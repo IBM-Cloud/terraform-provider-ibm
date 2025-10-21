@@ -1155,6 +1155,897 @@ func ResourceIbmBackupRecovery() *schema.Resource {
 					},
 				},
 			},
+			"mssql_params": &schema.Schema{
+				Type:     schema.TypeList,
+				MaxItems: 1,
+				Optional: true,
+				// ForceNew:    true,
+				Description: "Specifies the recovery options specific to Sql environment.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"recover_app_params": &schema.Schema{
+							Type:        schema.TypeList,
+							Optional:    true,
+							Description: "Specifies the parameters to recover Sql databases.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"snapshot_id": &schema.Schema{
+										Type:        schema.TypeString,
+										Required:    true,
+										Description: "Specifies the snapshot id.",
+									},
+									"point_in_time_usecs": &schema.Schema{
+										Type:        schema.TypeInt,
+										Optional:    true,
+										Description: "Specifies the timestamp (in microseconds. from epoch) for recovering to a point-in-time in the past.",
+									},
+									"protection_group_id": &schema.Schema{
+										Type:        schema.TypeString,
+										Optional:    true,
+										Description: "Specifies the protection group id of the object snapshot.",
+									},
+									"protection_group_name": &schema.Schema{
+										Type:        schema.TypeString,
+										Optional:    true,
+										Description: "Specifies the protection group name of the object snapshot.",
+									},
+									"snapshot_creation_time_usecs": &schema.Schema{
+										Type:        schema.TypeInt,
+										Computed:    true,
+										Description: "Specifies the time when the snapshot is created in Unix timestamp epoch in microseconds.",
+									},
+									"object_info": &schema.Schema{
+										Type:        schema.TypeList,
+										Computed:    true,
+										Description: "Specifies the information about the object for which the snapshot is taken.",
+										Elem: &schema.Resource{
+											Schema: map[string]*schema.Schema{
+												"id": &schema.Schema{
+													Type:        schema.TypeInt,
+													Optional:    true,
+													Computed:    true,
+													Description: "Specifies object id.",
+												},
+												"name": &schema.Schema{
+													Type:        schema.TypeString,
+													Optional:    true,
+													Computed:    true,
+													Description: "Specifies the name of the object.",
+												},
+												"source_id": &schema.Schema{
+													Type:        schema.TypeInt,
+													Optional:    true,
+													Computed:    true,
+													Description: "Specifies registered source id to which object belongs.",
+												},
+												"source_name": &schema.Schema{
+													Type:        schema.TypeString,
+													Optional:    true,
+													Computed:    true,
+													Description: "Specifies registered source name to which object belongs.",
+												},
+												"environment": &schema.Schema{
+													Type:        schema.TypeString,
+													Optional:    true,
+													Computed:    true,
+													Description: "Specifies the environment of the object.",
+												},
+												"object_hash": &schema.Schema{
+													Type:        schema.TypeString,
+													Optional:    true,
+													Computed:    true,
+													Description: "Specifies the hash identifier of the object.",
+												},
+												"object_type": &schema.Schema{
+													Type:        schema.TypeString,
+													Optional:    true,
+													Computed:    true,
+													Description: "Specifies the type of the object.",
+												},
+												"logical_size_bytes": &schema.Schema{
+													Type:        schema.TypeInt,
+													Optional:    true,
+													Computed:    true,
+													Description: "Specifies the logical size of object in bytes.",
+												},
+												"uuid": &schema.Schema{
+													Type:        schema.TypeString,
+													Optional:    true,
+													Computed:    true,
+													Description: "Specifies the uuid which is a unique identifier of the object.",
+												},
+												"global_id": &schema.Schema{
+													Type:        schema.TypeString,
+													Optional:    true,
+													Computed:    true,
+													Description: "Specifies the global id which is a unique identifier of the object.",
+												},
+												"protection_type": &schema.Schema{
+													Type:        schema.TypeString,
+													Optional:    true,
+													Computed:    true,
+													Description: "Specifies the protection type of the object if any.",
+												},
+												"sharepoint_site_summary": &schema.Schema{
+													Type:        schema.TypeList,
+													Optional:    true,
+													Computed:    true,
+													Description: "Specifies the common parameters for Sharepoint site objects.",
+													Elem: &schema.Resource{
+														Schema: map[string]*schema.Schema{
+															"site_web_url": &schema.Schema{
+																Type:        schema.TypeString,
+																Optional:    true,
+																Computed:    true,
+																Description: "Specifies the web url for the Sharepoint site.",
+															},
+														},
+													},
+												},
+												"os_type": &schema.Schema{
+													Type:        schema.TypeString,
+													Optional:    true,
+													Computed:    true,
+													Description: "Specifies the operating system type of the object.",
+												},
+												"child_objects": &schema.Schema{
+													Type:        schema.TypeList,
+													Optional:    true,
+													Computed:    true,
+													Description: "Specifies child object details.",
+													Elem: &schema.Resource{
+														Schema: map[string]*schema.Schema{
+															"id": &schema.Schema{
+																Type:        schema.TypeInt,
+																Optional:    true,
+																Computed:    true,
+																Description: "Specifies object id.",
+															},
+															"name": &schema.Schema{
+																Type:        schema.TypeString,
+																Optional:    true,
+																Computed:    true,
+																Description: "Specifies the name of the object.",
+															},
+															"source_id": &schema.Schema{
+																Type:        schema.TypeInt,
+																Optional:    true,
+																Computed:    true,
+																Description: "Specifies registered source id to which object belongs.",
+															},
+															"source_name": &schema.Schema{
+																Type:        schema.TypeString,
+																Optional:    true,
+																Computed:    true,
+																Description: "Specifies registered source name to which object belongs.",
+															},
+															"environment": &schema.Schema{
+																Type:        schema.TypeString,
+																Optional:    true,
+																Computed:    true,
+																Description: "Specifies the environment of the object.",
+															},
+															"object_hash": &schema.Schema{
+																Type:        schema.TypeString,
+																Optional:    true,
+																Computed:    true,
+																Description: "Specifies the hash identifier of the object.",
+															},
+															"object_type": &schema.Schema{
+																Type:        schema.TypeString,
+																Optional:    true,
+																Computed:    true,
+																Description: "Specifies the type of the object.",
+															},
+															"logical_size_bytes": &schema.Schema{
+																Type:        schema.TypeInt,
+																Optional:    true,
+																Computed:    true,
+																Description: "Specifies the logical size of object in bytes.",
+															},
+															"uuid": &schema.Schema{
+																Type:        schema.TypeString,
+																Optional:    true,
+																Computed:    true,
+																Description: "Specifies the uuid which is a unique identifier of the object.",
+															},
+															"global_id": &schema.Schema{
+																Type:        schema.TypeString,
+																Optional:    true,
+																Computed:    true,
+																Description: "Specifies the global id which is a unique identifier of the object.",
+															},
+															"protection_type": &schema.Schema{
+																Type:        schema.TypeString,
+																Optional:    true,
+																Computed:    true,
+																Description: "Specifies the protection type of the object if any.",
+															},
+															"sharepoint_site_summary": &schema.Schema{
+																Type:        schema.TypeList,
+																Optional:    true,
+																Computed:    true,
+																Description: "Specifies the common parameters for Sharepoint site objects.",
+																Elem: &schema.Resource{
+																	Schema: map[string]*schema.Schema{
+																		"site_web_url": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Optional:    true,
+																			Computed:    true,
+																			Description: "Specifies the web url for the Sharepoint site.",
+																		},
+																	},
+																},
+															},
+															"os_type": &schema.Schema{
+																Type:        schema.TypeString,
+																Optional:    true,
+																Computed:    true,
+																Description: "Specifies the operating system type of the object.",
+															},
+															"child_objects": &schema.Schema{
+																Type:        schema.TypeList,
+																Optional:    true,
+																Computed:    true,
+																Description: "Specifies child object details.",
+																Elem: &schema.Resource{
+																	Schema: map[string]*schema.Schema{},
+																},
+															},
+															"v_center_summary": &schema.Schema{
+																Type:     schema.TypeList,
+																Optional: true,
+																Computed: true,
+																Elem: &schema.Resource{
+																	Schema: map[string]*schema.Schema{
+																		"is_cloud_env": &schema.Schema{
+																			Type:        schema.TypeBool,
+																			Optional:    true,
+																			Computed:    true,
+																			Description: "Specifies that registered vCenter source is a VMC (VMware Cloud) environment or not.",
+																		},
+																	},
+																},
+															},
+															"windows_cluster_summary": &schema.Schema{
+																Type:     schema.TypeList,
+																Optional: true,
+																Computed: true,
+																Elem: &schema.Resource{
+																	Schema: map[string]*schema.Schema{
+																		"cluster_source_type": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Optional:    true,
+																			Computed:    true,
+																			Description: "Specifies the type of cluster resource this source represents.",
+																		},
+																	},
+																},
+															},
+														},
+													},
+												},
+												"v_center_summary": &schema.Schema{
+													Type:     schema.TypeList,
+													Optional: true,
+													Computed: true,
+													Elem: &schema.Resource{
+														Schema: map[string]*schema.Schema{
+															"is_cloud_env": &schema.Schema{
+																Type:        schema.TypeBool,
+																Optional:    true,
+																Computed:    true,
+																Description: "Specifies that registered vCenter source is a VMC (VMware Cloud) environment or not.",
+															},
+														},
+													},
+												},
+												"windows_cluster_summary": &schema.Schema{
+													Type:     schema.TypeList,
+													Optional: true,
+													Computed: true,
+													Elem: &schema.Resource{
+														Schema: map[string]*schema.Schema{
+															"cluster_source_type": &schema.Schema{
+																Type:        schema.TypeString,
+																Optional:    true,
+																Computed:    true,
+																Description: "Specifies the type of cluster resource this source represents.",
+															},
+														},
+													},
+												},
+											},
+										},
+									},
+									"snapshot_target_type": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "Specifies the snapshot target type.",
+									},
+									"archival_target_info": &schema.Schema{
+										Type:        schema.TypeList,
+										Computed:    true,
+										Description: "Specifies the archival target information if the snapshot is an archival snapshot.",
+										Elem: &schema.Resource{
+											Schema: map[string]*schema.Schema{
+												"target_id": &schema.Schema{
+													Type:        schema.TypeInt,
+													Optional:    true,
+													Computed:    true,
+													Description: "Specifies the archival target ID.",
+												},
+												"archival_task_id": &schema.Schema{
+													Type:        schema.TypeString,
+													Optional:    true,
+													Computed:    true,
+													Description: "Specifies the archival task id. This is a protection group UID which only applies when archival type is 'Tape'.",
+												},
+												"target_name": &schema.Schema{
+													Type:        schema.TypeString,
+													Optional:    true,
+													Computed:    true,
+													Description: "Specifies the archival target name.",
+												},
+												"target_type": &schema.Schema{
+													Type:        schema.TypeString,
+													Optional:    true,
+													Computed:    true,
+													Description: "Specifies the archival target type.",
+												},
+												"usage_type": &schema.Schema{
+													Type:        schema.TypeString,
+													Optional:    true,
+													Computed:    true,
+													Description: "Specifies the usage type for the target.",
+												},
+												"ownership_context": &schema.Schema{
+													Type:        schema.TypeString,
+													Optional:    true,
+													Computed:    true,
+													Description: "Specifies the ownership context for the target.",
+												},
+												"tier_settings": &schema.Schema{
+													Type:        schema.TypeList,
+													Optional:    true,
+													Computed:    true,
+													Description: "Specifies the tier info for archival.",
+													Elem: &schema.Resource{
+														Schema: map[string]*schema.Schema{
+															"aws_tiering": &schema.Schema{
+																Type:        schema.TypeList,
+																Optional:    true,
+																Computed:    true,
+																Description: "Specifies aws tiers.",
+																Elem: &schema.Resource{
+																	Schema: map[string]*schema.Schema{
+																		"tiers": &schema.Schema{
+																			Type:        schema.TypeList,
+																			Required:    true,
+																			Description: "Specifies the tiers that are used to move the archived backup from current tier to next tier. The order of the tiers determines which tier will be used next for moving the archived backup. The first tier input should always be default tier where backup will be acrhived. Each tier specifies how much time after the backup will be moved to next tier from the current tier.",
+																			Elem: &schema.Resource{
+																				Schema: map[string]*schema.Schema{
+																					"move_after_unit": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Optional:    true,
+																						Computed:    true,
+																						Description: "Specifies the unit for moving the data from current tier to next tier. This unit will be a base unit for the 'moveAfter' field specified below.",
+																					},
+																					"move_after": &schema.Schema{
+																						Type:        schema.TypeInt,
+																						Optional:    true,
+																						Computed:    true,
+																						Description: "Specifies the time period after which the backup will be moved from current tier to next tier.",
+																					},
+																					"tier_type": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Computed:    true,
+																						Description: "Specifies the AWS tier types.",
+																					},
+																				},
+																			},
+																		},
+																	},
+																},
+															},
+															"azure_tiering": &schema.Schema{
+																Type:        schema.TypeList,
+																Optional:    true,
+																Computed:    true,
+																Description: "Specifies Azure tiers.",
+																Elem: &schema.Resource{
+																	Schema: map[string]*schema.Schema{
+																		"tiers": &schema.Schema{
+																			Type:        schema.TypeList,
+																			Optional:    true,
+																			Computed:    true,
+																			Description: "Specifies the tiers that are used to move the archived backup from current tier to next tier. The order of the tiers determines which tier will be used next for moving the archived backup. The first tier input should always be default tier where backup will be acrhived. Each tier specifies how much time after the backup will be moved to next tier from the current tier.",
+																			Elem: &schema.Resource{
+																				Schema: map[string]*schema.Schema{
+																					"move_after_unit": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Optional:    true,
+																						Computed:    true,
+																						Description: "Specifies the unit for moving the data from current tier to next tier. This unit will be a base unit for the 'moveAfter' field specified below.",
+																					},
+																					"move_after": &schema.Schema{
+																						Type:        schema.TypeInt,
+																						Optional:    true,
+																						Computed:    true,
+																						Description: "Specifies the time period after which the backup will be moved from current tier to next tier.",
+																					},
+																					"tier_type": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Computed:    true,
+																						Description: "Specifies the Azure tier types.",
+																					},
+																				},
+																			},
+																		},
+																	},
+																},
+															},
+															"cloud_platform": &schema.Schema{
+																Type:        schema.TypeString,
+																Optional:    true,
+																Computed:    true,
+																Description: "Specifies the cloud platform to enable tiering.",
+															},
+															"google_tiering": &schema.Schema{
+																Type:        schema.TypeList,
+																Optional:    true,
+																Computed:    true,
+																Description: "Specifies Google tiers.",
+																Elem: &schema.Resource{
+																	Schema: map[string]*schema.Schema{
+																		"tiers": &schema.Schema{
+																			Type:        schema.TypeList,
+																			Required:    true,
+																			Description: "Specifies the tiers that are used to move the archived backup from current tier to next tier. The order of the tiers determines which tier will be used next for moving the archived backup. The first tier input should always be default tier where backup will be acrhived. Each tier specifies how much time after the backup will be moved to next tier from the current tier.",
+																			Elem: &schema.Resource{
+																				Schema: map[string]*schema.Schema{
+																					"move_after_unit": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Optional:    true,
+																						Computed:    true,
+																						Description: "Specifies the unit for moving the data from current tier to next tier. This unit will be a base unit for the 'moveAfter' field specified below.",
+																					},
+																					"move_after": &schema.Schema{
+																						Type:        schema.TypeInt,
+																						Optional:    true,
+																						Computed:    true,
+																						Description: "Specifies the time period after which the backup will be moved from current tier to next tier.",
+																					},
+																					"tier_type": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Computed:    true,
+																						Description: "Specifies the Google tier types.",
+																					},
+																				},
+																			},
+																		},
+																	},
+																},
+															},
+															"oracle_tiering": &schema.Schema{
+																Type:        schema.TypeList,
+																Optional:    true,
+																Computed:    true,
+																Description: "Specifies Oracle tiers.",
+																Elem: &schema.Resource{
+																	Schema: map[string]*schema.Schema{
+																		"tiers": &schema.Schema{
+																			Type:        schema.TypeList,
+																			Required:    true,
+																			Description: "Specifies the tiers that are used to move the archived backup from current tier to next tier. The order of the tiers determines which tier will be used next for moving the archived backup. The first tier input should always be default tier where backup will be acrhived. Each tier specifies how much time after the backup will be moved to next tier from the current tier.",
+																			Elem: &schema.Resource{
+																				Schema: map[string]*schema.Schema{
+																					"move_after_unit": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Optional:    true,
+																						Computed:    true,
+																						Description: "Specifies the unit for moving the data from current tier to next tier. This unit will be a base unit for the 'moveAfter' field specified below.",
+																					},
+																					"move_after": &schema.Schema{
+																						Type:        schema.TypeInt,
+																						Optional:    true,
+																						Computed:    true,
+																						Description: "Specifies the time period after which the backup will be moved from current tier to next tier.",
+																					},
+																					"tier_type": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Computed:    true,
+																						Description: "Specifies the Oracle tier types.",
+																					},
+																				},
+																			},
+																		},
+																	},
+																},
+															},
+															"current_tier_type": &schema.Schema{
+																Type:        schema.TypeString,
+																Optional:    true,
+																Computed:    true,
+																Description: "Specifies the type of the current tier where the snapshot resides. This will be specified if the run is a CAD run.",
+															},
+														},
+													},
+												},
+											},
+										},
+									},
+									"progress_task_id": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "Progress monitor task id for Recovery of VM.",
+									},
+									"recover_from_standby": &schema.Schema{
+										Type:        schema.TypeBool,
+										Optional:    true,
+										Description: "Specifies that user wants to perform standby restore if it is enabled for this object.",
+									},
+									"status": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "Status of the Recovery. 'Running' indicates that the Recovery is still running. 'Canceled' indicates that the Recovery has been cancelled. 'Canceling' indicates that the Recovery is in the process of being cancelled. 'Failed' indicates that the Recovery has failed. 'Succeeded' indicates that the Recovery has finished successfully. 'SucceededWithWarning' indicates that the Recovery finished successfully, but there were some warning messages. 'Skipped' indicates that the Recovery task was skipped.",
+									},
+									"start_time_usecs": &schema.Schema{
+										Type:        schema.TypeInt,
+										Computed:    true,
+										Description: "Specifies the start time of the Recovery in Unix timestamp epoch in microseconds.",
+									},
+									"end_time_usecs": &schema.Schema{
+										Type:        schema.TypeInt,
+										Computed:    true,
+										Description: "Specifies the end time of the Recovery in Unix timestamp epoch in microseconds. This field will be populated only after Recovery is finished.",
+									},
+									"messages": &schema.Schema{
+										Type:        schema.TypeList,
+										Computed:    true,
+										Description: "Specify error messages about the object.",
+										Elem:        &schema.Schema{Type: schema.TypeString},
+									},
+									"bytes_restored": &schema.Schema{
+										Type:        schema.TypeInt,
+										Computed:    true,
+										Description: "Specify the total bytes restored.",
+									},
+									"aag_info": &schema.Schema{
+										Type:        schema.TypeList,
+										MaxItems:    1,
+										Optional:    true,
+										Description: "Object details for Mssql.",
+										Elem: &schema.Resource{
+											Schema: map[string]*schema.Schema{
+												"name": &schema.Schema{
+													Type:        schema.TypeString,
+													Optional:    true,
+													Description: "Specifies the AAG name.",
+												},
+												"object_id": &schema.Schema{
+													Type:        schema.TypeInt,
+													Optional:    true,
+													Description: "Specifies the AAG object Id.",
+												},
+											},
+										},
+									},
+									"host_info": &schema.Schema{
+										Type:        schema.TypeList,
+										MaxItems:    1,
+										Optional:    true,
+										Description: "Specifies the host information for a objects. This is mainly populated in case of App objects where app object is hosted by another object such as VM or physical server.",
+										Elem: &schema.Resource{
+											Schema: map[string]*schema.Schema{
+												"id": &schema.Schema{
+													Type:        schema.TypeString,
+													Optional:    true,
+													Description: "Specifies the id of the host object.",
+												},
+												"name": &schema.Schema{
+													Type:        schema.TypeString,
+													Optional:    true,
+													Description: "Specifies the name of the host object.",
+												},
+												"environment": &schema.Schema{
+													Type:        schema.TypeString,
+													Optional:    true,
+													Description: "Specifies the environment of the object.",
+												},
+											},
+										},
+									},
+									"is_encrypted": &schema.Schema{
+										Type:        schema.TypeBool,
+										Optional:    true,
+										Description: "Specifies whether the database is TDE enabled.",
+									},
+									"sql_target_params": &schema.Schema{
+										Type:        schema.TypeList,
+										MaxItems:    1,
+										Optional:    true,
+										Description: "Specifies the params for recovering to a sql host. Specifiy seperate settings for each db object that need to be recovered. Provided sql backup should be recovered to same type of target host. For Example: If you have sql backup taken from a physical host then that should be recovered to physical host only.",
+										Elem: &schema.Resource{
+											Schema: map[string]*schema.Schema{
+												"new_source_config": &schema.Schema{
+													Type:        schema.TypeList,
+													MaxItems:    1,
+													Optional:    true,
+													Description: "Specifies the destination Source configuration parameters where the databases will be recovered. This is mandatory if recoverToNewSource is set to true.",
+													Elem: &schema.Resource{
+														Schema: map[string]*schema.Schema{
+															"keep_cdc": &schema.Schema{
+																Type:        schema.TypeBool,
+																Optional:    true,
+																Description: "Specifies whether to keep CDC (Change Data Capture) on recovered databases or not. If not passed, this is assumed to be true. If withNoRecovery is passed as true, then this field must not be set to true. Passing this field as true in this scenario will be a invalid request.",
+															},
+															"multi_stage_restore_options": &schema.Schema{
+																Type:        schema.TypeList,
+																MaxItems:    1,
+																Optional:    true,
+																Description: "Specifies the parameters related to multi stage Sql restore.",
+																Elem: &schema.Resource{
+																	Schema: map[string]*schema.Schema{
+																		"enable_auto_sync": &schema.Schema{
+																			Type:        schema.TypeBool,
+																			Optional:    true,
+																			Description: "Set this to true if you want to enable auto sync for multi stage restore.",
+																		},
+																		"enable_multi_stage_restore": &schema.Schema{
+																			Type:        schema.TypeBool,
+																			Optional:    true,
+																			Description: "Set this to true if you are creating a multi-stage Sql restore task needed for features such as Hot-Standby.",
+																		},
+																	},
+																},
+															},
+															"native_log_recovery_with_clause": &schema.Schema{
+																Type:        schema.TypeString,
+																Optional:    true,
+																Description: "Specifies the WITH clause to be used in native sql log restore command. This is only applicable for native log restore.",
+															},
+															"native_recovery_with_clause": &schema.Schema{
+																Type:        schema.TypeString,
+																Optional:    true,
+																Description: "'with_clause' contains 'with clause' to be used in native sql restore command. This is only applicable for database restore of native sql backup. Here user can specify multiple restore options. Example: 'WITH BUFFERCOUNT = 575, MAXTRANSFERSIZE = 2097152'.",
+															},
+															"overwriting_policy": &schema.Schema{
+																Type:        schema.TypeString,
+																Optional:    true,
+																Description: "Specifies a policy to be used while recovering existing databases.",
+															},
+															"replay_entire_last_log": &schema.Schema{
+																Type:        schema.TypeBool,
+																Optional:    true,
+																Description: "Specifies the option to set replay last log bit while creating the sql restore task and doing restore to latest point-in-time. If this is set to true, we will replay the entire last log without STOPAT.",
+															},
+															"restore_time_usecs": &schema.Schema{
+																Type:        schema.TypeInt,
+																Optional:    true,
+																Description: "Specifies the time in the past to which the Sql database needs to be restored. This allows for granular recovery of Sql databases. If this is not set, the Sql database will be restored from the full/incremental snapshot.",
+															},
+															"secondary_data_files_dir_list": &schema.Schema{
+																Type:        schema.TypeList,
+																Optional:    true,
+																Description: "Specifies the secondary data filename pattern and corresponding direcories of the DB. Secondary data files are optional and are user defined. The recommended file extention for secondary files is \".ndf\". If this option is specified and the destination folders do not exist they will be automatically created.",
+																Elem: &schema.Resource{
+																	Schema: map[string]*schema.Schema{
+																		"directory": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Optional:    true,
+																			Description: "Specifies the directory where to keep the files matching the pattern.",
+																		},
+																		"filename_pattern": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Optional:    true,
+																			Description: "Specifies a pattern to be matched with filenames. This can be a regex expression.",
+																		},
+																	},
+																},
+															},
+															"with_no_recovery": &schema.Schema{
+																Type:        schema.TypeBool,
+																Optional:    true,
+																Description: "Specifies the flag to bring DBs online or not after successful recovery. If this is passed as true, then it means DBs won't be brought online.",
+															},
+															"data_file_directory_location": &schema.Schema{
+																Type:        schema.TypeString,
+																Required:    true,
+																Description: "Specifies the directory where to put the database data files. Missing directory will be automatically created.",
+															},
+															"database_name": &schema.Schema{
+																Type:        schema.TypeString,
+																Optional:    true,
+																Description: "Specifies a new name for the restored database. If this field is not specified, then the original database will be overwritten after recovery.",
+															},
+															"host": &schema.Schema{
+																Type:        schema.TypeList,
+																MinItems:    1,
+																MaxItems:    1,
+																Required:    true,
+																Description: "Specifies the source id of target host where databases will be recovered. This source id can be a physical host or virtual machine.",
+																Elem: &schema.Resource{
+																	Schema: map[string]*schema.Schema{
+																		"id": &schema.Schema{
+																			Type:        schema.TypeInt,
+																			Required:    true,
+																			Description: "Specifies the id of the object.",
+																		},
+																		"name": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Computed:    true,
+																			Description: "Specifies the name of the object.",
+																		},
+																	},
+																},
+															},
+															"instance_name": &schema.Schema{
+																Type:        schema.TypeString,
+																Required:    true,
+																Description: "Specifies an instance name of the Sql Server that should be used for restoring databases to.",
+															},
+															"log_file_directory_location": &schema.Schema{
+																Type:        schema.TypeString,
+																Required:    true,
+																Description: "Specifies the directory where to put the database log files. Missing directory will be automatically created.",
+															},
+														},
+													},
+												},
+												"original_source_config": &schema.Schema{
+													Type:        schema.TypeList,
+													MaxItems:    1,
+													Optional:    true,
+													Description: "Specifies the Source configuration if databases are being recovered to Original Source. If not specified, all the configuration parameters will be retained.",
+													Elem: &schema.Resource{
+														Schema: map[string]*schema.Schema{
+															"keep_cdc": &schema.Schema{
+																Type:        schema.TypeBool,
+																Optional:    true,
+																Description: "Specifies whether to keep CDC (Change Data Capture) on recovered databases or not. If not passed, this is assumed to be true. If withNoRecovery is passed as true, then this field must not be set to true. Passing this field as true in this scenario will be a invalid request.",
+															},
+															"multi_stage_restore_options": &schema.Schema{
+																Type:        schema.TypeList,
+																MaxItems:    1,
+																Optional:    true,
+																Description: "Specifies the parameters related to multi stage Sql restore.",
+																Elem: &schema.Resource{
+																	Schema: map[string]*schema.Schema{
+																		"enable_auto_sync": &schema.Schema{
+																			Type:        schema.TypeBool,
+																			Optional:    true,
+																			Description: "Set this to true if you want to enable auto sync for multi stage restore.",
+																		},
+																		"enable_multi_stage_restore": &schema.Schema{
+																			Type:        schema.TypeBool,
+																			Optional:    true,
+																			Description: "Set this to true if you are creating a multi-stage Sql restore task needed for features such as Hot-Standby.",
+																		},
+																	},
+																},
+															},
+															"native_log_recovery_with_clause": &schema.Schema{
+																Type:        schema.TypeString,
+																Optional:    true,
+																Description: "Specifies the WITH clause to be used in native sql log restore command. This is only applicable for native log restore.",
+															},
+															"native_recovery_with_clause": &schema.Schema{
+																Type:        schema.TypeString,
+																Optional:    true,
+																Description: "'with_clause' contains 'with clause' to be used in native sql restore command. This is only applicable for database restore of native sql backup. Here user can specify multiple restore options. Example: 'WITH BUFFERCOUNT = 575, MAXTRANSFERSIZE = 2097152'.",
+															},
+															"overwriting_policy": &schema.Schema{
+																Type:        schema.TypeString,
+																Optional:    true,
+																Description: "Specifies a policy to be used while recovering existing databases.",
+															},
+															"replay_entire_last_log": &schema.Schema{
+																Type:        schema.TypeBool,
+																Optional:    true,
+																Description: "Specifies the option to set replay last log bit while creating the sql restore task and doing restore to latest point-in-time. If this is set to true, we will replay the entire last log without STOPAT.",
+															},
+															"restore_time_usecs": &schema.Schema{
+																Type:        schema.TypeInt,
+																Optional:    true,
+																Description: "Specifies the time in the past to which the Sql database needs to be restored. This allows for granular recovery of Sql databases. If this is not set, the Sql database will be restored from the full/incremental snapshot.",
+															},
+															"secondary_data_files_dir_list": &schema.Schema{
+																Type:        schema.TypeList,
+																Optional:    true,
+																Description: "Specifies the secondary data filename pattern and corresponding direcories of the DB. Secondary data files are optional and are user defined. The recommended file extention for secondary files is \".ndf\". If this option is specified and the destination folders do not exist they will be automatically created.",
+																Elem: &schema.Resource{
+																	Schema: map[string]*schema.Schema{
+																		"directory": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Optional:    true,
+																			Description: "Specifies the directory where to keep the files matching the pattern.",
+																		},
+																		"filename_pattern": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Optional:    true,
+																			Description: "Specifies a pattern to be matched with filenames. This can be a regex expression.",
+																		},
+																	},
+																},
+															},
+															"with_no_recovery": &schema.Schema{
+																Type:        schema.TypeBool,
+																Optional:    true,
+																Description: "Specifies the flag to bring DBs online or not after successful recovery. If this is passed as true, then it means DBs won't be brought online.",
+															},
+															"capture_tail_logs": &schema.Schema{
+																Type:        schema.TypeBool,
+																Optional:    true,
+																Description: "Set this to true if tail logs are to be captured before the recovery operation. This is only applicable if database is not being renamed.",
+															},
+															"data_file_directory_location": &schema.Schema{
+																Type:        schema.TypeString,
+																Optional:    true,
+																Description: "Specifies the directory where to put the database data files. Missing directory will be automatically created. If you are overwriting the existing database then this field will be ignored.",
+															},
+															"log_file_directory_location": &schema.Schema{
+																Type:        schema.TypeString,
+																Optional:    true,
+																Description: "Specifies the directory where to put the database log files. Missing directory will be automatically created. If you are overwriting the existing database then this field will be ignored.",
+															},
+															"new_database_name": &schema.Schema{
+																Type:        schema.TypeString,
+																Optional:    true,
+																Description: "Specifies a new name for the restored database. If this field is not specified, then the original database will be overwritten after recovery.",
+															},
+														},
+													},
+												},
+												"recover_to_new_source": &schema.Schema{
+													Type:        schema.TypeBool,
+													Required:    true,
+													Description: "Specifies the parameter whether the recovery should be performed to a new sources or an original Source Target.",
+												},
+											},
+										},
+									},
+									"target_environment": &schema.Schema{
+										Type:        schema.TypeString,
+										Required:    true,
+										Description: "Specifies the environment of the recovery target. The corresponding params below must be filled out.",
+									},
+								},
+							},
+						},
+						"recovery_action": &schema.Schema{
+							Type:        schema.TypeString,
+							Required:    true,
+							Description: "Specifies the type of recover action to be performed.",
+						},
+						"vlan_config": &schema.Schema{
+							Type:        schema.TypeList,
+							MaxItems:    1,
+							Optional:    true,
+							Description: "Specifies VLAN Params associated with the recovered. If this is not specified, then the VLAN settings will be automatically selected from one of the below options: a. If VLANs are configured on IBM, then the VLAN host/VIP will be automatically based on the client's (e.g. ESXI host) IP address. b. If VLANs are not configured on IBM, then the partition hostname or VIPs will be used for Recovery.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"id": &schema.Schema{
+										Type:        schema.TypeInt,
+										Optional:    true,
+										Description: "If this is set, then the Cohesity host name or the IP address associated with this vlan is used for mounting Cohesity's view on the remote host.",
+									},
+									"disable_vlan": &schema.Schema{
+										Type:        schema.TypeBool,
+										Optional:    true,
+										Description: "If this is set to true, then even if VLANs are configured on the system, the partition VIPs will be used for the Recovery.",
+									},
+									"interface_name": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "Interface group to use for Recovery.",
+									},
+								},
+							},
+						},
+					},
+				},
+			},
 			"kubernetes_params": &schema.Schema{
 				Type:     schema.TypeList,
 				MaxItems: 1,
@@ -2869,897 +3760,6 @@ func ResourceIbmBackupRecovery() *schema.Resource {
 							Type:        schema.TypeString,
 							Required:    true,
 							Description: "Specifies the type of recover action to be performed.",
-						},
-					},
-				},
-			},
-			"mssql_params": &schema.Schema{
-				Type:     schema.TypeList,
-				MaxItems: 1,
-				Optional: true,
-				// ForceNew:    true,
-				Description: "Specifies the recovery options specific to Sql environment.",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"recover_app_params": &schema.Schema{
-							Type:        schema.TypeList,
-							Optional:    true,
-							Description: "Specifies the parameters to recover Sql databases.",
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									"snapshot_id": &schema.Schema{
-										Type:        schema.TypeString,
-										Required:    true,
-										Description: "Specifies the snapshot id.",
-									},
-									"point_in_time_usecs": &schema.Schema{
-										Type:        schema.TypeInt,
-										Optional:    true,
-										Description: "Specifies the timestamp (in microseconds. from epoch) for recovering to a point-in-time in the past.",
-									},
-									"protection_group_id": &schema.Schema{
-										Type:        schema.TypeString,
-										Optional:    true,
-										Description: "Specifies the protection group id of the object snapshot.",
-									},
-									"protection_group_name": &schema.Schema{
-										Type:        schema.TypeString,
-										Optional:    true,
-										Description: "Specifies the protection group name of the object snapshot.",
-									},
-									"snapshot_creation_time_usecs": &schema.Schema{
-										Type:        schema.TypeInt,
-										Computed:    true,
-										Description: "Specifies the time when the snapshot is created in Unix timestamp epoch in microseconds.",
-									},
-									"object_info": &schema.Schema{
-										Type:        schema.TypeList,
-										Computed:    true,
-										Description: "Specifies the information about the object for which the snapshot is taken.",
-										Elem: &schema.Resource{
-											Schema: map[string]*schema.Schema{
-												"id": &schema.Schema{
-													Type:        schema.TypeInt,
-													Optional:    true,
-													Computed:    true,
-													Description: "Specifies object id.",
-												},
-												"name": &schema.Schema{
-													Type:        schema.TypeString,
-													Optional:    true,
-													Computed:    true,
-													Description: "Specifies the name of the object.",
-												},
-												"source_id": &schema.Schema{
-													Type:        schema.TypeInt,
-													Optional:    true,
-													Computed:    true,
-													Description: "Specifies registered source id to which object belongs.",
-												},
-												"source_name": &schema.Schema{
-													Type:        schema.TypeString,
-													Optional:    true,
-													Computed:    true,
-													Description: "Specifies registered source name to which object belongs.",
-												},
-												"environment": &schema.Schema{
-													Type:        schema.TypeString,
-													Optional:    true,
-													Computed:    true,
-													Description: "Specifies the environment of the object.",
-												},
-												"object_hash": &schema.Schema{
-													Type:        schema.TypeString,
-													Optional:    true,
-													Computed:    true,
-													Description: "Specifies the hash identifier of the object.",
-												},
-												"object_type": &schema.Schema{
-													Type:        schema.TypeString,
-													Optional:    true,
-													Computed:    true,
-													Description: "Specifies the type of the object.",
-												},
-												"logical_size_bytes": &schema.Schema{
-													Type:        schema.TypeInt,
-													Optional:    true,
-													Computed:    true,
-													Description: "Specifies the logical size of object in bytes.",
-												},
-												"uuid": &schema.Schema{
-													Type:        schema.TypeString,
-													Optional:    true,
-													Computed:    true,
-													Description: "Specifies the uuid which is a unique identifier of the object.",
-												},
-												"global_id": &schema.Schema{
-													Type:        schema.TypeString,
-													Optional:    true,
-													Computed:    true,
-													Description: "Specifies the global id which is a unique identifier of the object.",
-												},
-												"protection_type": &schema.Schema{
-													Type:        schema.TypeString,
-													Optional:    true,
-													Computed:    true,
-													Description: "Specifies the protection type of the object if any.",
-												},
-												"sharepoint_site_summary": &schema.Schema{
-													Type:        schema.TypeList,
-													Optional:    true,
-													Computed:    true,
-													Description: "Specifies the common parameters for Sharepoint site objects.",
-													Elem: &schema.Resource{
-														Schema: map[string]*schema.Schema{
-															"site_web_url": &schema.Schema{
-																Type:        schema.TypeString,
-																Optional:    true,
-																Computed:    true,
-																Description: "Specifies the web url for the Sharepoint site.",
-															},
-														},
-													},
-												},
-												"os_type": &schema.Schema{
-													Type:        schema.TypeString,
-													Optional:    true,
-													Computed:    true,
-													Description: "Specifies the operating system type of the object.",
-												},
-												"child_objects": &schema.Schema{
-													Type:        schema.TypeList,
-													Optional:    true,
-													Computed:    true,
-													Description: "Specifies child object details.",
-													Elem: &schema.Resource{
-														Schema: map[string]*schema.Schema{
-															"id": &schema.Schema{
-																Type:        schema.TypeInt,
-																Optional:    true,
-																Computed:    true,
-																Description: "Specifies object id.",
-															},
-															"name": &schema.Schema{
-																Type:        schema.TypeString,
-																Optional:    true,
-																Computed:    true,
-																Description: "Specifies the name of the object.",
-															},
-															"source_id": &schema.Schema{
-																Type:        schema.TypeInt,
-																Optional:    true,
-																Computed:    true,
-																Description: "Specifies registered source id to which object belongs.",
-															},
-															"source_name": &schema.Schema{
-																Type:        schema.TypeString,
-																Optional:    true,
-																Computed:    true,
-																Description: "Specifies registered source name to which object belongs.",
-															},
-															"environment": &schema.Schema{
-																Type:        schema.TypeString,
-																Optional:    true,
-																Computed:    true,
-																Description: "Specifies the environment of the object.",
-															},
-															"object_hash": &schema.Schema{
-																Type:        schema.TypeString,
-																Optional:    true,
-																Computed:    true,
-																Description: "Specifies the hash identifier of the object.",
-															},
-															"object_type": &schema.Schema{
-																Type:        schema.TypeString,
-																Optional:    true,
-																Computed:    true,
-																Description: "Specifies the type of the object.",
-															},
-															"logical_size_bytes": &schema.Schema{
-																Type:        schema.TypeInt,
-																Optional:    true,
-																Computed:    true,
-																Description: "Specifies the logical size of object in bytes.",
-															},
-															"uuid": &schema.Schema{
-																Type:        schema.TypeString,
-																Optional:    true,
-																Computed:    true,
-																Description: "Specifies the uuid which is a unique identifier of the object.",
-															},
-															"global_id": &schema.Schema{
-																Type:        schema.TypeString,
-																Optional:    true,
-																Computed:    true,
-																Description: "Specifies the global id which is a unique identifier of the object.",
-															},
-															"protection_type": &schema.Schema{
-																Type:        schema.TypeString,
-																Optional:    true,
-																Computed:    true,
-																Description: "Specifies the protection type of the object if any.",
-															},
-															"sharepoint_site_summary": &schema.Schema{
-																Type:        schema.TypeList,
-																Optional:    true,
-																Computed:    true,
-																Description: "Specifies the common parameters for Sharepoint site objects.",
-																Elem: &schema.Resource{
-																	Schema: map[string]*schema.Schema{
-																		"site_web_url": &schema.Schema{
-																			Type:        schema.TypeString,
-																			Optional:    true,
-																			Computed:    true,
-																			Description: "Specifies the web url for the Sharepoint site.",
-																		},
-																	},
-																},
-															},
-															"os_type": &schema.Schema{
-																Type:        schema.TypeString,
-																Optional:    true,
-																Computed:    true,
-																Description: "Specifies the operating system type of the object.",
-															},
-															"child_objects": &schema.Schema{
-																Type:        schema.TypeList,
-																Optional:    true,
-																Computed:    true,
-																Description: "Specifies child object details.",
-																Elem: &schema.Resource{
-																	Schema: map[string]*schema.Schema{},
-																},
-															},
-															"v_center_summary": &schema.Schema{
-																Type:     schema.TypeList,
-																Optional: true,
-																Computed: true,
-																Elem: &schema.Resource{
-																	Schema: map[string]*schema.Schema{
-																		"is_cloud_env": &schema.Schema{
-																			Type:        schema.TypeBool,
-																			Optional:    true,
-																			Computed:    true,
-																			Description: "Specifies that registered vCenter source is a VMC (VMware Cloud) environment or not.",
-																		},
-																	},
-																},
-															},
-															"windows_cluster_summary": &schema.Schema{
-																Type:     schema.TypeList,
-																Optional: true,
-																Computed: true,
-																Elem: &schema.Resource{
-																	Schema: map[string]*schema.Schema{
-																		"cluster_source_type": &schema.Schema{
-																			Type:        schema.TypeString,
-																			Optional:    true,
-																			Computed:    true,
-																			Description: "Specifies the type of cluster resource this source represents.",
-																		},
-																	},
-																},
-															},
-														},
-													},
-												},
-												"v_center_summary": &schema.Schema{
-													Type:     schema.TypeList,
-													Optional: true,
-													Computed: true,
-													Elem: &schema.Resource{
-														Schema: map[string]*schema.Schema{
-															"is_cloud_env": &schema.Schema{
-																Type:        schema.TypeBool,
-																Optional:    true,
-																Computed:    true,
-																Description: "Specifies that registered vCenter source is a VMC (VMware Cloud) environment or not.",
-															},
-														},
-													},
-												},
-												"windows_cluster_summary": &schema.Schema{
-													Type:     schema.TypeList,
-													Optional: true,
-													Computed: true,
-													Elem: &schema.Resource{
-														Schema: map[string]*schema.Schema{
-															"cluster_source_type": &schema.Schema{
-																Type:        schema.TypeString,
-																Optional:    true,
-																Computed:    true,
-																Description: "Specifies the type of cluster resource this source represents.",
-															},
-														},
-													},
-												},
-											},
-										},
-									},
-									"snapshot_target_type": &schema.Schema{
-										Type:        schema.TypeString,
-										Computed:    true,
-										Description: "Specifies the snapshot target type.",
-									},
-									"archival_target_info": &schema.Schema{
-										Type:        schema.TypeList,
-										Computed:    true,
-										Description: "Specifies the archival target information if the snapshot is an archival snapshot.",
-										Elem: &schema.Resource{
-											Schema: map[string]*schema.Schema{
-												"target_id": &schema.Schema{
-													Type:        schema.TypeInt,
-													Optional:    true,
-													Computed:    true,
-													Description: "Specifies the archival target ID.",
-												},
-												"archival_task_id": &schema.Schema{
-													Type:        schema.TypeString,
-													Optional:    true,
-													Computed:    true,
-													Description: "Specifies the archival task id. This is a protection group UID which only applies when archival type is 'Tape'.",
-												},
-												"target_name": &schema.Schema{
-													Type:        schema.TypeString,
-													Optional:    true,
-													Computed:    true,
-													Description: "Specifies the archival target name.",
-												},
-												"target_type": &schema.Schema{
-													Type:        schema.TypeString,
-													Optional:    true,
-													Computed:    true,
-													Description: "Specifies the archival target type.",
-												},
-												"usage_type": &schema.Schema{
-													Type:        schema.TypeString,
-													Optional:    true,
-													Computed:    true,
-													Description: "Specifies the usage type for the target.",
-												},
-												"ownership_context": &schema.Schema{
-													Type:        schema.TypeString,
-													Optional:    true,
-													Computed:    true,
-													Description: "Specifies the ownership context for the target.",
-												},
-												"tier_settings": &schema.Schema{
-													Type:        schema.TypeList,
-													Optional:    true,
-													Computed:    true,
-													Description: "Specifies the tier info for archival.",
-													Elem: &schema.Resource{
-														Schema: map[string]*schema.Schema{
-															"aws_tiering": &schema.Schema{
-																Type:        schema.TypeList,
-																Optional:    true,
-																Computed:    true,
-																Description: "Specifies aws tiers.",
-																Elem: &schema.Resource{
-																	Schema: map[string]*schema.Schema{
-																		"tiers": &schema.Schema{
-																			Type:        schema.TypeList,
-																			Required:    true,
-																			Description: "Specifies the tiers that are used to move the archived backup from current tier to next tier. The order of the tiers determines which tier will be used next for moving the archived backup. The first tier input should always be default tier where backup will be acrhived. Each tier specifies how much time after the backup will be moved to next tier from the current tier.",
-																			Elem: &schema.Resource{
-																				Schema: map[string]*schema.Schema{
-																					"move_after_unit": &schema.Schema{
-																						Type:        schema.TypeString,
-																						Optional:    true,
-																						Computed:    true,
-																						Description: "Specifies the unit for moving the data from current tier to next tier. This unit will be a base unit for the 'moveAfter' field specified below.",
-																					},
-																					"move_after": &schema.Schema{
-																						Type:        schema.TypeInt,
-																						Optional:    true,
-																						Computed:    true,
-																						Description: "Specifies the time period after which the backup will be moved from current tier to next tier.",
-																					},
-																					"tier_type": &schema.Schema{
-																						Type:        schema.TypeString,
-																						Computed:    true,
-																						Description: "Specifies the AWS tier types.",
-																					},
-																				},
-																			},
-																		},
-																	},
-																},
-															},
-															"azure_tiering": &schema.Schema{
-																Type:        schema.TypeList,
-																Optional:    true,
-																Computed:    true,
-																Description: "Specifies Azure tiers.",
-																Elem: &schema.Resource{
-																	Schema: map[string]*schema.Schema{
-																		"tiers": &schema.Schema{
-																			Type:        schema.TypeList,
-																			Optional:    true,
-																			Computed:    true,
-																			Description: "Specifies the tiers that are used to move the archived backup from current tier to next tier. The order of the tiers determines which tier will be used next for moving the archived backup. The first tier input should always be default tier where backup will be acrhived. Each tier specifies how much time after the backup will be moved to next tier from the current tier.",
-																			Elem: &schema.Resource{
-																				Schema: map[string]*schema.Schema{
-																					"move_after_unit": &schema.Schema{
-																						Type:        schema.TypeString,
-																						Optional:    true,
-																						Computed:    true,
-																						Description: "Specifies the unit for moving the data from current tier to next tier. This unit will be a base unit for the 'moveAfter' field specified below.",
-																					},
-																					"move_after": &schema.Schema{
-																						Type:        schema.TypeInt,
-																						Optional:    true,
-																						Computed:    true,
-																						Description: "Specifies the time period after which the backup will be moved from current tier to next tier.",
-																					},
-																					"tier_type": &schema.Schema{
-																						Type:        schema.TypeString,
-																						Computed:    true,
-																						Description: "Specifies the Azure tier types.",
-																					},
-																				},
-																			},
-																		},
-																	},
-																},
-															},
-															"cloud_platform": &schema.Schema{
-																Type:        schema.TypeString,
-																Optional:    true,
-																Computed:    true,
-																Description: "Specifies the cloud platform to enable tiering.",
-															},
-															"google_tiering": &schema.Schema{
-																Type:        schema.TypeList,
-																Optional:    true,
-																Computed:    true,
-																Description: "Specifies Google tiers.",
-																Elem: &schema.Resource{
-																	Schema: map[string]*schema.Schema{
-																		"tiers": &schema.Schema{
-																			Type:        schema.TypeList,
-																			Required:    true,
-																			Description: "Specifies the tiers that are used to move the archived backup from current tier to next tier. The order of the tiers determines which tier will be used next for moving the archived backup. The first tier input should always be default tier where backup will be acrhived. Each tier specifies how much time after the backup will be moved to next tier from the current tier.",
-																			Elem: &schema.Resource{
-																				Schema: map[string]*schema.Schema{
-																					"move_after_unit": &schema.Schema{
-																						Type:        schema.TypeString,
-																						Optional:    true,
-																						Computed:    true,
-																						Description: "Specifies the unit for moving the data from current tier to next tier. This unit will be a base unit for the 'moveAfter' field specified below.",
-																					},
-																					"move_after": &schema.Schema{
-																						Type:        schema.TypeInt,
-																						Optional:    true,
-																						Computed:    true,
-																						Description: "Specifies the time period after which the backup will be moved from current tier to next tier.",
-																					},
-																					"tier_type": &schema.Schema{
-																						Type:        schema.TypeString,
-																						Computed:    true,
-																						Description: "Specifies the Google tier types.",
-																					},
-																				},
-																			},
-																		},
-																	},
-																},
-															},
-															"oracle_tiering": &schema.Schema{
-																Type:        schema.TypeList,
-																Optional:    true,
-																Computed:    true,
-																Description: "Specifies Oracle tiers.",
-																Elem: &schema.Resource{
-																	Schema: map[string]*schema.Schema{
-																		"tiers": &schema.Schema{
-																			Type:        schema.TypeList,
-																			Required:    true,
-																			Description: "Specifies the tiers that are used to move the archived backup from current tier to next tier. The order of the tiers determines which tier will be used next for moving the archived backup. The first tier input should always be default tier where backup will be acrhived. Each tier specifies how much time after the backup will be moved to next tier from the current tier.",
-																			Elem: &schema.Resource{
-																				Schema: map[string]*schema.Schema{
-																					"move_after_unit": &schema.Schema{
-																						Type:        schema.TypeString,
-																						Optional:    true,
-																						Computed:    true,
-																						Description: "Specifies the unit for moving the data from current tier to next tier. This unit will be a base unit for the 'moveAfter' field specified below.",
-																					},
-																					"move_after": &schema.Schema{
-																						Type:        schema.TypeInt,
-																						Optional:    true,
-																						Computed:    true,
-																						Description: "Specifies the time period after which the backup will be moved from current tier to next tier.",
-																					},
-																					"tier_type": &schema.Schema{
-																						Type:        schema.TypeString,
-																						Computed:    true,
-																						Description: "Specifies the Oracle tier types.",
-																					},
-																				},
-																			},
-																		},
-																	},
-																},
-															},
-															"current_tier_type": &schema.Schema{
-																Type:        schema.TypeString,
-																Optional:    true,
-																Computed:    true,
-																Description: "Specifies the type of the current tier where the snapshot resides. This will be specified if the run is a CAD run.",
-															},
-														},
-													},
-												},
-											},
-										},
-									},
-									"progress_task_id": &schema.Schema{
-										Type:        schema.TypeString,
-										Computed:    true,
-										Description: "Progress monitor task id for Recovery of VM.",
-									},
-									"recover_from_standby": &schema.Schema{
-										Type:        schema.TypeBool,
-										Optional:    true,
-										Description: "Specifies that user wants to perform standby restore if it is enabled for this object.",
-									},
-									"status": &schema.Schema{
-										Type:        schema.TypeString,
-										Computed:    true,
-										Description: "Status of the Recovery. 'Running' indicates that the Recovery is still running. 'Canceled' indicates that the Recovery has been cancelled. 'Canceling' indicates that the Recovery is in the process of being cancelled. 'Failed' indicates that the Recovery has failed. 'Succeeded' indicates that the Recovery has finished successfully. 'SucceededWithWarning' indicates that the Recovery finished successfully, but there were some warning messages. 'Skipped' indicates that the Recovery task was skipped.",
-									},
-									"start_time_usecs": &schema.Schema{
-										Type:        schema.TypeInt,
-										Computed:    true,
-										Description: "Specifies the start time of the Recovery in Unix timestamp epoch in microseconds.",
-									},
-									"end_time_usecs": &schema.Schema{
-										Type:        schema.TypeInt,
-										Computed:    true,
-										Description: "Specifies the end time of the Recovery in Unix timestamp epoch in microseconds. This field will be populated only after Recovery is finished.",
-									},
-									"messages": &schema.Schema{
-										Type:        schema.TypeList,
-										Computed:    true,
-										Description: "Specify error messages about the object.",
-										Elem:        &schema.Schema{Type: schema.TypeString},
-									},
-									"bytes_restored": &schema.Schema{
-										Type:        schema.TypeInt,
-										Computed:    true,
-										Description: "Specify the total bytes restored.",
-									},
-									"aag_info": &schema.Schema{
-										Type:        schema.TypeList,
-										MaxItems:    1,
-										Optional:    true,
-										Description: "Object details for Mssql.",
-										Elem: &schema.Resource{
-											Schema: map[string]*schema.Schema{
-												"name": &schema.Schema{
-													Type:        schema.TypeString,
-													Optional:    true,
-													Description: "Specifies the AAG name.",
-												},
-												"object_id": &schema.Schema{
-													Type:        schema.TypeInt,
-													Optional:    true,
-													Description: "Specifies the AAG object Id.",
-												},
-											},
-										},
-									},
-									"host_info": &schema.Schema{
-										Type:        schema.TypeList,
-										MaxItems:    1,
-										Optional:    true,
-										Description: "Specifies the host information for a objects. This is mainly populated in case of App objects where app object is hosted by another object such as VM or physical server.",
-										Elem: &schema.Resource{
-											Schema: map[string]*schema.Schema{
-												"id": &schema.Schema{
-													Type:        schema.TypeString,
-													Optional:    true,
-													Description: "Specifies the id of the host object.",
-												},
-												"name": &schema.Schema{
-													Type:        schema.TypeString,
-													Optional:    true,
-													Description: "Specifies the name of the host object.",
-												},
-												"environment": &schema.Schema{
-													Type:        schema.TypeString,
-													Optional:    true,
-													Description: "Specifies the environment of the object.",
-												},
-											},
-										},
-									},
-									"is_encrypted": &schema.Schema{
-										Type:        schema.TypeBool,
-										Optional:    true,
-										Description: "Specifies whether the database is TDE enabled.",
-									},
-									"sql_target_params": &schema.Schema{
-										Type:        schema.TypeList,
-										MaxItems:    1,
-										Optional:    true,
-										Description: "Specifies the params for recovering to a sql host. Specifiy seperate settings for each db object that need to be recovered. Provided sql backup should be recovered to same type of target host. For Example: If you have sql backup taken from a physical host then that should be recovered to physical host only.",
-										Elem: &schema.Resource{
-											Schema: map[string]*schema.Schema{
-												"new_source_config": &schema.Schema{
-													Type:        schema.TypeList,
-													MaxItems:    1,
-													Optional:    true,
-													Description: "Specifies the destination Source configuration parameters where the databases will be recovered. This is mandatory if recoverToNewSource is set to true.",
-													Elem: &schema.Resource{
-														Schema: map[string]*schema.Schema{
-															"keep_cdc": &schema.Schema{
-																Type:        schema.TypeBool,
-																Optional:    true,
-																Description: "Specifies whether to keep CDC (Change Data Capture) on recovered databases or not. If not passed, this is assumed to be true. If withNoRecovery is passed as true, then this field must not be set to true. Passing this field as true in this scenario will be a invalid request.",
-															},
-															"multi_stage_restore_options": &schema.Schema{
-																Type:        schema.TypeList,
-																MaxItems:    1,
-																Optional:    true,
-																Description: "Specifies the parameters related to multi stage Sql restore.",
-																Elem: &schema.Resource{
-																	Schema: map[string]*schema.Schema{
-																		"enable_auto_sync": &schema.Schema{
-																			Type:        schema.TypeBool,
-																			Optional:    true,
-																			Description: "Set this to true if you want to enable auto sync for multi stage restore.",
-																		},
-																		"enable_multi_stage_restore": &schema.Schema{
-																			Type:        schema.TypeBool,
-																			Optional:    true,
-																			Description: "Set this to true if you are creating a multi-stage Sql restore task needed for features such as Hot-Standby.",
-																		},
-																	},
-																},
-															},
-															"native_log_recovery_with_clause": &schema.Schema{
-																Type:        schema.TypeString,
-																Optional:    true,
-																Description: "Specifies the WITH clause to be used in native sql log restore command. This is only applicable for native log restore.",
-															},
-															"native_recovery_with_clause": &schema.Schema{
-																Type:        schema.TypeString,
-																Optional:    true,
-																Description: "'with_clause' contains 'with clause' to be used in native sql restore command. This is only applicable for database restore of native sql backup. Here user can specify multiple restore options. Example: 'WITH BUFFERCOUNT = 575, MAXTRANSFERSIZE = 2097152'.",
-															},
-															"overwriting_policy": &schema.Schema{
-																Type:        schema.TypeString,
-																Optional:    true,
-																Description: "Specifies a policy to be used while recovering existing databases.",
-															},
-															"replay_entire_last_log": &schema.Schema{
-																Type:        schema.TypeBool,
-																Optional:    true,
-																Description: "Specifies the option to set replay last log bit while creating the sql restore task and doing restore to latest point-in-time. If this is set to true, we will replay the entire last log without STOPAT.",
-															},
-															"restore_time_usecs": &schema.Schema{
-																Type:        schema.TypeInt,
-																Optional:    true,
-																Description: "Specifies the time in the past to which the Sql database needs to be restored. This allows for granular recovery of Sql databases. If this is not set, the Sql database will be restored from the full/incremental snapshot.",
-															},
-															"secondary_data_files_dir_list": &schema.Schema{
-																Type:        schema.TypeList,
-																Optional:    true,
-																Description: "Specifies the secondary data filename pattern and corresponding direcories of the DB. Secondary data files are optional and are user defined. The recommended file extention for secondary files is \".ndf\". If this option is specified and the destination folders do not exist they will be automatically created.",
-																Elem: &schema.Resource{
-																	Schema: map[string]*schema.Schema{
-																		"directory": &schema.Schema{
-																			Type:        schema.TypeString,
-																			Optional:    true,
-																			Description: "Specifies the directory where to keep the files matching the pattern.",
-																		},
-																		"filename_pattern": &schema.Schema{
-																			Type:        schema.TypeString,
-																			Optional:    true,
-																			Description: "Specifies a pattern to be matched with filenames. This can be a regex expression.",
-																		},
-																	},
-																},
-															},
-															"with_no_recovery": &schema.Schema{
-																Type:        schema.TypeBool,
-																Optional:    true,
-																Description: "Specifies the flag to bring DBs online or not after successful recovery. If this is passed as true, then it means DBs won't be brought online.",
-															},
-															"data_file_directory_location": &schema.Schema{
-																Type:        schema.TypeString,
-																Required:    true,
-																Description: "Specifies the directory where to put the database data files. Missing directory will be automatically created.",
-															},
-															"database_name": &schema.Schema{
-																Type:        schema.TypeString,
-																Optional:    true,
-																Description: "Specifies a new name for the restored database. If this field is not specified, then the original database will be overwritten after recovery.",
-															},
-															"host": &schema.Schema{
-																Type:        schema.TypeList,
-																MinItems:    1,
-																MaxItems:    1,
-																Required:    true,
-																Description: "Specifies the source id of target host where databases will be recovered. This source id can be a physical host or virtual machine.",
-																Elem: &schema.Resource{
-																	Schema: map[string]*schema.Schema{
-																		"id": &schema.Schema{
-																			Type:        schema.TypeInt,
-																			Required:    true,
-																			Description: "Specifies the id of the object.",
-																		},
-																		"name": &schema.Schema{
-																			Type:        schema.TypeString,
-																			Computed:    true,
-																			Description: "Specifies the name of the object.",
-																		},
-																	},
-																},
-															},
-															"instance_name": &schema.Schema{
-																Type:        schema.TypeString,
-																Required:    true,
-																Description: "Specifies an instance name of the Sql Server that should be used for restoring databases to.",
-															},
-															"log_file_directory_location": &schema.Schema{
-																Type:        schema.TypeString,
-																Required:    true,
-																Description: "Specifies the directory where to put the database log files. Missing directory will be automatically created.",
-															},
-														},
-													},
-												},
-												"original_source_config": &schema.Schema{
-													Type:        schema.TypeList,
-													MaxItems:    1,
-													Optional:    true,
-													Description: "Specifies the Source configuration if databases are being recovered to Original Source. If not specified, all the configuration parameters will be retained.",
-													Elem: &schema.Resource{
-														Schema: map[string]*schema.Schema{
-															"keep_cdc": &schema.Schema{
-																Type:        schema.TypeBool,
-																Optional:    true,
-																Description: "Specifies whether to keep CDC (Change Data Capture) on recovered databases or not. If not passed, this is assumed to be true. If withNoRecovery is passed as true, then this field must not be set to true. Passing this field as true in this scenario will be a invalid request.",
-															},
-															"multi_stage_restore_options": &schema.Schema{
-																Type:        schema.TypeList,
-																MaxItems:    1,
-																Optional:    true,
-																Description: "Specifies the parameters related to multi stage Sql restore.",
-																Elem: &schema.Resource{
-																	Schema: map[string]*schema.Schema{
-																		"enable_auto_sync": &schema.Schema{
-																			Type:        schema.TypeBool,
-																			Optional:    true,
-																			Description: "Set this to true if you want to enable auto sync for multi stage restore.",
-																		},
-																		"enable_multi_stage_restore": &schema.Schema{
-																			Type:        schema.TypeBool,
-																			Optional:    true,
-																			Description: "Set this to true if you are creating a multi-stage Sql restore task needed for features such as Hot-Standby.",
-																		},
-																	},
-																},
-															},
-															"native_log_recovery_with_clause": &schema.Schema{
-																Type:        schema.TypeString,
-																Optional:    true,
-																Description: "Specifies the WITH clause to be used in native sql log restore command. This is only applicable for native log restore.",
-															},
-															"native_recovery_with_clause": &schema.Schema{
-																Type:        schema.TypeString,
-																Optional:    true,
-																Description: "'with_clause' contains 'with clause' to be used in native sql restore command. This is only applicable for database restore of native sql backup. Here user can specify multiple restore options. Example: 'WITH BUFFERCOUNT = 575, MAXTRANSFERSIZE = 2097152'.",
-															},
-															"overwriting_policy": &schema.Schema{
-																Type:        schema.TypeString,
-																Optional:    true,
-																Description: "Specifies a policy to be used while recovering existing databases.",
-															},
-															"replay_entire_last_log": &schema.Schema{
-																Type:        schema.TypeBool,
-																Optional:    true,
-																Description: "Specifies the option to set replay last log bit while creating the sql restore task and doing restore to latest point-in-time. If this is set to true, we will replay the entire last log without STOPAT.",
-															},
-															"restore_time_usecs": &schema.Schema{
-																Type:        schema.TypeInt,
-																Optional:    true,
-																Description: "Specifies the time in the past to which the Sql database needs to be restored. This allows for granular recovery of Sql databases. If this is not set, the Sql database will be restored from the full/incremental snapshot.",
-															},
-															"secondary_data_files_dir_list": &schema.Schema{
-																Type:        schema.TypeList,
-																Optional:    true,
-																Description: "Specifies the secondary data filename pattern and corresponding direcories of the DB. Secondary data files are optional and are user defined. The recommended file extention for secondary files is \".ndf\". If this option is specified and the destination folders do not exist they will be automatically created.",
-																Elem: &schema.Resource{
-																	Schema: map[string]*schema.Schema{
-																		"directory": &schema.Schema{
-																			Type:        schema.TypeString,
-																			Optional:    true,
-																			Description: "Specifies the directory where to keep the files matching the pattern.",
-																		},
-																		"filename_pattern": &schema.Schema{
-																			Type:        schema.TypeString,
-																			Optional:    true,
-																			Description: "Specifies a pattern to be matched with filenames. This can be a regex expression.",
-																		},
-																	},
-																},
-															},
-															"with_no_recovery": &schema.Schema{
-																Type:        schema.TypeBool,
-																Optional:    true,
-																Description: "Specifies the flag to bring DBs online or not after successful recovery. If this is passed as true, then it means DBs won't be brought online.",
-															},
-															"capture_tail_logs": &schema.Schema{
-																Type:        schema.TypeBool,
-																Optional:    true,
-																Description: "Set this to true if tail logs are to be captured before the recovery operation. This is only applicable if database is not being renamed.",
-															},
-															"data_file_directory_location": &schema.Schema{
-																Type:        schema.TypeString,
-																Optional:    true,
-																Description: "Specifies the directory where to put the database data files. Missing directory will be automatically created. If you are overwriting the existing database then this field will be ignored.",
-															},
-															"log_file_directory_location": &schema.Schema{
-																Type:        schema.TypeString,
-																Optional:    true,
-																Description: "Specifies the directory where to put the database log files. Missing directory will be automatically created. If you are overwriting the existing database then this field will be ignored.",
-															},
-															"new_database_name": &schema.Schema{
-																Type:        schema.TypeString,
-																Optional:    true,
-																Description: "Specifies a new name for the restored database. If this field is not specified, then the original database will be overwritten after recovery.",
-															},
-														},
-													},
-												},
-												"recover_to_new_source": &schema.Schema{
-													Type:        schema.TypeBool,
-													Required:    true,
-													Description: "Specifies the parameter whether the recovery should be performed to a new sources or an original Source Target.",
-												},
-											},
-										},
-									},
-									"target_environment": &schema.Schema{
-										Type:        schema.TypeString,
-										Required:    true,
-										Description: "Specifies the environment of the recovery target. The corresponding params below must be filled out.",
-									},
-								},
-							},
-						},
-						"recovery_action": &schema.Schema{
-							Type:        schema.TypeString,
-							Required:    true,
-							Description: "Specifies the type of recover action to be performed.",
-						},
-						"vlan_config": &schema.Schema{
-							Type:        schema.TypeList,
-							MaxItems:    1,
-							Optional:    true,
-							Description: "Specifies VLAN Params associated with the recovered. If this is not specified, then the VLAN settings will be automatically selected from one of the below options: a. If VLANs are configured on IBM, then the VLAN host/VIP will be automatically based on the client's (e.g. ESXI host) IP address. b. If VLANs are not configured on IBM, then the partition hostname or VIPs will be used for Recovery.",
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									"id": &schema.Schema{
-										Type:        schema.TypeInt,
-										Optional:    true,
-										Description: "If this is set, then the Cohesity host name or the IP address associated with this vlan is used for mounting Cohesity's view on the remote host.",
-									},
-									"disable_vlan": &schema.Schema{
-										Type:        schema.TypeBool,
-										Optional:    true,
-										Description: "If this is set to true, then even if VLANs are configured on the system, the partition VIPs will be used for the Recovery.",
-									},
-									"interface_name": &schema.Schema{
-										Type:        schema.TypeString,
-										Computed:    true,
-										Description: "Interface group to use for Recovery.",
-									},
-								},
-							},
 						},
 					},
 				},
