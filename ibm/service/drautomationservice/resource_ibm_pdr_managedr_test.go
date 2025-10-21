@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"testing"
 
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 
@@ -38,7 +39,7 @@ func TestAccIBMPdrManagedrBasic(t *testing.T) {
 
 func TestAccIBMPdrManagedrAllArgs(t *testing.T) {
 	var conf drautomationservicev1.ServiceInstanceManageDr
-	instanceID := "ac645fe5-fba1-4cb3-952e-e1b09fa0df26"
+	instanceID := "xxxxxfe5-fba1-4cb3-xxxx-e1b09fa0df26"
 	acceptLanguage := "it"
 	standByRedeploy := "false"
 	acceptsIncomplete := "true"
