@@ -35,7 +35,6 @@ After your data source is created, you can read values from the following attrib
 * `id` - The unique identifier of the iam_effective_account_settings.
 * `account` - (List) Input body parameters for the Account Settings REST request.
 Nested schema for **account**:
-	* `account_id` - (String) Unique ID of the account.
 	* `allowed_ip_addresses` - (String) Defines the IP addresses and subnets from which IAM tokens can be created for the account.
 	* `entity_tag` - (String) Version of the account settings.
 	* `history` - (List) History of the Account Settings.
