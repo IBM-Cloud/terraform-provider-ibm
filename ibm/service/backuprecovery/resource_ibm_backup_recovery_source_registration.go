@@ -1072,6 +1072,11 @@ func resourceIbmBackupRecoverySourceRegistrationCreate(context context.Context, 
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
+	endpointType := d.Get("endpoint_type").(string)
+	instanceId, region := getInstanceIdAndRegion(d)
+	if instanceId != "" && region != "" {
+		backupRecoveryClient = getClientWithInstanceEndpoint(backupRecoveryClient, instanceId, region, endpointType)
+	}
 
 	registerProtectionSourceOptions := &backuprecoveryv1.RegisterProtectionSourceOptions{}
 
@@ -1130,12 +1135,6 @@ func resourceIbmBackupRecoverySourceRegistrationCreate(context context.Context, 
 			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_source_registration", "create", "parse-physical_params").GetDiag()
 		}
 		registerProtectionSourceOptions.SetPhysicalParams(physicalParamsModel)
-	}
-	if _, ok := d.GetOk("backup_recovery_endpoint"); ok {
-		endpoint := d.Get("backup_recovery_endpoint").(string)
-		if endpoint != "" {
-			backupRecoveryClient.Service.Options.URL = endpoint
-		}
 	}
 
 	sourceRegistrationReponseParams, _, err := backupRecoveryClient.RegisterProtectionSourceWithContext(context, registerProtectionSourceOptions)

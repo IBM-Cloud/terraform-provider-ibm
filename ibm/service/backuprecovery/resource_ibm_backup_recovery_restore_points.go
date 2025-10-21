@@ -3405,10 +3405,20 @@ func resourceIbmBackupRecoveryRestorePointsCreate(context context.Context, d *sc
 
 	d.SetId(resourceIbmBackupRecoveryRestorePointsID(d))
 
-	if endpoint, ok := d.GetOk("backup_recovery_endpoint"); ok {
-		if err := d.Set("backup_recovery_endpoint", endpoint); err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting backup_recovery_endpoint: %s", err), "(Resource) ibm_backup_recovery_restore_points", "create", "set-backup-recovery-endpoint").GetDiag()
+	if instanceId != "" {
+		if err := d.Set("instance_id", instanceId); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting instance_id: %s", err), "(Resource) ibm_restore_points", "read", "set-instance-id").GetDiag()
 		}
+	}
+	if region != "" {
+		if err := d.Set("region", region); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting region: %s", err), "(Resource) ibm_restore_points", "read", "set--region").GetDiag()
+		}
+	}
+
+	if err = d.Set("endpoint_type", d.Get("endpoint_type").(string)); err != nil {
+		err = fmt.Errorf("Error setting endpoint_type: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_restore_points", "read", "set-endpoint-type").GetDiag()
 	}
 
 	if !core.IsNil(getRestorePointsInTimeRangeResponse.FullSnapshotInfo) {

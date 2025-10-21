@@ -2356,12 +2356,6 @@ func dataSourceIbmBackupRecoveriesRead(context context.Context, d *schema.Resour
 	}
 
 	d.SetId(dataSourceIbmBackupRecoveriesID(d))
-	if endpoint, ok := d.GetOk("backup_recovery_endpoint"); ok {
-		if err := d.Set("backup_recovery_endpoint", endpoint); err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting backup_recovery_endpoint: %s", err), "(Data) ibm_backup_recovery_recoveries", "read", "recoveries-to-map").GetDiag()
-		}
-	}
-
 	if !core.IsNil(recoveriesResponse.Recoveries) {
 		recoveries := []map[string]interface{}{}
 		for _, recoveriesItem := range recoveriesResponse.Recoveries {

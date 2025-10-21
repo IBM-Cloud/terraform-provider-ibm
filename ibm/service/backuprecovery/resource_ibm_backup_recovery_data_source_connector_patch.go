@@ -209,10 +209,20 @@ func resourceIbmBackupRecoveryDataSourceConnectorPatchRead(context context.Conte
 		return tfErr.GetDiag()
 	}
 
-	if endpoint, ok := d.GetOk("backup_recovery_endpoint"); ok {
-		if err := d.Set("backup_recovery_endpoint", endpoint); err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting backup_recovery_endpoint: %s", err), "(Resource) ibm_backup_recovery_data_source_connector_patch", "read", "set-backup-recovery-endpoint").GetDiag()
+	if instanceId != "" {
+		if err := d.Set("instance_id", instanceId); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting instance_id: %s", err), "(Resource) ibm_backup_recovery_data_source_connector_patch", "read", "set-instance-id").GetDiag()
 		}
+	}
+	if region != "" {
+		if err := d.Set("region", region); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting region: %s", err), "(Resource) ibm_backup_recovery_data_source_connector_patch", "read", "set--region").GetDiag()
+		}
+	}
+
+	if err = d.Set("endpoint_type", d.Get("endpoint_type").(string)); err != nil {
+		err = fmt.Errorf("Error setting endpoint_type: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_data_source_connector_patch", "read", "set-endpoint-type").GetDiag()
 	}
 
 	if !core.IsNil(dataSourceConnectorList.Connectors[0].ConnectorName) {

@@ -2228,12 +2228,6 @@ func dataSourceIbmBackupRecoveryRead(context context.Context, d *schema.Resource
 	recoveryId := fmt.Sprintf("%s::%s", tenantId, d.Get("recovery_id").(string))
 	d.SetId(recoveryId)
 
-	if endpoint, ok := d.GetOk("backup_recovery_endpoint"); ok {
-		if err := d.Set("backup_recovery_endpoint", endpoint); err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting backup_recovery_endpoint: %s", err), "(Data) ibm_backup_recovery_recovery", "read", "set-backup-recovery-endpoint").GetDiag()
-		}
-	}
-
 	if !core.IsNil(recovery.Name) {
 		if err = d.Set("name", recovery.Name); err != nil {
 			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting name: %s", err), "(Data) ibm_backup_recovery_recovery", "read", "set-name").GetDiag()
