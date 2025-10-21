@@ -48,6 +48,22 @@ func TestAccIbmBackupRecoveryProtectionGroupsDataSourceBasic(t *testing.T) {
 	})
 }
 
+func TestAccIbmBackupRecoveryProtectionGroupsDataSourceKubernetesBasic(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { acc.TestAccPreCheck(t) },
+		Providers: acc.TestAccProviders,
+		Steps: []resource.TestStep{
+			resource.TestStep{
+				Config: testAccCheckIbmBackupRecoveryProtectionGroupsDataSourceKubernetesConfigBasic(),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet("data.ibm_backup_recovery_protection_groups.baas_protection_groups_instance", "id"),
+					resource.TestCheckResourceAttrSet("data.ibm_backup_recovery_protection_groups.baas_protection_groups_instance", "x_ibm_tenant_id"),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckIbmBackupRecoveryProtectionGroupsDataSourceConfigBasic(name, environment, includedPath, protectionType, policyName string, objectId int) string {
 	return fmt.Sprintf(`
 	resource "ibm_backup_recovery_protection_policy" "baas_protection_policy_instance" {
@@ -104,4 +120,12 @@ func testAccCheckIbmBackupRecoveryProtectionGroupsDataSourceConfigBasic(name, en
 			ids = [ ibm_backup_recovery_protection_group.baas_protection_group_instance.group_id ]
 		}
 	`, tenantId, policyName, tenantId, name, environment, protectionType, objectId, includedPath)
+}
+
+func testAccCheckIbmBackupRecoveryProtectionGroupsDataSourceKubernetesConfigBasic() string {
+	return `
+		data "ibm_backup_recovery_protection_groups" "baas_protection_groups_instance" {
+			x_ibm_tenant_id = "wkk1yqrdce/"
+		}
+	`
 }
