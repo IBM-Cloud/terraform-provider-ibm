@@ -45,9 +45,10 @@ func testAccCheckIbmPdrWorkspaceCustomVpcDataSourceConfigBasic() string {
 	return fmt.Sprintf(`
 		data "ibm_pdr_workspace_custom_vpc" "pdr_workspace_custom_vpc_instance" {
 			instance_id = "crn:v1:staging:public:power-dr-automation:global:a/a123456fb04ceebfb4a9fd38c22334455:123456d3-1122-3344-b67d-4389b44b7bf9::"
-			location_id = "lon06"
+			location_id = "location_id"
 			vpc_id = "r006-2f3b3ab9-2149-49cc-83a1-30a5d93d59b2"
-			tg_id = "024fcff9-c676-46e4-ad42-3b2d349c9f8f"
+			tg_id = "925a7b81-a826-4d0a-8ef9-7496e9dc58bc"
+			If-None-Match = "If-None-Match"
 		}
 	`)
 }
@@ -73,14 +74,14 @@ func TestDataSourceIbmPdrWorkspaceCustomVpcDRStandbyWorkspaceToMap(t *testing.T)
 	}
 
 	detailsDrModel := new(drautomationservicev1.DetailsDr)
-	detailsDrModel.Crn = core.StringPtr("crn:v1:bluemix:public:power-iaas:lon06:a/094f4214c75941f991da601b001df1fe:b6297e60-d0fe-4e24-8b15-276cf0645737::")
+	detailsDrModel.CRN = core.StringPtr("crn:v1:bluemix:public:power-iaas:lon06:a/094f4214c75941f991da601b001df1fe:b6297e60-d0fe-4e24-8b15-276cf0645737::")
 
 	locationDrModel := new(drautomationservicev1.LocationDr)
 	locationDrModel.Region = core.StringPtr("lon06")
 	locationDrModel.Type = core.StringPtr("data-center")
 	locationDrModel.URL = core.StringPtr("https://lon.power-iaas.cloud.ibm.com")
 
-	model := new(drautomationservicev1.DRStandbyWorkspace)
+	model := new(drautomationservicev1.DrStandbyWorkspace)
 	model.Details = detailsDrModel
 	model.ID = core.StringPtr("testString")
 	model.Location = locationDrModel
@@ -101,7 +102,7 @@ func TestDataSourceIbmPdrWorkspaceCustomVpcDetailsDrToMap(t *testing.T) {
 	}
 
 	model := new(drautomationservicev1.DetailsDr)
-	model.Crn = core.StringPtr("crn:v1:bluemix:public:power-iaas:lon06:a/094f4214c75941f991da601b001df1fe:b6297e60-d0fe-4e24-8b15-276cf0645737::")
+	model.CRN = core.StringPtr("crn:v1:bluemix:public:power-iaas:lon06:a/094f4214c75941f991da601b001df1fe:b6297e60-d0fe-4e24-8b15-276cf0645737::")
 
 	result, err := drautomationservice.DataSourceIbmPdrWorkspaceCustomVpcDetailsDrToMap(model)
 	assert.Nil(t, err)
@@ -150,14 +151,14 @@ func TestDataSourceIbmPdrWorkspaceCustomVpcDRWorkspaceToMap(t *testing.T) {
 	}
 
 	detailsDrModel := new(drautomationservicev1.DetailsDr)
-	detailsDrModel.Crn = core.StringPtr("crn:v1:bluemix:public:power-iaas:lon06:a/094f4214c75941f991da601b001df1fe:b6297e60-d0fe-4e24-8b15-276cf0645737::")
+	detailsDrModel.CRN = core.StringPtr("crn:v1:bluemix:public:power-iaas:lon06:a/094f4214c75941f991da601b001df1fe:b6297e60-d0fe-4e24-8b15-276cf0645737::")
 
 	locationDrModel := new(drautomationservicev1.LocationDr)
 	locationDrModel.Region = core.StringPtr("lon06")
 	locationDrModel.Type = core.StringPtr("data-center")
 	locationDrModel.URL = core.StringPtr("https://lon.power-iaas.cloud.ibm.com")
 
-	model := new(drautomationservicev1.DRWorkspace)
+	model := new(drautomationservicev1.DrWorkspace)
 	model.Default = core.BoolPtr(true)
 	model.Details = detailsDrModel
 	model.ID = core.StringPtr("testString")

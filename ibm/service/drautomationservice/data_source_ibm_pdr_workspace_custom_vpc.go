@@ -3,7 +3,7 @@
 
 /*
  * IBM OpenAPI Terraform Generator Version: 3.105.0-3c13b041-20250605-193116
-*/
+ */
 
 package drautomationservice
 
@@ -192,19 +192,19 @@ func dataSourceIbmPdrWorkspaceCustomVpcRead(context context.Context, d *schema.R
 		return tfErr.GetDiag()
 	}
 
-	getPvsworkspacesCustomVpcOptions := &drautomationservicev1.GetPvsworkspacesCustomVpcOptions{}
+	getPowervsWorkspacesForCustomVpcOptions := &drautomationservicev1.GetPowervsWorkspacesForCustomVPCOptions{}
 
-	getPvsworkspacesCustomVpcOptions.SetInstanceID(d.Get("instance_id").(string))
-	getPvsworkspacesCustomVpcOptions.SetLocationID(d.Get("location_id").(string))
-	getPvsworkspacesCustomVpcOptions.SetVpcID(d.Get("vpc_id").(string))
-	getPvsworkspacesCustomVpcOptions.SetTgID(d.Get("tg_id").(string))
+	getPowervsWorkspacesForCustomVpcOptions.SetInstanceID(d.Get("instance_id").(string))
+	getPowervsWorkspacesForCustomVpcOptions.SetLocationID(d.Get("location_id").(string))
+	getPowervsWorkspacesForCustomVpcOptions.SetVPCID(d.Get("vpc_id").(string))
+	getPowervsWorkspacesForCustomVpcOptions.SetTgID(d.Get("tg_id").(string))
 	if _, ok := d.GetOk("if_none_match"); ok {
-		getPvsworkspacesCustomVpcOptions.SetIfNoneMatch(d.Get("if_none_match").(string))
+		getPowervsWorkspacesForCustomVpcOptions.SetIfNoneMatch(d.Get("if_none_match").(string))
 	}
 
-	drDataCustomVPC, _, err := drAutomationServiceClient.GetPvsworkspacesCustomVpcWithContext(context, getPvsworkspacesCustomVpcOptions)
+	drDataCustomVPC, _, err := drAutomationServiceClient.GetPowervsWorkspacesForCustomVPCWithContext(context, getPowervsWorkspacesForCustomVpcOptions)
 	if err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetPvsworkspacesCustomVpcWithContext failed: %s", err.Error()), "(Data) ibm_pdr_workspace_custom_vpc", "read")
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetPowervsWorkspacesForCustomVpcWithContext failed: %s", err.Error()), "(Data) ibm_pdr_workspace_custom_vpc", "read")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
@@ -243,7 +243,7 @@ func dataSourceIbmPdrWorkspaceCustomVpcID(d *schema.ResourceData) string {
 	return time.Now().UTC().String()
 }
 
-func DataSourceIbmPdrWorkspaceCustomVpcDRStandbyWorkspaceToMap(model *drautomationservicev1.DRStandbyWorkspace) (map[string]interface{}, error) {
+func DataSourceIbmPdrWorkspaceCustomVpcDRStandbyWorkspaceToMap(model *drautomationservicev1.DrStandbyWorkspace) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.Details != nil {
 		detailsMap, err := DataSourceIbmPdrWorkspaceCustomVpcDetailsDrToMap(model.Details)
@@ -273,8 +273,8 @@ func DataSourceIbmPdrWorkspaceCustomVpcDRStandbyWorkspaceToMap(model *drautomati
 
 func DataSourceIbmPdrWorkspaceCustomVpcDetailsDrToMap(model *drautomationservicev1.DetailsDr) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	if model.Crn != nil {
-		modelMap["crn"] = *model.Crn
+	if model.CRN != nil {
+		modelMap["crn"] = *model.CRN
 	}
 	return modelMap, nil
 }
@@ -293,7 +293,7 @@ func DataSourceIbmPdrWorkspaceCustomVpcLocationDrToMap(model *drautomationservic
 	return modelMap, nil
 }
 
-func DataSourceIbmPdrWorkspaceCustomVpcDRWorkspaceToMap(model *drautomationservicev1.DRWorkspace) (map[string]interface{}, error) {
+func DataSourceIbmPdrWorkspaceCustomVpcDRWorkspaceToMap(model *drautomationservicev1.DrWorkspace) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.Default != nil {
 		modelMap["default"] = *model.Default

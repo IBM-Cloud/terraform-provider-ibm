@@ -208,8 +208,8 @@ func dataSourceIbmPdrGetEventsID(d *schema.ResourceData) string {
 func DataSourceIbmPdrGetEventsEventToMap(model *drautomationservicev1.Event) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["action"] = *model.Action
-	if model.ApiSource != nil {
-		modelMap["api_source"] = *model.ApiSource
+	if model.APISource != nil {
+		modelMap["api_source"] = *model.APISource
 	}
 	modelMap["event_id"] = *model.EventID
 	modelMap["level"] = *model.Level

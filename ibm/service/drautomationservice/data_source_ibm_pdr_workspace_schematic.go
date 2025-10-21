@@ -237,7 +237,7 @@ func dataSourceIbmPdrWorkspaceSchematicID(d *schema.ResourceData) string {
 	return time.Now().UTC().String()
 }
 
-func DataSourceIbmPdrWorkspaceSchematicDRStandbyWorkspaceToMap(model *drautomationservicev1.DRStandbyWorkspace) (map[string]interface{}, error) {
+func DataSourceIbmPdrWorkspaceSchematicDRStandbyWorkspaceToMap(model *drautomationservicev1.DrStandbyWorkspace) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.Details != nil {
 		detailsMap, err := DataSourceIbmPdrWorkspaceSchematicDetailsDrToMap(model.Details)
@@ -267,8 +267,8 @@ func DataSourceIbmPdrWorkspaceSchematicDRStandbyWorkspaceToMap(model *drautomati
 
 func DataSourceIbmPdrWorkspaceSchematicDetailsDrToMap(model *drautomationservicev1.DetailsDr) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	if model.Crn != nil {
-		modelMap["crn"] = *model.Crn
+	if model.CRN != nil {
+		modelMap["crn"] = *model.CRN
 	}
 	return modelMap, nil
 }
@@ -287,7 +287,7 @@ func DataSourceIbmPdrWorkspaceSchematicLocationDrToMap(model *drautomationservic
 	return modelMap, nil
 }
 
-func DataSourceIbmPdrWorkspaceSchematicDRWorkspaceToMap(model *drautomationservicev1.DRWorkspace) (map[string]interface{}, error) {
+func DataSourceIbmPdrWorkspaceSchematicDRWorkspaceToMap(model *drautomationservicev1.DrWorkspace) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.Default != nil {
 		modelMap["default"] = *model.Default

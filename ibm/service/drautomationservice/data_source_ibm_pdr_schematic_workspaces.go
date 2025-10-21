@@ -162,8 +162,8 @@ func DataSourceIbmPdrSchematicWorkspacesDrAutomationSchematicsWorkspaceToMap(mod
 	if model.CreatedBy != nil {
 		modelMap["created_by"] = *model.CreatedBy
 	}
-	if model.Crn != nil {
-		modelMap["crn"] = *model.Crn
+	if model.CRN != nil {
+		modelMap["crn"] = *model.CRN
 	}
 	if model.Description != nil {
 		modelMap["description"] = *model.Description

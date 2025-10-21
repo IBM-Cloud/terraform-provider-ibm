@@ -47,7 +47,7 @@ func testAccCheckIbmPdrGetEventDataSourceConfigBasic() string {
 	return fmt.Sprintf(`
 		data "ibm_pdr_get_event" "pdr_get_event_instance" {
 			provision_id = "crn:v1:staging:public:power-dr-automation:global:a/a123456fb04ceebfb4a9fd38c22334455:123456d3-1122-3344-b67d-4389b44b7bf9::"
-			event_id = "1c22aa1c-5ec6-438d-b11a-3984dab6d438"
+			event_id = "00116b2a-9326-4024-839e-fb5364b76898"
 		}
 	`)
 }

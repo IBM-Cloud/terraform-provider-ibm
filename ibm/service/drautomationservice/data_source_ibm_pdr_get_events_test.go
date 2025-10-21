@@ -79,7 +79,7 @@ func TestDataSourceIbmPdrGetEventsEventToMap(t *testing.T) {
 
 	model := new(drautomationservicev1.Event)
 	model.Action = core.StringPtr("create")
-	model.ApiSource = core.StringPtr("dr-automation-api")
+	model.APISource = core.StringPtr("dr-automation-api")
 	model.EventID = core.StringPtr("1cecfe43-43cd-4b1b-86be-30c2d3d2a25f")
 	model.Level = core.StringPtr("info")
 	model.Message = core.StringPtr("Service Instance created successfully")

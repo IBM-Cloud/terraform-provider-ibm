@@ -45,7 +45,8 @@ func testAccCheckIbmPdrWorkspaceSchematicDataSourceConfigBasic() string {
 		data "ibm_pdr_workspace_schematic" "pdr_workspace_schematic_instance" {
 			instance_id = "crn:v1:staging:public:power-dr-automation:global:a/a123456fb04ceebfb4a9fd38c22334455:123456d3-1122-3344-b67d-4389b44b7bf9::"
 			schematic_id = "us-south.workspace.projects-service.3ae96a02"
-			location_id = "lon06"
+			location_id = "location_id"
+			If-None-Match = "If-None-Match"
 		}
 	`)
 }
@@ -71,14 +72,14 @@ func TestDataSourceIbmPdrWorkspaceSchematicDRStandbyWorkspaceToMap(t *testing.T)
 	}
 
 	detailsDrModel := new(drautomationservicev1.DetailsDr)
-	detailsDrModel.Crn = core.StringPtr("crn:v1:bluemix:public:power-iaas:lon06:a/094f4214c75941f991da601b001df1fe:b6297e60-d0fe-4e24-8b15-276cf0645737::")
+	detailsDrModel.CRN = core.StringPtr("crn:v1:bluemix:public:power-iaas:lon06:a/094f4214c75941f991da601b001df1fe:b6297e60-d0fe-4e24-8b15-276cf0645737::")
 
 	locationDrModel := new(drautomationservicev1.LocationDr)
 	locationDrModel.Region = core.StringPtr("lon06")
 	locationDrModel.Type = core.StringPtr("data-center")
 	locationDrModel.URL = core.StringPtr("https://lon.power-iaas.cloud.ibm.com")
 
-	model := new(drautomationservicev1.DRStandbyWorkspace)
+	model := new(drautomationservicev1.DrStandbyWorkspace)
 	model.Details = detailsDrModel
 	model.ID = core.StringPtr("testString")
 	model.Location = locationDrModel
@@ -99,7 +100,7 @@ func TestDataSourceIbmPdrWorkspaceSchematicDetailsDrToMap(t *testing.T) {
 	}
 
 	model := new(drautomationservicev1.DetailsDr)
-	model.Crn = core.StringPtr("crn:v1:bluemix:public:power-iaas:lon06:a/094f4214c75941f991da601b001df1fe:b6297e60-d0fe-4e24-8b15-276cf0645737::")
+	model.CRN = core.StringPtr("crn:v1:bluemix:public:power-iaas:lon06:a/094f4214c75941f991da601b001df1fe:b6297e60-d0fe-4e24-8b15-276cf0645737::")
 
 	result, err := drautomationservice.DataSourceIbmPdrWorkspaceSchematicDetailsDrToMap(model)
 	assert.Nil(t, err)
@@ -148,14 +149,14 @@ func TestDataSourceIbmPdrWorkspaceSchematicDRWorkspaceToMap(t *testing.T) {
 	}
 
 	detailsDrModel := new(drautomationservicev1.DetailsDr)
-	detailsDrModel.Crn = core.StringPtr("crn:v1:bluemix:public:power-iaas:lon06:a/094f4214c75941f991da601b001df1fe:b6297e60-d0fe-4e24-8b15-276cf0645737::")
+	detailsDrModel.CRN = core.StringPtr("crn:v1:bluemix:public:power-iaas:lon06:a/094f4214c75941f991da601b001df1fe:b6297e60-d0fe-4e24-8b15-276cf0645737::")
 
 	locationDrModel := new(drautomationservicev1.LocationDr)
 	locationDrModel.Region = core.StringPtr("lon06")
 	locationDrModel.Type = core.StringPtr("data-center")
 	locationDrModel.URL = core.StringPtr("https://lon.power-iaas.cloud.ibm.com")
 
-	model := new(drautomationservicev1.DRWorkspace)
+	model := new(drautomationservicev1.DrWorkspace)
 	model.Default = core.BoolPtr(true)
 	model.Details = detailsDrModel
 	model.ID = core.StringPtr("testString")

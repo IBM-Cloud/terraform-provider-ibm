@@ -31,9 +31,9 @@ func ResourceIbmPdrValidateApikey() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"instance_id": &schema.Schema{
-				Type:        schema.TypeString,
-				Required:    true,
-				ForceNew:    true,
+				Type:     schema.TypeString,
+				Required: true,
+				// ForceNew:    true,
 				Description: "instance id of instance to provision.",
 			},
 			"accept_language": &schema.Schema{
@@ -42,9 +42,10 @@ func ResourceIbmPdrValidateApikey() *schema.Resource {
 				Description: "The language requested for the return document.",
 			},
 			"api_key": &schema.Schema{
-				Type:        schema.TypeString,
-				Required:    true,
-				ForceNew:    true,
+				Type:     schema.TypeString,
+				Required: true,
+				// ForceNew:    true,
+				Sensitive:   true,
 				Description: "api key",
 			},
 			"if_none_match": &schema.Schema{
@@ -83,10 +84,10 @@ func resourceIbmPdrValidateApikeyCreate(context context.Context, d *schema.Resou
 		return tfErr.GetDiag()
 	}
 
-	createServiceInstanceKeyValidationOptions := &drautomationservicev1.CreateServiceInstanceKeyValidationOptions{}
+	createServiceInstanceKeyValidationOptions := &drautomationservicev1.CreateApikeyOptions{}
 
 	createServiceInstanceKeyValidationOptions.SetInstanceID(d.Get("instance_id").(string))
-	createServiceInstanceKeyValidationOptions.SetApiKey(d.Get("api_key").(string))
+	createServiceInstanceKeyValidationOptions.SetAPIKey(d.Get("api_key").(string))
 	if _, ok := d.GetOk("accept_language"); ok {
 		createServiceInstanceKeyValidationOptions.SetAcceptLanguage(d.Get("accept_language").(string))
 	}
@@ -94,7 +95,7 @@ func resourceIbmPdrValidateApikeyCreate(context context.Context, d *schema.Resou
 		createServiceInstanceKeyValidationOptions.SetIfNoneMatch(d.Get("if_none_match").(string))
 	}
 
-	validationKeyResponse, _, err := drAutomationServiceClient.CreateServiceInstanceKeyValidationWithContext(context, createServiceInstanceKeyValidationOptions)
+	validationKeyResponse, _, err := drAutomationServiceClient.Clone().CreateApikeyWithContext(context, createServiceInstanceKeyValidationOptions)
 	if err != nil {
 		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateServiceInstanceKeyValidationWithContext failed: %s", err.Error()), "ibm_pdr_validate_apikey", "create")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
@@ -118,15 +119,21 @@ func resourceIbmPdrValidateApikeyRead(context context.Context, d *schema.Resourc
 		return tfErr.GetDiag()
 	}
 
-	getServiceInstanceKeyV1Options := &drautomationservicev1.GetServiceInstanceKeyV1Options{}
+	getServiceInstanceKeyV1Options := &drautomationservicev1.GetApikeyOptions{}
 
-	parts, err := flex.SepIdParts(d.Id(), "/")
-	if err != nil {
-		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_pdr_validate_apikey", "read", "sep-id-parts").GetDiag()
-	}
+	instanceID := d.Get("instance_id").(string)
 
-	getServiceInstanceKeyV1Options.SetInstanceID(parts[0])
-	getServiceInstanceKeyV1Options.SetInstanceID(parts[1])
+	log.Printf("[DEBUG] Read operation using instance ID from resource: %s", instanceID)
+
+	getServiceInstanceKeyV1Options.SetInstanceID(instanceID)
+
+	// parts, err := flex.SepIdParts(d.Id(), "/")
+	// if err != nil {
+	// 	return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_pdr_validate_apikey", "read", "sep-id-parts").GetDiag()
+	// }
+
+	// getServiceInstanceKeyV1Options.SetInstanceID(parts[0])
+	// getServiceInstanceKeyV1Options.SetInstanceID(parts[1])
 	if _, ok := d.GetOk("accept_language"); ok {
 		getServiceInstanceKeyV1Options.SetAcceptLanguage(d.Get("accept_language").(string))
 	}
@@ -134,7 +141,7 @@ func resourceIbmPdrValidateApikeyRead(context context.Context, d *schema.Resourc
 		getServiceInstanceKeyV1Options.SetIfNoneMatch(d.Get("if_none_match").(string))
 	}
 
-	validationKeyResponse, response, err := drAutomationServiceClient.GetServiceInstanceKeyV1WithContext(context, getServiceInstanceKeyV1Options)
+	validationKeyResponse, response, err := drAutomationServiceClient.GetApikeyWithContext(context, getServiceInstanceKeyV1Options)
 	if err != nil {
 		if response != nil && response.StatusCode == 404 {
 			d.SetId("")
@@ -178,7 +185,7 @@ func resourceIbmPdrValidateApikeyUpdate(context context.Context, d *schema.Resou
 		return tfErr.GetDiag()
 	}
 
-	replaceServiceInstanceApiKeyOptions := &drautomationservicev1.ReplaceServiceInstanceApiKeyOptions{}
+	replaceServiceInstanceApiKeyOptions := &drautomationservicev1.UpdateApikeyOptions{}
 
 	parts, err := flex.SepIdParts(d.Id(), "/")
 	if err != nil {
@@ -194,9 +201,9 @@ func resourceIbmPdrValidateApikeyUpdate(context context.Context, d *schema.Resou
 	if _, ok := d.GetOk("if_none_match"); ok {
 		replaceServiceInstanceApiKeyOptions.SetIfNoneMatch(d.Get("if_none_match").(string))
 	}
-	replaceServiceInstanceApiKeyOptions.SetApiKey(d.Get("api_key").(string))
+	replaceServiceInstanceApiKeyOptions.SetAPIKey(d.Get("api_key").(string))
 
-	_, _, err = drAutomationServiceClient.ReplaceServiceInstanceApiKeyWithContext(context, replaceServiceInstanceApiKeyOptions)
+	_, _, err = drAutomationServiceClient.UpdateApikeyWithContext(context, replaceServiceInstanceApiKeyOptions)
 	if err != nil {
 		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("ReplaceServiceInstanceApiKeyWithContext failed: %s", err.Error()), "ibm_pdr_validate_apikey", "update")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())

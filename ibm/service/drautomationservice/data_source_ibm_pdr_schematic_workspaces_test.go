@@ -3,7 +3,7 @@
 
 /*
  * IBM OpenAPI Terraform Generator Version: 3.105.0-3c13b041-20250605-193116
- */
+*/
 
 package drautomationservice_test
 
@@ -13,12 +13,12 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 
-	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/drautomationservice"
-	. "github.com/IBM-Cloud/terraform-provider-ibm/ibm/unittest"
 	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/stretchr/testify/assert"
 	"github.ibm.com/DRAutomation/dra-go-sdk/drautomationservicev1"
+	. "github.com/IBM-Cloud/terraform-provider-ibm/ibm/unittest"
+	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 )
 
 func TestAccIbmPdrSchematicWorkspacesDataSourceBasic(t *testing.T) {
@@ -42,9 +42,11 @@ func testAccCheckIbmPdrSchematicWorkspacesDataSourceConfigBasic() string {
 	return fmt.Sprintf(`
 		data "ibm_pdr_schematic_workspaces" "pdr_schematic_workspaces_instance" {
 			instance_id = "crn:v1:staging:public:power-dr-automation:global:a/a123456fb04ceebfb4a9fd38c22334455:123456d3-1122-3344-b67d-4389b44b7bf9::"
+			If-None-Match = "If-None-Match"
 		}
 	`)
 }
+
 
 func TestDataSourceIbmPdrSchematicWorkspacesDrAutomationSchematicsWorkspaceToMap(t *testing.T) {
 	checkResult := func(result map[string]interface{}) {
@@ -72,7 +74,7 @@ func TestDataSourceIbmPdrSchematicWorkspacesDrAutomationSchematicsWorkspaceToMap
 	model.CatalogRef = drAutomationCatalogRefModel
 	model.CreatedAt = CreateMockDateTime("2025-02-24T11:18:49.819Z")
 	model.CreatedBy = core.StringPtr("crn:v1:bluemix:public:project:eu-gb:a/094f4214c75941f94c2w1g1b001df1fe:fbe45gs9-d3c6-hny3-898d-ff2e6rfes257::")
-	model.Crn = core.StringPtr("crn:v1:bluemix:public:schematics:eu-de:a/094f42141234567891da601b001df1fe:59389f45-a1d7-085g-8abe-7a28327e5574:workspace:eu-gb.workspace.projects-service.42a7ab33")
+	model.CRN = core.StringPtr("crn:v1:bluemix:public:schematics:eu-de:a/094f42141234567891da601b001df1fe:59389f45-a1d7-085g-8abe-7a28327e5574:workspace:eu-gb.workspace.projects-service.42a7ab33")
 	model.Description = core.StringPtr("A configuration of the 54f31234-e74f-4567-a0a8-367b45658765 project")
 	model.ID = core.StringPtr("A configuration of the fbe4a122-d3c6-4543-898d-ff2e6df74123 project")
 	model.Location = core.StringPtr("us-south")

@@ -3,7 +3,7 @@
 
 /*
  * IBM OpenAPI Terraform Generator Version: 3.105.0-3c13b041-20250605-193116
-*/
+ */
 
 package drautomationservice
 
@@ -18,6 +18,7 @@ import (
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
+	"github.com/IBM/go-sdk-core/v5/core"
 	"github.ibm.com/DRAutomation/dra-go-sdk/drautomationservicev1"
 )
 
@@ -42,22 +43,10 @@ func DataSourceIbmPdrGetManagedVmList() *schema.Resource {
 				Description: "ETag for conditional requests (optional).",
 			},
 			"managed_vms": &schema.Schema{
-				Type:        schema.TypeList,
-				Computed:    true,
-				Description: "List of managed VMs associated with the service instance.",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"vm_id": &schema.Schema{
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "Unique identifier of the VM.",
-						},
-						"vm_name": &schema.Schema{
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "Name of the VM.",
-						},
-					},
+				Type:     schema.TypeMap,
+				Computed: true,
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
 				},
 			},
 		},
@@ -72,7 +61,7 @@ func dataSourceIbmPdrGetManagedVmListRead(context context.Context, d *schema.Res
 		return tfErr.GetDiag()
 	}
 
-	getDrManagedVmOptions := &drautomationservicev1.GetDrManagedVmOptions{}
+	getDrManagedVmOptions := &drautomationservicev1.GetDrManagedVMOptions{}
 
 	getDrManagedVmOptions.SetInstanceID(d.Get("instance_id").(string))
 	if _, ok := d.GetOk("accept_language"); ok {
@@ -82,7 +71,7 @@ func dataSourceIbmPdrGetManagedVmListRead(context context.Context, d *schema.Res
 		getDrManagedVmOptions.SetIfNoneMatch(d.Get("if_none_match").(string))
 	}
 
-	managedVmListResponse, _, err := drAutomationServiceClient.GetDrManagedVmWithContext(context, getDrManagedVmOptions)
+	managedVmMapResponse, _, err := drAutomationServiceClient.GetDrManagedVMWithContext(context, getDrManagedVmOptions)
 	if err != nil {
 		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetDrManagedVmWithContext failed: %s", err.Error()), "(Data) ibm_pdr_get_managed_vm_list", "read")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
@@ -91,16 +80,14 @@ func dataSourceIbmPdrGetManagedVmListRead(context context.Context, d *schema.Res
 
 	d.SetId(dataSourceIbmPdrGetManagedVmListID(d))
 
-	managedVms := []map[string]interface{}{}
-	for _, managedVmsItem := range managedVmListResponse.ManagedVms {
-		managedVmsItemMap, err := DataSourceIbmPdrGetManagedVmListManagedVmListToMap(&managedVmsItem) // #nosec G601
-		if err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_pdr_get_managed_vm_list", "read", "managed_vms-to-map").GetDiag()
+	if !core.IsNil(managedVmMapResponse.ManagedVms) {
+		convertedMap := make(map[string]interface{}, len(managedVmMapResponse.ManagedVms))
+		for k, v := range managedVmMapResponse.ManagedVms {
+			convertedMap[k] = v
 		}
-		managedVms = append(managedVms, managedVmsItemMap)
-	}
-	if err = d.Set("managed_vms", managedVms); err != nil {
-		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting managed_vms: %s", err), "(Data) ibm_pdr_get_managed_vm_list", "read", "set-managed_vms").GetDiag()
+		if err = d.Set("managed_vms", flex.Flatten(convertedMap)); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting managed_vms: %s", err), "(Data) ibm_pdr_get_managed_vm_list", "read", "set-managed_vms").GetDiag()
+		}
 	}
 
 	return nil
@@ -111,13 +98,31 @@ func dataSourceIbmPdrGetManagedVmListID(d *schema.ResourceData) string {
 	return time.Now().UTC().String()
 }
 
-func DataSourceIbmPdrGetManagedVmListManagedVmListToMap(model *drautomationservicev1.ManagedVmList) (map[string]interface{}, error) {
+func DataSourceIbmPdrGetManagedVmListManagedVmDetailsToMap(model *drautomationservicev1.ManagedVMDetails) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	if model.VmID != nil {
-		modelMap["vm_id"] = *model.VmID
+	if model.Core != nil {
+		modelMap["core"] = *model.Core
 	}
-	if model.VmName != nil {
-		modelMap["vm_name"] = *model.VmName
+	if model.DrAverageTime != nil {
+		modelMap["dr_average_time"] = *model.DrAverageTime
+	}
+	if model.DrRegion != nil {
+		modelMap["dr_region"] = *model.DrRegion
+	}
+	if model.Memory != nil {
+		modelMap["memory"] = *model.Memory
+	}
+	if model.Region != nil {
+		modelMap["region"] = *model.Region
+	}
+	if model.VMName != nil {
+		modelMap["vm_name"] = *model.VMName
+	}
+	if model.WorkgroupName != nil {
+		modelMap["workgroup_name"] = *model.WorkgroupName
+	}
+	if model.WorkspaceName != nil {
+		modelMap["workspace_name"] = *model.WorkspaceName
 	}
 	return modelMap, nil
 }

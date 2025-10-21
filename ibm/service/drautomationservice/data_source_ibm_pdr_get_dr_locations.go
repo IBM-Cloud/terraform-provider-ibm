@@ -72,19 +72,19 @@ func dataSourceIbmPdrGetDrLocationsRead(context context.Context, d *schema.Resou
 		return tfErr.GetDiag()
 	}
 
-	getDrLocationOptions := &drautomationservicev1.GetDrLocationOptions{}
+	getDrLocationsOptions := &drautomationservicev1.GetDrLocationsOptions{}
 
-	getDrLocationOptions.SetInstanceID(d.Get("instance_id").(string))
+	getDrLocationsOptions.SetInstanceID(d.Get("instance_id").(string))
 	if _, ok := d.GetOk("accept_language"); ok {
-		getDrLocationOptions.SetAcceptLanguage(d.Get("accept_language").(string))
+		getDrLocationsOptions.SetAcceptLanguage(d.Get("accept_language").(string))
 	}
 	if _, ok := d.GetOk("if_none_match"); ok {
-		getDrLocationOptions.SetIfNoneMatch(d.Get("if_none_match").(string))
+		getDrLocationsOptions.SetIfNoneMatch(d.Get("if_none_match").(string))
 	}
 
-	getDrLocationsResponse, _, err := drAutomationServiceClient.GetDrLocationWithContext(context, getDrLocationOptions)
+	getDrLocationsResponse, _, err := drAutomationServiceClient.GetDrLocationsWithContext(context, getDrLocationsOptions)
 	if err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetDrLocationWithContext failed: %s", err.Error()), "(Data) ibm_pdr_get_dr_locations", "read")
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetDrLocationsWithContext failed: %s", err.Error()), "(Data) ibm_pdr_get_dr_locations", "read")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}

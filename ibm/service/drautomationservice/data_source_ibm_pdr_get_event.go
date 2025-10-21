@@ -158,8 +158,8 @@ func dataSourceIbmPdrGetEventRead(context context.Context, d *schema.ResourceDat
 		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting action: %s", err), "(Data) ibm_pdr_get_event", "read", "set-action").GetDiag()
 	}
 
-	if !core.IsNil(event.ApiSource) {
-		if err = d.Set("api_source", event.ApiSource); err != nil {
+	if !core.IsNil(event.APISource) {
+		if err = d.Set("api_source", event.APISource); err != nil {
 			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting api_source: %s", err), "(Data) ibm_pdr_get_event", "read", "set-api_source").GetDiag()
 		}
 	}

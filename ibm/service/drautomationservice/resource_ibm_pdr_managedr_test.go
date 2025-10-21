@@ -6,8 +6,11 @@ package drautomationservice_test
 import (
 	"fmt"
 	"testing"
+	"time"
 
-	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
+	// "github.com/hashicorp/terraform-plugin-testing/helper/acctest"
+	"math/rand"
+
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 
@@ -18,7 +21,7 @@ import (
 )
 
 func TestAccIbmPdrManagedrBasic(t *testing.T) {
-	var conf drautomationservicev1.ServiceInstanceManageDR
+	var conf drautomationservicev1.ServiceInstanceManageDr
 	instanceID := "crn:v1:staging:public:power-dr-automation:global:a/a09202c1bfb04ceebfb4a9fd38c87721:050ebe3b-13f4-4db8-8ece-501a3c13be0965822::"
 	standByRedeploy := "false"
 
@@ -40,11 +43,14 @@ func TestAccIbmPdrManagedrBasic(t *testing.T) {
 }
 
 func TestAccIbmPdrManagedrAllArgs(t *testing.T) {
-	var conf drautomationservicev1.ServiceInstanceManageDR
+	var conf drautomationservicev1.ServiceInstanceManageDr
 	instanceID := "crn:v1:staging:public:power-dr-automation:global:a/a09202c1bfb04ceebfb4a9fd38c87721:050ebe3b-13f4-4db8-8ece-501a3c13be0965822::"
 	standByRedeploy := "false"
-	acceptLanguage := fmt.Sprintf("tf_accept_language_%d", acctest.RandIntRange(10, 100))
-	ifNoneMatch := fmt.Sprintf("tf_if_none_match_%d", acctest.RandIntRange(10, 100))
+	rand.Seed(time.Now().UnixNano())
+	acceptLanguage := fmt.Sprintf("tf_accept_language_%d", rand.Intn(90)+10)
+	ifNoneMatch := fmt.Sprintf("tf_if_none_match_%d", rand.Intn(90)+10)
+	// acceptLanguage := fmt.Sprintf("tf_accept_language_%d", acc.RandIntRange(10, 100))
+	// ifNoneMatch := fmt.Sprintf("tf_if_none_match_%d", acc.RandIntRange(10, 100))
 	acceptsIncomplete := "true"
 
 	resource.Test(t, resource.TestCase{
@@ -125,7 +131,7 @@ func testAccCheckIbmPdrManagedrConfig(instanceID string, standByRedeploy string,
 	`, instanceID, standByRedeploy, acceptLanguage, ifNoneMatch, acceptsIncomplete)
 }
 
-func testAccCheckIbmPdrManagedrExists(n string, obj drautomationservicev1.ServiceInstanceManageDR) resource.TestCheckFunc {
+func testAccCheckIbmPdrManagedrExists(n string, obj drautomationservicev1.ServiceInstanceManageDr) resource.TestCheckFunc {
 
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]

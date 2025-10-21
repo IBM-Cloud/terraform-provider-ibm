@@ -3,7 +3,7 @@
 
 /*
  * IBM OpenAPI Terraform Generator Version: 3.105.0-3c13b041-20250605-193116
-*/
+ */
 
 package drautomationservice
 
@@ -258,8 +258,8 @@ func dataSourceIbmPdrGetDrSummaryResponseRead(context context.Context, d *schema
 
 	d.SetId(dataSourceIbmPdrGetDrSummaryResponseID(d))
 
-	convertedMap := make(map[string]interface{}, len(drAutomationGetSummaryResponse.ManagedVmList))
-	for k, v := range drAutomationGetSummaryResponse.ManagedVmList {
+	convertedMap := make(map[string]interface{}, len(drAutomationGetSummaryResponse.ManagedVMList))
+	for k, v := range drAutomationGetSummaryResponse.ManagedVMList {
 		convertedMap[k] = v
 	}
 	if err = d.Set("managed_vm_list", flex.Flatten(convertedMap)); err != nil {
@@ -306,30 +306,30 @@ func DataSourceIbmPdrGetDrSummaryResponseOrchestratorDetailsToMap(model *drautom
 	modelMap["orchestrator_name"] = *model.OrchestratorName
 	modelMap["orchestrator_status"] = *model.OrchestratorStatus
 	modelMap["orchestrator_workspace_name"] = *model.OrchestratorWorkspaceName
-	modelMap["proxy_ip"] = *model.ProxyIp
+	modelMap["proxy_ip"] = *model.ProxyIP
 	modelMap["schematic_workspace_name"] = *model.SchematicWorkspaceName
 	modelMap["schematic_workspace_status"] = *model.SchematicWorkspaceStatus
-	modelMap["ssh_key_name"] = *model.SshKeyName
+	modelMap["ssh_key_name"] = *model.SSHKeyName
 	modelMap["standby_orchestrator_name"] = *model.StandbyOrchestratorName
 	modelMap["standby_orchestrator_status"] = *model.StandbyOrchestratorStatus
 	modelMap["standby_orchestrator_workspace_name"] = *model.StandbyOrchestratorWorkspaceName
 	modelMap["transit_gateway_name"] = *model.TransitGatewayName
-	modelMap["vpc_name"] = *model.VpcName
+	modelMap["vpc_name"] = *model.VPCName
 	return modelMap, nil
 }
 
 func DataSourceIbmPdrGetDrSummaryResponseServiceDetailsToMap(model *drautomationservicev1.ServiceDetails) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	modelMap["crn"] = *model.Crn
+	modelMap["crn"] = *model.CRN
 	modelMap["deployment_name"] = *model.DeploymentName
 	modelMap["description"] = *model.Description
 	modelMap["is_ksys_ha"] = *model.IsKsysHa
-	modelMap["primary_ip_address"] = *model.PrimaryIpAddress
+	modelMap["primary_ip_address"] = *model.PrimaryIPAddress
 	modelMap["primary_orchestrator_dashboard_url"] = *model.PrimaryOrchestratorDashboardURL
 	modelMap["recovery_location"] = *model.RecoveryLocation
 	modelMap["resource_group"] = *model.ResourceGroup
 	modelMap["standby_description"] = *model.StandbyDescription
-	modelMap["standby_ip_address"] = *model.StandbyIpAddress
+	modelMap["standby_ip_address"] = *model.StandbyIPAddress
 	modelMap["standby_orchestrator_dashboard_url"] = *model.StandbyOrchestratorDashboardURL
 	modelMap["standby_status"] = *model.StandbyStatus
 	modelMap["status"] = *model.Status

@@ -88,7 +88,7 @@ func ResourceIbmPdrManagedr() *schema.Resource {
 				ForceNew:  true,
 				Optional:  true,
 			},
-			"enable_ha": {
+			"orchestrator_ha": {
 				Type:     schema.TypeBool,
 				Optional: true,
 				ForceNew: true,
@@ -108,7 +108,7 @@ func ResourceIbmPdrManagedr() *schema.Resource {
 				Optional: true,
 				ForceNew: true,
 			},
-			"orchestrator_cluster_type": {
+			"orchestrator_location_type": {
 				Type:     schema.TypeString,
 				Optional: true,
 				ForceNew: true,
@@ -260,13 +260,14 @@ func resourceIbmPdrManagedrCreate(context context.Context, d *schema.ResourceDat
 		createManageDrOptions.SetAction(d.Get("action").(string))
 	}
 	if _, ok := d.GetOk("api_key"); ok {
-		createManageDrOptions.SetApiKey(d.Get("api_key").(string))
+		createManageDrOptions.SetAPIKey(d.Get("api_key").(string))
 	}
-	if _, ok := d.GetOk("enable_ha"); ok {
-		createManageDrOptions.SetEnableHa(d.Get("enable_ha").(bool))
+	if v, ok := d.GetOk("orchestrator_ha"); ok {
+		enableHA := v.(bool)
+		createManageDrOptions.OrchestratorHa = core.BoolPtr(enableHA)
 	}
 	if _, ok := d.GetOk("guid"); ok {
-		createManageDrOptions.SetGuid(d.Get("guid").(string))
+		createManageDrOptions.SetGUID(d.Get("guid").(string))
 	}
 	if _, ok := d.GetOk("location_id"); ok {
 		createManageDrOptions.SetLocationID(d.Get("location_id").(string))
@@ -274,8 +275,8 @@ func resourceIbmPdrManagedrCreate(context context.Context, d *schema.ResourceDat
 	if _, ok := d.GetOk("machine_type"); ok {
 		createManageDrOptions.SetMachineType(d.Get("machine_type").(string))
 	}
-	if _, ok := d.GetOk("orchestrator_cluster_type"); ok {
-		createManageDrOptions.SetOrchestratorClusterType(d.Get("orchestrator_cluster_type").(string))
+	if _, ok := d.GetOk("orchestrator_location_type"); ok {
+		createManageDrOptions.SetOrchestratorLocationType(d.Get("orchestrator_location_type").(string))
 	}
 	if _, ok := d.GetOk("orchestrator_name"); ok {
 		createManageDrOptions.SetOrchestratorName(d.Get("orchestrator_name").(string))
@@ -290,7 +291,7 @@ func resourceIbmPdrManagedrCreate(context context.Context, d *schema.ResourceDat
 		createManageDrOptions.SetOrchestratorWorkspaceLocation(d.Get("orchestrator_workspace_location").(string))
 	}
 	if _, ok := d.GetOk("proxy_ip"); ok {
-		createManageDrOptions.SetProxyIp(d.Get("proxy_ip").(string))
+		createManageDrOptions.SetProxyIP(d.Get("proxy_ip").(string))
 	}
 	if _, ok := d.GetOk("region_id"); ok {
 		createManageDrOptions.SetRegionID(d.Get("region_id").(string))
@@ -311,10 +312,7 @@ func resourceIbmPdrManagedrCreate(context context.Context, d *schema.ResourceDat
 		createManageDrOptions.SetSecretGroup(d.Get("secret_group").(string))
 	}
 	if _, ok := d.GetOk("ssh_key_name"); ok {
-		createManageDrOptions.SetSshKeyName(d.Get("ssh_key_name").(string))
-	}
-	if _, ok := d.GetOk("ssh_public_key"); ok {
-		createManageDrOptions.SetSshPublicKey(d.Get("ssh_public_key").(string))
+		createManageDrOptions.SetSSHKeyName(d.Get("ssh_key_name").(string))
 	}
 	if _, ok := d.GetOk("standby_machine_type"); ok {
 		createManageDrOptions.SetStandbyMachineType(d.Get("standby_machine_type").(string))
@@ -341,7 +339,7 @@ func resourceIbmPdrManagedrCreate(context context.Context, d *schema.ResourceDat
 		createManageDrOptions.SetTransitGatewayID(d.Get("transit_gateway_id").(string))
 	}
 	if _, ok := d.GetOk("vpc_id"); ok {
-		createManageDrOptions.SetVpcID(d.Get("vpc_id").(string))
+		createManageDrOptions.SetVPCID(d.Get("vpc_id").(string))
 	}
 	if _, ok := d.GetOk("accept_language"); ok {
 		createManageDrOptions.SetAcceptLanguage(d.Get("accept_language").(string))
@@ -375,13 +373,18 @@ func resourceIbmPdrManagedrRead(context context.Context, d *schema.ResourceData,
 
 	getManageDrOptions := &drautomationservicev1.GetManageDrOptions{}
 
-	parts, err := flex.SepIdParts(d.Id(), "/")
-	if err != nil {
-		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_pdr_managedr", "read", "sep-id-parts").GetDiag()
-	}
+	// parts, err := flex.SepIdParts(d.Id(), "/")
+	// if err != nil {
+	// 	return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_pdr_managedr", "read", "sep-id-parts").GetDiag()
+	// }
+	instanceID := d.Get("instance_id").(string)
 
-	getManageDrOptions.SetInstanceID(parts[0])
-	getManageDrOptions.SetInstanceID(parts[1])
+	log.Printf("[DEBUG] Read operation using instance ID from resource: %s", instanceID)
+
+	getManageDrOptions.SetInstanceID(instanceID)
+
+	// getManageDrOptions.SetInstanceID(parts[0])
+	// getManageDrOptions.SetInstanceID(parts[1])
 	if _, ok := d.GetOk("accept_language"); ok {
 		getManageDrOptions.SetAcceptLanguage(d.Get("accept_language").(string))
 	}

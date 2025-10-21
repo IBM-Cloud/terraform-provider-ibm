@@ -80,7 +80,7 @@ func testAccCheckIbmPdrValidateApikeyConfigBasic(instanceID string) string {
 	return fmt.Sprintf(`
 		resource "ibm_pdr_validate_apikey" "pdr_validate_apikey_instance" {
 			instance_id = "%s"
-			api_key = "azGTysdgsvameQEAhya_1_fD"
+			api_key = "sdfasfasdfasd"
 		}
 	`, instanceID)
 }
@@ -110,7 +110,7 @@ func testAccCheckIbmPdrValidateApikeyExists(n string, obj drautomationservicev1.
 			return err
 		}
 
-		getServiceInstanceKeyV1Options := &drautomationservicev1.GetServiceInstanceKeyV1Options{}
+		getServiceInstanceKeyV1Options := &drautomationservicev1.GetApikeyOptions{}
 
 		// parts, err := flex.SepIdParts(rs.Primary.ID, "/")
 		// if err != nil {
@@ -120,7 +120,7 @@ func testAccCheckIbmPdrValidateApikeyExists(n string, obj drautomationservicev1.
 		// getServiceInstanceKeyV1Options.SetInstanceID(parts[0])
 		getServiceInstanceKeyV1Options.SetInstanceID(rs.Primary.ID)
 
-		validationKeyResponse, _, err := drAutomationServiceClient.GetServiceInstanceKeyV1(getServiceInstanceKeyV1Options)
+		validationKeyResponse, _, err := drAutomationServiceClient.GetApikey(getServiceInstanceKeyV1Options)
 		if err != nil {
 			return err
 		}
@@ -140,7 +140,7 @@ func testAccCheckIbmPdrValidateApikeyDestroy(s *terraform.State) error {
 			continue
 		}
 
-		getServiceInstanceKeyV1Options := &drautomationservicev1.GetServiceInstanceKeyV1Options{}
+		getServiceInstanceKeyV1Options := &drautomationservicev1.GetApikeyOptions{}
 
 		parts, err := flex.SepIdParts(rs.Primary.ID, "/")
 		if err != nil {
@@ -148,7 +148,7 @@ func testAccCheckIbmPdrValidateApikeyDestroy(s *terraform.State) error {
 		}
 		getServiceInstanceKeyV1Options.SetInstanceID(fmt.Sprintf("%s/%s", parts[0], parts[1]))
 		// Try to find the key
-		_, response, err := drAutomationServiceClient.GetServiceInstanceKeyV1(getServiceInstanceKeyV1Options)
+		_, response, err := drAutomationServiceClient.GetApikey(getServiceInstanceKeyV1Options)
 		fmt.Println(response)
 		if err == nil {
 			return fmt.Errorf("pdr_validate_apikey still exists: %s", rs.Primary.ID)

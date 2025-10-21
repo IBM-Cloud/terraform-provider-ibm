@@ -153,7 +153,7 @@ func dataSourceIbmPdrLastOperationRead(context context.Context, d *schema.Resour
 
 	d.SetId(dataSourceIbmPdrLastOperationID(d))
 
-	if err = d.Set("crn", serviceInstanceStatus.Crn); err != nil {
+	if err = d.Set("crn", serviceInstanceStatus.CRN); err != nil {
 		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting crn: %s", err), "(Data) ibm_pdr_last_operation", "read", "set-crn").GetDiag()
 	}
 
@@ -187,7 +187,7 @@ func dataSourceIbmPdrLastOperationRead(context context.Context, d *schema.Resour
 		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting primary_description: %s", err), "(Data) ibm_pdr_last_operation", "read", "set-primary_description").GetDiag()
 	}
 
-	if err = d.Set("primary_ip_address", serviceInstanceStatus.PrimaryIpAddress); err != nil {
+	if err = d.Set("primary_ip_address", serviceInstanceStatus.PrimaryIPAddress); err != nil {
 		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting primary_ip_address: %s", err), "(Data) ibm_pdr_last_operation", "read", "set-primary_ip_address").GetDiag()
 	}
 
@@ -207,7 +207,7 @@ func dataSourceIbmPdrLastOperationRead(context context.Context, d *schema.Resour
 		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting standby_description: %s", err), "(Data) ibm_pdr_last_operation", "read", "set-standby_description").GetDiag()
 	}
 
-	if err = d.Set("standby_ip_address", serviceInstanceStatus.StandbyIpAddress); err != nil {
+	if err = d.Set("standby_ip_address", serviceInstanceStatus.StandbyIPAddress); err != nil {
 		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting standby_ip_address: %s", err), "(Data) ibm_pdr_last_operation", "read", "set-standby_ip_address").GetDiag()
 	}
 

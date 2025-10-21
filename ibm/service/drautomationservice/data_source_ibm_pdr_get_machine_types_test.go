@@ -3,7 +3,7 @@
 
 /*
  * IBM OpenAPI Terraform Generator Version: 3.105.0-3c13b041-20250605-193116
- */
+*/
 
 package drautomationservice_test
 
@@ -42,3 +42,4 @@ func testAccCheckIbmPdrGetMachineTypesDataSourceConfigBasic() string {
 		}
 	`)
 }
+

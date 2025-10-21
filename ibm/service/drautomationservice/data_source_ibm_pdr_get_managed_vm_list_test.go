@@ -30,7 +30,6 @@ func TestAccIbmPdrGetManagedVmListDataSourceBasic(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_pdr_get_managed_vm_list.pdr_get_managed_vm_list_instance", "id"),
 					resource.TestCheckResourceAttrSet("data.ibm_pdr_get_managed_vm_list.pdr_get_managed_vm_list_instance", "instance_id"),
-					resource.TestCheckResourceAttrSet("data.ibm_pdr_get_managed_vm_list.pdr_get_managed_vm_list_instance", "managed_vms.#"),
 				),
 			},
 		},
@@ -45,20 +44,32 @@ func testAccCheckIbmPdrGetManagedVmListDataSourceConfigBasic() string {
 	`)
 }
 
-func TestDataSourceIbmPdrGetManagedVmListManagedVmListToMap(t *testing.T) {
+func TestDataSourceIbmPdrGetManagedVmListManagedVmDetailsToMap(t *testing.T) {
 	checkResult := func(result map[string]interface{}) {
 		model := make(map[string]interface{})
-		model["vm_id"] = "5f4f7dd3-6d44-4086-9950-933bd550e24d"
-		model["vm_name"] = "abc-aix-vm1"
+		model["core"] = "0.50"
+		model["dr_average_time"] = "10"
+		model["dr_region"] = "nyc02"
+		model["memory"] = "4"
+		model["region"] = "lon04"
+		model["vm_name"] = "example_vm"
+		model["workgroup_name"] = "Example_Workgroup"
+		model["workspace_name"] = "Example_Workspace"
 
 		assert.Equal(t, result, model)
 	}
 
-	model := new(drautomationservicev1.ManagedVmList)
-	model.VmID = core.StringPtr("5f4f7dd3-6d44-4086-9950-933bd550e24d")
-	model.VmName = core.StringPtr("abc-aix-vm1")
+	model := new(drautomationservicev1.ManagedVMDetails)
+	model.Core = core.StringPtr("0.50")
+	model.DrAverageTime = core.StringPtr("10")
+	model.DrRegion = core.StringPtr("nyc02")
+	model.Memory = core.StringPtr("4")
+	model.Region = core.StringPtr("lon04")
+	model.VMName = core.StringPtr("example_vm")
+	model.WorkgroupName = core.StringPtr("Example_Workgroup")
+	model.WorkspaceName = core.StringPtr("Example_Workspace")
 
-	result, err := drautomationservice.DataSourceIbmPdrGetManagedVmListManagedVmListToMap(model)
+	result, err := drautomationservice.DataSourceIbmPdrGetManagedVmListManagedVmDetailsToMap(model)
 	assert.Nil(t, err)
 	checkResult(result)
 }
