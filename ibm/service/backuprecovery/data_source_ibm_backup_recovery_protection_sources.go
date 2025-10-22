@@ -22217,7 +22217,6 @@ func dataSourceIbmBackupRecoveryProtectionSourcesRead(context context.Context, d
 			}
 			protectionSources = append(protectionSources, protectionSourcesItemMap)
 		}
-
 		if err = d.Set("protection_sources", protectionSources); err != nil {
 			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting protection_sources: %s", err), "(Data) ibm_backup_recovery_protection_sources", "read", "set-protection_sources").GetDiag()
 		}
@@ -22493,6 +22492,7 @@ func DataSourceIbmBackupRecoveryProtectionSourcesProtectionSourceNodeToMap(model
 		modelMap["environment"] = *model.Environment
 	}
 	if model.ID != nil {
+
 		modelMap["id"] = flex.IntValue(model.ID)
 	}
 	if model.Name != nil {

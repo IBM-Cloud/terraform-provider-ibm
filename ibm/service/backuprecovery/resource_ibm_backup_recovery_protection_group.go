@@ -1414,6 +1414,345 @@ func ResourceIbmBackupRecoveryProtectionGroup() *schema.Resource {
 					},
 				},
 			},
+			"kubernetes_params": &schema.Schema{
+				Type:        schema.TypeList,
+				MaxItems:    1,
+				Optional:    true,
+				Description: "Specifies the parameters which are related to Kubernetes Protection Groups.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"enable_indexing": &schema.Schema{
+							Type:        schema.TypeBool,
+							Optional:    true,
+							Description: "Specifies if indexing of files and folders is allowed or not while backing up namespace. If allowed files and folder can be recovered.",
+						},
+						"exclude_label_ids": &schema.Schema{
+							Type:        schema.TypeList,
+							Optional:    true,
+							Description: "Array of arrays of label IDs that specify labels to exclude. Optionally specify a list of labels to exclude from protecting by listing protection source ids of labels in this two dimensional array. Using this two dimensional array of label IDs, the Cluster generates a list of namespaces to exclude from protecting, which are derived from intersections of the inner arrays and union of the outer array.",
+							Elem:        &schema.Schema{Type: schema.TypeInt},
+						},
+						"exclude_object_ids": &schema.Schema{
+							Type:        schema.TypeList,
+							Optional:    true,
+							Description: "Specifies the objects to be excluded in the Protection Group.",
+							Elem:        &schema.Schema{Type: schema.TypeInt},
+						},
+						"exclude_params": &schema.Schema{
+							Type:        schema.TypeList,
+							MaxItems:    1,
+							Optional:    true,
+							Description: "Specifies the parameters to in/exclude objects (e.g.: volumes). An object satisfying any of these criteria will be included by this filter.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"label_combination_method": &schema.Schema{
+										Type:        schema.TypeString,
+										Optional:    true,
+										Description: "Whether to include all the labels or any of them while performing inclusion/exclusion of objects.",
+									},
+									"label_vector": &schema.Schema{
+										Type:        schema.TypeList,
+										Optional:    true,
+										Description: "Array of Object to represent Label that Specify Objects (e.g.: Persistent Volumes and Persistent Volume Claims) to Include or Exclude.It will be a two-dimensional array, where each inner array will consist of a key and value representing labels. Using this two dimensional array of Labels, the Cluster generates a list of items to include in the filter, which are derived from intersections or the union of these labels, as decided by operation parameter.",
+										Elem: &schema.Resource{
+											Schema: map[string]*schema.Schema{
+												"key": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "The key of the label, used to identify the label.",
+												},
+												"value": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "The value associated with the label key.",
+												},
+											},
+										},
+									},
+									"objects": &schema.Schema{
+										Type:        schema.TypeList,
+										Optional:    true,
+										Description: "Array of objects that are to be included.",
+										Elem:        &schema.Schema{Type: schema.TypeInt},
+									},
+								},
+							},
+						},
+						"include_params": &schema.Schema{
+							Type:        schema.TypeList,
+							MaxItems:    1,
+							Optional:    true,
+							Description: "Specifies the parameters to in/exclude objects (e.g.: volumes). An object satisfying any of these criteria will be included by this filter.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"label_combination_method": &schema.Schema{
+										Type:        schema.TypeString,
+										Optional:    true,
+										Description: "Whether to include all the labels or any of them while performing inclusion/exclusion of objects.",
+									},
+									"label_vector": &schema.Schema{
+										Type:        schema.TypeList,
+										Optional:    true,
+										Description: "Array of Object to represent Label that Specify Objects (e.g.: Persistent Volumes and Persistent Volume Claims) to Include or Exclude.It will be a two-dimensional array, where each inner array will consist of a key and value representing labels. Using this two dimensional array of Labels, the Cluster generates a list of items to include in the filter, which are derived from intersections or the union of these labels, as decided by operation parameter.",
+										Elem: &schema.Resource{
+											Schema: map[string]*schema.Schema{
+												"key": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "The key of the label, used to identify the label.",
+												},
+												"value": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "The value associated with the label key.",
+												},
+											},
+										},
+									},
+									"objects": &schema.Schema{
+										Type:        schema.TypeList,
+										Optional:    true,
+										Description: "Array of objects that are to be included.",
+										Elem:        &schema.Schema{Type: schema.TypeInt},
+									},
+								},
+							},
+						},
+						"label_ids": &schema.Schema{
+							Type:        schema.TypeList,
+							Optional:    true,
+							Description: "Array of array of label IDs that specify labels to protect. Optionally specify a list of labels to protect by listing protection source ids of labels in this two dimensional array. Using this two dimensional array of label IDs, the cluster generates a list of namespaces to protect, which are derived from intersections of the inner arrays and union of the outer array.",
+							Elem:        &schema.Schema{Type: schema.TypeInt},
+						},
+						"leverage_csi_snapshot": &schema.Schema{
+							Type:        schema.TypeBool,
+							Optional:    true,
+							Description: "Specifies if CSI snapshots should be used for backup of namespaces.",
+						},
+						"non_snapshot_backup": &schema.Schema{
+							Type:        schema.TypeBool,
+							Optional:    true,
+							Description: "Specifies if snapshot backup fails, non-snapshot backup will be proceeded.",
+						},
+						"objects": &schema.Schema{
+							Type:        schema.TypeList,
+							Optional:    true,
+							Description: "Specifies the objects included in the Protection Group.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"backup_only_pvc": &schema.Schema{
+										Type:        schema.TypeBool,
+										Optional:    true,
+										Description: "Specifies whether to backup pvc and related resources only.",
+									},
+									"exclude_pvcs": &schema.Schema{
+										Type:        schema.TypeList,
+										Optional:    true,
+										Description: "Specifies a list of pvcs to exclude from being protected. This is only applicable to kubernetes.",
+										Elem: &schema.Resource{
+											Schema: map[string]*schema.Schema{
+												"id": &schema.Schema{
+													Type:        schema.TypeInt,
+													Computed:    true,
+													Description: "Specifies the id of the pvc.",
+												},
+												"name": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "Name of the pvc.",
+												},
+											},
+										},
+									},
+									"excluded_resources": &schema.Schema{
+										Type:        schema.TypeList,
+										Optional:    true,
+										Description: "Specifies the resources to exclude during backup.",
+										Elem:        &schema.Schema{Type: schema.TypeString},
+									},
+									"id": &schema.Schema{
+										Type:        schema.TypeInt,
+										Required:    true,
+										Description: "Specifies the id of the object.",
+									},
+									"include_pvcs": &schema.Schema{
+										Type:        schema.TypeList,
+										Optional:    true,
+										Description: "Specifies a list of Pvcs to include in the protection. This is only applicable to kubernetes.",
+										Elem: &schema.Resource{
+											Schema: map[string]*schema.Schema{
+												"id": &schema.Schema{
+													Type:        schema.TypeInt,
+													Computed:    true,
+													Description: "Specifies the id of the pvc.",
+												},
+												"name": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "Name of the pvc.",
+												},
+											},
+										},
+									},
+									"included_resources": &schema.Schema{
+										Type:        schema.TypeList,
+										Optional:    true,
+										Description: "Specifies the resources to include during backup.",
+										Elem:        &schema.Schema{Type: schema.TypeString},
+									},
+									"name": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "Specifies the name of the object.",
+									},
+									"quiesce_groups": &schema.Schema{
+										Type:        schema.TypeList,
+										Optional:    true,
+										Description: "Specifies the quiescing rules are which specified by the user for doing backup.",
+										Elem: &schema.Resource{
+											Schema: map[string]*schema.Schema{
+												"quiesce_mode": &schema.Schema{
+													Type:        schema.TypeString,
+													Required:    true,
+													Description: "Specifies quiesce mode for applying quiesce rules.",
+												},
+												"quiesce_rules": &schema.Schema{
+													Type:        schema.TypeList,
+													Required:    true,
+													Description: "Specifies a list of quiesce rules.",
+													Elem: &schema.Resource{
+														Schema: map[string]*schema.Schema{
+															"pod_selector_labels": &schema.Schema{
+																Type:        schema.TypeList,
+																Optional:    true,
+																Description: "Specifies the labels to select a pod.",
+																Elem: &schema.Resource{
+																	Schema: map[string]*schema.Schema{
+																		"key": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Computed:    true,
+																			Description: "The key of the label, used to identify the label.",
+																		},
+																		"value": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Computed:    true,
+																			Description: "The value associated with the label key.",
+																		},
+																	},
+																},
+															},
+															"post_snapshot_hooks": &schema.Schema{
+																Type:        schema.TypeList,
+																Required:    true,
+																Description: "Specifies the hooks to be applied after taking snapshot.",
+																Elem: &schema.Resource{
+																	Schema: map[string]*schema.Schema{
+																		"commands": &schema.Schema{
+																			Type:        schema.TypeList,
+																			Required:    true,
+																			Description: "Specifies the commands.",
+																			Elem:        &schema.Schema{Type: schema.TypeString},
+																		},
+																		"container": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Optional:    true,
+																			Description: "Specifies the name of the container.",
+																		},
+																		"fail_on_error": &schema.Schema{
+																			Type:        schema.TypeBool,
+																			Optional:    true,
+																			Description: "Specifies whether to fail on error or not.",
+																		},
+																		"timeout": &schema.Schema{
+																			Type:        schema.TypeInt,
+																			Optional:    true,
+																			Description: "Specifies timeout for the operation.",
+																		},
+																	},
+																},
+															},
+															"pre_snapshot_hooks": &schema.Schema{
+																Type:        schema.TypeList,
+																Required:    true,
+																Description: "Specifies the hooks to be applied before taking snapshot.",
+																Elem: &schema.Resource{
+																	Schema: map[string]*schema.Schema{
+																		"commands": &schema.Schema{
+																			Type:        schema.TypeList,
+																			Required:    true,
+																			Description: "Specifies the commands.",
+																			Elem:        &schema.Schema{Type: schema.TypeString},
+																		},
+																		"container": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Optional:    true,
+																			Description: "Specifies the name of the container.",
+																		},
+																		"fail_on_error": &schema.Schema{
+																			Type:        schema.TypeBool,
+																			Optional:    true,
+																			Description: "Specifies whether to fail on error or not.",
+																		},
+																		"timeout": &schema.Schema{
+																			Type:        schema.TypeInt,
+																			Optional:    true,
+																			Description: "Specifies timeout for the operation.",
+																		},
+																	},
+																},
+															},
+														},
+													},
+												},
+											},
+										},
+									},
+								},
+							},
+						},
+						"source_id": &schema.Schema{
+							Type:        schema.TypeInt,
+							Computed:    true,
+							Description: "Specifies the id of the parent of the objects.",
+						},
+						"source_name": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Specifies the name of the parent of the objects.",
+						},
+						"vlan_params": &schema.Schema{
+							Type:        schema.TypeList,
+							MaxItems:    1,
+							Optional:    true,
+							Description: "Specifies VLAN params associated with the backup/restore operation.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"disable_vlan": &schema.Schema{
+										Type:        schema.TypeBool,
+										Optional:    true,
+										Description: "If this is set to true, then even if VLANs are configured on the system, the partition VIPs will be used for the restore.",
+									},
+									"interface_name": &schema.Schema{
+										Type:        schema.TypeString,
+										Optional:    true,
+										Description: "Interface group to use for backup/restore. If this is not specified, primary interface group for the cluster will be used.",
+									},
+									"vlan_id": &schema.Schema{
+										Type:        schema.TypeInt,
+										Optional:    true,
+										Description: "If this is set, then the Cohesity host name or the IP address associated with this VLAN is used for mounting Cohesity's view on the remote host.",
+									},
+								},
+							},
+						},
+						"volume_backup_failure": &schema.Schema{
+							Type:        schema.TypeBool,
+							Optional:    true,
+							Description: "Specifies whether to process with backup if volumes backup fails.",
+						},
+					},
+				},
+			},
 			"cluster_id": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -5174,6 +5513,13 @@ func resourceIbmBackupRecoveryProtectionGroupCreate(context context.Context, d *
 		}
 		createProtectionGroupOptions.SetMssqlParams(mssqlParamsModel)
 	}
+	if _, ok := d.GetOk("kubernetes_params"); ok {
+		kubernetesParamsModel, err := ResourceIbmBackupRecoveryProtectionGroupMapToKubernetesProtectionGroupParams(d.Get("kubernetes_params.0").(map[string]interface{}))
+		if err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_protection_group", "create", "parse-kubernetes_params").GetDiag()
+		}
+		createProtectionGroupOptions.SetKubernetesParams(kubernetesParamsModel)
+	}
 
 	protectionGroupResponse, _, err := backupRecoveryClient.CreateProtectionGroupWithContext(context, createProtectionGroupOptions)
 	if err != nil {
@@ -5380,6 +5726,16 @@ func resourceIbmBackupRecoveryProtectionGroupRead(context context.Context, d *sc
 		if err = d.Set("mssql_params", []map[string]interface{}{mssqlParamsMap}); err != nil {
 			err = fmt.Errorf("Error setting mssql_params: %s", err)
 			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_protection_group", "read", "set-mssql_params").GetDiag()
+		}
+	}
+	if !core.IsNil(protectionGroupResponse.KubernetesParams) {
+		kubernetesParamsMap, err := ResourceIbmBackupRecoveryProtectionGroupKubernetesProtectionGroupParamsToMap(protectionGroupResponse.KubernetesParams)
+		if err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_protection_group", "read", "kubernetes_params-to-map").GetDiag()
+		}
+		if err = d.Set("kubernetes_params", []map[string]interface{}{kubernetesParamsMap}); err != nil {
+			err = fmt.Errorf("Error setting kubernetes_params: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_protection_group", "read", "set-kubernetes_params").GetDiag()
 		}
 	}
 	if !core.IsNil(protectionGroupResponse.ClusterID) {
@@ -5598,6 +5954,13 @@ func resourceIbmBackupRecoveryProtectionGroupUpdate(context context.Context, d *
 			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_protection_group", "update", "parse-mssql_params").GetDiag()
 		}
 		updateProtectionGroupOptions.SetMssqlParams(mssqlParams)
+	}
+	if _, ok := d.GetOk("kubernetes_params"); ok {
+		kubernetesParams, err := ResourceIbmBackupRecoveryProtectionGroupMapToKubernetesProtectionGroupParams(d.Get("kubernetes_params.0").(map[string]interface{}))
+		if err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_protection_group", "update", "parse-kubernetes_params").GetDiag()
+		}
+		updateProtectionGroupOptions.SetKubernetesParams(kubernetesParams)
 	}
 
 	_, _, err = backupRecoveryClient.UpdateProtectionGroupWithContext(context, updateProtectionGroupOptions)
@@ -6412,6 +6775,280 @@ func ResourceIbmBackupRecoveryProtectionGroupMapToMSSQLVolumeProtectionGroupObje
 	return model, nil
 }
 
+func ResourceIbmBackupRecoveryProtectionGroupMapToKubernetesProtectionGroupParams(modelMap map[string]interface{}) (*backuprecoveryv1.KubernetesProtectionGroupParams, error) {
+	model := &backuprecoveryv1.KubernetesProtectionGroupParams{}
+	if modelMap["enable_indexing"] != nil {
+		model.EnableIndexing = core.BoolPtr(modelMap["enable_indexing"].(bool))
+	}
+	if modelMap["exclude_label_ids"] != nil && len(modelMap["exclude_label_ids"].([]interface{})) > 0 && len(modelMap["exclude_label_ids"].([][]interface{})) > 0 {
+		excludeLabelIds := [][]int64{}
+		for _, excludeLabelIdsItemArray := range modelMap["exclude_label_ids"].([][]interface{}) {
+			excludeLabelIdsItemArrayInt64 := make([]int64, len(excludeLabelIdsItemArray))
+			for _, excludeLabelIdsItem := range excludeLabelIdsItemArray {
+				excludeLabelIdsItemArrayInt64 = append(excludeLabelIdsItemArrayInt64, int64(excludeLabelIdsItem.(int)))
+			}
+			excludeLabelIds = append(excludeLabelIds, excludeLabelIdsItemArrayInt64)
+		}
+		model.ExcludeLabelIds = excludeLabelIds
+	}
+	if modelMap["exclude_object_ids"] != nil {
+		excludeObjectIds := []int64{}
+		for _, excludeObjectIdsItem := range modelMap["exclude_object_ids"].([]interface{}) {
+			excludeObjectIds = append(excludeObjectIds, int64(excludeObjectIdsItem.(int)))
+		}
+		model.ExcludeObjectIds = excludeObjectIds
+	}
+	if modelMap["exclude_params"] != nil && len(modelMap["exclude_params"].([]interface{})) > 0 {
+		ExcludeParamsModel, err := ResourceIbmBackupRecoveryProtectionGroupMapToKubernetesFilterParams(modelMap["exclude_params"].([]interface{})[0].(map[string]interface{}))
+		if err != nil {
+			return model, err
+		}
+		model.ExcludeParams = ExcludeParamsModel
+	}
+	if modelMap["include_params"] != nil && len(modelMap["include_params"].([]interface{})) > 0 {
+		IncludeParamsModel, err := ResourceIbmBackupRecoveryProtectionGroupMapToKubernetesFilterParams(modelMap["include_params"].([]interface{})[0].(map[string]interface{}))
+		if err != nil {
+			return model, err
+		}
+		model.IncludeParams = IncludeParamsModel
+	}
+	if modelMap["label_ids"] != nil && len(modelMap["label_ids"].([]interface{})) > 0 && len(modelMap["label_ids"].([][]interface{})) > 0 {
+		labelIds := [][]int64{}
+		for _, labelIdsItem := range modelMap["label_ids"].([][]interface{}) {
+
+			labelIdsItemInt64 := make([]int64, len(labelIdsItem))
+			for _, labelIdsItem := range labelIdsItem {
+				labelIdsItemInt64 = append(labelIdsItemInt64, int64(labelIdsItem.(int)))
+			}
+			labelIds = append(labelIds, labelIdsItemInt64)
+		}
+		model.LabelIds = labelIds
+	}
+	if modelMap["leverage_csi_snapshot"] != nil {
+		model.LeverageCSISnapshot = core.BoolPtr(modelMap["leverage_csi_snapshot"].(bool))
+	}
+	if modelMap["non_snapshot_backup"] != nil {
+		model.NonSnapshotBackup = core.BoolPtr(modelMap["non_snapshot_backup"].(bool))
+	}
+	if modelMap["objects"] != nil {
+		objects := []backuprecoveryv1.KubernetesProtectionGroupObjectParams{}
+		for _, objectsItem := range modelMap["objects"].([]interface{}) {
+			objectsItemModel, err := ResourceIbmBackupRecoveryProtectionGroupMapToKubernetesProtectionGroupObjectParams(objectsItem.(map[string]interface{}))
+			if err != nil {
+				return model, err
+			}
+			objects = append(objects, *objectsItemModel)
+		}
+		model.Objects = objects
+	}
+	if modelMap["source_id"] != nil {
+		model.SourceID = core.Int64Ptr(int64(modelMap["source_id"].(int)))
+	}
+	if modelMap["source_name"] != nil && modelMap["source_name"].(string) != "" {
+		model.SourceName = core.StringPtr(modelMap["source_name"].(string))
+	}
+	if modelMap["vlan_params"] != nil && len(modelMap["vlan_params"].([]interface{})) > 0 {
+		VlanParamsModel, err := ResourceIbmBackupRecoveryProtectionGroupMapToVlanParams(modelMap["vlan_params"].([]interface{})[0].(map[string]interface{}))
+		if err != nil {
+			return model, err
+		}
+		model.VlanParams = VlanParamsModel
+	}
+	if modelMap["volume_backup_failure"] != nil {
+		model.VolumeBackupFailure = core.BoolPtr(modelMap["volume_backup_failure"].(bool))
+	}
+	return model, nil
+}
+
+func ResourceIbmBackupRecoveryProtectionGroupMapToKubernetesFilterParams(modelMap map[string]interface{}) (*backuprecoveryv1.KubernetesFilterParams, error) {
+	model := &backuprecoveryv1.KubernetesFilterParams{}
+	if modelMap["label_combination_method"] != nil && modelMap["label_combination_method"].(string) != "" {
+		model.LabelCombinationMethod = core.StringPtr(modelMap["label_combination_method"].(string))
+	}
+	if modelMap["label_vector"] != nil {
+		labelVector := []backuprecoveryv1.KubernetesLabel{}
+		for _, labelVectorItem := range modelMap["label_vector"].([]interface{}) {
+			labelVectorItemModel, err := ResourceIbmBackupRecoveryProtectionGroupMapToKubernetesLabel(labelVectorItem.(map[string]interface{}))
+			if err != nil {
+				return model, err
+			}
+			labelVector = append(labelVector, *labelVectorItemModel)
+		}
+		model.LabelVector = labelVector
+	}
+	if modelMap["objects"] != nil {
+		objects := []int64{}
+		for _, objectsItem := range modelMap["objects"].([]interface{}) {
+			objects = append(objects, int64(objectsItem.(int)))
+		}
+		model.Objects = objects
+	}
+	return model, nil
+}
+
+func ResourceIbmBackupRecoveryProtectionGroupMapToKubernetesLabel(modelMap map[string]interface{}) (*backuprecoveryv1.KubernetesLabel, error) {
+	model := &backuprecoveryv1.KubernetesLabel{}
+	if modelMap["key"] != nil && modelMap["key"].(string) != "" {
+		model.Key = core.StringPtr(modelMap["key"].(string))
+	}
+	if modelMap["value"] != nil && modelMap["value"].(string) != "" {
+		model.Value = core.StringPtr(modelMap["value"].(string))
+	}
+	return model, nil
+}
+
+func ResourceIbmBackupRecoveryProtectionGroupMapToKubernetesProtectionGroupObjectParams(modelMap map[string]interface{}) (*backuprecoveryv1.KubernetesProtectionGroupObjectParams, error) {
+	model := &backuprecoveryv1.KubernetesProtectionGroupObjectParams{}
+	if modelMap["backup_only_pvc"] != nil {
+		model.BackupOnlyPvc = core.BoolPtr(modelMap["backup_only_pvc"].(bool))
+	}
+	if modelMap["exclude_pvcs"] != nil {
+		excludePvcs := []backuprecoveryv1.KubernetesPvcInfo{}
+		for _, excludePvcsItem := range modelMap["exclude_pvcs"].([]interface{}) {
+			excludePvcsItemModel, err := ResourceIbmBackupRecoveryProtectionGroupMapToKubernetesPvcInfo(excludePvcsItem.(map[string]interface{}))
+			if err != nil {
+				return model, err
+			}
+			excludePvcs = append(excludePvcs, *excludePvcsItemModel)
+		}
+		model.ExcludePvcs = excludePvcs
+	}
+	if modelMap["excluded_resources"] != nil {
+		excludedResources := []string{}
+		for _, excludedResourcesItem := range modelMap["excluded_resources"].([]interface{}) {
+			excludedResources = append(excludedResources, excludedResourcesItem.(string))
+		}
+		model.ExcludedResources = excludedResources
+	}
+	model.ID = core.Int64Ptr(int64(modelMap["id"].(int)))
+	if modelMap["include_pvcs"] != nil {
+		includePvcs := []backuprecoveryv1.KubernetesPvcInfo{}
+		for _, includePvcsItem := range modelMap["include_pvcs"].([]interface{}) {
+			includePvcsItemModel, err := ResourceIbmBackupRecoveryProtectionGroupMapToKubernetesPvcInfo(includePvcsItem.(map[string]interface{}))
+			if err != nil {
+				return model, err
+			}
+			includePvcs = append(includePvcs, *includePvcsItemModel)
+		}
+		model.IncludePvcs = includePvcs
+	}
+	if modelMap["included_resources"] != nil {
+		includedResources := []string{}
+		for _, includedResourcesItem := range modelMap["included_resources"].([]interface{}) {
+			includedResources = append(includedResources, includedResourcesItem.(string))
+		}
+		model.IncludedResources = includedResources
+	}
+	if modelMap["name"] != nil && modelMap["name"].(string) != "" {
+		model.Name = core.StringPtr(modelMap["name"].(string))
+	}
+	if modelMap["quiesce_groups"] != nil {
+		quiesceGroups := []backuprecoveryv1.QuiesceGroup{}
+		for _, quiesceGroupsItem := range modelMap["quiesce_groups"].([]interface{}) {
+			quiesceGroupsItemModel, err := ResourceIbmBackupRecoveryProtectionGroupMapToQuiesceGroup(quiesceGroupsItem.(map[string]interface{}))
+			if err != nil {
+				return model, err
+			}
+			quiesceGroups = append(quiesceGroups, *quiesceGroupsItemModel)
+		}
+		model.QuiesceGroups = quiesceGroups
+	}
+	return model, nil
+}
+
+func ResourceIbmBackupRecoveryProtectionGroupMapToKubernetesPvcInfo(modelMap map[string]interface{}) (*backuprecoveryv1.KubernetesPvcInfo, error) {
+	model := &backuprecoveryv1.KubernetesPvcInfo{}
+	if modelMap["id"] != nil {
+		model.ID = core.Int64Ptr(int64(modelMap["id"].(int)))
+	}
+	if modelMap["name"] != nil && modelMap["name"].(string) != "" {
+		model.Name = core.StringPtr(modelMap["name"].(string))
+	}
+	return model, nil
+}
+
+func ResourceIbmBackupRecoveryProtectionGroupMapToQuiesceGroup(modelMap map[string]interface{}) (*backuprecoveryv1.QuiesceGroup, error) {
+	model := &backuprecoveryv1.QuiesceGroup{}
+	model.QuiesceMode = core.StringPtr(modelMap["quiesce_mode"].(string))
+	quiesceRules := []backuprecoveryv1.QuiesceRule{}
+	for _, quiesceRulesItem := range modelMap["quiesce_rules"].([]interface{}) {
+		quiesceRulesItemModel, err := ResourceIbmBackupRecoveryProtectionGroupMapToQuiesceRule(quiesceRulesItem.(map[string]interface{}))
+		if err != nil {
+			return model, err
+		}
+		quiesceRules = append(quiesceRules, *quiesceRulesItemModel)
+	}
+	model.QuiesceRules = quiesceRules
+	return model, nil
+}
+
+func ResourceIbmBackupRecoveryProtectionGroupMapToQuiesceRule(modelMap map[string]interface{}) (*backuprecoveryv1.QuiesceRule, error) {
+	model := &backuprecoveryv1.QuiesceRule{}
+	if modelMap["pod_selector_labels"] != nil {
+		podSelectorLabels := []backuprecoveryv1.KubernetesLabel{}
+		for _, podSelectorLabelsItem := range modelMap["pod_selector_labels"].([]interface{}) {
+			podSelectorLabelsItemModel, err := ResourceIbmBackupRecoveryProtectionGroupMapToKubernetesLabel(podSelectorLabelsItem.(map[string]interface{}))
+			if err != nil {
+				return model, err
+			}
+			podSelectorLabels = append(podSelectorLabels, *podSelectorLabelsItemModel)
+		}
+		model.PodSelectorLabels = podSelectorLabels
+	}
+	postSnapshotHooks := []backuprecoveryv1.KubernetesHook{}
+	for _, postSnapshotHooksItem := range modelMap["post_snapshot_hooks"].([]interface{}) {
+		postSnapshotHooksItemModel, err := ResourceIbmBackupRecoveryProtectionGroupMapToKubernetesHook(postSnapshotHooksItem.(map[string]interface{}))
+		if err != nil {
+			return model, err
+		}
+		postSnapshotHooks = append(postSnapshotHooks, *postSnapshotHooksItemModel)
+	}
+	model.PostSnapshotHooks = postSnapshotHooks
+	preSnapshotHooks := []backuprecoveryv1.KubernetesHook{}
+	for _, preSnapshotHooksItem := range modelMap["pre_snapshot_hooks"].([]interface{}) {
+		preSnapshotHooksItemModel, err := ResourceIbmBackupRecoveryProtectionGroupMapToKubernetesHook(preSnapshotHooksItem.(map[string]interface{}))
+		if err != nil {
+			return model, err
+		}
+		preSnapshotHooks = append(preSnapshotHooks, *preSnapshotHooksItemModel)
+	}
+	model.PreSnapshotHooks = preSnapshotHooks
+	return model, nil
+}
+
+func ResourceIbmBackupRecoveryProtectionGroupMapToKubernetesHook(modelMap map[string]interface{}) (*backuprecoveryv1.KubernetesHook, error) {
+	model := &backuprecoveryv1.KubernetesHook{}
+	commands := []string{}
+	for _, commandsItem := range modelMap["commands"].([]interface{}) {
+		commands = append(commands, commandsItem.(string))
+	}
+	model.Commands = commands
+	if modelMap["container"] != nil && modelMap["container"].(string) != "" {
+		model.Container = core.StringPtr(modelMap["container"].(string))
+	}
+	if modelMap["fail_on_error"] != nil {
+		model.FailOnError = core.BoolPtr(modelMap["fail_on_error"].(bool))
+	}
+	if modelMap["timeout"] != nil {
+		model.Timeout = core.Int64Ptr(int64(modelMap["timeout"].(int)))
+	}
+	return model, nil
+}
+
+func ResourceIbmBackupRecoveryProtectionGroupMapToVlanParams(modelMap map[string]interface{}) (*backuprecoveryv1.VlanParams, error) {
+	model := &backuprecoveryv1.VlanParams{}
+	if modelMap["disable_vlan"] != nil {
+		model.DisableVlan = core.BoolPtr(modelMap["disable_vlan"].(bool))
+	}
+	if modelMap["interface_name"] != nil && modelMap["interface_name"].(string) != "" {
+		model.InterfaceName = core.StringPtr(modelMap["interface_name"].(string))
+	}
+	if modelMap["vlan_id"] != nil {
+		model.VlanID = core.Int64Ptr(int64(modelMap["vlan_id"].(int)))
+	}
+	return model, nil
+}
+
 func ResourceIbmBackupRecoveryProtectionGroupTimeOfDayToMap(model *backuprecoveryv1.TimeOfDay) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["hour"] = flex.IntValue(model.Hour)
@@ -7103,6 +7740,243 @@ func ResourceIbmBackupRecoveryProtectionGroupMSSQLVolumeProtectionGroupObjectPar
 	}
 	if model.SourceType != nil {
 		modelMap["source_type"] = *model.SourceType
+	}
+	return modelMap, nil
+}
+
+func ResourceIbmBackupRecoveryProtectionGroupKubernetesProtectionGroupParamsToMap(model *backuprecoveryv1.KubernetesProtectionGroupParams) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.EnableIndexing != nil {
+		modelMap["enable_indexing"] = *model.EnableIndexing
+	}
+	if model.ExcludeLabelIds != nil {
+		modelMap["exclude_label_ids"] = model.ExcludeLabelIds
+	}
+	if model.ExcludeObjectIds != nil {
+		modelMap["exclude_object_ids"] = model.ExcludeObjectIds
+	}
+	if model.ExcludeParams != nil {
+		excludeParamsMap, err := ResourceIbmBackupRecoveryProtectionGroupKubernetesFilterParamsToMap(model.ExcludeParams)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["exclude_params"] = []map[string]interface{}{excludeParamsMap}
+	}
+	if model.IncludeParams != nil {
+		includeParamsMap, err := ResourceIbmBackupRecoveryProtectionGroupKubernetesFilterParamsToMap(model.IncludeParams)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["include_params"] = []map[string]interface{}{includeParamsMap}
+	}
+	if model.LabelIds != nil {
+		modelMap["label_ids"] = model.LabelIds
+	}
+	if model.LeverageCSISnapshot != nil {
+		modelMap["leverage_csi_snapshot"] = *model.LeverageCSISnapshot
+	}
+	if model.NonSnapshotBackup != nil {
+		modelMap["non_snapshot_backup"] = *model.NonSnapshotBackup
+	}
+	if model.Objects != nil {
+		objects := []map[string]interface{}{}
+		for _, objectsItem := range model.Objects {
+			objectsItemMap, err := ResourceIbmBackupRecoveryProtectionGroupKubernetesProtectionGroupObjectParamsToMap(&objectsItem) // #nosec G601
+			if err != nil {
+				return modelMap, err
+			}
+			objects = append(objects, objectsItemMap)
+		}
+		modelMap["objects"] = objects
+	}
+	if model.SourceID != nil {
+		modelMap["source_id"] = flex.IntValue(model.SourceID)
+	}
+	if model.SourceName != nil {
+		modelMap["source_name"] = *model.SourceName
+	}
+	if model.VlanParams != nil {
+		vlanParamsMap, err := ResourceIbmBackupRecoveryProtectionGroupVlanParamsToMap(model.VlanParams)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["vlan_params"] = []map[string]interface{}{vlanParamsMap}
+	}
+	if model.VolumeBackupFailure != nil {
+		modelMap["volume_backup_failure"] = *model.VolumeBackupFailure
+	}
+	return modelMap, nil
+}
+
+func ResourceIbmBackupRecoveryProtectionGroupKubernetesFilterParamsToMap(model *backuprecoveryv1.KubernetesFilterParams) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.LabelCombinationMethod != nil {
+		modelMap["label_combination_method"] = *model.LabelCombinationMethod
+	}
+	if model.LabelVector != nil {
+		labelVector := []map[string]interface{}{}
+		for _, labelVectorItem := range model.LabelVector {
+			labelVectorItemMap, err := ResourceIbmBackupRecoveryProtectionGroupKubernetesLabelToMap(&labelVectorItem) // #nosec G601
+			if err != nil {
+				return modelMap, err
+			}
+			labelVector = append(labelVector, labelVectorItemMap)
+		}
+		modelMap["label_vector"] = labelVector
+	}
+	if model.Objects != nil {
+		modelMap["objects"] = model.Objects
+	}
+	return modelMap, nil
+}
+
+func ResourceIbmBackupRecoveryProtectionGroupKubernetesLabelToMap(model *backuprecoveryv1.KubernetesLabel) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.Key != nil {
+		modelMap["key"] = *model.Key
+	}
+	if model.Value != nil {
+		modelMap["value"] = *model.Value
+	}
+	return modelMap, nil
+}
+
+func ResourceIbmBackupRecoveryProtectionGroupKubernetesProtectionGroupObjectParamsToMap(model *backuprecoveryv1.KubernetesProtectionGroupObjectParams) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.BackupOnlyPvc != nil {
+		modelMap["backup_only_pvc"] = *model.BackupOnlyPvc
+	}
+	if model.ExcludePvcs != nil {
+		excludePvcs := []map[string]interface{}{}
+		for _, excludePvcsItem := range model.ExcludePvcs {
+			excludePvcsItemMap, err := ResourceIbmBackupRecoveryProtectionGroupKubernetesPvcInfoToMap(&excludePvcsItem) // #nosec G601
+			if err != nil {
+				return modelMap, err
+			}
+			excludePvcs = append(excludePvcs, excludePvcsItemMap)
+		}
+		modelMap["exclude_pvcs"] = excludePvcs
+	}
+	if model.ExcludedResources != nil {
+		modelMap["excluded_resources"] = model.ExcludedResources
+	}
+	modelMap["id"] = flex.IntValue(model.ID)
+	if model.IncludePvcs != nil {
+		includePvcs := []map[string]interface{}{}
+		for _, includePvcsItem := range model.IncludePvcs {
+			includePvcsItemMap, err := ResourceIbmBackupRecoveryProtectionGroupKubernetesPvcInfoToMap(&includePvcsItem) // #nosec G601
+			if err != nil {
+				return modelMap, err
+			}
+			includePvcs = append(includePvcs, includePvcsItemMap)
+		}
+		modelMap["include_pvcs"] = includePvcs
+	}
+	if model.IncludedResources != nil {
+		modelMap["included_resources"] = model.IncludedResources
+	}
+	if model.Name != nil {
+		modelMap["name"] = *model.Name
+	}
+	if model.QuiesceGroups != nil {
+		quiesceGroups := []map[string]interface{}{}
+		for _, quiesceGroupsItem := range model.QuiesceGroups {
+			quiesceGroupsItemMap, err := ResourceIbmBackupRecoveryProtectionGroupQuiesceGroupToMap(&quiesceGroupsItem) // #nosec G601
+			if err != nil {
+				return modelMap, err
+			}
+			quiesceGroups = append(quiesceGroups, quiesceGroupsItemMap)
+		}
+		modelMap["quiesce_groups"] = quiesceGroups
+	}
+	return modelMap, nil
+}
+
+func ResourceIbmBackupRecoveryProtectionGroupKubernetesPvcInfoToMap(model *backuprecoveryv1.KubernetesPvcInfo) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.ID != nil {
+		modelMap["id"] = flex.IntValue(model.ID)
+	}
+	if model.Name != nil {
+		modelMap["name"] = *model.Name
+	}
+	return modelMap, nil
+}
+
+func ResourceIbmBackupRecoveryProtectionGroupQuiesceGroupToMap(model *backuprecoveryv1.QuiesceGroup) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	modelMap["quiesce_mode"] = *model.QuiesceMode
+	quiesceRules := []map[string]interface{}{}
+	for _, quiesceRulesItem := range model.QuiesceRules {
+		quiesceRulesItemMap, err := ResourceIbmBackupRecoveryProtectionGroupQuiesceRuleToMap(&quiesceRulesItem) // #nosec G601
+		if err != nil {
+			return modelMap, err
+		}
+		quiesceRules = append(quiesceRules, quiesceRulesItemMap)
+	}
+	modelMap["quiesce_rules"] = quiesceRules
+	return modelMap, nil
+}
+
+func ResourceIbmBackupRecoveryProtectionGroupQuiesceRuleToMap(model *backuprecoveryv1.QuiesceRule) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.PodSelectorLabels != nil {
+		podSelectorLabels := []map[string]interface{}{}
+		for _, podSelectorLabelsItem := range model.PodSelectorLabels {
+			podSelectorLabelsItemMap, err := ResourceIbmBackupRecoveryProtectionGroupKubernetesLabelToMap(&podSelectorLabelsItem) // #nosec G601
+			if err != nil {
+				return modelMap, err
+			}
+			podSelectorLabels = append(podSelectorLabels, podSelectorLabelsItemMap)
+		}
+		modelMap["pod_selector_labels"] = podSelectorLabels
+	}
+	postSnapshotHooks := []map[string]interface{}{}
+	for _, postSnapshotHooksItem := range model.PostSnapshotHooks {
+		postSnapshotHooksItemMap, err := ResourceIbmBackupRecoveryProtectionGroupKubernetesHookToMap(&postSnapshotHooksItem) // #nosec G601
+		if err != nil {
+			return modelMap, err
+		}
+		postSnapshotHooks = append(postSnapshotHooks, postSnapshotHooksItemMap)
+	}
+	modelMap["post_snapshot_hooks"] = postSnapshotHooks
+	preSnapshotHooks := []map[string]interface{}{}
+	for _, preSnapshotHooksItem := range model.PreSnapshotHooks {
+		preSnapshotHooksItemMap, err := ResourceIbmBackupRecoveryProtectionGroupKubernetesHookToMap(&preSnapshotHooksItem) // #nosec G601
+		if err != nil {
+			return modelMap, err
+		}
+		preSnapshotHooks = append(preSnapshotHooks, preSnapshotHooksItemMap)
+	}
+	modelMap["pre_snapshot_hooks"] = preSnapshotHooks
+	return modelMap, nil
+}
+
+func ResourceIbmBackupRecoveryProtectionGroupKubernetesHookToMap(model *backuprecoveryv1.KubernetesHook) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	modelMap["commands"] = model.Commands
+	if model.Container != nil {
+		modelMap["container"] = *model.Container
+	}
+	if model.FailOnError != nil {
+		modelMap["fail_on_error"] = *model.FailOnError
+	}
+	if model.Timeout != nil {
+		modelMap["timeout"] = flex.IntValue(model.Timeout)
+	}
+	return modelMap, nil
+}
+
+func ResourceIbmBackupRecoveryProtectionGroupVlanParamsToMap(model *backuprecoveryv1.VlanParams) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.DisableVlan != nil {
+		modelMap["disable_vlan"] = *model.DisableVlan
+	}
+	if model.InterfaceName != nil {
+		modelMap["interface_name"] = *model.InterfaceName
+	}
+	if model.VlanID != nil {
+		modelMap["vlan_id"] = flex.IntValue(model.VlanID)
 	}
 	return modelMap, nil
 }

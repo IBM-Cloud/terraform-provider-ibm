@@ -266,7 +266,6 @@ func Provider() *schema.Provider {
 			"ibm_config_aggregator_resource_collection_status": configurationaggregator.AddConfigurationAggregatorInstanceFields(configurationaggregator.DataSourceIbmConfigAggregatorResourceCollectionStatus()),
 
 			// // BackupAndRecovery
-			// // BackupAndRecovery
 			"ibm_backup_recovery_agent_upgrade_tasks":      backuprecovery.AddInstanceFields(backuprecovery.DataSourceIbmBackupRecoveryAgentUpgradeTasks()),
 			"ibm_backup_recovery_download_agent":           backuprecovery.AddInstanceFields(backuprecovery.DataSourceIbmBackupRecoveryDownloadAgent()),
 			"ibm_backup_recovery_search_indexed_object":    backuprecovery.AddInstanceFields(backuprecovery.DataSourceIbmBackupRecoverySearchIndexedObject()),
@@ -291,6 +290,7 @@ func Provider() *schema.Provider {
 			"ibm_backup_recovery_download_indexed_files":   backuprecovery.AddInstanceFields(backuprecovery.DataSourceIbmBackupRecoveryDownloadIndexedFiles()),
 			"ibm_backup_recovery_protection_sources":       backuprecovery.AddInstanceFields(backuprecovery.DataSourceIbmBackupRecoveryProtectionSources()),
 			"ibm_backup_recovery_connector_get_users":      backuprecovery.AddInstanceFields(backuprecovery.DataSourceIbmBackupRecoveryConnectorGetUsers()),
+			"ibm_backup_recovery_registration_info":        backuprecovery.AddInstanceFields(backuprecovery.DataSourceIbmBackupRecoveryRegistrationInfo()),
 			// // AppID
 			"ibm_appid_action_url":               appid.DataSourceIBMAppIDActionURL(),
 			"ibm_appid_apm":                      appid.DataSourceIBMAppIDAPM(),

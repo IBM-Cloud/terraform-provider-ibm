@@ -79,6 +79,53 @@ func testAccCheckIbmBackupRecoveryConfigBasic(objectId int, name, snapshotEnviro
 	`, tenantId, objectId, tenantId, snapshotEnvironment, name, recoveryAction, targetenvironment, absolutePath, objectId, restoreEntityType, absolutePath)
 }
 
+func TestAccIbmBackupRecoveryKubernetesBasic(t *testing.T) {
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { acc.TestAccPreCheck(t) },
+		Providers: acc.TestAccProviders,
+		Steps: []resource.TestStep{
+			resource.TestStep{
+				Destroy: false,
+				Config:  testAccCheckIbmBackupRecoveryKubernetesConfigBasic(),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("ibm_backup_recovery.baas_recovery_instance", "name", "terra-k8s-recovery-1"),
+				),
+			},
+		},
+	})
+}
+
+func testAccCheckIbmBackupRecoveryKubernetesConfigBasic() string {
+	return fmt.Sprintf(`
+
+	 resource "ibm_backup_recovery" "baas_recovery_instance" {
+		 	x_ibm_tenant_id = "wkk1yqrdce/"
+		 	snapshot_environment = "kKubernetes"
+		 	name = "terra-k8s-recovery-1"
+		 	kubernetes_params {
+		 		recovery_action = "RecoverNamespaces"
+		 		recover_namespace_params {
+		 			target_environment = "kKubernetes"
+		 			kubernetes_target_params {
+		 				objects {
+		 					snapshot_id = "eyJhX2NsdXN0ZXJJZCI6ODMwNTE4NDI0MTIzMjg0MiwiYl9jbHVzdGVySW5jYXJuYXRpb25JZCI6MTc1NzMzMTc4MTI1NCwiY19qb2JJZCI6MjQ4MDM2LCJlX2pvYkluc3RhbmNlSWQiOjI0ODA1MywiZl9ydW5TdGFydFRpbWVVc2VjcyI6MTc2MDI3MDk2NjI2ODg4MywiZ19vYmplY3RJZCI6MzEyMCwiaF92YXVsdElkIjoxMjQzNDU3fQ=="
+		 				}
+		 				rename_recovered_namespaces_params {
+		 				  prefix = "0-copy-sdk-workload"
+		 				}
+		 				recovery_target_config {
+		 					recover_to_new_source = false
+		 				}
+		 			}
+		 		}
+		 	}
+		 }
+
+
+	`)
+}
+
 func testAccCheckIbmBackupRecoveryExists(n string) resource.TestCheckFunc {
 
 	return func(s *terraform.State) error {
