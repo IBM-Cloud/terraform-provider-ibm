@@ -47,7 +47,7 @@ func ResourceIbmLogsAlertDefinition() *schema.Resource {
 			"enabled": &schema.Schema{
 				Type:        schema.TypeBool,
 				Optional:    true,
-				Description: "Whether the alert is currently active and monitoring.",
+				Description: "Whether the alert is currently active and monitoring. If true, alert is active.",
 			},
 			"priority": &schema.Schema{
 				Type:         schema.TypeString,
@@ -79,12 +79,12 @@ func ResourceIbmLogsAlertDefinition() *schema.Resource {
 									"hours": &schema.Schema{
 										Type:        schema.TypeInt,
 										Optional:    true,
-										Description: "Hours of day in 24 hour format. Should be from 0 to 23.",
+										Description: "The hour of the day in 24-hour format. Must be an integer between 0 and 23.",
 									},
 									"minutes": &schema.Schema{
 										Type:        schema.TypeInt,
 										Optional:    true,
-										Description: "Minutes of hour of day. Must be from 0 to 59.",
+										Description: "Minute of the hour of the day. Must be an integer between 0 and 59.",
 									},
 								},
 							},
@@ -100,12 +100,12 @@ func ResourceIbmLogsAlertDefinition() *schema.Resource {
 									"hours": &schema.Schema{
 										Type:        schema.TypeInt,
 										Optional:    true,
-										Description: "Hours of day in 24 hour format. Should be from 0 to 23.",
+										Description: "The hour of the day in 24-hour format. Must be an integer between 0 and 23.",
 									},
 									"minutes": &schema.Schema{
 										Type:        schema.TypeInt,
 										Optional:    true,
-										Description: "Minutes of hour of day. Must be from 0 to 59.",
+										Description: "Minute of the hour of the day. Must be an integer between 0 and 59.",
 									},
 								},
 							},
@@ -136,12 +136,12 @@ func ResourceIbmLogsAlertDefinition() *schema.Resource {
 						"notify_on": &schema.Schema{
 							Type:        schema.TypeString,
 							Optional:    true,
-							Description: "The condition to notify about the alert.",
+							Description: "Indicate if the alert should be triggered or triggered and resolved.",
 						},
 						"minutes": &schema.Schema{
 							Type:        schema.TypeInt,
 							Optional:    true,
-							Description: "The time in minutes before the alert can be retriggered.",
+							Description: "The time in minutes before the alert can be triggered again.",
 						},
 					},
 				},
@@ -155,20 +155,20 @@ func ResourceIbmLogsAlertDefinition() *schema.Resource {
 					Schema: map[string]*schema.Schema{
 						"group_by_keys": &schema.Schema{
 							Type:        schema.TypeList,
-							Required:    true,
-							Description: "The keys to group the alerts by.",
+							Optional:    true,
+							Description: "Group the alerts by these keys.",
 							Elem:        &schema.Schema{Type: schema.TypeString},
 						},
 						"webhooks": &schema.Schema{
 							Type:        schema.TypeList,
-							Required:    true,
+							Optional:    true,
 							Description: "The settings for webhooks associated with the alert definition.",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"notify_on": &schema.Schema{
 										Type:        schema.TypeString,
 										Optional:    true,
-										Description: "The condition to notify about the alert.",
+										Description: "Indicate if the alert should be triggered or triggered and resolved.",
 									},
 									"integration": &schema.Schema{
 										Type:        schema.TypeList,
@@ -248,14 +248,14 @@ func ResourceIbmLogsAlertDefinition() *schema.Resource {
 														Schema: map[string]*schema.Schema{
 															"application_name": &schema.Schema{
 																Type:        schema.TypeList,
-																Required:    true,
+																Optional:    true,
 																Description: "Filter by application names.",
 																Elem: &schema.Resource{
 																	Schema: map[string]*schema.Schema{
 																		"value": &schema.Schema{
 																			Type:        schema.TypeString,
 																			Optional:    true,
-																			Description: "/ The value of the label to filter by.",
+																			Description: "The value used to filter the label.",
 																		},
 																		"operation": &schema.Schema{
 																			Type:        schema.TypeString,
@@ -267,14 +267,14 @@ func ResourceIbmLogsAlertDefinition() *schema.Resource {
 															},
 															"subsystem_name": &schema.Schema{
 																Type:        schema.TypeList,
-																Required:    true,
+																Optional:    true,
 																Description: "Filter by subsystem names.",
 																Elem: &schema.Resource{
 																	Schema: map[string]*schema.Schema{
 																		"value": &schema.Schema{
 																			Type:        schema.TypeString,
 																			Optional:    true,
-																			Description: "/ The value of the label to filter by.",
+																			Description: "The value used to filter the label.",
 																		},
 																		"operation": &schema.Schema{
 																			Type:        schema.TypeString,
@@ -286,7 +286,7 @@ func ResourceIbmLogsAlertDefinition() *schema.Resource {
 															},
 															"severities": &schema.Schema{
 																Type:        schema.TypeList,
-																Required:    true,
+																Optional:    true,
 																Description: "Filter by log severities.",
 																Elem:        &schema.Schema{Type: schema.TypeString},
 															},
@@ -302,7 +302,7 @@ func ResourceIbmLogsAlertDefinition() *schema.Resource {
 						"notification_payload_filter": &schema.Schema{
 							Type:        schema.TypeList,
 							Optional:    true,
-							Description: "The filter to specify which fields to include in the notification payload.",
+							Description: "The filter to specify which fields are included in the notification payload.",
 							Elem:        &schema.Schema{Type: schema.TypeString},
 						},
 					},
@@ -312,7 +312,7 @@ func ResourceIbmLogsAlertDefinition() *schema.Resource {
 				Type:        schema.TypeList,
 				MaxItems:    1,
 				Optional:    true,
-				Description: "Configuration for log-based threshold alerts.",
+				Description: "Configuration for the log-based threshold alerts.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"logs_filter": &schema.Schema{
@@ -343,14 +343,14 @@ func ResourceIbmLogsAlertDefinition() *schema.Resource {
 														Schema: map[string]*schema.Schema{
 															"application_name": &schema.Schema{
 																Type:        schema.TypeList,
-																Required:    true,
+																Optional:    true,
 																Description: "Filter by application names.",
 																Elem: &schema.Resource{
 																	Schema: map[string]*schema.Schema{
 																		"value": &schema.Schema{
 																			Type:        schema.TypeString,
 																			Optional:    true,
-																			Description: "/ The value of the label to filter by.",
+																			Description: "The value used to filter the label.",
 																		},
 																		"operation": &schema.Schema{
 																			Type:        schema.TypeString,
@@ -362,14 +362,14 @@ func ResourceIbmLogsAlertDefinition() *schema.Resource {
 															},
 															"subsystem_name": &schema.Schema{
 																Type:        schema.TypeList,
-																Required:    true,
+																Optional:    true,
 																Description: "Filter by subsystem names.",
 																Elem: &schema.Resource{
 																	Schema: map[string]*schema.Schema{
 																		"value": &schema.Schema{
 																			Type:        schema.TypeString,
 																			Optional:    true,
-																			Description: "/ The value of the label to filter by.",
+																			Description: "The value used to filter the label.",
 																		},
 																		"operation": &schema.Schema{
 																			Type:        schema.TypeString,
@@ -381,7 +381,7 @@ func ResourceIbmLogsAlertDefinition() *schema.Resource {
 															},
 															"severities": &schema.Schema{
 																Type:        schema.TypeList,
-																Required:    true,
+																Optional:    true,
 																Description: "Filter by log severities.",
 																Elem:        &schema.Schema{Type: schema.TypeString},
 															},
@@ -404,7 +404,7 @@ func ResourceIbmLogsAlertDefinition() *schema.Resource {
 									"trigger_undetected_values": &schema.Schema{
 										Type:        schema.TypeBool,
 										Required:    true,
-										Description: "Should trigger the alert when undetected values are detected.",
+										Description: "Should trigger the alert when undetected values are detected. If true, alert is triggered.",
 									},
 									"auto_retire_timeframe": &schema.Schema{
 										Type:        schema.TypeString,
@@ -417,7 +417,7 @@ func ResourceIbmLogsAlertDefinition() *schema.Resource {
 						"rules": &schema.Schema{
 							Type:        schema.TypeList,
 							Required:    true,
-							Description: "The rules for the threshold alert.",
+							Description: "The condition rules for the threshold alert.",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"condition": &schema.Schema{
@@ -444,7 +444,7 @@ func ResourceIbmLogsAlertDefinition() *schema.Resource {
 															"logs_time_window_specific_value": &schema.Schema{
 																Type:        schema.TypeString,
 																Required:    true,
-																Description: "A time window defined by a specific value.",
+																Description: "The time window defined for an alert to be triggered.",
 															},
 														},
 													},
@@ -474,12 +474,12 @@ func ResourceIbmLogsAlertDefinition() *schema.Resource {
 						"condition_type": &schema.Schema{
 							Type:        schema.TypeString,
 							Required:    true,
-							Description: "The type of condition for the alert.",
+							Description: "The condition type for the alert.",
 						},
 						"notification_payload_filter": &schema.Schema{
 							Type:        schema.TypeList,
 							Optional:    true,
-							Description: "The filter to specify which fields to include in the notification payload.",
+							Description: "The filter to specify which fields are included in the notification payload.",
 							Elem:        &schema.Schema{Type: schema.TypeString},
 						},
 						"evaluation_delay_ms": &schema.Schema{
@@ -494,7 +494,7 @@ func ResourceIbmLogsAlertDefinition() *schema.Resource {
 				Type:        schema.TypeList,
 				MaxItems:    1,
 				Optional:    true,
-				Description: "Configuration for log-based ratio threshold alerts.",
+				Description: "Configuration for the log-based ratio threshold alerts.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"numerator": &schema.Schema{
@@ -526,14 +526,14 @@ func ResourceIbmLogsAlertDefinition() *schema.Resource {
 														Schema: map[string]*schema.Schema{
 															"application_name": &schema.Schema{
 																Type:        schema.TypeList,
-																Required:    true,
+																Optional:    true,
 																Description: "Filter by application names.",
 																Elem: &schema.Resource{
 																	Schema: map[string]*schema.Schema{
 																		"value": &schema.Schema{
 																			Type:        schema.TypeString,
 																			Optional:    true,
-																			Description: "/ The value of the label to filter by.",
+																			Description: "The value used to filter the label.",
 																		},
 																		"operation": &schema.Schema{
 																			Type:        schema.TypeString,
@@ -545,14 +545,14 @@ func ResourceIbmLogsAlertDefinition() *schema.Resource {
 															},
 															"subsystem_name": &schema.Schema{
 																Type:        schema.TypeList,
-																Required:    true,
+																Optional:    true,
 																Description: "Filter by subsystem names.",
 																Elem: &schema.Resource{
 																	Schema: map[string]*schema.Schema{
 																		"value": &schema.Schema{
 																			Type:        schema.TypeString,
 																			Optional:    true,
-																			Description: "/ The value of the label to filter by.",
+																			Description: "The value used to filter the label.",
 																		},
 																		"operation": &schema.Schema{
 																			Type:        schema.TypeString,
@@ -564,7 +564,7 @@ func ResourceIbmLogsAlertDefinition() *schema.Resource {
 															},
 															"severities": &schema.Schema{
 																Type:        schema.TypeList,
-																Required:    true,
+																Optional:    true,
 																Description: "Filter by log severities.",
 																Elem:        &schema.Schema{Type: schema.TypeString},
 															},
@@ -611,14 +611,14 @@ func ResourceIbmLogsAlertDefinition() *schema.Resource {
 														Schema: map[string]*schema.Schema{
 															"application_name": &schema.Schema{
 																Type:        schema.TypeList,
-																Required:    true,
+																Optional:    true,
 																Description: "Filter by application names.",
 																Elem: &schema.Resource{
 																	Schema: map[string]*schema.Schema{
 																		"value": &schema.Schema{
 																			Type:        schema.TypeString,
 																			Optional:    true,
-																			Description: "/ The value of the label to filter by.",
+																			Description: "The value used to filter the label.",
 																		},
 																		"operation": &schema.Schema{
 																			Type:        schema.TypeString,
@@ -630,14 +630,14 @@ func ResourceIbmLogsAlertDefinition() *schema.Resource {
 															},
 															"subsystem_name": &schema.Schema{
 																Type:        schema.TypeList,
-																Required:    true,
+																Optional:    true,
 																Description: "Filter by subsystem names.",
 																Elem: &schema.Resource{
 																	Schema: map[string]*schema.Schema{
 																		"value": &schema.Schema{
 																			Type:        schema.TypeString,
 																			Optional:    true,
-																			Description: "/ The value of the label to filter by.",
+																			Description: "The value used to filter the label.",
 																		},
 																		"operation": &schema.Schema{
 																			Type:        schema.TypeString,
@@ -649,7 +649,7 @@ func ResourceIbmLogsAlertDefinition() *schema.Resource {
 															},
 															"severities": &schema.Schema{
 																Type:        schema.TypeList,
-																Required:    true,
+																Optional:    true,
 																Description: "Filter by log severities.",
 																Elem:        &schema.Schema{Type: schema.TypeString},
 															},
@@ -670,7 +670,7 @@ func ResourceIbmLogsAlertDefinition() *schema.Resource {
 						"rules": &schema.Schema{
 							Type:        schema.TypeList,
 							Required:    true,
-							Description: "The rules for the ratio alert.",
+							Description: "The condition rules for the ratio alert.",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"condition": &schema.Schema{
@@ -727,12 +727,12 @@ func ResourceIbmLogsAlertDefinition() *schema.Resource {
 						"condition_type": &schema.Schema{
 							Type:        schema.TypeString,
 							Required:    true,
-							Description: "The type of condition for the alert.",
+							Description: "The condition type for the alert.",
 						},
 						"notification_payload_filter": &schema.Schema{
 							Type:        schema.TypeList,
 							Optional:    true,
-							Description: "The filter to specify which fields to include in the notification payload.",
+							Description: "The filter to specify which fields are included in the notification payload.",
 							Elem:        &schema.Schema{Type: schema.TypeString},
 						},
 						"group_by_for": &schema.Schema{
@@ -750,7 +750,7 @@ func ResourceIbmLogsAlertDefinition() *schema.Resource {
 									"trigger_undetected_values": &schema.Schema{
 										Type:        schema.TypeBool,
 										Required:    true,
-										Description: "Should trigger the alert when undetected values are detected.",
+										Description: "Should trigger the alert when undetected values are detected. If true, alert is triggered.",
 									},
 									"auto_retire_timeframe": &schema.Schema{
 										Type:        schema.TypeString,
@@ -763,7 +763,7 @@ func ResourceIbmLogsAlertDefinition() *schema.Resource {
 						"ignore_infinity": &schema.Schema{
 							Type:        schema.TypeBool,
 							Optional:    true,
-							Description: "The configuration for ignoring infinity values in the ratio.",
+							Description: "Determine whether to ignore an infinity result or not. If true, alert is not triggered. When the value of second query is 0, the result of the ratio will be infinity.",
 						},
 						"evaluation_delay_ms": &schema.Schema{
 							Type:        schema.TypeInt,
@@ -808,14 +808,14 @@ func ResourceIbmLogsAlertDefinition() *schema.Resource {
 														Schema: map[string]*schema.Schema{
 															"application_name": &schema.Schema{
 																Type:        schema.TypeList,
-																Required:    true,
+																Optional:    true,
 																Description: "Filter by application names.",
 																Elem: &schema.Resource{
 																	Schema: map[string]*schema.Schema{
 																		"value": &schema.Schema{
 																			Type:        schema.TypeString,
 																			Optional:    true,
-																			Description: "/ The value of the label to filter by.",
+																			Description: "The value used to filter the label.",
 																		},
 																		"operation": &schema.Schema{
 																			Type:        schema.TypeString,
@@ -827,14 +827,14 @@ func ResourceIbmLogsAlertDefinition() *schema.Resource {
 															},
 															"subsystem_name": &schema.Schema{
 																Type:        schema.TypeList,
-																Required:    true,
+																Optional:    true,
 																Description: "Filter by subsystem names.",
 																Elem: &schema.Resource{
 																	Schema: map[string]*schema.Schema{
 																		"value": &schema.Schema{
 																			Type:        schema.TypeString,
 																			Optional:    true,
-																			Description: "/ The value of the label to filter by.",
+																			Description: "The value used to filter the label.",
 																		},
 																		"operation": &schema.Schema{
 																			Type:        schema.TypeString,
@@ -846,7 +846,7 @@ func ResourceIbmLogsAlertDefinition() *schema.Resource {
 															},
 															"severities": &schema.Schema{
 																Type:        schema.TypeList,
-																Required:    true,
+																Optional:    true,
 																Description: "Filter by log severities.",
 																Elem:        &schema.Schema{Type: schema.TypeString},
 															},
@@ -862,7 +862,7 @@ func ResourceIbmLogsAlertDefinition() *schema.Resource {
 						"rules": &schema.Schema{
 							Type:        schema.TypeList,
 							Required:    true,
-							Description: "The rules for the time-relative alert.",
+							Description: "The condition rules for the time-relative alert.",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"condition": &schema.Schema{
@@ -918,7 +918,7 @@ func ResourceIbmLogsAlertDefinition() *schema.Resource {
 						"notification_payload_filter": &schema.Schema{
 							Type:        schema.TypeList,
 							Optional:    true,
-							Description: "The filter to specify which fields to include in the notification payload.",
+							Description: "The filter to specify which fields are included in the notification payload.",
 							Elem:        &schema.Schema{Type: schema.TypeString},
 						},
 						"undetected_values_management": &schema.Schema{
@@ -931,7 +931,7 @@ func ResourceIbmLogsAlertDefinition() *schema.Resource {
 									"trigger_undetected_values": &schema.Schema{
 										Type:        schema.TypeBool,
 										Required:    true,
-										Description: "Should trigger the alert when undetected values are detected.",
+										Description: "Should trigger the alert when undetected values are detected. If true, alert is triggered.",
 									},
 									"auto_retire_timeframe": &schema.Schema{
 										Type:        schema.TypeString,
@@ -975,7 +975,7 @@ func ResourceIbmLogsAlertDefinition() *schema.Resource {
 						"rules": &schema.Schema{
 							Type:        schema.TypeList,
 							Required:    true,
-							Description: "The rules for the metric threshold alert.",
+							Description: "The condition rules for the metric threshold alert.",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"condition": &schema.Schema{
@@ -1054,7 +1054,7 @@ func ResourceIbmLogsAlertDefinition() *schema.Resource {
 									"trigger_undetected_values": &schema.Schema{
 										Type:        schema.TypeBool,
 										Required:    true,
-										Description: "Should trigger the alert when undetected values are detected.",
+										Description: "Should trigger the alert when undetected values are detected. If true, alert is triggered.",
 									},
 									"auto_retire_timeframe": &schema.Schema{
 										Type:        schema.TypeString,
@@ -1069,7 +1069,7 @@ func ResourceIbmLogsAlertDefinition() *schema.Resource {
 							MinItems:    1,
 							MaxItems:    1,
 							Required:    true,
-							Description: "Configuration for handling missing values in the alert.",
+							Description: "Configuration for handling missing values in the alert. Only one of `replace_with_zero` or `min_non_null_value_pct` is supported.",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"replace_with_zero": &schema.Schema{
@@ -1097,13 +1097,13 @@ func ResourceIbmLogsAlertDefinition() *schema.Resource {
 				Type:        schema.TypeList,
 				MaxItems:    1,
 				Optional:    true,
-				Description: "Configuration for flow-based alerts.",
+				Description: "Configuration for flow alerts.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"stages": &schema.Schema{
 							Type:        schema.TypeList,
 							Required:    true,
-							Description: "The stages of the flow alert.",
+							Description: "The definition of stages of the flow alert.",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"timeframe_ms": &schema.Schema{
@@ -1121,13 +1121,13 @@ func ResourceIbmLogsAlertDefinition() *schema.Resource {
 										MinItems:    1,
 										MaxItems:    1,
 										Required:    true,
-										Description: "Flow stages groups.",
+										Description: "The definition of groups in the flow alert.",
 										Elem: &schema.Resource{
 											Schema: map[string]*schema.Schema{
 												"groups": &schema.Schema{
 													Type:        schema.TypeList,
 													Required:    true,
-													Description: "The groups of stages in the flow alert.",
+													Description: "The definition of an array of groups with alerts and logical operation among those alerts in the flow alert.",
 													Elem: &schema.Resource{
 														Schema: map[string]*schema.Schema{
 															"alert_defs": &schema.Schema{
@@ -1144,7 +1144,7 @@ func ResourceIbmLogsAlertDefinition() *schema.Resource {
 																		"not": &schema.Schema{
 																			Type:        schema.TypeBool,
 																			Optional:    true,
-																			Description: "Whether to negate the alert definition or not.",
+																			Description: "Whether or not to negate the alert definition. If true, flow checks for the negate condition of the respective alert.",
 																		},
 																	},
 																},
@@ -1180,7 +1180,7 @@ func ResourceIbmLogsAlertDefinition() *schema.Resource {
 				Type:        schema.TypeList,
 				MaxItems:    1,
 				Optional:    true,
-				Description: "Configuration for log-based anomaly detection alerts.",
+				Description: "Configuration for the log-based anomaly detection alerts.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"logs_filter": &schema.Schema{
@@ -1211,14 +1211,14 @@ func ResourceIbmLogsAlertDefinition() *schema.Resource {
 														Schema: map[string]*schema.Schema{
 															"application_name": &schema.Schema{
 																Type:        schema.TypeList,
-																Required:    true,
+																Optional:    true,
 																Description: "Filter by application names.",
 																Elem: &schema.Resource{
 																	Schema: map[string]*schema.Schema{
 																		"value": &schema.Schema{
 																			Type:        schema.TypeString,
 																			Optional:    true,
-																			Description: "/ The value of the label to filter by.",
+																			Description: "The value used to filter the label.",
 																		},
 																		"operation": &schema.Schema{
 																			Type:        schema.TypeString,
@@ -1230,14 +1230,14 @@ func ResourceIbmLogsAlertDefinition() *schema.Resource {
 															},
 															"subsystem_name": &schema.Schema{
 																Type:        schema.TypeList,
-																Required:    true,
+																Optional:    true,
 																Description: "Filter by subsystem names.",
 																Elem: &schema.Resource{
 																	Schema: map[string]*schema.Schema{
 																		"value": &schema.Schema{
 																			Type:        schema.TypeString,
 																			Optional:    true,
-																			Description: "/ The value of the label to filter by.",
+																			Description: "The value used to filter the label.",
 																		},
 																		"operation": &schema.Schema{
 																			Type:        schema.TypeString,
@@ -1249,7 +1249,7 @@ func ResourceIbmLogsAlertDefinition() *schema.Resource {
 															},
 															"severities": &schema.Schema{
 																Type:        schema.TypeList,
-																Required:    true,
+																Optional:    true,
 																Description: "Filter by log severities.",
 																Elem:        &schema.Schema{Type: schema.TypeString},
 															},
@@ -1265,7 +1265,7 @@ func ResourceIbmLogsAlertDefinition() *schema.Resource {
 						"rules": &schema.Schema{
 							Type:        schema.TypeList,
 							Required:    true,
-							Description: "The rules for the log anomaly alert.",
+							Description: "The condition rules for the log anomaly alert.",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"condition": &schema.Schema{
@@ -1292,7 +1292,7 @@ func ResourceIbmLogsAlertDefinition() *schema.Resource {
 															"logs_time_window_specific_value": &schema.Schema{
 																Type:        schema.TypeString,
 																Required:    true,
-																Description: "A time window defined by a specific value.",
+																Description: "The time window defined for an alert to be triggered.",
 															},
 														},
 													},
@@ -1306,12 +1306,12 @@ func ResourceIbmLogsAlertDefinition() *schema.Resource {
 						"condition_type": &schema.Schema{
 							Type:        schema.TypeString,
 							Required:    true,
-							Description: "The type of condition for the alert.",
+							Description: "The condition type for the alert.",
 						},
 						"notification_payload_filter": &schema.Schema{
 							Type:        schema.TypeList,
 							Optional:    true,
-							Description: "The notification payload filter to specify which fields to include in the notification.",
+							Description: "The notification payload filter to specify which fields are included in the notification.",
 							Elem:        &schema.Schema{Type: schema.TypeString},
 						},
 						"evaluation_delay_ms": &schema.Schema{
@@ -1329,7 +1329,7 @@ func ResourceIbmLogsAlertDefinition() *schema.Resource {
 									"percentage_of_deviation": &schema.Schema{
 										Type:        schema.TypeFloat,
 										Optional:    true,
-										Description: "The percentage of deviation from the baseline for triggering the alert.",
+										Description: "The percentage of deviation from the baseline when the alert is triggered.",
 									},
 								},
 							},
@@ -1363,7 +1363,7 @@ func ResourceIbmLogsAlertDefinition() *schema.Resource {
 						"rules": &schema.Schema{
 							Type:        schema.TypeList,
 							Required:    true,
-							Description: "The rules for the metric anomaly alert.",
+							Description: "The condition rules for the metric anomaly alert.",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"condition": &schema.Schema{
@@ -1419,7 +1419,7 @@ func ResourceIbmLogsAlertDefinition() *schema.Resource {
 						"condition_type": &schema.Schema{
 							Type:        schema.TypeString,
 							Required:    true,
-							Description: "The type of condition for the alert.",
+							Description: "The condition type for the alert.",
 						},
 						"evaluation_delay_ms": &schema.Schema{
 							Type:        schema.TypeInt,
@@ -1436,7 +1436,7 @@ func ResourceIbmLogsAlertDefinition() *schema.Resource {
 									"percentage_of_deviation": &schema.Schema{
 										Type:        schema.TypeFloat,
 										Optional:    true,
-										Description: "The percentage of deviation from the baseline for triggering the alert.",
+										Description: "The percentage of deviation from the baseline when the alert is triggered.",
 									},
 								},
 							},
@@ -1479,14 +1479,14 @@ func ResourceIbmLogsAlertDefinition() *schema.Resource {
 														Schema: map[string]*schema.Schema{
 															"application_name": &schema.Schema{
 																Type:        schema.TypeList,
-																Required:    true,
+																Optional:    true,
 																Description: "Filter by application names.",
 																Elem: &schema.Resource{
 																	Schema: map[string]*schema.Schema{
 																		"value": &schema.Schema{
 																			Type:        schema.TypeString,
 																			Optional:    true,
-																			Description: "/ The value of the label to filter by.",
+																			Description: "The value used to filter the label.",
 																		},
 																		"operation": &schema.Schema{
 																			Type:        schema.TypeString,
@@ -1498,14 +1498,14 @@ func ResourceIbmLogsAlertDefinition() *schema.Resource {
 															},
 															"subsystem_name": &schema.Schema{
 																Type:        schema.TypeList,
-																Required:    true,
+																Optional:    true,
 																Description: "Filter by subsystem names.",
 																Elem: &schema.Resource{
 																	Schema: map[string]*schema.Schema{
 																		"value": &schema.Schema{
 																			Type:        schema.TypeString,
 																			Optional:    true,
-																			Description: "/ The value of the label to filter by.",
+																			Description: "The value used to filter the label.",
 																		},
 																		"operation": &schema.Schema{
 																			Type:        schema.TypeString,
@@ -1517,7 +1517,7 @@ func ResourceIbmLogsAlertDefinition() *schema.Resource {
 															},
 															"severities": &schema.Schema{
 																Type:        schema.TypeList,
-																Required:    true,
+																Optional:    true,
 																Description: "Filter by log severities.",
 																Elem:        &schema.Schema{Type: schema.TypeString},
 															},
@@ -1533,7 +1533,7 @@ func ResourceIbmLogsAlertDefinition() *schema.Resource {
 						"rules": &schema.Schema{
 							Type:        schema.TypeList,
 							Required:    true,
-							Description: "The rules for the log new value alert.",
+							Description: "The condition rules for the log new value alert.",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"condition": &schema.Schema{
@@ -1574,7 +1574,7 @@ func ResourceIbmLogsAlertDefinition() *schema.Resource {
 						"notification_payload_filter": &schema.Schema{
 							Type:        schema.TypeList,
 							Optional:    true,
-							Description: "The filter to specify which fields to include in the notification payload.",
+							Description: "The filter to specify which fields are included in the notification payload.",
 							Elem:        &schema.Schema{Type: schema.TypeString},
 						},
 					},
@@ -1615,14 +1615,14 @@ func ResourceIbmLogsAlertDefinition() *schema.Resource {
 														Schema: map[string]*schema.Schema{
 															"application_name": &schema.Schema{
 																Type:        schema.TypeList,
-																Required:    true,
+																Optional:    true,
 																Description: "Filter by application names.",
 																Elem: &schema.Resource{
 																	Schema: map[string]*schema.Schema{
 																		"value": &schema.Schema{
 																			Type:        schema.TypeString,
 																			Optional:    true,
-																			Description: "/ The value of the label to filter by.",
+																			Description: "The value used to filter the label.",
 																		},
 																		"operation": &schema.Schema{
 																			Type:        schema.TypeString,
@@ -1634,14 +1634,14 @@ func ResourceIbmLogsAlertDefinition() *schema.Resource {
 															},
 															"subsystem_name": &schema.Schema{
 																Type:        schema.TypeList,
-																Required:    true,
+																Optional:    true,
 																Description: "Filter by subsystem names.",
 																Elem: &schema.Resource{
 																	Schema: map[string]*schema.Schema{
 																		"value": &schema.Schema{
 																			Type:        schema.TypeString,
 																			Optional:    true,
-																			Description: "/ The value of the label to filter by.",
+																			Description: "The value used to filter the label.",
 																		},
 																		"operation": &schema.Schema{
 																			Type:        schema.TypeString,
@@ -1653,7 +1653,7 @@ func ResourceIbmLogsAlertDefinition() *schema.Resource {
 															},
 															"severities": &schema.Schema{
 																Type:        schema.TypeList,
-																Required:    true,
+																Optional:    true,
 																Description: "Filter by log severities.",
 																Elem:        &schema.Schema{Type: schema.TypeString},
 															},
@@ -1669,7 +1669,7 @@ func ResourceIbmLogsAlertDefinition() *schema.Resource {
 						"rules": &schema.Schema{
 							Type:        schema.TypeList,
 							Required:    true,
-							Description: "The rules for the log unique count alert.",
+							Description: "Rules defining the conditions for the unique count alert.",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"condition": &schema.Schema{
@@ -1710,7 +1710,7 @@ func ResourceIbmLogsAlertDefinition() *schema.Resource {
 						"notification_payload_filter": &schema.Schema{
 							Type:        schema.TypeList,
 							Optional:    true,
-							Description: "The filter to specify which fields to include in the notification payload.",
+							Description: "The filter to specify which fields are included in the notification payload.",
 							Elem:        &schema.Schema{Type: schema.TypeString},
 						},
 						"max_unique_count_per_group_by_key": &schema.Schema{
@@ -1822,7 +1822,9 @@ func resourceIbmLogsAlertDefinitionCreate(context context.Context, d *schema.Res
 		bodyModelMap["active_on"] = d.Get("active_on")
 	}
 	bodyModelMap["type"] = d.Get("type")
-	bodyModelMap["group_by_keys"] = d.Get("group_by_keys")
+	if _, ok := d.GetOk("group_by_keys"); ok {
+		bodyModelMap["group_by_keys"] = d.Get("group_by_keys")
+	}
 	if _, ok := d.GetOk("incidents_settings"); ok {
 		bodyModelMap["incidents_settings"] = d.Get("incidents_settings")
 	}
@@ -1962,9 +1964,11 @@ func resourceIbmLogsAlertDefinitionRead(context context.Context, d *schema.Resou
 		err = fmt.Errorf("Error setting type: %s", err)
 		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_logs_alert_definition", "read", "set-type").GetDiag()
 	}
-	if err = d.Set("group_by_keys", alertDefinition.GroupByKeys); err != nil {
-		err = fmt.Errorf("Error setting group_by_keys: %s", err)
-		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_logs_alert_definition", "read", "set-group_by_keys").GetDiag()
+	if !core.IsNil(alertDefinition.GroupByKeys) {
+		if err = d.Set("group_by_keys", alertDefinition.GroupByKeys); err != nil {
+			err = fmt.Errorf("Error setting group_by_keys: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_logs_alert_definition", "read", "set-group_by_keys").GetDiag()
+		}
 	}
 	if !core.IsNil(alertDefinition.IncidentsSettings) {
 		incidentsSettingsMap, err := ResourceIbmLogsAlertDefinitionApisAlertDefinitionAlertDefIncidentSettingsToMap(alertDefinition.IncidentsSettings)
@@ -2233,7 +2237,7 @@ func resourceIbmLogsAlertDefinitionUpdate(context context.Context, d *schema.Res
 		}
 		convertedModel, err := ResourceIbmLogsAlertDefinitionMapToAlertDefinitionPrototype(bodyModelMap)
 		if err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_logs_alert_definition", "create", "parse-request-body").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_logs_alert_definition", "update", "parse-alert_definition_prototype").GetDiag()
 		}
 		replaceAlertDefOptions.SetAlertDefinitionPrototype(convertedModel)
 		hasChange = true
@@ -2321,20 +2325,24 @@ func ResourceIbmLogsAlertDefinitionMapToApisAlertDefinitionAlertDefIncidentSetti
 
 func ResourceIbmLogsAlertDefinitionMapToApisAlertDefinitionAlertDefNotificationGroup(modelMap map[string]interface{}) (*logsv0.ApisAlertDefinitionAlertDefNotificationGroup, error) {
 	model := &logsv0.ApisAlertDefinitionAlertDefNotificationGroup{}
-	groupByKeys := []string{}
-	for _, groupByKeysItem := range modelMap["group_by_keys"].([]interface{}) {
-		groupByKeys = append(groupByKeys, groupByKeysItem.(string))
-	}
-	model.GroupByKeys = groupByKeys
-	webhooks := []logsv0.ApisAlertDefinitionAlertDefWebhooksSettings{}
-	for _, webhooksItem := range modelMap["webhooks"].([]interface{}) {
-		webhooksItemModel, err := ResourceIbmLogsAlertDefinitionMapToApisAlertDefinitionAlertDefWebhooksSettings(webhooksItem.(map[string]interface{}))
-		if err != nil {
-			return model, err
+	if modelMap["group_by_keys"] != nil {
+		groupByKeys := []string{}
+		for _, groupByKeysItem := range modelMap["group_by_keys"].([]interface{}) {
+			groupByKeys = append(groupByKeys, groupByKeysItem.(string))
 		}
-		webhooks = append(webhooks, *webhooksItemModel)
+		model.GroupByKeys = groupByKeys
 	}
-	model.Webhooks = webhooks
+	if modelMap["webhooks"] != nil {
+		webhooks := []logsv0.ApisAlertDefinitionAlertDefWebhooksSettings{}
+		for _, webhooksItem := range modelMap["webhooks"].([]interface{}) {
+			webhooksItemModel, err := ResourceIbmLogsAlertDefinitionMapToApisAlertDefinitionAlertDefWebhooksSettings(webhooksItem.(map[string]interface{}))
+			if err != nil {
+				return model, err
+			}
+			webhooks = append(webhooks, *webhooksItemModel)
+		}
+		model.Webhooks = webhooks
+	}
 	return model, nil
 }
 
@@ -2422,29 +2430,35 @@ func ResourceIbmLogsAlertDefinitionMapToApisAlertDefinitionLogsSimpleFilter(mode
 
 func ResourceIbmLogsAlertDefinitionMapToApisAlertDefinitionLabelFilters(modelMap map[string]interface{}) (*logsv0.ApisAlertDefinitionLabelFilters, error) {
 	model := &logsv0.ApisAlertDefinitionLabelFilters{}
-	applicationName := []logsv0.ApisAlertDefinitionLabelFilterType{}
-	for _, applicationNameItem := range modelMap["application_name"].([]interface{}) {
-		applicationNameItemModel, err := ResourceIbmLogsAlertDefinitionMapToApisAlertDefinitionLabelFilterType(applicationNameItem.(map[string]interface{}))
-		if err != nil {
-			return model, err
+	if modelMap["application_name"] != nil {
+		applicationName := []logsv0.ApisAlertDefinitionLabelFilterType{}
+		for _, applicationNameItem := range modelMap["application_name"].([]interface{}) {
+			applicationNameItemModel, err := ResourceIbmLogsAlertDefinitionMapToApisAlertDefinitionLabelFilterType(applicationNameItem.(map[string]interface{}))
+			if err != nil {
+				return model, err
+			}
+			applicationName = append(applicationName, *applicationNameItemModel)
 		}
-		applicationName = append(applicationName, *applicationNameItemModel)
+		model.ApplicationName = applicationName
 	}
-	model.ApplicationName = applicationName
-	subsystemName := []logsv0.ApisAlertDefinitionLabelFilterType{}
-	for _, subsystemNameItem := range modelMap["subsystem_name"].([]interface{}) {
-		subsystemNameItemModel, err := ResourceIbmLogsAlertDefinitionMapToApisAlertDefinitionLabelFilterType(subsystemNameItem.(map[string]interface{}))
-		if err != nil {
-			return model, err
+	if modelMap["subsystem_name"] != nil {
+		subsystemName := []logsv0.ApisAlertDefinitionLabelFilterType{}
+		for _, subsystemNameItem := range modelMap["subsystem_name"].([]interface{}) {
+			subsystemNameItemModel, err := ResourceIbmLogsAlertDefinitionMapToApisAlertDefinitionLabelFilterType(subsystemNameItem.(map[string]interface{}))
+			if err != nil {
+				return model, err
+			}
+			subsystemName = append(subsystemName, *subsystemNameItemModel)
 		}
-		subsystemName = append(subsystemName, *subsystemNameItemModel)
+		model.SubsystemName = subsystemName
 	}
-	model.SubsystemName = subsystemName
-	severities := []string{}
-	for _, severitiesItem := range modelMap["severities"].([]interface{}) {
-		severities = append(severities, severitiesItem.(string))
+	if modelMap["severities"] != nil {
+		severities := []string{}
+		for _, severitiesItem := range modelMap["severities"].([]interface{}) {
+			severities = append(severities, severitiesItem.(string))
+		}
+		model.Severities = severities
 	}
-	model.Severities = severities
 	return model, nil
 }
 
@@ -2786,10 +2800,10 @@ func ResourceIbmLogsAlertDefinitionMapToApisAlertDefinitionMetricTimeWindowTypeM
 
 func ResourceIbmLogsAlertDefinitionMapToApisAlertDefinitionMetricMissingValues(modelMap map[string]interface{}) (logsv0.ApisAlertDefinitionMetricMissingValuesIntf, error) {
 	model := &logsv0.ApisAlertDefinitionMetricMissingValues{}
-	if modelMap["replace_with_zero"] != nil {
+	if modelMap["replace_with_zero"] != nil && modelMap["min_non_null_values_pct"] != nil && modelMap["min_non_null_values_pct"] == 0 {
 		model.ReplaceWithZero = core.BoolPtr(modelMap["replace_with_zero"].(bool))
 	}
-	if modelMap["min_non_null_values_pct"] != nil {
+	if modelMap["min_non_null_values_pct"] != nil && modelMap["min_non_null_values_pct"] != 0 {
 		model.MinNonNullValuesPct = core.Int64Ptr(int64(modelMap["min_non_null_values_pct"].(int)))
 	}
 	return model, nil
@@ -3136,11 +3150,13 @@ func ResourceIbmLogsAlertDefinitionMapToAlertDefinitionPrototype(modelMap map[st
 		model.ActiveOn = ActiveOnModel
 	}
 	model.Type = core.StringPtr(modelMap["type"].(string))
-	groupByKeys := []string{}
-	for _, groupByKeysItem := range modelMap["group_by_keys"].([]interface{}) {
-		groupByKeys = append(groupByKeys, groupByKeysItem.(string))
+	if modelMap["group_by_keys"] != nil {
+		groupByKeys := []string{}
+		for _, groupByKeysItem := range modelMap["group_by_keys"].([]interface{}) {
+			groupByKeys = append(groupByKeys, groupByKeysItem.(string))
+		}
+		model.GroupByKeys = groupByKeys
 	}
-	model.GroupByKeys = groupByKeys
 	if modelMap["incidents_settings"] != nil && len(modelMap["incidents_settings"].([]interface{})) > 0 {
 		IncidentsSettingsModel, err := ResourceIbmLogsAlertDefinitionMapToApisAlertDefinitionAlertDefIncidentSettings(modelMap["incidents_settings"].([]interface{})[0].(map[string]interface{}))
 		if err != nil {
@@ -3257,11 +3273,13 @@ func ResourceIbmLogsAlertDefinitionMapToAlertDefinitionPrototypeApisAlertDefinit
 		model.ActiveOn = ActiveOnModel
 	}
 	model.Type = core.StringPtr(modelMap["type"].(string))
-	groupByKeys := []string{}
-	for _, groupByKeysItem := range modelMap["group_by_keys"].([]interface{}) {
-		groupByKeys = append(groupByKeys, groupByKeysItem.(string))
+	if modelMap["group_by_keys"] != nil {
+		groupByKeys := []string{}
+		for _, groupByKeysItem := range modelMap["group_by_keys"].([]interface{}) {
+			groupByKeys = append(groupByKeys, groupByKeysItem.(string))
+		}
+		model.GroupByKeys = groupByKeys
 	}
-	model.GroupByKeys = groupByKeys
 	if modelMap["incidents_settings"] != nil && len(modelMap["incidents_settings"].([]interface{})) > 0 {
 		IncidentsSettingsModel, err := ResourceIbmLogsAlertDefinitionMapToApisAlertDefinitionAlertDefIncidentSettings(modelMap["incidents_settings"].([]interface{})[0].(map[string]interface{}))
 		if err != nil {
@@ -3315,11 +3333,13 @@ func ResourceIbmLogsAlertDefinitionMapToAlertDefinitionPrototypeApisAlertDefinit
 		model.ActiveOn = ActiveOnModel
 	}
 	model.Type = core.StringPtr(modelMap["type"].(string))
-	groupByKeys := []string{}
-	for _, groupByKeysItem := range modelMap["group_by_keys"].([]interface{}) {
-		groupByKeys = append(groupByKeys, groupByKeysItem.(string))
+	if modelMap["group_by_keys"] != nil {
+		groupByKeys := []string{}
+		for _, groupByKeysItem := range modelMap["group_by_keys"].([]interface{}) {
+			groupByKeys = append(groupByKeys, groupByKeysItem.(string))
+		}
+		model.GroupByKeys = groupByKeys
 	}
-	model.GroupByKeys = groupByKeys
 	if modelMap["incidents_settings"] != nil && len(modelMap["incidents_settings"].([]interface{})) > 0 {
 		IncidentsSettingsModel, err := ResourceIbmLogsAlertDefinitionMapToApisAlertDefinitionAlertDefIncidentSettings(modelMap["incidents_settings"].([]interface{})[0].(map[string]interface{}))
 		if err != nil {
@@ -3373,11 +3393,13 @@ func ResourceIbmLogsAlertDefinitionMapToAlertDefinitionPrototypeApisAlertDefinit
 		model.ActiveOn = ActiveOnModel
 	}
 	model.Type = core.StringPtr(modelMap["type"].(string))
-	groupByKeys := []string{}
-	for _, groupByKeysItem := range modelMap["group_by_keys"].([]interface{}) {
-		groupByKeys = append(groupByKeys, groupByKeysItem.(string))
+	if modelMap["group_by_keys"] != nil {
+		groupByKeys := []string{}
+		for _, groupByKeysItem := range modelMap["group_by_keys"].([]interface{}) {
+			groupByKeys = append(groupByKeys, groupByKeysItem.(string))
+		}
+		model.GroupByKeys = groupByKeys
 	}
-	model.GroupByKeys = groupByKeys
 	if modelMap["incidents_settings"] != nil && len(modelMap["incidents_settings"].([]interface{})) > 0 {
 		IncidentsSettingsModel, err := ResourceIbmLogsAlertDefinitionMapToApisAlertDefinitionAlertDefIncidentSettings(modelMap["incidents_settings"].([]interface{})[0].(map[string]interface{}))
 		if err != nil {
@@ -3431,11 +3453,13 @@ func ResourceIbmLogsAlertDefinitionMapToAlertDefinitionPrototypeApisAlertDefinit
 		model.ActiveOn = ActiveOnModel
 	}
 	model.Type = core.StringPtr(modelMap["type"].(string))
-	groupByKeys := []string{}
-	for _, groupByKeysItem := range modelMap["group_by_keys"].([]interface{}) {
-		groupByKeys = append(groupByKeys, groupByKeysItem.(string))
+	if modelMap["group_by_keys"] != nil {
+		groupByKeys := []string{}
+		for _, groupByKeysItem := range modelMap["group_by_keys"].([]interface{}) {
+			groupByKeys = append(groupByKeys, groupByKeysItem.(string))
+		}
+		model.GroupByKeys = groupByKeys
 	}
-	model.GroupByKeys = groupByKeys
 	if modelMap["incidents_settings"] != nil && len(modelMap["incidents_settings"].([]interface{})) > 0 {
 		IncidentsSettingsModel, err := ResourceIbmLogsAlertDefinitionMapToApisAlertDefinitionAlertDefIncidentSettings(modelMap["incidents_settings"].([]interface{})[0].(map[string]interface{}))
 		if err != nil {
@@ -3489,11 +3513,13 @@ func ResourceIbmLogsAlertDefinitionMapToAlertDefinitionPrototypeApisAlertDefinit
 		model.ActiveOn = ActiveOnModel
 	}
 	model.Type = core.StringPtr(modelMap["type"].(string))
-	groupByKeys := []string{}
-	for _, groupByKeysItem := range modelMap["group_by_keys"].([]interface{}) {
-		groupByKeys = append(groupByKeys, groupByKeysItem.(string))
+	if modelMap["group_by_keys"] != nil {
+		groupByKeys := []string{}
+		for _, groupByKeysItem := range modelMap["group_by_keys"].([]interface{}) {
+			groupByKeys = append(groupByKeys, groupByKeysItem.(string))
+		}
+		model.GroupByKeys = groupByKeys
 	}
-	model.GroupByKeys = groupByKeys
 	if modelMap["incidents_settings"] != nil && len(modelMap["incidents_settings"].([]interface{})) > 0 {
 		IncidentsSettingsModel, err := ResourceIbmLogsAlertDefinitionMapToApisAlertDefinitionAlertDefIncidentSettings(modelMap["incidents_settings"].([]interface{})[0].(map[string]interface{}))
 		if err != nil {
@@ -3547,11 +3573,13 @@ func ResourceIbmLogsAlertDefinitionMapToAlertDefinitionPrototypeApisAlertDefinit
 		model.ActiveOn = ActiveOnModel
 	}
 	model.Type = core.StringPtr(modelMap["type"].(string))
-	groupByKeys := []string{}
-	for _, groupByKeysItem := range modelMap["group_by_keys"].([]interface{}) {
-		groupByKeys = append(groupByKeys, groupByKeysItem.(string))
+	if modelMap["group_by_keys"] != nil {
+		groupByKeys := []string{}
+		for _, groupByKeysItem := range modelMap["group_by_keys"].([]interface{}) {
+			groupByKeys = append(groupByKeys, groupByKeysItem.(string))
+		}
+		model.GroupByKeys = groupByKeys
 	}
-	model.GroupByKeys = groupByKeys
 	if modelMap["incidents_settings"] != nil && len(modelMap["incidents_settings"].([]interface{})) > 0 {
 		IncidentsSettingsModel, err := ResourceIbmLogsAlertDefinitionMapToApisAlertDefinitionAlertDefIncidentSettings(modelMap["incidents_settings"].([]interface{})[0].(map[string]interface{}))
 		if err != nil {
@@ -3605,11 +3633,13 @@ func ResourceIbmLogsAlertDefinitionMapToAlertDefinitionPrototypeApisAlertDefinit
 		model.ActiveOn = ActiveOnModel
 	}
 	model.Type = core.StringPtr(modelMap["type"].(string))
-	groupByKeys := []string{}
-	for _, groupByKeysItem := range modelMap["group_by_keys"].([]interface{}) {
-		groupByKeys = append(groupByKeys, groupByKeysItem.(string))
+	if modelMap["group_by_keys"] != nil {
+		groupByKeys := []string{}
+		for _, groupByKeysItem := range modelMap["group_by_keys"].([]interface{}) {
+			groupByKeys = append(groupByKeys, groupByKeysItem.(string))
+		}
+		model.GroupByKeys = groupByKeys
 	}
-	model.GroupByKeys = groupByKeys
 	if modelMap["incidents_settings"] != nil && len(modelMap["incidents_settings"].([]interface{})) > 0 {
 		IncidentsSettingsModel, err := ResourceIbmLogsAlertDefinitionMapToApisAlertDefinitionAlertDefIncidentSettings(modelMap["incidents_settings"].([]interface{})[0].(map[string]interface{}))
 		if err != nil {
@@ -3663,11 +3693,13 @@ func ResourceIbmLogsAlertDefinitionMapToAlertDefinitionPrototypeApisAlertDefinit
 		model.ActiveOn = ActiveOnModel
 	}
 	model.Type = core.StringPtr(modelMap["type"].(string))
-	groupByKeys := []string{}
-	for _, groupByKeysItem := range modelMap["group_by_keys"].([]interface{}) {
-		groupByKeys = append(groupByKeys, groupByKeysItem.(string))
+	if modelMap["group_by_keys"] != nil {
+		groupByKeys := []string{}
+		for _, groupByKeysItem := range modelMap["group_by_keys"].([]interface{}) {
+			groupByKeys = append(groupByKeys, groupByKeysItem.(string))
+		}
+		model.GroupByKeys = groupByKeys
 	}
-	model.GroupByKeys = groupByKeys
 	if modelMap["incidents_settings"] != nil && len(modelMap["incidents_settings"].([]interface{})) > 0 {
 		IncidentsSettingsModel, err := ResourceIbmLogsAlertDefinitionMapToApisAlertDefinitionAlertDefIncidentSettings(modelMap["incidents_settings"].([]interface{})[0].(map[string]interface{}))
 		if err != nil {
@@ -3721,11 +3753,13 @@ func ResourceIbmLogsAlertDefinitionMapToAlertDefinitionPrototypeApisAlertDefinit
 		model.ActiveOn = ActiveOnModel
 	}
 	model.Type = core.StringPtr(modelMap["type"].(string))
-	groupByKeys := []string{}
-	for _, groupByKeysItem := range modelMap["group_by_keys"].([]interface{}) {
-		groupByKeys = append(groupByKeys, groupByKeysItem.(string))
+	if modelMap["group_by_keys"] != nil {
+		groupByKeys := []string{}
+		for _, groupByKeysItem := range modelMap["group_by_keys"].([]interface{}) {
+			groupByKeys = append(groupByKeys, groupByKeysItem.(string))
+		}
+		model.GroupByKeys = groupByKeys
 	}
-	model.GroupByKeys = groupByKeys
 	if modelMap["incidents_settings"] != nil && len(modelMap["incidents_settings"].([]interface{})) > 0 {
 		IncidentsSettingsModel, err := ResourceIbmLogsAlertDefinitionMapToApisAlertDefinitionAlertDefIncidentSettings(modelMap["incidents_settings"].([]interface{})[0].(map[string]interface{}))
 		if err != nil {
@@ -3779,11 +3813,13 @@ func ResourceIbmLogsAlertDefinitionMapToAlertDefinitionPrototypeApisAlertDefinit
 		model.ActiveOn = ActiveOnModel
 	}
 	model.Type = core.StringPtr(modelMap["type"].(string))
-	groupByKeys := []string{}
-	for _, groupByKeysItem := range modelMap["group_by_keys"].([]interface{}) {
-		groupByKeys = append(groupByKeys, groupByKeysItem.(string))
+	if modelMap["group_by_keys"] != nil {
+		groupByKeys := []string{}
+		for _, groupByKeysItem := range modelMap["group_by_keys"].([]interface{}) {
+			groupByKeys = append(groupByKeys, groupByKeysItem.(string))
+		}
+		model.GroupByKeys = groupByKeys
 	}
-	model.GroupByKeys = groupByKeys
 	if modelMap["incidents_settings"] != nil && len(modelMap["incidents_settings"].([]interface{})) > 0 {
 		IncidentsSettingsModel, err := ResourceIbmLogsAlertDefinitionMapToApisAlertDefinitionAlertDefIncidentSettings(modelMap["incidents_settings"].([]interface{})[0].(map[string]interface{}))
 		if err != nil {
@@ -3857,16 +3893,20 @@ func ResourceIbmLogsAlertDefinitionApisAlertDefinitionAlertDefIncidentSettingsTo
 
 func ResourceIbmLogsAlertDefinitionApisAlertDefinitionAlertDefNotificationGroupToMap(model *logsv0.ApisAlertDefinitionAlertDefNotificationGroup) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	modelMap["group_by_keys"] = model.GroupByKeys
-	webhooks := []map[string]interface{}{}
-	for _, webhooksItem := range model.Webhooks {
-		webhooksItemMap, err := ResourceIbmLogsAlertDefinitionApisAlertDefinitionAlertDefWebhooksSettingsToMap(&webhooksItem) // #nosec G601
-		if err != nil {
-			return modelMap, err
-		}
-		webhooks = append(webhooks, webhooksItemMap)
+	if model.GroupByKeys != nil {
+		modelMap["group_by_keys"] = model.GroupByKeys
 	}
-	modelMap["webhooks"] = webhooks
+	if model.Webhooks != nil {
+		webhooks := []map[string]interface{}{}
+		for _, webhooksItem := range model.Webhooks {
+			webhooksItemMap, err := ResourceIbmLogsAlertDefinitionApisAlertDefinitionAlertDefWebhooksSettingsToMap(&webhooksItem) // #nosec G601
+			if err != nil {
+				return modelMap, err
+			}
+			webhooks = append(webhooks, webhooksItemMap)
+		}
+		modelMap["webhooks"] = webhooks
+	}
 	return modelMap, nil
 }
 
@@ -3953,25 +3993,31 @@ func ResourceIbmLogsAlertDefinitionApisAlertDefinitionLogsSimpleFilterToMap(mode
 
 func ResourceIbmLogsAlertDefinitionApisAlertDefinitionLabelFiltersToMap(model *logsv0.ApisAlertDefinitionLabelFilters) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	applicationName := []map[string]interface{}{}
-	for _, applicationNameItem := range model.ApplicationName {
-		applicationNameItemMap, err := ResourceIbmLogsAlertDefinitionApisAlertDefinitionLabelFilterTypeToMap(&applicationNameItem) // #nosec G601
-		if err != nil {
-			return modelMap, err
+	if model.ApplicationName != nil {
+		applicationName := []map[string]interface{}{}
+		for _, applicationNameItem := range model.ApplicationName {
+			applicationNameItemMap, err := ResourceIbmLogsAlertDefinitionApisAlertDefinitionLabelFilterTypeToMap(&applicationNameItem) // #nosec G601
+			if err != nil {
+				return modelMap, err
+			}
+			applicationName = append(applicationName, applicationNameItemMap)
 		}
-		applicationName = append(applicationName, applicationNameItemMap)
+		modelMap["application_name"] = applicationName
 	}
-	modelMap["application_name"] = applicationName
-	subsystemName := []map[string]interface{}{}
-	for _, subsystemNameItem := range model.SubsystemName {
-		subsystemNameItemMap, err := ResourceIbmLogsAlertDefinitionApisAlertDefinitionLabelFilterTypeToMap(&subsystemNameItem) // #nosec G601
-		if err != nil {
-			return modelMap, err
+	if model.SubsystemName != nil {
+		subsystemName := []map[string]interface{}{}
+		for _, subsystemNameItem := range model.SubsystemName {
+			subsystemNameItemMap, err := ResourceIbmLogsAlertDefinitionApisAlertDefinitionLabelFilterTypeToMap(&subsystemNameItem) // #nosec G601
+			if err != nil {
+				return modelMap, err
+			}
+			subsystemName = append(subsystemName, subsystemNameItemMap)
 		}
-		subsystemName = append(subsystemName, subsystemNameItemMap)
+		modelMap["subsystem_name"] = subsystemName
 	}
-	modelMap["subsystem_name"] = subsystemName
-	modelMap["severities"] = model.Severities
+	if model.Severities != nil {
+		modelMap["severities"] = model.Severities
+	}
 	return modelMap, nil
 }
 

@@ -45,7 +45,7 @@ func DataSourceIbmLogsAlertDefinition() *schema.Resource {
 			"alert_version_id": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "The old alert ID.",
+				Description: "The previous or old alert ID.",
 			},
 			"name": &schema.Schema{
 				Type:        schema.TypeString,
@@ -60,7 +60,7 @@ func DataSourceIbmLogsAlertDefinition() *schema.Resource {
 			"enabled": &schema.Schema{
 				Type:        schema.TypeBool,
 				Computed:    true,
-				Description: "Whether the alert is currently active and monitoring.",
+				Description: "Whether the alert is currently active and monitoring. If true, alert is active.",
 			},
 			"priority": &schema.Schema{
 				Type:        schema.TypeString,
@@ -90,12 +90,12 @@ func DataSourceIbmLogsAlertDefinition() *schema.Resource {
 									"hours": &schema.Schema{
 										Type:        schema.TypeInt,
 										Computed:    true,
-										Description: "Hours of day in 24 hour format. Should be from 0 to 23.",
+										Description: "The hour of the day in 24-hour format. Must be an integer between 0 and 23.",
 									},
 									"minutes": &schema.Schema{
 										Type:        schema.TypeInt,
 										Computed:    true,
-										Description: "Minutes of hour of day. Must be from 0 to 59.",
+										Description: "Minute of the hour of the day. Must be an integer between 0 and 59.",
 									},
 								},
 							},
@@ -109,12 +109,12 @@ func DataSourceIbmLogsAlertDefinition() *schema.Resource {
 									"hours": &schema.Schema{
 										Type:        schema.TypeInt,
 										Computed:    true,
-										Description: "Hours of day in 24 hour format. Should be from 0 to 23.",
+										Description: "The hour of the day in 24-hour format. Must be an integer between 0 and 23.",
 									},
 									"minutes": &schema.Schema{
 										Type:        schema.TypeInt,
 										Computed:    true,
-										Description: "Minutes of hour of day. Must be from 0 to 59.",
+										Description: "Minute of the hour of the day. Must be an integer between 0 and 59.",
 									},
 								},
 							},
@@ -144,12 +144,12 @@ func DataSourceIbmLogsAlertDefinition() *schema.Resource {
 						"notify_on": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "The condition to notify about the alert.",
+							Description: "Indicate if the alert should be triggered or triggered and resolved.",
 						},
 						"minutes": &schema.Schema{
 							Type:        schema.TypeInt,
 							Computed:    true,
-							Description: "The time in minutes before the alert can be retriggered.",
+							Description: "The time in minutes before the alert can be triggered again.",
 						},
 					},
 				},
@@ -163,7 +163,7 @@ func DataSourceIbmLogsAlertDefinition() *schema.Resource {
 						"group_by_keys": &schema.Schema{
 							Type:        schema.TypeList,
 							Computed:    true,
-							Description: "The keys to group the alerts by.",
+							Description: "Group the alerts by these keys.",
 							Elem: &schema.Schema{
 								Type: schema.TypeString,
 							},
@@ -177,7 +177,7 @@ func DataSourceIbmLogsAlertDefinition() *schema.Resource {
 									"notify_on": &schema.Schema{
 										Type:        schema.TypeString,
 										Computed:    true,
-										Description: "The condition to notify about the alert.",
+										Description: "Indicate if the alert should be triggered or triggered and resolved.",
 									},
 									"integration": &schema.Schema{
 										Type:        schema.TypeList,
@@ -260,7 +260,7 @@ func DataSourceIbmLogsAlertDefinition() *schema.Resource {
 																		"value": &schema.Schema{
 																			Type:        schema.TypeString,
 																			Computed:    true,
-																			Description: "/ The value of the label to filter by.",
+																			Description: "The value used to filter the label.",
 																		},
 																		"operation": &schema.Schema{
 																			Type:        schema.TypeString,
@@ -279,7 +279,7 @@ func DataSourceIbmLogsAlertDefinition() *schema.Resource {
 																		"value": &schema.Schema{
 																			Type:        schema.TypeString,
 																			Computed:    true,
-																			Description: "/ The value of the label to filter by.",
+																			Description: "The value used to filter the label.",
 																		},
 																		"operation": &schema.Schema{
 																			Type:        schema.TypeString,
@@ -309,7 +309,7 @@ func DataSourceIbmLogsAlertDefinition() *schema.Resource {
 						"notification_payload_filter": &schema.Schema{
 							Type:        schema.TypeList,
 							Computed:    true,
-							Description: "The filter to specify which fields to include in the notification payload.",
+							Description: "The filter to specify which fields are included in the notification payload.",
 							Elem: &schema.Schema{
 								Type: schema.TypeString,
 							},
@@ -320,7 +320,7 @@ func DataSourceIbmLogsAlertDefinition() *schema.Resource {
 			"logs_threshold": &schema.Schema{
 				Type:        schema.TypeList,
 				Computed:    true,
-				Description: "Configuration for log-based threshold alerts.",
+				Description: "Configuration for the log-based threshold alerts.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"logs_filter": &schema.Schema{
@@ -355,7 +355,7 @@ func DataSourceIbmLogsAlertDefinition() *schema.Resource {
 																		"value": &schema.Schema{
 																			Type:        schema.TypeString,
 																			Computed:    true,
-																			Description: "/ The value of the label to filter by.",
+																			Description: "The value used to filter the label.",
 																		},
 																		"operation": &schema.Schema{
 																			Type:        schema.TypeString,
@@ -374,7 +374,7 @@ func DataSourceIbmLogsAlertDefinition() *schema.Resource {
 																		"value": &schema.Schema{
 																			Type:        schema.TypeString,
 																			Computed:    true,
-																			Description: "/ The value of the label to filter by.",
+																			Description: "The value used to filter the label.",
 																		},
 																		"operation": &schema.Schema{
 																			Type:        schema.TypeString,
@@ -410,7 +410,7 @@ func DataSourceIbmLogsAlertDefinition() *schema.Resource {
 									"trigger_undetected_values": &schema.Schema{
 										Type:        schema.TypeBool,
 										Computed:    true,
-										Description: "Should trigger the alert when undetected values are detected.",
+										Description: "Should trigger the alert when undetected values are detected. If true, alert is triggered.",
 									},
 									"auto_retire_timeframe": &schema.Schema{
 										Type:        schema.TypeString,
@@ -423,7 +423,7 @@ func DataSourceIbmLogsAlertDefinition() *schema.Resource {
 						"rules": &schema.Schema{
 							Type:        schema.TypeList,
 							Computed:    true,
-							Description: "The rules for the threshold alert.",
+							Description: "The condition rules for the threshold alert.",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"condition": &schema.Schema{
@@ -446,7 +446,7 @@ func DataSourceIbmLogsAlertDefinition() *schema.Resource {
 															"logs_time_window_specific_value": &schema.Schema{
 																Type:        schema.TypeString,
 																Computed:    true,
-																Description: "A time window defined by a specific value.",
+																Description: "The time window defined for an alert to be triggered.",
 															},
 														},
 													},
@@ -474,12 +474,12 @@ func DataSourceIbmLogsAlertDefinition() *schema.Resource {
 						"condition_type": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "The type of condition for the alert.",
+							Description: "The condition type for the alert.",
 						},
 						"notification_payload_filter": &schema.Schema{
 							Type:        schema.TypeList,
 							Computed:    true,
-							Description: "The filter to specify which fields to include in the notification payload.",
+							Description: "The filter to specify which fields are included in the notification payload.",
 							Elem: &schema.Schema{
 								Type: schema.TypeString,
 							},
@@ -495,7 +495,7 @@ func DataSourceIbmLogsAlertDefinition() *schema.Resource {
 			"logs_ratio_threshold": &schema.Schema{
 				Type:        schema.TypeList,
 				Computed:    true,
-				Description: "Configuration for log-based ratio threshold alerts.",
+				Description: "Configuration for the log-based ratio threshold alerts.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"numerator": &schema.Schema{
@@ -530,7 +530,7 @@ func DataSourceIbmLogsAlertDefinition() *schema.Resource {
 																		"value": &schema.Schema{
 																			Type:        schema.TypeString,
 																			Computed:    true,
-																			Description: "/ The value of the label to filter by.",
+																			Description: "The value used to filter the label.",
 																		},
 																		"operation": &schema.Schema{
 																			Type:        schema.TypeString,
@@ -549,7 +549,7 @@ func DataSourceIbmLogsAlertDefinition() *schema.Resource {
 																		"value": &schema.Schema{
 																			Type:        schema.TypeString,
 																			Computed:    true,
-																			Description: "/ The value of the label to filter by.",
+																			Description: "The value used to filter the label.",
 																		},
 																		"operation": &schema.Schema{
 																			Type:        schema.TypeString,
@@ -613,7 +613,7 @@ func DataSourceIbmLogsAlertDefinition() *schema.Resource {
 																		"value": &schema.Schema{
 																			Type:        schema.TypeString,
 																			Computed:    true,
-																			Description: "/ The value of the label to filter by.",
+																			Description: "The value used to filter the label.",
 																		},
 																		"operation": &schema.Schema{
 																			Type:        schema.TypeString,
@@ -632,7 +632,7 @@ func DataSourceIbmLogsAlertDefinition() *schema.Resource {
 																		"value": &schema.Schema{
 																			Type:        schema.TypeString,
 																			Computed:    true,
-																			Description: "/ The value of the label to filter by.",
+																			Description: "The value used to filter the label.",
 																		},
 																		"operation": &schema.Schema{
 																			Type:        schema.TypeString,
@@ -667,7 +667,7 @@ func DataSourceIbmLogsAlertDefinition() *schema.Resource {
 						"rules": &schema.Schema{
 							Type:        schema.TypeList,
 							Computed:    true,
-							Description: "The rules for the ratio alert.",
+							Description: "The condition rules for the ratio alert.",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"condition": &schema.Schema{
@@ -718,12 +718,12 @@ func DataSourceIbmLogsAlertDefinition() *schema.Resource {
 						"condition_type": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "The type of condition for the alert.",
+							Description: "The condition type for the alert.",
 						},
 						"notification_payload_filter": &schema.Schema{
 							Type:        schema.TypeList,
 							Computed:    true,
-							Description: "The filter to specify which fields to include in the notification payload.",
+							Description: "The filter to specify which fields are included in the notification payload.",
 							Elem: &schema.Schema{
 								Type: schema.TypeString,
 							},
@@ -742,7 +742,7 @@ func DataSourceIbmLogsAlertDefinition() *schema.Resource {
 									"trigger_undetected_values": &schema.Schema{
 										Type:        schema.TypeBool,
 										Computed:    true,
-										Description: "Should trigger the alert when undetected values are detected.",
+										Description: "Should trigger the alert when undetected values are detected. If true, alert is triggered.",
 									},
 									"auto_retire_timeframe": &schema.Schema{
 										Type:        schema.TypeString,
@@ -755,7 +755,7 @@ func DataSourceIbmLogsAlertDefinition() *schema.Resource {
 						"ignore_infinity": &schema.Schema{
 							Type:        schema.TypeBool,
 							Computed:    true,
-							Description: "The configuration for ignoring infinity values in the ratio.",
+							Description: "Determine whether to ignore an infinity result or not. If true, alert is not triggered. When the value of second query is 0, the result of the ratio will be infinity.",
 						},
 						"evaluation_delay_ms": &schema.Schema{
 							Type:        schema.TypeInt,
@@ -803,7 +803,7 @@ func DataSourceIbmLogsAlertDefinition() *schema.Resource {
 																		"value": &schema.Schema{
 																			Type:        schema.TypeString,
 																			Computed:    true,
-																			Description: "/ The value of the label to filter by.",
+																			Description: "The value used to filter the label.",
 																		},
 																		"operation": &schema.Schema{
 																			Type:        schema.TypeString,
@@ -822,7 +822,7 @@ func DataSourceIbmLogsAlertDefinition() *schema.Resource {
 																		"value": &schema.Schema{
 																			Type:        schema.TypeString,
 																			Computed:    true,
-																			Description: "/ The value of the label to filter by.",
+																			Description: "The value used to filter the label.",
 																		},
 																		"operation": &schema.Schema{
 																			Type:        schema.TypeString,
@@ -852,7 +852,7 @@ func DataSourceIbmLogsAlertDefinition() *schema.Resource {
 						"rules": &schema.Schema{
 							Type:        schema.TypeList,
 							Computed:    true,
-							Description: "The rules for the time-relative alert.",
+							Description: "The condition rules for the time-relative alert.",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"condition": &schema.Schema{
@@ -904,7 +904,7 @@ func DataSourceIbmLogsAlertDefinition() *schema.Resource {
 						"notification_payload_filter": &schema.Schema{
 							Type:        schema.TypeList,
 							Computed:    true,
-							Description: "The filter to specify which fields to include in the notification payload.",
+							Description: "The filter to specify which fields are included in the notification payload.",
 							Elem: &schema.Schema{
 								Type: schema.TypeString,
 							},
@@ -918,7 +918,7 @@ func DataSourceIbmLogsAlertDefinition() *schema.Resource {
 									"trigger_undetected_values": &schema.Schema{
 										Type:        schema.TypeBool,
 										Computed:    true,
-										Description: "Should trigger the alert when undetected values are detected.",
+										Description: "Should trigger the alert when undetected values are detected. If true, alert is triggered.",
 									},
 									"auto_retire_timeframe": &schema.Schema{
 										Type:        schema.TypeString,
@@ -959,7 +959,7 @@ func DataSourceIbmLogsAlertDefinition() *schema.Resource {
 						"rules": &schema.Schema{
 							Type:        schema.TypeList,
 							Computed:    true,
-							Description: "The rules for the metric threshold alert.",
+							Description: "The condition rules for the metric threshold alert.",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"condition": &schema.Schema{
@@ -1031,7 +1031,7 @@ func DataSourceIbmLogsAlertDefinition() *schema.Resource {
 									"trigger_undetected_values": &schema.Schema{
 										Type:        schema.TypeBool,
 										Computed:    true,
-										Description: "Should trigger the alert when undetected values are detected.",
+										Description: "Should trigger the alert when undetected values are detected. If true, alert is triggered.",
 									},
 									"auto_retire_timeframe": &schema.Schema{
 										Type:        schema.TypeString,
@@ -1044,7 +1044,7 @@ func DataSourceIbmLogsAlertDefinition() *schema.Resource {
 						"missing_values": &schema.Schema{
 							Type:        schema.TypeList,
 							Computed:    true,
-							Description: "Configuration for handling missing values in the alert.",
+							Description: "Configuration for handling missing values in the alert. Only one of `replace_with_zero` or `min_non_null_value_pct` is supported.",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"replace_with_zero": &schema.Schema{
@@ -1071,13 +1071,13 @@ func DataSourceIbmLogsAlertDefinition() *schema.Resource {
 			"flow": &schema.Schema{
 				Type:        schema.TypeList,
 				Computed:    true,
-				Description: "Configuration for flow-based alerts.",
+				Description: "Configuration for flow alerts.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"stages": &schema.Schema{
 							Type:        schema.TypeList,
 							Computed:    true,
-							Description: "The stages of the flow alert.",
+							Description: "The definition of stages of the flow alert.",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"timeframe_ms": &schema.Schema{
@@ -1093,13 +1093,13 @@ func DataSourceIbmLogsAlertDefinition() *schema.Resource {
 									"flow_stages_groups": &schema.Schema{
 										Type:        schema.TypeList,
 										Computed:    true,
-										Description: "Flow stages groups.",
+										Description: "The definition of groups in the flow alert.",
 										Elem: &schema.Resource{
 											Schema: map[string]*schema.Schema{
 												"groups": &schema.Schema{
 													Type:        schema.TypeList,
 													Computed:    true,
-													Description: "The groups of stages in the flow alert.",
+													Description: "The definition of an array of groups with alerts and logical operation among those alerts in the flow alert.",
 													Elem: &schema.Resource{
 														Schema: map[string]*schema.Schema{
 															"alert_defs": &schema.Schema{
@@ -1116,7 +1116,7 @@ func DataSourceIbmLogsAlertDefinition() *schema.Resource {
 																		"not": &schema.Schema{
 																			Type:        schema.TypeBool,
 																			Computed:    true,
-																			Description: "Whether to negate the alert definition or not.",
+																			Description: "Whether or not to negate the alert definition. If true, flow checks for the negate condition of the respective alert.",
 																		},
 																	},
 																},
@@ -1151,7 +1151,7 @@ func DataSourceIbmLogsAlertDefinition() *schema.Resource {
 			"logs_anomaly": &schema.Schema{
 				Type:        schema.TypeList,
 				Computed:    true,
-				Description: "Configuration for log-based anomaly detection alerts.",
+				Description: "Configuration for the log-based anomaly detection alerts.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"logs_filter": &schema.Schema{
@@ -1186,7 +1186,7 @@ func DataSourceIbmLogsAlertDefinition() *schema.Resource {
 																		"value": &schema.Schema{
 																			Type:        schema.TypeString,
 																			Computed:    true,
-																			Description: "/ The value of the label to filter by.",
+																			Description: "The value used to filter the label.",
 																		},
 																		"operation": &schema.Schema{
 																			Type:        schema.TypeString,
@@ -1205,7 +1205,7 @@ func DataSourceIbmLogsAlertDefinition() *schema.Resource {
 																		"value": &schema.Schema{
 																			Type:        schema.TypeString,
 																			Computed:    true,
-																			Description: "/ The value of the label to filter by.",
+																			Description: "The value used to filter the label.",
 																		},
 																		"operation": &schema.Schema{
 																			Type:        schema.TypeString,
@@ -1235,7 +1235,7 @@ func DataSourceIbmLogsAlertDefinition() *schema.Resource {
 						"rules": &schema.Schema{
 							Type:        schema.TypeList,
 							Computed:    true,
-							Description: "The rules for the log anomaly alert.",
+							Description: "The condition rules for the log anomaly alert.",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"condition": &schema.Schema{
@@ -1258,7 +1258,7 @@ func DataSourceIbmLogsAlertDefinition() *schema.Resource {
 															"logs_time_window_specific_value": &schema.Schema{
 																Type:        schema.TypeString,
 																Computed:    true,
-																Description: "A time window defined by a specific value.",
+																Description: "The time window defined for an alert to be triggered.",
 															},
 														},
 													},
@@ -1272,12 +1272,12 @@ func DataSourceIbmLogsAlertDefinition() *schema.Resource {
 						"condition_type": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "The type of condition for the alert.",
+							Description: "The condition type for the alert.",
 						},
 						"notification_payload_filter": &schema.Schema{
 							Type:        schema.TypeList,
 							Computed:    true,
-							Description: "The notification payload filter to specify which fields to include in the notification.",
+							Description: "The notification payload filter to specify which fields are included in the notification.",
 							Elem: &schema.Schema{
 								Type: schema.TypeString,
 							},
@@ -1296,7 +1296,7 @@ func DataSourceIbmLogsAlertDefinition() *schema.Resource {
 									"percentage_of_deviation": &schema.Schema{
 										Type:        schema.TypeFloat,
 										Computed:    true,
-										Description: "The percentage of deviation from the baseline for triggering the alert.",
+										Description: "The percentage of deviation from the baseline when the alert is triggered.",
 									},
 								},
 							},
@@ -1327,7 +1327,7 @@ func DataSourceIbmLogsAlertDefinition() *schema.Resource {
 						"rules": &schema.Schema{
 							Type:        schema.TypeList,
 							Computed:    true,
-							Description: "The rules for the metric anomaly alert.",
+							Description: "The condition rules for the metric anomaly alert.",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"condition": &schema.Schema{
@@ -1379,7 +1379,7 @@ func DataSourceIbmLogsAlertDefinition() *schema.Resource {
 						"condition_type": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "The type of condition for the alert.",
+							Description: "The condition type for the alert.",
 						},
 						"evaluation_delay_ms": &schema.Schema{
 							Type:        schema.TypeInt,
@@ -1395,7 +1395,7 @@ func DataSourceIbmLogsAlertDefinition() *schema.Resource {
 									"percentage_of_deviation": &schema.Schema{
 										Type:        schema.TypeFloat,
 										Computed:    true,
-										Description: "The percentage of deviation from the baseline for triggering the alert.",
+										Description: "The percentage of deviation from the baseline when the alert is triggered.",
 									},
 								},
 							},
@@ -1441,7 +1441,7 @@ func DataSourceIbmLogsAlertDefinition() *schema.Resource {
 																		"value": &schema.Schema{
 																			Type:        schema.TypeString,
 																			Computed:    true,
-																			Description: "/ The value of the label to filter by.",
+																			Description: "The value used to filter the label.",
 																		},
 																		"operation": &schema.Schema{
 																			Type:        schema.TypeString,
@@ -1460,7 +1460,7 @@ func DataSourceIbmLogsAlertDefinition() *schema.Resource {
 																		"value": &schema.Schema{
 																			Type:        schema.TypeString,
 																			Computed:    true,
-																			Description: "/ The value of the label to filter by.",
+																			Description: "The value used to filter the label.",
 																		},
 																		"operation": &schema.Schema{
 																			Type:        schema.TypeString,
@@ -1490,7 +1490,7 @@ func DataSourceIbmLogsAlertDefinition() *schema.Resource {
 						"rules": &schema.Schema{
 							Type:        schema.TypeList,
 							Computed:    true,
-							Description: "The rules for the log new value alert.",
+							Description: "The condition rules for the log new value alert.",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"condition": &schema.Schema{
@@ -1527,7 +1527,7 @@ func DataSourceIbmLogsAlertDefinition() *schema.Resource {
 						"notification_payload_filter": &schema.Schema{
 							Type:        schema.TypeList,
 							Computed:    true,
-							Description: "The filter to specify which fields to include in the notification payload.",
+							Description: "The filter to specify which fields are included in the notification payload.",
 							Elem: &schema.Schema{
 								Type: schema.TypeString,
 							},
@@ -1573,7 +1573,7 @@ func DataSourceIbmLogsAlertDefinition() *schema.Resource {
 																		"value": &schema.Schema{
 																			Type:        schema.TypeString,
 																			Computed:    true,
-																			Description: "/ The value of the label to filter by.",
+																			Description: "The value used to filter the label.",
 																		},
 																		"operation": &schema.Schema{
 																			Type:        schema.TypeString,
@@ -1592,7 +1592,7 @@ func DataSourceIbmLogsAlertDefinition() *schema.Resource {
 																		"value": &schema.Schema{
 																			Type:        schema.TypeString,
 																			Computed:    true,
-																			Description: "/ The value of the label to filter by.",
+																			Description: "The value used to filter the label.",
 																		},
 																		"operation": &schema.Schema{
 																			Type:        schema.TypeString,
@@ -1622,7 +1622,7 @@ func DataSourceIbmLogsAlertDefinition() *schema.Resource {
 						"rules": &schema.Schema{
 							Type:        schema.TypeList,
 							Computed:    true,
-							Description: "The rules for the log unique count alert.",
+							Description: "Rules defining the conditions for the unique count alert.",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"condition": &schema.Schema{
@@ -1659,7 +1659,7 @@ func DataSourceIbmLogsAlertDefinition() *schema.Resource {
 						"notification_payload_filter": &schema.Schema{
 							Type:        schema.TypeList,
 							Computed:    true,
-							Description: "The filter to specify which fields to include in the notification payload.",
+							Description: "The filter to specify which fields are included in the notification payload.",
 							Elem: &schema.Schema{
 								Type: schema.TypeString,
 							},
@@ -1773,12 +1773,14 @@ func dataSourceIbmLogsAlertDefinitionRead(context context.Context, d *schema.Res
 		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting type: %s", err), "(Data) ibm_logs_alert_definition", "read", "set-type").GetDiag()
 	}
 
-	groupByKeys := []interface{}{}
-	for _, groupByKeysItem := range alertDefinition.GroupByKeys {
-		groupByKeys = append(groupByKeys, groupByKeysItem)
-	}
-	if err = d.Set("group_by_keys", groupByKeys); err != nil {
-		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting group_by_keys: %s", err), "(Data) ibm_logs_alert_definition", "read", "set-group_by_keys").GetDiag()
+	if !core.IsNil(alertDefinition.GroupByKeys) {
+		groupByKeys := []interface{}{}
+		for _, groupByKeysItem := range alertDefinition.GroupByKeys {
+			groupByKeys = append(groupByKeys, groupByKeysItem)
+		}
+		if err = d.Set("group_by_keys", groupByKeys); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting group_by_keys: %s", err), "(Data) ibm_logs_alert_definition", "read", "set-group_by_keys").GetDiag()
+		}
 	}
 
 	if !core.IsNil(alertDefinition.IncidentsSettings) {
@@ -1986,16 +1988,20 @@ func DataSourceIbmLogsAlertDefinitionApisAlertDefinitionAlertDefIncidentSettings
 
 func DataSourceIbmLogsAlertDefinitionApisAlertDefinitionAlertDefNotificationGroupToMap(model *logsv0.ApisAlertDefinitionAlertDefNotificationGroup) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	modelMap["group_by_keys"] = model.GroupByKeys
-	webhooks := []map[string]interface{}{}
-	for _, webhooksItem := range model.Webhooks {
-		webhooksItemMap, err := DataSourceIbmLogsAlertDefinitionApisAlertDefinitionAlertDefWebhooksSettingsToMap(&webhooksItem) // #nosec G601
-		if err != nil {
-			return modelMap, err
-		}
-		webhooks = append(webhooks, webhooksItemMap)
+	if model.GroupByKeys != nil {
+		modelMap["group_by_keys"] = model.GroupByKeys
 	}
-	modelMap["webhooks"] = webhooks
+	if model.Webhooks != nil {
+		webhooks := []map[string]interface{}{}
+		for _, webhooksItem := range model.Webhooks {
+			webhooksItemMap, err := DataSourceIbmLogsAlertDefinitionApisAlertDefinitionAlertDefWebhooksSettingsToMap(&webhooksItem) // #nosec G601
+			if err != nil {
+				return modelMap, err
+			}
+			webhooks = append(webhooks, webhooksItemMap)
+		}
+		modelMap["webhooks"] = webhooks
+	}
 	return modelMap, nil
 }
 
@@ -2082,25 +2088,31 @@ func DataSourceIbmLogsAlertDefinitionApisAlertDefinitionLogsSimpleFilterToMap(mo
 
 func DataSourceIbmLogsAlertDefinitionApisAlertDefinitionLabelFiltersToMap(model *logsv0.ApisAlertDefinitionLabelFilters) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	applicationName := []map[string]interface{}{}
-	for _, applicationNameItem := range model.ApplicationName {
-		applicationNameItemMap, err := DataSourceIbmLogsAlertDefinitionApisAlertDefinitionLabelFilterTypeToMap(&applicationNameItem) // #nosec G601
-		if err != nil {
-			return modelMap, err
+	if model.ApplicationName != nil {
+		applicationName := []map[string]interface{}{}
+		for _, applicationNameItem := range model.ApplicationName {
+			applicationNameItemMap, err := DataSourceIbmLogsAlertDefinitionApisAlertDefinitionLabelFilterTypeToMap(&applicationNameItem) // #nosec G601
+			if err != nil {
+				return modelMap, err
+			}
+			applicationName = append(applicationName, applicationNameItemMap)
 		}
-		applicationName = append(applicationName, applicationNameItemMap)
+		modelMap["application_name"] = applicationName
 	}
-	modelMap["application_name"] = applicationName
-	subsystemName := []map[string]interface{}{}
-	for _, subsystemNameItem := range model.SubsystemName {
-		subsystemNameItemMap, err := DataSourceIbmLogsAlertDefinitionApisAlertDefinitionLabelFilterTypeToMap(&subsystemNameItem) // #nosec G601
-		if err != nil {
-			return modelMap, err
+	if model.SubsystemName != nil {
+		subsystemName := []map[string]interface{}{}
+		for _, subsystemNameItem := range model.SubsystemName {
+			subsystemNameItemMap, err := DataSourceIbmLogsAlertDefinitionApisAlertDefinitionLabelFilterTypeToMap(&subsystemNameItem) // #nosec G601
+			if err != nil {
+				return modelMap, err
+			}
+			subsystemName = append(subsystemName, subsystemNameItemMap)
 		}
-		subsystemName = append(subsystemName, subsystemNameItemMap)
+		modelMap["subsystem_name"] = subsystemName
 	}
-	modelMap["subsystem_name"] = subsystemName
-	modelMap["severities"] = model.Severities
+	if model.Severities != nil {
+		modelMap["severities"] = model.Severities
+	}
 	return modelMap, nil
 }
 

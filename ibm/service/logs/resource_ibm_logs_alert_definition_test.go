@@ -102,7 +102,6 @@ func testAccCheckIbmLogsAlertDefinitionConfigBasic(name string, description stri
 		name        = "%s"
 		description = "%s"
 		enabled     = true
-		group_by_keys = ["ibm.logId"]
 		entity_labels = {
 			"key" = "value"
 		}
@@ -203,6 +202,8 @@ func testAccCheckIbmLogsAlertDefinitionExists(n string, obj logsv0.AlertDefiniti
 		if err != nil {
 			return err
 		}
+		logsClient = getTestClientWithLogsInstanceEndpoint(logsClient)
+
 		resourceID, err := flex.IdParts(rs.Primary.ID)
 		if err != nil {
 			return err
@@ -228,6 +229,7 @@ func testAccCheckIbmLogsAlertDefinitionDestroy(s *terraform.State) error {
 	if err != nil {
 		return err
 	}
+	logsClient = getTestClientWithLogsInstanceEndpoint(logsClient)
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "ibm_logs_alert_definition" {
 			continue

@@ -14,8 +14,17 @@ Provides a read-only data source to retrieve information about logs_alert_defini
 
 ```hcl
 data "ibm_logs_alert_definitions" "logs_alert_definitions" {
+	instance_id = "470e285d-3354-44f8-8119-c91902d23"
+  	region      = "eu-gb"
 }
 ```
+
+## Argument Reference
+
+You can specify the following arguments for this data source.
+
+* `instance_id` - (Required, Forces new resource, String)  Cloud Logs Instance GUID.
+* `region` - (Optional, Forces new resource, String) Cloud Logs Instance Region.
 
 
 ## Attribute Reference
@@ -32,33 +41,33 @@ Nested schema for **alert_definitions**:
 		  * Constraints: Allowable list items are: `monday_or_unspecified`, `tuesday`, `wednesday`, `thursday`, `friday`, `saturday`, `sunday`. The maximum length is `7` items. The minimum length is `1` item.
 		* `end_time` - (List) Start time of the alert activity.
 		Nested schema for **end_time**:
-			* `hours` - (Integer) Hours of day in 24 hour format. Should be from 0 to 23.
+			* `hours` - (Integer) The hour of the day in 24-hour format. Must be an integer between 0 and 23.
 			  * Constraints: The maximum value is `23`. The minimum value is `0`.
-			* `minutes` - (Integer) Minutes of hour of day. Must be from 0 to 59.
+			* `minutes` - (Integer) Minute of the hour of the day. Must be an integer between 0 and 59.
 			  * Constraints: The maximum value is `59`. The minimum value is `0`.
 		* `start_time` - (List) Start time of the alert activity.
 		Nested schema for **start_time**:
-			* `hours` - (Integer) Hours of day in 24 hour format. Should be from 0 to 23.
+			* `hours` - (Integer) The hour of the day in 24-hour format. Must be an integer between 0 and 23.
 			  * Constraints: The maximum value is `23`. The minimum value is `0`.
-			* `minutes` - (Integer) Minutes of hour of day. Must be from 0 to 59.
+			* `minutes` - (Integer) Minute of the hour of the day. Must be an integer between 0 and 59.
 			  * Constraints: The maximum value is `59`. The minimum value is `0`.
-	* `alert_version_id` - (String) The old alert ID.
+	* `alert_version_id` - (String) The previous or old alert ID.
 	  * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/`.
 	* `created_time` - (String) The time when the alert definition was created.
 	* `deleted` - (Boolean) Whether the alert has been marked as deleted.
 	* `description` - (String) A detailed description of what the alert monitors and when it triggers.
 	  * Constraints: The maximum length is `4096` characters. The minimum length is `1` character. The value must match regular expression `/^[\\p{L}\\p{N}\\p{P}\\p{Z}\\p{S}\\p{M}]+$/`.
-	* `enabled` - (Boolean) Whether the alert is currently active and monitoring.
+	* `enabled` - (Boolean) Whether the alert is currently active and monitoring. If true, alert is active.
 	* `entity_labels` - (Map) Labels used to identify and categorize the alert entity.
-	* `flow` - (List) Configuration for flow-based alerts.
+	* `flow` - (List) Configuration for flow alerts.
 	Nested schema for **flow**:
 		* `enforce_suppression` - (Boolean) Whether to enforce suppression for the flow alert.
-		* `stages` - (List) The stages of the flow alert.
+		* `stages` - (List) The definition of stages of the flow alert.
 		  * Constraints: The maximum length is `4096` items. The minimum length is `1` item.
 		Nested schema for **stages**:
-			* `flow_stages_groups` - (List) Flow stages groups.
+			* `flow_stages_groups` - (List) The definition of groups in the flow alert.
 			Nested schema for **flow_stages_groups**:
-				* `groups` - (List) The groups of stages in the flow alert.
+				* `groups` - (List) The definition of an array of groups with alerts and logical operation among those alerts in the flow alert.
 				  * Constraints: The maximum length is `4096` items. The minimum length is `1` item.
 				Nested schema for **groups**:
 					* `alert_defs` - (List) The alert definitions for the flow stage group.
@@ -66,7 +75,7 @@ Nested schema for **alert_definitions**:
 					Nested schema for **alert_defs**:
 						* `id` - (String) The alert definition ID.
 						  * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/`.
-						* `not` - (Boolean) Whether to negate the alert definition or not.
+						* `not` - (Boolean) Whether or not to negate the alert definition. If true, flow checks for the negate condition of the respective alert.
 					* `alerts_op` - (String) The logical operation to apply to the alerts in the group.
 					  * Constraints: Allowable values are: `and_or_unspecified`, `or`.
 					* `next_op` - (String) The logical operation to apply to the next stage.
@@ -77,20 +86,20 @@ Nested schema for **alert_definitions**:
 			  * Constraints: Allowable values are: `unspecified`, `up_to`.
 	* `group_by_keys` - (List) Keys used to group and aggregate alert data.
 	  * Constraints: The list items must match regular expression `/^[\\p{L}\\p{N}\\p{P}\\p{Z}\\p{S}\\p{M}]+$/`. The maximum length is `2` items. The minimum length is `0` items.
-	* `id` - (String) This is the alert definition's persistent ID (does not change on replace), AKA UniqueIdentifier.
+	* `id` - (String) This is the alert definition's persistent ID (UniqueIdentifier). This ID does not change when the alert is updated.
 	  * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/`.
 	* `incidents_settings` - (List) Incident creation and management settings.
 	Nested schema for **incidents_settings**:
-		* `minutes` - (Integer) The time in minutes before the alert can be retriggered.
+		* `minutes` - (Integer) The time in minutes before the alert can be triggered again.
 		  * Constraints: The maximum value is `4294967295`. The minimum value is `0`.
-		* `notify_on` - (String) The condition to notify about the alert.
+		* `notify_on` - (String) Indicate if the alert should be triggered or triggered and resolved.
 		  * Constraints: Allowable values are: `triggered_only_unspecified`, `triggered_and_resolved`.
-	* `logs_anomaly` - (List) Configuration for log-based anomaly detection alerts.
+	* `logs_anomaly` - (List) Configuration for the log-based anomaly detection alerts.
 	Nested schema for **logs_anomaly**:
 		* `anomaly_alert_settings` - (List) The anomaly alert settings configuration.
 		Nested schema for **anomaly_alert_settings**:
-			* `percentage_of_deviation` - (Float) The percentage of deviation from the baseline for triggering the alert.
-		* `condition_type` - (String) The type of condition for the alert.
+			* `percentage_of_deviation` - (Float) The percentage of deviation from the baseline when the alert is triggered.
+		* `condition_type` - (String) The condition type for the alert.
 		  * Constraints: Allowable values are: `more_than_usual_or_unspecified`.
 		* `evaluation_delay_ms` - (Integer) The delay in milliseconds before evaluating the alert condition.
 		  * Constraints: The maximum value is `2147483647`. The minimum value is `0`.
@@ -105,7 +114,7 @@ Nested schema for **alert_definitions**:
 					Nested schema for **application_name**:
 						* `operation` - (String) The operation to perform on the label value.
 						  * Constraints: Allowable values are: `is_or_unspecified`, `includes`, `ends_with`, `starts_with`.
-						* `value` - (String) / The value of the label to filter by.
+						* `value` - (String) The value used to filter the label.
 						  * Constraints: The maximum length is `4096` characters. The minimum length is `1` character. The value must match regular expression `/^.*$/`.
 					* `severities` - (List) Filter by log severities.
 					  * Constraints: Allowable list items are: `verbose_unspecified`, `debug`, `info`, `warning`, `error`, `critical`. The maximum length is `4096` items. The minimum length is `0` items.
@@ -114,13 +123,13 @@ Nested schema for **alert_definitions**:
 					Nested schema for **subsystem_name**:
 						* `operation` - (String) The operation to perform on the label value.
 						  * Constraints: Allowable values are: `is_or_unspecified`, `includes`, `ends_with`, `starts_with`.
-						* `value` - (String) / The value of the label to filter by.
+						* `value` - (String) The value used to filter the label.
 						  * Constraints: The maximum length is `4096` characters. The minimum length is `1` character. The value must match regular expression `/^.*$/`.
 				* `lucene_query` - (String) The Lucene query to filter logs.
 				  * Constraints: The maximum length is `4096` characters. The minimum length is `1` character. The value must match regular expression `/^[\\p{L}\\p{N}\\p{P}\\p{Z}\\p{S}\\p{M}]+$/`.
-		* `notification_payload_filter` - (List) The notification payload filter to specify which fields to include in the notification.
+		* `notification_payload_filter` - (List) The notification payload filter to specify which fields are included in the notification.
 		  * Constraints: The list items must match regular expression `/^[a-zA-Z0-9_.]+$/`. The maximum length is `4096` items. The minimum length is `0` items.
-		* `rules` - (List) The rules for the log anomaly alert.
+		* `rules` - (List) The condition rules for the log anomaly alert.
 		  * Constraints: The maximum length is `1` item. The minimum length is `1` item.
 		Nested schema for **rules**:
 			* `condition` - (List) The condition for the anomaly alert.
@@ -128,7 +137,7 @@ Nested schema for **alert_definitions**:
 				* `minimum_threshold` - (Float) The threshold value for the alert condition.
 				* `time_window` - (List) The time window for the alert condition.
 				Nested schema for **time_window**:
-					* `logs_time_window_specific_value` - (String) A time window defined by a specific value.
+					* `logs_time_window_specific_value` - (String) The time window defined for an alert to be triggered.
 					  * Constraints: Allowable values are: `minutes_5_or_unspecified`, `minutes_10`, `minutes_20`, `minutes_15`, `minutes_30`, `hour_1`, `hours_2`, `hours_4`, `hours_6`, `hours_12`, `hours_24`, `hours_36`.
 	* `logs_immediate` - (List) Configuration for immediate log-based alerts.
 	Nested schema for **logs_immediate**:
@@ -143,7 +152,7 @@ Nested schema for **alert_definitions**:
 					Nested schema for **application_name**:
 						* `operation` - (String) The operation to perform on the label value.
 						  * Constraints: Allowable values are: `is_or_unspecified`, `includes`, `ends_with`, `starts_with`.
-						* `value` - (String) / The value of the label to filter by.
+						* `value` - (String) The value used to filter the label.
 						  * Constraints: The maximum length is `4096` characters. The minimum length is `1` character. The value must match regular expression `/^.*$/`.
 					* `severities` - (List) Filter by log severities.
 					  * Constraints: Allowable list items are: `verbose_unspecified`, `debug`, `info`, `warning`, `error`, `critical`. The maximum length is `4096` items. The minimum length is `0` items.
@@ -152,11 +161,11 @@ Nested schema for **alert_definitions**:
 					Nested schema for **subsystem_name**:
 						* `operation` - (String) The operation to perform on the label value.
 						  * Constraints: Allowable values are: `is_or_unspecified`, `includes`, `ends_with`, `starts_with`.
-						* `value` - (String) / The value of the label to filter by.
+						* `value` - (String) The value used to filter the label.
 						  * Constraints: The maximum length is `4096` characters. The minimum length is `1` character. The value must match regular expression `/^.*$/`.
 				* `lucene_query` - (String) The Lucene query to filter logs.
 				  * Constraints: The maximum length is `4096` characters. The minimum length is `1` character. The value must match regular expression `/^[\\p{L}\\p{N}\\p{P}\\p{Z}\\p{S}\\p{M}]+$/`.
-		* `notification_payload_filter` - (List) The filter to specify which fields to include in the notification payload.
+		* `notification_payload_filter` - (List) The filter to specify which fields are included in the notification payload.
 		  * Constraints: The list items must match regular expression `/^[a-zA-Z0-9_.]+$/`. The maximum length is `4096` items. The minimum length is `0` items.
 	* `logs_new_value` - (List) Configuration for alerts triggered by new log values.
 	Nested schema for **logs_new_value**:
@@ -171,7 +180,7 @@ Nested schema for **alert_definitions**:
 					Nested schema for **application_name**:
 						* `operation` - (String) The operation to perform on the label value.
 						  * Constraints: Allowable values are: `is_or_unspecified`, `includes`, `ends_with`, `starts_with`.
-						* `value` - (String) / The value of the label to filter by.
+						* `value` - (String) The value used to filter the label.
 						  * Constraints: The maximum length is `4096` characters. The minimum length is `1` character. The value must match regular expression `/^.*$/`.
 					* `severities` - (List) Filter by log severities.
 					  * Constraints: Allowable list items are: `verbose_unspecified`, `debug`, `info`, `warning`, `error`, `critical`. The maximum length is `4096` items. The minimum length is `0` items.
@@ -180,13 +189,13 @@ Nested schema for **alert_definitions**:
 					Nested schema for **subsystem_name**:
 						* `operation` - (String) The operation to perform on the label value.
 						  * Constraints: Allowable values are: `is_or_unspecified`, `includes`, `ends_with`, `starts_with`.
-						* `value` - (String) / The value of the label to filter by.
+						* `value` - (String) The value used to filter the label.
 						  * Constraints: The maximum length is `4096` characters. The minimum length is `1` character. The value must match regular expression `/^.*$/`.
 				* `lucene_query` - (String) The Lucene query to filter logs.
 				  * Constraints: The maximum length is `4096` characters. The minimum length is `1` character. The value must match regular expression `/^[\\p{L}\\p{N}\\p{P}\\p{Z}\\p{S}\\p{M}]+$/`.
-		* `notification_payload_filter` - (List) The filter to specify which fields to include in the notification payload.
+		* `notification_payload_filter` - (List) The filter to specify which fields are included in the notification payload.
 		  * Constraints: The list items must match regular expression `/^[a-zA-Z0-9_.]+$/`. The maximum length is `4096` items. The minimum length is `0` items.
-		* `rules` - (List) The rules for the log new value alert.
+		* `rules` - (List) The condition rules for the log new value alert.
 		  * Constraints: The maximum length is `1` item. The minimum length is `1` item.
 		Nested schema for **rules**:
 			* `condition` - (List) The condition for detecting new values in logs.
@@ -197,9 +206,9 @@ Nested schema for **alert_definitions**:
 				Nested schema for **time_window**:
 					* `logs_new_value_time_window_specific_value` - (String) A time window defined by a specific value.
 					  * Constraints: Allowable values are: `hours_12_or_unspecified`, `hours_24`, `hours_48`, `hours_72`, `week_1`, `month_1`, `months_2`, `months_3`.
-	* `logs_ratio_threshold` - (List) Configuration for log-based ratio threshold alerts.
+	* `logs_ratio_threshold` - (List) Configuration for the log-based ratio threshold alerts.
 	Nested schema for **logs_ratio_threshold**:
-		* `condition_type` - (String) The type of condition for the alert.
+		* `condition_type` - (String) The condition type for the alert.
 		  * Constraints: Allowable values are: `more_than_or_unspecified`, `less_than`.
 		* `denominator` - (List) The filter to match log entries for immediate alerts.
 		Nested schema for **denominator**:
@@ -212,7 +221,7 @@ Nested schema for **alert_definitions**:
 					Nested schema for **application_name**:
 						* `operation` - (String) The operation to perform on the label value.
 						  * Constraints: Allowable values are: `is_or_unspecified`, `includes`, `ends_with`, `starts_with`.
-						* `value` - (String) / The value of the label to filter by.
+						* `value` - (String) The value used to filter the label.
 						  * Constraints: The maximum length is `4096` characters. The minimum length is `1` character. The value must match regular expression `/^.*$/`.
 					* `severities` - (List) Filter by log severities.
 					  * Constraints: Allowable list items are: `verbose_unspecified`, `debug`, `info`, `warning`, `error`, `critical`. The maximum length is `4096` items. The minimum length is `0` items.
@@ -221,7 +230,7 @@ Nested schema for **alert_definitions**:
 					Nested schema for **subsystem_name**:
 						* `operation` - (String) The operation to perform on the label value.
 						  * Constraints: Allowable values are: `is_or_unspecified`, `includes`, `ends_with`, `starts_with`.
-						* `value` - (String) / The value of the label to filter by.
+						* `value` - (String) The value used to filter the label.
 						  * Constraints: The maximum length is `4096` characters. The minimum length is `1` character. The value must match regular expression `/^.*$/`.
 				* `lucene_query` - (String) The Lucene query to filter logs.
 				  * Constraints: The maximum length is `4096` characters. The minimum length is `1` character. The value must match regular expression `/^[\\p{L}\\p{N}\\p{P}\\p{Z}\\p{S}\\p{M}]+$/`.
@@ -231,8 +240,8 @@ Nested schema for **alert_definitions**:
 		  * Constraints: The maximum value is `2147483647`. The minimum value is `0`.
 		* `group_by_for` - (String) The group by settings for the numerator and denominator filters.
 		  * Constraints: Allowable values are: `both_or_unspecified`, `numerator_only`, `denumerator_only`.
-		* `ignore_infinity` - (Boolean) The configuration for ignoring infinity values in the ratio.
-		* `notification_payload_filter` - (List) The filter to specify which fields to include in the notification payload.
+		* `ignore_infinity` - (Boolean) Determine whether to ignore an infinity result or not. If true, alert is not triggered. When the value of second query is 0, the result of the ratio will be infinity.
+		* `notification_payload_filter` - (List) The filter to specify which fields are included in the notification payload.
 		  * Constraints: The list items must match regular expression `/^[a-zA-Z0-9_.]+$/`. The maximum length is `4096` items. The minimum length is `0` items.
 		* `numerator` - (List) The filter to match log entries for immediate alerts.
 		Nested schema for **numerator**:
@@ -245,7 +254,7 @@ Nested schema for **alert_definitions**:
 					Nested schema for **application_name**:
 						* `operation` - (String) The operation to perform on the label value.
 						  * Constraints: Allowable values are: `is_or_unspecified`, `includes`, `ends_with`, `starts_with`.
-						* `value` - (String) / The value of the label to filter by.
+						* `value` - (String) The value used to filter the label.
 						  * Constraints: The maximum length is `4096` characters. The minimum length is `1` character. The value must match regular expression `/^.*$/`.
 					* `severities` - (List) Filter by log severities.
 					  * Constraints: Allowable list items are: `verbose_unspecified`, `debug`, `info`, `warning`, `error`, `critical`. The maximum length is `4096` items. The minimum length is `0` items.
@@ -254,13 +263,13 @@ Nested schema for **alert_definitions**:
 					Nested schema for **subsystem_name**:
 						* `operation` - (String) The operation to perform on the label value.
 						  * Constraints: Allowable values are: `is_or_unspecified`, `includes`, `ends_with`, `starts_with`.
-						* `value` - (String) / The value of the label to filter by.
+						* `value` - (String) The value used to filter the label.
 						  * Constraints: The maximum length is `4096` characters. The minimum length is `1` character. The value must match regular expression `/^.*$/`.
 				* `lucene_query` - (String) The Lucene query to filter logs.
 				  * Constraints: The maximum length is `4096` characters. The minimum length is `1` character. The value must match regular expression `/^[\\p{L}\\p{N}\\p{P}\\p{Z}\\p{S}\\p{M}]+$/`.
 		* `numerator_alias` - (String) The alias for the numerator filter, used for display purposes.
 		  * Constraints: The maximum length is `4096` characters. The minimum length is `1` character. The value must match regular expression `/^[\\p{L}\\p{N}\\p{P}\\p{Z}\\p{S}\\p{M}]+$/`.
-		* `rules` - (List) The rules for the ratio alert.
+		* `rules` - (List) The condition rules for the ratio alert.
 		  * Constraints: The maximum length is `5` items. The minimum length is `1` item.
 		Nested schema for **rules**:
 			* `condition` - (List) The condition for the ratio alert.
@@ -278,10 +287,10 @@ Nested schema for **alert_definitions**:
 		Nested schema for **undetected_values_management**:
 			* `auto_retire_timeframe` - (String) The timeframe for auto-retiring the alert when undetected values are detected.
 			  * Constraints: Allowable values are: `never_or_unspecified`, `minutes_5`, `minutes_10`, `hour_1`, `hours_2`, `hours_6`, `hours_12`, `hours_24`.
-			* `trigger_undetected_values` - (Boolean) Should trigger the alert when undetected values are detected.
-	* `logs_threshold` - (List) Configuration for log-based threshold alerts.
+			* `trigger_undetected_values` - (Boolean) Should trigger the alert when undetected values are detected. If true, alert is triggered.
+	* `logs_threshold` - (List) Configuration for the log-based threshold alerts.
 	Nested schema for **logs_threshold**:
-		* `condition_type` - (String) The type of condition for the alert.
+		* `condition_type` - (String) The condition type for the alert.
 		  * Constraints: Allowable values are: `more_than_or_unspecified`, `less_than`.
 		* `evaluation_delay_ms` - (Integer) The delay in milliseconds before evaluating the alert condition.
 		  * Constraints: The maximum value is `2147483647`. The minimum value is `0`.
@@ -296,7 +305,7 @@ Nested schema for **alert_definitions**:
 					Nested schema for **application_name**:
 						* `operation` - (String) The operation to perform on the label value.
 						  * Constraints: Allowable values are: `is_or_unspecified`, `includes`, `ends_with`, `starts_with`.
-						* `value` - (String) / The value of the label to filter by.
+						* `value` - (String) The value used to filter the label.
 						  * Constraints: The maximum length is `4096` characters. The minimum length is `1` character. The value must match regular expression `/^.*$/`.
 					* `severities` - (List) Filter by log severities.
 					  * Constraints: Allowable list items are: `verbose_unspecified`, `debug`, `info`, `warning`, `error`, `critical`. The maximum length is `4096` items. The minimum length is `0` items.
@@ -305,13 +314,13 @@ Nested schema for **alert_definitions**:
 					Nested schema for **subsystem_name**:
 						* `operation` - (String) The operation to perform on the label value.
 						  * Constraints: Allowable values are: `is_or_unspecified`, `includes`, `ends_with`, `starts_with`.
-						* `value` - (String) / The value of the label to filter by.
+						* `value` - (String) The value used to filter the label.
 						  * Constraints: The maximum length is `4096` characters. The minimum length is `1` character. The value must match regular expression `/^.*$/`.
 				* `lucene_query` - (String) The Lucene query to filter logs.
 				  * Constraints: The maximum length is `4096` characters. The minimum length is `1` character. The value must match regular expression `/^[\\p{L}\\p{N}\\p{P}\\p{Z}\\p{S}\\p{M}]+$/`.
-		* `notification_payload_filter` - (List) The filter to specify which fields to include in the notification payload.
+		* `notification_payload_filter` - (List) The filter to specify which fields are included in the notification payload.
 		  * Constraints: The list items must match regular expression `/^[a-zA-Z0-9_.]+$/`. The maximum length is `4096` items. The minimum length is `0` items.
-		* `rules` - (List) The rules for the threshold alert.
+		* `rules` - (List) The condition rules for the threshold alert.
 		  * Constraints: The maximum length is `5` items. The minimum length is `1` item.
 		Nested schema for **rules**:
 			* `condition` - (List) The condition for the threshold alert.
@@ -319,7 +328,7 @@ Nested schema for **alert_definitions**:
 				* `threshold` - (Float) The threshold value for the alert condition.
 				* `time_window` - (List) The time window for the alert condition.
 				Nested schema for **time_window**:
-					* `logs_time_window_specific_value` - (String) A time window defined by a specific value.
+					* `logs_time_window_specific_value` - (String) The time window defined for an alert to be triggered.
 					  * Constraints: Allowable values are: `minutes_5_or_unspecified`, `minutes_10`, `minutes_20`, `minutes_15`, `minutes_30`, `hour_1`, `hours_2`, `hours_4`, `hours_6`, `hours_12`, `hours_24`, `hours_36`.
 			* `override` - (List) The override settings for the alert.
 			Nested schema for **override**:
@@ -329,7 +338,7 @@ Nested schema for **alert_definitions**:
 		Nested schema for **undetected_values_management**:
 			* `auto_retire_timeframe` - (String) The timeframe for auto-retiring the alert when undetected values are detected.
 			  * Constraints: Allowable values are: `never_or_unspecified`, `minutes_5`, `minutes_10`, `hour_1`, `hours_2`, `hours_6`, `hours_12`, `hours_24`.
-			* `trigger_undetected_values` - (Boolean) Should trigger the alert when undetected values are detected.
+			* `trigger_undetected_values` - (Boolean) Should trigger the alert when undetected values are detected. If true, alert is triggered.
 	* `logs_time_relative_threshold` - (List) Configuration for time-relative log threshold alerts.
 	Nested schema for **logs_time_relative_threshold**:
 		* `condition_type` - (String) The delay in milliseconds before evaluating the alert condition.
@@ -348,7 +357,7 @@ Nested schema for **alert_definitions**:
 					Nested schema for **application_name**:
 						* `operation` - (String) The operation to perform on the label value.
 						  * Constraints: Allowable values are: `is_or_unspecified`, `includes`, `ends_with`, `starts_with`.
-						* `value` - (String) / The value of the label to filter by.
+						* `value` - (String) The value used to filter the label.
 						  * Constraints: The maximum length is `4096` characters. The minimum length is `1` character. The value must match regular expression `/^.*$/`.
 					* `severities` - (List) Filter by log severities.
 					  * Constraints: Allowable list items are: `verbose_unspecified`, `debug`, `info`, `warning`, `error`, `critical`. The maximum length is `4096` items. The minimum length is `0` items.
@@ -357,13 +366,13 @@ Nested schema for **alert_definitions**:
 					Nested schema for **subsystem_name**:
 						* `operation` - (String) The operation to perform on the label value.
 						  * Constraints: Allowable values are: `is_or_unspecified`, `includes`, `ends_with`, `starts_with`.
-						* `value` - (String) / The value of the label to filter by.
+						* `value` - (String) The value used to filter the label.
 						  * Constraints: The maximum length is `4096` characters. The minimum length is `1` character. The value must match regular expression `/^.*$/`.
 				* `lucene_query` - (String) The Lucene query to filter logs.
 				  * Constraints: The maximum length is `4096` characters. The minimum length is `1` character. The value must match regular expression `/^[\\p{L}\\p{N}\\p{P}\\p{Z}\\p{S}\\p{M}]+$/`.
-		* `notification_payload_filter` - (List) The filter to specify which fields to include in the notification payload.
+		* `notification_payload_filter` - (List) The filter to specify which fields are included in the notification payload.
 		  * Constraints: The list items must match regular expression `/^[a-zA-Z0-9_.]+$/`. The maximum length is `4096` items. The minimum length is `0` items.
-		* `rules` - (List) The rules for the time-relative alert.
+		* `rules` - (List) The condition rules for the time-relative alert.
 		  * Constraints: The maximum length is `5` items. The minimum length is `1` item.
 		Nested schema for **rules**:
 			* `condition` - (List) The condition for the time-relative alert.
@@ -379,7 +388,7 @@ Nested schema for **alert_definitions**:
 		Nested schema for **undetected_values_management**:
 			* `auto_retire_timeframe` - (String) The timeframe for auto-retiring the alert when undetected values are detected.
 			  * Constraints: Allowable values are: `never_or_unspecified`, `minutes_5`, `minutes_10`, `hour_1`, `hours_2`, `hours_6`, `hours_12`, `hours_24`.
-			* `trigger_undetected_values` - (Boolean) Should trigger the alert when undetected values are detected.
+			* `trigger_undetected_values` - (Boolean) Should trigger the alert when undetected values are detected. If true, alert is triggered.
 	* `logs_unique_count` - (List) Configuration for alerts based on unique log value counts.
 	Nested schema for **logs_unique_count**:
 		* `logs_filter` - (List) The filter to match log entries for immediate alerts.
@@ -393,7 +402,7 @@ Nested schema for **alert_definitions**:
 					Nested schema for **application_name**:
 						* `operation` - (String) The operation to perform on the label value.
 						  * Constraints: Allowable values are: `is_or_unspecified`, `includes`, `ends_with`, `starts_with`.
-						* `value` - (String) / The value of the label to filter by.
+						* `value` - (String) The value used to filter the label.
 						  * Constraints: The maximum length is `4096` characters. The minimum length is `1` character. The value must match regular expression `/^.*$/`.
 					* `severities` - (List) Filter by log severities.
 					  * Constraints: Allowable list items are: `verbose_unspecified`, `debug`, `info`, `warning`, `error`, `critical`. The maximum length is `4096` items. The minimum length is `0` items.
@@ -402,15 +411,15 @@ Nested schema for **alert_definitions**:
 					Nested schema for **subsystem_name**:
 						* `operation` - (String) The operation to perform on the label value.
 						  * Constraints: Allowable values are: `is_or_unspecified`, `includes`, `ends_with`, `starts_with`.
-						* `value` - (String) / The value of the label to filter by.
+						* `value` - (String) The value used to filter the label.
 						  * Constraints: The maximum length is `4096` characters. The minimum length is `1` character. The value must match regular expression `/^.*$/`.
 				* `lucene_query` - (String) The Lucene query to filter logs.
 				  * Constraints: The maximum length is `4096` characters. The minimum length is `1` character. The value must match regular expression `/^[\\p{L}\\p{N}\\p{P}\\p{Z}\\p{S}\\p{M}]+$/`.
 		* `max_unique_count_per_group_by_key` - (String) The maximum unique count per group by key.
 		  * Constraints: The maximum length is `19` characters. The minimum length is `1` character. The value must match regular expression `/^-?\\d{1,19}$/`.
-		* `notification_payload_filter` - (List) The filter to specify which fields to include in the notification payload.
+		* `notification_payload_filter` - (List) The filter to specify which fields are included in the notification payload.
 		  * Constraints: The list items must match regular expression `/^[a-zA-Z0-9_.]+$/`. The maximum length is `4096` items. The minimum length is `0` items.
-		* `rules` - (List) The rules for the log unique count alert.
+		* `rules` - (List) Rules defining the conditions for the unique count alert.
 		  * Constraints: The maximum length is `1` item. The minimum length is `1` item.
 		Nested schema for **rules**:
 			* `condition` - (List) The condition for detecting unique counts in logs.
@@ -427,8 +436,8 @@ Nested schema for **alert_definitions**:
 	Nested schema for **metric_anomaly**:
 		* `anomaly_alert_settings` - (List) The anomaly alert settings configuration.
 		Nested schema for **anomaly_alert_settings**:
-			* `percentage_of_deviation` - (Float) The percentage of deviation from the baseline for triggering the alert.
-		* `condition_type` - (String) The type of condition for the alert.
+			* `percentage_of_deviation` - (Float) The percentage of deviation from the baseline when the alert is triggered.
+		* `condition_type` - (String) The condition type for the alert.
 		  * Constraints: Allowable values are: `more_than_usual_or_unspecified`, `less_than_usual`.
 		* `evaluation_delay_ms` - (Integer) The delay in milliseconds before evaluating the alert condition.
 		  * Constraints: The maximum value is `2147483647`. The minimum value is `0`.
@@ -436,7 +445,7 @@ Nested schema for **alert_definitions**:
 		Nested schema for **metric_filter**:
 			* `promql` - (String) The filter is a PromQL expression.
 			  * Constraints: The maximum length is `4096` characters. The minimum length is `1` character. The value must match regular expression `/^[\\p{L}\\p{N}\\p{P}\\p{Z}\\p{S}\\p{M}]+$/`.
-		* `rules` - (List) The rules for the metric anomaly alert.
+		* `rules` - (List) The condition rules for the metric anomaly alert.
 		  * Constraints: The maximum length is `1` item. The minimum length is `1` item.
 		Nested schema for **rules**:
 			* `condition` - (List) The condition for the metric anomaly alert.
@@ -462,12 +471,12 @@ Nested schema for **alert_definitions**:
 		Nested schema for **metric_filter**:
 			* `promql` - (String) The filter is a PromQL expression.
 			  * Constraints: The maximum length is `4096` characters. The minimum length is `1` character. The value must match regular expression `/^[\\p{L}\\p{N}\\p{P}\\p{Z}\\p{S}\\p{M}]+$/`.
-		* `missing_values` - (List) Configuration for handling missing values in the alert.
+		* `missing_values` - (List) Configuration for handling missing values in the alert. Only one of `replace_with_zero` or `min_non_null_value_pct` is supported.
 		Nested schema for **missing_values**:
 			* `min_non_null_values_pct` - (Integer) If set, specifies the minimum percentage of non-null values required for the alert to be triggered.
 			  * Constraints: The maximum value is `4294967295`. The minimum value is `0`.
 			* `replace_with_zero` - (Boolean) If set to true, missing values will be replaced with zero.
-		* `rules` - (List) The rules for the metric threshold alert.
+		* `rules` - (List) The condition rules for the metric threshold alert.
 		  * Constraints: The maximum length is `5` items. The minimum length is `1` item.
 		Nested schema for **rules**:
 			* `condition` - (List) The condition for the metric threshold alert.
@@ -489,12 +498,12 @@ Nested schema for **alert_definitions**:
 		Nested schema for **undetected_values_management**:
 			* `auto_retire_timeframe` - (String) The timeframe for auto-retiring the alert when undetected values are detected.
 			  * Constraints: Allowable values are: `never_or_unspecified`, `minutes_5`, `minutes_10`, `hour_1`, `hours_2`, `hours_6`, `hours_12`, `hours_24`.
-			* `trigger_undetected_values` - (Boolean) Should trigger the alert when undetected values are detected.
+			* `trigger_undetected_values` - (Boolean) Should trigger the alert when undetected values are detected. If true, alert is triggered.
 	* `name` - (String) The name of the alert definition.
 	  * Constraints: The maximum length is `4096` characters. The minimum length is `1` character. The value must match regular expression `/^[\\p{L}\\p{N}\\p{P}\\p{Z}\\p{S}\\p{M}]+$/`.
 	* `notification_group` - (List) Primary notification group for alert events.
 	Nested schema for **notification_group**:
-		* `group_by_keys` - (List) The keys to group the alerts by.
+		* `group_by_keys` - (List) Group the alerts by these keys.
 		  * Constraints: The list items must match regular expression `/^[a-zA-Z0-9_.]+$/`. The maximum length is `4096` items. The minimum length is `0` items.
 		* `webhooks` - (List) The settings for webhooks associated with the alert definition.
 		  * Constraints: The maximum length is `4096` items. The minimum length is `0` items.
@@ -505,7 +514,7 @@ Nested schema for **alert_definitions**:
 				  * Constraints: The maximum value is `4294967295`. The minimum value is `0`.
 			* `minutes` - (Integer) The time in minutes before the notification is sent.
 			  * Constraints: The maximum value is `4294967295`. The minimum value is `0`.
-			* `notify_on` - (String) The condition to notify about the alert.
+			* `notify_on` - (String) Indicate if the alert should be triggered or triggered and resolved.
 			  * Constraints: Allowable values are: `triggered_only_unspecified`, `triggered_and_resolved`.
 	* `phantom_mode` - (Boolean) Whether the alert is in phantom mode (creating incidents or not).
 	* `priority` - (String) The priority of the alert definition.
