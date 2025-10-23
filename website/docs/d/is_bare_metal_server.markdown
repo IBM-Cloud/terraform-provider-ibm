@@ -91,6 +91,12 @@ In addition to all argument reference list, you can access the following attribu
 - `image` - (String) Image used in the bare metal server.
 - `keys` - (String) Image used in the bare metal server.
 - `memory` - (Integer) The amount of memory, truncated to whole gibibytes
+- `metadata_service` - (List) The metadata service configuration for the bare metal server
+  Nested scheme for `metadata_service`:
+  - `enabled` - (Boolean) Indicates whether the metadata service endpoint is available to the bare metal server
+  - `protocol` - (String) The communication protocol to use for the metadata service endpoint. Applies only when the metadata service is enabled.
+    - **http: HTTP protocol (unencrypted)**
+    - **https:  HTTP Secure protocol**
 - `name` - (String) The name of the bare metal server.
 - `network_attachments` - (List) The network attachments for this bare metal server, including the primary network attachment.
   Nested schema for **network_attachments**:

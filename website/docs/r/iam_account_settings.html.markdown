@@ -1,91 +1,93 @@
 ---
 subcategory: "Identity & Access Management (IAM)"
 layout: "ibm"
-page_title: "IBM : iam_account_settings"
+page_title: "IBM : ibm_iam_account_settings"
 description: |-
-  Manages IAM account settings.
+  Manages iam_account_settings.
 ---
 
 # ibm_iam_account_settings
 
-Create, modify, or delete an `iam_account_settings` resources. Access groups can be used to define a set of permissions that you want to grant to a group of users. For more information, about IAM account settings, refer to [setting up your IBM Cloud](https://cloud.ibm.com/docs/account?topic=account-account-getting-started).
+Create or update iam_account_settingss with this resource.
 
-## Example usage
+## Example Usage
 
-```terraform
+```hcl
 resource "ibm_iam_account_settings" "iam_account_settings_instance" {
   mfa = "LEVEL3"
   session_expiration_in_seconds = "40000"
 }
 ```
 
+## Argument Reference
 
+You can specify the following arguments for this resource.
 
-## Argument reference
-Review the argument references that you can specify for your resource. 
+* `account_id` - (Required, Forces new resource, String) Unique ID of the account.
+* `include_history` - (Optional, Boolean) Defines if the entity history is included in the response.
+  * Constraints: The default value is `false`.
+* `resolve_user_mfa` - (Optional, Boolean) Enrich MFA exemptions with user PI.
+  * Constraints: The default value is `false`.
 
-- `allowed_ip_addresses` - (Optional, String) Defines the IP addresses and subnets from which IAM tokens can be created for the account. **Note** value should be a comma separated string.
-- `include_history` - (Optional, Bool) Defines if the entity history is included in the response.
-- `if_match` - (Optional, String) Version of the account settings to update, if no value is supplied then the default value `*` is used to indicate to update any version available. This might result in stale updates.
-- `max_sessions_per_identity` - (Optional, String) Defines the maximum allowed sessions per identity required by the account. Supported valid values are
-  * Any whole number greater than '0' 
-  * NOT_SET - To unset account setting and use service default.
-- `mfa` - (Optional, String) Defines the MFA trait for the account. Supported valid values are
-  * NONE - No MFA trait set  
-  * TOTP - For all non-federated IBMId users
-  * TOTP4ALL - For all users
-  * LEVEL1 - Email based MFA for all users
-  * LEVEL2 - TOTP based MFA for all users
-  * LEVEL3 - U2F MFA for all users.
-- `user_mfa` - (Optional, List) List of users that are exempted from the MFA requirement of the account.
-Nested scheme for `user_mfa`:
-  - `iam_id` - (Required, String) The iam_id of the user.
-  - `mfa` - (Required, String) Defines the MFA requirement for the user. Valid values:  
-    * NONE - No MFA trait set  
-    * TOTP - For all non-federated IBMId users  
-    * TOTP4ALL - For all users  
-    * LEVEL1 - Email-based MFA for all users  
-    * LEVEL2 - TOTP-based MFA for all users  
-    * LEVEL3 - U2F MFA for all users.
-	  * Constraints: Allowable values are: `NONE`, `TOTP`, `TOTP4ALL`, `LEVEL1`, `LEVEL2`, `LEVEL3`.
-- `restrict_create_service_id` - (Optional, String) Defines whether or not creating a service ID is access controlled. Supported valid values are
-  * RESTRICTED - to apply access control  
-  * NOT_RESTRICTED - to remove access control  
-  * NOT_SET - to 'unset' a previous set value.
-- `restrict_create_platform_apikey` - (Optional, String) Defines whether or not creating platform API keys is access controlled.Supported valid values are  
-  * RESTRICTED - to apply access control  
-  * NOT_RESTRICTED - to remove access control  
-  * NOT_SET - to `unset` a previous set value.
-- `session_expiration_in_seconds` - (Optional, String) Defines the session expiration in seconds for the account. Supported valid values are  
-  * Any whole number between between `900` and `86400`.  
-  * NOT_SET - To unset account setting and use service default.
-- `session_invalidation_in_seconds` - (Optional, String) Defines the period of time in seconds in which a session is invalid due to inactivity. Supported valid values are  
-  * Any whole number between between `900` and `7200`.  
-  * NOT_SET - To unset account setting and use service default.
-- `system_access_token_expiration_in_seconds` - (Optional, String) Defines the access token expiration in seconds. Supported valid values are  
-  * Any whole number between '900' and '3600'  * NOT_SET - To unset account setting and use service default.
+## Attribute Reference
+
+After your resource is created, you can read values from the listed arguments and the following attributes.
+
+* `id` - The unique identifier of the iam_account_settings.
+* `allowed_ip_addresses` - (String) Defines the IP addresses and subnets from which IAM tokens can be created for the account.
+* `entity_tag` - (String) Version of the account settings.
+* `history` - (List) History of the Account Settings.
+Nested schema for **history**:
+	* `action` - (String) Action of the history entry.
+	* `iam_id` - (String) IAM ID of the identity which triggered the action.
+	* `iam_id_account` - (String) Account of the identity which triggered the action.
+	* `message` - (String) Message which summarizes the executed action.
+	* `params` - (List) Params of the history entry.
+	* `timestamp` - (String) Timestamp when the action was triggered.
+* `max_sessions_per_identity` - (String) Defines the max allowed sessions per identity required by the account. Valid values:  * Any whole number greater than 0  * NOT_SET - To unset account setting and use service default.
+* `mfa` - (String) MFA trait definitions as follows:  * NONE - No MFA trait set  * NONE_NO_ROPC- No MFA, disable CLI logins with only a password  * TOTP - For all non-federated IBMId users  * TOTP4ALL - For all users  * LEVEL1 - Email-based MFA for all users  * LEVEL2 - TOTP-based MFA for all users  * LEVEL3 - U2F MFA for all users.
+  * Constraints: Allowable values are: `NONE`, `NONE_NO_ROPC`, `TOTP`, `TOTP4ALL`, `LEVEL1`, `LEVEL2`, `LEVEL3`.
+* `restrict_create_platform_apikey` - (String) Defines whether or not creating the resource is access controlled. Valid values:  * RESTRICTED - only users assigned the 'Service ID creator' role on the IAM Identity Service can create service IDs, including the account owner  * NOT_RESTRICTED - all members of an account can create service IDs  * NOT_SET - to 'unset' a previous set value.
+  * Constraints: The default value is `NOT_SET`. Allowable values are: `RESTRICTED`, `NOT_RESTRICTED`, `NOT_SET`.
+* `restrict_create_service_id` - (String) Defines whether or not creating the resource is access controlled. Valid values:  * RESTRICTED - only users assigned the 'Service ID creator' role on the IAM Identity Service can create service IDs, including the account owner  * NOT_RESTRICTED - all members of an account can create service IDs  * NOT_SET - to 'unset' a previous set value.
+  * Constraints: The default value is `NOT_SET`. Allowable values are: `RESTRICTED`, `NOT_RESTRICTED`, `NOT_SET`.
+* `restrict_user_domains` - (List) Defines if account invitations are restricted to specified domains. To remove an entry for a realm_id, perform an update (PUT) request with only the realm_id set.
+Nested schema for **restrict_user_domains**:
+	* `invitation_email_allow_patterns` - (List) The list of allowed email patterns. Wildcard syntax is supported, '*' represents any sequence of zero or more characters in the string, except for '.' and '@'. The sequence ends if a '.' or '@' was found. '**' represents any sequence of zero or more characters in the string - without limit.
+	* `realm_id` - (String) The realm that the restrictions apply to.
+	* `restrict_invitation` - (Boolean) When true invites will only be possible to the domain patterns provided, otherwise invites are unrestricted.
+* `restrict_user_list_visibility` - (String) Defines whether or not user visibility is access controlled. Valid values:  * RESTRICTED - users can view only specific types of users in the account, such as those the user has invited to the account, or descendants of those users based on the classic infrastructure hierarchy  * NOT_RESTRICTED - any user in the account can view other users from the Users page in IBM Cloud console.
+  * Constraints: The default value is `NOT_RESTRICTED`. Allowable values are: `NOT_RESTRICTED`, `RESTRICTED`.
+* `session_expiration_in_seconds` - (String) Defines the session expiration in seconds for the account. Valid values:  * Any whole number between between '900' and '86400'  * NOT_SET - To unset account setting and use service default.
+  * Constraints: The default value is `86400`.
+* `session_invalidation_in_seconds` - (String) Defines the period of time in seconds in which a session will be invalidated due to inactivity. Valid values:  * Any whole number between '900' and '7200'  * NOT_SET - To unset account setting and use service default.
+  * Constraints: The default value is `7200`.
+* `system_access_token_expiration_in_seconds` - (String) Defines the access token expiration in seconds. Valid values:  * Any whole number between '900' and '3600'  * NOT_SET - To unset account setting and use service default.
   * Constraints: The default value is `3600`.
-- `system_refresh_token_expiration_in_seconds` - (Optional, String) Defines the refresh token expiration in seconds. Supported valid values are
-  * Any whole number between '900' and '2592000'  * NOT_SET - To unset account setting and use service default.
-  * Constraints: The default value is `2592000`.
+* `system_refresh_token_expiration_in_seconds` - (String) Defines the refresh token expiration in seconds. Valid values:  * Any whole number between '900' and '259200'  * NOT_SET - To unset account setting and use service default.
+  * Constraints: The default value is `259200`.
+* `user_mfa` - (List) List of users that are exempted from the MFA requirement of the account.
+Nested schema for **user_mfa**:
+	* `description` - (String) optional description.
+	* `email` - (String) email of the user.
+	* `iam_id` - (String) The iam_id of the user.
+	* `mfa` - (String) MFA trait definitions as follows:  * NONE - No MFA trait set  * NONE_NO_ROPC- No MFA, disable CLI logins with only a password  * TOTP - For all non-federated IBMId users  * TOTP4ALL - For all users  * LEVEL1 - Email-based MFA for all users  * LEVEL2 - TOTP-based MFA for all users  * LEVEL3 - U2F MFA for all users.
+	  * Constraints: Allowable values are: `NONE`, `NONE_NO_ROPC`, `TOTP`, `TOTP4ALL`, `LEVEL1`, `LEVEL2`, `LEVEL3`.
+	* `name` - (String) name of the user account.
+	* `user_name` - (String) userName of the user.
 
 
+## Import
 
-## Attribute reference
-In addition to all argument reference list, you can access the following attribute reference after your resource is created.
+You can import the `ibm_iam_account_settings` resource by using `account_id`.
+The `account_id` property can be formed from and `account_id` in the following format:
 
-- `account_id` - (String) Unique ID of an account.
-- `allowed_ip_addresses` - (String) Defines the IP addresses and subnets from which IAM tokens can be created for the account. **Note** value should be a comma separated string.
-- `entity_tag` - (String) The version of the account settings object. You need to specify this value when updating the account settings to avoid stale updates.
-- `history` - (String) The update history of the settings instance.
-- `id` - (String) Unique ID of an account settings instance.
-- `mfa` - (String) Defines the session expiration in seconds for the account.
-- `user_mfa` - (String) List of users that are exempted from the MFA requirement of the account.
-- `max_sessions_per_identity` - (String) Defines the maximum allowed sessions per identity required by the account.
-- `restrict_create_service_id` - (String) Defines whether or not creating a service ID is access controlled.
-- `restrict_create_platform_apikey` - (String) Defines whether or not creating platform API keys is access controlled.
-- `session_expiration_in_seconds` - (String) Defines the session expiration in seconds for the account.
-- `session_invalidation_in_seconds` - (String) Defines the period of time in seconds in which a session is invalid due to inactivity.
-- `system_access_token_expiration_in_seconds` - (String) Defines the access token expiration in seconds.
-- `system_refresh_token_expiration_in_seconds` - (String) Defines the refresh token expiration in seconds.
+<pre>
+&lt;account_id&gt;
+</pre>
+* `account_id`: A string. Unique ID of the account.
 
+# Syntax
+<pre>
+$ terraform import ibm_iam_account_settings.iam_account_settings &lt;account_id&gt;
+</pre>

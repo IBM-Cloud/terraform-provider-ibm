@@ -17,15 +17,15 @@ import (
 )
 
 var (
-	tenantIdRegister = "jhxqx715r9/"
+	tenantIdRegister = "wkk1yqrdce/"
 )
 
 func TestAccIbmBackupRecoverySourceRegistrationBasic(t *testing.T) {
 	var conf backuprecoveryv1.SourceRegistrationResponseParams
 
 	environment := "kPhysical"
-	connectionId := "6456884682673709176"
-	endpoint := "172.26.1.21"
+	connectionId := "5128356219792164864"
+	endpoint := "172.26.202.5"
 	hostType := "kLinux"
 	physicalType := "kHost"
 	applications := ""
@@ -70,6 +70,7 @@ func TestAccIbmBackupRecoverySourceRegistrationBasic(t *testing.T) {
 func testAccCheckIbmBackupRecoverySourceRegistrationConfigBasic(environment, applications, endpoint, hostType, physicalType string, connectionId string) string {
 	return fmt.Sprintf(`
 			resource "ibm_backup_recovery_source_registration" "baas_source_registration_instance" {
+				
 				x_ibm_tenant_id = "%s"
 				environment = "%s"
 				connection_id = "%s"
@@ -81,6 +82,40 @@ func testAccCheckIbmBackupRecoverySourceRegistrationConfigBasic(environment, app
 				}
 			}
 	`, tenantIdRegister, environment, connectionId, endpoint, hostType, physicalType, applications)
+}
+
+func TestAccIbmBackupRecoveryKubernetesSourceRegistrationBasic(t *testing.T) {
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { acc.TestAccPreCheck(t) },
+		Providers: acc.TestAccProviders,
+		Steps: []resource.TestStep{
+			resource.TestStep{
+				Config: testAccCheckIbmBackupRecoveryKubernetesSourceRegistrationConfigBasic(),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttrSet("ibm_backup_recovery_source_registration.ibm_backup_recovery_source_registration_instance", "id"),
+					resource.TestCheckResourceAttrSet("ibm_backup_recovery_source_registration.ibm_backup_recovery_source_registration_instance", "connections.#"),
+				),
+			},
+		},
+	})
+}
+
+func testAccCheckIbmBackupRecoveryKubernetesSourceRegistrationConfigBasic() string {
+	return fmt.Sprintf(`
+	resource "ibm_backup_recovery_source_registration" "ibm_backup_recovery_source_registration_instance" {
+		x_ibm_tenant_id = "wkk1yqrdce/"
+		environment = "kKubernetes"
+		connection_id = "932952619841170816"
+		name = "terra-iks-registration-1"
+		kubernetes_params {
+		  endpoint = "https://c104-e.us-east.containers.cloud.ibm.com:31410"
+		  kubernetes_distribution = "kIKS"
+		  data_mover_image_location = "icr.io/ext/brs/cohesity-datamover:7.2.15-p2"
+		  client_private_key = ""
+		}
+	  }
+	`)
 }
 
 func testAccCheckIbmBackupRecoverySourceRegistrationExists(n string, obj backuprecoveryv1.SourceRegistrationResponseParams) resource.TestCheckFunc {

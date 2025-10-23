@@ -10,7 +10,7 @@ description: |-
 
 Retrieve information about all placement groups. For more information, see [getting started with IBM Power Systems Virtual Servers](https://cloud.ibm.com/docs/power-iaas?topic=power-iaas-getting-started).
 
-## Example usage
+## Example Usage
 
 ```terraform
 data "ibm_pi_placement_groups" "example" {

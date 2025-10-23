@@ -3,6 +3,7 @@ package cos
 import (
 	"encoding/json"
 	"fmt"
+	"os"
 	"strings"
 	"time"
 
@@ -494,7 +495,13 @@ func parseWebsiteId(id string, info string) string {
 		return strings.Split(meta, ":")[0]
 	}
 	if info == "endpointType" {
-		return strings.Split(meta, ":")[1]
+		eType := strings.Split(meta, ":")[1]
+		// This changes is only for Schematics
+		schET := os.Getenv("IBMCLOUD_ENV_SCH_COS_ENDPOINT_OVERRIDE")
+		if eType != "" && eType == "private" && schET != "" {
+			return schET
+		}
+		return eType
 	}
 	if info == "keyName" {
 		return strings.Split(meta, ":key:")[1]

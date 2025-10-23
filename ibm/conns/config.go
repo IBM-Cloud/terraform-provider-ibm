@@ -140,6 +140,8 @@ import (
 // RetryAPIDelay - retry api delay
 const RetryAPIDelay = 5 * time.Second
 
+const IAMURL = iamidentity.DefaultServiceURL
+
 // BluemixRegion ...
 var BluemixRegion string
 
@@ -198,8 +200,14 @@ type Config struct {
 	// IAM Token
 	IAMToken string
 
-	// TrustedProfileToken Token
+	// TrustedProfileID
 	IAMTrustedProfileID string
+
+	// TrustedProfileName
+	IAMTrustedProfileName string
+
+	// Account
+	Account string
 
 	// IAM Refresh Token
 	IAMRefreshToken string
@@ -1349,7 +1357,7 @@ func (sess clientSession) GlobalCatalogV1API() (*globalcatalogv1.GlobalCatalogV1
 
 // ClientSession configures and returns a fully initialized ClientSession
 func (c *Config) ClientSession() (interface{}, error) {
-	sess, err := newSession(c)
+	sess, fileMap, err := newSession(c)
 	if err != nil {
 		return nil, err
 	}
@@ -1449,62 +1457,22 @@ func (c *Config) ClientSession() (interface{}, error) {
 		return session, nil
 	}
 
-	if sess.BluemixSession.Config.BluemixAPIKey != "" && c.IAMTrustedProfileID == "" {
-		err = authenticateAPIKey(sess.BluemixSession)
-		if err != nil {
-			for count := c.RetryCount; count >= 0; count-- {
-				if err == nil || !isRetryable(err) {
-					break
-				}
-				time.Sleep(c.RetryDelay)
-				log.Printf("Retrying IAM Authentication %d", count)
-				err = authenticateAPIKey(sess.BluemixSession)
+	err = fetchAuthorizationData(sess.BluemixSession)
+	if err != nil {
+		for count := c.RetryCount; count >= 0; count-- {
+			if err == nil || !isRetryable(err) {
+				break
 			}
-			if err != nil {
-				session.bmxUserFetchErr = fmt.Errorf("[ERROR] Error occured while fetching auth key for account user details: %q", err)
-				session.functionConfigErr = fmt.Errorf("[ERROR] Error occured while fetching auth key for function: %q", err)
-			}
+			time.Sleep(c.RetryDelay)
+			log.Printf("Retrying IAM Authentication %d", count)
+			err = fetchAuthorizationData(sess.BluemixSession)
 		}
-
-		session.functionConfigErr = fmt.Errorf("[ERROR] Error occured while fetching auth key for function: %q", err)
-	}
-
-	if sess.BluemixSession.Config.BluemixAPIKey != "" && c.IAMTrustedProfileID != "" {
-		err = authenticateAssume(sess.BluemixSession)
 		if err != nil {
-			for count := c.RetryCount; count >= 0; count-- {
-				if err == nil || !isRetryable(err) {
-					break
-				}
-				time.Sleep(c.RetryDelay)
-				log.Printf("Retrying IAM Authentication %d", count)
-				err = authenticateAssume(sess.BluemixSession)
-			}
-			if err != nil {
-				session.bmxUserFetchErr = fmt.Errorf("[ERROR] Error occured while fetching auth key for account user details: %q", err)
-				session.functionConfigErr = fmt.Errorf("[ERROR] Error occured while fetching auth key for function: %q", err)
-			}
-		}
-
-		session.functionConfigErr = fmt.Errorf("[ERROR] Error occured while fetching auth key for function: %q", err)
-	}
-
-	if c.IAMTrustedProfileID == "" && sess.BluemixSession.Config.BluemixAPIKey == "" && sess.BluemixSession.Config.IAMAccessToken != "" && sess.BluemixSession.Config.IAMRefreshToken != "" {
-		err := RefreshToken(sess.BluemixSession)
-		if err != nil {
-			for count := c.RetryCount; count >= 0; count-- {
-				if err == nil || !isRetryable(err) {
-					break
-				}
-				time.Sleep(c.RetryDelay)
-				log.Printf("Retrying refresh token %d", count)
-				err = RefreshToken(sess.BluemixSession)
-			}
-			if err != nil {
-				return nil, fmt.Errorf("[ERROR] Error occured while refreshing the token: %q", err)
-			}
+			session.bmxUserFetchErr = fmt.Errorf("[ERROR] Error occured while fetching auth key for account user details: %q", err)
+			session.functionConfigErr = fmt.Errorf("[ERROR] Error occured while fetching auth key for function: %q", err)
 		}
 	}
+
 	userConfig, err := fetchUserDetails(sess.BluemixSession, c.RetryCount, c.RetryDelay)
 	if err != nil {
 		session.bmxUserFetchErr = fmt.Errorf("[ERROR] Error occured while fetching account user details: %q", err)
@@ -1520,22 +1488,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 	session.functionClient, session.functionConfigErr = FunctionClient(sess.BluemixSession.Config)
 
 	BluemixRegion = sess.BluemixSession.Config.Region
-	var fileMap map[string]interface{}
-	if f := EnvFallBack([]string{"IBMCLOUD_ENDPOINTS_FILE_PATH", "IC_ENDPOINTS_FILE_PATH"}, c.EndpointsFile); f != "" {
-		jsonFile, err := os.Open(f)
-		if err != nil {
-			log.Fatalf("Unable to open Endpoints File %s", err)
-		}
-		defer jsonFile.Close()
-		bytes, err := ioutil.ReadAll(jsonFile)
-		if err != nil {
-			log.Fatalf("Unable to read Endpoints File %s", err)
-		}
-		err = json.Unmarshal([]byte(bytes), &fileMap)
-		if err != nil {
-			log.Fatalf("Unable to unmarshal Endpoints File %s", err)
-		}
-	}
+
 	accv1API, err := accountv1.New(sess.BluemixSession)
 	if err != nil {
 		session.accountV1ConfigErr = fmt.Errorf("[ERROR] Error occured while configuring Bluemix Accountv1 Service: %q", err)
@@ -1580,7 +1533,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 		kpurl = fileFallBack(fileMap, c.Visibility, "IBMCLOUD_KP_API_ENDPOINT", c.Region, kpurl)
 	}
 	var options kp.ClientConfig
-	if c.BluemixAPIKey != "" {
+	if (c.BluemixAPIKey != "") && (c.IAMTrustedProfileID == "" && c.IAMTrustedProfileName == "") {
 		options = kp.ClientConfig{
 			BaseURL: EnvFallBack([]string{"IBMCLOUD_KP_API_ENDPOINT"}, kpurl),
 			APIKey:  sess.BluemixSession.Config.BluemixAPIKey, // pragma: allowlist secret
@@ -1601,7 +1554,8 @@ func (c *Config) ClientSession() (interface{}, error) {
 	}
 	session.kpAPI = kpAPIclient
 
-	iamURL := iamidentity.DefaultServiceURL
+	iamURL := EnvFallBack([]string{"IBMCLOUD_IAM_API_ENDPOINT"}, IAMURL)
+
 	if c.Visibility == "private" || c.Visibility == "public-and-private" {
 		if c.Region == "us-south" || c.Region == "us-east" {
 			iamURL = ContructEndpoint(fmt.Sprintf("private.%s.iam", c.Region), cloudEndpoint)
@@ -1622,7 +1576,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 		kmsurl = fileFallBack(fileMap, c.Visibility, "IBMCLOUD_KP_API_ENDPOINT", c.Region, kmsurl)
 	}
 	var kmsOptions kp.ClientConfig
-	if c.BluemixAPIKey != "" {
+	if (c.BluemixAPIKey != "") && (c.IAMTrustedProfileID == "" && c.IAMTrustedProfileName == "") {
 		kmsOptions = kp.ClientConfig{
 			BaseURL: EnvFallBack([]string{"IBMCLOUD_KP_API_ENDPOINT"}, kmsurl),
 			APIKey:  sess.BluemixSession.Config.BluemixAPIKey, // pragma: allowlist secret
@@ -1647,13 +1601,27 @@ func (c *Config) ClientSession() (interface{}, error) {
 
 	var authenticator core.Authenticator
 
-	if (c.BluemixAPIKey != "") && c.IAMTrustedProfileID != "" {
-		authenticator, err = core.NewIamAssumeAuthenticatorBuilder().
-			SetApiKey(c.BluemixAPIKey).
-			SetIAMProfileID(c.IAMTrustedProfileID).
-			Build()
-		if err != nil {
-			log.Fatalf("Error in authenticating using NewIamAssumeAuthenticatorBuilder. Error: %s", err)
+	if (c.BluemixAPIKey != "") && (c.IAMTrustedProfileID != "" || c.IAMTrustedProfileName != "") {
+		if c.IAMTrustedProfileID != "" {
+			authenticator, err = core.NewIamAssumeAuthenticatorBuilder().
+				SetApiKey(c.BluemixAPIKey).
+				SetIAMProfileID(c.IAMTrustedProfileID).
+				SetURL(EnvFallBack([]string{"IBMCLOUD_IAM_API_ENDPOINT"}, iamURL)).
+				Build()
+			if err != nil {
+				log.Fatalf("Error in authenticating using NewIamAssumeAuthenticatorBuilder. Error: %s", err)
+			}
+		} else {
+			authenticator, err = core.NewIamAssumeAuthenticatorBuilder().
+				SetApiKey(c.BluemixAPIKey).
+				SetIAMProfileName(c.IAMTrustedProfileName).
+				SetIAMAccountID(c.Account).
+				SetURL(EnvFallBack([]string{"IBMCLOUD_IAM_API_ENDPOINT"}, iamURL)).
+				Build()
+			if err != nil {
+				log.Fatalf("Error in authenticating using NewIamAssumeAuthenticatorBuilder with trusted profile name. Error: %s", err)
+			}
+
 		}
 	} else if c.BluemixAPIKey != "" || sess.BluemixSession.Config.IAMRefreshToken != "" {
 		if c.BluemixAPIKey != "" {
@@ -1681,7 +1649,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 	}
 
 	// Construct the service options.
-	var backupRecoveryURL string
+	var backupRecoveryURL string = "https://default.backup-recovery.cloud.ibm.com/v2"
 	var backupRecoveryConnectorURL string
 
 	if fileMap != nil && c.Visibility != "public-and-private" {
@@ -1693,9 +1661,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 		Authenticator: authenticator,
 		URL:           EnvFallBack([]string{"IBMCLOUD_BACKUP_RECOVERY_ENDPOINT"}, backupRecoveryURL),
 	}
-	if backupRecoveryClientOptions.URL == "" {
-		session.backupRecoveryClientErr = fmt.Errorf("IBMCLOUD_BACKUP_RECOVERY_ENDPOINT not set in env or endpoints file")
-	}
+
 	// Construct the service client.
 	session.backupRecoveryClient, err = backuprecoveryv1.NewBackupRecoveryV1(backupRecoveryClientOptions)
 	if err != nil {
@@ -1720,6 +1686,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 
 	// Construct the service connector client.
 	session.backupRecoveryConnectorClient, err = backuprecoveryv1.NewBackupRecoveryV1Connector(backupRecoveryConnectorClientOptions)
+	session.backupRecoveryConnectorClient.Service.DisableSSLVerification()
 	if err != nil {
 		session.backupRecoveryConnectorClientErr = fmt.Errorf("Error occurred while configuring IBM Backup recovery API connector service: %q", err)
 	}
@@ -3772,7 +3739,7 @@ func CreateVersionDate() *string {
 	return &version
 }
 
-func newSession(c *Config) (*Session, error) {
+func newSession(c *Config) (*Session, map[string]interface{}, error) {
 	ibmSession := &Session{}
 
 	softlayerSession := &slsession.Session{
@@ -3798,67 +3765,118 @@ func newSession(c *Config) (*Session, error) {
 	softlayerSession.AppendUserAgent(fmt.Sprintf("terraform-provider-ibm/%s", version.Version))
 	ibmSession.SoftLayerSession = softlayerSession
 
-	/*if c.IAMTrustedProfileID == "" && (c.IAMToken != "" && c.IAMRefreshToken == "") || (c.IAMToken == "" && c.IAMRefreshToken != "") {
-		return nil, fmt.Errorf("iam_token and iam_refresh_token must be provided")
-	}
-	if c.IAMTrustedProfileID != "" && c.IAMToken == "" {
-		return nil, fmt.Errorf("iam_token and iam_profile_id must be provided")
-	}*/
-
-	if c.IAMToken != "" {
-		log.Println("Configuring IBM Cloud Session with token")
-		var sess *bxsession.Session
-		bmxConfig := &bluemix.Config{
-			IAMAccessToken:  c.IAMToken,
-			IAMRefreshToken: c.IAMRefreshToken,
-			// Comment out debug mode for v0.12
-			Debug:               os.Getenv("TF_LOG") != "",
-			HTTPTimeout:         c.BluemixTimeout,
-			Region:              c.Region,
-			ResourceGroup:       c.ResourceGroup,
-			RetryDelay:          &c.RetryDelay,
-			MaxRetries:          &c.RetryCount,
-			Visibility:          c.Visibility,
-			PrivateEndpointType: c.PrivateEndpointType,
-			EndpointsFile:       c.EndpointsFile,
-			UserAgent:           fmt.Sprintf("terraform-provider-ibm/%s", version.Version),
-		}
-		sess, err := bxsession.New(bmxConfig)
+	var authenticator core.Authenticator
+	var err error
+	var fileMap map[string]interface{}
+	if f := EnvFallBack([]string{"IBMCLOUD_ENDPOINTS_FILE_PATH", "IC_ENDPOINTS_FILE_PATH"}, c.EndpointsFile); f != "" {
+		jsonFile, err := os.Open(f)
 		if err != nil {
-			return nil, err
+			log.Fatalf("Unable to open Endpoints File %s", err)
 		}
-		ibmSession.BluemixSession = sess
-	}
-
-	if c.BluemixAPIKey != "" {
-		log.Println("Configuring IBM Cloud Session with API key")
-		var sess *bxsession.Session
-		bmxConfig := &bluemix.Config{
-			BluemixAPIKey: c.BluemixAPIKey,
-			// Comment out debug mode for v0.12
-			Debug:               os.Getenv("TF_LOG") != "",
-			HTTPTimeout:         c.BluemixTimeout,
-			Region:              c.Region,
-			ResourceGroup:       c.ResourceGroup,
-			RetryDelay:          &c.RetryDelay,
-			MaxRetries:          &c.RetryCount,
-			Visibility:          c.Visibility,
-			PrivateEndpointType: c.PrivateEndpointType,
-			EndpointsFile:       c.EndpointsFile,
-			UserAgent:           fmt.Sprintf("terraform-provider-ibm/%s", version.Version),
-			IAMTrustedProfileID: c.IAMTrustedProfileID,
-		}
-		sess, err := bxsession.New(bmxConfig)
+		defer jsonFile.Close()
+		bytes, err := ioutil.ReadAll(jsonFile)
 		if err != nil {
-			return nil, err
+			log.Fatalf("Unable to read Endpoints File %s", err)
 		}
-		ibmSession.BluemixSession = sess
+		err = json.Unmarshal([]byte(bytes), &fileMap)
+		if err != nil {
+			log.Fatalf("Unable to unmarshal Endpoints File %s", err)
+		}
+	}
+	iamURL := EnvFallBack([]string{"IBMCLOUD_IAM_API_ENDPOINT"}, IAMURL)
+
+	if c.Visibility == "private" || c.Visibility == "public-and-private" {
+		if c.Region == "us-south" || c.Region == "us-east" {
+			iamURL = ContructEndpoint(fmt.Sprintf("private.%s.iam", c.Region), cloudEndpoint)
+		} else {
+			iamURL = ContructEndpoint("private.iam", cloudEndpoint)
+		}
+	}
+	if fileMap != nil && c.Visibility != "public-and-private" {
+		iamURL = fileFallBack(fileMap, c.Visibility, "IBMCLOUD_IAM_API_ENDPOINT", c.Region, iamURL)
+	}
+	if (c.BluemixAPIKey != "") && (c.IAMTrustedProfileID != "" || c.IAMTrustedProfileName != "") {
+		if c.IAMTrustedProfileID != "" {
+			log.Println("Configuring Session with Trusted Profile ID")
+			authenticator, err = core.NewIamAssumeAuthenticatorBuilder().
+				SetApiKey(c.BluemixAPIKey).
+				SetIAMProfileID(c.IAMTrustedProfileID).
+				SetURL(iamURL).
+				Build()
+			if err != nil {
+				log.Fatalf("Error in authenticating using NewIamAssumeAuthenticatorBuilder. Error: %s", err)
+			}
+		} else {
+			log.Println("Configuring Session with Trusted Profile Name")
+			authenticator, err = core.NewIamAssumeAuthenticatorBuilder().
+				SetApiKey(c.BluemixAPIKey).
+				SetIAMProfileName(c.IAMTrustedProfileName).
+				SetIAMAccountID(c.Account).
+				SetURL(iamURL).
+				Build()
+			if err != nil {
+				log.Fatalf("Error in authenticating using NewIamAssumeAuthenticatorBuilder with trusted profile name. Error: %s", err)
+			}
+		}
+	} else if c.BluemixAPIKey != "" || c.IAMRefreshToken != "" {
+		if c.BluemixAPIKey != "" {
+			log.Println("Configuring Session with API Key")
+			authenticator = &core.IamAuthenticator{
+				ApiKey:       c.BluemixAPIKey,
+				URL:          iamURL,
+				ClientId:     "bx",
+				ClientSecret: "bx",
+			}
+		} else {
+			// Construct the IamAuthenticator with the IAM refresh token.
+			log.Println("Configuring Session with refresh token")
+			authenticator = &core.IamAuthenticator{
+				RefreshToken: c.IAMRefreshToken,
+				ClientId:     "bx",
+				ClientSecret: "bx",
+				URL:          iamURL,
+			}
+		}
+	} else if strings.HasPrefix(c.IAMToken, "Bearer") {
+		log.Println("Configuring Session with access token")
+		authenticator = &core.BearerTokenAuthenticator{
+			BearerToken: c.IAMToken[7:],
+		}
+	} else {
+		log.Println("Configuring Session with access token")
+		authenticator = &core.BearerTokenAuthenticator{
+			BearerToken: c.IAMToken,
+		}
 	}
 
-	return ibmSession, nil
+	var sess *bxsession.Session
+	bmxConfig := &bluemix.Config{
+		IAMAccessToken:  c.IAMToken,
+		IAMRefreshToken: c.IAMRefreshToken,
+		BluemixAPIKey:   c.BluemixAPIKey,
+		// Comment out debug mode for v0.12
+		Debug:               os.Getenv("TF_LOG") != "",
+		HTTPTimeout:         c.BluemixTimeout,
+		Region:              c.Region,
+		ResourceGroup:       c.ResourceGroup,
+		RetryDelay:          &c.RetryDelay,
+		MaxRetries:          &c.RetryCount,
+		Visibility:          c.Visibility,
+		PrivateEndpointType: c.PrivateEndpointType,
+		EndpointsFile:       c.EndpointsFile,
+		UserAgent:           fmt.Sprintf("terraform-provider-ibm/%s", version.Version),
+		Authenticator:       authenticator,
+	}
+	sess, err = bxsession.New(bmxConfig)
+	if err != nil {
+		return nil, fileMap, err
+	}
+	ibmSession.BluemixSession = sess
+
+	return ibmSession, fileMap, err
 }
 
-func authenticateAPIKey(sess *bxsession.Session) error {
+/*func authenticateAPIKey(sess *bxsession.Session) error {
 	config := sess.Config
 	tokenRefresher, err := authentication.NewIAMAuthRepository(config, &rest.Client{
 		DefaultHeader: gohttp.Header{
@@ -3884,6 +3902,20 @@ func authenticateAssume(sess *bxsession.Session) error {
 		return err
 	}
 	return tokenRefresher.AuthenticateAssume(config.BluemixAPIKey, config.IAMTrustedProfileID)
+}*/
+
+func fetchAuthorizationData(sess *bxsession.Session) error {
+	config := sess.Config
+	tokenRefresher, err := authentication.NewIAMAuthRepository(config, &rest.Client{
+		DefaultHeader: gohttp.Header{
+			"User-Agent":            []string{http.UserAgent()},
+			"X-Original-User-Agent": []string{config.UserAgent},
+		},
+	})
+	if err != nil {
+		return err
+	}
+	return tokenRefresher.FetchAuthorizationData(config.Authenticator)
 }
 
 func fetchUserDetails(sess *bxsession.Session, retries int, retryDelay time.Duration) (*UserConfig, error) {
@@ -3903,18 +3935,9 @@ func fetchUserDetails(sess *bxsession.Session, retries int, retryDelay time.Dura
 	// TODO validate with key
 	if err != nil && !strings.Contains(err.Error(), "key is of invalid type") {
 		if retries > 0 {
-			if config.BluemixAPIKey != "" && config.IAMTrustedProfileID == "" {
-				time.Sleep(retryDelay)
-				log.Printf("Retrying authentication for user details %d", retries)
-				_ = authenticateAPIKey(sess)
-				return fetchUserDetails(sess, retries-1, retryDelay)
-			} else if config.BluemixAPIKey != "" && config.IAMTrustedProfileID != "" {
-				time.Sleep(retryDelay)
-				log.Printf("Retrying authentication for user details %d", retries)
-				_ = authenticateAssume(sess)
-				return fetchUserDetails(sess, retries-1, retryDelay)
-
-			}
+			time.Sleep(retryDelay)
+			log.Printf("Retrying authentication for user details %d", retries)
+			_ = fetchAuthorizationData(sess)
 		}
 		return &user, err
 	}
@@ -3947,7 +3970,7 @@ func RefreshToken(sess *bxsession.Session) error {
 	if err != nil {
 		return err
 	}
-	_, err = tokenRefresher.RefreshToken()
+	err = tokenRefresher.FetchAuthorizationData(config.Authenticator)
 	return err
 }
 

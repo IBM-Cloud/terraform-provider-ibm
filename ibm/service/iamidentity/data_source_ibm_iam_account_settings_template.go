@@ -6,11 +6,12 @@ package iamidentity
 import (
 	"context"
 	"fmt"
+	"log"
+	"strconv"
+
 	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"log"
-	"strconv"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM/platform-services-go-sdk/iamidentityv1"
@@ -284,7 +285,7 @@ func dataSourceIBMAccountSettingsTemplateRead(context context.Context, d *schema
 	var history []map[string]interface{}
 	if accountSettingsTemplateResponse.History != nil {
 		for _, modelItem := range accountSettingsTemplateResponse.History {
-			modelMap, err := dataSourceIBMAccountSettingsTemplateEnityHistoryRecordToMap(&modelItem)
+			modelMap, err := EnityHistoryRecordToMap(&modelItem)
 			if err != nil {
 				return diag.FromErr(err)
 			}
@@ -365,20 +366,9 @@ func dataSourceIBMAccountSettingsTemplateAccountSettingsComponentToMap(model *ia
 	return modelMap, nil
 }
 
-func dataSourceIBMAccountSettingsTemplateAccountSettingsUserMfaToMap(model *iamidentityv1.AccountSettingsUserMfa) (map[string]interface{}, error) {
+func dataSourceIBMAccountSettingsTemplateAccountSettingsUserMfaToMap(model *iamidentityv1.UserMfa) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["iam_id"] = model.IamID
 	modelMap["mfa"] = model.Mfa
-	return modelMap, nil
-}
-
-func dataSourceIBMAccountSettingsTemplateEnityHistoryRecordToMap(model *iamidentityv1.EnityHistoryRecord) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	modelMap["timestamp"] = model.Timestamp
-	modelMap["iam_id"] = model.IamID
-	modelMap["iam_id_account"] = model.IamIDAccount
-	modelMap["action"] = model.Action
-	modelMap["params"] = model.Params
-	modelMap["message"] = model.Message
 	return modelMap, nil
 }
