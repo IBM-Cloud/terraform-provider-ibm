@@ -3110,6 +3110,11 @@ func instanceCreateByCatalogOffering(context context.Context, d *schema.Resource
 		}
 
 		volprof := "general-purpose"
+		// profile changes
+		bootvolProfileOk, ok := bootvol["profile"]
+		if ok && bootvolProfileOk.(string) != "" {
+			volprof = bootvolProfileOk.(string)
+		}
 		volTemplate.Profile = &vpcv1.VolumeProfileIdentity{
 			Name: &volprof,
 		}
@@ -3676,7 +3681,11 @@ func instanceCreateByTemplate(context context.Context, d *schema.ResourceData, m
 		}
 
 		volprof := "general-purpose"
-
+		// profile changes
+		bootvolProfileOk, ok := bootvol["profile"]
+		if ok && bootvolProfileOk.(string) != "" {
+			volprof = bootvolProfileOk.(string)
+		}
 		volTemplate.Profile = &vpcv1.VolumeProfileIdentity{
 			Name: &volprof,
 		}
@@ -4237,6 +4246,11 @@ func instanceCreateBySnapshot(context context.Context, d *schema.ResourceData, m
 			}
 		}
 		volprof := "general-purpose"
+		// profile changes
+		bootvolProfileOk, ok := bootvol["profile"]
+		if ok && bootvolProfileOk.(string) != "" {
+			volprof = bootvolProfileOk.(string)
+		}
 		volTemplate.Profile = &vpcv1.VolumeProfileIdentity{
 			Name: &volprof,
 		}
