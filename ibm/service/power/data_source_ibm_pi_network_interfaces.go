@@ -5,6 +5,7 @@ package power
 
 import (
 	"context"
+	"fmt"
 	"log"
 
 	"github.com/IBM-Cloud/power-go-client/clients/instance"
@@ -117,11 +118,13 @@ func DataSourceIBMPINetworkInterfaces() *schema.Resource {
 	}
 }
 
-func dataSourceIBMPINetworkInterfacesRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataSourceIBMPINetworkInterfacesRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	sess, err := meta.(conns.ClientSession).IBMPISession()
 
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("IBMPISession failed: %s", err.Error()), "(Data) ibm_pi_network_interfaces", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	cloudInstanceID := d.Get(Arg_CloudInstanceID).(string)
@@ -129,12 +132,14 @@ func dataSourceIBMPINetworkInterfacesRead(ctx context.Context, d *schema.Resourc
 	networkC := instance.NewIBMPINetworkClient(ctx, sess, cloudInstanceID)
 	networkInterfaces, err := networkC.GetAllNetworkInterfaces(networkID)
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetAllNetworkInterfaces failed: %s", err.Error()), "(Data) ibm_pi_network_interfaces", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	var genID, _ = uuid.GenerateUUID()
 	d.SetId(genID)
-	interfaces := []map[string]interface{}{}
+	interfaces := []map[string]any{}
 	if len(networkInterfaces.Interfaces) > 0 {
 		for _, netInterface := range networkInterfaces.Interfaces {
 			interfaceMap := networkInterfaceToMap(netInterface, meta)
@@ -146,8 +151,8 @@ func dataSourceIBMPINetworkInterfacesRead(ctx context.Context, d *schema.Resourc
 	return nil
 }
 
-func networkInterfaceToMap(netInterface *models.NetworkInterface, meta interface{}) map[string]interface{} {
-	interfaceMap := make(map[string]interface{})
+func networkInterfaceToMap(netInterface *models.NetworkInterface, meta any) map[string]any {
+	interfaceMap := make(map[string]any)
 	interfaceMap[Attr_ID] = netInterface.ID
 	interfaceMap[Attr_IPAddress] = netInterface.IPAddress
 	interfaceMap[Attr_MacAddress] = netInterface.MacAddress
@@ -156,7 +161,7 @@ func networkInterfaceToMap(netInterface *models.NetworkInterface, meta interface
 	interfaceMap[Attr_NetworkSecurityGroupIDs] = netInterface.NetworkSecurityGroupIDs
 	if netInterface.Instance != nil {
 		pvmInstanceMap := pvmInstanceToMap(netInterface.Instance)
-		interfaceMap[Attr_Instance] = []map[string]interface{}{pvmInstanceMap}
+		interfaceMap[Attr_Instance] = []map[string]any{pvmInstanceMap}
 	}
 	interfaceMap[Attr_Status] = netInterface.Status
 	if netInterface.Crn != nil {
