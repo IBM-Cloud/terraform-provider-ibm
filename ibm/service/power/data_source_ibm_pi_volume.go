@@ -5,6 +5,7 @@ package power
 
 import (
 	"context"
+	"fmt"
 	"log"
 
 	"github.com/IBM-Cloud/power-go-client/clients/instance"
@@ -26,11 +27,20 @@ func DataSourceIBMPIVolume() *schema.Resource {
 				Type:         schema.TypeString,
 				ValidateFunc: validation.NoZeroValues,
 			},
+			Arg_VolumeID: {
+				AtLeastOneOf:  []string{Arg_VolumeID, Arg_VolumeName},
+				ConflictsWith: []string{Arg_VolumeName},
+				Description:   "The volume ID.",
+				Optional:      true,
+				Type:          schema.TypeString,
+			},
 			Arg_VolumeName: {
-				Description:  "Volume Name to be used for pvminstances",
-				Required:     true,
-				Type:         schema.TypeString,
-				ValidateFunc: validation.NoZeroValues,
+				AtLeastOneOf:  []string{Arg_VolumeID, Arg_VolumeName},
+				ConflictsWith: []string{Arg_VolumeID},
+				Deprecated:    "The pi_volume_name field is deprecated. Please use pi_volume_id instead",
+				Description:   "Volume Name to be used for pvminstances",
+				Optional:      true,
+				Type:          schema.TypeString,
 			},
 
 			// Attributes
@@ -152,9 +162,19 @@ func DataSourceIBMPIVolume() *schema.Resource {
 				Set:         schema.HashString,
 				Type:        schema.TypeSet,
 			},
+			Attr_Name: {
+				Computed:    true,
+				Description: "The name of the volume.",
+				Type:        schema.TypeString,
+			},
 			Attr_VolumePool: {
 				Computed:    true,
 				Description: "Volume pool, name of storage pool where the volume is located.",
+				Type:        schema.TypeString,
+			},
+			Attr_VolumeType: {
+				Computed:    true,
+				Description: "The name of storage template used to create the volume.",
 				Type:        schema.TypeString,
 			},
 			Attr_WWN: {
@@ -166,17 +186,28 @@ func DataSourceIBMPIVolume() *schema.Resource {
 	}
 }
 
-func dataSourceIBMPIVolumeRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataSourceIBMPIVolumeRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	sess, err := meta.(conns.ClientSession).IBMPISession()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("IBMPISession failed: %s", err.Error()), "(Data) ibm_pi_volume", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	cloudInstanceID := d.Get(Arg_CloudInstanceID).(string)
+	var volumeID string
+	if v, ok := d.GetOk(Arg_VolumeID); ok {
+		volumeID = v.(string)
+	} else if v, ok := d.GetOk(Arg_VolumeName); ok {
+		volumeID = v.(string)
+	}
+
 	volumeC := instance.NewIBMPIVolumeClient(ctx, sess, cloudInstanceID)
-	volumedata, err := volumeC.Get(d.Get(Arg_VolumeName).(string))
+	volumedata, err := volumeC.Get(volumeID)
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Get failed: %s", err.Error()), "(Data) ibm_pi_volume", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	d.SetId(*volumedata.VolumeID)
@@ -202,18 +233,20 @@ func dataSourceIBMPIVolumeRead(ctx context.Context, d *schema.ResourceData, meta
 	d.Set(Attr_LastUpdateDate, volumedata.LastUpdateDate.String())
 	d.Set(Attr_MasterVolumeName, volumedata.MasterVolumeName)
 	d.Set(Attr_MirroringState, volumedata.MirroringState)
+	d.Set(Attr_Name, volumedata.Name)
 	d.Set(Attr_OutOfBandDeleted, volumedata.OutOfBandDeleted)
 	d.Set(Attr_PrimaryRole, volumedata.PrimaryRole)
 	d.Set(Attr_ReplicationEnabled, volumedata.ReplicationEnabled)
-	d.Set(Attr_ReplicationType, volumedata.ReplicationType)
 	if len(volumedata.ReplicationSites) > 0 {
 		d.Set(Attr_ReplicationSites, volumedata.ReplicationSites)
 	}
 	d.Set(Attr_ReplicationStatus, volumedata.ReplicationStatus)
-	d.Set(Attr_State, volumedata.State)
+	d.Set(Attr_ReplicationType, volumedata.ReplicationType)
 	d.Set(Attr_Shareable, volumedata.Shareable)
 	d.Set(Attr_Size, volumedata.Size)
+	d.Set(Attr_State, volumedata.State)
 	d.Set(Attr_VolumePool, volumedata.VolumePool)
+	d.Set(Attr_VolumeType, volumedata.VolumeType)
 	d.Set(Attr_WWN, volumedata.Wwn)
 
 	return nil
