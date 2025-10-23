@@ -23,7 +23,7 @@ func TestAccIbmBackupRecoverySourceRegistrationsDataSourceBasic(t *testing.T) {
 	// hostType := "kLinux"
 	// physicalType := "kHost"
 
-	objectId := 18
+	objectId := 344
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheck(t) },
 		Providers: acc.TestAccProviders,
@@ -63,6 +63,7 @@ func testAccCheckIbmBackupRecoverySourceRegistrationsDataSourceConfigBasic(objec
 	return fmt.Sprintf(`
 
 			data "ibm_backup_recovery_source_registrations" "baas_source_registrations_instance" {
+				
 				ids = [%d]
 				x_ibm_tenant_id = "%s"
 			}

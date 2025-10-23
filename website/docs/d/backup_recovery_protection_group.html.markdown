@@ -24,6 +24,9 @@ data "ibm_backup_recovery_protection_group" "backup_recovery_protection_group" {
 You can specify the following arguments for this data source.
 
 * `protection_group_id` - (Required, Forces new resource, String) Specifies a unique id of the Protection Group.
+* `endpoint_type` - (Optional, String) Backup Recovery Endpoint type. By default set to "public".
+* `instance_id` - (Optional, String) Backup Recovery instance ID. If provided here along with region, the provider constructs the endpoint URL using them, which overrides any value set through environment variables or the `endpoints.json` file.
+* `region` - (Optional, String) Backup Recovery region. If provided here along with instance_id, the provider constructs the endpoint URL using them, which overrides any value set through environment variables or the `endpoints.json` file.  
 * `include_last_run_info` - (Optional, Boolean) If true, the response will include last run info. If it is false or not specified, the last run info won't be returned.
 * `prune_excluded_source_ids` - (Optional, Boolean) If true, the response will not include the list of excluded source IDs in groups that contain this field. This can be set to true in order to improve performance if excluded source IDs are not needed by the user.
 * `prune_source_ids` - (Optional, Boolean) If true, the response will exclude the list of source IDs within the group specified.
@@ -36,6 +39,77 @@ You can specify the following arguments for this data source.
 After your data source is created, you can read values from the following attributes.
 
 * `id` - The unique identifier of the backup_recovery_protection_group.
+* `kubernetes_params` - (List) Specifies the parameters which are related to Kubernetes Protection Groups.
+Nested schema for **kubernetes_params**:
+	* `enable_indexing` - (Boolean) Specifies if indexing of files and folders is allowed or not while backing up namespace. If allowed files and folder can be recovered.
+	* `exclude_label_ids` - (List) Array of arrays of label IDs that specify labels to exclude. Optionally specify a list of labels to exclude from protecting by listing protection source ids of labels in this two dimensional array. Using this two dimensional array of label IDs, the Cluster generates a list of namespaces to exclude from protecting, which are derived from intersections of the inner arrays and union of the outer array.
+	* `exclude_object_ids` - (List) Specifies the objects to be excluded in the Protection Group.
+	* `exclude_params` - (List) Specifies the parameters to in/exclude objects (e.g.: volumes). An object satisfying any of these criteria will be included by this filter.
+	Nested schema for **exclude_params**:
+		* `label_combination_method` - (String) Whether to include all the labels or any of them while performing inclusion/exclusion of objects.
+		  * Constraints: Allowable values are: `AND`, `OR`.
+		* `label_vector` - (List) Array of Object to represent Label that Specify Objects (e.g.: Persistent Volumes and Persistent Volume Claims) to Include or Exclude.It will be a two-dimensional array, where each inner array will consist of a key and value representing labels. Using this two dimensional array of Labels, the Cluster generates a list of items to include in the filter, which are derived from intersections or the union of these labels, as decided by operation parameter.
+		Nested schema for **label_vector**:
+			* `key` - (String) The key of the label, used to identify the label.
+			* `value` - (String) The value associated with the label key.
+		* `objects` - (List) Array of objects that are to be included.
+	* `include_params` - (List) Specifies the parameters to in/exclude objects (e.g.: volumes). An object satisfying any of these criteria will be included by this filter.
+	Nested schema for **include_params**:
+		* `label_combination_method` - (String) Whether to include all the labels or any of them while performing inclusion/exclusion of objects.
+		  * Constraints: Allowable values are: `AND`, `OR`.
+		* `label_vector` - (List) Array of Object to represent Label that Specify Objects (e.g.: Persistent Volumes and Persistent Volume Claims) to Include or Exclude.It will be a two-dimensional array, where each inner array will consist of a key and value representing labels. Using this two dimensional array of Labels, the Cluster generates a list of items to include in the filter, which are derived from intersections or the union of these labels, as decided by operation parameter.
+		Nested schema for **label_vector**:
+			* `key` - (String) The key of the label, used to identify the label.
+			* `value` - (String) The value associated with the label key.
+		* `objects` - (List) Array of objects that are to be included.
+	* `label_ids` - (List) Array of array of label IDs that specify labels to protect. Optionally specify a list of labels to protect by listing protection source ids of labels in this two dimensional array. Using this two dimensional array of label IDs, the cluster generates a list of namespaces to protect, which are derived from intersections of the inner arrays and union of the outer array.
+	* `leverage_csi_snapshot` - (Boolean) Specifies if CSI snapshots should be used for backup of namespaces.
+	* `non_snapshot_backup` - (Boolean) Specifies if snapshot backup fails, non-snapshot backup will be proceeded.
+	* `objects` - (List) Specifies the objects included in the Protection Group.
+	Nested schema for **objects**:
+		* `backup_only_pvc` - (Boolean) Specifies whether to backup pvc and related resources only.
+		* `exclude_pvcs` - (List) Specifies a list of pvcs to exclude from being protected. This is only applicable to kubernetes.
+		Nested schema for **exclude_pvcs**:
+			* `id` - (Integer) Specifies the id of the pvc.
+			* `name` - (String) Name of the pvc.
+		* `excluded_resources` - (List) Specifies the resources to exclude during backup.
+		* `id` - (Integer) Specifies the id of the object.
+		* `include_pvcs` - (List) Specifies a list of Pvcs to include in the protection. This is only applicable to kubernetes.
+		Nested schema for **include_pvcs**:
+			* `id` - (Integer) Specifies the id of the pvc.
+			* `name` - (String) Name of the pvc.
+		* `included_resources` - (List) Specifies the resources to include during backup.
+		* `name` - (String) Specifies the name of the object.
+		* `quiesce_groups` - (List) Specifies the quiescing rules are which specified by the user for doing backup.
+		Nested schema for **quiesce_groups**:
+			* `quiesce_mode` - (String) Specifies quiesce mode for applying quiesce rules.
+			  * Constraints: Allowable values are: `kQuiesceTogether`, `kQuiesceIndependently`.
+			* `quiesce_rules` - (List) Specifies a list of quiesce rules.
+			Nested schema for **quiesce_rules**:
+				* `pod_selector_labels` - (List) Specifies the labels to select a pod.
+				Nested schema for **pod_selector_labels**:
+					* `key` - (String) The key of the label, used to identify the label.
+					* `value` - (String) The value associated with the label key.
+				* `post_snapshot_hooks` - (List) Specifies the hooks to be applied after taking snapshot.
+				Nested schema for **post_snapshot_hooks**:
+					* `commands` - (List) Specifies the commands.
+					* `container` - (String) Specifies the name of the container.
+					* `fail_on_error` - (Boolean) Specifies whether to fail on error or not.
+					* `timeout` - (Integer) Specifies timeout for the operation.
+				* `pre_snapshot_hooks` - (List) Specifies the hooks to be applied before taking snapshot.
+				Nested schema for **pre_snapshot_hooks**:
+					* `commands` - (List) Specifies the commands.
+					* `container` - (String) Specifies the name of the container.
+					* `fail_on_error` - (Boolean) Specifies whether to fail on error or not.
+					* `timeout` - (Integer) Specifies timeout for the operation.
+	* `source_id` - (Integer) Specifies the id of the parent of the objects.
+	* `source_name` - (String) Specifies the name of the parent of the objects.
+	* `vlan_params` - (List) Specifies VLAN params associated with the backup/restore operation.
+	Nested schema for **vlan_params**:
+		* `disable_vlan` - (Boolean) If this is set to true, then even if VLANs are configured on the system, the partition VIPs will be used for the restore.
+		* `interface_name` - (String) Interface group to use for backup/restore. If this is not specified, primary interface group for the cluster will be used.
+		* `vlan_id` - (Integer) If this is set, then the Cohesity host name or the IP address associated with this VLAN is used for mounting Cohesity's view on the remote host.
+	* `volume_backup_failure` - (Boolean) Specifies whether to process with backup if volumes backup fails.
 * `abort_in_blackouts` - (Boolean) Specifies whether currently executing jobs should abort if a blackout period specified by a policy starts. Available only if the selected policy has at least one blackout period. Default value is false.
 * `advanced_configs` - (List) Specifies the advanced configuration for a protection job.
 Nested schema for **advanced_configs**:
@@ -59,7 +133,7 @@ Nested schema for **alert_policy**:
 * `description` - (String) Specifies a description of the Protection Group.
 * `end_time_usecs` - (Integer) Specifies the end time in micro seconds for this Protection Group. If this is not specified, the Protection Group won't be ended.
 * `environment` - (String) Specifies the environment of the Protection Group.
-  * Constraints: Allowable values are: `kPhysical`, `kSQL`.
+  * Constraints: Allowable values are: `kPhysical`, `kSQL`, `kKubernetes`.
 * `invalid_entities` - (List) Specifies the Information about invalid entities. An entity will be considered invalid if it is part of an active protection group but has lost compatibility for the given backup type.
 Nested schema for **invalid_entities**:
 	* `id` - (Integer) Specifies the ID of the object.
