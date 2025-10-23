@@ -1,3 +1,11 @@
+# 1.84.3 (October 23, 2025)
+
+## Bug Fixes
+### VPC Infrastructure
+* fix: support boot volume profile configuration for is_instance creation
+ ([6528](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6528))
+
+
 # 1.84.2 (October 21, 2025)
 
 ## Bug Fixes
