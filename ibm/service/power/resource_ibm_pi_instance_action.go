@@ -38,10 +38,12 @@ func ResourceIBMPIInstanceAction() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 			// Arguments
 			Arg_Action: {
-				Type:         schema.TypeString,
-				Required:     true,
-				ValidateFunc: validate.ValidateAllowedStringValues([]string{Action_HardReboot, Action_ImmediateShutdown, Action_ResetState, Action_Start, Action_Stop, Action_SoftReboot}),
-				Description:  "PVM instance action type",
+				Type:     schema.TypeString,
+				Required: true,
+				ValidateFunc: validate.ValidateAllowedStringValues(
+					[]string{Action_Dumprestart, Action_HardReboot, Action_ImmediateShutdown,
+						Action_ResetState, Action_Start, Action_Stop, Action_SoftReboot}),
+				Description: "PVM instance action type",
 			},
 			Arg_CloudInstanceID: {
 				Type:        schema.TypeString,
@@ -156,7 +158,7 @@ func takeInstanceAction(ctx context.Context, d *schema.ResourceData, meta interf
 		targetStatus = State_Active
 		targetHealthStatus = Critical
 	} else {
-		// action is "start" or "soft-reboot" or "hard-reboot"
+		// action is "dumprestart", "hard-reboot", "start", or "soft-reboot"
 		targetStatus = State_Active
 	}
 

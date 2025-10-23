@@ -649,6 +649,7 @@ const (
 	Workspace                  = "workspace"
 
 	// Actions
+	Action_Dumprestart       = "dumprestart"
 	Action_HardReboot        = "hard-reboot"
 	Action_ImmediateShutdown = "immediate-shutdown"
 	Action_ResetState        = "reset-state"
