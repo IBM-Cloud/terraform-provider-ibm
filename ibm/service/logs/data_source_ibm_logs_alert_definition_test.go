@@ -47,9 +47,6 @@ func testAccCheckIbmLogsAlertDefinitionDataSourceConfigBasic(alertDefinitionName
 			name        = "%s"
 			description = "%s"
 			enabled     = true
-			group_by_keys    = [
-                "ibm.logId",
-                ]
 			entity_labels = {
 				"key" = "value"
 			}
