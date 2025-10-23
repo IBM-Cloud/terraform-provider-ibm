@@ -218,54 +218,6 @@ variable "logs_stream_compression_type" {
   type        = string
   default     = "gzip"
 }
-
-// Resource arguments for logs_alert_definition
-variable "logs_alert_definition_name" {
-  description = "The name of the alert definition."
-  type        = string
-  default     = "Unique count alert"
-}
-variable "logs_alert_definition_description" {
-  description = "A detailed description of what the alert monitors and when it triggers."
-  type        = string
-  default     = "Example of unique count alert from terraform"
-}
-variable "logs_alert_definition_enabled" {
-  description = "Whether the alert is currently active and monitoring."
-  type        = bool
-  default     = true
-}
-variable "logs_alert_definition_priority" {
-  description = "The priority of the alert definition."
-  type        = string
-  default     = "p1"
-}
-variable "logs_alert_definition_type" {
-  description = "Alert type."
-  type        = string
-  default     = "flow"
-}
-variable "logs_alert_definition_group_by_keys" {
-  description = "Keys used to group and aggregate alert data."
-  type        = list(string)
-  default     = ["key1","key2"]
-}
-variable "logs_alert_definition_entity_labels" {
-  description = "Labels used to identify and categorize the alert entity."
-  type        = map(string)
-  default     = {"key":"value"}
-}
-variable "logs_alert_definition_phantom_mode" {
-  description = "Whether the alert is in phantom mode (creating incidents or not)."
-  type        = bool
-  default     = false
-}
-variable "logs_alert_definition_deleted" {
-  description = "Whether the alert has been marked as deleted."
-  type        = bool
-  default     = false
-}
-
 // Data source arguments for logs_alert
 variable "data_logs_alert_logs_alert_id" {
   description = "Alert ID."
@@ -377,12 +329,4 @@ variable "data_logs_data_usage_metrics_query" {
   default     = "daily"
 }
 
-
-
-// Data source arguments for logs_alert_definition
-variable "data_logs_alert_definition_logs_alert_definition_id" {
-  description = "Alert definition ID."
-  type        = 
-  default     = 3dc02998-0b50-4ea8-b68a-4779d716fa1f
-}
 

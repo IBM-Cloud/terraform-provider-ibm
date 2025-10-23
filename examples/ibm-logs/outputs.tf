@@ -76,9 +76,3 @@ output "ibm_logs_stream" {
   value       = ibm_logs_stream.logs_stream_instance
   description = "logs_stream resource instance"
 }
-// This output allows logs_alert_definition data to be referenced by other resources and the terraform CLI
-// Modify this output if only certain data should be exposed
-output "ibm_logs_alert_definition" {
-  value       = ibm_logs_alert_definition.logs_alert_definition_instance
-  description = "logs_alert_definition resource instance"
-}

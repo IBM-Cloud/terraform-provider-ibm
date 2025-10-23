@@ -76,6 +76,7 @@ Nested schema for **subsystem_rule**:
 After your resource is created, you can read values from the listed arguments and the following attributes.
 
 * `id` - The unique identifier of the logs_policy.
+* `policy_id` - The unique identifier of the logs_policy.
 * `company_id` - (Integer) Company ID.
   * Constraints: The maximum value is `2147483647`. The minimum value is `0`.
 * `created_at` - (String) Created at date at utc+0.
