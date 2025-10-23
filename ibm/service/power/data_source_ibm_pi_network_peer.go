@@ -5,16 +5,18 @@ package power
 
 import (
 	"context"
+	"fmt"
+	"log"
 
 	"github.com/IBM-Cloud/power-go-client/clients/instance"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
 
 func DataSourceIBMPINetworkPeer() *schema.Resource {
-
 	return &schema.Resource{
 		ReadContext: dataSourceIBMPINetworkPeerRead,
 
@@ -110,17 +112,21 @@ func DataSourceIBMPINetworkPeer() *schema.Resource {
 
 }
 
-func dataSourceIBMPINetworkPeerRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataSourceIBMPINetworkPeerRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	sess, err := meta.(conns.ClientSession).IBMPISession()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("IBMPISession failed: %s", err.Error()), "(Data) ibm_pi_network_peer", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	cloudInstanceID := d.Get(Arg_CloudInstanceID).(string)
 	networkPeerID := d.Get(Arg_NetworkPeerID).(string)
 	networkC := instance.NewIBMPINetworkPeerClient(ctx, sess, cloudInstanceID)
 	networkdata, err := networkC.GetNetworkPeer(networkPeerID)
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetNetworkPeer failed: %s", err.Error()), "(Data) ibm_pi_network_peer", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	d.SetId(*networkdata.ID)
 	d.Set(Attr_CreationDate, networkdata.CreationDate)
@@ -129,7 +135,7 @@ func dataSourceIBMPINetworkPeerRead(ctx context.Context, d *schema.ResourceData,
 	d.Set(Attr_DefaultExportRouteFilter, networkdata.DefaultExportRouteFilter)
 	d.Set(Attr_DefaultImportRouteFilter, networkdata.DefaultImportRouteFilter)
 	d.Set(Attr_Error, networkdata.Error)
-	exportRouteFilters := []map[string]interface{}{}
+	exportRouteFilters := []map[string]any{}
 	if len(networkdata.ExportRouteFilters) > 0 {
 		for _, erp := range networkdata.ExportRouteFilters {
 			exportRouteFilter := dataSourceIBMPINetworkPeerRouteFilterToMap(erp)
@@ -139,7 +145,7 @@ func dataSourceIBMPINetworkPeerRead(ctx context.Context, d *schema.ResourceData,
 	d.Set(Attr_ExportRouteFilters, exportRouteFilters)
 	d.Set(Attr_IBMASN, networkdata.IbmASN)
 	d.Set(Attr_IBMCIDR, networkdata.IbmCidr)
-	importRouteFilters := []map[string]interface{}{}
+	importRouteFilters := []map[string]any{}
 	if len(networkdata.ImportRouteFilters) > 0 {
 		for _, irp := range networkdata.ImportRouteFilters {
 			importRouteFilter := dataSourceIBMPINetworkPeerRouteFilterToMap(irp)
