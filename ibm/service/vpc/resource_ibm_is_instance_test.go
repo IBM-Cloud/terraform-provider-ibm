@@ -4633,3 +4633,148 @@ func testAccCheckIBMISInstanceConfig_AllowedUse(vpcname, subnetname, sshname, pu
 	}
 	`, insName, acc.InstanceProfileName, acc.ISZoneName, apiVersion, bareMetalServer, instanceval, apiVersion, bareMetalServer, instanceval)
 }
+
+// boot volume profile test
+
+func TestAccIBMISInstance_BootVolumeVariations(t *testing.T) {
+	var instance string
+	vpcname := fmt.Sprintf("tf-vpc-%d", acctest.RandIntRange(10, 100))
+	subnetname := fmt.Sprintf("tf-subnet-%d", acctest.RandIntRange(10, 100))
+	sshname := fmt.Sprintf("tf-ssh-%d", acctest.RandIntRange(10, 100))
+	templatename := fmt.Sprintf("tf-template-%d", acctest.RandIntRange(10, 100))
+	sourceInstanceName := fmt.Sprintf("tf-instance-source-%d", acctest.RandIntRange(10, 100))
+	instanceFromTemplateName := fmt.Sprintf("tf-instance-template-%d", acctest.RandIntRange(10, 100))
+	instanceFromCatalogName := fmt.Sprintf("tf-instance-catalog-%d", acctest.RandIntRange(10, 100))
+	snapshotname := fmt.Sprintf("tf-snapshot-%d", acctest.RandIntRange(10, 100))
+	instanceFromSnapshotName := fmt.Sprintf("tf-instance-snapshot-%d", acctest.RandIntRange(10, 100))
+	publicKey := strings.TrimSpace(`
+ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVERRN7/9484SOBJ3HSKxxNG5JN8owAjy5f9yYwcUg+JaUVuytn5Pv3aeYROHGGg+5G346xaq3DAwX6Y5ykr2fvjObgncQBnuU5KHWCECO/4h8uWuwh/kfniXPVjFToc+gnkqA+3RKpAecZhFXwfalQ9mMuYGFxn+fwn8cYEApsJbsEmb0iJwPiZ5hjFC8wREuiTlhPHDgkBLOiycd20op2nXzDbHfCHInquEe/gYxEitALONxm0swBOwJZwlTDOB7C6y2dzlrtxr1L59m7pCkWI4EtTRLvleehBoj3u7jB4usR
+`)
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMISInstanceDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMISInstanceBootVolumeConfig(vpcname, subnetname, sshname, publicKey, templatename, sourceInstanceName, snapshotname, instanceFromTemplateName, instanceFromCatalogName, instanceFromSnapshotName),
+				Check: resource.ComposeTestCheckFunc(
+					// Verify instance from template with boot volume
+					testAccCheckIBMISInstanceExists("ibm_is_instance.testacc_instance_template", instance),
+					resource.TestCheckResourceAttr(
+						"ibm_is_instance.testacc_instance_template", "name", instanceFromTemplateName),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_instance.testacc_instance_template", "instance_template"),
+					resource.TestCheckResourceAttr(
+						"ibm_is_instance.testacc_instance_template", "boot_volume.0.profile", "sdp"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_instance.testacc_instance_template", "boot_volume.0.name"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_instance.testacc_instance_template", "primary_network_attachment.0.id"),
+					resource.TestCheckResourceAttr(
+						"ibm_is_instance.testacc_instance_template", "zone", acc.ISZoneName),
+
+					// Verify instance from catalog with boot volume
+					testAccCheckIBMISInstanceExists("ibm_is_instance.testacc_instance_catalog", instance),
+					resource.TestCheckResourceAttr(
+						"ibm_is_instance.testacc_instance_catalog", "name", instanceFromCatalogName),
+					resource.TestCheckResourceAttr(
+						"ibm_is_instance.testacc_instance_catalog", "boot_volume.0.profile", "sdp"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_instance.testacc_instance_catalog", "boot_volume.0.name"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_instance.testacc_instance_catalog", "catalog_offering.0.version_crn"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_instance.testacc_instance_catalog", "primary_network_attachment.0.id"),
+					resource.TestCheckResourceAttr(
+						"ibm_is_instance.testacc_instance_catalog", "zone", acc.ISZoneName),
+				),
+			},
+		},
+	})
+}
+
+func testAccCheckIBMISInstanceBootVolumeConfig(vpcname, subnetname, sshname, publicKey, templatename, sourceInstanceName, snapshotname, instanceFromTemplateName, instanceFromCatalogName, instanceFromSnapshotName string) string {
+	return fmt.Sprintf(`
+	resource "ibm_is_vpc" "testacc_vpc" {
+		name = "%s"
+	}
+	
+	resource "ibm_is_subnet" "testacc_subnet" {
+		name                     = "%s"
+		vpc                      = ibm_is_vpc.testacc_vpc.id
+		zone                     = "%s"
+		total_ipv4_address_count = 64
+	}
+	
+	resource "ibm_is_ssh_key" "testacc_sshkey" {
+		name       = "%s"
+		public_key = "%s"
+	}
+	
+	resource "ibm_is_instance_template" "instancetemplate1" {
+		name    = "%s"
+		image   = "%s"
+		profile = "bxf-2x8"
+		primary_network_attachment {
+			name = "pna-template"
+			virtual_network_interface {
+				subnet = ibm_is_subnet.testacc_subnet.id
+			}
+		}
+		vpc       = ibm_is_vpc.testacc_vpc.id
+		zone      = "%s"
+		keys      = [ibm_is_ssh_key.testacc_sshkey.id]
+	}
+
+	resource "ibm_is_instance" "testacc_instance_source" {
+		name              = "%s"
+		primary_network_attachment {
+			name = "pna-from-template"
+			virtual_network_interface {
+				subnet = ibm_is_subnet.testacc_subnet.id
+			}
+		}
+		instance_template = ibm_is_instance_template.instancetemplate1.id
+	}
+
+	resource "ibm_is_instance" "testacc_instance_template" {
+		name              = "%s"
+		boot_volume {
+			profile = "sdp"
+		}
+		primary_network_attachment {
+			name = "pna-ins-from-template"
+			virtual_network_interface {
+				subnet = ibm_is_subnet.testacc_subnet.id
+			}
+		}
+		instance_template = ibm_is_instance_template.instancetemplate1.id
+	}
+
+	data "ibm_is_image" "catalog_image" {
+		name = "%s"
+	}
+
+	resource "ibm_is_instance" "testacc_instance_catalog" {
+		name    = "%s"
+		profile = "bxf-2x8"
+		primary_network_attachment {
+			name = "pna-catalog"
+			virtual_network_interface {
+				subnet = ibm_is_subnet.testacc_subnet.id
+			}
+		}
+		boot_volume {
+			profile = "sdp"
+		}
+		catalog_offering {
+			version_crn = data.ibm_is_image.catalog_image.catalog_offering.0.version.0.crn
+		}
+		vpc  = ibm_is_vpc.testacc_vpc.id
+		zone = ibm_is_subnet.testacc_subnet.zone
+		keys = [ibm_is_ssh_key.testacc_sshkey.id]
+	}
+
+	`, vpcname, subnetname, acc.ISZoneName, sshname, publicKey, templatename, acc.IsImage, acc.ISZoneName, sourceInstanceName, instanceFromTemplateName, acc.ISCatalogImageName, instanceFromCatalogName)
+}
