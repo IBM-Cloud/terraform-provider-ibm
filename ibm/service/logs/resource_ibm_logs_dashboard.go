@@ -8328,7 +8328,7 @@ func ResourceIbmLogsDashboardMapToApisDashboardsV1AstWidgetsGaugeLogsQuery(model
 			model.LuceneQuery = LuceneQueryModel
 		}
 		if modelMapElement["logs_aggregation"] != nil && len(modelMapElement["logs_aggregation"].([]interface{})) > 0 {
-			modelMapAggregation := modelMapElement["aggregation"].([]interface{})
+			modelMapAggregation := modelMapElement["logs_aggregation"].([]interface{})
 			if modelMapAggregation != nil && len(modelMapAggregation) > 0 {
 				LogsAggregationModel, err := ResourceIbmLogsDashboardMapToApisDashboardsV1CommonLogsAggregation(modelMapAggregation[0].(map[string]interface{}))
 				if err != nil {
