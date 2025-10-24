@@ -37,6 +37,7 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/db2"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/directlink"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/dnsservices"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/drautomationservice"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/enterprise"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/eventnotification"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/eventstreams"
@@ -1118,6 +1119,18 @@ func Provider() *schema.Provider {
 			// Logs Router Service
 			"ibm_logs_router_tenants": logsrouting.DataSourceIBMLogsRouterTenants(),
 			"ibm_logs_router_targets": logsrouting.DataSourceIBMLogsRouterTargets(),
+
+			// DR Automation Service
+			"ibm_pdr_get_dr_summary_response": drautomationservice.DataSourceIbmPdrGetDrSummaryResponse(),
+			"ibm_pdr_workspace_schematic":     drautomationservice.DataSourceIbmPdrWorkspaceSchematic(),
+			"ibm_pdr_workspace_custom_vpc":    drautomationservice.DataSourceIbmPdrWorkspaceCustomVpc(),
+			"ibm_pdr_get_event":               drautomationservice.DataSourceIbmPdrGetEvent(),
+			"ibm_pdr_get_events":              drautomationservice.DataSourceIbmPdrGetEvents(),
+			"ibm_pdr_get_dr_locations":        drautomationservice.DataSourceIbmPdrGetDrLocations(),
+			"ibm_pdr_get_machine_types":       drautomationservice.DataSourceIbmPdrGetMachineTypes(),
+			"ibm_pdr_get_managed_vm_list":     drautomationservice.DataSourceIbmPdrGetManagedVmList(),
+			"ibm_pdr_schematic_workspaces":    drautomationservice.DataSourceIbmPdrSchematicWorkspaces(),
+			"ibm_pdr_last_operation":          drautomationservice.DataSourceIbmPdrLastOperation(),
 		},
 
 		ResourcesMap: map[string]*schema.Resource{
@@ -1789,6 +1802,10 @@ func Provider() *schema.Provider {
 
 			// Logs Router Service
 			"ibm_logs_router_tenant": logsrouting.ResourceIBMLogsRouterTenant(),
+
+			// DR Automation Service
+			"ibm_pdr_managedr": drautomationservice.ResourceIbmPdrManagedr(),
+			"ibm_pdr_validate_apikey": drautomationservice.ResourceIbmPdrValidateApikey(),
 		},
 
 		ConfigureFunc: providerConfigure,
