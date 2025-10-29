@@ -129,7 +129,7 @@ resource "ibm_is_share" "example-4" {
   bandwidth = 210
   name    = "my-share"
   size    = 200
-  profile = "  profile = "rfs"
+  profile = "rfs"
 }
 
 ## Argument Reference
