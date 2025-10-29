@@ -1,35 +1,32 @@
 ---
 subcategory: 'Event Notifications'
 layout: 'ibm'
-page_title: 'IBM : ibm_en_destination_webhook'
+page_title: 'IBM : ibm_en_destination_app_configuration'
 description: |-
-  Manages Event Notification Webhook destinations.
+  Manages Event Notification App Configuration destinations.
 ---
 
-# ibm_en_destination_webhook
+# ibm_en_destination_app_configuration
 
-Create, update, or delete a Webhook destination by using IBM Cloud™ Event Notifications.
+Create, update, or delete a App Configuration destination by using IBM Cloud™ Event Notifications.
 
 ## Example usage
 
 ```terraform
-resource "ibm_en_destination_webhook" "webhook_en_destination" {
+resource "ibm_en_destination_app_configuration" "ac_destination" {
   instance_guid         = ibm_resource_instance.en_terraform_test_resource.guid
-  name                  = "My Webhook Destination"
-  type                  = "webhook"
-  test_destination = true
+  name                  = "App Configuration EN Destination"
+  type                  = "app_configuration"
   collect_failed_events = false
-  description           = "Destination webhook for event notification"
+  description           = "Destination App Configuration for event notification"
   config {
     params {
-      verb = "POST"
-      url  = "https://testwebhook.com"
-      custom_headers = {
-        "authorization" = "authorization"
-      }
-      sensitive_headers = ["authorization"]
-    }
+      type  = "features"
+      crn = "crn:v1:bluemix:public:apprapp:us-south:a/4a74f2c31f554afc88156b73a1d577c6:dbxxxx93-0xxa-4xx5-axcf-c2faxxxd::"
+      feature_id = "test"
+      environment_id = "stage"
   }
+}
 }
 ```
 
@@ -43,11 +40,9 @@ Review the argument reference that you can specify for your resource.
 
 - `description` - (Optional, String) The Destination description.
 
-- `type` - (Required, String) Webhook.
+- `type` - (Required, String) msteams.
 
 - `collect_failed_events` - (boolean) Toggle switch to enable collect failed event in Cloud Object Storage bucket.
-
-- `test_destination` - (boolean) Set flag to true for webhook destination test.
 
 - `config` - (Optional, List) Payload describing a destination configuration.
 
@@ -57,25 +52,24 @@ Review the argument reference that you can specify for your resource.
 
   Nested scheme for **params**:
 
-  - `custom_headers` - (Optional, Map) Custom headers (Key-Value pair) for webhook call.
-  - `sensitive_headers` - (Optional, List) List of sensitive headers from custom headers.
-  - `url` - (Optional, String) URL of webhook.
-  - `verb` - (Optional, String) HTTP method of webhook. Allowable values are: `GET`, `POST`.
-
+  - `type` - (Required, String) The App Configuration Destination type, the only supported type is **features** currently.
+  - `crn` - (Required, String) CRN of the App Configuration instance.
+  - `environment_id` - (Required, String) Environment ID of App Configuration.
+  - `feature_id` - (Required, String) Feature ID of App Configuration.
 ## Attribute reference
 
 In addition to all argument references listed, you can access the following attribute references after your resource is created.
 
-- `id` - (String) The unique identifier of the `webhook_en_destination`.
+- `id` - (String) The unique identifier of the `ac_destination`.
 - `destination_id` - (String) The unique identifier of the created destination.
 - `subscription_count` - (Integer) Number of subscriptions.
   - Constraints: The minimum value is `0`.
 - `subscription_names` - (List) List of subscriptions.
 - `updated_at` - (String) Last updated time.
-- `test_status` - Webhook destination test result. The possible values are success, failed and inprogress
+
 ## Import
 
-You can import the `ibm_en_destination_webhook` resource by using `id`.
+You can import the `ibm_en_destination_app_configuration` resource by using `id`.
 
 The `id` property can be formed from `instance_guid`, and `destination_id` in the following format:
 
@@ -90,5 +84,5 @@ The `id` property can be formed from `instance_guid`, and `destination_id` in th
 **Example**
 
 ```
-$ terraform import ibm_en_destination_webhook.webhook_en_destination <instance_guid>/<destination_id>
+$ terraform import ibm_en_destination_app_configuration.ac_destination <instance_guid>/<destination_id>
 ```
