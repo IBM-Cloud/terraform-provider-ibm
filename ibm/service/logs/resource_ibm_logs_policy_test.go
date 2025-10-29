@@ -1,4 +1,4 @@
-// Copyright IBM Corp. 2024 All Rights Reserved.
+// Copyright IBM Corp. 2025 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 package logs_test
@@ -55,9 +55,11 @@ func TestAccIbmLogsPolicyAllArgs(t *testing.T) {
 	name := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 	description := fmt.Sprintf("tf_description_%d", acctest.RandIntRange(10, 100))
 	priority := "type_unspecified"
+	enabled := "true"
 	nameUpdate := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 	descriptionUpdate := fmt.Sprintf("tf_description_%d", acctest.RandIntRange(10, 100))
 	priorityUpdate := "type_high"
+	enabledUpdate := "false"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheckCloudLogs(t) },
@@ -65,20 +67,22 @@ func TestAccIbmLogsPolicyAllArgs(t *testing.T) {
 		CheckDestroy: testAccCheckIbmLogsPolicyDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIbmLogsPolicyConfig(name, description, priority),
+				Config: testAccCheckIbmLogsPolicyConfig(name, description, priority, enabled),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIbmLogsPolicyExists("ibm_logs_policy.logs_policy_instance", conf),
 					resource.TestCheckResourceAttr("ibm_logs_policy.logs_policy_instance", "name", name),
 					resource.TestCheckResourceAttr("ibm_logs_policy.logs_policy_instance", "description", description),
 					resource.TestCheckResourceAttr("ibm_logs_policy.logs_policy_instance", "priority", priority),
+					resource.TestCheckResourceAttr("ibm_logs_policy.logs_policy_instance", "enabled", enabled),
 				),
 			},
 			resource.TestStep{
-				Config: testAccCheckIbmLogsPolicyConfig(nameUpdate, descriptionUpdate, priorityUpdate),
+				Config: testAccCheckIbmLogsPolicyConfig(nameUpdate, descriptionUpdate, priorityUpdate, enabledUpdate),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("ibm_logs_policy.logs_policy_instance", "name", nameUpdate),
 					resource.TestCheckResourceAttr("ibm_logs_policy.logs_policy_instance", "description", descriptionUpdate),
 					resource.TestCheckResourceAttr("ibm_logs_policy.logs_policy_instance", "priority", priorityUpdate),
+					resource.TestCheckResourceAttr("ibm_logs_policy.logs_policy_instance", "enabled", enabledUpdate),
 				),
 			},
 			resource.TestStep{
@@ -92,7 +96,7 @@ func TestAccIbmLogsPolicyAllArgs(t *testing.T) {
 
 func testAccCheckIbmLogsPolicyConfigBasic(name string, priority string) string {
 	return fmt.Sprintf(`
-	resource "ibm_logs_policy" "logs_policy_instance" {
+		resource "ibm_logs_policy" "logs_policy_instance" {
 		instance_id = "%s"
 		region      = "%s"
 		name        = "%s"
@@ -105,28 +109,29 @@ func testAccCheckIbmLogsPolicyConfigBasic(name string, priority string) string {
 		log_rules {
 		  severities = ["info"]
 		}
-	  }
+		}
 	`, acc.LogsInstanceId, acc.LogsInstanceRegion, name, priority)
 }
 
-func testAccCheckIbmLogsPolicyConfig(name string, description string, priority string) string {
+func testAccCheckIbmLogsPolicyConfig(name string, description string, priority string, enabled string) string {
 	return fmt.Sprintf(`
 
-	resource "ibm_logs_policy" "logs_policy_instance" {
+		resource "ibm_logs_policy" "logs_policy_instance" {
 		instance_id = "%s"
 		region      = "%s"
 		name        = "%s"
-		description = "%s"
-		priority    = "%s"
-		application_rule {
+			description = "%s"
+			priority = "%s"
+			enabled = %s
+			application_rule {
 		  name         = "otel-links-test"
 		  rule_type_id = "start_with"
+			}
+			log_rules {
+				severities = ["critical"]
+			}
 		}
-		log_rules {
-		  severities = ["info"]
-		}
-	  }
-	`, acc.LogsInstanceId, acc.LogsInstanceRegion, name, description, priority)
+	`, acc.LogsInstanceId, acc.LogsInstanceRegion, name, description, priority, enabled)
 }
 
 func testAccCheckIbmLogsPolicyExists(n string, obj logsv0.Policy) resource.TestCheckFunc {
