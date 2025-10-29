@@ -221,6 +221,26 @@ func TestAccIBMIAMPolicyTemplateBasicS2SUpdate(t *testing.T) {
 	})
 }
 
+func TestAccIBMIAMPolicyTemplateSubjectStringExists(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMPolicyTemplateDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMPolicyS2STemplateSubjectStringExists("TerraformS2SSubjectTest", "is", "is", "true"),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMPolicyTemplateExists("ibm_iam_policy_template.policy_template", conf),
+					resource.TestCheckResourceAttr("ibm_iam_policy_template.policy_template", "name", "TerraformS2SSubjectTest"),
+					resource.TestCheckResourceAttr("ibm_iam_policy_template.policy_template", "policy.0.resource.0.attributes.0.value", "is"),
+					resource.TestCheckResourceAttr("ibm_iam_policy_template.policy_template", "policy.0.subject.0.attributes.0.value", "is"),
+					resource.TestCheckResourceAttr("ibm_iam_policy_template.policy_template", "policy.0.subject.0.attributes.1.value", "true"),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckIBMPolicyTemplateExists(n string, obj iampolicymanagementv1.PolicyTemplate) resource.TestCheckFunc {
 
 	return func(s *terraform.State) error {
@@ -514,4 +534,37 @@ func testAccCheckIBMPolicyTemplateConfigBasicWithTags(name string, serviceName s
 			}
 		}
 	`, name, serviceName, tagValue)
+}
+
+func testAccCheckIBMPolicyS2STemplateSubjectStringExists(name string, resourceServiceName string, subjectServiceName string, vpcIdValue string) string {
+	return fmt.Sprintf(`
+		resource "ibm_iam_policy_template" "policy_template" {
+			name = "%s"
+			policy {
+				type = "authorization"
+				description = "Test terraform enterprise S2S with stringExists in subject"
+				resource {
+					attributes {
+						key = "serviceName"
+						operator = "stringEquals"
+						value = "%s"
+					}
+				}
+				subject {
+					attributes {
+						key = "serviceName"
+						operator = "stringEquals"
+						value = "%s"
+					}
+					attributes {
+						key = "vpcId"
+						operator = "stringExists"
+						value = "%s"
+					}
+				}
+				roles = ["Reader"]
+			}
+			committed=true
+		}
+	`, name, resourceServiceName, subjectServiceName, vpcIdValue)
 }
