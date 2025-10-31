@@ -22,9 +22,9 @@ import (
 	"github.com/IBM/ibm-backup-recovery-sdk-go/backuprecoveryv1"
 )
 
-func DataSourceIbmBackupRecoveryManagerSreGetClusterInfo() *schema.Resource {
+func DataSourceIbmBackupRecoveryManagerGetClusterInfo() *schema.Resource {
 	return &schema.Resource{
-		ReadContext: dataSourceIbmBackupRecoveryManagerSreGetClusterInfoRead,
+		ReadContext: dataSourceIbmBackupRecoveryManagerGetClusterInfoRead,
 
 		Schema: map[string]*schema.Schema{
 			"cohesity_clusters": &schema.Schema{
@@ -119,7 +119,7 @@ func DataSourceIbmBackupRecoveryManagerSreGetClusterInfo() *schema.Resource {
 						"current_version": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "Specifies if the cluster is connected to helios.",
+							Description: "Specifies if the cluster is connected to management console.",
 						},
 						"health": &schema.Schema{
 							Type:        schema.TypeString,
@@ -129,7 +129,7 @@ func DataSourceIbmBackupRecoveryManagerSreGetClusterInfo() *schema.Resource {
 						"is_connected_to_helios": &schema.Schema{
 							Type:        schema.TypeBool,
 							Computed:    true,
-							Description: "Specifies if the cluster is connected to helios.",
+							Description: "Specifies if the cluster is connected to management console.",
 						},
 						"location": &schema.Schema{
 							Type:        schema.TypeString,
@@ -246,7 +246,7 @@ func DataSourceIbmBackupRecoveryManagerSreGetClusterInfo() *schema.Resource {
 						"is_connected_to_helios": &schema.Schema{
 							Type:        schema.TypeBool,
 							Computed:    true,
-							Description: "Specifies if the cluster is connected to helios.",
+							Description: "Specifies if the cluster is connected to management console.",
 						},
 						"node_ips": &schema.Schema{
 							Type:        schema.TypeList,
@@ -288,62 +288,62 @@ func DataSourceIbmBackupRecoveryManagerSreGetClusterInfo() *schema.Resource {
 	}
 }
 
-func dataSourceIbmBackupRecoveryManagerSreGetClusterInfoRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	heliosSreApiClient, err := meta.(conns.ClientSession).BackupRecoveryManagerSreV1()
+func dataSourceIbmBackupRecoveryManagerGetClusterInfoRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	managementSreApiClient, err := meta.(conns.ClientSession).BackupRecoveryManagerV1()
 	if err != nil {
-		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_backup_recovery_manager_sre_get_cluster_info", "read", "initialize-client")
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_backup_recovery_manager_get_cluster_info", "read", "initialize-client")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
 
 	getClustersInfoOptions := &backuprecoveryv1.GetClustersInfoOptions{}
 
-	clusterDetails, _, err := heliosSreApiClient.GetClustersInfoWithContext(context, getClustersInfoOptions)
+	clusterDetails, _, err := managementSreApiClient.GetClustersInfoWithContext(context, getClustersInfoOptions)
 	if err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetClustersInfoWithContext failed: %s", err.Error()), "(Data) ibm_backup_recovery_manager_sre_get_cluster_info", "read")
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetClustersInfoWithContext failed: %s", err.Error()), "(Data) ibm_backup_recovery_manager_get_cluster_info", "read")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
 
-	d.SetId(dataSourceIbmBackupRecoveryManagerSreGetClusterInfoID(d))
+	d.SetId(dataSourceIbmBackupRecoveryManagerGetClusterInfoID(d))
 
 	if !core.IsNil(clusterDetails.CohesityClusters) {
 		cohesityClusters := []map[string]interface{}{}
 		for _, cohesityClustersItem := range clusterDetails.CohesityClusters {
-			cohesityClustersItemMap, err := DataSourceIbmBackupRecoveryManagerSreGetClusterInfoClusterInfoToMap(&cohesityClustersItem) // #nosec G601
+			cohesityClustersItemMap, err := DataSourceIbmBackupRecoveryManagerGetClusterInfoClusterInfoToMap(&cohesityClustersItem) // #nosec G601
 			if err != nil {
-				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_backup_recovery_manager_sre_get_cluster_info", "read", "cohesity_clusters-to-map").GetDiag()
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_backup_recovery_manager_get_cluster_info", "read", "cohesity_clusters-to-map").GetDiag()
 			}
 			cohesityClusters = append(cohesityClusters, cohesityClustersItemMap)
 		}
 		if err = d.Set("cohesity_clusters", cohesityClusters); err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting cohesity_clusters: %s", err), "(Data) ibm_backup_recovery_manager_sre_get_cluster_info", "read", "set-cohesity_clusters").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting cohesity_clusters: %s", err), "(Data) ibm_backup_recovery_manager_get_cluster_info", "read", "set-cohesity_clusters").GetDiag()
 		}
 	}
 
 	if !core.IsNil(clusterDetails.SpClusters) {
 		spClusters := []map[string]interface{}{}
 		for _, spClustersItem := range clusterDetails.SpClusters {
-			spClustersItemMap, err := DataSourceIbmBackupRecoveryManagerSreGetClusterInfoSPClusterInfoToMap(&spClustersItem) // #nosec G601
+			spClustersItemMap, err := DataSourceIbmBackupRecoveryManagerGetClusterInfoSPClusterInfoToMap(&spClustersItem) // #nosec G601
 			if err != nil {
-				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_backup_recovery_manager_sre_get_cluster_info", "read", "sp_clusters-to-map").GetDiag()
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_backup_recovery_manager_get_cluster_info", "read", "sp_clusters-to-map").GetDiag()
 			}
 			spClusters = append(spClusters, spClustersItemMap)
 		}
 		if err = d.Set("sp_clusters", spClusters); err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting sp_clusters: %s", err), "(Data) ibm_backup_recovery_manager_sre_get_cluster_info", "read", "set-sp_clusters").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting sp_clusters: %s", err), "(Data) ibm_backup_recovery_manager_get_cluster_info", "read", "set-sp_clusters").GetDiag()
 		}
 	}
 
 	return nil
 }
 
-// dataSourceIbmBackupRecoveryManagerSreGetClusterInfoID returns a reasonable ID for the list.
-func dataSourceIbmBackupRecoveryManagerSreGetClusterInfoID(d *schema.ResourceData) string {
+// dataSourceIbmBackupRecoveryManagerGetClusterInfoID returns a reasonable ID for the list.
+func dataSourceIbmBackupRecoveryManagerGetClusterInfoID(d *schema.ResourceData) string {
 	return time.Now().UTC().String()
 }
 
-func DataSourceIbmBackupRecoveryManagerSreGetClusterInfoClusterInfoToMap(model *backuprecoveryv1.ClusterInfo) (map[string]interface{}, error) {
+func DataSourceIbmBackupRecoveryManagerGetClusterInfoClusterInfoToMap(model *backuprecoveryv1.ClusterInfo) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.AuthSupportForPkgDownloads != nil {
 		modelMap["auth_support_for_pkg_downloads"] = *model.AuthSupportForPkgDownloads
@@ -351,7 +351,7 @@ func DataSourceIbmBackupRecoveryManagerSreGetClusterInfoClusterInfoToMap(model *
 	if model.AvailableVersions != nil {
 		availableVersions := []map[string]interface{}{}
 		for _, availableVersionsItem := range model.AvailableVersions {
-			availableVersionsItemMap, err := DataSourceIbmBackupRecoveryManagerSreGetClusterInfoAvailableReleaseVersionToMap(&availableVersionsItem) // #nosec G601
+			availableVersionsItemMap, err := DataSourceIbmBackupRecoveryManagerGetClusterInfoAvailableReleaseVersionToMap(&availableVersionsItem) // #nosec G601
 			if err != nil {
 				return modelMap, err
 			}
@@ -428,13 +428,13 @@ func DataSourceIbmBackupRecoveryManagerSreGetClusterInfoClusterInfoToMap(model *
 	return modelMap, nil
 }
 
-func DataSourceIbmBackupRecoveryManagerSreGetClusterInfoAvailableReleaseVersionToMap(model *backuprecoveryv1.AvailableReleaseVersion) (map[string]interface{}, error) {
+func DataSourceIbmBackupRecoveryManagerGetClusterInfoAvailableReleaseVersionToMap(model *backuprecoveryv1.AvailableReleaseVersion) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.Notes != nil {
 		modelMap["notes"] = *model.Notes
 	}
 	if model.PatchDetails != nil {
-		patchDetailsMap, err := DataSourceIbmBackupRecoveryManagerSreGetClusterInfoAvailablePatchReleaseToMap(model.PatchDetails)
+		patchDetailsMap, err := DataSourceIbmBackupRecoveryManagerGetClusterInfoAvailablePatchReleaseToMap(model.PatchDetails)
 		if err != nil {
 			return modelMap, err
 		}
@@ -455,7 +455,7 @@ func DataSourceIbmBackupRecoveryManagerSreGetClusterInfoAvailableReleaseVersionT
 	return modelMap, nil
 }
 
-func DataSourceIbmBackupRecoveryManagerSreGetClusterInfoAvailablePatchReleaseToMap(model *backuprecoveryv1.AvailablePatchRelease) (map[string]interface{}, error) {
+func DataSourceIbmBackupRecoveryManagerGetClusterInfoAvailablePatchReleaseToMap(model *backuprecoveryv1.AvailablePatchRelease) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.Notes != nil {
 		modelMap["notes"] = *model.Notes
@@ -469,7 +469,7 @@ func DataSourceIbmBackupRecoveryManagerSreGetClusterInfoAvailablePatchReleaseToM
 	return modelMap, nil
 }
 
-func DataSourceIbmBackupRecoveryManagerSreGetClusterInfoSPClusterInfoToMap(model *backuprecoveryv1.SPClusterInfo) (map[string]interface{}, error) {
+func DataSourceIbmBackupRecoveryManagerGetClusterInfoSPClusterInfoToMap(model *backuprecoveryv1.SPClusterInfo) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.ClusterID != nil {
 		modelMap["cluster_id"] = flex.IntValue(model.ClusterID)

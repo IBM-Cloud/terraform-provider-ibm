@@ -16,25 +16,25 @@ import (
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 )
 
-func TestAccIbmBackupRecoveryManagerSreGetAlertsDataSourceBasic(t *testing.T) {
+func TestAccIbmBackupRecoveryManagerGetAlertsDataSourceBasic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheck(t) },
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIbmBackupRecoveryManagerSreGetAlertsDataSourceConfigBasic(),
+				Config: testAccCheckIbmBackupRecoveryManagerGetAlertsDataSourceConfigBasic(),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet("data.ibm_backup_recovery_manager_sre_get_alerts.backup_recovery_manager_sre_get_alerts_instance", "id"),
-					resource.TestCheckResourceAttrSet("data.ibm_backup_recovery_manager_sre_get_alerts.backup_recovery_manager_sre_get_alerts_instance", "alerts.#"),
+					resource.TestCheckResourceAttrSet("data.ibm_backup_recovery_manager_get_alerts.backup_recovery_manager_get_alerts_instance", "id"),
+					resource.TestCheckResourceAttrSet("data.ibm_backup_recovery_manager_get_alerts.backup_recovery_manager_get_alerts_instance", "alerts.#"),
 				),
 			},
 		},
 	})
 }
 
-func testAccCheckIbmBackupRecoveryManagerSreGetAlertsDataSourceConfigBasic() string {
+func testAccCheckIbmBackupRecoveryManagerGetAlertsDataSourceConfigBasic() string {
 	return fmt.Sprintf(`
-		data "ibm_backup_recovery_manager_sre_get_alerts" "backup_recovery_manager_sre_get_alerts_instance" {
+		data "ibm_backup_recovery_manager_get_alerts" "backup_recovery_manager_get_alerts_instance" {
 			alertIds = [ "alertIds" ]
 			alertTypes = [ 1 ]
 			alertCategories = [ "kDisk" ]

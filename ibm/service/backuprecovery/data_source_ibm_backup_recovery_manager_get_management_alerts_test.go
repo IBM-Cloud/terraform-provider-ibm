@@ -16,25 +16,25 @@ import (
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 )
 
-func TestAccIbmBackupRecoveryManagerSreGetHeliosAlertsDataSourceBasic(t *testing.T) {
+func TestAccIbmBackupRecoveryManagerGetManagementAlertsDataSourceBasic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheck(t) },
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIbmBackupRecoveryManagerSreGetHeliosAlertsDataSourceConfigBasic(),
+				Config: testAccCheckIbmBackupRecoveryManagerGetManagementAlertsDataSourceConfigBasic(),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet("data.ibm_backup_recovery_manager_sre_get_helios_alerts.backup_recovery_manager_sre_get_helios_alerts_instance", "id"),
-					resource.TestCheckResourceAttrSet("data.ibm_backup_recovery_manager_sre_get_helios_alerts.backup_recovery_manager_sre_get_helios_alerts_instance", "alerts_list.#"),
+					resource.TestCheckResourceAttrSet("data.ibm_backup_recovery_manager_get_management_alerts.backup_recovery_manager_get_management_alerts_instance", "id"),
+					resource.TestCheckResourceAttrSet("data.ibm_backup_recovery_manager_get_management_alerts.backup_recovery_manager_get_management_alerts_instance", "alerts_list.#"),
 				),
 			},
 		},
 	})
 }
 
-func testAccCheckIbmBackupRecoveryManagerSreGetHeliosAlertsDataSourceConfigBasic() string {
+func testAccCheckIbmBackupRecoveryManagerGetManagementAlertsDataSourceConfigBasic() string {
 	return fmt.Sprintf(`
-		data "ibm_backup_recovery_manager_sre_get_helios_alerts" "backup_recovery_manager_sre_get_helios_alerts_instance" {
+		data "ibm_backup_recovery_manager_get_management_alerts" "backup_recovery_manager_get_management_alerts_instance" {
 			alertIdList = [ "alertIdList" ]
 			alertStateList = [ "alertStateList" ]
 			alertTypeList = [ 1 ]

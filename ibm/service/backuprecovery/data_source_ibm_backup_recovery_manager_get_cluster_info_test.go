@@ -16,24 +16,24 @@ import (
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 )
 
-func TestAccIbmBackupRecoveryManagerSreGetClusterInfoDataSourceBasic(t *testing.T) {
+func TestAccIbmBackupRecoveryManagerGetClusterInfoDataSourceBasic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheck(t) },
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIbmBackupRecoveryManagerSreGetClusterInfoDataSourceConfigBasic(),
+				Config: testAccCheckIbmBackupRecoveryManagerGetClusterInfoDataSourceConfigBasic(),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet("data.ibm_backup_recovery_manager_sre_get_cluster_info.backup_recovery_manager_sre_get_cluster_info_instance", "id"),
+					resource.TestCheckResourceAttrSet("data.ibm_backup_recovery_manager_get_cluster_info.backup_recovery_manager_get_cluster_info_instance", "id"),
 				),
 			},
 		},
 	})
 }
 
-func testAccCheckIbmBackupRecoveryManagerSreGetClusterInfoDataSourceConfigBasic() string {
+func testAccCheckIbmBackupRecoveryManagerGetClusterInfoDataSourceConfigBasic() string {
 	return fmt.Sprintf(`
-		data "ibm_backup_recovery_manager_sre_get_cluster_info" "backup_recovery_manager_sre_get_cluster_info_instance" {
+		data "ibm_backup_recovery_manager_get_cluster_info" "backup_recovery_manager_get_cluster_info_instance" {
 		}
 	`)
 }

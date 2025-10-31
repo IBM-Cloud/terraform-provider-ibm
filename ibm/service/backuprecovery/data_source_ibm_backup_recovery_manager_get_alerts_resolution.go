@@ -22,9 +22,9 @@ import (
 	"github.com/IBM/ibm-backup-recovery-sdk-go/backuprecoveryv1"
 )
 
-func DataSourceIbmBackupRecoveryManagerSreGetHeliosAlertsResolution() *schema.Resource {
+func DataSourceIbmBackupRecoveryManagerGetAlertsResolution() *schema.Resource {
 	return &schema.Resource{
-		ReadContext: dataSourceIbmBackupRecoveryManagerSreGetHeliosAlertsResolutionRead,
+		ReadContext: dataSourceIbmBackupRecoveryManagerGetAlertsResolutionRead,
 
 		Schema: map[string]*schema.Schema{
 			"max_resolutions": &schema.Schema{
@@ -66,12 +66,12 @@ func DataSourceIbmBackupRecoveryManagerSreGetHeliosAlertsResolution() *schema.Re
 						"external_key": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "Specifies the external key assigned outside of helios, with the form of \"clusterid:resolutionid\".",
+							Description: "Specifies the external key assigned outside of management console, with the form of \"clusterid:resolutionid\".",
 						},
 						"resolution_id": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "Specifies the unique reslution id assigned in helios.",
+							Description: "Specifies the unique reslution id assigned in management console.",
 						},
 						"resolution_name": &schema.Schema{
 							Type:        schema.TypeString,
@@ -137,66 +137,56 @@ func DataSourceIbmBackupRecoveryManagerSreGetHeliosAlertsResolution() *schema.Re
 	}
 }
 
-func dataSourceIbmBackupRecoveryManagerSreGetHeliosAlertsResolutionRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	heliosSreApiClient, err := meta.(conns.ClientSession).BackupRecoveryManagerSreV1()
+func dataSourceIbmBackupRecoveryManagerGetAlertsResolutionRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	managementSreApiClient, err := meta.(conns.ClientSession).BackupRecoveryManagerV1()
 	if err != nil {
-		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_backup_recovery_manager_sre_get_helios_alerts_resolution", "read", "initialize-client")
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_backup_recovery_manager_get_alerts_resolution", "read", "initialize-client")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
 
-	getHeliosAlertResolutionOptions := &backuprecoveryv1.GetHeliosAlertResolutionOptions{}
+	getManagementAlertResolutionOptions := &backuprecoveryv1.GetManagementAlertResolutionOptions{}
 
-	getHeliosAlertResolutionOptions.SetMaxResolutions(int64(d.Get("max_resolutions").(int)))
+	getManagementAlertResolutionOptions.SetMaxResolutions(int64(d.Get("max_resolutions").(int)))
 	if _, ok := d.GetOk("resolution_name"); ok {
-		getHeliosAlertResolutionOptions.SetResolutionName(d.Get("resolution_name").(string))
+		getManagementAlertResolutionOptions.SetResolutionName(d.Get("resolution_name").(string))
 	}
 	if _, ok := d.GetOk("resolution_id"); ok {
-		getHeliosAlertResolutionOptions.SetResolutionID(d.Get("resolution_id").(string))
+		getManagementAlertResolutionOptions.SetResolutionID(d.Get("resolution_id").(string))
 	}
 
-	alertResolutionsList, _, err := heliosSreApiClient.GetHeliosAlertResolutionWithContext(context, getHeliosAlertResolutionOptions)
+	alertResolutionsList, _, err := managementSreApiClient.GetManagementAlertResolutionWithContext(context, getManagementAlertResolutionOptions)
 	if err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetHeliosAlertResolutionWithContext failed: %s", err.Error()), "(Data) ibm_backup_recovery_manager_sre_get_helios_alerts_resolution", "read")
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetManagementAlertResolutionWithContext failed: %s", err.Error()), "(Data) ibm_backup_recovery_manager_get_alerts_resolution", "read")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
 
-	d.SetId(dataSourceIbmBackupRecoveryManagerSreGetHeliosAlertsResolutionID(d))
+	d.SetId(dataSourceIbmBackupRecoveryManagerGetAlertsResolutionID(d))
 
-	if !core.IsNil(alertResolutionsList) {
-		alertResolutionsListItems := [][]map[string]interface{}{}
-
-		for _, alertResolutionsListItem := range alertResolutionsList {
-
-			alertResolutionsItems := []map[string]interface{}{}
-
-			for _, alertResolutionsListItem := range alertResolutionsListItem.AlertResolutionsList {
-
-				alertResolutionsItem, err := DataSourceIbmBackupRecoveryManagerSreGetHeliosAlertsResolutionAlertResolutionToMap(&alertResolutionsListItem)
-				if err != nil {
-					return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_backup_recovery_manager_sre_get_helios_alerts_resolution", "read", "alert_resolutions_list-to-map").GetDiag()
-				}
-
-				alertResolutionsItems = append(alertResolutionsItems, alertResolutionsItem)
+	if !core.IsNil(alertResolutionsList.AlertResolutionsList) {
+		alertResolutionsListResult := []map[string]interface{}{}
+		for _, alertResolutionsListItem := range alertResolutionsList.AlertResolutionsList {
+			alertResolutionsListItemMap, err := DataSourceIbmBackupRecoveryManagerGetAlertsResolutionAlertResolutionToMap(&alertResolutionsListItem) // #nosec G601
+			if err != nil {
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_backup_recovery_manager_get_alerts_resolution", "read", "alert_resolutions_list-to-map").GetDiag()
 			}
-			alertResolutionsListItems = append(alertResolutionsListItems, alertResolutionsItems)
+			alertResolutionsListResult = append(alertResolutionsListResult, alertResolutionsListItemMap)
 		}
-
 		if err = d.Set("alert_resolutions_list", alertResolutionsList); err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting alert_resolutions_list: %s", err), "(Data) ibm_backup_recovery_manager_sre_get_helios_alerts_resolution", "read", "set-alert_resolutions_list").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting alert_resolutions_list: %s", err), "(Data) ibm_backup_recovery_manager_get_alerts_resolution", "read", "set-alert_resolutions_list").GetDiag()
 		}
 	}
 
 	return nil
 }
 
-// dataSourceIbmBackupRecoveryManagerSreGetHeliosAlertsResolutionID returns a reasonable ID for the list.
-func dataSourceIbmBackupRecoveryManagerSreGetHeliosAlertsResolutionID(d *schema.ResourceData) string {
+// dataSourceIbmBackupRecoveryManagerGetAlertsResolutionID returns a reasonable ID for the list.
+func dataSourceIbmBackupRecoveryManagerGetAlertsResolutionID(d *schema.ResourceData) string {
 	return time.Now().UTC().String()
 }
 
-func DataSourceIbmBackupRecoveryManagerSreGetHeliosAlertsResolutionAlertResolutionToMap(model *backuprecoveryv1.AlertResolution) (map[string]interface{}, error) {
+func DataSourceIbmBackupRecoveryManagerGetAlertsResolutionAlertResolutionToMap(model *backuprecoveryv1.AlertResolution) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.AccountID != nil {
 		modelMap["account_id"] = *model.AccountID
@@ -219,7 +209,7 @@ func DataSourceIbmBackupRecoveryManagerSreGetHeliosAlertsResolutionAlertResoluti
 	if model.ResolvedAlerts != nil {
 		resolvedAlerts := []map[string]interface{}{}
 		for _, resolvedAlertsItem := range model.ResolvedAlerts {
-			resolvedAlertsItemMap, err := DataSourceIbmBackupRecoveryManagerSreGetHeliosAlertsResolutionResolvedAlertInfoToMap(&resolvedAlertsItem) // #nosec G601
+			resolvedAlertsItemMap, err := DataSourceIbmBackupRecoveryManagerGetAlertsResolutionResolvedAlertInfoToMap(&resolvedAlertsItem) // #nosec G601
 			if err != nil {
 				return modelMap, err
 			}
@@ -236,7 +226,7 @@ func DataSourceIbmBackupRecoveryManagerSreGetHeliosAlertsResolutionAlertResoluti
 	return modelMap, nil
 }
 
-func DataSourceIbmBackupRecoveryManagerSreGetHeliosAlertsResolutionResolvedAlertInfoToMap(model *backuprecoveryv1.ResolvedAlertInfo) (map[string]interface{}, error) {
+func DataSourceIbmBackupRecoveryManagerGetAlertsResolutionResolvedAlertInfoToMap(model *backuprecoveryv1.ResolvedAlertInfo) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.AlertID != nil {
 		modelMap["alert_id"] = flex.IntValue(model.AlertID)

@@ -22,9 +22,9 @@ import (
 	"github.com/IBM/ibm-backup-recovery-sdk-go/backuprecoveryv1"
 )
 
-func DataSourceIbmBackupRecoveryManagerSreGetAlertsSummary() *schema.Resource {
+func DataSourceIbmBackupRecoveryManagerGetAlertsSummary() *schema.Resource {
 	return &schema.Resource{
-		ReadContext: dataSourceIbmBackupRecoveryManagerSreGetAlertsSummaryRead,
+		ReadContext: dataSourceIbmBackupRecoveryManagerGetAlertsSummaryRead,
 
 		Schema: map[string]*schema.Schema{
 			"start_time_usecs": &schema.Schema{
@@ -106,10 +106,10 @@ func DataSourceIbmBackupRecoveryManagerSreGetAlertsSummary() *schema.Resource {
 	}
 }
 
-func dataSourceIbmBackupRecoveryManagerSreGetAlertsSummaryRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	heliosSreApiClient, err := meta.(conns.ClientSession).BackupRecoveryManagerSreV1()
+func dataSourceIbmBackupRecoveryManagerGetAlertsSummaryRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	managementSreApiClient, err := meta.(conns.ClientSession).BackupRecoveryManagerV1()
 	if err != nil {
-		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_backup_recovery_manager_sre_get_alerts_summary", "read", "initialize-client")
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_backup_recovery_manager_get_alerts_summary", "read", "initialize-client")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
@@ -145,38 +145,38 @@ func dataSourceIbmBackupRecoveryManagerSreGetAlertsSummaryRead(context context.C
 		getAlertSummaryOptions.SetXScopeIdentifier(d.Get("x_scope_identifier").(string))
 	}
 
-	alertsSummaryResponse, _, err := heliosSreApiClient.GetAlertSummaryWithContext(context, getAlertSummaryOptions)
+	alertsSummaryResponse, _, err := managementSreApiClient.GetAlertSummaryWithContext(context, getAlertSummaryOptions)
 	if err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetAlertSummaryWithContext failed: %s", err.Error()), "(Data) ibm_backup_recovery_manager_sre_get_alerts_summary", "read")
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetAlertSummaryWithContext failed: %s", err.Error()), "(Data) ibm_backup_recovery_manager_get_alerts_summary", "read")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
 
-	d.SetId(dataSourceIbmBackupRecoveryManagerSreGetAlertsSummaryID(d))
+	d.SetId(dataSourceIbmBackupRecoveryManagerGetAlertsSummaryID(d))
 
 	if !core.IsNil(alertsSummaryResponse.AlertsSummary) {
 		alertsSummary := []map[string]interface{}{}
 		for _, alertsSummaryItem := range alertsSummaryResponse.AlertsSummary {
-			alertsSummaryItemMap, err := DataSourceIbmBackupRecoveryManagerSreGetAlertsSummaryAlertGroupSummaryToMap(&alertsSummaryItem) // #nosec G601
+			alertsSummaryItemMap, err := DataSourceIbmBackupRecoveryManagerGetAlertsSummaryAlertGroupSummaryToMap(&alertsSummaryItem) // #nosec G601
 			if err != nil {
-				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_backup_recovery_manager_sre_get_alerts_summary", "read", "alerts_summary-to-map").GetDiag()
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_backup_recovery_manager_get_alerts_summary", "read", "alerts_summary-to-map").GetDiag()
 			}
 			alertsSummary = append(alertsSummary, alertsSummaryItemMap)
 		}
 		if err = d.Set("alerts_summary", alertsSummary); err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting alerts_summary: %s", err), "(Data) ibm_backup_recovery_manager_sre_get_alerts_summary", "read", "set-alerts_summary").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting alerts_summary: %s", err), "(Data) ibm_backup_recovery_manager_get_alerts_summary", "read", "set-alerts_summary").GetDiag()
 		}
 	}
 
 	return nil
 }
 
-// dataSourceIbmBackupRecoveryManagerSreGetAlertsSummaryID returns a reasonable ID for the list.
-func dataSourceIbmBackupRecoveryManagerSreGetAlertsSummaryID(d *schema.ResourceData) string {
+// dataSourceIbmBackupRecoveryManagerGetAlertsSummaryID returns a reasonable ID for the list.
+func dataSourceIbmBackupRecoveryManagerGetAlertsSummaryID(d *schema.ResourceData) string {
 	return time.Now().UTC().String()
 }
 
-func DataSourceIbmBackupRecoveryManagerSreGetAlertsSummaryAlertGroupSummaryToMap(model *backuprecoveryv1.AlertGroupSummary) (map[string]interface{}, error) {
+func DataSourceIbmBackupRecoveryManagerGetAlertsSummaryAlertGroupSummaryToMap(model *backuprecoveryv1.AlertGroupSummary) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.Category != nil {
 		modelMap["category"] = *model.Category

@@ -16,24 +16,24 @@ import (
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 )
 
-func TestAccIbmBackupRecoveryManagerSreGetUpgradesInfoDataSourceBasic(t *testing.T) {
+func TestAccIbmBackupRecoveryManagerGetUpgradesInfoDataSourceBasic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheck(t) },
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIbmBackupRecoveryManagerSreGetUpgradesInfoDataSourceConfigBasic(),
+				Config: testAccCheckIbmBackupRecoveryManagerGetUpgradesInfoDataSourceConfigBasic(),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet("data.ibm_backup_recovery_manager_sre_get_upgrades_info.backup_recovery_manager_sre_get_upgrades_info_instance", "id"),
+					resource.TestCheckResourceAttrSet("data.ibm_backup_recovery_manager_get_upgrades_info.backup_recovery_manager_get_upgrades_info_instance", "id"),
 				),
 			},
 		},
 	})
 }
 
-func testAccCheckIbmBackupRecoveryManagerSreGetUpgradesInfoDataSourceConfigBasic() string {
+func testAccCheckIbmBackupRecoveryManagerGetUpgradesInfoDataSourceConfigBasic() string {
 	return fmt.Sprintf(`
-		data "ibm_backup_recovery_manager_sre_get_upgrades_info" "backup_recovery_manager_sre_get_upgrades_info_instance" {
+		data "ibm_backup_recovery_manager_get_upgrades_info" "backup_recovery_manager_get_upgrades_info_instance" {
 			clusterIdentifiers = [ "clusterIdentifiers" ]
 		}
 	`)

@@ -22,9 +22,9 @@ import (
 	"github.com/IBM/ibm-backup-recovery-sdk-go/backuprecoveryv1"
 )
 
-func DataSourceIbmBackupRecoveryManagerSreGetHeliosAlertsStats() *schema.Resource {
+func DataSourceIbmBackupRecoveryManagerGetAlertsStats() *schema.Resource {
 	return &schema.Resource{
-		ReadContext: dataSourceIbmBackupRecoveryManagerSreGetHeliosAlertsStatsRead,
+		ReadContext: dataSourceIbmBackupRecoveryManagerGetAlertsStatsRead,
 
 		Schema: map[string]*schema.Schema{
 			"start_time_usecs": &schema.Schema{
@@ -43,6 +43,14 @@ func DataSourceIbmBackupRecoveryManagerSreGetHeliosAlertsStats() *schema.Resourc
 				Description: "Specifies the list of cluster IDs.",
 				Elem: &schema.Schema{
 					Type: schema.TypeInt,
+				},
+			},
+			"service_instance_ids": &schema.Schema{
+				Type:        schema.TypeList,
+				Optional:    true,
+				Description: "Specifies list of service instance ids to filter alert stats by.",
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
 				},
 			},
 			"region_ids": &schema.Schema{
@@ -356,25 +364,33 @@ func DataSourceIbmBackupRecoveryManagerSreGetHeliosAlertsStats() *schema.Resourc
 	}
 }
 
-func dataSourceIbmBackupRecoveryManagerSreGetHeliosAlertsStatsRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	heliosSreApiClient, err := meta.(conns.ClientSession).BackupRecoveryManagerSreV1()
+func dataSourceIbmBackupRecoveryManagerGetAlertsStatsRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	managementSreApiClient, err := meta.(conns.ClientSession).BackupRecoveryManagerV1()
 	if err != nil {
-		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_backup_recovery_manager_sre_get_helios_alerts_stats", "read", "initialize-client")
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_backup_recovery_manager_get_alerts_stats", "read", "initialize-client")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
 
-	getHeliosAlertsStatsOptions := &backuprecoveryv1.GetHeliosAlertsStatsOptions{}
+	getManagementAlertsStatsOptions := &backuprecoveryv1.GetManagementAlertsStatsOptions{}
 
-	getHeliosAlertsStatsOptions.SetStartTimeUsecs(int64(d.Get("start_time_usecs").(int)))
-	getHeliosAlertsStatsOptions.SetEndTimeUsecs(int64(d.Get("end_time_usecs").(int)))
+	getManagementAlertsStatsOptions.SetStartTimeUsecs(int64(d.Get("start_time_usecs").(int)))
+	getManagementAlertsStatsOptions.SetEndTimeUsecs(int64(d.Get("end_time_usecs").(int)))
 	if _, ok := d.GetOk("cluster_ids"); ok {
 		var clusterIds []int64
 		for _, v := range d.Get("cluster_ids").([]interface{}) {
 			clusterIdsItem := int64(v.(int))
 			clusterIds = append(clusterIds, clusterIdsItem)
 		}
-		getHeliosAlertsStatsOptions.SetClusterIds(clusterIds)
+		getManagementAlertsStatsOptions.SetClusterIds(clusterIds)
+	}
+	if _, ok := d.GetOk("service_instance_ids"); ok {
+		var serviceInstanceIds []string
+		for _, v := range d.Get("service_instance_ids").([]interface{}) {
+			serviceInstanceIdsItem := v.(string)
+			serviceInstanceIds = append(serviceInstanceIds, serviceInstanceIdsItem)
+		}
+		getManagementAlertsStatsOptions.SetServiceInstanceIds(serviceInstanceIds)
 	}
 	if _, ok := d.GetOk("region_ids"); ok {
 		var regionIds []string
@@ -382,13 +398,13 @@ func dataSourceIbmBackupRecoveryManagerSreGetHeliosAlertsStatsRead(context conte
 			regionIdsItem := v.(string)
 			regionIds = append(regionIds, regionIdsItem)
 		}
-		getHeliosAlertsStatsOptions.SetRegionIds(regionIds)
+		getManagementAlertsStatsOptions.SetRegionIds(regionIds)
 	}
 	if _, ok := d.GetOk("exclude_stats_by_cluster"); ok {
-		getHeliosAlertsStatsOptions.SetExcludeStatsByCluster(d.Get("exclude_stats_by_cluster").(bool))
+		getManagementAlertsStatsOptions.SetExcludeStatsByCluster(d.Get("exclude_stats_by_cluster").(bool))
 	}
 	if _, ok := d.GetOk("alert_source"); ok {
-		getHeliosAlertsStatsOptions.SetAlertSource(d.Get("alert_source").(string))
+		getManagementAlertsStatsOptions.SetAlertSource(d.Get("alert_source").(string))
 	}
 	if _, ok := d.GetOk("tenant_ids"); ok {
 		var tenantIds []string
@@ -396,65 +412,65 @@ func dataSourceIbmBackupRecoveryManagerSreGetHeliosAlertsStatsRead(context conte
 			tenantIdsItem := v.(string)
 			tenantIds = append(tenantIds, tenantIdsItem)
 		}
-		getHeliosAlertsStatsOptions.SetTenantIds(tenantIds)
+		getManagementAlertsStatsOptions.SetTenantIds(tenantIds)
 	}
 
-	mcmActiveAlertsStats, _, err := heliosSreApiClient.GetHeliosAlertsStatsWithContext(context, getHeliosAlertsStatsOptions)
+	mcmActiveAlertsStats, _, err := managementSreApiClient.GetManagementAlertsStatsWithContext(context, getManagementAlertsStatsOptions)
 	if err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetHeliosAlertsStatsWithContext failed: %s", err.Error()), "(Data) ibm_backup_recovery_manager_sre_get_helios_alerts_stats", "read")
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetManagementAlertsStatsWithContext failed: %s", err.Error()), "(Data) ibm_backup_recovery_manager_get_alerts_stats", "read")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
 
-	d.SetId(dataSourceIbmBackupRecoveryManagerSreGetHeliosAlertsStatsID(d))
+	d.SetId(dataSourceIbmBackupRecoveryManagerGetAlertsStatsID(d))
 
 	if !core.IsNil(mcmActiveAlertsStats.AggregatedAlertsStats) {
 		aggregatedAlertsStats := []map[string]interface{}{}
-		aggregatedAlertsStatsMap, err := DataSourceIbmBackupRecoveryManagerSreGetHeliosAlertsStatsActiveAlertsStatsToMap(mcmActiveAlertsStats.AggregatedAlertsStats)
+		aggregatedAlertsStatsMap, err := DataSourceIbmBackupRecoveryManagerGetAlertsStatsActiveAlertsStatsToMap(mcmActiveAlertsStats.AggregatedAlertsStats)
 		if err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_backup_recovery_manager_sre_get_helios_alerts_stats", "read", "aggregated_alerts_stats-to-map").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_backup_recovery_manager_get_alerts_stats", "read", "aggregated_alerts_stats-to-map").GetDiag()
 		}
 		aggregatedAlertsStats = append(aggregatedAlertsStats, aggregatedAlertsStatsMap)
 		if err = d.Set("aggregated_alerts_stats", aggregatedAlertsStats); err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting aggregated_alerts_stats: %s", err), "(Data) ibm_backup_recovery_manager_sre_get_helios_alerts_stats", "read", "set-aggregated_alerts_stats").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting aggregated_alerts_stats: %s", err), "(Data) ibm_backup_recovery_manager_get_alerts_stats", "read", "set-aggregated_alerts_stats").GetDiag()
 		}
 	}
 
 	if !core.IsNil(mcmActiveAlertsStats.AggregatedClusterStats) {
 		aggregatedClusterStats := []map[string]interface{}{}
-		aggregatedClusterStatsMap, err := DataSourceIbmBackupRecoveryManagerSreGetHeliosAlertsStatsClusterAlertStatsToMap(mcmActiveAlertsStats.AggregatedClusterStats)
+		aggregatedClusterStatsMap, err := DataSourceIbmBackupRecoveryManagerGetAlertsStatsClusterAlertStatsToMap(mcmActiveAlertsStats.AggregatedClusterStats)
 		if err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_backup_recovery_manager_sre_get_helios_alerts_stats", "read", "aggregated_cluster_stats-to-map").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_backup_recovery_manager_get_alerts_stats", "read", "aggregated_cluster_stats-to-map").GetDiag()
 		}
 		aggregatedClusterStats = append(aggregatedClusterStats, aggregatedClusterStatsMap)
 		if err = d.Set("aggregated_cluster_stats", aggregatedClusterStats); err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting aggregated_cluster_stats: %s", err), "(Data) ibm_backup_recovery_manager_sre_get_helios_alerts_stats", "read", "set-aggregated_cluster_stats").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting aggregated_cluster_stats: %s", err), "(Data) ibm_backup_recovery_manager_get_alerts_stats", "read", "set-aggregated_cluster_stats").GetDiag()
 		}
 	}
 
 	if !core.IsNil(mcmActiveAlertsStats.StatsByCluster) {
 		statsByCluster := []map[string]interface{}{}
 		for _, statsByClusterItem := range mcmActiveAlertsStats.StatsByCluster {
-			statsByClusterItemMap, err := DataSourceIbmBackupRecoveryManagerSreGetHeliosAlertsStatsMcmActiveAlertsStatsByClusterToMap(&statsByClusterItem) // #nosec G601
+			statsByClusterItemMap, err := DataSourceIbmBackupRecoveryManagerGetAlertsStatsMcmActiveAlertsStatsByClusterToMap(&statsByClusterItem) // #nosec G601
 			if err != nil {
-				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_backup_recovery_manager_sre_get_helios_alerts_stats", "read", "stats_by_cluster-to-map").GetDiag()
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_backup_recovery_manager_get_alerts_stats", "read", "stats_by_cluster-to-map").GetDiag()
 			}
 			statsByCluster = append(statsByCluster, statsByClusterItemMap)
 		}
 		if err = d.Set("stats_by_cluster", statsByCluster); err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting stats_by_cluster: %s", err), "(Data) ibm_backup_recovery_manager_sre_get_helios_alerts_stats", "read", "set-stats_by_cluster").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting stats_by_cluster: %s", err), "(Data) ibm_backup_recovery_manager_get_alerts_stats", "read", "set-stats_by_cluster").GetDiag()
 		}
 	}
 
 	return nil
 }
 
-// dataSourceIbmBackupRecoveryManagerSreGetHeliosAlertsStatsID returns a reasonable ID for the list.
-func dataSourceIbmBackupRecoveryManagerSreGetHeliosAlertsStatsID(d *schema.ResourceData) string {
+// dataSourceIbmBackupRecoveryManagerGetAlertsStatsID returns a reasonable ID for the list.
+func dataSourceIbmBackupRecoveryManagerGetAlertsStatsID(d *schema.ResourceData) string {
 	return time.Now().UTC().String()
 }
 
-func DataSourceIbmBackupRecoveryManagerSreGetHeliosAlertsStatsActiveAlertsStatsToMap(model *backuprecoveryv1.ActiveAlertsStats) (map[string]interface{}, error) {
+func DataSourceIbmBackupRecoveryManagerGetAlertsStatsActiveAlertsStatsToMap(model *backuprecoveryv1.ActiveAlertsStats) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.NumCriticalAlerts != nil {
 		modelMap["num_critical_alerts"] = flex.IntValue(model.NumCriticalAlerts)
@@ -525,7 +541,7 @@ func DataSourceIbmBackupRecoveryManagerSreGetHeliosAlertsStatsActiveAlertsStatsT
 	return modelMap, nil
 }
 
-func DataSourceIbmBackupRecoveryManagerSreGetHeliosAlertsStatsClusterAlertStatsToMap(model *backuprecoveryv1.ClusterAlertStats) (map[string]interface{}, error) {
+func DataSourceIbmBackupRecoveryManagerGetAlertsStatsClusterAlertStatsToMap(model *backuprecoveryv1.ClusterAlertStats) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.NumClustersWithCriticalAlerts != nil {
 		modelMap["num_clusters_with_critical_alerts"] = flex.IntValue(model.NumClustersWithCriticalAlerts)
@@ -539,10 +555,10 @@ func DataSourceIbmBackupRecoveryManagerSreGetHeliosAlertsStatsClusterAlertStatsT
 	return modelMap, nil
 }
 
-func DataSourceIbmBackupRecoveryManagerSreGetHeliosAlertsStatsMcmActiveAlertsStatsByClusterToMap(model *backuprecoveryv1.McmActiveAlertsStatsByCluster) (map[string]interface{}, error) {
+func DataSourceIbmBackupRecoveryManagerGetAlertsStatsMcmActiveAlertsStatsByClusterToMap(model *backuprecoveryv1.McmActiveAlertsStatsByCluster) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.AlertsStats != nil {
-		alertsStatsMap, err := DataSourceIbmBackupRecoveryManagerSreGetHeliosAlertsStatsActiveAlertsStatsToMap(model.AlertsStats)
+		alertsStatsMap, err := DataSourceIbmBackupRecoveryManagerGetAlertsStatsActiveAlertsStatsToMap(model.AlertsStats)
 		if err != nil {
 			return modelMap, err
 		}
