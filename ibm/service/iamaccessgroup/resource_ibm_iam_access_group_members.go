@@ -93,7 +93,9 @@ func ResourceIBMIAMAccessGroupMembersValidator() *validate.ResourceValidator {
 func resourceIBMIAMAccessGroupMembersCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	iamAccessGroupsClient, err := meta.(conns.ClientSession).IAMAccessGroupsV2()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, err.Error(), "ibm_iam_access_group_members", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	grpID := d.Get("access_group_id").(string)
@@ -112,7 +114,7 @@ func resourceIBMIAMAccessGroupMembersCreate(context context.Context, d *schema.R
 	profiles := flex.ExpandStringList(d.Get("iam_profile_ids").(*schema.Set).List())
 
 	if len(users) == 0 && len(services) == 0 && len(profiles) == 0 {
-		return diag.FromErr(fmt.Errorf("ERROR] Provide either `ibm_ids` or `iam_service_ids` or `iam_profile_ids`"))
+		return diag.FromErr(flex.FmtErrorf("ERROR] Provide either `ibm_ids` or `iam_service_ids` or `iam_profile_ids`"))
 
 	}
 
@@ -135,9 +137,11 @@ func resourceIBMIAMAccessGroupMembersCreate(context context.Context, d *schema.R
 
 	addMembersToAccessGroupOptions := iamAccessGroupsClient.NewAddMembersToAccessGroupOptions(grpID)
 	addMembersToAccessGroupOptions.SetMembers(members)
-	membership, detailResponse, err := iamAccessGroupsClient.AddMembersToAccessGroup(addMembersToAccessGroupOptions)
+	membership, _, err := iamAccessGroupsClient.AddMembersToAccessGroupWithContext(context, addMembersToAccessGroupOptions)
 	if err != nil || membership == nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error adding members to group(%s). API response: %s", grpID, detailResponse))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("AddMembersToAccessGroupWithContext failed: %s", err.Error()), "ibm_iam_access_group_members", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	d.SetId(fmt.Sprintf("%s/%s", grpID, time.Now().UTC().String()))
@@ -148,7 +152,9 @@ func resourceIBMIAMAccessGroupMembersCreate(context context.Context, d *schema.R
 func resourceIBMIAMAccessGroupMembersRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	iamAccessGroupsClient, err := meta.(conns.ClientSession).IAMAccessGroupsV2()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, err.Error(), "ibm_iam_access_group_members", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	parts, err := flex.IdParts(d.Id())
@@ -162,22 +168,27 @@ func resourceIBMIAMAccessGroupMembersRead(context context.Context, d *schema.Res
 	// lets fetch 100 in a single pagination
 	limit := int64(100)
 	listAccessGroupMembersOptions.SetLimit(limit)
-	members, detailedResponse, err := iamAccessGroupsClient.ListAccessGroupMembers(listAccessGroupMembersOptions)
+	members, detailedResponse, err := iamAccessGroupsClient.ListAccessGroupMembersWithContext(context, listAccessGroupMembersOptions)
 	if err != nil {
 		if detailedResponse != nil && detailedResponse.StatusCode == 404 {
 			d.SetId("")
 			return nil
 		}
-		return diag.FromErr(fmt.Errorf("[ERROR] Error retrieving access group members: %s. API Response: %s", err, detailedResponse))
+
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("ListAccessGroupMembersWithContext failed: %s", err.Error()), "ibm_iam_access_group_members", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	allMembers := members.Members
 	totalMembers := flex.IntValue(members.TotalCount)
 	for len(allMembers) < totalMembers {
 		offset = offset + limit
 		listAccessGroupMembersOptions.SetOffset(offset)
-		members, detailedResponse, err = iamAccessGroupsClient.ListAccessGroupMembers(listAccessGroupMembersOptions)
+		members, detailedResponse, err = iamAccessGroupsClient.ListAccessGroupMembersWithContext(context, listAccessGroupMembersOptions)
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error retrieving access group members: %s. API Response: %s", err, detailedResponse))
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("ListAccessGroupMembersWithContext failed: %s", err.Error()), "ibm_iam_access_group_members", "read")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		allMembers = append(allMembers, members.Members...)
 	}
@@ -220,7 +231,7 @@ func resourceIBMIAMAccessGroupMembersRead(context context.Context, d *schema.Res
 
 		serviceIDs, resp, err := iamClient.ListServiceIds(&listServiceIDOptions)
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error listing Service Ids %s %s", err, resp))
+			return diag.FromErr(flex.FmtErrorf("[ERROR] Error listing Service Ids %s %s", err, resp))
 		}
 		start = flex.GetNextIAM(serviceIDs.Next)
 		allrecs = append(allrecs, serviceIDs.Serviceids...)
@@ -243,7 +254,7 @@ func resourceIBMIAMAccessGroupMembersRead(context context.Context, d *schema.Res
 
 		profileIDs, resp, err := iamClient.ListProfiles(&listProfilesOptions)
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error listing Trusted Profiles %s %s", err, resp))
+			return diag.FromErr(flex.FmtErrorf("[ERROR] Error listing Trusted Profiles %s %s", err, resp))
 		}
 		profileStart = flex.GetNextIAM(profileIDs.Next)
 		allprofiles = append(allprofiles, profileIDs.Profiles...)
@@ -331,7 +342,7 @@ func resourceIBMIAMAccessGroupMembersUpdate(context context.Context, d *schema.R
 		addMembersToAccessGroupOptions.SetMembers(members)
 		membership, detailResponse, err := iamAccessGroupsClient.AddMembersToAccessGroup(addMembersToAccessGroupOptions)
 		if err != nil || membership == nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error updating members to group(%s). API response: %s", grpID, detailResponse))
+			return diag.FromErr(flex.FmtErrorf("[ERROR] Error updating members to group(%s). API response: %s", grpID, detailResponse))
 		}
 
 	}
@@ -359,12 +370,12 @@ func resourceIBMIAMAccessGroupMembersUpdate(context context.Context, d *schema.R
 			}
 			serviceID, resp, err := iamClient.GetServiceID(&getServiceIDOptions)
 			if err != nil || serviceID == nil {
-				return diag.FromErr(fmt.Errorf("ERROR] Error Getting Service Ids %s %s", err, resp))
+				return diag.FromErr(flex.FmtErrorf("ERROR] Error Getting Service Ids %s %s", err, resp))
 			}
 			removeMembersFromAccessGroupOptions := iamAccessGroupsClient.NewRemoveMemberFromAccessGroupOptions(grpID, *serviceID.IamID)
 			detailResponse, err := iamAccessGroupsClient.RemoveMemberFromAccessGroup(removeMembersFromAccessGroupOptions)
 			if err != nil {
-				return diag.FromErr(fmt.Errorf("[ERROR] Error removing members to group(%s). API Response: %s", grpID, detailResponse))
+				return diag.FromErr(flex.FmtErrorf("[ERROR] Error removing members to group(%s). API Response: %s", grpID, detailResponse))
 			}
 
 		}
@@ -375,12 +386,12 @@ func resourceIBMIAMAccessGroupMembersUpdate(context context.Context, d *schema.R
 			}
 			profileID, resp, err := iamClient.GetProfile(&getProfileOptions)
 			if err != nil || profileID == nil {
-				return diag.FromErr(fmt.Errorf("ERROR] Error Getting Profile Ids %s %s", err, resp))
+				return diag.FromErr(flex.FmtErrorf("ERROR] Error Getting Profile Ids %s %s", err, resp))
 			}
 			removeMembersFromAccessGroupOptions := iamAccessGroupsClient.NewRemoveMemberFromAccessGroupOptions(grpID, *profileID.IamID)
 			detailResponse, err := iamAccessGroupsClient.RemoveMemberFromAccessGroup(removeMembersFromAccessGroupOptions)
 			if err != nil {
-				return diag.FromErr(fmt.Errorf("[ERROR] Error removing members to group(%s). API Response: %s", grpID, detailResponse))
+				return diag.FromErr(flex.FmtErrorf("[ERROR] Error removing members to group(%s). API Response: %s", grpID, detailResponse))
 			}
 
 		}
@@ -512,7 +523,7 @@ func getServiceID(id string, meta interface{}) (iamidentityv1.ServiceID, error) 
 	}
 	serviceID, resp, err := iamClient.GetServiceID(&getServiceIDOptions)
 	if err != nil || serviceID == nil {
-		return serviceids, fmt.Errorf("ERROR] Error Getting Service Ids %s %s", err, resp)
+		return serviceids, flex.FmtErrorf("ERROR] Error Getting Service Ids %s %s", err, resp)
 	}
 	return *serviceID, nil
 }
@@ -552,7 +563,7 @@ func getProfileID(id string, meta interface{}) (iamidentityv1.TrustedProfile, er
 	}
 	profileID, resp, err := iamClient.GetProfile(&getProfileOptions)
 	if err != nil || profileID == nil {
-		return profileids, fmt.Errorf("ERROR] Error Getting Profile Ids %s %s", err, resp)
+		return profileids, flex.FmtErrorf("ERROR] Error Getting Profile Ids %s %s", err, resp)
 	}
 	return *profileID, nil
 }

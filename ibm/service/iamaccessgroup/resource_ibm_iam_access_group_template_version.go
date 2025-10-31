@@ -349,7 +349,9 @@ func ResourceIBMIAMAccessGroupTemplateVersionValidator() *validate.ResourceValid
 func resourceIBMIAMAccessGroupTemplateVersionCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	iamAccessGroupsClient, err := meta.(conns.ClientSession).IAMAccessGroupsV2()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, err.Error(), "ibm_iam_access_group_template_version", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	createTemplateVersionOptions := &iamaccessgroupsv2.CreateTemplateVersionOptions{}
@@ -386,8 +388,9 @@ func resourceIBMIAMAccessGroupTemplateVersionCreate(context context.Context, d *
 
 	templateVersionResponse, response, err := iamAccessGroupsClient.CreateTemplateVersionWithContext(context, createTemplateVersionOptions)
 	if err != nil {
-		log.Printf("[DEBUG] CreateTemplateVersionWithContext failed %s\n%s", err, response)
-		return diag.FromErr(fmt.Errorf("CreateTemplateVersionWithContext failed %s\n%s", err, response))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateTemplateVersionWithContext failed: %s", err.Error()), "ibm_iam_access_group_template_version", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	if d.Get("committed").(bool) {
@@ -397,8 +400,9 @@ func resourceIBMIAMAccessGroupTemplateVersionCreate(context context.Context, d *
 		commitTemplateOptions.SetIfMatch(response.Headers.Get("ETag"))
 		response, err = iamAccessGroupsClient.CommitTemplateWithContext(context, commitTemplateOptions)
 		if err != nil {
-			log.Printf("[DEBUG] CommitTemplateWithContext failed %s\n%s", err, response)
-			return diag.FromErr(fmt.Errorf("CommitTemplateWithContext failed %s\n%s", err, response))
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CommitTemplateWithContext failed: %s", err.Error()), "ibm_iam_access_group_template_version", "create")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 	}
 
@@ -410,7 +414,9 @@ func resourceIBMIAMAccessGroupTemplateVersionCreate(context context.Context, d *
 func resourceIBMIAMAccessGroupTemplateVersionRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	iamAccessGroupsClient, err := meta.(conns.ClientSession).IAMAccessGroupsV2()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, err.Error(), "ibm_iam_access_group_template_version", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	getTemplateVersionOptions := &iamaccessgroupsv2.GetTemplateVersionOptions{}
@@ -429,18 +435,19 @@ func resourceIBMIAMAccessGroupTemplateVersionRead(context context.Context, d *sc
 			d.SetId("")
 			return nil
 		}
-		log.Printf("[DEBUG] GetTemplateVersionWithContext failed %s\n%s", err, response)
-		return diag.FromErr(fmt.Errorf("GetTemplateVersionWithContext failed %s\n%s", err, response))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetTemplateVersionWithContext failed: %s", err.Error()), "ibm_iam_access_group_template_version", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	if !core.IsNil(templateVersionResponse.Name) {
 		if err = d.Set("name", templateVersionResponse.Name); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting name: %s", err))
+			return diag.FromErr(flex.FmtErrorf("Error setting name: %s", err))
 		}
 	}
 	if !core.IsNil(templateVersionResponse.Description) {
 		if err = d.Set("description", templateVersionResponse.Description); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting description: %s", err))
+			return diag.FromErr(flex.FmtErrorf("Error setting description: %s", err))
 		}
 	}
 	if !core.IsNil(templateVersionResponse.Group) {
@@ -449,7 +456,7 @@ func resourceIBMIAMAccessGroupTemplateVersionRead(context context.Context, d *sc
 			return diag.FromErr(err)
 		}
 		if err = d.Set("group", []map[string]interface{}{groupMap}); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting group: %s", err))
+			return diag.FromErr(flex.FmtErrorf("Error setting group: %s", err))
 		}
 	}
 	if !core.IsNil(templateVersionResponse.PolicyTemplateReferences) {
@@ -462,35 +469,35 @@ func resourceIBMIAMAccessGroupTemplateVersionRead(context context.Context, d *sc
 			policyTemplateReferences = append(policyTemplateReferences, policyTemplateReferencesItemMap)
 		}
 		if err = d.Set("policy_template_references", policyTemplateReferences); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting policy_template_references: %s", err))
+			return diag.FromErr(flex.FmtErrorf("Error setting policy_template_references: %s", err))
 		}
 	}
 	if err = d.Set("account_id", templateVersionResponse.AccountID); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting account_id: %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting account_id: %s", err))
 	}
 	if err = d.Set("version", templateVersionResponse.Version); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting version: %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting version: %s", err))
 	}
 	if err = d.Set("committed", templateVersionResponse.Committed); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting committed: %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting committed: %s", err))
 	}
 	if err = d.Set("href", templateVersionResponse.Href); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting href: %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting href: %s", err))
 	}
 	if err = d.Set("created_at", flex.DateTimeToString(templateVersionResponse.CreatedAt)); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting created_at: %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting created_at: %s", err))
 	}
 	if err = d.Set("created_by_id", templateVersionResponse.CreatedByID); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting created_by_id: %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting created_by_id: %s", err))
 	}
 	if err = d.Set("last_modified_at", flex.DateTimeToString(templateVersionResponse.LastModifiedAt)); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting last_modified_at: %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting last_modified_at: %s", err))
 	}
 	if err = d.Set("last_modified_by_id", templateVersionResponse.LastModifiedByID); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting last_modified_by_id: %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting last_modified_by_id: %s", err))
 	}
 	if err = d.Set("template_id", templateVersionResponse.ID); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting template_version__id: %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting template_version__id: %s", err))
 	}
 
 	return nil
@@ -499,7 +506,9 @@ func resourceIBMIAMAccessGroupTemplateVersionRead(context context.Context, d *sc
 func resourceIBMIAMAccessGroupTemplateVersionUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	iamAccessGroupsClient, err := meta.(conns.ClientSession).IAMAccessGroupsV2()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, err.Error(), "ibm_iam_access_group_template_version", "update")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	updateTemplateVersionOptions := &iamaccessgroupsv2.UpdateTemplateVersionOptions{}
@@ -525,8 +534,9 @@ func resourceIBMIAMAccessGroupTemplateVersionUpdate(context context.Context, d *
 			d.SetId("")
 			return nil
 		}
-		log.Printf("[DEBUG] GetTemplateVersionWithContext failed %s\n%s", err, response)
-		return diag.FromErr(fmt.Errorf("GetTemplateVersionWithContext failed %s\n%s", err, response))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetTemplateVersionWithContext failed: %s", err.Error()), "ibm_iam_access_group_template_version", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	updateTemplateVersionOptions.SetIfMatch(response.Headers.Get("ETag"))
@@ -569,8 +579,9 @@ func resourceIBMIAMAccessGroupTemplateVersionUpdate(context context.Context, d *
 
 	_, response, err = iamAccessGroupsClient.UpdateTemplateVersionWithContext(context, updateTemplateVersionOptions)
 	if err != nil {
-		log.Printf("[DEBUG] UpdateTemplateVersionWithContext failed %s\n%s", err, response)
-		return diag.FromErr(fmt.Errorf("UpdateTemplateVersionWithContext failed %s\n%s", err, response))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("UpdateTemplateVersionWithContext failed: %s", err.Error()), "ibm_iam_access_group_template_version", "update")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	// Test committed
@@ -582,8 +593,9 @@ func resourceIBMIAMAccessGroupTemplateVersionUpdate(context context.Context, d *
 		if d.Get("committed").(bool) {
 			response, err = iamAccessGroupsClient.CommitTemplateWithContext(context, commitTemplateOptions)
 			if err != nil {
-				log.Printf("[DEBUG] UpdateTemplateVersionWithContext failed %s\n%s", err, response)
-				return diag.FromErr(fmt.Errorf("UpdateTemplateVersionWithContext failed %s\n%s", err, response))
+				tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CommitTemplateWithContext failed: %s", err.Error()), "ibm_iam_access_group_template_version", "update")
+				log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+				return tfErr.GetDiag()
 			}
 		}
 	}
@@ -594,7 +606,9 @@ func resourceIBMIAMAccessGroupTemplateVersionUpdate(context context.Context, d *
 func resourceIBMIAMAccessGroupTemplateVersionDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	iamAccessGroupsClient, err := meta.(conns.ClientSession).IAMAccessGroupsV2()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CommitTemplateWithContext failed: %s", err.Error()), "ibm_iam_access_group_template_version", "update")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	deleteTemplateVersionOptions := &iamaccessgroupsv2.DeleteTemplateVersionOptions{}
@@ -607,10 +621,11 @@ func resourceIBMIAMAccessGroupTemplateVersionDelete(context context.Context, d *
 	deleteTemplateVersionOptions.SetTemplateID(parts[0])
 	deleteTemplateVersionOptions.SetVersionNum(parts[1])
 
-	response, err := iamAccessGroupsClient.DeleteTemplateVersionWithContext(context, deleteTemplateVersionOptions)
+	_, err = iamAccessGroupsClient.DeleteTemplateVersionWithContext(context, deleteTemplateVersionOptions)
 	if err != nil {
-		log.Printf("[DEBUG] DeleteTemplateVersionWithContext failed %s\n%s", err, response)
-		return diag.FromErr(fmt.Errorf("DeleteTemplateVersionWithContext failed %s\n%s", err, response))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("DeleteTemplateVersionWithContext failed: %s", err.Error()), "ibm_iam_access_group_template_version", "delete")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	d.SetId("")
