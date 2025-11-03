@@ -13,13 +13,12 @@ import (
 	"log"
 	"time"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/IBM/ibm-backup-recovery-sdk-go/backuprecoveryv1"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 func DataSourceIbmBackupRecoveries() *schema.Resource {
@@ -1446,6 +1445,1577 @@ func DataSourceIbmBackupRecoveries() *schema.Resource {
 								},
 							},
 						},
+						"kubernetes_params": &schema.Schema{
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "Specifies the recovery options specific to Kubernetes environment.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"download_file_and_folder_params": &schema.Schema{
+										Type:        schema.TypeList,
+										Computed:    true,
+										Description: "Specifies the parameters to download files and folders.",
+										Elem: &schema.Resource{
+											Schema: map[string]*schema.Schema{
+												"expiry_time_usecs": &schema.Schema{
+													Type:        schema.TypeInt,
+													Computed:    true,
+													Description: "Specifies the time upto which the download link is available.",
+												},
+												"files_and_folders": &schema.Schema{
+													Type:        schema.TypeList,
+													Computed:    true,
+													Description: "Specifies the info about the files and folders to be recovered.",
+													Elem: &schema.Resource{
+														Schema: map[string]*schema.Schema{
+															"absolute_path": &schema.Schema{
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "Specifies the absolute path to the file or folder.",
+															},
+															"destination_dir": &schema.Schema{
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "Specifies the destination directory where the file/directory was copied.",
+															},
+															"is_directory": &schema.Schema{
+																Type:        schema.TypeBool,
+																Computed:    true,
+																Description: "Specifies whether this is a directory or not.",
+															},
+															"status": &schema.Schema{
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "Specifies the recovery status for this file or folder.",
+															},
+															"messages": &schema.Schema{
+																Type:        schema.TypeList,
+																Computed:    true,
+																Description: "Specify error messages about the file during recovery.",
+																Elem: &schema.Schema{
+																	Type: schema.TypeString,
+																},
+															},
+															"is_view_file_recovery": &schema.Schema{
+																Type:        schema.TypeBool,
+																Computed:    true,
+																Description: "Specify if the recovery is of type view file/folder.",
+															},
+														},
+													},
+												},
+												"download_file_path": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "Specifies the path location to download the files and folders.",
+												},
+											},
+										},
+									},
+									"objects": &schema.Schema{
+										Type:        schema.TypeList,
+										Computed:    true,
+										Description: "Specifies the list of objects which need to be recovered.",
+										Elem: &schema.Resource{
+											Schema: map[string]*schema.Schema{
+												"snapshot_id": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "Specifies the snapshot id.",
+												},
+												"point_in_time_usecs": &schema.Schema{
+													Type:        schema.TypeInt,
+													Computed:    true,
+													Description: "Specifies the timestamp (in microseconds. from epoch) for recovering to a point-in-time in the past.",
+												},
+												"protection_group_id": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "Specifies the protection group id of the object snapshot.",
+												},
+												"protection_group_name": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "Specifies the protection group name of the object snapshot.",
+												},
+												"snapshot_creation_time_usecs": &schema.Schema{
+													Type:        schema.TypeInt,
+													Computed:    true,
+													Description: "Specifies the time when the snapshot is created in Unix timestamp epoch in microseconds.",
+												},
+												"object_info": &schema.Schema{
+													Type:        schema.TypeList,
+													Computed:    true,
+													Description: "Specifies the information about the object for which the snapshot is taken.",
+													Elem: &schema.Resource{
+														Schema: map[string]*schema.Schema{
+															"id": &schema.Schema{
+																Type:        schema.TypeInt,
+																Computed:    true,
+																Description: "Specifies object id.",
+															},
+															"name": &schema.Schema{
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "Specifies the name of the object.",
+															},
+															"source_id": &schema.Schema{
+																Type:        schema.TypeInt,
+																Computed:    true,
+																Description: "Specifies registered source id to which object belongs.",
+															},
+															"source_name": &schema.Schema{
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "Specifies registered source name to which object belongs.",
+															},
+															"environment": &schema.Schema{
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "Specifies the environment of the object.",
+															},
+															"object_hash": &schema.Schema{
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "Specifies the hash identifier of the object.",
+															},
+															"object_type": &schema.Schema{
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "Specifies the type of the object.",
+															},
+															"logical_size_bytes": &schema.Schema{
+																Type:        schema.TypeInt,
+																Computed:    true,
+																Description: "Specifies the logical size of object in bytes.",
+															},
+															"uuid": &schema.Schema{
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "Specifies the uuid which is a unique identifier of the object.",
+															},
+															"global_id": &schema.Schema{
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "Specifies the global id which is a unique identifier of the object.",
+															},
+															"protection_type": &schema.Schema{
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "Specifies the protection type of the object if any.",
+															},
+															"sharepoint_site_summary": &schema.Schema{
+																Type:        schema.TypeList,
+																Computed:    true,
+																Description: "Specifies the common parameters for Sharepoint site objects.",
+																Elem: &schema.Resource{
+																	Schema: map[string]*schema.Schema{
+																		"site_web_url": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Computed:    true,
+																			Description: "Specifies the web url for the Sharepoint site.",
+																		},
+																	},
+																},
+															},
+															"os_type": &schema.Schema{
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "Specifies the operating system type of the object.",
+															},
+															"child_objects": &schema.Schema{
+																Type:        schema.TypeList,
+																Computed:    true,
+																Description: "Specifies child object details.",
+																Elem: &schema.Resource{
+																	Schema: map[string]*schema.Schema{
+																		"id": &schema.Schema{
+																			Type:        schema.TypeInt,
+																			Computed:    true,
+																			Description: "Specifies object id.",
+																		},
+																		"name": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Computed:    true,
+																			Description: "Specifies the name of the object.",
+																		},
+																		"source_id": &schema.Schema{
+																			Type:        schema.TypeInt,
+																			Computed:    true,
+																			Description: "Specifies registered source id to which object belongs.",
+																		},
+																		"source_name": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Computed:    true,
+																			Description: "Specifies registered source name to which object belongs.",
+																		},
+																		"environment": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Computed:    true,
+																			Description: "Specifies the environment of the object.",
+																		},
+																		"object_hash": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Computed:    true,
+																			Description: "Specifies the hash identifier of the object.",
+																		},
+																		"object_type": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Computed:    true,
+																			Description: "Specifies the type of the object.",
+																		},
+																		"logical_size_bytes": &schema.Schema{
+																			Type:        schema.TypeInt,
+																			Computed:    true,
+																			Description: "Specifies the logical size of object in bytes.",
+																		},
+																		"uuid": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Computed:    true,
+																			Description: "Specifies the uuid which is a unique identifier of the object.",
+																		},
+																		"global_id": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Computed:    true,
+																			Description: "Specifies the global id which is a unique identifier of the object.",
+																		},
+																		"protection_type": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Computed:    true,
+																			Description: "Specifies the protection type of the object if any.",
+																		},
+																		"sharepoint_site_summary": &schema.Schema{
+																			Type:        schema.TypeList,
+																			Computed:    true,
+																			Description: "Specifies the common parameters for Sharepoint site objects.",
+																			Elem: &schema.Resource{
+																				Schema: map[string]*schema.Schema{
+																					"site_web_url": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Computed:    true,
+																						Description: "Specifies the web url for the Sharepoint site.",
+																					},
+																				},
+																			},
+																		},
+																		"os_type": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Computed:    true,
+																			Description: "Specifies the operating system type of the object.",
+																		},
+																		"child_objects": &schema.Schema{
+																			Type:        schema.TypeList,
+																			Computed:    true,
+																			Description: "Specifies child object details.",
+																			Elem: &schema.Resource{
+																				Schema: map[string]*schema.Schema{},
+																			},
+																		},
+																		"v_center_summary": &schema.Schema{
+																			Type:     schema.TypeList,
+																			Computed: true,
+																			Elem: &schema.Resource{
+																				Schema: map[string]*schema.Schema{
+																					"is_cloud_env": &schema.Schema{
+																						Type:        schema.TypeBool,
+																						Computed:    true,
+																						Description: "Specifies that registered vCenter source is a VMC (VMware Cloud) environment or not.",
+																					},
+																				},
+																			},
+																		},
+																		"windows_cluster_summary": &schema.Schema{
+																			Type:     schema.TypeList,
+																			Computed: true,
+																			Elem: &schema.Resource{
+																				Schema: map[string]*schema.Schema{
+																					"cluster_source_type": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Computed:    true,
+																						Description: "Specifies the type of cluster resource this source represents.",
+																					},
+																				},
+																			},
+																		},
+																	},
+																},
+															},
+															"v_center_summary": &schema.Schema{
+																Type:     schema.TypeList,
+																Computed: true,
+																Elem: &schema.Resource{
+																	Schema: map[string]*schema.Schema{
+																		"is_cloud_env": &schema.Schema{
+																			Type:        schema.TypeBool,
+																			Computed:    true,
+																			Description: "Specifies that registered vCenter source is a VMC (VMware Cloud) environment or not.",
+																		},
+																	},
+																},
+															},
+															"windows_cluster_summary": &schema.Schema{
+																Type:     schema.TypeList,
+																Computed: true,
+																Elem: &schema.Resource{
+																	Schema: map[string]*schema.Schema{
+																		"cluster_source_type": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Computed:    true,
+																			Description: "Specifies the type of cluster resource this source represents.",
+																		},
+																	},
+																},
+															},
+														},
+													},
+												},
+												"snapshot_target_type": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "Specifies the snapshot target type.",
+												},
+												"archival_target_info": &schema.Schema{
+													Type:        schema.TypeList,
+													Computed:    true,
+													Description: "Specifies the archival target information if the snapshot is an archival snapshot.",
+													Elem: &schema.Resource{
+														Schema: map[string]*schema.Schema{
+															"target_id": &schema.Schema{
+																Type:        schema.TypeInt,
+																Computed:    true,
+																Description: "Specifies the archival target ID.",
+															},
+															"archival_task_id": &schema.Schema{
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "Specifies the archival task id. This is a protection group UID which only applies when archival type is 'Tape'.",
+															},
+															"target_name": &schema.Schema{
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "Specifies the archival target name.",
+															},
+															"target_type": &schema.Schema{
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "Specifies the archival target type.",
+															},
+															"usage_type": &schema.Schema{
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "Specifies the usage type for the target.",
+															},
+															"ownership_context": &schema.Schema{
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "Specifies the ownership context for the target.",
+															},
+															"tier_settings": &schema.Schema{
+																Type:        schema.TypeList,
+																Computed:    true,
+																Description: "Specifies the tier info for archival.",
+																Elem: &schema.Resource{
+																	Schema: map[string]*schema.Schema{
+																		"aws_tiering": &schema.Schema{
+																			Type:        schema.TypeList,
+																			Computed:    true,
+																			Description: "Specifies aws tiers.",
+																			Elem: &schema.Resource{
+																				Schema: map[string]*schema.Schema{
+																					"tiers": &schema.Schema{
+																						Type:        schema.TypeList,
+																						Computed:    true,
+																						Description: "Specifies the tiers that are used to move the archived backup from current tier to next tier. The order of the tiers determines which tier will be used next for moving the archived backup. The first tier input should always be default tier where backup will be acrhived. Each tier specifies how much time after the backup will be moved to next tier from the current tier.",
+																						Elem: &schema.Resource{
+																							Schema: map[string]*schema.Schema{
+																								"move_after_unit": &schema.Schema{
+																									Type:        schema.TypeString,
+																									Computed:    true,
+																									Description: "Specifies the unit for moving the data from current tier to next tier. This unit will be a base unit for the 'moveAfter' field specified below.",
+																								},
+																								"move_after": &schema.Schema{
+																									Type:        schema.TypeInt,
+																									Computed:    true,
+																									Description: "Specifies the time period after which the backup will be moved from current tier to next tier.",
+																								},
+																								"tier_type": &schema.Schema{
+																									Type:        schema.TypeString,
+																									Computed:    true,
+																									Description: "Specifies the AWS tier types.",
+																								},
+																							},
+																						},
+																					},
+																				},
+																			},
+																		},
+																		"azure_tiering": &schema.Schema{
+																			Type:        schema.TypeList,
+																			Computed:    true,
+																			Description: "Specifies Azure tiers.",
+																			Elem: &schema.Resource{
+																				Schema: map[string]*schema.Schema{
+																					"tiers": &schema.Schema{
+																						Type:        schema.TypeList,
+																						Computed:    true,
+																						Description: "Specifies the tiers that are used to move the archived backup from current tier to next tier. The order of the tiers determines which tier will be used next for moving the archived backup. The first tier input should always be default tier where backup will be acrhived. Each tier specifies how much time after the backup will be moved to next tier from the current tier.",
+																						Elem: &schema.Resource{
+																							Schema: map[string]*schema.Schema{
+																								"move_after_unit": &schema.Schema{
+																									Type:        schema.TypeString,
+																									Computed:    true,
+																									Description: "Specifies the unit for moving the data from current tier to next tier. This unit will be a base unit for the 'moveAfter' field specified below.",
+																								},
+																								"move_after": &schema.Schema{
+																									Type:        schema.TypeInt,
+																									Computed:    true,
+																									Description: "Specifies the time period after which the backup will be moved from current tier to next tier.",
+																								},
+																								"tier_type": &schema.Schema{
+																									Type:        schema.TypeString,
+																									Computed:    true,
+																									Description: "Specifies the Azure tier types.",
+																								},
+																							},
+																						},
+																					},
+																				},
+																			},
+																		},
+																		"cloud_platform": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Computed:    true,
+																			Description: "Specifies the cloud platform to enable tiering.",
+																		},
+																		"google_tiering": &schema.Schema{
+																			Type:        schema.TypeList,
+																			Computed:    true,
+																			Description: "Specifies Google tiers.",
+																			Elem: &schema.Resource{
+																				Schema: map[string]*schema.Schema{
+																					"tiers": &schema.Schema{
+																						Type:        schema.TypeList,
+																						Computed:    true,
+																						Description: "Specifies the tiers that are used to move the archived backup from current tier to next tier. The order of the tiers determines which tier will be used next for moving the archived backup. The first tier input should always be default tier where backup will be acrhived. Each tier specifies how much time after the backup will be moved to next tier from the current tier.",
+																						Elem: &schema.Resource{
+																							Schema: map[string]*schema.Schema{
+																								"move_after_unit": &schema.Schema{
+																									Type:        schema.TypeString,
+																									Computed:    true,
+																									Description: "Specifies the unit for moving the data from current tier to next tier. This unit will be a base unit for the 'moveAfter' field specified below.",
+																								},
+																								"move_after": &schema.Schema{
+																									Type:        schema.TypeInt,
+																									Computed:    true,
+																									Description: "Specifies the time period after which the backup will be moved from current tier to next tier.",
+																								},
+																								"tier_type": &schema.Schema{
+																									Type:        schema.TypeString,
+																									Computed:    true,
+																									Description: "Specifies the Google tier types.",
+																								},
+																							},
+																						},
+																					},
+																				},
+																			},
+																		},
+																		"oracle_tiering": &schema.Schema{
+																			Type:        schema.TypeList,
+																			Computed:    true,
+																			Description: "Specifies Oracle tiers.",
+																			Elem: &schema.Resource{
+																				Schema: map[string]*schema.Schema{
+																					"tiers": &schema.Schema{
+																						Type:        schema.TypeList,
+																						Computed:    true,
+																						Description: "Specifies the tiers that are used to move the archived backup from current tier to next tier. The order of the tiers determines which tier will be used next for moving the archived backup. The first tier input should always be default tier where backup will be acrhived. Each tier specifies how much time after the backup will be moved to next tier from the current tier.",
+																						Elem: &schema.Resource{
+																							Schema: map[string]*schema.Schema{
+																								"move_after_unit": &schema.Schema{
+																									Type:        schema.TypeString,
+																									Computed:    true,
+																									Description: "Specifies the unit for moving the data from current tier to next tier. This unit will be a base unit for the 'moveAfter' field specified below.",
+																								},
+																								"move_after": &schema.Schema{
+																									Type:        schema.TypeInt,
+																									Computed:    true,
+																									Description: "Specifies the time period after which the backup will be moved from current tier to next tier.",
+																								},
+																								"tier_type": &schema.Schema{
+																									Type:        schema.TypeString,
+																									Computed:    true,
+																									Description: "Specifies the Oracle tier types.",
+																								},
+																							},
+																						},
+																					},
+																				},
+																			},
+																		},
+																		"current_tier_type": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Computed:    true,
+																			Description: "Specifies the type of the current tier where the snapshot resides. This will be specified if the run is a CAD run.",
+																		},
+																	},
+																},
+															},
+														},
+													},
+												},
+												"progress_task_id": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "Progress monitor task id for Recovery of VM.",
+												},
+												"recover_from_standby": &schema.Schema{
+													Type:        schema.TypeBool,
+													Computed:    true,
+													Description: "Specifies that user wants to perform standby restore if it is enabled for this object.",
+												},
+												"status": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "Status of the Recovery. 'Running' indicates that the Recovery is still running. 'Canceled' indicates that the Recovery has been cancelled. 'Canceling' indicates that the Recovery is in the process of being cancelled. 'Failed' indicates that the Recovery has failed. 'Succeeded' indicates that the Recovery has finished successfully. 'SucceededWithWarning' indicates that the Recovery finished successfully, but there were some warning messages. 'Skipped' indicates that the Recovery task was skipped.",
+												},
+												"start_time_usecs": &schema.Schema{
+													Type:        schema.TypeInt,
+													Computed:    true,
+													Description: "Specifies the start time of the Recovery in Unix timestamp epoch in microseconds.",
+												},
+												"end_time_usecs": &schema.Schema{
+													Type:        schema.TypeInt,
+													Computed:    true,
+													Description: "Specifies the end time of the Recovery in Unix timestamp epoch in microseconds. This field will be populated only after Recovery is finished.",
+												},
+												"messages": &schema.Schema{
+													Type:        schema.TypeList,
+													Computed:    true,
+													Description: "Specify error messages about the object.",
+													Elem: &schema.Schema{
+														Type: schema.TypeString,
+													},
+												},
+												"bytes_restored": &schema.Schema{
+													Type:        schema.TypeInt,
+													Computed:    true,
+													Description: "Specify the total bytes restored.",
+												},
+											},
+										},
+									},
+									"recover_file_and_folder_params": &schema.Schema{
+										Type:        schema.TypeList,
+										Computed:    true,
+										Description: "Specifies the parameters to perform a file and folder recovery.",
+										Elem: &schema.Resource{
+											Schema: map[string]*schema.Schema{
+												"files_and_folders": &schema.Schema{
+													Type:        schema.TypeList,
+													Computed:    true,
+													Description: "Specifies the information about the files and folders to be recovered.",
+													Elem: &schema.Resource{
+														Schema: map[string]*schema.Schema{
+															"absolute_path": &schema.Schema{
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "Specifies the absolute path to the file or folder.",
+															},
+															"destination_dir": &schema.Schema{
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "Specifies the destination directory where the file/directory was copied.",
+															},
+															"is_directory": &schema.Schema{
+																Type:        schema.TypeBool,
+																Computed:    true,
+																Description: "Specifies whether this is a directory or not.",
+															},
+															"status": &schema.Schema{
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "Specifies the recovery status for this file or folder.",
+															},
+															"messages": &schema.Schema{
+																Type:        schema.TypeList,
+																Computed:    true,
+																Description: "Specify error messages about the file during recovery.",
+																Elem: &schema.Schema{
+																	Type: schema.TypeString,
+																},
+															},
+															"is_view_file_recovery": &schema.Schema{
+																Type:        schema.TypeBool,
+																Computed:    true,
+																Description: "Specify if the recovery is of type view file/folder.",
+															},
+														},
+													},
+												},
+												"kubernetes_target_params": &schema.Schema{
+													Type:        schema.TypeList,
+													Computed:    true,
+													Description: "Specifies the parameters to recover to a Kubernetes target.",
+													Elem: &schema.Resource{
+														Schema: map[string]*schema.Schema{
+															"continue_on_error": &schema.Schema{
+																Type:        schema.TypeBool,
+																Computed:    true,
+																Description: "Specifies whether to continue recovering other files if one of files or folders failed to recover. Default value is false.",
+															},
+															"new_target_config": &schema.Schema{
+																Type:        schema.TypeList,
+																Computed:    true,
+																Description: "Specifies the configuration for recovering to a new target.",
+																Elem: &schema.Resource{
+																	Schema: map[string]*schema.Schema{
+																		"absolute_path": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Computed:    true,
+																			Description: "Specifies the absolute path of the file.",
+																		},
+																		"target_namespace": &schema.Schema{
+																			Type:        schema.TypeList,
+																			Computed:    true,
+																			Description: "Specifies the target namespace to recover files and folders to.",
+																			Elem: &schema.Resource{
+																				Schema: map[string]*schema.Schema{
+																					"id": &schema.Schema{
+																						Type:        schema.TypeInt,
+																						Computed:    true,
+																						Description: "Specifies the id of the object.",
+																					},
+																					"name": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Computed:    true,
+																						Description: "Specifies the name of the object.",
+																					},
+																					"parent_source_id": &schema.Schema{
+																						Type:        schema.TypeInt,
+																						Computed:    true,
+																						Description: "Specifies the id of the parent source of the target.",
+																					},
+																					"parent_source_name": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Computed:    true,
+																						Description: "Specifies the name of the parent source of the target.",
+																					},
+																				},
+																			},
+																		},
+																		"target_pvc": &schema.Schema{
+																			Type:        schema.TypeList,
+																			Computed:    true,
+																			Description: "Specifies the target PVC(Persistent Volume Claim) to recover files and folders to.",
+																			Elem: &schema.Resource{
+																				Schema: map[string]*schema.Schema{
+																					"id": &schema.Schema{
+																						Type:        schema.TypeInt,
+																						Computed:    true,
+																						Description: "Specifies the id of the object.",
+																					},
+																					"name": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Computed:    true,
+																						Description: "Specifies the name of the object.",
+																					},
+																					"parent_source_id": &schema.Schema{
+																						Type:        schema.TypeInt,
+																						Computed:    true,
+																						Description: "Specifies the id of the parent source of the target.",
+																					},
+																					"parent_source_name": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Computed:    true,
+																						Description: "Specifies the name of the parent source of the target.",
+																					},
+																				},
+																			},
+																		},
+																		"target_source": &schema.Schema{
+																			Type:        schema.TypeList,
+																			Computed:    true,
+																			Description: "Specifies the target kubernetes to recover files and folders to.",
+																			Elem: &schema.Resource{
+																				Schema: map[string]*schema.Schema{
+																					"id": &schema.Schema{
+																						Type:        schema.TypeInt,
+																						Computed:    true,
+																						Description: "Specifies the id of the object.",
+																					},
+																					"name": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Computed:    true,
+																						Description: "Specifies the name of the object.",
+																					},
+																					"parent_source_id": &schema.Schema{
+																						Type:        schema.TypeInt,
+																						Computed:    true,
+																						Description: "Specifies the id of the parent source of the target.",
+																					},
+																					"parent_source_name": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Computed:    true,
+																						Description: "Specifies the name of the parent source of the target.",
+																					},
+																				},
+																			},
+																		},
+																	},
+																},
+															},
+															"original_target_config": &schema.Schema{
+																Type:        schema.TypeList,
+																Computed:    true,
+																Description: "Specifies the configuration for recovering to the original target.",
+																Elem: &schema.Resource{
+																	Schema: map[string]*schema.Schema{
+																		"alternate_path": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Computed:    true,
+																			Description: "Specifies the alternate path location to recover files to.",
+																		},
+																		"recover_to_original_path": &schema.Schema{
+																			Type:        schema.TypeBool,
+																			Computed:    true,
+																			Description: "Specifies whether to recover files and folders to the original path location. If false, alternatePath must be specified.",
+																		},
+																	},
+																},
+															},
+															"overwrite_existing": &schema.Schema{
+																Type:        schema.TypeBool,
+																Computed:    true,
+																Description: "Specifies whether to overwrite the existing files. Default is true.",
+															},
+															"preserve_attributes": &schema.Schema{
+																Type:        schema.TypeBool,
+																Computed:    true,
+																Description: "Specifies whether to preserve original attributes. Default is true.",
+															},
+															"recover_to_original_target": &schema.Schema{
+																Type:        schema.TypeBool,
+																Computed:    true,
+																Description: "Specifies whether to recover to the original target. If true, originalTargetConfig must be specified. If false, newTargetConfig must be specified.",
+															},
+															"vlan_config": &schema.Schema{
+																Type:        schema.TypeList,
+																Computed:    true,
+																Description: "Specifies VLAN Params associated with the recovered files and folders. If this is not specified, then the VLAN settings will be automatically selected from one of the below options: a. If VLANs are configured on Cohesity, then the VLAN host/VIP will be automatically based on the client's (e.g. ESXI host) IP address. b. If VLANs are not configured on Cohesity, then the partition hostname or VIPs will be used for Recovery.",
+																Elem: &schema.Resource{
+																	Schema: map[string]*schema.Schema{
+																		"id": &schema.Schema{
+																			Type:        schema.TypeInt,
+																			Computed:    true,
+																			Description: "If this is set, then the Cohesity host name or the IP address associated with this vlan is used for mounting Cohesity's view on the remote host.",
+																		},
+																		"disable_vlan": &schema.Schema{
+																			Type:        schema.TypeBool,
+																			Computed:    true,
+																			Description: "If this is set to true, then even if VLANs are configured on the system, the partition VIPs will be used for the Recovery.",
+																		},
+																		"interface_name": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Computed:    true,
+																			Description: "Interface group to use for Recovery.",
+																		},
+																	},
+																},
+															},
+														},
+													},
+												},
+												"target_environment": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "Specifies the environment of the recovery target. The corresponding params below must be filled out.",
+												},
+											},
+										},
+									},
+									"recover_namespace_params": &schema.Schema{
+										Type:        schema.TypeList,
+										Computed:    true,
+										Description: "Specifies the parameters to recover Kubernetes Namespaces.",
+										Elem: &schema.Resource{
+											Schema: map[string]*schema.Schema{
+												"kubernetes_target_params": &schema.Schema{
+													Type:        schema.TypeList,
+													Computed:    true,
+													Description: "Specifies the params for recovering to a Kubernetes host.",
+													Elem: &schema.Resource{
+														Schema: map[string]*schema.Schema{
+															"exclude_params": &schema.Schema{
+																Type:        schema.TypeList,
+																Computed:    true,
+																Description: "Specifies the parameters to in/exclude objects (e.g.: volumes). An object satisfying any of these criteria will be included by this filter.",
+																Elem: &schema.Resource{
+																	Schema: map[string]*schema.Schema{
+																		"label_combination_method": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Computed:    true,
+																			Description: "Whether to include all the labels or any of them while performing inclusion/exclusion of objects.",
+																		},
+																		"label_vector": &schema.Schema{
+																			Type:        schema.TypeList,
+																			Computed:    true,
+																			Description: "Array of Object to represent Label that Specify Objects (e.g.: Persistent Volumes and Persistent Volume Claims) to Include or Exclude.It will be a two-dimensional array, where each inner array will consist of a key and value representing labels. Using this two dimensional array of Labels, the Cluster generates a list of items to include in the filter, which are derived from intersections or the union of these labels, as decided by operation parameter.",
+																			Elem: &schema.Resource{
+																				Schema: map[string]*schema.Schema{
+																					"key": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Computed:    true,
+																						Description: "The key of the label, used to identify the label.",
+																					},
+																					"value": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Computed:    true,
+																						Description: "The value associated with the label key.",
+																					},
+																				},
+																			},
+																		},
+																		"objects": &schema.Schema{
+																			Type:        schema.TypeList,
+																			Computed:    true,
+																			Description: "Array of objects that are to be included.",
+																			Elem: &schema.Schema{
+																				Type: schema.TypeInt,
+																			},
+																		},
+																	},
+																},
+															},
+															"excluded_pvcs": &schema.Schema{
+																Type:        schema.TypeList,
+																Computed:    true,
+																Description: "Specifies the list of pvc to be excluded from recovery.",
+																Elem: &schema.Resource{
+																	Schema: map[string]*schema.Schema{
+																		"id": &schema.Schema{
+																			Type:        schema.TypeInt,
+																			Computed:    true,
+																			Description: "Specifies the id of the pvc.",
+																		},
+																		"name": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Computed:    true,
+																			Description: "Name of the pvc.",
+																		},
+																	},
+																},
+															},
+															"include_params": &schema.Schema{
+																Type:        schema.TypeList,
+																Computed:    true,
+																Description: "Specifies the parameters to in/exclude objects (e.g.: volumes). An object satisfying any of these criteria will be included by this filter.",
+																Elem: &schema.Resource{
+																	Schema: map[string]*schema.Schema{
+																		"label_combination_method": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Computed:    true,
+																			Description: "Whether to include all the labels or any of them while performing inclusion/exclusion of objects.",
+																		},
+																		"label_vector": &schema.Schema{
+																			Type:        schema.TypeList,
+																			Computed:    true,
+																			Description: "Array of Object to represent Label that Specify Objects (e.g.: Persistent Volumes and Persistent Volume Claims) to Include or Exclude.It will be a two-dimensional array, where each inner array will consist of a key and value representing labels. Using this two dimensional array of Labels, the Cluster generates a list of items to include in the filter, which are derived from intersections or the union of these labels, as decided by operation parameter.",
+																			Elem: &schema.Resource{
+																				Schema: map[string]*schema.Schema{
+																					"key": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Computed:    true,
+																						Description: "The key of the label, used to identify the label.",
+																					},
+																					"value": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Computed:    true,
+																						Description: "The value associated with the label key.",
+																					},
+																				},
+																			},
+																		},
+																		"objects": &schema.Schema{
+																			Type:        schema.TypeList,
+																			Computed:    true,
+																			Description: "Array of objects that are to be included.",
+																			Elem: &schema.Schema{
+																				Type: schema.TypeInt,
+																			},
+																		},
+																	},
+																},
+															},
+															"objects": &schema.Schema{
+																Type:        schema.TypeList,
+																Computed:    true,
+																Description: "Specifies the objects to be recovered.",
+																Elem: &schema.Resource{
+																	Schema: map[string]*schema.Schema{
+																		"snapshot_id": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Computed:    true,
+																			Description: "Specifies the snapshot id.",
+																		},
+																		"point_in_time_usecs": &schema.Schema{
+																			Type:        schema.TypeInt,
+																			Computed:    true,
+																			Description: "Specifies the timestamp (in microseconds. from epoch) for recovering to a point-in-time in the past.",
+																		},
+																		"protection_group_id": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Computed:    true,
+																			Description: "Specifies the protection group id of the object snapshot.",
+																		},
+																		"protection_group_name": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Computed:    true,
+																			Description: "Specifies the protection group name of the object snapshot.",
+																		},
+																		"snapshot_creation_time_usecs": &schema.Schema{
+																			Type:        schema.TypeInt,
+																			Computed:    true,
+																			Description: "Specifies the time when the snapshot is created in Unix timestamp epoch in microseconds.",
+																		},
+																		"object_info": &schema.Schema{
+																			Type:        schema.TypeList,
+																			Computed:    true,
+																			Description: "Specifies the information about the object for which the snapshot is taken.",
+																			Elem: &schema.Resource{
+																				Schema: map[string]*schema.Schema{
+																					"id": &schema.Schema{
+																						Type:        schema.TypeInt,
+																						Computed:    true,
+																						Description: "Specifies object id.",
+																					},
+																					"name": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Computed:    true,
+																						Description: "Specifies the name of the object.",
+																					},
+																					"source_id": &schema.Schema{
+																						Type:        schema.TypeInt,
+																						Computed:    true,
+																						Description: "Specifies registered source id to which object belongs.",
+																					},
+																					"source_name": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Computed:    true,
+																						Description: "Specifies registered source name to which object belongs.",
+																					},
+																					"environment": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Computed:    true,
+																						Description: "Specifies the environment of the object.",
+																					},
+																					"object_hash": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Computed:    true,
+																						Description: "Specifies the hash identifier of the object.",
+																					},
+																					"object_type": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Computed:    true,
+																						Description: "Specifies the type of the object.",
+																					},
+																					"logical_size_bytes": &schema.Schema{
+																						Type:        schema.TypeInt,
+																						Computed:    true,
+																						Description: "Specifies the logical size of object in bytes.",
+																					},
+																					"uuid": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Computed:    true,
+																						Description: "Specifies the uuid which is a unique identifier of the object.",
+																					},
+																					"global_id": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Computed:    true,
+																						Description: "Specifies the global id which is a unique identifier of the object.",
+																					},
+																					"protection_type": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Computed:    true,
+																						Description: "Specifies the protection type of the object if any.",
+																					},
+																					"sharepoint_site_summary": &schema.Schema{
+																						Type:        schema.TypeList,
+																						Computed:    true,
+																						Description: "Specifies the common parameters for Sharepoint site objects.",
+																						Elem: &schema.Resource{
+																							Schema: map[string]*schema.Schema{
+																								"site_web_url": &schema.Schema{
+																									Type:        schema.TypeString,
+																									Computed:    true,
+																									Description: "Specifies the web url for the Sharepoint site.",
+																								},
+																							},
+																						},
+																					},
+																					"os_type": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Computed:    true,
+																						Description: "Specifies the operating system type of the object.",
+																					},
+																					"child_objects": &schema.Schema{
+																						Type:        schema.TypeList,
+																						Computed:    true,
+																						Description: "Specifies child object details.",
+																						Elem: &schema.Resource{
+																							Schema: map[string]*schema.Schema{
+																								"id": &schema.Schema{
+																									Type:        schema.TypeInt,
+																									Computed:    true,
+																									Description: "Specifies object id.",
+																								},
+																								"name": &schema.Schema{
+																									Type:        schema.TypeString,
+																									Computed:    true,
+																									Description: "Specifies the name of the object.",
+																								},
+																								"source_id": &schema.Schema{
+																									Type:        schema.TypeInt,
+																									Computed:    true,
+																									Description: "Specifies registered source id to which object belongs.",
+																								},
+																								"source_name": &schema.Schema{
+																									Type:        schema.TypeString,
+																									Computed:    true,
+																									Description: "Specifies registered source name to which object belongs.",
+																								},
+																								"environment": &schema.Schema{
+																									Type:        schema.TypeString,
+																									Computed:    true,
+																									Description: "Specifies the environment of the object.",
+																								},
+																								"object_hash": &schema.Schema{
+																									Type:        schema.TypeString,
+																									Computed:    true,
+																									Description: "Specifies the hash identifier of the object.",
+																								},
+																								"object_type": &schema.Schema{
+																									Type:        schema.TypeString,
+																									Computed:    true,
+																									Description: "Specifies the type of the object.",
+																								},
+																								"logical_size_bytes": &schema.Schema{
+																									Type:        schema.TypeInt,
+																									Computed:    true,
+																									Description: "Specifies the logical size of object in bytes.",
+																								},
+																								"uuid": &schema.Schema{
+																									Type:        schema.TypeString,
+																									Computed:    true,
+																									Description: "Specifies the uuid which is a unique identifier of the object.",
+																								},
+																								"global_id": &schema.Schema{
+																									Type:        schema.TypeString,
+																									Computed:    true,
+																									Description: "Specifies the global id which is a unique identifier of the object.",
+																								},
+																								"protection_type": &schema.Schema{
+																									Type:        schema.TypeString,
+																									Computed:    true,
+																									Description: "Specifies the protection type of the object if any.",
+																								},
+																								"sharepoint_site_summary": &schema.Schema{
+																									Type:        schema.TypeList,
+																									Computed:    true,
+																									Description: "Specifies the common parameters for Sharepoint site objects.",
+																									Elem: &schema.Resource{
+																										Schema: map[string]*schema.Schema{
+																											"site_web_url": &schema.Schema{
+																												Type:        schema.TypeString,
+																												Computed:    true,
+																												Description: "Specifies the web url for the Sharepoint site.",
+																											},
+																										},
+																									},
+																								},
+																								"os_type": &schema.Schema{
+																									Type:        schema.TypeString,
+																									Computed:    true,
+																									Description: "Specifies the operating system type of the object.",
+																								},
+																								"child_objects": &schema.Schema{
+																									Type:        schema.TypeList,
+																									Computed:    true,
+																									Description: "Specifies child object details.",
+																									Elem: &schema.Resource{
+																										Schema: map[string]*schema.Schema{},
+																									},
+																								},
+																								"v_center_summary": &schema.Schema{
+																									Type:     schema.TypeList,
+																									Computed: true,
+																									Elem: &schema.Resource{
+																										Schema: map[string]*schema.Schema{
+																											"is_cloud_env": &schema.Schema{
+																												Type:        schema.TypeBool,
+																												Computed:    true,
+																												Description: "Specifies that registered vCenter source is a VMC (VMware Cloud) environment or not.",
+																											},
+																										},
+																									},
+																								},
+																								"windows_cluster_summary": &schema.Schema{
+																									Type:     schema.TypeList,
+																									Computed: true,
+																									Elem: &schema.Resource{
+																										Schema: map[string]*schema.Schema{
+																											"cluster_source_type": &schema.Schema{
+																												Type:        schema.TypeString,
+																												Computed:    true,
+																												Description: "Specifies the type of cluster resource this source represents.",
+																											},
+																										},
+																									},
+																								},
+																							},
+																						},
+																					},
+																					"v_center_summary": &schema.Schema{
+																						Type:     schema.TypeList,
+																						Computed: true,
+																						Elem: &schema.Resource{
+																							Schema: map[string]*schema.Schema{
+																								"is_cloud_env": &schema.Schema{
+																									Type:        schema.TypeBool,
+																									Computed:    true,
+																									Description: "Specifies that registered vCenter source is a VMC (VMware Cloud) environment or not.",
+																								},
+																							},
+																						},
+																					},
+																					"windows_cluster_summary": &schema.Schema{
+																						Type:     schema.TypeList,
+																						Computed: true,
+																						Elem: &schema.Resource{
+																							Schema: map[string]*schema.Schema{
+																								"cluster_source_type": &schema.Schema{
+																									Type:        schema.TypeString,
+																									Computed:    true,
+																									Description: "Specifies the type of cluster resource this source represents.",
+																								},
+																							},
+																						},
+																					},
+																				},
+																			},
+																		},
+																		"snapshot_target_type": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Computed:    true,
+																			Description: "Specifies the snapshot target type.",
+																		},
+																		"archival_target_info": &schema.Schema{
+																			Type:        schema.TypeList,
+																			Computed:    true,
+																			Description: "Specifies the archival target information if the snapshot is an archival snapshot.",
+																			Elem: &schema.Resource{
+																				Schema: map[string]*schema.Schema{
+																					"target_id": &schema.Schema{
+																						Type:        schema.TypeInt,
+																						Computed:    true,
+																						Description: "Specifies the archival target ID.",
+																					},
+																					"archival_task_id": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Computed:    true,
+																						Description: "Specifies the archival task id. This is a protection group UID which only applies when archival type is 'Tape'.",
+																					},
+																					"target_name": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Computed:    true,
+																						Description: "Specifies the archival target name.",
+																					},
+																					"target_type": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Computed:    true,
+																						Description: "Specifies the archival target type.",
+																					},
+																					"usage_type": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Computed:    true,
+																						Description: "Specifies the usage type for the target.",
+																					},
+																					"ownership_context": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Computed:    true,
+																						Description: "Specifies the ownership context for the target.",
+																					},
+																					"tier_settings": &schema.Schema{
+																						Type:        schema.TypeList,
+																						Computed:    true,
+																						Description: "Specifies the tier info for archival.",
+																						Elem: &schema.Resource{
+																							Schema: map[string]*schema.Schema{
+																								"aws_tiering": &schema.Schema{
+																									Type:        schema.TypeList,
+																									Computed:    true,
+																									Description: "Specifies aws tiers.",
+																									Elem: &schema.Resource{
+																										Schema: map[string]*schema.Schema{
+																											"tiers": &schema.Schema{
+																												Type:        schema.TypeList,
+																												Computed:    true,
+																												Description: "Specifies the tiers that are used to move the archived backup from current tier to next tier. The order of the tiers determines which tier will be used next for moving the archived backup. The first tier input should always be default tier where backup will be acrhived. Each tier specifies how much time after the backup will be moved to next tier from the current tier.",
+																												Elem: &schema.Resource{
+																													Schema: map[string]*schema.Schema{
+																														"move_after_unit": &schema.Schema{
+																															Type:        schema.TypeString,
+																															Computed:    true,
+																															Description: "Specifies the unit for moving the data from current tier to next tier. This unit will be a base unit for the 'moveAfter' field specified below.",
+																														},
+																														"move_after": &schema.Schema{
+																															Type:        schema.TypeInt,
+																															Computed:    true,
+																															Description: "Specifies the time period after which the backup will be moved from current tier to next tier.",
+																														},
+																														"tier_type": &schema.Schema{
+																															Type:        schema.TypeString,
+																															Computed:    true,
+																															Description: "Specifies the AWS tier types.",
+																														},
+																													},
+																												},
+																											},
+																										},
+																									},
+																								},
+																								"azure_tiering": &schema.Schema{
+																									Type:        schema.TypeList,
+																									Computed:    true,
+																									Description: "Specifies Azure tiers.",
+																									Elem: &schema.Resource{
+																										Schema: map[string]*schema.Schema{
+																											"tiers": &schema.Schema{
+																												Type:        schema.TypeList,
+																												Computed:    true,
+																												Description: "Specifies the tiers that are used to move the archived backup from current tier to next tier. The order of the tiers determines which tier will be used next for moving the archived backup. The first tier input should always be default tier where backup will be acrhived. Each tier specifies how much time after the backup will be moved to next tier from the current tier.",
+																												Elem: &schema.Resource{
+																													Schema: map[string]*schema.Schema{
+																														"move_after_unit": &schema.Schema{
+																															Type:        schema.TypeString,
+																															Computed:    true,
+																															Description: "Specifies the unit for moving the data from current tier to next tier. This unit will be a base unit for the 'moveAfter' field specified below.",
+																														},
+																														"move_after": &schema.Schema{
+																															Type:        schema.TypeInt,
+																															Computed:    true,
+																															Description: "Specifies the time period after which the backup will be moved from current tier to next tier.",
+																														},
+																														"tier_type": &schema.Schema{
+																															Type:        schema.TypeString,
+																															Computed:    true,
+																															Description: "Specifies the Azure tier types.",
+																														},
+																													},
+																												},
+																											},
+																										},
+																									},
+																								},
+																								"cloud_platform": &schema.Schema{
+																									Type:        schema.TypeString,
+																									Computed:    true,
+																									Description: "Specifies the cloud platform to enable tiering.",
+																								},
+																								"google_tiering": &schema.Schema{
+																									Type:        schema.TypeList,
+																									Computed:    true,
+																									Description: "Specifies Google tiers.",
+																									Elem: &schema.Resource{
+																										Schema: map[string]*schema.Schema{
+																											"tiers": &schema.Schema{
+																												Type:        schema.TypeList,
+																												Computed:    true,
+																												Description: "Specifies the tiers that are used to move the archived backup from current tier to next tier. The order of the tiers determines which tier will be used next for moving the archived backup. The first tier input should always be default tier where backup will be acrhived. Each tier specifies how much time after the backup will be moved to next tier from the current tier.",
+																												Elem: &schema.Resource{
+																													Schema: map[string]*schema.Schema{
+																														"move_after_unit": &schema.Schema{
+																															Type:        schema.TypeString,
+																															Computed:    true,
+																															Description: "Specifies the unit for moving the data from current tier to next tier. This unit will be a base unit for the 'moveAfter' field specified below.",
+																														},
+																														"move_after": &schema.Schema{
+																															Type:        schema.TypeInt,
+																															Computed:    true,
+																															Description: "Specifies the time period after which the backup will be moved from current tier to next tier.",
+																														},
+																														"tier_type": &schema.Schema{
+																															Type:        schema.TypeString,
+																															Computed:    true,
+																															Description: "Specifies the Google tier types.",
+																														},
+																													},
+																												},
+																											},
+																										},
+																									},
+																								},
+																								"oracle_tiering": &schema.Schema{
+																									Type:        schema.TypeList,
+																									Computed:    true,
+																									Description: "Specifies Oracle tiers.",
+																									Elem: &schema.Resource{
+																										Schema: map[string]*schema.Schema{
+																											"tiers": &schema.Schema{
+																												Type:        schema.TypeList,
+																												Computed:    true,
+																												Description: "Specifies the tiers that are used to move the archived backup from current tier to next tier. The order of the tiers determines which tier will be used next for moving the archived backup. The first tier input should always be default tier where backup will be acrhived. Each tier specifies how much time after the backup will be moved to next tier from the current tier.",
+																												Elem: &schema.Resource{
+																													Schema: map[string]*schema.Schema{
+																														"move_after_unit": &schema.Schema{
+																															Type:        schema.TypeString,
+																															Computed:    true,
+																															Description: "Specifies the unit for moving the data from current tier to next tier. This unit will be a base unit for the 'moveAfter' field specified below.",
+																														},
+																														"move_after": &schema.Schema{
+																															Type:        schema.TypeInt,
+																															Computed:    true,
+																															Description: "Specifies the time period after which the backup will be moved from current tier to next tier.",
+																														},
+																														"tier_type": &schema.Schema{
+																															Type:        schema.TypeString,
+																															Computed:    true,
+																															Description: "Specifies the Oracle tier types.",
+																														},
+																													},
+																												},
+																											},
+																										},
+																									},
+																								},
+																								"current_tier_type": &schema.Schema{
+																									Type:        schema.TypeString,
+																									Computed:    true,
+																									Description: "Specifies the type of the current tier where the snapshot resides. This will be specified if the run is a CAD run.",
+																								},
+																							},
+																						},
+																					},
+																				},
+																			},
+																		},
+																		"progress_task_id": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Computed:    true,
+																			Description: "Progress monitor task id for Recovery of VM.",
+																		},
+																		"recover_from_standby": &schema.Schema{
+																			Type:        schema.TypeBool,
+																			Computed:    true,
+																			Description: "Specifies that user wants to perform standby restore if it is enabled for this object.",
+																		},
+																		"status": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Computed:    true,
+																			Description: "Status of the Recovery. 'Running' indicates that the Recovery is still running. 'Canceled' indicates that the Recovery has been cancelled. 'Canceling' indicates that the Recovery is in the process of being cancelled. 'Failed' indicates that the Recovery has failed. 'Succeeded' indicates that the Recovery has finished successfully. 'SucceededWithWarning' indicates that the Recovery finished successfully, but there were some warning messages. 'Skipped' indicates that the Recovery task was skipped.",
+																		},
+																		"start_time_usecs": &schema.Schema{
+																			Type:        schema.TypeInt,
+																			Computed:    true,
+																			Description: "Specifies the start time of the Recovery in Unix timestamp epoch in microseconds.",
+																		},
+																		"end_time_usecs": &schema.Schema{
+																			Type:        schema.TypeInt,
+																			Computed:    true,
+																			Description: "Specifies the end time of the Recovery in Unix timestamp epoch in microseconds. This field will be populated only after Recovery is finished.",
+																		},
+																		"messages": &schema.Schema{
+																			Type:        schema.TypeList,
+																			Computed:    true,
+																			Description: "Specify error messages about the object.",
+																			Elem: &schema.Schema{
+																				Type: schema.TypeString,
+																			},
+																		},
+																		"bytes_restored": &schema.Schema{
+																			Type:        schema.TypeInt,
+																			Computed:    true,
+																			Description: "Specify the total bytes restored.",
+																		},
+																	},
+																},
+															},
+															"recover_protection_group_runs_params": &schema.Schema{
+																Type:        schema.TypeList,
+																Computed:    true,
+																Description: "Specifies the Protection Group Runs params to recover. All the VM's that are successfully backed up by specified Runs will be recovered. This can be specified along with individual snapshots of VMs. User has to make sure that specified Object snapshots and Protection Group Runs should not have any intersection. For example, user cannot specify multiple Runs which has same Object or an Object snapshot and a Run which has same Object's snapshot.",
+																Elem: &schema.Resource{
+																	Schema: map[string]*schema.Schema{
+																		"archival_target_id": &schema.Schema{
+																			Type:        schema.TypeInt,
+																			Computed:    true,
+																			Description: "Specifies the archival target id. If specified and Protection Group run has an archival snapshot then VMs are recovered from the specified archival snapshot. If not specified (default), VMs are recovered from local snapshot.",
+																		},
+																		"protection_group_id": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Computed:    true,
+																			Description: "Specifies the local Protection Group id. In case of recovering a replication Run, this field should be provided with local Protection Group id.",
+																		},
+																		"protection_group_instance_id": &schema.Schema{
+																			Type:        schema.TypeInt,
+																			Computed:    true,
+																			Description: "Specifies the Protection Group Instance id.",
+																		},
+																		"protection_group_run_id": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Computed:    true,
+																			Description: "Specifies the Protection Group Run id from which to recover VMs. All the VM's that are successfully protected by this Run will be recovered.",
+																		},
+																	},
+																},
+															},
+															"recover_pvcs_only": &schema.Schema{
+																Type:        schema.TypeBool,
+																Computed:    true,
+																Description: "Specifies whether to recover PVCs only during recovery.",
+															},
+															"recovery_target_config": &schema.Schema{
+																Type:        schema.TypeList,
+																Computed:    true,
+																Description: "Specifies the recovery target configuration of the Namespace recovery.",
+																Elem: &schema.Resource{
+																	Schema: map[string]*schema.Schema{
+																		"new_source_config": &schema.Schema{
+																			Type:        schema.TypeList,
+																			Computed:    true,
+																			Description: "Specifies the new source configuration if a Kubernetes Namespace is being restored to a different source than the one from which it was protected.",
+																			Elem: &schema.Resource{
+																				Schema: map[string]*schema.Schema{
+																					"source": &schema.Schema{
+																						Type:        schema.TypeList,
+																						Computed:    true,
+																						Description: "Specifies the id of the parent source to recover the Namespaces.",
+																						Elem: &schema.Resource{
+																							Schema: map[string]*schema.Schema{
+																								"id": &schema.Schema{
+																									Type:        schema.TypeInt,
+																									Computed:    true,
+																									Description: "Specifies the id of the object.",
+																								},
+																								"name": &schema.Schema{
+																									Type:        schema.TypeString,
+																									Computed:    true,
+																									Description: "Specifies the name of the object.",
+																								},
+																							},
+																						},
+																					},
+																				},
+																			},
+																		},
+																		"recover_to_new_source": &schema.Schema{
+																			Type:        schema.TypeBool,
+																			Computed:    true,
+																			Description: "Specifies whether or not to recover the Namespaces to a different source than they were backed up from.",
+																		},
+																	},
+																},
+															},
+															"rename_recovered_namespaces_params": &schema.Schema{
+																Type:        schema.TypeList,
+																Computed:    true,
+																Description: "Specifies params to rename the Namespaces that are recovered. If not specified, the original names of the Namespaces are preserved. If a name collision occurs then the Namespace being recovered will overwrite the Namespace already present on the source.",
+																Elem: &schema.Resource{
+																	Schema: map[string]*schema.Schema{
+																		"prefix": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Computed:    true,
+																			Description: "Specifies the prefix string to be added to recovered or cloned object names.",
+																		},
+																		"suffix": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Computed:    true,
+																			Description: "Specifies the suffix string to be added to recovered or cloned object names.",
+																		},
+																	},
+																},
+															},
+															"skip_cluster_compatibility_check": &schema.Schema{
+																Type:        schema.TypeBool,
+																Computed:    true,
+																Description: "Specifies whether to skip checking if the target cluster, to restore to, is compatible or not. By default restore allowed to compatible cluster only.",
+															},
+															"storage_class": &schema.Schema{
+																Type:        schema.TypeList,
+																Computed:    true,
+																Description: "Specifies the storage class parameters for recovery of namespace.",
+																Elem: &schema.Resource{
+																	Schema: map[string]*schema.Schema{
+																		"storage_class_mapping": &schema.Schema{
+																			Type:        schema.TypeList,
+																			Computed:    true,
+																			Description: "Specifies mapping of storage classes.",
+																			Elem: &schema.Resource{
+																				Schema: map[string]*schema.Schema{
+																					"key": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Computed:    true,
+																						Description: "The key of the label, used to identify the label.",
+																					},
+																					"value": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Computed:    true,
+																						Description: "The value associated with the label key.",
+																					},
+																				},
+																			},
+																		},
+																		"use_storage_class_mapping": &schema.Schema{
+																			Type:        schema.TypeBool,
+																			Computed:    true,
+																			Description: "Specifies whether or not to use storage class mapping.",
+																		},
+																	},
+																},
+															},
+														},
+													},
+												},
+												"target_environment": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "Specifies the environment of the recovery target. The corresponding params below must be filled out. As of now only kubernetes target environment is supported.",
+												},
+												"vlan_config": &schema.Schema{
+													Type:        schema.TypeList,
+													Computed:    true,
+													Description: "Specifies VLAN Params associated with the recovered. If this is not specified, then the VLAN settings will be automatically selected from one of the below options: a. If VLANs are configured on Cohesity, then the VLAN host/VIP will be automatically based on the client's (e.g. ESXI host) IP address. b. If VLANs are not configured on Cohesity, then the partition hostname or VIPs will be used for Recovery.",
+													Elem: &schema.Resource{
+														Schema: map[string]*schema.Schema{
+															"id": &schema.Schema{
+																Type:        schema.TypeInt,
+																Computed:    true,
+																Description: "If this is set, then the Cohesity host name or the IP address associated with this vlan is used for mounting Cohesity's view on the remote host.",
+															},
+															"disable_vlan": &schema.Schema{
+																Type:        schema.TypeBool,
+																Computed:    true,
+																Description: "If this is set to true, then even if VLANs are configured on the system, the partition VIPs will be used for the Recovery.",
+															},
+															"interface_name": &schema.Schema{
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "Interface group to use for Recovery.",
+															},
+														},
+													},
+												},
+											},
+										},
+									},
+									"recovery_action": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "Specifies the type of recover action to be performed.",
+									},
+								},
+							},
+						},
 						"mssql_params": &schema.Schema{
 							Type:        schema.TypeList,
 							Computed:    true,
@@ -2282,6 +3852,18 @@ func dataSourceIbmBackupRecoveriesRead(context context.Context, d *schema.Resour
 		return tfErr.GetDiag()
 	}
 
+	endpointType := d.Get("endpoint_type").(string)
+	instanceId, region := getInstanceIdAndRegion(d)
+	if instanceId != "" && region != "" {
+		bmxsession, err := meta.(conns.ClientSession).BluemixSession()
+		if err != nil {
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("unable to get clientSession"), "ibm_backup_recovery", "create")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
+		}
+		backupRecoveryClient = getClientWithInstanceEndpoint(backupRecoveryClient, bmxsession, instanceId, region, endpointType)
+	}
+
 	getRecoveriesOptions := &backuprecoveryv1.GetRecoveriesOptions{}
 
 	getRecoveriesOptions.SetXIBMTenantID(d.Get("x_ibm_tenant_id").(string))
@@ -2351,7 +3933,6 @@ func dataSourceIbmBackupRecoveriesRead(context context.Context, d *schema.Resour
 	}
 
 	d.SetId(dataSourceIbmBackupRecoveriesID(d))
-
 	if !core.IsNil(recoveriesResponse.Recoveries) {
 		recoveries := []map[string]interface{}{}
 		for _, recoveriesItem := range recoveriesResponse.Recoveries {
@@ -2456,6 +4037,13 @@ func DataSourceIbmBackupRecoveriesRecoveryToMap(model *backuprecoveryv1.Recovery
 			return modelMap, err
 		}
 		modelMap["physical_params"] = []map[string]interface{}{physicalParamsMap}
+	}
+	if model.KubernetesParams != nil {
+		kubernetesParamsMap, err := DataSourceIbmBackupRecoveriesRecoveryKubernetesParamsToMap(model.KubernetesParams)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["kubernetes_params"] = []map[string]interface{}{kubernetesParamsMap}
 	}
 	if model.MssqlParams != nil {
 		mssqlParamsMap, err := DataSourceIbmBackupRecoveriesRecoverSqlParamsToMap(model.MssqlParams)
@@ -3476,6 +5064,447 @@ func DataSourceIbmBackupRecoveriesRecoverPhysicalParamsSystemRecoveryParamsToMap
 	modelMap := make(map[string]interface{})
 	if model.FullNasPath != nil {
 		modelMap["full_nas_path"] = *model.FullNasPath
+	}
+	return modelMap, nil
+}
+
+func DataSourceIbmBackupRecoveriesRecoveryKubernetesParamsToMap(model *backuprecoveryv1.RecoveryKubernetesParams) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.DownloadFileAndFolderParams != nil {
+		downloadFileAndFolderParamsMap, err := DataSourceIbmBackupRecoveriesRecoverKubernetesParamsDownloadFileAndFolderParamsToMap(model.DownloadFileAndFolderParams)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["download_file_and_folder_params"] = []map[string]interface{}{downloadFileAndFolderParamsMap}
+	}
+	if model.Objects != nil {
+		objects := []map[string]interface{}{}
+		for _, objectsItem := range model.Objects {
+			objectsItemMap, err := DataSourceIbmBackupRecoveriesCommonRecoverObjectSnapshotParamsToMap(&objectsItem) // #nosec G601
+			if err != nil {
+				return modelMap, err
+			}
+			objects = append(objects, objectsItemMap)
+		}
+		modelMap["objects"] = objects
+	}
+	if model.RecoverFileAndFolderParams != nil {
+		recoverFileAndFolderParamsMap, err := DataSourceIbmBackupRecoveriesRecoverKubernetesParamsRecoverFileAndFolderParamsToMap(model.RecoverFileAndFolderParams)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["recover_file_and_folder_params"] = []map[string]interface{}{recoverFileAndFolderParamsMap}
+	}
+	if model.RecoverNamespaceParams != nil {
+		recoverNamespaceParamsMap, err := DataSourceIbmBackupRecoveriesRecoverKubernetesParamsRecoverNamespaceParamsToMap(model.RecoverNamespaceParams)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["recover_namespace_params"] = []map[string]interface{}{recoverNamespaceParamsMap}
+	}
+	modelMap["recovery_action"] = *model.RecoveryAction
+	return modelMap, nil
+}
+
+func DataSourceIbmBackupRecoveriesRecoverKubernetesParamsDownloadFileAndFolderParamsToMap(model *backuprecoveryv1.RecoverKubernetesParamsDownloadFileAndFolderParams) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.ExpiryTimeUsecs != nil {
+		modelMap["expiry_time_usecs"] = flex.IntValue(model.ExpiryTimeUsecs)
+	}
+	if model.FilesAndFolders != nil {
+		filesAndFolders := []map[string]interface{}{}
+		for _, filesAndFoldersItem := range model.FilesAndFolders {
+			filesAndFoldersItemMap, err := DataSourceIbmBackupRecoveriesCommonRecoverFileAndFolderInfoToMap(&filesAndFoldersItem) // #nosec G601
+			if err != nil {
+				return modelMap, err
+			}
+			filesAndFolders = append(filesAndFolders, filesAndFoldersItemMap)
+		}
+		modelMap["files_and_folders"] = filesAndFolders
+	}
+	if model.DownloadFilePath != nil {
+		modelMap["download_file_path"] = *model.DownloadFilePath
+	}
+	return modelMap, nil
+}
+
+func DataSourceIbmBackupRecoveriesRecoverKubernetesParamsRecoverFileAndFolderParamsToMap(model *backuprecoveryv1.RecoverKubernetesParamsRecoverFileAndFolderParams) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	filesAndFolders := []map[string]interface{}{}
+	for _, filesAndFoldersItem := range model.FilesAndFolders {
+		filesAndFoldersItemMap, err := DataSourceIbmBackupRecoveriesCommonRecoverFileAndFolderInfoToMap(&filesAndFoldersItem) // #nosec G601
+		if err != nil {
+			return modelMap, err
+		}
+		filesAndFolders = append(filesAndFolders, filesAndFoldersItemMap)
+	}
+	modelMap["files_and_folders"] = filesAndFolders
+	if model.KubernetesTargetParams != nil {
+		kubernetesTargetParamsMap, err := DataSourceIbmBackupRecoveriesRecoverKubernetesFileAndFolderParamsKubernetesTargetParamsToMap(model.KubernetesTargetParams)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["kubernetes_target_params"] = []map[string]interface{}{kubernetesTargetParamsMap}
+	}
+	modelMap["target_environment"] = *model.TargetEnvironment
+	return modelMap, nil
+}
+
+func DataSourceIbmBackupRecoveriesRecoverKubernetesFileAndFolderParamsKubernetesTargetParamsToMap(model *backuprecoveryv1.RecoverKubernetesFileAndFolderParamsKubernetesTargetParams) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.ContinueOnError != nil {
+		modelMap["continue_on_error"] = *model.ContinueOnError
+	}
+	if model.NewTargetConfig != nil {
+		newTargetConfigMap, err := DataSourceIbmBackupRecoveriesKubernetesTargetParamsForRecoverFileAndFolderNewTargetConfigToMap(model.NewTargetConfig)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["new_target_config"] = []map[string]interface{}{newTargetConfigMap}
+	}
+	if model.OriginalTargetConfig != nil {
+		originalTargetConfigMap, err := DataSourceIbmBackupRecoveriesKubernetesTargetParamsForRecoverFileAndFolderOriginalTargetConfigToMap(model.OriginalTargetConfig)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["original_target_config"] = []map[string]interface{}{originalTargetConfigMap}
+	}
+	if model.OverwriteExisting != nil {
+		modelMap["overwrite_existing"] = *model.OverwriteExisting
+	}
+	if model.PreserveAttributes != nil {
+		modelMap["preserve_attributes"] = *model.PreserveAttributes
+	}
+	modelMap["recover_to_original_target"] = *model.RecoverToOriginalTarget
+	if model.VlanConfig != nil {
+		vlanConfigMap, err := DataSourceIbmBackupRecoveriesKubernetesTargetParamsForRecoverFileAndFolderVlanConfigToMap(model.VlanConfig)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["vlan_config"] = []map[string]interface{}{vlanConfigMap}
+	}
+	return modelMap, nil
+}
+
+func DataSourceIbmBackupRecoveriesKubernetesTargetParamsForRecoverFileAndFolderNewTargetConfigToMap(model *backuprecoveryv1.KubernetesTargetParamsForRecoverFileAndFolderNewTargetConfig) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	modelMap["absolute_path"] = *model.AbsolutePath
+	if model.TargetNamespace != nil {
+		targetNamespaceMap, err := DataSourceIbmBackupRecoveriesKubernetesRecoverFilesNewTargetConfigTargetNamespaceToMap(model.TargetNamespace)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["target_namespace"] = []map[string]interface{}{targetNamespaceMap}
+	}
+	targetPvcMap, err := DataSourceIbmBackupRecoveriesKubernetesRecoverFilesNewTargetConfigTargetPvcToMap(model.TargetPvc)
+	if err != nil {
+		return modelMap, err
+	}
+	modelMap["target_pvc"] = []map[string]interface{}{targetPvcMap}
+	if model.TargetSource != nil {
+		targetSourceMap, err := DataSourceIbmBackupRecoveriesKubernetesRecoverFilesNewTargetConfigTargetSourceToMap(model.TargetSource)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["target_source"] = []map[string]interface{}{targetSourceMap}
+	}
+	return modelMap, nil
+}
+
+func DataSourceIbmBackupRecoveriesKubernetesRecoverFilesNewTargetConfigTargetNamespaceToMap(model *backuprecoveryv1.KubernetesRecoverFilesNewTargetConfigTargetNamespace) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	modelMap["id"] = flex.IntValue(model.ID)
+	if model.Name != nil {
+		modelMap["name"] = *model.Name
+	}
+	if model.ParentSourceID != nil {
+		modelMap["parent_source_id"] = flex.IntValue(model.ParentSourceID)
+	}
+	if model.ParentSourceName != nil {
+		modelMap["parent_source_name"] = *model.ParentSourceName
+	}
+	return modelMap, nil
+}
+
+func DataSourceIbmBackupRecoveriesKubernetesRecoverFilesNewTargetConfigTargetPvcToMap(model *backuprecoveryv1.KubernetesRecoverFilesNewTargetConfigTargetPvc) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	modelMap["id"] = flex.IntValue(model.ID)
+	if model.Name != nil {
+		modelMap["name"] = *model.Name
+	}
+	if model.ParentSourceID != nil {
+		modelMap["parent_source_id"] = flex.IntValue(model.ParentSourceID)
+	}
+	if model.ParentSourceName != nil {
+		modelMap["parent_source_name"] = *model.ParentSourceName
+	}
+	return modelMap, nil
+}
+
+func DataSourceIbmBackupRecoveriesKubernetesRecoverFilesNewTargetConfigTargetSourceToMap(model *backuprecoveryv1.KubernetesRecoverFilesNewTargetConfigTargetSource) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	modelMap["id"] = flex.IntValue(model.ID)
+	if model.Name != nil {
+		modelMap["name"] = *model.Name
+	}
+	if model.ParentSourceID != nil {
+		modelMap["parent_source_id"] = flex.IntValue(model.ParentSourceID)
+	}
+	if model.ParentSourceName != nil {
+		modelMap["parent_source_name"] = *model.ParentSourceName
+	}
+	return modelMap, nil
+}
+
+func DataSourceIbmBackupRecoveriesKubernetesTargetParamsForRecoverFileAndFolderOriginalTargetConfigToMap(model *backuprecoveryv1.KubernetesTargetParamsForRecoverFileAndFolderOriginalTargetConfig) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.AlternatePath != nil {
+		modelMap["alternate_path"] = *model.AlternatePath
+	}
+	modelMap["recover_to_original_path"] = *model.RecoverToOriginalPath
+	return modelMap, nil
+}
+
+func DataSourceIbmBackupRecoveriesKubernetesTargetParamsForRecoverFileAndFolderVlanConfigToMap(model *backuprecoveryv1.KubernetesTargetParamsForRecoverFileAndFolderVlanConfig) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.ID != nil {
+		modelMap["id"] = flex.IntValue(model.ID)
+	}
+	if model.DisableVlan != nil {
+		modelMap["disable_vlan"] = *model.DisableVlan
+	}
+	if model.InterfaceName != nil {
+		modelMap["interface_name"] = *model.InterfaceName
+	}
+	return modelMap, nil
+}
+
+func DataSourceIbmBackupRecoveriesRecoverKubernetesParamsRecoverNamespaceParamsToMap(model *backuprecoveryv1.RecoverKubernetesParamsRecoverNamespaceParams) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.KubernetesTargetParams != nil {
+		kubernetesTargetParamsMap, err := DataSourceIbmBackupRecoveriesRecoverKubernetesNamespaceParamsKubernetesTargetParamsToMap(model.KubernetesTargetParams)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["kubernetes_target_params"] = []map[string]interface{}{kubernetesTargetParamsMap}
+	}
+	modelMap["target_environment"] = *model.TargetEnvironment
+	if model.VlanConfig != nil {
+		vlanConfigMap, err := DataSourceIbmBackupRecoveriesRecoverKubernetesNamespaceParamsVlanConfigToMap(model.VlanConfig)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["vlan_config"] = []map[string]interface{}{vlanConfigMap}
+	}
+	return modelMap, nil
+}
+
+func DataSourceIbmBackupRecoveriesRecoverKubernetesNamespaceParamsKubernetesTargetParamsToMap(model *backuprecoveryv1.RecoverKubernetesNamespaceParamsKubernetesTargetParams) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.ExcludeParams != nil {
+		excludeParamsMap, err := DataSourceIbmBackupRecoveriesKubernetesFilterParamsToMap(model.ExcludeParams)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["exclude_params"] = []map[string]interface{}{excludeParamsMap}
+	}
+	if model.ExcludedPvcs != nil {
+		excludedPvcs := []map[string]interface{}{}
+		for _, excludedPvcsItem := range model.ExcludedPvcs {
+			excludedPvcsItemMap, err := DataSourceIbmBackupRecoveriesKubernetesPvcInfoToMap(&excludedPvcsItem) // #nosec G601
+			if err != nil {
+				return modelMap, err
+			}
+			excludedPvcs = append(excludedPvcs, excludedPvcsItemMap)
+		}
+		modelMap["excluded_pvcs"] = excludedPvcs
+	}
+	if model.IncludeParams != nil {
+		includeParamsMap, err := DataSourceIbmBackupRecoveriesKubernetesFilterParamsToMap(model.IncludeParams)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["include_params"] = []map[string]interface{}{includeParamsMap}
+	}
+	if model.Objects != nil {
+		objects := []map[string]interface{}{}
+		for _, objectsItem := range model.Objects {
+			objectsItemMap, err := DataSourceIbmBackupRecoveriesCommonRecoverObjectSnapshotParamsToMap(&objectsItem) // #nosec G601
+			if err != nil {
+				return modelMap, err
+			}
+			objects = append(objects, objectsItemMap)
+		}
+		modelMap["objects"] = objects
+	}
+	if model.RecoverProtectionGroupRunsParams != nil {
+		recoverProtectionGroupRunsParams := []map[string]interface{}{}
+		for _, recoverProtectionGroupRunsParamsItem := range model.RecoverProtectionGroupRunsParams {
+			recoverProtectionGroupRunsParamsItemMap, err := DataSourceIbmBackupRecoveriesRecoverProtectionGroupRunParamsToMap(&recoverProtectionGroupRunsParamsItem) // #nosec G601
+			if err != nil {
+				return modelMap, err
+			}
+			recoverProtectionGroupRunsParams = append(recoverProtectionGroupRunsParams, recoverProtectionGroupRunsParamsItemMap)
+		}
+		modelMap["recover_protection_group_runs_params"] = recoverProtectionGroupRunsParams
+	}
+	if model.RecoverPvcsOnly != nil {
+		modelMap["recover_pvcs_only"] = *model.RecoverPvcsOnly
+	}
+	recoveryTargetConfigMap, err := DataSourceIbmBackupRecoveriesKubernetesTargetParamsForRecoverKubernetesNamespaceRecoveryTargetConfigToMap(model.RecoveryTargetConfig)
+	if err != nil {
+		return modelMap, err
+	}
+	modelMap["recovery_target_config"] = []map[string]interface{}{recoveryTargetConfigMap}
+	if model.RenameRecoveredNamespacesParams != nil {
+		renameRecoveredNamespacesParamsMap, err := DataSourceIbmBackupRecoveriesKubernetesTargetParamsForRecoverKubernetesNamespaceRenameRecoveredNamespacesParamsToMap(model.RenameRecoveredNamespacesParams)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["rename_recovered_namespaces_params"] = []map[string]interface{}{renameRecoveredNamespacesParamsMap}
+	}
+	if model.SkipClusterCompatibilityCheck != nil {
+		modelMap["skip_cluster_compatibility_check"] = *model.SkipClusterCompatibilityCheck
+	}
+	if model.StorageClass != nil {
+		storageClassMap, err := DataSourceIbmBackupRecoveriesKubernetesStorageClassParamsToMap(model.StorageClass)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["storage_class"] = []map[string]interface{}{storageClassMap}
+	}
+	return modelMap, nil
+}
+
+func DataSourceIbmBackupRecoveriesKubernetesFilterParamsToMap(model *backuprecoveryv1.KubernetesFilterParams) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.LabelCombinationMethod != nil {
+		modelMap["label_combination_method"] = *model.LabelCombinationMethod
+	}
+	if model.LabelVector != nil {
+		labelVector := []map[string]interface{}{}
+		for _, labelVectorItem := range model.LabelVector {
+			labelVectorItemMap, err := DataSourceIbmBackupRecoveriesKubernetesLabelToMap(&labelVectorItem) // #nosec G601
+			if err != nil {
+				return modelMap, err
+			}
+			labelVector = append(labelVector, labelVectorItemMap)
+		}
+		modelMap["label_vector"] = labelVector
+	}
+	if model.Objects != nil {
+		modelMap["objects"] = model.Objects
+	}
+	return modelMap, nil
+}
+
+func DataSourceIbmBackupRecoveriesKubernetesLabelToMap(model *backuprecoveryv1.KubernetesLabel) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.Key != nil {
+		modelMap["key"] = *model.Key
+	}
+	if model.Value != nil {
+		modelMap["value"] = *model.Value
+	}
+	return modelMap, nil
+}
+
+func DataSourceIbmBackupRecoveriesKubernetesPvcInfoToMap(model *backuprecoveryv1.KubernetesPvcInfo) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.ID != nil {
+		modelMap["id"] = flex.IntValue(model.ID)
+	}
+	if model.Name != nil {
+		modelMap["name"] = *model.Name
+	}
+	return modelMap, nil
+}
+
+func DataSourceIbmBackupRecoveriesRecoverProtectionGroupRunParamsToMap(model *backuprecoveryv1.RecoverProtectionGroupRunParams) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.ArchivalTargetID != nil {
+		modelMap["archival_target_id"] = flex.IntValue(model.ArchivalTargetID)
+	}
+	if model.ProtectionGroupID != nil {
+		modelMap["protection_group_id"] = *model.ProtectionGroupID
+	}
+	modelMap["protection_group_instance_id"] = flex.IntValue(model.ProtectionGroupInstanceID)
+	modelMap["protection_group_run_id"] = *model.ProtectionGroupRunID
+	return modelMap, nil
+}
+
+func DataSourceIbmBackupRecoveriesKubernetesTargetParamsForRecoverKubernetesNamespaceRecoveryTargetConfigToMap(model *backuprecoveryv1.KubernetesTargetParamsForRecoverKubernetesNamespaceRecoveryTargetConfig) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.NewSourceConfig != nil {
+		newSourceConfigMap, err := DataSourceIbmBackupRecoveriesKubernetesNamespaceRecoveryTargetConfigNewSourceConfigToMap(model.NewSourceConfig)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["new_source_config"] = []map[string]interface{}{newSourceConfigMap}
+	}
+	modelMap["recover_to_new_source"] = *model.RecoverToNewSource
+	return modelMap, nil
+}
+
+func DataSourceIbmBackupRecoveriesKubernetesNamespaceRecoveryTargetConfigNewSourceConfigToMap(model *backuprecoveryv1.KubernetesNamespaceRecoveryTargetConfigNewSourceConfig) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	sourceMap, err := DataSourceIbmBackupRecoveriesKubernetesNamespaceRecoveryNewSourceConfigSourceToMap(model.Source)
+	if err != nil {
+		return modelMap, err
+	}
+	modelMap["source"] = []map[string]interface{}{sourceMap}
+	return modelMap, nil
+}
+
+func DataSourceIbmBackupRecoveriesKubernetesNamespaceRecoveryNewSourceConfigSourceToMap(model *backuprecoveryv1.KubernetesNamespaceRecoveryNewSourceConfigSource) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	modelMap["id"] = flex.IntValue(model.ID)
+	if model.Name != nil {
+		modelMap["name"] = *model.Name
+	}
+	return modelMap, nil
+}
+
+func DataSourceIbmBackupRecoveriesKubernetesTargetParamsForRecoverKubernetesNamespaceRenameRecoveredNamespacesParamsToMap(model *backuprecoveryv1.KubernetesTargetParamsForRecoverKubernetesNamespaceRenameRecoveredNamespacesParams) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.Prefix != nil {
+		modelMap["prefix"] = *model.Prefix
+	}
+	if model.Suffix != nil {
+		modelMap["suffix"] = *model.Suffix
+	}
+	return modelMap, nil
+}
+
+func DataSourceIbmBackupRecoveriesKubernetesStorageClassParamsToMap(model *backuprecoveryv1.KubernetesStorageClassParams) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.StorageClassMapping != nil {
+		storageClassMapping := []map[string]interface{}{}
+		for _, storageClassMappingItem := range model.StorageClassMapping {
+			storageClassMappingItemMap, err := DataSourceIbmBackupRecoveriesKubernetesLabelToMap(&storageClassMappingItem) // #nosec G601
+			if err != nil {
+				return modelMap, err
+			}
+			storageClassMapping = append(storageClassMapping, storageClassMappingItemMap)
+		}
+		modelMap["storage_class_mapping"] = storageClassMapping
+	}
+	if model.UseStorageClassMapping != nil {
+		modelMap["use_storage_class_mapping"] = *model.UseStorageClassMapping
+	}
+	return modelMap, nil
+}
+
+func DataSourceIbmBackupRecoveriesRecoverKubernetesNamespaceParamsVlanConfigToMap(model *backuprecoveryv1.RecoverKubernetesNamespaceParamsVlanConfig) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.ID != nil {
+		modelMap["id"] = flex.IntValue(model.ID)
+	}
+	if model.DisableVlan != nil {
+		modelMap["disable_vlan"] = *model.DisableVlan
+	}
+	if model.InterfaceName != nil {
+		modelMap["interface_name"] = *model.InterfaceName
 	}
 	return modelMap, nil
 }

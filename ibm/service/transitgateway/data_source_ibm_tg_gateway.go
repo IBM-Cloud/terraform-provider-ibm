@@ -4,7 +4,6 @@
 package transitgateway
 
 import (
-	"fmt"
 	"log"
 
 	"github.com/IBM/networking-go-sdk/transitgatewayapisv1"
@@ -45,6 +44,10 @@ func DataSourceIBMTransitGateway() *schema.Resource {
 				Computed: true,
 			},
 			tgGlobal: {
+				Type:     schema.TypeBool,
+				Computed: true,
+			},
+			tgGreEnhancedRoutePropagation: {
 				Type:     schema.TypeBool,
 				Computed: true,
 			},
@@ -236,7 +239,7 @@ func dataSourceIBMTransitGatewayRead(d *schema.ResourceData, meta interface{}) e
 	listTransitGatewaysOptionsModel := &transitgatewayapisv1.ListTransitGatewaysOptions{}
 	listTransitGateways, response, err := client.ListTransitGateways(listTransitGatewaysOptionsModel)
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error while listing transit gateways %s\n%s", err, response)
+		return flex.FmtErrorf("[ERROR] Error while listing transit gateways %s\n%s", err, response)
 	}
 
 	gwName := d.Get(tgName).(string)
@@ -254,6 +257,7 @@ func dataSourceIBMTransitGatewayRead(d *schema.ResourceData, meta interface{}) e
 				d.Set(tgUpdatedAt, tgw.UpdatedAt.String())
 			}
 			d.Set(tgGlobal, tgw.Global)
+			d.Set(tgGreEnhancedRoutePropagation, tgw.GreEnhancedRoutePropagation)
 			d.Set(tgStatus, tgw.Status)
 
 			if tgw.ResourceGroup != nil {
@@ -265,7 +269,7 @@ func dataSourceIBMTransitGatewayRead(d *schema.ResourceData, meta interface{}) e
 	}
 
 	if !foundGateway {
-		return fmt.Errorf("[ERROR] Couldn't find any gateway with the specified name: (%s)", gwName)
+		return flex.FmtErrorf("[ERROR] Couldn't find any gateway with the specified name: (%s)", gwName)
 	}
 
 	return dataSourceIBMTransitGatewayConnectionsRead(d, meta)
@@ -291,7 +295,7 @@ func dataSourceIBMTransitGatewayConnectionsRead(d *schema.ResourceData, meta int
 		}
 		listTGConnections, response, err := client.ListTransitGatewayConnections(listTransitGatewayConnectionsOptions)
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error while listing transit gateway connections %s\n%s", err, response)
+			return flex.FmtErrorf("[ERROR] Error while listing transit gateway connections %s\n%s", err, response)
 		}
 		for _, instance := range listTGConnections.Connections {
 			tgConn := map[string]interface{}{}

@@ -11,13 +11,13 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 )
 
-func TestAccIBMPIPlacementGrousDataSourceBasic(t *testing.T) {
+func TestAccIBMPIPlacementGroupsDataSourceBasic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheck(t) },
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIBMPIPlacementGrousDataSourceConfig(),
+				Config: testAccCheckIBMPIPlacementGroupsDataSourceConfig(),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_pi_placement_groups.test", "id"),
 				),
@@ -26,7 +26,7 @@ func TestAccIBMPIPlacementGrousDataSourceBasic(t *testing.T) {
 	})
 }
 
-func testAccCheckIBMPIPlacementGrousDataSourceConfig() string {
+func testAccCheckIBMPIPlacementGroupsDataSourceConfig() string {
 	return fmt.Sprintf(`
 		data "ibm_pi_placement_groups" "test" {
 			pi_cloud_instance_id = "%s"

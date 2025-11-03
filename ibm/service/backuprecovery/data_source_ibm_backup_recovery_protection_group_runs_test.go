@@ -17,7 +17,7 @@ import (
 )
 
 func TestAccIbmBackupRecoveryProtectionGroupRunsDataSourceBasic(t *testing.T) {
-	groupName := "terra-test-group-1"
+	groupName := "tetst-terra-group-4"
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheck(t) },
 		Providers: acc.TestAccProviders,
@@ -51,11 +51,13 @@ func testAccCheckIbmBackupRecoveryProtectionGroupRunsDataSourceConfigBasic(group
 	return fmt.Sprintf(`
 	data "ibm_backup_recovery_protection_groups" "ibm_backup_recovery_protection_groups_instance" {
 		x_ibm_tenant_id = "%s"
+		
 		names = ["%s"]
 	}
 
 	data "ibm_backup_recovery_protection_group_runs" "baas_protection_group_runs_instance" {
 		x_ibm_tenant_id = "%[1]s"
+		
 		protection_group_id = data.ibm_backup_recovery_protection_groups.ibm_backup_recovery_protection_groups_instance.protection_groups.0.id
 	}
 	`, tenantId, groupName)

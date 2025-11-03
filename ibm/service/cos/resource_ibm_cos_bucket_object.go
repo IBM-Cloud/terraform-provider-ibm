@@ -262,6 +262,10 @@ func resourceIBMCOSBucketObjectRead(ctx context.Context, d *schema.ResourceData,
 	bucketLocation := parseObjectId(objectID, "bucketLocation")
 	instanceCRN := parseObjectId(objectID, "instanceCRN")
 	endpointType := d.Get("endpoint_type").(string)
+	schET := os.Getenv("IBMCLOUD_ENV_SCH_COS_ENDPOINT_OVERRIDE")
+	if endpointType != "" && endpointType == "private" && schET != "" {
+		endpointType = schET
+	}
 
 	d.Set("bucket_crn", bucketCRN)
 	d.Set("bucket_location", bucketLocation)
@@ -353,6 +357,10 @@ func resourceIBMCOSBucketObjectUpdate(ctx context.Context, d *schema.ResourceDat
 	objectKey := d.Get("key").(string)
 	bucketLocation := d.Get("bucket_location").(string)
 	endpointType := d.Get("endpoint_type").(string)
+	schET := os.Getenv("IBMCLOUD_ENV_SCH_COS_ENDPOINT_OVERRIDE")
+	if endpointType != "" && endpointType == "private" && schET != "" {
+		endpointType = schET
+	}
 	bxSession, err := m.(conns.ClientSession).BluemixSession()
 	if err != nil {
 		return diag.FromErr(err)
@@ -452,6 +460,10 @@ func resourceIBMCOSBucketObjectDelete(ctx context.Context, d *schema.ResourceDat
 
 	bucketLocation := d.Get("bucket_location").(string)
 	endpointType := d.Get("endpoint_type").(string)
+	schET := os.Getenv("IBMCLOUD_ENV_SCH_COS_ENDPOINT_OVERRIDE")
+	if endpointType != "" && endpointType == "private" && schET != "" {
+		endpointType = schET
+	}
 
 	bxSession, err := m.(conns.ClientSession).BluemixSession()
 	if err != nil {

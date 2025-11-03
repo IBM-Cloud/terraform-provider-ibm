@@ -8105,11 +8105,15 @@ func ResourceIbmLogsDashboardMapToApisDashboardsV1AstWidgetsDataTableLogsQueryAg
 	model.ID = core.UUIDPtr(strfmt.UUID(modelMap["id"].(string)))
 	model.Name = core.StringPtr(modelMap["name"].(string))
 	model.IsVisible = core.BoolPtr(modelMap["is_visible"].(bool))
-	AggregationModel, err := ResourceIbmLogsDashboardMapToApisDashboardsV1CommonLogsAggregation(modelMap["aggregation"].([]interface{})[0].(map[string]interface{}))
-	if err != nil {
-		return model, err
+	modelMapAggregation := modelMap["aggregation"].([]interface{})
+	if modelMapAggregation != nil && len(modelMapAggregation) > 0 {
+		AggregationModel, err := ResourceIbmLogsDashboardMapToApisDashboardsV1CommonLogsAggregation(modelMapAggregation[0].(map[string]interface{}))
+		if err != nil {
+			return model, err
+		}
+		model.Aggregation = AggregationModel
 	}
-	model.Aggregation = AggregationModel
+
 	return model, nil
 }
 
@@ -8324,11 +8328,15 @@ func ResourceIbmLogsDashboardMapToApisDashboardsV1AstWidgetsGaugeLogsQuery(model
 			model.LuceneQuery = LuceneQueryModel
 		}
 		if modelMapElement["logs_aggregation"] != nil && len(modelMapElement["logs_aggregation"].([]interface{})) > 0 {
-			LogsAggregationModel, err := ResourceIbmLogsDashboardMapToApisDashboardsV1CommonLogsAggregation(modelMapElement["logs_aggregation"].([]interface{})[0].(map[string]interface{}))
-			if err != nil {
-				return model, err
+			modelMapAggregation := modelMapElement["logs_aggregation"].([]interface{})
+			if modelMapAggregation != nil && len(modelMapAggregation) > 0 {
+				LogsAggregationModel, err := ResourceIbmLogsDashboardMapToApisDashboardsV1CommonLogsAggregation(modelMapAggregation[0].(map[string]interface{}))
+				if err != nil {
+					return model, err
+				}
+				model.LogsAggregation = LogsAggregationModel
 			}
-			model.LogsAggregation = LogsAggregationModel
+
 		}
 		if modelMapElement["filters"] != nil {
 			filters := []logsv0.ApisDashboardsV1AstFilterLogsFilter{}
@@ -8488,11 +8496,15 @@ func ResourceIbmLogsDashboardMapToApisDashboardsV1AstWidgetsPieChartLogsQuery(mo
 			}
 			model.LuceneQuery = LuceneQueryModel
 		}
-		AggregationModel, err := ResourceIbmLogsDashboardMapToApisDashboardsV1CommonLogsAggregation(modelMapElement["aggregation"].([]interface{})[0].(map[string]interface{}))
-		if err != nil {
-			return model, err
+		modelMapAggregation := modelMapElement["aggregation"].([]interface{})
+		if modelMapAggregation != nil && len(modelMapAggregation) > 0 {
+			AggregationModel, err := ResourceIbmLogsDashboardMapToApisDashboardsV1CommonLogsAggregation(modelMapAggregation[0].(map[string]interface{}))
+			if err != nil {
+				return model, err
+			}
+			model.Aggregation = AggregationModel
 		}
-		model.Aggregation = AggregationModel
+
 		if modelMapElement["filters"] != nil {
 			filters := []logsv0.ApisDashboardsV1AstFilterLogsFilter{}
 			for _, filtersItem := range modelMapElement["filters"].([]interface{}) {
@@ -8719,14 +8731,14 @@ func ResourceIbmLogsDashboardMapToApisDashboardsV1AstWidgetsBarChartQuery(modelM
 	if modelMap != nil && len(modelMap) > 0 && modelMap[0] != nil {
 		modelMapElement := modelMap[0].(map[string]interface{})
 		if modelMapElement["logs"] != nil && len(modelMapElement["logs"].([]interface{})) > 0 {
-			LogsModel, err := ResourceIbmLogsDashboardMapToApisDashboardsV1AstWidgetsBarChartLogsQuery(modelMapElement["logs"].([]interface{})[0].(map[string]interface{}))
+			LogsModel, err := ResourceIbmLogsDashboardMapToApisDashboardsV1AstWidgetsBarChartLogsQuery(modelMapElement["logs"].([]interface{}))
 			if err != nil {
 				return model, err
 			}
 			model.Logs = LogsModel
 		}
 		if modelMapElement["metrics"] != nil && len(modelMapElement["metrics"].([]interface{})) > 0 {
-			MetricsModel, err := ResourceIbmLogsDashboardMapToApisDashboardsV1AstWidgetsBarChartMetricsQuery(modelMapElement["metrics"].([]interface{})[0].(map[string]interface{}))
+			MetricsModel, err := ResourceIbmLogsDashboardMapToApisDashboardsV1AstWidgetsBarChartMetricsQuery(modelMapElement["metrics"].([]interface{}))
 			if err != nil {
 				return model, err
 			}
@@ -8744,85 +8756,95 @@ func ResourceIbmLogsDashboardMapToApisDashboardsV1AstWidgetsBarChartQuery(modelM
 	return model, nil
 }
 
-func ResourceIbmLogsDashboardMapToApisDashboardsV1AstWidgetsBarChartLogsQuery(modelMap map[string]interface{}) (*logsv0.ApisDashboardsV1AstWidgetsBarChartLogsQuery, error) {
+func ResourceIbmLogsDashboardMapToApisDashboardsV1AstWidgetsBarChartLogsQuery(modelMap []interface{}) (*logsv0.ApisDashboardsV1AstWidgetsBarChartLogsQuery, error) {
 	model := &logsv0.ApisDashboardsV1AstWidgetsBarChartLogsQuery{}
-	if modelMap["lucene_query"] != nil && len(modelMap["lucene_query"].([]interface{})) > 0 {
-		LuceneQueryModel, err := ResourceIbmLogsDashboardMapToApisDashboardsV1AstWidgetsCommonLuceneQuery(modelMap["lucene_query"].([]interface{}))
-		if err != nil {
-			return model, err
-		}
-		model.LuceneQuery = LuceneQueryModel
-	}
-	AggregationModel, err := ResourceIbmLogsDashboardMapToApisDashboardsV1CommonLogsAggregation(modelMap["aggregation"].([]interface{})[0].(map[string]interface{}))
-	if err != nil {
-		return model, err
-	}
-	model.Aggregation = AggregationModel
-	if modelMap["filters"] != nil {
-		filters := []logsv0.ApisDashboardsV1AstFilterLogsFilter{}
-		for _, filtersItem := range modelMap["filters"].([]interface{}) {
-			filtersItemModel, err := ResourceIbmLogsDashboardMapToApisDashboardsV1AstFilterLogsFilter(filtersItem.(map[string]interface{}))
+	if len(modelMap) > 0 && modelMap[0] != nil {
+		modelMapElement := modelMap[0].(map[string]interface{})
+		if modelMapElement["lucene_query"] != nil && len(modelMapElement["lucene_query"].([]interface{})) > 0 {
+			LuceneQueryModel, err := ResourceIbmLogsDashboardMapToApisDashboardsV1AstWidgetsCommonLuceneQuery(modelMapElement["lucene_query"].([]interface{}))
 			if err != nil {
 				return model, err
 			}
-			filters = append(filters, *filtersItemModel)
+			model.LuceneQuery = LuceneQueryModel
 		}
-		model.Filters = filters
-	}
-	if modelMap["group_names_fields"] != nil {
-		// groupNamesFields := []logsv0.ApisDashboardsV1CommonObservationField{}
-		// for _, groupNamesFieldsItem := range modelMap["group_names_fields"].([]interface{}) {
-		// 	groupNamesFieldsItemModel, err := ResourceIbmLogsDashboardMapToApisDashboardsV1CommonObservationField(groupNamesFieldsItem.(map[string]interface{}))
-		// 	if err != nil {
-		// 		return model, err
-		// 	}
-		// 	groupNamesFields = append(groupNamesFields, *groupNamesFieldsItemModel)
-		// }
-		groupNamesFields, err := ResourceIbmLogsDashboardMapToApisDashboardsV1CommonObservationField(modelMap["group_names_fields"].([]interface{}))
-		if err != nil {
-			return model, err
+		modelMapAggregation := modelMapElement["aggregation"].([]interface{})
+		if modelMapAggregation != nil && len(modelMapAggregation) > 0 {
+			AggregationModel, err := ResourceIbmLogsDashboardMapToApisDashboardsV1CommonLogsAggregation(modelMapAggregation[0].(map[string]interface{}))
+			if err != nil {
+				return model, err
+			}
+			model.Aggregation = AggregationModel
 		}
-		model.GroupNamesFields = groupNamesFields
-	}
-	if modelMap["stacked_group_name_field"] != nil && len(modelMap["stacked_group_name_field"].([]interface{})) > 0 && modelMap["stacked_group_name_field"].([]interface{})[0] != nil {
-		StackedGroupNameFieldModel, err := ResourceIbmLogsDashboardMapToApisDashboardsV1CommonObservationField(modelMap["stacked_group_name_field"].([]interface{}))
-		if err != nil {
-			return model, err
+		if modelMapElement["filters"] != nil {
+			filters := []logsv0.ApisDashboardsV1AstFilterLogsFilter{}
+			for _, filtersItem := range modelMapElement["filters"].([]interface{}) {
+				filtersItemModel, err := ResourceIbmLogsDashboardMapToApisDashboardsV1AstFilterLogsFilter(filtersItem.(map[string]interface{}))
+				if err != nil {
+					return model, err
+				}
+				filters = append(filters, *filtersItemModel)
+			}
+			model.Filters = filters
 		}
-		model.StackedGroupNameField = &StackedGroupNameFieldModel[0]
+		if modelMapElement["group_names_fields"] != nil {
+			// groupNamesFields := []logsv0.ApisDashboardsV1CommonObservationField{}
+			// for _, groupNamesFieldsItem := range modelMapElement["group_names_fields"].([]interface{}) {
+			// 	groupNamesFieldsItemModel, err := ResourceIbmLogsDashboardMapToApisDashboardsV1CommonObservationField(groupNamesFieldsItem.(map[string]interface{}))
+			// 	if err != nil {
+			// 		return model, err
+			// 	}
+			// 	groupNamesFields = append(groupNamesFields, *groupNamesFieldsItemModel)
+			// }
+			groupNamesFields, err := ResourceIbmLogsDashboardMapToApisDashboardsV1CommonObservationField(modelMapElement["group_names_fields"].([]interface{}))
+			if err != nil {
+				return model, err
+			}
+			model.GroupNamesFields = groupNamesFields
+		}
+		if modelMapElement["stacked_group_name_field"] != nil && len(modelMapElement["stacked_group_name_field"].([]interface{})) > 0 && modelMapElement["stacked_group_name_field"].([]interface{})[0] != nil {
+			StackedGroupNameFieldModel, err := ResourceIbmLogsDashboardMapToApisDashboardsV1CommonObservationField(modelMapElement["stacked_group_name_field"].([]interface{}))
+			if err != nil {
+				return model, err
+			}
+			model.StackedGroupNameField = &StackedGroupNameFieldModel[0]
+		}
 	}
+
 	return model, nil
 }
 
-func ResourceIbmLogsDashboardMapToApisDashboardsV1AstWidgetsBarChartMetricsQuery(modelMap map[string]interface{}) (*logsv0.ApisDashboardsV1AstWidgetsBarChartMetricsQuery, error) {
+func ResourceIbmLogsDashboardMapToApisDashboardsV1AstWidgetsBarChartMetricsQuery(modelMap []interface{}) (*logsv0.ApisDashboardsV1AstWidgetsBarChartMetricsQuery, error) {
 	model := &logsv0.ApisDashboardsV1AstWidgetsBarChartMetricsQuery{}
-	if modelMap["promql_query"] != nil && len(modelMap["promql_query"].([]interface{})) > 0 {
-		PromqlQueryModel, err := ResourceIbmLogsDashboardMapToApisDashboardsV1AstWidgetsCommonPromQlQuery(modelMap["promql_query"].([]interface{}))
-		if err != nil {
-			return model, err
-		}
-		model.PromqlQuery = PromqlQueryModel
-	}
-	if modelMap["filters"] != nil {
-		filters := []logsv0.ApisDashboardsV1AstFilterMetricsFilter{}
-		for _, filtersItem := range modelMap["filters"].([]interface{}) {
-			filtersItemModel, err := ResourceIbmLogsDashboardMapToApisDashboardsV1AstFilterMetricsFilter(filtersItem.(map[string]interface{}))
+	if len(modelMap) > 0 && modelMap[0] != nil {
+		modelMapElement := modelMap[0].(map[string]interface{})
+		if modelMapElement["promql_query"] != nil && len(modelMapElement["promql_query"].([]interface{})) > 0 {
+			PromqlQueryModel, err := ResourceIbmLogsDashboardMapToApisDashboardsV1AstWidgetsCommonPromQlQuery(modelMapElement["promql_query"].([]interface{}))
 			if err != nil {
 				return model, err
 			}
-			filters = append(filters, *filtersItemModel)
+			model.PromqlQuery = PromqlQueryModel
 		}
-		model.Filters = filters
-	}
-	if modelMap["group_names"] != nil {
-		groupNames := []string{}
-		for _, groupNamesItem := range modelMap["group_names"].([]interface{}) {
-			groupNames = append(groupNames, groupNamesItem.(string))
+		if modelMapElement["filters"] != nil {
+			filters := []logsv0.ApisDashboardsV1AstFilterMetricsFilter{}
+			for _, filtersItem := range modelMapElement["filters"].([]interface{}) {
+				filtersItemModel, err := ResourceIbmLogsDashboardMapToApisDashboardsV1AstFilterMetricsFilter(filtersItem.(map[string]interface{}))
+				if err != nil {
+					return model, err
+				}
+				filters = append(filters, *filtersItemModel)
+			}
+			model.Filters = filters
 		}
-		model.GroupNames = groupNames
-	}
-	if modelMap["stacked_group_name"] != nil && modelMap["stacked_group_name"].(string) != "" {
-		model.StackedGroupName = core.StringPtr(modelMap["stacked_group_name"].(string))
+		if modelMapElement["group_names"] != nil {
+			groupNames := []string{}
+			for _, groupNamesItem := range modelMapElement["group_names"].([]interface{}) {
+				groupNames = append(groupNames, groupNamesItem.(string))
+			}
+			model.GroupNames = groupNames
+		}
+		if modelMapElement["stacked_group_name"] != nil && modelMapElement["stacked_group_name"].(string) != "" {
+			model.StackedGroupName = core.StringPtr(modelMapElement["stacked_group_name"].(string))
+		}
 	}
 	return model, nil
 }
@@ -8861,7 +8883,7 @@ func ResourceIbmLogsDashboardMapToApisDashboardsV1AstWidgetsBarChartDataprimeQue
 func ResourceIbmLogsDashboardMapToApisDashboardsV1AstWidgetsBarChartQueryValueLogs(modelMap map[string]interface{}) (*logsv0.ApisDashboardsV1AstWidgetsBarChartQueryValueLogs, error) {
 	model := &logsv0.ApisDashboardsV1AstWidgetsBarChartQueryValueLogs{}
 	if modelMap["logs"] != nil && len(modelMap["logs"].([]interface{})) > 0 {
-		LogsModel, err := ResourceIbmLogsDashboardMapToApisDashboardsV1AstWidgetsBarChartLogsQuery(modelMap["logs"].([]interface{})[0].(map[string]interface{}))
+		LogsModel, err := ResourceIbmLogsDashboardMapToApisDashboardsV1AstWidgetsBarChartLogsQuery(modelMap["logs"].([]interface{}))
 		if err != nil {
 			return model, err
 		}
@@ -8873,7 +8895,7 @@ func ResourceIbmLogsDashboardMapToApisDashboardsV1AstWidgetsBarChartQueryValueLo
 func ResourceIbmLogsDashboardMapToApisDashboardsV1AstWidgetsBarChartQueryValueMetrics(modelMap map[string]interface{}) (*logsv0.ApisDashboardsV1AstWidgetsBarChartQueryValueMetrics, error) {
 	model := &logsv0.ApisDashboardsV1AstWidgetsBarChartQueryValueMetrics{}
 	if modelMap["metrics"] != nil && len(modelMap["metrics"].([]interface{})) > 0 {
-		MetricsModel, err := ResourceIbmLogsDashboardMapToApisDashboardsV1AstWidgetsBarChartMetricsQuery(modelMap["metrics"].([]interface{})[0].(map[string]interface{}))
+		MetricsModel, err := ResourceIbmLogsDashboardMapToApisDashboardsV1AstWidgetsBarChartMetricsQuery(modelMap["metrics"].([]interface{}))
 		if err != nil {
 			return model, err
 		}
@@ -8995,14 +9017,14 @@ func ResourceIbmLogsDashboardMapToApisDashboardsV1AstWidgetsBarChartXAxis(modelM
 	if modelMap != nil && len(modelMap) > 0 && modelMap[0] != nil {
 		modelMapElement := modelMap[0].(map[string]interface{})
 		if modelMapElement["value"] != nil && len(modelMapElement["value"].([]interface{})) > 0 {
-			ValueModel, err := ResourceIbmLogsDashboardMapToApisDashboardsV1AstWidgetsBarChartXAxisXAxisByValueEmpty(modelMapElement["value"].([]interface{})[0].(map[string]interface{}))
+			ValueModel, err := ResourceIbmLogsDashboardMapToApisDashboardsV1AstWidgetsBarChartXAxisXAxisByValueEmpty(modelMapElement["value"].([]interface{}))
 			if err != nil {
 				return model, err
 			}
 			model.Value = ValueModel
 		}
 		if modelMapElement["time"] != nil && len(modelMapElement["time"].([]interface{})) > 0 {
-			TimeModel, err := ResourceIbmLogsDashboardMapToApisDashboardsV1AstWidgetsBarChartXAxisXAxisByTime(modelMapElement["time"].([]interface{})[0].(map[string]interface{}))
+			TimeModel, err := ResourceIbmLogsDashboardMapToApisDashboardsV1AstWidgetsBarChartXAxisXAxisByTime(modelMapElement["time"].([]interface{}))
 			if err != nil {
 				return model, err
 			}
@@ -9013,26 +9035,30 @@ func ResourceIbmLogsDashboardMapToApisDashboardsV1AstWidgetsBarChartXAxis(modelM
 	return model, nil
 }
 
-func ResourceIbmLogsDashboardMapToApisDashboardsV1AstWidgetsBarChartXAxisXAxisByValueEmpty(modelMap map[string]interface{}) (*logsv0.ApisDashboardsV1AstWidgetsBarChartXAxisXAxisByValueEmpty, error) {
+func ResourceIbmLogsDashboardMapToApisDashboardsV1AstWidgetsBarChartXAxisXAxisByValueEmpty(modelMap interface{}) (*logsv0.ApisDashboardsV1AstWidgetsBarChartXAxisXAxisByValueEmpty, error) {
 	model := &logsv0.ApisDashboardsV1AstWidgetsBarChartXAxisXAxisByValueEmpty{}
 	return model, nil
 }
 
-func ResourceIbmLogsDashboardMapToApisDashboardsV1AstWidgetsBarChartXAxisXAxisByTime(modelMap map[string]interface{}) (*logsv0.ApisDashboardsV1AstWidgetsBarChartXAxisXAxisByTime, error) {
+func ResourceIbmLogsDashboardMapToApisDashboardsV1AstWidgetsBarChartXAxisXAxisByTime(modelMap []interface{}) (*logsv0.ApisDashboardsV1AstWidgetsBarChartXAxisXAxisByTime, error) {
 	model := &logsv0.ApisDashboardsV1AstWidgetsBarChartXAxisXAxisByTime{}
-	if modelMap["interval"] != nil && modelMap["interval"].(string) != "" {
-		model.Interval = core.StringPtr(modelMap["interval"].(string))
+	if len(modelMap) > 0 && modelMap[0] != nil {
+		modelMapElement := modelMap[0].(map[string]interface{})
+		if modelMapElement["interval"] != nil && modelMapElement["interval"].(string) != "" {
+			model.Interval = core.StringPtr(modelMapElement["interval"].(string))
+		}
+		if modelMapElement["buckets_presented"] != nil {
+			model.BucketsPresented = core.Int64Ptr(int64(modelMapElement["buckets_presented"].(int)))
+		}
 	}
-	if modelMap["buckets_presented"] != nil {
-		model.BucketsPresented = core.Int64Ptr(int64(modelMap["buckets_presented"].(int)))
-	}
+
 	return model, nil
 }
 
 func ResourceIbmLogsDashboardMapToApisDashboardsV1AstWidgetsBarChartXAxisTypeValue(modelMap map[string]interface{}) (*logsv0.ApisDashboardsV1AstWidgetsBarChartXAxisTypeValue, error) {
 	model := &logsv0.ApisDashboardsV1AstWidgetsBarChartXAxisTypeValue{}
 	if modelMap["value"] != nil && len(modelMap["value"].([]interface{})) > 0 {
-		ValueModel, err := ResourceIbmLogsDashboardMapToApisDashboardsV1AstWidgetsBarChartXAxisXAxisByValueEmpty(modelMap["value"].([]interface{})[0].(map[string]interface{}))
+		ValueModel, err := ResourceIbmLogsDashboardMapToApisDashboardsV1AstWidgetsBarChartXAxisXAxisByValueEmpty(modelMap["value"].([]interface{}))
 		if err != nil {
 			return model, err
 		}
@@ -9044,7 +9070,7 @@ func ResourceIbmLogsDashboardMapToApisDashboardsV1AstWidgetsBarChartXAxisTypeVal
 func ResourceIbmLogsDashboardMapToApisDashboardsV1AstWidgetsBarChartXAxisTypeTime(modelMap map[string]interface{}) (*logsv0.ApisDashboardsV1AstWidgetsBarChartXAxisTypeTime, error) {
 	model := &logsv0.ApisDashboardsV1AstWidgetsBarChartXAxisTypeTime{}
 	if modelMap["time"] != nil && len(modelMap["time"].([]interface{})) > 0 {
-		TimeModel, err := ResourceIbmLogsDashboardMapToApisDashboardsV1AstWidgetsBarChartXAxisXAxisByTime(modelMap["time"].([]interface{})[0].(map[string]interface{}))
+		TimeModel, err := ResourceIbmLogsDashboardMapToApisDashboardsV1AstWidgetsBarChartXAxisXAxisByTime(modelMap["time"].([]interface{}))
 		if err != nil {
 			return model, err
 		}
@@ -9151,11 +9177,15 @@ func ResourceIbmLogsDashboardMapToApisDashboardsV1AstWidgetsHorizontalBarChartLo
 		model.LuceneQuery = LuceneQueryModel
 	}
 	if modelMap["aggregation"] != nil && len(modelMap["aggregation"].([]interface{})) > 0 {
-		AggregationModel, err := ResourceIbmLogsDashboardMapToApisDashboardsV1CommonLogsAggregation(modelMap["aggregation"].([]interface{})[0].(map[string]interface{}))
-		if err != nil {
-			return model, err
+		modelMapAggregation := modelMap["aggregation"].([]interface{})
+		if modelMapAggregation != nil && len(modelMapAggregation) > 0 {
+			AggregationModel, err := ResourceIbmLogsDashboardMapToApisDashboardsV1CommonLogsAggregation(modelMapAggregation[0].(map[string]interface{}))
+			if err != nil {
+				return model, err
+			}
+			model.Aggregation = AggregationModel
 		}
-		model.Aggregation = AggregationModel
+
 	}
 	if modelMap["filters"] != nil {
 		filters := []logsv0.ApisDashboardsV1AstFilterLogsFilter{}
@@ -12175,13 +12205,17 @@ func ResourceIbmLogsDashboardApisDashboardsV1AstWidgetsBarChartToMap(model *logs
 	}
 	modelMap["query"] = []map[string]interface{}{queryMap}
 	modelMap["max_bars_per_chart"] = flex.IntValue(model.MaxBarsPerChart)
-	modelMap["group_name_template"] = *model.GroupNameTemplate
+	if model.GroupNameTemplate != nil {
+		modelMap["group_name_template"] = *model.GroupNameTemplate
+	}
 	stackDefinitionMap, err := ResourceIbmLogsDashboardApisDashboardsV1AstWidgetsBarChartStackDefinitionToMap(model.StackDefinition)
 	if err != nil {
 		return modelMap, err
 	}
 	modelMap["stack_definition"] = []map[string]interface{}{stackDefinitionMap}
-	modelMap["scale_type"] = *model.ScaleType
+	if model.ScaleType != nil {
+		modelMap["scale_type"] = *model.ScaleType
+	}
 	colorsByMap, err := ResourceIbmLogsDashboardApisDashboardsV1AstWidgetsCommonColorsByToMap(model.ColorsBy)
 	if err != nil {
 		return modelMap, err

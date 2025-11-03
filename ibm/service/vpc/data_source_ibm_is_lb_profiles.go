@@ -160,6 +160,27 @@ func DataSourceIBMISLbProfiles() *schema.Resource {
 								},
 							},
 						},
+						"targetable_resource_types": &schema.Schema{
+							Type:     schema.TypeList,
+							Computed: true,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"type": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The type for this profile field.",
+									},
+									"values": &schema.Schema{
+										Type:        schema.TypeList,
+										Computed:    true,
+										Description: "The resource types that pool members of load balancers with this profile can target",
+										Elem: &schema.Schema{
+											Type: schema.TypeString,
+										},
+									},
+								},
+							},
+						},
 						"route_mode_supported": {
 							Type:        schema.TypeBool,
 							Computed:    true,
@@ -340,6 +361,10 @@ func dataSourceIBMISLbProfilesRead(context context.Context, d *schema.ResourceDa
 
 		if profileCollector.TargetableLoadBalancerProfiles != nil {
 			l["targetable_load_balancer_profiles"] = dataSourceLbProfileFlattenTargetableLoadBalancerProfiles(profileCollector.TargetableLoadBalancerProfiles)
+		}
+
+		if profileCollector.TargetableResourceTypes != nil {
+			l["targetable_resource_types"] = dataSourceTargetableResourceTypes(*profileCollector.TargetableResourceTypes)
 		}
 
 		if profileCollector.Availability != nil {

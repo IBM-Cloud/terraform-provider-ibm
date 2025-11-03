@@ -5,10 +5,12 @@ package power
 
 import (
 	"context"
+	"fmt"
 	"log"
 
 	"github.com/IBM-Cloud/power-go-client/clients/instance"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/hashicorp/go-uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -33,6 +35,11 @@ func DataSourceIBMPIPlacementGroups() *schema.Resource {
 				Computed: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
+						Attr_CRN: {
+							Computed:    true,
+							Description: "The CRN of this resource.",
+							Type:        schema.TypeString,
+						},
 						Attr_ID: {
 							Computed:    true,
 							Description: "The ID of the placement group.",
@@ -46,13 +53,20 @@ func DataSourceIBMPIPlacementGroups() *schema.Resource {
 						},
 						Attr_Name: {
 							Computed:    true,
-							Description: "User defined name for the placement group.",
+							Description: "The name of the placement group.",
 							Type:        schema.TypeString,
 						},
 						Attr_Policy: {
 							Computed:    true,
 							Description: "The value of the group's affinity policy. Valid values are affinity and anti-affinity.",
 							Type:        schema.TypeString,
+						},
+						Attr_UserTags: {
+							Computed:    true,
+							Description: "List of user tags attached to the resource.",
+							Elem:        &schema.Schema{Type: schema.TypeString},
+							Set:         schema.HashString,
+							Type:        schema.TypeSet,
 						},
 					},
 				},
@@ -61,10 +75,12 @@ func DataSourceIBMPIPlacementGroups() *schema.Resource {
 	}
 }
 
-func dataSourceIBMPIPlacementGroupsRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataSourceIBMPIPlacementGroupsRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	sess, err := meta.(conns.ClientSession).IBMPISession()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("IBMPISession failed: %s", err.Error()), "(Data) ibm_pi_placement_groups", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	cloudInstanceID := d.Get(Arg_CloudInstanceID).(string)
@@ -72,17 +88,26 @@ func dataSourceIBMPIPlacementGroupsRead(ctx context.Context, d *schema.ResourceD
 	client := instance.NewIBMPIPlacementGroupClient(ctx, sess, cloudInstanceID)
 	groups, err := client.GetAll()
 	if err != nil {
-		log.Printf("[ERROR] get all placement groups failed %v", err)
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetAll failed: %s", err.Error()), "(Data) ibm_pi_placement_groups", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
-	result := make([]map[string]interface{}, 0, len(groups.PlacementGroups))
+	result := make([]map[string]any, 0, len(groups.PlacementGroups))
 	for _, placementGroup := range groups.PlacementGroups {
-		key := map[string]interface{}{
+		key := map[string]any{
 			Attr_ID:      placementGroup.ID,
 			Attr_Members: placementGroup.Members,
 			Attr_Name:    placementGroup.Name,
 			Attr_Policy:  placementGroup.Policy,
+		}
+		if placementGroup.Crn != "" {
+			key[Attr_CRN] = placementGroup.Crn
+			tags, err := flex.GetGlobalTagsUsingCRN(meta, string(placementGroup.Crn), "", UserTagType)
+			if err != nil {
+				log.Printf("Error on get of placement group (%s) user_tags: %s", *placementGroup.ID, err)
+			}
+			key[Attr_UserTags] = tags
 		}
 		result = append(result, key)
 	}

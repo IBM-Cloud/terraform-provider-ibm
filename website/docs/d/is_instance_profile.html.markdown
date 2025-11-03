@@ -206,3 +206,9 @@ In addition to the argument reference list, you can access the following attribu
   - `default` - (String) The default VCPU manufacturer for an instance with this profile.
   - `type` - (String) The type for this profile field.
   - `value` - (String) The VCPU manufacturer for an instance with this profile.
+- `volume_bandwidth_qos_modes` - (List) Nested `volume_bandwidth_qos_modes` blocks have the following structure:
+
+  Nested scheme for `volume_bandwidth_qos_modes`:
+  - `default` - (String) The default volume bandwidth QoS mode for this profile.
+  - `type` - (String) The type for this profile field.
+  - `values` - (String) The permitted volume bandwidth QoS modes for an instance using this profile.

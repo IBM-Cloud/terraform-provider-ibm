@@ -6,14 +6,10 @@ package secretsmanager
 import (
 	"context"
 	"fmt"
-	"github.com/IBM-Cloud/bluemix-go/bmxerror"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"log"
-	"strings"
-	"time"
-
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"log"
+	"strings"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
@@ -90,6 +86,11 @@ func ResourceIbmSmIamCredentialsSecret() *schema.Resource {
 				Computed:    true,
 				ForceNew:    true,
 				Description: "The service ID under which the API key (see the `api_key` field) is created.If you omit this parameter, Secrets Manager generates a new service ID for your secret at its creation and adds it to the access groups that you assign.Optionally, you can use this field to provide your own service ID if you prefer to manage its access directly or retain the service ID after your secret expires, is rotated, or deleted. If you provide a service ID, do not include the `access_groups` parameter.",
+			},
+			"retrieved_at": &schema.Schema{
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The date when the data of the secret was last retrieved. The date format follows RFC 3339. Epoch date if there is no record of secret data retrieval.",
 			},
 			"reuse_api_key": &schema.Schema{
 				Type:        schema.TypeBool,
@@ -251,47 +252,7 @@ func resourceIbmSmIamCredentialsSecretCreate(context context.Context, d *schema.
 	d.SetId(fmt.Sprintf("%s/%s/%s", region, instanceId, *secret.ID))
 	d.Set("secret_id", *secret.ID)
 
-	_, err = waitForIbmSmIamCredentialsSecretCreate(secretsManagerClient, d)
-	if err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error waiting for resource IbmSmIamCredentialsSecret (%s) to be created: %s", d.Id(), err.Error()), IAMCredentialsSecretResourceName, "create")
-		return tfErr.GetDiag()
-	}
-
 	return resourceIbmSmIamCredentialsSecretRead(context, d, meta)
-}
-
-func waitForIbmSmIamCredentialsSecretCreate(secretsManagerClient *secretsmanagerv2.SecretsManagerV2, d *schema.ResourceData) (interface{}, error) {
-	getSecretOptions := &secretsmanagerv2.GetSecretOptions{}
-
-	id := strings.Split(d.Id(), "/")
-	secretId := id[2]
-
-	getSecretOptions.SetID(secretId)
-
-	stateConf := &resource.StateChangeConf{
-		Pending: []string{"pre_activation"},
-		Target:  []string{"active"},
-		Refresh: func() (interface{}, string, error) {
-			stateObjIntf, response, err := secretsManagerClient.GetSecret(getSecretOptions)
-			stateObj := stateObjIntf.(*secretsmanagerv2.IAMCredentialsSecret)
-			if err != nil {
-				if apiErr, ok := err.(bmxerror.RequestFailure); ok && apiErr.StatusCode() == 404 {
-					return nil, "", fmt.Errorf("The instance %s does not exist anymore: %s\n%s", "getSecretOptions", err, response)
-				}
-				return nil, "", err
-			}
-			failStates := map[string]bool{"destroyed": true}
-			if failStates[*stateObj.StateDescription] {
-				return stateObj, *stateObj.StateDescription, fmt.Errorf("The instance %s failed: %s\n%s", "getSecretOptions", err, response)
-			}
-			return stateObj, *stateObj.StateDescription, nil
-		},
-		Timeout:    d.Timeout(schema.TimeoutCreate),
-		Delay:      0 * time.Second,
-		MinTimeout: 5 * time.Second,
-	}
-
-	return stateConf.WaitForState()
 }
 
 func resourceIbmSmIamCredentialsSecretRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -395,6 +356,10 @@ func resourceIbmSmIamCredentialsSecretRead(context context.Context, d *schema.Re
 	}
 	if err = d.Set("updated_at", DateTimeToRFC3339(secret.UpdatedAt)); err != nil {
 		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting updated_at"), IAMCredentialsSecretResourceName, "read")
+		return tfErr.GetDiag()
+	}
+	if err = d.Set("retrieved_at", DateTimeToRFC3339(secret.RetrievedAt)); err != nil {
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting retrieved_at"), IAMCredentialsSecretResourceName, "read")
 		return tfErr.GetDiag()
 	}
 	if err = d.Set("versions_total", flex.IntValue(secret.VersionsTotal)); err != nil {

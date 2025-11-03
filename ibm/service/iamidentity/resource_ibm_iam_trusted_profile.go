@@ -300,7 +300,7 @@ func resourceIBMIamTrustedProfileRead(context context.Context, d *schema.Resourc
 	history := []map[string]interface{}{}
 	if !core.IsNil(trustedProfile.History) {
 		for _, historyItem := range trustedProfile.History {
-			historyItemMap, err := ResourceIBMIamTrustedProfileEnityHistoryRecordToMap(&historyItem) // #nosec G601
+			historyItemMap, err := EnityHistoryRecordToMap(&historyItem) // #nosec G601
 			if err != nil {
 				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_trusted_profile", "read", "history-to-map").GetDiag()
 			}
@@ -367,15 +367,4 @@ func resourceIBMIamTrustedProfileDelete(context context.Context, d *schema.Resou
 	d.SetId("")
 
 	return nil
-}
-
-func ResourceIBMIamTrustedProfileEnityHistoryRecordToMap(model *iamidentityv1.EnityHistoryRecord) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	modelMap["timestamp"] = *model.Timestamp
-	modelMap["iam_id"] = *model.IamID
-	modelMap["iam_id_account"] = *model.IamIDAccount
-	modelMap["action"] = *model.Action
-	modelMap["params"] = model.Params
-	modelMap["message"] = *model.Message
-	return modelMap, nil
 }

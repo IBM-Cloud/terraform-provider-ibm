@@ -1,8 +1,8 @@
-// Copyright IBM Corp. 2024 All Rights Reserved.
+// Copyright IBM Corp. 2025 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 /*
- * IBM OpenAPI Terraform Generator Version: 3.95.2-120e65bc-20240924-152329
+ * IBM OpenAPI Terraform Generator Version: 3.104.0-b4a47c49-20250418-184351
  */
 
 package mqcloud
@@ -18,6 +18,7 @@ import (
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
+	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/IBM/mqcloud-go-sdk/mqcloudv1"
 )
 
@@ -29,7 +30,7 @@ func DataSourceIbmMqcloudQueueManagerOptions() *schema.Resource {
 			"service_instance_guid": {
 				Type:        schema.TypeString,
 				Required:    true,
-				Description: "The GUID that uniquely identifies the MQaaS service instance.",
+				Description: "The GUID that uniquely identifies the MQ SaaS service instance.",
 			},
 			"locations": {
 				Type:        schema.TypeList,
@@ -67,15 +68,7 @@ func DataSourceIbmMqcloudQueueManagerOptions() *schema.Resource {
 func dataSourceIbmMqcloudQueueManagerOptionsRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	mqcloudClient, err := meta.(conns.ClientSession).MqcloudV1()
 	if err != nil {
-		// Error is coming from SDK client, so it doesn't need to be discriminated.
-		tfErr := flex.TerraformErrorf(err, err.Error(), "(Data) ibm_mqcloud_queue_manager_options", "read")
-		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
-		return tfErr.GetDiag()
-	}
-
-	err = checkSIPlan(d, meta)
-	if err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Read Queue Manager Options failed: %s", err.Error()), "(Data) ibm_mqcloud_queue_manager_options", "read")
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_mqcloud_queue_manager_options", "read", "initialize-client")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
@@ -93,20 +86,40 @@ func dataSourceIbmMqcloudQueueManagerOptionsRead(context context.Context, d *sch
 
 	d.SetId(dataSourceIbmMqcloudQueueManagerOptionsID(d))
 
-	if err = d.Set("latest_version", configurationOptions.LatestVersion); err != nil {
-		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting latest_version: %s", err), "(Data) ibm_mqcloud_queue_manager_options", "read", "set-latest_version").GetDiag()
+	if !core.IsNil(configurationOptions.Locations) {
+		locations := []interface{}{}
+		for _, locationsItem := range configurationOptions.Locations {
+			locations = append(locations, locationsItem)
+		}
+		if err = d.Set("locations", locations); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting locations: %s", err), "(Data) ibm_mqcloud_queue_manager_options", "read", "set-locations").GetDiag()
+		}
 	}
 
-	if err = d.Set("locations", configurationOptions.Locations); err != nil {
-		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting locations: %s", err), "(Data) ibm_mqcloud_queue_manager_options", "read", "set-locations").GetDiag()
+	if !core.IsNil(configurationOptions.Sizes) {
+		sizes := []interface{}{}
+		for _, sizesItem := range configurationOptions.Sizes {
+			sizes = append(sizes, sizesItem)
+		}
+		if err = d.Set("sizes", sizes); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting sizes: %s", err), "(Data) ibm_mqcloud_queue_manager_options", "read", "set-sizes").GetDiag()
+		}
 	}
 
-	if err = d.Set("versions", configurationOptions.Versions); err != nil {
-		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting versions: %s", err), "(Data) ibm_mqcloud_queue_manager_options", "read", "set-versions").GetDiag()
+	if !core.IsNil(configurationOptions.Versions) {
+		versions := []interface{}{}
+		for _, versionsItem := range configurationOptions.Versions {
+			versions = append(versions, versionsItem)
+		}
+		if err = d.Set("versions", versions); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting versions: %s", err), "(Data) ibm_mqcloud_queue_manager_options", "read", "set-versions").GetDiag()
+		}
 	}
 
-	if err = d.Set("sizes", configurationOptions.Sizes); err != nil {
-		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting sizes: %s", err), "(Data) ibm_mqcloud_queue_manager_options", "read", "set-sizes").GetDiag()
+	if !core.IsNil(configurationOptions.LatestVersion) {
+		if err = d.Set("latest_version", configurationOptions.LatestVersion); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting latest_version: %s", err), "(Data) ibm_mqcloud_queue_manager_options", "read", "set-latest_version").GetDiag()
+		}
 	}
 
 	return nil

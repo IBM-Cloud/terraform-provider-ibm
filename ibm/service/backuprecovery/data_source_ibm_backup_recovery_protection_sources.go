@@ -6014,7 +6014,10921 @@ func DataSourceIbmBackupRecoveryProtectionSources() *schema.Resource {
 										Computed:    true,
 										Description: "Specifies children of the current node in the Protection Sources hierarchy. When representing Objects in memory, the entire Object subtree hierarchy is represented. You can use this subtree to navigate down the Object hierarchy.",
 										Elem: &schema.Resource{
-											Schema: map[string]*schema.Schema{},
+											Schema: map[string]*schema.Schema{
+												"application_nodes": &schema.Schema{
+													Type:        schema.TypeList,
+													Computed:    true,
+													Description: "Specifies the child subtree used to store additional application-level Objects. Different environments use the subtree to store application-level information. For example for SQL Server, this subtree stores the SQL Server instances running on a VM.",
+													Elem: &schema.Resource{
+														Schema: map[string]*schema.Schema{
+															"nodes": &schema.Schema{
+																Type:        schema.TypeList,
+																Computed:    true,
+																Description: "Specifies children of the current node in the Protection Sources hierarchy.",
+																Elem: &schema.Resource{
+																	Schema: map[string]*schema.Schema{
+																		"application_nodes": &schema.Schema{
+																			Type:        schema.TypeList,
+																			Computed:    true,
+																			Description: "Specifies the child subtree used to store additional application-level Objects. Different environments use the subtree to store application-level information. For example for SQL Server, this subtree stores the SQL Server instances running on a VM.",
+																			Elem: &schema.Resource{
+																				Schema: map[string]*schema.Schema{},
+																			},
+																		},
+																		"entity_pagination_parameters": &schema.Schema{
+																			Type:        schema.TypeList,
+																			Computed:    true,
+																			Description: "Specifies the cursor based pagination parameters for Protection Source and its children. Pagination is supported at a given level within the Protection Source Hierarchy with the help of before or after cursors. A Cursor will always refer to a specific source within the source dataset but will be invalidated if the item is removed.",
+																			Elem: &schema.Resource{
+																				Schema: map[string]*schema.Schema{
+																					"after_cursor_entity_id": &schema.Schema{
+																						Type:        schema.TypeInt,
+																						Computed:    true,
+																						Description: "Specifies the entity id starting from which the items are to be returned.",
+																					},
+																					"before_cursor_entity_id": &schema.Schema{
+																						Type:        schema.TypeInt,
+																						Computed:    true,
+																						Description: "Specifies the entity id upto which the items are to be returned.",
+																					},
+																					"node_id": &schema.Schema{
+																						Type:        schema.TypeInt,
+																						Computed:    true,
+																						Description: "Specifies the entity id for the Node at any level within the Source entity hierarchy whose children are to be paginated.",
+																					},
+																					"page_size": &schema.Schema{
+																						Type:        schema.TypeInt,
+																						Computed:    true,
+																						Description: "Specifies the maximum number of entities to be returned within the page.",
+																					},
+																				},
+																			},
+																		},
+																		"entity_permission_info": &schema.Schema{
+																			Type:        schema.TypeList,
+																			Computed:    true,
+																			Description: "Specifies the permission information of entities.",
+																			Elem: &schema.Resource{
+																				Schema: map[string]*schema.Schema{
+																					"entity_id": &schema.Schema{
+																						Type:        schema.TypeInt,
+																						Computed:    true,
+																						Description: "Specifies the entity id.",
+																					},
+																					"groups": &schema.Schema{
+																						Type:        schema.TypeList,
+																						Computed:    true,
+																						Description: "Specifies struct with basic group details.",
+																						Elem: &schema.Resource{
+																							Schema: map[string]*schema.Schema{
+																								"domain": &schema.Schema{
+																									Type:        schema.TypeString,
+																									Computed:    true,
+																									Description: "Specifies domain name of the user.",
+																								},
+																								"group_name": &schema.Schema{
+																									Type:        schema.TypeString,
+																									Computed:    true,
+																									Description: "Specifies group name of the group.",
+																								},
+																								"sid": &schema.Schema{
+																									Type:        schema.TypeString,
+																									Computed:    true,
+																									Description: "Specifies unique Security ID (SID) of the user.",
+																								},
+																								"tenant_ids": &schema.Schema{
+																									Type:        schema.TypeList,
+																									Computed:    true,
+																									Description: "Specifies the tenants to which the group belongs to.",
+																									Elem: &schema.Schema{
+																										Type: schema.TypeString,
+																									},
+																								},
+																							},
+																						},
+																					},
+																					"is_inferred": &schema.Schema{
+																						Type:        schema.TypeBool,
+																						Computed:    true,
+																						Description: "Specifies whether the Entity Permission Information is inferred or not. For example, SQL application hosted over vCenter will have inferred entity permission information.",
+																					},
+																					"is_registered_by_sp": &schema.Schema{
+																						Type:        schema.TypeBool,
+																						Computed:    true,
+																						Description: "Specifies whether this entity is registered by the SP or not. This will be populated only if the entity is a root entity. Refer to magneto/base/permissions.proto for details.",
+																					},
+																					"registering_tenant_id": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Computed:    true,
+																						Description: "Specifies the tenant id that registered this entity. This will be populated only if the entity is a root entity.",
+																					},
+																					"tenant": &schema.Schema{
+																						Type:        schema.TypeList,
+																						Computed:    true,
+																						Description: "Specifies struct with basic tenant details.",
+																						Elem: &schema.Resource{
+																							Schema: map[string]*schema.Schema{
+																								"bifrost_enabled": &schema.Schema{
+																									Type:        schema.TypeBool,
+																									Computed:    true,
+																									Description: "Specifies if this tenant is bifrost enabled or not.",
+																								},
+																								"is_managed_on_helios": &schema.Schema{
+																									Type:        schema.TypeBool,
+																									Computed:    true,
+																									Description: "Specifies whether this tenant is manged on helios.",
+																								},
+																								"name": &schema.Schema{
+																									Type:        schema.TypeBool,
+																									Computed:    true,
+																									Description: "Specifies name of the tenant.",
+																								},
+																								"tenant_id": &schema.Schema{
+																									Type:        schema.TypeBool,
+																									Computed:    true,
+																									Description: "Specifies the unique id of the tenant.",
+																								},
+																							},
+																						},
+																					},
+																					"users": &schema.Schema{
+																						Type:        schema.TypeList,
+																						Computed:    true,
+																						Description: "Specifies struct with basic user details.",
+																						Elem: &schema.Resource{
+																							Schema: map[string]*schema.Schema{
+																								"domain": &schema.Schema{
+																									Type:        schema.TypeString,
+																									Computed:    true,
+																									Description: "Specifies domain name of the user.",
+																								},
+																								"sid": &schema.Schema{
+																									Type:        schema.TypeString,
+																									Computed:    true,
+																									Description: "Specifies unique Security ID (SID) of the user.",
+																								},
+																								"tenant_id": &schema.Schema{
+																									Type:        schema.TypeString,
+																									Computed:    true,
+																									Description: "Specifies the tenant to which the user belongs to.",
+																								},
+																								"user_name": &schema.Schema{
+																									Type:        schema.TypeString,
+																									Computed:    true,
+																									Description: "Specifies user name of the user.",
+																								},
+																							},
+																						},
+																					},
+																				},
+																			},
+																		},
+																		"logical_size": &schema.Schema{
+																			Type:        schema.TypeInt,
+																			Computed:    true,
+																			Description: "Specifies the logical size of the data in bytes for the Object on this node. Presence of this field indicates this node is a leaf node.",
+																		},
+																		"nodes": &schema.Schema{
+																			Type:        schema.TypeList,
+																			Computed:    true,
+																			Description: "Specifies children of the current node in the Protection Sources hierarchy. When representing Objects in memory, the entire Object subtree hierarchy is represented. You can use this subtree to navigate down the Object hierarchy.",
+																			Elem: &schema.Resource{
+																				Schema: map[string]*schema.Schema{},
+																			},
+																		},
+																		"object_protection_info": &schema.Schema{
+																			Type:        schema.TypeList,
+																			Computed:    true,
+																			Description: "Specifies the Object Protection Info of the Protection Source.",
+																			Elem: &schema.Resource{
+																				Schema: map[string]*schema.Schema{
+																					"auto_protect_parent_id": &schema.Schema{
+																						Type:        schema.TypeInt,
+																						Computed:    true,
+																						Description: "Specifies the auto protect parent id if this entity is protected based on auto protection. This is only specified for leaf entities.",
+																					},
+																					"entity_id": &schema.Schema{
+																						Type:        schema.TypeInt,
+																						Computed:    true,
+																						Description: "Specifies the entity id.",
+																					},
+																					"has_active_object_protection_spec": &schema.Schema{
+																						Type:        schema.TypeInt,
+																						Computed:    true,
+																						Description: "Specifies if the entity is under object protection.",
+																					},
+																				},
+																			},
+																		},
+																		"protected_sources_summary": &schema.Schema{
+																			Type:        schema.TypeList,
+																			Computed:    true,
+																			Description: "Array of Protected Objects. Specifies aggregated information about all the child Objects of this node that are currently protected by a Protection Job. There is one entry for each environment that is being backed up. The aggregated information for the Object hierarchy's environment will be available at the 0th index of the vector.",
+																			Elem: &schema.Resource{
+																				Schema: map[string]*schema.Schema{
+																					"environment": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Computed:    true,
+																						Description: "Specifies the environment such as 'kSQL' or 'kVMware', where the Protection Source exists. Supported environment types such as 'kView', 'kSQL', 'kVMware', etc. NOTE 'kPuppeteer' refers to Cohesity's Remote Adapter. 'kVMware' indicates the VMware Protection Source environment. 'kHyperV' indicates the HyperV Protection Source environment. 'kSQL' indicates the SQL Protection Source environment. 'kView' indicates the View Protection Source environment. 'kPuppeteer' indicates the Cohesity's Remote Adapter. 'kPhysical' indicates the physical Protection Source environment. 'kPure' indicates the Pure Storage Protection Source environment. 'kNimble' indicates the Nimble Storage Protection Source environment. 'kAzure' indicates the Microsoft's Azure Protection Source environment. 'kNetapp' indicates the Netapp Protection Source environment. 'kAgent' indicates the Agent Protection Source environment. 'kGenericNas' indicates the Generic Network Attached Storage Protection Source environment. 'kAcropolis' indicates the Acropolis Protection Source environment. 'kPhysicalFiles' indicates the Physical Files Protection Source environment. 'kIbmFlashSystem' indicates the IBM Flash System Protection Source environment. 'kIsilon' indicates the Dell EMC's Isilon Protection Source environment. 'kGPFS' indicates IBM's GPFS Protection Source environment. 'kKVM' indicates the KVM Protection Source environment. 'kAWS' indicates the AWS Protection Source environment. 'kExchange' indicates the Exchange Protection Source environment. 'kHyperVVSS' indicates the HyperV VSS Protection Source environment. 'kOracle' indicates the Oracle Protection Source environment. 'kGCP' indicates the Google Cloud Platform Protection Source environment. 'kFlashBlade' indicates the Flash Blade Protection Source environment. 'kAWSNative' indicates the AWS Native Protection Source environment. 'kO365' indicates the Office 365 Protection Source environment. 'kO365Outlook' indicates Office 365 outlook Protection Source environment. 'kHyperFlex' indicates the Hyper Flex Protection Source environment. 'kGCPNative' indicates the GCP Native Protection Source environment. 'kAzureNative' indicates the Azure Native Protection Source environment. 'kKubernetes' indicates a Kubernetes Protection Source environment. 'kElastifile' indicates Elastifile Protection Source environment. 'kAD' indicates Active Directory Protection Source environment. 'kRDSSnapshotManager' indicates AWS RDS Protection Source environment. 'kCassandra' indicates Cassandra Protection Source environment. 'kMongoDB' indicates MongoDB Protection Source environment. 'kCouchbase' indicates Couchbase Protection Source environment. 'kHdfs' indicates Hdfs Protection Source environment. 'kHive' indicates Hive Protection Source environment. 'kHBase' indicates HBase Protection Source environment. 'kUDA' indicates Universal Data Adapter Protection Source environment. 'kO365Teams' indicates the Office365 Teams Protection Source environment. 'kO365Group' indicates the Office365 Groups Protection Source environment. 'kO365Exchange' indicates the Office365 Mailbox Protection Source environment. 'kO365OneDrive' indicates the Office365 OneDrive Protection Source environment. 'kO365Sharepoint' indicates the Office365 SharePoint Protection Source environment. 'kO365PublicFolders' indicates the Office365 PublicFolders Protection Source environment.",
+																					},
+																					"leaves_count": &schema.Schema{
+																						Type:        schema.TypeInt,
+																						Computed:    true,
+																						Description: "Specifies the number of leaf nodes under the subtree of this node.",
+																					},
+																					"total_logical_size": &schema.Schema{
+																						Type:        schema.TypeInt,
+																						Computed:    true,
+																						Description: "Specifies the total logical size of the data under the subtree of this node.",
+																					},
+																				},
+																			},
+																		},
+																		"protection_source": &schema.Schema{
+																			Type:        schema.TypeList,
+																			Computed:    true,
+																			Description: "Specifies details about an Acropolis Protection Source when the environment is set to 'kAcropolis'.",
+																			Elem: &schema.Resource{
+																				Schema: map[string]*schema.Schema{
+																					"connection_id": &schema.Schema{
+																						Type:        schema.TypeInt,
+																						Computed:    true,
+																						Description: "Specifies the connection id of the tenant.",
+																					},
+																					"connector_group_id": &schema.Schema{
+																						Type:        schema.TypeInt,
+																						Computed:    true,
+																						Description: "Specifies the connector group id of the connector groups.",
+																					},
+																					"custom_name": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Computed:    true,
+																						Description: "Specifies the user provided custom name of the Protection Source.",
+																					},
+																					"environment": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Computed:    true,
+																						Description: "Specifies the environment (such as 'kVMware' or 'kSQL') where the Protection Source exists. Depending on the environment, one of the following Protection Sources are initialized.",
+																					},
+																					"id": &schema.Schema{
+																						Type:        schema.TypeInt,
+																						Computed:    true,
+																						Description: "Specifies an id of the Protection Source.",
+																					},
+																					"name": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Computed:    true,
+																						Description: "Specifies a name of the Protection Source.",
+																					},
+																					"parent_id": &schema.Schema{
+																						Type:        schema.TypeInt,
+																						Computed:    true,
+																						Description: "Specifies an id of the parent of the Protection Source.",
+																					},
+																					"physical_protection_source": &schema.Schema{
+																						Type:        schema.TypeList,
+																						Computed:    true,
+																						Description: "Specifies a Protection Source in a Physical environment.",
+																						Elem: &schema.Resource{
+																							Schema: map[string]*schema.Schema{
+																								"agents": &schema.Schema{
+																									Type:        schema.TypeList,
+																									Computed:    true,
+																									Description: "Specifiles the agents running on the Physical Protection Source and the status information.",
+																									Elem: &schema.Resource{
+																										Schema: map[string]*schema.Schema{
+																											"cbmr_version": &schema.Schema{
+																												Type:        schema.TypeString,
+																												Computed:    true,
+																												Description: "Specifies the version if Cristie BMR product is installed on the host.",
+																											},
+																											"file_cbt_info": &schema.Schema{
+																												Type:        schema.TypeList,
+																												Computed:    true,
+																												Description: "CBT version and service state info.",
+																												Elem: &schema.Resource{
+																													Schema: map[string]*schema.Schema{
+																														"file_version": &schema.Schema{
+																															Type:        schema.TypeList,
+																															Computed:    true,
+																															Description: "Subcomponent version. The interpretation of the version is based on operating system.",
+																															Elem: &schema.Resource{
+																																Schema: map[string]*schema.Schema{
+																																	"build_ver": &schema.Schema{
+																																		Type:     schema.TypeFloat,
+																																		Computed: true,
+																																	},
+																																	"major_ver": &schema.Schema{
+																																		Type:     schema.TypeFloat,
+																																		Computed: true,
+																																	},
+																																	"minor_ver": &schema.Schema{
+																																		Type:     schema.TypeFloat,
+																																		Computed: true,
+																																	},
+																																	"revision_num": &schema.Schema{
+																																		Type:     schema.TypeFloat,
+																																		Computed: true,
+																																	},
+																																},
+																															},
+																														},
+																														"is_installed": &schema.Schema{
+																															Type:        schema.TypeBool,
+																															Computed:    true,
+																															Description: "Indicates whether the cbt driver is installed.",
+																														},
+																														"reboot_status": &schema.Schema{
+																															Type:        schema.TypeString,
+																															Computed:    true,
+																															Description: "Indicates whether host is rebooted post VolCBT installation.",
+																														},
+																														"service_state": &schema.Schema{
+																															Type:        schema.TypeList,
+																															Computed:    true,
+																															Description: "Structure to Hold Service Status.",
+																															Elem: &schema.Resource{
+																																Schema: map[string]*schema.Schema{
+																																	"name": &schema.Schema{
+																																		Type:     schema.TypeString,
+																																		Computed: true,
+																																	},
+																																	"state": &schema.Schema{
+																																		Type:     schema.TypeString,
+																																		Computed: true,
+																																	},
+																																},
+																															},
+																														},
+																													},
+																												},
+																											},
+																											"host_type": &schema.Schema{
+																												Type:        schema.TypeString,
+																												Computed:    true,
+																												Description: "Specifies the host type where the agent is running. This is only set for persistent agents.",
+																											},
+																											"id": &schema.Schema{
+																												Type:        schema.TypeInt,
+																												Computed:    true,
+																												Description: "Specifies the agent's id.",
+																											},
+																											"name": &schema.Schema{
+																												Type:        schema.TypeString,
+																												Computed:    true,
+																												Description: "Specifies the agent's name.",
+																											},
+																											"oracle_multi_node_channel_supported": &schema.Schema{
+																												Type:        schema.TypeBool,
+																												Computed:    true,
+																												Description: "Specifies whether oracle multi node multi channel is supported or not.",
+																											},
+																											"registration_info": &schema.Schema{
+																												Type:        schema.TypeList,
+																												Computed:    true,
+																												Description: "Specifies information about a registered Source.",
+																												Elem: &schema.Resource{
+																													Schema: map[string]*schema.Schema{
+																														"access_info": &schema.Schema{
+																															Type:        schema.TypeList,
+																															Computed:    true,
+																															Description: "Specifies the parameters required to establish a connection with a particular environment.",
+																															Elem: &schema.Resource{
+																																Schema: map[string]*schema.Schema{
+																																	"connection_id": &schema.Schema{
+																																		Type:        schema.TypeInt,
+																																		Computed:    true,
+																																		Description: "ID of the Bifrost (HyX or Rigel) network realm (i.e. a connection) associated with the source.",
+																																	},
+																																	"connector_group_id": &schema.Schema{
+																																		Type:        schema.TypeInt,
+																																		Computed:    true,
+																																		Description: "Specifies the Id of the connector group. Each connector group is collection of Rigel/hyx. Each entity will be tagged with connector group id.",
+																																	},
+																																	"endpoint": &schema.Schema{
+																																		Type:        schema.TypeString,
+																																		Computed:    true,
+																																		Description: "Specify an IP address or URL of the environment. (such as the IP address of the vCenter Server for a VMware environment).",
+																																	},
+																																	"environment": &schema.Schema{
+																																		Type:        schema.TypeString,
+																																		Computed:    true,
+																																		Description: "Specifies the environment like VMware, SQL, where the Protection Source exists. Supported environment types such as 'kView', 'kSQL', 'kVMware', etc.",
+																																	},
+																																	"id": &schema.Schema{
+																																		Type:        schema.TypeInt,
+																																		Computed:    true,
+																																		Description: "Specifies a Unique id that is generated when the Source is registered. This is a convenience field that is used to maintain an index to different connection params.",
+																																	},
+																																	"version": &schema.Schema{
+																																		Type:        schema.TypeInt,
+																																		Computed:    true,
+																																		Description: "Version is updated each time the connector parameters are updated. This is used to discard older connector parameters.",
+																																	},
+																																},
+																															},
+																														},
+																														"allowed_ip_addresses": &schema.Schema{
+																															Type:        schema.TypeList,
+																															Computed:    true,
+																															Description: "Specifies the list of IP Addresses on the registered source to be exclusively allowed for doing any type of IO operations.",
+																															Elem: &schema.Schema{
+																																Type: schema.TypeString,
+																															},
+																														},
+																														"authentication_error_message": &schema.Schema{
+																															Type:        schema.TypeString,
+																															Computed:    true,
+																															Description: "Specifies an authentication error message. This indicates the given credentials are rejected and the registration of the source is not successful.",
+																														},
+																														"authentication_status": &schema.Schema{
+																															Type:        schema.TypeString,
+																															Computed:    true,
+																															Description: "Specifies the status of the authenticating to the Protection Source when registering it with Cohesity Cluster.",
+																														},
+																														"blacklisted_ip_addresses": &schema.Schema{
+																															Type:        schema.TypeList,
+																															Computed:    true,
+																															Description: "This field is deprecated. Use DeniedIpAddresses instead.",
+																															Elem: &schema.Schema{
+																																Type: schema.TypeString,
+																															},
+																														},
+																														"denied_ip_addresses": &schema.Schema{
+																															Type:        schema.TypeList,
+																															Computed:    true,
+																															Description: "Specifies the list of IP Addresses on the registered source to be denied for doing any type of IO operations.",
+																															Elem: &schema.Schema{
+																																Type: schema.TypeString,
+																															},
+																														},
+																														"environments": &schema.Schema{
+																															Type:        schema.TypeList,
+																															Computed:    true,
+																															Description: "Specifies a list of applications environment that are registered with this Protection Source such as 'kSQL'. Supported environment types such as 'kView', 'kSQL', 'kVMware', etc.",
+																															Elem: &schema.Schema{
+																																Type: schema.TypeString,
+																															},
+																														},
+																														"is_db_authenticated": &schema.Schema{
+																															Type:        schema.TypeBool,
+																															Computed:    true,
+																															Description: "Specifies if application entity dbAuthenticated or not.",
+																														},
+																														"is_storage_array_snapshot_enabled": &schema.Schema{
+																															Type:        schema.TypeBool,
+																															Computed:    true,
+																															Description: "Specifies if this source entity has enabled storage array snapshot or not.",
+																														},
+																														"link_vms_across_vcenter": &schema.Schema{
+																															Type:        schema.TypeBool,
+																															Computed:    true,
+																															Description: "Specifies if the VM linking feature is enabled for this VCenter This means that VMs present in this VCenter which earlier belonged to some other VCenter(also registerd on same cluster) and were migrated, will be linked during EH refresh. This will enable preserving snapshot chains for migrated VMs.",
+																														},
+																														"minimum_free_space_gb": &schema.Schema{
+																															Type:        schema.TypeInt,
+																															Computed:    true,
+																															Description: "Specifies the minimum free space in GiB of the space expected to be available on the datastore where the virtual disks of the VM being backed up. If the amount of free space(in GiB) is lower than the value given by this field, backup will be aborted. Note that this field is applicable only to 'kVMware' type of environments.",
+																														},
+																														"minimum_free_space_percent": &schema.Schema{
+																															Type:        schema.TypeInt,
+																															Computed:    true,
+																															Description: "Specifies the minimum free space in percentage of the space expected to be available on the datastore where the virtual disks of the VM being backed up. If the amount of free space(in percentage) is lower than the value given by this field, backup will be aborted. Note that this field is applicable only to 'kVMware' type of environments.",
+																														},
+																														"password": &schema.Schema{
+																															Type:        schema.TypeString,
+																															Computed:    true,
+																															Description: "Specifies password of the username to access the target source.",
+																														},
+																														"physical_params": &schema.Schema{
+																															Type:        schema.TypeList,
+																															Computed:    true,
+																															Description: "Specifies the parameters required to register Application Servers running in a Protection Source specific to a physical adapter.",
+																															Elem: &schema.Resource{
+																																Schema: map[string]*schema.Schema{
+																																	"applications": &schema.Schema{
+																																		Type:        schema.TypeList,
+																																		Computed:    true,
+																																		Description: "Specifies the types of applications such as 'kSQL', 'kExchange', 'kAD' running on the Protection Source. Supported environment types such as 'kView', 'kSQL', 'kVMware', etc.",
+																																		Elem: &schema.Schema{
+																																			Type: schema.TypeString,
+																																		},
+																																	},
+																																	"password": &schema.Schema{
+																																		Type:        schema.TypeString,
+																																		Computed:    true,
+																																		Description: "Specifies password of the username to access the target source.",
+																																	},
+																																	"throttling_config": &schema.Schema{
+																																		Type:        schema.TypeList,
+																																		Computed:    true,
+																																		Description: "Specifies the source side throttling configuration.",
+																																		Elem: &schema.Resource{
+																																			Schema: map[string]*schema.Schema{
+																																				"cpu_throttling_config": &schema.Schema{
+																																					Type:        schema.TypeList,
+																																					Computed:    true,
+																																					Description: "Specifies the Throttling Configuration Parameters.",
+																																					Elem: &schema.Resource{
+																																						Schema: map[string]*schema.Schema{
+																																							"fixed_threshold": &schema.Schema{
+																																								Type:        schema.TypeInt,
+																																								Computed:    true,
+																																								Description: "Fixed baseline threshold for throttling. This is mandatory for any other throttling type than kNoThrottling.",
+																																							},
+																																							"pattern_type": &schema.Schema{
+																																								Type:        schema.TypeString,
+																																								Computed:    true,
+																																								Description: "Type of the throttling pattern. 'kNoThrottling' indicates that throttling is not in force. 'kBaseThrottling' indicates indicates a constant base level throttling. 'kFixed' indicates a constant base level throttling.",
+																																							},
+																																							"throttling_windows": &schema.Schema{
+																																								Type:        schema.TypeList,
+																																								Computed:    true,
+																																								Description: "Specifies the Throttling Window Parameters Definition.",
+																																								Elem: &schema.Resource{
+																																									Schema: map[string]*schema.Schema{
+																																										"day_time_window": &schema.Schema{
+																																											Type:        schema.TypeList,
+																																											Computed:    true,
+																																											Description: "Specifies the Day Time Window Parameters.",
+																																											Elem: &schema.Resource{
+																																												Schema: map[string]*schema.Schema{
+																																													"end_time": &schema.Schema{
+																																														Type:        schema.TypeList,
+																																														Computed:    true,
+																																														Description: "Specifies the Day Time Parameters.",
+																																														Elem: &schema.Resource{
+																																															Schema: map[string]*schema.Schema{
+																																																"day": &schema.Schema{
+																																																	Type:        schema.TypeString,
+																																																	Computed:    true,
+																																																	Description: "Specifies the day of the week (such as 'kMonday') for scheduling throttling. Specifies a day in a week such as 'kSunday', 'kMonday', etc.",
+																																																},
+																																																"time": &schema.Schema{
+																																																	Type:        schema.TypeList,
+																																																	Computed:    true,
+																																																	Description: "Specifies the time in hours and minutes.",
+																																																	Elem: &schema.Resource{
+																																																		Schema: map[string]*schema.Schema{
+																																																			"hour": &schema.Schema{
+																																																				Type:        schema.TypeInt,
+																																																				Computed:    true,
+																																																				Description: "Specifies the hour of this time.",
+																																																			},
+																																																			"minute": &schema.Schema{
+																																																				Type:        schema.TypeInt,
+																																																				Computed:    true,
+																																																				Description: "Specifies the minute of this time.",
+																																																			},
+																																																		},
+																																																	},
+																																																},
+																																															},
+																																														},
+																																													},
+																																													"start_time": &schema.Schema{
+																																														Type:        schema.TypeList,
+																																														Computed:    true,
+																																														Description: "Specifies the Day Time Parameters.",
+																																														Elem: &schema.Resource{
+																																															Schema: map[string]*schema.Schema{
+																																																"day": &schema.Schema{
+																																																	Type:        schema.TypeString,
+																																																	Computed:    true,
+																																																	Description: "Specifies the day of the week (such as 'kMonday') for scheduling throttling. Specifies a day in a week such as 'kSunday', 'kMonday', etc.",
+																																																},
+																																																"time": &schema.Schema{
+																																																	Type:        schema.TypeList,
+																																																	Computed:    true,
+																																																	Description: "Specifies the time in hours and minutes.",
+																																																	Elem: &schema.Resource{
+																																																		Schema: map[string]*schema.Schema{
+																																																			"hour": &schema.Schema{
+																																																				Type:        schema.TypeInt,
+																																																				Computed:    true,
+																																																				Description: "Specifies the hour of this time.",
+																																																			},
+																																																			"minute": &schema.Schema{
+																																																				Type:        schema.TypeInt,
+																																																				Computed:    true,
+																																																				Description: "Specifies the minute of this time.",
+																																																			},
+																																																		},
+																																																	},
+																																																},
+																																															},
+																																														},
+																																													},
+																																												},
+																																											},
+																																										},
+																																										"threshold": &schema.Schema{
+																																											Type:        schema.TypeInt,
+																																											Computed:    true,
+																																											Description: "Throttling threshold applicable in the window.",
+																																										},
+																																									},
+																																								},
+																																							},
+																																						},
+																																					},
+																																				},
+																																				"network_throttling_config": &schema.Schema{
+																																					Type:        schema.TypeList,
+																																					Computed:    true,
+																																					Description: "Specifies the Throttling Configuration Parameters.",
+																																					Elem: &schema.Resource{
+																																						Schema: map[string]*schema.Schema{
+																																							"fixed_threshold": &schema.Schema{
+																																								Type:        schema.TypeInt,
+																																								Computed:    true,
+																																								Description: "Fixed baseline threshold for throttling. This is mandatory for any other throttling type than kNoThrottling.",
+																																							},
+																																							"pattern_type": &schema.Schema{
+																																								Type:        schema.TypeString,
+																																								Computed:    true,
+																																								Description: "Type of the throttling pattern. 'kNoThrottling' indicates that throttling is not in force. 'kBaseThrottling' indicates indicates a constant base level throttling. 'kFixed' indicates a constant base level throttling.",
+																																							},
+																																							"throttling_windows": &schema.Schema{
+																																								Type:        schema.TypeList,
+																																								Computed:    true,
+																																								Description: "Specifies the Throttling Window Parameters Definition.",
+																																								Elem: &schema.Resource{
+																																									Schema: map[string]*schema.Schema{
+																																										"day_time_window": &schema.Schema{
+																																											Type:        schema.TypeList,
+																																											Computed:    true,
+																																											Description: "Specifies the Day Time Window Parameters.",
+																																											Elem: &schema.Resource{
+																																												Schema: map[string]*schema.Schema{
+																																													"end_time": &schema.Schema{
+																																														Type:        schema.TypeList,
+																																														Computed:    true,
+																																														Description: "Specifies the Day Time Parameters.",
+																																														Elem: &schema.Resource{
+																																															Schema: map[string]*schema.Schema{
+																																																"day": &schema.Schema{
+																																																	Type:        schema.TypeString,
+																																																	Computed:    true,
+																																																	Description: "Specifies the day of the week (such as 'kMonday') for scheduling throttling. Specifies a day in a week such as 'kSunday', 'kMonday', etc.",
+																																																},
+																																																"time": &schema.Schema{
+																																																	Type:        schema.TypeList,
+																																																	Computed:    true,
+																																																	Description: "Specifies the time in hours and minutes.",
+																																																	Elem: &schema.Resource{
+																																																		Schema: map[string]*schema.Schema{
+																																																			"hour": &schema.Schema{
+																																																				Type:        schema.TypeInt,
+																																																				Computed:    true,
+																																																				Description: "Specifies the hour of this time.",
+																																																			},
+																																																			"minute": &schema.Schema{
+																																																				Type:        schema.TypeInt,
+																																																				Computed:    true,
+																																																				Description: "Specifies the minute of this time.",
+																																																			},
+																																																		},
+																																																	},
+																																																},
+																																															},
+																																														},
+																																													},
+																																													"start_time": &schema.Schema{
+																																														Type:        schema.TypeList,
+																																														Computed:    true,
+																																														Description: "Specifies the Day Time Parameters.",
+																																														Elem: &schema.Resource{
+																																															Schema: map[string]*schema.Schema{
+																																																"day": &schema.Schema{
+																																																	Type:        schema.TypeString,
+																																																	Computed:    true,
+																																																	Description: "Specifies the day of the week (such as 'kMonday') for scheduling throttling. Specifies a day in a week such as 'kSunday', 'kMonday', etc.",
+																																																},
+																																																"time": &schema.Schema{
+																																																	Type:        schema.TypeList,
+																																																	Computed:    true,
+																																																	Description: "Specifies the time in hours and minutes.",
+																																																	Elem: &schema.Resource{
+																																																		Schema: map[string]*schema.Schema{
+																																																			"hour": &schema.Schema{
+																																																				Type:        schema.TypeInt,
+																																																				Computed:    true,
+																																																				Description: "Specifies the hour of this time.",
+																																																			},
+																																																			"minute": &schema.Schema{
+																																																				Type:        schema.TypeInt,
+																																																				Computed:    true,
+																																																				Description: "Specifies the minute of this time.",
+																																																			},
+																																																		},
+																																																	},
+																																																},
+																																															},
+																																														},
+																																													},
+																																												},
+																																											},
+																																										},
+																																										"threshold": &schema.Schema{
+																																											Type:        schema.TypeInt,
+																																											Computed:    true,
+																																											Description: "Throttling threshold applicable in the window.",
+																																										},
+																																									},
+																																								},
+																																							},
+																																						},
+																																					},
+																																				},
+																																			},
+																																		},
+																																	},
+																																	"username": &schema.Schema{
+																																		Type:        schema.TypeString,
+																																		Computed:    true,
+																																		Description: "Specifies username to access the target source.",
+																																	},
+																																},
+																															},
+																														},
+																														"progress_monitor_path": &schema.Schema{
+																															Type:        schema.TypeString,
+																															Computed:    true,
+																															Description: "Captures the current progress and pulse details w.r.t to either the registration or refresh.",
+																														},
+																														"refresh_error_message": &schema.Schema{
+																															Type:        schema.TypeString,
+																															Computed:    true,
+																															Description: "Specifies a message if there was any error encountered during the last rebuild of the Protection Source tree. If there was no error during the last rebuild, this field is reset.",
+																														},
+																														"refresh_time_usecs": &schema.Schema{
+																															Type:        schema.TypeInt,
+																															Computed:    true,
+																															Description: "Specifies the Unix epoch time (in microseconds) when the Protection Source tree was most recently fetched and built.",
+																														},
+																														"registered_apps_info": &schema.Schema{
+																															Type:        schema.TypeList,
+																															Computed:    true,
+																															Description: "Specifies information of the applications registered on this protection source.",
+																															Elem: &schema.Resource{
+																																Schema: map[string]*schema.Schema{
+																																	"authentication_error_message": &schema.Schema{
+																																		Type:        schema.TypeString,
+																																		Computed:    true,
+																																		Description: "pecifies an authentication error message. This indicates the given credentials are rejected and the registration of the application is not successful.",
+																																	},
+																																	"authentication_status": &schema.Schema{
+																																		Type:        schema.TypeString,
+																																		Computed:    true,
+																																		Description: "Specifies the status of authenticating to the Protection Source when registering this application with Cohesity Cluster. If the status is 'kFinished' and there is no error, registration is successful. Specifies the status of the authentication during the registration of a Protection Source. 'kPending' indicates the authentication is in progress. 'kScheduled' indicates the authentication is scheduled. 'kFinished' indicates the authentication is completed. 'kRefreshInProgress' indicates the refresh is in progress.",
+																																	},
+																																	"environment": &schema.Schema{
+																																		Type:        schema.TypeString,
+																																		Computed:    true,
+																																		Description: "Specifies the application environment. Supported environment types such as 'kView', 'kSQL', 'kVMware', etc.",
+																																	},
+																																	"host_settings_check_results": &schema.Schema{
+																																		Type:        schema.TypeList,
+																																		Computed:    true,
+																																		Description: "Specifies the list of check results internally performed to verify status of various services such as 'AgnetRunning', 'SQLWriterRunning' etc.",
+																																		Elem: &schema.Resource{
+																																			Schema: map[string]*schema.Schema{
+																																				"check_type": &schema.Schema{
+																																					Type:        schema.TypeString,
+																																					Computed:    true,
+																																					Description: "Specifies the type of the check internally performed. Specifies the type of the host check performed internally. 'kIsAgentPortAccessible' indicates the check for agent port access. 'kIsAgentRunning' indicates the status for the Cohesity agent service. 'kIsSQLWriterRunning' indicates the status for SQLWriter service. 'kAreSQLInstancesRunning' indicates the run status for all the SQL instances in the host. 'kCheckServiceLoginsConfig' checks the privileges and sysadmin status of the logins used by the SQL instance services, Cohesity agent service and the SQLWriter service. 'kCheckSQLFCIVIP' checks whether the SQL FCI is registered with a valid VIP or FQDN. 'kCheckSQLDiskSpace' checks whether volumes containing SQL DBs have at least 10% free space.",
+																																				},
+																																				"result_type": &schema.Schema{
+																																					Type:        schema.TypeString,
+																																					Computed:    true,
+																																					Description: "Specifies the type of the result returned after performing the internal host check. Specifies the type of the host check result performed internally. 'kPass' indicates that the respective check was successful. 'kFail' indicates that the respective check failed as some mandatory setting is not met 'kWarning' indicates that the respective check has warning as certain non-mandatory setting is not met.",
+																																				},
+																																				"user_message": &schema.Schema{
+																																					Type:        schema.TypeString,
+																																					Computed:    true,
+																																					Description: "Specifies a descriptive message for failed/warning types.",
+																																				},
+																																			},
+																																		},
+																																	},
+																																	"refresh_error_message": &schema.Schema{
+																																		Type:        schema.TypeString,
+																																		Computed:    true,
+																																		Description: "Specifies a message if there was any error encountered during the last rebuild of the application tree. If there was no error during the last rebuild, this field is reset.",
+																																	},
+																																},
+																															},
+																														},
+																														"registration_time_usecs": &schema.Schema{
+																															Type:        schema.TypeInt,
+																															Computed:    true,
+																															Description: "Specifies the Unix epoch time (in microseconds) when the Protection Source was registered.",
+																														},
+																														"subnets": &schema.Schema{
+																															Type:        schema.TypeList,
+																															Computed:    true,
+																															Description: "Specifies the list of subnets added during creation or updation of vmare source. Currently, this field will only be populated in case of VMware registration.",
+																															Elem: &schema.Resource{
+																																Schema: map[string]*schema.Schema{
+																																	"component": &schema.Schema{
+																																		Type:        schema.TypeString,
+																																		Computed:    true,
+																																		Description: "Component that has reserved the subnet.",
+																																	},
+																																	"description": &schema.Schema{
+																																		Type:        schema.TypeString,
+																																		Computed:    true,
+																																		Description: "Description of the subnet.",
+																																	},
+																																	"id": &schema.Schema{
+																																		Type:        schema.TypeFloat,
+																																		Computed:    true,
+																																		Description: "ID of the subnet.",
+																																	},
+																																	"ip": &schema.Schema{
+																																		Type:        schema.TypeString,
+																																		Computed:    true,
+																																		Description: "Specifies either an IPv6 address or an IPv4 address.",
+																																	},
+																																	"netmask_bits": &schema.Schema{
+																																		Type:        schema.TypeFloat,
+																																		Computed:    true,
+																																		Description: "netmaskBits.",
+																																	},
+																																	"netmask_ip4": &schema.Schema{
+																																		Type:        schema.TypeString,
+																																		Computed:    true,
+																																		Description: "Specifies the netmask using an IP4 address. The netmask can only be set using netmaskIp4 if the IP address is an IPv4 address.",
+																																	},
+																																	"nfs_access": &schema.Schema{
+																																		Type:        schema.TypeString,
+																																		Computed:    true,
+																																		Description: "Component that has reserved the subnet.",
+																																	},
+																																	"nfs_all_squash": &schema.Schema{
+																																		Type:        schema.TypeBool,
+																																		Computed:    true,
+																																		Description: "Specifies whether all clients from this subnet can map view with view_all_squash_uid/view_all_squash_gid configured in the view.",
+																																	},
+																																	"nfs_root_squash": &schema.Schema{
+																																		Type:        schema.TypeBool,
+																																		Computed:    true,
+																																		Description: "Specifies whether clients from this subnet can mount as root on NFS.",
+																																	},
+																																	"s3_access": &schema.Schema{
+																																		Type:        schema.TypeString,
+																																		Computed:    true,
+																																		Description: "Specifies whether clients from this subnet can access using S3 protocol. Protocol access level. 'kDisabled' indicates Protocol access level 'Disabled' 'kReadOnly' indicates Protocol access level 'ReadOnly' 'kReadWrite' indicates Protocol access level 'ReadWrite'.",
+																																	},
+																																	"smb_access": &schema.Schema{
+																																		Type:        schema.TypeString,
+																																		Computed:    true,
+																																		Description: "Specifies whether clients from this subnet can mount using SMB protocol. Protocol access level. 'kDisabled' indicates Protocol access level 'Disabled' 'kReadOnly' indicates Protocol access level 'ReadOnly' 'kReadWrite' indicates Protocol access level 'ReadWrite'.",
+																																	},
+																																	"tenant_id": &schema.Schema{
+																																		Type:        schema.TypeString,
+																																		Computed:    true,
+																																		Description: "Specifies the unique id of the tenant.",
+																																	},
+																																},
+																															},
+																														},
+																														"throttling_policy": &schema.Schema{
+																															Type:        schema.TypeList,
+																															Computed:    true,
+																															Description: "Specifies the throttling policy for a registered Protection Source.",
+																															Elem: &schema.Resource{
+																																Schema: map[string]*schema.Schema{
+																																	"enforce_max_streams": &schema.Schema{
+																																		Type:        schema.TypeBool,
+																																		Computed:    true,
+																																		Description: "Specifies whether datastore streams are configured for all datastores that are part of the registered entity. If set to true, number of streams from Cohesity cluster to the registered entity will be limited to the value set for maxConcurrentStreams. If not set or set to false, there is no max limit for the number of concurrent streams.",
+																																	},
+																																	"enforce_registered_source_max_backups": &schema.Schema{
+																																		Type:        schema.TypeBool,
+																																		Computed:    true,
+																																		Description: "Specifies whether no. of backups are configured for the registered entity. If set to true, number of backups made by Cohesity cluster in the registered entity will be limited to the value set for RegisteredSourceMaxConcurrentBackups. If not set or set to false, there is no max limit for the number of concurrent backups.",
+																																	},
+																																	"is_enabled": &schema.Schema{
+																																		Type:        schema.TypeBool,
+																																		Computed:    true,
+																																		Description: "Indicates whether read operations to the datastores, which are part of the registered Protection Source, are throttled.",
+																																	},
+																																	"latency_thresholds": &schema.Schema{
+																																		Type:        schema.TypeList,
+																																		Computed:    true,
+																																		Description: "Specifies latency thresholds that trigger throttling for all datastores found in the registered Protection Source or specific to one datastore.",
+																																		Elem: &schema.Resource{
+																																			Schema: map[string]*schema.Schema{
+																																				"active_task_msecs": &schema.Schema{
+																																					Type:        schema.TypeInt,
+																																					Computed:    true,
+																																					Description: "If the latency of a datastore is above this value, existing backup tasks using the datastore are throttled.",
+																																				},
+																																				"new_task_msecs": &schema.Schema{
+																																					Type:        schema.TypeInt,
+																																					Computed:    true,
+																																					Description: "If the latency of a datastore is above this value, then new backup tasks using the datastore will not be started.",
+																																				},
+																																			},
+																																		},
+																																	},
+																																	"max_concurrent_streams": &schema.Schema{
+																																		Type:        schema.TypeFloat,
+																																		Computed:    true,
+																																		Description: "Specifies the limit on the number of streams Cohesity cluster will make concurrently to the datastores of the registered entity. This limit is enforced only when the flag enforceMaxStreams is set to true.",
+																																	},
+																																	"nas_source_params": &schema.Schema{
+																																		Type:        schema.TypeList,
+																																		Computed:    true,
+																																		Description: "Specifies the NAS specific source throttling parameters during source registration or during backup of the source.",
+																																		Elem: &schema.Resource{
+																																			Schema: map[string]*schema.Schema{
+																																				"max_parallel_metadata_fetch_full_percentage": &schema.Schema{
+																																					Type:        schema.TypeFloat,
+																																					Computed:    true,
+																																					Description: "Specifies the percentage value of maximum concurrent metadata to be fetched during full backup of the source.",
+																																				},
+																																				"max_parallel_metadata_fetch_incremental_percentage": &schema.Schema{
+																																					Type:        schema.TypeFloat,
+																																					Computed:    true,
+																																					Description: "Specifies the percentage value of maximum concurrent metadata to be fetched during incremental backup of the source.",
+																																				},
+																																				"max_parallel_read_write_full_percentage": &schema.Schema{
+																																					Type:        schema.TypeFloat,
+																																					Computed:    true,
+																																					Description: "Specifies the percentage value of maximum concurrent IO during full backup of the source.",
+																																				},
+																																				"max_parallel_read_write_incremental_percentage": &schema.Schema{
+																																					Type:        schema.TypeFloat,
+																																					Computed:    true,
+																																					Description: "Specifies the percentage value of maximum concurrent IO during incremental backup of the source.",
+																																				},
+																																			},
+																																		},
+																																	},
+																																	"registered_source_max_concurrent_backups": &schema.Schema{
+																																		Type:        schema.TypeFloat,
+																																		Computed:    true,
+																																		Description: "Specifies the limit on the number of backups Cohesity cluster will make concurrently to the registered entity. This limit is enforced only when the flag enforceRegisteredSourceMaxBackups is set to true.",
+																																	},
+																																	"storage_array_snapshot_config": &schema.Schema{
+																																		Type:        schema.TypeList,
+																																		Computed:    true,
+																																		Description: "Specifies Storage Array Snapshot Configuration.",
+																																		Elem: &schema.Resource{
+																																			Schema: map[string]*schema.Schema{
+																																				"is_max_snapshots_config_enabled": &schema.Schema{
+																																					Type:        schema.TypeBool,
+																																					Computed:    true,
+																																					Description: "Specifies if the storage array snapshot max snapshots config is enabled or not.",
+																																				},
+																																				"is_max_space_config_enabled": &schema.Schema{
+																																					Type:        schema.TypeBool,
+																																					Computed:    true,
+																																					Description: "Specifies if the storage array snapshot max space config is enabled or not.",
+																																				},
+																																				"storage_array_snapshot_max_space_config": &schema.Schema{
+																																					Type:        schema.TypeList,
+																																					Computed:    true,
+																																					Description: "Specifies Storage Array Snapshot Max Space Config.",
+																																					Elem: &schema.Resource{
+																																						Schema: map[string]*schema.Schema{
+																																							"max_snapshot_space_percentage": &schema.Schema{
+																																								Type:        schema.TypeFloat,
+																																								Computed:    true,
+																																								Description: "Max number of storage snapshots allowed per volume/lun.",
+																																							},
+																																						},
+																																					},
+																																				},
+																																				"storage_array_snapshot_throttling_policies": &schema.Schema{
+																																					Type:        schema.TypeList,
+																																					Computed:    true,
+																																					Description: "Specifies throttling policies configured for individual volume/lun.",
+																																					Elem: &schema.Resource{
+																																						Schema: map[string]*schema.Schema{
+																																							"id": &schema.Schema{
+																																								Type:        schema.TypeInt,
+																																								Computed:    true,
+																																								Description: "Specifies the volume id of the storage array snapshot config.",
+																																							},
+																																							"is_max_snapshots_config_enabled": &schema.Schema{
+																																								Type:        schema.TypeBool,
+																																								Computed:    true,
+																																								Description: "Specifies if the storage array snapshot max snapshots config is enabled or not.",
+																																							},
+																																							"is_max_space_config_enabled": &schema.Schema{
+																																								Type:        schema.TypeBool,
+																																								Computed:    true,
+																																								Description: "Specifies if the storage array snapshot max space config is enabled or not.",
+																																							},
+																																							"max_snapshot_config": &schema.Schema{
+																																								Type:        schema.TypeList,
+																																								Computed:    true,
+																																								Description: "Specifies Storage Array Snapshot Max Snapshots Config.",
+																																								Elem: &schema.Resource{
+																																									Schema: map[string]*schema.Schema{
+																																										"max_snapshots": &schema.Schema{
+																																											Type:        schema.TypeFloat,
+																																											Computed:    true,
+																																											Description: "Max number of storage snapshots allowed per volume/lun.",
+																																										},
+																																									},
+																																								},
+																																							},
+																																							"max_space_config": &schema.Schema{
+																																								Type:        schema.TypeList,
+																																								Computed:    true,
+																																								Description: "Specifies Storage Array Snapshot Max Space Config.",
+																																								Elem: &schema.Resource{
+																																									Schema: map[string]*schema.Schema{
+																																										"max_snapshot_space_percentage": &schema.Schema{
+																																											Type:        schema.TypeFloat,
+																																											Computed:    true,
+																																											Description: "Max number of storage snapshots allowed per volume/lun.",
+																																										},
+																																									},
+																																								},
+																																							},
+																																						},
+																																					},
+																																				},
+																																			},
+																																		},
+																																	},
+																																},
+																															},
+																														},
+																														"throttling_policy_overrides": &schema.Schema{
+																															Type:        schema.TypeList,
+																															Computed:    true,
+																															Description: "Specifies throttling policy override for a Datastore in a registered entity.",
+																															Elem: &schema.Resource{
+																																Schema: map[string]*schema.Schema{
+																																	"datastore_id": &schema.Schema{
+																																		Type:        schema.TypeInt,
+																																		Computed:    true,
+																																		Description: "Specifies the Protection Source id of the Datastore.",
+																																	},
+																																	"datastore_name": &schema.Schema{
+																																		Type:        schema.TypeString,
+																																		Computed:    true,
+																																		Description: "Specifies the display name of the Datastore.",
+																																	},
+																																	"throttling_policy": &schema.Schema{
+																																		Type:        schema.TypeList,
+																																		Computed:    true,
+																																		Description: "Specifies the throttling policy for a registered Protection Source.",
+																																		Elem: &schema.Resource{
+																																			Schema: map[string]*schema.Schema{
+																																				"enforce_max_streams": &schema.Schema{
+																																					Type:        schema.TypeBool,
+																																					Computed:    true,
+																																					Description: "Specifies whether datastore streams are configured for all datastores that are part of the registered entity. If set to true, number of streams from Cohesity cluster to the registered entity will be limited to the value set for maxConcurrentStreams. If not set or set to false, there is no max limit for the number of concurrent streams.",
+																																				},
+																																				"enforce_registered_source_max_backups": &schema.Schema{
+																																					Type:        schema.TypeBool,
+																																					Computed:    true,
+																																					Description: "Specifies whether no. of backups are configured for the registered entity. If set to true, number of backups made by Cohesity cluster in the registered entity will be limited to the value set for RegisteredSourceMaxConcurrentBackups. If not set or set to false, there is no max limit for the number of concurrent backups.",
+																																				},
+																																				"is_enabled": &schema.Schema{
+																																					Type:        schema.TypeBool,
+																																					Computed:    true,
+																																					Description: "Indicates whether read operations to the datastores, which are part of the registered Protection Source, are throttled.",
+																																				},
+																																				"latency_thresholds": &schema.Schema{
+																																					Type:        schema.TypeList,
+																																					Computed:    true,
+																																					Description: "Specifies latency thresholds that trigger throttling for all datastores found in the registered Protection Source or specific to one datastore.",
+																																					Elem: &schema.Resource{
+																																						Schema: map[string]*schema.Schema{
+																																							"active_task_msecs": &schema.Schema{
+																																								Type:        schema.TypeInt,
+																																								Computed:    true,
+																																								Description: "If the latency of a datastore is above this value, existing backup tasks using the datastore are throttled.",
+																																							},
+																																							"new_task_msecs": &schema.Schema{
+																																								Type:        schema.TypeInt,
+																																								Computed:    true,
+																																								Description: "If the latency of a datastore is above this value, then new backup tasks using the datastore will not be started.",
+																																							},
+																																						},
+																																					},
+																																				},
+																																				"max_concurrent_streams": &schema.Schema{
+																																					Type:        schema.TypeFloat,
+																																					Computed:    true,
+																																					Description: "Specifies the limit on the number of streams Cohesity cluster will make concurrently to the datastores of the registered entity. This limit is enforced only when the flag enforceMaxStreams is set to true.",
+																																				},
+																																				"nas_source_params": &schema.Schema{
+																																					Type:        schema.TypeList,
+																																					Computed:    true,
+																																					Description: "Specifies the NAS specific source throttling parameters during source registration or during backup of the source.",
+																																					Elem: &schema.Resource{
+																																						Schema: map[string]*schema.Schema{
+																																							"max_parallel_metadata_fetch_full_percentage": &schema.Schema{
+																																								Type:        schema.TypeFloat,
+																																								Computed:    true,
+																																								Description: "Specifies the percentage value of maximum concurrent metadata to be fetched during full backup of the source.",
+																																							},
+																																							"max_parallel_metadata_fetch_incremental_percentage": &schema.Schema{
+																																								Type:        schema.TypeFloat,
+																																								Computed:    true,
+																																								Description: "Specifies the percentage value of maximum concurrent metadata to be fetched during incremental backup of the source.",
+																																							},
+																																							"max_parallel_read_write_full_percentage": &schema.Schema{
+																																								Type:        schema.TypeFloat,
+																																								Computed:    true,
+																																								Description: "Specifies the percentage value of maximum concurrent IO during full backup of the source.",
+																																							},
+																																							"max_parallel_read_write_incremental_percentage": &schema.Schema{
+																																								Type:        schema.TypeFloat,
+																																								Computed:    true,
+																																								Description: "Specifies the percentage value of maximum concurrent IO during incremental backup of the source.",
+																																							},
+																																						},
+																																					},
+																																				},
+																																				"registered_source_max_concurrent_backups": &schema.Schema{
+																																					Type:        schema.TypeFloat,
+																																					Computed:    true,
+																																					Description: "Specifies the limit on the number of backups Cohesity cluster will make concurrently to the registered entity. This limit is enforced only when the flag enforceRegisteredSourceMaxBackups is set to true.",
+																																				},
+																																				"storage_array_snapshot_config": &schema.Schema{
+																																					Type:        schema.TypeList,
+																																					Computed:    true,
+																																					Description: "Specifies Storage Array Snapshot Configuration.",
+																																					Elem: &schema.Resource{
+																																						Schema: map[string]*schema.Schema{
+																																							"is_max_snapshots_config_enabled": &schema.Schema{
+																																								Type:        schema.TypeBool,
+																																								Computed:    true,
+																																								Description: "Specifies if the storage array snapshot max snapshots config is enabled or not.",
+																																							},
+																																							"is_max_space_config_enabled": &schema.Schema{
+																																								Type:        schema.TypeBool,
+																																								Computed:    true,
+																																								Description: "Specifies if the storage array snapshot max space config is enabled or not.",
+																																							},
+																																							"storage_array_snapshot_max_space_config": &schema.Schema{
+																																								Type:        schema.TypeList,
+																																								Computed:    true,
+																																								Description: "Specifies Storage Array Snapshot Max Space Config.",
+																																								Elem: &schema.Resource{
+																																									Schema: map[string]*schema.Schema{
+																																										"max_snapshot_space_percentage": &schema.Schema{
+																																											Type:        schema.TypeFloat,
+																																											Computed:    true,
+																																											Description: "Max number of storage snapshots allowed per volume/lun.",
+																																										},
+																																									},
+																																								},
+																																							},
+																																							"storage_array_snapshot_throttling_policies": &schema.Schema{
+																																								Type:        schema.TypeList,
+																																								Computed:    true,
+																																								Description: "Specifies throttling policies configured for individual volume/lun.",
+																																								Elem: &schema.Resource{
+																																									Schema: map[string]*schema.Schema{
+																																										"id": &schema.Schema{
+																																											Type:        schema.TypeInt,
+																																											Computed:    true,
+																																											Description: "Specifies the volume id of the storage array snapshot config.",
+																																										},
+																																										"is_max_snapshots_config_enabled": &schema.Schema{
+																																											Type:        schema.TypeBool,
+																																											Computed:    true,
+																																											Description: "Specifies if the storage array snapshot max snapshots config is enabled or not.",
+																																										},
+																																										"is_max_space_config_enabled": &schema.Schema{
+																																											Type:        schema.TypeBool,
+																																											Computed:    true,
+																																											Description: "Specifies if the storage array snapshot max space config is enabled or not.",
+																																										},
+																																										"max_snapshot_config": &schema.Schema{
+																																											Type:        schema.TypeList,
+																																											Computed:    true,
+																																											Description: "Specifies Storage Array Snapshot Max Snapshots Config.",
+																																											Elem: &schema.Resource{
+																																												Schema: map[string]*schema.Schema{
+																																													"max_snapshots": &schema.Schema{
+																																														Type:        schema.TypeFloat,
+																																														Computed:    true,
+																																														Description: "Max number of storage snapshots allowed per volume/lun.",
+																																													},
+																																												},
+																																											},
+																																										},
+																																										"max_space_config": &schema.Schema{
+																																											Type:        schema.TypeList,
+																																											Computed:    true,
+																																											Description: "Specifies Storage Array Snapshot Max Space Config.",
+																																											Elem: &schema.Resource{
+																																												Schema: map[string]*schema.Schema{
+																																													"max_snapshot_space_percentage": &schema.Schema{
+																																														Type:        schema.TypeFloat,
+																																														Computed:    true,
+																																														Description: "Max number of storage snapshots allowed per volume/lun.",
+																																													},
+																																												},
+																																											},
+																																										},
+																																									},
+																																								},
+																																							},
+																																						},
+																																					},
+																																				},
+																																			},
+																																		},
+																																	},
+																																},
+																															},
+																														},
+																														"use_o_auth_for_exchange_online": &schema.Schema{
+																															Type:        schema.TypeBool,
+																															Computed:    true,
+																															Description: "Specifies whether OAuth should be used for authentication in case of Exchange Online.",
+																														},
+																														"use_vm_bios_uuid": &schema.Schema{
+																															Type:        schema.TypeBool,
+																															Computed:    true,
+																															Description: "Specifies if registered vCenter is using BIOS UUID to track virtual machines.",
+																														},
+																														"user_messages": &schema.Schema{
+																															Type:        schema.TypeList,
+																															Computed:    true,
+																															Description: "Specifies the additional details encountered during registration. Though the registration may succeed, user messages imply the host environment requires some cleanup or fixing.",
+																															Elem: &schema.Schema{
+																																Type: schema.TypeString,
+																															},
+																														},
+																														"username": &schema.Schema{
+																															Type:        schema.TypeString,
+																															Computed:    true,
+																															Description: "Specifies username to access the target source.",
+																														},
+																														"vlan_params": &schema.Schema{
+																															Type:        schema.TypeList,
+																															Computed:    true,
+																															Description: "Specifies the VLAN configuration for Recovery.",
+																															Elem: &schema.Resource{
+																																Schema: map[string]*schema.Schema{
+																																	"vlan": &schema.Schema{
+																																		Type:        schema.TypeFloat,
+																																		Computed:    true,
+																																		Description: "Specifies the VLAN to use for mounting Cohesity's view on the remote host. If specified, Cohesity hostname or the IP address on this VLAN is used.",
+																																	},
+																																	"disable_vlan": &schema.Schema{
+																																		Type:        schema.TypeBool,
+																																		Computed:    true,
+																																		Description: "Specifies whether to use the VIPs even when VLANs are configured on the Cluster. If configured, VLAN IP addresses are used by default. If VLANs are not configured, this flag is ignored. Set this flag to true to force using the partition VIPs when VLANs are configured on the Cluster.",
+																																	},
+																																	"interface_name": &schema.Schema{
+																																		Type:        schema.TypeString,
+																																		Computed:    true,
+																																		Description: "Specifies the physical interface group name to use for mounting Cohesity's view on the remote host. If specified, Cohesity hostname or the IP address on this VLAN is used.",
+																																	},
+																																},
+																															},
+																														},
+																														"warning_messages": &schema.Schema{
+																															Type:        schema.TypeList,
+																															Computed:    true,
+																															Description: "Specifies a list of warnings encountered during registration. Though the registration may succeed, warning messages imply the host environment requires some cleanup or fixing.",
+																															Elem: &schema.Schema{
+																																Type: schema.TypeString,
+																															},
+																														},
+																													},
+																												},
+																											},
+																											"source_side_dedup_enabled": &schema.Schema{
+																												Type:        schema.TypeBool,
+																												Computed:    true,
+																												Description: "Specifies whether source side dedup is enabled or not.",
+																											},
+																											"status": &schema.Schema{
+																												Type:        schema.TypeString,
+																												Computed:    true,
+																												Description: "Specifies the agent status. Specifies the status of the agent running on a physical source.",
+																											},
+																											"status_message": &schema.Schema{
+																												Type:        schema.TypeString,
+																												Computed:    true,
+																												Description: "Specifies additional details about the agent status.",
+																											},
+																											"upgradability": &schema.Schema{
+																												Type:        schema.TypeString,
+																												Computed:    true,
+																												Description: "Specifies the upgradability of the agent running on the physical server. Specifies the upgradability of the agent running on the physical server.",
+																											},
+																											"upgrade_status": &schema.Schema{
+																												Type:        schema.TypeString,
+																												Computed:    true,
+																												Description: "Specifies the status of the upgrade of the agent on a physical server. Specifies the status of the upgrade of the agent on a physical server.",
+																											},
+																											"upgrade_status_message": &schema.Schema{
+																												Type:        schema.TypeString,
+																												Computed:    true,
+																												Description: "Specifies detailed message about the agent upgrade failure. This field is not set for successful upgrade.",
+																											},
+																											"version": &schema.Schema{
+																												Type:        schema.TypeString,
+																												Computed:    true,
+																												Description: "Specifies the version of the Agent software.",
+																											},
+																											"vol_cbt_info": &schema.Schema{
+																												Type:        schema.TypeList,
+																												Computed:    true,
+																												Description: "CBT version and service state info.",
+																												Elem: &schema.Resource{
+																													Schema: map[string]*schema.Schema{
+																														"file_version": &schema.Schema{
+																															Type:        schema.TypeList,
+																															Computed:    true,
+																															Description: "Subcomponent version. The interpretation of the version is based on operating system.",
+																															Elem: &schema.Resource{
+																																Schema: map[string]*schema.Schema{
+																																	"build_ver": &schema.Schema{
+																																		Type:     schema.TypeFloat,
+																																		Computed: true,
+																																	},
+																																	"major_ver": &schema.Schema{
+																																		Type:     schema.TypeFloat,
+																																		Computed: true,
+																																	},
+																																	"minor_ver": &schema.Schema{
+																																		Type:     schema.TypeFloat,
+																																		Computed: true,
+																																	},
+																																	"revision_num": &schema.Schema{
+																																		Type:     schema.TypeFloat,
+																																		Computed: true,
+																																	},
+																																},
+																															},
+																														},
+																														"is_installed": &schema.Schema{
+																															Type:        schema.TypeBool,
+																															Computed:    true,
+																															Description: "Indicates whether the cbt driver is installed.",
+																														},
+																														"reboot_status": &schema.Schema{
+																															Type:        schema.TypeString,
+																															Computed:    true,
+																															Description: "Indicates whether host is rebooted post VolCBT installation.",
+																														},
+																														"service_state": &schema.Schema{
+																															Type:        schema.TypeList,
+																															Computed:    true,
+																															Description: "Structure to Hold Service Status.",
+																															Elem: &schema.Resource{
+																																Schema: map[string]*schema.Schema{
+																																	"name": &schema.Schema{
+																																		Type:     schema.TypeString,
+																																		Computed: true,
+																																	},
+																																	"state": &schema.Schema{
+																																		Type:     schema.TypeString,
+																																		Computed: true,
+																																	},
+																																},
+																															},
+																														},
+																													},
+																												},
+																											},
+																										},
+																									},
+																								},
+																								"cluster_source_type": &schema.Schema{
+																									Type:        schema.TypeString,
+																									Computed:    true,
+																									Description: "Specifies the type of cluster resource this source represents.",
+																								},
+																								"host_name": &schema.Schema{
+																									Type:        schema.TypeString,
+																									Computed:    true,
+																									Description: "Specifies the hostname.",
+																								},
+																								"host_type": &schema.Schema{
+																									Type:        schema.TypeString,
+																									Computed:    true,
+																									Description: "Specifies the environment type for the host.",
+																								},
+																								"id": &schema.Schema{
+																									Type:        schema.TypeList,
+																									Computed:    true,
+																									Description: "Specifies an id for an object that is unique across Cohesity Clusters. The id is composite of all the ids listed below.",
+																									Elem: &schema.Resource{
+																										Schema: map[string]*schema.Schema{
+																											"cluster_id": &schema.Schema{
+																												Type:        schema.TypeInt,
+																												Computed:    true,
+																												Description: "Specifies the Cohesity Cluster id where the object was created.",
+																											},
+																											"cluster_incarnation_id": &schema.Schema{
+																												Type:        schema.TypeInt,
+																												Computed:    true,
+																												Description: "Specifies an id for the Cohesity Cluster that is generated when a Cohesity Cluster is initially created.",
+																											},
+																											"id": &schema.Schema{
+																												Type:        schema.TypeInt,
+																												Computed:    true,
+																												Description: "Specifies a unique id assigned to an object (such as a Job) by the Cohesity Cluster.",
+																											},
+																										},
+																									},
+																								},
+																								"is_proxy_host": &schema.Schema{
+																									Type:        schema.TypeBool,
+																									Computed:    true,
+																									Description: "Specifies if the physical host is a proxy host.",
+																								},
+																								"memory_size_bytes": &schema.Schema{
+																									Type:        schema.TypeInt,
+																									Computed:    true,
+																									Description: "Specifies the total memory on the host in bytes.",
+																								},
+																								"name": &schema.Schema{
+																									Type:        schema.TypeString,
+																									Computed:    true,
+																									Description: "Specifies a human readable name of the Protection Source.",
+																								},
+																								"networking_info": &schema.Schema{
+																									Type:        schema.TypeList,
+																									Computed:    true,
+																									Description: "Specifies the struct containing information about network addresses configured on the given box. This is needed for dealing with Windows/Oracle Cluster resources that we discover and protect automatically.",
+																									Elem: &schema.Resource{
+																										Schema: map[string]*schema.Schema{
+																											"resource_vec": &schema.Schema{
+																												Type:        schema.TypeList,
+																												Computed:    true,
+																												Description: "The list of resources on the system that are accessible by an IP address.",
+																												Elem: &schema.Resource{
+																													Schema: map[string]*schema.Schema{
+																														"endpoints": &schema.Schema{
+																															Type:        schema.TypeList,
+																															Computed:    true,
+																															Description: "The endpoints by which the resource is accessible.",
+																															Elem: &schema.Resource{
+																																Schema: map[string]*schema.Schema{
+																																	"fqdn": &schema.Schema{
+																																		Type:        schema.TypeString,
+																																		Computed:    true,
+																																		Description: "The Fully Qualified Domain Name.",
+																																	},
+																																	"ipv4_addr": &schema.Schema{
+																																		Type:        schema.TypeString,
+																																		Computed:    true,
+																																		Description: "The IPv4 address.",
+																																	},
+																																	"ipv6_addr": &schema.Schema{
+																																		Type:        schema.TypeString,
+																																		Computed:    true,
+																																		Description: "The IPv6 address.",
+																																	},
+																																},
+																															},
+																														},
+																														"type": &schema.Schema{
+																															Type:        schema.TypeString,
+																															Computed:    true,
+																															Description: "The type of the resource.",
+																														},
+																													},
+																												},
+																											},
+																										},
+																									},
+																								},
+																								"num_processors": &schema.Schema{
+																									Type:        schema.TypeInt,
+																									Computed:    true,
+																									Description: "Specifies the number of processors on the host.",
+																								},
+																								"os_name": &schema.Schema{
+																									Type:        schema.TypeString,
+																									Computed:    true,
+																									Description: "Specifies a human readable name of the OS of the Protection Source.",
+																								},
+																								"type": &schema.Schema{
+																									Type:        schema.TypeString,
+																									Computed:    true,
+																									Description: "Specifies the type of managed Object in a Physical Protection Source. 'kGroup' indicates the EH container.",
+																								},
+																								"vcs_version": &schema.Schema{
+																									Type:        schema.TypeString,
+																									Computed:    true,
+																									Description: "Specifies cluster version for VCS host.",
+																								},
+																								"volumes": &schema.Schema{
+																									Type:        schema.TypeList,
+																									Computed:    true,
+																									Description: "Array of Physical Volumes. Specifies the volumes available on the physical host. These fields are populated only for the kPhysicalHost type.",
+																									Elem: &schema.Resource{
+																										Schema: map[string]*schema.Schema{
+																											"device_path": &schema.Schema{
+																												Type:        schema.TypeString,
+																												Computed:    true,
+																												Description: "Specifies the path to the device that hosts the volume locally.",
+																											},
+																											"guid": &schema.Schema{
+																												Type:        schema.TypeString,
+																												Computed:    true,
+																												Description: "Specifies an id for the Physical Volume.",
+																											},
+																											"is_boot_volume": &schema.Schema{
+																												Type:        schema.TypeBool,
+																												Computed:    true,
+																												Description: "Specifies whether the volume is boot volume.",
+																											},
+																											"is_extended_attributes_supported": &schema.Schema{
+																												Type:        schema.TypeBool,
+																												Computed:    true,
+																												Description: "Specifies whether this volume supports extended attributes (like ACLs) when performing file backups.",
+																											},
+																											"is_protected": &schema.Schema{
+																												Type:        schema.TypeBool,
+																												Computed:    true,
+																												Description: "Specifies if a volume is protected by a Job.",
+																											},
+																											"is_shared_volume": &schema.Schema{
+																												Type:        schema.TypeBool,
+																												Computed:    true,
+																												Description: "Specifies whether the volume is shared volume.",
+																											},
+																											"label": &schema.Schema{
+																												Type:        schema.TypeString,
+																												Computed:    true,
+																												Description: "Specifies a volume label that can be used for displaying additional identifying information about a volume.",
+																											},
+																											"logical_size_bytes": &schema.Schema{
+																												Type:        schema.TypeFloat,
+																												Computed:    true,
+																												Description: "Specifies the logical size of the volume in bytes that is not reduced by change-block tracking, compression and deduplication.",
+																											},
+																											"mount_points": &schema.Schema{
+																												Type:        schema.TypeList,
+																												Computed:    true,
+																												Description: "Specifies the mount points where the volume is mounted, for example- 'C:', '/mnt/foo' etc.",
+																												Elem: &schema.Schema{
+																													Type: schema.TypeString,
+																												},
+																											},
+																											"mount_type": &schema.Schema{
+																												Type:        schema.TypeString,
+																												Computed:    true,
+																												Description: "Specifies mount type of volume e.g. nfs, autofs, ext4 etc.",
+																											},
+																											"network_path": &schema.Schema{
+																												Type:        schema.TypeString,
+																												Computed:    true,
+																												Description: "Specifies the full path to connect to the network attached volume. For example, (IP or hostname):/path/to/share for NFS volumes).",
+																											},
+																											"used_size_bytes": &schema.Schema{
+																												Type:        schema.TypeFloat,
+																												Computed:    true,
+																												Description: "Specifies the size used by the volume in bytes.",
+																											},
+																										},
+																									},
+																								},
+																								"vsswriters": &schema.Schema{
+																									Type:        schema.TypeList,
+																									Computed:    true,
+																									Description: "Specifies vss writer information about a Physical Protection Source.",
+																									Elem: &schema.Resource{
+																										Schema: map[string]*schema.Schema{
+																											"is_writer_excluded": &schema.Schema{
+																												Type:        schema.TypeBool,
+																												Computed:    true,
+																												Description: "If true, the writer will be excluded by default.",
+																											},
+																											"writer_name": &schema.Schema{
+																												Type:        schema.TypeBool,
+																												Computed:    true,
+																												Description: "Specifies the name of the writer.",
+																											},
+																										},
+																									},
+																								},
+																							},
+																						},
+																					},
+																					"sql_protection_source": &schema.Schema{
+																						Type:        schema.TypeList,
+																						Computed:    true,
+																						Description: "Specifies an Object representing one SQL Server instance or database.",
+																						Elem: &schema.Resource{
+																							Schema: map[string]*schema.Schema{
+																								"is_available_for_vss_backup": &schema.Schema{
+																									Type:        schema.TypeBool,
+																									Computed:    true,
+																									Description: "Specifies whether the database is marked as available for backup according to the SQL Server VSS writer. This may be false if either the state of the databases is not online, or if the VSS writer is not online. This field is set only for type 'kDatabase'.",
+																								},
+																								"created_timestamp": &schema.Schema{
+																									Type:        schema.TypeString,
+																									Computed:    true,
+																									Description: "Specifies the time when the database was created. It is displayed in the timezone of the SQL server on which this database is running.",
+																								},
+																								"database_name": &schema.Schema{
+																									Type:        schema.TypeString,
+																									Computed:    true,
+																									Description: "Specifies the database name of the SQL Protection Source, if the type is database.",
+																								},
+																								"db_aag_entity_id": &schema.Schema{
+																									Type:        schema.TypeInt,
+																									Computed:    true,
+																									Description: "Specifies the AAG entity id if the database is part of an AAG. This field is set only for type 'kDatabase'.",
+																								},
+																								"db_aag_name": &schema.Schema{
+																									Type:        schema.TypeString,
+																									Computed:    true,
+																									Description: "Specifies the name of the AAG if the database is part of an AAG. This field is set only for type 'kDatabase'.",
+																								},
+																								"db_compatibility_level": &schema.Schema{
+																									Type:        schema.TypeInt,
+																									Computed:    true,
+																									Description: "Specifies the versions of SQL server that the database is compatible with.",
+																								},
+																								"db_file_groups": &schema.Schema{
+																									Type:        schema.TypeList,
+																									Computed:    true,
+																									Description: "Specifies the information about the set of file groups for this db on the host. This is only set if the type is kDatabase.",
+																									Elem: &schema.Schema{
+																										Type: schema.TypeString,
+																									},
+																								},
+																								"db_files": &schema.Schema{
+																									Type:        schema.TypeList,
+																									Computed:    true,
+																									Description: "Specifies the last known information about the set of database files on the host. This field is set only for type 'kDatabase'.",
+																									Elem: &schema.Resource{
+																										Schema: map[string]*schema.Schema{
+																											"file_type": &schema.Schema{
+																												Type:        schema.TypeString,
+																												Computed:    true,
+																												Description: "Specifies the format type of the file that SQL database stores the data. Specifies the format type of the file that SQL database stores the data. 'kRows' refers to a data file 'kLog' refers to a log file 'kFileStream' refers to a directory containing FILESTREAM data 'kNotSupportedType' is for information purposes only. Not supported. 'kFullText' refers to a full-text catalog.",
+																											},
+																											"full_path": &schema.Schema{
+																												Type:        schema.TypeString,
+																												Computed:    true,
+																												Description: "Specifies the full path of the database file on the SQL host machine.",
+																											},
+																											"size_bytes": &schema.Schema{
+																												Type:        schema.TypeInt,
+																												Computed:    true,
+																												Description: "Specifies the last known size of the database file.",
+																											},
+																										},
+																									},
+																								},
+																								"db_owner_username": &schema.Schema{
+																									Type:        schema.TypeString,
+																									Computed:    true,
+																									Description: "Specifies the name of the database owner.",
+																								},
+																								"default_database_location": &schema.Schema{
+																									Type:        schema.TypeString,
+																									Computed:    true,
+																									Description: "Specifies the default path for data files for DBs in an instance.",
+																								},
+																								"default_log_location": &schema.Schema{
+																									Type:        schema.TypeString,
+																									Computed:    true,
+																									Description: "Specifies the default path for log files for DBs in an instance.",
+																								},
+																								"id": &schema.Schema{
+																									Type:        schema.TypeList,
+																									Computed:    true,
+																									Description: "Specifies a unique id for a SQL Protection Source.",
+																									Elem: &schema.Resource{
+																										Schema: map[string]*schema.Schema{
+																											"created_date_msecs": &schema.Schema{
+																												Type:        schema.TypeInt,
+																												Computed:    true,
+																												Description: "Specifies a unique identifier generated from the date the database is created or renamed. Cohesity uses this identifier in combination with the databaseId to uniquely identify a database.",
+																											},
+																											"database_id": &schema.Schema{
+																												Type:        schema.TypeInt,
+																												Computed:    true,
+																												Description: "Specifies a unique id of the database but only for the life of the database. SQL Server may reuse database ids. Cohesity uses the createDateMsecs in combination with this databaseId to uniquely identify a database.",
+																											},
+																											"instance_id": &schema.Schema{
+																												Type:        schema.TypeString,
+																												Computed:    true,
+																												Description: "Specifies unique id for the SQL Server instance. This id does not change during the life of the instance.",
+																											},
+																										},
+																									},
+																								},
+																								"is_encrypted": &schema.Schema{
+																									Type:        schema.TypeBool,
+																									Computed:    true,
+																									Description: "Specifies whether the database is TDE enabled.",
+																								},
+																								"name": &schema.Schema{
+																									Type:        schema.TypeString,
+																									Computed:    true,
+																									Description: "Specifies the instance name of the SQL Protection Source.",
+																								},
+																								"owner_id": &schema.Schema{
+																									Type:        schema.TypeInt,
+																									Computed:    true,
+																									Description: "Specifies the id of the container VM for the SQL Protection Source.",
+																								},
+																								"recovery_model": &schema.Schema{
+																									Type:        schema.TypeString,
+																									Computed:    true,
+																									Description: "Specifies the Recovery Model for the database in SQL environment. Only meaningful for the 'kDatabase' SQL Protection Source. Specifies the Recovery Model set for the Microsoft SQL Server. 'kSimpleRecoveryModel' indicates the Simple SQL Recovery Model which does not utilize log backups. 'kFullRecoveryModel' indicates the Full SQL Recovery Model which requires log backups and allows recovery to a single point in time. 'kBulkLoggedRecoveryModel' indicates the Bulk Logged SQL Recovery Model which requires log backups and allows high-performance bulk copy operations.",
+																								},
+																								"sql_server_db_state": &schema.Schema{
+																									Type:        schema.TypeString,
+																									Computed:    true,
+																									Description: "The state of the database as returned by SQL Server. Indicates the state of the database. The values correspond to the 'state' field in the system table sys.databases. See https://goo.gl/P66XqM. 'kOnline' indicates that database is in online state. 'kRestoring' indicates that database is in restore state. 'kRecovering' indicates that database is in recovery state. 'kRecoveryPending' indicates that database recovery is in pending state. 'kSuspect' indicates that primary filegroup is suspect and may be damaged. 'kEmergency' indicates that manually forced emergency state. 'kOffline' indicates that database is in offline state. 'kCopying' indicates that database is in copying state. 'kOfflineSecondary' indicates that secondary database is in offline state.",
+																								},
+																								"sql_server_instance_version": &schema.Schema{
+																									Type:        schema.TypeList,
+																									Computed:    true,
+																									Description: "Specifies the Server Instance Version.",
+																									Elem: &schema.Resource{
+																										Schema: map[string]*schema.Schema{
+																											"build": &schema.Schema{
+																												Type:        schema.TypeFloat,
+																												Computed:    true,
+																												Description: "Specifies the build.",
+																											},
+																											"major_version": &schema.Schema{
+																												Type:        schema.TypeFloat,
+																												Computed:    true,
+																												Description: "Specifies the major version.",
+																											},
+																											"minor_version": &schema.Schema{
+																												Type:        schema.TypeFloat,
+																												Computed:    true,
+																												Description: "Specifies the minor version.",
+																											},
+																											"revision": &schema.Schema{
+																												Type:        schema.TypeFloat,
+																												Computed:    true,
+																												Description: "Specifies the revision.",
+																											},
+																											"version_string": &schema.Schema{
+																												Type:        schema.TypeFloat,
+																												Computed:    true,
+																												Description: "Specifies the version string.",
+																											},
+																										},
+																									},
+																								},
+																								"type": &schema.Schema{
+																									Type:        schema.TypeString,
+																									Computed:    true,
+																									Description: "Specifies the type of the managed Object in a SQL Protection Source. Examples of SQL Objects include 'kInstance' and 'kDatabase'. 'kInstance' indicates that SQL server instance is being protected. 'kDatabase' indicates that SQL server database is being protected. 'kAAG' indicates that SQL AAG (AlwaysOn Availability Group) is being protected. 'kAAGRootContainer' indicates that SQL AAG's root container is being protected. 'kRootContainer' indicates root container for SQL sources.",
+																								},
+																							},
+																						},
+																					},
+																				},
+																			},
+																		},
+																		"registration_info": &schema.Schema{
+																			Type:        schema.TypeList,
+																			Computed:    true,
+																			Description: "Specifies information about a registered Source.",
+																			Elem: &schema.Resource{
+																				Schema: map[string]*schema.Schema{
+																					"access_info": &schema.Schema{
+																						Type:        schema.TypeList,
+																						Computed:    true,
+																						Description: "Specifies the parameters required to establish a connection with a particular environment.",
+																						Elem: &schema.Resource{
+																							Schema: map[string]*schema.Schema{
+																								"connection_id": &schema.Schema{
+																									Type:        schema.TypeInt,
+																									Computed:    true,
+																									Description: "ID of the Bifrost (HyX or Rigel) network realm (i.e. a connection) associated with the source.",
+																								},
+																								"connector_group_id": &schema.Schema{
+																									Type:        schema.TypeInt,
+																									Computed:    true,
+																									Description: "Specifies the Id of the connector group. Each connector group is collection of Rigel/hyx. Each entity will be tagged with connector group id.",
+																								},
+																								"endpoint": &schema.Schema{
+																									Type:        schema.TypeString,
+																									Computed:    true,
+																									Description: "Specify an IP address or URL of the environment. (such as the IP address of the vCenter Server for a VMware environment).",
+																								},
+																								"environment": &schema.Schema{
+																									Type:        schema.TypeString,
+																									Computed:    true,
+																									Description: "Specifies the environment like VMware, SQL, where the Protection Source exists. Supported environment types such as 'kView', 'kSQL', 'kVMware', etc.",
+																								},
+																								"id": &schema.Schema{
+																									Type:        schema.TypeInt,
+																									Computed:    true,
+																									Description: "Specifies a Unique id that is generated when the Source is registered. This is a convenience field that is used to maintain an index to different connection params.",
+																								},
+																								"version": &schema.Schema{
+																									Type:        schema.TypeInt,
+																									Computed:    true,
+																									Description: "Version is updated each time the connector parameters are updated. This is used to discard older connector parameters.",
+																								},
+																							},
+																						},
+																					},
+																					"allowed_ip_addresses": &schema.Schema{
+																						Type:        schema.TypeList,
+																						Computed:    true,
+																						Description: "Specifies the list of IP Addresses on the registered source to be exclusively allowed for doing any type of IO operations.",
+																						Elem: &schema.Schema{
+																							Type: schema.TypeString,
+																						},
+																					},
+																					"authentication_error_message": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Computed:    true,
+																						Description: "Specifies an authentication error message. This indicates the given credentials are rejected and the registration of the source is not successful.",
+																					},
+																					"authentication_status": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Computed:    true,
+																						Description: "Specifies the status of the authenticating to the Protection Source when registering it with Cohesity Cluster.",
+																					},
+																					"blacklisted_ip_addresses": &schema.Schema{
+																						Type:        schema.TypeList,
+																						Computed:    true,
+																						Description: "This field is deprecated. Use DeniedIpAddresses instead.",
+																						Elem: &schema.Schema{
+																							Type: schema.TypeString,
+																						},
+																					},
+																					"denied_ip_addresses": &schema.Schema{
+																						Type:        schema.TypeList,
+																						Computed:    true,
+																						Description: "Specifies the list of IP Addresses on the registered source to be denied for doing any type of IO operations.",
+																						Elem: &schema.Schema{
+																							Type: schema.TypeString,
+																						},
+																					},
+																					"environments": &schema.Schema{
+																						Type:        schema.TypeList,
+																						Computed:    true,
+																						Description: "Specifies a list of applications environment that are registered with this Protection Source such as 'kSQL'. Supported environment types such as 'kView', 'kSQL', 'kVMware', etc.",
+																						Elem: &schema.Schema{
+																							Type: schema.TypeString,
+																						},
+																					},
+																					"is_db_authenticated": &schema.Schema{
+																						Type:        schema.TypeBool,
+																						Computed:    true,
+																						Description: "Specifies if application entity dbAuthenticated or not.",
+																					},
+																					"is_storage_array_snapshot_enabled": &schema.Schema{
+																						Type:        schema.TypeBool,
+																						Computed:    true,
+																						Description: "Specifies if this source entity has enabled storage array snapshot or not.",
+																					},
+																					"link_vms_across_vcenter": &schema.Schema{
+																						Type:        schema.TypeBool,
+																						Computed:    true,
+																						Description: "Specifies if the VM linking feature is enabled for this VCenter This means that VMs present in this VCenter which earlier belonged to some other VCenter(also registerd on same cluster) and were migrated, will be linked during EH refresh. This will enable preserving snapshot chains for migrated VMs.",
+																					},
+																					"minimum_free_space_gb": &schema.Schema{
+																						Type:        schema.TypeInt,
+																						Computed:    true,
+																						Description: "Specifies the minimum free space in GiB of the space expected to be available on the datastore where the virtual disks of the VM being backed up. If the amount of free space(in GiB) is lower than the value given by this field, backup will be aborted. Note that this field is applicable only to 'kVMware' type of environments.",
+																					},
+																					"minimum_free_space_percent": &schema.Schema{
+																						Type:        schema.TypeInt,
+																						Computed:    true,
+																						Description: "Specifies the minimum free space in percentage of the space expected to be available on the datastore where the virtual disks of the VM being backed up. If the amount of free space(in percentage) is lower than the value given by this field, backup will be aborted. Note that this field is applicable only to 'kVMware' type of environments.",
+																					},
+																					"password": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Computed:    true,
+																						Description: "Specifies password of the username to access the target source.",
+																					},
+																					"physical_params": &schema.Schema{
+																						Type:        schema.TypeList,
+																						Computed:    true,
+																						Description: "Specifies the parameters required to register Application Servers running in a Protection Source specific to a physical adapter.",
+																						Elem: &schema.Resource{
+																							Schema: map[string]*schema.Schema{
+																								"applications": &schema.Schema{
+																									Type:        schema.TypeList,
+																									Computed:    true,
+																									Description: "Specifies the types of applications such as 'kSQL', 'kExchange', 'kAD' running on the Protection Source. Supported environment types such as 'kView', 'kSQL', 'kVMware', etc.",
+																									Elem: &schema.Schema{
+																										Type: schema.TypeString,
+																									},
+																								},
+																								"password": &schema.Schema{
+																									Type:        schema.TypeString,
+																									Computed:    true,
+																									Description: "Specifies password of the username to access the target source.",
+																								},
+																								"throttling_config": &schema.Schema{
+																									Type:        schema.TypeList,
+																									Computed:    true,
+																									Description: "Specifies the source side throttling configuration.",
+																									Elem: &schema.Resource{
+																										Schema: map[string]*schema.Schema{
+																											"cpu_throttling_config": &schema.Schema{
+																												Type:        schema.TypeList,
+																												Computed:    true,
+																												Description: "Specifies the Throttling Configuration Parameters.",
+																												Elem: &schema.Resource{
+																													Schema: map[string]*schema.Schema{
+																														"fixed_threshold": &schema.Schema{
+																															Type:        schema.TypeInt,
+																															Computed:    true,
+																															Description: "Fixed baseline threshold for throttling. This is mandatory for any other throttling type than kNoThrottling.",
+																														},
+																														"pattern_type": &schema.Schema{
+																															Type:        schema.TypeString,
+																															Computed:    true,
+																															Description: "Type of the throttling pattern. 'kNoThrottling' indicates that throttling is not in force. 'kBaseThrottling' indicates indicates a constant base level throttling. 'kFixed' indicates a constant base level throttling.",
+																														},
+																														"throttling_windows": &schema.Schema{
+																															Type:        schema.TypeList,
+																															Computed:    true,
+																															Description: "Specifies the Throttling Window Parameters Definition.",
+																															Elem: &schema.Resource{
+																																Schema: map[string]*schema.Schema{
+																																	"day_time_window": &schema.Schema{
+																																		Type:        schema.TypeList,
+																																		Computed:    true,
+																																		Description: "Specifies the Day Time Window Parameters.",
+																																		Elem: &schema.Resource{
+																																			Schema: map[string]*schema.Schema{
+																																				"end_time": &schema.Schema{
+																																					Type:        schema.TypeList,
+																																					Computed:    true,
+																																					Description: "Specifies the Day Time Parameters.",
+																																					Elem: &schema.Resource{
+																																						Schema: map[string]*schema.Schema{
+																																							"day": &schema.Schema{
+																																								Type:        schema.TypeString,
+																																								Computed:    true,
+																																								Description: "Specifies the day of the week (such as 'kMonday') for scheduling throttling. Specifies a day in a week such as 'kSunday', 'kMonday', etc.",
+																																							},
+																																							"time": &schema.Schema{
+																																								Type:        schema.TypeList,
+																																								Computed:    true,
+																																								Description: "Specifies the time in hours and minutes.",
+																																								Elem: &schema.Resource{
+																																									Schema: map[string]*schema.Schema{
+																																										"hour": &schema.Schema{
+																																											Type:        schema.TypeInt,
+																																											Computed:    true,
+																																											Description: "Specifies the hour of this time.",
+																																										},
+																																										"minute": &schema.Schema{
+																																											Type:        schema.TypeInt,
+																																											Computed:    true,
+																																											Description: "Specifies the minute of this time.",
+																																										},
+																																									},
+																																								},
+																																							},
+																																						},
+																																					},
+																																				},
+																																				"start_time": &schema.Schema{
+																																					Type:        schema.TypeList,
+																																					Computed:    true,
+																																					Description: "Specifies the Day Time Parameters.",
+																																					Elem: &schema.Resource{
+																																						Schema: map[string]*schema.Schema{
+																																							"day": &schema.Schema{
+																																								Type:        schema.TypeString,
+																																								Computed:    true,
+																																								Description: "Specifies the day of the week (such as 'kMonday') for scheduling throttling. Specifies a day in a week such as 'kSunday', 'kMonday', etc.",
+																																							},
+																																							"time": &schema.Schema{
+																																								Type:        schema.TypeList,
+																																								Computed:    true,
+																																								Description: "Specifies the time in hours and minutes.",
+																																								Elem: &schema.Resource{
+																																									Schema: map[string]*schema.Schema{
+																																										"hour": &schema.Schema{
+																																											Type:        schema.TypeInt,
+																																											Computed:    true,
+																																											Description: "Specifies the hour of this time.",
+																																										},
+																																										"minute": &schema.Schema{
+																																											Type:        schema.TypeInt,
+																																											Computed:    true,
+																																											Description: "Specifies the minute of this time.",
+																																										},
+																																									},
+																																								},
+																																							},
+																																						},
+																																					},
+																																				},
+																																			},
+																																		},
+																																	},
+																																	"threshold": &schema.Schema{
+																																		Type:        schema.TypeInt,
+																																		Computed:    true,
+																																		Description: "Throttling threshold applicable in the window.",
+																																	},
+																																},
+																															},
+																														},
+																													},
+																												},
+																											},
+																											"network_throttling_config": &schema.Schema{
+																												Type:        schema.TypeList,
+																												Computed:    true,
+																												Description: "Specifies the Throttling Configuration Parameters.",
+																												Elem: &schema.Resource{
+																													Schema: map[string]*schema.Schema{
+																														"fixed_threshold": &schema.Schema{
+																															Type:        schema.TypeInt,
+																															Computed:    true,
+																															Description: "Fixed baseline threshold for throttling. This is mandatory for any other throttling type than kNoThrottling.",
+																														},
+																														"pattern_type": &schema.Schema{
+																															Type:        schema.TypeString,
+																															Computed:    true,
+																															Description: "Type of the throttling pattern. 'kNoThrottling' indicates that throttling is not in force. 'kBaseThrottling' indicates indicates a constant base level throttling. 'kFixed' indicates a constant base level throttling.",
+																														},
+																														"throttling_windows": &schema.Schema{
+																															Type:        schema.TypeList,
+																															Computed:    true,
+																															Description: "Specifies the Throttling Window Parameters Definition.",
+																															Elem: &schema.Resource{
+																																Schema: map[string]*schema.Schema{
+																																	"day_time_window": &schema.Schema{
+																																		Type:        schema.TypeList,
+																																		Computed:    true,
+																																		Description: "Specifies the Day Time Window Parameters.",
+																																		Elem: &schema.Resource{
+																																			Schema: map[string]*schema.Schema{
+																																				"end_time": &schema.Schema{
+																																					Type:        schema.TypeList,
+																																					Computed:    true,
+																																					Description: "Specifies the Day Time Parameters.",
+																																					Elem: &schema.Resource{
+																																						Schema: map[string]*schema.Schema{
+																																							"day": &schema.Schema{
+																																								Type:        schema.TypeString,
+																																								Computed:    true,
+																																								Description: "Specifies the day of the week (such as 'kMonday') for scheduling throttling. Specifies a day in a week such as 'kSunday', 'kMonday', etc.",
+																																							},
+																																							"time": &schema.Schema{
+																																								Type:        schema.TypeList,
+																																								Computed:    true,
+																																								Description: "Specifies the time in hours and minutes.",
+																																								Elem: &schema.Resource{
+																																									Schema: map[string]*schema.Schema{
+																																										"hour": &schema.Schema{
+																																											Type:        schema.TypeInt,
+																																											Computed:    true,
+																																											Description: "Specifies the hour of this time.",
+																																										},
+																																										"minute": &schema.Schema{
+																																											Type:        schema.TypeInt,
+																																											Computed:    true,
+																																											Description: "Specifies the minute of this time.",
+																																										},
+																																									},
+																																								},
+																																							},
+																																						},
+																																					},
+																																				},
+																																				"start_time": &schema.Schema{
+																																					Type:        schema.TypeList,
+																																					Computed:    true,
+																																					Description: "Specifies the Day Time Parameters.",
+																																					Elem: &schema.Resource{
+																																						Schema: map[string]*schema.Schema{
+																																							"day": &schema.Schema{
+																																								Type:        schema.TypeString,
+																																								Computed:    true,
+																																								Description: "Specifies the day of the week (such as 'kMonday') for scheduling throttling. Specifies a day in a week such as 'kSunday', 'kMonday', etc.",
+																																							},
+																																							"time": &schema.Schema{
+																																								Type:        schema.TypeList,
+																																								Computed:    true,
+																																								Description: "Specifies the time in hours and minutes.",
+																																								Elem: &schema.Resource{
+																																									Schema: map[string]*schema.Schema{
+																																										"hour": &schema.Schema{
+																																											Type:        schema.TypeInt,
+																																											Computed:    true,
+																																											Description: "Specifies the hour of this time.",
+																																										},
+																																										"minute": &schema.Schema{
+																																											Type:        schema.TypeInt,
+																																											Computed:    true,
+																																											Description: "Specifies the minute of this time.",
+																																										},
+																																									},
+																																								},
+																																							},
+																																						},
+																																					},
+																																				},
+																																			},
+																																		},
+																																	},
+																																	"threshold": &schema.Schema{
+																																		Type:        schema.TypeInt,
+																																		Computed:    true,
+																																		Description: "Throttling threshold applicable in the window.",
+																																	},
+																																},
+																															},
+																														},
+																													},
+																												},
+																											},
+																										},
+																									},
+																								},
+																								"username": &schema.Schema{
+																									Type:        schema.TypeString,
+																									Computed:    true,
+																									Description: "Specifies username to access the target source.",
+																								},
+																							},
+																						},
+																					},
+																					"progress_monitor_path": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Computed:    true,
+																						Description: "Captures the current progress and pulse details w.r.t to either the registration or refresh.",
+																					},
+																					"refresh_error_message": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Computed:    true,
+																						Description: "Specifies a message if there was any error encountered during the last rebuild of the Protection Source tree. If there was no error during the last rebuild, this field is reset.",
+																					},
+																					"refresh_time_usecs": &schema.Schema{
+																						Type:        schema.TypeInt,
+																						Computed:    true,
+																						Description: "Specifies the Unix epoch time (in microseconds) when the Protection Source tree was most recently fetched and built.",
+																					},
+																					"registered_apps_info": &schema.Schema{
+																						Type:        schema.TypeList,
+																						Computed:    true,
+																						Description: "Specifies information of the applications registered on this protection source.",
+																						Elem: &schema.Resource{
+																							Schema: map[string]*schema.Schema{
+																								"authentication_error_message": &schema.Schema{
+																									Type:        schema.TypeString,
+																									Computed:    true,
+																									Description: "pecifies an authentication error message. This indicates the given credentials are rejected and the registration of the application is not successful.",
+																								},
+																								"authentication_status": &schema.Schema{
+																									Type:        schema.TypeString,
+																									Computed:    true,
+																									Description: "Specifies the status of authenticating to the Protection Source when registering this application with Cohesity Cluster. If the status is 'kFinished' and there is no error, registration is successful. Specifies the status of the authentication during the registration of a Protection Source. 'kPending' indicates the authentication is in progress. 'kScheduled' indicates the authentication is scheduled. 'kFinished' indicates the authentication is completed. 'kRefreshInProgress' indicates the refresh is in progress.",
+																								},
+																								"environment": &schema.Schema{
+																									Type:        schema.TypeString,
+																									Computed:    true,
+																									Description: "Specifies the application environment. Supported environment types such as 'kView', 'kSQL', 'kVMware', etc.",
+																								},
+																								"host_settings_check_results": &schema.Schema{
+																									Type:        schema.TypeList,
+																									Computed:    true,
+																									Description: "Specifies the list of check results internally performed to verify status of various services such as 'AgnetRunning', 'SQLWriterRunning' etc.",
+																									Elem: &schema.Resource{
+																										Schema: map[string]*schema.Schema{
+																											"check_type": &schema.Schema{
+																												Type:        schema.TypeString,
+																												Computed:    true,
+																												Description: "Specifies the type of the check internally performed. Specifies the type of the host check performed internally. 'kIsAgentPortAccessible' indicates the check for agent port access. 'kIsAgentRunning' indicates the status for the Cohesity agent service. 'kIsSQLWriterRunning' indicates the status for SQLWriter service. 'kAreSQLInstancesRunning' indicates the run status for all the SQL instances in the host. 'kCheckServiceLoginsConfig' checks the privileges and sysadmin status of the logins used by the SQL instance services, Cohesity agent service and the SQLWriter service. 'kCheckSQLFCIVIP' checks whether the SQL FCI is registered with a valid VIP or FQDN. 'kCheckSQLDiskSpace' checks whether volumes containing SQL DBs have at least 10% free space.",
+																											},
+																											"result_type": &schema.Schema{
+																												Type:        schema.TypeString,
+																												Computed:    true,
+																												Description: "Specifies the type of the result returned after performing the internal host check. Specifies the type of the host check result performed internally. 'kPass' indicates that the respective check was successful. 'kFail' indicates that the respective check failed as some mandatory setting is not met 'kWarning' indicates that the respective check has warning as certain non-mandatory setting is not met.",
+																											},
+																											"user_message": &schema.Schema{
+																												Type:        schema.TypeString,
+																												Computed:    true,
+																												Description: "Specifies a descriptive message for failed/warning types.",
+																											},
+																										},
+																									},
+																								},
+																								"refresh_error_message": &schema.Schema{
+																									Type:        schema.TypeString,
+																									Computed:    true,
+																									Description: "Specifies a message if there was any error encountered during the last rebuild of the application tree. If there was no error during the last rebuild, this field is reset.",
+																								},
+																							},
+																						},
+																					},
+																					"registration_time_usecs": &schema.Schema{
+																						Type:        schema.TypeInt,
+																						Computed:    true,
+																						Description: "Specifies the Unix epoch time (in microseconds) when the Protection Source was registered.",
+																					},
+																					"subnets": &schema.Schema{
+																						Type:        schema.TypeList,
+																						Computed:    true,
+																						Description: "Specifies the list of subnets added during creation or updation of vmare source. Currently, this field will only be populated in case of VMware registration.",
+																						Elem: &schema.Resource{
+																							Schema: map[string]*schema.Schema{
+																								"component": &schema.Schema{
+																									Type:        schema.TypeString,
+																									Computed:    true,
+																									Description: "Component that has reserved the subnet.",
+																								},
+																								"description": &schema.Schema{
+																									Type:        schema.TypeString,
+																									Computed:    true,
+																									Description: "Description of the subnet.",
+																								},
+																								"id": &schema.Schema{
+																									Type:        schema.TypeFloat,
+																									Computed:    true,
+																									Description: "ID of the subnet.",
+																								},
+																								"ip": &schema.Schema{
+																									Type:        schema.TypeString,
+																									Computed:    true,
+																									Description: "Specifies either an IPv6 address or an IPv4 address.",
+																								},
+																								"netmask_bits": &schema.Schema{
+																									Type:        schema.TypeFloat,
+																									Computed:    true,
+																									Description: "netmaskBits.",
+																								},
+																								"netmask_ip4": &schema.Schema{
+																									Type:        schema.TypeString,
+																									Computed:    true,
+																									Description: "Specifies the netmask using an IP4 address. The netmask can only be set using netmaskIp4 if the IP address is an IPv4 address.",
+																								},
+																								"nfs_access": &schema.Schema{
+																									Type:        schema.TypeString,
+																									Computed:    true,
+																									Description: "Component that has reserved the subnet.",
+																								},
+																								"nfs_all_squash": &schema.Schema{
+																									Type:        schema.TypeBool,
+																									Computed:    true,
+																									Description: "Specifies whether all clients from this subnet can map view with view_all_squash_uid/view_all_squash_gid configured in the view.",
+																								},
+																								"nfs_root_squash": &schema.Schema{
+																									Type:        schema.TypeBool,
+																									Computed:    true,
+																									Description: "Specifies whether clients from this subnet can mount as root on NFS.",
+																								},
+																								"s3_access": &schema.Schema{
+																									Type:        schema.TypeString,
+																									Computed:    true,
+																									Description: "Specifies whether clients from this subnet can access using S3 protocol. Protocol access level. 'kDisabled' indicates Protocol access level 'Disabled' 'kReadOnly' indicates Protocol access level 'ReadOnly' 'kReadWrite' indicates Protocol access level 'ReadWrite'.",
+																								},
+																								"smb_access": &schema.Schema{
+																									Type:        schema.TypeString,
+																									Computed:    true,
+																									Description: "Specifies whether clients from this subnet can mount using SMB protocol. Protocol access level. 'kDisabled' indicates Protocol access level 'Disabled' 'kReadOnly' indicates Protocol access level 'ReadOnly' 'kReadWrite' indicates Protocol access level 'ReadWrite'.",
+																								},
+																								"tenant_id": &schema.Schema{
+																									Type:        schema.TypeString,
+																									Computed:    true,
+																									Description: "Specifies the unique id of the tenant.",
+																								},
+																							},
+																						},
+																					},
+																					"throttling_policy": &schema.Schema{
+																						Type:        schema.TypeList,
+																						Computed:    true,
+																						Description: "Specifies the throttling policy for a registered Protection Source.",
+																						Elem: &schema.Resource{
+																							Schema: map[string]*schema.Schema{
+																								"enforce_max_streams": &schema.Schema{
+																									Type:        schema.TypeBool,
+																									Computed:    true,
+																									Description: "Specifies whether datastore streams are configured for all datastores that are part of the registered entity. If set to true, number of streams from Cohesity cluster to the registered entity will be limited to the value set for maxConcurrentStreams. If not set or set to false, there is no max limit for the number of concurrent streams.",
+																								},
+																								"enforce_registered_source_max_backups": &schema.Schema{
+																									Type:        schema.TypeBool,
+																									Computed:    true,
+																									Description: "Specifies whether no. of backups are configured for the registered entity. If set to true, number of backups made by Cohesity cluster in the registered entity will be limited to the value set for RegisteredSourceMaxConcurrentBackups. If not set or set to false, there is no max limit for the number of concurrent backups.",
+																								},
+																								"is_enabled": &schema.Schema{
+																									Type:        schema.TypeBool,
+																									Computed:    true,
+																									Description: "Indicates whether read operations to the datastores, which are part of the registered Protection Source, are throttled.",
+																								},
+																								"latency_thresholds": &schema.Schema{
+																									Type:        schema.TypeList,
+																									Computed:    true,
+																									Description: "Specifies latency thresholds that trigger throttling for all datastores found in the registered Protection Source or specific to one datastore.",
+																									Elem: &schema.Resource{
+																										Schema: map[string]*schema.Schema{
+																											"active_task_msecs": &schema.Schema{
+																												Type:        schema.TypeInt,
+																												Computed:    true,
+																												Description: "If the latency of a datastore is above this value, existing backup tasks using the datastore are throttled.",
+																											},
+																											"new_task_msecs": &schema.Schema{
+																												Type:        schema.TypeInt,
+																												Computed:    true,
+																												Description: "If the latency of a datastore is above this value, then new backup tasks using the datastore will not be started.",
+																											},
+																										},
+																									},
+																								},
+																								"max_concurrent_streams": &schema.Schema{
+																									Type:        schema.TypeFloat,
+																									Computed:    true,
+																									Description: "Specifies the limit on the number of streams Cohesity cluster will make concurrently to the datastores of the registered entity. This limit is enforced only when the flag enforceMaxStreams is set to true.",
+																								},
+																								"nas_source_params": &schema.Schema{
+																									Type:        schema.TypeList,
+																									Computed:    true,
+																									Description: "Specifies the NAS specific source throttling parameters during source registration or during backup of the source.",
+																									Elem: &schema.Resource{
+																										Schema: map[string]*schema.Schema{
+																											"max_parallel_metadata_fetch_full_percentage": &schema.Schema{
+																												Type:        schema.TypeFloat,
+																												Computed:    true,
+																												Description: "Specifies the percentage value of maximum concurrent metadata to be fetched during full backup of the source.",
+																											},
+																											"max_parallel_metadata_fetch_incremental_percentage": &schema.Schema{
+																												Type:        schema.TypeFloat,
+																												Computed:    true,
+																												Description: "Specifies the percentage value of maximum concurrent metadata to be fetched during incremental backup of the source.",
+																											},
+																											"max_parallel_read_write_full_percentage": &schema.Schema{
+																												Type:        schema.TypeFloat,
+																												Computed:    true,
+																												Description: "Specifies the percentage value of maximum concurrent IO during full backup of the source.",
+																											},
+																											"max_parallel_read_write_incremental_percentage": &schema.Schema{
+																												Type:        schema.TypeFloat,
+																												Computed:    true,
+																												Description: "Specifies the percentage value of maximum concurrent IO during incremental backup of the source.",
+																											},
+																										},
+																									},
+																								},
+																								"registered_source_max_concurrent_backups": &schema.Schema{
+																									Type:        schema.TypeFloat,
+																									Computed:    true,
+																									Description: "Specifies the limit on the number of backups Cohesity cluster will make concurrently to the registered entity. This limit is enforced only when the flag enforceRegisteredSourceMaxBackups is set to true.",
+																								},
+																								"storage_array_snapshot_config": &schema.Schema{
+																									Type:        schema.TypeList,
+																									Computed:    true,
+																									Description: "Specifies Storage Array Snapshot Configuration.",
+																									Elem: &schema.Resource{
+																										Schema: map[string]*schema.Schema{
+																											"is_max_snapshots_config_enabled": &schema.Schema{
+																												Type:        schema.TypeBool,
+																												Computed:    true,
+																												Description: "Specifies if the storage array snapshot max snapshots config is enabled or not.",
+																											},
+																											"is_max_space_config_enabled": &schema.Schema{
+																												Type:        schema.TypeBool,
+																												Computed:    true,
+																												Description: "Specifies if the storage array snapshot max space config is enabled or not.",
+																											},
+																											"storage_array_snapshot_max_space_config": &schema.Schema{
+																												Type:        schema.TypeList,
+																												Computed:    true,
+																												Description: "Specifies Storage Array Snapshot Max Space Config.",
+																												Elem: &schema.Resource{
+																													Schema: map[string]*schema.Schema{
+																														"max_snapshot_space_percentage": &schema.Schema{
+																															Type:        schema.TypeFloat,
+																															Computed:    true,
+																															Description: "Max number of storage snapshots allowed per volume/lun.",
+																														},
+																													},
+																												},
+																											},
+																											"storage_array_snapshot_throttling_policies": &schema.Schema{
+																												Type:        schema.TypeList,
+																												Computed:    true,
+																												Description: "Specifies throttling policies configured for individual volume/lun.",
+																												Elem: &schema.Resource{
+																													Schema: map[string]*schema.Schema{
+																														"id": &schema.Schema{
+																															Type:        schema.TypeInt,
+																															Computed:    true,
+																															Description: "Specifies the volume id of the storage array snapshot config.",
+																														},
+																														"is_max_snapshots_config_enabled": &schema.Schema{
+																															Type:        schema.TypeBool,
+																															Computed:    true,
+																															Description: "Specifies if the storage array snapshot max snapshots config is enabled or not.",
+																														},
+																														"is_max_space_config_enabled": &schema.Schema{
+																															Type:        schema.TypeBool,
+																															Computed:    true,
+																															Description: "Specifies if the storage array snapshot max space config is enabled or not.",
+																														},
+																														"max_snapshot_config": &schema.Schema{
+																															Type:        schema.TypeList,
+																															Computed:    true,
+																															Description: "Specifies Storage Array Snapshot Max Snapshots Config.",
+																															Elem: &schema.Resource{
+																																Schema: map[string]*schema.Schema{
+																																	"max_snapshots": &schema.Schema{
+																																		Type:        schema.TypeFloat,
+																																		Computed:    true,
+																																		Description: "Max number of storage snapshots allowed per volume/lun.",
+																																	},
+																																},
+																															},
+																														},
+																														"max_space_config": &schema.Schema{
+																															Type:        schema.TypeList,
+																															Computed:    true,
+																															Description: "Specifies Storage Array Snapshot Max Space Config.",
+																															Elem: &schema.Resource{
+																																Schema: map[string]*schema.Schema{
+																																	"max_snapshot_space_percentage": &schema.Schema{
+																																		Type:        schema.TypeFloat,
+																																		Computed:    true,
+																																		Description: "Max number of storage snapshots allowed per volume/lun.",
+																																	},
+																																},
+																															},
+																														},
+																													},
+																												},
+																											},
+																										},
+																									},
+																								},
+																							},
+																						},
+																					},
+																					"throttling_policy_overrides": &schema.Schema{
+																						Type:        schema.TypeList,
+																						Computed:    true,
+																						Description: "Specifies throttling policy override for a Datastore in a registered entity.",
+																						Elem: &schema.Resource{
+																							Schema: map[string]*schema.Schema{
+																								"datastore_id": &schema.Schema{
+																									Type:        schema.TypeInt,
+																									Computed:    true,
+																									Description: "Specifies the Protection Source id of the Datastore.",
+																								},
+																								"datastore_name": &schema.Schema{
+																									Type:        schema.TypeString,
+																									Computed:    true,
+																									Description: "Specifies the display name of the Datastore.",
+																								},
+																								"throttling_policy": &schema.Schema{
+																									Type:        schema.TypeList,
+																									Computed:    true,
+																									Description: "Specifies the throttling policy for a registered Protection Source.",
+																									Elem: &schema.Resource{
+																										Schema: map[string]*schema.Schema{
+																											"enforce_max_streams": &schema.Schema{
+																												Type:        schema.TypeBool,
+																												Computed:    true,
+																												Description: "Specifies whether datastore streams are configured for all datastores that are part of the registered entity. If set to true, number of streams from Cohesity cluster to the registered entity will be limited to the value set for maxConcurrentStreams. If not set or set to false, there is no max limit for the number of concurrent streams.",
+																											},
+																											"enforce_registered_source_max_backups": &schema.Schema{
+																												Type:        schema.TypeBool,
+																												Computed:    true,
+																												Description: "Specifies whether no. of backups are configured for the registered entity. If set to true, number of backups made by Cohesity cluster in the registered entity will be limited to the value set for RegisteredSourceMaxConcurrentBackups. If not set or set to false, there is no max limit for the number of concurrent backups.",
+																											},
+																											"is_enabled": &schema.Schema{
+																												Type:        schema.TypeBool,
+																												Computed:    true,
+																												Description: "Indicates whether read operations to the datastores, which are part of the registered Protection Source, are throttled.",
+																											},
+																											"latency_thresholds": &schema.Schema{
+																												Type:        schema.TypeList,
+																												Computed:    true,
+																												Description: "Specifies latency thresholds that trigger throttling for all datastores found in the registered Protection Source or specific to one datastore.",
+																												Elem: &schema.Resource{
+																													Schema: map[string]*schema.Schema{
+																														"active_task_msecs": &schema.Schema{
+																															Type:        schema.TypeInt,
+																															Computed:    true,
+																															Description: "If the latency of a datastore is above this value, existing backup tasks using the datastore are throttled.",
+																														},
+																														"new_task_msecs": &schema.Schema{
+																															Type:        schema.TypeInt,
+																															Computed:    true,
+																															Description: "If the latency of a datastore is above this value, then new backup tasks using the datastore will not be started.",
+																														},
+																													},
+																												},
+																											},
+																											"max_concurrent_streams": &schema.Schema{
+																												Type:        schema.TypeFloat,
+																												Computed:    true,
+																												Description: "Specifies the limit on the number of streams Cohesity cluster will make concurrently to the datastores of the registered entity. This limit is enforced only when the flag enforceMaxStreams is set to true.",
+																											},
+																											"nas_source_params": &schema.Schema{
+																												Type:        schema.TypeList,
+																												Computed:    true,
+																												Description: "Specifies the NAS specific source throttling parameters during source registration or during backup of the source.",
+																												Elem: &schema.Resource{
+																													Schema: map[string]*schema.Schema{
+																														"max_parallel_metadata_fetch_full_percentage": &schema.Schema{
+																															Type:        schema.TypeFloat,
+																															Computed:    true,
+																															Description: "Specifies the percentage value of maximum concurrent metadata to be fetched during full backup of the source.",
+																														},
+																														"max_parallel_metadata_fetch_incremental_percentage": &schema.Schema{
+																															Type:        schema.TypeFloat,
+																															Computed:    true,
+																															Description: "Specifies the percentage value of maximum concurrent metadata to be fetched during incremental backup of the source.",
+																														},
+																														"max_parallel_read_write_full_percentage": &schema.Schema{
+																															Type:        schema.TypeFloat,
+																															Computed:    true,
+																															Description: "Specifies the percentage value of maximum concurrent IO during full backup of the source.",
+																														},
+																														"max_parallel_read_write_incremental_percentage": &schema.Schema{
+																															Type:        schema.TypeFloat,
+																															Computed:    true,
+																															Description: "Specifies the percentage value of maximum concurrent IO during incremental backup of the source.",
+																														},
+																													},
+																												},
+																											},
+																											"registered_source_max_concurrent_backups": &schema.Schema{
+																												Type:        schema.TypeFloat,
+																												Computed:    true,
+																												Description: "Specifies the limit on the number of backups Cohesity cluster will make concurrently to the registered entity. This limit is enforced only when the flag enforceRegisteredSourceMaxBackups is set to true.",
+																											},
+																											"storage_array_snapshot_config": &schema.Schema{
+																												Type:        schema.TypeList,
+																												Computed:    true,
+																												Description: "Specifies Storage Array Snapshot Configuration.",
+																												Elem: &schema.Resource{
+																													Schema: map[string]*schema.Schema{
+																														"is_max_snapshots_config_enabled": &schema.Schema{
+																															Type:        schema.TypeBool,
+																															Computed:    true,
+																															Description: "Specifies if the storage array snapshot max snapshots config is enabled or not.",
+																														},
+																														"is_max_space_config_enabled": &schema.Schema{
+																															Type:        schema.TypeBool,
+																															Computed:    true,
+																															Description: "Specifies if the storage array snapshot max space config is enabled or not.",
+																														},
+																														"storage_array_snapshot_max_space_config": &schema.Schema{
+																															Type:        schema.TypeList,
+																															Computed:    true,
+																															Description: "Specifies Storage Array Snapshot Max Space Config.",
+																															Elem: &schema.Resource{
+																																Schema: map[string]*schema.Schema{
+																																	"max_snapshot_space_percentage": &schema.Schema{
+																																		Type:        schema.TypeFloat,
+																																		Computed:    true,
+																																		Description: "Max number of storage snapshots allowed per volume/lun.",
+																																	},
+																																},
+																															},
+																														},
+																														"storage_array_snapshot_throttling_policies": &schema.Schema{
+																															Type:        schema.TypeList,
+																															Computed:    true,
+																															Description: "Specifies throttling policies configured for individual volume/lun.",
+																															Elem: &schema.Resource{
+																																Schema: map[string]*schema.Schema{
+																																	"id": &schema.Schema{
+																																		Type:        schema.TypeInt,
+																																		Computed:    true,
+																																		Description: "Specifies the volume id of the storage array snapshot config.",
+																																	},
+																																	"is_max_snapshots_config_enabled": &schema.Schema{
+																																		Type:        schema.TypeBool,
+																																		Computed:    true,
+																																		Description: "Specifies if the storage array snapshot max snapshots config is enabled or not.",
+																																	},
+																																	"is_max_space_config_enabled": &schema.Schema{
+																																		Type:        schema.TypeBool,
+																																		Computed:    true,
+																																		Description: "Specifies if the storage array snapshot max space config is enabled or not.",
+																																	},
+																																	"max_snapshot_config": &schema.Schema{
+																																		Type:        schema.TypeList,
+																																		Computed:    true,
+																																		Description: "Specifies Storage Array Snapshot Max Snapshots Config.",
+																																		Elem: &schema.Resource{
+																																			Schema: map[string]*schema.Schema{
+																																				"max_snapshots": &schema.Schema{
+																																					Type:        schema.TypeFloat,
+																																					Computed:    true,
+																																					Description: "Max number of storage snapshots allowed per volume/lun.",
+																																				},
+																																			},
+																																		},
+																																	},
+																																	"max_space_config": &schema.Schema{
+																																		Type:        schema.TypeList,
+																																		Computed:    true,
+																																		Description: "Specifies Storage Array Snapshot Max Space Config.",
+																																		Elem: &schema.Resource{
+																																			Schema: map[string]*schema.Schema{
+																																				"max_snapshot_space_percentage": &schema.Schema{
+																																					Type:        schema.TypeFloat,
+																																					Computed:    true,
+																																					Description: "Max number of storage snapshots allowed per volume/lun.",
+																																				},
+																																			},
+																																		},
+																																	},
+																																},
+																															},
+																														},
+																													},
+																												},
+																											},
+																										},
+																									},
+																								},
+																							},
+																						},
+																					},
+																					"use_o_auth_for_exchange_online": &schema.Schema{
+																						Type:        schema.TypeBool,
+																						Computed:    true,
+																						Description: "Specifies whether OAuth should be used for authentication in case of Exchange Online.",
+																					},
+																					"use_vm_bios_uuid": &schema.Schema{
+																						Type:        schema.TypeBool,
+																						Computed:    true,
+																						Description: "Specifies if registered vCenter is using BIOS UUID to track virtual machines.",
+																					},
+																					"user_messages": &schema.Schema{
+																						Type:        schema.TypeList,
+																						Computed:    true,
+																						Description: "Specifies the additional details encountered during registration. Though the registration may succeed, user messages imply the host environment requires some cleanup or fixing.",
+																						Elem: &schema.Schema{
+																							Type: schema.TypeString,
+																						},
+																					},
+																					"username": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Computed:    true,
+																						Description: "Specifies username to access the target source.",
+																					},
+																					"vlan_params": &schema.Schema{
+																						Type:        schema.TypeList,
+																						Computed:    true,
+																						Description: "Specifies the VLAN configuration for Recovery.",
+																						Elem: &schema.Resource{
+																							Schema: map[string]*schema.Schema{
+																								"vlan": &schema.Schema{
+																									Type:        schema.TypeFloat,
+																									Computed:    true,
+																									Description: "Specifies the VLAN to use for mounting Cohesity's view on the remote host. If specified, Cohesity hostname or the IP address on this VLAN is used.",
+																								},
+																								"disable_vlan": &schema.Schema{
+																									Type:        schema.TypeBool,
+																									Computed:    true,
+																									Description: "Specifies whether to use the VIPs even when VLANs are configured on the Cluster. If configured, VLAN IP addresses are used by default. If VLANs are not configured, this flag is ignored. Set this flag to true to force using the partition VIPs when VLANs are configured on the Cluster.",
+																								},
+																								"interface_name": &schema.Schema{
+																									Type:        schema.TypeString,
+																									Computed:    true,
+																									Description: "Specifies the physical interface group name to use for mounting Cohesity's view on the remote host. If specified, Cohesity hostname or the IP address on this VLAN is used.",
+																								},
+																							},
+																						},
+																					},
+																					"warning_messages": &schema.Schema{
+																						Type:        schema.TypeList,
+																						Computed:    true,
+																						Description: "Specifies a list of warnings encountered during registration. Though the registration may succeed, warning messages imply the host environment requires some cleanup or fixing.",
+																						Elem: &schema.Schema{
+																							Type: schema.TypeString,
+																						},
+																					},
+																				},
+																			},
+																		},
+																		"total_downtiered_size_in_bytes": &schema.Schema{
+																			Type:        schema.TypeInt,
+																			Computed:    true,
+																			Description: "Specifies the total bytes downtiered from the source so far.",
+																		},
+																		"total_uptiered_size_in_bytes": &schema.Schema{
+																			Type:        schema.TypeInt,
+																			Computed:    true,
+																			Description: "Specifies the total bytes uptiered to the source so far.",
+																		},
+																		"unprotected_sources_summary": &schema.Schema{
+																			Type:        schema.TypeList,
+																			Computed:    true,
+																			Description: "Aggregated information about a node subtree.",
+																			Elem: &schema.Resource{
+																				Schema: map[string]*schema.Schema{
+																					"environment": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Computed:    true,
+																						Description: "Specifies the environment such as 'kSQL' or 'kVMware', where the Protection Source exists. Supported environment types such as 'kView', 'kSQL', 'kVMware', etc. NOTE 'kPuppeteer' refers to Cohesity's Remote Adapter. 'kVMware' indicates the VMware Protection Source environment. 'kHyperV' indicates the HyperV Protection Source environment. 'kSQL' indicates the SQL Protection Source environment. 'kView' indicates the View Protection Source environment. 'kPuppeteer' indicates the Cohesity's Remote Adapter. 'kPhysical' indicates the physical Protection Source environment. 'kPure' indicates the Pure Storage Protection Source environment. 'kNimble' indicates the Nimble Storage Protection Source environment. 'kAzure' indicates the Microsoft's Azure Protection Source environment. 'kNetapp' indicates the Netapp Protection Source environment. 'kAgent' indicates the Agent Protection Source environment. 'kGenericNas' indicates the Generic Network Attached Storage Protection Source environment. 'kAcropolis' indicates the Acropolis Protection Source environment. 'kPhysicalFiles' indicates the Physical Files Protection Source environment. 'kIbmFlashSystem' indicates the IBM Flash System Protection Source environment. 'kIsilon' indicates the Dell EMC's Isilon Protection Source environment. 'kGPFS' indicates IBM's GPFS Protection Source environment. 'kKVM' indicates the KVM Protection Source environment. 'kAWS' indicates the AWS Protection Source environment. 'kExchange' indicates the Exchange Protection Source environment. 'kHyperVVSS' indicates the HyperV VSS Protection Source environment. 'kOracle' indicates the Oracle Protection Source environment. 'kGCP' indicates the Google Cloud Platform Protection Source environment. 'kFlashBlade' indicates the Flash Blade Protection Source environment. 'kAWSNative' indicates the AWS Native Protection Source environment. 'kO365' indicates the Office 365 Protection Source environment. 'kO365Outlook' indicates Office 365 outlook Protection Source environment. 'kHyperFlex' indicates the Hyper Flex Protection Source environment. 'kGCPNative' indicates the GCP Native Protection Source environment. 'kAzureNative' indicates the Azure Native Protection Source environment. 'kKubernetes' indicates a Kubernetes Protection Source environment. 'kElastifile' indicates Elastifile Protection Source environment. 'kAD' indicates Active Directory Protection Source environment. 'kRDSSnapshotManager' indicates AWS RDS Protection Source environment. 'kCassandra' indicates Cassandra Protection Source environment. 'kMongoDB' indicates MongoDB Protection Source environment. 'kCouchbase' indicates Couchbase Protection Source environment. 'kHdfs' indicates Hdfs Protection Source environment. 'kHive' indicates Hive Protection Source environment. 'kHBase' indicates HBase Protection Source environment. 'kUDA' indicates Universal Data Adapter Protection Source environment. 'kO365Teams' indicates the Office365 Teams Protection Source environment. 'kO365Group' indicates the Office365 Groups Protection Source environment. 'kO365Exchange' indicates the Office365 Mailbox Protection Source environment. 'kO365OneDrive' indicates the Office365 OneDrive Protection Source environment. 'kO365Sharepoint' indicates the Office365 SharePoint Protection Source environment. 'kO365PublicFolders' indicates the Office365 PublicFolders Protection Source environment.",
+																					},
+																					"leaves_count": &schema.Schema{
+																						Type:        schema.TypeInt,
+																						Computed:    true,
+																						Description: "Specifies the number of leaf nodes under the subtree of this node.",
+																					},
+																					"total_logical_size": &schema.Schema{
+																						Type:        schema.TypeInt,
+																						Computed:    true,
+																						Description: "Specifies the total logical size of the data under the subtree of this node.",
+																					},
+																				},
+																			},
+																		},
+																	},
+																},
+															},
+														},
+													},
+												},
+												"entity_pagination_parameters": &schema.Schema{
+													Type:        schema.TypeList,
+													Computed:    true,
+													Description: "Specifies the cursor based pagination parameters for Protection Source and its children. Pagination is supported at a given level within the Protection Source Hierarchy with the help of before or after cursors. A Cursor will always refer to a specific source within the source dataset but will be invalidated if the item is removed.",
+													Elem: &schema.Resource{
+														Schema: map[string]*schema.Schema{
+															"after_cursor_entity_id": &schema.Schema{
+																Type:        schema.TypeInt,
+																Computed:    true,
+																Description: "Specifies the entity id starting from which the items are to be returned.",
+															},
+															"before_cursor_entity_id": &schema.Schema{
+																Type:        schema.TypeInt,
+																Computed:    true,
+																Description: "Specifies the entity id upto which the items are to be returned.",
+															},
+															"node_id": &schema.Schema{
+																Type:        schema.TypeInt,
+																Computed:    true,
+																Description: "Specifies the entity id for the Node at any level within the Source entity hierarchy whose children are to be paginated.",
+															},
+															"page_size": &schema.Schema{
+																Type:        schema.TypeInt,
+																Computed:    true,
+																Description: "Specifies the maximum number of entities to be returned within the page.",
+															},
+														},
+													},
+												},
+												"entity_permission_info": &schema.Schema{
+													Type:        schema.TypeList,
+													Computed:    true,
+													Description: "Specifies the permission information of entities.",
+													Elem: &schema.Resource{
+														Schema: map[string]*schema.Schema{
+															"entity_id": &schema.Schema{
+																Type:        schema.TypeInt,
+																Computed:    true,
+																Description: "Specifies the entity id.",
+															},
+															"groups": &schema.Schema{
+																Type:        schema.TypeList,
+																Computed:    true,
+																Description: "Specifies struct with basic group details.",
+																Elem: &schema.Resource{
+																	Schema: map[string]*schema.Schema{
+																		"domain": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Computed:    true,
+																			Description: "Specifies domain name of the user.",
+																		},
+																		"group_name": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Computed:    true,
+																			Description: "Specifies group name of the group.",
+																		},
+																		"sid": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Computed:    true,
+																			Description: "Specifies unique Security ID (SID) of the user.",
+																		},
+																		"tenant_ids": &schema.Schema{
+																			Type:        schema.TypeList,
+																			Computed:    true,
+																			Description: "Specifies the tenants to which the group belongs to.",
+																			Elem: &schema.Schema{
+																				Type: schema.TypeString,
+																			},
+																		},
+																	},
+																},
+															},
+															"is_inferred": &schema.Schema{
+																Type:        schema.TypeBool,
+																Computed:    true,
+																Description: "Specifies whether the Entity Permission Information is inferred or not. For example, SQL application hosted over vCenter will have inferred entity permission information.",
+															},
+															"is_registered_by_sp": &schema.Schema{
+																Type:        schema.TypeBool,
+																Computed:    true,
+																Description: "Specifies whether this entity is registered by the SP or not. This will be populated only if the entity is a root entity. Refer to magneto/base/permissions.proto for details.",
+															},
+															"registering_tenant_id": &schema.Schema{
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "Specifies the tenant id that registered this entity. This will be populated only if the entity is a root entity.",
+															},
+															"tenant": &schema.Schema{
+																Type:        schema.TypeList,
+																Computed:    true,
+																Description: "Specifies struct with basic tenant details.",
+																Elem: &schema.Resource{
+																	Schema: map[string]*schema.Schema{
+																		"bifrost_enabled": &schema.Schema{
+																			Type:        schema.TypeBool,
+																			Computed:    true,
+																			Description: "Specifies if this tenant is bifrost enabled or not.",
+																		},
+																		"is_managed_on_helios": &schema.Schema{
+																			Type:        schema.TypeBool,
+																			Computed:    true,
+																			Description: "Specifies whether this tenant is manged on helios.",
+																		},
+																		"name": &schema.Schema{
+																			Type:        schema.TypeBool,
+																			Computed:    true,
+																			Description: "Specifies name of the tenant.",
+																		},
+																		"tenant_id": &schema.Schema{
+																			Type:        schema.TypeBool,
+																			Computed:    true,
+																			Description: "Specifies the unique id of the tenant.",
+																		},
+																	},
+																},
+															},
+															"users": &schema.Schema{
+																Type:        schema.TypeList,
+																Computed:    true,
+																Description: "Specifies struct with basic user details.",
+																Elem: &schema.Resource{
+																	Schema: map[string]*schema.Schema{
+																		"domain": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Computed:    true,
+																			Description: "Specifies domain name of the user.",
+																		},
+																		"sid": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Computed:    true,
+																			Description: "Specifies unique Security ID (SID) of the user.",
+																		},
+																		"tenant_id": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Computed:    true,
+																			Description: "Specifies the tenant to which the user belongs to.",
+																		},
+																		"user_name": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Computed:    true,
+																			Description: "Specifies user name of the user.",
+																		},
+																	},
+																},
+															},
+														},
+													},
+												},
+												"nodes": &schema.Schema{
+													Type:        schema.TypeList,
+													Computed:    true,
+													Description: "Specifies children of the current node in the Protection Sources hierarchy. When representing Objects in memory, the entire Object subtree hierarchy is represented. You can use this subtree to navigate down the Object hierarchy.",
+													Elem: &schema.Resource{
+														Schema: map[string]*schema.Schema{
+															"application_nodes": &schema.Schema{
+																Type:        schema.TypeList,
+																Computed:    true,
+																Description: "Specifies the child subtree used to store additional application-level Objects. Different environments use the subtree to store application-level information. For example for SQL Server, this subtree stores the SQL Server instances running on a VM.",
+																Elem: &schema.Resource{
+																	Schema: map[string]*schema.Schema{
+																		"nodes": &schema.Schema{
+																			Type:        schema.TypeList,
+																			Computed:    true,
+																			Description: "Specifies children of the current node in the Protection Sources hierarchy.",
+																			Elem: &schema.Resource{
+																				Schema: map[string]*schema.Schema{
+																					"application_nodes": &schema.Schema{
+																						Type:        schema.TypeList,
+																						Computed:    true,
+																						Description: "Specifies the child subtree used to store additional application-level Objects. Different environments use the subtree to store application-level information. For example for SQL Server, this subtree stores the SQL Server instances running on a VM.",
+																						Elem: &schema.Resource{
+																							Schema: map[string]*schema.Schema{},
+																						},
+																					},
+																					"entity_pagination_parameters": &schema.Schema{
+																						Type:        schema.TypeList,
+																						Computed:    true,
+																						Description: "Specifies the cursor based pagination parameters for Protection Source and its children. Pagination is supported at a given level within the Protection Source Hierarchy with the help of before or after cursors. A Cursor will always refer to a specific source within the source dataset but will be invalidated if the item is removed.",
+																						Elem: &schema.Resource{
+																							Schema: map[string]*schema.Schema{
+																								"after_cursor_entity_id": &schema.Schema{
+																									Type:        schema.TypeInt,
+																									Computed:    true,
+																									Description: "Specifies the entity id starting from which the items are to be returned.",
+																								},
+																								"before_cursor_entity_id": &schema.Schema{
+																									Type:        schema.TypeInt,
+																									Computed:    true,
+																									Description: "Specifies the entity id upto which the items are to be returned.",
+																								},
+																								"node_id": &schema.Schema{
+																									Type:        schema.TypeInt,
+																									Computed:    true,
+																									Description: "Specifies the entity id for the Node at any level within the Source entity hierarchy whose children are to be paginated.",
+																								},
+																								"page_size": &schema.Schema{
+																									Type:        schema.TypeInt,
+																									Computed:    true,
+																									Description: "Specifies the maximum number of entities to be returned within the page.",
+																								},
+																							},
+																						},
+																					},
+																					"entity_permission_info": &schema.Schema{
+																						Type:        schema.TypeList,
+																						Computed:    true,
+																						Description: "Specifies the permission information of entities.",
+																						Elem: &schema.Resource{
+																							Schema: map[string]*schema.Schema{
+																								"entity_id": &schema.Schema{
+																									Type:        schema.TypeInt,
+																									Computed:    true,
+																									Description: "Specifies the entity id.",
+																								},
+																								"groups": &schema.Schema{
+																									Type:        schema.TypeList,
+																									Computed:    true,
+																									Description: "Specifies struct with basic group details.",
+																									Elem: &schema.Resource{
+																										Schema: map[string]*schema.Schema{
+																											"domain": &schema.Schema{
+																												Type:        schema.TypeString,
+																												Computed:    true,
+																												Description: "Specifies domain name of the user.",
+																											},
+																											"group_name": &schema.Schema{
+																												Type:        schema.TypeString,
+																												Computed:    true,
+																												Description: "Specifies group name of the group.",
+																											},
+																											"sid": &schema.Schema{
+																												Type:        schema.TypeString,
+																												Computed:    true,
+																												Description: "Specifies unique Security ID (SID) of the user.",
+																											},
+																											"tenant_ids": &schema.Schema{
+																												Type:        schema.TypeList,
+																												Computed:    true,
+																												Description: "Specifies the tenants to which the group belongs to.",
+																												Elem: &schema.Schema{
+																													Type: schema.TypeString,
+																												},
+																											},
+																										},
+																									},
+																								},
+																								"is_inferred": &schema.Schema{
+																									Type:        schema.TypeBool,
+																									Computed:    true,
+																									Description: "Specifies whether the Entity Permission Information is inferred or not. For example, SQL application hosted over vCenter will have inferred entity permission information.",
+																								},
+																								"is_registered_by_sp": &schema.Schema{
+																									Type:        schema.TypeBool,
+																									Computed:    true,
+																									Description: "Specifies whether this entity is registered by the SP or not. This will be populated only if the entity is a root entity. Refer to magneto/base/permissions.proto for details.",
+																								},
+																								"registering_tenant_id": &schema.Schema{
+																									Type:        schema.TypeString,
+																									Computed:    true,
+																									Description: "Specifies the tenant id that registered this entity. This will be populated only if the entity is a root entity.",
+																								},
+																								"tenant": &schema.Schema{
+																									Type:        schema.TypeList,
+																									Computed:    true,
+																									Description: "Specifies struct with basic tenant details.",
+																									Elem: &schema.Resource{
+																										Schema: map[string]*schema.Schema{
+																											"bifrost_enabled": &schema.Schema{
+																												Type:        schema.TypeBool,
+																												Computed:    true,
+																												Description: "Specifies if this tenant is bifrost enabled or not.",
+																											},
+																											"is_managed_on_helios": &schema.Schema{
+																												Type:        schema.TypeBool,
+																												Computed:    true,
+																												Description: "Specifies whether this tenant is manged on helios.",
+																											},
+																											"name": &schema.Schema{
+																												Type:        schema.TypeBool,
+																												Computed:    true,
+																												Description: "Specifies name of the tenant.",
+																											},
+																											"tenant_id": &schema.Schema{
+																												Type:        schema.TypeBool,
+																												Computed:    true,
+																												Description: "Specifies the unique id of the tenant.",
+																											},
+																										},
+																									},
+																								},
+																								"users": &schema.Schema{
+																									Type:        schema.TypeList,
+																									Computed:    true,
+																									Description: "Specifies struct with basic user details.",
+																									Elem: &schema.Resource{
+																										Schema: map[string]*schema.Schema{
+																											"domain": &schema.Schema{
+																												Type:        schema.TypeString,
+																												Computed:    true,
+																												Description: "Specifies domain name of the user.",
+																											},
+																											"sid": &schema.Schema{
+																												Type:        schema.TypeString,
+																												Computed:    true,
+																												Description: "Specifies unique Security ID (SID) of the user.",
+																											},
+																											"tenant_id": &schema.Schema{
+																												Type:        schema.TypeString,
+																												Computed:    true,
+																												Description: "Specifies the tenant to which the user belongs to.",
+																											},
+																											"user_name": &schema.Schema{
+																												Type:        schema.TypeString,
+																												Computed:    true,
+																												Description: "Specifies user name of the user.",
+																											},
+																										},
+																									},
+																								},
+																							},
+																						},
+																					},
+																					"logical_size": &schema.Schema{
+																						Type:        schema.TypeInt,
+																						Computed:    true,
+																						Description: "Specifies the logical size of the data in bytes for the Object on this node. Presence of this field indicates this node is a leaf node.",
+																					},
+																					"nodes": &schema.Schema{
+																						Type:        schema.TypeList,
+																						Computed:    true,
+																						Description: "Specifies children of the current node in the Protection Sources hierarchy. When representing Objects in memory, the entire Object subtree hierarchy is represented. You can use this subtree to navigate down the Object hierarchy.",
+																						Elem: &schema.Resource{
+																							Schema: map[string]*schema.Schema{},
+																						},
+																					},
+																					"object_protection_info": &schema.Schema{
+																						Type:        schema.TypeList,
+																						Computed:    true,
+																						Description: "Specifies the Object Protection Info of the Protection Source.",
+																						Elem: &schema.Resource{
+																							Schema: map[string]*schema.Schema{
+																								"auto_protect_parent_id": &schema.Schema{
+																									Type:        schema.TypeInt,
+																									Computed:    true,
+																									Description: "Specifies the auto protect parent id if this entity is protected based on auto protection. This is only specified for leaf entities.",
+																								},
+																								"entity_id": &schema.Schema{
+																									Type:        schema.TypeInt,
+																									Computed:    true,
+																									Description: "Specifies the entity id.",
+																								},
+																								"has_active_object_protection_spec": &schema.Schema{
+																									Type:        schema.TypeInt,
+																									Computed:    true,
+																									Description: "Specifies if the entity is under object protection.",
+																								},
+																							},
+																						},
+																					},
+																					"protected_sources_summary": &schema.Schema{
+																						Type:        schema.TypeList,
+																						Computed:    true,
+																						Description: "Array of Protected Objects. Specifies aggregated information about all the child Objects of this node that are currently protected by a Protection Job. There is one entry for each environment that is being backed up. The aggregated information for the Object hierarchy's environment will be available at the 0th index of the vector.",
+																						Elem: &schema.Resource{
+																							Schema: map[string]*schema.Schema{
+																								"environment": &schema.Schema{
+																									Type:        schema.TypeString,
+																									Computed:    true,
+																									Description: "Specifies the environment such as 'kSQL' or 'kVMware', where the Protection Source exists. Supported environment types such as 'kView', 'kSQL', 'kVMware', etc. NOTE 'kPuppeteer' refers to Cohesity's Remote Adapter. 'kVMware' indicates the VMware Protection Source environment. 'kHyperV' indicates the HyperV Protection Source environment. 'kSQL' indicates the SQL Protection Source environment. 'kView' indicates the View Protection Source environment. 'kPuppeteer' indicates the Cohesity's Remote Adapter. 'kPhysical' indicates the physical Protection Source environment. 'kPure' indicates the Pure Storage Protection Source environment. 'kNimble' indicates the Nimble Storage Protection Source environment. 'kAzure' indicates the Microsoft's Azure Protection Source environment. 'kNetapp' indicates the Netapp Protection Source environment. 'kAgent' indicates the Agent Protection Source environment. 'kGenericNas' indicates the Generic Network Attached Storage Protection Source environment. 'kAcropolis' indicates the Acropolis Protection Source environment. 'kPhysicalFiles' indicates the Physical Files Protection Source environment. 'kIbmFlashSystem' indicates the IBM Flash System Protection Source environment. 'kIsilon' indicates the Dell EMC's Isilon Protection Source environment. 'kGPFS' indicates IBM's GPFS Protection Source environment. 'kKVM' indicates the KVM Protection Source environment. 'kAWS' indicates the AWS Protection Source environment. 'kExchange' indicates the Exchange Protection Source environment. 'kHyperVVSS' indicates the HyperV VSS Protection Source environment. 'kOracle' indicates the Oracle Protection Source environment. 'kGCP' indicates the Google Cloud Platform Protection Source environment. 'kFlashBlade' indicates the Flash Blade Protection Source environment. 'kAWSNative' indicates the AWS Native Protection Source environment. 'kO365' indicates the Office 365 Protection Source environment. 'kO365Outlook' indicates Office 365 outlook Protection Source environment. 'kHyperFlex' indicates the Hyper Flex Protection Source environment. 'kGCPNative' indicates the GCP Native Protection Source environment. 'kAzureNative' indicates the Azure Native Protection Source environment. 'kKubernetes' indicates a Kubernetes Protection Source environment. 'kElastifile' indicates Elastifile Protection Source environment. 'kAD' indicates Active Directory Protection Source environment. 'kRDSSnapshotManager' indicates AWS RDS Protection Source environment. 'kCassandra' indicates Cassandra Protection Source environment. 'kMongoDB' indicates MongoDB Protection Source environment. 'kCouchbase' indicates Couchbase Protection Source environment. 'kHdfs' indicates Hdfs Protection Source environment. 'kHive' indicates Hive Protection Source environment. 'kHBase' indicates HBase Protection Source environment. 'kUDA' indicates Universal Data Adapter Protection Source environment. 'kO365Teams' indicates the Office365 Teams Protection Source environment. 'kO365Group' indicates the Office365 Groups Protection Source environment. 'kO365Exchange' indicates the Office365 Mailbox Protection Source environment. 'kO365OneDrive' indicates the Office365 OneDrive Protection Source environment. 'kO365Sharepoint' indicates the Office365 SharePoint Protection Source environment. 'kO365PublicFolders' indicates the Office365 PublicFolders Protection Source environment.",
+																								},
+																								"leaves_count": &schema.Schema{
+																									Type:        schema.TypeInt,
+																									Computed:    true,
+																									Description: "Specifies the number of leaf nodes under the subtree of this node.",
+																								},
+																								"total_logical_size": &schema.Schema{
+																									Type:        schema.TypeInt,
+																									Computed:    true,
+																									Description: "Specifies the total logical size of the data under the subtree of this node.",
+																								},
+																							},
+																						},
+																					},
+																					"protection_source": &schema.Schema{
+																						Type:        schema.TypeList,
+																						Computed:    true,
+																						Description: "Specifies details about an Acropolis Protection Source when the environment is set to 'kAcropolis'.",
+																						Elem: &schema.Resource{
+																							Schema: map[string]*schema.Schema{
+																								"connection_id": &schema.Schema{
+																									Type:        schema.TypeInt,
+																									Computed:    true,
+																									Description: "Specifies the connection id of the tenant.",
+																								},
+																								"connector_group_id": &schema.Schema{
+																									Type:        schema.TypeInt,
+																									Computed:    true,
+																									Description: "Specifies the connector group id of the connector groups.",
+																								},
+																								"custom_name": &schema.Schema{
+																									Type:        schema.TypeString,
+																									Computed:    true,
+																									Description: "Specifies the user provided custom name of the Protection Source.",
+																								},
+																								"environment": &schema.Schema{
+																									Type:        schema.TypeString,
+																									Computed:    true,
+																									Description: "Specifies the environment (such as 'kVMware' or 'kSQL') where the Protection Source exists. Depending on the environment, one of the following Protection Sources are initialized.",
+																								},
+																								"id": &schema.Schema{
+																									Type:        schema.TypeInt,
+																									Computed:    true,
+																									Description: "Specifies an id of the Protection Source.",
+																								},
+																								"name": &schema.Schema{
+																									Type:        schema.TypeString,
+																									Computed:    true,
+																									Description: "Specifies a name of the Protection Source.",
+																								},
+																								"parent_id": &schema.Schema{
+																									Type:        schema.TypeInt,
+																									Computed:    true,
+																									Description: "Specifies an id of the parent of the Protection Source.",
+																								},
+																								"physical_protection_source": &schema.Schema{
+																									Type:        schema.TypeList,
+																									Computed:    true,
+																									Description: "Specifies a Protection Source in a Physical environment.",
+																									Elem: &schema.Resource{
+																										Schema: map[string]*schema.Schema{
+																											"agents": &schema.Schema{
+																												Type:        schema.TypeList,
+																												Computed:    true,
+																												Description: "Specifiles the agents running on the Physical Protection Source and the status information.",
+																												Elem: &schema.Resource{
+																													Schema: map[string]*schema.Schema{
+																														"cbmr_version": &schema.Schema{
+																															Type:        schema.TypeString,
+																															Computed:    true,
+																															Description: "Specifies the version if Cristie BMR product is installed on the host.",
+																														},
+																														"file_cbt_info": &schema.Schema{
+																															Type:        schema.TypeList,
+																															Computed:    true,
+																															Description: "CBT version and service state info.",
+																															Elem: &schema.Resource{
+																																Schema: map[string]*schema.Schema{
+																																	"file_version": &schema.Schema{
+																																		Type:        schema.TypeList,
+																																		Computed:    true,
+																																		Description: "Subcomponent version. The interpretation of the version is based on operating system.",
+																																		Elem: &schema.Resource{
+																																			Schema: map[string]*schema.Schema{
+																																				"build_ver": &schema.Schema{
+																																					Type:     schema.TypeFloat,
+																																					Computed: true,
+																																				},
+																																				"major_ver": &schema.Schema{
+																																					Type:     schema.TypeFloat,
+																																					Computed: true,
+																																				},
+																																				"minor_ver": &schema.Schema{
+																																					Type:     schema.TypeFloat,
+																																					Computed: true,
+																																				},
+																																				"revision_num": &schema.Schema{
+																																					Type:     schema.TypeFloat,
+																																					Computed: true,
+																																				},
+																																			},
+																																		},
+																																	},
+																																	"is_installed": &schema.Schema{
+																																		Type:        schema.TypeBool,
+																																		Computed:    true,
+																																		Description: "Indicates whether the cbt driver is installed.",
+																																	},
+																																	"reboot_status": &schema.Schema{
+																																		Type:        schema.TypeString,
+																																		Computed:    true,
+																																		Description: "Indicates whether host is rebooted post VolCBT installation.",
+																																	},
+																																	"service_state": &schema.Schema{
+																																		Type:        schema.TypeList,
+																																		Computed:    true,
+																																		Description: "Structure to Hold Service Status.",
+																																		Elem: &schema.Resource{
+																																			Schema: map[string]*schema.Schema{
+																																				"name": &schema.Schema{
+																																					Type:     schema.TypeString,
+																																					Computed: true,
+																																				},
+																																				"state": &schema.Schema{
+																																					Type:     schema.TypeString,
+																																					Computed: true,
+																																				},
+																																			},
+																																		},
+																																	},
+																																},
+																															},
+																														},
+																														"host_type": &schema.Schema{
+																															Type:        schema.TypeString,
+																															Computed:    true,
+																															Description: "Specifies the host type where the agent is running. This is only set for persistent agents.",
+																														},
+																														"id": &schema.Schema{
+																															Type:        schema.TypeInt,
+																															Computed:    true,
+																															Description: "Specifies the agent's id.",
+																														},
+																														"name": &schema.Schema{
+																															Type:        schema.TypeString,
+																															Computed:    true,
+																															Description: "Specifies the agent's name.",
+																														},
+																														"oracle_multi_node_channel_supported": &schema.Schema{
+																															Type:        schema.TypeBool,
+																															Computed:    true,
+																															Description: "Specifies whether oracle multi node multi channel is supported or not.",
+																														},
+																														"registration_info": &schema.Schema{
+																															Type:        schema.TypeList,
+																															Computed:    true,
+																															Description: "Specifies information about a registered Source.",
+																															Elem: &schema.Resource{
+																																Schema: map[string]*schema.Schema{
+																																	"access_info": &schema.Schema{
+																																		Type:        schema.TypeList,
+																																		Computed:    true,
+																																		Description: "Specifies the parameters required to establish a connection with a particular environment.",
+																																		Elem: &schema.Resource{
+																																			Schema: map[string]*schema.Schema{
+																																				"connection_id": &schema.Schema{
+																																					Type:        schema.TypeInt,
+																																					Computed:    true,
+																																					Description: "ID of the Bifrost (HyX or Rigel) network realm (i.e. a connection) associated with the source.",
+																																				},
+																																				"connector_group_id": &schema.Schema{
+																																					Type:        schema.TypeInt,
+																																					Computed:    true,
+																																					Description: "Specifies the Id of the connector group. Each connector group is collection of Rigel/hyx. Each entity will be tagged with connector group id.",
+																																				},
+																																				"endpoint": &schema.Schema{
+																																					Type:        schema.TypeString,
+																																					Computed:    true,
+																																					Description: "Specify an IP address or URL of the environment. (such as the IP address of the vCenter Server for a VMware environment).",
+																																				},
+																																				"environment": &schema.Schema{
+																																					Type:        schema.TypeString,
+																																					Computed:    true,
+																																					Description: "Specifies the environment like VMware, SQL, where the Protection Source exists. Supported environment types such as 'kView', 'kSQL', 'kVMware', etc.",
+																																				},
+																																				"id": &schema.Schema{
+																																					Type:        schema.TypeInt,
+																																					Computed:    true,
+																																					Description: "Specifies a Unique id that is generated when the Source is registered. This is a convenience field that is used to maintain an index to different connection params.",
+																																				},
+																																				"version": &schema.Schema{
+																																					Type:        schema.TypeInt,
+																																					Computed:    true,
+																																					Description: "Version is updated each time the connector parameters are updated. This is used to discard older connector parameters.",
+																																				},
+																																			},
+																																		},
+																																	},
+																																	"allowed_ip_addresses": &schema.Schema{
+																																		Type:        schema.TypeList,
+																																		Computed:    true,
+																																		Description: "Specifies the list of IP Addresses on the registered source to be exclusively allowed for doing any type of IO operations.",
+																																		Elem: &schema.Schema{
+																																			Type: schema.TypeString,
+																																		},
+																																	},
+																																	"authentication_error_message": &schema.Schema{
+																																		Type:        schema.TypeString,
+																																		Computed:    true,
+																																		Description: "Specifies an authentication error message. This indicates the given credentials are rejected and the registration of the source is not successful.",
+																																	},
+																																	"authentication_status": &schema.Schema{
+																																		Type:        schema.TypeString,
+																																		Computed:    true,
+																																		Description: "Specifies the status of the authenticating to the Protection Source when registering it with Cohesity Cluster.",
+																																	},
+																																	"blacklisted_ip_addresses": &schema.Schema{
+																																		Type:        schema.TypeList,
+																																		Computed:    true,
+																																		Description: "This field is deprecated. Use DeniedIpAddresses instead.",
+																																		Elem: &schema.Schema{
+																																			Type: schema.TypeString,
+																																		},
+																																	},
+																																	"denied_ip_addresses": &schema.Schema{
+																																		Type:        schema.TypeList,
+																																		Computed:    true,
+																																		Description: "Specifies the list of IP Addresses on the registered source to be denied for doing any type of IO operations.",
+																																		Elem: &schema.Schema{
+																																			Type: schema.TypeString,
+																																		},
+																																	},
+																																	"environments": &schema.Schema{
+																																		Type:        schema.TypeList,
+																																		Computed:    true,
+																																		Description: "Specifies a list of applications environment that are registered with this Protection Source such as 'kSQL'. Supported environment types such as 'kView', 'kSQL', 'kVMware', etc.",
+																																		Elem: &schema.Schema{
+																																			Type: schema.TypeString,
+																																		},
+																																	},
+																																	"is_db_authenticated": &schema.Schema{
+																																		Type:        schema.TypeBool,
+																																		Computed:    true,
+																																		Description: "Specifies if application entity dbAuthenticated or not.",
+																																	},
+																																	"is_storage_array_snapshot_enabled": &schema.Schema{
+																																		Type:        schema.TypeBool,
+																																		Computed:    true,
+																																		Description: "Specifies if this source entity has enabled storage array snapshot or not.",
+																																	},
+																																	"link_vms_across_vcenter": &schema.Schema{
+																																		Type:        schema.TypeBool,
+																																		Computed:    true,
+																																		Description: "Specifies if the VM linking feature is enabled for this VCenter This means that VMs present in this VCenter which earlier belonged to some other VCenter(also registerd on same cluster) and were migrated, will be linked during EH refresh. This will enable preserving snapshot chains for migrated VMs.",
+																																	},
+																																	"minimum_free_space_gb": &schema.Schema{
+																																		Type:        schema.TypeInt,
+																																		Computed:    true,
+																																		Description: "Specifies the minimum free space in GiB of the space expected to be available on the datastore where the virtual disks of the VM being backed up. If the amount of free space(in GiB) is lower than the value given by this field, backup will be aborted. Note that this field is applicable only to 'kVMware' type of environments.",
+																																	},
+																																	"minimum_free_space_percent": &schema.Schema{
+																																		Type:        schema.TypeInt,
+																																		Computed:    true,
+																																		Description: "Specifies the minimum free space in percentage of the space expected to be available on the datastore where the virtual disks of the VM being backed up. If the amount of free space(in percentage) is lower than the value given by this field, backup will be aborted. Note that this field is applicable only to 'kVMware' type of environments.",
+																																	},
+																																	"password": &schema.Schema{
+																																		Type:        schema.TypeString,
+																																		Computed:    true,
+																																		Description: "Specifies password of the username to access the target source.",
+																																	},
+																																	"physical_params": &schema.Schema{
+																																		Type:        schema.TypeList,
+																																		Computed:    true,
+																																		Description: "Specifies the parameters required to register Application Servers running in a Protection Source specific to a physical adapter.",
+																																		Elem: &schema.Resource{
+																																			Schema: map[string]*schema.Schema{
+																																				"applications": &schema.Schema{
+																																					Type:        schema.TypeList,
+																																					Computed:    true,
+																																					Description: "Specifies the types of applications such as 'kSQL', 'kExchange', 'kAD' running on the Protection Source. Supported environment types such as 'kView', 'kSQL', 'kVMware', etc.",
+																																					Elem: &schema.Schema{
+																																						Type: schema.TypeString,
+																																					},
+																																				},
+																																				"password": &schema.Schema{
+																																					Type:        schema.TypeString,
+																																					Computed:    true,
+																																					Description: "Specifies password of the username to access the target source.",
+																																				},
+																																				"throttling_config": &schema.Schema{
+																																					Type:        schema.TypeList,
+																																					Computed:    true,
+																																					Description: "Specifies the source side throttling configuration.",
+																																					Elem: &schema.Resource{
+																																						Schema: map[string]*schema.Schema{
+																																							"cpu_throttling_config": &schema.Schema{
+																																								Type:        schema.TypeList,
+																																								Computed:    true,
+																																								Description: "Specifies the Throttling Configuration Parameters.",
+																																								Elem: &schema.Resource{
+																																									Schema: map[string]*schema.Schema{
+																																										"fixed_threshold": &schema.Schema{
+																																											Type:        schema.TypeInt,
+																																											Computed:    true,
+																																											Description: "Fixed baseline threshold for throttling. This is mandatory for any other throttling type than kNoThrottling.",
+																																										},
+																																										"pattern_type": &schema.Schema{
+																																											Type:        schema.TypeString,
+																																											Computed:    true,
+																																											Description: "Type of the throttling pattern. 'kNoThrottling' indicates that throttling is not in force. 'kBaseThrottling' indicates indicates a constant base level throttling. 'kFixed' indicates a constant base level throttling.",
+																																										},
+																																										"throttling_windows": &schema.Schema{
+																																											Type:        schema.TypeList,
+																																											Computed:    true,
+																																											Description: "Specifies the Throttling Window Parameters Definition.",
+																																											Elem: &schema.Resource{
+																																												Schema: map[string]*schema.Schema{
+																																													"day_time_window": &schema.Schema{
+																																														Type:        schema.TypeList,
+																																														Computed:    true,
+																																														Description: "Specifies the Day Time Window Parameters.",
+																																														Elem: &schema.Resource{
+																																															Schema: map[string]*schema.Schema{
+																																																"end_time": &schema.Schema{
+																																																	Type:        schema.TypeList,
+																																																	Computed:    true,
+																																																	Description: "Specifies the Day Time Parameters.",
+																																																	Elem: &schema.Resource{
+																																																		Schema: map[string]*schema.Schema{
+																																																			"day": &schema.Schema{
+																																																				Type:        schema.TypeString,
+																																																				Computed:    true,
+																																																				Description: "Specifies the day of the week (such as 'kMonday') for scheduling throttling. Specifies a day in a week such as 'kSunday', 'kMonday', etc.",
+																																																			},
+																																																			"time": &schema.Schema{
+																																																				Type:        schema.TypeList,
+																																																				Computed:    true,
+																																																				Description: "Specifies the time in hours and minutes.",
+																																																				Elem: &schema.Resource{
+																																																					Schema: map[string]*schema.Schema{
+																																																						"hour": &schema.Schema{
+																																																							Type:        schema.TypeInt,
+																																																							Computed:    true,
+																																																							Description: "Specifies the hour of this time.",
+																																																						},
+																																																						"minute": &schema.Schema{
+																																																							Type:        schema.TypeInt,
+																																																							Computed:    true,
+																																																							Description: "Specifies the minute of this time.",
+																																																						},
+																																																					},
+																																																				},
+																																																			},
+																																																		},
+																																																	},
+																																																},
+																																																"start_time": &schema.Schema{
+																																																	Type:        schema.TypeList,
+																																																	Computed:    true,
+																																																	Description: "Specifies the Day Time Parameters.",
+																																																	Elem: &schema.Resource{
+																																																		Schema: map[string]*schema.Schema{
+																																																			"day": &schema.Schema{
+																																																				Type:        schema.TypeString,
+																																																				Computed:    true,
+																																																				Description: "Specifies the day of the week (such as 'kMonday') for scheduling throttling. Specifies a day in a week such as 'kSunday', 'kMonday', etc.",
+																																																			},
+																																																			"time": &schema.Schema{
+																																																				Type:        schema.TypeList,
+																																																				Computed:    true,
+																																																				Description: "Specifies the time in hours and minutes.",
+																																																				Elem: &schema.Resource{
+																																																					Schema: map[string]*schema.Schema{
+																																																						"hour": &schema.Schema{
+																																																							Type:        schema.TypeInt,
+																																																							Computed:    true,
+																																																							Description: "Specifies the hour of this time.",
+																																																						},
+																																																						"minute": &schema.Schema{
+																																																							Type:        schema.TypeInt,
+																																																							Computed:    true,
+																																																							Description: "Specifies the minute of this time.",
+																																																						},
+																																																					},
+																																																				},
+																																																			},
+																																																		},
+																																																	},
+																																																},
+																																															},
+																																														},
+																																													},
+																																													"threshold": &schema.Schema{
+																																														Type:        schema.TypeInt,
+																																														Computed:    true,
+																																														Description: "Throttling threshold applicable in the window.",
+																																													},
+																																												},
+																																											},
+																																										},
+																																									},
+																																								},
+																																							},
+																																							"network_throttling_config": &schema.Schema{
+																																								Type:        schema.TypeList,
+																																								Computed:    true,
+																																								Description: "Specifies the Throttling Configuration Parameters.",
+																																								Elem: &schema.Resource{
+																																									Schema: map[string]*schema.Schema{
+																																										"fixed_threshold": &schema.Schema{
+																																											Type:        schema.TypeInt,
+																																											Computed:    true,
+																																											Description: "Fixed baseline threshold for throttling. This is mandatory for any other throttling type than kNoThrottling.",
+																																										},
+																																										"pattern_type": &schema.Schema{
+																																											Type:        schema.TypeString,
+																																											Computed:    true,
+																																											Description: "Type of the throttling pattern. 'kNoThrottling' indicates that throttling is not in force. 'kBaseThrottling' indicates indicates a constant base level throttling. 'kFixed' indicates a constant base level throttling.",
+																																										},
+																																										"throttling_windows": &schema.Schema{
+																																											Type:        schema.TypeList,
+																																											Computed:    true,
+																																											Description: "Specifies the Throttling Window Parameters Definition.",
+																																											Elem: &schema.Resource{
+																																												Schema: map[string]*schema.Schema{
+																																													"day_time_window": &schema.Schema{
+																																														Type:        schema.TypeList,
+																																														Computed:    true,
+																																														Description: "Specifies the Day Time Window Parameters.",
+																																														Elem: &schema.Resource{
+																																															Schema: map[string]*schema.Schema{
+																																																"end_time": &schema.Schema{
+																																																	Type:        schema.TypeList,
+																																																	Computed:    true,
+																																																	Description: "Specifies the Day Time Parameters.",
+																																																	Elem: &schema.Resource{
+																																																		Schema: map[string]*schema.Schema{
+																																																			"day": &schema.Schema{
+																																																				Type:        schema.TypeString,
+																																																				Computed:    true,
+																																																				Description: "Specifies the day of the week (such as 'kMonday') for scheduling throttling. Specifies a day in a week such as 'kSunday', 'kMonday', etc.",
+																																																			},
+																																																			"time": &schema.Schema{
+																																																				Type:        schema.TypeList,
+																																																				Computed:    true,
+																																																				Description: "Specifies the time in hours and minutes.",
+																																																				Elem: &schema.Resource{
+																																																					Schema: map[string]*schema.Schema{
+																																																						"hour": &schema.Schema{
+																																																							Type:        schema.TypeInt,
+																																																							Computed:    true,
+																																																							Description: "Specifies the hour of this time.",
+																																																						},
+																																																						"minute": &schema.Schema{
+																																																							Type:        schema.TypeInt,
+																																																							Computed:    true,
+																																																							Description: "Specifies the minute of this time.",
+																																																						},
+																																																					},
+																																																				},
+																																																			},
+																																																		},
+																																																	},
+																																																},
+																																																"start_time": &schema.Schema{
+																																																	Type:        schema.TypeList,
+																																																	Computed:    true,
+																																																	Description: "Specifies the Day Time Parameters.",
+																																																	Elem: &schema.Resource{
+																																																		Schema: map[string]*schema.Schema{
+																																																			"day": &schema.Schema{
+																																																				Type:        schema.TypeString,
+																																																				Computed:    true,
+																																																				Description: "Specifies the day of the week (such as 'kMonday') for scheduling throttling. Specifies a day in a week such as 'kSunday', 'kMonday', etc.",
+																																																			},
+																																																			"time": &schema.Schema{
+																																																				Type:        schema.TypeList,
+																																																				Computed:    true,
+																																																				Description: "Specifies the time in hours and minutes.",
+																																																				Elem: &schema.Resource{
+																																																					Schema: map[string]*schema.Schema{
+																																																						"hour": &schema.Schema{
+																																																							Type:        schema.TypeInt,
+																																																							Computed:    true,
+																																																							Description: "Specifies the hour of this time.",
+																																																						},
+																																																						"minute": &schema.Schema{
+																																																							Type:        schema.TypeInt,
+																																																							Computed:    true,
+																																																							Description: "Specifies the minute of this time.",
+																																																						},
+																																																					},
+																																																				},
+																																																			},
+																																																		},
+																																																	},
+																																																},
+																																															},
+																																														},
+																																													},
+																																													"threshold": &schema.Schema{
+																																														Type:        schema.TypeInt,
+																																														Computed:    true,
+																																														Description: "Throttling threshold applicable in the window.",
+																																													},
+																																												},
+																																											},
+																																										},
+																																									},
+																																								},
+																																							},
+																																						},
+																																					},
+																																				},
+																																				"username": &schema.Schema{
+																																					Type:        schema.TypeString,
+																																					Computed:    true,
+																																					Description: "Specifies username to access the target source.",
+																																				},
+																																			},
+																																		},
+																																	},
+																																	"progress_monitor_path": &schema.Schema{
+																																		Type:        schema.TypeString,
+																																		Computed:    true,
+																																		Description: "Captures the current progress and pulse details w.r.t to either the registration or refresh.",
+																																	},
+																																	"refresh_error_message": &schema.Schema{
+																																		Type:        schema.TypeString,
+																																		Computed:    true,
+																																		Description: "Specifies a message if there was any error encountered during the last rebuild of the Protection Source tree. If there was no error during the last rebuild, this field is reset.",
+																																	},
+																																	"refresh_time_usecs": &schema.Schema{
+																																		Type:        schema.TypeInt,
+																																		Computed:    true,
+																																		Description: "Specifies the Unix epoch time (in microseconds) when the Protection Source tree was most recently fetched and built.",
+																																	},
+																																	"registered_apps_info": &schema.Schema{
+																																		Type:        schema.TypeList,
+																																		Computed:    true,
+																																		Description: "Specifies information of the applications registered on this protection source.",
+																																		Elem: &schema.Resource{
+																																			Schema: map[string]*schema.Schema{
+																																				"authentication_error_message": &schema.Schema{
+																																					Type:        schema.TypeString,
+																																					Computed:    true,
+																																					Description: "pecifies an authentication error message. This indicates the given credentials are rejected and the registration of the application is not successful.",
+																																				},
+																																				"authentication_status": &schema.Schema{
+																																					Type:        schema.TypeString,
+																																					Computed:    true,
+																																					Description: "Specifies the status of authenticating to the Protection Source when registering this application with Cohesity Cluster. If the status is 'kFinished' and there is no error, registration is successful. Specifies the status of the authentication during the registration of a Protection Source. 'kPending' indicates the authentication is in progress. 'kScheduled' indicates the authentication is scheduled. 'kFinished' indicates the authentication is completed. 'kRefreshInProgress' indicates the refresh is in progress.",
+																																				},
+																																				"environment": &schema.Schema{
+																																					Type:        schema.TypeString,
+																																					Computed:    true,
+																																					Description: "Specifies the application environment. Supported environment types such as 'kView', 'kSQL', 'kVMware', etc.",
+																																				},
+																																				"host_settings_check_results": &schema.Schema{
+																																					Type:        schema.TypeList,
+																																					Computed:    true,
+																																					Description: "Specifies the list of check results internally performed to verify status of various services such as 'AgnetRunning', 'SQLWriterRunning' etc.",
+																																					Elem: &schema.Resource{
+																																						Schema: map[string]*schema.Schema{
+																																							"check_type": &schema.Schema{
+																																								Type:        schema.TypeString,
+																																								Computed:    true,
+																																								Description: "Specifies the type of the check internally performed. Specifies the type of the host check performed internally. 'kIsAgentPortAccessible' indicates the check for agent port access. 'kIsAgentRunning' indicates the status for the Cohesity agent service. 'kIsSQLWriterRunning' indicates the status for SQLWriter service. 'kAreSQLInstancesRunning' indicates the run status for all the SQL instances in the host. 'kCheckServiceLoginsConfig' checks the privileges and sysadmin status of the logins used by the SQL instance services, Cohesity agent service and the SQLWriter service. 'kCheckSQLFCIVIP' checks whether the SQL FCI is registered with a valid VIP or FQDN. 'kCheckSQLDiskSpace' checks whether volumes containing SQL DBs have at least 10% free space.",
+																																							},
+																																							"result_type": &schema.Schema{
+																																								Type:        schema.TypeString,
+																																								Computed:    true,
+																																								Description: "Specifies the type of the result returned after performing the internal host check. Specifies the type of the host check result performed internally. 'kPass' indicates that the respective check was successful. 'kFail' indicates that the respective check failed as some mandatory setting is not met 'kWarning' indicates that the respective check has warning as certain non-mandatory setting is not met.",
+																																							},
+																																							"user_message": &schema.Schema{
+																																								Type:        schema.TypeString,
+																																								Computed:    true,
+																																								Description: "Specifies a descriptive message for failed/warning types.",
+																																							},
+																																						},
+																																					},
+																																				},
+																																				"refresh_error_message": &schema.Schema{
+																																					Type:        schema.TypeString,
+																																					Computed:    true,
+																																					Description: "Specifies a message if there was any error encountered during the last rebuild of the application tree. If there was no error during the last rebuild, this field is reset.",
+																																				},
+																																			},
+																																		},
+																																	},
+																																	"registration_time_usecs": &schema.Schema{
+																																		Type:        schema.TypeInt,
+																																		Computed:    true,
+																																		Description: "Specifies the Unix epoch time (in microseconds) when the Protection Source was registered.",
+																																	},
+																																	"subnets": &schema.Schema{
+																																		Type:        schema.TypeList,
+																																		Computed:    true,
+																																		Description: "Specifies the list of subnets added during creation or updation of vmare source. Currently, this field will only be populated in case of VMware registration.",
+																																		Elem: &schema.Resource{
+																																			Schema: map[string]*schema.Schema{
+																																				"component": &schema.Schema{
+																																					Type:        schema.TypeString,
+																																					Computed:    true,
+																																					Description: "Component that has reserved the subnet.",
+																																				},
+																																				"description": &schema.Schema{
+																																					Type:        schema.TypeString,
+																																					Computed:    true,
+																																					Description: "Description of the subnet.",
+																																				},
+																																				"id": &schema.Schema{
+																																					Type:        schema.TypeFloat,
+																																					Computed:    true,
+																																					Description: "ID of the subnet.",
+																																				},
+																																				"ip": &schema.Schema{
+																																					Type:        schema.TypeString,
+																																					Computed:    true,
+																																					Description: "Specifies either an IPv6 address or an IPv4 address.",
+																																				},
+																																				"netmask_bits": &schema.Schema{
+																																					Type:        schema.TypeFloat,
+																																					Computed:    true,
+																																					Description: "netmaskBits.",
+																																				},
+																																				"netmask_ip4": &schema.Schema{
+																																					Type:        schema.TypeString,
+																																					Computed:    true,
+																																					Description: "Specifies the netmask using an IP4 address. The netmask can only be set using netmaskIp4 if the IP address is an IPv4 address.",
+																																				},
+																																				"nfs_access": &schema.Schema{
+																																					Type:        schema.TypeString,
+																																					Computed:    true,
+																																					Description: "Component that has reserved the subnet.",
+																																				},
+																																				"nfs_all_squash": &schema.Schema{
+																																					Type:        schema.TypeBool,
+																																					Computed:    true,
+																																					Description: "Specifies whether all clients from this subnet can map view with view_all_squash_uid/view_all_squash_gid configured in the view.",
+																																				},
+																																				"nfs_root_squash": &schema.Schema{
+																																					Type:        schema.TypeBool,
+																																					Computed:    true,
+																																					Description: "Specifies whether clients from this subnet can mount as root on NFS.",
+																																				},
+																																				"s3_access": &schema.Schema{
+																																					Type:        schema.TypeString,
+																																					Computed:    true,
+																																					Description: "Specifies whether clients from this subnet can access using S3 protocol. Protocol access level. 'kDisabled' indicates Protocol access level 'Disabled' 'kReadOnly' indicates Protocol access level 'ReadOnly' 'kReadWrite' indicates Protocol access level 'ReadWrite'.",
+																																				},
+																																				"smb_access": &schema.Schema{
+																																					Type:        schema.TypeString,
+																																					Computed:    true,
+																																					Description: "Specifies whether clients from this subnet can mount using SMB protocol. Protocol access level. 'kDisabled' indicates Protocol access level 'Disabled' 'kReadOnly' indicates Protocol access level 'ReadOnly' 'kReadWrite' indicates Protocol access level 'ReadWrite'.",
+																																				},
+																																				"tenant_id": &schema.Schema{
+																																					Type:        schema.TypeString,
+																																					Computed:    true,
+																																					Description: "Specifies the unique id of the tenant.",
+																																				},
+																																			},
+																																		},
+																																	},
+																																	"throttling_policy": &schema.Schema{
+																																		Type:        schema.TypeList,
+																																		Computed:    true,
+																																		Description: "Specifies the throttling policy for a registered Protection Source.",
+																																		Elem: &schema.Resource{
+																																			Schema: map[string]*schema.Schema{
+																																				"enforce_max_streams": &schema.Schema{
+																																					Type:        schema.TypeBool,
+																																					Computed:    true,
+																																					Description: "Specifies whether datastore streams are configured for all datastores that are part of the registered entity. If set to true, number of streams from Cohesity cluster to the registered entity will be limited to the value set for maxConcurrentStreams. If not set or set to false, there is no max limit for the number of concurrent streams.",
+																																				},
+																																				"enforce_registered_source_max_backups": &schema.Schema{
+																																					Type:        schema.TypeBool,
+																																					Computed:    true,
+																																					Description: "Specifies whether no. of backups are configured for the registered entity. If set to true, number of backups made by Cohesity cluster in the registered entity will be limited to the value set for RegisteredSourceMaxConcurrentBackups. If not set or set to false, there is no max limit for the number of concurrent backups.",
+																																				},
+																																				"is_enabled": &schema.Schema{
+																																					Type:        schema.TypeBool,
+																																					Computed:    true,
+																																					Description: "Indicates whether read operations to the datastores, which are part of the registered Protection Source, are throttled.",
+																																				},
+																																				"latency_thresholds": &schema.Schema{
+																																					Type:        schema.TypeList,
+																																					Computed:    true,
+																																					Description: "Specifies latency thresholds that trigger throttling for all datastores found in the registered Protection Source or specific to one datastore.",
+																																					Elem: &schema.Resource{
+																																						Schema: map[string]*schema.Schema{
+																																							"active_task_msecs": &schema.Schema{
+																																								Type:        schema.TypeInt,
+																																								Computed:    true,
+																																								Description: "If the latency of a datastore is above this value, existing backup tasks using the datastore are throttled.",
+																																							},
+																																							"new_task_msecs": &schema.Schema{
+																																								Type:        schema.TypeInt,
+																																								Computed:    true,
+																																								Description: "If the latency of a datastore is above this value, then new backup tasks using the datastore will not be started.",
+																																							},
+																																						},
+																																					},
+																																				},
+																																				"max_concurrent_streams": &schema.Schema{
+																																					Type:        schema.TypeFloat,
+																																					Computed:    true,
+																																					Description: "Specifies the limit on the number of streams Cohesity cluster will make concurrently to the datastores of the registered entity. This limit is enforced only when the flag enforceMaxStreams is set to true.",
+																																				},
+																																				"nas_source_params": &schema.Schema{
+																																					Type:        schema.TypeList,
+																																					Computed:    true,
+																																					Description: "Specifies the NAS specific source throttling parameters during source registration or during backup of the source.",
+																																					Elem: &schema.Resource{
+																																						Schema: map[string]*schema.Schema{
+																																							"max_parallel_metadata_fetch_full_percentage": &schema.Schema{
+																																								Type:        schema.TypeFloat,
+																																								Computed:    true,
+																																								Description: "Specifies the percentage value of maximum concurrent metadata to be fetched during full backup of the source.",
+																																							},
+																																							"max_parallel_metadata_fetch_incremental_percentage": &schema.Schema{
+																																								Type:        schema.TypeFloat,
+																																								Computed:    true,
+																																								Description: "Specifies the percentage value of maximum concurrent metadata to be fetched during incremental backup of the source.",
+																																							},
+																																							"max_parallel_read_write_full_percentage": &schema.Schema{
+																																								Type:        schema.TypeFloat,
+																																								Computed:    true,
+																																								Description: "Specifies the percentage value of maximum concurrent IO during full backup of the source.",
+																																							},
+																																							"max_parallel_read_write_incremental_percentage": &schema.Schema{
+																																								Type:        schema.TypeFloat,
+																																								Computed:    true,
+																																								Description: "Specifies the percentage value of maximum concurrent IO during incremental backup of the source.",
+																																							},
+																																						},
+																																					},
+																																				},
+																																				"registered_source_max_concurrent_backups": &schema.Schema{
+																																					Type:        schema.TypeFloat,
+																																					Computed:    true,
+																																					Description: "Specifies the limit on the number of backups Cohesity cluster will make concurrently to the registered entity. This limit is enforced only when the flag enforceRegisteredSourceMaxBackups is set to true.",
+																																				},
+																																				"storage_array_snapshot_config": &schema.Schema{
+																																					Type:        schema.TypeList,
+																																					Computed:    true,
+																																					Description: "Specifies Storage Array Snapshot Configuration.",
+																																					Elem: &schema.Resource{
+																																						Schema: map[string]*schema.Schema{
+																																							"is_max_snapshots_config_enabled": &schema.Schema{
+																																								Type:        schema.TypeBool,
+																																								Computed:    true,
+																																								Description: "Specifies if the storage array snapshot max snapshots config is enabled or not.",
+																																							},
+																																							"is_max_space_config_enabled": &schema.Schema{
+																																								Type:        schema.TypeBool,
+																																								Computed:    true,
+																																								Description: "Specifies if the storage array snapshot max space config is enabled or not.",
+																																							},
+																																							"storage_array_snapshot_max_space_config": &schema.Schema{
+																																								Type:        schema.TypeList,
+																																								Computed:    true,
+																																								Description: "Specifies Storage Array Snapshot Max Space Config.",
+																																								Elem: &schema.Resource{
+																																									Schema: map[string]*schema.Schema{
+																																										"max_snapshot_space_percentage": &schema.Schema{
+																																											Type:        schema.TypeFloat,
+																																											Computed:    true,
+																																											Description: "Max number of storage snapshots allowed per volume/lun.",
+																																										},
+																																									},
+																																								},
+																																							},
+																																							"storage_array_snapshot_throttling_policies": &schema.Schema{
+																																								Type:        schema.TypeList,
+																																								Computed:    true,
+																																								Description: "Specifies throttling policies configured for individual volume/lun.",
+																																								Elem: &schema.Resource{
+																																									Schema: map[string]*schema.Schema{
+																																										"id": &schema.Schema{
+																																											Type:        schema.TypeInt,
+																																											Computed:    true,
+																																											Description: "Specifies the volume id of the storage array snapshot config.",
+																																										},
+																																										"is_max_snapshots_config_enabled": &schema.Schema{
+																																											Type:        schema.TypeBool,
+																																											Computed:    true,
+																																											Description: "Specifies if the storage array snapshot max snapshots config is enabled or not.",
+																																										},
+																																										"is_max_space_config_enabled": &schema.Schema{
+																																											Type:        schema.TypeBool,
+																																											Computed:    true,
+																																											Description: "Specifies if the storage array snapshot max space config is enabled or not.",
+																																										},
+																																										"max_snapshot_config": &schema.Schema{
+																																											Type:        schema.TypeList,
+																																											Computed:    true,
+																																											Description: "Specifies Storage Array Snapshot Max Snapshots Config.",
+																																											Elem: &schema.Resource{
+																																												Schema: map[string]*schema.Schema{
+																																													"max_snapshots": &schema.Schema{
+																																														Type:        schema.TypeFloat,
+																																														Computed:    true,
+																																														Description: "Max number of storage snapshots allowed per volume/lun.",
+																																													},
+																																												},
+																																											},
+																																										},
+																																										"max_space_config": &schema.Schema{
+																																											Type:        schema.TypeList,
+																																											Computed:    true,
+																																											Description: "Specifies Storage Array Snapshot Max Space Config.",
+																																											Elem: &schema.Resource{
+																																												Schema: map[string]*schema.Schema{
+																																													"max_snapshot_space_percentage": &schema.Schema{
+																																														Type:        schema.TypeFloat,
+																																														Computed:    true,
+																																														Description: "Max number of storage snapshots allowed per volume/lun.",
+																																													},
+																																												},
+																																											},
+																																										},
+																																									},
+																																								},
+																																							},
+																																						},
+																																					},
+																																				},
+																																			},
+																																		},
+																																	},
+																																	"throttling_policy_overrides": &schema.Schema{
+																																		Type:        schema.TypeList,
+																																		Computed:    true,
+																																		Description: "Specifies throttling policy override for a Datastore in a registered entity.",
+																																		Elem: &schema.Resource{
+																																			Schema: map[string]*schema.Schema{
+																																				"datastore_id": &schema.Schema{
+																																					Type:        schema.TypeInt,
+																																					Computed:    true,
+																																					Description: "Specifies the Protection Source id of the Datastore.",
+																																				},
+																																				"datastore_name": &schema.Schema{
+																																					Type:        schema.TypeString,
+																																					Computed:    true,
+																																					Description: "Specifies the display name of the Datastore.",
+																																				},
+																																				"throttling_policy": &schema.Schema{
+																																					Type:        schema.TypeList,
+																																					Computed:    true,
+																																					Description: "Specifies the throttling policy for a registered Protection Source.",
+																																					Elem: &schema.Resource{
+																																						Schema: map[string]*schema.Schema{
+																																							"enforce_max_streams": &schema.Schema{
+																																								Type:        schema.TypeBool,
+																																								Computed:    true,
+																																								Description: "Specifies whether datastore streams are configured for all datastores that are part of the registered entity. If set to true, number of streams from Cohesity cluster to the registered entity will be limited to the value set for maxConcurrentStreams. If not set or set to false, there is no max limit for the number of concurrent streams.",
+																																							},
+																																							"enforce_registered_source_max_backups": &schema.Schema{
+																																								Type:        schema.TypeBool,
+																																								Computed:    true,
+																																								Description: "Specifies whether no. of backups are configured for the registered entity. If set to true, number of backups made by Cohesity cluster in the registered entity will be limited to the value set for RegisteredSourceMaxConcurrentBackups. If not set or set to false, there is no max limit for the number of concurrent backups.",
+																																							},
+																																							"is_enabled": &schema.Schema{
+																																								Type:        schema.TypeBool,
+																																								Computed:    true,
+																																								Description: "Indicates whether read operations to the datastores, which are part of the registered Protection Source, are throttled.",
+																																							},
+																																							"latency_thresholds": &schema.Schema{
+																																								Type:        schema.TypeList,
+																																								Computed:    true,
+																																								Description: "Specifies latency thresholds that trigger throttling for all datastores found in the registered Protection Source or specific to one datastore.",
+																																								Elem: &schema.Resource{
+																																									Schema: map[string]*schema.Schema{
+																																										"active_task_msecs": &schema.Schema{
+																																											Type:        schema.TypeInt,
+																																											Computed:    true,
+																																											Description: "If the latency of a datastore is above this value, existing backup tasks using the datastore are throttled.",
+																																										},
+																																										"new_task_msecs": &schema.Schema{
+																																											Type:        schema.TypeInt,
+																																											Computed:    true,
+																																											Description: "If the latency of a datastore is above this value, then new backup tasks using the datastore will not be started.",
+																																										},
+																																									},
+																																								},
+																																							},
+																																							"max_concurrent_streams": &schema.Schema{
+																																								Type:        schema.TypeFloat,
+																																								Computed:    true,
+																																								Description: "Specifies the limit on the number of streams Cohesity cluster will make concurrently to the datastores of the registered entity. This limit is enforced only when the flag enforceMaxStreams is set to true.",
+																																							},
+																																							"nas_source_params": &schema.Schema{
+																																								Type:        schema.TypeList,
+																																								Computed:    true,
+																																								Description: "Specifies the NAS specific source throttling parameters during source registration or during backup of the source.",
+																																								Elem: &schema.Resource{
+																																									Schema: map[string]*schema.Schema{
+																																										"max_parallel_metadata_fetch_full_percentage": &schema.Schema{
+																																											Type:        schema.TypeFloat,
+																																											Computed:    true,
+																																											Description: "Specifies the percentage value of maximum concurrent metadata to be fetched during full backup of the source.",
+																																										},
+																																										"max_parallel_metadata_fetch_incremental_percentage": &schema.Schema{
+																																											Type:        schema.TypeFloat,
+																																											Computed:    true,
+																																											Description: "Specifies the percentage value of maximum concurrent metadata to be fetched during incremental backup of the source.",
+																																										},
+																																										"max_parallel_read_write_full_percentage": &schema.Schema{
+																																											Type:        schema.TypeFloat,
+																																											Computed:    true,
+																																											Description: "Specifies the percentage value of maximum concurrent IO during full backup of the source.",
+																																										},
+																																										"max_parallel_read_write_incremental_percentage": &schema.Schema{
+																																											Type:        schema.TypeFloat,
+																																											Computed:    true,
+																																											Description: "Specifies the percentage value of maximum concurrent IO during incremental backup of the source.",
+																																										},
+																																									},
+																																								},
+																																							},
+																																							"registered_source_max_concurrent_backups": &schema.Schema{
+																																								Type:        schema.TypeFloat,
+																																								Computed:    true,
+																																								Description: "Specifies the limit on the number of backups Cohesity cluster will make concurrently to the registered entity. This limit is enforced only when the flag enforceRegisteredSourceMaxBackups is set to true.",
+																																							},
+																																							"storage_array_snapshot_config": &schema.Schema{
+																																								Type:        schema.TypeList,
+																																								Computed:    true,
+																																								Description: "Specifies Storage Array Snapshot Configuration.",
+																																								Elem: &schema.Resource{
+																																									Schema: map[string]*schema.Schema{
+																																										"is_max_snapshots_config_enabled": &schema.Schema{
+																																											Type:        schema.TypeBool,
+																																											Computed:    true,
+																																											Description: "Specifies if the storage array snapshot max snapshots config is enabled or not.",
+																																										},
+																																										"is_max_space_config_enabled": &schema.Schema{
+																																											Type:        schema.TypeBool,
+																																											Computed:    true,
+																																											Description: "Specifies if the storage array snapshot max space config is enabled or not.",
+																																										},
+																																										"storage_array_snapshot_max_space_config": &schema.Schema{
+																																											Type:        schema.TypeList,
+																																											Computed:    true,
+																																											Description: "Specifies Storage Array Snapshot Max Space Config.",
+																																											Elem: &schema.Resource{
+																																												Schema: map[string]*schema.Schema{
+																																													"max_snapshot_space_percentage": &schema.Schema{
+																																														Type:        schema.TypeFloat,
+																																														Computed:    true,
+																																														Description: "Max number of storage snapshots allowed per volume/lun.",
+																																													},
+																																												},
+																																											},
+																																										},
+																																										"storage_array_snapshot_throttling_policies": &schema.Schema{
+																																											Type:        schema.TypeList,
+																																											Computed:    true,
+																																											Description: "Specifies throttling policies configured for individual volume/lun.",
+																																											Elem: &schema.Resource{
+																																												Schema: map[string]*schema.Schema{
+																																													"id": &schema.Schema{
+																																														Type:        schema.TypeInt,
+																																														Computed:    true,
+																																														Description: "Specifies the volume id of the storage array snapshot config.",
+																																													},
+																																													"is_max_snapshots_config_enabled": &schema.Schema{
+																																														Type:        schema.TypeBool,
+																																														Computed:    true,
+																																														Description: "Specifies if the storage array snapshot max snapshots config is enabled or not.",
+																																													},
+																																													"is_max_space_config_enabled": &schema.Schema{
+																																														Type:        schema.TypeBool,
+																																														Computed:    true,
+																																														Description: "Specifies if the storage array snapshot max space config is enabled or not.",
+																																													},
+																																													"max_snapshot_config": &schema.Schema{
+																																														Type:        schema.TypeList,
+																																														Computed:    true,
+																																														Description: "Specifies Storage Array Snapshot Max Snapshots Config.",
+																																														Elem: &schema.Resource{
+																																															Schema: map[string]*schema.Schema{
+																																																"max_snapshots": &schema.Schema{
+																																																	Type:        schema.TypeFloat,
+																																																	Computed:    true,
+																																																	Description: "Max number of storage snapshots allowed per volume/lun.",
+																																																},
+																																															},
+																																														},
+																																													},
+																																													"max_space_config": &schema.Schema{
+																																														Type:        schema.TypeList,
+																																														Computed:    true,
+																																														Description: "Specifies Storage Array Snapshot Max Space Config.",
+																																														Elem: &schema.Resource{
+																																															Schema: map[string]*schema.Schema{
+																																																"max_snapshot_space_percentage": &schema.Schema{
+																																																	Type:        schema.TypeFloat,
+																																																	Computed:    true,
+																																																	Description: "Max number of storage snapshots allowed per volume/lun.",
+																																																},
+																																															},
+																																														},
+																																													},
+																																												},
+																																											},
+																																										},
+																																									},
+																																								},
+																																							},
+																																						},
+																																					},
+																																				},
+																																			},
+																																		},
+																																	},
+																																	"use_o_auth_for_exchange_online": &schema.Schema{
+																																		Type:        schema.TypeBool,
+																																		Computed:    true,
+																																		Description: "Specifies whether OAuth should be used for authentication in case of Exchange Online.",
+																																	},
+																																	"use_vm_bios_uuid": &schema.Schema{
+																																		Type:        schema.TypeBool,
+																																		Computed:    true,
+																																		Description: "Specifies if registered vCenter is using BIOS UUID to track virtual machines.",
+																																	},
+																																	"user_messages": &schema.Schema{
+																																		Type:        schema.TypeList,
+																																		Computed:    true,
+																																		Description: "Specifies the additional details encountered during registration. Though the registration may succeed, user messages imply the host environment requires some cleanup or fixing.",
+																																		Elem: &schema.Schema{
+																																			Type: schema.TypeString,
+																																		},
+																																	},
+																																	"username": &schema.Schema{
+																																		Type:        schema.TypeString,
+																																		Computed:    true,
+																																		Description: "Specifies username to access the target source.",
+																																	},
+																																	"vlan_params": &schema.Schema{
+																																		Type:        schema.TypeList,
+																																		Computed:    true,
+																																		Description: "Specifies the VLAN configuration for Recovery.",
+																																		Elem: &schema.Resource{
+																																			Schema: map[string]*schema.Schema{
+																																				"vlan": &schema.Schema{
+																																					Type:        schema.TypeFloat,
+																																					Computed:    true,
+																																					Description: "Specifies the VLAN to use for mounting Cohesity's view on the remote host. If specified, Cohesity hostname or the IP address on this VLAN is used.",
+																																				},
+																																				"disable_vlan": &schema.Schema{
+																																					Type:        schema.TypeBool,
+																																					Computed:    true,
+																																					Description: "Specifies whether to use the VIPs even when VLANs are configured on the Cluster. If configured, VLAN IP addresses are used by default. If VLANs are not configured, this flag is ignored. Set this flag to true to force using the partition VIPs when VLANs are configured on the Cluster.",
+																																				},
+																																				"interface_name": &schema.Schema{
+																																					Type:        schema.TypeString,
+																																					Computed:    true,
+																																					Description: "Specifies the physical interface group name to use for mounting Cohesity's view on the remote host. If specified, Cohesity hostname or the IP address on this VLAN is used.",
+																																				},
+																																			},
+																																		},
+																																	},
+																																	"warning_messages": &schema.Schema{
+																																		Type:        schema.TypeList,
+																																		Computed:    true,
+																																		Description: "Specifies a list of warnings encountered during registration. Though the registration may succeed, warning messages imply the host environment requires some cleanup or fixing.",
+																																		Elem: &schema.Schema{
+																																			Type: schema.TypeString,
+																																		},
+																																	},
+																																},
+																															},
+																														},
+																														"source_side_dedup_enabled": &schema.Schema{
+																															Type:        schema.TypeBool,
+																															Computed:    true,
+																															Description: "Specifies whether source side dedup is enabled or not.",
+																														},
+																														"status": &schema.Schema{
+																															Type:        schema.TypeString,
+																															Computed:    true,
+																															Description: "Specifies the agent status. Specifies the status of the agent running on a physical source.",
+																														},
+																														"status_message": &schema.Schema{
+																															Type:        schema.TypeString,
+																															Computed:    true,
+																															Description: "Specifies additional details about the agent status.",
+																														},
+																														"upgradability": &schema.Schema{
+																															Type:        schema.TypeString,
+																															Computed:    true,
+																															Description: "Specifies the upgradability of the agent running on the physical server. Specifies the upgradability of the agent running on the physical server.",
+																														},
+																														"upgrade_status": &schema.Schema{
+																															Type:        schema.TypeString,
+																															Computed:    true,
+																															Description: "Specifies the status of the upgrade of the agent on a physical server. Specifies the status of the upgrade of the agent on a physical server.",
+																														},
+																														"upgrade_status_message": &schema.Schema{
+																															Type:        schema.TypeString,
+																															Computed:    true,
+																															Description: "Specifies detailed message about the agent upgrade failure. This field is not set for successful upgrade.",
+																														},
+																														"version": &schema.Schema{
+																															Type:        schema.TypeString,
+																															Computed:    true,
+																															Description: "Specifies the version of the Agent software.",
+																														},
+																														"vol_cbt_info": &schema.Schema{
+																															Type:        schema.TypeList,
+																															Computed:    true,
+																															Description: "CBT version and service state info.",
+																															Elem: &schema.Resource{
+																																Schema: map[string]*schema.Schema{
+																																	"file_version": &schema.Schema{
+																																		Type:        schema.TypeList,
+																																		Computed:    true,
+																																		Description: "Subcomponent version. The interpretation of the version is based on operating system.",
+																																		Elem: &schema.Resource{
+																																			Schema: map[string]*schema.Schema{
+																																				"build_ver": &schema.Schema{
+																																					Type:     schema.TypeFloat,
+																																					Computed: true,
+																																				},
+																																				"major_ver": &schema.Schema{
+																																					Type:     schema.TypeFloat,
+																																					Computed: true,
+																																				},
+																																				"minor_ver": &schema.Schema{
+																																					Type:     schema.TypeFloat,
+																																					Computed: true,
+																																				},
+																																				"revision_num": &schema.Schema{
+																																					Type:     schema.TypeFloat,
+																																					Computed: true,
+																																				},
+																																			},
+																																		},
+																																	},
+																																	"is_installed": &schema.Schema{
+																																		Type:        schema.TypeBool,
+																																		Computed:    true,
+																																		Description: "Indicates whether the cbt driver is installed.",
+																																	},
+																																	"reboot_status": &schema.Schema{
+																																		Type:        schema.TypeString,
+																																		Computed:    true,
+																																		Description: "Indicates whether host is rebooted post VolCBT installation.",
+																																	},
+																																	"service_state": &schema.Schema{
+																																		Type:        schema.TypeList,
+																																		Computed:    true,
+																																		Description: "Structure to Hold Service Status.",
+																																		Elem: &schema.Resource{
+																																			Schema: map[string]*schema.Schema{
+																																				"name": &schema.Schema{
+																																					Type:     schema.TypeString,
+																																					Computed: true,
+																																				},
+																																				"state": &schema.Schema{
+																																					Type:     schema.TypeString,
+																																					Computed: true,
+																																				},
+																																			},
+																																		},
+																																	},
+																																},
+																															},
+																														},
+																													},
+																												},
+																											},
+																											"cluster_source_type": &schema.Schema{
+																												Type:        schema.TypeString,
+																												Computed:    true,
+																												Description: "Specifies the type of cluster resource this source represents.",
+																											},
+																											"host_name": &schema.Schema{
+																												Type:        schema.TypeString,
+																												Computed:    true,
+																												Description: "Specifies the hostname.",
+																											},
+																											"host_type": &schema.Schema{
+																												Type:        schema.TypeString,
+																												Computed:    true,
+																												Description: "Specifies the environment type for the host.",
+																											},
+																											"id": &schema.Schema{
+																												Type:        schema.TypeList,
+																												Computed:    true,
+																												Description: "Specifies an id for an object that is unique across Cohesity Clusters. The id is composite of all the ids listed below.",
+																												Elem: &schema.Resource{
+																													Schema: map[string]*schema.Schema{
+																														"cluster_id": &schema.Schema{
+																															Type:        schema.TypeInt,
+																															Computed:    true,
+																															Description: "Specifies the Cohesity Cluster id where the object was created.",
+																														},
+																														"cluster_incarnation_id": &schema.Schema{
+																															Type:        schema.TypeInt,
+																															Computed:    true,
+																															Description: "Specifies an id for the Cohesity Cluster that is generated when a Cohesity Cluster is initially created.",
+																														},
+																														"id": &schema.Schema{
+																															Type:        schema.TypeInt,
+																															Computed:    true,
+																															Description: "Specifies a unique id assigned to an object (such as a Job) by the Cohesity Cluster.",
+																														},
+																													},
+																												},
+																											},
+																											"is_proxy_host": &schema.Schema{
+																												Type:        schema.TypeBool,
+																												Computed:    true,
+																												Description: "Specifies if the physical host is a proxy host.",
+																											},
+																											"memory_size_bytes": &schema.Schema{
+																												Type:        schema.TypeInt,
+																												Computed:    true,
+																												Description: "Specifies the total memory on the host in bytes.",
+																											},
+																											"name": &schema.Schema{
+																												Type:        schema.TypeString,
+																												Computed:    true,
+																												Description: "Specifies a human readable name of the Protection Source.",
+																											},
+																											"networking_info": &schema.Schema{
+																												Type:        schema.TypeList,
+																												Computed:    true,
+																												Description: "Specifies the struct containing information about network addresses configured on the given box. This is needed for dealing with Windows/Oracle Cluster resources that we discover and protect automatically.",
+																												Elem: &schema.Resource{
+																													Schema: map[string]*schema.Schema{
+																														"resource_vec": &schema.Schema{
+																															Type:        schema.TypeList,
+																															Computed:    true,
+																															Description: "The list of resources on the system that are accessible by an IP address.",
+																															Elem: &schema.Resource{
+																																Schema: map[string]*schema.Schema{
+																																	"endpoints": &schema.Schema{
+																																		Type:        schema.TypeList,
+																																		Computed:    true,
+																																		Description: "The endpoints by which the resource is accessible.",
+																																		Elem: &schema.Resource{
+																																			Schema: map[string]*schema.Schema{
+																																				"fqdn": &schema.Schema{
+																																					Type:        schema.TypeString,
+																																					Computed:    true,
+																																					Description: "The Fully Qualified Domain Name.",
+																																				},
+																																				"ipv4_addr": &schema.Schema{
+																																					Type:        schema.TypeString,
+																																					Computed:    true,
+																																					Description: "The IPv4 address.",
+																																				},
+																																				"ipv6_addr": &schema.Schema{
+																																					Type:        schema.TypeString,
+																																					Computed:    true,
+																																					Description: "The IPv6 address.",
+																																				},
+																																			},
+																																		},
+																																	},
+																																	"type": &schema.Schema{
+																																		Type:        schema.TypeString,
+																																		Computed:    true,
+																																		Description: "The type of the resource.",
+																																	},
+																																},
+																															},
+																														},
+																													},
+																												},
+																											},
+																											"num_processors": &schema.Schema{
+																												Type:        schema.TypeInt,
+																												Computed:    true,
+																												Description: "Specifies the number of processors on the host.",
+																											},
+																											"os_name": &schema.Schema{
+																												Type:        schema.TypeString,
+																												Computed:    true,
+																												Description: "Specifies a human readable name of the OS of the Protection Source.",
+																											},
+																											"type": &schema.Schema{
+																												Type:        schema.TypeString,
+																												Computed:    true,
+																												Description: "Specifies the type of managed Object in a Physical Protection Source. 'kGroup' indicates the EH container.",
+																											},
+																											"vcs_version": &schema.Schema{
+																												Type:        schema.TypeString,
+																												Computed:    true,
+																												Description: "Specifies cluster version for VCS host.",
+																											},
+																											"volumes": &schema.Schema{
+																												Type:        schema.TypeList,
+																												Computed:    true,
+																												Description: "Array of Physical Volumes. Specifies the volumes available on the physical host. These fields are populated only for the kPhysicalHost type.",
+																												Elem: &schema.Resource{
+																													Schema: map[string]*schema.Schema{
+																														"device_path": &schema.Schema{
+																															Type:        schema.TypeString,
+																															Computed:    true,
+																															Description: "Specifies the path to the device that hosts the volume locally.",
+																														},
+																														"guid": &schema.Schema{
+																															Type:        schema.TypeString,
+																															Computed:    true,
+																															Description: "Specifies an id for the Physical Volume.",
+																														},
+																														"is_boot_volume": &schema.Schema{
+																															Type:        schema.TypeBool,
+																															Computed:    true,
+																															Description: "Specifies whether the volume is boot volume.",
+																														},
+																														"is_extended_attributes_supported": &schema.Schema{
+																															Type:        schema.TypeBool,
+																															Computed:    true,
+																															Description: "Specifies whether this volume supports extended attributes (like ACLs) when performing file backups.",
+																														},
+																														"is_protected": &schema.Schema{
+																															Type:        schema.TypeBool,
+																															Computed:    true,
+																															Description: "Specifies if a volume is protected by a Job.",
+																														},
+																														"is_shared_volume": &schema.Schema{
+																															Type:        schema.TypeBool,
+																															Computed:    true,
+																															Description: "Specifies whether the volume is shared volume.",
+																														},
+																														"label": &schema.Schema{
+																															Type:        schema.TypeString,
+																															Computed:    true,
+																															Description: "Specifies a volume label that can be used for displaying additional identifying information about a volume.",
+																														},
+																														"logical_size_bytes": &schema.Schema{
+																															Type:        schema.TypeFloat,
+																															Computed:    true,
+																															Description: "Specifies the logical size of the volume in bytes that is not reduced by change-block tracking, compression and deduplication.",
+																														},
+																														"mount_points": &schema.Schema{
+																															Type:        schema.TypeList,
+																															Computed:    true,
+																															Description: "Specifies the mount points where the volume is mounted, for example- 'C:', '/mnt/foo' etc.",
+																															Elem: &schema.Schema{
+																																Type: schema.TypeString,
+																															},
+																														},
+																														"mount_type": &schema.Schema{
+																															Type:        schema.TypeString,
+																															Computed:    true,
+																															Description: "Specifies mount type of volume e.g. nfs, autofs, ext4 etc.",
+																														},
+																														"network_path": &schema.Schema{
+																															Type:        schema.TypeString,
+																															Computed:    true,
+																															Description: "Specifies the full path to connect to the network attached volume. For example, (IP or hostname):/path/to/share for NFS volumes).",
+																														},
+																														"used_size_bytes": &schema.Schema{
+																															Type:        schema.TypeFloat,
+																															Computed:    true,
+																															Description: "Specifies the size used by the volume in bytes.",
+																														},
+																													},
+																												},
+																											},
+																											"vsswriters": &schema.Schema{
+																												Type:        schema.TypeList,
+																												Computed:    true,
+																												Description: "Specifies vss writer information about a Physical Protection Source.",
+																												Elem: &schema.Resource{
+																													Schema: map[string]*schema.Schema{
+																														"is_writer_excluded": &schema.Schema{
+																															Type:        schema.TypeBool,
+																															Computed:    true,
+																															Description: "If true, the writer will be excluded by default.",
+																														},
+																														"writer_name": &schema.Schema{
+																															Type:        schema.TypeBool,
+																															Computed:    true,
+																															Description: "Specifies the name of the writer.",
+																														},
+																													},
+																												},
+																											},
+																										},
+																									},
+																								},
+																								"sql_protection_source": &schema.Schema{
+																									Type:        schema.TypeList,
+																									Computed:    true,
+																									Description: "Specifies an Object representing one SQL Server instance or database.",
+																									Elem: &schema.Resource{
+																										Schema: map[string]*schema.Schema{
+																											"is_available_for_vss_backup": &schema.Schema{
+																												Type:        schema.TypeBool,
+																												Computed:    true,
+																												Description: "Specifies whether the database is marked as available for backup according to the SQL Server VSS writer. This may be false if either the state of the databases is not online, or if the VSS writer is not online. This field is set only for type 'kDatabase'.",
+																											},
+																											"created_timestamp": &schema.Schema{
+																												Type:        schema.TypeString,
+																												Computed:    true,
+																												Description: "Specifies the time when the database was created. It is displayed in the timezone of the SQL server on which this database is running.",
+																											},
+																											"database_name": &schema.Schema{
+																												Type:        schema.TypeString,
+																												Computed:    true,
+																												Description: "Specifies the database name of the SQL Protection Source, if the type is database.",
+																											},
+																											"db_aag_entity_id": &schema.Schema{
+																												Type:        schema.TypeInt,
+																												Computed:    true,
+																												Description: "Specifies the AAG entity id if the database is part of an AAG. This field is set only for type 'kDatabase'.",
+																											},
+																											"db_aag_name": &schema.Schema{
+																												Type:        schema.TypeString,
+																												Computed:    true,
+																												Description: "Specifies the name of the AAG if the database is part of an AAG. This field is set only for type 'kDatabase'.",
+																											},
+																											"db_compatibility_level": &schema.Schema{
+																												Type:        schema.TypeInt,
+																												Computed:    true,
+																												Description: "Specifies the versions of SQL server that the database is compatible with.",
+																											},
+																											"db_file_groups": &schema.Schema{
+																												Type:        schema.TypeList,
+																												Computed:    true,
+																												Description: "Specifies the information about the set of file groups for this db on the host. This is only set if the type is kDatabase.",
+																												Elem: &schema.Schema{
+																													Type: schema.TypeString,
+																												},
+																											},
+																											"db_files": &schema.Schema{
+																												Type:        schema.TypeList,
+																												Computed:    true,
+																												Description: "Specifies the last known information about the set of database files on the host. This field is set only for type 'kDatabase'.",
+																												Elem: &schema.Resource{
+																													Schema: map[string]*schema.Schema{
+																														"file_type": &schema.Schema{
+																															Type:        schema.TypeString,
+																															Computed:    true,
+																															Description: "Specifies the format type of the file that SQL database stores the data. Specifies the format type of the file that SQL database stores the data. 'kRows' refers to a data file 'kLog' refers to a log file 'kFileStream' refers to a directory containing FILESTREAM data 'kNotSupportedType' is for information purposes only. Not supported. 'kFullText' refers to a full-text catalog.",
+																														},
+																														"full_path": &schema.Schema{
+																															Type:        schema.TypeString,
+																															Computed:    true,
+																															Description: "Specifies the full path of the database file on the SQL host machine.",
+																														},
+																														"size_bytes": &schema.Schema{
+																															Type:        schema.TypeInt,
+																															Computed:    true,
+																															Description: "Specifies the last known size of the database file.",
+																														},
+																													},
+																												},
+																											},
+																											"db_owner_username": &schema.Schema{
+																												Type:        schema.TypeString,
+																												Computed:    true,
+																												Description: "Specifies the name of the database owner.",
+																											},
+																											"default_database_location": &schema.Schema{
+																												Type:        schema.TypeString,
+																												Computed:    true,
+																												Description: "Specifies the default path for data files for DBs in an instance.",
+																											},
+																											"default_log_location": &schema.Schema{
+																												Type:        schema.TypeString,
+																												Computed:    true,
+																												Description: "Specifies the default path for log files for DBs in an instance.",
+																											},
+																											"id": &schema.Schema{
+																												Type:        schema.TypeList,
+																												Computed:    true,
+																												Description: "Specifies a unique id for a SQL Protection Source.",
+																												Elem: &schema.Resource{
+																													Schema: map[string]*schema.Schema{
+																														"created_date_msecs": &schema.Schema{
+																															Type:        schema.TypeInt,
+																															Computed:    true,
+																															Description: "Specifies a unique identifier generated from the date the database is created or renamed. Cohesity uses this identifier in combination with the databaseId to uniquely identify a database.",
+																														},
+																														"database_id": &schema.Schema{
+																															Type:        schema.TypeInt,
+																															Computed:    true,
+																															Description: "Specifies a unique id of the database but only for the life of the database. SQL Server may reuse database ids. Cohesity uses the createDateMsecs in combination with this databaseId to uniquely identify a database.",
+																														},
+																														"instance_id": &schema.Schema{
+																															Type:        schema.TypeString,
+																															Computed:    true,
+																															Description: "Specifies unique id for the SQL Server instance. This id does not change during the life of the instance.",
+																														},
+																													},
+																												},
+																											},
+																											"is_encrypted": &schema.Schema{
+																												Type:        schema.TypeBool,
+																												Computed:    true,
+																												Description: "Specifies whether the database is TDE enabled.",
+																											},
+																											"name": &schema.Schema{
+																												Type:        schema.TypeString,
+																												Computed:    true,
+																												Description: "Specifies the instance name of the SQL Protection Source.",
+																											},
+																											"owner_id": &schema.Schema{
+																												Type:        schema.TypeInt,
+																												Computed:    true,
+																												Description: "Specifies the id of the container VM for the SQL Protection Source.",
+																											},
+																											"recovery_model": &schema.Schema{
+																												Type:        schema.TypeString,
+																												Computed:    true,
+																												Description: "Specifies the Recovery Model for the database in SQL environment. Only meaningful for the 'kDatabase' SQL Protection Source. Specifies the Recovery Model set for the Microsoft SQL Server. 'kSimpleRecoveryModel' indicates the Simple SQL Recovery Model which does not utilize log backups. 'kFullRecoveryModel' indicates the Full SQL Recovery Model which requires log backups and allows recovery to a single point in time. 'kBulkLoggedRecoveryModel' indicates the Bulk Logged SQL Recovery Model which requires log backups and allows high-performance bulk copy operations.",
+																											},
+																											"sql_server_db_state": &schema.Schema{
+																												Type:        schema.TypeString,
+																												Computed:    true,
+																												Description: "The state of the database as returned by SQL Server. Indicates the state of the database. The values correspond to the 'state' field in the system table sys.databases. See https://goo.gl/P66XqM. 'kOnline' indicates that database is in online state. 'kRestoring' indicates that database is in restore state. 'kRecovering' indicates that database is in recovery state. 'kRecoveryPending' indicates that database recovery is in pending state. 'kSuspect' indicates that primary filegroup is suspect and may be damaged. 'kEmergency' indicates that manually forced emergency state. 'kOffline' indicates that database is in offline state. 'kCopying' indicates that database is in copying state. 'kOfflineSecondary' indicates that secondary database is in offline state.",
+																											},
+																											"sql_server_instance_version": &schema.Schema{
+																												Type:        schema.TypeList,
+																												Computed:    true,
+																												Description: "Specifies the Server Instance Version.",
+																												Elem: &schema.Resource{
+																													Schema: map[string]*schema.Schema{
+																														"build": &schema.Schema{
+																															Type:        schema.TypeFloat,
+																															Computed:    true,
+																															Description: "Specifies the build.",
+																														},
+																														"major_version": &schema.Schema{
+																															Type:        schema.TypeFloat,
+																															Computed:    true,
+																															Description: "Specifies the major version.",
+																														},
+																														"minor_version": &schema.Schema{
+																															Type:        schema.TypeFloat,
+																															Computed:    true,
+																															Description: "Specifies the minor version.",
+																														},
+																														"revision": &schema.Schema{
+																															Type:        schema.TypeFloat,
+																															Computed:    true,
+																															Description: "Specifies the revision.",
+																														},
+																														"version_string": &schema.Schema{
+																															Type:        schema.TypeFloat,
+																															Computed:    true,
+																															Description: "Specifies the version string.",
+																														},
+																													},
+																												},
+																											},
+																											"type": &schema.Schema{
+																												Type:        schema.TypeString,
+																												Computed:    true,
+																												Description: "Specifies the type of the managed Object in a SQL Protection Source. Examples of SQL Objects include 'kInstance' and 'kDatabase'. 'kInstance' indicates that SQL server instance is being protected. 'kDatabase' indicates that SQL server database is being protected. 'kAAG' indicates that SQL AAG (AlwaysOn Availability Group) is being protected. 'kAAGRootContainer' indicates that SQL AAG's root container is being protected. 'kRootContainer' indicates root container for SQL sources.",
+																											},
+																										},
+																									},
+																								},
+																							},
+																						},
+																					},
+																					"registration_info": &schema.Schema{
+																						Type:        schema.TypeList,
+																						Computed:    true,
+																						Description: "Specifies information about a registered Source.",
+																						Elem: &schema.Resource{
+																							Schema: map[string]*schema.Schema{
+																								"access_info": &schema.Schema{
+																									Type:        schema.TypeList,
+																									Computed:    true,
+																									Description: "Specifies the parameters required to establish a connection with a particular environment.",
+																									Elem: &schema.Resource{
+																										Schema: map[string]*schema.Schema{
+																											"connection_id": &schema.Schema{
+																												Type:        schema.TypeInt,
+																												Computed:    true,
+																												Description: "ID of the Bifrost (HyX or Rigel) network realm (i.e. a connection) associated with the source.",
+																											},
+																											"connector_group_id": &schema.Schema{
+																												Type:        schema.TypeInt,
+																												Computed:    true,
+																												Description: "Specifies the Id of the connector group. Each connector group is collection of Rigel/hyx. Each entity will be tagged with connector group id.",
+																											},
+																											"endpoint": &schema.Schema{
+																												Type:        schema.TypeString,
+																												Computed:    true,
+																												Description: "Specify an IP address or URL of the environment. (such as the IP address of the vCenter Server for a VMware environment).",
+																											},
+																											"environment": &schema.Schema{
+																												Type:        schema.TypeString,
+																												Computed:    true,
+																												Description: "Specifies the environment like VMware, SQL, where the Protection Source exists. Supported environment types such as 'kView', 'kSQL', 'kVMware', etc.",
+																											},
+																											"id": &schema.Schema{
+																												Type:        schema.TypeInt,
+																												Computed:    true,
+																												Description: "Specifies a Unique id that is generated when the Source is registered. This is a convenience field that is used to maintain an index to different connection params.",
+																											},
+																											"version": &schema.Schema{
+																												Type:        schema.TypeInt,
+																												Computed:    true,
+																												Description: "Version is updated each time the connector parameters are updated. This is used to discard older connector parameters.",
+																											},
+																										},
+																									},
+																								},
+																								"allowed_ip_addresses": &schema.Schema{
+																									Type:        schema.TypeList,
+																									Computed:    true,
+																									Description: "Specifies the list of IP Addresses on the registered source to be exclusively allowed for doing any type of IO operations.",
+																									Elem: &schema.Schema{
+																										Type: schema.TypeString,
+																									},
+																								},
+																								"authentication_error_message": &schema.Schema{
+																									Type:        schema.TypeString,
+																									Computed:    true,
+																									Description: "Specifies an authentication error message. This indicates the given credentials are rejected and the registration of the source is not successful.",
+																								},
+																								"authentication_status": &schema.Schema{
+																									Type:        schema.TypeString,
+																									Computed:    true,
+																									Description: "Specifies the status of the authenticating to the Protection Source when registering it with Cohesity Cluster.",
+																								},
+																								"blacklisted_ip_addresses": &schema.Schema{
+																									Type:        schema.TypeList,
+																									Computed:    true,
+																									Description: "This field is deprecated. Use DeniedIpAddresses instead.",
+																									Elem: &schema.Schema{
+																										Type: schema.TypeString,
+																									},
+																								},
+																								"denied_ip_addresses": &schema.Schema{
+																									Type:        schema.TypeList,
+																									Computed:    true,
+																									Description: "Specifies the list of IP Addresses on the registered source to be denied for doing any type of IO operations.",
+																									Elem: &schema.Schema{
+																										Type: schema.TypeString,
+																									},
+																								},
+																								"environments": &schema.Schema{
+																									Type:        schema.TypeList,
+																									Computed:    true,
+																									Description: "Specifies a list of applications environment that are registered with this Protection Source such as 'kSQL'. Supported environment types such as 'kView', 'kSQL', 'kVMware', etc.",
+																									Elem: &schema.Schema{
+																										Type: schema.TypeString,
+																									},
+																								},
+																								"is_db_authenticated": &schema.Schema{
+																									Type:        schema.TypeBool,
+																									Computed:    true,
+																									Description: "Specifies if application entity dbAuthenticated or not.",
+																								},
+																								"is_storage_array_snapshot_enabled": &schema.Schema{
+																									Type:        schema.TypeBool,
+																									Computed:    true,
+																									Description: "Specifies if this source entity has enabled storage array snapshot or not.",
+																								},
+																								"link_vms_across_vcenter": &schema.Schema{
+																									Type:        schema.TypeBool,
+																									Computed:    true,
+																									Description: "Specifies if the VM linking feature is enabled for this VCenter This means that VMs present in this VCenter which earlier belonged to some other VCenter(also registerd on same cluster) and were migrated, will be linked during EH refresh. This will enable preserving snapshot chains for migrated VMs.",
+																								},
+																								"minimum_free_space_gb": &schema.Schema{
+																									Type:        schema.TypeInt,
+																									Computed:    true,
+																									Description: "Specifies the minimum free space in GiB of the space expected to be available on the datastore where the virtual disks of the VM being backed up. If the amount of free space(in GiB) is lower than the value given by this field, backup will be aborted. Note that this field is applicable only to 'kVMware' type of environments.",
+																								},
+																								"minimum_free_space_percent": &schema.Schema{
+																									Type:        schema.TypeInt,
+																									Computed:    true,
+																									Description: "Specifies the minimum free space in percentage of the space expected to be available on the datastore where the virtual disks of the VM being backed up. If the amount of free space(in percentage) is lower than the value given by this field, backup will be aborted. Note that this field is applicable only to 'kVMware' type of environments.",
+																								},
+																								"password": &schema.Schema{
+																									Type:        schema.TypeString,
+																									Computed:    true,
+																									Description: "Specifies password of the username to access the target source.",
+																								},
+																								"physical_params": &schema.Schema{
+																									Type:        schema.TypeList,
+																									Computed:    true,
+																									Description: "Specifies the parameters required to register Application Servers running in a Protection Source specific to a physical adapter.",
+																									Elem: &schema.Resource{
+																										Schema: map[string]*schema.Schema{
+																											"applications": &schema.Schema{
+																												Type:        schema.TypeList,
+																												Computed:    true,
+																												Description: "Specifies the types of applications such as 'kSQL', 'kExchange', 'kAD' running on the Protection Source. Supported environment types such as 'kView', 'kSQL', 'kVMware', etc.",
+																												Elem: &schema.Schema{
+																													Type: schema.TypeString,
+																												},
+																											},
+																											"password": &schema.Schema{
+																												Type:        schema.TypeString,
+																												Computed:    true,
+																												Description: "Specifies password of the username to access the target source.",
+																											},
+																											"throttling_config": &schema.Schema{
+																												Type:        schema.TypeList,
+																												Computed:    true,
+																												Description: "Specifies the source side throttling configuration.",
+																												Elem: &schema.Resource{
+																													Schema: map[string]*schema.Schema{
+																														"cpu_throttling_config": &schema.Schema{
+																															Type:        schema.TypeList,
+																															Computed:    true,
+																															Description: "Specifies the Throttling Configuration Parameters.",
+																															Elem: &schema.Resource{
+																																Schema: map[string]*schema.Schema{
+																																	"fixed_threshold": &schema.Schema{
+																																		Type:        schema.TypeInt,
+																																		Computed:    true,
+																																		Description: "Fixed baseline threshold for throttling. This is mandatory for any other throttling type than kNoThrottling.",
+																																	},
+																																	"pattern_type": &schema.Schema{
+																																		Type:        schema.TypeString,
+																																		Computed:    true,
+																																		Description: "Type of the throttling pattern. 'kNoThrottling' indicates that throttling is not in force. 'kBaseThrottling' indicates indicates a constant base level throttling. 'kFixed' indicates a constant base level throttling.",
+																																	},
+																																	"throttling_windows": &schema.Schema{
+																																		Type:        schema.TypeList,
+																																		Computed:    true,
+																																		Description: "Specifies the Throttling Window Parameters Definition.",
+																																		Elem: &schema.Resource{
+																																			Schema: map[string]*schema.Schema{
+																																				"day_time_window": &schema.Schema{
+																																					Type:        schema.TypeList,
+																																					Computed:    true,
+																																					Description: "Specifies the Day Time Window Parameters.",
+																																					Elem: &schema.Resource{
+																																						Schema: map[string]*schema.Schema{
+																																							"end_time": &schema.Schema{
+																																								Type:        schema.TypeList,
+																																								Computed:    true,
+																																								Description: "Specifies the Day Time Parameters.",
+																																								Elem: &schema.Resource{
+																																									Schema: map[string]*schema.Schema{
+																																										"day": &schema.Schema{
+																																											Type:        schema.TypeString,
+																																											Computed:    true,
+																																											Description: "Specifies the day of the week (such as 'kMonday') for scheduling throttling. Specifies a day in a week such as 'kSunday', 'kMonday', etc.",
+																																										},
+																																										"time": &schema.Schema{
+																																											Type:        schema.TypeList,
+																																											Computed:    true,
+																																											Description: "Specifies the time in hours and minutes.",
+																																											Elem: &schema.Resource{
+																																												Schema: map[string]*schema.Schema{
+																																													"hour": &schema.Schema{
+																																														Type:        schema.TypeInt,
+																																														Computed:    true,
+																																														Description: "Specifies the hour of this time.",
+																																													},
+																																													"minute": &schema.Schema{
+																																														Type:        schema.TypeInt,
+																																														Computed:    true,
+																																														Description: "Specifies the minute of this time.",
+																																													},
+																																												},
+																																											},
+																																										},
+																																									},
+																																								},
+																																							},
+																																							"start_time": &schema.Schema{
+																																								Type:        schema.TypeList,
+																																								Computed:    true,
+																																								Description: "Specifies the Day Time Parameters.",
+																																								Elem: &schema.Resource{
+																																									Schema: map[string]*schema.Schema{
+																																										"day": &schema.Schema{
+																																											Type:        schema.TypeString,
+																																											Computed:    true,
+																																											Description: "Specifies the day of the week (such as 'kMonday') for scheduling throttling. Specifies a day in a week such as 'kSunday', 'kMonday', etc.",
+																																										},
+																																										"time": &schema.Schema{
+																																											Type:        schema.TypeList,
+																																											Computed:    true,
+																																											Description: "Specifies the time in hours and minutes.",
+																																											Elem: &schema.Resource{
+																																												Schema: map[string]*schema.Schema{
+																																													"hour": &schema.Schema{
+																																														Type:        schema.TypeInt,
+																																														Computed:    true,
+																																														Description: "Specifies the hour of this time.",
+																																													},
+																																													"minute": &schema.Schema{
+																																														Type:        schema.TypeInt,
+																																														Computed:    true,
+																																														Description: "Specifies the minute of this time.",
+																																													},
+																																												},
+																																											},
+																																										},
+																																									},
+																																								},
+																																							},
+																																						},
+																																					},
+																																				},
+																																				"threshold": &schema.Schema{
+																																					Type:        schema.TypeInt,
+																																					Computed:    true,
+																																					Description: "Throttling threshold applicable in the window.",
+																																				},
+																																			},
+																																		},
+																																	},
+																																},
+																															},
+																														},
+																														"network_throttling_config": &schema.Schema{
+																															Type:        schema.TypeList,
+																															Computed:    true,
+																															Description: "Specifies the Throttling Configuration Parameters.",
+																															Elem: &schema.Resource{
+																																Schema: map[string]*schema.Schema{
+																																	"fixed_threshold": &schema.Schema{
+																																		Type:        schema.TypeInt,
+																																		Computed:    true,
+																																		Description: "Fixed baseline threshold for throttling. This is mandatory for any other throttling type than kNoThrottling.",
+																																	},
+																																	"pattern_type": &schema.Schema{
+																																		Type:        schema.TypeString,
+																																		Computed:    true,
+																																		Description: "Type of the throttling pattern. 'kNoThrottling' indicates that throttling is not in force. 'kBaseThrottling' indicates indicates a constant base level throttling. 'kFixed' indicates a constant base level throttling.",
+																																	},
+																																	"throttling_windows": &schema.Schema{
+																																		Type:        schema.TypeList,
+																																		Computed:    true,
+																																		Description: "Specifies the Throttling Window Parameters Definition.",
+																																		Elem: &schema.Resource{
+																																			Schema: map[string]*schema.Schema{
+																																				"day_time_window": &schema.Schema{
+																																					Type:        schema.TypeList,
+																																					Computed:    true,
+																																					Description: "Specifies the Day Time Window Parameters.",
+																																					Elem: &schema.Resource{
+																																						Schema: map[string]*schema.Schema{
+																																							"end_time": &schema.Schema{
+																																								Type:        schema.TypeList,
+																																								Computed:    true,
+																																								Description: "Specifies the Day Time Parameters.",
+																																								Elem: &schema.Resource{
+																																									Schema: map[string]*schema.Schema{
+																																										"day": &schema.Schema{
+																																											Type:        schema.TypeString,
+																																											Computed:    true,
+																																											Description: "Specifies the day of the week (such as 'kMonday') for scheduling throttling. Specifies a day in a week such as 'kSunday', 'kMonday', etc.",
+																																										},
+																																										"time": &schema.Schema{
+																																											Type:        schema.TypeList,
+																																											Computed:    true,
+																																											Description: "Specifies the time in hours and minutes.",
+																																											Elem: &schema.Resource{
+																																												Schema: map[string]*schema.Schema{
+																																													"hour": &schema.Schema{
+																																														Type:        schema.TypeInt,
+																																														Computed:    true,
+																																														Description: "Specifies the hour of this time.",
+																																													},
+																																													"minute": &schema.Schema{
+																																														Type:        schema.TypeInt,
+																																														Computed:    true,
+																																														Description: "Specifies the minute of this time.",
+																																													},
+																																												},
+																																											},
+																																										},
+																																									},
+																																								},
+																																							},
+																																							"start_time": &schema.Schema{
+																																								Type:        schema.TypeList,
+																																								Computed:    true,
+																																								Description: "Specifies the Day Time Parameters.",
+																																								Elem: &schema.Resource{
+																																									Schema: map[string]*schema.Schema{
+																																										"day": &schema.Schema{
+																																											Type:        schema.TypeString,
+																																											Computed:    true,
+																																											Description: "Specifies the day of the week (such as 'kMonday') for scheduling throttling. Specifies a day in a week such as 'kSunday', 'kMonday', etc.",
+																																										},
+																																										"time": &schema.Schema{
+																																											Type:        schema.TypeList,
+																																											Computed:    true,
+																																											Description: "Specifies the time in hours and minutes.",
+																																											Elem: &schema.Resource{
+																																												Schema: map[string]*schema.Schema{
+																																													"hour": &schema.Schema{
+																																														Type:        schema.TypeInt,
+																																														Computed:    true,
+																																														Description: "Specifies the hour of this time.",
+																																													},
+																																													"minute": &schema.Schema{
+																																														Type:        schema.TypeInt,
+																																														Computed:    true,
+																																														Description: "Specifies the minute of this time.",
+																																													},
+																																												},
+																																											},
+																																										},
+																																									},
+																																								},
+																																							},
+																																						},
+																																					},
+																																				},
+																																				"threshold": &schema.Schema{
+																																					Type:        schema.TypeInt,
+																																					Computed:    true,
+																																					Description: "Throttling threshold applicable in the window.",
+																																				},
+																																			},
+																																		},
+																																	},
+																																},
+																															},
+																														},
+																													},
+																												},
+																											},
+																											"username": &schema.Schema{
+																												Type:        schema.TypeString,
+																												Computed:    true,
+																												Description: "Specifies username to access the target source.",
+																											},
+																										},
+																									},
+																								},
+																								"progress_monitor_path": &schema.Schema{
+																									Type:        schema.TypeString,
+																									Computed:    true,
+																									Description: "Captures the current progress and pulse details w.r.t to either the registration or refresh.",
+																								},
+																								"refresh_error_message": &schema.Schema{
+																									Type:        schema.TypeString,
+																									Computed:    true,
+																									Description: "Specifies a message if there was any error encountered during the last rebuild of the Protection Source tree. If there was no error during the last rebuild, this field is reset.",
+																								},
+																								"refresh_time_usecs": &schema.Schema{
+																									Type:        schema.TypeInt,
+																									Computed:    true,
+																									Description: "Specifies the Unix epoch time (in microseconds) when the Protection Source tree was most recently fetched and built.",
+																								},
+																								"registered_apps_info": &schema.Schema{
+																									Type:        schema.TypeList,
+																									Computed:    true,
+																									Description: "Specifies information of the applications registered on this protection source.",
+																									Elem: &schema.Resource{
+																										Schema: map[string]*schema.Schema{
+																											"authentication_error_message": &schema.Schema{
+																												Type:        schema.TypeString,
+																												Computed:    true,
+																												Description: "pecifies an authentication error message. This indicates the given credentials are rejected and the registration of the application is not successful.",
+																											},
+																											"authentication_status": &schema.Schema{
+																												Type:        schema.TypeString,
+																												Computed:    true,
+																												Description: "Specifies the status of authenticating to the Protection Source when registering this application with Cohesity Cluster. If the status is 'kFinished' and there is no error, registration is successful. Specifies the status of the authentication during the registration of a Protection Source. 'kPending' indicates the authentication is in progress. 'kScheduled' indicates the authentication is scheduled. 'kFinished' indicates the authentication is completed. 'kRefreshInProgress' indicates the refresh is in progress.",
+																											},
+																											"environment": &schema.Schema{
+																												Type:        schema.TypeString,
+																												Computed:    true,
+																												Description: "Specifies the application environment. Supported environment types such as 'kView', 'kSQL', 'kVMware', etc.",
+																											},
+																											"host_settings_check_results": &schema.Schema{
+																												Type:        schema.TypeList,
+																												Computed:    true,
+																												Description: "Specifies the list of check results internally performed to verify status of various services such as 'AgnetRunning', 'SQLWriterRunning' etc.",
+																												Elem: &schema.Resource{
+																													Schema: map[string]*schema.Schema{
+																														"check_type": &schema.Schema{
+																															Type:        schema.TypeString,
+																															Computed:    true,
+																															Description: "Specifies the type of the check internally performed. Specifies the type of the host check performed internally. 'kIsAgentPortAccessible' indicates the check for agent port access. 'kIsAgentRunning' indicates the status for the Cohesity agent service. 'kIsSQLWriterRunning' indicates the status for SQLWriter service. 'kAreSQLInstancesRunning' indicates the run status for all the SQL instances in the host. 'kCheckServiceLoginsConfig' checks the privileges and sysadmin status of the logins used by the SQL instance services, Cohesity agent service and the SQLWriter service. 'kCheckSQLFCIVIP' checks whether the SQL FCI is registered with a valid VIP or FQDN. 'kCheckSQLDiskSpace' checks whether volumes containing SQL DBs have at least 10% free space.",
+																														},
+																														"result_type": &schema.Schema{
+																															Type:        schema.TypeString,
+																															Computed:    true,
+																															Description: "Specifies the type of the result returned after performing the internal host check. Specifies the type of the host check result performed internally. 'kPass' indicates that the respective check was successful. 'kFail' indicates that the respective check failed as some mandatory setting is not met 'kWarning' indicates that the respective check has warning as certain non-mandatory setting is not met.",
+																														},
+																														"user_message": &schema.Schema{
+																															Type:        schema.TypeString,
+																															Computed:    true,
+																															Description: "Specifies a descriptive message for failed/warning types.",
+																														},
+																													},
+																												},
+																											},
+																											"refresh_error_message": &schema.Schema{
+																												Type:        schema.TypeString,
+																												Computed:    true,
+																												Description: "Specifies a message if there was any error encountered during the last rebuild of the application tree. If there was no error during the last rebuild, this field is reset.",
+																											},
+																										},
+																									},
+																								},
+																								"registration_time_usecs": &schema.Schema{
+																									Type:        schema.TypeInt,
+																									Computed:    true,
+																									Description: "Specifies the Unix epoch time (in microseconds) when the Protection Source was registered.",
+																								},
+																								"subnets": &schema.Schema{
+																									Type:        schema.TypeList,
+																									Computed:    true,
+																									Description: "Specifies the list of subnets added during creation or updation of vmare source. Currently, this field will only be populated in case of VMware registration.",
+																									Elem: &schema.Resource{
+																										Schema: map[string]*schema.Schema{
+																											"component": &schema.Schema{
+																												Type:        schema.TypeString,
+																												Computed:    true,
+																												Description: "Component that has reserved the subnet.",
+																											},
+																											"description": &schema.Schema{
+																												Type:        schema.TypeString,
+																												Computed:    true,
+																												Description: "Description of the subnet.",
+																											},
+																											"id": &schema.Schema{
+																												Type:        schema.TypeFloat,
+																												Computed:    true,
+																												Description: "ID of the subnet.",
+																											},
+																											"ip": &schema.Schema{
+																												Type:        schema.TypeString,
+																												Computed:    true,
+																												Description: "Specifies either an IPv6 address or an IPv4 address.",
+																											},
+																											"netmask_bits": &schema.Schema{
+																												Type:        schema.TypeFloat,
+																												Computed:    true,
+																												Description: "netmaskBits.",
+																											},
+																											"netmask_ip4": &schema.Schema{
+																												Type:        schema.TypeString,
+																												Computed:    true,
+																												Description: "Specifies the netmask using an IP4 address. The netmask can only be set using netmaskIp4 if the IP address is an IPv4 address.",
+																											},
+																											"nfs_access": &schema.Schema{
+																												Type:        schema.TypeString,
+																												Computed:    true,
+																												Description: "Component that has reserved the subnet.",
+																											},
+																											"nfs_all_squash": &schema.Schema{
+																												Type:        schema.TypeBool,
+																												Computed:    true,
+																												Description: "Specifies whether all clients from this subnet can map view with view_all_squash_uid/view_all_squash_gid configured in the view.",
+																											},
+																											"nfs_root_squash": &schema.Schema{
+																												Type:        schema.TypeBool,
+																												Computed:    true,
+																												Description: "Specifies whether clients from this subnet can mount as root on NFS.",
+																											},
+																											"s3_access": &schema.Schema{
+																												Type:        schema.TypeString,
+																												Computed:    true,
+																												Description: "Specifies whether clients from this subnet can access using S3 protocol. Protocol access level. 'kDisabled' indicates Protocol access level 'Disabled' 'kReadOnly' indicates Protocol access level 'ReadOnly' 'kReadWrite' indicates Protocol access level 'ReadWrite'.",
+																											},
+																											"smb_access": &schema.Schema{
+																												Type:        schema.TypeString,
+																												Computed:    true,
+																												Description: "Specifies whether clients from this subnet can mount using SMB protocol. Protocol access level. 'kDisabled' indicates Protocol access level 'Disabled' 'kReadOnly' indicates Protocol access level 'ReadOnly' 'kReadWrite' indicates Protocol access level 'ReadWrite'.",
+																											},
+																											"tenant_id": &schema.Schema{
+																												Type:        schema.TypeString,
+																												Computed:    true,
+																												Description: "Specifies the unique id of the tenant.",
+																											},
+																										},
+																									},
+																								},
+																								"throttling_policy": &schema.Schema{
+																									Type:        schema.TypeList,
+																									Computed:    true,
+																									Description: "Specifies the throttling policy for a registered Protection Source.",
+																									Elem: &schema.Resource{
+																										Schema: map[string]*schema.Schema{
+																											"enforce_max_streams": &schema.Schema{
+																												Type:        schema.TypeBool,
+																												Computed:    true,
+																												Description: "Specifies whether datastore streams are configured for all datastores that are part of the registered entity. If set to true, number of streams from Cohesity cluster to the registered entity will be limited to the value set for maxConcurrentStreams. If not set or set to false, there is no max limit for the number of concurrent streams.",
+																											},
+																											"enforce_registered_source_max_backups": &schema.Schema{
+																												Type:        schema.TypeBool,
+																												Computed:    true,
+																												Description: "Specifies whether no. of backups are configured for the registered entity. If set to true, number of backups made by Cohesity cluster in the registered entity will be limited to the value set for RegisteredSourceMaxConcurrentBackups. If not set or set to false, there is no max limit for the number of concurrent backups.",
+																											},
+																											"is_enabled": &schema.Schema{
+																												Type:        schema.TypeBool,
+																												Computed:    true,
+																												Description: "Indicates whether read operations to the datastores, which are part of the registered Protection Source, are throttled.",
+																											},
+																											"latency_thresholds": &schema.Schema{
+																												Type:        schema.TypeList,
+																												Computed:    true,
+																												Description: "Specifies latency thresholds that trigger throttling for all datastores found in the registered Protection Source or specific to one datastore.",
+																												Elem: &schema.Resource{
+																													Schema: map[string]*schema.Schema{
+																														"active_task_msecs": &schema.Schema{
+																															Type:        schema.TypeInt,
+																															Computed:    true,
+																															Description: "If the latency of a datastore is above this value, existing backup tasks using the datastore are throttled.",
+																														},
+																														"new_task_msecs": &schema.Schema{
+																															Type:        schema.TypeInt,
+																															Computed:    true,
+																															Description: "If the latency of a datastore is above this value, then new backup tasks using the datastore will not be started.",
+																														},
+																													},
+																												},
+																											},
+																											"max_concurrent_streams": &schema.Schema{
+																												Type:        schema.TypeFloat,
+																												Computed:    true,
+																												Description: "Specifies the limit on the number of streams Cohesity cluster will make concurrently to the datastores of the registered entity. This limit is enforced only when the flag enforceMaxStreams is set to true.",
+																											},
+																											"nas_source_params": &schema.Schema{
+																												Type:        schema.TypeList,
+																												Computed:    true,
+																												Description: "Specifies the NAS specific source throttling parameters during source registration or during backup of the source.",
+																												Elem: &schema.Resource{
+																													Schema: map[string]*schema.Schema{
+																														"max_parallel_metadata_fetch_full_percentage": &schema.Schema{
+																															Type:        schema.TypeFloat,
+																															Computed:    true,
+																															Description: "Specifies the percentage value of maximum concurrent metadata to be fetched during full backup of the source.",
+																														},
+																														"max_parallel_metadata_fetch_incremental_percentage": &schema.Schema{
+																															Type:        schema.TypeFloat,
+																															Computed:    true,
+																															Description: "Specifies the percentage value of maximum concurrent metadata to be fetched during incremental backup of the source.",
+																														},
+																														"max_parallel_read_write_full_percentage": &schema.Schema{
+																															Type:        schema.TypeFloat,
+																															Computed:    true,
+																															Description: "Specifies the percentage value of maximum concurrent IO during full backup of the source.",
+																														},
+																														"max_parallel_read_write_incremental_percentage": &schema.Schema{
+																															Type:        schema.TypeFloat,
+																															Computed:    true,
+																															Description: "Specifies the percentage value of maximum concurrent IO during incremental backup of the source.",
+																														},
+																													},
+																												},
+																											},
+																											"registered_source_max_concurrent_backups": &schema.Schema{
+																												Type:        schema.TypeFloat,
+																												Computed:    true,
+																												Description: "Specifies the limit on the number of backups Cohesity cluster will make concurrently to the registered entity. This limit is enforced only when the flag enforceRegisteredSourceMaxBackups is set to true.",
+																											},
+																											"storage_array_snapshot_config": &schema.Schema{
+																												Type:        schema.TypeList,
+																												Computed:    true,
+																												Description: "Specifies Storage Array Snapshot Configuration.",
+																												Elem: &schema.Resource{
+																													Schema: map[string]*schema.Schema{
+																														"is_max_snapshots_config_enabled": &schema.Schema{
+																															Type:        schema.TypeBool,
+																															Computed:    true,
+																															Description: "Specifies if the storage array snapshot max snapshots config is enabled or not.",
+																														},
+																														"is_max_space_config_enabled": &schema.Schema{
+																															Type:        schema.TypeBool,
+																															Computed:    true,
+																															Description: "Specifies if the storage array snapshot max space config is enabled or not.",
+																														},
+																														"storage_array_snapshot_max_space_config": &schema.Schema{
+																															Type:        schema.TypeList,
+																															Computed:    true,
+																															Description: "Specifies Storage Array Snapshot Max Space Config.",
+																															Elem: &schema.Resource{
+																																Schema: map[string]*schema.Schema{
+																																	"max_snapshot_space_percentage": &schema.Schema{
+																																		Type:        schema.TypeFloat,
+																																		Computed:    true,
+																																		Description: "Max number of storage snapshots allowed per volume/lun.",
+																																	},
+																																},
+																															},
+																														},
+																														"storage_array_snapshot_throttling_policies": &schema.Schema{
+																															Type:        schema.TypeList,
+																															Computed:    true,
+																															Description: "Specifies throttling policies configured for individual volume/lun.",
+																															Elem: &schema.Resource{
+																																Schema: map[string]*schema.Schema{
+																																	"id": &schema.Schema{
+																																		Type:        schema.TypeInt,
+																																		Computed:    true,
+																																		Description: "Specifies the volume id of the storage array snapshot config.",
+																																	},
+																																	"is_max_snapshots_config_enabled": &schema.Schema{
+																																		Type:        schema.TypeBool,
+																																		Computed:    true,
+																																		Description: "Specifies if the storage array snapshot max snapshots config is enabled or not.",
+																																	},
+																																	"is_max_space_config_enabled": &schema.Schema{
+																																		Type:        schema.TypeBool,
+																																		Computed:    true,
+																																		Description: "Specifies if the storage array snapshot max space config is enabled or not.",
+																																	},
+																																	"max_snapshot_config": &schema.Schema{
+																																		Type:        schema.TypeList,
+																																		Computed:    true,
+																																		Description: "Specifies Storage Array Snapshot Max Snapshots Config.",
+																																		Elem: &schema.Resource{
+																																			Schema: map[string]*schema.Schema{
+																																				"max_snapshots": &schema.Schema{
+																																					Type:        schema.TypeFloat,
+																																					Computed:    true,
+																																					Description: "Max number of storage snapshots allowed per volume/lun.",
+																																				},
+																																			},
+																																		},
+																																	},
+																																	"max_space_config": &schema.Schema{
+																																		Type:        schema.TypeList,
+																																		Computed:    true,
+																																		Description: "Specifies Storage Array Snapshot Max Space Config.",
+																																		Elem: &schema.Resource{
+																																			Schema: map[string]*schema.Schema{
+																																				"max_snapshot_space_percentage": &schema.Schema{
+																																					Type:        schema.TypeFloat,
+																																					Computed:    true,
+																																					Description: "Max number of storage snapshots allowed per volume/lun.",
+																																				},
+																																			},
+																																		},
+																																	},
+																																},
+																															},
+																														},
+																													},
+																												},
+																											},
+																										},
+																									},
+																								},
+																								"throttling_policy_overrides": &schema.Schema{
+																									Type:        schema.TypeList,
+																									Computed:    true,
+																									Description: "Specifies throttling policy override for a Datastore in a registered entity.",
+																									Elem: &schema.Resource{
+																										Schema: map[string]*schema.Schema{
+																											"datastore_id": &schema.Schema{
+																												Type:        schema.TypeInt,
+																												Computed:    true,
+																												Description: "Specifies the Protection Source id of the Datastore.",
+																											},
+																											"datastore_name": &schema.Schema{
+																												Type:        schema.TypeString,
+																												Computed:    true,
+																												Description: "Specifies the display name of the Datastore.",
+																											},
+																											"throttling_policy": &schema.Schema{
+																												Type:        schema.TypeList,
+																												Computed:    true,
+																												Description: "Specifies the throttling policy for a registered Protection Source.",
+																												Elem: &schema.Resource{
+																													Schema: map[string]*schema.Schema{
+																														"enforce_max_streams": &schema.Schema{
+																															Type:        schema.TypeBool,
+																															Computed:    true,
+																															Description: "Specifies whether datastore streams are configured for all datastores that are part of the registered entity. If set to true, number of streams from Cohesity cluster to the registered entity will be limited to the value set for maxConcurrentStreams. If not set or set to false, there is no max limit for the number of concurrent streams.",
+																														},
+																														"enforce_registered_source_max_backups": &schema.Schema{
+																															Type:        schema.TypeBool,
+																															Computed:    true,
+																															Description: "Specifies whether no. of backups are configured for the registered entity. If set to true, number of backups made by Cohesity cluster in the registered entity will be limited to the value set for RegisteredSourceMaxConcurrentBackups. If not set or set to false, there is no max limit for the number of concurrent backups.",
+																														},
+																														"is_enabled": &schema.Schema{
+																															Type:        schema.TypeBool,
+																															Computed:    true,
+																															Description: "Indicates whether read operations to the datastores, which are part of the registered Protection Source, are throttled.",
+																														},
+																														"latency_thresholds": &schema.Schema{
+																															Type:        schema.TypeList,
+																															Computed:    true,
+																															Description: "Specifies latency thresholds that trigger throttling for all datastores found in the registered Protection Source or specific to one datastore.",
+																															Elem: &schema.Resource{
+																																Schema: map[string]*schema.Schema{
+																																	"active_task_msecs": &schema.Schema{
+																																		Type:        schema.TypeInt,
+																																		Computed:    true,
+																																		Description: "If the latency of a datastore is above this value, existing backup tasks using the datastore are throttled.",
+																																	},
+																																	"new_task_msecs": &schema.Schema{
+																																		Type:        schema.TypeInt,
+																																		Computed:    true,
+																																		Description: "If the latency of a datastore is above this value, then new backup tasks using the datastore will not be started.",
+																																	},
+																																},
+																															},
+																														},
+																														"max_concurrent_streams": &schema.Schema{
+																															Type:        schema.TypeFloat,
+																															Computed:    true,
+																															Description: "Specifies the limit on the number of streams Cohesity cluster will make concurrently to the datastores of the registered entity. This limit is enforced only when the flag enforceMaxStreams is set to true.",
+																														},
+																														"nas_source_params": &schema.Schema{
+																															Type:        schema.TypeList,
+																															Computed:    true,
+																															Description: "Specifies the NAS specific source throttling parameters during source registration or during backup of the source.",
+																															Elem: &schema.Resource{
+																																Schema: map[string]*schema.Schema{
+																																	"max_parallel_metadata_fetch_full_percentage": &schema.Schema{
+																																		Type:        schema.TypeFloat,
+																																		Computed:    true,
+																																		Description: "Specifies the percentage value of maximum concurrent metadata to be fetched during full backup of the source.",
+																																	},
+																																	"max_parallel_metadata_fetch_incremental_percentage": &schema.Schema{
+																																		Type:        schema.TypeFloat,
+																																		Computed:    true,
+																																		Description: "Specifies the percentage value of maximum concurrent metadata to be fetched during incremental backup of the source.",
+																																	},
+																																	"max_parallel_read_write_full_percentage": &schema.Schema{
+																																		Type:        schema.TypeFloat,
+																																		Computed:    true,
+																																		Description: "Specifies the percentage value of maximum concurrent IO during full backup of the source.",
+																																	},
+																																	"max_parallel_read_write_incremental_percentage": &schema.Schema{
+																																		Type:        schema.TypeFloat,
+																																		Computed:    true,
+																																		Description: "Specifies the percentage value of maximum concurrent IO during incremental backup of the source.",
+																																	},
+																																},
+																															},
+																														},
+																														"registered_source_max_concurrent_backups": &schema.Schema{
+																															Type:        schema.TypeFloat,
+																															Computed:    true,
+																															Description: "Specifies the limit on the number of backups Cohesity cluster will make concurrently to the registered entity. This limit is enforced only when the flag enforceRegisteredSourceMaxBackups is set to true.",
+																														},
+																														"storage_array_snapshot_config": &schema.Schema{
+																															Type:        schema.TypeList,
+																															Computed:    true,
+																															Description: "Specifies Storage Array Snapshot Configuration.",
+																															Elem: &schema.Resource{
+																																Schema: map[string]*schema.Schema{
+																																	"is_max_snapshots_config_enabled": &schema.Schema{
+																																		Type:        schema.TypeBool,
+																																		Computed:    true,
+																																		Description: "Specifies if the storage array snapshot max snapshots config is enabled or not.",
+																																	},
+																																	"is_max_space_config_enabled": &schema.Schema{
+																																		Type:        schema.TypeBool,
+																																		Computed:    true,
+																																		Description: "Specifies if the storage array snapshot max space config is enabled or not.",
+																																	},
+																																	"storage_array_snapshot_max_space_config": &schema.Schema{
+																																		Type:        schema.TypeList,
+																																		Computed:    true,
+																																		Description: "Specifies Storage Array Snapshot Max Space Config.",
+																																		Elem: &schema.Resource{
+																																			Schema: map[string]*schema.Schema{
+																																				"max_snapshot_space_percentage": &schema.Schema{
+																																					Type:        schema.TypeFloat,
+																																					Computed:    true,
+																																					Description: "Max number of storage snapshots allowed per volume/lun.",
+																																				},
+																																			},
+																																		},
+																																	},
+																																	"storage_array_snapshot_throttling_policies": &schema.Schema{
+																																		Type:        schema.TypeList,
+																																		Computed:    true,
+																																		Description: "Specifies throttling policies configured for individual volume/lun.",
+																																		Elem: &schema.Resource{
+																																			Schema: map[string]*schema.Schema{
+																																				"id": &schema.Schema{
+																																					Type:        schema.TypeInt,
+																																					Computed:    true,
+																																					Description: "Specifies the volume id of the storage array snapshot config.",
+																																				},
+																																				"is_max_snapshots_config_enabled": &schema.Schema{
+																																					Type:        schema.TypeBool,
+																																					Computed:    true,
+																																					Description: "Specifies if the storage array snapshot max snapshots config is enabled or not.",
+																																				},
+																																				"is_max_space_config_enabled": &schema.Schema{
+																																					Type:        schema.TypeBool,
+																																					Computed:    true,
+																																					Description: "Specifies if the storage array snapshot max space config is enabled or not.",
+																																				},
+																																				"max_snapshot_config": &schema.Schema{
+																																					Type:        schema.TypeList,
+																																					Computed:    true,
+																																					Description: "Specifies Storage Array Snapshot Max Snapshots Config.",
+																																					Elem: &schema.Resource{
+																																						Schema: map[string]*schema.Schema{
+																																							"max_snapshots": &schema.Schema{
+																																								Type:        schema.TypeFloat,
+																																								Computed:    true,
+																																								Description: "Max number of storage snapshots allowed per volume/lun.",
+																																							},
+																																						},
+																																					},
+																																				},
+																																				"max_space_config": &schema.Schema{
+																																					Type:        schema.TypeList,
+																																					Computed:    true,
+																																					Description: "Specifies Storage Array Snapshot Max Space Config.",
+																																					Elem: &schema.Resource{
+																																						Schema: map[string]*schema.Schema{
+																																							"max_snapshot_space_percentage": &schema.Schema{
+																																								Type:        schema.TypeFloat,
+																																								Computed:    true,
+																																								Description: "Max number of storage snapshots allowed per volume/lun.",
+																																							},
+																																						},
+																																					},
+																																				},
+																																			},
+																																		},
+																																	},
+																																},
+																															},
+																														},
+																													},
+																												},
+																											},
+																										},
+																									},
+																								},
+																								"use_o_auth_for_exchange_online": &schema.Schema{
+																									Type:        schema.TypeBool,
+																									Computed:    true,
+																									Description: "Specifies whether OAuth should be used for authentication in case of Exchange Online.",
+																								},
+																								"use_vm_bios_uuid": &schema.Schema{
+																									Type:        schema.TypeBool,
+																									Computed:    true,
+																									Description: "Specifies if registered vCenter is using BIOS UUID to track virtual machines.",
+																								},
+																								"user_messages": &schema.Schema{
+																									Type:        schema.TypeList,
+																									Computed:    true,
+																									Description: "Specifies the additional details encountered during registration. Though the registration may succeed, user messages imply the host environment requires some cleanup or fixing.",
+																									Elem: &schema.Schema{
+																										Type: schema.TypeString,
+																									},
+																								},
+																								"username": &schema.Schema{
+																									Type:        schema.TypeString,
+																									Computed:    true,
+																									Description: "Specifies username to access the target source.",
+																								},
+																								"vlan_params": &schema.Schema{
+																									Type:        schema.TypeList,
+																									Computed:    true,
+																									Description: "Specifies the VLAN configuration for Recovery.",
+																									Elem: &schema.Resource{
+																										Schema: map[string]*schema.Schema{
+																											"vlan": &schema.Schema{
+																												Type:        schema.TypeFloat,
+																												Computed:    true,
+																												Description: "Specifies the VLAN to use for mounting Cohesity's view on the remote host. If specified, Cohesity hostname or the IP address on this VLAN is used.",
+																											},
+																											"disable_vlan": &schema.Schema{
+																												Type:        schema.TypeBool,
+																												Computed:    true,
+																												Description: "Specifies whether to use the VIPs even when VLANs are configured on the Cluster. If configured, VLAN IP addresses are used by default. If VLANs are not configured, this flag is ignored. Set this flag to true to force using the partition VIPs when VLANs are configured on the Cluster.",
+																											},
+																											"interface_name": &schema.Schema{
+																												Type:        schema.TypeString,
+																												Computed:    true,
+																												Description: "Specifies the physical interface group name to use for mounting Cohesity's view on the remote host. If specified, Cohesity hostname or the IP address on this VLAN is used.",
+																											},
+																										},
+																									},
+																								},
+																								"warning_messages": &schema.Schema{
+																									Type:        schema.TypeList,
+																									Computed:    true,
+																									Description: "Specifies a list of warnings encountered during registration. Though the registration may succeed, warning messages imply the host environment requires some cleanup or fixing.",
+																									Elem: &schema.Schema{
+																										Type: schema.TypeString,
+																									},
+																								},
+																							},
+																						},
+																					},
+																					"total_downtiered_size_in_bytes": &schema.Schema{
+																						Type:        schema.TypeInt,
+																						Computed:    true,
+																						Description: "Specifies the total bytes downtiered from the source so far.",
+																					},
+																					"total_uptiered_size_in_bytes": &schema.Schema{
+																						Type:        schema.TypeInt,
+																						Computed:    true,
+																						Description: "Specifies the total bytes uptiered to the source so far.",
+																					},
+																					"unprotected_sources_summary": &schema.Schema{
+																						Type:        schema.TypeList,
+																						Computed:    true,
+																						Description: "Aggregated information about a node subtree.",
+																						Elem: &schema.Resource{
+																							Schema: map[string]*schema.Schema{
+																								"environment": &schema.Schema{
+																									Type:        schema.TypeString,
+																									Computed:    true,
+																									Description: "Specifies the environment such as 'kSQL' or 'kVMware', where the Protection Source exists. Supported environment types such as 'kView', 'kSQL', 'kVMware', etc. NOTE 'kPuppeteer' refers to Cohesity's Remote Adapter. 'kVMware' indicates the VMware Protection Source environment. 'kHyperV' indicates the HyperV Protection Source environment. 'kSQL' indicates the SQL Protection Source environment. 'kView' indicates the View Protection Source environment. 'kPuppeteer' indicates the Cohesity's Remote Adapter. 'kPhysical' indicates the physical Protection Source environment. 'kPure' indicates the Pure Storage Protection Source environment. 'kNimble' indicates the Nimble Storage Protection Source environment. 'kAzure' indicates the Microsoft's Azure Protection Source environment. 'kNetapp' indicates the Netapp Protection Source environment. 'kAgent' indicates the Agent Protection Source environment. 'kGenericNas' indicates the Generic Network Attached Storage Protection Source environment. 'kAcropolis' indicates the Acropolis Protection Source environment. 'kPhysicalFiles' indicates the Physical Files Protection Source environment. 'kIbmFlashSystem' indicates the IBM Flash System Protection Source environment. 'kIsilon' indicates the Dell EMC's Isilon Protection Source environment. 'kGPFS' indicates IBM's GPFS Protection Source environment. 'kKVM' indicates the KVM Protection Source environment. 'kAWS' indicates the AWS Protection Source environment. 'kExchange' indicates the Exchange Protection Source environment. 'kHyperVVSS' indicates the HyperV VSS Protection Source environment. 'kOracle' indicates the Oracle Protection Source environment. 'kGCP' indicates the Google Cloud Platform Protection Source environment. 'kFlashBlade' indicates the Flash Blade Protection Source environment. 'kAWSNative' indicates the AWS Native Protection Source environment. 'kO365' indicates the Office 365 Protection Source environment. 'kO365Outlook' indicates Office 365 outlook Protection Source environment. 'kHyperFlex' indicates the Hyper Flex Protection Source environment. 'kGCPNative' indicates the GCP Native Protection Source environment. 'kAzureNative' indicates the Azure Native Protection Source environment. 'kKubernetes' indicates a Kubernetes Protection Source environment. 'kElastifile' indicates Elastifile Protection Source environment. 'kAD' indicates Active Directory Protection Source environment. 'kRDSSnapshotManager' indicates AWS RDS Protection Source environment. 'kCassandra' indicates Cassandra Protection Source environment. 'kMongoDB' indicates MongoDB Protection Source environment. 'kCouchbase' indicates Couchbase Protection Source environment. 'kHdfs' indicates Hdfs Protection Source environment. 'kHive' indicates Hive Protection Source environment. 'kHBase' indicates HBase Protection Source environment. 'kUDA' indicates Universal Data Adapter Protection Source environment. 'kO365Teams' indicates the Office365 Teams Protection Source environment. 'kO365Group' indicates the Office365 Groups Protection Source environment. 'kO365Exchange' indicates the Office365 Mailbox Protection Source environment. 'kO365OneDrive' indicates the Office365 OneDrive Protection Source environment. 'kO365Sharepoint' indicates the Office365 SharePoint Protection Source environment. 'kO365PublicFolders' indicates the Office365 PublicFolders Protection Source environment.",
+																								},
+																								"leaves_count": &schema.Schema{
+																									Type:        schema.TypeInt,
+																									Computed:    true,
+																									Description: "Specifies the number of leaf nodes under the subtree of this node.",
+																								},
+																								"total_logical_size": &schema.Schema{
+																									Type:        schema.TypeInt,
+																									Computed:    true,
+																									Description: "Specifies the total logical size of the data under the subtree of this node.",
+																								},
+																							},
+																						},
+																					},
+																				},
+																			},
+																		},
+																	},
+																},
+															},
+															"entity_pagination_parameters": &schema.Schema{
+																Type:        schema.TypeList,
+																Computed:    true,
+																Description: "Specifies the cursor based pagination parameters for Protection Source and its children. Pagination is supported at a given level within the Protection Source Hierarchy with the help of before or after cursors. A Cursor will always refer to a specific source within the source dataset but will be invalidated if the item is removed.",
+																Elem: &schema.Resource{
+																	Schema: map[string]*schema.Schema{
+																		"after_cursor_entity_id": &schema.Schema{
+																			Type:        schema.TypeInt,
+																			Computed:    true,
+																			Description: "Specifies the entity id starting from which the items are to be returned.",
+																		},
+																		"before_cursor_entity_id": &schema.Schema{
+																			Type:        schema.TypeInt,
+																			Computed:    true,
+																			Description: "Specifies the entity id upto which the items are to be returned.",
+																		},
+																		"node_id": &schema.Schema{
+																			Type:        schema.TypeInt,
+																			Computed:    true,
+																			Description: "Specifies the entity id for the Node at any level within the Source entity hierarchy whose children are to be paginated.",
+																		},
+																		"page_size": &schema.Schema{
+																			Type:        schema.TypeInt,
+																			Computed:    true,
+																			Description: "Specifies the maximum number of entities to be returned within the page.",
+																		},
+																	},
+																},
+															},
+															"entity_permission_info": &schema.Schema{
+																Type:        schema.TypeList,
+																Computed:    true,
+																Description: "Specifies the permission information of entities.",
+																Elem: &schema.Resource{
+																	Schema: map[string]*schema.Schema{
+																		"entity_id": &schema.Schema{
+																			Type:        schema.TypeInt,
+																			Computed:    true,
+																			Description: "Specifies the entity id.",
+																		},
+																		"groups": &schema.Schema{
+																			Type:        schema.TypeList,
+																			Computed:    true,
+																			Description: "Specifies struct with basic group details.",
+																			Elem: &schema.Resource{
+																				Schema: map[string]*schema.Schema{
+																					"domain": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Computed:    true,
+																						Description: "Specifies domain name of the user.",
+																					},
+																					"group_name": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Computed:    true,
+																						Description: "Specifies group name of the group.",
+																					},
+																					"sid": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Computed:    true,
+																						Description: "Specifies unique Security ID (SID) of the user.",
+																					},
+																					"tenant_ids": &schema.Schema{
+																						Type:        schema.TypeList,
+																						Computed:    true,
+																						Description: "Specifies the tenants to which the group belongs to.",
+																						Elem: &schema.Schema{
+																							Type: schema.TypeString,
+																						},
+																					},
+																				},
+																			},
+																		},
+																		"is_inferred": &schema.Schema{
+																			Type:        schema.TypeBool,
+																			Computed:    true,
+																			Description: "Specifies whether the Entity Permission Information is inferred or not. For example, SQL application hosted over vCenter will have inferred entity permission information.",
+																		},
+																		"is_registered_by_sp": &schema.Schema{
+																			Type:        schema.TypeBool,
+																			Computed:    true,
+																			Description: "Specifies whether this entity is registered by the SP or not. This will be populated only if the entity is a root entity. Refer to magneto/base/permissions.proto for details.",
+																		},
+																		"registering_tenant_id": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Computed:    true,
+																			Description: "Specifies the tenant id that registered this entity. This will be populated only if the entity is a root entity.",
+																		},
+																		"tenant": &schema.Schema{
+																			Type:        schema.TypeList,
+																			Computed:    true,
+																			Description: "Specifies struct with basic tenant details.",
+																			Elem: &schema.Resource{
+																				Schema: map[string]*schema.Schema{
+																					"bifrost_enabled": &schema.Schema{
+																						Type:        schema.TypeBool,
+																						Computed:    true,
+																						Description: "Specifies if this tenant is bifrost enabled or not.",
+																					},
+																					"is_managed_on_helios": &schema.Schema{
+																						Type:        schema.TypeBool,
+																						Computed:    true,
+																						Description: "Specifies whether this tenant is manged on helios.",
+																					},
+																					"name": &schema.Schema{
+																						Type:        schema.TypeBool,
+																						Computed:    true,
+																						Description: "Specifies name of the tenant.",
+																					},
+																					"tenant_id": &schema.Schema{
+																						Type:        schema.TypeBool,
+																						Computed:    true,
+																						Description: "Specifies the unique id of the tenant.",
+																					},
+																				},
+																			},
+																		},
+																		"users": &schema.Schema{
+																			Type:        schema.TypeList,
+																			Computed:    true,
+																			Description: "Specifies struct with basic user details.",
+																			Elem: &schema.Resource{
+																				Schema: map[string]*schema.Schema{
+																					"domain": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Computed:    true,
+																						Description: "Specifies domain name of the user.",
+																					},
+																					"sid": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Computed:    true,
+																						Description: "Specifies unique Security ID (SID) of the user.",
+																					},
+																					"tenant_id": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Computed:    true,
+																						Description: "Specifies the tenant to which the user belongs to.",
+																					},
+																					"user_name": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Computed:    true,
+																						Description: "Specifies user name of the user.",
+																					},
+																				},
+																			},
+																		},
+																	},
+																},
+															},
+															"logical_size": &schema.Schema{
+																Type:        schema.TypeInt,
+																Computed:    true,
+																Description: "Specifies the logical size of the data in bytes for the Object on this node. Presence of this field indicates this node is a leaf node.",
+															},
+															"object_protection_info": &schema.Schema{
+																Type:        schema.TypeList,
+																Computed:    true,
+																Description: "Specifies the Object Protection Info of the Protection Source.",
+																Elem: &schema.Resource{
+																	Schema: map[string]*schema.Schema{
+																		"auto_protect_parent_id": &schema.Schema{
+																			Type:        schema.TypeInt,
+																			Computed:    true,
+																			Description: "Specifies the auto protect parent id if this entity is protected based on auto protection. This is only specified for leaf entities.",
+																		},
+																		"entity_id": &schema.Schema{
+																			Type:        schema.TypeInt,
+																			Computed:    true,
+																			Description: "Specifies the entity id.",
+																		},
+																		"has_active_object_protection_spec": &schema.Schema{
+																			Type:        schema.TypeInt,
+																			Computed:    true,
+																			Description: "Specifies if the entity is under object protection.",
+																		},
+																	},
+																},
+															},
+															"protected_sources_summary": &schema.Schema{
+																Type:        schema.TypeList,
+																Computed:    true,
+																Description: "Array of Protected Objects. Specifies aggregated information about all the child Objects of this node that are currently protected by a Protection Job. There is one entry for each environment that is being backed up. The aggregated information for the Object hierarchy's environment will be available at the 0th index of the vector.",
+																Elem: &schema.Resource{
+																	Schema: map[string]*schema.Schema{
+																		"environment": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Computed:    true,
+																			Description: "Specifies the environment such as 'kSQL' or 'kVMware', where the Protection Source exists. Supported environment types such as 'kView', 'kSQL', 'kVMware', etc. NOTE 'kPuppeteer' refers to Cohesity's Remote Adapter. 'kVMware' indicates the VMware Protection Source environment. 'kHyperV' indicates the HyperV Protection Source environment. 'kSQL' indicates the SQL Protection Source environment. 'kView' indicates the View Protection Source environment. 'kPuppeteer' indicates the Cohesity's Remote Adapter. 'kPhysical' indicates the physical Protection Source environment. 'kPure' indicates the Pure Storage Protection Source environment. 'kNimble' indicates the Nimble Storage Protection Source environment. 'kAzure' indicates the Microsoft's Azure Protection Source environment. 'kNetapp' indicates the Netapp Protection Source environment. 'kAgent' indicates the Agent Protection Source environment. 'kGenericNas' indicates the Generic Network Attached Storage Protection Source environment. 'kAcropolis' indicates the Acropolis Protection Source environment. 'kPhysicalFiles' indicates the Physical Files Protection Source environment. 'kIbmFlashSystem' indicates the IBM Flash System Protection Source environment. 'kIsilon' indicates the Dell EMC's Isilon Protection Source environment. 'kGPFS' indicates IBM's GPFS Protection Source environment. 'kKVM' indicates the KVM Protection Source environment. 'kAWS' indicates the AWS Protection Source environment. 'kExchange' indicates the Exchange Protection Source environment. 'kHyperVVSS' indicates the HyperV VSS Protection Source environment. 'kOracle' indicates the Oracle Protection Source environment. 'kGCP' indicates the Google Cloud Platform Protection Source environment. 'kFlashBlade' indicates the Flash Blade Protection Source environment. 'kAWSNative' indicates the AWS Native Protection Source environment. 'kO365' indicates the Office 365 Protection Source environment. 'kO365Outlook' indicates Office 365 outlook Protection Source environment. 'kHyperFlex' indicates the Hyper Flex Protection Source environment. 'kGCPNative' indicates the GCP Native Protection Source environment. 'kAzureNative' indicates the Azure Native Protection Source environment. 'kKubernetes' indicates a Kubernetes Protection Source environment. 'kElastifile' indicates Elastifile Protection Source environment. 'kAD' indicates Active Directory Protection Source environment. 'kRDSSnapshotManager' indicates AWS RDS Protection Source environment. 'kCassandra' indicates Cassandra Protection Source environment. 'kMongoDB' indicates MongoDB Protection Source environment. 'kCouchbase' indicates Couchbase Protection Source environment. 'kHdfs' indicates Hdfs Protection Source environment. 'kHive' indicates Hive Protection Source environment. 'kHBase' indicates HBase Protection Source environment. 'kUDA' indicates Universal Data Adapter Protection Source environment. 'kO365Teams' indicates the Office365 Teams Protection Source environment. 'kO365Group' indicates the Office365 Groups Protection Source environment. 'kO365Exchange' indicates the Office365 Mailbox Protection Source environment. 'kO365OneDrive' indicates the Office365 OneDrive Protection Source environment. 'kO365Sharepoint' indicates the Office365 SharePoint Protection Source environment. 'kO365PublicFolders' indicates the Office365 PublicFolders Protection Source environment.",
+																		},
+																		"leaves_count": &schema.Schema{
+																			Type:        schema.TypeInt,
+																			Computed:    true,
+																			Description: "Specifies the number of leaf nodes under the subtree of this node.",
+																		},
+																		"total_logical_size": &schema.Schema{
+																			Type:        schema.TypeInt,
+																			Computed:    true,
+																			Description: "Specifies the total logical size of the data under the subtree of this node.",
+																		},
+																	},
+																},
+															},
+															"protection_source": &schema.Schema{
+																Type:        schema.TypeList,
+																Computed:    true,
+																Description: "Specifies details about an Acropolis Protection Source when the environment is set to 'kAcropolis'.",
+																Elem: &schema.Resource{
+																	Schema: map[string]*schema.Schema{
+																		"connection_id": &schema.Schema{
+																			Type:        schema.TypeInt,
+																			Computed:    true,
+																			Description: "Specifies the connection id of the tenant.",
+																		},
+																		"connector_group_id": &schema.Schema{
+																			Type:        schema.TypeInt,
+																			Computed:    true,
+																			Description: "Specifies the connector group id of the connector groups.",
+																		},
+																		"custom_name": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Computed:    true,
+																			Description: "Specifies the user provided custom name of the Protection Source.",
+																		},
+																		"environment": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Computed:    true,
+																			Description: "Specifies the environment (such as 'kVMware' or 'kSQL') where the Protection Source exists. Depending on the environment, one of the following Protection Sources are initialized.",
+																		},
+																		"id": &schema.Schema{
+																			Type:        schema.TypeInt,
+																			Computed:    true,
+																			Description: "Specifies an id of the Protection Source.",
+																		},
+																		"name": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Computed:    true,
+																			Description: "Specifies a name of the Protection Source.",
+																		},
+																		"parent_id": &schema.Schema{
+																			Type:        schema.TypeInt,
+																			Computed:    true,
+																			Description: "Specifies an id of the parent of the Protection Source.",
+																		},
+																		"physical_protection_source": &schema.Schema{
+																			Type:        schema.TypeList,
+																			Computed:    true,
+																			Description: "Specifies a Protection Source in a Physical environment.",
+																			Elem: &schema.Resource{
+																				Schema: map[string]*schema.Schema{
+																					"agents": &schema.Schema{
+																						Type:        schema.TypeList,
+																						Computed:    true,
+																						Description: "Specifiles the agents running on the Physical Protection Source and the status information.",
+																						Elem: &schema.Resource{
+																							Schema: map[string]*schema.Schema{
+																								"cbmr_version": &schema.Schema{
+																									Type:        schema.TypeString,
+																									Computed:    true,
+																									Description: "Specifies the version if Cristie BMR product is installed on the host.",
+																								},
+																								"file_cbt_info": &schema.Schema{
+																									Type:        schema.TypeList,
+																									Computed:    true,
+																									Description: "CBT version and service state info.",
+																									Elem: &schema.Resource{
+																										Schema: map[string]*schema.Schema{
+																											"file_version": &schema.Schema{
+																												Type:        schema.TypeList,
+																												Computed:    true,
+																												Description: "Subcomponent version. The interpretation of the version is based on operating system.",
+																												Elem: &schema.Resource{
+																													Schema: map[string]*schema.Schema{
+																														"build_ver": &schema.Schema{
+																															Type:     schema.TypeFloat,
+																															Computed: true,
+																														},
+																														"major_ver": &schema.Schema{
+																															Type:     schema.TypeFloat,
+																															Computed: true,
+																														},
+																														"minor_ver": &schema.Schema{
+																															Type:     schema.TypeFloat,
+																															Computed: true,
+																														},
+																														"revision_num": &schema.Schema{
+																															Type:     schema.TypeFloat,
+																															Computed: true,
+																														},
+																													},
+																												},
+																											},
+																											"is_installed": &schema.Schema{
+																												Type:        schema.TypeBool,
+																												Computed:    true,
+																												Description: "Indicates whether the cbt driver is installed.",
+																											},
+																											"reboot_status": &schema.Schema{
+																												Type:        schema.TypeString,
+																												Computed:    true,
+																												Description: "Indicates whether host is rebooted post VolCBT installation.",
+																											},
+																											"service_state": &schema.Schema{
+																												Type:        schema.TypeList,
+																												Computed:    true,
+																												Description: "Structure to Hold Service Status.",
+																												Elem: &schema.Resource{
+																													Schema: map[string]*schema.Schema{
+																														"name": &schema.Schema{
+																															Type:     schema.TypeString,
+																															Computed: true,
+																														},
+																														"state": &schema.Schema{
+																															Type:     schema.TypeString,
+																															Computed: true,
+																														},
+																													},
+																												},
+																											},
+																										},
+																									},
+																								},
+																								"host_type": &schema.Schema{
+																									Type:        schema.TypeString,
+																									Computed:    true,
+																									Description: "Specifies the host type where the agent is running. This is only set for persistent agents.",
+																								},
+																								"id": &schema.Schema{
+																									Type:        schema.TypeInt,
+																									Computed:    true,
+																									Description: "Specifies the agent's id.",
+																								},
+																								"name": &schema.Schema{
+																									Type:        schema.TypeString,
+																									Computed:    true,
+																									Description: "Specifies the agent's name.",
+																								},
+																								"oracle_multi_node_channel_supported": &schema.Schema{
+																									Type:        schema.TypeBool,
+																									Computed:    true,
+																									Description: "Specifies whether oracle multi node multi channel is supported or not.",
+																								},
+																								"registration_info": &schema.Schema{
+																									Type:        schema.TypeList,
+																									Computed:    true,
+																									Description: "Specifies information about a registered Source.",
+																									Elem: &schema.Resource{
+																										Schema: map[string]*schema.Schema{
+																											"access_info": &schema.Schema{
+																												Type:        schema.TypeList,
+																												Computed:    true,
+																												Description: "Specifies the parameters required to establish a connection with a particular environment.",
+																												Elem: &schema.Resource{
+																													Schema: map[string]*schema.Schema{
+																														"connection_id": &schema.Schema{
+																															Type:        schema.TypeInt,
+																															Computed:    true,
+																															Description: "ID of the Bifrost (HyX or Rigel) network realm (i.e. a connection) associated with the source.",
+																														},
+																														"connector_group_id": &schema.Schema{
+																															Type:        schema.TypeInt,
+																															Computed:    true,
+																															Description: "Specifies the Id of the connector group. Each connector group is collection of Rigel/hyx. Each entity will be tagged with connector group id.",
+																														},
+																														"endpoint": &schema.Schema{
+																															Type:        schema.TypeString,
+																															Computed:    true,
+																															Description: "Specify an IP address or URL of the environment. (such as the IP address of the vCenter Server for a VMware environment).",
+																														},
+																														"environment": &schema.Schema{
+																															Type:        schema.TypeString,
+																															Computed:    true,
+																															Description: "Specifies the environment like VMware, SQL, where the Protection Source exists. Supported environment types such as 'kView', 'kSQL', 'kVMware', etc.",
+																														},
+																														"id": &schema.Schema{
+																															Type:        schema.TypeInt,
+																															Computed:    true,
+																															Description: "Specifies a Unique id that is generated when the Source is registered. This is a convenience field that is used to maintain an index to different connection params.",
+																														},
+																														"version": &schema.Schema{
+																															Type:        schema.TypeInt,
+																															Computed:    true,
+																															Description: "Version is updated each time the connector parameters are updated. This is used to discard older connector parameters.",
+																														},
+																													},
+																												},
+																											},
+																											"allowed_ip_addresses": &schema.Schema{
+																												Type:        schema.TypeList,
+																												Computed:    true,
+																												Description: "Specifies the list of IP Addresses on the registered source to be exclusively allowed for doing any type of IO operations.",
+																												Elem: &schema.Schema{
+																													Type: schema.TypeString,
+																												},
+																											},
+																											"authentication_error_message": &schema.Schema{
+																												Type:        schema.TypeString,
+																												Computed:    true,
+																												Description: "Specifies an authentication error message. This indicates the given credentials are rejected and the registration of the source is not successful.",
+																											},
+																											"authentication_status": &schema.Schema{
+																												Type:        schema.TypeString,
+																												Computed:    true,
+																												Description: "Specifies the status of the authenticating to the Protection Source when registering it with Cohesity Cluster.",
+																											},
+																											"blacklisted_ip_addresses": &schema.Schema{
+																												Type:        schema.TypeList,
+																												Computed:    true,
+																												Description: "This field is deprecated. Use DeniedIpAddresses instead.",
+																												Elem: &schema.Schema{
+																													Type: schema.TypeString,
+																												},
+																											},
+																											"denied_ip_addresses": &schema.Schema{
+																												Type:        schema.TypeList,
+																												Computed:    true,
+																												Description: "Specifies the list of IP Addresses on the registered source to be denied for doing any type of IO operations.",
+																												Elem: &schema.Schema{
+																													Type: schema.TypeString,
+																												},
+																											},
+																											"environments": &schema.Schema{
+																												Type:        schema.TypeList,
+																												Optional:    true,
+																												Description: "Return only Protection Sources that match the passed in environment type such as 'kVMware', 'kSQL', 'kView' 'kPhysical', 'kPuppeteer', 'kPure', 'kNetapp', 'kGenericNas', 'kHyperV', 'kAcropolis', or 'kAzure'. For example, set this parameter to 'kVMware' to only return the Sources (and their Object subtrees) found in the 'kVMware' (VMware vCenter Server) environment.",
+																												Elem: &schema.Schema{
+																													Type: schema.TypeString,
+																												},
+																											},
+																											"is_db_authenticated": &schema.Schema{
+																												Type:        schema.TypeBool,
+																												Computed:    true,
+																												Description: "Specifies if application entity dbAuthenticated or not.",
+																											},
+																											"is_storage_array_snapshot_enabled": &schema.Schema{
+																												Type:        schema.TypeBool,
+																												Computed:    true,
+																												Description: "Specifies if this source entity has enabled storage array snapshot or not.",
+																											},
+																											"link_vms_across_vcenter": &schema.Schema{
+																												Type:        schema.TypeBool,
+																												Computed:    true,
+																												Description: "Specifies if the VM linking feature is enabled for this VCenter This means that VMs present in this VCenter which earlier belonged to some other VCenter(also registerd on same cluster) and were migrated, will be linked during EH refresh. This will enable preserving snapshot chains for migrated VMs.",
+																											},
+																											"minimum_free_space_gb": &schema.Schema{
+																												Type:        schema.TypeInt,
+																												Computed:    true,
+																												Description: "Specifies the minimum free space in GiB of the space expected to be available on the datastore where the virtual disks of the VM being backed up. If the amount of free space(in GiB) is lower than the value given by this field, backup will be aborted. Note that this field is applicable only to 'kVMware' type of environments.",
+																											},
+																											"minimum_free_space_percent": &schema.Schema{
+																												Type:        schema.TypeInt,
+																												Computed:    true,
+																												Description: "Specifies the minimum free space in percentage of the space expected to be available on the datastore where the virtual disks of the VM being backed up. If the amount of free space(in percentage) is lower than the value given by this field, backup will be aborted. Note that this field is applicable only to 'kVMware' type of environments.",
+																											},
+																											"password": &schema.Schema{
+																												Type:        schema.TypeString,
+																												Computed:    true,
+																												Description: "Specifies password of the username to access the target source.",
+																											},
+																											"physical_params": &schema.Schema{
+																												Type:        schema.TypeList,
+																												Computed:    true,
+																												Description: "Specifies the parameters required to register Application Servers running in a Protection Source specific to a physical adapter.",
+																												Elem: &schema.Resource{
+																													Schema: map[string]*schema.Schema{
+																														"applications": &schema.Schema{
+																															Type:        schema.TypeList,
+																															Computed:    true,
+																															Description: "Specifies the types of applications such as 'kSQL', 'kExchange', 'kAD' running on the Protection Source. Supported environment types such as 'kView', 'kSQL', 'kVMware', etc.",
+																															Elem: &schema.Schema{
+																																Type: schema.TypeString,
+																															},
+																														},
+																														"password": &schema.Schema{
+																															Type:        schema.TypeString,
+																															Computed:    true,
+																															Description: "Specifies password of the username to access the target source.",
+																														},
+																														"throttling_config": &schema.Schema{
+																															Type:        schema.TypeList,
+																															Computed:    true,
+																															Description: "Specifies the source side throttling configuration.",
+																															Elem: &schema.Resource{
+																																Schema: map[string]*schema.Schema{
+																																	"cpu_throttling_config": &schema.Schema{
+																																		Type:        schema.TypeList,
+																																		Computed:    true,
+																																		Description: "Specifies the Throttling Configuration Parameters.",
+																																		Elem: &schema.Resource{
+																																			Schema: map[string]*schema.Schema{
+																																				"fixed_threshold": &schema.Schema{
+																																					Type:        schema.TypeInt,
+																																					Computed:    true,
+																																					Description: "Fixed baseline threshold for throttling. This is mandatory for any other throttling type than kNoThrottling.",
+																																				},
+																																				"pattern_type": &schema.Schema{
+																																					Type:        schema.TypeString,
+																																					Computed:    true,
+																																					Description: "Type of the throttling pattern. 'kNoThrottling' indicates that throttling is not in force. 'kBaseThrottling' indicates indicates a constant base level throttling. 'kFixed' indicates a constant base level throttling.",
+																																				},
+																																				"throttling_windows": &schema.Schema{
+																																					Type:        schema.TypeList,
+																																					Computed:    true,
+																																					Description: "Specifies the Throttling Window Parameters Definition.",
+																																					Elem: &schema.Resource{
+																																						Schema: map[string]*schema.Schema{
+																																							"day_time_window": &schema.Schema{
+																																								Type:        schema.TypeList,
+																																								Computed:    true,
+																																								Description: "Specifies the Day Time Window Parameters.",
+																																								Elem: &schema.Resource{
+																																									Schema: map[string]*schema.Schema{
+																																										"end_time": &schema.Schema{
+																																											Type:        schema.TypeList,
+																																											Computed:    true,
+																																											Description: "Specifies the Day Time Parameters.",
+																																											Elem: &schema.Resource{
+																																												Schema: map[string]*schema.Schema{
+																																													"day": &schema.Schema{
+																																														Type:        schema.TypeString,
+																																														Computed:    true,
+																																														Description: "Specifies the day of the week (such as 'kMonday') for scheduling throttling. Specifies a day in a week such as 'kSunday', 'kMonday', etc.",
+																																													},
+																																													"time": &schema.Schema{
+																																														Type:        schema.TypeList,
+																																														Computed:    true,
+																																														Description: "Specifies the time in hours and minutes.",
+																																														Elem: &schema.Resource{
+																																															Schema: map[string]*schema.Schema{
+																																																"hour": &schema.Schema{
+																																																	Type:        schema.TypeInt,
+																																																	Computed:    true,
+																																																	Description: "Specifies the hour of this time.",
+																																																},
+																																																"minute": &schema.Schema{
+																																																	Type:        schema.TypeInt,
+																																																	Computed:    true,
+																																																	Description: "Specifies the minute of this time.",
+																																																},
+																																															},
+																																														},
+																																													},
+																																												},
+																																											},
+																																										},
+																																										"start_time": &schema.Schema{
+																																											Type:        schema.TypeList,
+																																											Computed:    true,
+																																											Description: "Specifies the Day Time Parameters.",
+																																											Elem: &schema.Resource{
+																																												Schema: map[string]*schema.Schema{
+																																													"day": &schema.Schema{
+																																														Type:        schema.TypeString,
+																																														Computed:    true,
+																																														Description: "Specifies the day of the week (such as 'kMonday') for scheduling throttling. Specifies a day in a week such as 'kSunday', 'kMonday', etc.",
+																																													},
+																																													"time": &schema.Schema{
+																																														Type:        schema.TypeList,
+																																														Computed:    true,
+																																														Description: "Specifies the time in hours and minutes.",
+																																														Elem: &schema.Resource{
+																																															Schema: map[string]*schema.Schema{
+																																																"hour": &schema.Schema{
+																																																	Type:        schema.TypeInt,
+																																																	Computed:    true,
+																																																	Description: "Specifies the hour of this time.",
+																																																},
+																																																"minute": &schema.Schema{
+																																																	Type:        schema.TypeInt,
+																																																	Computed:    true,
+																																																	Description: "Specifies the minute of this time.",
+																																																},
+																																															},
+																																														},
+																																													},
+																																												},
+																																											},
+																																										},
+																																									},
+																																								},
+																																							},
+																																							"threshold": &schema.Schema{
+																																								Type:        schema.TypeInt,
+																																								Computed:    true,
+																																								Description: "Throttling threshold applicable in the window.",
+																																							},
+																																						},
+																																					},
+																																				},
+																																			},
+																																		},
+																																	},
+																																	"network_throttling_config": &schema.Schema{
+																																		Type:        schema.TypeList,
+																																		Computed:    true,
+																																		Description: "Specifies the Throttling Configuration Parameters.",
+																																		Elem: &schema.Resource{
+																																			Schema: map[string]*schema.Schema{
+																																				"fixed_threshold": &schema.Schema{
+																																					Type:        schema.TypeInt,
+																																					Computed:    true,
+																																					Description: "Fixed baseline threshold for throttling. This is mandatory for any other throttling type than kNoThrottling.",
+																																				},
+																																				"pattern_type": &schema.Schema{
+																																					Type:        schema.TypeString,
+																																					Computed:    true,
+																																					Description: "Type of the throttling pattern. 'kNoThrottling' indicates that throttling is not in force. 'kBaseThrottling' indicates indicates a constant base level throttling. 'kFixed' indicates a constant base level throttling.",
+																																				},
+																																				"throttling_windows": &schema.Schema{
+																																					Type:        schema.TypeList,
+																																					Computed:    true,
+																																					Description: "Specifies the Throttling Window Parameters Definition.",
+																																					Elem: &schema.Resource{
+																																						Schema: map[string]*schema.Schema{
+																																							"day_time_window": &schema.Schema{
+																																								Type:        schema.TypeList,
+																																								Computed:    true,
+																																								Description: "Specifies the Day Time Window Parameters.",
+																																								Elem: &schema.Resource{
+																																									Schema: map[string]*schema.Schema{
+																																										"end_time": &schema.Schema{
+																																											Type:        schema.TypeList,
+																																											Computed:    true,
+																																											Description: "Specifies the Day Time Parameters.",
+																																											Elem: &schema.Resource{
+																																												Schema: map[string]*schema.Schema{
+																																													"day": &schema.Schema{
+																																														Type:        schema.TypeString,
+																																														Computed:    true,
+																																														Description: "Specifies the day of the week (such as 'kMonday') for scheduling throttling. Specifies a day in a week such as 'kSunday', 'kMonday', etc.",
+																																													},
+																																													"time": &schema.Schema{
+																																														Type:        schema.TypeList,
+																																														Computed:    true,
+																																														Description: "Specifies the time in hours and minutes.",
+																																														Elem: &schema.Resource{
+																																															Schema: map[string]*schema.Schema{
+																																																"hour": &schema.Schema{
+																																																	Type:        schema.TypeInt,
+																																																	Computed:    true,
+																																																	Description: "Specifies the hour of this time.",
+																																																},
+																																																"minute": &schema.Schema{
+																																																	Type:        schema.TypeInt,
+																																																	Computed:    true,
+																																																	Description: "Specifies the minute of this time.",
+																																																},
+																																															},
+																																														},
+																																													},
+																																												},
+																																											},
+																																										},
+																																										"start_time": &schema.Schema{
+																																											Type:        schema.TypeList,
+																																											Computed:    true,
+																																											Description: "Specifies the Day Time Parameters.",
+																																											Elem: &schema.Resource{
+																																												Schema: map[string]*schema.Schema{
+																																													"day": &schema.Schema{
+																																														Type:        schema.TypeString,
+																																														Computed:    true,
+																																														Description: "Specifies the day of the week (such as 'kMonday') for scheduling throttling. Specifies a day in a week such as 'kSunday', 'kMonday', etc.",
+																																													},
+																																													"time": &schema.Schema{
+																																														Type:        schema.TypeList,
+																																														Computed:    true,
+																																														Description: "Specifies the time in hours and minutes.",
+																																														Elem: &schema.Resource{
+																																															Schema: map[string]*schema.Schema{
+																																																"hour": &schema.Schema{
+																																																	Type:        schema.TypeInt,
+																																																	Computed:    true,
+																																																	Description: "Specifies the hour of this time.",
+																																																},
+																																																"minute": &schema.Schema{
+																																																	Type:        schema.TypeInt,
+																																																	Computed:    true,
+																																																	Description: "Specifies the minute of this time.",
+																																																},
+																																															},
+																																														},
+																																													},
+																																												},
+																																											},
+																																										},
+																																									},
+																																								},
+																																							},
+																																							"threshold": &schema.Schema{
+																																								Type:        schema.TypeInt,
+																																								Computed:    true,
+																																								Description: "Throttling threshold applicable in the window.",
+																																							},
+																																						},
+																																					},
+																																				},
+																																			},
+																																		},
+																																	},
+																																},
+																															},
+																														},
+																														"username": &schema.Schema{
+																															Type:        schema.TypeString,
+																															Computed:    true,
+																															Description: "Specifies username to access the target source.",
+																														},
+																													},
+																												},
+																											},
+																											"progress_monitor_path": &schema.Schema{
+																												Type:        schema.TypeString,
+																												Computed:    true,
+																												Description: "Captures the current progress and pulse details w.r.t to either the registration or refresh.",
+																											},
+																											"refresh_error_message": &schema.Schema{
+																												Type:        schema.TypeString,
+																												Computed:    true,
+																												Description: "Specifies a message if there was any error encountered during the last rebuild of the Protection Source tree. If there was no error during the last rebuild, this field is reset.",
+																											},
+																											"refresh_time_usecs": &schema.Schema{
+																												Type:        schema.TypeInt,
+																												Computed:    true,
+																												Description: "Specifies the Unix epoch time (in microseconds) when the Protection Source tree was most recently fetched and built.",
+																											},
+																											"registered_apps_info": &schema.Schema{
+																												Type:        schema.TypeList,
+																												Computed:    true,
+																												Description: "Specifies information of the applications registered on this protection source.",
+																												Elem: &schema.Resource{
+																													Schema: map[string]*schema.Schema{
+																														"authentication_error_message": &schema.Schema{
+																															Type:        schema.TypeString,
+																															Computed:    true,
+																															Description: "pecifies an authentication error message. This indicates the given credentials are rejected and the registration of the application is not successful.",
+																														},
+																														"authentication_status": &schema.Schema{
+																															Type:        schema.TypeString,
+																															Computed:    true,
+																															Description: "Specifies the status of authenticating to the Protection Source when registering this application with Cohesity Cluster. If the status is 'kFinished' and there is no error, registration is successful. Specifies the status of the authentication during the registration of a Protection Source. 'kPending' indicates the authentication is in progress. 'kScheduled' indicates the authentication is scheduled. 'kFinished' indicates the authentication is completed. 'kRefreshInProgress' indicates the refresh is in progress.",
+																														},
+																														"environment": &schema.Schema{
+																															Type:        schema.TypeString,
+																															Computed:    true,
+																															Description: "Specifies the application environment. Supported environment types such as 'kView', 'kSQL', 'kVMware', etc.",
+																														},
+																														"host_settings_check_results": &schema.Schema{
+																															Type:        schema.TypeList,
+																															Computed:    true,
+																															Description: "Specifies the list of check results internally performed to verify status of various services such as 'AgnetRunning', 'SQLWriterRunning' etc.",
+																															Elem: &schema.Resource{
+																																Schema: map[string]*schema.Schema{
+																																	"check_type": &schema.Schema{
+																																		Type:        schema.TypeString,
+																																		Computed:    true,
+																																		Description: "Specifies the type of the check internally performed. Specifies the type of the host check performed internally. 'kIsAgentPortAccessible' indicates the check for agent port access. 'kIsAgentRunning' indicates the status for the Cohesity agent service. 'kIsSQLWriterRunning' indicates the status for SQLWriter service. 'kAreSQLInstancesRunning' indicates the run status for all the SQL instances in the host. 'kCheckServiceLoginsConfig' checks the privileges and sysadmin status of the logins used by the SQL instance services, Cohesity agent service and the SQLWriter service. 'kCheckSQLFCIVIP' checks whether the SQL FCI is registered with a valid VIP or FQDN. 'kCheckSQLDiskSpace' checks whether volumes containing SQL DBs have at least 10% free space.",
+																																	},
+																																	"result_type": &schema.Schema{
+																																		Type:        schema.TypeString,
+																																		Computed:    true,
+																																		Description: "Specifies the type of the result returned after performing the internal host check. Specifies the type of the host check result performed internally. 'kPass' indicates that the respective check was successful. 'kFail' indicates that the respective check failed as some mandatory setting is not met 'kWarning' indicates that the respective check has warning as certain non-mandatory setting is not met.",
+																																	},
+																																	"user_message": &schema.Schema{
+																																		Type:        schema.TypeString,
+																																		Computed:    true,
+																																		Description: "Specifies a descriptive message for failed/warning types.",
+																																	},
+																																},
+																															},
+																														},
+																														"refresh_error_message": &schema.Schema{
+																															Type:        schema.TypeString,
+																															Computed:    true,
+																															Description: "Specifies a message if there was any error encountered during the last rebuild of the application tree. If there was no error during the last rebuild, this field is reset.",
+																														},
+																													},
+																												},
+																											},
+																											"registration_time_usecs": &schema.Schema{
+																												Type:        schema.TypeInt,
+																												Computed:    true,
+																												Description: "Specifies the Unix epoch time (in microseconds) when the Protection Source was registered.",
+																											},
+																											"subnets": &schema.Schema{
+																												Type:        schema.TypeList,
+																												Computed:    true,
+																												Description: "Specifies the list of subnets added during creation or updation of vmare source. Currently, this field will only be populated in case of VMware registration.",
+																												Elem: &schema.Resource{
+																													Schema: map[string]*schema.Schema{
+																														"component": &schema.Schema{
+																															Type:        schema.TypeString,
+																															Computed:    true,
+																															Description: "Component that has reserved the subnet.",
+																														},
+																														"description": &schema.Schema{
+																															Type:        schema.TypeString,
+																															Computed:    true,
+																															Description: "Description of the subnet.",
+																														},
+																														"id": &schema.Schema{
+																															Type:        schema.TypeFloat,
+																															Computed:    true,
+																															Description: "ID of the subnet.",
+																														},
+																														"ip": &schema.Schema{
+																															Type:        schema.TypeString,
+																															Computed:    true,
+																															Description: "Specifies either an IPv6 address or an IPv4 address.",
+																														},
+																														"netmask_bits": &schema.Schema{
+																															Type:        schema.TypeFloat,
+																															Computed:    true,
+																															Description: "netmaskBits.",
+																														},
+																														"netmask_ip4": &schema.Schema{
+																															Type:        schema.TypeString,
+																															Computed:    true,
+																															Description: "Specifies the netmask using an IP4 address. The netmask can only be set using netmaskIp4 if the IP address is an IPv4 address.",
+																														},
+																														"nfs_access": &schema.Schema{
+																															Type:        schema.TypeString,
+																															Computed:    true,
+																															Description: "Component that has reserved the subnet.",
+																														},
+																														"nfs_all_squash": &schema.Schema{
+																															Type:        schema.TypeBool,
+																															Computed:    true,
+																															Description: "Specifies whether all clients from this subnet can map view with view_all_squash_uid/view_all_squash_gid configured in the view.",
+																														},
+																														"nfs_root_squash": &schema.Schema{
+																															Type:        schema.TypeBool,
+																															Computed:    true,
+																															Description: "Specifies whether clients from this subnet can mount as root on NFS.",
+																														},
+																														"s3_access": &schema.Schema{
+																															Type:        schema.TypeString,
+																															Computed:    true,
+																															Description: "Specifies whether clients from this subnet can access using S3 protocol. Protocol access level. 'kDisabled' indicates Protocol access level 'Disabled' 'kReadOnly' indicates Protocol access level 'ReadOnly' 'kReadWrite' indicates Protocol access level 'ReadWrite'.",
+																														},
+																														"smb_access": &schema.Schema{
+																															Type:        schema.TypeString,
+																															Computed:    true,
+																															Description: "Specifies whether clients from this subnet can mount using SMB protocol. Protocol access level. 'kDisabled' indicates Protocol access level 'Disabled' 'kReadOnly' indicates Protocol access level 'ReadOnly' 'kReadWrite' indicates Protocol access level 'ReadWrite'.",
+																														},
+																														"tenant_id": &schema.Schema{
+																															Type:        schema.TypeString,
+																															Computed:    true,
+																															Description: "Specifies the unique id of the tenant.",
+																														},
+																													},
+																												},
+																											},
+																											"throttling_policy": &schema.Schema{
+																												Type:        schema.TypeList,
+																												Computed:    true,
+																												Description: "Specifies the throttling policy for a registered Protection Source.",
+																												Elem: &schema.Resource{
+																													Schema: map[string]*schema.Schema{
+																														"enforce_max_streams": &schema.Schema{
+																															Type:        schema.TypeBool,
+																															Computed:    true,
+																															Description: "Specifies whether datastore streams are configured for all datastores that are part of the registered entity. If set to true, number of streams from Cohesity cluster to the registered entity will be limited to the value set for maxConcurrentStreams. If not set or set to false, there is no max limit for the number of concurrent streams.",
+																														},
+																														"enforce_registered_source_max_backups": &schema.Schema{
+																															Type:        schema.TypeBool,
+																															Computed:    true,
+																															Description: "Specifies whether no. of backups are configured for the registered entity. If set to true, number of backups made by Cohesity cluster in the registered entity will be limited to the value set for RegisteredSourceMaxConcurrentBackups. If not set or set to false, there is no max limit for the number of concurrent backups.",
+																														},
+																														"is_enabled": &schema.Schema{
+																															Type:        schema.TypeBool,
+																															Computed:    true,
+																															Description: "Indicates whether read operations to the datastores, which are part of the registered Protection Source, are throttled.",
+																														},
+																														"latency_thresholds": &schema.Schema{
+																															Type:        schema.TypeList,
+																															Computed:    true,
+																															Description: "Specifies latency thresholds that trigger throttling for all datastores found in the registered Protection Source or specific to one datastore.",
+																															Elem: &schema.Resource{
+																																Schema: map[string]*schema.Schema{
+																																	"active_task_msecs": &schema.Schema{
+																																		Type:        schema.TypeInt,
+																																		Computed:    true,
+																																		Description: "If the latency of a datastore is above this value, existing backup tasks using the datastore are throttled.",
+																																	},
+																																	"new_task_msecs": &schema.Schema{
+																																		Type:        schema.TypeInt,
+																																		Computed:    true,
+																																		Description: "If the latency of a datastore is above this value, then new backup tasks using the datastore will not be started.",
+																																	},
+																																},
+																															},
+																														},
+																														"max_concurrent_streams": &schema.Schema{
+																															Type:        schema.TypeFloat,
+																															Computed:    true,
+																															Description: "Specifies the limit on the number of streams Cohesity cluster will make concurrently to the datastores of the registered entity. This limit is enforced only when the flag enforceMaxStreams is set to true.",
+																														},
+																														"nas_source_params": &schema.Schema{
+																															Type:        schema.TypeList,
+																															Computed:    true,
+																															Description: "Specifies the NAS specific source throttling parameters during source registration or during backup of the source.",
+																															Elem: &schema.Resource{
+																																Schema: map[string]*schema.Schema{
+																																	"max_parallel_metadata_fetch_full_percentage": &schema.Schema{
+																																		Type:        schema.TypeFloat,
+																																		Computed:    true,
+																																		Description: "Specifies the percentage value of maximum concurrent metadata to be fetched during full backup of the source.",
+																																	},
+																																	"max_parallel_metadata_fetch_incremental_percentage": &schema.Schema{
+																																		Type:        schema.TypeFloat,
+																																		Computed:    true,
+																																		Description: "Specifies the percentage value of maximum concurrent metadata to be fetched during incremental backup of the source.",
+																																	},
+																																	"max_parallel_read_write_full_percentage": &schema.Schema{
+																																		Type:        schema.TypeFloat,
+																																		Computed:    true,
+																																		Description: "Specifies the percentage value of maximum concurrent IO during full backup of the source.",
+																																	},
+																																	"max_parallel_read_write_incremental_percentage": &schema.Schema{
+																																		Type:        schema.TypeFloat,
+																																		Computed:    true,
+																																		Description: "Specifies the percentage value of maximum concurrent IO during incremental backup of the source.",
+																																	},
+																																},
+																															},
+																														},
+																														"registered_source_max_concurrent_backups": &schema.Schema{
+																															Type:        schema.TypeFloat,
+																															Computed:    true,
+																															Description: "Specifies the limit on the number of backups Cohesity cluster will make concurrently to the registered entity. This limit is enforced only when the flag enforceRegisteredSourceMaxBackups is set to true.",
+																														},
+																														"storage_array_snapshot_config": &schema.Schema{
+																															Type:        schema.TypeList,
+																															Computed:    true,
+																															Description: "Specifies Storage Array Snapshot Configuration.",
+																															Elem: &schema.Resource{
+																																Schema: map[string]*schema.Schema{
+																																	"is_max_snapshots_config_enabled": &schema.Schema{
+																																		Type:        schema.TypeBool,
+																																		Computed:    true,
+																																		Description: "Specifies if the storage array snapshot max snapshots config is enabled or not.",
+																																	},
+																																	"is_max_space_config_enabled": &schema.Schema{
+																																		Type:        schema.TypeBool,
+																																		Computed:    true,
+																																		Description: "Specifies if the storage array snapshot max space config is enabled or not.",
+																																	},
+																																	"storage_array_snapshot_max_space_config": &schema.Schema{
+																																		Type:        schema.TypeList,
+																																		Computed:    true,
+																																		Description: "Specifies Storage Array Snapshot Max Space Config.",
+																																		Elem: &schema.Resource{
+																																			Schema: map[string]*schema.Schema{
+																																				"max_snapshot_space_percentage": &schema.Schema{
+																																					Type:        schema.TypeFloat,
+																																					Computed:    true,
+																																					Description: "Max number of storage snapshots allowed per volume/lun.",
+																																				},
+																																			},
+																																		},
+																																	},
+																																	"storage_array_snapshot_throttling_policies": &schema.Schema{
+																																		Type:        schema.TypeList,
+																																		Computed:    true,
+																																		Description: "Specifies throttling policies configured for individual volume/lun.",
+																																		Elem: &schema.Resource{
+																																			Schema: map[string]*schema.Schema{
+																																				"id": &schema.Schema{
+																																					Type:        schema.TypeInt,
+																																					Computed:    true,
+																																					Description: "Specifies the volume id of the storage array snapshot config.",
+																																				},
+																																				"is_max_snapshots_config_enabled": &schema.Schema{
+																																					Type:        schema.TypeBool,
+																																					Computed:    true,
+																																					Description: "Specifies if the storage array snapshot max snapshots config is enabled or not.",
+																																				},
+																																				"is_max_space_config_enabled": &schema.Schema{
+																																					Type:        schema.TypeBool,
+																																					Computed:    true,
+																																					Description: "Specifies if the storage array snapshot max space config is enabled or not.",
+																																				},
+																																				"max_snapshot_config": &schema.Schema{
+																																					Type:        schema.TypeList,
+																																					Computed:    true,
+																																					Description: "Specifies Storage Array Snapshot Max Snapshots Config.",
+																																					Elem: &schema.Resource{
+																																						Schema: map[string]*schema.Schema{
+																																							"max_snapshots": &schema.Schema{
+																																								Type:        schema.TypeFloat,
+																																								Computed:    true,
+																																								Description: "Max number of storage snapshots allowed per volume/lun.",
+																																							},
+																																						},
+																																					},
+																																				},
+																																				"max_space_config": &schema.Schema{
+																																					Type:        schema.TypeList,
+																																					Computed:    true,
+																																					Description: "Specifies Storage Array Snapshot Max Space Config.",
+																																					Elem: &schema.Resource{
+																																						Schema: map[string]*schema.Schema{
+																																							"max_snapshot_space_percentage": &schema.Schema{
+																																								Type:        schema.TypeFloat,
+																																								Computed:    true,
+																																								Description: "Max number of storage snapshots allowed per volume/lun.",
+																																							},
+																																						},
+																																					},
+																																				},
+																																			},
+																																		},
+																																	},
+																																},
+																															},
+																														},
+																													},
+																												},
+																											},
+																											"throttling_policy_overrides": &schema.Schema{
+																												Type:        schema.TypeList,
+																												Computed:    true,
+																												Description: "Specifies throttling policy override for a Datastore in a registered entity.",
+																												Elem: &schema.Resource{
+																													Schema: map[string]*schema.Schema{
+																														"datastore_id": &schema.Schema{
+																															Type:        schema.TypeInt,
+																															Computed:    true,
+																															Description: "Specifies the Protection Source id of the Datastore.",
+																														},
+																														"datastore_name": &schema.Schema{
+																															Type:        schema.TypeString,
+																															Computed:    true,
+																															Description: "Specifies the display name of the Datastore.",
+																														},
+																														"throttling_policy": &schema.Schema{
+																															Type:        schema.TypeList,
+																															Computed:    true,
+																															Description: "Specifies the throttling policy for a registered Protection Source.",
+																															Elem: &schema.Resource{
+																																Schema: map[string]*schema.Schema{
+																																	"enforce_max_streams": &schema.Schema{
+																																		Type:        schema.TypeBool,
+																																		Computed:    true,
+																																		Description: "Specifies whether datastore streams are configured for all datastores that are part of the registered entity. If set to true, number of streams from Cohesity cluster to the registered entity will be limited to the value set for maxConcurrentStreams. If not set or set to false, there is no max limit for the number of concurrent streams.",
+																																	},
+																																	"enforce_registered_source_max_backups": &schema.Schema{
+																																		Type:        schema.TypeBool,
+																																		Computed:    true,
+																																		Description: "Specifies whether no. of backups are configured for the registered entity. If set to true, number of backups made by Cohesity cluster in the registered entity will be limited to the value set for RegisteredSourceMaxConcurrentBackups. If not set or set to false, there is no max limit for the number of concurrent backups.",
+																																	},
+																																	"is_enabled": &schema.Schema{
+																																		Type:        schema.TypeBool,
+																																		Computed:    true,
+																																		Description: "Indicates whether read operations to the datastores, which are part of the registered Protection Source, are throttled.",
+																																	},
+																																	"latency_thresholds": &schema.Schema{
+																																		Type:        schema.TypeList,
+																																		Computed:    true,
+																																		Description: "Specifies latency thresholds that trigger throttling for all datastores found in the registered Protection Source or specific to one datastore.",
+																																		Elem: &schema.Resource{
+																																			Schema: map[string]*schema.Schema{
+																																				"active_task_msecs": &schema.Schema{
+																																					Type:        schema.TypeInt,
+																																					Computed:    true,
+																																					Description: "If the latency of a datastore is above this value, existing backup tasks using the datastore are throttled.",
+																																				},
+																																				"new_task_msecs": &schema.Schema{
+																																					Type:        schema.TypeInt,
+																																					Computed:    true,
+																																					Description: "If the latency of a datastore is above this value, then new backup tasks using the datastore will not be started.",
+																																				},
+																																			},
+																																		},
+																																	},
+																																	"max_concurrent_streams": &schema.Schema{
+																																		Type:        schema.TypeFloat,
+																																		Computed:    true,
+																																		Description: "Specifies the limit on the number of streams Cohesity cluster will make concurrently to the datastores of the registered entity. This limit is enforced only when the flag enforceMaxStreams is set to true.",
+																																	},
+																																	"nas_source_params": &schema.Schema{
+																																		Type:        schema.TypeList,
+																																		Computed:    true,
+																																		Description: "Specifies the NAS specific source throttling parameters during source registration or during backup of the source.",
+																																		Elem: &schema.Resource{
+																																			Schema: map[string]*schema.Schema{
+																																				"max_parallel_metadata_fetch_full_percentage": &schema.Schema{
+																																					Type:        schema.TypeFloat,
+																																					Computed:    true,
+																																					Description: "Specifies the percentage value of maximum concurrent metadata to be fetched during full backup of the source.",
+																																				},
+																																				"max_parallel_metadata_fetch_incremental_percentage": &schema.Schema{
+																																					Type:        schema.TypeFloat,
+																																					Computed:    true,
+																																					Description: "Specifies the percentage value of maximum concurrent metadata to be fetched during incremental backup of the source.",
+																																				},
+																																				"max_parallel_read_write_full_percentage": &schema.Schema{
+																																					Type:        schema.TypeFloat,
+																																					Computed:    true,
+																																					Description: "Specifies the percentage value of maximum concurrent IO during full backup of the source.",
+																																				},
+																																				"max_parallel_read_write_incremental_percentage": &schema.Schema{
+																																					Type:        schema.TypeFloat,
+																																					Computed:    true,
+																																					Description: "Specifies the percentage value of maximum concurrent IO during incremental backup of the source.",
+																																				},
+																																			},
+																																		},
+																																	},
+																																	"registered_source_max_concurrent_backups": &schema.Schema{
+																																		Type:        schema.TypeFloat,
+																																		Computed:    true,
+																																		Description: "Specifies the limit on the number of backups Cohesity cluster will make concurrently to the registered entity. This limit is enforced only when the flag enforceRegisteredSourceMaxBackups is set to true.",
+																																	},
+																																	"storage_array_snapshot_config": &schema.Schema{
+																																		Type:        schema.TypeList,
+																																		Computed:    true,
+																																		Description: "Specifies Storage Array Snapshot Configuration.",
+																																		Elem: &schema.Resource{
+																																			Schema: map[string]*schema.Schema{
+																																				"is_max_snapshots_config_enabled": &schema.Schema{
+																																					Type:        schema.TypeBool,
+																																					Computed:    true,
+																																					Description: "Specifies if the storage array snapshot max snapshots config is enabled or not.",
+																																				},
+																																				"is_max_space_config_enabled": &schema.Schema{
+																																					Type:        schema.TypeBool,
+																																					Computed:    true,
+																																					Description: "Specifies if the storage array snapshot max space config is enabled or not.",
+																																				},
+																																				"storage_array_snapshot_max_space_config": &schema.Schema{
+																																					Type:        schema.TypeList,
+																																					Computed:    true,
+																																					Description: "Specifies Storage Array Snapshot Max Space Config.",
+																																					Elem: &schema.Resource{
+																																						Schema: map[string]*schema.Schema{
+																																							"max_snapshot_space_percentage": &schema.Schema{
+																																								Type:        schema.TypeFloat,
+																																								Computed:    true,
+																																								Description: "Max number of storage snapshots allowed per volume/lun.",
+																																							},
+																																						},
+																																					},
+																																				},
+																																				"storage_array_snapshot_throttling_policies": &schema.Schema{
+																																					Type:        schema.TypeList,
+																																					Computed:    true,
+																																					Description: "Specifies throttling policies configured for individual volume/lun.",
+																																					Elem: &schema.Resource{
+																																						Schema: map[string]*schema.Schema{
+																																							"id": &schema.Schema{
+																																								Type:        schema.TypeInt,
+																																								Computed:    true,
+																																								Description: "Specifies the volume id of the storage array snapshot config.",
+																																							},
+																																							"is_max_snapshots_config_enabled": &schema.Schema{
+																																								Type:        schema.TypeBool,
+																																								Computed:    true,
+																																								Description: "Specifies if the storage array snapshot max snapshots config is enabled or not.",
+																																							},
+																																							"is_max_space_config_enabled": &schema.Schema{
+																																								Type:        schema.TypeBool,
+																																								Computed:    true,
+																																								Description: "Specifies if the storage array snapshot max space config is enabled or not.",
+																																							},
+																																							"max_snapshot_config": &schema.Schema{
+																																								Type:        schema.TypeList,
+																																								Computed:    true,
+																																								Description: "Specifies Storage Array Snapshot Max Snapshots Config.",
+																																								Elem: &schema.Resource{
+																																									Schema: map[string]*schema.Schema{
+																																										"max_snapshots": &schema.Schema{
+																																											Type:        schema.TypeFloat,
+																																											Computed:    true,
+																																											Description: "Max number of storage snapshots allowed per volume/lun.",
+																																										},
+																																									},
+																																								},
+																																							},
+																																							"max_space_config": &schema.Schema{
+																																								Type:        schema.TypeList,
+																																								Computed:    true,
+																																								Description: "Specifies Storage Array Snapshot Max Space Config.",
+																																								Elem: &schema.Resource{
+																																									Schema: map[string]*schema.Schema{
+																																										"max_snapshot_space_percentage": &schema.Schema{
+																																											Type:        schema.TypeFloat,
+																																											Computed:    true,
+																																											Description: "Max number of storage snapshots allowed per volume/lun.",
+																																										},
+																																									},
+																																								},
+																																							},
+																																						},
+																																					},
+																																				},
+																																			},
+																																		},
+																																	},
+																																},
+																															},
+																														},
+																													},
+																												},
+																											},
+																											"use_o_auth_for_exchange_online": &schema.Schema{
+																												Type:        schema.TypeBool,
+																												Computed:    true,
+																												Description: "Specifies whether OAuth should be used for authentication in case of Exchange Online.",
+																											},
+																											"use_vm_bios_uuid": &schema.Schema{
+																												Type:        schema.TypeBool,
+																												Computed:    true,
+																												Description: "Specifies if registered vCenter is using BIOS UUID to track virtual machines.",
+																											},
+																											"user_messages": &schema.Schema{
+																												Type:        schema.TypeList,
+																												Computed:    true,
+																												Description: "Specifies the additional details encountered during registration. Though the registration may succeed, user messages imply the host environment requires some cleanup or fixing.",
+																												Elem: &schema.Schema{
+																													Type: schema.TypeString,
+																												},
+																											},
+																											"username": &schema.Schema{
+																												Type:        schema.TypeString,
+																												Computed:    true,
+																												Description: "Specifies username to access the target source.",
+																											},
+																											"vlan_params": &schema.Schema{
+																												Type:        schema.TypeList,
+																												Computed:    true,
+																												Description: "Specifies the VLAN configuration for Recovery.",
+																												Elem: &schema.Resource{
+																													Schema: map[string]*schema.Schema{
+																														"vlan": &schema.Schema{
+																															Type:        schema.TypeFloat,
+																															Computed:    true,
+																															Description: "Specifies the VLAN to use for mounting Cohesity's view on the remote host. If specified, Cohesity hostname or the IP address on this VLAN is used.",
+																														},
+																														"disable_vlan": &schema.Schema{
+																															Type:        schema.TypeBool,
+																															Computed:    true,
+																															Description: "Specifies whether to use the VIPs even when VLANs are configured on the Cluster. If configured, VLAN IP addresses are used by default. If VLANs are not configured, this flag is ignored. Set this flag to true to force using the partition VIPs when VLANs are configured on the Cluster.",
+																														},
+																														"interface_name": &schema.Schema{
+																															Type:        schema.TypeString,
+																															Computed:    true,
+																															Description: "Specifies the physical interface group name to use for mounting Cohesity's view on the remote host. If specified, Cohesity hostname or the IP address on this VLAN is used.",
+																														},
+																													},
+																												},
+																											},
+																											"warning_messages": &schema.Schema{
+																												Type:        schema.TypeList,
+																												Computed:    true,
+																												Description: "Specifies a list of warnings encountered during registration. Though the registration may succeed, warning messages imply the host environment requires some cleanup or fixing.",
+																												Elem: &schema.Schema{
+																													Type: schema.TypeString,
+																												},
+																											},
+																										},
+																									},
+																								},
+																								"source_side_dedup_enabled": &schema.Schema{
+																									Type:        schema.TypeBool,
+																									Computed:    true,
+																									Description: "Specifies whether source side dedup is enabled or not.",
+																								},
+																								"status": &schema.Schema{
+																									Type:        schema.TypeString,
+																									Computed:    true,
+																									Description: "Specifies the agent status. Specifies the status of the agent running on a physical source.",
+																								},
+																								"status_message": &schema.Schema{
+																									Type:        schema.TypeString,
+																									Computed:    true,
+																									Description: "Specifies additional details about the agent status.",
+																								},
+																								"upgradability": &schema.Schema{
+																									Type:        schema.TypeString,
+																									Computed:    true,
+																									Description: "Specifies the upgradability of the agent running on the physical server. Specifies the upgradability of the agent running on the physical server.",
+																								},
+																								"upgrade_status": &schema.Schema{
+																									Type:        schema.TypeString,
+																									Computed:    true,
+																									Description: "Specifies the status of the upgrade of the agent on a physical server. Specifies the status of the upgrade of the agent on a physical server.",
+																								},
+																								"upgrade_status_message": &schema.Schema{
+																									Type:        schema.TypeString,
+																									Computed:    true,
+																									Description: "Specifies detailed message about the agent upgrade failure. This field is not set for successful upgrade.",
+																								},
+																								"version": &schema.Schema{
+																									Type:        schema.TypeString,
+																									Computed:    true,
+																									Description: "Specifies the version of the Agent software.",
+																								},
+																								"vol_cbt_info": &schema.Schema{
+																									Type:        schema.TypeList,
+																									Computed:    true,
+																									Description: "CBT version and service state info.",
+																									Elem: &schema.Resource{
+																										Schema: map[string]*schema.Schema{
+																											"file_version": &schema.Schema{
+																												Type:        schema.TypeList,
+																												Computed:    true,
+																												Description: "Subcomponent version. The interpretation of the version is based on operating system.",
+																												Elem: &schema.Resource{
+																													Schema: map[string]*schema.Schema{
+																														"build_ver": &schema.Schema{
+																															Type:     schema.TypeFloat,
+																															Computed: true,
+																														},
+																														"major_ver": &schema.Schema{
+																															Type:     schema.TypeFloat,
+																															Computed: true,
+																														},
+																														"minor_ver": &schema.Schema{
+																															Type:     schema.TypeFloat,
+																															Computed: true,
+																														},
+																														"revision_num": &schema.Schema{
+																															Type:     schema.TypeFloat,
+																															Computed: true,
+																														},
+																													},
+																												},
+																											},
+																											"is_installed": &schema.Schema{
+																												Type:        schema.TypeBool,
+																												Computed:    true,
+																												Description: "Indicates whether the cbt driver is installed.",
+																											},
+																											"reboot_status": &schema.Schema{
+																												Type:        schema.TypeString,
+																												Computed:    true,
+																												Description: "Indicates whether host is rebooted post VolCBT installation.",
+																											},
+																											"service_state": &schema.Schema{
+																												Type:        schema.TypeList,
+																												Computed:    true,
+																												Description: "Structure to Hold Service Status.",
+																												Elem: &schema.Resource{
+																													Schema: map[string]*schema.Schema{
+																														"name": &schema.Schema{
+																															Type:     schema.TypeString,
+																															Computed: true,
+																														},
+																														"state": &schema.Schema{
+																															Type:     schema.TypeString,
+																															Computed: true,
+																														},
+																													},
+																												},
+																											},
+																										},
+																									},
+																								},
+																							},
+																						},
+																					},
+																					"cluster_source_type": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Computed:    true,
+																						Description: "Specifies the type of cluster resource this source represents.",
+																					},
+																					"host_name": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Computed:    true,
+																						Description: "Specifies the hostname.",
+																					},
+																					"host_type": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Computed:    true,
+																						Description: "Specifies the environment type for the host.",
+																					},
+																					"id": &schema.Schema{
+																						Type:        schema.TypeList,
+																						Computed:    true,
+																						Description: "Specifies an id for an object that is unique across Cohesity Clusters. The id is composite of all the ids listed below.",
+																						Elem: &schema.Resource{
+																							Schema: map[string]*schema.Schema{
+																								"cluster_id": &schema.Schema{
+																									Type:        schema.TypeInt,
+																									Computed:    true,
+																									Description: "Specifies the Cohesity Cluster id where the object was created.",
+																								},
+																								"cluster_incarnation_id": &schema.Schema{
+																									Type:        schema.TypeInt,
+																									Computed:    true,
+																									Description: "Specifies an id for the Cohesity Cluster that is generated when a Cohesity Cluster is initially created.",
+																								},
+																								"id": &schema.Schema{
+																									Type:        schema.TypeInt,
+																									Computed:    true,
+																									Description: "Specifies a unique id assigned to an object (such as a Job) by the Cohesity Cluster.",
+																								},
+																							},
+																						},
+																					},
+																					"is_proxy_host": &schema.Schema{
+																						Type:        schema.TypeBool,
+																						Computed:    true,
+																						Description: "Specifies if the physical host is a proxy host.",
+																					},
+																					"memory_size_bytes": &schema.Schema{
+																						Type:        schema.TypeInt,
+																						Computed:    true,
+																						Description: "Specifies the total memory on the host in bytes.",
+																					},
+																					"name": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Computed:    true,
+																						Description: "Specifies a human readable name of the Protection Source.",
+																					},
+																					"networking_info": &schema.Schema{
+																						Type:        schema.TypeList,
+																						Computed:    true,
+																						Description: "Specifies the struct containing information about network addresses configured on the given box. This is needed for dealing with Windows/Oracle Cluster resources that we discover and protect automatically.",
+																						Elem: &schema.Resource{
+																							Schema: map[string]*schema.Schema{
+																								"resource_vec": &schema.Schema{
+																									Type:        schema.TypeList,
+																									Computed:    true,
+																									Description: "The list of resources on the system that are accessible by an IP address.",
+																									Elem: &schema.Resource{
+																										Schema: map[string]*schema.Schema{
+																											"endpoints": &schema.Schema{
+																												Type:        schema.TypeList,
+																												Computed:    true,
+																												Description: "The endpoints by which the resource is accessible.",
+																												Elem: &schema.Resource{
+																													Schema: map[string]*schema.Schema{
+																														"fqdn": &schema.Schema{
+																															Type:        schema.TypeString,
+																															Computed:    true,
+																															Description: "The Fully Qualified Domain Name.",
+																														},
+																														"ipv4_addr": &schema.Schema{
+																															Type:        schema.TypeString,
+																															Computed:    true,
+																															Description: "The IPv4 address.",
+																														},
+																														"ipv6_addr": &schema.Schema{
+																															Type:        schema.TypeString,
+																															Computed:    true,
+																															Description: "The IPv6 address.",
+																														},
+																													},
+																												},
+																											},
+																											"type": &schema.Schema{
+																												Type:        schema.TypeString,
+																												Computed:    true,
+																												Description: "The type of the resource.",
+																											},
+																										},
+																									},
+																								},
+																							},
+																						},
+																					},
+																					"num_processors": &schema.Schema{
+																						Type:        schema.TypeInt,
+																						Computed:    true,
+																						Description: "Specifies the number of processors on the host.",
+																					},
+																					"os_name": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Computed:    true,
+																						Description: "Specifies a human readable name of the OS of the Protection Source.",
+																					},
+																					"type": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Computed:    true,
+																						Description: "Specifies the type of managed Object in a Physical Protection Source. 'kGroup' indicates the EH container.",
+																					},
+																					"vcs_version": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Computed:    true,
+																						Description: "Specifies cluster version for VCS host.",
+																					},
+																					"volumes": &schema.Schema{
+																						Type:        schema.TypeList,
+																						Computed:    true,
+																						Description: "Array of Physical Volumes. Specifies the volumes available on the physical host. These fields are populated only for the kPhysicalHost type.",
+																						Elem: &schema.Resource{
+																							Schema: map[string]*schema.Schema{
+																								"device_path": &schema.Schema{
+																									Type:        schema.TypeString,
+																									Computed:    true,
+																									Description: "Specifies the path to the device that hosts the volume locally.",
+																								},
+																								"guid": &schema.Schema{
+																									Type:        schema.TypeString,
+																									Computed:    true,
+																									Description: "Specifies an id for the Physical Volume.",
+																								},
+																								"is_boot_volume": &schema.Schema{
+																									Type:        schema.TypeBool,
+																									Computed:    true,
+																									Description: "Specifies whether the volume is boot volume.",
+																								},
+																								"is_extended_attributes_supported": &schema.Schema{
+																									Type:        schema.TypeBool,
+																									Computed:    true,
+																									Description: "Specifies whether this volume supports extended attributes (like ACLs) when performing file backups.",
+																								},
+																								"is_protected": &schema.Schema{
+																									Type:        schema.TypeBool,
+																									Computed:    true,
+																									Description: "Specifies if a volume is protected by a Job.",
+																								},
+																								"is_shared_volume": &schema.Schema{
+																									Type:        schema.TypeBool,
+																									Computed:    true,
+																									Description: "Specifies whether the volume is shared volume.",
+																								},
+																								"label": &schema.Schema{
+																									Type:        schema.TypeString,
+																									Computed:    true,
+																									Description: "Specifies a volume label that can be used for displaying additional identifying information about a volume.",
+																								},
+																								"logical_size_bytes": &schema.Schema{
+																									Type:        schema.TypeFloat,
+																									Computed:    true,
+																									Description: "Specifies the logical size of the volume in bytes that is not reduced by change-block tracking, compression and deduplication.",
+																								},
+																								"mount_points": &schema.Schema{
+																									Type:        schema.TypeList,
+																									Computed:    true,
+																									Description: "Specifies the mount points where the volume is mounted, for example- 'C:', '/mnt/foo' etc.",
+																									Elem: &schema.Schema{
+																										Type: schema.TypeString,
+																									},
+																								},
+																								"mount_type": &schema.Schema{
+																									Type:        schema.TypeString,
+																									Computed:    true,
+																									Description: "Specifies mount type of volume e.g. nfs, autofs, ext4 etc.",
+																								},
+																								"network_path": &schema.Schema{
+																									Type:        schema.TypeString,
+																									Computed:    true,
+																									Description: "Specifies the full path to connect to the network attached volume. For example, (IP or hostname):/path/to/share for NFS volumes).",
+																								},
+																								"used_size_bytes": &schema.Schema{
+																									Type:        schema.TypeFloat,
+																									Computed:    true,
+																									Description: "Specifies the size used by the volume in bytes.",
+																								},
+																							},
+																						},
+																					},
+																					"vsswriters": &schema.Schema{
+																						Type:        schema.TypeList,
+																						Computed:    true,
+																						Description: "Specifies vss writer information about a Physical Protection Source.",
+																						Elem: &schema.Resource{
+																							Schema: map[string]*schema.Schema{
+																								"is_writer_excluded": &schema.Schema{
+																									Type:        schema.TypeBool,
+																									Computed:    true,
+																									Description: "If true, the writer will be excluded by default.",
+																								},
+																								"writer_name": &schema.Schema{
+																									Type:        schema.TypeBool,
+																									Computed:    true,
+																									Description: "Specifies the name of the writer.",
+																								},
+																							},
+																						},
+																					},
+																				},
+																			},
+																		},
+																		"sql_protection_source": &schema.Schema{
+																			Type:        schema.TypeList,
+																			Computed:    true,
+																			Description: "Specifies an Object representing one SQL Server instance or database.",
+																			Elem: &schema.Resource{
+																				Schema: map[string]*schema.Schema{
+																					"is_available_for_vss_backup": &schema.Schema{
+																						Type:        schema.TypeBool,
+																						Computed:    true,
+																						Description: "Specifies whether the database is marked as available for backup according to the SQL Server VSS writer. This may be false if either the state of the databases is not online, or if the VSS writer is not online. This field is set only for type 'kDatabase'.",
+																					},
+																					"created_timestamp": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Computed:    true,
+																						Description: "Specifies the time when the database was created. It is displayed in the timezone of the SQL server on which this database is running.",
+																					},
+																					"database_name": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Computed:    true,
+																						Description: "Specifies the database name of the SQL Protection Source, if the type is database.",
+																					},
+																					"db_aag_entity_id": &schema.Schema{
+																						Type:        schema.TypeInt,
+																						Computed:    true,
+																						Description: "Specifies the AAG entity id if the database is part of an AAG. This field is set only for type 'kDatabase'.",
+																					},
+																					"db_aag_name": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Computed:    true,
+																						Description: "Specifies the name of the AAG if the database is part of an AAG. This field is set only for type 'kDatabase'.",
+																					},
+																					"db_compatibility_level": &schema.Schema{
+																						Type:        schema.TypeInt,
+																						Computed:    true,
+																						Description: "Specifies the versions of SQL server that the database is compatible with.",
+																					},
+																					"db_file_groups": &schema.Schema{
+																						Type:        schema.TypeList,
+																						Computed:    true,
+																						Description: "Specifies the information about the set of file groups for this db on the host. This is only set if the type is kDatabase.",
+																						Elem: &schema.Schema{
+																							Type: schema.TypeString,
+																						},
+																					},
+																					"db_files": &schema.Schema{
+																						Type:        schema.TypeList,
+																						Computed:    true,
+																						Description: "Specifies the last known information about the set of database files on the host. This field is set only for type 'kDatabase'.",
+																						Elem: &schema.Resource{
+																							Schema: map[string]*schema.Schema{
+																								"file_type": &schema.Schema{
+																									Type:        schema.TypeString,
+																									Computed:    true,
+																									Description: "Specifies the format type of the file that SQL database stores the data. Specifies the format type of the file that SQL database stores the data. 'kRows' refers to a data file 'kLog' refers to a log file 'kFileStream' refers to a directory containing FILESTREAM data 'kNotSupportedType' is for information purposes only. Not supported. 'kFullText' refers to a full-text catalog.",
+																								},
+																								"full_path": &schema.Schema{
+																									Type:        schema.TypeString,
+																									Computed:    true,
+																									Description: "Specifies the full path of the database file on the SQL host machine.",
+																								},
+																								"size_bytes": &schema.Schema{
+																									Type:        schema.TypeInt,
+																									Computed:    true,
+																									Description: "Specifies the last known size of the database file.",
+																								},
+																							},
+																						},
+																					},
+																					"db_owner_username": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Computed:    true,
+																						Description: "Specifies the name of the database owner.",
+																					},
+																					"default_database_location": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Computed:    true,
+																						Description: "Specifies the default path for data files for DBs in an instance.",
+																					},
+																					"default_log_location": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Computed:    true,
+																						Description: "Specifies the default path for log files for DBs in an instance.",
+																					},
+																					"id": &schema.Schema{
+																						Type:        schema.TypeList,
+																						Computed:    true,
+																						Description: "Specifies a unique id for a SQL Protection Source.",
+																						Elem: &schema.Resource{
+																							Schema: map[string]*schema.Schema{
+																								"created_date_msecs": &schema.Schema{
+																									Type:        schema.TypeInt,
+																									Computed:    true,
+																									Description: "Specifies a unique identifier generated from the date the database is created or renamed. Cohesity uses this identifier in combination with the databaseId to uniquely identify a database.",
+																								},
+																								"database_id": &schema.Schema{
+																									Type:        schema.TypeInt,
+																									Computed:    true,
+																									Description: "Specifies a unique id of the database but only for the life of the database. SQL Server may reuse database ids. Cohesity uses the createDateMsecs in combination with this databaseId to uniquely identify a database.",
+																								},
+																								"instance_id": &schema.Schema{
+																									Type:        schema.TypeString,
+																									Computed:    true,
+																									Description: "Specifies unique id for the SQL Server instance. This id does not change during the life of the instance.",
+																								},
+																							},
+																						},
+																					},
+																					"is_encrypted": &schema.Schema{
+																						Type:        schema.TypeBool,
+																						Computed:    true,
+																						Description: "Specifies whether the database is TDE enabled.",
+																					},
+																					"name": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Computed:    true,
+																						Description: "Specifies the instance name of the SQL Protection Source.",
+																					},
+																					"owner_id": &schema.Schema{
+																						Type:        schema.TypeInt,
+																						Computed:    true,
+																						Description: "Specifies the id of the container VM for the SQL Protection Source.",
+																					},
+																					"recovery_model": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Computed:    true,
+																						Description: "Specifies the Recovery Model for the database in SQL environment. Only meaningful for the 'kDatabase' SQL Protection Source. Specifies the Recovery Model set for the Microsoft SQL Server. 'kSimpleRecoveryModel' indicates the Simple SQL Recovery Model which does not utilize log backups. 'kFullRecoveryModel' indicates the Full SQL Recovery Model which requires log backups and allows recovery to a single point in time. 'kBulkLoggedRecoveryModel' indicates the Bulk Logged SQL Recovery Model which requires log backups and allows high-performance bulk copy operations.",
+																					},
+																					"sql_server_db_state": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Computed:    true,
+																						Description: "The state of the database as returned by SQL Server. Indicates the state of the database. The values correspond to the 'state' field in the system table sys.databases. See https://goo.gl/P66XqM. 'kOnline' indicates that database is in online state. 'kRestoring' indicates that database is in restore state. 'kRecovering' indicates that database is in recovery state. 'kRecoveryPending' indicates that database recovery is in pending state. 'kSuspect' indicates that primary filegroup is suspect and may be damaged. 'kEmergency' indicates that manually forced emergency state. 'kOffline' indicates that database is in offline state. 'kCopying' indicates that database is in copying state. 'kOfflineSecondary' indicates that secondary database is in offline state.",
+																					},
+																					"sql_server_instance_version": &schema.Schema{
+																						Type:        schema.TypeList,
+																						Computed:    true,
+																						Description: "Specifies the Server Instance Version.",
+																						Elem: &schema.Resource{
+																							Schema: map[string]*schema.Schema{
+																								"build": &schema.Schema{
+																									Type:        schema.TypeFloat,
+																									Computed:    true,
+																									Description: "Specifies the build.",
+																								},
+																								"major_version": &schema.Schema{
+																									Type:        schema.TypeFloat,
+																									Computed:    true,
+																									Description: "Specifies the major version.",
+																								},
+																								"minor_version": &schema.Schema{
+																									Type:        schema.TypeFloat,
+																									Computed:    true,
+																									Description: "Specifies the minor version.",
+																								},
+																								"revision": &schema.Schema{
+																									Type:        schema.TypeFloat,
+																									Computed:    true,
+																									Description: "Specifies the revision.",
+																								},
+																								"version_string": &schema.Schema{
+																									Type:        schema.TypeFloat,
+																									Computed:    true,
+																									Description: "Specifies the version string.",
+																								},
+																							},
+																						},
+																					},
+																					"type": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Computed:    true,
+																						Description: "Specifies the type of the managed Object in a SQL Protection Source. Examples of SQL Objects include 'kInstance' and 'kDatabase'. 'kInstance' indicates that SQL server instance is being protected. 'kDatabase' indicates that SQL server database is being protected. 'kAAG' indicates that SQL AAG (AlwaysOn Availability Group) is being protected. 'kAAGRootContainer' indicates that SQL AAG's root container is being protected. 'kRootContainer' indicates root container for SQL sources.",
+																					},
+																				},
+																			},
+																		},
+																	},
+																},
+															},
+															"registration_info": &schema.Schema{
+																Type:        schema.TypeList,
+																Computed:    true,
+																Description: "Specifies information about a registered Source.",
+																Elem: &schema.Resource{
+																	Schema: map[string]*schema.Schema{
+																		"access_info": &schema.Schema{
+																			Type:        schema.TypeList,
+																			Computed:    true,
+																			Description: "Specifies the parameters required to establish a connection with a particular environment.",
+																			Elem: &schema.Resource{
+																				Schema: map[string]*schema.Schema{
+																					"connection_id": &schema.Schema{
+																						Type:        schema.TypeInt,
+																						Computed:    true,
+																						Description: "ID of the Bifrost (HyX or Rigel) network realm (i.e. a connection) associated with the source.",
+																					},
+																					"connector_group_id": &schema.Schema{
+																						Type:        schema.TypeInt,
+																						Computed:    true,
+																						Description: "Specifies the Id of the connector group. Each connector group is collection of Rigel/hyx. Each entity will be tagged with connector group id.",
+																					},
+																					"endpoint": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Computed:    true,
+																						Description: "Specify an IP address or URL of the environment. (such as the IP address of the vCenter Server for a VMware environment).",
+																					},
+																					"environment": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Computed:    true,
+																						Description: "Specifies the environment like VMware, SQL, where the Protection Source exists. Supported environment types such as 'kView', 'kSQL', 'kVMware', etc.",
+																					},
+																					"id": &schema.Schema{
+																						Type:        schema.TypeInt,
+																						Computed:    true,
+																						Description: "Specifies a Unique id that is generated when the Source is registered. This is a convenience field that is used to maintain an index to different connection params.",
+																					},
+																					"version": &schema.Schema{
+																						Type:        schema.TypeInt,
+																						Computed:    true,
+																						Description: "Version is updated each time the connector parameters are updated. This is used to discard older connector parameters.",
+																					},
+																				},
+																			},
+																		},
+																		"allowed_ip_addresses": &schema.Schema{
+																			Type:        schema.TypeList,
+																			Computed:    true,
+																			Description: "Specifies the list of IP Addresses on the registered source to be exclusively allowed for doing any type of IO operations.",
+																			Elem: &schema.Schema{
+																				Type: schema.TypeString,
+																			},
+																		},
+																		"authentication_error_message": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Computed:    true,
+																			Description: "Specifies an authentication error message. This indicates the given credentials are rejected and the registration of the source is not successful.",
+																		},
+																		"authentication_status": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Computed:    true,
+																			Description: "Specifies the status of the authenticating to the Protection Source when registering it with Cohesity Cluster.",
+																		},
+																		"blacklisted_ip_addresses": &schema.Schema{
+																			Type:        schema.TypeList,
+																			Computed:    true,
+																			Description: "This field is deprecated. Use DeniedIpAddresses instead.",
+																			Elem: &schema.Schema{
+																				Type: schema.TypeString,
+																			},
+																		},
+																		"denied_ip_addresses": &schema.Schema{
+																			Type:        schema.TypeList,
+																			Computed:    true,
+																			Description: "Specifies the list of IP Addresses on the registered source to be denied for doing any type of IO operations.",
+																			Elem: &schema.Schema{
+																				Type: schema.TypeString,
+																			},
+																		},
+																		"environments": &schema.Schema{
+																			Type:        schema.TypeList,
+																			Optional:    true,
+																			Description: "Return only Protection Sources that match the passed in environment type such as 'kVMware', 'kSQL', 'kView' 'kPhysical', 'kPuppeteer', 'kPure', 'kNetapp', 'kGenericNas', 'kHyperV', 'kAcropolis', or 'kAzure'. For example, set this parameter to 'kVMware' to only return the Sources (and their Object subtrees) found in the 'kVMware' (VMware vCenter Server) environment.",
+																			Elem: &schema.Schema{
+																				Type: schema.TypeString,
+																			},
+																		},
+																		"is_db_authenticated": &schema.Schema{
+																			Type:        schema.TypeBool,
+																			Computed:    true,
+																			Description: "Specifies if application entity dbAuthenticated or not.",
+																		},
+																		"is_storage_array_snapshot_enabled": &schema.Schema{
+																			Type:        schema.TypeBool,
+																			Computed:    true,
+																			Description: "Specifies if this source entity has enabled storage array snapshot or not.",
+																		},
+																		"link_vms_across_vcenter": &schema.Schema{
+																			Type:        schema.TypeBool,
+																			Computed:    true,
+																			Description: "Specifies if the VM linking feature is enabled for this VCenter This means that VMs present in this VCenter which earlier belonged to some other VCenter(also registerd on same cluster) and were migrated, will be linked during EH refresh. This will enable preserving snapshot chains for migrated VMs.",
+																		},
+																		"minimum_free_space_gb": &schema.Schema{
+																			Type:        schema.TypeInt,
+																			Computed:    true,
+																			Description: "Specifies the minimum free space in GiB of the space expected to be available on the datastore where the virtual disks of the VM being backed up. If the amount of free space(in GiB) is lower than the value given by this field, backup will be aborted. Note that this field is applicable only to 'kVMware' type of environments.",
+																		},
+																		"minimum_free_space_percent": &schema.Schema{
+																			Type:        schema.TypeInt,
+																			Computed:    true,
+																			Description: "Specifies the minimum free space in percentage of the space expected to be available on the datastore where the virtual disks of the VM being backed up. If the amount of free space(in percentage) is lower than the value given by this field, backup will be aborted. Note that this field is applicable only to 'kVMware' type of environments.",
+																		},
+																		"password": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Computed:    true,
+																			Description: "Specifies password of the username to access the target source.",
+																		},
+																		"physical_params": &schema.Schema{
+																			Type:        schema.TypeList,
+																			Computed:    true,
+																			Description: "Specifies the parameters required to register Application Servers running in a Protection Source specific to a physical adapter.",
+																			Elem: &schema.Resource{
+																				Schema: map[string]*schema.Schema{
+																					"applications": &schema.Schema{
+																						Type:        schema.TypeList,
+																						Computed:    true,
+																						Description: "Specifies the types of applications such as 'kSQL', 'kExchange', 'kAD' running on the Protection Source. Supported environment types such as 'kView', 'kSQL', 'kVMware', etc.",
+																						Elem: &schema.Schema{
+																							Type: schema.TypeString,
+																						},
+																					},
+																					"password": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Computed:    true,
+																						Description: "Specifies password of the username to access the target source.",
+																					},
+																					"throttling_config": &schema.Schema{
+																						Type:        schema.TypeList,
+																						Computed:    true,
+																						Description: "Specifies the source side throttling configuration.",
+																						Elem: &schema.Resource{
+																							Schema: map[string]*schema.Schema{
+																								"cpu_throttling_config": &schema.Schema{
+																									Type:        schema.TypeList,
+																									Computed:    true,
+																									Description: "Specifies the Throttling Configuration Parameters.",
+																									Elem: &schema.Resource{
+																										Schema: map[string]*schema.Schema{
+																											"fixed_threshold": &schema.Schema{
+																												Type:        schema.TypeInt,
+																												Computed:    true,
+																												Description: "Fixed baseline threshold for throttling. This is mandatory for any other throttling type than kNoThrottling.",
+																											},
+																											"pattern_type": &schema.Schema{
+																												Type:        schema.TypeString,
+																												Computed:    true,
+																												Description: "Type of the throttling pattern. 'kNoThrottling' indicates that throttling is not in force. 'kBaseThrottling' indicates indicates a constant base level throttling. 'kFixed' indicates a constant base level throttling.",
+																											},
+																											"throttling_windows": &schema.Schema{
+																												Type:        schema.TypeList,
+																												Computed:    true,
+																												Description: "Specifies the Throttling Window Parameters Definition.",
+																												Elem: &schema.Resource{
+																													Schema: map[string]*schema.Schema{
+																														"day_time_window": &schema.Schema{
+																															Type:        schema.TypeList,
+																															Computed:    true,
+																															Description: "Specifies the Day Time Window Parameters.",
+																															Elem: &schema.Resource{
+																																Schema: map[string]*schema.Schema{
+																																	"end_time": &schema.Schema{
+																																		Type:        schema.TypeList,
+																																		Computed:    true,
+																																		Description: "Specifies the Day Time Parameters.",
+																																		Elem: &schema.Resource{
+																																			Schema: map[string]*schema.Schema{
+																																				"day": &schema.Schema{
+																																					Type:        schema.TypeString,
+																																					Computed:    true,
+																																					Description: "Specifies the day of the week (such as 'kMonday') for scheduling throttling. Specifies a day in a week such as 'kSunday', 'kMonday', etc.",
+																																				},
+																																				"time": &schema.Schema{
+																																					Type:        schema.TypeList,
+																																					Computed:    true,
+																																					Description: "Specifies the time in hours and minutes.",
+																																					Elem: &schema.Resource{
+																																						Schema: map[string]*schema.Schema{
+																																							"hour": &schema.Schema{
+																																								Type:        schema.TypeInt,
+																																								Computed:    true,
+																																								Description: "Specifies the hour of this time.",
+																																							},
+																																							"minute": &schema.Schema{
+																																								Type:        schema.TypeInt,
+																																								Computed:    true,
+																																								Description: "Specifies the minute of this time.",
+																																							},
+																																						},
+																																					},
+																																				},
+																																			},
+																																		},
+																																	},
+																																	"start_time": &schema.Schema{
+																																		Type:        schema.TypeList,
+																																		Computed:    true,
+																																		Description: "Specifies the Day Time Parameters.",
+																																		Elem: &schema.Resource{
+																																			Schema: map[string]*schema.Schema{
+																																				"day": &schema.Schema{
+																																					Type:        schema.TypeString,
+																																					Computed:    true,
+																																					Description: "Specifies the day of the week (such as 'kMonday') for scheduling throttling. Specifies a day in a week such as 'kSunday', 'kMonday', etc.",
+																																				},
+																																				"time": &schema.Schema{
+																																					Type:        schema.TypeList,
+																																					Computed:    true,
+																																					Description: "Specifies the time in hours and minutes.",
+																																					Elem: &schema.Resource{
+																																						Schema: map[string]*schema.Schema{
+																																							"hour": &schema.Schema{
+																																								Type:        schema.TypeInt,
+																																								Computed:    true,
+																																								Description: "Specifies the hour of this time.",
+																																							},
+																																							"minute": &schema.Schema{
+																																								Type:        schema.TypeInt,
+																																								Computed:    true,
+																																								Description: "Specifies the minute of this time.",
+																																							},
+																																						},
+																																					},
+																																				},
+																																			},
+																																		},
+																																	},
+																																},
+																															},
+																														},
+																														"threshold": &schema.Schema{
+																															Type:        schema.TypeInt,
+																															Computed:    true,
+																															Description: "Throttling threshold applicable in the window.",
+																														},
+																													},
+																												},
+																											},
+																										},
+																									},
+																								},
+																								"network_throttling_config": &schema.Schema{
+																									Type:        schema.TypeList,
+																									Computed:    true,
+																									Description: "Specifies the Throttling Configuration Parameters.",
+																									Elem: &schema.Resource{
+																										Schema: map[string]*schema.Schema{
+																											"fixed_threshold": &schema.Schema{
+																												Type:        schema.TypeInt,
+																												Computed:    true,
+																												Description: "Fixed baseline threshold for throttling. This is mandatory for any other throttling type than kNoThrottling.",
+																											},
+																											"pattern_type": &schema.Schema{
+																												Type:        schema.TypeString,
+																												Computed:    true,
+																												Description: "Type of the throttling pattern. 'kNoThrottling' indicates that throttling is not in force. 'kBaseThrottling' indicates indicates a constant base level throttling. 'kFixed' indicates a constant base level throttling.",
+																											},
+																											"throttling_windows": &schema.Schema{
+																												Type:        schema.TypeList,
+																												Computed:    true,
+																												Description: "Specifies the Throttling Window Parameters Definition.",
+																												Elem: &schema.Resource{
+																													Schema: map[string]*schema.Schema{
+																														"day_time_window": &schema.Schema{
+																															Type:        schema.TypeList,
+																															Computed:    true,
+																															Description: "Specifies the Day Time Window Parameters.",
+																															Elem: &schema.Resource{
+																																Schema: map[string]*schema.Schema{
+																																	"end_time": &schema.Schema{
+																																		Type:        schema.TypeList,
+																																		Computed:    true,
+																																		Description: "Specifies the Day Time Parameters.",
+																																		Elem: &schema.Resource{
+																																			Schema: map[string]*schema.Schema{
+																																				"day": &schema.Schema{
+																																					Type:        schema.TypeString,
+																																					Computed:    true,
+																																					Description: "Specifies the day of the week (such as 'kMonday') for scheduling throttling. Specifies a day in a week such as 'kSunday', 'kMonday', etc.",
+																																				},
+																																				"time": &schema.Schema{
+																																					Type:        schema.TypeList,
+																																					Computed:    true,
+																																					Description: "Specifies the time in hours and minutes.",
+																																					Elem: &schema.Resource{
+																																						Schema: map[string]*schema.Schema{
+																																							"hour": &schema.Schema{
+																																								Type:        schema.TypeInt,
+																																								Computed:    true,
+																																								Description: "Specifies the hour of this time.",
+																																							},
+																																							"minute": &schema.Schema{
+																																								Type:        schema.TypeInt,
+																																								Computed:    true,
+																																								Description: "Specifies the minute of this time.",
+																																							},
+																																						},
+																																					},
+																																				},
+																																			},
+																																		},
+																																	},
+																																	"start_time": &schema.Schema{
+																																		Type:        schema.TypeList,
+																																		Computed:    true,
+																																		Description: "Specifies the Day Time Parameters.",
+																																		Elem: &schema.Resource{
+																																			Schema: map[string]*schema.Schema{
+																																				"day": &schema.Schema{
+																																					Type:        schema.TypeString,
+																																					Computed:    true,
+																																					Description: "Specifies the day of the week (such as 'kMonday') for scheduling throttling. Specifies a day in a week such as 'kSunday', 'kMonday', etc.",
+																																				},
+																																				"time": &schema.Schema{
+																																					Type:        schema.TypeList,
+																																					Computed:    true,
+																																					Description: "Specifies the time in hours and minutes.",
+																																					Elem: &schema.Resource{
+																																						Schema: map[string]*schema.Schema{
+																																							"hour": &schema.Schema{
+																																								Type:        schema.TypeInt,
+																																								Computed:    true,
+																																								Description: "Specifies the hour of this time.",
+																																							},
+																																							"minute": &schema.Schema{
+																																								Type:        schema.TypeInt,
+																																								Computed:    true,
+																																								Description: "Specifies the minute of this time.",
+																																							},
+																																						},
+																																					},
+																																				},
+																																			},
+																																		},
+																																	},
+																																},
+																															},
+																														},
+																														"threshold": &schema.Schema{
+																															Type:        schema.TypeInt,
+																															Computed:    true,
+																															Description: "Throttling threshold applicable in the window.",
+																														},
+																													},
+																												},
+																											},
+																										},
+																									},
+																								},
+																							},
+																						},
+																					},
+																					"username": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Computed:    true,
+																						Description: "Specifies username to access the target source.",
+																					},
+																				},
+																			},
+																		},
+																		"progress_monitor_path": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Computed:    true,
+																			Description: "Captures the current progress and pulse details w.r.t to either the registration or refresh.",
+																		},
+																		"refresh_error_message": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Computed:    true,
+																			Description: "Specifies a message if there was any error encountered during the last rebuild of the Protection Source tree. If there was no error during the last rebuild, this field is reset.",
+																		},
+																		"refresh_time_usecs": &schema.Schema{
+																			Type:        schema.TypeInt,
+																			Computed:    true,
+																			Description: "Specifies the Unix epoch time (in microseconds) when the Protection Source tree was most recently fetched and built.",
+																		},
+																		"registered_apps_info": &schema.Schema{
+																			Type:        schema.TypeList,
+																			Computed:    true,
+																			Description: "Specifies information of the applications registered on this protection source.",
+																			Elem: &schema.Resource{
+																				Schema: map[string]*schema.Schema{
+																					"authentication_error_message": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Computed:    true,
+																						Description: "pecifies an authentication error message. This indicates the given credentials are rejected and the registration of the application is not successful.",
+																					},
+																					"authentication_status": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Computed:    true,
+																						Description: "Specifies the status of authenticating to the Protection Source when registering this application with Cohesity Cluster. If the status is 'kFinished' and there is no error, registration is successful. Specifies the status of the authentication during the registration of a Protection Source. 'kPending' indicates the authentication is in progress. 'kScheduled' indicates the authentication is scheduled. 'kFinished' indicates the authentication is completed. 'kRefreshInProgress' indicates the refresh is in progress.",
+																					},
+																					"environment": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Computed:    true,
+																						Description: "Specifies the application environment. Supported environment types such as 'kView', 'kSQL', 'kVMware', etc.",
+																					},
+																					"host_settings_check_results": &schema.Schema{
+																						Type:        schema.TypeList,
+																						Computed:    true,
+																						Description: "Specifies the list of check results internally performed to verify status of various services such as 'AgnetRunning', 'SQLWriterRunning' etc.",
+																						Elem: &schema.Resource{
+																							Schema: map[string]*schema.Schema{
+																								"check_type": &schema.Schema{
+																									Type:        schema.TypeString,
+																									Computed:    true,
+																									Description: "Specifies the type of the check internally performed. Specifies the type of the host check performed internally. 'kIsAgentPortAccessible' indicates the check for agent port access. 'kIsAgentRunning' indicates the status for the Cohesity agent service. 'kIsSQLWriterRunning' indicates the status for SQLWriter service. 'kAreSQLInstancesRunning' indicates the run status for all the SQL instances in the host. 'kCheckServiceLoginsConfig' checks the privileges and sysadmin status of the logins used by the SQL instance services, Cohesity agent service and the SQLWriter service. 'kCheckSQLFCIVIP' checks whether the SQL FCI is registered with a valid VIP or FQDN. 'kCheckSQLDiskSpace' checks whether volumes containing SQL DBs have at least 10% free space.",
+																								},
+																								"result_type": &schema.Schema{
+																									Type:        schema.TypeString,
+																									Computed:    true,
+																									Description: "Specifies the type of the result returned after performing the internal host check. Specifies the type of the host check result performed internally. 'kPass' indicates that the respective check was successful. 'kFail' indicates that the respective check failed as some mandatory setting is not met 'kWarning' indicates that the respective check has warning as certain non-mandatory setting is not met.",
+																								},
+																								"user_message": &schema.Schema{
+																									Type:        schema.TypeString,
+																									Computed:    true,
+																									Description: "Specifies a descriptive message for failed/warning types.",
+																								},
+																							},
+																						},
+																					},
+																					"refresh_error_message": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Computed:    true,
+																						Description: "Specifies a message if there was any error encountered during the last rebuild of the application tree. If there was no error during the last rebuild, this field is reset.",
+																					},
+																				},
+																			},
+																		},
+																		"registration_time_usecs": &schema.Schema{
+																			Type:        schema.TypeInt,
+																			Computed:    true,
+																			Description: "Specifies the Unix epoch time (in microseconds) when the Protection Source was registered.",
+																		},
+																		"subnets": &schema.Schema{
+																			Type:        schema.TypeList,
+																			Computed:    true,
+																			Description: "Specifies the list of subnets added during creation or updation of vmare source. Currently, this field will only be populated in case of VMware registration.",
+																			Elem: &schema.Resource{
+																				Schema: map[string]*schema.Schema{
+																					"component": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Computed:    true,
+																						Description: "Component that has reserved the subnet.",
+																					},
+																					"description": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Computed:    true,
+																						Description: "Description of the subnet.",
+																					},
+																					"id": &schema.Schema{
+																						Type:        schema.TypeFloat,
+																						Computed:    true,
+																						Description: "ID of the subnet.",
+																					},
+																					"ip": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Computed:    true,
+																						Description: "Specifies either an IPv6 address or an IPv4 address.",
+																					},
+																					"netmask_bits": &schema.Schema{
+																						Type:        schema.TypeFloat,
+																						Computed:    true,
+																						Description: "netmaskBits.",
+																					},
+																					"netmask_ip4": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Computed:    true,
+																						Description: "Specifies the netmask using an IP4 address. The netmask can only be set using netmaskIp4 if the IP address is an IPv4 address.",
+																					},
+																					"nfs_access": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Computed:    true,
+																						Description: "Component that has reserved the subnet.",
+																					},
+																					"nfs_all_squash": &schema.Schema{
+																						Type:        schema.TypeBool,
+																						Computed:    true,
+																						Description: "Specifies whether all clients from this subnet can map view with view_all_squash_uid/view_all_squash_gid configured in the view.",
+																					},
+																					"nfs_root_squash": &schema.Schema{
+																						Type:        schema.TypeBool,
+																						Computed:    true,
+																						Description: "Specifies whether clients from this subnet can mount as root on NFS.",
+																					},
+																					"s3_access": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Computed:    true,
+																						Description: "Specifies whether clients from this subnet can access using S3 protocol. Protocol access level. 'kDisabled' indicates Protocol access level 'Disabled' 'kReadOnly' indicates Protocol access level 'ReadOnly' 'kReadWrite' indicates Protocol access level 'ReadWrite'.",
+																					},
+																					"smb_access": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Computed:    true,
+																						Description: "Specifies whether clients from this subnet can mount using SMB protocol. Protocol access level. 'kDisabled' indicates Protocol access level 'Disabled' 'kReadOnly' indicates Protocol access level 'ReadOnly' 'kReadWrite' indicates Protocol access level 'ReadWrite'.",
+																					},
+																					"tenant_id": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Computed:    true,
+																						Description: "Specifies the unique id of the tenant.",
+																					},
+																				},
+																			},
+																		},
+																		"throttling_policy": &schema.Schema{
+																			Type:        schema.TypeList,
+																			Computed:    true,
+																			Description: "Specifies the throttling policy for a registered Protection Source.",
+																			Elem: &schema.Resource{
+																				Schema: map[string]*schema.Schema{
+																					"enforce_max_streams": &schema.Schema{
+																						Type:        schema.TypeBool,
+																						Computed:    true,
+																						Description: "Specifies whether datastore streams are configured for all datastores that are part of the registered entity. If set to true, number of streams from Cohesity cluster to the registered entity will be limited to the value set for maxConcurrentStreams. If not set or set to false, there is no max limit for the number of concurrent streams.",
+																					},
+																					"enforce_registered_source_max_backups": &schema.Schema{
+																						Type:        schema.TypeBool,
+																						Computed:    true,
+																						Description: "Specifies whether no. of backups are configured for the registered entity. If set to true, number of backups made by Cohesity cluster in the registered entity will be limited to the value set for RegisteredSourceMaxConcurrentBackups. If not set or set to false, there is no max limit for the number of concurrent backups.",
+																					},
+																					"is_enabled": &schema.Schema{
+																						Type:        schema.TypeBool,
+																						Computed:    true,
+																						Description: "Indicates whether read operations to the datastores, which are part of the registered Protection Source, are throttled.",
+																					},
+																					"latency_thresholds": &schema.Schema{
+																						Type:        schema.TypeList,
+																						Computed:    true,
+																						Description: "Specifies latency thresholds that trigger throttling for all datastores found in the registered Protection Source or specific to one datastore.",
+																						Elem: &schema.Resource{
+																							Schema: map[string]*schema.Schema{
+																								"active_task_msecs": &schema.Schema{
+																									Type:        schema.TypeInt,
+																									Computed:    true,
+																									Description: "If the latency of a datastore is above this value, existing backup tasks using the datastore are throttled.",
+																								},
+																								"new_task_msecs": &schema.Schema{
+																									Type:        schema.TypeInt,
+																									Computed:    true,
+																									Description: "If the latency of a datastore is above this value, then new backup tasks using the datastore will not be started.",
+																								},
+																							},
+																						},
+																					},
+																					"max_concurrent_streams": &schema.Schema{
+																						Type:        schema.TypeFloat,
+																						Computed:    true,
+																						Description: "Specifies the limit on the number of streams Cohesity cluster will make concurrently to the datastores of the registered entity. This limit is enforced only when the flag enforceMaxStreams is set to true.",
+																					},
+																					"nas_source_params": &schema.Schema{
+																						Type:        schema.TypeList,
+																						Computed:    true,
+																						Description: "Specifies the NAS specific source throttling parameters during source registration or during backup of the source.",
+																						Elem: &schema.Resource{
+																							Schema: map[string]*schema.Schema{
+																								"max_parallel_metadata_fetch_full_percentage": &schema.Schema{
+																									Type:        schema.TypeFloat,
+																									Computed:    true,
+																									Description: "Specifies the percentage value of maximum concurrent metadata to be fetched during full backup of the source.",
+																								},
+																								"max_parallel_metadata_fetch_incremental_percentage": &schema.Schema{
+																									Type:        schema.TypeFloat,
+																									Computed:    true,
+																									Description: "Specifies the percentage value of maximum concurrent metadata to be fetched during incremental backup of the source.",
+																								},
+																								"max_parallel_read_write_full_percentage": &schema.Schema{
+																									Type:        schema.TypeFloat,
+																									Computed:    true,
+																									Description: "Specifies the percentage value of maximum concurrent IO during full backup of the source.",
+																								},
+																								"max_parallel_read_write_incremental_percentage": &schema.Schema{
+																									Type:        schema.TypeFloat,
+																									Computed:    true,
+																									Description: "Specifies the percentage value of maximum concurrent IO during incremental backup of the source.",
+																								},
+																							},
+																						},
+																					},
+																					"registered_source_max_concurrent_backups": &schema.Schema{
+																						Type:        schema.TypeFloat,
+																						Computed:    true,
+																						Description: "Specifies the limit on the number of backups Cohesity cluster will make concurrently to the registered entity. This limit is enforced only when the flag enforceRegisteredSourceMaxBackups is set to true.",
+																					},
+																					"storage_array_snapshot_config": &schema.Schema{
+																						Type:        schema.TypeList,
+																						Computed:    true,
+																						Description: "Specifies Storage Array Snapshot Configuration.",
+																						Elem: &schema.Resource{
+																							Schema: map[string]*schema.Schema{
+																								"is_max_snapshots_config_enabled": &schema.Schema{
+																									Type:        schema.TypeBool,
+																									Computed:    true,
+																									Description: "Specifies if the storage array snapshot max snapshots config is enabled or not.",
+																								},
+																								"is_max_space_config_enabled": &schema.Schema{
+																									Type:        schema.TypeBool,
+																									Computed:    true,
+																									Description: "Specifies if the storage array snapshot max space config is enabled or not.",
+																								},
+																								"storage_array_snapshot_max_space_config": &schema.Schema{
+																									Type:        schema.TypeList,
+																									Computed:    true,
+																									Description: "Specifies Storage Array Snapshot Max Space Config.",
+																									Elem: &schema.Resource{
+																										Schema: map[string]*schema.Schema{
+																											"max_snapshot_space_percentage": &schema.Schema{
+																												Type:        schema.TypeFloat,
+																												Computed:    true,
+																												Description: "Max number of storage snapshots allowed per volume/lun.",
+																											},
+																										},
+																									},
+																								},
+																								"storage_array_snapshot_throttling_policies": &schema.Schema{
+																									Type:        schema.TypeList,
+																									Computed:    true,
+																									Description: "Specifies throttling policies configured for individual volume/lun.",
+																									Elem: &schema.Resource{
+																										Schema: map[string]*schema.Schema{
+																											"id": &schema.Schema{
+																												Type:        schema.TypeInt,
+																												Computed:    true,
+																												Description: "Specifies the volume id of the storage array snapshot config.",
+																											},
+																											"is_max_snapshots_config_enabled": &schema.Schema{
+																												Type:        schema.TypeBool,
+																												Computed:    true,
+																												Description: "Specifies if the storage array snapshot max snapshots config is enabled or not.",
+																											},
+																											"is_max_space_config_enabled": &schema.Schema{
+																												Type:        schema.TypeBool,
+																												Computed:    true,
+																												Description: "Specifies if the storage array snapshot max space config is enabled or not.",
+																											},
+																											"max_snapshot_config": &schema.Schema{
+																												Type:        schema.TypeList,
+																												Computed:    true,
+																												Description: "Specifies Storage Array Snapshot Max Snapshots Config.",
+																												Elem: &schema.Resource{
+																													Schema: map[string]*schema.Schema{
+																														"max_snapshots": &schema.Schema{
+																															Type:        schema.TypeFloat,
+																															Computed:    true,
+																															Description: "Max number of storage snapshots allowed per volume/lun.",
+																														},
+																													},
+																												},
+																											},
+																											"max_space_config": &schema.Schema{
+																												Type:        schema.TypeList,
+																												Computed:    true,
+																												Description: "Specifies Storage Array Snapshot Max Space Config.",
+																												Elem: &schema.Resource{
+																													Schema: map[string]*schema.Schema{
+																														"max_snapshot_space_percentage": &schema.Schema{
+																															Type:        schema.TypeFloat,
+																															Computed:    true,
+																															Description: "Max number of storage snapshots allowed per volume/lun.",
+																														},
+																													},
+																												},
+																											},
+																										},
+																									},
+																								},
+																							},
+																						},
+																					},
+																				},
+																			},
+																		},
+																		"throttling_policy_overrides": &schema.Schema{
+																			Type:        schema.TypeList,
+																			Computed:    true,
+																			Description: "Specifies throttling policy override for a Datastore in a registered entity.",
+																			Elem: &schema.Resource{
+																				Schema: map[string]*schema.Schema{
+																					"datastore_id": &schema.Schema{
+																						Type:        schema.TypeInt,
+																						Computed:    true,
+																						Description: "Specifies the Protection Source id of the Datastore.",
+																					},
+																					"datastore_name": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Computed:    true,
+																						Description: "Specifies the display name of the Datastore.",
+																					},
+																					"throttling_policy": &schema.Schema{
+																						Type:        schema.TypeList,
+																						Computed:    true,
+																						Description: "Specifies the throttling policy for a registered Protection Source.",
+																						Elem: &schema.Resource{
+																							Schema: map[string]*schema.Schema{
+																								"enforce_max_streams": &schema.Schema{
+																									Type:        schema.TypeBool,
+																									Computed:    true,
+																									Description: "Specifies whether datastore streams are configured for all datastores that are part of the registered entity. If set to true, number of streams from Cohesity cluster to the registered entity will be limited to the value set for maxConcurrentStreams. If not set or set to false, there is no max limit for the number of concurrent streams.",
+																								},
+																								"enforce_registered_source_max_backups": &schema.Schema{
+																									Type:        schema.TypeBool,
+																									Computed:    true,
+																									Description: "Specifies whether no. of backups are configured for the registered entity. If set to true, number of backups made by Cohesity cluster in the registered entity will be limited to the value set for RegisteredSourceMaxConcurrentBackups. If not set or set to false, there is no max limit for the number of concurrent backups.",
+																								},
+																								"is_enabled": &schema.Schema{
+																									Type:        schema.TypeBool,
+																									Computed:    true,
+																									Description: "Indicates whether read operations to the datastores, which are part of the registered Protection Source, are throttled.",
+																								},
+																								"latency_thresholds": &schema.Schema{
+																									Type:        schema.TypeList,
+																									Computed:    true,
+																									Description: "Specifies latency thresholds that trigger throttling for all datastores found in the registered Protection Source or specific to one datastore.",
+																									Elem: &schema.Resource{
+																										Schema: map[string]*schema.Schema{
+																											"active_task_msecs": &schema.Schema{
+																												Type:        schema.TypeInt,
+																												Computed:    true,
+																												Description: "If the latency of a datastore is above this value, existing backup tasks using the datastore are throttled.",
+																											},
+																											"new_task_msecs": &schema.Schema{
+																												Type:        schema.TypeInt,
+																												Computed:    true,
+																												Description: "If the latency of a datastore is above this value, then new backup tasks using the datastore will not be started.",
+																											},
+																										},
+																									},
+																								},
+																								"max_concurrent_streams": &schema.Schema{
+																									Type:        schema.TypeFloat,
+																									Computed:    true,
+																									Description: "Specifies the limit on the number of streams Cohesity cluster will make concurrently to the datastores of the registered entity. This limit is enforced only when the flag enforceMaxStreams is set to true.",
+																								},
+																								"nas_source_params": &schema.Schema{
+																									Type:        schema.TypeList,
+																									Computed:    true,
+																									Description: "Specifies the NAS specific source throttling parameters during source registration or during backup of the source.",
+																									Elem: &schema.Resource{
+																										Schema: map[string]*schema.Schema{
+																											"max_parallel_metadata_fetch_full_percentage": &schema.Schema{
+																												Type:        schema.TypeFloat,
+																												Computed:    true,
+																												Description: "Specifies the percentage value of maximum concurrent metadata to be fetched during full backup of the source.",
+																											},
+																											"max_parallel_metadata_fetch_incremental_percentage": &schema.Schema{
+																												Type:        schema.TypeFloat,
+																												Computed:    true,
+																												Description: "Specifies the percentage value of maximum concurrent metadata to be fetched during incremental backup of the source.",
+																											},
+																											"max_parallel_read_write_full_percentage": &schema.Schema{
+																												Type:        schema.TypeFloat,
+																												Computed:    true,
+																												Description: "Specifies the percentage value of maximum concurrent IO during full backup of the source.",
+																											},
+																											"max_parallel_read_write_incremental_percentage": &schema.Schema{
+																												Type:        schema.TypeFloat,
+																												Computed:    true,
+																												Description: "Specifies the percentage value of maximum concurrent IO during incremental backup of the source.",
+																											},
+																										},
+																									},
+																								},
+																								"registered_source_max_concurrent_backups": &schema.Schema{
+																									Type:        schema.TypeFloat,
+																									Computed:    true,
+																									Description: "Specifies the limit on the number of backups Cohesity cluster will make concurrently to the registered entity. This limit is enforced only when the flag enforceRegisteredSourceMaxBackups is set to true.",
+																								},
+																								"storage_array_snapshot_config": &schema.Schema{
+																									Type:        schema.TypeList,
+																									Computed:    true,
+																									Description: "Specifies Storage Array Snapshot Configuration.",
+																									Elem: &schema.Resource{
+																										Schema: map[string]*schema.Schema{
+																											"is_max_snapshots_config_enabled": &schema.Schema{
+																												Type:        schema.TypeBool,
+																												Computed:    true,
+																												Description: "Specifies if the storage array snapshot max snapshots config is enabled or not.",
+																											},
+																											"is_max_space_config_enabled": &schema.Schema{
+																												Type:        schema.TypeBool,
+																												Computed:    true,
+																												Description: "Specifies if the storage array snapshot max space config is enabled or not.",
+																											},
+																											"storage_array_snapshot_max_space_config": &schema.Schema{
+																												Type:        schema.TypeList,
+																												Computed:    true,
+																												Description: "Specifies Storage Array Snapshot Max Space Config.",
+																												Elem: &schema.Resource{
+																													Schema: map[string]*schema.Schema{
+																														"max_snapshot_space_percentage": &schema.Schema{
+																															Type:        schema.TypeFloat,
+																															Computed:    true,
+																															Description: "Max number of storage snapshots allowed per volume/lun.",
+																														},
+																													},
+																												},
+																											},
+																											"storage_array_snapshot_throttling_policies": &schema.Schema{
+																												Type:        schema.TypeList,
+																												Computed:    true,
+																												Description: "Specifies throttling policies configured for individual volume/lun.",
+																												Elem: &schema.Resource{
+																													Schema: map[string]*schema.Schema{
+																														"id": &schema.Schema{
+																															Type:        schema.TypeInt,
+																															Computed:    true,
+																															Description: "Specifies the volume id of the storage array snapshot config.",
+																														},
+																														"is_max_snapshots_config_enabled": &schema.Schema{
+																															Type:        schema.TypeBool,
+																															Computed:    true,
+																															Description: "Specifies if the storage array snapshot max snapshots config is enabled or not.",
+																														},
+																														"is_max_space_config_enabled": &schema.Schema{
+																															Type:        schema.TypeBool,
+																															Computed:    true,
+																															Description: "Specifies if the storage array snapshot max space config is enabled or not.",
+																														},
+																														"max_snapshot_config": &schema.Schema{
+																															Type:        schema.TypeList,
+																															Computed:    true,
+																															Description: "Specifies Storage Array Snapshot Max Snapshots Config.",
+																															Elem: &schema.Resource{
+																																Schema: map[string]*schema.Schema{
+																																	"max_snapshots": &schema.Schema{
+																																		Type:        schema.TypeFloat,
+																																		Computed:    true,
+																																		Description: "Max number of storage snapshots allowed per volume/lun.",
+																																	},
+																																},
+																															},
+																														},
+																														"max_space_config": &schema.Schema{
+																															Type:        schema.TypeList,
+																															Computed:    true,
+																															Description: "Specifies Storage Array Snapshot Max Space Config.",
+																															Elem: &schema.Resource{
+																																Schema: map[string]*schema.Schema{
+																																	"max_snapshot_space_percentage": &schema.Schema{
+																																		Type:        schema.TypeFloat,
+																																		Computed:    true,
+																																		Description: "Max number of storage snapshots allowed per volume/lun.",
+																																	},
+																																},
+																															},
+																														},
+																													},
+																												},
+																											},
+																										},
+																									},
+																								},
+																							},
+																						},
+																					},
+																				},
+																			},
+																		},
+																		"use_o_auth_for_exchange_online": &schema.Schema{
+																			Type:        schema.TypeBool,
+																			Computed:    true,
+																			Description: "Specifies whether OAuth should be used for authentication in case of Exchange Online.",
+																		},
+																		"use_vm_bios_uuid": &schema.Schema{
+																			Type:        schema.TypeBool,
+																			Computed:    true,
+																			Description: "Specifies if registered vCenter is using BIOS UUID to track virtual machines.",
+																		},
+																		"user_messages": &schema.Schema{
+																			Type:        schema.TypeList,
+																			Computed:    true,
+																			Description: "Specifies the additional details encountered during registration. Though the registration may succeed, user messages imply the host environment requires some cleanup or fixing.",
+																			Elem: &schema.Schema{
+																				Type: schema.TypeString,
+																			},
+																		},
+																		"username": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Computed:    true,
+																			Description: "Specifies username to access the target source.",
+																		},
+																		"vlan_params": &schema.Schema{
+																			Type:        schema.TypeList,
+																			Computed:    true,
+																			Description: "Specifies the VLAN configuration for Recovery.",
+																			Elem: &schema.Resource{
+																				Schema: map[string]*schema.Schema{
+																					"vlan": &schema.Schema{
+																						Type:        schema.TypeFloat,
+																						Computed:    true,
+																						Description: "Specifies the VLAN to use for mounting Cohesity's view on the remote host. If specified, Cohesity hostname or the IP address on this VLAN is used.",
+																					},
+																					"disable_vlan": &schema.Schema{
+																						Type:        schema.TypeBool,
+																						Computed:    true,
+																						Description: "Specifies whether to use the VIPs even when VLANs are configured on the Cluster. If configured, VLAN IP addresses are used by default. If VLANs are not configured, this flag is ignored. Set this flag to true to force using the partition VIPs when VLANs are configured on the Cluster.",
+																					},
+																					"interface_name": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Computed:    true,
+																						Description: "Specifies the physical interface group name to use for mounting Cohesity's view on the remote host. If specified, Cohesity hostname or the IP address on this VLAN is used.",
+																					},
+																				},
+																			},
+																		},
+																		"warning_messages": &schema.Schema{
+																			Type:        schema.TypeList,
+																			Computed:    true,
+																			Description: "Specifies a list of warnings encountered during registration. Though the registration may succeed, warning messages imply the host environment requires some cleanup or fixing.",
+																			Elem: &schema.Schema{
+																				Type: schema.TypeString,
+																			},
+																		},
+																	},
+																},
+															},
+															"total_downtiered_size_in_bytes": &schema.Schema{
+																Type:        schema.TypeInt,
+																Computed:    true,
+																Description: "Specifies the total bytes downtiered from the source so far.",
+															},
+															"total_uptiered_size_in_bytes": &schema.Schema{
+																Type:        schema.TypeInt,
+																Computed:    true,
+																Description: "Specifies the total bytes uptiered to the source so far.",
+															},
+															"unprotected_sources_summary": &schema.Schema{
+																Type:        schema.TypeList,
+																Computed:    true,
+																Description: "Aggregated information about a node subtree.",
+																Elem: &schema.Resource{
+																	Schema: map[string]*schema.Schema{
+																		"environment": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Computed:    true,
+																			Description: "Specifies the environment such as 'kSQL' or 'kVMware', where the Protection Source exists. Supported environment types such as 'kView', 'kSQL', 'kVMware', etc. NOTE 'kPuppeteer' refers to Cohesity's Remote Adapter. 'kVMware' indicates the VMware Protection Source environment. 'kHyperV' indicates the HyperV Protection Source environment. 'kSQL' indicates the SQL Protection Source environment. 'kView' indicates the View Protection Source environment. 'kPuppeteer' indicates the Cohesity's Remote Adapter. 'kPhysical' indicates the physical Protection Source environment. 'kPure' indicates the Pure Storage Protection Source environment. 'kNimble' indicates the Nimble Storage Protection Source environment. 'kAzure' indicates the Microsoft's Azure Protection Source environment. 'kNetapp' indicates the Netapp Protection Source environment. 'kAgent' indicates the Agent Protection Source environment. 'kGenericNas' indicates the Generic Network Attached Storage Protection Source environment. 'kAcropolis' indicates the Acropolis Protection Source environment. 'kPhysicalFiles' indicates the Physical Files Protection Source environment. 'kIbmFlashSystem' indicates the IBM Flash System Protection Source environment. 'kIsilon' indicates the Dell EMC's Isilon Protection Source environment. 'kGPFS' indicates IBM's GPFS Protection Source environment. 'kKVM' indicates the KVM Protection Source environment. 'kAWS' indicates the AWS Protection Source environment. 'kExchange' indicates the Exchange Protection Source environment. 'kHyperVVSS' indicates the HyperV VSS Protection Source environment. 'kOracle' indicates the Oracle Protection Source environment. 'kGCP' indicates the Google Cloud Platform Protection Source environment. 'kFlashBlade' indicates the Flash Blade Protection Source environment. 'kAWSNative' indicates the AWS Native Protection Source environment. 'kO365' indicates the Office 365 Protection Source environment. 'kO365Outlook' indicates Office 365 outlook Protection Source environment. 'kHyperFlex' indicates the Hyper Flex Protection Source environment. 'kGCPNative' indicates the GCP Native Protection Source environment. 'kAzureNative' indicates the Azure Native Protection Source environment. 'kKubernetes' indicates a Kubernetes Protection Source environment. 'kElastifile' indicates Elastifile Protection Source environment. 'kAD' indicates Active Directory Protection Source environment. 'kRDSSnapshotManager' indicates AWS RDS Protection Source environment. 'kCassandra' indicates Cassandra Protection Source environment. 'kMongoDB' indicates MongoDB Protection Source environment. 'kCouchbase' indicates Couchbase Protection Source environment. 'kHdfs' indicates Hdfs Protection Source environment. 'kHive' indicates Hive Protection Source environment. 'kHBase' indicates HBase Protection Source environment. 'kUDA' indicates Universal Data Adapter Protection Source environment. 'kO365Teams' indicates the Office365 Teams Protection Source environment. 'kO365Group' indicates the Office365 Groups Protection Source environment. 'kO365Exchange' indicates the Office365 Mailbox Protection Source environment. 'kO365OneDrive' indicates the Office365 OneDrive Protection Source environment. 'kO365Sharepoint' indicates the Office365 SharePoint Protection Source environment. 'kO365PublicFolders' indicates the Office365 PublicFolders Protection Source environment.",
+																		},
+																		"leaves_count": &schema.Schema{
+																			Type:        schema.TypeInt,
+																			Computed:    true,
+																			Description: "Specifies the number of leaf nodes under the subtree of this node.",
+																		},
+																		"total_logical_size": &schema.Schema{
+																			Type:        schema.TypeInt,
+																			Computed:    true,
+																			Description: "Specifies the total logical size of the data under the subtree of this node.",
+																		},
+																	},
+																},
+															},
+														},
+													},
+												},
+												"logical_size": &schema.Schema{
+													Type:        schema.TypeInt,
+													Computed:    true,
+													Description: "Specifies the logical size of the data in bytes for the Object on this node. Presence of this field indicates this node is a leaf node.",
+												},
+												"object_protection_info": &schema.Schema{
+													Type:        schema.TypeList,
+													Computed:    true,
+													Description: "Specifies the Object Protection Info of the Protection Source.",
+													Elem: &schema.Resource{
+														Schema: map[string]*schema.Schema{
+															"auto_protect_parent_id": &schema.Schema{
+																Type:        schema.TypeInt,
+																Computed:    true,
+																Description: "Specifies the auto protect parent id if this entity is protected based on auto protection. This is only specified for leaf entities.",
+															},
+															"entity_id": &schema.Schema{
+																Type:        schema.TypeInt,
+																Computed:    true,
+																Description: "Specifies the entity id.",
+															},
+															"has_active_object_protection_spec": &schema.Schema{
+																Type:        schema.TypeInt,
+																Computed:    true,
+																Description: "Specifies if the entity is under object protection.",
+															},
+														},
+													},
+												},
+												"protected_sources_summary": &schema.Schema{
+													Type:        schema.TypeList,
+													Computed:    true,
+													Description: "Array of Protected Objects. Specifies aggregated information about all the child Objects of this node that are currently protected by a Protection Job. There is one entry for each environment that is being backed up. The aggregated information for the Object hierarchy's environment will be available at the 0th index of the vector.",
+													Elem: &schema.Resource{
+														Schema: map[string]*schema.Schema{
+															"environment": &schema.Schema{
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "Specifies the environment such as 'kSQL' or 'kVMware', where the Protection Source exists. Supported environment types such as 'kView', 'kSQL', 'kVMware', etc. NOTE 'kPuppeteer' refers to Cohesity's Remote Adapter. 'kVMware' indicates the VMware Protection Source environment. 'kHyperV' indicates the HyperV Protection Source environment. 'kSQL' indicates the SQL Protection Source environment. 'kView' indicates the View Protection Source environment. 'kPuppeteer' indicates the Cohesity's Remote Adapter. 'kPhysical' indicates the physical Protection Source environment. 'kPure' indicates the Pure Storage Protection Source environment. 'kNimble' indicates the Nimble Storage Protection Source environment. 'kAzure' indicates the Microsoft's Azure Protection Source environment. 'kNetapp' indicates the Netapp Protection Source environment. 'kAgent' indicates the Agent Protection Source environment. 'kGenericNas' indicates the Generic Network Attached Storage Protection Source environment. 'kAcropolis' indicates the Acropolis Protection Source environment. 'kPhysicalFiles' indicates the Physical Files Protection Source environment. 'kIbmFlashSystem' indicates the IBM Flash System Protection Source environment. 'kIsilon' indicates the Dell EMC's Isilon Protection Source environment. 'kGPFS' indicates IBM's GPFS Protection Source environment. 'kKVM' indicates the KVM Protection Source environment. 'kAWS' indicates the AWS Protection Source environment. 'kExchange' indicates the Exchange Protection Source environment. 'kHyperVVSS' indicates the HyperV VSS Protection Source environment. 'kOracle' indicates the Oracle Protection Source environment. 'kGCP' indicates the Google Cloud Platform Protection Source environment. 'kFlashBlade' indicates the Flash Blade Protection Source environment. 'kAWSNative' indicates the AWS Native Protection Source environment. 'kO365' indicates the Office 365 Protection Source environment. 'kO365Outlook' indicates Office 365 outlook Protection Source environment. 'kHyperFlex' indicates the Hyper Flex Protection Source environment. 'kGCPNative' indicates the GCP Native Protection Source environment. 'kAzureNative' indicates the Azure Native Protection Source environment. 'kKubernetes' indicates a Kubernetes Protection Source environment. 'kElastifile' indicates Elastifile Protection Source environment. 'kAD' indicates Active Directory Protection Source environment. 'kRDSSnapshotManager' indicates AWS RDS Protection Source environment. 'kCassandra' indicates Cassandra Protection Source environment. 'kMongoDB' indicates MongoDB Protection Source environment. 'kCouchbase' indicates Couchbase Protection Source environment. 'kHdfs' indicates Hdfs Protection Source environment. 'kHive' indicates Hive Protection Source environment. 'kHBase' indicates HBase Protection Source environment. 'kUDA' indicates Universal Data Adapter Protection Source environment. 'kO365Teams' indicates the Office365 Teams Protection Source environment. 'kO365Group' indicates the Office365 Groups Protection Source environment. 'kO365Exchange' indicates the Office365 Mailbox Protection Source environment. 'kO365OneDrive' indicates the Office365 OneDrive Protection Source environment. 'kO365Sharepoint' indicates the Office365 SharePoint Protection Source environment. 'kO365PublicFolders' indicates the Office365 PublicFolders Protection Source environment.",
+															},
+															"leaves_count": &schema.Schema{
+																Type:        schema.TypeInt,
+																Computed:    true,
+																Description: "Specifies the number of leaf nodes under the subtree of this node.",
+															},
+															"total_logical_size": &schema.Schema{
+																Type:        schema.TypeInt,
+																Computed:    true,
+																Description: "Specifies the total logical size of the data under the subtree of this node.",
+															},
+														},
+													},
+												},
+												"protection_source": &schema.Schema{
+													Type:        schema.TypeList,
+													Computed:    true,
+													Description: "Specifies details about an Acropolis Protection Source when the environment is set to 'kAcropolis'.",
+													Elem: &schema.Resource{
+														Schema: map[string]*schema.Schema{
+															"connection_id": &schema.Schema{
+																Type:        schema.TypeInt,
+																Computed:    true,
+																Description: "Specifies the connection id of the tenant.",
+															},
+															"connector_group_id": &schema.Schema{
+																Type:        schema.TypeInt,
+																Computed:    true,
+																Description: "Specifies the connector group id of the connector groups.",
+															},
+															"custom_name": &schema.Schema{
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "Specifies the user provided custom name of the Protection Source.",
+															},
+															"environment": &schema.Schema{
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "Specifies the environment (such as 'kVMware' or 'kSQL') where the Protection Source exists. Depending on the environment, one of the following Protection Sources are initialized.",
+															},
+															"id": &schema.Schema{
+																Type:        schema.TypeInt,
+																Computed:    true,
+																Description: "Specifies an id of the Protection Source.",
+															},
+															"name": &schema.Schema{
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "Specifies a name of the Protection Source.",
+															},
+															"parent_id": &schema.Schema{
+																Type:        schema.TypeInt,
+																Computed:    true,
+																Description: "Specifies an id of the parent of the Protection Source.",
+															},
+															"physical_protection_source": &schema.Schema{
+																Type:        schema.TypeList,
+																Computed:    true,
+																Description: "Specifies a Protection Source in a Physical environment.",
+																Elem: &schema.Resource{
+																	Schema: map[string]*schema.Schema{
+																		"agents": &schema.Schema{
+																			Type:        schema.TypeList,
+																			Computed:    true,
+																			Description: "Specifiles the agents running on the Physical Protection Source and the status information.",
+																			Elem: &schema.Resource{
+																				Schema: map[string]*schema.Schema{
+																					"cbmr_version": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Computed:    true,
+																						Description: "Specifies the version if Cristie BMR product is installed on the host.",
+																					},
+																					"file_cbt_info": &schema.Schema{
+																						Type:        schema.TypeList,
+																						Computed:    true,
+																						Description: "CBT version and service state info.",
+																						Elem: &schema.Resource{
+																							Schema: map[string]*schema.Schema{
+																								"file_version": &schema.Schema{
+																									Type:        schema.TypeList,
+																									Computed:    true,
+																									Description: "Subcomponent version. The interpretation of the version is based on operating system.",
+																									Elem: &schema.Resource{
+																										Schema: map[string]*schema.Schema{
+																											"build_ver": &schema.Schema{
+																												Type:     schema.TypeFloat,
+																												Computed: true,
+																											},
+																											"major_ver": &schema.Schema{
+																												Type:     schema.TypeFloat,
+																												Computed: true,
+																											},
+																											"minor_ver": &schema.Schema{
+																												Type:     schema.TypeFloat,
+																												Computed: true,
+																											},
+																											"revision_num": &schema.Schema{
+																												Type:     schema.TypeFloat,
+																												Computed: true,
+																											},
+																										},
+																									},
+																								},
+																								"is_installed": &schema.Schema{
+																									Type:        schema.TypeBool,
+																									Computed:    true,
+																									Description: "Indicates whether the cbt driver is installed.",
+																								},
+																								"reboot_status": &schema.Schema{
+																									Type:        schema.TypeString,
+																									Computed:    true,
+																									Description: "Indicates whether host is rebooted post VolCBT installation.",
+																								},
+																								"service_state": &schema.Schema{
+																									Type:        schema.TypeList,
+																									Computed:    true,
+																									Description: "Structure to Hold Service Status.",
+																									Elem: &schema.Resource{
+																										Schema: map[string]*schema.Schema{
+																											"name": &schema.Schema{
+																												Type:     schema.TypeString,
+																												Computed: true,
+																											},
+																											"state": &schema.Schema{
+																												Type:     schema.TypeString,
+																												Computed: true,
+																											},
+																										},
+																									},
+																								},
+																							},
+																						},
+																					},
+																					"host_type": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Computed:    true,
+																						Description: "Specifies the host type where the agent is running. This is only set for persistent agents.",
+																					},
+																					"id": &schema.Schema{
+																						Type:        schema.TypeInt,
+																						Computed:    true,
+																						Description: "Specifies the agent's id.",
+																					},
+																					"name": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Computed:    true,
+																						Description: "Specifies the agent's name.",
+																					},
+																					"oracle_multi_node_channel_supported": &schema.Schema{
+																						Type:        schema.TypeBool,
+																						Computed:    true,
+																						Description: "Specifies whether oracle multi node multi channel is supported or not.",
+																					},
+																					"registration_info": &schema.Schema{
+																						Type:        schema.TypeList,
+																						Computed:    true,
+																						Description: "Specifies information about a registered Source.",
+																						Elem: &schema.Resource{
+																							Schema: map[string]*schema.Schema{
+																								"access_info": &schema.Schema{
+																									Type:        schema.TypeList,
+																									Computed:    true,
+																									Description: "Specifies the parameters required to establish a connection with a particular environment.",
+																									Elem: &schema.Resource{
+																										Schema: map[string]*schema.Schema{
+																											"connection_id": &schema.Schema{
+																												Type:        schema.TypeInt,
+																												Computed:    true,
+																												Description: "ID of the Bifrost (HyX or Rigel) network realm (i.e. a connection) associated with the source.",
+																											},
+																											"connector_group_id": &schema.Schema{
+																												Type:        schema.TypeInt,
+																												Computed:    true,
+																												Description: "Specifies the Id of the connector group. Each connector group is collection of Rigel/hyx. Each entity will be tagged with connector group id.",
+																											},
+																											"endpoint": &schema.Schema{
+																												Type:        schema.TypeString,
+																												Computed:    true,
+																												Description: "Specify an IP address or URL of the environment. (such as the IP address of the vCenter Server for a VMware environment).",
+																											},
+																											"environment": &schema.Schema{
+																												Type:        schema.TypeString,
+																												Computed:    true,
+																												Description: "Specifies the environment like VMware, SQL, where the Protection Source exists. Supported environment types such as 'kView', 'kSQL', 'kVMware', etc.",
+																											},
+																											"id": &schema.Schema{
+																												Type:        schema.TypeInt,
+																												Computed:    true,
+																												Description: "Specifies a Unique id that is generated when the Source is registered. This is a convenience field that is used to maintain an index to different connection params.",
+																											},
+																											"version": &schema.Schema{
+																												Type:        schema.TypeInt,
+																												Computed:    true,
+																												Description: "Version is updated each time the connector parameters are updated. This is used to discard older connector parameters.",
+																											},
+																										},
+																									},
+																								},
+																								"allowed_ip_addresses": &schema.Schema{
+																									Type:        schema.TypeList,
+																									Computed:    true,
+																									Description: "Specifies the list of IP Addresses on the registered source to be exclusively allowed for doing any type of IO operations.",
+																									Elem: &schema.Schema{
+																										Type: schema.TypeString,
+																									},
+																								},
+																								"authentication_error_message": &schema.Schema{
+																									Type:        schema.TypeString,
+																									Computed:    true,
+																									Description: "Specifies an authentication error message. This indicates the given credentials are rejected and the registration of the source is not successful.",
+																								},
+																								"authentication_status": &schema.Schema{
+																									Type:        schema.TypeString,
+																									Computed:    true,
+																									Description: "Specifies the status of the authenticating to the Protection Source when registering it with Cohesity Cluster.",
+																								},
+																								"blacklisted_ip_addresses": &schema.Schema{
+																									Type:        schema.TypeList,
+																									Computed:    true,
+																									Description: "This field is deprecated. Use DeniedIpAddresses instead.",
+																									Elem: &schema.Schema{
+																										Type: schema.TypeString,
+																									},
+																								},
+																								"denied_ip_addresses": &schema.Schema{
+																									Type:        schema.TypeList,
+																									Computed:    true,
+																									Description: "Specifies the list of IP Addresses on the registered source to be denied for doing any type of IO operations.",
+																									Elem: &schema.Schema{
+																										Type: schema.TypeString,
+																									},
+																								},
+																								"environments": &schema.Schema{
+																									Type:        schema.TypeList,
+																									Optional:    true,
+																									Description: "Return only Protection Sources that match the passed in environment type such as 'kVMware', 'kSQL', 'kView' 'kPhysical', 'kPuppeteer', 'kPure', 'kNetapp', 'kGenericNas', 'kHyperV', 'kAcropolis', or 'kAzure'. For example, set this parameter to 'kVMware' to only return the Sources (and their Object subtrees) found in the 'kVMware' (VMware vCenter Server) environment.",
+																									Elem: &schema.Schema{
+																										Type: schema.TypeString,
+																									},
+																								},
+																								"is_db_authenticated": &schema.Schema{
+																									Type:        schema.TypeBool,
+																									Computed:    true,
+																									Description: "Specifies if application entity dbAuthenticated or not.",
+																								},
+																								"is_storage_array_snapshot_enabled": &schema.Schema{
+																									Type:        schema.TypeBool,
+																									Computed:    true,
+																									Description: "Specifies if this source entity has enabled storage array snapshot or not.",
+																								},
+																								"link_vms_across_vcenter": &schema.Schema{
+																									Type:        schema.TypeBool,
+																									Computed:    true,
+																									Description: "Specifies if the VM linking feature is enabled for this VCenter This means that VMs present in this VCenter which earlier belonged to some other VCenter(also registerd on same cluster) and were migrated, will be linked during EH refresh. This will enable preserving snapshot chains for migrated VMs.",
+																								},
+																								"minimum_free_space_gb": &schema.Schema{
+																									Type:        schema.TypeInt,
+																									Computed:    true,
+																									Description: "Specifies the minimum free space in GiB of the space expected to be available on the datastore where the virtual disks of the VM being backed up. If the amount of free space(in GiB) is lower than the value given by this field, backup will be aborted. Note that this field is applicable only to 'kVMware' type of environments.",
+																								},
+																								"minimum_free_space_percent": &schema.Schema{
+																									Type:        schema.TypeInt,
+																									Computed:    true,
+																									Description: "Specifies the minimum free space in percentage of the space expected to be available on the datastore where the virtual disks of the VM being backed up. If the amount of free space(in percentage) is lower than the value given by this field, backup will be aborted. Note that this field is applicable only to 'kVMware' type of environments.",
+																								},
+																								"password": &schema.Schema{
+																									Type:        schema.TypeString,
+																									Computed:    true,
+																									Description: "Specifies password of the username to access the target source.",
+																								},
+																								"physical_params": &schema.Schema{
+																									Type:        schema.TypeList,
+																									Computed:    true,
+																									Description: "Specifies the parameters required to register Application Servers running in a Protection Source specific to a physical adapter.",
+																									Elem: &schema.Resource{
+																										Schema: map[string]*schema.Schema{
+																											"applications": &schema.Schema{
+																												Type:        schema.TypeList,
+																												Computed:    true,
+																												Description: "Specifies the types of applications such as 'kSQL', 'kExchange', 'kAD' running on the Protection Source. Supported environment types such as 'kView', 'kSQL', 'kVMware', etc.",
+																												Elem: &schema.Schema{
+																													Type: schema.TypeString,
+																												},
+																											},
+																											"password": &schema.Schema{
+																												Type:        schema.TypeString,
+																												Computed:    true,
+																												Description: "Specifies password of the username to access the target source.",
+																											},
+																											"throttling_config": &schema.Schema{
+																												Type:        schema.TypeList,
+																												Computed:    true,
+																												Description: "Specifies the source side throttling configuration.",
+																												Elem: &schema.Resource{
+																													Schema: map[string]*schema.Schema{
+																														"cpu_throttling_config": &schema.Schema{
+																															Type:        schema.TypeList,
+																															Computed:    true,
+																															Description: "Specifies the Throttling Configuration Parameters.",
+																															Elem: &schema.Resource{
+																																Schema: map[string]*schema.Schema{
+																																	"fixed_threshold": &schema.Schema{
+																																		Type:        schema.TypeInt,
+																																		Computed:    true,
+																																		Description: "Fixed baseline threshold for throttling. This is mandatory for any other throttling type than kNoThrottling.",
+																																	},
+																																	"pattern_type": &schema.Schema{
+																																		Type:        schema.TypeString,
+																																		Computed:    true,
+																																		Description: "Type of the throttling pattern. 'kNoThrottling' indicates that throttling is not in force. 'kBaseThrottling' indicates indicates a constant base level throttling. 'kFixed' indicates a constant base level throttling.",
+																																	},
+																																	"throttling_windows": &schema.Schema{
+																																		Type:        schema.TypeList,
+																																		Computed:    true,
+																																		Description: "Specifies the Throttling Window Parameters Definition.",
+																																		Elem: &schema.Resource{
+																																			Schema: map[string]*schema.Schema{
+																																				"day_time_window": &schema.Schema{
+																																					Type:        schema.TypeList,
+																																					Computed:    true,
+																																					Description: "Specifies the Day Time Window Parameters.",
+																																					Elem: &schema.Resource{
+																																						Schema: map[string]*schema.Schema{
+																																							"end_time": &schema.Schema{
+																																								Type:        schema.TypeList,
+																																								Computed:    true,
+																																								Description: "Specifies the Day Time Parameters.",
+																																								Elem: &schema.Resource{
+																																									Schema: map[string]*schema.Schema{
+																																										"day": &schema.Schema{
+																																											Type:        schema.TypeString,
+																																											Computed:    true,
+																																											Description: "Specifies the day of the week (such as 'kMonday') for scheduling throttling. Specifies a day in a week such as 'kSunday', 'kMonday', etc.",
+																																										},
+																																										"time": &schema.Schema{
+																																											Type:        schema.TypeList,
+																																											Computed:    true,
+																																											Description: "Specifies the time in hours and minutes.",
+																																											Elem: &schema.Resource{
+																																												Schema: map[string]*schema.Schema{
+																																													"hour": &schema.Schema{
+																																														Type:        schema.TypeInt,
+																																														Computed:    true,
+																																														Description: "Specifies the hour of this time.",
+																																													},
+																																													"minute": &schema.Schema{
+																																														Type:        schema.TypeInt,
+																																														Computed:    true,
+																																														Description: "Specifies the minute of this time.",
+																																													},
+																																												},
+																																											},
+																																										},
+																																									},
+																																								},
+																																							},
+																																							"start_time": &schema.Schema{
+																																								Type:        schema.TypeList,
+																																								Computed:    true,
+																																								Description: "Specifies the Day Time Parameters.",
+																																								Elem: &schema.Resource{
+																																									Schema: map[string]*schema.Schema{
+																																										"day": &schema.Schema{
+																																											Type:        schema.TypeString,
+																																											Computed:    true,
+																																											Description: "Specifies the day of the week (such as 'kMonday') for scheduling throttling. Specifies a day in a week such as 'kSunday', 'kMonday', etc.",
+																																										},
+																																										"time": &schema.Schema{
+																																											Type:        schema.TypeList,
+																																											Computed:    true,
+																																											Description: "Specifies the time in hours and minutes.",
+																																											Elem: &schema.Resource{
+																																												Schema: map[string]*schema.Schema{
+																																													"hour": &schema.Schema{
+																																														Type:        schema.TypeInt,
+																																														Computed:    true,
+																																														Description: "Specifies the hour of this time.",
+																																													},
+																																													"minute": &schema.Schema{
+																																														Type:        schema.TypeInt,
+																																														Computed:    true,
+																																														Description: "Specifies the minute of this time.",
+																																													},
+																																												},
+																																											},
+																																										},
+																																									},
+																																								},
+																																							},
+																																						},
+																																					},
+																																				},
+																																				"threshold": &schema.Schema{
+																																					Type:        schema.TypeInt,
+																																					Computed:    true,
+																																					Description: "Throttling threshold applicable in the window.",
+																																				},
+																																			},
+																																		},
+																																	},
+																																},
+																															},
+																														},
+																														"network_throttling_config": &schema.Schema{
+																															Type:        schema.TypeList,
+																															Computed:    true,
+																															Description: "Specifies the Throttling Configuration Parameters.",
+																															Elem: &schema.Resource{
+																																Schema: map[string]*schema.Schema{
+																																	"fixed_threshold": &schema.Schema{
+																																		Type:        schema.TypeInt,
+																																		Computed:    true,
+																																		Description: "Fixed baseline threshold for throttling. This is mandatory for any other throttling type than kNoThrottling.",
+																																	},
+																																	"pattern_type": &schema.Schema{
+																																		Type:        schema.TypeString,
+																																		Computed:    true,
+																																		Description: "Type of the throttling pattern. 'kNoThrottling' indicates that throttling is not in force. 'kBaseThrottling' indicates indicates a constant base level throttling. 'kFixed' indicates a constant base level throttling.",
+																																	},
+																																	"throttling_windows": &schema.Schema{
+																																		Type:        schema.TypeList,
+																																		Computed:    true,
+																																		Description: "Specifies the Throttling Window Parameters Definition.",
+																																		Elem: &schema.Resource{
+																																			Schema: map[string]*schema.Schema{
+																																				"day_time_window": &schema.Schema{
+																																					Type:        schema.TypeList,
+																																					Computed:    true,
+																																					Description: "Specifies the Day Time Window Parameters.",
+																																					Elem: &schema.Resource{
+																																						Schema: map[string]*schema.Schema{
+																																							"end_time": &schema.Schema{
+																																								Type:        schema.TypeList,
+																																								Computed:    true,
+																																								Description: "Specifies the Day Time Parameters.",
+																																								Elem: &schema.Resource{
+																																									Schema: map[string]*schema.Schema{
+																																										"day": &schema.Schema{
+																																											Type:        schema.TypeString,
+																																											Computed:    true,
+																																											Description: "Specifies the day of the week (such as 'kMonday') for scheduling throttling. Specifies a day in a week such as 'kSunday', 'kMonday', etc.",
+																																										},
+																																										"time": &schema.Schema{
+																																											Type:        schema.TypeList,
+																																											Computed:    true,
+																																											Description: "Specifies the time in hours and minutes.",
+																																											Elem: &schema.Resource{
+																																												Schema: map[string]*schema.Schema{
+																																													"hour": &schema.Schema{
+																																														Type:        schema.TypeInt,
+																																														Computed:    true,
+																																														Description: "Specifies the hour of this time.",
+																																													},
+																																													"minute": &schema.Schema{
+																																														Type:        schema.TypeInt,
+																																														Computed:    true,
+																																														Description: "Specifies the minute of this time.",
+																																													},
+																																												},
+																																											},
+																																										},
+																																									},
+																																								},
+																																							},
+																																							"start_time": &schema.Schema{
+																																								Type:        schema.TypeList,
+																																								Computed:    true,
+																																								Description: "Specifies the Day Time Parameters.",
+																																								Elem: &schema.Resource{
+																																									Schema: map[string]*schema.Schema{
+																																										"day": &schema.Schema{
+																																											Type:        schema.TypeString,
+																																											Computed:    true,
+																																											Description: "Specifies the day of the week (such as 'kMonday') for scheduling throttling. Specifies a day in a week such as 'kSunday', 'kMonday', etc.",
+																																										},
+																																										"time": &schema.Schema{
+																																											Type:        schema.TypeList,
+																																											Computed:    true,
+																																											Description: "Specifies the time in hours and minutes.",
+																																											Elem: &schema.Resource{
+																																												Schema: map[string]*schema.Schema{
+																																													"hour": &schema.Schema{
+																																														Type:        schema.TypeInt,
+																																														Computed:    true,
+																																														Description: "Specifies the hour of this time.",
+																																													},
+																																													"minute": &schema.Schema{
+																																														Type:        schema.TypeInt,
+																																														Computed:    true,
+																																														Description: "Specifies the minute of this time.",
+																																													},
+																																												},
+																																											},
+																																										},
+																																									},
+																																								},
+																																							},
+																																						},
+																																					},
+																																				},
+																																				"threshold": &schema.Schema{
+																																					Type:        schema.TypeInt,
+																																					Computed:    true,
+																																					Description: "Throttling threshold applicable in the window.",
+																																				},
+																																			},
+																																		},
+																																	},
+																																},
+																															},
+																														},
+																													},
+																												},
+																											},
+																											"username": &schema.Schema{
+																												Type:        schema.TypeString,
+																												Computed:    true,
+																												Description: "Specifies username to access the target source.",
+																											},
+																										},
+																									},
+																								},
+																								"progress_monitor_path": &schema.Schema{
+																									Type:        schema.TypeString,
+																									Computed:    true,
+																									Description: "Captures the current progress and pulse details w.r.t to either the registration or refresh.",
+																								},
+																								"refresh_error_message": &schema.Schema{
+																									Type:        schema.TypeString,
+																									Computed:    true,
+																									Description: "Specifies a message if there was any error encountered during the last rebuild of the Protection Source tree. If there was no error during the last rebuild, this field is reset.",
+																								},
+																								"refresh_time_usecs": &schema.Schema{
+																									Type:        schema.TypeInt,
+																									Computed:    true,
+																									Description: "Specifies the Unix epoch time (in microseconds) when the Protection Source tree was most recently fetched and built.",
+																								},
+																								"registered_apps_info": &schema.Schema{
+																									Type:        schema.TypeList,
+																									Computed:    true,
+																									Description: "Specifies information of the applications registered on this protection source.",
+																									Elem: &schema.Resource{
+																										Schema: map[string]*schema.Schema{
+																											"authentication_error_message": &schema.Schema{
+																												Type:        schema.TypeString,
+																												Computed:    true,
+																												Description: "pecifies an authentication error message. This indicates the given credentials are rejected and the registration of the application is not successful.",
+																											},
+																											"authentication_status": &schema.Schema{
+																												Type:        schema.TypeString,
+																												Computed:    true,
+																												Description: "Specifies the status of authenticating to the Protection Source when registering this application with Cohesity Cluster. If the status is 'kFinished' and there is no error, registration is successful. Specifies the status of the authentication during the registration of a Protection Source. 'kPending' indicates the authentication is in progress. 'kScheduled' indicates the authentication is scheduled. 'kFinished' indicates the authentication is completed. 'kRefreshInProgress' indicates the refresh is in progress.",
+																											},
+																											"environment": &schema.Schema{
+																												Type:        schema.TypeString,
+																												Computed:    true,
+																												Description: "Specifies the application environment. Supported environment types such as 'kView', 'kSQL', 'kVMware', etc.",
+																											},
+																											"host_settings_check_results": &schema.Schema{
+																												Type:        schema.TypeList,
+																												Computed:    true,
+																												Description: "Specifies the list of check results internally performed to verify status of various services such as 'AgnetRunning', 'SQLWriterRunning' etc.",
+																												Elem: &schema.Resource{
+																													Schema: map[string]*schema.Schema{
+																														"check_type": &schema.Schema{
+																															Type:        schema.TypeString,
+																															Computed:    true,
+																															Description: "Specifies the type of the check internally performed. Specifies the type of the host check performed internally. 'kIsAgentPortAccessible' indicates the check for agent port access. 'kIsAgentRunning' indicates the status for the Cohesity agent service. 'kIsSQLWriterRunning' indicates the status for SQLWriter service. 'kAreSQLInstancesRunning' indicates the run status for all the SQL instances in the host. 'kCheckServiceLoginsConfig' checks the privileges and sysadmin status of the logins used by the SQL instance services, Cohesity agent service and the SQLWriter service. 'kCheckSQLFCIVIP' checks whether the SQL FCI is registered with a valid VIP or FQDN. 'kCheckSQLDiskSpace' checks whether volumes containing SQL DBs have at least 10% free space.",
+																														},
+																														"result_type": &schema.Schema{
+																															Type:        schema.TypeString,
+																															Computed:    true,
+																															Description: "Specifies the type of the result returned after performing the internal host check. Specifies the type of the host check result performed internally. 'kPass' indicates that the respective check was successful. 'kFail' indicates that the respective check failed as some mandatory setting is not met 'kWarning' indicates that the respective check has warning as certain non-mandatory setting is not met.",
+																														},
+																														"user_message": &schema.Schema{
+																															Type:        schema.TypeString,
+																															Computed:    true,
+																															Description: "Specifies a descriptive message for failed/warning types.",
+																														},
+																													},
+																												},
+																											},
+																											"refresh_error_message": &schema.Schema{
+																												Type:        schema.TypeString,
+																												Computed:    true,
+																												Description: "Specifies a message if there was any error encountered during the last rebuild of the application tree. If there was no error during the last rebuild, this field is reset.",
+																											},
+																										},
+																									},
+																								},
+																								"registration_time_usecs": &schema.Schema{
+																									Type:        schema.TypeInt,
+																									Computed:    true,
+																									Description: "Specifies the Unix epoch time (in microseconds) when the Protection Source was registered.",
+																								},
+																								"subnets": &schema.Schema{
+																									Type:        schema.TypeList,
+																									Computed:    true,
+																									Description: "Specifies the list of subnets added during creation or updation of vmare source. Currently, this field will only be populated in case of VMware registration.",
+																									Elem: &schema.Resource{
+																										Schema: map[string]*schema.Schema{
+																											"component": &schema.Schema{
+																												Type:        schema.TypeString,
+																												Computed:    true,
+																												Description: "Component that has reserved the subnet.",
+																											},
+																											"description": &schema.Schema{
+																												Type:        schema.TypeString,
+																												Computed:    true,
+																												Description: "Description of the subnet.",
+																											},
+																											"id": &schema.Schema{
+																												Type:        schema.TypeFloat,
+																												Computed:    true,
+																												Description: "ID of the subnet.",
+																											},
+																											"ip": &schema.Schema{
+																												Type:        schema.TypeString,
+																												Computed:    true,
+																												Description: "Specifies either an IPv6 address or an IPv4 address.",
+																											},
+																											"netmask_bits": &schema.Schema{
+																												Type:        schema.TypeFloat,
+																												Computed:    true,
+																												Description: "netmaskBits.",
+																											},
+																											"netmask_ip4": &schema.Schema{
+																												Type:        schema.TypeString,
+																												Computed:    true,
+																												Description: "Specifies the netmask using an IP4 address. The netmask can only be set using netmaskIp4 if the IP address is an IPv4 address.",
+																											},
+																											"nfs_access": &schema.Schema{
+																												Type:        schema.TypeString,
+																												Computed:    true,
+																												Description: "Component that has reserved the subnet.",
+																											},
+																											"nfs_all_squash": &schema.Schema{
+																												Type:        schema.TypeBool,
+																												Computed:    true,
+																												Description: "Specifies whether all clients from this subnet can map view with view_all_squash_uid/view_all_squash_gid configured in the view.",
+																											},
+																											"nfs_root_squash": &schema.Schema{
+																												Type:        schema.TypeBool,
+																												Computed:    true,
+																												Description: "Specifies whether clients from this subnet can mount as root on NFS.",
+																											},
+																											"s3_access": &schema.Schema{
+																												Type:        schema.TypeString,
+																												Computed:    true,
+																												Description: "Specifies whether clients from this subnet can access using S3 protocol. Protocol access level. 'kDisabled' indicates Protocol access level 'Disabled' 'kReadOnly' indicates Protocol access level 'ReadOnly' 'kReadWrite' indicates Protocol access level 'ReadWrite'.",
+																											},
+																											"smb_access": &schema.Schema{
+																												Type:        schema.TypeString,
+																												Computed:    true,
+																												Description: "Specifies whether clients from this subnet can mount using SMB protocol. Protocol access level. 'kDisabled' indicates Protocol access level 'Disabled' 'kReadOnly' indicates Protocol access level 'ReadOnly' 'kReadWrite' indicates Protocol access level 'ReadWrite'.",
+																											},
+																											"tenant_id": &schema.Schema{
+																												Type:        schema.TypeString,
+																												Computed:    true,
+																												Description: "Specifies the unique id of the tenant.",
+																											},
+																										},
+																									},
+																								},
+																								"throttling_policy": &schema.Schema{
+																									Type:        schema.TypeList,
+																									Computed:    true,
+																									Description: "Specifies the throttling policy for a registered Protection Source.",
+																									Elem: &schema.Resource{
+																										Schema: map[string]*schema.Schema{
+																											"enforce_max_streams": &schema.Schema{
+																												Type:        schema.TypeBool,
+																												Computed:    true,
+																												Description: "Specifies whether datastore streams are configured for all datastores that are part of the registered entity. If set to true, number of streams from Cohesity cluster to the registered entity will be limited to the value set for maxConcurrentStreams. If not set or set to false, there is no max limit for the number of concurrent streams.",
+																											},
+																											"enforce_registered_source_max_backups": &schema.Schema{
+																												Type:        schema.TypeBool,
+																												Computed:    true,
+																												Description: "Specifies whether no. of backups are configured for the registered entity. If set to true, number of backups made by Cohesity cluster in the registered entity will be limited to the value set for RegisteredSourceMaxConcurrentBackups. If not set or set to false, there is no max limit for the number of concurrent backups.",
+																											},
+																											"is_enabled": &schema.Schema{
+																												Type:        schema.TypeBool,
+																												Computed:    true,
+																												Description: "Indicates whether read operations to the datastores, which are part of the registered Protection Source, are throttled.",
+																											},
+																											"latency_thresholds": &schema.Schema{
+																												Type:        schema.TypeList,
+																												Computed:    true,
+																												Description: "Specifies latency thresholds that trigger throttling for all datastores found in the registered Protection Source or specific to one datastore.",
+																												Elem: &schema.Resource{
+																													Schema: map[string]*schema.Schema{
+																														"active_task_msecs": &schema.Schema{
+																															Type:        schema.TypeInt,
+																															Computed:    true,
+																															Description: "If the latency of a datastore is above this value, existing backup tasks using the datastore are throttled.",
+																														},
+																														"new_task_msecs": &schema.Schema{
+																															Type:        schema.TypeInt,
+																															Computed:    true,
+																															Description: "If the latency of a datastore is above this value, then new backup tasks using the datastore will not be started.",
+																														},
+																													},
+																												},
+																											},
+																											"max_concurrent_streams": &schema.Schema{
+																												Type:        schema.TypeFloat,
+																												Computed:    true,
+																												Description: "Specifies the limit on the number of streams Cohesity cluster will make concurrently to the datastores of the registered entity. This limit is enforced only when the flag enforceMaxStreams is set to true.",
+																											},
+																											"nas_source_params": &schema.Schema{
+																												Type:        schema.TypeList,
+																												Computed:    true,
+																												Description: "Specifies the NAS specific source throttling parameters during source registration or during backup of the source.",
+																												Elem: &schema.Resource{
+																													Schema: map[string]*schema.Schema{
+																														"max_parallel_metadata_fetch_full_percentage": &schema.Schema{
+																															Type:        schema.TypeFloat,
+																															Computed:    true,
+																															Description: "Specifies the percentage value of maximum concurrent metadata to be fetched during full backup of the source.",
+																														},
+																														"max_parallel_metadata_fetch_incremental_percentage": &schema.Schema{
+																															Type:        schema.TypeFloat,
+																															Computed:    true,
+																															Description: "Specifies the percentage value of maximum concurrent metadata to be fetched during incremental backup of the source.",
+																														},
+																														"max_parallel_read_write_full_percentage": &schema.Schema{
+																															Type:        schema.TypeFloat,
+																															Computed:    true,
+																															Description: "Specifies the percentage value of maximum concurrent IO during full backup of the source.",
+																														},
+																														"max_parallel_read_write_incremental_percentage": &schema.Schema{
+																															Type:        schema.TypeFloat,
+																															Computed:    true,
+																															Description: "Specifies the percentage value of maximum concurrent IO during incremental backup of the source.",
+																														},
+																													},
+																												},
+																											},
+																											"registered_source_max_concurrent_backups": &schema.Schema{
+																												Type:        schema.TypeFloat,
+																												Computed:    true,
+																												Description: "Specifies the limit on the number of backups Cohesity cluster will make concurrently to the registered entity. This limit is enforced only when the flag enforceRegisteredSourceMaxBackups is set to true.",
+																											},
+																											"storage_array_snapshot_config": &schema.Schema{
+																												Type:        schema.TypeList,
+																												Computed:    true,
+																												Description: "Specifies Storage Array Snapshot Configuration.",
+																												Elem: &schema.Resource{
+																													Schema: map[string]*schema.Schema{
+																														"is_max_snapshots_config_enabled": &schema.Schema{
+																															Type:        schema.TypeBool,
+																															Computed:    true,
+																															Description: "Specifies if the storage array snapshot max snapshots config is enabled or not.",
+																														},
+																														"is_max_space_config_enabled": &schema.Schema{
+																															Type:        schema.TypeBool,
+																															Computed:    true,
+																															Description: "Specifies if the storage array snapshot max space config is enabled or not.",
+																														},
+																														"storage_array_snapshot_max_space_config": &schema.Schema{
+																															Type:        schema.TypeList,
+																															Computed:    true,
+																															Description: "Specifies Storage Array Snapshot Max Space Config.",
+																															Elem: &schema.Resource{
+																																Schema: map[string]*schema.Schema{
+																																	"max_snapshot_space_percentage": &schema.Schema{
+																																		Type:        schema.TypeFloat,
+																																		Computed:    true,
+																																		Description: "Max number of storage snapshots allowed per volume/lun.",
+																																	},
+																																},
+																															},
+																														},
+																														"storage_array_snapshot_throttling_policies": &schema.Schema{
+																															Type:        schema.TypeList,
+																															Computed:    true,
+																															Description: "Specifies throttling policies configured for individual volume/lun.",
+																															Elem: &schema.Resource{
+																																Schema: map[string]*schema.Schema{
+																																	"id": &schema.Schema{
+																																		Type:        schema.TypeInt,
+																																		Computed:    true,
+																																		Description: "Specifies the volume id of the storage array snapshot config.",
+																																	},
+																																	"is_max_snapshots_config_enabled": &schema.Schema{
+																																		Type:        schema.TypeBool,
+																																		Computed:    true,
+																																		Description: "Specifies if the storage array snapshot max snapshots config is enabled or not.",
+																																	},
+																																	"is_max_space_config_enabled": &schema.Schema{
+																																		Type:        schema.TypeBool,
+																																		Computed:    true,
+																																		Description: "Specifies if the storage array snapshot max space config is enabled or not.",
+																																	},
+																																	"max_snapshot_config": &schema.Schema{
+																																		Type:        schema.TypeList,
+																																		Computed:    true,
+																																		Description: "Specifies Storage Array Snapshot Max Snapshots Config.",
+																																		Elem: &schema.Resource{
+																																			Schema: map[string]*schema.Schema{
+																																				"max_snapshots": &schema.Schema{
+																																					Type:        schema.TypeFloat,
+																																					Computed:    true,
+																																					Description: "Max number of storage snapshots allowed per volume/lun.",
+																																				},
+																																			},
+																																		},
+																																	},
+																																	"max_space_config": &schema.Schema{
+																																		Type:        schema.TypeList,
+																																		Computed:    true,
+																																		Description: "Specifies Storage Array Snapshot Max Space Config.",
+																																		Elem: &schema.Resource{
+																																			Schema: map[string]*schema.Schema{
+																																				"max_snapshot_space_percentage": &schema.Schema{
+																																					Type:        schema.TypeFloat,
+																																					Computed:    true,
+																																					Description: "Max number of storage snapshots allowed per volume/lun.",
+																																				},
+																																			},
+																																		},
+																																	},
+																																},
+																															},
+																														},
+																													},
+																												},
+																											},
+																										},
+																									},
+																								},
+																								"throttling_policy_overrides": &schema.Schema{
+																									Type:        schema.TypeList,
+																									Computed:    true,
+																									Description: "Specifies throttling policy override for a Datastore in a registered entity.",
+																									Elem: &schema.Resource{
+																										Schema: map[string]*schema.Schema{
+																											"datastore_id": &schema.Schema{
+																												Type:        schema.TypeInt,
+																												Computed:    true,
+																												Description: "Specifies the Protection Source id of the Datastore.",
+																											},
+																											"datastore_name": &schema.Schema{
+																												Type:        schema.TypeString,
+																												Computed:    true,
+																												Description: "Specifies the display name of the Datastore.",
+																											},
+																											"throttling_policy": &schema.Schema{
+																												Type:        schema.TypeList,
+																												Computed:    true,
+																												Description: "Specifies the throttling policy for a registered Protection Source.",
+																												Elem: &schema.Resource{
+																													Schema: map[string]*schema.Schema{
+																														"enforce_max_streams": &schema.Schema{
+																															Type:        schema.TypeBool,
+																															Computed:    true,
+																															Description: "Specifies whether datastore streams are configured for all datastores that are part of the registered entity. If set to true, number of streams from Cohesity cluster to the registered entity will be limited to the value set for maxConcurrentStreams. If not set or set to false, there is no max limit for the number of concurrent streams.",
+																														},
+																														"enforce_registered_source_max_backups": &schema.Schema{
+																															Type:        schema.TypeBool,
+																															Computed:    true,
+																															Description: "Specifies whether no. of backups are configured for the registered entity. If set to true, number of backups made by Cohesity cluster in the registered entity will be limited to the value set for RegisteredSourceMaxConcurrentBackups. If not set or set to false, there is no max limit for the number of concurrent backups.",
+																														},
+																														"is_enabled": &schema.Schema{
+																															Type:        schema.TypeBool,
+																															Computed:    true,
+																															Description: "Indicates whether read operations to the datastores, which are part of the registered Protection Source, are throttled.",
+																														},
+																														"latency_thresholds": &schema.Schema{
+																															Type:        schema.TypeList,
+																															Computed:    true,
+																															Description: "Specifies latency thresholds that trigger throttling for all datastores found in the registered Protection Source or specific to one datastore.",
+																															Elem: &schema.Resource{
+																																Schema: map[string]*schema.Schema{
+																																	"active_task_msecs": &schema.Schema{
+																																		Type:        schema.TypeInt,
+																																		Computed:    true,
+																																		Description: "If the latency of a datastore is above this value, existing backup tasks using the datastore are throttled.",
+																																	},
+																																	"new_task_msecs": &schema.Schema{
+																																		Type:        schema.TypeInt,
+																																		Computed:    true,
+																																		Description: "If the latency of a datastore is above this value, then new backup tasks using the datastore will not be started.",
+																																	},
+																																},
+																															},
+																														},
+																														"max_concurrent_streams": &schema.Schema{
+																															Type:        schema.TypeFloat,
+																															Computed:    true,
+																															Description: "Specifies the limit on the number of streams Cohesity cluster will make concurrently to the datastores of the registered entity. This limit is enforced only when the flag enforceMaxStreams is set to true.",
+																														},
+																														"nas_source_params": &schema.Schema{
+																															Type:        schema.TypeList,
+																															Computed:    true,
+																															Description: "Specifies the NAS specific source throttling parameters during source registration or during backup of the source.",
+																															Elem: &schema.Resource{
+																																Schema: map[string]*schema.Schema{
+																																	"max_parallel_metadata_fetch_full_percentage": &schema.Schema{
+																																		Type:        schema.TypeFloat,
+																																		Computed:    true,
+																																		Description: "Specifies the percentage value of maximum concurrent metadata to be fetched during full backup of the source.",
+																																	},
+																																	"max_parallel_metadata_fetch_incremental_percentage": &schema.Schema{
+																																		Type:        schema.TypeFloat,
+																																		Computed:    true,
+																																		Description: "Specifies the percentage value of maximum concurrent metadata to be fetched during incremental backup of the source.",
+																																	},
+																																	"max_parallel_read_write_full_percentage": &schema.Schema{
+																																		Type:        schema.TypeFloat,
+																																		Computed:    true,
+																																		Description: "Specifies the percentage value of maximum concurrent IO during full backup of the source.",
+																																	},
+																																	"max_parallel_read_write_incremental_percentage": &schema.Schema{
+																																		Type:        schema.TypeFloat,
+																																		Computed:    true,
+																																		Description: "Specifies the percentage value of maximum concurrent IO during incremental backup of the source.",
+																																	},
+																																},
+																															},
+																														},
+																														"registered_source_max_concurrent_backups": &schema.Schema{
+																															Type:        schema.TypeFloat,
+																															Computed:    true,
+																															Description: "Specifies the limit on the number of backups Cohesity cluster will make concurrently to the registered entity. This limit is enforced only when the flag enforceRegisteredSourceMaxBackups is set to true.",
+																														},
+																														"storage_array_snapshot_config": &schema.Schema{
+																															Type:        schema.TypeList,
+																															Computed:    true,
+																															Description: "Specifies Storage Array Snapshot Configuration.",
+																															Elem: &schema.Resource{
+																																Schema: map[string]*schema.Schema{
+																																	"is_max_snapshots_config_enabled": &schema.Schema{
+																																		Type:        schema.TypeBool,
+																																		Computed:    true,
+																																		Description: "Specifies if the storage array snapshot max snapshots config is enabled or not.",
+																																	},
+																																	"is_max_space_config_enabled": &schema.Schema{
+																																		Type:        schema.TypeBool,
+																																		Computed:    true,
+																																		Description: "Specifies if the storage array snapshot max space config is enabled or not.",
+																																	},
+																																	"storage_array_snapshot_max_space_config": &schema.Schema{
+																																		Type:        schema.TypeList,
+																																		Computed:    true,
+																																		Description: "Specifies Storage Array Snapshot Max Space Config.",
+																																		Elem: &schema.Resource{
+																																			Schema: map[string]*schema.Schema{
+																																				"max_snapshot_space_percentage": &schema.Schema{
+																																					Type:        schema.TypeFloat,
+																																					Computed:    true,
+																																					Description: "Max number of storage snapshots allowed per volume/lun.",
+																																				},
+																																			},
+																																		},
+																																	},
+																																	"storage_array_snapshot_throttling_policies": &schema.Schema{
+																																		Type:        schema.TypeList,
+																																		Computed:    true,
+																																		Description: "Specifies throttling policies configured for individual volume/lun.",
+																																		Elem: &schema.Resource{
+																																			Schema: map[string]*schema.Schema{
+																																				"id": &schema.Schema{
+																																					Type:        schema.TypeInt,
+																																					Computed:    true,
+																																					Description: "Specifies the volume id of the storage array snapshot config.",
+																																				},
+																																				"is_max_snapshots_config_enabled": &schema.Schema{
+																																					Type:        schema.TypeBool,
+																																					Computed:    true,
+																																					Description: "Specifies if the storage array snapshot max snapshots config is enabled or not.",
+																																				},
+																																				"is_max_space_config_enabled": &schema.Schema{
+																																					Type:        schema.TypeBool,
+																																					Computed:    true,
+																																					Description: "Specifies if the storage array snapshot max space config is enabled or not.",
+																																				},
+																																				"max_snapshot_config": &schema.Schema{
+																																					Type:        schema.TypeList,
+																																					Computed:    true,
+																																					Description: "Specifies Storage Array Snapshot Max Snapshots Config.",
+																																					Elem: &schema.Resource{
+																																						Schema: map[string]*schema.Schema{
+																																							"max_snapshots": &schema.Schema{
+																																								Type:        schema.TypeFloat,
+																																								Computed:    true,
+																																								Description: "Max number of storage snapshots allowed per volume/lun.",
+																																							},
+																																						},
+																																					},
+																																				},
+																																				"max_space_config": &schema.Schema{
+																																					Type:        schema.TypeList,
+																																					Computed:    true,
+																																					Description: "Specifies Storage Array Snapshot Max Space Config.",
+																																					Elem: &schema.Resource{
+																																						Schema: map[string]*schema.Schema{
+																																							"max_snapshot_space_percentage": &schema.Schema{
+																																								Type:        schema.TypeFloat,
+																																								Computed:    true,
+																																								Description: "Max number of storage snapshots allowed per volume/lun.",
+																																							},
+																																						},
+																																					},
+																																				},
+																																			},
+																																		},
+																																	},
+																																},
+																															},
+																														},
+																													},
+																												},
+																											},
+																										},
+																									},
+																								},
+																								"use_o_auth_for_exchange_online": &schema.Schema{
+																									Type:        schema.TypeBool,
+																									Computed:    true,
+																									Description: "Specifies whether OAuth should be used for authentication in case of Exchange Online.",
+																								},
+																								"use_vm_bios_uuid": &schema.Schema{
+																									Type:        schema.TypeBool,
+																									Computed:    true,
+																									Description: "Specifies if registered vCenter is using BIOS UUID to track virtual machines.",
+																								},
+																								"user_messages": &schema.Schema{
+																									Type:        schema.TypeList,
+																									Computed:    true,
+																									Description: "Specifies the additional details encountered during registration. Though the registration may succeed, user messages imply the host environment requires some cleanup or fixing.",
+																									Elem: &schema.Schema{
+																										Type: schema.TypeString,
+																									},
+																								},
+																								"username": &schema.Schema{
+																									Type:        schema.TypeString,
+																									Computed:    true,
+																									Description: "Specifies username to access the target source.",
+																								},
+																								"vlan_params": &schema.Schema{
+																									Type:        schema.TypeList,
+																									Computed:    true,
+																									Description: "Specifies the VLAN configuration for Recovery.",
+																									Elem: &schema.Resource{
+																										Schema: map[string]*schema.Schema{
+																											"vlan": &schema.Schema{
+																												Type:        schema.TypeFloat,
+																												Computed:    true,
+																												Description: "Specifies the VLAN to use for mounting Cohesity's view on the remote host. If specified, Cohesity hostname or the IP address on this VLAN is used.",
+																											},
+																											"disable_vlan": &schema.Schema{
+																												Type:        schema.TypeBool,
+																												Computed:    true,
+																												Description: "Specifies whether to use the VIPs even when VLANs are configured on the Cluster. If configured, VLAN IP addresses are used by default. If VLANs are not configured, this flag is ignored. Set this flag to true to force using the partition VIPs when VLANs are configured on the Cluster.",
+																											},
+																											"interface_name": &schema.Schema{
+																												Type:        schema.TypeString,
+																												Computed:    true,
+																												Description: "Specifies the physical interface group name to use for mounting Cohesity's view on the remote host. If specified, Cohesity hostname or the IP address on this VLAN is used.",
+																											},
+																										},
+																									},
+																								},
+																								"warning_messages": &schema.Schema{
+																									Type:        schema.TypeList,
+																									Computed:    true,
+																									Description: "Specifies a list of warnings encountered during registration. Though the registration may succeed, warning messages imply the host environment requires some cleanup or fixing.",
+																									Elem: &schema.Schema{
+																										Type: schema.TypeString,
+																									},
+																								},
+																							},
+																						},
+																					},
+																					"source_side_dedup_enabled": &schema.Schema{
+																						Type:        schema.TypeBool,
+																						Computed:    true,
+																						Description: "Specifies whether source side dedup is enabled or not.",
+																					},
+																					"status": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Computed:    true,
+																						Description: "Specifies the agent status. Specifies the status of the agent running on a physical source.",
+																					},
+																					"status_message": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Computed:    true,
+																						Description: "Specifies additional details about the agent status.",
+																					},
+																					"upgradability": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Computed:    true,
+																						Description: "Specifies the upgradability of the agent running on the physical server. Specifies the upgradability of the agent running on the physical server.",
+																					},
+																					"upgrade_status": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Computed:    true,
+																						Description: "Specifies the status of the upgrade of the agent on a physical server. Specifies the status of the upgrade of the agent on a physical server.",
+																					},
+																					"upgrade_status_message": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Computed:    true,
+																						Description: "Specifies detailed message about the agent upgrade failure. This field is not set for successful upgrade.",
+																					},
+																					"version": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Computed:    true,
+																						Description: "Specifies the version of the Agent software.",
+																					},
+																					"vol_cbt_info": &schema.Schema{
+																						Type:        schema.TypeList,
+																						Computed:    true,
+																						Description: "CBT version and service state info.",
+																						Elem: &schema.Resource{
+																							Schema: map[string]*schema.Schema{
+																								"file_version": &schema.Schema{
+																									Type:        schema.TypeList,
+																									Computed:    true,
+																									Description: "Subcomponent version. The interpretation of the version is based on operating system.",
+																									Elem: &schema.Resource{
+																										Schema: map[string]*schema.Schema{
+																											"build_ver": &schema.Schema{
+																												Type:     schema.TypeFloat,
+																												Computed: true,
+																											},
+																											"major_ver": &schema.Schema{
+																												Type:     schema.TypeFloat,
+																												Computed: true,
+																											},
+																											"minor_ver": &schema.Schema{
+																												Type:     schema.TypeFloat,
+																												Computed: true,
+																											},
+																											"revision_num": &schema.Schema{
+																												Type:     schema.TypeFloat,
+																												Computed: true,
+																											},
+																										},
+																									},
+																								},
+																								"is_installed": &schema.Schema{
+																									Type:        schema.TypeBool,
+																									Computed:    true,
+																									Description: "Indicates whether the cbt driver is installed.",
+																								},
+																								"reboot_status": &schema.Schema{
+																									Type:        schema.TypeString,
+																									Computed:    true,
+																									Description: "Indicates whether host is rebooted post VolCBT installation.",
+																								},
+																								"service_state": &schema.Schema{
+																									Type:        schema.TypeList,
+																									Computed:    true,
+																									Description: "Structure to Hold Service Status.",
+																									Elem: &schema.Resource{
+																										Schema: map[string]*schema.Schema{
+																											"name": &schema.Schema{
+																												Type:     schema.TypeString,
+																												Computed: true,
+																											},
+																											"state": &schema.Schema{
+																												Type:     schema.TypeString,
+																												Computed: true,
+																											},
+																										},
+																									},
+																								},
+																							},
+																						},
+																					},
+																				},
+																			},
+																		},
+																		"cluster_source_type": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Computed:    true,
+																			Description: "Specifies the type of cluster resource this source represents.",
+																		},
+																		"host_name": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Computed:    true,
+																			Description: "Specifies the hostname.",
+																		},
+																		"host_type": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Computed:    true,
+																			Description: "Specifies the environment type for the host.",
+																		},
+																		"id": &schema.Schema{
+																			Type:        schema.TypeList,
+																			Computed:    true,
+																			Description: "Specifies an id for an object that is unique across Cohesity Clusters. The id is composite of all the ids listed below.",
+																			Elem: &schema.Resource{
+																				Schema: map[string]*schema.Schema{
+																					"cluster_id": &schema.Schema{
+																						Type:        schema.TypeInt,
+																						Computed:    true,
+																						Description: "Specifies the Cohesity Cluster id where the object was created.",
+																					},
+																					"cluster_incarnation_id": &schema.Schema{
+																						Type:        schema.TypeInt,
+																						Computed:    true,
+																						Description: "Specifies an id for the Cohesity Cluster that is generated when a Cohesity Cluster is initially created.",
+																					},
+																					"id": &schema.Schema{
+																						Type:        schema.TypeInt,
+																						Computed:    true,
+																						Description: "Specifies a unique id assigned to an object (such as a Job) by the Cohesity Cluster.",
+																					},
+																				},
+																			},
+																		},
+																		"is_proxy_host": &schema.Schema{
+																			Type:        schema.TypeBool,
+																			Computed:    true,
+																			Description: "Specifies if the physical host is a proxy host.",
+																		},
+																		"memory_size_bytes": &schema.Schema{
+																			Type:        schema.TypeInt,
+																			Computed:    true,
+																			Description: "Specifies the total memory on the host in bytes.",
+																		},
+																		"name": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Computed:    true,
+																			Description: "Specifies a human readable name of the Protection Source.",
+																		},
+																		"networking_info": &schema.Schema{
+																			Type:        schema.TypeList,
+																			Computed:    true,
+																			Description: "Specifies the struct containing information about network addresses configured on the given box. This is needed for dealing with Windows/Oracle Cluster resources that we discover and protect automatically.",
+																			Elem: &schema.Resource{
+																				Schema: map[string]*schema.Schema{
+																					"resource_vec": &schema.Schema{
+																						Type:        schema.TypeList,
+																						Computed:    true,
+																						Description: "The list of resources on the system that are accessible by an IP address.",
+																						Elem: &schema.Resource{
+																							Schema: map[string]*schema.Schema{
+																								"endpoints": &schema.Schema{
+																									Type:        schema.TypeList,
+																									Computed:    true,
+																									Description: "The endpoints by which the resource is accessible.",
+																									Elem: &schema.Resource{
+																										Schema: map[string]*schema.Schema{
+																											"fqdn": &schema.Schema{
+																												Type:        schema.TypeString,
+																												Computed:    true,
+																												Description: "The Fully Qualified Domain Name.",
+																											},
+																											"ipv4_addr": &schema.Schema{
+																												Type:        schema.TypeString,
+																												Computed:    true,
+																												Description: "The IPv4 address.",
+																											},
+																											"ipv6_addr": &schema.Schema{
+																												Type:        schema.TypeString,
+																												Computed:    true,
+																												Description: "The IPv6 address.",
+																											},
+																										},
+																									},
+																								},
+																								"type": &schema.Schema{
+																									Type:        schema.TypeString,
+																									Computed:    true,
+																									Description: "The type of the resource.",
+																								},
+																							},
+																						},
+																					},
+																				},
+																			},
+																		},
+																		"num_processors": &schema.Schema{
+																			Type:        schema.TypeInt,
+																			Computed:    true,
+																			Description: "Specifies the number of processors on the host.",
+																		},
+																		"os_name": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Computed:    true,
+																			Description: "Specifies a human readable name of the OS of the Protection Source.",
+																		},
+																		"type": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Computed:    true,
+																			Description: "Specifies the type of managed Object in a Physical Protection Source. 'kGroup' indicates the EH container.",
+																		},
+																		"vcs_version": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Computed:    true,
+																			Description: "Specifies cluster version for VCS host.",
+																		},
+																		"volumes": &schema.Schema{
+																			Type:        schema.TypeList,
+																			Computed:    true,
+																			Description: "Array of Physical Volumes. Specifies the volumes available on the physical host. These fields are populated only for the kPhysicalHost type.",
+																			Elem: &schema.Resource{
+																				Schema: map[string]*schema.Schema{
+																					"device_path": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Computed:    true,
+																						Description: "Specifies the path to the device that hosts the volume locally.",
+																					},
+																					"guid": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Computed:    true,
+																						Description: "Specifies an id for the Physical Volume.",
+																					},
+																					"is_boot_volume": &schema.Schema{
+																						Type:        schema.TypeBool,
+																						Computed:    true,
+																						Description: "Specifies whether the volume is boot volume.",
+																					},
+																					"is_extended_attributes_supported": &schema.Schema{
+																						Type:        schema.TypeBool,
+																						Computed:    true,
+																						Description: "Specifies whether this volume supports extended attributes (like ACLs) when performing file backups.",
+																					},
+																					"is_protected": &schema.Schema{
+																						Type:        schema.TypeBool,
+																						Computed:    true,
+																						Description: "Specifies if a volume is protected by a Job.",
+																					},
+																					"is_shared_volume": &schema.Schema{
+																						Type:        schema.TypeBool,
+																						Computed:    true,
+																						Description: "Specifies whether the volume is shared volume.",
+																					},
+																					"label": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Computed:    true,
+																						Description: "Specifies a volume label that can be used for displaying additional identifying information about a volume.",
+																					},
+																					"logical_size_bytes": &schema.Schema{
+																						Type:        schema.TypeFloat,
+																						Computed:    true,
+																						Description: "Specifies the logical size of the volume in bytes that is not reduced by change-block tracking, compression and deduplication.",
+																					},
+																					"mount_points": &schema.Schema{
+																						Type:        schema.TypeList,
+																						Computed:    true,
+																						Description: "Specifies the mount points where the volume is mounted, for example- 'C:', '/mnt/foo' etc.",
+																						Elem: &schema.Schema{
+																							Type: schema.TypeString,
+																						},
+																					},
+																					"mount_type": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Computed:    true,
+																						Description: "Specifies mount type of volume e.g. nfs, autofs, ext4 etc.",
+																					},
+																					"network_path": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Computed:    true,
+																						Description: "Specifies the full path to connect to the network attached volume. For example, (IP or hostname):/path/to/share for NFS volumes).",
+																					},
+																					"used_size_bytes": &schema.Schema{
+																						Type:        schema.TypeFloat,
+																						Computed:    true,
+																						Description: "Specifies the size used by the volume in bytes.",
+																					},
+																				},
+																			},
+																		},
+																		"vsswriters": &schema.Schema{
+																			Type:        schema.TypeList,
+																			Computed:    true,
+																			Description: "Specifies vss writer information about a Physical Protection Source.",
+																			Elem: &schema.Resource{
+																				Schema: map[string]*schema.Schema{
+																					"is_writer_excluded": &schema.Schema{
+																						Type:        schema.TypeBool,
+																						Computed:    true,
+																						Description: "If true, the writer will be excluded by default.",
+																					},
+																					"writer_name": &schema.Schema{
+																						Type:        schema.TypeBool,
+																						Computed:    true,
+																						Description: "Specifies the name of the writer.",
+																					},
+																				},
+																			},
+																		},
+																	},
+																},
+															},
+															"sql_protection_source": &schema.Schema{
+																Type:        schema.TypeList,
+																Computed:    true,
+																Description: "Specifies an Object representing one SQL Server instance or database.",
+																Elem: &schema.Resource{
+																	Schema: map[string]*schema.Schema{
+																		"is_available_for_vss_backup": &schema.Schema{
+																			Type:        schema.TypeBool,
+																			Computed:    true,
+																			Description: "Specifies whether the database is marked as available for backup according to the SQL Server VSS writer. This may be false if either the state of the databases is not online, or if the VSS writer is not online. This field is set only for type 'kDatabase'.",
+																		},
+																		"created_timestamp": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Computed:    true,
+																			Description: "Specifies the time when the database was created. It is displayed in the timezone of the SQL server on which this database is running.",
+																		},
+																		"database_name": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Computed:    true,
+																			Description: "Specifies the database name of the SQL Protection Source, if the type is database.",
+																		},
+																		"db_aag_entity_id": &schema.Schema{
+																			Type:        schema.TypeInt,
+																			Computed:    true,
+																			Description: "Specifies the AAG entity id if the database is part of an AAG. This field is set only for type 'kDatabase'.",
+																		},
+																		"db_aag_name": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Computed:    true,
+																			Description: "Specifies the name of the AAG if the database is part of an AAG. This field is set only for type 'kDatabase'.",
+																		},
+																		"db_compatibility_level": &schema.Schema{
+																			Type:        schema.TypeInt,
+																			Computed:    true,
+																			Description: "Specifies the versions of SQL server that the database is compatible with.",
+																		},
+																		"db_file_groups": &schema.Schema{
+																			Type:        schema.TypeList,
+																			Computed:    true,
+																			Description: "Specifies the information about the set of file groups for this db on the host. This is only set if the type is kDatabase.",
+																			Elem: &schema.Schema{
+																				Type: schema.TypeString,
+																			},
+																		},
+																		"db_files": &schema.Schema{
+																			Type:        schema.TypeList,
+																			Computed:    true,
+																			Description: "Specifies the last known information about the set of database files on the host. This field is set only for type 'kDatabase'.",
+																			Elem: &schema.Resource{
+																				Schema: map[string]*schema.Schema{
+																					"file_type": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Computed:    true,
+																						Description: "Specifies the format type of the file that SQL database stores the data. Specifies the format type of the file that SQL database stores the data. 'kRows' refers to a data file 'kLog' refers to a log file 'kFileStream' refers to a directory containing FILESTREAM data 'kNotSupportedType' is for information purposes only. Not supported. 'kFullText' refers to a full-text catalog.",
+																					},
+																					"full_path": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Computed:    true,
+																						Description: "Specifies the full path of the database file on the SQL host machine.",
+																					},
+																					"size_bytes": &schema.Schema{
+																						Type:        schema.TypeInt,
+																						Computed:    true,
+																						Description: "Specifies the last known size of the database file.",
+																					},
+																				},
+																			},
+																		},
+																		"db_owner_username": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Computed:    true,
+																			Description: "Specifies the name of the database owner.",
+																		},
+																		"default_database_location": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Computed:    true,
+																			Description: "Specifies the default path for data files for DBs in an instance.",
+																		},
+																		"default_log_location": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Computed:    true,
+																			Description: "Specifies the default path for log files for DBs in an instance.",
+																		},
+																		"id": &schema.Schema{
+																			Type:        schema.TypeList,
+																			Computed:    true,
+																			Description: "Specifies a unique id for a SQL Protection Source.",
+																			Elem: &schema.Resource{
+																				Schema: map[string]*schema.Schema{
+																					"created_date_msecs": &schema.Schema{
+																						Type:        schema.TypeInt,
+																						Computed:    true,
+																						Description: "Specifies a unique identifier generated from the date the database is created or renamed. Cohesity uses this identifier in combination with the databaseId to uniquely identify a database.",
+																					},
+																					"database_id": &schema.Schema{
+																						Type:        schema.TypeInt,
+																						Computed:    true,
+																						Description: "Specifies a unique id of the database but only for the life of the database. SQL Server may reuse database ids. Cohesity uses the createDateMsecs in combination with this databaseId to uniquely identify a database.",
+																					},
+																					"instance_id": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Computed:    true,
+																						Description: "Specifies unique id for the SQL Server instance. This id does not change during the life of the instance.",
+																					},
+																				},
+																			},
+																		},
+																		"is_encrypted": &schema.Schema{
+																			Type:        schema.TypeBool,
+																			Computed:    true,
+																			Description: "Specifies whether the database is TDE enabled.",
+																		},
+																		"name": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Computed:    true,
+																			Description: "Specifies the instance name of the SQL Protection Source.",
+																		},
+																		"owner_id": &schema.Schema{
+																			Type:        schema.TypeInt,
+																			Computed:    true,
+																			Description: "Specifies the id of the container VM for the SQL Protection Source.",
+																		},
+																		"recovery_model": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Computed:    true,
+																			Description: "Specifies the Recovery Model for the database in SQL environment. Only meaningful for the 'kDatabase' SQL Protection Source. Specifies the Recovery Model set for the Microsoft SQL Server. 'kSimpleRecoveryModel' indicates the Simple SQL Recovery Model which does not utilize log backups. 'kFullRecoveryModel' indicates the Full SQL Recovery Model which requires log backups and allows recovery to a single point in time. 'kBulkLoggedRecoveryModel' indicates the Bulk Logged SQL Recovery Model which requires log backups and allows high-performance bulk copy operations.",
+																		},
+																		"sql_server_db_state": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Computed:    true,
+																			Description: "The state of the database as returned by SQL Server. Indicates the state of the database. The values correspond to the 'state' field in the system table sys.databases. See https://goo.gl/P66XqM. 'kOnline' indicates that database is in online state. 'kRestoring' indicates that database is in restore state. 'kRecovering' indicates that database is in recovery state. 'kRecoveryPending' indicates that database recovery is in pending state. 'kSuspect' indicates that primary filegroup is suspect and may be damaged. 'kEmergency' indicates that manually forced emergency state. 'kOffline' indicates that database is in offline state. 'kCopying' indicates that database is in copying state. 'kOfflineSecondary' indicates that secondary database is in offline state.",
+																		},
+																		"sql_server_instance_version": &schema.Schema{
+																			Type:        schema.TypeList,
+																			Computed:    true,
+																			Description: "Specifies the Server Instance Version.",
+																			Elem: &schema.Resource{
+																				Schema: map[string]*schema.Schema{
+																					"build": &schema.Schema{
+																						Type:        schema.TypeFloat,
+																						Computed:    true,
+																						Description: "Specifies the build.",
+																					},
+																					"major_version": &schema.Schema{
+																						Type:        schema.TypeFloat,
+																						Computed:    true,
+																						Description: "Specifies the major version.",
+																					},
+																					"minor_version": &schema.Schema{
+																						Type:        schema.TypeFloat,
+																						Computed:    true,
+																						Description: "Specifies the minor version.",
+																					},
+																					"revision": &schema.Schema{
+																						Type:        schema.TypeFloat,
+																						Computed:    true,
+																						Description: "Specifies the revision.",
+																					},
+																					"version_string": &schema.Schema{
+																						Type:        schema.TypeFloat,
+																						Computed:    true,
+																						Description: "Specifies the version string.",
+																					},
+																				},
+																			},
+																		},
+																		"type": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Computed:    true,
+																			Description: "Specifies the type of the managed Object in a SQL Protection Source. Examples of SQL Objects include 'kInstance' and 'kDatabase'. 'kInstance' indicates that SQL server instance is being protected. 'kDatabase' indicates that SQL server database is being protected. 'kAAG' indicates that SQL AAG (AlwaysOn Availability Group) is being protected. 'kAAGRootContainer' indicates that SQL AAG's root container is being protected. 'kRootContainer' indicates root container for SQL sources.",
+																		},
+																	},
+																},
+															},
+														},
+													},
+												},
+												"registration_info": &schema.Schema{
+													Type:        schema.TypeList,
+													Computed:    true,
+													Description: "Specifies information about a registered Source.",
+													Elem: &schema.Resource{
+														Schema: map[string]*schema.Schema{
+															"access_info": &schema.Schema{
+																Type:        schema.TypeList,
+																Computed:    true,
+																Description: "Specifies the parameters required to establish a connection with a particular environment.",
+																Elem: &schema.Resource{
+																	Schema: map[string]*schema.Schema{
+																		"connection_id": &schema.Schema{
+																			Type:        schema.TypeInt,
+																			Computed:    true,
+																			Description: "ID of the Bifrost (HyX or Rigel) network realm (i.e. a connection) associated with the source.",
+																		},
+																		"connector_group_id": &schema.Schema{
+																			Type:        schema.TypeInt,
+																			Computed:    true,
+																			Description: "Specifies the Id of the connector group. Each connector group is collection of Rigel/hyx. Each entity will be tagged with connector group id.",
+																		},
+																		"endpoint": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Computed:    true,
+																			Description: "Specify an IP address or URL of the environment. (such as the IP address of the vCenter Server for a VMware environment).",
+																		},
+																		"environment": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Computed:    true,
+																			Description: "Specifies the environment like VMware, SQL, where the Protection Source exists. Supported environment types such as 'kView', 'kSQL', 'kVMware', etc.",
+																		},
+																		"id": &schema.Schema{
+																			Type:        schema.TypeInt,
+																			Computed:    true,
+																			Description: "Specifies a Unique id that is generated when the Source is registered. This is a convenience field that is used to maintain an index to different connection params.",
+																		},
+																		"version": &schema.Schema{
+																			Type:        schema.TypeInt,
+																			Computed:    true,
+																			Description: "Version is updated each time the connector parameters are updated. This is used to discard older connector parameters.",
+																		},
+																	},
+																},
+															},
+															"allowed_ip_addresses": &schema.Schema{
+																Type:        schema.TypeList,
+																Computed:    true,
+																Description: "Specifies the list of IP Addresses on the registered source to be exclusively allowed for doing any type of IO operations.",
+																Elem: &schema.Schema{
+																	Type: schema.TypeString,
+																},
+															},
+															"authentication_error_message": &schema.Schema{
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "Specifies an authentication error message. This indicates the given credentials are rejected and the registration of the source is not successful.",
+															},
+															"authentication_status": &schema.Schema{
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "Specifies the status of the authenticating to the Protection Source when registering it with Cohesity Cluster.",
+															},
+															"blacklisted_ip_addresses": &schema.Schema{
+																Type:        schema.TypeList,
+																Computed:    true,
+																Description: "This field is deprecated. Use DeniedIpAddresses instead.",
+																Elem: &schema.Schema{
+																	Type: schema.TypeString,
+																},
+															},
+															"denied_ip_addresses": &schema.Schema{
+																Type:        schema.TypeList,
+																Computed:    true,
+																Description: "Specifies the list of IP Addresses on the registered source to be denied for doing any type of IO operations.",
+																Elem: &schema.Schema{
+																	Type: schema.TypeString,
+																},
+															},
+															"environments": &schema.Schema{
+																Type:        schema.TypeList,
+																Optional:    true,
+																Description: "Return only Protection Sources that match the passed in environment type such as 'kVMware', 'kSQL', 'kView' 'kPhysical', 'kPuppeteer', 'kPure', 'kNetapp', 'kGenericNas', 'kHyperV', 'kAcropolis', or 'kAzure'. For example, set this parameter to 'kVMware' to only return the Sources (and their Object subtrees) found in the 'kVMware' (VMware vCenter Server) environment.",
+																Elem: &schema.Schema{
+																	Type: schema.TypeString,
+																},
+															},
+															"is_db_authenticated": &schema.Schema{
+																Type:        schema.TypeBool,
+																Computed:    true,
+																Description: "Specifies if application entity dbAuthenticated or not.",
+															},
+															"is_storage_array_snapshot_enabled": &schema.Schema{
+																Type:        schema.TypeBool,
+																Computed:    true,
+																Description: "Specifies if this source entity has enabled storage array snapshot or not.",
+															},
+															"link_vms_across_vcenter": &schema.Schema{
+																Type:        schema.TypeBool,
+																Computed:    true,
+																Description: "Specifies if the VM linking feature is enabled for this VCenter This means that VMs present in this VCenter which earlier belonged to some other VCenter(also registerd on same cluster) and were migrated, will be linked during EH refresh. This will enable preserving snapshot chains for migrated VMs.",
+															},
+															"minimum_free_space_gb": &schema.Schema{
+																Type:        schema.TypeInt,
+																Computed:    true,
+																Description: "Specifies the minimum free space in GiB of the space expected to be available on the datastore where the virtual disks of the VM being backed up. If the amount of free space(in GiB) is lower than the value given by this field, backup will be aborted. Note that this field is applicable only to 'kVMware' type of environments.",
+															},
+															"minimum_free_space_percent": &schema.Schema{
+																Type:        schema.TypeInt,
+																Computed:    true,
+																Description: "Specifies the minimum free space in percentage of the space expected to be available on the datastore where the virtual disks of the VM being backed up. If the amount of free space(in percentage) is lower than the value given by this field, backup will be aborted. Note that this field is applicable only to 'kVMware' type of environments.",
+															},
+															"password": &schema.Schema{
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "Specifies password of the username to access the target source.",
+															},
+															"physical_params": &schema.Schema{
+																Type:        schema.TypeList,
+																Computed:    true,
+																Description: "Specifies the parameters required to register Application Servers running in a Protection Source specific to a physical adapter.",
+																Elem: &schema.Resource{
+																	Schema: map[string]*schema.Schema{
+																		"applications": &schema.Schema{
+																			Type:        schema.TypeList,
+																			Computed:    true,
+																			Description: "Specifies the types of applications such as 'kSQL', 'kExchange', 'kAD' running on the Protection Source. Supported environment types such as 'kView', 'kSQL', 'kVMware', etc.",
+																			Elem: &schema.Schema{
+																				Type: schema.TypeString,
+																			},
+																		},
+																		"password": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Computed:    true,
+																			Description: "Specifies password of the username to access the target source.",
+																		},
+																		"throttling_config": &schema.Schema{
+																			Type:        schema.TypeList,
+																			Computed:    true,
+																			Description: "Specifies the source side throttling configuration.",
+																			Elem: &schema.Resource{
+																				Schema: map[string]*schema.Schema{
+																					"cpu_throttling_config": &schema.Schema{
+																						Type:        schema.TypeList,
+																						Computed:    true,
+																						Description: "Specifies the Throttling Configuration Parameters.",
+																						Elem: &schema.Resource{
+																							Schema: map[string]*schema.Schema{
+																								"fixed_threshold": &schema.Schema{
+																									Type:        schema.TypeInt,
+																									Computed:    true,
+																									Description: "Fixed baseline threshold for throttling. This is mandatory for any other throttling type than kNoThrottling.",
+																								},
+																								"pattern_type": &schema.Schema{
+																									Type:        schema.TypeString,
+																									Computed:    true,
+																									Description: "Type of the throttling pattern. 'kNoThrottling' indicates that throttling is not in force. 'kBaseThrottling' indicates indicates a constant base level throttling. 'kFixed' indicates a constant base level throttling.",
+																								},
+																								"throttling_windows": &schema.Schema{
+																									Type:        schema.TypeList,
+																									Computed:    true,
+																									Description: "Specifies the Throttling Window Parameters Definition.",
+																									Elem: &schema.Resource{
+																										Schema: map[string]*schema.Schema{
+																											"day_time_window": &schema.Schema{
+																												Type:        schema.TypeList,
+																												Computed:    true,
+																												Description: "Specifies the Day Time Window Parameters.",
+																												Elem: &schema.Resource{
+																													Schema: map[string]*schema.Schema{
+																														"end_time": &schema.Schema{
+																															Type:        schema.TypeList,
+																															Computed:    true,
+																															Description: "Specifies the Day Time Parameters.",
+																															Elem: &schema.Resource{
+																																Schema: map[string]*schema.Schema{
+																																	"day": &schema.Schema{
+																																		Type:        schema.TypeString,
+																																		Computed:    true,
+																																		Description: "Specifies the day of the week (such as 'kMonday') for scheduling throttling. Specifies a day in a week such as 'kSunday', 'kMonday', etc.",
+																																	},
+																																	"time": &schema.Schema{
+																																		Type:        schema.TypeList,
+																																		Computed:    true,
+																																		Description: "Specifies the time in hours and minutes.",
+																																		Elem: &schema.Resource{
+																																			Schema: map[string]*schema.Schema{
+																																				"hour": &schema.Schema{
+																																					Type:        schema.TypeInt,
+																																					Computed:    true,
+																																					Description: "Specifies the hour of this time.",
+																																				},
+																																				"minute": &schema.Schema{
+																																					Type:        schema.TypeInt,
+																																					Computed:    true,
+																																					Description: "Specifies the minute of this time.",
+																																				},
+																																			},
+																																		},
+																																	},
+																																},
+																															},
+																														},
+																														"start_time": &schema.Schema{
+																															Type:        schema.TypeList,
+																															Computed:    true,
+																															Description: "Specifies the Day Time Parameters.",
+																															Elem: &schema.Resource{
+																																Schema: map[string]*schema.Schema{
+																																	"day": &schema.Schema{
+																																		Type:        schema.TypeString,
+																																		Computed:    true,
+																																		Description: "Specifies the day of the week (such as 'kMonday') for scheduling throttling. Specifies a day in a week such as 'kSunday', 'kMonday', etc.",
+																																	},
+																																	"time": &schema.Schema{
+																																		Type:        schema.TypeList,
+																																		Computed:    true,
+																																		Description: "Specifies the time in hours and minutes.",
+																																		Elem: &schema.Resource{
+																																			Schema: map[string]*schema.Schema{
+																																				"hour": &schema.Schema{
+																																					Type:        schema.TypeInt,
+																																					Computed:    true,
+																																					Description: "Specifies the hour of this time.",
+																																				},
+																																				"minute": &schema.Schema{
+																																					Type:        schema.TypeInt,
+																																					Computed:    true,
+																																					Description: "Specifies the minute of this time.",
+																																				},
+																																			},
+																																		},
+																																	},
+																																},
+																															},
+																														},
+																													},
+																												},
+																											},
+																											"threshold": &schema.Schema{
+																												Type:        schema.TypeInt,
+																												Computed:    true,
+																												Description: "Throttling threshold applicable in the window.",
+																											},
+																										},
+																									},
+																								},
+																							},
+																						},
+																					},
+																					"network_throttling_config": &schema.Schema{
+																						Type:        schema.TypeList,
+																						Computed:    true,
+																						Description: "Specifies the Throttling Configuration Parameters.",
+																						Elem: &schema.Resource{
+																							Schema: map[string]*schema.Schema{
+																								"fixed_threshold": &schema.Schema{
+																									Type:        schema.TypeInt,
+																									Computed:    true,
+																									Description: "Fixed baseline threshold for throttling. This is mandatory for any other throttling type than kNoThrottling.",
+																								},
+																								"pattern_type": &schema.Schema{
+																									Type:        schema.TypeString,
+																									Computed:    true,
+																									Description: "Type of the throttling pattern. 'kNoThrottling' indicates that throttling is not in force. 'kBaseThrottling' indicates indicates a constant base level throttling. 'kFixed' indicates a constant base level throttling.",
+																								},
+																								"throttling_windows": &schema.Schema{
+																									Type:        schema.TypeList,
+																									Computed:    true,
+																									Description: "Specifies the Throttling Window Parameters Definition.",
+																									Elem: &schema.Resource{
+																										Schema: map[string]*schema.Schema{
+																											"day_time_window": &schema.Schema{
+																												Type:        schema.TypeList,
+																												Computed:    true,
+																												Description: "Specifies the Day Time Window Parameters.",
+																												Elem: &schema.Resource{
+																													Schema: map[string]*schema.Schema{
+																														"end_time": &schema.Schema{
+																															Type:        schema.TypeList,
+																															Computed:    true,
+																															Description: "Specifies the Day Time Parameters.",
+																															Elem: &schema.Resource{
+																																Schema: map[string]*schema.Schema{
+																																	"day": &schema.Schema{
+																																		Type:        schema.TypeString,
+																																		Computed:    true,
+																																		Description: "Specifies the day of the week (such as 'kMonday') for scheduling throttling. Specifies a day in a week such as 'kSunday', 'kMonday', etc.",
+																																	},
+																																	"time": &schema.Schema{
+																																		Type:        schema.TypeList,
+																																		Computed:    true,
+																																		Description: "Specifies the time in hours and minutes.",
+																																		Elem: &schema.Resource{
+																																			Schema: map[string]*schema.Schema{
+																																				"hour": &schema.Schema{
+																																					Type:        schema.TypeInt,
+																																					Computed:    true,
+																																					Description: "Specifies the hour of this time.",
+																																				},
+																																				"minute": &schema.Schema{
+																																					Type:        schema.TypeInt,
+																																					Computed:    true,
+																																					Description: "Specifies the minute of this time.",
+																																				},
+																																			},
+																																		},
+																																	},
+																																},
+																															},
+																														},
+																														"start_time": &schema.Schema{
+																															Type:        schema.TypeList,
+																															Computed:    true,
+																															Description: "Specifies the Day Time Parameters.",
+																															Elem: &schema.Resource{
+																																Schema: map[string]*schema.Schema{
+																																	"day": &schema.Schema{
+																																		Type:        schema.TypeString,
+																																		Computed:    true,
+																																		Description: "Specifies the day of the week (such as 'kMonday') for scheduling throttling. Specifies a day in a week such as 'kSunday', 'kMonday', etc.",
+																																	},
+																																	"time": &schema.Schema{
+																																		Type:        schema.TypeList,
+																																		Computed:    true,
+																																		Description: "Specifies the time in hours and minutes.",
+																																		Elem: &schema.Resource{
+																																			Schema: map[string]*schema.Schema{
+																																				"hour": &schema.Schema{
+																																					Type:        schema.TypeInt,
+																																					Computed:    true,
+																																					Description: "Specifies the hour of this time.",
+																																				},
+																																				"minute": &schema.Schema{
+																																					Type:        schema.TypeInt,
+																																					Computed:    true,
+																																					Description: "Specifies the minute of this time.",
+																																				},
+																																			},
+																																		},
+																																	},
+																																},
+																															},
+																														},
+																													},
+																												},
+																											},
+																											"threshold": &schema.Schema{
+																												Type:        schema.TypeInt,
+																												Computed:    true,
+																												Description: "Throttling threshold applicable in the window.",
+																											},
+																										},
+																									},
+																								},
+																							},
+																						},
+																					},
+																				},
+																			},
+																		},
+																		"username": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Computed:    true,
+																			Description: "Specifies username to access the target source.",
+																		},
+																	},
+																},
+															},
+															"progress_monitor_path": &schema.Schema{
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "Captures the current progress and pulse details w.r.t to either the registration or refresh.",
+															},
+															"refresh_error_message": &schema.Schema{
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "Specifies a message if there was any error encountered during the last rebuild of the Protection Source tree. If there was no error during the last rebuild, this field is reset.",
+															},
+															"refresh_time_usecs": &schema.Schema{
+																Type:        schema.TypeInt,
+																Computed:    true,
+																Description: "Specifies the Unix epoch time (in microseconds) when the Protection Source tree was most recently fetched and built.",
+															},
+															"registered_apps_info": &schema.Schema{
+																Type:        schema.TypeList,
+																Computed:    true,
+																Description: "Specifies information of the applications registered on this protection source.",
+																Elem: &schema.Resource{
+																	Schema: map[string]*schema.Schema{
+																		"authentication_error_message": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Computed:    true,
+																			Description: "pecifies an authentication error message. This indicates the given credentials are rejected and the registration of the application is not successful.",
+																		},
+																		"authentication_status": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Computed:    true,
+																			Description: "Specifies the status of authenticating to the Protection Source when registering this application with Cohesity Cluster. If the status is 'kFinished' and there is no error, registration is successful. Specifies the status of the authentication during the registration of a Protection Source. 'kPending' indicates the authentication is in progress. 'kScheduled' indicates the authentication is scheduled. 'kFinished' indicates the authentication is completed. 'kRefreshInProgress' indicates the refresh is in progress.",
+																		},
+																		"environment": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Computed:    true,
+																			Description: "Specifies the application environment. Supported environment types such as 'kView', 'kSQL', 'kVMware', etc.",
+																		},
+																		"host_settings_check_results": &schema.Schema{
+																			Type:        schema.TypeList,
+																			Computed:    true,
+																			Description: "Specifies the list of check results internally performed to verify status of various services such as 'AgnetRunning', 'SQLWriterRunning' etc.",
+																			Elem: &schema.Resource{
+																				Schema: map[string]*schema.Schema{
+																					"check_type": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Computed:    true,
+																						Description: "Specifies the type of the check internally performed. Specifies the type of the host check performed internally. 'kIsAgentPortAccessible' indicates the check for agent port access. 'kIsAgentRunning' indicates the status for the Cohesity agent service. 'kIsSQLWriterRunning' indicates the status for SQLWriter service. 'kAreSQLInstancesRunning' indicates the run status for all the SQL instances in the host. 'kCheckServiceLoginsConfig' checks the privileges and sysadmin status of the logins used by the SQL instance services, Cohesity agent service and the SQLWriter service. 'kCheckSQLFCIVIP' checks whether the SQL FCI is registered with a valid VIP or FQDN. 'kCheckSQLDiskSpace' checks whether volumes containing SQL DBs have at least 10% free space.",
+																					},
+																					"result_type": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Computed:    true,
+																						Description: "Specifies the type of the result returned after performing the internal host check. Specifies the type of the host check result performed internally. 'kPass' indicates that the respective check was successful. 'kFail' indicates that the respective check failed as some mandatory setting is not met 'kWarning' indicates that the respective check has warning as certain non-mandatory setting is not met.",
+																					},
+																					"user_message": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Computed:    true,
+																						Description: "Specifies a descriptive message for failed/warning types.",
+																					},
+																				},
+																			},
+																		},
+																		"refresh_error_message": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Computed:    true,
+																			Description: "Specifies a message if there was any error encountered during the last rebuild of the application tree. If there was no error during the last rebuild, this field is reset.",
+																		},
+																	},
+																},
+															},
+															"registration_time_usecs": &schema.Schema{
+																Type:        schema.TypeInt,
+																Computed:    true,
+																Description: "Specifies the Unix epoch time (in microseconds) when the Protection Source was registered.",
+															},
+															"subnets": &schema.Schema{
+																Type:        schema.TypeList,
+																Computed:    true,
+																Description: "Specifies the list of subnets added during creation or updation of vmare source. Currently, this field will only be populated in case of VMware registration.",
+																Elem: &schema.Resource{
+																	Schema: map[string]*schema.Schema{
+																		"component": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Computed:    true,
+																			Description: "Component that has reserved the subnet.",
+																		},
+																		"description": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Computed:    true,
+																			Description: "Description of the subnet.",
+																		},
+																		"id": &schema.Schema{
+																			Type:        schema.TypeFloat,
+																			Computed:    true,
+																			Description: "ID of the subnet.",
+																		},
+																		"ip": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Computed:    true,
+																			Description: "Specifies either an IPv6 address or an IPv4 address.",
+																		},
+																		"netmask_bits": &schema.Schema{
+																			Type:        schema.TypeFloat,
+																			Computed:    true,
+																			Description: "netmaskBits.",
+																		},
+																		"netmask_ip4": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Computed:    true,
+																			Description: "Specifies the netmask using an IP4 address. The netmask can only be set using netmaskIp4 if the IP address is an IPv4 address.",
+																		},
+																		"nfs_access": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Computed:    true,
+																			Description: "Component that has reserved the subnet.",
+																		},
+																		"nfs_all_squash": &schema.Schema{
+																			Type:        schema.TypeBool,
+																			Computed:    true,
+																			Description: "Specifies whether all clients from this subnet can map view with view_all_squash_uid/view_all_squash_gid configured in the view.",
+																		},
+																		"nfs_root_squash": &schema.Schema{
+																			Type:        schema.TypeBool,
+																			Computed:    true,
+																			Description: "Specifies whether clients from this subnet can mount as root on NFS.",
+																		},
+																		"s3_access": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Computed:    true,
+																			Description: "Specifies whether clients from this subnet can access using S3 protocol. Protocol access level. 'kDisabled' indicates Protocol access level 'Disabled' 'kReadOnly' indicates Protocol access level 'ReadOnly' 'kReadWrite' indicates Protocol access level 'ReadWrite'.",
+																		},
+																		"smb_access": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Computed:    true,
+																			Description: "Specifies whether clients from this subnet can mount using SMB protocol. Protocol access level. 'kDisabled' indicates Protocol access level 'Disabled' 'kReadOnly' indicates Protocol access level 'ReadOnly' 'kReadWrite' indicates Protocol access level 'ReadWrite'.",
+																		},
+																		"tenant_id": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Computed:    true,
+																			Description: "Specifies the unique id of the tenant.",
+																		},
+																	},
+																},
+															},
+															"throttling_policy": &schema.Schema{
+																Type:        schema.TypeList,
+																Computed:    true,
+																Description: "Specifies the throttling policy for a registered Protection Source.",
+																Elem: &schema.Resource{
+																	Schema: map[string]*schema.Schema{
+																		"enforce_max_streams": &schema.Schema{
+																			Type:        schema.TypeBool,
+																			Computed:    true,
+																			Description: "Specifies whether datastore streams are configured for all datastores that are part of the registered entity. If set to true, number of streams from Cohesity cluster to the registered entity will be limited to the value set for maxConcurrentStreams. If not set or set to false, there is no max limit for the number of concurrent streams.",
+																		},
+																		"enforce_registered_source_max_backups": &schema.Schema{
+																			Type:        schema.TypeBool,
+																			Computed:    true,
+																			Description: "Specifies whether no. of backups are configured for the registered entity. If set to true, number of backups made by Cohesity cluster in the registered entity will be limited to the value set for RegisteredSourceMaxConcurrentBackups. If not set or set to false, there is no max limit for the number of concurrent backups.",
+																		},
+																		"is_enabled": &schema.Schema{
+																			Type:        schema.TypeBool,
+																			Computed:    true,
+																			Description: "Indicates whether read operations to the datastores, which are part of the registered Protection Source, are throttled.",
+																		},
+																		"latency_thresholds": &schema.Schema{
+																			Type:        schema.TypeList,
+																			Computed:    true,
+																			Description: "Specifies latency thresholds that trigger throttling for all datastores found in the registered Protection Source or specific to one datastore.",
+																			Elem: &schema.Resource{
+																				Schema: map[string]*schema.Schema{
+																					"active_task_msecs": &schema.Schema{
+																						Type:        schema.TypeInt,
+																						Computed:    true,
+																						Description: "If the latency of a datastore is above this value, existing backup tasks using the datastore are throttled.",
+																					},
+																					"new_task_msecs": &schema.Schema{
+																						Type:        schema.TypeInt,
+																						Computed:    true,
+																						Description: "If the latency of a datastore is above this value, then new backup tasks using the datastore will not be started.",
+																					},
+																				},
+																			},
+																		},
+																		"max_concurrent_streams": &schema.Schema{
+																			Type:        schema.TypeFloat,
+																			Computed:    true,
+																			Description: "Specifies the limit on the number of streams Cohesity cluster will make concurrently to the datastores of the registered entity. This limit is enforced only when the flag enforceMaxStreams is set to true.",
+																		},
+																		"nas_source_params": &schema.Schema{
+																			Type:        schema.TypeList,
+																			Computed:    true,
+																			Description: "Specifies the NAS specific source throttling parameters during source registration or during backup of the source.",
+																			Elem: &schema.Resource{
+																				Schema: map[string]*schema.Schema{
+																					"max_parallel_metadata_fetch_full_percentage": &schema.Schema{
+																						Type:        schema.TypeFloat,
+																						Computed:    true,
+																						Description: "Specifies the percentage value of maximum concurrent metadata to be fetched during full backup of the source.",
+																					},
+																					"max_parallel_metadata_fetch_incremental_percentage": &schema.Schema{
+																						Type:        schema.TypeFloat,
+																						Computed:    true,
+																						Description: "Specifies the percentage value of maximum concurrent metadata to be fetched during incremental backup of the source.",
+																					},
+																					"max_parallel_read_write_full_percentage": &schema.Schema{
+																						Type:        schema.TypeFloat,
+																						Computed:    true,
+																						Description: "Specifies the percentage value of maximum concurrent IO during full backup of the source.",
+																					},
+																					"max_parallel_read_write_incremental_percentage": &schema.Schema{
+																						Type:        schema.TypeFloat,
+																						Computed:    true,
+																						Description: "Specifies the percentage value of maximum concurrent IO during incremental backup of the source.",
+																					},
+																				},
+																			},
+																		},
+																		"registered_source_max_concurrent_backups": &schema.Schema{
+																			Type:        schema.TypeFloat,
+																			Computed:    true,
+																			Description: "Specifies the limit on the number of backups Cohesity cluster will make concurrently to the registered entity. This limit is enforced only when the flag enforceRegisteredSourceMaxBackups is set to true.",
+																		},
+																		"storage_array_snapshot_config": &schema.Schema{
+																			Type:        schema.TypeList,
+																			Computed:    true,
+																			Description: "Specifies Storage Array Snapshot Configuration.",
+																			Elem: &schema.Resource{
+																				Schema: map[string]*schema.Schema{
+																					"is_max_snapshots_config_enabled": &schema.Schema{
+																						Type:        schema.TypeBool,
+																						Computed:    true,
+																						Description: "Specifies if the storage array snapshot max snapshots config is enabled or not.",
+																					},
+																					"is_max_space_config_enabled": &schema.Schema{
+																						Type:        schema.TypeBool,
+																						Computed:    true,
+																						Description: "Specifies if the storage array snapshot max space config is enabled or not.",
+																					},
+																					"storage_array_snapshot_max_space_config": &schema.Schema{
+																						Type:        schema.TypeList,
+																						Computed:    true,
+																						Description: "Specifies Storage Array Snapshot Max Space Config.",
+																						Elem: &schema.Resource{
+																							Schema: map[string]*schema.Schema{
+																								"max_snapshot_space_percentage": &schema.Schema{
+																									Type:        schema.TypeFloat,
+																									Computed:    true,
+																									Description: "Max number of storage snapshots allowed per volume/lun.",
+																								},
+																							},
+																						},
+																					},
+																					"storage_array_snapshot_throttling_policies": &schema.Schema{
+																						Type:        schema.TypeList,
+																						Computed:    true,
+																						Description: "Specifies throttling policies configured for individual volume/lun.",
+																						Elem: &schema.Resource{
+																							Schema: map[string]*schema.Schema{
+																								"id": &schema.Schema{
+																									Type:        schema.TypeInt,
+																									Computed:    true,
+																									Description: "Specifies the volume id of the storage array snapshot config.",
+																								},
+																								"is_max_snapshots_config_enabled": &schema.Schema{
+																									Type:        schema.TypeBool,
+																									Computed:    true,
+																									Description: "Specifies if the storage array snapshot max snapshots config is enabled or not.",
+																								},
+																								"is_max_space_config_enabled": &schema.Schema{
+																									Type:        schema.TypeBool,
+																									Computed:    true,
+																									Description: "Specifies if the storage array snapshot max space config is enabled or not.",
+																								},
+																								"max_snapshot_config": &schema.Schema{
+																									Type:        schema.TypeList,
+																									Computed:    true,
+																									Description: "Specifies Storage Array Snapshot Max Snapshots Config.",
+																									Elem: &schema.Resource{
+																										Schema: map[string]*schema.Schema{
+																											"max_snapshots": &schema.Schema{
+																												Type:        schema.TypeFloat,
+																												Computed:    true,
+																												Description: "Max number of storage snapshots allowed per volume/lun.",
+																											},
+																										},
+																									},
+																								},
+																								"max_space_config": &schema.Schema{
+																									Type:        schema.TypeList,
+																									Computed:    true,
+																									Description: "Specifies Storage Array Snapshot Max Space Config.",
+																									Elem: &schema.Resource{
+																										Schema: map[string]*schema.Schema{
+																											"max_snapshot_space_percentage": &schema.Schema{
+																												Type:        schema.TypeFloat,
+																												Computed:    true,
+																												Description: "Max number of storage snapshots allowed per volume/lun.",
+																											},
+																										},
+																									},
+																								},
+																							},
+																						},
+																					},
+																				},
+																			},
+																		},
+																	},
+																},
+															},
+															"throttling_policy_overrides": &schema.Schema{
+																Type:        schema.TypeList,
+																Computed:    true,
+																Description: "Specifies throttling policy override for a Datastore in a registered entity.",
+																Elem: &schema.Resource{
+																	Schema: map[string]*schema.Schema{
+																		"datastore_id": &schema.Schema{
+																			Type:        schema.TypeInt,
+																			Computed:    true,
+																			Description: "Specifies the Protection Source id of the Datastore.",
+																		},
+																		"datastore_name": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Computed:    true,
+																			Description: "Specifies the display name of the Datastore.",
+																		},
+																		"throttling_policy": &schema.Schema{
+																			Type:        schema.TypeList,
+																			Computed:    true,
+																			Description: "Specifies the throttling policy for a registered Protection Source.",
+																			Elem: &schema.Resource{
+																				Schema: map[string]*schema.Schema{
+																					"enforce_max_streams": &schema.Schema{
+																						Type:        schema.TypeBool,
+																						Computed:    true,
+																						Description: "Specifies whether datastore streams are configured for all datastores that are part of the registered entity. If set to true, number of streams from Cohesity cluster to the registered entity will be limited to the value set for maxConcurrentStreams. If not set or set to false, there is no max limit for the number of concurrent streams.",
+																					},
+																					"enforce_registered_source_max_backups": &schema.Schema{
+																						Type:        schema.TypeBool,
+																						Computed:    true,
+																						Description: "Specifies whether no. of backups are configured for the registered entity. If set to true, number of backups made by Cohesity cluster in the registered entity will be limited to the value set for RegisteredSourceMaxConcurrentBackups. If not set or set to false, there is no max limit for the number of concurrent backups.",
+																					},
+																					"is_enabled": &schema.Schema{
+																						Type:        schema.TypeBool,
+																						Computed:    true,
+																						Description: "Indicates whether read operations to the datastores, which are part of the registered Protection Source, are throttled.",
+																					},
+																					"latency_thresholds": &schema.Schema{
+																						Type:        schema.TypeList,
+																						Computed:    true,
+																						Description: "Specifies latency thresholds that trigger throttling for all datastores found in the registered Protection Source or specific to one datastore.",
+																						Elem: &schema.Resource{
+																							Schema: map[string]*schema.Schema{
+																								"active_task_msecs": &schema.Schema{
+																									Type:        schema.TypeInt,
+																									Computed:    true,
+																									Description: "If the latency of a datastore is above this value, existing backup tasks using the datastore are throttled.",
+																								},
+																								"new_task_msecs": &schema.Schema{
+																									Type:        schema.TypeInt,
+																									Computed:    true,
+																									Description: "If the latency of a datastore is above this value, then new backup tasks using the datastore will not be started.",
+																								},
+																							},
+																						},
+																					},
+																					"max_concurrent_streams": &schema.Schema{
+																						Type:        schema.TypeFloat,
+																						Computed:    true,
+																						Description: "Specifies the limit on the number of streams Cohesity cluster will make concurrently to the datastores of the registered entity. This limit is enforced only when the flag enforceMaxStreams is set to true.",
+																					},
+																					"nas_source_params": &schema.Schema{
+																						Type:        schema.TypeList,
+																						Computed:    true,
+																						Description: "Specifies the NAS specific source throttling parameters during source registration or during backup of the source.",
+																						Elem: &schema.Resource{
+																							Schema: map[string]*schema.Schema{
+																								"max_parallel_metadata_fetch_full_percentage": &schema.Schema{
+																									Type:        schema.TypeFloat,
+																									Computed:    true,
+																									Description: "Specifies the percentage value of maximum concurrent metadata to be fetched during full backup of the source.",
+																								},
+																								"max_parallel_metadata_fetch_incremental_percentage": &schema.Schema{
+																									Type:        schema.TypeFloat,
+																									Computed:    true,
+																									Description: "Specifies the percentage value of maximum concurrent metadata to be fetched during incremental backup of the source.",
+																								},
+																								"max_parallel_read_write_full_percentage": &schema.Schema{
+																									Type:        schema.TypeFloat,
+																									Computed:    true,
+																									Description: "Specifies the percentage value of maximum concurrent IO during full backup of the source.",
+																								},
+																								"max_parallel_read_write_incremental_percentage": &schema.Schema{
+																									Type:        schema.TypeFloat,
+																									Computed:    true,
+																									Description: "Specifies the percentage value of maximum concurrent IO during incremental backup of the source.",
+																								},
+																							},
+																						},
+																					},
+																					"registered_source_max_concurrent_backups": &schema.Schema{
+																						Type:        schema.TypeFloat,
+																						Computed:    true,
+																						Description: "Specifies the limit on the number of backups Cohesity cluster will make concurrently to the registered entity. This limit is enforced only when the flag enforceRegisteredSourceMaxBackups is set to true.",
+																					},
+																					"storage_array_snapshot_config": &schema.Schema{
+																						Type:        schema.TypeList,
+																						Computed:    true,
+																						Description: "Specifies Storage Array Snapshot Configuration.",
+																						Elem: &schema.Resource{
+																							Schema: map[string]*schema.Schema{
+																								"is_max_snapshots_config_enabled": &schema.Schema{
+																									Type:        schema.TypeBool,
+																									Computed:    true,
+																									Description: "Specifies if the storage array snapshot max snapshots config is enabled or not.",
+																								},
+																								"is_max_space_config_enabled": &schema.Schema{
+																									Type:        schema.TypeBool,
+																									Computed:    true,
+																									Description: "Specifies if the storage array snapshot max space config is enabled or not.",
+																								},
+																								"storage_array_snapshot_max_space_config": &schema.Schema{
+																									Type:        schema.TypeList,
+																									Computed:    true,
+																									Description: "Specifies Storage Array Snapshot Max Space Config.",
+																									Elem: &schema.Resource{
+																										Schema: map[string]*schema.Schema{
+																											"max_snapshot_space_percentage": &schema.Schema{
+																												Type:        schema.TypeFloat,
+																												Computed:    true,
+																												Description: "Max number of storage snapshots allowed per volume/lun.",
+																											},
+																										},
+																									},
+																								},
+																								"storage_array_snapshot_throttling_policies": &schema.Schema{
+																									Type:        schema.TypeList,
+																									Computed:    true,
+																									Description: "Specifies throttling policies configured for individual volume/lun.",
+																									Elem: &schema.Resource{
+																										Schema: map[string]*schema.Schema{
+																											"id": &schema.Schema{
+																												Type:        schema.TypeInt,
+																												Computed:    true,
+																												Description: "Specifies the volume id of the storage array snapshot config.",
+																											},
+																											"is_max_snapshots_config_enabled": &schema.Schema{
+																												Type:        schema.TypeBool,
+																												Computed:    true,
+																												Description: "Specifies if the storage array snapshot max snapshots config is enabled or not.",
+																											},
+																											"is_max_space_config_enabled": &schema.Schema{
+																												Type:        schema.TypeBool,
+																												Computed:    true,
+																												Description: "Specifies if the storage array snapshot max space config is enabled or not.",
+																											},
+																											"max_snapshot_config": &schema.Schema{
+																												Type:        schema.TypeList,
+																												Computed:    true,
+																												Description: "Specifies Storage Array Snapshot Max Snapshots Config.",
+																												Elem: &schema.Resource{
+																													Schema: map[string]*schema.Schema{
+																														"max_snapshots": &schema.Schema{
+																															Type:        schema.TypeFloat,
+																															Computed:    true,
+																															Description: "Max number of storage snapshots allowed per volume/lun.",
+																														},
+																													},
+																												},
+																											},
+																											"max_space_config": &schema.Schema{
+																												Type:        schema.TypeList,
+																												Computed:    true,
+																												Description: "Specifies Storage Array Snapshot Max Space Config.",
+																												Elem: &schema.Resource{
+																													Schema: map[string]*schema.Schema{
+																														"max_snapshot_space_percentage": &schema.Schema{
+																															Type:        schema.TypeFloat,
+																															Computed:    true,
+																															Description: "Max number of storage snapshots allowed per volume/lun.",
+																														},
+																													},
+																												},
+																											},
+																										},
+																									},
+																								},
+																							},
+																						},
+																					},
+																				},
+																			},
+																		},
+																	},
+																},
+															},
+															"use_o_auth_for_exchange_online": &schema.Schema{
+																Type:        schema.TypeBool,
+																Computed:    true,
+																Description: "Specifies whether OAuth should be used for authentication in case of Exchange Online.",
+															},
+															"use_vm_bios_uuid": &schema.Schema{
+																Type:        schema.TypeBool,
+																Computed:    true,
+																Description: "Specifies if registered vCenter is using BIOS UUID to track virtual machines.",
+															},
+															"user_messages": &schema.Schema{
+																Type:        schema.TypeList,
+																Computed:    true,
+																Description: "Specifies the additional details encountered during registration. Though the registration may succeed, user messages imply the host environment requires some cleanup or fixing.",
+																Elem: &schema.Schema{
+																	Type: schema.TypeString,
+																},
+															},
+															"username": &schema.Schema{
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "Specifies username to access the target source.",
+															},
+															"vlan_params": &schema.Schema{
+																Type:        schema.TypeList,
+																Computed:    true,
+																Description: "Specifies the VLAN configuration for Recovery.",
+																Elem: &schema.Resource{
+																	Schema: map[string]*schema.Schema{
+																		"vlan": &schema.Schema{
+																			Type:        schema.TypeFloat,
+																			Computed:    true,
+																			Description: "Specifies the VLAN to use for mounting Cohesity's view on the remote host. If specified, Cohesity hostname or the IP address on this VLAN is used.",
+																		},
+																		"disable_vlan": &schema.Schema{
+																			Type:        schema.TypeBool,
+																			Computed:    true,
+																			Description: "Specifies whether to use the VIPs even when VLANs are configured on the Cluster. If configured, VLAN IP addresses are used by default. If VLANs are not configured, this flag is ignored. Set this flag to true to force using the partition VIPs when VLANs are configured on the Cluster.",
+																		},
+																		"interface_name": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Computed:    true,
+																			Description: "Specifies the physical interface group name to use for mounting Cohesity's view on the remote host. If specified, Cohesity hostname or the IP address on this VLAN is used.",
+																		},
+																	},
+																},
+															},
+															"warning_messages": &schema.Schema{
+																Type:        schema.TypeList,
+																Computed:    true,
+																Description: "Specifies a list of warnings encountered during registration. Though the registration may succeed, warning messages imply the host environment requires some cleanup or fixing.",
+																Elem: &schema.Schema{
+																	Type: schema.TypeString,
+																},
+															},
+														},
+													},
+												},
+												"total_downtiered_size_in_bytes": &schema.Schema{
+													Type:        schema.TypeInt,
+													Computed:    true,
+													Description: "Specifies the total bytes downtiered from the source so far.",
+												},
+												"total_uptiered_size_in_bytes": &schema.Schema{
+													Type:        schema.TypeInt,
+													Computed:    true,
+													Description: "Specifies the total bytes uptiered to the source so far.",
+												},
+												"unprotected_sources_summary": &schema.Schema{
+													Type:        schema.TypeList,
+													Computed:    true,
+													Description: "Aggregated information about a node subtree.",
+													Elem: &schema.Resource{
+														Schema: map[string]*schema.Schema{
+															"environment": &schema.Schema{
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "Specifies the environment such as 'kSQL' or 'kVMware', where the Protection Source exists. Supported environment types such as 'kView', 'kSQL', 'kVMware', etc. NOTE 'kPuppeteer' refers to Cohesity's Remote Adapter. 'kVMware' indicates the VMware Protection Source environment. 'kHyperV' indicates the HyperV Protection Source environment. 'kSQL' indicates the SQL Protection Source environment. 'kView' indicates the View Protection Source environment. 'kPuppeteer' indicates the Cohesity's Remote Adapter. 'kPhysical' indicates the physical Protection Source environment. 'kPure' indicates the Pure Storage Protection Source environment. 'kNimble' indicates the Nimble Storage Protection Source environment. 'kAzure' indicates the Microsoft's Azure Protection Source environment. 'kNetapp' indicates the Netapp Protection Source environment. 'kAgent' indicates the Agent Protection Source environment. 'kGenericNas' indicates the Generic Network Attached Storage Protection Source environment. 'kAcropolis' indicates the Acropolis Protection Source environment. 'kPhysicalFiles' indicates the Physical Files Protection Source environment. 'kIbmFlashSystem' indicates the IBM Flash System Protection Source environment. 'kIsilon' indicates the Dell EMC's Isilon Protection Source environment. 'kGPFS' indicates IBM's GPFS Protection Source environment. 'kKVM' indicates the KVM Protection Source environment. 'kAWS' indicates the AWS Protection Source environment. 'kExchange' indicates the Exchange Protection Source environment. 'kHyperVVSS' indicates the HyperV VSS Protection Source environment. 'kOracle' indicates the Oracle Protection Source environment. 'kGCP' indicates the Google Cloud Platform Protection Source environment. 'kFlashBlade' indicates the Flash Blade Protection Source environment. 'kAWSNative' indicates the AWS Native Protection Source environment. 'kO365' indicates the Office 365 Protection Source environment. 'kO365Outlook' indicates Office 365 outlook Protection Source environment. 'kHyperFlex' indicates the Hyper Flex Protection Source environment. 'kGCPNative' indicates the GCP Native Protection Source environment. 'kAzureNative' indicates the Azure Native Protection Source environment. 'kKubernetes' indicates a Kubernetes Protection Source environment. 'kElastifile' indicates Elastifile Protection Source environment. 'kAD' indicates Active Directory Protection Source environment. 'kRDSSnapshotManager' indicates AWS RDS Protection Source environment. 'kCassandra' indicates Cassandra Protection Source environment. 'kMongoDB' indicates MongoDB Protection Source environment. 'kCouchbase' indicates Couchbase Protection Source environment. 'kHdfs' indicates Hdfs Protection Source environment. 'kHive' indicates Hive Protection Source environment. 'kHBase' indicates HBase Protection Source environment. 'kUDA' indicates Universal Data Adapter Protection Source environment. 'kO365Teams' indicates the Office365 Teams Protection Source environment. 'kO365Group' indicates the Office365 Groups Protection Source environment. 'kO365Exchange' indicates the Office365 Mailbox Protection Source environment. 'kO365OneDrive' indicates the Office365 OneDrive Protection Source environment. 'kO365Sharepoint' indicates the Office365 SharePoint Protection Source environment. 'kO365PublicFolders' indicates the Office365 PublicFolders Protection Source environment.",
+															},
+															"leaves_count": &schema.Schema{
+																Type:        schema.TypeInt,
+																Computed:    true,
+																Description: "Specifies the number of leaf nodes under the subtree of this node.",
+															},
+															"total_logical_size": &schema.Schema{
+																Type:        schema.TypeInt,
+																Computed:    true,
+																Description: "Specifies the total logical size of the data under the subtree of this node.",
+															},
+														},
+													},
+												},
+											},
 										},
 									},
 									"object_protection_info": &schema.Schema{
@@ -11146,6 +22060,17 @@ func dataSourceIbmBackupRecoveryProtectionSourcesRead(context context.Context, d
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
+	endpointType := d.Get("endpoint_type").(string)
+	instanceId, region := getInstanceIdAndRegion(d)
+	if instanceId != "" && region != "" {
+		bmxsession, err := meta.(conns.ClientSession).BluemixSession()
+		if err != nil {
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("unable to get clientSession"), "ibm_backup_recovery", "create")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
+		}
+		backupRecoveryClient = getClientWithInstanceEndpoint(backupRecoveryClient, bmxsession, instanceId, region, endpointType)
+	}
 
 	listProtectionSourcesOptions := &backuprecoveryv1.ListProtectionSourcesOptions{}
 
@@ -11567,6 +22492,7 @@ func DataSourceIbmBackupRecoveryProtectionSourcesProtectionSourceNodeToMap(model
 		modelMap["environment"] = *model.Environment
 	}
 	if model.ID != nil {
+
 		modelMap["id"] = flex.IntValue(model.ID)
 	}
 	if model.Name != nil {

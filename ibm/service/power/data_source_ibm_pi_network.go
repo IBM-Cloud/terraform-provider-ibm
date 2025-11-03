@@ -8,7 +8,6 @@ import (
 	"log"
 
 	"github.com/IBM-Cloud/power-go-client/clients/instance"
-	"github.com/IBM-Cloud/power-go-client/helpers"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -27,18 +26,31 @@ func DataSourceIBMPINetwork() *schema.Resource {
 				Type:         schema.TypeString,
 				ValidateFunc: validation.NoZeroValues,
 			},
+			Arg_NetworkID: {
+				AtLeastOneOf:  []string{Arg_NetworkID, Arg_NetworkName},
+				ConflictsWith: []string{Arg_NetworkName},
+				Description:   "The network ID.",
+				Optional:      true,
+				Type:          schema.TypeString,
+			},
 			Arg_NetworkName: {
-				Description:  "The unique identifier or name of a network.",
-				Required:     true,
-				Type:         schema.TypeString,
-				ValidateFunc: validation.NoZeroValues,
+				AtLeastOneOf:  []string{Arg_NetworkID, Arg_NetworkName},
+				ConflictsWith: []string{Arg_NetworkID},
+				Deprecated:    "The pi_network_name field is deprecated. Please use pi_network_id instead",
+				Description:   "The unique identifier or name of a network.",
+				Optional:      true,
+				Type:          schema.TypeString,
 			},
 
 			// Attributes
-			Attr_AccessConfig: {
+			Attr_Advertise: {
 				Computed:    true,
-				Deprecated:  "This field is deprecated please use peer_id instead.",
-				Description: "The network communication configuration option of the network (for on prem locations only). Use `peer_id` instead.",
+				Description: "Indicates if the network is advertised.",
+				Type:        schema.TypeString,
+			},
+			Attr_ARPBroadcast: {
+				Computed:    true,
+				Description: "Indicates if ARP Broadcast is enabled.",
 				Type:        schema.TypeString,
 			},
 			Attr_AvailableIPCount: {
@@ -67,12 +79,6 @@ func DataSourceIBMPINetwork() *schema.Resource {
 				Description: "The network gateway that is attached to your network.",
 				Type:        schema.TypeString,
 			},
-			Attr_Jumbo: {
-				Computed:    true,
-				Deprecated:  "This field is deprecated, use mtu instead.",
-				Description: "MTU Jumbo option of the network (for multi-zone locations only).",
-				Type:        schema.TypeBool,
-			},
 			Attr_MTU: {
 				Computed:    true,
 				Description: "Maximum Transmission Unit option of the network.",
@@ -80,8 +86,7 @@ func DataSourceIBMPINetwork() *schema.Resource {
 			},
 			Attr_Name: {
 				Computed:    true,
-				Deprecated:  "This field is deprecated, use pi_network_name instead.",
-				Description: "The unique identifier or name of a network.",
+				Description: "The name of the network.",
 				Type:        schema.TypeString,
 			},
 			Attr_NetworkAddressTranslation: {
@@ -100,6 +105,7 @@ func DataSourceIBMPINetwork() *schema.Resource {
 			},
 			Attr_PeerID: {
 				Computed:    true,
+				Deprecated:  "This field is deprecated",
 				Description: "Network peer ID (for on prem locations only).",
 				Type:        schema.TypeString,
 			},
@@ -141,15 +147,22 @@ func dataSourceIBMPINetworkRead(ctx context.Context, d *schema.ResourceData, met
 	}
 
 	cloudInstanceID := d.Get(Arg_CloudInstanceID).(string)
+	var networkID string
+	if v, ok := d.GetOk(Arg_NetworkID); ok {
+		networkID = v.(string)
+	} else if v, ok := d.GetOk(Arg_NetworkName); ok {
+		networkID = v.(string)
+	}
 
 	networkC := instance.NewIBMPINetworkClient(ctx, sess, cloudInstanceID)
-	networkdata, err := networkC.Get(d.Get(helpers.PINetworkName).(string))
+	networkdata, err := networkC.Get(networkID)
 	if err != nil || networkdata == nil {
 		return diag.FromErr(err)
 	}
 
 	d.SetId(*networkdata.NetworkID)
-	d.Set(Attr_AccessConfig, networkdata.AccessConfig)
+	d.Set(Attr_Advertise, networkdata.Advertise)
+	d.Set(Attr_ARPBroadcast, networkdata.ArpBroadcast)
 	if networkdata.IPAddressMetrics.Available != nil {
 		d.Set(Attr_AvailableIPCount, networkdata.IPAddressMetrics.Available)
 	}
@@ -168,7 +181,6 @@ func dataSourceIBMPINetworkRead(ctx context.Context, d *schema.ResourceData, met
 		d.Set(Attr_DNS, networkdata.DNSServers)
 	}
 	d.Set(Attr_Gateway, networkdata.Gateway)
-	d.Set(Attr_Jumbo, networkdata.Jumbo)
 	d.Set(Attr_MTU, networkdata.Mtu)
 	if networkdata.Name != nil {
 		d.Set(Attr_Name, networkdata.Name)

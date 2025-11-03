@@ -52,6 +52,7 @@ func TestAccIbmIsSharesDataSourceAllArgs(t *testing.T) {
 					resource.TestCheckResourceAttrSet("data.ibm_is_shares.is_shares", "shares.0.name"),
 					resource.TestCheckResourceAttrSet("data.ibm_is_shares.is_shares", "shares.0.resource_type"),
 					resource.TestCheckResourceAttrSet("data.ibm_is_shares.is_shares", "shares.0.size"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_shares.is_shares", "shares.0.storage_generation"),
 					resource.TestCheckResourceAttrSet("data.ibm_is_shares.is_shares", "shares.0.accessor_binding_role"),
 					resource.TestCheckResourceAttrSet("data.ibm_is_shares.is_shares", "total_count"),
 				),

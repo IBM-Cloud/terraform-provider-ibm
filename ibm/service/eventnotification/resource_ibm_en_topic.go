@@ -90,7 +90,7 @@ func ResourceIBMEnTopic() *schema.Resource {
 												},
 												"ends_at": {
 													Type:        schema.TypeString,
-													Required:    true,
+													Optional:    true,
 													Description: "event schedule end time.",
 												},
 												"expression": {
@@ -418,14 +418,14 @@ func resourceIBMEnTopicMapToRules(rulesMap map[string]interface{}) en.Rules {
 
 func resourceIBMEnTopicsMapToEventScheduleFilterAttributes(modelMap map[string]interface{}) (*eventnotificationsv1.EventScheduleFilterAttributes, error) {
 	model := &en.EventScheduleFilterAttributes{}
-	if modelMap["starts_at"] != nil {
+	if modelMap["starts_at"] != nil && modelMap["starts_at"].(string) != "" {
 		dateTime, err := core.ParseDateTime(modelMap["starts_at"].(string))
 		if err != nil {
 			return model, err
 		}
 		model.StartsAt = &dateTime
 	}
-	if modelMap["ends_at"] != nil {
+	if modelMap["ends_at"] != nil && modelMap["ends_at"].(string) != "" {
 		dateTime, err := core.ParseDateTime(modelMap["ends_at"].(string))
 		if err != nil {
 			return model, err

@@ -260,6 +260,11 @@ func ResourceIbmSmPublicCertificate() *schema.Resource {
 				Computed:    true,
 				Description: "The date when a resource was recently modified. The date format follows RFC 3339.",
 			},
+			"retrieved_at": &schema.Schema{
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The date when the data of the secret was last retrieved. The date format follows RFC 3339. Epoch date if there is no record of secret data retrieval.",
+			},
 			"versions_total": &schema.Schema{
 				Type:        schema.TypeInt,
 				Computed:    true,
@@ -464,13 +469,13 @@ func waitForIbmSmPublicCertificateCreate(secretsManagerClient *secretsmanagerv2.
 		Target:  []string{targetStatus},
 		Refresh: func() (interface{}, string, error) {
 			stateObjIntf, response, err := secretsManagerClient.GetSecret(getSecretOptions)
-			stateObj := stateObjIntf.(*secretsmanagerv2.PublicCertificate)
 			if err != nil {
 				if apiErr, ok := err.(bmxerror.RequestFailure); ok && apiErr.StatusCode() == 404 {
 					return nil, "", fmt.Errorf("The instance %s does not exist anymore: %s\n%s", "getSecretOptions", err, response)
 				}
 				return nil, "", err
 			}
+			stateObj := stateObjIntf.(*secretsmanagerv2.PublicCertificate)
 			failStates := map[string]bool{"destroyed": true}
 			if failStates[*stateObj.StateDescription] {
 				return stateObj, *stateObj.StateDescription, fmt.Errorf("The instance %s failed: %s\n%s", "getSecretOptions", err, response)
@@ -573,6 +578,10 @@ func resourceIbmSmPublicCertificateRead(context context.Context, d *schema.Resou
 	}
 	if err = d.Set("updated_at", DateTimeToRFC3339(secret.UpdatedAt)); err != nil {
 		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting updated_at"), PublicCertSecretResourceName, "read")
+		return tfErr.GetDiag()
+	}
+	if err = d.Set("retrieved_at", DateTimeToRFC3339(secret.RetrievedAt)); err != nil {
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting retrieved_at"), PublicCertSecretResourceName, "read")
 		return tfErr.GetDiag()
 	}
 	if err = d.Set("versions_total", flex.IntValue(secret.VersionsTotal)); err != nil {

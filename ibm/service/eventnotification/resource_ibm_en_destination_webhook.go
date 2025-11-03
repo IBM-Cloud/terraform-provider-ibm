@@ -7,6 +7,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"time"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
@@ -51,6 +52,11 @@ func ResourceIBMEnWebhookDestination() *schema.Resource {
 				Type:        schema.TypeBool,
 				Optional:    true,
 				Description: "Whether to collect the failed event in Cloud Object Storage bucket",
+			},
+			"test_destination": {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Description: "Set flag to Test Webhook destination",
 			},
 			"config": {
 				Type:        schema.TypeList,
@@ -97,6 +103,11 @@ func ResourceIBMEnWebhookDestination() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "Destination ID",
+			},
+			"test_status": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Result destination test status",
 			},
 			"updated_at": {
 				Type:        schema.TypeString,
@@ -148,10 +159,56 @@ func resourceIBMEnWebhookDestinationCreate(context context.Context, d *schema.Re
 		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateDestinationWithContext failed: %s", err.Error()), "ibm_en_destination_webhook", "create")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
-		// return diag.FromErr(fmt.Errorf("CreateDestinationWithContext failed %s\n%s", err, response))
 	}
 
 	d.SetId(fmt.Sprintf("%s/%s", *options.InstanceID, *result.ID))
+	testdestination := &en.TestDestinationOptions{}
+	parts, err := flex.SepIdParts(d.Id(), "/")
+	if err != nil {
+		tfErr := flex.TerraformErrorf(err, err.Error(), "ibm_en_destination_webhook", "update")
+		return tfErr.GetDiag()
+	}
+	testDestination := false
+	if d.Get("test_destination").(bool) == true {
+		testdestination.SetInstanceID(parts[0])
+		testdestination.SetID(parts[1])
+		testDestination = true
+	}
+
+	if testDestination {
+		testResponse, response, err := enClient.TestDestinationWithContext(context, testdestination)
+		if err != nil {
+			if response != nil && response.StatusCode != 202 {
+				d.SetId("")
+				return nil
+			}
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("TestDestinationWithContext failed: %s", err.Error()), "ibm_en_destination_webhook", "test")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
+			// return diag.FromErr(fmt.Errorf("TestDestinationWithContext failed %s\n%s", err, response))
+		}
+
+		if test, ok := testResponse.(*en.TestDestinationResponse); ok {
+			if test.Status != nil {
+				testNotificationID := *test.NotificationID
+				time.Sleep(5 * time.Second)
+
+				getNoticationOptions := &en.GetNotificationsStatusOptions{}
+				getNoticationOptions.SetInstanceID(parts[0])
+				getNoticationOptions.SetID(testNotificationID)
+
+				getNotificationResponse, _, notificationerr := enClient.GetNotificationsStatus(getNoticationOptions)
+				if notificationerr != nil {
+					panic(notificationerr)
+				}
+				if notificationerr = d.Set("test_status", getNotificationResponse.Status); notificationerr != nil {
+					return diag.FromErr(fmt.Errorf("[ERROR] Error setting test status: %s", notificationerr))
+				}
+			}
+
+		}
+
+	}
 
 	return resourceIBMEnWebhookDestinationRead(context, d, meta)
 }
@@ -171,7 +228,6 @@ func resourceIBMEnWebhookDestinationRead(context context.Context, d *schema.Reso
 	if err != nil {
 		tfErr := flex.TerraformErrorf(err, err.Error(), "ibm_en_destination_webhook", "read")
 		return tfErr.GetDiag()
-		// return diag.FromErr(err)
 	}
 
 	options.SetInstanceID(parts[0])
@@ -186,7 +242,6 @@ func resourceIBMEnWebhookDestinationRead(context context.Context, d *schema.Reso
 		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetDestinationWithContext failed: %s", err.Error()), "ibm_en_destination_webhook", "read")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
-		// return diag.FromErr(fmt.Errorf("GetDestinationWithContext failed %s\n%s", err, response))
 	}
 
 	if err = d.Set("instance_guid", options.InstanceID); err != nil {
@@ -244,7 +299,6 @@ func resourceIBMEnWebhookDestinationUpdate(context context.Context, d *schema.Re
 		tfErr := flex.TerraformErrorf(err, err.Error(), "ibm_en_destination_webhook", "update")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
-		// return diag.FromErr(err)
 	}
 
 	options := &en.UpdateDestinationOptions{}
@@ -253,11 +307,50 @@ func resourceIBMEnWebhookDestinationUpdate(context context.Context, d *schema.Re
 	if err != nil {
 		tfErr := flex.TerraformErrorf(err, err.Error(), "ibm_en_destination_webhook", "update")
 		return tfErr.GetDiag()
-		// return diag.FromErr(err)
 	}
 
 	options.SetInstanceID(parts[0])
 	options.SetID(parts[1])
+
+	testdestination := &en.TestDestinationOptions{}
+	testDestination := false
+	if d.Get("test_destination").(bool) == true {
+		testdestination.SetInstanceID(parts[0])
+		testdestination.SetID(parts[1])
+		testDestination = true
+	}
+
+	if testDestination {
+		testResponse, response, err := enClient.TestDestinationWithContext(context, testdestination)
+		if err != nil {
+			if response != nil && response.StatusCode != 202 {
+				d.SetId("")
+				return nil
+			}
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("TestDestinationWithContext failed: %s", err.Error()), "ibm_en_destination_webhook", "test")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
+		}
+
+		if test, ok := testResponse.(*en.TestDestinationResponse); ok {
+			if test.Status != nil {
+				testNotificationID := *test.NotificationID
+				time.Sleep(5 * time.Second)
+
+				getNoticationOptions := &en.GetNotificationsStatusOptions{}
+				getNoticationOptions.SetInstanceID(parts[0])
+				getNoticationOptions.SetID(testNotificationID)
+
+				getNotificationResponse, _, notificationerr := enClient.GetNotificationsStatus(getNoticationOptions)
+				if notificationerr != nil {
+					panic(notificationerr)
+				}
+				if notificationerr = d.Set("test_status", getNotificationResponse.Status); notificationerr != nil {
+					return diag.FromErr(fmt.Errorf("[ERROR] Error setting test status: %s", notificationerr))
+				}
+			}
+		}
+	}
 
 	if ok := d.HasChanges("name", "description", "collect_failed_events", "config"); ok {
 		options.SetName(d.Get("name").(string))
@@ -279,7 +372,6 @@ func resourceIBMEnWebhookDestinationUpdate(context context.Context, d *schema.Re
 			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("UpdateDestinationWithContext failed: %s", err.Error()), "ibm_en_destination_webhook", "update")
 			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 			return tfErr.GetDiag()
-			// return diag.FromErr(fmt.Errorf("UpdateDestinationWithContext failed %s\n%s", err, response))
 		}
 
 		return resourceIBMEnWebhookDestinationRead(context, d, meta)
@@ -294,7 +386,6 @@ func resourceIBMEnWebhookDestinationDelete(context context.Context, d *schema.Re
 		tfErr := flex.TerraformErrorf(err, err.Error(), "ibm_en_destination_webhook", "delete")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
-		// return diag.FromErr(err)
 	}
 
 	options := &en.DeleteDestinationOptions{}
@@ -303,7 +394,6 @@ func resourceIBMEnWebhookDestinationDelete(context context.Context, d *schema.Re
 	if err != nil {
 		tfErr := flex.TerraformErrorf(err, err.Error(), "ibm_en_destination_webhook", "delete")
 		return tfErr.GetDiag()
-		// return diag.FromErr(err)
 	}
 
 	options.SetInstanceID(parts[0])
@@ -318,7 +408,6 @@ func resourceIBMEnWebhookDestinationDelete(context context.Context, d *schema.Re
 		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("DeleteDestinationWithContext failed: %s", err.Error()), "ibm_en_destination_webhook", "delete")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
-		// return diag.FromErr(fmt.Errorf("DeleteDestinationWithContext failed %s\n%s", err, response))
 	}
 
 	d.SetId("")

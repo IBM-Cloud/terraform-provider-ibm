@@ -257,6 +257,37 @@ resource "ibm_is_instance_template" "is_instance_template" {
 }
 ```
 
+```
+// Instance Template with volume attachment as source snapshot
+resource "ibm_is_instance_template" "instancetemplate1" {
+  name    = "tfp-instance-temp"
+  image   = data.ibm_is_image.example.id
+  profile = "bx2-8x32"
+
+  primary_network_interface {
+    subnet = ibm_is_subnet.example.id
+  }
+  volume_attachments {
+    delete_volume_on_instance_delete = true
+    name                             = "vol-attach-tfp"
+    volume_prototype {
+      iops            = 6000
+      profile         = "custom"
+      capacity        = 100
+      source_snapshot = ibm_is_snapshot.example.id
+      allowed_use {
+        api_version       = "2025-04-03"
+        bare_metal_server = "true"
+        instance          = "true"
+      }
+    }
+  }
+  vpc  = ibm_is_vpc.example.id
+  zone = "us-south-2"
+  keys = [ibm_is_ssh_key.example.id]
+}
+```
+
 ## Argument reference
 Review the argument references that you can specify for your resource. 
 - `availability_policy_host_failure` - (Optional, String) The availability policy to use for this virtual server instance. The action to perform if the compute host experiences a failure. Supported values are `restart` and `stop`.
@@ -264,6 +295,24 @@ Review the argument references that you can specify for your resource.
 - `boot_volume` - (Optional, List) A nested block describes the boot volume configuration for the template.
 
   Nested scheme for `boot_volume`:
+  - `allowed_use` - (Optional, List) The usage constraints to be matched against requested instance or bare metal server properties to determine compatibility. Can only be specified if `source_snapshot`  present and bootable. If not specified, the value of this property will be inherited from the `source_image`
+    
+    Nested schema for `allowed_use`:
+    - `api_version` - (Optional, String) The API version with which to evaluate the expressions.
+	  
+    - `bare_metal_server` - (Optional, String) The expression that must be satisfied by the properties of a bare metal server provisioned using the image data in this volume. If unspecified, the expression will be set to true. The expression follows [Common Expression Language](https://github.com/google/cel-spec/blob/master/doc/langdef.md), but does not support built-in functions and macros. 
+   
+    ~> **NOTE** </br> In addition, the following property is supported, corresponding to the `BareMetalServer` property: </br>
+      **&#x2022;** `enable_secure_boot` - (boolean) Indicates whether secure boot is enabled.
+	 
+    - `instance` - (Optional, String) The expression that must be satisfied by the properties of a virtual server instance provisioned using this volume. If unspecified, the expression will be set to true. The expression follows [Common Expression Language](https://github.com/google/cel-spec/blob/master/doc/langdef.md), but does not support built-in functions and macros.
+   
+    ~> **NOTE** </br> In addition, the following variables are supported, corresponding to `Instance` properties: </br>
+      **&#x2022;** `gpu.count` - (integer) The number of GPUs. </br>
+      **&#x2022;** `gpu.manufacturer` - (string) The GPU manufacturer. </br>
+      **&#x2022;** `gpu.memory` - (integer) The overall amount of GPU memory in GiB (gibibytes). </br>
+      **&#x2022;** `gpu.model` - (string) The GPU model. </br>
+      **&#x2022;** `enable_secure_boot` - (boolean) Indicates whether secure boot is enabled. </br>  
   - `bandwidth` - (Optional, Integer) The maximum bandwidth (in megabits per second) for the volume. For this property to be specified, the volume storage_generation must be 2.
 	- `delete_volume_on_instance_delete` - (Optional, Bool) You can configure to delete the boot volume based on instance deletion.
 	- `encryption` - (Optional, String) The encryption key CRN to encrypt the boot volume attached.
@@ -457,15 +506,35 @@ Review the argument references that you can specify for your resource.
   - `volume_prototype` - (Optional, Forces new resource, List)
 
       Nested scheme for `volume_prototype`:
+      - `allowed_use` - (Optional, List) The usage constraints to be matched against requested instance or bare metal server properties to determine compatibility. Can only be specified if `source_snapshot` is present and bootable. If not specified, the value of this property will be inherited from the `source_snapshot`.
+      
+      Nested schema for `allowed_use`:
+      - `api_version` - (Optional, String) The API version with which to evaluate the expressions.
+      
+      - `bare_metal_server` - (Optional, String) The expression that must be satisfied by the properties of a bare metal server provisioned using the image data in this volume. If unspecified, the expression will be set to true. The expression follows [Common Expression Language](https://github.com/google/cel-spec/blob/master/doc/langdef.md), but does not support built-in functions and macros. 
+    
+      ~> **NOTE** </br> In addition, the following property is supported, corresponding to the `BareMetalServer` property: </br>
+        **&#x2022;** `enable_secure_boot` - (boolean) Indicates whether secure boot is enabled.
+    
+      - `instance` - (Optional, String) The expression that must be satisfied by the properties of a virtual server instance provisioned using this volume. If unspecified, the expression will be set to true. The expression follows [Common Expression Language](https://github.com/google/cel-spec/blob/master/doc/langdef.md), but does not support built-in functions and macros.
+    
+      ~> **NOTE** </br> In addition, the following variables are supported, corresponding to `Instance` properties: </br>
+        **&#x2022;** `gpu.count` - (integer) The number of GPUs. </br>
+        **&#x2022;** `gpu.manufacturer` - (string) The GPU manufacturer. </br>
+        **&#x2022;** `gpu.memory` - (integer) The overall amount of GPU memory in GiB (gibibytes). </br>
+        **&#x2022;** `gpu.model` - (string) The GPU model. </br>
+        **&#x2022;** `enable_secure_boot` - (boolean) Indicates whether secure boot is enabled. </br>       
       - `bandwidth` - (Optional, Integer) The maximum bandwidth (in megabits per second) for the volume. For this property to be specified, the volume storage_generation must be 2.
       - `capacity` - (Required, Forces new resource, Integer) The capacity of the volume in gigabytes. The specified minimum and maximum capacity values for creating or updating volumes may expand in the future.
       - `encryption_key` - (Optional, Forces new resource, String) The CRN of the [Key Protect Root Key](https://cloud.ibm.com/docs/key-protect?topic=key-protect-getting-started-tutorial) or [Hyper Protect Crypto Service Root Key](https://cloud.ibm.com/docs/hs-crypto?topic=hs-crypto-get-started) for the resource.
       - `iops` - (Optional, Forces new resource, Integer) The maximum input and output operations per second (IOPS) for the volume.
       - `profile` - (Required, Forces new resource, String) The global unique name for the volume profile to use for the volume. Allowed values areFor more information, about volume profiles, see [volume profiles](https://cloud.ibm.com/docs/vpc?topic=vpc-block-storage-profiles)
+      - `source_snapshot` - The snapshot to use as a source for the volume's data. To create a volume from a `source_snapshot`, the volume profile and the source snapshot must have the same `storage_generation` value.
       - `tags`- (Optional, Array of Strings) A list of user tags that you want to add to your volume. (https://cloud.ibm.com/apidocs/tagging#types-of-tags)
       
       ~>**Note:** 
       `volume_attachments` provides either `volume` with a storage volume ID, or `volume_prototype` to create a new volume. If you plan to use this template with instance group, provide the `volume_prototype`. Instance group does not support template with existing storage volume IDs.
+- `volume_bandwidth_qos_mode` - (Optional, String) The volume bandwidth QoS mode to use for this virtual server instance. The specified value must be listed in the instance profile's volume_bandwidth_qos_modes. If unspecified, the default volume bandwidth QoS mode from the profile will be used.
 - `vpc` - (Required, String) The VPC ID that the instance templates needs to be created.
 - `user_data` -  (Optional, String) The user data provided for the instance.
 - `zone` - (Required, String) The name of the zone.

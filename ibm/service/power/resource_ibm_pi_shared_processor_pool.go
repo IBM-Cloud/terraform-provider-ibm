@@ -30,9 +30,9 @@ func ResourceIBMPISharedProcessorPool() *schema.Resource {
 		Importer:      &schema.ResourceImporter{},
 
 		Timeouts: &schema.ResourceTimeout{
-			Create: schema.DefaultTimeout(60 * time.Minute),
-			Update: schema.DefaultTimeout(60 * time.Minute),
-			Delete: schema.DefaultTimeout(60 * time.Minute),
+			Create: schema.DefaultTimeout(15 * time.Minute),
+			Update: schema.DefaultTimeout(15 * time.Minute),
+			Delete: schema.DefaultTimeout(10 * time.Minute),
 		},
 		CustomizeDiff: customdiff.Sequence(
 			func(_ context.Context, diff *schema.ResourceDiff, v interface{}) error {
@@ -54,7 +54,7 @@ func ResourceIBMPISharedProcessorPool() *schema.Resource {
 				Type:        schema.TypeString,
 			},
 			Arg_SharedProcessorPoolHostGroup: {
-				Description: "Host group of the shared processor pool. Valid values are 's922', 'e980' and 's1022'.",
+				Description: "Host group of the shared processor pool. Valid values are 'e980', 'e1080', 'e1180', 's922', 's1022' and 's1122'.",
 				ForceNew:    true,
 				Required:    true,
 				Type:        schema.TypeString,
@@ -102,6 +102,11 @@ func ResourceIBMPISharedProcessorPool() *schema.Resource {
 				Computed:    true,
 				Description: "The available cores in the shared processor pool.",
 				Type:        schema.TypeInt,
+			},
+			Attr_CreationDate: {
+				Computed:    true,
+				Description: "Date of shared processor pool creation.",
+				Type:        schema.TypeString,
 			},
 			Attr_CRN: {
 				Computed:    true,
@@ -338,6 +343,7 @@ func resourceIBMPISharedProcessorPoolRead(ctx context.Context, d *schema.Resourc
 			d.Set(Arg_SharedProcessorPoolPlacementGroups, pgIDs)
 		}
 	}
+	d.Set(Attr_CreationDate, response.SharedProcessorPool.CreationDate.String())
 	d.Set(Attr_DedicatedHostID, response.SharedProcessorPool.DedicatedHostID)
 	d.Set(Attr_HostID, response.SharedProcessorPool.HostID)
 	d.Set(Attr_Status, response.SharedProcessorPool.Status)

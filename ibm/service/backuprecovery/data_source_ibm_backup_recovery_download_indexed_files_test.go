@@ -17,7 +17,7 @@ import (
 )
 
 func TestAccIbmBackupRecoveryDownloadIndexedFilesDataSourceBasic(t *testing.T) {
-	objectId := 18
+	objectId := 344
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheck(t) },
 		Providers: acc.TestAccProviders,
@@ -38,13 +38,15 @@ func testAccCheckIbmBackupRecoveryDownloadIndexedFilesDataSourceConfigBasic(obje
 	return fmt.Sprintf(`
 		data "ibm_backup_recovery_object_snapshots" "baas_object_snapshots_instance" {
 			x_ibm_tenant_id = "%s"
+			
 			object_id = %d
 		}
 
 		data "ibm_backup_recovery_download_indexed_files" "baas_download_indexed_files_instance" {
 			x_ibm_tenant_id = "%s"
 			snapshots_id = data.ibm_backup_recovery_object_snapshots.baas_object_snapshots_instance.snapshots.0.id
-			file_path = "/data/"
+			
+			file_path = "/mnt"
 		}
 	`, tenantId, objectId, tenantId)
 }

@@ -78,12 +78,12 @@ func testAccCheckIBMIamTrustedProfileLinkConfigBasic(profileName string, crType 
 			profile_id = ibm_iam_trusted_profile.iam_trusted_profile.id
 			cr_type = "%s"
 			link {
-				crn = "%s"
+				crn = ibm_iam_trusted_profile.iam_trusted_profile.crn # any valid CRN will do for testing
 				namespace = "namespace"
 				name = "name"
 			}
 		}
-	`, profileName, crType, acc.IksSa)
+	`, profileName, crType)
 }
 
 func testAccCheckIBMIamTrustedProfileLinkConfig(profileName string, crType string, name string) string {
@@ -95,13 +95,13 @@ func testAccCheckIBMIamTrustedProfileLinkConfig(profileName string, crType strin
 			profile_id = ibm_iam_trusted_profile.iam_trusted_profile.id
 			cr_type = "%s"
 			link {
-				crn = "%s"
+				crn = ibm_iam_trusted_profile.iam_trusted_profile.crn # any valid CRN will do for testing
 				namespace = "namespace"
 				name = "name"
 			}
 			name = "%s"
 		}
-	`, profileName, crType, acc.IksSa, name)
+	`, profileName, crType, name)
 }
 
 func testAccCheckIBMIamTrustedProfileLinkExists(n string, obj iamidentityv1.ProfileLink) resource.TestCheckFunc {
