@@ -11,7 +11,6 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -21,9 +20,9 @@ import (
 	"github.ibm.com/DRAutomation/dra-go-sdk/drautomationservicev1"
 )
 
-func DataSourceIbmPdrGetDrSummaryResponse() *schema.Resource {
+func DataSourceIBMPdrGetDrSummaryResponse() *schema.Resource {
 	return &schema.Resource{
-		ReadContext: dataSourceIbmPdrGetDrSummaryResponseRead,
+		ReadContext: dataSourceIBMPdrGetDrSummaryResponseRead,
 
 		Schema: map[string]*schema.Schema{
 			"instance_id": &schema.Schema{
@@ -35,11 +34,6 @@ func DataSourceIbmPdrGetDrSummaryResponse() *schema.Resource {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Description: "The language requested for the return document.",
-			},
-			"if_none_match": &schema.Schema{
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "ETag for conditional requests (optional).",
 			},
 			"managed_vm_list": &schema.Schema{
 				Type:        schema.TypeMap,
@@ -55,10 +49,30 @@ func DataSourceIbmPdrGetDrSummaryResponse() *schema.Resource {
 				Description: "Contains details about the orchestrator configuration.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
+						"last_updated_orchestrator_deployment_time": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Deployment time of primary orchestrator VM.",
+						},
+						"last_updated_standby_orchestrator_deployment_time": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Deployment time of StandBy orchestrator VM.",
+						},
+						"latest_orchestrator_time": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Latest Orchestrator Time in COS.",
+						},
 						"location_id": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "Location identifier.",
+						},
+						"mfa_enabled": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Multi Factor Authentication Enabled or not.",
 						},
 						"orch_ext_connectivity_status": &schema.Schema{
 							Type:        schema.TypeString,
@@ -75,11 +89,6 @@ func DataSourceIbmPdrGetDrSummaryResponse() *schema.Resource {
 							Computed:    true,
 							Description: "Message regarding orchestrator cluster status.",
 						},
-						"orchestrator_cluster_type": &schema.Schema{
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "Type of orchestrator cluster.",
-						},
 						"orchestrator_config_status": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
@@ -89,6 +98,11 @@ func DataSourceIbmPdrGetDrSummaryResponse() *schema.Resource {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "Leader node of the orchestrator group.",
+						},
+						"orchestrator_location_type": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Type of orchestrator Location.",
 						},
 						"orchestrator_name": &schema.Schema{
 							Type:        schema.TypeString,
@@ -179,6 +193,11 @@ func DataSourceIbmPdrGetDrSummaryResponse() *schema.Resource {
 							Computed:    true,
 							Description: "Flag indicating if KSYS HA is enabled.",
 						},
+						"plan_name": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "plan name.",
+						},
 						"primary_ip_address": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
@@ -231,7 +250,7 @@ func DataSourceIbmPdrGetDrSummaryResponse() *schema.Resource {
 	}
 }
 
-func dataSourceIbmPdrGetDrSummaryResponseRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataSourceIBMPdrGetDrSummaryResponseRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	drAutomationServiceClient, err := meta.(conns.ClientSession).DrAutomationServiceV1()
 	if err != nil {
 		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_pdr_get_dr_summary_response", "read", "initialize-client")
@@ -245,18 +264,22 @@ func dataSourceIbmPdrGetDrSummaryResponseRead(context context.Context, d *schema
 	if _, ok := d.GetOk("accept_language"); ok {
 		getDrSummaryOptions.SetAcceptLanguage(d.Get("accept_language").(string))
 	}
-	if _, ok := d.GetOk("if_none_match"); ok {
-		getDrSummaryOptions.SetIfNoneMatch(d.Get("if_none_match").(string))
-	}
-
-	drAutomationGetSummaryResponse, _, err := drAutomationServiceClient.GetDrSummaryWithContext(context, getDrSummaryOptions)
+	drAutomationGetSummaryResponse, response, err := drAutomationServiceClient.GetDrSummaryWithContext(context, getDrSummaryOptions)
 	if err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetDrSummaryWithContext failed: %s", err.Error()), "(Data) ibm_pdr_get_dr_summary_response", "read")
-		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		detailedMsg := fmt.Sprintf("GetDrSummaryWithContext failed: %s", err.Error())
+		// Include HTTP status & raw body if available
+		if response != nil {
+			detailedMsg = fmt.Sprintf(
+				"GetDrSummaryWithContext failed: %s (status: %d, response: %s)",
+				err.Error(), response.StatusCode, response.Result,
+			)
+		}
+		tfErr := flex.TerraformErrorf(err, detailedMsg, "(Data) ibm_pdr_get_dr_summary_response", "read")
+		log.Printf("[ERROR] %s", detailedMsg)
 		return tfErr.GetDiag()
 	}
 
-	d.SetId(dataSourceIbmPdrGetDrSummaryResponseID(d))
+	d.SetId(dataSourceIBMPdrGetDrSummaryResponseID(d))
 
 	convertedMap := make(map[string]interface{}, len(drAutomationGetSummaryResponse.ManagedVMList))
 	for k, v := range drAutomationGetSummaryResponse.ManagedVMList {
@@ -267,7 +290,7 @@ func dataSourceIbmPdrGetDrSummaryResponseRead(context context.Context, d *schema
 	}
 
 	orchestratorDetails := []map[string]interface{}{}
-	orchestratorDetailsMap, err := DataSourceIbmPdrGetDrSummaryResponseOrchestratorDetailsToMap(drAutomationGetSummaryResponse.OrchestratorDetails)
+	orchestratorDetailsMap, err := DataSourceIBMPdrGetDrSummaryResponseOrchestratorDetailsToMap(drAutomationGetSummaryResponse.OrchestratorDetails)
 	if err != nil {
 		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_pdr_get_dr_summary_response", "read", "orchestrator_details-to-map").GetDiag()
 	}
@@ -277,7 +300,7 @@ func dataSourceIbmPdrGetDrSummaryResponseRead(context context.Context, d *schema
 	}
 
 	serviceDetails := []map[string]interface{}{}
-	serviceDetailsMap, err := DataSourceIbmPdrGetDrSummaryResponseServiceDetailsToMap(drAutomationGetSummaryResponse.ServiceDetails)
+	serviceDetailsMap, err := DataSourceIBMPdrGetDrSummaryResponseServiceDetailsToMap(drAutomationGetSummaryResponse.ServiceDetails)
 	if err != nil {
 		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_pdr_get_dr_summary_response", "read", "service_details-to-map").GetDiag()
 	}
@@ -289,20 +312,26 @@ func dataSourceIbmPdrGetDrSummaryResponseRead(context context.Context, d *schema
 	return nil
 }
 
-// dataSourceIbmPdrGetDrSummaryResponseID returns a reasonable ID for the list.
-func dataSourceIbmPdrGetDrSummaryResponseID(d *schema.ResourceData) string {
-	return time.Now().UTC().String()
+// dataSourceIBMPdrGetDrSummaryResponseID returns a reasonable ID for the list.
+func dataSourceIBMPdrGetDrSummaryResponseID(d *schema.ResourceData) string {
+	return d.Get("instance_id").(string)
 }
 
-func DataSourceIbmPdrGetDrSummaryResponseOrchestratorDetailsToMap(model *drautomationservicev1.OrchestratorDetails) (map[string]interface{}, error) {
+func DataSourceIBMPdrGetDrSummaryResponseOrchestratorDetailsToMap(model *drautomationservicev1.OrchestratorDetails) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
+	modelMap["last_updated_orchestrator_deployment_time"] = model.LastUpdatedOrchestratorDeploymentTime.String()
+	modelMap["last_updated_standby_orchestrator_deployment_time"] = model.LastUpdatedStandbyOrchestratorDeploymentTime.String()
+	if model.LatestOrchestratorTime != nil {
+		modelMap["latest_orchestrator_time"] = model.LatestOrchestratorTime.String()
+	}
 	modelMap["location_id"] = *model.LocationID
+	modelMap["mfa_enabled"] = *model.MfaEnabled
 	modelMap["orch_ext_connectivity_status"] = *model.OrchExtConnectivityStatus
 	modelMap["orch_standby_node_addition_status"] = *model.OrchStandbyNodeAdditionStatus
 	modelMap["orchestrator_cluster_message"] = *model.OrchestratorClusterMessage
-	modelMap["orchestrator_cluster_type"] = *model.OrchestratorClusterType
 	modelMap["orchestrator_config_status"] = *model.OrchestratorConfigStatus
 	modelMap["orchestrator_group_leader"] = *model.OrchestratorGroupLeader
+	modelMap["orchestrator_location_type"] = *model.OrchestratorLocationType
 	modelMap["orchestrator_name"] = *model.OrchestratorName
 	modelMap["orchestrator_status"] = *model.OrchestratorStatus
 	modelMap["orchestrator_workspace_name"] = *model.OrchestratorWorkspaceName
@@ -318,12 +347,13 @@ func DataSourceIbmPdrGetDrSummaryResponseOrchestratorDetailsToMap(model *drautom
 	return modelMap, nil
 }
 
-func DataSourceIbmPdrGetDrSummaryResponseServiceDetailsToMap(model *drautomationservicev1.ServiceDetails) (map[string]interface{}, error) {
+func DataSourceIBMPdrGetDrSummaryResponseServiceDetailsToMap(model *drautomationservicev1.ServiceDetails) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["crn"] = *model.CRN
 	modelMap["deployment_name"] = *model.DeploymentName
 	modelMap["description"] = *model.Description
 	modelMap["is_ksys_ha"] = *model.IsKsysHa
+	modelMap["plan_name"] = *model.PlanName
 	modelMap["primary_ip_address"] = *model.PrimaryIPAddress
 	modelMap["primary_orchestrator_dashboard_url"] = *model.PrimaryOrchestratorDashboardURL
 	modelMap["recovery_location"] = *model.RecoveryLocation

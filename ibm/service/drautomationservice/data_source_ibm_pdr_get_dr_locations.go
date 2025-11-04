@@ -3,7 +3,7 @@
 
 /*
  * IBM OpenAPI Terraform Generator Version: 3.105.0-3c13b041-20250605-193116
-*/
+ */
 
 package drautomationservice
 
@@ -11,7 +11,6 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -21,9 +20,9 @@ import (
 	"github.ibm.com/DRAutomation/dra-go-sdk/drautomationservicev1"
 )
 
-func DataSourceIbmPdrGetDrLocations() *schema.Resource {
+func DataSourceIBMPdrGetDrLocations() *schema.Resource {
 	return &schema.Resource{
-		ReadContext: dataSourceIbmPdrGetDrLocationsRead,
+		ReadContext: dataSourceIBMPdrGetDrLocationsRead,
 
 		Schema: map[string]*schema.Schema{
 			"instance_id": &schema.Schema{
@@ -35,11 +34,6 @@ func DataSourceIbmPdrGetDrLocations() *schema.Resource {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Description: "The language requested for the return document.",
-			},
-			"if_none_match": &schema.Schema{
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "ETag for conditional requests (optional).",
 			},
 			"dr_locations": &schema.Schema{
 				Type:        schema.TypeList,
@@ -64,7 +58,7 @@ func DataSourceIbmPdrGetDrLocations() *schema.Resource {
 	}
 }
 
-func dataSourceIbmPdrGetDrLocationsRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataSourceIBMPdrGetDrLocationsRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	drAutomationServiceClient, err := meta.(conns.ClientSession).DrAutomationServiceV1()
 	if err != nil {
 		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_pdr_get_dr_locations", "read", "initialize-client")
@@ -75,30 +69,38 @@ func dataSourceIbmPdrGetDrLocationsRead(context context.Context, d *schema.Resou
 	getDrLocationsOptions := &drautomationservicev1.GetDrLocationsOptions{}
 
 	getDrLocationsOptions.SetInstanceID(d.Get("instance_id").(string))
-	if _, ok := d.GetOk("accept_language"); ok {
-		getDrLocationsOptions.SetAcceptLanguage(d.Get("accept_language").(string))
-	}
-	if _, ok := d.GetOk("if_none_match"); ok {
-		getDrLocationsOptions.SetIfNoneMatch(d.Get("if_none_match").(string))
-	}
 
-	getDrLocationsResponse, _, err := drAutomationServiceClient.GetDrLocationsWithContext(context, getDrLocationsOptions)
+	getDrLocationsResponse, response, err := drAutomationServiceClient.GetDrLocationsWithContext(context, getDrLocationsOptions)
+
 	if err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetDrLocationsWithContext failed: %s", err.Error()), "(Data) ibm_pdr_get_dr_locations", "read")
-		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		detailedMsg := fmt.Sprintf("GetDrLocationsWithContext failed: %s", err.Error())
+		// Include HTTP status & raw body if available
+		if response != nil {
+			detailedMsg = fmt.Sprintf(
+				"GetDrLocations failed: %s (status: %d, response: %s)",
+				err.Error(), response.StatusCode, response.Result,
+			)
+		}
+		tfErr := flex.TerraformErrorf(err, detailedMsg, "(Data) ibm_pdr_get_dr_locations", "read")
+		log.Printf("[ERROR] %s", detailedMsg)
 		return tfErr.GetDiag()
 	}
 
-	d.SetId(dataSourceIbmPdrGetDrLocationsID(d))
+	d.SetId(dataSourceIBMPdrGetDrLocationsID(d))
+
+	if _, ok := d.GetOk("accept_language"); ok {
+		getDrLocationsOptions.SetAcceptLanguage(d.Get("accept_language").(string))
+	}
 
 	drLocations := []map[string]interface{}{}
 	for _, drLocationsItem := range getDrLocationsResponse.DrLocations {
-		drLocationsItemMap, err := DataSourceIbmPdrGetDrLocationsDrLocationToMap(&drLocationsItem) // #nosec G601
+		drLocationsItemMap, err := DataSourceIBMPdrGetDrLocationsDrLocationToMap(&drLocationsItem) // #nosec G601
 		if err != nil {
 			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_pdr_get_dr_locations", "read", "dr_locations-to-map").GetDiag()
 		}
 		drLocations = append(drLocations, drLocationsItemMap)
 	}
+
 	if err = d.Set("dr_locations", drLocations); err != nil {
 		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting dr_locations: %s", err), "(Data) ibm_pdr_get_dr_locations", "read", "set-dr_locations").GetDiag()
 	}
@@ -106,12 +108,12 @@ func dataSourceIbmPdrGetDrLocationsRead(context context.Context, d *schema.Resou
 	return nil
 }
 
-// dataSourceIbmPdrGetDrLocationsID returns a reasonable ID for the list.
-func dataSourceIbmPdrGetDrLocationsID(d *schema.ResourceData) string {
-	return time.Now().UTC().String()
+// dataSourceIBMPdrGetDrLocationsID returns a reasonable ID for the list.
+func dataSourceIBMPdrGetDrLocationsID(d *schema.ResourceData) string {
+	return d.Get("instance_id").(string)
 }
 
-func DataSourceIbmPdrGetDrLocationsDrLocationToMap(model *drautomationservicev1.DrLocation) (map[string]interface{}, error) {
+func DataSourceIBMPdrGetDrLocationsDrLocationToMap(model *drautomationservicev1.DrLocation) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.ID != nil {
 		modelMap["id"] = *model.ID

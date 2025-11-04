@@ -15,18 +15,19 @@ import (
 
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/drautomationservice"
+	. "github.com/IBM-Cloud/terraform-provider-ibm/ibm/unittest"
 	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/stretchr/testify/assert"
 	"github.ibm.com/DRAutomation/dra-go-sdk/drautomationservicev1"
 )
 
-func TestAccIbmPdrGetDrSummaryResponseDataSourceBasic(t *testing.T) {
+func TestAccIBMPdrGetDrSummaryResponseDataSourceBasic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheck(t) },
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIbmPdrGetDrSummaryResponseDataSourceConfigBasic(),
+				Config: testAccCheckIBMPdrGetDrSummaryResponseDataSourceConfigBasic(),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_pdr_get_dr_summary_response.pdr_get_dr_summary_response_instance", "id"),
 					resource.TestCheckResourceAttrSet("data.ibm_pdr_get_dr_summary_response.pdr_get_dr_summary_response_instance", "instance_id"),
@@ -39,7 +40,7 @@ func TestAccIbmPdrGetDrSummaryResponseDataSourceBasic(t *testing.T) {
 	})
 }
 
-func testAccCheckIbmPdrGetDrSummaryResponseDataSourceConfigBasic() string {
+func testAccCheckIBMPdrGetDrSummaryResponseDataSourceConfigBasic() string {
 	return fmt.Sprintf(`
 		data "ibm_pdr_get_dr_summary_response" "pdr_get_dr_summary_response_instance" {
 			instance_id = "crn:v1:staging:public:power-dr-automation:global:a/a123456fb04ceebfb4a9fd38c22334455:123456d3-1122-3344-b67d-4389b44b7bf9::"
@@ -47,16 +48,20 @@ func testAccCheckIbmPdrGetDrSummaryResponseDataSourceConfigBasic() string {
 	`)
 }
 
-func TestDataSourceIbmPdrGetDrSummaryResponseOrchestratorDetailsToMap(t *testing.T) {
+func TestDataSourceIBMPdrGetDrSummaryResponseOrchestratorDetailsToMap(t *testing.T) {
 	checkResult := func(result map[string]interface{}) {
 		model := make(map[string]interface{})
+		model["last_updated_orchestrator_deployment_time"] = "2025-10-16T09:28:13.696Z"
+		model["last_updated_standby_orchestrator_deployment_time"] = "2025-10-16T09:28:13.696Z"
+		model["latest_orchestrator_time"] = "2025-10-16T09:28:13.696Z"
 		model["location_id"] = "testString"
+		model["mfa_enabled"] = "testString"
 		model["orch_ext_connectivity_status"] = "testString"
 		model["orch_standby_node_addition_status"] = "testString"
 		model["orchestrator_cluster_message"] = "testString"
-		model["orchestrator_cluster_type"] = "testString"
 		model["orchestrator_config_status"] = "testString"
 		model["orchestrator_group_leader"] = "testString"
+		model["orchestrator_location_type"] = "testString"
 		model["orchestrator_name"] = "testString"
 		model["orchestrator_status"] = "testString"
 		model["orchestrator_workspace_name"] = "testString"
@@ -74,13 +79,17 @@ func TestDataSourceIbmPdrGetDrSummaryResponseOrchestratorDetailsToMap(t *testing
 	}
 
 	model := new(drautomationservicev1.OrchestratorDetails)
+	model.LastUpdatedOrchestratorDeploymentTime = CreateMockDateTime("2025-10-16T09:28:13.696Z")
+	model.LastUpdatedStandbyOrchestratorDeploymentTime = CreateMockDateTime("2025-10-16T09:28:13.696Z")
+	model.LatestOrchestratorTime = CreateMockDateTime("2025-10-16T09:28:13.696Z")
 	model.LocationID = core.StringPtr("testString")
+	model.MfaEnabled = core.StringPtr("testString")
 	model.OrchExtConnectivityStatus = core.StringPtr("testString")
 	model.OrchStandbyNodeAdditionStatus = core.StringPtr("testString")
 	model.OrchestratorClusterMessage = core.StringPtr("testString")
-	model.OrchestratorClusterType = core.StringPtr("testString")
 	model.OrchestratorConfigStatus = core.StringPtr("testString")
 	model.OrchestratorGroupLeader = core.StringPtr("testString")
+	model.OrchestratorLocationType = core.StringPtr("testString")
 	model.OrchestratorName = core.StringPtr("testString")
 	model.OrchestratorStatus = core.StringPtr("testString")
 	model.OrchestratorWorkspaceName = core.StringPtr("testString")
@@ -94,18 +103,19 @@ func TestDataSourceIbmPdrGetDrSummaryResponseOrchestratorDetailsToMap(t *testing
 	model.TransitGatewayName = core.StringPtr("testString")
 	model.VPCName = core.StringPtr("testString")
 
-	result, err := drautomationservice.DataSourceIbmPdrGetDrSummaryResponseOrchestratorDetailsToMap(model)
+	result, err := drautomationservice.DataSourceIBMPdrGetDrSummaryResponseOrchestratorDetailsToMap(model)
 	assert.Nil(t, err)
 	checkResult(result)
 }
 
-func TestDataSourceIbmPdrGetDrSummaryResponseServiceDetailsToMap(t *testing.T) {
+func TestDataSourceIBMPdrGetDrSummaryResponseServiceDetailsToMap(t *testing.T) {
 	checkResult := func(result map[string]interface{}) {
 		model := make(map[string]interface{})
 		model["crn"] = "testString"
 		model["deployment_name"] = "testString"
 		model["description"] = "testString"
 		model["is_ksys_ha"] = true
+		model["plan_name"] = "testString"
 		model["primary_ip_address"] = "testString"
 		model["primary_orchestrator_dashboard_url"] = "testString"
 		model["recovery_location"] = "testString"
@@ -124,6 +134,7 @@ func TestDataSourceIbmPdrGetDrSummaryResponseServiceDetailsToMap(t *testing.T) {
 	model.DeploymentName = core.StringPtr("testString")
 	model.Description = core.StringPtr("testString")
 	model.IsKsysHa = core.BoolPtr(true)
+	model.PlanName = core.StringPtr("testString")
 	model.PrimaryIPAddress = core.StringPtr("testString")
 	model.PrimaryOrchestratorDashboardURL = core.StringPtr("testString")
 	model.RecoveryLocation = core.StringPtr("testString")
@@ -134,7 +145,7 @@ func TestDataSourceIbmPdrGetDrSummaryResponseServiceDetailsToMap(t *testing.T) {
 	model.StandbyStatus = core.StringPtr("testString")
 	model.Status = core.StringPtr("testString")
 
-	result, err := drautomationservice.DataSourceIbmPdrGetDrSummaryResponseServiceDetailsToMap(model)
+	result, err := drautomationservice.DataSourceIBMPdrGetDrSummaryResponseServiceDetailsToMap(model)
 	assert.Nil(t, err)
 	checkResult(result)
 }

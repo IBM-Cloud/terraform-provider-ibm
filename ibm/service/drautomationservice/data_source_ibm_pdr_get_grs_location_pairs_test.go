@@ -16,29 +16,26 @@ import (
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 )
 
-func TestAccIBMPdrGetMachineTypesDataSourceBasic(t *testing.T) {
+func TestAccIBMPdrGetGrsLocationPairsDataSourceBasic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheck(t) },
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIBMPdrGetMachineTypesDataSourceConfigBasic(),
+				Config: testAccCheckIBMPdrGetGrsLocationPairsDataSourceConfigBasic(),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet("data.ibm_pdr_get_machine_types.pdr_get_machine_types_instance", "id"),
-					resource.TestCheckResourceAttrSet("data.ibm_pdr_get_machine_types.pdr_get_machine_types_instance", "instance_id"),
-					resource.TestCheckResourceAttrSet("data.ibm_pdr_get_machine_types.pdr_get_machine_types_instance", "primary_workspace_name"),
+					resource.TestCheckResourceAttrSet("data.ibm_pdr_get_grs_location_pairs.pdr_get_grs_location_pairs_instance", "id"),
+					resource.TestCheckResourceAttrSet("data.ibm_pdr_get_grs_location_pairs.pdr_get_grs_location_pairs_instance", "instance_id"),
 				),
 			},
 		},
 	})
 }
 
-func testAccCheckIBMPdrGetMachineTypesDataSourceConfigBasic() string {
+func testAccCheckIBMPdrGetGrsLocationPairsDataSourceConfigBasic() string {
 	return fmt.Sprintf(`
-		data "ibm_pdr_get_machine_types" "pdr_get_machine_types_instance" {
+		data "ibm_pdr_get_grs_location_pairs" "pdr_get_grs_location_pairs_instance" {
 			instance_id = "crn:v1:staging:public:power-dr-automation:global:a/a123456fb04ceebfb4a9fd38c22334455:123456d3-1122-3344-b67d-4389b44b7bf9::"
-			primary_workspace_name = "Test-workspace-wdc06"
-			standby_workspace_name = "Test-workspace-wdc07"
 		}
 	`)
 }

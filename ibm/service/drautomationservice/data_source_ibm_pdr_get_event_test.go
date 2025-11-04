@@ -20,13 +20,13 @@ import (
 	"github.ibm.com/DRAutomation/dra-go-sdk/drautomationservicev1"
 )
 
-func TestAccIbmPdrGetEventDataSourceBasic(t *testing.T) {
+func TestAccIBMPdrGetEventDataSourceBasic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheck(t) },
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIbmPdrGetEventDataSourceConfigBasic(),
+				Config: testAccCheckIBMPdrGetEventDataSourceConfigBasic(),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_pdr_get_event.pdr_get_event_instance", "id"),
 					resource.TestCheckResourceAttrSet("data.ibm_pdr_get_event.pdr_get_event_instance", "provision_id"),
@@ -43,7 +43,7 @@ func TestAccIbmPdrGetEventDataSourceBasic(t *testing.T) {
 	})
 }
 
-func testAccCheckIbmPdrGetEventDataSourceConfigBasic() string {
+func testAccCheckIBMPdrGetEventDataSourceConfigBasic() string {
 	return fmt.Sprintf(`
 		data "ibm_pdr_get_event" "pdr_get_event_instance" {
 			provision_id = "crn:v1:staging:public:power-dr-automation:global:a/a123456fb04ceebfb4a9fd38c22334455:123456d3-1122-3344-b67d-4389b44b7bf9::"
@@ -52,7 +52,7 @@ func testAccCheckIbmPdrGetEventDataSourceConfigBasic() string {
 	`)
 }
 
-func TestDataSourceIbmPdrGetEventEventUserToMap(t *testing.T) {
+func TestDataSourceIBMPdrGetEventEventUserToMap(t *testing.T) {
 	checkResult := func(result map[string]interface{}) {
 		model := make(map[string]interface{})
 		model["email"] = "abcuser@ibm.com"
@@ -67,7 +67,7 @@ func TestDataSourceIbmPdrGetEventEventUserToMap(t *testing.T) {
 	model.Name = core.StringPtr("abcuser")
 	model.UserID = core.StringPtr("IBMid-695000abc7E")
 
-	result, err := drautomationservice.DataSourceIbmPdrGetEventEventUserToMap(model)
+	result, err := drautomationservice.DataSourceIBMPdrGetEventEventUserToMap(model)
 	assert.Nil(t, err)
 	checkResult(result)
 }

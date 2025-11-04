@@ -20,13 +20,13 @@ import (
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 )
 
-func TestAccIbmPdrGetDrLocationsDataSourceBasic(t *testing.T) {
+func TestAccIBMPdrGetDrLocationsDataSourceBasic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheck(t) },
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIbmPdrGetDrLocationsDataSourceConfigBasic(),
+				Config: testAccCheckIBMPdrGetDrLocationsDataSourceConfigBasic(),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_pdr_get_dr_locations.pdr_get_dr_locations_instance", "id"),
 					resource.TestCheckResourceAttrSet("data.ibm_pdr_get_dr_locations.pdr_get_dr_locations_instance", "instance_id"),
@@ -37,7 +37,7 @@ func TestAccIbmPdrGetDrLocationsDataSourceBasic(t *testing.T) {
 	})
 }
 
-func testAccCheckIbmPdrGetDrLocationsDataSourceConfigBasic() string {
+func testAccCheckIBMPdrGetDrLocationsDataSourceConfigBasic() string {
 	return fmt.Sprintf(`
 		data "ibm_pdr_get_dr_locations" "pdr_get_dr_locations_instance" {
 			instance_id = "crn:v1:staging:public:power-dr-automation:global:a/a123456fb04ceebfb4a9fd38c22334455:123456d3-1122-3344-b67d-4389b44b7bf9::"
@@ -46,7 +46,7 @@ func testAccCheckIbmPdrGetDrLocationsDataSourceConfigBasic() string {
 }
 
 
-func TestDataSourceIbmPdrGetDrLocationsDrLocationToMap(t *testing.T) {
+func TestDataSourceIBMPdrGetDrLocationsDrLocationToMap(t *testing.T) {
 	checkResult := func(result map[string]interface{}) {
 		model := make(map[string]interface{})
 		model["id"] = "loc123"
@@ -59,7 +59,7 @@ func TestDataSourceIbmPdrGetDrLocationsDrLocationToMap(t *testing.T) {
 	model.ID = core.StringPtr("loc123")
 	model.Name = core.StringPtr("US-East-1")
 
-	result, err := drautomationservice.DataSourceIbmPdrGetDrLocationsDrLocationToMap(model)
+	result, err := drautomationservice.DataSourceIBMPdrGetDrLocationsDrLocationToMap(model)
 	assert.Nil(t, err)
 	checkResult(result)
 }

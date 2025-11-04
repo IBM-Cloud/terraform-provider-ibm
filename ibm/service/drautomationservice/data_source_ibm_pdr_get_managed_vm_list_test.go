@@ -20,13 +20,13 @@ import (
 	"github.ibm.com/DRAutomation/dra-go-sdk/drautomationservicev1"
 )
 
-func TestAccIbmPdrGetManagedVmListDataSourceBasic(t *testing.T) {
+func TestAccIBMPdrGetManagedVMListDataSourceBasic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheck(t) },
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIbmPdrGetManagedVmListDataSourceConfigBasic(),
+				Config: testAccCheckIBMPdrGetManagedVMListDataSourceConfigBasic(),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_pdr_get_managed_vm_list.pdr_get_managed_vm_list_instance", "id"),
 					resource.TestCheckResourceAttrSet("data.ibm_pdr_get_managed_vm_list.pdr_get_managed_vm_list_instance", "instance_id"),
@@ -36,7 +36,7 @@ func TestAccIbmPdrGetManagedVmListDataSourceBasic(t *testing.T) {
 	})
 }
 
-func testAccCheckIbmPdrGetManagedVmListDataSourceConfigBasic() string {
+func testAccCheckIBMPdrGetManagedVMListDataSourceConfigBasic() string {
 	return fmt.Sprintf(`
 		data "ibm_pdr_get_managed_vm_list" "pdr_get_managed_vm_list_instance" {
 			instance_id = "crn:v1:staging:public:power-dr-automation:global:a/a123456fb04ceebfb4a9fd38c22334455:123456d3-1122-3344-b67d-4389b44b7bf9::"
@@ -44,7 +44,7 @@ func testAccCheckIbmPdrGetManagedVmListDataSourceConfigBasic() string {
 	`)
 }
 
-func TestDataSourceIbmPdrGetManagedVmListManagedVmDetailsToMap(t *testing.T) {
+func TestDataSourceIBMPdrGetManagedVMListManagedVMDetailsToMap(t *testing.T) {
 	checkResult := func(result map[string]interface{}) {
 		model := make(map[string]interface{})
 		model["core"] = "0.50"
@@ -69,7 +69,7 @@ func TestDataSourceIbmPdrGetManagedVmListManagedVmDetailsToMap(t *testing.T) {
 	model.WorkgroupName = core.StringPtr("Example_Workgroup")
 	model.WorkspaceName = core.StringPtr("Example_Workspace")
 
-	result, err := drautomationservice.DataSourceIbmPdrGetManagedVmListManagedVmDetailsToMap(model)
+	result, err := drautomationservice.DataSourceIBMPdrGetManagedVMListManagedVMDetailsToMap(model)
 	assert.Nil(t, err)
 	checkResult(result)
 }

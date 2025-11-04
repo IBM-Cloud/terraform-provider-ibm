@@ -3,7 +3,7 @@
 
 /*
  * IBM OpenAPI Terraform Generator Version: 3.105.0-3c13b041-20250605-193116
-*/
+ */
 
 package drautomationservice
 
@@ -11,19 +11,19 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
+	"github.com/IBM/go-sdk-core/v5/core"
 	"github.ibm.com/DRAutomation/dra-go-sdk/drautomationservicev1"
 )
 
-func DataSourceIbmPdrWorkspaceSchematic() *schema.Resource {
+func DataSourceIBMPdrGetPowervsWorkspace() *schema.Resource {
 	return &schema.Resource{
-		ReadContext: dataSourceIbmPdrWorkspaceSchematicRead,
+		ReadContext: dataSourceIBMPdrGetPowervsWorkspaceRead,
 
 		Schema: map[string]*schema.Schema{
 			"instance_id": &schema.Schema{
@@ -31,20 +31,20 @@ func DataSourceIbmPdrWorkspaceSchematic() *schema.Resource {
 				Required:    true,
 				Description: "instance id of instance to provision.",
 			},
-			"schematic_id": &schema.Schema{
+			"accept_language": &schema.Schema{
 				Type:        schema.TypeString,
-				Required:    true,
-				Description: "Schematic ID value.",
+				Optional:    true,
+				Description: "The language requested for the return document.",
 			},
 			"location_id": &schema.Schema{
 				Type:        schema.TypeString,
 				Required:    true,
 				Description: "Location ID value.",
 			},
-			"if_none_match": &schema.Schema{
+			"dr_standby_workspace_description": &schema.Schema{
 				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "ETag for conditional requests (optional).",
+				Computed:    true,
+				Description: "Description of Standby Workspace.",
 			},
 			"dr_standby_workspaces": &schema.Schema{
 				Type:        schema.TypeList,
@@ -107,6 +107,11 @@ func DataSourceIbmPdrWorkspaceSchematic() *schema.Resource {
 						},
 					},
 				},
+			},
+			"dr_workspace_description": &schema.Schema{
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Description of Workspace.",
 			},
 			"dr_workspaces": &schema.Schema{
 				Type:        schema.TypeList,
@@ -179,68 +184,84 @@ func DataSourceIbmPdrWorkspaceSchematic() *schema.Resource {
 	}
 }
 
-func dataSourceIbmPdrWorkspaceSchematicRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataSourceIBMPdrGetPowervsWorkspaceRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	drAutomationServiceClient, err := meta.(conns.ClientSession).DrAutomationServiceV1()
 	if err != nil {
-		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_pdr_workspace_schematic", "read", "initialize-client")
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_pdr_get_powervs_workspace", "read", "initialize-client")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
 
-	getPvsworkspaceSchematicOptions := &drautomationservicev1.GetPvsworkspaceSchematicOptions{}
+	getPowervsWorkspacesOptions := &drautomationservicev1.GetPowervsWorkspacesOptions{}
 
-	getPvsworkspaceSchematicOptions.SetInstanceID(d.Get("instance_id").(string))
-	getPvsworkspaceSchematicOptions.SetSchematicID(d.Get("schematic_id").(string))
-	getPvsworkspaceSchematicOptions.SetLocationID(d.Get("location_id").(string))
-	if _, ok := d.GetOk("if_none_match"); ok {
-		getPvsworkspaceSchematicOptions.SetIfNoneMatch(d.Get("if_none_match").(string))
-	}
+	getPowervsWorkspacesOptions.SetInstanceID(d.Get("instance_id").(string))
+	getPowervsWorkspacesOptions.SetLocationID(d.Get("location_id").(string))
 
-	drData, _, err := drAutomationServiceClient.GetPvsworkspaceSchematicWithContext(context, getPvsworkspaceSchematicOptions)
+	drData, response, err := drAutomationServiceClient.GetPowervsWorkspacesWithContext(context, getPowervsWorkspacesOptions)
 	if err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetPvsworkspaceSchematicWithContext failed: %s", err.Error()), "(Data) ibm_pdr_workspace_schematic", "read")
-		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		detailedMsg := fmt.Sprintf("GetPowervsWorkspacesWithContext failed: %s", err.Error())
+		// Include HTTP status & raw body if available
+		if response != nil {
+			detailedMsg = fmt.Sprintf(
+				"GetPowervsWorkspacesWithContext failed: %s (status: %d, response: %s)",
+				err.Error(), response.StatusCode, response.Result,
+			)
+		}
+		tfErr := flex.TerraformErrorf(err, detailedMsg, "(Data) ibm_pdr_get_powervs_workspace", "read")
+		log.Printf("[ERROR] %s", detailedMsg)
 		return tfErr.GetDiag()
 	}
 
-	d.SetId(dataSourceIbmPdrWorkspaceSchematicID(d))
+	d.SetId(dataSourceIBMPdrGetPowervsWorkspaceID(d))
+
+	if !core.IsNil(drData.DrStandbyWorkspaceDescription) {
+		if err = d.Set("dr_standby_workspace_description", flex.Stringify(drData.DrStandbyWorkspaceDescription)); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting dr_standby_workspace_description: %s", err), "(Data) ibm_pdr_get_powervs_workspace", "read", "set-dr_standby_workspace_description").GetDiag()
+		}
+	}
 
 	drStandbyWorkspaces := []map[string]interface{}{}
 	for _, drStandbyWorkspacesItem := range drData.DrStandbyWorkspaces {
-		drStandbyWorkspacesItemMap, err := DataSourceIbmPdrWorkspaceSchematicDRStandbyWorkspaceToMap(&drStandbyWorkspacesItem) // #nosec G601
+		drStandbyWorkspacesItemMap, err := DataSourceIBMPdrGetPowervsWorkspaceDrStandbyWorkspaceToMap(&drStandbyWorkspacesItem) // #nosec G601
 		if err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_pdr_workspace_schematic", "read", "dr_standby_workspaces-to-map").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_pdr_get_powervs_workspace", "read", "dr_standby_workspaces-to-map").GetDiag()
 		}
 		drStandbyWorkspaces = append(drStandbyWorkspaces, drStandbyWorkspacesItemMap)
 	}
 	if err = d.Set("dr_standby_workspaces", drStandbyWorkspaces); err != nil {
-		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting dr_standby_workspaces: %s", err), "(Data) ibm_pdr_workspace_schematic", "read", "set-dr_standby_workspaces").GetDiag()
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting dr_standby_workspaces: %s", err), "(Data) ibm_pdr_get_powervs_workspace", "read", "set-dr_standby_workspaces").GetDiag()
+	}
+
+	if !core.IsNil(drData.DrWorkspaceDescription) {
+		if err = d.Set("dr_workspace_description", flex.Stringify(drData.DrWorkspaceDescription)); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting dr_workspace_description: %s", err), "(Data) ibm_pdr_get_powervs_workspace", "read", "set-dr_workspace_description").GetDiag()
+		}
 	}
 
 	drWorkspaces := []map[string]interface{}{}
 	for _, drWorkspacesItem := range drData.DrWorkspaces {
-		drWorkspacesItemMap, err := DataSourceIbmPdrWorkspaceSchematicDRWorkspaceToMap(&drWorkspacesItem) // #nosec G601
+		drWorkspacesItemMap, err := DataSourceIBMPdrGetPowervsWorkspaceDrWorkspaceToMap(&drWorkspacesItem) // #nosec G601
 		if err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_pdr_workspace_schematic", "read", "dr_workspaces-to-map").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_pdr_get_powervs_workspace", "read", "dr_workspaces-to-map").GetDiag()
 		}
 		drWorkspaces = append(drWorkspaces, drWorkspacesItemMap)
 	}
 	if err = d.Set("dr_workspaces", drWorkspaces); err != nil {
-		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting dr_workspaces: %s", err), "(Data) ibm_pdr_workspace_schematic", "read", "set-dr_workspaces").GetDiag()
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting dr_workspaces: %s", err), "(Data) ibm_pdr_get_powervs_workspace", "read", "set-dr_workspaces").GetDiag()
 	}
 
 	return nil
 }
 
-// dataSourceIbmPdrWorkspaceSchematicID returns a reasonable ID for the list.
-func dataSourceIbmPdrWorkspaceSchematicID(d *schema.ResourceData) string {
-	return time.Now().UTC().String()
+// dataSourceIBMPdrGetPowervsWorkspaceID returns a reasonable ID for the list.
+func dataSourceIBMPdrGetPowervsWorkspaceID(d *schema.ResourceData) string {
+	return d.Get("instance_id").(string)
 }
 
-func DataSourceIbmPdrWorkspaceSchematicDRStandbyWorkspaceToMap(model *drautomationservicev1.DrStandbyWorkspace) (map[string]interface{}, error) {
+func DataSourceIBMPdrGetPowervsWorkspaceDrStandbyWorkspaceToMap(model *drautomationservicev1.DrStandbyWorkspace) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.Details != nil {
-		detailsMap, err := DataSourceIbmPdrWorkspaceSchematicDetailsDrToMap(model.Details)
+		detailsMap, err := DataSourceIBMPdrGetPowervsWorkspaceDetailsDrToMap(model.Details)
 		if err != nil {
 			return modelMap, err
 		}
@@ -250,7 +271,7 @@ func DataSourceIbmPdrWorkspaceSchematicDRStandbyWorkspaceToMap(model *drautomati
 		modelMap["id"] = *model.ID
 	}
 	if model.Location != nil {
-		locationMap, err := DataSourceIbmPdrWorkspaceSchematicLocationDrToMap(model.Location)
+		locationMap, err := DataSourceIBMPdrGetPowervsWorkspaceLocationDrToMap(model.Location)
 		if err != nil {
 			return modelMap, err
 		}
@@ -265,7 +286,7 @@ func DataSourceIbmPdrWorkspaceSchematicDRStandbyWorkspaceToMap(model *drautomati
 	return modelMap, nil
 }
 
-func DataSourceIbmPdrWorkspaceSchematicDetailsDrToMap(model *drautomationservicev1.DetailsDr) (map[string]interface{}, error) {
+func DataSourceIBMPdrGetPowervsWorkspaceDetailsDrToMap(model *drautomationservicev1.DetailsDr) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.CRN != nil {
 		modelMap["crn"] = *model.CRN
@@ -273,7 +294,7 @@ func DataSourceIbmPdrWorkspaceSchematicDetailsDrToMap(model *drautomationservice
 	return modelMap, nil
 }
 
-func DataSourceIbmPdrWorkspaceSchematicLocationDrToMap(model *drautomationservicev1.LocationDr) (map[string]interface{}, error) {
+func DataSourceIBMPdrGetPowervsWorkspaceLocationDrToMap(model *drautomationservicev1.LocationDr) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.Region != nil {
 		modelMap["region"] = *model.Region
@@ -287,13 +308,13 @@ func DataSourceIbmPdrWorkspaceSchematicLocationDrToMap(model *drautomationservic
 	return modelMap, nil
 }
 
-func DataSourceIbmPdrWorkspaceSchematicDRWorkspaceToMap(model *drautomationservicev1.DrWorkspace) (map[string]interface{}, error) {
+func DataSourceIBMPdrGetPowervsWorkspaceDrWorkspaceToMap(model *drautomationservicev1.DrWorkspace) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.Default != nil {
 		modelMap["default"] = *model.Default
 	}
 	if model.Details != nil {
-		detailsMap, err := DataSourceIbmPdrWorkspaceSchematicDetailsDrToMap(model.Details)
+		detailsMap, err := DataSourceIBMPdrGetPowervsWorkspaceDetailsDrToMap(model.Details)
 		if err != nil {
 			return modelMap, err
 		}
@@ -303,7 +324,7 @@ func DataSourceIbmPdrWorkspaceSchematicDRWorkspaceToMap(model *drautomationservi
 		modelMap["id"] = *model.ID
 	}
 	if model.Location != nil {
-		locationMap, err := DataSourceIbmPdrWorkspaceSchematicLocationDrToMap(model.Location)
+		locationMap, err := DataSourceIBMPdrGetPowervsWorkspaceLocationDrToMap(model.Location)
 		if err != nil {
 			return modelMap, err
 		}

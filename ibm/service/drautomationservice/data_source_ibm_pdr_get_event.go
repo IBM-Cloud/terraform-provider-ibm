@@ -3,7 +3,7 @@
 
 /*
  * IBM OpenAPI Terraform Generator Version: 3.105.0-3c13b041-20250605-193116
-*/
+ */
 
 package drautomationservice
 
@@ -11,7 +11,6 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -22,9 +21,9 @@ import (
 	"github.ibm.com/DRAutomation/dra-go-sdk/drautomationservicev1"
 )
 
-func DataSourceIbmPdrGetEvent() *schema.Resource {
+func DataSourceIBMPdrGetEvent() *schema.Resource {
 	return &schema.Resource{
-		ReadContext: dataSourceIbmPdrGetEventRead,
+		ReadContext: dataSourceIBMPdrGetEventRead,
 
 		Schema: map[string]*schema.Schema{
 			"provision_id": &schema.Schema{
@@ -41,11 +40,6 @@ func DataSourceIbmPdrGetEvent() *schema.Resource {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Description: "The language requested for the return document.",
-			},
-			"if_none_match": &schema.Schema{
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "ETag for conditional requests (optional).",
 			},
 			"action": &schema.Schema{
 				Type:        schema.TypeString,
@@ -126,7 +120,7 @@ func DataSourceIbmPdrGetEvent() *schema.Resource {
 	}
 }
 
-func dataSourceIbmPdrGetEventRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataSourceIBMPdrGetEventRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	drAutomationServiceClient, err := meta.(conns.ClientSession).DrAutomationServiceV1()
 	if err != nil {
 		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_pdr_get_event", "read", "initialize-client")
@@ -141,18 +135,23 @@ func dataSourceIbmPdrGetEventRead(context context.Context, d *schema.ResourceDat
 	if _, ok := d.GetOk("accept_language"); ok {
 		getEventOptions.SetAcceptLanguage(d.Get("accept_language").(string))
 	}
-	if _, ok := d.GetOk("if_none_match"); ok {
-		getEventOptions.SetIfNoneMatch(d.Get("if_none_match").(string))
-	}
 
-	event, _, err := drAutomationServiceClient.GetEventWithContext(context, getEventOptions)
+	event, response, err := drAutomationServiceClient.GetEventWithContext(context, getEventOptions)
 	if err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetEventWithContext failed: %s", err.Error()), "(Data) ibm_pdr_get_event", "read")
-		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		detailedMsg := fmt.Sprintf("GetEventWithContext failed: %s", err.Error())
+		// Include HTTP status & raw body if available
+		if response != nil {
+			detailedMsg = fmt.Sprintf(
+				"GetEventWithContext failed: %s (status: %d, response: %s)",
+				err.Error(), response.StatusCode, response.Result,
+			)
+		}
+		tfErr := flex.TerraformErrorf(err, detailedMsg, "(Data) ibm_pdr_get_event", "read")
+		log.Printf("[ERROR] %s", detailedMsg)
 		return tfErr.GetDiag()
 	}
 
-	d.SetId(dataSourceIbmPdrGetEventID(d))
+	d.SetId(dataSourceIBMPdrGetEventID(d))
 
 	if err = d.Set("action", event.Action); err != nil {
 		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting action: %s", err), "(Data) ibm_pdr_get_event", "read", "set-action").GetDiag()
@@ -206,7 +205,7 @@ func dataSourceIbmPdrGetEventRead(context context.Context, d *schema.ResourceDat
 
 	if !core.IsNil(event.User) {
 		user := []map[string]interface{}{}
-		userMap, err := DataSourceIbmPdrGetEventEventUserToMap(event.User)
+		userMap, err := DataSourceIBMPdrGetEventEventUserToMap(event.User)
 		if err != nil {
 			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_pdr_get_event", "read", "user-to-map").GetDiag()
 		}
@@ -219,12 +218,12 @@ func dataSourceIbmPdrGetEventRead(context context.Context, d *schema.ResourceDat
 	return nil
 }
 
-// dataSourceIbmPdrGetEventID returns a reasonable ID for the list.
-func dataSourceIbmPdrGetEventID(d *schema.ResourceData) string {
-	return time.Now().UTC().String()
+// dataSourceIBMPdrGetEventID returns a reasonable ID for the list.
+func dataSourceIBMPdrGetEventID(d *schema.ResourceData) string {
+	return d.Get("instance_id").(string)
 }
 
-func DataSourceIbmPdrGetEventEventUserToMap(model *drautomationservicev1.EventUser) (map[string]interface{}, error) {
+func DataSourceIBMPdrGetEventEventUserToMap(model *drautomationservicev1.EventUser) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.Email != nil {
 		modelMap["email"] = *model.Email

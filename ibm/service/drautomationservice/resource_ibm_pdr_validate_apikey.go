@@ -21,19 +21,19 @@ import (
 	"github.ibm.com/DRAutomation/dra-go-sdk/drautomationservicev1"
 )
 
-func ResourceIbmPdrValidateApikey() *schema.Resource {
+func ResourceIBMPdrValidateApikey() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: resourceIbmPdrValidateApikeyCreate,
-		ReadContext:   resourceIbmPdrValidateApikeyRead,
-		UpdateContext: resourceIbmPdrValidateApikeyUpdate,
-		DeleteContext: resourceIbmPdrValidateApikeyDelete,
+		CreateContext: resourceIBMPdrValidateApikeyCreate,
+		ReadContext:   resourceIBMPdrValidateApikeyRead,
+		UpdateContext: resourceIBMPdrValidateApikeyUpdate,
+		DeleteContext: resourceIBMPdrValidateApikeyDelete,
 		Importer:      &schema.ResourceImporter{},
 
 		Schema: map[string]*schema.Schema{
 			"instance_id": &schema.Schema{
-				Type:     schema.TypeString,
-				Required: true,
-				// ForceNew:    true,
+				Type:        schema.TypeString,
+				Required:    true,
+				ForceNew:    true,
 				Description: "instance id of instance to provision.",
 			},
 			"accept_language": &schema.Schema{
@@ -47,11 +47,6 @@ func ResourceIbmPdrValidateApikey() *schema.Resource {
 				// ForceNew:    true,
 				Sensitive:   true,
 				Description: "api key",
-			},
-			"if_none_match": &schema.Schema{
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "ETag for conditional requests (optional).",
 			},
 			"description": &schema.Schema{
 				Type:        schema.TypeString,
@@ -76,7 +71,7 @@ func ResourceIbmPdrValidateApikey() *schema.Resource {
 	}
 }
 
-func resourceIbmPdrValidateApikeyCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceIBMPdrValidateApikeyCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	drAutomationServiceClient, err := meta.(conns.ClientSession).DrAutomationServiceV1()
 	if err != nil {
 		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_pdr_validate_apikey", "create", "initialize-client")
@@ -84,34 +79,32 @@ func resourceIbmPdrValidateApikeyCreate(context context.Context, d *schema.Resou
 		return tfErr.GetDiag()
 	}
 
-	createServiceInstanceKeyValidationOptions := &drautomationservicev1.CreateApikeyOptions{}
+	createApikeyOptions := &drautomationservicev1.CreateApikeyOptions{}
 
-	createServiceInstanceKeyValidationOptions.SetInstanceID(d.Get("instance_id").(string))
-	createServiceInstanceKeyValidationOptions.SetAPIKey(d.Get("api_key").(string))
-	if _, ok := d.GetOk("accept_language"); ok {
-		createServiceInstanceKeyValidationOptions.SetAcceptLanguage(d.Get("accept_language").(string))
-	}
-	if _, ok := d.GetOk("if_none_match"); ok {
-		createServiceInstanceKeyValidationOptions.SetIfNoneMatch(d.Get("if_none_match").(string))
-	}
+	createApikeyOptions.SetInstanceID(d.Get("instance_id").(string))
+	createApikeyOptions.SetAPIKey(d.Get("api_key").(string))
 
-	validationKeyResponse, _, err := drAutomationServiceClient.Clone().CreateApikeyWithContext(context, createServiceInstanceKeyValidationOptions)
+	validationKeyResponse, response, err := drAutomationServiceClient.CreateApikeyWithContext(context, createApikeyOptions)
 	if err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateServiceInstanceKeyValidationWithContext failed: %s", err.Error()), "ibm_pdr_validate_apikey", "create")
-		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		detailedMsg := fmt.Sprintf("CreateApikeyWithContext failed: %s", err.Error())
+		// Include HTTP status & raw body if available
+		if response != nil {
+			detailedMsg = fmt.Sprintf(
+				"CreateApikeyWithContext failed: %s (status: %d, response: %s)",
+				err.Error(), response.StatusCode, response.Result,
+			)
+		}
+		tfErr := flex.TerraformErrorf(err, detailedMsg, "ibm_pdr_validate_apikey", "create")
+		log.Printf("[ERROR] %s", detailedMsg)
 		return tfErr.GetDiag()
 	}
 
-	d.SetId(fmt.Sprintf("%s/%s", *createServiceInstanceKeyValidationOptions.InstanceID, *validationKeyResponse.ID))
+	d.SetId(fmt.Sprintf("%s/%s", *createApikeyOptions.InstanceID, *validationKeyResponse.ID))
 
-	return resourceIbmPdrValidateApikeyRead(context, d, meta)
+	return resourceIBMPdrValidateApikeyRead(context, d, meta)
 }
 
-func resourceIbmPdrValidateApikeyRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	if d.Id() == "" {
-		return nil
-	}
-
+func resourceIBMPdrValidateApikeyRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	drAutomationServiceClient, err := meta.(conns.ClientSession).DrAutomationServiceV1()
 	if err != nil {
 		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_pdr_validate_apikey", "read", "initialize-client")
@@ -119,36 +112,31 @@ func resourceIbmPdrValidateApikeyRead(context context.Context, d *schema.Resourc
 		return tfErr.GetDiag()
 	}
 
-	getServiceInstanceKeyV1Options := &drautomationservicev1.GetApikeyOptions{}
+	getApikeyOptions := &drautomationservicev1.GetApikeyOptions{}
 
-	instanceID := d.Get("instance_id").(string)
-
-	log.Printf("[DEBUG] Read operation using instance ID from resource: %s", instanceID)
-
-	getServiceInstanceKeyV1Options.SetInstanceID(instanceID)
-
-	// parts, err := flex.SepIdParts(d.Id(), "/")
-	// if err != nil {
-	// 	return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_pdr_validate_apikey", "read", "sep-id-parts").GetDiag()
+	getApikeyOptions.SetInstanceID(d.Get("instance_id").(string))
+	// if _, ok := d.GetOk("accept_language"); ok {
+	// 	getApikeyOptions.SetAcceptLanguage(d.Get("accept_language").(string))
+	// }
+	// if _, ok := d.GetOk("if_none_match"); ok {
+	// 	getApikeyOptions.SetIfNoneMatch(d.Get("if_none_match").(string))
 	// }
 
-	// getServiceInstanceKeyV1Options.SetInstanceID(parts[0])
-	// getServiceInstanceKeyV1Options.SetInstanceID(parts[1])
-	if _, ok := d.GetOk("accept_language"); ok {
-		getServiceInstanceKeyV1Options.SetAcceptLanguage(d.Get("accept_language").(string))
-	}
-	if _, ok := d.GetOk("if_none_match"); ok {
-		getServiceInstanceKeyV1Options.SetIfNoneMatch(d.Get("if_none_match").(string))
-	}
-
-	validationKeyResponse, response, err := drAutomationServiceClient.GetApikeyWithContext(context, getServiceInstanceKeyV1Options)
+	validationKeyResponse, response, err := drAutomationServiceClient.GetApikeyWithContext(context, getApikeyOptions)
 	if err != nil {
-		if response != nil && response.StatusCode == 404 {
-			d.SetId("")
-			return nil
+		detailedMsg := fmt.Sprintf("GetApikeyWithContext failed: %s", err.Error())
+		// Include HTTP status & raw body if available
+		if response != nil {
+			detailedMsg = fmt.Sprintf(
+				"GetApikeyWithContext failed: %s (status: %d, response: %s)",
+				err.Error(), response.StatusCode, response.Result,
+			)
 		}
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetServiceInstanceKeyV1WithContext failed: %s", err.Error()), "ibm_pdr_validate_apikey", "read")
-		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		if response.StatusCode == 404 {
+			d.SetId("")
+		}
+		tfErr := flex.TerraformErrorf(err, detailedMsg, "ibm_pdr_validate_apikey", "read")
+		log.Printf("[ERROR] %s", detailedMsg)
 		return tfErr.GetDiag()
 	}
 
@@ -177,7 +165,7 @@ func resourceIbmPdrValidateApikeyRead(context context.Context, d *schema.Resourc
 	return nil
 }
 
-func resourceIbmPdrValidateApikeyUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceIBMPdrValidateApikeyUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	drAutomationServiceClient, err := meta.(conns.ClientSession).DrAutomationServiceV1()
 	if err != nil {
 		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_pdr_validate_apikey", "update", "initialize-client")
@@ -185,35 +173,39 @@ func resourceIbmPdrValidateApikeyUpdate(context context.Context, d *schema.Resou
 		return tfErr.GetDiag()
 	}
 
-	replaceServiceInstanceApiKeyOptions := &drautomationservicev1.UpdateApikeyOptions{}
+	updateApikeyOptions := &drautomationservicev1.UpdateApikeyOptions{}
 
-	parts, err := flex.SepIdParts(d.Id(), "/")
-	if err != nil {
-		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_pdr_validate_apikey", "update", "sep-id-parts").GetDiag()
-	}
-
-	replaceServiceInstanceApiKeyOptions.SetInstanceID(parts[0])
-	replaceServiceInstanceApiKeyOptions.SetInstanceID(parts[1])
-	replaceServiceInstanceApiKeyOptions.SetInstanceID(d.Get("instance_id").(string))
+	updateApikeyOptions.SetInstanceID(d.Get("instance_id").(string))
 	if _, ok := d.GetOk("accept_language"); ok {
-		replaceServiceInstanceApiKeyOptions.SetAcceptLanguage(d.Get("accept_language").(string))
+		updateApikeyOptions.SetAcceptLanguage(d.Get("accept_language").(string))
 	}
-	if _, ok := d.GetOk("if_none_match"); ok {
-		replaceServiceInstanceApiKeyOptions.SetIfNoneMatch(d.Get("if_none_match").(string))
-	}
-	replaceServiceInstanceApiKeyOptions.SetAPIKey(d.Get("api_key").(string))
+	// if _, ok := d.GetOk("if_none_match"); ok {
+	// 	updateApikeyOptions.SetIfNoneMatch(d.Get("if_none_match").(string))
+	// }
+	updateApikeyOptions.SetAPIKey(d.Get("api_key").(string))
 
-	_, _, err = drAutomationServiceClient.UpdateApikeyWithContext(context, replaceServiceInstanceApiKeyOptions)
+	_, response, err := drAutomationServiceClient.UpdateApikeyWithContext(context, updateApikeyOptions)
 	if err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("ReplaceServiceInstanceApiKeyWithContext failed: %s", err.Error()), "ibm_pdr_validate_apikey", "update")
-		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		detailedMsg := fmt.Sprintf("UpdateApikeyWithContext failed: %s", err.Error())
+		// Include HTTP status & raw body if available
+		if response != nil {
+			detailedMsg = fmt.Sprintf(
+				"UpdateApikeyWithContext failed: %s (status: %d, response: %s)",
+				err.Error(), response.StatusCode, response.Result,
+			)
+		}
+		if response.StatusCode == 404 {
+			d.SetId("")
+		}
+		tfErr := flex.TerraformErrorf(err, detailedMsg, "ibm_pdr_validate_apikey", "update")
+		log.Printf("[ERROR] %s", detailedMsg)
 		return tfErr.GetDiag()
 	}
 
-	return resourceIbmPdrValidateApikeyRead(context, d, meta)
+	return resourceIBMPdrValidateApikeyRead(context, d, meta)
 }
 
-func resourceIbmPdrValidateApikeyDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceIBMPdrValidateApikeyDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	// This resource does not support a "delete" operation.
 	d.SetId("")
 	return nil

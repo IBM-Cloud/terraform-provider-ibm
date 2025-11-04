@@ -1101,16 +1101,14 @@ func Provider() *schema.Provider {
 			"ibm_logs_router_targets": logsrouting.DataSourceIBMLogsRouterTargets(),
 
 			// DR Automation Service
-			"ibm_pdr_get_dr_summary_response": drautomationservice.DataSourceIbmPdrGetDrSummaryResponse(),
-			"ibm_pdr_workspace_schematic":     drautomationservice.DataSourceIbmPdrWorkspaceSchematic(),
-			"ibm_pdr_workspace_custom_vpc":    drautomationservice.DataSourceIbmPdrWorkspaceCustomVpc(),
-			"ibm_pdr_get_event":               drautomationservice.DataSourceIbmPdrGetEvent(),
-			"ibm_pdr_get_events":              drautomationservice.DataSourceIbmPdrGetEvents(),
-			"ibm_pdr_get_dr_locations":        drautomationservice.DataSourceIbmPdrGetDrLocations(),
-			"ibm_pdr_get_machine_types":       drautomationservice.DataSourceIbmPdrGetMachineTypes(),
-			"ibm_pdr_get_managed_vm_list":     drautomationservice.DataSourceIbmPdrGetManagedVmList(),
-			"ibm_pdr_schematic_workspaces":    drautomationservice.DataSourceIbmPdrSchematicWorkspaces(),
-			"ibm_pdr_last_operation":          drautomationservice.DataSourceIbmPdrLastOperation(),
+			"ibm_pdr_get_dr_summary_response": drautomationservice.DataSourceIBMPdrGetDrSummaryResponse(),
+			"ibm_pdr_get_powervs_workspace":   drautomationservice.DataSourceIBMPdrGetPowervsWorkspace(),
+			"ibm_pdr_get_event":               drautomationservice.DataSourceIBMPdrGetEvent(),
+			"ibm_pdr_get_events":              drautomationservice.DataSourceIBMPdrGetEvents(),
+			"ibm_pdr_get_dr_locations":        drautomationservice.DataSourceIBMPdrGetDrLocations(),
+			"ibm_pdr_get_machine_types":       drautomationservice.DataSourceIBMPdrGetMachineTypes(),
+			"ibm_pdr_get_managed_vm_list":     drautomationservice.DataSourceIBMPdrGetManagedVMList(),
+			"ibm_pdr_last_operation":          drautomationservice.DataSourceIBMPdrLastOperation(),
 		},
 
 		ResourcesMap: map[string]*schema.Resource{
@@ -1782,8 +1780,8 @@ func Provider() *schema.Provider {
 			"ibm_logs_router_tenant": logsrouting.ResourceIBMLogsRouterTenant(),
 
 			// DR Automation Service
-			"ibm_pdr_managedr": drautomationservice.ResourceIbmPdrManagedr(),
-			"ibm_pdr_validate_apikey": drautomationservice.ResourceIbmPdrValidateApikey(),
+			"ibm_pdr_managedr":        drautomationservice.ResourceIbmPdrManagedr(),
+			"ibm_pdr_validate_apikey": drautomationservice.ResourceIBMPdrValidateApikey(),
 		},
 
 		ConfigureFunc: providerConfigure,
