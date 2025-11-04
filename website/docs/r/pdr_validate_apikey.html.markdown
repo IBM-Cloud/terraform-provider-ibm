@@ -36,4 +36,3 @@ After your resource is created, you can read values from the listed arguments an
 * `instance_id` - (String) Unique identifier of the API key.
 * `status` - (String) Status of the API key.
 
-
