@@ -5,15 +5,15 @@ package power
 
 import (
 	"context"
+	"fmt"
 	"log"
-
-	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	"github.com/IBM-Cloud/power-go-client/clients/instance"
 	"github.com/IBM-Cloud/power-go-client/power/models"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
 
@@ -205,10 +205,12 @@ func DataSourceIBMPINetworkSecurityGroup() *schema.Resource {
 	}
 }
 
-func dataSourceIBMPINetworkSecurityGroupRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataSourceIBMPINetworkSecurityGroupRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	sess, err := meta.(conns.ClientSession).IBMPISession()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("IBMPISession failed: %s", err.Error()), "(Data) ibm_pi_network_security_group", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	cloudInstanceID := d.Get(Arg_CloudInstanceID).(string)
@@ -216,7 +218,9 @@ func dataSourceIBMPINetworkSecurityGroupRead(ctx context.Context, d *schema.Reso
 
 	networkSecurityGroup, err := nsgClient.Get(d.Get(Arg_NetworkSecurityGroupID).(string))
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Get failed: %s", err.Error()), "(Data) ibm_pi_network_security_group", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	d.SetId(*networkSecurityGroup.ID)
@@ -231,7 +235,7 @@ func dataSourceIBMPINetworkSecurityGroupRead(ctx context.Context, d *schema.Reso
 	d.Set(Attr_Default, networkSecurityGroup.Default)
 
 	if len(networkSecurityGroup.Members) > 0 {
-		members := []map[string]interface{}{}
+		members := []map[string]any{}
 		for _, mbr := range networkSecurityGroup.Members {
 			mbrMap := networkSecurityGroupMemberToMap(mbr)
 			members = append(members, mbrMap)
@@ -242,7 +246,7 @@ func dataSourceIBMPINetworkSecurityGroupRead(ctx context.Context, d *schema.Reso
 	d.Set(Attr_Name, networkSecurityGroup.Name)
 
 	if len(networkSecurityGroup.Rules) > 0 {
-		rules := []map[string]interface{}{}
+		rules := []map[string]any{}
 		for _, rule := range networkSecurityGroup.Rules {
 			ruleMap := networkSecurityGroupRuleToMap(rule)
 			rules = append(rules, ruleMap)
@@ -253,8 +257,8 @@ func dataSourceIBMPINetworkSecurityGroupRead(ctx context.Context, d *schema.Reso
 	return nil
 }
 
-func networkSecurityGroupMemberToMap(mbr *models.NetworkSecurityGroupMember) map[string]interface{} {
-	mbrMap := make(map[string]interface{})
+func networkSecurityGroupMemberToMap(mbr *models.NetworkSecurityGroupMember) map[string]any {
+	mbrMap := make(map[string]any)
 	mbrMap[Attr_ID] = mbr.ID
 	if mbr.MacAddress != "" {
 		mbrMap[Attr_MacAddress] = mbr.MacAddress
@@ -267,46 +271,46 @@ func networkSecurityGroupMemberToMap(mbr *models.NetworkSecurityGroupMember) map
 	return mbrMap
 }
 
-func networkSecurityGroupRuleToMap(rule *models.NetworkSecurityGroupRule) map[string]interface{} {
-	ruleMap := make(map[string]interface{})
+func networkSecurityGroupRuleToMap(rule *models.NetworkSecurityGroupRule) map[string]any {
+	ruleMap := make(map[string]any)
 	ruleMap[Attr_Action] = rule.Action
 	if rule.DestinationPort != nil {
 		destinationPortMap := networkSecurityGroupRulePortToMap(rule.DestinationPort)
-		ruleMap[Attr_DestinationPort] = []map[string]interface{}{destinationPortMap}
+		ruleMap[Attr_DestinationPort] = []map[string]any{destinationPortMap}
 	}
 
 	ruleMap[Attr_ID] = rule.ID
 
 	protocolMap := networkSecurityGroupRuleProtocolToMap(rule.Protocol)
-	ruleMap[Attr_Protocol] = []map[string]interface{}{protocolMap}
+	ruleMap[Attr_Protocol] = []map[string]any{protocolMap}
 
 	remoteMap := networkSecurityGroupRuleRemoteToMap(rule.Remote)
-	ruleMap[Attr_Remote] = []map[string]interface{}{remoteMap}
+	ruleMap[Attr_Remote] = []map[string]any{remoteMap}
 
 	if rule.SourcePort != nil {
 		sourcePortMap := networkSecurityGroupRulePortToMap(rule.SourcePort)
-		ruleMap[Attr_SourcePort] = []map[string]interface{}{sourcePortMap}
+		ruleMap[Attr_SourcePort] = []map[string]any{sourcePortMap}
 	}
 
 	return ruleMap
 }
 
-func networkSecurityGroupRulePortToMap(port *models.NetworkSecurityGroupRulePort) map[string]interface{} {
-	portMap := make(map[string]interface{})
+func networkSecurityGroupRulePortToMap(port *models.NetworkSecurityGroupRulePort) map[string]any {
+	portMap := make(map[string]any)
 	portMap[Attr_Maximum] = port.Maximum
 	portMap[Attr_Minimum] = port.Minimum
 	return portMap
 }
 
-func networkSecurityGroupRuleProtocolToMap(protocol *models.NetworkSecurityGroupRuleProtocol) map[string]interface{} {
-	protocolMap := make(map[string]interface{})
+func networkSecurityGroupRuleProtocolToMap(protocol *models.NetworkSecurityGroupRuleProtocol) map[string]any {
+	protocolMap := make(map[string]any)
 	if protocol.IcmpType != nil {
 		protocolMap[Attr_ICMPType] = protocol.IcmpType
 	}
 	if len(protocol.TCPFlags) > 0 {
-		tcpFlags := []map[string]interface{}{}
+		tcpFlags := []map[string]any{}
 		for _, tcpFlagsItem := range protocol.TCPFlags {
-			tcpFlagsItemMap := make(map[string]interface{})
+			tcpFlagsItemMap := make(map[string]any)
 			tcpFlagsItemMap[Attr_Flag] = tcpFlagsItem.Flag
 			tcpFlags = append(tcpFlags, tcpFlagsItemMap)
 		}
@@ -318,8 +322,8 @@ func networkSecurityGroupRuleProtocolToMap(protocol *models.NetworkSecurityGroup
 	return protocolMap
 }
 
-func networkSecurityGroupRuleRemoteToMap(remote *models.NetworkSecurityGroupRuleRemote) map[string]interface{} {
-	remoteMap := make(map[string]interface{})
+func networkSecurityGroupRuleRemoteToMap(remote *models.NetworkSecurityGroupRuleRemote) map[string]any {
+	remoteMap := make(map[string]any)
 	if remote.ID != "" {
 		remoteMap[Attr_ID] = remote.ID
 	}
