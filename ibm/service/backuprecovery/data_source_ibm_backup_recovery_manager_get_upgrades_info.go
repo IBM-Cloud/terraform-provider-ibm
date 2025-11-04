@@ -116,11 +116,30 @@ func DataSourceIbmBackupRecoveryManagerGetUpgradesInfo() *schema.Resource {
 }
 
 func dataSourceIbmBackupRecoveryManagerGetUpgradesInfoRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	managementSreApiClient, err := meta.(conns.ClientSession).BackupRecoveryManagerV1()
+	managementApiClient, err := meta.(conns.ClientSession).BackupRecoveryManagerV1()
 	if err != nil {
 		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_backup_recovery_manager_get_upgrades_info", "read", "initialize-client")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
+	}
+
+	bmxsession, err := meta.(conns.ClientSession).BluemixSession()
+	if err != nil {
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("unable to get clientSession"), "ibm_backup_recovery_manager_get_upgrades_info", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
+	}
+
+	endpointType := d.Get("endpoint_type").(string)
+	instanceId, region := getInstanceIdAndRegion(d)
+	managementApiClient, err = setManagerClientAuth(managementApiClient, bmxsession, region, endpointType)
+	if err != nil {
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("unable to set authenticator for clientSession: %s", err), "ibm_backup_recovery_manager_get_upgrades_info", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
+	}
+	if instanceId != "" {
+		managementApiClient = getManagerClientWithInstanceEndpoint(managementApiClient, bmxsession, instanceId, region, endpointType)
 	}
 
 	clustersUpgradesInfoOptions := &backuprecoveryv1.ClustersUpgradesInfoOptions{}
@@ -134,7 +153,7 @@ func dataSourceIbmBackupRecoveryManagerGetUpgradesInfoRead(context context.Conte
 		clustersUpgradesInfoOptions.SetClusterIdentifiers(clusterIdentifiers)
 	}
 
-	upgradesInfo, _, err := managementSreApiClient.ClustersUpgradesInfoWithContext(context, clustersUpgradesInfoOptions)
+	upgradesInfo, _, err := managementApiClient.ClustersUpgradesInfoWithContext(context, clustersUpgradesInfoOptions)
 	if err != nil {
 		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("ClustersUpgradesInfoWithContext failed: %s", err.Error()), "(Data) ibm_backup_recovery_manager_get_upgrades_info", "read")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
@@ -152,7 +171,7 @@ func dataSourceIbmBackupRecoveryManagerGetUpgradesInfoRead(context context.Conte
 			}
 			upgradesInfoResult = append(upgradesInfoResult, upgradesInfoItemMap)
 		}
-		if err = d.Set("upgrades_info", upgradesInfo); err != nil {
+		if err = d.Set("upgrades_info", upgradesInfoResult); err != nil {
 			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting upgrades_info: %s", err), "(Data) ibm_backup_recovery_manager_get_upgrades_info", "read", "set-upgrades_info").GetDiag()
 		}
 	}

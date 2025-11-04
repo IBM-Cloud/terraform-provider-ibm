@@ -365,11 +365,30 @@ func DataSourceIbmBackupRecoveryManagerGetAlertsStats() *schema.Resource {
 }
 
 func dataSourceIbmBackupRecoveryManagerGetAlertsStatsRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	managementSreApiClient, err := meta.(conns.ClientSession).BackupRecoveryManagerV1()
+	managementApiClient, err := meta.(conns.ClientSession).BackupRecoveryManagerV1()
 	if err != nil {
 		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_backup_recovery_manager_get_alerts_stats", "read", "initialize-client")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
+	}
+
+	bmxsession, err := meta.(conns.ClientSession).BluemixSession()
+	if err != nil {
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("unable to get clientSession"), "ibm_backup_recovery_manager_get_alerts_stats", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
+	}
+
+	endpointType := d.Get("endpoint_type").(string)
+	instanceId, region := getInstanceIdAndRegion(d)
+	managementApiClient, err = setManagerClientAuth(managementApiClient, bmxsession, region, endpointType)
+	if err != nil {
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("unable to set authenticator for clientSession: %s", err), "ibm_backup_recovery_manager_get_alerts_stats", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
+	}
+	if instanceId != "" {
+		managementApiClient = getManagerClientWithInstanceEndpoint(managementApiClient, bmxsession, instanceId, region, endpointType)
 	}
 
 	getManagementAlertsStatsOptions := &backuprecoveryv1.GetManagementAlertsStatsOptions{}
@@ -415,7 +434,7 @@ func dataSourceIbmBackupRecoveryManagerGetAlertsStatsRead(context context.Contex
 		getManagementAlertsStatsOptions.SetTenantIds(tenantIds)
 	}
 
-	mcmActiveAlertsStats, _, err := managementSreApiClient.GetManagementAlertsStatsWithContext(context, getManagementAlertsStatsOptions)
+	mcmActiveAlertsStats, _, err := managementApiClient.GetManagementAlertsStatsWithContext(context, getManagementAlertsStatsOptions)
 	if err != nil {
 		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetManagementAlertsStatsWithContext failed: %s", err.Error()), "(Data) ibm_backup_recovery_manager_get_alerts_stats", "read")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())

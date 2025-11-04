@@ -64,11 +64,30 @@ func DataSourceIbmBackupRecoveryManagerGetCompatibleClusters() *schema.Resource 
 }
 
 func dataSourceIbmBackupRecoveryManagerGetCompatibleClustersRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	managementSreApiClient, err := meta.(conns.ClientSession).BackupRecoveryManagerV1()
+	managementApiClient, err := meta.(conns.ClientSession).BackupRecoveryManagerV1()
 	if err != nil {
 		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_backup_recovery_manager_get_compatible_clusters", "read", "initialize-client")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
+	}
+
+	bmxsession, err := meta.(conns.ClientSession).BluemixSession()
+	if err != nil {
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("unable to get clientSession"), "ibm_backup_recovery_manager_get_compatible_clusters", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
+	}
+
+	endpointType := d.Get("endpoint_type").(string)
+	instanceId, region := getInstanceIdAndRegion(d)
+	managementApiClient, err = setManagerClientAuth(managementApiClient, bmxsession, region, endpointType)
+	if err != nil {
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("unable to set authenticator for clientSession: %s", err), "ibm_backup_recovery_manager_get_compatible_clusters", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
+	}
+	if instanceId != "" {
+		managementApiClient = getManagerClientWithInstanceEndpoint(managementApiClient, bmxsession, instanceId, region, endpointType)
 	}
 
 	compatibleClustersForReleaseOptions := &backuprecoveryv1.CompatibleClustersForReleaseOptions{}
@@ -77,7 +96,7 @@ func dataSourceIbmBackupRecoveryManagerGetCompatibleClustersRead(context context
 		compatibleClustersForReleaseOptions.SetReleaseVersion(d.Get("release_version").(string))
 	}
 
-	compatibleClusters, _, err := managementSreApiClient.CompatibleClustersForReleaseWithContext(context, compatibleClustersForReleaseOptions)
+	compatibleClusters, _, err := managementApiClient.CompatibleClustersForReleaseWithContext(context, compatibleClustersForReleaseOptions)
 	if err != nil {
 		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CompatibleClustersForReleaseWithContext failed: %s", err.Error()), "(Data) ibm_backup_recovery_manager_get_compatible_clusters", "read")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
@@ -95,7 +114,7 @@ func dataSourceIbmBackupRecoveryManagerGetCompatibleClustersRead(context context
 			}
 			compatibleClustersResult = append(compatibleClustersResult, compatibleClustersItemMap)
 		}
-		if err = d.Set("compatible_clusters", compatibleClusters); err != nil {
+		if err = d.Set("compatible_clusters", compatibleClustersResult); err != nil {
 			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting compatible_clusters: %s", err), "(Data) ibm_backup_recovery_manager_get_compatible_clusters", "read", "set-compatible_clusters").GetDiag()
 		}
 	}

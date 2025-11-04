@@ -27,6 +27,7 @@ func ResourceIbmBackupRecoveryManagerCreateClusterUpgrades() *schema.Resource {
 		CreateContext: resourceIbmBackupRecoveryManagerCreateClusterUpgradesCreate,
 		ReadContext:   resourceIbmBackupRecoveryManagerCreateClusterUpgradesRead,
 		DeleteContext: resourceIbmBackupRecoveryManagerCreateClusterUpgradesDelete,
+		UpdateContext: resourceIbmBackupRecoveryManagerCreateClusterUpgradesUpdate,
 		Importer:      &schema.ResourceImporter{},
 
 		Schema: map[string]*schema.Schema{
@@ -190,11 +191,30 @@ func ResourceIbmBackupRecoveryManagerCreateClusterUpgrades() *schema.Resource {
 }
 
 func resourceIbmBackupRecoveryManagerCreateClusterUpgradesCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	managementSreApiClient, err := meta.(conns.ClientSession).BackupRecoveryManagerV1()
+	managementApiClient, err := meta.(conns.ClientSession).BackupRecoveryManagerV1()
 	if err != nil {
 		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_manager_create_cluster_upgrades", "create", "initialize-client")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
+	}
+
+	bmxsession, err := meta.(conns.ClientSession).BluemixSession()
+	if err != nil {
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("unable to get clientSession"), "ibm_backup_recovery_manager_cancel_cluster_upgrades", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
+	}
+
+	endpointType := d.Get("endpoint_type").(string)
+	instanceId, region := getInstanceIdAndRegion(d)
+	managementApiClient, err = setManagerClientAuth(managementApiClient, bmxsession, region, endpointType)
+	if err != nil {
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("unable to set authenticator for clientSession: %s", err), "ibm_backup_recovery_manager_create_cluster_upgrades", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
+	}
+	if instanceId != "" {
+		managementApiClient = getManagerClientWithInstanceEndpoint(managementApiClient, bmxsession, instanceId, region, endpointType)
 	}
 
 	createClustersUpgradesOptions := &backuprecoveryv1.CreateClustersUpgradesOptions{}
@@ -246,7 +266,7 @@ func resourceIbmBackupRecoveryManagerCreateClusterUpgradesCreate(context context
 		createClustersUpgradesOptions.SetType(d.Get("type").(string))
 	}
 
-	upgradesResponse, _, err := managementSreApiClient.CreateClustersUpgradesWithContext(context, createClustersUpgradesOptions)
+	upgradesResponse, _, err := managementApiClient.CreateClustersUpgradesWithContext(context, createClustersUpgradesOptions)
 	if err != nil {
 		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateClustersUpgradesWithContext failed: %s", err.Error()), "ibm_backup_recovery_manager_create_cluster_upgrades", "create")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
@@ -296,6 +316,19 @@ func resourceIbmBackupRecoveryManagerCreateClusterUpgradesID(d *schema.ResourceD
 
 func resourceIbmBackupRecoveryManagerCreateClusterUpgradesRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	return nil
+}
+
+func resourceIbmBackupRecoveryManagerCreateClusterUpgradesUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	// This resource does not support a "delete" operation.
+	var diags diag.Diagnostics
+	warning := diag.Diagnostic{
+		Severity: diag.Warning,
+		Summary:  "Update Not Supported",
+		Detail:   "The resource definition will be only be removed from the terraform statefile. This resource cannot be deleted from the backend. ",
+	}
+	diags = append(diags, warning)
+	d.SetId("")
+	return diags
 }
 
 func resourceIbmBackupRecoveryManagerCreateClusterUpgradesDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
