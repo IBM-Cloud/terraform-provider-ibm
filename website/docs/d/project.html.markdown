@@ -111,8 +111,10 @@ Nested schema for **cumulative_needs_attention_view**:
   * Constraints: The default value is `false`.
 * `definition` - (List) The definition of the project.
 Nested schema for **definition**:
-	* `auto_deploy` - (Boolean) A boolean flag to enable auto deploy.
+	* `auto_deploy` - (Boolean) A boolean flag to enable deploying configurations automatically.
 	  * Constraints: The default value is `false`.
+	* `auto_deploy_mode` - (String) This is an advanced setting to auto deploy to tell how auto deploy should behave when it is enabled. There are 2 options:> 1. `auto_approval` will automatically approve the configuration after validated without user confirmation.> 2. `manual_approval` will require user confirmation to approve the configuration after validated before deploying the configuration starts.
+	  * Constraints: The default value is `manual_approval`. Allowable values are: `auto_approval`, `manual_approval`.
 	* `description` - (String) A brief explanation of the project's use in the configuration of a deployable architecture. A project can be created without providing a description.
 	  * Constraints: The default value is `''`. The maximum length is `1024` characters. The minimum length is `0` characters. The value must match regular expression `/^$|^(?!\\s)(?!.*\\s$)[^\\x00-\\x1F]*$/`.
 	* `destroy_on_delete` - (Boolean) The policy that indicates whether the resources are undeployed or not when a project is deleted.

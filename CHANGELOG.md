@@ -1,3 +1,108 @@
+# 1.85.0-beta0 (October 29, 2025)
+
+## Bug Fixes
+
+### Backup/Recovery
+* Iks roks support ([6386](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6386))
+
+### Power Systems
+* Fix ibm_pi_network and   ibm_pi_network data source to use id ([6509](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6509))
+
+## Enhancements
+
+### Cloud Logs
+* alert_definitins, policy order and dashboard fix ([6526](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6526))
+
+### Configuration Aggregator
+* Update sdk version ([6497](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6497))
+* app configuration destination, subscription and template, Webho… ([6477](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6477))
+
+### IAM
+* remove account_id from account section of effective settings datasource ([6523](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6523))
+
+### Kubernetes
+* ODF 4.19 initial support ([6527](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6527))
+
+### Power Systems
+* Deprecate Arg_KeyName for Arg_SSHKeyID ([6505](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6505))
+* Deprecate Arg_PlacementGroupName for Arg_PlacementGroupID ([6507](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6507))
+
+
+## Documentation
+
+### General
+* Refined Db2 doc ([6515](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6515))
+
+
+# 1.84.3 (October 23, 2025)
+
+## Bug Fixes
+### VPC Infrastructure
+* fix: support boot volume profile configuration for is_instance creation
+ ([6528](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6528))
+
+
+# 1.84.2 (October 21, 2025)
+
+## Bug Fixes
+
+### General
+* Fix the filemap for IAM endpoint type from endpoints file ([6524](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6524))
+
+# 1.84.1 (October 17, 2025)
+
+## Enhancements
+
+### IAM
+* Add new attributes to IAM Identity Account Settings ([6491](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6491))
+
+# 1.84.0 (October 13, 2025)
+
+## Bug Fixes
+
+### Cloud Databases
+* Add hidden and beta versions to in place upgrade ([6502](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6502))
+
+
+## Enhancements
+
+### Cloud Object Storage
+* Support Schematics replatform for COS resources ([6504](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6504))
+
+### Secrets Manager
+* projects - support auto deploy mode ([6492](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6492))
+
+### VPC Infrastructure
+* volume-qos-mode feature development ([6498](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6498))
+
+# 1.83.3 (October 9, 2025)
+
+## Bug Fixes
+### VPC Infrastructure
+* migrated provider to v0.74.1 vpc-go-sdk ([6500](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6500))
+
+# 1.83.2 (October 7, 2025)
+
+## Bug Fixes
+### Global Catalog
+* correct argument capitalization, update cm account doc ([6486](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6486))
+* only set rev field if it exists ([6494](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6494))
+
+### CIS
+* check position index before updating CIS ruleset rule ([6472](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6472))
+
+### General
+* removed platform-services-go-sdk replace from go.mod ([6495](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6495))
+
+# 1.83.1 (October 1, 2025)
+
+## Bug Fixes
+* fix the refresh token issue ([6489](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6489))
+* Breaking change with 1.83.0 again ([6487](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/6487))
+* Timeout since v1.83.0 with resource ibm_cos_bucket_lifecycle_configuration ([6488](https://github.com/IBM-Cloud/terraform-provider-ibm/issues/6488))
+
+
+
 # 1.83.0 (September 29, 2025)
 
 ## Bug Fixes

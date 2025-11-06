@@ -247,7 +247,7 @@ var (
 	Pi_network_security_group_id      string
 	Pi_network_security_group_rule_id string
 	Pi_peer_interface_id              string
-	Pi_placement_group_name           string
+	Pi_placement_group_id             string
 	Pi_remote_id                      string
 	Pi_remote_type                    string
 	Pi_replication_volume_name        string
@@ -259,6 +259,7 @@ var (
 	Pi_shared_processor_pool_id       string
 	Pi_snapshot_id                    string
 	Pi_spp_placement_group_id         string
+	Pi_ssh_key_id                     string
 	Pi_storage_connection             string
 	Pi_target_storage_tier            string
 	Pi_virtual_serial_number          string
@@ -407,6 +408,7 @@ var (
 
 // for IAM Identity
 var IamIdentityAssignmentTargetAccountId string
+var IamIdentityEnterpriseAccountId string
 
 // Projects
 var ProjectsConfigApiKey string
@@ -466,6 +468,7 @@ func init() {
 	}
 
 	IamIdentityAssignmentTargetAccountId = os.Getenv("IAM_IDENTITY_ASSIGNMENT_TARGET_ACCOUNT")
+	IamIdentityEnterpriseAccountId = os.Getenv("IAM_IDENTITY_ENTERPRISE_ACCOUNT")
 
 	ProjectsConfigApiKey = os.Getenv("IBM_PROJECTS_CONFIG_APIKEY")
 	if ProjectsConfigApiKey == "" {
@@ -1195,7 +1198,13 @@ func init() {
 	Pi_key_name = os.Getenv("PI_KEY_NAME")
 	if Pi_key_name == "" {
 		Pi_key_name = "terraform-test-power"
-		fmt.Println("[INFO] Set the environment variable PI_KEY_NAME for testing ibm_pi_key_name resource else it is set to default value 'terraform-test-power'")
+		fmt.Println("[INFO] Set the environment variable PI_KEY_NAME for testing ibm_pi_key resource else it is set to default value 'terraform-test-power'")
+	}
+
+	Pi_ssh_key_id = os.Getenv("PI_SSH_KEY_ID")
+	if Pi_ssh_key_id == "" {
+		Pi_ssh_key_id = "terraform-test-power"
+		fmt.Println("[INFO] Set the environment variable PI_SSH_KEY_ID for testing ibm_pi_key resource else it is set to default value 'terraform-test-power'")
 	}
 
 	Pi_network_name = os.Getenv("PI_NETWORK_NAME")
@@ -1339,10 +1348,10 @@ func init() {
 		fmt.Println("[INFO] Set the environment variable PI_SAP_PROFILE_ID for testing ibm_pi_sap_profile resource else it is set to default value 'terraform-test-power'")
 	}
 
-	Pi_placement_group_name = os.Getenv("PI_PLACEMENT_GROUP_NAME")
-	if Pi_placement_group_name == "" {
-		Pi_placement_group_name = "tf-pi-placement-group"
-		fmt.Println("[WARN] Set the environment variable PI_PLACEMENT_GROUP_NAME for testing ibm_pi_placement_group resource else it is set to default value 'tf-pi-placement-group'")
+	Pi_placement_group_id = os.Getenv("PI_PLACEMENT_GROUP_ID")
+	if Pi_placement_group_id == "" {
+		Pi_placement_group_id = "tf-pi-placement-group"
+		fmt.Println("[WARN] Set the environment variable PI_PLACEMENT_GROUP_ID for testing ibm_pi_placement_group resource else it is set to default value 'tf-pi-placement-group'")
 	}
 
 	Pi_remote_id = os.Getenv("PI_REMOTE_ID")
@@ -2258,9 +2267,13 @@ func TestAccPreCheckEnterprise(t *testing.T) {
 	}
 }
 
-func TestAccPreCheckAssignmentTargetAccount(t *testing.T) {
+func TestAccPreCheckIamIdentityEnterpriseTemplates(t *testing.T) {
+	TestAccPreCheck(t)
 	if v := os.Getenv("IAM_IDENTITY_ASSIGNMENT_TARGET_ACCOUNT"); v == "" {
 		t.Fatal("IAM_IDENTITY_ASSIGNMENT_TARGET_ACCOUNT must be set for IAM identity assignment tests")
+	}
+	if v := os.Getenv("IAM_IDENTITY_ENTERPRISE_ACCOUNT"); v == "" {
+		t.Fatal("IAM_IDENTITY_ENTERPRISE_ACCOUNT must be set for IAM identity assignment tests")
 	}
 }
 

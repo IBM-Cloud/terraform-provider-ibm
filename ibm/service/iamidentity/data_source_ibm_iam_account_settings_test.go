@@ -24,6 +24,8 @@ func TestAccIBMIAMAccountSettingsDataSourceBasic(t *testing.T) {
 					resource.TestCheckResourceAttrSet("data.ibm_iam_account_settings.iam_account_settings", "account_id"),
 					resource.TestCheckResourceAttrSet("data.ibm_iam_account_settings.iam_account_settings", "restrict_create_service_id"),
 					resource.TestCheckResourceAttrSet("data.ibm_iam_account_settings.iam_account_settings", "restrict_create_platform_apikey"),
+					resource.TestCheckResourceAttrSet("data.ibm_iam_account_settings.iam_account_settings", "restrict_user_list_visibility"),
+					resource.TestCheckResourceAttrSet("data.ibm_iam_account_settings.iam_account_settings", "restrict_user_domains.#"),
 					resource.TestCheckResourceAttrSet("data.ibm_iam_account_settings.iam_account_settings", "entity_tag"),
 					resource.TestCheckResourceAttrSet("data.ibm_iam_account_settings.iam_account_settings", "mfa"),
 					resource.TestCheckResourceAttrSet("data.ibm_iam_account_settings.iam_account_settings", "user_mfa.#"),

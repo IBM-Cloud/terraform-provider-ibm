@@ -48,6 +48,7 @@ func testAccCheckIbmBackupRecoveryProtectionPolicyDataSourceConfigBasic(name str
 	return fmt.Sprintf(`
 		resource "ibm_backup_recovery_protection_policy" "baas_protection_policy_instance" {
 			x_ibm_tenant_id = "%s"
+			
 			name = "%s"
 			backup_policy {
 					regular {
@@ -76,6 +77,7 @@ func testAccCheckIbmBackupRecoveryProtectionPolicyDataSourceConfigBasic(name str
 
 		data "ibm_backup_recovery_protection_policy" "baas_protection_policy_instance" {
 			protection_policy_id = ibm_backup_recovery_protection_policy.baas_protection_policy_instance.policy_id
+			
 			x_ibm_tenant_id = "%[1]s"
 		}
 

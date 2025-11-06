@@ -326,7 +326,13 @@ func ResourceIBMISInstanceTemplate() *schema.Resource {
 				ValidateFunc: validate.InvokeValidator("ibm_is_instance_template", isInstanceTotalVolumeBandwidth),
 				Description:  "The amount of bandwidth (in megabits per second) allocated exclusively to instance storage volumes",
 			},
-
+			isInstanceVolumeBandwidthQoSMode: {
+				Type:         schema.TypeString,
+				Optional:     true,
+				ForceNew:     true,
+				ValidateFunc: validate.InvokeValidator("ibm_is_instance_template", isInstanceVolumeBandwidthQoSMode),
+				Description:  "The volume bandwidth QoS mode for this virtual server instance.",
+			},
 			isInstanceTemplateKeys: {
 				Type:             schema.TypeSet,
 				Required:         true,
@@ -1411,6 +1417,16 @@ func ResourceIBMISInstanceTemplateValidator() *validate.ResourceValidator {
 			Regexp:                     `^[A-Za-z0-9:_ .-]+$`,
 			MinValueLength:             1,
 			MaxValueLength:             128})
+	validateSchema = append(validateSchema, validate.ValidateSchema{
+		Identifier:                 isInstanceVolumeBandwidthQoSMode,
+		ValidateFunctionIdentifier: validate.ValidateAllowedStringValue,
+		Type:                       validate.TypeString,
+		Optional:                   true,
+		AllowedValues:              "pooled, weighted",
+		Regexp:                     `^[a-z][a-z0-9]*(_[a-z0-9]+)*$`,
+		MinValueLength:             1,
+		MaxValueLength:             128,
+	})
 	ibmISInstanceTemplateValidator := validate.ResourceValidator{ResourceName: "ibm_is_instance_template", Schema: validateSchema}
 	return &ibmISInstanceTemplateValidator
 }
@@ -1646,6 +1662,11 @@ func instanceTemplateCreateBySourceSnapshot(context context.Context, d *schema.R
 	if totalVolBandwidthIntf, ok := d.GetOk(isInstanceTotalVolumeBandwidth); ok {
 		totalVolBandwidthStr := int64(totalVolBandwidthIntf.(int))
 		instanceproto.TotalVolumeBandwidth = &totalVolBandwidthStr
+	}
+
+	if volumeBandwidthQoSModeIntf, ok := d.GetOk(isInstanceVolumeBandwidthQoSMode); ok {
+		volumeBandwidthQoSModeStr := volumeBandwidthQoSModeIntf.(string)
+		instanceproto.VolumeBandwidthQosMode = &volumeBandwidthQoSModeStr
 	}
 
 	// BOOT VOLUME ATTACHMENT for instance template
@@ -2207,6 +2228,11 @@ func instanceTemplateCreateByCatalogOffering(context context.Context, d *schema.
 		instanceproto.TotalVolumeBandwidth = &totalVolBandwidthStr
 	}
 
+	if volumeBandwidthQoSModeIntf, ok := d.GetOk(isInstanceVolumeBandwidthQoSMode); ok {
+		volumeBandwidthQoSModeStr := volumeBandwidthQoSModeIntf.(string)
+		instanceproto.VolumeBandwidthQosMode = &volumeBandwidthQoSModeStr
+	}
+
 	// BOOT VOLUME ATTACHMENT for instance template
 	if boot, ok := d.GetOk(isInstanceTemplateBootVolume); ok {
 		bootvol := boot.([]interface{})[0].(map[string]interface{})
@@ -2759,6 +2785,11 @@ func instanceTemplateCreate(context context.Context, d *schema.ResourceData, met
 		instanceproto.TotalVolumeBandwidth = &totalVolBandwidthStr
 	}
 
+	if volumeBandwidthQoSModeIntf, ok := d.GetOk(isInstanceVolumeBandwidthQoSMode); ok {
+		volumeBandwidthQoSModeStr := volumeBandwidthQoSModeIntf.(string)
+		instanceproto.VolumeBandwidthQosMode = &volumeBandwidthQoSModeStr
+	}
+
 	// BOOT VOLUME ATTACHMENT for instance template
 	if boot, ok := d.GetOk(isInstanceTemplateBootVolume); ok {
 		bootvol := boot.([]interface{})[0].(map[string]interface{})
@@ -3300,6 +3331,12 @@ func instanceTemplateGet(context context.Context, d *schema.ResourceData, meta i
 				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance_template", "read", "set-total_volume_bandwidth").GetDiag()
 			}
 		}
+		if instanceTemplate.VolumeBandwidthQosMode != nil {
+			if err = d.Set(isInstanceVolumeBandwidthQoSMode, string(*instanceTemplate.VolumeBandwidthQosMode)); err != nil {
+				err = fmt.Errorf("Error setting volume_bandwidth_qos_mode: %s", err)
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance_template", "read", "set-volume_bandwidth_qos_mode").GetDiag()
+			}
+		}
 		if instanceTemplate.MetadataService != nil {
 			if err = d.Set(isInstanceTemplateMetadataServiceEnabled, instanceTemplate.MetadataService.Enabled); err != nil {
 				err = fmt.Errorf("Error setting metadata_service_enabled: %s", err)
@@ -3750,6 +3787,12 @@ func instanceTemplateGet(context context.Context, d *schema.ResourceData, meta i
 			if err = d.Set(isInstanceTotalVolumeBandwidth, int(*instanceTemplate.TotalVolumeBandwidth)); err != nil {
 				err = fmt.Errorf("Error setting total_volume_bandwidth: %s", err)
 				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance_template", "read", "set-total_volume_bandwidth").GetDiag()
+			}
+		}
+		if instanceTemplate.VolumeBandwidthQosMode != nil {
+			if err = d.Set(isInstanceVolumeBandwidthQoSMode, string(*instanceTemplate.VolumeBandwidthQosMode)); err != nil {
+				err = fmt.Errorf("Error setting volume_bandwidth_qos_mode: %s", err)
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance_template", "read", "set-volume_bandwidth_qos_mode").GetDiag()
 			}
 		}
 		if instanceTemplate.MetadataService != nil {

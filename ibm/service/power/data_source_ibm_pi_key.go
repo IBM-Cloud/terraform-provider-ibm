@@ -5,10 +5,12 @@ package power
 
 import (
 	"context"
+	"fmt"
+	"log"
 
 	"github.com/IBM-Cloud/power-go-client/clients/instance"
-	"github.com/IBM-Cloud/power-go-client/helpers"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
@@ -25,11 +27,21 @@ func DataSourceIBMPIKey() *schema.Resource {
 				Type:         schema.TypeString,
 				ValidateFunc: validation.NoZeroValues,
 			},
+
 			Arg_KeyName: {
-				Description:  "User defined name for the SSH key.",
-				Required:     true,
-				Type:         schema.TypeString,
-				ValidateFunc: validation.NoZeroValues,
+				AtLeastOneOf:  []string{Arg_SSHKeyID, Arg_KeyName},
+				ConflictsWith: []string{Arg_SSHKeyID},
+				Deprecated:    "The pi_key_name field is deprecated. Please use pi_ssh_key_id instead",
+				Description:   "The name of the SSH key.",
+				Optional:      true,
+				Type:          schema.TypeString,
+			},
+			Arg_SSHKeyID: {
+				AtLeastOneOf:  []string{Arg_SSHKeyID, Arg_KeyName},
+				ConflictsWith: []string{Arg_KeyName},
+				Description:   "The ID of the SSH key.",
+				Optional:      true,
+				Type:          schema.TypeString,
 			},
 
 			// Attributes
@@ -76,15 +88,25 @@ func DataSourceIBMPIKey() *schema.Resource {
 func dataSourceIBMPIKeyRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	sess, err := meta.(conns.ClientSession).IBMPISession()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("IBMPISession failed: %s", err.Error()), "(Data) ibm_pi_key", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	cloudInstanceID := d.Get(Arg_CloudInstanceID).(string)
+	var sshKeyID string
+	if v, ok := d.GetOk(Arg_SSHKeyID); ok {
+		sshKeyID = v.(string)
+	} else if v, ok := d.GetOk(Arg_KeyName); ok {
+		sshKeyID = v.(string)
+	}
 
 	sshkeyC := instance.NewIBMPISSHKeyClient(ctx, sess, cloudInstanceID)
-	sshkeydata, err := sshkeyC.Get(d.Get(helpers.PIKeyName).(string))
+	sshkeydata, err := sshkeyC.Get(sshKeyID)
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Get failed: %s", err.Error()), "(Data) ibm_pi_key", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	d.SetId(*sshkeydata.Name)
