@@ -47,6 +47,11 @@ func DataSourceIBMPIInstanceNetworks() *schema.Resource {
 							Description: "The external IP address of the instance.",
 							Type:        schema.TypeString,
 						},
+						Attr_Href: {
+							Computed:    true,
+							Description: "Link to this PVM instance network.",
+							Type:        schema.TypeString,
+						},
 						Attr_IPAddress: {
 							Computed:    true,
 							Description: "The IP address of the instance.",
@@ -89,11 +94,6 @@ func DataSourceIBMPIInstanceNetworks() *schema.Resource {
 							Description: "The type of the network.",
 							Type:        schema.TypeString,
 						},
-						Attr_Href: {
-							Computed:    true,
-							Description: "Link to this PVM instance network.",
-							Type:        schema.TypeString,
-						},
 						Attr_Version: {
 							Computed:    true,
 							Description: "Version of the network information.",
@@ -125,10 +125,10 @@ func dataSourceIBMPIInstanceNetworksRead(ctx context.Context, d *schema.Resource
 		return tfErr.GetDiag()
 	}
 
-	flat := flattenPvmInstanceNetworksv2(netsWrap.Networks)
+	networks := flattenPvmInstanceNetworksv2(netsWrap.Networks)
 
 	d.SetId(fmt.Sprintf("%s/%s", cloudInstanceID, instanceID))
-	_ = d.Set(Attr_Networks, flat)
+	d.Set(Attr_Networks, networks)
 
 	return nil
 }
@@ -136,22 +136,22 @@ func dataSourceIBMPIInstanceNetworksRead(ctx context.Context, d *schema.Resource
 func flattenPvmInstanceNetworksv2(list []*models.PVMInstanceNetwork) (networks []map[string]any) {
 	if list != nil {
 		networks = make([]map[string]any, len(list))
-		for i, pvmip := range list {
+		for i, pvmNet := range list {
 			p := make(map[string]any)
-			p[Attr_ExternalIP] = pvmip.ExternalIP
-			p[Attr_IPAddress] = pvmip.IPAddress
-			p[Attr_MacAddress] = pvmip.MacAddress
-			p[Attr_NetworkID] = pvmip.NetworkID
-			p[Attr_NetworkInterfaceID] = pvmip.NetworkInterfaceID
-			p[Attr_NetworkName] = pvmip.NetworkName
-			p[Attr_Type] = pvmip.Type
-			p[Attr_Href] = pvmip.Href
-			p[Attr_Version] = pvmip.Version
-			if len(pvmip.NetworkSecurityGroupIDs) > 0 {
-				p[Attr_NetworkSecurityGroupIDs] = pvmip.NetworkSecurityGroupIDs
+			p[Attr_ExternalIP] = pvmNet.ExternalIP
+			p[Attr_IPAddress] = pvmNet.IPAddress
+			p[Attr_MacAddress] = pvmNet.MacAddress
+			p[Attr_NetworkID] = pvmNet.NetworkID
+			p[Attr_NetworkInterfaceID] = pvmNet.NetworkInterfaceID
+			p[Attr_NetworkName] = pvmNet.NetworkName
+			p[Attr_Type] = pvmNet.Type
+			p[Attr_Href] = pvmNet.Href
+			p[Attr_Version] = pvmNet.Version
+			if len(pvmNet.NetworkSecurityGroupIDs) > 0 {
+				p[Attr_NetworkSecurityGroupIDs] = pvmNet.NetworkSecurityGroupIDs
 			}
-			if len(pvmip.NetworkSecurityGroupsHref) > 0 {
-				p[Attr_NetworkSecurityGroupsHref] = pvmip.NetworkSecurityGroupsHref
+			if len(pvmNet.NetworkSecurityGroupsHref) > 0 {
+				p[Attr_NetworkSecurityGroupsHref] = pvmNet.NetworkSecurityGroupsHref
 			}
 			networks[i] = p
 		}

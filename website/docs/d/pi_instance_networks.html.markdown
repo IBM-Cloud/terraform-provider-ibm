@@ -50,6 +50,13 @@ In addition to all argument reference list, you can access the following attribu
 - `networks` - (List) List of networks associated with this instance.
       Nested scheme for networks:
       - `external_ip` - (String) The external IP address of the network (for pub-VLAN networks).
+      - `href` - (String) Link to this PVM instance network.
       - `ip_address` - (String) The IP address of the network interface.
       - `mac_address` - (String) The MAC address of the network interface.
       - `network_id` - (String) The network ID.
+      - `network_interface_id` - (String) ID of the network interface.
+      - `network_name` - (String) The network name.
+      - `network_security_group_ids` - (List) IDs of the network security groups that the network interface is a member of.
+      - `network_security_groups_href` - (List) Links to the network security groups that the network interface is a member of.
+      - `type` - (String) The network type.
+      - `version` - (Float) Version of the network information.

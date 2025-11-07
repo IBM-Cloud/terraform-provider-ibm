@@ -1,4 +1,4 @@
-// Copyright IBM Corp.
+// Copyright IBM Corp. 2025 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 package power_test
@@ -34,5 +34,5 @@ func testAccCheckIBMPIInstanceNetworkDataSourceConfig() string {
   			pi_cloud_instance_id = "%[1]s"
   			pi_instance_id       = "%[2]s"
   			pi_network_id        = "%[3]s"
-		}`, acc.Pi_cloud_instance_id, acc.Pi_instance_name, acc.Pi_network_id)
+		}`, acc.Pi_cloud_instance_id, acc.Pi_instance_id, acc.Pi_network_id)
 }

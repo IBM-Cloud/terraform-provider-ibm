@@ -28,7 +28,7 @@ func DataSourceIBMPIInstanceNetwork() *schema.Resource {
 				ValidateFunc: validation.NoZeroValues,
 			},
 			Arg_InstanceID: {
-				Description:  "The unique identifier or ID of the instance.",
+				Description:  "The unique identifier of the instance.",
 				Required:     true,
 				Type:         schema.TypeString,
 				ValidateFunc: validation.NoZeroValues,
@@ -44,6 +44,11 @@ func DataSourceIBMPIInstanceNetwork() *schema.Resource {
 			Attr_ExternalIP: {
 				Computed:    true,
 				Description: "The external IP address of the instance.",
+				Type:        schema.TypeString,
+			},
+			Attr_Href: {
+				Computed:    true,
+				Description: "Link to this PVM instance network.",
 				Type:        schema.TypeString,
 			},
 			Attr_IPAddress: {
@@ -75,7 +80,7 @@ func DataSourceIBMPIInstanceNetwork() *schema.Resource {
 				Computed:    true,
 				Description: "IDs of the network security groups that the network interface is a member of.",
 				Elem:        &schema.Schema{Type: schema.TypeString},
-				Type:        schema.TypeSet,
+				Type:        schema.TypeList,
 			},
 			Attr_NetworkSecurityGroupsHref: {
 				Computed:    true,
@@ -86,11 +91,6 @@ func DataSourceIBMPIInstanceNetwork() *schema.Resource {
 			Attr_Type: {
 				Computed:    true,
 				Description: "The type of the network.",
-				Type:        schema.TypeString,
-			},
-			Attr_Href: {
-				Computed:    true,
-				Description: "Link to this PVM instance network.",
 				Type:        schema.TypeString,
 			},
 			Attr_Version: {

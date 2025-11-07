@@ -3,7 +3,7 @@ subcategory: "Power Systems"
 layout: "ibm"
 page_title: "IBM: pi_instance_network"
 description: |-
-  Retrieve information about a single network attached to a Power Systems Virtual Server instance.
+  Retrieve information about a network attached to a Power Systems Virtual Server instance.
 ---
 
 # ibm_pi_instance_network
@@ -41,7 +41,7 @@ Example usage:
 Review the argument references that you can specify for your data source.
 
 - `pi_cloud_instance_id` - (Required, String) The GUID of the service instance associated with an account.
-- `pi_instance_id` - (Required, String) The unique identifier or name of the instance.
+- `pi_instance_id` - (Required, String) The PVM instance id.
 - `pi_network_id` - (Required, String) The unique identifier or name of the instance.
 
 ## Attribute Reference
