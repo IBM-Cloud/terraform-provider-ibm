@@ -187,7 +187,7 @@ resource "ibm_iam_trusted_profile_policy" "policy1" {
 
 data "ibm_iam_trusted_profile_policy" "policy" {
   profile_id = ibm_iam_trusted_profile_policy.policy.profile_id
-  sort = "id"
+  sort = "created_at"
 }`, name, name)
 
 }
