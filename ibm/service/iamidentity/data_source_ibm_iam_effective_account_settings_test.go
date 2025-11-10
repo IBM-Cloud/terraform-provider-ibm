@@ -217,7 +217,19 @@ func TestDataSourceIBMIamEffectiveAccountSettingsAccountSettingsAssignedTemplate
 		model["restrict_create_service_id"] = "NOT_SET"
 		model["restrict_create_platform_apikey"] = "NOT_SET"
 		model["restrict_user_list_visibility"] = "NOT_RESTRICTED"
-		model["restrict_user_domains"] = []map[string]interface{}{accountSettingsUserDomainRestrictionModel}
+		//model["restrict_user_domains"] = []map[string]interface{}{accountSettingsUserDomainRestrictionModel}
+		model["restrict_user_domains"] = []map[string]interface{}{
+			{
+				"account_sufficient": true,
+				"restrictions": []map[string]interface{}{
+					{
+						"realm_id":                        "IBMid",
+						"invitation_email_allow_patterns": []string{"*.*@company.com"},
+						"restrict_invitation":             true,
+					},
+				},
+			},
+		}
 		model["allowed_ip_addresses"] = "testString"
 		model["mfa"] = "NONE"
 		model["session_expiration_in_seconds"] = "86400"
@@ -250,7 +262,13 @@ func TestDataSourceIBMIamEffectiveAccountSettingsAccountSettingsAssignedTemplate
 	model.RestrictCreateServiceID = core.StringPtr("NOT_SET")
 	model.RestrictCreatePlatformApikey = core.StringPtr("NOT_SET")
 	model.RestrictUserListVisibility = core.StringPtr("NOT_RESTRICTED")
-	model.RestrictUserDomains = []iamidentityv1.AccountSettingsUserDomainRestriction{*accountSettingsUserDomainRestrictionModel}
+	restrictUserDomains := &iamidentityv1.AssignedTemplatesAccountSettingsRestrictUserDomains{
+		AccountSufficient: core.BoolPtr(true),
+		Restrictions: []iamidentityv1.AccountSettingsUserDomainRestriction{
+			*accountSettingsUserDomainRestrictionModel,
+		},
+	}
+	model.RestrictUserDomains = restrictUserDomains
 	model.AllowedIPAddresses = core.StringPtr("testString")
 	model.Mfa = core.StringPtr("NONE")
 	model.SessionExpirationInSeconds = core.StringPtr("86400")
