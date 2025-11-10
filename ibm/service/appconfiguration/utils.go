@@ -35,9 +35,9 @@ func getAppConfigClient(meta any, guid string) (*appconfigurationv1.AppConfigura
 func formatValue(typ string, format any, value any) (any, error) {
 	switch typ {
 	case "BOOLEAN":
-		convertedValue, ok := value.(bool)
-		if !ok {
-			return nil, flex.FmtErrorf("value not of type boolean")
+		convertedValue, err := strconv.ParseBool(value.(string))
+		if err != nil {
+			return nil, flex.FmtErrorf("value not of type boolean: %s", err.Error())
 		}
 		return convertedValue, nil
 	case "NUMERIC":
