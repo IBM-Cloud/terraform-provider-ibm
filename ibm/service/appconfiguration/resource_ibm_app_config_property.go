@@ -348,7 +348,7 @@ func resourceIbmIbmAppConfigPropertyUpdate(d *schema.ResourceData, meta interfac
 		options.SetValue(value)
 
 		options.SetEnvironmentID(d.Get("environment_id").(string))
-		options.SetPropertyID(parts[2])
+		options.SetPropertyID(parts[1])
 
 		options.SetName(d.Get("name").(string))
 
