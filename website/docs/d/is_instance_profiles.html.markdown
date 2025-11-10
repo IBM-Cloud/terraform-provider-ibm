@@ -213,4 +213,10 @@ You can access the following attribute references after your data source is crea
       Nested scheme for `volume_bandwidth_qos_modes`:
       - `default` - (String) The default volume bandwidth QoS mode for this profile.
       - `type` - (String) The type for this profile field.
-      - `values` - (String) The permitted volume bandwidth QoS modes for an instance using this profile.    
+      - `values` - (String) The permitted volume bandwidth QoS modes for an instance using this profile.
+
+  - `zones` - (List) The zones in this region that support this instance profile.
+
+      Nested schema for **zones**:
+      - `href` - (String) The URL for this zone.
+      - `name` - (String) The globally unique name for this zone.

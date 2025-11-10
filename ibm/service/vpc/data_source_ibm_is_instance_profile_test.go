@@ -74,6 +74,7 @@ func TestAccIBMISInstanceProfileDataSource_QoSMode(t *testing.T) {
 					resource.TestCheckResourceAttrSet("data.ibm_is_instance_profile.test1", "network_attachment_count.0.type"),
 					resource.TestCheckResourceAttrSet("data.ibm_is_instance_profile.test1", "network_attachment_count.#"),
 					resource.TestCheckResourceAttrSet("data.ibm_is_instance_profile.test1", "volume_bandwidth_qos_modes.#"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_instance_profile.test1", "zones.#"),
 				),
 			},
 		},

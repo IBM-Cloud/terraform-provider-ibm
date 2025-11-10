@@ -115,6 +115,7 @@ func TestAccIBMISInstanceProfilesDataSource_cluster(t *testing.T) {
 					resource.TestCheckResourceAttrSet("data.ibm_is_instance_profiles.test1", "profiles.0.cluster_network_attachment_count.#"),
 					resource.TestCheckResourceAttrSet("data.ibm_is_instance_profiles.test1", "profiles.0.cluster_network_attachment_count.0.values.#"),
 					resource.TestCheckResourceAttrSet("data.ibm_is_instance_profiles.test1", "profiles.0.supported_cluster_network_profiles.#"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_instance_profiles.test1", "profiles.0.zones.#"),
 				),
 			},
 		},
