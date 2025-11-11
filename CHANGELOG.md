@@ -1,3 +1,24 @@
+# 1.85.0 (November 9, 2025)
+
+## Bug Fixes
+
+### Power Systems
+* Refactor terraform errors to use new toolchain in nag and ni data sources ([6525](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6525))
+* Refactor terraform errors to use new toolchain in nsg, network_port, and network peer data sources ([6529](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6529))
+
+### VPC Infrastructure
+* Fix example in share docs ([6534](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6534))
+
+
+## Enhancements
+
+### IAM
+* add new account settings ([6538](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6538))
+
+### Power Systems
+* Deprecate Arg_VolumeName for Arg_VolumeID ([6508](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6508))
+* Add new ibm_pi_volumes data source and documentation ([6520](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6520))
+
 # 1.85.0-beta0 (October 29, 2025)
 
 ## Bug Fixes
