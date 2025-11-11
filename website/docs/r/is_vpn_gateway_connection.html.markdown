@@ -96,6 +96,53 @@ resource "ibm_is_vpn_gateway_connection" "example" {
 
 ```
 
+## Example usage ( route mode with bgp protocol )
+The following example creates a VPN gateway:
+
+```terraform
+resource "ibm_is_vpn_gateway" "example" {
+  name      = "example-vpn-gateway"
+  subnet    = ibm_is_subnet.example.id
+  mode      = "route"
+  local_asn = 64522
+}
+
+resource "ibm_is_vpn_gateway_connection" "example" {
+  name               = "example-vpn-gateway-connection"
+  vpn_gateway        = ibm_is_vpn_gateway.example.id
+  preshared_key      = "VPNDemoPassword"
+  distribute_traffic = true
+  routing_protocol   = "bgp"
+  local {
+    ike_identities {
+      type  = "fqdn"
+      value = "fqdn.example.com"
+    }
+    ike_identities {
+      type  = "fqdn"
+      value = "fqdn.example.com"
+    }
+  }
+  peer {
+    ike_identity {
+      type  = "fqdn"
+      value = "example.fqdn.com"
+    }
+    fqdn = "peer-vpn.example.com"
+    asn  = 65534
+  }
+  tunnel {
+    neighbor_ip         = "192.168.1.8"
+    tunnel_interface_ip = "10.0.0.8"
+  }
+  tunnel {
+    neighbor_ip         = "192.168.1.6"
+    tunnel_interface_ip = "10.0.0.6"
+  }
+}
+
+```
+
 ## Timeouts
 The `ibm_is_vpn_gateway_connection` resource provides the following [Timeouts](https://www.terraform.io/docs/language/resources/syntax.html) configuration options:
 
@@ -107,6 +154,7 @@ Review the argument references that you can specify for your resource.
 
 - `action` - (Optional, String)  Dead peer detection actions. Supported values are **restart**, **clear**, **hold**, or **none**. Default value is `restart`.
 - `admin_state_up` - (Optional, Bool) The VPN gateway connection status. Default value is **false**. If set to false, the VPN gateway connection is shut down.
+- `asn` - (Optional, String) The peer autonomous system number (ASN) for this VPN gateway connection.
 - `distribute_traffic` - (Optional, Bool) Indicates whether the traffic is distributed between the `up` tunnels of the VPN gateway connection when the VPC route's next hop is a VPN connection. If `false`, the traffic is only routed through the `up` tunnel with the lower `public_ip` address. Distributing traffic across tunnels of route-based VPN gateway connections. Traffic across tunnels can be distributed with a status of up in a route-based VPN gateway connection. When creating or updating a route-based VPN gateway connection, set the distribute_traffic property to true (default is false). Existing connections will have the `distribute_traffic` property set to false.
 - `establish_mode` - (Optional, String) The establish mode of the VPN gateway connection:- `bidirectional`: Either side of the VPN gateway can initiate IKE protocol   negotiations or rekeying processes.- `peer_only`: Only the peer can initiate IKE protocol negotiations for this VPN gateway   connection. Additionally, the peer is responsible for initiating the rekeying process   after the connection is established. If rekeying does not occur, the VPN gateway   connection will be brought down after its lifetime expires.
 - `ike_policy` - (Optional, String) The ID of the IKE policy. Updating value from ID to `""` or making it `null` or removing it  will remove the existing policy.
@@ -133,7 +181,12 @@ Review the argument references that you can specify for your resource.
 - `peer_cidrs` - (Optional, DEPRECATED, Forces new resource, List) List of peer CIDRs for this resource. `peer_cidrs` is deprecated and use `peer` block instead.
 - `peer_address` - (Optional, DEPRECATED, String) The IP address of the peer VPN gateway. `peer_address` is deprecated and use `peer` block instead.
 - `preshared_key` - (Required, Forces new resource, String) The preshared key.
+- `routing_protocol` - (Optional, String) The peer autonomous system number (ASN) for this VPN gateway connection.
 - `timeout` - (Optional, Integer) Dead peer detection timeout in seconds. Default value is 10.
+- `tunnel` - (Optional, List) 
+  Nested schema for **tunnel**:
+  - `neighbor_ip` - (Required, String) 	The IP address of the neighbor on the virtual tunnel interface.
+  - `tunnel_interface_ip` - (Required, String) The IP address of the virtual tunnel interface.
 - `vpn_gateway` - (Required, Forces new resource, String) The unique identifier of the VPN gateway.
 
 ## Attribute reference

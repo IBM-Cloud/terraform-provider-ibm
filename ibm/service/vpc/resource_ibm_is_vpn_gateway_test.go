@@ -62,6 +62,8 @@ func TestAccIBMISVPNGateway_route(t *testing.T) {
 						"ibm_is_vpn_gateway.testacc_vpnGateway", "name", name1),
 					resource.TestCheckResourceAttr(
 						"ibm_is_vpn_gateway.testacc_vpnGateway", "mode", "route"),
+					resource.TestCheckResourceAttr(
+						"ibm_is_vpn_gateway.testacc_vpnGateway", "local_asn", "64520"),
 				),
 			},
 			{
@@ -156,9 +158,15 @@ func testAccCheckIBMISVPNGatewayRouteConfig(vpc, subnet, name string) string {
 		ipv4_cidr_block = "%s"
 	}
 	resource "ibm_is_vpn_gateway" "testacc_vpnGateway" {
-	name = "%s"
-	subnet = "${ibm_is_subnet.testacc_subnet.id}"
-	mode = "route"
+		name = "%s"
+		subnet = "${ibm_is_subnet.testacc_subnet.id}"
+		mode = "route"
+		local_asn = 64520
+		lifecycle {
+			ignore_changes = [
+				advertised_cidrs
+			]
+		}
 	}`, vpc, subnet, acc.ISZoneName, acc.ISCIDR, name)
 
 }

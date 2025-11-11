@@ -45,6 +45,7 @@ In addition to all argument reference list, you can access the following attribu
   - `crn` - (String) The VPN gateway's CRN.
   - `created_at`- (Timestamp) The date and time the VPN gateway was created.
   - `id` - (String) The ID of the VPN gateway.
+  - `advertised_cidrs` - (Optional, List) The additional CIDRs advertised through any enabled routing protocol (for example, BGP). The routing protocol will advertise routes with these CIDRs and VPC prefixes as route destinations.
   - `name`-  (String) The VPN gateway instance name.
   - `members` - (List) Collection of VPN gateway members.</n>
   
@@ -80,6 +81,7 @@ In addition to all argument reference list, you can access the following attribu
       - `message` - (String) An explanation of the reason for this lifecycle reason.
       - `more_info` - (String) Link to documentation about the reason for this lifecycle reason.
   - `lifecycle_state` - (String) The lifecycle state of the VPN gateway.
+  - `local_asn` - (Integer) The local autonomous system number (ASN) for this VPN gateway and its connections.
   - `subnet` - (String) The VPN gateway subnet information.
   - `tags`- (Optional, Array of Strings) A list of tags associated with the instance.
   - `vpc` - (String) 	The VPC this VPN server resides in.

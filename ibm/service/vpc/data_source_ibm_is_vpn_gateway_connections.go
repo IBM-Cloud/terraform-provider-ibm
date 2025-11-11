@@ -203,6 +203,12 @@ func DataSourceIBMISVPNGatewayConnections() *schema.Resource {
 										Computed:    true,
 										Description: "The FQDN of the peer VPN gateway for this connection.",
 									},
+									"asn": &schema.Schema{
+										Type:        schema.TypeInt,
+										Optional:    true,
+										Computed:    true,
+										Description: "The peer autonomous system number (ASN) for this VPN gateway connection.",
+									},
 								},
 							},
 						},
@@ -268,6 +274,21 @@ func DataSourceIBMISVPNGatewayConnections() *schema.Resource {
 										Type:        schema.TypeString,
 										Computed:    true,
 										Description: "The status of the VPN Tunnel",
+									},
+									"neighbor_ip": {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The IP address of the neighbor on the virtual tunnel interface.",
+									},
+									"tunnel_interface_ip": {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The IP address of the virtual tunnel interface.",
+									},
+									"protocol_state": {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "BGP routing protocol state.",
 									},
 								},
 							},
@@ -520,6 +541,65 @@ func getvpnGatewayConnectionIntfData(vpnGatewayConnectionIntf vpcv1.VPNGatewayCo
 				gatewayconnection["tunnels"] = dataSourceVPNGatewayConnectionsFlattenTunnels(vpnGatewayConnection.Tunnels)
 			}
 		}
+	case "*vpcv1.VPNGatewayConnectionRouteModeVPNGatewayConnectionDynamicRouteMode":
+		{
+			vpnGatewayConnection := vpnGatewayConnectionIntf.(*vpcv1.VPNGatewayConnectionRouteModeVPNGatewayConnectionDynamicRouteMode)
+			gatewayconnection["id"] = vpnGatewayConnection.ID
+			gatewayconnection["admin_state_up"] = vpnGatewayConnection.AdminStateUp
+			gatewayconnection["authentication_mode"] = vpnGatewayConnection.AuthenticationMode
+			gatewayconnection["created_at"] = flex.DateTimeToString(vpnGatewayConnection.CreatedAt)
+
+			if vpnGatewayConnection.DeadPeerDetection != nil {
+				gatewayconnection[isVPNGatewayConnectionDeadPeerDetectionAction] = vpnGatewayConnection.DeadPeerDetection.Action
+				gatewayconnection[isVPNGatewayConnectionDeadPeerDetectionInterval] = vpnGatewayConnection.DeadPeerDetection.Interval
+				gatewayconnection[isVPNGatewayConnectionDeadPeerDetectionTimeout] = vpnGatewayConnection.DeadPeerDetection.Timeout
+			}
+			gatewayconnection["distribute_traffic"] = vpnGatewayConnection.DistributeTraffic
+			gatewayconnection["href"] = vpnGatewayConnection.Href
+			if vpnGatewayConnection.IkePolicy != nil {
+				gatewayconnection["ike_policy"] = vpnGatewayConnection.IkePolicy.ID
+			}
+
+			if vpnGatewayConnection.IpsecPolicy != nil {
+				gatewayconnection["ipsec_policy"] = vpnGatewayConnection.IpsecPolicy.ID
+			}
+			gatewayconnection["mode"] = vpnGatewayConnection.Mode
+			gatewayconnection["name"] = vpnGatewayConnection.Name
+
+			gatewayconnection["establish_mode"] = vpnGatewayConnection.EstablishMode
+			local := []map[string]interface{}{}
+			if vpnGatewayConnection.Local != nil {
+				modelMap, err := dataSourceIBMIsVPNGatewayConnectionVPNGatewayConnectionDynamicRouteModeLocalToMap(vpnGatewayConnection.Local)
+				if err != nil {
+					return gatewayconnection, err
+				}
+				local = append(local, modelMap)
+			}
+			gatewayconnection["local"] = local
+
+			peer := []map[string]interface{}{}
+			if vpnGatewayConnection.Peer != nil {
+				modelMap, err := dataSourceIBMIsVPNGatewayConnectionVPNGatewayConnectionDynamicRouteModePeerToMap(vpnGatewayConnection.Peer)
+				if err != nil {
+					return gatewayconnection, err
+				}
+				peer = append(peer, modelMap)
+			}
+			gatewayconnection["peer"] = peer
+			if vpnGatewayConnection.Peer != nil {
+				peer := vpnGatewayConnection.Peer.(*vpcv1.VPNGatewayConnectionDynamicRouteModePeer)
+				gatewayconnection["peer_address"] = peer.Address
+			}
+			gatewayconnection["psk"] = vpnGatewayConnection.Psk
+			gatewayconnection["resource_type"] = vpnGatewayConnection.ResourceType
+			gatewayconnection["status"] = vpnGatewayConnection.Status
+			gatewayconnection["status_reasons"] = resourceVPNGatewayConnectionFlattenLifecycleReasons(vpnGatewayConnection.StatusReasons)
+			gatewayconnection["routing_protocol"] = vpnGatewayConnection.RoutingProtocol
+
+			if vpnGatewayConnection.Tunnels != nil {
+				gatewayconnection["tunnels"] = dataSourceVPNGatewayConnectionsFlattenDynamicTunnels(vpnGatewayConnection.Tunnels)
+			}
+		}
 	case "*vpcv1.VPNGatewayConnectionPolicyMode":
 		{
 			vpnGatewayConnection := vpnGatewayConnectionIntf.(*vpcv1.VPNGatewayConnectionPolicyMode)
@@ -724,6 +804,36 @@ func dataSourceVPNGatewayConnectionsTunnelsToMap(tunnelsItem vpcv1.VPNGatewayCon
 	}
 	if tunnelsItem.Status != nil {
 		tunnelsMap["status"] = tunnelsItem.Status
+	}
+
+	return tunnelsMap
+}
+
+func dataSourceVPNGatewayConnectionsFlattenDynamicTunnels(result []vpcv1.VPNGatewayConnectionDynamicRouteModeTunnel) (tunnels []map[string]interface{}) {
+	for _, tunnelsItem := range result {
+		tunnels = append(tunnels, dataSourceVPNGatewayConnectionsDynamicTunnelsToMap(tunnelsItem))
+	}
+
+	return tunnels
+}
+
+func dataSourceVPNGatewayConnectionsDynamicTunnelsToMap(tunnelsItem vpcv1.VPNGatewayConnectionDynamicRouteModeTunnel) (tunnelsMap map[string]interface{}) {
+	tunnelsMap = map[string]interface{}{}
+
+	if tunnelsItem.NeighborIP != nil {
+		tunnelsMap["neighbor_ip"] = tunnelsItem.NeighborIP.Address
+	}
+	if tunnelsItem.ProtocolState != nil {
+		tunnelsMap["protocol_state"] = tunnelsItem.ProtocolState
+	}
+	if tunnelsItem.PublicIP != nil {
+		tunnelsMap["address"] = tunnelsItem.PublicIP.Address
+	}
+	if tunnelsItem.Status != nil {
+		tunnelsMap["status"] = tunnelsItem.Status
+	}
+	if tunnelsItem.TunnelInterfaceIP != nil {
+		tunnelsMap["tunnel_interface_ip"] = tunnelsItem.TunnelInterfaceIP.Address
 	}
 
 	return tunnelsMap
