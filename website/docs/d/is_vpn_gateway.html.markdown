@@ -36,6 +36,7 @@ In addition to all argument references listed, you can access the following attr
 
 - `id` - The unique identifier of the is_vpn_gateway.
 - `access_tags`  - (List) Access management tags associated for the vpn gateway.
+- `advertised_cidrs` - (Optional, List) The additional CIDRs advertised through any enabled routing protocol (for example, BGP). The routing protocol will advertise routes with these CIDRs and VPC prefixes as route destinations.
 - `connections` - (List) Connections for this VPN gateway.
   Nested scheme for **connections**:
 	- `deleted` - (List) If present, this property indicates the referenced resource has been deleted and provides some supplementary information.
@@ -51,7 +52,7 @@ In addition to all argument references listed, you can access the following attr
 - `crn` - (String) The VPN gateway's CRN.
 
 - `href` - (String) The VPN gateway's canonical URL.
-
+- `local_asn` - (Integer) The local autonomous system number (ASN) for this VPN gateway and its connections.
 - `members` - (List) Collection of VPN gateway members.
   Nested scheme for **members**:
 
@@ -67,7 +68,6 @@ In addition to all argument references listed, you can access the following attr
 	- `role` - (String) The high availability role assigned to the VPN gateway member.
 
 - `mode` - (String) Route mode VPN gateway.
-
 - `name` - (String) The user-defined name for this VPN gateway.
 
 - `resource_group` - (List) The resource group object, for this VPN gateway.
