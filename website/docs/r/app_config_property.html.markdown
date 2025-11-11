@@ -39,7 +39,7 @@ resource "ibm_app_config_property" "app_config_property" {
     collection_id = "collection_id1"
   }
   # only use this deleted attribute during 
-  # update of propertyt
+  # update of property
   collections {
     collection_id = "collection_id2"
     deleted = true
