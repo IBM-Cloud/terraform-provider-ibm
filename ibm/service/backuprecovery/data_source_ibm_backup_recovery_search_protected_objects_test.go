@@ -39,6 +39,7 @@ func testAccCheckIbmBackupRecoverySearchProtectedObjectsDataSourceConfigBasic() 
 	return fmt.Sprintf(`
 	data "ibm_backup_recovery_search_protected_objects" "baas_search_protected_objects_instance" {
 		x_ibm_tenant_id = "%s"
+		
 	  }
 	`, tenantId)
 }

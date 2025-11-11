@@ -5,12 +5,13 @@ package power
 
 import (
 	"context"
+	"fmt"
 	"log"
 
 	"github.com/IBM-Cloud/power-go-client/clients/instance"
-	"github.com/IBM-Cloud/power-go-client/helpers"
 	"github.com/IBM-Cloud/power-go-client/power/models"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/hashicorp/go-uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -28,11 +29,20 @@ func DataSourceIBMPINetworkPort() *schema.Resource {
 				Type:         schema.TypeString,
 				ValidateFunc: validation.NoZeroValues,
 			},
+			Arg_NetworkID: {
+				AtLeastOneOf:  []string{Arg_NetworkID, Arg_NetworkName},
+				ConflictsWith: []string{Arg_NetworkName},
+				Description:   "The network ID.",
+				Optional:      true,
+				Type:          schema.TypeString,
+			},
 			Arg_NetworkName: {
-				Description:  "The unique identifier or name of a network.",
-				Required:     true,
-				Type:         schema.TypeString,
-				ValidateFunc: validation.NoZeroValues,
+				AtLeastOneOf:  []string{Arg_NetworkID, Arg_NetworkName},
+				ConflictsWith: []string{Arg_NetworkID},
+				Deprecated:    "The pi_network_name field is deprecated. Please use pi_network_id instead",
+				Description:   "The unique identifier or name of a network.",
+				Optional:      true,
+				Type:          schema.TypeString,
 			},
 
 			// Attributes
@@ -90,18 +100,28 @@ func DataSourceIBMPINetworkPort() *schema.Resource {
 	}
 }
 
-func dataSourceIBMPINetworkPortsRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataSourceIBMPINetworkPortsRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	sess, err := meta.(conns.ClientSession).IBMPISession()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("IBMPISession failed: %s", err.Error()), "(Data) ibm_pi_network_port", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	cloudInstanceID := d.Get(Arg_CloudInstanceID).(string)
+	var networkID string
+	if v, ok := d.GetOk(Arg_NetworkID); ok {
+		networkID = v.(string)
+	} else if v, ok := d.GetOk(Arg_NetworkName); ok {
+		networkID = v.(string)
+	}
 
 	networkportC := instance.NewIBMPINetworkClient(ctx, sess, cloudInstanceID)
-	networkportdata, err := networkportC.GetAllPorts(d.Get(helpers.PINetworkName).(string))
+	networkportdata, err := networkportC.GetAllPorts(networkID)
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetAllPorts failed: %s", err.Error()), "(Data) ibm_pi_network_port", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	var clientgenU, _ = uuid.GenerateUUID()
 	d.SetId(clientgenU)
@@ -111,11 +131,11 @@ func dataSourceIBMPINetworkPortsRead(ctx context.Context, d *schema.ResourceData
 	return nil
 }
 
-func flattenNetworkPorts(networkPorts []*models.NetworkPort) interface{} {
-	result := make([]map[string]interface{}, 0, len(networkPorts))
+func flattenNetworkPorts(networkPorts []*models.NetworkPort) any {
+	result := make([]map[string]any, 0, len(networkPorts))
 	log.Printf("the number of ports is %d", len(networkPorts))
 	for _, i := range networkPorts {
-		l := map[string]interface{}{
+		l := map[string]any{
 			Attr_Description: i.Description,
 			Attr_Href:        i.Href,
 			Attr_IPaddress:   *i.IPAddress,

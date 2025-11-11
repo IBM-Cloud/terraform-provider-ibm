@@ -633,6 +633,7 @@ Review the argument references that you can specify for your resource.
   - `bandwidth` - (Optional, Integer) The maximum bandwidth (in megabits per second) for the volume. For this property to be specified, the volume storage_generation must be 2.
   - `encryption` - (Optional, String) The type of encryption to use for the boot volume.
   - `name` - (Optional, String) The name of the boot volume.
+  - `profile` - (Optional, String) The name of the profile for this boot volume(not applicable for creating VSI with `volume_id`).
   - `size` - (Optional, Integer) The size of the boot volume.(The capacity of the volume in gigabytes. This defaults to minimum capacity of the image and maximum to `250`.)
 
     ~> **NOTE:**

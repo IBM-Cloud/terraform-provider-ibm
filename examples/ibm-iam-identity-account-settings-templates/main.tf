@@ -5,7 +5,28 @@ provider "ibm" {
 resource "ibm_iam_account_settings_template" "account_settings_template_instance" {
   name = var.account_settings_template_name
   account_settings {
-
+    restrict_create_service_id = "RESTRICTED"
+    restrict_create_platform_apikey = "RESTRICTED"
+    allowed_ip_addresses = "allowed_ip_addresses"
+    mfa = "NONE"
+    user_mfa {
+      iam_id = "iam_id"
+      mfa = "NONE"
+    }
+    session_expiration_in_seconds = "session_expiration_in_seconds"
+    session_invalidation_in_seconds = "session_invalidation_in_seconds"
+    max_sessions_per_identity = "max_sessions_per_identity"
+    system_access_token_expiration_in_seconds = "system_access_token_expiration_in_seconds"
+    system_refresh_token_expiration_in_seconds = "system_refresh_token_expiration_in_seconds"
+    restrict_user_list_visibility = "RESTRICTED"
+    restrict_user_domains {
+      account_sufficient = true
+      restrictions {
+        realm_id = "IBMid"
+        invitation_email_allow_patterns = *.*@company.com
+        restrict_invitation = true
+      }
+    }
   }
 }
 
