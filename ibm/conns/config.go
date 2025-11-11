@@ -2297,7 +2297,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 	}
 	globalSearchAPIV2, err := searchv2.NewGlobalSearchV2(globalSearchV2Options)
 	if err != nil {
-		session.globalTaggingConfigErrV1 = fmt.Errorf("[ERROR] Error occured while configuring Global Search: %q", err)
+		session.globalSearchConfigErrV2 = fmt.Errorf("[ERROR] Error occured while configuring Global Search: %q", err)
 	}
 	if globalSearchAPIV2 != nil && globalSearchAPIV2.Service != nil {
 		session.globalSearchServiceAPIV2 = *globalSearchAPIV2
