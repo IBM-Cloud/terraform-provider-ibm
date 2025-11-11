@@ -581,11 +581,7 @@ func resourceIBMTransitGatewayConnectionRead(d *schema.ResourceData, meta interf
 			tunnel[tgconTunnelName] = *rGREtunnel.Name
 		}
 		if rGREtunnel.Zone.Name != nil {
-			if *instance.NetworkType != "vpn_gateway" {
-				tunnel[tgZone] = *rGREtunnel.Zone
-			} else {
-				tunnel[tgZone] = *rGREtunnel.Zone.Name
-			}
+			tunnel[tgZone] = *rGREtunnel.Zone.Name
 		}
 		if rGREtunnel.LocalBgpAsn != nil {
 			tunnel[tgLocalBgpAsn] = *rGREtunnel.LocalBgpAsn
