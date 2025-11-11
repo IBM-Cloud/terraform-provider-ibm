@@ -133,10 +133,10 @@ func dataSourceIBMPIInstanceNetworksRead(ctx context.Context, d *schema.Resource
 	return nil
 }
 
-func flattenPvmInstanceNetworksv2(list []*models.PVMInstanceNetwork) (networks []map[string]any) {
-	if list != nil {
-		networks = make([]map[string]any, len(list))
-		for i, pvmNet := range list {
+func flattenPvmInstanceNetworksv2(InstanceNetworks []*models.PVMInstanceNetwork) (networks []map[string]any) {
+	if InstanceNetworks != nil {
+		networks = make([]map[string]any, len(InstanceNetworks))
+		for i, pvmNet := range InstanceNetworks {
 			p := make(map[string]any)
 			p[Attr_ExternalIP] = pvmNet.ExternalIP
 			p[Attr_IPAddress] = pvmNet.IPAddress
