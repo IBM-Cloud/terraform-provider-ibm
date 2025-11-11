@@ -64,10 +64,18 @@ In addition to all argument reference list, you can access the following attribu
 
 ## Import
 
-The `ibm_is_ipsec_policy` resource can be imported by using ID.
+In Terraform v1.5.0 and later, use an [`import` block](https://developer.hashicorp.com/terraform/language/import) to import the `ibm_is_ipsec_policy` resource by using `id`.
+The `id` property can be formed from ipsec policy ID. For example:
 
-**Example**
-
+```terraform
+import {
+  to = ibm_is_ipsec_policy.example
+  id = "<id>"
+}
 ```
-$ terraform import ibm_is_ipsec_policy.example d7bec597-4726-451f-8a63-e62e6f19c32c
+
+Using `terraform import`. For example:
+
+```console
+% terraform import ibm_is_ipsec_policy.example <id>
 ```

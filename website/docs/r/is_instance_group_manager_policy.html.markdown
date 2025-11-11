@@ -109,10 +109,19 @@ In addition to all argument reference list, you can access the following attribu
 - `policy_id` - (String) The policy ID.
 
 ## Import
-The `ibm_is_instance_group_manager_policy` resource can be imported by using instance group ID, instance group manager ID and instance group manager policy ID.
 
-**Example**
+In Terraform v1.5.0 and later, use an [`import` block](https://developer.hashicorp.com/terraform/language/import) to import the `ibm_is_instance_group_manager_policy` resource by using `id`.
+The `id` property can be formed from `instance group ID`, `instance group manager ID`, and `instance group manager policy ID`. For example:
 
+```terraform
+import {
+  to = ibm_is_instance_group_manager_policy.policy
+  id = "<instance_group_id>/<instance_group_manager_id>/<instance_group_manager_policy_id>"
+}
 ```
-$ terraform import ibm_is_instance_group_manager_policy.policy r006-eea6b0b7-babd-47a8-82c5-ad73d1e10bef/r006-160b9a68-58c8-4ec3-84b0-ad553ccb1e5a/r006-94d99d1d-be65-4939-9006-1a1a767245b5
+
+Using `terraform import`. For example:
+
+```console
+% terraform import ibm_is_instance_group_manager_policy.policy <instance_group_id>/<instance_group_manager_id>/<instance_group_manager_policy_id>
 ```

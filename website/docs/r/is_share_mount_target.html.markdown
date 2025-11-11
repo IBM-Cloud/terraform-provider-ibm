@@ -191,16 +191,18 @@ The following attributes are exported:
 
 ## Import
 
-The `ibm_is_share_mount_target` can be imported using ID.
+In Terraform v1.5.0 and later, use an [`import` block](https://developer.hashicorp.com/terraform/language/import) to import the `ibm_is_share_mount_target` resource by using `id`.
+The `id` property can be formed using the appropriate identifier(s) in the format: <share_id>/<share_mount_target_id>. For example:
 
-**Syntax**
-
+```terraform
+import {
+  to = ibm_is_share_mount_target.example
+  id = "<share_id>/<share_mount_target_id>"
+}
 ```
-$ terraform import ibm_is_share_mount_target.example `\<ibm_is_share_id\>/\<ibm_is_share_mount_target_id\>`
-```
 
-**Example**
+Using `terraform import`. For example:
 
-```
-$ terraform import ibm_is_share_mount_target.example d7bec597-4726-451f-8a63-e62e6f19c32c/d7bec597-4726-451f-8a63-e62e6f19c32c
+```console
+% terraform import ibm_is_share_mount_target.example <share_id>/<share_mount_target_id>
 ```

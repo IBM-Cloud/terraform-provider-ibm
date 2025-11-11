@@ -58,14 +58,18 @@ In addition to all argument references listed, you can access the following attr
 
 ## Import
 
-You can import the `ibm_is_private_path_service_gateway` resource by using `id`. The unique identifier for this private path service gateway.
+In Terraform v1.5.0 and later, use an [`import` block](https://developer.hashicorp.com/terraform/language/import) to import the `ibm_is_private_path_service_gateway` resource by using `id`.
+The `id` property can be formed using the private_path_service_gateway id. For example:
 
-# Syntax
-```
-$ terraform import ibm_is_private_path_service_gateway.example <id>
+```terraform
+import {
+  to = ibm_is_private_path_service_gateway.example
+  id = "<id>"
+}
 ```
 
-# Example
-```
-$ terraform import ibm_is_private_path_service_gateway.example 0767-fa41aecb-4f21-423d-8082-630bfba1e1d9
+Using `terraform import`. For example:
+
+```console
+% terraform import ibm_is_private_path_service_gateway.example <id>
 ```

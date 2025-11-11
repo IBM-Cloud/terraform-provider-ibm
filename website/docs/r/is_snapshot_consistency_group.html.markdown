@@ -106,14 +106,18 @@ After your resource is created, you can read values from the listed arguments an
 
 ## Import
 
-You can import the `ibm_is_snapshot_consistency_group` resource by using `id`. The unique identifier for this snapshot consistency group.
+In Terraform v1.5.0 and later, use an [`import` block](https://developer.hashicorp.com/terraform/language/import) to import the `ibm_is_snapshot_consistency_group` resource by using `id`.
+The `id` property can be formed using the snapshot_consistency_group identifier. For example:
 
-# Syntax
-```
-$ terraform import ibm_is_snapshot_consistency_group.is_snapshot_consistency_group <id>
+```terraform
+import {
+  to = ibm_is_snapshot_consistency_group.is_snapshot_consistency_group
+  id = "<id>"
+}
 ```
 
-# Example
-```
-$ terraform import ibm_is_snapshot_consistency_group.is_snapshot_consistency_group r134-fa329f6b-0e36-433f-a3bb-0df632e79263
+Using `terraform import`. For example:
+
+```console
+% terraform import ibm_is_snapshot_consistency_group.is_snapshot_consistency_group <id>
 ```

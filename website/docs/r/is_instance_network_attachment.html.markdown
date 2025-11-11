@@ -181,21 +181,18 @@ After your resource is created, you can read values from the listed arguments an
 
 ## Import
 
-You can import the `ibm_is_instance_network_attachment` resource by using `id`.
-The `id` property can be formed from `instance`, and `id` in the following format:
+In Terraform v1.5.0 and later, use an [`import` block](https://developer.hashicorp.com/terraform/language/import) to import the `ibm_is_instance_network_attachment` resource by using `id`.
+The `id` property can be formed from `instance`, and `id`. For example:
 
-```
-<instance>/<id>
-```
-- `instance`: A string. The virtual server instance identifier.
-- `id`: A string. The instance network attachment identifier.
-
-# Syntax
-```
-$ terraform import ibm_is_instance_network_attachment.is_instance_network_attachment <instance>/<id>
+```terraform
+import {
+  to = ibm_is_instance_network_attachment.is_instance_network_attachment
+  id = "<instance>/<id>"
+}
 ```
 
-# Example
-```
-$ terraform import ibm_is_instance_network_attachment.is_instance_network_attachment 0716-a4c2c0c6-65c2-4b6a-8293-3f3bded0a5c6/0716-f92b-456a-a162-7a8c26dd5c6
+Using `terraform import`. For example:
+
+```console
+% terraform import ibm_is_instance_network_attachment.is_instance_network_attachment <instance>/<id>
 ```

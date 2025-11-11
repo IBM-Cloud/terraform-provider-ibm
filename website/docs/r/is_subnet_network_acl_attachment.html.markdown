@@ -117,16 +117,19 @@ In addition to all argument reference list, you can access the following attribu
 	- `name` - (String) The user-defined name of the rule.
 
 ## Import
-The `ibm_is_subnet_network_acl_attachment` resource can be imported by using the ID. 
 
-**Syntax**
+In Terraform v1.5.0 and later, use an [`import` block](https://developer.hashicorp.com/terraform/language/import) to import the `ibm_is_subnet_network_acl_attachment` resource by using `id`.
+The `id` property can be formed from subnet ID. For example:
 
+```terraform
+import {
+  to = ibm_is_subnet_network_acl_attachment.example
+  id = "<subnet_ID>"
+}
 ```
-$ terraform import ibm_is_subnet_network_acl_attachment.example <subnet_network_acl_ID>
-```
 
-**Example**
+Using `terraform import`. For example:
 
-```
-$ terraform import ibm_is_subnet_network_acl_attachment.example d7bec597-4726-451f-8a63-1111e6f19c32c
+```console
+% terraform import ibm_is_subnet_network_acl_attachment.example <subnet_network_acl_ID>
 ```

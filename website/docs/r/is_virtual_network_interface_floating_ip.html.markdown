@@ -40,14 +40,18 @@ After your resource is created, you can read values from the listed arguments an
 
 ## Import
 
-You can import the `ibm_is_virtual_network_interface_floating_ip` resource by using `< vni_id >/< floating_ip_id >` combination. The unique identifier for this floating IP.
+In Terraform v1.5.0 and later, use an [`import` block](https://developer.hashicorp.com/terraform/language/import) to import the `ibm_is_virtual_network_interface_floating_ip` resource by using `id`.
+The `id` property can be formed using the virtual_network_interface and floating_ip identifier(s). For example:
 
-# Syntax
-```
-$ terraform import ibm_is_virtual_network_interface_floating_ip.vni_fip < vni_id >/< floating_ip_id >
+```terraform
+import {
+  to = ibm_is_virtual_network_interface_floating_ip.vni_fip
+  id = "< vni_id >/< floating_ip_id >"
+}
 ```
 
-# Example
-```
-<!-- $ terraform import ibm_is_virtual_network_interface_floating_ip.vni_fip 39300233-9995-4806-89a5-3c1b6eb8868939300233-9995-4806-89a5-3c1b6eb88689 -->
+Using `terraform import`. For example:
+
+```console
+% terraform import ibm_is_virtual_network_interface_floating_ip.vni_fip < vni_id >/< floating_ip_id >
 ```

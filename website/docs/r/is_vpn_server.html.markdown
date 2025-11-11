@@ -129,14 +129,18 @@ In addition to all argument references listed, you can access the following attr
 
 ## Import
 
-You can import the `ibm_is_vpn_server` resource by using `id`. The unique identifier for this VPN server.
+In Terraform v1.5.0 and later, use an [`import` block](https://developer.hashicorp.com/terraform/language/import) to import the `ibm_is_vpn_server` resource by using `id`.
+The `id` property can be formed using the appropriate identifier(s). For example:
 
-# Syntax
-```
-$ terraform import ibm_is_vpn_server.is_vpn_server <id>
+```terraform
+import {
+  to = ibm_is_vpn_server.is_vpn_server
+  id = "<id>"
+}
 ```
 
-# Example
-```
-$ terraform import ibm_is_vpn_server.is_vpn_server r006-d7cc5196-9864-48c4-82d8-3f30da41fcc5
+Using `terraform import`. For example:
+
+```console
+% terraform import ibm_is_vpn_server.is_vpn_server <id>
 ```

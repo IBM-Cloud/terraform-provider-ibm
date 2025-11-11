@@ -94,10 +94,18 @@ In addition to all argument reference list, you can access the following attribu
 
 ## Import
 
-The `ibm_is_instance_disk_management` resource can be imported byusing Instance disk management ID.
+In Terraform v1.5.0 and later, use an [`import` block](https://developer.hashicorp.com/terraform/language/import) to import the `ibm_is_instance_disk_management` resource by using `id`.
+The `id` property can be formed from `instance ID`. For example:
 
-**Example**
-
+```terraform
+import {
+  to = ibm_is_instance_action.example
+  id = "<instance_id>"
+}
 ```
-$ terraform import ibm_is_instance_disk_management.example 0716-111172bb2-decc-4555-b1a6-5d128c62806c
+
+Using `terraform import`. For example:
+
+```console
+% terraform import ibm_is_instance_disk_management.example <instance_id>
 ```

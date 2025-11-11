@@ -121,16 +121,18 @@ Nested schema for **subnet**:
 
 ## Import
 
-You can import the `ibm_is_bare_metal_server_network_attachment` resource by using `id`.
-The `id` property can be formed from `bare_metal_server`, and `id` in the following format:
+In Terraform v1.5.0 and later, use an [`import` block](https://developer.hashicorp.com/terraform/language/import) to import the `ibm_is_bare_metal_server_network_attachment` resource by using `id`.
+The `id` property can be formed from `bare_metal_server`, and `network_attachment_id`. For example:
 
+```terraform
+import {
+  to = ibm_is_bare_metal_server_network_attachment.is_bare_metal_server_network_attachment
+  id = "<bare_metal_server>/<network_attachment_id>"
+}
 ```
-<bare_metal_server>/<id>
-```
-- `bare_metal_server`: A string. The bare metal server identifier.
-- `id`: A string. The bare metal server network attachment identifier.
 
-# Syntax
-```
-$ terraform import ibm_is_bare_metal_server_network_attachment.is_bare_metal_server_network_attachment <bare_metal_server>/<id>
+Using `terraform import`. For example:
+
+```console
+% terraform import ibm_is_bare_metal_server_network_attachment.is_bare_metal_server_network_attachment <bare_metal_server>/<network_attachment_id>
 ```

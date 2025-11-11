@@ -235,16 +235,19 @@ In addition to all argument reference list, you can access the following attribu
 		- `id` - (String) The unique identifier for this load balancer listener.
 	- `uri` - (String) The redirect relative target URI.
 ## Import
-The `ibm_is_lb_listener` resource can be imported by using the load balancer ID and listener ID.
 
-**Syntax**
+In Terraform v1.5.0 and later, use an [`import` block](https://developer.hashicorp.com/terraform/language/import) to import the `ibm_is_lb_listener` resource by using `id`.
+The `id` property can be formed from `load balancer ID`, and `listener ID`. For example:
 
+```terraform
+import {
+  to = ibm_is_lb_listener.example
+  id = "<loadbalancer_ID>/<listener_ID>"
+}
 ```
-$ terraform import ibm_is_lb_listener.example <loadbalancer_ID>/<listener_ID>
-```
 
-**Example**
+Using `terraform import`. For example:
 
-```
-$ terraform import ibm_is_lb_listener.example d7bec597-4726-451f-8a63-e61212c32c/cea6651a-bc0a-4438-9f8a-44444f3ebb
+```console
+% terraform import ibm_is_lb_listener.example <loadbalancer_ID>/<listener_ID>
 ```

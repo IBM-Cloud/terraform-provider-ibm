@@ -90,16 +90,18 @@ After your resource is created, you can read values from the listed arguments an
 
 ## Import
 
-You can import the `ibm_is_cluster_network_interface` resource by using `id`.
-The `id` property can be formed from `cluster_network_id`, and `cluster_network_interface_id` in the following format:
+In Terraform v1.5.0 and later, use an [`import` block](https://developer.hashicorp.com/terraform/language/import) to import the `ibm_is_cluster_network_interface` resource by using `id`.
+The `id` property can be formed from `cluster_network_id` and `cluster_network_interface_id`. For example:
 
-<pre>
-&lt;cluster_network_id&gt;/&lt;cluster_network_interface_id&gt;
-</pre>
-- `cluster_network_id`: A string. The cluster network identifier.
-- `cluster_network_interface_id`: A string in the format `0717-ffc092f7-5d02-4b93-ab69-26860529b9fb`. The unique identifier for this cluster network interface.
+```terraform
+import {
+  to = ibm_is_cluster_network_interface.is_cluster_network_interface
+  id = "<cluster_network_id>/<cluster_network_interface_id>"
+}
+```
 
-# Syntax
-<pre>
-$ terraform import ibm_is_cluster_network_interface.is_cluster_network_interface &lt;cluster_network_id&gt;/&lt;cluster_network_interface_id&gt;
-</pre>
+Using `terraform import`. For example:
+
+```console
+% terraform import ibm_is_cluster_network_interface.is_cluster_network_interface <cluster_network_id>/<cluster_network_interface_id>
+```

@@ -242,10 +242,19 @@ In addition to all argument reference list, you can access the following attribu
 
 
 ## Import
-The `ibm_is_instance_volume_attachment` resource can be imported by using the instance id and volume attachment id. 
 
-**Syntax**
+In Terraform v1.5.0 and later, use an [`import` block](https://developer.hashicorp.com/terraform/language/import) to import the `ibm_is_instance_volume_attachment` resource by using `id`.
+The `id` property can be formed from `instance id`, and `volume attachment id`. For example:
 
+```terraform
+import {
+  to = ibm_is_instance_volume_attachment.example
+  id = "<instance_id>/<volume_attachment_id>"
+}
 ```
-$ terraform import ibm_is_instance_volume_attachment.example <instance_id>/<volume_attachment_id>
+
+Using `terraform import`. For example:
+
+```console
+% terraform import ibm_is_instance_volume_attachment.example <instance_id>/<volume_attachment_id>
 ```

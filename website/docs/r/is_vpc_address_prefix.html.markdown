@@ -57,10 +57,19 @@ In addition to all argument reference list, you can access the following attribu
 - `related_crn` - (String) CRN of the VPC this address prefix belongs to.
 
 ## Import
-The `ibm_is_vpc_address_prefix` resource can be imported by using the VPC ID and VPC address prefix ID.
 
-**Syntax**
+In Terraform v1.5.0 and later, use an [`import` block](https://developer.hashicorp.com/terraform/language/import) to import the `ibm_is_vpc_address_prefix` resource by using `id`.
+The `id` property can be formed from `VPC ID`, and `VPC address prefix ID`. For example:
 
+```terraform
+import {
+  to = ibm_is_vpc_address_prefix.example
+  id = "<vpc_ID>/<address_prefix_ID>"
+}
 ```
-$ terraform import ibm_is_vpc_address_prefix.example <vpc_ID>/<address_prefix_ID>
+
+Using `terraform import`. For example:
+
+```console
+% terraform import ibm_is_vpc_address_prefix.example <vpc_ID>/<address_prefix_ID>
 ```

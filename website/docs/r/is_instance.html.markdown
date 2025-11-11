@@ -1148,10 +1148,19 @@ In addition to all argument reference list, you can access the following attribu
 
 
 ## Import
-The `ibm_is_instance` resource can be imported by using the instance ID.
 
-**Example**
+In Terraform v1.5.0 and later, use an [`import` block](https://developer.hashicorp.com/terraform/language/import) to import the `ibm_is_instance` resource by using `id`.
+The `id` property can be formed from `instance ID`. For example:
 
+```terraform
+import {
+  to = ibm_is_instance.example
+  id = "<instance_id>"
+}
 ```
-$ terraform import ibm_is_instance.example a1aaa111-1111-111a-1a11-a11a1a11a11a
+
+Using `terraform import`. For example:
+
+```console
+% terraform import ibm_is_instance.example <instance_id>
 ```

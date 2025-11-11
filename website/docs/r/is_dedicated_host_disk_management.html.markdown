@@ -74,10 +74,18 @@ In addition to all argument reference list, you can access the following attribu
 
 ## Import
 
-The `ibm_is_dedicated_host_disk_management` resource can be imported by using dedicated host disk management ID.
+In Terraform v1.5.0 and later, use an [`import` block](https://developer.hashicorp.com/terraform/language/import) to import the `ibm_is_dedicated_host_disk_management` resource by using `id`.
+The `id` property can be formed from `dedicated host ID`. For example:
 
-**Example**
-
+```terraform
+import {
+  to = ibm_is_dedicated_host_disk_management.example
+  id = "<dedicated_host_id>"
+}
 ```
-$ terraform import ibm_is_dedicated_host_disk_management.example 0716-1c372bb2-decc-4555-b1a6-5d128c612316c
+
+Using `terraform import`. For example:
+
+```console
+% terraform import ibm_is_dedicated_host_disk_management.example <dedicated_host_id>
 ```

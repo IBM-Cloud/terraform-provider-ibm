@@ -115,17 +115,18 @@ In addition to all argument references listed, you can access the following attr
 
 ## Import
 
-You can import the `ibm_is_backup_policy_plan` resource by using `id`.
-The `id` property can be formed from `backup_policy_id`, and `id` in the following format:
+In Terraform v1.5.0 and later, use an [`import` block](https://developer.hashicorp.com/terraform/language/import) to import the `ibm_is_backup_policy_plan` resource by using `id`.
+The `id` property can be formed from `backup_policy_id`, and `backup_policy_plan_id`. For example:
 
+```terraform
+import {
+  to = ibm_is_backup_policy_plan.is_backup_policy_plan
+  id = "<backup_policy_id>/<backup_policy_plan_id>"
+}
 ```
-<0fe9e5d8-0a4d-4818-96ec-e99708644a58>/<0fg9e5d8-0a4d-4818-96ec-e99708634a58>
-```
-- `backup_policy_id`: A string. The backup policy identifier.
-- `id`: A string. The backup policy plan identifier.
 
-# Syntax
-```
-$ terraform import ibm_is_backup_policy_plan.is_backup_policy_plan <0fe9e5d8-0a4d-4818-96ec-e99708644a58>/<0fg9e5d8-0a4d-4818-96ec-e99708634a58>
+Using `terraform import`. For example:
 
+```console
+% terraform import ibm_is_backup_policy_plan.is_backup_policy_plan <backup_policy_id>/<backup_policy_plan_id>
 ```

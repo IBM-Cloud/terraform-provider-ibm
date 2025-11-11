@@ -233,16 +233,18 @@ In addition to all argument reference list, you can access the following attribu
 
 ## Import
 
-The `ibm_is_snapshot` can be imported using ID.
+In Terraform v1.5.0 and later, use an [`import` block](https://developer.hashicorp.com/terraform/language/import) to import the `ibm_is_snapshot` resource by using `id`.
+The `id` property can be formed using the snapshot identifier. For example:
 
-**Syntax**
-
+```terraform
+import {
+  to = ibm_is_snapshot.example
+  id = "< id >"
+}
 ```
-$ terraform import ibm_is_snapshot.example < id >
-```
 
-**Example**
+Using `terraform import`. For example:
 
-```
-$ terraform import ibm_is_snapshot.example d7bec597-4726-451f-8a63-e62e6f19c32c
+```console
+% terraform import ibm_is_snapshot.example < id >
 ```

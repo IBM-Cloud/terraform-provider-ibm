@@ -223,16 +223,19 @@ In addition to all argument reference list, you can access the following attribu
 - `session_persistence_http_cookie_name` - (String) The HTTP cookie name used for session persistence. Only present when `session_persistence_type = "http_cookie"`. This is system-generated and read-only.
 
 ## Import
-The `ibm_is_lb_pool` resource can be imported using the load balancer ID and pool ID separated by a forward slash. 
 
-**Syntax**
+In Terraform v1.5.0 and later, use an [`import` block](https://developer.hashicorp.com/terraform/language/import) to import the `ibm_is_lb_pool` resource by using `id`.
+The `id` property can be formed using the appropriate identifier(s) `loadbalancer_ID` and `pool_ID`. For example:
 
+```terraform
+import {
+  to = ibm_is_lb_pool.example
+  id = "<loadbalancer_ID>/<pool_ID>"
+}
 ```
-$ terraform import ibm_is_lb_pool.example <loadbalancer_ID>/<pool_ID>
-```
 
-**Example**
+Using `terraform import`. For example:
 
-```
-$ terraform import ibm_is_lb_pool.example d7bec597-4726-451f-8a63-e62e6f19c32c/cea6651a-bc0a-4438-9f8a-a0770bbf3ebb
+```console
+% terraform import ibm_is_lb_pool.example <loadbalancer_ID>/<pool_ID>
 ```

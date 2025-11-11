@@ -58,16 +58,18 @@ After your resource is created, you can read values from the listed arguments an
 
 ## Import
 
-You can import the `ibm_is_cluster_network_subnet` resource by using `id`.
-The `id` property can be formed from `cluster_network_id`, and `cluster_network_subnet_id` in the following format:
+In Terraform v1.5.0 and later, use an [`import` block](https://developer.hashicorp.com/terraform/language/import) to import the `ibm_is_cluster_network_subnet` resource by using `id`.
+The `id` property can be formed from `cluster_network_id`, and `cluster_network_subnet_id`. For example:
 
-<pre>
-&lt;cluster_network_id&gt;/&lt;cluster_network_subnet_id&gt;
-</pre>
-- `cluster_network_id`: A string. The cluster network identifier.
-- `cluster_network_subnet_id`: A string in the format `0717-7931845c-65c4-4b0a-80cd-7d9c1a6d7930`. The unique identifier for this cluster network subnet.
+```terraform
+import {
+  to = ibm_is_cluster_network_subnet.is_cluster_network_subnet
+  id = "<cluster_network_id>/<cluster_network_subnet_id>"
+}
+```
 
-# Syntax
-<pre>
-$ terraform import ibm_is_cluster_network_subnet.is_cluster_network_subnet &lt;cluster_network_id&gt;/&lt;cluster_network_subnet_id&gt;
-</pre>
+Using `terraform import`. For example:
+
+```console
+% terraform import ibm_is_cluster_network_subnet.is_cluster_network_subnet <cluster_network_id>/<cluster_network_subnet_id>
+```

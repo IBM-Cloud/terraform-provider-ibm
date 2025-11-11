@@ -190,10 +190,18 @@ In addition to all argument reference list, you can access the following attribu
 
 ## Import
 
-The `ibm_is_virtual_endpoint_gateway` resource can be imported by using virtual endpoint gateway ID.
+In Terraform v1.5.0 and later, use an [`import` block](https://developer.hashicorp.com/terraform/language/import) to import the `ibm_is_virtual_endpoint_gateway` resource by using `id`.
+The `id` property can be formed from `virtual endpoint gateway ID`. For example:
 
-**Example**
-
+```terraform
+import {
+  to = ibm_is_virtual_endpoint_gateway.example
+  id = "<virtual_endpoint_gateway_id>"
+}
 ```
-$ terraform import ibm_is_virtual_endpoint_gateway.example d7bec597-4726-451f-8a63-xxxxsdf345
+
+Using `terraform import`. For example:
+
+```console
+% terraform import ibm_is_virtual_endpoint_gateway.example <virtual_endpoint_gateway_id>
 ```

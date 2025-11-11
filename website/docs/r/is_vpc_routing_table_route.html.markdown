@@ -96,7 +96,7 @@ In addition to all argument reference list, you can access the following attribu
     - `resource_type` - (Optional, String) The resource type.
       - Constraints: Allowable values are: `vpn_gateway`. The maximum length is `128` characters. The minimum length is `1` character. The value must match regular expression `/^[a-z][a-z0-9]*(_[a-z0-9]+)*$/`.
 - `href` - (String) The routing table URL.
-- `id` - (String) The routing table ID. The ID is composed of `<vpc_route_table_id>/<vpc_route_table_route_id>`.
+- `id` - (String) The routing table ID. The ID is composed of `<vpc_routing_table_id>/<vpc_routing_table_route_id>`.
 - `is_default` - (String) Indicates the default routing table for this VPC.
 - `lifecycle_state` - (String) The lifecycle state of the route.
 - `origin` - (Optional, String) The origin of this route:- `service`: route was directly created by a service- `user`: route was directly created by a userThe enumerated values for this property are expected to expand in the future. When processing this property, check for and log unknown values. Optionally halt processing and surface the error, or bypass the route on which the unexpected property value was encountered.
@@ -105,11 +105,19 @@ In addition to all argument reference list, you can access the following attribu
 - `resource_type` - (String) The resource type.
 
 ## Import
-The `ibm_is_vpc_routing_table_route` resource  can be imported by using VPC ID, VPC Route table ID, and VPC Route table Route ID.
 
-**Example**
+In Terraform v1.5.0 and later, use an [`import` block](https://developer.hashicorp.com/terraform/language/import) to import the `ibm_is_vpc_routing_table_route` resource by using `id`.
+The `id` property can be formed from `VPC ID`, `VPC Route table ID`, and `VPC Route table Route ID`. For example:
 
+```terraform
+import {
+  to = ibm_is_vpc_routing_table_route.example
+  id = "<vpc_id>/<vpc_routing_table_id>/<vpc_routing_table_route_id>"
+}
 ```
-$ terraform import ibm_is_vpc_routing_table_route.example 56738c92-4631-4eb5-8938-8af90000006ea4/4993-a0fd-cabab477c4d1-8af911111a4/fc2667e0-9e6f-4993-a0fd-cabab55557c4d1
-```
 
+Using `terraform import`. For example:
+
+```console
+% terraform import ibm_is_vpc_routing_table_route.example <vpc_id>/<vpc_routing_table_id>/<vpc_routing_table_route_id>
+```

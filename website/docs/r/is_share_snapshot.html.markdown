@@ -83,16 +83,18 @@ After your resource is created, you can read values from the listed arguments an
 
 ## Import
 
-You can import the `ibm_is_share_snapshot` resource by using `id`.
-The `id` property can be formed from `share_id`, and `share_snapshot` in the following format:
+In Terraform v1.5.0 and later, use an [`import` block](https://developer.hashicorp.com/terraform/language/import) to import the `ibm_is_share_snapshot` resource by using `id`.
+The `id` property can be formed from `share_id`, and `share_snapshot`. For example:
 
-<pre>
-&lt;share_id&gt;/&lt;is_share_snapshot_id&gt;
-</pre>
-- `share_id`: A string. The file share identifier.
-- `share_snapshot`: A string in the format `r006-e13ee54f-baa4-40d3-b35c-b9ec163972b4`. The unique identifier for this share snapshot.
+```terraform
+import {
+  to = ibm_is_share_snapshot.is_share_snapshot
+  id = "<share_id>/<share_snapshot_id>"
+}
+```
 
-# Syntax
-<pre>
-$ terraform import ibm_is_share_snapshot.is_share_snapshot &lt;share_id&gt;/&lt;is_share_snapshot_id&gt;
-</pre>
+Using `terraform import`. For example:
+
+```console
+% terraform import ibm_is_share_snapshot.is_share_snapshot <share_id>/<share_snapshot_id>
+```
