@@ -518,32 +518,31 @@ func flattenCISRulesets(rulesetObj rulesetsv1.RulesetDetails) interface{} {
 	rulesetOutput[CISRulesetsVersion] = *rulesetObj.Version
 	rulesetOutput[CISRulesetsId] = *&rulesetObj.ID
 
-	ruleDetailsList := make([]map[string]interface{}, 0)
-	for _, ruleDetailsObj := range rulesetObj.Rules {
-		ruleDetails := map[string]interface{}{}
-		ruleDetails[CISRulesetsRuleId] = ruleDetailsObj.ID
-		ruleDetails[CISRulesetsRuleVersion] = ruleDetailsObj.Version
-		ruleDetails[CISRulesetsRuleAction] = ruleDetailsObj.Action
-		ruleDetails[CISRulesetsRuleExpression] = ruleDetailsObj.Expression
-		ruleDetails[CISRulesetsRuleRef] = ruleDetailsObj.Ref
-		ruleDetails[CISRulesetsRuleLastUpdatedAt] = ruleDetailsObj.LastUpdated
-		ruleDetails[CISRulesetsRuleActionCategories] = ruleDetailsObj.Categories
-		ruleDetails[CISRulesetsRuleActionEnabled] = ruleDetailsObj.Enabled
-		ruleDetails[CISRulesetsRuleActionDescription] = ruleDetailsObj.Description
+	if rulesetObj.Rules != nil {
+		ruleDetailsList := make([]map[string]interface{}, 0)
+		for _, ruleDetailsObj := range rulesetObj.Rules {
+			ruleDetails := map[string]interface{}{}
+			ruleDetails[CISRulesetsRuleId] = ruleDetailsObj.ID
+			ruleDetails[CISRulesetsRuleVersion] = ruleDetailsObj.Version
+			ruleDetails[CISRulesetsRuleAction] = ruleDetailsObj.Action
+			ruleDetails[CISRulesetsRuleExpression] = ruleDetailsObj.Expression
+			ruleDetails[CISRulesetsRuleRef] = ruleDetailsObj.Ref
+			ruleDetails[CISRulesetsRuleLastUpdatedAt] = ruleDetailsObj.LastUpdated
+			ruleDetails[CISRulesetsRuleActionCategories] = ruleDetailsObj.Categories
+			ruleDetails[CISRulesetsRuleActionEnabled] = ruleDetailsObj.Enabled
+			ruleDetails[CISRulesetsRuleActionDescription] = ruleDetailsObj.Description
 
-		// Not Applicable for now
-		//ruleDetails[CISRulesetsRuleLogging] = ruleDetailsObj.Logging
+			// Not Applicable for now
+			//ruleDetails[CISRulesetsRuleLogging] = ruleDetailsObj.Logging
 
-		flattenedActionParameter := flattenCISRulesetsRuleActionParameters(ruleDetailsObj.ActionParameters)
-
-		if len(flattenedActionParameter) != 0 {
-			ruleDetails[CISRulesetsRuleActionParameters] = []map[string]interface{}{flattenedActionParameter}
+			flattenedActionParameter := flattenCISRulesetsRuleActionParameters(ruleDetailsObj.ActionParameters)
+			if len(flattenedActionParameter) != 0 {
+				ruleDetails[CISRulesetsRuleActionParameters] = []map[string]interface{}{flattenedActionParameter}
+			}
+			ruleDetailsList = append(ruleDetailsList, ruleDetails)
 		}
-
-		ruleDetailsList = append(ruleDetailsList, ruleDetails)
+		rulesetOutput[CISRulesetsRules] = ruleDetailsList
 	}
-
-	rulesetOutput[CISRulesetsRules] = ruleDetailsList
 
 	finalrulesetObj = append(finalrulesetObj, rulesetOutput)
 
@@ -584,18 +583,19 @@ func flattenCISRulesetsRuleActionParameters(rulesetsRuleActionParameterObj *rule
 		resultOutput[CISRulesetOverrides] = []map[string]interface{}{flattenCISRulesetsRuleActionParameterOverrides}
 	}
 
-	if rulesToSkip := rulesetsRuleActionParameterObj.Rules; rulesToSkip != nil && len(rulesToSkip) > 0 {
-		flattenedRulesToSkip := make([]map[string]interface{}, 0, len(rulesToSkip))
-
-		for rulesetID, ruleIDs := range rulesToSkip {
-			entry := map[string]interface{}{
-				"ruleset_id": rulesetID,
-				"rule_ids":   ruleIDs,
+	if _, ok := actionParametersOutput["rules"]; ok {
+		rulesToSkip := rulesetsRuleActionParameterObj.Rules
+		if len(rulesToSkip) > 0 {
+			flattenedRulesToSkip := make([]map[string]interface{}, 0, len(rulesToSkip))
+			for rulesetID, ruleIDs := range rulesToSkip {
+				entry := map[string]interface{}{
+					"ruleset_id": rulesetID,
+					"rule_ids":   ruleIDs,
+				}
+				flattenedRulesToSkip = append(flattenedRulesToSkip, entry)
 			}
-			flattenedRulesToSkip = append(flattenedRulesToSkip, entry)
+			resultOutput[CISRulesToSkip] = flattenedRulesToSkip
 		}
-
-		resultOutput[CISRulesToSkip] = flattenedRulesToSkip
 	}
 
 	return resultOutput

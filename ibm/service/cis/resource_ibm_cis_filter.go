@@ -82,7 +82,7 @@ func ResourceIBMCISFilterCreate(d *schema.ResourceData, meta interface{}) error 
 
 	var newfilter filtersv1.FilterInput
 
-	if p, ok := d.GetOkExists(cisFilterPaused); ok {
+	if p, ok := d.GetOk(cisFilterPaused); ok {
 		paused := p.(bool)
 		newfilter.Paused = &paused
 	}
@@ -118,7 +118,7 @@ func ResourceIBMCISFilterRead(d *schema.ResourceData, meta interface{}) error {
 	if err != nil {
 		return flex.FmtErrorf("[ERROR] Error while getting the CisFiltersSession %s", err)
 	}
-	filterid, zoneID, crn, _ := flex.ConvertTfToCisThreeVar(d.Id())
+	filterid, zoneID, crn, err := flex.ConvertTfToCisThreeVar(d.Id())
 	if err != nil {
 		return err
 	}
@@ -155,7 +155,7 @@ func ResourceIBMCISFilterUpdate(d *schema.ResourceData, meta interface{}) error 
 		return flex.FmtErrorf("[ERROR] Error while getting the CisFiltersSession %s", err)
 	}
 
-	filterid, zoneID, crn, _ := flex.ConvertTfToCisThreeVar(d.Id())
+	filterid, zoneID, crn, err := flex.ConvertTfToCisThreeVar(d.Id())
 	if err != nil {
 		return err
 	}
@@ -167,7 +167,7 @@ func ResourceIBMCISFilterUpdate(d *schema.ResourceData, meta interface{}) error 
 		var updatefilter filtersv1.FilterUpdateInput
 		updatefilter.ID = &filterid
 
-		if p, ok := d.GetOkExists(cisFilterPaused); ok {
+		if p, ok := d.GetOk(cisFilterPaused); ok {
 			paused := p.(bool)
 			updatefilter.Paused = &paused
 		}
@@ -205,7 +205,7 @@ func ResourceIBMCISFilterDelete(d *schema.ResourceData, meta interface{}) error 
 	if err != nil {
 		return err
 	}
-	filterid, zoneID, crn, _ := flex.ConvertTfToCisThreeVar(d.Id())
+	filterid, zoneID, crn, err := flex.ConvertTfToCisThreeVar(d.Id())
 	if err != nil {
 		return err
 	}
