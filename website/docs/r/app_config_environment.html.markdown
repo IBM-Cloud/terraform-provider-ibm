@@ -18,7 +18,7 @@ resource "ibm_app_config_environment" "app_config_environment" {
   environment_id = "environment_id"
   name = "name"
   description = "description"
-  tags = "tags"
+  tags = "tag1,tag2"
   color_code = "color_code"
 }
 ```

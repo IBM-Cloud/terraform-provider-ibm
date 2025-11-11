@@ -16,7 +16,7 @@ Provides a resource for `collection`. This allows collection to be created, upda
 resource "ibm_app_config_collection" "app_config_collection" {
   guid = "guid"
   name = "name"
-  tags = "tags"
+  tags = "tag1,tag2"
   description = "description"
   collection_id = "collection_id"
 }

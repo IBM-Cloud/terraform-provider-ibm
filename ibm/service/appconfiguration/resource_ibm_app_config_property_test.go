@@ -100,8 +100,8 @@ func testAccCheckIbmAppConfigPropertyExists(n string, obj appconfigurationv1.Pro
 		}
 		options := &appconfigurationv1.GetPropertyOptions{}
 
-		options.SetEnvironmentID(parts[1])
-		options.SetPropertyID(parts[2])
+		options.SetEnvironmentID("dev")
+		options.SetPropertyID(parts[1])
 
 		property, _, err := appconfigClient.GetProperty(options)
 		if err != nil {
@@ -129,8 +129,8 @@ func testAccCheckIbmAppConfigPropertyDestroy(s *terraform.State) error {
 		}
 		options := &appconfigurationv1.GetPropertyOptions{}
 
-		options.SetEnvironmentID(parts[1])
-		options.SetPropertyID(parts[2])
+		options.SetEnvironmentID("dev")
+		options.SetPropertyID(parts[1])
 
 		// Try to find the key
 		_, response, err := appconfigClient.GetProperty(options)
