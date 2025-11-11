@@ -13,6 +13,7 @@ Provides a resource for `property`. This allows property to be created, updated 
 ## Example Usage
 
 ```hcl
+# Example 1
 resource "ibm_app_config_property" "app_config_property" {
   guid = "guid"
   environment_id = "environment_id"
@@ -21,7 +22,42 @@ resource "ibm_app_config_property" "app_config_property" {
   type = "type"
   value = "value"
   description = "description"
-  tags = "tags"
+  tags = "tag1,tag2"
+}
+
+# Example 2
+resource "ibm_app_config_property" "app_config_property" {
+  guid = "guid"
+  environment_id = "environment_id"
+  name = "name"
+  property_id = "property_id"
+  type = "type"
+  value = "value"
+  description = "description"
+  tags = "tag1,tag2"
+  collections {
+    collection_id = "collection_id1"
+  }
+  # only use this deleted attribute during 
+  # update of propertyt
+  collections {
+    collection_id = "collection_id2"
+    deleted = true
+  }
+  segment_rules {
+    rules {
+      segments = [ "segment_id1","segment_id2" ]
+    }
+    value = "value1"
+    order = 1
+  }
+  segment_rules {
+    rules {
+      segments = [ "segment_id3","segment_id4" ]
+    }
+    value = "value2"
+    order = 2
+  }
 }
 ```
 
@@ -42,8 +78,11 @@ The following arguments are supported:
     - `rules` - (Required, []interface{}) Rules array.
     - `value` - (Required, TypeMap) Value to be used for evaluation for this rule. The value can be Boolean, String or a Numeric value as per the `type` attribute.
     - `order` - (Required, int) Order of the rule, used during evaluation. The evaluation is performed in the order defined and the value associated with the first matching rule is used for evaluation.
+    **Index 1 based numbering is used for order**.
 - `collections` - (Optional, List) List of collection id representing the collections that are associated with the specified property.
     - `collection_id` - (Required, string) Collection id.
+    - `deleted` - (Optional, Boolean) Delete resource association with collection.
+  Note:- Only to be used during update operation
 
 ## Attribute Reference
 
