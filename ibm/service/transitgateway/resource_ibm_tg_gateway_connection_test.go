@@ -25,6 +25,7 @@ func TestAccIBMTransitGatewayConnection_basic(t *testing.T) {
 	gatewayName := fmt.Sprintf("tg-gateway-name-%d", acctest.RandIntRange(10, 100))
 	updateVcName := fmt.Sprintf("newtg-connection-name-%d", acctest.RandIntRange(10, 100))
 	vpcName := fmt.Sprintf("vpc-name-%d", acctest.RandIntRange(10, 100))
+	vpnGatewayName := fmt.Sprintf("vpn-gateway-%d", acctest.RandIntRange(10, 100))
 	dlGatewayName := fmt.Sprintf("dl-gateway-name-%d", acctest.RandIntRange(10, 100))
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
@@ -91,6 +92,15 @@ func TestAccIBMTransitGatewayConnection_basic(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckIBMTransitGatewayConnectionExists("ibm_tg_connection.test_tg_powervs_connection", tgConnection),
 					resource.TestCheckResourceAttr("ibm_tg_connection.test_tg_powervs_connection", "name", tgConnectionName),
+				),
+			},
+			// tg vpn gateway test
+			{
+				//Create test case
+				Config: testAccCheckIBMTransitGatewayVPNGatewayConnectionConfig(vpnGatewayName, gatewayName, tgConnectionName),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMTransitGatewayConnectionExists("ibm_tg_connection.test_tg_vpn_connection", tgConnection),
+					resource.TestCheckResourceAttr("ibm_tg_connection.test_tg_vpn_connection", "name", tgConnectionName),
 				),
 			},
 		},
@@ -242,6 +252,26 @@ resource "ibm_tg_connection" "test_tg_powervs_connection"{
 		network_id = "%s"
 }	   
 	  `, gatewayName, powerVSConnName, acc.Tg_power_vs_network_id)
+}
+
+func testAccCheckIBMTransitGatewayVPNGatewayConnectionConfig(vpnGatewayName, transitGatewayName, connectionName string) string {
+	return fmt.Sprintf(`	
+		data "ibm_is_vpn_gateway" "test_tg_vpn_gateway" {
+			vpn_gateway_name = "%s"
+		} 
+
+		data "ibm_tg_gateway" "test_tg_gateway"{
+			name="%s"
+		}	 
+			
+		resource "ibm_tg_connection" "test_tg_vpn_gateway_connection"{
+			gateway = "${ibm_tg_gateway.test_tg_gateway.id}"
+			network_type = "vpn_gateway"
+			name = "%s"
+			network_id = "${ibm_is_vpn_gateway.test_tg_vpn_gateway.crn}"
+			cidr = "192.168.100.0/24"
+		}	   
+	  `, vpnGatewayName, transitGatewayName, connectionName)
 }
 
 func transitgatewayClient(meta interface{}) (*transitgatewayapisv1.TransitGatewayApisV1, error) {
