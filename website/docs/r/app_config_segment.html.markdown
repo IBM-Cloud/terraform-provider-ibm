@@ -17,7 +17,7 @@ resource "ibm_app_config_segment" "app_config_segment" {
   guid = "guid"
   name = "name"
   description = "description"
-  tags = "tags"
+  tags = "tag1,tag2"
   segment_id = "segment_id"
   rules {
     attribute_name = "attribute_name"
