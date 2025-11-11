@@ -69,10 +69,19 @@ In addition to all argument reference list, you can access the following attribu
   - `type` - (String) The `ICMP` traffic type to allow.
 
 ## Import
-The `ibm_is_security_group` resource can be imported by using security group ID. 
 
-**Example**
+In Terraform v1.5.0 and later, use an [`import` block](https://developer.hashicorp.com/terraform/language/import) to import the `ibm_is_security_group` resource by using `id`.
+The `id` property can be formed from `security group ID`. For example:
 
+```terraform
+import {
+  to = ibm_is_security_group.example
+  id = "<security_group_id>"
+}
 ```
-$ terraform import ibm_is_security_group.example a1aaa111-1111-111a-1a11-a11a1a11a11a
+
+Using `terraform import`. For example:
+
+```console
+% terraform import ibm_is_security_group.example <security_group_id>
 ```
