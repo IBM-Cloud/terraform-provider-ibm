@@ -49,7 +49,7 @@ func DataSourceIBMPdrGetDrLocations() *schema.Resource {
 						"name": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "Name of the DR location.",
+							Description: "The name of the Power virtual server DR location .",
 						},
 					},
 				},
@@ -69,6 +69,9 @@ func dataSourceIBMPdrGetDrLocationsRead(context context.Context, d *schema.Resou
 	getDrLocationsOptions := &drautomationservicev1.GetDrLocationsOptions{}
 
 	getDrLocationsOptions.SetInstanceID(d.Get("instance_id").(string))
+	if _, ok := d.GetOk("accept_language"); ok {
+		getDrLocationsOptions.SetAcceptLanguage(d.Get("accept_language").(string))
+	}
 
 	getDrLocationsResponse, response, err := drAutomationServiceClient.GetDrLocationsWithContext(context, getDrLocationsOptions)
 
@@ -87,10 +90,6 @@ func dataSourceIBMPdrGetDrLocationsRead(context context.Context, d *schema.Resou
 	}
 
 	d.SetId(dataSourceIBMPdrGetDrLocationsID(d))
-
-	if _, ok := d.GetOk("accept_language"); ok {
-		getDrLocationsOptions.SetAcceptLanguage(d.Get("accept_language").(string))
-	}
 
 	drLocations := []map[string]interface{}{}
 	for _, drLocationsItem := range getDrLocationsResponse.DrLocations {

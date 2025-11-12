@@ -52,12 +52,12 @@ func DataSourceIBMPdrGetDrSummaryResponse() *schema.Resource {
 						"last_updated_orchestrator_deployment_time": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "Deployment time of primary orchestrator VM.",
+							Description: "The deployment time of primary orchestrator VM.",
 						},
 						"last_updated_standby_orchestrator_deployment_time": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "Deployment time of StandBy orchestrator VM.",
+							Description: "The deployment time of StandBy orchestrator VM.",
 						},
 						"latest_orchestrator_time": &schema.Schema{
 							Type:        schema.TypeString,
@@ -67,72 +67,72 @@ func DataSourceIBMPdrGetDrSummaryResponse() *schema.Resource {
 						"location_id": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "Location identifier.",
+							Description: "The unique identifier of location.",
 						},
 						"mfa_enabled": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "Multi Factor Authentication Enabled or not.",
+							Description: "indicates if Multi Factor Authentication is enabled or not.",
 						},
 						"orch_ext_connectivity_status": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "External connectivity status of the orchestrator.",
+							Description: "The external connectivity status of the orchestrator.",
 						},
 						"orch_standby_node_addition_status": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "Status of standby node addition.",
+							Description: "The status of standby node addition.",
 						},
 						"orchestrator_cluster_message": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "Message regarding orchestrator cluster status.",
+							Description: "The message regarding orchestrator cluster status.",
 						},
 						"orchestrator_config_status": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "Configuration status of the orchestrator.",
+							Description: "The configuration status of the orchestrator.",
 						},
 						"orchestrator_group_leader": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "Leader node of the orchestrator group.",
+							Description: "The leader node of the orchestrator group.",
 						},
 						"orchestrator_location_type": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "Type of orchestrator Location.",
+							Description: "The type of orchestrator Location.",
 						},
 						"orchestrator_name": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "Name of the primary orchestrator.",
+							Description: "The name of the primary orchestrator.",
 						},
 						"orchestrator_status": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "Status of the primary orchestrator.",
+							Description: "The status of the primary orchestrator.",
 						},
 						"orchestrator_workspace_name": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "Name of the orchestrator workspace.",
+							Description: "The name of the orchestrator workspace.",
 						},
 						"proxy_ip": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "IP address of the proxy.",
+							Description: "The IP address of the proxy.",
 						},
 						"schematic_workspace_name": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "Name of the schematic workspace.",
+							Description: "The name of the schematic workspace.",
 						},
 						"schematic_workspace_status": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "Status of the schematic workspace.",
+							Description: "The status of the schematic workspace.",
 						},
 						"ssh_key_name": &schema.Schema{
 							Type:        schema.TypeString,
@@ -142,27 +142,27 @@ func DataSourceIBMPdrGetDrSummaryResponse() *schema.Resource {
 						"standby_orchestrator_name": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "Name of the standby orchestrator.",
+							Description: "The name of the standby orchestrator.",
 						},
 						"standby_orchestrator_status": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "Status of the standby orchestrator.",
+							Description: "The status of the standby orchestrator.",
 						},
 						"standby_orchestrator_workspace_name": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "Name of the standby orchestrator workspace.",
+							Description: "The name of the standby orchestrator workspace.",
 						},
 						"transit_gateway_name": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "Name of the transit gateway.",
+							Description: "The name of the transit gateway.",
 						},
 						"vpc_name": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "Name of the VPC.",
+							Description: "The name of the VPC.",
 						},
 					},
 				},
@@ -176,72 +176,72 @@ func DataSourceIBMPdrGetDrSummaryResponse() *schema.Resource {
 						"crn": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "Cloud Resource Name identifier.",
+							Description: "The deployment crn.",
 						},
 						"deployment_name": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "Name of the deployment.",
+							Description: "The name of the deployment.",
 						},
 						"description": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "Description of the primary service.",
+							Description: "The Service description.",
 						},
-						"is_ksys_ha": &schema.Schema{
+						"orchestrator_ha": &schema.Schema{
 							Type:        schema.TypeBool,
 							Computed:    true,
-							Description: "Flag indicating if KSYS HA is enabled.",
+							Description: "The flag indicating whether orchestartor HA is enabled.",
 						},
 						"plan_name": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "plan name.",
+							Description: "The plan name.",
 						},
 						"primary_ip_address": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "IP address of the primary service.",
+							Description: "The service Orchestator primary IP address.",
 						},
 						"primary_orchestrator_dashboard_url": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "Primary Orchestrator Dashboard URL.",
+							Description: "The Primary Orchestrator Dashboard URL.",
 						},
 						"recovery_location": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "Location for disaster recovery.",
+							Description: "The disaster recovery location.",
 						},
 						"resource_group": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "Resource group name.",
+							Description: "The Resource group name.",
 						},
 						"standby_description": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "Description of the standby service.",
+							Description: "The standby orchestrator current status details.",
 						},
 						"standby_ip_address": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "IP address of the standby service.",
+							Description: "The service Orchestator standby IP address.",
 						},
 						"standby_orchestrator_dashboard_url": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "Standby Orchestrator Dashboard URL.",
+							Description: "The Standby Orchestrator Dashboard URL.",
 						},
 						"standby_status": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "Current status of the standby service.",
+							Description: "The standby orchestrator current status.",
 						},
 						"status": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "Current status of the primary service.",
+							Description: "The Status of the service.",
 						},
 					},
 				},
@@ -352,7 +352,7 @@ func DataSourceIBMPdrGetDrSummaryResponseServiceDetailsToMap(model *drautomation
 	modelMap["crn"] = *model.CRN
 	modelMap["deployment_name"] = *model.DeploymentName
 	modelMap["description"] = *model.Description
-	modelMap["is_ksys_ha"] = *model.IsKsysHa
+	modelMap["orchestrator_ha"] = *model.
 	modelMap["plan_name"] = *model.PlanName
 	modelMap["primary_ip_address"] = *model.PrimaryIPAddress
 	modelMap["primary_orchestrator_dashboard_url"] = *model.PrimaryOrchestratorDashboardURL

@@ -3,7 +3,7 @@
 
 /*
  * IBM OpenAPI Terraform Generator Version: 3.105.0-3c13b041-20250605-193116
- */
+*/
 
 package drautomationservice
 
@@ -61,6 +61,9 @@ func dataSourceIBMPdrGetManagedVMListRead(context context.Context, d *schema.Res
 	getDrManagedVMOptions.SetInstanceID(d.Get("instance_id").(string))
 	if _, ok := d.GetOk("accept_language"); ok {
 		getDrManagedVMOptions.SetAcceptLanguage(d.Get("accept_language").(string))
+	}
+	if _, ok := d.GetOk("if_none_match"); ok {
+		getDrManagedVMOptions.SetIfNoneMatch(d.Get("if_none_match").(string))
 	}
 
 	managedVMMapResponse, response, err := drAutomationServiceClient.GetDrManagedVMWithContext(context, getDrManagedVMOptions)

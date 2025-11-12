@@ -33,5 +33,5 @@ After your data source is created, you can read values from the following attrib
 * `dr_locations` - (List) List of disaster recovery locations available for the service.
 Nested schema for **dr_locations**:
 	* `id` - (String) Unique identifier of the DR location.
-	* `name` - (String) Name of the DR location.
+	* `name` - (String) The name of the Power virtual server DR location .
 

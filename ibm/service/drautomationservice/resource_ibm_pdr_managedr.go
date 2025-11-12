@@ -31,6 +31,10 @@ func ResourceIbmPdrManagedr() *schema.Resource {
 		DeleteContext: resourceIbmPdrManagedrDelete,
 		Importer:      &schema.ResourceImporter{},
 
+		Timeouts: &schema.ResourceTimeout{
+			Create: schema.DefaultTimeout(90 * time.Minute),
+		},
+
 		Schema: map[string]*schema.Schema{
 			"instance_id": &schema.Schema{
 				Type:        schema.TypeString,
@@ -93,6 +97,25 @@ func ResourceIbmPdrManagedr() *schema.Resource {
 				Sensitive: true,
 				ForceNew:  true,
 				Optional:  true,
+			},
+			"client_id": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				ForceNew:    true,
+				Description: "Client ID for MFA Authentication.",
+			},
+			"client_secret": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				ForceNew:    true,
+				Sensitive:   true,
+				Description: "Client Secret for MFA Authentication.",
+			},
+			"tenant_name": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				ForceNew:    true,
+				Description: "Tenant Name for MFA Authentication.",
 			},
 			"orchestrator_ha": {
 				Type:     schema.TypeBool,
@@ -170,11 +193,6 @@ func ResourceIbmPdrManagedr() *schema.Resource {
 				Optional: true,
 				ForceNew: true,
 			},
-			"ssh_public_key": {
-				Type:     schema.TypeString,
-				Optional: true,
-				ForceNew: true,
-			},
 			"standby_machine_type": {
 				Type:     schema.TypeString,
 				Optional: true,
@@ -225,7 +243,10 @@ func ResourceIbmPdrManagedrValidator() *validate.ResourceValidator {
 	return &resourceValidator
 }
 
-func resourceIbmPdrManagedrCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceIbmPdrManagedrCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	ctx, cancel := context.WithTimeout(ctx, 90*time.Minute)
+	defer cancel()
+
 	drAutomationServiceClient, err := meta.(conns.ClientSession).DrAutomationServiceV1()
 	if err != nil {
 		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_pdr_managedr", "create", "initialize-client")
@@ -274,6 +295,15 @@ func resourceIbmPdrManagedrCreate(context context.Context, d *schema.ResourceDat
 	if _, ok := d.GetOk("region_id"); ok {
 		createManageDrOptions.SetRegionID(d.Get("region_id").(string))
 	}
+	if _, ok := d.GetOk("client_id"); ok {
+		createManageDrOptions.SetClientID(d.Get("client_id").(string))
+	}
+	if _, ok := d.GetOk("client_secret"); ok {
+		createManageDrOptions.SetClientSecret(d.Get("client_secret").(string))
+	}
+	if _, ok := d.GetOk("tenant_name"); ok {
+		createManageDrOptions.SetTenantName(d.Get("tenant_name").(string))
+	}
 	if _, ok := d.GetOk("resource_instance"); ok {
 		createManageDrOptions.SetResourceInstance(d.Get("resource_instance").(string))
 	}
@@ -317,7 +347,7 @@ func resourceIbmPdrManagedrCreate(context context.Context, d *schema.ResourceDat
 		createManageDrOptions.SetAcceptsIncomplete(d.Get("accepts_incomplete").(bool))
 	}
 
-	serviceInstanceManageDr, response, err := drAutomationServiceClient.CreateManageDrWithContext(context, createManageDrOptions)
+	serviceInstanceManageDr, response, err := drAutomationServiceClient.CreateManageDrWithContext(ctx, createManageDrOptions)
 	if err != nil {
 		detailedMsg := fmt.Sprintf("CreateManageDrWithContext failed: %s", err.Error())
 		// Include HTTP status & raw body if available
@@ -337,7 +367,7 @@ func resourceIbmPdrManagedrCreate(context context.Context, d *schema.ResourceDat
 	instanceID := *createManageDrOptions.InstanceID
 	const (
 		pollInterval = 1 * time.Minute
-		maxWaitTime  = 75 * time.Minute // optional, can extend as needed
+		maxWaitTime  = 90 * time.Minute // optional, can extend as needed
 	)
 	timeout := time.After(maxWaitTime)
 	ticker := time.NewTicker(pollInterval)
@@ -357,7 +387,7 @@ func resourceIbmPdrManagedrCreate(context context.Context, d *schema.ResourceDat
 				return tfErr.GetDiag()
 
 			case <-ticker.C:
-				status, _, _, statusErr, errormessage := checkLastOperationStatus(context, drAutomationServiceClient, instanceID)
+				status, _, _, statusErr, _ := checkLastOperationStatus(ctx, drAutomationServiceClient, instanceID)
 				if statusErr != nil {
 					tfErr := flex.TerraformErrorf(statusErr, fmt.Sprintf("GetLastOperation failed: %s", statusErr.Error()), "ibm_pdr_managedr", "create")
 					log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
@@ -365,16 +395,16 @@ func resourceIbmPdrManagedrCreate(context context.Context, d *schema.ResourceDat
 					return tfErr.GetDiag()
 				}
 
-				log.Printf("[INFO] Current Last Operation status for instance %s: %s", instanceID, status)
+				log.Printf("[INFO] Current Last Operation status for instance %s: %s", instanceID, *status.Status)
 
-				switch strings.ToLower(status) {
+				switch strings.ToLower(*status.Status) {
 				case "active":
 					log.Printf("[INFO] Manage DR operation completed successfully for instance %s", instanceID)
 					ticker.Stop()
-					return resourceIbmPdrManagedrRead(context, d, meta)
+					return resourceIbmPdrManagedrRead(ctx, d, meta)
 
 				case "fail", "failed", "error":
-					errMsg := fmt.Sprintf("Manage DR operation failed for instance %s (status: %s) and error message: %s", instanceID, status, errormessage)
+					errMsg := fmt.Sprintf("Manage DR operation failed for instance %s and error message: %s", instanceID, *status.PrimaryDescription)
 					tfErr := flex.TerraformErrorf(fmt.Errorf("%s", errMsg), errMsg, "ibm_pdr_managedr", "create")
 
 					log.Printf("[ERROR] %s", errMsg)
@@ -382,7 +412,7 @@ func resourceIbmPdrManagedrCreate(context context.Context, d *schema.ResourceDat
 					return tfErr.GetDiag()
 
 				default:
-					log.Printf("[DEBUG] Manage DR still in progress (status: %s)... retrying in %v", status, pollInterval)
+					log.Printf("[DEBUG] Manage DR still in progress... retrying in %v", pollInterval)
 				}
 			}
 		}
@@ -397,7 +427,7 @@ func resourceIbmPdrManagedrCreate(context context.Context, d *schema.ResourceDat
 				return tfErr.GetDiag()
 
 			case <-ticker.C:
-				status, _, standbyStatus, statusErr, errormessage := checkLastOperationStatus(context, drAutomationServiceClient, instanceID)
+				status, _, standbyStatus, statusErr, _ := checkLastOperationStatus(ctx, drAutomationServiceClient, instanceID)
 				if statusErr != nil {
 					tfErr := flex.TerraformErrorf(statusErr, fmt.Sprintf("GetLastOperation failed: %s", statusErr.Error()), "ibm_pdr_managedr", "create")
 					log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
@@ -405,19 +435,20 @@ func resourceIbmPdrManagedrCreate(context context.Context, d *schema.ResourceDat
 					return tfErr.GetDiag()
 				}
 
-				log.Printf("[INFO] Current Last Operation status for instance %s: %s", instanceID, status)
-
-				switch strings.ToLower(status) {
+				switch strings.ToLower(*status.Status) {
 				case "active":
 					if strings.ToLower(standbyStatus) == "active" {
 						log.Printf("[INFO] Manage DR operation completed successfully for instance %s (both primary and standby active)", instanceID)
 						ticker.Stop()
-						return resourceIbmPdrManagedrRead(context, d, meta)
+						return resourceIbmPdrManagedrRead(ctx, d, meta)
 					}
 					if strings.ToLower(standbyStatus) == "failed" {
-						log.Printf("[INFO] Standby Orchestrator Failed for instance %s", instanceID)
+						errMsg := fmt.Sprintf("Manage DR operation failed for instance %s and error message: %s", instanceID, *status.StandbyDescription)
+						tfErr := flex.TerraformErrorf(fmt.Errorf("%s", errMsg), errMsg, "ibm_pdr_managedr", "create")
+
+						log.Printf("[ERROR] %s", errMsg)
 						ticker.Stop()
-						return resourceIbmPdrManagedrRead(context, d, meta)
+						return tfErr.GetDiag()
 					}
 
 					// If standby still initializing
@@ -426,7 +457,7 @@ func resourceIbmPdrManagedrCreate(context context.Context, d *schema.ResourceDat
 					continue
 
 				case "fail", "failed", "error":
-					errMsg := fmt.Sprintf("Manage DR operation failed for instance %s (status: %s) and error message: %s", instanceID, status, errormessage)
+					errMsg := fmt.Sprintf("Manage DR operation failed for instance %s and error message: %s", instanceID, *status.PrimaryDescription)
 					tfErr := flex.TerraformErrorf(fmt.Errorf("%s", errMsg), errMsg, "ibm_pdr_managedr", "create")
 
 					log.Printf("[ERROR] %s", errMsg)
@@ -434,7 +465,7 @@ func resourceIbmPdrManagedrCreate(context context.Context, d *schema.ResourceDat
 					return tfErr.GetDiag()
 
 				default:
-					log.Printf("[DEBUG] Manage DR still in progress (status: %s)... retrying in %v", status, pollInterval)
+					log.Printf("[DEBUG] Manage DR still in progress ... retrying in %v", pollInterval)
 				}
 			}
 		}
@@ -507,17 +538,17 @@ func resourceIbmPdrManagedrDelete(context context.Context, d *schema.ResourceDat
 	return nil
 }
 
-func checkLastOperationStatus(ctx context.Context, client *drautomationservicev1.DrAutomationServiceV1, instanceID string) (string, string, string, error, error) {
+func checkLastOperationStatus(ctx context.Context, client *drautomationservicev1.DrAutomationServiceV1, instanceID string) (*drautomationservicev1.ServiceInstanceStatus, string, string, error, error) {
 	opts := &drautomationservicev1.GetLastOperationOptions{}
 	opts.SetInstanceID(instanceID)
 
 	statusResponse, _, err := client.GetLastOperationWithContext(ctx, opts)
 	if err != nil {
-		return "", "", "", err, nil
+		return nil, "", "", err, nil
 	}
 
 	if statusResponse.Status == nil {
-		return *statusResponse.Status, "", "", fmt.Errorf("received nil status for instance %s", instanceID), nil
+		return statusResponse, "", "", fmt.Errorf("received nil status for instance %s", instanceID), nil
 	}
 
 	status := strings.ToLower(*statusResponse.Status)
@@ -528,19 +559,19 @@ func checkLastOperationStatus(ctx context.Context, client *drautomationservicev1
 	if status == "failed" {
 		switch {
 		case primaryStatus == "failed" && standbyStatus == "failed":
-			return status, primaryStatus, standbyStatus, nil, fmt.Errorf("%s \n %s", *statusResponse.PrimaryDescription, *statusResponse.StandbyDescription)
+			return statusResponse, primaryStatus, standbyStatus, nil, fmt.Errorf("%s \n %s", *statusResponse.PrimaryDescription, *statusResponse.StandbyDescription)
 		case primaryStatus == "failed" && (standbyStatus == "" || standbyStatus == "na"):
-			return status, primaryStatus, standbyStatus, nil, fmt.Errorf("%s", *statusResponse.PrimaryDescription)
+			return statusResponse, primaryStatus, standbyStatus, nil, fmt.Errorf("%s", *statusResponse.PrimaryDescription)
 		case primaryStatus == "active" && (standbyStatus != "" || standbyStatus == "failed"):
-			return status, primaryStatus, standbyStatus, nil, fmt.Errorf("%s \n %s", *statusResponse.PrimaryDescription, *statusResponse.StandbyDescription)
+			return statusResponse, primaryStatus, standbyStatus, nil, fmt.Errorf("%s \n %s", *statusResponse.PrimaryDescription, *statusResponse.StandbyDescription)
 		case primaryStatus == "failed":
-			return status, primaryStatus, standbyStatus, nil, fmt.Errorf("primary orchestrator failed for instance %s", instanceID)
+			return statusResponse, primaryStatus, standbyStatus, nil, fmt.Errorf("primary orchestrator failed for instance %s", instanceID)
 		case standbyStatus == "failed":
-			return status, primaryStatus, standbyStatus, nil, fmt.Errorf("standby orchestrator failed for instance %s", instanceID)
+			return statusResponse, primaryStatus, standbyStatus, nil, fmt.Errorf("standby orchestrator failed for instance %s", instanceID)
 		default:
-			return status, primaryStatus, standbyStatus, nil, fmt.Errorf("operation failed for instance %s with unknown cause", instanceID)
+			return statusResponse, primaryStatus, standbyStatus, nil, fmt.Errorf("operation failed for instance %s with unknown cause", instanceID)
 		}
 	}
 
-	return *statusResponse.Status, primaryStatus, standbyStatus, nil, nil
+	return statusResponse, primaryStatus, standbyStatus, nil, nil
 }

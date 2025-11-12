@@ -3,7 +3,7 @@
 
 /*
  * IBM OpenAPI Terraform Generator Version: 3.105.0-3c13b041-20250605-193116
- */
+*/
 
 package drautomationservice
 
@@ -39,32 +39,27 @@ func DataSourceIBMPdrLastOperation() *schema.Resource {
 			"crn": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "Cloud Resource Name (CRN) of the service instance.",
+				Description: "The service instance crn.",
 			},
 			"deployment_name": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "Name of the service instance deployment.",
-			},
-			"is_ksys_ha": &schema.Schema{
-				Type:        schema.TypeBool,
-				Computed:    true,
-				Description: "Indicates whether high availability (HA) is enabled for the orchestrator.",
+				Description: "The name of the service instance deployment.",
 			},
 			"last_updated_orchestrator_deployment_time": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "Deployment time of primary orchestrator VM.",
+				Description: "The deployment time of primary orchestrator VM.",
 			},
 			"last_updated_standby_orchestrator_deployment_time": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "Deployment time of StandBy orchestrator VM.",
+				Description: "The deployment time of StandBy orchestrator VM.",
 			},
 			"mfa_enabled": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "Multiple Factor Authentication Enabled or not.",
+				Description: "Indicated whether multi factor authentication is ennabled or not.",
 			},
 			"orch_ext_connectivity_status": &schema.Schema{
 				Type:        schema.TypeString,
@@ -74,67 +69,72 @@ func DataSourceIBMPdrLastOperation() *schema.Resource {
 			"orch_standby_node_addtion_status": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "Health or informational message about the orchestrator cluster.",
+				Description: "The status of standby node in the Orchestrator cluster.",
 			},
 			"orchestrator_cluster_message": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "Current status of the primary orchestrator VM.",
+				Description: "The current status of the primary orchestrator VM.",
 			},
 			"orchestrator_config_status": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "Configuration status of the orchestrator cluster.",
+				Description: "The configuration status of the orchestrator cluster.",
+			},
+			"orchestrator_ha": &schema.Schema{
+				Type:        schema.TypeBool,
+				Computed:    true,
+				Description: "Indicates whether high availability (HA) is enabled for the orchestrator.",
 			},
 			"plan_name": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "Name of the Plan.",
+				Description: "The name of the DR Automation plan.",
 			},
 			"primary_description": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "Detailed status message for the primary orchestrator VM.",
+				Description: "Indicates the progress details of primary orchestrator creation.",
 			},
 			"primary_ip_address": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "IP address of the primary orchestrator VM.",
+				Description: "The IP address of the primary orchestrator VM.",
 			},
 			"primary_orchestrator_status": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "Configuration status of the orchestrator cluster.",
+				Description: "The configuration status of the orchestrator cluster.",
 			},
 			"recovery_location": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "Disaster recovery location associated with the instance.",
+				Description: "The disaster recovery location associated with the instance.",
 			},
 			"resource_group": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "Resource group to which the service instance belongs.",
+				Description: "The resource group to which the service instance belongs.",
 			},
 			"standby_description": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "Detailed status message for the standby orchestrator VM.",
+				Description: "Indicates the progress details of primary orchestrator creation.",
 			},
 			"standby_ip_address": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "IP address of the standby orchestrator VM.",
+				Description: "The IP address of the standby orchestrator VM.",
 			},
 			"standby_status": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "Current state of the standby orchestrator VM.",
+				Description: "The current state of the standby orchestrator.",
 			},
 			"status": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "Overall status of the service instance.",
+				Description: "The current state of the primary orchestrator.",
 			},
 		},
 	}
@@ -183,10 +183,6 @@ func dataSourceIBMPdrLastOperationRead(context context.Context, d *schema.Resour
 		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting deployment_name: %s", err), "(Data) ibm_pdr_last_operation", "read", "set-deployment_name").GetDiag()
 	}
 
-	if err = d.Set("is_ksys_ha", serviceInstanceStatus.IsKsysHa); err != nil {
-		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting is_ksys_ha: %s", err), "(Data) ibm_pdr_last_operation", "read", "set-is_ksys_ha").GetDiag()
-	}
-
 	if err = d.Set("last_updated_orchestrator_deployment_time", flex.DateTimeToString(serviceInstanceStatus.LastUpdatedOrchestratorDeploymentTime)); err != nil {
 		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting last_updated_orchestrator_deployment_time: %s", err), "(Data) ibm_pdr_last_operation", "read", "set-last_updated_orchestrator_deployment_time").GetDiag()
 	}
@@ -215,6 +211,10 @@ func dataSourceIBMPdrLastOperationRead(context context.Context, d *schema.Resour
 
 	if err = d.Set("orchestrator_config_status", serviceInstanceStatus.OrchestratorConfigStatus); err != nil {
 		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting orchestrator_config_status: %s", err), "(Data) ibm_pdr_last_operation", "read", "set-orchestrator_config_status").GetDiag()
+	}
+
+	if err = d.Set("orchestrator_ha", serviceInstanceStatus.OrchestratorHa); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting orchestrator_ha: %s", err), "(Data) ibm_pdr_last_operation", "read", "set-orchestrator_ha").GetDiag()
 	}
 
 	if err = d.Set("plan_name", serviceInstanceStatus.PlanName); err != nil {

@@ -26,13 +26,13 @@ You can specify the following arguments for this data source.
 
 * `accept_language` - (Optional, String) The language requested for the return document.
 * `instance_id` - (Required, Forces new resource, String) instance id of instance to provision.
-* `primary_workspace_name` - (Required, String) Primary Workspace Name.
-* `standby_workspace_name` - (Optional, String) Standby Workspace Name.
+* `primary_workspace_name` - (Required, String) The primary Power virtual server workspace name.
+* `standby_workspace_name` - (Optional, String) The standby Power virtual server workspace name.
 
 ## Attribute Reference
 
 After your data source is created, you can read values from the following attributes.
 
 * `id` - The unique identifier of the pdr_get_machine_types.
-* `workspaces` - (Map) Map of workspace IDs to lists of machine types.
+* `workspaces` - (Map) The Map of workspace IDs to lists of machine types.
 

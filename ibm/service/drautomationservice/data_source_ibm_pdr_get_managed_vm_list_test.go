@@ -53,8 +53,8 @@ func TestDataSourceIBMPdrGetManagedVMListManagedVMDetailsToMap(t *testing.T) {
 		model["memory"] = "4"
 		model["region"] = "lon04"
 		model["vm_name"] = "example_vm"
-		model["workgroup_name"] = "Example_Workgroup"
-		model["workspace_name"] = "Example_Workspace"
+		model["workgroup_name"] = "Workgroup1"
+		model["workspace_name"] = "Workspace_dallas01"
 
 		assert.Equal(t, result, model)
 	}
@@ -66,8 +66,8 @@ func TestDataSourceIBMPdrGetManagedVMListManagedVMDetailsToMap(t *testing.T) {
 	model.Memory = core.StringPtr("4")
 	model.Region = core.StringPtr("lon04")
 	model.VMName = core.StringPtr("example_vm")
-	model.WorkgroupName = core.StringPtr("Example_Workgroup")
-	model.WorkspaceName = core.StringPtr("Example_Workspace")
+	model.WorkgroupName = core.StringPtr("Workgroup1")
+	model.WorkspaceName = core.StringPtr("Workspace_dallas01")
 
 	result, err := drautomationservice.DataSourceIBMPdrGetManagedVMListManagedVMDetailsToMap(model)
 	assert.Nil(t, err)

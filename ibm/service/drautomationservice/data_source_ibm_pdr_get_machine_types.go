@@ -34,7 +34,7 @@ func DataSourceIBMPdrGetMachineTypes() *schema.Resource {
 			"primary_workspace_name": &schema.Schema{
 				Type:        schema.TypeString,
 				Required:    true,
-				Description: "Primary Workspace Name.",
+				Description: "The primary Power virtual server workspace name.",
 			},
 			"accept_language": &schema.Schema{
 				Type:        schema.TypeString,
@@ -44,7 +44,7 @@ func DataSourceIBMPdrGetMachineTypes() *schema.Resource {
 			"standby_workspace_name": &schema.Schema{
 				Type:        schema.TypeString,
 				Optional:    true,
-				Description: "Standby Workspace Name.",
+				Description: "The standby Power virtual server workspace name.",
 			},
 			"workspaces": {
 				Type:        schema.TypeList,
@@ -80,19 +80,15 @@ func dataSourceIBMPdrGetMachineTypesRead(context context.Context, d *schema.Reso
 
 	getMachineTypeOptions.SetInstanceID(d.Get("instance_id").(string))
 	getMachineTypeOptions.SetPrimaryWorkspaceName(d.Get("primary_workspace_name").(string))
-
-	if _, ok := d.GetOk("standby_workspace_name"); ok {
-		getMachineTypeOptions.SetStandbyWorkspaceName(d.Get("standby_workspace_name").(string))
-	}
 	if _, ok := d.GetOk("accept_language"); ok {
 		getMachineTypeOptions.SetAcceptLanguage(d.Get("accept_language").(string))
 	}
 
+	if _, ok := d.GetOk("standby_workspace_name"); ok {
+		getMachineTypeOptions.SetStandbyWorkspaceName(d.Get("standby_workspace_name").(string))
+	}
+
 	machineTypesByWorkspace, response, err := drAutomationServiceClient.GetMachineTypeWithContext(context, getMachineTypeOptions)
-	fmt.Println("machineTypesByWorkspace", machineTypesByWorkspace)
-	fmt.Println("============================================================")
-	fmt.Println("response:", response)
-	fmt.Println("============================================================")
 	if err != nil {
 		detailedMsg := fmt.Sprintf("GetMachineTypeWithContext failed: %s", err.Error())
 		// Include HTTP status & raw body if available

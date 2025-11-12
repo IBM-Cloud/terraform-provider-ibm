@@ -32,32 +32,32 @@ After your data source is created, you can read values from the following attrib
 
 * `id` - The unique identifier of the pdr_get_powervs_workspace.
 * `dr_standby_workspace_description` - (String) Description of Standby Workspace.
-* `dr_standby_workspaces` - (List) List of standby disaster recovery workspaces.
+* `dr_standby_workspaces` - (List) The list of standby disaster recovery workspaces.
 Nested schema for **dr_standby_workspaces**:
-	* `details` - (List) Detailed information of the standby DR workspace.
+	* `details` - (List) The detailed information of the standby DR workspace.
 	Nested schema for **details**:
 		* `crn` - (String) Cloud Resource Name (CRN) of the DR workspace.
-	* `id` - (String) Unique identifier of the standby workspace.
-	* `location` - (List) Location information of the standby workspace.
+	* `id` - (String) The unique identifier of the standby workspace.
+	* `location` - (List) The location information of the standby workspace.
 	Nested schema for **location**:
 		* `region` - (String) The region identifier of the DR location.
 		* `type` - (String) The type of location (e.g., data-center, cloud-region).
 		* `url` - (String) The URL endpoint to access the DR location.
-	* `name` - (String) Name of the standby workspace.
-	* `status` - (String) Current status of the standby workspace.
+	* `name` - (String) The name of the standby workspace.
+	* `status` - (String) The status of the standby workspace.
 * `dr_workspace_description` - (String) Description of Workspace.
-* `dr_workspaces` - (List) List of primary disaster recovery workspaces.
+* `dr_workspaces` - (List) The list of primary disaster recovery workspaces.
 Nested schema for **dr_workspaces**:
 	* `default` - (Boolean) Indicates if this is the default DR workspace.
-	* `details` - (List) Detailed information about the DR workspace.
+	* `details` - (List) The detailed information about the DR workspace.
 	Nested schema for **details**:
 		* `crn` - (String) Cloud Resource Name (CRN) of the DR workspace.
-	* `id` - (String) Unique identifier of the DR workspace.
-	* `location` - (List) Location information of the DR workspace.
+	* `id` - (String) The unique identifier of the DR workspace.
+	* `location` - (List) The location information of the DR workspace.
 	Nested schema for **location**:
 		* `region` - (String) The region identifier of the DR location.
 		* `type` - (String) The type of location (e.g., data-center, cloud-region).
 		* `url` - (String) The URL endpoint to access the DR location.
-	* `name` - (String) Name of the DR workspace.
-	* `status` - (String) Current status of the DR workspace.
+	* `name` - (String) The name of the DR workspace.
+	* `status` - (String) The status of the DR workspace.
 

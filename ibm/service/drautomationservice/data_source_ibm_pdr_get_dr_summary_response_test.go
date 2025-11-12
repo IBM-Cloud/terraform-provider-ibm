@@ -114,7 +114,7 @@ func TestDataSourceIBMPdrGetDrSummaryResponseServiceDetailsToMap(t *testing.T) {
 		model["crn"] = "testString"
 		model["deployment_name"] = "testString"
 		model["description"] = "testString"
-		model["is_ksys_ha"] = true
+		model["orchestrator_ha"] = true
 		model["plan_name"] = "testString"
 		model["primary_ip_address"] = "testString"
 		model["primary_orchestrator_dashboard_url"] = "testString"
@@ -133,7 +133,7 @@ func TestDataSourceIBMPdrGetDrSummaryResponseServiceDetailsToMap(t *testing.T) {
 	model.CRN = core.StringPtr("testString")
 	model.DeploymentName = core.StringPtr("testString")
 	model.Description = core.StringPtr("testString")
-	model.IsKsysHa = core.BoolPtr(true)
+	model.OrchestratorHa = core.BoolPtr(true)
 	model.PlanName = core.StringPtr("testString")
 	model.PrimaryIPAddress = core.StringPtr("testString")
 	model.PrimaryOrchestratorDashboardURL = core.StringPtr("testString")

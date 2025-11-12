@@ -55,7 +55,7 @@ func DataSourceIBMPdrGetPowervsWorkspace() *schema.Resource {
 						"details": &schema.Schema{
 							Type:        schema.TypeList,
 							Computed:    true,
-							Description: "Detailed information of the standby DR workspace.",
+							Description: "The detailed information of the standby DR workspace.",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"crn": &schema.Schema{
@@ -69,12 +69,12 @@ func DataSourceIBMPdrGetPowervsWorkspace() *schema.Resource {
 						"id": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "Unique identifier of the standby workspace.",
+							Description: "The unique identifier of the standby workspace.",
 						},
 						"location": &schema.Schema{
 							Type:        schema.TypeList,
 							Computed:    true,
-							Description: "Location information of the standby workspace.",
+							Description: "The location information of the standby workspace.",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"region": &schema.Schema{
@@ -98,12 +98,12 @@ func DataSourceIBMPdrGetPowervsWorkspace() *schema.Resource {
 						"name": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "Name of the standby workspace.",
+							Description: "The name of the standby workspace.",
 						},
 						"status": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "Current status of the standby workspace.",
+							Description: "The status of the standby workspace.",
 						},
 					},
 				},
@@ -116,7 +116,7 @@ func DataSourceIBMPdrGetPowervsWorkspace() *schema.Resource {
 			"dr_workspaces": &schema.Schema{
 				Type:        schema.TypeList,
 				Computed:    true,
-				Description: "List of primary disaster recovery workspaces.",
+				Description: "The list of primary disaster recovery workspaces.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"default": &schema.Schema{
@@ -127,7 +127,7 @@ func DataSourceIBMPdrGetPowervsWorkspace() *schema.Resource {
 						"details": &schema.Schema{
 							Type:        schema.TypeList,
 							Computed:    true,
-							Description: "Detailed information about the DR workspace.",
+							Description: "The detailed information about the DR workspace.",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"crn": &schema.Schema{
@@ -141,12 +141,12 @@ func DataSourceIBMPdrGetPowervsWorkspace() *schema.Resource {
 						"id": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "Unique identifier of the DR workspace.",
+							Description: "The unique identifier of the DR workspace.",
 						},
 						"location": &schema.Schema{
 							Type:        schema.TypeList,
 							Computed:    true,
-							Description: "Location information of the DR workspace.",
+							Description: "The location information of the DR workspace.",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"region": &schema.Schema{
@@ -170,12 +170,12 @@ func DataSourceIBMPdrGetPowervsWorkspace() *schema.Resource {
 						"name": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "Name of the DR workspace.",
+							Description: "The name of the DR workspace.",
 						},
 						"status": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "Current status of the DR workspace.",
+							Description: "The status of the DR workspace.",
 						},
 					},
 				},
