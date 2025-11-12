@@ -182,6 +182,7 @@ func dataSourceIBMPdrLastOperationRead(context context.Context, d *schema.Resour
 		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting deployment_name: %s", err), "(Data) ibm_pdr_last_operation", "read", "set-deployment_name").GetDiag()
 	}
 
+<<<<<<< HEAD
 	if err = d.Set("last_updated_orchestrator_deployment_time", flex.DateTimeToString(serviceInstanceStatus.LastUpdatedOrchestratorDeploymentTime)); err != nil {
 		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting last_updated_orchestrator_deployment_time: %s", err), "(Data) ibm_pdr_last_operation", "read", "set-last_updated_orchestrator_deployment_time").GetDiag()
 	}
@@ -194,6 +195,8 @@ func dataSourceIBMPdrLastOperationRead(context context.Context, d *schema.Resour
 		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting mfa_enabled: %s", err), "(Data) ibm_pdr_last_operation", "read", "set-mfa_enabled").GetDiag()
 	}
 
+=======
+>>>>>>> 72b7501c4 (updated Dr Automation APIs and Documentation)
 	if err = d.Set("last_updated_orchestrator_deployment_time", flex.DateTimeToString(serviceInstanceStatus.LastUpdatedOrchestratorDeploymentTime)); err != nil {
 		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting last_updated_orchestrator_deployment_time: %s", err), "(Data) ibm_pdr_last_operation", "read", "set-last_updated_orchestrator_deployment_time").GetDiag()
 	}

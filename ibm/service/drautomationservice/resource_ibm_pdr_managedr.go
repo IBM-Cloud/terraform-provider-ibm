@@ -126,6 +126,25 @@ func ResourceIbmPdrManagedr() *schema.Resource {
 				ForceNew:    true,
 				Description: "Tenant Name for MFA Authentication.",
 			},
+			"client_id": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				ForceNew:    true,
+				Description: "Client ID for MFA Authentication.",
+			},
+			"client_secret": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				ForceNew:    true,
+				Sensitive:   true,
+				Description: "Client Secret for MFA Authentication.",
+			},
+			"tenant_name": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				ForceNew:    true,
+				Description: "Tenant Name for MFA Authentication.",
+			},
 			"orchestrator_ha": {
 				Type:        schema.TypeBool,
 				Optional:    true,
