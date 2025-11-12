@@ -499,6 +499,8 @@ func resourceIBMIamAccountSettingsUpdate(context context.Context, d *schema.Reso
 			}
 			updateAccountSettingsOptions.SetRestrictUserDomains(restrictUserDomains)
 		}
+
+		hasChange = true
 	}
 
 	if d.HasChange("session_expiration_in_seconds") {
