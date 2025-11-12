@@ -92,6 +92,10 @@ func dataSourceIBMPdrGetMachineTypesRead(context context.Context, d *schema.Reso
 		getMachineTypeOptions.SetAcceptLanguage(d.Get("accept_language").(string))
 	}
 
+	if _, ok := d.GetOk("standby_workspace_name"); ok {
+		getMachineTypeOptions.SetStandbyWorkspaceName(d.Get("standby_workspace_name").(string))
+	}
+
 	machineTypesByWorkspace, response, err := drAutomationServiceClient.GetMachineTypeWithContext(context, getMachineTypeOptions)
 	if err != nil {
 		detailedMsg := fmt.Sprintf("GetMachineTypeWithContext failed: %s", err.Error())

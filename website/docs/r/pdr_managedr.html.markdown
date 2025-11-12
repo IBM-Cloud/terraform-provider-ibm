@@ -8,14 +8,23 @@ subcategory: "DrAutomation Service"
 
 # ibm_pdr_managedr
 
+<<<<<<< HEAD
 Creates DR Deployment by creating Orchestrator instance in the given PowerVS workspace and configuration. Orchestrator instance can be used to manage multiple virtual servers and ensure continuous availability. For more details, refer Deploying the Orchestrator -https://cloud.ibm.com/docs/dr-automation-powervs?topic=dr-automation-powervs-idep-the-orch
+=======
+ Creates Orchestrator VM in the given workspace and configuration. Orchestrator VM can be used to manage multiple virtual servers and help ensure continuous availability. For more details, refer Deploying the Orchestrator -
+ https://test.cloud.ibm.com/docs/dr-automation-powervs?topic=dr-automation-powervs-idep-the-orch
+>>>>>>> 72b7501c4 (updated Dr Automation APIs and Documentation)
 
 ## Example Usage
 
 ```hcl
 ServiceInstanceManageDr HA with sshkey
 resource "ibm_pdr_managedr" "pdr_managedr_instance" {
+<<<<<<< HEAD
   instance_id                         = "050ebe3b-13f4-4db8-8ece-501a3c13be80mh1"
+=======
+  instance_id                         = "crn:v1:staging:public:power-dr-automation:global:a/a09202c1bfb04ceebfb4a9fd38c87721:050ebe3b-13f4-4db8-8ece-501a3c13be80mh1::"
+>>>>>>> 72b7501c4 (updated Dr Automation APIs and Documentation)
   orchestrator_ha                     = true
   orchestrator_location_type          = "off-premises"
   location_id                         = "dal10"
@@ -39,14 +48,21 @@ resource "ibm_pdr_managedr" "pdr_managedr_instance" {
   client_id                           = "123abcd-97d2-4b14-bf62-8eaecc67a122"
   client_secret                       = "abcdefgT5rS8wK6qR9dD7vF1hU4sA3bE2jG0pL9oX7yC"
   tenant_name                         = "xxx.ibm.com"
+<<<<<<< HEAD
   proxy_ip                            = "10.3.41.4:443"
+=======
+>>>>>>> 72b7501c4 (updated Dr Automation APIs and Documentation)
 }
 
 ```
 ```hcl
 ServiceInstanceManageDr HA with secrets
 resource "ibm_pdr_managedr" "pdr_managedr_instance" {
+<<<<<<< HEAD
   instance_id                       = "050ebe3b-13f4-4db8-8ece-501a3c13be80mh3"
+=======
+  instance_id                       = "crn:v1:staging:public:power-dr-automation:global:a/a09202c1bfb04ceebfb4a9fd38c87721:050ebe3b-13f4-4db8-8ece-501a3c13be80mh3::"
+>>>>>>> 72b7501c4 (updated Dr Automation APIs and Documentation)
   orchestrator_ha                   = true
   orchestrator_location_type        = "off-premises"
   location_id                       = "dal10"
@@ -73,13 +89,20 @@ resource "ibm_pdr_managedr" "pdr_managedr_instance" {
   client_id                         = "123abcd-97d2-4b14-bf62-8eaecc67a122"
   client_secret                     = "abcdefgT5rS8wK6qR9dD7vF1hU4sA3bE2jG0pL9oX7yC"
   tenant_name                       = "xxx.ibm.com"
+<<<<<<< HEAD
   proxy_ip                          = "10.3.41.4:443"
+=======
+>>>>>>> 72b7501c4 (updated Dr Automation APIs and Documentation)
 }
 ```
 ```hcl
 ServiceInstanceManageDr Non-HA with sshkey
 resource "ibm_pdr_managedr" "pdr_managedr_instance" {
+<<<<<<< HEAD
   instance_id                 = "050ebe3b-13f4-4db8-8ece-501a3c13be80mnh5"
+=======
+  instance_id                 = "crn:v1:staging:public:power-dr-automation:global:a/a09202c1bfb04ceebfb4a9fd38c87721:050ebe3b-13f4-4db8-8ece-501a3c13be80mnh5::"
+>>>>>>> 72b7501c4 (updated Dr Automation APIs and Documentation)
   orchestrator_ha             = false
   orchestrator_location_type  = "off-premises"
   location_id                 = "dal10"
