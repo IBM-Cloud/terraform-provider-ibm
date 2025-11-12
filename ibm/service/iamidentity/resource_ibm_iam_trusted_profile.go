@@ -18,7 +18,6 @@ import (
 	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/IBM/platform-services-go-sdk/iamidentityv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -29,7 +28,12 @@ func ResourceIBMIAMTrustedProfile() *schema.Resource {
 		UpdateContext: resourceIBMIamTrustedProfileUpdate,
 		DeleteContext: resourceIBMIamTrustedProfileDelete,
 		Importer:      &schema.ResourceImporter{},
-
+		Timeouts: &schema.ResourceTimeout{
+			Create: schema.DefaultTimeout(30 * time.Minute),
+			Read:   schema.DefaultTimeout(5 * time.Minute), // enables HCL `timeouts { read = "…" }`
+			Update: schema.DefaultTimeout(30 * time.Minute),
+			Delete: schema.DefaultTimeout(30 * time.Minute),
+		},
 		Schema: map[string]*schema.Schema{
 			"name": &schema.Schema{
 				Type:        schema.TypeString,
@@ -112,7 +116,7 @@ func ResourceIBMIAMTrustedProfile() *schema.Resource {
 							Computed:    true,
 							Description: "IAM ID of the identity which triggered the action.",
 						},
-						"iam_id_account": &schema.Schema{
+						"iam_id_account": {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "Account of the identity which triggered the action.",
@@ -177,57 +181,103 @@ func resourceIBMIamTrustedProfileCreate(context context.Context, d *schema.Resou
 
 func resourceIBMIamTrustedProfileRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	iamIdentityClient, err := meta.(conns.ClientSession).IAMIdentityV1API()
+	log.Printf("[UJJK][READ][assert-timeout] create=%s read=%s update=%s delete=%s",
+		d.Timeout(schema.TimeoutCreate), d.Timeout(schema.TimeoutRead),
+		d.Timeout(schema.TimeoutUpdate), d.Timeout(schema.TimeoutDelete),
+	)
 	if err != nil {
 		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_trusted_profile", "read", "initialize-client")
-		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		log.Printf("[UJJK][READ][init-error] %s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
 
 	getProfileOptions := &iamidentityv1.GetProfileOptions{}
-
 	getProfileOptions.SetProfileID(d.Id())
+
 	var trustedProfile *iamidentityv1.TrustedProfile
 	var response *core.DetailedResponse
 
-	var (
-		initialDelaySec = 2  // seconds
-		maxDelaySec     = 60 // max delay in seconds
-
-	)
-
-	err = retry.RetryContext(context, 5*time.Minute, func() *retry.RetryError {
-		retryCount := 0
-
-		return func() *retry.RetryError {
-			// Calculate exponential delay
-			delaySec := initialDelaySec * (1 << retryCount) // equivalent to initialDelaySec * 2^retryCount
-			if delaySec > maxDelaySec {
-				delaySec = maxDelaySec
-			}
-			time.Sleep(time.Duration(delaySec) * time.Second)
-
-			trustedProfile, response, err = iamIdentityClient.GetProfileWithContext(context, getProfileOptions)
-			if err != nil || trustedProfile == nil {
-				retryCount++
-				if response != nil && response.StatusCode == 404 {
-					return retry.RetryableError(err)
-				}
-				return retry.NonRetryableError(err)
-			}
-			return nil
-		}()
-	})
-
-	if conns.IsResourceTimeoutError(err) {
-		trustedProfile, response, err = iamIdentityClient.GetProfileWithContext(context, getProfileOptions)
+	// ceiling from HCL timeouts (or default)
+	timeout := d.Timeout(schema.TimeoutRead)
+	if timeout <= 0 {
+		timeout = 5 * time.Minute
 	}
-	if err != nil {
-		if response != nil && response.StatusCode == 404 {
+	start := time.Now()
+
+	// retry ONLY after Create (eventual consistency)
+	awaiting := d.IsNewResource()
+	log.Printf("[UJJK][READ][start] id=%s timeout=%s awaiting=%t", d.Id(), timeout, awaiting)
+
+	// bounded backoff (used only if awaiting==true)
+	initialDelay := 2 * time.Second
+	maxDelay := 60 * time.Second
+	retryCount, attempt := 0, 1
+
+	for {
+		elapsed := time.Since(start)
+		if elapsed > timeout {
+			log.Printf("[UJJK][READ][timeout] id=%s elapsed=%s awaiting=%t -> clear state", d.Id(), elapsed, awaiting)
 			d.SetId("")
 			return nil
 		}
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetProfileWithContext failed: %s", err.Error()), "ibm_iam_trusted_profile", "read")
-		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+
+		log.Printf("[UJJK][READ][attempt] id=%s attempt=%d elapsed=%s retryCount=%d awaiting=%t", d.Id(), attempt, elapsed, retryCount, awaiting)
+
+		trustedProfile, response, err = iamIdentityClient.GetProfileWithContext(context, getProfileOptions)
+
+		var status any = "nil"
+		if response != nil {
+			status = response.StatusCode
+		}
+
+		// success → proceed to mapping
+		if err == nil && trustedProfile != nil {
+			name := "<nil>"
+			if !core.IsNil(trustedProfile.Name) {
+				name = *trustedProfile.Name
+			}
+			etag := "<nil>"
+			if !core.IsNil(trustedProfile.EntityTag) {
+				etag = *trustedProfile.EntityTag
+			}
+			crn := "<nil>"
+			if !core.IsNil(trustedProfile.CRN) {
+				crn = *trustedProfile.CRN
+			}
+			log.Printf("[UJJK][READ][success] id=%s status=%v name=%s etag=%s crn=%s", d.Id(), status, name, etag, crn)
+			break
+		}
+
+		// log failure
+		if err != nil {
+			log.Printf("[UJJK][READ][error] id=%s status=%v err=%v", d.Id(), status, err)
+		} else {
+			log.Printf("[UJJK][READ][nil-profile] id=%s status=%v", d.Id(), status)
+		}
+
+		// 404 handling: retry only if awaiting visibility after create; otherwise clear immediately
+		if response != nil && response.StatusCode == 404 {
+			if awaiting {
+				delay := initialDelay * time.Duration(1<<uint(retryCount))
+				if delay > maxDelay {
+					delay = maxDelay
+				}
+				remaining := timeout - elapsed
+				log.Printf("[UJJK][READ][404-await][retry] id=%s attempt=%d delay=%s remaining=%s",
+					d.Id(), attempt, delay, remaining)
+				time.Sleep(delay)
+				retryCount++
+				attempt++
+				continue
+			}
+			log.Printf("[UJJK][READ][404-steady][clear] id=%s elapsed=%s", d.Id(), elapsed)
+			d.SetId("")
+			return nil
+		}
+
+		// non-404 error: non-retryable in Read
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetProfileWithContext failed: %v", err), "ibm_iam_trusted_profile", "read")
+		log.Printf("[UJJK][READ][non-retryable] id=%s status=%v msg=%s", d.Id(), status, tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
 
@@ -310,9 +360,9 @@ func resourceIBMIamTrustedProfileRead(context context.Context, d *schema.Resourc
 	if err = d.Set("history", history); err != nil {
 		err = fmt.Errorf("Error setting history: %s", err)
 		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_trusted_profile", "read", "set-history").GetDiag()
-
 	}
 
+	log.Printf("[UJJK][READ][done] id=%s elapsed=%s", d.Id(), time.Since(start))
 	return nil
 }
 
@@ -354,7 +404,6 @@ func resourceIBMIamTrustedProfileDelete(context context.Context, d *schema.Resou
 	}
 
 	deleteProfileOptions := &iamidentityv1.DeleteProfileOptions{}
-
 	deleteProfileOptions.SetProfileID(d.Id())
 
 	_, err = iamIdentityClient.DeleteProfileWithContext(context, deleteProfileOptions)
@@ -365,6 +414,5 @@ func resourceIBMIamTrustedProfileDelete(context context.Context, d *schema.Resou
 	}
 
 	d.SetId("")
-
 	return nil
 }
