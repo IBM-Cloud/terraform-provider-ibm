@@ -14,9 +14,9 @@ Retrieve information about a Power Systems Virtual Server instance IP address. F
 
 ```terraform
 data "ibm_pi_instance_ip" "ds_instance_ip" {
-  pi_instance_name     = "terraform-test-instance"
-  pi_network_name = "APP"
   pi_cloud_instance_id = "49fba6c9-23f8-40bc-9899-aca322ee7d5b"
+  pi_instance_id       = "9f1b78d2-5c83-4a6f-aef4-6e48d2f5d91d"
+  pi_network_name      = "APP"
 }
 ```
 
@@ -41,8 +41,9 @@ Example usage:
 Review the argument references that you can specify for your data source.
 
 - `pi_cloud_instance_id` - (Required, String) The GUID of the service instance associated with an account.
-- `pi_instance_name` - (Required, String) The unique identifier or name of the instance.
-- `pi_network_name` - (Required, String) The subnet that the instance belongs to.
+- `pi_instance_id` - (Optional, String) The unique identifier the instance.
+- `pi_instance_name` - (Deprecated, Optional, String) The unique identifier or name of the instance. Passing the name of the instance could fail or fetch stale data. Please pass an id and use `pi_instance_id` instead
+- `pi_network_name` - (Required, String) The subnet name that the instance belongs to.
 
 ## Attribute Reference
 
