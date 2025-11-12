@@ -535,10 +535,13 @@ func flattenCISRulesets(rulesetObj rulesetsv1.RulesetDetails) interface{} {
 			// Not Applicable for now
 			//ruleDetails[CISRulesetsRuleLogging] = ruleDetailsObj.Logging
 
-			flattenedActionParameter := flattenCISRulesetsRuleActionParameters(ruleDetailsObj.ActionParameters)
-			if len(flattenedActionParameter) != 0 {
-				ruleDetails[CISRulesetsRuleActionParameters] = []map[string]interface{}{flattenedActionParameter}
+			if ruleDetailsObj.ActionParameters != nil {
+				flattenedActionParameter := flattenCISRulesetsRuleActionParameters(ruleDetailsObj.ActionParameters)
+				if len(flattenedActionParameter) != 0 {
+					ruleDetails[CISRulesetsRuleActionParameters] = []map[string]interface{}{flattenedActionParameter}
+				}
 			}
+
 			ruleDetailsList = append(ruleDetailsList, ruleDetails)
 		}
 		rulesetOutput[CISRulesetsRules] = ruleDetailsList
@@ -550,6 +553,10 @@ func flattenCISRulesets(rulesetObj rulesetsv1.RulesetDetails) interface{} {
 }
 
 func flattenCISRulesetsRuleActionParameters(rulesetsRuleActionParameterObj *rulesetsv1.ActionParameters) map[string]interface{} {
+	if rulesetsRuleActionParameterObj == nil {
+		return nil
+	}
+
 	actionParametersOutput := map[string]interface{}{}
 	resultOutput := map[string]interface{}{}
 
