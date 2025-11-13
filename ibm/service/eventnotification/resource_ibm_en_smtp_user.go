@@ -42,8 +42,15 @@ func ResourceIBMEnSMTPUser() *schema.Resource {
 			},
 			"smtp_config_id": &schema.Schema{
 				Type:        schema.TypeString,
-				Optional:    true,
+				ForceNew:    true,
+				Required:    true,
 				Description: "SMTP confg Id.",
+			},
+			"username_to_clone": &schema.Schema{
+				Type:        schema.TypeString,
+				ForceNew:    true,
+				Optional:    true,
+				Description: "Name of the user to clone.",
 			},
 			"domain": &schema.Schema{
 				Type:        schema.TypeString,
@@ -121,6 +128,9 @@ func resourceIBMEnSMTPUserCreate(context context.Context, d *schema.ResourceData
 	createSMTPUserOptions.SetID(d.Get("smtp_config_id").(string))
 	if _, ok := d.GetOk("description"); ok {
 		createSMTPUserOptions.SetDescription(d.Get("description").(string))
+	}
+	if _, ok := d.GetOk("username_to_clone"); ok {
+		createSMTPUserOptions.SetUsernameToClone(d.Get("username_to_clone").(string))
 	}
 
 	smtpUserResponse, _, err := eventNotificationsClient.CreateSMTPUserWithContext(context, createSMTPUserOptions)
