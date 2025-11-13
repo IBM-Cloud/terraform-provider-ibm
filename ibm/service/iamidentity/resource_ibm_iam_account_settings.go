@@ -484,6 +484,8 @@ func resourceIBMIamAccountSettingsUpdate(context context.Context, d *schema.Reso
 			}
 			updateAccountSettingsOptions.SetUserMfa(userMfa)
 		}
+
+		hasChange = true
 	}
 
 	if d.HasChange("restrict_user_domains") {
