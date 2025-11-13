@@ -1,4 +1,4 @@
-// Copyright IBM Corp.
+// Copyright IBM Corp. 2025 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 package power
