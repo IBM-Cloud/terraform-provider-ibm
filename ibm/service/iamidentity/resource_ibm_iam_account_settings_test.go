@@ -60,14 +60,14 @@ func TestAccIBMIAMAccountSettingsAllArgs(t *testing.T) {
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIbmIamAccountSettingsConfig(includeHistory),
+				Config: testAccCheckIbmIamAccountSettingsConfig(includeHistory, "*@companya.com"),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIbmIamAccountSettingsExists("ibm_iam_account_settings.iam_account_settings", conf),
 					resource.TestCheckResourceAttr("ibm_iam_account_settings.iam_account_settings", "include_history", includeHistory),
 				),
 			},
 			{
-				Config: testAccCheckIbmIamAccountSettingsConfig(includeHistoryUpdate),
+				Config: testAccCheckIbmIamAccountSettingsConfig(includeHistoryUpdate, "*@companyab.com"),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("ibm_iam_account_settings.iam_account_settings", "include_history", includeHistoryUpdate),
 				),
@@ -115,13 +115,18 @@ func testAccCheckIbmIamAccountSettingsConfigBasic() string {
 	`
 }
 
-func testAccCheckIbmIamAccountSettingsConfig(includeHistory string) string {
+func testAccCheckIbmIamAccountSettingsConfig(includeHistory string, emailPatterns string) string {
 	return fmt.Sprintf(`
 
 		resource "ibm_iam_account_settings" "iam_account_settings" {
 			include_history = %s
+			restrict_user_domains {
+				realm_id                        = "IBMid"
+				restrict_invitation             = false
+				invitation_email_allow_patterns = ["%s"]
+			}
 		}
-	`, includeHistory)
+	`, includeHistory, emailPatterns)
 }
 
 func testAccCheckIbmIamAccountSettingsUpdateConfig() string {
