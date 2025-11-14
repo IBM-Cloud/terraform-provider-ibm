@@ -26,7 +26,39 @@ func ResourceIBMCmObject() *schema.Resource {
 		ReadContext:   resourceIBMCmObjectRead,
 		UpdateContext: resourceIBMCmObjectUpdate,
 		DeleteContext: resourceIBMCmObjectDelete,
-		Importer:      &schema.ResourceImporter{},
+		Importer: &schema.ResourceImporter{
+			State: func(d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
+
+				catalogManagementClient, err := meta.(conns.ClientSession).CatalogManagementV1()
+				if err != nil {
+					tfErr := flex.TerraformErrorf(err, err.Error(), "ibm_cm_object", "import")
+					log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+					return []*schema.ResourceData{d}, nil
+				}
+
+				catalogOptions := &catalogmanagementv1.ListCatalogsOptions{}
+				catalogs, _, err := catalogManagementClient.ListCatalogs(catalogOptions)
+				if err != nil {
+					tfErr := flex.TerraformErrorf(err, err.Error(), "ibm_cm_object", "import")
+					log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+					return []*schema.ResourceData{d}, nil
+				}
+				for _, c := range catalogs.Resources {
+					id := d.Id()
+					getObjectOptions := &catalogmanagementv1.GetObjectOptions{
+						CatalogIdentifier: c.ID,
+						ObjectIdentifier:  &id,
+					}
+					catalogObject, res, err := catalogManagementClient.GetObject(getObjectOptions)
+					if err != nil && res.StatusCode != 404 {
+						// do nothing
+					} else {
+						d.Set("catalog_id", *catalogObject.CatalogID)
+					}
+				}
+				return []*schema.ResourceData{d}, nil
+			},
+		},
 
 		Schema: map[string]*schema.Schema{
 			"catalog_id": &schema.Schema{
