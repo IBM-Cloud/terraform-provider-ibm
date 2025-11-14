@@ -26,7 +26,66 @@ func ResourceIBMCmObject() *schema.Resource {
 		ReadContext:   resourceIBMCmObjectRead,
 		UpdateContext: resourceIBMCmObjectUpdate,
 		DeleteContext: resourceIBMCmObjectDelete,
-		Importer:      &schema.ResourceImporter{},
+		Importer: &schema.ResourceImporter{
+			State: func(d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
+
+				catalogManagementClient, err := meta.(conns.ClientSession).CatalogManagementV1()
+				if err != nil {
+					tfErr := flex.TerraformErrorf(err, err.Error(), "ibm_cm_object", "import")
+					log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+					return nil, fmt.Errorf("error creating catalog management client during import: %w", err)
+				}
+
+				catalogOptions := &catalogmanagementv1.ListCatalogsOptions{}
+				catalogs, _, err := catalogManagementClient.ListCatalogs(catalogOptions)
+				if err != nil {
+					tfErr := flex.TerraformErrorf(err, err.Error(), "ibm_cm_object", "import")
+					log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+					return nil, fmt.Errorf("error listing catalogs during import: %w", err)
+				}
+
+				id := d.Id()
+				found := false
+
+				for _, c := range catalogs.Resources {
+					if c.ID == nil {
+						continue
+					}
+
+					getObjectOptions := &catalogmanagementv1.GetObjectOptions{
+						CatalogIdentifier: c.ID,
+						ObjectIdentifier:  &id,
+					}
+
+					catalogObject, res, err := catalogManagementClient.GetObject(getObjectOptions)
+
+					if err != nil && res.StatusCode != 404 {
+						tfErr := flex.TerraformErrorf(err, err.Error(), "ibm_cm_object", "import")
+						log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+						continue
+					}
+
+					if catalogObject == nil || catalogObject.CatalogID == nil {
+						continue
+					}
+
+					if err := d.Set("catalog_id", *catalogObject.CatalogID); err != nil {
+						tfErr := flex.TerraformErrorf(err, err.Error(), "ibm_cm_object", "import")
+						log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+						return nil, fmt.Errorf("error setting catalog_id during import: %w", err)
+					}
+
+					found = true
+					break
+				}
+
+				if !found {
+					return nil, fmt.Errorf("ibm_cm_object with id %q not found in any catalog", d.Id())
+				}
+
+				return []*schema.ResourceData{d}, nil
+			},
+		},
 
 		Schema: map[string]*schema.Schema{
 			"catalog_id": &schema.Schema{

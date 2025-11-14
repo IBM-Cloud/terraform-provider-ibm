@@ -5,6 +5,7 @@ package catalogmanagement_test
 
 import (
 	"fmt"
+	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
@@ -62,9 +63,53 @@ func testAccCheckIBMCmObjectConfig(name string, parentID string, label string, s
 			short_description = "%s"
 			kind = "%s"
 			tags = ["test1", "test2"]
-			data = jsonencode(local.catalog_object_data)
 		}
 	`, kind, name, parentID, label, shortDescription, kind)
+}
+
+func TestAccIBMCmObjectImport(t *testing.T) {
+	var conf catalogmanagementv1.CatalogObject
+	name := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
+	parentID := "us-south"
+	label := fmt.Sprintf("tf_label_%d", acctest.RandIntRange(10, 100))
+	shortDescription := fmt.Sprintf("tf_short_description_%d", acctest.RandIntRange(10, 100))
+	kind := "vpe"
+
+	badID := "this-id-does-not-exist-12345"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMCmObjectDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMCmObjectConfig(name, parentID, label, shortDescription, kind),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMCmObjectExists("ibm_cm_object.cm_object", conf),
+					resource.TestCheckResourceAttr("ibm_cm_object.cm_object", "name", name),
+					resource.TestCheckResourceAttr("ibm_cm_object.cm_object", "parent_id", parentID),
+					resource.TestCheckResourceAttr("ibm_cm_object.cm_object", "label", label),
+					resource.TestCheckResourceAttr("ibm_cm_object.cm_object", "short_description", shortDescription),
+					resource.TestCheckResourceAttr("ibm_cm_object.cm_object", "kind", kind),
+				),
+			},
+
+			{
+				ResourceName:  "ibm_cm_object.cm_object",
+				ImportState:   true,
+				ImportStateId: badID,
+				ExpectError: regexp.MustCompile(
+					`ibm_cm_object with id "` + badID + `" not found in any catalog`,
+				),
+			},
+
+			{
+				ResourceName:      "ibm_cm_object.cm_object",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		},
+	})
 }
 
 func testAccCheckIBMCmObjectExists(n string, obj catalogmanagementv1.CatalogObject) resource.TestCheckFunc {
