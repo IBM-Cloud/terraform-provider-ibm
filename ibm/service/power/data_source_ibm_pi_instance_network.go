@@ -34,7 +34,7 @@ func DataSourceIBMPIInstanceNetwork() *schema.Resource {
 				ValidateFunc: validation.NoZeroValues,
 			},
 			Arg_NetworkID: {
-				Description:  "The network ID on the instance.",
+				Description:  "The network ID of the instance.",
 				Required:     true,
 				Type:         schema.TypeString,
 				ValidateFunc: validation.NoZeroValues,

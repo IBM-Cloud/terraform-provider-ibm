@@ -42,7 +42,7 @@ Review the argument references that you can specify for your data source.
 
 - `pi_cloud_instance_id` - (Required, String) The GUID of the service instance associated with an account.
 - `pi_instance_id` - (Required, String) The PVM instance id.
-- `pi_network_id` - (Required, String) The unique identifier or name of the instance.
+- `pi_network_id` - (Required, String) The network id.
 
 ## Attribute Reference
 
