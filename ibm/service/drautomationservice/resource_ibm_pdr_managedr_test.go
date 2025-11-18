@@ -11,10 +11,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 
+	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.ibm.com/DRAutomation/dra-go-sdk/drautomationservicev1"
-	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 )
 
 func TestAccIBMPdrManagedrBasic(t *testing.T) {
@@ -22,8 +22,8 @@ func TestAccIBMPdrManagedrBasic(t *testing.T) {
 	instanceID := fmt.Sprintf("tf_instance_id_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acc.TestAccPreCheck(t) },
-		Providers:    acc.TestAccProviders,
+		PreCheck:  func() { acc.TestAccPreCheck(t) },
+		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
 				Config: testAccCheckIBMPdrManagedrConfigBasic(instanceID),
@@ -45,8 +45,8 @@ func TestAccIBMPdrManagedrAllArgs(t *testing.T) {
 	acceptsIncomplete := "true"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acc.TestAccPreCheck(t) },
-		Providers:    acc.TestAccProviders,
+		PreCheck:  func() { acc.TestAccPreCheck(t) },
+		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
 				Config: testAccCheckIBMPdrManagedrConfig(instanceID, standByRedeploy, acceptLanguage, ifNoneMatch, acceptsIncomplete),

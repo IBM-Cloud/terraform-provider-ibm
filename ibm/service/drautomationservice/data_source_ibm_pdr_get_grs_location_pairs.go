@@ -11,6 +11,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -91,5 +92,9 @@ func dataSourceIBMPdrGetGrsLocationPairsRead(context context.Context, d *schema.
 
 // dataSourceIBMPdrGetGrsLocationPairsID returns a reasonable ID for the list.
 func dataSourceIBMPdrGetGrsLocationPairsID(d *schema.ResourceData) string {
+	parts := strings.Split(d.Get("instance_id").(string), ":")
+	if len(parts) > 7 {
+		return parts[7]
+	}
 	return d.Get("instance_id").(string)
 }

@@ -3,7 +3,7 @@
 
 /*
  * IBM OpenAPI Terraform Generator Version: 3.105.0-3c13b041-20250605-193116
-*/
+ */
 
 package drautomationservice
 
@@ -11,6 +11,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -36,12 +37,21 @@ func DataSourceIBMPdrGetManagedVMList() *schema.Resource {
 				Optional:    true,
 				Description: "The language requested for the return document.",
 			},
-			"managed_vms": &schema.Schema{
-				Type:        schema.TypeMap,
-				Computed:    true,
-				Description: "A map where the key is the VM ID and the value is the corresponding ManagedVmDetails object.",
-				Elem: &schema.Schema{
-					Type: schema.TypeString,
+			"managed_vm_list": &schema.Schema{
+				Type:     schema.TypeList,
+				Computed: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"vm_id":           {Type: schema.TypeString, Computed: true},
+						"core":            {Type: schema.TypeString, Computed: true},
+						"dr_average_time": {Type: schema.TypeString, Computed: true},
+						"dr_region":       {Type: schema.TypeString, Computed: true},
+						"memory":          {Type: schema.TypeString, Computed: true},
+						"region":          {Type: schema.TypeString, Computed: true},
+						"vm_name":         {Type: schema.TypeString, Computed: true},
+						"workgroup_name":  {Type: schema.TypeString, Computed: true},
+						"workspace_name":  {Type: schema.TypeString, Computed: true},
+					},
 				},
 			},
 		},
@@ -83,13 +93,50 @@ func dataSourceIBMPdrGetManagedVMListRead(context context.Context, d *schema.Res
 
 	d.SetId(dataSourceIBMPdrGetManagedVMListID(d))
 
-	if !core.IsNil(managedVMMapResponse.ManagedVms) {
-		convertedMap := make(map[string]interface{}, len(managedVMMapResponse.ManagedVms))
-		for k, v := range managedVMMapResponse.ManagedVms {
-			convertedMap[k] = v
+	if !core.IsNil(managedVMMapResponse.ManagedVMList) {
+		// convertedMap := make(map[string]interface{}, len(managedVMMapResponse.ManagedVMList))
+		list := make([]map[string]interface{}, 0, len(managedVMMapResponse.ManagedVMList))
+
+		for vmID, vmDetails := range managedVMMapResponse.ManagedVMList {
+
+			obj := map[string]interface{}{
+				"vm_id": vmID,
+			}
+
+			if vmDetails.Core != nil {
+				obj["core"] = *vmDetails.Core
+			}
+			if vmDetails.DrAverageTime != nil {
+				obj["dr_average_time"] = *vmDetails.DrAverageTime
+			}
+			if vmDetails.DrRegion != nil {
+				obj["dr_region"] = *vmDetails.DrRegion
+			}
+			if vmDetails.Memory != nil {
+				obj["memory"] = *vmDetails.Memory
+			}
+			if vmDetails.Region != nil {
+				obj["region"] = *vmDetails.Region
+			}
+			if vmDetails.VMName != nil {
+				obj["vm_name"] = *vmDetails.VMName
+			}
+			if vmDetails.WorkgroupName != nil {
+				obj["workgroup_name"] = *vmDetails.WorkgroupName
+			}
+			if vmDetails.WorkspaceName != nil {
+				obj["workspace_name"] = *vmDetails.WorkspaceName
+			}
+
+			list = append(list, obj)
 		}
-		if err = d.Set("managed_vms", flex.Flatten(convertedMap)); err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting managed_vms: %s", err), "(Data) ibm_pdr_get_managed_vm_list", "read", "set-managed_vms").GetDiag()
+
+		// if err := d.Set("managed_vm_list", list); err != nil {
+		// 	return diag.FromErr(err)
+		// }
+
+		if err = d.Set("managed_vm_list", list); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting managed_vm_list: %s", err), "(Data) ibm_pdr_get_managed_vm_list", "read", "set-managed_vm_list").GetDiag()
 		}
 	}
 
@@ -98,6 +145,10 @@ func dataSourceIBMPdrGetManagedVMListRead(context context.Context, d *schema.Res
 
 // dataSourceIBMPdrGetManagedVMListID returns a reasonable ID for the list.
 func dataSourceIBMPdrGetManagedVMListID(d *schema.ResourceData) string {
+	parts := strings.Split(d.Get("instance_id").(string), ":")
+	if len(parts) > 7 {
+		return parts[7]
+	}
 	return d.Get("instance_id").(string)
 }
 

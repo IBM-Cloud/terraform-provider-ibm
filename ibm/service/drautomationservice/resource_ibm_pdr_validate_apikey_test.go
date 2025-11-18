@@ -11,10 +11,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 
-	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.ibm.com/DRAutomation/dra-go-sdk/drautomationservicev1"
+	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 )
 
 func TestAccIBMPdrValidateApikeyBasic(t *testing.T) {

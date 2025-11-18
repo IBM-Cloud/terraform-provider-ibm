@@ -258,9 +258,6 @@ func resourceIbmPdrManagedrCreate(ctx context.Context, d *schema.ResourceData, m
 
 	createManageDrOptions.SetInstanceID(d.Get("instance_id").(string))
 	createManageDrOptions.SetStandByRedeploy(d.Get("stand_by_redeploy").(string))
-	if _, ok := d.GetOk("action"); ok {
-		createManageDrOptions.SetAction(d.Get("action").(string))
-	}
 	if _, ok := d.GetOk("api_key"); ok {
 		createManageDrOptions.SetAPIKey(d.Get("api_key").(string))
 	}

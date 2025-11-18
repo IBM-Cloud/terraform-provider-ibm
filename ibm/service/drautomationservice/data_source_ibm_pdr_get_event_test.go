@@ -29,7 +29,7 @@ func TestAccIBMPdrGetEventDataSourceBasic(t *testing.T) {
 				Config: testAccCheckIBMPdrGetEventDataSourceConfigBasic(),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_pdr_get_event.pdr_get_event_instance", "id"),
-					resource.TestCheckResourceAttrSet("data.ibm_pdr_get_event.pdr_get_event_instance", "provision_id"),
+					resource.TestCheckResourceAttrSet("data.ibm_pdr_get_event.pdr_get_event_instance", "instance_id"),
 					resource.TestCheckResourceAttrSet("data.ibm_pdr_get_event.pdr_get_event_instance", "event_id"),
 					resource.TestCheckResourceAttrSet("data.ibm_pdr_get_event.pdr_get_event_instance", "action"),
 					resource.TestCheckResourceAttrSet("data.ibm_pdr_get_event.pdr_get_event_instance", "level"),
@@ -46,7 +46,7 @@ func TestAccIBMPdrGetEventDataSourceBasic(t *testing.T) {
 func testAccCheckIBMPdrGetEventDataSourceConfigBasic() string {
 	return fmt.Sprintf(`
 		data "ibm_pdr_get_event" "pdr_get_event_instance" {
-			provision_id = "crn:v1:staging:public:power-dr-automation:global:a/a123456fb04ceebfb4a9fd38c22334455:123456d3-1122-3344-b67d-4389b44b7bf9::"
+			instance_id = "crn:v1:staging:public:power-dr-automation:global:a/a123456fb04ceebfb4a9fd38c22334455:123456d3-1122-3344-b67d-4389b44b7bf9::"
 			event_id = "00116b2a-9326-4024-839e-fb5364b76898"
 		}
 	`)

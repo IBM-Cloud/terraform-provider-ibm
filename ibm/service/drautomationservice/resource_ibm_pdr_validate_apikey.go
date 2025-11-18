@@ -42,9 +42,9 @@ func ResourceIBMPdrValidateApikey() *schema.Resource {
 				Description: "The language requested for the return document.",
 			},
 			"api_key": &schema.Schema{
-				Type:     schema.TypeString,
-				Required: true,
-				// ForceNew:    true,
+				Type:        schema.TypeString,
+				Required:    true,
+				ForceNew:    true,
 				Sensitive:   true,
 				Description: "api key",
 			},
@@ -83,6 +83,9 @@ func resourceIBMPdrValidateApikeyCreate(context context.Context, d *schema.Resou
 
 	createApikeyOptions.SetInstanceID(d.Get("instance_id").(string))
 	createApikeyOptions.SetAPIKey(d.Get("api_key").(string))
+	if _, ok := d.GetOk("accept_language"); ok {
+		createApikeyOptions.SetAcceptLanguage(d.Get("accept_language").(string))
+	}
 
 	validationKeyResponse, response, err := drAutomationServiceClient.CreateApikeyWithContext(context, createApikeyOptions)
 	if err != nil {

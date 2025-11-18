@@ -3,7 +3,7 @@
 
 /*
  * IBM OpenAPI Terraform Generator Version: 3.105.0-3c13b041-20250605-193116
-*/
+ */
 
 package drautomationservice
 
@@ -11,6 +11,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -262,5 +263,9 @@ func dataSourceIBMPdrLastOperationRead(context context.Context, d *schema.Resour
 
 // dataSourceIBMPdrLastOperationID returns a reasonable ID for the list.
 func dataSourceIBMPdrLastOperationID(d *schema.ResourceData) string {
+	parts := strings.Split(d.Get("instance_id").(string), ":")
+	if len(parts) > 7 {
+		return parts[7]
+	}
 	return d.Get("instance_id").(string)
 }

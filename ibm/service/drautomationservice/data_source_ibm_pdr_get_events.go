@@ -3,7 +3,7 @@
 
 /*
  * IBM OpenAPI Terraform Generator Version: 3.105.0-3c13b041-20250605-193116
-*/
+ */
 
 package drautomationservice
 
@@ -11,6 +11,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -25,10 +26,10 @@ func DataSourceIBMPdrGetEvents() *schema.Resource {
 		ReadContext: dataSourceIBMPdrGetEventsRead,
 
 		Schema: map[string]*schema.Schema{
-			"provision_id": &schema.Schema{
+			"instance_id": &schema.Schema{
 				Type:        schema.TypeString,
 				Required:    true,
-				Description: "provision id.",
+				Description: "instance id of the service.",
 			},
 			"time": &schema.Schema{
 				Type:        schema.TypeString,
@@ -153,7 +154,7 @@ func dataSourceIBMPdrGetEventsRead(context context.Context, d *schema.ResourceDa
 
 	listEventsOptions := &drautomationservicev1.ListEventsOptions{}
 
-	listEventsOptions.SetProvisionID(d.Get("provision_id").(string))
+	listEventsOptions.SetInstanceID(d.Get("instance_id").(string))
 	if _, ok := d.GetOk("time"); ok {
 		listEventsOptions.SetTime(d.Get("time").(string))
 	}
@@ -200,7 +201,11 @@ func dataSourceIBMPdrGetEventsRead(context context.Context, d *schema.ResourceDa
 
 // dataSourceIBMPdrGetEventsID returns a reasonable ID for the list.
 func dataSourceIBMPdrGetEventsID(d *schema.ResourceData) string {
-	return d.Get("provision_id").(string)
+	parts := strings.Split(d.Get("instance_id").(string), ":")
+	if len(parts) > 7 {
+		return parts[7]
+	}
+	return d.Get("instance_id").(string)
 }
 
 func DataSourceIBMPdrGetEventsEventToMap(model *drautomationservicev1.Event) (map[string]interface{}, error) {

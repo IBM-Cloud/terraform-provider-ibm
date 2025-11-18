@@ -11,6 +11,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -49,7 +50,7 @@ func DataSourceIBMPdrGetPowervsWorkspace() *schema.Resource {
 			"dr_standby_workspaces": &schema.Schema{
 				Type:        schema.TypeList,
 				Computed:    true,
-				Description: "List of standby disaster recovery workspaces.",
+				Description: "The list of standby disaster recovery workspaces.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"details": &schema.Schema{
@@ -255,6 +256,10 @@ func dataSourceIBMPdrGetPowervsWorkspaceRead(context context.Context, d *schema.
 
 // dataSourceIBMPdrGetPowervsWorkspaceID returns a reasonable ID for the list.
 func dataSourceIBMPdrGetPowervsWorkspaceID(d *schema.ResourceData) string {
+	parts := strings.Split(d.Get("instance_id").(string), ":")
+	if len(parts) > 7 {
+		return parts[7]
+	}
 	return d.Get("instance_id").(string)
 }
 

@@ -11,6 +11,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -314,6 +315,10 @@ func dataSourceIBMPdrGetDrSummaryResponseRead(context context.Context, d *schema
 
 // dataSourceIBMPdrGetDrSummaryResponseID returns a reasonable ID for the list.
 func dataSourceIBMPdrGetDrSummaryResponseID(d *schema.ResourceData) string {
+	parts := strings.Split(d.Get("instance_id").(string), ":")
+	if len(parts) > 7 {
+		return parts[7]
+	}
 	return d.Get("instance_id").(string)
 }
 
@@ -352,7 +357,7 @@ func DataSourceIBMPdrGetDrSummaryResponseServiceDetailsToMap(model *drautomation
 	modelMap["crn"] = *model.CRN
 	modelMap["deployment_name"] = *model.DeploymentName
 	modelMap["description"] = *model.Description
-	modelMap["orchestrator_ha"] = *model.
+	modelMap["orchestrator_ha"] = *model.OrchestratorHa
 	modelMap["plan_name"] = *model.PlanName
 	modelMap["primary_ip_address"] = *model.PrimaryIPAddress
 	modelMap["primary_orchestrator_dashboard_url"] = *model.PrimaryOrchestratorDashboardURL

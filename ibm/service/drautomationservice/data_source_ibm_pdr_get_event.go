@@ -3,7 +3,7 @@
 
 /*
  * IBM OpenAPI Terraform Generator Version: 3.105.0-3c13b041-20250605-193116
-*/
+ */
 
 package drautomationservice
 
@@ -11,6 +11,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -26,10 +27,10 @@ func DataSourceIBMPdrGetEvent() *schema.Resource {
 		ReadContext: dataSourceIBMPdrGetEventRead,
 
 		Schema: map[string]*schema.Schema{
-			"provision_id": &schema.Schema{
+			"instance_id": &schema.Schema{
 				Type:        schema.TypeString,
 				Required:    true,
-				Description: "provision id.",
+				Description: "instance id of the service.",
 			},
 			"event_id": &schema.Schema{
 				Type:        schema.TypeString,
@@ -130,10 +131,13 @@ func dataSourceIBMPdrGetEventRead(context context.Context, d *schema.ResourceDat
 
 	getEventOptions := &drautomationservicev1.GetEventOptions{}
 
-	getEventOptions.SetProvisionID(d.Get("provision_id").(string))
+	getEventOptions.SetInstanceID(d.Get("instance_id").(string))
 	getEventOptions.SetEventID(d.Get("event_id").(string))
 	if _, ok := d.GetOk("accept_language"); ok {
 		getEventOptions.SetAcceptLanguage(d.Get("accept_language").(string))
+	}
+	if _, ok := d.GetOk("if_none_match"); ok {
+		getEventOptions.SetIfNoneMatch(d.Get("if_none_match").(string))
 	}
 
 	event, response, err := drAutomationServiceClient.GetEventWithContext(context, getEventOptions)
@@ -220,6 +224,10 @@ func dataSourceIBMPdrGetEventRead(context context.Context, d *schema.ResourceDat
 
 // dataSourceIBMPdrGetEventID returns a reasonable ID for the list.
 func dataSourceIBMPdrGetEventID(d *schema.ResourceData) string {
+	parts := strings.Split(d.Get("instance_id").(string), ":")
+	if len(parts) > 7 {
+		return parts[7]
+	}
 	return d.Get("instance_id").(string)
 }
 
