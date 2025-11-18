@@ -267,6 +267,20 @@ func DataSourceIBMISVPNGateway() *schema.Resource {
 				Computed:    true,
 				Description: "Route mode VPN gateway.",
 			},
+			isVPNGatewayLocalAsn: {
+				Type:        schema.TypeInt,
+				Computed:    true,
+				Description: "The local autonomous system number (ASN) for this VPN gateway and its connections.",
+			},
+
+			isVPNGatewayAdvertisedCidrs: {
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "The additional CIDRs advertised through any enabled routing protocol (for example, BGP). The routing protocol will advertise routes with these CIDRs and VPC prefixes as route destinations.",
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
+			},
 			"vpc": {
 				Type:        schema.TypeList,
 				Computed:    true,
@@ -444,6 +458,16 @@ func dataSourceIBMIsVPNGatewayRead(context context.Context, d *schema.ResourceDa
 	}
 	if err = d.Set("mode", vpnGateway.Mode); err != nil {
 		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting mode: %s", err), "(Data) ibm_is_vpn_gateway", "read", "set-mode").GetDiag()
+	}
+	if vpnGateway.AdvertisedCIDRs != nil {
+		if err = d.Set("advertised_cidrs", vpnGateway.AdvertisedCIDRs); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting advertised_cidrs: %s", err), "(Data) ibm_is_vpn_gateway", "read", "set-advertised_cidrs").GetDiag()
+		}
+	}
+	if vpnGateway.LocalAsn != nil {
+		if err = d.Set("local_asn", vpnGateway.LocalAsn); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting local_asn: %s", err), "(Data) ibm_is_vpn_gateway", "read", "set-local_asn").GetDiag()
+		}
 	}
 	if vpnGateway.VPC != nil {
 		err = d.Set("vpc", dataSourceVPNGatewayFlattenVPC(vpnGateway.VPC))

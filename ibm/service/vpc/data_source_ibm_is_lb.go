@@ -620,7 +620,6 @@ func lbGetByName(context context.Context, d *schema.ResourceData, meta interface
 						healthMonitorInfo[healthMonitorType] = *(poolHealthMonitor.Type)
 						pool[healthMonitor] = healthMonitorInfo
 					}
-
 					if p.SessionPersistence != nil {
 						sessionPersistenceInfo := make(map[string]interface{})
 						sessionPersistenceInfo[sessionType] = *p.SessionPersistence.Type
