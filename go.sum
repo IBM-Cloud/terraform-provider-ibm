@@ -115,8 +115,8 @@ github.com/IBM/container-registry-go-sdk v1.2.0 h1:DX08GSKFvgCcUne9rWwb9+UttevV4
 github.com/IBM/container-registry-go-sdk v1.2.0/go.mod h1:fE1iNfehccXBx1wmX/RUWksDteWOOOXJFtHWYlT4zKk=
 github.com/IBM/continuous-delivery-go-sdk/v2 v2.0.6 h1:CdJWGVzcHngf6un5N2C4KDgIzqViA2Md6pSeZNZzsLQ=
 github.com/IBM/continuous-delivery-go-sdk/v2 v2.0.6/go.mod h1:Iibf+4gRasEZHakDgnMm7TOX87xex0L+DfghUclcmcg=
-github.com/IBM/event-notifications-go-admin-sdk v0.20.0 h1:IuIWVLQuNfIfuw/ZRqu06x85zIKq6HiMzT4vlgPeJTw=
-github.com/IBM/event-notifications-go-admin-sdk v0.20.0/go.mod h1:9fG6k1gYRqiChZvmn1iRIjaKCXuDBCOlPH6xPJN+mMU=
+github.com/IBM/event-notifications-go-admin-sdk v0.21.0 h1:WqKRm0mQoDKb6VlFrF2Ksz3SEizM1MGxx/HSF3In1ns=
+github.com/IBM/event-notifications-go-admin-sdk v0.21.0/go.mod h1:9fG6k1gYRqiChZvmn1iRIjaKCXuDBCOlPH6xPJN+mMU=
 github.com/IBM/eventstreams-go-sdk v1.4.0 h1:yS/Ns29sBOe8W2tynQmz9HTKqQZ0ckse4Py5Oy/F2rM=
 github.com/IBM/eventstreams-go-sdk v1.4.0/go.mod h1:2tuAxaYLctfqfr5jvyqSrxxEQGMwYPm3yJGWSj85YVQ=
 github.com/IBM/go-sdk-core/v5 v5.0.0/go.mod h1:vyNdbFujJtdTj9HbihtvKwwS3k/GKSKpOx9ZIQ6MWDY=
@@ -170,6 +170,8 @@ github.com/IBM/vpc-beta-go-sdk v0.8.0 h1:cEPpv4iw3Ba5W2d0AWg3TIbKeJ8y1nPuUuibR5J
 github.com/IBM/vpc-beta-go-sdk v0.8.0/go.mod h1:hORgIyTFRzXrZIK9IohaWmCRBBlYiDRagsufi7M6akE=
 github.com/IBM/vpc-go-sdk v0.74.1 h1:qkWwdlILx3ZVNWht96CdlPKwhKL/y3ItN6XmwJ1rShM=
 github.com/IBM/vpc-go-sdk v0.74.1/go.mod h1:8lX6TpeYBbx1Vd4KTgM3PPQ4y3auGOPuD6qq3UBDdug=
+github.com/IBM/vpc-go-sdk v0.75.0 h1:8s11vR30n0eY9ptf6Osh9Bw13okhMVasb/KX9M52LEg=
+github.com/IBM/vpc-go-sdk v0.75.0/go.mod h1:8lX6TpeYBbx1Vd4KTgM3PPQ4y3auGOPuD6qq3UBDdug=
 github.com/Logicalis/asn1 v0.0.0-20190312173541-d60463189a56 h1:vuquMR410psHNax14XKNWa0Ae/kYgWJcXi0IFuX60N0=
 github.com/Logicalis/asn1 v0.0.0-20190312173541-d60463189a56/go.mod h1:Zb3OT4l0mf7P/GOs2w2Ilj5sdm5Whoq3pa24dAEBHFc=
 github.com/Masterminds/semver/v3 v3.2.1 h1:RN9w6+7QoMeJVGyfmbcgs28Br8cvmnucEXnY0rYXWg0=

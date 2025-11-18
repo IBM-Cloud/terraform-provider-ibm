@@ -1371,7 +1371,16 @@ func testAccCheckIBMISVPNGatewayConnectionAdvanceConfig(vpc1, subnet1, vpnname1,
 		vpn_gateway   = ibm_is_vpn_gateway.testacc_VPNGateway2.id
 		peer {
 				address  = cidrhost(ibm_is_subnet.testacc_subnet4.ipv4_cidr_block, 15)
-			}	
+				asn = 65533
+			}
+		tunnel {
+			neighbor_ip         = "192.168.1.4"
+			tunnel_interface_ip = "10.0.0.4"
+		}
+		tunnel {
+			neighbor_ip         = "192.168.1.5"
+			tunnel_interface_ip = "10.0.0.5"
+		}			
 		preshared_key = "VPNDemoPassword"
 	  }
 	`, vpc1, subnet1, acc.ISZoneName, subnet3, acc.ISZoneName, vpnname1, name1, name3, vpc2, subnet2, acc.ISZoneName, subnet4, acc.ISZoneName, vpnname2, name2, name4)
