@@ -10,10 +10,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 
-	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
-
+	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 	"github.com/IBM/dra-go-sdk/drautomationservicev1"
 )
 

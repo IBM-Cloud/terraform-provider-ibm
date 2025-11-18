@@ -72,9 +72,6 @@ func dataSourceIBMPdrGetManagedVMListRead(context context.Context, d *schema.Res
 	if _, ok := d.GetOk("accept_language"); ok {
 		getDrManagedVMOptions.SetAcceptLanguage(d.Get("accept_language").(string))
 	}
-	if _, ok := d.GetOk("if_none_match"); ok {
-		getDrManagedVMOptions.SetIfNoneMatch(d.Get("if_none_match").(string))
-	}
 
 	managedVMMapResponse, response, err := drAutomationServiceClient.GetDrManagedVMWithContext(context, getDrManagedVMOptions)
 	if err != nil {
