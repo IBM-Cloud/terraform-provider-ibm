@@ -166,6 +166,11 @@ var (
 	LogsEventNotificationInstanceRegion string
 )
 
+// Reclamation
+var (
+	ReclamationId string
+)
+
 // Secrets Manager
 var (
 	SecretsManagerInstanceID                                                        string
@@ -460,6 +465,11 @@ func init() {
 	testlogger := os.Getenv("TF_LOG")
 	if testlogger != "" {
 		os.Setenv("IBMCLOUD_BLUEMIX_GO_TRACE", "true")
+	}
+
+	ReclamationId = os.Getenv("IBM_RECLAMATION_ID")
+	if ReclamationId == "" {
+		fmt.Println("[WARN] Set the environment variable IBM_RECLAMATION_ID for testing reclamation, reclamation_delete tests will fail if this is not set")
 	}
 
 	IamIdentityAssignmentTargetAccountId = os.Getenv("IAM_IDENTITY_ASSIGNMENT_TARGET_ACCOUNT")
