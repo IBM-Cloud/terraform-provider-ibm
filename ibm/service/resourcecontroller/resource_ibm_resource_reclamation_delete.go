@@ -195,7 +195,7 @@ func resourceIBMResourceReclamationDeleteCreate(ctx context.Context, d *schema.R
 }
 
 // resourceIBMResourceReclamationDeleteRead refreshes state by querying the reclamation.
-// If the reclamation is missing (successfully deleted), removes it from state.
+// Since this is an action resource, we keep state even if reclamation is gone (expected after deletion).
 func resourceIBMResourceReclamationDeleteRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	rsConClient, err := meta.(conns.ClientSession).ResourceControllerV2API()
 	if err != nil {
@@ -216,8 +216,7 @@ func resourceIBMResourceReclamationDeleteRead(ctx context.Context, d *schema.Res
 	reclamationsList, _, err := rsConClient.ListReclamationsWithContext(ctx, opts)
 	if err != nil {
 		log.Printf("[WARN] ListReclamationsWithContext failed during read: %s", err.Error())
-		// Assume resource is gone (successfully deleted), clear state
-		d.SetId("")
+		// Keep state - the deletion action was performed, API error doesn't change that
 		return nil
 	}
 
@@ -229,9 +228,9 @@ func resourceIBMResourceReclamationDeleteRead(ctx context.Context, d *schema.Res
 		}
 	}
 
-	// Not found: resource successfully deleted, clear state
-	log.Printf("[INFO] Reclamation %s not found, assuming successfully deleted", recID)
-	d.SetId("")
+	// Not found: This is expected - the deletion action succeeded
+	// Keep the state to prevent Terraform from trying to recreate
+	log.Printf("[INFO] Reclamation %s not found (expected after successful deletion), keeping state", recID)
 	return nil
 }
 
