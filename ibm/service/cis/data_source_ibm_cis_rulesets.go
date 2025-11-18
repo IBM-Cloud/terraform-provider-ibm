@@ -553,9 +553,6 @@ func flattenCISRulesets(rulesetObj rulesetsv1.RulesetDetails) interface{} {
 }
 
 func flattenCISRulesetsRuleActionParameters(rulesetsRuleActionParameterObj *rulesetsv1.ActionParameters) map[string]interface{} {
-	if rulesetsRuleActionParameterObj == nil {
-		return nil
-	}
 
 	actionParametersOutput := map[string]interface{}{}
 	resultOutput := map[string]interface{}{}
