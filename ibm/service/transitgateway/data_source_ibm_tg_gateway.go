@@ -126,6 +126,10 @@ func DataSourceIBMTransitGateway() *schema.Resource {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
+						tgCidr: {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
 						tgMtu: {
 							Type:     schema.TypeInt,
 							Computed: true,
@@ -358,6 +362,9 @@ func dataSourceIBMTransitGatewayConnectionsRead(d *schema.ResourceData, meta int
 				if instance.Zone != nil {
 					tgConn[tgZone] = *instance.Zone.Name
 				}
+				if instance.Cidr != nil {
+					tgConn[tgCidr] = *instance.Cidr
+				}
 				if instance.Mtu != nil {
 					tgConn[tgMtu] = *instance.Mtu
 				}
@@ -416,10 +423,6 @@ func dataSourceIBMTransitGatewayConnectionsRead(d *schema.ResourceData, meta int
 				if len(rGREtunnels) > 0 {
 					tgConn[tgrGREtunnels] = rGREtunnels
 				}
-			}
-
-			if instance.Cidr != nil {
-				tgConn[tgCidr] = *instance.Cidr
 			}
 
 			connections = append(connections, tgConn)

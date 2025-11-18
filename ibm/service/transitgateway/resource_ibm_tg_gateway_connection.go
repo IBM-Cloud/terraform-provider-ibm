@@ -155,6 +155,12 @@ func ResourceIBMTransitGatewayConnection() *schema.Resource {
 				ForceNew:    true,
 				Description: "Location of connection. This field only applies to network type 'gre_tunnel' and 'unbound_gre_tunnel' connections and optional for network type 'vpn_gateway' connections",
 			},
+			tgCidr: {
+				Type:        schema.TypeString,
+				Optional:    true,
+				ForceNew:    true,
+				Description: "The network_type 'vpn_gateway' connections use 'cidr' to specify the CIDR to use for the VPN GRE tunnels",
+			},
 			tgCreatedAt: {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -269,12 +275,6 @@ func ResourceIBMTransitGatewayConnection() *schema.Resource {
 						},
 					},
 				},
-			},
-			tgCidr: {
-				Type:        schema.TypeString,
-				Optional:    true,
-				ForceNew:    true,
-				Description: "The network_type 'vpn_gateway' connections use 'cidr' to specify the CIDR to use for the VPN GRE tunnels",
 			},
 		},
 	}
