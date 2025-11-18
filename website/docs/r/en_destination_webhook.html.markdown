@@ -17,6 +17,7 @@ resource "ibm_en_destination_webhook" "webhook_en_destination" {
   instance_guid         = ibm_resource_instance.en_terraform_test_resource.guid
   name                  = "My Webhook Destination"
   type                  = "webhook"
+  test_destination = true
   collect_failed_events = false
   description           = "Destination webhook for event notification"
   config {
@@ -46,6 +47,8 @@ Review the argument reference that you can specify for your resource.
 
 - `collect_failed_events` - (boolean) Toggle switch to enable collect failed event in Cloud Object Storage bucket.
 
+- `test_destination` - (boolean) Set flag to true for webhook destination test.
+
 - `config` - (Optional, List) Payload describing a destination configuration.
 
   Nested scheme for **config**:
@@ -69,7 +72,7 @@ In addition to all argument references listed, you can access the following attr
   - Constraints: The minimum value is `0`.
 - `subscription_names` - (List) List of subscriptions.
 - `updated_at` - (String) Last updated time.
-
+- `test_status` - Webhook destination test result. The possible values are success, failed and inprogress
 ## Import
 
 You can import the `ibm_en_destination_webhook` resource by using `id`.

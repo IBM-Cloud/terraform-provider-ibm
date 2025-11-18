@@ -1,5 +1,9 @@
-// Copyright IBM Corp. 2022 All Rights Reserved.
+// Copyright IBM Corp. 2025 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
+
+/*
+ * IBM OpenAPI Terraform Generator Version: 3.107.1-41b0fbd0-20250825-080732
+ */
 
 package iamidentity
 
@@ -8,28 +12,30 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
-	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/IBM/platform-services-go-sdk/iamidentityv1"
 )
 
 const (
-	accountSettings         = "ibm_iam_account_settings"
-	restrictCreateServiceId = "restrict_create_service_id"
-	restrictCreateApiKey    = "restrict_create_platform_apikey"
-	mfa                     = "mfa"
+	accountSettings            = "ibm_iam_account_settings"
+	restrictCreateServiceId    = "restrict_create_service_id"
+	restrictCreateApiKey       = "restrict_create_platform_apikey"
+	restrictUserListVisibility = "restrict_user_list_visibility"
+	mfa                        = "mfa"
 )
 
-func ResourceIBMIAMAccountSettings() *schema.Resource {
+func ResourceIBMIamAccountSettings() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: resourceIbmIamAccountSettingsCreate,
-		ReadContext:   resourceIbmIamAccountSettingsRead,
-		UpdateContext: resourceIbmIamAccountSettingsUpdate,
-		DeleteContext: resourceIbmIamAccountSettingsDelete,
+		CreateContext: resourceIBMIamAccountSettingsCreate,
+		ReadContext:   resourceIBMIamAccountSettingsRead,
+		UpdateContext: resourceIBMIamAccountSettingsUpdate,
+		DeleteContext: resourceIBMIamAccountSettingsDelete,
 		Importer:      &schema.ResourceImporter{},
 
 		Schema: map[string]*schema.Schema{
@@ -38,6 +44,12 @@ func ResourceIBMIAMAccountSettings() *schema.Resource {
 				Optional:    true,
 				Default:     false,
 				Description: "Defines if the entity history is included in the response.",
+			},
+			"resolve_user_mfa": {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Default:     false,
+				Description: "Enrich MFA exemptions with user PI.",
 			},
 			"restrict_create_service_id": {
 				Type:         schema.TypeString,
@@ -52,6 +64,42 @@ func ResourceIBMIAMAccountSettings() *schema.Resource {
 				Computed:     true,
 				ValidateFunc: validate.InvokeValidator(accountSettings, "restrict_create_platform_apikey"),
 				Description:  "Defines whether or not creating platform API keys is access controlled. Valid values:  * RESTRICTED - to apply access control  * NOT_RESTRICTED - to remove access control  * NOT_SET - to 'unset' a previous set value.",
+			},
+			"restrict_user_list_visibility": {
+				Type:         schema.TypeString,
+				Optional:     true,
+				Computed:     true,
+				ValidateFunc: validate.InvokeValidator(accountSettings, "restrict_user_list_visibility"),
+				Description:  "Defines whether or not user visibility is access controlled. Valid values:  * RESTRICTED - users can view only specific types of users in the account, such as those the user has invited to the account, or descendants of those users based on the classic infrastructure hierarchy  * NOT_RESTRICTED - any user in the account can view other users from the Users page in IBM Cloud console.",
+			},
+			"restrict_user_domains": {
+				Type:        schema.TypeList,
+				Optional:    true,
+				Computed:    true,
+				Description: "Defines if account invitations are restricted to specified domains. To remove an entry for a realm_id, perform an update (PUT) request with only the realm_id set.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"realm_id": {
+							Type:        schema.TypeString,
+							Optional:    true,
+							Computed:    true,
+							Description: "The realm that the restrictions apply to.",
+						},
+						"invitation_email_allow_patterns": {
+							Type:        schema.TypeList,
+							Optional:    true,
+							Computed:    true,
+							Description: "The list of allowed email patterns. Wildcard syntax is supported, '*' represents any sequence of zero or more characters in the string, except for '.' and '@'. The sequence ends if a '.' or '@' was found. '**' represents any sequence of zero or more characters in the string - without limit.",
+							Elem:        &schema.Schema{Type: schema.TypeString},
+						},
+						"restrict_invitation": {
+							Type:        schema.TypeBool,
+							Optional:    true,
+							Computed:    true,
+							Description: "When true invites will only be possible to the domain patterns provided, otherwise invites are unrestricted.",
+						},
+					},
+				},
 			},
 			"allowed_ip_addresses": {
 				Type:        schema.TypeString,
@@ -80,18 +128,45 @@ func ResourceIBMIAMAccountSettings() *schema.Resource {
 			"user_mfa": {
 				Type:        schema.TypeList,
 				Optional:    true,
+				Computed:    true,
 				Description: "List of users that are exempted from the MFA requirement of the account.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"iam_id": {
 							Type:        schema.TypeString,
-							Required:    true,
+							Optional:    true,
+							Computed:    true,
 							Description: "The iam_id of the user.",
 						},
 						"mfa": {
 							Type:        schema.TypeString,
-							Required:    true,
+							Optional:    true,
+							Computed:    true,
 							Description: "Defines the MFA requirement for the user. Valid values:  * NONE - No MFA trait set  * TOTP - For all non-federated IBMId users  * TOTP4ALL - For all users  * LEVEL1 - Email-based MFA for all users  * LEVEL2 - TOTP-based MFA for all users  * LEVEL3 - U2F MFA for all users.",
+						},
+						"name": {
+							Type:        schema.TypeString,
+							Optional:    true,
+							Computed:    true,
+							Description: "name of the user account.",
+						},
+						"user_name": {
+							Type:        schema.TypeString,
+							Optional:    true,
+							Computed:    true,
+							Description: "userName of the user.",
+						},
+						"email": {
+							Type:        schema.TypeString,
+							Optional:    true,
+							Computed:    true,
+							Description: "email of the user.",
+						},
+						"description": {
+							Type:        schema.TypeString,
+							Optional:    true,
+							Computed:    true,
+							Description: "optional description.",
 						},
 					},
 				},
@@ -104,33 +179,33 @@ func ResourceIBMIAMAccountSettings() *schema.Resource {
 					Schema: map[string]*schema.Schema{
 						"timestamp": {
 							Type:        schema.TypeString,
-							Required:    true,
+							Computed:    true,
 							Description: "Timestamp when the action was triggered.",
 						},
 						"iam_id": {
 							Type:        schema.TypeString,
-							Required:    true,
+							Computed:    true,
 							Description: "IAM ID of the identity which triggered the action.",
 						},
 						"iam_id_account": {
 							Type:        schema.TypeString,
-							Required:    true,
+							Computed:    true,
 							Description: "Account of the identity which triggered the action.",
 						},
 						"action": {
 							Type:        schema.TypeString,
-							Required:    true,
+							Computed:    true,
 							Description: "Action of the history entry.",
 						},
 						"params": {
 							Type:        schema.TypeList,
-							Required:    true,
+							Computed:    true,
 							Description: "Params of the history entry.",
 							Elem:        &schema.Schema{Type: schema.TypeString},
 						},
 						"message": {
 							Type:        schema.TypeString,
-							Required:    true,
+							Computed:    true,
 							Description: "Message which summarizes the executed action.",
 						},
 					},
@@ -152,7 +227,7 @@ func ResourceIBMIAMAccountSettings() *schema.Resource {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Computed:    true,
-				Description: "Defines the max allowed sessions per identity required by the account. Value values:  * Any whole number greater than 0  * NOT_SET - To unset account setting and use service default.",
+				Description: "Defines the max allowed sessions per identity required by the account. Valid values:  * Any whole number greater than 0  * NOT_SET - To unset account setting and use service default.",
 			},
 			"system_access_token_expiration_in_seconds": {
 				Type:        schema.TypeString,
@@ -174,8 +249,16 @@ func ResourceIBMIAMAccountSettingsValidator() *validate.ResourceValidator {
 	validateSchema := make([]validate.ValidateSchema, 0)
 
 	restrict_values := "RESTRICTED, NOT_RESTRICTED, NOT_SET"
-	mfa_values := "NONE, TOTP, TOTP4ALL, LEVEL1, LEVEL2, LEVEL3"
+	user_visibility_restrict_values := "RESTRICTED, NOT_RESTRICTED"
+	mfa_values := "NONE, NONE_NO_ROPC, TOTP, TOTP4ALL, LEVEL1, LEVEL2, LEVEL3"
 
+	validateSchema = append(validateSchema,
+		validate.ValidateSchema{
+			Identifier:                 restrictUserListVisibility,
+			ValidateFunctionIdentifier: validate.ValidateAllowedStringValue,
+			Type:                       validate.TypeString,
+			Required:                   true,
+			AllowedValues:              user_visibility_restrict_values})
 	validateSchema = append(validateSchema,
 		validate.ValidateSchema{
 			Identifier:                 restrictCreateServiceId,
@@ -202,7 +285,7 @@ func ResourceIBMIAMAccountSettingsValidator() *validate.ResourceValidator {
 	return &ibmIAMAccountSettingsValidator
 }
 
-func resourceIbmIamAccountSettingsCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceIBMIamAccountSettingsCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	iamIdentityClient, err := meta.(conns.ClientSession).IAMIdentityV1API()
 	if err != nil {
 		return diag.FromErr(err)
@@ -227,13 +310,15 @@ func resourceIbmIamAccountSettingsCreate(context context.Context, d *schema.Reso
 
 	d.SetId(*accountSettingsResponse.AccountID)
 
-	return resourceIbmIamAccountSettingsUpdate(context, d, meta)
+	return resourceIBMIamAccountSettingsUpdate(context, d, meta)
 }
 
-func resourceIbmIamAccountSettingsRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceIBMIamAccountSettingsRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	iamIdentityClient, err := meta.(conns.ClientSession).IAMIdentityV1API()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_account_settings", "read", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	getAccountSettingsOptions := &iamidentityv1.GetAccountSettingsOptions{}
@@ -241,90 +326,112 @@ func resourceIbmIamAccountSettingsRead(context context.Context, d *schema.Resour
 	getAccountSettingsOptions.SetAccountID(d.Id())
 	getAccountSettingsOptions.SetIncludeHistory(d.Get("include_history").(bool))
 
-	accountSettingsResponse, response, err := iamIdentityClient.GetAccountSettings(getAccountSettingsOptions)
+	if _, ok := d.GetOk("resolve_user_mfa"); ok {
+		getAccountSettingsOptions.SetResolveUserMfa(d.Get("resolve_user_mfa").(bool))
+	}
+
+	accountSettingsResponse, response, err := iamIdentityClient.GetAccountSettingsWithContext(context, getAccountSettingsOptions)
 	if err != nil {
 		if response != nil && response.StatusCode == 404 {
 			d.SetId("")
 			return nil
 		}
-		log.Printf("[DEBUG] GetAccountSettings failed %s\n%s", err, response)
-		return diag.FromErr(err)
-	}
-
-	if err = d.Set("restrict_create_service_id", accountSettingsResponse.RestrictCreateServiceID); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting restrict_create_service_id: %s", err))
-	}
-	if err = d.Set("restrict_create_platform_apikey", accountSettingsResponse.RestrictCreatePlatformApikey); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting restrict_create_platform_apikey: %s", err))
-	}
-	if err = d.Set("allowed_ip_addresses", accountSettingsResponse.AllowedIPAddresses); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting allowed_ip_addresses: %s", err))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetAccountSettingsWithContext failed: %s", err.Error()), "ibm_iam_account_settings", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	if err = d.Set("entity_tag", accountSettingsResponse.EntityTag); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting entity_tag: %s", err))
+		err = fmt.Errorf("Error setting entity_tag: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_account_settings", "read", "set-entity_tag").GetDiag()
 	}
-	if err = d.Set("mfa", accountSettingsResponse.Mfa); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting mfa: %s", err))
-	}
-	if accountSettingsResponse.History != nil {
+	if !core.IsNil(accountSettingsResponse.History) {
 		history := []map[string]interface{}{}
 		for _, historyItem := range accountSettingsResponse.History {
-			historyItemMap := resourceIbmIamAccountSettingsEnityHistoryRecordToMap(historyItem)
+			historyItemMap, _ := EnityHistoryRecordToMap(&historyItem) // #nosec G601
+			if err != nil {
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_account_settings", "read", "history-to-map").GetDiag()
+			}
 			history = append(history, historyItemMap)
 		}
 		if err = d.Set("history", history); err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error setting history: %s", err))
+			err = fmt.Errorf("Error setting history: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_account_settings", "read", "set-history").GetDiag()
 		}
 	}
-	userMfa := []map[string]interface{}{}
-	if accountSettingsResponse.UserMfa != nil {
-		for _, userMfaItem := range accountSettingsResponse.UserMfa {
-			userMfaItemMap, err := resourceIBMIamAccountSettingsAccountSettingsUserMfaToMap(&userMfaItem)
-			if err != nil {
-				return diag.FromErr(err)
-			}
-			userMfa = append(userMfa, userMfaItemMap)
-		}
+	if err = d.Set("restrict_create_service_id", accountSettingsResponse.RestrictCreateServiceID); err != nil {
+		err = fmt.Errorf("Error setting restrict_create_service_id: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_account_settings", "read", "set-restrict_create_service_id").GetDiag()
 	}
-	if err = d.Set("user_mfa", userMfa); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting user_mfa: %s", err))
+	if err = d.Set("restrict_create_platform_apikey", accountSettingsResponse.RestrictCreatePlatformApikey); err != nil {
+		err = fmt.Errorf("Error setting restrict_create_platform_apikey: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_account_settings", "read", "set-restrict_create_platform_apikey").GetDiag()
+	}
+	if err = d.Set("restrict_user_list_visibility", accountSettingsResponse.RestrictUserListVisibility); err != nil {
+		err = fmt.Errorf("Error setting restrict_user_list_visibility: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_account_settings", "read", "set-restrict_user_list_visibility").GetDiag()
+	}
+	restrictUserDomains := []map[string]interface{}{}
+	for _, restrictUserDomainsItem := range accountSettingsResponse.RestrictUserDomains {
+		restrictUserDomainsItemMap, err := AccountSettingsUserDomainRestrictionToMap(&restrictUserDomainsItem) // #nosec G601
+		if err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_account_settings", "read", "restrict_user_domains-to-map").GetDiag()
+		}
+		restrictUserDomains = append(restrictUserDomains, restrictUserDomainsItemMap)
+	}
+	if err = d.Set("restrict_user_domains", restrictUserDomains); err != nil {
+		err = fmt.Errorf("Error setting restrict_user_domains: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_account_settings", "read", "set-restrict_user_domains").GetDiag()
+	}
+	if err = d.Set("allowed_ip_addresses", accountSettingsResponse.AllowedIPAddresses); err != nil {
+		err = fmt.Errorf("Error setting allowed_ip_addresses: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_account_settings", "read", "set-allowed_ip_addresses").GetDiag()
+	}
+	if err = d.Set("mfa", accountSettingsResponse.Mfa); err != nil {
+		err = fmt.Errorf("Error setting mfa: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_account_settings", "read", "set-mfa").GetDiag()
 	}
 	if err = d.Set("session_expiration_in_seconds", accountSettingsResponse.SessionExpirationInSeconds); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting session_expiration_in_seconds: %s", err))
+		err = fmt.Errorf("Error setting session_expiration_in_seconds: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_account_settings", "read", "set-session_expiration_in_seconds").GetDiag()
 	}
 	if err = d.Set("session_invalidation_in_seconds", accountSettingsResponse.SessionInvalidationInSeconds); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting session_invalidation_in_seconds: %s", err))
+		err = fmt.Errorf("Error setting session_invalidation_in_seconds: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_account_settings", "read", "set-session_invalidation_in_seconds").GetDiag()
 	}
 	if err = d.Set("max_sessions_per_identity", accountSettingsResponse.MaxSessionsPerIdentity); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting max_sessions_per_identity: %s", err))
+		err = fmt.Errorf("Error setting max_sessions_per_identity: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_account_settings", "read", "set-max_sessions_per_identity").GetDiag()
 	}
 	if err = d.Set("system_access_token_expiration_in_seconds", accountSettingsResponse.SystemAccessTokenExpirationInSeconds); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting system_access_token_expiration_in_seconds: %s", err))
+		err = fmt.Errorf("Error setting system_access_token_expiration_in_seconds: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_account_settings", "read", "set-system_access_token_expiration_in_seconds").GetDiag()
 	}
 	if err = d.Set("system_refresh_token_expiration_in_seconds", accountSettingsResponse.SystemRefreshTokenExpirationInSeconds); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting system_refresh_token_expiration_in_seconds: %s", err))
+		err = fmt.Errorf("Error setting system_refresh_token_expiration_in_seconds: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_account_settings", "read", "set-system_refresh_token_expiration_in_seconds").GetDiag()
+	}
+	userMfa := []map[string]interface{}{}
+	for _, userMfaItem := range accountSettingsResponse.UserMfa {
+		userMfaItemMap, err := AccountSettingsUserMfaResponseToMap(&userMfaItem)
+		if err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_account_settings", "read", "user_mfa-to-map").GetDiag()
+		}
+		userMfa = append(userMfa, userMfaItemMap)
+	}
+	if err = d.Set("user_mfa", userMfa); err != nil {
+		err = fmt.Errorf("Error setting user_mfa: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_account_settings", "read", "set-user_mfa").GetDiag()
 	}
 
 	return nil
 }
 
-func resourceIbmIamAccountSettingsEnityHistoryRecordToMap(enityHistoryRecord iamidentityv1.EnityHistoryRecord) map[string]interface{} {
-	enityHistoryRecordMap := map[string]interface{}{}
-
-	enityHistoryRecordMap["timestamp"] = enityHistoryRecord.Timestamp
-	enityHistoryRecordMap["iam_id"] = enityHistoryRecord.IamID
-	enityHistoryRecordMap["iam_id_account"] = enityHistoryRecord.IamIDAccount
-	enityHistoryRecordMap["action"] = enityHistoryRecord.Action
-	enityHistoryRecordMap["params"] = enityHistoryRecord.Params
-	enityHistoryRecordMap["message"] = enityHistoryRecord.Message
-
-	return enityHistoryRecordMap
-}
-
-func resourceIbmIamAccountSettingsUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceIBMIamAccountSettingsUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	iamIdentityClient, err := meta.(conns.ClientSession).IAMIdentityV1API()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_account_settings", "update", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	updateAccountSettingsOptions := &iamidentityv1.UpdateAccountSettingsOptions{}
@@ -352,21 +459,52 @@ func resourceIbmIamAccountSettingsUpdate(context context.Context, d *schema.Reso
 		hasChange = true
 	}
 
+	if d.HasChange("restrict_user_list_visibility") {
+		restrict_user_list_visibility_str := d.Get("restrict_user_list_visibility").(string)
+		updateAccountSettingsOptions.SetRestrictUserListVisibility(restrict_user_list_visibility_str)
+		hasChange = true
+	}
+
 	if d.HasChange("mfa") {
 		mfa_str := d.Get("mfa").(string)
 		updateAccountSettingsOptions.SetMfa(mfa_str)
 		hasChange = true
 	}
-	var user_mfa []iamidentityv1.AccountSettingsUserMfa
+
 	if d.HasChange("user_mfa") {
-		for _, e := range d.Get("user_mfa").([]interface{}) {
-			value := e.(map[string]interface{})
-			userMfaItem := resourceIBMIamAccountSettingsMapToAccountSettingsUserMfa(value)
-			user_mfa = append(user_mfa, userMfaItem)
+		if _, ok := d.GetOk("user_mfa"); ok {
+			var userMfa []iamidentityv1.UserMfa
+			for _, v := range d.Get("user_mfa").([]interface{}) {
+				value := v.(map[string]interface{})
+				userMfaItem, err := ResourceIBMIamAccountSettingsMapToUserMfa(value)
+				if err != nil {
+					return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_account_settings", "update", "parse-user_mfa").GetDiag()
+				}
+				userMfa = append(userMfa, *userMfaItem)
+			}
+			updateAccountSettingsOptions.SetUserMfa(userMfa)
 		}
-		updateAccountSettingsOptions.SetUserMfa(user_mfa)
+
 		hasChange = true
 	}
+
+	if d.HasChange("restrict_user_domains") {
+		if _, ok := d.GetOk("restrict_user_domains"); ok {
+			var restrictUserDomains []iamidentityv1.AccountSettingsUserDomainRestriction
+			for _, v := range d.Get("restrict_user_domains").([]interface{}) {
+				value := v.(map[string]interface{})
+				restrictUserDomainsItem, err := ResourceIBMIamAccountSettingsMapToAccountSettingsUserDomainRestriction(value)
+				if err != nil {
+					return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_account_settings", "update", "parse-restrict_user_domains").GetDiag()
+				}
+				restrictUserDomains = append(restrictUserDomains, *restrictUserDomainsItem)
+			}
+			updateAccountSettingsOptions.SetRestrictUserDomains(restrictUserDomains)
+		}
+
+		hasChange = true
+	}
+
 	if d.HasChange("session_expiration_in_seconds") {
 		session_expiration_in_seconds_str := d.Get("session_expiration_in_seconds").(string)
 		updateAccountSettingsOptions.SetSessionExpirationInSeconds(session_expiration_in_seconds_str)
@@ -394,34 +532,48 @@ func resourceIbmIamAccountSettingsUpdate(context context.Context, d *schema.Reso
 	}
 
 	if hasChange {
-		_, response, err := iamIdentityClient.UpdateAccountSettings(updateAccountSettingsOptions)
+		_, _, err = iamIdentityClient.UpdateAccountSettingsWithContext(context, updateAccountSettingsOptions)
 		if err != nil {
-			log.Printf("[DEBUG] UpdateAccountSettings failed %s\n%s", err, response)
-			return diag.FromErr(err)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("UpdateAccountSettingsWithContext failed: %s", err.Error()), "ibm_iam_account_settings", "update")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 	}
 
-	return resourceIbmIamAccountSettingsRead(context, d, meta)
+	return resourceIBMIamAccountSettingsRead(context, d, meta)
 }
 
-func resourceIBMIamAccountSettingsMapToAccountSettingsUserMfa(userMfaMap map[string]interface{}) iamidentityv1.AccountSettingsUserMfa {
-	userMfa := iamidentityv1.AccountSettingsUserMfa{}
-	userMfa.IamID = core.StringPtr(userMfaMap["iam_id"].(string))
-	userMfa.Mfa = core.StringPtr(userMfaMap["mfa"].(string))
-	return userMfa
-}
-
-func resourceIBMIamAccountSettingsAccountSettingsUserMfaToMap(model *iamidentityv1.AccountSettingsUserMfa) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	modelMap["iam_id"] = model.IamID
-	modelMap["mfa"] = model.Mfa
-	return modelMap, nil
-}
-
-func resourceIbmIamAccountSettingsDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceIBMIamAccountSettingsDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 
 	// DELETE NOT SUPPORTED
 	d.SetId("")
 
 	return nil
+}
+
+func ResourceIBMIamAccountSettingsMapToAccountSettingsUserDomainRestriction(modelMap map[string]interface{}) (*iamidentityv1.AccountSettingsUserDomainRestriction, error) {
+	model := &iamidentityv1.AccountSettingsUserDomainRestriction{}
+	model.RealmID = core.StringPtr(modelMap["realm_id"].(string))
+	if modelMap["invitation_email_allow_patterns"] != nil {
+		invitationEmailAllowPatterns := []string{}
+		for _, invitationEmailAllowPatternsItem := range modelMap["invitation_email_allow_patterns"].([]interface{}) {
+			invitationEmailAllowPatterns = append(invitationEmailAllowPatterns, invitationEmailAllowPatternsItem.(string))
+		}
+		model.InvitationEmailAllowPatterns = invitationEmailAllowPatterns
+	}
+	if modelMap["restrict_invitation"] != nil {
+		model.RestrictInvitation = core.BoolPtr(modelMap["restrict_invitation"].(bool))
+	}
+	return model, nil
+}
+
+func ResourceIBMIamAccountSettingsMapToUserMfa(modelMap map[string]interface{}) (*iamidentityv1.UserMfa, error) {
+	model := &iamidentityv1.UserMfa{}
+	if modelMap["iam_id"] != nil && modelMap["iam_id"].(string) != "" {
+		model.IamID = core.StringPtr(modelMap["iam_id"].(string))
+	}
+	if modelMap["mfa"] != nil && modelMap["mfa"].(string) != "" {
+		model.Mfa = core.StringPtr(modelMap["mfa"].(string))
+	}
+	return model, nil
 }

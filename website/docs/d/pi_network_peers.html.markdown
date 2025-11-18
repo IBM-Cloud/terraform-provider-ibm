@@ -27,7 +27,7 @@ data "ibm_pi_network_peers" "pi_network_peers" {
   
 Example usage:
 
-```terraform
+  ```terraform
     provider "ibm" {
       region    =   "lon"
       zone      =   "lon04"
@@ -47,8 +47,45 @@ In addition to all argument reference list, you can access the following attribu
 - `id` - (String) The unique identifier of the pi_network_peers.
 - `network_peers` - (List) List of network peers.
   
-   Nested schema for `network_peers`:
-  - `description` - (String) Description of the network peer.
-  - `id` - (String) ID of the network peer.
-  - `name` - (String) Name of the network peer.
-  - `type` - (String) Type of the network peer.
+  Nested schema for `network_peers`:
+      - `creation_date` - (String) Time stamp for create network peer.
+      - `customer_asn` - (Integer) ASN number at customer network side.
+      - `customer_cidr` - (String) IP address used for configuring customer network interface with network subnet mask.
+      - `default_export_route_filter` - (String) Default action for export route filter.
+      - `default_import_route_filter` - (String) Default action for import route filter.
+      - `error` - (String) Error description.
+      - `export_route_filters` - (List) List of export route filters.
+
+        Nested schema for `export_route_filters`:
+         - `action` - (String) Action of the filter.
+         - `creation_date` - (String) Time stamp for create route filter.
+         - `direction` - (String) Direction of the filter.
+         - `error` - (String) Error description.
+         - `ge` - (Integer) The minimum matching length of the prefix-set.
+         - `index` - (Integer) Priority or order of the filter.
+         - `le` - (Integer) The maximum matching length of the prefix-set.
+         - `prefix` - (String) IP prefix representing an address and mask length of the prefix-set.
+         - `route_filter_id` - (String) Route filter ID.
+         - `state` - (String) Status of the route filter.
+      - `ibm_asn` - (Integer) ASN number at IBM PowerVS side.
+      - `ibm_cidr` - (String) IP address used for configuring IBM network interface with network subnet mask.
+      - `id` - (String) ID of the network peer.
+      - `import_route_filters` - (List) List of import route filters.
+          
+          Nested schema for `import_route_filters`:
+          - `action` - (String) Action of the filter.
+          - `creation_date` - (String) Time stamp for create route filter.
+          - `direction` - (String) Direction of the filter.
+          - `error` - (String) Error description.
+          - `ge` - (Integer) The minimum matching length of the prefix-set.
+          - `index` - (Integer) Priority or order of the filter.
+          - `le` - (Integer) The maximum matching length of the prefix-set.
+          - `prefix` - (String) IP prefix representing an address and mask length of the prefix-set.
+          - `route_filter_id` - (String) Route filter ID.
+          - `state` - (String) Status of the route filter.
+      - `name` - (String) User defined name.
+      - `peer_interface_id` - (String) Peer interface id.
+      - `state` - (String) Status of the network peer.
+      - `type` - (String) Type of the peer network.
+      - `updated_date` - (String) Time stamp for update network peer.
+      - `vlan` - (Integer) A vlan configured at the customer network.

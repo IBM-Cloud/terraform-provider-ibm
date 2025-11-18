@@ -111,6 +111,8 @@ In addition to all argument references listed, you can access the following attr
 * `private_key` - (String) (Optional) The PEM-encoded private key to associate with the certificate.
     * Constraints: The maximum length is `100000` characters. The minimum length is `50` characters. The value must match regular expression `/^(-{5}BEGIN.+?-{5}[\\s\\S]+-{5}END.+?-{5})$/`.
 
+* `retrieved_at` - (String) The date when the data of the secret was last retrieved. The date format follows RFC 3339. Epoch date if there is no record of secret data retrieval.
+
 * `revocation_time_rfc3339` - (String) The date and time that the certificate was revoked. The date format follows RFC 3339.
 
 * `revocation_time_seconds` - (Integer) The timestamp of the certificate revocation.

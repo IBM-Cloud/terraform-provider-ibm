@@ -365,7 +365,7 @@ func dataSourceIBMAccountSettingsTemplateAssignmentRead(context context.Context,
 	var history []map[string]interface{}
 	if templateAssignmentResponse.History != nil {
 		for _, modelItem := range templateAssignmentResponse.History {
-			modelMap, err := dataSourceIBMAccountSettingsTemplateAssignmentEnityHistoryRecordToMap(&modelItem)
+			modelMap, err := EnityHistoryRecordToMap(&modelItem)
 			if err != nil {
 				return diag.FromErr(err)
 			}
@@ -458,9 +458,9 @@ func dataSourceIBMAccountSettingsTemplateAssignmentTemplateAssignmentResponseRes
 		}
 		modelMap["account_settings"] = []map[string]interface{}{accountSettingsMap}
 	}
-	if model.PolicyTemplateRefs != nil {
+	if model.PolicyTemplateReferences != nil {
 		var policyTemplateRefs []map[string]interface{}
-		for _, policyTemplateRefsItem := range model.PolicyTemplateRefs {
+		for _, policyTemplateRefsItem := range model.PolicyTemplateReferences {
 			policyTemplateRefsItemMap, err := dataSourceIBMAccountSettingsTemplateAssignmentTemplateAssignmentResponseResourceDetailToMap(&policyTemplateRefsItem)
 			if err != nil {
 				return modelMap, err
@@ -520,16 +520,5 @@ func dataSourceIBMAccountSettingsTemplateAssignmentTemplateAssignmentResourceErr
 	if model.StatusCode != nil {
 		modelMap["status_code"] = model.StatusCode
 	}
-	return modelMap, nil
-}
-
-func dataSourceIBMAccountSettingsTemplateAssignmentEnityHistoryRecordToMap(model *iamidentityv1.EnityHistoryRecord) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	modelMap["timestamp"] = model.Timestamp
-	modelMap["iam_id"] = model.IamID
-	modelMap["iam_id_account"] = model.IamIDAccount
-	modelMap["action"] = model.Action
-	modelMap["params"] = model.Params
-	modelMap["message"] = model.Message
 	return modelMap, nil
 }

@@ -214,6 +214,11 @@ func DataSourceIBMISInstanceTemplate() *schema.Resource {
 				Computed:    true,
 				Description: "The amount of bandwidth (in megabits per second) allocated exclusively to instance storage volumes",
 			},
+			isInstanceVolumeBandwidthQoSMode: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The volume bandwidth QoS mode for this virtual server instance.",
+			},
 			isInstanceDefaultTrustedProfileAutoLink: {
 				Type:        schema.TypeBool,
 				Computed:    true,
@@ -1226,6 +1231,12 @@ func dataSourceIBMISInstanceTemplateRead(context context.Context, d *schema.Reso
 					return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting total_volume_bandwidth: %s", err), "(Data) ibm_is_instance_template", "read", "set-total_volume_bandwidth").GetDiag()
 				}
 			}
+			if instanceTemplate.VolumeBandwidthQosMode != nil {
+				d.Set(isInstanceVolumeBandwidthQoSMode, string(*instanceTemplate.VolumeBandwidthQosMode))
+				if err = d.Set(isInstanceVolumeBandwidthQoSMode, string(*instanceTemplate.VolumeBandwidthQosMode)); err != nil {
+					return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting volume_bandwidth_qos_mode: %s", err), "(Data) ibm_is_instance_template", "read", "set-volume_bandwidth_qos_mode").GetDiag()
+				}
+			}
 
 			if instanceTemplate.PrimaryNetworkInterface != nil {
 				interfaceList := make([]map[string]interface{}, 0)
@@ -1638,6 +1649,12 @@ func dataSourceIBMISInstanceTemplateRead(context context.Context, d *schema.Reso
 			if instanceTemplate.TotalVolumeBandwidth != nil {
 				if err = d.Set("total_volume_bandwidth", int(*instanceTemplate.TotalVolumeBandwidth)); err != nil {
 					return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting total_volume_bandwidth: %s", err), "(Data) ibm_is_instance_template", "read", "set-total_volume_bandwidth").GetDiag()
+				}
+			}
+			if instanceTemplate.VolumeBandwidthQosMode != nil {
+				d.Set(isInstanceVolumeBandwidthQoSMode, string(*instanceTemplate.VolumeBandwidthQosMode))
+				if err = d.Set(isInstanceVolumeBandwidthQoSMode, string(*instanceTemplate.VolumeBandwidthQosMode)); err != nil {
+					return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting volume_bandwidth_qos_mode: %s", err), "(Data) ibm_is_instance_template", "read", "set-volume_bandwidth_qos_mode").GetDiag()
 				}
 			}
 
@@ -2165,6 +2182,12 @@ func dataSourceIBMISInstanceTemplateRead(context context.Context, d *schema.Reso
 							return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting total_volume_bandwidth: %s", err), "(Data) ibm_is_instance_template", "read", "set-total_volume_bandwidth").GetDiag()
 						}
 					}
+					if instanceTemplate.VolumeBandwidthQosMode != nil {
+						d.Set(isInstanceVolumeBandwidthQoSMode, string(*instanceTemplate.VolumeBandwidthQosMode))
+						if err = d.Set(isInstanceVolumeBandwidthQoSMode, string(*instanceTemplate.VolumeBandwidthQosMode)); err != nil {
+							return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting volume_bandwidth_qos_mode: %s", err), "(Data) ibm_is_instance_template", "read", "set-volume_bandwidth_qos_mode").GetDiag()
+						}
+					}
 
 					if instanceTemplate.Image != nil {
 						imageInf := instanceTemplate.Image
@@ -2538,6 +2561,12 @@ func dataSourceIBMISInstanceTemplateRead(context context.Context, d *schema.Reso
 					if instanceTemplate.TotalVolumeBandwidth != nil {
 						if err = d.Set("total_volume_bandwidth", int(*instanceTemplate.TotalVolumeBandwidth)); err != nil {
 							return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting total_volume_bandwidth: %s", err), "(Data) ibm_is_instance_template", "read", "set-total_volume_bandwidth").GetDiag()
+						}
+					}
+					if instanceTemplate.VolumeBandwidthQosMode != nil {
+						d.Set(isInstanceVolumeBandwidthQoSMode, string(*instanceTemplate.VolumeBandwidthQosMode))
+						if err = d.Set(isInstanceVolumeBandwidthQoSMode, string(*instanceTemplate.VolumeBandwidthQosMode)); err != nil {
+							return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting volume_bandwidth_qos_mode: %s", err), "(Data) ibm_is_instance_template", "read", "set-volume_bandwidth_qos_mode").GetDiag()
 						}
 					}
 

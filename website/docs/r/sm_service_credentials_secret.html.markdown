@@ -161,6 +161,7 @@ In addition to all argument references listed, you can access the following attr
 * `locks_total` - (Integer) The number of locks of the secret.
   * Constraints: The maximum value is `1000`. The minimum value is `0`.
 * `next_rotation_date` - (String) The date that the secret is scheduled for automatic rotation.The service automatically creates a new version of the secret on its next rotation date. This field exists only for secrets that have an existing rotation policy.
+* `retrieved_at` - (String) The date when the data of the secret was last retrieved. The date format follows RFC 3339. Epoch date if there is no record of secret data retrieval.
 * `source_service` - (List) The properties required for creating the service credentials for the specified source service instance.
   Nested scheme for **source_service**:
       * `iam` - (List) The source service IAM data is returned in case IAM credentials where created for this secret.

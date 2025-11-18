@@ -43,6 +43,11 @@ func DataSourceIBMIsShareTargets() *schema.Resource {
 							Computed:    true,
 							Description: "The access control mode for the share",
 						},
+						"access_protocol": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The protocol to use to access the share for this share mount target.",
+						},
 						"name": {
 							Type:        schema.TypeString,
 							Computed:    true,
@@ -345,6 +350,9 @@ func dataSourceShareMountTargetCollectionTargetsToMap(targetsItem vpcv1.ShareMou
 
 	if targetsItem.AccessControlMode != nil {
 		targetsMap["access_control_mode"] = *targetsItem.AccessControlMode
+	}
+	if targetsItem.AccessProtocol != nil {
+		targetsMap["access_protocol"] = *targetsItem.AccessProtocol
 	}
 	if targetsItem.CreatedAt != nil {
 		targetsMap["created_at"] = targetsItem.CreatedAt.String()

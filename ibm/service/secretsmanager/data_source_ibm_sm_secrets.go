@@ -24,7 +24,7 @@ func DataSourceIbmSmSecrets() *schema.Resource {
 			"sort": &schema.Schema{
 				Type:        schema.TypeString,
 				Optional:    true,
-				Description: "Sort a collection of secrets by the specified field in ascending order. To sort in descending order use the `-` character. Available values: id | created_at | updated_at | expiration_date | secret_type | name",
+				Description: "Sort a collection of secrets by the specified field in ascending order. To sort in descending order use the `-` character. Available values: id | created_at | updated_at | retrieved_at | expiration_date | secret_type | name",
 			},
 			"search": &schema.Schema{
 				Type:        schema.TypeString,
@@ -114,6 +114,11 @@ func DataSourceIbmSmSecrets() *schema.Resource {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "The human-readable name of your secret.",
+						},
+						"retrieved_at": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The date when the data of the secret was last retrieved. The date format follows RFC 3339. Epoch date if there is no record of secret data retrieval.",
 						},
 						"secret_group_id": &schema.Schema{
 							Type:        schema.TypeString,
@@ -627,6 +632,8 @@ func dataSourceIbmSmSecretsSecretMetadataToMap(model secretsmanagerv2.SecretMeta
 		return dataSourceIbmSmSecretsPrivateCertificateMetadataToMap(model.(*secretsmanagerv2.PrivateCertificateMetadata))
 	} else if _, ok := model.(*secretsmanagerv2.ServiceCredentialsSecretMetadata); ok {
 		return dataSourceIbmSmSecretsServiceCredentialsSecretMetadataToMap(model.(*secretsmanagerv2.ServiceCredentialsSecretMetadata))
+	} else if _, ok := model.(*secretsmanagerv2.CustomCredentialsSecretMetadata); ok {
+		return dataSourceIbmSmSecretsCustomCredentialsSecretMetadataToMap(model.(*secretsmanagerv2.CustomCredentialsSecretMetadata))
 	} else {
 		return nil, fmt.Errorf("Unrecognized secretsmanagerv2.SecretMetadataIntf subtype encountered")
 	}
@@ -802,6 +809,9 @@ func dataSourceIbmSmSecretsArbitrarySecretMetadataToMap(model *secretsmanagerv2.
 	if model.UpdatedAt != nil {
 		modelMap["updated_at"] = model.UpdatedAt.String()
 	}
+	if model.RetrievedAt != nil {
+		modelMap["retrieved_at"] = model.RetrievedAt.String()
+	}
 	if model.VersionsTotal != nil {
 		modelMap["versions_total"] = *model.VersionsTotal
 	}
@@ -861,6 +871,9 @@ func dataSourceIbmSmSecretsIAMCredentialsSecretMetadataToMap(model *secretsmanag
 	}
 	if model.UpdatedAt != nil {
 		modelMap["updated_at"] = model.UpdatedAt.String()
+	}
+	if model.RetrievedAt != nil {
+		modelMap["retrieved_at"] = model.RetrievedAt.String()
 	}
 	if model.VersionsTotal != nil {
 		modelMap["versions_total"] = *model.VersionsTotal
@@ -946,6 +959,9 @@ func dataSourceIbmSmSecretsImportedCertificateMetadataToMap(model *secretsmanage
 	}
 	if model.UpdatedAt != nil {
 		modelMap["updated_at"] = model.UpdatedAt.String()
+	}
+	if model.RetrievedAt != nil {
+		modelMap["retrieved_at"] = model.RetrievedAt.String()
 	}
 	if model.VersionsTotal != nil {
 		modelMap["versions_total"] = *model.VersionsTotal
@@ -1037,6 +1053,9 @@ func dataSourceIbmSmSecretsPublicCertificateMetadataToMap(model *secretsmanagerv
 	}
 	if model.UpdatedAt != nil {
 		modelMap["updated_at"] = model.UpdatedAt.String()
+	}
+	if model.RetrievedAt != nil {
+		modelMap["retrieved_at"] = model.RetrievedAt.String()
 	}
 	if model.VersionsTotal != nil {
 		modelMap["versions_total"] = *model.VersionsTotal
@@ -1146,6 +1165,9 @@ func dataSourceIbmSmSecretsKVSecretMetadataToMap(model *secretsmanagerv2.KVSecre
 	if model.UpdatedAt != nil {
 		modelMap["updated_at"] = model.UpdatedAt.String()
 	}
+	if model.RetrievedAt != nil {
+		modelMap["retrieved_at"] = model.RetrievedAt.String()
+	}
 	if model.VersionsTotal != nil {
 		modelMap["versions_total"] = *model.VersionsTotal
 	}
@@ -1202,6 +1224,9 @@ func dataSourceIbmSmSecretsUsernamePasswordSecretMetadataToMap(model *secretsman
 	}
 	if model.UpdatedAt != nil {
 		modelMap["updated_at"] = model.UpdatedAt.String()
+	}
+	if model.RetrievedAt != nil {
+		modelMap["retrieved_at"] = model.RetrievedAt.String()
 	}
 	if model.VersionsTotal != nil {
 		modelMap["versions_total"] = *model.VersionsTotal
@@ -1272,6 +1297,9 @@ func dataSourceIbmSmSecretsPrivateCertificateMetadataToMap(model *secretsmanager
 	}
 	if model.UpdatedAt != nil {
 		modelMap["updated_at"] = model.UpdatedAt.String()
+	}
+	if model.RetrievedAt != nil {
+		modelMap["retrieved_at"] = model.RetrievedAt.String()
 	}
 	if model.VersionsTotal != nil {
 		modelMap["versions_total"] = *model.VersionsTotal
@@ -1380,6 +1408,9 @@ func dataSourceIbmSmSecretsServiceCredentialsSecretMetadataToMap(model *secretsm
 	if model.UpdatedAt != nil {
 		modelMap["updated_at"] = model.UpdatedAt.String()
 	}
+	if model.RetrievedAt != nil {
+		modelMap["retrieved_at"] = model.RetrievedAt.String()
+	}
 	if model.VersionsTotal != nil {
 		modelMap["versions_total"] = *model.VersionsTotal
 	}
@@ -1404,5 +1435,69 @@ func dataSourceIbmSmSecretsServiceCredentialsSecretMetadataToMap(model *secretsm
 		modelMap["source_service"] = []map[string]interface{}{sourceServiceMap}
 	}
 
+	return modelMap, nil
+}
+
+func dataSourceIbmSmSecretsCustomCredentialsSecretMetadataToMap(model *secretsmanagerv2.CustomCredentialsSecretMetadata) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.CreatedBy != nil {
+		modelMap["created_by"] = *model.CreatedBy
+	}
+
+	if model.CreatedAt != nil {
+		modelMap["created_at"] = model.CreatedAt.String()
+	}
+	if model.Crn != nil {
+		modelMap["crn"] = *model.Crn
+	}
+	if model.CustomMetadata != nil {
+		customMetadataMap := make(map[string]interface{}, len(model.CustomMetadata))
+		for k, v := range model.CustomMetadata {
+			customMetadataMap[k] = v
+		}
+		modelMap["custom_metadata"] = flex.Flatten(customMetadataMap)
+	}
+	if model.Description != nil {
+		modelMap["description"] = *model.Description
+	}
+	if model.Downloaded != nil {
+		modelMap["downloaded"] = *model.Downloaded
+	}
+	if model.ID != nil {
+		modelMap["id"] = *model.ID
+	}
+	if model.Labels != nil {
+		modelMap["labels"] = model.Labels
+	}
+	if model.LocksTotal != nil {
+		modelMap["locks_total"] = *model.LocksTotal
+	}
+	if model.Name != nil {
+		modelMap["name"] = *model.Name
+	}
+	if model.SecretGroupID != nil {
+		modelMap["secret_group_id"] = *model.SecretGroupID
+	}
+	if model.SecretType != nil {
+		modelMap["secret_type"] = *model.SecretType
+	}
+	if model.State != nil {
+		modelMap["state"] = *model.State
+	}
+	if model.StateDescription != nil {
+		modelMap["state_description"] = *model.StateDescription
+	}
+	if model.UpdatedAt != nil {
+		modelMap["updated_at"] = model.UpdatedAt.String()
+	}
+	if model.RetrievedAt != nil {
+		modelMap["retrieved_at"] = model.RetrievedAt.String()
+	}
+	if model.VersionsTotal != nil {
+		modelMap["versions_total"] = *model.VersionsTotal
+	}
+	if model.ExpirationDate != nil {
+		modelMap["expiration_date"] = model.ExpirationDate.String()
+	}
 	return modelMap, nil
 }

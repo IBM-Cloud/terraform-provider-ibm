@@ -14,8 +14,8 @@ Retrieve information about a Power Systems Virtual Server instance. For more inf
 
 ```terraform
 data "ibm_pi_instance" "ds_instance" {
-  pi_instance_name     = "terraform-test-instance"
   pi_cloud_instance_id = "49fba6c9-23f8-40bc-9899-aca322ee7d5b"
+  pi_instance_id       = "e6b579b7-d94b-42e5-a19d-5d1e0b2547c4"
 }
 ```
 
@@ -40,7 +40,8 @@ Example usage:
 Review the argument references that you can specify for your data source.
 
 - `pi_cloud_instance_id` - (Required, String) The GUID of the service instance associated with an account.
-- `pi_instance_name` - (Required, String) The unique identifier or name of the instance.
+- `pi_instance_id` - (Optional, String) The PVM instance ID.
+- `pi_instance_name` - (Deprecated, Optional, String) The unique identifier or name of the instance. Passing the name of the instance could fail or fetch stale data. Please pass an id and use `pi_instance_id` instead.
 
 ## Attribute Reference
 
@@ -49,6 +50,7 @@ In addition to all argument reference list, you can access the following attribu
 - `crn` - (String) The CRN of this resource.
 - `dedicated_host_id` - (String) The dedicated host ID where the shared processor pool resides.
 - `deployment_type` - (String) The custom deployment type.
+- `effective_processor_compatibility_mode` - (String) Effective processor compatibility mode.
 - `fault` - (Map) Fault information, if any.
   
   Nested scheme for `fault`:
@@ -88,7 +90,8 @@ In addition to all argument reference list, you can access the following attribu
   - `type` - (String) The type of the network.
 
 - `pin_policy` - (String) The pinning policy of the instance.
-- `placement_group_id`- (String) The ID of the placement group that the instance is a member.
+- `placement_group_id` - (String) The ID of the placement group that the instance is a member.
+- `preferred_processor_compatibility_mode` - (String) Preferred processor compatibility mode.
 - `processors` - (Float) The number of processors that are allocated to the instance.
 - `proctype` - (String) The procurement type of the instance. Supported values are `shared` and `dedicated`.
 - `server_name` - (String) The name of the instance.

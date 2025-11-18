@@ -169,6 +169,12 @@ func DataSourceIBMISVolume() *schema.Resource {
 				Description: "IOPS value for the Volume",
 			},
 
+			"storage_generation": {
+				Type:        schema.TypeInt,
+				Computed:    true,
+				Description: "storage_generation indicates which generation the profile family belongs to. For the custom and tiered profiles, this value is 1.",
+			},
+
 			isVolumeCrn: {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -479,6 +485,11 @@ func volumeGet(context context.Context, d *schema.ResourceData, meta interface{}
 	if err = d.Set("iops", flex.IntValue(volume.Iops)); err != nil {
 		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting iops: %s", err), "(Data) ibm_is_volume", "read", "set-iops").GetDiag()
 	}
+
+	if err = d.Set("storage_generation", flex.IntValue(volume.StorageGeneration)); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting storage_generation: %s", err), "(Data) ibm_is_volume", "read", "set-storage_generation").GetDiag()
+	}
+
 	if err = d.Set("capacity", flex.IntValue(volume.Capacity)); err != nil {
 		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting capacity: %s", err), "(Data) ibm_is_volume", "read", "set-capacity").GetDiag()
 	}
