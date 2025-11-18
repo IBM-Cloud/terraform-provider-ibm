@@ -6,8 +6,10 @@ package resourcemanager
 import (
 	"context"
 	"fmt"
+	"log"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 	rg "github.com/IBM/platform-services-go-sdk/resourcemanagerv2"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -140,12 +142,16 @@ func dataSourceIBMResourceGroupsRead(ctx context.Context, d *schema.ResourceData
 
 	rMgtClient, err := meta.(conns.ClientSession).ResourceManagerV2API()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_resource_groups", "read", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	userDetails, err := meta.(conns.ClientSession).BluemixUserDetails()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("BluemixUserDetails failed: %s", err.Error()), "ibm_resource_groups", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	accountID := userDetails.UserAccount
 
@@ -176,25 +182,17 @@ func dataSourceIBMResourceGroupsRead(ctx context.Context, d *schema.ResourceData
 	}
 
 	// List resource groups
-	rgList, response, err := rMgtClient.ListResourceGroupsWithContext(ctx, &resourceGroupListOptions)
+	rgList, _, err := rMgtClient.ListResourceGroupsWithContext(ctx, &resourceGroupListOptions)
 	if err != nil {
-		return diag.Diagnostics{
-			diag.Diagnostic{
-				Severity: diag.Error,
-				Summary:  "Error retrieving resource groups",
-				Detail:   fmt.Sprintf("Error: %s, Response: %v", err, response),
-			},
-		}
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("ListResourceGroupsWithContext failed: %s", err.Error()), "ibm_resource_groups", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	if rgList == nil || rgList.Resources == nil {
-		return diag.Diagnostics{
-			diag.Diagnostic{
-				Severity: diag.Error,
-				Summary:  "No resource groups found",
-				Detail:   "No resource groups were returned from the API",
-			},
-		}
+		tfErr := flex.TerraformErrorf(fmt.Errorf("no resource groups found"), "No resource groups were returned from the API", "ibm_resource_groups", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	// Convert resource groups to list of maps
@@ -252,7 +250,9 @@ func dataSourceIBMResourceGroupsRead(ctx context.Context, d *schema.ResourceData
 	// Set the data source ID and resource groups
 	d.SetId(accountID)
 	if err := d.Set("resource_groups", resourceGroups); err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting resource_groups: %s", err.Error()), "ibm_resource_groups", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	return diags
