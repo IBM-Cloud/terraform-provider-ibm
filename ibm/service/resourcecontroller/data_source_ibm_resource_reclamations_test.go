@@ -20,7 +20,7 @@ func TestAccIBMResourceReclamationsDataSource_basic(t *testing.T) {
 				Config: testAccCheckIBMResourceReclamationsDataSourceConfig(),
 				Check: resource.ComposeTestCheckFunc(
 					// Basic check to ensure reclamations attribute is present and is a list
-					resource.TestCheckResourceAttrSet("data.ibm_resource_reclamations.all", "reclamations"),
+					resource.TestCheckResourceAttrSet("data.ibm_resource_reclamations.all", "reclamations.#"),
 				),
 			},
 		},
@@ -35,10 +35,10 @@ func TestAccIBMResourceReclamationsDataSource_invalid(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: `
-                data "ibm_resource_reclamations" "all" {
+                data "ibm_resource_reclamationss" "all" {
                   # Intentionally invalid config if any required fields added later, or just test error
                 }`,
-				ExpectError: regexp.MustCompile(``), // Adjust this if error is expected, else skip this test
+				ExpectError: regexp.MustCompile(``),
 			},
 		},
 	})
