@@ -265,8 +265,8 @@ func ResourceIBMISVPNGateway() *schema.Resource {
 			},
 
 			isVPNGatewayAdvertisedCidrs: {
-				Type:        schema.TypeList,
-				Optional:    true,
+				Type: schema.TypeList,
+				// Optional:    true,
 				Computed:    true,
 				Description: "The additional CIDRs advertised through any enabled routing protocol (for example, BGP). The routing protocol will advertise routes with these CIDRs and VPC prefixes as route destinations.",
 				Elem: &schema.Schema{
@@ -657,11 +657,9 @@ func vpngwGet(context context.Context, d *schema.ResourceData, meta interface{},
 			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_vpn_gateway", "read", "set-resource_group").GetDiag()
 		}
 	}
-	if vpnGateway.AdvertisedCIDRs != nil {
-		if err = d.Set(isVPNGatewayAdvertisedCidrs, vpnGateway.AdvertisedCIDRs); err != nil {
-			err = fmt.Errorf("Error setting advertised_cidrs: %s", err)
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_vpn_gateway", "read", "set-advertised_cidrs").GetDiag()
-		}
+	if err = d.Set(isVPNGatewayAdvertisedCidrs, vpnGateway.AdvertisedCIDRs); err != nil {
+		err = fmt.Errorf("Error setting advertised_cidrs: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_vpn_gateway", "read", "set-advertised_cidrs").GetDiag()
 	}
 	if vpnGateway.LocalAsn != nil {
 		if err = d.Set(isVPNGatewayLocalAsn, *vpnGateway.LocalAsn); err != nil {
