@@ -557,6 +557,7 @@ const (
 	Attr_VolumeSnapshots                     = "volume_snapshots"
 	Attr_VolumesSnapshots                    = "volume_snapshots"
 	Attr_VolumeStatus                        = "volume_status"
+	Attr_VolumeType                          = "volume_type"
 	Attr_VPCCRNs                             = "vpc_crns"
 	Attr_VPCEnabled                          = "vpc_enabled"
 	Attr_WorkloadType                        = "workload_type"

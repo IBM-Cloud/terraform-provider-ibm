@@ -113,14 +113,19 @@ resource "ibm_logs_outgoing_webhook" "logs_outgoing_webhook_instance" {
     region_id = "eu-es"
     source_id = "crn:v1:staging:public:logs:eu-gb:a/223af6f4260f42ebe23e95fcddd33cb7:63a3e4be-cb73-4f52-898e-8e93484a70a5::"
     source_name = "IBM Cloud Event Notifications"
+    endpoint_type = "private"
   }
 }
 
 // Provision logs_policy resource instance
 resource "ibm_logs_policy" "logs_policy_instance" {
+  before {
+    id = "9fab83da-98cb-4f18-a7ba-b6f0435c9673"
+  }
   name = var.logs_policy_name
   description = var.logs_policy_description
   priority = var.logs_policy_priority
+  enabled = var.logs_policy_enabled
   application_rule {
     rule_type_id = "includes"
     name = "Rule Name"
@@ -224,6 +229,9 @@ resource "ibm_logs_dashboard" "logs_dashboard_instance" {
           updated_at = "2021-01-01T00:00:00.000Z"
         }
       }
+      options {
+        internal = {  }
+      }
     }
   }
   variables {
@@ -242,9 +250,14 @@ resource "ibm_logs_dashboard" "logs_dashboard_instance" {
           all = {  }
         }
         values_order_direction = "desc"
+        selection_options {
+          selection_type = "single"
+        }
       }
     }
     display_name = "Service Name"
+    description = "description"
+    display_type = "nothing"
   }
   filters {
     source {
@@ -364,6 +377,42 @@ resource "ibm_logs_view_folder" "logs_view_folder_instance" {
   name = var.logs_view_folder_name
 }
 
+// Provision logs_data_access_rule resource instance
+resource "ibm_logs_data_access_rule" "logs_data_access_rule_instance" {
+  display_name = var.logs_data_access_rule_display_name
+  description = var.logs_data_access_rule_description
+  filters {
+    entity_type = "logs"
+    expression = "true"
+  }
+  default_expression = var.logs_data_access_rule_default_expression
+}
+
+// Provision logs_enrichment resource instance
+resource "ibm_logs_enrichment" "logs_enrichment_instance" {
+  field_name = var.logs_enrichment_field_name
+  enrichment_type {
+    geo_ip = {  }
+  }
+}
+
+// Provision logs_data_usage_metrics resource instance
+resource "ibm_logs_data_usage_metrics" "logs_data_usage_metrics_instance" {
+  enabled = var.logs_data_usage_metrics_enabled
+}
+
+// Provision logs_stream resource instance
+resource "ibm_logs_stream" "logs_stream_instance" {
+  name = var.logs_stream_name
+  is_active = var.logs_stream_is_active
+  dpxl_expression = var.logs_stream_dpxl_expression
+  compression_type = var.logs_stream_compression_type
+  ibm_event_streams {
+    brokers = "kafka01.example.com:9093"
+    topic = "live.screen"
+  }
+}
+
 // Data source is not linked to a resource instance
 // Uncomment if an existing data source instance exists
 /*
@@ -447,8 +496,24 @@ data "ibm_logs_dashboard" "logs_dashboard_instance" {
 // Data source is not linked to a resource instance
 // Uncomment if an existing data source instance exists
 /*
+// Create logs_dashboard_folder data source
+data "ibm_logs_dashboard_folder" "logs_dashboard_folder_instance" {
+}
+*/
+
+// Data source is not linked to a resource instance
+// Uncomment if an existing data source instance exists
+/*
 // Create logs_dashboard_folders data source
 data "ibm_logs_dashboard_folders" "logs_dashboard_folders_instance" {
+}
+*/
+
+// Data source is not linked to a resource instance
+// Uncomment if an existing data source instance exists
+/*
+// Create logs_dashboards data source
+data "ibm_logs_dashboards" "logs_dashboards_instance" {
 }
 */
 
@@ -500,5 +565,82 @@ data "ibm_logs_view_folder" "logs_view_folder_instance" {
 /*
 // Create logs_view_folders data source
 data "ibm_logs_view_folders" "logs_view_folders_instance" {
+}
+*/
+
+// Data source is not linked to a resource instance
+// Uncomment if an existing data source instance exists
+/*
+// Create logs_data_access_rule data source
+data "ibm_logs_data_access_rule" "logs_data_access_rule_instance" {
+  logs_data_access_rule_id = var.data_logs_data_access_rule_logs_data_access_rule_id
+}
+*/
+
+// Data source is not linked to a resource instance
+// Uncomment if an existing data source instance exists
+/*
+// Create logs_data_access_rules data source
+data "ibm_logs_data_access_rules" "logs_data_access_rules_instance" {
+  logs_data_access_rules_id = var.logs_data_access_rules_logs_data_access_rules_id
+}
+*/
+
+// Data source is not linked to a resource instance
+// Uncomment if an existing data source instance exists
+/*
+// Create logs_enrichment data source
+data "ibm_logs_enrichment" "logs_enrichment_instance" {
+}
+*/
+
+// Data source is not linked to a resource instance
+// Uncomment if an existing data source instance exists
+/*
+// Create logs_enrichments data source
+data "ibm_logs_enrichments" "logs_enrichments_instance" {
+}
+*/
+
+// Data source is not linked to a resource instance
+// Uncomment if an existing data source instance exists
+/*
+// Create logs_data_usage_metrics data source
+data "ibm_logs_data_usage_metrics" "logs_data_usage_metrics_instance" {
+  range = var.data_logs_data_usage_metrics_range
+  query = var.data_logs_data_usage_metrics_query
+}
+*/
+
+// Data source is not linked to a resource instance
+// Uncomment if an existing data source instance exists
+/*
+// Create logs_stream data source
+data "ibm_logs_stream" "logs_stream_instance" {
+}
+*/
+
+// Data source is not linked to a resource instance
+// Uncomment if an existing data source instance exists
+/*
+// Create logs_streams data source
+data "ibm_logs_streams" "logs_streams_instance" {
+}
+*/
+
+// Data source is not linked to a resource instance
+// Uncomment if an existing data source instance exists
+/*
+// Create logs_alert_definition data source
+data "ibm_logs_alert_definition" "logs_alert_definition_instance" {
+  logs_alert_definition_id = var.data_logs_alert_definition_logs_alert_definition_id
+}
+*/
+
+// Data source is not linked to a resource instance
+// Uncomment if an existing data source instance exists
+/*
+// Create logs_alert_definitions data source
+data "ibm_logs_alert_definitions" "logs_alert_definitions_instance" {
 }
 */
