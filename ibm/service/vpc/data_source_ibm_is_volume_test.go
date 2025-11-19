@@ -206,6 +206,91 @@ ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVE
 		},
 	})
 }
+func TestAccIBMISVolumeDatasource_storage_generation(t *testing.T) {
+
+	resName := "data.ibm_is_volume.testacc_dsvol"
+	resName1 := "data.ibm_is_volume.testacc_dsvolid"
+	resName2 := "data.ibm_is_volume.testacc_dsvol2"
+	resName3 := "data.ibm_is_volume.testacc_dsvol2id"
+	name := fmt.Sprintf("tf-vol-%d", acctest.RandIntRange(10, 100))
+	name1 := fmt.Sprintf("tf-vol2-%d", acctest.RandIntRange(10, 100))
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { acc.TestAccPreCheck(t) },
+		Providers: acc.TestAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMISVolumeDataSourceStorageGeneration(name, name1),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet(
+						resName, "active"),
+					resource.TestCheckResourceAttrSet(
+						resName, "attachment_state"),
+					resource.TestCheckResourceAttrSet(
+						resName, "bandwidth"),
+					resource.TestCheckResourceAttrSet(
+						resName, "busy"),
+					resource.TestCheckResourceAttrSet(
+						resName, "created_at"),
+					resource.TestCheckResourceAttrSet(
+						resName, "resource_group"),
+					resource.TestCheckResourceAttrSet(
+						resName, "profile"),
+					resource.TestCheckResourceAttrSet(
+						resName, "storage_generation"),
+					resource.TestCheckResourceAttrSet(
+						resName1, "active"),
+					resource.TestCheckResourceAttrSet(
+						resName1, "attachment_state"),
+					resource.TestCheckResourceAttrSet(
+						resName1, "bandwidth"),
+					resource.TestCheckResourceAttrSet(
+						resName1, "busy"),
+					resource.TestCheckResourceAttrSet(
+						resName1, "created_at"),
+					resource.TestCheckResourceAttrSet(
+						resName1, "resource_group"),
+					resource.TestCheckResourceAttrSet(
+						resName1, "profile"),
+					resource.TestCheckResourceAttrSet(
+						resName1, "storage_generation"),
+					resource.TestCheckResourceAttrSet(
+						resName2, "active"),
+					resource.TestCheckResourceAttrSet(
+						resName2, "attachment_state"),
+					resource.TestCheckResourceAttrSet(
+						resName2, "bandwidth"),
+					resource.TestCheckResourceAttrSet(
+						resName2, "busy"),
+					resource.TestCheckResourceAttrSet(
+						resName2, "created_at"),
+					resource.TestCheckResourceAttrSet(
+						resName2, "resource_group"),
+					resource.TestCheckResourceAttrSet(
+						resName2, "profile"),
+					resource.TestCheckResourceAttrSet(
+						resName2, "storage_generation"),
+					resource.TestCheckResourceAttrSet(
+						resName3, "active"),
+					resource.TestCheckResourceAttrSet(
+						resName3, "attachment_state"),
+					resource.TestCheckResourceAttrSet(
+						resName3, "bandwidth"),
+					resource.TestCheckResourceAttrSet(
+						resName3, "busy"),
+					resource.TestCheckResourceAttrSet(
+						resName3, "created_at"),
+					resource.TestCheckResourceAttrSet(
+						resName3, "resource_group"),
+					resource.TestCheckResourceAttrSet(
+						resName3, "profile"),
+					resource.TestCheckResourceAttrSet(
+						resName3, "storage_generation"),
+				),
+			},
+		},
+	})
+}
 func TestAccIBMISVolumeDatasourceWithCatalogOffering(t *testing.T) {
 
 	resName := "data.ibm_is_volume.testacc_dsvol"
@@ -243,6 +328,24 @@ func testAccCheckIBMISVolumeDataSourceFromSnapshotConfig(vpcname, subnetname, ss
 	data "ibm_is_volume" "testacc_dsvol" {
 		name = ibm_is_volume.storage.name
 	}`)
+}
+func testAccCheckIBMISVolumeDataSourceStorageGeneration(name, name1 string) string {
+	return testAccCheckIBMISVolumeStorageConfig(name, name1) + fmt.Sprintf(`
+	
+	data "ibm_is_volume" "testacc_dsvol" {
+		name = ibm_is_volume.storage.name
+	}
+	data "ibm_is_volume" "testacc_dsvolid" {
+		identifier = ibm_is_volume.storage2.id
+	}
+	data "ibm_is_volume" "testacc_dsvol2" {
+		name = ibm_is_volume.storage.name
+	}
+	data "ibm_is_volume" "testacc_dsvol2id" {
+		identifier = ibm_is_volume.storage2.id
+	}
+		
+	`)
 }
 func testAccCheckIBMISVolumeDataSourceConfig(name, zone string) string {
 	return fmt.Sprintf(`

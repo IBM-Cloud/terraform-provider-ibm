@@ -1,6 +1,6 @@
-# Examples for Cloud Logs API
+# Examples for Cloud Logs
 
-These examples illustrate how to use the resources and data sources associated with Cloud Logs API.
+These examples illustrate how to use the resources and data sources associated with Cloud Logs.
 
 The following resources are supported:
 * ibm_logs_alert
@@ -12,6 +12,11 @@ The following resources are supported:
 * ibm_logs_e2m
 * ibm_logs_view
 * ibm_logs_view_folder
+* ibm_logs_data_access_rule
+* ibm_logs_enrichment
+* ibm_logs_data_usage_metrics
+* ibm_logs_stream
+* ibm_logs_alert_definition
 
 The following data sources are supported:
 * ibm_logs_alert
@@ -23,13 +28,24 @@ The following data sources are supported:
 * ibm_logs_policy
 * ibm_logs_policies
 * ibm_logs_dashboard
+* ibm_logs_dashboard_folder
 * ibm_logs_dashboard_folders
+* ibm_logs_dashboards
 * ibm_logs_e2m
 * ibm_logs_e2ms
 * ibm_logs_view
 * ibm_logs_views
 * ibm_logs_view_folder
 * ibm_logs_view_folders
+* ibm_logs_data_access_rule
+* ibm_logs_data_access_rules
+* ibm_logs_enrichment
+* ibm_logs_enrichments
+* ibm_logs_data_usage_metrics
+* ibm_logs_stream
+* ibm_logs_streams
+* ibm_logs_alert_definition
+* ibm_logs_alert_definitions
 
 ## Usage
 
@@ -43,7 +59,7 @@ $ terraform apply
 
 Run `terraform destroy` when you don't need these resources.
 
-## Cloud Logs API resources
+## Cloud Logs resources
 
 ### Resource: ibm_logs_alert
 
@@ -76,8 +92,8 @@ resource "ibm_logs_alert" "logs_alert_instance" {
 | severity | Alert severity. | `string` | true |
 | expiration | Alert expiration date. | `` | false |
 | condition | Alert condition. | `` | true |
-| notification_groups | Alert notification groups. | `list()` | true |
-| filters | Alert filters. | `` | true |
+| notification_groups | Alert notification groups. | `list()` | false |
+| filters | Alert filters. | `` | false |
 | active_when | When should the alert be active. | `` | false |
 | notification_payload_filters | JSON keys to include in the alert notification, if left empty get the full log text in the alert notification. | `list(string)` | false |
 | meta_labels | The Meta labels to add to the alert. | `list()` | false |
@@ -148,9 +164,11 @@ resource "ibm_logs_outgoing_webhook" "logs_outgoing_webhook_instance" {
 
 ```hcl
 resource "ibm_logs_policy" "logs_policy_instance" {
+  before = var.logs_policy_before
   name = var.logs_policy_name
   description = var.logs_policy_description
   priority = var.logs_policy_priority
+  enabled = var.logs_policy_enabled
   application_rule = var.logs_policy_application_rule
   subsystem_rule = var.logs_policy_subsystem_rule
   archive_retention = var.logs_policy_archive_retention
@@ -163,9 +181,11 @@ resource "ibm_logs_policy" "logs_policy_instance" {
 | Name | Description | Type | Required |
 |------|-------------|------|---------|
 | ibmcloud\_api\_key | IBM Cloud API key | `string` | true |
+| before | The policy will be inserted immediately before the existing policy with this ID. If unspecified, the policy will be inserted after all existing policies. | `` | false |
 | name | Name of policy. | `string` | true |
 | description | Description of policy. | `string` | false |
 | priority | The data pipeline sources that match the policy rules will go through. | `string` | true |
+| enabled | Flag to enable or disable a policy. This flag is supported only while updating a policy, since the policies are always enabled during creation. | `bool` | false |
 | application_rule | Rule for matching with application. | `` | false |
 | subsystem_rule | Rule for matching with application. | `` | false |
 | archive_retention | Archive retention definition. | `` | false |
@@ -177,7 +197,6 @@ resource "ibm_logs_policy" "logs_policy_instance" {
 |------|-------------|
 | company_id | Company ID. |
 | deleted | Soft deletion flag. |
-| enabled | Enabled flag. |
 | order | Order of policy in relation to other policies. |
 | created_at | Created at date at utc+0. |
 | updated_at | Updated at date at utc+0. |
@@ -312,7 +331,90 @@ resource "ibm_logs_view_folder" "logs_view_folder_instance" {
 | ibmcloud\_api\_key | IBM Cloud API key | `string` | true |
 | name | Folder name. | `string` | true |
 
-## Cloud Logs API data sources
+### Resource: ibm_logs_data_access_rule
+
+```hcl
+resource "ibm_logs_data_access_rule" "logs_data_access_rule_instance" {
+  display_name = var.logs_data_access_rule_display_name
+  description = var.logs_data_access_rule_description
+  filters = var.logs_data_access_rule_filters
+  default_expression = var.logs_data_access_rule_default_expression
+}
+```
+
+#### Inputs
+
+| Name | Description | Type | Required |
+|------|-------------|------|---------|
+| ibmcloud\_api\_key | IBM Cloud API key | `string` | true |
+| display_name | Data Access Rule Display Name. | `string` | true |
+| description | Optional Data Access Rule Description. | `string` | false |
+| filters | List of filters that the Data Access Rule is composed of. | `list()` | true |
+| default_expression | Default expression to use when no filter matches the query. | `string` | true |
+
+### Resource: ibm_logs_enrichment
+
+```hcl
+resource "ibm_logs_enrichment" "logs_enrichment_instance" {
+  field_name = var.logs_enrichment_field_name
+  enrichment_type = var.logs_enrichment_enrichment_type
+}
+```
+
+#### Inputs
+
+| Name | Description | Type | Required |
+|------|-------------|------|---------|
+| ibmcloud\_api\_key | IBM Cloud API key | `string` | true |
+| field_name | The enrichment field name. | `string` | true |
+| enrichment_type | The enrichment type. | `` | true |
+
+### Resource: ibm_logs_data_usage_metrics
+
+```hcl
+resource "ibm_logs_data_usage_metrics" "logs_data_usage_metrics_instance" {
+  enabled = var.logs_data_usage_metrics_enabled
+}
+```
+
+#### Inputs
+
+| Name | Description | Type | Required |
+|------|-------------|------|---------|
+| ibmcloud\_api\_key | IBM Cloud API key | `string` | true |
+| enabled | The "enabled" parameter for metrics export. | `bool` | true |
+
+### Resource: ibm_logs_stream
+
+```hcl
+resource "ibm_logs_stream" "logs_stream_instance" {
+  name = var.logs_stream_name
+  is_active = var.logs_stream_is_active
+  dpxl_expression = var.logs_stream_dpxl_expression
+  compression_type = var.logs_stream_compression_type
+  ibm_event_streams = var.logs_stream_ibm_event_streams
+}
+```
+
+#### Inputs
+
+| Name | Description | Type | Required |
+|------|-------------|------|---------|
+| ibmcloud\_api\_key | IBM Cloud API key | `string` | true |
+| name | The name of the Event stream. | `string` | true |
+| is_active | Whether the Event stream is active. | `bool` | false |
+| dpxl_expression | The DPXL expression of the Event stream. | `string` | true |
+| compression_type | The compression type of the stream. | `string` | false |
+| ibm_event_streams | Configuration for IBM Event Streams. | `` | false |
+
+#### Outputs
+
+| Name | Description |
+|------|-------------|
+| created_at | The creation time of the Event stream. |
+| updated_at | The update time of the Event stream. |
+
+## Cloud Logs data sources
 
 ### Data source: ibm_logs_alert
 
@@ -462,12 +564,13 @@ data "ibm_logs_policy" "logs_policy_instance" {
 
 | Name | Description |
 |------|-------------|
+| before | The policy will be inserted immediately before the existing policy with this ID. If unspecified, the policy will be inserted after all existing policies. |
 | company_id | Company ID. |
 | name | Name of policy. |
 | description | Description of policy. |
 | priority | The data pipeline sources that match the policy rules will go through. |
 | deleted | Soft deletion flag. |
-| enabled | Enabled flag. |
+| enabled | Flag to enable or disable a policy. This flag is supported only while updating a policy, since the policies are always enabled during creation. |
 | order | Order of policy in relation to other policies. |
 | application_rule | Rule for matching with application. |
 | subsystem_rule | Rule for matching with application. |
@@ -531,6 +634,20 @@ data "ibm_logs_dashboard" "logs_dashboard_instance" {
 | two_minutes | Auto refresh interval is set to two minutes. |
 | five_minutes | Auto refresh interval is set to five minutes. |
 
+### Data source: ibm_logs_dashboard_folder
+
+```hcl
+data "ibm_logs_dashboard_folder" "logs_dashboard_folder_instance" {
+}
+```
+
+#### Outputs
+
+| Name | Description |
+|------|-------------|
+| name | The dashboard folder name, required. |
+| parent_id | The dashboard folder parent ID, optional. If not set, the folder is a root folder, if set, the folder is a subfolder of the parent folder and needs to be a uuid. |
+
 ### Data source: ibm_logs_dashboard_folders
 
 ```hcl
@@ -543,6 +660,19 @@ data "ibm_logs_dashboard_folders" "logs_dashboard_folders_instance" {
 | Name | Description |
 |------|-------------|
 | folders | The list of folders. |
+
+### Data source: ibm_logs_dashboards
+
+```hcl
+data "ibm_logs_dashboards" "logs_dashboards_instance" {
+}
+```
+
+#### Outputs
+
+| Name | Description |
+|------|-------------|
+| dashboards | List of dashboards. |
 
 ### Data source: ibm_logs_e2m
 
@@ -655,6 +785,187 @@ data "ibm_logs_view_folders" "logs_view_folders_instance" {
 | Name | Description |
 |------|-------------|
 | view_folders | List of view folders. |
+
+### Data source: ibm_logs_data_access_rule
+
+```hcl
+data "ibm_logs_data_access_rule" "logs_data_access_rule_instance" {
+  logs_data_access_rule_id = var.data_logs_data_access_rule_logs_data_access_rule_id
+}
+```
+
+#### Inputs
+
+| Name | Description | Type | Required |
+|------|-------------|------|---------|
+| logs_data_access_rule_id | Array of data access rule IDs. | `list()` | false |
+
+#### Outputs
+
+| Name | Description |
+|------|-------------|
+| display_name | Data Access Rule Display Name. |
+| description | Optional Data Access Rule Description. |
+| filters | List of filters that the Data Access Rule is composed of. |
+| default_expression | Default expression to use when no filter matches the query. |
+
+### Data source: ibm_logs_data_access_rules
+
+```hcl
+data "ibm_logs_data_access_rules" "logs_data_access_rules_instance" {
+  logs_data_access_rules_id = var.logs_data_access_rules_logs_data_access_rules_id
+}
+```
+
+#### Inputs
+
+| Name | Description | Type | Required |
+|------|-------------|------|---------|
+| logs_data_access_rules_id | Array of data access rule IDs. | `list()` | false |
+
+#### Outputs
+
+| Name | Description |
+|------|-------------|
+| data_access_rules | Data Access Rule details. |
+
+### Data source: ibm_logs_enrichment
+
+```hcl
+data "ibm_logs_enrichment" "logs_enrichment_instance" {
+}
+```
+
+#### Outputs
+
+| Name | Description |
+|------|-------------|
+| field_name | The enrichment field name. |
+| enrichment_type | The enrichment type. |
+
+### Data source: ibm_logs_enrichments
+
+```hcl
+data "ibm_logs_enrichments" "logs_enrichments_instance" {
+}
+```
+
+#### Outputs
+
+| Name | Description |
+|------|-------------|
+| enrichments | The enrichments. |
+
+### Data source: ibm_logs_data_usage_metrics
+
+```hcl
+data "ibm_logs_data_usage_metrics" "logs_data_usage_metrics_instance" {
+  range = var.data_logs_data_usage_metrics_range
+  query = var.data_logs_data_usage_metrics_query
+}
+```
+
+#### Inputs
+
+| Name | Description | Type | Required |
+|------|-------------|------|---------|
+| range | Range of days to get the data usage for, by default it will use current month. | `string` | false |
+| query | Query to filter daily or detailed the data usage, by default it will use daily one. | `string` | false |
+
+#### Outputs
+
+| Name | Description |
+|------|-------------|
+| enabled | The "enabled" parameter for metrics export. |
+
+### Data source: ibm_logs_stream
+
+```hcl
+data "ibm_logs_stream" "logs_stream_instance" {
+}
+```
+
+#### Outputs
+
+| Name | Description |
+|------|-------------|
+| name | The name of the Event stream. |
+| is_active | Whether the Event stream is active. |
+| dpxl_expression | The DPXL expression of the Event stream. |
+| created_at | The creation time of the Event stream. |
+| updated_at | The update time of the Event stream. |
+| compression_type | The compression type of the stream. |
+| ibm_event_streams | Configuration for IBM Event Streams. |
+
+### Data source: ibm_logs_streams
+
+```hcl
+data "ibm_logs_streams" "logs_streams_instance" {
+}
+```
+
+#### Outputs
+
+| Name | Description |
+|------|-------------|
+| streams | Collection of Event Streams. |
+
+### Data source: ibm_logs_alert_definition
+
+```hcl
+data "ibm_logs_alert_definition" "logs_alert_definition_instance" {
+  logs_alert_definition_id = var.data_logs_alert_definition_logs_alert_definition_id
+}
+```
+
+#### Inputs
+
+| Name | Description | Type | Required |
+|------|-------------|------|---------|
+| logs_alert_definition_id | Alert definition ID. | `` | true |
+
+#### Outputs
+
+| Name | Description |
+|------|-------------|
+| created_time | The time when the alert definition was created. |
+| updated_time | The time when the alert definition was last updated. |
+| alert_version_id | The old alert ID. |
+| name | The name of the alert definition. |
+| description | A detailed description of what the alert monitors and when it triggers. |
+| enabled | Whether the alert is currently active and monitoring. |
+| priority | The priority of the alert definition. |
+| active_on | Defining when the alert is active. |
+| type | Alert type. |
+| group_by_keys | Keys used to group and aggregate alert data. |
+| incidents_settings | Incident creation and management settings. |
+| notification_group | Primary notification group for alert events. |
+| entity_labels | Labels used to identify and categorize the alert entity. |
+| phantom_mode | Whether the alert is in phantom mode (creating incidents or not). |
+| deleted | Whether the alert has been marked as deleted. |
+| logs_immediate | Configuration for immediate log-based alerts. |
+| logs_threshold | Configuration for log-based threshold alerts. |
+| logs_ratio_threshold | Configuration for log-based ratio threshold alerts. |
+| logs_time_relative_threshold | Configuration for time-relative log threshold alerts. |
+| metric_threshold | Configuration for metric-based threshold alerts. |
+| flow | Configuration for flow-based alerts. |
+| logs_anomaly | Configuration for log-based anomaly detection alerts. |
+| metric_anomaly | Configuration for metric-based anomaly detection alerts. |
+| logs_new_value | Configuration for alerts triggered by new log values. |
+| logs_unique_count | Configuration for alerts based on unique log value counts. |
+
+### Data source: ibm_logs_alert_definitions
+
+```hcl
+data "ibm_logs_alert_definitions" "logs_alert_definitions_instance" {
+}
+```
+
+#### Outputs
+
+| Name | Description |
+|------|-------------|
+| alert_definitions | List of alert definitions. |
 
 ## Assumptions
 

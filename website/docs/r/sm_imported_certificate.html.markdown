@@ -140,6 +140,7 @@ In addition to all argument references listed, you can access the following attr
 * `locks_total` - (Integer) The number of locks of the secret.
   * Constraints: The maximum value is `1000`. The minimum value is `0`.
 * `private_key_included` - (Boolean) Indicates whether the certificate was imported with an associated private key.
+* `retrieved_at` - (String) The date when the data of the secret was last retrieved. The date format follows RFC 3339. Epoch date if there is no record of secret data retrieval.
 * `secret_type` - (String) The secret type. Supported types are arbitrary, certificates (imported, public, and private), IAM credentials, key-value, and user credentials.
   * Constraints: Allowable values are: `arbitrary`, `imported_cert`, `public_cert`, `iam_credentials`, `kv`, `username_password`, `private_cert`.
 * `serial_number` - (String) The unique serial number that was assigned to a certificate by the issuing certificate authority.

@@ -6,11 +6,12 @@ package iamidentity
 import (
 	"context"
 	"fmt"
+	"log"
+	"strconv"
+
 	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"log"
-	"strconv"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM/platform-services-go-sdk/iamidentityv1"
@@ -130,6 +131,50 @@ func DataSourceIBMAccountSettingsTemplate() *schema.Resource {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "Defines the refresh token expiration in seconds. Valid values:  * Any whole number between '900' and '259200'  * NOT_SET - To unset account setting and use service default.",
+						},
+						"restrict_user_list_visibility": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Defines whether or not user visibility is access controlled. Valid values:  * RESTRICTED - users can view only specific types of users in the account, such as those the user has invited to the account, or descendants of those users based on the classic infrastructure hierarchy  * NOT_RESTRICTED - any user in the account can view other users from the Users page in IBM Cloud console  * NOT_SET - to 'unset' a previous set value.",
+						},
+						"restrict_user_domains": {
+							Type:     schema.TypeList,
+							Computed: true,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"account_sufficient": &schema.Schema{
+										Type:     schema.TypeBool,
+										Computed: true,
+									},
+									"restrictions": &schema.Schema{
+										Type:        schema.TypeList,
+										Computed:    true,
+										Description: "Defines if account invitations are restricted to specified domains. To remove an entry for a realm_id, perform an update (PUT) request with only the realm_id set.",
+										Elem: &schema.Resource{
+											Schema: map[string]*schema.Schema{
+												"realm_id": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "The realm that the restrictions apply to.",
+												},
+												"invitation_email_allow_patterns": &schema.Schema{
+													Type:        schema.TypeList,
+													Computed:    true,
+													Description: "The list of allowed email patterns. Wildcard syntax is supported, '*' represents any sequence of zero or more characters in the string, except for '.' and '@'. The sequence ends if a '.' or '@' was found. '**' represents any sequence of zero or more characters in the string - without limit.",
+													Elem: &schema.Schema{
+														Type: schema.TypeString,
+													},
+												},
+												"restrict_invitation": &schema.Schema{
+													Type:        schema.TypeBool,
+													Computed:    true,
+													Description: "When true invites will only be possible to the domain patterns provided, otherwise invites are unrestricted.",
+												},
+											},
+										},
+									},
+								},
+							},
 						},
 					},
 				},
@@ -284,7 +329,7 @@ func dataSourceIBMAccountSettingsTemplateRead(context context.Context, d *schema
 	var history []map[string]interface{}
 	if accountSettingsTemplateResponse.History != nil {
 		for _, modelItem := range accountSettingsTemplateResponse.History {
-			modelMap, err := dataSourceIBMAccountSettingsTemplateEnityHistoryRecordToMap(&modelItem)
+			modelMap, err := EnityHistoryRecordToMap(&modelItem)
 			if err != nil {
 				return diag.FromErr(err)
 			}
@@ -322,7 +367,7 @@ func dataSourceIBMAccountSettingsTemplateRead(context context.Context, d *schema
 	return nil
 }
 
-func dataSourceIBMAccountSettingsTemplateAccountSettingsComponentToMap(model *iamidentityv1.AccountSettingsComponent) (map[string]interface{}, error) {
+func dataSourceIBMAccountSettingsTemplateAccountSettingsComponentToMap(model *iamidentityv1.TemplateAccountSettings) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.RestrictCreateServiceID != nil {
 		modelMap["restrict_create_service_id"] = model.RestrictCreateServiceID
@@ -362,23 +407,53 @@ func dataSourceIBMAccountSettingsTemplateAccountSettingsComponentToMap(model *ia
 	if model.SystemRefreshTokenExpirationInSeconds != nil {
 		modelMap["system_refresh_token_expiration_in_seconds"] = model.SystemRefreshTokenExpirationInSeconds
 	}
+	if model.RestrictUserListVisibility != nil {
+		modelMap["restrict_user_list_visibility"] = *model.RestrictUserListVisibility
+	}
+	if model.RestrictUserDomains != nil {
+		restrictUserDomainsMap, err := dataSourceIBMAccountSettingsTemplatesTemplateAccountSettingsRestrictUserDomainsToMap(model.RestrictUserDomains)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["restrict_user_domains"] = []map[string]interface{}{restrictUserDomainsMap}
+	}
 	return modelMap, nil
 }
 
-func dataSourceIBMAccountSettingsTemplateAccountSettingsUserMfaToMap(model *iamidentityv1.AccountSettingsUserMfa) (map[string]interface{}, error) {
+func dataSourceIBMAccountSettingsTemplatesTemplateAccountSettingsRestrictUserDomainsToMap(model *iamidentityv1.TemplateAccountSettingsRestrictUserDomains) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.AccountSufficient != nil {
+		modelMap["account_sufficient"] = *model.AccountSufficient
+	}
+	if model.Restrictions != nil {
+		restrictions := []map[string]interface{}{}
+		for _, restrictionsItem := range model.Restrictions {
+			restrictionsItemMap, err := dataSourceIBMAccountSettingsTemplatesAccountSettingsUserDomainRestrictionToMap(&restrictionsItem) // #nosec G601
+			if err != nil {
+				return modelMap, err
+			}
+			restrictions = append(restrictions, restrictionsItemMap)
+		}
+		modelMap["restrictions"] = restrictions
+	}
+	return modelMap, nil
+}
+
+func dataSourceIBMAccountSettingsTemplatesAccountSettingsUserDomainRestrictionToMap(model *iamidentityv1.AccountSettingsUserDomainRestriction) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	modelMap["realm_id"] = *model.RealmID
+	if model.InvitationEmailAllowPatterns != nil {
+		modelMap["invitation_email_allow_patterns"] = model.InvitationEmailAllowPatterns
+	}
+	if model.RestrictInvitation != nil {
+		modelMap["restrict_invitation"] = *model.RestrictInvitation
+	}
+	return modelMap, nil
+}
+
+func dataSourceIBMAccountSettingsTemplateAccountSettingsUserMfaToMap(model *iamidentityv1.UserMfa) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["iam_id"] = model.IamID
 	modelMap["mfa"] = model.Mfa
-	return modelMap, nil
-}
-
-func dataSourceIBMAccountSettingsTemplateEnityHistoryRecordToMap(model *iamidentityv1.EnityHistoryRecord) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	modelMap["timestamp"] = model.Timestamp
-	modelMap["iam_id"] = model.IamID
-	modelMap["iam_id_account"] = model.IamIDAccount
-	modelMap["action"] = model.Action
-	modelMap["params"] = model.Params
-	modelMap["message"] = model.Message
 	return modelMap, nil
 }

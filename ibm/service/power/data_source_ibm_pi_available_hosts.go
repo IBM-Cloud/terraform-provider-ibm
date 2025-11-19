@@ -62,7 +62,7 @@ func DataSourceIBMPIAvailableHosts() *schema.Resource {
 	}
 }
 
-func dataSourceIBMPIAvailableHostsRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataSourceIBMPIAvailableHostsRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	sess, err := meta.(conns.ClientSession).IBMPISession()
 	if err != nil {
 		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("IBMPISession failed: %s", err.Error()), "(Data) ibm_pi_available_hosts", "read")
@@ -77,10 +77,10 @@ func dataSourceIBMPIAvailableHostsRead(ctx context.Context, d *schema.ResourceDa
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
-	availableHosts := []map[string]interface{}{}
+	availableHosts := []map[string]any{}
 	for _, value := range hostlist {
 		if value.Capacity != nil {
-			availableHosts = append(availableHosts, map[string]interface{}{
+			availableHosts = append(availableHosts, map[string]any{
 				Attr_Count:           int(value.Count),
 				Attr_SysType:         value.SysType,
 				Attr_AvailableCores:  value.Capacity.Cores.Total,

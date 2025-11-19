@@ -131,6 +131,11 @@ func ResourceIbmSmCustomCredentialsSecret() *schema.Resource {
 						},
 					},
 				}},
+			"retrieved_at": &schema.Schema{
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The date when the data of the secret was last retrieved. The date format follows RFC 3339. Epoch date if there is no record of secret data retrieval.",
+			},
 			"secret_group_id": &schema.Schema{
 				Type:        schema.TypeString,
 				Optional:    true,
@@ -289,13 +294,13 @@ func waitForIbmSmCustomCredentialsSecretCreate(secretsManagerClient *secretsmana
 		Target:  []string{"active"},
 		Refresh: func() (interface{}, string, error) {
 			secretIntf, _, err := secretsManagerClient.GetSecret(getSecretOptions)
-			secret := secretIntf.(*secretsmanagerv2.CustomCredentialsSecret)
 			if err != nil {
 				if apiErr, ok := err.(bmxerror.RequestFailure); ok && apiErr.StatusCode() == 404 {
 					return nil, "", fmt.Errorf("The secret does not exist anymore")
 				}
 				return nil, "", err
 			}
+			secret := secretIntf.(*secretsmanagerv2.CustomCredentialsSecret)
 			if *secret.StateDescription == "destroyed" {
 				return secret, *secret.StateDescription, fmt.Errorf("Failed to get the secret %w", err)
 			}
@@ -409,6 +414,10 @@ func resourceIbmSmCustomCredentialsSecretRead(context context.Context, d *schema
 	}
 	if err = d.Set("updated_at", DateTimeToRFC3339(secret.UpdatedAt)); err != nil {
 		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting updated_at"), CustomCredentialsSecretResourceName, "read")
+		return tfErr.GetDiag()
+	}
+	if err = d.Set("retrieved_at", DateTimeToRFC3339(secret.RetrievedAt)); err != nil {
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting retrieved_at"), CustomCredentialsSecretResourceName, "read")
 		return tfErr.GetDiag()
 	}
 	if err = d.Set("versions_total", flex.IntValue(secret.VersionsTotal)); err != nil {

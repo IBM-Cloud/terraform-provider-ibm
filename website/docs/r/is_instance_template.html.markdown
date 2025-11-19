@@ -534,6 +534,7 @@ Review the argument references that you can specify for your resource.
       
       ~>**Note:** 
       `volume_attachments` provides either `volume` with a storage volume ID, or `volume_prototype` to create a new volume. If you plan to use this template with instance group, provide the `volume_prototype`. Instance group does not support template with existing storage volume IDs.
+- `volume_bandwidth_qos_mode` - (Optional, String) The volume bandwidth QoS mode to use for this virtual server instance. The specified value must be listed in the instance profile's volume_bandwidth_qos_modes. If unspecified, the default volume bandwidth QoS mode from the profile will be used.
 - `vpc` - (Required, String) The VPC ID that the instance templates needs to be created.
 - `user_data` -  (Optional, String) The user data provided for the instance.
 - `zone` - (Required, String) The name of the zone.

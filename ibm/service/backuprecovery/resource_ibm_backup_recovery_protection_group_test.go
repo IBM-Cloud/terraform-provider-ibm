@@ -25,7 +25,7 @@ func TestAccIbmBackupRecoveryProtectionGroupBasic(t *testing.T) {
 	includedPath := "/data2/data/"
 	includedPathUpdate := "/data1/"
 	protectionType := "kFile"
-	objectId := 18
+	objectId := 344
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
@@ -83,6 +83,7 @@ func testAccCheckIbmBackupRecoveryProtectionGroupConfigBasic(name, environment, 
 
 		resource "ibm_backup_recovery_protection_group" "baas_protection_group_instance" {
 			x_ibm_tenant_id = "%s"
+			
 			policy_id = ibm_backup_recovery_protection_policy.baas_protection_policy_instance.policy_id
 			name = "%s"
 			environment = "%s"
@@ -99,6 +100,40 @@ func testAccCheckIbmBackupRecoveryProtectionGroupConfigBasic(name, environment, 
 			}
 		}
 	`, tenantId, policyName, tenantId, name, environment, protectionType, objectId, includedPath)
+}
+
+func TestAccIbmBackupRecoveryProtectionGroupKubernetesBasic(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { acc.TestAccPreCheck(t) },
+		Providers: acc.TestAccProviders,
+		Steps: []resource.TestStep{
+			resource.TestStep{
+				Config: testAccCheckIbmBackupRecoveryProtectionKubernetesGroupConfigBasic(),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("ibm_backup_recovery_protection_group.baas_protection_group_instance", "x_ibm_tenant_id", "wkk1yqrdce/"),
+					resource.TestCheckResourceAttr("ibm_backup_recovery_protection_group.baas_protection_group_instance", "name", "terra-test-group-100"),
+				),
+			},
+		},
+	})
+}
+
+func testAccCheckIbmBackupRecoveryProtectionKubernetesGroupConfigBasic() string {
+	return fmt.Sprintf(`
+	resource "ibm_backup_recovery_protection_group" "baas_protection_group_instance" {
+		x_ibm_tenant_id = "wkk1yqrdce/"
+		policy_id = "8305184241232842:1757331781254:65366"
+		name = "terra-test-group-100"
+		environment = "kKubernetes"
+		priority = "kMedium"
+		qos_policy = "kBackupHDD"
+		kubernetes_params {
+			objects {
+				id = 3120
+			}
+		}
+}
+	`)
 }
 
 func testAccCheckIbmBackupRecoveryProtectionGroupExists(n string, obj backuprecoveryv1.ProtectionGroupResponse) resource.TestCheckFunc {

@@ -261,5 +261,6 @@ You can access the following attribute references after your data source is crea
 		  - `profile` - (String) The global unique name for the volume profile to use for the volume.
 		  - `source_snapshot` - The snapshot to use as a source for the volume's data. To create a volume from a `source_snapshot`, the volume profile and the source snapshot must have the same `storage_generation` value.		  
 		  - `tags` - (String) User Tags associated with the volume. (https://cloud.ibm.com/apidocs/tagging#types-of-tags)
+	- `volume_bandwidth_qos_mode` - (String) The volume bandwidth QoS mode to use for this virtual server instance.
 	- `vpc` - (String) The VPC ID that the instance templates needs to be created.
 	- `zone` - (String) The name of the zone.

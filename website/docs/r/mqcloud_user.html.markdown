@@ -39,8 +39,11 @@ After your resource is created, you can read values from the listed arguments an
 
 * `id` - The unique identifier of the mqcloud_user.
 * `href` - (String) The URL for the user details.
+* `iam_managed` - (Boolean) Indicates whether the user is managed by IAM.
 * `iam_service_id` - (String) The IAM ID of the user.
   * Constraints: The maximum length is `50` characters. The minimum length is `5` characters.
+* `roles` - (List) A list of roles the user has.
+  * Constraints: The maximum length is `200` items. The minimum length is `0` items.
 * `user_id` - (String) The ID of the user which was allocated on creation, and can be used for delete calls.
 
 

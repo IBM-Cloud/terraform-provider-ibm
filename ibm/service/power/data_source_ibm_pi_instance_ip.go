@@ -5,11 +5,14 @@ package power
 
 import (
 	"context"
+	"fmt"
+	"log"
 	"net"
 	"strconv"
 
 	"github.com/IBM-Cloud/power-go-client/clients/instance"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
@@ -26,11 +29,20 @@ func DataSourceIBMPIInstanceIP() *schema.Resource {
 				Type:         schema.TypeString,
 				ValidateFunc: validation.NoZeroValues,
 			},
+			Arg_InstanceID: {
+				AtLeastOneOf:  []string{Arg_InstanceID, Arg_InstanceName},
+				ConflictsWith: []string{Arg_InstanceName},
+				Description:   "The ID of the PVM instance.",
+				Optional:      true,
+				Type:          schema.TypeString,
+			},
 			Arg_InstanceName: {
-				Description:  "The unique identifier or name of the instance.",
-				Required:     true,
-				Type:         schema.TypeString,
-				ValidateFunc: validation.NoZeroValues,
+				AtLeastOneOf:  []string{Arg_InstanceID, Arg_InstanceName},
+				ConflictsWith: []string{Arg_InstanceID},
+				Deprecated:    "The pi_instance_name field is deprecated. Please use pi_instance_id instead",
+				Description:   "The name of the PVM instance.",
+				Optional:      true,
+				Type:          schema.TypeString,
 			},
 			Arg_NetworkName: {
 				Description:  "The subnet that the instance belongs to.",
@@ -97,19 +109,29 @@ func DataSourceIBMPIInstanceIP() *schema.Resource {
 	}
 }
 
-func dataSourceIBMPIInstancesIPRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataSourceIBMPIInstancesIPRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	sess, err := meta.(conns.ClientSession).IBMPISession()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("IBMPISession failed: %s", err.Error()), "(Data) ibm_pi_instance_ip", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	cloudInstanceID := d.Get(Arg_CloudInstanceID).(string)
+	var instanceID string
+	if v, ok := d.GetOk(Arg_InstanceID); ok {
+		instanceID = v.(string)
+	} else if v, ok := d.GetOk(Arg_InstanceName); ok {
+		instanceID = v.(string)
+	}
 	networkName := d.Get(Arg_NetworkName).(string)
 	powerC := instance.NewIBMPIInstanceClient(ctx, sess, cloudInstanceID)
 
-	powervmdata, err := powerC.Get(d.Get(Arg_InstanceName).(string))
+	powervmdata, err := powerC.Get(instanceID)
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Get failed: %s", err.Error()), "(Data) ibm_pi_instance_ip", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	for _, network := range powervmdata.Networks {
@@ -137,5 +159,8 @@ func dataSourceIBMPIInstancesIPRead(ctx context.Context, d *schema.ResourceData,
 		}
 	}
 
-	return diag.Errorf("failed to find instance ip that belongs to the given network")
+	err = flex.FmtErrorf("failed to find instance ip that belongs to the given network")
+	tfErr := flex.TerraformErrorf(err, fmt.Sprintf("operation failed: %s", err.Error()), "(Data) ibm_pi_instance_ip", "read")
+	log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+	return tfErr.GetDiag()
 }

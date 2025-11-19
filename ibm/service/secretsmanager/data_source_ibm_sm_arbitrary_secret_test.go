@@ -29,6 +29,7 @@ func TestAccIbmSmArbitrarySecretDataSourceBasic(t *testing.T) {
 					resource.TestCheckResourceAttrSet("data.ibm_sm_arbitrary_secret.sm_arbitrary_secret", "secret_type"),
 					resource.TestCheckResourceAttrSet("data.ibm_sm_arbitrary_secret.sm_arbitrary_secret", "updated_at"),
 					resource.TestCheckResourceAttrSet("data.ibm_sm_arbitrary_secret.sm_arbitrary_secret", "versions_total"),
+					resource.TestCheckResourceAttrSet("data.ibm_sm_arbitrary_secret.sm_arbitrary_secret", "retrieved_at"),
 					resource.TestCheckResourceAttrSet("data.ibm_sm_arbitrary_secret.sm_arbitrary_secret_by_name", "name"),
 					resource.TestCheckResourceAttrSet("data.ibm_sm_arbitrary_secret.sm_arbitrary_secret_by_name", "secret_group_name"),
 					resource.TestCheckResourceAttrSet("data.ibm_sm_arbitrary_secret.sm_arbitrary_secret_by_name", "secret_id"),
