@@ -2,7 +2,7 @@
 // Licensed under the Mozilla Public License v2.0
 
 /*
- * IBM OpenAPI Terraform Generator Version: 3.107.1-41b0fbd0-20250825-080732
+ * IBM OpenAPI Terraform Generator Version: 3.108.0-56772134-20251111-102802
  */
 
 package project_test
@@ -11,7 +11,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/project"
@@ -38,10 +38,10 @@ func TestAccIbmProjectConfigDataSourceBasic(t *testing.T) {
 					resource.TestCheckResourceAttrSet("data.ibm_project_config.project_config_instance", "modified_at"),
 					resource.TestCheckResourceAttrSet("data.ibm_project_config.project_config_instance", "outputs.#"),
 					resource.TestCheckResourceAttrSet("data.ibm_project_config.project_config_instance", "references.#"),
-					resource.TestCheckResourceAttrSet("data.ibm_project_config.project_config_instance", "state"),
 					resource.TestCheckResourceAttrSet("data.ibm_project_config.project_config_instance", "href"),
 					resource.TestCheckResourceAttrSet("data.ibm_project_config.project_config_instance", "is_draft"),
 					resource.TestCheckResourceAttrSet("data.ibm_project_config.project_config_instance", "project.#"),
+					resource.TestCheckResourceAttrSet("data.ibm_project_config.project_config_instance", "state"),
 					resource.TestCheckResourceAttrSet("data.ibm_project_config.project_config_instance", "deployment_model"),
 					resource.TestCheckResourceAttrSet("data.ibm_project_config.project_config_instance", "definition.#"),
 				),
@@ -126,6 +126,7 @@ func TestDataSourceIbmProjectConfigOutputValueToMap(t *testing.T) {
 		model["name"] = "testString"
 		model["description"] = "testString"
 		model["value"] = "testString"
+		model["sensitive"] = true
 
 		assert.Equal(t, result, model)
 	}
@@ -134,6 +135,7 @@ func TestDataSourceIbmProjectConfigOutputValueToMap(t *testing.T) {
 	model.Name = core.StringPtr("testString")
 	model.Description = core.StringPtr("testString")
 	model.Value = "testString"
+	model.Sensitive = core.BoolPtr(true)
 
 	result, err := project.DataSourceIbmProjectConfigOutputValueToMap(model)
 	assert.Nil(t, err)
@@ -382,6 +384,10 @@ func TestDataSourceIbmProjectConfigProjectConfigDefinitionResponseToMap(t *testi
 		stackMemberModel["name"] = "testString"
 		stackMemberModel["config_id"] = "testString"
 
+		projectConfigUsesModel := make(map[string]interface{})
+		projectConfigUsesModel["config_id"] = "testString"
+		projectConfigUsesModel["project_id"] = "testString"
+
 		projectConfigAuthModel := make(map[string]interface{})
 		projectConfigAuthModel["trusted_profile_id"] = "Profile-9ac10c5c-195c-41ef-b465-68a6b6dg5f12"
 		projectConfigAuthModel["method"] = "trusted_profile"
@@ -391,6 +397,7 @@ func TestDataSourceIbmProjectConfigProjectConfigDefinitionResponseToMap(t *testi
 		model["compliance_profile"] = []map[string]interface{}{projectComplianceProfileModel}
 		model["locator_id"] = "testString"
 		model["members"] = []map[string]interface{}{stackMemberModel}
+		model["uses"] = []map[string]interface{}{projectConfigUsesModel}
 		model["description"] = "testString"
 		model["name"] = "testString"
 		model["authorizations"] = []map[string]interface{}{projectConfigAuthModel}
@@ -408,6 +415,10 @@ func TestDataSourceIbmProjectConfigProjectConfigDefinitionResponseToMap(t *testi
 	stackMemberModel.Name = core.StringPtr("testString")
 	stackMemberModel.ConfigID = core.StringPtr("testString")
 
+	projectConfigUsesModel := new(projectv1.ProjectConfigUses)
+	projectConfigUsesModel.ConfigID = core.StringPtr("testString")
+	projectConfigUsesModel.ProjectID = core.StringPtr("testString")
+
 	projectConfigAuthModel := new(projectv1.ProjectConfigAuth)
 	projectConfigAuthModel.TrustedProfileID = core.StringPtr("Profile-9ac10c5c-195c-41ef-b465-68a6b6dg5f12")
 	projectConfigAuthModel.Method = core.StringPtr("trusted_profile")
@@ -417,6 +428,7 @@ func TestDataSourceIbmProjectConfigProjectConfigDefinitionResponseToMap(t *testi
 	model.ComplianceProfile = projectComplianceProfileModel
 	model.LocatorID = core.StringPtr("testString")
 	model.Members = []projectv1.StackMember{*stackMemberModel}
+	model.Uses = []projectv1.ProjectConfigUses{*projectConfigUsesModel}
 	model.Description = core.StringPtr("testString")
 	model.Name = core.StringPtr("testString")
 	model.Authorizations = projectConfigAuthModel
@@ -520,6 +532,24 @@ func TestDataSourceIbmProjectConfigProjectComplianceProfileV1ToMap(t *testing.T)
 	checkResult(result)
 }
 
+func TestDataSourceIbmProjectConfigProjectConfigUsesToMap(t *testing.T) {
+	checkResult := func(result map[string]interface{}) {
+		model := make(map[string]interface{})
+		model["config_id"] = "testString"
+		model["project_id"] = "testString"
+
+		assert.Equal(t, result, model)
+	}
+
+	model := new(projectv1.ProjectConfigUses)
+	model.ConfigID = core.StringPtr("testString")
+	model.ProjectID = core.StringPtr("testString")
+
+	result, err := project.DataSourceIbmProjectConfigProjectConfigUsesToMap(model)
+	assert.Nil(t, err)
+	checkResult(result)
+}
+
 func TestDataSourceIbmProjectConfigProjectConfigAuthToMap(t *testing.T) {
 	checkResult := func(result map[string]interface{}) {
 		model := make(map[string]interface{})
@@ -548,6 +578,10 @@ func TestDataSourceIbmProjectConfigProjectConfigDefinitionResponseDAConfigDefini
 		stackMemberModel["name"] = "testString"
 		stackMemberModel["config_id"] = "testString"
 
+		projectConfigUsesModel := make(map[string]interface{})
+		projectConfigUsesModel["config_id"] = "testString"
+		projectConfigUsesModel["project_id"] = "testString"
+
 		projectConfigAuthModel := make(map[string]interface{})
 		projectConfigAuthModel["trusted_profile_id"] = "Profile-9ac10c5c-195c-41ef-b465-68a6b6dg5f12"
 		projectConfigAuthModel["method"] = "trusted_profile"
@@ -557,6 +591,7 @@ func TestDataSourceIbmProjectConfigProjectConfigDefinitionResponseDAConfigDefini
 		model["compliance_profile"] = []map[string]interface{}{projectComplianceProfileModel}
 		model["locator_id"] = "testString"
 		model["members"] = []map[string]interface{}{stackMemberModel}
+		model["uses"] = []map[string]interface{}{projectConfigUsesModel}
 		model["description"] = "testString"
 		model["name"] = "testString"
 		model["authorizations"] = []map[string]interface{}{projectConfigAuthModel}
@@ -573,6 +608,10 @@ func TestDataSourceIbmProjectConfigProjectConfigDefinitionResponseDAConfigDefini
 	stackMemberModel.Name = core.StringPtr("testString")
 	stackMemberModel.ConfigID = core.StringPtr("testString")
 
+	projectConfigUsesModel := new(projectv1.ProjectConfigUses)
+	projectConfigUsesModel.ConfigID = core.StringPtr("testString")
+	projectConfigUsesModel.ProjectID = core.StringPtr("testString")
+
 	projectConfigAuthModel := new(projectv1.ProjectConfigAuth)
 	projectConfigAuthModel.TrustedProfileID = core.StringPtr("Profile-9ac10c5c-195c-41ef-b465-68a6b6dg5f12")
 	projectConfigAuthModel.Method = core.StringPtr("trusted_profile")
@@ -582,6 +621,7 @@ func TestDataSourceIbmProjectConfigProjectConfigDefinitionResponseDAConfigDefini
 	model.ComplianceProfile = projectComplianceProfileModel
 	model.LocatorID = core.StringPtr("testString")
 	model.Members = []projectv1.StackMember{*stackMemberModel}
+	model.Uses = []projectv1.ProjectConfigUses{*projectConfigUsesModel}
 	model.Description = core.StringPtr("testString")
 	model.Name = core.StringPtr("testString")
 	model.Authorizations = projectConfigAuthModel
@@ -640,6 +680,7 @@ func TestDataSourceIbmProjectConfigProjectConfigVersionSummaryToMap(t *testing.T
 
 		model := make(map[string]interface{})
 		model["definition"] = []map[string]interface{}{projectConfigVersionDefinitionSummaryModel}
+		model["container_state"] = "approved"
 		model["state"] = "approved"
 		model["version"] = int(0)
 		model["href"] = "testString"
@@ -653,6 +694,7 @@ func TestDataSourceIbmProjectConfigProjectConfigVersionSummaryToMap(t *testing.T
 
 	model := new(projectv1.ProjectConfigVersionSummary)
 	model.Definition = projectConfigVersionDefinitionSummaryModel
+	model.ContainerState = core.StringPtr("approved")
 	model.State = core.StringPtr("approved")
 	model.Version = core.Int64Ptr(int64(0))
 	model.Href = core.StringPtr("testString")

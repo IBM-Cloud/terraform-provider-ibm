@@ -7,8 +7,8 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/terraform"
 
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
@@ -125,6 +125,7 @@ func TestResourceIbmProjectProjectConfigSummaryToMap(t *testing.T) {
 
 		projectConfigVersionSummaryModel := make(map[string]interface{})
 		projectConfigVersionSummaryModel["definition"] = []map[string]interface{}{projectConfigVersionDefinitionSummaryModel}
+		projectConfigVersionSummaryModel["container_state"] = "approved"
 		projectConfigVersionSummaryModel["state"] = "approved"
 		projectConfigVersionSummaryModel["version"] = int(0)
 		projectConfigVersionSummaryModel["href"] = "testString"
@@ -148,7 +149,10 @@ func TestResourceIbmProjectProjectConfigSummaryToMap(t *testing.T) {
 		model["deployed_version"] = []map[string]interface{}{projectConfigVersionSummaryModel}
 		model["id"] = "testString"
 		model["version"] = int(0)
+		model["container_state"] = "approved"
+		model["container_state_code"] = "awaiting_input"
 		model["state"] = "approved"
+		model["state_code"] = "awaiting_input"
 		model["created_at"] = "2019-01-01T12:00:00.000Z"
 		model["modified_at"] = "2019-01-01T12:00:00.000Z"
 		model["href"] = "testString"
@@ -165,6 +169,7 @@ func TestResourceIbmProjectProjectConfigSummaryToMap(t *testing.T) {
 
 	projectConfigVersionSummaryModel := new(projectv1.ProjectConfigVersionSummary)
 	projectConfigVersionSummaryModel.Definition = projectConfigVersionDefinitionSummaryModel
+	projectConfigVersionSummaryModel.ContainerState = core.StringPtr("approved")
 	projectConfigVersionSummaryModel.State = core.StringPtr("approved")
 	projectConfigVersionSummaryModel.Version = core.Int64Ptr(int64(0))
 	projectConfigVersionSummaryModel.Href = core.StringPtr("testString")
@@ -188,7 +193,10 @@ func TestResourceIbmProjectProjectConfigSummaryToMap(t *testing.T) {
 	model.DeployedVersion = projectConfigVersionSummaryModel
 	model.ID = core.StringPtr("testString")
 	model.Version = core.Int64Ptr(int64(0))
+	model.ContainerState = core.StringPtr("approved")
+	model.ContainerStateCode = core.StringPtr("awaiting_input")
 	model.State = core.StringPtr("approved")
+	model.StateCode = core.StringPtr("awaiting_input")
 	model.CreatedAt = CreateMockDateTime("2019-01-01T12:00:00.000Z")
 	model.ModifiedAt = CreateMockDateTime("2019-01-01T12:00:00.000Z")
 	model.Href = core.StringPtr("testString")
@@ -209,6 +217,7 @@ func TestResourceIbmProjectProjectConfigVersionSummaryToMap(t *testing.T) {
 
 		model := make(map[string]interface{})
 		model["definition"] = []map[string]interface{}{projectConfigVersionDefinitionSummaryModel}
+		model["container_state"] = "approved"
 		model["state"] = "approved"
 		model["version"] = int(0)
 		model["href"] = "testString"
@@ -222,6 +231,7 @@ func TestResourceIbmProjectProjectConfigVersionSummaryToMap(t *testing.T) {
 
 	model := new(projectv1.ProjectConfigVersionSummary)
 	model.Definition = projectConfigVersionDefinitionSummaryModel
+	model.ContainerState = core.StringPtr("approved")
 	model.State = core.StringPtr("approved")
 	model.Version = core.Int64Ptr(int64(0))
 	model.Href = core.StringPtr("testString")
@@ -687,6 +697,24 @@ func TestResourceIbmProjectMapToStackMember(t *testing.T) {
 	model["config_id"] = "testString"
 
 	result, err := project.ResourceIbmProjectMapToStackMember(model)
+	assert.Nil(t, err)
+	checkResult(result)
+}
+
+func TestResourceIbmProjectMapToProjectConfigUses(t *testing.T) {
+	checkResult := func(result *projectv1.ProjectConfigUses) {
+		model := new(projectv1.ProjectConfigUses)
+		model.ConfigID = core.StringPtr("testString")
+		model.ProjectID = core.StringPtr("testString")
+
+		assert.Equal(t, result, model)
+	}
+
+	model := make(map[string]interface{})
+	model["config_id"] = "testString"
+	model["project_id"] = "testString"
+
+	result, err := project.ResourceIbmProjectMapToProjectConfigUses(model)
 	assert.Nil(t, err)
 	checkResult(result)
 }
