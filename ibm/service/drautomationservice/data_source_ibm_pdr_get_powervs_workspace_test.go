@@ -3,7 +3,7 @@
 
 /*
  * IBM OpenAPI Terraform Generator Version: 3.105.0-3c13b041-20250605-193116
-*/
+ */
 
 package drautomationservice_test
 
@@ -13,11 +13,11 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 
+	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/drautomationservice"
 	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/stretchr/testify/assert"
 	"github.ibm.com/DRAutomation/dra-go-sdk/drautomationservicev1"
-	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 )
 
 func TestAccIBMPdrGetPowervsWorkspaceDataSourceBasic(t *testing.T) {
@@ -48,7 +48,6 @@ func testAccCheckIBMPdrGetPowervsWorkspaceDataSourceConfigBasic() string {
 		}
 	`)
 }
-
 
 func TestDataSourceIBMPdrGetPowervsWorkspaceDrStandbyWorkspaceToMap(t *testing.T) {
 	checkResult := func(result map[string]interface{}) {
