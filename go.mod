@@ -2,7 +2,7 @@ module github.com/IBM-Cloud/terraform-provider-ibm
 
 go 1.24.2
 
-replace github.ibm.com/DRAutomation/dra-go-sdk => ./ibm/service/dra-go-sdk
+replace github.ibm.com/DRAutomation/dra-go-sdk => ./ibm/service/drautomationservice/dra-go-sdk
 
 require (
 	github.com/IBM-Cloud/bluemix-go v0.0.0-20250324085928-caa6511f0c13
@@ -63,7 +63,7 @@ require (
 	github.com/rook/rook/pkg/apis v0.0.0-20250619203122-80563e28b685
 	github.com/softlayer/softlayer-go v1.0.3
 	github.com/stretchr/testify v1.11.1
-	github.ibm.com/DRAutomation/dra-go-sdk v0.0.0-20251104054047-090b5d3b82c6
+	github.ibm.com/DRAutomation/dra-go-sdk v0.0.0-20251118093457-0d6f8c56680b
 	golang.org/x/crypto v0.42.0
 	gopkg.in/yaml.v3 v3.0.1
 	gotest.tools v2.2.0+incompatible
