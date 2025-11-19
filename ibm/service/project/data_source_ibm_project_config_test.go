@@ -42,6 +42,8 @@ func TestAccIbmProjectConfigDataSourceBasic(t *testing.T) {
 					resource.TestCheckResourceAttrSet("data.ibm_project_config.project_config_instance", "is_draft"),
 					resource.TestCheckResourceAttrSet("data.ibm_project_config.project_config_instance", "project.#"),
 					resource.TestCheckResourceAttrSet("data.ibm_project_config.project_config_instance", "state"),
+					resource.TestCheckResourceAttrSet("data.ibm_project_config.project_config_instance", "state_code"),
+					resource.TestCheckResourceAttrSet("data.ibm_project_config.project_config_instance", "container_state"),
 					resource.TestCheckResourceAttrSet("data.ibm_project_config.project_config_instance", "deployment_model"),
 					resource.TestCheckResourceAttrSet("data.ibm_project_config.project_config_instance", "definition.#"),
 				),
