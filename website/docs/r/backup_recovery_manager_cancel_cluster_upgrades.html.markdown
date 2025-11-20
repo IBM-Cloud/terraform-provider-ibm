@@ -21,7 +21,7 @@ resource "ibm_backup_recovery_manager_cancel_cluster_upgrades" "backup_recovery_
 
 You can specify the following arguments for this resource.
 
-* `cluster_identifiers` - (Optional, Forces new resource, List) Specifies the list of cluster identifiers. The format is clusterId:clusterIncarnationId.
+* `cluster_identifiers` - (Required, Forces new resource, List) Specifies the list of cluster identifiers. The format is clusterId:clusterIncarnationId.
   * Constraints: The list items must match regular expression `/^([0-9]+:[0-9]+)$/`.
 
 ## Attribute Reference
@@ -38,10 +38,4 @@ Nested schema for **cancelled_upgrade_response_list**:
 
 
 ## Import
-
-You can import the `ibm_backup_recovery_manager_cancel_cluster_upgrades` resource by using `id`. Specifies the ID of the object.
-
-# Syntax
-<pre>
-$ terraform import ibm_backup_recovery_manager_cancel_cluster_upgrades.backup_recovery_manager_cancel_cluster_upgrades &lt;id&gt;
-</pre>
+Not Supported

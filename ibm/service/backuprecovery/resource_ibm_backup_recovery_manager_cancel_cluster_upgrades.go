@@ -33,7 +33,7 @@ func ResourceIbmBackupRecoveryManagerCancelClusterUpgrades() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 			"cluster_identifiers": &schema.Schema{
 				Type:        schema.TypeList,
-				Optional:    true,
+				Required:    true,
 				ForceNew:    true,
 				Description: "Specifies the list of cluster identifiers. The format is clusterId:clusterIncarnationId.",
 				Elem:        &schema.Schema{Type: schema.TypeString},

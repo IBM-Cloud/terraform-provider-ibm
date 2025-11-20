@@ -53,7 +53,7 @@ func ResourceIbmBackupRecoveryManagerCreateClusterUpgrades() *schema.Resource {
 			},
 			"clusters": &schema.Schema{
 				Type:        schema.TypeList,
-				Optional:    true,
+				Required:    true,
 				ForceNew:    true,
 				Description: "Array for clusters to be upgraded.",
 				Elem: &schema.Resource{

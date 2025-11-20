@@ -43,7 +43,7 @@ You can specify the following arguments for this resource.
 Nested schema for **auth_headers**:
 	* `key` - (Required, String) Specifies the key or name of the header.
 	* `value` - (Required, String) Specifies the value of the header.
-* `clusters` - (Optional, Forces new resource, List) Array for clusters to be upgraded.
+* `clusters` - (Required, Forces new resource, List) Array for clusters to be upgraded.
 Nested schema for **clusters**:
 	* `cluster_id` - (Optional, Integer) Specifies cluster id.
 	* `cluster_incarnation_id` - (Optional, Integer) Specifies cluster incarnation id.
@@ -73,10 +73,4 @@ After your resource is created, you can read values from the listed arguments an
 
 
 ## Import
-
-You can import the `ibm_backup_recovery_manager_update_cluster_upgrades` resource by using `id`. Specifies the ID of the object.
-
-# Syntax
-<pre>
-$ terraform import ibm_backup_recovery_manager_update_cluster_upgrades.backup_recovery_manager_update_cluster_upgrades &lt;id&gt;
-</pre>
+Not Supported
