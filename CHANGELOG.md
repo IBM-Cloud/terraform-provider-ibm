@@ -1,3 +1,82 @@
+# 1.85.0 (November 9, 2025)
+
+## Bug Fixes
+
+### Power Systems
+* Refactor terraform errors to use new toolchain in nag and ni data sources ([6525](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6525))
+* Refactor terraform errors to use new toolchain in nsg, network_port, and network peer data sources ([6529](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6529))
+
+### VPC Infrastructure
+* Fix example in share docs ([6534](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6534))
+
+
+## Enhancements
+
+### IAM
+* add new account settings ([6538](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6538))
+
+### Power Systems
+* Deprecate Arg_VolumeName for Arg_VolumeID ([6508](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6508))
+* Add new ibm_pi_volumes data source and documentation ([6520](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6520))
+
+# 1.85.0-beta0 (October 29, 2025)
+
+## Bug Fixes
+
+### Backup/Recovery
+* Iks roks support ([6386](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6386))
+
+### Power Systems
+* Fix ibm_pi_network and   ibm_pi_network data source to use id ([6509](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6509))
+
+## Enhancements
+
+### Cloud Logs
+* alert_definitins, policy order and dashboard fix ([6526](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6526))
+
+### Configuration Aggregator
+* Update sdk version ([6497](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6497))
+* app configuration destination, subscription and template, Webho… ([6477](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6477))
+
+### IAM
+* remove account_id from account section of effective settings datasource ([6523](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6523))
+
+### Kubernetes
+* ODF 4.19 initial support ([6527](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6527))
+
+### Power Systems
+* Deprecate Arg_KeyName for Arg_SSHKeyID ([6505](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6505))
+* Deprecate Arg_PlacementGroupName for Arg_PlacementGroupID ([6507](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6507))
+
+
+## Documentation
+
+### General
+* Refined Db2 doc ([6515](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6515))
+
+
+# 1.84.3 (October 23, 2025)
+
+## Bug Fixes
+### VPC Infrastructure
+* fix: support boot volume profile configuration for is_instance creation
+ ([6528](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6528))
+
+
+# 1.84.2 (October 21, 2025)
+
+## Bug Fixes
+
+### General
+* Fix the filemap for IAM endpoint type from endpoints file ([6524](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6524))
+
+# 1.84.1 (October 17, 2025)
+
+## Enhancements
+
+### IAM
+* Add new attributes to IAM Identity Account Settings ([6491](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6491))
+
 # 1.84.0 (October 13, 2025)
 
 ## Bug Fixes

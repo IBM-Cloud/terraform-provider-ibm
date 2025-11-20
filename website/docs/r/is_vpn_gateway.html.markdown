@@ -38,9 +38,10 @@ resource "ibm_is_subnet" "example" {
 }
 
 resource "ibm_is_vpn_gateway" "example" {
-  name   = "example-vpn-gateway"
-  subnet = ibm_is_subnet.example.id
-  mode   = "route"
+  name      = "example-vpn-gateway"
+  subnet    = ibm_is_subnet.example.id
+  mode      = "route"
+  local_asn = 64520
 }
 
 ```
@@ -55,6 +56,7 @@ The `ibm_is_vpn_gateway` resource provides the following [Timeouts](https://www.
 ## Argument reference
 Review the argument references that you can specify for your resource. 
 
+- `local_asn` - (Optional, Integer) The local autonomous system number (ASN) for this VPN gateway and its connections.
 - `mode`- (Optional, String) Mode in VPN gateway. Supported values are `route` or `policy`. The default value is `route`.
 - `name` - (Required, String) The name of the VPN gateway.
 - `resource_group` - (Optional, Forces new resource, String) The resource group (id), where the VPN gateway to be created.
@@ -102,6 +104,7 @@ In addition to all argument reference list, you can access the following attribu
   - `message` - (String) An explanation of the reason for this lifecycle reason.
   - `more_info` - (String) Link to documentation about the reason for this lifecycle reason.
 - `lifecycle_state` - (String) The lifecycle state of the VPN gateway.
+- `local_asn` - (Integer) The local autonomous system number (ASN) for this VPN gateway and its connections.
 - `vpc` - (String) 	The VPC this VPN server resides in.
   Nested scheme for `vpc`:
   - `crn` - (String) The CRN for this VPC.
