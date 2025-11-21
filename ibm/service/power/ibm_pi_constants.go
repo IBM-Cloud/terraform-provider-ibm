@@ -469,6 +469,7 @@ const (
 	Attr_ServerName                          = "server_name"
 	Attr_Servers                             = "servers"
 	Attr_Shareable                           = "shreable"
+	Attr_Shared                              = "shared"
 	Attr_SharedCoreRatio                     = "shared_core_ratio"
 	Attr_SharedProcessorPool                 = "shared_processor_pool"
 	Attr_SharedProcessorPoolID               = "shared_processor_pool_id"

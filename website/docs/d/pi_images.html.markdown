@@ -49,11 +49,18 @@ In addition to all argument reference list, you can access the following attribu
 - `image_info` - (List) List of all supported images.
 
   Nested scheme for `image_info`:
+  - `architecture` - (String) The CPU architecture that the image is designed for.
+  - `container_format` - (String) The container format.
   - `crn` - (String) The CRN of this resource.
+  - `disk_format` - (String) The disk format.
+  - `endianness` - (String) The endianness order.
   - `href` - (String) The hyper link of an image.
+  - `hypervisor` - (String) Hypervisor type.
   - `id` - (String) The unique identifier of an image.
   - `image_type` - (String) The identifier of this image type.
   - `name`-  (String) The name of an image.
+  - `operating_system` - (String) The operating system that is installed with the image.
+  - `shared` - (String) Indicates whether the image is shared.
   - `source_checksum` - (String) Checksum of the image.
   - `state` - (String) The state of an image.
   - `storage_pool` - (String) Storage pool where image resides.
