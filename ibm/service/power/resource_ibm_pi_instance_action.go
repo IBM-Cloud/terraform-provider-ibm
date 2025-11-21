@@ -6,24 +6,22 @@ package power
 import (
 	"context"
 	"fmt"
+	"log"
 	"strings"
+	"time"
 
-	st "github.com/IBM-Cloud/power-go-client/clients/instance"
-
+	"github.com/IBM-Cloud/power-go-client/clients/instance"
 	"github.com/IBM-Cloud/power-go-client/power/models"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-
-	"log"
-	"time"
 )
 
 func ResourceIBMPIInstanceAction() *schema.Resource {
 	return &schema.Resource{
-
 		CreateContext: resourceIBMPIInstanceActionCreate,
 		ReadContext:   resourceIBMPIInstanceActionRead,
 		UpdateContext: resourceIBMPIInstanceActionUpdate,
@@ -38,10 +36,12 @@ func ResourceIBMPIInstanceAction() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 			// Arguments
 			Arg_Action: {
-				Type:         schema.TypeString,
-				Required:     true,
-				ValidateFunc: validate.ValidateAllowedStringValues([]string{Action_HardReboot, Action_ImmediateShutdown, Action_ResetState, Action_Start, Action_Stop, Action_SoftReboot}),
-				Description:  "PVM instance action type",
+				Type:     schema.TypeString,
+				Required: true,
+				ValidateFunc: validate.ValidateAllowedStringValues(
+					[]string{Action_Dumprestart, Action_HardReboot, Action_ImmediateShutdown,
+						Action_ResetState, Action_Start, Action_Stop, Action_SoftReboot}),
+				Description: "PVM instance action type",
 			},
 			Arg_CloudInstanceID: {
 				Type:        schema.TypeString,
@@ -80,8 +80,7 @@ func ResourceIBMPIInstanceAction() *schema.Resource {
 	}
 }
 
-func resourceIBMPIInstanceActionCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-
+func resourceIBMPIInstanceActionCreate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	adiag := takeInstanceAction(ctx, d, meta, d.Timeout(schema.TimeoutCreate))
 	if adiag != nil {
 		return adiag
@@ -94,21 +93,27 @@ func resourceIBMPIInstanceActionCreate(ctx context.Context, d *schema.ResourceDa
 	return resourceIBMPIInstanceActionRead(ctx, d, meta)
 }
 
-func resourceIBMPIInstanceActionRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceIBMPIInstanceActionRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	sess, err := meta.(conns.ClientSession).IBMPISession()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("IBMPISession failed: %s", err.Error()), "ibm_pi_instance_action", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	cloudInstanceID, id, err := splitID(d.Id())
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("splitID failed: %s", err.Error()), "ibm_pi_instance_action", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
-	client := st.NewIBMPIInstanceClient(context.Background(), sess, cloudInstanceID)
+	client := instance.NewIBMPIInstanceClient(context.Background(), sess, cloudInstanceID)
 	powervmdata, err := client.Get(id)
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Get failed: %s", err.Error()), "ibm_pi_instance_action", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	d.Set(Attr_Status, powervmdata.Status)
@@ -120,28 +125,28 @@ func resourceIBMPIInstanceActionRead(ctx context.Context, d *schema.ResourceData
 	return nil
 }
 
-func resourceIBMPIInstanceActionUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-
+func resourceIBMPIInstanceActionUpdate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	if d.HasChange(Arg_Action) {
 		adiag := takeInstanceAction(ctx, d, meta, d.Timeout(schema.TimeoutUpdate))
 		if adiag != nil {
 			return adiag
 		}
 	}
-
 	return resourceIBMPIInstanceActionRead(ctx, d, meta)
 }
 
-func resourceIBMPIInstanceActionDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceIBMPIInstanceActionDelete(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	// There is no delete or unset concept for instance action
 	d.SetId("")
 	return nil
 }
 
-func takeInstanceAction(ctx context.Context, d *schema.ResourceData, meta interface{}, timeout time.Duration) diag.Diagnostics {
+func takeInstanceAction(ctx context.Context, d *schema.ResourceData, meta any, timeout time.Duration) diag.Diagnostics {
 	sess, err := meta.(conns.ClientSession).IBMPISession()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("IBMPISession failed: %s", err.Error()), "ibm_pi_instance_action", "create/update")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	cloudInstanceID := d.Get(Arg_CloudInstanceID).(string)
@@ -150,24 +155,27 @@ func takeInstanceAction(ctx context.Context, d *schema.ResourceData, meta interf
 	targetHealthStatus := d.Get(Arg_HealthStatus).(string)
 
 	var targetStatus string
-	if action == Action_Stop || action == Action_ImmediateShutdown {
+	switch action {
+	case Action_ImmediateShutdown, Action_Stop:
 		targetStatus = State_Shutoff
-	} else if action == Action_ResetState {
+	case Action_ResetState:
 		targetStatus = State_Active
 		targetHealthStatus = Critical
-	} else {
-		// action is "start" or "soft-reboot" or "hard-reboot"
+	default:
+		// action is "dumprestart", "hard-reboot", "start", or "soft-reboot"
 		targetStatus = State_Active
 	}
 
-	client := st.NewIBMPIInstanceClient(ctx, sess, cloudInstanceID)
+	client := instance.NewIBMPIInstanceClient(ctx, sess, cloudInstanceID)
 
 	// special case for action "start", "stop", "immediate-shutdown"
 	// skip calling action if instance is already in desired state
 	if action == Action_Start || action == Action_Stop || action == Action_ImmediateShutdown {
 		pvm, err := client.Get(id)
 		if err != nil {
-			return diag.FromErr(err)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Get failed: %s", err.Error()), "ibm_pi_instance_action", "create/update")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 
 		if strings.ToLower(*pvm.Status) == targetStatus && pvm.Health != nil && (pvm.Health.Status == targetHealthStatus || pvm.Health.Status == OK) {
@@ -181,8 +189,9 @@ func takeInstanceAction(ctx context.Context, d *schema.ResourceData, meta interf
 
 	err = client.Action(id, body)
 	if err != nil {
-		log.Printf("[ERROR] failed to perform the action on the instance %v", err)
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Action failed: %s", err.Error()), "ibm_pi_instance_action", "create/update")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	log.Printf("Executed the action on the instance")
@@ -190,13 +199,15 @@ func takeInstanceAction(ctx context.Context, d *schema.ResourceData, meta interf
 	log.Printf("Calling the check for %s opertion to check for status %s", action, targetStatus)
 	_, err = isWaitForPIInstanceActionStatus(ctx, client, id, timeout, targetStatus, targetHealthStatus)
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("isWaitForPIInstanceActionStatus failed: %s", err.Error()), "ibm_pi_instance_action", "create/update")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	return nil
 }
 
-func isWaitForPIInstanceActionStatus(ctx context.Context, client *st.IBMPIInstanceClient, id string, timeout time.Duration, targetStatus, targetHealthStatus string) (interface{}, error) {
+func isWaitForPIInstanceActionStatus(ctx context.Context, client *instance.IBMPIInstanceClient, id string, timeout time.Duration, targetStatus, targetHealthStatus string) (any, error) {
 	log.Printf("Waiting for the action to be performed on the instance %s", id)
 
 	stateConf := &retry.StateChangeConf{
@@ -211,8 +222,8 @@ func isWaitForPIInstanceActionStatus(ctx context.Context, client *st.IBMPIInstan
 	return stateConf.WaitForStateContext(ctx)
 }
 
-func isPIActionRefreshFunc(client *st.IBMPIInstanceClient, id, targetStatus, targetHealthStatus string) retry.StateRefreshFunc {
-	return func() (interface{}, string, error) {
+func isPIActionRefreshFunc(client *instance.IBMPIInstanceClient, id, targetStatus, targetHealthStatus string) retry.StateRefreshFunc {
+	return func() (any, string, error) {
 		log.Printf("Waiting for the target status to be [ %s ]", targetStatus)
 		pvm, err := client.Get(id)
 		if err != nil {

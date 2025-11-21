@@ -3,7 +3,7 @@ subcategory: "Power Systems"
 layout: "ibm"
 page_title: "IBM: pi_instance_action"
 description: |-
-  Performs an action start, stop, reboot, immediate-shutdown, reset on a PVM instance.
+  Performs an action dumprestart, hard-reboot, immediate-shutdown, reset-state, soft-reboot, start, or stop on a PVM instance.
 ---
 
 # ibm_pi_instance_action
@@ -50,7 +50,7 @@ The `ibm_pi_instance_action` provides the following [timeouts](https://www.terra
 
 Review the argument references that you can specify for your resource.
 
-- `pi_action` - (Required, String) Name of the action to take. Allowed values are `start`, `stop`, `hard-reboot`, `soft-reboot`, `immediate-shutdown`, `reset-state`.
+- `pi_action` - (Required, String) Name of the action to take. Allowed values are `dumprestart`, `hard-reboot`, `immediate-shutdown`, `reset-state`, `soft-reboot`, `start`, `stop`.
 - `pi_cloud_instance_id` - (Required, String) The GUID of the service instance associated with an account.
 - `pi_health_status` - (Optional, String) Specifies if Terraform should poll for the health status to be `OK` or `WARNING`. The default value is `OK`. Ignored for `pi_action = "reset-state"`.
 - `pi_instance_id` - (Required, String) The ID of the pvm instance to perform an action on.
