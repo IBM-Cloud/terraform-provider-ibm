@@ -100,11 +100,6 @@ func DataSourceIBMPIInstanceVpmemVolume() *schema.Resource {
 				Set:  schema.HashString,
 				Type: schema.TypeSet,
 			},
-			Attr_VolumeID: {
-				Computed:    true,
-				Description: "Volume ID.",
-				Type:        schema.TypeString,
-			},
 		},
 	}
 }
