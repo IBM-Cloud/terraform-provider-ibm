@@ -67,6 +67,7 @@ After your data source is created, you can read values from the following attrib
    Nested schema for `volumes`:
   - `creation_date` - (String) The date and time when the volume was created.
   - `crn` - (String) The CRN for this resource.
+  - `error_code` - (String) Error code for the vPMEM volume.
   - `href` - (String) Link to vPMEM volume resource.
   - `name` - (String) Volume Name.
   - `pvm_instance_id` - (String) PVM Instance ID which the volume is attached to.
