@@ -113,12 +113,13 @@ In addition to all argument reference list, you can access the following attribu
 - `volumes` - (List) List of volume IDs that are attached to the instance.
 - `vpmem_volumes` - (List) List of vPMEM volumes.
    Nested schema for `vpmem_volumes`:
-  - `created_at` - (String) Time when the volume was created.
+  - `creation_date` - (String) The date and time when the volume was created.
   - `crn` - (String) The CRN for this resource.
   - `href` - (String) Link to vPMEM volume resource.
   - `name` - (String) Volume Name.
   - `pvm_instance_id` - (String) PVM Instance ID which the volume is attached to.
   - `size` - (Float) Volume Size (GB).
   - `status` - (String) Status of the volume.
+  - `updated_date` - (String) The date and time when the volume was updated.
   - `user_tags` - (List) List of user tags.
   - `volume_id` - (String) Volume ID.
