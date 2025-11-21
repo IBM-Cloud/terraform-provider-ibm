@@ -119,6 +119,7 @@ In addition to all argument reference list, you can access the following attribu
   - `href` - (String) Link to vPMEM volume resource.
   - `name` - (String) Volume Name.
   - `pvm_instance_id` - (String) PVM Instance ID which the volume is attached to.
+  - `reason` - (String) Reason for error.
   - `size` - (Float) Volume Size (GB).
   - `status` - (String) Status of the volume.
   - `updated_date` - (String) The date and time when the volume was updated.
