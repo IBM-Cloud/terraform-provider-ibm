@@ -4,7 +4,6 @@
 package power_test
 
 import (
-	"fmt"
 	"testing"
 
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
@@ -27,8 +26,6 @@ func TestAccIBMPIWorkspacesDataSourceBasic(t *testing.T) {
 }
 
 func testAccCheckIBMPIWorkspacesDataSourceConfig() string {
-	return fmt.Sprintf(`
-		data "ibm_pi_workspaces" "test" {
-			pi_cloud_instance_id = "%s"
-		}`, acc.Pi_cloud_instance_id)
+	return `
+		data "ibm_pi_workspaces" "test" {}`
 }
