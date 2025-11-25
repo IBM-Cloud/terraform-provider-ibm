@@ -38,9 +38,21 @@ In addition to the argument reference list, you can access the following attribu
 
 - `access_tags`  - (List) Access management tags associated for the virtual endpoint gateway.
 
-- `allow_dns_resolution_binding` - (Bool) Indicates whether to allow this endpoint gateway to participate in DNS resolution bindings with a VPC that has dns.enable_hub set to true.
+- `allow_dns_resolution_binding` - (**Deprecated**, Optional, bool) **This field has been deprecated in favor of `dns_resolution_binding_mode` and will be removed in a future version.** 
+  
+  Previously indicated whether to allow this endpoint gateway to participate in DNS resolution bindings with a VPC that has dns.enable_hub set to true.
+  
+  **Migration Guide:**
+  - `false` → use `dns_resolution_binding_mode = "disabled"`
+  - `true` → use `dns_resolution_binding_mode = "primary"`
+  
+  **Note:** The new `dns_resolution_binding_mode` field also supports `"per_resource_binding"` for advanced DNS sharing scenarios not available with this boolean field.
+  
+  ~> **Important:** Do not use both `allow_dns_resolution_binding` and `dns_resolution_binding_mode` in the same configuration. Use only `dns_resolution_binding_mode`.
 - `created_at` - (Timestamp) The created date and time of the endpoint gateway.
 - `crn` - (String) The CRN for this endpoint gateway.
+- `dns_resolution_binding_mode` - (String) The DNS resolution binding mode used for this endpoint gateway:- `disabled`: The endpoint gateway is not participating in [DNS sharing for VPE   gateways](/docs/vpc?topic=vpc-vpe-dns-sharing).- `primary`: The endpoint gateway is participating in [DNS sharing for VPE gateways]   (/docs/vpc?topic=vpc-vpe-dns-sharing) if the VPC this endpoint gateway resides in   has a DNS resolution binding to another VPC.- `per_resource_binding`: The endpoint gateway is participating in [DNS sharing for VPE   gateways](/docs/vpc?topic=vpc-vpe-dns-sharing) if the VPC this endpoint gateway   resides in has a DNS resolution binding to another VPC, and resource binding is   enabled for the `target` service.
+  - Constraints: Allowable values are: `disabled`, `per_resource_binding`, `primary`.
 - `health_state` - (String) Endpoint gateway health state. `ok: Healthy`, `degraded: Suffering from compromised performance, capacity, or connectivity`, `faulted: Completely unreachable, inoperative, or entirely incapacitated`, `inapplicable: The health state does not apply because of the current lifecycle state`. A resource with a lifecycle state of failed or deleting will have a health state of inapplicable. A pending resource may have this state.
 - `lifecycle_state` - (String) The endpoint gateway lifecycle state, supported values are **deleted**, **deleting**, **failed**, **pending**, **stable**, **updating**, **waiting**, **suspended**.
 - `ips` - (List) The unique identifier for the reserved IP.

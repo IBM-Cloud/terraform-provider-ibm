@@ -99,7 +99,13 @@ func DataSourceIBMISEndpointGateway() *schema.Resource {
 			isVirtualEndpointGatewayAllowDnsResolutionBinding: {
 				Type:        schema.TypeBool,
 				Computed:    true,
+				Deprecated:  "This property has been deprecated in favor of dns_resolution_binding_mode.",
 				Description: "Indicates whether to allow this endpoint gateway to participate in DNS resolution bindings with a VPC that has dns.enable_hub set to true.",
+			},
+			"dns_resolution_binding_mode": &schema.Schema{
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The DNS resolution binding mode used for this endpoint gateway:- `disabled`: The endpoint gateway is not participating in [DNS sharing for VPE   gateways](/docs/vpc?topic=vpc-vpe-dns-sharing).- `primary`: The endpoint gateway is participating in [DNS sharing for VPE gateways]   (/docs/vpc?topic=vpc-vpe-dns-sharing) if the VPC this endpoint gateway resides in   has a DNS resolution binding to another VPC.- `per_resource_binding`: The endpoint gateway is participating in [DNS sharing for VPE   gateways](/docs/vpc?topic=vpc-vpe-dns-sharing) if the VPC this endpoint gateway   resides in has a DNS resolution binding to another VPC, and resource binding is   enabled for the `target` service.",
 			},
 			isVirtualEndpointGatewayIPs: {
 				Type:        schema.TypeList,
@@ -209,7 +215,20 @@ func dataSourceIBMISEndpointGatewayRead(
 	result := allrecs[0]
 	d.SetId(*result.ID)
 	d.Set(isVirtualEndpointGatewayName, result.Name)
-	d.Set(isVirtualEndpointGatewayAllowDnsResolutionBinding, result.AllowDnsResolutionBinding)
+	// Handle the new dns_resolution_binding_mode field
+	// Handle the new dns_resolution_binding_mode field (API now only returns this field)
+	if result.DnsResolutionBindingMode != nil && *result.DnsResolutionBindingMode != "" {
+		if err = d.Set("dns_resolution_binding_mode", *result.DnsResolutionBindingMode); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting dns_resolution_binding_mode: %s", err), "(Data) ibm_is_virtual_endpoint_gateway", "read", "set-dns_resolution_binding_mode").GetDiag()
+		}
+
+		// Compute and set deprecated field for backward compatibility in Terraform state
+		allowDnsResolutionBinding := mapDnsResolutionBindingModeToBoolean(*result.DnsResolutionBindingMode)
+		if err = d.Set(isVirtualEndpointGatewayAllowDnsResolutionBinding, allowDnsResolutionBinding); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting allow_dns_resolution_binding: %s", err), "(Data) ibm_is_virtual_endpoint_gateway", "read", "set-allow_dns_resolution_binding").GetDiag()
+		}
+	}
+
 	d.Set(isVirtualEndpointGatewayCRN, result.CRN)
 	d.Set(isVirtualEndpointGatewayHealthState, result.HealthState)
 	d.Set(isVirtualEndpointGatewayCreatedAt, result.CreatedAt.String())
@@ -242,4 +261,17 @@ func dataSourceIBMISEndpointGatewayRead(
 		d.Set(isVirtualEndpointGatewaySecurityGroups, flattenDataSourceSecurityGroups(result.SecurityGroups))
 	}
 	return nil
+}
+
+// Helper functions for field mapping during migration period
+func mapDnsResolutionBindingModeToBoolean(mode string) bool {
+	switch mode {
+	case "disabled":
+		return false
+	case "primary", "per_resource_binding":
+		return true
+	default:
+		// Default to false for unknown values
+		return false
+	}
 }
