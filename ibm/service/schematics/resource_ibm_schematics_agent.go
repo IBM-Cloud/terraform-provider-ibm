@@ -586,7 +586,14 @@ func resourceIbmSchematicsAgentCreate(context context.Context, d *schema.Resourc
 	if _, ok := d.GetOk("agent_metadata"); ok {
 		var agentMetadata []schematicsv1.AgentMetadataInfo
 		for _, e := range d.Get("agent_metadata").([]interface{}) {
-			value := e.(map[string]interface{})
+			if e == nil {
+				continue
+			}
+
+			value, ok := e.(map[string]interface{})
+			if !ok {
+				continue
+			}
 			agentMetadataItem, err := resourceIbmSchematicsAgentMapToAgentMetadataInfo(value)
 			if err != nil {
 				tfErr := flex.TerraformErrorf(err, fmt.Sprintf("resourceIbmSchematicsAgentCreate failed: %s", err.Error()), "ibm_schematics_agent", "create")
