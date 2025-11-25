@@ -3421,6 +3421,27 @@ func (c *Config) ClientSession() (interface{}, error) {
 	}
 	session.resourceControllerAPI = resourceControllerClient
 
+	// Construct an instance of the 'DrAutomation Service' service.
+	if session.drAutomationServiceClientErr == nil {
+		// Construct the service options.
+		drAutomationServiceClientOptions := &drautomationservicev1.DrAutomationServiceV1Options{
+			Authenticator: authenticator,
+		}
+
+		// Construct the service client.
+		session.drAutomationServiceClient, err = drautomationservicev1.NewDrAutomationServiceV1(drAutomationServiceClientOptions)
+		if err == nil {
+			// Enable retries for API calls
+			session.drAutomationServiceClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+			// Add custom header for analytics
+			session.drAutomationServiceClient.SetDefaultHeaders(gohttp.Header{
+				"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
+			})
+		} else {
+			session.drAutomationServiceClientErr = fmt.Errorf("error occurred while constructing 'DrAutomation Service' service client: %q", err)
+		}
+	}
+
 	// SECRETS MANAGER Service V2
 	// Construct an "options" struct for creating the service client.
 	var smBaseUrl string

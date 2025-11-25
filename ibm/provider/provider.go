@@ -1139,6 +1139,7 @@ func Provider() *schema.Provider {
 			"ibm_pdr_get_machine_types":       drautomationservice.DataSourceIBMPdrGetMachineTypes(),
 			"ibm_pdr_get_managed_vm_list":     drautomationservice.DataSourceIBMPdrGetManagedVMList(),
 			"ibm_pdr_last_operation":          drautomationservice.DataSourceIBMPdrLastOperation(),
+			"ibm_pdr_get_grs_location_pairs":  drautomationservice.DataSourceIBMPdrGetGrsLocationPairs(),
 		},
 
 		ResourcesMap: map[string]*schema.Resource{
