@@ -53,7 +53,13 @@ func DataSourceIBMISEndpointGateways() *schema.Resource {
 						isVirtualEndpointGatewayAllowDnsResolutionBinding: {
 							Type:        schema.TypeBool,
 							Computed:    true,
+							Deprecated:  "This property has been deprecated in favor of dns_resolution_binding_mode.",
 							Description: "Indicates whether to allow this endpoint gateway to participate in DNS resolution bindings with a VPC that has dns.enable_hub set to true.",
+						},
+						"dns_resolution_binding_mode": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The DNS resolution binding mode used for this endpoint gateway:- `disabled`: The endpoint gateway is not participating in [DNS sharing for VPE   gateways](/docs/vpc?topic=vpc-vpe-dns-sharing).- `primary`: The endpoint gateway is participating in [DNS sharing for VPE gateways]   (/docs/vpc?topic=vpc-vpe-dns-sharing) if the VPC this endpoint gateway resides in   has a DNS resolution binding to another VPC.- `per_resource_binding`: The endpoint gateway is participating in [DNS sharing for VPE   gateways](/docs/vpc?topic=vpc-vpe-dns-sharing) if the VPC this endpoint gateway   resides in has a DNS resolution binding to another VPC, and resource binding is   enabled for the `target` service.",
 						},
 						isVirtualEndpointGatewayResourceType: {
 							Type:        schema.TypeString,
@@ -248,7 +254,15 @@ func dataSourceIBMISEndpointGatewaysRead(context context.Context, d *schema.Reso
 		endpointGatewayOutput[isVirtualEndpointGatewayResourceGroupID] = *endpointGateway.ResourceGroup.ID
 		endpointGatewayOutput[isVirtualEndpointGatewayCRN] = *endpointGateway.CRN
 		endpointGatewayOutput[isVirtualEndpointGatewayVpcID] = *endpointGateway.VPC.ID
-		endpointGatewayOutput[isVirtualEndpointGatewayAllowDnsResolutionBinding] = endpointGateway.AllowDnsResolutionBinding
+		endpointGatewayOutput["dns_resolution_binding_mode"] = endpointGateway.DnsResolutionBindingMode
+		// Compute and set deprecated field for backward compatibility
+		if endpointGateway.DnsResolutionBindingMode != nil {
+			allowDnsResolutionBinding := mapDnsResolutionBindingModeToBoolean(*endpointGateway.DnsResolutionBindingMode)
+			endpointGatewayOutput[isVirtualEndpointGatewayAllowDnsResolutionBinding] = allowDnsResolutionBinding
+		} else {
+			// Handle case where new field might be nil/empty - default to false for backward compatibility
+			endpointGatewayOutput[isVirtualEndpointGatewayAllowDnsResolutionBinding] = false
+		}
 		endpointGatewayOutput[isVirtualEndpointGatewayTarget] =
 			flattenEndpointGatewayTarget(endpointGateway.Target.(*vpcv1.EndpointGatewayTarget))
 		if endpointGateway.SecurityGroups != nil {
