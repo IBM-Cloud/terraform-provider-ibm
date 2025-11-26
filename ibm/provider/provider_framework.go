@@ -53,6 +53,10 @@ func (p *IbmCloudProvider) Schema(_ context.Context, _ provider.SchemaRequest, r
 				Optional:    true,
 				Description: "The IBM Cloud API Key",
 			},
+			"ibmcloud_account_id": schema.StringAttribute{
+				Optional:    true,
+				Description: "The IBM Cloud account ID",
+			},
 			"iam_token": schema.StringAttribute{
 				Optional:    true,
 				Description: "IAM Authentication token",
@@ -63,7 +67,11 @@ func (p *IbmCloudProvider) Schema(_ context.Context, _ provider.SchemaRequest, r
 			},
 			"iam_profile_id": schema.StringAttribute{
 				Optional:    true,
-				Description: "IAM Trusted Profile Authentication token",
+				Description: "IAM Trusted Profile ID",
+			},
+			"iam_profile_name": schema.StringAttribute{
+				Optional:    true,
+				Description: "IAM Trusted Profile Name",
 			},
 			"softlayer_username": schema.StringAttribute{
 				Optional:           true,
@@ -126,6 +134,13 @@ func (p *IbmCloudProvider) Schema(_ context.Context, _ provider.SchemaRequest, r
 				Optional:    true,
 				Description: "Path of the file that contains private and public regional endpoints mapping",
 			},
+			"private_endpoint_type": schema.StringAttribute{
+				Optional:    true,
+				Description: "Private Endpoint type used by the service endpoints. Example: vpe.",
+				Validators: []validator.String{
+					stringvalidator.OneOf("vpe"),
+				},
+			},
 			"resource_group": schema.StringAttribute{
 				Optional:    true,
 				Description: "The Resource group id.",
@@ -163,6 +178,7 @@ func (p *IbmCloudProvider) Configure(ctx context.Context, req provider.Configure
 		return
 	}
 	config.IBMCloudAPIKey = GetStringFromEnv(config.IBMCloudAPIKey, []string{"IC_API_KEY", "IBMCLOUD_API_KEY"})
+	config.IBMCloudAccountID = GetStringFromEnv(config.IBMCloudAccountID, []string{"IC_ACCOUNT_ID", "IBMCLOUD_ACCOUNT_ID"})
 	config.IBMCloudTimeout = GetInt64FromEnv(config.IBMCloudTimeout, []string{"IC_TIMEOUT", "IBMCLOUD_TIMEOUT"})
 	config.Region = GetStringFromEnv(config.Region, []string{"IC_REGION", "IBMCLOUD_REGION", "BM_REGION", "BLUEMIX_REGION"})
 	config.Zone = GetStringFromEnv(config.Zone, []string{"IC_ZONE", "IBMCLOUD_ZONE"})
@@ -173,10 +189,12 @@ func (p *IbmCloudProvider) Configure(ctx context.Context, req provider.Configure
 	config.IAASClassicTimeout = GetInt64FromEnv(config.IAASClassicTimeout, []string{"IAAS_CLASSIC_TIMEOUT"})
 	config.MaxRetries = GetInt64FromEnv(config.MaxRetries, []string{"MAX_RETRIES"})
 	config.IAMProfileID = GetStringFromEnv(config.IAMProfileID, []string{"IC_IAM_PROFILE_ID", "IBMCLOUD_IAM_PROFILE_ID"})
+	config.IAMProfileName = GetStringFromEnv(config.IAMProfileName, []string{"IC_IAM_PROFILE_NAME", "IBMCLOUD_IAM_PROFILE_NAME"})
 	config.IAMToken = GetStringFromEnv(config.IAMToken, []string{"IC_IAM_TOKEN", "IBMCLOUD_IAM_TOKEN"})
 	config.IAMRefreshToken = GetStringFromEnv(config.IAMRefreshToken, []string{"IC_IAM_REFRESH_TOKEN", "IBMCLOUD_IAM_REFRESH_TOKEN"})
 	config.Visibility = GetStringFromEnv(config.Visibility, []string{"IC_VISIBILITY", "IBMCLOUD_VISIBILITY"})
 	config.EndpointsFilePath = GetStringFromEnv(config.EndpointsFilePath, []string{"IC_ENDPOINTS_FILE_PATH", "IBMCLOUD_ENDPOINTS_FILE_PATH"})
+	config.PrivateEndpointType = GetStringFromEnv(config.PrivateEndpointType, []string{"IC_PRIVATE_ENDPOINT_TYPE", "IBMCLOUD_PRIVATE_ENDPOINT_TYPE"})
 
 	bluemixAPIKey := config.BluemixAPIKey.ValueString()
 	if bluemixAPIKey == "" {
@@ -186,6 +204,8 @@ func (p *IbmCloudProvider) Configure(ctx context.Context, req provider.Configure
 	iamToken := config.IAMToken.ValueString()
 	iamRefreshToken := config.IAMRefreshToken.ValueString()
 	iamTrustedProfileId := config.IAMProfileID.ValueString()
+	iamTrustedProfileName := config.IAMProfileName.ValueString()
+	accountID := config.IBMCloudAccountID.ValueString()
 
 	softlayerUsername := config.SoftLayerUsername.ValueString()
 	if softlayerUsername == "" {
@@ -214,6 +234,7 @@ func (p *IbmCloudProvider) Configure(ctx context.Context, req provider.Configure
 
 	visibility := config.Visibility.ValueString()
 	endpointsFilePath := config.EndpointsFilePath.ValueString()
+	privateEndpointType := config.PrivateEndpointType.ValueString()
 	resourceGroup := config.ResourceGroup.ValueString()
 	region := config.Region.ValueString()
 	zone := config.Zone.ValueString()
@@ -229,24 +250,27 @@ func (p *IbmCloudProvider) Configure(ctx context.Context, req provider.Configure
 	}
 
 	providerConfig := conns.Config{
-		BluemixAPIKey:        bluemixAPIKey,
-		Region:               region,
-		ResourceGroup:        resourceGroup,
-		BluemixTimeout:       time.Duration(bluemixTimeout) * time.Second,
-		SoftLayerTimeout:     time.Duration(softlayerTimeout) * time.Second,
-		SoftLayerUserName:    softlayerUsername,
-		SoftLayerAPIKey:      softlayerAPIKey,
-		RetryCount:           retryCount,
-		SoftLayerEndpointURL: softlayerEndpointUrl,
-		RetryDelay:           conns.RetryAPIDelay,
-		FunctionNameSpace:    functionNamespace,
-		RiaasEndPoint:        riaasEndpoint,
-		IAMToken:             iamToken,
-		IAMRefreshToken:      iamRefreshToken,
-		Zone:                 zone,
-		Visibility:           visibility,
-		EndpointsFile:        endpointsFilePath,
-		IAMTrustedProfileID:  iamTrustedProfileId,
+		BluemixAPIKey:         bluemixAPIKey,
+		Region:                region,
+		ResourceGroup:         resourceGroup,
+		BluemixTimeout:        time.Duration(bluemixTimeout) * time.Second,
+		SoftLayerTimeout:      time.Duration(softlayerTimeout) * time.Second,
+		SoftLayerUserName:     softlayerUsername,
+		SoftLayerAPIKey:       softlayerAPIKey,
+		RetryCount:            retryCount,
+		SoftLayerEndpointURL:  softlayerEndpointUrl,
+		RetryDelay:            conns.RetryAPIDelay,
+		FunctionNameSpace:     functionNamespace,
+		RiaasEndPoint:         riaasEndpoint,
+		IAMToken:              iamToken,
+		IAMRefreshToken:       iamRefreshToken,
+		Zone:                  zone,
+		Visibility:            visibility,
+		EndpointsFile:         endpointsFilePath,
+		PrivateEndpointType:   privateEndpointType,
+		IAMTrustedProfileID:   iamTrustedProfileId,
+		IAMTrustedProfileName: iamTrustedProfileName,
+		Account:               accountID,
 	}
 
 	clientSession, err := providerConfig.ClientSession()
@@ -281,9 +305,11 @@ func (p *IbmCloudProvider) Resources(_ context.Context) []func() resource.Resour
 type ProviderFrameworkModel struct {
 	BluemixAPIKey          types.String `tfsdk:"bluemix_api_key"`
 	IBMCloudAPIKey         types.String `tfsdk:"ibmcloud_api_key"`
+	IBMCloudAccountID      types.String `tfsdk:"ibmcloud_account_id"`
 	IAMToken               types.String `tfsdk:"iam_token"`
 	IAMRefreshToken        types.String `tfsdk:"iam_refresh_token"`
 	IAMProfileID           types.String `tfsdk:"iam_profile_id"`
+	IAMProfileName         types.String `tfsdk:"iam_profile_name"`
 	SoftLayerUsername      types.String `tfsdk:"softlayer_username"`
 	IAASClassicUsername    types.String `tfsdk:"iaas_classic_username"`
 	SoftLayerAPIKey        types.String `tfsdk:"softlayer_api_key"`
@@ -296,6 +322,7 @@ type ProviderFrameworkModel struct {
 	IBMCloudTimeout        types.Int64  `tfsdk:"ibmcloud_timeout"`
 	Visibility             types.String `tfsdk:"visibility"`
 	EndpointsFilePath      types.String `tfsdk:"endpoints_file_path"`
+	PrivateEndpointType    types.String `tfsdk:"private_endpoint_type"`
 	ResourceGroup          types.String `tfsdk:"resource_group"`
 	Region                 types.String `tfsdk:"region"`
 	Zone                   types.String `tfsdk:"zone"`

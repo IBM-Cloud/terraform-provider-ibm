@@ -28,6 +28,9 @@ import (
 	"golang.org/x/crypto/ssh"
 )
 
+// Constants shared with resource_ibm_is_ssh_key.go:
+// isKeyUserTagType, isKeyAccessTagType
+
 var _ resource.Resource = &SSHKeyResource{}
 
 type SSHKeyResource struct {
@@ -512,13 +515,17 @@ func BeautifyResponse(response interface{}) string {
 	return fmt.Sprintf("Error : %#v", response)
 }
 
-// to suppress any change shown when keys are same
+// Functions shared with resource_ibm_is_ssh_key.go:
+// parseKey
+
+// suppressSshKeyPublicKeyDiff compares two SSH public keys for semantic equality
+// This is a wrapper around the key parsing logic from parseKey
 func suppressSshKeyPublicKeyDiff(old, new string) bool {
 	// if there are extra spaces or new lines, suppress that change
 	if strings.Compare(strings.TrimSpace(old), strings.TrimSpace(new)) != 0 {
 		// if old is empty
 		if old != "" {
-			//create a new piblickey object from the string
+			//create a new public key object from the string
 			usePK, error := parseKey(new)
 			if error != nil {
 				return false

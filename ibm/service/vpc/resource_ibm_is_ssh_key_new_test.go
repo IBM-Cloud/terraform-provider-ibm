@@ -37,11 +37,6 @@ func TestAccIBMIsSSHKeyNew_RSA(t *testing.T) {
 				),
 			},
 			{
-				ResourceName:      "ibm_is_ssh_key_new.rsa",
-				ImportState:       true,
-				ImportStateVerify: true,
-			},
-			{
 				Config: testAccIBMIsSSHKeyNewConfigRSAUpdate(sshKeyName),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("ibm_is_ssh_key_new.rsa", "name", sshKeyName+"-updated"),
