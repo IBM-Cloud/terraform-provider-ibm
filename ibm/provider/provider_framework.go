@@ -17,6 +17,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/cis"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/kms"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/resourcemanager"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/vpc"
 )
 
@@ -286,20 +289,39 @@ func (p *IbmCloudProvider) Configure(ctx context.Context, req provider.Configure
 
 func (p *IbmCloudProvider) DataSources(_ context.Context) []func() datasource.DataSource {
 	return []func() datasource.DataSource{
-		// Add your data sources here
-		func() datasource.DataSource {
-			return vpc.NewIsSshKeyDataSource(p.clientSession)
-		},
+		// VPC Data Sources
+		func() datasource.DataSource { return vpc.NewIsSshKeyDataSource(p.clientSession) },
+
+		// KMS Data Sources
+		func() datasource.DataSource { return kms.NewKMSKeyDataSource(p.clientSession) },
+		func() datasource.DataSource { return kms.NewKMSKeyPoliciesDataSource(p.clientSession) },
+
+		// CIS Data Sources
+		func() datasource.DataSource { return cis.NewCISAlertsDataSource(p.clientSession) },
+		func() datasource.DataSource { return cis.NewCISWebhooksDataSource(p.clientSession) },
+
+		// Resource Manager Data Sources
+		func() datasource.DataSource { return resourcemanager.NewResourceGroupDataSource(p.clientSession) },
+		func() datasource.DataSource { return resourcemanager.NewResourceGroupsDataSource(p.clientSession) },
 	}
 }
 
 func (p *IbmCloudProvider) Resources(_ context.Context) []func() resource.Resource {
 	return []func() resource.Resource{
-		func() resource.Resource {
-			return vpc.NewSSHKeyResource(p.clientSession)
-		},
-	}
+		// VPC Resources
+		func() resource.Resource { return vpc.NewSSHKeyResource(p.clientSession) },
 
+		// KMS Resources
+		func() resource.Resource { return kms.NewKMSKeyResource(p.clientSession) },
+		func() resource.Resource { return kms.NewKMSKeyAliasResource(p.clientSession) },
+
+		// CIS Resources
+		func() resource.Resource { return cis.NewCISAlertResource(p.clientSession) },
+		func() resource.Resource { return cis.NewCISWebhookResource(p.clientSession) },
+
+		// Resource Manager Resources
+		func() resource.Resource { return resourcemanager.NewResourceGroupResource(p.clientSession) },
+	}
 }
 
 type ProviderFrameworkModel struct {

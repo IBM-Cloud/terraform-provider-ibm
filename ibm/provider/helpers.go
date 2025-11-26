@@ -9,9 +9,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 )
 
-// GetStringFromEnv checks environment variables for a value if the given StringValue is null
+// GetStringFromEnv checks environment variables for a value if the given StringValue is null or empty
 func GetStringFromEnv(value basetypes.StringValue, envVars []string) basetypes.StringValue {
-	if !value.IsNull() {
+	if !value.IsNull() && value.ValueString() != "" {
 		return value
 	}
 	for _, envVar := range envVars {
