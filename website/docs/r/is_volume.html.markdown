@@ -176,10 +176,19 @@ In addition to all argument reference list, you can access the following attribu
 - `storage_generation` - (Int) The storage generation indicates which generation the profile family belongs to. For the custom and tiered profiles, this value is 1. For the sdp profile, this value is 2.
 
 ## Import
-The `ibm_is_volume` resource can be imported by using volume ID.
 
-**Example**
+In Terraform v1.5.0 and later, use an [`import` block](https://developer.hashicorp.com/terraform/language/import) to import the `ibm_is_volume` resource by using `id`.
+The `id` property can be formed from `volume ID`. For example:
 
+```terraform
+import {
+  to = ibm_is_volume.example
+  id = "<volume_id>"
+}
 ```
-$ terraform import ibm_is_volume.example d7bec597-4726-451f-8a63-e62e6f19c32c
+
+Using `terraform import`. For example:
+
+```console
+% terraform import ibm_is_volume.example <volume_id>
 ```

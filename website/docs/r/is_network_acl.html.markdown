@@ -111,17 +111,19 @@ In addition to all argument reference list, you can access the following attribu
   - `subnets` - (String) The subnets for the ACL rule.
 
 ## Import
-The `ibm_is_network_acl` resource can be imported by using the network ACL ID. 
 
-**Syntax**
+In Terraform v1.5.0 and later, use an [`import` block](https://developer.hashicorp.com/terraform/language/import) to import the `ibm_is_network_acl` resource by using `id`.
+The `id` property can be formed from `network ACL ID`. For example:
 
-```
-$ terraform import ibm_is_network_acl.example <network_acl_id>
-```
-
-**Example**
-
-```
-$ terraform import ibm_is_network_acl.example d7bec597-4726-451f-8a63-1111132c
+```terraform
+import {
+  to = ibm_is_network_acl.example
+  id = "<network_acl_id>"
+}
 ```
 
+Using `terraform import`. For example:
+
+```console
+% terraform import ibm_is_network_acl.example <network_acl_id>
+```

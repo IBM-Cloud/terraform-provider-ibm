@@ -214,16 +214,19 @@ In addition to all argument reference list, you can access the following attribu
 
 
 ## Import
-The `ibm_is_vpn_gateway_connection` resource can be imported by using the VPN gateway ID and the VPN gateway connection ID. 
 
-**Syntax**
+In Terraform v1.5.0 and later, use an [`import` block](https://developer.hashicorp.com/terraform/language/import) to import the `ibm_is_vpn_gateway_connection` resource by using `id`.
+The `id` property can be formed from `VPN gateway ID`, and `the VPN gateway connection ID`. For example:
 
+```terraform
+import {
+  to = ibm_is_vpn_gateway_connection.example
+  id = "<vpn_gateway_ID>/<vpn_gateway_connection_ID>"
+}
 ```
-$ terraform import ibm_is_vpn_gateway_connection.example <vpn_gateway_ID>/<vpn_gateway_connection_ID>
-```
 
-**Example**
+Using `terraform import`. For example:
 
-```
-$ terraform import ibm_is_vpn_gateway_connection.example d7bec597-4726-451f-8a63-e62e6f19c32c/cea6651a-bc0a-4438-9f8a-a0770bbf3ebb
+```console
+% terraform import ibm_is_vpn_gateway_connection.example <vpn_gateway_ID>/<vpn_gateway_connection_ID>
 ```
