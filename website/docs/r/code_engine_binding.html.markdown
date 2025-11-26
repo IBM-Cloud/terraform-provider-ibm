@@ -53,7 +53,7 @@ Nested schema for **component**:
 After your resource is created, you can read values from the listed arguments and the following attributes.
 
 * `id` - The unique identifier of the code_engine_binding.
-* `code_engine_binding_id` - (String) The ID of the binding.
+* `binding_id` - (String) The ID of the binding.
   * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/.+/`.
 * `href` - (String) When you provision a new binding,  a URL is created identifying the location of the instance.
   * Constraints: The maximum length is `2048` characters. The minimum length is `0` characters. The value must match regular expression `/(([^:\/?#]+):)?(\/\/([^\/?#]*))?([^?#]*)(\\?([^#]*))?(#(.*))?$/`.
@@ -65,15 +65,15 @@ After your resource is created, you can read values from the listed arguments an
 ## Import
 
 You can import the `ibm_code_engine_binding` resource by using `id`.
-The `id` property can be formed from `project_id`, and `code_engine_binding_id` in the following format:
+The `id` property can be formed from `project_id`, and `binding_id` in the following format:
 
 <pre>
-&lt;project_id&gt;/&lt;code_engine_binding_id&gt;
+&lt;project_id&gt;/&lt;binding_id&gt;
 </pre>
 * `project_id`: A string in the format `15314cc3-85b4-4338-903f-c28cdee6d005`. The ID of the project.
-* `code_engine_binding_id`: A string in the format `a172ced-b5f21bc-71ba50c-1638604`. The ID of the binding.
+* `binding_id`: A string in the format `a172ced-b5f21bc-71ba50c-1638604`. The ID of the binding.
 
 # Syntax
 <pre>
-$ terraform import ibm_code_engine_binding.code_engine_binding &lt;project_id&gt;/&lt;code_engine_binding_id&gt;
+$ terraform import ibm_code_engine_binding.code_engine_binding &lt;project_id&gt;/&lt;binding_id&gt;
 </pre>

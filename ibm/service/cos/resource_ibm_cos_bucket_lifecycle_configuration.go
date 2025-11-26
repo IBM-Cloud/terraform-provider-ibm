@@ -4,6 +4,7 @@ import (
 	// "encoding/json"
 	"context"
 	"fmt"
+	"os"
 	"strings"
 	"time"
 
@@ -14,7 +15,7 @@ import (
 	"github.com/IBM/ibm-cos-sdk-go/service/s3"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	validation "github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
@@ -91,7 +92,7 @@ func ResourceIBMCOSBucketLifecycleConfiguration() *schema.Resource {
 										Type:         schema.TypeInt,
 										Optional:     true,
 										ValidateFunc: validate.ValidateAllowedRangeInt(1, 3650),
-										Default:      0, // API returns 0
+										Default:      0,
 									},
 									"expired_object_delete_marker": {
 										Type:     schema.TypeBool,
@@ -105,13 +106,79 @@ func ResourceIBMCOSBucketLifecycleConfiguration() *schema.Resource {
 							Type:             schema.TypeList,
 							Required:         true,
 							DiffSuppressFunc: suppressMissingFilterConfigurationBlock,
-							// IBM has filter as required parameter
+							// IBM has filter a required parameter
 							MaxItems: 1,
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"prefix": {
 										Type:     schema.TypeString,
 										Optional: true,
+									},
+									"object_size_greater_than": {
+										Type:         schema.TypeInt,
+										Optional:     true,
+										ValidateFunc: validation.IntAtLeast(0),
+									},
+									"object_size_less_than": {
+										Type:         schema.TypeInt,
+										Optional:     true,
+										ValidateFunc: validation.IntAtLeast(1),
+									},
+									"tag": {
+										Type:     schema.TypeList,
+										MaxItems: 1,
+										Optional: true,
+										Elem: &schema.Resource{
+											Schema: map[string]*schema.Schema{
+												"key": {
+													Type:     schema.TypeString,
+													Required: true,
+												},
+												"value": {
+													Type:     schema.TypeString,
+													Required: true,
+												},
+											},
+										},
+									},
+									"and": {
+										Type:     schema.TypeList,
+										Optional: true,
+										MaxItems: 1,
+										Elem: &schema.Resource{
+											Schema: map[string]*schema.Schema{
+												"object_size_greater_than": {
+													Type:         schema.TypeInt,
+													Optional:     true,
+													ValidateFunc: validation.IntAtLeast(0),
+												},
+												"object_size_less_than": {
+													Type:         schema.TypeInt,
+													Optional:     true,
+													ValidateFunc: validation.IntAtLeast(1),
+												},
+												"prefix": {
+													Type:     schema.TypeString,
+													Optional: true,
+												},
+												"tags": {
+													Type:     schema.TypeList,
+													Optional: true,
+													Elem: &schema.Resource{
+														Schema: map[string]*schema.Schema{
+															"key": {
+																Type:     schema.TypeString,
+																Required: true,
+															},
+															"value": {
+																Type:     schema.TypeString,
+																Required: true,
+															},
+														},
+													},
+												},
+											},
+										},
 									},
 								},
 							},
@@ -233,9 +300,101 @@ func lifecycleRuleFilterSet(filter []interface{}) *s3.LifecycleRuleFilter {
 		return result
 	}
 	filterMap := filter[0].(map[string]interface{})
-	if v, ok := filterMap["prefix"].(string); ok {
+	if v, ok := filterMap["and"].([]interface{}); ok && len(v) > 0 && v[0] != nil {
+		resultValue.And = lifecycleRuleFilterMemberAndSet(v[0].(map[string]interface{}))
+	}
+
+	if v, ok := filterMap["object_size_greater_than"]; ok && v.(int) > 0 {
+		resultValue.ObjectSizeGreaterThan = aws.Int64(int64(v.(int)))
+
+	}
+
+	if v, ok := filterMap["object_size_less_than"]; ok && v.(int) > 0 {
+		resultValue.ObjectSizeLessThan = aws.Int64(int64(v.(int)))
+
+	}
+
+	if v, ok := filterMap["tag"].([]interface{}); ok && len(v) > 0 && v[0] != nil {
+		resultValue.Tag = lifecycleRuleFilterMemberTagSet(v[0].(map[string]interface{}))
+	}
+	if v, ok := filterMap["prefix"].(string); ok && resultValue == (s3.LifecycleRuleFilter{}) {
 		resultValue.Prefix = aws.String(v)
 	}
+	result = &resultValue
+	return result
+}
+
+func lifecycleRuleFilterMemberAndSet(m map[string]interface{}) *s3.LifecycleRuleAndOperator {
+	if len(m) == 0 {
+		return nil
+	}
+
+	result := &s3.LifecycleRuleAndOperator{}
+
+	if v, ok := m["object_size_greater_than"].(int); ok && v > 0 {
+		result.ObjectSizeGreaterThan = aws.Int64(int64(v))
+	}
+
+	if v, ok := m["object_size_less_than"].(int); ok && v > 0 {
+		result.ObjectSizeLessThan = aws.Int64(int64(v))
+	}
+
+	if v, ok := m["prefix"].(string); ok {
+		result.Prefix = aws.String(v)
+	}
+
+	if v, ok := m["tags"]; ok {
+		result.Tags = expandMultipleTags(v.([]interface{}))
+	}
+
+	return result
+}
+
+func expandMultipleTags(m []interface{}) []*s3.Tag {
+	if len(m) == 0 {
+		return nil
+	}
+
+	result := []*s3.Tag{}
+
+	if m != nil {
+		for _, tagSetValueRaw := range m {
+			tagSetValue, _ := tagSetValueRaw.(map[string]interface{})
+			tag := s3.Tag{}
+			if key, ok := tagSetValue["key"].(string); ok {
+				tag.Key = aws.String(key)
+			}
+
+			if value, ok := tagSetValue["value"].(string); ok {
+				tag.Value = aws.String(value)
+			}
+
+			result = append(result, &tag)
+
+		}
+
+	}
+
+	return result
+}
+
+func lifecycleRuleFilterMemberTagSet(m map[string]interface{}) *s3.Tag {
+	if len(m) == 0 {
+		return nil
+	}
+
+	var result *s3.Tag
+
+	resultValue := s3.Tag{}
+
+	if key, ok := m["key"].(string); ok {
+		resultValue.Key = aws.String(key)
+	}
+
+	if value, ok := m["value"].(string); ok {
+		resultValue.Value = aws.String(value)
+	}
+
 	result = &resultValue
 	return result
 }
@@ -316,7 +475,6 @@ func lifecycleConfigurationSet(lifecycleConfigurationList []interface{}) []*s3.L
 			}
 
 		}
-
 		// check for transition
 		if v, ok := lifecycleRuleMap["transition"].([]interface{}); ok && len(v) > 0 {
 			lifecycleRule.Transitions = transitionsSet(v)
@@ -411,7 +569,7 @@ func resourceIBMCOSBucketLifecycleConfigurationRead(ctx context.Context, d *sche
 	}
 	//getBucketConfiguration
 	const (
-		lifecycleConfigurationRulesSteadyTimeout = 2 * time.Minute
+		lifecycleConfigurationRulesSteadyTimeout = 5 * time.Minute
 	)
 	getLifecycleConfigurationInput := &s3.GetBucketLifecycleConfigurationInput{
 		Bucket: aws.String(bucketName),
@@ -419,16 +577,15 @@ func resourceIBMCOSBucketLifecycleConfigurationRead(ctx context.Context, d *sche
 	var output *s3.GetBucketLifecycleConfigurationOutput
 
 	// Adding a retry to overcome the NoSuchLifecycleConfiguration error as it takes time for the lifecycle rules to  get applied.
-	err = retry.Retry(lifecycleConfigurationRulesSteadyTimeout, func() *retry.RetryError {
+	err = resource.Retry(lifecycleConfigurationRulesSteadyTimeout, func() *resource.RetryError {
 		var err error
 		output, err = s3Client.GetBucketLifecycleConfiguration(getLifecycleConfigurationInput)
 
-		if d.IsNewResource() && err != nil && strings.Contains(err.Error(), "NoSuchLifecycleConfiguration: The lifecycle configuration does not exist") {
-
-			return retry.RetryableError(err)
+		if err != nil && strings.Contains(err.Error(), "NoSuchLifecycleConfiguration: The lifecycle configuration does not exist") {
+			return resource.RetryableError(err)
 		}
 		if err != nil {
-			return retry.NonRetryableError(err)
+			return resource.NonRetryableError(err)
 		}
 		return nil
 	})
@@ -493,7 +650,13 @@ func parseLifecycleId(id string, info string) string {
 		return strings.Split(meta, ":")[0]
 	}
 	if info == "endpointType" {
-		return strings.Split(meta, ":")[1]
+		eType := strings.Split(meta, ":")[1]
+		// This changes is only for Schematics
+		schET := os.Getenv("IBMCLOUD_ENV_SCH_COS_ENDPOINT_OVERRIDE")
+		if eType != "" && eType == "private" && schET != "" {
+			return schET
+		}
+		return eType
 	}
 	if info == "keyName" {
 		return strings.Split(meta, ":key:")[1]

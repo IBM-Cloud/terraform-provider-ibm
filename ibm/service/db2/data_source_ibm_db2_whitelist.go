@@ -24,7 +24,8 @@ import (
 
 func DataSourceIbmDb2Whitelist() *schema.Resource {
 	return &schema.Resource{
-		ReadContext: dataSourceIbmDb2WhitelistRead,
+		ReadContext:        dataSourceIbmDb2WhitelistRead,
+		DeprecationMessage: "This service is deprecated and replaced with `ibm_db2_allowlist_ip`",
 
 		Schema: map[string]*schema.Schema{
 			"x_deployment_id": &schema.Schema{
@@ -63,13 +64,13 @@ func dataSourceIbmDb2WhitelistRead(context context.Context, d *schema.ResourceDa
 		return tfErr.GetDiag()
 	}
 
-	getDb2SaasWhitelistOptions := &db2saasv1.GetDb2SaasWhitelistOptions{}
+	getDb2SaasWhitelistOptions := &db2saasv1.GetDb2SaasAllowlistOptions{}
 
 	getDb2SaasWhitelistOptions.SetXDeploymentID(d.Get("x_deployment_id").(string))
 
-	successGetWhitelistIPs, _, err := db2saasClient.GetDb2SaasWhitelistWithContext(context, getDb2SaasWhitelistOptions)
+	successGetWhitelistIPs, _, err := db2saasClient.GetDb2SaasAllowlistWithContext(context, getDb2SaasWhitelistOptions)
 	if err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetDb2SaasWhitelistWithContext failed: %s", err.Error()), "(Data) ibm_db2_whitelist_ip", "read")
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetDb2SaasAllowlistWithContext failed: %s", err.Error()), "(Data) ibm_db2_whitelist_ip", "read")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}

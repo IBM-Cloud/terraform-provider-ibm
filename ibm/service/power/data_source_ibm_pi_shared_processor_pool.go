@@ -44,9 +44,19 @@ func DataSourceIBMPISharedProcessorPool() *schema.Resource {
 				Description: "The available cores in the shared processor pool.",
 				Type:        schema.TypeFloat,
 			},
+			Attr_CreationDate: {
+				Computed:    true,
+				Description: "Date of shared processor pool creation.",
+				Type:        schema.TypeString,
+			},
 			Attr_CRN: {
 				Computed:    true,
 				Description: "The CRN of this resource.",
+				Type:        schema.TypeString,
+			},
+			Attr_DedicatedHostID: {
+				Computed:    true,
+				Description: "The dedicated host ID where the shared processor pool resides.",
 				Type:        schema.TypeString,
 			},
 			Attr_HostID: {
@@ -171,6 +181,8 @@ func dataSourceIBMPISharedProcessorPoolRead(ctx context.Context, d *schema.Resou
 			d.Set(Attr_UserTags, tags)
 		}
 	}
+	d.Set(Attr_CreationDate, response.SharedProcessorPool.CreationDate.String())
+	d.Set(Attr_DedicatedHostID, response.SharedProcessorPool.DedicatedHostID)
 	d.Set(Attr_HostID, response.SharedProcessorPool.HostID)
 	d.Set(Attr_Name, response.SharedProcessorPool.Name)
 	d.Set(Attr_ReservedCores, response.SharedProcessorPool.ReservedCores)

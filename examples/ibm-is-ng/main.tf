@@ -1,395 +1,156 @@
-resource "ibm_is_vpc" "vpc1" {
-  name = "vpc1"
+# =====================================================================================
+# IBM VPC Infrastructure
+# =====================================================================================
+
+# =====================================================================================
+# Resource Groups
+# =====================================================================================
+
+data "ibm_resource_group" "default" {
+  name = "Default" // Update with your resource group name
 }
 
-resource "ibm_is_vpc_address_prefix" "testacc_vpc_address_prefix" {
-  name       = "vpcaddressprefix"
+# =====================================================================================
+# VPCs
+# =====================================================================================
+
+resource "ibm_is_vpc" "vpc-primary" {
+  name = "vpc-primary"
+}
+
+resource "ibm_is_vpc" "vpc-secondary-1" {
+  name = "vpc-secondary-1"
+}
+
+resource "ibm_is_vpc" "vpc-secondary-2" {
+  name = "vpc-secondary-2"
+}
+
+// VPC with DNS hub configuration
+resource "ibm_is_vpc" "vpc-hub-enabled" {
+  name = "vpc-hub-enabled"
+  dns {
+    enable_hub = true
+  }
+}
+
+// VPC with DNS hub disabled (can be delegated later)
+resource "ibm_is_vpc" "vpc-hub-disabled" {
+  name = "vpc-hub-disabled"
+  dns {
+    enable_hub = false
+    # resolver {
+    # 	type = "delegated"
+    # 	vpc_id = ibm_is_vpc.vpc-hub-enabled.id
+    # }
+  }
+}
+
+# =====================================================================================
+# VPC Address Prefixes
+# =====================================================================================
+
+resource "ibm_is_vpc_address_prefix" "address-prefix-1" {
+  name       = "address-prefix-1"
   zone       = var.zone1
-  vpc        = ibm_is_vpc.vpc1.id
+  vpc        = ibm_is_vpc.vpc-primary.id
   cidr       = var.cidr1
-  is_default = true
+  is_default = false
 }
 
-resource "ibm_is_subnet" "subnet1" {
-  name            = "subnet1"
-  vpc             = ibm_is_vpc.vpc1.id
+# =====================================================================================
+# Subnets
+# =====================================================================================
+
+resource "ibm_is_subnet" "subnet-primary-1" {
+  name            = "subnet-primary-1"
+  vpc             = ibm_is_vpc.vpc-primary.id
   zone            = var.zone1
   ipv4_cidr_block = "10.240.0.0/28"
 }
 
-resource "ibm_is_instance_template" "instancetemplate1" {
-  name    = "testtemplate"
-  image   = "r006-14140f94-fcc4-11e9-96e7-a72723715315"
-  profile = "bx2-8x32"
-
-  primary_network_interface {
-    subnet            = ibm_is_subnet.subnet2.id
-    allow_ip_spoofing = true
-  }
-
-  vpc  = ibm_is_vpc.vpc2.id
-  zone = "us-south-2"
-  keys = [ibm_is_ssh_key.sshkey.id]
-
-  boot_volume {
-    name                             = "testbootvol"
-    delete_volume_on_instance_delete = true
-  }
-  volume_attachments {
-    delete_volume_on_instance_delete = true
-    name                             = "volatt-01"
-    volume_prototype {
-      iops     = 3000
-      profile  = "general-purpose"
-      capacity = 200
-    }
-  }
-}
-
-resource "ibm_is_instance_template" "instancetemplate2" {
-  name    = "testtemplate1"
-  image   = "r006-14140f94-fcc4-11e9-96e7-a72723715315"
-  profile = "bx2-8x32"
-
-  primary_network_interface {
-    subnet            = ibm_is_subnet.subnet2.id
-    allow_ip_spoofing = true
-  }
-
-  vpc  = ibm_is_vpc.vpc2.id
-  zone = "us-south-2"
-  keys = [ibm_is_ssh_key.sshkey.id]
-
-  boot_volume {
-    name                             = "testbootvol"
-    delete_volume_on_instance_delete = true
-  }
-  volume_attachments {
-    delete_volume_on_instance_delete = true
-    name                             = "volatt-01"
-    volume                           = ibm_is_volume.vol1.id
-  }
-}
-
-// datasource for instance template
-data "ibm_is_instance_template" "instancetemplates" {
-  identifier = ibm_is_instance_template.instancetemplate2.id
-}
-
-// Load balancer with private DNS
-resource "ibm_is_lb" "example" {
-  name    = "example-load-balancer"
-  subnets = [ibm_is_subnet.subnet1.id]
-  profile = "network-fixed"
-  dns {
-    instance_crn = "crn:v1:staging:public:dns-svcs:global:a/exxxxxxxxxxxxx-xxxxxxxxxxxxxxxxx:5xxxxxxx-xxxxx-xxxxxxxxxxxxxxx-xxxxxxxxxxxxxxx::"
-    zone_id      = "bxxxxx-xxxx-xxxx-xxxx-xxxxxxxxx"
-  }
-}
-
-resource "ibm_is_lb" "lb2" {
-  name    = "mylb"
-  subnets = [ibm_is_subnet.subnet1.id]
-}
-
-resource "ibm_is_lb_listener" "lb_listener2" {
-  lb       = ibm_is_lb.lb2.id
-  port     = "9086"
-  protocol = "http"
-}
-resource "ibm_is_lb_listener_policy" "lb_listener_policy" {
-  lb                      = ibm_is_lb.lb2.id
-  listener                = ibm_is_lb_listener.lb_listener2.listener_id
-  action                  = "redirect"
-  priority                = 2
-  name                    = "mylistenerpolicy"
-  target_http_status_code = 302
-  target_url              = "https://www.google.com"
-  rules {
-    condition = "contains"
-    type      = "header"
-    field     = "1"
-    value     = "2"
-  }
-}
-
-resource "ibm_is_lb_listener_policy_rule" "lb_listener_policy_rule" {
-  lb        = ibm_is_lb.lb2.id
-  listener  = ibm_is_lb_listener.lb_listener2.listener_id
-  policy    = ibm_is_lb_listener_policy.lb_listener_policy.policy_id
-  condition = "equals"
-  type      = "header"
-  field     = "MY-APP-HEADER"
-  value     = "UpdateVal"
-}
-
-resource "ibm_is_lb_pool" "testacc_pool" {
-  name                                = "test_pool"
-  lb                                  = ibm_is_lb.lb2.id
-  algorithm                           = "round_robin"
-  protocol                            = "https"
-  health_delay                        = 60
-  health_retries                      = 5
-  health_timeout                      = 30
-  health_type                         = "https"
-  proxy_protocol                      = "v1"
-  session_persistence_type            = "app_cookie"
-  session_persistence_app_cookie_name = "cookie1"
-}
-
-resource "ibm_is_lb_pool" "testacc_pool" {
-  name                     = "test_pool"
-  lb                       = ibm_is_lb.lb2.id
-  algorithm                = "round_robin"
-  protocol                 = "https"
-  health_delay             = 60
-  health_retries           = 5
-  health_timeout           = 30
-  health_type              = "https"
-  proxy_protocol           = "v1"
-  session_persistence_type = "http_cookie"
-}
-
-resource "ibm_is_lb_pool" "testacc_pool" {
-  name                     = "test_pool"
-  lb                       = ibm_is_lb.lb2.id
-  algorithm                = "round_robin"
-  protocol                 = "https"
-  health_delay             = 60
-  health_retries           = 5
-  health_timeout           = 30
-  health_type              = "https"
-  proxy_protocol           = "v1"
-  session_persistence_type = "source_ip"
-}
-
-data "ibm_is_lb_listener" "is_lb_listener" {
-  lb          = ibm_is_lb.lb2.id
-  listener_id = ibm_is_lb_listener.lb_listener2.listener_id
-}
-data "ibm_is_lb_listeners" "is_lb_listeners" {
-  lb = ibm_is_lb.lb2.id
-}
-
-data "ibm_is_lb_listener_policy" "is_lb_listener_policy" {
-  lb        = ibm_is_lb.lb2.id
-  listener  = ibm_is_lb_listener.lb_listener2.listener_id
-  policy_id = ibm_is_lb_listener_policy.lb_listener_policy.policy_id
-}
-data "ibm_is_lb_listener_policies" "is_lb_listener_policies" {
-  lb       = ibm_is_lb.lb2.id
-  listener = ibm_is_lb_listener.lb_listener2.listener_id
-}
-
-data "ibm_is_lb_listener_policy_rule" "is_lb_listener_policy_rule" {
-  lb       = ibm_is_lb.lb2.id
-  listener = ibm_is_lb_listener.lb_listener2.listener_id
-  policy   = ibm_is_lb_listener_policy.lb_listener_policy.policy_id
-  rule     = ibm_is_lb_listener_policy_rule.lb_listener_policy_rule.rule
-}
-
-data "ibm_is_lb_listener_policy_rules" "is_lb_listener_policy_rules" {
-  lb       = ibm_is_lb.lb2.id
-  listener = ibm_is_lb_listener.lb_listener2.listener_id
-  policy   = ibm_is_lb_listener_policy.lb_listener_policy.policy_id
-}
-
-resource "ibm_is_vpn_gateway" "VPNGateway1" {
-  name   = "vpn1"
-  subnet = ibm_is_subnet.subnet1.id
-}
-
-// Deprecated: peer_address, local_cidrs, peer_cidrs
-resource "ibm_is_vpn_gateway_connection" "VPNGatewayConnection1_deprecated" {
-  name          = "vpnconn1-deprecated"
-  vpn_gateway   = ibm_is_vpn_gateway.VPNGateway1.id
-  peer_address  = ibm_is_vpn_gateway.VPNGateway1.public_ip_address
-  preshared_key = "VPNDemoPassword"
-  local_cidrs   = [ibm_is_subnet.subnet1.ipv4_cidr_block]
-  peer_cidrs    = [ibm_is_subnet.subnet2.ipv4_cidr_block]
-  ipsec_policy  = ibm_is_ipsec_policy.example.id
-}
-
-resource "ibm_is_vpn_gateway_connection" "VPNGatewayConnection1" {
-  name          = "vpnconn1"
-  vpn_gateway   = ibm_is_vpn_gateway.VPNGateway1.id
-  peer_address  = ibm_is_vpn_gateway.VPNGateway1.public_ip_address
-  preshared_key = "VPNDemoPassword"
-  peer {
-    address    = ibm_is_vpn_gateway.testacc_VPNGateway1.public_ip_address != "0.0.0.0" ? ibm_is_vpn_gateway.testacc_VPNGateway1.public_ip_address : ibm_is_vpn_gateway.testacc_VPNGateway1.public_ip_address2
-    peer_cidrs = [ibm_is_subnet.subnet2.ipv4_cidr_block]
-  }
-  local {
-    cidrs = [ibm_is_subnet.subnet1.ipv4_cidr_block]
-  }
-  ipsec_policy = ibm_is_ipsec_policy.example.id
-}
-
-resource "ibm_is_ssh_key" "sshkey" {
-  name       = "ssh1"
-  public_key = file(var.ssh_public_key)
-}
-
-resource "ibm_is_instance" "instance1" {
-  name    = "instance1"
-  image   = var.image
-  profile = var.profile
-
-  primary_network_interface {
-    subnet = ibm_is_subnet.subnet1.id
-  }
-
-  vpc  = ibm_is_vpc.vpc1.id
-  zone = var.zone1
-  keys = [ibm_is_ssh_key.sshkey.id]
-}
-
-data "ibm_is_instance" "ds_instance" {
-  name        = ibm_is_instance.instance1.name
-  private_key = file("~/.ssh/id_rsa")
-  passphrase  = ""
-}
-
-
-resource "ibm_is_instance_network_interface" "is_instance_network_interface" {
-  instance             = ibm_is_instance.instance1.id
-  subnet               = ibm_is_subnet.subnet1.id
-  allow_ip_spoofing    = true
-  name                 = "my-network-interface"
-  primary_ipv4_address = "10.0.0.5"
-}
-
-data "ibm_is_instance_network_interface" "is_instance_network_interface" {
-  instance_name          = ibm_is_instance.instance1.name
-  network_interface_name = ibm_is_instance_network_interface.is_instance_network_interface.name
-}
-
-data "ibm_is_instance_network_interfaces" "is_instance_network_interfaces" {
-  instance_name = ibm_is_instance.instance1.name
-}
-
-resource "ibm_is_floating_ip" "floatingip1" {
-  name   = "fip1"
-  target = ibm_is_instance.instance1.primary_network_interface[0].id
-}
-
-resource "ibm_is_security_group_rule" "sg1_tcp_rule" {
-  depends_on = [ibm_is_floating_ip.floatingip1]
-  group      = ibm_is_vpc.vpc1.default_security_group
-  direction  = "inbound"
-  remote     = "0.0.0.0/0"
-
-  tcp {
-    port_min = 22
-    port_max = 22
-  }
-}
-
-resource "ibm_is_security_group_rule" "sg1_icmp_rule" {
-  depends_on = [ibm_is_floating_ip.floatingip1]
-  group      = ibm_is_vpc.vpc1.default_security_group
-  direction  = "inbound"
-  remote     = "0.0.0.0/0"
-
-  icmp {
-    code = 0
-    type = 8
-  }
-}
-
-resource "ibm_is_security_group_rule" "sg1_app_tcp_rule" {
-  depends_on = [ibm_is_floating_ip.floatingip1]
-  group      = ibm_is_vpc.vpc1.default_security_group
-  direction  = "inbound"
-  remote     = "0.0.0.0/0"
-
-  tcp {
-    port_min = 80
-    port_max = 80
-  }
-}
-
-resource "ibm_is_vpc" "vpc2" {
-  name = "vpc2"
-}
-
-resource "ibm_is_subnet" "subnet2" {
-  name            = "subnet2"
-  vpc             = ibm_is_vpc.vpc2.id
+resource "ibm_is_subnet" "subnet-secondary-1" {
+  name            = "subnet-secondary-1"
+  vpc             = ibm_is_vpc.vpc-secondary-1.id
   zone            = var.zone2
   ipv4_cidr_block = "10.240.64.0/28"
 }
 
-resource "ibm_is_ipsec_policy" "example" {
-  name                     = "test-ipsec"
-  authentication_algorithm = "sha256"
-  encryption_algorithm     = "aes128"
-  pfs                      = "disabled"
+// Subnets for DNS hub configuration
+resource "ibm_is_subnet" "subnet-hub-1" {
+  name                     = "subnet-hub-1"
+  vpc                      = ibm_is_vpc.vpc-hub-enabled.id
+  zone                     = "${var.region}-2"
+  total_ipv4_address_count = 16
 }
 
-resource "ibm_is_ike_policy" "example" {
-  name                     = "test-ike"
-  authentication_algorithm = "sha256"
-  encryption_algorithm     = "aes128"
-  dh_group                 = 14
-  ike_version              = 1
+resource "ibm_is_subnet" "subnet-hub-2" {
+  name                     = "subnet-hub-2"
+  vpc                      = ibm_is_vpc.vpc-hub-enabled.id
+  zone                     = "${var.region}-2"
+  total_ipv4_address_count = 16
 }
 
-resource "ibm_is_vpn_gateway" "VPNGateway2" {
-  name   = "vpn2"
-  subnet = ibm_is_subnet.subnet2.id
+resource "ibm_is_subnet" "subnet-delegated-1" {
+  name                     = "subnet-delegated-1"
+  vpc                      = ibm_is_vpc.vpc-hub-disabled.id
+  zone                     = "${var.region}-2"
+  total_ipv4_address_count = 16
 }
 
-resource "ibm_is_vpn_gateway_connection" "VPNGatewayConnection2" {
-  name           = "vpnconn2"
-  vpn_gateway    = ibm_is_vpn_gateway.VPNGateway2.id
-  peer_address   = ibm_is_vpn_gateway.VPNGateway2.public_ip_address
-  preshared_key  = "VPNDemoPassword"
-  local_cidrs    = [ibm_is_subnet.subnet2.ipv4_cidr_block]
-  peer_cidrs     = [ibm_is_subnet.subnet1.ipv4_cidr_block]
-  admin_state_up = true
-  ike_policy     = ibm_is_ike_policy.example.id
+resource "ibm_is_subnet" "subnet-delegated-2" {
+  name                     = "subnet-delegated-2"
+  vpc                      = ibm_is_vpc.vpc-hub-disabled.id
+  zone                     = "${var.region}-2"
+  total_ipv4_address_count = 16
 }
 
-resource "ibm_is_instance" "instance2" {
-  name    = "instance2"
-  image   = var.image
-  profile = var.profile
-
-  primary_network_interface {
-    subnet = ibm_is_subnet.subnet2.id
-  }
-  dedicated_host = ibm_is_dedicated_host.is_dedicated_host.id
-  vpc            = ibm_is_vpc.vpc2.id
-  zone           = var.zone2
-  keys           = [ibm_is_ssh_key.sshkey.id]
+// Additional subnet for VNI examples
+resource "ibm_is_subnet" "subnet-vni-example" {
+  name                     = "subnet-vni-example"
+  vpc                      = ibm_is_vpc.vpc-secondary-2.id
+  zone                     = "${var.region}-2"
+  total_ipv4_address_count = 16
 }
 
-resource "ibm_is_instance" "instance3" {
-  name    = "instance3"
-  image   = var.image
-  profile = var.profile
+# =====================================================================================
+# SSH Keys
+# =====================================================================================
 
-  primary_network_interface {
-    subnet = ibm_is_subnet.subnet2.id
-  }
-  dedicated_host_group = ibm_is_dedicated_host_group.dh_group01.id
-  vpc                  = ibm_is_vpc.vpc2.id
-  zone                 = var.zone2
-  keys                 = [ibm_is_ssh_key.sshkey.id]
+resource "ibm_is_ssh_key" "ssh-key-1" {
+  name       = "ssh-key-1"
+  public_key = file(var.ssh_public_key)
 }
 
-
-resource "ibm_is_floating_ip" "floatingip2" {
-  name   = "fip2"
-  target = ibm_is_instance.instance2.primary_network_interface[0].id
+resource "ibm_is_ssh_key" "ssh-key-2" {
+  name       = "ssh-key-2"
+  public_key = file("~/.ssh/id_rsa.pub")
 }
 
-resource "ibm_is_security_group_rule" "sg2_tcp_rule" {
-  depends_on = [ibm_is_floating_ip.floatingip2]
-  group      = ibm_is_vpc.vpc2.default_security_group
-  direction  = "inbound"
-  remote     = "0.0.0.0/0"
+resource "ibm_is_ssh_key" "ssh-key-ed25519" {
+  name       = "ssh-key-ed25519"
+  public_key = file("~/.ssh/id_ed25519.pub")
+  type       = "ed25519"
+}
+
+# =====================================================================================
+# Security Groups
+# =====================================================================================
+
+resource "ibm_is_security_group" "security-group-1" {
+  name = "security-group-1"
+  vpc  = ibm_is_vpc.vpc-primary.id
+}
+
+# =====================================================================================
+# Security Group Rules
+# =====================================================================================
+
+// SSH access rule
+resource "ibm_is_security_group_rule" "sg-ssh-rule" {
+  group     = ibm_is_vpc.vpc-primary.default_security_group
+  direction = "inbound"
+  remote    = "0.0.0.0/0"
 
   tcp {
     port_min = 22
@@ -397,11 +158,11 @@ resource "ibm_is_security_group_rule" "sg2_tcp_rule" {
   }
 }
 
-resource "ibm_is_security_group_rule" "sg2_icmp_rule" {
-  depends_on = [ibm_is_floating_ip.floatingip2]
-  group      = ibm_is_vpc.vpc2.default_security_group
-  direction  = "inbound"
-  remote     = "0.0.0.0/0"
+// ICMP rule
+resource "ibm_is_security_group_rule" "sg-icmp-rule" {
+  group     = ibm_is_vpc.vpc-primary.default_security_group
+  direction = "inbound"
+  remote    = "0.0.0.0/0"
 
   icmp {
     code = 0
@@ -409,11 +170,11 @@ resource "ibm_is_security_group_rule" "sg2_icmp_rule" {
   }
 }
 
-resource "ibm_is_security_group_rule" "sg2_app_tcp_rule" {
-  depends_on = [ibm_is_floating_ip.floatingip2]
-  group      = ibm_is_vpc.vpc2.default_security_group
-  direction  = "inbound"
-  remote     = "0.0.0.0/0"
+// HTTP access rule
+resource "ibm_is_security_group_rule" "sg-http-rule" {
+  group     = ibm_is_vpc.vpc-primary.default_security_group
+  direction = "inbound"
+  remote    = "0.0.0.0/0"
 
   tcp {
     port_min = 80
@@ -421,23 +182,72 @@ resource "ibm_is_security_group_rule" "sg2_app_tcp_rule" {
   }
 }
 
-resource "ibm_is_volume" "vol1" {
-  name    = "vol1"
-  profile = "10iops-tier"
-  zone    = var.zone1
+// UDP rule example
+resource "ibm_is_security_group_rule" "sg-udp-rule" {
+  group     = ibm_is_security_group.security-group-1.id
+  direction = "inbound"
+  remote    = "127.0.0.1"
+
+  udp {
+    port_min = 805
+    port_max = 807
+  }
 }
 
-resource "ibm_is_volume" "vol2" {
-  name     = "vol2"
-  profile  = "custom"
-  zone     = var.zone1
-  iops     = 1000
-  capacity = 200
+// TCP outbound rule
+resource "ibm_is_security_group_rule" "sg-tcp-outbound" {
+  group     = ibm_is_security_group.security-group-1.id
+  direction = "outbound"
+  remote    = "127.0.0.1"
+
+  tcp {
+    port_min = 8080
+    port_max = 8080
+  }
 }
 
-resource "ibm_is_network_acl" "isExampleACL" {
-  name = "is-example-acl"
-  vpc  = ibm_is_vpc.vpc1.id
+// Security group rules for VPC 2
+resource "ibm_is_security_group_rule" "sg2-ssh-rule" {
+  group     = ibm_is_vpc.vpc-secondary-1.default_security_group
+  direction = "inbound"
+  remote    = "0.0.0.0/0"
+
+  tcp {
+    port_min = 22
+    port_max = 22
+  }
+}
+
+resource "ibm_is_security_group_rule" "sg2-icmp-rule" {
+  group     = ibm_is_vpc.vpc-secondary-1.default_security_group
+  direction = "inbound"
+  remote    = "0.0.0.0/0"
+
+  icmp {
+    code = 0
+    type = 8
+  }
+}
+
+resource "ibm_is_security_group_rule" "sg2-http-rule" {
+  group     = ibm_is_vpc.vpc-secondary-1.default_security_group
+  direction = "inbound"
+  remote    = "0.0.0.0/0"
+
+  tcp {
+    port_min = 80
+    port_max = 80
+  }
+}
+
+# =====================================================================================
+# Network ACLs
+# =====================================================================================
+
+resource "ibm_is_network_acl" "network-acl-1" {
+  name = "network-acl-1"
+  vpc  = ibm_is_vpc.vpc-primary.id
+
   rules {
     name        = "outbound"
     action      = "allow"
@@ -451,6 +261,7 @@ resource "ibm_is_network_acl" "isExampleACL" {
       source_port_min = 22
     }
   }
+
   rules {
     name        = "inbound"
     action      = "allow"
@@ -466,1601 +277,2058 @@ resource "ibm_is_network_acl" "isExampleACL" {
   }
 }
 
-resource "ibm_is_network_acl_rule" "isExampleACLRule" {
-  network_acl = ibm_is_network_acl.isExampleACL.id
-  name        = "isexample-rule"
+# =====================================================================================
+# Network ACL Rules
+# =====================================================================================
+
+resource "ibm_is_network_acl_rule" "network-acl-rule-1" {
+  network_acl = ibm_is_network_acl.network-acl-1.id
+  name        = "network-acl-rule-1"
   action      = "allow"
   source      = "0.0.0.0/0"
   destination = "0.0.0.0/0"
   direction   = "outbound"
+
   icmp {
     code = 1
     type = 1
   }
 }
 
-data "ibm_is_network_acl_rule" "testacc_dsnaclrule" {
-  network_acl = ibm_is_network_acl.isExampleACL.id
-  name        = ibm_is_network_acl_rule.isExampleACL.name
+# =====================================================================================
+# Reserved IPs
+# =====================================================================================
+
+resource "ibm_is_subnet_reserved_ip" "reserved-ip-1" {
+  subnet = ibm_is_subnet.subnet-vni-example.id
+  name   = "reserved-ip-1"
 }
 
-data "ibm_is_network_acl_rules" "testacc_dsnaclrules" {
-  network_acl = ibm_is_network_acl.isExampleACL.id
+# =====================================================================================
+# Virtual Network Interfaces (VNIs)
+# =====================================================================================
+
+resource "ibm_is_virtual_network_interface" "vni-1" {
+  name                      = "vni-1"
+  subnet                    = ibm_is_subnet.subnet-vni-example.id
+  enable_infrastructure_nat = true
+  allow_ip_spoofing         = true
 }
 
-data "ibm_is_network_acl" "is_network_acl" {
-  network_acl = ibm_is_network_acl.isExampleACL.id
+resource "ibm_is_virtual_network_interface" "vni-2" {
+  name                      = "vni-2"
+  subnet                    = ibm_is_subnet.subnet-vni-example.id
+  enable_infrastructure_nat = true
+  allow_ip_spoofing         = true
 }
 
-data "ibm_is_network_acl" "is_network_acl1" {
-  name     = ibm_is_network_acl.isExampleACL.name
-  vpc_name = ibm_is_vpc.vpc1.name
+resource "ibm_is_virtual_network_interface" "vni-3" {
+  name                      = "vni-3"
+  subnet                    = ibm_is_subnet.subnet-vni-example.id
+  enable_infrastructure_nat = true
+  allow_ip_spoofing         = true
 }
 
-data "ibm_is_network_acls" "is_network_acls" {
+# =====================================================================================
+# VNI Reserved IP Attachments
+# =====================================================================================
+
+resource "ibm_is_virtual_network_interface_ip" "vni-reserved-ip-1" {
+  virtual_network_interface = ibm_is_virtual_network_interface.vni-1.id
+  reserved_ip               = ibm_is_subnet_reserved_ip.reserved-ip-1.reserved_ip
 }
 
-resource "ibm_is_public_gateway" "publicgateway1" {
-  name = "gateway1"
-  vpc  = ibm_is_vpc.vpc1.id
-  zone = var.zone1
+# =====================================================================================
+# Data Sources for Foundation Resources
+# =====================================================================================
+
+// VPC data sources
+data "ibm_is_vpc" "vpc-primary-data" {
+  name = ibm_is_vpc.vpc-primary.name
 }
 
-// subnet public gateway attachment
-resource "ibm_is_subnet_public_gateway_attachment" "example" {
-  subnet         = ibm_is_subnet.subnet1.id
-  public_gateway = ibm_is_public_gateway.publicgateway1.id
+data "ibm_is_vpcs" "all-vpcs" {
 }
 
-data "ibm_is_public_gateway" "testacc_dspgw" {
-  name = ibm_is_public_gateway.publicgateway1.name
+// VPC address prefix data sources
+data "ibm_is_vpc_address_prefix" "address-prefix-data" {
+  vpc            = ibm_is_vpc.vpc-primary.id
+  address_prefix = ibm_is_vpc_address_prefix.address-prefix-1.address_prefix
 }
 
-data "ibm_is_public_gateways" "publicgateways" {
+data "ibm_is_vpc_address_prefix" "address-prefix-by-name" {
+  vpc_name            = ibm_is_vpc.vpc-primary.name
+  address_prefix_name = ibm_is_vpc_address_prefix.address-prefix-1.name
 }
 
-data "ibm_is_vpc" "vpc1" {
-  name = ibm_is_vpc.vpc1.name
+// Security group data sources
+data "ibm_is_security_groups" "all-security-groups" {
 }
 
-// added for vpcs datasource
-data "ibm_is_vpc" "vpcs" {
+data "ibm_is_security_group_rule" "sg-rule-data" {
+  security_group_rule = ibm_is_security_group_rule.sg-udp-rule.rule_id
+  security_group      = ibm_is_security_group.security-group-1.id
 }
 
-data "ibm_is_volume_profile" "volprofile" {
-  name = "general-purpose"
+data "ibm_is_security_group_rules" "sg-rules-data" {
+  security_group = ibm_is_security_group.security-group-1.id
 }
 
-data "ibm_is_volume_profiles" "volprofiles" {
+// Network ACL data sources
+data "ibm_is_network_acl" "network-acl-data" {
+  network_acl = ibm_is_network_acl.network-acl-1.id
 }
 
-data "ibm_resource_group" "default" {
-  name = "Default" ///give your resource grp
+data "ibm_is_network_acl" "network-acl-by-name" {
+  name     = ibm_is_network_acl.network-acl-1.name
+  vpc_name = ibm_is_vpc.vpc-primary.name
 }
 
-resource "ibm_is_dedicated_host_group" "dh_group01" {
-  family         = "balanced"
-  class          = "bx2d"
-  zone           = "us-south-1"
-  name           = "my-dh-group-01"
-  resource_group = data.ibm_resource_group.default.id
-}
-data "ibm_is_dedicated_host_group" "dgroup" {
-  name = ibm_is_dedicated_host_group.dh_group01.name
-}
-resource "ibm_is_dedicated_host" "is_dedicated_host" {
-  profile        = "bx2d-host-152x608"
-  name           = "my-dedicated-host-01"
-  host_group     = ibm_is_dedicated_host_group.dh_group01.id
-  resource_group = data.ibm_resource_group.default.id
+data "ibm_is_network_acls" "all-network-acls" {
 }
 
-data "ibm_is_dedicated_host_groups" "dgroups" {
+data "ibm_is_network_acl_rule" "network-acl-rule-data" {
+  network_acl = ibm_is_network_acl.network-acl-1.id
+  name        = ibm_is_network_acl_rule.network-acl-rule-1.name
 }
 
-data "ibm_is_dedicated_host_profile" "ibm_is_dedicated_host_profile" {
-  name = "bx2d-host-152x608"
+data "ibm_is_network_acl_rules" "network-acl-rules-data" {
+  network_acl = ibm_is_network_acl.network-acl-1.id
 }
 
-data "ibm_is_dedicated_host_profiles" "ibm_is_dedicated_host_profiles" {
+// SSH key data sources
+data "ibm_is_ssh_keys" "all-ssh-keys" {
 }
 
-
-data "ibm_is_dedicated_hosts" "dhosts" {
-
+data "ibm_is_ssh_keys" "ssh-keys-by-resource-group" {
 }
 
-data "ibm_is_dedicated_host" "dhost" {
-  name       = ibm_is_dedicated_host.is_dedicated_host.name
-  host_group = data.ibm_is_dedicated_host_group.dgroup.id
+// VNI data sources
+data "ibm_is_virtual_network_interface_ips" "vni-reserved-ips" {
+  virtual_network_interface = ibm_is_virtual_network_interface.vni-1.id
 }
 
-resource "ibm_is_volume" "vol3" {
-  name    = "vol3"
+data "ibm_is_virtual_network_interface_ip" "vni-reserved-ip-data" {
+  virtual_network_interface = ibm_is_virtual_network_interface.vni-1.id
+  reserved_ip               = ibm_is_subnet_reserved_ip.reserved-ip-1.reserved_ip
+}
+
+# =====================================================================================
+# DNS Resolution Bindings
+# =====================================================================================
+
+// Create DNS resolution binding between VPCs
+resource "ibm_is_vpc_dns_resolution_binding" "dns-binding-1" {
+  name   = "dns-binding-1"
+  vpc_id = ibm_is_vpc.vpc-hub-disabled.id
+  vpc {
+    id = ibm_is_vpc.vpc-hub-enabled.id
+  }
+}
+
+// DNS resolution binding data sources
+data "ibm_is_vpc_dns_resolution_bindings" "dns-bindings-data" {
+  vpc_id = ibm_is_vpc.vpc-primary.id
+}
+
+data "ibm_is_vpc_dns_resolution_binding" "dns-binding-data" {
+  vpc_id     = ibm_is_vpc.vpc-hub-disabled.id
+  identifier = split("/", ibm_is_vpc_dns_resolution_binding.dns-binding-1.id)[1]
+}
+
+# =====================================================================================
+# Volumes
+# =====================================================================================
+
+resource "ibm_is_volume" "volume-1" {
+  name    = "volume-1"
   profile = "10iops-tier"
   zone    = var.zone1
 }
 
-// creating an instance with volumes
-resource "ibm_is_instance" "instance4" {
-  name    = "instance4"
-  image   = var.image
-  profile = var.profile
-
-  volumes = [ibm_is_volume.vol3.id]
-
-  primary_network_interface {
-    subnet = ibm_is_subnet.subnet1.id
-  }
-
-  vpc  = ibm_is_vpc.vpc1.id
-  zone = var.zone1
-  keys = [ibm_is_ssh_key.sshkey.id]
-}
-
-// creating a snapshot from boot volume with clone
-resource "ibm_is_snapshot" "b_snapshot" {
-  name          = "my-snapshot-boot"
-  source_volume = ibm_is_instance.instance4.volume_attachments[0].volume_id
-  clones        = [var.zone1]
-  tags          = ["tags1"]
-}
-
-// creating a snapshot from data volume
-resource "ibm_is_snapshot" "d_snapshot" {
-  name          = "my-snapshot-data"
-  source_volume = ibm_is_instance.instance4.volume_attachments[1].volume_id
-  tags          = ["tags1"]
-}
-
-// data source for snapshot by name
-data "ibm_is_snapshot" "ds_snapshot" {
-  name = "my-snapshot-boot"
-}
-
-// data source for snapshots
-data "ibm_is_snapshots" "ds_snapshots" {
-}
-
-// data source for snapshot clones
-data "ibm_is_snapshot_clones" "ds_snapshot_clones" {
-  snapshot = ibm_is_snapshot.b_snapshot.id
-}
-
-// data source for snapshot clones
-data "ibm_is_snapshot_clones" "ds_snapshot_clone" {
-  snapshot = ibm_is_snapshot.b_snapshot.id
+resource "ibm_is_volume" "volume-2" {
+  name     = "volume-2"
+  profile  = "custom"
   zone     = var.zone1
+  iops     = 1000
+  capacity = 200
 }
 
-// restoring a boot volume from snapshot in a new instance
-resource "ibm_is_instance" "instance5" {
-  name    = "instance5"
-  profile = var.profile
-  boot_volume {
-    name     = "boot-restore"
-    snapshot = ibm_is_snapshot.b_snapshot.id
-  }
-  auto_delete_volume = true
-  primary_network_interface {
-    subnet = ibm_is_subnet.subnet2.id
-  }
-  vpc  = ibm_is_vpc.vpc2.id
-  zone = "us-south-2"
-  keys = [ibm_is_ssh_key.sshkey.id]
+resource "ibm_is_volume" "volume-3" {
+  name    = "volume-3"
+  profile = "10iops-tier"
+  zone    = var.zone1
+  tags    = ["tag1"]
 }
 
-// creating a volume 
-resource "ibm_is_volume" "vol5" {
-  name    = "vol5"
+resource "ibm_is_volume" "volume-4" {
+  name    = "volume-4"
   profile = "10iops-tier"
   zone    = "us-south-2"
   tags    = ["tag1"]
 }
 
-// creating a volume attachment on an existing instance using an existing volume
-resource "ibm_is_instance_volume_attachment" "att1" {
-  instance                           = ibm_is_instance.instance5.id
-  volume                             = ibm_is_volume.vol5.id
-  name                               = "vol-att-1"
-  delete_volume_on_attachment_delete = false
-  delete_volume_on_instance_delete   = false
-}
+# =====================================================================================
+# Virtual Server Instances (VSIs)
+# =====================================================================================
 
-// creating a volume attachment on an existing instance using a new volume
-resource "ibm_is_instance_volume_attachment" "att2" {
-  instance                           = ibm_is_instance.instance5.id
-  name                               = "vol-att-2"
-  profile                            = "general-purpose"
-  snapshot                           = ibm_is_snapshot.d_snapshot.id
-  delete_volume_on_instance_delete   = true
-  delete_volume_on_attachment_delete = true
-  volume_name                        = "vol4-restore"
-}
-
-// data source for volume attachment
-data "ibm_is_instance_volume_attachment" "ds_vol_att" {
-  instance = ibm_is_instance.instance5.id
-  name     = ibm_is_instance_volume_attachment.att2.name
-}
-
-// data source for volume attachments
-data "ibm_is_instance_volume_attachment" "ds_vol_atts" {
-  instance = ibm_is_instance.instance5.id
-}
-
-// creating an instance using an existing instance template
-resource "ibm_is_instance" "instance6" {
-  name              = "instance4"
-  instance_template = ibm_is_instance_template.instancetemplate1.id
-}
-
-resource "ibm_is_image" "image1" {
-  href             = var.image_cos_url
-  name             = "my-img-1"
-  operating_system = var.image_operating_system
-}
-
-resource "ibm_is_image" "image2" {
-  source_volume = data.ibm_is_instance.instance1.volume_attachments.0.volume_id
-  name          = "my-img-1"
-}
-
-data "ibm_is_image" "dsimage" {
-  name = ibm_is_image.image1.name
-}
-
-data "ibm_is_images" "dsimages" {
-}
-
-resource "ibm_is_instance_disk_management" "disks" {
-  instance = ibm_is_instance.instance1.id
-  disks {
-    name = "mydisk01"
-    id   = ibm_is_instance.instance1.disks.0.id
-  }
-}
-
-data "ibm_is_instance_disks" "disk1" {
-  instance = ibm_is_instance.instance1.id
-}
-
-// reserved ips
-
-resource "ibm_is_instance" "instance7" {
-  name    = "instance5"
+// Basic instance
+resource "ibm_is_instance" "vsi-1" {
+  name    = "vsi-1"
+  image   = var.image
   profile = var.profile
-  boot_volume {
-    name     = "boot-restore"
-    snapshot = ibm_is_snapshot.b_snapshot.id
+
+  primary_network_interface {
+    subnet = ibm_is_subnet.subnet-primary-1.id
   }
+
+  vpc  = ibm_is_vpc.vpc-primary.id
+  zone = var.zone1
+  keys = [ibm_is_ssh_key.ssh-key-1.id]
+}
+
+
+// Instance with dedicated host
+resource "ibm_is_instance" "vsi-2" {
+  name    = "vsi-2"
+  image   = var.image
+  profile = var.profile
+
+  primary_network_interface {
+    subnet = ibm_is_subnet.subnet-secondary-1.id
+  }
+
+  dedicated_host = ibm_is_dedicated_host.dedicated-host-1.id
+  vpc            = ibm_is_vpc.vpc-secondary-1.id
+  zone           = var.zone2
+  keys           = [ibm_is_ssh_key.ssh-key-1.id]
+}
+
+// Instance with dedicated host group
+resource "ibm_is_instance" "vsi-3" {
+  name    = "vsi-3"
+  image   = var.image
+  profile = var.profile
+
+  primary_network_interface {
+    subnet = ibm_is_subnet.subnet-secondary-1.id
+  }
+
+  dedicated_host_group = ibm_is_dedicated_host_group.host-group-1.id
+  vpc                  = ibm_is_vpc.vpc-secondary-1.id
+  zone                 = var.zone2
+  keys                 = [ibm_is_ssh_key.ssh-key-1.id]
+}
+
+// Instance with volumes attached
+resource "ibm_is_instance" "vsi-4" {
+  name    = "vsi-4"
+  image   = var.image
+  profile = var.profile
+
+  volumes = [ibm_is_volume.volume-3.id]
+
+  primary_network_interface {
+    subnet = ibm_is_subnet.subnet-primary-1.id
+  }
+
+  vpc  = ibm_is_vpc.vpc-primary.id
+  zone = var.zone1
+  keys = [ibm_is_ssh_key.ssh-key-1.id]
+}
+
+// Instance with boot volume from snapshot
+resource "ibm_is_instance" "vsi-5" {
+  name    = "vsi-5"
+  profile = var.profile
+
+  boot_volume {
+    name     = "boot-volume-restored"
+    snapshot = ibm_is_snapshot.snapshot-boot.id
+  }
+
   auto_delete_volume = true
+
+  primary_network_interface {
+    subnet = ibm_is_subnet.subnet-secondary-1.id
+  }
+
+  vpc  = ibm_is_vpc.vpc-secondary-1.id
+  zone = "us-south-2"
+  keys = [ibm_is_ssh_key.ssh-key-1.id]
+}
+
+// Instance with reserved IP
+resource "ibm_is_instance" "vsi-6" {
+  name    = "vsi-6"
+  profile = var.profile
+
+  boot_volume {
+    name     = "boot-volume-reserved-ip"
+    snapshot = ibm_is_snapshot.snapshot-boot.id
+  }
+
+  auto_delete_volume = true
+
   primary_network_interface {
     primary_ip {
       address     = "10.0.0.5"
       auto_delete = true
     }
-    name   = "test-reserved-ip"
-    subnet = ibm_is_subnet.subnet2.id
+    name   = "network-interface-reserved-ip"
+    subnet = ibm_is_subnet.subnet-secondary-1.id
   }
-  vpc  = ibm_is_vpc.vpc2.id
+
+  vpc  = ibm_is_vpc.vpc-secondary-1.id
   zone = "us-south-2"
-  keys = [ibm_is_ssh_key.sshkey.id]
+  keys = [ibm_is_ssh_key.ssh-key-1.id]
 }
 
-// catalog images 
-
-data "ibm_is_images" "imageslist" {
-  catalog_managed = true
-}
-resource "ibm_is_instance" "instance8" {
-  name               = "instance8"
+// Instance with named reserved IP
+resource "ibm_is_instance" "vsi-7" {
+  name               = "vsi-7"
   profile            = var.profile
   auto_delete_volume = true
+
   primary_network_interface {
     primary_ip {
-      name        = "example-reserved-ip"
+      name        = "reserved-ip-named"
       auto_delete = true
     }
-    name   = "test-reserved-ip"
-    subnet = ibm_is_subnet.subnet2.id
+    name   = "network-interface-named-ip"
+    subnet = ibm_is_subnet.subnet-secondary-1.id
   }
+
   catalog_offering {
-    version_crn = data.ibm_is_images.imageslist.images.0.catalog_offering.0.version.0.crn
-    plan_crn = "crn:v1:bluemix:public:globalcatalog-collection:global:a/123456:51c9e0db-2911-45a6-adb0-ac5332d27cf2:plan:sw.51c9e0db-2911-45a6-adb0-ac5332d27cf2.772c0dbe-aa62-482e-adbe-a3fc20101e0e"
+    version_crn = data.ibm_is_images.catalog-images.images.0.catalog_offering.0.version.0.crn
+    plan_crn    = "crn:v1:bluemix:public:globalcatalog-collection:global:a/123456:51c9e0db-2911-45a6-adb0-ac5332d27cf2:plan:sw.51c9e0db-2911-45a6-adb0-ac5332d27cf2.772c0dbe-aa62-482e-adbe-a3fc20101e0e"
   }
-  vpc  = ibm_is_vpc.vpc2.id
+
+  vpc  = ibm_is_vpc.vpc-secondary-1.id
   zone = "us-south-2"
-  keys = [ibm_is_ssh_key.sshkey.id]
+  keys = [ibm_is_ssh_key.ssh-key-1.id]
 }
 
-resource "ibm_is_instance_template" "instancetemplate3" {
-  name = "instancetemplate-3"
-  catalog_offering {
-    version_crn = data.ibm_is_images.imageslist.images.0.catalog_offering.0.version.0.crn
-    plan_crn = "crn:v1:bluemix:public:globalcatalog-collection:global:a/123456:51c9e0db-2911-45a6-adb0-ac5332d27cf2:plan:sw.51c9e0db-2911-45a6-adb0-ac5332d27cf2.772c0dbe-aa62-482e-adbe-a3fc20101e0e"
+// Instance using VNI (Virtual Network Interface)
+resource "ibm_is_instance" "vsi-8" {
+  name    = "vsi-8"
+  profile = "bx2-2x8"
+  image   = "r134-f47cc24c-e020-4db5-ad96-1e5be8b5853b"
+
+  primary_network_attachment {
+    name = "vni-attachment-1"
+    virtual_network_interface {
+      id = ibm_is_virtual_network_interface.vni-3.id
+    }
   }
-  profile = var.profile
 
-  primary_network_interface {
-    subnet = ibm_is_subnet.subnet2.id
+  vpc  = ibm_is_vpc.vpc-secondary-2.id
+  zone = "${var.region}-2"
+  keys = [ibm_is_ssh_key.ssh-key-ed25519.id]
+}
+
+# =====================================================================================
+# Instance Network Interfaces
+# =====================================================================================
+
+resource "ibm_is_instance_network_interface" "network-interface-1" {
+  instance             = ibm_is_instance.vsi-1.id
+  subnet               = ibm_is_subnet.subnet-primary-1.id
+  allow_ip_spoofing    = true
+  name                 = "network-interface-1"
+  primary_ipv4_address = "10.0.0.5"
+}
+
+// Instance network attachment using VNI
+resource "ibm_is_instance_network_attachment" "network-attachment-1" {
+  instance = ibm_is_instance.vsi-8.id
+  name     = "network-attachment-1"
+  virtual_network_interface {
+    id = ibm_is_virtual_network_interface.vni-2.id
   }
-
-  vpc  = ibm_is_vpc.vpc2.id
-  zone = "us-south-2"
-  keys = [ibm_is_ssh_key.sshkey.id]
 }
 
+# =====================================================================================
+# Floating IPs
+# =====================================================================================
 
-data "ibm_is_instance_network_interface_reserved_ip" "data_reserved_ip" {
-  instance          = ibm_is_instance.test_instance.id
-  network_interface = ibm_is_instance.test_instance.network_interfaces.0.id
-  reserved_ip       = ibm_is_instance.test_instance.network_interfaces.0.ips.0.id
+resource "ibm_is_floating_ip" "floating-ip-1" {
+  name   = "floating-ip-1"
+  target = ibm_is_instance.vsi-1.primary_network_interface[0].id
 }
 
-data "ibm_is_instance_network_interface_reserved_ips" "data_reserved_ips" {
-  instance          = ibm_is_instance.test_instance.id
-  network_interface = ibm_is_instance.test_instance.network_interfaces.0.id
+resource "ibm_is_floating_ip" "floating-ip-2" {
+  name   = "floating-ip-2"
+  target = ibm_is_instance.vsi-2.primary_network_interface[0].id
 }
 
-data "ibm_is_instance_disk" "disk1" {
-  instance = ibm_is_instance.instance1.id
-  disk     = data.ibm_is_instance_disks.disk1.disks.0.id
+resource "ibm_is_floating_ip" "floating-ip-3" {
+  name = "floating-ip-3"
+  zone = ibm_is_subnet.subnet-vni-example.zone
 }
 
-data "ibm_is_dedicated_host_disks" "dhdisks" {
-  dedicated_host = data.ibm_is_dedicated_host.dhost.id
+// VNI floating IP attachment
+resource "ibm_is_virtual_network_interface_floating_ip" "vni-floating-ip-1" {
+  virtual_network_interface = ibm_is_virtual_network_interface.vni-1.id
+  floating_ip               = ibm_is_floating_ip.floating-ip-3.id
 }
 
-data "ibm_is_dedicated_host_disk" "dhdisk" {
-  dedicated_host = data.ibm_is_dedicated_host.dhost.id
-  disk           = ibm_is_dedicated_host_disk_management.disks.disks.0.id
+# =====================================================================================
+# Volume Attachments
+# =====================================================================================
+
+// Volume attachment using existing volume
+resource "ibm_is_instance_volume_attachment" "volume-attachment-1" {
+  instance                           = ibm_is_instance.vsi-5.id
+  volume                             = ibm_is_volume.volume-4.id
+  name                               = "volume-attachment-1"
+  delete_volume_on_attachment_delete = false
+  delete_volume_on_instance_delete   = false
 }
 
-resource "ibm_is_dedicated_host_disk_management" "disks" {
-  dedicated_host = data.ibm_is_dedicated_host.dhost.id
+// Volume attachment creating new volume from snapshot
+resource "ibm_is_instance_volume_attachment" "volume-attachment-2" {
+  instance                           = ibm_is_instance.vsi-5.id
+  name                               = "volume-attachment-2"
+  profile                            = "general-purpose"
+  snapshot                           = ibm_is_snapshot.snapshot-data.id
+  delete_volume_on_instance_delete   = true
+  delete_volume_on_attachment_delete = true
+  volume_name                        = "volume-from-snapshot"
+}
+
+# =====================================================================================
+# Instance Actions
+# =====================================================================================
+
+resource "ibm_is_instance_action" "vsi-stop-action" {
+  action   = "stop"
+  instance = ibm_is_instance.vsi-8.id
+}
+
+resource "ibm_is_instance_action" "vsi-start-action" {
+  action   = "start"
+  instance = ibm_is_instance.vsi-8.id
+}
+
+# =====================================================================================
+# Instance Disk Management
+# =====================================================================================
+
+resource "ibm_is_instance_disk_management" "disk-management-1" {
+  instance = ibm_is_instance.vsi-1.id
   disks {
-    name = "newdisk01"
-    id   = data.ibm_is_dedicated_host.dhost.disks.0.id
-
-  }
-  disks {
-    name = "newdisk02"
-    id   = data.ibm_is_dedicated_host.dhost.disks.1.id
-
+    name = "disk-1"
+    id   = ibm_is_instance.vsi-1.disks.0.id
   }
 }
 
-data "ibm_is_operating_system" "os" {
-  name = "red-8-amd64"
+# =====================================================================================
+# Data Sources for Compute Resources
+# =====================================================================================
+
+// Instance data sources
+data "ibm_is_instance" "vsi-1-data" {
+  name        = ibm_is_instance.vsi-1.name
+  private_key = file("~/.ssh/id_rsa")
+  passphrase  = ""
 }
 
-data "ibm_is_operating_systems" "oslist" {
+data "ibm_is_instances" "all-instances" {
 }
 
-#### BARE METAL SERVER
-
-
-resource "ibm_is_bare_metal_server" "bms" {
-  profile = "bx2-metal-192x768"
-  name    = "my-bms"
-  image   = "r134-31c8ca90-2623-48d7-8cf7-737be6fc4c3e"
-  zone    = "us-south-3"
-  keys    = [ibm_is_ssh_key.sshkey.id]
-  primary_network_interface {
-    subnet = ibm_is_subnet.subnet1.id
-  }
-  vpc = ibm_is_vpc.vpc1.id
+// Instance network interface data sources
+data "ibm_is_instance_network_interface" "network-interface-data" {
+  instance_name          = ibm_is_instance.vsi-1.name
+  network_interface_name = ibm_is_instance_network_interface.network-interface-1.name
 }
 
-resource "ibm_is_bare_metal_server_disk" "this" {
-  bare_metal_server = ibm_is_bare_metal_server.bms.id
-  disk              = ibm_is_bare_metal_server.bms.disks.0.id
-  name              = "bms-disk-update"
+data "ibm_is_instance_network_interfaces" "all-network-interfaces" {
+  instance_name = ibm_is_instance.vsi-1.name
 }
 
-resource "ibm_is_bare_metal_server_action" "this" {
-  bare_metal_server = ibm_is_bare_metal_server.bms.id
-  action            = "stop"
-  stop_type         = "hard"
+// Instance network interface reserved IP data sources
+data "ibm_is_instance_network_interface_reserved_ip" "reserved-ip-data" {
+  instance          = ibm_is_instance.vsi-6.id
+  network_interface = ibm_is_instance.vsi-6.network_interfaces.0.id
+  reserved_ip       = ibm_is_instance.vsi-6.network_interfaces.0.primary_ip.0.reserved_ip
 }
 
-data "ibm_is_bare_metal_server_profiles" "this" {
+data "ibm_is_instance_network_interface_reserved_ips" "reserved-ips-data" {
+  instance          = ibm_is_instance.vsi-6.id
+  network_interface = ibm_is_instance.vsi-6.network_interfaces.0.id
 }
 
-data "ibm_is_bare_metal_server_profile" "this" {
-  name = data.ibm_is_bare_metal_server_profiles.this.profiles.0.name
+// Volume data sources
+data "ibm_is_volumes" "all-volumes" {
 }
 
-data "ibm_is_bare_metal_server_disk" "this" {
-  bare_metal_server = ibm_is_bare_metal_server.this.id
-  disk              = ibm_is_bare_metal_server.this.disks.0.id
+data "ibm_is_volumes" "volumes-by-name" {
+  volume_name = "volume-1"
 }
 
-data "ibm_is_bare_metal_server_disks" "this" {
-  bare_metal_server = ibm_is_bare_metal_server.this.id
-}
-
-resource "ibm_is_bare_metal_server_network_interface" "bms_nic" {
-  bare_metal_server = ibm_is_bare_metal_server.bms.id
-
-  subnet            = ibm_is_subnet.subnet1.id
-  name              = "eth2"
-  allow_ip_spoofing = true
-  allowed_vlans     = [101, 102]
-}
-
-resource "ibm_is_bare_metal_server_network_interface_allow_float" "bms_vlan_nic" {
-  bare_metal_server = ibm_is_bare_metal_server.bms.id
-
-  subnet = ibm_is_subnet.subnet1.id
-  name   = "eth2"
-  vlan   = 102
-}
-
-resource "ibm_is_bare_metal_server_network_interface" "bms_nic2" {
-  bare_metal_server = ibm_is_bare_metal_server.bms.id
-
-  subnet            = ibm_is_subnet.subnet1.id
-  name              = "eth2"
-  allow_ip_spoofing = true
-  vlan              = 101
-}
-
-resource "ibm_is_floating_ip" "testacc_fip" {
-  name = "testaccfip"
-  zone = ibm_is_subnet.subnet1.zone
-}
-
-resource "ibm_is_bare_metal_server_network_interface_floating_ip" "bms_nic_fip" {
-  bare_metal_server = ibm_is_bare_metal_server.bms.id
-  network_interface = ibm_is_bare_metal_server_network_interface.bms_nic2.id
-  floating_ip       = ibm_is_floating_ip.testacc_fip.id
-}
-
-data "ibm_is_bare_metal_server_network_interface" "this" {
-  bare_metal_server = ibm_is_bare_metal_server.this.id
-  network_interface = ibm_is_bare_metal_server.this.primary_network_interface.id
-}
-
-data "ibm_is_bare_metal_server_network_interfaces" "this" {
-  bare_metal_server = ibm_is_bare_metal_server.this.id
-}
-
-data "ibm_is_bare_metal_server" "this" {
-  identifier = ibm_is_bare_metal_server.this.id
-}
-
-data "ibm_is_bare_metal_servers" "this" {
-}
-
-data "ibm_is_bare_metal_server_initialization" "this" {
-  bare_metal_server = ibm_is_bare_metal_server.this.id
-}
-
-resource "ibm_is_floating_ip" "floatingipbms" {
-  name = "fip1"
-  zone = ibm_is_subnet.subnet1.zone
-}
-
-data "ibm_is_bare_metal_server_network_interface_floating_ip" "this" {
-  bare_metal_server = ibm_is_bare_metal_server.this.id
-  network_interface = ibm_is_bare_metal_server.this.primary_network_interface[0].id
-  floating_ip       = ibm_is_floating_ip.floatingipbms.id
-}
-
-data "ibm_is_bare_metal_server_network_interface_floating_ips" "this" {
-  bare_metal_server = ibm_is_bare_metal_server.this.id
-  network_interface = ibm_is_bare_metal_server.this.primary_network_interface[0].id
-}
-
-resource "ibm_is_placement_group" "is_placement_group" {
-  strategy       = "%s"
-  name           = "%s"
-  resource_group = data.ibm_resource_group.default.id
-}
-
-data "ibm_is_placement_group" "is_placement_group" {
-  name = ibm_is_placement_group.is_placement_group.name
-}
-
-data "ibm_is_placement_groups" "is_placement_groups" {
-}
-
-## List regions 
-data "ibm_is_regions" "regions" {
-}
-
-data "ibm_is_vpc_address_prefix" "example" {
-  vpc            = ibm_is_vpc.vpc1.id
-  address_prefix = ibm_is_vpc_address_prefix.testacc_vpc_address_prefix.address_prefix
-}
-
-data "ibm_is_vpc_address_prefix" "example-1" {
-  vpc_name       = ibm_is_vpc.vpc1.name
-  address_prefix = ibm_is_vpc_address_prefix.testacc_vpc_address_prefix.address_prefix
-}
-
-data "ibm_is_vpc_address_prefix" "example-2" {
-  vpc                 = ibm_is_vpc.vpc1.id
-  address_prefix_name = ibm_is_vpc_address_prefix.testacc_vpc_address_prefix.name
-}
-
-data "ibm_is_vpc_address_prefix" "example-3" {
-  vpc_name            = ibm_is_vpc.vpc1.name
-  address_prefix_name = ibm_is_vpc_address_prefix.testacc_vpc_address_prefix.name
-}
-
-## Security Groups/Rules/Rule
-// Create is_security_groups data source
-data "ibm_is_security_groups" "example" {
-}
-
-// Create is_security_group data source
-resource "ibm_is_security_group" "example" {
-  name = "example-security-group"
-  vpc  = ibm_is_vpc.vpc1.id
-}
-
-resource "ibm_is_security_group_rule" "exampleudp" {
-  depends_on = [
-    ibm_is_security_group.example,
-  ]
-  group     = ibm_is_security_group.example.id
-  direction = "inbound"
-  remote    = "127.0.0.1"
-  udp {
-    port_min = 805
-    port_max = 807
-  }
-}
-
-data "ibm_is_security_group_rule" "example" {
-  depends_on = [
-    ibm_is_security_group_rule.exampleudp,
-  ]
-  security_group_rule = ibm_is_security_group_rule.exampleudp.rule_id
-  security_group      = ibm_is_security_group.example.id
-}
-
-// Create is_security_group_rules data source
-resource "ibm_is_security_group_rule" "exampletcp" {
-  group     = ibm_is_security_group.example.id
-  direction = "outbound"
-  remote    = "127.0.0.1"
-  tcp {
-    port_min = 8080
-    port_max = 8080
-  }
-  depends_on = [
-    ibm_is_security_group.example,
-  ]
-}
-
-data "ibm_is_security_group_rules" "example" {
-  depends_on = [
-    ibm_is_security_group_rule.exampletcp,
-  ]
-}
-
-data "ibm_is_vpn_gateway" "example" {
-  vpn_gateway = ibm_is_vpn_gateway.example.id
-}
-data "ibm_is_vpn_gateway" "example-1" {
-  vpn_gateway_name = ibm_is_vpn_gateway.example.name
-}
-data "ibm_is_vpn_gateway_connection" "example" {
-  vpn_gateway            = ibm_is_vpn_gateway.example.id
-  vpn_gateway_connection = ibm_is_vpn_gateway_connection.example.gateway_connection
-}
-data "ibm_is_vpn_gateway_connection" "example-1" {
-  vpn_gateway                 = ibm_is_vpn_gateway.example-1.id
-  vpn_gateway_connection_name = ibm_is_vpn_gateway_connection.example.name
-}
-data "ibm_is_vpn_gateway_connection" "example-2" {
-  vpn_gateway_name       = ibm_is_vpn_gateway.example.name
-  vpn_gateway_connection = ibm_is_vpn_gateway_connection.example.gateway_connection
-}
-data "ibm_is_vpn_gateway_connection" "example-3" {
-  vpn_gateway_name            = ibm_is_vpn_gateway.example.name
-  vpn_gateway_connection_name = ibm_is_vpn_gateway_connection.example.name
-}
-data "ibm_is_ike_policies" "example" {
-}
-
-data "ibm_is_ipsec_policies" "example" {
-}
-
-data "ibm_is_ike_policy" "example" {
-  ike_policy = ibm_is_ike_policy.example.id
-}
-
-data "ibm_is_ipsec_policy" "example1" {
-  ipsec_policy = ibm_is_ipsec_policy.example.id
-}
-
-data "ibm_is_ike_policy" "example2" {
-  name = "my-ike-policy"
-}
-
-data "ibm_is_ipsec_policy" "example3" {
-  name = "my-ipsec-policy"
-}
-
-# List ssh keys 
-data "ibm_is_ssh_keys" "example" {
-}
-
-# List ssh keys by Resource group id
-data "ibm_is_ssh_keys" "example" {
-  resource_group = data.ibm_resource_group.default.id
-}
-
-# List volumes
-data "ibm_is_volumes" "example-volumes" {
-}
-
-# List Volumes by Name 
-data "ibm_is_volumes" "example" {
-  volume_name = "worrier-mailable-timpani-scowling"
-}
-
-# List Volumes by Zone name
-data "ibm_is_volumes" "example" {
+data "ibm_is_volumes" "volumes-by-zone" {
   zone_name = "us-south-1"
 }
 
-## Backup Policy
-resource "ibm_is_backup_policy" "is_backup_policy" {
+data "ibm_is_volume_profile" "volume-profile-data" {
+  name = "general-purpose"
+}
+
+data "ibm_is_volume_profiles" "all-volume-profiles" {
+}
+
+// Volume attachment data sources
+data "ibm_is_instance_volume_attachment" "volume-attachment-data" {
+  instance = ibm_is_instance.vsi-5.id
+  name     = ibm_is_instance_volume_attachment.volume-attachment-2.name
+}
+
+data "ibm_is_instance_volume_attachments" "all-volume-attachments" {
+  instance = ibm_is_instance.vsi-5.id
+}
+
+// Instance disk data sources
+data "ibm_is_instance_disks" "instance-disks" {
+  instance = ibm_is_instance.vsi-1.id
+}
+
+data "ibm_is_instance_disk" "instance-disk-data" {
+  instance = ibm_is_instance.vsi-1.id
+  disk     = data.ibm_is_instance_disks.instance-disks.disks.0.id
+}
+
+// VNI floating IP data sources
+data "ibm_is_virtual_network_interface_floating_ip" "vni-floating-ip-data" {
+  virtual_network_interface = ibm_is_virtual_network_interface.vni-1.id
+  floating_ip               = ibm_is_floating_ip.floating-ip-3.id
+}
+
+data "ibm_is_virtual_network_interface_floating_ips" "vni-floating-ips-data" {
+  virtual_network_interface = ibm_is_virtual_network_interface.vni-1.id
+}
+
+// Image data sources
+data "ibm_is_image" "image-data" {
+  name = "my-custom-image"
+}
+
+data "ibm_is_images" "all-images" {
+}
+
+data "ibm_is_images" "catalog-images" {
+  catalog_managed = true
+}
+
+// Operating system data sources
+data "ibm_is_operating_system" "os-data" {
+  name = "red-8-amd64"
+}
+
+data "ibm_is_operating_systems" "all-operating-systems" {
+}
+
+// Regions data source
+data "ibm_is_regions" "all-regions" {
+}
+
+# =====================================================================================
+# Public Gateways
+# =====================================================================================
+
+resource "ibm_is_public_gateway" "public-gateway-1" {
+  name = "public-gateway-1"
+  vpc  = ibm_is_vpc.vpc-primary.id
+  zone = var.zone1
+}
+
+// Subnet public gateway attachment
+resource "ibm_is_subnet_public_gateway_attachment" "subnet-pgw-attachment-1" {
+  subnet         = ibm_is_subnet.subnet-primary-1.id
+  public_gateway = ibm_is_public_gateway.public-gateway-1.id
+}
+
+# =====================================================================================
+# IKE and IPSec Policies
+# =====================================================================================
+
+resource "ibm_is_ike_policy" "ike-policy-1" {
+  name                     = "ike-policy-1"
+  authentication_algorithm = "sha256"
+  encryption_algorithm     = "aes128"
+  dh_group                 = 14
+  ike_version              = 1
+}
+
+resource "ibm_is_ipsec_policy" "ipsec-policy-1" {
+  name                     = "ipsec-policy-1"
+  authentication_algorithm = "sha256"
+  encryption_algorithm     = "aes128"
+  pfs                      = "disabled"
+}
+
+# =====================================================================================
+# VPN Gateways
+# =====================================================================================
+
+resource "ibm_is_vpn_gateway" "vpn-gateway-1" {
+  name   = "vpn-gateway-1"
+  subnet = ibm_is_subnet.subnet-primary-1.id
+}
+
+resource "ibm_is_vpn_gateway" "vpn-gateway-2" {
+  name   = "vpn-gateway-2"
+  subnet = ibm_is_subnet.subnet-secondary-1.id
+}
+
+# =====================================================================================
+# VPN Gateway Connections
+# =====================================================================================
+
+// Deprecated format for reference
+resource "ibm_is_vpn_gateway_connection" "vpn-connection-1-deprecated" {
+  name          = "vpn-connection-1-deprecated"
+  vpn_gateway   = ibm_is_vpn_gateway.vpn-gateway-1.id
+  peer_address  = ibm_is_vpn_gateway.vpn-gateway-1.public_ip_address
+  preshared_key = "VPNDemoPassword"
+  local_cidrs   = [ibm_is_subnet.subnet-primary-1.ipv4_cidr_block]
+  peer_cidrs    = [ibm_is_subnet.subnet-secondary-1.ipv4_cidr_block]
+  ipsec_policy  = ibm_is_ipsec_policy.ipsec-policy-1.id
+}
+
+// Current format
+resource "ibm_is_vpn_gateway_connection" "vpn-connection-1" {
+  name          = "vpn-connection-1"
+  vpn_gateway   = ibm_is_vpn_gateway.vpn-gateway-1.id
+  preshared_key = "VPNDemoPassword"
+
+  peer {
+    address = ibm_is_vpn_gateway.vpn-gateway-2.public_ip_address != "0.0.0.0" ? ibm_is_vpn_gateway.vpn-gateway-2.public_ip_address : ibm_is_vpn_gateway.vpn-gateway-2.public_ip_address2
+    cidrs   = [ibm_is_subnet.subnet-secondary-1.ipv4_cidr_block]
+  }
+
+  local {
+    cidrs = [ibm_is_subnet.subnet-primary-1.ipv4_cidr_block]
+  }
+
+  ipsec_policy = ibm_is_ipsec_policy.ipsec-policy-1.id
+}
+
+resource "ibm_is_vpn_gateway_connection" "vpn-connection-2" {
+  name           = "vpn-connection-2-deprecated"
+  vpn_gateway    = ibm_is_vpn_gateway.vpn-gateway-2.id
+  peer_address   = ibm_is_vpn_gateway.vpn-gateway-2.public_ip_address
+  preshared_key  = "VPNDemoPassword"
+  local_cidrs    = [ibm_is_subnet.subnet-secondary-1.ipv4_cidr_block]
+  peer_cidrs     = [ibm_is_subnet.subnet-primary-1.ipv4_cidr_block]
+  admin_state_up = true
+  ike_policy     = ibm_is_ike_policy.ike-policy-1.id
+}
+
+# =====================================================================================
+# Load Balancers
+# =====================================================================================
+
+// Load balancer with private DNS
+resource "ibm_is_lb" "load-balancer-1" {
+  name    = "load-balancer-1"
+  subnets = [ibm_is_subnet.subnet-primary-1.id]
+  profile = "network-fixed"
+  dns {
+    instance_crn = "crn:v1:staging:public:dns-svcs:global:a/exxxxxxxxxxxxx-xxxxxxxxxxxxxxxxx:5xxxxxxx-xxxxx-xxxxxxxxxxxxxxx-xxxxxxxxxxxxxxx::"
+    zone_id      = "bxxxxx-xxxx-xxxx-xxxx-xxxxxxxxx"
+  }
+}
+
+// Basic load balancer
+resource "ibm_is_lb" "load-balancer-2" {
+  name    = "load-balancer-2"
+  subnets = [ibm_is_subnet.subnet-primary-1.id]
+}
+
+# =====================================================================================
+# Load Balancer Listeners
+# =====================================================================================
+
+resource "ibm_is_lb_listener" "lb-listener-1" {
+  lb       = ibm_is_lb.load-balancer-2.id
+  port     = "9086"
+  protocol = "http"
+}
+
+# =====================================================================================
+# Load Balancer Listener Policies
+# =====================================================================================
+
+resource "ibm_is_lb_listener_policy" "lb-listener-policy-1" {
+  lb                      = ibm_is_lb.load-balancer-2.id
+  listener                = ibm_is_lb_listener.lb-listener-1.listener_id
+  action                  = "redirect"
+  priority                = 2
+  name                    = "lb-listener-policy-1"
+  target_http_status_code = 302
+  target_url              = "https://www.google.com"
+
+  rules {
+    condition = "contains"
+    type      = "header"
+    field     = "1"
+    value     = "2"
+  }
+}
+
+# =====================================================================================
+# Load Balancer Listener Policy Rules
+# =====================================================================================
+
+resource "ibm_is_lb_listener_policy_rule" "lb-listener-policy-rule-1" {
+  lb        = ibm_is_lb.load-balancer-2.id
+  listener  = ibm_is_lb_listener.lb-listener-1.listener_id
+  policy    = ibm_is_lb_listener_policy.lb-listener-policy-1.policy_id
+  condition = "equals"
+  type      = "header"
+  field     = "MY-APP-HEADER"
+  value     = "UpdateVal"
+}
+
+# =====================================================================================
+# Load Balancer Pools
+# =====================================================================================
+
+// Pool with app cookie session persistence
+resource "ibm_is_lb_pool" "lb-pool-1" {
+  name                                = "lb-pool-1"
+  lb                                  = ibm_is_lb.load-balancer-2.id
+  algorithm                           = "round_robin"
+  protocol                            = "https"
+  health_delay                        = 60
+  health_retries                      = 5
+  health_timeout                      = 30
+  health_type                         = "https"
+  proxy_protocol                      = "v1"
+  session_persistence_type            = "app_cookie"
+  session_persistence_app_cookie_name = "cookie1"
+}
+
+// Pool with HTTP cookie session persistence
+resource "ibm_is_lb_pool" "lb-pool-2" {
+  name                     = "lb-pool-2"
+  lb                       = ibm_is_lb.load-balancer-2.id
+  algorithm                = "round_robin"
+  protocol                 = "https"
+  health_delay             = 60
+  health_retries           = 5
+  health_timeout           = 30
+  health_type              = "https"
+  proxy_protocol           = "v1"
+  session_persistence_type = "http_cookie"
+}
+
+// Pool with source IP session persistence
+resource "ibm_is_lb_pool" "lb-pool-3" {
+  name                     = "lb-pool-3"
+  lb                       = ibm_is_lb.load-balancer-2.id
+  algorithm                = "round_robin"
+  protocol                 = "https"
+  health_delay             = 60
+  health_retries           = 5
+  health_timeout           = 30
+  health_type              = "https"
+  proxy_protocol           = "v1"
+  session_persistence_type = "source_ip"
+}
+
+# =====================================================================================
+# Data Sources for Advanced Networking
+# =====================================================================================
+
+// Public gateway data sources
+data "ibm_is_public_gateway" "public-gateway-data" {
+  name = ibm_is_public_gateway.public-gateway-1.name
+}
+
+data "ibm_is_public_gateways" "all-public-gateways" {
+}
+
+// VPN data sources
+data "ibm_is_vpn_gateway" "vpn-gateway-data" {
+  vpn_gateway = ibm_is_vpn_gateway.vpn-gateway-1.id
+}
+
+data "ibm_is_vpn_gateway" "vpn-gateway-by-name" {
+  vpn_gateway_name = ibm_is_vpn_gateway.vpn-gateway-1.name
+}
+
+data "ibm_is_vpn_gateway_connection" "vpn-connection-data" {
+  vpn_gateway            = ibm_is_vpn_gateway.vpn-gateway-2.id
+  vpn_gateway_connection = ibm_is_vpn_gateway_connection.vpn-connection-1.gateway_connection
+}
+
+data "ibm_is_vpn_gateway_connection" "vpn-connection-by-name" {
+  vpn_gateway                 = ibm_is_vpn_gateway.vpn-gateway-2.id
+  vpn_gateway_connection_name = ibm_is_vpn_gateway_connection.vpn-connection-1.name
+}
+
+data "ibm_is_vpn_gateway_connection" "vpn-connection-by-gateway-name" {
+  vpn_gateway_name       = ibm_is_vpn_gateway.vpn-gateway-1.name
+  vpn_gateway_connection = ibm_is_vpn_gateway_connection.vpn-connection-1.gateway_connection
+}
+
+data "ibm_is_vpn_gateway_connection" "vpn-connection-by-both-names" {
+  vpn_gateway_name            = ibm_is_vpn_gateway.vpn-gateway-1.name
+  vpn_gateway_connection_name = ibm_is_vpn_gateway_connection.vpn-connection-1.name
+}
+
+// IKE and IPSec policy data sources
+data "ibm_is_ike_policies" "all-ike-policies" {
+}
+
+data "ibm_is_ipsec_policies" "all-ipsec-policies" {
+}
+
+data "ibm_is_ike_policy" "ike-policy-data" {
+  ike_policy = ibm_is_ike_policy.ike-policy-1.id
+}
+
+data "ibm_is_ipsec_policy" "ipsec-policy-data" {
+  ipsec_policy = ibm_is_ipsec_policy.ipsec-policy-1.id
+}
+
+data "ibm_is_ike_policy" "ike-policy-by-name" {
+  name = "my-ike-policy"
+}
+
+data "ibm_is_ipsec_policy" "ipsec-policy-by-name" {
+  name = "my-ipsec-policy"
+}
+
+// Load balancer data sources
+data "ibm_is_lb_listener" "lb-listener-data" {
+  lb          = ibm_is_lb.load-balancer-2.id
+  listener_id = ibm_is_lb_listener.lb-listener-1.listener_id
+}
+
+data "ibm_is_lb_listeners" "lb-listeners-data" {
+  lb = ibm_is_lb.load-balancer-2.id
+}
+
+data "ibm_is_lb_listener_policy" "lb-listener-policy-data" {
+  lb        = ibm_is_lb.load-balancer-2.id
+  listener  = ibm_is_lb_listener.lb-listener-1.listener_id
+  policy_id = ibm_is_lb_listener_policy.lb-listener-policy-1.policy_id
+}
+
+data "ibm_is_lb_listener_policies" "lb-listener-policies-data" {
+  lb       = ibm_is_lb.load-balancer-2.id
+  listener = ibm_is_lb_listener.lb-listener-1.listener_id
+}
+
+data "ibm_is_lb_listener_policy_rule" "lb-listener-policy-rule-data" {
+  lb       = ibm_is_lb.load-balancer-2.id
+  listener = ibm_is_lb_listener.lb-listener-1.listener_id
+  policy   = ibm_is_lb_listener_policy.lb-listener-policy-1.policy_id
+  rule     = ibm_is_lb_listener_policy_rule.lb-listener-policy-rule-1.rule
+}
+
+data "ibm_is_lb_listener_policy_rules" "lb-listener-policy-rules-data" {
+  lb       = ibm_is_lb.load-balancer-2.id
+  listener = ibm_is_lb_listener.lb-listener-1.listener_id
+  policy   = ibm_is_lb_listener_policy.lb-listener-policy-1.policy_id
+}
+
+# =====================================================================================
+# Snapshots
+# =====================================================================================
+
+// Creating a snapshot from boot volume with clone
+resource "ibm_is_snapshot" "snapshot-boot" {
+  name          = "snapshot-boot"
+  source_volume = ibm_is_instance.vsi-4.volume_attachments[0].volume_id
+  clones        = [var.zone1]
+  tags          = ["boot-snapshot"]
+}
+
+// Creating a snapshot from data volume
+resource "ibm_is_snapshot" "snapshot-data" {
+  name          = "snapshot-data"
+  source_volume = ibm_is_instance.vsi-4.volume_attachments[1].volume_id
+  tags          = ["data-snapshot"]
+}
+
+// Additional snapshots for examples
+resource "ibm_is_snapshot" "snapshot-1" {
+  name          = "snapshot-1"
+  source_volume = ibm_is_volume.volume-1.id
+  tags          = ["volume-snapshot"]
+}
+
+resource "ibm_is_snapshot" "snapshot-2" {
+  name          = "snapshot-2"
+  source_volume = ibm_is_volume.volume-2.id
+  tags          = ["custom-volume-snapshot"]
+}
+
+# =====================================================================================
+# Cross-Region Snapshot Copy
+# =====================================================================================
+
+// Provider for different region
+provider "ibm" {
+  alias  = "eu-de"
+  region = "eu-de"
+}
+
+// Cross-region snapshot copy
+resource "ibm_is_snapshot" "snapshot-cross-region" {
+  provider            = ibm.eu-de
+  name                = "snapshot-cross-region"
+  source_snapshot_crn = ibm_is_snapshot.snapshot-boot.crn
+}
+
+# =====================================================================================
+# Snapshot Consistency Groups
+# =====================================================================================
+
+resource "ibm_is_snapshot_consistency_group" "snapshot-consistency-group-1" {
+  delete_snapshots_on_delete = true
+
+  snapshots {
+    name          = "snapshot-consistency-1"
+    source_volume = ibm_is_instance.vsi-4.volume_attachments[0].volume_id
+  }
+
+  snapshots {
+    name          = "snapshot-consistency-2"
+    source_volume = ibm_is_instance.vsi-4.volume_attachments[1].volume_id
+  }
+
+  name = "snapshot-consistency-group-1"
+}
+
+# =====================================================================================
+# Custom Images
+# =====================================================================================
+
+// Image from COS URL
+resource "ibm_is_image" "image-1" {
+  href             = var.image_cos_url
+  name             = "image-1"
+  operating_system = var.image_operating_system
+}
+
+// Image from instance volume
+resource "ibm_is_image" "image-2" {
+  source_volume = data.ibm_is_instance.vsi-1-data.volume_attachments.0.volume_id
+  name          = "image-2"
+}
+
+# =====================================================================================
+# Image Management
+# =====================================================================================
+
+// Image deprecation
+resource "ibm_is_image_deprecate" "image-deprecate-1" {
+  image = ibm_is_image.image-1.id
+}
+
+// Image obsolescence
+resource "ibm_is_image_obsolete" "image-obsolete-1" {
+  image = ibm_is_image.image-1.id
+}
+
+# =====================================================================================
+# Image Export Jobs
+# =====================================================================================
+
+resource "ibm_is_image_export_job" "image-export-1" {
+  image = ibm_is_image.image-1.id
+  name  = "image-export-1"
+  storage_bucket {
+    name = "bucket-27200-lwx4cfvcue"
+  }
+}
+
+# =====================================================================================
+# File Shares
+# =====================================================================================
+
+// Basic file share
+resource "ibm_is_share" "share-1" {
+  zone        = "us-south-1"
+  size        = 30000
+  name        = "share-1"
+  profile     = "dp2"
+  tags        = ["share1", "share3"]
+  access_tags = ["access:dev"]
+}
+
+// Replica share with replication
+resource "ibm_is_share" "share-replica-1" {
+  zone                  = "us-south-2"
+  name                  = "share-replica-1"
+  profile               = "dp2"
+  replication_cron_spec = "0 * /5 * * *"
+  source_share          = ibm_is_share.share-1.id
+  tags                  = ["share1", "share3"]
+  access_tags           = ["access:dev"]
+}
+
+// Share from source share (cross-region replication)
+resource "ibm_is_share" "share-cross-region" {
+  zone                  = "us-east-1"
+  source_share_crn      = "crn:v1:staging:public:is:us-south-1:a/efe5afc483594adaa8325e2b4d1290df::share:r134-d8c8821c-a227-451d-a9ed-0c0cd2358829"
+  encryption_key        = "crn:v1:staging:public:kms:us-south:a/efe5afc483594adaa8325e2b4d1290df:1be45161-6dae-44ca-b248-837f98004057:key:3dd21cc5-cc20-4f7c-bc62-8ec9a8a3d1bd"
+  replication_cron_spec = "5 * * * *"
+  name                  = "share-cross-region"
+  profile               = "dp2"
+}
+
+# =====================================================================================
+# Share Mount Targets
+# =====================================================================================
+
+resource "ibm_is_share_mount_target" "share-mount-target-1" {
+  share = ibm_is_share.share-1.id
+  vpc   = ibm_is_vpc.vpc-primary.id
+  name  = "share-mount-target-1"
+}
+
+# =====================================================================================
+# Share Snapshots
+# =====================================================================================
+
+resource "ibm_is_share_snapshot" "share-snapshot-1" {
+  name  = "share-snapshot-1"
+  share = ibm_is_share.share-1.id
+  tags  = ["share-snapshot-tag"]
+}
+
+# =====================================================================================
+# Backup Policies
+# =====================================================================================
+
+// Backup policy for volumes
+resource "ibm_is_backup_policy" "backup-policy-volumes" {
   match_user_tags     = ["tag1"]
-  name                = "my-backup-policy"
+  name                = "backup-policy-volumes"
   match_resource_type = "volume"
 }
 
-resource "ibm_is_backup_policy" "is_backup_policy" {
+// Backup policy for instances
+resource "ibm_is_backup_policy" "backup-policy-instances" {
   match_user_tags     = ["tag1"]
-  name                = "my-backup-policy-instance"
+  name                = "backup-policy-instances"
   match_resource_type = "instance"
   included_content    = ["boot_volume", "data_volumes"]
 }
 
-resource "ibm_is_backup_policy_plan" "is_backup_policy_plan" {
-  backup_policy_id = ibm_is_backup_policy.is_backup_policy.id
-  cron_spec        = "30 09 * * *"
-  active           = false
-  attach_user_tags = ["tag2"]
-  copy_user_tags   = true
-  deletion_trigger {
-    delete_after      = 20
-    delete_over_count = "20"
+// Enterprise backup policy with scope
+resource "ibm_is_backup_policy" "backup-policy-enterprise" {
+  match_user_tags = ["tag1"]
+  name            = "backup-policy-enterprise"
+  scope {
+    crn = "crn:v1:bluemix:public:is:us-south:a/123456::reservation:7187-ba49df72-37b8-43ac-98da-f8e029de0e63"
   }
-  name = "my-backup-policy-plan-1"
 }
-resource "ibm_is_backup_policy_plan" "is_backup_policy_plan_clone" {
-  backup_policy_id = ibm_is_backup_policy.is_backup_policy.id
+
+# =====================================================================================
+# Backup Policy Plans
+# =====================================================================================
+
+// Basic backup policy plan
+resource "ibm_is_backup_policy_plan" "backup-policy-plan-1" {
+  backup_policy_id = ibm_is_backup_policy.backup-policy-volumes.id
   cron_spec        = "30 09 * * *"
   active           = false
   attach_user_tags = ["tag2"]
   copy_user_tags   = true
+
   deletion_trigger {
     delete_after      = 20
     delete_over_count = "20"
   }
-  name = "my-backup-policy-plan-1"
+
+  name = "backup-policy-plan-1"
+}
+
+// Backup policy plan with clone policy
+resource "ibm_is_backup_policy_plan" "backup-policy-plan-clone" {
+  backup_policy_id = ibm_is_backup_policy.backup-policy-volumes.id
+  cron_spec        = "30 09 * * *"
+  active           = false
+  attach_user_tags = ["tag2"]
+  copy_user_tags   = true
+
+  deletion_trigger {
+    delete_after      = 20
+    delete_over_count = "20"
+  }
+
+  name = "backup-policy-plan-clone"
+
   clone_policy {
     zones         = ["us-south-1", "us-south-2"]
     max_snapshots = 3
   }
 }
 
-data "ibm_is_backup_policies" "is_backup_policies" {
+# =====================================================================================
+# Data Sources for Storage & Backup
+# =====================================================================================
+
+// Snapshot data sources
+data "ibm_is_snapshot" "snapshot-data" {
+  name = "snapshot-boot"
 }
 
-data "ibm_is_backup_policy" "is_backup_policy" {
-  name = "my-backup-policy"
+data "ibm_is_snapshots" "all-snapshots" {
 }
 
-data "ibm_is_backup_policy_plans" "is_backup_policy_plans" {
-  backup_policy_id = ibm_is_backup_policy.is_backup_policy.id
+data "ibm_is_snapshot_clones" "snapshot-clones" {
+  snapshot = ibm_is_snapshot.snapshot-boot.id
 }
 
-data "ibm_is_backup_policy_plan" "is_backup_policy_plan" {
-  backup_policy_id = ibm_is_backup_policy.is_backup_policy.id
-  name             = "my-backup-policy-plan"
+data "ibm_is_snapshot_clones" "snapshot-clone-by-zone" {
+  snapshot = ibm_is_snapshot.snapshot-boot.id
 }
 
-//backup policies for enterprise
-
-resource "ibm_is_backup_policy" "ent-baas-example" {
-  match_user_tags = ["tag1"]
-  name            = "example-enterprise-backup-policy"
-  scope {
-    crn = "crn:v1:bluemix:public:is:us-south:a/123456::reservation:7187-ba49df72-37b8-43ac-98da-f8e029de0e63"
-  }
+// Snapshot consistency group data sources
+data "ibm_is_snapshot_consistency_group" "snapshot-consistency-group-data" {
+  identifier = ibm_is_snapshot_consistency_group.snapshot-consistency-group-1.id
 }
 
-data "ibm_is_backup_policy" "enterprise_backup" {
-  name = ibm_is_backup_policy.ent-baas-example.name
+data "ibm_is_snapshot_consistency_group" "snapshot-consistency-group-by-name" {
+  name = "snapshot-consistency-group-1"
 }
 
-// Vpn Server
-resource "ibm_is_vpn_server" "is_vpn_server" {
-  certificate_crn = var.is_certificate_crn
-  client_authentication {
-    method    = "certificate"
-    client_ca = var.is_client_ca
-  }
-  client_ip_pool         = "10.5.0.0/21"
-  subnets                = [ibm_is_subnet.subnet1.id]
-  client_dns_server_ips  = ["192.168.3.4"]
-  client_idle_timeout    = 2800
-  enable_split_tunneling = false
-  name                   = "example-vpn-server"
-  port                   = 443
-  protocol               = "udp"
+data "ibm_is_snapshot_consistency_groups" "all-snapshot-consistency-groups" {
+  name = "snapshot-consistency-group-1"
 }
 
-resource "ibm_is_vpn_server_route" "is_vpn_server_route" {
-  vpn_server_id = ibm_is_vpn_server.is_vpn_server.vpn_server
-  destination   = "172.16.0.0/16"
-  action        = "translate"
-  name          = "example-vpn-server-route"
+// Image data sources
+data "ibm_is_image" "custom-image-data" {
+  name = ibm_is_image.image-1.name
 }
 
-data "ibm_is_backup_policy_job" "is_backup_policy_job" {
-  backup_policy_id = ibm_is_backup_policy.is_backup_policy.id
+data "ibm_is_images" "all-custom-images" {
+}
+
+// Image export job data sources
+data "ibm_is_image_export_jobs" "image-export-jobs" {
+  image = ibm_is_image_export_job.image-export-1.image
+}
+
+data "ibm_is_image_export_job" "image-export-job-data" {
+  image            = ibm_is_image_export_job.image-export-1.image
+  image_export_job = ibm_is_image_export_job.image-export-1.image_export_job
+}
+
+// Share data sources
+data "ibm_is_share" "share-data" {
+  share = ibm_is_share.share-1.id
+}
+
+data "ibm_is_shares" "all-shares" {
+}
+
+// Share mount target data sources
+data "ibm_is_share_mount_target" "share-mount-target-data" {
+  share        = ibm_is_share.share-1.id
+  mount_target = ibm_is_share_mount_target.share-mount-target-1.mount_target
+}
+
+data "ibm_is_share_mount_targets" "share-mount-targets" {
+  share = ibm_is_share.share-1.id
+}
+
+// Share snapshot data sources
+data "ibm_is_share_snapshots" "share-snapshots-by-share" {
+  share = ibm_is_share.share-1.id
+}
+
+data "ibm_is_share_snapshots" "all-share-snapshots" {
+}
+
+data "ibm_is_share_snapshot" "share-snapshot-data" {
+  share          = ibm_is_share.share-1.id
+  share_snapshot = ibm_is_share_snapshot.share-snapshot-1.share_snapshot
+}
+
+// Backup policy data sources
+data "ibm_is_backup_policies" "all-backup-policies" {
+}
+
+data "ibm_is_backup_policy" "backup-policy-data" {
+  name = "backup-policy-volumes"
+}
+
+data "ibm_is_backup_policy" "backup-policy-enterprise-data" {
+  name = ibm_is_backup_policy.backup-policy-enterprise.name
+}
+
+// Backup policy plan data sources
+data "ibm_is_backup_policy_plans" "backup-policy-plans" {
+  backup_policy_id = ibm_is_backup_policy.backup-policy-volumes.id
+}
+
+data "ibm_is_backup_policy_plan" "backup-policy-plan-data" {
+  backup_policy_id = ibm_is_backup_policy.backup-policy-volumes.id
+  name             = "backup-policy-plan-1"
+}
+
+// Backup policy job data sources
+data "ibm_is_backup_policy_job" "backup-policy-job-data" {
+  backup_policy_id = ibm_is_backup_policy.backup-policy-volumes.id
   identifier       = ""
 }
 
-data "ibm_is_backup_policy_jobs" "is_backup_policy_jobs" {
-  backup_policy_plan_id = ibm_is_backup_policy.is_backup_policy.backup_policy_plan_id
-  backup_policy_id      = ibm_is_backup_policy.is_backup_policy.id
+data "ibm_is_backup_policy_jobs" "backup-policy-jobs" {
+  backup_policy_id = ibm_is_backup_policy.backup-policy-volumes.id
 }
 
-data "ibm_is_vpn_server" "is_vpn_server" {
-  identifier = ibm_is_vpn_server.is_vpn_server.vpn_server
-}
-data "ibm_is_vpn_servers" "is_vpn_servers" {
+# =====================================================================================
+# Dedicated Host Groups
+# =====================================================================================
+
+resource "ibm_is_dedicated_host_group" "host-group-1" {
+  family         = "balanced"
+  class          = "bx2d"
+  zone           = "us-south-1"
+  name           = "host-group-1"
+  resource_group = data.ibm_resource_group.default.id
 }
 
-data "ibm_is_vpn_server_routes" "is_vpn_server_routes" {
-  vpn_server_id = ibm_is_vpn_server.is_vpn_server.vpn_server
+# =====================================================================================
+# Dedicated Hosts
+# =====================================================================================
+
+resource "ibm_is_dedicated_host" "dedicated-host-1" {
+  profile        = "bx2d-host-152x608"
+  name           = "dedicated-host-1"
+  host_group     = ibm_is_dedicated_host_group.host-group-1.id
+  resource_group = data.ibm_resource_group.default.id
 }
 
-data "ibm_is_vpn_server_route" "is_vpn_server_route" {
-  vpn_server_id = ibm_is_vpn_server.is_vpn_server.vpn_server
-  identifier    = ibm_is_vpn_server_route.is_vpn_server_route.vpn_route
-}
-data "ibm_is_vpn_server_clients" "is_vpn_server_clients" {
-  vpn_server_id = ibm_is_vpn_server.is_vpn_server.vpn_server
-}
-data "ibm_is_vpn_server_client" "is_vpn_server_client" {
-  vpn_server_id = ibm_is_vpn_server.is_vpn_server.vpn_server
-  identifier    = "0726-61b2f53f-1e95-42a7-94ab-55de8f8cbdd5"
-}
-resource "ibm_is_image_export_job" "example" {
-  image = ibm_is_image.image1.id
-  name  = "my-image-export"
-  storage_bucket {
-    name = "bucket-27200-lwx4cfvcue"
+# =====================================================================================
+# Dedicated Host Disk Management
+# =====================================================================================
+
+resource "ibm_is_dedicated_host_disk_management" "dedicated-host-disks-1" {
+  dedicated_host = ibm_is_dedicated_host.dedicated-host-1.id
+
+  disks {
+    name = "dedicated-host-disk-1"
+    id   = ibm_is_dedicated_host.dedicated-host-1.disks.0.id
+  }
+
+  disks {
+    name = "dedicated-host-disk-2"
+    id   = ibm_is_dedicated_host.dedicated-host-1.disks.1.id
   }
 }
 
-data "ibm_is_image_export_jobs" "example" {
-  image = ibm_is_image_export_job.example.image
-}
+# =====================================================================================
+# Instance Templates
+# =====================================================================================
 
-data "ibm_is_image_export_job" "example" {
-  image            = ibm_is_image_export_job.example.image
-  image_export_job = ibm_is_image_export_job.example.image_export_job
-}
-resource "ibm_is_vpc" "vpc" {
-  name = "my-vpc"
-}
-resource "ibm_is_share" "share" {
-  zone        = "us-south-1"
-  size        = 30000
-  name        = "my-share"
-  profile     = "dp2"
-  tags        = ["share1", "share3"]
-  access_tags = ["access:dev"]
-}
+// Basic instance template
+resource "ibm_is_instance_template" "instance-template-1" {
+  name    = "instance-template-1"
+  image   = "r006-618b224d-eb88-492f-9825-dc246bb5211a"
+  profile = "bx2-8x32"
 
-resource "ibm_is_share" "sharereplica" {
-  zone                  = "us-south-2"
-  name                  = "my-share-replica"
-  profile               = "dp2"
-  replication_cron_spec = "0 */5 * * *"
-  source_share          = ibm_is_share.share.id
-  tags                  = ["share1", "share3"]
-  access_tags           = ["access:dev"]
-}
+  primary_network_interface {
+    subnet            = ibm_is_subnet.subnet-secondary-1.id
+    allow_ip_spoofing = true
+  }
 
-resource "ibm_is_share_mount_target" "is_share_mount_target" {
-  share = ibm_is_share.is_share.id
-  vpc   = ibm_is_vpc.vpc1.id
-  name  = "my-share-target-1"
-}
+  vpc  = ibm_is_vpc.vpc-secondary-1.id
+  zone = "us-south-2"
+  keys = [ibm_is_ssh_key.ssh-key-1.id]
 
-data "ibm_is_share_mount_target" "is_share_mount_target" {
-  share        = ibm_is_share.is_share.id
-  mount_target = ibm_is_share_mount_target.is_share_target.mount_target
-}
+  boot_volume {
+    name                             = "instance-template-boot-vol"
+    delete_volume_on_instance_delete = true
+  }
 
-data "ibm_is_share_mount_targets" "is_share_mount_targets" {
-  share = ibm_is_share.is_share.id
-}
-
-data "ibm_is_share" "is_share" {
-  share = ibm_is_share.is_share.id
-}
-
-data "ibm_is_shares" "is_shares" {
-}
-
-// vpc dns resolution bindings
-
-// list all dns resolution bindings on a vpc
-data "ibm_is_vpc_dns_resolution_bindings" "is_vpc_dns_resolution_bindings" {
-  vpc_id = ibm_is_vpc.vpc1.id
-}
-// get a dns resolution bindings on a vpc
-data "ibm_is_vpc_dns_resolution_binding" "is_vpc_dns_resolution_binding" {
-  vpc_id = ibm_is_vpc.vpc1.id
-  id     = ibm_is_vpc.vpc2.id
-}
-data "ibm_resource_group" "rg" {
-  is_default = true
-}
-// creating a hub enabled vpc, hub disabled vpc, creating custom resolvers for both then
-// delegating the vpc by uncommenting the configuration in hub_false_delegated vpc
-resource "ibm_is_vpc" "hub_true" {
-  name = "${var.name}-vpc-hub-true"
-  dns {
-    enable_hub = true
+  volume_attachments {
+    delete_volume_on_instance_delete = true
+    name                             = "instance-template-vol-attachment-1"
+    volume_prototype {
+      iops     = 3000
+      profile  = "general-purpose"
+      capacity = 200
+    }
   }
 }
 
-resource "ibm_is_vpc" "hub_false_delegated" {
-  name = "${var.name}-vpc-hub-false-del"
-  dns {
-    enable_hub = false
-    # resolver {
-    # 	type = "delegated"
-    # 	vpc_id = ibm_is_vpc.hub_true.id
-    # }
+// Instance template with existing volume
+resource "ibm_is_instance_template" "instance-template-2" {
+  name    = "instance-template-2"
+  image   = "r006-618b224d-eb88-492f-9825-dc246bb5211a"
+  profile = "bx2-8x32"
+
+  primary_network_interface {
+    subnet            = ibm_is_subnet.subnet-secondary-1.id
+    allow_ip_spoofing = true
+  }
+
+  vpc  = ibm_is_vpc.vpc-secondary-1.id
+  zone = "us-south-2"
+  keys = [ibm_is_ssh_key.ssh-key-1.id]
+
+  boot_volume {
+    name                             = "instance-template-boot-vol-2"
+    delete_volume_on_instance_delete = true
+  }
+
+  volume_attachments {
+    delete_volume_on_instance_delete = true
+    name                             = "instance-template-vol-attachment-2"
+    volume                           = ibm_is_volume.volume-1.id
   }
 }
 
-resource "ibm_is_subnet" "hub_true_sub1" {
-  name                     = "hub-true-subnet1"
-  vpc                      = ibm_is_vpc.hub_true.id
-  zone                     = "${var.region}-2"
-  total_ipv4_address_count = 16
-}
-resource "ibm_is_subnet" "hub_true_sub2" {
-  name                     = "hub-true-subnet2"
-  vpc                      = ibm_is_vpc.hub_true.id
-  zone                     = "${var.region}-2"
-  total_ipv4_address_count = 16
-}
-resource "ibm_is_subnet" "hub_false_delegated_sub1" {
-  name                     = "hub-false-delegated-subnet1"
-  vpc                      = ibm_is_vpc.hub_false_delegated.id
-  zone                     = "${var.region}-2"
-  total_ipv4_address_count = 16
-}
-resource "ibm_is_subnet" "hub_false_delegated_sub2" {
-  name                     = "hub-false-delegated-subnet2"
-  vpc                      = ibm_is_vpc.hub_false_delegated.id
-  zone                     = "${var.region}-2"
-  total_ipv4_address_count = 16
-}
-resource "ibm_resource_instance" "dns-cr-instance" {
-  name              = "dns-cr-instance"
-  resource_group_id = data.ibm_resource_group.rg.id
-  location          = "global"
-  service           = "dns-svcs"
-  plan              = "standard-dns"
-}
-resource "ibm_dns_custom_resolver" "test_hub_true" {
-  name              = "test-hub-true-customresolver"
-  instance_id       = ibm_resource_instance.dns-cr-instance.guid
-  description       = "new test CR - TF"
-  high_availability = true
-  enabled           = true
-  locations {
-    subnet_crn = ibm_is_subnet.hub_true_sub1.crn
-    enabled    = true
+// Instance template with catalog offering
+resource "ibm_is_instance_template" "instance-template-3" {
+  name = "instance-template-3"
+
+  catalog_offering {
+    version_crn = data.ibm_is_images.catalog-images.images.0.catalog_offering.0.version.0.crn
+    plan_crn    = "crn:v1:bluemix:public:globalcatalog-collection:global:a/123456:51c9e0db-2911-45a6-adb0-ac5332d27cf2:plan:sw.51c9e0db-2911-45a6-adb0-ac5332d27cf2.772c0dbe-aa62-482e-adbe-a3fc20101e0e"
   }
-  locations {
-    subnet_crn = ibm_is_subnet.hub_true_sub2.crn
-    enabled    = true
+
+  profile = var.profile
+
+  primary_network_interface {
+    subnet = ibm_is_subnet.subnet-secondary-1.id
   }
+
+  vpc  = ibm_is_vpc.vpc-secondary-1.id
+  zone = "us-south-2"
+  keys = [ibm_is_ssh_key.ssh-key-1.id]
 }
-resource "ibm_dns_custom_resolver" "test_hub_false_delegated" {
-  name              = "test-hub-false-customresolver"
-  instance_id       = ibm_resource_instance.dns-cr-instance.guid
-  description       = "new test CR - TF"
-  high_availability = true
-  enabled           = true
-  locations {
-    subnet_crn = ibm_is_subnet.hub_false_delegated_sub1.crn
-    enabled    = true
+
+// Instance template with VNI
+resource "ibm_is_instance_template" "instance-template-vni" {
+  name    = "instance-template-vni"
+  profile = "bx2-2x8"
+  image   = "r134-f47cc24c-e020-4db5-ad96-1e5be8b5853b"
+
+  primary_network_attachment {
+    name = "template-vni-attachment"
+    virtual_network_interface {
+      id = ibm_is_virtual_network_interface.vni-3.id
+    }
   }
-  locations {
-    subnet_crn = ibm_is_subnet.hub_false_delegated_sub2.crn
-    enabled    = true
+
+  vpc  = ibm_is_vpc.vpc-secondary-2.id
+  zone = "${var.region}-2"
+  keys = [ibm_is_ssh_key.ssh-key-ed25519.id]
+}
+
+# =====================================================================================
+# Instance from Template
+# =====================================================================================
+
+// Creating an instance using an existing instance template
+resource "ibm_is_instance" "vsi-from-template" {
+  name              = "vsi-from-template"
+  instance_template = ibm_is_instance_template.instance-template-1.id
+  zone              = "us-south-3"
+  keys              = [ibm_is_ssh_key.ssh-key-1.id]
+
+  primary_network_interface {
+    subnet = ibm_is_subnet.subnet-primary-1.id
   }
+
+  vpc = ibm_is_vpc.vpc-primary.id
 }
 
-resource "ibm_is_vpc_dns_resolution_binding" "dnstrue" {
-  name   = "hub-spoke-binding"
-  vpc_id = ibm_is_vpc.hub_false_delegated.id
-  vpc {
-    id = ibm_is_vpc.hub_true.id
+# =====================================================================================
+# Bare Metal Servers
+# =====================================================================================
+
+// Basic bare metal server
+resource "ibm_is_bare_metal_server" "bare-metal-1" {
+  profile = "bx2-metal-192x768"
+  name    = "bare-metal-1"
+  image   = "r134-31c8ca90-2623-48d7-8cf7-737be6fc4c3e"
+  zone    = "us-south-3"
+  keys    = [ibm_is_ssh_key.ssh-key-1.id]
+
+  primary_network_interface {
+    subnet = ibm_is_subnet.subnet-primary-1.id
   }
+
+  vpc = ibm_is_vpc.vpc-primary.id
 }
 
-
-// snapshot cross region
-
-provider "ibm" {
-  alias  = "eu-de"
-  region = "eu-de"
-}
-
-resource "ibm_is_snapshot" "b_snapshot_copy" {
-  provider            = ibm.eu-de
-  name                = "my-snapshot-boot-copy"
-  source_snapshot_crn = ibm_is_snapshot.b_snapshot.crn
-}
-
-// image deprecate and obsolete
-
-resource "ibm_is_image_deprecate" "example" {
-  image = ibm_is_image.image1.id
-}
-
-resource "ibm_is_image_obsolete" "example" {
-  image = ibm_is_image.image1.id
-}
-
-
-// vni
-
-resource "ibm_is_vpc" "testacc_vpc" {
-  name = "${var.name}-vpc"
-}
-
-resource "ibm_is_subnet" "testacc_subnet" {
-  name                     = "${var.name}-subnet"
-  vpc                      = ibm_is_vpc.testacc_vpc.id
-  zone                     = "${var.region}-2"
-  total_ipv4_address_count = 16
-
-}
-
-resource "ibm_is_virtual_network_interface" "testacc_vni" {
-  name                      = var.name
-  subnet                    = ibm_is_subnet.testacc_subnet.id
-  enable_infrastructure_nat = true
-  allow_ip_spoofing         = true
-}
-
-resource "ibm_is_floating_ip" "testacc_floatingip" {
-  name = "${var.name}-floating"
-  zone = ibm_is_subnet.testacc_subnet.zone
-}
-resource "ibm_is_virtual_network_interface_floating_ip" "testacc_vni_floatingip" {
-  virtual_network_interface = ibm_is_virtual_network_interface.testacc_vni.id
-  floating_ip               = ibm_is_floating_ip.testacc_floatingip.id
-}
-data "ibm_is_virtual_network_interface_floating_ip" "is_vni_floating_ip" {
-  depends_on                = [ibm_is_virtual_network_interface_floating_ip.testacc_vni_floatingip]
-  virtual_network_interface = ibm_is_virtual_network_interface.testacc_vni.id
-  floating_ip               = ibm_is_floating_ip.testacc_floatingip.id
-}
-data "ibm_is_virtual_network_interface_floating_ips" "is_vni_floating_ips" {
-  depends_on                = [ibm_is_virtual_network_interface_floating_ip.testacc_vni_floatingip]
-  virtual_network_interface = ibm_is_virtual_network_interface.testacc_vni.id
-}
-
-data "ibm_is_virtual_network_interface_ips" "is_vni_reservedips" {
-  depends_on                = [ibm_is_virtual_network_interface_ip.testacc_vni_reservedip]
-  virtual_network_interface = ibm_is_virtual_network_interface.testacc_vni.id
-}
-data "ibm_is_virtual_network_interface_ip" "is_vni_reservedip" {
-  depends_on                = [ibm_is_virtual_network_interface_ip.testacc_vni_reservedip]
-  virtual_network_interface = ibm_is_virtual_network_interface.testacc_vni.id
-  reserved_ip               = ibm_is_subnet_reserved_ip.testacc_reservedip.reserved_ip
-}
-
-resource "ibm_is_subnet_reserved_ip" "testacc_reservedip" {
-  subnet = ibm_is_subnet.testacc_subnet.id
-  name   = "${var.name}-reserved-ip"
-}
-resource "ibm_is_virtual_network_interface_ip" "testacc_vni_reservedip" {
-  virtual_network_interface = ibm_is_virtual_network_interface.testacc_vni.id
-  reserved_ip               = ibm_is_subnet_reserved_ip.testacc_reservedip.reserved_ip
-}
-
-resource "ibm_is_virtual_network_interface" "testacc_vni2" {
-  name                      = "${var.name}-2"
-  subnet                    = ibm_is_subnet.testacc_subnet.id
-  enable_infrastructure_nat = true
-  allow_ip_spoofing         = true
-}
-resource "ibm_is_virtual_network_interface" "testacc_vni3" {
-  name                      = "${var.name}-3"
-  subnet                    = ibm_is_subnet.testacc_subnet.id
-  enable_infrastructure_nat = true
-  allow_ip_spoofing         = true
-}
-resource "ibm_is_ssh_key" "testacc_sshkey" {
-  name       = "${var.name}-ssh"
-  public_key = file("~/.ssh/id_rsa.pub")
-}
-
-
-resource "ibm_is_bare_metal_server" "testacc_bms" {
+// Bare metal server with VNI
+resource "ibm_is_bare_metal_server" "bare-metal-vni" {
   profile = "cx2-metal-96x192"
-  name    = "${var.name}-bms"
+  name    = "bare-metal-vni"
   image   = "r134-f47cc24c-e020-4db5-ad96-1e5be8b5853b"
   zone    = "${var.region}-2"
-  keys    = [ibm_is_ssh_key.testacc_sshkey.id]
+  keys    = [ibm_is_ssh_key.ssh-key-ed25519.id]
+
   primary_network_attachment {
-    name = "vni-221"
+    name = "bare-metal-vni-attachment"
     virtual_network_interface {
-      id = ibm_is_virtual_network_interface.testacc_vni.id
+      id = ibm_is_virtual_network_interface.vni-1.id
     }
     allowed_vlans = [100, 102]
   }
-  vpc = ibm_is_vpc.testacc_vpc.id
+
+  vpc = ibm_is_vpc.vpc-secondary-2.id
 }
 
-resource "ibm_is_bare_metal_server_network_attachment" "na" {
-  bare_metal_server = ibm_is_bare_metal_server.testacc_bms.id
-  # interface_type = "vlan"
-  vlan = 100
-}
-resource "ibm_is_bare_metal_server_network_attachment" "na2" {
-  bare_metal_server = ibm_is_bare_metal_server.testacc_bms.id
-  # interface_type = "pci"
-  allowed_vlans = [200, 202]
+# =====================================================================================
+# Bare Metal Server Actions
+# =====================================================================================
+
+resource "ibm_is_bare_metal_server_action" "bare-metal-stop" {
+  bare_metal_server = ibm_is_bare_metal_server.bare-metal-1.id
+  action            = "stop"
+  stop_type         = "hard"
 }
 
-resource "ibm_is_instance_network_attachment" "ina" {
-  instance = ibm_is_instance.ins.id
-  name     = "viability-undecided-jalapeno-unbuilt"
-  virtual_network_interface {
-    id = ibm_is_virtual_network_interface.testacc_vni2.id
-  }
-}
-resource "ibm_is_instance" "ins" {
-  name    = "${var.name}-vsi2"
-  profile = "bx2-2x8"
-  image   = "r134-f47cc24c-e020-4db5-ad96-1e5be8b5853b"
-  primary_network_attachment {
-    name = "vni-test"
-    virtual_network_interface {
-      id = ibm_is_virtual_network_interface.testacc_vni3.id
-    }
-  }
-  vpc  = ibm_is_vpc.testacc_vpc.id
-  zone = "${var.region}-2"
-  keys = [ibm_is_ssh_key.testacc_sshkey.id]
-}
-resource "ibm_is_instance_template" "ins_temp" {
-  name    = "${var.name}-vsi2"
-  profile = "bx2-2x8"
-  image   = "r134-f47cc24c-e020-4db5-ad96-1e5be8b5853b"
-  primary_network_attachment {
-    name = "vni-test"
-    virtual_network_interface {
-      id = ibm_is_virtual_network_interface.testacc_vni3.id
-    }
-  }
-  vpc  = ibm_is_vpc.testacc_vpc.id
-  zone = "${var.region}-2"
-  keys = [ibm_is_ssh_key.testacc_sshkey.id]
+# =====================================================================================
+# Bare Metal Server Disk Management
+# =====================================================================================
+
+resource "ibm_is_bare_metal_server_disk" "bare-metal-disk-1" {
+  bare_metal_server = ibm_is_bare_metal_server.bare-metal-1.id
+  disk              = ibm_is_bare_metal_server.bare-metal-1.disks.0.id
+  name              = "bare-metal-disk-1"
 }
 
-resource "ibm_is_share" "share" {
-  zone                  = "us-east-1"
-  source_share_crn      = "crn:v1:staging:public:is:us-south-1:a/efe5afc483594adaa8325e2b4d1290df::share:r134-d8c8821c-a227-451d-a9ed-0c0cd2358829"
-  encryption_key        = "crn:v1:staging:public:kms:us-south:a/efe5afc483594adaa8325e2b4d1290df:1be45161-6dae-44ca-b248-837f98004057:key:3dd21cc5-cc20-4f7c-bc62-8ec9a8a3d1bd"
-  replication_cron_spec = "5 * * * *"
-  name                  = "tfp-temp-crr"
-  profile               = "dp2"
-}
-//snapshot consistency group
+# =====================================================================================
+# Bare Metal Server Network Interfaces
+# =====================================================================================
 
-resource "ibm_is_snapshot_consistency_group" "is_snapshot_consistency_group_instance" {
-  delete_snapshots_on_delete = true
-  snapshots {
-    name          = "exmaple-snapshot"
-    source_volume = ibm_is_instance.instance.volume_attachments[0].volume_id
-  }
-  snapshots {
-    name          = "example-snapshot-1"
-    source_volume = ibm_is_instance.instance.volume_attachments[1].volume_id
-  }
-  name = "example-snapshot-consistency-group"
+// Basic network interface
+resource "ibm_is_bare_metal_server_network_interface" "bare-metal-nic-1" {
+  bare_metal_server = ibm_is_bare_metal_server.bare-metal-1.id
+  subnet            = ibm_is_subnet.subnet-primary-1.id
+  name              = "bare-metal-nic-1"
+  allow_ip_spoofing = true
+  allowed_vlans     = [101, 102]
 }
 
-data "ibm_is_snapshot_consistency_group" "is_snapshot_consistency_group_instance" {
-  identifier = ibm_is_snapshot_consistency_group.is_snapshot_consistency_group_instance.id
-}
-data "ibm_is_snapshot_consistency_group" "is_snapshot_consistency_group_instance" {
-  name = "example-snapshot-consistency-group"
-}
-data "ibm_is_snapshot_consistency_groups" "is_snapshot_consistency_group_instance" {
-  depends_on = [ibm_is_snapshot_consistency_group.is_snapshot_consistency_group_instance]
-  name       = "example-snapshot-consistency-group"
+// VLAN network interface
+resource "ibm_is_bare_metal_server_network_interface" "bare-metal-nic-vlan" {
+  bare_metal_server = ibm_is_bare_metal_server.bare-metal-1.id
+  subnet            = ibm_is_subnet.subnet-primary-1.id
+  name              = "bare-metal-nic-vlan"
+  allow_ip_spoofing = true
+  vlan              = 101
 }
 
-//reservation
+// Allow float network interface
+resource "ibm_is_bare_metal_server_network_interface_allow_float" "bare-metal-nic-float" {
+  bare_metal_server = ibm_is_bare_metal_server.bare-metal-1.id
+  subnet            = ibm_is_subnet.subnet-primary-1.id
+  name              = "bare-metal-nic-float"
+  vlan              = 102
+}
 
-resource "ibm_is_reservation" "example" {
+// Bare metal server network attachments for VNI-based server
+resource "ibm_is_bare_metal_server_network_attachment" "bare-metal-attachment-1" {
+  bare_metal_server = ibm_is_bare_metal_server.bare-metal-vni.id
+  vlan              = 100
+}
+
+resource "ibm_is_bare_metal_server_network_attachment" "bare-metal-attachment-2" {
+  bare_metal_server = ibm_is_bare_metal_server.bare-metal-vni.id
+  allowed_vlans     = [200, 202]
+}
+
+# =====================================================================================
+# Bare Metal Server Floating IPs
+# =====================================================================================
+
+resource "ibm_is_floating_ip" "bare-metal-floating-ip" {
+  name = "bare-metal-floating-ip"
+  zone = ibm_is_subnet.subnet-primary-1.zone
+}
+
+resource "ibm_is_bare_metal_server_network_interface_floating_ip" "bare-metal-nic-fip" {
+  bare_metal_server = ibm_is_bare_metal_server.bare-metal-1.id
+  network_interface = ibm_is_bare_metal_server_network_interface.bare-metal-nic-vlan.id
+  floating_ip       = ibm_is_floating_ip.bare-metal-floating-ip.id
+}
+
+# =====================================================================================
+# Placement Groups
+# =====================================================================================
+
+resource "ibm_is_placement_group" "placement-group-1" {
+  strategy       = "host_spread"
+  name           = "placement-group-1"
+  resource_group = data.ibm_resource_group.default.id
+}
+
+# =====================================================================================
+# Reservations
+# =====================================================================================
+
+resource "ibm_is_reservation" "reservation-1" {
   capacity {
     total = 5
   }
+
   committed_use {
     term = "one_year"
   }
+
   profile {
     name          = "ba2-2x8"
     resource_type = "instance_profile"
   }
+
   zone = "us-east-3"
 }
 
-resource "ibm_is_reservation_activate" "example" {
-  reservation = ibm_is_reservation.example.id
+resource "ibm_is_reservation_activate" "reservation-1-activate" {
+  reservation = ibm_is_reservation.reservation-1.id
 }
 
-data "ibm_is_reservations" "example" {
+# =====================================================================================
+# Data Sources for Advanced Compute
+# =====================================================================================
+
+// Dedicated host group data sources
+data "ibm_is_dedicated_host_group" "host-group-data" {
+  name = ibm_is_dedicated_host_group.host-group-1.name
 }
 
-data "ibm_is_reservation" "example" {
-  identifier = ibm_is_reservation.example.id
+data "ibm_is_dedicated_host_groups" "all-host-groups" {
 }
 
-// cluster examples
-# =============================================================================================================
-variable prefix {
-  default = "test-cluster"
-}
-variable is_instances_resource_group_id {
-  default = "efhiorho4388yf348y83yvchrc083h0r30c"
-}
-variable region {
-  default = "us-east"
-}
-variable is_instances_name {
-  default = "test-vsi"
-}
-data "ibm_is_cluster_network_profile" "is_cluster_network_profile_instance" {
-  name = "h100"
-}
-data "ibm_is_cluster_network_profiles" "is_cluster_network_profiles_instance" {
-}
-# Create VPC
-resource "ibm_is_vpc" "is_vpc" {
-  name = "${var.prefix}-vpc"
-}
-resource "ibm_is_vpc" "is_vpc2" {
-  name = "${var.prefix}-vpc2"
+// Dedicated host data sources
+data "ibm_is_dedicated_host" "dedicated-host-data" {
+  name       = ibm_is_dedicated_host.dedicated-host-1.name
+  host_group = data.ibm_is_dedicated_host_group.host-group-data.id
 }
 
-# # # Create Subnet
-resource "ibm_is_subnet" "is_subnet" {
-  name                     = "${var.prefix}-subnet"
-  vpc                      = ibm_is_vpc.is_vpc.id
-  total_ipv4_address_count = 64
-  zone                     = "${var.region}-3"
+data "ibm_is_dedicated_hosts" "all-dedicated-hosts" {
 }
 
-data ibm_is_instance_profile is_instance_profile_instance{
+data "ibm_is_dedicated_host_profile" "dedicated-host-profile-data" {
+  name = "bx2d-host-152x608"
+}
+
+data "ibm_is_dedicated_host_profiles" "all-dedicated-host-profiles" {
+}
+
+// Dedicated host disk data sources
+data "ibm_is_dedicated_host_disks" "dedicated-host-disks-data" {
+  dedicated_host = data.ibm_is_dedicated_host.dedicated-host-data.id
+}
+
+data "ibm_is_dedicated_host_disk" "dedicated-host-disk-data" {
+  dedicated_host = data.ibm_is_dedicated_host.dedicated-host-data.id
+  disk           = ibm_is_dedicated_host_disk_management.dedicated-host-disks-1.disks.0.id
+}
+
+// Instance template data sources
+data "ibm_is_instance_template" "instance-template-data" {
+  identifier = ibm_is_instance_template.instance-template-2.id
+}
+
+data "ibm_is_instance_template" "instance-template-by-name" {
+  name = ibm_is_instance_template.instance-template-vni.name
+}
+
+// Bare metal server data sources
+data "ibm_is_bare_metal_servers" "all-bare-metal-servers" {
+}
+
+data "ibm_is_bare_metal_server" "bare-metal-server-data" {
+  identifier = ibm_is_bare_metal_server.bare-metal-1.id
+}
+
+data "ibm_is_bare_metal_server_profiles" "all-bare-metal-profiles" {
+}
+
+data "ibm_is_bare_metal_server_profile" "bare-metal-profile-data" {
+  name = data.ibm_is_bare_metal_server_profiles.all-bare-metal-profiles.profiles.0.name
+}
+
+// Bare metal server initialization data
+data "ibm_is_bare_metal_server_initialization" "bare-metal-init-data" {
+  bare_metal_server = ibm_is_bare_metal_server.bare-metal-1.id
+}
+
+// Bare metal server disk data sources
+data "ibm_is_bare_metal_server_disk" "bare-metal-disk-data" {
+  bare_metal_server = ibm_is_bare_metal_server.bare-metal-1.id
+  disk              = ibm_is_bare_metal_server.bare-metal-1.disks.0.id
+}
+
+data "ibm_is_bare_metal_server_disks" "bare-metal-disks-data" {
+  bare_metal_server = ibm_is_bare_metal_server.bare-metal-1.id
+}
+
+// Bare metal server network interface data sources
+data "ibm_is_bare_metal_server_network_interface" "bare-metal-nic-data" {
+  bare_metal_server = ibm_is_bare_metal_server.bare-metal-1.id
+  network_interface = ibm_is_bare_metal_server.bare-metal-1.primary_network_interface.0.id
+}
+
+data "ibm_is_bare_metal_server_network_interfaces" "bare-metal-nics-data" {
+  bare_metal_server = ibm_is_bare_metal_server.bare-metal-1.id
+}
+
+// Bare metal server floating IP data sources
+data "ibm_is_bare_metal_server_network_interface_floating_ip" "bare-metal-fip-data" {
+  bare_metal_server = ibm_is_bare_metal_server.bare-metal-1.id
+  network_interface = ibm_is_bare_metal_server.bare-metal-1.primary_network_interface[0].id
+  floating_ip       = ibm_is_floating_ip.bare-metal-floating-ip.id
+}
+
+data "ibm_is_bare_metal_server_network_interface_floating_ips" "bare-metal-fips-data" {
+  bare_metal_server = ibm_is_bare_metal_server.bare-metal-1.id
+  network_interface = ibm_is_bare_metal_server.bare-metal-1.primary_network_interface[0].id
+}
+
+// Placement group data sources
+data "ibm_is_placement_group" "placement-group-data" {
+  name = ibm_is_placement_group.placement-group-1.name
+}
+
+data "ibm_is_placement_groups" "all-placement-groups" {
+}
+
+// Reservation data sources
+data "ibm_is_reservations" "all-reservations" {
+}
+
+data "ibm_is_reservation" "reservation-data" {
+  identifier = ibm_is_reservation.reservation-1.id
+}
+
+// Instance profile data sources
+data "ibm_is_instance_profile" "instance-profile-data" {
   name = "gx3d-160x1792x8h100"
 }
-data ibm_is_instance_profiles is_instance_profiles_instance{
+
+data "ibm_is_instance_profiles" "all-instance-profiles" {
 }
-data "ibm_is_image" "is_image" {
-  name = "ibm-ubuntu-20-04-6-minimal-amd64-6"
+
+# =====================================================================================
+# DNS Services
+# =====================================================================================
+
+// DNS service instance
+resource "ibm_resource_instance" "dns-service-instance" {
+  name              = "dns-service-instance"
+  resource_group_id = data.ibm_resource_group.default.id
+  location          = "global"
+  service           = "dns-svcs"
+  plan              = "standard-dns"
 }
-resource "ibm_is_cluster_network" "is_cluster_network_instance" {
-  name = "${var.prefix}-cluster"
-  profile = "h100"
-  resource_group  = var.is_instances_resource_group_id
+
+// Custom DNS resolver for hub VPC
+resource "ibm_dns_custom_resolver" "dns-resolver-hub" {
+  name              = "dns-resolver-hub"
+  instance_id       = ibm_resource_instance.dns-service-instance.guid
+  description       = "Custom DNS resolver for hub VPC"
+  high_availability = true
+  enabled           = true
+
+  locations {
+    subnet_crn = ibm_is_subnet.subnet-hub-1.crn
+    enabled    = true
+  }
+
+  locations {
+    subnet_crn = ibm_is_subnet.subnet-hub-2.crn
+    enabled    = true
+  }
+}
+
+// Custom DNS resolver for delegated VPC
+resource "ibm_dns_custom_resolver" "dns-resolver-delegated" {
+  name              = "dns-resolver-delegated"
+  instance_id       = ibm_resource_instance.dns-service-instance.guid
+  description       = "Custom DNS resolver for delegated VPC"
+  high_availability = true
+  enabled           = true
+
+  locations {
+    subnet_crn = ibm_is_subnet.subnet-delegated-1.crn
+    enabled    = true
+  }
+
+  locations {
+    subnet_crn = ibm_is_subnet.subnet-delegated-2.crn
+    enabled    = true
+  }
+}
+
+# =====================================================================================
+# VPN Servers
+# =====================================================================================
+
+resource "ibm_is_vpn_server" "vpn-server-1" {
+  certificate_crn = var.is_certificate_crn
+
+  client_authentication {
+    method        = "certificate"
+    client_ca_crn = var.is_client_ca
+  }
+
+  client_ip_pool         = "10.5.0.0/21"
+  subnets                = [ibm_is_subnet.subnet-primary-1.id]
+  client_dns_server_ips  = ["192.168.3.4"]
+  client_idle_timeout    = 2800
+  enable_split_tunneling = false
+  name                   = "vpn-server-1"
+  port                   = 443
+  protocol               = "udp"
+}
+
+# =====================================================================================
+# VPN Server Routes
+# =====================================================================================
+
+resource "ibm_is_vpn_server_route" "vpn-server-route-1" {
+  vpn_server  = ibm_is_vpn_server.vpn-server-1.vpn_server
+  destination = "172.16.0.0/16"
+  action      = "translate"
+  name        = "vpn-server-route-1"
+}
+
+# =====================================================================================
+# Cluster Networks
+# =====================================================================================
+
+// Cluster network profile data sources
+data "ibm_is_cluster_network_profile" "cluster-network-profile-h100" {
+  name = "h100"
+}
+
+data "ibm_is_cluster_network_profiles" "all-cluster-network-profiles" {
+}
+
+// Cluster network
+resource "ibm_is_cluster_network" "cluster-network-1" {
+  name           = "cluster-network-1"
+  profile        = "h100"
+  resource_group = data.ibm_resource_group.default.id
+
   subnet_prefixes {
     cidr = "10.1.0.0/24"
   }
+
   vpc {
-    id = ibm_is_vpc.is_vpc.id
+    id = ibm_is_vpc.vpc-primary.id
   }
+
   zone = "${var.region}-3"
 }
-resource "ibm_is_cluster_network" "is_cluster_network_instance" {
-  name = "${var.prefix}-cluster-updated"
-  profile = "h100"
-  subnet_prefixes {
-    cidr = "10.0.0.0/24"
-  }
-  vpc {
-    id = ibm_is_vpc.is_vpc.id
-  }
-  zone = ibm_is_subnet.is_subnet.zone
-}
-resource "ibm_is_cluster_network_subnet" "is_cluster_network_subnet_instance" {
-  cluster_network_id = ibm_is_cluster_network.is_cluster_network_instance.id
-  name = "${var.prefix}-cluster-subnet"
+
+# =====================================================================================
+# Cluster Network Subnets
+# =====================================================================================
+
+resource "ibm_is_cluster_network_subnet" "cluster-subnet-1" {
+  cluster_network_id       = ibm_is_cluster_network.cluster-network-1.id
+  name                     = "cluster-subnet-1"
   total_ipv4_address_count = 64
 }
 
-resource "ibm_is_cluster_network_subnet_reserved_ip" "is_cluster_network_subnet_reserved_ip_instance" {
-  cluster_network_id = ibm_is_cluster_network.is_cluster_network_instance.id
-  cluster_network_subnet_id = ibm_is_cluster_network_subnet.is_cluster_network_subnet_instance.cluster_network_subnet_id
-  address = "10.1.0.4"
-  name = "${var.prefix}-cluster-subnet-r-ip"
+# =====================================================================================
+# Cluster Network Reserved IPs
+# =====================================================================================
+
+resource "ibm_is_cluster_network_subnet_reserved_ip" "cluster-reserved-ip-1" {
+  cluster_network_id        = ibm_is_cluster_network.cluster-network-1.id
+  cluster_network_subnet_id = ibm_is_cluster_network_subnet.cluster-subnet-1.cluster_network_subnet_id
+  address                   = "10.1.0.4"
+  name                      = "cluster-reserved-ip-1"
 }
 
-resource "ibm_is_cluster_network_interface" "is_cluster_network_interface_instance" {
-  cluster_network_id = ibm_is_cluster_network.is_cluster_network_instance.id
-  name = "${var.prefix}-cluster-ni"
+# =====================================================================================
+# Cluster Network Interfaces
+# =====================================================================================
+
+resource "ibm_is_cluster_network_interface" "cluster-network-interface-1" {
+  cluster_network_id = ibm_is_cluster_network.cluster-network-1.id
+  name               = "cluster-network-interface-1"
+
   primary_ip {
-    id = ibm_is_cluster_network_subnet_reserved_ip.is_cluster_network_subnet_reserved_ip_instance.cluster_network_subnet_reserved_ip_id
+    id = ibm_is_cluster_network_subnet_reserved_ip.cluster-reserved-ip-1.cluster_network_subnet_reserved_ip_id
   }
+
   subnet {
-    id = ibm_is_cluster_network_subnet.is_cluster_network_subnet_instance.cluster_network_subnet_id
+    id = ibm_is_cluster_network_subnet.cluster-subnet-1.cluster_network_subnet_id
   }
 }
 
-resource "ibm_is_instance_template" "is_instance_template" {
-  name    = "${var.prefix}-cluster-it"
-  image   = data.ibm_is_image.is_image.id
+# =====================================================================================
+# High-Performance Computing Instances
+# =====================================================================================
+
+// HPC-optimized instance with cluster network attachments
+resource "ibm_is_instance" "hpc-instance-1" {
+  name    = "hpc-instance-1"
+  image   = data.ibm_is_image.ubuntu-image.id
   profile = "gx3d-160x1792x8h100"
+
+  primary_network_interface {
+    subnet = ibm_is_subnet.subnet-primary-1.id
+  }
+
+  // Multiple cluster network attachments for high-performance networking
+  cluster_network_attachments {
+    name = "cluster-attachment-1"
+    cluster_network_interface {
+      auto_delete = true
+      name        = "cluster-interface-1"
+      subnet {
+        id = ibm_is_cluster_network_subnet.cluster-subnet-1.cluster_network_subnet_id
+      }
+    }
+  }
+
+  cluster_network_attachments {
+    name = "cluster-attachment-2"
+    cluster_network_interface {
+      auto_delete = true
+      name        = "cluster-interface-2"
+      subnet {
+        id = ibm_is_cluster_network_subnet.cluster-subnet-1.cluster_network_subnet_id
+      }
+    }
+  }
+
+  cluster_network_attachments {
+    name = "cluster-attachment-3"
+    cluster_network_interface {
+      auto_delete = true
+      name        = "cluster-interface-3"
+      subnet {
+        id = ibm_is_cluster_network_subnet.cluster-subnet-1.cluster_network_subnet_id
+      }
+    }
+  }
+
+  cluster_network_attachments {
+    name = "cluster-attachment-4"
+    cluster_network_interface {
+      auto_delete = true
+      name        = "cluster-interface-4"
+      subnet {
+        id = ibm_is_cluster_network_subnet.cluster-subnet-1.cluster_network_subnet_id
+      }
+    }
+  }
+
+  vpc  = ibm_is_vpc.vpc-primary.id
+  zone = ibm_is_subnet.subnet-primary-1.zone
+  keys = [ibm_is_ssh_key.ssh-key-1.id]
+}
+
+# =====================================================================================
+# Instance Cluster Network Attachments (Dynamic)
+# =====================================================================================
+
+// Stop instance before adding more cluster network attachments
+resource "ibm_is_instance_action" "hpc-instance-stop" {
+  action   = "stop"
+  instance = ibm_is_instance.hpc-instance-1.id
+}
+
+// Add additional cluster network attachments
+resource "ibm_is_instance_cluster_network_attachment" "cluster-attachment-5" {
+  depends_on  = [ibm_is_instance_action.hpc-instance-stop]
+  instance_id = ibm_is_instance.hpc-instance-1.id
+
+  before {
+    id = ibm_is_instance.hpc-instance-1.cluster_network_attachments.0.id
+  }
+
+  cluster_network_interface {
+    name = "cluster-interface-5"
+    subnet {
+      id = ibm_is_cluster_network_subnet.cluster-subnet-1.cluster_network_subnet_id
+    }
+  }
+
+  name = "cluster-attachment-5"
+}
+
+resource "ibm_is_instance_cluster_network_attachment" "cluster-attachment-6" {
+  depends_on  = [ibm_is_instance_action.hpc-instance-stop]
+  instance_id = ibm_is_instance.hpc-instance-1.id
+
+  before {
+    id = ibm_is_instance_cluster_network_attachment.cluster-attachment-5.instance_cluster_network_attachment_id
+  }
+
+  cluster_network_interface {
+    name = "cluster-interface-6"
+    subnet {
+      id = ibm_is_cluster_network_subnet.cluster-subnet-1.cluster_network_subnet_id
+    }
+  }
+
+  name = "cluster-attachment-6"
+}
+
+// Start instance after adding cluster network attachments
+resource "ibm_is_instance_action" "hpc-instance-start" {
+  depends_on = [
+    ibm_is_instance_cluster_network_attachment.cluster-attachment-5,
+    ibm_is_instance_cluster_network_attachment.cluster-attachment-6
+  ]
+  action   = "start"
+  instance = ibm_is_instance.hpc-instance-1.id
+}
+
+# =====================================================================================
+# HPC Instance Template with Cluster Networking
+# =====================================================================================
+
+resource "ibm_is_instance_template" "hpc-template-1" {
+  name    = "hpc-template-1"
+  image   = data.ibm_is_image.ubuntu-image.id
+  profile = "gx3d-160x1792x8h100"
+
   primary_network_attachment {
-    name = "my-pna-it"
+    name = "hpc-template-primary-attachment"
     virtual_network_interface {
       auto_delete = true
-      subnet      = ibm_is_subnet.is_subnet.id
+      subnet      = ibm_is_subnet.subnet-primary-1.id
     }
   }
+
+  // Template with multiple cluster network attachments
   cluster_network_attachments {
-    cluster_network_interface{
-      id = ibm_is_cluster_network_interface.is_cluster_network_interface_instance.cluster_network_interface_id
+    cluster_network_interface {
+      id = ibm_is_cluster_network_interface.cluster-network-interface-1.cluster_network_interface_id
     }
   }
+
   cluster_network_attachments {
-    cluster_network_interface{
-      id = ibm_is_cluster_network_interface.is_cluster_network_interface_instance.cluster_network_interface_id
+    cluster_network_interface {
+      id = ibm_is_cluster_network_interface.cluster-network-interface-1.cluster_network_interface_id
     }
   }
+
   cluster_network_attachments {
-    cluster_network_interface{
-      id = ibm_is_cluster_network_interface.is_cluster_network_interface_instance.cluster_network_interface_id
+    cluster_network_interface {
+      id = ibm_is_cluster_network_interface.cluster-network-interface-1.cluster_network_interface_id
     }
   }
+
   cluster_network_attachments {
-    cluster_network_interface{
-      id = ibm_is_cluster_network_interface.is_cluster_network_interface_instance.cluster_network_interface_id
+    cluster_network_interface {
+      id = ibm_is_cluster_network_interface.cluster-network-interface-1.cluster_network_interface_id
     }
   }
-  cluster_network_attachments {
-    cluster_network_interface{
-      id = ibm_is_cluster_network_interface.is_cluster_network_interface_instance.cluster_network_interface_id
-    }
-  }
-  cluster_network_attachments {
-    cluster_network_interface{
-      id = ibm_is_cluster_network_interface.is_cluster_network_interface_instance.cluster_network_interface_id
-    }
-  }
-  cluster_network_attachments {
-    cluster_network_interface{
-      id = ibm_is_cluster_network_interface.is_cluster_network_interface_instance.cluster_network_interface_id
-    }
-  }
-  cluster_network_attachments {
-    cluster_network_interface{
-      id = ibm_is_cluster_network_interface.is_cluster_network_interface_instance.cluster_network_interface_id
-    }
-  }
-  vpc  = ibm_is_vpc.is_vpc.id
-  zone = ibm_is_subnet.is_subnet.zone
-  keys = [ibm_is_ssh_key.is_key.id]
-}
-resource "ibm_is_ssh_key" "is_key" {
-  name       = "my-key"
-  public_key = file("~/.ssh/id_ed25519.pub")
-  type       = "ed25519"
+
+  vpc  = ibm_is_vpc.vpc-primary.id
+  zone = ibm_is_subnet.subnet-primary-1.zone
+  keys = [ibm_is_ssh_key.ssh-key-1.id]
 }
 
-resource "ibm_is_instance" "is_instance" {
-  name    = "${var.prefix}-cluster-ins"
-  image   = data.ibm_is_image.is_image.id
-  profile = "gx3d-160x1792x8h100"
-  primary_network_interface {
-    subnet = ibm_is_subnet.is_subnet.id
-  }
-  cluster_network_attachments {
-      name = "cna-1"
-    cluster_network_interface{
-      auto_delete = true
-      name = "cni-1"
-      subnet {
-        id = ibm_is_cluster_network_subnet.is_cluster_network_subnet_instance.cluster_network_subnet_id
-      }
-    }
-  }
-  cluster_network_attachments {
-      name = "cna-2"
-    cluster_network_interface{
-      auto_delete = true
-      name = "cni-2"
-      subnet {
-        id = ibm_is_cluster_network_subnet.is_cluster_network_subnet_instance.cluster_network_subnet_id
-      }
-    }
-  }
-  cluster_network_attachments {
-    name = "cna-3"
-    cluster_network_interface{
-      auto_delete = true
-      name = "cni-3"
-      subnet {
-        id = ibm_is_cluster_network_subnet.is_cluster_network_subnet_instance.cluster_network_subnet_id
-      }
-    }
-  }
-  cluster_network_attachments {
-      name = "cna-4"
-    cluster_network_interface{
-      auto_delete = true
-      name = "cni-4"
-      subnet {
-        id = ibm_is_cluster_network_subnet.is_cluster_network_subnet_instance.cluster_network_subnet_id
-      }
-    }
-  }
-  cluster_network_attachments {
-      name = "cna-5"
-    cluster_network_interface{
-      auto_delete = true
-      name = "cni-5"
-      subnet {
-        id = ibm_is_cluster_network_subnet.is_cluster_network_subnet_instance.cluster_network_subnet_id
-      }
-    }
-  }
-  cluster_network_attachments {
-      name = "cna-6"
-    cluster_network_interface{
-      auto_delete = true
-      name = "cni-6"
-      subnet {
-        id = ibm_is_cluster_network_subnet.is_cluster_network_subnet_instance.cluster_network_subnet_id
-      }
-    }
-  }
-  cluster_network_attachments {
-      name = "cna-7"
-    cluster_network_interface{
-      auto_delete = true
-      name = "cni-7"
-      subnet {
-        id = ibm_is_cluster_network_subnet.is_cluster_network_subnet_instance.cluster_network_subnet_id
-      }
-    }
-  }
-  cluster_network_attachments {
-      name = "cna-8"
-    cluster_network_interface{
-      auto_delete = true
-      name = "cni-8"
-      subnet {
-        id = ibm_is_cluster_network_subnet.is_cluster_network_subnet_instance.cluster_network_subnet_id
-      }
-    }
-  }
-  vpc  = ibm_is_vpc.is_vpc.id
-  zone = ibm_is_subnet.is_subnet.zone
-  keys = [ibm_is_ssh_key.is_key.id]
+# =====================================================================================
+# Data Sources for Specialized Services
+# =====================================================================================
+
+// Ubuntu image for HPC instances
+data "ibm_is_image" "ubuntu-image" {
+  name = "ibm-ubuntu-20-04-6-minimal-amd64-6"
 }
 
-resource "ibm_is_instance_action" "is_instance_stop_before" {
-	  action = "stop"
-	  instance = ibm_is_instance.is_instance.id
+// VPN server data sources
+data "ibm_is_vpn_server" "vpn-server-data" {
+  identifier = ibm_is_vpn_server.vpn-server-1.vpn_server
 }
 
-resource "ibm_is_instance_cluster_network_attachment" "is_instance_cluster_network_attachment_instance" {
-	  depends_on = [ibm_is_instance_action.is_instance_stop_before]
-    instance_id = ibm_is_instance.is_instance.id
-    before {
-      id = ibm_is_instance.is_instance.cluster_network_attachments.0.id
-    }
-    cluster_network_interface {
-      name = "my-cluster-network-interface"
-      subnet {
-        id = ibm_is_cluster_network_subnet.is_cluster_network_subnet_instance.cluster_network_subnet_id
-      }
-    }
-    name = "cna-9"
-}
-resource "ibm_is_instance_cluster_network_attachment" "is_instance_cluster_network_attachment_instance10" {
-	  depends_on = [ibm_is_instance_action.is_instance_stop_before]
-    instance_id = ibm_is_instance.is_instance.id
-    before {
-      id = ibm_is_instance_cluster_network_attachment.is_instance_cluster_network_attachment_instance.instance_cluster_network_attachment_id
-    }
-    cluster_network_interface {
-      name = "my-cluster-network-interface-10"
-      subnet {
-        id = ibm_is_cluster_network_subnet.is_cluster_network_subnet_instance.cluster_network_subnet_id
-      }
-    }
-    name = "cna-10"
-}
-resource "ibm_is_instance_cluster_network_attachment" "is_instance_cluster_network_attachment_instance11" {
-	  depends_on = [ibm_is_instance_action.is_instance_stop_before]
-    instance_id = ibm_is_instance.is_instance.id
-    before {
-      id = ibm_is_instance_cluster_network_attachment.is_instance_cluster_network_attachment_instance10.instance_cluster_network_attachment_id
-}
-    cluster_network_interface {
-      name = "my-cluster-network-interface-11"
-      subnet {
-        id = ibm_is_cluster_network_subnet.is_cluster_network_subnet_instance.cluster_network_subnet_id
-      }
-    }
-    name = "cna-11"
-}
-resource "ibm_is_instance_cluster_network_attachment" "is_instance_cluster_network_attachment_instance12" {
-	  depends_on = [ibm_is_instance_action.is_instance_stop_before]
-    instance_id = ibm_is_instance.is_instance.id
-    before {
-      id = ibm_is_instance_cluster_network_attachment.is_instance_cluster_network_attachment_instance11.instance_cluster_network_attachment_id
-}
-    cluster_network_interface {
-      name = "my-cluster-network-interface12"
-      subnet {
-        id = ibm_is_cluster_network_subnet.is_cluster_network_subnet_instance.cluster_network_subnet_id
-      }
-    }
-    name = "cna-12"
-}
-resource "ibm_is_instance_cluster_network_attachment" "is_instance_cluster_network_attachment_instance13" {
-	  depends_on = [ibm_is_instance_action.is_instance_stop_before]
-    instance_id = ibm_is_instance.is_instance.id
-    before {
-      id = ibm_is_instance_cluster_network_attachment.is_instance_cluster_network_attachment_instance12.instance_cluster_network_attachment_id
-    }
-    cluster_network_interface {
-      name = "my-cluster-network-interface13"
-      subnet {
-        id = ibm_is_cluster_network_subnet.is_cluster_network_subnet_instance.cluster_network_subnet_id
-      }
-    }
-    name = "cna-13"
-}
-resource "ibm_is_instance_cluster_network_attachment" "is_instance_cluster_network_attachment_instance14" {
-	  depends_on = [ibm_is_instance_action.is_instance_stop_before]
-    instance_id = ibm_is_instance.is_instance.id
-    before {
-      id = ibm_is_instance_cluster_network_attachment.is_instance_cluster_network_attachment_instance13.instance_cluster_network_attachment_id
-    }
-    cluster_network_interface {
-      name = "my-cluster-network-interface14"
-      subnet {
-        id = ibm_is_cluster_network_subnet.is_cluster_network_subnet_instance.cluster_network_subnet_id
-      }
-    }
-    name = "cna-149"
-}
-resource "ibm_is_instance_cluster_network_attachment" "is_instance_cluster_network_attachment_instance15" {
-	  depends_on = [ibm_is_instance_action.is_instance_stop_before]
-    instance_id = ibm_is_instance.is_instance.id
-    before {
-      id = ibm_is_instance_cluster_network_attachment.is_instance_cluster_network_attachment_instance14.instance_cluster_network_attachment_id
-    }
-    cluster_network_interface {
-      name = "my-cluster-network-interface15"
-      subnet {
-        id = ibm_is_cluster_network_subnet.is_cluster_network_subnet_instance.cluster_network_subnet_id
-      }
-    }
-    name = "cna-15"
-}
-resource "ibm_is_instance_cluster_network_attachment" "is_instance_cluster_network_attachment_instance16" {
-	  depends_on = [ibm_is_instance_action.is_instance_stop_before]
-    instance_id = ibm_is_instance.is_instance.id
-    before {
-      id = ibm_is_instance_cluster_network_attachment.is_instance_cluster_network_attachment_instance15.instance_cluster_network_attachment_id
-    }
-    cluster_network_interface {
-      name = "my-cluster-network-interface16"
-      subnet {
-        id = ibm_is_cluster_network_subnet.is_cluster_network_subnet_instance.cluster_network_subnet_id
-      }
-    }
-    name = "cna-16"
-}
-resource "ibm_is_instance_action" "is_instance_start_after" {
-	  # depends_on = [ibm_is_instance_cluster_network_attachment.is_instance_cluster_network_attachment_instance16]
-	  action = "start"
-	  instance = ibm_is_instance.is_instance.id
-}
-resource "ibm_is_instance_action" "is_instance_stop_update" {
-	  # depends_on = [ibm_is_instance_cluster_network_attachment.is_instance_cluster_network_attachment_instance16]
-	  action = "stop"
-	  instance = ibm_is_instance.is_instance.id
+data "ibm_is_vpn_servers" "all-vpn-servers" {
 }
 
-data "ibm_is_cluster_network" "is_cluster_network_instance" {
-  cluster_network_id = ibm_is_cluster_network.is_cluster_network_instance.id
-}
-data "ibm_is_cluster_networks" "is_cluster_networks_instance" {
-}
-
-data "ibm_is_cluster_network_interface" "is_cluster_network_interface_instance" {
-  cluster_network_id = ibm_is_cluster_network.is_cluster_network_instance.id
-  cluster_network_interface_id = ibm_is_cluster_network_interface.is_cluster_network_interface_instance.cluster_network_interface_id
-}
-data "ibm_is_cluster_network_interfaces" "is_cluster_network_interfaces_instance" {
-  cluster_network_id = ibm_is_cluster_network.is_cluster_network_instance.id
+// VPN server route data sources
+data "ibm_is_vpn_server_routes" "vpn-server-routes" {
+  vpn_server = ibm_is_vpn_server.vpn-server-1.vpn_server
 }
 
-data "ibm_is_cluster_network_subnet" "is_cluster_network_subnet_instance" {
-  cluster_network_id = ibm_is_cluster_network.is_cluster_network_instance.id
-  cluster_network_subnet_id = ibm_is_cluster_network_subnet.is_cluster_network_subnet_instance.cluster_network_subnet_id
-}
-data "ibm_is_cluster_network_subnets" "is_cluster_network_subnets_instance" {
-  cluster_network_id = ibm_is_cluster_network.is_cluster_network_instance.id
-}
-data "ibm_is_cluster_network_subnet_reserved_ip" "is_cluster_network_subnet_reserved_ip_instance" {
-  cluster_network_id = ibm_is_cluster_network.is_cluster_network_instance.id
-  cluster_network_subnet_id =ibm_is_cluster_network_subnet.is_cluster_network_subnet_instance.cluster_network_subnet_id
-  cluster_network_subnet_reserved_ip_id = ibm_is_cluster_network_subnet_reserved_ip.is_cluster_network_subnet_reserved_ip_instance.cluster_network_subnet_reserved_ip_id
-
-}
-data "ibm_is_cluster_network_subnet_reserved_ips" "is_cluster_network_subnet_reserved_ips_instance" {
-  cluster_network_id = ibm_is_cluster_network.is_cluster_network_instance.id
-  cluster_network_subnet_id = ibm_is_cluster_network_subnet.is_cluster_network_subnet_instance.cluster_network_subnet_id
+data "ibm_is_vpn_server_route" "vpn-server-route-data" {
+  vpn_server = ibm_is_vpn_server.vpn-server-1.vpn_server
+  identifier = ibm_is_vpn_server_route.vpn-server-route-1.vpn_route
 }
 
-data "ibm_is_instance_template" "is_instance_template_instance" {
-  name = ibm_is_instance_template.is_instance_template.name
+// VPN server client data sources
+data "ibm_is_vpn_server_clients" "vpn-server-clients" {
+  vpn_server = ibm_is_vpn_server.vpn-server-1.vpn_server
 }
-data "ibm_is_instance" "is_instance_instance" {
-  name = ibm_is_instance.is_instance.name
+
+data "ibm_is_vpn_server_client" "vpn-server-client-data" {
+  vpn_server = ibm_is_vpn_server.vpn-server-1.vpn_server
+  identifier = "0726-61b2f53f-1e95-42a7-94ab-55de8f8cbdd5"
 }
-data "ibm_is_instances" "is_instances_instance" {
+
+// Cluster network data sources
+data "ibm_is_cluster_network" "cluster-network-data" {
+  cluster_network_id = ibm_is_cluster_network.cluster-network-1.id
 }
-data "ibm_is_instance_cluster_network_attachment" "is_instance_cluster_network_attachment_instance" {
-  instance_id = ibm_is_instance.is_instance.id
-  instance_cluster_network_attachment_id = ibm_is_instance.is_instance.cluster_network_attachments.0.id
+
+data "ibm_is_cluster_networks" "all-cluster-networks" {
 }
-data "ibm_is_instance_cluster_network_attachments" "is_instance_cluster_network_attachments_instance" {
-  instance_id = ibm_is_instance.is_instance.id
+
+// Cluster network interface data sources
+data "ibm_is_cluster_network_interface" "cluster-interface-data" {
+  cluster_network_id           = ibm_is_cluster_network.cluster-network-1.id
+  cluster_network_interface_id = ibm_is_cluster_network_interface.cluster-network-interface-1.cluster_network_interface_id
 }
-data "ibm_is_instances" "is_instances_instance" {
-  # resource_group_id = var.is_instances_resource_group_id
-  name = var.is_instances_name
-  # cluster_network_id = var.is_instances_cluster_network_id
-  # cluster_network_crn = var.is_instances_cluster_network_crn
-  # cluster_network_name = var.is_instances_cluster_network_name
-  # dedicated_host_id = var.is_instances_dedicated_host_id
-  # dedicated_host_crn = var.is_instances_dedicated_host_crn
-  # dedicated_host_name = var.is_instances_dedicated_host_name
-  # placement_group_id = var.is_instances_placement_group_id
-  # placement_group_crn = var.is_instances_placement_group_crn
-  # placement_group_name = var.is_instances_placement_group_name
-  # reservation_id = var.is_instances_reservation_id
-  # reservation_crn = var.is_instances_reservation_crn
-  # reservation_name = var.is_instances_reservation_name
-  # vpc_id = var.is_instances_vpc_id
-  # vpc_crn = var.is_instances_vpc_crn
-  # vpc_name = var.is_instances_vpc_name
+
+data "ibm_is_cluster_network_interfaces" "cluster-interfaces-data" {
+  cluster_network_id = ibm_is_cluster_network.cluster-network-1.id
+}
+
+// Cluster network subnet data sources
+data "ibm_is_cluster_network_subnet" "cluster-subnet-data" {
+  cluster_network_id        = ibm_is_cluster_network.cluster-network-1.id
+  cluster_network_subnet_id = ibm_is_cluster_network_subnet.cluster-subnet-1.cluster_network_subnet_id
+}
+
+data "ibm_is_cluster_network_subnets" "cluster-subnets-data" {
+  cluster_network_id = ibm_is_cluster_network.cluster-network-1.id
+}
+
+// Cluster network reserved IP data sources
+data "ibm_is_cluster_network_subnet_reserved_ip" "cluster-reserved-ip-data" {
+  cluster_network_id                    = ibm_is_cluster_network.cluster-network-1.id
+  cluster_network_subnet_id             = ibm_is_cluster_network_subnet.cluster-subnet-1.cluster_network_subnet_id
+  cluster_network_subnet_reserved_ip_id = ibm_is_cluster_network_subnet_reserved_ip.cluster-reserved-ip-1.cluster_network_subnet_reserved_ip_id
+}
+
+data "ibm_is_cluster_network_subnet_reserved_ips" "cluster-reserved-ips-data" {
+  cluster_network_id        = ibm_is_cluster_network.cluster-network-1.id
+  cluster_network_subnet_id = ibm_is_cluster_network_subnet.cluster-subnet-1.cluster_network_subnet_id
+}
+
+// Instance cluster network attachment data sources
+data "ibm_is_instance_cluster_network_attachment" "cluster-attachment-data" {
+  instance_id                            = ibm_is_instance.hpc-instance-1.id
+  instance_cluster_network_attachment_id = ibm_is_instance.hpc-instance-1.cluster_network_attachments.0.id
+}
+
+data "ibm_is_instance_cluster_network_attachments" "cluster-attachments-data" {
+  instance_id = ibm_is_instance.hpc-instance-1.id
+}
+
+// HPC instance template data source
+data "ibm_is_instance_template" "hpc-template-data" {
+  name = ibm_is_instance_template.hpc-template-1.name
+}
+
+// HPC instance data source
+data "ibm_is_instance" "hpc-instance-data" {
+  name = ibm_is_instance.hpc-instance-1.name
 }

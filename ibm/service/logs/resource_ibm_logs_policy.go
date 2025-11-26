@@ -1,5 +1,9 @@
-// Copyright IBM Corp. 2024 All Rights Reserved.
+// Copyright IBM Corp. 2025 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
+
+/*
+ * IBM OpenAPI Terraform Generator Version: 3.104.0-b4a47c49-20250418-184351
+ */
 
 package logs
 
@@ -28,6 +32,27 @@ func ResourceIbmLogsPolicy() *schema.Resource {
 		Importer:      &schema.ResourceImporter{},
 
 		Schema: map[string]*schema.Schema{
+			"before": &schema.Schema{
+				Type:     schema.TypeList,
+				MaxItems: 1,
+				Optional: true,
+				Computed: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"id": &schema.Schema{
+							Type:        schema.TypeString,
+							Optional:    true,
+							Computed:    true,
+							Description: "Policy ID.",
+						},
+						"name": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Policy name.",
+						},
+					},
+				},
+			},
 			"name": &schema.Schema{
 				Type:         schema.TypeString,
 				Required:     true,
@@ -46,6 +71,12 @@ func ResourceIbmLogsPolicy() *schema.Resource {
 				ValidateFunc: validate.InvokeValidator("ibm_logs_policy", "priority"),
 				Description:  "The data pipeline sources that match the policy rules will go through.",
 			},
+			"enabled": &schema.Schema{
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Default:     true,
+				Description: "Enabled flag.",
+			},
 			"application_rule": &schema.Schema{
 				Type:        schema.TypeList,
 				MaxItems:    1,
@@ -61,7 +92,7 @@ func ResourceIbmLogsPolicy() *schema.Resource {
 						"name": &schema.Schema{
 							Type:        schema.TypeString,
 							Required:    true,
-							Description: "Value of the rule.",
+							Description: "Value of the rule. Multiple values can be provided as comma separated string of values.",
 						},
 					},
 				},
@@ -81,7 +112,7 @@ func ResourceIbmLogsPolicy() *schema.Resource {
 						"name": &schema.Schema{
 							Type:        schema.TypeString,
 							Required:    true,
-							Description: "Value of the rule.",
+							Description: "Value of the rule. Multiple values can be provided as comma separated string of values.",
 						},
 					},
 				},
@@ -127,11 +158,6 @@ func ResourceIbmLogsPolicy() *schema.Resource {
 				Computed:    true,
 				Description: "Soft deletion flag.",
 			},
-			"enabled": &schema.Schema{
-				Type:        schema.TypeBool,
-				Computed:    true,
-				Description: "Enabled flag.",
-			},
 			"order": &schema.Schema{
 				Type:        schema.TypeInt,
 				Computed:    true,
@@ -173,7 +199,7 @@ func ResourceIbmLogsPolicyValidator() *validate.ResourceValidator {
 			ValidateFunctionIdentifier: validate.ValidateRegexpLen,
 			Type:                       validate.TypeString,
 			Optional:                   true,
-			Regexp:                     `^[A-Za-z0-9_\-\s]+$`,
+			Regexp:                     `^[\p{L}0-9_\-\s]+$`,
 			MinValueLength:             1,
 			MaxValueLength:             4096,
 		},
@@ -200,12 +226,18 @@ func resourceIbmLogsPolicyCreate(context context.Context, d *schema.ResourceData
 
 	region := getLogsInstanceRegion(logsClient, d)
 	instanceId := d.Get("instance_id").(string)
-	logsClient = getClientWithLogsInstanceEndpoint(logsClient, instanceId, region, getLogsInstanceEndpointType(logsClient, d))
+	logsClient, err = getClientWithLogsInstanceEndpoint(logsClient, meta, instanceId, region, getLogsInstanceEndpointType(logsClient, d))
+	if err != nil {
+		return diag.FromErr(fmt.Errorf("Unable to get updated logs instance client"))
+	}
 
 	bodyModelMap := map[string]interface{}{}
 	createPolicyOptions := &logsv0.CreatePolicyOptions{}
 
 	bodyModelMap["name"] = d.Get("name")
+	if _, ok := d.GetOk("before"); ok {
+		bodyModelMap["before"] = d.Get("before")
+	}
 	if _, ok := d.GetOk("description"); ok {
 		bodyModelMap["description"] = d.Get("description")
 	}
@@ -219,13 +251,14 @@ func resourceIbmLogsPolicyCreate(context context.Context, d *schema.ResourceData
 	if _, ok := d.GetOk("archive_retention"); ok {
 		bodyModelMap["archive_retention"] = d.Get("archive_retention")
 	}
+	bodyModelMap["enabled"] = d.Get("enabled")
+
 	if _, ok := d.GetOk("log_rules"); ok {
 		bodyModelMap["log_rules"] = d.Get("log_rules")
 	}
 	convertedModel, err := ResourceIbmLogsPolicyMapToPolicyPrototype(bodyModelMap)
 	if err != nil {
-		tfErr := flex.TerraformErrorf(err, err.Error(), "ibm_logs_policy", "create")
-		return tfErr.GetDiag()
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_logs_policy", "create", "parse-request-body").GetDiag()
 	}
 	createPolicyOptions.PolicyPrototype = convertedModel
 
@@ -247,12 +280,12 @@ func resourceIbmLogsPolicyCreate(context context.Context, d *schema.ResourceData
 func resourceIbmLogsPolicyRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	logsClient, err := meta.(conns.ClientSession).LogsV0()
 	if err != nil {
-		tfErr := flex.TerraformErrorf(err, err.Error(), "ibm_logs_policy", "read")
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_logs_policy", "read", "initialize-client")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
 
-	logsClient, region, instanceId, policyId, err := updateClientURLWithInstanceEndpoint(d.Id(), logsClient, d)
+	logsClient, region, instanceId, policyId, err := updateClientURLWithInstanceEndpoint(d.Id(), meta, logsClient, d)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -284,95 +317,113 @@ func resourceIbmLogsPolicyRead(context context.Context, d *schema.ResourceData, 
 		return diag.FromErr(fmt.Errorf("Error setting region: %s", err))
 	}
 	if err = d.Set("name", policy.Name); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting name: %s", err))
+		err = fmt.Errorf("Error setting name: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_logs_policy", "read", "set-name").GetDiag()
 	}
 	if !core.IsNil(policy.Description) {
 		if err = d.Set("description", policy.Description); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting description: %s", err))
+			err = fmt.Errorf("Error setting description: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_logs_policy", "read", "set-description").GetDiag()
 		}
 	}
 	if err = d.Set("priority", policy.Priority); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting priority: %s", err))
+		err = fmt.Errorf("Error setting priority: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_logs_policy", "read", "set-priority").GetDiag()
 	}
+
+	if !core.IsNil(policy.Enabled) {
+		if err = d.Set("enabled", policy.Enabled); err != nil {
+			err = fmt.Errorf("Error setting enabled: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_logs_policy", "read", "set-enabled").GetDiag()
+		}
+	}
+
+	// if !core.IsNil(policy.Before) { //manual change donot remove
+	beforeMap, err := ResourceIbmLogsPolicyPolicyBeforeToMap(policy.Before)
+	if err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_logs_policy", "read", "before-to-map").GetDiag()
+	}
+	if err = d.Set("before", []map[string]interface{}{beforeMap}); err != nil {
+		err = fmt.Errorf("Error setting before: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_logs_policy", "read", "set-before").GetDiag()
+	}
+	// }
 	if !core.IsNil(policy.ApplicationRule) {
 		applicationRuleMap, err := ResourceIbmLogsPolicyQuotaV1RuleToMap(policy.ApplicationRule)
 		if err != nil {
-			return diag.FromErr(err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_logs_policy", "read", "application_rule-to-map").GetDiag()
 		}
 		if err = d.Set("application_rule", []map[string]interface{}{applicationRuleMap}); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting application_rule: %s", err))
+			err = fmt.Errorf("Error setting application_rule: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_logs_policy", "read", "set-application_rule").GetDiag()
 		}
 	}
 	if !core.IsNil(policy.SubsystemRule) {
 		subsystemRuleMap, err := ResourceIbmLogsPolicyQuotaV1RuleToMap(policy.SubsystemRule)
 		if err != nil {
-			return diag.FromErr(err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_logs_policy", "read", "subsystem_rule-to-map").GetDiag()
 		}
 		if err = d.Set("subsystem_rule", []map[string]interface{}{subsystemRuleMap}); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting subsystem_rule: %s", err))
+			err = fmt.Errorf("Error setting subsystem_rule: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_logs_policy", "read", "set-subsystem_rule").GetDiag()
 		}
 	}
 	if !core.IsNil(policy.ArchiveRetention) {
 		archiveRetentionMap, err := ResourceIbmLogsPolicyQuotaV1ArchiveRetentionToMap(policy.ArchiveRetention)
 		if err != nil {
-			return diag.FromErr(err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_logs_policy", "read", "archive_retention-to-map").GetDiag()
 		}
 		if err = d.Set("archive_retention", []map[string]interface{}{archiveRetentionMap}); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting archive_retention: %s", err))
+			err = fmt.Errorf("Error setting archive_retention: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_logs_policy", "read", "set-archive_retention").GetDiag()
 		}
 	}
 	if !core.IsNil(policy.LogRules) {
 		logRulesMap, err := ResourceIbmLogsPolicyQuotaV1LogRulesToMap(policy.LogRules)
 		if err != nil {
-			return diag.FromErr(err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_logs_policy", "read", "log_rules-to-map").GetDiag()
 		}
 		if err = d.Set("log_rules", []map[string]interface{}{logRulesMap}); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting log_rules: %s", err))
+			err = fmt.Errorf("Error setting log_rules: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_logs_policy", "read", "set-log_rules").GetDiag()
 		}
 	}
-	if !core.IsNil(policy.CompanyID) {
-		if err = d.Set("company_id", flex.IntValue(policy.CompanyID)); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting company_id: %s", err))
-		}
+	if err = d.Set("company_id", flex.IntValue(policy.CompanyID)); err != nil {
+		err = fmt.Errorf("Error setting company_id: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_logs_policy", "read", "set-company_id").GetDiag()
 	}
 	if !core.IsNil(policy.Deleted) {
 		if err = d.Set("deleted", policy.Deleted); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting deleted: %s", err))
+			err = fmt.Errorf("Error setting deleted: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_logs_policy", "read", "set-deleted").GetDiag()
 		}
 	}
-	if !core.IsNil(policy.Enabled) {
-		if err = d.Set("enabled", policy.Enabled); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting enabled: %s", err))
-		}
+	if err = d.Set("order", flex.IntValue(policy.Order)); err != nil {
+		err = fmt.Errorf("Error setting order: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_logs_policy", "read", "set-order").GetDiag()
 	}
-	if !core.IsNil(policy.Order) {
-		if err = d.Set("order", flex.IntValue(policy.Order)); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting order: %s", err))
-		}
+	if err = d.Set("created_at", policy.CreatedAt); err != nil {
+		err = fmt.Errorf("Error setting created_at: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_logs_policy", "read", "set-created_at").GetDiag()
 	}
-	if !core.IsNil(policy.CreatedAt) {
-		if err = d.Set("created_at", policy.CreatedAt); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting created_at: %s", err))
-		}
-	}
-	if !core.IsNil(policy.UpdatedAt) {
-		if err = d.Set("updated_at", policy.UpdatedAt); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting updated_at: %s", err))
-		}
+	if err = d.Set("updated_at", policy.UpdatedAt); err != nil {
+		err = fmt.Errorf("Error setting updated_at: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_logs_policy", "read", "set-updated_at").GetDiag()
 	}
 
 	return nil
 }
 
 func resourceIbmLogsPolicyUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+
 	logsClient, err := meta.(conns.ClientSession).LogsV0()
 	if err != nil {
-		tfErr := flex.TerraformErrorf(err, err.Error(), "ibm_logs_policy", "update")
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_logs_policy", "update", "initialize-client")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
 
-	logsClient, _, _, policyId, err := updateClientURLWithInstanceEndpoint(d.Id(), logsClient, d)
+	logsClient, _, _, policyId, err := updateClientURLWithInstanceEndpoint(d.Id(), meta, logsClient, d)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -389,6 +440,8 @@ func resourceIbmLogsPolicyUpdate(context context.Context, d *schema.ResourceData
 		d.HasChange("application_rule") ||
 		d.HasChange("subsystem_rule") ||
 		d.HasChange("archive_retention") ||
+		d.HasChange("before") ||
+		d.HasChange("enabled") ||
 		d.HasChange("log_rules") {
 
 		bodyModelMap := map[string]interface{}{}
@@ -411,16 +464,20 @@ func resourceIbmLogsPolicyUpdate(context context.Context, d *schema.ResourceData
 		if _, ok := d.GetOk("log_rules"); ok {
 			bodyModelMap["log_rules"] = d.Get("log_rules")
 		}
+		if _, ok := d.GetOk("before"); ok {
+			bodyModelMap["before"] = d.Get("before")
+		}
+		bodyModelMap["enabled"] = d.Get("enabled")
+
 		convertedModel, err := ResourceIbmLogsPolicyMapToPolicyPrototype(bodyModelMap)
 		if err != nil {
-			tfErr := flex.TerraformErrorf(err, err.Error(), "ibm_logs_policy", "create")
-			return tfErr.GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_logs_policy", "update", "parse-policy_prototype").GetDiag()
 		}
 		updatePolicyOptions.PolicyPrototype = convertedModel
 
 		hasChange = true
-	}
 
+	}
 	if hasChange {
 		_, _, err = logsClient.UpdatePolicyWithContext(context, updatePolicyOptions)
 		if err != nil {
@@ -436,12 +493,12 @@ func resourceIbmLogsPolicyUpdate(context context.Context, d *schema.ResourceData
 func resourceIbmLogsPolicyDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	logsClient, err := meta.(conns.ClientSession).LogsV0()
 	if err != nil {
-		tfErr := flex.TerraformErrorf(err, err.Error(), "ibm_logs_policy", "delete")
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_logs_policy", "delete", "initialize-client")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
 
-	logsClient, _, _, policyId, err := updateClientURLWithInstanceEndpoint(d.Id(), logsClient, d)
+	logsClient, _, _, policyId, err := updateClientURLWithInstanceEndpoint(d.Id(), meta, logsClient, d)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -460,6 +517,12 @@ func resourceIbmLogsPolicyDelete(context context.Context, d *schema.ResourceData
 	d.SetId("")
 
 	return nil
+}
+
+func ResourceIbmLogsPolicyMapToPolicyBeforePrototype(modelMap map[string]interface{}) (*logsv0.PolicyBeforePrototype, error) {
+	model := &logsv0.PolicyBeforePrototype{}
+	model.ID = core.UUIDPtr(strfmt.UUID(modelMap["id"].(string)))
+	return model, nil
 }
 
 func ResourceIbmLogsPolicyMapToQuotaV1Rule(modelMap map[string]interface{}) (*logsv0.QuotaV1Rule, error) {
@@ -490,6 +553,13 @@ func ResourceIbmLogsPolicyMapToQuotaV1LogRules(modelMap map[string]interface{}) 
 func ResourceIbmLogsPolicyMapToPolicyPrototype(modelMap map[string]interface{}) (logsv0.PolicyPrototypeIntf, error) {
 	model := &logsv0.PolicyPrototype{}
 	model.Name = core.StringPtr(modelMap["name"].(string))
+	if modelMap["before"] != nil && len(modelMap["before"].([]interface{})) > 0 {
+		BeforeModel, err := ResourceIbmLogsPolicyMapToPolicyBeforePrototype(modelMap["before"].([]interface{})[0].(map[string]interface{}))
+		if err != nil {
+			return model, err
+		}
+		model.Before = BeforeModel
+	}
 	if modelMap["description"] != nil && modelMap["description"].(string) != "" {
 		model.Description = core.StringPtr(modelMap["description"].(string))
 	}
@@ -514,6 +584,9 @@ func ResourceIbmLogsPolicyMapToPolicyPrototype(modelMap map[string]interface{}) 
 			return model, err
 		}
 		model.ArchiveRetention = ArchiveRetentionModel
+	}
+	if modelMap["enabled"] != nil {
+		model.Enabled = core.BoolPtr(modelMap["enabled"].(bool))
 	}
 	if modelMap["log_rules"] != nil && len(modelMap["log_rules"].([]interface{})) > 0 {
 		LogRulesModel, err := ResourceIbmLogsPolicyMapToQuotaV1LogRules(modelMap["log_rules"].([]interface{})[0].(map[string]interface{}))
@@ -528,6 +601,13 @@ func ResourceIbmLogsPolicyMapToPolicyPrototype(modelMap map[string]interface{}) 
 func ResourceIbmLogsPolicyMapToPolicyPrototypeQuotaV1CreatePolicyRequestSourceTypeRulesLogRules(modelMap map[string]interface{}) (*logsv0.PolicyPrototypeQuotaV1CreatePolicyRequestSourceTypeRulesLogRules, error) {
 	model := &logsv0.PolicyPrototypeQuotaV1CreatePolicyRequestSourceTypeRulesLogRules{}
 	model.Name = core.StringPtr(modelMap["name"].(string))
+	if modelMap["before"] != nil && len(modelMap["before"].([]interface{})) > 0 {
+		BeforeModel, err := ResourceIbmLogsPolicyMapToPolicyBeforePrototype(modelMap["before"].([]interface{})[0].(map[string]interface{}))
+		if err != nil {
+			return model, err
+		}
+		model.Before = BeforeModel
+	}
 	if modelMap["description"] != nil && modelMap["description"].(string) != "" {
 		model.Description = core.StringPtr(modelMap["description"].(string))
 	}
@@ -553,6 +633,9 @@ func ResourceIbmLogsPolicyMapToPolicyPrototypeQuotaV1CreatePolicyRequestSourceTy
 		}
 		model.ArchiveRetention = ArchiveRetentionModel
 	}
+	if modelMap["enabled"] != nil {
+		model.Enabled = core.BoolPtr(modelMap["enabled"].(bool))
+	}
 	if modelMap["log_rules"] != nil && len(modelMap["log_rules"].([]interface{})) > 0 {
 		LogRulesModel, err := ResourceIbmLogsPolicyMapToQuotaV1LogRules(modelMap["log_rules"].([]interface{})[0].(map[string]interface{}))
 		if err != nil {
@@ -561,6 +644,18 @@ func ResourceIbmLogsPolicyMapToPolicyPrototypeQuotaV1CreatePolicyRequestSourceTy
 		model.LogRules = LogRulesModel
 	}
 	return model, nil
+}
+
+func ResourceIbmLogsPolicyPolicyBeforeToMap(model *logsv0.PolicyBefore) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{}) //Manual change Donot remove
+	if model != nil {
+		modelMap["id"] = model.ID.String()
+		if model.Name != nil {
+			modelMap["name"] = *model.Name
+		}
+	}
+
+	return modelMap, nil
 }
 
 func ResourceIbmLogsPolicyQuotaV1RuleToMap(model *logsv0.QuotaV1Rule) (map[string]interface{}, error) {

@@ -1,5 +1,9 @@
-// Copyright IBM Corp. 2024 All Rights Reserved.
+// Copyright IBM Corp. 2025 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
+
+/*
+ * IBM OpenAPI Terraform Generator Version: 3.104.0-b4a47c49-20250418-184351
+ */
 
 package logs
 
@@ -27,6 +31,24 @@ func DataSourceIbmLogsPolicy() *schema.Resource {
 				Type:        schema.TypeString,
 				Required:    true,
 				Description: "ID of policy.",
+			},
+			"before": &schema.Schema{
+				Type:     schema.TypeList,
+				Computed: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"id": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Policy ID.",
+						},
+						"name": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Policy name.",
+						},
+					},
+				},
 			},
 			"company_id": &schema.Schema{
 				Type:        schema.TypeInt,
@@ -77,7 +99,7 @@ func DataSourceIbmLogsPolicy() *schema.Resource {
 						"name": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "Value of the rule.",
+							Description: "Value of the rule. Multiple values can be provided as comma separated string of values.",
 						},
 					},
 				},
@@ -96,7 +118,7 @@ func DataSourceIbmLogsPolicy() *schema.Resource {
 						"name": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "Value of the rule.",
+							Description: "Value of the rule. Multiple values can be provided as comma separated string of values.",
 						},
 					},
 				},
@@ -149,13 +171,16 @@ func DataSourceIbmLogsPolicy() *schema.Resource {
 func dataSourceIbmLogsPolicyRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	logsClient, err := meta.(conns.ClientSession).LogsV0()
 	if err != nil {
-		tfErr := flex.TerraformErrorf(err, err.Error(), "(Data) ibm_logs_policy", "read")
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_logs_policy", "read", "initialize-client")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
 	region := getLogsInstanceRegion(logsClient, d)
 	instanceId := d.Get("instance_id").(string)
-	logsClient = getClientWithLogsInstanceEndpoint(logsClient, instanceId, region, getLogsInstanceEndpointType(logsClient, d))
+	logsClient, err = getClientWithLogsInstanceEndpoint(logsClient, meta, instanceId, region, getLogsInstanceEndpointType(logsClient, d))
+	if err != nil {
+		return diag.FromErr(fmt.Errorf("Unable to get updated logs instance client"))
+	}
 
 	getPolicyOptions := &logsv0.GetPolicyOptions{}
 
@@ -171,108 +196,118 @@ func dataSourceIbmLogsPolicyRead(context context.Context, d *schema.ResourceData
 
 	d.SetId(fmt.Sprintf("%s", *getPolicyOptions.ID))
 
+	if !core.IsNil(policy.Before) {
+		before := []map[string]interface{}{}
+		beforeMap, err := DataSourceIbmLogsPolicyPolicyBeforeToMap(policy.Before)
+		if err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_logs_policy", "read", "before-to-map").GetDiag()
+		}
+		before = append(before, beforeMap)
+		if err = d.Set("before", before); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting before: %s", err), "(Data) ibm_logs_policy", "read", "set-before").GetDiag()
+		}
+	}
+
 	if err = d.Set("company_id", flex.IntValue(policy.CompanyID)); err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting company_id: %s", err), "(Data) ibm_logs_policy", "read")
-		return tfErr.GetDiag()
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting company_id: %s", err), "(Data) ibm_logs_policy", "read", "set-company_id").GetDiag()
 	}
 
 	if err = d.Set("name", policy.Name); err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting name: %s", err), "(Data) ibm_logs_policy", "read")
-		return tfErr.GetDiag()
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting name: %s", err), "(Data) ibm_logs_policy", "read", "set-name").GetDiag()
 	}
 
 	if err = d.Set("description", policy.Description); err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting description: %s", err), "(Data) ibm_logs_policy", "read")
-		return tfErr.GetDiag()
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting description: %s", err), "(Data) ibm_logs_policy", "read", "set-description").GetDiag()
 	}
 
-	if err = d.Set("priority", policy.Priority); err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting priority: %s", err), "(Data) ibm_logs_policy", "read")
-		return tfErr.GetDiag()
+	if !core.IsNil(policy.Priority) {
+		if err = d.Set("priority", policy.Priority); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting priority: %s", err), "(Data) ibm_logs_policy", "read", "set-priority").GetDiag()
+		}
 	}
 
-	if err = d.Set("deleted", policy.Deleted); err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting deleted: %s", err), "(Data) ibm_logs_policy", "read")
-		return tfErr.GetDiag()
+	if !core.IsNil(policy.Deleted) {
+		if err = d.Set("deleted", policy.Deleted); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting deleted: %s", err), "(Data) ibm_logs_policy", "read", "set-deleted").GetDiag()
+		}
 	}
 
-	if err = d.Set("enabled", policy.Enabled); err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting enabled: %s", err), "(Data) ibm_logs_policy", "read")
-		return tfErr.GetDiag()
+	if !core.IsNil(policy.Enabled) {
+		if err = d.Set("enabled", policy.Enabled); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting enabled: %s", err), "(Data) ibm_logs_policy", "read", "set-enabled").GetDiag()
+		}
 	}
 
 	if err = d.Set("order", flex.IntValue(policy.Order)); err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting order: %s", err), "(Data) ibm_logs_policy", "read")
-		return tfErr.GetDiag()
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting order: %s", err), "(Data) ibm_logs_policy", "read", "set-order").GetDiag()
 	}
 
-	applicationRule := []map[string]interface{}{}
-	if policy.ApplicationRule != nil {
-		modelMap, err := DataSourceIbmLogsPolicyQuotaV1RuleToMap(policy.ApplicationRule)
+	if !core.IsNil(policy.ApplicationRule) {
+		applicationRule := []map[string]interface{}{}
+		applicationRuleMap, err := DataSourceIbmLogsPolicyQuotaV1RuleToMap(policy.ApplicationRule)
 		if err != nil {
-			tfErr := flex.TerraformErrorf(err, err.Error(), "(Data) ibm_logs_policy", "read")
-			return tfErr.GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_logs_policy", "read", "application_rule-to-map").GetDiag()
 		}
-		applicationRule = append(applicationRule, modelMap)
-	}
-	if err = d.Set("application_rule", applicationRule); err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting application_rule: %s", err), "(Data) ibm_logs_policy", "read")
-		return tfErr.GetDiag()
+		applicationRule = append(applicationRule, applicationRuleMap)
+		if err = d.Set("application_rule", applicationRule); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting application_rule: %s", err), "(Data) ibm_logs_policy", "read", "set-application_rule").GetDiag()
+		}
 	}
 
-	subsystemRule := []map[string]interface{}{}
-	if policy.SubsystemRule != nil {
-		modelMap, err := DataSourceIbmLogsPolicyQuotaV1RuleToMap(policy.SubsystemRule)
+	if !core.IsNil(policy.SubsystemRule) {
+		subsystemRule := []map[string]interface{}{}
+		subsystemRuleMap, err := DataSourceIbmLogsPolicyQuotaV1RuleToMap(policy.SubsystemRule)
 		if err != nil {
-			tfErr := flex.TerraformErrorf(err, err.Error(), "(Data) ibm_logs_policy", "read")
-			return tfErr.GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_logs_policy", "read", "subsystem_rule-to-map").GetDiag()
 		}
-		subsystemRule = append(subsystemRule, modelMap)
-	}
-	if err = d.Set("subsystem_rule", subsystemRule); err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting subsystem_rule: %s", err), "(Data) ibm_logs_policy", "read")
-		return tfErr.GetDiag()
+		subsystemRule = append(subsystemRule, subsystemRuleMap)
+		if err = d.Set("subsystem_rule", subsystemRule); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting subsystem_rule: %s", err), "(Data) ibm_logs_policy", "read", "set-subsystem_rule").GetDiag()
+		}
 	}
 
 	if err = d.Set("created_at", policy.CreatedAt); err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting created_at: %s", err), "(Data) ibm_logs_policy", "read")
-		return tfErr.GetDiag()
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting created_at: %s", err), "(Data) ibm_logs_policy", "read", "set-created_at").GetDiag()
 	}
 
 	if err = d.Set("updated_at", policy.UpdatedAt); err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting updated_at: %s", err), "(Data) ibm_logs_policy", "read")
-		return tfErr.GetDiag()
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting updated_at: %s", err), "(Data) ibm_logs_policy", "read", "set-updated_at").GetDiag()
 	}
 
-	archiveRetention := []map[string]interface{}{}
-	if policy.ArchiveRetention != nil {
-		modelMap, err := DataSourceIbmLogsPolicyQuotaV1ArchiveRetentionToMap(policy.ArchiveRetention)
+	if !core.IsNil(policy.ArchiveRetention) {
+		archiveRetention := []map[string]interface{}{}
+		archiveRetentionMap, err := DataSourceIbmLogsPolicyQuotaV1ArchiveRetentionToMap(policy.ArchiveRetention)
 		if err != nil {
-			tfErr := flex.TerraformErrorf(err, err.Error(), "(Data) ibm_logs_policy", "read")
-			return tfErr.GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_logs_policy", "read", "archive_retention-to-map").GetDiag()
 		}
-		archiveRetention = append(archiveRetention, modelMap)
-	}
-	if err = d.Set("archive_retention", archiveRetention); err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting archive_retention: %s", err), "(Data) ibm_logs_policy", "read")
-		return tfErr.GetDiag()
+		archiveRetention = append(archiveRetention, archiveRetentionMap)
+		if err = d.Set("archive_retention", archiveRetention); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting archive_retention: %s", err), "(Data) ibm_logs_policy", "read", "set-archive_retention").GetDiag()
+		}
 	}
 
-	logRules := []map[string]interface{}{}
-	if policy.LogRules != nil {
-		modelMap, err := DataSourceIbmLogsPolicyQuotaV1LogRulesToMap(policy.LogRules)
+	if !core.IsNil(policy.LogRules) {
+		logRules := []map[string]interface{}{}
+		logRulesMap, err := DataSourceIbmLogsPolicyQuotaV1LogRulesToMap(policy.LogRules)
 		if err != nil {
-			tfErr := flex.TerraformErrorf(err, err.Error(), "(Data) ibm_logs_policy", "read")
-			return tfErr.GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_logs_policy", "read", "log_rules-to-map").GetDiag()
 		}
-		logRules = append(logRules, modelMap)
-	}
-	if err = d.Set("log_rules", logRules); err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting log_rules: %s", err), "(Data) ibm_logs_policy", "read")
-		return tfErr.GetDiag()
+		logRules = append(logRules, logRulesMap)
+		if err = d.Set("log_rules", logRules); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting log_rules: %s", err), "(Data) ibm_logs_policy", "read", "set-log_rules").GetDiag()
+		}
 	}
 
 	return nil
+}
+
+func DataSourceIbmLogsPolicyPolicyBeforeToMap(model *logsv0.PolicyBefore) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	modelMap["id"] = model.ID.String()
+	if model.Name != nil {
+		modelMap["name"] = *model.Name
+	}
+	return modelMap, nil
 }
 
 func DataSourceIbmLogsPolicyQuotaV1RuleToMap(model *logsv0.QuotaV1Rule) (map[string]interface{}, error) {

@@ -8,10 +8,10 @@ import (
 	"regexp"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 
-	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
-	"github.com/hashicorp/terraform-plugin-testing/terraform"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
@@ -20,19 +20,18 @@ import (
 
 func TestAccIBMAccountSettingsTemplateAssignmentBasic(t *testing.T) {
 	var conf iamidentityv1.TemplateAssignmentResponse
+	enterpriseAccountId := acc.IamIdentityEnterpriseAccountId
+	targetId := acc.IamIdentityAssignmentTargetAccountId
 	name := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
-		PreCheck: func() {
-			acc.TestAccPreCheck(t)
-			acc.TestAccPreCheckAssignmentTargetAccount(t)
-		},
+		PreCheck:                  func() { acc.TestAccPreCheckIamIdentityEnterpriseTemplates(t) },
 		Providers:                 acc.TestAccProviders,
 		CheckDestroy:              testAccCheckIBMAccountSettingsTemplateAssignmentResourceDestroy,
 		PreventPostDestroyRefresh: true,
 		Steps: []resource.TestStep{
 			{
-				Config:             testAccCheckIBMAccountSettingsTemplateAssignmentConfigBasic(name),
+				Config:             testAccCheckIBMAccountSettingsTemplateAssignmentConfigBasic(enterpriseAccountId, targetId, name),
 				ExpectNonEmptyPlan: true,
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMAccountSettingsTemplateAssignmentExists("ibm_iam_account_settings_template_assignment.account_settings_template_assignment_instance", conf),
@@ -53,15 +52,16 @@ func TestAccIBMAccountSettingsTemplateAssignmentBasic(t *testing.T) {
 			},
 			{
 				ExpectError: regexp.MustCompile("Template version '2' is not found."),
-				Config:      testAccCheckIBMAccountSettingsTemplateAssignmentConfigBasicUpdate(name),
+				Config:      testAccCheckIBMAccountSettingsTemplateAssignmentConfigBasicUpdate(enterpriseAccountId, targetId, name),
 			},
 		},
 	})
 }
 
-func testAccCheckIBMAccountSettingsTemplateAssignmentConfigBasic(name string) string {
+func testAccCheckIBMAccountSettingsTemplateAssignmentConfigBasic(enterpriseAccountId string, targetId string, name string) string {
 	return fmt.Sprintf(`
 		resource "ibm_iam_account_settings_template" "account_settings_template" {
+			account_id = "%s"
 			name = "%s"
 			account_settings {
 				mfa = "LEVEL3"
@@ -83,12 +83,13 @@ func testAccCheckIBMAccountSettingsTemplateAssignmentConfigBasic(name string) st
 				create = "5m"
 			}
 		}
-	`, name, acc.IamIdentityAssignmentTargetAccountId)
+	`, enterpriseAccountId, name, targetId)
 }
 
-func testAccCheckIBMAccountSettingsTemplateAssignmentConfigBasicUpdate(name string) string {
+func testAccCheckIBMAccountSettingsTemplateAssignmentConfigBasicUpdate(enterpriseAccountId string, targetId string, name string) string {
 	return fmt.Sprintf(`
 		resource "ibm_iam_account_settings_template" "account_settings_template" {
+			account_id = "%s"	
 			name = "%s"
 			account_settings {
 				mfa = "LEVEL3"
@@ -110,7 +111,7 @@ func testAccCheckIBMAccountSettingsTemplateAssignmentConfigBasicUpdate(name stri
 				update = "5m"
 			}
 		}
-	`, name, acc.IamIdentityAssignmentTargetAccountId)
+	`, enterpriseAccountId, name, targetId)
 }
 
 func testAccCheckIBMAccountSettingsTemplateAssignmentExists(n string, obj iamidentityv1.TemplateAssignmentResponse) resource.TestCheckFunc {

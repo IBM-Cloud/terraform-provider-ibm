@@ -8,9 +8,9 @@ import (
 	"testing"
 
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
-	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 
-	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 )
 
 func TestAccIbmAppConfigSegmentDataSource(t *testing.T) {
@@ -18,17 +18,15 @@ func TestAccIbmAppConfigSegmentDataSource(t *testing.T) {
 	name := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 	segmentID := fmt.Sprintf("tf_segment_id_%d", acctest.RandIntRange(10, 100))
 	description := fmt.Sprintf("tf_description_%d", acctest.RandIntRange(10, 100))
-	tags := "development segment"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheck(t) },
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIbmAppConfigSegmentDataSourceConfigBasic(instanceName, name, segmentID, description, tags),
+				Config: testAccCheckIbmAppConfigSegmentDataSourceConfigBasic(instanceName, name, segmentID, description),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_app_config_segment.ibm_app_config_segment_data1", "name"),
-					resource.TestCheckResourceAttrSet("data.ibm_app_config_segment.ibm_app_config_segment_data1", "tags"),
 					resource.TestCheckResourceAttrSet("data.ibm_app_config_segment.ibm_app_config_segment_data1", "segment_id"),
 					resource.TestCheckResourceAttrSet("data.ibm_app_config_segment.ibm_app_config_segment_data1", "description"),
 					resource.TestCheckResourceAttrSet("data.ibm_app_config_segment.ibm_app_config_segment_data1", "created_time"),
@@ -40,7 +38,7 @@ func TestAccIbmAppConfigSegmentDataSource(t *testing.T) {
 	})
 }
 
-func testAccCheckIbmAppConfigSegmentDataSourceConfigBasic(instanceName, name, segmentID, description, tags string) string {
+func testAccCheckIbmAppConfigSegmentDataSourceConfigBasic(instanceName, name, segmentID, description string) string {
 	return fmt.Sprintf(`
 		resource "ibm_resource_instance" "app_config_terraform_test456" {
 			name     = "%s"
@@ -58,13 +56,11 @@ func testAccCheckIbmAppConfigSegmentDataSourceConfigBasic(instanceName, name, se
 				values 			 = ["india", "UK"]
 			}	
 			description    	    = "%s"
-			tags    			= "%s"
 		}
 		
 		data "ibm_app_config_segment" "ibm_app_config_segment_data1" {
 			guid          = ibm_app_config_segment.app_config_segment_resource1.guid
 			segment_id    = ibm_app_config_segment.app_config_segment_resource1.segment_id
-			tags		  = ibm_app_config_segment.app_config_segment_resource1.tags
 		}
-		`, instanceName, name, segmentID, description, tags)
+		`, instanceName, name, segmentID, description)
 }

@@ -99,9 +99,9 @@ Nested schema for **referent**:
 * `resource_group_id` - (String) Resource group where the tool is located.
 * `state` - (String) Current configuration state of the tool.
   * Constraints: Allowable values are: `configured`, `configuring`, `misconfigured`, `unconfigured`.
-* `toolchain_crn` - (String) CRN of toolchain which the tool is bound to.
 * `tool_id` - (String) Tool ID.
   * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-4[a-fA-F0-9]{3}-[89abAB][a-fA-F0-9]{3}-[a-fA-F0-9]{12}$/`.
+* `toolchain_crn` - (String) CRN of toolchain which the tool is bound to.
 * `updated_at` - (String) Latest tool update timestamp.
 
 
@@ -110,13 +110,13 @@ Nested schema for **referent**:
 You can import the `ibm_cd_toolchain_tool_gitlab` resource by using `id`.
 The `id` property can be formed from `toolchain_id`, and `tool_id` in the following format:
 
-```
-<toolchain_id>/<tool_id>
-```
+<pre>
+&lt;toolchain_id&gt;/&lt;tool_id&gt;
+</pre>
 * `toolchain_id`: A string. ID of the toolchain to bind the tool to.
-* `tool_id`: A string. ID of the tool bound to the toolchain.
+* `tool_id`: A string. Tool ID.
 
 # Syntax
-```
-$ terraform import ibm_cd_toolchain_tool_gitlab.cd_toolchain_tool_gitlab <toolchain_id>/<tool_id>
-```
+<pre>
+$ terraform import ibm_cd_toolchain_tool_gitlab.cd_toolchain_tool_gitlab &lt;toolchain_id&gt;/&lt;tool_id&gt;
+</pre>

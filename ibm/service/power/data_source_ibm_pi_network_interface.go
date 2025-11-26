@@ -8,14 +8,13 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
-
 	"github.com/IBM-Cloud/power-go-client/clients/instance"
 	"github.com/IBM-Cloud/power-go-client/power/models"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
 
 func DataSourceIBMPINetworkInterface() *schema.Resource {
@@ -26,21 +25,18 @@ func DataSourceIBMPINetworkInterface() *schema.Resource {
 			// Arguments
 			Arg_CloudInstanceID: {
 				Description:  "The GUID of the service instance associated with an account.",
-				ForceNew:     true,
 				Required:     true,
 				Type:         schema.TypeString,
 				ValidateFunc: validation.NoZeroValues,
 			},
 			Arg_NetworkID: {
 				Description:  "Network ID.",
-				ForceNew:     true,
 				Required:     true,
 				Type:         schema.TypeString,
 				ValidateFunc: validation.NoZeroValues,
 			},
 			Arg_NetworkInterfaceID: {
-				Description:  "Network Interface ID.",
-				ForceNew:     true,
+				Description:  "Network interface ID.",
 				Required:     true,
 				Type:         schema.TypeString,
 				ValidateFunc: validation.NoZeroValues,
@@ -48,12 +44,12 @@ func DataSourceIBMPINetworkInterface() *schema.Resource {
 			// Attributes
 			Attr_CRN: {
 				Computed:    true,
-				Description: "The Network Interface's crn.",
+				Description: "The network interface's crn.",
 				Type:        schema.TypeString,
 			},
 			Attr_Instance: {
 				Computed:    true,
-				Description: "The attached instance to this Network Interface.",
+				Description: "The attached instance to this network interface.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						Attr_Href: {
@@ -92,12 +88,19 @@ func DataSourceIBMPINetworkInterface() *schema.Resource {
 			},
 			Attr_NetworkSecurityGroupID: {
 				Computed:    true,
-				Description: "ID of the Network Security Group the network interface will be added to.",
+				Deprecated:  "Deprecated, use network_security_group_ids instead.",
+				Description: "ID of the network security group the network interface will be added to.",
 				Type:        schema.TypeString,
+			},
+			Attr_NetworkSecurityGroupIDs: {
+				Computed:    true,
+				Description: "List of network security groups that the network interface is a member of.",
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				Type:        schema.TypeSet,
 			},
 			Attr_Status: {
 				Computed:    true,
-				Description: "The status of the network address group.",
+				Description: "The status of the network interface.",
 				Type:        schema.TypeString,
 			},
 			Attr_UserTags: {
@@ -111,10 +114,12 @@ func DataSourceIBMPINetworkInterface() *schema.Resource {
 	}
 }
 
-func dataSourceIBMPINetworkInterfaceRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataSourceIBMPINetworkInterfaceRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	sess, err := meta.(conns.ClientSession).IBMPISession()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("IBMPISession failed: %s", err.Error()), "(Data) ibm_pi_network_interface", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	cloudInstanceID := d.Get(Arg_CloudInstanceID).(string)
@@ -123,7 +128,9 @@ func dataSourceIBMPINetworkInterfaceRead(ctx context.Context, d *schema.Resource
 	networkC := instance.NewIBMPINetworkClient(ctx, sess, cloudInstanceID)
 	networkInterface, err := networkC.GetNetworkInterface(networkID, networkInterfaceID)
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetNetworkInterface failed: %s", err.Error()), "(Data) ibm_pi_network_interfaces", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	d.SetId(fmt.Sprintf("%s/%s", networkID, *networkInterface.ID))
@@ -132,9 +139,9 @@ func dataSourceIBMPINetworkInterfaceRead(ctx context.Context, d *schema.Resource
 	d.Set(Attr_Name, networkInterface.Name)
 	d.Set(Attr_NetworkInterfaceID, *networkInterface.ID)
 	d.Set(Attr_NetworkSecurityGroupID, networkInterface.NetworkSecurityGroupID)
-
+	d.Set(Attr_NetworkSecurityGroupIDs, networkInterface.NetworkSecurityGroupIDs)
 	if networkInterface.Instance != nil {
-		instance := []map[string]interface{}{}
+		instance := []map[string]any{}
 		instanceMap := pvmInstanceToMap(networkInterface.Instance)
 		instance = append(instance, instanceMap)
 		d.Set(Attr_Instance, instance)
@@ -142,7 +149,7 @@ func dataSourceIBMPINetworkInterfaceRead(ctx context.Context, d *schema.Resource
 	d.Set(Attr_Status, networkInterface.Status)
 	if networkInterface.Crn != nil {
 		d.Set(Attr_CRN, networkInterface.Crn)
-		userTags, err := flex.GetTagsUsingCRN(meta, string(*networkInterface.Crn))
+		userTags, err := flex.GetGlobalTagsUsingCRN(meta, string(*networkInterface.Crn), "", UserTagType)
 		if err != nil {
 			log.Printf("Error on get of network interface (%s) user_tags: %s", *networkInterface.ID, err)
 		}
@@ -152,8 +159,8 @@ func dataSourceIBMPINetworkInterfaceRead(ctx context.Context, d *schema.Resource
 	return nil
 }
 
-func pvmInstanceToMap(pvm *models.NetworkInterfaceInstance) map[string]interface{} {
-	instanceMap := make(map[string]interface{})
+func pvmInstanceToMap(pvm *models.NetworkInterfaceInstance) map[string]any {
+	instanceMap := make(map[string]any)
 	if pvm.Href != "" {
 		instanceMap[Attr_Href] = pvm.Href
 	}

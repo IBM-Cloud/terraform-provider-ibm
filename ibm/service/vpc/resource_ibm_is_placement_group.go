@@ -17,6 +17,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
+	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
 )
 
@@ -165,7 +166,9 @@ func ResourceIbmIsPlacementGroupValidator() *validate.ResourceValidator {
 func resourceIbmIsPlacementGroupCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	vpcClient, err := meta.(conns.ClientSession).VpcV1API()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_placement_group", "create", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	createPlacementGroupOptions := &vpcv1.CreatePlacementGroupOptions{}
@@ -181,17 +184,20 @@ func resourceIbmIsPlacementGroupCreate(context context.Context, d *schema.Resour
 		createPlacementGroupOptions.SetResourceGroup(resourceGroupIdentity)
 	}
 
-	placementGroup, response, err := vpcClient.CreatePlacementGroupWithContext(context, createPlacementGroupOptions)
+	placementGroup, _, err := vpcClient.CreatePlacementGroupWithContext(context, createPlacementGroupOptions)
 	if err != nil {
-		log.Printf("[DEBUG] CreatePlacementGroupWithContext failed %s\n%s", err, response)
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreatePlacementGroupWithContext failed: %s", err.Error()), "ibm_is_placement_group", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	d.SetId(*placementGroup.ID)
 
 	_, err = isWaitForPlacementGroupAvailable(vpcClient, d.Id(), d.Timeout(schema.TimeoutCreate), d)
 	if err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error waiting for placement group to be available %s", err))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("isWaitForPlacementGroupAvailable failed: %s", err.Error()), "ibm_is_placement_group", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	if _, ok := d.GetOk(isPlacementGroupTags); ok {
 		oldList, newList := d.GetChange(isPlacementGroupTags)
@@ -218,7 +224,9 @@ func resourceIbmIsPlacementGroupCreate(context context.Context, d *schema.Resour
 func resourceIbmIsPlacementGroupRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	vpcClient, err := meta.(conns.ClientSession).VpcV1API()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_placement_group", "read", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	getPlacementGroupOptions := &vpcv1.GetPlacementGroupOptions{}
@@ -231,35 +239,46 @@ func resourceIbmIsPlacementGroupRead(context context.Context, d *schema.Resource
 			d.SetId("")
 			return nil
 		}
-		log.Printf("[DEBUG] GetPlacementGroupWithContext failed %s\n%s", err, response)
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetPlacementGroupWithContext failed: %s", err.Error()), "ibm_is_placement_group", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	if err = d.Set("strategy", placementGroup.Strategy); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting strategy: %s", err))
+		err = fmt.Errorf("Error setting strategy: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_placement_group", "read", "set-strategy").GetDiag()
 	}
-	if err = d.Set("name", placementGroup.Name); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting name: %s", err))
+	if !core.IsNil(placementGroup.Name) {
+		if err = d.Set("name", placementGroup.Name); err != nil {
+			err = fmt.Errorf("Error setting name: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_placement_group", "read", "set-name").GetDiag()
+		}
 	}
 	if placementGroup.ResourceGroup != nil {
 		if err = d.Set("resource_group", *placementGroup.ResourceGroup.ID); err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error setting resource_group: %s", err))
+			err = fmt.Errorf("Error setting resource_group: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_placement_group", "read", "set-resource_group").GetDiag()
 		}
 	}
-	if err = d.Set("created_at", placementGroup.CreatedAt.String()); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting created_at: %s", err))
+	if err = d.Set("created_at", flex.DateTimeToString(placementGroup.CreatedAt)); err != nil {
+		err = fmt.Errorf("Error setting created_at: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_placement_group", "read", "set-created_at").GetDiag()
 	}
 	if err = d.Set("crn", placementGroup.CRN); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting crn: %s", err))
+		err = fmt.Errorf("Error setting crn: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_placement_group", "read", "set-crn").GetDiag()
 	}
 	if err = d.Set("href", placementGroup.Href); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting href: %s", err))
+		err = fmt.Errorf("Error setting href: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_placement_group", "read", "set-href").GetDiag()
 	}
 	if err = d.Set("lifecycle_state", placementGroup.LifecycleState); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting lifecycle_state: %s", err))
+		err = fmt.Errorf("Error setting lifecycle_state: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_placement_group", "read", "set-lifecycle_state").GetDiag()
 	}
 	if err = d.Set("resource_type", placementGroup.ResourceType); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting resource_type: %s", err))
+		err = fmt.Errorf("Error setting resource_type: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_placement_group", "read", "set-resource_type").GetDiag()
 	}
 	tags, err := flex.GetGlobalTagsUsingCRN(meta, *placementGroup.CRN, "", isUserTagType)
 	if err != nil {
@@ -273,15 +292,23 @@ func resourceIbmIsPlacementGroupRead(context context.Context, d *schema.Resource
 			"Error getting placement group (%s) access tags: %s", d.Id(), err)
 	}
 
-	d.Set(isPlacementGroupTags, tags)
-	d.Set(isPlacementGroupAccessTags, accesstags)
+	if err = d.Set("tags", tags); err != nil {
+		err = fmt.Errorf("Error setting tags: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_placement_group", "read", "set-tags").GetDiag()
+	}
+	if err = d.Set("access_tags", accesstags); err != nil {
+		err = fmt.Errorf("Error setting access_tags: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_placement_group", "read", "set-access_tags").GetDiag()
+	}
 	return nil
 }
 
 func resourceIbmIsPlacementGroupUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	vpcClient, err := meta.(conns.ClientSession).VpcV1API()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_placement_group", "update", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	updatePlacementGroupOptions := &vpcv1.UpdatePlacementGroupOptions{}
@@ -299,14 +326,16 @@ func resourceIbmIsPlacementGroupUpdate(context context.Context, d *schema.Resour
 	if hasChange {
 		placementGroupPatch, err := placementGroupPatchModel.AsPatch()
 		if err != nil {
-			log.Printf("[DEBUG] Error calling AsPatch for PlacementGroupPatch %s", err)
-			return diag.FromErr(err)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("placementGroupPatchModel.AsPatch failed: %s", err.Error()), "ibm_is_placement_group", "update")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		updatePlacementGroupOptions.SetPlacementGroupPatch(placementGroupPatch)
-		_, response, err := vpcClient.UpdatePlacementGroupWithContext(context, updatePlacementGroupOptions)
+		_, _, err = vpcClient.UpdatePlacementGroupWithContext(context, updatePlacementGroupOptions)
 		if err != nil {
-			log.Printf("[DEBUG] UpdatePlacementGroupWithContext failed %s\n%s", err, response)
-			return diag.FromErr(err)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("UpdatePlacementGroupWithContext failed: %s", err.Error()), "ibm_is_placement_group", "update")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 	}
 	if d.HasChange(isPlacementGroupTags) {
@@ -332,7 +361,9 @@ func resourceIbmIsPlacementGroupUpdate(context context.Context, d *schema.Resour
 func resourceIbmIsPlacementGroupDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	vpcClient, err := meta.(conns.ClientSession).VpcV1API()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_placement_group", "delete", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	deletePlacementGroupOptions := &vpcv1.DeletePlacementGroupOptions{}
@@ -344,15 +375,21 @@ func resourceIbmIsPlacementGroupDelete(context context.Context, d *schema.Resour
 		if response.StatusCode == 409 {
 			_, err = isWaitForPlacementGroupDeleteRetry(vpcClient, d, d.Id())
 			if err != nil {
-				return diag.FromErr(fmt.Errorf("[ERROR] Error deleting PLacementGroup: %s", err))
+				tfErr := flex.TerraformErrorf(err, fmt.Sprintf("isWaitForPlacementGroupDeleteRetry failed: %s", err.Error()), "ibm_is_placement_group", "delete")
+				log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+				return tfErr.GetDiag()
 			}
 		} else {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error deleting PLacementGroup: %s\n%s", err, response))
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("DeletePlacementGroupWithContext failed: %s", err.Error()), "ibm_is_placement_group", "delete")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 	}
 	_, err = isWaitForPlacementGroupDelete(vpcClient, d, d.Id())
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("isWaitForPlacementGroupDelete failed: %s", err.Error()), "ibm_is_placement_group", "delete")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	d.SetId("")
 

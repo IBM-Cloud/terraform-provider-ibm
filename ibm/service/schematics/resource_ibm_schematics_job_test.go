@@ -63,7 +63,7 @@ func testAccCheckIBMSchematicsJobConfig(commandObject string, commandObjectID st
 			command_object_id = "%s"
 			command_name = "%s"
 			command_parameter = "%s"
-			location = "us"
+			location = "us-south"
 		}
 	`, commandObject, commandObjectID, commandName, commandParameter)
 }

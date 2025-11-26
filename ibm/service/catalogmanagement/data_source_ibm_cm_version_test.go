@@ -70,6 +70,19 @@ func testAccCheckIBMCmVersionDataSourceConfig(versionZipurl string, versionTarge
 			target_version = "%s"
 			include_config = %s
 			install {}
+			configuration {
+				default_value = "foo"
+				description = "The name to pass to the template."
+				key = "name"
+				type = "string"
+				hidden = false
+				required = false
+				value_constraints {
+					type  = "regex"
+					value = "*"
+					description = "Invalid name input"
+				}
+			}
 		}
 
 		data "ibm_cm_version" "cm_version" {

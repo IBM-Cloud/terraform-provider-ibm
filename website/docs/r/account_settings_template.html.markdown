@@ -30,6 +30,78 @@ resource "ibm_iam_account_settings_template" "account_settings_template_instance
 		max_sessions_per_identity = "3"
 		system_access_token_expiration_in_seconds = "NOT_SET"
 		system_refresh_token_expiration_in_seconds = "NOT_SET"
+		restrict_user_list_visibility = "RESTRICTED"
+		restrict_user_domains {
+			account_sufficient = true
+			restrictions {
+				realm_id = "IBMid"
+				invitation_email_allow_patterns = "*.*@company.com"
+				restrict_invitation = true
+			}
+		}
+	}
+}
+```
+
+Create new account setting template version
+
+```hcl
+resource "ibm_iam_account_settings_template" "account_settings_template_instance" {
+	name = "My template name"
+	description = "My template description"
+	account_settings {
+		restrict_create_service_id = "RESTRICTED"
+		restrict_create_platform_apikey = "RESTRICTED"
+		allowed_ip_addresses = "127.0.0.1"
+		mfa = "LEVEL3"
+		user_mfa {
+			iam_id = "IBMid-123456879"
+			mfa = "TOTP"
+		}
+		session_expiration_in_seconds = "1800"
+		session_invalidation_in_seconds = "900"
+		max_sessions_per_identity = "3"
+		system_access_token_expiration_in_seconds = "NOT_SET"
+		system_refresh_token_expiration_in_seconds = "NOT_SET"
+		restrict_user_list_visibility = "NOT_SET"
+		restrict_user_domains {
+			account_sufficient = true
+			restrictions {
+				realm_id = "IBMid"
+				invitation_email_allow_patterns = "*.*@company.com"
+				restrict_invitation = false
+			}
+		}
+	}
+}
+
+resource "ibm_iam_account_settings_template" "account_settings_template_v2" {
+	template_id = ibm_iam_account_settings_template.ibm_iam_account_settings_template.id
+	name = "My template name"
+	description = "My template description v2"
+	account_settings {
+		restrict_create_service_id = "RESTRICTED"
+		restrict_create_platform_apikey = "RESTRICTED"
+		allowed_ip_addresses = "127.0.0.1"
+		mfa = "LEVEL3"
+		user_mfa {
+			iam_id = "IBMid-123456879"
+			mfa = "TOTP"
+		}
+		session_expiration_in_seconds = "1800"
+		session_invalidation_in_seconds = "900"
+		max_sessions_per_identity = "3"
+		system_access_token_expiration_in_seconds = "NOT_SET"
+		system_refresh_token_expiration_in_seconds = "NOT_SET"
+		restrict_user_list_visibility = "NOT_RESTRICTED"
+		restrict_user_domains {
+			account_sufficient = false
+			restrictions {
+				realm_id = "IBMid"
+				invitation_email_allow_patterns = "*.*@company.com"
+				restrict_invitation = false
+			}
+		}
 	}
 }
 ```
@@ -49,6 +121,16 @@ You can specify the following arguments for this resource.
 	  * Constraints: The default value is `NOT_SET`. Allowable values are: `RESTRICTED`, `NOT_RESTRICTED`, `NOT_SET`.
 	* `restrict_create_service_id` - (Optional, String) Defines whether or not creating a service ID is access controlled.
 	  * Constraints: The default value is `NOT_SET`. Allowable values are: `RESTRICTED`, `NOT_RESTRICTED`, `NOT_SET`.
+	* `restrict_user_domains` - (Optional, List)
+	Nested schema for **restrict_user_domains**:
+		* `account_sufficient` - (Optional, Boolean)
+		* `restrictions` - (Optional, List) Defines if account invitations are restricted to specified domains. To remove an entry for a realm_id, perform an update (PUT) request with only the realm_id set.
+		Nested schema for **restrictions**:
+			* `invitation_email_allow_patterns` - (Optional, List) The list of allowed email patterns. Wildcard syntax is supported, '*' represents any sequence of zero or more characters in the string, except for '.' and '@'. The sequence ends if a '.' or '@' was found. '**' represents any sequence of zero or more characters in the string - without limit.
+			* `realm_id` - (Required, String) The realm that the restrictions apply to.
+			* `restrict_invitation` - (Optional, Boolean) When true invites will only be possible to the domain patterns provided, otherwise invites are unrestricted.
+	* `restrict_user_list_visibility` - (Optional, String) Defines whether or not user visibility is access controlled. Valid values:  * RESTRICTED - users can view only specific types of users in the account, such as those the user has invited to the account, or descendants of those users based on the classic infrastructure hierarchy  * NOT_RESTRICTED - any user in the account can view other users from the Users page in IBM Cloud console  * NOT_SET - to 'unset' a previous set value.
+	  * Constraints: Allowable values are: `RESTRICTED`, `NOT_RESTRICTED`, `NOT_SET`.
 	* `session_expiration_in_seconds` - (Optional, String) Defines the session expiration in seconds for the account. Valid values:  * Any whole number between between '900' and '86400'  * NOT_SET - To unset account setting and use service default.
 	  * Constraints: The default value is `86400`.
 	* `session_invalidation_in_seconds` - (Optional, String) Defines the period of time in seconds in which a session will be invalidated due to inactivity. Valid values:  * Any whole number between '900' and '7200'  * NOT_SET - To unset account setting and use service default.
@@ -96,13 +178,12 @@ Nested schema for **history**:
 * `last_modified_at` - (String) Template last modified at.
 * `last_modified_by_id` - (String) IAMid of the identity that made the latest modification.
 
-
-
 ## Import
 
 You can import the `ibm_iam_account_settings_template` resource by using `version`. Version of the the template.
 
-# Syntax
-```
-$ terraform import ibm_iam_account_settings_template.account_settings_template <version>
+### Syntax
+
+```bash
+$ terraform import ibm_iam_account_settings_template.account_settings_template $version
 ```

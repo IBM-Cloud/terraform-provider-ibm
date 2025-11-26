@@ -31,6 +31,8 @@ func TestAccIBMTransitGatewayDataSource_basic(t *testing.T) {
 						"data.ibm_tg_gateway.test_tg_gateway", "name", gatewayname),
 					resource.TestCheckResourceAttr(
 						"data.ibm_tg_gateway.test_tg_gateway", "location", location),
+					resource.TestCheckResourceAttr(
+						"data.ibm_tg_gateway.test_tg_gateway", "gre_enhanced_route_propagation", "false"),
 				),
 			},
 			{

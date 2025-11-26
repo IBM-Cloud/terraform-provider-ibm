@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -26,6 +27,139 @@ func DataSourceIbmIsShareProfiles() *schema.Resource {
 				Description: "Collection of share profiles.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
+						"allowed_access_protocols": &schema.Schema{
+							Type:     schema.TypeList,
+							Computed: true,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"default": &schema.Schema{
+										Type:        schema.TypeList,
+										Computed:    true,
+										Description: "The default allowed access protocol modes for shares with this profile.",
+										Elem: &schema.Schema{
+											Type: schema.TypeString,
+										},
+									},
+									"type": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The type for this profile field.",
+									},
+									"values": &schema.Schema{
+										Type:        schema.TypeList,
+										Computed:    true,
+										Description: "The possible allowed access protocols for shares with this profile.",
+										Elem: &schema.Schema{
+											Type: schema.TypeString,
+										},
+									},
+								},
+							},
+						},
+						"allowed_transit_encryption_modes": &schema.Schema{
+							Type:     schema.TypeList,
+							Computed: true,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"default": &schema.Schema{
+										Type:        schema.TypeList,
+										Computed:    true,
+										Description: "The default allowed transit encryption modes for shares with this profile.",
+										Elem: &schema.Schema{
+											Type: schema.TypeString,
+										},
+									},
+									"type": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The type for this profile field.",
+									},
+									"values": &schema.Schema{
+										Type:        schema.TypeList,
+										Computed:    true,
+										Description: "The allowed transit encryption modes for a share with this profile",
+										Elem: &schema.Schema{
+											Type: schema.TypeString,
+										},
+									},
+								},
+							},
+						},
+						"availability_modes": {
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "The data availability mode of a share with this profile..",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"default": {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The default data availability mode for this profile.",
+									},
+									"type": {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The type for this profile field.",
+									},
+									"value": {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The value for this profile field",
+									},
+									"values": {
+										Type:        schema.TypeSet,
+										Computed:    true,
+										Elem:        &schema.Schema{Type: schema.TypeString},
+										Description: "The permitted values for this profile field.",
+									},
+								},
+							},
+						},
+						"bandwidth": {
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "The permitted bandwidth (in megabits per second) for a share with this profile",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"default": {
+										Type:        schema.TypeInt,
+										Computed:    true,
+										Description: "The default capacity.",
+									},
+									"max": {
+										Type:        schema.TypeInt,
+										Computed:    true,
+										Description: "The max capacity.",
+									},
+									"min": {
+										Type:        schema.TypeInt,
+										Computed:    true,
+										Description: "The min capacity.",
+									},
+									"step": {
+										Type:        schema.TypeInt,
+										Computed:    true,
+										Description: "The increment step value for this profile field.",
+									},
+									"type": {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The type for this profile field.",
+									},
+									"value": {
+										Type:        schema.TypeInt,
+										Computed:    true,
+										Description: "The value for this profile field",
+									},
+									"values": {
+										Type:        schema.TypeSet,
+										Computed:    true,
+										Elem:        &schema.Schema{Type: schema.TypeInt},
+										Description: "The permitted values for this profile field.",
+									},
+								},
+							},
+						},
 						"capacity": {
 							Type:        schema.TypeList,
 							Computed:    true,
@@ -151,15 +285,18 @@ func DataSourceIbmIsShareProfiles() *schema.Resource {
 func dataSourceIbmIsShareProfilesRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	vpcClient, err := meta.(conns.ClientSession).VpcV1API()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("vpcClient creation failed: %s", err.Error()), "(Data) ibm_is_share_profiles", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	listShareProfilesOptions := &vpcv1.ListShareProfilesOptions{}
 
 	shareProfileCollection, response, err := vpcClient.ListShareProfilesWithContext(context, listShareProfilesOptions)
 	if err != nil {
-		log.Printf("[DEBUG] ListShareProfilesWithContext failed %s\n%s", err, response)
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("ListShareProfilesWithContext failed: %s\n%s", err.Error(), response), "(Data) ibm_is_share_profiles", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	d.SetId(dataSourceIbmIsShareProfilesID(d))
@@ -167,11 +304,13 @@ func dataSourceIbmIsShareProfilesRead(context context.Context, d *schema.Resourc
 	if shareProfileCollection.Profiles != nil {
 		err = d.Set("profiles", dataSourceShareProfileCollectionFlattenProfiles(shareProfileCollection.Profiles))
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting profiles %s", err))
+			err = fmt.Errorf("Error setting profiles: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_share_profiles", "read", "set-profiles").GetDiag()
 		}
 	}
 	if err = d.Set("total_count", shareProfileCollection.TotalCount); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting total_count: %s", err))
+		err = fmt.Errorf("Error setting total_count: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_share_profiles", "read", "set-total_count").GetDiag()
 	}
 
 	return nil
@@ -205,6 +344,36 @@ func dataSourceShareProfileCollectionProfilesToMap(profilesItem vpcv1.ShareProfi
 	if profilesItem.ResourceType != nil {
 		profilesMap["resource_type"] = profilesItem.ResourceType
 	}
+
+	if profilesItem.AllowedAccessProtocols != nil {
+		allowedAccessprotocolsList := []map[string]interface{}{}
+		allowedAccessprotocols := profilesItem.AllowedAccessProtocols.(*vpcv1.ShareProfileAllowedAccessProtocols)
+		allowedAccessprotocolsMap := dataSourceShareProfileAllowedAccessProtocolToMap(*allowedAccessprotocols)
+		allowedAccessprotocolsList = append(allowedAccessprotocolsList, allowedAccessprotocolsMap)
+		profilesMap["allowed_access_protocols"] = allowedAccessprotocolsList
+	}
+	if profilesItem.AllowedTransitEncryptionModes != nil {
+		allowedTEMList := []map[string]interface{}{}
+		allowedTEM := profilesItem.AllowedTransitEncryptionModes.(*vpcv1.ShareProfileAllowedTransitEncryptionModes)
+		allowedTEMMap := dataSourceShareProfileAllowedTransitEncryptionToMap(*allowedTEM)
+		allowedTEMList = append(allowedTEMList, allowedTEMMap)
+		profilesMap["allowed_transit_encryption_modes"] = allowedTEMList
+	}
+	if profilesItem.AvailabilityModes != nil {
+		availabilityModesList := []map[string]interface{}{}
+		availabilityModes := profilesItem.AvailabilityModes.(*vpcv1.ShareProfileAvailabilityModes)
+		availabilityModesMap := dataSourceShareProfileAvailabilityModesToMap(*availabilityModes)
+		availabilityModesList = append(availabilityModesList, availabilityModesMap)
+		profilesMap["availability_modes"] = availabilityModesList
+	}
+	if profilesItem.Bandwidth != nil {
+		bandwidthList := []map[string]interface{}{}
+		bandwidth := profilesItem.Bandwidth.(*vpcv1.ShareProfileBandwidth)
+		bandwidthMap := dataSourceShareProfileBandwidthToMap(*bandwidth)
+		bandwidthList = append(bandwidthList, bandwidthMap)
+		profilesMap["bandwidth"] = bandwidthList
+	}
+
 	if profilesItem.Capacity != nil {
 		capacityList := []map[string]interface{}{}
 		capacity := profilesItem.Capacity.(*vpcv1.ShareProfileCapacity)

@@ -48,6 +48,37 @@ func TestAccIBMISVolume_basic(t *testing.T) {
 		},
 	})
 }
+func TestAccIBMISVolume_storage_generation(t *testing.T) {
+	var vol string
+	name := fmt.Sprintf("tf-vol-%d", acctest.RandIntRange(10, 100))
+	name1 := fmt.Sprintf("tf-vol-tier-%d", acctest.RandIntRange(10, 100))
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMISVolumeDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMISVolumeStorageConfig(name, name1),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISVolumeExists("ibm_is_volume.storage", vol),
+					resource.TestCheckResourceAttr(
+						"ibm_is_volume.storage", "name", name),
+					resource.TestCheckResourceAttr(
+						"ibm_is_volume.storage2", "name", name1),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_volume.storage", "storage_generation"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_volume.storage2", "storage_generation"),
+					resource.TestCheckResourceAttr(
+						"ibm_is_volume.storage", "storage_generation", "1"),
+					resource.TestCheckResourceAttr(
+						"ibm_is_volume.storage2", "storage_generation", "2"),
+				),
+			},
+		},
+	})
+}
 func TestAccIBMISVolume_sdp(t *testing.T) {
 	var vol string
 	name := fmt.Sprintf("tf-vol-%d", acctest.RandIntRange(10, 100))
@@ -78,6 +109,48 @@ func TestAccIBMISVolume_sdp(t *testing.T) {
 						"ibm_is_volume.storage", "name", name1),
 					resource.TestCheckResourceAttr(
 						"ibm_is_volume.storage", "capacity", fmt.Sprintf("%d", capacity2)),
+				),
+			},
+		},
+	})
+}
+
+// bandwidth changes
+func TestAccIBMISVolume_bandwidth(t *testing.T) {
+	var vol string
+	name := fmt.Sprintf("tf-vol-%d", acctest.RandIntRange(10, 100))
+	name1 := fmt.Sprintf("tf-vol-upd-%d", acctest.RandIntRange(10, 100))
+	capacity1 := 100
+	bandwidth1 := 5000
+	bandwidth2 := 6000
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMISVolumeDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMISVolumeBandwidthConfig(name, capacity1, bandwidth1),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISVolumeExists("ibm_is_volume.storage", vol),
+					resource.TestCheckResourceAttr(
+						"ibm_is_volume.storage", "name", name),
+					resource.TestCheckResourceAttr(
+						"ibm_is_volume.storage", "capacity", fmt.Sprintf("%d", capacity1)),
+					resource.TestCheckResourceAttr(
+						"ibm_is_volume.storage", "bandwidth", fmt.Sprintf("%d", bandwidth1)),
+				),
+			},
+
+			{
+				Config: testAccCheckIBMISVolumeBandwidthConfig(name1, capacity1, bandwidth2),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISVolumeExists("ibm_is_volume.storage", vol),
+					resource.TestCheckResourceAttr(
+						"ibm_is_volume.storage", "name", name1),
+					resource.TestCheckResourceAttr(
+						"ibm_is_volume.storage", "capacity", fmt.Sprintf("%d", capacity1)),
+					resource.TestCheckResourceAttr(
+						"ibm_is_volume.storage", "bandwidth", fmt.Sprintf("%d", bandwidth2)),
 				),
 			},
 		},
@@ -178,6 +251,75 @@ ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVE
 		},
 	})
 }
+
+func TestAccIBMISVolume_snapshot_alloweduse(t *testing.T) {
+	var vol string
+	vpcname := fmt.Sprintf("tf-vpc-%d", acctest.RandIntRange(10, 100))
+	name := fmt.Sprintf("tf-instnace-%d", acctest.RandIntRange(10, 100))
+	subnetname := fmt.Sprintf("tf-subnet-%d", acctest.RandIntRange(10, 100))
+	publicKey := strings.TrimSpace(`
+ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVERRN7/9484SOBJ3HSKxxNG5JN8owAjy5f9yYwcUg+JaUVuytn5Pv3aeYROHGGg+5G346xaq3DAwX6Y5ykr2fvjObgncQBnuU5KHWCECO/4h8uWuwh/kfniXPVjFToc+gnkqA+3RKpAecZhFXwfalQ9mMuYGFxn+fwn8cYEApsJbsEmb0iJwPiZ5hjFC8wREuiTlhPHDgkBLOiycd20op2nXzDbHfCHInquEe/gYxEitALONxm0swBOwJZwlTDOB7C6y2dzlrtxr1L59m7pCkWI4EtTRLvleehBoj3u7jB4usR
+`)
+	sshname := fmt.Sprintf("tf-ssh-%d", acctest.RandIntRange(10, 100))
+	volname := fmt.Sprintf("tf-vol-%d", acctest.RandIntRange(10, 100))
+	name1 := fmt.Sprintf("tfsnapshotuat-%d", acctest.RandIntRange(10, 100))
+	apiVersion := "2025-07-02"
+	bareMetalServer := "enable_secure_boot==true"
+	instance := "enable_secure_boot==true"
+	apiVersionUpdate := "2025-07-05"
+	bareMetalServerUpdate := "true"
+	instanceUpdate := "true"
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMISVolumeDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMISVolumeConfigSnapshotAllowedUse(vpcname, subnetname, sshname, publicKey, volname, name, name1, apiVersion, bareMetalServer, instance),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISVolumeExists("ibm_is_volume.storage", vol),
+					resource.TestCheckResourceAttrSet("ibm_is_volume.storage", "health_state"),
+					resource.TestCheckResourceAttrSet("ibm_is_volume.storage", "health_reasons.#"),
+					resource.TestCheckResourceAttr(
+						"ibm_is_volume.storage", "name", volname),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_volume.storage", "allowed_use.#"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_volume.storage", "allowed_use.0.bare_metal_server"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_volume.storage", "allowed_use.0.instance"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_volume.storage", "allowed_use.0.api_version"),
+					resource.TestCheckResourceAttr("ibm_is_volume.storage", "allowed_use.0.bare_metal_server", bareMetalServer),
+					resource.TestCheckResourceAttr("ibm_is_volume.storage", "allowed_use.0.instance", instance),
+					resource.TestCheckResourceAttr("ibm_is_volume.storage", "allowed_use.0.api_version", apiVersion),
+				),
+			},
+			{
+				Config: testAccCheckIBMISVolumeConfigSnapshotAllowedUse(vpcname, subnetname, sshname, publicKey, volname, name, name1, apiVersionUpdate, bareMetalServerUpdate, instanceUpdate),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISVolumeExists("ibm_is_volume.storage", vol),
+					resource.TestCheckResourceAttrSet("ibm_is_volume.storage", "health_state"),
+					resource.TestCheckResourceAttrSet("ibm_is_volume.storage", "health_reasons.#"),
+					resource.TestCheckResourceAttr(
+						"ibm_is_volume.storage", "name", volname),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_volume.storage", "allowed_use.#"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_volume.storage", "allowed_use.0.bare_metal_server"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_volume.storage", "allowed_use.0.instance"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_volume.storage", "allowed_use.0.api_version"),
+					resource.TestCheckResourceAttr("ibm_is_volume.storage", "allowed_use.0.bare_metal_server", bareMetalServerUpdate),
+					resource.TestCheckResourceAttr("ibm_is_volume.storage", "allowed_use.0.instance", instanceUpdate),
+					resource.TestCheckResourceAttr("ibm_is_volume.storage", "allowed_use.0.api_version", apiVersionUpdate),
+				),
+			},
+		},
+	})
+}
+
 func TestAccIBMISVolume_snapshotcrn(t *testing.T) {
 	var vol string
 	vpcname := fmt.Sprintf("tf-vpc-%d", acctest.RandIntRange(10, 100))
@@ -481,6 +623,25 @@ func testAccCheckIBMISVolumeConfig(name string) string {
 `, name)
 
 }
+func testAccCheckIBMISVolumeStorageConfig(name, name2 string) string {
+	return fmt.Sprintf(
+		`
+	resource "ibm_is_volume" "storage"{
+		name 			= "%s"
+		profile 		= "10iops-tier"
+		zone 			= "%s"
+		# capacity= 200
+	}
+	resource "ibm_is_volume" "storage2"{
+		name 			= "%s"
+		profile 		= "sdp"
+		zone 			= "%s"
+		capacity		= 100
+		bandwidth		= 6000
+	}
+`, name, acc.ISZoneName, name2, acc.ISZoneName)
+
+}
 
 func testAccCheckIBMISVolumeSdpConfig(name string, capacity int) string {
 	return fmt.Sprintf(
@@ -492,6 +653,19 @@ func testAccCheckIBMISVolumeSdpConfig(name string, capacity int) string {
 		capacity		= %d
 	}
 `, name, capacity)
+
+}
+func testAccCheckIBMISVolumeBandwidthConfig(name string, capacity, bandwidth int) string {
+	return fmt.Sprintf(
+		`
+	resource "ibm_is_volume" "storage"{
+		name 			= "%s"
+		profile 		= "sdp"
+		zone 			= "eu-gb-1"
+		capacity		= %d
+		bandwidth		= %d
+	}
+`, name, capacity, bandwidth)
 
 }
 func testAccCheckIBMISVolumeSdpUpdateConfig(name string, iops, capacity int) string {
@@ -702,6 +876,23 @@ func testAccCheckIBMISVolumeConfigSnapshot(vpcname, subnetname, sshname, publicK
 		   source_snapshot= ibm_is_snapshot.testacc_snapshot.id
 		 }
 	`, volname, acc.ISZoneName)
+}
+
+func testAccCheckIBMISVolumeConfigSnapshotAllowedUse(vpcname, subnetname, sshname, publicKey, volname, name, name1, apiVersion, bareMetalServer, instance string) string {
+
+	return testAccCheckIBMISSnapshotConfig(vpcname, subnetname, sshname, publicKey, volname, name, name1) + fmt.Sprintf(`
+	 resource "ibm_is_volume" "storage" {
+		   name    = "%s"
+		   profile = "general-purpose"
+		   zone    = "%s"
+		   source_snapshot= ibm_is_snapshot.testacc_snapshot.id
+		   allowed_use {
+   				api_version       = "%s"
+    			bare_metal_server = "%s"
+    			instance          = "%s"
+  			}
+		 }
+	`, volname, acc.ISZoneName, apiVersion, bareMetalServer, instance)
 }
 func testAccCheckIBMISVolumeConfigSnapshotCrn(vpcname, subnetname, sshname, publicKey, volname, name, name1 string) string {
 

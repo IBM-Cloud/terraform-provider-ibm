@@ -77,6 +77,11 @@ func DataSourceIbmSmArbitrarySecretMetadata() *schema.Resource {
 				Computed:    true,
 				Description: "The human-readable name of your secret.",
 			},
+			"retrieved_at": &schema.Schema{
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The date when the data of the secret was last retrieved. The date format follows RFC 3339. Epoch date if there is no record of secret data retrieval.",
+			},
 			"secret_group_id": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -117,7 +122,7 @@ func DataSourceIbmSmArbitrarySecretMetadata() *schema.Resource {
 }
 
 func dataSourceIbmSmArbitrarySecretMetadataRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	secretsManagerClient, err := meta.(conns.ClientSession).SecretsManagerV2()
+	secretsManagerClient, endpointsFile, err := getSecretsManagerSession(meta.(conns.ClientSession))
 	if err != nil {
 		tfErr := flex.TerraformErrorf(err, "", fmt.Sprintf("(Data) %s_metadata", ArbitrarySecretResourceName), "read")
 		return tfErr.GetDiag()
@@ -125,7 +130,7 @@ func dataSourceIbmSmArbitrarySecretMetadataRead(context context.Context, d *sche
 
 	region := getRegion(secretsManagerClient, d)
 	instanceId := d.Get("instance_id").(string)
-	secretsManagerClient = getClientWithInstanceEndpoint(secretsManagerClient, instanceId, region, getEndpointType(secretsManagerClient, d))
+	secretsManagerClient = getClientWithInstanceEndpoint(secretsManagerClient, instanceId, region, getEndpointType(secretsManagerClient, d), endpointsFile)
 
 	getSecretMetadataOptions := &secretsmanagerv2.GetSecretMetadataOptions{}
 
@@ -139,7 +144,11 @@ func dataSourceIbmSmArbitrarySecretMetadataRead(context context.Context, d *sche
 		return tfErr.GetDiag()
 	}
 
-	arbitrarySecretMetadata := arbitrarySecretMetadataIntf.(*secretsmanagerv2.ArbitrarySecretMetadata)
+	arbitrarySecretMetadata, ok := arbitrarySecretMetadataIntf.(*secretsmanagerv2.ArbitrarySecretMetadata)
+	if !ok {
+		tfErr := flex.TerraformErrorf(nil, fmt.Sprintf("Wrong secret type: The provided secret is not an Arbitrary secret."), fmt.Sprintf("(Data) %s_metadata", ArbitrarySecretResourceName), "read")
+		return tfErr.GetDiag()
+	}
 
 	d.SetId(fmt.Sprintf("%s/%s/%s", region, instanceId, secretId))
 
@@ -196,6 +205,11 @@ func dataSourceIbmSmArbitrarySecretMetadataRead(context context.Context, d *sche
 
 	if err = d.Set("name", arbitrarySecretMetadata.Name); err != nil {
 		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting name"), fmt.Sprintf("(Data) %s_metadata", ArbitrarySecretResourceName), "read")
+		return tfErr.GetDiag()
+	}
+
+	if err = d.Set("retrieved_at", DateTimeToRFC3339(arbitrarySecretMetadata.RetrievedAt)); err != nil {
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting retrieved_at"), fmt.Sprintf("(Data) %s_metadata", ArbitrarySecretResourceName), "read")
 		return tfErr.GetDiag()
 	}
 

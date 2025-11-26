@@ -35,6 +35,7 @@ func TestAccIbmSmImportedCertificateBasic(t *testing.T) {
 					resource.TestCheckResourceAttrSet(resourceName, "created_by"),
 					resource.TestCheckResourceAttrSet(resourceName, "created_at"),
 					resource.TestCheckResourceAttrSet(resourceName, "updated_at"),
+					resource.TestCheckResourceAttrSet(resourceName, "retrieved_at"),
 					resource.TestCheckResourceAttrSet(resourceName, "crn"),
 					resource.TestCheckResourceAttrSet(resourceName, "downloaded"),
 					resource.TestCheckResourceAttrSet(resourceName, "issuer"),
@@ -51,9 +52,10 @@ func TestAccIbmSmImportedCertificateBasic(t *testing.T) {
 				),
 			},
 			resource.TestStep{
-				ResourceName:      resourceName,
-				ImportState:       true,
-				ImportStateVerify: true,
+				ResourceName:            resourceName,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"updated_at", "retrieved_at"},
 			},
 		},
 	})
@@ -101,9 +103,94 @@ func TestAccIbmSmImportedCertificateAllArgs(t *testing.T) {
 				),
 			},
 			resource.TestStep{
-				ResourceName:      resourceName,
-				ImportState:       true,
-				ImportStateVerify: true,
+				ResourceName:            resourceName,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"updated_at", "retrieved_at"},
+			},
+		},
+	})
+}
+
+func TestAccIbmSmImportedCertificateManagedCSR(t *testing.T) {
+	resourceName := "ibm_sm_imported_certificate.managed_csr"
+
+	resource.Test(t, resource.TestCase{
+
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIbmSmImportedCertificateDestroy,
+		Steps: []resource.TestStep{
+			resource.TestStep{
+				Config: importedCertificateConfigManagedCSR(),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIbmSmManagedCsrCreated(resourceName),
+					resource.TestCheckResourceAttrSet(resourceName, "secret_id"),
+					resource.TestCheckResourceAttrSet(resourceName, "created_by"),
+					resource.TestCheckResourceAttrSet(resourceName, "created_at"),
+					resource.TestCheckResourceAttrSet(resourceName, "updated_at"),
+					resource.TestCheckResourceAttrSet(resourceName, "crn"),
+					resource.TestCheckResourceAttrSet(resourceName, "downloaded"),
+					resource.TestCheckResourceAttr(resourceName, "state", "0"),
+					resource.TestCheckResourceAttr(resourceName, "state_description", "pre_activation"),
+					resource.TestCheckResourceAttr(resourceName, "versions_total", "0"),
+					resource.TestCheckResourceAttrSet(resourceName, "managed_csr.0.csr"),
+					resource.TestCheckResourceAttr(resourceName, "managed_csr.0.common_name", "example.com"),
+					resource.TestCheckResourceAttr(resourceName, "managed_csr.0.alt_names", "alt1"),
+					resource.TestCheckResourceAttr(resourceName, "managed_csr.0.client_flag", "true"),
+					resource.TestCheckResourceAttr(resourceName, "managed_csr.0.code_signing_flag", "false"),
+					resource.TestCheckResourceAttr(resourceName, "managed_csr.0.organization.0", "IBM"),
+					resource.TestCheckResourceAttr(resourceName, "managed_csr.0.country.0", "IL"),
+					resource.TestCheckResourceAttr(resourceName, "managed_csr.0.ou.0", "ILSL"),
+					resource.TestCheckResourceAttr(resourceName, "managed_csr.0.postal_code.0", "5320047"),
+					resource.TestCheckResourceAttr(resourceName, "managed_csr.0.province.0", "DAN"),
+					resource.TestCheckResourceAttr(resourceName, "managed_csr.0.locality.0", "Givatayim"),
+					resource.TestCheckResourceAttr(resourceName, "managed_csr.0.email_protection_flag", "false"),
+					resource.TestCheckResourceAttr(resourceName, "managed_csr.0.exclude_cn_from_sans", "false"),
+					resource.TestCheckResourceAttr(resourceName, "managed_csr.0.ext_key_usage", "timestamping"),
+					resource.TestCheckResourceAttr(resourceName, "managed_csr.0.ip_sans", "127.0.0.1"),
+					resource.TestCheckResourceAttr(resourceName, "managed_csr.0.key_bits", "2048"),
+					resource.TestCheckResourceAttr(resourceName, "managed_csr.0.key_type", "rsa"),
+					resource.TestCheckResourceAttr(resourceName, "managed_csr.0.key_usage", "DigitalSignature"),
+					resource.TestCheckResourceAttr(resourceName, "managed_csr.0.other_sans", "1.3.6.1.4.1.311.21.2.3;utf8:*.example.com"),
+					resource.TestCheckResourceAttr(resourceName, "managed_csr.0.policy_identifiers", ""),
+					resource.TestCheckResourceAttr(resourceName, "managed_csr.0.uri_sans", "https://www.example.com/test"),
+					resource.TestCheckResourceAttr(resourceName, "managed_csr.0.user_ids", "user"),
+					resource.TestCheckResourceAttr(resourceName, "managed_csr.0.require_cn", "true"),
+					resource.TestCheckResourceAttr(resourceName, "managed_csr.0.rotate_keys", "false"),
+					resource.TestCheckResourceAttr(resourceName, "managed_csr.0.server_flag", "true"),
+				),
+			},
+			{
+				Config: mangedCSRConfigUpdated(),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIbmSmManagedCsrUpdated(resourceName),
+					resource.TestCheckResourceAttr(resourceName, "managed_csr.0.common_name", "example.com"),
+					resource.TestCheckResourceAttr(resourceName, "managed_csr.0.alt_names", "alt2"),
+					resource.TestCheckResourceAttr(resourceName, "managed_csr.0.client_flag", "false"),
+					resource.TestCheckResourceAttr(resourceName, "managed_csr.0.code_signing_flag", "true"),
+					resource.TestCheckResourceAttr(resourceName, "managed_csr.0.country.0", "USA"),
+					resource.TestCheckResourceAttr(resourceName, "managed_csr.0.email_protection_flag", "true"),
+					resource.TestCheckResourceAttr(resourceName, "managed_csr.0.exclude_cn_from_sans", "true"),
+					resource.TestCheckResourceAttr(resourceName, "managed_csr.0.ext_key_usage", ""),
+					resource.TestCheckResourceAttr(resourceName, "managed_csr.0.ip_sans", ""),
+					resource.TestCheckResourceAttr(resourceName, "managed_csr.0.key_bits", "2048"),
+					resource.TestCheckResourceAttr(resourceName, "managed_csr.0.key_type", "rsa"),
+					resource.TestCheckResourceAttr(resourceName, "managed_csr.0.key_usage", ""),
+					resource.TestCheckResourceAttr(resourceName, "managed_csr.0.other_sans", ""),
+					resource.TestCheckResourceAttr(resourceName, "managed_csr.0.policy_identifiers", ""),
+					resource.TestCheckResourceAttr(resourceName, "managed_csr.0.uri_sans", ""),
+					resource.TestCheckResourceAttr(resourceName, "managed_csr.0.user_ids", "user"),
+					resource.TestCheckResourceAttr(resourceName, "managed_csr.0.require_cn", "false"),
+					resource.TestCheckResourceAttr(resourceName, "managed_csr.0.rotate_keys", "true"),
+					resource.TestCheckResourceAttr(resourceName, "managed_csr.0.server_flag", "false"),
+				),
+			},
+			resource.TestStep{
+				ResourceName:            resourceName,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"updated_at", "retrieved_at"},
 			},
 		},
 	})
@@ -126,6 +213,70 @@ var importedCertFullConfigFormat = `
   			labels = ["%s"]
   			custom_metadata = %s
 			secret_group_id = "default"`
+
+var importedCertWithManagedCsrFormat = `
+		resource "ibm_sm_imported_certificate" "managed_csr" {
+			instance_id   = "%s"
+  			region        = "%s"
+			name = "%s"
+  			description = "%s"
+  			labels = ["%s"]
+  			custom_metadata = %s
+			secret_group_id = "default"
+			managed_csr %s
+        }`
+
+var managedCsrConfigFormat = `{
+		alt_names = "alt1"
+		client_flag = true
+		code_signing_flag = false
+		common_name = "example.com"
+		country = ["IL"]
+		email_protection_flag = false
+		exclude_cn_from_sans = false
+		ext_key_usage = "timestamping"
+		ext_key_usage_oids = "1.3.6.1.5.5.7.3.67"
+		ip_sans = "127.0.0.1"
+		key_bits = 2048
+		key_type = "rsa"
+		key_usage = "DigitalSignature"
+		locality = ["Givatayim"]
+		policy_identifiers = ""
+		organization = ["IBM"]
+		other_sans = "1.3.6.1.4.1.311.21.2.3;utf8:*.example.com"
+		ou = ["ILSL"]
+		postal_code = ["5320047"]
+		province = ["DAN"]
+		require_cn = true
+		rotate_keys = false
+		server_flag = true
+		street_address = ["Ariel Sharon 4"]
+		uri_sans = "https://www.example.com/test"
+		user_ids = "user"
+	}`
+
+var managedCsrModified = `{
+		alt_names = "alt2"
+		client_flag = false
+		code_signing_flag = true
+		common_name = "example.com"
+		country = ["USA"]
+		email_protection_flag = true
+		exclude_cn_from_sans = true
+		key_bits = 2048
+		key_type = "rsa"
+		locality = ["Givatayim"]
+		policy_identifiers = ""
+		organization = ["IBM"]
+		ou = ["ILSL"]
+		postal_code = ["5320047"]
+		province = ["DAN"]
+		require_cn = false
+		rotate_keys = true
+		server_flag = false
+		street_address = ["Ariel Sharon 4"]
+		user_ids = "user"
+	}`
 
 var firstImportedCertData = `
 			certificate = "-----BEGIN CERTIFICATE-----\r\nMIICsDCCAhmgAwIBAgIJALrogcLQxAOqMA0GCSqGSIb3DQEBCwUAMHExCzAJBgNV\r\nBAYTAnVzMREwDwYDVQQIDAh1cy1zb3V0aDEPMA0GA1UEBwwGRGFsLTEwMQwwCgYD\r\nVQQKDANJQk0xEzARBgNVBAsMCkNsb3VkQ2VydHMxGzAZBgNVBAMMEiouY2VydG1n\r\nbXQtZGV2LmNvbTAeFw0xODA0MjUwODM5NTlaFw00NTA5MTAwODM5NTlaMHExCzAJ\r\nBgNVBAYTAnVzMREwDwYDVQQIDAh1cy1zb3V0aDEPMA0GA1UEBwwGRGFsLTEwMQww\r\nCgYDVQQKDANJQk0xEzARBgNVBAsMCkNsb3VkQ2VydHMxGzAZBgNVBAMMEiouY2Vy\r\ndG1nbXQtZGV2LmNvbTCBnzANBgkqhkiG9w0BAQEFAAOBjQAwgYkCgYEAmy/4uEEw\r\nAn75rBuAIv5zi+1b2ycUnlw94x3QzYtY3QHQysFu73U3rczVHOsQNd9VIoC0z8py\r\npMZZu7W6dv6cjOSXlpiLfd7Y9TWzO43mNUH0qrnFpSgXM9ZXN3PJWjmTH3yxAsdK\r\nd5wtRdSv9AwrHWo8hHoTumoXYNMDuehyVJ8CAwEAAaNQME4wHQYDVR0OBBYEFMNC\r\nbcvQ+Smn8ikBDrMKhPc4C+f5MB8GA1UdIwQYMBaAFMNCbcvQ+Smn8ikBDrMKhPc4\r\nC+f5MAwGA1UdEwQFMAMBAf8wDQYJKoZIhvcNAQELBQADgYEAFe2fCmzTcmCHeijV\r\nq0+EOvMRVNF/FTYyjb24gUGTbouZOkfv7JK94lAt/u5mPhpftYX+b1wUlkz0Kyl5\r\n4IgM0XXpcPYDdxQ87c0l/nAUF7Pi++u7CVmJBlclyDOL6AmBpUE0HyquQT4rSp/K\r\n+5qcqSxVjznd5XgQrWQGHLI2tnY=\r\n-----END CERTIFICATE-----"
@@ -152,6 +303,16 @@ func importedCertificateConfigUpdated() string {
 	return fmt.Sprintf(importedCertFullConfigFormat, acc.SecretsManagerInstanceID, acc.SecretsManagerInstanceRegion,
 		modifiedImportedCertName, modifiedDescription, modifiedLabel, modifiedCustomMetadata) +
 		secondImportedCertData + `}`
+}
+
+func importedCertificateConfigManagedCSR() string {
+	return fmt.Sprintf(importedCertWithManagedCsrFormat, acc.SecretsManagerInstanceID, acc.SecretsManagerInstanceRegion,
+		importedCertName, description, label, customMetadata, managedCsrConfigFormat)
+}
+
+func mangedCSRConfigUpdated() string {
+	return fmt.Sprintf(importedCertWithManagedCsrFormat, acc.SecretsManagerInstanceID, acc.SecretsManagerInstanceRegion,
+		importedCertName, description, label, customMetadata, managedCsrModified)
 }
 
 func testAccCheckIbmSmImportedCertificateCreated(n string) resource.TestCheckFunc {
@@ -202,6 +363,119 @@ func testAccCheckIbmSmImportedCertificateUpdated(n string) resource.TestCheckFun
 			return err
 		}
 		if err := verifyJsonAttr(secret.CustomMetadata, modifiedCustomMetadata, "custom metadata after update"); err != nil {
+			return err
+		}
+		return nil
+	}
+}
+
+func testAccCheckIbmSmManagedCsrCreated(n string) resource.TestCheckFunc {
+
+	return func(s *terraform.State) error {
+		importedCertIntf, err := getSecret(s, n)
+		if err != nil {
+			return err
+		}
+		secret := importedCertIntf.(*secretsmanagerv2.ImportedCertificate)
+		managedCsr := secret.ManagedCsr
+		if err := verifyAttr(*managedCsr.CommonName, "example.com", "common_name"); err != nil {
+			return err
+		}
+		if err := verifyAttr(*managedCsr.AltNames, "alt1", "alt_names"); err != nil {
+			return err
+		}
+		if err := verifyAttr(managedCsr.Organization[0], "IBM", "organization"); err != nil {
+			return err
+		}
+		if err := verifyAttr(managedCsr.Ou[0], "ILSL", "ou"); err != nil {
+			return err
+		}
+		if err := verifyAttr(managedCsr.Country[0], "IL", "country"); err != nil {
+			return err
+		}
+		if err := verifyAttr(*managedCsr.ExtKeyUsage, "timestamping", "ext_key_usage"); err != nil {
+			return err
+		}
+		if err := verifyAttr(*managedCsr.IpSans, "127.0.0.1", "ip_sans"); err != nil {
+			return err
+		}
+		if err := verifyAttr(*managedCsr.KeyType, "rsa", "key_type"); err != nil {
+			return err
+		}
+		if err := verifyIntAttr(int(*managedCsr.KeyBits), 2048, "key_bits"); err != nil {
+			return err
+		}
+		if err := verifyAttr(*managedCsr.KeyUsage, "DigitalSignature", "key_usage"); err != nil {
+			return err
+		}
+		if err := verifyAttr(*managedCsr.OtherSans, "1.3.6.1.4.1.311.21.2.3;utf8:*.example.com", "other_sans"); err != nil {
+			return err
+		}
+		if err := verifyAttr(*managedCsr.UriSans, "https://www.example.com/test", "uri_sans"); err != nil {
+			return err
+		}
+		if err := verifyAttr(*managedCsr.UserIds, "user", "user_ids"); err != nil {
+			return err
+		}
+		if err := verifyBoolAttr(*managedCsr.ClientFlag, true, "client_flag"); err != nil {
+			return err
+		}
+		if err := verifyBoolAttr(*managedCsr.ServerFlag, true, "server_flag"); err != nil {
+			return err
+		}
+		if err := verifyBoolAttr(*managedCsr.CodeSigningFlag, false, "code_signing_flag"); err != nil {
+			return err
+		}
+		if err := verifyBoolAttr(*managedCsr.EmailProtectionFlag, false, "email_protection_flag"); err != nil {
+			return err
+		}
+		if err := verifyBoolAttr(*managedCsr.ExcludeCnFromSans, false, "exclude_cn_from_sans"); err != nil {
+			return err
+		}
+		if err := verifyBoolAttr(*managedCsr.RequireCn, true, "require_cn"); err != nil {
+			return err
+		}
+		if err := verifyBoolAttr(*managedCsr.RotateKeys, false, "rotate_keys"); err != nil {
+			return err
+		}
+		return nil
+	}
+}
+
+func testAccCheckIbmSmManagedCsrUpdated(n string) resource.TestCheckFunc {
+
+	return func(s *terraform.State) error {
+		importedCertIntf, err := getSecret(s, n)
+		if err != nil {
+			return err
+		}
+		secret := importedCertIntf.(*secretsmanagerv2.ImportedCertificate)
+		managedCsr := secret.ManagedCsr
+		if err := verifyAttr(*managedCsr.AltNames, "alt2", "alt_names"); err != nil {
+			return err
+		}
+		if err := verifyAttr(managedCsr.Country[0], "USA", "country"); err != nil {
+			return err
+		}
+		if err := verifyBoolAttr(*managedCsr.ClientFlag, false, "client_flag"); err != nil {
+			return err
+		}
+		if err := verifyBoolAttr(*managedCsr.ServerFlag, false, "server_flag"); err != nil {
+			return err
+		}
+		if err := verifyBoolAttr(*managedCsr.CodeSigningFlag, true, "code_signing_flag"); err != nil {
+			return err
+		}
+		if err := verifyBoolAttr(*managedCsr.EmailProtectionFlag, true, "email_protection_flag"); err != nil {
+			return err
+		}
+		if err := verifyBoolAttr(*managedCsr.ExcludeCnFromSans, true, "exclude_cn_from_sans"); err != nil {
+			return err
+		}
+		if err := verifyBoolAttr(*managedCsr.RequireCn, false, "require_cn"); err != nil {
+			return err
+		}
+		if err := verifyBoolAttr(*managedCsr.RotateKeys, true, "rotate_keys"); err != nil {
 			return err
 		}
 		return nil

@@ -152,7 +152,7 @@ func testAccCheckIbmOnboardingResourceBrokerConfigBasic(authUsername string, aut
 			name = "%s"
 			region = "global"
 			state = "active"
-			resource_group_crn = "crn:v1:staging:public:resource-controller::a/f15038e9046e4b9587db0ae76c4cbc26::resource-group:3a3a8ae311d0486c86b0a8c09e56883d"
+			resource_group_crn = "crn:v1:staging:public:resource-controller::a/b763b2a2e1564b23a5374e6f61ac3602::resource-group:a9327fb119d34b2690b59ebc0e8df5e2"
 		}
 	`, authUsername, authPassword, authScheme, brokerURL, typeVar, name)
 }
@@ -172,7 +172,7 @@ func testAccCheckIbmOnboardingResourceBrokerConfig(env string, authUsername stri
 			type = "%s"
 			name = "%s"
 			region = "%s"
-			resource_group_crn = "crn:v1:staging:public:resource-controller::a/f15038e9046e4b9587db0ae76c4cbc26::resource-group:3a3a8ae311d0486c86b0a8c09e56883d"
+			resource_group_crn = "crn:v1:staging:public:resource-controller::a/b763b2a2e1564b23a5374e6f61ac3602::resource-group:a9327fb119d34b2690b59ebc0e8df5e2"
 		}
 	`, env, authUsername, authPassword, authScheme, state, brokerURL, allowContextUpdates, catalogType, typeVar, name, region)
 }

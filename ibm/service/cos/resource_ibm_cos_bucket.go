@@ -7,6 +7,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"os"
 	"regexp"
 	"strings"
 	"time"
@@ -14,7 +15,7 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
-	"github.com/IBM/go-sdk-core/core"
+	"github.com/IBM/go-sdk-core/v5/core"
 
 	"github.com/IBM/ibm-cos-sdk-go-config/v2/resourceconfigurationv1"
 	"github.com/IBM/ibm-cos-sdk-go/aws"
@@ -1328,7 +1329,7 @@ func resourceIBMCOSBucketRead(d *schema.ResourceData, meta interface{}) error {
 			d.Set("abort_incomplete_multipart_upload_days", abort_mpuRules)
 		}
 	} else {
-		fmt.Println("There is no lifecycle configuration on the bucket")
+		log.Printf("[DEBUG] There is no lifecycle configuration on the bucket")
 	}
 
 	// Read retention rule
@@ -1791,7 +1792,13 @@ func parseBucketId(id string, info string) string {
 	if info == "endpointType" {
 		s := strings.Split(meta, ":")
 		if len(s) > 2 {
-			return strings.Split(meta, ":")[2]
+			eType := strings.Split(meta, ":")[2]
+			// This changes is only for Schematics
+			schET := os.Getenv("IBMCLOUD_ENV_SCH_COS_ENDPOINT_OVERRIDE")
+			if eType != "" && eType == "private" && schET != "" {
+				return schET
+			}
+			return eType
 		}
 		return ""
 

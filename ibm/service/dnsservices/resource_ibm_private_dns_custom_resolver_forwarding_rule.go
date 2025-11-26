@@ -11,21 +11,28 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
+	"github.com/IBM/go-sdk-core/v5/core"
+	dns "github.com/IBM/networking-go-sdk/dnssvcsv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 const (
-	pdnsCRForwardRule   = "ibm_dns_custom_resolver_forwarding_rule"
-	pdnsCRForwardRules  = "rules"
-	pdnsCRFRResolverID  = "resolver_id"
-	pdnsCRFRDesctiption = "description"
-	pdnsCRFRType        = "type"
-	pdnsCRFRMatch       = "match"
-	pdnsCRFRForwardTo   = "forward_to"
-	pdnsCRFRRuleID      = "rule_id"
-	pdnsCRFRCreatedOn   = "created_on"
-	pdnsCRFRModifiedOn  = "modified_on"
+	pdnsCRForwardRule    = "ibm_dns_custom_resolver_forwarding_rule"
+	pdnsCRForwardRules   = "rules"
+	pdnsCRFRResolverID   = "resolver_id"
+	pdnsCRFRDesctiption  = "description"
+	pdnsCRFRType         = "type"
+	pdnsCRFRMatch        = "match"
+	pdnsCRFRForwardTo    = "forward_to"
+	pdnsCRFRRuleID       = "rule_id"
+	pdnsCRFRCreatedOn    = "created_on"
+	pdnsCRFRModifiedOn   = "modified_on"
+	pdnsCRFRViews        = "views"
+	pdnsCRFRVName        = "name"
+	pdnsCRFRVDescription = "description"
+	pdnsCRFRVExpression  = "expression"
+	pdnsCRFRVForwardTo   = "forward_to"
 )
 
 func ResourceIBMPrivateDNSForwardingRule() *schema.Resource {
@@ -75,6 +82,36 @@ func ResourceIBMPrivateDNSForwardingRule() *schema.Resource {
 				Computed:    true,
 				Description: "the time when a forwarding rule ID is created, RFC3339 format.",
 			},
+			pdnsCRFRViews: {
+				Type:        schema.TypeList,
+				Description: "An array of views used by forwarding rules.",
+				Optional:    true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						pdnsCRFRVName: {
+							Type:        schema.TypeString,
+							Required:    true,
+							Description: "Unique name of the view.",
+						},
+						pdnsCRFRVDescription: {
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "Description of the view.",
+						},
+						pdnsCRFRVExpression: {
+							Type:        schema.TypeString,
+							Required:    true,
+							Description: "Expression of the view.",
+						},
+						pdnsCRFRVForwardTo: {
+							Type:        schema.TypeList,
+							Required:    true,
+							Description: "The upstream DNS servers that the matching DNS queries will be forwarded to.",
+							Elem:        &schema.Schema{Type: schema.TypeString},
+						},
+					},
+				},
+			},
 		},
 	}
 }
@@ -98,28 +135,52 @@ func ResourceIBMPrivateDNSForwardingRuleValidator() *validate.ResourceValidator 
 func resourceIbmDnsCrForwardingRuleCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	dnsSvcsClient, err := meta.(conns.ClientSession).PrivateDNSClientSession()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("resourceIbmDnsCustomResolverForwardingRuleCreate initialization failed: %s", err.Error()), "ibm_dns_cr_forward_rule_zone", "create")
+		return tfErr.GetDiag()
 	}
 	instanceID := d.Get(pdnsInstanceID).(string)
 	resolverID := d.Get(pdnsCRFRResolverID).(string)
-	opt := dnsSvcsClient.NewCreateForwardingRuleOptions(instanceID, resolverID)
 
-	if des, ok := d.GetOk(pdnsCRFRDesctiption); ok {
-		opt.SetDescription(des.(string))
+	ruleType := d.Get(pdnsCRFRType).(string)
+	ruleMatch := d.Get(pdnsCRFRMatch).(string)
+	ruleDescription := d.Get(pdnsCRFRDesctiption).(string)
+
+	views := d.Get(pdnsCRFRViews).([]interface{})
+
+	var forwardingRuleInp dns.ForwardingRuleInputIntf
+	opt := dnsSvcsClient.NewCreateForwardingRuleOptions(instanceID, resolverID, forwardingRuleInp)
+
+	// If forward_to field is present then we check if views are also present or not.
+	// We call the respective functions depending upon the availibility of the views.
+	// We follow the same approach when forward_to is not present. In this case if views are also not present then we throw an error.
+	if forward, ok := d.GetOk(pdnsCRFRForwardTo); ok {
+		if _, ok := d.GetOk(pdnsCRFRViews); ok {
+			forwardingRuleInpBoth, _ := dnsSvcsClient.NewForwardingRuleInputForwardingRuleBoth(ruleType, ruleMatch, flex.ExpandStringList(forward.([]interface{})), expandPDNSFRViews(views))
+			forwardingRuleInpBoth.Description = &ruleDescription
+			opt.SetForwardingRuleInput(forwardingRuleInpBoth)
+
+		} else {
+			forwardingRuleInpOnlyRule, _ := dnsSvcsClient.NewForwardingRuleInputForwardingRuleOnlyForward(ruleType, ruleMatch, flex.ExpandStringList(forward.([]interface{})))
+			forwardingRuleInpOnlyRule.Description = &ruleDescription
+			opt.SetForwardingRuleInput(forwardingRuleInpOnlyRule)
+		}
+	} else {
+		if _, ok := d.GetOk(pdnsCRFRViews); ok {
+			forwardingRuleInpOnlyView, _ := dnsSvcsClient.NewForwardingRuleInputForwardingRuleOnlyView(ruleType, ruleMatch, expandPDNSFRViews(views))
+			forwardingRuleInpOnlyView.Description = &ruleDescription
+			opt.SetForwardingRuleInput(forwardingRuleInpOnlyView)
+		} else {
+			err := fmt.Errorf("[ERROR] Cannot create the forwarding rules. One of the fields from forward_to or views must be provided")
+			tfErr := flex.TerraformErrorf(err, err.Error(), "ibm_dns_custom_resolver_forwarding_rule", "create")
+			return tfErr.GetDiag()
+		}
 	}
-	if t, ok := d.GetOk(pdnsCRFRType); ok {
-		opt.SetType(t.(string))
-	}
-	if m, ok := d.GetOk(pdnsCRFRMatch); ok {
-		opt.SetMatch(m.(string))
-	}
-	if _, ok := d.GetOk(pdnsCRFRForwardTo); ok {
-		opt.SetForwardTo(flex.ExpandStringList(d.Get(pdnsCRFRForwardTo).([]interface{})))
-	}
+
 	result, resp, err := dnsSvcsClient.CreateForwardingRuleWithContext(context, opt)
 
 	if err != nil || result == nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error creating the forwarding rules %s:%s", err, resp))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateForwardingRuleWithContext failed with error: %s and response:\n%s", err, resp), "ibm_dns_custom_resolver_forwarding_rule", "create")
+		return tfErr.GetDiag()
 	}
 	d.SetId(flex.ConvertCisToTfThreeVar(*result.ID, resolverID, instanceID))
 
@@ -129,7 +190,8 @@ func resourceIbmDnsCrForwardingRuleCreate(context context.Context, d *schema.Res
 func resourceIbmDnsCrForwardingRuleRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	dnsSvcsClient, err := meta.(conns.ClientSession).PrivateDNSClientSession()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("DnsCrForwardingRuleClient initialization failed: %s", err.Error()), "ibm_dns_custom_resolver_forwarding_rule", "read")
+		return tfErr.GetDiag()
 	}
 	ruleID, resolverID, instanceID, err := flex.ConvertTfToCisThreeVar(d.Id())
 	opt := dnsSvcsClient.NewGetForwardingRuleOptions(instanceID, resolverID, ruleID)
@@ -140,7 +202,8 @@ func resourceIbmDnsCrForwardingRuleRead(context context.Context, d *schema.Resou
 			d.SetId("")
 			return nil
 		}
-		return diag.FromErr(fmt.Errorf("[ERROR] Error reading the forwarding rules %s:%s", err, resp))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetForwardingRuleWithContext failed: %s", err.Error()), "ibm_dns_custom_resolver_forwarding_rule", "read")
+		return tfErr.GetDiag()
 	}
 	d.Set(pdnsInstanceID, instanceID)
 	d.Set(pdnsCRFRResolverID, resolverID)
@@ -149,31 +212,47 @@ func resourceIbmDnsCrForwardingRuleRead(context context.Context, d *schema.Resou
 	d.Set(pdnsCRFRType, *result.Type)
 	d.Set(pdnsCRFRMatch, *result.Match)
 	d.Set(pdnsCRFRForwardTo, result.ForwardTo)
+	d.Set(pdnsCRFRViews, flattenPDNSFRViews(result.Views))
 	return nil
 
 }
 func resourceIbmDnsCrForwardingRuleUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	dnsSvcsClient, err := meta.(conns.ClientSession).PrivateDNSClientSession()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("resourceIbmDnsCrForwardingRuleUpdate Client initialization failed: %s", err.Error()), "ibm_dns_custom_resolver_forwarding_rule", "update")
+		return tfErr.GetDiag()
 	}
 	ruleID, resolverID, instanceID, err := flex.ConvertTfToCisThreeVar(d.Id())
 
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("DnsCrForwardingRuleClient initialization failed: %s", err.Error()), "ibm_dns_custom_resolver_forwarding_rule", "update")
+		return tfErr.GetDiag()
 	}
 	opt := dnsSvcsClient.NewUpdateForwardingRuleOptions(instanceID, resolverID, ruleID)
 
 	if d.HasChange(pdnsCRFRDesctiption) ||
 		d.HasChange(pdnsCRFRMatch) ||
-		d.HasChange(pdnsCRFRForwardTo) {
+		d.HasChange(pdnsCRFRForwardTo) ||
+		d.HasChange(pdnsCRFRViews) {
 		if des, ok := d.GetOk(pdnsCRFRDesctiption); ok {
 			frdesc := des.(string)
 			opt.SetDescription(frdesc)
 		}
-		if _, ok := d.GetOk(pdnsCRFRForwardTo); ok {
-			opt.SetForwardTo(flex.ExpandStringList(d.Get(pdnsCRFRForwardTo).([]interface{})))
+
+		// Update logic is changed. Now we can have empty forward_to field if views are present. The only constraint is both the fields should not be empty.
+		if _, ok := d.GetOk(pdnsCRFRForwardTo); !ok {
+			if _, ok := d.GetOk(pdnsCRFRViews); !ok {
+				err := fmt.Errorf("[ERROR] Cannot update the forwarding rules. One of the fields from forward_to or views must be provided")
+				tfErr := flex.TerraformErrorf(err, err.Error(), "ibm_dns_custom_resolver_forwarding_rule", "update")
+				return tfErr.GetDiag()
+
+			}
 		}
+
+		// Once we make sure the one of the field from forward_to or views is present we can allow empty fields to be updated.
+		opt.SetForwardTo(flex.ExpandStringList(d.Get(pdnsCRFRForwardTo).([]interface{})))
+		opt.SetViews(expandPDNSFRViews(d.Get(pdnsCRFRViews).([]interface{})))
+
 		if ty, ok := d.GetOk(pdnsCRFRType); ok {
 			crtype := ty.(string)
 			if strings.ToLower(crtype) == "Default" {
@@ -183,9 +262,11 @@ func resourceIbmDnsCrForwardingRuleUpdate(context context.Context, d *schema.Res
 				}
 			}
 		}
+
 		result, resp, err := dnsSvcsClient.UpdateForwardingRuleWithContext(context, opt)
 		if err != nil || result == nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error updating the forwarding rule %s:%s", err, resp))
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("UpdateForwardingRuleWithContext failed with error: %s and response:\n%s", err, resp), "ibm_dns_custom_resolver_forwarding_rule", "update")
+			return tfErr.GetDiag()
 		}
 
 	}
@@ -195,7 +276,8 @@ func resourceIbmDnsCrForwardingRuleUpdate(context context.Context, d *schema.Res
 func resourceIbmDnsCrForwardingRuleDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	dnsSvcsClient, err := meta.(conns.ClientSession).PrivateDNSClientSession()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("resourceIbmDnsCrForwardingRuleDelete Client initialization failed: %s", err.Error()), "ibm_dns_custom_resolver_forwarding_rule", "delete")
+		return tfErr.GetDiag()
 	}
 	ruleID, resolverID, instanceID, err := flex.ConvertTfToCisThreeVar(d.Id())
 	opt := dnsSvcsClient.NewDeleteForwardingRuleOptions(instanceID, resolverID, ruleID)
@@ -204,8 +286,38 @@ func resourceIbmDnsCrForwardingRuleDelete(context context.Context, d *schema.Res
 		if response != nil && response.StatusCode == 404 {
 			return nil
 		}
-		return diag.FromErr(fmt.Errorf("[ERROR] Error deleting the  Forwarding Rules %s:%s", err, response))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("DeleteForwardingRuleWithContext failed: %s", err.Error()), "ibm_dns_custom_resolver_forwarding_rule", "delete")
+		return tfErr.GetDiag()
 	}
 	d.SetId("")
 	return nil
+}
+
+func expandPDNSFRViews(viewsList []interface{}) []dns.ViewConfig {
+	views := []dns.ViewConfig{}
+	for _, viewElem := range viewsList {
+		viewItem := viewElem.(map[string]interface{})
+		view := dns.ViewConfig{
+			Name:        core.StringPtr(viewItem[pdnsCRFRVName].(string)),
+			Description: core.StringPtr(viewItem[pdnsCRFRVDescription].(string)),
+			Expression:  core.StringPtr(viewItem[pdnsCRFRVExpression].(string)),
+			ForwardTo:   flex.ExpandStringList(viewItem[pdnsCRFRVForwardTo].([]interface{})),
+		}
+		views = append(views, view)
+	}
+	return views
+}
+
+func flattenPDNSFRViews(list []dns.ViewConfig) []map[string]interface{} {
+	views := []map[string]interface{}{}
+	for _, view := range list {
+		l := map[string]interface{}{
+			pdnsCRFRVName:        *view.Name,
+			pdnsCRFRVExpression:  *view.Expression,
+			pdnsCRFRVDescription: *view.Description,
+			pdnsCRFRVForwardTo:   view.ForwardTo,
+		}
+		views = append(views, l)
+	}
+	return views
 }

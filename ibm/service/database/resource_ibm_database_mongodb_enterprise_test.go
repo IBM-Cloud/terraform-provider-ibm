@@ -112,8 +112,6 @@ func TestAccIBMMongoDBEnterpriseDatabaseInstanceGroupBasic(t *testing.T) {
 					resource.TestCheckResourceAttr(name, "groups.0.memory.0.allocation_mb", "49152"),
 					resource.TestCheckResourceAttr(name, "groups.0.disk.0.allocation_mb", "61440"),
 					resource.TestCheckResourceAttr(name, "groups.0.count", "3"),
-					resource.TestCheckResourceAttr(name, "groups.1.count", "1"),
-					resource.TestCheckResourceAttr(name, "groups.2.count", "1"),
 					resource.TestCheckResourceAttr(name, "tags.#", "1"),
 				),
 			},
@@ -327,22 +325,6 @@ func testAccCheckIBMDatabaseInstanceMongoDBEnterpriseGroupBasic(databaseResource
 			}
 			disk {
 				allocation_mb = 20480
-			}
-		}
-
-		group {
-			group_id = "bi_connector"
-
-			members {
-				allocation_count = 1
-			}
-		}
-
-		group {
-			group_id = "analytics"
-
-			members {
-				allocation_count = 1
 			}
 		}
 

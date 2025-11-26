@@ -45,10 +45,26 @@ func DataSourceIbmIsShares() *schema.Resource {
 							Elem:        &schema.Schema{Type: schema.TypeString},
 							Description: "Allowed transit encryption modes",
 						},
+						"availability_mode": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Availability mode of the share.",
+						},
 						"access_control_mode": {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "The access control mode for the share",
+						},
+						"allowed_access_protocols": {
+							Type:        schema.TypeList,
+							Computed:    true,
+							Elem:        &schema.Schema{Type: schema.TypeString},
+							Description: "Allowed access protocols for this share",
+						},
+						"bandwidth": {
+							Type:        schema.TypeInt,
+							Computed:    true,
+							Description: "The bandwidth for this share.",
 						},
 						"created_at": {
 							Type:        schema.TypeString,
@@ -503,6 +519,69 @@ func DataSourceIbmIsShares() *schema.Resource {
 								},
 							},
 						},
+						"snapshot_count": &schema.Schema{
+							Type:        schema.TypeInt,
+							Computed:    true,
+							Description: "The total number of snapshots for this share.",
+						},
+						"snapshot_size": &schema.Schema{
+							Type:        schema.TypeInt,
+							Computed:    true,
+							Description: "The total size (in gigabytes) of snapshots used for this file share.",
+						},
+						"source_snapshot": &schema.Schema{
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "The snapshot from which this share was cloned.This property will be present when the share was created from a snapshot.The resources supported by this property may[expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) in thefuture.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"crn": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The CRN for this share snapshot.",
+									},
+									"deleted": &schema.Schema{
+										Type:        schema.TypeList,
+										Computed:    true,
+										Description: "If present, this property indicates the referenced resource has been deleted, and providessome supplementary information.",
+										Elem: &schema.Resource{
+											Schema: map[string]*schema.Schema{
+												"more_info": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "Link to documentation about deleted resources.",
+												},
+											},
+										},
+									},
+									"href": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The URL for this share snapshot.",
+									},
+									"id": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The unique identifier for this share snapshot.",
+									},
+									"name": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The name for this share snapshot. The name is unique across all snapshots for the file share.",
+									},
+									"resource_type": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The resource type.",
+									},
+								},
+							},
+						},
+						"storage_generation": {
+							Type:        schema.TypeInt,
+							Computed:    true,
+							Description: "The storage generation for this share",
+						},
 					},
 				},
 			},
@@ -518,7 +597,9 @@ func DataSourceIbmIsShares() *schema.Resource {
 func dataSourceIbmIsSharesRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	vpcClient, err := meta.(conns.ClientSession).VpcV1API()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("vpcClient creation failed: %s", err.Error()), "(Data) ibm_is_shares", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	shareName := ""
 	if shareNameIntf, ok := d.GetOk("name"); ok {
@@ -545,8 +626,9 @@ func dataSourceIbmIsSharesRead(context context.Context, d *schema.ResourceData, 
 		}
 		shareCollection, response, err := vpcClient.ListSharesWithContext(context, listSharesOptions)
 		if err != nil {
-			log.Printf("[DEBUG] ListSharesWithContext failed %s\n%s", err, response)
-			return diag.FromErr(err)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("ListSharesWithContext failed: %s\n%s", err.Error(), response), "(Data) ibm_is_shares", "read")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		if totalCount == 0 {
 			totalCount = int(*shareCollection.TotalCount)
@@ -561,9 +643,14 @@ func dataSourceIbmIsSharesRead(context context.Context, d *schema.ResourceData, 
 	d.SetId(dataSourceIbmIsSharesID(d))
 
 	if allrecs != nil {
-		err = d.Set("shares", dataSourceShareCollectionFlattenShares(meta, allrecs))
+		shares, err := dataSourceShareCollectionFlattenShares(meta, allrecs)
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting shares %s", err))
+			return err
+		}
+		errSettingShares := d.Set("shares", shares)
+		if errSettingShares != nil {
+			errSettingShares = fmt.Errorf("Error setting shares: %s", errSettingShares)
+			return flex.DiscriminatedTerraformErrorf(errSettingShares, errSettingShares.Error(), "(Data) ibm_is_shares", "read", "set-shares").GetDiag()
 		}
 	}
 	if err = d.Set("total_count", totalCount); err != nil {
@@ -578,15 +665,19 @@ func dataSourceIbmIsSharesID(d *schema.ResourceData) string {
 	return time.Now().UTC().String()
 }
 
-func dataSourceShareCollectionFlattenShares(meta interface{}, result []vpcv1.Share) (shares []map[string]interface{}) {
+func dataSourceShareCollectionFlattenShares(meta interface{}, result []vpcv1.Share) (shares []map[string]interface{}, diag diag.Diagnostics) {
 	for _, sharesItem := range result {
-		shares = append(shares, dataSourceShareCollectionSharesToMap(meta, sharesItem))
+		shareMap, err := dataSourceShareCollectionSharesToMap(meta, sharesItem)
+		if err != nil {
+			return nil, err
+		}
+		shares = append(shares, shareMap)
 	}
 
-	return shares
+	return shares, nil
 }
 
-func dataSourceShareCollectionSharesToMap(meta interface{}, sharesItem vpcv1.Share) (sharesMap map[string]interface{}) {
+func dataSourceShareCollectionSharesToMap(meta interface{}, sharesItem vpcv1.Share) (sharesMap map[string]interface{}, diag diag.Diagnostics) {
 	sharesMap = map[string]interface{}{}
 
 	if sharesItem.CreatedAt != nil {
@@ -645,6 +736,15 @@ func dataSourceShareCollectionSharesToMap(meta interface{}, sharesItem vpcv1.Sha
 	if !core.IsNil(sharesItem.AllowedTransitEncryptionModes) {
 		sharesMap["allowed_transit_encryption_modes"] = sharesItem.AllowedTransitEncryptionModes
 	}
+	if sharesItem.AvailabilityMode != nil {
+		sharesMap["availability_mode"] = *sharesItem.AvailabilityMode
+	}
+	if !core.IsNil(sharesItem.AllowedAccessProtocols) {
+		sharesMap["allowed_access_protocols"] = sharesItem.AllowedAccessProtocols
+	}
+	if sharesItem.Bandwidth != nil {
+		sharesMap["bandwidth"] = sharesItem.Bandwidth
+	}
 	if sharesItem.AccessorBindingRole != nil {
 		sharesMap["accessor_binding_role"] = sharesItem.AccessorBindingRole
 	}
@@ -688,6 +788,23 @@ func dataSourceShareCollectionSharesToMap(meta interface{}, sharesItem vpcv1.Sha
 	if sharesItem.Zone != nil {
 		sharesMap["zone"] = *sharesItem.Zone.Name
 	}
+	if sharesItem.SnapshotCount != nil {
+		sharesMap["snapshot_count"] = flex.IntValue(sharesItem.SnapshotCount)
+	}
+	if sharesItem.SnapshotSize != nil {
+		sharesMap["snapshot_size"] = flex.IntValue(sharesItem.SnapshotSize)
+	}
+	sourceSnapshot := []map[string]interface{}{}
+	if sharesItem.SourceSnapshot != nil {
+		modelMap, err := DataSourceIBMIsShareShareSourceSnapshotToMap(sharesItem.SourceSnapshot)
+		if err != nil {
+			return nil, flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_share", "read", "source_snapshot-to-map").GetDiag()
+		}
+		sourceSnapshot = append(sourceSnapshot, modelMap)
+	}
+	sharesMap["source_snapshot"] = sourceSnapshot
+
+	sharesMap["storage_generation"] = flex.IntValue(sharesItem.StorageGeneration)
 
 	accesstags, err := flex.GetGlobalTagsUsingCRN(meta, *sharesItem.CRN, "", isAccessTagType)
 	if err != nil {
@@ -699,7 +816,7 @@ func dataSourceShareCollectionSharesToMap(meta interface{}, sharesItem vpcv1.Sha
 		sharesMap[isFileShareTags] = sharesItem.UserTags
 	}
 	sharesMap[isFileShareAccessTags] = accesstags
-	return sharesMap
+	return sharesMap, nil
 }
 
 func dataSourceShareCollectionSharesTargetsToMap(targetsItem vpcv1.ShareMountTargetReference) (targetsMap map[string]interface{}) {

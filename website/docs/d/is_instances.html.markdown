@@ -313,5 +313,6 @@ In addition to all argument reference list, you can access the following attribu
 		- `architecture` - (String) The architecture of the virtual CPU.
 		- `manufacturer` - (String) The manufacturer of the virtual CPU.
 		- `count`- (Integer) The number of virtual CPUs that are allocated to the instance.
+	- `volume_bandwidth_qos_mode` - (String) The volume bandwidth QoS mode to use for this virtual server instance.
 	- `vpc` - (String) The ID of the VPC that the instance belongs to.
 	- `zone` - (String) The zone where the instance was created.

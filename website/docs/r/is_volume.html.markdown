@@ -54,6 +54,22 @@ resource "ibm_is_volume" "storage" {
   source_snapshot = ibm_is_snapshot.example.id
 }
 ```
+
+The following example creates a volume from snapshot with allowed_use.
+```terraform
+resource "ibm_is_volume" "storage" {
+  name            = "example-volume"
+  profile         = "general-purpose"
+  zone            = "us-south-1"
+  source_snapshot = ibm_is_snapshot.example.id
+  allowed_use {
+    api_version       = "2025-07-02"
+    bare_metal_server = "enable_secure_boot == true"
+    instance          = "enable_secure_boot == true"
+  }
+}
+```
+
 ## Timeouts
 The `ibm_is_volume` resource provides the following [Timeouts](https://www.terraform.io/docs/language/resources/syntax.html) configuration options:
 
@@ -73,6 +89,25 @@ Review the argument references that you can specify for your resource.
   **&#x2022;** `access_tags` must be in the format `key:value`.
 - `adjustable_capacity_states` - (List) The attachment states that support adjustable capacity for this volume. Allowable list items are: `attached`, `unattached`, `unusable`. 
 - `adjustable_iops_states` - (List) The attachment states that support adjustable IOPS for this volume. Allowable list items are: `attached`, `unattached`, `unusable`.
+- `allowed_use` - (Optional, List) The usage constraints to be matched against the requested instance or bare metal server properties to determine compatibility. Can only be specified if `source_snapshot` is bootable. If not specified, the value of this property will be inherited from the `source_snapshot`.
+    
+    Nested schema for `allowed_use`:
+    - `api_version` - (Optional, String) The API version with which to evaluate the expressions.
+	  
+    - `bare_metal_server` - (Optional, String) The expression that must be satisfied by the properties of a bare metal server provisioned using the image data in this volume. If unspecified, the expression will be set to true. The expression follows [Common Expression Language](https://github.com/google/cel-spec/blob/master/doc/langdef.md), but does not support built-in functions and macros. 
+   
+    ~> **NOTE** </br> In addition, the following property is supported, corresponding to the `BareMetalServer` property: </br>
+      **&#x2022;** `enable_secure_boot` - (boolean) Indicates whether secure boot is enabled.
+	 
+    - `instance` - (Optional, String) The expression that must be satisfied by the properties of a virtual server instance provisioned using this volume. If unspecified, the expression will be set to true. The expression follows [Common Expression Language](https://github.com/google/cel-spec/blob/master/doc/langdef.md), but does not support built-in functions and macros.
+    
+    ~> **NOTE** </br> In addition, the following variables are supported, corresponding to `Instance` properties:  </br>
+      **&#x2022;** `gpu.count` - (integer) The number of GPUs. </br>
+      **&#x2022;** `gpu.manufacturer` - (string) The GPU manufacturer. </br>
+      **&#x2022;** `gpu.memory` - (integer) The overall amount of GPU memory in GiB (gibibytes). </br>
+      **&#x2022;** `gpu.model` - (string) The GPU model. </br>
+      **&#x2022;** `enable_secure_boot` - (boolean) Indicates whether secure boot is enabled. </br>
+- `bandwidth` - (Optional, Integer) The maximum bandwidth (in megabits per second) for the volume. For this property to be specified, the volume storage_generation must be 2.
 - `capacity` - (Optional, Integer) (The capacity of the volume in gigabytes. This defaults to `100`, minimum to `10 ` and maximum to `16000`.
 
   ~> **NOTE:** Supports only expansion on update (must be attached to a running instance and must not be less than the current volume capacity). Can be updated only if volume is attached to an running virtual server instance. Stopped instance will be started on update of capacity of the volume.If `source_snapshot` is provided `capacity` must be at least the snapshot's minimum_capacity. The maximum value may increase in the future and If unspecified, the capacity will be the source snapshot's minimum_capacity.
@@ -121,6 +156,7 @@ In addition to all argument reference list, you can access the following attribu
     
       Nested schema for `deleted`:
         - `more_info`  - (String) Link to documentation about deleted resources.
+- `crn` - (String) The CRN for the volume.
 - `encryption_type` - (String) The type of encryption used in the volume [**provider_managed**, **user_managed**].
 - `health_reasons` - (List) The reasons for the current health_state (if any).
 
@@ -137,7 +173,7 @@ In addition to all argument reference list, you can access the following attribu
   - `code` - (String) A string with an underscore as a special character identifying the status reason.
   - `message` - (String) An explanation of the status reason.
   - `more_info` - (String) Link to documentation about this status reason
-- `crn` - (String) The CRN for the volume.
+- `storage_generation` - (Int) The storage generation indicates which generation the profile family belongs to. For the custom and tiered profiles, this value is 1. For the sdp profile, this value is 2.
 
 ## Import
 The `ibm_is_volume` resource can be imported by using volume ID.

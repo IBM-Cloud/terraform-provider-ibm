@@ -39,6 +39,8 @@ func TestAccIBMISVpnGatewaysDataSource_basic(t *testing.T) {
 					resource.TestCheckResourceAttrSet("data.ibm_is_vpn_gateways.test1", "vpn_gateways.0.vpc.0.crn"),
 					resource.TestCheckResourceAttrSet("data.ibm_is_vpn_gateways.test1", "vpn_gateways.0.vpc.0.href"),
 					resource.TestCheckResourceAttrSet("data.ibm_is_vpn_gateways.test1", "vpn_gateways.0.vpc.0.id"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_vpn_gateways.test1", "vpn_gateways.0.local_asn"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_vpn_gateways.test1", "vpn_gateways.0.advertised_cidrs.#"),
 				),
 			},
 		},
@@ -60,9 +62,20 @@ func testAccCheckIBMISVpnGatewaysDataSourceConfig(vpc, subnet, name string) stri
 		
 	}
 	resource "ibm_is_vpn_gateway" "testacc_vpnGateway" {
-	name = "%s"
-	subnet = "${ibm_is_subnet.testacc_subnet.id}"
+		name   = "%s"
+		subnet = ibm_is_subnet.testacc_subnet.id
+		mode   = "route"
+		local_asn = 64520
+		lifecycle {
+			ignore_changes = [
+				advertised_cidrs
+			]
+  		}
 	}
+	resource "ibm_is_vpn_gateway_advertised_cidr" "example" {
+		vpn_gateway = ibm_is_vpn_gateway.testacc_vpnGateway.id
+		cidr        = "10.45.0.0/25"
+	}	
 	data "ibm_is_vpn_gateways" "test1" {
 		
 	}`, vpc, subnet, acc.ISZoneName, acc.ISCIDR, name)

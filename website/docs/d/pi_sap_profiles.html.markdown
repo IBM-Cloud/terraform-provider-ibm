@@ -10,7 +10,7 @@ description: |-
 
 Retrieve information about all SAP profiles. For more information, see [getting started with IBM Power Systems Virtual Servers](https://cloud.ibm.com/docs/power-iaas?topic=power-iaas-getting-started).
 
-## Example usage
+## Example Usage
 
 ```terraform
 data "ibm_pi_sap_profiles" "example" {
@@ -25,22 +25,24 @@ data "ibm_pi_sap_profiles" "example" {
   - `region` - `lon`
   - `zone` - `lon04`
 
-  Example usage:
+Example usage:
 
-    ```terraform
-      provider "ibm" {
-        region    =   "lon"
-        zone      =   "lon04"
-      }
-    ```
+  ```terraform
+    provider "ibm" {
+      region    =   "lon"
+      zone      =   "lon04"
+    }
+  ```
   
-## Argument reference
+## Argument Reference
 
 Review the argument references that you can specify for your data source.
 
 - `pi_cloud_instance_id` - (Required, String) The GUID of the service instance associated with an account.
+- `pi_family_filter` - (Optional, String) SAP profile family filter. Allowed values are: ["balanced", "compute", "memory", "sap-rise", "sap-rise-app", "small", "ultra-memory"].
+- `pi_prefix_filter` - (Optional, String) SAP profile prefix filter. Allowed values are: ["bh1", "bh2", "ch1", "ch2", "mh1", "mh2", "umh", "ush1", "sh2", "sr2", "sr3"].
 
-## Attribute reference
+## Attribute Reference
 
 In addition to all argument reference list, you can access the following attribute references after your data source is created.
 
@@ -49,6 +51,7 @@ In addition to all argument reference list, you can access the following attribu
   Nested scheme for `profiles`:
   - `certified` - (Boolean) Has certification been performed on profile.
   - `cores` - (Integer) Amount of cores.
+  - `default_system` - (String) System to use if not provided.
   - `full_system_profile` - (Boolean) Requires full system for deployment.
   - `memory` - (Integer) Amount of memory (in GB).
   - `profile_id` - (String) SAP Profile ID.

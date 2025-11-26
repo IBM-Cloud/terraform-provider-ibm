@@ -67,7 +67,7 @@ func testAccCheckIbmAppConfigEnvironmentConfigBasic(name, envName, environmentID
 			 name     = "%s"
 			 location = "us-south"
 			 service  = "apprapp"
-			 plan     = "standard"
+			 plan     = "lite"
 		 }
 		 resource "ibm_app_config_environment" "app_config_environment_resource1" {
 			 name          		= "%s"
@@ -79,16 +79,16 @@ func testAccCheckIbmAppConfigEnvironmentConfigBasic(name, envName, environmentID
 		 }`, name, envName, environmentID, description, colorCode)
 }
 func getAppConfigClient(meta interface{}, guid string) (*appconfigurationv1.AppConfigurationV1, error) {
-	appconfigClient, err := meta.(conns.ClientSession).AppConfigurationV1()
-	if err != nil {
-		return nil, err
-	}
 	bluemixSession, err := meta.(conns.ClientSession).BluemixSession()
 	if err != nil {
 		return nil, err
 	}
-	appConfigURL := fmt.Sprintf("https://%s.apprapp.cloud.ibm.com/apprapp/feature/v1/instances/%s", bluemixSession.Config.Region, guid)
-	url := conns.EnvFallBack([]string{"IBMCLOUD_APP_CONFIG_API_ENDPOINT"}, appConfigURL)
+	appConfigURL := fmt.Sprintf("https://%s.apprapp.cloud.ibm.com", bluemixSession.Config.Region)
+	url := fmt.Sprintf("%s/apprapp/feature/v1/instances/%s", conns.EnvFallBack([]string{"IBMCLOUD_APP_CONFIG_API_ENDPOINT"}, appConfigURL), guid)
+	appconfigClient, err := meta.(conns.ClientSession).AppConfigurationV1()
+	if err != nil {
+		return nil, err
+	}
 	appconfigClient.Service.Options.URL = url
 	return appconfigClient, nil
 }
@@ -98,17 +98,17 @@ func testAccCheckIbmAppConfigEnvironmentExists(n string, obj appconfigurationv1.
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
-			return fmt.Errorf("Not found: %s", n)
+			return flex.FmtErrorf("Not found: %s", n)
 		}
 
 		parts, err := flex.IdParts(rs.Primary.ID)
 		if err != nil {
-			return err
+			return flex.FmtErrorf("%s", err)
 		}
 
 		appconfigClient, err := getAppConfigClient(acc.TestAccProvider.Meta(), parts[0])
 		if err != nil {
-			return err
+			return flex.FmtErrorf("%s", err)
 		}
 
 		options := &appconfigurationv1.GetEnvironmentOptions{}
@@ -116,7 +116,7 @@ func testAccCheckIbmAppConfigEnvironmentExists(n string, obj appconfigurationv1.
 
 		result, _, err := appconfigClient.GetEnvironment(options)
 		if err != nil {
-			return err
+			return flex.FmtErrorf("%s", err)
 		}
 
 		obj = *result
@@ -132,12 +132,12 @@ func testAccCheckIbmAppConfigEnvironmentDestroy(s *terraform.State) error {
 
 		parts, err := flex.IdParts(rs.Primary.ID)
 		if err != nil {
-			return err
+			return flex.FmtErrorf("%s", err)
 		}
 
 		appconfigClient, err := getAppConfigClient(acc.TestAccProvider.Meta(), parts[0])
 		if err != nil {
-			return err
+			return flex.FmtErrorf("%s", err)
 		}
 		options := &appconfigurationv1.GetEnvironmentOptions{}
 		options.SetEnvironmentID(parts[1])
@@ -146,9 +146,9 @@ func testAccCheckIbmAppConfigEnvironmentDestroy(s *terraform.State) error {
 		_, response, err := appconfigClient.GetEnvironment(options)
 
 		if err == nil {
-			return fmt.Errorf("Environment still exists: %s", rs.Primary.ID)
+			return flex.FmtErrorf("Environment still exists: %s", rs.Primary.ID)
 		} else if response.StatusCode != 404 {
-			return fmt.Errorf("[ERROR] Error checking for environment (%s) has been destroyed: %s", rs.Primary.ID, err)
+			return flex.FmtErrorf("[ERROR] Error checking for environment (%s) has been destroyed: %s", rs.Primary.ID, err)
 		}
 	}
 

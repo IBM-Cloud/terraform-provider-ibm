@@ -18,7 +18,7 @@ func TestAccIBMSchematicsJobDataSourceBasic(t *testing.T) {
 	//jobCommandObjectID := fmt.Sprintf("command_object_id_%d", acctest.RandIntRange(10, 100))
 	jobCommandName := "ansible_playbook_run"
 	jobCommandParameter := fmt.Sprintf("command_parameter_%d", acctest.RandIntRange(10, 100))
-	jobLocation := "us"
+	jobLocation := "us-south"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheck(t) },

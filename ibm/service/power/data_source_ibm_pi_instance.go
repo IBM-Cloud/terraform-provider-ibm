@@ -5,6 +5,7 @@ package power
 
 import (
 	"context"
+	"fmt"
 	"log"
 
 	"github.com/IBM-Cloud/power-go-client/clients/instance"
@@ -26,11 +27,20 @@ func DataSourceIBMPIInstance() *schema.Resource {
 				Type:         schema.TypeString,
 				ValidateFunc: validation.NoZeroValues,
 			},
+			Arg_InstanceID: {
+				AtLeastOneOf:  []string{Arg_InstanceID, Arg_InstanceName},
+				ConflictsWith: []string{Arg_InstanceName},
+				Description:   "The ID of the PVM instance.",
+				Optional:      true,
+				Type:          schema.TypeString,
+			},
 			Arg_InstanceName: {
-				Description:  "The unique identifier or name of the instance.",
-				Required:     true,
-				Type:         schema.TypeString,
-				ValidateFunc: validation.NoZeroValues,
+				AtLeastOneOf:  []string{Arg_InstanceID, Arg_InstanceName},
+				ConflictsWith: []string{Arg_InstanceID},
+				Deprecated:    "The pi_instance_name field is deprecated. Please use pi_instance_id instead",
+				Description:   "The name of the PVM instance.",
+				Optional:      true,
+				Type:          schema.TypeString,
 			},
 
 			// Attributes
@@ -39,9 +49,19 @@ func DataSourceIBMPIInstance() *schema.Resource {
 				Description: "The CRN of this resource.",
 				Type:        schema.TypeString,
 			},
+			Attr_DedicatedHostID: {
+				Computed:    true,
+				Description: "The dedicated host ID where the shared processor pool resides.",
+				Type:        schema.TypeString,
+			},
 			Attr_DeploymentType: {
 				Computed:    true,
 				Description: "The custom deployment type.",
+				Type:        schema.TypeString,
+			},
+			Attr_EffectiveProcessorCompatibilityMode: {
+				Computed:    true,
+				Description: "Effective processor compatibility mode.",
 				Type:        schema.TypeString,
 			},
 			Attr_Fault: {
@@ -76,7 +96,6 @@ func DataSourceIBMPIInstance() *schema.Resource {
 			},
 			Attr_LicenseRepositoryCapacity: {
 				Computed:    true,
-				Deprecated:  "This field is deprecated.",
 				Description: "The VTL license repository capacity TB value.",
 				Type:        schema.TypeInt,
 			},
@@ -135,21 +154,32 @@ func DataSourceIBMPIInstance() *schema.Resource {
 							Description: "The MAC address of the instance.",
 							Type:        schema.TypeString,
 						},
-						Attr_Macaddress: {
-							Computed:    true,
-							Deprecated:  "Deprecated, use mac_address instead",
-							Description: "The MAC address of the instance.",
-							Type:        schema.TypeString,
-						},
 						Attr_NetworkID: {
 							Computed:    true,
 							Description: "The network ID of the instance.",
+							Type:        schema.TypeString,
+						},
+						Attr_NetworkInterfaceID: {
+							Computed:    true,
+							Description: "ID of the network interface.",
 							Type:        schema.TypeString,
 						},
 						Attr_NetworkName: {
 							Computed:    true,
 							Description: "The network name of the instance.",
 							Type:        schema.TypeString,
+						},
+						Attr_NetworkSecurityGroupIDs: {
+							Computed:    true,
+							Description: "IDs of the network necurity groups that the network interface is a member of.",
+							Elem:        &schema.Schema{Type: schema.TypeString},
+							Type:        schema.TypeSet,
+						},
+						Attr_NetworkSecurityGroupsHref: {
+							Computed:    true,
+							Description: "Links to the network security groups that the network interface is a member of.",
+							Elem:        &schema.Schema{Type: schema.TypeString},
+							Type:        schema.TypeList,
 						},
 						Attr_Type: {
 							Computed:    true,
@@ -168,6 +198,11 @@ func DataSourceIBMPIInstance() *schema.Resource {
 			Attr_PlacementGroupID: {
 				Computed:    true,
 				Description: "The ID of the placement group that the instance is a member.",
+				Type:        schema.TypeString,
+			},
+			Attr_PreferredProcessorCompatibilityMode: {
+				Computed:    true,
+				Description: "Preferred processor compatibility mode.",
 				Type:        schema.TypeString,
 			},
 			Attr_Processors: {
@@ -232,6 +267,30 @@ func DataSourceIBMPIInstance() *schema.Resource {
 				Description: "The virtual cores that are assigned to the instance.",
 				Type:        schema.TypeInt,
 			},
+			Attr_VirtualSerialNumber: {
+				Computed:    true,
+				Description: "Virtual Serial Number information",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						Attr_Description: {
+							Computed:    true,
+							Description: "Description of the Virtual Serial Number",
+							Type:        schema.TypeString,
+						},
+						Attr_Serial: {
+							Computed:    true,
+							Description: "Virtual serial number.",
+							Type:        schema.TypeString,
+						},
+						Attr_SoftwareTier: {
+							Computed:    true,
+							Description: "Software tier.",
+							Type:        schema.TypeString,
+						},
+					},
+				},
+				Type: schema.TypeList,
+			},
 			Attr_Volumes: {
 				Computed:    true,
 				Description: "List of volume IDs that are attached to the instance.",
@@ -242,18 +301,28 @@ func DataSourceIBMPIInstance() *schema.Resource {
 	}
 }
 
-func dataSourceIBMPIInstancesRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataSourceIBMPIInstancesRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	sess, err := meta.(conns.ClientSession).IBMPISession()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("IBMPISession failed: %s", err.Error()), "(Data) ibm_pi_instance", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	cloudInstanceID := d.Get(Arg_CloudInstanceID).(string)
+	var instanceID string
+	if v, ok := d.GetOk(Arg_InstanceID); ok {
+		instanceID = v.(string)
+	} else if v, ok := d.GetOk(Arg_InstanceName); ok {
+		instanceID = v.(string)
+	}
 
 	powerC := instance.NewIBMPIInstanceClient(ctx, sess, cloudInstanceID)
-	powervmdata, err := powerC.Get(d.Get(Arg_InstanceName).(string))
+	powervmdata, err := powerC.Get(instanceID)
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Get failed: %s", err.Error()), "(Data) ibm_pi_instance", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	pvminstanceid := *powervmdata.PvmInstanceID
@@ -266,7 +335,10 @@ func dataSourceIBMPIInstancesRead(ctx context.Context, d *schema.ResourceData, m
 		}
 		d.Set(Attr_UserTags, tags)
 	}
+
+	d.Set(Attr_DedicatedHostID, powervmdata.DedicatedHostID)
 	d.Set(Attr_DeploymentType, powervmdata.DeploymentType)
+	d.Set(Attr_EffectiveProcessorCompatibilityMode, powervmdata.EffectiveProcessorCompatibilityMode)
 	d.Set(Attr_LicenseRepositoryCapacity, powervmdata.LicenseRepositoryCapacity)
 	d.Set(Attr_MaxMem, powervmdata.Maxmem)
 	d.Set(Attr_MaxProc, powervmdata.Maxproc)
@@ -277,6 +349,7 @@ func dataSourceIBMPIInstancesRead(ctx context.Context, d *schema.ResourceData, m
 	d.Set(Attr_MinVirtualCores, powervmdata.VirtualCores.Min)
 	d.Set(Attr_Networks, flattenPvmInstanceNetworks(powervmdata.Networks))
 	d.Set(Attr_PinPolicy, powervmdata.PinPolicy)
+	d.Set(Attr_PreferredProcessorCompatibilityMode, powervmdata.PreferredProcessorCompatibilityMode)
 	d.Set(Attr_Processors, powervmdata.Processors)
 	d.Set(Attr_ProcType, powervmdata.ProcType)
 	d.Set(Attr_ServerName, powervmdata.ServerName)
@@ -284,11 +357,11 @@ func dataSourceIBMPIInstancesRead(ctx context.Context, d *schema.ResourceData, m
 	d.Set(Attr_SharedProcessorPoolID, powervmdata.SharedProcessorPoolID)
 	d.Set(Attr_Status, powervmdata.Status)
 	d.Set(Attr_StorageConnection, powervmdata.StorageConnection)
-	d.Set(Attr_StorageType, powervmdata.StorageType)
 	d.Set(Attr_StoragePool, powervmdata.StoragePool)
 	d.Set(Attr_StoragePoolAffinity, powervmdata.StoragePoolAffinity)
-	d.Set(Attr_Volumes, powervmdata.VolumeIDs)
+	d.Set(Attr_StorageType, powervmdata.StorageType)
 	d.Set(Attr_VirtualCoresAssigned, powervmdata.VirtualCores.Assigned)
+	d.Set(Attr_Volumes, powervmdata.VolumeIDs)
 
 	if *powervmdata.PlacementGroup != "none" {
 		d.Set(Attr_PlacementGroupID, powervmdata.PlacementGroup)
@@ -310,6 +383,9 @@ func dataSourceIBMPIInstancesRead(ctx context.Context, d *schema.ResourceData, m
 	}
 	if powervmdata.Fault != nil {
 		d.Set(Attr_Fault, flattenPvmInstanceFault(powervmdata.Fault))
+	}
+	if powervmdata.VirtualSerialNumber != nil {
+		d.Set(Attr_VirtualSerialNumber, flattenVirtualSerialNumberToList(powervmdata.VirtualSerialNumber))
 	}
 
 	return nil

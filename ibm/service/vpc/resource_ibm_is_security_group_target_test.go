@@ -143,3 +143,99 @@ resource "ibm_is_security_group_target" "testacc_security_group_target" {
   }`, vpcname, subnetname, zoneName, cidr, name, lbname)
 
 }
+
+func TestAccIBMISSecurityGroupTarget_UpdatePendingRetry(t *testing.T) {
+	var securityGroup1, securityGroup2 string
+
+	vpcname := fmt.Sprintf("tfsg-vpc-%d", acctest.RandIntRange(10, 100))
+	subnetname := fmt.Sprintf("tfsg-subnet-%d", acctest.RandIntRange(10, 100))
+	lbname := fmt.Sprintf("tfsg-lb-%d", acctest.RandIntRange(10, 100))
+	sg1name := fmt.Sprintf("tfsg-one-%d", acctest.RandIntRange(10, 100))
+	sg2name := fmt.Sprintf("tfsg-two-%d", acctest.RandIntRange(10, 100))
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMISSecurityGroupTargetDestroy,
+		Steps: []resource.TestStep{
+			// Create first security group target binding
+			{
+				Config: testAccCheckIBMISsecurityGroupTargetConfig(vpcname, subnetname, acc.ISZoneName, acc.ISCIDR, lbname, sg1name),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISSecurityGroupTargetExists("ibm_is_security_group_target.testacc_security_group_target", &securityGroup1),
+					resource.TestCheckResourceAttr(
+						"ibm_is_security_group_target.testacc_security_group_target", "name", lbname),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_security_group_target.testacc_security_group_target", "security_group"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_security_group_target.testacc_security_group_target", "target"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_security_group_target.testacc_security_group_target", "crn"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_security_group_target.testacc_security_group_target", "resource_type"),
+				),
+			},
+			// Create second security group target binding for the same LB - should trigger UPDATE_PENDING condition
+			{
+				Config: testAccCheckIBMISsecurityGroupTargetDualConfig(vpcname, subnetname, acc.ISZoneName, acc.ISCIDR, lbname, sg1name, sg2name),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISSecurityGroupTargetExists("ibm_is_security_group_target.testacc_security_group_target", &securityGroup1),
+					testAccCheckIBMISSecurityGroupTargetExists("ibm_is_security_group_target.testacc_security_group_target2", &securityGroup2),
+					resource.TestCheckResourceAttr(
+						"ibm_is_security_group_target.testacc_security_group_target", "name", lbname),
+					resource.TestCheckResourceAttr(
+						"ibm_is_security_group_target.testacc_security_group_target2", "name", lbname),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_security_group_target.testacc_security_group_target2", "security_group"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_security_group_target.testacc_security_group_target2", "target"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_security_group_target.testacc_security_group_target2", "crn"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_security_group_target.testacc_security_group_target2", "resource_type"),
+				),
+			},
+		},
+	})
+}
+
+// Config for dual security groups attached to the same load balancer
+func testAccCheckIBMISsecurityGroupTargetDualConfig(vpcname, subnetname, zoneName, cidr, lbname, sg1name, sg2name string) string {
+	return fmt.Sprintf(`
+		resource "ibm_is_vpc" "testacc_vpc" {
+			name = "%s"
+		}
+
+		resource "ibm_is_subnet" "testacc_subnet" {
+			name = "%s"
+			vpc = ibm_is_vpc.testacc_vpc.id
+			zone = "%s"
+			ipv4_cidr_block = "%s"
+		}
+
+		resource "ibm_is_security_group" "testacc_security_group_one" {
+			name = "%s"
+			vpc = ibm_is_vpc.testacc_vpc.id
+		}
+
+		resource "ibm_is_security_group" "testacc_security_group_two" {
+			name = "%s"
+			vpc = ibm_is_vpc.testacc_vpc.id
+		}
+
+		resource "ibm_is_lb" "testacc_LB" {
+			name = "%s"
+			subnets = [ibm_is_subnet.testacc_subnet.id]
+		}
+
+		resource "ibm_is_security_group_target" "testacc_security_group_target" {
+			security_group = ibm_is_security_group.testacc_security_group_one.id
+			target = ibm_is_lb.testacc_LB.id
+		}
+
+		resource "ibm_is_security_group_target" "testacc_security_group_target2" {
+			security_group = ibm_is_security_group.testacc_security_group_two.id
+			target = ibm_is_lb.testacc_LB.id
+		}`,
+		vpcname, subnetname, zoneName, cidr, sg1name, sg2name, lbname)
+}

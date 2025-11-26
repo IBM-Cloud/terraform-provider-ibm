@@ -288,7 +288,7 @@ func DataSourceIbmSmPrivateCertificateConfigurationTemplate() *schema.Resource {
 }
 
 func dataSourceIbmSmPrivateCertificateConfigurationTemplateRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	secretsManagerClient, err := meta.(conns.ClientSession).SecretsManagerV2()
+	secretsManagerClient, endpointsFile, err := getSecretsManagerSession(meta.(conns.ClientSession))
 	if err != nil {
 		tfErr := flex.TerraformErrorf(err, "", fmt.Sprintf("(Data) %s", PrivateCertConfigTemplateResourceName), "read")
 		return tfErr.GetDiag()
@@ -296,7 +296,7 @@ func dataSourceIbmSmPrivateCertificateConfigurationTemplateRead(context context.
 
 	region := getRegion(secretsManagerClient, d)
 	instanceId := d.Get("instance_id").(string)
-	secretsManagerClient = getClientWithInstanceEndpoint(secretsManagerClient, instanceId, region, getEndpointType(secretsManagerClient, d))
+	secretsManagerClient = getClientWithInstanceEndpoint(secretsManagerClient, instanceId, region, getEndpointType(secretsManagerClient, d), endpointsFile)
 
 	getConfigurationOptions := &secretsmanagerv2.GetConfigurationOptions{}
 
@@ -308,7 +308,12 @@ func dataSourceIbmSmPrivateCertificateConfigurationTemplateRead(context context.
 		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetConfigurationWithContext failed %s\n%s", err, response), fmt.Sprintf("(Data) %s", PrivateCertConfigTemplateResourceName), "read")
 		return tfErr.GetDiag()
 	}
-	privateCertificateConfigurationTemplate := privateCertificateConfigurationTemplateIntf.(*secretsmanagerv2.PrivateCertificateConfigurationTemplate)
+
+	privateCertificateConfigurationTemplate, ok := privateCertificateConfigurationTemplateIntf.(*secretsmanagerv2.PrivateCertificateConfigurationTemplate)
+	if !ok {
+		tfErr := flex.TerraformErrorf(nil, fmt.Sprintf("Wrong configuration type: The provided configuration is not a Private Certificate Template configuration."), fmt.Sprintf("(Data) %s", PrivateCertConfigTemplateResourceName), "read")
+		return tfErr.GetDiag()
+	}
 
 	d.SetId(fmt.Sprintf("%s/%s/%s", region, instanceId, *getConfigurationOptions.Name))
 

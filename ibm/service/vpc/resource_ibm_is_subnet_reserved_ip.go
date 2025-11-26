@@ -4,6 +4,7 @@
 package vpc
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"reflect"
@@ -13,6 +14,7 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
@@ -28,12 +30,12 @@ const (
 
 func ResourceIBMISReservedIP() *schema.Resource {
 	return &schema.Resource{
-		Create:   resourceIBMISReservedIPCreate,
-		Read:     resourceIBMISReservedIPRead,
-		Update:   resourceIBMISReservedIPUpdate,
-		Delete:   resourceIBMISReservedIPDelete,
-		Exists:   resourceIBMISReservedIPExists,
-		Importer: &schema.ResourceImporter{},
+		CreateContext: resourceIBMISReservedIPCreate,
+		ReadContext:   resourceIBMISReservedIPRead,
+		UpdateContext: resourceIBMISReservedIPUpdate,
+		DeleteContext: resourceIBMISReservedIPDelete,
+		Exists:        resourceIBMISReservedIPExists,
+		Importer:      &schema.ResourceImporter{},
 		Timeouts: &schema.ResourceTimeout{
 			Create: schema.DefaultTimeout(10 * time.Minute),
 			Delete: schema.DefaultTimeout(10 * time.Minute),
@@ -141,10 +143,13 @@ func ResourceIBMISSubnetReservedIPValidator() *validate.ResourceValidator {
 }
 
 // resourceIBMISReservedIPCreate Creates a reserved IP given a subnet ID
-func resourceIBMISReservedIPCreate(d *schema.ResourceData, meta interface{}) error {
+func resourceIBMISReservedIPCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	sess, err := vpcClient(meta)
 	if err != nil {
-		return err
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_subnet_reserved_ip", "create", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
+
 	}
 
 	subnetID := d.Get(isSubNetID).(string)
@@ -173,82 +178,152 @@ func resourceIBMISReservedIPCreate(d *schema.ResourceData, meta interface{}) err
 			ID: &targetId,
 		}
 	}
-	rip, response, err := sess.CreateSubnetReservedIP(options)
+	rip, response, err := sess.CreateSubnetReservedIPWithContext(context, options)
 	if err != nil || response == nil || rip == nil {
-		return fmt.Errorf("[ERROR] Error creating the reserved IP: %s\n%s", err, response)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateSubnetReservedIPWithContext failed: %s", err.Error()), "ibm_is_subnet_reserved_ip", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	// Set id for the reserved IP as combination of subnet ID and reserved IP ID
 	d.SetId(fmt.Sprintf("%s/%s", subnetID, *rip.ID))
 	_, err = isWaitForReservedIpAvailable(sess, subnetID, *rip.ID, d.Timeout(schema.TimeoutCreate), d)
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error waiting for the reserved IP to be available: %s", err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("isWaitForReservedIpAvailable failed: %s", err.Error()), "ibm_is_subnet_reserved_ip", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
-	return resourceIBMISReservedIPRead(d, meta)
+	return resourceIBMISReservedIPRead(context, d, meta)
 }
 
-func resourceIBMISReservedIPRead(d *schema.ResourceData, meta interface{}) error {
-	rip, err := get(d, meta)
-	if err != nil {
-		return err
+func resourceIBMISReservedIPRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	reservedIP, diagErr := getReservedIpWithContext(context, d, meta)
+	if diagErr != nil {
+		return diagErr
 	}
 
 	allIDs, err := flex.IdParts(d.Id())
 	if err != nil {
-		return fmt.Errorf("[ERROR] The ID can not be split into subnet ID and reserved IP ID. %s", err)
+		if err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_subnet_reserved_ip", "read", "sep-id-parts").GetDiag()
+		}
 	}
 	subnetID := allIDs[0]
 
-	if rip != nil {
-		d.Set(isReservedIPAddress, *rip.Address)
-		d.Set(isReservedIP, *rip.ID)
-		d.Set(isSubNetID, subnetID)
-		if rip.LifecycleState != nil {
-			d.Set(isReservedIPLifecycleState, *rip.LifecycleState)
+	if reservedIP != nil {
+		if !core.IsNil(reservedIP.Address) {
+			if err = d.Set("address", reservedIP.Address); err != nil {
+				err = fmt.Errorf("Error setting address: %s", err)
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_subnet_reserved_ip", "read", "set-address").GetDiag()
+			}
 		}
-		d.Set(isReservedIPAutoDelete, *rip.AutoDelete)
-		d.Set(isReservedIPCreatedAt, (*rip.CreatedAt).String())
-		d.Set(isReservedIPhref, *rip.Href)
-		d.Set(isReservedIPName, *rip.Name)
-		d.Set(isReservedIPOwner, *rip.Owner)
-		d.Set(isReservedIPType, *rip.ResourceType)
-		if rip.Target != nil {
-			targetIntf := rip.Target
+		if err = d.Set(isReservedIP, *reservedIP.ID); err != nil {
+			err = fmt.Errorf("Error setting reserved_ip: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_subnet_reserved_ip", "read", "set-reserved_ip").GetDiag()
+		}
+		if err = d.Set(isSubNetID, subnetID); err != nil {
+			err = fmt.Errorf("Error setting subnet: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_subnet_reserved_ip", "read", "set-subnet").GetDiag()
+		}
+		if err = d.Set("lifecycle_state", reservedIP.LifecycleState); err != nil {
+			err = fmt.Errorf("Error setting lifecycle_state: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_subnet_reserved_ip", "read", "set-lifecycle_state").GetDiag()
+		}
+		if !core.IsNil(reservedIP.AutoDelete) {
+			if err = d.Set("auto_delete", reservedIP.AutoDelete); err != nil {
+				err = fmt.Errorf("Error setting auto_delete: %s", err)
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_subnet_reserved_ip", "read", "set-auto_delete").GetDiag()
+			}
+		}
+		if err = d.Set("created_at", flex.DateTimeToString(reservedIP.CreatedAt)); err != nil {
+			err = fmt.Errorf("Error setting created_at: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_subnet_reserved_ip", "read", "set-created_at").GetDiag()
+		}
+		if err = d.Set("href", reservedIP.Href); err != nil {
+			err = fmt.Errorf("Error setting href: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_subnet_reserved_ip", "read", "set-href").GetDiag()
+		}
+		if !core.IsNil(reservedIP.Name) {
+			if err = d.Set("name", reservedIP.Name); err != nil {
+				err = fmt.Errorf("Error setting name: %s", err)
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_subnet_reserved_ip", "read", "set-name").GetDiag()
+			}
+		}
+		if err = d.Set("owner", reservedIP.Owner); err != nil {
+			err = fmt.Errorf("Error setting owner: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_subnet_reserved_ip", "read", "set-owner").GetDiag()
+		}
+		if err = d.Set("resource_type", reservedIP.ResourceType); err != nil {
+			err = fmt.Errorf("Error setting resource_type: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_subnet_reserved_ip", "read", "set-resource_type").GetDiag()
+		}
+		if reservedIP.Target != nil {
+			targetIntf := reservedIP.Target
 			switch reflect.TypeOf(targetIntf).String() {
 			case "*vpcv1.ReservedIPTargetEndpointGatewayReference":
 				{
 					target := targetIntf.(*vpcv1.ReservedIPTargetEndpointGatewayReference)
-					d.Set(isReservedIPTarget, target.ID)
-					d.Set(isReservedIPTargetCrn, target.CRN)
+					if err = d.Set(isReservedIPTarget, target.ID); err != nil {
+						err = fmt.Errorf("Error setting target: %s", err)
+						return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_subnet_reserved_ip", "read", "set-target").GetDiag()
+					}
+					if err = d.Set(isReservedIPTargetCrn, target.CRN); err != nil {
+						err = fmt.Errorf("Error setting target_crn: %s", err)
+						return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_subnet_reserved_ip", "read", "set-target_crn").GetDiag()
+					}
 				}
 			case "*vpcv1.ReservedIPTargetGenericResourceReference":
 				{
 					target := targetIntf.(*vpcv1.ReservedIPTargetGenericResourceReference)
-					d.Set(isReservedIPTargetCrn, target.CRN)
+					if err = d.Set(isReservedIPTargetCrn, target.CRN); err != nil {
+						err = fmt.Errorf("Error setting target_crn: %s", err)
+						return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_subnet_reserved_ip", "read", "set-target_crn").GetDiag()
+					}
 				}
 			case "*vpcv1.ReservedIPTargetNetworkInterfaceReferenceTargetContext":
 				{
 					target := targetIntf.(*vpcv1.ReservedIPTargetNetworkInterfaceReferenceTargetContext)
-					d.Set(isReservedIPTarget, target.ID)
+					if err = d.Set(isReservedIPTarget, target.ID); err != nil {
+						err = fmt.Errorf("Error setting target: %s", err)
+						return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_subnet_reserved_ip", "read", "set-target").GetDiag()
+					}
 				}
 			case "*vpcv1.ReservedIPTargetLoadBalancerReference":
 				{
 					target := targetIntf.(*vpcv1.ReservedIPTargetLoadBalancerReference)
-					d.Set(isReservedIPTarget, target.ID)
-					d.Set(isReservedIPTargetCrn, target.CRN)
+					if err = d.Set(isReservedIPTarget, target.ID); err != nil {
+						err = fmt.Errorf("Error setting target: %s", err)
+						return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_subnet_reserved_ip", "read", "set-target").GetDiag()
+					}
+					if err = d.Set(isReservedIPTargetCrn, target.CRN); err != nil {
+						err = fmt.Errorf("Error setting target_crn: %s", err)
+						return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_subnet_reserved_ip", "read", "set-target_crn").GetDiag()
+					}
 				}
 			case "*vpcv1.ReservedIPTargetVPNGatewayReference":
 				{
 					target := targetIntf.(*vpcv1.ReservedIPTargetVPNGatewayReference)
-					d.Set(isReservedIPTarget, target.ID)
-					d.Set(isReservedIPTargetCrn, target.CRN)
+					if err = d.Set(isReservedIPTarget, target.ID); err != nil {
+						err = fmt.Errorf("Error setting target: %s", err)
+						return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_subnet_reserved_ip", "read", "set-target").GetDiag()
+					}
+					if err = d.Set(isReservedIPTargetCrn, target.CRN); err != nil {
+						err = fmt.Errorf("Error setting target_crn: %s", err)
+						return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_subnet_reserved_ip", "read", "set-target_crn").GetDiag()
+					}
 				}
 			case "*vpcv1.ReservedIPTarget":
 				{
 					target := targetIntf.(*vpcv1.ReservedIPTarget)
-					d.Set(isReservedIPTarget, target.ID)
-					d.Set(isReservedIPTargetCrn, target.CRN)
+					if err = d.Set(isReservedIPTarget, target.ID); err != nil {
+						err = fmt.Errorf("Error setting target: %s", err)
+						return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_subnet_reserved_ip", "read", "set-target").GetDiag()
+					}
+					if err = d.Set(isReservedIPTargetCrn, target.CRN); err != nil {
+						err = fmt.Errorf("Error setting target_crn: %s", err)
+						return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_subnet_reserved_ip", "read", "set-target_crn").GetDiag()
+					}
 				}
 			}
 		}
@@ -256,7 +331,7 @@ func resourceIBMISReservedIPRead(d *schema.ResourceData, meta interface{}) error
 	return nil
 }
 
-func resourceIBMISReservedIPUpdate(d *schema.ResourceData, meta interface{}) error {
+func resourceIBMISReservedIPUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 
 	// For updating the name
 	nameChanged := d.HasChange(isReservedIPName)
@@ -265,12 +340,14 @@ func resourceIBMISReservedIPUpdate(d *schema.ResourceData, meta interface{}) err
 	if nameChanged || autoDeleteChanged {
 		sess, err := vpcClient(meta)
 		if err != nil {
-			return err
+			tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_subnet_reserved_ip", "update", "initialize-client")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 
 		allIDs, err := flex.IdParts(d.Id())
 		if err != nil {
-			return err
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_subnet_reserved_ip", "update", "sep-id-parts").GetDiag()
 		}
 		subnetID := allIDs[0]
 		reservedIPID := allIDs[1]
@@ -294,56 +371,66 @@ func resourceIBMISReservedIPUpdate(d *schema.ResourceData, meta interface{}) err
 
 		reservedIPPatch, err := patch.AsPatch()
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error updating the reserved IP %s", err)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("patch.AsPatch() failed: %s", err.Error()), "ibm_is_subnet_reserved_ip", "update")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 
 		options.ReservedIPPatch = reservedIPPatch
 
-		_, response, err := sess.UpdateSubnetReservedIP(options)
+		_, _, err = sess.UpdateSubnetReservedIPWithContext(context, options)
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error updating the reserved IP %s\n%s", err, response)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("UpdateSubnetReservedIPWithContext failed: %s", err.Error()), "ibm_is_subnet_reserved_ip", "update")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 
 		_, err = isWaitForReservedIpAvailable(sess, subnetID, reservedIPID, d.Timeout(schema.TimeoutCreate), d)
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error waiting for the reserved IP to be available: %s", err)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("isWaitForReservedIpAvailable failed: %s", err.Error()), "ibm_is_subnet_reserved_ip", "update")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 	}
-	return resourceIBMISReservedIPRead(d, meta)
+	return resourceIBMISReservedIPRead(context, d, meta)
 }
 
-func resourceIBMISReservedIPDelete(d *schema.ResourceData, meta interface{}) error {
+func resourceIBMISReservedIPDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 
-	rip, err := get(d, meta)
-	if err != nil {
-		return err
+	rip, diagErr := getReservedIpWithContext(context, d, meta)
+	if diagErr != nil {
+		return diagErr
 	}
-	if err == nil && rip == nil {
+	if diagErr == nil && rip == nil {
 		// If there is no such reserved IP, it can not be deleted
 		return nil
 	}
 
 	sess, err := vpcClient(meta)
 	if err != nil {
-		return err
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_subnet_reserved_ip", "delete", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	allIDs, err := flex.IdParts(d.Id())
 	if err != nil {
-		return err
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_subnet_reserved_ip", "delete", "sep-id-parts").GetDiag()
 	}
 	subnetID := allIDs[0]
 	reservedIPID := allIDs[1]
 	deleteOptions := sess.NewDeleteSubnetReservedIPOptions(subnetID, reservedIPID)
-	response, err := sess.DeleteSubnetReservedIP(deleteOptions)
+	response, err := sess.DeleteSubnetReservedIPWithContext(context, deleteOptions)
 	if err != nil || response == nil {
-		return fmt.Errorf("[ERROR] Error deleting the reserverd ip %s in subnet %s, %s\n%s", reservedIPID, subnetID, err, response)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("DeleteSubnetReservedIPWithContext failed: %s", err.Error()), "ibm_is_subnet_reserved_ip", "delete")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	d.SetId("")
 	return nil
 }
 
 func resourceIBMISReservedIPExists(d *schema.ResourceData, meta interface{}) (bool, error) {
-	rip, err := get(d, meta)
+	rip, err := getReservedIpWithoutContext(d, meta)
 	if err != nil {
 		return false, err
 	}
@@ -354,24 +441,57 @@ func resourceIBMISReservedIPExists(d *schema.ResourceData, meta interface{}) (bo
 }
 
 // get is a generic function that gets the reserved ip given subnet id and reserved ip
-func get(d *schema.ResourceData, meta interface{}) (*vpcv1.ReservedIP, error) {
+func getReservedIpWithContext(context context.Context, d *schema.ResourceData, meta interface{}) (*vpcv1.ReservedIP, diag.Diagnostics) {
 	sess, err := vpcClient(meta)
 	if err != nil {
-		return nil, err
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_subnet_reserved_ip", "read", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return nil, tfErr.GetDiag()
 	}
 	allIDs, err := flex.IdParts(d.Id())
+	if err != nil {
+		return nil, flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_subnet_reserved_ip", "read", "sep-id-parts").GetDiag()
+	}
 	subnetID := allIDs[0]
 	reservedIPID := allIDs[1]
 	options := sess.NewGetSubnetReservedIPOptions(subnetID, reservedIPID)
-	rip, response, err := sess.GetSubnetReservedIP(options)
+	reservedIP, response, err := sess.GetSubnetReservedIPWithContext(context, options)
 	if err != nil {
 		if response != nil && response.StatusCode == 404 {
 			d.SetId("")
 			return nil, nil
 		}
-		return nil, fmt.Errorf("[ERROR] Error Getting Reserved IP : %s\n%s", err, response)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetSubnetReservedIPWithContext failed: %s", err.Error()), "ibm_is_subnet_reserved_ip", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return nil, tfErr.GetDiag()
 	}
-	return rip, nil
+	return reservedIP, nil
+}
+func getReservedIpWithoutContext(d *schema.ResourceData, meta interface{}) (*vpcv1.ReservedIP, error) {
+	sess, err := vpcClient(meta)
+	if err != nil {
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_subnet_reserved_ip", "read", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return nil, tfErr
+	}
+	allIDs, err := flex.IdParts(d.Id())
+	if err != nil {
+		return nil, flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_subnet_reserved_ip", "read", "sep-id-parts")
+	}
+	subnetID := allIDs[0]
+	reservedIPID := allIDs[1]
+	options := sess.NewGetSubnetReservedIPOptions(subnetID, reservedIPID)
+	reservedIP, response, err := sess.GetSubnetReservedIP(options)
+	if err != nil {
+		if response != nil && response.StatusCode == 404 {
+			d.SetId("")
+			return nil, nil
+		}
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetSubnetReservedIPWithContext failed: %s", err.Error()), "ibm_is_subnet_reserved_ip", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return nil, tfErr
+	}
+	return reservedIP, nil
 }
 
 func isWaitForReservedIpAvailable(sess *vpcv1.VpcV1, subnetid, id string, timeout time.Duration, d *schema.ResourceData) (interface{}, error) {

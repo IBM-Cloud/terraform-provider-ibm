@@ -35,6 +35,8 @@ After your data source is created, you can read values from the following attrib
 * `id` - The unique identifier of the cd_tekton_pipeline_trigger.
 * `cron` - (String) Only needed for timer triggers. CRON expression that indicates when this trigger will activate. Maximum frequency is every 5 minutes. The string is based on UNIX crontab syntax: minute, hour, day of month, month, day of week. Example: The CRON expression 0 *_/2 * * * - translates to - every 2 hours.
   * Constraints: The maximum length is `253` characters. The minimum length is `5` characters. The value must match regular expression `/^[-0-9a-zA-Z,\\*\/ ]{5,253}$/`.
+* `disable_draft_events` - (Boolean) Prevent new pipeline runs from being triggered by events from draft pull requests.
+  * Constraints: The default value is `false`.
 * `enable_events_from_forks` - (Boolean) When enabled, pull request events from forks of the selected repository will trigger a pipeline run.
   * Constraints: The default value is `false`.
 * `enabled` - (Boolean) Flag to check if the trigger is enabled.
@@ -49,6 +51,8 @@ After your data source is created, you can read values from the following attrib
   * Constraints: The maximum length is `4096` characters. The minimum length is `1` character. The value must match regular expression `/^.*$/`.
 * `href` - (String) API URL for interacting with the trigger. Only included when fetching the list of pipeline triggers.
   * Constraints: The maximum length is `2048` characters. The minimum length is `10` characters. The value must match regular expression `/^http(s)?:\/\/([^\/?#]*)([^?#]*)(\\?([^#]*))?(#(.*))?$/`.
+* `limit_waiting_runs` - (Boolean) Flag that will limit the trigger to a maximum of one waiting run. A newly triggered run will cause any other waiting run(s) to be automatically cancelled.
+  * Constraints: The default value is `false`.
 * `max_concurrent_runs` - (Integer) Defines the maximum number of concurrent runs for this trigger. If omitted then the concurrency limit is disabled for this trigger.
 * `name` - (String) Trigger name.
   * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^([a-zA-Z0-9]{1,2}|[a-zA-Z0-9][0-9a-zA-Z-_.: \/\\(\\)\\[\\]]{1,251}[a-zA-Z0-9])$/`.

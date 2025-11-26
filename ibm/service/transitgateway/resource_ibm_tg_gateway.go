@@ -5,7 +5,6 @@ package transitgateway
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"os"
 	"time"
@@ -21,17 +20,18 @@ import (
 )
 
 const (
-	tgGateways      = "transit_gateways"
-	tgResourceGroup = "resource_group"
-	tgID            = "id"
-	tgCrn           = "crn"
-	tgName          = "name"
-	tgLocation      = "location"
-	tgCreatedAt     = "created_at"
-	tgGlobal        = "global"
-	tgStatus        = "status"
-	tgUpdatedAt     = "updated_at"
-	tgGatewayTags   = "tags"
+	tgGateways                    = "transit_gateways"
+	tgResourceGroup               = "resource_group"
+	tgID                          = "id"
+	tgCrn                         = "crn"
+	tgName                        = "name"
+	tgLocation                    = "location"
+	tgCreatedAt                   = "created_at"
+	tgGlobal                      = "global"
+	tgGreEnhancedRoutePropagation = "gre_enhanced_route_propagation"
+	tgStatus                      = "status"
+	tgUpdatedAt                   = "updated_at"
+	tgGatewayTags                 = "tags"
 
 	isTransitGatewayProvisioning     = "provisioning"
 	isTransitGatewayProvisioningDone = "done"
@@ -82,6 +82,14 @@ func ResourceIBMTransitGateway() *schema.Resource {
 				ForceNew:    false,
 				Default:     false,
 				Description: "Allow global routing for a Transit Gateway. If unspecified, the default value is false",
+			},
+
+			tgGreEnhancedRoutePropagation: {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				ForceNew:    false,
+				Default:     false,
+				Description: "Allow route propagation across all GREs connected to the same transit gateway. This affects connections on the gateway of type redundant_gre, unbound_gre_tunnel and gre_tunnel",
 			},
 
 			tgGatewayTags: {
@@ -194,12 +202,14 @@ func resourceIBMTransitGatewayCreate(d *schema.ResourceData, meta interface{}) e
 	location := d.Get(tgLocation).(string)
 	name := d.Get(tgName).(string)
 	global := d.Get(tgGlobal).(bool)
+	greEnhancedRoutePropagation := d.Get(tgGreEnhancedRoutePropagation).(bool)
 
 	createTransitGatewayOptions := &transitgatewayapisv1.CreateTransitGatewayOptions{}
 
 	createTransitGatewayOptions.Name = &name
 	createTransitGatewayOptions.Location = &location
 	createTransitGatewayOptions.Global = &global
+	createTransitGatewayOptions.GreEnhancedRoutePropagation = &greEnhancedRoutePropagation
 
 	if rsg, ok := d.GetOk(tgResourceGroup); ok {
 		resourceGroup := rsg.(string)
@@ -255,7 +265,7 @@ func isTransitGatewayRefreshFunc(client *transitgatewayapisv1.TransitGatewayApis
 		}
 		transitGateway, response, err := client.GetTransitGateway(gettgwoptions)
 		if err != nil {
-			return nil, "", fmt.Errorf("[ERROR] Error Getting Transit Gateway: %s\n%s", err, response)
+			return nil, "", flex.FmtErrorf("[ERROR] Error Getting Transit Gateway: %s\n%s", err, response)
 		}
 
 		if *transitGateway.Status == "available" || *transitGateway.Status == "failed" {
@@ -352,6 +362,10 @@ func resourceIBMTransitGatewayUpdate(d *schema.ResourceData, meta interface{}) e
 		global := d.Get(tgGlobal).(bool)
 		updateTransitGatewayOptions.Global = &global
 	}
+	if d.HasChange(tgGreEnhancedRoutePropagation) {
+		greEnhancedRoutePropagation := d.Get(tgGreEnhancedRoutePropagation).(bool)
+		updateTransitGatewayOptions.GreEnhancedRoutePropagation = &greEnhancedRoutePropagation
+	}
 	if d.HasChange(tgGatewayTags) {
 		oldList, newList := d.GetChange(tgGatewayTags)
 		err = flex.UpdateTagsUsingCRN(oldList, newList, meta, *tgw.Crn)
@@ -387,7 +401,7 @@ func resourceIBMTransitGatewayDelete(d *schema.ResourceData, meta interface{}) e
 		if response != nil && response.StatusCode == 404 {
 			return nil
 		}
-		return fmt.Errorf("[ERROR] Error deleting Transit Gateway (%s): %s\n%s", ID, err, response)
+		return flex.FmtErrorf("[ERROR] Error deleting Transit Gateway (%s): %s\n%s", ID, err, response)
 	}
 	_, err = isWaitForTransitGatewayDeleted(client, ID, d.Timeout(schema.TimeoutDelete))
 	if err != nil {
@@ -423,7 +437,7 @@ func isTransitGatewayDeleteRefreshFunc(client *transitgatewayapisv1.TransitGatew
 			if response != nil && response.StatusCode == 404 {
 				return transitGateway, isTransitGatewayDeleted, nil
 			}
-			return nil, "", fmt.Errorf("[ERROR] Error Getting Transit Gateway: %s\n%s", err, response)
+			return nil, "", flex.FmtErrorf("[ERROR] Error Getting Transit Gateway: %s\n%s", err, response)
 		}
 		return transitGateway, isTransitGatewayDeleting, err
 	}
@@ -448,7 +462,7 @@ func resourceIBMTransitGatewayExists(d *schema.ResourceData, meta interface{}) (
 			d.SetId("")
 			return false, nil
 		}
-		return false, fmt.Errorf("[ERROR] Error Getting Transit Gateway: %s\n%s", err, response)
+		return false, flex.FmtErrorf("[ERROR] Error Getting Transit Gateway: %s\n%s", err, response)
 	}
 
 	return true, nil

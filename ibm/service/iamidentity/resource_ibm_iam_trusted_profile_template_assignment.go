@@ -9,8 +9,10 @@ import (
 	"log"
 	"time"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
+
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
@@ -21,9 +23,8 @@ import (
 )
 
 const (
-	InProgress = "in_progress"
-	complete   = "complete"
-	failed     = "failed"
+	WAITING = "waiting"
+	READY   = "ready"
 )
 
 func ResourceIBMTrustedProfileTemplateAssignment() *schema.Resource {
@@ -213,7 +214,7 @@ func ResourceIBMTrustedProfileTemplateAssignment() *schema.Resource {
 								},
 							},
 						},
-						"policy_template_refs": {
+						"policy_template_references": {
 							Type:        schema.TypeList,
 							Computed:    true,
 							Description: "Policy resource(s) included only for trusted profile assignments with policy references.",
@@ -467,7 +468,7 @@ func resourceIBMTrustedProfileTemplateAssignmentRead(context context.Context, d 
 	history := []map[string]interface{}{}
 	if !core.IsNil(templateAssignmentResponse.History) {
 		for _, historyItem := range templateAssignmentResponse.History {
-			historyItemMap, err := resourceIBMTrustedProfileTemplateAssignmentEnityHistoryRecordToMap(&historyItem)
+			historyItemMap, err := EnityHistoryRecordToMap(&historyItem)
 			if err != nil {
 				return diag.FromErr(err)
 			}
@@ -559,20 +560,20 @@ func resourceIBMTrustedProfileTemplateAssignmentDelete(context context.Context, 
 	return nil
 }
 
-func waitForAssignment(timeout time.Duration, meta interface{}, d *schema.ResourceData, refreshFn func(string, interface{}) retry.StateRefreshFunc) (interface{}, error) {
+func waitForAssignment(timeout time.Duration, meta interface{}, d *schema.ResourceData, refreshFn func(string, interface{}) resource.StateRefreshFunc) (interface{}, error) {
 	stateConf := &retry.StateChangeConf{
-		Pending:      []string{InProgress},
-		Target:       []string{complete},
+		Pending:      []string{WAITING},
+		Target:       []string{READY},
 		Refresh:      refreshFn(d.Id(), meta),
 		Delay:        30 * time.Second,
-		PollInterval: time.Minute,
+		PollInterval: 10 * time.Second,
 		Timeout:      timeout,
 	}
 
-	return stateConf.WaitForState()
+	return stateConf.WaitForStateContext(context.Background())
 }
 
-func isTrustedProfileAssignmentRemoved(id string, meta interface{}) retry.StateRefreshFunc {
+func isTrustedProfileAssignmentRemoved(id string, meta interface{}) resource.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		iamIdentityClient, err := meta.(conns.ClientSession).IAMIdentityV1API()
 
@@ -582,14 +583,14 @@ func isTrustedProfileAssignmentRemoved(id string, meta interface{}) retry.StateR
 		assignment, response, err := iamIdentityClient.GetTrustedProfileAssignment(getOptions)
 		if err != nil {
 			if response != nil && response.StatusCode == 404 {
-				return assignment, complete, nil
+				return assignment, READY, nil
 			}
 
-			return nil, failed, fmt.Errorf("[ERROR] The assignment %s failed to delete or deletion was not completed within specific timeout period: %s\n%s", id, err, response)
+			return nil, READY, fmt.Errorf("[ERROR] The assignment %s failed to delete or deletion was not completed within specific timeout period: %s\n%s", id, err, response)
 		} else {
 			log.Printf("Assignment removal still in progress\n")
 		}
-		return assignment, InProgress, nil
+		return assignment, WAITING, nil
 	}
 }
 
@@ -603,25 +604,23 @@ func isTrustedProfileTemplateAssigned(id string, meta interface{}) retry.StateRe
 		}
 		assignment, response, err := iamIdentityClient.GetTrustedProfileAssignment(getOptions)
 		if err != nil {
-			return nil, failed, fmt.Errorf("[ERROR] The assignment %s failed or did not complete within specific timeout period: %s\n%s", id, err, response)
+			return nil, READY, fmt.Errorf("[ERROR] The assignment %s failed or did not complete within specific timeout period: %s\n%s", id, err, response)
 		}
 
 		if assignment != nil {
 			if *assignment.Status == "accepted" || *assignment.Status == "in_progress" {
 				log.Printf("Assignment still in progress\n")
-				return assignment, InProgress, nil
-			}
-
-			if *assignment.Status == "succeeded" {
-				return assignment, complete, nil
+				return assignment, WAITING, nil
 			}
 
 			if *assignment.Status == "failed" {
-				return assignment, failed, fmt.Errorf("[ERROR] The assignment %s did complete but with a 'failed' status. Please check assignment resource for detailed errors: %s\n", id, response)
+				return assignment, READY, fmt.Errorf("[ERROR] The assignment %s did complete but with a 'failed' status. Please check assignment resource for detailed errors: %s\n", id, response)
 			}
+
+			return assignment, READY, nil
 		}
 
-		return assignment, failed, fmt.Errorf("[ERROR] Unexpected status reached for assignment %s.: %s\n", id, response)
+		return assignment, READY, fmt.Errorf("[ERROR] Unexpected status reached for assignment %s.: %s\n", id, response)
 	}
 }
 
@@ -673,16 +672,16 @@ func resourceIBMTrustedProfileTemplateAssignmentTemplateAssignmentResponseResour
 		}
 		modelMap["profile"] = []map[string]interface{}{profileMap}
 	}
-	if model.PolicyTemplateRefs != nil {
+	if model.PolicyTemplateReferences != nil {
 		policyTemplateRefs := []map[string]interface{}{}
-		for _, policyTemplateRefsItem := range model.PolicyTemplateRefs {
+		for _, policyTemplateRefsItem := range model.PolicyTemplateReferences {
 			policyTemplateRefsItemMap, err := resourceIBMTrustedProfileTemplateAssignmentTemplateAssignmentResponseResourceDetailToMap(&policyTemplateRefsItem)
 			if err != nil {
 				return modelMap, err
 			}
 			policyTemplateRefs = append(policyTemplateRefs, policyTemplateRefsItemMap)
 		}
-		modelMap["policy_template_refs"] = policyTemplateRefs
+		modelMap["policy_template_references"] = policyTemplateRefs
 	}
 	return modelMap, nil
 }
@@ -735,16 +734,5 @@ func resourceIBMTrustedProfileTemplateAssignmentTemplateAssignmentResourceErrorT
 	if model.StatusCode != nil {
 		modelMap["status_code"] = model.StatusCode
 	}
-	return modelMap, nil
-}
-
-func resourceIBMTrustedProfileTemplateAssignmentEnityHistoryRecordToMap(model *iamidentityv1.EnityHistoryRecord) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	modelMap["timestamp"] = model.Timestamp
-	modelMap["iam_id"] = model.IamID
-	modelMap["iam_id_account"] = model.IamIDAccount
-	modelMap["action"] = model.Action
-	modelMap["params"] = model.Params
-	modelMap["message"] = model.Message
 	return modelMap, nil
 }

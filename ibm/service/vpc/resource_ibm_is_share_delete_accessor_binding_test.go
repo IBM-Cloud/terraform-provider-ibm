@@ -22,7 +22,7 @@ func TestAccIbmIsShareDeleteAccessorBinding(t *testing.T) {
 	shareName := fmt.Sprintf("tf-share-%d", acctest.RandIntRange(10, 100))
 	shareName1 := fmt.Sprintf("tf-share1-%d", acctest.RandIntRange(10, 100))
 	shareName2 := fmt.Sprintf("tf-share2-%d", acctest.RandIntRange(10, 100))
-	tEMode1 := "user_managed"
+	tEMode1 := "ipsec"
 	// tEMode2 := "none"
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },

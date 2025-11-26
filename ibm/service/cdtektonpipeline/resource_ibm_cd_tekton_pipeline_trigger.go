@@ -1,8 +1,8 @@
-// Copyright IBM Corp. 2024 All Rights Reserved.
+// Copyright IBM Corp. 2025 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 /*
- * IBM OpenAPI Terraform Generator Version: 3.95.2-120e65bc-20240924-152329
+ * IBM OpenAPI Terraform Generator Version: 3.103.0-e8b84313-20250402-201816
  */
 
 package cdtektonpipeline
@@ -105,11 +105,23 @@ func ResourceIBMCdTektonPipelineTrigger() *schema.Resource {
 				Default:     false,
 				Description: "Mark the trigger as a favorite.",
 			},
+			"limit_waiting_runs": &schema.Schema{
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Default:     false,
+				Description: "Flag that will limit the trigger to a maximum of one waiting run. A newly triggered run will cause any other waiting run(s) to be automatically cancelled.",
+			},
 			"enable_events_from_forks": &schema.Schema{
 				Type:        schema.TypeBool,
 				Optional:    true,
 				Default:     false,
 				Description: "When enabled, pull request events from forks of the selected repository will trigger a pipeline run.",
+			},
+			"disable_draft_events": &schema.Schema{
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Default:     false,
+				Description: "Prevent new pipeline runs from being triggered by events from draft pull requests.",
 			},
 			"source": &schema.Schema{
 				Type:        schema.TypeList,
@@ -264,7 +276,6 @@ func ResourceIBMCdTektonPipelineTrigger() *schema.Resource {
 						},
 						"href": &schema.Schema{
 							Type:        schema.TypeString,
-							Optional:    true,
 							Computed:    true,
 							Description: "API URL for interacting with the trigger property.",
 						},
@@ -412,6 +423,9 @@ func resourceIBMCdTektonPipelineTriggerCreate(context context.Context, d *schema
 	if _, ok := d.GetOk("max_concurrent_runs"); ok {
 		createTektonPipelineTriggerOptions.SetMaxConcurrentRuns(int64(d.Get("max_concurrent_runs").(int)))
 	}
+	if _, ok := d.GetOk("limit_waiting_runs"); ok {
+		createTektonPipelineTriggerOptions.SetLimitWaitingRuns(d.Get("limit_waiting_runs").(bool))
+	}
 	if _, ok := d.GetOkExists("enabled"); ok {
 		createTektonPipelineTriggerOptions.SetEnabled(d.Get("enabled").(bool))
 	}
@@ -452,6 +466,9 @@ func resourceIBMCdTektonPipelineTriggerCreate(context context.Context, d *schema
 	}
 	if _, ok := d.GetOk("enable_events_from_forks"); ok {
 		createTektonPipelineTriggerOptions.SetEnableEventsFromForks(d.Get("enable_events_from_forks").(bool))
+	}
+	if _, ok := d.GetOk("disable_draft_events"); ok {
+		createTektonPipelineTriggerOptions.SetDisableDraftEvents(d.Get("disable_draft_events").(bool))
 	}
 
 	triggerIntf, _, err := cdTektonPipelineClient.CreateTektonPipelineTriggerWithContext(context, createTektonPipelineTriggerOptions)
@@ -497,6 +514,10 @@ func resourceIBMCdTektonPipelineTriggerRead(context context.Context, d *schema.R
 	}
 
 	trigger := triggerIntf.(*cdtektonpipelinev2.Trigger)
+	if err = d.Set("pipeline_id", d.Get("pipeline_id").(string)); err != nil {
+		err = fmt.Errorf("Error setting pipeline_id: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_cd_tekton_pipeline_trigger", "read", "set-pipeline_id").GetDiag()
+	}
 	if err = d.Set("type", trigger.Type); err != nil {
 		err = fmt.Errorf("Error setting type: %s", err)
 		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_cd_tekton_pipeline_trigger", "read", "set-type").GetDiag()
@@ -543,10 +564,22 @@ func resourceIBMCdTektonPipelineTriggerRead(context context.Context, d *schema.R
 			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_cd_tekton_pipeline_trigger", "read", "set-favorite").GetDiag()
 		}
 	}
+	if !core.IsNil(trigger.LimitWaitingRuns) {
+		if err = d.Set("limit_waiting_runs", trigger.LimitWaitingRuns); err != nil {
+			err = fmt.Errorf("Error setting limit_waiting_runs: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_cd_tekton_pipeline_trigger", "read", "set-limit_waiting_runs").GetDiag()
+		}
+	}
 	if !core.IsNil(trigger.EnableEventsFromForks) {
 		if err = d.Set("enable_events_from_forks", trigger.EnableEventsFromForks); err != nil {
 			err = fmt.Errorf("Error setting enable_events_from_forks: %s", err)
 			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_cd_tekton_pipeline_trigger", "read", "set-enable_events_from_forks").GetDiag()
+		}
+	}
+	if !core.IsNil(trigger.DisableDraftEvents) {
+		if err = d.Set("disable_draft_events", trigger.DisableDraftEvents); err != nil {
+			err = fmt.Errorf("Error setting disable_draft_events: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_cd_tekton_pipeline_trigger", "read", "set-disable_draft_events").GetDiag()
 		}
 	}
 	if !core.IsNil(trigger.Source) {
@@ -692,6 +725,11 @@ func resourceIBMCdTektonPipelineTriggerUpdate(context context.Context, d *schema
 		patchVals.MaxConcurrentRuns = &newMaxConcurrentRuns
 		hasChange = true
 	}
+	if d.HasChange("limit_waiting_runs") {
+		newLimitWaitingRuns := d.Get("limit_waiting_runs").(bool)
+		patchVals.LimitWaitingRuns = &newLimitWaitingRuns
+		hasChange = true
+	}
 	if d.HasChange("enabled") {
 		newEnabled := d.Get("enabled").(bool)
 		patchVals.Enabled = &newEnabled
@@ -749,6 +787,11 @@ func resourceIBMCdTektonPipelineTriggerUpdate(context context.Context, d *schema
 		patchVals.EnableEventsFromForks = &newEnableEventsFromForks
 		hasChange = true
 	}
+	if d.HasChange("disable_draft_events") {
+		newDisableDraftEvents := d.Get("disable_draft_events").(bool)
+		patchVals.DisableDraftEvents = &newDisableDraftEvents
+		hasChange = true
+	}
 
 	if hasChange {
 		// Fields with `nil` values are omitted from the generic map,
@@ -799,7 +842,9 @@ func resourceIBMCdTektonPipelineTriggerDelete(context context.Context, d *schema
 
 func ResourceIBMCdTektonPipelineTriggerMapToWorkerIdentity(modelMap map[string]interface{}) (*cdtektonpipelinev2.WorkerIdentity, error) {
 	model := &cdtektonpipelinev2.WorkerIdentity{}
-	model.ID = core.StringPtr(modelMap["id"].(string))
+	if modelMap["id"] != nil {
+		model.ID = core.StringPtr(modelMap["id"].(string))
+	}
 	return model, nil
 }
 
@@ -945,90 +990,142 @@ func ResourceIBMCdTektonPipelineTriggerTriggerPatchAsPatch(patchVals *cdtektonpi
 	path = "type"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["type"] = nil
+	} else if !exists {
+		delete(patch, "type")
 	}
 	path = "name"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["name"] = nil
+	} else if !exists {
+		delete(patch, "name")
 	}
 	path = "event_listener"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["event_listener"] = nil
+	} else if !exists {
+		delete(patch, "event_listener")
 	}
 	path = "tags"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["tags"] = nil
+	} else if !exists {
+		delete(patch, "tags")
 	}
 	path = "worker"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["worker"] = nil
+	} else if !exists {
+		delete(patch, "worker")
 	}
 	path = "max_concurrent_runs"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["max_concurrent_runs"] = nil
+	} else if !exists {
+		delete(patch, "max_concurrent_runs")
+	}
+	path = "limit_waiting_runs"
+	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
+		patch["limit_waiting_runs"] = nil
+	} else if !exists {
+		delete(patch, "limit_waiting_runs")
 	}
 	path = "enabled"
-	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
+	if _, exists := d.GetOkExists(path); d.HasChange(path) && !exists {
 		patch["enabled"] = nil
+	} else if !exists {
+		delete(patch, "enabled")
 	}
 	path = "secret"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["secret"] = nil
 	} else if exists && patch["secret"] != nil {
-		ResourceIBMCdTektonPipelineTriggerGenericSecretAsPatch(patch["secret"].(map[string]interface{}), d)
+		ResourceIBMCdTektonPipelineTriggerGenericSecretAsPatch(patch["secret"].(map[string]interface{}), d, fmt.Sprintf("%s.0", path))
+	} else if !exists {
+		delete(patch, "secret")
 	}
 	path = "cron"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["cron"] = nil
+	} else if !exists {
+		delete(patch, "cron")
 	}
 	path = "timezone"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["timezone"] = nil
+	} else if !exists {
+		delete(patch, "timezone")
 	}
 	path = "source"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["source"] = nil
+	} else if !exists {
+		delete(patch, "source")
 	}
 	path = "events"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["events"] = nil
+	} else if !exists {
+		delete(patch, "events")
 	}
 	path = "filter"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["filter"] = nil
+	} else if !exists {
+		delete(patch, "filter")
 	}
 	path = "favorite"
-	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
+	if _, exists := d.GetOkExists(path); d.HasChange(path) && !exists {
 		patch["favorite"] = nil
+	} else if !exists {
+		delete(patch, "favorite")
 	}
 	path = "enable_events_from_forks"
 	if _, exists := d.GetOkExists(path); d.HasChange(path) && !exists {
 		patch["enable_events_from_forks"] = nil
+	} else if !exists {
+		delete(patch, "enable_events_from_forks")
+	}
+	path = "disable_draft_events"
+	if _, exists := d.GetOkExists(path); d.HasChange(path) && !exists {
+		patch["disable_draft_events"] = nil
+	} else if !exists {
+		delete(patch, "disable_draft_events")
 	}
 
 	return patch
 }
 
-func ResourceIBMCdTektonPipelineTriggerGenericSecretAsPatch(patch map[string]interface{}, d *schema.ResourceData) {
+func ResourceIBMCdTektonPipelineTriggerGenericSecretAsPatch(patch map[string]interface{}, d *schema.ResourceData, rootPath string) {
 	var path string
 
-	path = "secret.0.type"
+	path = rootPath + ".type"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["type"] = nil
+	} else if !exists {
+		delete(patch, "type")
 	}
-	path = "secret.0.value"
+	path = rootPath + ".value"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["value"] = nil
+	} else if !exists {
+		delete(patch, "value")
 	}
-	path = "secret.0.source"
+	path = rootPath + ".source"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["source"] = nil
+	} else if !exists {
+		delete(patch, "source")
 	}
-	path = "secret.0.key_name"
+	path = rootPath + ".key_name"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["key_name"] = nil
+	} else if !exists {
+		delete(patch, "key_name")
 	}
-	path = "secret.0.algorithm"
+	path = rootPath + ".algorithm"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["algorithm"] = nil
+	} else if !exists {
+		delete(patch, "algorithm")
 	}
 }

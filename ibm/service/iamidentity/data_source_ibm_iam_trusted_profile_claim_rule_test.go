@@ -14,14 +14,14 @@ import (
 )
 
 func TestAccIBMIAMTrustedProfileClaimRuleDataSourceBasic(t *testing.T) {
-	profileClaimRuleProfileID := fmt.Sprintf("tf_profile_%d", acctest.RandIntRange(10, 100))
+	profileClaimRuleProfileName := fmt.Sprintf("tf_profile_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { acc.TestAccPreCheckIAMTrustedProfile(t) },
+		PreCheck:  func() { acc.TestAccPreCheck(t) },
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIBMIamTrustedProfileClaimRuleDataSourceConfigBasic(profileClaimRuleProfileID),
+				Config: testAccCheckIBMIamTrustedProfileClaimRuleDataSourceConfigBasic(profileClaimRuleProfileName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_iam_trusted_profile_claim_rule.iam_trusted_profile_claim_rule", "id"),
 					resource.TestCheckResourceAttrSet("data.ibm_iam_trusted_profile_claim_rule.iam_trusted_profile_claim_rule", "entity_tag"),
@@ -36,14 +36,13 @@ func TestAccIBMIAMTrustedProfileClaimRuleDataSourceBasic(t *testing.T) {
 }
 
 func TestAccIBMIAMTrustedProfileClaimRuleDataSourceAllArgs(t *testing.T) {
-	profileClaimRuleProfileID := fmt.Sprintf("tf_profile_id_%d", acctest.RandIntRange(10, 100))
 	profileClaimRuleName := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { acc.TestAccPreCheckIAMTrustedProfile(t) },
+		PreCheck:  func() { acc.TestAccPreCheck(t) },
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIBMIamTrustedProfileClaimRuleDataSourceConfig(profileClaimRuleProfileID, profileClaimRuleName),
+				Config: testAccCheckIBMIamTrustedProfileClaimRuleDataSourceConfig(profileClaimRuleName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_iam_trusted_profile_claim_rule.iam_trusted_profile_claim_rule", "id"),
 					resource.TestCheckResourceAttrSet("data.ibm_iam_trusted_profile_claim_rule.iam_trusted_profile_claim_rule", "entity_tag"),
@@ -58,16 +57,19 @@ func TestAccIBMIAMTrustedProfileClaimRuleDataSourceAllArgs(t *testing.T) {
 	})
 }
 
-func testAccCheckIBMIamTrustedProfileClaimRuleDataSourceConfigBasic(profileClaimRuleProfileID string) string {
+func testAccCheckIBMIamTrustedProfileClaimRuleDataSourceConfigBasic(profileClaimRuleProfileName string) string {
 	return fmt.Sprintf(`
 		resource "ibm_iam_trusted_profile" "iam_trusted_profile" {
 			name = "%s"
+			lifecycle {
+              ignore_changes = [history]
+            }
 		}
 		resource "ibm_iam_trusted_profile_claim_rule" "iam_trusted_profile_claim_rule" {
 			profile_id = ibm_iam_trusted_profile.iam_trusted_profile.id 
 			type = "Profile-SAML"
-			name = "%[1]s"
-			realm_name = "%s"
+			name = "%s"
+			realm_name = "testString"
 			expiration = 43200
 			conditions {
 				claim = "blueGroups"
@@ -79,13 +81,16 @@ func testAccCheckIBMIamTrustedProfileClaimRuleDataSourceConfigBasic(profileClaim
 			profile_id = ibm_iam_trusted_profile_claim_rule.iam_trusted_profile_claim_rule.profile_id
 			rule_id = ibm_iam_trusted_profile_claim_rule.iam_trusted_profile_claim_rule.rule_id
 		}
-	`, profileClaimRuleProfileID, acc.RealmName)
+	`, profileClaimRuleProfileName, profileClaimRuleProfileName)
 }
 
-func testAccCheckIBMIamTrustedProfileClaimRuleDataSourceConfig(profileClaimRuleProfileID string, profileClaimRuleName string) string {
+func testAccCheckIBMIamTrustedProfileClaimRuleDataSourceConfig(profileClaimRuleName string) string {
 	return fmt.Sprintf(`
 	resource "ibm_iam_trusted_profile" "iam_trusted_profile" {
 		name = "%s"
+		lifecycle {
+              ignore_changes = [history]
+            }
 	}
 	resource "ibm_iam_trusted_profile_claim_rule" "iam_trusted_profile_claim_rule" {
 		profile_id = ibm_iam_trusted_profile.iam_trusted_profile.id
@@ -103,5 +108,5 @@ func testAccCheckIBMIamTrustedProfileClaimRuleDataSourceConfig(profileClaimRuleP
 			profile_id = ibm_iam_trusted_profile_claim_rule.iam_trusted_profile_claim_rule.profile_id
 			rule_id = ibm_iam_trusted_profile_claim_rule.iam_trusted_profile_claim_rule.rule_id
 		}
-	`, profileClaimRuleProfileID, profileClaimRuleName)
+	`, profileClaimRuleName, profileClaimRuleName)
 }

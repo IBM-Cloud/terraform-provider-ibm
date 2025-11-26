@@ -6,15 +6,12 @@ package secretsmanager
 import (
 	"context"
 	"fmt"
+	"github.com/go-openapi/strfmt"
 	"log"
 	"strings"
 	"time"
 
-	"github.com/IBM-Cloud/bluemix-go/bmxerror"
-	"github.com/go-openapi/strfmt"
-
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
@@ -60,6 +57,11 @@ func ResourceIbmSmUsernamePasswordSecret() *schema.Resource {
 				Type:        schema.TypeString,
 				Required:    true,
 				Description: "A human-readable name to assign to your secret.To protect your privacy, do not use personal data, such as your name or location, as a name for your secret.",
+			},
+			"retrieved_at": &schema.Schema{
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The date when the data of the secret was last retrieved. The date format follows RFC 3339. Epoch date if there is no record of secret data retrieval.",
 			},
 			"secret_group_id": &schema.Schema{
 				Type:        schema.TypeString,
@@ -217,7 +219,7 @@ func ResourceIbmSmUsernamePasswordSecret() *schema.Resource {
 }
 
 func resourceIbmSmUsernamePasswordSecretCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	secretsManagerClient, err := meta.(conns.ClientSession).SecretsManagerV2()
+	secretsManagerClient, endpointsFile, err := getSecretsManagerSession(meta.(conns.ClientSession))
 	if err != nil {
 		tfErr := flex.TerraformErrorf(err, "", UsernamePasswordSecretResourceName, "create")
 		return tfErr.GetDiag()
@@ -225,7 +227,7 @@ func resourceIbmSmUsernamePasswordSecretCreate(context context.Context, d *schem
 
 	region := getRegion(secretsManagerClient, d)
 	instanceId := d.Get("instance_id").(string)
-	secretsManagerClient = getClientWithInstanceEndpoint(secretsManagerClient, instanceId, region, getEndpointType(secretsManagerClient, d))
+	secretsManagerClient = getClientWithInstanceEndpoint(secretsManagerClient, instanceId, region, getEndpointType(secretsManagerClient, d), endpointsFile)
 
 	createSecretOptions := &secretsmanagerv2.CreateSecretOptions{}
 
@@ -246,49 +248,11 @@ func resourceIbmSmUsernamePasswordSecretCreate(context context.Context, d *schem
 	d.SetId(fmt.Sprintf("%s/%s/%s", region, instanceId, *secret.ID))
 	d.Set("secret_id", *secret.ID)
 
-	_, err = waitForIbmSmUsernamePasswordSecretCreate(secretsManagerClient, d)
-	if err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error waiting for resource IbmSmUsernamePasswordSecret (%s) to be created: %s", d.Id(), err.Error()), UsernamePasswordSecretResourceName, "create")
-		return tfErr.GetDiag()
-	}
-
 	return resourceIbmSmUsernamePasswordSecretRead(context, d, meta)
 }
 
-func waitForIbmSmUsernamePasswordSecretCreate(secretsManagerClient *secretsmanagerv2.SecretsManagerV2, d *schema.ResourceData) (interface{}, error) {
-	getSecretOptions := &secretsmanagerv2.GetSecretOptions{}
-	id := strings.Split(d.Id(), "/")
-	secretId := id[2]
-	getSecretOptions.SetID(secretId)
-
-	stateConf := &retry.StateChangeConf{
-		Pending: []string{"pre_activation"},
-		Target:  []string{"active"},
-		Refresh: func() (interface{}, string, error) {
-			stateObjIntf, response, err := secretsManagerClient.GetSecret(getSecretOptions)
-			stateObj := stateObjIntf.(*secretsmanagerv2.UsernamePasswordSecret)
-			if err != nil {
-				if apiErr, ok := err.(bmxerror.RequestFailure); ok && apiErr.StatusCode() == 404 {
-					return nil, "", fmt.Errorf("The instance %s does not exist anymore: %s\n%s", "getSecretOptions", err, response)
-				}
-				return nil, "", err
-			}
-			failStates := map[string]bool{"destroyed": true}
-			if failStates[*stateObj.StateDescription] {
-				return stateObj, *stateObj.StateDescription, fmt.Errorf("The instance %s failed: %s\n%s", "getSecretOptions", err, response)
-			}
-			return stateObj, *stateObj.StateDescription, nil
-		},
-		Timeout:    d.Timeout(schema.TimeoutCreate),
-		Delay:      0 * time.Second,
-		MinTimeout: 5 * time.Second,
-	}
-
-	return stateConf.WaitForState()
-}
-
 func resourceIbmSmUsernamePasswordSecretRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	secretsManagerClient, err := meta.(conns.ClientSession).SecretsManagerV2()
+	secretsManagerClient, endpointsFile, err := getSecretsManagerSession(meta.(conns.ClientSession))
 	if err != nil {
 		tfErr := flex.TerraformErrorf(err, "", UsernamePasswordSecretResourceName, "read")
 		return tfErr.GetDiag()
@@ -302,7 +266,7 @@ func resourceIbmSmUsernamePasswordSecretRead(context context.Context, d *schema.
 	region := id[0]
 	instanceId := id[1]
 	secretId := id[2]
-	secretsManagerClient = getClientWithInstanceEndpoint(secretsManagerClient, instanceId, region, getEndpointType(secretsManagerClient, d))
+	secretsManagerClient = getClientWithInstanceEndpoint(secretsManagerClient, instanceId, region, getEndpointType(secretsManagerClient, d), endpointsFile)
 
 	getSecretOptions := &secretsmanagerv2.GetSecretOptions{}
 
@@ -389,6 +353,10 @@ func resourceIbmSmUsernamePasswordSecretRead(context context.Context, d *schema.
 		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting updated_at"), UsernamePasswordSecretResourceName, "read")
 		return tfErr.GetDiag()
 	}
+	if err = d.Set("retrieved_at", DateTimeToRFC3339(secret.UpdatedAt)); err != nil {
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting updated_at"), UsernamePasswordSecretResourceName, "read")
+		return tfErr.GetDiag()
+	}
 	if err = d.Set("versions_total", flex.IntValue(secret.VersionsTotal)); err != nil {
 		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting versions_total"), UsernamePasswordSecretResourceName, "read")
 		return tfErr.GetDiag()
@@ -453,7 +421,7 @@ func resourceIbmSmUsernamePasswordSecretRead(context context.Context, d *schema.
 }
 
 func resourceIbmSmUsernamePasswordSecretUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	secretsManagerClient, err := meta.(conns.ClientSession).SecretsManagerV2()
+	secretsManagerClient, endpointsFile, err := getSecretsManagerSession(meta.(conns.ClientSession))
 	if err != nil {
 		tfErr := flex.TerraformErrorf(err, "", UsernamePasswordSecretResourceName, "update")
 		return tfErr.GetDiag()
@@ -463,7 +431,7 @@ func resourceIbmSmUsernamePasswordSecretUpdate(context context.Context, d *schem
 	region := id[0]
 	instanceId := id[1]
 	secretId := id[2]
-	secretsManagerClient = getClientWithInstanceEndpoint(secretsManagerClient, instanceId, region, getEndpointType(secretsManagerClient, d))
+	secretsManagerClient = getClientWithInstanceEndpoint(secretsManagerClient, instanceId, region, getEndpointType(secretsManagerClient, d), endpointsFile)
 
 	updateSecretMetadataOptions := &secretsmanagerv2.UpdateSecretMetadataOptions{}
 
@@ -594,7 +562,7 @@ func resourceIbmSmUsernamePasswordSecretUpdate(context context.Context, d *schem
 }
 
 func resourceIbmSmUsernamePasswordSecretDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	secretsManagerClient, err := meta.(conns.ClientSession).SecretsManagerV2()
+	secretsManagerClient, endpointsFile, err := getSecretsManagerSession(meta.(conns.ClientSession))
 	if err != nil {
 		tfErr := flex.TerraformErrorf(err, "", UsernamePasswordSecretResourceName, "delete")
 		return tfErr.GetDiag()
@@ -604,7 +572,7 @@ func resourceIbmSmUsernamePasswordSecretDelete(context context.Context, d *schem
 	region := id[0]
 	instanceId := id[1]
 	secretId := id[2]
-	secretsManagerClient = getClientWithInstanceEndpoint(secretsManagerClient, instanceId, region, getEndpointType(secretsManagerClient, d))
+	secretsManagerClient = getClientWithInstanceEndpoint(secretsManagerClient, instanceId, region, getEndpointType(secretsManagerClient, d), endpointsFile)
 
 	deleteSecretOptions := &secretsmanagerv2.DeleteSecretOptions{}
 
@@ -639,7 +607,7 @@ func resourceIbmSmUsernamePasswordSecretMapToSecretPrototype(d *schema.ResourceD
 		layout := time.RFC3339
 		parseToTime, err := time.Parse(layout, d.Get("expiration_date").(string))
 		if err != nil {
-			return nil, fmt.Errorf(`Failed to get "expiration_date". Error: ` + err.Error())
+			return nil, fmt.Errorf(`Failed to get "expiration_date". Error: %s`, err.Error())
 		}
 		parseToDateTime := strfmt.DateTime(parseToTime)
 		model.ExpirationDate = &parseToDateTime

@@ -5,6 +5,7 @@ package power
 
 import (
 	"context"
+	"fmt"
 	"log"
 
 	"github.com/IBM-Cloud/power-go-client/clients/instance"
@@ -85,23 +86,27 @@ func DataSourceIBMPINetworkAddressGroups() *schema.Resource {
 	}
 }
 
-func dataSourceIBMPINetworkAddressGroupsRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataSourceIBMPINetworkAddressGroupsRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	sess, err := meta.(conns.ClientSession).IBMPISession()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("IBMPISession failed: %s", err.Error()), "(Data) ibm_pi_network_address_groups", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	cloudInstanceID := d.Get(Arg_CloudInstanceID).(string)
 	nagC := instance.NewIBMPINetworkAddressGroupClient(ctx, sess, cloudInstanceID)
 	networkAddressGroups, err := nagC.GetAll()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetAll failed: %s", err.Error()), "(Data) ibm_pi_network_address_groups", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	var genID, _ = uuid.GenerateUUID()
 	d.SetId(genID)
 
-	nags := []map[string]interface{}{}
+	nags := []map[string]any{}
 	if len(networkAddressGroups.NetworkAddressGroups) > 0 {
 		for _, nag := range networkAddressGroups.NetworkAddressGroups {
 			modelMap := networkAddressGroupsNetworkAddressGroupToMap(nag, meta)
@@ -113,11 +118,11 @@ func dataSourceIBMPINetworkAddressGroupsRead(ctx context.Context, d *schema.Reso
 	return nil
 }
 
-func networkAddressGroupsNetworkAddressGroupToMap(networkAddressGroup *models.NetworkAddressGroup, meta interface{}) map[string]interface{} {
-	nag := make(map[string]interface{})
+func networkAddressGroupsNetworkAddressGroupToMap(networkAddressGroup *models.NetworkAddressGroup, meta any) map[string]any {
+	nag := make(map[string]any)
 	if networkAddressGroup.Crn != nil {
 		nag[Attr_CRN] = networkAddressGroup.Crn
-		userTags, err := flex.GetTagsUsingCRN(meta, string(*networkAddressGroup.Crn))
+		userTags, err := flex.GetGlobalTagsUsingCRN(meta, string(*networkAddressGroup.Crn), "", UserTagType)
 		if err != nil {
 			log.Printf("Error on get of pi network address group (%s) user_tags: %s", *networkAddressGroup.ID, err)
 		}
@@ -126,7 +131,7 @@ func networkAddressGroupsNetworkAddressGroupToMap(networkAddressGroup *models.Ne
 
 	nag[Attr_ID] = networkAddressGroup.ID
 	if len(networkAddressGroup.Members) > 0 {
-		members := []map[string]interface{}{}
+		members := []map[string]any{}
 		for _, membersItem := range networkAddressGroup.Members {
 			member := memberToMap(membersItem)
 			members = append(members, member)
@@ -137,8 +142,8 @@ func networkAddressGroupsNetworkAddressGroupToMap(networkAddressGroup *models.Ne
 	return nag
 }
 
-func memberToMap(mbr *models.NetworkAddressGroupMember) map[string]interface{} {
-	member := make(map[string]interface{})
+func memberToMap(mbr *models.NetworkAddressGroupMember) map[string]any {
+	member := make(map[string]any)
 	member[Attr_CIDR] = mbr.Cidr
 	member[Attr_ID] = mbr.ID
 	return member

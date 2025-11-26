@@ -103,7 +103,7 @@ func ResourceIbmSmConfigurationPublicCertificateDNSCisValidator() *validate.Reso
 }
 
 func resourceIbmSmConfigurationPublicCertificateDNSCisCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	secretsManagerClient, err := meta.(conns.ClientSession).SecretsManagerV2()
+	secretsManagerClient, endpointsFile, err := getSecretsManagerSession(meta.(conns.ClientSession))
 	if err != nil {
 		tfErr := flex.TerraformErrorf(err, "", PublicCertConfigDnsCISResourceName, "create")
 		return tfErr.GetDiag()
@@ -111,7 +111,7 @@ func resourceIbmSmConfigurationPublicCertificateDNSCisCreate(context context.Con
 
 	region := getRegion(secretsManagerClient, d)
 	instanceId := d.Get("instance_id").(string)
-	secretsManagerClient = getClientWithInstanceEndpoint(secretsManagerClient, instanceId, region, getEndpointType(secretsManagerClient, d))
+	secretsManagerClient = getClientWithInstanceEndpoint(secretsManagerClient, instanceId, region, getEndpointType(secretsManagerClient, d), endpointsFile)
 	bodyModelMap := map[string]interface{}{}
 	createConfigurationOptions := &secretsmanagerv2.CreateConfigurationOptions{}
 
@@ -150,7 +150,7 @@ func resourceIbmSmConfigurationPublicCertificateDNSCisCreate(context context.Con
 }
 
 func resourceIbmSmConfigurationPublicCertificateDNSCisRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	secretsManagerClient, err := meta.(conns.ClientSession).SecretsManagerV2()
+	secretsManagerClient, endpointsFile, err := getSecretsManagerSession(meta.(conns.ClientSession))
 	if err != nil {
 		tfErr := flex.TerraformErrorf(err, "", PublicCertConfigDnsCISResourceName, "read")
 		return tfErr.GetDiag()
@@ -164,7 +164,7 @@ func resourceIbmSmConfigurationPublicCertificateDNSCisRead(context context.Conte
 	region := id[0]
 	instanceId := id[1]
 	configName := id[2]
-	secretsManagerClient = getClientWithInstanceEndpoint(secretsManagerClient, instanceId, region, getEndpointType(secretsManagerClient, d))
+	secretsManagerClient = getClientWithInstanceEndpoint(secretsManagerClient, instanceId, region, getEndpointType(secretsManagerClient, d), endpointsFile)
 	getConfigurationOptions := &secretsmanagerv2.GetConfigurationOptions{}
 
 	getConfigurationOptions.SetName(configName)
@@ -232,7 +232,7 @@ func resourceIbmSmConfigurationPublicCertificateDNSCisRead(context context.Conte
 }
 
 func resourceIbmSmConfigurationPublicCertificateDNSCisUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	secretsManagerClient, err := meta.(conns.ClientSession).SecretsManagerV2()
+	secretsManagerClient, endpointsFile, err := getSecretsManagerSession(meta.(conns.ClientSession))
 	if err != nil {
 		tfErr := flex.TerraformErrorf(err, "", PublicCertConfigDnsCISResourceName, "update")
 		return tfErr.GetDiag()
@@ -242,7 +242,7 @@ func resourceIbmSmConfigurationPublicCertificateDNSCisUpdate(context context.Con
 	region := id[0]
 	instanceId := id[1]
 	configName := id[2]
-	secretsManagerClient = getClientWithInstanceEndpoint(secretsManagerClient, instanceId, region, getEndpointType(secretsManagerClient, d))
+	secretsManagerClient = getClientWithInstanceEndpoint(secretsManagerClient, instanceId, region, getEndpointType(secretsManagerClient, d), endpointsFile)
 	updateConfigurationOptions := &secretsmanagerv2.UpdateConfigurationOptions{}
 
 	updateConfigurationOptions.SetName(configName)
@@ -275,7 +275,7 @@ func resourceIbmSmConfigurationPublicCertificateDNSCisUpdate(context context.Con
 }
 
 func resourceIbmSmConfigurationPublicCertificateDNSCisDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	secretsManagerClient, err := meta.(conns.ClientSession).SecretsManagerV2()
+	secretsManagerClient, endpointsFile, err := getSecretsManagerSession(meta.(conns.ClientSession))
 	if err != nil {
 		tfErr := flex.TerraformErrorf(err, "", PublicCertConfigDnsCISResourceName, "delete")
 		return tfErr.GetDiag()
@@ -285,7 +285,7 @@ func resourceIbmSmConfigurationPublicCertificateDNSCisDelete(context context.Con
 	region := id[0]
 	instanceId := id[1]
 	configName := id[2]
-	secretsManagerClient = getClientWithInstanceEndpoint(secretsManagerClient, instanceId, region, getEndpointType(secretsManagerClient, d))
+	secretsManagerClient = getClientWithInstanceEndpoint(secretsManagerClient, instanceId, region, getEndpointType(secretsManagerClient, d), endpointsFile)
 	deleteConfigurationOptions := &secretsmanagerv2.DeleteConfigurationOptions{}
 
 	deleteConfigurationOptions.SetName(configName)

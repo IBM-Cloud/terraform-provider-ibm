@@ -596,6 +596,274 @@ func TestAccIBMCosBucket_Lifecycle_Configuration_Transition_Multiple_Rules(t *te
 	})
 }
 
+// F1888 test cases
+
+func TestAccIBMCosBucket_Lifecycle_Configuration_Expiration_Filter_With_Valid_Prefix(t *testing.T) {
+	serviceName := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
+	bucketName := fmt.Sprintf("terraform-lifecycle-configuration%d", acctest.RandIntRange(10, 100))
+	bucketRegion := "us-south"
+	bucketClass := "standard"
+	bucketRegionType := "region_location"
+	expirationDays := 1
+	filterPrefix := "/foo"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMCosBucketDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMCosBucket_Lifecycle_Configuration_Expiration_Filter_With_Valid_Prefix(serviceName, bucketName, bucketRegionType, bucketRegion, bucketClass, expirationDays, filterPrefix),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMCosBucketExists("ibm_resource_instance.instance", "ibm_cos_bucket.bucket", bucketRegionType, bucketRegion, bucketName),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket", "bucket_name", bucketName),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket", "storage_class", bucketClass),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket", "region_location", bucketRegion),
+					resource.TestCheckResourceAttr("ibm_cos_bucket_lifecycle_configuration.lifecycle", "lifecycle_rule.#", "1"),
+					resource.TestCheckResourceAttr("ibm_cos_bucket_lifecycle_configuration.lifecycle", "lifecycle_rule.0.filter.0.prefix", filterPrefix),
+					resource.TestCheckResourceAttr("ibm_cos_bucket_lifecycle_configuration.lifecycle", "lifecycle_rule.0.expiration.0.days", "1"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccIBMCosBucket_Lifecycle_Configuration_Expiration_Filter_With_Valid_Tag(t *testing.T) {
+	serviceName := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
+	bucketName := fmt.Sprintf("terraform-lifecycle-configuration%d", acctest.RandIntRange(10, 100))
+	bucketRegion := "us-south"
+	bucketClass := "standard"
+	bucketRegionType := "region_location"
+	expirationDays := 1
+	key := "one"
+	value := "done"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMCosBucketDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMCosBucket_Lifecycle_Configuration_Expiration_Filter_With_Valid_Tag(serviceName, bucketName, bucketRegionType, bucketRegion, bucketClass, expirationDays, key, value),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMCosBucketExists("ibm_resource_instance.instance", "ibm_cos_bucket.bucket", bucketRegionType, bucketRegion, bucketName),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket", "bucket_name", bucketName),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket", "storage_class", bucketClass),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket", "region_location", bucketRegion),
+					resource.TestCheckResourceAttr("ibm_cos_bucket_lifecycle_configuration.lifecycle", "lifecycle_rule.#", "1"),
+					resource.TestCheckResourceAttr("ibm_cos_bucket_lifecycle_configuration.lifecycle", "lifecycle_rule.0.filter.0.tag.0.key", key),
+					resource.TestCheckResourceAttr("ibm_cos_bucket_lifecycle_configuration.lifecycle", "lifecycle_rule.0.filter.0.tag.0.value", value),
+					resource.TestCheckResourceAttr("ibm_cos_bucket_lifecycle_configuration.lifecycle", "lifecycle_rule.0.expiration.0.days", "1"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccIBMCosBucket_Lifecycle_Configuration_Expiration_Filter_With_Valid_Object_Size_Greater_Than(t *testing.T) {
+	serviceName := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
+	bucketName := fmt.Sprintf("terraform-lifecycle-configuration%d", acctest.RandIntRange(10, 100))
+	bucketRegion := "us-south"
+	bucketClass := "standard"
+	bucketRegionType := "region_location"
+	expirationDays := 1
+	objectSizeGreaterThan := 10
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMCosBucketDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMCosBucket_Lifecycle_Configuration_Expiration_Filter_With_Valid_Object_Size_Greater_Than(serviceName, bucketName, bucketRegionType, bucketRegion, bucketClass, expirationDays, objectSizeGreaterThan),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMCosBucketExists("ibm_resource_instance.instance", "ibm_cos_bucket.bucket", bucketRegionType, bucketRegion, bucketName),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket", "bucket_name", bucketName),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket", "storage_class", bucketClass),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket", "region_location", bucketRegion),
+					resource.TestCheckResourceAttr("ibm_cos_bucket_lifecycle_configuration.lifecycle", "lifecycle_rule.#", "1"),
+					resource.TestCheckResourceAttr("ibm_cos_bucket_lifecycle_configuration.lifecycle", "lifecycle_rule.0.filter.0.object_size_greater_than", "10"),
+					resource.TestCheckResourceAttr("ibm_cos_bucket_lifecycle_configuration.lifecycle", "lifecycle_rule.0.expiration.0.days", "1"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccIBMCosBucket_Lifecycle_Configuration_Expiration_Filter_With_Valid_Object_Size_Less_Than(t *testing.T) {
+	serviceName := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
+	bucketName := fmt.Sprintf("terraform-lifecycle-configuration%d", acctest.RandIntRange(10, 100))
+	bucketRegion := "us-south"
+	bucketClass := "standard"
+	bucketRegionType := "region_location"
+	expirationDays := 1
+	objectSizeLessThan := 10
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMCosBucketDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMCosBucket_Lifecycle_Configuration_Expiration_Filter_With_Valid_Object_Size_Less_Than(serviceName, bucketName, bucketRegionType, bucketRegion, bucketClass, expirationDays, objectSizeLessThan),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMCosBucketExists("ibm_resource_instance.instance", "ibm_cos_bucket.bucket", bucketRegionType, bucketRegion, bucketName),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket", "bucket_name", bucketName),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket", "storage_class", bucketClass),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket", "region_location", bucketRegion),
+					resource.TestCheckResourceAttr("ibm_cos_bucket_lifecycle_configuration.lifecycle", "lifecycle_rule.#", "1"),
+					resource.TestCheckResourceAttr("ibm_cos_bucket_lifecycle_configuration.lifecycle", "lifecycle_rule.0.filter.0.object_size_less_than", "10"),
+					resource.TestCheckResourceAttr("ibm_cos_bucket_lifecycle_configuration.lifecycle", "lifecycle_rule.0.expiration.0.days", "1"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccIBMCosBucket_Lifecycle_Configuration_Expiration_Filter_With_Valid_All_With_And(t *testing.T) {
+	serviceName := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
+	bucketName := fmt.Sprintf("terraform-lifecycle-configuration%d", acctest.RandIntRange(10, 100))
+	bucketRegion := "us-south"
+	bucketClass := "standard"
+	bucketRegionType := "region_location"
+	expirationDays := 1
+	filterPrefix := "/foo"
+	key := "one"
+	value := "done"
+	objectSizeGreaterThan := 10
+	objectSizeLessThan := 20
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMCosBucketDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMCosBucket_Lifecycle_Configuration_Expiration_Filter_With_Valid_All_With_And(serviceName, bucketName, bucketRegionType, bucketRegion, bucketClass, expirationDays, filterPrefix, key, value, objectSizeGreaterThan, objectSizeLessThan),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMCosBucketExists("ibm_resource_instance.instance", "ibm_cos_bucket.bucket", bucketRegionType, bucketRegion, bucketName),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket", "bucket_name", bucketName),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket", "storage_class", bucketClass),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket", "region_location", bucketRegion),
+					resource.TestCheckResourceAttr("ibm_cos_bucket_lifecycle_configuration.lifecycle", "lifecycle_rule.#", "1"),
+					resource.TestCheckResourceAttr("ibm_cos_bucket_lifecycle_configuration.lifecycle", "lifecycle_rule.0.filter.0.and.0.prefix", filterPrefix),
+					resource.TestCheckResourceAttr("ibm_cos_bucket_lifecycle_configuration.lifecycle", "lifecycle_rule.0.filter.0.and.0.tags.0.key", key),
+					resource.TestCheckResourceAttr("ibm_cos_bucket_lifecycle_configuration.lifecycle", "lifecycle_rule.0.filter.0.and.0.tags.0.value", value),
+					resource.TestCheckResourceAttr("ibm_cos_bucket_lifecycle_configuration.lifecycle", "lifecycle_rule.0.filter.0.and.0.object_size_greater_than", "10"),
+					resource.TestCheckResourceAttr("ibm_cos_bucket_lifecycle_configuration.lifecycle", "lifecycle_rule.0.filter.0.and.0.object_size_less_than", "20"),
+					resource.TestCheckResourceAttr("ibm_cos_bucket_lifecycle_configuration.lifecycle", "lifecycle_rule.0.expiration.0.days", "1"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccIBMCosBucket_Lifecycle_Configuration_Expiration_Filter_With_Valid_Multiple_Tags(t *testing.T) {
+	serviceName := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
+	bucketName := fmt.Sprintf("terraform-lifecycle-configuration%d", acctest.RandIntRange(10, 100))
+	bucketRegion := "us-south"
+	bucketClass := "standard"
+	bucketRegionType := "region_location"
+	expirationDays := 1
+	key1 := "one"
+	value1 := "done"
+	key2 := "two"
+	value2 := "true"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMCosBucketDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMCosBucket_Lifecycle_Configuration_Expiration_Filter_With_Valid_Multiple_Tags(serviceName, bucketName, bucketRegionType, bucketRegion, bucketClass, expirationDays, key1, value1, key2, value2),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMCosBucketExists("ibm_resource_instance.instance", "ibm_cos_bucket.bucket", bucketRegionType, bucketRegion, bucketName),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket", "bucket_name", bucketName),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket", "storage_class", bucketClass),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket", "region_location", bucketRegion),
+					resource.TestCheckResourceAttr("ibm_cos_bucket_lifecycle_configuration.lifecycle", "lifecycle_rule.#", "1"),
+					resource.TestCheckResourceAttr("ibm_cos_bucket_lifecycle_configuration.lifecycle", "lifecycle_rule.0.filter.0.and.0.tags.0.key", key1),
+					resource.TestCheckResourceAttr("ibm_cos_bucket_lifecycle_configuration.lifecycle", "lifecycle_rule.0.filter.0.and.0.tags.0.value", value1),
+					resource.TestCheckResourceAttr("ibm_cos_bucket_lifecycle_configuration.lifecycle", "lifecycle_rule.0.filter.0.and.0.tags.1.key", key2),
+					resource.TestCheckResourceAttr("ibm_cos_bucket_lifecycle_configuration.lifecycle", "lifecycle_rule.0.filter.0.and.0.tags.1.value", value2),
+					resource.TestCheckResourceAttr("ibm_cos_bucket_lifecycle_configuration.lifecycle", "lifecycle_rule.0.expiration.0.days", "1"),
+				),
+			},
+		},
+	})
+}
+func TestAccIBMCosBucket_Lifecycle_Configuration_Expiration_Filter_With_Valid_All_Without_And(t *testing.T) {
+	serviceName := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
+	bucketName := fmt.Sprintf("terraform-lifecycle-configuration%d", acctest.RandIntRange(10, 100))
+	bucketRegion := "us-south"
+	bucketClass := "standard"
+	bucketRegionType := "region_location"
+	expirationDays := 1
+	filterPrefix := "/foo"
+	key := "one"
+	value := "done"
+	objectSizeGreaterThan := 10
+	objectSizeLessThan := 20
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMCosBucketDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config:      testAccCheckIBMCosBucket_Lifecycle_Configuration_Expiration_Filter_With_Valid_All_Without_And(serviceName, bucketName, bucketRegionType, bucketRegion, bucketClass, expirationDays, filterPrefix, key, value, objectSizeGreaterThan, objectSizeLessThan),
+				ExpectError: regexp.MustCompile("MalformedXML: The XML you provided was not well-formed or did not validate against our published schema."),
+			},
+		},
+	})
+}
+
+func TestAccIBMCosBucket_Lifecycle_Configuration_Expiration_Filter_With_Invalid_Object_Size_Greater_Than(t *testing.T) {
+	serviceName := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
+	bucketName := fmt.Sprintf("terraform-lifecycle-configuration%d", acctest.RandIntRange(10, 100))
+	bucketRegion := "us-south"
+	bucketClass := "standard"
+	bucketRegionType := "region_location"
+	expirationDays := 1
+	objectSizeGreaterThan := -10
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMCosBucketDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config:      testAccCheckIBMCosBucket_Lifecycle_Configuration_Expiration_Filter_With_Valid_Object_Size_Greater_Than(serviceName, bucketName, bucketRegionType, bucketRegion, bucketClass, expirationDays, objectSizeGreaterThan),
+				ExpectError: regexp.MustCompile(`expected lifecycle_rule.0.filter.0.object_size_greater_than to be at least \(0\), got -10`),
+			},
+		},
+	})
+}
+
+func TestAccIBMCosBucket_Lifecycle_Configuration_Expiration_Filter_With_Invalid_Object_Size_Less_Than(t *testing.T) {
+	serviceName := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
+	bucketName := fmt.Sprintf("terraform-lifecycle-configuration%d", acctest.RandIntRange(10, 100))
+	bucketRegion := "us-south"
+	bucketClass := "standard"
+	bucketRegionType := "region_location"
+	expirationDays := 1
+	objectSizeLessThan := -10
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMCosBucketDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config:      testAccCheckIBMCosBucket_Lifecycle_Configuration_Expiration_Filter_With_Valid_Object_Size_Less_Than(serviceName, bucketName, bucketRegionType, bucketRegion, bucketClass, expirationDays, objectSizeLessThan),
+				ExpectError: regexp.MustCompile(`expected lifecycle_rule.0.filter.0.object_size_less_than to be at least \(1\), got -10`),
+			},
+		},
+	})
+}
+
+// check
 func testAccCheckIBMCosBucket_Lifecycle_Configuration_Expiration_With_Days(cosServiceName string, bucketName string, regiontype string, region string, storageClass string, days int) string {
 
 	return fmt.Sprintf(`
@@ -1241,8 +1509,8 @@ func testAccCheckIBMCosBucket_Lifecycle_Configuration_Transition_With_Multiple_R
 		 }
 		 lifecycle_rule {
 			transition{
-			 days = 3
-			 storage_class = "ACCELERATED"
+			   days = 3
+			   storage_class = "ACCELERATED"
 			 }
 			filter {
 			  prefix = ""
@@ -1253,4 +1521,305 @@ func testAccCheckIBMCosBucket_Lifecycle_Configuration_Transition_With_Multiple_R
 		  }
 	  }
 	`, cosServiceName, bucketName, region, storageClass)
+}
+
+func testAccCheckIBMCosBucket_Lifecycle_Configuration_Expiration_Filter_With_Valid_Prefix(cosServiceName string, bucketName string, regiontype string, region string, storageClass string, days int, prefix string) string {
+
+	return fmt.Sprintf(`
+	data "ibm_resource_group" "cos_group" {
+		name = "Default"
+	}
+
+	resource "ibm_resource_instance" "instance" {
+		name              = "%s"
+		service           = "cloud-object-storage"
+		plan              = "standard"
+		location          = "global"
+		resource_group_id = data.ibm_resource_group.cos_group.id
+	}
+	resource "ibm_cos_bucket" "bucket" {
+		bucket_name           = "%s"
+		resource_instance_id  = ibm_resource_instance.instance.id
+	    region_location = "%s"
+		storage_class         = "%s"
+	}
+	resource "ibm_cos_bucket_lifecycle_configuration"  "lifecycle" {
+		bucket_crn = ibm_cos_bucket.bucket.crn
+		bucket_location = ibm_cos_bucket.bucket.region_location
+		lifecycle_rule {
+		   expiration{
+		     days = "%d"
+		   }
+		   filter {
+		     prefix = "%s"
+		   }  
+		   rule_id = "id"
+		   status = "enable"
+	
+		 }
+	  } 
+	`, cosServiceName, bucketName, region, storageClass, days, prefix)
+}
+
+func testAccCheckIBMCosBucket_Lifecycle_Configuration_Expiration_Filter_With_Valid_Tag(cosServiceName string, bucketName string, regiontype string, region string, storageClass string, days int, key string, value string) string {
+
+	return fmt.Sprintf(`
+	data "ibm_resource_group" "cos_group" {
+		name = "Default"
+	}
+
+	resource "ibm_resource_instance" "instance" {
+		name              = "%s"
+		service           = "cloud-object-storage"
+		plan              = "standard"
+		location          = "global"
+		resource_group_id = data.ibm_resource_group.cos_group.id
+	}
+	resource "ibm_cos_bucket" "bucket" {
+		bucket_name           = "%s"
+		resource_instance_id  = ibm_resource_instance.instance.id
+	    region_location = "%s"
+		storage_class         = "%s"
+	}
+	resource "ibm_cos_bucket_lifecycle_configuration"  "lifecycle" {
+		bucket_crn = ibm_cos_bucket.bucket.crn
+		bucket_location = ibm_cos_bucket.bucket.region_location
+		lifecycle_rule {
+		   expiration{
+		     days = "%d"
+		   }
+		   filter {
+		     tag{
+			key = "%s"
+			value = "%s"
+			 }
+		   }  
+		   rule_id = "id"
+		   status = "enable"
+		 }
+	  }
+		 
+	`, cosServiceName, bucketName, region, storageClass, days, key, value)
+}
+func testAccCheckIBMCosBucket_Lifecycle_Configuration_Expiration_Filter_With_Valid_Object_Size_Greater_Than(cosServiceName string, bucketName string, regiontype string, region string, storageClass string, days int, object_size_greater_than int) string {
+
+	return fmt.Sprintf(`
+	data "ibm_resource_group" "cos_group" {
+		name = "Default"
+	}
+
+	resource "ibm_resource_instance" "instance" {
+		name              = "%s"
+		service           = "cloud-object-storage"
+		plan              = "standard"
+		location          = "global"
+		resource_group_id = data.ibm_resource_group.cos_group.id
+	}
+	resource "ibm_cos_bucket" "bucket" {
+		bucket_name           = "%s"
+		resource_instance_id  = ibm_resource_instance.instance.id
+	    region_location = "%s"
+		storage_class         = "%s"
+	}
+	resource "ibm_cos_bucket_lifecycle_configuration"  "lifecycle" {
+		bucket_crn = ibm_cos_bucket.bucket.crn
+		bucket_location = ibm_cos_bucket.bucket.region_location
+		lifecycle_rule {
+		   expiration{
+		     days = "%d"
+		   }
+		   filter {
+			object_size_greater_than = "%d"
+		   }  
+		   rule_id = "id"
+		   status = "enable"
+	
+		 }
+	  }
+	
+	 
+	`, cosServiceName, bucketName, region, storageClass, days, object_size_greater_than)
+}
+
+func testAccCheckIBMCosBucket_Lifecycle_Configuration_Expiration_Filter_With_Valid_Object_Size_Less_Than(cosServiceName string, bucketName string, regiontype string, region string, storageClass string, days int, object_size_less_than int) string {
+
+	return fmt.Sprintf(`
+	data "ibm_resource_group" "cos_group" {
+		name = "Default"
+	}
+
+	resource "ibm_resource_instance" "instance" {
+		name              = "%s"
+		service           = "cloud-object-storage"
+		plan              = "standard"
+		location          = "global"
+		resource_group_id = data.ibm_resource_group.cos_group.id
+	}
+	resource "ibm_cos_bucket" "bucket" {
+		bucket_name           = "%s"
+		resource_instance_id  = ibm_resource_instance.instance.id
+	    region_location = "%s"
+		storage_class         = "%s"
+	}
+	resource "ibm_cos_bucket_lifecycle_configuration"  "lifecycle" {
+		bucket_crn = ibm_cos_bucket.bucket.crn
+		bucket_location = ibm_cos_bucket.bucket.region_location
+		lifecycle_rule {
+		   expiration{
+		     days = "%d"
+		   }
+		   filter {
+			object_size_less_than = "%d"
+		   }  
+		   rule_id = "id"
+		   status = "enable"
+	
+		 }
+	  }
+	
+	 
+	`, cosServiceName, bucketName, region, storageClass, days, object_size_less_than)
+}
+
+func testAccCheckIBMCosBucket_Lifecycle_Configuration_Expiration_Filter_With_Valid_All_With_And(cosServiceName string, bucketName string, regiontype string, region string, storageClass string, days int, prefix string, key string, value string, object_size_greater_than int, object_size_less_than int) string {
+
+	return fmt.Sprintf(`
+	data "ibm_resource_group" "cos_group" {
+		name = "Default"
+	}
+
+	resource "ibm_resource_instance" "instance" {
+		name              = "%s"
+		service           = "cloud-object-storage"
+		plan              = "standard"
+		location          = "global"
+		resource_group_id = data.ibm_resource_group.cos_group.id
+	}
+	resource "ibm_cos_bucket" "bucket" {
+		bucket_name           = "%s"
+		resource_instance_id  = ibm_resource_instance.instance.id
+	    region_location = "%s"
+		storage_class         = "%s"
+	}
+	resource "ibm_cos_bucket_lifecycle_configuration"  "lifecycle" {
+		bucket_crn = ibm_cos_bucket.bucket.crn
+		bucket_location = ibm_cos_bucket.bucket.region_location
+		lifecycle_rule {
+		   expiration{
+		     days = "%d"
+		   }
+		   filter {
+		      and{
+			prefix = "%s"
+			tags{
+			    key = "%s"
+			    value = "%s"
+			}
+			object_size_greater_than = "%d"
+			object_size_less_than = "%d"
+		   }
+		   }  
+		   rule_id = "id"
+		   status = "enable"
+	
+		 }
+	  }
+	
+	 
+	`, cosServiceName, bucketName, region, storageClass, days, prefix, key, value, object_size_greater_than, object_size_less_than)
+}
+
+func testAccCheckIBMCosBucket_Lifecycle_Configuration_Expiration_Filter_With_Valid_Multiple_Tags(cosServiceName string, bucketName string, regiontype string, region string, storageClass string, days int, key string, value string, key1 string, value1 string) string {
+
+	return fmt.Sprintf(`
+	data "ibm_resource_group" "cos_group" {
+		name = "Default"
+	}
+
+	resource "ibm_resource_instance" "instance" {
+		name              = "%s"
+		service           = "cloud-object-storage"
+		plan              = "standard"
+		location          = "global"
+		resource_group_id = data.ibm_resource_group.cos_group.id
+	}
+	resource "ibm_cos_bucket" "bucket" {
+		bucket_name           = "%s"
+		resource_instance_id  = ibm_resource_instance.instance.id
+	    region_location = "%s"
+		storage_class         = "%s"
+	}
+	resource "ibm_cos_bucket_lifecycle_configuration"  "lifecycle" {
+		bucket_crn = ibm_cos_bucket.bucket.crn
+		bucket_location = ibm_cos_bucket.bucket.region_location
+		lifecycle_rule {
+		   expiration{
+		     days = "%d"
+		   }
+		   filter {
+		      and{
+			tags{
+			  key = "%s"
+			  value = "%s"
+			}
+			tags{
+			  key = "%s"
+			  value = "%s"
+			}
+		      }
+		   }  
+		   rule_id = "id"
+		   status = "enable"
+	
+		 }
+	  }
+	
+	 
+	`, cosServiceName, bucketName, region, storageClass, days, key, value, key1, value1)
+}
+
+func testAccCheckIBMCosBucket_Lifecycle_Configuration_Expiration_Filter_With_Valid_All_Without_And(cosServiceName string, bucketName string, regiontype string, region string, storageClass string, days int, prefix string, key string, value string, object_size_greater_than int, object_size_less_than int) string {
+
+	return fmt.Sprintf(`
+	data "ibm_resource_group" "cos_group" {
+		name = "Default"
+	}
+
+	resource "ibm_resource_instance" "instance" {
+		name              = "%s"
+		service           = "cloud-object-storage"
+		plan              = "standard"
+		location          = "global"
+		resource_group_id = data.ibm_resource_group.cos_group.id
+	}
+	resource "ibm_cos_bucket" "bucket" {
+		bucket_name           = "%s"
+		resource_instance_id  = ibm_resource_instance.instance.id
+	        region_location = "%s"
+		storage_class         = "%s"
+	}
+	resource "ibm_cos_bucket_lifecycle_configuration"  "lifecycle" {
+		bucket_crn = ibm_cos_bucket.bucket.crn
+		bucket_location = ibm_cos_bucket.bucket.region_location
+		lifecycle_rule {
+		   expiration{
+		     days = "%d"
+		   }
+		   filter {
+		      prefix = "%s"
+		      tag{
+		         key = "%s"
+		         value = "%s"
+		      }
+		      object_size_greater_than = "%d"
+		      object_size_less_than = "%d"
+		   }  
+		   rule_id = "id"
+		   status = "enable"
+	
+		 }
+	  }
+	
+	 
+	`, cosServiceName, bucketName, region, storageClass, days, prefix, key, value, object_size_greater_than, object_size_less_than)
 }

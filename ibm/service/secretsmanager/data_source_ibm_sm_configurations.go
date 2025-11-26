@@ -200,7 +200,7 @@ func DataSourceIbmSmConfigurations() *schema.Resource {
 }
 
 func dataSourceIbmSmConfigurationsRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	secretsManagerClient, err := meta.(conns.ClientSession).SecretsManagerV2()
+	secretsManagerClient, endpointsFile, err := getSecretsManagerSession(meta.(conns.ClientSession))
 	if err != nil {
 		tfErr := flex.TerraformErrorf(err, "", fmt.Sprintf("(Data) %s", ConfigurationsResourceName), "read")
 		return tfErr.GetDiag()
@@ -208,7 +208,7 @@ func dataSourceIbmSmConfigurationsRead(context context.Context, d *schema.Resour
 
 	region := getRegion(secretsManagerClient, d)
 	instanceId := d.Get("instance_id").(string)
-	secretsManagerClient = getClientWithInstanceEndpoint(secretsManagerClient, instanceId, region, getEndpointType(secretsManagerClient, d))
+	secretsManagerClient = getClientWithInstanceEndpoint(secretsManagerClient, instanceId, region, getEndpointType(secretsManagerClient, d), endpointsFile)
 
 	listConfigurationsOptions := &secretsmanagerv2.ListConfigurationsOptions{}
 	sort, ok := d.GetOk("sort")
@@ -288,6 +288,8 @@ func dataSourceIbmSmConfigurationsConfigurationMetadataToMap(model secretsmanage
 		return dataSourceIbmSmConfigurationsPrivateCertificateConfigurationIntermediateCAMetadataToMap(model.(*secretsmanagerv2.PrivateCertificateConfigurationIntermediateCAMetadata))
 	} else if _, ok := model.(*secretsmanagerv2.PrivateCertificateConfigurationTemplateMetadata); ok {
 		return dataSourceIbmSmConfigurationsPrivateCertificateConfigurationTemplateMetadataToMap(model.(*secretsmanagerv2.PrivateCertificateConfigurationTemplateMetadata))
+	} else if _, ok := model.(*secretsmanagerv2.CustomCredentialsConfigurationMetadata); ok {
+		return dataSourceIbmSmConfigurationsCustomCredentialsConfigurationMetadataToMap(model.(*secretsmanagerv2.CustomCredentialsConfigurationMetadata))
 	} else if _, ok := model.(*secretsmanagerv2.ConfigurationMetadata); ok {
 		modelMap := make(map[string]interface{})
 		model := model.(*secretsmanagerv2.ConfigurationMetadata)
@@ -571,6 +573,29 @@ func dataSourceIbmSmConfigurationsPrivateCertificateConfigurationTemplateMetadat
 	}
 	if model.CertificateAuthority != nil {
 		modelMap["certificate_authority"] = *model.CertificateAuthority
+	}
+	return modelMap, nil
+}
+
+func dataSourceIbmSmConfigurationsCustomCredentialsConfigurationMetadataToMap(model *secretsmanagerv2.CustomCredentialsConfigurationMetadata) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.ConfigType != nil {
+		modelMap["config_type"] = *model.ConfigType
+	}
+	if model.Name != nil {
+		modelMap["name"] = *model.Name
+	}
+	if model.SecretType != nil {
+		modelMap["secret_type"] = *model.SecretType
+	}
+	if model.CreatedBy != nil {
+		modelMap["created_by"] = *model.CreatedBy
+	}
+	if model.CreatedAt != nil {
+		modelMap["created_at"] = model.CreatedAt.String()
+	}
+	if model.UpdatedAt != nil {
+		modelMap["updated_at"] = model.UpdatedAt.String()
 	}
 	return modelMap, nil
 }

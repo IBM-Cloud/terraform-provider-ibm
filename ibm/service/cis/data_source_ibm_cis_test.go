@@ -13,7 +13,7 @@ import (
 )
 
 func TestAccIBMCisDataSource_basic(t *testing.T) {
-	instanceName := fmt.Sprintf(acc.CisInstance)
+	instanceName := acc.CisInstance
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheckCis(t) },

@@ -10,6 +10,7 @@ import (
 	"log"
 	"time"
 
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
@@ -36,6 +37,48 @@ func ResourceIBMIsBareMetalServerInitialization() *schema.Resource {
 				ForceNew:    true,
 				Required:    true,
 				Description: "Bare metal server identifier",
+			},
+			isBareMetalServerDefaultTrustedProfile: {
+				Type:        schema.TypeList,
+				Optional:    true,
+				ForceNew:    true,
+				MaxItems:    1,
+				Description: "The default trusted profile configuration for the bare metal server",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"auto_link": {
+							Type:        schema.TypeBool,
+							Optional:    true,
+							ForceNew:    true,
+							Description: "If set to true, the system will create a link to the specified target trusted profile during server initialization.",
+						},
+						"target": {
+							Type:        schema.TypeList,
+							Optional:    true,
+							ForceNew:    true,
+							MaxItems:    1,
+							Description: "The default IAM trusted profile to use for this bare metal server",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"id": {
+										Type:          schema.TypeString,
+										Optional:      true,
+										ForceNew:      true,
+										Description:   "The unique identifier for this trusted profile",
+										ConflictsWith: []string{"default_trusted_profile.0.target.0.crn"},
+									},
+									"crn": {
+										Type:          schema.TypeString,
+										Optional:      true,
+										ForceNew:      true,
+										Description:   "The CRN for this trusted profile",
+										ConflictsWith: []string{"default_trusted_profile.0.target.0.id"},
+									},
+								},
+							},
+						},
+					},
+				},
 			},
 			isBareMetalServerImage: {
 				Type:        schema.TypeString,
@@ -76,7 +119,9 @@ func resourceIBMISBareMetalServerInitializationCreate(context context.Context, d
 
 	sess, err := vpcClient(meta)
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_bare_metal_server_initialization", "create", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	stopServerIfStartingForInitialization := false
 	options := &vpcv1.GetBareMetalServerInitializationOptions{
@@ -84,11 +129,15 @@ func resourceIBMISBareMetalServerInitializationCreate(context context.Context, d
 	}
 	stopServerIfStartingForInitialization, err = resourceStopServerIfRunning(bareMetalServerId, "hard", d, context, sess, stopServerIfStartingForInitialization)
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("resourceStopServerIfRunning failed: %s", err.Error()), "ibm_is_bare_metal_server_initialization", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
-	init, response, err := sess.GetBareMetalServerInitializationWithContext(context, options)
+	init, _, err := sess.GetBareMetalServerInitializationWithContext(context, options)
 	if err != nil || init == nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error get bare metal server initialization (%s) err %s\n%s", bareMetalServerId, err, response))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetBareMetalServerInitializationWithContext failed: %s", err.Error()), "ibm_is_bare_metal_server_initialization", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	d.SetId(bareMetalServerId)
 
@@ -110,40 +159,79 @@ func resourceIBMISBareMetalServerInitializationCreate(context context.Context, d
 		}
 		initializationReplaceOptions.Keys = keyobjs
 	}
-	initInitializationReplace, response, err := sess.ReplaceBareMetalServerInitializationWithContext(context, initializationReplaceOptions)
+	if defaultTrustedProfile, ok := d.GetOk(isBareMetalServerDefaultTrustedProfile); ok {
+		defaultTrustedProfilePrototype := &vpcv1.BareMetalServerInitializationDefaultTrustedProfilePrototype{}
+		defaultTrustedProfileMap := defaultTrustedProfile.([]interface{})[0].(map[string]interface{})
+		if autoLinkIntf, ok := defaultTrustedProfileMap["auto_link"]; ok {
+			if autolink, ok := autoLinkIntf.(bool); ok {
+				defaultTrustedProfilePrototype.AutoLink = &autolink
+			}
+		}
+
+		if targetIntf, ok := defaultTrustedProfileMap["target"]; ok {
+			if targetList, ok := targetIntf.([]interface{}); ok && len(targetList) > 0 {
+				if targetMap, ok := targetList[0].(map[string]interface{}); ok {
+					var id, crn *string
+					if crnStr, ok := targetMap["crn"].(string); ok && crnStr != "" {
+						crn = &crnStr
+					} else if idStr, ok := targetMap["id"].(string); ok && idStr != "" {
+						id = &idStr
+					}
+
+					if crn != nil || id != nil {
+						defaultTrustedProfilePrototype.Target = &vpcv1.TrustedProfileIdentity{
+							CRN: crn,
+							ID:  id,
+						}
+					}
+				}
+			}
+		}
+		initializationReplaceOptions.DefaultTrustedProfile = defaultTrustedProfilePrototype
+	}
+
+	initInitializationReplace, _, err := sess.ReplaceBareMetalServerInitializationWithContext(context, initializationReplaceOptions)
 	if err != nil || initInitializationReplace == nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error initialization replacing bare metal server (%s) err %s\n%s", bareMetalServerId, err, response))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("ReplaceBareMetalServerInitializationWithContext failed: %s", err.Error()), "ibm_is_bare_metal_server_initialization", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	_, err = isWaitForBareMetalServerInitializationStopped(sess, bareMetalServerId, d.Timeout(schema.TimeoutUpdate), d)
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("isWaitForBareMetalServerInitializationStopped failed: %s", err.Error()), "ibm_is_bare_metal_server_initialization", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	if stopServerIfStartingForInitialization {
 		_, err = resourceStartServerIfStopped(bareMetalServerId, "hard", d, context, sess, stopServerIfStartingForInitialization)
 		if err != nil {
-			return diag.FromErr(err)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("resourceStartServerIfStopped failed: %s", err.Error()), "ibm_is_bare_metal_server_initialization", "create")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 	}
-	err = BareMetalServerInitializationGet(d, sess, bareMetalServerId)
-	if err != nil {
-		return diag.FromErr(err)
+	diagErr := BareMetalServerInitializationGet(context, d, sess, bareMetalServerId)
+	if diagErr != nil {
+		return diagErr
 	}
 	return nil
 }
 
-func BareMetalServerInitializationGet(d *schema.ResourceData, sess *vpcv1.VpcV1, bareMetalServerId string) error {
+func BareMetalServerInitializationGet(context context.Context, d *schema.ResourceData, sess *vpcv1.VpcV1, bareMetalServerId string) diag.Diagnostics {
 
 	options := &vpcv1.GetBareMetalServerInitializationOptions{
 		ID: &bareMetalServerId,
 	}
-	init, response, err := sess.GetBareMetalServerInitialization(options)
+	init, response, err := sess.GetBareMetalServerInitializationWithContext(context, options)
 	if err != nil || init == nil {
 		if response != nil && response.StatusCode == 404 {
 			d.SetId("")
 			return nil
 		}
-		return fmt.Errorf("[ERROR] Error fetching bare metal server (%s)  initialization err %s\n%s", bareMetalServerId, err, response)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetBareMetalServerInitializationWithContext failed: %s", err.Error()), "ibm_is_bare_metal_server_initialization", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	d.Set(isBareMetalServerID, bareMetalServerId)
@@ -157,11 +245,13 @@ func resourceIBMISBareMetalServerInitializationRead(context context.Context, d *
 	}
 	sess, err := vpcClient(meta)
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_bare_metal_server_initialization", "read", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
-	err = BareMetalServerInitializationGet(d, sess, bareMetalServerId)
-	if err != nil {
-		return diag.FromErr(err)
+	diagErr := BareMetalServerInitializationGet(context, d, sess, bareMetalServerId)
+	if diagErr != nil {
+		return diagErr
 	}
 	return nil
 }

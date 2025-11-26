@@ -114,6 +114,44 @@ func TestAccIBMISLB_basic(t *testing.T) {
 		},
 	})
 }
+func TestAccIBMISLB_failsafe_policy_actions(t *testing.T) {
+	var lb string
+	vpcname := fmt.Sprintf("tflb-vpc-%d", acctest.RandIntRange(10, 100))
+	subnetname := fmt.Sprintf("tflb-subnet-name-%d", acctest.RandIntRange(10, 100))
+	name := fmt.Sprintf("tfcreate%d", acctest.RandIntRange(10, 100))
+	name1 := fmt.Sprintf("tfupdate%d", acctest.RandIntRange(10, 100))
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMISLBDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMISLBConfig(vpcname, subnetname, acc.ISZoneName, acc.ISCIDR, name),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISLBExists("ibm_is_lb.testacc_LB", lb),
+					resource.TestCheckResourceAttr(
+						"ibm_is_lb.testacc_LB", "name", name),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_lb.testacc_LB", "hostname"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_lb.testacc_LB", "failsafe_policy_actions.#"),
+				),
+			},
+
+			{
+				Config: testAccCheckIBMISLBConfig(vpcname, subnetname, acc.ISZoneName, acc.ISCIDR, name1),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISLBExists("ibm_is_lb.testacc_LB", lb),
+					resource.TestCheckResourceAttr(
+						"ibm_is_lb.testacc_LB", "name", name1),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_lb.testacc_LB", "failsafe_policy_actions.#"),
+				),
+			},
+		},
+	})
+}
 
 func TestAccIBMISLB_PPNLB(t *testing.T) {
 	var lb string

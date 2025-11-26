@@ -68,12 +68,37 @@ func TestAccIBMIsShareMountTargetTransitEncryptionBasic(t *testing.T) {
 	})
 }
 
+func TestAccIBMIsShareMountTargetTransitEncryptionIpsec(t *testing.T) {
+	var conf vpcv1.ShareMountTarget
+	vpcname := fmt.Sprintf("tf-vpc-name-%d", acctest.RandIntRange(10, 100))
+	targetName := fmt.Sprintf("tf-target-%d", acctest.RandIntRange(10, 100))
+	sname := fmt.Sprintf("tf-fs-name-%d", acctest.RandIntRange(10, 100))
+	vniName := fmt.Sprintf("tf-fs-vni-%d", acctest.RandIntRange(10, 100))
+	primaryIPName := fmt.Sprintf("tf-fs-pipname-%d", acctest.RandIntRange(10, 100))
+	subnetName := fmt.Sprintf("tf-fs-subnetn-%d", acctest.RandIntRange(10, 100))
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIbmIsShareTargetDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMIsShareTargetTransitEncryptionConfigIpsec(vpcname, sname, vniName, subnetName, primaryIPName, targetName),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIbmIsShareTargetExists("ibm_is_share_mount_target.is_share_target", conf),
+					resource.TestCheckResourceAttr("ibm_is_share_mount_target.is_share_target", "name", targetName),
+					resource.TestCheckResourceAttr("ibm_is_share_mount_target.is_share_target", "transit_encryption", "user_managed"),
+				),
+			},
+		},
+	})
+}
+
 func TestAccIbmIsShareMountTargetVNISubnet(t *testing.T) {
 	var conf vpcv1.ShareMountTarget
 	vpcname := fmt.Sprintf("tf-vpc-name-%d", acctest.RandIntRange(10, 100))
 	targetName := fmt.Sprintf("tf-target-%d", acctest.RandIntRange(10, 100))
 	targetNameUpdate := fmt.Sprintf("tf-target-%d", acctest.RandIntRange(10, 100))
-	sname := fmt.Sprintf("tf-fs-name-%d", acctest.RandIntRange(10, 100))
+	sname := fmt.Sprintf("tf-fs-mt-vni-name-%d", acctest.RandIntRange(10, 100))
 	subnetName := fmt.Sprintf("tf-subnet-name-%d", acctest.RandIntRange(10, 100))
 	vniName := fmt.Sprintf("tf-vni-name-%d", acctest.RandIntRange(10, 100))
 	vniNameUpdated := fmt.Sprintf("tf-vni-name-updated-%d", acctest.RandIntRange(10, 100))
@@ -373,7 +398,6 @@ func testAccCheckIbmIsShareMountTargetConfigVNIProtocolStateFilteringMode(vpcNam
 			primary_ip {
 				name = "%s"
 				address = "${replace(ibm_is_subnet.testacc_subnet.ipv4_cidr_block, "0/24", "14")}"
-				auto_delete = %t
 			}
 			subnet = ibm_is_subnet.testacc_subnet.id
 			protocol_state_filtering_mode = "auto"
@@ -382,9 +406,9 @@ func testAccCheckIbmIsShareMountTargetConfigVNIProtocolStateFilteringMode(vpcNam
 		name = "%s"
 	}
 	data "ibm_is_virtual_network_interface" "is_virtual_network_interface" {
-		virtual_network_interface = ibm_is_share_mount_target.is_share_target.virtual_network_interface.0.id
+		virtual_network_interface = ibm_is_share_mount_target.is_share_target.virtual_network_interface[0].id
 	}
-	`, sname, acc.ShareProfileName, vpcName, subnetName, acc.ISCIDR, vniName, pIpName, false, targetName)
+	`, sname, acc.ShareProfileName, vpcName, subnetName, acc.ISCIDR, vniName, pIpName, targetName)
 }
 
 func testAccCheckIbmIsShareMountTargetConfigVNIProtocolStateFilteringModeUpdate(vpcName, sname, targetName, subnetName, vniName, pIpName string) string {
@@ -414,7 +438,6 @@ func testAccCheckIbmIsShareMountTargetConfigVNIProtocolStateFilteringModeUpdate(
 			primary_ip {
 				name = "%s"
 				address = "${replace(ibm_is_subnet.testacc_subnet.ipv4_cidr_block, "0/24", "14")}"
-				auto_delete = %t
 			}
 			subnet = ibm_is_subnet.testacc_subnet.id
 			protocol_state_filtering_mode = "enabled"
@@ -422,7 +445,10 @@ func testAccCheckIbmIsShareMountTargetConfigVNIProtocolStateFilteringModeUpdate(
 
 		name = "%s"
 	}
-	`, sname, acc.ShareProfileName, vpcName, subnetName, acc.ISCIDR, vniName, pIpName, false, targetName)
+	data "ibm_is_virtual_network_interface" "is_virtual_network_interface" {
+		virtual_network_interface = ibm_is_share_mount_target.is_share_target.virtual_network_interface[0].id
+	}
+	`, sname, acc.ShareProfileName, vpcName, subnetName, acc.ISCIDR, vniName, pIpName, targetName)
 }
 
 func testAccCheckIbmIsShareMountTargetConfigVNI(vpcName, sname, targetName, subnetName, vniName, pIpName string) string {
@@ -452,14 +478,13 @@ func testAccCheckIbmIsShareMountTargetConfigVNI(vpcName, sname, targetName, subn
 			primary_ip {
 				name = "%s"
 				address = "${replace(ibm_is_subnet.testacc_subnet.ipv4_cidr_block, "0/24", "14")}"
-				auto_delete = %t
 			}
 			subnet = ibm_is_subnet.testacc_subnet.id
 		}
 
 		name = "%s"
 	}
-	`, sname, acc.ShareProfileName, vpcName, subnetName, acc.ISCIDR, vniName, pIpName, false, targetName)
+	`, sname, acc.ShareProfileName, vpcName, subnetName, acc.ISCIDR, vniName, pIpName, targetName)
 }
 
 func testAccCheckIbmIsShareTargetConfig(vpcName, sname, targetName string) string {
@@ -507,7 +532,45 @@ func testAccCheckIBMIsShareTargetTransitEncryptionConfigBasic(vpcName, sname, vn
 	}
 	resource "ibm_is_share_mount_target" "is_share_target" {
 		share = ibm_is_share.is_share.id
-		transit_encryption = "user_managed"
+		transit_encryption = "ipsec"
+		virtual_network_interface {
+			name = "%s"
+			primary_ip {
+				name = "%s"
+			}
+			subnet = ibm_is_subnet.testacc_subnet.id
+		}
+		name = "%s"
+	}
+	`, sname, acc.ShareProfileName, vpcName, subnetName, acc.ISCIDR, vniName, primaryIPName, targetName)
+}
+
+func testAccCheckIBMIsShareTargetTransitEncryptionConfigIpsec(vpcName, sname, vniName, subnetName, primaryIPName, targetName string) string {
+	return fmt.Sprintf(`
+	data "ibm_resource_group" "group" {
+		is_default = "true"
+	}
+	resource "ibm_is_share" "is_share" {
+		access_control_mode = "security_group"
+		allowed_access_protocols = ["nfs4]
+		zone = "us-south-1"
+		size = 200
+		name = "%s"
+		profile = "%s"
+	}
+	resource "ibm_is_vpc" "testacc_vpc" {
+		name = "%s"
+	}
+	resource "ibm_is_subnet" "testacc_subnet" {
+		name = "%s"
+		vpc = ibm_is_vpc.testacc_vpc.id
+		zone = "us-south-1"
+		ipv4_cidr_block = "%s"
+	}
+	resource "ibm_is_share_mount_target" "is_share_target" {
+		share = ibm_is_share.is_share.id
+		transit_encryption = "ipsec"
+		access_protocol = "nfs4"
 		virtual_network_interface {
 			name = "%s"
 			primary_ip {

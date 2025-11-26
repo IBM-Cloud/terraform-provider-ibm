@@ -224,6 +224,7 @@ func ResourceIbmLogsAlert() *schema.Resource {
 													Type:        schema.TypeList,
 													MaxItems:    1,
 													Optional:    true,
+													Computed:    true,
 													Description: "Deadman configuration.",
 													Elem: &schema.Resource{
 														Schema: map[string]*schema.Schema{
@@ -1250,7 +1251,7 @@ func ResourceIbmLogsAlert() *schema.Resource {
 			},
 			"notification_groups": &schema.Schema{
 				Type:        schema.TypeList,
-				Required:    true,
+				Optional:    true,
 				Description: "Alert notification groups.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -1497,8 +1498,9 @@ func ResourceIbmLogsAlert() *schema.Resource {
 				Elem:        &schema.Schema{Type: schema.TypeString},
 			},
 			"meta_labels": &schema.Schema{
-				Type:        schema.TypeList,
+				Type:        schema.TypeSet,
 				Optional:    true,
+				Computed:    true,
 				Description: "The Meta labels to add to the alert.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -1518,6 +1520,7 @@ func ResourceIbmLogsAlert() *schema.Resource {
 			"meta_labels_strings": &schema.Schema{
 				Type:        schema.TypeList,
 				Optional:    true,
+				Deprecated:  "Use 'meta_labels' instead.",
 				Description: "The Meta labels to add to the alert as string with ':' separator.",
 				Elem:        &schema.Schema{Type: schema.TypeString},
 			},
@@ -1604,7 +1607,10 @@ func resourceIbmLogsAlertCreate(context context.Context, d *schema.ResourceData,
 
 	region := getLogsInstanceRegion(logsClient, d)
 	instanceId := d.Get("instance_id").(string)
-	logsClient = getClientWithLogsInstanceEndpoint(logsClient, instanceId, region, getLogsInstanceEndpointType(logsClient, d))
+	logsClient, err = getClientWithLogsInstanceEndpoint(logsClient, meta, instanceId, region, getLogsInstanceEndpointType(logsClient, d))
+	if err != nil {
+		return diag.FromErr(fmt.Errorf("Unable to get updated logs instance client"))
+	}
 
 	createAlertOptions := &logsv0.CreateAlertOptions{}
 
@@ -1660,7 +1666,7 @@ func resourceIbmLogsAlertCreate(context context.Context, d *schema.ResourceData,
 	}
 	if _, ok := d.GetOk("meta_labels"); ok {
 		var metaLabels []logsv0.AlertsV1MetaLabel
-		for _, v := range d.Get("meta_labels").([]interface{}) {
+		for _, v := range d.Get("meta_labels").(*schema.Set).List() {
 			value := v.(map[string]interface{})
 			metaLabelsItem, err := ResourceIbmLogsAlertMapToAlertsV1MetaLabel(value)
 			if err != nil {
@@ -1706,7 +1712,7 @@ func resourceIbmLogsAlertRead(context context.Context, d *schema.ResourceData, m
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
-	logsClient, region, instanceId, alertId, err := updateClientURLWithInstanceEndpoint(d.Id(), logsClient, d)
+	logsClient, region, instanceId, alertId, err := updateClientURLWithInstanceEndpoint(d.Id(), meta, logsClient, d)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -1776,13 +1782,16 @@ func resourceIbmLogsAlertRead(context context.Context, d *schema.ResourceData, m
 	if err = d.Set("notification_groups", notificationGroups); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting notification_groups: %s", err))
 	}
-	filtersMap, err := ResourceIbmLogsAlertAlertsV1AlertFiltersToMap(alert.Filters)
-	if err != nil {
-		return diag.FromErr(err)
+	if alert.Filters != nil {
+		filtersMap, err := ResourceIbmLogsAlertAlertsV1AlertFiltersToMap(alert.Filters)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		if err = d.Set("filters", []map[string]interface{}{filtersMap}); err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting filters: %s", err))
+		}
 	}
-	if err = d.Set("filters", []map[string]interface{}{filtersMap}); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting filters: %s", err))
-	}
+
 	if !core.IsNil(alert.ActiveWhen) {
 		activeWhenMap, err := ResourceIbmLogsAlertAlertsV1AlertActiveWhenToMap(alert.ActiveWhen)
 		if err != nil {
@@ -1810,11 +1819,9 @@ func resourceIbmLogsAlertRead(context context.Context, d *schema.ResourceData, m
 			return diag.FromErr(fmt.Errorf("Error setting meta_labels: %s", err))
 		}
 	}
-	if !core.IsNil(alert.MetaLabelsStrings) {
-		if err = d.Set("meta_labels_strings", alert.MetaLabelsStrings); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting meta_labels_strings: %s", err))
-		}
-	}
+	meta_labels_strings := d.Get("meta_labels_strings").([]interface{})
+	d.Set("meta_labels_strings", meta_labels_strings)
+
 	if !core.IsNil(alert.IncidentSettings) {
 		incidentSettingsMap, err := ResourceIbmLogsAlertAlertsV2AlertIncidentSettingsToMap(alert.IncidentSettings)
 		if err != nil {
@@ -1841,7 +1848,7 @@ func resourceIbmLogsAlertUpdate(context context.Context, d *schema.ResourceData,
 		return tfErr.GetDiag()
 	}
 
-	logsClient, _, _, alertId, err := updateClientURLWithInstanceEndpoint(d.Id(), logsClient, d)
+	logsClient, _, _, alertId, err := updateClientURLWithInstanceEndpoint(d.Id(), meta, logsClient, d)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -1923,13 +1930,16 @@ func resourceIbmLogsAlertUpdate(context context.Context, d *schema.ResourceData,
 
 		if _, ok := d.GetOk("meta_labels"); ok {
 			var metaLabels []logsv0.AlertsV1MetaLabel
-			for _, v := range d.Get("meta_labels").([]interface{}) {
-				value := v.(map[string]interface{})
-				metaLabelsItem, err := ResourceIbmLogsAlertMapToAlertsV1MetaLabel(value)
-				if err != nil {
-					return diag.FromErr(err)
+			for _, v := range d.Get("meta_labels").(*schema.Set).List() {
+				if v != nil {
+					value := v.(map[string]interface{})
+					metaLabelsItem, err := ResourceIbmLogsAlertMapToAlertsV1MetaLabel(value)
+					if err != nil {
+						return diag.FromErr(err)
+					}
+					metaLabels = append(metaLabels, *metaLabelsItem)
 				}
-				metaLabels = append(metaLabels, *metaLabelsItem)
+
 			}
 			updateAlertOptions.SetMetaLabels(metaLabels)
 		}
@@ -1971,7 +1981,7 @@ func resourceIbmLogsAlertDelete(context context.Context, d *schema.ResourceData,
 		return tfErr.GetDiag()
 	}
 
-	logsClient, _, _, alertId, err := updateClientURLWithInstanceEndpoint(d.Id(), logsClient, d)
+	logsClient, _, _, alertId, err := updateClientURLWithInstanceEndpoint(d.Id(), meta, logsClient, d)
 	if err != nil {
 		return diag.FromErr(err)
 	}

@@ -1,5 +1,9 @@
-// Copyright IBM Corp. 2024 All Rights Reserved.
+// Copyright IBM Corp. 2025 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
+
+/*
+ * IBM OpenAPI Terraform Generator Version: 3.104.0-b4a47c49-20250418-184351
+ */
 
 package logs
 
@@ -14,6 +18,7 @@ import (
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
+	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/IBM/logs-go-sdk/logsv0"
 )
 
@@ -42,6 +47,24 @@ func DataSourceIbmLogsPolicies() *schema.Resource {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "Policy ID.",
+						},
+						"before": &schema.Schema{
+							Type:     schema.TypeList,
+							Computed: true,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"id": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "Policy ID.",
+									},
+									"name": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "Policy name.",
+									},
+								},
+							},
 						},
 						"company_id": &schema.Schema{
 							Type:        schema.TypeInt,
@@ -92,7 +115,7 @@ func DataSourceIbmLogsPolicies() *schema.Resource {
 									"name": &schema.Schema{
 										Type:        schema.TypeString,
 										Computed:    true,
-										Description: "Value of the rule.",
+										Description: "Value of the rule. Multiple values can be provided as comma separated string of values.",
 									},
 								},
 							},
@@ -111,7 +134,7 @@ func DataSourceIbmLogsPolicies() *schema.Resource {
 									"name": &schema.Schema{
 										Type:        schema.TypeString,
 										Computed:    true,
-										Description: "Value of the rule.",
+										Description: "Value of the rule. Multiple values can be provided as comma separated string of values.",
 									},
 								},
 							},
@@ -167,13 +190,16 @@ func DataSourceIbmLogsPolicies() *schema.Resource {
 func dataSourceIbmLogsPoliciesRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	logsClient, err := meta.(conns.ClientSession).LogsV0()
 	if err != nil {
-		tfErr := flex.TerraformErrorf(err, err.Error(), "(Data) ibm_logs_policies", "read")
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_logs_policies", "read", "initialize-client")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
 	region := getLogsInstanceRegion(logsClient, d)
 	instanceId := d.Get("instance_id").(string)
-	logsClient = getClientWithLogsInstanceEndpoint(logsClient, instanceId, region, getLogsInstanceEndpointType(logsClient, d))
+	logsClient, err = getClientWithLogsInstanceEndpoint(logsClient, meta, instanceId, region, getLogsInstanceEndpointType(logsClient, d))
+	if err != nil {
+		return diag.FromErr(fmt.Errorf("Unable to get updated logs instance client"))
+	}
 
 	getCompanyPoliciesOptions := &logsv0.GetCompanyPoliciesOptions{}
 
@@ -193,20 +219,18 @@ func dataSourceIbmLogsPoliciesRead(context context.Context, d *schema.ResourceDa
 
 	d.SetId(dataSourceIbmLogsPoliciesID(d))
 
-	policies := []map[string]interface{}{}
-	if policyCollection.Policies != nil {
-		for _, modelItem := range policyCollection.Policies {
-			modelMap, err := DataSourceIbmLogsPoliciesPolicyToMap(modelItem)
+	if !core.IsNil(policyCollection.Policies) {
+		policies := []map[string]interface{}{}
+		for _, policiesItem := range policyCollection.Policies {
+			policiesItemMap, err := DataSourceIbmLogsPoliciesPolicyToMap(policiesItem) // #nosec G601
 			if err != nil {
-				tfErr := flex.TerraformErrorf(err, err.Error(), "(Data) ibm_logs_policies", "read")
-				return tfErr.GetDiag()
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_logs_policies", "read", "policies-to-map").GetDiag()
 			}
-			policies = append(policies, modelMap)
+			policies = append(policies, policiesItemMap)
 		}
-	}
-	if err = d.Set("policies", policies); err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting policies: %s", err), "(Data) ibm_logs_policies", "read")
-		return tfErr.GetDiag()
+		if err = d.Set("policies", policies); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting policies: %s", err), "(Data) ibm_logs_policies", "read", "set-policies").GetDiag()
+		}
 	}
 
 	return nil
@@ -224,6 +248,13 @@ func DataSourceIbmLogsPoliciesPolicyToMap(model logsv0.PolicyIntf) (map[string]i
 		modelMap := make(map[string]interface{})
 		model := model.(*logsv0.Policy)
 		modelMap["id"] = model.ID.String()
+		if model.Before != nil {
+			beforeMap, err := DataSourceIbmLogsPoliciesPolicyBeforeToMap(model.Before)
+			if err != nil {
+				return modelMap, err
+			}
+			modelMap["before"] = []map[string]interface{}{beforeMap}
+		}
 		modelMap["company_id"] = flex.IntValue(model.CompanyID)
 		modelMap["name"] = *model.Name
 		modelMap["description"] = *model.Description
@@ -273,6 +304,15 @@ func DataSourceIbmLogsPoliciesPolicyToMap(model logsv0.PolicyIntf) (map[string]i
 	}
 }
 
+func DataSourceIbmLogsPoliciesPolicyBeforeToMap(model *logsv0.PolicyBefore) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	modelMap["id"] = model.ID.String()
+	if model.Name != nil {
+		modelMap["name"] = *model.Name
+	}
+	return modelMap, nil
+}
+
 func DataSourceIbmLogsPoliciesQuotaV1RuleToMap(model *logsv0.QuotaV1Rule) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["rule_type_id"] = *model.RuleTypeID
@@ -297,6 +337,13 @@ func DataSourceIbmLogsPoliciesQuotaV1LogRulesToMap(model *logsv0.QuotaV1LogRules
 func DataSourceIbmLogsPoliciesPolicyQuotaV1PolicySourceTypeRulesLogRulesToMap(model *logsv0.PolicyQuotaV1PolicySourceTypeRulesLogRules) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["id"] = model.ID.String()
+	if model.Before != nil {
+		beforeMap, err := DataSourceIbmLogsPoliciesPolicyBeforeToMap(model.Before)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["before"] = []map[string]interface{}{beforeMap}
+	}
 	modelMap["company_id"] = flex.IntValue(model.CompanyID)
 	modelMap["name"] = *model.Name
 	modelMap["description"] = *model.Description

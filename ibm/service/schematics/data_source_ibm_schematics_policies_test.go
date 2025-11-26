@@ -31,7 +31,6 @@ func TestAccIbmSchematicsPoliciesDataSourceBasic(t *testing.T) {
 func testAccCheckIbmSchematicsPoliciesDataSourceConfigBasic() string {
 	return fmt.Sprintf(`
 		data "ibm_schematics_policies" "schematics_policies_instance" {
-			policy_kind = "agent_assignment_policy"
 		}
 	`)
 }

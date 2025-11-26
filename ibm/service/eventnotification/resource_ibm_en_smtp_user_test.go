@@ -20,6 +20,7 @@ import (
 func TestAccIBMEnSMTPUserBasic(t *testing.T) {
 	var conf eventnotificationsv1.SMTPUser
 	instanceID := fmt.Sprintf("tf_instance_id_%d", acctest.RandIntRange(10, 100))
+	smtpConfigID := fmt.Sprintf("tf_smtp_config_id_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
@@ -27,10 +28,11 @@ func TestAccIBMEnSMTPUserBasic(t *testing.T) {
 		CheckDestroy: testAccCheckIBMEnSMTPUserDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIBMEnSMTPUserConfigBasic(instanceID),
+				Config: testAccCheckIBMEnSMTPUserConfigBasic(instanceID, smtpConfigID),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMEnSMTPUserExists("ibm_en_smtp_user.en_smtp_user_instance", conf),
 					resource.TestCheckResourceAttr("ibm_en_smtp_user.en_smtp_user_instance", "instance_id", instanceID),
+					resource.TestCheckResourceAttr("ibm_en_smtp_user.en_smtp_user_instance", "smtp_config_id", smtpConfigID),
 				),
 			},
 		},
@@ -40,8 +42,10 @@ func TestAccIBMEnSMTPUserBasic(t *testing.T) {
 func TestAccIBMEnSMTPUserAllArgs(t *testing.T) {
 	var conf eventnotificationsv1.SMTPUser
 	instanceID := fmt.Sprintf("tf_instance_id_%d", acctest.RandIntRange(10, 100))
+	smtpConfigID := fmt.Sprintf("tf_smtp_config_id_%d", acctest.RandIntRange(10, 100))
 	description := fmt.Sprintf("tf_description_%d", acctest.RandIntRange(10, 100))
 	descriptionUpdate := fmt.Sprintf("tf_description_%d", acctest.RandIntRange(10, 100))
+	usernameToClone := "existing_username_123"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
@@ -49,22 +53,25 @@ func TestAccIBMEnSMTPUserAllArgs(t *testing.T) {
 		CheckDestroy: testAccCheckIBMEnSMTPUserDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIBMEnSMTPUserConfig(instanceID, description),
+				Config: testAccCheckIBMEnSMTPUserConfig(instanceID, smtpConfigID, description, usernameToClone),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMEnSMTPUserExists("ibm_en_smtp_user.en_smtp_user_instance", conf),
 					resource.TestCheckResourceAttr("ibm_en_smtp_user.en_smtp_user_instance", "instance_id", instanceID),
+					resource.TestCheckResourceAttr("ibm_en_smtp_user.en_smtp_user_instance", "smtp_config_id", smtpConfigID),
 					resource.TestCheckResourceAttr("ibm_en_smtp_user.en_smtp_user_instance", "description", description),
+					resource.TestCheckResourceAttr("ibm_en_smtp_user.en_smtp_user_instance", "username_to_clone", usernameToClone),
 				),
 			},
 			resource.TestStep{
-				Config: testAccCheckIBMEnSMTPUserConfig(instanceID, descriptionUpdate),
+				Config: testAccCheckIBMEnSMTPUserConfig(instanceID, smtpConfigID, descriptionUpdate, usernameToClone),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("ibm_en_smtp_user.en_smtp_user_instance", "instance_id", instanceID),
+					resource.TestCheckResourceAttr("ibm_en_smtp_user.en_smtp_user_instance", "smtp_config_id", smtpConfigID),
 					resource.TestCheckResourceAttr("ibm_en_smtp_user.en_smtp_user_instance", "description", descriptionUpdate),
 				),
 			},
 			resource.TestStep{
-				ResourceName:      "ibm_en_smtp_user.en_smtp_user",
+				ResourceName:      "ibm_en_smtp_user.en_smtp_user_instance",
 				ImportState:       true,
 				ImportStateVerify: true,
 			},
@@ -72,22 +79,25 @@ func TestAccIBMEnSMTPUserAllArgs(t *testing.T) {
 	})
 }
 
-func testAccCheckIBMEnSMTPUserConfigBasic(instanceID string) string {
+func testAccCheckIBMEnSMTPUserConfigBasic(instanceID, smtpConfigID string) string {
 	return fmt.Sprintf(`
 		resource "ibm_en_smtp_user" "en_smtp_user_instance" {
 			instance_id = "%s"
+			smtp_config_id  = "%s"
 		}
-	`, instanceID)
+	`, instanceID, smtpConfigID)
 }
 
-func testAccCheckIBMEnSMTPUserConfig(instanceID string, description string) string {
+func testAccCheckIBMEnSMTPUserConfig(instanceID, smtpConfigID, description, usernameToClone string) string {
 	return fmt.Sprintf(`
 
 		resource "ibm_en_smtp_user" "en_smtp_user_instance" {
 			instance_id = "%s"
+			smtp_config_id  = "%s"
 			description = "%s"
+			username_to_clone = "%s"
 		}
-	`, instanceID, description)
+	`, instanceID, smtpConfigID, description, usernameToClone)
 }
 
 func testAccCheckIBMEnSMTPUserExists(n string, obj eventnotificationsv1.SMTPUser) resource.TestCheckFunc {

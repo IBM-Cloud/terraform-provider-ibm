@@ -77,6 +77,11 @@ func DataSourceIbmSmKvSecretMetadata() *schema.Resource {
 				Computed:    true,
 				Description: "The human-readable name of your secret.",
 			},
+			"retrieved_at": &schema.Schema{
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The date when the data of the secret was last retrieved. The date format follows RFC 3339. Epoch date if there is no record of secret data retrieval.",
+			},
 			"secret_group_id": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -112,7 +117,7 @@ func DataSourceIbmSmKvSecretMetadata() *schema.Resource {
 }
 
 func dataSourceIbmSmKvSecretMetadataRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	secretsManagerClient, err := meta.(conns.ClientSession).SecretsManagerV2()
+	secretsManagerClient, endpointsFile, err := getSecretsManagerSession(meta.(conns.ClientSession))
 	if err != nil {
 		tfErr := flex.TerraformErrorf(err, "", fmt.Sprintf("(Data) %s_metadata", KvSecretResourceName), "read")
 		return tfErr.GetDiag()
@@ -120,7 +125,7 @@ func dataSourceIbmSmKvSecretMetadataRead(context context.Context, d *schema.Reso
 
 	region := getRegion(secretsManagerClient, d)
 	instanceId := d.Get("instance_id").(string)
-	secretsManagerClient = getClientWithInstanceEndpoint(secretsManagerClient, instanceId, region, getEndpointType(secretsManagerClient, d))
+	secretsManagerClient = getClientWithInstanceEndpoint(secretsManagerClient, instanceId, region, getEndpointType(secretsManagerClient, d), endpointsFile)
 
 	getSecretMetadataOptions := &secretsmanagerv2.GetSecretMetadataOptions{}
 
@@ -133,7 +138,12 @@ func dataSourceIbmSmKvSecretMetadataRead(context context.Context, d *schema.Reso
 		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetSecretMetadataWithContext failed %s\n%s", err, response), fmt.Sprintf("(Data) %s_metadata", KvSecretResourceName), "read")
 		return tfErr.GetDiag()
 	}
-	kVSecretMetadata := kVSecretMetadataIntf.(*secretsmanagerv2.KVSecretMetadata)
+
+	kVSecretMetadata, ok := kVSecretMetadataIntf.(*secretsmanagerv2.KVSecretMetadata)
+	if !ok {
+		tfErr := flex.TerraformErrorf(nil, fmt.Sprintf("Wrong secret type: The provided secret is not a KV secret."), fmt.Sprintf("(Data) %s_metadata", KvSecretResourceName), "read")
+		return tfErr.GetDiag()
+	}
 
 	d.SetId(fmt.Sprintf("%s/%s/%s", region, instanceId, secretId))
 
@@ -215,6 +225,11 @@ func dataSourceIbmSmKvSecretMetadataRead(context context.Context, d *schema.Reso
 
 	if err = d.Set("updated_at", DateTimeToRFC3339(kVSecretMetadata.UpdatedAt)); err != nil {
 		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting updated_at"), fmt.Sprintf("(Data) %s_metadata", KvSecretResourceName), "read")
+		return tfErr.GetDiag()
+	}
+
+	if err = d.Set("retrieved_at", DateTimeToRFC3339(kVSecretMetadata.RetrievedAt)); err != nil {
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting retrieved_at"), fmt.Sprintf("(Data) %s_metadata", KvSecretResourceName), "read")
 		return tfErr.GetDiag()
 	}
 

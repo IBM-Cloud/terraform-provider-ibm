@@ -1,8 +1,8 @@
-// Copyright IBM Corp. 2024 All Rights Reserved.
+// Copyright IBM Corp. 2025 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 /*
- * IBM OpenAPI Terraform Generator Version: 3.95.2-120e65bc-20240924-152329
+ * IBM OpenAPI Terraform Generator Version: 3.107.1-41b0fbd0-20250825-080732
  */
 
 package mqcloud
@@ -25,6 +25,7 @@ func ResourceIbmMqcloudUser() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceIbmMqcloudUserCreate,
 		ReadContext:   resourceIbmMqcloudUserRead,
+		UpdateContext: resourceIbmMqcloudUserUpdate,
 		DeleteContext: resourceIbmMqcloudUserDelete,
 		Importer:      &schema.ResourceImporter{},
 
@@ -34,21 +35,35 @@ func ResourceIbmMqcloudUser() *schema.Resource {
 				Required:     true,
 				ForceNew:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_mqcloud_user", "service_instance_guid"),
-				Description:  "The GUID that uniquely identifies the MQaaS service instance.",
+				Description:  "The GUID that uniquely identifies the MQ SaaS service instance.",
 			},
 			"name": {
 				Type:         schema.TypeString,
 				Required:     true,
-				ForceNew:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_mqcloud_user", "name"),
 				Description:  "The shortname of the user that will be used as the IBM MQ administrator in interactions with a queue manager for this service instance.",
 			},
 			"email": {
 				Type:         schema.TypeString,
 				Required:     true,
-				ForceNew:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_mqcloud_user", "email"),
 				Description:  "The email of the user.",
+			},
+			"iam_service_id": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The IAM ID of the user.",
+			},
+			"roles": {
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "A list of roles the user has.",
+				Elem:        &schema.Schema{Type: schema.TypeString},
+			},
+			"iam_managed": {
+				Type:        schema.TypeBool,
+				Computed:    true,
+				Description: "Indicates whether the user is managed by IAM.",
 			},
 			"href": {
 				Type:        schema.TypeString,
@@ -102,15 +117,7 @@ func ResourceIbmMqcloudUserValidator() *validate.ResourceValidator {
 func resourceIbmMqcloudUserCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	mqcloudClient, err := meta.(conns.ClientSession).MqcloudV1()
 	if err != nil {
-		// Error is coming from SDK client, so it doesn't need to be discriminated.
-		tfErr := flex.TerraformErrorf(err, err.Error(), "ibm_mqcloud_user", "create")
-		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
-		return tfErr.GetDiag()
-	}
-
-	err = checkSIPlan(d, meta)
-	if err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Create User failed: %s", err.Error()), "ibm_mqcloud_user", "create")
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_mqcloud_user", "create", "initialize-client")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
@@ -136,7 +143,7 @@ func resourceIbmMqcloudUserCreate(context context.Context, d *schema.ResourceDat
 func resourceIbmMqcloudUserRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	mqcloudClient, err := meta.(conns.ClientSession).MqcloudV1()
 	if err != nil {
-		tfErr := flex.TerraformErrorf(err, err.Error(), "ibm_mqcloud_user", "read")
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_mqcloud_user", "read", "initialize-client")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
@@ -173,6 +180,18 @@ func resourceIbmMqcloudUserRead(context context.Context, d *schema.ResourceData,
 		err = fmt.Errorf("Error setting email: %s", err)
 		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_mqcloud_user", "read", "set-email").GetDiag()
 	}
+	if err = d.Set("iam_service_id", userDetails.IamServiceID); err != nil {
+		err = fmt.Errorf("Error setting iam_service_id: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_mqcloud_user", "read", "set-iam_service_id").GetDiag()
+	}
+	if err = d.Set("roles", userDetails.Roles); err != nil {
+		err = fmt.Errorf("Error setting roles: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_mqcloud_user", "read", "set-roles").GetDiag()
+	}
+	if err = d.Set("iam_managed", userDetails.IamManaged); err != nil {
+		err = fmt.Errorf("Error setting iam_managed: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_mqcloud_user", "read", "set-iam_managed").GetDiag()
+	}
 	if err = d.Set("href", userDetails.Href); err != nil {
 		err = fmt.Errorf("Error setting href: %s", err)
 		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_mqcloud_user", "read", "set-href").GetDiag()
@@ -185,17 +204,52 @@ func resourceIbmMqcloudUserRead(context context.Context, d *schema.ResourceData,
 	return nil
 }
 
-func resourceIbmMqcloudUserDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceIbmMqcloudUserUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	mqcloudClient, err := meta.(conns.ClientSession).MqcloudV1()
 	if err != nil {
-		tfErr := flex.TerraformErrorf(err, err.Error(), "ibm_mqcloud_user", "delete")
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_mqcloud_user", "update", "initialize-client")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
 
-	err = checkSIPlan(d, meta)
+	setUserNameOptions := &mqcloudv1.SetUserNameOptions{}
+
+	parts, err := flex.SepIdParts(d.Id(), "/")
 	if err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Delete User failed: %s", err.Error()), "ibm_mqcloud_user", "delete")
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_mqcloud_user", "update", "sep-id-parts").GetDiag()
+	}
+
+	setUserNameOptions.SetServiceInstanceGuid(parts[0])
+	setUserNameOptions.SetUserID(parts[1])
+
+	hasChange := false
+
+	if d.HasChange("service_instance_guid") {
+		errMsg := fmt.Sprintf("Cannot update resource property \"%s\" with the ForceNew annotation."+
+			" The resource must be re-created to update this property.", "service_instance_guid")
+		return flex.DiscriminatedTerraformErrorf(nil, errMsg, "ibm_mqcloud_user", "update", "service_instance_guid-forces-new").GetDiag()
+	}
+	if d.HasChange("name") {
+		setUserNameOptions.SetName(d.Get("name").(string))
+		hasChange = true
+	}
+
+	if hasChange {
+		_, _, err = mqcloudClient.SetUserNameWithContext(context, setUserNameOptions)
+		if err != nil {
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("SetUserNameWithContext failed: %s", err.Error()), "ibm_mqcloud_user", "update")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
+		}
+	}
+
+	return resourceIbmMqcloudUserRead(context, d, meta)
+}
+
+func resourceIbmMqcloudUserDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	mqcloudClient, err := meta.(conns.ClientSession).MqcloudV1()
+	if err != nil {
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_mqcloud_user", "delete", "initialize-client")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}

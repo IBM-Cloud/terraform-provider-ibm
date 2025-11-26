@@ -4,7 +4,6 @@
 package vpc
 
 import (
-	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -15,7 +14,6 @@ import (
 	"sync"
 	"time"
 
-	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 	"github.com/IBM/go-sdk-core/v5/core"
@@ -68,6 +66,7 @@ const (
 	isBareMetalServerFirmwareUpdateTypeAvailable         = "firmware_update_type_available"
 	isBareMetalServerKeys                                = "keys"
 	isBareMetalServerUserData                            = "user_data"
+	isBareMetalServerDefaultTrustedProfile               = "default_trusted_profile"
 	isBareMetalServerNicName                             = "name"
 	isBareMetalServerNicPortSpeed                        = "port_speed"
 	isBareMetalServerNicAllowIPSpoofing                  = "allow_ip_spoofing"
@@ -86,6 +85,9 @@ const (
 	isBareMetalServerAccessTags                          = "access_tags"
 	isBareMetalServerUserTagType                         = "user"
 	isBareMetalServerAccessTagType                       = "access"
+	isBareMetalServerMetadataService                     = "metadata_service"
+	isBareMetalServerMetadataServiceEnabled              = "enabled"
+	isBareMetalServerMetadataServiceProtocol             = "protocol"
 )
 
 func ResourceIBMIsBareMetalServer() *schema.Resource {
@@ -119,6 +121,7 @@ func ResourceIBMIsBareMetalServer() *schema.Resource {
 					return flex.ResourceValidateAccessTags(diff, v)
 				},
 			),
+			validateBareMetalServerNicNames,
 		),
 
 		Schema: map[string]*schema.Schema{
@@ -162,6 +165,32 @@ func ResourceIBMIsBareMetalServer() *schema.Resource {
 							Set:         flex.ResourceIBMVPCHash,
 							Computed:    true,
 							Description: "The trusted platform module (TPM) mode:: disabled: No TPM functionality, tpm_2: TPM 2.0. The enumerated values for this property are expected to expand in the future. When processing this property, check for and log unknown values. Optionally halt processing and surface the error, or bypass the resource on which the unexpected property value was encountered. Enum: [ disabled, tpm_2 ]",
+						},
+					},
+				},
+			},
+
+			isBareMetalServerMetadataService: {
+				Type:        schema.TypeList,
+				MaxItems:    1,
+				Optional:    true,
+				Computed:    true,
+				Description: "The metadata service configuration",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						isBareMetalServerMetadataServiceEnabled: {
+							Type:        schema.TypeBool,
+							Optional:    true,
+							Computed:    true,
+							Description: "Indicates whether the metadata service endpoint will be available to the bare metal server",
+						},
+
+						isBareMetalServerMetadataServiceProtocol: {
+							Type:         schema.TypeString,
+							Optional:     true,
+							Computed:     true,
+							Description:  "The communication protocol to use for the metadata service endpoint. Applies only when the metadata service is enabled.",
+							ValidateFunc: validate.InvokeValidator("ibm_is_bare_metal_server", isBareMetalServerMetadataServiceProtocol),
 						},
 					},
 				},
@@ -259,6 +288,25 @@ func ResourceIBMIsBareMetalServer() *schema.Resource {
 							Type:        schema.TypeInt,
 							Computed:    true,
 							Description: "The size of the disk in GB (gigabytes)",
+						},
+						"allowed_use": &schema.Schema{
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "The usage constraints to match against the requested instance or bare metal server properties to determine compatibility.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"bare_metal_server": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "An image can only be used for bare metal instantiation if this expression resolves to true.",
+									},
+									"api_version": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The API version with which to evaluate the expressions.",
+									},
+								},
+							},
 						},
 					},
 				},
@@ -492,6 +540,11 @@ func ResourceIBMIsBareMetalServer() *schema.Resource {
 										Computed:    true,
 										Description: "The virtual network interface id for this bare metal server network attachment.",
 									},
+									"crn": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The crn of the virtual network interface.",
+									},
 									"allow_ip_spoofing": &schema.Schema{
 										Type:          schema.TypeBool,
 										Optional:      true,
@@ -593,10 +646,11 @@ func ResourceIBMIsBareMetalServer() *schema.Resource {
 										Elem: &schema.Resource{
 											Schema: map[string]*schema.Schema{
 												"address": &schema.Schema{
-													Type:        schema.TypeString,
-													Optional:    true,
-													Computed:    true,
-													Description: "The IP address.If the address has not yet been selected, the value will be `0.0.0.0`.This property may add support for IPv6 addresses in the future. When processing a value in this property, verify that the address is in an expected format. If it is not, log an error. Optionally halt processing and surface the error, or bypass the resource on which the unexpected IP address format was encountered.",
+													Type:          schema.TypeString,
+													Optional:      true,
+													ConflictsWith: []string{"primary_network_attachment.0.virtual_network_interface.0.primary_ip.0.reserved_ip"},
+													Computed:      true,
+													Description:   "The IP address.If the address has not yet been selected, the value will be `0.0.0.0`.This property may add support for IPv6 addresses in the future. When processing a value in this property, verify that the address is in an expected format. If it is not, log an error. Optionally halt processing and surface the error, or bypass the resource on which the unexpected IP address format was encountered.",
 												},
 												"deleted": &schema.Schema{
 													Type:        schema.TypeList,
@@ -624,10 +678,11 @@ func ResourceIBMIsBareMetalServer() *schema.Resource {
 													Description: "The unique identifier for this reserved IP.",
 												},
 												"name": &schema.Schema{
-													Type:        schema.TypeString,
-													Optional:    true,
-													Computed:    true,
-													Description: "The name for this reserved IP. The name is unique across all reserved IPs in a subnet.",
+													Type:          schema.TypeString,
+													Optional:      true,
+													ConflictsWith: []string{"primary_network_attachment.0.virtual_network_interface.0.primary_ip.0.reserved_ip"},
+													Computed:      true,
+													Description:   "The name for this reserved IP. The name is unique across all reserved IPs in a subnet.",
 												},
 												"resource_type": &schema.Schema{
 													Type:        schema.TypeString,
@@ -675,9 +730,8 @@ func ResourceIBMIsBareMetalServer() *schema.Resource {
 			},
 
 			isBareMetalServerNetworkInterfaces: {
-				Type:          schema.TypeSet,
+				Type:          schema.TypeList,
 				Optional:      true,
-				Set:           resourceIBMBMSNicSet,
 				ConflictsWith: []string{"primary_network_attachment", "network_attachments"},
 				Computed:      true,
 				Elem: &schema.Resource{
@@ -695,7 +749,7 @@ func ResourceIBMIsBareMetalServer() *schema.Resource {
 						isBareMetalServerNicName: {
 							Type:             schema.TypeString,
 							Required:         true,
-							DiffSuppressFunc: flex.ApplyOnce,
+							DiffSuppressFunc: flex.ApplyOnlyOnce,
 							Description:      "The user-defined name for this network interface. If unspecified, the name will be a hyphenated list of randomly-selected words",
 						},
 						isBareMetalServerNicPortSpeed: {
@@ -893,6 +947,11 @@ func ResourceIBMIsBareMetalServer() *schema.Resource {
 										Computed:    true,
 										Description: "The virtual network interface id for this bare metal server network attachment.",
 									},
+									"crn": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The crn of the virtual network interface.",
+									},
 									"allow_ip_spoofing": &schema.Schema{
 										Type:        schema.TypeBool,
 										Optional:    true,
@@ -1078,6 +1137,44 @@ func ResourceIBMIsBareMetalServer() *schema.Resource {
 				Required:    true,
 				Description: "image id",
 			},
+
+			isBareMetalServerDefaultTrustedProfile: {
+				Type:     schema.TypeList,
+				Optional: true,
+				MaxItems: 1,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"auto_link": {
+							Type:        schema.TypeBool,
+							Optional:    true,
+							Description: "If set to true, the system will create a link to the specified target trusted profile during server creation. Regardless of whether a link is created by the system or manually using the IAM Identity service, it will be automatically deleted when the server is deleted.",
+						},
+						"target": {
+							Type:        schema.TypeList,
+							Optional:    true,
+							MaxItems:    1,
+							Description: "The default IAM trusted profile to use for this bare metal server",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"id": {
+										Type:          schema.TypeString,
+										Optional:      true,
+										Description:   "The unique identifier for this trusted profile",
+										ConflictsWith: []string{"default_trusted_profile.0.target.0.crn"},
+									},
+									"crn": {
+										Type:          schema.TypeString,
+										Optional:      true,
+										Description:   "The CRN for this trusted profile",
+										ConflictsWith: []string{"default_trusted_profile.0.target.0.id"},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+
 			isBareMetalServerProfile: {
 				Type:        schema.TypeString,
 				ForceNew:    true,
@@ -1317,6 +1414,7 @@ func ResourceIBMIsBareMetalServerValidator() *validate.ResourceValidator {
 	bareMetalServerActions := "start, restart, stop"
 	tpmModes := "disabled, tpm_2"
 	interface_types := "pci, hipersocket"
+	metadataServiceProtocol := "https, http"
 	validateSchema := make([]validate.ValidateSchema, 1)
 
 	validateSchema = append(validateSchema,
@@ -1361,7 +1459,13 @@ func ResourceIBMIsBareMetalServerValidator() *validate.ResourceValidator {
 			Type:                       validate.TypeString,
 			Required:                   true,
 			AllowedValues:              tpmModes})
-
+	validateSchema = append(validateSchema,
+		validate.ValidateSchema{
+			Identifier:                 isBareMetalServerMetadataServiceProtocol,
+			ValidateFunctionIdentifier: validate.ValidateAllowedStringValue,
+			Type:                       validate.TypeString,
+			Optional:                   true,
+			AllowedValues:              metadataServiceProtocol})
 	validateSchema = append(validateSchema,
 		validate.ValidateSchema{
 			Identifier:                 "accesstag",
@@ -1379,7 +1483,9 @@ func resourceIBMISBareMetalServerCreate(context context.Context, d *schema.Resou
 
 	sess, err := vpcClient(meta)
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_bare_metal_server", "create", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	createbmsoptions := &vpcv1.CreateBareMetalServerOptions{}
 	options := &vpcv1.BareMetalServerPrototype{}
@@ -1427,6 +1533,53 @@ func resourceIBMISBareMetalServerCreate(context context.Context, d *schema.Resou
 			userdatastr := userdata.(string)
 			options.Initialization.UserData = &userdatastr
 		}
+
+		if defaultTrustedProfile, ok := d.GetOk(isBareMetalServerDefaultTrustedProfile); ok {
+			defaultTrustedProfilePrototype := &vpcv1.BareMetalServerInitializationDefaultTrustedProfilePrototype{}
+			defaultTrustedProfileMap := defaultTrustedProfile.([]interface{})[0].(map[string]interface{})
+			if autoLinkIntf, ok := defaultTrustedProfileMap["auto_link"]; ok {
+				if autolink, ok := autoLinkIntf.(bool); ok {
+					defaultTrustedProfilePrototype.AutoLink = &autolink
+				}
+			}
+
+			if targetIntf, ok := defaultTrustedProfileMap["target"]; ok {
+				if targetList, ok := targetIntf.([]interface{}); ok && len(targetList) > 0 {
+					if targetMap, ok := targetList[0].(map[string]interface{}); ok {
+						var id, crn *string
+						if crnStr, ok := targetMap["crn"].(string); ok && crnStr != "" {
+							crn = &crnStr
+						} else if idStr, ok := targetMap["id"].(string); ok && idStr != "" {
+							id = &idStr
+						}
+
+						if crn != nil || id != nil {
+							defaultTrustedProfilePrototype.Target = &vpcv1.TrustedProfileIdentity{
+								CRN: crn,
+								ID:  id,
+							}
+						}
+					}
+				}
+			}
+			options.Initialization.DefaultTrustedProfile = defaultTrustedProfilePrototype
+		}
+	}
+
+	if metadataServiceIntf, ok := d.GetOk(isBareMetalServerMetadataService); ok {
+		metadataService := &vpcv1.BareMetalServerMetadataServicePrototype{}
+		metadataServiceMap := metadataServiceIntf.([]interface{})[0].(map[string]interface{})
+		enabledIntf, ok := metadataServiceMap[isBareMetalServerMetadataServiceEnabled]
+		if ok {
+			enabled := enabledIntf.(bool)
+			metadataService.Enabled = &enabled
+		}
+		protocolIntf, ok := metadataServiceMap[isBareMetalServerMetadataServiceProtocol]
+		if ok && protocolIntf.(string) != "" {
+			protocol := protocolIntf.(string)
+			metadataService.Protocol = &protocol
+		}
+		options.MetadataService = metadataService
 	}
 
 	if name, ok := d.GetOk(isBareMetalServerName); ok {
@@ -1563,7 +1716,7 @@ func resourceIBMISBareMetalServerCreate(context context.Context, d *schema.Resou
 		enablenat := fmt.Sprintf("primary_network_attachment.0.virtual_network_interface.%d.enable_infrastructure_nat", i)
 		primaryNetworkAttachmentModel, err := resourceIBMIsBareMetalServerMapToBareMetalServerPrimaryNetworkAttachmentPrototype(allowipspoofing, autodelete, enablenat, d, primarynetworkAttachmentsIntf.([]interface{})[0].(map[string]interface{}))
 		if err != nil {
-			return diag.FromErr(err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_bare_metal_server", "create", "parse-primary_network_attachment").GetDiag()
 		}
 		options.PrimaryNetworkAttachment = primaryNetworkAttachmentModel
 	}
@@ -1577,7 +1730,7 @@ func resourceIBMISBareMetalServerCreate(context context.Context, d *schema.Resou
 		for _, networkAttachmentsItem := range networkAttachmentsIntf.([]interface{}) {
 			networkAttachmentsItemModel, err := resourceIBMIsBareMetalServerMapToBareMetalServerNetworkAttachmentPrototype(allowipspoofing, allowfloat, autodelete, enablenat, d, networkAttachmentsItem.(map[string]interface{}))
 			if err != nil {
-				return diag.FromErr(err)
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_bare_metal_server", "create", "parse-network_attachments").GetDiag()
 			}
 			networkAttachments = append(networkAttachments, networkAttachmentsItemModel)
 		}
@@ -1586,7 +1739,7 @@ func resourceIBMISBareMetalServerCreate(context context.Context, d *schema.Resou
 
 	if nicsintf, ok := d.GetOk(isBareMetalServerNetworkInterfaces); ok {
 
-		nics := nicsintf.(*schema.Set).List()
+		nics := nicsintf.([]interface{})
 		inlinenicobj := make([]vpcv1.BareMetalServerNetworkInterfacePrototypeIntf, 0)
 		for _, resource := range nics {
 			nic := resource.(map[string]interface{})
@@ -2048,13 +2201,28 @@ func resourceIBMISBareMetalServerCreate(context context.Context, d *schema.Resou
 	createbmsoptions.BareMetalServerPrototype = options
 	bms, response, err := sess.CreateBareMetalServerWithContext(context, createbmsoptions)
 	if err != nil {
-		return diag.FromErr(fmt.Errorf("[DEBUG] Create bare metal server err %s\n%s", err, response))
+		if response != nil && response.StatusCode == 409 {
+			log.Printf("[DEBUG] Create Bare Metal Server response status code: 409 conflict, provider will try again. %s", err)
+			time.Sleep(15 * time.Second)
+			bms, response, err = sess.CreateBareMetalServerWithContext(context, createbmsoptions)
+			if err != nil {
+				tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateBareMetalServerWithContext retry failed: %s", err.Error()), "ibm_is_bare_metal_server", "create")
+				log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+				return tfErr.GetDiag()
+			}
+		} else {
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateBareMetalServerWithContext failed: %s", err.Error()), "ibm_is_bare_metal_server", "create")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
+		}
 	}
 	d.SetId(*bms.ID)
 	log.Printf("[INFO] Bare Metal Server : %s", *bms.ID)
 	_, err = isWaitForBareMetalServerAvailable(sess, d.Id(), d.Timeout(schema.TimeoutCreate), d)
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("isWaitForBareMetalServerAvailable failed: %s", err.Error()), "ibm_is_bare_metal_server", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	v := os.Getenv("IC_ENV_TAGS")
 	if _, ok := d.GetOk(isBareMetalServerTags); ok || v != "" {
@@ -2079,18 +2247,20 @@ func resourceIBMISBareMetalServerCreate(context context.Context, d *schema.Resou
 
 func resourceIBMISBareMetalServerRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	id := d.Id()
-	err := bareMetalServerGet(context, d, meta, id)
-	if err != nil {
-		return diag.FromErr(err)
+	diagErr := bareMetalServerGet(context, d, meta, id)
+	if diagErr != nil {
+		return diagErr
 	}
 
 	return nil
 }
 
-func bareMetalServerGet(context context.Context, d *schema.ResourceData, meta interface{}, id string) error {
+func bareMetalServerGet(context context.Context, d *schema.ResourceData, meta interface{}, id string) diag.Diagnostics {
 	sess, err := vpcClient(meta)
 	if err != nil {
-		return err
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_bare_metal_server", "read", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	options := &vpcv1.GetBareMetalServerOptions{
 		ID: &id,
@@ -2101,14 +2271,24 @@ func bareMetalServerGet(context context.Context, d *schema.ResourceData, meta in
 			d.SetId("")
 			return nil
 		}
-		return fmt.Errorf("[ERROR] Error getting Bare Metal Server (%s): %s\n%s", id, err, response)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetBareMetalServerWithContext failed: %s", err.Error()), "ibm_is_bare_metal_server", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	d.SetId(*bms.ID)
-	d.Set(isBareMetalServerBandwidth, bms.Bandwidth)
+	if !core.IsNil(bms.Bandwidth) {
+		if err = d.Set("bandwidth", flex.IntValue(bms.Bandwidth)); err != nil {
+			err = fmt.Errorf("Error setting bandwidth: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_bare_metal_server", "read", "set-bandwidth").GetDiag()
+		}
+	}
 	if bms.BootTarget != nil {
 		bmsBootTargetIntf := bms.BootTarget.(*vpcv1.BareMetalServerBootTarget)
 		bmsBootTarget := bmsBootTargetIntf.ID
-		d.Set(isBareMetalServerBootTarget, bmsBootTarget)
+		if err = d.Set(isBareMetalServerBootTarget, bmsBootTarget); err != nil {
+			err = fmt.Errorf("Error setting boot_target: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_bare_metal_server", "read", "set-boot_target").GetDiag()
+		}
 	}
 	cpuList := make([]map[string]interface{}, 0)
 	if bms.Cpu != nil {
@@ -2119,25 +2299,36 @@ func bareMetalServerGet(context context.Context, d *schema.ResourceData, meta in
 		currentCPU[isBareMetalServerCpuThreadPerCore] = *bms.Cpu.ThreadsPerCore
 		cpuList = append(cpuList, currentCPU)
 	}
-	d.Set(isBareMetalServerCPU, cpuList)
-	d.Set(isBareMetalServerCRN, *bms.CRN)
+	if err = d.Set(isBareMetalServerCPU, cpuList); err != nil {
+		err = fmt.Errorf("Error setting cpu: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_bare_metal_server", "read", "set-cpu").GetDiag()
+	}
+	if err = d.Set(isBareMetalServerCRN, *bms.CRN); err != nil {
+		err = fmt.Errorf("Error setting crn: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_bare_metal_server", "read", "set-crn").GetDiag()
+	}
 	if bms.Firmware != nil && bms.Firmware.Update != nil {
-		d.Set(isBareMetalServerFirmwareUpdateTypeAvailable, *bms.Firmware.Update)
+		if err = d.Set(isBareMetalServerFirmwareUpdateTypeAvailable, *bms.Firmware.Update); err != nil {
+			err = fmt.Errorf("Error setting firmware_update_type_available: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_bare_metal_server", "read", "set-firmware_update_type_available").GetDiag()
+		}
 	}
 
 	//enable secure boot
 	if err = d.Set(isBareMetalServerEnableSecureBoot, bms.EnableSecureBoot); err != nil {
-		return fmt.Errorf("[ERROR] Error setting enable_secure_boot: %s", err)
+		err = fmt.Errorf("Error setting enable_secure_boot: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_bare_metal_server", "read", "set-enable_secure_boot").GetDiag()
 	}
 
 	// tpm
 	if bms.TrustedPlatformModule != nil {
 		trustedPlatformModuleMap, err := resourceIBMIsBareMetalServerBareMetalServerTrustedPlatformModulePrototypeToMap(bms.TrustedPlatformModule)
 		if err != nil {
-			return (err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_bare_metal_server", "read", "trusted_platform_module-to-map").GetDiag()
 		}
 		if err = d.Set(isBareMetalServerTrustedPlatformModule, []map[string]interface{}{trustedPlatformModuleMap}); err != nil {
-			return fmt.Errorf("[ERROR] Error setting trusted_platform_module: %s", err)
+			err = fmt.Errorf("Error setting trusted_platform_module: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_bare_metal_server", "read", "set-trusted_platform_module").GetDiag()
 		}
 	}
 
@@ -2152,14 +2343,35 @@ func bareMetalServerGet(context context.Context, d *schema.ResourceData, meta in
 				isBareMetalServerDiskResourceType:  disk.ResourceType,
 				isBareMetalServerDiskSize:          disk.Size,
 			}
+			if disk.AllowedUse != nil {
+				usageConstraintList := []map[string]interface{}{}
+				modelMap, err := ResourceceIBMIsBareMetalServerDiskAllowedUseToMap(disk.AllowedUse)
+				if err != nil {
+					tfErr := flex.TerraformErrorf(err, err.Error(), "(Resource) ibm_is_bare_metal_server", "read")
+					log.Println(tfErr.GetDiag())
+				}
+				usageConstraintList = append(usageConstraintList, modelMap)
+				currentDisk["allowed_use"] = usageConstraintList
+			}
 			diskList = append(diskList, currentDisk)
 		}
 	}
-	d.Set(isBareMetalServerDisks, diskList)
-	d.Set(isBareMetalServerHref, *bms.Href)
-	d.Set(isBareMetalServerMemory, *bms.Memory)
-	d.Set(isBareMetalServerName, *bms.Name)
-
+	if err = d.Set(isBareMetalServerDisks, diskList); err != nil {
+		err = fmt.Errorf("Error setting disks: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_bare_metal_server", "read", "set-disks").GetDiag()
+	}
+	if err = d.Set(isBareMetalServerHref, *bms.Href); err != nil {
+		err = fmt.Errorf("Error setting href: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_bare_metal_server", "read", "set-href").GetDiag()
+	}
+	if err = d.Set(isBareMetalServerMemory, *bms.Memory); err != nil {
+		err = fmt.Errorf("Error setting memory: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_bare_metal_server", "read", "set-memory").GetDiag()
+	}
+	if err = d.Set(isBareMetalServerName, *bms.Name); err != nil {
+		err = fmt.Errorf("Error setting name: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_bare_metal_server", "read", "set-name").GetDiag()
+	}
 	// get initialization
 	getBmsInitialization := &vpcv1.GetBareMetalServerInitializationOptions{
 		ID: bms.ID,
@@ -2170,7 +2382,9 @@ func bareMetalServerGet(context context.Context, d *schema.ResourceData, meta in
 			d.SetId("")
 			return nil
 		}
-		return fmt.Errorf("[ERROR] Error getting Bare Metal Server (%s) initialization: %s\n%s", id, err, response)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetBareMetalServerInitializationWithContext failed: %s", err.Error()), "ibm_is_bare_metal_server", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	if bmsinitialization != nil && bmsinitialization.Image.ID != nil {
 		d.Set(isBareMetalServerImage, *bmsinitialization.Image.ID)
@@ -2182,7 +2396,10 @@ func bareMetalServerGet(context context.Context, d *schema.ResourceData, meta in
 				keyList = append(keyList, string(*(bmsinitialization.Keys[i].ID)))
 			}
 		}
-		d.Set(isBareMetalServerKeys, keyList)
+		if err = d.Set(isBareMetalServerKeys, keyList); err != nil {
+			err = fmt.Errorf("Error setting keys: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_bare_metal_server", "read", "set-keys").GetDiag()
+		}
 	}
 
 	//pni
@@ -2198,10 +2415,12 @@ func bareMetalServerGet(context context.Context, d *schema.ResourceData, meta in
 			BareMetalServerID: &id,
 			ID:                bms.PrimaryNetworkInterface.ID,
 		}
-		bmsnic, response, err := sess.GetBareMetalServerNetworkInterfaceWithContext(context, getnicoptions)
+		bmsnic, _, err := sess.GetBareMetalServerNetworkInterfaceWithContext(context, getnicoptions)
 
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error getting primary network interface attached to the bare metal server %s\n%s", err, response)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetBareMetalServerNetworkInterfaceWithContext failed: %s", err.Error()), "ibm_is_bare_metal_server", "read")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 
 		if bms.PrimaryNetworkInterface.PrimaryIP != nil {
@@ -2230,9 +2449,11 @@ func bareMetalServerGet(context context.Context, d *schema.ResourceData, meta in
 				SubnetID: bms.PrimaryNetworkInterface.Subnet.ID,
 				ID:       bms.PrimaryNetworkInterface.PrimaryIP.ID,
 			}
-			bmsRip, response, err := sess.GetSubnetReservedIP(getripoptions)
+			bmsRip, _, err := sess.GetSubnetReservedIPWithContext(context, getripoptions)
 			if err != nil {
-				return fmt.Errorf("[ERROR] Error getting network interface reserved ip(%s) attached to the bare metal server primary network interface(%s): %s\n%s", *bms.PrimaryNetworkInterface.PrimaryIP.ID, *bms.PrimaryNetworkInterface.ID, err, response)
+				tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetSubnetReservedIPWithContext failed: %s", err.Error()), "ibm_is_bare_metal_server", "read")
+				log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+				return tfErr.GetDiag()
 			}
 			currentIP[isBareMetalServerNicIpAutoDelete] = bmsRip.AutoDelete
 		}
@@ -2295,7 +2516,10 @@ func bareMetalServerGet(context context.Context, d *schema.ResourceData, meta in
 		}
 
 		primaryNicList = append(primaryNicList, currentPrimNic)
-		d.Set(isBareMetalServerPrimaryNetworkInterface, primaryNicList)
+		if err = d.Set(isBareMetalServerPrimaryNetworkInterface, primaryNicList); err != nil {
+			err = fmt.Errorf("Error setting primary_network_interface: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_bare_metal_server", "read", "set-primary_network_interface").GetDiag()
+		}
 	}
 
 	if bms.HealthReasons != nil {
@@ -2311,10 +2535,14 @@ func bareMetalServerGet(context context.Context, d *schema.ResourceData, meta in
 				healthReasonsList = append(healthReasonsList, currentSR)
 			}
 		}
-		d.Set("health_reasons", healthReasonsList)
+		if err = d.Set("health_reasons", healthReasonsList); err != nil {
+			err = fmt.Errorf("Error setting health_reasons: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_bare_metal_server", "read", "set-health_reasons").GetDiag()
+		}
 	}
 	if err = d.Set("health_state", bms.HealthState); err != nil {
-		return err
+		err = fmt.Errorf("Error setting health_state: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_bare_metal_server", "read", "set-health_state").GetDiag()
 	}
 	if bms.ReservationAffinity != nil {
 		reservationAffinity := []map[string]interface{}{}
@@ -2342,7 +2570,11 @@ func bareMetalServerGet(context context.Context, d *schema.ResourceData, meta in
 			reservationAffinityMap[isReservationAffinityPool] = poolList
 		}
 		reservationAffinity = append(reservationAffinity, reservationAffinityMap)
-		d.Set(isReservationAffinity, reservationAffinity)
+
+		if err = d.Set(isReservationAffinity, reservationAffinity); err != nil {
+			err = fmt.Errorf("Error setting reservation_affinity: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_bare_metal_server", "read", "set-reservation_affinity").GetDiag()
+		}
 	}
 	resList := make([]map[string]interface{}, 0)
 	if bms.Reservation != nil {
@@ -2361,7 +2593,24 @@ func bareMetalServerGet(context context.Context, d *schema.ResourceData, meta in
 		}
 		resList = append(resList, res)
 	}
-	d.Set(isReservation, resList)
+	if err = d.Set(isReservation, resList); err != nil {
+		err = fmt.Errorf("Error setting reservation: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_bare_metal_server", "read", "set-reservation").GetDiag()
+	}
+	if bms.MetadataService != nil {
+		metadataServiceList := make([]map[string]interface{}, 0)
+		metadataServiceMap := map[string]interface{}{}
+
+		metadataServiceMap[isBareMetalServerMetadataServiceEnabled] = *bms.MetadataService.Enabled
+		if bms.MetadataService.Protocol != nil {
+			metadataServiceMap[isBareMetalServerMetadataServiceProtocol] = *bms.MetadataService.Protocol
+		}
+		metadataServiceList = append(metadataServiceList, metadataServiceMap)
+		if err = d.Set(isBareMetalServerMetadataService, metadataServiceList); err != nil {
+			err = fmt.Errorf("Error setting metadata_service: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_bare_metal_server", "read", "set-metadata_service").GetDiag()
+		}
+	}
 
 	if !core.IsNil(bms.PrimaryNetworkAttachment) {
 		pnaId := *bms.PrimaryNetworkAttachment.ID
@@ -2369,16 +2618,19 @@ func bareMetalServerGet(context context.Context, d *schema.ResourceData, meta in
 			BareMetalServerID: &id,
 			ID:                &pnaId,
 		}
-		pna, response, err := sess.GetBareMetalServerNetworkAttachment(getBareMetalServerNetworkAttachment)
+		pna, _, err := sess.GetBareMetalServerNetworkAttachmentWithContext(context, getBareMetalServerNetworkAttachment)
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error on GetBareMetalServerNetworkAttachment in bms : %s\n%s", err, response)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetBareMetalServerNetworkAttachmentWithContext failed: %s", err.Error()), "ibm_is_bare_metal_server", "read")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		primaryNetworkAttachmentMap, err := resourceIBMIsBareMetalServerBareMetalServerNetworkAttachmentReferenceToMap(bms.PrimaryNetworkAttachment, pna, sess)
 		if err != nil {
-			return err
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_bare_metal_server", "read", "primary_network_attachment-to-map").GetDiag()
 		}
 		if err = d.Set("primary_network_attachment", []map[string]interface{}{primaryNetworkAttachmentMap}); err != nil {
-			return fmt.Errorf("[ERROR] Error setting primary_network_attachment: %s", err)
+			err = fmt.Errorf("Error setting primary_network_attachment: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_bare_metal_server", "read", "set-primary_network_attachment").GetDiag()
 		}
 	}
 
@@ -2401,9 +2653,11 @@ func bareMetalServerGet(context context.Context, d *schema.ResourceData, meta in
 					BareMetalServerID: &id,
 					ID:                &nicId,
 				}
-				bmsnicintf, response, err := sess.GetBareMetalServerNetworkInterfaceWithContext(context, getnicoptions)
+				bmsnicintf, _, err := sess.GetBareMetalServerNetworkInterfaceWithContext(context, getnicoptions)
 				if err != nil {
-					return fmt.Errorf("[ERROR] Error getting network interface(%s) attached to the bare metal server(%s) %s\n%s", nicId, id, err, response)
+					tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetBareMetalServerNetworkInterfaceWithContext failed: %s", err.Error()), "ibm_is_bare_metal_server", "read")
+					log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+					return tfErr.GetDiag()
 				}
 				if intfc.PrimaryIP != nil {
 					primaryIpList := make([]map[string]interface{}, 0)
@@ -2424,9 +2678,11 @@ func bareMetalServerGet(context context.Context, d *schema.ResourceData, meta in
 							SubnetID: &subnetId,
 							ID:       &ripId,
 						}
-						bmsRip, response, err := sess.GetSubnetReservedIP(getripoptions)
+						bmsRip, _, err := sess.GetSubnetReservedIPWithContext(context, getripoptions)
 						if err != nil {
-							return fmt.Errorf("[ERROR] Error getting network interface reserved ip(%s) attached to the bare metal server network interface(%s): %s\n%s", ripId, nicId, err, response)
+							tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetSubnetReservedIPWithContext failed: %s", err.Error()), "ibm_is_bare_metal_server", "read")
+							log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+							return tfErr.GetDiag()
 						}
 						if bmsRip.AutoDelete != nil {
 							currentIP[isBareMetalServerNicIpAutoDelete] = *bmsRip.AutoDelete
@@ -2504,7 +2760,10 @@ func bareMetalServerGet(context context.Context, d *schema.ResourceData, meta in
 				}
 			}
 		}
-		d.Set(isBareMetalServerNetworkInterfaces, interfacesList)
+		if err = d.Set(isBareMetalServerNetworkInterfaces, interfacesList); err != nil {
+			err = fmt.Errorf("Error setting network_interfaces: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_bare_metal_server", "read", "set-network_interfaces").GetDiag()
+		}
 	}
 
 	if !core.IsNil(bms.NetworkAttachments) {
@@ -2516,28 +2775,43 @@ func bareMetalServerGet(context context.Context, d *schema.ResourceData, meta in
 					BareMetalServerID: &id,
 					ID:                &naId,
 				}
-				na, response, err := sess.GetBareMetalServerNetworkAttachment(getBareMetalServerNetworkAttachment)
+				na, _, err := sess.GetBareMetalServerNetworkAttachmentWithContext(context, getBareMetalServerNetworkAttachment)
 				if err != nil {
-					return fmt.Errorf("[ERROR] Error on GetBareMetalServerNetworkAttachment in baremetal server : %s\n%s", err, response)
+					tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetBareMetalServerNetworkAttachmentWithContext failed: %s", err.Error()), "ibm_is_bare_metal_server", "read")
+					log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+					return tfErr.GetDiag()
 				}
 				networkAttachmentsItemMap, err := resourceIBMIsBareMetalServerBareMetalServerNetworkAttachmentReferenceToMap(&networkAttachmentsItem, na, sess)
 				if err != nil {
-					return err
+					return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_bare_metal_server", "read", "network_attachments-to-map").GetDiag()
 				}
 				networkAttachments = append(networkAttachments, networkAttachmentsItemMap)
 			}
 		}
 		if err = d.Set("network_attachments", networkAttachments); err != nil {
-			return fmt.Errorf("[ERROR] Error setting network_attachments: %s", err)
+			err = fmt.Errorf("Error setting network_attachments: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_bare_metal_server", "read", "set-network_attachments").GetDiag()
 		}
 	}
 
-	d.Set(isBareMetalServerProfile, *bms.Profile.Name)
-	if bms.ResourceGroup != nil {
-		d.Set(isBareMetalServerResourceGroup, *bms.ResourceGroup.ID)
+	if err = d.Set(isBareMetalServerProfile, *bms.Profile.Name); err != nil {
+		err = fmt.Errorf("Error setting profile: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_bare_metal_server", "read", "set-profile").GetDiag()
 	}
-	d.Set(isBareMetalServerResourceType, bms.ResourceType)
-	d.Set(isBareMetalServerStatus, *bms.Status)
+	if bms.ResourceGroup != nil {
+		if err = d.Set(isBareMetalServerResourceGroup, *bms.ResourceGroup.ID); err != nil {
+			err = fmt.Errorf("Error setting resource_group: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_bare_metal_server", "read", "set-resource_group").GetDiag()
+		}
+	}
+	if err = d.Set(isBareMetalServerResourceType, bms.ResourceType); err != nil {
+		err = fmt.Errorf("Error setting resource_type: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_bare_metal_server", "read", "set-resource_type").GetDiag()
+	}
+	if err = d.Set(isBareMetalServerStatus, *bms.Status); err != nil {
+		err = fmt.Errorf("Error setting status: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_bare_metal_server", "read", "set-status").GetDiag()
+	}
 	statusReasonsList := make([]map[string]interface{}, 0)
 	if bms.StatusReasons != nil {
 		for _, sr := range bms.StatusReasons {
@@ -2552,24 +2826,36 @@ func bareMetalServerGet(context context.Context, d *schema.ResourceData, meta in
 			}
 		}
 	}
-	d.Set(isBareMetalServerStatusReasons, statusReasonsList)
-	d.Set(isBareMetalServerVPC, *bms.VPC.ID)
-	d.Set(isBareMetalServerZone, *bms.Zone.Name)
-
+	if err = d.Set(isBareMetalServerStatusReasons, statusReasonsList); err != nil {
+		err = fmt.Errorf("Error setting status_reasons: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_bare_metal_server", "read", "set-status_reasons").GetDiag()
+	}
+	if err = d.Set(isBareMetalServerVPC, *bms.VPC.ID); err != nil {
+		err = fmt.Errorf("Error setting vpc: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_bare_metal_server", "read", "set-vpc").GetDiag()
+	}
+	if err = d.Set(isBareMetalServerZone, *bms.Zone.Name); err != nil {
+		err = fmt.Errorf("Error setting zone: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_bare_metal_server", "read", "set-zone").GetDiag()
+	}
 	tags, err := flex.GetGlobalTagsUsingCRN(meta, *bms.CRN, "", isBareMetalServerUserTagType)
 	if err != nil {
 		log.Printf(
 			"[ERROR] Error on get of resource bare metal server (%s) tags: %s", d.Id(), err)
 	}
-	d.Set(isBareMetalServerTags, tags)
-
+	if err = d.Set(isBareMetalServerTags, tags); err != nil {
+		err = fmt.Errorf("Error setting tags: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_bare_metal_server", "read", "set-tags").GetDiag()
+	}
 	accesstags, err := flex.GetGlobalTagsUsingCRN(meta, *bms.CRN, "", isBareMetalServerAccessTagType)
 	if err != nil {
 		log.Printf(
 			"[ERROR] Error on get of resource bare metal server (%s) access tags: %s", d.Id(), err)
 	}
-	d.Set(isBareMetalServerAccessTags, accesstags)
-
+	if err = d.Set(isBareMetalServerAccessTags, accesstags); err != nil {
+		err = fmt.Errorf("Error setting access_tags: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_bare_metal_server", "read", "set-access_tags").GetDiag()
+	}
 	return nil
 }
 
@@ -2579,18 +2865,20 @@ func resourceIBMISBareMetalServerUpdate(context context.Context, d *schema.Resou
 
 	err := bareMetalServerUpdate(context, d, meta, id)
 	if err != nil {
-		return diag.FromErr(err)
+		return err
 	}
 
 	return resourceIBMISBareMetalServerRead(context, d, meta)
 }
 
-func bareMetalServerUpdate(context context.Context, d *schema.ResourceData, meta interface{}, id string) error {
+func bareMetalServerUpdate(context context.Context, d *schema.ResourceData, meta interface{}, id string) diag.Diagnostics {
 	sess, err := vpcClient(meta)
 	if err != nil {
-		return err
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_bare_metal_server", "update", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
-	if d.HasChange("image") || d.HasChange("keys") || d.HasChange("user_data") {
+	if d.HasChange("image") || d.HasChange("keys") || d.HasChange("user_data") || d.HasChange("default_trusted_profile") {
 		stopServerIfStartingForInitialization := false
 		newImageId := d.Get("image").(string)
 		initializationPatch := &vpcv1.ReplaceBareMetalServerInitializationOptions{
@@ -2615,22 +2903,54 @@ func bareMetalServerUpdate(context context.Context, d *schema.ResourceData, meta
 			initializationPatch.Keys = keyobjs
 		}
 
+		defaultTrustedProfile := &vpcv1.BareMetalServerInitializationDefaultTrustedProfilePrototype{}
+		if d.HasChange("default_trusted_profile.0.auto_link") {
+			newAutoLink := d.Get("default_trusted_profile.0.auto_link").(bool)
+			defaultTrustedProfile.AutoLink = &newAutoLink
+		}
+
+		if d.HasChange("default_trusted_profile.0.target.0.id") {
+			newTargetID := d.Get("default_trusted_profile.0.target.0.id").(string)
+			defaultTrustedProfile.Target = &vpcv1.TrustedProfileIdentity{
+				ID: &newTargetID,
+			}
+		}
+
+		if d.HasChange("default_trusted_profile.0.target.0.crn") {
+			newTargetCRN := d.Get("default_trusted_profile.0.target.0.crn").(string)
+			defaultTrustedProfile.Target = &vpcv1.TrustedProfileIdentity{
+				CRN: &newTargetCRN,
+			}
+		}
+
+		if defaultTrustedProfile.AutoLink != nil || defaultTrustedProfile.Target != nil {
+			initializationPatch.DefaultTrustedProfile = defaultTrustedProfile
+		}
+
 		stopServerIfStartingForInitialization, err = resourceStopServerIfRunning(id, "hard", d, context, sess, stopServerIfStartingForInitialization)
 		if err != nil {
-			return err
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("resourceStopServerIfRunning failed: %s", err.Error()), "ibm_is_bare_metal_server", "update")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
-		_, res, err := sess.ReplaceBareMetalServerInitialization(initializationPatch)
+		_, _, err := sess.ReplaceBareMetalServerInitializationWithContext(context, initializationPatch)
 		if err != nil {
-			return fmt.Errorf("ReplaceBareMetalServerInitialization failed %s\n%s", err, res)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("ReplaceBareMetalServerInitializationWithContext failed: %s", err.Error()), "ibm_is_bare_metal_server", "update")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		_, err = isWaitForBareMetalServerStoppedOnReload(sess, d.Id(), d.Timeout(schema.TimeoutUpdate), d)
 		if err != nil {
-			return err
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("isWaitForBareMetalServerStoppedOnReload failed: %s", err.Error()), "ibm_is_bare_metal_server", "update")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		if stopServerIfStartingForInitialization {
 			_, err = resourceStartServerIfStopped(id, "hard", d, context, sess, stopServerIfStartingForInitialization)
 			if err != nil {
-				return err
+				tfErr := flex.TerraformErrorf(err, fmt.Sprintf("resourceStartServerIfStopped failed: %s", err.Error()), "ibm_is_bare_metal_server", "update")
+				log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+				return tfErr.GetDiag()
 			}
 		}
 	}
@@ -2663,10 +2983,11 @@ func bareMetalServerUpdate(context context.Context, d *schema.ResourceData, meta
 				patchVals.Name = &newName
 			}
 			updateBareMetalServerNetworkAttachmentOptions.BareMetalServerNetworkAttachmentPatch, _ = patchVals.AsPatch()
-			_, response, err := sess.UpdateBareMetalServerNetworkAttachmentWithContext(context, updateBareMetalServerNetworkAttachmentOptions)
+			_, _, err := sess.UpdateBareMetalServerNetworkAttachmentWithContext(context, updateBareMetalServerNetworkAttachmentOptions)
 			if err != nil {
-				log.Printf("[DEBUG] UpdateBareMetalServerNetworkAttachmentWithContext failed %s\n%s", err, response)
-				return fmt.Errorf("UpdateBareMetalServerNetworkAttachmentWithContext failed %s\n%s", err, response)
+				tfErr := flex.TerraformErrorf(err, fmt.Sprintf("UpdateBareMetalServerNetworkAttachmentWithContext failed: %s", err.Error()), "ibm_is_bare_metal_server", "update")
+				log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+				return tfErr.GetDiag()
 			}
 		}
 		if vniChanged {
@@ -2697,13 +3018,16 @@ func bareMetalServerUpdate(context context.Context, d *schema.ResourceData, meta
 			}
 			virtualNetworkInterfacePatchAsPatch, err := virtualNetworkInterfacePatch.AsPatch()
 			if err != nil {
-				return fmt.Errorf("[ERROR] Error encountered while apply as patch for virtualNetworkInterfacePatch of BareMetalServer(%s) vni (%s) %s", d.Id(), vniId, err)
+				tfErr := flex.TerraformErrorf(err, fmt.Sprintf("virtualNetworkInterfacePatch.AsPatch() failed: %s", err.Error()), "ibm_is_bare_metal_server", "update")
+				log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+				return tfErr.GetDiag()
 			}
 			updateVirtualNetworkInterfaceOptions.VirtualNetworkInterfacePatch = virtualNetworkInterfacePatchAsPatch
-			_, response, err := sess.UpdateVirtualNetworkInterfaceWithContext(context, updateVirtualNetworkInterfaceOptions)
+			_, _, err = sess.UpdateVirtualNetworkInterfaceWithContext(context, updateVirtualNetworkInterfaceOptions)
 			if err != nil {
-				log.Printf("[DEBUG] UpdateVirtualNetworkInterfaceWithContext failed %s\n%s", err, response)
-				return fmt.Errorf("UpdateVirtualNetworkInterfaceWithContext failed during BareMetalServer(%s) network attachment patch %s\n%s", d.Id(), err, response)
+				tfErr := flex.TerraformErrorf(err, fmt.Sprintf("UpdateVirtualNetworkInterfaceWithContext failed: %s", err.Error()), "ibm_is_bare_metal_server", "update")
+				log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+				return tfErr.GetDiag()
 			}
 
 			if d.HasChange("primary_network_attachment.0.virtual_network_interface.0.ips") {
@@ -2736,10 +3060,11 @@ func bareMetalServerUpdate(context context.Context, d *schema.ResourceData, meta
 							addVirtualNetworkInterfaceIPOptions := &vpcv1.AddVirtualNetworkInterfaceIPOptions{}
 							addVirtualNetworkInterfaceIPOptions.SetVirtualNetworkInterfaceID(vniId)
 							addVirtualNetworkInterfaceIPOptions.SetID(ipItem)
-							_, response, err := sess.AddVirtualNetworkInterfaceIPWithContext(context, addVirtualNetworkInterfaceIPOptions)
+							_, _, err := sess.AddVirtualNetworkInterfaceIPWithContext(context, addVirtualNetworkInterfaceIPOptions)
 							if err != nil {
-								log.Printf("[DEBUG] AddVirtualNetworkInterfaceIPWithContext failed in VirtualNetworkInterface patch during BareMetalServer nac patch %s\n%s", err, response)
-								return fmt.Errorf("AddVirtualNetworkInterfaceIPWithContext failed in VirtualNetworkInterface patch during BareMetalServer nac patch %s\n%s", err, response)
+								tfErr := flex.TerraformErrorf(err, fmt.Sprintf("AddVirtualNetworkInterfaceIPWithContext failed: %s", err.Error()), "ibm_is_bare_metal_server", "update")
+								log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+								return tfErr.GetDiag()
 							}
 						}
 					}
@@ -2751,10 +3076,11 @@ func bareMetalServerUpdate(context context.Context, d *schema.ResourceData, meta
 							removeVirtualNetworkInterfaceIPOptions := &vpcv1.RemoveVirtualNetworkInterfaceIPOptions{}
 							removeVirtualNetworkInterfaceIPOptions.SetVirtualNetworkInterfaceID(vniId)
 							removeVirtualNetworkInterfaceIPOptions.SetID(ipItem)
-							response, err := sess.RemoveVirtualNetworkInterfaceIPWithContext(context, removeVirtualNetworkInterfaceIPOptions)
+							_, err := sess.RemoveVirtualNetworkInterfaceIPWithContext(context, removeVirtualNetworkInterfaceIPOptions)
 							if err != nil {
-								log.Printf("[DEBUG] RemoveVirtualNetworkInterfaceIPWithContext failed in VirtualNetworkInterface patch during BareMetalServer nac patch %s\n%s", err, response)
-								return fmt.Errorf("RemoveVirtualNetworkInterfaceIPWithContext failed in VirtualNetworkInterface patch during BareMetalServer nac patch %s\n%s", err, response)
+								tfErr := flex.TerraformErrorf(err, fmt.Sprintf("RemoveVirtualNetworkInterfaceIPWithContext failed: %s", err.Error()), "ibm_is_bare_metal_server", "update")
+								log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+								return tfErr.GetDiag()
 							}
 						}
 					}
@@ -2779,12 +3105,16 @@ func bareMetalServerUpdate(context context.Context, d *schema.ResourceData, meta
 				}
 				reservedIpPathAsPatch, err := reservedIpPath.AsPatch()
 				if err != nil {
-					return fmt.Errorf("[ERROR] Error calling reserved ip as patch on vni patch \n%s", err)
+					tfErr := flex.TerraformErrorf(err, fmt.Sprintf("reservedIpPath.AsPatch() failed: %s", err.Error()), "ibm_is_bare_metal_server", "update")
+					log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+					return tfErr.GetDiag()
 				}
 				updateripoptions.ReservedIPPatch = reservedIpPathAsPatch
-				_, response, err := sess.UpdateSubnetReservedIP(updateripoptions)
+				_, _, err = sess.UpdateSubnetReservedIPWithContext(context, updateripoptions)
 				if err != nil {
-					return fmt.Errorf("[ERROR] Error updating vni reserved ip(%s): %s\n%s", ripId, err, response)
+					tfErr := flex.TerraformErrorf(err, fmt.Sprintf("UpdateSubnetReservedIPWithContext failed: %s", err.Error()), "ibm_is_bare_metal_server", "update")
+					log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+					return tfErr.GetDiag()
 				}
 			}
 			if d.HasChange("primary_network_attachment.0.virtual_network_interface.0.security_groups") {
@@ -2799,13 +3129,17 @@ func bareMetalServerUpdate(context context.Context, d *schema.ResourceData, meta
 							SecurityGroupID: &add[i],
 							ID:              &vniId,
 						}
-						_, response, err := sess.CreateSecurityGroupTargetBinding(createsgnicoptions)
+						_, _, err := sess.CreateSecurityGroupTargetBindingWithContext(context, createsgnicoptions)
 						if err != nil {
-							return (fmt.Errorf("[ERROR] Error while creating security group %q for virtual network interface %s\n%s: %q", add[i], d.Id(), err, response))
+							tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateSecurityGroupTargetBindingWithContext failed: %s", err.Error()), "ibm_is_bare_metal_server", "update")
+							log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+							return tfErr.GetDiag()
 						}
 						_, err = isWaitForVirtualNetworkInterfaceAvailable(sess, vniId, d.Timeout(schema.TimeoutUpdate))
 						if err != nil {
-							return (err)
+							tfErr := flex.TerraformErrorf(err, fmt.Sprintf("isWaitForVirtualNetworkInterfaceAvailable failed: %s", err.Error()), "ibm_is_bare_metal_server", "update")
+							log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+							return tfErr.GetDiag()
 						}
 					}
 
@@ -2816,13 +3150,17 @@ func bareMetalServerUpdate(context context.Context, d *schema.ResourceData, meta
 							SecurityGroupID: &remove[i],
 							ID:              &vniId,
 						}
-						response, err := sess.DeleteSecurityGroupTargetBinding(deletesgnicoptions)
+						_, err := sess.DeleteSecurityGroupTargetBindingWithContext(context, deletesgnicoptions)
 						if err != nil {
-							return (fmt.Errorf("[ERROR] Error while removing security group %q for virtual network interface %s\n%s: %q", remove[i], d.Id(), err, response))
+							tfErr := flex.TerraformErrorf(err, fmt.Sprintf("DeleteSecurityGroupTargetBindingWithContext failed: %s", err.Error()), "ibm_is_bare_metal_server", "update")
+							log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+							return tfErr.GetDiag()
 						}
 						_, err = isWaitForVirtualNetworkInterfaceAvailable(sess, vniId, d.Timeout(schema.TimeoutUpdate))
 						if err != nil {
-							return (err)
+							tfErr := flex.TerraformErrorf(err, fmt.Sprintf("isWaitForVirtualNetworkInterfaceAvailable failed: %s", err.Error()), "ibm_is_bare_metal_server", "update")
+							log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+							return tfErr.GetDiag()
 						}
 					}
 				}
@@ -2843,7 +3181,10 @@ func bareMetalServerUpdate(context context.Context, d *schema.ResourceData, meta
 		listToRemove, listToAdd, serverToStop, listToUpdate := findNetworkAttachmentDifferences(otsIntf, ntsIntf, d.Id(), sess, d)
 
 		if listToUpdate != nil {
-			return fmt.Errorf("[ERROR] Error while updating network attachment BareMetalServer(%s) \n%s", d.Id(), err)
+			err = fmt.Errorf("[ERROR] Error while updating network attachment BareMetalServer(%s) \n%s", d.Id(), err)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("findNetworkAttachmentDifferences failed: %s", err.Error()), "ibm_is_bare_metal_server", "update")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		serverStopped := false
 		if serverToStop {
@@ -2851,26 +3192,34 @@ func bareMetalServerUpdate(context context.Context, d *schema.ResourceData, meta
 			serverStopped = true
 			isServerStopped, err = resourceStopServerIfRunning(id, "hard", d, context, sess, isServerStopped)
 			if err != nil {
-				return err
+				tfErr := flex.TerraformErrorf(err, fmt.Sprintf("resourceStopServerIfRunning failed: %s", err.Error()), "ibm_is_bare_metal_server", "update")
+				log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+				return tfErr.GetDiag()
 			}
 		}
 		for _, removeItem := range listToRemove {
-			res, err := sess.DeleteBareMetalServerNetworkAttachment(&removeItem)
+			_, err := sess.DeleteBareMetalServerNetworkAttachmentWithContext(context, &removeItem)
 			if err != nil {
-				return fmt.Errorf("[ERROR] Error while removing network attachment(%s) of BareMetalServer(%s) \n%s: %q", *removeItem.ID, d.Id(), err, res)
+				tfErr := flex.TerraformErrorf(err, fmt.Sprintf("DeleteBareMetalServerNetworkAttachmentWithContext failed: %s", err.Error()), "ibm_is_bare_metal_server", "update")
+				log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+				return tfErr.GetDiag()
 			}
 		}
 		for _, addItem := range listToAdd {
-			_, res, err := sess.CreateBareMetalServerNetworkAttachment(&addItem)
+			_, _, err := sess.CreateBareMetalServerNetworkAttachmentWithContext(context, &addItem)
 			if err != nil {
-				return fmt.Errorf("[ERROR] Error while adding network attachment(%s) of BareMetalServer(%s) \n%s: %q", *addItem.BareMetalServerID, d.Id(), err, res)
+				tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateBareMetalServerNetworkAttachmentWithContext failed: %s", err.Error()), "ibm_is_bare_metal_server", "update")
+				log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+				return tfErr.GetDiag()
 			}
 		}
 		if serverStopped && isServerStopped {
 			// retstart ther server
 			isServerStopped, err = resourceStartServerIfStopped(id, "hard", d, context, sess, isServerStopped)
 			if err != nil {
-				return err
+				tfErr := flex.TerraformErrorf(err, fmt.Sprintf("resourceStartServerIfStopped failed: %s", err.Error()), "ibm_is_bare_metal_server", "update")
+				log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+				return tfErr.GetDiag()
 			}
 		}
 		// j := 0
@@ -3146,7 +3495,9 @@ func bareMetalServerUpdate(context context.Context, d *schema.ResourceData, meta
 					d.SetId("")
 					return nil
 				}
-				return fmt.Errorf("[ERROR] Error getting Bare Metal Server (%s): %s\n%s", id, err, response)
+				tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetBareMetalServerWithContext failed: %s", err.Error()), "ibm_is_bare_metal_server", "update")
+				log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+				return tfErr.GetDiag()
 			}
 			bmscrn = *bms.CRN
 		}
@@ -3171,19 +3522,31 @@ func bareMetalServerUpdate(context context.Context, d *schema.ResourceData, meta
 	if d.HasChange(isBareMetalServerNetworkInterfaces) {
 		oldList, newList := d.GetChange(isBareMetalServerNetworkInterfaces)
 		if oldList == nil {
-			oldList = new(schema.Set)
+			oldList = new([]interface{})
 		}
 		if newList == nil {
-			newList = new(schema.Set)
+			newList = new([]interface{})
 		}
-		os := oldList.(*schema.Set)
-		ns := newList.(*schema.Set)
-		for _, nA := range ns.List() {
+
+		oldListVal := oldList.([]interface{})
+		newListVal := newList.([]interface{})
+
+		var remove, add []interface{}
+
+		// First pass: check for updates to existing interfaces
+		for _, nA := range newListVal {
 			newPack := nA.(map[string]interface{})
-			for _, oA := range os.List() {
+			found := false
+
+			for i, oA := range oldListVal {
 				oldPack := oA.(map[string]interface{})
-				if strings.Compare(newPack["name"].(string), oldPack["name"].(string)) == 0 {
-					networkId := newPack["id"].(string)
+
+				// If names match, this is an interface that needs to be updated
+				if strings.Compare(newPack[isBareMetalServerNicName].(string), oldPack[isBareMetalServerNicName].(string)) == 0 {
+					found = true
+					networkId := oldPack["id"].(string)
+
+					// Check if any properties changed
 					newAllowedVlans := newPack[isBareMetalServerNicAllowedVlans].(*schema.Set)
 					newNicName := newPack[isBareMetalServerNicName].(string)
 					newIpSpoofing := newPack[isBareMetalServerNicAllowIPSpoofing].(bool)
@@ -3194,7 +3557,11 @@ func bareMetalServerUpdate(context context.Context, d *schema.ResourceData, meta
 					oldIpSpoofing := oldPack[isBareMetalServerNicAllowIPSpoofing].(bool)
 					oldInfraNat := oldPack[isBareMetalServerNicEnableInfraNAT].(bool)
 
-					if oldAllowedVlans.Difference(newAllowedVlans).Len() > 0 || newAllowedVlans.Difference(oldAllowedVlans).Len() > 0 || newInfraNat != oldInfraNat || newIpSpoofing != oldIpSpoofing {
+					// If any properties changed, update the interface
+					if oldAllowedVlans.Difference(newAllowedVlans).Len() > 0 ||
+						newAllowedVlans.Difference(oldAllowedVlans).Len() > 0 ||
+						newInfraNat != oldInfraNat ||
+						newIpSpoofing != oldIpSpoofing {
 
 						updatepnicfoptions := &vpcv1.UpdateBareMetalServerNetworkInterfaceOptions{
 							BareMetalServerID: &id,
@@ -3202,11 +3569,16 @@ func bareMetalServerUpdate(context context.Context, d *schema.ResourceData, meta
 						}
 
 						bmsPatchModel := &vpcv1.BareMetalServerNetworkInterfacePatch{}
+
+						// Check for name change
 						if strings.Compare(newNicName, oldNicName) != 0 {
 							bmsPatchModel.Name = &newNicName
 						}
 
-						if oldAllowedVlans.Difference(newAllowedVlans).Len() > 0 || newAllowedVlans.Difference(oldAllowedVlans).Len() > 0 {
+						// Check for allowed VLANs change
+						if oldAllowedVlans.Difference(newAllowedVlans).Len() > 0 ||
+							newAllowedVlans.Difference(oldAllowedVlans).Len() > 0 {
+
 							allowedVlansList := newPack[isBareMetalServerNicAllowedVlans].(*schema.Set).List()
 							allowedVlans := make([]int64, 0, len(allowedVlansList))
 							for _, k := range allowedVlansList {
@@ -3215,84 +3587,132 @@ func bareMetalServerUpdate(context context.Context, d *schema.ResourceData, meta
 							bmsPatchModel.AllowedVlans = allowedVlans
 						}
 
+						// Check for IP spoofing change
 						if newIpSpoofing != oldIpSpoofing {
 							bmsPatchModel.AllowIPSpoofing = &newIpSpoofing
 						}
+
+						// Check for infra NAT change
 						if newInfraNat != oldInfraNat {
 							bmsPatchModel.EnableInfrastructureNat = &newInfraNat
 						}
+
+						// Apply the update
 						networkInterfacePatch, err := bmsPatchModel.AsPatch()
 						if err != nil {
-							return fmt.Errorf("[ERROR] Error calling asPatch for BareMetalServerNetworkInterfacePatch: %s", err)
+							tfErr := flex.TerraformErrorf(err, fmt.Sprintf("bmsPatchModel.AsPatch() failed: %s", err.Error()), "ibm_is_bare_metal_server", "update")
+							log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+							return tfErr.GetDiag()
 						}
+
 						updatepnicfoptions.BareMetalServerNetworkInterfacePatch = networkInterfacePatch
-						_, response, err := sess.UpdateBareMetalServerNetworkInterface(updatepnicfoptions)
+
+						_, _, err = sess.UpdateBareMetalServerNetworkInterfaceWithContext(context, updatepnicfoptions)
 						if err != nil {
-							return fmt.Errorf("[ERROR] Error while updating network interface(%s) of bar emetal server(%s) \n%s: %q", networkId, d.Id(), err, response)
+							tfErr := flex.TerraformErrorf(err, fmt.Sprintf("UpdateBareMetalServerNetworkInterfaceWithContext failed: %s", err.Error()), "ibm_is_bare_metal_server", "update")
+							log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+							return tfErr.GetDiag()
 						}
-						ns.Remove(nA)
-						os.Remove(oA)
 					}
+
+					// Remove this pair from consideration for add/remove
+					oldListVal = append(oldListVal[:i], oldListVal[i+1:]...)
+					break
 				}
 			}
-		}
-		remove := os.Difference(ns).List()
 
+			// If not found in old list, it needs to be added
+			if !found {
+				add = append(add, nA)
+			}
+		}
+
+		// Any remaining items in old list need to be removed
+		remove = oldListVal
+
+		// Check if server needs to be stopped for PCI operations
+		var isServerStopped bool = false
+
+		// Process removals first
 		if len(remove) > 0 {
-			// check if any removing nic is of pci type
+			// Check if any removing NIC is of PCI type
 			flag := false
 			for _, rem := range remove {
 				oldNic := rem.(map[string]interface{})
-				interfaceType := oldNic["interface_type"].(string)
-				if interfaceType == "pci" {
+				interfaceType, ok := oldNic["interface_type"]
+				if ok && interfaceType.(string) == "pci" {
 					flag = true
+					break
 				}
 			}
+
+			// Stop server if needed
 			if flag {
 				isServerStopped, err = resourceStopServerIfRunning(id, "hard", d, context, sess, isServerStopped)
 				if err != nil {
-					return err
+					tfErr := flex.TerraformErrorf(err, fmt.Sprintf("resourceStopServerIfRunning failed: %s", err.Error()), "ibm_is_bare_metal_server", "update")
+					log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+					return tfErr.GetDiag()
 				}
 			}
+
+			// Remove all interfaces
 			for _, rem := range remove {
 				oldNic := rem.(map[string]interface{})
 				networkId := oldNic["id"].(string)
+
 				removeBMSNic := &vpcv1.DeleteBareMetalServerNetworkInterfaceOptions{
 					BareMetalServerID: &id,
 					ID:                &networkId,
 				}
-				_, err = sess.DeleteBareMetalServerNetworkInterface(removeBMSNic)
+
+				_, err = sess.DeleteBareMetalServerNetworkInterfaceWithContext(context, removeBMSNic)
 				if err != nil {
-					return err
+					tfErr := flex.TerraformErrorf(err, fmt.Sprintf("DeleteBareMetalServerNetworkInterfaceWithContext failed: %s", err.Error()), "ibm_is_bare_metal_server", "update")
+					log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+					return tfErr.GetDiag()
+				}
+			}
+		}
+
+		// Process additions
+		if len(add) > 0 {
+			// Check if any adding NIC is of PCI type
+			flag := false
+			for _, a := range add {
+				newNic := a.(map[string]interface{})
+				allowedVlansOk, ok := newNic[isBareMetalServerNicAllowedVlans]
+				if ok && allowedVlansOk != nil {
+					allowedVlansSet := allowedVlansOk.(*schema.Set)
+					if allowedVlansSet.Len() > 0 {
+						flag = true
+						break
+					}
 				}
 			}
 
-		}
-		add := ns.Difference(os).List()
-		if len(add) > 0 {
-			// check if any adding nic is of pci type
-			flag := false
-			for _, a := range add {
-				oldNic := a.(map[string]interface{})
-				allowedVlansOk, ok := oldNic[isBareMetalServerNicAllowedVlans]
-				if ok && len(allowedVlansOk.(*schema.Set).List()) > 0 {
-					flag = true
-				}
-			}
-			if flag {
+			// Stop server if needed and not already stopped
+			if flag && !isServerStopped {
 				isServerStopped, err = resourceStopServerIfRunning(id, "hard", d, context, sess, isServerStopped)
 				if err != nil {
-					return err
+					tfErr := flex.TerraformErrorf(err, fmt.Sprintf("resourceStopServerIfRunning failed: %s", err.Error()), "ibm_is_bare_metal_server", "update")
+					log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+					return tfErr.GetDiag()
 				}
 			}
+
+			// Add all interfaces
 			for _, a := range add {
 				nic := a.(map[string]interface{})
 				addNicOptions := &vpcv1.CreateBareMetalServerNetworkInterfaceOptions{
 					BareMetalServerID: &id,
 				}
-				interfaceType := ""
-				if interfaceTypeOk, ok := nic[isBareMetalServerNicInterfaceType]; ok && interfaceTypeOk.(string) == "hipersocket" {
-					interfaceType = "hipersocket"
+
+				// Determine interface type and create appropriate prototype
+				if interfaceTypeOk, ok := nic[isBareMetalServerNicInterfaceType]; ok &&
+					interfaceTypeOk.(string) == "hipersocket" {
+					// Hipersocket interface
+					interfaceType := "hipersocket"
 					var nicobj = &vpcv1.BareMetalServerNetworkInterfacePrototypeBareMetalServerNetworkInterfaceByHiperSocketPrototype{}
 					nicobj.InterfaceType = &interfaceType
 
@@ -3301,6 +3721,7 @@ func bareMetalServerUpdate(context context.Context, d *schema.ResourceData, meta
 					nicobj.Subnet = &vpcv1.SubnetIdentity{
 						ID: &subnetintfstr,
 					}
+
 					name, _ := nic[isBareMetalServerNicName]
 					namestr := name.(string)
 					if namestr != "" {
@@ -3308,13 +3729,15 @@ func bareMetalServerUpdate(context context.Context, d *schema.ResourceData, meta
 					}
 
 					enableInfraNAT, ok := nic[isBareMetalServerNicEnableInfraNAT]
-					enableInfraNATbool := enableInfraNAT.(bool)
 					if ok {
+						enableInfraNATbool := enableInfraNAT.(bool)
 						nicobj.EnableInfrastructureNat = &enableInfraNATbool
 					}
 
+					// Set primary IP if present
 					if primaryIpIntf, ok := nic[isBareMetalServerNicPrimaryIP]; ok && len(primaryIpIntf.([]interface{})) > 0 {
 						primaryIp := primaryIpIntf.([]interface{})[0].(map[string]interface{})
+
 						reservedIpIdOk, ok := primaryIp[isBareMetalServerNicIpID]
 						if ok && reservedIpIdOk.(string) != "" {
 							ipid := reservedIpIdOk.(string)
@@ -3341,17 +3764,21 @@ func bareMetalServerUpdate(context context.Context, d *schema.ResourceData, meta
 								reservedIpAuto := reservedIpAutoOk.(bool)
 								primaryip.AutoDelete = &reservedIpAuto
 							}
+
 							if okAdd || okName || okAuto {
 								nicobj.PrimaryIP = primaryip
 							}
 						}
 					}
 
+					// Set IP spoofing if enabled
 					allowIPSpoofing, ok := nic[isBareMetalServerNicAllowIPSpoofing]
-					allowIPSpoofingbool := allowIPSpoofing.(bool)
-					if ok && allowIPSpoofingbool {
+					if ok && allowIPSpoofing.(bool) {
+						allowIPSpoofingbool := allowIPSpoofing.(bool)
 						nicobj.AllowIPSpoofing = &allowIPSpoofingbool
 					}
+
+					// Set security groups if present
 					secgrpintf, ok := nic[isBareMetalServerNicSecurityGroups]
 					if ok {
 						secgrpSet := secgrpintf.(*schema.Set)
@@ -3366,35 +3793,44 @@ func bareMetalServerUpdate(context context.Context, d *schema.ResourceData, meta
 							nicobj.SecurityGroups = secgrpobjs
 						}
 					}
+
 					addNicOptions.BareMetalServerNetworkInterfacePrototype = nicobj
+
 				} else if allowedVlansOk, ok := nic[isBareMetalServerNicAllowedVlans]; ok {
-					interfaceType = "pci"
-					var nicobj = &vpcv1.BareMetalServerNetworkInterfacePrototypeBareMetalServerNetworkInterfaceByPciPrototype{}
-					nicobj.InterfaceType = &interfaceType
+					allowedVlansSet := allowedVlansOk.(*schema.Set)
 
-					allowedVlansList := allowedVlansOk.(*schema.Set).List()
+					if allowedVlansSet.Len() > 0 {
+						// PCI interface
+						interfaceType := "pci"
+						var nicobj = &vpcv1.BareMetalServerNetworkInterfacePrototypeBareMetalServerNetworkInterfaceByPciPrototype{}
+						nicobj.InterfaceType = &interfaceType
 
-					if len(allowedVlansList) > 0 {
+						// Set allowed VLANs
+						allowedVlansList := allowedVlansSet.List()
 						allowedVlans := make([]int64, 0, len(allowedVlansList))
 						for _, k := range allowedVlansList {
 							allowedVlans = append(allowedVlans, int64(k.(int)))
 						}
 						nicobj.AllowedVlans = allowedVlans
 
+						// Set other fields (same as in your original code)
 						subnetintf, _ := nic[isBareMetalServerNicSubnet]
 						subnetintfstr := subnetintf.(string)
 						nicobj.Subnet = &vpcv1.SubnetIdentity{
 							ID: &subnetintfstr,
 						}
+
 						name, _ := nic[isBareMetalServerNicName]
 						namestr := name.(string)
 						if namestr != "" {
 							nicobj.Name = &namestr
 						}
 
+						// Rest of the field settings for PCI interface
+						// (Same as your original code)
 						enableInfraNAT, ok := nic[isBareMetalServerNicEnableInfraNAT]
-						enableInfraNATbool := enableInfraNAT.(bool)
 						if ok {
+							enableInfraNATbool := enableInfraNAT.(bool)
 							nicobj.EnableInfrastructureNat = &enableInfraNATbool
 						}
 
@@ -3409,33 +3845,37 @@ func bareMetalServerUpdate(context context.Context, d *schema.ResourceData, meta
 								}
 							} else {
 								primaryip := &vpcv1.NetworkInterfaceIPPrototypeReservedIPPrototypeNetworkInterfaceContext{}
+
 								reservedIpAddressOk, okAdd := primaryIp[isBareMetalServerNicIpAddress]
 								if okAdd && reservedIpAddressOk.(string) != "" {
 									reservedIpAddress := reservedIpAddressOk.(string)
 									primaryip.Address = &reservedIpAddress
 								}
+
 								reservedIpNameOk, okName := primaryIp[isBareMetalServerNicIpName]
 								if okName && reservedIpNameOk.(string) != "" {
 									reservedIpName := reservedIpNameOk.(string)
 									primaryip.Name = &reservedIpName
 								}
+
 								reservedIpAutoOk, okAuto := primaryIp[isBareMetalServerNicIpAutoDelete]
 								if okAuto {
 									reservedIpAuto := reservedIpAutoOk.(bool)
 									primaryip.AutoDelete = &reservedIpAuto
 								}
+
 								if okAdd || okName || okAuto {
 									nicobj.PrimaryIP = primaryip
 								}
 							}
-
 						}
 
 						allowIPSpoofing, ok := nic[isBareMetalServerNicAllowIPSpoofing]
-						allowIPSpoofingbool := allowIPSpoofing.(bool)
-						if ok && allowIPSpoofingbool {
+						if ok && allowIPSpoofing.(bool) {
+							allowIPSpoofingbool := allowIPSpoofing.(bool)
 							nicobj.AllowIPSpoofing = &allowIPSpoofingbool
 						}
+
 						secgrpintf, ok := nic[isBareMetalServerNicSecurityGroups]
 						if ok {
 							secgrpSet := secgrpintf.(*schema.Set)
@@ -3450,16 +3890,23 @@ func bareMetalServerUpdate(context context.Context, d *schema.ResourceData, meta
 								nicobj.SecurityGroups = secgrpobjs
 							}
 						}
+
 						addNicOptions.BareMetalServerNetworkInterfacePrototype = nicobj
+
 					} else {
-						interfaceType = "vlan"
+						// VLAN interface with empty allowed_vlans
+						// (Same as your original code for VLAN interfaces)
+						interfaceType := "vlan"
 						var nicobj = &vpcv1.BareMetalServerNetworkInterfacePrototypeBareMetalServerNetworkInterfaceByVlanPrototype{}
 						nicobj.InterfaceType = &interfaceType
 
+						// Set VLAN-specific fields and other common fields
+						// (Same code as in your original implementation)
 						if aitf, ok := nic[isBareMetalServerNicAllowInterfaceToFloat]; ok {
 							allowInterfaceToFloat := aitf.(bool)
 							nicobj.AllowInterfaceToFloat = &allowInterfaceToFloat
 						}
+
 						if vlan, ok := nic[isBareMetalServerNicVlan]; ok {
 							vlanInt := int64(vlan.(int))
 							nicobj.Vlan = &vlanInt
@@ -3470,20 +3917,25 @@ func bareMetalServerUpdate(context context.Context, d *schema.ResourceData, meta
 						nicobj.Subnet = &vpcv1.SubnetIdentity{
 							ID: &subnetintfstr,
 						}
+
 						name, _ := nic[isBareMetalServerNicName]
 						namestr := name.(string)
 						if namestr != "" {
 							nicobj.Name = &namestr
 						}
 
+						// Rest of the VLAN interface configuration (copied from your original code)
 						enableInfraNAT, ok := nic[isBareMetalServerNicEnableInfraNAT]
-						enableInfraNATbool := enableInfraNAT.(bool)
 						if ok {
+							enableInfraNATbool := enableInfraNAT.(bool)
 							nicobj.EnableInfrastructureNat = &enableInfraNATbool
 						}
 
 						if primaryIpIntf, ok := nic[isBareMetalServerNicPrimaryIP]; ok && len(primaryIpIntf.([]interface{})) > 0 {
+							// Primary IP configuration (same as in other interface types)
+							// (Copy of your original code)
 							primaryIp := primaryIpIntf.([]interface{})[0].(map[string]interface{})
+
 							reservedIpIdOk, ok := primaryIp[isBareMetalServerNicIpID]
 							if ok && reservedIpIdOk.(string) != "" {
 								ipid := reservedIpIdOk.(string)
@@ -3493,6 +3945,8 @@ func bareMetalServerUpdate(context context.Context, d *schema.ResourceData, meta
 							} else {
 								primaryip := &vpcv1.NetworkInterfaceIPPrototypeReservedIPPrototypeNetworkInterfaceContext{}
 
+								// Set primary IP properties (address, name, auto-delete)
+								// (Copy of your original code)
 								reservedIpAddressOk, okAdd := primaryIp[isBareMetalServerNicIpAddress]
 								if okAdd && reservedIpAddressOk.(string) != "" {
 									reservedIpAddress := reservedIpAddressOk.(string)
@@ -3510,6 +3964,7 @@ func bareMetalServerUpdate(context context.Context, d *schema.ResourceData, meta
 									reservedIpAuto := reservedIpAutoOk.(bool)
 									primaryip.AutoDelete = &reservedIpAuto
 								}
+
 								if okAdd || okName || okAuto {
 									nicobj.PrimaryIP = primaryip
 								}
@@ -3517,10 +3972,11 @@ func bareMetalServerUpdate(context context.Context, d *schema.ResourceData, meta
 						}
 
 						allowIPSpoofing, ok := nic[isBareMetalServerNicAllowIPSpoofing]
-						allowIPSpoofingbool := allowIPSpoofing.(bool)
-						if ok && allowIPSpoofingbool {
+						if ok && allowIPSpoofing.(bool) {
+							allowIPSpoofingbool := allowIPSpoofing.(bool)
 							nicobj.AllowIPSpoofing = &allowIPSpoofingbool
 						}
+
 						secgrpintf, ok := nic[isBareMetalServerNicSecurityGroups]
 						if ok {
 							secgrpSet := secgrpintf.(*schema.Set)
@@ -3535,17 +3991,23 @@ func bareMetalServerUpdate(context context.Context, d *schema.ResourceData, meta
 								nicobj.SecurityGroups = secgrpobjs
 							}
 						}
+
 						addNicOptions.BareMetalServerNetworkInterfacePrototype = nicobj
 					}
 				} else {
-					interfaceType = "vlan"
+					// Default to VLAN interface
+					// (Same as your original code for default VLAN interfaces)
+					interfaceType := "vlan"
 					var nicobj = &vpcv1.BareMetalServerNetworkInterfacePrototypeBareMetalServerNetworkInterfaceByVlanPrototype{}
 					nicobj.InterfaceType = &interfaceType
 
+					// Set VLAN-specific fields and other common fields
+					// (Same code as in your original implementation)
 					if aitf, ok := nic[isBareMetalServerNicAllowInterfaceToFloat]; ok {
 						allowInterfaceToFloat := aitf.(bool)
 						nicobj.AllowInterfaceToFloat = &allowInterfaceToFloat
 					}
+
 					if vlan, ok := nic[isBareMetalServerNicVlan]; ok {
 						vlanInt := int64(vlan.(int))
 						nicobj.Vlan = &vlanInt
@@ -3556,20 +4018,25 @@ func bareMetalServerUpdate(context context.Context, d *schema.ResourceData, meta
 					nicobj.Subnet = &vpcv1.SubnetIdentity{
 						ID: &subnetintfstr,
 					}
+
 					name, _ := nic[isBareMetalServerNicName]
 					namestr := name.(string)
 					if namestr != "" {
 						nicobj.Name = &namestr
 					}
 
+					// Rest of the VLAN interface configuration (copied from your original code)
 					enableInfraNAT, ok := nic[isBareMetalServerNicEnableInfraNAT]
-					enableInfraNATbool := enableInfraNAT.(bool)
 					if ok {
+						enableInfraNATbool := enableInfraNAT.(bool)
 						nicobj.EnableInfrastructureNat = &enableInfraNATbool
 					}
 
 					if primaryIpIntf, ok := nic[isBareMetalServerNicPrimaryIP]; ok && len(primaryIpIntf.([]interface{})) > 0 {
+						// Primary IP configuration (same as in other interface types)
+						// (Copy of your original code)
 						primaryIp := primaryIpIntf.([]interface{})[0].(map[string]interface{})
+
 						reservedIpIdOk, ok := primaryIp[isBareMetalServerNicIpID]
 						if ok && reservedIpIdOk.(string) != "" {
 							ipid := reservedIpIdOk.(string)
@@ -3579,6 +4046,8 @@ func bareMetalServerUpdate(context context.Context, d *schema.ResourceData, meta
 						} else {
 							primaryip := &vpcv1.NetworkInterfaceIPPrototypeReservedIPPrototypeNetworkInterfaceContext{}
 
+							// Set primary IP properties (address, name, auto-delete)
+							// (Copy of your original code)
 							reservedIpAddressOk, okAdd := primaryIp[isBareMetalServerNicIpAddress]
 							if okAdd && reservedIpAddressOk.(string) != "" {
 								reservedIpAddress := reservedIpAddressOk.(string)
@@ -3596,6 +4065,7 @@ func bareMetalServerUpdate(context context.Context, d *schema.ResourceData, meta
 								reservedIpAuto := reservedIpAutoOk.(bool)
 								primaryip.AutoDelete = &reservedIpAuto
 							}
+
 							if okAdd || okName || okAuto {
 								nicobj.PrimaryIP = primaryip
 							}
@@ -3603,10 +4073,11 @@ func bareMetalServerUpdate(context context.Context, d *schema.ResourceData, meta
 					}
 
 					allowIPSpoofing, ok := nic[isBareMetalServerNicAllowIPSpoofing]
-					allowIPSpoofingbool := allowIPSpoofing.(bool)
-					if ok && allowIPSpoofingbool {
+					if ok && allowIPSpoofing.(bool) {
+						allowIPSpoofingbool := allowIPSpoofing.(bool)
 						nicobj.AllowIPSpoofing = &allowIPSpoofingbool
 					}
+
 					secgrpintf, ok := nic[isBareMetalServerNicSecurityGroups]
 					if ok {
 						secgrpSet := secgrpintf.(*schema.Set)
@@ -3621,96 +4092,57 @@ func bareMetalServerUpdate(context context.Context, d *schema.ResourceData, meta
 							nicobj.SecurityGroups = secgrpobjs
 						}
 					}
+
 					addNicOptions.BareMetalServerNetworkInterfacePrototype = nicobj
 				}
-				_, _, err := sess.CreateBareMetalServerNetworkInterface(addNicOptions)
+
+				// Create the network interface
+				_, _, err := sess.CreateBareMetalServerNetworkInterfaceWithContext(context, addNicOptions)
 				if err != nil {
-					return err
+					tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateBareMetalServerNetworkInterfaceWithContext failed: %s", err.Error()), "ibm_is_bare_metal_server", "update")
+					log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+					return tfErr.GetDiag()
 				}
 			}
-
 		}
 
-		// if len(add) > 0 {
-		// }
-		// if len(remove) > 0 {
-		// }
-		// nics := d.Get(isBareMetalServerNetworkInterfaces).(*schema.Set).List()
-		// for i := range nics {
-		// 	securitygrpKey := fmt.Sprintf("network_interfaces.%d.security_groups", i)
-		// 	networkNameKey := fmt.Sprintf("network_interfaces.%d.name", i)
-		// 	ipSpoofingKey := fmt.Sprintf("network_interfaces.%d.allow_ip_spoofing", i)
-		// 	infraNatKey := fmt.Sprintf("network_interfaces.%d.enable_infrastructure_nat", i)
-		// 	allowedVlans := fmt.Sprintf("network_interfaces.%d.allowed_vlans", i)
-		// 	primaryipname := fmt.Sprintf("network_interfaces.%d.primary_ip.0.name", i)
-		// 	primaryipauto := fmt.Sprintf("network_interfaces.%d.primary_ip.0.auto_delete", i)
-		// 	primaryiprip := fmt.Sprintf("network_interfaces.%d.primary_ip.0.reserved_ip", i)
-		// 	if d.HasChange(primaryipname) || d.HasChange(primaryipauto) {
-		// 		subnetId := d.Get(isBareMetalServerNicSubnet).(string)
-		// 		ripId := d.Get(primaryiprip).(string)
-		// 		updateripoptions := &vpcv1.UpdateSubnetReservedIPOptions{
-		// 			SubnetID: &subnetId,
-		// 			ID:       &ripId,
-		// 		}
-		// 		reservedIpPath := &vpcv1.ReservedIPPatch{}
-		// 		if d.HasChange(primaryipname) {
-		// 			name := d.Get(primaryipname).(string)
-		// 			reservedIpPath.Name = &name
-		// 		}
-		// 		if d.HasChange(primaryipauto) {
-		// 			auto := d.Get(primaryipauto).(bool)
-		// 			reservedIpPath.AutoDelete = &auto
-		// 		}
-		// 		reservedIpPathAsPatch, err := reservedIpPath.AsPatch()
-		// 		if err != nil {
-		// 			return fmt.Errorf("[ERROR] Error calling reserved ip as patch \n%s", err)
-		// 		}
-		// 		updateripoptions.ReservedIPPatch = reservedIpPathAsPatch
-		// 		_, response, err := sess.UpdateSubnetReservedIP(updateripoptions)
-		// 		if err != nil {
-		// 			return fmt.Errorf("[ERROR] Error updating bare metal server network interface reserved ip(%s): %s\n%s", ripId, err, response)
-		// 		}
-		// 	}
+		// Restore server state if needed
+		if isServerStopped {
+			// Get current server state
+			getBMSOptions := &vpcv1.GetBareMetalServerOptions{
+				ID: &id,
+			}
+			bms, _, err := sess.GetBareMetalServerWithContext(context, getBMSOptions)
+			if err != nil {
+				tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetBareMetalServerWithContext failed: %s", err.Error()), "ibm_is_bare_metal_server", "update")
+				log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+				return tfErr.GetDiag()
+			}
 
-		// 	if d.HasChange(securitygrpKey) {
-		// 		ovs, nvs := d.GetChange(securitygrpKey)
-		// 		ov := ovs.(*schema.Set)
-		// 		nv := nvs.(*schema.Set)
-		// 		remove := flex.ExpandStringList(ov.Difference(nv).List())
-		// 		add := flex.ExpandStringList(nv.Difference(ov).List())
-		// 		if len(add) > 0 {
-		// 			networkIDKey := fmt.Sprintf("network_interfaces.%d.id", i)
-		// 			networkID := d.Get(networkIDKey).(string)
-		// 			for i := range add {
-		// 				createsgnicoptions := &vpcv1.CreateSecurityGroupTargetBindingOptions{
-		// 					SecurityGroupID: &add[i],
-		// 					ID:              &networkID,
-		// 				}
-		// 				_, response, err := sess.CreateSecurityGroupTargetBinding(createsgnicoptions)
-		// 				if err != nil {
-		// 					return fmt.Errorf("[ERROR] Error while creating security group %q for network interface of bare metal server %s\n%s: %q", add[i], d.Id(), err, response)
-		// 				}
-		// 			}
+			// Only start if stopped
+			if *bms.Status == isBareMetalServerActionStatusStopped {
+				startBMSOptions := &vpcv1.StartBareMetalServerOptions{
+					ID: &id,
+				}
+				_, err := sess.StartBareMetalServerWithContext(context, startBMSOptions)
+				if err != nil {
+					tfErr := flex.TerraformErrorf(err, fmt.Sprintf("StartBareMetalServerWithContext failed: %s", err.Error()), "ibm_is_bare_metal_server", "update")
+					log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+					return tfErr.GetDiag()
+				}
 
-		// 		}
-		// 		if len(remove) > 0 {
-		// 			networkIDKey := fmt.Sprintf("network_interfaces.%d.id", i)
-		// 			networkID := d.Get(networkIDKey).(string)
-		// 			for i := range remove {
-		// 				deletesgnicoptions := &vpcv1.DeleteSecurityGroupTargetBindingOptions{
-		// 					SecurityGroupID: &remove[i],
-		// 					ID:              &networkID,
-		// 				}
-		// 				response, err := sess.DeleteSecurityGroupTargetBinding(deletesgnicoptions)
-		// 				if err != nil {
-		// 					return fmt.Errorf("[ERROR] Error while removing security group %q for network interface of instance %s\n%s: %q", remove[i], d.Id(), err, response)
-		// 				}
-		// 			}
-		// 		}
-
-		// 	}
-
+				// Wait for the server to start
+				// ctx := context.TODO()
+				_, err = isWaitForBareMetalServerAvailable(sess, id, d.Timeout(schema.TimeoutUpdate), d)
+				if err != nil {
+					tfErr := flex.TerraformErrorf(err, fmt.Sprintf("isWaitForBareMetalServerAvailable failed: %s", err.Error()), "ibm_is_bare_metal_server", "update")
+					log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+					return tfErr.GetDiag()
+				}
+			}
+		}
 	}
+
 	options := &vpcv1.UpdateBareMetalServerOptions{
 		ID: &id,
 	}
@@ -3729,7 +4161,31 @@ func bareMetalServerUpdate(context context.Context, d *schema.ResourceData, meta
 		flag = true
 		isServerStopped, err = resourceStopServerIfRunning(id, "hard", d, context, sess, isServerStopped)
 		if err != nil {
-			return err
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("resourceStopServerIfRunning failed: %s", err.Error()), "ibm_is_bare_metal_server", "update")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
+		}
+	}
+
+	//MetadataService
+	if d.HasChange("metadata_service") {
+		bareMetalServerMetadataService := &vpcv1.BareMetalServerMetadataServicePatch{}
+		if d.HasChange("metadata_service.0.enabled") {
+			flag = true
+			metadataServiceEnabled := d.Get("metadata_service.0.enabled").(bool)
+			bareMetalServerMetadataService.Enabled = &metadataServiceEnabled
+		}
+		if d.HasChange("metadata_service.0.protocol") {
+			flag = true
+			metadataServiceProtocol := d.Get("metadata_service.0.protocol").(string)
+			bareMetalServerMetadataService.Protocol = &metadataServiceProtocol
+		}
+		bmsPatchModel.MetadataService = bareMetalServerMetadataService
+		isServerStopped, err = resourceStopServerIfRunning(id, "hard", d, context, sess, isServerStopped)
+		if err != nil {
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("resourceStopServerIfRunning failed: %s", err.Error()), "ibm_is_bare_metal_server", "update")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 	}
 
@@ -3742,7 +4198,9 @@ func bareMetalServerUpdate(context context.Context, d *schema.ResourceData, meta
 		flag = true
 		isServerStopped, err = resourceStopServerIfRunning(id, "hard", d, context, sess, isServerStopped)
 		if err != nil {
-			return err
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("resourceStopServerIfRunning failed: %s", err.Error()), "ibm_is_bare_metal_server", "update")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 	}
 
@@ -3767,12 +4225,16 @@ func bareMetalServerUpdate(context context.Context, d *schema.ResourceData, meta
 			}
 			reservedIpPathAsPatch, err := reservedIpPath.AsPatch()
 			if err != nil {
-				return fmt.Errorf("[ERROR] Error calling reserved ip as patch \n%s", err)
+				tfErr := flex.TerraformErrorf(err, fmt.Sprintf("reservedIpPath.AsPatch() failed: %s", err.Error()), "ibm_is_bare_metal_server", "update")
+				log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+				return tfErr.GetDiag()
 			}
 			updateripoptions.ReservedIPPatch = reservedIpPathAsPatch
-			_, response, err := sess.UpdateSubnetReservedIP(updateripoptions)
+			_, _, err = sess.UpdateSubnetReservedIPWithContext(context, updateripoptions)
 			if err != nil {
-				return fmt.Errorf("[ERROR] Error updating bare metal server primary network interface reserved ip(%s): %s\n%s", ripId, err, response)
+				tfErr := flex.TerraformErrorf(err, fmt.Sprintf("UpdateSubnetReservedIPWithContext failed: %s", err.Error()), "ibm_is_bare_metal_server", "update")
+				log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+				return tfErr.GetDiag()
 			}
 		}
 		bmsNicUpdateOptions := &vpcv1.UpdateBareMetalServerNetworkInterfaceOptions{
@@ -3821,13 +4283,17 @@ func bareMetalServerUpdate(context context.Context, d *schema.ResourceData, meta
 						SecurityGroupID: &add[i],
 						ID:              &networkID,
 					}
-					_, response, err := sess.CreateSecurityGroupTargetBinding(createsgnicoptions)
+					_, _, err := sess.CreateSecurityGroupTargetBindingWithContext(context, createsgnicoptions)
 					if err != nil {
-						return fmt.Errorf("[ERROR] Error while creating security group %q for primary network interface of bare metal server %s\n%s: %q", add[i], d.Id(), err, response)
+						tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateSecurityGroupTargetBindingWithContext failed: %s", err.Error()), "ibm_is_bare_metal_server", "update")
+						log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+						return tfErr.GetDiag()
 					}
 					_, err = isWaitForBareMetalServerAvailable(sess, id, d.Timeout(schema.TimeoutUpdate), d)
 					if err != nil {
-						return err
+						tfErr := flex.TerraformErrorf(err, fmt.Sprintf("isWaitForBareMetalServerAvailable failed: %s", err.Error()), "ibm_is_bare_metal_server", "update")
+						log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+						return tfErr.GetDiag()
 					}
 				}
 
@@ -3839,13 +4305,17 @@ func bareMetalServerUpdate(context context.Context, d *schema.ResourceData, meta
 						SecurityGroupID: &remove[i],
 						ID:              &networkID,
 					}
-					response, err := sess.DeleteSecurityGroupTargetBinding(deletesgnicoptions)
+					_, err := sess.DeleteSecurityGroupTargetBindingWithContext(context, deletesgnicoptions)
 					if err != nil {
-						return fmt.Errorf("[ERROR] Error while removing security group %q for primary network interface of bare metal server %s\n%s: %q", remove[i], d.Id(), err, response)
+						tfErr := flex.TerraformErrorf(err, fmt.Sprintf("DeleteSecurityGroupTargetBindingWithContext failed: %s", err.Error()), "ibm_is_bare_metal_server", "update")
+						log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+						return tfErr.GetDiag()
 					}
 					_, err = isWaitForBareMetalServerAvailable(sess, id, d.Timeout(schema.TimeoutUpdate), d)
 					if err != nil {
-						return err
+						tfErr := flex.TerraformErrorf(err, fmt.Sprintf("isWaitForBareMetalServerAvailable failed: %s", err.Error()), "ibm_is_bare_metal_server", "update")
+						log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+						return tfErr.GetDiag()
 					}
 				}
 			}
@@ -3860,16 +4330,22 @@ func bareMetalServerUpdate(context context.Context, d *schema.ResourceData, meta
 		if nicflag {
 			bmsNicPatch, err := bmsNicPatchModel.AsPatch()
 			if err != nil {
-				return err
+				tfErr := flex.TerraformErrorf(err, fmt.Sprintf("bmsNicPatchModel.AsPatch() failed: %s", err.Error()), "ibm_is_bare_metal_server", "update")
+				log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+				return tfErr.GetDiag()
 			}
 			bmsNicUpdateOptions.BareMetalServerNetworkInterfacePatch = bmsNicPatch
 			_, _, err = sess.UpdateBareMetalServerNetworkInterfaceWithContext(context, bmsNicUpdateOptions)
 			if err != nil {
-				return err
+				tfErr := flex.TerraformErrorf(err, fmt.Sprintf("UpdateBareMetalServerNetworkInterfaceWithContext failed: %s", err.Error()), "ibm_is_bare_metal_server", "update")
+				log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+				return tfErr.GetDiag()
 			}
 			_, err = isWaitForBareMetalServerAvailable(sess, id, d.Timeout(schema.TimeoutUpdate), d)
 			if err != nil {
-				return err
+				tfErr := flex.TerraformErrorf(err, fmt.Sprintf("isWaitForBareMetalServerAvailable failed: %s", err.Error()), "ibm_is_bare_metal_server", "update")
+				log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+				return tfErr.GetDiag()
 			}
 		}
 	}
@@ -3925,12 +4401,16 @@ func bareMetalServerUpdate(context context.Context, d *schema.ResourceData, meta
 			bmsPatch["reservation_affinity"] = resAffMap
 		}
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error calling asPatch for BareMetalServerPatch: %s", err)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("bmsPatchModel.AsPatch() failed: %s", err.Error()), "ibm_is_bare_metal_server", "update")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		options.BareMetalServerPatch = bmsPatch
-		_, response, err := sess.UpdateBareMetalServerWithContext(context, options)
+		_, _, err = sess.UpdateBareMetalServerWithContext(context, options)
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error updating Bare Metal Server: %s\n%s", err, response)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("UpdateBareMetalServerWithContext failed: %s", err.Error()), "ibm_is_bare_metal_server", "update")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 	}
 
@@ -3951,7 +4431,9 @@ func bareMetalServerUpdate(context context.Context, d *schema.ResourceData, meta
 	if flag || isServerStopped {
 		_, err = resourceStartServerIfStopped(id, "hard", d, context, sess, isServerStopped)
 		if err != nil {
-			return err
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("resourceStartServerIfStopped failed: %s", err.Error()), "ibm_is_bare_metal_server", "update")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 	}
 
@@ -3966,16 +4448,18 @@ func resourceIBMISBareMetalServerDelete(context context.Context, d *schema.Resou
 	}
 	err := bareMetalServerDelete(context, d, meta, id, deleteType)
 	if err != nil {
-		return diag.FromErr(err)
+		return err
 	}
 
 	return nil
 }
 
-func bareMetalServerDelete(context context.Context, d *schema.ResourceData, meta interface{}, id, deleteType string) error {
+func bareMetalServerDelete(context context.Context, d *schema.ResourceData, meta interface{}, id, deleteType string) diag.Diagnostics {
 	sess, err := vpcClient(meta)
 	if err != nil {
-		return err
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_bare_metal_server", "delete", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	getBmsOptions := &vpcv1.GetBareMetalServerOptions{
@@ -3986,7 +4470,9 @@ func bareMetalServerDelete(context context.Context, d *schema.ResourceData, meta
 		if response != nil && response.StatusCode == 404 {
 			return nil
 		}
-		return fmt.Errorf("[ERROR] Error Getting Bare Metal Server (%s): %s\n%s", id, err, response)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetBareMetalServerWithContext failed: %s", err.Error()), "ibm_is_bare_metal_server", "delete")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	if *bms.Status == "running" {
 
@@ -3997,21 +4483,32 @@ func bareMetalServerDelete(context context.Context, d *schema.ResourceData, meta
 
 		response, err := sess.StopBareMetalServerWithContext(context, options)
 		if err != nil && response != nil && response.StatusCode != 204 {
-			return fmt.Errorf("[ERROR] Error stopping Bare Metal Server (%s): %s\n%s", id, err, response)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("StopBareMetalServerWithContext failed: %s", err.Error()), "ibm_is_bare_metal_server", "delete")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
-		isWaitForBareMetalServerActionStop(sess, d.Timeout(schema.TimeoutDelete), id, d)
 
+		_, err = isWaitForBareMetalServerActionStop(sess, d.Timeout(schema.TimeoutDelete), id, d)
+		if err != nil {
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("isWaitForBareMetalServerActionStop failed: %s", err.Error()), "ibm_is_bare_metal_server", "delete")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
+		}
 	}
 	options := &vpcv1.DeleteBareMetalServerOptions{
 		ID: &id,
 	}
 	response, err = sess.DeleteBareMetalServerWithContext(context, options)
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error Deleting Bare Metal Server : %s\n%s", err, response)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("DeleteBareMetalServerWithContext failed: %s", err.Error()), "ibm_is_bare_metal_server", "delete")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	_, err = isWaitForBareMetalServerDeleted(sess, id, d.Timeout(schema.TimeoutDelete))
 	if err != nil {
-		return err
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("isWaitForBareMetalServerDeleted failed: %s", err.Error()), "ibm_is_bare_metal_server", "delete")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	d.SetId("")
 	return nil
@@ -4300,16 +4797,6 @@ func isBareMetalServerRestart(bmsC *vpcv1.VpcV1, id string, d *schema.ResourceDa
 	return nil, nil
 }
 
-func resourceIBMBMSNicSet(v interface{}) int {
-	var buf bytes.Buffer
-	a := v.(map[string]interface{})
-	buf.WriteString(fmt.Sprintf("%s-", a["subnet"].(string)))
-	// buf.WriteString(fmt.Sprintf("%s-", a["name"].(string)))
-	buf.WriteString(fmt.Sprintf("%d-", a["vlan"].(int)))
-	buf.WriteString(fmt.Sprintf("%v-", a["allowed_vlans"].(*schema.Set)))
-	return conns.String(buf.String())
-}
-
 func resourceStopServerIfRunning(id, stoppingType string, d *schema.ResourceData, context context.Context, sess *vpcv1.VpcV1, isServerStopped bool) (bool, error) {
 	getBmsOptions := &vpcv1.GetBareMetalServerOptions{
 		ID: &id,
@@ -4424,6 +4911,7 @@ func resourceIBMIsBareMetalServerBareMetalServerNetworkAttachmentReferenceToMap(
 				vniid = *vna.VirtualNetworkInterface.ID
 				vniMap["id"] = vniid
 				vniMap["name"] = vna.VirtualNetworkInterface.Name
+				vniMap["crn"] = vna.VirtualNetworkInterface.CRN
 				vniMap["resource_type"] = vna.VirtualNetworkInterface.ResourceType
 			}
 		}
@@ -4440,6 +4928,7 @@ func resourceIBMIsBareMetalServerBareMetalServerNetworkAttachmentReferenceToMap(
 				vniid = *vna.VirtualNetworkInterface.ID
 				vniMap["id"] = vniid
 				vniMap["name"] = vna.VirtualNetworkInterface.Name
+				vniMap["crn"] = vna.VirtualNetworkInterface.CRN
 				vniMap["resource_type"] = vna.VirtualNetworkInterface.ResourceType
 			}
 		}
@@ -4450,6 +4939,7 @@ func resourceIBMIsBareMetalServerBareMetalServerNetworkAttachmentReferenceToMap(
 				vniid = *vna.VirtualNetworkInterface.ID
 				vniMap["id"] = vniid
 				vniMap["name"] = vna.VirtualNetworkInterface.Name
+				vniMap["crn"] = vna.VirtualNetworkInterface.CRN
 				vniMap["resource_type"] = vna.VirtualNetworkInterface.ResourceType
 			}
 			if vna.AllowedVlans != nil {
@@ -4486,7 +4976,7 @@ func resourceIBMIsBareMetalServerBareMetalServerNetworkAttachmentReferenceToMap(
 		ips := []map[string]interface{}{}
 		for _, ipsItem := range vniDetails.Ips {
 			if *ipsItem.ID != primaryipId {
-				ipsItemMap, err := resourceIBMIsVirtualNetworkInterfaceReservedIPReferenceToMap(&ipsItem, true)
+				ipsItemMap, err := resourceIBMIsVirtualNetworkInterfaceReservedIPReferenceToMap(&ipsItem, true, false)
 				if err != nil {
 					return nil, err
 				}
@@ -4576,39 +5066,39 @@ func resourceIBMIsBareMetalServerMapToBareMetalServerPrimaryNetworkAttachmentPro
 }
 func resourceIBMIsBareMetalServerMapToVirtualNetworkInterfaceIPsReservedIPPrototype(modelMap map[string]interface{}) (vpcv1.VirtualNetworkInterfaceIPPrototypeIntf, error) {
 	model := &vpcv1.VirtualNetworkInterfaceIPPrototype{}
-	if modelMap["id"] != nil && modelMap["id"].(string) != "" {
-		model.ID = core.StringPtr(modelMap["id"].(string))
-	}
-	if modelMap["href"] != nil && modelMap["href"].(string) != "" {
+	if modelMap["reserved_ip"] != nil && modelMap["reserved_ip"].(string) != "" {
+		model.ID = core.StringPtr(modelMap["reserved_ip"].(string))
+	} else if modelMap["href"] != nil && modelMap["href"].(string) != "" {
 		model.Href = core.StringPtr(modelMap["href"].(string))
-	}
-	if modelMap["address"] != nil && modelMap["address"].(string) != "" {
-		model.Address = core.StringPtr(modelMap["address"].(string))
-	}
-	if modelMap["auto_delete"] != nil {
-		model.AutoDelete = core.BoolPtr(modelMap["auto_delete"].(bool))
-	}
-	if modelMap["name"] != nil && modelMap["name"].(string) != "" {
-		model.Name = core.StringPtr(modelMap["name"].(string))
+	} else {
+		if modelMap["address"] != nil && modelMap["address"].(string) != "" {
+			model.Address = core.StringPtr(modelMap["address"].(string))
+		}
+		if modelMap["auto_delete"] != nil {
+			model.AutoDelete = core.BoolPtr(modelMap["auto_delete"].(bool))
+		}
+		if modelMap["name"] != nil && modelMap["name"].(string) != "" {
+			model.Name = core.StringPtr(modelMap["name"].(string))
+		}
 	}
 	return model, nil
 }
 func resourceIBMIsBareMetalServerMapToVirtualNetworkInterfacePrimaryIPReservedIPPrototype(modelMap map[string]interface{}) (vpcv1.VirtualNetworkInterfacePrimaryIPPrototypeIntf, error) {
 	model := &vpcv1.VirtualNetworkInterfacePrimaryIPPrototype{}
-	if modelMap["id"] != nil && modelMap["id"].(string) != "" {
-		model.ID = core.StringPtr(modelMap["id"].(string))
-	}
-	if modelMap["href"] != nil && modelMap["href"].(string) != "" {
+	if modelMap["reserved_ip"] != nil && modelMap["reserved_ip"].(string) != "" {
+		model.ID = core.StringPtr(modelMap["reserved_ip"].(string))
+	} else if modelMap["href"] != nil && modelMap["href"].(string) != "" {
 		model.Href = core.StringPtr(modelMap["href"].(string))
-	}
-	if modelMap["address"] != nil && modelMap["address"].(string) != "" {
-		model.Address = core.StringPtr(modelMap["address"].(string))
-	}
-	if modelMap["auto_delete"] != nil {
-		model.AutoDelete = core.BoolPtr(modelMap["auto_delete"].(bool))
-	}
-	if modelMap["name"] != nil && modelMap["name"].(string) != "" {
-		model.Name = core.StringPtr(modelMap["name"].(string))
+	} else {
+		if modelMap["address"] != nil && modelMap["address"].(string) != "" {
+			model.Address = core.StringPtr(modelMap["address"].(string))
+		}
+		if modelMap["auto_delete"] != nil {
+			model.AutoDelete = core.BoolPtr(modelMap["auto_delete"].(bool))
+		}
+		if modelMap["name"] != nil && modelMap["name"].(string) != "" {
+			model.Name = core.StringPtr(modelMap["name"].(string))
+		}
 	}
 	return model, nil
 }
@@ -5229,5 +5719,35 @@ func compareModifiedNacs(oldList, newList []interface{}, bareMetalServerId strin
 			}
 		}
 	}
+	return nil
+}
+
+// This will be added to the resource's CustomizeDiff function
+func validateBareMetalServerNicNames(ctx context.Context, d *schema.ResourceDiff, meta interface{}) error {
+	// Create a map to track interface names
+	nicNames := make(map[string]bool)
+
+	// Check primary network interface name
+	if primaryIf, ok := d.GetOk("primary_network_interface"); ok && len(primaryIf.([]interface{})) > 0 {
+		primaryIfMap := primaryIf.([]interface{})[0].(map[string]interface{})
+		if name, ok := primaryIfMap[isBareMetalServerNicName]; ok {
+			nicNames[name.(string)] = true
+		}
+	}
+
+	// Check network interfaces names
+	if nics, ok := d.GetOk(isBareMetalServerNetworkInterfaces); ok {
+		nicsList := nics.([]interface{})
+		for i, nic := range nicsList {
+			nicMap := nic.(map[string]interface{})
+			if name, ok := nicMap[isBareMetalServerNicName]; ok {
+				if _, exists := nicNames[name.(string)]; exists {
+					return fmt.Errorf("duplicate network interface name '%s' found at network_interfaces[%d]", name.(string), i)
+				}
+				nicNames[name.(string)] = true
+			}
+		}
+	}
+
 	return nil
 }

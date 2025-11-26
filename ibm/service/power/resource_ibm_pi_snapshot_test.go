@@ -9,28 +9,28 @@ import (
 	"fmt"
 	"testing"
 
-	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
-
 	"github.com/IBM-Cloud/power-go-client/clients/instance"
+	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
+
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/power"
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 )
 
-func TestAccIBMPIInstanceSnapshotbasic(t *testing.T) {
-	name := fmt.Sprintf("tf-pi-instance-snapshot-%d", acctest.RandIntRange(10, 100))
+func TestAccIBMPIInstanceSnapshotbasicV0(t *testing.T) {
+	name := fmt.Sprintf("tf-pi-instance-snapshot-v0-%d", acctest.RandIntRange(10, 100))
 	snapshotRes := "ibm_pi_snapshot.power_snapshot"
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
 		Providers:    acc.TestAccProviders,
-		CheckDestroy: testAccCheckIBMPIInstanceSnapshotDestroy,
+		CheckDestroy: testAccCheckIBMPIInstanceSnapshotDestroyV0,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIBMPIInstanceSnapshotConfig(name, power.OK),
+				Config: testAccCheckIBMPIInstanceSnapshotConfigV0(name, power.OK),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckIBMPIInstanceSnapshotExists(snapshotRes),
+					testAccCheckIBMPIInstanceSnapshotExistsV0(snapshotRes),
 					resource.TestCheckResourceAttr(snapshotRes, "pi_snap_shot_name", name),
 					resource.TestCheckResourceAttr(snapshotRes, "status", power.State_Available),
 					resource.TestCheckResourceAttrSet(snapshotRes, "id"),
@@ -40,7 +40,7 @@ func TestAccIBMPIInstanceSnapshotbasic(t *testing.T) {
 	})
 }
 
-func TestAccIBMPIInstanceSnapshotUserTags(t *testing.T) {
+func TestAccIBMPIInstanceSnapshotUserTagsV0(t *testing.T) {
 	name := fmt.Sprintf("tf-pi-instance-snapshot-%d", acctest.RandIntRange(10, 100))
 	snapshotRes := "ibm_pi_snapshot.power_snapshot"
 	userTagsString := `["env:dev","test_tag"]`
@@ -48,12 +48,12 @@ func TestAccIBMPIInstanceSnapshotUserTags(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
 		Providers:    acc.TestAccProviders,
-		CheckDestroy: testAccCheckIBMPIInstanceSnapshotDestroy,
+		CheckDestroy: testAccCheckIBMPIInstanceSnapshotDestroyV0,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIBMPIInstanceSnapshotUserTagsConfig(name, power.OK, userTagsString),
+				Config: testAccCheckIBMPIInstanceSnapshotUserTagsConfigV0(name, power.OK, userTagsString),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckIBMPIInstanceSnapshotExists(snapshotRes),
+					testAccCheckIBMPIInstanceSnapshotExistsV0(snapshotRes),
 					resource.TestCheckResourceAttr(snapshotRes, "pi_snap_shot_name", name),
 					resource.TestCheckResourceAttr(snapshotRes, "status", power.State_Available),
 					resource.TestCheckResourceAttrSet(snapshotRes, "id"),
@@ -63,9 +63,9 @@ func TestAccIBMPIInstanceSnapshotUserTags(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccCheckIBMPIInstanceSnapshotUserTagsConfig(name, power.OK, userTagsStringUpdated),
+				Config: testAccCheckIBMPIInstanceSnapshotUserTagsConfigV0(name, power.OK, userTagsStringUpdated),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckIBMPIInstanceSnapshotExists(snapshotRes),
+					testAccCheckIBMPIInstanceSnapshotExistsV0(snapshotRes),
 					resource.TestCheckResourceAttr(snapshotRes, "pi_snap_shot_name", name),
 					resource.TestCheckResourceAttr(snapshotRes, "status", power.State_Available),
 					resource.TestCheckResourceAttrSet(snapshotRes, "id"),
@@ -79,7 +79,7 @@ func TestAccIBMPIInstanceSnapshotUserTags(t *testing.T) {
 	})
 }
 
-func testAccCheckIBMPIInstanceSnapshotDestroy(s *terraform.State) error {
+func testAccCheckIBMPIInstanceSnapshotDestroyV0(s *terraform.State) error {
 	sess, err := acc.TestAccProvider.Meta().(conns.ClientSession).IBMPISession()
 	if err != nil {
 		return err
@@ -101,7 +101,7 @@ func testAccCheckIBMPIInstanceSnapshotDestroy(s *terraform.State) error {
 	return nil
 }
 
-func testAccCheckIBMPIInstanceSnapshotExists(n string) resource.TestCheckFunc {
+func testAccCheckIBMPIInstanceSnapshotExistsV0(n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
@@ -132,7 +132,7 @@ func testAccCheckIBMPIInstanceSnapshotExists(n string) resource.TestCheckFunc {
 	}
 }
 
-func testAccCheckIBMPIInstanceSnapshotConfig(name, healthStatus string) string {
+func testAccCheckIBMPIInstanceSnapshotConfigV0(name, healthStatus string) string {
 	return testAccCheckIBMPIInstanceConfig(name, healthStatus) + fmt.Sprintf(`
 		resource "ibm_pi_snapshot" "power_snapshot"{
 			depends_on=[ibm_pi_instance.power_instance]
@@ -143,7 +143,7 @@ func testAccCheckIBMPIInstanceSnapshotConfig(name, healthStatus string) string {
 		}`, acc.Pi_cloud_instance_id, name)
 }
 
-func testAccCheckIBMPIInstanceSnapshotUserTagsConfig(name, healthStatus string, userTagsString string) string {
+func testAccCheckIBMPIInstanceSnapshotUserTagsConfigV0(name, healthStatus string, userTagsString string) string {
 	return testAccCheckIBMPIInstanceConfig(name, healthStatus) + fmt.Sprintf(`
 		resource "ibm_pi_snapshot" "power_snapshot"{
 			depends_on=[ibm_pi_instance.power_instance]

@@ -9,6 +9,7 @@ import (
 	"log"
 	"strings"
 
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
@@ -78,7 +79,9 @@ func ResourceIBMIsVirtualNetworkInterfaceFloatingIP() *schema.Resource {
 func resourceIBMIsVirtualNetworkInterfaceFloatingIPCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	sess, err := vpcClient(meta)
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_virtual_network_interface_floating_ip", "create", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	createVirtualNetworkInterfaceFloatingIPOptions := &vpcv1.AddNetworkInterfaceFloatingIPOptions{}
@@ -87,10 +90,11 @@ func resourceIBMIsVirtualNetworkInterfaceFloatingIPCreate(context context.Contex
 	createVirtualNetworkInterfaceFloatingIPOptions.VirtualNetworkInterfaceID = &vniId
 	createVirtualNetworkInterfaceFloatingIPOptions.ID = &fipId
 
-	floatingIP, response, err := sess.AddNetworkInterfaceFloatingIPWithContext(context, createVirtualNetworkInterfaceFloatingIPOptions)
+	floatingIP, _, err := sess.AddNetworkInterfaceFloatingIPWithContext(context, createVirtualNetworkInterfaceFloatingIPOptions)
 	if err != nil {
-		log.Printf("[DEBUG] AddNetworkInterfaceFloatingIPOptions failed %s\n%s", err, response)
-		return diag.FromErr(fmt.Errorf("AddNetworkInterfaceFloatingIPOptions failed %s\n%s", err, response))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("AddNetworkInterfaceFloatingIPWithContext failed: %s", err.Error()), "ibm_is_virtual_network_interface_floating_ip", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	d.SetId(MakeTerraformVNIFloatingIpID(vniId, fipId))
 	resourceIBMIsVirtualNetworkInterfaceFloatingIPGet(d, floatingIP)
@@ -101,11 +105,13 @@ func resourceIBMIsVirtualNetworkInterfaceFloatingIPCreate(context context.Contex
 func resourceIBMIsVirtualNetworkInterfaceFloatingIPRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	sess, err := vpcClient(meta)
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_virtual_network_interface_floating_ip", "read", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	vniId, fipId, err := ParseVNIFloatingIpTerraformID(d.Id())
 	if err != nil {
-		return diag.FromErr(err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_virtual_network_interface_floating_ip", "read", "sep-id-parts").GetDiag()
 	}
 	getNetworkInterfaceFloatingIPOptions := &vpcv1.GetNetworkInterfaceFloatingIPOptions{}
 	getNetworkInterfaceFloatingIPOptions.SetVirtualNetworkInterfaceID(vniId)
@@ -117,8 +123,9 @@ func resourceIBMIsVirtualNetworkInterfaceFloatingIPRead(context context.Context,
 			d.SetId("")
 			return nil
 		}
-		log.Printf("[DEBUG] GetVirtualNetworkInterfaceFloatingIPWithContext failed %s\n%s", err, response)
-		return diag.FromErr(fmt.Errorf("GetVirtualNetworkInterfaceFloatingIPWithContext failed %s\n%s", err, response))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetNetworkInterfaceFloatingIPWithContext failed: %s", err.Error()), "ibm_is_virtual_network_interface_floating_ip", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	resourceIBMIsVirtualNetworkInterfaceFloatingIPGet(d, floatingIP)
 
@@ -127,25 +134,33 @@ func resourceIBMIsVirtualNetworkInterfaceFloatingIPRead(context context.Context,
 func resourceIBMIsVirtualNetworkInterfaceFloatingIPGet(d *schema.ResourceData, floatingIP *vpcv1.FloatingIPReference) diag.Diagnostics {
 	if !core.IsNil(floatingIP.Name) {
 		if err := d.Set("name", floatingIP.Name); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting name: %s", err))
+			err = fmt.Errorf("Error setting name: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_virtual_network_interface_floating_ip", "read", "set-name").GetDiag()
 		}
 	}
 	if err := d.Set("address", floatingIP.Address); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting address: %s", err))
+		err = fmt.Errorf("Error setting address: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_virtual_network_interface_floating_ip", "read", "set-address").GetDiag()
 	}
 
 	if err := d.Set("crn", floatingIP.CRN); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting crn: %s", err))
+		err = fmt.Errorf("Error setting crn: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_virtual_network_interface_floating_ip", "read", "set-crn").GetDiag()
 	}
 	if err := d.Set("href", floatingIP.Href); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting href: %s", err))
+		err = fmt.Errorf("Error setting href: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_virtual_network_interface_floating_ip", "read", "set-href").GetDiag()
 	}
 	deleted := make(map[string]interface{})
 
 	if floatingIP.Deleted != nil && floatingIP.Deleted.MoreInfo != nil {
 		deleted["more_info"] = floatingIP.Deleted
 	}
-	d.Set("deleted", []map[string]interface{}{deleted})
+
+	if err := d.Set("deleted", []map[string]interface{}{deleted}); err != nil {
+		err = fmt.Errorf("Error setting deleted: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_virtual_network_interface_floating_ip", "read", "set-deleted").GetDiag()
+	}
 
 	return nil
 }
@@ -153,7 +168,9 @@ func resourceIBMIsVirtualNetworkInterfaceFloatingIPGet(d *schema.ResourceData, f
 func resourceIBMIsVirtualNetworkInterfaceFloatingIPDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	sess, err := vpcClient(meta)
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_virtual_network_interface_floating_ip", "delete", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	vniId, fipId, err := ParseVNIFloatingIpTerraformID(d.Id())
 	if err != nil {
@@ -164,10 +181,11 @@ func resourceIBMIsVirtualNetworkInterfaceFloatingIPDelete(context context.Contex
 	removeNetworkInterfaceFloatingIPOptions.SetVirtualNetworkInterfaceID(vniId)
 	removeNetworkInterfaceFloatingIPOptions.SetID(fipId)
 
-	response, err := sess.RemoveNetworkInterfaceFloatingIPWithContext(context, removeNetworkInterfaceFloatingIPOptions)
+	_, err = sess.RemoveNetworkInterfaceFloatingIPWithContext(context, removeNetworkInterfaceFloatingIPOptions)
 	if err != nil {
-		log.Printf("[DEBUG] RemoveNetworkInterfaceFloatingIPWithContext failed %s\n%s", err, response)
-		return diag.FromErr(fmt.Errorf("RemoveNetworkInterfaceFloatingIPWithContext failed %s\n%s", err, response))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("RemoveNetworkInterfaceFloatingIPWithContext failed: %s", err.Error()), "ibm_is_virtual_network_interface_floating_ip", "delete")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	d.SetId("")

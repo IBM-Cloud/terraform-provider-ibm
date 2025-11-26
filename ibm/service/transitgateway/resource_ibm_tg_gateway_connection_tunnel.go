@@ -217,7 +217,7 @@ func resourceIBMTransitGatewayConnectionRgreTunnelCreate(d *schema.ResourceData,
 
 	rGRETunnel, response, err := client.CreateTransitGatewayGreTunnel(createTransitGatewayConnectionRgreTunnelOptions)
 	if err != nil {
-		return fmt.Errorf("[ERROR] Create Transit Gateway connection  rGRE tunnel err %s\n%s", err, response)
+		return flex.FmtErrorf("[ERROR] Create Transit Gateway connection  rGRE tunnel err %s\n%s", err, response)
 	}
 
 	d.SetId(fmt.Sprintf("%s/%s/%s", gatewayId, connectionId, *rGRETunnel.ID))
@@ -245,7 +245,7 @@ func isTransitGatewayConnectionRgreTunnelRefreshFunc(client *transitgatewayapisv
 
 		parts, err := flex.IdParts(id)
 		if err != nil {
-			return nil, "", fmt.Errorf("[ERROR] Error Getting Transit Gateway connection: %s", err)
+			return nil, "", flex.FmtErrorf("[ERROR] Error Getting Transit Gateway connection: %s", err)
 		}
 
 		gatewayId := parts[0]
@@ -259,7 +259,7 @@ func isTransitGatewayConnectionRgreTunnelRefreshFunc(client *transitgatewayapisv
 		trGREunnel, response, err := client.GetTransitGatewayConnectionTunnels(getTransitGatewayConnectionrGRETunnelOptions)
 
 		if err != nil {
-			return nil, "", fmt.Errorf("[ERROR] Error Getting Transit Gateway Connection Tunnel (%s): %s\n%s", rGRETunnelID, err, response)
+			return nil, "", flex.FmtErrorf("[ERROR] Error Getting Transit Gateway Connection Tunnel (%s): %s\n%s", rGRETunnelID, err, response)
 		}
 		if *trGREunnel.Status == "attached" || *trGREunnel.Status == "failed" {
 			return trGREunnel, isTransitGatewayConnectionTunnelAttached, nil
@@ -305,7 +305,7 @@ func resourceIBMTransitGatewayConnectionRgreTunnelRead(d *schema.ResourceData, m
 			d.SetId("")
 			return nil
 		}
-		return fmt.Errorf("[ERROR] Error Getting Transit Gateway Connection  Redundant GRE Tunnel (%s): %s\n%s", rGRETunnelID, err, response)
+		return flex.FmtErrorf("[ERROR] Error Getting Transit Gateway Connection  Redundant GRE Tunnel (%s): %s\n%s", rGRETunnelID, err, response)
 	}
 
 	if instance.Name != nil {
@@ -369,13 +369,16 @@ func resourceIBMTransitGatewayConnectionRgreTunnelUpdate(d *schema.ResourceData,
 	if d.HasChange(tgconTunnelName) {
 		if d.Get(tgconTunnelName) != nil {
 			name := d.Get(tgconTunnelName).(string)
-			updateTransitGatewayConnectionOptions.Name = &name
+			gwTunnelPatch := map[string]interface{}{
+				"name": &name,
+			}
+			updateTransitGatewayConnectionOptions.SetTransitGatewayTunnelPatch(gwTunnelPatch)
 		}
 	}
 
 	_, response, err := client.UpdateTransitGatewayConnectionTunnels(updateTransitGatewayConnectionOptions)
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error in Update Transit Gateway Connection Tunnel: %s\n%s", err, response)
+		return flex.FmtErrorf("[ERROR] Error in Update Transit Gateway Connection Tunnel: %s\n%s", err, response)
 	}
 
 	return resourceIBMTransitGatewayConnectionRgreTunnelRead(d, meta)
@@ -408,7 +411,7 @@ func resourceIBMTransitGatewayConnectionRgreTunnelDelete(d *schema.ResourceData,
 		if response != nil && response.StatusCode == 404 {
 			return nil
 		}
-		return fmt.Errorf("[ERROR] Error deleting Transit Gateway Connection Tunnel (%s): %s\n%s", rGRETunnelID, err, response)
+		return flex.FmtErrorf("[ERROR] Error deleting Transit Gateway Connection Tunnel (%s): %s\n%s", rGRETunnelID, err, response)
 	}
 	_, err = isWaitForTransitGatewayConnectionRgreTunnelDeleted(client, d.Id(), d.Timeout(schema.TimeoutCreate))
 
@@ -439,7 +442,7 @@ func isTransitGatewayConnectionRgreTunnelDeleteRefreshFunc(client *transitgatewa
 		log.Printf("[DEBUG] tg gateway connection Tunnel delete function here")
 		parts, err := flex.IdParts(id)
 		if err != nil {
-			return nil, "", fmt.Errorf("[ERROR] Error Getting Transit Gateway connection Tunnel: %s", err)
+			return nil, "", flex.FmtErrorf("[ERROR] Error Getting Transit Gateway connection Tunnel: %s", err)
 
 		}
 
@@ -457,7 +460,7 @@ func isTransitGatewayConnectionRgreTunnelDeleteRefreshFunc(client *transitgatewa
 			if response != nil && response.StatusCode == 404 {
 				return trGREunnel, isTransitGatewayConnectionTunnelDeleted, nil
 			}
-			return nil, "", fmt.Errorf("[ERROR] Error Getting Transit Gateway Connection Tunnel (%s): %s\n%s", rGRETunnelID, err, response)
+			return nil, "", flex.FmtErrorf("[ERROR] Error Getting Transit Gateway Connection Tunnel (%s): %s\n%s", rGRETunnelID, err, response)
 		}
 		return trGREunnel, isTransitGatewayConnectionTunnelDeleting, err
 	}
@@ -472,7 +475,7 @@ func resourceIBMTransitGatewayConnectionRgreTunnelExists(d *schema.ResourceData,
 		return false, err
 	}
 	if len(parts) < 3 {
-		return false, fmt.Errorf("[ERROR] Incorrect ID %s: Id should be a combination of gatewayID/ConnectionID/TunnelID", d.Id())
+		return false, flex.FmtErrorf("[ERROR] Incorrect ID %s: Id should be a combination of gatewayID/ConnectionID/TunnelID", d.Id())
 	}
 
 	gatewayId := parts[0]
@@ -490,7 +493,7 @@ func resourceIBMTransitGatewayConnectionRgreTunnelExists(d *schema.ResourceData,
 			d.SetId("")
 			return false, nil
 		}
-		return false, fmt.Errorf("[ERROR] Error Getting Transit Gateway Connection Tunnel: %s\n%s", err, response)
+		return false, flex.FmtErrorf("[ERROR] Error Getting Transit Gateway Connection Tunnel: %s\n%s", err, response)
 	}
 	return true, nil
 }

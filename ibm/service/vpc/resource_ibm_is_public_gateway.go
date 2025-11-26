@@ -13,7 +13,9 @@ import (
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
+	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -39,12 +41,12 @@ const (
 
 func ResourceIBMISPublicGateway() *schema.Resource {
 	return &schema.Resource{
-		Create:   resourceIBMISPublicGatewayCreate,
-		Read:     resourceIBMISPublicGatewayRead,
-		Update:   resourceIBMISPublicGatewayUpdate,
-		Delete:   resourceIBMISPublicGatewayDelete,
-		Exists:   resourceIBMISPublicGatewayExists,
-		Importer: &schema.ResourceImporter{},
+		CreateContext: resourceIBMISPublicGatewayCreate,
+		ReadContext:   resourceIBMISPublicGatewayRead,
+		UpdateContext: resourceIBMISPublicGatewayUpdate,
+		DeleteContext: resourceIBMISPublicGatewayDelete,
+		Exists:        resourceIBMISPublicGatewayExists,
+		Importer:      &schema.ResourceImporter{},
 
 		Timeouts: &schema.ResourceTimeout{
 			Create: schema.DefaultTimeout(10 * time.Minute),
@@ -200,10 +202,12 @@ func ResourceIBMISPublicGatewayValidator() *validate.ResourceValidator {
 	return &ibmISPublicGatewayResourceValidator
 }
 
-func resourceIBMISPublicGatewayCreate(d *schema.ResourceData, meta interface{}) error {
+func resourceIBMISPublicGatewayCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	sess, err := vpcClient(meta)
 	if err != nil {
-		return err
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_public_gateway", "create", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	name := d.Get(isPublicGatewayName).(string)
@@ -241,16 +245,20 @@ func resourceIBMISPublicGatewayCreate(d *schema.ResourceData, meta interface{}) 
 		}
 	}
 
-	publicgw, response, err := sess.CreatePublicGateway(options)
+	publicgw, _, err := sess.CreatePublicGatewayWithContext(context, options)
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error while creating Public Gateway %s\n%s", err, response)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreatePublicGatewayWithContext failed: %s", err.Error()), "ibm_is_public_gateway", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	d.SetId(*publicgw.ID)
 	log.Printf("[INFO] PublicGateway : %s", *publicgw.ID)
 
 	_, err = isWaitForPublicGatewayAvailable(sess, d.Id(), d.Timeout(schema.TimeoutCreate))
 	if err != nil {
-		return err
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Wait for PublicGateway available failed: %s", err.Error()), "ibm_is_public_gateway", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	v := os.Getenv("IC_ENV_TAGS")
@@ -272,7 +280,7 @@ func resourceIBMISPublicGatewayCreate(d *schema.ResourceData, meta interface{}) 
 		}
 	}
 
-	return resourceIBMISPublicGatewayRead(d, meta)
+	return resourceIBMISPublicGatewayRead(context, d, meta)
 }
 
 func isWaitForPublicGatewayAvailable(publicgwC *vpcv1.VpcV1, id string, timeout time.Duration) (interface{}, error) {
@@ -308,70 +316,119 @@ func isPublicGatewayRefreshFunc(publicgwC *vpcv1.VpcV1, id string) retry.StateRe
 	}
 }
 
-func resourceIBMISPublicGatewayRead(d *schema.ResourceData, meta interface{}) error {
+func resourceIBMISPublicGatewayRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	sess, err := vpcClient(meta)
 	if err != nil {
-		return err
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_public_gateway", "read", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	id := d.Id()
 	getPublicGatewayOptions := &vpcv1.GetPublicGatewayOptions{
 		ID: &id,
 	}
-	publicgw, response, err := sess.GetPublicGateway(getPublicGatewayOptions)
+	publicGateway, response, err := sess.GetPublicGatewayWithContext(context, getPublicGatewayOptions)
 	if err != nil {
 		if response != nil && response.StatusCode == 404 {
 			d.SetId("")
 			return nil
 		}
-		return fmt.Errorf("[ERROR] Error getting Public Gateway : %s\n%s", err, response)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetPublicGatewayWithContext failed: %s", err.Error()), "ibm_is_public_gateway", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
-	d.Set(isPublicGatewayName, *publicgw.Name)
-	if publicgw.FloatingIP != nil {
-		floatIP := map[string]interface{}{
-			"id":                             *publicgw.FloatingIP.ID,
-			isPublicGatewayFloatingIPAddress: *publicgw.FloatingIP.Address,
+	if !core.IsNil(publicGateway.Name) {
+		if err = d.Set("name", publicGateway.Name); err != nil {
+			err = fmt.Errorf("Error setting name: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_public_gateway", "read", "set-name").GetDiag()
 		}
-		d.Set(isPublicGatewayFloatingIP, floatIP)
-
 	}
-	d.Set(isPublicGatewayStatus, *publicgw.Status)
-	d.Set(isPublicGatewayZone, *publicgw.Zone.Name)
-	d.Set(isPublicGatewayVPC, *publicgw.VPC.ID)
-	tags, err := flex.GetGlobalTagsUsingCRN(meta, *publicgw.CRN, "", isUserTagType)
+	if publicGateway.FloatingIP != nil {
+		floatIP := map[string]interface{}{
+			"id":                             *publicGateway.FloatingIP.ID,
+			isPublicGatewayFloatingIPAddress: *publicGateway.FloatingIP.Address,
+		}
+		if err = d.Set("floating_ip", floatIP); err != nil {
+			err = fmt.Errorf("Error setting floating_ip: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_public_gateway", "read", "set-floating_ip").GetDiag()
+		}
+	}
+	if err = d.Set("status", publicGateway.Status); err != nil {
+		err = fmt.Errorf("Error setting status: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_public_gateway", "read", "set-status").GetDiag()
+	}
+	if err = d.Set("zone", *publicGateway.Zone.Name); err != nil {
+		err = fmt.Errorf("Error setting zone: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_public_gateway", "read", "set-zone").GetDiag()
+	}
+	if err = d.Set("vpc", *publicGateway.VPC.ID); err != nil {
+		err = fmt.Errorf("Error setting vpc: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_public_gateway", "read", "set-vpc").GetDiag()
+	}
+	tags, err := flex.GetGlobalTagsUsingCRN(meta, *publicGateway.CRN, "", isUserTagType)
 	if err != nil {
 		log.Printf(
 			"Error on get of vpc public gateway (%s) tags: %s", id, err)
 	}
-	d.Set(isPublicGatewayTags, tags)
+	if err = d.Set("tags", tags); err != nil {
+		err = fmt.Errorf("Error setting tags: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_public_gateway", "read", "set-tags").GetDiag()
+	}
 
-	accesstags, err := flex.GetGlobalTagsUsingCRN(meta, *publicgw.CRN, "", isAccessTagType)
+	accesstags, err := flex.GetGlobalTagsUsingCRN(meta, *publicGateway.CRN, "", isAccessTagType)
 	if err != nil {
 		log.Printf(
 			"Error on get of vpc public gateway (%s) access tags: %s", d.Id(), err)
 	}
-
-	d.Set(isPublicGatewayAccessTags, accesstags)
+	if err = d.Set("access_tags", accesstags); err != nil {
+		err = fmt.Errorf("Error setting access_tags: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_public_gateway", "read", "set-access_tags").GetDiag()
+	}
 
 	controller, err := flex.GetBaseController(meta)
 	if err != nil {
-		return err
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetBaseController failed: %s", err.Error()), "ibm_is_public_gateway", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	d.Set(flex.ResourceControllerURL, controller+"/vpc-ext/network/publicGateways")
-	d.Set(flex.ResourceName, *publicgw.Name)
-	d.Set(flex.ResourceCRN, *publicgw.CRN)
-	d.Set(isPublicGatewayCRN, *publicgw.CRN)
-	d.Set(flex.ResourceStatus, *publicgw.Status)
-	if publicgw.ResourceGroup != nil {
-		d.Set(isPublicGatewayResourceGroup, *publicgw.ResourceGroup.ID)
-		d.Set(flex.ResourceGroupName, *publicgw.ResourceGroup.Name)
+	if !core.IsNil(publicGateway.Name) {
+		if err = d.Set("resource_name", publicGateway.Name); err != nil {
+			err = fmt.Errorf("Error setting resource_name: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_public_gateway", "read", "set-resource_name").GetDiag()
+		}
+	}
+	if err = d.Set("resource_crn", publicGateway.CRN); err != nil {
+		err = fmt.Errorf("Error setting resource_crn: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_public_gateway", "read", "set-resource_crn").GetDiag()
+	}
+	if err = d.Set("crn", publicGateway.CRN); err != nil {
+		err = fmt.Errorf("Error setting crn: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_public_gateway", "read", "set-crn").GetDiag()
+	}
+	if err = d.Set("resource_status", publicGateway.Status); err != nil {
+		err = fmt.Errorf("Error setting status: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_public_gateway", "read", "set-status").GetDiag()
+	}
+	if publicGateway.ResourceGroup != nil {
+		if err = d.Set("resource_group", *publicGateway.ResourceGroup.ID); err != nil {
+			err = fmt.Errorf("Error setting resource_group: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_public_gateway", "read", "set-resource_group").GetDiag()
+		}
+		if err = d.Set("resource_group_name", *publicGateway.ResourceGroup.Name); err != nil {
+			err = fmt.Errorf("Error setting resource_group_name: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_public_gateway", "read", "set-resource_group_name").GetDiag()
+		}
 	}
 	return nil
 }
 
-func resourceIBMISPublicGatewayUpdate(d *schema.ResourceData, meta interface{}) error {
+func resourceIBMISPublicGatewayUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	sess, err := vpcClient(meta)
 	if err != nil {
-		return err
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_public_gateway", "update", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	id := d.Id()
 
@@ -386,9 +443,11 @@ func resourceIBMISPublicGatewayUpdate(d *schema.ResourceData, meta interface{}) 
 		getPublicGatewayOptions := &vpcv1.GetPublicGatewayOptions{
 			ID: &id,
 		}
-		publicgw, response, err := sess.GetPublicGateway(getPublicGatewayOptions)
+		publicgw, _, err := sess.GetPublicGatewayWithContext(context, getPublicGatewayOptions)
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error getting Public Gateway : %s\n%s", err, response)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetPublicGatewayWithContext failed: %s", err.Error()), "ibm_is_public_gateway", "update")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		oldList, newList := d.GetChange(isPublicGatewayTags)
 		err = flex.UpdateGlobalTagsUsingCRN(oldList, newList, meta, *publicgw.CRN, "", isUserTagType)
@@ -402,9 +461,11 @@ func resourceIBMISPublicGatewayUpdate(d *schema.ResourceData, meta interface{}) 
 		getPublicGatewayOptions := &vpcv1.GetPublicGatewayOptions{
 			ID: &id,
 		}
-		publicgw, response, err := sess.GetPublicGateway(getPublicGatewayOptions)
+		publicgw, _, err := sess.GetPublicGatewayWithContext(context, getPublicGatewayOptions)
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error getting Public Gateway : %s\n%s", err, response)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetPublicGatewayWithContext failed: %s", err.Error()), "ibm_is_public_gateway", "update")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		oldList, newList := d.GetChange(isPublicGatewayTags)
 		err = flex.UpdateGlobalTagsUsingCRN(oldList, newList, meta, *publicgw.CRN, "", isAccessTagType)
@@ -423,40 +484,48 @@ func resourceIBMISPublicGatewayUpdate(d *schema.ResourceData, meta interface{}) 
 		}
 		PublicGatewayPatch, err := PublicGatewayPatchModel.AsPatch()
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error calling asPatch for PublicGatewayPatch: %s", err)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("PublicGatewayPatchModel.AsPatch failed: %s", err.Error()), "ibm_is_public_gateway", "update")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		updatePublicGatewayOptions.PublicGatewayPatch = PublicGatewayPatch
-		_, response, err := sess.UpdatePublicGateway(updatePublicGatewayOptions)
+		_, _, err = sess.UpdatePublicGateway(updatePublicGatewayOptions)
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error Updating Public Gateway  : %s\n%s", err, response)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("UpdatePublicGatewayWithContext failed: %s", err.Error()), "ibm_is_public_gateway", "update")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 	}
-	return resourceIBMISPublicGatewayRead(d, meta)
+	return resourceIBMISPublicGatewayRead(context, d, meta)
 }
 
-func resourceIBMISPublicGatewayDelete(d *schema.ResourceData, meta interface{}) error {
+func resourceIBMISPublicGatewayDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	sess, err := vpcClient(meta)
 	if err != nil {
-		return err
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_public_gateway", "delete", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	id := d.Id()
 
 	getPublicGatewayOptions := &vpcv1.GetPublicGatewayOptions{
 		ID: &id,
 	}
-	_, response, err := sess.GetPublicGateway(getPublicGatewayOptions)
+	_, response, err := sess.GetPublicGatewayWithContext(context, getPublicGatewayOptions)
 	if err != nil {
 		if response != nil && response.StatusCode == 404 {
 			d.SetId("")
 			return nil
 		}
-		return fmt.Errorf("[ERROR] Error Getting Public Gateway (%s): %s\n%s", id, err, response)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetPublicGatewayWithContext failed: %s", err.Error()), "ibm_is_public_gateway", "delete")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	deletePublicGatewayOptions := &vpcv1.DeletePublicGatewayOptions{
 		ID: &id,
 	}
-	response, err = sess.DeletePublicGateway(deletePublicGatewayOptions)
+	response, err = sess.DeletePublicGatewayWithContext(context, deletePublicGatewayOptions)
 	if err != nil {
 		if response.StatusCode == 409 && strings.Contains(strings.ToLower(err.Error()), strings.ToLower("The Public Gateway is in use by subnet")) {
 			listSubnetsOptions := &vpcv1.ListSubnetsOptions{}
@@ -466,28 +535,38 @@ func resourceIBMISPublicGatewayDelete(d *schema.ResourceData, meta interface{}) 
 					unsetSubnetPublicGatewayOptions := &vpcv1.UnsetSubnetPublicGatewayOptions{
 						ID: s.ID,
 					}
-					res, errSub := sess.UnsetSubnetPublicGateway(unsetSubnetPublicGatewayOptions)
+					res, errSub := sess.UnsetSubnetPublicGatewayWithContext(context, unsetSubnetPublicGatewayOptions)
 					if res.StatusCode == 204 {
 						_, err = isWaitForSubnetPublicGatewayUnset(sess, *s.ID, d.Timeout(schema.TimeoutDelete))
 						if err != nil {
-							return err
+							tfErr := flex.TerraformErrorf(err, fmt.Sprintf("UnsetSubnetPublicGatewayWithContext failed: %s", err.Error()), "ibm_is_public_gateway", "delete")
+							log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+							return tfErr.GetDiag()
 						}
-						response, err = sess.DeletePublicGateway(deletePublicGatewayOptions)
+						response, err = sess.DeletePublicGatewayWithContext(context, deletePublicGatewayOptions)
 						if err != nil {
-							return fmt.Errorf("[ERROR] Error Deleting Public Gateway : %s\n%s", err, response)
+							tfErr := flex.TerraformErrorf(err, fmt.Sprintf("DeletePublicGatewayWithContext failed: %s", err.Error()), "ibm_is_public_gateway", "delete")
+							log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+							return tfErr.GetDiag()
 						}
 					} else {
-						return fmt.Errorf("[ERROR] Error Unsetting Public Gateway : %s\n%s", errSub, res)
+						tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error Unsetting Public Gateway : %s\n%s", errSub, res), "ibm_is_public_gateway", "delete")
+						log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+						return tfErr.GetDiag()
 					}
 				}
 			}
 		} else {
-			return fmt.Errorf("[ERROR] Error Deleting Public Gateway : error is %s\n%s", err, response)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("DeletePublicGatewayWithContext failed: %s", err.Error()), "ibm_is_public_gateway", "delete")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 	}
 	_, err = isWaitForPublicGatewayDeleted(sess, id, d.Timeout(schema.TimeoutDelete))
 	if err != nil {
-		return err
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Wait for PublicGateway deleted failed: %s", err.Error()), "ibm_is_public_gateway", "delete")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	d.SetId("")
 	return nil

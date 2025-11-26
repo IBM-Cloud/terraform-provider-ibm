@@ -1,20 +1,21 @@
 data "ibm_resource_group" "cos_group" {
   name = var.resource_group_name
 }
+
 resource "ibm_resource_instance" "cos_instance" {
   name              = "cos-instance"
   resource_group_id = data.ibm_resource_group.cos_group.id
   service           = "cloud-object-storage"
   plan              = "standard"
   location          = "global"
-}
+} 
 resource "ibm_resource_instance" "activity_tracker" {
   name              = "activity_tracker"
   resource_group_id = data.ibm_resource_group.cos_group.id
   service           = "logdnaat"
   plan              = "lite"
   location          =  var.regional_loc
-}
+} 
 resource "ibm_resource_instance" "metrics_monitor" {
   name              = "metrics_monitor"
   resource_group_id = data.ibm_resource_group.cos_group.id
@@ -24,7 +25,7 @@ resource "ibm_resource_instance" "metrics_monitor" {
   parameters        = {
     default_receiver = true
   }
-}
+} 
 resource "ibm_cos_bucket" "standard-ams03" {
   bucket_name           = var.bucket_name
   resource_instance_id  = ibm_resource_instance.cos_instance.id
@@ -285,11 +286,13 @@ resource ibm_hpcs hpcs {
     }
   }
 }
+
 resource "ibm_iam_authorization_policy" "policy2" {
   source_service_name = "cloud-object-storage"
   target_service_name = "hs-crypto"
   roles               = ["Reader"]
 }
+
 resource "ibm_kms_key" "key" {
   instance_id  = ibm_hpcs.hpcs.guid
   key_name     = var.hpcs_key_name
@@ -315,6 +318,7 @@ resource "ibm_cos_bucket" "hpcs-uko-enable" {
   storage_class         = var.standard_storage_class
   kms_key_crn           = var.hpcs_uko_rootkeycrn
 }
+
 resource "ibm_cos_bucket_object" "plaintext" {
   bucket_crn      = ibm_cos_bucket.cos_bucket.crn
   bucket_location = ibm_cos_bucket.cos_bucket.region_location
@@ -354,6 +358,7 @@ resource "ibm_resource_instance" "cos_instance_onerate" {
   plan              = "cos-one-rate-plan"
   location          = "global"
 }
+
 resource "ibm_cos_bucket" "cos_bucket_onerate" {
   bucket_name           = var.bucket_name
   resource_instance_id  = ibm_resource_instance.cos_instance_onerate.id
@@ -513,6 +518,7 @@ resource "ibm_cos_bucket" "cos_bucket_lifecycle_expiration" {
   storage_class         = var.standard_storage_class
 
 }
+
 resource "ibm_cos_bucket_lifecycle_configuration"  "lifecycle" {
   bucket_crn = ibm_cos_bucket.cos_bucket.crn
   bucket_location = ibm_cos_bucket.cos_bucket.region_location
@@ -529,8 +535,6 @@ resource "ibm_cos_bucket_lifecycle_configuration"  "lifecycle" {
   }
 }
 
-
-
 # Adding lifecycle configuration with transition.
 
 resource "ibm_cos_bucket" "cos_bucket_transition" {
@@ -540,6 +544,7 @@ resource "ibm_cos_bucket" "cos_bucket_transition" {
   storage_class         = var.standard_storage_class
 
 }
+
 resource "ibm_cos_bucket_lifecycle_configuration"  "lifecycle_transition" {
   bucket_crn = ibm_cos_bucket.cos_bucket.crn
   bucket_location = ibm_cos_bucket.cos_bucket.region_location
@@ -567,6 +572,7 @@ resource "ibm_cos_bucket" "cos_bucket_abort_incomplete" {
   storage_class         = var.standard_storage_class
 
 }
+
 resource "ibm_cos_bucket_lifecycle_configuration"  "lifecycle_abort_incomplete" {
   bucket_crn = ibm_cos_bucket.cos_bucket.crn
   bucket_location = ibm_cos_bucket.cos_bucket.region_location
@@ -583,7 +589,6 @@ resource "ibm_cos_bucket_lifecycle_configuration"  "lifecycle_abort_incomplete" 
   }
 }
 
-
 # Adding lifecycle configuration with non current version expiration.
 
 resource "ibm_cos_bucket" "cos_bucket_lifecycle_version_expiration" {
@@ -593,13 +598,14 @@ resource "ibm_cos_bucket" "cos_bucket_lifecycle_version_expiration" {
   storage_class         = var.standard_storage_class
 
 }
+
 resource "ibm_cos_bucket_lifecycle_configuration"  "lifecycle_new" {
   bucket_crn = ibm_cos_bucket.cos_bucket.crn
   bucket_location = ibm_cos_bucket.cos_bucket.region_location
   lifecycle_rule {
     noncurrent_version_expiration{
-			noncurrent_days = "1"
-		}
+    noncurrent_days = "1"
+    }
     filter {
       prefix = ""
     }  
@@ -642,4 +648,211 @@ resource "ibm_cos_bucket_lifecycle_configuration"  "lifecycle_config" {
     status = "enable"
   }
 }
+
+
+# Adding lifecycle configuration for object expiration with filter based on object size.
+
+resource "ibm_cos_bucket" "cos_bucket" {
+  bucket_name           = var.bucket_name
+  resource_instance_id  = ibm_resource_instance.cos_instance.id
+  region_location       = var.regional_loc
+  storage_class         = var.standard_storage_class
+
+}
+
+resource "ibm_cos_bucket_lifecycle_configuration"  "lifecycle" {
+  bucket_crn = ibm_cos_bucket.cos_bucket.crn
+  bucket_location = ibm_cos_bucket.cos_bucket.region_location
+  lifecycle_rule {
+    expiration{
+      days = 1
+    }
+    filter {
+      object_size_greater_than = 1000
+    }  
+    rule_id = "id"
+    status = "enable"
+  }
+}
+
+
+
+# Adding lifecycle configuration for object expiration with filter based on tag.
+
+resource "ibm_cos_bucket" "cos_bucket" {
+  bucket_name           = var.bucket_name
+  resource_instance_id  = ibm_resource_instance.cos_instance.id
+  region_location       = var.regional_loc
+  storage_class         = var.standard_storage_class
+
+}
+
+resource "ibm_cos_bucket_lifecycle_configuration"  "lifecycle" {
+  bucket_crn = ibm_cos_bucket.cos_bucket.crn
+  bucket_location = ibm_cos_bucket.cos_bucket.region_location
+  lifecycle_rule {
+    expiration{
+      days = 1
+    }
+    filter {
+      tag{
+        key = "key"
+        value = "value"
+      }
+    }  
+    rule_id = "id"
+    status = "enable"
+  }
+}
+
+
+# Adding lifecycle configuration for object expiration with multiple filter.
+
+resource "ibm_cos_bucket" "cos_bucket" {
+  bucket_name           = var.bucket_name
+  resource_instance_id  = ibm_resource_instance.cos_instance.id
+  region_location       = var.regional_loc
+  storage_class         = var.standard_storage_class
+
+}
+
+resource "ibm_cos_bucket_lifecycle_configuration"  "lifecycle" {
+  bucket_crn = ibm_cos_bucket.cos_bucket.crn
+  bucket_location = ibm_cos_bucket.cos_bucket.region_location
+  lifecycle_rule {
+    expiration{
+      days = 1
+    }
+    filter {
+      and {
+        prefix = "foo"
+        tags {
+          key   = "key"
+          value = "value"
+        }
+        object_size_greater_than = 20
+        object_size_less_than    = 40
+      }
+    }
+    rule_id = "id"
+    status = "enable"
+  }
+}
+
+# Adding lifecycle configuration for object expiration with filter based on multiple tags.
+
+resource "ibm_cos_bucket" "cos_bucket" {
+  bucket_name           = var.bucket_name
+  resource_instance_id  = ibm_resource_instance.cos_instance.id
+  region_location       = var.regional_loc
+  storage_class         = var.standard_storage_class
+
+}
+
+resource "ibm_cos_bucket_lifecycle_configuration"  "lifecycle" {
+  bucket_crn = ibm_cos_bucket.cos_bucket.crn
+  bucket_location = ibm_cos_bucket.cos_bucket.region_location
+  lifecycle_rule {
+    expiration{
+      days = 1
+    }
+    filter {
+      and {
+        tags {
+          key   = "key1"
+          value = "value1"
+        }
+        tags {
+          key   = "key2"
+          value = "value2"
+        }
+      }
+    }  
+    rule_id = "id"
+    status = "enable"
+  }
+}
+
+
+resource "ibm_cos_bucket" "backup-source-bucket" {
+  bucket_name           = "bucket-name"
+  resource_instance_id  = "cos_instance_id"
+  cross_region_location = "us"
+  storage_class         = "standard"
+  object_versioning {
+    enable = true
+  }
+
+}
+
+
+resource "ibm_cos_backup_vault" "backup-vault" {
+  backup_vault_name                   = "backup_vault_name"
+  service_instance_id                 = "cos_instance_id to create backup vault"
+  region                              = "us"
+  activity_tracking_management_events = true
+  metrics_monitoring_usage_metrics    = true
+  kms_key_crn                         = "crn:v1:staging:public:kms:us-south:a/997xxxxxxxxxxxxxxxxxxxxxx54:5xxxxxxxa-fxxb-4xx8-9xx4-f1xxxxxxxxx5:key:af5667d5-dxx5-4xxf-8xxf-exxxxxxxf1d"
+}
+
+
+resource "ibm_iam_authorization_policy" "policy" {
+  roles = [
+    "Backup Manager", "Writer"
+  ]
+  subject_attributes {
+    name  = "accountId"
+    value = "account_id of the cos account"
+  }
+  subject_attributes {
+    name  = "serviceName"
+    value = "cloud-object-storage"
+  }
+  subject_attributes {
+    name  = "serviceInstance"
+    value = "exxxxx34-xxxx-xxxx-xxxx-d6xxxxxxxx9"
+  }
+  subject_attributes {
+    name  = "resource"
+    value = "source-bucket-name"
+  }
+  subject_attributes {
+    name  = "resourceType"
+    value = "bucket"
+  }
+  resource_attributes {
+    name     = "accountId"
+    operator = "stringEquals"
+    value    = "account id of the cos account of backup vault"
+  }
+  resource_attributes {
+    name     = "serviceName"
+    operator = "stringEquals"
+    value    = "cloud-object-storage"
+  }
+  resource_attributes {
+    name     = "serviceInstance"
+    operator = "stringEquals"
+    value    = "exxxxx34-xxxx-xxxx-xxxx-d6xxxxxxxx9"
+  }
+  resource_attributes {
+    name     = "resource"
+    operator = "stringEquals"
+    value    = "backup-vault-name"
+  }
+  resource_attributes {
+    name     = "resourceType"
+    operator = "stringEquals"
+    value    = "backup-vault"
+  }
+}
+
+resource "ibm_cos_backup_policy" "policy" {
+  bucket_crn              = ibm_cos_bucket.bucket.crn
+  initial_delete_after_days       = 2
+  policy_name             = "policy_name"
+  target_backup_vault_crn = ibm_cos_backup_vault.backup-vault.backup_vault_crn
+  backup_type             = "continuous"
+}
+
 

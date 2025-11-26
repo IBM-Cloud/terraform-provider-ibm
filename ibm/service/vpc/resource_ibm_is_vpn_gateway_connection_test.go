@@ -1371,7 +1371,16 @@ func testAccCheckIBMISVPNGatewayConnectionAdvanceConfig(vpc1, subnet1, vpnname1,
 		vpn_gateway   = ibm_is_vpn_gateway.testacc_VPNGateway2.id
 		peer {
 				address  = cidrhost(ibm_is_subnet.testacc_subnet4.ipv4_cidr_block, 15)
-			}	
+				asn = 65533
+			}
+		tunnel {
+			neighbor_ip         = "192.168.1.4"
+			tunnel_interface_ip = "10.0.0.4"
+		}
+		tunnel {
+			neighbor_ip         = "192.168.1.5"
+			tunnel_interface_ip = "10.0.0.5"
+		}			
 		preshared_key = "VPNDemoPassword"
 	  }
 	`, vpc1, subnet1, acc.ISZoneName, subnet3, acc.ISZoneName, vpnname1, name1, name3, vpc2, subnet2, acc.ISZoneName, subnet4, acc.ISZoneName, vpnname2, name2, name4)
@@ -1538,4 +1547,111 @@ func testAccCheckIBMISVPNGatewayConnectionNullPatchConfig(vpc, subnet, vpnname, 
 
 	`, vpc, subnet, acc.ISZoneName, acc.ISCIDR, vpnname, ikepolicyname, ipsecpolicyname, name, noNullPass, noNullPass)
 
+}
+
+func TestAccIBMISVPNGatewayConnection_CIDRUpdates(t *testing.T) {
+	var VPNGatewayConnection string
+	vpcname := fmt.Sprintf("tfvpngc-vpc-%d", acctest.RandIntRange(100, 200))
+	subnetname1 := fmt.Sprintf("tfvpngc-subnet-%d", acctest.RandIntRange(100, 200))
+	subnetname2 := fmt.Sprintf("tfvpngc-subnet-%d", acctest.RandIntRange(100, 200))
+	vpnname := fmt.Sprintf("tfvpngc-vpn-%d", acctest.RandIntRange(100, 200))
+	name := fmt.Sprintf("tfvpngc-conn-%d", acctest.RandIntRange(100, 200))
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMISVPNGatewayConnectionDestroy,
+		Steps: []resource.TestStep{
+			// Initial configuration
+			{
+				Config: testAccCheckIBMISVPNGatewayConnectionCIDRConfig(vpcname, subnetname1, subnetname2, vpnname, name, false),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISVPNGatewayConnectionExists("ibm_is_vpn_gateway_connection.testacc_VPNGatewayConnection", VPNGatewayConnection),
+					resource.TestCheckResourceAttr(
+						"ibm_is_vpn_gateway_connection.testacc_VPNGatewayConnection", "name", name),
+					resource.TestCheckResourceAttr(
+						"ibm_is_vpn_gateway_connection.testacc_VPNGatewayConnection", "peer.0.cidrs.#", "1"),
+					resource.TestCheckResourceAttr(
+						"ibm_is_vpn_gateway_connection.testacc_VPNGatewayConnection", "local.0.cidrs.#", "1"),
+				),
+			},
+			// Add additional CIDRs
+			{
+				Config: testAccCheckIBMISVPNGatewayConnectionCIDRConfig(vpcname, subnetname1, subnetname2, vpnname, name, true),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISVPNGatewayConnectionExists("ibm_is_vpn_gateway_connection.testacc_VPNGatewayConnection", VPNGatewayConnection),
+					resource.TestCheckResourceAttr(
+						"ibm_is_vpn_gateway_connection.testacc_VPNGatewayConnection", "peer.0.cidrs.#", "2"),
+					resource.TestCheckResourceAttr(
+						"ibm_is_vpn_gateway_connection.testacc_VPNGatewayConnection", "local.0.cidrs.#", "2"),
+				),
+			},
+		},
+	})
+}
+
+func testAccCheckIBMISVPNGatewayConnectionCIDRConfig(vpc, subnet1, subnet2, vpnname, name string, additionalCIDRs bool) string {
+	base := fmt.Sprintf(`
+	resource "ibm_is_vpc" "testacc_vpc" {
+		name = "%s"
+	}
+	
+	resource "ibm_is_subnet" "testacc_subnet1" {
+		name                     = "%s"
+		vpc                      = ibm_is_vpc.testacc_vpc.id
+		zone                     = "%s"
+		total_ipv4_address_count = 64
+	}
+	
+	resource "ibm_is_subnet" "testacc_subnet2" {
+		name                     = "%s"
+		vpc                      = ibm_is_vpc.testacc_vpc.id
+		zone                     = "%s"
+		total_ipv4_address_count = 64
+	}
+	
+	resource "ibm_is_vpn_gateway" "testacc_VPNGateway" {
+		name   = "%s"
+		subnet = ibm_is_subnet.testacc_subnet1.id
+		mode   = "policy"
+	}
+	`, vpc, subnet1, acc.ISZoneName, subnet2, acc.ISZoneName, vpnname)
+
+	if !additionalCIDRs {
+		return base + fmt.Sprintf(`
+		resource "ibm_is_vpn_gateway_connection" "testacc_VPNGatewayConnection" {
+			name          = "%s"
+			vpn_gateway   = ibm_is_vpn_gateway.testacc_VPNGateway.id
+			peer {
+				cidrs    = [ibm_is_subnet.testacc_subnet1.ipv4_cidr_block]
+				address  = cidrhost(ibm_is_subnet.testacc_subnet1.ipv4_cidr_block, 14)
+			}
+			local {
+				cidrs    = [ibm_is_subnet.testacc_subnet1.ipv4_cidr_block]
+			}
+			preshared_key = "VPNDemoPassword"
+		}
+		`, name)
+	}
+
+	return base + fmt.Sprintf(`
+		resource "ibm_is_vpn_gateway_connection" "testacc_VPNGatewayConnection" {
+			name          = "%s"
+			vpn_gateway   = ibm_is_vpn_gateway.testacc_VPNGateway.id
+			peer {
+				cidrs    = [
+					ibm_is_subnet.testacc_subnet1.ipv4_cidr_block,
+					ibm_is_subnet.testacc_subnet2.ipv4_cidr_block
+				]
+				address  = cidrhost(ibm_is_subnet.testacc_subnet1.ipv4_cidr_block, 14)
+			}
+			local {
+				cidrs    = [
+					ibm_is_subnet.testacc_subnet1.ipv4_cidr_block,
+					ibm_is_subnet.testacc_subnet2.ipv4_cidr_block
+				]
+			}
+			preshared_key = "VPNDemoPassword"
+		}
+		`, name)
 }

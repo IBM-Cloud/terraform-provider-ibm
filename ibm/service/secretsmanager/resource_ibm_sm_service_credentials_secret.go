@@ -290,6 +290,11 @@ func ResourceIbmSmServiceCredentialsSecret() *schema.Resource {
 				Computed:    true,
 				Description: "The date when a resource was recently modified. The date format follows RFC 3339.",
 			},
+			"retrieved_at": &schema.Schema{
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The date when the data of the secret was last retrieved. The date format follows RFC 3339. Epoch date if there is no record of secret data retrieval.",
+			},
 			"versions_total": &schema.Schema{
 				Type:        schema.TypeInt,
 				Computed:    true,
@@ -305,7 +310,7 @@ func ResourceIbmSmServiceCredentialsSecret() *schema.Resource {
 }
 
 func resourceIbmSmServiceCredentialsSecretCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	secretsManagerClient, err := meta.(conns.ClientSession).SecretsManagerV2()
+	secretsManagerClient, endpointsFile, err := getSecretsManagerSession(meta.(conns.ClientSession))
 	if err != nil {
 		tfErr := flex.TerraformErrorf(err, "", ServiceCredentialsSecretResourceName, "create")
 		return tfErr.GetDiag()
@@ -313,7 +318,7 @@ func resourceIbmSmServiceCredentialsSecretCreate(context context.Context, d *sch
 
 	region := getRegion(secretsManagerClient, d)
 	instanceId := d.Get("instance_id").(string)
-	secretsManagerClient = getClientWithInstanceEndpoint(secretsManagerClient, instanceId, region, getEndpointType(secretsManagerClient, d))
+	secretsManagerClient = getClientWithInstanceEndpoint(secretsManagerClient, instanceId, region, getEndpointType(secretsManagerClient, d), endpointsFile)
 
 	createSecretOptions := &secretsmanagerv2.CreateSecretOptions{}
 
@@ -339,7 +344,7 @@ func resourceIbmSmServiceCredentialsSecretCreate(context context.Context, d *sch
 }
 
 func resourceIbmSmServiceCredentialsSecretRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	secretsManagerClient, err := meta.(conns.ClientSession).SecretsManagerV2()
+	secretsManagerClient, endpointsFile, err := getSecretsManagerSession(meta.(conns.ClientSession))
 	if err != nil {
 		tfErr := flex.TerraformErrorf(err, "", ServiceCredentialsSecretResourceName, "read")
 		return tfErr.GetDiag()
@@ -353,7 +358,7 @@ func resourceIbmSmServiceCredentialsSecretRead(context context.Context, d *schem
 	region := id[0]
 	instanceId := id[1]
 	secretId := id[2]
-	secretsManagerClient = getClientWithInstanceEndpoint(secretsManagerClient, instanceId, region, getEndpointType(secretsManagerClient, d))
+	secretsManagerClient = getClientWithInstanceEndpoint(secretsManagerClient, instanceId, region, getEndpointType(secretsManagerClient, d), endpointsFile)
 
 	getSecretOptions := &secretsmanagerv2.GetSecretOptions{}
 
@@ -426,6 +431,10 @@ func resourceIbmSmServiceCredentialsSecretRead(context context.Context, d *schem
 	}
 	if err = d.Set("updated_at", DateTimeToRFC3339(secret.UpdatedAt)); err != nil {
 		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting updated_at"), ServiceCredentialsSecretResourceName, "read")
+		return tfErr.GetDiag()
+	}
+	if err = d.Set("retrieved_at", DateTimeToRFC3339(secret.RetrievedAt)); err != nil {
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting retrieved_at"), ServiceCredentialsSecretResourceName, "read")
 		return tfErr.GetDiag()
 	}
 	if err = d.Set("versions_total", flex.IntValue(secret.VersionsTotal)); err != nil {
@@ -512,7 +521,7 @@ func resourceIbmSmServiceCredentialsSecretRead(context context.Context, d *schem
 }
 
 func resourceIbmSmServiceCredentialsSecretUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	secretsManagerClient, err := meta.(conns.ClientSession).SecretsManagerV2()
+	secretsManagerClient, endpointsFile, err := getSecretsManagerSession(meta.(conns.ClientSession))
 	if err != nil {
 		tfErr := flex.TerraformErrorf(err, "", ServiceCredentialsSecretResourceName, "update")
 		return tfErr.GetDiag()
@@ -522,7 +531,7 @@ func resourceIbmSmServiceCredentialsSecretUpdate(context context.Context, d *sch
 	region := id[0]
 	instanceId := id[1]
 	secretId := id[2]
-	secretsManagerClient = getClientWithInstanceEndpoint(secretsManagerClient, instanceId, region, getEndpointType(secretsManagerClient, d))
+	secretsManagerClient = getClientWithInstanceEndpoint(secretsManagerClient, instanceId, region, getEndpointType(secretsManagerClient, d), endpointsFile)
 
 	updateSecretMetadataOptions := &secretsmanagerv2.UpdateSecretMetadataOptions{}
 
@@ -605,7 +614,7 @@ func resourceIbmSmServiceCredentialsSecretUpdate(context context.Context, d *sch
 }
 
 func resourceIbmSmServiceCredentialsSecretDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	secretsManagerClient, err := meta.(conns.ClientSession).SecretsManagerV2()
+	secretsManagerClient, endpointsFile, err := getSecretsManagerSession(meta.(conns.ClientSession))
 	if err != nil {
 		tfErr := flex.TerraformErrorf(err, "", ServiceCredentialsSecretResourceName, "delete")
 		return tfErr.GetDiag()
@@ -615,7 +624,7 @@ func resourceIbmSmServiceCredentialsSecretDelete(context context.Context, d *sch
 	region := id[0]
 	instanceId := id[1]
 	secretId := id[2]
-	secretsManagerClient = getClientWithInstanceEndpoint(secretsManagerClient, instanceId, region, getEndpointType(secretsManagerClient, d))
+	secretsManagerClient = getClientWithInstanceEndpoint(secretsManagerClient, instanceId, region, getEndpointType(secretsManagerClient, d), endpointsFile)
 
 	deleteSecretOptions := &secretsmanagerv2.DeleteSecretOptions{}
 

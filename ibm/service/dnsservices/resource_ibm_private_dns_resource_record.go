@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -105,7 +106,7 @@ func ResourceIBMPrivateDNSResourceRecord() *schema.Resource {
 
 					errors = append(
 						errors,
-						fmt.Errorf("%s is not one of the valid domain record types: %s",
+						flex.FmtErrorf("%s is not one of the valid domain record types: %s",
 							value, strings.Join(allowedPrivateDomainRecordTypes, ", "),
 						),
 					)
@@ -123,7 +124,7 @@ func ResourceIBMPrivateDNSResourceRecord() *schema.Resource {
 					if ipv6Regexp.MatchString(value) && upcaseRegexp.MatchString(value) {
 						errors = append(
 							errors,
-							fmt.Errorf(
+							flex.FmtErrorf(
 								"IPv6 addresses in the data property cannot have upper case letters: %s",
 								value,
 							),
@@ -229,40 +230,39 @@ func resourceIBMPrivateDNSResourceRecordCreate(d *schema.ResourceData, meta inte
 		ttl = v.(int)
 	}
 
-	createResourceRecordOptions := sess.NewCreateResourceRecordOptions(instanceID, zoneID)
+	createResourceRecordOptions := sess.NewCreateResourceRecordOptions(instanceID, zoneID, recordType)
 	createResourceRecordOptions.SetName(name)
-	createResourceRecordOptions.SetType(recordType)
 	createResourceRecordOptions.SetTTL(int64(ttl))
 
 	switch recordType {
 	case "A":
 		resourceRecordAData, err := sess.NewResourceRecordInputRdataRdataARecord(rdata)
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error creating pdns resource record A data:%s", err)
+			return flex.FmtErrorf("[ERROR] Error creating dns services resource record A data:%s", err)
 		}
 		createResourceRecordOptions.SetRdata(resourceRecordAData)
 	case "AAAA":
 		resourceRecordAaaaData, err := sess.NewResourceRecordInputRdataRdataAaaaRecord(rdata)
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error creating pdns resource record Aaaa data:%s", err)
+			return flex.FmtErrorf("[ERROR] Error creating dns services resource record Aaaa data:%s", err)
 		}
 		createResourceRecordOptions.SetRdata(resourceRecordAaaaData)
 	case "CNAME":
 		resourceRecordCnameData, err := sess.NewResourceRecordInputRdataRdataCnameRecord(rdata)
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error creating pdns resource record Cname data:%s", err)
+			return flex.FmtErrorf("[ERROR] Error creating dns services resource record Cname data:%s", err)
 		}
 		createResourceRecordOptions.SetRdata(resourceRecordCnameData)
 	case "PTR":
 		resourceRecordPtrData, err := sess.NewResourceRecordInputRdataRdataPtrRecord(rdata)
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error creating pdns resource record Ptr data:%s", err)
+			return flex.FmtErrorf("[ERROR] Error creating dns services resource record Ptr data:%s", err)
 		}
 		createResourceRecordOptions.SetRdata(resourceRecordPtrData)
 	case "TXT":
 		resourceRecordTxtData, err := sess.NewResourceRecordInputRdataRdataTxtRecord(rdata)
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error creating pdns resource record Txt data:%s", err)
+			return flex.FmtErrorf("[ERROR] Error creating dns services resource record Txt data:%s", err)
 		}
 		createResourceRecordOptions.SetRdata(resourceRecordTxtData)
 	case "MX":
@@ -271,7 +271,7 @@ func resourceIBMPrivateDNSResourceRecordCreate(d *schema.ResourceData, meta inte
 		}
 		resourceRecordMxData, err := sess.NewResourceRecordInputRdataRdataMxRecord(rdata, int64(preference))
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error creating pdns resource record Mx data:%s", err)
+			return flex.FmtErrorf("[ERROR] Error creating dns services resource record Mx data:%s", err)
 		}
 		createResourceRecordOptions.SetRdata(resourceRecordMxData)
 	case "SRV":
@@ -286,7 +286,7 @@ func resourceIBMPrivateDNSResourceRecordCreate(d *schema.ResourceData, meta inte
 		}
 		resourceRecordSrvData, err := sess.NewResourceRecordInputRdataRdataSrvRecord(int64(port), int64(priority), rdata, int64(weight))
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error creating pdns resource record Srv data:%s", err)
+			return flex.FmtErrorf("[ERROR] Error creating dns services resource record Srv data:%s", err)
 		}
 		if v, ok := d.GetOk(pdnsSrvService); ok {
 			service = v.(string)
@@ -305,7 +305,7 @@ func resourceIBMPrivateDNSResourceRecordCreate(d *schema.ResourceData, meta inte
 	defer conns.IbmMutexKV.Unlock(mk)
 	response, detail, err := sess.CreateResourceRecord(createResourceRecordOptions)
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error creating pdns resource record:%s\n%s", err, detail)
+		return flex.FmtErrorf("[ERROR] Error creating dns services resource record:%s\n%s", err, detail)
 	}
 
 	d.SetId(fmt.Sprintf("%s/%s/%s", instanceID, zoneID, *response.ID))
@@ -322,7 +322,7 @@ func resourceIBMPrivateDNSResourceRecordRead(d *schema.ResourceData, meta interf
 	getResourceRecordOptions := sess.NewGetResourceRecordOptions(idSet[0], idSet[1], idSet[2])
 	response, detail, err := sess.GetResourceRecord(getResourceRecordOptions)
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error reading pdns resource record:%s\n%s", err, detail)
+		return flex.FmtErrorf("[ERROR] Error reading dns services resource record:%s\n%s", err, detail)
 	}
 
 	// extract the record name by removing zone details
@@ -395,7 +395,7 @@ func resourceIBMPrivateDNSResourceRecordUpdate(d *schema.ResourceData, meta inte
 	conns.IbmMutexKV.Lock(mk)
 	defer conns.IbmMutexKV.Unlock(mk)
 
-	updateResourceRecordOptions := sess.NewUpdateResourceRecordOptions(idSet[0], idSet[1], idSet[2])
+	updateResourceRecordOptions := sess.NewUpdateResourceRecordOptions(idSet[0], idSet[1], idSet[2], "", nil)
 
 	var rdata string
 
@@ -417,7 +417,7 @@ func resourceIBMPrivateDNSResourceRecordUpdate(d *schema.ResourceData, meta inte
 			rdata = d.Get(pdnsRdata).(string)
 			resourceRecordAData, err := sess.NewResourceRecordUpdateInputRdataRdataARecord(rdata)
 			if err != nil {
-				return fmt.Errorf("[ERROR] Error creating pdns resource record A data:%s", err)
+				return flex.FmtErrorf("[ERROR] Error creating dns services resource record A data:%s", err)
 			}
 			updateResourceRecordOptions.SetRdata(resourceRecordAData)
 
@@ -426,7 +426,7 @@ func resourceIBMPrivateDNSResourceRecordUpdate(d *schema.ResourceData, meta inte
 			rdata = d.Get(pdnsRdata).(string)
 			resourceRecordAaaaData, err := sess.NewResourceRecordUpdateInputRdataRdataAaaaRecord(rdata)
 			if err != nil {
-				return fmt.Errorf("[ERROR] Error creating pdns resource record Aaaa data:%s", err)
+				return flex.FmtErrorf("[ERROR] Error creating dns services resource record Aaaa data:%s", err)
 			}
 			updateResourceRecordOptions.SetRdata(resourceRecordAaaaData)
 
@@ -435,7 +435,7 @@ func resourceIBMPrivateDNSResourceRecordUpdate(d *schema.ResourceData, meta inte
 			rdata = d.Get(pdnsRdata).(string)
 			resourceRecordCnameData, err := sess.NewResourceRecordUpdateInputRdataRdataCnameRecord(rdata)
 			if err != nil {
-				return fmt.Errorf("[ERROR] Error creating pdns resource record Cname data:%s", err)
+				return flex.FmtErrorf("[ERROR] Error creating dns services resource record Cname data:%s", err)
 			}
 			updateResourceRecordOptions.SetRdata(resourceRecordCnameData)
 
@@ -447,7 +447,7 @@ func resourceIBMPrivateDNSResourceRecordUpdate(d *schema.ResourceData, meta inte
 			rdata = d.Get(pdnsRdata).(string)
 			resourceRecordTxtData, err := sess.NewResourceRecordUpdateInputRdataRdataTxtRecord(rdata)
 			if err != nil {
-				return fmt.Errorf("[ERROR] Error creating pdns resource record Txt data:%s", err)
+				return flex.FmtErrorf("[ERROR] Error creating dns services resource record Txt data:%s", err)
 			}
 			updateResourceRecordOptions.SetRdata(resourceRecordTxtData)
 
@@ -458,7 +458,7 @@ func resourceIBMPrivateDNSResourceRecordUpdate(d *schema.ResourceData, meta inte
 
 			resourceRecordMxData, err := sess.NewResourceRecordUpdateInputRdataRdataMxRecord(rdata, int64(preference))
 			if err != nil {
-				return fmt.Errorf("[ERROR] Error creating pdns resource record Mx data:%s", err)
+				return flex.FmtErrorf("[ERROR] Error creating dns services resource record Mx data:%s", err)
 			}
 			updateResourceRecordOptions.SetRdata(resourceRecordMxData)
 
@@ -471,7 +471,7 @@ func resourceIBMPrivateDNSResourceRecordUpdate(d *schema.ResourceData, meta inte
 
 			resourceRecordSrvData, err := sess.NewResourceRecordUpdateInputRdataRdataSrvRecord(int64(port), int64(priority), rdata, int64(weight))
 			if err != nil {
-				return fmt.Errorf("[ERROR] Error creating pdns resource record Srv data:%s", err)
+				return flex.FmtErrorf("[ERROR] Error creating dns services resource record Srv data:%s", err)
 			}
 			updateResourceRecordOptions.SetRdata(resourceRecordSrvData)
 
@@ -483,7 +483,7 @@ func resourceIBMPrivateDNSResourceRecordUpdate(d *schema.ResourceData, meta inte
 
 		_, detail, err := sess.UpdateResourceRecord(updateResourceRecordOptions)
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error updating pdns resource record:%s\n%s", err, detail)
+			return flex.FmtErrorf("[ERROR] Error updating dns services resource record:%s\n%s", err, detail)
 		}
 	}
 
@@ -505,7 +505,7 @@ func resourceIBMPrivateDNSResourceRecordDelete(d *schema.ResourceData, meta inte
 	defer conns.IbmMutexKV.Unlock(mk)
 	response, err := sess.DeleteResourceRecord(deleteResourceRecordOptions)
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error deleting pdns resource record:%s\n%s", err, response)
+		return flex.FmtErrorf("[ERROR] Error deleting dns services resource record:%s\n%s", err, response)
 	}
 
 	d.SetId("")
@@ -520,7 +520,7 @@ func resourceIBMPrivateDNSResourceRecordExists(d *schema.ResourceData, meta inte
 
 	idSet := strings.Split(d.Id(), "/")
 	if len(idSet) < 3 {
-		return false, fmt.Errorf("[ERROR] Incorrect ID %s: Id should be a combination of InstanceID/zoneID/recordID", d.Id())
+		return false, flex.FmtErrorf("[ERROR] Incorrect ID %s: Id should be a combination of InstanceID/zoneID/recordID", d.Id())
 	}
 	rand.Seed(time.Now().UnixNano())
 	randI := fmt.Sprint(rand.Intn(50))

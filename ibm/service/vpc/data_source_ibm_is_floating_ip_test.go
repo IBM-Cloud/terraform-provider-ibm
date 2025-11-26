@@ -16,6 +16,7 @@ import (
 
 func TestAccIBMISFloatingIPDataSource_basic(t *testing.T) {
 	resName := "data.ibm_is_floating_ip.test"
+	resourceKey := "ibm_is_floating_ip.testacc_floatingip"
 
 	vpcname := fmt.Sprintf("tfip-vpc-%d", acctest.RandIntRange(10, 100))
 	fipname := fmt.Sprintf("tfip-%d", acctest.RandIntRange(10, 100))
@@ -33,13 +34,39 @@ ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVE
 			{
 				Config: testAccCheckIBMISFloatingIPDataSourceConfig(vpcname, subnetname, sshname, publicKey, instancename, fipname),
 				Check: resource.ComposeTestCheckFunc(
+					// Check the datasource attributes match the resource
+					resource.TestCheckResourceAttrPair(resName, "name", resourceKey, "name"),
+					resource.TestCheckResourceAttrPair(resName, "address", resourceKey, "address"),
+					resource.TestCheckResourceAttrPair(resName, "status", resourceKey, "status"),
+					resource.TestCheckResourceAttrPair(resName, "target", resourceKey, "target"),
+					resource.TestCheckResourceAttrPair(resName, "crn", resourceKey, "crn"),
+
+					// Check specific values
 					resource.TestCheckResourceAttr(resName, "name", fipname),
 					resource.TestCheckResourceAttr(resName, "zone", acc.ISZoneName),
+
+					// Check computed fields are set
+					resource.TestCheckResourceAttrSet(resName, "address"),
+					resource.TestCheckResourceAttrSet(resName, "status"),
+					resource.TestCheckResourceAttrSet(resName, "target"),
+					resource.TestCheckResourceAttrSet(resName, "crn"),
+
+					// Check complex nested structures
+					resource.TestCheckResourceAttrSet(resName, "target_list.#"),
+					resource.TestCheckResourceAttrSet(resName, "target_list.0.id"),
+					resource.TestCheckResourceAttrSet(resName, "target_list.0.name"),
+					resource.TestCheckResourceAttrSet(resName, "target_list.0.href"),
+					resource.TestCheckResourceAttrSet(resName, "target_list.0.resource_type"),
+
+					resource.TestCheckResourceAttrSet(resName, "target_list.0.primary_ip.#"),
 					resource.TestCheckResourceAttrSet(resName, "target_list.0.primary_ip.0.address"),
 					resource.TestCheckResourceAttrSet(resName, "target_list.0.primary_ip.0.name"),
 					resource.TestCheckResourceAttrSet(resName, "target_list.0.primary_ip.0.href"),
 					resource.TestCheckResourceAttrSet(resName, "target_list.0.primary_ip.0.reserved_ip"),
 					resource.TestCheckResourceAttrSet(resName, "target_list.0.primary_ip.0.resource_type"),
+
+					// Check tags (may be empty)
+					resource.TestCheckResourceAttrSet(resName, "tags.#"),
 				),
 			},
 		},
@@ -47,44 +74,43 @@ ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVE
 }
 
 func testAccCheckIBMISFloatingIPDataSourceConfig(vpcname, subnetname, sshname, publicKey, instancename, fipname string) string {
-	// status filter defaults to empty
 	return fmt.Sprintf(`
-
 	resource "ibm_is_vpc" "testacc_vpc" {
 		name = "%s"
-	  }
+	}
 	  
-	  resource "ibm_is_subnet" "testacc_subnet" {
+	resource "ibm_is_subnet" "testacc_subnet" {
 		name            = "%s"
 		vpc             = ibm_is_vpc.testacc_vpc.id
 		zone            = "%s"
 		ipv4_cidr_block = "%s"
-	  }
+	}
 	  
-	  resource "ibm_is_ssh_key" "testacc_sshkey" {
+	resource "ibm_is_ssh_key" "testacc_sshkey" {
 		name       = "%s"
 		public_key = "%s"
-	  }
+	}
 	  
-	  resource "ibm_is_instance" "testacc_instance" {
+	resource "ibm_is_instance" "testacc_instance" {
 		name    = "%s"
 		image   = "%s"
 		profile = "%s"
 		primary_network_interface {
-		  subnet     = ibm_is_subnet.testacc_subnet.id
+			subnet = ibm_is_subnet.testacc_subnet.id
 		}
 		vpc  = ibm_is_vpc.testacc_vpc.id
 		zone = "%s"
 		keys = [ibm_is_ssh_key.testacc_sshkey.id]
-	  }
+	}
 	  
-	  resource "ibm_is_floating_ip" "testacc_floatingip" {
+	resource "ibm_is_floating_ip" "testacc_floatingip" {
 		name   = "%s"
 		target = ibm_is_instance.testacc_instance.primary_network_interface[0].id
-	  }
+	}
 
-	  data "ibm_is_floating_ip" "test" {
-		name   = ibm_is_floating_ip.testacc_floatingip.name
-	  }
-	  `, vpcname, subnetname, acc.ISZoneName, acc.ISCIDR, sshname, publicKey, instancename, acc.IsImage, acc.InstanceProfileName, acc.ISZoneName, fipname)
+	data "ibm_is_floating_ip" "test" {
+		name = ibm_is_floating_ip.testacc_floatingip.name
+		depends_on = [ibm_is_floating_ip.testacc_floatingip]
+	}
+	`, vpcname, subnetname, acc.ISZoneName, acc.ISCIDR, sshname, publicKey, instancename, acc.IsImage, acc.InstanceProfileName, acc.ISZoneName, fipname)
 }

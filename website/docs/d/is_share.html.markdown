@@ -46,12 +46,15 @@ The following attributes are exported:
 
 - `access_control_mode` - (Boolean) The access control mode for the share.
 - `accessor_binding_role` - (String) The accessor binding role of this file share:- `none`: This file share is not participating in access with another file share- `origin`: This file share is the origin for one or more file shares  (which may be in other accounts)- `accessor`: This file share is providing access to another file share  (which may be in another account).
+- `allowed_transit_encryption_modes` - (List of string) The transit encryption modes to allow for this share.
+- `availability_mode` - (String) The data availability mode of the share
+- `allowed_access_protocols` - (String) The access protocols to allow for this share
+- `bandwidth` - (Integer) The maximum bandwidth (in megabits per second) for the share.
 - `accessor_bindings` - (List) The accessor bindings for this file share. Each accessor binding identifies a resource (possibly in another account) with access to this file share's data.
   Nested schema for **accessor_bindings**:
 	- `href` - (String) The URL for this share accessor binding.
 	- `id` - (String) The unique identifier for this share accessor binding.
 	- `resource_type` - (String) The resource type.
-- `allowed_transit_encryption_modes` - (List of string) The transit encryption modes allowed for this share.
 - `access_tags`  - (String) Access management tags associated to the share.
 - `created_at` - The date and time that the file share is created.
 - `crn` - The CRN for this share.
@@ -126,6 +129,18 @@ Nested `latest_sync` blocks have the following structure:
   - `id` - The unique identifier for this file share.
   - `name` - The unique user-defined name for this file share.
   - `resource_type` - The resource type.
+- `snapshot_count` - (Integer) The total number of snapshots for this share.
+- `snapshot_size` - (Integer) The total size (in gigabytes) of snapshots used for this file share.
+- `source_snapshot` - (List) The snapshot from which this share was cloned.This property will be present when the share was created from a snapshot.The resources supported by this property may[expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) in thefuture.
+  Nested schema for **source_snapshot**:
+	- `crn` - (String) The CRN for this share snapshot.
+	- `deleted` - (List) If present, this property indicates the referenced resource has been deleted, and providessome supplementary information.
+	  Nested schema for **deleted**:
+		- `more_info` - (String) Link to documentation about deleted resources.
+	- `href` - (String) The URL for this share snapshot.
+	- `id` - (String) The unique identifier for this share snapshot.
+	- `name` - (String) The name for this share snapshot. The name is unique across all snapshots for the file share.
+	- `resource_type` - (String) The resource type.
 - `tags`  - (String) User tags associated for to the share.
 - `zone` - The name of the zone this file share will reside in.
 

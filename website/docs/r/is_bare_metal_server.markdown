@@ -105,6 +105,39 @@ resource "ibm_is_bare_metal_server" "example" {
 }
 
 ```
+### MetadataService Example
+```terraform
+resource "ibm_is_vpc" "example" {
+  name = "example-vpc"
+}
+resource "ibm_is_subnet" "example" {
+  name            = "example-subnet"
+  vpc             = ibm_is_vpc.vpc.id
+  zone            = "us-south-3"
+  ipv4_cidr_block = "10.240.129.0/24"
+}
+resource "ibm_is_ssh_key" "example" {
+  name       = "example-ssh"
+  public_key = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVERRN7/9484SOBJ3HSKxxNG5JN8owAjy5f9yYwcUg+JaUVuytn5Pv3aeYROHGGg+5G346xaq3DAwX6Y5ykr2fvjObgncQBnuU5KHWCECO/4h8uWuwh/kfniXPVjFToc+gnkqA+3RKpAecZhFXwfalQ9mMuYGFxn+fwn8cYEApsJbsEmb0iJwPiZ5hjFC8wREuiTlhPHDgkBLOiycd20op2nXzDbHfCHInquEe/gYxEitALONxm0swBOwJZwlTDOB7C6y2dzlrtxr1L59m7pCkWI4EtTRLvleehBoj3u7jB4usR"
+}
+resource "ibm_is_bare_metal_server" "example" {
+  profile = "mx2d-metal-32x192"
+  name    = "example-bms"
+  image   = "r134-31c8ca90-2623-48d7-8cf7-737be6fc4c3e"
+  zone    = "us-south-3"
+  keys    = [ibm_is_ssh_key.example.id]
+  primary_network_interface {
+    subnet = ibm_is_subnet.example.id
+  }
+  metadata_service {
+    enabled  = true
+    protocol = "https"
+  }
+  vpc = ibm_is_vpc.example.id
+}
+
+```
+
 ### Reserved ip example
 ```terraform
 resource "ibm_is_bare_metal_server" "bms" {
@@ -186,6 +219,14 @@ Review the argument references that you can specify for your resource.
   **&#x2022;** You must have the access listed in the [Granting users access to tag resources](https://cloud.ibm.com/docs/account?topic=account-access) for `access_tags`</br>
   **&#x2022;** `access_tags` must be in the format `key:value`.
 - `bandwidth` - (Integer) The total bandwidth (in megabits per second) shared across the bare metal server's network interfaces. The specified value must match one of the bandwidth values in the bare metal server's profile.
+- `default_trusted_profile`- (Optional, List) The default trusted profile to be used when initializing the bare metal server.
+
+  Nested scheme for `default_trusted_profile`:
+  - `auto_link` - (Boolean) If set to true, the system will create a link to the specified target trusted profile during server creation. Regardless of whether a link is created by the system or manually using the IAM Identity service, it will be automatically deleted when the server is deleted.
+  - `target` - (List) The default IAM trusted profile to use for this bare metal server.
+     Nested scheme for `target`: 
+     - `id` - (String) The unique identifier for this trusted profile
+     - `crn`- (String) The CRN for this trusted profile
 - `delete_type` - (Optional, String) Type of deletion on destroy. **soft** signals running operating system to quiesce and shutdown cleanly, **hard** immediately stop the server. By default its `hard`.
 - `enable_secure_boot` - (Optional, Boolean) Indicates whether secure boot is enabled. If enabled, the image must support secure boot or the server will fail to boot. Updating `enable_secure_boot` requires the server to be stopped and then it would be started.
 - `health_reasons` - (List) The reasons for the current health_state (if any).
@@ -208,7 +249,13 @@ Review the argument references that you can specify for your resource.
 
   -> **NOTE:**
     To reinitialize a bare metal server, the server status must be stopped, or have failed a previous reinitialization. For more information, see [Managing Bare Metal Servers for VPC](https://cloud.ibm.com/docs/vpc?topic=vpc-managing-bare-metal-servers&interface=api#reinitialize-bare-metal-servers-api).
+     
+- `metadata_service`- (Optional, List) The metadata service configuration for the bare metal server.
 
+  Nested scheme for `metadata_service`:
+  - `enabled` - (Boolean) Indicates whether the metadata service endpoint will be available to the bare metal server.
+  - `protocol` - (String) The communication protocol to use for the metadata service endpoint. Applies only when the metadata service is enabled.
+    
 - `name` - (Optional, String) The bare metal server name.
 
   -> **NOTE:**
@@ -223,6 +270,7 @@ Review the argument references that you can specify for your resource.
     Nested schema for **virtual_network_interface**:
     - `allow_ip_spoofing` - (Optional, Boolean) Indicates whether source IP spoofing is allowed on this interface. If `false`, source IP spoofing is prevented on this interface. If `true`, source IP spoofing is allowed on this interface.
     - `auto_delete` - (Optional, Boolean) Indicates whether this virtual network interface will be automatically deleted when`target` is deleted.
+    - `crn` - (String) The CRN for this virtual network interface.
     - `enable_infrastructure_nat` - (Optional, Boolean) If `true`:- The VPC infrastructure performs any needed NAT operations.- `floating_ips` must not have more than one floating IP.If `false`:- Packets are passed unchanged to/from the network interface,  allowing the workload to perform any needed NAT operations.- `allow_ip_spoofing` must be `false`.- If the virtual network interface is attached:  - The target `resource_type` must be `bare_metal_server_network_attachment`.  - The target `interface_type` must not be `hipersocket`.
     - `ips` - (Optional, List) The reserved IPs bound to this virtual network interface.May be empty when `lifecycle_state` is `pending`.
       Nested schema for **ips**:
@@ -285,6 +333,7 @@ Review the argument references that you can specify for your resource.
     Nested schema for **virtual_network_interface**:
     - `allow_ip_spoofing` - (Optional, Boolean) Indicates whether source IP spoofing is allowed on this interface. If `false`, source IP spoofing is prevented on this interface. If `true`, source IP spoofing is allowed on this interface.
     - `auto_delete` - (Optional, Boolean) Indicates whether this virtual network interface will be automatically deleted when`target` is deleted.
+    - `crn` - (String) The CRN for this virtual network interface.
     - `enable_infrastructure_nat` - (Optional, Boolean) If `true`:- The VPC infrastructure performs any needed NAT operations.- `floating_ips` must not have more than one floating IP.If `false`:- Packets are passed unchanged to/from the network interface,  allowing the workload to perform any needed NAT operations.- `allow_ip_spoofing` must be `false`.- If the virtual network interface is attached:  - The target `resource_type` must be `bare_metal_server_network_attachment`.  - The target `interface_type` must not be `hipersocket`.
     - `ips` - (Optional, List) The reserved IPs bound to this virtual network interface.May be empty when `lifecycle_state` is `pending`.
       Nested schema for **ips**:
@@ -397,9 +446,32 @@ In addition to all argument reference list, you can access the following attribu
     - `core_count` - (Integer) The total number of cores
     - `socket_count` - (Integer) The total number of CPU sockets
     - `threads_per_core` - (Integer) The total number of hardware threads per core
+- `disks` - (List) The disks for this bare metal server, including any disks that are associated with the boot_target.
+  Nested scheme for `disks`:
+    - `allowed_use` - (List) The usage constraints to be matched against the requested bare metal server properties to determine compatibility. Only present for disks which are referenced in a bare metal server's boot_target property. The value of this property will be inherited from the source image at creation.
+    
+      Nested schema for `allowed_use`:
+      - `api_version` - (String) The API version with which to evaluate the expressions.
+
+      - `bare_metal_server` - (String) The expression that must be satisfied by the properties of a bare metal server provisioned using the image data in this disk. The expression follows [Common Expression Language](https://github.com/google/cel-spec/blob/master/doc/langdef.md), but does not support built-in functions and macros. 
+      
+      ~> **NOTE** </br> In addition, the following property is supported: </br>
+      **&#x2022;** `enable_secure_boot` - (boolean) Indicates whether secure boot is enabled for this bare metal server.   
+    - `href` - (String) The URL for this bare metal server disk.
+    - `id` - (String) The unique identifier for this bare metal server disk.
+    - `interface_type` - (String) The disk interface used for attaching the disk. The enumerated values for this property are expected to expand in the future. When processing this property, check for and log unknown values. Optionally halt processing and surface the error, or bypass the resource on which the unexpected property value was encountered. [ **nvme**, **sata** ]
+    - `name` - (String) The user-defined name for this disk
+    - `resource_type` - (String) The resource type
+    - `size` - (Integer) The size of the disk in GB (gigabytes)
 - `href` - (String) The URL for this bare metal server
 - `id` - (String) The unique identifier for this bare metal server
 - `memory` - (Integer) The amount of memory, truncated to whole gibibytes
+- `metadata_service` - (List) The metadata service configuration for the bare metal server
+  Nested scheme for `metadata_service`:
+  - `enabled` - (Boolean) Indicates whether the metadata service endpoint is available to the bare metal server
+  - `protocol` - (String) The communication protocol to use for the metadata service endpoint. Applies only when the metadata service is enabled.
+    - **http: HTTP protocol (unencrypted)**
+    - **https:  HTTP Secure protocol**
 - `network_interfaces` - (List) The additional network interfaces to create for the bare metal server to this bare metal server. Use `ibm_is_bare_metal_server_network_interface` resource for network interfaces.
   
   Nested scheme for `network_interfaces`:

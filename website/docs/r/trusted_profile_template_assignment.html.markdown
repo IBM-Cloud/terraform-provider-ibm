@@ -65,8 +65,8 @@ Nested schema for **history**:
 * `last_modified_by_id` - (String) IAMid of the identity that last modified the assignment.
 * `resources` - (List) Status breakdown per target account of IAM resources created or errors encountered in attempting to create those IAM resources. IAM resources are only included in the response providing the assignment is not in progress. IAM resources are also only included when getting a single assignment, and excluded by list APIs.
 Nested schema for **resources**:
-	* `policy_template_refs` - (List) Policy resource(s) included only for trusted profile assignments with policy references.
-	Nested schema for **policy_template_refs**:
+	* `policy_template_references` - (List) Policy resource(s) included only for trusted profile assignments with policy references.
+	Nested schema for **policy_template_references**:
 		* `error_message` - (List) Body parameters for assignment error.
 		Nested schema for **error_message**:
 			* `error_code` - (String) Internal error code.
@@ -96,12 +96,12 @@ Nested schema for **resources**:
 	* `target` - (String) Target account where the IAM resource is created.
 * `status` - (String) Assignment status.
 
-
 ## Import
 
 You can import the `ibm_iam_trusted_profile_template_assignment` resource by using `id`. Assignment record Id.
 
-# Syntax
-```
-$ terraform import ibm_iam_trusted_profile_template_assignment.trusted_profile_template_assignment_instance <id>
+### Syntax
+
+```bash
+$ terraform import ibm_iam_trusted_profile_template_assignment.trusted_profile_template_assignment_instance $id
 ```

@@ -19,6 +19,9 @@ resource "ibm_en_subscription_pagerduty" "pagerduty_subscription" {
   description      = "Subscription for pagerduty destination in Event Notifications"
   destination_id   = ibm_en_destination_pagerduty.destination1.destination_id
   topic_id         = ibm_en_topic.topic1.topic_id
+  attributes {
+    template_id_notification = "e40843c8-hgft-4717-8ee4-f923f2786a34"
+  }
 }
 ```
 
@@ -35,6 +38,11 @@ Review the argument reference that you can specify for your resource.
 - `destination_id` - (Requires, String) Destination ID.
 
 - `topic_id` - (Required, String) Topic ID.
+
+- `attributes` - (Optional, List) Subscription attributes.
+  Nested scheme for **attributes**:
+
+  - `template_id_notification` - (Optional, String) The templete id for notification.
 
 ## Attribute reference
 

@@ -48,9 +48,9 @@ func TestAccIBMSchematicsWorkspaceDataSourceBasic(t *testing.T) {
 func TestAccIBMSchematicsWorkspaceDataSourceAllArgs(t *testing.T) {
 	workspaceResponseDescription := fmt.Sprintf("description_%d", acctest.RandIntRange(10, 100))
 	workspaceResponseLocation := "us-east"
-	workspaceTemplateType := "terraform_v0.13.5"
+	workspaceTemplateType := "terraform_v1.6"
 	workspaceResponseName := fmt.Sprintf("name_%d", acctest.RandIntRange(10, 100))
-	workspaceResponseResourceGroup := "default"
+	workspaceResponseResourceGroup := "Default"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheck(t) },
@@ -88,8 +88,8 @@ func testAccCheckIBMSchematicsWorkspaceDataSourceConfigBasic() string {
 			description = "tf-acc-test-schematics"
 			name = "tf-acc-test-schematics"
 			location = "us-east"
-			resource_group = "default"
-			template_type = "terraform_v0.13.5"
+			resource_group = "Default"
+			template_type = "terraform_v1.6"
 			template_env_settings = [
 				{
 					IBMCLOUD_ENV_VAR = "ENV_VALUE",
@@ -110,7 +110,7 @@ func testAccCheckIBMSchematicsWorkspaceDataSourceConfig(workspaceResponseDescrip
 			 location = "%s"
 			 name = "%s"
 			 resource_group = "%s"
-			 template_type = "terraform_v0.13.5"
+			 template_type = "terraform_v1.6"
 		 }
  
 		 data "ibm_schematics_workspace" "schematics_workspace" {

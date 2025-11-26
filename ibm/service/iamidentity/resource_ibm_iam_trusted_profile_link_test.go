@@ -1,4 +1,4 @@
-// Copyright IBM Corp. 2021 All Rights Reserved.
+// Copyright IBM Corp. 2025 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 package iamidentity_test
@@ -7,15 +7,17 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
-
-	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
-	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
-	"github.com/hashicorp/terraform-plugin-testing/terraform"
-
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/iamidentity"
+	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/IBM/platform-services-go-sdk/iamidentityv1"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestAccIBMIAMTrustedProfileLinkBasic(t *testing.T) {
@@ -76,12 +78,12 @@ func testAccCheckIBMIamTrustedProfileLinkConfigBasic(profileName string, crType 
 			profile_id = ibm_iam_trusted_profile.iam_trusted_profile.id
 			cr_type = "%s"
 			link {
-				crn = "%s"
+				crn = ibm_iam_trusted_profile.iam_trusted_profile.crn # any valid CRN will do for testing
 				namespace = "namespace"
 				name = "name"
 			}
 		}
-	`, profileName, crType, acc.IksSa)
+	`, profileName, crType)
 }
 
 func testAccCheckIBMIamTrustedProfileLinkConfig(profileName string, crType string, name string) string {
@@ -93,13 +95,13 @@ func testAccCheckIBMIamTrustedProfileLinkConfig(profileName string, crType strin
 			profile_id = ibm_iam_trusted_profile.iam_trusted_profile.id
 			cr_type = "%s"
 			link {
-				crn = "%s"
+				crn = ibm_iam_trusted_profile.iam_trusted_profile.crn # any valid CRN will do for testing
 				namespace = "namespace"
 				name = "name"
 			}
 			name = "%s"
 		}
-	`, profileName, crType, acc.IksSa, name)
+	`, profileName, crType, name)
 }
 
 func testAccCheckIBMIamTrustedProfileLinkExists(n string, obj iamidentityv1.ProfileLink) resource.TestCheckFunc {
@@ -161,9 +163,49 @@ func testAccCheckIBMIamTrustedProfileLinkDestroy(s *terraform.State) error {
 		if err == nil {
 			return fmt.Errorf("iam_trusted_profile_link still exists: %s", rs.Primary.ID)
 		} else if response.StatusCode != 404 {
-			return fmt.Errorf("[ERROR] Error checking for iam_trusted_profile_link (%s) has been destroyed: %s", rs.Primary.ID, err)
+			return fmt.Errorf("Error checking for iam_trusted_profile_link (%s) has been destroyed: %s", rs.Primary.ID, err)
 		}
 	}
 
 	return nil
+}
+
+func TestResourceIBMIamTrustedProfileLinkProfileLinkLinkToMap(t *testing.T) {
+	checkResult := func(result map[string]interface{}) {
+		model := make(map[string]interface{})
+		model["crn"] = "testString"
+		model["namespace"] = "testString"
+		model["name"] = "testString"
+
+		assert.Equal(t, result, model)
+	}
+
+	model := new(iamidentityv1.ProfileLinkLink)
+	model.CRN = core.StringPtr("testString")
+	model.Namespace = core.StringPtr("testString")
+	model.Name = core.StringPtr("testString")
+
+	result, err := iamidentity.ResourceIBMIamTrustedProfileLinkProfileLinkLinkToMap(model)
+	assert.Nil(t, err)
+	checkResult(result)
+}
+
+func TestResourceIBMIamTrustedProfileLinkMapToCreateProfileLinkRequestLink(t *testing.T) {
+	checkResult := func(result *iamidentityv1.CreateProfileLinkRequestLink) {
+		model := new(iamidentityv1.CreateProfileLinkRequestLink)
+		model.CRN = core.StringPtr("testString")
+		model.Namespace = core.StringPtr("testString")
+		model.Name = core.StringPtr("testString")
+
+		assert.Equal(t, result, model)
+	}
+
+	model := make(map[string]interface{})
+	model["crn"] = "testString"
+	model["namespace"] = "testString"
+	model["name"] = "testString"
+
+	result, err := iamidentity.ResourceIBMIamTrustedProfileLinkMapToCreateProfileLinkRequestLink(model)
+	assert.Nil(t, err)
+	checkResult(result)
 }

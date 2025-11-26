@@ -67,7 +67,7 @@ variable "onboarding_resource_broker_region" {
 
 // Resource arguments for onboarding_catalog_deployment
 variable "onboarding_catalog_deployment_product_id" {
-  description = "The unique ID of the product."
+  description = "The unique ID of the resource."
   type        = string
   default     = "product_id"
 }
@@ -119,7 +119,7 @@ variable "onboarding_catalog_deployment_tags" {
 
 // Resource arguments for onboarding_catalog_plan
 variable "onboarding_catalog_plan_product_id" {
-  description = "The unique ID of the product."
+  description = "The unique ID of the resource."
   type        = string
   default     = "product_id"
 }
@@ -163,10 +163,15 @@ variable "onboarding_catalog_plan_tags" {
   type        = list(string)
   default     = ["ibm_created"]
 }
+variable "onboarding_catalog_plan_pricing_tags" {
+  description = "A list of tags that carry information about the pricing information of your product."
+  type        = list(string)
+  default     = [ "pricing_tags" ]
+}
 
 // Resource arguments for onboarding_catalog_product
 variable "onboarding_catalog_product_product_id" {
-  description = "The unique ID of the product."
+  description = "The unique ID of the resource."
   type        = string
   default     = "product_id"
 }
@@ -208,7 +213,7 @@ variable "onboarding_catalog_product_tags" {
 
 // Resource arguments for onboarding_iam_registration
 variable "onboarding_iam_registration_product_id" {
-  description = "The unique ID of the product."
+  description = "The unique ID of the resource."
   type        = string
   default     = "product_id"
 }
@@ -241,6 +246,11 @@ variable "onboarding_iam_registration_parent_ids" {
   description = "The list of parent IDs for product access management."
   type        = list(string)
   default     = []
+}
+variable "onboarding_iam_registration_supported_action_control" {
+  description = "The list that indicates which actions are part of the service restrictions."
+  type        = list(string)
+  default     = [ "supported_action_control" ]
 }
 
 // Resource arguments for onboarding_product

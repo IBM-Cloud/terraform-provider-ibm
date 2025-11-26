@@ -28,12 +28,14 @@ func TestAccIbmSmServiceCredentialsSecretDataSourceBasic(t *testing.T) {
 					resource.TestCheckResourceAttrSet("data.ibm_sm_service_credentials_secret.sm_service_credentials_secret", "secret_group_id"),
 					resource.TestCheckResourceAttrSet("data.ibm_sm_service_credentials_secret.sm_service_credentials_secret", "secret_type"),
 					resource.TestCheckResourceAttrSet("data.ibm_sm_service_credentials_secret.sm_service_credentials_secret", "updated_at"),
+					resource.TestCheckResourceAttrSet("data.ibm_sm_service_credentials_secret.sm_service_credentials_secret", "retrieved_at"),
 					resource.TestCheckResourceAttrSet("data.ibm_sm_service_credentials_secret.sm_service_credentials_secret", "versions_total"),
 					resource.TestCheckResourceAttrSet("data.ibm_sm_service_credentials_secret.sm_service_credentials_secret", "rotation.#"),
 					resource.TestCheckResourceAttrSet("data.ibm_sm_service_credentials_secret.sm_service_credentials_secret", "ttl"),
 					resource.TestCheckResourceAttrSet("data.ibm_sm_service_credentials_secret.sm_service_credentials_secret", "source_service.#"),
 					resource.TestCheckResourceAttrSet("data.ibm_sm_service_credentials_secret.sm_service_credentials_secret_by_name", "name"),
 					resource.TestCheckResourceAttrSet("data.ibm_sm_service_credentials_secret.sm_service_credentials_secret_by_name", "secret_group_name"),
+					resource.TestCheckResourceAttrSet("data.ibm_sm_service_credentials_secret.sm_service_credentials_secret_by_name", "secret_id"),
 				),
 			},
 		},
@@ -60,7 +62,6 @@ func testAccCheckIbmSmServiceCredentialsSecretDataSourceConfigBasic() string {
 			  	instance {
 					crn = "%s"
 				}
-				parameters = %s
 				role {
 					crn = "%s"
 				}
@@ -79,5 +80,5 @@ func testAccCheckIbmSmServiceCredentialsSecretDataSourceConfigBasic() string {
 			name = ibm_sm_service_credentials_secret.sm_service_credentials_secret_instance.name
 			secret_group_name = "default"
 		}
-	`, acc.SecretsManagerInstanceID, acc.SecretsManagerInstanceRegion, serviceCredentialsTtl, acc.SecretsManagerServiceCredentialsCosCrn, serviceCredentialsParameters, serviceCredentialsRoleCrn, acc.SecretsManagerInstanceID, acc.SecretsManagerInstanceRegion, acc.SecretsManagerInstanceID, acc.SecretsManagerInstanceRegion)
+	`, acc.SecretsManagerInstanceID, acc.SecretsManagerInstanceRegion, serviceCredentialsTtl, acc.SecretsManagerENInstanceCrn, serviceCredentialsRoleCrn, acc.SecretsManagerInstanceID, acc.SecretsManagerInstanceRegion, acc.SecretsManagerInstanceID, acc.SecretsManagerInstanceRegion)
 }

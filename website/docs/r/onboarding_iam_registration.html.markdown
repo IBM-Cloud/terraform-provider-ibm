@@ -48,6 +48,7 @@ resource "ibm_onboarding_iam_registration" "onboarding_iam_registration_instance
 		options {
 			hidden = true
 		}
+		api_types = [ "api_types" ]
   }
   display_name {
 		default = "default"
@@ -82,7 +83,7 @@ resource "ibm_onboarding_iam_registration" "onboarding_iam_registration_instance
 		options {
 			operators = [ "stringEquals" ]
 			hidden = true
-			supported_attributes = [ "supported_attributes" ]
+			supported_patterns = [ "supported_patterns" ]
 			policy_types = [ "access" ]
 			is_empty_value_supported = true
 			is_string_exists_false_value_supported = true
@@ -171,6 +172,43 @@ resource "ibm_onboarding_iam_registration" "onboarding_iam_registration_instance
 				hidden = true
 			}
 		}
+		operations {
+			api_types {
+				name = "name"
+				enforcement_method = [ "enforcement_method" ]
+				display_name {
+					default = "default"
+					en = "en"
+					de = "de"
+					es = "es"
+					fr = "fr"
+					it = "it"
+					ja = "ja"
+					ko = "ko"
+					pt_br = "pt_br"
+					zh_tw = "zh_tw"
+					zh_cn = "zh_cn"
+				}
+				description {
+					default = "default"
+					en = "en"
+					de = "de"
+					es = "es"
+					fr = "fr"
+					it = "it"
+					ja = "ja"
+					ko = "ko"
+					pt_br = "pt_br"
+					zh_tw = "zh_tw"
+					zh_cn = "zh_cn"
+				}
+			}
+		}
+		self_managed_allowlist_enforcement {
+			event_publishing {
+				api_types = [ "api_types" ]
+			}
+		}
   }
   supported_roles {
 		id = "id"
@@ -202,7 +240,6 @@ resource "ibm_onboarding_iam_registration" "onboarding_iam_registration_instance
 		}
 		options {
 			access_policy = true
-			additional_properties_for_access_policy = { "key" = "inner" }
 			policy_type = [ "access" ]
 			account_type = "enterprise"
 		}
@@ -217,6 +254,8 @@ You can specify the following arguments for this resource.
 * `actions` - (Optional, List) The product access management action.
   * Constraints: The maximum length is `100` items. The minimum length is `0` items.
 Nested schema for **actions**:
+	* `api_types` - (Optional, List) Context-based-restrictions API type configuration for an action.
+	  * Constraints: The list items must match regular expression `/^[ -~\\s]*$/`. The maximum length is `100` items. The minimum length is `0` items.
 	* `description` - (Optional, List) The description for the object.
 	Nested schema for **description**:
 		* `de` - (Optional, String) German.
@@ -300,12 +339,12 @@ Nested schema for **display_name**:
 	  * Constraints: The maximum length is `256` characters. The minimum length is `0` characters. The value must match regular expression `/./`.
 * `enabled` - (Optional, Boolean) Whether the service is enabled or disabled for IAM.
 * `env` - (Optional, String) The environment to fetch this object from.
-  * Constraints: The maximum length is `64` characters. The minimum length is `1` character. The value must match regular expression `/^[a-z]+$/`.
+  * Constraints: The maximum length is `64` characters. The minimum length is `1` character. The value must match regular expression `/^[a-z_.-]+$/`.
 * `name` - (Required, String) The IAM registration name, which must be the programmatic name of the product.
-  * Constraints: The value must match regular expression `/^[a-z0-9\\-.]+$/`.
+  * Constraints: The value must match regular expression `/^\\S*$/`.
 * `parent_ids` - (Optional, List) The list of parent IDs for product access management.
-  * Constraints: The list items must match regular expression `/^[a-z0-9\\-.]+$/`. The maximum length is `100` items. The minimum length is `0` items.
-* `product_id` - (Required, Forces new resource, String) The unique ID of the product.
+  * Constraints: The list items must match regular expression `/^\\S*$/`. The maximum length is `100` items. The minimum length is `0` items.
+* `product_id` - (Required, Forces new resource, String) The unique ID of the resource.
   * Constraints: The maximum length is `71` characters. The minimum length is `71` characters. The value must match regular expression `/^[a-zA-Z0-9]{32}:o:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/`.
 * `resource_hierarchy_attribute` - (Optional, List) The resource hierarchy key-value pair for composite services.
 Nested schema for **resource_hierarchy_attribute**:
@@ -313,6 +352,8 @@ Nested schema for **resource_hierarchy_attribute**:
 	* `value` - (Optional, String) The resource hierarchy value.
 * `service_type` - (Optional, String) The type of the service.
   * Constraints: Allowable values are: `service`, `platform_service`.
+* `supported_action_control` - (Optional, List) The list that indicates which actions are part of the service restrictions.
+  * Constraints: The list items must match regular expression `/^[ -~\\s]*$/`. The maximum length is `100` items. The minimum length is `0` items.
 * `supported_anonymous_accesses` - (Optional, List) The list of supported anonymous accesses.
   * Constraints: The maximum length is `100` items. The minimum length is `0` items.
 Nested schema for **supported_anonymous_accesses**:
@@ -395,7 +436,7 @@ Nested schema for **supported_attributes**:
 			* `value` - (Optional, List) Hierarchy description value.
 			Nested schema for **value**:
 				* `key` - (Optional, String) Key.
-		* `supported_attributes` - (Optional, List) The list of supported patterns.
+		* `supported_patterns` - (Optional, List) The list of supported patterns.
 		  * Constraints: The maximum length is `100` items. The minimum length is `0` items.
 	* `ui` - (Optional, List) The user interface.
 	Nested schema for **ui**:
@@ -472,6 +513,69 @@ Nested schema for **supported_network**:
 			* `hidden` - (Optional, Boolean) Whether the attribute is hidden or not.
 		* `values` - (Optional, List) The list of values that belong to the key.
 		  * Constraints: The list items must match regular expression `/^[ -~\\s]*$/`. The maximum length is `100` items. The minimum length is `0` items.
+	* `operations` - (Optional, List) Specifies API types that the service supports.
+	Nested schema for **operations**:
+		* `api_types` - (Optional, List) The environment attribute for support.
+		  * Constraints: The maximum length is `100` items. The minimum length is `0` items.
+		Nested schema for **api_types**:
+			* `description` - (Optional, List) The description for the object.
+			Nested schema for **description**:
+				* `de` - (Optional, String) German.
+				  * Constraints: The maximum length is `20000` characters. The minimum length is `0` characters. The value must match regular expression `/\\b[\\wäöüß\\d]+\\b/`.
+				* `default` - (Optional, String) The fallback string for the description object.
+				  * Constraints: The maximum length is `20000` characters. The minimum length is `0` characters. The value must match regular expression `/^[ -~\\s]*$/`.
+				* `en` - (Optional, String) English.
+				  * Constraints: The maximum length is `20000` characters. The minimum length is `0` characters. The value must match regular expression `/^[ -~\\s]*$/`.
+				* `es` - (Optional, String) Spanish.
+				  * Constraints: The maximum length is `20000` characters. The minimum length is `0` characters. The value must match regular expression `/\\b[\\wáéíóúñ]+\\b/`.
+				* `fr` - (Optional, String) French.
+				  * Constraints: The maximum length is `20000` characters. The minimum length is `0` characters. The value must match regular expression `/\\b[\\wàâçéèêëîïôûùüÿñœæ]+\\b/`.
+				* `it` - (Optional, String) Italian.
+				  * Constraints: The maximum length is `20000` characters. The minimum length is `0` characters. The value must match regular expression `/\\b[\\wàèéìîòóù]+\\b/`.
+				* `ja` - (Optional, String) Japanese.
+				  * Constraints: The maximum length is `20000` characters. The minimum length is `0` characters. The value must match regular expression `/^[A-Za-z0-9\\s,.!?;:'"-]+|[ぁ-んァ-ン一-龯、。「」！？\\d\\s]*$/`.
+				* `ko` - (Optional, String) Korean.
+				  * Constraints: The maximum length is `20000` characters. The minimum length is `0` characters. The value must match regular expression `/./`.
+				* `pt_br` - (Optional, String) Portuguese (Brazil).
+				  * Constraints: The maximum length is `20000` characters. The minimum length is `0` characters. The value must match regular expression `/\\b[\\wàèéìîòóù]+\\b/`.
+				* `zh_cn` - (Optional, String) Simplified Chinese.
+				  * Constraints: The maximum length is `20000` characters. The minimum length is `0` characters. The value must match regular expression `/./`.
+				* `zh_tw` - (Optional, String) Traditional Chinese.
+				  * Constraints: The maximum length is `20000` characters. The minimum length is `0` characters. The value must match regular expression `/./`.
+			* `display_name` - (Optional, List) The display name of the object.
+			Nested schema for **display_name**:
+				* `de` - (Optional, String) German.
+				  * Constraints: The maximum length is `256` characters. The minimum length is `0` characters. The value must match regular expression `/\\b[\\wäöüß\\d]+\\b/`.
+				* `default` - (Optional, String) The fallback string for the description object.
+				  * Constraints: The maximum length is `256` characters. The minimum length is `0` characters. The value must match regular expression `/^[ -~\\s]*$/`.
+				* `en` - (Optional, String) English.
+				  * Constraints: The maximum length is `256` characters. The minimum length is `0` characters. The value must match regular expression `/^[ -~\\s]*$/`.
+				* `es` - (Optional, String) Spanish.
+				  * Constraints: The maximum length is `256` characters. The minimum length is `0` characters. The value must match regular expression `/\\b[\\wáéíóúñ]+\\b/`.
+				* `fr` - (Optional, String) French.
+				  * Constraints: The maximum length is `256` characters. The minimum length is `0` characters. The value must match regular expression `/\\b[\\wàâçéèêëîïôûùüÿñœæ]+\\b/`.
+				* `it` - (Optional, String) Italian.
+				  * Constraints: The maximum length is `256` characters. The minimum length is `0` characters. The value must match regular expression `/\\b[\\wàèéìîòóù]+\\b/`.
+				* `ja` - (Optional, String) Japanese.
+				  * Constraints: The maximum length is `256` characters. The minimum length is `0` characters. The value must match regular expression `/^[A-Za-z0-9\\s,.!?;:'"-]+|[ぁ-んァ-ン一-龯、。「」！？\\d\\s]*$/`.
+				* `ko` - (Optional, String) Korean.
+				  * Constraints: The maximum length is `256` characters. The minimum length is `0` characters. The value must match regular expression `/./`.
+				* `pt_br` - (Optional, String) Portuguese (Brazil).
+				  * Constraints: The maximum length is `256` characters. The minimum length is `0` characters. The value must match regular expression `/\\b[\\wàèéìîòóù]+\\b/`.
+				* `zh_cn` - (Optional, String) Simplified Chinese.
+				  * Constraints: The maximum length is `256` characters. The minimum length is `0` characters. The value must match regular expression `/./`.
+				* `zh_tw` - (Optional, String) Traditional Chinese.
+				  * Constraints: The maximum length is `256` characters. The minimum length is `0` characters. The value must match regular expression `/./`.
+			* `enforcement_method` - (Optional, List) The enforcement method used for the API type.
+			  * Constraints: The list items must match regular expression `/^[ -~\\s]*$/`. The maximum length is `100` items. The minimum length is `0` items.
+			* `name` - (Optional, String) The cloud resource name (CRN) or name of the API type.
+			  * Constraints: The maximum length is `100` characters. The minimum length is `0` characters. The value must match regular expression `/^[ -~\\s]*$/`.
+	* `self_managed_allowlist_enforcement` - (Optional, List) Deprecated field, which is optionally specified only if the service uses additional enforcement mechanisms beyond the primary one.
+	Nested schema for **self_managed_allowlist_enforcement**:
+		* `event_publishing` - (Optional, List) Specifies API types that the service supports. This method is deprecated and is used only for older setups. Don't use this method when you create a context-based restrictions setup for the first time.
+		Nested schema for **event_publishing**:
+			* `api_types` - (Optional, List) The cloud resource name (CRN) or name of the API type.
+			  * Constraints: The list items must match regular expression `/^[ -~\\s]*$/`. The maximum length is `100` items. The minimum length is `0` items.
 * `supported_roles` - (Optional, List) The list of roles that you can use to assign access.
   * Constraints: The maximum length is `100` items. The minimum length is `0` items.
 Nested schema for **supported_roles**:
@@ -530,7 +634,6 @@ Nested schema for **supported_roles**:
 		* `access_policy` - (Required, Boolean) Optional opt-in to require access control on the role.
 		* `account_type` - (Optional, String) Optional opt-in to require checking account type when applying the role.
 		  * Constraints: Allowable values are: `enterprise`.
-		* `additional_properties_for_access_policy` - (Optional, Map) Additional properties for access policy.
 		* `policy_type` - (Optional, List) Optional opt-in to require checking policy type when applying the role.
 		  * Constraints: Allowable list items are: `access`, `authorization`, `authorization-delegated`. The list items must match regular expression `/^[ -~\\s]*$/`. The maximum length is `100` items. The minimum length is `0` items.
 
@@ -547,9 +650,9 @@ You can import the `ibm_onboarding_iam_registration` resource by using `name`.
 The `name` property can be formed from `product_id`, and `name` in the following format:
 
 <pre>
-&lt;product_id&gt;/&lt;name&gt;
+&lt;product_id/name
 </pre>
-* `product_id`: A string. The unique ID of the product.
+* `product_id`: A string. The unique ID of the resource.
 * `name`: A string in the format `pet-store`. The IAM registration name, which must be the programmatic name of the product.
 
 # Syntax

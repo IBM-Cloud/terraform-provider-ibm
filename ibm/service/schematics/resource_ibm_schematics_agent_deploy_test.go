@@ -7,9 +7,8 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
-	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
-	"github.com/hashicorp/terraform-plugin-testing/terraform"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
@@ -20,7 +19,6 @@ import (
 
 func TestAccIbmSchematicsAgentDeployBasic(t *testing.T) {
 	var conf *schematicsv1.AgentDataRecentDeployJob
-	agentID := fmt.Sprintf("tf_agent_id_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
@@ -28,10 +26,10 @@ func TestAccIbmSchematicsAgentDeployBasic(t *testing.T) {
 		CheckDestroy: testAccCheckIbmSchematicsAgentDeployDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIbmSchematicsAgentDeployConfigBasic(agentID),
+				Config: testAccCheckIbmSchematicsAgentDeployConfigBasic(acc.AgentID),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIbmSchematicsAgentDeployExists("ibm_schematics_agent_deploy.schematics_agent_deploy_instance", conf),
-					resource.TestCheckResourceAttr("ibm_schematics_agent_deploy.schematics_agent_deploy_instance", "agent_id", agentID),
+					resource.TestCheckResourceAttr("ibm_schematics_agent_deploy.schematics_agent_deploy_instance", "agent_id", acc.AgentID),
 				),
 			},
 		},

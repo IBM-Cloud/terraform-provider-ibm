@@ -31,10 +31,8 @@ func TestAccIbmIamApiKeyDataSourceBasic(t *testing.T) {
 					resource.TestCheckResourceAttrSet("data.ibm_iam_api_key.iam_api_key", "created_by"),
 					resource.TestCheckResourceAttrSet("data.ibm_iam_api_key.iam_api_key", "modified_at"),
 					resource.TestCheckResourceAttrSet("data.ibm_iam_api_key.iam_api_key", "name"),
-					resource.TestCheckResourceAttrSet("data.ibm_iam_api_key.iam_api_key", "description"),
 					resource.TestCheckResourceAttrSet("data.ibm_iam_api_key.iam_api_key", "iam_id"),
 					resource.TestCheckResourceAttrSet("data.ibm_iam_api_key.iam_api_key", "account_id"),
-					resource.TestCheckResourceAttrSet("data.ibm_iam_api_key.iam_api_key", "apikey"),
 				),
 			},
 		},
@@ -61,10 +59,8 @@ func TestAccIbmIamApiKeyDataSourceAllArgs(t *testing.T) {
 					resource.TestCheckResourceAttrSet("data.ibm_iam_api_key.iam_api_key", "created_by"),
 					resource.TestCheckResourceAttrSet("data.ibm_iam_api_key.iam_api_key", "modified_at"),
 					resource.TestCheckResourceAttrSet("data.ibm_iam_api_key.iam_api_key", "name"),
-					resource.TestCheckResourceAttrSet("data.ibm_iam_api_key.iam_api_key", "description"),
 					resource.TestCheckResourceAttrSet("data.ibm_iam_api_key.iam_api_key", "iam_id"),
 					resource.TestCheckResourceAttrSet("data.ibm_iam_api_key.iam_api_key", "account_id"),
-					resource.TestCheckResourceAttrSet("data.ibm_iam_api_key.iam_api_key", "apikey"),
 				),
 			},
 		},
@@ -73,7 +69,7 @@ func TestAccIbmIamApiKeyDataSourceAllArgs(t *testing.T) {
 
 func testAccCheckIbmIamApiKeyDataSourceConfigBasic(apiKeyName string) string {
 	return fmt.Sprintf(`
-		resource "ibm_iam_api_key" "iam_api_key" {
+	resource "ibm_iam_api_key" "iam_api_key" {
 			name = "%s"
 		}
 

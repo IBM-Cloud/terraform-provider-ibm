@@ -4,12 +4,14 @@
 package vpc
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"strconv"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -43,7 +45,7 @@ const (
 
 func DataSourceIBMISLB() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceIBMISLBRead,
+		ReadContext: dataSourceIBMISLBRead,
 
 		Schema: map[string]*schema.Schema{
 			isLBName: {
@@ -149,6 +151,40 @@ func DataSourceIBMISLB() *schema.Resource {
 				Elem:        &schema.Schema{Type: schema.TypeString},
 				Set:         schema.HashString,
 				Description: "Load Balancer subnets list",
+			},
+
+			isAttachedLoadBalancerPoolMembers: {
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "The load balancer pool members attached to this load balancer.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"deleted": {
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "If present, this property indicates the referenced resource has been deleted and providessome supplementary information.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"more_info": {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "Link to documentation about deleted resources.",
+									},
+								},
+							},
+						},
+						"href": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The URL for this load balancer pool member.",
+						},
+						"id": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The unique identifier for this load balancer pool member.",
+						},
+					},
+				},
 			},
 
 			isLBSecurityGroups: {
@@ -320,6 +356,12 @@ func DataSourceIBMISLB() *schema.Resource {
 					},
 				},
 			},
+			"failsafe_policy_actions": &schema.Schema{
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "The supported `failsafe_policy.action` values for this load balancer's pools.",
+				Elem:        &schema.Schema{Type: schema.TypeString},
+			},
 			flex.ResourceControllerURL: {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -341,20 +383,22 @@ func DataSourceIBMISLB() *schema.Resource {
 	}
 }
 
-func dataSourceIBMISLBRead(d *schema.ResourceData, meta interface{}) error {
+func dataSourceIBMISLBRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 
 	name := d.Get(isLBName).(string)
-	err := lbGetByName(d, meta, name)
+	err := lbGetByName(context, d, meta, name)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func lbGetByName(d *schema.ResourceData, meta interface{}, name string) error {
+func lbGetByName(context context.Context, d *schema.ResourceData, meta interface{}, name string) diag.Diagnostics {
 	sess, err := vpcClient(meta)
 	if err != nil {
-		return err
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_lb", "read", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	start := ""
@@ -364,9 +408,11 @@ func lbGetByName(d *schema.ResourceData, meta interface{}, name string) error {
 		if start != "" {
 			listLoadBalancersOptions.Start = &start
 		}
-		lbs, response, err := sess.ListLoadBalancers(listLoadBalancersOptions)
+		lbs, _, err := sess.ListLoadBalancersWithContext(context, listLoadBalancersOptions)
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error Fetching Load Balancers %s\n%s", err, response)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("ListLoadBalancersWithContext failed: %s", err.Error()), "(Data) ibm_is_lb", "read")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		start = flex.GetNext(lbs.Next)
 		allrecs = append(allrecs, lbs.LoadBalancers...)
@@ -375,70 +421,94 @@ func lbGetByName(d *schema.ResourceData, meta interface{}, name string) error {
 		}
 	}
 
-	for _, lb := range allrecs {
-		if *lb.Name == name {
-			d.SetId(*lb.ID)
-			if lb.Availability != nil {
-				d.Set(isLBAvailability, *lb.Availability)
+	for _, loadBalancer := range allrecs {
+		if *loadBalancer.Name == name {
+			d.SetId(*loadBalancer.ID)
+			if err = d.Set("availability", loadBalancer.Availability); err != nil {
+				return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting availability: %s", err), "(Data) ibm_is_lb", "read", "set-availability").GetDiag()
 			}
-			if lb.AccessMode != nil {
-				d.Set(isLBAccessMode, *lb.AccessMode)
+			if err = d.Set("access_mode", loadBalancer.AccessMode); err != nil {
+				return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting access_mode: %s", err), "(Data) ibm_is_lb", "read", "set-access_mode").GetDiag()
 			}
-			if lb.InstanceGroupsSupported != nil {
-				d.Set(isLBInstanceGroupsSupported, *lb.InstanceGroupsSupported)
+			if err = d.Set("instance_groups_supported", loadBalancer.InstanceGroupsSupported); err != nil {
+				return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting instance_groups_supported: %s", err), "(Data) ibm_is_lb", "read", "set-instance_groups_supported").GetDiag()
 			}
-			if lb.SourceIPSessionPersistenceSupported != nil {
-				d.Set(isLBSourceIPPersistenceSupported, *lb.SourceIPSessionPersistenceSupported)
+			if err = d.Set("source_ip_session_persistence_supported", loadBalancer.SourceIPSessionPersistenceSupported); err != nil {
+				return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting source_ip_session_persistence_supported: %s", err), "(Data) ibm_is_lb", "read", "set-source_ip_session_persistence_supported").GetDiag()
 			}
 			dnsList := make([]map[string]interface{}, 0)
-			if lb.Dns != nil {
+			if loadBalancer.Dns != nil {
 				dns := map[string]interface{}{}
-				dns["instance_crn"] = lb.Dns.Instance.CRN
-				dns["zone_id"] = lb.Dns.Zone.ID
+				dns["instance_crn"] = loadBalancer.Dns.Instance.CRN
+				dns["zone_id"] = loadBalancer.Dns.Zone.ID
 				dnsList = append(dnsList, dns)
-				d.Set("dns", dnsList)
+				if err = d.Set("dns", dnsList); err != nil {
+					return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting dns: %s", err), "(Data) ibm_is_lb", "read", "set-dns").GetDiag()
+				}
 			}
-			d.Set(isLBName, *lb.Name)
-			if lb.Logging != nil && lb.Logging.Datapath != nil {
-				d.Set(isLBLogging, *lb.Logging.Datapath.Active)
+			if err = d.Set("name", loadBalancer.Name); err != nil {
+				return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting name: %s", err), "(Data) ibm_is_lb", "read", "set-name").GetDiag()
 			}
-			if lb.IsPublic != nil && *lb.IsPublic {
-				d.Set(isLBType, "public")
-			} else if lb.IsPrivatePath != nil && *lb.IsPrivatePath {
-				d.Set(isLBType, "private_path")
+			if loadBalancer.Logging != nil && loadBalancer.Logging.Datapath != nil {
+				if err = d.Set(isLBLogging, *loadBalancer.Logging.Datapath.Active); err != nil {
+					return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting logging: %s", err), "(Data) ibm_is_lb", "read", "set-logging").GetDiag()
+				}
+			}
+			if loadBalancer.IsPublic != nil && *loadBalancer.IsPublic {
+				if err = d.Set(isLBType, "public"); err != nil {
+					return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting type: %s", err), "(Data) ibm_is_lb", "read", "set-type").GetDiag()
+				}
+			} else if loadBalancer.IsPrivatePath != nil && *loadBalancer.IsPrivatePath {
+				if err = d.Set(isLBType, "private_path"); err != nil {
+					return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting type: %s", err), "(Data) ibm_is_lb", "read", "set-type").GetDiag()
+				}
 			} else {
-				d.Set(isLBType, "private")
+				if err = d.Set(isLBType, "private"); err != nil {
+					return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting type: %s", err), "(Data) ibm_is_lb", "read", "set-type").GetDiag()
+				}
 			}
 			lbProfile := make(map[string]interface{})
-			if lb.Profile != nil {
-				lbProfile[isLBName] = *lb.Profile.Name
-				lbProfile[href] = *lb.Profile.Href
-				lbProfile[family] = *lb.Profile.Family
+			if loadBalancer.Profile != nil {
+				lbProfile[isLBName] = *loadBalancer.Profile.Name
+				lbProfile[href] = *loadBalancer.Profile.Href
+				lbProfile[family] = *loadBalancer.Profile.Family
 			}
-			d.Set(isLbProfile, lbProfile)
-			d.Set(isLBStatus, *lb.ProvisioningStatus)
-			if lb.RouteMode != nil {
-				d.Set(isLBRouteMode, *lb.RouteMode)
+			if err = d.Set("profile", lbProfile); err != nil {
+				return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting profile: %s", err), "(Data) ibm_is_lb", "read", "set-profile").GetDiag()
 			}
-			if lb.UDPSupported != nil {
-				d.Set(isLBUdpSupported, *lb.UDPSupported)
+			if err = d.Set("status", loadBalancer.ProvisioningStatus); err != nil {
+				return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting status: %s", err), "(Data) ibm_is_lb", "read", "set-status").GetDiag()
 			}
-			d.Set(isLBCrn, *lb.CRN)
-			d.Set(isLBOperatingStatus, *lb.OperatingStatus)
+			if loadBalancer.RouteMode != nil {
+				if err = d.Set(isLBRouteMode, *loadBalancer.RouteMode); err != nil {
+					return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting route_mode: %s", err), "(Data) ibm_is_lb", "read", "set-route_mode").GetDiag()
+				}
+			}
+			if err = d.Set("udp_supported", loadBalancer.UDPSupported); err != nil {
+				return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting udp_supported: %s", err), "(Data) ibm_is_lb", "read", "set-udp_supported").GetDiag()
+			}
+			if err = d.Set("crn", loadBalancer.CRN); err != nil {
+				return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting crn: %s", err), "(Data) ibm_is_lb", "read", "set-crn").GetDiag()
+			}
+			if err = d.Set("operating_status", loadBalancer.OperatingStatus); err != nil {
+				return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting operating_status: %s", err), "(Data) ibm_is_lb", "read", "set-operating_status").GetDiag()
+			}
 			publicIpList := make([]string, 0)
-			if lb.PublicIps != nil {
-				for _, ip := range lb.PublicIps {
+			if loadBalancer.PublicIps != nil {
+				for _, ip := range loadBalancer.PublicIps {
 					if ip.Address != nil {
 						pubip := *ip.Address
 						publicIpList = append(publicIpList, pubip)
 					}
 				}
 			}
-			d.Set(isLBPublicIPs, publicIpList)
+			if err = d.Set(isLBPublicIPs, publicIpList); err != nil {
+				return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting public_ips: %s", err), "(Data) ibm_is_lb", "read", "set-public_ips").GetDiag()
+			}
 			privateIpList := make([]string, 0)
 			privateIpDetailList := make([]map[string]interface{}, 0)
-			if lb.PrivateIps != nil {
-				for _, ip := range lb.PrivateIps {
+			if loadBalancer.PrivateIps != nil {
+				for _, ip := range loadBalancer.PrivateIps {
 					if ip.Address != nil {
 						prip := *ip.Address
 						privateIpList = append(privateIpList, prip)
@@ -464,44 +534,63 @@ func lbGetByName(d *schema.ResourceData, meta interface{}, name string) error {
 
 				}
 			}
-			d.Set(isLBPrivateIPDetail, privateIpDetailList)
-			d.Set(isLBPrivateIPs, privateIpList)
-			if lb.Subnets != nil {
+			if err = d.Set(isLBPrivateIPDetail, privateIpDetailList); err != nil {
+				return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting private_ip: %s", err), "(Data) ibm_is_lb", "read", "set-private_ip").GetDiag()
+			}
+			if err = d.Set(isLBPrivateIPs, privateIpList); err != nil {
+				return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting private_ips: %s", err), "(Data) ibm_is_lb", "read", "set-private_ips").GetDiag()
+			}
+			if loadBalancer.Subnets != nil {
 				subnetList := make([]string, 0)
-				for _, subnet := range lb.Subnets {
+				for _, subnet := range loadBalancer.Subnets {
 					if subnet.ID != nil {
 						sub := *subnet.ID
 						subnetList = append(subnetList, sub)
 					}
 				}
-				d.Set(isLBSubnets, subnetList)
+				if err = d.Set(isLBSubnets, subnetList); err != nil {
+					return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting subnets: %s", err), "(Data) ibm_is_lb", "read", "set-subnets").GetDiag()
+				}
 			}
 
+			if loadBalancer.AttachedLoadBalancerPoolMembers != nil {
+				d.Set(isAttachedLoadBalancerPoolMembers, dataSourceAttachedLoadBalancerPoolFlattenMembers(loadBalancer.AttachedLoadBalancerPoolMembers))
+			}
 			d.Set(isLBSecurityGroupsSupported, false)
-			if lb.SecurityGroups != nil {
+			if loadBalancer.SecurityGroups != nil {
 				securitygroupList := make([]string, 0)
-				for _, securityGroup := range lb.SecurityGroups {
+				for _, securityGroup := range loadBalancer.SecurityGroups {
 					if securityGroup.ID != nil {
 						securityGroupID := *securityGroup.ID
 						securitygroupList = append(securitygroupList, securityGroupID)
 					}
 				}
-				d.Set(isLBSecurityGroups, securitygroupList)
-				d.Set(isLBSecurityGroupsSupported, true)
+				if err = d.Set(isLBSecurityGroups, securitygroupList); err != nil {
+					return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting security_groups: %s", err), "(Data) ibm_is_lb", "read", "set-security_groups").GetDiag()
+				}
+				if err = d.Set(isLBSecurityGroupsSupported, true); err != nil {
+					return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting security_group_supported: %s", err), "(Data) ibm_is_lb", "read", "set-security_group_supported").GetDiag()
+				}
 			}
 
-			if lb.Listeners != nil {
+			if loadBalancer.Listeners != nil {
 				listenerList := make([]string, 0)
-				for _, listener := range lb.Listeners {
+				for _, listener := range loadBalancer.Listeners {
 					if listener.ID != nil {
 						lis := *listener.ID
 						listenerList = append(listenerList, lis)
 					}
 				}
-				d.Set(isLBListeners, listenerList)
+
+				if err = d.Set(isLBListeners, listenerList); err != nil {
+					return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting listeners: %s", err), "(Data) ibm_is_lb", "read", "set-listeners").GetDiag()
+				}
+			}
+			if err = d.Set("failsafe_policy_actions", loadBalancer.FailsafePolicyActions); err != nil {
+				return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting failsafe_policy_actions: %s", err), "(Data) ibm_is_lb", "read", "set-failsafe_policy_actions").GetDiag()
 			}
 			listLoadBalancerPoolsOptions := &vpcv1.ListLoadBalancerPoolsOptions{}
-			listLoadBalancerPoolsOptions.SetLoadBalancerID(*lb.ID)
+			listLoadBalancerPoolsOptions.SetLoadBalancerID(*loadBalancer.ID)
 			poolsResult, _, _ := sess.ListLoadBalancerPools(listLoadBalancerPoolsOptions)
 			if poolsResult != nil {
 				poolsInfo := make([]map[string]interface{}, 0)
@@ -517,20 +606,20 @@ func lbGetByName(d *schema.ResourceData, meta interface{}, name string) error {
 					pool[poolProvisioningStatus] = *p.ProvisioningStatus
 					pool["name"] = *p.Name
 					if p.HealthMonitor != nil {
+						poolHealthMonitor := p.HealthMonitor.(*vpcv1.LoadBalancerPoolHealthMonitor)
 						healthMonitorInfo := make(map[string]interface{})
-						delayfinal := strconv.FormatInt(*(p.HealthMonitor.Delay), 10)
+						delayfinal := strconv.FormatInt(*(poolHealthMonitor.Delay), 10)
 						healthMonitorInfo[healthMonitorDelay] = delayfinal
-						maxRetriesfinal := strconv.FormatInt(*(p.HealthMonitor.MaxRetries), 10)
-						timeoutfinal := strconv.FormatInt(*(p.HealthMonitor.Timeout), 10)
+						maxRetriesfinal := strconv.FormatInt(*(poolHealthMonitor.MaxRetries), 10)
+						timeoutfinal := strconv.FormatInt(*(poolHealthMonitor.Timeout), 10)
 						healthMonitorInfo[healthMonitorMaxRetries] = maxRetriesfinal
 						healthMonitorInfo[healthMonitorTimeout] = timeoutfinal
-						if p.HealthMonitor.URLPath != nil {
-							healthMonitorInfo[healthMonitorURLPath] = *(p.HealthMonitor.URLPath)
+						if poolHealthMonitor.URLPath != nil {
+							healthMonitorInfo[healthMonitorURLPath] = *(poolHealthMonitor.URLPath)
 						}
-						healthMonitorInfo[healthMonitorType] = *(p.HealthMonitor.Type)
+						healthMonitorInfo[healthMonitorType] = *(poolHealthMonitor.Type)
 						pool[healthMonitor] = healthMonitorInfo
 					}
-
 					if p.SessionPersistence != nil {
 						sessionPersistenceInfo := make(map[string]interface{})
 						sessionPersistenceInfo[sessionType] = *p.SessionPersistence.Type
@@ -557,34 +646,92 @@ func lbGetByName(d *schema.ResourceData, meta interface{}, name string) error {
 					}
 					poolsInfo = append(poolsInfo, pool)
 				} //for
-				d.Set(isLBPools, poolsInfo)
+
+				if err = d.Set(isLBPools, poolsInfo); err != nil {
+					return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting pools: %s", err), "(Data) ibm_is_lb", "read", "set-pools").GetDiag()
+				}
 			}
 
-			d.Set(isLBResourceGroup, *lb.ResourceGroup.ID)
-			d.Set(isLBHostName, *lb.Hostname)
-			tags, err := flex.GetGlobalTagsUsingCRN(meta, *lb.CRN, "", isUserTagType)
+			if err = d.Set(isLBResourceGroup, *loadBalancer.ResourceGroup.ID); err != nil {
+				return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting resource_group: %s", err), "(Data) ibm_is_lb", "read", "set-resource_group").GetDiag()
+			}
+			if err = d.Set("hostname", loadBalancer.Hostname); err != nil {
+				return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting hostname: %s", err), "(Data) ibm_is_lb", "read", "set-hostname").GetDiag()
+			}
+			tags, err := flex.GetGlobalTagsUsingCRN(meta, *loadBalancer.CRN, "", isUserTagType)
 			if err != nil {
 				log.Printf(
 					"Error on get of resource vpc Load Balancer (%s) tags: %s", d.Id(), err)
 			}
-			d.Set(isLBTags, tags)
-			accesstags, err := flex.GetGlobalTagsUsingCRN(meta, *lb.CRN, "", isAccessTagType)
+			if err = d.Set(isLBTags, tags); err != nil {
+				return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting tags: %s", err), "(Data) ibm_is_lb", "read", "set-tags").GetDiag()
+			}
+			accesstags, err := flex.GetGlobalTagsUsingCRN(meta, *loadBalancer.CRN, "", isAccessTagType)
 			if err != nil {
 				log.Printf(
 					"Error on get of resource Load Balancer (%s) access tags: %s", d.Id(), err)
 			}
-			d.Set(isLBAccessTags, accesstags)
+			if err = d.Set(isLBAccessTags, accesstags); err != nil {
+				return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting access_tags: %s", err), "(Data) ibm_is_lb", "read", "set-access_tags").GetDiag()
+			}
 			controller, err := flex.GetBaseController(meta)
 			if err != nil {
-				return err
+				tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetBaseController failed: %s", err.Error()), "(Data) ibm_is_lb", "read")
+				log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+				return tfErr.GetDiag()
 			}
-			d.Set(flex.ResourceControllerURL, controller+"/vpc-ext/network/loadBalancers")
-			d.Set(flex.ResourceName, *lb.Name)
-			if lb.ResourceGroup != nil {
-				d.Set(flex.ResourceGroupName, *lb.ResourceGroup.ID)
+			if err = d.Set(flex.ResourceControllerURL, controller+"/vpc-ext/network/loadBalancers"); err != nil {
+				return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting resource_controller_url: %s", err), "(Data) ibm_is_lb", "read", "set-resource_controller_url").GetDiag()
+			}
+			if err = d.Set(flex.ResourceName, *loadBalancer.Name); err != nil {
+				return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting resource_name: %s", err), "(Data) ibm_is_lb", "read", "set-resource_name").GetDiag()
+			}
+			if loadBalancer.ResourceGroup != nil {
+				if err = d.Set(flex.ResourceGroupName, *loadBalancer.ResourceGroup.ID); err != nil {
+					return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting resource_group_name: %s", err), "(Data) ibm_is_lb", "read", "set-resource_group_name").GetDiag()
+				}
 			}
 			return nil
 		}
 	}
-	return fmt.Errorf("[ERROR] No Load balancer found with name %s", name)
+	tfErr := flex.TerraformErrorf(err, fmt.Sprintf("No Load balancer found with name: %s", name), "(Data) ibm_is_lb", "read")
+	log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+	return tfErr.GetDiag()
+}
+
+func dataSourceAttachedLoadBalancerPoolFlattenMembers(result []vpcv1.LoadBalancerPoolMemberReference) (members []map[string]interface{}) {
+	for _, membersItem := range result {
+		members = append(members, dataSourceAttachedLoadBalancerPoolMembersToMap(membersItem))
+	}
+
+	return members
+}
+
+func dataSourceAttachedLoadBalancerPoolMembersToMap(membersItem vpcv1.LoadBalancerPoolMemberReference) (membersMap map[string]interface{}) {
+	membersMap = map[string]interface{}{}
+
+	if membersItem.Deleted != nil {
+		deletedList := []map[string]interface{}{}
+		deletedMap := dataSourceAttachedLoadBalancerPoolMembersDeletedToMap(*membersItem.Deleted)
+		deletedList = append(deletedList, deletedMap)
+		membersMap["deleted"] = deletedList
+	}
+	if membersItem.Href != nil {
+		membersMap["href"] = membersItem.Href
+	}
+	if membersItem.ID != nil {
+		membersMap["id"] = membersItem.ID
+	}
+
+	return membersMap
+}
+
+func dataSourceAttachedLoadBalancerPoolMembersDeletedToMap(deletedItem vpcv1.Deleted) (deletedMap map[string]interface{}) {
+	deletedMap = map[string]interface{}{}
+
+	if deletedItem.MoreInfo != nil {
+		deletedMap["more_info"] = deletedItem.MoreInfo
+	}
+
+	return deletedMap
 }

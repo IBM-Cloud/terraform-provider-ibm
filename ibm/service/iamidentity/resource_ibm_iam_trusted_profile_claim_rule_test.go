@@ -23,7 +23,7 @@ func TestAccIBMIAMTrustedProfileClaimRuleBasic(t *testing.T) {
 	profileName := fmt.Sprintf("tf_profile_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acc.TestAccPreCheckIAMTrustedProfile(t) },
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
 		Providers:    acc.TestAccProviders,
 		CheckDestroy: testAccCheckIBMIamTrustedProfileClaimRuleDestroy,
 		Steps: []resource.TestStep{
@@ -43,7 +43,7 @@ func TestAccIBMIAMTrustedProfileClaimRuleAllArgs(t *testing.T) {
 	profileName := fmt.Sprintf("tf_profile_%d", acctest.RandIntRange(10, 100))
 	name := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acc.TestAccPreCheckIAMTrustedProfile(t) },
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
 		Providers:    acc.TestAccProviders,
 		CheckDestroy: testAccCheckIBMIamTrustedProfileClaimRuleDestroy,
 		Steps: []resource.TestStep{
@@ -69,12 +69,15 @@ func testAccCheckIBMIamTrustedProfileClaimRuleConfigBasic(profileName string) st
 	return fmt.Sprintf(`
 		resource "ibm_iam_trusted_profile" "iam_trusted_profile" {
 			name = "%s"
+			lifecycle {
+              ignore_changes = [history]
+            }
 		}
 		resource "ibm_iam_trusted_profile_claim_rule" "iam_trusted_profile_claim_rule" {
 			profile_id = ibm_iam_trusted_profile.iam_trusted_profile.id 
 			type = "Profile-SAML"
-			name = "%[1]s"
-			realm_name = "%s"
+			name = "%s"
+			realm_name = "testString"
 			expiration = 43200
 			conditions {
 				claim = "blueGroups"
@@ -82,13 +85,16 @@ func testAccCheckIBMIamTrustedProfileClaimRuleConfigBasic(profileName string) st
 				value = "\"cloud-docs-dev\""
 			}
 		}
-	`, profileName, acc.RealmName)
+	`, profileName, profileName)
 }
 
 func testAccCheckIBMIamTrustedProfileClaimRuleConfig(profileName string, name string) string {
 	return fmt.Sprintf(`
 		resource "ibm_iam_trusted_profile" "iam_trusted_profile" {
 			name = "%s"
+			lifecycle {
+              ignore_changes = [history]
+            }
 		}
 		resource "ibm_iam_trusted_profile_claim_rule" "iam_trusted_profile_claim_rule" {
 			profile_id = ibm_iam_trusted_profile.iam_trusted_profile.id

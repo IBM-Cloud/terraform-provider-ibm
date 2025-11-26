@@ -7,8 +7,9 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
-	"github.com/hashicorp/terraform-plugin-testing/terraform"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
@@ -18,10 +19,8 @@ import (
 
 func TestAccIBMIamTrustedProfileIdentityBasic(t *testing.T) {
 	var conf iamidentityv1.ProfileIdentityResponse
+	name := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 	profileID := acc.IAMTrustedProfileID
-	identityType := "serviceid"
-	identifier := acc.IAMServiceId
-	typeVar := "serviceid"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
@@ -29,13 +28,13 @@ func TestAccIBMIamTrustedProfileIdentityBasic(t *testing.T) {
 		CheckDestroy: testAccCheckIBMIamTrustedProfileIdentityDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIBMIamTrustedProfileIdentityConfigBasic(profileID, identityType, identifier, typeVar),
+				Config: testAccCheckIBMIamTrustedProfileIdentityConfigBasic(profileID, name),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMIamTrustedProfileIdentityExists("ibm_iam_trusted_profile_identity.iam_trusted_profile_identity", conf),
-					resource.TestCheckResourceAttr("ibm_iam_trusted_profile_identity.iam_trusted_profile_identity", "profile_id", profileID),
-					resource.TestCheckResourceAttr("ibm_iam_trusted_profile_identity.iam_trusted_profile_identity", "identity_type", identityType),
-					resource.TestCheckResourceAttr("ibm_iam_trusted_profile_identity.iam_trusted_profile_identity", "identifier", identifier),
-					resource.TestCheckResourceAttr("ibm_iam_trusted_profile_identity.iam_trusted_profile_identity", "type", typeVar),
+					resource.TestCheckResourceAttrSet("ibm_iam_trusted_profile_identity.iam_trusted_profile_identity", "profile_id"),
+					resource.TestCheckResourceAttrSet("ibm_iam_trusted_profile_identity.iam_trusted_profile_identity", "identity_type"),
+					resource.TestCheckResourceAttrSet("ibm_iam_trusted_profile_identity.iam_trusted_profile_identity", "identifier"),
+					resource.TestCheckResourceAttrSet("ibm_iam_trusted_profile_identity.iam_trusted_profile_identity", "type"),
 				),
 			},
 		},
@@ -46,7 +45,7 @@ func TestAccIBMIamTrustedProfileIdentityAllArgs(t *testing.T) {
 	var conf iamidentityv1.ProfileIdentityResponse
 	profileID := acc.IAMTrustedProfileID
 	identityType := "user"
-	identifier := acc.Ibmid2
+	identifier := acc.Ibmid1
 	typeVar := "user"
 	description := fmt.Sprintf("tf_description_%s", "profile identity description")
 
@@ -75,16 +74,20 @@ func TestAccIBMIamTrustedProfileIdentityAllArgs(t *testing.T) {
 	})
 }
 
-func testAccCheckIBMIamTrustedProfileIdentityConfigBasic(profileID string, identityType string, identifier string, typeVar string) string {
+func testAccCheckIBMIamTrustedProfileIdentityConfigBasic(profileID string, name string) string {
 	return fmt.Sprintf(`
+		resource "ibm_iam_service_id" "serviceID" {
+			name        = "%s"
+			description = "ServiceID for test"
+		}
 
 		resource "ibm_iam_trusted_profile_identity" "iam_trusted_profile_identity" {
 			profile_id = "%s"
-			identity_type = "%s"
-			identifier = "%s"
-			type = "%s"
+			identity_type = "serviceid"
+			identifier = ibm_iam_service_id.serviceID.id
+			type = "serviceid"
 		}
-	`, profileID, identityType, identifier, typeVar)
+	`, name, profileID)
 }
 
 func testAccCheckIBMIamTrustedProfileIdentityConfig(profileID string, identityType string, identifier string, typeVar string, description string) string {

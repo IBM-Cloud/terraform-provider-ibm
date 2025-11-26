@@ -29,6 +29,7 @@ resource "ibm_project" "project_instance" {
     destroy_on_delete = true
     monitoring_enabled = true
     auto_deploy = true
+    auto_deploy_mode = "auto_approval"
   }
 }
 

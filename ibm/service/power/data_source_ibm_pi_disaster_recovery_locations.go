@@ -5,9 +5,12 @@ package power
 
 import (
 	"context"
+	"fmt"
+	"log"
 
 	"github.com/IBM-Cloud/power-go-client/clients/instance"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/hashicorp/go-uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -73,22 +76,26 @@ func DataSourceIBMPIDisasterRecoveryLocations() *schema.Resource {
 	}
 }
 
-func dataSourceIBMPIDisasterRecoveryLocations(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataSourceIBMPIDisasterRecoveryLocations(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	sess, err := meta.(conns.ClientSession).IBMPISession()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("IBMPISession failed: %s", err.Error()), "(Data) ibm_pi_disaster_recovery_locations", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	drClient := instance.NewIBMPIDisasterRecoveryLocationClient(ctx, sess, "")
 	drLocationSites, err := drClient.GetAll()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetAll failed: %s", err.Error()), "(Data) ibm_pi_disaster_recovery_locations", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
-	results := make([]map[string]interface{}, 0, len(drLocationSites.DisasterRecoveryLocations))
+	results := make([]map[string]any, 0, len(drLocationSites.DisasterRecoveryLocations))
 	for _, drl := range drLocationSites.DisasterRecoveryLocations {
 		if drl != nil {
-			replicationSites := make([]map[string]interface{}, 0, len(drl.ReplicationSites))
+			replicationSites := make([]map[string]any, 0, len(drl.ReplicationSites))
 			for _, site := range drl.ReplicationSites {
 				if site != nil {
 					replicationPoolMap := make([]map[string]string, 0)
@@ -100,7 +107,7 @@ func dataSourceIBMPIDisasterRecoveryLocations(ctx context.Context, d *schema.Res
 							replicationPoolMap = append(replicationPoolMap, replicationPool)
 						}
 					}
-					r := map[string]interface{}{
+					r := map[string]any{
 						Attr_IsActive:           site.IsActive,
 						Attr_Location:           site.Location,
 						Attr_ReplicationPoolMap: replicationPoolMap,
@@ -108,7 +115,7 @@ func dataSourceIBMPIDisasterRecoveryLocations(ctx context.Context, d *schema.Res
 					replicationSites = append(replicationSites, r)
 				}
 			}
-			l := map[string]interface{}{
+			l := map[string]any{
 				Attr_Location:         drl.Location,
 				Attr_ReplicationSites: replicationSites,
 			}

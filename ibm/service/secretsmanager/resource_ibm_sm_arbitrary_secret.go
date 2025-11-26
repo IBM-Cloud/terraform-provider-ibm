@@ -10,12 +10,13 @@ import (
 	"strings"
 	"time"
 
-	"github.com/IBM-Cloud/bluemix-go/bmxerror"
+	"github.com/go-openapi/strfmt"
+	"github.com/pkg/errors"
+
 	"github.com/go-openapi/strfmt"
 	"github.com/pkg/errors"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
@@ -118,6 +119,11 @@ func ResourceIbmSmArbitrarySecret() *schema.Resource {
 				Computed:    true,
 				Description: "The number of locks of the secret.",
 			},
+			"retrieved_at": &schema.Schema{
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The date when the data of the secret was last retrieved. The date format follows RFC 3339. Epoch date if there is no record of secret data retrieval.",
+			},
 			"state": &schema.Schema{
 				Type:        schema.TypeInt,
 				Computed:    true,
@@ -143,7 +149,7 @@ func ResourceIbmSmArbitrarySecret() *schema.Resource {
 }
 
 func resourceIbmSmArbitrarySecretCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	secretsManagerClient, err := meta.(conns.ClientSession).SecretsManagerV2()
+	secretsManagerClient, endpointsFile, err := getSecretsManagerSession(meta.(conns.ClientSession))
 	if err != nil {
 		tfErr := flex.TerraformErrorf(err, "", ArbitrarySecretResourceName, "create")
 		return tfErr.GetDiag()
@@ -151,7 +157,7 @@ func resourceIbmSmArbitrarySecretCreate(context context.Context, d *schema.Resou
 
 	region := getRegion(secretsManagerClient, d)
 	instanceId := d.Get("instance_id").(string)
-	secretsManagerClient = getClientWithInstanceEndpoint(secretsManagerClient, instanceId, region, getEndpointType(secretsManagerClient, d))
+	secretsManagerClient = getClientWithInstanceEndpoint(secretsManagerClient, instanceId, region, getEndpointType(secretsManagerClient, d), endpointsFile)
 
 	createSecretOptions := &secretsmanagerv2.CreateSecretOptions{}
 
@@ -173,50 +179,11 @@ func resourceIbmSmArbitrarySecretCreate(context context.Context, d *schema.Resou
 	d.SetId(fmt.Sprintf("%s/%s/%s", region, instanceId, *secret.ID))
 	d.Set("secret_id", *secret.ID)
 
-	_, err = waitForIbmSmArbitrarySecretCreate(secretsManagerClient, d)
-	if err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error waiting for resource IbmSmArbitrarySecret (%s) to be created: %s", d.Id(), err.Error()), ArbitrarySecretResourceName, "create")
-		return tfErr.GetDiag()
-	}
-
 	return resourceIbmSmArbitrarySecretRead(context, d, meta)
 }
 
-func waitForIbmSmArbitrarySecretCreate(secretsManagerClient *secretsmanagerv2.SecretsManagerV2, d *schema.ResourceData) (interface{}, error) {
-	getSecretOptions := &secretsmanagerv2.GetSecretOptions{}
-	id := strings.Split(d.Id(), "/")
-	secretId := id[2]
-
-	getSecretOptions.SetID(secretId)
-
-	stateConf := &retry.StateChangeConf{
-		Pending: []string{"pre_activation"},
-		Target:  []string{"active"},
-		Refresh: func() (interface{}, string, error) {
-			stateObjIntf, response, err := secretsManagerClient.GetSecret(getSecretOptions)
-			stateObj := stateObjIntf.(*secretsmanagerv2.ArbitrarySecret)
-			if err != nil {
-				if apiErr, ok := err.(bmxerror.RequestFailure); ok && apiErr.StatusCode() == 404 {
-					return nil, "", fmt.Errorf("The instance %s does not exist anymore: %s\n%s", "getSecretOptions", err, response)
-				}
-				return nil, "", err
-			}
-			failStates := map[string]bool{"destroyed": true}
-			if failStates[*stateObj.StateDescription] {
-				return stateObj, *stateObj.StateDescription, fmt.Errorf("The instance %s failed: %s\n%s", "getSecretOptions", err, response)
-			}
-			return stateObj, *stateObj.StateDescription, nil
-		},
-		Timeout:    d.Timeout(schema.TimeoutCreate),
-		Delay:      0 * time.Second,
-		MinTimeout: 5 * time.Second,
-	}
-
-	return stateConf.WaitForState()
-}
-
 func resourceIbmSmArbitrarySecretRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	secretsManagerClient, err := meta.(conns.ClientSession).SecretsManagerV2()
+	secretsManagerClient, endpointsFile, err := getSecretsManagerSession(meta.(conns.ClientSession))
 	if err != nil {
 		tfErr := flex.TerraformErrorf(err, "", ArbitrarySecretResourceName, "read")
 		return tfErr.GetDiag()
@@ -230,7 +197,7 @@ func resourceIbmSmArbitrarySecretRead(context context.Context, d *schema.Resourc
 	region := id[0]
 	instanceId := id[1]
 	secretId := id[2]
-	secretsManagerClient = getClientWithInstanceEndpoint(secretsManagerClient, instanceId, region, getEndpointType(secretsManagerClient, d))
+	secretsManagerClient = getClientWithInstanceEndpoint(secretsManagerClient, instanceId, region, getEndpointType(secretsManagerClient, d), endpointsFile)
 
 	getSecretOptions := &secretsmanagerv2.GetSecretOptions{}
 
@@ -318,6 +285,10 @@ func resourceIbmSmArbitrarySecretRead(context context.Context, d *schema.Resourc
 		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting updated_at"), ArbitrarySecretResourceName, "read")
 		return tfErr.GetDiag()
 	}
+	if err = d.Set("retrieved_at", DateTimeToRFC3339(secret.UpdatedAt)); err != nil {
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting retrieved_at"), ArbitrarySecretResourceName, "read")
+		return tfErr.GetDiag()
+	}
 	if err = d.Set("versions_total", flex.IntValue(secret.VersionsTotal)); err != nil {
 		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting versions_total"), ArbitrarySecretResourceName, "read")
 		return tfErr.GetDiag()
@@ -355,7 +326,7 @@ func resourceIbmSmArbitrarySecretRead(context context.Context, d *schema.Resourc
 }
 
 func resourceIbmSmArbitrarySecretUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	secretsManagerClient, err := meta.(conns.ClientSession).SecretsManagerV2()
+	secretsManagerClient, endpointsFile, err := getSecretsManagerSession(meta.(conns.ClientSession))
 	if err != nil {
 		tfErr := flex.TerraformErrorf(err, "", ArbitrarySecretResourceName, "update")
 		return tfErr.GetDiag()
@@ -365,7 +336,7 @@ func resourceIbmSmArbitrarySecretUpdate(context context.Context, d *schema.Resou
 	region := id[0]
 	instanceId := id[1]
 	secretId := id[2]
-	secretsManagerClient = getClientWithInstanceEndpoint(secretsManagerClient, instanceId, region, getEndpointType(secretsManagerClient, d))
+	secretsManagerClient = getClientWithInstanceEndpoint(secretsManagerClient, instanceId, region, getEndpointType(secretsManagerClient, d), endpointsFile)
 
 	updateSecretMetadataOptions := &secretsmanagerv2.UpdateSecretMetadataOptions{}
 
@@ -476,7 +447,7 @@ func resourceIbmSmArbitrarySecretUpdate(context context.Context, d *schema.Resou
 }
 
 func resourceIbmSmArbitrarySecretDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	secretsManagerClient, err := meta.(conns.ClientSession).SecretsManagerV2()
+	secretsManagerClient, endpointsFile, err := getSecretsManagerSession(meta.(conns.ClientSession))
 	if err != nil {
 		tfErr := flex.TerraformErrorf(err, "", ArbitrarySecretResourceName, "delete")
 		return tfErr.GetDiag()
@@ -486,7 +457,7 @@ func resourceIbmSmArbitrarySecretDelete(context context.Context, d *schema.Resou
 	region := id[0]
 	instanceId := id[1]
 	secretId := id[2]
-	secretsManagerClient = getClientWithInstanceEndpoint(secretsManagerClient, instanceId, region, getEndpointType(secretsManagerClient, d))
+	secretsManagerClient = getClientWithInstanceEndpoint(secretsManagerClient, instanceId, region, getEndpointType(secretsManagerClient, d), endpointsFile)
 
 	deleteSecretOptions := &secretsmanagerv2.DeleteSecretOptions{}
 

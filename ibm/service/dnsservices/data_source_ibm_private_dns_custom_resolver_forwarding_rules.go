@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
@@ -61,6 +62,36 @@ func DataSourceIBMPrivateDNSForwardingRules() *schema.Resource {
 								Type: schema.TypeString,
 							},
 						},
+						pdnsCRFRViews: {
+							Type:        schema.TypeList,
+							Description: "An array of views used by forwarding rules.",
+							Computed:    true,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									pdnsCRFRVName: {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "Unique name of the view.",
+									},
+									pdnsCRFRVDescription: {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "Description of the view.",
+									},
+									pdnsCRFRVExpression: {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "Expression of the view.",
+									},
+									pdnsCRFRVForwardTo: {
+										Type:        schema.TypeList,
+										Computed:    true,
+										Description: "The upstream DNS servers that the matching DNS queries will be forwarded to.",
+										Elem:        &schema.Schema{Type: schema.TypeString},
+									},
+								},
+							},
+						},
 					},
 				},
 			},
@@ -71,7 +102,8 @@ func DataSourceIBMPrivateDNSForwardingRules() *schema.Resource {
 func dataSourceIbmDnsCrForwardingRulesRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	sess, err := meta.(conns.ClientSession).PrivateDNSClientSession()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("dataSourceIbmDnsCrForwardingRulesRead Client initialization failed: %s", err.Error()), "ibm_dns_custom_resolver_forwarding_rule", "read")
+		return tfErr.GetDiag()
 	}
 	instanceID := d.Get(pdnsInstanceID).(string)
 	resolverID := d.Get(pdnsCRFRResolverID).(string)
@@ -80,27 +112,29 @@ func dataSourceIbmDnsCrForwardingRulesRead(context context.Context, d *schema.Re
 
 	result, resp, err := sess.ListForwardingRulesWithContext(context, opt)
 	if err != nil || result == nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error listing the forwarding rules %s:%s", err, resp))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("dataSourceIbmDnsCustomResolverForwardingRulesRead ListForwardingRulesWithContext failed with error: %s and response:\n%s", err, resp), "ibm_dns_custom_resolver_forwarding_rule", "read")
+		return tfErr.GetDiag()
 	}
 
 	forwardRules := make([]interface{}, 0)
-	for _, instance := range result.ForwardingRules {
+	for _, rule := range result.ForwardingRules {
 		forwardRule := map[string]interface{}{}
-		forwardRule[pdnsCRFRRuleID] = *instance.ID
-		forwardRule[pdnsCRFRDesctiption] = *instance.Description
-		forwardRule[pdnsCRFRType] = *instance.Type
-		forwardRule[pdnsCRFRMatch] = *instance.Match
-		forwardRule[pdnsCRFRForwardTo] = instance.ForwardTo
+		forwardRule[pdnsCRFRRuleID] = *rule.ID
+		forwardRule[pdnsCRFRDesctiption] = *rule.Description
+		forwardRule[pdnsCRFRType] = *rule.Type
+		forwardRule[pdnsCRFRMatch] = *rule.Match
+		forwardRule[pdnsCRFRForwardTo] = rule.ForwardTo
+		forwardRule[pdnsCRFRViews] = flattenPDNSFRViews(rule.Views)
 
 		forwardRules = append(forwardRules, forwardRule)
 	}
-	d.SetId(dataSourceIBMPrivateDNSForwardrulesID(d))
+	d.SetId(dataSourceIBMPrivateDNSForwardrulesID())
 	d.Set(pdnsInstanceID, instanceID)
 	d.Set(pdnsCRFRResolverID, resolverID)
 	d.Set(pdnsCRForwardRules, forwardRules)
 	return nil
 }
 
-func dataSourceIBMPrivateDNSForwardrulesID(d *schema.ResourceData) string {
+func dataSourceIBMPrivateDNSForwardrulesID() string {
 	return time.Now().UTC().String()
 }

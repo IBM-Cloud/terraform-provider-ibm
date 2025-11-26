@@ -26,7 +26,7 @@ func TestAccIBMIsShareAccessorBindingDataSourceBasic(t *testing.T) {
 	vpcname := fmt.Sprintf("tf-vpc-name-%d", acctest.RandIntRange(10, 100))
 	shareName := fmt.Sprintf("tf-share-%d", acctest.RandIntRange(10, 100))
 	shareName1 := fmt.Sprintf("tf-share1-%d", acctest.RandIntRange(10, 100))
-	tEMode1 := "user_managed"
+	tEMode1 := "ipsec"
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheck(t) },
 		Providers: acc.TestAccProviders,

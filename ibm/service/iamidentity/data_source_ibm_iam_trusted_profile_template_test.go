@@ -14,15 +14,16 @@ import (
 )
 
 func TestAccIBMTrustedProfileTemplateDataSourceBasic(t *testing.T) {
+	enterpriseAccountId := acc.IamIdentityEnterpriseAccountId
 	name := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 	description := fmt.Sprintf("tf_desc_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { acc.TestAccPreCheck(t) },
+		PreCheck:  func() { acc.TestAccPreCheckIamIdentityEnterpriseTemplates(t) },
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIBMTrustedProfileTemplateDataSourceConfigBasic(name, description),
+				Config: testAccCheckIBMTrustedProfileTemplateDataSourceConfigBasic(enterpriseAccountId, name, description),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_iam_trusted_profile_template.trusted_profile_template", "id"),
 					resource.TestCheckResourceAttrSet("data.ibm_iam_trusted_profile_template.trusted_profile_template", "template_id"),
@@ -40,15 +41,16 @@ func TestAccIBMTrustedProfileTemplateDataSourceBasic(t *testing.T) {
 }
 
 func TestAccIBMTrustedProfileTemplateDataSourceAllArgs(t *testing.T) {
+	enterpriseAccountId := acc.IamIdentityEnterpriseAccountId
 	name := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 	description := fmt.Sprintf("tf_description_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { acc.TestAccPreCheck(t) },
+		PreCheck:  func() { acc.TestAccPreCheckIamIdentityEnterpriseTemplates(t) },
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIBMTrustedProfileTemplateDataSourceConfig(name, description),
+				Config: testAccCheckIBMTrustedProfileTemplateDataSourceConfig(enterpriseAccountId, name, description),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_iam_trusted_profile_template.trusted_profile_template", "id"),
 					resource.TestCheckResourceAttrSet("data.ibm_iam_trusted_profile_template.trusted_profile_template", "version"),
@@ -74,9 +76,10 @@ func TestAccIBMTrustedProfileTemplateDataSourceAllArgs(t *testing.T) {
 	})
 }
 
-func testAccCheckIBMTrustedProfileTemplateDataSourceConfigBasic(name string, description string) string {
+func testAccCheckIBMTrustedProfileTemplateDataSourceConfigBasic(enterpriseAccountId string, name string, description string) string {
 	return fmt.Sprintf(`
 		resource "ibm_iam_trusted_profile_template" "trusted_profile_template" {
+			account_id = "%s"
 			name = "%s"
 			description = "%s"
 			profile {
@@ -87,12 +90,13 @@ func testAccCheckIBMTrustedProfileTemplateDataSourceConfigBasic(name string, des
 		data "ibm_iam_trusted_profile_template" "trusted_profile_template" {
 			template_id = ibm_iam_trusted_profile_template.trusted_profile_template.id
 		}
-	`, name, description, name)
+	`, enterpriseAccountId, name, description, name)
 }
 
-func testAccCheckIBMTrustedProfileTemplateDataSourceConfig(name string, description string) string {
+func testAccCheckIBMTrustedProfileTemplateDataSourceConfig(enterpriseAccountId string, name string, description string) string {
 	return fmt.Sprintf(`
 		resource "ibm_iam_trusted_profile_template" "trusted_profile_template" {
+		  account_id = "%s"
 		  name = "%s"
 		  description = "%s"
 		  profile {
@@ -120,5 +124,5 @@ func testAccCheckIBMTrustedProfileTemplateDataSourceConfig(name string, descript
 		data "ibm_iam_trusted_profile_template" "trusted_profile_template" {
 			template_id = ibm_iam_trusted_profile_template.trusted_profile_template.id
 		}
-	`, name, description)
+	`, enterpriseAccountId, name, description)
 }

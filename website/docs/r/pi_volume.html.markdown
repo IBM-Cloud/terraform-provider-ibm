@@ -10,7 +10,7 @@ description: |-
 
 Create, update, or delete a volume to attach it to a Power Systems Virtual Server instance. For more information, about managing volume, see [cloning a volume](https://cloud.ibm.com/docs/power-iaas?topic=power-iaas-volume-snapshot-clone#cloning-volume).
 
-## Example usage
+## Example Usage
 
 The following example creates a 20 GB volume.
 
@@ -48,7 +48,7 @@ ibm_pi_volume provides the following [timeouts](https://www.terraform.io/docs/la
 - **update** - (Default 30 minutes) Used for updating volume.
 - **delete** - (Default 10 minutes) Used for deleting volume.
 
-## Argument reference
+## Argument Reference
 
 Review the argument references that you can specify for your resource.
 
@@ -70,7 +70,7 @@ Review the argument references that you can specify for your resource.
 - `pi_volume_size`  - (Required, Integer) The size of the volume in GB.
 - `pi_volume_type` - (Optional, String) Type of volume, if this field is not provided, it will default to `tier3`. To get a list of available volume types, please use the [ibm_pi_storage_types_capacity](https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/data-sources/pi_storage_types_capacity) data source.
 
-## Attribute reference
+## Attribute Reference
 
 In addition to all argument reference list, you can access the following attribute reference after your resource is created.
 
@@ -84,6 +84,7 @@ In addition to all argument reference list, you can access the following attribu
 - `io_throttle_rate` - (String) Amount of iops assigned to the volume.
 - `master_volume_name` - (String) The master volume name.
 - `mirroring_state` - (String) Mirroring state for replication enabled volume.
+- `out_of_band_deleted` - (Bool) Indicates if the volume does not exist on storage controller.
 - `primary_role` - (String) Indicates whether `master`/`auxiliary` volume is playing the primary role.
 - `replication_status` - (String) The replication status of the volume.
 - `replication_sites` - (List) List of replication sites for volume replication.

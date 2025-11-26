@@ -6,6 +6,7 @@ package eventnotification
 import (
 	"context"
 	"fmt"
+	"log"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -41,8 +42,15 @@ func ResourceIBMEnSMTPUser() *schema.Resource {
 			},
 			"smtp_config_id": &schema.Schema{
 				Type:        schema.TypeString,
-				Optional:    true,
+				ForceNew:    true,
+				Required:    true,
 				Description: "SMTP confg Id.",
+			},
+			"username_to_clone": &schema.Schema{
+				Type:        schema.TypeString,
+				ForceNew:    true,
+				Optional:    true,
+				Description: "Name of the user to clone.",
 			},
 			"domain": &schema.Schema{
 				Type:        schema.TypeString,
@@ -109,7 +117,9 @@ func ResourceIBMEnSMTPUserValidator() *validate.ResourceValidator {
 func resourceIBMEnSMTPUserCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	eventNotificationsClient, err := meta.(conns.ClientSession).EventNotificationsApiV1()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, err.Error(), "ibm_en_smtp_user", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	createSMTPUserOptions := &en.CreateSMTPUserOptions{}
@@ -119,10 +129,15 @@ func resourceIBMEnSMTPUserCreate(context context.Context, d *schema.ResourceData
 	if _, ok := d.GetOk("description"); ok {
 		createSMTPUserOptions.SetDescription(d.Get("description").(string))
 	}
+	if _, ok := d.GetOk("username_to_clone"); ok {
+		createSMTPUserOptions.SetUsernameToClone(d.Get("username_to_clone").(string))
+	}
 
 	smtpUserResponse, _, err := eventNotificationsClient.CreateSMTPUserWithContext(context, createSMTPUserOptions)
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateSMTPUserWithContext failed: %s", err.Error()), "ibm_en_smtp_user", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	if err = d.Set("password", smtpUserResponse.Password); err != nil {
@@ -137,14 +152,17 @@ func resourceIBMEnSMTPUserCreate(context context.Context, d *schema.ResourceData
 func resourceIBMEnSMTPUserRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	eventNotificationsClient, err := meta.(conns.ClientSession).EventNotificationsApiV1()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, err.Error(), "ibm_en_smtp_user", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	getSMTPUserOptions := &en.GetSMTPUserOptions{}
 
 	parts, err := flex.SepIdParts(d.Id(), "/")
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, err.Error(), "ibm_en_smtp_user", "read")
+		return tfErr.GetDiag()
 	}
 
 	getSMTPUserOptions.SetInstanceID(parts[0])
@@ -157,7 +175,9 @@ func resourceIBMEnSMTPUserRead(context context.Context, d *schema.ResourceData, 
 			d.SetId("")
 			return nil
 		}
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetSMTPUserWithContext failed: %s", err.Error()), "ibm_en_smtp_user", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	if !core.IsNil(smtpUser.Description) {
@@ -190,14 +210,17 @@ func resourceIBMEnSMTPUserRead(context context.Context, d *schema.ResourceData, 
 func resourceIBMEnSMTPUserUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	eventNotificationsClient, err := meta.(conns.ClientSession).EventNotificationsApiV1()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, err.Error(), "ibm_en_smtp_user", "update")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	updateSMTPUserOptions := &en.UpdateSMTPUserOptions{}
 
 	parts, err := flex.SepIdParts(d.Id(), "/")
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, err.Error(), "ibm_en_smtp_user", "update")
+		return tfErr.GetDiag()
 	}
 
 	updateSMTPUserOptions.SetInstanceID(parts[0])
@@ -217,7 +240,9 @@ func resourceIBMEnSMTPUserUpdate(context context.Context, d *schema.ResourceData
 	if hasChange {
 		_, _, err = eventNotificationsClient.UpdateSMTPUserWithContext(context, updateSMTPUserOptions)
 		if err != nil {
-			return diag.FromErr(err)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("UpdateSMTPUserWithContex failed: %s", err.Error()), "ibm_en_smtp_user", "update")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 	}
 
@@ -227,14 +252,17 @@ func resourceIBMEnSMTPUserUpdate(context context.Context, d *schema.ResourceData
 func resourceIBMEnSMTPUserDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	eventNotificationsClient, err := meta.(conns.ClientSession).EventNotificationsApiV1()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, err.Error(), "ibm_en_smtp_user", "delete")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	deleteSMTPUserOptions := &en.DeleteSMTPUserOptions{}
 
 	parts, err := flex.SepIdParts(d.Id(), "/")
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, err.Error(), "ibm_en_smtp_user", "delete")
+		return tfErr.GetDiag()
 	}
 
 	deleteSMTPUserOptions.SetInstanceID(parts[0])
@@ -243,7 +271,9 @@ func resourceIBMEnSMTPUserDelete(context context.Context, d *schema.ResourceData
 
 	_, err = eventNotificationsClient.DeleteSMTPUserWithContext(context, deleteSMTPUserOptions)
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("DeleteSMTPUserWithContext: failed: %s", err.Error()), "ibm_en_smtp_user", "delete")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	d.SetId("")

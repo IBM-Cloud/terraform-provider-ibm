@@ -1,4 +1,4 @@
-// Copyright IBM Corp. 2021 All Rights Reserved.
+// Copyright IBM Corp. 2025 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 package iamidentity_test
@@ -7,17 +7,16 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
-
-	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
-	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
-	"github.com/hashicorp/terraform-plugin-testing/terraform"
-
 	"github.com/IBM/platform-services-go-sdk/iamidentityv1"
 )
 
-func TestAccIBMIAMTrustedProfileBasic(t *testing.T) {
+func TestAccIBMIamTrustedProfileBasic(t *testing.T) {
 	var conf iamidentityv1.TrustedProfile
 	name := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 	nameUpdate := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
@@ -27,24 +26,24 @@ func TestAccIBMIAMTrustedProfileBasic(t *testing.T) {
 		Providers:    acc.TestAccProviders,
 		CheckDestroy: testAccCheckIBMIamTrustedProfileDestroy,
 		Steps: []resource.TestStep{
-			{
+			resource.TestStep{
 				Config: testAccCheckIBMIamTrustedProfileConfigBasic(name),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckIBMIamTrustedProfileExists("ibm_iam_trusted_profile.iam_trusted_profile", conf),
-					resource.TestCheckResourceAttr("ibm_iam_trusted_profile.iam_trusted_profile", "name", name),
+					testAccCheckIBMIamTrustedProfileExists("ibm_iam_trusted_profile.iam_trusted_profile_instance", conf),
+					resource.TestCheckResourceAttr("ibm_iam_trusted_profile.iam_trusted_profile_instance", "name", name),
 				),
 			},
-			{
+			resource.TestStep{
 				Config: testAccCheckIBMIamTrustedProfileConfigBasic(nameUpdate),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("ibm_iam_trusted_profile.iam_trusted_profile", "name", nameUpdate),
+					resource.TestCheckResourceAttr("ibm_iam_trusted_profile.iam_trusted_profile_instance", "name", nameUpdate),
 				),
 			},
 		},
 	})
 }
 
-func TestAccIBMIAMTrustedProfileAllArgs(t *testing.T) {
+func TestAccIBMIamTrustedProfileAllArgs(t *testing.T) {
 	var conf iamidentityv1.TrustedProfile
 	name := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 	description := fmt.Sprintf("tf_description_%d", acctest.RandIntRange(10, 100))
@@ -56,23 +55,23 @@ func TestAccIBMIAMTrustedProfileAllArgs(t *testing.T) {
 		Providers:    acc.TestAccProviders,
 		CheckDestroy: testAccCheckIBMIamTrustedProfileDestroy,
 		Steps: []resource.TestStep{
-			{
+			resource.TestStep{
 				Config: testAccCheckIBMIamTrustedProfileConfig(name, description),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckIBMIamTrustedProfileExists("ibm_iam_trusted_profile.iam_trusted_profile", conf),
-					resource.TestCheckResourceAttr("ibm_iam_trusted_profile.iam_trusted_profile", "name", name),
-					resource.TestCheckResourceAttr("ibm_iam_trusted_profile.iam_trusted_profile", "description", description),
+					testAccCheckIBMIamTrustedProfileExists("ibm_iam_trusted_profile.iam_trusted_profile_instance", conf),
+					resource.TestCheckResourceAttr("ibm_iam_trusted_profile.iam_trusted_profile_instance", "name", name),
+					resource.TestCheckResourceAttr("ibm_iam_trusted_profile.iam_trusted_profile_instance", "description", description),
 				),
 			},
-			{
+			resource.TestStep{
 				Config: testAccCheckIBMIamTrustedProfileConfig(nameUpdate, descriptionUpdate),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("ibm_iam_trusted_profile.iam_trusted_profile", "name", nameUpdate),
-					resource.TestCheckResourceAttr("ibm_iam_trusted_profile.iam_trusted_profile", "description", descriptionUpdate),
+					resource.TestCheckResourceAttr("ibm_iam_trusted_profile.iam_trusted_profile_instance", "name", nameUpdate),
+					resource.TestCheckResourceAttr("ibm_iam_trusted_profile.iam_trusted_profile_instance", "description", descriptionUpdate),
 				),
 			},
-			{
-				ResourceName:      "ibm_iam_trusted_profile.iam_trusted_profile",
+			resource.TestStep{
+				ResourceName:      "ibm_iam_trusted_profile.iam_trusted_profile_instance",
 				ImportState:       true,
 				ImportStateVerify: true,
 			},
@@ -82,8 +81,7 @@ func TestAccIBMIAMTrustedProfileAllArgs(t *testing.T) {
 
 func testAccCheckIBMIamTrustedProfileConfigBasic(name string) string {
 	return fmt.Sprintf(`
-
-		resource "ibm_iam_trusted_profile" "iam_trusted_profile" {
+		resource "ibm_iam_trusted_profile" "iam_trusted_profile_instance" {
 			name = "%s"
 		}
 	`, name)
@@ -92,9 +90,12 @@ func testAccCheckIBMIamTrustedProfileConfigBasic(name string) string {
 func testAccCheckIBMIamTrustedProfileConfig(name string, description string) string {
 	return fmt.Sprintf(`
 
-		resource "ibm_iam_trusted_profile" "iam_trusted_profile" {
+		resource "ibm_iam_trusted_profile" "iam_trusted_profile_instance" {
 			name = "%s"
 			description = "%s"
+			lifecycle {
+              ignore_changes = [history]
+            }
 		}
 	`, name, description)
 }
@@ -146,7 +147,7 @@ func testAccCheckIBMIamTrustedProfileDestroy(s *terraform.State) error {
 		if err == nil {
 			return fmt.Errorf("iam_trusted_profile still exists: %s", rs.Primary.ID)
 		} else if response.StatusCode != 404 {
-			return fmt.Errorf("[ERROR] Error checking for iam_trusted_profile (%s) has been destroyed: %s", rs.Primary.ID, err)
+			return fmt.Errorf("Error checking for iam_trusted_profile (%s) has been destroyed: %s", rs.Primary.ID, err)
 		}
 	}
 

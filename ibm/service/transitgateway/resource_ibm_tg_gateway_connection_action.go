@@ -44,7 +44,7 @@ func ResourceIBMTransitGatewayConnectionAction() *schema.Resource {
 							// We are only concerned with checking if the action changes for existing action/connection resource
 							return nil
 						}
-						return fmt.Errorf("The action for the transit gateway connection has already been performed and cannot be changed from %s to %s", oldAction, newAction)
+						return flex.FmtErrorf("The action for the transit gateway connection has already been performed and cannot be changed from %s to %s", oldAction, newAction)
 					}
 					return nil
 				}),
@@ -110,7 +110,7 @@ func resourceIBMTransitGatewayConnectionActionCreate(d *schema.ResourceData, met
 
 	response, err := client.CreateTransitGatewayConnectionActions(createTransitGatewayConnectionActionsOptions)
 	if err != nil {
-		return fmt.Errorf("Error performing an action on the Transit Gateway Connection: %s\n%s", err, response)
+		return flex.FmtErrorf("Error performing an action on the Transit Gateway Connection: %s\n%s", err, response)
 	}
 
 	d.SetId(fmt.Sprintf("%s/%s", gatewayId, connectionId))

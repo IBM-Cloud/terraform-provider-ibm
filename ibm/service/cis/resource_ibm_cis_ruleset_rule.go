@@ -1,10 +1,9 @@
-// Copyright IBM Corp. 2024 All Rights Reserved.
+// Copyright IBM Corp. 2024, 2025. All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 package cis
 
 import (
-	"fmt"
 	"reflect"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
@@ -20,29 +19,29 @@ var CISRulesetsRulesObject = &schema.Resource{
 		CISRulesetsRuleId: {
 			Type:        schema.TypeString,
 			Optional:    true,
-			Description: "Id of the Rulesets Rule",
+			Description: "ID of the rulesets rule",
 			Computed:    true,
 		},
 		CISRulesetsRuleVersion: {
 			Type:        schema.TypeString,
 			Optional:    true,
-			Description: "Version of the Rulesets Rule",
+			Description: "Version of the rulesets rule",
 		},
 		CISRulesetsRuleAction: {
 			Type:        schema.TypeString,
 			Optional:    true,
-			Description: "Action of the Rulesets Rule",
+			Description: "Action of the rulesets rule",
 		},
 		CISRulesetsRuleActionParameters: {
 			Type:        schema.TypeSet,
 			Optional:    true,
-			Description: "Action parameters of the Rulesets Rule",
+			Description: "Action parameters of the rulesets rule",
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
 					CISRulesetsRuleId: {
 						Type:        schema.TypeString,
 						Optional:    true,
-						Description: "Id of the Rulesets Rule",
+						Description: "ID of the rulesets rule",
 						Computed:    true,
 					},
 					CISRulesetOverrides: {
@@ -59,12 +58,12 @@ var CISRulesetsRulesObject = &schema.Resource{
 								CISRulesetOverridesEnabled: {
 									Type:        schema.TypeBool,
 									Optional:    true,
-									Description: "Enable Disable Rule",
+									Description: "Enable/Disable rule",
 								},
 								// CISRulesetOverridesSensitivityLevel: {
 								// 	Type:        schema.TypeString,
 								// 	Optional:    true,
-								// 	Description: "Sensitivity Level",
+								// 	Description: "Sensitivity level",
 								// },
 								CISRulesetOverridesRules: {
 									Type:        schema.TypeList,
@@ -75,12 +74,12 @@ var CISRulesetsRulesObject = &schema.Resource{
 											CISRulesetRuleId: {
 												Type:        schema.TypeString,
 												Optional:    true,
-												Description: "Id of the Ruleset",
+												Description: "ID of the ruleset",
 											},
 											CISRulesetOverridesEnabled: {
 												Type:        schema.TypeBool,
 												Optional:    true,
-												Description: "Enable Disable Rule",
+												Description: "Enable/Disable rule",
 											},
 											CISRulesetOverridesAction: {
 												Type:        schema.TypeString,
@@ -90,7 +89,12 @@ var CISRulesetsRulesObject = &schema.Resource{
 											CISRulesetOverridesSensitivityLevel: {
 												Type:        schema.TypeString,
 												Optional:    true,
-												Description: "Sensitivity Level",
+												Description: "Sensitivity level",
+											},
+											CISRulesetOverridesScoreThreshold: {
+												Type:        schema.TypeInt,
+												Optional:    true,
+												Description: "Score threshold for the override rule",
 											},
 										},
 									},
@@ -109,7 +113,7 @@ var CISRulesetsRulesObject = &schema.Resource{
 											CISRulesetOverridesEnabled: {
 												Type:        schema.TypeBool,
 												Optional:    true,
-												Description: "Enable Disable Rule",
+												Description: "Enable/Disable rule",
 											},
 											CISRulesetOverridesAction: {
 												Type:        schema.TypeString,
@@ -125,39 +129,73 @@ var CISRulesetsRulesObject = &schema.Resource{
 					CISRulesetsVersion: {
 						Type:        schema.TypeString,
 						Optional:    true,
-						Description: "Version of the Ruleset",
+						Description: "Version of the ruleset",
 					},
 					CISRuleset: {
 						Type:        schema.TypeString,
 						Optional:    true,
-						Description: "Ruleset ID of the ruleset to apply action to.",
+						Description: "Ruleset of the rule",
+					},
+					CISRulesetsRulePhases: {
+						Type:        schema.TypeList,
+						Optional:    true,
+						Description: "Phases of the rule",
+						Elem:        &schema.Schema{Type: schema.TypeString},
+					},
+					CISRulesetsRuleProducts: {
+						Type:        schema.TypeList,
+						Optional:    true,
+						Description: "Products of the rule",
+						Elem:        &schema.Schema{Type: schema.TypeString},
 					},
 					CISRulesetList: {
 						Type:        schema.TypeList,
 						Optional:    true,
-						Description: "List of Ruleset IDs of the ruleset to apply action to.",
+						Description: "List of ruleset IDs of the ruleset to apply action to",
 						Elem:        &schema.Schema{Type: schema.TypeString},
 					},
 					CISRulesetsRuleActionParametersResponse: {
 						Type:        schema.TypeSet,
 						Optional:    true,
-						Description: "Action parameters response of the Rulesets Rule",
+						Description: "Action parameters response of the rulesets rule",
 						Elem: &schema.Resource{
 							Schema: map[string]*schema.Schema{
 								CISRulesetsRuleActionParametersResponseContent: {
 									Type:        schema.TypeString,
 									Optional:    true,
-									Description: "Action parameters response content of the Rulesets Rule",
+									Description: "Action parameters response content of the rulesets rule",
 								},
 								CISRulesetsRuleActionParametersResponseContentType: {
 									Type:        schema.TypeString,
 									Optional:    true,
-									Description: "Action parameters response type of the Rulesets Rule",
+									Description: "Action parameters response type of the rulesets rule",
 								},
 								CISRulesetsRuleActionParametersResponseStatusCode: {
 									Type:        schema.TypeInt,
 									Optional:    true,
-									Description: "Action parameters response status code of the Rulesets Rule",
+									Description: "Action parameters response status code of the rulesets rule",
+								},
+							},
+						},
+					},
+					CISRulesToSkip: {
+						Type:        schema.TypeList,
+						Optional:    true,
+						Description: "A list of ruleset mappings, where each element is a map of ruleset_id and its associated rule_ids",
+						Elem: &schema.Resource{
+							Schema: map[string]*schema.Schema{
+								"ruleset_id": {
+									Type:        schema.TypeString,
+									Required:    true,
+									Description: "The ruleset identifier",
+								},
+								"rule_ids": {
+									Type:        schema.TypeList,
+									Required:    true,
+									Description: "A list of rule IDs to be skipped",
+									Elem: &schema.Schema{
+										Type: schema.TypeString,
+									},
 								},
 							},
 						},
@@ -168,55 +206,91 @@ var CISRulesetsRulesObject = &schema.Resource{
 		CISRulesetsRuleActionCategories: {
 			Type:        schema.TypeList,
 			Optional:    true,
-			Description: "Categories of the Rulesets Rule",
+			Description: "Categories of the rulesets rule",
 			Elem:        &schema.Schema{Type: schema.TypeString},
 		},
 		CISRulesetsRuleActionEnabled: {
 			Type:        schema.TypeBool,
 			Optional:    true,
-			Description: "Enable/Disable Ruleset Rule",
+			Description: "Enable/Disable ruleset rule",
 		},
 		CISRulesetsRuleActionDescription: {
 			Type:        schema.TypeString,
 			Optional:    true,
-			Description: "Description of the Rulesets Rule",
+			Description: "Description of the rulesets rule",
 		},
 		CISRulesetsRuleExpression: {
 			Type:        schema.TypeString,
 			Optional:    true,
-			Description: "Experession of the Rulesets Rule",
+			Description: "Expression of the rulesets rule",
 		},
 		CISRulesetsRuleRef: {
 			Type:        schema.TypeString,
 			Optional:    true,
-			Description: "Reference of the Rulesets Rule",
+			Description: "Reference of the rulesets rule",
 		},
 		CISRulesetsRuleLogging: {
 			Type:        schema.TypeMap,
 			Optional:    true,
-			Description: "Logging of the Rulesets Rule",
+			Description: "Logging of the rulesets rule",
 			Elem:        &schema.Schema{Type: schema.TypeBool},
 		},
 		CISRulesetsRulePosition: {
 			Type:        schema.TypeSet,
 			Optional:    true,
-			Description: "Position of Rulesets Rule",
+			Description: "Position of the rulesets rule",
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
 					CISRulesetsRulePositionAfter: {
 						Type:        schema.TypeString,
 						Optional:    true,
-						Description: "Ruleset before Position of Rulesets Rule",
+						Description: "Ruleset before position of the rulesets rule",
 					},
 					CISRulesetsRulePositionBefore: {
 						Type:        schema.TypeString,
 						Optional:    true,
-						Description: "Ruleset after Position of Rulesets Rule",
+						Description: "Ruleset after position of the rulesets rule",
 					},
 					CISRulesetsRulePositionIndex: {
 						Type:        schema.TypeInt,
 						Optional:    true,
-						Description: "Index of Rulesets Rule",
+						Description: "Index of the rulesets rule",
+					},
+				},
+			},
+		},
+		CISRulesetsRuleRateLimit: {
+			Type:        schema.TypeList,
+			Optional:    true,
+			MaxItems:    1,
+			Description: "Ratelimit of the Rulesets Rule",
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					CISRulesetsRuleRateLimitCharacteristics: {
+						Type:        schema.TypeList,
+						Optional:    true,
+						Description: "List of Characteristics of the ratelimit on rulesets rule.",
+						Elem:        &schema.Schema{Type: schema.TypeString},
+					},
+					CISRulesetsRuleRateLimitCountingExpression: {
+						Type:        schema.TypeString,
+						Optional:    true,
+						Description: "Counting expression of the ratelimit on rulesets rule.",
+					},
+					CISRulesetsRuleRateLimitMitigationTimeout: {
+						Type:        schema.TypeInt,
+						Optional:    true,
+						Description: "Mitigation timeout of the ratelimit on rulesets rule.",
+					},
+					CISRulesetsRuleRateLimitPeriod: {
+						Type:        schema.TypeInt,
+						Optional:    true,
+						Description: "Period of the ratelimit on rulesets rule.",
+					},
+					CISRulesetsRuleRateLimitRequestsPerPeriod: {
+						Type:        schema.TypeInt,
+						Optional:    true,
+						Description: "Requests per period of the ratelimit on rulesets rule.",
 					},
 				},
 			},
@@ -224,7 +298,7 @@ var CISRulesetsRulesObject = &schema.Resource{
 		CISRulesetsRuleLastUpdatedAt: {
 			Type:        schema.TypeString,
 			Optional:    true,
-			Description: "Rulesets Rule Last Updated At",
+			Description: "Rulesets rule last updated at",
 		},
 	},
 }
@@ -239,7 +313,7 @@ func ResourceIBMCISRulesetRule() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 			cisID: {
 				Type:        schema.TypeString,
-				Description: "CIS instance crn",
+				Description: "CIS instance CRN",
 				Required:    true,
 				ValidateFunc: validate.InvokeValidator("ibm_cis_ruleset_rule",
 					"cis_id"),
@@ -252,13 +326,14 @@ func ResourceIBMCISRulesetRule() *schema.Resource {
 			},
 			CISRulesetsId: {
 				Type:        schema.TypeString,
-				Description: "Associated Ruleset ID",
+				Description: "Associated ruleset ID",
 				Required:    true,
 			},
 			CISRulesetsRule: {
 				Type:        schema.TypeList,
 				Optional:    true,
-				Description: "Rules of the Rulesets",
+				Description: "Rules of the rulesets",
+				MaxItems:    1,
 				Elem:        CISRulesetsRulesObject,
 			},
 		},
@@ -283,7 +358,7 @@ func ResourceIBMCISRulesetRuleValidator() *validate.ResourceValidator {
 func ResourceIBMCISRulesetRuleCreate(d *schema.ResourceData, meta interface{}) error {
 	sess, err := meta.(conns.ClientSession).CisRulesetsSession()
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error while getting the CisRulesetsSession %s", err)
+		return flex.FmtErrorf("[ERROR] Error while getting the CisRulesetsSession %s", err)
 	}
 	crn := d.Get(cisID).(string)
 	zoneId := d.Get(cisDomainID).(string)
@@ -305,10 +380,25 @@ func ResourceIBMCISRulesetRuleCreate(d *schema.ResourceData, meta interface{}) e
 		opt.SetRef(rulesObject[CISRulesetsRuleRef].(string))
 
 		position := rulesetsv1.Position{}
-		if reflect.ValueOf(rulesObject[CISRulesetsRulePosition]).IsNil() {
-			position = expandCISRulesetsRulesPositions(rulesObject[CISRulesetsRulePosition])
+		if !reflect.ValueOf(rulesObject[CISRulesetsRulePosition]).IsNil() {
+			position, err = expandCISRulesetsRulesPositions(rulesObject[CISRulesetsRulePosition])
+			if err != nil {
+				return flex.FmtErrorf("[ERROR] Error while creating the zone Rule %s", err)
+			}
 		}
 		opt.SetPosition(&position)
+
+		ratelimit := rulesetsv1.Ratelimit{}
+		if v, ok := rulesObject[CISRulesetsRuleRateLimit]; ok && v != nil {
+			ratelimit, err = expandCISRulesetsRulesRateLimits(v)
+			if err != nil {
+				return flex.FmtErrorf("[ERROR] Error while creating the zone Rule: %s", err)
+			}
+
+			if !DataSourceCISRulesetsRuleIsEmptyRateLimit(ratelimit) {
+				opt.SetRatelimit(&ratelimit)
+			}
+		}
 
 		actionParameterObj := rulesetsv1.ActionParameters{}
 		if len(rulesObject[CISRulesetsRuleActionParameters].(*schema.Set).List()) != 0 {
@@ -319,12 +409,48 @@ func ResourceIBMCISRulesetRuleCreate(d *schema.ResourceData, meta interface{}) e
 		result, resp, err := sess.CreateZoneRulesetRule(opt)
 
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error while creating the zone Rule %s", resp)
+			return flex.FmtErrorf("[ERROR] Error while creating the zone Rule %s", resp)
 		}
 		len_rules := len(result.Result.Rules)
-		opt.SetID(*result.Result.Rules[len_rules-1].ID)
 
-		d.SetId(dataSourceCISRulesetsRuleCheckID(d, *result.Result.Rules[len_rules-1].ID))
+		// When creating a rule response is resulted as list of rules.
+		// To get the index we have to check if index,after or before is provided by the user.
+		// If not provided then we will take the last rule from the list as the new rule is added at the end.
+
+		rule_id := ""
+		if len(rulesObject[CISRulesetsRulePosition].(*schema.Set).List()) != 0 {
+			response := rulesObject[CISRulesetsRulePosition].(*schema.Set).List()[0].(map[string]interface{})
+			before := response[CISRulesetsRulePositionBefore].(string)
+			after := response[CISRulesetsRulePositionAfter].(string)
+			index := int64(response[CISRulesetsRulePositionIndex].(int))
+
+			if after != "" {
+				for i, rule := range result.Result.Rules {
+					if *rule.ID == after {
+						opt.SetID(*result.Result.Rules[i+1].ID)
+						rule_id = *result.Result.Rules[i+1].ID
+						break
+					}
+				}
+			} else if before != "" {
+				for i, rule := range result.Result.Rules {
+					if *rule.ID == before {
+						opt.SetID(*result.Result.Rules[i-1].ID)
+						rule_id = *result.Result.Rules[i-1].ID
+						break
+					}
+				}
+			} else if index != 0 {
+				opt.SetID(*result.Result.Rules[index-1].ID)
+				rule_id = *result.Result.Rules[index-1].ID
+			}
+
+		} else {
+			opt.SetID(*result.Result.Rules[len_rules-1].ID)
+			rule_id = *result.Result.Rules[len_rules-1].ID
+		}
+
+		d.SetId(dataSourceCISRulesetsRuleCheckID(d, rule_id))
 
 	} else {
 		opt := sess.NewCreateInstanceRulesetRuleOptions(rulesetId)
@@ -340,7 +466,10 @@ func ResourceIBMCISRulesetRuleCreate(d *schema.ResourceData, meta interface{}) e
 
 		position := rulesetsv1.Position{}
 		if reflect.ValueOf(rulesObject[CISRulesetsRulePosition]).IsNil() {
-			position = expandCISRulesetsRulesPositions(rulesObject[CISRulesetsRulePosition])
+			position, err = expandCISRulesetsRulesPositions(rulesObject[CISRulesetsRulePosition])
+			if err != nil {
+				return flex.FmtErrorf("[ERROR] Error while creating the instance Rule %s", err)
+			}
 		}
 		opt.SetPosition(&position)
 
@@ -353,7 +482,7 @@ func ResourceIBMCISRulesetRuleCreate(d *schema.ResourceData, meta interface{}) e
 		result, resp, err := sess.CreateInstanceRulesetRule(opt)
 
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error while creating the instance Rule %s", resp)
+			return flex.FmtErrorf("[ERROR] Error while creating the instance Rule %s", resp)
 		}
 
 		len_rules := len(result.Result.Rules)
@@ -372,10 +501,10 @@ func ResourceIBMCISRulesetRuleRead(d *schema.ResourceData, meta interface{}) err
 func ResourceIBMCISRulesetRuleUpdate(d *schema.ResourceData, meta interface{}) error {
 	sess, err := meta.(conns.ClientSession).CisRulesetsSession()
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error while getting the CisRulesetsSession %s", err)
+		return flex.FmtErrorf("[ERROR] Error while getting the CisRulesetsSession %s", err)
 	}
 
-	ruleId, rulesetId, zoneId, crn, err := flex.ConvertTfToCisFourVar(d.Id())
+	ruleId, rulesetId, zoneId, crn, _ := flex.ConvertTfToCisFourVar(d.Id())
 	sess.Crn = core.StringPtr(crn)
 
 	if zoneId != "" {
@@ -386,13 +515,31 @@ func ResourceIBMCISRulesetRuleUpdate(d *schema.ResourceData, meta interface{}) e
 		rulesetsRuleObject := d.Get(CISRulesetsRule).([]interface{})[0].(map[string]interface{})
 		opt.SetDescription(rulesetsRuleObject[CISRulesetsDescription].(string))
 		opt.SetAction(rulesetsRuleObject[CISRulesetsRuleAction].(string))
-		actionParameters := expandCISRulesetsRulesActionParameters(rulesetsRuleObject[CISRulesetsRuleActionParameters])
-		opt.SetActionParameters(&actionParameters)
+		if rulesetsRuleObject[CISRulesetsRuleActionParameters] != nil {
+			actionParameters := expandCISRulesetsRulesActionParameters(rulesetsRuleObject[CISRulesetsRuleActionParameters])
+			opt.SetActionParameters(&actionParameters)
+		}
 		opt.SetEnabled(rulesetsRuleObject[CISRulesetsRuleActionEnabled].(bool))
 		opt.SetExpression(rulesetsRuleObject[CISRulesetsRuleExpression].(string))
 		opt.SetRef(rulesetsRuleObject[CISRulesetsRuleRef].(string))
-		position := expandCISRulesetsRulesPositions(rulesetsRuleObject[CISRulesetsRulePosition])
-		opt.SetPosition(&position)
+		if d.HasChange(CISRulesetsRule + ".0." + CISRulesetsRulePosition) {
+			position, positionError := expandCISRulesetsRulesPositions(rulesetsRuleObject[CISRulesetsRulePosition])
+			if positionError != nil {
+				return flex.FmtErrorf("[ERROR] Error while updating the zone Ruleset %s", positionError)
+			}
+			opt.SetPosition(&position)
+		}
+
+		if v, ok := rulesetsRuleObject[CISRulesetsRuleRateLimit]; ok && v != nil {
+			ratelimit, ratelimitErr := expandCISRulesetsRulesRateLimits(v)
+			if ratelimitErr != nil {
+				return flex.FmtErrorf("[ERROR] Error while updating the zone Ruleset: %s", ratelimitErr)
+			}
+
+			if !DataSourceCISRulesetsRuleIsEmptyRateLimit(ratelimit) {
+				opt.SetRatelimit(&ratelimit)
+			}
+		}
 
 		opt.SetRulesetID(rulesetId)
 		opt.SetRuleID(ruleId)
@@ -401,7 +548,7 @@ func ResourceIBMCISRulesetRuleUpdate(d *schema.ResourceData, meta interface{}) e
 		_, _, err := sess.UpdateZoneRulesetRule(opt)
 
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error while updating the zone Ruleset %s", err)
+			return flex.FmtErrorf("[ERROR] Error while updating the zone Ruleset %s", err)
 		}
 
 		d.SetId(dataSourceCISRulesetsRuleCheckID(d, ruleId))
@@ -417,17 +564,20 @@ func ResourceIBMCISRulesetRuleUpdate(d *schema.ResourceData, meta interface{}) e
 		opt.SetEnabled(rulesetsRuleObject[CISRulesetsRuleActionEnabled].(bool))
 		opt.SetExpression(rulesetsRuleObject[CISRulesetsRuleExpression].(string))
 		opt.SetRef(rulesetsRuleObject[CISRulesetsRuleAction].(string))
-		position := expandCISRulesetsRulesPositions(rulesetsRuleObject[CISRulesetsRulePosition])
+		position, err := expandCISRulesetsRulesPositions(rulesetsRuleObject[CISRulesetsRulePosition])
+		if err != nil {
+			return flex.FmtErrorf("[ERROR] Error while updating the instance Ruleset %s", err)
+		}
 		opt.SetPosition(&position)
 
 		opt.SetRulesetID(rulesetId)
 		opt.SetRuleID(ruleId)
 		opt.SetID(ruleId)
 
-		_, _, err := sess.UpdateInstanceRulesetRule(opt)
+		_, _, err = sess.UpdateInstanceRulesetRule(opt)
 
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error while updating the zone Ruleset %s", err)
+			return flex.FmtErrorf("[ERROR] Error while updating the instance Ruleset %s", err)
 		}
 
 		d.SetId(dataSourceCISRulesetsRuleCheckID(d, ruleId))
@@ -439,10 +589,10 @@ func ResourceIBMCISRulesetRuleDelete(d *schema.ResourceData, meta interface{}) e
 
 	sess, err := meta.(conns.ClientSession).CisRulesetsSession()
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error while getting the CisRulesetsSession %s", err)
+		return flex.FmtErrorf("[ERROR] Error while getting the CisRulesetsSession %s", err)
 	}
 
-	ruleId, rulesetId, zoneId, crn, err := flex.ConvertTfToCisFourVar(d.Id())
+	ruleId, rulesetId, zoneId, crn, _ := flex.ConvertTfToCisFourVar(d.Id())
 	sess.Crn = core.StringPtr(crn)
 
 	if zoneId != "" {
@@ -450,13 +600,13 @@ func ResourceIBMCISRulesetRuleDelete(d *schema.ResourceData, meta interface{}) e
 		opt := sess.NewDeleteZoneRulesetRuleOptions(rulesetId, ruleId)
 		_, res, err := sess.DeleteZoneRulesetRule(opt)
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error deleting the zone ruleset rule %s:%s", err, res)
+			return flex.FmtErrorf("[ERROR] Error deleting the zone ruleset rule %s:%s", err, res)
 		}
 	} else {
 		opt := sess.NewDeleteInstanceRulesetRuleOptions(rulesetId, ruleId)
 		_, res, err := sess.DeleteInstanceRulesetRule(opt)
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error deleting the Instance ruleset rule %s:%s", err, res)
+			return flex.FmtErrorf("[ERROR] Error deleting the Instance ruleset rule %s:%s", err, res)
 		}
 	}
 
@@ -466,4 +616,12 @@ func ResourceIBMCISRulesetRuleDelete(d *schema.ResourceData, meta interface{}) e
 
 func dataSourceCISRulesetsRuleCheckID(d *schema.ResourceData, ruleId string) string {
 	return ruleId + ":" + d.Get(CISRulesetsId).(string) + ":" + d.Get(cisDomainID).(string) + ":" + d.Get(cisID).(string)
+}
+
+func DataSourceCISRulesetsRuleIsEmptyRateLimit(r rulesetsv1.Ratelimit) bool {
+	return len(r.Characteristics) == 0 &&
+		r.CountingExpression == nil &&
+		r.MitigationTimeout == nil &&
+		r.Period == nil &&
+		r.RequestsPerPeriod == nil
 }

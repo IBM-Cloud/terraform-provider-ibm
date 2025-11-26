@@ -4,7 +4,6 @@
 package cis
 
 import (
-	"fmt"
 	"time"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
@@ -158,7 +157,7 @@ func dataSourceIBMCISRangeAppsRead(d *schema.ResourceData, meta interface{}) err
 	opt := cisClient.NewListRangeAppsOptions()
 	result, resp, err := cisClient.ListRangeApps(opt)
 	if err != nil {
-		return fmt.Errorf("[ERROR] Failed to list range applications: %v", resp)
+		return flex.FmtErrorf("[ERROR] Failed to list range applications: %v", resp)
 	}
 	apps := make([]map[string]interface{}, 0)
 	for _, i := range result.Result {

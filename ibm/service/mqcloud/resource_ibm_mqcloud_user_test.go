@@ -1,4 +1,4 @@
-// Copyright IBM Corp. 2024 All Rights Reserved.
+// Copyright IBM Corp. 2025 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 package mqcloud_test
@@ -18,11 +18,11 @@ import (
 )
 
 func TestAccIbmMqcloudUserBasic(t *testing.T) {
-	t.Parallel()
 	var conf mqcloudv1.UserDetails
 	serviceInstanceGuid := acc.MqcloudDeploymentID
-	name := fmt.Sprintf("tfname%d", acctest.RandIntRange(10, 100))
-	email := fmt.Sprintf("tfemail%d@ibm.com", acctest.RandIntRange(10, 100))
+	name := fmt.Sprintf("tf-name-%d", acctest.RandIntRange(10, 100))
+	email := fmt.Sprintf("tf_email_%d@ibm.com", acctest.RandIntRange(10, 100))
+	nameUpdate := fmt.Sprintf("tf-name-%d", acctest.RandIntRange(101, 200))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheckMqcloud(t) },
@@ -35,6 +35,14 @@ func TestAccIbmMqcloudUserBasic(t *testing.T) {
 					testAccCheckIbmMqcloudUserExists("ibm_mqcloud_user.mqcloud_user_instance", conf),
 					resource.TestCheckResourceAttr("ibm_mqcloud_user.mqcloud_user_instance", "service_instance_guid", serviceInstanceGuid),
 					resource.TestCheckResourceAttr("ibm_mqcloud_user.mqcloud_user_instance", "name", name),
+					resource.TestCheckResourceAttr("ibm_mqcloud_user.mqcloud_user_instance", "email", email),
+				),
+			},
+			{
+				Config: testAccCheckIbmMqcloudUserConfigBasic(serviceInstanceGuid, nameUpdate, email),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("ibm_mqcloud_user.mqcloud_user_instance", "service_instance_guid", serviceInstanceGuid),
+					resource.TestCheckResourceAttr("ibm_mqcloud_user.mqcloud_user_instance", "name", nameUpdate),
 					resource.TestCheckResourceAttr("ibm_mqcloud_user.mqcloud_user_instance", "email", email),
 				),
 			},

@@ -1,8 +1,8 @@
-// Copyright IBM Corp. 2024 All Rights Reserved.
+// Copyright IBM Corp. 2025 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 /*
- * IBM OpenAPI Terraform Generator Version: 3.93.0-c40121e6-20240729-182103
+ * IBM OpenAPI Terraform Generator Version: 3.107.1-41b0fbd0-20250825-080732
  */
 
 package iamidentity_test
@@ -21,15 +21,24 @@ import (
 )
 
 func TestAccIBMIamEffectiveAccountSettingsDataSourceBasic(t *testing.T) {
+	accountId := acc.IAMAccountId
+	includeHistory := "false"
+	resolveUserMfa := "true"
+
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { acc.TestAccPreCheck(t) },
+		PreCheck: func() {
+			acc.TestAccPreCheck(t)
+			acc.TestAccPreCheckCbr(t)
+		},
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
-			resource.TestStep{
-				Config: testAccCheckIBMIamEffectiveAccountSettingsDataSourceConfigBasic(),
+			{
+				Config: testAccCheckIBMIamEffectiveAccountSettingsDataSourceConfigBasic(accountId, includeHistory, resolveUserMfa),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_iam_effective_account_settings.iam_effective_account_settings_instance", "id"),
 					resource.TestCheckResourceAttrSet("data.ibm_iam_effective_account_settings.iam_effective_account_settings_instance", "account_id"),
+					resource.TestCheckResourceAttrSet("data.ibm_iam_effective_account_settings.iam_effective_account_settings_instance", "include_history"),
+					resource.TestCheckResourceAttrSet("data.ibm_iam_effective_account_settings.iam_effective_account_settings_instance", "resolve_user_mfa"),
 					resource.TestCheckResourceAttrSet("data.ibm_iam_effective_account_settings.iam_effective_account_settings_instance", "effective.#"),
 					resource.TestCheckResourceAttrSet("data.ibm_iam_effective_account_settings.iam_effective_account_settings_instance", "account.#"),
 				),
@@ -38,68 +47,33 @@ func TestAccIBMIamEffectiveAccountSettingsDataSourceBasic(t *testing.T) {
 	})
 }
 
-func testAccCheckIBMIamEffectiveAccountSettingsDataSourceConfigBasic() string {
+func testAccCheckIBMIamEffectiveAccountSettingsDataSourceConfigBasic(accountId string, includeHistory string, resolveUserMfa string) string {
 	return fmt.Sprintf(`
 		data "ibm_iam_effective_account_settings" "iam_effective_account_settings_instance" {
-			account_id = "account_id"
-			include_history = true
-			resolve_user_mfa = true
+			account_id = "%s"
+			include_history = %s
+			resolve_user_mfa = %s
 		}
-	`)
-}
-
-func TestDataSourceIBMIamEffectiveAccountSettingsResponseContextToMap(t *testing.T) {
-	checkResult := func(result map[string]interface{}) {
-		model := make(map[string]interface{})
-		model["transaction_id"] = "testString"
-		model["operation"] = "testString"
-		model["user_agent"] = "testString"
-		model["url"] = "testString"
-		model["instance_id"] = "testString"
-		model["thread_id"] = "testString"
-		model["host"] = "testString"
-		model["start_time"] = "testString"
-		model["end_time"] = "testString"
-		model["elapsed_time"] = "testString"
-		model["cluster_name"] = "testString"
-
-		assert.Equal(t, result, model)
-	}
-
-	model := new(iamidentityv1.ResponseContext)
-	model.TransactionID = core.StringPtr("testString")
-	model.Operation = core.StringPtr("testString")
-	model.UserAgent = core.StringPtr("testString")
-	model.URL = core.StringPtr("testString")
-	model.InstanceID = core.StringPtr("testString")
-	model.ThreadID = core.StringPtr("testString")
-	model.Host = core.StringPtr("testString")
-	model.StartTime = core.StringPtr("testString")
-	model.EndTime = core.StringPtr("testString")
-	model.ElapsedTime = core.StringPtr("testString")
-	model.ClusterName = core.StringPtr("testString")
-
-	result, err := iamidentity.DataSourceIBMIamEffectiveAccountSettingsResponseContextToMap(model)
-	assert.Nil(t, err)
-	checkResult(result)
+	`, accountId, includeHistory, resolveUserMfa)
 }
 
 func TestDataSourceIBMIamEffectiveAccountSettingsAccountSettingsEffectiveSectionToMap(t *testing.T) {
 	checkResult := func(result map[string]interface{}) {
-		effectiveAccountSettingsUserMfaModel := make(map[string]interface{})
-		effectiveAccountSettingsUserMfaModel["iam_id"] = "testString"
-		effectiveAccountSettingsUserMfaModel["mfa"] = "NONE"
-		effectiveAccountSettingsUserMfaModel["name"] = "testString"
-		effectiveAccountSettingsUserMfaModel["user_name"] = "testString"
-		effectiveAccountSettingsUserMfaModel["email"] = "testString"
-		effectiveAccountSettingsUserMfaModel["description"] = "testString"
+		accountSettingsUserMfaResponseModel := make(map[string]interface{})
+		accountSettingsUserMfaResponseModel["iam_id"] = "testString"
+		accountSettingsUserMfaResponseModel["mfa"] = "NONE"
+		accountSettingsUserMfaResponseModel["name"] = "testString"
+		accountSettingsUserMfaResponseModel["user_name"] = "testString"
+		accountSettingsUserMfaResponseModel["email"] = "testString"
+		accountSettingsUserMfaResponseModel["description"] = "testString"
 
 		model := make(map[string]interface{})
 		model["restrict_create_service_id"] = "NOT_SET"
 		model["restrict_create_platform_apikey"] = "NOT_SET"
+		model["restrict_user_list_visibility"] = "NOT_RESTRICTED"
 		model["allowed_ip_addresses"] = "testString"
 		model["mfa"] = "NONE"
-		model["user_mfa"] = []map[string]interface{}{effectiveAccountSettingsUserMfaModel}
+		model["user_mfa"] = []map[string]interface{}{accountSettingsUserMfaResponseModel}
 		model["session_expiration_in_seconds"] = "86400"
 		model["session_invalidation_in_seconds"] = "7200"
 		model["max_sessions_per_identity"] = "testString"
@@ -109,20 +83,21 @@ func TestDataSourceIBMIamEffectiveAccountSettingsAccountSettingsEffectiveSection
 		assert.Equal(t, result, model)
 	}
 
-	effectiveAccountSettingsUserMfaModel := new(iamidentityv1.EffectiveAccountSettingsUserMfa)
-	effectiveAccountSettingsUserMfaModel.IamID = core.StringPtr("testString")
-	effectiveAccountSettingsUserMfaModel.Mfa = core.StringPtr("NONE")
-	effectiveAccountSettingsUserMfaModel.Name = core.StringPtr("testString")
-	effectiveAccountSettingsUserMfaModel.UserName = core.StringPtr("testString")
-	effectiveAccountSettingsUserMfaModel.Email = core.StringPtr("testString")
-	effectiveAccountSettingsUserMfaModel.Description = core.StringPtr("testString")
+	accountSettingsUserMfaResponseModel := new(iamidentityv1.AccountSettingsUserMfaResponse)
+	accountSettingsUserMfaResponseModel.IamID = core.StringPtr("testString")
+	accountSettingsUserMfaResponseModel.Mfa = core.StringPtr("NONE")
+	accountSettingsUserMfaResponseModel.Name = core.StringPtr("testString")
+	accountSettingsUserMfaResponseModel.UserName = core.StringPtr("testString")
+	accountSettingsUserMfaResponseModel.Email = core.StringPtr("testString")
+	accountSettingsUserMfaResponseModel.Description = core.StringPtr("testString")
 
 	model := new(iamidentityv1.AccountSettingsEffectiveSection)
 	model.RestrictCreateServiceID = core.StringPtr("NOT_SET")
 	model.RestrictCreatePlatformApikey = core.StringPtr("NOT_SET")
+	model.RestrictUserListVisibility = core.StringPtr("NOT_RESTRICTED")
 	model.AllowedIPAddresses = core.StringPtr("testString")
 	model.Mfa = core.StringPtr("NONE")
-	model.UserMfa = []iamidentityv1.EffectiveAccountSettingsUserMfa{*effectiveAccountSettingsUserMfaModel}
+	model.UserMfa = []iamidentityv1.AccountSettingsUserMfaResponse{*accountSettingsUserMfaResponseModel}
 	model.SessionExpirationInSeconds = core.StringPtr("86400")
 	model.SessionInvalidationInSeconds = core.StringPtr("7200")
 	model.MaxSessionsPerIdentity = core.StringPtr("testString")
@@ -134,42 +109,8 @@ func TestDataSourceIBMIamEffectiveAccountSettingsAccountSettingsEffectiveSection
 	checkResult(result)
 }
 
-func TestDataSourceIBMIamEffectiveAccountSettingsEffectiveAccountSettingsUserMfaToMap(t *testing.T) {
+func TestDataSourceIBMIamEffectiveAccountSettingsAccountSettingsResponseToMap(t *testing.T) {
 	checkResult := func(result map[string]interface{}) {
-		model := make(map[string]interface{})
-		model["iam_id"] = "testString"
-		model["mfa"] = "NONE"
-		model["name"] = "testString"
-		model["user_name"] = "testString"
-		model["email"] = "testString"
-		model["description"] = "testString"
-
-		assert.Equal(t, result, model)
-	}
-
-	model := new(iamidentityv1.EffectiveAccountSettingsUserMfa)
-	model.IamID = core.StringPtr("testString")
-	model.Mfa = core.StringPtr("NONE")
-	model.Name = core.StringPtr("testString")
-	model.UserName = core.StringPtr("testString")
-	model.Email = core.StringPtr("testString")
-	model.Description = core.StringPtr("testString")
-
-	result, err := iamidentity.DataSourceIBMIamEffectiveAccountSettingsEffectiveAccountSettingsUserMfaToMap(model)
-	assert.Nil(t, err)
-	checkResult(result)
-}
-
-func TestDataSourceIBMIamEffectiveAccountSettingsAccountSettingsAccountSectionToMap(t *testing.T) {
-	checkResult := func(result map[string]interface{}) {
-		effectiveAccountSettingsUserMfaModel := make(map[string]interface{})
-		effectiveAccountSettingsUserMfaModel["iam_id"] = "testString"
-		effectiveAccountSettingsUserMfaModel["mfa"] = "NONE"
-		effectiveAccountSettingsUserMfaModel["name"] = "testString"
-		effectiveAccountSettingsUserMfaModel["user_name"] = "testString"
-		effectiveAccountSettingsUserMfaModel["email"] = "testString"
-		effectiveAccountSettingsUserMfaModel["description"] = "testString"
-
 		enityHistoryRecordModel := make(map[string]interface{})
 		enityHistoryRecordModel["timestamp"] = "testString"
 		enityHistoryRecordModel["iam_id"] = "testString"
@@ -178,30 +119,38 @@ func TestDataSourceIBMIamEffectiveAccountSettingsAccountSettingsAccountSectionTo
 		enityHistoryRecordModel["params"] = []string{"testString"}
 		enityHistoryRecordModel["message"] = "testString"
 
+		accountSettingsUserDomainRestrictionModel := make(map[string]interface{})
+		accountSettingsUserDomainRestrictionModel["realm_id"] = "IBMid"
+		accountSettingsUserDomainRestrictionModel["invitation_email_allow_patterns"] = []string{"*.*@company.com"}
+		accountSettingsUserDomainRestrictionModel["restrict_invitation"] = true
+
+		accountSettingsUserMfaResponseModel := make(map[string]interface{})
+		accountSettingsUserMfaResponseModel["iam_id"] = "testString"
+		accountSettingsUserMfaResponseModel["mfa"] = "NONE"
+		accountSettingsUserMfaResponseModel["name"] = "testString"
+		accountSettingsUserMfaResponseModel["user_name"] = "testString"
+		accountSettingsUserMfaResponseModel["email"] = "testString"
+		accountSettingsUserMfaResponseModel["description"] = "testString"
+
 		model := make(map[string]interface{})
 		model["account_id"] = "testString"
+		model["entity_tag"] = "testString"
+		model["history"] = []map[string]interface{}{enityHistoryRecordModel}
 		model["restrict_create_service_id"] = "NOT_SET"
 		model["restrict_create_platform_apikey"] = "NOT_SET"
+		model["restrict_user_list_visibility"] = "NOT_RESTRICTED"
+		model["restrict_user_domains"] = []map[string]interface{}{accountSettingsUserDomainRestrictionModel}
 		model["allowed_ip_addresses"] = "testString"
 		model["mfa"] = "NONE"
-		model["user_mfa"] = []map[string]interface{}{effectiveAccountSettingsUserMfaModel}
-		model["history"] = []map[string]interface{}{enityHistoryRecordModel}
 		model["session_expiration_in_seconds"] = "86400"
 		model["session_invalidation_in_seconds"] = "7200"
 		model["max_sessions_per_identity"] = "testString"
 		model["system_access_token_expiration_in_seconds"] = "3600"
 		model["system_refresh_token_expiration_in_seconds"] = "259200"
+		model["user_mfa"] = []map[string]interface{}{accountSettingsUserMfaResponseModel}
 
 		assert.Equal(t, result, model)
 	}
-
-	effectiveAccountSettingsUserMfaModel := new(iamidentityv1.EffectiveAccountSettingsUserMfa)
-	effectiveAccountSettingsUserMfaModel.IamID = core.StringPtr("testString")
-	effectiveAccountSettingsUserMfaModel.Mfa = core.StringPtr("NONE")
-	effectiveAccountSettingsUserMfaModel.Name = core.StringPtr("testString")
-	effectiveAccountSettingsUserMfaModel.UserName = core.StringPtr("testString")
-	effectiveAccountSettingsUserMfaModel.Email = core.StringPtr("testString")
-	effectiveAccountSettingsUserMfaModel.Description = core.StringPtr("testString")
 
 	enityHistoryRecordModel := new(iamidentityv1.EnityHistoryRecord)
 	enityHistoryRecordModel.Timestamp = core.StringPtr("testString")
@@ -211,60 +160,55 @@ func TestDataSourceIBMIamEffectiveAccountSettingsAccountSettingsAccountSectionTo
 	enityHistoryRecordModel.Params = []string{"testString"}
 	enityHistoryRecordModel.Message = core.StringPtr("testString")
 
-	model := new(iamidentityv1.AccountSettingsAccountSection)
+	accountSettingsUserDomainRestrictionModel := new(iamidentityv1.AccountSettingsUserDomainRestriction)
+	accountSettingsUserDomainRestrictionModel.RealmID = core.StringPtr("IBMid")
+	accountSettingsUserDomainRestrictionModel.InvitationEmailAllowPatterns = []string{"*.*@company.com"}
+	accountSettingsUserDomainRestrictionModel.RestrictInvitation = core.BoolPtr(true)
+
+	accountSettingsUserMfaResponseModel := new(iamidentityv1.AccountSettingsUserMfaResponse)
+	accountSettingsUserMfaResponseModel.IamID = core.StringPtr("testString")
+	accountSettingsUserMfaResponseModel.Mfa = core.StringPtr("NONE")
+	accountSettingsUserMfaResponseModel.Name = core.StringPtr("testString")
+	accountSettingsUserMfaResponseModel.UserName = core.StringPtr("testString")
+	accountSettingsUserMfaResponseModel.Email = core.StringPtr("testString")
+	accountSettingsUserMfaResponseModel.Description = core.StringPtr("testString")
+
+	model := new(iamidentityv1.AccountSettingsResponse)
 	model.AccountID = core.StringPtr("testString")
+	model.EntityTag = core.StringPtr("testString")
+	model.History = []iamidentityv1.EnityHistoryRecord{*enityHistoryRecordModel}
 	model.RestrictCreateServiceID = core.StringPtr("NOT_SET")
 	model.RestrictCreatePlatformApikey = core.StringPtr("NOT_SET")
+	model.RestrictUserListVisibility = core.StringPtr("NOT_RESTRICTED")
+	model.RestrictUserDomains = []iamidentityv1.AccountSettingsUserDomainRestriction{*accountSettingsUserDomainRestrictionModel}
 	model.AllowedIPAddresses = core.StringPtr("testString")
 	model.Mfa = core.StringPtr("NONE")
-	model.UserMfa = []iamidentityv1.EffectiveAccountSettingsUserMfa{*effectiveAccountSettingsUserMfaModel}
-	model.History = []iamidentityv1.EnityHistoryRecord{*enityHistoryRecordModel}
 	model.SessionExpirationInSeconds = core.StringPtr("86400")
 	model.SessionInvalidationInSeconds = core.StringPtr("7200")
 	model.MaxSessionsPerIdentity = core.StringPtr("testString")
 	model.SystemAccessTokenExpirationInSeconds = core.StringPtr("3600")
 	model.SystemRefreshTokenExpirationInSeconds = core.StringPtr("259200")
+	model.UserMfa = []iamidentityv1.AccountSettingsUserMfaResponse{*accountSettingsUserMfaResponseModel}
 
 	result, err := iamidentity.DataSourceIBMIamEffectiveAccountSettingsAccountSettingsAccountSectionToMap(model)
 	assert.Nil(t, err)
 	checkResult(result)
 }
 
-func TestDataSourceIBMIamEffectiveAccountSettingsEnityHistoryRecordToMap(t *testing.T) {
-	checkResult := func(result map[string]interface{}) {
-		model := make(map[string]interface{})
-		model["timestamp"] = "testString"
-		model["iam_id"] = "testString"
-		model["iam_id_account"] = "testString"
-		model["action"] = "testString"
-		model["params"] = []string{"testString"}
-		model["message"] = "testString"
-
-		assert.Equal(t, result, model)
-	}
-
-	model := new(iamidentityv1.EnityHistoryRecord)
-	model.Timestamp = core.StringPtr("testString")
-	model.IamID = core.StringPtr("testString")
-	model.IamIDAccount = core.StringPtr("testString")
-	model.Action = core.StringPtr("testString")
-	model.Params = []string{"testString"}
-	model.Message = core.StringPtr("testString")
-
-	result, err := iamidentity.DataSourceIBMIamEffectiveAccountSettingsEnityHistoryRecordToMap(model)
-	assert.Nil(t, err)
-	checkResult(result)
-}
-
 func TestDataSourceIBMIamEffectiveAccountSettingsAccountSettingsAssignedTemplatesSectionToMap(t *testing.T) {
 	checkResult := func(result map[string]interface{}) {
-		effectiveAccountSettingsUserMfaModel := make(map[string]interface{})
-		effectiveAccountSettingsUserMfaModel["iam_id"] = "testString"
-		effectiveAccountSettingsUserMfaModel["mfa"] = "NONE"
-		effectiveAccountSettingsUserMfaModel["name"] = "testString"
-		effectiveAccountSettingsUserMfaModel["user_name"] = "testString"
-		effectiveAccountSettingsUserMfaModel["email"] = "testString"
-		effectiveAccountSettingsUserMfaModel["description"] = "testString"
+		accountSettingsUserDomainRestrictionModel := make(map[string]interface{})
+		accountSettingsUserDomainRestrictionModel["realm_id"] = "IBMid"
+		accountSettingsUserDomainRestrictionModel["invitation_email_allow_patterns"] = []string{"*.*@company.com"}
+		accountSettingsUserDomainRestrictionModel["restrict_invitation"] = true
+
+		accountSettingsUserMfaResponseModel := make(map[string]interface{})
+		accountSettingsUserMfaResponseModel["iam_id"] = "testString"
+		accountSettingsUserMfaResponseModel["mfa"] = "NONE"
+		accountSettingsUserMfaResponseModel["name"] = "testString"
+		accountSettingsUserMfaResponseModel["user_name"] = "testString"
+		accountSettingsUserMfaResponseModel["email"] = "testString"
+		accountSettingsUserMfaResponseModel["description"] = "testString"
 
 		model := make(map[string]interface{})
 		model["template_id"] = "testString"
@@ -272,25 +216,44 @@ func TestDataSourceIBMIamEffectiveAccountSettingsAccountSettingsAssignedTemplate
 		model["template_name"] = "testString"
 		model["restrict_create_service_id"] = "NOT_SET"
 		model["restrict_create_platform_apikey"] = "NOT_SET"
+		model["restrict_user_list_visibility"] = "NOT_RESTRICTED"
+		//model["restrict_user_domains"] = []map[string]interface{}{accountSettingsUserDomainRestrictionModel}
+		model["restrict_user_domains"] = []map[string]interface{}{
+			{
+				"account_sufficient": true,
+				"restrictions": []map[string]interface{}{
+					{
+						"realm_id":                        "IBMid",
+						"invitation_email_allow_patterns": []string{"*.*@company.com"},
+						"restrict_invitation":             true,
+					},
+				},
+			},
+		}
 		model["allowed_ip_addresses"] = "testString"
 		model["mfa"] = "NONE"
-		model["user_mfa"] = []map[string]interface{}{effectiveAccountSettingsUserMfaModel}
 		model["session_expiration_in_seconds"] = "86400"
 		model["session_invalidation_in_seconds"] = "7200"
 		model["max_sessions_per_identity"] = "testString"
 		model["system_access_token_expiration_in_seconds"] = "3600"
 		model["system_refresh_token_expiration_in_seconds"] = "259200"
+		model["user_mfa"] = []map[string]interface{}{accountSettingsUserMfaResponseModel}
 
 		assert.Equal(t, result, model)
 	}
 
-	effectiveAccountSettingsUserMfaModel := new(iamidentityv1.EffectiveAccountSettingsUserMfa)
-	effectiveAccountSettingsUserMfaModel.IamID = core.StringPtr("testString")
-	effectiveAccountSettingsUserMfaModel.Mfa = core.StringPtr("NONE")
-	effectiveAccountSettingsUserMfaModel.Name = core.StringPtr("testString")
-	effectiveAccountSettingsUserMfaModel.UserName = core.StringPtr("testString")
-	effectiveAccountSettingsUserMfaModel.Email = core.StringPtr("testString")
-	effectiveAccountSettingsUserMfaModel.Description = core.StringPtr("testString")
+	accountSettingsUserDomainRestrictionModel := new(iamidentityv1.AccountSettingsUserDomainRestriction)
+	accountSettingsUserDomainRestrictionModel.RealmID = core.StringPtr("IBMid")
+	accountSettingsUserDomainRestrictionModel.InvitationEmailAllowPatterns = []string{"*.*@company.com"}
+	accountSettingsUserDomainRestrictionModel.RestrictInvitation = core.BoolPtr(true)
+
+	accountSettingsUserMfaResponseModel := new(iamidentityv1.AccountSettingsUserMfaResponse)
+	accountSettingsUserMfaResponseModel.IamID = core.StringPtr("testString")
+	accountSettingsUserMfaResponseModel.Mfa = core.StringPtr("NONE")
+	accountSettingsUserMfaResponseModel.Name = core.StringPtr("testString")
+	accountSettingsUserMfaResponseModel.UserName = core.StringPtr("testString")
+	accountSettingsUserMfaResponseModel.Email = core.StringPtr("testString")
+	accountSettingsUserMfaResponseModel.Description = core.StringPtr("testString")
 
 	model := new(iamidentityv1.AccountSettingsAssignedTemplatesSection)
 	model.TemplateID = core.StringPtr("testString")
@@ -298,14 +261,22 @@ func TestDataSourceIBMIamEffectiveAccountSettingsAccountSettingsAssignedTemplate
 	model.TemplateName = core.StringPtr("testString")
 	model.RestrictCreateServiceID = core.StringPtr("NOT_SET")
 	model.RestrictCreatePlatformApikey = core.StringPtr("NOT_SET")
+	model.RestrictUserListVisibility = core.StringPtr("NOT_RESTRICTED")
+	restrictUserDomains := &iamidentityv1.AssignedTemplatesAccountSettingsRestrictUserDomains{
+		AccountSufficient: core.BoolPtr(true),
+		Restrictions: []iamidentityv1.AccountSettingsUserDomainRestriction{
+			*accountSettingsUserDomainRestrictionModel,
+		},
+	}
+	model.RestrictUserDomains = restrictUserDomains
 	model.AllowedIPAddresses = core.StringPtr("testString")
 	model.Mfa = core.StringPtr("NONE")
-	model.UserMfa = []iamidentityv1.EffectiveAccountSettingsUserMfa{*effectiveAccountSettingsUserMfaModel}
 	model.SessionExpirationInSeconds = core.StringPtr("86400")
 	model.SessionInvalidationInSeconds = core.StringPtr("7200")
 	model.MaxSessionsPerIdentity = core.StringPtr("testString")
 	model.SystemAccessTokenExpirationInSeconds = core.StringPtr("3600")
 	model.SystemRefreshTokenExpirationInSeconds = core.StringPtr("259200")
+	model.UserMfa = []iamidentityv1.AccountSettingsUserMfaResponse{*accountSettingsUserMfaResponseModel}
 
 	result, err := iamidentity.DataSourceIBMIamEffectiveAccountSettingsAccountSettingsAssignedTemplatesSectionToMap(model)
 	assert.Nil(t, err)

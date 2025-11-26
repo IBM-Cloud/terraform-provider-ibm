@@ -422,7 +422,9 @@ func DataSourceIbmIsDedicatedHosts() *schema.Resource {
 func dataSourceIbmIsDedicatedHostsRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	vpcClient, err := meta.(conns.ClientSession).VpcV1API()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_dedicated_hosts", "read", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	listDedicatedHostsOptions := &vpcv1.ListDedicatedHostsOptions{}
@@ -450,8 +452,9 @@ func dataSourceIbmIsDedicatedHostsRead(context context.Context, d *schema.Resour
 		}
 		dedicatedHostCollection, response, err := vpcClient.ListDedicatedHostsWithContext(context, listDedicatedHostsOptions)
 		if err != nil {
-			log.Printf("[DEBUG] ListDedicatedHostsWithContext failed %s\n%s", err, response)
-			return diag.FromErr(err)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("ListDedicatedHostsWithContext failed: %s\n%s", err, response), "ibm_is_dedicated_hosts", "read")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		start = flex.GetNext(dedicatedHostCollection.Next)
 		allrecs = append(allrecs, dedicatedHostCollection.DedicatedHosts...)
@@ -466,11 +469,13 @@ func dataSourceIbmIsDedicatedHostsRead(context context.Context, d *schema.Resour
 
 		err = d.Set("dedicated_hosts", dataSourceDedicatedHostCollectionFlattenDedicatedHosts(allrecs, meta))
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error setting dedicated_hosts %s", err))
+			err = fmt.Errorf("[ERROR] Error setting dedicated_hosts %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_dedicated_hosts", "read", "set-dedicated_hosts").GetDiag()
 		}
 
 		if err = d.Set("total_count", len(allrecs)); err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error setting total_count: %s", err))
+			err = fmt.Errorf("[ERROR] Error setting total_count: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_dedicated_hosts", "read", "set-total_count").GetDiag()
 		}
 	}
 	return nil

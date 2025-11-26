@@ -4,6 +4,7 @@
 package iamidentity_test
 
 import (
+	"fmt"
 	"testing"
 
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
@@ -29,9 +30,9 @@ func TestAccIBMIamTrustedProfilesClaimRulesDataSourceBasic(t *testing.T) {
 }
 
 func testAccCheckIBMIamTrustedProfilesClaimRulesDataSourceConfigBasic() string {
-	return `
+	return fmt.Sprintf(`
 		data "ibm_iam_trusted_profile_claim_rules" "iam_trusted_profile_claim_rules" {
-			profile_id = "profile_id"
+			profile_id = "%s"
 		}
-	`
+	`, acc.IAMTrustedProfileID)
 }

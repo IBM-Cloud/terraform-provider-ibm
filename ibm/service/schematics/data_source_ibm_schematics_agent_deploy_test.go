@@ -7,21 +7,19 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
-	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 )
 
 func TestAccIbmSchematicsAgentDeployDataSourceBasic(t *testing.T) {
-	agentDeployJobAgentID := fmt.Sprintf("tf_agent_id_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheck(t) },
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIbmSchematicsAgentDeployDataSourceConfigBasic(agentDeployJobAgentID),
+				Config: testAccCheckIbmSchematicsAgentDeployDataSourceConfigBasic(acc.AgentID),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_schematics_agent_deploy.schematics_agent_deploy_instance", "id"),
 					resource.TestCheckResourceAttrSet("data.ibm_schematics_agent_deploy.schematics_agent_deploy_instance", "agent_id"),

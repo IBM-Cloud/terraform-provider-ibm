@@ -1,8 +1,8 @@
-// Copyright IBM Corp. 2024 All Rights Reserved.
+// Copyright IBM Corp. 2025 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 /*
- * IBM OpenAPI Terraform Generator Version: 3.95.2-120e65bc-20240924-152329
+ * IBM OpenAPI Terraform Generator Version: 3.104.0-b4a47c49-20250418-184351
  */
 
 package mqcloud_test
@@ -10,6 +10,7 @@ package mqcloud_test
 import (
 	"fmt"
 	"testing"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 
@@ -21,12 +22,14 @@ import (
 )
 
 func TestAccIbmMqcloudApplicationDataSourceBasic(t *testing.T) {
-	t.Parallel()
 	applicationDetailsServiceInstanceGuid := acc.MqcloudDeploymentID
 	applicationDetailsName := "appdsbasic"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { acc.TestAccPreCheckMqcloud(t) },
+		PreCheck: func() {
+			acc.TestAccPreCheckMqcloud(t)
+			time.Sleep(60 * time.Second) //This is to allow time for cloud qm to become ready
+		},
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			{
@@ -57,11 +60,11 @@ func testAccCheckIbmMqcloudApplicationDataSourceConfigBasic(applicationDetailsSe
 }
 
 func TestDataSourceIbmMqcloudApplicationApplicationDetailsToMap(t *testing.T) {
-	t.Parallel()
 	checkResult := func(result map[string]interface{}) {
 		model := make(map[string]interface{})
 		model["id"] = "testString"
 		model["name"] = "testString"
+		model["iam_service_id"] = "testString"
 		model["create_api_key_uri"] = "testString"
 		model["href"] = "testString"
 
@@ -71,6 +74,7 @@ func TestDataSourceIbmMqcloudApplicationApplicationDetailsToMap(t *testing.T) {
 	model := new(mqcloudv1.ApplicationDetails)
 	model.ID = core.StringPtr("testString")
 	model.Name = core.StringPtr("testString")
+	model.IamServiceID = core.StringPtr("testString")
 	model.CreateApiKeyURI = core.StringPtr("testString")
 	model.Href = core.StringPtr("testString")
 

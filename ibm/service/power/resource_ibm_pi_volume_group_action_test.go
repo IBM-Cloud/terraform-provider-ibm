@@ -13,7 +13,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 
-	st "github.com/IBM-Cloud/power-go-client/clients/instance"
+	"github.com/IBM-Cloud/power-go-client/clients/instance"
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
@@ -68,7 +68,7 @@ func testAccCheckIBMPIVolumeGroupActionExists(n string) resource.TestCheckFunc {
 			return err
 		}
 		cloudInstanceID, vgID := ids[0], ids[1]
-		client := st.NewIBMPIVolumeGroupClient(context.Background(), sess, cloudInstanceID)
+		client := instance.NewIBMPIVolumeGroupClient(context.Background(), sess, cloudInstanceID)
 
 		_, err = client.Get(vgID)
 		if err != nil {

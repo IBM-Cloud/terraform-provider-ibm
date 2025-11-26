@@ -56,7 +56,7 @@ func testAccCheckIBMDLImportRouteFilterDataSourceConfig(gatewayname string) stri
     }
 	data "ibm_dl_import_route_filter" "test_dl_import_route_filter" {
 			gateway = ibm_dl_gateway.test_dl_gateway.id
-			id = data.ibm_dl_import_route_filters.test_dl_import_route_filters.import_route_filters[0].import_route_filter_id
+			im_filter_id = data.ibm_dl_import_route_filters.test_dl_import_route_filters.import_route_filters[0].im_filter_id
 	 }
 	  `, gatewayname)
 }

@@ -33,7 +33,7 @@ provider "ibm" {
   
   # ... other provider configuration ...
 
-  visiblity="private"
+  visibility="private"
   endpoints_file_path= "endpoints.json"
 }
 ```
@@ -45,7 +45,6 @@ provider "ibm" {
 | Service | Endpoint Variable |
 |---------|-----------------|
 |Account Management|IBMCLOUD_ACCOUNT_MANAGEMENT_API_ENDPOINT|
-|API Gateway|IBMCLOUD_API_GATEWAY_ENDPOINT|
 |App Id|IBMCLOUD_APPID_MANAGEMENT_API_ENDPOINT|
 |Atracker|IBMCLOUD_ATRACKER_API_ENDPOINT|
 |Catalog Management|IBMCLOUD_CATALOG_MANAGEMENT_API_ENDPOINT|
@@ -54,7 +53,9 @@ provider "ibm" {
 |Internet Services|IBMCLOUD_CIS_API_ENDPOINT|
 |Cloud Shell|IBMCLOUD_CLOUD_SHELL_API_ENDPOINT|
 |Compilance (Posture Management)|IBMCLOUD_COMPLIANCE_API_ENDPOINT|
+|Configuration Aggregator|IBMCLOUD_APP_CONFIG_ENDPOINT|
 |Container Registry|IBMCLOUD_CR_API_ENDPOINT|
+|Cloud Logs | IBMCLOUD_LOGS_API_ENDPOINT |
 |Kubernetes Service|IBMCLOUD_CS_API_ENDPOINT|
 |Metrics Router| IBMCLOUD_METRICS_ROUTING_API_ENDPOINT|
 |MQ on Cloud| IBMCLOUD_MQCLOUD_CONFIG_ENDPOINT|
@@ -84,6 +85,7 @@ provider "ibm" {
 |UAA|IBMCLOUD_UAA_ENDPOINT|
 |User Management|IBMCLOUD_USER_MANAGEMENT_ENDPOINT|
 |Event Notifications|IBMCLOUD_EVENT_NOTIFICATIONS_API_ENDPOINT|
+|Logs Routing|IBMCLOUD_LOGS_ROUTING_API_ENDPOINT|
 
 ## File structure for endpoints file
 

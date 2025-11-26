@@ -4,16 +4,20 @@
 package vpc
 
 import (
+	"context"
 	"fmt"
+	"log"
 	"strings"
 	"time"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
+	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
 )
 
@@ -39,12 +43,12 @@ const (
 
 func ResourceIBMISLBListenerPolicyRule() *schema.Resource {
 	return &schema.Resource{
-		Create:   resourceIBMISLBListenerPolicyRuleCreate,
-		Read:     resourceIBMISLBListenerPolicyRuleRead,
-		Update:   resourceIBMISLBListenerPolicyRuleUpdate,
-		Delete:   resourceIBMISLBListenerPolicyRuleDelete,
-		Exists:   resourceIBMISLBListenerPolicyRuleExists,
-		Importer: &schema.ResourceImporter{},
+		CreateContext: resourceIBMISLBListenerPolicyRuleCreate,
+		ReadContext:   resourceIBMISLBListenerPolicyRuleRead,
+		UpdateContext: resourceIBMISLBListenerPolicyRuleUpdate,
+		DeleteContext: resourceIBMISLBListenerPolicyRuleDelete,
+		Exists:        resourceIBMISLBListenerPolicyRuleExists,
+		Importer:      &schema.ResourceImporter{},
 
 		Timeouts: &schema.ResourceTimeout{
 			Create: schema.DefaultTimeout(10 * time.Minute),
@@ -163,7 +167,7 @@ func ResourceIBMISLBListenerPolicyRuleValidator() *validate.ResourceValidator {
 
 	validateSchema := make([]validate.ValidateSchema, 0)
 	condition := "contains, equals, matches_regex"
-	ruletype := "header, hostname, path, body, query"
+	ruletype := "header, hostname, path, body, query, sni_hostname"
 	validateSchema = append(validateSchema,
 		validate.ValidateSchema{
 			Identifier:                 isLBListenerPolicyRulecondition,
@@ -183,19 +187,19 @@ func ResourceIBMISLBListenerPolicyRuleValidator() *validate.ResourceValidator {
 	return &ibmISLBListenerPolicyRuleResourceValidator
 }
 
-func resourceIBMISLBListenerPolicyRuleCreate(d *schema.ResourceData, meta interface{}) error {
+func resourceIBMISLBListenerPolicyRuleCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 
 	//Read lb, listerner, policy IDs
 	var field string
 	lbID := d.Get(isLBListenerPolicyRuleLBID).(string)
 	listenerID, err := getLbListenerID(d.Get(isLBListenerPolicyRuleListenerID).(string))
 	if err != nil {
-		return err
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_lb_listener_policy_rule", "create", "parse-listener_id").GetDiag()
 	}
 
 	policyID, err := getLbPolicyID(d.Get(isLBListenerPolicyRulePolicyID).(string))
 	if err != nil {
-		return err
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_lb_listener_policy_rule", "create", "parse-policy_id").GetDiag()
 	}
 
 	condition := d.Get(isLBListenerPolicyRulecondition).(string)
@@ -205,12 +209,12 @@ func resourceIBMISLBListenerPolicyRuleCreate(d *schema.ResourceData, meta interf
 		field = n.(string)
 	}
 
-	err = lbListenerPolicyRuleCreate(d, meta, lbID, listenerID, policyID, condition, ty, value, field)
-	if err != nil {
-		return err
+	diagErr := lbListenerPolicyRuleCreate(context, d, meta, lbID, listenerID, policyID, condition, ty, value, field)
+	if diagErr != nil {
+		return diagErr
 	}
 
-	return resourceIBMISLBListenerPolicyRuleRead(d, meta)
+	return resourceIBMISLBListenerPolicyRuleRead(context, d, meta)
 }
 
 func getLbListenerID(id string) (string, error) {
@@ -244,11 +248,13 @@ func vpcSdkClient(meta interface{}) (*vpcv1.VpcV1, error) {
 	return sess, err
 }
 
-func lbListenerPolicyRuleCreate(d *schema.ResourceData, meta interface{}, lbID, listenerID, policyID, condition, ty, value, field string) error {
+func lbListenerPolicyRuleCreate(context context.Context, d *schema.ResourceData, meta interface{}, lbID, listenerID, policyID, condition, ty, value, field string) diag.Diagnostics {
 
 	sess, err := vpcSdkClient(meta)
 	if err != nil {
-		return err
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_lb_listener_policy_rule", "create", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	options := &vpcv1.CreateLoadBalancerListenerPolicyRuleOptions{
@@ -267,20 +273,25 @@ func lbListenerPolicyRuleCreate(d *schema.ResourceData, meta interface{}, lbID, 
 
 	_, err = isWaitForLoadbalancerAvailable(sess, lbID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
-		return fmt.Errorf(
-			"LB-LP Error checking for load balancer (%s) is active: %s", lbID, err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("isWaitForLoadbalancerAvailable failed: %s", err.Error()), "ibm_is_lb_listener_policy_rule", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
-	rule, response, err := sess.CreateLoadBalancerListenerPolicyRule(options)
+	rule, _, err := sess.CreateLoadBalancerListenerPolicyRuleWithContext(context, options)
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error while creating lb listener policy for LB %s: Error %v Response %v", lbID, err, *response)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateLoadBalancerListenerPolicyRuleWithContext failed: %s", err.Error()), "ibm_is_lb_listener_policy_rule", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	d.SetId(fmt.Sprintf("%s/%s/%s/%s", lbID, listenerID, policyID, *(rule.ID)))
 
 	_, err = isWaitForLbListenerPolicyRuleAvailable(sess, d.Id(), d.Timeout(schema.TimeoutCreate))
 	if err != nil {
-		return err
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("isWaitForLbListenerPolicyRuleAvailable failed: %s", err.Error()), "ibm_is_lb_listener_policy_rule", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	return nil
@@ -368,12 +379,12 @@ func isLbListenerPolicyRuleRefreshFunc(vpc *vpcv1.VpcV1, id string) retry.StateR
 	}
 }
 
-func resourceIBMISLBListenerPolicyRuleRead(d *schema.ResourceData, meta interface{}) error {
+func resourceIBMISLBListenerPolicyRuleRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 
 	ID := d.Id()
 	parts, err := flex.IdParts(ID)
 	if err != nil {
-		return err
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_lb_listener_policy_rule", "read", "sep-id-parts").GetDiag()
 	}
 
 	lbID := parts[0]
@@ -381,9 +392,9 @@ func resourceIBMISLBListenerPolicyRuleRead(d *schema.ResourceData, meta interfac
 	policyID := parts[2]
 	ruleID := parts[3]
 
-	err = lbListenerPolicyRuleGet(d, meta, lbID, listenerID, policyID, ruleID)
-	if err != nil {
-		return err
+	diagErr := lbListenerPolicyRuleGet(context, d, meta, lbID, listenerID, policyID, ruleID)
+	if diagErr != nil {
+		return diagErr
 	}
 
 	return nil
@@ -405,10 +416,11 @@ func lbListenerPolicyRuleExists(d *schema.ResourceData, meta interface{}, ID str
 	}
 	parts, err := flex.IdParts(d.Id())
 	if err != nil {
-		return false, err
+		return false, flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_lb_listener_policy_rule", "exists", "sep-id-parts")
 	}
 	if len(parts) != 4 {
-		return false, fmt.Errorf("[ERROR] Incorrect ID %s: ID should be a combination of lbID/listenerID/policyID/ruleID", d.Id())
+		err = fmt.Errorf("[ERROR] Incorrect ID %s: ID should be a combination of lbID/listenerID/policyID/ruleID", d.Id())
+		return false, flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_lb_listener_policy_rule", "exists", "sep-id-parts")
 	}
 	lbID := parts[0]
 	listenerID := parts[1]
@@ -429,15 +441,17 @@ func lbListenerPolicyRuleExists(d *schema.ResourceData, meta interface{}, ID str
 		if response != nil && response.StatusCode == 404 {
 			return false, nil
 		}
-		return false, fmt.Errorf("[ERROR] Error getting policy: %s\n%s", err, response)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetLoadBalancerListenerPolicyRule failed: %s", err.Error()), "ibm_is_lb_listener_policy_rule", "exists")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return false, tfErr
 	}
 	return true, nil
 }
-func resourceIBMISLBListenerPolicyRuleUpdate(d *schema.ResourceData, meta interface{}) error {
+func resourceIBMISLBListenerPolicyRuleUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 
 	parts, err := flex.IdParts(d.Id())
 	if err != nil {
-		return err
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_lb_listener_policy_rule", "update", "sep-id-parts").GetDiag()
 	}
 
 	lbID := parts[0]
@@ -445,18 +459,20 @@ func resourceIBMISLBListenerPolicyRuleUpdate(d *schema.ResourceData, meta interf
 	policyID := parts[2]
 	ruleID := parts[3]
 
-	err = lbListenerPolicyRuleUpdate(d, meta, lbID, listenerID, policyID, ruleID)
-	if err != nil {
-		return err
+	diagErr := lbListenerPolicyRuleUpdate(context, d, meta, lbID, listenerID, policyID, ruleID)
+	if diagErr != nil {
+		return diagErr
 	}
 
-	return resourceIBMISLBListenerPolicyRuleRead(d, meta)
+	return resourceIBMISLBListenerPolicyRuleRead(context, d, meta)
 }
 
-func lbListenerPolicyRuleUpdate(d *schema.ResourceData, meta interface{}, lbID, listenerID, policyID, ID string) error {
+func lbListenerPolicyRuleUpdate(context context.Context, d *schema.ResourceData, meta interface{}, lbID, listenerID, policyID, ID string) diag.Diagnostics {
 	sess, err := vpcSdkClient(meta)
 	if err != nil {
-		return err
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_lb_listener_policy_rule", "update", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	hasChanged := false
 	updatePolicyRuleOptions := vpcv1.UpdateLoadBalancerListenerPolicyRuleOptions{}
@@ -494,7 +510,9 @@ func lbListenerPolicyRuleUpdate(d *schema.ResourceData, meta interface{}, lbID, 
 	if hasChanged {
 		loadBalancerListenerPolicyRulePatch, err := loadBalancerListenerPolicyRulePatchModel.AsPatch()
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error calling asPatch for LoadBalancerListenerPolicyRulePatch: %s", err)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("loadBalancerListenerPolicyRulePatchModel.AsPatch() failed: %s", err.Error()), "ibm_is_lb_listener_policy_rule", "update")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 		updatePolicyRuleOptions.LoadBalancerListenerPolicyRulePatch = loadBalancerListenerPolicyRulePatch
 
@@ -504,29 +522,34 @@ func lbListenerPolicyRuleUpdate(d *schema.ResourceData, meta interface{}, lbID, 
 
 		_, err = isWaitForLoadbalancerAvailable(sess, lbID, d.Timeout(schema.TimeoutCreate))
 		if err != nil {
-			return fmt.Errorf(
-				"LB-LP Error checking for load balancer (%s) is active: %s", lbID, err)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("isWaitForLoadbalancerAvailable failed: %s", err.Error()), "ibm_is_lb_listener_policy_rule", "update")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 
-		_, response, err := sess.UpdateLoadBalancerListenerPolicyRule(&updatePolicyRuleOptions)
+		_, _, err = sess.UpdateLoadBalancerListenerPolicyRuleWithContext(context, &updatePolicyRuleOptions)
 		if err != nil {
-			return fmt.Errorf("[ERROR] Error Updating in policy : %s\n%s", err, response)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("UpdateLoadBalancerListenerPolicyRuleWithContext failed: %s", err.Error()), "ibm_is_lb_listener_policy_rule", "update")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 
 		_, err = isWaitForLbListenerPolicyRuleAvailable(sess, d.Id(), d.Timeout(schema.TimeoutCreate))
 		if err != nil {
-			return err
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("isWaitForLbListenerPolicyRuleAvailable failed: %s", err.Error()), "ibm_is_lb_listener_policy_rule", "update")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 	}
 	return nil
 }
 
-func resourceIBMISLBListenerPolicyRuleDelete(d *schema.ResourceData, meta interface{}) error {
+func resourceIBMISLBListenerPolicyRuleDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 
 	//Retrieve lbId, listenerId and policyID
 	parts, err := flex.IdParts(d.Id())
 	if err != nil {
-		return err
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_lb_listener_policy_rule", "delete", "sep-id-parts").GetDiag()
 	}
 
 	lbID := parts[0]
@@ -538,9 +561,9 @@ func resourceIBMISLBListenerPolicyRuleDelete(d *schema.ResourceData, meta interf
 	conns.IbmMutexKV.Lock(isLBKey)
 	defer conns.IbmMutexKV.Unlock(isLBKey)
 
-	err = lbListenerPolicyRuleDelete(d, meta, lbID, listenerID, policyID, ruleID)
-	if err != nil {
-		return err
+	diagErr := lbListenerPolicyRuleDelete(context, d, meta, lbID, listenerID, policyID, ruleID)
+	if diagErr != nil {
+		return diagErr
 	}
 
 	d.SetId("")
@@ -548,11 +571,13 @@ func resourceIBMISLBListenerPolicyRuleDelete(d *schema.ResourceData, meta interf
 
 }
 
-func lbListenerPolicyRuleDelete(d *schema.ResourceData, meta interface{}, lbID, listenerID, policyID, ID string) error {
+func lbListenerPolicyRuleDelete(context context.Context, d *schema.ResourceData, meta interface{}, lbID, listenerID, policyID, ID string) diag.Diagnostics {
 
 	sess, err := vpcSdkClient(meta)
 	if err != nil {
-		return err
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_lb_listener_policy_rule", "delete", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	//Getting rule optins
@@ -564,13 +589,15 @@ func lbListenerPolicyRuleDelete(d *schema.ResourceData, meta interface{}, lbID, 
 	}
 
 	//Getting lb listener policy
-	_, response, err := sess.GetLoadBalancerListenerPolicyRule(getLbListenerPolicyRuleOptions)
+	_, response, err := sess.GetLoadBalancerListenerPolicyRuleWithContext(context, getLbListenerPolicyRuleOptions)
 	if err != nil {
 		if response != nil && response.StatusCode == 404 {
 			d.SetId("")
 			return nil
 		}
-		return fmt.Errorf("[ERROR] Error in LbListenerPolicyGet : %s\n%s", err, response)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetLoadBalancerListenerPolicyRuleWithContext failed: %s", err.Error()), "ibm_is_lb_listener_policy_rule", "delete")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	deleteLbListenerPolicyRuleOptions := &vpcv1.DeleteLoadBalancerListenerPolicyRuleOptions{
@@ -579,13 +606,17 @@ func lbListenerPolicyRuleDelete(d *schema.ResourceData, meta interface{}, lbID, 
 		PolicyID:       &policyID,
 		ID:             &ID,
 	}
-	response, err = sess.DeleteLoadBalancerListenerPolicyRule(deleteLbListenerPolicyRuleOptions)
+	response, err = sess.DeleteLoadBalancerListenerPolicyRuleWithContext(context, deleteLbListenerPolicyRuleOptions)
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error in lbListenerPolicyRuleDelete: %s\n%s", err, response)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("DeleteLoadBalancerListenerPolicyRuleWithContext failed: %s", err.Error()), "ibm_is_lb_listener_policy_rule", "delete")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	_, err = isWaitForLbListnerPolicyRuleDeleted(sess, d.Id(), d.Timeout(schema.TimeoutDelete))
 	if err != nil {
-		return err
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("isWaitForLbListnerPolicyRuleDeleted failed: %s", err.Error()), "ibm_is_lb_listener_policy_rule", "delete")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	return nil
 }
@@ -637,11 +668,13 @@ func isLbListenerPolicyRuleDeleteRefreshFunc(vpc *vpcv1.VpcV1, id string) retry.
 	}
 }
 
-func lbListenerPolicyRuleGet(d *schema.ResourceData, meta interface{}, lbID, listenerID, policyID, id string) error {
+func lbListenerPolicyRuleGet(context context.Context, d *schema.ResourceData, meta interface{}, lbID, listenerID, policyID, id string) diag.Diagnostics {
 
 	sess, err := vpcSdkClient(meta)
 	if err != nil {
-		return err
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_lb_listener_policy_rule", "read", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	//Getting rule optins
@@ -653,33 +686,69 @@ func lbListenerPolicyRuleGet(d *schema.ResourceData, meta interface{}, lbID, lis
 	}
 
 	//Getting lb listener policy
-	rule, response, err := sess.GetLoadBalancerListenerPolicyRule(getLbListenerPolicyRuleOptions)
+	loadBalancerListenerPolicyRule, response, err := sess.GetLoadBalancerListenerPolicyRuleWithContext(context, getLbListenerPolicyRuleOptions)
 	if err != nil {
 		if response != nil && response.StatusCode == 404 {
 			d.SetId("")
 			return nil
 		}
-		return err
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetLoadBalancerListenerPolicyRuleWithContext failed: %s", err.Error()), "ibm_is_lb_listener_policy_rule", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	//set the argument values
-	d.Set(isLBListenerPolicyRuleLBID, lbID)
-	d.Set(isLBListenerPolicyRuleListenerID, listenerID)
-	d.Set(isLBListenerPolicyRulePolicyID, policyID)
-	d.Set(isLBListenerPolicyRuleid, id)
-	d.Set(isLBListenerPolicyRulecondition, rule.Condition)
-	d.Set(isLBListenerPolicyRuletype, rule.Type)
-	d.Set(isLBListenerPolicyRulevalue, rule.Value)
-	d.Set(isLBListenerPolicyRulefield, rule.Field)
-	d.Set(isLBListenerPolicyRuleStatus, rule.ProvisioningStatus)
+	if err = d.Set(isLBListenerPolicyRuleLBID, lbID); err != nil {
+		err = fmt.Errorf("Error setting lb: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_lb_listener_policy_rule", "read", "set-lb").GetDiag()
+	}
+	if err = d.Set(isLBListenerPolicyRuleListenerID, listenerID); err != nil {
+		err = fmt.Errorf("Error setting listener: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_lb_listener_policy_rule", "read", "set-listener").GetDiag()
+	}
+	if err = d.Set(isLBListenerPolicyRulePolicyID, policyID); err != nil {
+		err = fmt.Errorf("Error setting policy: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_lb_listener_policy_rule", "read", "set-policy").GetDiag()
+	}
+	if err = d.Set(isLBListenerPolicyRuleid, id); err != nil {
+		err = fmt.Errorf("Error setting rule: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_lb_listener_policy_rule", "read", "set-rule").GetDiag()
+	}
+	if err = d.Set("condition", loadBalancerListenerPolicyRule.Condition); err != nil {
+		err = fmt.Errorf("Error setting condition: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_lb_listener_policy_rule", "read", "set-condition").GetDiag()
+	}
+	if err = d.Set("type", loadBalancerListenerPolicyRule.Type); err != nil {
+		err = fmt.Errorf("Error setting type: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_lb_listener_policy_rule", "read", "set-type").GetDiag()
+	}
+	if err = d.Set("value", loadBalancerListenerPolicyRule.Value); err != nil {
+		err = fmt.Errorf("Error setting value: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_lb_listener_policy_rule", "read", "set-value").GetDiag()
+	}
+	if !core.IsNil(loadBalancerListenerPolicyRule.Field) {
+		if err = d.Set("field", loadBalancerListenerPolicyRule.Field); err != nil {
+			err = fmt.Errorf("Error setting field: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_lb_listener_policy_rule", "read", "set-field").GetDiag()
+		}
+	}
+	if err = d.Set("provisioning_status", loadBalancerListenerPolicyRule.ProvisioningStatus); err != nil {
+		err = fmt.Errorf("Error setting provisioning_status: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_lb_listener_policy_rule", "read", "set-provisioning_status").GetDiag()
+	}
 	getLoadBalancerOptions := &vpcv1.GetLoadBalancerOptions{
 		ID: &lbID,
 	}
-	lb, response, err := sess.GetLoadBalancer(getLoadBalancerOptions)
+	lb, response, err := sess.GetLoadBalancerWithContext(context, getLoadBalancerOptions)
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error Getting Load Balancer : %s\n%s", err, response)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetLoadBalancerWithContext failed: %s", err.Error()), "ibm_is_lb_listener_policy_rule", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
-	d.Set(flex.RelatedCRN, *lb.CRN)
+	if err = d.Set(flex.RelatedCRN, *lb.CRN); err != nil {
+		err = fmt.Errorf("Error setting provisioning_status: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_lb_listener_policy_rule", "read", "set-provisioning_status").GetDiag()
+	}
 
 	return nil
 }

@@ -39,7 +39,7 @@ func TestAccIBMSchematicsWorkspaceAllArgs(t *testing.T) {
 	var conf schematicsv1.WorkspaceResponse
 	description := fmt.Sprintf("tf-acc-test-schematics-all-args_%d", acctest.RandIntRange(10, 100))
 	name := fmt.Sprintf("tf-acc-test-schematics_%d", acctest.RandIntRange(10, 100))
-	templateType := "terraform_v0.13.5"
+	templateType := "terraform_v1.6"
 
 	descriptionUpdate := fmt.Sprintf("description_%d", acctest.RandIntRange(10, 100))
 	nameUpdate := fmt.Sprintf("tf-acc-test-schematics_%d", acctest.RandIntRange(10, 100))
@@ -116,8 +116,8 @@ func testAccCheckIBMSchematicsWorkspaceConfigBasic() string {
 			description = "tf-acc-test-schematics"
 			name = "tf-acc-test-schematics"
 			location = "us-east"
-			resource_group = "default"
-			template_type = "terraform_v0.13.5"
+			resource_group = "Default"
+			template_type = "terraform_v1.6"
 		}
 	`
 }
@@ -129,8 +129,8 @@ func testAccCheckIBMSchematicsWorkspaceConfig(description string, name string) s
 			description = "%s"
 			location = "us-east"
 			name = "%s"
-			resource_group = "default"
-			template_type = "terraform_v0.13.5"
+			resource_group = "Default"
+			template_type = "terraform_v1.6"
 		}
 	`, description, name)
 }
@@ -142,8 +142,8 @@ func testAccCheckIBMSchematicsWorkspaceConfigUpdate(description string, name str
 			description = "%s"
 			location = "us-east"
 			name = "%s"
-			resource_group = "default"
-			template_type = "terraform_v0.13.5"
+			resource_group = "Default"
+			template_type = "terraform_v1.6"
 			template_inputs {
 				name = "testinput"
 				value = "test"
@@ -160,8 +160,8 @@ func testAccCheckIBMSchematicsWorkspaceConfigUpdateRepoURL(description string, n
 			description = "%s"
 			location = "us-east"
 			name = "%s"
-			resource_group = "default"
-			template_type = "terraform_v0.13.5"
+			resource_group = "Default"
+			template_type = "terraform_v1.6"
 			template_git_url = "%s"
 			template_inputs {
 				name = "testinput"
@@ -179,8 +179,8 @@ func testAccCheckIBMSchematicsWorkspaceConfigUpdateRepoBranch(description string
 			description = "%s"
 			location = "us-east"
 			name = "%s"
-			resource_group = "default"
-			template_type = "terraform_v0.13.5"
+			resource_group = "Default"
+			template_type = "terraform_v1.6"
 			template_git_url = "%s"
 			template_inputs {
 				name = "testinput"

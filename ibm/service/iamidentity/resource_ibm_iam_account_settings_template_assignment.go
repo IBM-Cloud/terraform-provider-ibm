@@ -9,8 +9,9 @@ import (
 	"log"
 	"time"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
+
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
@@ -388,7 +389,7 @@ func resourceIBMAccountSettingsTemplateAssignmentRead(context context.Context, d
 	if !core.IsNil(templateAssignmentResponse.History) {
 		var history []map[string]interface{}
 		for _, historyItem := range templateAssignmentResponse.History {
-			historyItemMap, err := resourceIBMAccountSettingsTemplateAssignmentEnityHistoryRecordToMap(&historyItem)
+			historyItemMap, err := EnityHistoryRecordToMap(&historyItem)
 			if err != nil {
 				return diag.FromErr(err)
 			}
@@ -529,16 +530,16 @@ func resourceIBMAccountSettingsTemplateAssignmentTemplateAssignmentResponseResou
 		}
 		modelMap["account_settings"] = []map[string]interface{}{accountSettingsMap}
 	}
-	if model.PolicyTemplateRefs != nil {
+	if model.PolicyTemplateReferences != nil {
 		var policyTemplateRefs []map[string]interface{}
-		for _, policyTemplateRefsItem := range model.PolicyTemplateRefs {
+		for _, policyTemplateRefsItem := range model.PolicyTemplateReferences {
 			policyTemplateRefsItemMap, err := resourceIBMAccountSettingsTemplateAssignmentTemplateAssignmentResponseResourceDetailToMap(&policyTemplateRefsItem)
 			if err != nil {
 				return modelMap, err
 			}
 			policyTemplateRefs = append(policyTemplateRefs, policyTemplateRefsItemMap)
 		}
-		modelMap["policy_template_refs"] = policyTemplateRefs
+		modelMap["policy_template_references"] = policyTemplateRefs
 	}
 	return modelMap, nil
 }
@@ -594,20 +595,9 @@ func resourceIBMAccountSettingsTemplateAssignmentTemplateAssignmentResourceError
 	return modelMap, nil
 }
 
-func resourceIBMAccountSettingsTemplateAssignmentEnityHistoryRecordToMap(model *iamidentityv1.EnityHistoryRecord) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	modelMap["timestamp"] = model.Timestamp
-	modelMap["iam_id"] = model.IamID
-	modelMap["iam_id_account"] = model.IamIDAccount
-	modelMap["action"] = model.Action
-	modelMap["params"] = model.Params
-	modelMap["message"] = model.Message
-	return modelMap, nil
-}
-
 func isAccountSettingsAssignmentRemoved(id string, meta interface{}) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
-		iamIdentityClient, err := meta.(conns.ClientSession).IAMIdentityV1API()
+		iamIdentityClient, _ := meta.(conns.ClientSession).IAMIdentityV1API()
 
 		getOptions := &iamidentityv1.GetAccountSettingsAssignmentOptions{
 			AssignmentID: &id,
@@ -615,46 +605,44 @@ func isAccountSettingsAssignmentRemoved(id string, meta interface{}) retry.State
 		assignment, response, err := iamIdentityClient.GetAccountSettingsAssignment(getOptions)
 		if err != nil {
 			if response != nil && response.StatusCode == 404 {
-				return assignment, complete, nil
+				return assignment, READY, nil
 			}
 
-			return nil, failed, fmt.Errorf("[ERROR] The assignment %s failed to delete or deletion was not completed within specific timeout period: %s\n%s", id, err, response)
+			return nil, READY, fmt.Errorf("[ERROR] The assignment %s failed to delete or deletion was not completed within specific timeout period: %s\n%s", id, err, response)
 		} else {
 			log.Printf("Assignment removal still in progress\n")
 		}
 
-		return assignment, InProgress, nil
+		return assignment, WAITING, nil
 	}
 }
 
 func isAccountSettingsTemplateAssigned(id string, meta interface{}) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 
-		iamIdentityClient, err := meta.(conns.ClientSession).IAMIdentityV1API()
+		iamIdentityClient, _ := meta.(conns.ClientSession).IAMIdentityV1API()
 
 		getOptions := &iamidentityv1.GetAccountSettingsAssignmentOptions{
 			AssignmentID: &id,
 		}
 		assignment, response, err := iamIdentityClient.GetAccountSettingsAssignment(getOptions)
 		if err != nil {
-			return nil, failed, fmt.Errorf("[ERROR] The assignment %s failed or did not complete within specific timeout period: %s\n%s", id, err, response)
+			return nil, READY, fmt.Errorf("[ERROR] The assignment %s failed or did not complete within specific timeout period: %s\n%s", id, err, response)
 		}
 
 		if assignment != nil {
 			if *assignment.Status == "accepted" || *assignment.Status == "in_progress" {
 				log.Printf("Assignment still in progress\n")
-				return assignment, InProgress, nil
-			}
-
-			if *assignment.Status == "succeeded" {
-				return assignment, complete, nil
+				return assignment, WAITING, nil
 			}
 
 			if *assignment.Status == "failed" {
-				return assignment, failed, fmt.Errorf("[ERROR] The assignment %s did complete but with a 'failed' status. Please check assignment resource for detailed errors: %s\n", id, response)
+				return assignment, READY, fmt.Errorf("[ERROR] The assignment %s did complete but with a 'failed' status. Please check assignment resource for detailed errors: %s\n", id, response)
 			}
+
+			return assignment, READY, nil
 		}
 
-		return assignment, failed, fmt.Errorf("[ERROR] Unexpected status reached for assignment %s.: %s\n", id, response)
+		return assignment, READY, fmt.Errorf("[ERROR] Unexpected status reached for assignment %s.: %s\n", id, response)
 	}
 }

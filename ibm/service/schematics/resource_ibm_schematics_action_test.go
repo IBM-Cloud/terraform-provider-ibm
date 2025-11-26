@@ -56,7 +56,7 @@ func testAccCheckIBMSchematicsActionConfigBasic(actionName string, description s
 			name = "%s"
 			description = "%s"
 			location = "us-east"
-			resource_group = "default"
+			resource_group = "Default"
 		}
 	`, actionName, description)
 }

@@ -28,6 +28,7 @@ func TestAccIbmSmServiceCredentialsSecretMetadataDataSourceBasic(t *testing.T) {
 					resource.TestCheckResourceAttrSet("data.ibm_sm_service_credentials_secret_metadata.sm_service_credentials_secret_metadata", "secret_group_id"),
 					resource.TestCheckResourceAttrSet("data.ibm_sm_service_credentials_secret_metadata.sm_service_credentials_secret_metadata", "secret_type"),
 					resource.TestCheckResourceAttrSet("data.ibm_sm_service_credentials_secret_metadata.sm_service_credentials_secret_metadata", "updated_at"),
+					resource.TestCheckResourceAttrSet("data.ibm_sm_service_credentials_secret_metadata.sm_service_credentials_secret_metadata", "retrieved_at"),
 					resource.TestCheckResourceAttrSet("data.ibm_sm_service_credentials_secret_metadata.sm_service_credentials_secret_metadata", "versions_total"),
 					resource.TestCheckResourceAttrSet("data.ibm_sm_service_credentials_secret_metadata.sm_service_credentials_secret_metadata", "rotation.#"),
 					resource.TestCheckResourceAttrSet("data.ibm_sm_service_credentials_secret_metadata.sm_service_credentials_secret_metadata", "ttl"),
@@ -58,7 +59,6 @@ func testAccCheckIbmSmServiceCredentialsSecretMetadataDataSourceConfigBasic() st
 			  	instance {
 					crn = "%s"
 				}
-				parameters = %s
 				role {
 					crn = "%s"
 				}
@@ -70,5 +70,5 @@ func testAccCheckIbmSmServiceCredentialsSecretMetadataDataSourceConfigBasic() st
 			region = "%s"
 			secret_id = ibm_sm_service_credentials_secret.sm_service_credentials_secret_instance.secret_id
 		}
-	`, acc.SecretsManagerInstanceID, acc.SecretsManagerInstanceRegion, serviceCredentialsTtl, acc.SecretsManagerServiceCredentialsCosCrn, serviceCredentialsParameters, serviceCredentialsRoleCrn, acc.SecretsManagerInstanceID, acc.SecretsManagerInstanceRegion)
+	`, acc.SecretsManagerInstanceID, acc.SecretsManagerInstanceRegion, serviceCredentialsTtl, acc.SecretsManagerENInstanceCrn, serviceCredentialsRoleCrn, acc.SecretsManagerInstanceID, acc.SecretsManagerInstanceRegion)
 }

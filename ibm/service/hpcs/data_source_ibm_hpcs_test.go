@@ -12,7 +12,7 @@ import (
 )
 
 func TestAccIBMHPCSDatasourceBasic(t *testing.T) {
-	instanceName := "test-hpcs"
+	instanceName := acc.HpcsInstanceName
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheck(t) },
 		Providers: acc.TestAccProviders,

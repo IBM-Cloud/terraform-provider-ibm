@@ -76,7 +76,6 @@ func testAccCheckIBMEnPagerDutyDestinationConfig(instanceName, name, description
 		config {
 			params {
 				routing_key  = "33220320pgdpgpewwp"
-                api_key = "dwvdouqufqwojji"
 			}
 		}
 	}

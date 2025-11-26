@@ -50,6 +50,26 @@ func TestAccIBMPINetworkSecurityGroupRuleTCP(t *testing.T) {
 	})
 }
 
+func TestAccIBMPINetworkSecurityGroupRulePorts(t *testing.T) {
+	destinationPortBegin := "1200"
+	sourcePortBegin := "1000"
+	destinationPortEnd := "2000"
+	sourcePortEnd := "2000"
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { acc.TestAccPreCheck(t) },
+		Providers: acc.TestAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMPINetworkSecurityGroupRuleConfigPorts(sourcePortBegin, sourcePortEnd, destinationPortBegin, destinationPortEnd),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMPINetworkSecurityGroupRuleExists("ibm_pi_network_security_group_rule.network_security_group_rule"),
+					resource.TestCheckResourceAttrSet("ibm_pi_network_security_group_rule.network_security_group_rule", power.Arg_NetworkSecurityGroupID),
+				),
+			},
+		},
+	})
+}
+
 func TestAccIBMPINetworkSecurityGroupRuleRemove(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheck(t) },
@@ -104,7 +124,7 @@ func testAccCheckIBMPINetworkSecurityGroupRuleConfigAddRuleTCP() string {
 					flag = "syn"
 				}
 				tcp_flags {
-					flag = "psh"
+					flag = "fin"
 				}
 				type       = "tcp"
 			}
@@ -113,6 +133,30 @@ func testAccCheckIBMPINetworkSecurityGroupRuleConfigAddRuleTCP() string {
 				type = "%[4]s"
 			}
 		}`, acc.Pi_cloud_instance_id, acc.Pi_network_security_group_id, acc.Pi_remote_id, acc.Pi_remote_type)
+}
+
+func testAccCheckIBMPINetworkSecurityGroupRuleConfigPorts(sourcePortBegin string, sourcePortEnd string, destinationPortBegin string, destinationPortEnd string) string {
+	return fmt.Sprintf(`
+		resource "ibm_pi_network_security_group_rule" "network_security_group_rule" {
+  			pi_cloud_instance_id = "%[1]s"
+  			pi_network_security_group_id = "%[2]s"
+ 			pi_action = "allow"
+			pi_protocol {
+				type = "tcp"
+			}
+			pi_source_port {
+				minimum = %[5]s
+				maximum = %[6]s
+			}
+			pi_destination_port {
+				minimum = %[7]s
+				maximum = %[8]s
+			}
+			pi_remote {
+				id = "%[3]s"
+				type = "%[4]s"
+			}
+		}`, acc.Pi_cloud_instance_id, acc.Pi_network_security_group_id, acc.Pi_remote_id, acc.Pi_remote_type, sourcePortBegin, sourcePortEnd, destinationPortBegin, destinationPortEnd)
 }
 
 func testAccCheckIBMPINetworkSecurityGroupRuleConfigRemoveRule() string {
