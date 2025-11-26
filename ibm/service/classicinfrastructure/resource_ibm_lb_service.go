@@ -12,7 +12,7 @@ import (
 	"strings"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/softlayer/softlayer-go/datatypes"
 	"github.com/softlayer/softlayer-go/filter"
@@ -261,7 +261,7 @@ func resourceIBMLbServiceDelete(d *schema.ResourceData, meta interface{}) error 
 
 	svcID, _ := strconv.Atoi(d.Id())
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending: []string{"pending"},
 		Target:  []string{"complete"},
 		Refresh: func() (interface{}, string, error) {
@@ -343,7 +343,7 @@ func getHealthCheckTypeId(sess *session.Session, healthCheckTypeName string) (in
 }
 
 func updateLoadBalancerService(sess *session.Session, vipID int, vip *datatypes.Network_Application_Delivery_Controller_LoadBalancer_VirtualIpAddress) error {
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending: []string{"pending"},
 		Target:  []string{"complete"},
 		Refresh: func() (interface{}, string, error) {

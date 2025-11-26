@@ -15,7 +15,7 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -1432,7 +1432,7 @@ func bareMetalServerNetworkInterfaceDelete(context context.Context, d *schema.Re
 
 func isWaitForBareMetalServerNetworkInterfaceDeleted(bmsC *vpcv1.VpcV1, bareMetalServerId, nicId, nicType string, nicIntf vpcv1.BareMetalServerNetworkInterfaceIntf, timeout time.Duration) (interface{}, error) {
 	log.Printf("Waiting for (%s) / (%s) to be deleted.", bareMetalServerId, nicId)
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending:    []string{isBareMetalServerNetworkInterfaceAvailable, isBareMetalServerNetworkInterfaceDeleting, isBareMetalServerNetworkInterfacePending},
 		Target:     []string{isBareMetalServerNetworkInterfaceDeleted, isBareMetalServerNetworkInterfaceVlanPending, isBareMetalServerNetworkInterfaceFailed, isBareMetalServerNetworkInterfacePCIPending, ""},
 		Refresh:    isBareMetalServerNetworkInterfaceDeleteRefreshFunc(bmsC, bareMetalServerId, nicId, nicType, nicIntf),
@@ -1444,7 +1444,7 @@ func isWaitForBareMetalServerNetworkInterfaceDeleted(bmsC *vpcv1.VpcV1, bareMeta
 	return stateConf.WaitForState()
 }
 
-func isBareMetalServerNetworkInterfaceDeleteRefreshFunc(bmsC *vpcv1.VpcV1, bareMetalServerId, nicId, nicType string, nicIntf vpcv1.BareMetalServerNetworkInterfaceIntf) resource.StateRefreshFunc {
+func isBareMetalServerNetworkInterfaceDeleteRefreshFunc(bmsC *vpcv1.VpcV1, bareMetalServerId, nicId, nicType string, nicIntf vpcv1.BareMetalServerNetworkInterfaceIntf) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		getBmsNicOptions := &vpcv1.GetBareMetalServerNetworkInterfaceOptions{
 			BareMetalServerID: &bareMetalServerId,
@@ -1487,7 +1487,7 @@ func isBareMetalServerNetworkInterfaceDeleteRefreshFunc(bmsC *vpcv1.VpcV1, bareM
 
 func isWaitForBareMetalServerNetworkInterfaceAvailable(client *vpcv1.VpcV1, bareMetalServerId, nicId string, timeout time.Duration, d *schema.ResourceData) (interface{}, error) {
 	log.Printf("Waiting for Bare Metal Server (%s) Network Interface (%s) to be available.", bareMetalServerId, nicId)
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending:    []string{isBareMetalServerNetworkInterfacePending},
 		Target:     []string{isBareMetalServerNetworkInterfaceAvailable, isBareMetalServerNetworkInterfacePCIPending, isBareMetalServerNetworkInterfaceFailed},
 		Refresh:    isBareMetalServerNetworkInterfaceRefreshFunc(client, bareMetalServerId, nicId, d),
@@ -1498,7 +1498,7 @@ func isWaitForBareMetalServerNetworkInterfaceAvailable(client *vpcv1.VpcV1, bare
 	return stateConf.WaitForState()
 }
 
-func isBareMetalServerNetworkInterfaceRefreshFunc(client *vpcv1.VpcV1, bareMetalServerId, nicId string, d *schema.ResourceData) resource.StateRefreshFunc {
+func isBareMetalServerNetworkInterfaceRefreshFunc(client *vpcv1.VpcV1, bareMetalServerId, nicId string, d *schema.ResourceData) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		getBmsNicOptions := &vpcv1.GetBareMetalServerNetworkInterfaceOptions{
 			BareMetalServerID: &bareMetalServerId,
@@ -1568,7 +1568,7 @@ func ParseNICTerraformID(s string) (string, string, error) {
 
 func isWaitForBareMetalServerAvailableForNIC(client *vpcv1.VpcV1, id string, timeout time.Duration, d *schema.ResourceData) (interface{}, error) {
 	log.Printf("Waiting for Bare Metal Server (%s) to be available.", id)
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending:    []string{isBareMetalServerStatusPending, isBareMetalServerActionStatusStarting, "running"},
 		Target:     []string{isBareMetalServerStatusRunning, isBareMetalServerStatusFailed},
 		Refresh:    isBareMetalServerForNICRefreshFunc(client, id, d),
@@ -1579,7 +1579,7 @@ func isWaitForBareMetalServerAvailableForNIC(client *vpcv1.VpcV1, id string, tim
 	return stateConf.WaitForState()
 }
 
-func isBareMetalServerForNICRefreshFunc(client *vpcv1.VpcV1, id string, d *schema.ResourceData) resource.StateRefreshFunc {
+func isBareMetalServerForNICRefreshFunc(client *vpcv1.VpcV1, id string, d *schema.ResourceData) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		bmsgetoptions := &vpcv1.GetBareMetalServerOptions{
 			ID: &id,
@@ -1598,7 +1598,7 @@ func isBareMetalServerForNICRefreshFunc(client *vpcv1.VpcV1, id string, d *schem
 
 func isWaitForBareMetalServerStoppedForNIC(client *vpcv1.VpcV1, id string, timeout time.Duration, d *schema.ResourceData) (interface{}, error) {
 	log.Printf("Waiting for Bare Metal Server (%s) to be stopped.", id)
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending:    []string{isBareMetalServerStatusPending, isBareMetalServerActionStatusStarting},
 		Target:     []string{isBareMetalServerActionStatusStopped},
 		Refresh:    isBareMetalServerForNICStoppedRefreshFunc(client, id, d),
@@ -1609,7 +1609,7 @@ func isWaitForBareMetalServerStoppedForNIC(client *vpcv1.VpcV1, id string, timeo
 	return stateConf.WaitForState()
 }
 
-func isBareMetalServerForNICStoppedRefreshFunc(client *vpcv1.VpcV1, id string, d *schema.ResourceData) resource.StateRefreshFunc {
+func isBareMetalServerForNICStoppedRefreshFunc(client *vpcv1.VpcV1, id string, d *schema.ResourceData) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		bmsgetoptions := &vpcv1.GetBareMetalServerOptions{
 			ID: &id,

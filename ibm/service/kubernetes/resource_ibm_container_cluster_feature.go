@@ -9,7 +9,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	v1 "github.com/IBM-Cloud/bluemix-go/api/container/containerv1"
@@ -336,7 +336,7 @@ func WaitForClusterAvailableForFeatureUpdate(cluster string, timeout time.Durati
 	log.Printf("Waiting for cluster (%s) to be available.", cluster)
 	id := cluster
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending:    []string{"retry", clusterProvisioning},
 		Target:     []string{clusterNormal},
 		Refresh:    clusterStateRefreshFunc(csClient.Clusters(), id, target),
@@ -348,7 +348,7 @@ func WaitForClusterAvailableForFeatureUpdate(cluster string, timeout time.Durati
 	return stateConf.WaitForState()
 }
 
-func clusterStateRefreshFunc(client v1.Clusters, instanceID string, target v1.ClusterTargetHeader) resource.StateRefreshFunc {
+func clusterStateRefreshFunc(client v1.Clusters, instanceID string, target v1.ClusterTargetHeader) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		clusterFields, err := client.FindWithOutShowResourcesCompatible(instanceID, target)
 		if err != nil {
@@ -373,7 +373,7 @@ func WaitForWorkerAvailableForFeatureUpdate(cluster string, timeout time.Duratio
 	log.Printf("Waiting for worker of the cluster (%s) to be available.", cluster)
 	id := cluster
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending:    []string{"retry", workerProvisioning},
 		Target:     []string{workerNormal},
 		Refresh:    workerStateRefreshFunc(csClient.Workers(), id, target),

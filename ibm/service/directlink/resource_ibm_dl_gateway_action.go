@@ -13,7 +13,7 @@ import (
 
 	"github.com/IBM/networking-go-sdk/directlinkv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
@@ -980,7 +980,7 @@ func resourceIBMdlGatewayActionRead(d *schema.ResourceData, meta interface{}) er
 
 func isWaitForDirectLinkAvailableforAction(client *directlinkv1.DirectLinkV1, id string, timeout time.Duration) (interface{}, error) {
 	log.Printf("Waiting for direct link (%s) to be provisioned.", id)
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending:    []string{"retry", dlGatewayProvisioning},
 		Target:     []string{dlGatewayProvisioningDone, ""},
 		Refresh:    isDirectLinkRefreshFuncforAction(client, id),
@@ -990,7 +990,7 @@ func isWaitForDirectLinkAvailableforAction(client *directlinkv1.DirectLinkV1, id
 	}
 	return stateConf.WaitForState()
 }
-func isDirectLinkRefreshFuncforAction(client *directlinkv1.DirectLinkV1, id string) resource.StateRefreshFunc {
+func isDirectLinkRefreshFuncforAction(client *directlinkv1.DirectLinkV1, id string) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		getOptions := &directlinkv1.GetGatewayOptions{
 			ID: &id,
@@ -1010,7 +1010,7 @@ func isDirectLinkRefreshFuncforAction(client *directlinkv1.DirectLinkV1, id stri
 
 func isWaitForDirectLinkActionAvailable(client *directlinkv1.DirectLinkV1, id string, timeout time.Duration) (interface{}, error) {
 	log.Printf("Waiting for direct link (%s) to be provisioned.", id)
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending:    []string{"retry", dlGatewayActionUpdate},
 		Target:     []string{dlGatewayActionUpdateDone, ""},
 		Refresh:    isDirectLinkRefreshActionFunc(client, id),
@@ -1020,7 +1020,7 @@ func isWaitForDirectLinkActionAvailable(client *directlinkv1.DirectLinkV1, id st
 	}
 	return stateConf.WaitForState()
 }
-func isDirectLinkRefreshActionFunc(client *directlinkv1.DirectLinkV1, id string) resource.StateRefreshFunc {
+func isDirectLinkRefreshActionFunc(client *directlinkv1.DirectLinkV1, id string) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		getOptions := &directlinkv1.GetGatewayOptions{
 			ID: &id,
@@ -1044,7 +1044,7 @@ func isDirectLinkRefreshActionFunc(client *directlinkv1.DirectLinkV1, id string)
 
 func isWaitForDirectLinkDeleteActionAvailable(client *directlinkv1.DirectLinkV1, id string, timeout time.Duration) (interface{}, error) {
 	log.Printf("Waiting for direct link (%s) to be provisioned.", id)
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending:    []string{"retry", dlGatewayDeleteActionUpdate},
 		Target:     []string{dlGatewayDeleteActionUpdateDone, ""},
 		Refresh:    isDirectLinkRefreshDeleteActionFunc(client, id),
@@ -1054,7 +1054,7 @@ func isWaitForDirectLinkDeleteActionAvailable(client *directlinkv1.DirectLinkV1,
 	}
 	return stateConf.WaitForState()
 }
-func isDirectLinkRefreshDeleteActionFunc(client *directlinkv1.DirectLinkV1, id string) resource.StateRefreshFunc {
+func isDirectLinkRefreshDeleteActionFunc(client *directlinkv1.DirectLinkV1, id string) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		getOptions := &directlinkv1.GetGatewayOptions{
 			ID: &id,

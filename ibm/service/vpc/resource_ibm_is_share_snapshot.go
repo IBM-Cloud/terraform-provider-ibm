@@ -17,7 +17,6 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
@@ -25,6 +24,7 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 )
 
 func ResourceIBMIsShareSnapshot() *schema.Resource {
@@ -704,7 +704,7 @@ func ResourceIBMIsShareSnapshotZoneReferenceToMap(model *vpcv1.ZoneReference) (m
 func isWaitForShareSnapshotAvailable(context context.Context, vpcClient *vpcv1.VpcV1, shareid string, shareSnapshotId string, d *schema.ResourceData, timeout time.Duration) (interface{}, error) {
 	log.Printf("Waiting for share snapshot (%s) to be available.", shareid)
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending:    []string{"updating", "pending", "waiting"},
 		Target:     []string{"available", "failed"},
 		Refresh:    isShareSnapshotRefreshFunc(context, vpcClient, shareid, shareSnapshotId, d),
@@ -716,7 +716,7 @@ func isWaitForShareSnapshotAvailable(context context.Context, vpcClient *vpcv1.V
 	return stateConf.WaitForState()
 }
 
-func isShareSnapshotRefreshFunc(context context.Context, vpcClient *vpcv1.VpcV1, shareid, shareSnapshotId string, d *schema.ResourceData) resource.StateRefreshFunc {
+func isShareSnapshotRefreshFunc(context context.Context, vpcClient *vpcv1.VpcV1, shareid, shareSnapshotId string, d *schema.ResourceData) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		shareSnapOptions := &vpcv1.GetShareSnapshotOptions{}
 

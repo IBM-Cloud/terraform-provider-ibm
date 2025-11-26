@@ -18,7 +18,7 @@ import (
 	"github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -1154,7 +1154,7 @@ func resourceIBMIsVirtualNetworkInterfaceVirtualNetworkInterfaceTargetShareMount
 func isWaitForVirtualNetworkInterfaceAvailable(client *vpcv1.VpcV1, id string, timeout time.Duration) (interface{}, error) {
 	log.Printf("Waiting for VirtualNetworkInterface (%s) to be available.", id)
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending:    []string{"", "pending"},
 		Target:     []string{"done", "failed", "stable"},
 		Refresh:    isVirtualNetworkInterfaceRefreshFunc(client, id),
@@ -1166,7 +1166,7 @@ func isWaitForVirtualNetworkInterfaceAvailable(client *vpcv1.VpcV1, id string, t
 	return stateConf.WaitForState()
 }
 
-func isVirtualNetworkInterfaceRefreshFunc(client *vpcv1.VpcV1, id string) resource.StateRefreshFunc {
+func isVirtualNetworkInterfaceRefreshFunc(client *vpcv1.VpcV1, id string) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		vnigetoptions := &vpcv1.GetVirtualNetworkInterfaceOptions{
 			ID: &id,
@@ -1184,7 +1184,7 @@ func isVirtualNetworkInterfaceRefreshFunc(client *vpcv1.VpcV1, id string) resour
 func isWaitForVirtualNetworkInterfaceDeleted(client *vpcv1.VpcV1, id string, timeout time.Duration, vni *vpcv1.VirtualNetworkInterface) (interface{}, error) {
 	log.Printf("Waiting for VirtualNetworkInterface (%s) to be deleted.", id)
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending:    []string{"", "pending", "deleting", "updating", "waiting"},
 		Target:     []string{"done", "failed", "stable", "suspended"},
 		Refresh:    isVirtualNetworkInterfaceDeleteRefreshFunc(client, vni, id),
@@ -1196,7 +1196,7 @@ func isWaitForVirtualNetworkInterfaceDeleted(client *vpcv1.VpcV1, id string, tim
 	return stateConf.WaitForState()
 }
 
-func isVirtualNetworkInterfaceDeleteRefreshFunc(client *vpcv1.VpcV1, vnir *vpcv1.VirtualNetworkInterface, id string) resource.StateRefreshFunc {
+func isVirtualNetworkInterfaceDeleteRefreshFunc(client *vpcv1.VpcV1, vnir *vpcv1.VirtualNetworkInterface, id string) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		vnigetoptions := &vpcv1.GetVirtualNetworkInterfaceOptions{
 			ID: &id,

@@ -13,7 +13,7 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/softlayer/softlayer-go/datatypes"
 	"github.com/softlayer/softlayer-go/filter"
@@ -885,7 +885,7 @@ func waitForBareMetalProvision(hw *datatypes.Hardware, d *schema.ResourceData, m
 	domain := *hw.Domain
 	log.Printf("Waiting for server (%s.%s) to have to be provisioned", hostname, domain)
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending: []string{"retry", "pending"},
 		Target:  []string{"provisioned"},
 		Refresh: func() (interface{}, string, error) {
@@ -932,7 +932,7 @@ func waitForNoBareMetalActiveTransactions(id int, meta interface{}) (interface{}
 	log.Printf("Waiting for server (%d) to have zero active transactions", id)
 	service := services.GetHardwareServerService(meta.(conns.ClientSession).SoftLayerSession())
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending: []string{"retry", "active"},
 		Target:  []string{"idle"},
 		Refresh: func() (interface{}, string, error) {

@@ -17,7 +17,7 @@ import (
 	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -638,7 +638,7 @@ func lbListenerPolicyCreate(context context.Context, d *schema.ResourceData, met
 
 func isWaitForLbAvailable(vpc *vpcv1.VpcV1, id string, timeout time.Duration) (interface{}, error) {
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending:    []string{isLBListenerPolicyPending},
 		Target:     []string{isLBProvisioningDone},
 		Refresh:    isLbRefreshFunc(vpc, id),
@@ -650,7 +650,7 @@ func isWaitForLbAvailable(vpc *vpcv1.VpcV1, id string, timeout time.Duration) (i
 	return stateConf.WaitForState()
 }
 
-func isLbRefreshFunc(vpc *vpcv1.VpcV1, id string) resource.StateRefreshFunc {
+func isLbRefreshFunc(vpc *vpcv1.VpcV1, id string) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 
 		getLbOptions := &vpcv1.GetLoadBalancerOptions{
@@ -672,7 +672,7 @@ func isLbRefreshFunc(vpc *vpcv1.VpcV1, id string) resource.StateRefreshFunc {
 
 func isWaitForLbListenerPolicyAvailable(vpc *vpcv1.VpcV1, id string, timeout time.Duration) (interface{}, error) {
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending:    []string{"retry", isLBListenerProvisioning, "create_pending", "update_pending", "maintenance_pending"},
 		Target:     []string{isLBListenerProvisioningDone},
 		Refresh:    isLbListenerPolicyRefreshFunc(vpc, id),
@@ -684,7 +684,7 @@ func isWaitForLbListenerPolicyAvailable(vpc *vpcv1.VpcV1, id string, timeout tim
 	return stateConf.WaitForState()
 }
 
-func isLbListenerPolicyRefreshFunc(vpc *vpcv1.VpcV1, id string) resource.StateRefreshFunc {
+func isLbListenerPolicyRefreshFunc(vpc *vpcv1.VpcV1, id string) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 
 		parts, err := flex.IdParts(id)
@@ -1043,7 +1043,7 @@ func lbListenerPolicyDelete(context context.Context, d *schema.ResourceData, met
 }
 func isWaitForLbListnerPolicyDeleted(vpc *vpcv1.VpcV1, id string, timeout time.Duration) (interface{}, error) {
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending:    []string{isLBListenerPolicyRetry, isLBListenerPolicyDeleting},
 		Target:     []string{isLBListenerPolicyFailed, isLBListenerPolicyDeleted},
 		Refresh:    isLbListenerPolicyDeleteRefreshFunc(vpc, id),
@@ -1055,7 +1055,7 @@ func isWaitForLbListnerPolicyDeleted(vpc *vpcv1.VpcV1, id string, timeout time.D
 	return stateConf.WaitForState()
 }
 
-func isLbListenerPolicyDeleteRefreshFunc(vpc *vpcv1.VpcV1, id string) resource.StateRefreshFunc {
+func isLbListenerPolicyDeleteRefreshFunc(vpc *vpcv1.VpcV1, id string) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 
 		//Retrieve lbId, listenerId and policyID

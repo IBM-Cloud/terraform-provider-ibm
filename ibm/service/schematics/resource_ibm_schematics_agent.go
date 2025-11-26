@@ -10,7 +10,7 @@ import (
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
@@ -850,7 +850,7 @@ func resourceIbmSchematicsAgentRead(context context.Context, d *schema.ResourceD
 }
 func isWaitForAgentDestroyResources(context context.Context, schematicsClient *schematicsv1.SchematicsV1, id string, timeout time.Duration) (interface{}, error) {
 	log.Printf("Waiting for agent (%s) resources to be destroyed.", id)
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending:    []string{"retry", agentProvisioningStatusCodeJobInProgress, agentProvisioningStatusCodeJobPending, agentProvisioningStatusCodeJobReadyToExecute, agentProvisioningStatusCodeJobStopInProgress},
 		Target:     []string{agentProvisioningStatusCodeJobFinished, agentProvisioningStatusCodeJobFailed, agentProvisioningStatusCodeJobCancelled, agentProvisioningStatusCodeJobStopped, ""},
 		Refresh:    agentDestroyRefreshFunc(schematicsClient, id),
@@ -860,7 +860,7 @@ func isWaitForAgentDestroyResources(context context.Context, schematicsClient *s
 	}
 	return stateConf.WaitForStateContext(context)
 }
-func agentDestroyRefreshFunc(schematicsClient *schematicsv1.SchematicsV1, id string) resource.StateRefreshFunc {
+func agentDestroyRefreshFunc(schematicsClient *schematicsv1.SchematicsV1, id string) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		getAgentDataOptions := &schematicsv1.GetAgentDataOptions{
 			AgentID: core.StringPtr(id),

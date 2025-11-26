@@ -11,7 +11,7 @@ import (
 
 	"github.com/IBM/networking-go-sdk/transitgatewayapisv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
@@ -246,7 +246,7 @@ func resourceIBMTransitGatewayCreate(d *schema.ResourceData, meta interface{}) e
 func isWaitForTransitGatewayAvailable(client *transitgatewayapisv1.TransitGatewayApisV1, id string, timeout time.Duration) (interface{}, error) {
 	log.Printf("Waiting for transit gateway (%s) to be available.", id)
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending:    []string{"retry", isTransitGatewayProvisioning},
 		Target:     []string{isTransitGatewayProvisioningDone, ""},
 		Refresh:    isTransitGatewayRefreshFunc(client, id),
@@ -258,7 +258,7 @@ func isWaitForTransitGatewayAvailable(client *transitgatewayapisv1.TransitGatewa
 	return stateConf.WaitForState()
 }
 
-func isTransitGatewayRefreshFunc(client *transitgatewayapisv1.TransitGatewayApisV1, id string) resource.StateRefreshFunc {
+func isTransitGatewayRefreshFunc(client *transitgatewayapisv1.TransitGatewayApisV1, id string) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		gettgwoptions := &transitgatewayapisv1.GetTransitGatewayOptions{
 			ID: &id,
@@ -414,7 +414,7 @@ func resourceIBMTransitGatewayDelete(d *schema.ResourceData, meta interface{}) e
 func isWaitForTransitGatewayDeleted(client *transitgatewayapisv1.TransitGatewayApisV1, id string, timeout time.Duration) (interface{}, error) {
 	log.Printf("Waiting for transit gateway (%s) to be deleted.", id)
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending:    []string{"retry", isTransitGatewayDeleting},
 		Target:     []string{"", isTransitGatewayDeleted},
 		Refresh:    isTransitGatewayDeleteRefreshFunc(client, id),
@@ -426,7 +426,7 @@ func isWaitForTransitGatewayDeleted(client *transitgatewayapisv1.TransitGatewayA
 	return stateConf.WaitForState()
 }
 
-func isTransitGatewayDeleteRefreshFunc(client *transitgatewayapisv1.TransitGatewayApisV1, id string) resource.StateRefreshFunc {
+func isTransitGatewayDeleteRefreshFunc(client *transitgatewayapisv1.TransitGatewayApisV1, id string) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		log.Printf("[DEBUG] tg gateway delete function here")
 		gettgwoptions := &transitgatewayapisv1.GetTransitGatewayOptions{

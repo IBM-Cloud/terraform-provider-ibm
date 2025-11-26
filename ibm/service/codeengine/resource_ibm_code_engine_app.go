@@ -19,7 +19,7 @@ import (
 	"github.com/IBM/code-engine-go-sdk/codeenginev2"
 	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -711,7 +711,7 @@ func waitForIbmCodeEngineAppCreate(d *schema.ResourceData, meta interface{}) (in
 	getAppOptions.SetProjectID(parts[0])
 	getAppOptions.SetName(parts[1])
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending: []string{"deploying"},
 		Target:  []string{"ready", "failed", "warning"},
 		Refresh: func() (interface{}, string, error) {

@@ -14,7 +14,7 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	"github.com/IBM/go-sdk-core/v5/core"
@@ -794,7 +794,7 @@ func resourceIbmIsDedicatedHostDelete(context context.Context, d *schema.Resourc
 
 func isWaitForDedicatedHostDelete(instanceC *vpcv1.VpcV1, d *schema.ResourceData, id string) (interface{}, error) {
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending: []string{isDedicatedHostDeleting, isDedicatedHostStable},
 		Target:  []string{isDedicatedHostDeleteDone, ""},
 		Refresh: func() (interface{}, string, error) {
@@ -824,7 +824,7 @@ func isWaitForDedicatedHostDelete(instanceC *vpcv1.VpcV1, d *schema.ResourceData
 func isWaitForDedicatedHostAvailable(instanceC *vpcv1.VpcV1, id string, timeout time.Duration, d *schema.ResourceData) (interface{}, error) {
 	log.Printf("Waiting for dedicated host (%s) to be available.", id)
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending:    []string{isDedicatedHostStatusPending, isDedicatedHostUpdating, isDedicatedHostWaiting},
 		Target:     []string{isDedicatedHostFailed, isDedicatedHostStable, isDedicatedHostSuspended},
 		Refresh:    isDedicatedHostRefreshFunc(instanceC, id, d),
@@ -836,7 +836,7 @@ func isWaitForDedicatedHostAvailable(instanceC *vpcv1.VpcV1, id string, timeout 
 	return stateConf.WaitForState()
 }
 
-func isDedicatedHostRefreshFunc(instanceC *vpcv1.VpcV1, id string, d *schema.ResourceData) resource.StateRefreshFunc {
+func isDedicatedHostRefreshFunc(instanceC *vpcv1.VpcV1, id string, d *schema.ResourceData) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		getinsOptions := &vpcv1.GetDedicatedHostOptions{
 			ID: &id,

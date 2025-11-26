@@ -11,9 +11,9 @@ import (
 	"time"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 
 	"github.com/IBM/vmware-go-sdk/vmwarev1"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -36,7 +36,7 @@ func waitForVdcStatusUpdate(context context.Context, d *schema.ResourceData, met
 		return "", err
 	}
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending: []string{VdcCreatingState},
 		Target:  []string{VdcFinalState},
 		Refresh: func() (interface{}, string, error) {
@@ -78,7 +78,7 @@ func waitForVdcToDelete(context context.Context, d *schema.ResourceData, meta in
 		return false, err
 	}
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending: []string{isVdcDeleting},
 		Target:  []string{isVdcDeleteDone},
 		Refresh: func() (interface{}, string, error) {

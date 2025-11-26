@@ -44,7 +44,9 @@ import (
 	rg "github.com/IBM/platform-services-go-sdk/resourcemanagerv2"
 	"github.com/apache/openwhisk-client-go/whisk"
 	"github.com/go-openapi/strfmt"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-framework/attr"
+	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/softlayer/softlayer-go/datatypes"
 	"github.com/softlayer/softlayer-go/sl"
@@ -2914,7 +2916,7 @@ func UpdateGlobalTagsUsingCRN(oldList, newList interface{}, meta interface{}, re
 func WaitForTagsAvailable(meta interface{}, resourceID, resourceType, tagType string, desired *schema.Set, timeout time.Duration) (interface{}, error) {
 	log.Printf("Waiting for tag attachment (%s) to be successful.", resourceID)
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending:    []string{"pending"},
 		Target:     []string{"success", "error"},
 		Refresh:    tagsRefreshFunc(meta, resourceID, resourceType, tagType, desired),
@@ -2925,7 +2927,7 @@ func WaitForTagsAvailable(meta interface{}, resourceID, resourceType, tagType st
 	return stateConf.WaitForState()
 }
 
-func tagsRefreshFunc(meta interface{}, resourceID, resourceType, tagType string, desired *schema.Set) resource.StateRefreshFunc {
+func tagsRefreshFunc(meta interface{}, resourceID, resourceType, tagType string, desired *schema.Set) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		tags, err := GetGlobalTagsUsingCRN(meta, resourceID, resourceType, tagType)
 		if err != nil {
@@ -4813,4 +4815,201 @@ func Stringify(v interface{}) string {
 		}
 	}
 	return ""
+}
+
+func UpdateGlobalTagsElementsUsingCRN(oldList, newList []attr.Value, meta interface{}, resourceID, resourceType, tagType string) error {
+	gtClient, err := meta.(conns.ClientSession).GlobalTaggingAPIv1()
+	if err != nil {
+		return fmt.Errorf("[ERROR] Error getting global tagging client settings: %s", err)
+	}
+
+	userDetails, err := meta.(conns.ClientSession).BluemixUserDetails()
+	if err != nil {
+		return err
+	}
+	acctID := userDetails.UserAccount
+
+	resources := []globaltaggingv1.Resource{}
+	r := globaltaggingv1.Resource{ResourceID: PtrToString(resourceID), ResourceType: PtrToString(resourceType)}
+	resources = append(resources, r)
+
+	add, remove, news := processLists(oldList, newList)
+
+	if strings.TrimSpace(tagType) == "" || tagType == "user" {
+		schematicTags := os.Getenv("IC_ENV_TAGS")
+		var envTags []string
+		if schematicTags != "" {
+			envTags = strings.Split(schematicTags, ",")
+			add = append(add, envTags...)
+		}
+	}
+
+	if len(remove) > 0 {
+		detachTagOptions := &globaltaggingv1.DetachTagOptions{}
+		detachTagOptions.Resources = resources
+		detachTagOptions.TagNames = remove
+		if len(tagType) > 0 {
+			detachTagOptions.TagType = PtrToString(tagType)
+			if tagType == "service" {
+				detachTagOptions.AccountID = PtrToString(acctID)
+			}
+		}
+
+		_, resp, err := gtClient.DetachTag(detachTagOptions)
+		if err != nil {
+			return fmt.Errorf("[ERROR] Error detaching database tags %v: %s\n%s", remove, err, resp)
+		}
+		for _, v := range remove {
+			delTagOptions := &globaltaggingv1.DeleteTagOptions{
+				TagName: PtrToString(v),
+			}
+			_, resp, err := gtClient.DeleteTag(delTagOptions)
+			if err != nil {
+				return fmt.Errorf("[ERROR] Error deleting database tag %v: %s\n%s", v, err, resp)
+			}
+		}
+	}
+
+	if len(add) > 0 {
+		AttachTagOptions := &globaltaggingv1.AttachTagOptions{}
+		AttachTagOptions.Resources = resources
+		AttachTagOptions.TagNames = add
+		if len(tagType) > 0 {
+			AttachTagOptions.TagType = PtrToString(tagType)
+			if tagType == "service" {
+				AttachTagOptions.AccountID = PtrToString(acctID)
+			}
+		}
+
+		_, resp, err := gtClient.AttachTag(AttachTagOptions)
+		if err != nil {
+			return fmt.Errorf("[ERROR] Error updating database tags %v : %s\n%s", add, err, resp)
+		}
+		response, errored := WaitForTagsAvailable(meta, resourceID, resourceType, tagType, news, 30*time.Second)
+		if errored != nil {
+			log.Printf(`[ERROR] Error waiting for resource tags %s : %v
+%v`, resourceID, errored, response)
+		}
+	}
+
+	return nil
+}
+
+func processLists(oldList, newList []attr.Value) ([]string, []string, *schema.Set) {
+	// Check if either list is nil and assign an empty array if so
+	if oldList == nil {
+		oldList = []attr.Value{}
+	}
+	if newList == nil {
+		newList = []attr.Value{}
+	}
+	stringSet := &schema.Set{F: schema.HashString}
+	// Create sets for efficient difference calculation
+	oldSet := make(map[string]bool)
+	newSet := make(map[string]bool)
+
+	// Populate the sets
+	for _, v := range oldList {
+		if strVal, ok := v.(basetypes.StringValue); ok {
+			oldSet[strVal.ValueString()] = true
+		}
+	}
+	for _, v := range newList {
+		if strVal, ok := v.(basetypes.StringValue); ok {
+			stringSet.Add(strVal.ValueString())
+			newSet[strVal.ValueString()] = true
+		}
+	}
+	// Calculate differences
+	var remove, add []string
+	// Items in oldList but not in newList (to be removed)
+	for k := range oldSet {
+		if !newSet[k] {
+			remove = append(remove, k)
+		}
+	}
+	// Items in newList but not in oldList (to be added)
+	for k := range newSet {
+		if !oldSet[k] {
+			add = append(add, k)
+		}
+	}
+	return remove, add, stringSet
+}
+
+func GetGlobalTagsElementsUsingCRN(meta interface{}, resourceID, resourceType, tagType string) ([]string, error) {
+	userDetails, err := meta.(conns.ClientSession).BluemixUserDetails()
+	if err != nil {
+		return nil, err
+	}
+	accountID := userDetails.UserAccount
+	ListTagsOptions := &globaltaggingv1.ListTagsOptions{}
+	if resourceID != "" {
+		ListTagsOptions.AttachedTo = &resourceID
+	}
+	if strings.HasPrefix(resourceType, "Softlayer_") {
+		ListTagsOptions.Providers = []string{"ims"}
+	}
+	if len(tagType) > 0 {
+		ListTagsOptions.TagType = PtrToString(tagType)
+
+		if tagType == "service" {
+			ListTagsOptions.AccountID = PtrToString(accountID)
+		}
+	}
+	taggingResult, err := GetGlobalTagsElementsUsingSearchAPI(meta, resourceID, resourceType, tagType)
+	if err != nil {
+		return nil, err
+	}
+	return taggingResult, nil
+}
+
+func GetGlobalTagsElementsUsingSearchAPI(meta interface{}, resourceID, resourceType, tagType string) ([]string, error) {
+
+	gsClient, err := meta.(conns.ClientSession).GlobalSearchAPIV2()
+	if err != nil {
+		return nil, fmt.Errorf("[ERROR] Error getting global search client settings: %s", err)
+	}
+	options := globalsearchv2.SearchOptions{}
+	var query string
+	if strings.Contains(resourceType, "SoftLayer_") {
+		query = fmt.Sprintf("doc.id:%s AND family:ims", resourceID)
+		options.SetQuery(query)
+	} else {
+		query = fmt.Sprintf("crn:\"%s\"", resourceID)
+		options.SetQuery(query)
+	}
+	if tagType == "service" {
+		userDetails, err := meta.(conns.ClientSession).BluemixUserDetails()
+		if err != nil {
+			return nil, err
+		}
+		options.SetAccountID(userDetails.UserAccount)
+	}
+	options.SetFields([]string{"access_tags", "tags", "service_tags"})
+	result, resp, err := gsClient.Search(&options)
+	if err != nil {
+		return nil, fmt.Errorf("[ERROR] Error to query the tags for the resource: %s %s", err, resp)
+	}
+	var taglist []string
+	var t interface{}
+	if len(result.Items) > 0 {
+		if tagType == "access" {
+			t = result.Items[0].GetProperty("access_tags")
+		} else if tagType == "service" {
+			t = result.Items[0].GetProperty("service_tags")
+		} else {
+			t = result.Items[0].GetProperty("tags")
+		}
+		switch reflect.TypeOf(t).Kind() {
+		case reflect.Slice:
+			s := reflect.ValueOf(t)
+
+			for i := 0; i < s.Len(); i++ {
+				t := fmt.Sprintf("%s", (s.Index(i)))
+				taglist = append(taglist, t)
+			}
+		}
+	}
+	return taglist, nil
 }

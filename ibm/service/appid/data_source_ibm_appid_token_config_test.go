@@ -11,7 +11,7 @@ import (
 
 	"github.com/IBM-Cloud/bluemix-go/helpers"
 	appid "github.com/IBM/appid-management-go-sdk/appidmanagementv4"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"gotest.tools/assert"
 )
 

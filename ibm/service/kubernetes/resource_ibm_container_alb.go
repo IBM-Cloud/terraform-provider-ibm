@@ -8,7 +8,7 @@ import (
 	"log"
 	"time"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	v1 "github.com/IBM-Cloud/bluemix-go/api/container/containerv1"
@@ -223,7 +223,7 @@ func waitForContainerALB(d *schema.ResourceData, meta interface{}, albID, timeou
 		return false, err
 	}
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending: []string{"pending"},
 		Target:  []string{"active"},
 		Refresh: func() (interface{}, string, error) {
@@ -284,7 +284,7 @@ func waitForClusterAvailable(d *schema.ResourceData, meta interface{}, albID str
 
 	log.Printf("Waiting for worker of the cluster (%s) wokers to be available.", ClusterID)
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending:    []string{"retry", workerProvisioning},
 		Target:     []string{workerNormal},
 		Refresh:    workerStateRefreshFunc(csClient.Workers(), ClusterID, target),

@@ -17,7 +17,7 @@ import (
 	"github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -286,7 +286,7 @@ func resourceIBMISPublicGatewayCreate(context context.Context, d *schema.Resourc
 func isWaitForPublicGatewayAvailable(publicgwC *vpcv1.VpcV1, id string, timeout time.Duration) (interface{}, error) {
 	log.Printf("Waiting for public gateway (%s) to be available.", id)
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending:    []string{"retry", isPublicGatewayProvisioning},
 		Target:     []string{isPublicGatewayProvisioningDone, ""},
 		Refresh:    isPublicGatewayRefreshFunc(publicgwC, id),
@@ -298,7 +298,7 @@ func isWaitForPublicGatewayAvailable(publicgwC *vpcv1.VpcV1, id string, timeout 
 	return stateConf.WaitForState()
 }
 
-func isPublicGatewayRefreshFunc(publicgwC *vpcv1.VpcV1, id string) resource.StateRefreshFunc {
+func isPublicGatewayRefreshFunc(publicgwC *vpcv1.VpcV1, id string) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		getPublicGatewayOptions := &vpcv1.GetPublicGatewayOptions{
 			ID: &id,
@@ -575,7 +575,7 @@ func resourceIBMISPublicGatewayDelete(context context.Context, d *schema.Resourc
 func isWaitForPublicGatewayDeleted(pg *vpcv1.VpcV1, id string, timeout time.Duration) (interface{}, error) {
 	log.Printf("Waiting for public gateway (%s) to be deleted.", id)
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending:    []string{"retry", isPublicGatewayDeleting},
 		Target:     []string{isPublicGatewayDeleted, ""},
 		Refresh:    isPublicGatewayDeleteRefreshFunc(pg, id),
@@ -587,7 +587,7 @@ func isWaitForPublicGatewayDeleted(pg *vpcv1.VpcV1, id string, timeout time.Dura
 	return stateConf.WaitForState()
 }
 
-func isPublicGatewayDeleteRefreshFunc(pg *vpcv1.VpcV1, id string) resource.StateRefreshFunc {
+func isPublicGatewayDeleteRefreshFunc(pg *vpcv1.VpcV1, id string) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		log.Printf("[DEBUG] is pubic gateway delete function here")
 		getPublicGatewayOptions := &vpcv1.GetPublicGatewayOptions{
@@ -626,7 +626,7 @@ func resourceIBMISPublicGatewayExists(d *schema.ResourceData, meta interface{}) 
 func isWaitForSubnetPublicGatewayUnset(subnetC *vpcv1.VpcV1, id string, timeout time.Duration) (interface{}, error) {
 	log.Printf("Waiting for public gateway (%s) to be unset.", id)
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending:    []string{"retry", "wait"},
 		Target:     []string{"done", ""},
 		Refresh:    isSubnetPublicGatewayUnsetRefreshFunc(subnetC, id),
@@ -638,7 +638,7 @@ func isWaitForSubnetPublicGatewayUnset(subnetC *vpcv1.VpcV1, id string, timeout 
 	return stateConf.WaitForState()
 }
 
-func isSubnetPublicGatewayUnsetRefreshFunc(subnetC *vpcv1.VpcV1, id string) resource.StateRefreshFunc {
+func isSubnetPublicGatewayUnsetRefreshFunc(subnetC *vpcv1.VpcV1, id string) retry.StateRefreshFunc {
 	log.Printf("Waiting for public gateway (%s) to be unset.", id)
 	return func() (interface{}, string, error) {
 		getSubnetPublicGatewayOptions := &vpcv1.GetSubnetPublicGatewayOptions{

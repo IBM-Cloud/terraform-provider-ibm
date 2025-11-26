@@ -17,7 +17,7 @@ import (
 	"github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -659,7 +659,7 @@ func waitForHealthyInstanceGroup(instanceGroupID string, meta interface{}, timeo
 
 	getInstanceGroupOptions := vpcv1.GetInstanceGroupOptions{ID: &instanceGroupID}
 
-	healthStateConf := &resource.StateChangeConf{
+	healthStateConf := &retry.StateChangeConf{
 		Pending: []string{SCALING},
 		Target:  []string{HEALTHY},
 		Refresh: func() (interface{}, string, error) {
@@ -685,7 +685,7 @@ func waitForHealthyInstanceGroup(instanceGroupID string, meta interface{}, timeo
 }
 
 func waitForInstanceGroupDelete(d *schema.ResourceData, meta interface{}) (interface{}, error) {
-	healthStateConf := &resource.StateChangeConf{
+	healthStateConf := &retry.StateChangeConf{
 		Pending: []string{HEALTHY},
 		Target:  []string{DELETING},
 		Refresh: func() (interface{}, string, error) {

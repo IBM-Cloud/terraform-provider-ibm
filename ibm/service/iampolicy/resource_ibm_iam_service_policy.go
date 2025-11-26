@@ -14,7 +14,7 @@ import (
 	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/IBM/platform-services-go-sdk/iamidentityv1"
 	"github.com/IBM/platform-services-go-sdk/iampolicymanagementv1"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -436,15 +436,15 @@ func resourceIBMIAMServicePolicyCreate(d *schema.ResourceData, meta interface{})
 		getPolicyOptions.SetHeaders(map[string]string{"Transaction-Id": transactionID.(string)})
 	}
 
-	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
+	err = retry.Retry(5*time.Minute, func() *retry.RetryError {
 		var err error
 		policy, res, err := iamPolicyManagementClient.GetV2Policy(getPolicyOptions)
 
 		if err != nil || policy == nil {
 			if res != nil && res.StatusCode == 404 {
-				return resource.RetryableError(err)
+				return retry.RetryableError(err)
 			}
-			return resource.NonRetryableError(err)
+			return retry.NonRetryableError(err)
 		}
 		return nil
 	})
@@ -495,15 +495,15 @@ func resourceIBMIAMServicePolicyRead(d *schema.ResourceData, meta interface{}) e
 		getPolicyOptions.SetHeaders(map[string]string{"Transaction-Id": transactionID.(string)})
 	}
 
-	err = resource.Retry(5*time.Minute, func() *resource.RetryError {
+	err = retry.Retry(5*time.Minute, func() *retry.RetryError {
 		var err error
 		servicePolicy, res, err = iamPolicyManagementClient.GetV2Policy(getPolicyOptions)
 
 		if err != nil || servicePolicy == nil {
 			if res != nil && res.StatusCode == 404 {
-				return resource.RetryableError(err)
+				return retry.RetryableError(err)
 			}
-			return resource.NonRetryableError(err)
+			return retry.NonRetryableError(err)
 		}
 		return nil
 	})

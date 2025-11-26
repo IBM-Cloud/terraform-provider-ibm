@@ -19,7 +19,7 @@ import (
 	"github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -5211,7 +5211,7 @@ func isWaitForInstanceAvailable(instanceC *vpcv1.VpcV1, id string, timeout time.
 
 	communicator := make(chan interface{})
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending:    []string{"retry", isInstanceProvisioning},
 		Target:     []string{isInstanceStatusRunning, "available", "failed", ""},
 		Refresh:    isInstanceRefreshFunc(instanceC, id, d, communicator),
@@ -5228,7 +5228,7 @@ func isWaitForInstanceAvailable(instanceC *vpcv1.VpcV1, id string, timeout time.
 	return stateConf.WaitForState()
 }
 
-func isInstanceRefreshFunc(instanceC *vpcv1.VpcV1, id string, d *schema.ResourceData, communicator chan interface{}) resource.StateRefreshFunc {
+func isInstanceRefreshFunc(instanceC *vpcv1.VpcV1, id string, d *schema.ResourceData, communicator chan interface{}) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		getinsOptions := &vpcv1.GetInstanceOptions{
 			ID: &id,
@@ -7891,7 +7891,7 @@ func resourceIBMisInstanceExists(d *schema.ResourceData, meta interface{}) (bool
 
 func isWaitForInstanceDelete(instanceC *vpcv1.VpcV1, d *schema.ResourceData, id string) (interface{}, error) {
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending: []string{isInstanceDeleting, isInstanceAvailable},
 		Target:  []string{isInstanceDeleteDone, ""},
 		Refresh: func() (interface{}, string, error) {
@@ -7920,7 +7920,7 @@ func isWaitForInstanceDelete(instanceC *vpcv1.VpcV1, d *schema.ResourceData, id 
 
 func isWaitForInstanceActionStop(instanceC *vpcv1.VpcV1, timeout time.Duration, id string, d *schema.ResourceData) (interface{}, error) {
 	communicator := make(chan interface{})
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending: []string{isInstanceStatusRunning, isInstanceStatusPending, isInstanceActionStatusStopping},
 		Target:  []string{isInstanceActionStatusStopped, isInstanceStatusFailed, ""},
 		Refresh: func() (interface{}, string, error) {
@@ -7959,7 +7959,7 @@ func isWaitForInstanceActionStop(instanceC *vpcv1.VpcV1, timeout time.Duration, 
 
 func isWaitForInstanceActionStart(instanceC *vpcv1.VpcV1, timeout time.Duration, id string, d *schema.ResourceData) (interface{}, error) {
 	communicator := make(chan interface{})
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending: []string{isInstanceActionStatusStopped, isInstanceStatusPending, isInstanceActionStatusStopping, isInstanceStatusStarting, isInstanceStatusRestarting},
 		Target:  []string{isInstanceStatusRunning, isInstanceStatusFailed, ""},
 		Refresh: func() (interface{}, string, error) {
@@ -8025,7 +8025,7 @@ func isRestartStopAction(instanceC *vpcv1.VpcV1, id string, d *schema.ResourceDa
 func isWaitForInstanceVolumeAttached(instanceC *vpcv1.VpcV1, d *schema.ResourceData, id, volID string) (interface{}, error) {
 	log.Printf("Waiting for instance (%s) volume (%s) to be attached.", id, volID)
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending:    []string{isInstanceVolumeAttaching},
 		Target:     []string{isInstanceVolumeAttached, ""},
 		Refresh:    isInstanceVolumeRefreshFunc(instanceC, id, volID),
@@ -8036,8 +8036,7 @@ func isWaitForInstanceVolumeAttached(instanceC *vpcv1.VpcV1, d *schema.ResourceD
 
 	return stateConf.WaitForState()
 }
-
-func isInstanceVolumeRefreshFunc(instanceC *vpcv1.VpcV1, id, volID string) resource.StateRefreshFunc {
+func isInstanceVolumeRefreshFunc(instanceC *vpcv1.VpcV1, id, volID string) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		getvolattoptions := &vpcv1.GetInstanceVolumeAttachmentOptions{
 			InstanceID: &id,
@@ -8058,7 +8057,7 @@ func isInstanceVolumeRefreshFunc(instanceC *vpcv1.VpcV1, id, volID string) resou
 
 func isWaitForInstanceVolumeDetached(instanceC *vpcv1.VpcV1, d *schema.ResourceData, id, volID string) (interface{}, error) {
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending: []string{isInstanceVolumeAttached, isInstanceVolumeDetaching},
 		Target:  []string{isInstanceDeleteDone, ""},
 		Refresh: func() (interface{}, string, error) {

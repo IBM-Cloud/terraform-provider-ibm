@@ -12,7 +12,7 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -319,7 +319,7 @@ func resourceIBMISSubnetPublicGatewayAttachmentDelete(context context.Context, d
 func isWaitForSubnetPublicGatewayAvailable(subnetC *vpcv1.VpcV1, id string, timeout time.Duration) (interface{}, error) {
 	log.Printf("Waiting for subnet (%s) public gateway attachment to be available.", id)
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending:    []string{IsPublicGatewayAttachmentPending, IsPublicGatewayAttachmentDeleting},
 		Target:     []string{IsPublicGatewayAttachmentAvailable, IsPublicGatewayAttachmentFailed, ""},
 		Refresh:    isSubnetPublicGatewayRefreshFunc(subnetC, id),
@@ -331,7 +331,7 @@ func isWaitForSubnetPublicGatewayAvailable(subnetC *vpcv1.VpcV1, id string, time
 	return stateConf.WaitForState()
 }
 
-func isSubnetPublicGatewayRefreshFunc(subnetC *vpcv1.VpcV1, id string) resource.StateRefreshFunc {
+func isSubnetPublicGatewayRefreshFunc(subnetC *vpcv1.VpcV1, id string) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		getSubnetPublicGatewayOptionsModel := &vpcv1.GetSubnetPublicGatewayOptions{
 			ID: &id,
@@ -356,7 +356,7 @@ func isSubnetPublicGatewayRefreshFunc(subnetC *vpcv1.VpcV1, id string) resource.
 func isWaitForSubnetPublicGatewayDelete(subnetC *vpcv1.VpcV1, id string, timeout time.Duration) (interface{}, error) {
 	log.Printf("Waiting for subnet (%s) public gateway attachment to be detached.", id)
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending:    []string{IsPublicGatewayAttachmentPending, IsPublicGatewayAttachmentDeleting},
 		Target:     []string{IsPublicGatewayAttachmentAvailable, IsPublicGatewayAttachmentFailed, ""},
 		Refresh:    isSubnetPublicGatewayDeleteRefreshFunc(subnetC, id),
@@ -368,7 +368,7 @@ func isWaitForSubnetPublicGatewayDelete(subnetC *vpcv1.VpcV1, id string, timeout
 	return stateConf.WaitForState()
 }
 
-func isSubnetPublicGatewayDeleteRefreshFunc(subnetC *vpcv1.VpcV1, id string) resource.StateRefreshFunc {
+func isSubnetPublicGatewayDeleteRefreshFunc(subnetC *vpcv1.VpcV1, id string) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		getSubnetPublicGatewayOptionsModel := &vpcv1.GetSubnetPublicGatewayOptions{
 			ID: &id,

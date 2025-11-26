@@ -15,7 +15,6 @@ import (
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
@@ -707,7 +706,7 @@ func isActionControlAssignmentAssigned(id string, meta interface{}) retry.StateR
 	}
 }
 
-func isAccessActionControlAssignedDeleted(id string, meta interface{}) resource.StateRefreshFunc {
+func isAccessActionControlAssignedDeleted(id string, meta interface{}) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		iamPolicyManagementClient, err := meta.(conns.ClientSession).IAMPolicyManagementV1API()
 		if err != nil {

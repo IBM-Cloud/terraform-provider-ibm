@@ -12,7 +12,7 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM/networking-go-sdk/dnssvcsv1"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -346,7 +346,7 @@ func suppressPDNSGlbNameDiff(k, old, new string, d *schema.ResourceData) bool {
 func isWaitForLoadBalancerDeleted(LoadBalancer *dnssvcsv1.DnsSvcsV1, d *schema.ResourceData, timeout time.Duration) (interface{}, error) {
 	idset := strings.Split(d.Id(), "/")
 	log.Printf("Waiting for PDNS GLB (%s) to be deleted.", idset[2])
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending:    []string{pdnsGLBDeleting},
 		Target:     []string{pdnsGLBDeleted},
 		Refresh:    isVLoadBalancerDeleteRefreshFunc(LoadBalancer, d),
@@ -358,7 +358,7 @@ func isWaitForLoadBalancerDeleted(LoadBalancer *dnssvcsv1.DnsSvcsV1, d *schema.R
 	return stateConf.WaitForState()
 }
 
-func isVLoadBalancerDeleteRefreshFunc(LoadBalancer *dnssvcsv1.DnsSvcsV1, d *schema.ResourceData) resource.StateRefreshFunc {
+func isVLoadBalancerDeleteRefreshFunc(LoadBalancer *dnssvcsv1.DnsSvcsV1, d *schema.ResourceData) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		idset := strings.Split(d.Id(), "/")
 		getlbOptions := LoadBalancer.NewGetLoadBalancerOptions(idset[0], idset[1], idset[2])

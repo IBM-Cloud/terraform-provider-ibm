@@ -15,7 +15,7 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -329,7 +329,7 @@ func resourceIBMISSecurityGroupTargetExists(d *schema.ResourceData, meta interfa
 func isWaitForLBRemoveAvailable(sess *vpcv1.VpcV1, sgt vpcv1.SecurityGroupTargetReferenceIntf, lbId, securityGroupID, securityGroupTargetID string, timeout time.Duration) (interface{}, error) {
 	log.Printf("[INFO] Waiting for load balancer binding (%s) to be removed.", lbId)
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending:        []string{isLBProvisioning},
 		Target:         []string{isLBProvisioningDone},
 		Refresh:        isLBRemoveRefreshFunc(sess, sgt, lbId, securityGroupID, securityGroupTargetID),
@@ -342,7 +342,7 @@ func isWaitForLBRemoveAvailable(sess *vpcv1.VpcV1, sgt vpcv1.SecurityGroupTarget
 	return stateConf.WaitForState()
 }
 
-func isLBRemoveRefreshFunc(sess *vpcv1.VpcV1, sgt vpcv1.SecurityGroupTargetReferenceIntf, lbId, securityGroupID, securityGroupTargetID string) resource.StateRefreshFunc {
+func isLBRemoveRefreshFunc(sess *vpcv1.VpcV1, sgt vpcv1.SecurityGroupTargetReferenceIntf, lbId, securityGroupID, securityGroupTargetID string) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 
 		getSecurityGroupTargetOptions := &vpcv1.GetSecurityGroupTargetOptions{
@@ -376,7 +376,7 @@ func isLBRemoveRefreshFunc(sess *vpcv1.VpcV1, sgt vpcv1.SecurityGroupTargetRefer
 func isWaitForLbSgTargetCreateAvailable(sess *vpcv1.VpcV1, lbId string, timeout time.Duration) (interface{}, error) {
 	log.Printf("Waiting for load balancer (%s) to be available.", lbId)
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending:    []string{"retry", isLBProvisioning, "update_pending"},
 		Target:     []string{isLBProvisioningDone, ""},
 		Refresh:    isLBSgTargetRefreshFunc(sess, lbId),
@@ -388,7 +388,7 @@ func isWaitForLbSgTargetCreateAvailable(sess *vpcv1.VpcV1, lbId string, timeout 
 	return stateConf.WaitForState()
 }
 
-func isLBSgTargetRefreshFunc(sess *vpcv1.VpcV1, lbId string) resource.StateRefreshFunc {
+func isLBSgTargetRefreshFunc(sess *vpcv1.VpcV1, lbId string) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 
 		getlboptions := &vpcv1.GetLoadBalancerOptions{
@@ -410,7 +410,7 @@ func isLBSgTargetRefreshFunc(sess *vpcv1.VpcV1, lbId string) resource.StateRefre
 func isWaitForVNISgTargetCreateAvailable(sess *vpcv1.VpcV1, vniId string, timeout time.Duration) (interface{}, error) {
 	log.Printf("Waiting for virtual network interface (%s) to be available.", vniId)
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending:    []string{"pending", "updating", "waiting"},
 		Target:     []string{isLBProvisioningDone, "", "stable"},
 		Refresh:    isVNISgTargetRefreshFunc(sess, vniId),
@@ -422,7 +422,7 @@ func isWaitForVNISgTargetCreateAvailable(sess *vpcv1.VpcV1, vniId string, timeou
 	return stateConf.WaitForState()
 }
 
-func isVNISgTargetRefreshFunc(vpcClient *vpcv1.VpcV1, vniId string) resource.StateRefreshFunc {
+func isVNISgTargetRefreshFunc(vpcClient *vpcv1.VpcV1, vniId string) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 
 		getVNIOptions := &vpcv1.GetVirtualNetworkInterfaceOptions{
@@ -444,7 +444,7 @@ func isVNISgTargetRefreshFunc(vpcClient *vpcv1.VpcV1, vniId string) resource.Sta
 func isWaitForSGTargetLBAvailable(sess *vpcv1.VpcV1, lbId string, timeout time.Duration) (interface{}, error) {
 	log.Printf("Waiting for load balancer (%s) to be available before attaching security group.", lbId)
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending:    []string{"retry", isLBProvisioning, "update_pending"},
 		Target:     []string{isLBProvisioningDone, ""},
 		Refresh:    isSGTargetLBRefreshFunc(sess, lbId),
@@ -457,7 +457,7 @@ func isWaitForSGTargetLBAvailable(sess *vpcv1.VpcV1, lbId string, timeout time.D
 }
 
 // Refresh function for checking load balancer status before security group attachment
-func isSGTargetLBRefreshFunc(sess *vpcv1.VpcV1, lbId string) resource.StateRefreshFunc {
+func isSGTargetLBRefreshFunc(sess *vpcv1.VpcV1, lbId string) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		getlboptions := &vpcv1.GetLoadBalancerOptions{
 			ID: &lbId,

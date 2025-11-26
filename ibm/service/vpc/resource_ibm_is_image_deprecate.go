@@ -13,7 +13,7 @@ import (
 	"github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -217,7 +217,7 @@ func imgDeprecateCreate(context context.Context, d *schema.ResourceData, meta in
 func isWaitForImageDeprecate(imageC *vpcv1.VpcV1, id string, timeout time.Duration) (interface{}, error) {
 	log.Printf("Waiting for image (%s) to be deprecate.", id)
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending:    []string{"retry", isImageProvisioning},
 		Target:     []string{isImageProvisioningDone, ""},
 		Refresh:    isImageDeprecateRefreshFunc(imageC, id),
@@ -229,7 +229,7 @@ func isWaitForImageDeprecate(imageC *vpcv1.VpcV1, id string, timeout time.Durati
 	return stateConf.WaitForState()
 }
 
-func isImageDeprecateRefreshFunc(imageC *vpcv1.VpcV1, id string) resource.StateRefreshFunc {
+func isImageDeprecateRefreshFunc(imageC *vpcv1.VpcV1, id string) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		getimgoptions := &vpcv1.GetImageOptions{
 			ID: &id,

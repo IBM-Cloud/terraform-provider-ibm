@@ -15,13 +15,13 @@ import (
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 	"github.com/IBM/vmware-go-sdk/vmwarev1"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 )
 
 func ResourceIbmVmaasTransitGatewayConnection() *schema.Resource {
@@ -353,7 +353,7 @@ func waitForTransitGatewayConnectionDelete(
 	getVdcOptions := &vmwarev1.GetVdcOptions{}
 	getVdcOptions.SetID(vdcID)
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending: []string{"exists"},
 		Target:  []string{"deleted"},
 		Refresh: func() (interface{}, string, error) {
@@ -400,7 +400,7 @@ func waitForTransitGatewayConnectionTunnelIp(
 	getVdcOptions := &vmwarev1.GetVdcOptions{}
 	getVdcOptions.SetID(vdcID)
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending: []string{"not_ready"},
 		Target:  []string{"ready"},
 		Refresh: func() (interface{}, string, error) {

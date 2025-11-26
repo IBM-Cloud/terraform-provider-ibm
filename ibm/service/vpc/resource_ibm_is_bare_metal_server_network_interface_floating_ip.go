@@ -13,7 +13,7 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -313,7 +313,7 @@ func bareMetalServerNetworkInterfaceFipDelete(context context.Context, d *schema
 
 func isWaitForBareMetalServerNetworkInterfaceFloatingIpDeleted(bmsC *vpcv1.VpcV1, bareMetalServerId, nicId, fipId string, timeout time.Duration) (interface{}, error) {
 	log.Printf("Waiting for (%s) / (%s) / (%s) to be deleted.", bareMetalServerId, nicId, fipId)
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending:    []string{isBareMetalServerNetworkInterfaceFloatingIpAvailable, isBareMetalServerNetworkInterfaceFloatingIpDeleting, isBareMetalServerNetworkInterfaceFloatingIpPending},
 		Target:     []string{isBareMetalServerNetworkInterfaceFloatingIpDeleted, isBareMetalServerNetworkInterfaceFailed, ""},
 		Refresh:    isBareMetalServerNetworkInterfaceFloatingIpDeleteRefreshFunc(bmsC, bareMetalServerId, nicId, fipId),
@@ -325,7 +325,7 @@ func isWaitForBareMetalServerNetworkInterfaceFloatingIpDeleted(bmsC *vpcv1.VpcV1
 	return stateConf.WaitForState()
 }
 
-func isBareMetalServerNetworkInterfaceFloatingIpDeleteRefreshFunc(bmsC *vpcv1.VpcV1, bareMetalServerId, nicId, fipId string) resource.StateRefreshFunc {
+func isBareMetalServerNetworkInterfaceFloatingIpDeleteRefreshFunc(bmsC *vpcv1.VpcV1, bareMetalServerId, nicId, fipId string) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 
 		getBmsNicFloatingIpOptions := &vpcv1.GetBareMetalServerNetworkInterfaceFloatingIPOptions{
@@ -348,7 +348,7 @@ func isBareMetalServerNetworkInterfaceFloatingIpDeleteRefreshFunc(bmsC *vpcv1.Vp
 func isWaitForBareMetalServerNetworkInterfaceFloatingIpAvailable(client *vpcv1.VpcV1, bareMetalServerId, nicId, fipId string, timeout time.Duration, d *schema.ResourceData) (interface{}, error) {
 	log.Printf("Waiting for Bare Metal Server (%s) Network Interface (%s) to be available.", bareMetalServerId, nicId)
 	communicator := make(chan interface{})
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending:    []string{isBareMetalServerNetworkInterfaceFloatingIpPending},
 		Target:     []string{isBareMetalServerNetworkInterfaceFloatingIpAvailable, isBareMetalServerNetworkInterfaceFloatingIpFailed},
 		Refresh:    isBareMetalServerNetworkInterfaceFloatingIpRefreshFunc(client, bareMetalServerId, nicId, fipId, d, communicator),
@@ -359,7 +359,7 @@ func isWaitForBareMetalServerNetworkInterfaceFloatingIpAvailable(client *vpcv1.V
 	return stateConf.WaitForState()
 }
 
-func isBareMetalServerNetworkInterfaceFloatingIpRefreshFunc(client *vpcv1.VpcV1, bareMetalServerId, nicId, fipId string, d *schema.ResourceData, communicator chan interface{}) resource.StateRefreshFunc {
+func isBareMetalServerNetworkInterfaceFloatingIpRefreshFunc(client *vpcv1.VpcV1, bareMetalServerId, nicId, fipId string, d *schema.ResourceData, communicator chan interface{}) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		getBmsNicFloatingIpOptions := &vpcv1.GetBareMetalServerNetworkInterfaceFloatingIPOptions{
 			BareMetalServerID:  &bareMetalServerId,

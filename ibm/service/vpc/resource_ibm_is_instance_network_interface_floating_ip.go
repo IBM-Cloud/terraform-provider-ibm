@@ -13,7 +13,7 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -304,7 +304,7 @@ func instanceNetworkInterfaceFipDelete(context context.Context, d *schema.Resour
 
 func isWaitForInstanceNetworkInterfaceFloatingIpDeleted(instanceC *vpcv1.VpcV1, instanceId, nicId, fipId string, timeout time.Duration) (interface{}, error) {
 	log.Printf("Waiting for (%s) / (%s) / (%s) to be deleted.", instanceId, nicId, fipId)
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending:    []string{isInstanceNetworkInterfaceFloatingIpAvailable, isInstanceNetworkInterfaceFloatingIpDeleting, isInstanceNetworkInterfaceFloatingIpPending},
 		Target:     []string{isInstanceNetworkInterfaceFloatingIpDeleted, isInstanceNetworkInterfaceFloatingIpFailed, ""},
 		Refresh:    isInstanceNetworkInterfaceFloatingIpDeleteRefreshFunc(instanceC, instanceId, nicId, fipId),
@@ -316,7 +316,7 @@ func isWaitForInstanceNetworkInterfaceFloatingIpDeleted(instanceC *vpcv1.VpcV1, 
 	return stateConf.WaitForState()
 }
 
-func isInstanceNetworkInterfaceFloatingIpDeleteRefreshFunc(instanceC *vpcv1.VpcV1, instanceId, nicId, fipId string) resource.StateRefreshFunc {
+func isInstanceNetworkInterfaceFloatingIpDeleteRefreshFunc(instanceC *vpcv1.VpcV1, instanceId, nicId, fipId string) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 
 		getBmsNicFloatingIpOptions := &vpcv1.GetInstanceNetworkInterfaceFloatingIPOptions{
@@ -339,7 +339,7 @@ func isInstanceNetworkInterfaceFloatingIpDeleteRefreshFunc(instanceC *vpcv1.VpcV
 func isWaitForInstanceNetworkInterfaceFloatingIpAvailable(client *vpcv1.VpcV1, instanceId, nicId, fipId string, timeout time.Duration, d *schema.ResourceData) (interface{}, error) {
 	log.Printf("Waiting for Instance (%s) Network Interface (%s) to be available.", instanceId, nicId)
 	communicator := make(chan interface{})
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending:    []string{isInstanceNetworkInterfaceFloatingIpPending},
 		Target:     []string{isInstanceNetworkInterfaceFloatingIpAvailable, isInstanceNetworkInterfaceFloatingIpFailed},
 		Refresh:    isInstanceNetworkInterfaceFloatingIpRefreshFunc(client, instanceId, nicId, fipId, d, communicator),
@@ -350,7 +350,7 @@ func isWaitForInstanceNetworkInterfaceFloatingIpAvailable(client *vpcv1.VpcV1, i
 	return stateConf.WaitForState()
 }
 
-func isInstanceNetworkInterfaceFloatingIpRefreshFunc(client *vpcv1.VpcV1, instanceId, nicId, fipId string, d *schema.ResourceData, communicator chan interface{}) resource.StateRefreshFunc {
+func isInstanceNetworkInterfaceFloatingIpRefreshFunc(client *vpcv1.VpcV1, instanceId, nicId, fipId string, d *schema.ResourceData, communicator chan interface{}) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		getBmsNicFloatingIpOptions := &vpcv1.GetInstanceNetworkInterfaceFloatingIPOptions{
 			InstanceID:         &instanceId,

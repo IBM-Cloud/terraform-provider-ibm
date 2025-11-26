@@ -8,7 +8,6 @@ import (
 	"errors"
 	"fmt"
 	"github.com/IBM-Cloud/bluemix-go/bmxerror"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"log"
 	"strings"
 	"time"
@@ -20,6 +19,7 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/IBM/secrets-manager-go-sdk/v2/secretsmanagerv2"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 )
 
 func ResourceIbmSmCustomCredentialsSecret() *schema.Resource {
@@ -289,7 +289,7 @@ func waitForIbmSmCustomCredentialsSecretCreate(secretsManagerClient *secretsmana
 	secretId := id[2]
 	getSecretOptions.SetID(secretId)
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending: []string{"pre_activation"},
 		Target:  []string{"active"},
 		Refresh: func() (interface{}, string, error) {
@@ -682,7 +682,7 @@ func ibmSmCustomCredentialsClearVersion(secretsManagerClient *secretsmanagerv2.S
 	// Wait for the delete secret version task to start working. We don't have to wait for it to finish, because we
 	// are going to force-delete the secret, but at least we want it to leave the queue. Once it started SM will continue
 	// to retry even after the force-delete
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending: []string{"queued"},
 		Target:  []string{"credentials_deleted", "processing", "failed"},
 		Refresh: func() (interface{}, string, error) {

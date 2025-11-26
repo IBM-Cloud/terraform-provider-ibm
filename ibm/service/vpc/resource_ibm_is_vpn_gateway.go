@@ -16,7 +16,7 @@ import (
 	"github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -485,7 +485,7 @@ func vpngwCreate(context context.Context, d *schema.ResourceData, meta interface
 func isWaitForVpnGatewayAvailable(vpnGateway *vpcv1.VpcV1, id string, timeout time.Duration) (interface{}, error) {
 	log.Printf("Waiting for vpn gateway (%s) to be available.", id)
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending:    []string{"retry", isVPNGatewayProvisioning},
 		Target:     []string{isVPNGatewayProvisioningDone, ""},
 		Refresh:    isVpnGatewayRefreshFunc(vpnGateway, id),
@@ -497,7 +497,7 @@ func isWaitForVpnGatewayAvailable(vpnGateway *vpcv1.VpcV1, id string, timeout ti
 	return stateConf.WaitForState()
 }
 
-func isVpnGatewayRefreshFunc(vpnGateway *vpcv1.VpcV1, id string) resource.StateRefreshFunc {
+func isVpnGatewayRefreshFunc(vpnGateway *vpcv1.VpcV1, id string) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		getVpnGatewayOptions := &vpcv1.GetVPNGatewayOptions{
 			ID: &id,
@@ -851,7 +851,7 @@ func vpngwDelete(context context.Context, d *schema.ResourceData, meta interface
 func isWaitForVpnGatewayDeleted(vpnGateway *vpcv1.VpcV1, id string, timeout time.Duration) (interface{}, error) {
 	log.Printf("Waiting for VPNGateway (%s) to be deleted.", id)
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending:    []string{"retry", isVPNGatewayDeleting},
 		Target:     []string{isVPNGatewayDeleted, ""},
 		Refresh:    isVpnGatewayDeleteRefreshFunc(vpnGateway, id),
@@ -863,7 +863,7 @@ func isWaitForVpnGatewayDeleted(vpnGateway *vpcv1.VpcV1, id string, timeout time
 	return stateConf.WaitForState()
 }
 
-func isVpnGatewayDeleteRefreshFunc(vpnGateway *vpcv1.VpcV1, id string) resource.StateRefreshFunc {
+func isVpnGatewayDeleteRefreshFunc(vpnGateway *vpcv1.VpcV1, id string) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		getVpnGatewayOptions := &vpcv1.GetVPNGatewayOptions{
 			ID: &id,

@@ -20,7 +20,7 @@ import (
 	"github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -4517,7 +4517,7 @@ func bareMetalServerDelete(context context.Context, d *schema.ResourceData, meta
 func isWaitForBareMetalServerDeleted(bmsC *vpcv1.VpcV1, id string, timeout time.Duration) (interface{}, error) {
 	log.Printf("Waiting for  (%s) to be deleted.", id)
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending:    []string{"retry", isBareMetalServerActionDeleting},
 		Target:     []string{"done", "", isBareMetalServerActionDeleted, isBareMetalServerStatusFailed},
 		Refresh:    isBareMetalServerDeleteRefreshFunc(bmsC, id),
@@ -4529,7 +4529,7 @@ func isWaitForBareMetalServerDeleted(bmsC *vpcv1.VpcV1, id string, timeout time.
 	return stateConf.WaitForState()
 }
 
-func isBareMetalServerDeleteRefreshFunc(bmsC *vpcv1.VpcV1, id string) resource.StateRefreshFunc {
+func isBareMetalServerDeleteRefreshFunc(bmsC *vpcv1.VpcV1, id string) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		bmsgetoptions := &vpcv1.GetBareMetalServerOptions{
 			ID: &id,
@@ -4551,7 +4551,7 @@ func isBareMetalServerDeleteRefreshFunc(bmsC *vpcv1.VpcV1, id string) resource.S
 func isWaitForBareMetalServerAvailable(client *vpcv1.VpcV1, id string, timeout time.Duration, d *schema.ResourceData) (interface{}, error) {
 	log.Printf("Waiting for Bare Metal Server (%s) to be available.", id)
 	communicator := make(chan interface{})
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending:    []string{isBareMetalServerStatusPending, isBareMetalServerActionStatusStarting},
 		Target:     []string{isBareMetalServerStatusRunning, isBareMetalServerStatusFailed},
 		Refresh:    isBareMetalServerRefreshFunc(client, id, d, communicator),
@@ -4562,7 +4562,7 @@ func isWaitForBareMetalServerAvailable(client *vpcv1.VpcV1, id string, timeout t
 	return stateConf.WaitForState()
 }
 
-func isBareMetalServerRefreshFunc(client *vpcv1.VpcV1, id string, d *schema.ResourceData, communicator chan interface{}) resource.StateRefreshFunc {
+func isBareMetalServerRefreshFunc(client *vpcv1.VpcV1, id string, d *schema.ResourceData, communicator chan interface{}) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		bmsgetoptions := &vpcv1.GetBareMetalServerOptions{
 			ID: &id,
@@ -4618,7 +4618,7 @@ func isBareMetalServerRefreshFunc(client *vpcv1.VpcV1, id string, d *schema.Reso
 func isWaitForBareMetalServerStoppedOnReload(client *vpcv1.VpcV1, id string, timeout time.Duration, d *schema.ResourceData) (interface{}, error) {
 	log.Printf("Waiting for Bare Metal Server (%s) to be stopped for reload success.", id)
 	communicator := make(chan interface{})
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending:    []string{isBareMetalServerStatusPending, isBareMetalServerActionStatusStarting, "reinitializing"},
 		Target:     []string{isBareMetalServerStatusRunning, isBareMetalServerStatusFailed, "stopped"},
 		Refresh:    isBareMetalServerRefreshFuncForReload(client, id, d, communicator),
@@ -4629,7 +4629,7 @@ func isWaitForBareMetalServerStoppedOnReload(client *vpcv1.VpcV1, id string, tim
 	return stateConf.WaitForState()
 }
 
-func isBareMetalServerRefreshFuncForReload(client *vpcv1.VpcV1, id string, d *schema.ResourceData, communicator chan interface{}) resource.StateRefreshFunc {
+func isBareMetalServerRefreshFuncForReload(client *vpcv1.VpcV1, id string, d *schema.ResourceData, communicator chan interface{}) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		bmsgetoptions := &vpcv1.GetBareMetalServerOptions{
 			ID: &id,
@@ -4685,7 +4685,7 @@ func isBareMetalServerRefreshFuncForReload(client *vpcv1.VpcV1, id string, d *sc
 
 func isWaitForBareMetalServerActionStop(bmsC *vpcv1.VpcV1, timeout time.Duration, id string, d *schema.ResourceData) (interface{}, error) {
 	communicator := make(chan interface{})
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending: []string{isBareMetalServerStatusRunning, isBareMetalServerStatusPending, isBareMetalServerActionStatusStopping},
 		Target:  []string{isBareMetalServerActionStatusStopped, isBareMetalServerStatusFailed, ""},
 		Refresh: func() (interface{}, string, error) {

@@ -17,7 +17,7 @@ import (
 	"github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
@@ -889,7 +889,7 @@ func vpcCreate(context context.Context, d *schema.ResourceData, meta interface{}
 func isWaitForVPCAvailable(vpc *vpcv1.VpcV1, id string, timeout time.Duration) (interface{}, error) {
 	log.Printf("Waiting for VPC (%s) to be available.", id)
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending:    []string{isVPCPending},
 		Target:     []string{isVPCAvailable, isVPCFailed},
 		Refresh:    isVPCRefreshFunc(vpc, id),
@@ -973,7 +973,7 @@ func deleteDefaultSecurityGroupRules(sess *vpcv1.VpcV1, vpcID string) error {
 	return nil
 }
 
-func isVPCRefreshFunc(vpc *vpcv1.VpcV1, id string) resource.StateRefreshFunc {
+func isVPCRefreshFunc(vpc *vpcv1.VpcV1, id string) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		getvpcOptions := &vpcv1.GetVPCOptions{
 			ID: &id,
@@ -1816,7 +1816,7 @@ func vpcDelete(context context.Context, d *schema.ResourceData, meta interface{}
 func isWaitForVPCDeleted(vpc *vpcv1.VpcV1, id string, timeout time.Duration) (interface{}, error) {
 	log.Printf("Waiting for VPC (%s) to be deleted.", id)
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending:    []string{"retry", isVPCDeleting},
 		Target:     []string{isVPCDeleted, isVPCFailed},
 		Refresh:    isVPCDeleteRefreshFunc(vpc, id),
@@ -1828,7 +1828,7 @@ func isWaitForVPCDeleted(vpc *vpcv1.VpcV1, id string, timeout time.Duration) (in
 	return stateConf.WaitForState()
 }
 
-func isVPCDeleteRefreshFunc(vpc *vpcv1.VpcV1, id string) resource.StateRefreshFunc {
+func isVPCDeleteRefreshFunc(vpc *vpcv1.VpcV1, id string) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		log.Printf("[DEBUG] is vpc delete function here")
 		getvpcOptions := &vpcv1.GetVPCOptions{

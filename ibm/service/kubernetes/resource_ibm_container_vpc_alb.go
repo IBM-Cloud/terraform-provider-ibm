@@ -13,7 +13,7 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -233,7 +233,7 @@ func waitForVpcContainerALB(d *schema.ResourceData, meta interface{}, albID, tim
 	if err != nil {
 		return false, err
 	}
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending: []string{"pending"},
 		Target:  []string{"active"},
 		Refresh: func() (interface{}, string, error) {
@@ -275,7 +275,7 @@ func waitForVpcClusterAvailable(d *schema.ResourceData, meta interface{}, albID,
 	if err != nil {
 		return false, err
 	}
-	createStateConf := &resource.StateChangeConf{
+	createStateConf := &retry.StateChangeConf{
 		Pending: []string{deployRequested, deployInProgress},
 		Target:  []string{ready},
 		Refresh: func() (interface{}, string, error) {

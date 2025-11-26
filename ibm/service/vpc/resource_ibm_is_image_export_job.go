@@ -11,7 +11,7 @@ import (
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
@@ -503,7 +503,7 @@ func ResourceIBMIsImageExportCloudObjectStorageObjectReferenceToMap(model *vpcv1
 func isWaitForImageExportJobDeleted(context context.Context, d *schema.ResourceData, meta interface{}, vpcClient *vpcv1.VpcV1, id string, timeout time.Duration) (interface{}, error) {
 	log.Printf("Waiting for image export job (%s) to be deleted.", id)
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending:    []string{"retry", "deleting"},
 		Target:     []string{"", "done"},
 		Refresh:    isImageExportJobDeleteRefreshFunc(context, d, meta, vpcClient, id),
@@ -515,7 +515,7 @@ func isWaitForImageExportJobDeleted(context context.Context, d *schema.ResourceD
 	return stateConf.WaitForState()
 }
 
-func isImageExportJobDeleteRefreshFunc(context context.Context, d *schema.ResourceData, meta interface{}, vpcClient *vpcv1.VpcV1, id string) resource.StateRefreshFunc {
+func isImageExportJobDeleteRefreshFunc(context context.Context, d *schema.ResourceData, meta interface{}, vpcClient *vpcv1.VpcV1, id string) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		log.Printf("[DEBUG] is image export job delete refresh here")
 		parts, err := flex.SepIdParts(d.Id(), "/")

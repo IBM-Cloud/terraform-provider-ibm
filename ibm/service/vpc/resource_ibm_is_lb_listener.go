@@ -16,7 +16,7 @@ import (
 	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -472,7 +472,7 @@ func lbListenerCreate(context context.Context, d *schema.ResourceData, meta inte
 func isWaitForLBListenerAvailable(sess *vpcv1.VpcV1, lbID, lbListenerID string, timeout time.Duration) (interface{}, error) {
 	log.Printf("Waiting for load balancer Listener(%s) to be available.", lbListenerID)
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending:    []string{"retry", isLBListenerProvisioning, "create_pending", "update_pending", "maintenance_pending"},
 		Target:     []string{isLBListenerProvisioningDone, ""},
 		Refresh:    isLBListenerRefreshFunc(sess, lbID, lbListenerID),
@@ -484,7 +484,7 @@ func isWaitForLBListenerAvailable(sess *vpcv1.VpcV1, lbID, lbListenerID string, 
 	return stateConf.WaitForState()
 }
 
-func isLBListenerRefreshFunc(sess *vpcv1.VpcV1, lbID, lbListenerID string) resource.StateRefreshFunc {
+func isLBListenerRefreshFunc(sess *vpcv1.VpcV1, lbID, lbListenerID string) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 
 		getLoadBalancerListenerOptions := &vpcv1.GetLoadBalancerListenerOptions{
@@ -925,7 +925,7 @@ func lbListenerDelete(context context.Context, d *schema.ResourceData, meta inte
 func isWaitForLBListenerDeleted(lbc *vpcv1.VpcV1, lbID, lbListenerID string, timeout time.Duration) (interface{}, error) {
 	log.Printf("Waiting for  (%s) to be deleted.", lbListenerID)
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending:    []string{"retry", isLBListenerDeleting, "delete_pending"},
 		Target:     []string{isLBListenerDeleted, ""},
 		Refresh:    isLBListenerDeleteRefreshFunc(lbc, lbID, lbListenerID),
@@ -937,7 +937,7 @@ func isWaitForLBListenerDeleted(lbc *vpcv1.VpcV1, lbID, lbListenerID string, tim
 	return stateConf.WaitForState()
 }
 
-func isLBListenerDeleteRefreshFunc(lbc *vpcv1.VpcV1, lbID, lbListenerID string) resource.StateRefreshFunc {
+func isLBListenerDeleteRefreshFunc(lbc *vpcv1.VpcV1, lbID, lbListenerID string) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		getLoadBalancerListenerOptions := &vpcv1.GetLoadBalancerListenerOptions{
 			LoadBalancerID: &lbID,

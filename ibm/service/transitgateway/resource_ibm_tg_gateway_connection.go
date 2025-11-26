@@ -9,7 +9,7 @@ import (
 	"time"
 
 	"github.com/IBM/networking-go-sdk/transitgatewayapisv1"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
@@ -431,7 +431,7 @@ func resourceIBMTransitGatewayConnectionCreate(d *schema.ResourceData, meta inte
 func isWaitForTransitGatewayConnectionAvailable(client *transitgatewayapisv1.TransitGatewayApisV1, id string, timeout time.Duration) (interface{}, error) {
 	log.Printf("Waiting for transit gateway connection (%s) to be available.", id)
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending:    []string{"retry", isTransitGatewayConnectionPending},
 		Target:     []string{isTransitGatewayConnectionAttached, ""},
 		Refresh:    isTransitGatewayConnectionRefreshFunc(client, id),
@@ -442,7 +442,7 @@ func isWaitForTransitGatewayConnectionAvailable(client *transitgatewayapisv1.Tra
 
 	return stateConf.WaitForState()
 }
-func isTransitGatewayConnectionRefreshFunc(client *transitgatewayapisv1.TransitGatewayApisV1, id string) resource.StateRefreshFunc {
+func isTransitGatewayConnectionRefreshFunc(client *transitgatewayapisv1.TransitGatewayApisV1, id string) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 
 		parts, err := flex.IdParts(id)
@@ -668,7 +668,7 @@ func resourceIBMTransitGatewayConnectionDelete(d *schema.ResourceData, meta inte
 func isWaitForTransitGatewayConnectionDeleted(client *transitgatewayapisv1.TransitGatewayApisV1, id string, timeout time.Duration) (interface{}, error) {
 	log.Printf("Waiting for transit gateway Connection(%s) to be deleted.", id)
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending:    []string{"retry", isTransitGatewayConnectionDeleting, isTransitGatewayConnectionDetaching},
 		Target:     []string{"", isTransitGatewayConnectionDeleted},
 		Refresh:    isTransitGatewayConnectionDeleteRefreshFunc(client, id),
@@ -680,7 +680,7 @@ func isWaitForTransitGatewayConnectionDeleted(client *transitgatewayapisv1.Trans
 	return stateConf.WaitForState()
 }
 
-func isTransitGatewayConnectionDeleteRefreshFunc(client *transitgatewayapisv1.TransitGatewayApisV1, id string) resource.StateRefreshFunc {
+func isTransitGatewayConnectionDeleteRefreshFunc(client *transitgatewayapisv1.TransitGatewayApisV1, id string) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		log.Printf("[DEBUG] tg gateway connection delete function here")
 		parts, err := flex.IdParts(id)

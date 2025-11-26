@@ -9,7 +9,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	v1 "github.com/IBM-Cloud/bluemix-go/api/container/containerv1"
@@ -551,7 +551,7 @@ func WaitForV2WorkerZoneDeleted(clusterNameOrID, workerPoolNameOrID, zone string
 	if err != nil {
 		return nil, err
 	}
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending:    []string{"deleting"},
 		Target:     []string{workerDeleteState},
 		Refresh:    workerPoolV2ZoneDeleteStateRefreshFunc(csClient.Workers(), clusterNameOrID, workerPoolNameOrID, zone, target),
@@ -563,7 +563,7 @@ func WaitForV2WorkerZoneDeleted(clusterNameOrID, workerPoolNameOrID, zone string
 	return stateConf.WaitForState()
 }
 
-func workerPoolV2ZoneDeleteStateRefreshFunc(client v2.Workers, instanceID, workerPoolNameOrID, zone string, target v2.ClusterTargetHeader) resource.StateRefreshFunc {
+func workerPoolV2ZoneDeleteStateRefreshFunc(client v2.Workers, instanceID, workerPoolNameOrID, zone string, target v2.ClusterTargetHeader) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		workerFields, err := client.ListByWorkerPool(instanceID, workerPoolNameOrID, true, target)
 		if err != nil {
@@ -787,7 +787,7 @@ func WaitForWorkerPoolAvailable(d *schema.ResourceData, meta interface{}, cluste
 	log.Printf("Waiting for workerpool (%s) to be available.", d.Id())
 	// id := d.Id()
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending:    []string{"provision_pending"},
 		Target:     []string{workerDesired},
 		Refresh:    vpcWorkerPoolStateRefreshFunc(wpClient.Workers(), clusterNameOrID, workerPoolNameOrID, target),
@@ -799,7 +799,7 @@ func WaitForWorkerPoolAvailable(d *schema.ResourceData, meta interface{}, cluste
 	return stateConf.WaitForState()
 }
 
-func vpcWorkerPoolStateRefreshFunc(client v2.Workers, instanceID string, workerPoolNameOrID string, target v2.ClusterTargetHeader) resource.StateRefreshFunc {
+func vpcWorkerPoolStateRefreshFunc(client v2.Workers, instanceID string, workerPoolNameOrID string, target v2.ClusterTargetHeader) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		workerFields, err := client.ListByWorkerPool(instanceID, workerPoolNameOrID, false, target)
 		if err != nil {
@@ -826,7 +826,7 @@ func WaitForVpcWorkerDelete(clusterNameOrID, workerPoolNameOrID string, meta int
 		return nil, err
 	}
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending:    []string{"deleting"},
 		Target:     []string{workerDeleteState},
 		Refresh:    vpcworkerPoolDeleteStateRefreshFunc(wpClient.Workers(), clusterNameOrID, workerPoolNameOrID, target),
@@ -838,7 +838,7 @@ func WaitForVpcWorkerDelete(clusterNameOrID, workerPoolNameOrID string, meta int
 	return stateConf.WaitForState()
 }
 
-func vpcworkerPoolDeleteStateRefreshFunc(client v2.Workers, instanceID, workerPoolNameOrID string, target v2.ClusterTargetHeader) resource.StateRefreshFunc {
+func vpcworkerPoolDeleteStateRefreshFunc(client v2.Workers, instanceID, workerPoolNameOrID string, target v2.ClusterTargetHeader) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		workerFields, err := client.ListByWorkerPool(instanceID, "", true, target)
 		if err != nil {

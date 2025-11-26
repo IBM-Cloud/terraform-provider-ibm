@@ -14,7 +14,7 @@ import (
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
@@ -256,13 +256,13 @@ func resourceIbmMqcloudQueueManagerRead(context context.Context, d *schema.Resou
 	var queueManagerDetails *mqcloudv1.QueueManagerDetails
 	var response *core.DetailedResponse
 
-	err = resource.RetryContext(context, 150*time.Second, func() *resource.RetryError {
+	err = retry.RetryContext(context, 150*time.Second, func() *retry.RetryError {
 		queueManagerDetails, response, err = mqcloudClient.GetQueueManagerWithContext(context, getQueueManagerOptions)
 		if err != nil || queueManagerDetails == nil {
 			if response != nil && response.StatusCode == 404 {
-				return resource.RetryableError(fmt.Errorf("Queue Manager not found, retrying"))
+				return retry.RetryableError(fmt.Errorf("Queue Manager not found, retrying"))
 			}
-			return resource.NonRetryableError(err)
+			return retry.NonRetryableError(err)
 		}
 
 		return nil

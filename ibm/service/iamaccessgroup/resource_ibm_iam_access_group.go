@@ -12,7 +12,7 @@ import (
 	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/IBM/platform-services-go-sdk/iamaccessgroupsv2"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -94,13 +94,13 @@ func resourceIBMIAMAccessGroupRead(context context.Context, d *schema.ResourceDa
 	getAccessGroupOptions.SetShowCRN(true)
 	var agrp *iamaccessgroupsv2.Group
 	var detailedResponse *core.DetailedResponse
-	err = resource.RetryContext(context, 5*time.Second, func() *resource.RetryError {
+	err = retry.RetryContext(context, 5*time.Second, func() *retry.RetryError {
 		agrp, detailedResponse, err = iamAccessGroupsClient.GetAccessGroup(getAccessGroupOptions)
 		if err != nil || agrp == nil {
 			if detailedResponse != nil && detailedResponse.StatusCode == 404 {
-				return resource.RetryableError(err)
+				return retry.RetryableError(err)
 			}
-			return resource.NonRetryableError(err)
+			return retry.NonRetryableError(err)
 		}
 		return nil
 	})

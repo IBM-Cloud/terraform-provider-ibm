@@ -12,7 +12,7 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	"github.com/IBM/vpc-go-sdk/vpcv1"
@@ -74,7 +74,7 @@ func resourceIbmIsShareDeleteAccessorBindingCreate(context context.Context, d *s
 func isWaitForShareAccessorBindingDeleted(context context.Context, vpcClient *vpcv1.VpcV1, shareid, bindingId string, d *schema.ResourceData, timeout time.Duration) (interface{}, error) {
 	log.Printf("Waiting for share accessor binding (%s) to be deleted.", shareid)
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending:    []string{"pending", "deleting"},
 		Target:     []string{"done"},
 		Refresh:    isShareAccessorBindingRefreshFunc(context, vpcClient, shareid, bindingId, d),
@@ -86,7 +86,7 @@ func isWaitForShareAccessorBindingDeleted(context context.Context, vpcClient *vp
 	return stateConf.WaitForState()
 }
 
-func isShareAccessorBindingRefreshFunc(context context.Context, vpcClient *vpcv1.VpcV1, shareid string, bindingId string, d *schema.ResourceData) resource.StateRefreshFunc {
+func isShareAccessorBindingRefreshFunc(context context.Context, vpcClient *vpcv1.VpcV1, shareid string, bindingId string, d *schema.ResourceData) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		bindingOptions := &vpcv1.GetShareAccessorBindingOptions{
 			ShareID: &shareid,

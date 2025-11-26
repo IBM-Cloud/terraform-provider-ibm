@@ -14,7 +14,7 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	"github.com/IBM/go-sdk-core/v5/core"
@@ -398,7 +398,7 @@ func resourceIbmIsPlacementGroupDelete(context context.Context, d *schema.Resour
 
 func isWaitForPlacementGroupDelete(vpcClient *vpcv1.VpcV1, d *schema.ResourceData, id string) (interface{}, error) {
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending: []string{isPlacementGroupDeleting, isPlacementGroupStable, isPlacementGroupPending, isPlacementGroupWaiting, isPlacementGroupUpdating},
 		Target:  []string{isPlacementGroupDeleteDone, ""},
 		Refresh: func() (interface{}, string, error) {
@@ -430,7 +430,7 @@ func isWaitForPlacementGroupDelete(vpcClient *vpcv1.VpcV1, d *schema.ResourceDat
 
 func isWaitForPlacementGroupDeleteRetry(vpcClient *vpcv1.VpcV1, d *schema.ResourceData, id string) (interface{}, error) {
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending: []string{isPlacementGroupResourcesAttached},
 		Target:  []string{isPlacementGroupDeleting, isPlacementGroupDeleteDone, ""},
 		Refresh: func() (interface{}, string, error) {
@@ -460,7 +460,7 @@ func isWaitForPlacementGroupDeleteRetry(vpcClient *vpcv1.VpcV1, d *schema.Resour
 func isWaitForPlacementGroupAvailable(vpcClient *vpcv1.VpcV1, id string, timeout time.Duration, d *schema.ResourceData) (interface{}, error) {
 	log.Printf("Waiting for placement group (%s) to be available.", id)
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending:    []string{isPlacementGroupPending, isPlacementGroupWaiting, isPlacementGroupUpdating},
 		Target:     []string{isPlacementGroupFailed, isPlacementGroupStable, isPlacementGroupSuspended, ""},
 		Refresh:    isPlacementGroupRefreshFunc(vpcClient, id, d),
@@ -472,7 +472,7 @@ func isWaitForPlacementGroupAvailable(vpcClient *vpcv1.VpcV1, id string, timeout
 	return stateConf.WaitForState()
 }
 
-func isPlacementGroupRefreshFunc(vpcClient *vpcv1.VpcV1, id string, d *schema.ResourceData) resource.StateRefreshFunc {
+func isPlacementGroupRefreshFunc(vpcClient *vpcv1.VpcV1, id string, d *schema.ResourceData) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		getinsOptions := &vpcv1.GetPlacementGroupOptions{
 			ID: &id,

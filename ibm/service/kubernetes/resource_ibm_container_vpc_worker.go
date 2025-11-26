@@ -14,7 +14,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	v2 "github.com/IBM-Cloud/bluemix-go/api/container/containerv2"
@@ -474,7 +474,7 @@ func WaitForPortworxPod(d *schema.ResourceData, clientset *kubernetes.Clientset,
 		return nil, fmt.Errorf("[ERROR] Error parsing ptx_timeout: %s", err)
 	}
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending:      []string{"ptx_not_ready"},
 		Target:       []string{"ptx_ready"},
 		Refresh:      ptxPodRefreshFunc(clientset, worker_ip),
@@ -486,7 +486,7 @@ func WaitForPortworxPod(d *schema.ResourceData, clientset *kubernetes.Clientset,
 	return stateConf.WaitForState()
 }
 
-func ptxPodRefreshFunc(clientset *kubernetes.Clientset, worker_ip string) resource.StateRefreshFunc {
+func ptxPodRefreshFunc(clientset *kubernetes.Clientset, worker_ip string) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		//1. List pods from kube-system namespace
 		podList, err := clientset.CoreV1().Pods("kube-system").List(context.TODO(), metav1.ListOptions{LabelSelector: "name=portworx"})
@@ -520,7 +520,7 @@ func WaitForPortworxStatus(d *schema.ResourceData, clientset *kubernetes.Clients
 		return nil, fmt.Errorf("[ERROR] Error parsing ptx_timeout: %s", err)
 	}
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending:      []string{"pxctl_fail"},
 		Target:       []string{"pxctl_success"},
 		Refresh:      ptxStatusRefreshFunc(clientset, config, pod_name),
@@ -532,7 +532,7 @@ func WaitForPortworxStatus(d *schema.ResourceData, clientset *kubernetes.Clients
 	return stateConf.WaitForState()
 }
 
-func ptxStatusRefreshFunc(clientset *kubernetes.Clientset, config *rest.Config, pod_name string) resource.StateRefreshFunc {
+func ptxStatusRefreshFunc(clientset *kubernetes.Clientset, config *rest.Config, pod_name string) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		//Byte buffers for the exec command output
 		var stdout, stderr bytes.Buffer
@@ -601,7 +601,7 @@ func waitForVpcWorkerNodetoDelete(d *schema.ResourceData, meta interface{}, targ
 	}
 
 	clusterID := d.Get("cluster_name").(string)
-	deleteStateConf := &resource.StateChangeConf{
+	deleteStateConf := &retry.StateChangeConf{
 		Pending: []string{workerDeletePending},
 		Target:  []string{workerDeleteState},
 		Refresh: func() (interface{}, string, error) {
@@ -629,7 +629,7 @@ func waitForNewVpcWorker(d *schema.ResourceData, meta interface{}, targetEnv v2.
 	}
 
 	clusterID := d.Get("cluster_name").(string)
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending: []string{"creating"},
 		Target:  []string{"created"},
 		Refresh: func() (interface{}, string, error) {
@@ -681,7 +681,7 @@ func WaitForVpcClusterVpcWokersVersionUpdate(d *schema.ResourceData, meta interf
 
 	log.Printf("Waiting for worker (%s) version to be updated.", workerID)
 	clusterID := d.Get("cluster_name").(string)
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending:                   []string{"retry", versionUpdating},
 		Target:                    []string{workerNormal},
 		Refresh:                   vpcClusterVpcWorkersVersionRefreshFunc(csClient.Workers(), workerID, clusterID, d, target, masterVersion),
@@ -694,7 +694,7 @@ func WaitForVpcClusterVpcWokersVersionUpdate(d *schema.ResourceData, meta interf
 	return stateConf.WaitForState()
 }
 
-func vpcClusterVpcWorkersVersionRefreshFunc(client v2.Workers, workerID, clusterID string, d *schema.ResourceData, target v2.ClusterTargetHeader, masterVersion string) resource.StateRefreshFunc {
+func vpcClusterVpcWorkersVersionRefreshFunc(client v2.Workers, workerID, clusterID string, d *schema.ResourceData, target v2.ClusterTargetHeader, masterVersion string) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		worker, err := client.Get(clusterID, workerID, target)
 		if err != nil {

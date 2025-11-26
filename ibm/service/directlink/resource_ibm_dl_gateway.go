@@ -15,7 +15,7 @@ import (
 	"github.com/IBM/networking-go-sdk/directlinkv1"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
@@ -1307,7 +1307,7 @@ func resourceIBMdlGatewayRead(d *schema.ResourceData, meta interface{}) error {
 }
 func isWaitForDirectLinkAvailable(client *directlinkv1.DirectLinkV1, id string, timeout time.Duration) (interface{}, error) {
 	log.Printf("Waiting for direct link (%s) to be provisioned.", id)
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending:    []string{"retry", dlGatewayProvisioning},
 		Target:     []string{dlGatewayProvisioningDone, ""},
 		Refresh:    isDirectLinkRefreshFunc(client, id),
@@ -1317,7 +1317,7 @@ func isWaitForDirectLinkAvailable(client *directlinkv1.DirectLinkV1, id string, 
 	}
 	return stateConf.WaitForState()
 }
-func isDirectLinkRefreshFunc(client *directlinkv1.DirectLinkV1, id string) resource.StateRefreshFunc {
+func isDirectLinkRefreshFunc(client *directlinkv1.DirectLinkV1, id string) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		getOptions := &directlinkv1.GetGatewayOptions{
 			ID: &id,

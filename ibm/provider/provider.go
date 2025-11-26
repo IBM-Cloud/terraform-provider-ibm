@@ -1813,6 +1813,12 @@ func Provider() *schema.Provider {
 	return &wrappedProvider
 }
 
+func New(version string) func() *schema.Provider {
+	return func() *schema.Provider {
+		return Provider()
+	}
+}
+
 func wrapProvider(provider schema.Provider) schema.Provider {
 	wrappedResourcesMap := map[string]*schema.Resource{}
 	wrappedDataSourcesMap := map[string]*schema.Resource{}

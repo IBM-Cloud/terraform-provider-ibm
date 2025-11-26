@@ -12,7 +12,7 @@ import (
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
@@ -395,7 +395,7 @@ func resourceIBMIsSnapshotConsistencyGroupCreate(context context.Context, d *sch
 func isWaitForSnapshotConsistencyGroupAvailable(sess *vpcv1.VpcV1, id string, timeout time.Duration) (interface{}, error) {
 	log.Printf("Waiting for Snapshot Consistency Group(%s) to be available.", id)
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending:    []string{"pending"},
 		Target:     []string{"stable", "failed"},
 		Refresh:    isSnapshotConsistencyGroupRefreshFunc(sess, id),
@@ -407,7 +407,7 @@ func isWaitForSnapshotConsistencyGroupAvailable(sess *vpcv1.VpcV1, id string, ti
 	return stateConf.WaitForState()
 }
 
-func isSnapshotConsistencyGroupRefreshFunc(vpcClient *vpcv1.VpcV1, id string) resource.StateRefreshFunc {
+func isSnapshotConsistencyGroupRefreshFunc(vpcClient *vpcv1.VpcV1, id string) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 
 		getSnapshotConsistencyGroupOptions := &vpcv1.GetSnapshotConsistencyGroupOptions{}
@@ -433,7 +433,7 @@ func isSnapshotConsistencyGroupRefreshFunc(vpcClient *vpcv1.VpcV1, id string) re
 func isWaitForSnapshotConsistencyGroupUpdate(sess *vpcv1.VpcV1, id string, timeout time.Duration) (interface{}, error) {
 	log.Printf("Waiting for Snapshot Consistency Group (%s) to be available.", id)
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending:    []string{"updating"},
 		Target:     []string{"stable", "failed"},
 		Refresh:    isSnapshotUpdateConsistencyGroupRefreshFunc(sess, id),
@@ -444,7 +444,7 @@ func isWaitForSnapshotConsistencyGroupUpdate(sess *vpcv1.VpcV1, id string, timeo
 	return stateConf.WaitForState()
 }
 
-func isSnapshotUpdateConsistencyGroupRefreshFunc(vpcClient *vpcv1.VpcV1, id string) resource.StateRefreshFunc {
+func isSnapshotUpdateConsistencyGroupRefreshFunc(vpcClient *vpcv1.VpcV1, id string) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		getSnapshotConsistencyGroupOptions := &vpcv1.GetSnapshotConsistencyGroupOptions{}
 		getSnapshotConsistencyGroupOptions.SetID(id)
@@ -468,7 +468,7 @@ func isSnapshotUpdateConsistencyGroupRefreshFunc(vpcClient *vpcv1.VpcV1, id stri
 func isWaitForSnapshotConsistencyGroupDeleted(sess *vpcv1.VpcV1, id string, timeout time.Duration) (interface{}, error) {
 	log.Printf("Waiting for Snapshot Consistency Group (%s) to be deleted.", id)
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending:    []string{"deleting"},
 		Target:     []string{"deleted", "failed"},
 		Refresh:    isSnapshotDeleteConsistencyGroupRefreshFunc(sess, id),
@@ -480,7 +480,7 @@ func isWaitForSnapshotConsistencyGroupDeleted(sess *vpcv1.VpcV1, id string, time
 	return stateConf.WaitForState()
 }
 
-func isSnapshotDeleteConsistencyGroupRefreshFunc(vpcClient *vpcv1.VpcV1, id string) resource.StateRefreshFunc {
+func isSnapshotDeleteConsistencyGroupRefreshFunc(vpcClient *vpcv1.VpcV1, id string) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		log.Printf("[DEBUG] Refresh function for Snapshot Consistency Group delete.")
 

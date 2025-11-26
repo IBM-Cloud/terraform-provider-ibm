@@ -13,7 +13,7 @@ import (
 	"github.com/IBM-Cloud/bluemix-go/helpers"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -330,7 +330,7 @@ func waitForServiceInstanceAvailable(d *schema.ResourceData, meta interface{}) (
 	}
 	serviceGUID := d.Id()
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending: []string{svcInstanceProgressStatus},
 		Target:  []string{svcInstanceSuccessStatus},
 		Refresh: func() (interface{}, string, error) {
@@ -360,7 +360,7 @@ func waitForServiceInstanceDelete(d *schema.ResourceData, meta interface{}) (int
 		return false, err
 	}
 	serviceGUID := d.Id()
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending: []string{svcInstanceProgressStatus},
 		Target:  []string{svcInstanceSuccessStatus},
 		Refresh: func() (interface{}, string, error) {

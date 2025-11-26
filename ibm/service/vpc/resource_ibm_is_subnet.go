@@ -16,10 +16,10 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 
 	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -431,7 +431,7 @@ func subnetCreate(context context.Context, d *schema.ResourceData, meta interfac
 func isWaitForSubnetAvailable(subnetC *vpcv1.VpcV1, id string, timeout time.Duration) (interface{}, error) {
 	log.Printf("Waiting for subnet (%s) to be available.", id)
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending:    []string{"retry", isSubnetProvisioning},
 		Target:     []string{isSubnetProvisioningDone, ""},
 		Refresh:    isSubnetRefreshFunc(subnetC, id),
@@ -443,7 +443,7 @@ func isWaitForSubnetAvailable(subnetC *vpcv1.VpcV1, id string, timeout time.Dura
 	return stateConf.WaitForState()
 }
 
-func isSubnetRefreshFunc(subnetC *vpcv1.VpcV1, id string) resource.StateRefreshFunc {
+func isSubnetRefreshFunc(subnetC *vpcv1.VpcV1, id string) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		getSubnetOptions := &vpcv1.GetSubnetOptions{
 			ID: &id,
@@ -840,7 +840,7 @@ func subnetDelete(context context.Context, d *schema.ResourceData, meta interfac
 
 func isWaitForSubnetDeleteRetry(vpcClient *vpcv1.VpcV1, id string, timeout time.Duration) (interface{}, error) {
 	log.Printf("[DEBUG] Retrying subnet (%s) delete", id)
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending: []string{isSubnetInUse},
 		Target:  []string{isSubnetDeleting, isSubnetDeleted, ""},
 		Refresh: func() (interface{}, string, error) {
@@ -869,7 +869,7 @@ func isWaitForSubnetDeleteRetry(vpcClient *vpcv1.VpcV1, id string, timeout time.
 func isWaitForSubnetDeleted(subnetC *vpcv1.VpcV1, id string, timeout time.Duration) (interface{}, error) {
 	log.Printf("Waiting for subnet (%s) to be deleted.", id)
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending:    []string{"retry", isSubnetDeleting},
 		Target:     []string{isSubnetDeleted, ""},
 		Refresh:    isSubnetDeleteRefreshFunc(subnetC, id),
@@ -881,7 +881,7 @@ func isWaitForSubnetDeleted(subnetC *vpcv1.VpcV1, id string, timeout time.Durati
 	return stateConf.WaitForState()
 }
 
-func isSubnetDeleteRefreshFunc(subnetC *vpcv1.VpcV1, id string) resource.StateRefreshFunc {
+func isSubnetDeleteRefreshFunc(subnetC *vpcv1.VpcV1, id string) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		log.Printf("[DEBUG] is subnet delete function here")
 		getSubnetOptions := &vpcv1.GetSubnetOptions{

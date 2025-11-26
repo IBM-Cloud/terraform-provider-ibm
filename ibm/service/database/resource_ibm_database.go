@@ -20,7 +20,7 @@ import (
 	rc "github.com/IBM/platform-services-go-sdk/resourcecontrollerv2"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	r "github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	validation "github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 
@@ -2348,7 +2348,7 @@ func waitForDatabaseInstanceCreate(d *schema.ResourceData, meta interface{}, ins
 		return false, err
 	}
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &r.StateChangeConf{
 		Pending: []string{databaseInstanceProgressStatus, databaseInstanceInactiveStatus, databaseInstanceProvisioningStatus},
 		Target:  []string{databaseInstanceSuccessStatus},
 		Refresh: func() (interface{}, string, error) {
@@ -2387,7 +2387,7 @@ func waitForDatabaseInstanceUpdate(d *schema.ResourceData, meta interface{}) (in
 	}
 	instanceID := d.Id()
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &r.StateChangeConf{
 		Pending: []string{databaseInstanceProgressStatus, databaseInstanceInactiveStatus},
 		Target:  []string{databaseInstanceSuccessStatus},
 		Refresh: func() (interface{}, string, error) {
@@ -2472,7 +2472,7 @@ func waitForDatabaseInstanceDelete(d *schema.ResourceData, meta interface{}) (in
 		return false, err
 	}
 	instanceID := d.Id()
-	stateConf := &resource.StateChangeConf{
+	stateConf := &r.StateChangeConf{
 		Pending: []string{databaseInstanceProgressStatus, databaseInstanceInactiveStatus, databaseInstanceSuccessStatus},
 		Target:  []string{databaseInstanceRemovedStatus, databaseInstanceReclamation},
 		Refresh: func() (interface{}, string, error) {

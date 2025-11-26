@@ -18,7 +18,7 @@ import (
 	"github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -621,7 +621,7 @@ func flattenDataSourceSecurityGroups(securityGroupList []vpcv1.SecurityGroupRefe
 func isWaitForVirtualEndpointGatewayAvailable(sess *vpcv1.VpcV1, endPointGatewayId string, timeout time.Duration) (interface{}, error) {
 	log.Printf("Waiting for virtual endpoint gateway (%s) to be available.", endPointGatewayId)
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending:    []string{"waiting", "pending", "updating"},
 		Target:     []string{"stable", "failed", ""},
 		Refresh:    isVirtualEndpointGatewayRefreshFunc(sess, endPointGatewayId),
@@ -636,7 +636,7 @@ func isWaitForVirtualEndpointGatewayAvailable(sess *vpcv1.VpcV1, endPointGateway
 func isWaitForVirtualEndpointGatewayForPPSGAvailable(sess *vpcv1.VpcV1, endPointGatewayId string, timeout time.Duration) (interface{}, error) {
 	log.Printf("Waiting for virtual endpoint gateway (%s) to be available.", endPointGatewayId)
 	// When the target is PPSG, pending is a valid state when the endpoint gateway binding is not permitted within the terraform configuration.
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending:                   []string{"waiting", "updating"},
 		Target:                    []string{"stable", "failed", "pending", ""},
 		Refresh:                   isVirtualEndpointGatewayRefreshFunc(sess, endPointGatewayId),
@@ -649,7 +649,7 @@ func isWaitForVirtualEndpointGatewayForPPSGAvailable(sess *vpcv1.VpcV1, endPoint
 	return stateConf.WaitForState()
 }
 
-func isVirtualEndpointGatewayRefreshFunc(sess *vpcv1.VpcV1, endPointGatewayId string) resource.StateRefreshFunc {
+func isVirtualEndpointGatewayRefreshFunc(sess *vpcv1.VpcV1, endPointGatewayId string) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 
 		opt := sess.NewGetEndpointGatewayOptions(endPointGatewayId)
@@ -691,7 +691,7 @@ func resourceIBMisVirtualEndpointGatewayDelete(context context.Context, d *schem
 
 func isWaitForEGWDelete(vpcClient *vpcv1.VpcV1, d *schema.ResourceData, id string) (interface{}, error) {
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending: []string{"deleting", "stable"},
 		Target:  []string{"done", ""},
 		Refresh: func() (interface{}, string, error) {

@@ -17,7 +17,7 @@ import (
 	"github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -715,7 +715,7 @@ func resourceIBMISSnapshotCreate(context context.Context, d *schema.ResourceData
 func isWaitForSnapshotAvailable(sess *vpcv1.VpcV1, id string, timeout time.Duration) (interface{}, error) {
 	log.Printf("Waiting for Snapshot (%s) to be available.", id)
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending:    []string{isSnapshotPending},
 		Target:     []string{isSnapshotAvailable, isSnapshotFailed},
 		Refresh:    isSnapshotRefreshFunc(sess, id),
@@ -727,7 +727,7 @@ func isWaitForSnapshotAvailable(sess *vpcv1.VpcV1, id string, timeout time.Durat
 	return stateConf.WaitForState()
 }
 
-func isSnapshotRefreshFunc(sess *vpcv1.VpcV1, id string) resource.StateRefreshFunc {
+func isSnapshotRefreshFunc(sess *vpcv1.VpcV1, id string) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		getSnapshotOptions := &vpcv1.GetSnapshotOptions{
 			ID: &id,
@@ -1234,7 +1234,7 @@ func snapshotUpdate(context context.Context, d *schema.ResourceData, meta interf
 func isWaitForSnapshotUpdate(sess *vpcv1.VpcV1, id string, timeout time.Duration) (interface{}, error) {
 	log.Printf("Waiting for Snapshot (%s) to be available.", id)
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending:    []string{isSnapshotUpdating},
 		Target:     []string{isSnapshotAvailable, isSnapshotFailed},
 		Refresh:    isSnapshotUpdateRefreshFunc(sess, id),
@@ -1245,7 +1245,7 @@ func isWaitForSnapshotUpdate(sess *vpcv1.VpcV1, id string, timeout time.Duration
 	return stateConf.WaitForState()
 }
 
-func isSnapshotUpdateRefreshFunc(sess *vpcv1.VpcV1, id string) resource.StateRefreshFunc {
+func isSnapshotUpdateRefreshFunc(sess *vpcv1.VpcV1, id string) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		getSnapshotOptions := &vpcv1.GetSnapshotOptions{
 			ID: &id,
@@ -1267,7 +1267,7 @@ func isSnapshotUpdateRefreshFunc(sess *vpcv1.VpcV1, id string) resource.StateRef
 func isWaitForCloneAvailable(sess *vpcv1.VpcV1, d *schema.ResourceData, id, zoneName string) (interface{}, error) {
 	log.Printf("Waiting for Snapshot (%s) clone (%s) to be available.", id, zoneName)
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending:    []string{"false"},
 		Target:     []string{"true", "deleted"},
 		Refresh:    isSnapshotCloneRefreshFunc(sess, id, zoneName),
@@ -1278,7 +1278,7 @@ func isWaitForCloneAvailable(sess *vpcv1.VpcV1, d *schema.ResourceData, id, zone
 	return stateConf.WaitForState()
 }
 
-func isSnapshotCloneRefreshFunc(sess *vpcv1.VpcV1, id, zoneName string) resource.StateRefreshFunc {
+func isSnapshotCloneRefreshFunc(sess *vpcv1.VpcV1, id, zoneName string) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		getSnapshotCloneOptions := &vpcv1.GetSnapshotCloneOptions{
 			ID:       &id,
@@ -1300,7 +1300,7 @@ func isSnapshotCloneRefreshFunc(sess *vpcv1.VpcV1, id, zoneName string) resource
 	}
 }
 
-func isSnapshotCloneDeleteRefreshFunc(sess *vpcv1.VpcV1, id, zoneName string) resource.StateRefreshFunc {
+func isSnapshotCloneDeleteRefreshFunc(sess *vpcv1.VpcV1, id, zoneName string) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		getSnapshotCloneOptions := &vpcv1.GetSnapshotCloneOptions{
 			ID:       &id,
@@ -1321,7 +1321,7 @@ func isSnapshotCloneDeleteRefreshFunc(sess *vpcv1.VpcV1, id, zoneName string) re
 func isWaitForCloneDeleted(sess *vpcv1.VpcV1, d *schema.ResourceData, id, zoneName string) (interface{}, error) {
 	log.Printf("Waiting for Snapshot (%s) clone (%s) to be deleted.", id, zoneName)
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending:    []string{"true"},
 		Target:     []string{"false", "deleted"},
 		Refresh:    isSnapshotCloneDeleteRefreshFunc(sess, id, zoneName),
@@ -1386,7 +1386,7 @@ func snapshotDelete(context context.Context, d *schema.ResourceData, meta interf
 func isWaitForSnapshotDeleted(sess *vpcv1.VpcV1, id string, timeout time.Duration) (interface{}, error) {
 	log.Printf("Waiting for Snapshot (%s) to be deleted.", id)
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending:    []string{isSnapshotDeleting},
 		Target:     []string{isSnapshotDeleted, isSnapshotFailed},
 		Refresh:    isSnapshotDeleteRefreshFunc(sess, id),
@@ -1398,7 +1398,7 @@ func isWaitForSnapshotDeleted(sess *vpcv1.VpcV1, id string, timeout time.Duratio
 	return stateConf.WaitForState()
 }
 
-func isSnapshotDeleteRefreshFunc(sess *vpcv1.VpcV1, id string) resource.StateRefreshFunc {
+func isSnapshotDeleteRefreshFunc(sess *vpcv1.VpcV1, id string) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		log.Printf("[DEBUG] Refresh function for Snapshot delete.")
 		getSnapshotOptions := &vpcv1.GetSnapshotOptions{

@@ -10,7 +10,7 @@ import (
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
@@ -424,7 +424,7 @@ func resourceIBMIsPrivatePathServiceGatewayDelete(context context.Context, d *sc
 
 func isWaitForPPSGDeleteRetry(vpcClient *vpcv1.VpcV1, id string, timeout time.Duration) (interface{}, error) {
 	log.Printf("[DEBUG] Retrying PPSG (%s) delete", id)
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending: []string{"ppsg_in_use"},
 		Target:  []string{"deleting", "done", ""},
 		Refresh: func() (interface{}, string, error) {
@@ -451,7 +451,7 @@ func isWaitForPPSGDeleteRetry(vpcClient *vpcv1.VpcV1, id string, timeout time.Du
 func isWaitForPPSGDeleted(vpcClient *vpcv1.VpcV1, id string, timeout time.Duration) (interface{}, error) {
 	log.Printf("Waiting for ppsg (%s) to be deleted.", id)
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending:    []string{"retry", "deleting", "stable"},
 		Target:     []string{"deleted", ""},
 		Refresh:    isPPSGDeleteRefreshFunc(vpcClient, id),
@@ -463,7 +463,7 @@ func isWaitForPPSGDeleted(vpcClient *vpcv1.VpcV1, id string, timeout time.Durati
 	return stateConf.WaitForState()
 }
 
-func isPPSGDeleteRefreshFunc(vpcClient *vpcv1.VpcV1, id string) resource.StateRefreshFunc {
+func isPPSGDeleteRefreshFunc(vpcClient *vpcv1.VpcV1, id string) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		log.Printf("[DEBUG] is ppsg delete function here")
 		getPPSGOptions := &vpcv1.GetPrivatePathServiceGatewayOptions{
@@ -482,7 +482,7 @@ func isPPSGDeleteRefreshFunc(vpcClient *vpcv1.VpcV1, id string) resource.StateRe
 func isWaitForPPSGAvailable(vpcClient *vpcv1.VpcV1, id string, timeout time.Duration) (interface{}, error) {
 	log.Printf("Waiting for ppsg (%s) to be available.", id)
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending:    []string{"pending", "updating"},
 		Target:     []string{"stable", "failed", "suspended"},
 		Refresh:    isPPSGRefreshFunc(vpcClient, id),
@@ -494,7 +494,7 @@ func isWaitForPPSGAvailable(vpcClient *vpcv1.VpcV1, id string, timeout time.Dura
 	return stateConf.WaitForState()
 }
 
-func isPPSGRefreshFunc(vpcClient *vpcv1.VpcV1, id string) resource.StateRefreshFunc {
+func isPPSGRefreshFunc(vpcClient *vpcv1.VpcV1, id string) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		getPPSGOptions := &vpcv1.GetPrivatePathServiceGatewayOptions{
 			ID: &id,

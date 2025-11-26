@@ -16,7 +16,7 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	"github.com/IBM/go-sdk-core/v5/core"
@@ -1936,7 +1936,7 @@ func resourceIbmIsShareDelete(context context.Context, d *schema.ResourceData, m
 func isWaitForShareAvailable(context context.Context, vpcClient *vpcv1.VpcV1, shareid string, d *schema.ResourceData, timeout time.Duration) (interface{}, error) {
 	log.Printf("Waiting for share (%s) to be available.", shareid)
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending:    []string{"updating", "pending", "waiting"},
 		Target:     []string{"stable", "failed"},
 		Refresh:    isShareRefreshFunc(context, vpcClient, shareid, d),
@@ -1948,7 +1948,7 @@ func isWaitForShareAvailable(context context.Context, vpcClient *vpcv1.VpcV1, sh
 	return stateConf.WaitForState()
 }
 
-func isShareRefreshFunc(context context.Context, vpcClient *vpcv1.VpcV1, shareid string, d *schema.ResourceData) resource.StateRefreshFunc {
+func isShareRefreshFunc(context context.Context, vpcClient *vpcv1.VpcV1, shareid string, d *schema.ResourceData) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		shareOptions := &vpcv1.GetShareOptions{}
 
@@ -1970,7 +1970,7 @@ func isShareRefreshFunc(context context.Context, vpcClient *vpcv1.VpcV1, shareid
 
 func isWaitForShareDelete(context context.Context, vpcClient *vpcv1.VpcV1, d *schema.ResourceData, shareid string) (interface{}, error) {
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending: []string{"deleting", "stable", "waiting"},
 		Target:  []string{"done"},
 		Refresh: func() (interface{}, string, error) {

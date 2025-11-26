@@ -13,7 +13,7 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM/go-sdk-core/v5/core"
 	dns "github.com/IBM/networking-go-sdk/dnssvcsv1"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -384,7 +384,7 @@ func waitForPDNSGlbPoolDelete(d *schema.ResourceData, meta interface{}) (interfa
 	}
 	idset := strings.Split(d.Id(), "/")
 	getPoolOptions := cisClient.NewGetPoolOptions(idset[0], idset[1])
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending: []string{pdnsGlbPoolDeletePending},
 		Target:  []string{pdnsGlbPoolDeleted},
 		Refresh: func() (interface{}, string, error) {

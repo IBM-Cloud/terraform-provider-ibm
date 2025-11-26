@@ -13,7 +13,7 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	"github.com/IBM/go-sdk-core/v5/core"
@@ -723,7 +723,7 @@ func resourceIBMIsShareMountTargetDelete(context context.Context, d *schema.Reso
 func WaitForMountTargetAvailable(context context.Context, vpcClient *vpcv1.VpcV1, shareid, targetid string, d *schema.ResourceData, timeout time.Duration) (interface{}, error) {
 	log.Printf("Waiting for target (%s) to be available.", targetid)
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending:    []string{"updating", "pending", "waiting"},
 		Target:     []string{"stable", "failed"},
 		Refresh:    mountTargetRefresh(context, vpcClient, shareid, targetid, d),
@@ -735,7 +735,7 @@ func WaitForMountTargetAvailable(context context.Context, vpcClient *vpcv1.VpcV1
 	return stateConf.WaitForState()
 }
 
-func mountTargetRefresh(context context.Context, vpcClient *vpcv1.VpcV1, shareid, targetid string, d *schema.ResourceData) resource.StateRefreshFunc {
+func mountTargetRefresh(context context.Context, vpcClient *vpcv1.VpcV1, shareid, targetid string, d *schema.ResourceData) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		shareTargetOptions := &vpcv1.GetShareMountTargetOptions{}
 
@@ -758,7 +758,7 @@ func mountTargetRefresh(context context.Context, vpcClient *vpcv1.VpcV1, shareid
 
 func isWaitForMountTargetDelete(context context.Context, vpcClient *vpcv1.VpcV1, d *schema.ResourceData, shareid, targetid string) (interface{}, error) {
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending: []string{"deleting", "stable"},
 		Target:  []string{"done"},
 		Refresh: func() (interface{}, string, error) {
@@ -952,7 +952,7 @@ func ShareMountTargetMapToShareMountTargetPrototype(d *schema.ResourceData, vniM
 
 func isWaitForTargetDelete(context context.Context, vpcClient *vpcv1.VpcV1, d *schema.ResourceData, shareid, targetid string) (interface{}, error) {
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending: []string{"deleting", "stable"},
 		Target:  []string{"done"},
 		Refresh: func() (interface{}, string, error) {
@@ -984,7 +984,7 @@ func isWaitForTargetDelete(context context.Context, vpcClient *vpcv1.VpcV1, d *s
 func WaitForVNIAvailable(vpcClient *vpcv1.VpcV1, vniId string, d *schema.ResourceData, timeout time.Duration) (interface{}, error) {
 	log.Printf("Waiting for VNI (%s) to be available.", vniId)
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending:    []string{"updating", "pending", "waiting"},
 		Target:     []string{"stable", "failed"},
 		Refresh:    VNIRefreshFunc(vpcClient, vniId, d),
@@ -996,7 +996,7 @@ func WaitForVNIAvailable(vpcClient *vpcv1.VpcV1, vniId string, d *schema.Resourc
 	return stateConf.WaitForState()
 }
 
-func VNIRefreshFunc(vpcClient *vpcv1.VpcV1, vniId string, d *schema.ResourceData) resource.StateRefreshFunc {
+func VNIRefreshFunc(vpcClient *vpcv1.VpcV1, vniId string, d *schema.ResourceData) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		getVNIOptions := &vpcv1.GetVirtualNetworkInterfaceOptions{
 			ID: &vniId,
@@ -1016,7 +1016,7 @@ func VNIRefreshFunc(vpcClient *vpcv1.VpcV1, vniId string, d *schema.ResourceData
 func WaitForTargetAvailable(context context.Context, vpcClient *vpcv1.VpcV1, shareid, targetid string, d *schema.ResourceData, timeout time.Duration) (interface{}, error) {
 	log.Printf("Waiting for target (%s) to be available.", targetid)
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending:    []string{"updating", "pending", "waiting"},
 		Target:     []string{"stable", "failed"},
 		Refresh:    mountTargetRefreshFunc(context, vpcClient, shareid, targetid, d),
@@ -1028,7 +1028,7 @@ func WaitForTargetAvailable(context context.Context, vpcClient *vpcv1.VpcV1, sha
 	return stateConf.WaitForState()
 }
 
-func mountTargetRefreshFunc(context context.Context, vpcClient *vpcv1.VpcV1, shareid, targetid string, d *schema.ResourceData) resource.StateRefreshFunc {
+func mountTargetRefreshFunc(context context.Context, vpcClient *vpcv1.VpcV1, shareid, targetid string, d *schema.ResourceData) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		shareTargetOptions := &vpcv1.GetShareMountTargetOptions{}
 

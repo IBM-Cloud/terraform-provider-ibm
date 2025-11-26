@@ -9,7 +9,6 @@ import (
 	"log"
 	"time"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -560,7 +559,7 @@ func resourceIBMTrustedProfileTemplateAssignmentDelete(context context.Context, 
 	return nil
 }
 
-func waitForAssignment(timeout time.Duration, meta interface{}, d *schema.ResourceData, refreshFn func(string, interface{}) resource.StateRefreshFunc) (interface{}, error) {
+func waitForAssignment(timeout time.Duration, meta interface{}, d *schema.ResourceData, refreshFn func(string, interface{}) retry.StateRefreshFunc) (interface{}, error) {
 	stateConf := &retry.StateChangeConf{
 		Pending:      []string{WAITING},
 		Target:       []string{READY},
@@ -573,7 +572,7 @@ func waitForAssignment(timeout time.Duration, meta interface{}, d *schema.Resour
 	return stateConf.WaitForStateContext(context.Background())
 }
 
-func isTrustedProfileAssignmentRemoved(id string, meta interface{}) resource.StateRefreshFunc {
+func isTrustedProfileAssignmentRemoved(id string, meta interface{}) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		iamIdentityClient, err := meta.(conns.ClientSession).IAMIdentityV1API()
 

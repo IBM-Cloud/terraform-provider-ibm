@@ -13,7 +13,7 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -264,7 +264,7 @@ func resourceIBMISBareMetalServerInitializationDelete(context context.Context, d
 func isWaitForBareMetalServerInitializationStopped(client *vpcv1.VpcV1, id string, timeout time.Duration, d *schema.ResourceData) (interface{}, error) {
 	log.Printf("Waiting for Bare Metal Server (%s) to be stopped for reload success.", id)
 	communicator := make(chan interface{})
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending:    []string{isBareMetalServerStatusPending, isBareMetalServerActionStatusStarting, "reinitializing"},
 		Target:     []string{isBareMetalServerStatusRunning, isBareMetalServerStatusFailed, "stopped"},
 		Refresh:    isBareMetalServerInitializationRefreshFunc(client, id, d, communicator),
@@ -275,7 +275,7 @@ func isWaitForBareMetalServerInitializationStopped(client *vpcv1.VpcV1, id strin
 	return stateConf.WaitForState()
 }
 
-func isBareMetalServerInitializationRefreshFunc(client *vpcv1.VpcV1, id string, d *schema.ResourceData, communicator chan interface{}) resource.StateRefreshFunc {
+func isBareMetalServerInitializationRefreshFunc(client *vpcv1.VpcV1, id string, d *schema.ResourceData, communicator chan interface{}) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		bmsgetoptions := &vpcv1.GetBareMetalServerOptions{
 			ID: &id,

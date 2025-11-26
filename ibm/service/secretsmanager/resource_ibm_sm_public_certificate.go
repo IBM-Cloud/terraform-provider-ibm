@@ -8,11 +8,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/IBM-Cloud/bluemix-go/bmxerror"
-	"github.com/akamai/AkamaiOPEN-edgegrid-golang/client-v1"
-	"github.com/akamai/AkamaiOPEN-edgegrid-golang/edgegrid"
-	"github.com/akamai/AkamaiOPEN-edgegrid-golang/v5/pkg/dns"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"io/ioutil"
 	"log"
 	"reflect"
@@ -20,7 +15,13 @@ import (
 	"strings"
 	"time"
 
+	"github.com/IBM-Cloud/bluemix-go/bmxerror"
+	"github.com/akamai/AkamaiOPEN-edgegrid-golang/client-v1"
+	"github.com/akamai/AkamaiOPEN-edgegrid-golang/edgegrid"
+	"github.com/akamai/AkamaiOPEN-edgegrid-golang/v5/pkg/dns"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
@@ -464,7 +465,7 @@ func waitForIbmSmPublicCertificateCreate(secretsManagerClient *secretsmanagerv2.
 	secretId := id[2]
 
 	getSecretOptions.SetID(secretId)
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending: []string{pendingStatus},
 		Target:  []string{targetStatus},
 		Refresh: func() (interface{}, string, error) {

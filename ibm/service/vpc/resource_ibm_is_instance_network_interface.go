@@ -13,7 +13,7 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	"github.com/IBM/go-sdk-core/v5/core"
@@ -821,7 +821,7 @@ func resourceIBMIsInstanceNetworkInterfaceDelete(context context.Context, d *sch
 func isWaitForNetworkInterfaceAvailable(vpcClient *vpcv1.VpcV1, id string, timeout time.Duration, d *schema.ResourceData) (interface{}, error) {
 	log.Printf("Waiting for dedicated host (%s) to be available.", id)
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending:    []string{isNetworkInterfacePending},
 		Target:     []string{isNetworkInterfaceAvailable, isNetworkInterfaceFailed},
 		Refresh:    isNetworkInterfaceRefreshFunc(vpcClient, id, d),
@@ -833,7 +833,7 @@ func isWaitForNetworkInterfaceAvailable(vpcClient *vpcv1.VpcV1, id string, timeo
 	return stateConf.WaitForState()
 }
 
-func isNetworkInterfaceRefreshFunc(vpcClient *vpcv1.VpcV1, id string, d *schema.ResourceData) resource.StateRefreshFunc {
+func isNetworkInterfaceRefreshFunc(vpcClient *vpcv1.VpcV1, id string, d *schema.ResourceData) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 
 		getInstanceNetworkInterfaceOptions := &vpcv1.GetInstanceNetworkInterfaceOptions{}
@@ -861,7 +861,7 @@ func isNetworkInterfaceRefreshFunc(vpcClient *vpcv1.VpcV1, id string, d *schema.
 func isWaitForNetworkInterfaceDelete(vpcClient *vpcv1.VpcV1, id string, timeout time.Duration, d *schema.ResourceData) (interface{}, error) {
 	log.Printf("Waiting for dedicated host (%s) to be available.", id)
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending:    []string{isNetworkInterfacePending, isNetworkInterfaceDeleting, isNetworkInterfaceAvailable},
 		Target:     []string{isNetworkInterfaceDeleted},
 		Refresh:    isNetworkInterfaceRefreshDeleteFunc(vpcClient, id, d),
@@ -873,7 +873,7 @@ func isWaitForNetworkInterfaceDelete(vpcClient *vpcv1.VpcV1, id string, timeout 
 	return stateConf.WaitForState()
 }
 
-func isNetworkInterfaceRefreshDeleteFunc(vpcClient *vpcv1.VpcV1, id string, d *schema.ResourceData) resource.StateRefreshFunc {
+func isNetworkInterfaceRefreshDeleteFunc(vpcClient *vpcv1.VpcV1, id string, d *schema.ResourceData) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 
 		getInstanceNetworkInterfaceOptions := &vpcv1.GetInstanceNetworkInterfaceOptions{}

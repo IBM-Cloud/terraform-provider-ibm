@@ -14,7 +14,7 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	"github.com/IBM/vpc-go-sdk/vpcv1"
@@ -230,7 +230,7 @@ func resourceIBMIsVPNServerRouteCreate(context context.Context, d *schema.Resour
 func isWaitForVPNServerRouteStable(context context.Context, vpcClient *vpcv1.VpcV1, d *schema.ResourceData, timeout time.Duration) (interface{}, error) {
 
 	log.Printf("Waiting for VPN Server  Route(%s) to be stable.", d.Id())
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending: []string{isVPNServerStatusPending, isVPNServerRouteStatusUpdating},
 		Target:  []string{isVPNServerStatusStable, isVPNServerRouteStatusFailed},
 		Refresh: func() (interface{}, string, error) {
@@ -417,7 +417,8 @@ func resourceIBMIsVPNServerRouteDelete(context context.Context, d *schema.Resour
 func isWaitForVPNServerRouteDeleted(context context.Context, sess *vpcv1.VpcV1, d *schema.ResourceData) (interface{}, error) {
 	log.Printf("Waiting for VPN Server Route(%s) to be deleted.", d.Id())
 
-	stateConf := &resource.StateChangeConf{
+	log.Printf("Waiting for VPN Server  Route(%s) to be deleted.", d.Id())
+	stateConf := &retry.StateChangeConf{
 		Pending: []string{"retry", isVPNServerRouteStatusDeleting},
 		Target:  []string{isVPNServerStatusDeleted, isVPNServerRouteStatusFailed},
 		Refresh: func() (interface{}, string, error) {

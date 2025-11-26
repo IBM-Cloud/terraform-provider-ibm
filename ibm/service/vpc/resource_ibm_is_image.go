@@ -17,7 +17,7 @@ import (
 	"github.com/go-openapi/strfmt"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -609,7 +609,7 @@ func imgCreateByVolume(context context.Context, d *schema.ResourceData, meta int
 func isWaitForImageAvailable(imageC *vpcv1.VpcV1, id string, timeout time.Duration) (interface{}, error) {
 	log.Printf("Waiting for image (%s) to be available.", id)
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending:    []string{"retry", isImageProvisioning},
 		Target:     []string{isImageProvisioningDone, ""},
 		Refresh:    isImageRefreshFunc(imageC, id),
@@ -620,7 +620,7 @@ func isWaitForImageAvailable(imageC *vpcv1.VpcV1, id string, timeout time.Durati
 
 	return stateConf.WaitForState()
 }
-func isImageRefreshFunc(imageC *vpcv1.VpcV1, id string) resource.StateRefreshFunc {
+func isImageRefreshFunc(imageC *vpcv1.VpcV1, id string) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		getimgoptions := &vpcv1.GetImageOptions{
 			ID: &id,
@@ -1054,7 +1054,7 @@ func imgDelete(context context.Context, d *schema.ResourceData, meta interface{}
 func isWaitForImageDeleted(imageC *vpcv1.VpcV1, id string, timeout time.Duration) (interface{}, error) {
 	log.Printf("Waiting for image (%s) to be deleted.", id)
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending:    []string{"retry", isImageDeleting},
 		Target:     []string{"", isImageDeleted},
 		Refresh:    isImageDeleteRefreshFunc(imageC, id),
@@ -1066,7 +1066,7 @@ func isWaitForImageDeleted(imageC *vpcv1.VpcV1, id string, timeout time.Duration
 	return stateConf.WaitForState()
 }
 
-func isImageDeleteRefreshFunc(imageC *vpcv1.VpcV1, id string) resource.StateRefreshFunc {
+func isImageDeleteRefreshFunc(imageC *vpcv1.VpcV1, id string) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		log.Printf("[DEBUG] is image delete function here")
 		getimgoptions := &vpcv1.GetImageOptions{

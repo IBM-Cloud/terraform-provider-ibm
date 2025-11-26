@@ -15,7 +15,7 @@ import (
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/softlayer/softlayer-go/datatypes"
 	"github.com/softlayer/softlayer-go/filter"
@@ -1006,7 +1006,7 @@ func waitForNetworkGatewayMemberProvision(d *datatypes.Hardware, meta interface{
 	domain := *d.Domain
 	log.Printf("Waiting for Gateway (%s.%s) to be provisioned", hostname, domain)
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending: []string{"retry", "pending"},
 		Target:  []string{"provisioned"},
 		Refresh: func() (interface{}, string, error) {
