@@ -5,10 +5,12 @@ package power
 
 import (
 	"context"
+	"fmt"
 	"log"
 
 	"github.com/IBM-Cloud/power-go-client/clients/instance"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/hashicorp/go-uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -93,6 +95,24 @@ func DataSourceIBMPISAPProfiles() *schema.Resource {
 							Description: "Type of profile.",
 							Type:        schema.TypeString,
 						},
+						Attr_VPMEMVolume: {
+							Computed:    true,
+							Description: "vpmem volume.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									Attr_MaxPercent: {
+										Description: "Maximum percent of memory to be assigned for carved out vPMEM volume.",
+										Optional:    true,
+										Type:        schema.TypeInt,
+									},
+									Attr_MinPercent: {
+										Description: "Minimum percent of memory to be assigned for carved out vPMEM volume.",
+										Optional:    true,
+										Type:        schema.TypeInt,
+									},
+								}},
+							Type: schema.TypeList,
+						},
 						Attr_WorkloadType: {
 							Computed:    true,
 							Description: "Workload Type.",
@@ -109,10 +129,12 @@ func DataSourceIBMPISAPProfiles() *schema.Resource {
 	}
 }
 
-func dataSourceIBMPISAPProfilesRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataSourceIBMPISAPProfilesRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	sess, err := meta.(conns.ClientSession).IBMPISession()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("IBMPISession failed: %s", err.Error()), "(Data) ibm_pi_sap_profiles", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	cloudInstanceID := d.Get(Arg_CloudInstanceID).(string)
@@ -128,13 +150,14 @@ func dataSourceIBMPISAPProfilesRead(ctx context.Context, d *schema.ResourceData,
 
 	sapProfiles, err := client.GetAllSAPProfilesWithFilters(cloudInstanceID, filters)
 	if err != nil {
-		log.Printf("[DEBUG] get all sap profiles failed %v", err)
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetAllSAPProfilesWithFilters failed: %s", err.Error()), "(Data) ibm_pi_sap_profiles", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
-	result := make([]map[string]interface{}, 0, len(sapProfiles.Profiles))
+	result := make([]map[string]any, 0, len(sapProfiles.Profiles))
 	for _, sapProfile := range sapProfiles.Profiles {
-		profile := map[string]interface{}{
+		profile := map[string]any{
 			Attr_Certified:         *sapProfile.Certified,
 			Attr_Cores:             *sapProfile.Cores,
 			Attr_DefaultSystem:     sapProfile.DefaultSystem,
@@ -145,6 +168,9 @@ func dataSourceIBMPISAPProfilesRead(ctx context.Context, d *schema.ResourceData,
 			Attr_SupportedSystems:  sapProfile.SupportedSystems,
 			Attr_Type:              *sapProfile.Type,
 			Attr_WorkloadType:      sapProfile.WorkloadTypes,
+		}
+		if sapProfile.VpmemVolume != nil {
+			profile[Attr_VPMEMVolume] = sapVpmemVolumeToMap(sapProfile.VpmemVolume)
 		}
 		result = append(result, profile)
 	}

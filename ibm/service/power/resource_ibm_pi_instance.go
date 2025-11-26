@@ -407,7 +407,25 @@ func ResourceIBMPIInstance() *schema.Resource {
 				Set:              schema.HashString,
 				Type:             schema.TypeSet,
 			},
-
+			Arg_VPMEMVolumes: {
+				Description: "List of one or more vPMEM volumes to attach to the instance.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						Attr_Name: {
+							Description: "Volume base name.",
+							Required:    true,
+							Type:        schema.TypeString,
+						},
+						Attr_Size: {
+							Description: "Volume size (GB).",
+							Required:    true,
+							Type:        schema.TypeInt,
+						},
+					},
+				},
+				Optional: true,
+				Type:     schema.TypeList,
+			},
 			// Attributes
 			Attr_CRN: {
 				Computed:    true,
@@ -506,6 +524,7 @@ func ResourceIBMPIInstance() *schema.Resource {
 				Description: "PI instance status",
 				Type:        schema.TypeString,
 			},
+			Attr_VPMEMVolumes: vpmemVolumeSchema(),
 		},
 	}
 }
@@ -724,6 +743,14 @@ func resourceIBMPIInstanceRead(ctx context.Context, d *schema.ResourceData, meta
 	}
 	d.Set(Arg_PreferredProcessorCompatibilityMode, powervmdata.PreferredProcessorCompatibilityMode)
 	d.Set(Attr_EffectiveProcessorCompatibilityMode, powervmdata.EffectiveProcessorCompatibilityMode)
+	vpmemVolumes := []map[string]any{}
+	if len(powervmdata.VpmemVolumes) > 0 {
+		for _, volume := range powervmdata.VpmemVolumes {
+			vpmemVol := dataSourceIBMPIVPMEMVolumeToMap(volume, meta)
+			vpmemVolumes = append(vpmemVolumes, vpmemVol)
+		}
+	}
+	d.Set(Attr_VPMEMVolumes, vpmemVolumes)
 
 	return nil
 }
@@ -1621,6 +1648,19 @@ func expandPVMNetworks(networks []interface{}) []*models.PVMInstanceAddNetwork {
 	}
 	return pvmNetworks
 }
+func expandPVMVPMEMVolumes(vpmemVolumes []any) []*models.VPMemVolumeCreate {
+	pvmVpmemVolumes := make([]*models.VPMemVolumeCreate, 0, len(vpmemVolumes))
+	for _, v := range vpmemVolumes {
+		vpmemVolume := v.(map[string]any)
+		volSize := int64(vpmemVolume[Attr_Size].(int))
+		pvmVpmemVolume := &models.VPMemVolumeCreate{
+			Name: flex.PtrToString(vpmemVolume[Attr_Name].(string)),
+			Size: &volSize,
+		}
+		pvmVpmemVolumes = append(pvmVpmemVolumes, pvmVpmemVolume)
+	}
+	return pvmVpmemVolumes
+}
 
 func checkCloudInstanceCapability(cloudInstance *models.CloudInstance, custom_capability string) bool {
 	log.Printf("Checking for the following capability %s", custom_capability)
@@ -1754,6 +1794,9 @@ func createSAPInstance(d *schema.ResourceData, sapClient *instance.IBMPISAPInsta
 	}
 	if ppcm, ok := d.GetOk(Arg_PreferredProcessorCompatibilityMode); ok {
 		body.PreferredProcessorCompatibilityMode = ppcm.(string)
+	}
+	if vpmemVolumes, ok := d.GetOk(Arg_VPMEMVolumes); ok {
+		body.VpmemVolumes = expandPVMVPMEMVolumes(vpmemVolumes.([]any))
 	}
 	pvmList, err := sapClient.Create(body)
 	if err != nil {
@@ -1976,6 +2019,9 @@ func createPVMInstance(d *schema.ResourceData, client *instance.IBMPIInstanceCli
 		body.PreferredProcessorCompatibilityMode = ppcm.(string)
 	}
 
+	if vpmemVolumes, ok := d.GetOk(Arg_VPMEMVolumes); ok {
+		body.VpmemVolumes = expandPVMVPMEMVolumes(vpmemVolumes.([]any))
+	}
 	pvmList, err := client.Create(body)
 
 	if err != nil {
