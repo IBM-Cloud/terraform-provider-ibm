@@ -423,7 +423,8 @@ func (r *SSHKeyResource) Update(ctx context.Context, req resource.UpdateRequest,
 			return
 		}
 		plan.ResourceControllerURL = basetypes.NewStringValue(controller + "/vpc-ext/compute/sshKeys")
-		plan.ResourceName = basetypes.NewStringValue(*key.Name)
+		// Keep resource_name from state - it shouldn't change on update
+		plan.ResourceName = state.ResourceName
 		plan.ResourceCRN = basetypes.NewStringValue(*key.CRN)
 		plan.Crn = basetypes.NewStringValue(*key.CRN)
 		plan.ResourceGroupName = basetypes.NewStringValue(*key.ResourceGroup.Name)
