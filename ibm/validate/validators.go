@@ -51,7 +51,8 @@ func validateServiceTags(v interface{}, k string) (ws []string, errors []error) 
 func validateAllowedICDPlanValues(validValues []string) schema.SchemaValidateFunc {
 	return func(v interface{}, k string) (ws []string, errors []error) {
 		input := v.(string)
-		if input == "standard-gen2" {
+		gen2Pattern := regexp.MustCompile(`-gen2($|-.+)`)
+		if gen2Pattern.MatchString(input) {
 			errors = append(errors, fmt.Errorf(
 				"The plan %q corresponds to a Gen 2 database. Gen 2 instances are not supported by the ibm_database resource. "+
 					"Use the ibm_resource_instance resource instead for provisioning and management. "+
