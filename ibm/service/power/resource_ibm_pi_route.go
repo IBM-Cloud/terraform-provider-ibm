@@ -16,7 +16,6 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
@@ -330,7 +329,7 @@ func isWaitForIBMPIRouteDeleted(ctx context.Context, client *instance.IBMPIRoute
 	return stateConf.WaitForStateContext(ctx)
 }
 
-func isIBMPIRouteRefreshDeleteFunc(client *instance.IBMPIRouteClient, id string) resource.StateRefreshFunc {
+func isIBMPIRouteRefreshDeleteFunc(client *instance.IBMPIRouteClient, id string) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		route, err := client.Get(id)
 		if err != nil && strings.Contains(err.Error(), NotFound) {

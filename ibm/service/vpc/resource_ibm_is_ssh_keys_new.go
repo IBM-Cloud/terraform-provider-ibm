@@ -61,14 +61,8 @@ func (r *SSHKeyResource) Schema(ctx context.Context, req resource.SchemaRequest,
 			"public_key": schema.StringAttribute{
 				MarkdownDescription: "A unique public SSH key to import, in OpenSSH format (consisting of three space-separated fields: the algorithm name, base64-encoded key, and a comment). The algorithm and comment fields may be omitted, as only the key field is imported. Keys of type rsa may be 2048 or 4096 bits in length, however 4096 is recommended. Keys of type ed25519 are 256 bits in length.",
 				Required:            true,
-				// PlanModifiers: []planmodifier.String{
-				// 	stringplanmodifier.RequiresReplace(),
-				// },
-				CustomType: SSHPublicKeyType{},
+				CustomType:          SSHPublicKeyType{},
 				PlanModifiers: []planmodifier.String{
-					// Add the custom plan modifier
-					// SuppressPublicKeyDiff(),
-					// Since public_key changes should force a new resource
 					stringplanmodifier.RequiresReplace(),
 				},
 			},
@@ -76,10 +70,6 @@ func (r *SSHKeyResource) Schema(ctx context.Context, req resource.SchemaRequest,
 				MarkdownDescription: "Tags for the ssh key",
 				Optional:            true,
 				ElementType:         types.StringType,
-				// Validators: []validator.List{
-				// 	listvalidator.UniqueValues(),
-				// 	listvalidator.ValueStringsAre(stringvalidator.RegexMatches(regexp.MustCompile("read|write|read and write"), "Must be either of read|write|read and write")),
-				// },
 			},
 			"access_tags": schema.ListAttribute{
 				MarkdownDescription: "Access list for this ssh key",
@@ -210,18 +200,11 @@ func (r *SSHKeyResource) Create(ctx context.Context, req resource.CreateRequest,
 	}
 
 	plan.Id = basetypes.NewStringValue(*key.ID)
-	plan.Fingerprint = basetypes.NewStringValue(*key.Fingerprint)
-	plan.Length = basetypes.NewInt64Value(int64(*key.Length))
-
 	plan.Name = basetypes.NewStringValue(*key.Name)
-
-	if !plan.PublicKey.IsNull() {
-		plan.PublicKey = NewSSHPublicKeyValue(*key.PublicKey)
-	}
+	plan.PublicKey = NewSSHPublicKeyValue(*key.PublicKey)
 	plan.Type = basetypes.NewStringValue(*key.Type)
 	plan.Fingerprint = basetypes.NewStringValue(*key.Fingerprint)
 	plan.Length = basetypes.NewInt64Value(int64(*key.Length))
-	plan.Id = basetypes.NewStringValue(*key.ID)
 	plan.ResourceGroup = basetypes.NewStringValue(*key.ResourceGroup.ID)
 	controller, err := flex.GetBaseController(r.client)
 	if err != nil {
@@ -232,8 +215,7 @@ func (r *SSHKeyResource) Create(ctx context.Context, req resource.CreateRequest,
 		return
 	}
 	plan.ResourceControllerURL = basetypes.NewStringValue(controller + "/vpc-ext/compute/sshKeys")
-	plan.ResourceGroup = basetypes.NewStringValue(*key.ResourceGroup.ID)
-	plan.ResourceName = basetypes.NewStringValue(*key.ResourceGroup.Name)
+	plan.ResourceName = basetypes.NewStringValue(*key.Name)
 	plan.ResourceCRN = basetypes.NewStringValue(*key.CRN)
 	plan.Crn = basetypes.NewStringValue(*key.CRN)
 	plan.ResourceGroupName = basetypes.NewStringValue(*key.ResourceGroup.Name)
@@ -275,8 +257,12 @@ func (r *SSHKeyResource) Read(ctx context.Context, req resource.ReadRequest, res
 		ID: core.StringPtr(state.Id.ValueString()),
 	}
 
-	key, _, err := sess.GetKey(options)
+	key, response, err := sess.GetKey(options)
 	if err != nil {
+		if response != nil && response.StatusCode == 404 {
+			resp.State.RemoveResource(ctx)
+			return
+		}
 		resp.Diagnostics.AddError(
 			"Error getting key",
 			err.Error(),
@@ -300,8 +286,7 @@ func (r *SSHKeyResource) Read(ctx context.Context, req resource.ReadRequest, res
 		return
 	}
 	state.ResourceControllerURL = basetypes.NewStringValue(controller + "/vpc-ext/compute/sshKeys")
-	state.ResourceControllerURL = basetypes.NewStringValue(*key.ResourceGroup.ID)
-	state.ResourceName = basetypes.NewStringValue(*key.ResourceGroup.Name)
+	state.ResourceName = basetypes.NewStringValue(*key.Name)
 	state.ResourceCRN = basetypes.NewStringValue(*key.CRN)
 	state.Crn = basetypes.NewStringValue(*key.CRN)
 	state.ResourceGroupName = basetypes.NewStringValue(*key.ResourceGroup.Name)
@@ -332,9 +317,12 @@ func (r *SSHKeyResource) Update(ctx context.Context, req resource.UpdateRequest,
 		return
 	}
 
+	id := state.Id.ValueString()
+	keyUpdated := false
+
+	// Update name if changed
 	if !plan.Name.Equal(state.Name) {
 		input := &vpcv1.UpdateKeyOptions{}
-		id := state.Id.ValueString()
 		input.ID = &id
 		keyPatchModel := &vpcv1.KeyPatch{}
 		keyPatchModel.Name = core.StringPtr(plan.Name.ValueString())
@@ -349,17 +337,105 @@ func (r *SSHKeyResource) Update(ctx context.Context, req resource.UpdateRequest,
 		input.KeyPatch = keyPatchAsPatch
 
 		_, res, err := sess.UpdateKey(input)
-
 		if err != nil {
-			resp.Diagnostics.AddError(fmt.Sprintf(
-				"Error creating key %v", res),
+			resp.Diagnostics.AddError(
+				fmt.Sprintf("Error updating key %v", res),
 				err.Error(),
 			)
 			return
 		}
-		resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
+		keyUpdated = true
 	}
-	return
+
+	// Get current CRN for tag operations
+	getOptions := &vpcv1.GetKeyOptions{
+		ID: core.StringPtr(id),
+	}
+	key, _, err := sess.GetKey(getOptions)
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"Error getting key after update",
+			err.Error(),
+		)
+		return
+	}
+
+	// Update tags if changed
+	if !plan.Tags.Equal(state.Tags) {
+		oldList := state.Tags.Elements()
+		newList := plan.Tags.Elements()
+		err = flex.UpdateGlobalTagsElementsUsingCRN(oldList, newList, r.client, *key.CRN, "", isKeyUserTagType)
+		if err != nil {
+			resp.Diagnostics.AddError(
+				"Error updating tags",
+				err.Error(),
+			)
+			return
+		}
+		keyUpdated = true
+	}
+
+	// Update access tags if changed
+	if !plan.AccessTags.Equal(state.AccessTags) {
+		oldList := state.AccessTags.Elements()
+		newList := plan.AccessTags.Elements()
+		err = flex.UpdateGlobalTagsElementsUsingCRN(oldList, newList, r.client, *key.CRN, "", isKeyAccessTagType)
+		if err != nil {
+			resp.Diagnostics.AddError(
+				"Error updating access tags",
+				err.Error(),
+			)
+			return
+		}
+		keyUpdated = true
+	}
+
+	// Refresh state from API if anything was updated
+	if keyUpdated {
+		key, response, err := sess.GetKey(getOptions)
+		if err != nil {
+			if response != nil && response.StatusCode == 404 {
+				resp.State.RemoveResource(ctx)
+				return
+			}
+			resp.Diagnostics.AddError(
+				"Error refreshing key state after update",
+				err.Error(),
+			)
+			return
+		}
+
+		plan.Name = basetypes.NewStringValue(*key.Name)
+		plan.PublicKey = NewSSHPublicKeyValue(*key.PublicKey)
+		plan.Type = basetypes.NewStringValue(*key.Type)
+		plan.Fingerprint = basetypes.NewStringValue(*key.Fingerprint)
+		plan.Length = basetypes.NewInt64Value(int64(*key.Length))
+		plan.ResourceGroup = basetypes.NewStringValue(*key.ResourceGroup.ID)
+		controller, err := flex.GetBaseController(r.client)
+		if err != nil {
+			resp.Diagnostics.AddError(
+				"Error getting base controller",
+				err.Error(),
+			)
+			return
+		}
+		plan.ResourceControllerURL = basetypes.NewStringValue(controller + "/vpc-ext/compute/sshKeys")
+		plan.ResourceName = basetypes.NewStringValue(*key.Name)
+		plan.ResourceCRN = basetypes.NewStringValue(*key.CRN)
+		plan.Crn = basetypes.NewStringValue(*key.CRN)
+		plan.ResourceGroupName = basetypes.NewStringValue(*key.ResourceGroup.Name)
+
+		tags, _ := flex.GetGlobalTagsElementsUsingCRN(r.client, *key.CRN, "", isKeyUserTagType)
+		access, _ := flex.GetGlobalTagsElementsUsingCRN(r.client, *key.CRN, "", isKeyAccessTagType)
+		if len(tags) > 0 {
+			plan.Tags, _ = basetypes.NewListValue(convertStringSliceToListValue(tags))
+		}
+		if len(access) > 0 {
+			plan.AccessTags, _ = basetypes.NewListValue(convertStringSliceToListValue(access))
+		}
+	}
+
+	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
 func (r *SSHKeyResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
@@ -379,8 +455,13 @@ func (r *SSHKeyResource) Delete(ctx context.Context, req resource.DeleteRequest,
 		ID: core.StringPtr(state.Id.ValueString()),
 	}
 
-	_, err = sess.DeleteKey(options)
+	response, err := sess.DeleteKey(options)
 	if err != nil {
+		// Ignore 404 errors - resource already deleted
+		if response != nil && response.StatusCode == 404 {
+			resp.State.RemoveResource(ctx)
+			return
+		}
 		resp.Diagnostics.AddError(
 			"Error deleting key",
 			err.Error(),
@@ -389,6 +470,10 @@ func (r *SSHKeyResource) Delete(ctx context.Context, req resource.DeleteRequest,
 	}
 
 	resp.State.RemoveResource(ctx)
+}
+
+func (r *SSHKeyResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
 }
 
 type SSHKeyResourceModel struct {

@@ -69,17 +69,16 @@ require (
 
 require (
 	github.com/apparentlymart/go-cidr v1.1.0
-	github.com/hashicorp/terraform-plugin-framework v1.11.0
-	github.com/hashicorp/terraform-plugin-framework-validators v0.13.0
-	github.com/hashicorp/terraform-plugin-go v0.28.0
-	github.com/hashicorp/terraform-plugin-mux v0.16.0
+	github.com/hashicorp/terraform-plugin-framework v1.14.0
+	github.com/hashicorp/terraform-plugin-framework-validators v0.14.0
+	github.com/hashicorp/terraform-plugin-go v0.27.0
+	github.com/hashicorp/terraform-plugin-mux v0.17.0
 	github.com/hashicorp/terraform-plugin-testing v1.11.0
 	k8s.io/utils v0.0.0-20241210054802-24370beab758
 	sigs.k8s.io/controller-runtime v0.19.3
 )
 
 require (
-	github.com/IBM/apigateway-go-sdk v0.0.0-20210714141226-a5d5d49caaca // indirect
 	github.com/Logicalis/asn1 v0.0.0-20190312173541-d60463189a56 // indirect
 	github.com/PromonLogicalis/asn1 v0.0.0-20190312173541-d60463189a56 // indirect
 	github.com/ProtonMail/go-crypto v1.1.6 // indirect

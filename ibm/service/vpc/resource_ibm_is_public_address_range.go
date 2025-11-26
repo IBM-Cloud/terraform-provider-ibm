@@ -12,13 +12,13 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 )
 
 const (
@@ -335,7 +335,7 @@ func resourceIBMPublicAddressRangeCreate(context context.Context, d *schema.Reso
 	return resourceIBMPublicAddressRangeRead(context, d, meta)
 }
 
-func isPublicAddressRangeRefreshFunc(sess *vpcv1.VpcV1, id string) resource.StateRefreshFunc {
+func isPublicAddressRangeRefreshFunc(sess *vpcv1.VpcV1, id string) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		getPublicAddressRangeOptions := &vpcv1.GetPublicAddressRangeOptions{
 			ID: &id,
@@ -358,7 +358,7 @@ func isPublicAddressRangeRefreshFunc(sess *vpcv1.VpcV1, id string) resource.Stat
 func isWaitForPublicAddressRangeAvailable(sess *vpcv1.VpcV1, id string, timeout time.Duration) (interface{}, error) {
 	log.Printf("Waiting for public address range (%s) to be available.", id)
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending:    []string{isPublicAddressRangePending},
 		Target:     []string{isPublicAddressRangeAvailable, isPublicAddressRangeFailed},
 		Refresh:    isPublicAddressRangeRefreshFunc(sess, id),
@@ -541,7 +541,7 @@ func resourceIBMPublicAddressRangeUpdate(context context.Context, d *schema.Reso
 func isWaitForPublicAddressRangeUpdate(sess *vpcv1.VpcV1, id string, timeout time.Duration) (interface{}, error) {
 	log.Printf("Waiting for PublicAddressRange (%s) to be available.", id)
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending:    []string{isPublicAddressRangeUpdating},
 		Target:     []string{isPublicAddressRangeAvailable, isPublicAddressRangeFailed},
 		Refresh:    isPublicAddressRangeUpdateRefreshFunc(sess, id),
@@ -552,7 +552,7 @@ func isWaitForPublicAddressRangeUpdate(sess *vpcv1.VpcV1, id string, timeout tim
 	return stateConf.WaitForState()
 }
 
-func isPublicAddressRangeUpdateRefreshFunc(sess *vpcv1.VpcV1, id string) resource.StateRefreshFunc {
+func isPublicAddressRangeUpdateRefreshFunc(sess *vpcv1.VpcV1, id string) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		getPublicAddressRangeOptions := &vpcv1.GetPublicAddressRangeOptions{
 			ID: &id,
@@ -605,7 +605,7 @@ func resourceIBMPublicAddressRangeDelete(context context.Context, d *schema.Reso
 func isWaitForPublicAddressRangeDeleted(sess *vpcv1.VpcV1, id string, timeout time.Duration) (interface{}, error) {
 	log.Printf("Waiting for PublicAddressRange (%s) to be deleted.", id)
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending:    []string{isPublicAddressRangeDeleting},
 		Target:     []string{isPublicAddressRangeDeleted, isPublicAddressRangeFailed},
 		Refresh:    isPublicAddressRangeDeleteRefreshFunc(sess, id),
@@ -617,7 +617,7 @@ func isWaitForPublicAddressRangeDeleted(sess *vpcv1.VpcV1, id string, timeout ti
 	return stateConf.WaitForState()
 }
 
-func isPublicAddressRangeDeleteRefreshFunc(sess *vpcv1.VpcV1, id string) resource.StateRefreshFunc {
+func isPublicAddressRangeDeleteRefreshFunc(sess *vpcv1.VpcV1, id string) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		log.Printf("[DEBUG] Refresh function for PublicAddressRange delete.")
 		getPublicAddressRangeOptions := &vpcv1.GetPublicAddressRangeOptions{

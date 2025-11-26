@@ -14,7 +14,6 @@ import (
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
@@ -22,6 +21,7 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/IBM/vmware-go-sdk/vmwarev1"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 )
 
 func ResourceIbmVmaasVdc() *schema.Resource {
@@ -503,7 +503,7 @@ func waitForIbmVmaasVdcCreate(d *schema.ResourceData, meta interface{}) (interfa
 
 	getVdcOptions.SetID(d.Id())
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending: []string{"creating"},
 		Target:  []string{"ready_to_use"},
 		Refresh: func() (interface{}, string, error) {
@@ -737,7 +737,7 @@ func waitForIbmVmaasVdcUpdate(d *schema.ResourceData, meta interface{}) (interfa
 
 	getVdcOptions.SetID(d.Id())
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending: []string{"modifying"},
 		Target:  []string{"ready_to_use"},
 		Refresh: func() (interface{}, string, error) {
@@ -806,7 +806,7 @@ func waitForIbmVmaasVdcDelete(d *schema.ResourceData, meta interface{}) (interfa
 
 	getVdcOptions.SetID(d.Id())
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending: []string{"deleting"},
 		Target:  []string{"deleted"},
 		Refresh: func() (interface{}, string, error) {

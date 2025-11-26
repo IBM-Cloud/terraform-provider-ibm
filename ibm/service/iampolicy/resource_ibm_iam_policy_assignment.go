@@ -11,7 +11,6 @@ import (
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
@@ -567,7 +566,7 @@ func GetTargetModel(d *schema.ResourceData) (*iampolicymanagementv1.AssignmentTa
 	return targetModel, nil
 }
 
-func waitForAssignment(timeout time.Duration, meta interface{}, d *schema.ResourceData, refreshFn func(string, interface{}) resource.StateRefreshFunc) (interface{}, error) {
+func waitForAssignment(timeout time.Duration, meta interface{}, d *schema.ResourceData, refreshFn func(string, interface{}) retry.StateRefreshFunc) (interface{}, error) {
 
 	stateConf := &retry.StateChangeConf{
 		Pending:      []string{WAITING},
@@ -621,7 +620,7 @@ func isAccessPolicyAssigned(id string, meta interface{}) retry.StateRefreshFunc 
 	}
 }
 
-func isAccessPolicyAssignedDeleted(id string, meta interface{}) resource.StateRefreshFunc {
+func isAccessPolicyAssignedDeleted(id string, meta interface{}) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		iamPolicyManagementClient, err := meta.(conns.ClientSession).IAMPolicyManagementV1API()
 		if err != nil {

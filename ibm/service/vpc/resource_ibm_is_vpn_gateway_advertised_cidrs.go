@@ -12,7 +12,7 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -185,7 +185,7 @@ func vpngwAdvertisedCidrDelete(d *schema.ResourceData, meta interface{}, gID, gC
 func isWaitForVPNGatewayAdvertisedCIDRDeleted(vpnGatewayAdverisedCidr *vpcv1.VpcV1, gID, gCidr string, timeout time.Duration) (interface{}, error) {
 	log.Printf("Waiting for VPNGatewayAdvertisedCIDR (%s) to be deleted.", gCidr)
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending:    []string{"retry", isVPNGatewayAdvertisedCidrDeleting},
 		Target:     []string{"", isVPNGatewayAdvertisedCidrDeleted},
 		Refresh:    isVPNGatewayAdvertisedCIDRDeleteRefreshFunc(vpnGatewayAdverisedCidr, gID, gCidr),
@@ -197,7 +197,7 @@ func isWaitForVPNGatewayAdvertisedCIDRDeleted(vpnGatewayAdverisedCidr *vpcv1.Vpc
 	return stateConf.WaitForState()
 }
 
-func isVPNGatewayAdvertisedCIDRDeleteRefreshFunc(vpnGatewayAdverisedCidr *vpcv1.VpcV1, gID, gCidr string) resource.StateRefreshFunc {
+func isVPNGatewayAdvertisedCIDRDeleteRefreshFunc(vpnGatewayAdverisedCidr *vpcv1.VpcV1, gID, gCidr string) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		checkVPNGatewayAdvertisedCIDROptions := &vpcv1.CheckVPNGatewayAdvertisedCIDROptions{
 			VPNGatewayID: &gID,

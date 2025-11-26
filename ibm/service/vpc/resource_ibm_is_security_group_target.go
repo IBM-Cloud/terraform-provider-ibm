@@ -15,7 +15,6 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
@@ -445,7 +444,7 @@ func isVNISgTargetRefreshFunc(vpcClient *vpcv1.VpcV1, vniId string) retry.StateR
 func isWaitForSGTargetLBAvailable(sess *vpcv1.VpcV1, lbId string, timeout time.Duration) (interface{}, error) {
 	log.Printf("Waiting for load balancer (%s) to be available before attaching security group.", lbId)
 
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending:    []string{"retry", isLBProvisioning, "update_pending"},
 		Target:     []string{isLBProvisioningDone, ""},
 		Refresh:    isSGTargetLBRefreshFunc(sess, lbId),
@@ -458,7 +457,7 @@ func isWaitForSGTargetLBAvailable(sess *vpcv1.VpcV1, lbId string, timeout time.D
 }
 
 // Refresh function for checking load balancer status before security group attachment
-func isSGTargetLBRefreshFunc(sess *vpcv1.VpcV1, lbId string) resource.StateRefreshFunc {
+func isSGTargetLBRefreshFunc(sess *vpcv1.VpcV1, lbId string) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		getlboptions := &vpcv1.GetLoadBalancerOptions{
 			ID: &lbId,

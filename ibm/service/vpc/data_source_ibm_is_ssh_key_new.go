@@ -23,6 +23,8 @@ type DataSourceIsSshKey struct {
 }
 
 type DataSourceIsSshKeyModel struct {
+	ID                    types.String `tfsdk:"id"`
+	Href                  types.String `tfsdk:"href"`
 	ResourceGroup         types.String `tfsdk:"resource_group"`
 	Tags                  types.List   `tfsdk:"tags"`
 	Name                  types.String `tfsdk:"name"`
@@ -52,6 +54,14 @@ func (d *DataSourceIsSshKey) Schema(ctx context.Context, req datasource.SchemaRe
 	resp.Schema = schema.Schema{
 		MarkdownDescription: "The ssh key data source retrieves the given ssh key.",
 		Attributes: map[string]schema.Attribute{
+			"id": schema.StringAttribute{
+				Description: "The unique identifier of the SSH key",
+				Computed:    true,
+			},
+			"href": schema.StringAttribute{
+				Description: "The URL for this SSH key",
+				Computed:    true,
+			},
 			"resource_group": schema.StringAttribute{
 				Description: "Resource group ID",
 				Computed:    true,
@@ -114,15 +124,7 @@ func (d *DataSourceIsSshKey) Configure(ctx context.Context, req datasource.Confi
 	if req.ProviderData == nil {
 		return
 	}
-	client, err := d.client.(conns.ClientSession).VpcV1API()
-	if err != nil {
-		resp.Diagnostics.AddError(
-			"Unexpected Data Source Configure Type",
-			fmt.Sprintf("Expected *clients.Client, got: %T. Please report this issue to the provider developers.", req.ProviderData),
-		)
-		return
-	}
-	d.client = client
+	d.client = req.ProviderData
 }
 
 func (d *DataSourceIsSshKey) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
@@ -161,6 +163,8 @@ func (d *DataSourceIsSshKey) Read(ctx context.Context, req datasource.ReadReques
 		}
 	}
 	if keyfound != nil {
+		data.ID = types.StringValue(*keyfound.ID)
+		data.Href = types.StringValue(*keyfound.Href)
 		data.Name = types.StringValue(*keyfound.Name)
 		data.ResourceName = types.StringValue(*keyfound.Name)
 		data.ResourceCrn = types.StringValue(*keyfound.CRN)
@@ -190,8 +194,8 @@ func (d *DataSourceIsSshKey) Read(ctx context.Context, req datasource.ReadReques
 		resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 	} else {
 		resp.Diagnostics.AddError(
+			"SSH Key Not Found",
 			fmt.Sprintf("No key found with the name %s", name),
-			fmt.Errorf("No key found with the name %s", name).Error(),
 		)
 		return
 	}

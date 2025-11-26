@@ -772,7 +772,7 @@ func isSgRefreshFunc(client *vpcv1.VpcV1, sgId string, groups []vpcv1.SecurityGr
 
 func isWaitForSecurityGroupDeleteRetry(vpcClient *vpcv1.VpcV1, deleteSecurityGroupOptions *vpcv1.DeleteSecurityGroupOptions, timeout time.Duration) (interface{}, error) {
 	log.Printf("[DEBUG] Retrying security group (%s) delete", *deleteSecurityGroupOptions.ID)
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending: []string{"security-group-in-use"},
 		Target:  []string{"deleted", ""},
 		Refresh: func() (interface{}, string, error) {
@@ -797,7 +797,7 @@ func isWaitForSecurityGroupDeleteRetry(vpcClient *vpcv1.VpcV1, deleteSecurityGro
 
 func isWaitForSecurityGroupTargetDeleteRetry(vpcClient *vpcv1.VpcV1, deleteSecurityGroupTargetBindingOptions *vpcv1.DeleteSecurityGroupTargetBindingOptions, timeout time.Duration) (interface{}, error) {
 	log.Printf("[DEBUG] Retrying security group target (%s) delete", *deleteSecurityGroupTargetBindingOptions.ID)
-	stateConf := &resource.StateChangeConf{
+	stateConf := &retry.StateChangeConf{
 		Pending: []string{"security-group-target-in-use"},
 		Target:  []string{"deleted", ""},
 		Refresh: func() (interface{}, string, error) {
