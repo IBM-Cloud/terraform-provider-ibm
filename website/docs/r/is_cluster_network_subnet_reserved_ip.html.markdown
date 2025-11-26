@@ -60,17 +60,18 @@ After your resource is created, you can read values from the listed arguments an
 
 ## Import
 
-You can import the `ibm_is_cluster_network_subnet_reserved_ip` resource by using `id`.
-The `id` property can be formed from `cluster_network_id`, `cluster_network_subnet_id`, and `cluster_network_subnet_reserved_ip_id` in the following format:
+In Terraform v1.5.0 and later, use an [`import` block](https://developer.hashicorp.com/terraform/language/import) to import the `ibm_is_cluster_network_subnet_reserved_ip` resource by using `id`.
+The `id` property can be formed from `cluster_network_id`, `cluster_network_subnet_id`, and `cluster_network_subnet_reserved_ip_id`. For example:
 
-<pre>
-&lt;cluster_network_id&gt;/&lt;cluster_network_subnet_id&gt;/&lt;cluster_network_subnet_reserved_ip_id&gt;
-</pre>
-- `cluster_network_id`: A string. The cluster network identifier.
-- `cluster_network_subnet_id`: A string. The cluster network subnet identifier.
-- `cluster_network_subnet_reserved_ip_id`: A string in the format `6d353a0f-aeb1-4ae1-832e-1110d10981bb`. The unique identifier for this cluster network subnet reserved IP.
+```terraform
+import {
+  to = ibm_is_cluster_network_subnet_reserved_ip.is_cluster_network_subnet_reserved_ip
+  id = "<cluster_network_id>/<cluster_network_subnet_id>/<cluster_network_subnet_reserved_ip_id>"
+}
+```
 
-# Syntax
-<pre>
-$ terraform import ibm_is_cluster_network_subnet_reserved_ip.is_cluster_network_subnet_reserved_ip &lt;cluster_network_id&gt;/&lt;cluster_network_subnet_id&gt;/&lt;cluster_network_subnet_reserved_ip_id&gt;
-</pre>
+Using `terraform import`. For example:
+
+```console
+% terraform import ibm_is_cluster_network_subnet_reserved_ip.is_cluster_network_subnet_reserved_ip <cluster_network_id>/<cluster_network_subnet_id>/<cluster_network_subnet_reserved_ip_id>
+```

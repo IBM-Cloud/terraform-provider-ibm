@@ -123,10 +123,19 @@ In addition to all argument reference list, you can access the following attribu
   - `name` - (String) The user defined name of the subnet.
 
 ## Import
-The `ibm_is_vpc_routing_table` resource can be imported by using VPC ID and VPC Route table ID.
 
-**Example**
+In Terraform v1.5.0 and later, use an [`import` block](https://developer.hashicorp.com/terraform/language/import) to import the `ibm_is_vpc_routing_table` resource by using `id`.
+The `id` property can be formed from `VPC ID`, and `VPC Route table ID`. For example:
 
+```terraform
+import {
+  to = ibm_is_vpc_routing_table.example
+  id = "<vpc_id>/<vpc_route_table_id>"
+}
 ```
-$ terraform import ibm_is_vpc_routing_table.example 56738c92-4631-4eb5-8938-8af9211a6ea4/fc2667e0-9e6f-4993-a0fd-cabab477c4d1
+
+Using `terraform import`. For example:
+
+```console
+% terraform import ibm_is_vpc_routing_table.example <vpc_id>/<vpc_route_table_id>
 ```

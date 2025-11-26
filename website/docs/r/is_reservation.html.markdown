@@ -157,20 +157,22 @@ You can access the following attribute references after your data source is crea
 - `zone` - (String) The globally unique name for this zone.
 
 ## Import
-The `ibm_is_reservation` resource can be imported by using the ID. 
 
-**Syntax**
+In Terraform v1.5.0 and later, use an [`import` block](https://developer.hashicorp.com/terraform/language/import) to import the `ibm_is_reservation` resource by using `id`.
+The `id` property can be formed from reservation ID. For example:
 
-```
-$ terraform import ibm_is_reservation.example <reservation_ID>
-```
-
-**Example**
-
-```
-$ terraform import ibm_is_reservation.example d7bec597-4726-451f-8a63-e62e6f12122c
+```terraform
+import {
+  to = ibm_is_reservation.example
+  id = "<reservation_ID>"
+}
 ```
 
+Using `terraform import`. For example:
+
+```console
+% terraform import ibm_is_reservation.example <reservation_ID>
+```
 ## References 
 
 * [IBM Cloud Terraform Docs](https://cloud.ibm.com/docs/vpc?topic=vpc-provisioning-reserved-capacity-vpc&interface=ui

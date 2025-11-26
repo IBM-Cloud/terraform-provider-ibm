@@ -62,14 +62,18 @@ After your resource is created, you can read values from the listed arguments an
 
 ## Import
 
-You can import the `ibm_is_cluster_network` resource by using `id`. The unique identifier for this cluster network.
+In Terraform v1.5.0 and later, use an [`import` block](https://developer.hashicorp.com/terraform/language/import) to import the `ibm_is_cluster_network` resource by using `id`.
+The `id` property can be formed using the cluster_network id. For example:
 
-# Syntax
-<pre>
-$ terraform import ibm_is_cluster_network.is_cluster_network &lt;id&gt;
-</pre>
-
-# Example
+```terraform
+import {
+  to = ibm_is_cluster_network.is_cluster_network
+  id = "<id>"
+}
 ```
-$ terraform import ibm_is_cluster_network.is_cluster_network 0717-da0df18c-7598-4633-a648-fdaac28a5573
+
+Using `terraform import`. For example:
+
+```console
+% terraform import ibm_is_cluster_network.is_cluster_network <id>
 ```

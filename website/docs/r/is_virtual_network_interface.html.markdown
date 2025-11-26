@@ -111,14 +111,18 @@ After your resource is created, you can read values from the listed arguments an
 
 ## Import
 
-You can import the `ibm_is_virtual_network_interface` resource by using `id`. The unique identifier for this virtual network interface.
+In Terraform v1.5.0 and later, use an [`import` block](https://developer.hashicorp.com/terraform/language/import) to import the `ibm_is_virtual_network_interface` resource by using `id`.
+The `id` property can be formed using the VNI identifier. For example:
 
-# Syntax
-```
-$ terraform import ibm_is_virtual_network_interface.is_virtual_network_interface <id>
+```terraform
+import {
+  to = ibm_is_virtual_network_interface.is_virtual_network_interface
+  id = "<id>"
+}
 ```
 
-# Example
-```
-$ terraform import ibm_is_virtual_network_interface.is_virtual_network_interface 0767-fa41aecb-4f21-423d-8082-630bfba1e1d9
+Using `terraform import`. For example:
+
+```console
+% terraform import ibm_is_virtual_network_interface.is_virtual_network_interface <id>
 ```
