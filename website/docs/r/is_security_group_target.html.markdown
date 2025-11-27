@@ -59,10 +59,18 @@ In addition to all argument reference list, you can access the following attribu
 
 ## Import
 
-The `ibm_is_security_group_target` resource can be imported by using security group ID and target ID.
+In Terraform v1.5.0 and later, use an [`import` block](https://developer.hashicorp.com/terraform/language/import) to import the `ibm_is_security_group_target` resource by using `id`.
+The `id` property can be formed from `security group ID`, and `target ID`. For example:
 
-**Example**
-
+```terraform
+import {
+  to = ibm_is_security_group_target.example
+  id = "<security_group_id>/<target_id>"
+}
 ```
-$ terraform import ibm_is_security_group_target.example r006-6c6528a7-26de-4438-9685-bf2f6bbcb1ad/r006-5b77aa07-7dfb-4c74-a1bd-904123123cbe198
+
+Using `terraform import`. For example:
+
+```console
+% terraform import ibm_is_security_group_target.example <security_group_id>/<target_id>
 ```

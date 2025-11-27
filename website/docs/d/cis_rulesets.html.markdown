@@ -93,11 +93,3 @@ Extra attribute references when `ruleset_id` is provided.
         - `ruleset_id` (Required, String) Id of the Ruleset
         - `rule_ids` (Required, List) List of rule-ids
 
-    - `rate_limit` (Map) Ratelimit of the rule
-      
-      Nested scheme of `rate_limit`
-      - `characteristics` (StringList) Characteristics of Ratelimit for a rule
-      - `counting_expression` (String) Counting Expression of Ratelimit for a rule
-      - `mitigation_timeout` (Int) Mitigation Timeout of Ratelimit for a rule
-      - `period` (Int) Period of Ratelimit for a rule
-      - `requests_per_period` (Int) Requests per period of Ratelimit for a rule

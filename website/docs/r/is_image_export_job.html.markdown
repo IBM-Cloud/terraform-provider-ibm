@@ -83,16 +83,18 @@ Nested scheme for **storage_object**:
 
 ## Import
 
-You can import the `ibm_is_image_export_job` resource by using `id`.
-The `id` property can be formed from `image_id`, and `id` in the following format:
+In Terraform v1.5.0 and later, use an [`import` block](https://developer.hashicorp.com/terraform/language/import) to import the `ibm_is_image_export_job` resource by using `id`.
+The `id` property can be formed from `image_id`, and `id`. For example:
 
+```terraform
+import {
+  to = ibm_is_image_export_job.is_image_export
+  id = "<image_id>/<id>"
+}
 ```
-<image_id>/<id>
-```
-- `image_id`: A string. The image identifier.
-- `id`: A string. The image export job identifier.
 
-# Syntax
-```
-$ terraform import ibm_is_image_export_job.is_image_export <image_id>/<id>
+Using `terraform import`. For example:
+
+```console
+% terraform import ibm_is_image_export_job.is_image_export <image_id>/<id>
 ```
