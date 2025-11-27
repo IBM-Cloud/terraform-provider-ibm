@@ -707,6 +707,9 @@ func Provider() *schema.Provider {
 			"ibm_app_config_integration_en":          appconfiguration.DataSourceIBMAppConfigIntegrationEn(),
 			"ibm_app_config_integration_kms":         appconfiguration.DataSourceIBMAppConfigIntegrationKms(),
 
+			// resource_reclamations
+			"ibm_resource_reclamations": resourcecontroller.DataSourceIBMResourceReclamations(),
+
 			"ibm_resource_quota":    resourcecontroller.DataSourceIBMResourceQuota(),
 			"ibm_resource_group":    resourcemanager.DataSourceIBMResourceGroup(),
 			"ibm_resource_groups":   resourcemanager.DataSourceIBMResourceGroups(),
@@ -1463,21 +1466,25 @@ func Provider() *schema.Provider {
 			"ibm_kms_kmip_adapter":                         kms.ResourceIBMKmsKMIPAdapter(),
 			"ibm_kms_kmip_client_cert":                     kms.ResourceIBMKmsKMIPClientCertificate(),
 			"ibm_resource_group":                           resourcemanager.ResourceIBMResourceGroup(),
-			"ibm_resource_instance":                        resourcecontroller.ResourceIBMResourceInstance(),
-			"ibm_resource_key":                             resourcecontroller.ResourceIBMResourceKey(),
-			"ibm_security_group":                           classicinfrastructure.ResourceIBMSecurityGroup(),
-			"ibm_security_group_rule":                      classicinfrastructure.ResourceIBMSecurityGroupRule(),
-			"ibm_service_instance":                         cloudfoundry.ResourceIBMServiceInstance(),
-			"ibm_service_key":                              cloudfoundry.ResourceIBMServiceKey(),
-			"ibm_space":                                    cloudfoundry.ResourceIBMSpace(),
-			"ibm_storage_evault":                           classicinfrastructure.ResourceIBMStorageEvault(),
-			"ibm_storage_block":                            classicinfrastructure.ResourceIBMStorageBlock(),
-			"ibm_storage_file":                             classicinfrastructure.ResourceIBMStorageFile(),
-			"ibm_subnet":                                   classicinfrastructure.ResourceIBMSubnet(),
-			"ibm_dns_reverse_record":                       classicinfrastructure.ResourceIBMDNSReverseRecord(),
-			"ibm_ssl_certificate":                          classicinfrastructure.ResourceIBMSSLCertificate(),
-			"ibm_cdn":                                      classicinfrastructure.ResourceIBMCDN(),
-			"ibm_hardware_firewall_shared":                 classicinfrastructure.ResourceIBMFirewallShared(),
+
+			// resource_reclamation
+			"ibm_resource_reclamation_delete": resourcecontroller.ResourceIBMResourceReclamationDelete(),
+
+			"ibm_resource_instance":        resourcecontroller.ResourceIBMResourceInstance(),
+			"ibm_resource_key":             resourcecontroller.ResourceIBMResourceKey(),
+			"ibm_security_group":           classicinfrastructure.ResourceIBMSecurityGroup(),
+			"ibm_security_group_rule":      classicinfrastructure.ResourceIBMSecurityGroupRule(),
+			"ibm_service_instance":         cloudfoundry.ResourceIBMServiceInstance(),
+			"ibm_service_key":              cloudfoundry.ResourceIBMServiceKey(),
+			"ibm_space":                    cloudfoundry.ResourceIBMSpace(),
+			"ibm_storage_evault":           classicinfrastructure.ResourceIBMStorageEvault(),
+			"ibm_storage_block":            classicinfrastructure.ResourceIBMStorageBlock(),
+			"ibm_storage_file":             classicinfrastructure.ResourceIBMStorageFile(),
+			"ibm_subnet":                   classicinfrastructure.ResourceIBMSubnet(),
+			"ibm_dns_reverse_record":       classicinfrastructure.ResourceIBMDNSReverseRecord(),
+			"ibm_ssl_certificate":          classicinfrastructure.ResourceIBMSSLCertificate(),
+			"ibm_cdn":                      classicinfrastructure.ResourceIBMCDN(),
+			"ibm_hardware_firewall_shared": classicinfrastructure.ResourceIBMFirewallShared(),
 
 			// Software Defined Storage as a Service
 			"ibm_sds_volume":         sdsaas.ResourceIBMSdsVolume(),
