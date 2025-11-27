@@ -29,6 +29,10 @@ resource "ibm_logs_alert_definition" "standard_immediate" {
     minutes   = 10
     notify_on = "triggered_only_unspecified"
   }
+  entity_labels = {
+    key  = "value"
+    key2 = "value2"
+  }
   logs_immediate {
     notification_payload_filter = []
 

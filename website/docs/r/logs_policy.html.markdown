@@ -27,6 +27,9 @@ resource "ibm_logs_policy" "logs_policy_instance" {
   log_rules {
     severities = ["info"]
   }
+  before {
+    id = "3dc02998-0b50-4ea8-b68a-4779d716fa1f"
+  }
 }
 ```
 
