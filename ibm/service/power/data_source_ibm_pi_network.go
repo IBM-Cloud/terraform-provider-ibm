@@ -5,6 +5,7 @@ package power
 
 import (
 	"context"
+	"fmt"
 	"log"
 
 	"github.com/IBM-Cloud/power-go-client/clients/instance"
@@ -140,10 +141,12 @@ func DataSourceIBMPINetwork() *schema.Resource {
 	}
 }
 
-func dataSourceIBMPINetworkRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataSourceIBMPINetworkRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	sess, err := meta.(conns.ClientSession).IBMPISession()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("IBMPISession failed: %s", err.Error()), "(Data) ibm_pi_network", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	cloudInstanceID := d.Get(Arg_CloudInstanceID).(string)
@@ -156,8 +159,16 @@ func dataSourceIBMPINetworkRead(ctx context.Context, d *schema.ResourceData, met
 
 	networkC := instance.NewIBMPINetworkClient(ctx, sess, cloudInstanceID)
 	networkdata, err := networkC.Get(networkID)
-	if err != nil || networkdata == nil {
-		return diag.FromErr(err)
+	if err != nil {
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Get failed: %s", err.Error()), "(Data) ibm_pi_network", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
+	}
+	if networkdata == nil {
+		err = flex.FmtErrorf("response returned empty")
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("networkdata returned empty: %s", err.Error()), "(Data) ibm_pi_network", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	d.SetId(*networkdata.NetworkID)
@@ -185,7 +196,7 @@ func dataSourceIBMPINetworkRead(ctx context.Context, d *schema.ResourceData, met
 	if networkdata.Name != nil {
 		d.Set(Attr_Name, networkdata.Name)
 	}
-	networkAddressTranslation := []map[string]interface{}{}
+	networkAddressTranslation := []map[string]any{}
 	if networkdata.NetworkAddressTranslation != nil {
 		natMap := networkAddressTranslationToMap(networkdata.NetworkAddressTranslation)
 		networkAddressTranslation = append(networkAddressTranslation, natMap)
