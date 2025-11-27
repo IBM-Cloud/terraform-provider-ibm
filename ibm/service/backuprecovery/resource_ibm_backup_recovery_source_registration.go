@@ -216,6 +216,11 @@ func ResourceIbmBackupRecoverySourceRegistration() *schema.Resource {
 							DiffSuppressFunc: suppressParameterDuringRefresh,
 							Description:      "Specifies the bearer token or private key of Kubernetes source.",
 						},
+						"cohesity_dataprotect_plugin_image_location": &schema.Schema{
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "Specifies the custom Cohesity Dataprotect plugin image location of the Kubernetes source.",
+						},
 						"data_mover_image_location": &schema.Schema{
 							Type:        schema.TypeString,
 							Required:    true,
@@ -1895,6 +1900,9 @@ func ResourceIbmBackupRecoverySourceRegistrationMapToKubernetesSourceRegistratio
 		model.AutoProtectConfig = AutoProtectConfigModel
 	}
 	model.ClientPrivateKey = core.StringPtr(modelMap["client_private_key"].(string))
+	if modelMap["cohesity_dataprotect_plugin_image_location"] != nil && modelMap["cohesity_dataprotect_plugin_image_location"].(string) != "" {
+		model.CohesityDataprotectPluginImageLocation = core.StringPtr(modelMap["cohesity_dataprotect_plugin_image_location"].(string))
+	}
 	model.DataMoverImageLocation = core.StringPtr(modelMap["data_mover_image_location"].(string))
 	if modelMap["datamover_service_type"] != nil && modelMap["datamover_service_type"].(string) != "" {
 		model.DatamoverServiceType = core.StringPtr(modelMap["datamover_service_type"].(string))
@@ -2129,6 +2137,9 @@ func ResourceIbmBackupRecoverySourceRegistrationKubernetesSourceRegistrationPara
 	}
 	if model.ClientPrivateKey != nil {
 		modelMap["client_private_key"] = *model.ClientPrivateKey
+	}
+	if model.CohesityDataprotectPluginImageLocation != nil {
+		modelMap["cohesity_dataprotect_plugin_image_location"] = *model.CohesityDataprotectPluginImageLocation
 	}
 	if model.DataMoverImageLocation != nil {
 		modelMap["data_mover_image_location"] = *model.DataMoverImageLocation
