@@ -2,7 +2,7 @@
 // Licensed under the Mozilla Public License v2.0
 
 /*
- * IBM OpenAPI Terraform Generator Version: 3.107.1-41b0fbd0-20250825-080732
+ * IBM OpenAPI Terraform Generator Version: 3.108.0-56772134-20251111-102802
  */
 
 package project
@@ -80,6 +80,12 @@ func ResourceIbmProject() *schema.Resource {
 											},
 										},
 									},
+									"container_state": &schema.Schema{
+										Type:        schema.TypeString,
+										Optional:    true,
+										Computed:    true,
+										Description: "The aggregate state from all deployabe architectures that are included in this configuration.",
+									},
 									"state": &schema.Schema{
 										Type:        schema.TypeString,
 										Computed:    true,
@@ -127,6 +133,12 @@ func ResourceIbmProject() *schema.Resource {
 											},
 										},
 									},
+									"container_state": &schema.Schema{
+										Type:        schema.TypeString,
+										Optional:    true,
+										Computed:    true,
+										Description: "The aggregate state from all deployabe architectures that are included in this configuration.",
+									},
 									"state": &schema.Schema{
 										Type:        schema.TypeString,
 										Computed:    true,
@@ -155,10 +167,28 @@ func ResourceIbmProject() *schema.Resource {
 							Computed:    true,
 							Description: "The version of the configuration.",
 						},
+						"container_state": &schema.Schema{
+							Type:        schema.TypeString,
+							Optional:    true,
+							Computed:    true,
+							Description: "The aggregate state from all deployabe architectures that are included in this configuration.",
+						},
+						"container_state_code": &schema.Schema{
+							Type:        schema.TypeString,
+							Optional:    true,
+							Computed:    true,
+							Description: "Computed state code clarifying the prerequisites for validation for the configuration.",
+						},
 						"state": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "The state of the configuration.",
+						},
+						"state_code": &schema.Schema{
+							Type:        schema.TypeString,
+							Optional:    true,
+							Computed:    true,
+							Description: "Computed state code clarifying the prerequisites for validation for the configuration.",
 						},
 						"created_at": &schema.Schema{
 							Type:        schema.TypeString,
@@ -847,6 +877,17 @@ func ResourceIbmProjectMapToProjectConfigDefinitionPrototype(modelMap map[string
 		}
 		model.Members = members
 	}
+	if modelMap["uses"] != nil {
+		uses := []projectv1.ProjectConfigUses{}
+		for _, usesItem := range modelMap["uses"].([]interface{}) {
+			usesItemModel, err := ResourceIbmProjectMapToProjectConfigUses(usesItem.(map[string]interface{}))
+			if err != nil {
+				return model, err
+			}
+			uses = append(uses, *usesItemModel)
+		}
+		model.Uses = uses
+	}
 	if modelMap["description"] != nil && modelMap["description"].(string) != "" {
 		model.Description = core.StringPtr(modelMap["description"].(string))
 	}
@@ -973,6 +1014,13 @@ func ResourceIbmProjectMapToStackMember(modelMap map[string]interface{}) (*proje
 	return model, nil
 }
 
+func ResourceIbmProjectMapToProjectConfigUses(modelMap map[string]interface{}) (*projectv1.ProjectConfigUses, error) {
+	model := &projectv1.ProjectConfigUses{}
+	model.ConfigID = core.StringPtr(modelMap["config_id"].(string))
+	model.ProjectID = core.StringPtr(modelMap["project_id"].(string))
+	return model, nil
+}
+
 func ResourceIbmProjectMapToProjectConfigAuth(modelMap map[string]interface{}) (*projectv1.ProjectConfigAuth, error) {
 	model := &projectv1.ProjectConfigAuth{}
 	if modelMap["trusted_profile_id"] != nil && modelMap["trusted_profile_id"].(string) != "" {
@@ -1009,6 +1057,17 @@ func ResourceIbmProjectMapToProjectConfigDefinitionPrototypeDAConfigDefinitionPr
 			members = append(members, *membersItemModel)
 		}
 		model.Members = members
+	}
+	if modelMap["uses"] != nil {
+		uses := []projectv1.ProjectConfigUses{}
+		for _, usesItem := range modelMap["uses"].([]interface{}) {
+			usesItemModel, err := ResourceIbmProjectMapToProjectConfigUses(usesItem.(map[string]interface{}))
+			if err != nil {
+				return model, err
+			}
+			uses = append(uses, *usesItemModel)
+		}
+		model.Uses = uses
 	}
 	if modelMap["description"] != nil && modelMap["description"].(string) != "" {
 		model.Description = core.StringPtr(modelMap["description"].(string))
@@ -1164,7 +1223,16 @@ func ResourceIbmProjectProjectConfigSummaryToMap(model *projectv1.ProjectConfigS
 	}
 	modelMap["id"] = *model.ID
 	modelMap["version"] = flex.IntValue(model.Version)
+	if model.ContainerState != nil {
+		modelMap["container_state"] = *model.ContainerState
+	}
+	if model.ContainerStateCode != nil {
+		modelMap["container_state_code"] = *model.ContainerStateCode
+	}
 	modelMap["state"] = *model.State
+	if model.StateCode != nil {
+		modelMap["state_code"] = *model.StateCode
+	}
 	modelMap["created_at"] = model.CreatedAt.String()
 	modelMap["modified_at"] = model.ModifiedAt.String()
 	modelMap["href"] = *model.Href
@@ -1189,6 +1257,9 @@ func ResourceIbmProjectProjectConfigVersionSummaryToMap(model *projectv1.Project
 		return modelMap, err
 	}
 	modelMap["definition"] = []map[string]interface{}{definitionMap}
+	if model.ContainerState != nil {
+		modelMap["container_state"] = *model.ContainerState
+	}
 	modelMap["state"] = *model.State
 	modelMap["version"] = flex.IntValue(model.Version)
 	modelMap["href"] = *model.Href
