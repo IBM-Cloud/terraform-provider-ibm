@@ -34,7 +34,7 @@ You can specify the following arguments for this resource.
   * Constraints: The maximum length is `300` characters. The minimum length is `0` characters. The value must match regular expression `/^.*$/`.
 * `name` - (Optional, String) Required field when creating a new template. Otherwise, this field is optional. If the field is included, it changes the name value for all existing versions of the template.
   * Constraints: The maximum length is `100` characters. The minimum length is `1` character. The value must match regular expression `/^.*$/`.
-* `role` - (Required, List) The role properties that are created in an action resource when the template is assigned.
+* `role` - (Optional, List) The role properties that are created in an action resource when the template is assigned.
 Nested schema for **role**:
 	* `actions` - (Required, List) The actions of the role.
 	  * Constraints: The minimum length is `1` item.
@@ -67,20 +67,18 @@ After your resource is created, you can read values from the listed arguments an
   * Constraints: The maximum length is `250` characters. The minimum length is `1` character.
 * `state` - (String) State of role template.
   * Constraints: Allowable values are: `active`, `deleted`.
-
 * `etag` - ETag identifier for iam_role_template_version.
 
 ## Import
 
 You can import the `ibm_iam_role_template_version` resource by using `version`.
-The `version` property can be formed from and `role_template_id` in the following format:
+The `version` property can be formed from `template_id`, and `version` in the following format: `<template_id>/<version>`
 
-<pre>
-&lt;role_template_id&gt;
-</pre>
 * `role_template_id`: A string. The role template ID.
+* `version`: A string. The role template version.
 
-# Syntax
-<pre>
-$ terraform import ibm_iam_role_template_version.iam_role_template_version &lt;role_template_id&gt;
-</pre>
+### Syntax
+
+```bash
+$ terraform import ibm_iam_role_template_version.iam_role_template $role_template_id/$version
+```

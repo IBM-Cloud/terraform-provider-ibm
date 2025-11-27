@@ -27,6 +27,12 @@ You can specify the following arguments for this resource.
 
 * `accept_language` - (Optional, String) Language code for translations* `default` - English* `de` -  German (Standard)* `en` - English* `es` - Spanish (Spain)* `fr` - French (Standard)* `it` - Italian (Standard)* `ja` - Japanese* `ko` - Korean* `pt-br` - Portuguese (Brazil)* `zh-cn` - Chinese (Simplified, PRC)* `zh-tw` - (Chinese, Taiwan).
   * Constraints: The default value is `default`. The minimum length is `1` character.
+* `templates` - (Required, List) The set of properties required for a Role Template assignment.
+Nested schema for **templates**:
+	* `id` - (Required, String) ID of the template.
+		* Constraints: The maximum length is `51` characters. The minimum length is `1` character. The value must match regular expression `/^roleTemplate-[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/`.
+	* `version` - (Required, String) template version .
+		* Constraints: The maximum length is `2` characters. The minimum length is `1` character. The value must match regular expression `/^[0-9]*$/`.
 * `target` - (Required, List) assignment target account and type.
 Nested schema for **target**:
 	* `id` - (Required, String) ID of the target account.
@@ -74,7 +80,7 @@ Nested schema for **resources**:
 				* `more_info` - (String) Additional info for error.
 			* `message` - (String) Error message detailing the nature of the error.
 			* `name` - (String) Name of the error.
-		* `resource_created` - (List) On success, it includes the action control assigned.
+		* `resource_created` - (List) On success, it includes the role assigned.
 		Nested schema for **resource_created**:
 			* `id` - (String) role id.
 	* `target` - (List) assignment target account and type.
@@ -88,7 +94,7 @@ Nested schema for **resources**:
 * `template` - (List) The role template id and version that will be assigned.
 Nested schema for **template**:
 	* `id` - (String) Action control template ID.
-	  * Constraints: The maximum length is `58` characters. The minimum length is `1` character. The value must match regular expression `/^actionControlTemplate-[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/`.
+	  * Constraints: The maximum length is `58` characters. The minimum length is `1` character. The value must match regular expression `/^roleTemplate-[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/`.
 	* `version` - (String) Action control template version.
 	  * Constraints: The maximum length is `2` characters. The minimum length is `1` character. The value must match regular expression `/^[0-9]*$/`.
 
@@ -96,7 +102,7 @@ Nested schema for **template**:
 
 ## Import
 
-You can import the `ibm_iam_role_assignment` resource by using `id`. Action control assignment ID.
+You can import the `ibm_iam_role_assignment` resource by using `id`. Role template assignment ID.
 
 # Syntax
 <pre>

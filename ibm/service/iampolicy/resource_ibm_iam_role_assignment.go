@@ -39,12 +39,23 @@ func ResourceIBMIAMRoleAssignment() *schema.Resource {
 		},
 
 		Schema: map[string]*schema.Schema{
-			"target": {
-				Type:        schema.TypeMap,
-				Required:    true,
-				Description: "assignment target details",
-				Elem: &schema.Schema{
-					Type: schema.TypeString,
+			"target": &schema.Schema{
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "assignment target account and type.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"type": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Assignment target type.",
+						},
+						"id": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "ID of the target account.",
+						},
+					},
 				},
 			},
 			"templates": {

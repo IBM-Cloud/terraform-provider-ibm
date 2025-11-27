@@ -32,8 +32,6 @@ You can specify the following arguments for this resource.
 
 * `accept_language` - (Optional, Forces new resource, String) Language code for translations* `default` - English* `de` -  German (Standard)* `en` - English* `es` - Spanish (Spain)* `fr` - French (Standard)* `it` - Italian (Standard)* `ja` - Japanese* `ko` - Korean* `pt-br` - Portuguese (Brazil)* `zh-cn` - Chinese (Simplified, PRC)* `zh-tw` - (Chinese, Taiwan).
   * Constraints: The default value is `default`. The minimum length is `1` character.
-* `account_id` - (Required, Forces new resource, String) Enterprise account ID where this template is created.
-  * Constraints: The maximum length is `32` characters. The minimum length is `1` character. The value must match regular expression `/^[A-Za-z0-9-]*$/`.
 * `committed` - (Optional, Forces new resource, Boolean) Committed status of the template. If committed is set to true, then the template version can no longer be updated.
 * `description` - (Optional, Forces new resource, String) Description of the role template. This is shown to users in the enterprise account. Use this to describe the purpose or context of the role for enterprise users managing IAM templates.
   * Constraints: The maximum length is `300` characters. The minimum length is `0` characters. The value must match regular expression `/^.*$/`.
@@ -57,6 +55,7 @@ Nested schema for **role**:
 After your resource is created, you can read values from the listed arguments and the following attributes.
 
 * `id` - The unique identifier of the iam_role_template.
+* `account_id` - (String) Enterprise account ID where this template will be created.
 * `created_at` - (String) The UTC timestamp when the role template was created.
 * `created_by_id` - (String) The IAM ID of the entity that created the role template.
   * Constraints: The maximum length is `250` characters. The minimum length is `1` character.
@@ -69,12 +68,16 @@ After your resource is created, you can read values from the listed arguments an
 * `version` - (String) The version number of the template used to identify different versions of same template.
   * Constraints: The maximum length is `2` characters. The minimum length is `1` character. The value must match regular expression `/^[0-9]*$/`.
 
-
 ## Import
 
-You can import the `ibm_iam_role_template` resource by using `id`. The role template ID.
+You can import the `ibm_iam_role_template` resource by using `version`.
+The `version` property can be formed from `template_id`, and `version` in the following format: `<template_id>/<version>`
 
-# Syntax
-<pre>
-$ terraform import ibm_iam_role_template.iam_role_template &lt;id&gt;
-</pre>
+* `role_template_id`: A string. The role template ID.
+* `version`: A string. The role template version.
+
+### Syntax
+
+```bash
+$ terraform import ibm_iam_role_template.iam_role_template $role_template_id/$version
+```
