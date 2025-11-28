@@ -18,12 +18,9 @@ resource "ibm_backup_recovery_source_registration" "backup_recovery_source_regis
 		key = "key"
 		value = "value"
   }
-  connections {
-		connection_id = 1
-		entity_id = 1
-		connector_group_id = 1
-		data_source_connection_id = "data_source_connection_id"
-  }
+
+  connection_id = 1
+
   environment = "kPhysical"
     kubernetes_params {
 		auto_protect_config {
