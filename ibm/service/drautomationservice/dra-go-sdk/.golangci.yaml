@@ -1,0 +1,13 @@
+linters:
+  enable:
+    - gosec
+
+run:
+  timeout: 5m
+
+issues:
+  exclude-rules:
+    # Skip test files when running the gosec linter.
+    - path: (.+)_test\.go
+      linters:
+        - gosec

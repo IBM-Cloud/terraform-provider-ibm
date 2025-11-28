@@ -1,0 +1,18 @@
+{
+  "name": "semantic-release-dependencies",
+  "version": "0.0.0",
+  "description": "This package.json is being used to manage semantic-release and its dependencies",
+  "license": "Apache-2.0",
+  "devDependencies": {
+    "semantic-release": "21.0.7",
+    "@semantic-release/changelog": "6.0.3",
+    "@semantic-release/exec": "6.0.3",
+    "@semantic-release/git": "10.0.1"
+  },
+  "overrides": {
+    "semver": "^7.5.3"
+  },
+  "scripts": {
+    "semantic-release": "semantic-release"
+  }
+}

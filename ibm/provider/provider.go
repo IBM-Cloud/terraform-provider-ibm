@@ -37,6 +37,7 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/db2"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/directlink"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/dnsservices"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/drautomationservice"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/enterprise"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/eventnotification"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/eventstreams"
@@ -1131,6 +1132,17 @@ func Provider() *schema.Provider {
 			// Logs Router Service
 			"ibm_logs_router_tenants": logsrouting.DataSourceIBMLogsRouterTenants(),
 			"ibm_logs_router_targets": logsrouting.DataSourceIBMLogsRouterTargets(),
+
+			// DR Automation Service
+			"ibm_pdr_get_dr_summary_response": drautomationservice.DataSourceIBMPdrGetDrSummaryResponse(),
+			"ibm_pdr_get_powervs_workspace":   drautomationservice.DataSourceIBMPdrGetPowervsWorkspace(),
+			"ibm_pdr_get_event":               drautomationservice.DataSourceIBMPdrGetEvent(),
+			"ibm_pdr_get_events":              drautomationservice.DataSourceIBMPdrGetEvents(),
+			"ibm_pdr_get_dr_locations":        drautomationservice.DataSourceIBMPdrGetDrLocations(),
+			"ibm_pdr_get_machine_types":       drautomationservice.DataSourceIBMPdrGetMachineTypes(),
+			"ibm_pdr_get_managed_vm_list":     drautomationservice.DataSourceIBMPdrGetManagedVMList(),
+			"ibm_pdr_last_operation":          drautomationservice.DataSourceIBMPdrLastOperation(),
+			"ibm_pdr_get_grs_location_pairs":  drautomationservice.DataSourceIBMPdrGetGrsLocationPairs(),
 		},
 
 		ResourcesMap: map[string]*schema.Resource{
@@ -1811,6 +1823,10 @@ func Provider() *schema.Provider {
 
 			// Logs Router Service
 			"ibm_logs_router_tenant": logsrouting.ResourceIBMLogsRouterTenant(),
+
+			// DR Automation Service
+			"ibm_pdr_managedr":        drautomationservice.ResourceIbmPdrManagedr(),
+			"ibm_pdr_validate_apikey": drautomationservice.ResourceIBMPdrValidateApikey(),
 		},
 
 		ConfigureFunc: providerConfigure,
