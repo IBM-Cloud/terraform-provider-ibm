@@ -124,13 +124,12 @@ func testAccCheckIBMPdrManagedrExists(n string, obj drautomationservicev1.Servic
 
 		getManageDrOptions := &drautomationservicev1.GetManageDrOptions{}
 
-		parts, err := flex.SepIdParts(rs.Primary.ID, "/")
-		if err != nil {
-			return err
-		}
+		// parts, err := flex.SepIdParts(rs.Primary.ID, "/")
+		// if err != nil {
+		// 	return err
+		// }
 
-		getManageDrOptions.SetInstanceID(parts[0])
-		getManageDrOptions.SetInstanceID(parts[1])
+		getManageDrOptions.SetInstanceID(rs.Primary.ID)
 
 		serviceInstanceManageDr, _, err := drAutomationServiceClient.GetManageDr(getManageDrOptions)
 		if err != nil {
