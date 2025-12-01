@@ -11,7 +11,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 )
@@ -21,7 +21,7 @@ func TestAccIBMPdrLastOperationDataSourceBasic(t *testing.T) {
 		PreCheck:  func() { acc.TestAccPreCheck(t) },
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccCheckIBMPdrLastOperationDataSourceConfigBasic(),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_pdr_last_operation.pdr_last_operation_instance", "id"),
@@ -31,7 +31,7 @@ func TestAccIBMPdrLastOperationDataSourceBasic(t *testing.T) {
 					resource.TestCheckResourceAttrSet("data.ibm_pdr_last_operation.pdr_last_operation_instance", "last_updated_orchestrator_deployment_time"),
 					resource.TestCheckResourceAttrSet("data.ibm_pdr_last_operation.pdr_last_operation_instance", "last_updated_standby_orchestrator_deployment_time"),
 					resource.TestCheckResourceAttrSet("data.ibm_pdr_last_operation.pdr_last_operation_instance", "mfa_enabled"),
-					resource.TestCheckResourceAttrSet("data.ibm_pdr_last_operation.pdr_last_operation_instance", "orch_standby_node_addtion_status"),
+					resource.TestCheckResourceAttr("data.ibm_pdr_last_operation.pdr_last_operation_instance", "orch_standby_node_addtion_status", ""),
 					resource.TestCheckResourceAttrSet("data.ibm_pdr_last_operation.pdr_last_operation_instance", "orchestrator_cluster_message"),
 					resource.TestCheckResourceAttrSet("data.ibm_pdr_last_operation.pdr_last_operation_instance", "orchestrator_config_status"),
 					resource.TestCheckResourceAttrSet("data.ibm_pdr_last_operation.pdr_last_operation_instance", "orchestrator_ha"),
@@ -39,11 +39,11 @@ func TestAccIBMPdrLastOperationDataSourceBasic(t *testing.T) {
 					resource.TestCheckResourceAttrSet("data.ibm_pdr_last_operation.pdr_last_operation_instance", "primary_description"),
 					resource.TestCheckResourceAttrSet("data.ibm_pdr_last_operation.pdr_last_operation_instance", "primary_ip_address"),
 					resource.TestCheckResourceAttrSet("data.ibm_pdr_last_operation.pdr_last_operation_instance", "primary_orchestrator_status"),
-					resource.TestCheckResourceAttrSet("data.ibm_pdr_last_operation.pdr_last_operation_instance", "recovery_location"),
+					resource.TestCheckResourceAttr("data.ibm_pdr_last_operation.pdr_last_operation_instance", "recovery_location", ""),
 					resource.TestCheckResourceAttrSet("data.ibm_pdr_last_operation.pdr_last_operation_instance", "resource_group"),
-					resource.TestCheckResourceAttrSet("data.ibm_pdr_last_operation.pdr_last_operation_instance", "standby_description"),
-					resource.TestCheckResourceAttrSet("data.ibm_pdr_last_operation.pdr_last_operation_instance", "standby_ip_address"),
-					resource.TestCheckResourceAttrSet("data.ibm_pdr_last_operation.pdr_last_operation_instance", "standby_status"),
+					resource.TestCheckResourceAttr("data.ibm_pdr_last_operation.pdr_last_operation_instance", "standby_description", ""),
+					resource.TestCheckResourceAttr("data.ibm_pdr_last_operation.pdr_last_operation_instance", "standby_ip_address", ""),
+					resource.TestCheckResourceAttr("data.ibm_pdr_last_operation.pdr_last_operation_instance", "standby_status", ""),
 					resource.TestCheckResourceAttrSet("data.ibm_pdr_last_operation.pdr_last_operation_instance", "status"),
 				),
 			},
@@ -53,8 +53,8 @@ func TestAccIBMPdrLastOperationDataSourceBasic(t *testing.T) {
 
 func testAccCheckIBMPdrLastOperationDataSourceConfigBasic() string {
 	return fmt.Sprintf(`
-		data "ibm_pdr_last_operation" "pdr_last_operation_instance" {
-			instance_id = "crn:v1:staging:public:power-dr-automation:global:a/a123456fb04ceebfb4a9fd38c22334455:123456d3-1122-3344-b67d-4389b44b7bf9::"
-		}
-	`)
+data "ibm_pdr_last_operation" "pdr_last_operation_instance" {
+  instance_id = "crn:v1:staging:public:power-dr-automation:global:a/b68c234e719144b18598ae4a7b80c44c:492fef47-3ebf-4090-b089-e9b4199878b6::"
+}
+`)
 }
