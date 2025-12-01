@@ -196,7 +196,7 @@ func testAccCheckIBMRoleTemplateConfigWithRole(name string, roleName string, dis
 			    name = "%s"
 				display_name = "%s"
 				actions = ["%s" ]
-				service_name="am-test-service"
+				service_name="cloud-object-storage"
 			} 
 		}
 	`, name, roleName, displayName, role)
@@ -212,7 +212,7 @@ func testAccCheckIBMRoleTemplateConfigWithRoleAndCommit(name string, roleName st
 				name = "%s"
 				display_name = "%s"
 				actions = ["%s" ]
-				service_name="am-test-service"
+				service_name="cloud-object-storage"
 			}
 			committed = true
 		}

@@ -41,18 +41,18 @@ func ResourceIBMIAMRoleAssignment() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 			"target": &schema.Schema{
 				Type:        schema.TypeList,
-				Computed:    true,
+				Required:    true,
 				Description: "assignment target account and type.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"type": &schema.Schema{
+						"type": {
 							Type:        schema.TypeString,
-							Computed:    true,
+							Required:    true,
 							Description: "Assignment target type.",
 						},
-						"id": &schema.Schema{
+						"id": {
 							Type:        schema.TypeString,
-							Computed:    true,
+							Required:    true,
 							Description: "ID of the target account.",
 						},
 					},
@@ -277,8 +277,9 @@ func resourceIBMRoleAssignmentCreate(context context.Context, d *schema.Resource
 	}
 
 	createRoleTemplateAssignmentOptions := &iampolicymanagementv1.CreateRoleTemplateAssignmentOptions{}
+	targetDetails := d.Get("target").([]interface{})
 
-	targetModel, err := ResourceIBMRoleAssignmentMapToAssignmentTargetDetails(d.Get("target").(map[string]interface{}))
+	targetModel, err := ResourceIBMRoleAssignmentMapToAssignmentTargetDetails(targetDetails[0].(map[string]interface{}))
 	if err != nil {
 		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_role_assignment", "create", "parse-target").GetDiag()
 	}
@@ -340,10 +341,11 @@ func resourceIBMRoleAssignmentRead(context context.Context, d *schema.ResourceDa
 	}
 
 	targetMap, err := ResourceIBMRoleAssignmentAssignmentTargetDetailsToMap(roleAssignment.Target)
+
 	if err != nil {
 		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_role_assignment", "read", "target-to-map").GetDiag()
 	}
-	if err = d.Set("target", targetMap); err != nil {
+	if err = d.Set("target", []interface{}{targetMap}); err != nil {
 		err = fmt.Errorf("Error setting target: %s", err)
 		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_role_assignment", "read", "set-target").GetDiag()
 	}
@@ -429,10 +431,14 @@ func resourceIBMRoleAssignmentUpdate(context context.Context, d *schema.Resource
 	updateRoleAssignmentOptions := &iampolicymanagementv1.UpdateRoleAssignmentOptions{}
 
 	updateRoleAssignmentOptions.SetAssignmentID(d.Id())
-	targetModel, diags := GetTargetModel(d)
-	if diags.HasError() {
-		return diags
+	targetDetails := d.Get("target").([]interface{})
+
+	targetModel, err := ResourceIBMRoleAssignmentMapToAssignmentTargetDetails(targetDetails[0].(map[string]interface{}))
+
+	if err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_role_assignment", "create", "parse-target").GetDiag()
 	}
+
 	hasChange := false
 
 	if d.HasChange("template_version") {
@@ -494,10 +500,12 @@ func resourceIBMRoleAssignmentDelete(context context.Context, d *schema.Resource
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
+	targetDetails := d.Get("target").([]interface{})
 
-	targetModel, diags := GetTargetModel(d)
-	if diags.HasError() {
-		return diags
+	targetModel, err := ResourceIBMRoleAssignmentMapToAssignmentTargetDetails(targetDetails[0].(map[string]interface{}))
+
+	if err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_role_assignment", "create", "parse-target").GetDiag()
 	}
 
 	if targetModel.Type != nil && (*targetModel.Type == "Account") {

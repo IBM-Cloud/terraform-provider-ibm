@@ -3,7 +3,7 @@ layout: "ibm"
 page_title: "IBM : ibm_iam_role_template_version"
 description: |-
   Manages iam_role_template_version.
-subcategory: "IAM Policy Management"
+subcategory: "Identity & Access Management (IAM)"
 ---
 
 # ibm_iam_role_template_version

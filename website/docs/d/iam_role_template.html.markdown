@@ -3,7 +3,7 @@ layout: "ibm"
 page_title: "IBM : ibm_iam_role_template"
 description: |-
   Get information about iam_role_template
-subcategory: "IAM Policy Management"
+subcategory: "Identity & Access Management (IAM)"
 ---
 
 # ibm_iam_role_template
@@ -14,26 +14,10 @@ Provides a read-only data source to retrieve information about an iam_role_templ
 
 ```hcl
 data "ibm_iam_role_template" "iam_role_template" {
-	account_id = ibm_iam_role_template.iam_role_template_instance.account_id
 }
 ```
 
 ## Argument Reference
-
-You can specify the following arguments for this data source.
-
-* `accept_language` - (Optional, String) Language code for translations* `default` - English* `de` -  German (Standard)* `en` - English* `es` - Spanish (Spain)* `fr` - French (Standard)* `it` - Italian (Standard)* `ja` - Japanese* `ko` - Korean* `pt-br` - Portuguese (Brazil)* `zh-cn` - Chinese (Simplified, PRC)* `zh-tw` - (Chinese, Taiwan).
-  * Constraints: The default value is `default`. The minimum length is `1` character.
-* `account_id` - (Required, String) The account GUID that the role templates belong to.
-  * Constraints: The maximum length is `32` characters. The minimum length is `1` character. The value must match regular expression `/^[A-Za-z0-9-]*$/`.
-* `name` - (Optional, String) The role template name.
-  * Constraints: The maximum length is `100` characters. The minimum length is `1` character.
-* `role_name` - (Optional, String) The template role name.
-  * Constraints: The maximum length is `30` characters. The minimum length is `1` character. The value must match regular expression `/^[A-Z]{1}[A-Za-z0-9]{0,29}$/`.
-* `role_service_name` - (Optional, String) The template role service name.
-  * Constraints: The minimum length is `1` character.
-* `state` - (Optional, String) The role template state.
-  * Constraints: Allowable values are: `active`, `deleted`.
 
 ## Attribute Reference
 

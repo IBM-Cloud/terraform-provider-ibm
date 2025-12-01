@@ -45,7 +45,7 @@ func testAccCheckIBMRoleAssignmentDataSourceConfigBasic(name string, target stri
 }
 
 resource "ibm_iam_role_assignment" "role_assignment" {
-	target  ={
+	target {
 		type = "Account"
 		id = "%s"
 	}

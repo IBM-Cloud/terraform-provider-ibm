@@ -106,7 +106,7 @@ func testAccCheckIBMRoleAssignmentConfigBasic(name string, targetId string) stri
 			committed=true
 		}
 		resource "ibm_iam_role_assignment" "role_assignment" {
-			target  ={
+			target  {
 				type = "Account"
 				id = "%s"
 			}
@@ -141,7 +141,7 @@ func testAccCheckIBMRoleAssignmentConfigUpdate(name string, targetId string) str
 		}
 	
 		resource "ibm_iam_role_assignment" "role_assignment" {
-			target  ={
+			target  {
 				type = "Account"
 				id = "%s"
 			}
@@ -167,7 +167,7 @@ func testAccCheckIBMRoleAssignmentConfigAccountGroup(name string, targetId strin
 			committed=true
 		}
 		resource "ibm_iam_role_assignment" "role_assignment" {
-			target  ={
+			target  {
 				type = "AccountGroup"
 				id = "%s"
 			}

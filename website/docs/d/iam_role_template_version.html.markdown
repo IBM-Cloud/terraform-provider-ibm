@@ -3,7 +3,7 @@ layout: "ibm"
 page_title: "IBM : ibm_iam_role_template_version"
 description: |-
   Get information about iam_role_template_version
-subcategory: "IAM Policy Management"
+subcategory: "Identity & Access Management (IAM)"
 ---
 
 # ibm_iam_role_template_version
@@ -15,6 +15,7 @@ Provides a read-only data source to retrieve information about an iam_role_templ
 ```hcl
 data "ibm_iam_role_template_version" "iam_role_template_version" {
 	role_template_id = "role_template_id"
+	version = "version"
 }
 ```
 
@@ -22,8 +23,9 @@ data "ibm_iam_role_template_version" "iam_role_template_version" {
 
 You can specify the following arguments for this data source.
 
-* `role_template_id` - (Required, Forces new resource, String) The role template ID.
+* `role_template_id` - (Required, String) The role template ID.
   * Constraints: The maximum length is `49` characters. The minimum length is `1` character. The value must match regular expression `/^roleTemplate-[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/`.
+* `version` - (Required, String) The role template version.
 * `state` - (Optional, String) Role template state.
   * Constraints: Allowable values are: `active`, `deleted`.
 

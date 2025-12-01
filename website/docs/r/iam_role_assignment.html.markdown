@@ -3,7 +3,7 @@ layout: "ibm"
 page_title: "IBM : ibm_iam_role_assignment"
 description: |-
   Manages iam_role_assignment.
-subcategory: "IAM Policy Management"
+subcategory: "Identity & Access Management (IAM)"
 ---
 
 # ibm_iam_role_assignment
@@ -13,11 +13,52 @@ Create, update, and delete iam_role_assignments with this resource.
 ## Example Usage
 
 ```hcl
-resource "ibm_iam_role_assignment" "iam_role_assignment_instance" {
-  target {
-		type = "Account"
-		id = "id"
-  }
+resource "ibm_iam_role_template" "role_template" {
+	name = "TerraformActionControlTest"
+	role {
+		name = "COSBucketList"
+		display_name = "COSCustomRole"
+		actions = ["cloud-object-storage.bucket.get" ]
+		service_name="cloud-object-storage"
+		}
+	committed=true
+}
+resource "ibm_iam_role_template_version" "template_version" {
+	role_template_id = ibm_iam_role_template.role_template.role_template_id
+	role {
+		name = "COSBuckerDelete"
+		display_name = "COSBucketDeleteCustomRole"
+		actions = ["cloud-object-storage.bucket.delete_bucket" ]
+		service_name="cloud-object-storage"
+	}
+	committed=true
+}
+
+resource "ibm_iam_role_assignment" "role_assignment" {
+	target {
+		type = "Account" or "Account Group" or "Enterprise"
+		id = "<target-accountId>"
+	}
+	
+	templates {
+		id = ibm_iam_role_template.role_template.role_template_id
+		version = ibm_iam_role_template.role_template.version
+	}
+}
+
+resource "ibm_iam_role_assignment" "role_assignment" {
+	target {
+		type = "Account"  # or "Account Group" or "Enterprise"
+		id = "<target-accountId>"
+	}
+	
+	templates {
+		id = ibm_iam_role_template.role_template.role_template_id
+		version = ibm_iam_role_template.role_template.version
+	}
+
+	 # Optional: Use this during update to assign a specific template version
+	template_version=ibm_iam_role_template_version.template_version.version
 }
 ```
 
@@ -25,8 +66,6 @@ resource "ibm_iam_role_assignment" "iam_role_assignment_instance" {
 
 You can specify the following arguments for this resource.
 
-* `accept_language` - (Optional, String) Language code for translations* `default` - English* `de` -  German (Standard)* `en` - English* `es` - Spanish (Spain)* `fr` - French (Standard)* `it` - Italian (Standard)* `ja` - Japanese* `ko` - Korean* `pt-br` - Portuguese (Brazil)* `zh-cn` - Chinese (Simplified, PRC)* `zh-tw` - (Chinese, Taiwan).
-  * Constraints: The default value is `default`. The minimum length is `1` character.
 * `templates` - (Required, List) The set of properties required for a Role Template assignment.
 Nested schema for **templates**:
 	* `id` - (Required, String) ID of the template.
@@ -39,6 +78,15 @@ Nested schema for **target**:
 	  * Constraints: The maximum length is `32` characters. The minimum length is `1` character. The value must match regular expression `/^[A-Za-z0-9-]*$/`.
 	* `type` - (Required, String) Assignment target type.
 	  * Constraints: Allowable values are: `Account`. The maximum length is `30` characters. The minimum length is `1` character.
+
+## Timeouts section
+
+The resource includes default timeout settings for the following operations:
+
+* `create` - (Timeout) Defaults to 30 minutes.
+* `update` - (Timeout) Defaults to 30 minutes.
+* `delete` - (Timeout) Defaults to 30 minutes.
+
 
 ## Attribute Reference
 
