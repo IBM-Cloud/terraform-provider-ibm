@@ -2,11 +2,7 @@
 // Licensed under the Mozilla Public License v2.0
 
 /*
-<<<<<<< HEAD
  * IBM OpenAPI Terraform Generator Version: 3.108.0-56772134-20251111-102802
-=======
- * IBM OpenAPI Terraform Generator Version: 3.105.0-3c13b041-20250605-193116
->>>>>>> 9ba7eeb2b (resolved go.mod issue)
  */
 
 package drautomationservice_test
