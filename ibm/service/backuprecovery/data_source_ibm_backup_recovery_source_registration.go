@@ -2069,7 +2069,9 @@ func DataSourceIbmBackupRecoverySourceRegistrationKubernetesSourceRegistrationPa
 		}
 		modelMap["auto_protect_config"] = []map[string]interface{}{autoProtectConfigMap}
 	}
-	modelMap["client_private_key"] = *model.ClientPrivateKey
+	if model.ClientPrivateKey != nil {
+		modelMap["client_private_key"] = *model.ClientPrivateKey
+	}
 	if model.CohesityDataprotectPluginImageLocation != nil {
 		modelMap["cohesity_dataprotect_plugin_image_location"] = *model.CohesityDataprotectPluginImageLocation
 	}
@@ -2086,11 +2088,15 @@ func DataSourceIbmBackupRecoverySourceRegistrationKubernetesSourceRegistrationPa
 		}
 		modelMap["default_vlan_params"] = []map[string]interface{}{defaultVlanParamsMap}
 	}
-	modelMap["endpoint"] = *model.Endpoint
+	if model.Endpoint != nil {
+		modelMap["endpoint"] = *model.Endpoint
+	}
 	if model.InitContainerImageLocation != nil {
 		modelMap["init_container_image_location"] = *model.InitContainerImageLocation
 	}
-	modelMap["kubernetes_distribution"] = *model.KubernetesDistribution
+	if model.KubernetesDistribution != nil {
+		modelMap["kubernetes_distribution"] = *model.KubernetesDistribution
+	}
 	if model.KubernetesType != nil {
 		modelMap["kubernetes_type"] = *model.KubernetesType
 	}
