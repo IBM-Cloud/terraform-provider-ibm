@@ -109,8 +109,12 @@ func testAccCheckIbmBackupRecoveryKubernetesSourceRegistrationConfigBasic() stri
 		connection_id = "932952619841170816"
 		name = "terra-iks-registration-1"
 		kubernetes_params {
-		  endpoint = "https://c104-e.us-east.containers.cloud.ibm.com:31410"
+		  endpoint = "https://c104-e.us-east.containers.cloud.ibm.com:30587"
 		  kubernetes_distribution = "kIKS"
+		  cohesity_dataprotect_plugin_image_location = "icr.io/ext/brs/cohesity-dataprotect-plugin:7.2.15-p2"
+		  velero_openshift_plugin_image_location = "icr.io/ext/brs/velero-plugin-for-openshift:7.2.15-p2"
+		  velero_image_location = "icr.io/ext/brs/velero:7.2.15-p2"
+		  velero_aws_plugin_image_location = "icr.io/ext/brs/velero-plugin-for-aws:7.2.15-p2"
 		  data_mover_image_location = "icr.io/ext/brs/cohesity-datamover:7.2.15-p2"
 		  client_private_key = ""
 		}

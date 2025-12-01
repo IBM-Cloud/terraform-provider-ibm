@@ -15,12 +15,12 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	validation "github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/IBM/ibm-backup-recovery-sdk-go/backuprecoveryv1"
-	validation "github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
 
 func ResourceIbmBackupRecovery() *schema.Resource {
@@ -42,7 +42,7 @@ func ResourceIbmBackupRecovery() *schema.Resource {
 				Type:     schema.TypeString,
 				Optional: true,
 				ForceNew: true,
-				// ValidateFunc: validate.InvokeValidator("ibm_backup_recovery_recovery", "request_initiator_type"),
+				// ValidateFunc: validate.InvokeValidator("ibm_backup_recovery", "request_initiator_type"),
 				Description: "Specifies the type of request from UI, which is used for services like magneto to determine the priority of requests.",
 			},
 			"name": &schema.Schema{
@@ -60,7 +60,7 @@ func ResourceIbmBackupRecovery() *schema.Resource {
 				Type:     schema.TypeString,
 				Required: true,
 				// ForceNew:     true,
-				// ValidateFunc: validate.InvokeValidator("ibm_backup_recovery_recovery", "snapshot_environment"),
+				// ValidateFunc: validate.InvokeValidator("ibm_backup_recovery", "snapshot_environment"),
 				Description: "Specifies the type of snapshot environment for which the Recovery was performed.",
 			},
 			"physical_params": &schema.Schema{
@@ -2960,13 +2960,66 @@ func ResourceIbmBackupRecovery() *schema.Resource {
 																Description: "Array of objects that are to be included.",
 																Elem:        &schema.Schema{Type: schema.TypeInt},
 															},
+															"selected_resources": &schema.Schema{
+																Type:        schema.TypeList,
+																Optional:    true,
+																Description: "Array of Object which has group, version, kind, etc. as its fields to identify a resource type and a resource list which is essentially the list of instances of that resource type.",
+																Elem: &schema.Resource{
+																	Schema: map[string]*schema.Schema{
+																		"api_group": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Optional:    true,
+																			Description: "API group name of the resource (excluding the version). (Eg. apps, kubevirt.io).",
+																		},
+																		"is_cluster_scoped": &schema.Schema{
+																			Type:        schema.TypeBool,
+																			Optional:    true,
+																			Description: "Boolean indicating whether the resource is cluster scoped or not. This field is ignored for resource selection during recovery.",
+																		},
+																		"kind": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Optional:    true,
+																			Description: "The kind of the resource type. (Eg. VirtualMachine).",
+																		},
+																		"name": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Optional:    true,
+																			Description: "The name of the resource. This field is ignored for resource selection during recovery.",
+																		},
+																		"resource_list": &schema.Schema{
+																			Type:        schema.TypeList,
+																			Optional:    true,
+																			Description: "Array of the instances of the resource with group, version and kind mentioned above.",
+																			Elem: &schema.Resource{
+																				Schema: map[string]*schema.Schema{
+																					"entity_id": &schema.Schema{
+																						Type:        schema.TypeInt,
+																						Optional:    true,
+																						Description: "The id of the specific entity to be backed up or restored.",
+																					},
+																					"name": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Optional:    true,
+																						Description: "The name of the specific entity/resource to be backed up or restored.",
+																					},
+																				},
+																			},
+																		},
+																		"version": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Optional:    true,
+																			Description: "The version under the API group for the resource. This field is ignored for resource selection during recovery.",
+																		},
+																	},
+																},
+															},
 														},
 													},
 												},
 												"excluded_pvcs": &schema.Schema{
 													Type:        schema.TypeList,
 													Optional:    true,
-													Description: "Specifies the list of pvc to be excluded from recovery.",
+													Description: "Specifies the list of pvc to be excluded from recovery. This will be deprecated in the future. This is overridden by the object level param.",
 													Elem: &schema.Resource{
 														Schema: map[string]*schema.Schema{
 															"id": &schema.Schema{
@@ -3018,6 +3071,59 @@ func ResourceIbmBackupRecovery() *schema.Resource {
 																Optional:    true,
 																Description: "Array of objects that are to be included.",
 																Elem:        &schema.Schema{Type: schema.TypeInt},
+															},
+															"selected_resources": &schema.Schema{
+																Type:        schema.TypeList,
+																Optional:    true,
+																Description: "Array of Object which has group, version, kind, etc. as its fields to identify a resource type and a resource list which is essentially the list of instances of that resource type.",
+																Elem: &schema.Resource{
+																	Schema: map[string]*schema.Schema{
+																		"api_group": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Optional:    true,
+																			Description: "API group name of the resource (excluding the version). (Eg. apps, kubevirt.io).",
+																		},
+																		"is_cluster_scoped": &schema.Schema{
+																			Type:        schema.TypeBool,
+																			Optional:    true,
+																			Description: "Boolean indicating whether the resource is cluster scoped or not. This field is ignored for resource selection during recovery.",
+																		},
+																		"kind": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Optional:    true,
+																			Description: "The kind of the resource type. (Eg. VirtualMachine).",
+																		},
+																		"name": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Optional:    true,
+																			Description: "The name of the resource. This field is ignored for resource selection during recovery.",
+																		},
+																		"resource_list": &schema.Schema{
+																			Type:        schema.TypeList,
+																			Optional:    true,
+																			Description: "Array of the instances of the resource with group, version and kind mentioned above.",
+																			Elem: &schema.Resource{
+																				Schema: map[string]*schema.Schema{
+																					"entity_id": &schema.Schema{
+																						Type:        schema.TypeInt,
+																						Optional:    true,
+																						Description: "The id of the specific entity to be backed up or restored.",
+																					},
+																					"name": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Optional:    true,
+																						Description: "The name of the specific entity/resource to be backed up or restored.",
+																					},
+																				},
+																			},
+																		},
+																		"version": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Optional:    true,
+																			Description: "The version under the API group for the resource. This field is ignored for resource selection during recovery.",
+																		},
+																	},
+																},
 															},
 														},
 													},
@@ -3574,6 +3680,251 @@ func ResourceIbmBackupRecovery() *schema.Resource {
 																Computed:    true,
 																Description: "Specify the total bytes restored.",
 															},
+															"exclude_params": &schema.Schema{
+																Type:        schema.TypeList,
+																MaxItems:    1,
+																Optional:    true,
+																Description: "Specifies the parameters to in/exclude objects (e.g.: volumes). An object satisfying any of these criteria will be included by this filter.",
+																Elem: &schema.Resource{
+																	Schema: map[string]*schema.Schema{
+																		"label_combination_method": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Optional:    true,
+																			Description: "Whether to include all the labels or any of them while performing inclusion/exclusion of objects.",
+																		},
+																		"label_vector": &schema.Schema{
+																			Type:        schema.TypeList,
+																			Optional:    true,
+																			Description: "Array of Object to represent Label that Specify Objects (e.g.: Persistent Volumes and Persistent Volume Claims) to Include or Exclude.It will be a two-dimensional array, where each inner array will consist of a key and value representing labels. Using this two dimensional array of Labels, the Cluster generates a list of items to include in the filter, which are derived from intersections or the union of these labels, as decided by operation parameter.",
+																			Elem: &schema.Resource{
+																				Schema: map[string]*schema.Schema{
+																					"key": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Computed:    true,
+																						Description: "The key of the label, used to identify the label.",
+																					},
+																					"value": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Computed:    true,
+																						Description: "The value associated with the label key.",
+																					},
+																				},
+																			},
+																		},
+																		"objects": &schema.Schema{
+																			Type:        schema.TypeList,
+																			Optional:    true,
+																			Description: "Array of objects that are to be included.",
+																			Elem:        &schema.Schema{Type: schema.TypeInt},
+																		},
+																		"selected_resources": &schema.Schema{
+																			Type:        schema.TypeList,
+																			Optional:    true,
+																			Description: "Array of Object which has group, version, kind, etc. as its fields to identify a resource type and a resource list which is essentially the list of instances of that resource type.",
+																			Elem: &schema.Resource{
+																				Schema: map[string]*schema.Schema{
+																					"api_group": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Optional:    true,
+																						Description: "API group name of the resource (excluding the version). (Eg. apps, kubevirt.io).",
+																					},
+																					"is_cluster_scoped": &schema.Schema{
+																						Type:        schema.TypeBool,
+																						Optional:    true,
+																						Description: "Boolean indicating whether the resource is cluster scoped or not. This field is ignored for resource selection during recovery.",
+																					},
+																					"kind": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Optional:    true,
+																						Description: "The kind of the resource type. (Eg. VirtualMachine).",
+																					},
+																					"name": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Optional:    true,
+																						Description: "The name of the resource. This field is ignored for resource selection during recovery.",
+																					},
+																					"resource_list": &schema.Schema{
+																						Type:        schema.TypeList,
+																						Optional:    true,
+																						Description: "Array of the instances of the resource with group, version and kind mentioned above.",
+																						Elem: &schema.Resource{
+																							Schema: map[string]*schema.Schema{
+																								"entity_id": &schema.Schema{
+																									Type:        schema.TypeInt,
+																									Optional:    true,
+																									Description: "The id of the specific entity to be backed up or restored.",
+																								},
+																								"name": &schema.Schema{
+																									Type:        schema.TypeString,
+																									Optional:    true,
+																									Description: "The name of the specific entity/resource to be backed up or restored.",
+																								},
+																							},
+																						},
+																					},
+																					"version": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Optional:    true,
+																						Description: "The version under the API group for the resource. This field is ignored for resource selection during recovery.",
+																					},
+																				},
+																			},
+																		},
+																	},
+																},
+															},
+															"include_params": &schema.Schema{
+																Type:        schema.TypeList,
+																MaxItems:    1,
+																Optional:    true,
+																Description: "Specifies the parameters to in/exclude objects (e.g.: volumes). An object satisfying any of these criteria will be included by this filter.",
+																Elem: &schema.Resource{
+																	Schema: map[string]*schema.Schema{
+																		"label_combination_method": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Optional:    true,
+																			Description: "Whether to include all the labels or any of them while performing inclusion/exclusion of objects.",
+																		},
+																		"label_vector": &schema.Schema{
+																			Type:        schema.TypeList,
+																			Optional:    true,
+																			Description: "Array of Object to represent Label that Specify Objects (e.g.: Persistent Volumes and Persistent Volume Claims) to Include or Exclude.It will be a two-dimensional array, where each inner array will consist of a key and value representing labels. Using this two dimensional array of Labels, the Cluster generates a list of items to include in the filter, which are derived from intersections or the union of these labels, as decided by operation parameter.",
+																			Elem: &schema.Resource{
+																				Schema: map[string]*schema.Schema{
+																					"key": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Computed:    true,
+																						Description: "The key of the label, used to identify the label.",
+																					},
+																					"value": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Computed:    true,
+																						Description: "The value associated with the label key.",
+																					},
+																				},
+																			},
+																		},
+																		"objects": &schema.Schema{
+																			Type:        schema.TypeList,
+																			Optional:    true,
+																			Description: "Array of objects that are to be included.",
+																			Elem:        &schema.Schema{Type: schema.TypeInt},
+																		},
+																		"selected_resources": &schema.Schema{
+																			Type:        schema.TypeList,
+																			Optional:    true,
+																			Description: "Array of Object which has group, version, kind, etc. as its fields to identify a resource type and a resource list which is essentially the list of instances of that resource type.",
+																			Elem: &schema.Resource{
+																				Schema: map[string]*schema.Schema{
+																					"api_group": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Optional:    true,
+																						Description: "API group name of the resource (excluding the version). (Eg. apps, kubevirt.io).",
+																					},
+																					"is_cluster_scoped": &schema.Schema{
+																						Type:        schema.TypeBool,
+																						Optional:    true,
+																						Description: "Boolean indicating whether the resource is cluster scoped or not. This field is ignored for resource selection during recovery.",
+																					},
+																					"kind": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Optional:    true,
+																						Description: "The kind of the resource type. (Eg. VirtualMachine).",
+																					},
+																					"name": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Optional:    true,
+																						Description: "The name of the resource. This field is ignored for resource selection during recovery.",
+																					},
+																					"resource_list": &schema.Schema{
+																						Type:        schema.TypeList,
+																						Optional:    true,
+																						Description: "Array of the instances of the resource with group, version and kind mentioned above.",
+																						Elem: &schema.Resource{
+																							Schema: map[string]*schema.Schema{
+																								"entity_id": &schema.Schema{
+																									Type:        schema.TypeInt,
+																									Optional:    true,
+																									Description: "The id of the specific entity to be backed up or restored.",
+																								},
+																								"name": &schema.Schema{
+																									Type:        schema.TypeString,
+																									Optional:    true,
+																									Description: "The name of the specific entity/resource to be backed up or restored.",
+																								},
+																							},
+																						},
+																					},
+																					"version": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Optional:    true,
+																						Description: "The version under the API group for the resource. This field is ignored for resource selection during recovery.",
+																					},
+																				},
+																			},
+																		},
+																	},
+																},
+															},
+															"recover_pvcs_only": &schema.Schema{
+																Type:        schema.TypeBool,
+																Optional:    true,
+																Description: "Specifies whether to recover PVCs only during recovery. Default: false.",
+															},
+															"storage_class": &schema.Schema{
+																Type:        schema.TypeList,
+																MaxItems:    1,
+																Optional:    true,
+																Description: "Specifies the storage class parameters for recovery of namespace.",
+																Elem: &schema.Resource{
+																	Schema: map[string]*schema.Schema{
+																		"storage_class_mapping": &schema.Schema{
+																			Type:        schema.TypeList,
+																			Optional:    true,
+																			Description: "Specifies mapping of storage classes.",
+																			Elem: &schema.Resource{
+																				Schema: map[string]*schema.Schema{
+																					"key": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Computed:    true,
+																						Description: "The key of the label, used to identify the label.",
+																					},
+																					"value": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Computed:    true,
+																						Description: "The value associated with the label key.",
+																					},
+																				},
+																			},
+																		},
+																		"use_storage_class_mapping": &schema.Schema{
+																			Type:        schema.TypeBool,
+																			Optional:    true,
+																			Description: "Specifies whether or not to use storage class mapping.",
+																		},
+																	},
+																},
+															},
+															"unbind_pvcs": &schema.Schema{
+																Type:        schema.TypeBool,
+																Optional:    true,
+																Description: "Specifies whether the volume bindings will be removed from all restored PVCs. This will effectively unbind the PVCs from their original PVs. Default: false.",
+															},
+														},
+													},
+												},
+												"recover_cluster_scoped_resources": &schema.Schema{
+													Type:        schema.TypeList,
+													MaxItems:    1,
+													Optional:    true,
+													Description: "Specifies the parameters from where the cluster scoped resources would be recovered.",
+													Elem: &schema.Resource{
+														Schema: map[string]*schema.Schema{
+															"snapshot_id": &schema.Schema{
+																Type:        schema.TypeString,
+																Optional:    true,
+																Description: "Specifies the snapshot id of the namespace from where the cluster scoped resources are to be recovered.",
+															},
 														},
 													},
 												},
@@ -3609,7 +3960,27 @@ func ResourceIbmBackupRecovery() *schema.Resource {
 												"recover_pvcs_only": &schema.Schema{
 													Type:        schema.TypeBool,
 													Optional:    true,
-													Description: "Specifies whether to recover PVCs only during recovery.",
+													Description: "Specifies whether to recover PVCs only during recovery.. This is overridden with the object level settings and will be deprecated in the future.",
+												},
+												"recovery_region_migration_params": &schema.Schema{
+													Type:        schema.TypeList,
+													MaxItems:    1,
+													Optional:    true,
+													Description: "Specifies an individual migration rule for mapping a region/zone to another for cross region recovery.",
+													Elem: &schema.Resource{
+														Schema: map[string]*schema.Schema{
+															"current_value": &schema.Schema{
+																Type:        schema.TypeString,
+																Required:    true,
+																Description: "Specifies the current value for the mapping that needs to be mutated.",
+															},
+															"new_value": &schema.Schema{
+																Type:        schema.TypeString,
+																Required:    true,
+																Description: "Specifies the new value for the mapping with which the fields need to be updated with.",
+															},
+														},
+													},
 												},
 												"recovery_target_config": &schema.Schema{
 													Type:        schema.TypeList,
@@ -3655,6 +4026,25 @@ func ResourceIbmBackupRecovery() *schema.Resource {
 																Type:        schema.TypeBool,
 																Required:    true,
 																Description: "Specifies whether or not to recover the Namespaces to a different source than they were backed up from.",
+															},
+														},
+													},
+												},
+												"recovery_zone_migration_params": &schema.Schema{
+													Type:        schema.TypeList,
+													Optional:    true,
+													Description: "Specifies rules for performing zone migrations during recovery. Used in case of recovery to new location and the namespace being recovered is in a different zone.",
+													Elem: &schema.Resource{
+														Schema: map[string]*schema.Schema{
+															"current_value": &schema.Schema{
+																Type:        schema.TypeString,
+																Required:    true,
+																Description: "Specifies the current value for the mapping that needs to be mutated.",
+															},
+															"new_value": &schema.Schema{
+																Type:        schema.TypeString,
+																Required:    true,
+																Description: "Specifies the new value for the mapping with which the fields need to be updated with.",
 															},
 														},
 													},
@@ -5530,15 +5920,22 @@ func ResourceIbmBackupRecoveryMapToRecoverKubernetesNamespaceParamsKubernetesTar
 		model.IncludeParams = IncludeParamsModel
 	}
 	if modelMap["objects"] != nil {
-		objects := []backuprecoveryv1.CommonRecoverObjectSnapshotParams{}
+		objects := []backuprecoveryv1.KubernetesRecoveryObjectParams{}
 		for _, objectsItem := range modelMap["objects"].([]interface{}) {
-			objectsItemModel, err := ResourceIbmBackupRecoveryMapToCommonRecoverObjectSnapshotParams(objectsItem.(map[string]interface{}))
+			objectsItemModel, err := ResourceIbmBackupRecoveryMapToKubernetesRecoveryObjectParams(objectsItem.(map[string]interface{}))
 			if err != nil {
 				return model, err
 			}
 			objects = append(objects, *objectsItemModel)
 		}
 		model.Objects = objects
+	}
+	if modelMap["recover_cluster_scoped_resources"] != nil && len(modelMap["recover_cluster_scoped_resources"].([]interface{})) > 0 {
+		RecoverClusterScopedResourcesModel, err := ResourceIbmBackupRecoveryMapToRecoverClusterScopedResourcesParams(modelMap["recover_cluster_scoped_resources"].([]interface{})[0].(map[string]interface{}))
+		if err != nil {
+			return model, err
+		}
+		model.RecoverClusterScopedResources = RecoverClusterScopedResourcesModel
 	}
 	if modelMap["recover_protection_group_runs_params"] != nil {
 		recoverProtectionGroupRunsParams := []backuprecoveryv1.RecoverProtectionGroupRunParams{}
@@ -5554,11 +5951,29 @@ func ResourceIbmBackupRecoveryMapToRecoverKubernetesNamespaceParamsKubernetesTar
 	if modelMap["recover_pvcs_only"] != nil {
 		model.RecoverPvcsOnly = core.BoolPtr(modelMap["recover_pvcs_only"].(bool))
 	}
+	if modelMap["recovery_region_migration_params"] != nil && len(modelMap["recovery_region_migration_params"].([]interface{})) > 0 {
+		RecoveryRegionMigrationParamsModel, err := ResourceIbmBackupRecoveryMapToKubernetesRecoveryMigrationParams(modelMap["recovery_region_migration_params"].([]interface{})[0].(map[string]interface{}))
+		if err != nil {
+			return model, err
+		}
+		model.RecoveryRegionMigrationParams = RecoveryRegionMigrationParamsModel
+	}
 	RecoveryTargetConfigModel, err := ResourceIbmBackupRecoveryMapToKubernetesTargetParamsForRecoverKubernetesNamespaceRecoveryTargetConfig(modelMap["recovery_target_config"].([]interface{})[0].(map[string]interface{}))
 	if err != nil {
 		return model, err
 	}
 	model.RecoveryTargetConfig = RecoveryTargetConfigModel
+	if modelMap["recovery_zone_migration_params"] != nil {
+		recoveryZoneMigrationParams := []backuprecoveryv1.KubernetesRecoveryMigrationParams{}
+		for _, recoveryZoneMigrationParamsItem := range modelMap["recovery_zone_migration_params"].([]interface{}) {
+			recoveryZoneMigrationParamsItemModel, err := ResourceIbmBackupRecoveryMapToKubernetesRecoveryMigrationParams(recoveryZoneMigrationParamsItem.(map[string]interface{}))
+			if err != nil {
+				return model, err
+			}
+			recoveryZoneMigrationParams = append(recoveryZoneMigrationParams, *recoveryZoneMigrationParamsItemModel)
+		}
+		model.RecoveryZoneMigrationParams = recoveryZoneMigrationParams
+	}
 	if modelMap["rename_recovered_namespaces_params"] != nil && len(modelMap["rename_recovered_namespaces_params"].([]interface{})) > 0 {
 		RenameRecoveredNamespacesParamsModel, err := ResourceIbmBackupRecoveryMapToKubernetesTargetParamsForRecoverKubernetesNamespaceRenameRecoveredNamespacesParams(modelMap["rename_recovered_namespaces_params"].([]interface{})[0].(map[string]interface{}))
 		if err != nil {
@@ -5602,6 +6017,17 @@ func ResourceIbmBackupRecoveryMapToKubernetesFilterParams(modelMap map[string]in
 		}
 		model.Objects = objects
 	}
+	if modelMap["selected_resources"] != nil {
+		selectedResources := []backuprecoveryv1.ResourceInfo{}
+		for _, selectedResourcesItem := range modelMap["selected_resources"].([]interface{}) {
+			selectedResourcesItemModel, err := ResourceIbmBackupRecoveryMapToResourceInfo(selectedResourcesItem.(map[string]interface{}))
+			if err != nil {
+				return model, err
+			}
+			selectedResources = append(selectedResources, *selectedResourcesItemModel)
+		}
+		model.SelectedResources = selectedResources
+	}
 	return model, nil
 }
 
@@ -5616,6 +6042,48 @@ func ResourceIbmBackupRecoveryMapToKubernetesLabel(modelMap map[string]interface
 	return model, nil
 }
 
+func ResourceIbmBackupRecoveryMapToResourceInfo(modelMap map[string]interface{}) (*backuprecoveryv1.ResourceInfo, error) {
+	model := &backuprecoveryv1.ResourceInfo{}
+	if modelMap["api_group"] != nil {
+		model.ApiGroup = core.StringPtr(modelMap["api_group"].(string))
+	}
+	if modelMap["is_cluster_scoped"] != nil {
+		model.IsClusterScoped = core.BoolPtr(modelMap["is_cluster_scoped"].(bool))
+	}
+	if modelMap["kind"] != nil && modelMap["kind"].(string) != "" {
+		model.Kind = core.StringPtr(modelMap["kind"].(string))
+	}
+	if modelMap["name"] != nil && modelMap["name"].(string) != "" {
+		model.Name = core.StringPtr(modelMap["name"].(string))
+	}
+	if modelMap["resource_list"] != nil {
+		resourceList := []backuprecoveryv1.ResourceInstance{}
+		for _, resourceListItem := range modelMap["resource_list"].([]interface{}) {
+			resourceListItemModel, err := ResourceIbmBackupRecoveryMapToResourceInstance(resourceListItem.(map[string]interface{}))
+			if err != nil {
+				return model, err
+			}
+			resourceList = append(resourceList, *resourceListItemModel)
+		}
+		model.ResourceList = resourceList
+	}
+	if modelMap["version"] != nil && modelMap["version"].(string) != "" {
+		model.Version = core.StringPtr(modelMap["version"].(string))
+	}
+	return model, nil
+}
+
+func ResourceIbmBackupRecoveryMapToResourceInstance(modelMap map[string]interface{}) (*backuprecoveryv1.ResourceInstance, error) {
+	model := &backuprecoveryv1.ResourceInstance{}
+	if modelMap["entity_id"] != nil && modelMap["entity_id"].(int) != 0 {
+		model.EntityID = core.Int64Ptr(int64(modelMap["entity_id"].(int)))
+	}
+	if modelMap["name"] != nil && modelMap["name"].(string) != "" {
+		model.Name = core.StringPtr(modelMap["name"].(string))
+	}
+	return model, nil
+}
+
 func ResourceIbmBackupRecoveryMapToKubernetesPvcInfo(modelMap map[string]interface{}) (*backuprecoveryv1.KubernetesPvcInfo, error) {
 	model := &backuprecoveryv1.KubernetesPvcInfo{}
 	if modelMap["id"] != nil {
@@ -5624,6 +6092,108 @@ func ResourceIbmBackupRecoveryMapToKubernetesPvcInfo(modelMap map[string]interfa
 	if modelMap["name"] != nil && modelMap["name"].(string) != "" {
 		model.Name = core.StringPtr(modelMap["name"].(string))
 	}
+	return model, nil
+}
+
+func ResourceIbmBackupRecoveryMapToKubernetesRecoveryObjectParams(modelMap map[string]interface{}) (*backuprecoveryv1.KubernetesRecoveryObjectParams, error) {
+	model := &backuprecoveryv1.KubernetesRecoveryObjectParams{}
+	model.SnapshotID = core.StringPtr(modelMap["snapshot_id"].(string))
+	if modelMap["point_in_time_usecs"] != nil && modelMap["point_in_time_usecs"].(int) != 0 {
+		model.PointInTimeUsecs = core.Int64Ptr(int64(modelMap["point_in_time_usecs"].(int)))
+	}
+	if modelMap["protection_group_id"] != nil && modelMap["protection_group_id"].(string) != "" {
+		model.ProtectionGroupID = core.StringPtr(modelMap["protection_group_id"].(string))
+	}
+	if modelMap["protection_group_name"] != nil && modelMap["protection_group_name"].(string) != "" {
+		model.ProtectionGroupName = core.StringPtr(modelMap["protection_group_name"].(string))
+	}
+	if modelMap["snapshot_creation_time_usecs"] != nil {
+		model.SnapshotCreationTimeUsecs = core.Int64Ptr(int64(modelMap["snapshot_creation_time_usecs"].(int)))
+	}
+	if modelMap["object_info"] != nil && len(modelMap["object_info"].([]interface{})) > 0 {
+		ObjectInfoModel, err := ResourceIbmBackupRecoveryMapToCommonRecoverObjectSnapshotParamsObjectInfo(modelMap["object_info"].([]interface{})[0].(map[string]interface{}))
+		if err != nil {
+			return model, err
+		}
+		model.ObjectInfo = ObjectInfoModel
+	}
+	if modelMap["snapshot_target_type"] != nil && modelMap["snapshot_target_type"].(string) != "" {
+		model.SnapshotTargetType = core.StringPtr(modelMap["snapshot_target_type"].(string))
+	}
+	if modelMap["archival_target_info"] != nil && len(modelMap["archival_target_info"].([]interface{})) > 0 {
+		ArchivalTargetInfoModel, err := ResourceIbmBackupRecoveryMapToCommonRecoverObjectSnapshotParamsArchivalTargetInfo(modelMap["archival_target_info"].([]interface{})[0].(map[string]interface{}))
+		if err != nil {
+			return model, err
+		}
+		model.ArchivalTargetInfo = ArchivalTargetInfoModel
+	}
+	if modelMap["progress_task_id"] != nil && modelMap["progress_task_id"].(string) != "" {
+		model.ProgressTaskID = core.StringPtr(modelMap["progress_task_id"].(string))
+	}
+	if modelMap["recover_from_standby"] != nil {
+		model.RecoverFromStandby = core.BoolPtr(modelMap["recover_from_standby"].(bool))
+	}
+	if modelMap["status"] != nil && modelMap["status"].(string) != "" {
+		model.Status = core.StringPtr(modelMap["status"].(string))
+	}
+	if modelMap["start_time_usecs"] != nil {
+		model.StartTimeUsecs = core.Int64Ptr(int64(modelMap["start_time_usecs"].(int)))
+	}
+	if modelMap["end_time_usecs"] != nil {
+		model.EndTimeUsecs = core.Int64Ptr(int64(modelMap["end_time_usecs"].(int)))
+	}
+	if modelMap["messages"] != nil {
+		messages := []string{}
+		for _, messagesItem := range modelMap["messages"].([]interface{}) {
+			messages = append(messages, messagesItem.(string))
+		}
+		model.Messages = messages
+	}
+	if modelMap["bytes_restored"] != nil {
+		model.BytesRestored = core.Int64Ptr(int64(modelMap["bytes_restored"].(int)))
+	}
+	if modelMap["exclude_params"] != nil && len(modelMap["exclude_params"].([]interface{})) > 0 {
+		ExcludeParamsModel, err := ResourceIbmBackupRecoveryMapToKubernetesFilterParams(modelMap["exclude_params"].([]interface{})[0].(map[string]interface{}))
+		if err != nil {
+			return model, err
+		}
+		model.ExcludeParams = ExcludeParamsModel
+	}
+	if modelMap["include_params"] != nil && len(modelMap["include_params"].([]interface{})) > 0 {
+		IncludeParamsModel, err := ResourceIbmBackupRecoveryMapToKubernetesFilterParams(modelMap["include_params"].([]interface{})[0].(map[string]interface{}))
+		if err != nil {
+			return model, err
+		}
+		model.IncludeParams = IncludeParamsModel
+	}
+	if modelMap["recover_pvcs_only"] != nil {
+		model.RecoverPvcsOnly = core.BoolPtr(modelMap["recover_pvcs_only"].(bool))
+	}
+	if modelMap["storage_class"] != nil && len(modelMap["storage_class"].([]interface{})) > 0 {
+		StorageClassModel, err := ResourceIbmBackupRecoveryMapToKubernetesStorageClassParams(modelMap["storage_class"].([]interface{})[0].(map[string]interface{}))
+		if err != nil {
+			return model, err
+		}
+		model.StorageClass = StorageClassModel
+	}
+	if modelMap["unbind_pvcs"] != nil {
+		model.UnbindPvcs = core.BoolPtr(modelMap["unbind_pvcs"].(bool))
+	}
+	return model, nil
+}
+
+func ResourceIbmBackupRecoveryMapToRecoverClusterScopedResourcesParams(modelMap map[string]interface{}) (*backuprecoveryv1.RecoverClusterScopedResourcesParams, error) {
+	model := &backuprecoveryv1.RecoverClusterScopedResourcesParams{}
+	if modelMap["snapshot_id"] != nil && modelMap["snapshot_id"].(string) != "" {
+		model.SnapshotID = core.StringPtr(modelMap["snapshot_id"].(string))
+	}
+	return model, nil
+}
+
+func ResourceIbmBackupRecoveryMapToKubernetesRecoveryMigrationParams(modelMap map[string]interface{}) (*backuprecoveryv1.KubernetesRecoveryMigrationParams, error) {
+	model := &backuprecoveryv1.KubernetesRecoveryMigrationParams{}
+	model.CurrentValue = core.StringPtr(modelMap["current_value"].(string))
+	model.NewValue = core.StringPtr(modelMap["new_value"].(string))
 	return model, nil
 }
 
@@ -5743,7 +6313,7 @@ func ResourceIbmBackupRecoveryMapToRecoverSqlParams(modelMap map[string]interfac
 func ResourceIbmBackupRecoveryMapToRecoverSqlAppParams(modelMap map[string]interface{}) (*backuprecoveryv1.RecoverSqlAppParams, error) {
 	model := &backuprecoveryv1.RecoverSqlAppParams{}
 	model.SnapshotID = core.StringPtr(modelMap["snapshot_id"].(string))
-	if modelMap["point_in_time_usecs"] != nil {
+	if modelMap["point_in_time_usecs"] != nil && modelMap["point_in_time_usecs"].(int) != 0 {
 		model.PointInTimeUsecs = core.Int64Ptr(int64(modelMap["point_in_time_usecs"].(int)))
 	}
 	if modelMap["protection_group_id"] != nil && modelMap["protection_group_id"].(string) != "" {
@@ -6079,7 +6649,7 @@ func ResourceIbmBackupRecoveryRecoverPhysicalParamsToMap(model *backuprecoveryv1
 func ResourceIbmBackupRecoveryCommonRecoverObjectSnapshotParamsToMap(model *backuprecoveryv1.CommonRecoverObjectSnapshotParams) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["snapshot_id"] = *model.SnapshotID
-	if model.PointInTimeUsecs != nil {
+	if model.PointInTimeUsecs != nil && *(model.PointInTimeUsecs) != 0 {
 		modelMap["point_in_time_usecs"] = flex.IntValue(model.PointInTimeUsecs)
 	}
 	if model.ProtectionGroupID != nil {
@@ -7099,13 +7669,20 @@ func ResourceIbmBackupRecoveryRecoverKubernetesNamespaceParamsKubernetesTargetPa
 	if model.Objects != nil {
 		objects := []map[string]interface{}{}
 		for _, objectsItem := range model.Objects {
-			objectsItemMap, err := ResourceIbmBackupRecoveryCommonRecoverObjectSnapshotParamsToMap(&objectsItem) // #nosec G601
+			objectsItemMap, err := ResourceIbmBackupRecoveryKubernetesRecoveryObjectParamsToMap(&objectsItem) // #nosec G601
 			if err != nil {
 				return modelMap, err
 			}
 			objects = append(objects, objectsItemMap)
 		}
 		modelMap["objects"] = objects
+	}
+	if model.RecoverClusterScopedResources != nil {
+		recoverClusterScopedResourcesMap, err := ResourceIbmBackupRecoveryRecoverClusterScopedResourcesParamsToMap(model.RecoverClusterScopedResources)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["recover_cluster_scoped_resources"] = []map[string]interface{}{recoverClusterScopedResourcesMap}
 	}
 	if model.RecoverProtectionGroupRunsParams != nil {
 		recoverProtectionGroupRunsParams := []map[string]interface{}{}
@@ -7121,11 +7698,29 @@ func ResourceIbmBackupRecoveryRecoverKubernetesNamespaceParamsKubernetesTargetPa
 	if model.RecoverPvcsOnly != nil {
 		modelMap["recover_pvcs_only"] = *model.RecoverPvcsOnly
 	}
+	if model.RecoveryRegionMigrationParams != nil {
+		recoveryRegionMigrationParamsMap, err := ResourceIbmBackupRecoveryKubernetesRecoveryMigrationParamsToMap(model.RecoveryRegionMigrationParams)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["recovery_region_migration_params"] = []map[string]interface{}{recoveryRegionMigrationParamsMap}
+	}
 	recoveryTargetConfigMap, err := ResourceIbmBackupRecoveryKubernetesTargetParamsForRecoverKubernetesNamespaceRecoveryTargetConfigToMap(model.RecoveryTargetConfig)
 	if err != nil {
 		return modelMap, err
 	}
 	modelMap["recovery_target_config"] = []map[string]interface{}{recoveryTargetConfigMap}
+	if model.RecoveryZoneMigrationParams != nil {
+		recoveryZoneMigrationParams := []map[string]interface{}{}
+		for _, recoveryZoneMigrationParamsItem := range model.RecoveryZoneMigrationParams {
+			recoveryZoneMigrationParamsItemMap, err := ResourceIbmBackupRecoveryKubernetesRecoveryMigrationParamsToMap(&recoveryZoneMigrationParamsItem) // #nosec G601
+			if err != nil {
+				return modelMap, err
+			}
+			recoveryZoneMigrationParams = append(recoveryZoneMigrationParams, recoveryZoneMigrationParamsItemMap)
+		}
+		modelMap["recovery_zone_migration_params"] = recoveryZoneMigrationParams
+	}
 	if model.RenameRecoveredNamespacesParams != nil {
 		renameRecoveredNamespacesParamsMap, err := ResourceIbmBackupRecoveryKubernetesTargetParamsForRecoverKubernetesNamespaceRenameRecoveredNamespacesParamsToMap(model.RenameRecoveredNamespacesParams)
 		if err != nil {
@@ -7165,6 +7760,17 @@ func ResourceIbmBackupRecoveryKubernetesFilterParamsToMap(model *backuprecoveryv
 	if model.Objects != nil {
 		modelMap["objects"] = model.Objects
 	}
+	if model.SelectedResources != nil {
+		selectedResources := []map[string]interface{}{}
+		for _, selectedResourcesItem := range model.SelectedResources {
+			selectedResourcesItemMap, err := ResourceIbmBackupRecoveryResourceInfoToMap(&selectedResourcesItem) // #nosec G601
+			if err != nil {
+				return modelMap, err
+			}
+			selectedResources = append(selectedResources, selectedResourcesItemMap)
+		}
+		modelMap["selected_resources"] = selectedResources
+	}
 	return modelMap, nil
 }
 
@@ -7175,6 +7781,48 @@ func ResourceIbmBackupRecoveryKubernetesLabelToMap(model *backuprecoveryv1.Kuber
 	}
 	if model.Value != nil {
 		modelMap["value"] = *model.Value
+	}
+	return modelMap, nil
+}
+
+func ResourceIbmBackupRecoveryResourceInfoToMap(model *backuprecoveryv1.ResourceInfo) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.ApiGroup != nil {
+		modelMap["api_group"] = *model.ApiGroup
+	}
+	if model.IsClusterScoped != nil {
+		modelMap["is_cluster_scoped"] = *model.IsClusterScoped
+	}
+	if model.Kind != nil {
+		modelMap["kind"] = *model.Kind
+	}
+	if model.Name != nil {
+		modelMap["name"] = *model.Name
+	}
+	if model.ResourceList != nil {
+		resourceList := []map[string]interface{}{}
+		for _, resourceListItem := range model.ResourceList {
+			resourceListItemMap, err := ResourceIbmBackupRecoveryResourceInstanceToMap(&resourceListItem) // #nosec G601
+			if err != nil {
+				return modelMap, err
+			}
+			resourceList = append(resourceList, resourceListItemMap)
+		}
+		modelMap["resource_list"] = resourceList
+	}
+	if model.Version != nil {
+		modelMap["version"] = *model.Version
+	}
+	return modelMap, nil
+}
+
+func ResourceIbmBackupRecoveryResourceInstanceToMap(model *backuprecoveryv1.ResourceInstance) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.EntityID != nil && *(model.EntityID) != 0 {
+		modelMap["entity_id"] = flex.IntValue(model.EntityID)
+	}
+	if model.Name != nil {
+		modelMap["name"] = *model.Name
 	}
 	return modelMap, nil
 }
@@ -7190,6 +7838,97 @@ func ResourceIbmBackupRecoveryKubernetesPvcInfoToMap(model *backuprecoveryv1.Kub
 	return modelMap, nil
 }
 
+func ResourceIbmBackupRecoveryKubernetesRecoveryObjectParamsToMap(model *backuprecoveryv1.KubernetesRecoveryObjectParams) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	modelMap["snapshot_id"] = *model.SnapshotID
+	if model.PointInTimeUsecs != nil && *(model.PointInTimeUsecs) != 0 {
+		modelMap["point_in_time_usecs"] = flex.IntValue(model.PointInTimeUsecs)
+	}
+	if model.ProtectionGroupID != nil {
+		modelMap["protection_group_id"] = *model.ProtectionGroupID
+	}
+	if model.ProtectionGroupName != nil {
+		modelMap["protection_group_name"] = *model.ProtectionGroupName
+	}
+	if model.SnapshotCreationTimeUsecs != nil {
+		modelMap["snapshot_creation_time_usecs"] = flex.IntValue(model.SnapshotCreationTimeUsecs)
+	}
+	if model.ObjectInfo != nil {
+		objectInfoMap, err := ResourceIbmBackupRecoveryCommonRecoverObjectSnapshotParamsObjectInfoToMap(model.ObjectInfo)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["object_info"] = []map[string]interface{}{objectInfoMap}
+	}
+	if model.SnapshotTargetType != nil {
+		modelMap["snapshot_target_type"] = *model.SnapshotTargetType
+	}
+	if model.ArchivalTargetInfo != nil {
+		archivalTargetInfoMap, err := ResourceIbmBackupRecoveryCommonRecoverObjectSnapshotParamsArchivalTargetInfoToMap(model.ArchivalTargetInfo)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["archival_target_info"] = []map[string]interface{}{archivalTargetInfoMap}
+	}
+	if model.ProgressTaskID != nil {
+		modelMap["progress_task_id"] = *model.ProgressTaskID
+	}
+	if model.RecoverFromStandby != nil {
+		modelMap["recover_from_standby"] = *model.RecoverFromStandby
+	}
+	if model.Status != nil {
+		modelMap["status"] = *model.Status
+	}
+	if model.StartTimeUsecs != nil {
+		modelMap["start_time_usecs"] = flex.IntValue(model.StartTimeUsecs)
+	}
+	if model.EndTimeUsecs != nil {
+		modelMap["end_time_usecs"] = flex.IntValue(model.EndTimeUsecs)
+	}
+	if model.Messages != nil {
+		modelMap["messages"] = model.Messages
+	}
+	if model.BytesRestored != nil {
+		modelMap["bytes_restored"] = flex.IntValue(model.BytesRestored)
+	}
+	if model.ExcludeParams != nil {
+		excludeParamsMap, err := ResourceIbmBackupRecoveryKubernetesFilterParamsToMap(model.ExcludeParams)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["exclude_params"] = []map[string]interface{}{excludeParamsMap}
+	}
+	if model.IncludeParams != nil {
+		includeParamsMap, err := ResourceIbmBackupRecoveryKubernetesFilterParamsToMap(model.IncludeParams)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["include_params"] = []map[string]interface{}{includeParamsMap}
+	}
+	if model.RecoverPvcsOnly != nil {
+		modelMap["recover_pvcs_only"] = *model.RecoverPvcsOnly
+	}
+	if model.StorageClass != nil {
+		storageClassMap, err := ResourceIbmBackupRecoveryKubernetesStorageClassParamsToMap(model.StorageClass)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["storage_class"] = []map[string]interface{}{storageClassMap}
+	}
+	if model.UnbindPvcs != nil {
+		modelMap["unbind_pvcs"] = *model.UnbindPvcs
+	}
+	return modelMap, nil
+}
+
+func ResourceIbmBackupRecoveryRecoverClusterScopedResourcesParamsToMap(model *backuprecoveryv1.RecoverClusterScopedResourcesParams) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.SnapshotID != nil {
+		modelMap["snapshot_id"] = *model.SnapshotID
+	}
+	return modelMap, nil
+}
+
 func ResourceIbmBackupRecoveryRecoverProtectionGroupRunParamsToMap(model *backuprecoveryv1.RecoverProtectionGroupRunParams) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.ArchivalTargetID != nil {
@@ -7200,6 +7939,13 @@ func ResourceIbmBackupRecoveryRecoverProtectionGroupRunParamsToMap(model *backup
 	}
 	modelMap["protection_group_instance_id"] = flex.IntValue(model.ProtectionGroupInstanceID)
 	modelMap["protection_group_run_id"] = *model.ProtectionGroupRunID
+	return modelMap, nil
+}
+
+func ResourceIbmBackupRecoveryKubernetesRecoveryMigrationParamsToMap(model *backuprecoveryv1.KubernetesRecoveryMigrationParams) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	modelMap["current_value"] = *model.CurrentValue
+	modelMap["new_value"] = *model.NewValue
 	return modelMap, nil
 }
 

@@ -1022,6 +1022,11 @@ func DataSourceIbmBackupRecoverySourceRegistrations() *schema.Resource {
 										Computed:    true,
 										Description: "Specifies the bearer token or private key of Kubernetes source.",
 									},
+									"cohesity_dataprotect_plugin_image_location": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "Specifies the custom Cohesity Dataprotect plugin image location of the Kubernetes source.",
+									},
 									"data_mover_image_location": &schema.Schema{
 										Type:        schema.TypeString,
 										Computed:    true,
@@ -2094,6 +2099,9 @@ func DataSourceIbmBackupRecoverySourceRegistrationsKubernetesSourceRegistrationP
 	}
 	if model.ClientPrivateKey != nil {
 		modelMap["client_private_key"] = *model.ClientPrivateKey
+	}
+	if model.CohesityDataprotectPluginImageLocation != nil {
+		modelMap["cohesity_dataprotect_plugin_image_location"] = *model.CohesityDataprotectPluginImageLocation
 	}
 	if model.DataMoverImageLocation != nil {
 		modelMap["data_mover_image_location"] = *model.DataMoverImageLocation
