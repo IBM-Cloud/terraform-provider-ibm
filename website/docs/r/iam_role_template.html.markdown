@@ -14,7 +14,6 @@ Create, update, and delete iam_role_templates with this resource.
 
 ```hcl
 resource "ibm_iam_role_template" "iam_role_template_instance" {
-  account_id = "account_id"
   name = "name"
   role {
 		name = "name"
