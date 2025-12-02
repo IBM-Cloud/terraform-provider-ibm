@@ -469,6 +469,10 @@ func Provider() *schema.Provider {
 			"ibm_iam_action_control_template_version":       iampolicy.DataSourceIBMIAMActionControlTemplateVersion(),
 			"ibm_iam_action_control_assignments":            iampolicy.DataSourceIBMIAMActionControlAssignments(),
 			"ibm_iam_action_control_assignment":             iampolicy.DataSourceIBMIAMActionControlAssignment(),
+			"ibm_iam_role_template":                         iampolicy.DataSourceIBMIAMRoleTemplate(),
+			"ibm_iam_role_template_version":                 iampolicy.DataSourceIBMIAMRoleTemplateVersion(),
+			"ibm_iam_role_assignments":                      iampolicy.DataSourceIBMIAMRoleAssignments(),
+			"ibm_iam_role_assignment":                       iampolicy.DataSourceIBMIAMRoleAssignment(),
 
 			// backup as Service
 			"ibm_is_backup_policy":       vpc.DataSourceIBMIsBackupPolicy(),
@@ -1343,6 +1347,9 @@ func Provider() *schema.Provider {
 			"ibm_iam_action_control_template":               iampolicy.ResourceIBMIAMActionControlTemplate(),
 			"ibm_iam_action_control_template_version":       iampolicy.ResourceIBMIAMActionControlTemplateVersion(),
 			"ibm_iam_action_control_assignment":             iampolicy.ResourceIBMIAMActionControlAssignment(),
+			"ibm_iam_role_template":                         iampolicy.ResourceIBMIAMRoleTemplate(),
+			"ibm_iam_role_template_version":                 iampolicy.ResourceIBMIAMRoleTemplateVersion(),
+			"ibm_iam_role_assignment":                       iampolicy.ResourceIBMIAMRoleAssignment(),
 
 			"ibm_is_backup_policy":      vpc.ResourceIBMIsBackupPolicy(),
 			"ibm_is_backup_policy_plan": vpc.ResourceIBMIsBackupPolicyPlan(),
