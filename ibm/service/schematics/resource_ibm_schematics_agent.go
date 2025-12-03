@@ -1068,24 +1068,48 @@ func resourceIbmSchematicsAgentDelete(context context.Context, d *schema.Resourc
 	deleteAgentDataOptions.Headers = ff
 
 	deleteAgentDataOptions.SetAgentID(d.Id())
+	// get the agent data and check if deploy resources exist and then call this
+
+	getAgentDataOptions := &schematicsv1.GetAgentDataOptions{
+		Profile: core.StringPtr("detailed"),
+	}
+
+	getAgentDataOptions.SetAgentID(d.Id())
+
+	agentData, response, err := schematicsClient.GetAgentDataWithContext(context, getAgentDataOptions)
+	if err != nil {
+		if response != nil && response.StatusCode == 404 {
+			d.SetId("")
+			return nil
+		}
+
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("resourceIbmSchematicsAgentUpdate GetAgentDataWithContext failed with error: %s and response:\n%s", err, response), "ibm_schematics_agent", "update")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
+	}
 
 	// first try destroying resources associated with agent deploy and then delete the agent
+	if agentData.RecentDeployJob != nil {
+		if agentData.RecentDeployJob.JobID != nil {
+			// first try destroying resources associated with agent deploy and then delete the agent
+			deleteAgentResourcesOptions := &schematicsv1.DeleteAgentResourcesOptions{}
+			deleteAgentResourcesOptions.Headers = ff
 
-	deleteAgentResourcesOptions := &schematicsv1.DeleteAgentResourcesOptions{}
-	deleteAgentResourcesOptions.Headers = ff
+			deleteAgentResourcesOptions.SetAgentID(d.Id())
+			deleteAgentResourcesOptions.SetRefreshToken(iamRefreshToken)
 
-	deleteAgentResourcesOptions.SetAgentID(d.Id())
-	deleteAgentResourcesOptions.SetRefreshToken(iamRefreshToken)
+			response, err := schematicsClient.DeleteAgentResourcesWithContext(context, deleteAgentResourcesOptions)
+			if err != nil {
+				tfErr := flex.TerraformErrorf(err, fmt.Sprintf("resourceIbmSchematicsAgentDelete DeleteAgentResourcesWithContext failed with error: %s and response:\n%s", err, response), "ibm_schematics_agent", "delete")
+				log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			} else {
+				_, err = isWaitForAgentDestroyResources(context, schematicsClient, *deleteAgentResourcesOptions.AgentID, d.Timeout(schema.TimeoutDelete))
+				if err != nil {
 
-	response, err := schematicsClient.DeleteAgentResourcesWithContext(context, deleteAgentResourcesOptions)
-	if err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("resourceIbmSchematicsAgentDelete DeleteAgentResourcesWithContext failed with error: %s and response:\n%s", err, response), "ibm_schematics_agent", "delete")
-		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
-	} else {
-		_, err = isWaitForAgentDestroyResources(context, schematicsClient, *deleteAgentResourcesOptions.AgentID, d.Timeout(schema.TimeoutDelete))
-		if err != nil {
-
+				}
+			}
 		}
+
 	}
 
 	// After deploy associated resources are destroyed, now attempt to delete the agent
