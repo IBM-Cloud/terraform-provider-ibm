@@ -7,10 +7,13 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"strings"
+	"sync"
 	"time"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
+	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -378,199 +381,288 @@ func imageList(context context.Context, d *schema.ResourceData, meta interface{}
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
-	start := ""
-	allrecs := []vpcv1.Image{}
 
-	var resourceGroupID string
-	if v, ok := d.GetOk(isImagesResourceGroupID); ok {
-		resourceGroupID = v.(string)
+	// Build list options from datasource arguments
+	listImagesOptions := buildListImagesOptions(d)
+
+	// Use SDK pager for automatic pagination
+	pager, err := sess.NewImagesPager(listImagesOptions)
+	if err != nil {
+		tfErr := flex.DiscriminatedTerraformErrorf(err, "Failed to create images pager", "(Data) ibm_is_images", "read", "new-pager")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
-	var imageName string
-	if v, ok := d.GetOk(isImageName); ok {
-		imageName = v.(string)
+	// Fetch all images across pages
+	allImages, err := pager.GetAll()
+	if err != nil {
+		tfErr := flex.DiscriminatedTerraformErrorf(err, "Failed to fetch all images", "(Data) ibm_is_images", "read", "get-all")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
-	var visibility string
-	if v, ok := d.GetOk(isImageVisibility); ok {
-		visibility = v.(string)
+	// Apply client-side filters not supported by API
+	filteredImages := filterImages(allImages, d)
+
+	// Process images and fetch tags concurrently
+	imagesInfo, err := processImagesConcurrently(context, filteredImages, meta)
+	if err != nil {
+		tfErr := flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error processing images: %s", err), "(Data) ibm_is_images", "read", "processimages-concurrently")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
-	var remoteAccountId string
-	if v, ok := d.GetOk(isImageRemoteAccountId); ok {
-		remoteAccountId = v.(string)
-	}
-	var status string
-	if v, ok := d.GetOk(isImageStatus); ok {
-		status = v.(string)
-	}
-	var catalogManaged bool
-	if v, ok := d.GetOk(isImageCatalogManaged); ok {
-		catalogManaged = v.(bool)
-	}
-
-	listImagesOptions := &vpcv1.ListImagesOptions{}
-	if resourceGroupID != "" {
-		listImagesOptions.SetResourceGroupID(resourceGroupID)
-	}
-	if imageName != "" {
-		listImagesOptions.SetName(imageName)
-	}
-
-	if remoteAccountId != "" {
-		if remoteAccountId == "user" {
-			remoteAccountId = "null"
-			listImagesOptions.SetRemoteAccountID(remoteAccountId)
-		} else if remoteAccountId == "provider" {
-			remoteAccountId = "not:null"
-			listImagesOptions.SetRemoteAccountID(remoteAccountId)
-		} else {
-			listImagesOptions.SetRemoteAccountID(remoteAccountId)
-		}
-	}
-
-	if visibility != "" {
-		listImagesOptions.SetVisibility(visibility)
-	}
-
-	if userDataFormat, ok := d.GetOk(isImageUserDataFormat); ok {
-		userDataFormats := userDataFormat.(*schema.Set)
-		if userDataFormats.Len() != 0 {
-			userDataFormatsArray := make([]string, userDataFormats.Len())
-			for i, key := range userDataFormats.List() {
-				userDataFormatsArray[i] = key.(string)
-			}
-			listImagesOptions.SetUserDataFormat(userDataFormatsArray)
-		}
-	}
-
-	for {
-		if start != "" {
-			listImagesOptions.Start = &start
-		}
-		availableImages, _, err := sess.ListImagesWithContext(context, listImagesOptions)
-		if err != nil {
-			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("ListImagesWithContext failed %s", err), "(Data) ibm_is_images", "read")
-			log.Printf("[DEBUG] %s", tfErr.GetDebugMessage())
-			return tfErr.GetDiag()
-		}
-		start = flex.GetNext(availableImages.Next)
-		allrecs = append(allrecs, availableImages.Images...)
-		if start == "" {
-			break
-		}
-	}
-
-	if status != "" {
-		allrecsTemp := []vpcv1.Image{}
-		for _, image := range allrecs {
-			if status == *image.Status {
-				allrecsTemp = append(allrecsTemp, image)
-			}
-		}
-		allrecs = allrecsTemp
-	}
-
-	if catalogManaged {
-		allrecsTemp := []vpcv1.Image{}
-		for _, image := range allrecs {
-			if image.CatalogOffering != nil && catalogManaged == *image.CatalogOffering.Managed {
-				allrecsTemp = append(allrecsTemp, image)
-			}
-		}
-		allrecs = allrecsTemp
-	}
-
-	imagesInfo := make([]map[string]interface{}, 0)
-	for _, image := range allrecs {
-
-		l := map[string]interface{}{
-			"name":         *image.Name,
-			"id":           *image.ID,
-			"status":       *image.Status,
-			"crn":          *image.CRN,
-			"visibility":   *image.Visibility,
-			"os":           *image.OperatingSystem.Name,
-			"architecture": *image.OperatingSystem.Architecture,
-		}
-		if image.UserDataFormat != nil {
-			l["user_data_format"] = *image.UserDataFormat
-		}
-		if len(image.StatusReasons) > 0 {
-			l["status_reasons"] = dataSourceIBMIsImageFlattenStatusReasons(image.StatusReasons)
-		}
-		if image.ResourceGroup != nil {
-			resourceGroupList := []map[string]interface{}{}
-			resourceGroupMap := dataSourceImageResourceGroupToMap(*image.ResourceGroup)
-			resourceGroupList = append(resourceGroupList, resourceGroupMap)
-			l["resource_group"] = resourceGroupList
-		}
-		if image.OperatingSystem != nil {
-			operatingSystemList := []map[string]interface{}{}
-			operatingSystemMap := dataSourceIBMISImageOperatingSystemToMap(*image.OperatingSystem)
-			operatingSystemList = append(operatingSystemList, operatingSystemMap)
-			l["operating_system"] = operatingSystemList
-		}
-		if image.File != nil && image.File.Checksums != nil {
-			l[isImageCheckSum] = *image.File.Checksums.Sha256
-		}
-		if image.Encryption != nil {
-			l["encryption"] = *image.Encryption
-		}
-		if image.EncryptionKey != nil {
-			l["encryption_key"] = *image.EncryptionKey.CRN
-		}
-		if image.SourceVolume != nil {
-			l["source_volume"] = *image.SourceVolume.ID
-		}
-		if image.CatalogOffering != nil {
-			catalogOfferingList := []map[string]interface{}{}
-			catalogOfferingMap := dataSourceImageCollectionCatalogOfferingToMap(*image.CatalogOffering)
-			catalogOfferingList = append(catalogOfferingList, catalogOfferingMap)
-			l[isImageCatalogOffering] = catalogOfferingList
-		}
-
-		if image.Remote != nil {
-			imageRemoteMap, err := dataSourceImageRemote(image)
-			if err != nil {
-				if err != nil {
-					tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_image", "read", "initialize-client")
-					log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
-					return tfErr.GetDiag()
-				}
-			}
-			if len(imageRemoteMap) > 0 {
-				l["remote"] = []interface{}{imageRemoteMap}
-			}
-		}
-
-		if image.AllowedUse != nil {
-			usageConstraintList := []map[string]interface{}{}
-			modelMap, err := DataSourceIBMIsImageAllowedUseToMap(image.AllowedUse)
-			if err != nil {
-				tfErr := flex.TerraformErrorf(err, err.Error(), "(Data) ibm_is_image", "read")
-				log.Println(tfErr.GetDiag())
-			}
-			usageConstraintList = append(usageConstraintList, modelMap)
-			l["allowed_use"] = usageConstraintList
-		}
-
-		accesstags, err := flex.GetGlobalTagsUsingCRN(meta, *image.CRN, "", isImageAccessTagType)
-		if err != nil {
-			log.Printf(
-				"Error on get of resource image (%s) access tags: %s", d.Id(), err)
-		}
-		l[isImageAccessTags] = accesstags
-		imagesInfo = append(imagesInfo, l)
-	}
+	// Set results
 	d.SetId(dataSourceIBMISImagesID(d))
 	if err = d.Set("images", imagesInfo); err != nil {
 		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting images %s", err), "(Data) ibm_is_images", "read", "images-set").GetDiag()
 	}
+
 	return nil
 }
 
-// dataSourceIBMISImagesId returns a reasonable ID for a image list.
+// buildListImagesOptions constructs API options from datasource arguments
+func buildListImagesOptions(d *schema.ResourceData) *vpcv1.ListImagesOptions {
+	opts := &vpcv1.ListImagesOptions{}
+
+	if v, ok := d.GetOk(isImagesResourceGroupID); ok {
+		opts.ResourceGroupID = core.StringPtr(v.(string))
+	}
+
+	if v, ok := d.GetOk(isImageName); ok {
+		opts.Name = core.StringPtr(v.(string))
+	}
+
+	if v, ok := d.GetOk(isImageVisibility); ok {
+		opts.Visibility = core.StringPtr(v.(string))
+	}
+
+	if v, ok := d.GetOk(isImageRemoteAccountId); ok {
+		remoteAccountId := v.(string)
+		// Map user-friendly values to API values
+		switch remoteAccountId {
+		case "user":
+			opts.RemoteAccountID = core.StringPtr("null")
+		case "provider":
+			opts.RemoteAccountID = core.StringPtr("not:null")
+		default:
+			opts.RemoteAccountID = core.StringPtr(remoteAccountId)
+		}
+	}
+
+	if v, ok := d.GetOk(isImageUserDataFormat); ok {
+		userDataFormats := v.(*schema.Set)
+		if userDataFormats.Len() > 0 {
+			formats := make([]string, userDataFormats.Len())
+			for i, key := range userDataFormats.List() {
+				formats[i] = key.(string)
+			}
+			opts.UserDataFormat = formats
+		}
+	}
+
+	return opts
+}
+
+// filterImages applies client-side filters not supported by the API
+func filterImages(images []vpcv1.Image, d *schema.ResourceData) []vpcv1.Image {
+	var filtered []vpcv1.Image
+
+	// Extract filter values
+	status, hasStatus := d.GetOk(isImageStatus)
+	catalogManaged, hasCatalogManaged := d.GetOk(isImageCatalogManaged)
+
+	for _, image := range images {
+		// Filter by status if specified
+		if hasStatus && status.(string) != *image.Status {
+			continue
+		}
+
+		// Filter by catalog managed if specified
+		if hasCatalogManaged {
+			if image.CatalogOffering == nil || catalogManaged.(bool) != *image.CatalogOffering.Managed {
+				continue
+			}
+		}
+
+		filtered = append(filtered, image)
+	}
+
+	return filtered
+}
+
+// processImagesConcurrently processes images in parallel and fetches access tags in bulk
+// Stock images (IBM-prefixed) and remote images are excluded from tag fetching
+func processImagesConcurrently(ctx context.Context, images []vpcv1.Image, meta interface{}) ([]map[string]interface{}, error) {
+	// Identify images that need access tag fetching
+	// Skip: 1) Stock images (ibm prefix), 2) Remote/provider images
+	resourcesToFetch := []flex.ResourceIdentifier{}
+	for _, image := range images {
+		isStockImage := strings.HasPrefix(strings.ToLower(*image.Name), "ibm")
+		isRemoteImage := image.Remote != nil
+
+		if !isStockImage && !isRemoteImage {
+			resourcesToFetch = append(resourcesToFetch, flex.ResourceIdentifier{
+				CRN:          *image.CRN,
+				ResourceType: "",
+			})
+		}
+	}
+
+	// Bulk fetch access tags for eligible images
+	accessTagsMap := make(map[string]*schema.Set)
+	if len(resourcesToFetch) > 0 {
+		var err error
+		accessTagsMap, err = flex.GetGlobalTagsUsingCRNBulk(meta, resourcesToFetch, isImageAccessTagType)
+		if err != nil {
+			// Log warning but continue - tags are non-critical
+			log.Printf("[WARN] Error bulk fetching access tags: %s. Continuing without tags.", err)
+			accessTagsMap = make(map[string]*schema.Set)
+		}
+	}
+
+	// Process images concurrently
+	type result struct {
+		index int
+		data  map[string]interface{}
+		err   error
+	}
+
+	results := make(chan result, len(images))
+	semaphore := make(chan struct{}, 10) // Limit to 10 concurrent goroutines
+	var wg sync.WaitGroup
+
+	for idx, image := range images {
+		wg.Add(1)
+		go func(i int, img vpcv1.Image) {
+			defer wg.Done()
+
+			// Acquire semaphore
+			semaphore <- struct{}{}
+			defer func() { <-semaphore }()
+
+			// Process image
+			data, err := processImageWithTags(ctx, img, meta, accessTagsMap)
+			results <- result{index: i, data: data, err: err}
+		}(idx, image)
+	}
+
+	// Wait for all goroutines and close results channel
+	go func() {
+		wg.Wait()
+		close(results)
+	}()
+
+	// Collect results maintaining original order
+	orderedResults := make([]map[string]interface{}, len(images))
+	errorCount := 0
+
+	for res := range results {
+		if res.err != nil {
+			log.Printf("[WARN] Error processing image at index %d: %s", res.index+1, res.err)
+			errorCount++
+			continue
+		}
+		orderedResults[res.index] = res.data
+	}
+
+	if errorCount > 0 {
+		log.Printf("[WARN] %d images failed processing", errorCount)
+	}
+
+	// Build final list excluding nil entries
+	imagesInfo := make([]map[string]interface{}, 0, len(images))
+	for _, data := range orderedResults {
+		if data != nil {
+			imagesInfo = append(imagesInfo, data)
+		}
+	}
+	return imagesInfo, nil
+}
+
+// processImageWithTags builds the schema map for a single image
+// Access tags are retrieved from the pre-fetched bulk map
+func processImageWithTags(ctx context.Context, image vpcv1.Image, meta interface{}, accessTagsMap map[string]*schema.Set) (map[string]interface{}, error) {
+	l := map[string]interface{}{
+		"name":         *image.Name,
+		"id":           *image.ID,
+		"status":       *image.Status,
+		"crn":          *image.CRN,
+		"visibility":   *image.Visibility,
+		"os":           *image.OperatingSystem.Name,
+		"architecture": *image.OperatingSystem.Architecture,
+	}
+
+	// Optional fields
+	if image.UserDataFormat != nil {
+		l["user_data_format"] = *image.UserDataFormat
+	}
+
+	if len(image.StatusReasons) > 0 {
+		l["status_reasons"] = dataSourceIBMIsImageFlattenStatusReasons(image.StatusReasons)
+	}
+
+	if image.ResourceGroup != nil {
+		l["resource_group"] = []map[string]interface{}{
+			dataSourceImageResourceGroupToMap(*image.ResourceGroup),
+		}
+	}
+
+	if image.OperatingSystem != nil {
+		l["operating_system"] = []map[string]interface{}{
+			dataSourceIBMISImageOperatingSystemToMap(*image.OperatingSystem),
+		}
+	}
+
+	if image.File != nil && image.File.Checksums != nil {
+		l[isImageCheckSum] = *image.File.Checksums.Sha256
+	}
+
+	if image.Encryption != nil {
+		l["encryption"] = *image.Encryption
+	}
+
+	if image.EncryptionKey != nil {
+		l["encryption_key"] = *image.EncryptionKey.CRN
+	}
+
+	if image.SourceVolume != nil {
+		l["source_volume"] = *image.SourceVolume.ID
+	}
+
+	if image.CatalogOffering != nil {
+		l[isImageCatalogOffering] = []map[string]interface{}{
+			dataSourceImageCollectionCatalogOfferingToMap(*image.CatalogOffering),
+		}
+	}
+
+	if image.Remote != nil {
+		imageRemoteMap, err := dataSourceImageRemote(image)
+		if err != nil {
+			return nil, fmt.Errorf("error processing remote data: %s", err)
+		}
+		if len(imageRemoteMap) > 0 {
+			l["remote"] = []interface{}{imageRemoteMap}
+		}
+	}
+
+	if image.AllowedUse != nil {
+		modelMap, err := DataSourceIBMIsImageAllowedUseToMap(image.AllowedUse)
+		if err != nil {
+			return nil, fmt.Errorf("error processing allowed_use: %s", err)
+		}
+		l["allowed_use"] = []map[string]interface{}{modelMap}
+	}
+
+	// Add access tags from bulk-fetched map (if available)
+	if tags, exists := accessTagsMap[*image.CRN]; exists {
+		l[isImageAccessTags] = tags
+	}
+
+	return l, nil
+}
+
+// dataSourceIBMISImagesID returns a unique ID for the images datasource
 func dataSourceIBMISImagesID(d *schema.ResourceData) string {
 	return time.Now().UTC().String()
 }

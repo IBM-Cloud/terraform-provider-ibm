@@ -2725,6 +2725,213 @@ func GetTags(d *schema.ResourceData, meta interface{}) error {
 // 	return nil
 // }
 
+// bulk
+const (
+	// Set conservative limit to account for JSON encoding overhead
+	maxQueryLength = 900000 // ~900KB
+)
+
+// ResourceIdentifier contains the CRN and resource type for bulk tag operations
+type ResourceIdentifier struct {
+	CRN          string
+	ResourceType string
+}
+
+// GetGlobalTagsUsingCRNBulk fetches tags for multiple resources using bulk API calls
+// This is significantly more efficient than making individual calls per resource
+// Returns a map of CRN -> tag set for all resources
+func GetGlobalTagsUsingCRNBulk(meta interface{}, resources []ResourceIdentifier, tagType string) (map[string]*schema.Set, error) {
+	if len(resources) == 0 {
+		return make(map[string]*schema.Set), nil
+	}
+	// Chunk resources to stay within API size limits
+	chunks := chunkResources(resources)
+
+	// Fetch tags for each chunk and merge results
+	allTags := make(map[string]*schema.Set)
+
+	for chunkIdx, chunk := range chunks {
+		chunkTags, err := fetchTagsForChunk(meta, chunk, tagType)
+		if err != nil {
+			return nil, fmt.Errorf("[ERROR] Error fetching tags for chunk %d: %s", chunkIdx+1, err)
+		}
+
+		// Merge chunk results into final map
+		for crn, tags := range chunkTags {
+			allTags[crn] = tags
+		}
+	}
+	return allTags, nil
+}
+
+// chunkResources splits resources into chunks that fit within API size limits
+// Uses conservative estimation: each CRN ~120 chars, each query part ~130 chars with OR
+func chunkResources(resources []ResourceIdentifier) [][]ResourceIdentifier {
+	if len(resources) == 0 {
+		return nil
+	}
+
+	chunks := [][]ResourceIdentifier{}
+	currentChunk := []ResourceIdentifier{}
+	currentLength := 0
+
+	for _, res := range resources {
+		// Estimate query part length: crn:"<CRN>" OR  or  doc.id:<ID> OR
+		var queryPart string
+		if strings.Contains(res.ResourceType, "SoftLayer_") {
+			queryPart = fmt.Sprintf("doc.id:%s", res.CRN)
+		} else {
+			queryPart = fmt.Sprintf("crn:\"%s\"", res.CRN)
+		}
+
+		partLength := len(queryPart) + 4 // +4 for " OR "
+
+		// Check if adding this resource would exceed limit
+		if currentLength > 0 && currentLength+partLength > maxQueryLength {
+			// Start new chunk
+			chunks = append(chunks, currentChunk)
+			currentChunk = []ResourceIdentifier{res}
+			currentLength = partLength
+		} else {
+			// Add to current chunk
+			currentChunk = append(currentChunk, res)
+			currentLength += partLength
+		}
+	}
+
+	// Add final chunk
+	if len(currentChunk) > 0 {
+		chunks = append(chunks, currentChunk)
+	}
+
+	return chunks
+}
+
+// fetchTagsForChunk fetches tags for a single chunk of resources
+func fetchTagsForChunk(meta interface{}, resources []ResourceIdentifier, tagType string) (map[string]*schema.Set, error) {
+	// Initialize Global Search client
+	gsClient, err := meta.(conns.ClientSession).GlobalSearchAPIV2()
+	if err != nil {
+		return nil, fmt.Errorf("[ERROR] Error getting global search client settings: %s", err)
+	}
+
+	// Build bulk query for this chunk
+	query := buildBulkQuery(resources)
+
+	// Configure search options
+	options := globalsearchv2.SearchOptions{
+		Query:  core.StringPtr(query),
+		Fields: []string{"crn", "access_tags", "tags", "service_tags"},
+		Limit:  core.Int64Ptr(500), // Maximum allowed by API
+	}
+
+	// For service tags, account ID is required
+	if tagType == "service" {
+		userDetails, err := meta.(conns.ClientSession).BluemixUserDetails()
+		if err != nil {
+			return nil, fmt.Errorf("[ERROR] Error getting user details: %s", err)
+		}
+		options.SetAccountID(userDetails.UserAccount)
+	}
+
+	// Fetch all pages of results
+	allItems := []globalsearchv2.ResultItem{}
+	pageCount := 0
+
+	for {
+		pageCount++
+		result, resp, err := gsClient.Search(&options)
+		if err != nil {
+			return nil, fmt.Errorf("[ERROR] Error to query the tags for the resource: %s %s", err, resp)
+		}
+
+		allItems = append(allItems, result.Items...)
+
+		// Check if more pages exist
+		if result.SearchCursor == nil || len(result.Items) < int(*result.Limit) {
+			break
+		}
+
+		options.SearchCursor = result.SearchCursor
+	}
+
+	// Map results back to CRNs
+	tagMap := mapTagsToResources(allItems, tagType)
+
+	return tagMap, nil
+}
+
+// buildBulkQuery constructs a Global Search query for multiple resources
+// Supports both standard CRN-based queries and SoftLayer doc.id queries
+func buildBulkQuery(resources []ResourceIdentifier) string {
+	queries := make([]string, 0, len(resources))
+	hasSoftLayer := false
+
+	for _, res := range resources {
+		if strings.Contains(res.ResourceType, "SoftLayer_") {
+			hasSoftLayer = true
+			queries = append(queries, fmt.Sprintf("doc.id:%s", res.CRN))
+		} else {
+			queries = append(queries, fmt.Sprintf("crn:\"%s\"", res.CRN))
+		}
+	}
+
+	query := strings.Join(queries, " OR ")
+
+	// Add family filter for SoftLayer resources
+	if hasSoftLayer {
+		query = fmt.Sprintf("(%s) AND family:ims", query)
+	}
+
+	return query
+}
+
+// mapTagsToResources extracts tags from Global Search results and maps them to CRNs
+// Uses direct field access (item.CRN) rather than GetProperty due to API response structure
+func mapTagsToResources(items []globalsearchv2.ResultItem, tagType string) map[string]*schema.Set {
+	result := make(map[string]*schema.Set)
+
+	for itemIdx, item := range items {
+		// Extract CRN using direct field access
+		// Note: GetProperty("crn") does not work - must use item.CRN
+		if item.CRN == nil {
+			log.Printf("[WARN] Item %d missing CRN field, skipping", itemIdx+1)
+			continue
+		}
+
+		crn := *item.CRN
+
+		// Extract tags based on type
+		var taglist []string
+		var tagProperty interface{}
+
+		switch tagType {
+		case "access":
+			tagProperty = item.GetProperty("access_tags")
+		case "service":
+			tagProperty = item.GetProperty("service_tags")
+		default:
+			tagProperty = item.GetProperty("tags")
+		}
+
+		// Process tags if present
+		if tagProperty != nil && reflect.TypeOf(tagProperty).Kind() == reflect.Slice {
+			tagSlice := reflect.ValueOf(tagProperty)
+
+			for i := 0; i < tagSlice.Len(); i++ {
+				tag := fmt.Sprintf("%s", tagSlice.Index(i))
+				taglist = append(taglist, tag)
+			}
+
+		}
+
+		// Store in result map
+		result[crn] = NewStringSet(ResourceIBMVPCHash, taglist)
+	}
+
+	return result
+}
+
 func GetGlobalTagsUsingCRN(meta interface{}, resourceID, resourceType, tagType string) (*schema.Set, error) {
 	taggingResult, err := GetGlobalTagsUsingSearchAPI(meta, resourceID, resourceType, tagType)
 	if err != nil {
