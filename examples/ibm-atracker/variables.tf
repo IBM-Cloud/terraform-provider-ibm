@@ -25,6 +25,19 @@ variable "atracker_target_managed_by" {
   default     = "enterprise"
 }
 
+variable "atracker_route_receive_global_events" {
+  description = "Indicates whether or not all global events should be forwarded to this region."
+  type        = bool
+  default     = false
+}
+variable "atracker_route_rules" {
+  description = "Routing rules that will be evaluated in their order of the array."
+  type        = list(object({
+    target_ids = list(string)
+    locations = list(string)
+  }))
+  default     = [ ]
+}
 // Resource arguments for atracker_route
 variable "atracker_route_name" {
   description = "The name of the route."

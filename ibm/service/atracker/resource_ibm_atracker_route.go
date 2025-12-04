@@ -158,7 +158,7 @@ func resourceIBMAtrackerRouteCreate(context context.Context, d *schema.ResourceD
 	}
 
 	d.SetId(*route.ID)
-	d.Set("api_version", 3)
+	d.Set("api_version", 2)
 
 	return resourceIBMAtrackerRouteRead(context, d, meta)
 }
