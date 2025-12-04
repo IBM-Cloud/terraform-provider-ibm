@@ -42,14 +42,14 @@ func DataSourceIBMPIImages() *schema.Resource {
 							Description: "The CPU architecture that the image is designed for.",
 							Type:        schema.TypeString,
 						},
-						Attr_CRN: {
-							Computed:    true,
-							Description: "The CRN of this resource.",
-							Type:        schema.TypeString,
-						},
 						Attr_ContainerFormat: {
 							Computed:    true,
 							Description: "The container format.",
+							Type:        schema.TypeString,
+						},
+						Attr_CRN: {
+							Computed:    true,
+							Description: "The CRN of this resource.",
 							Type:        schema.TypeString,
 						},
 						Attr_DiskFormat: {

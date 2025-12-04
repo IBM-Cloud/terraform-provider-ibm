@@ -66,6 +66,7 @@ In addition to the argument reference list, you can access the following attribu
   - `name` - (String) The name of the image.
   - `operating_system` - (String)  Operating System.
   - `shared` - (String) Indicates whether the image is shared.
+  - `source_checksum` - (String) Checksum of the image.
   - `state` - (String) The state of an Operating System.
   - `storage_pool` - (String) Storage pool where image resides.
   - `storage_type` - (String) The storage type of an image.
