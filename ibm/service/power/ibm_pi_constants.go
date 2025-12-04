@@ -114,6 +114,7 @@ const (
 	Arg_NextHop                              = "pi_next_hop"
 	Arg_NextHopType                          = "pi_next_hop_type"
 	Arg_OnboardingVolumes                    = "pi_onboarding_volumes"
+	Arg_Parameters                           = "pi_parameters"
 	Arg_PeerInterfaceID                      = "pi_peer_interface_id"
 	Arg_PinPolicy                            = "pi_pin_policy"
 	Arg_PlacementGroupID                     = "pi_placement_group_id"

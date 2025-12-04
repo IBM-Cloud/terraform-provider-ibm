@@ -55,6 +55,38 @@ func TestAccIBMPIWorkspaceUserTags(t *testing.T) {
 		},
 	})
 }
+func TestAccIBMPIWorkspaceParametersSharedImages(t *testing.T) {
+	name := fmt.Sprintf("tf-pi-workspace-%d", acctest.RandIntRange(10, 100))
+
+	resourceName := "ibm_pi_workspace.powervs_service_instance"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccIBMPIWorkspaceDestroy,
+		Steps: []resource.TestStep{
+			// Step 1: sharedImages = "true"
+			{
+				Config: testAccCheckIBMPIWorkspaceParametersConfig(name, "true"),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMPIWorkspaceExists(resourceName),
+					resource.TestCheckResourceAttrSet(resourceName, "id"),
+					// parameters map should contain sharedmages = "true"
+					resource.TestCheckResourceAttr(resourceName, "pi_parameters.sharedImages", "true"),
+				),
+			},
+			// Step 2: sharedImages = "false" (will ForceNew and recreate)
+			{
+				Config: testAccCheckIBMPIWorkspaceParametersConfig(name, "false"),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMPIWorkspaceExists(resourceName),
+					resource.TestCheckResourceAttrSet(resourceName, "id"),
+					resource.TestCheckResourceAttr(resourceName, "pi_parameters.sharedImages", "false"),
+				),
+			},
+		},
+	})
+}
 
 func testAccCheckIBMPIWorkspaceConfig(name string) string {
 	return fmt.Sprintf(`
@@ -71,8 +103,21 @@ func testAccCheckIBMPIWorkspaceUserTagConfig(name string) string {
 			pi_name              = "%[1]s"
 			pi_datacenter        = "dal12"
 			pi_resource_group_id = "%[2]s"
-			pi_user_tags = ["env:dev", "dataresidency:france"]
+			pi_user_tags         = ["env:dev", "dataresidency:france"]
 		}`, name, acc.Pi_resource_group_id)
+}
+
+// config with parameters.sharedImages = <value>
+func testAccCheckIBMPIWorkspaceParametersConfig(name, sharedImages string) string {
+	return fmt.Sprintf(`
+		resource "ibm_pi_workspace" "powervs_service_instance" {
+			pi_name              = "%[1]s"
+			pi_datacenter        = "dal12"
+			pi_resource_group_id = "%[2]s"
+			pi_parameters = {
+				"sharedImages" = "%[3]s"
+			}
+		}`, name, acc.Pi_resource_group_id, sharedImages)
 }
 
 func testAccIBMPIWorkspaceDestroy(s *terraform.State) error {

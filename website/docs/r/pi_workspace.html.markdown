@@ -44,6 +44,7 @@ Review the argument references that you can specify for your resource.
 
 - `pi_datacenter` - (Required, String) Target location or environment to create the resource instance.
 - `pi_name` - (Required, String) A descriptive name used to identify the workspace.
+- `pi_parameters` - (Optional, Map of Strings) Optional parameters to pass to the workspace (for example: {"sharedImages" = "true"}).
 - `pi_plan` -  (Optional, String) Plan associated with the offering; Valid values are `public` or `private`. The default value is `public`.
 - `pi_resource_group_id` - (Required, String) The ID of the resource group where you want to create the workspace. You can retrieve the value from data source `ibm_resource_group`.
 - `pi_user_tags` - (Optional, List) List of user tags attached to the resource.

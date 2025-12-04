@@ -31,7 +31,7 @@ func ResourceIBMPIWorkspace() *schema.Resource {
 			Update: schema.DefaultTimeout(10 * time.Minute),
 		},
 		CustomizeDiff: customdiff.Sequence(
-			func(_ context.Context, diff *schema.ResourceDiff, v interface{}) error {
+			func(_ context.Context, diff *schema.ResourceDiff, v any) error {
 				return flex.ResourcePowerUserTagsCustomizeDiff(diff)
 			},
 		),
@@ -51,6 +51,15 @@ func ResourceIBMPIWorkspace() *schema.Resource {
 				Required:     true,
 				Type:         schema.TypeString,
 				ValidateFunc: validation.NoZeroValues,
+			},
+			Arg_Parameters: {
+				Description: `Optional parameters to pass to the workspace (for example: {"sharedImages" = "true"}).`,
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
+				ForceNew: true,
+				Optional: true,
+				Type:     schema.TypeMap,
 			},
 			Arg_Plan: {
 				Default:      Public,
@@ -92,7 +101,7 @@ func ResourceIBMPIWorkspace() *schema.Resource {
 	}
 }
 
-func resourceIBMPIWorkspaceCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceIBMPIWorkspaceCreate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	sess, err := meta.(conns.ClientSession).IBMPISession()
 	if err != nil {
 		return diag.FromErr(err)
@@ -102,10 +111,14 @@ func resourceIBMPIWorkspaceCreate(ctx context.Context, d *schema.ResourceData, m
 	datacenter := d.Get(Arg_Datacenter).(string)
 	resourceGroup := d.Get(Arg_ResourceGroupID).(string)
 	plan := d.Get(Arg_Plan).(string)
+	parameters := make(map[string]any)
 
 	// No need for cloudInstanceID because we are creating a workspace
 	client := instance.NewIBMPIWorkspacesClient(ctx, sess, "")
-	controller, _, err := client.Create(name, datacenter, resourceGroup, plan)
+	if paramMap, ok := d.GetOk(Arg_Parameters); ok {
+		parameters = paramMap.(map[string]any)
+	}
+	controller, _, err := client.CreateV2(name, datacenter, resourceGroup, plan, parameters)
 	if err != nil {
 		log.Printf("[DEBUG] create workspace failed %v", err)
 		return diag.FromErr(err)
@@ -132,7 +145,7 @@ func resourceIBMPIWorkspaceCreate(ctx context.Context, d *schema.ResourceData, m
 	return resourceIBMPIWorkspaceRead(ctx, d, meta)
 }
 
-func waitForResourceWorkspaceCreate(ctx context.Context, client *instance.IBMPIWorkspacesClient, id string, timeout time.Duration) (interface{}, error) {
+func waitForResourceWorkspaceCreate(ctx context.Context, client *instance.IBMPIWorkspacesClient, id string, timeout time.Duration) (any, error) {
 	stateConf := &retry.StateChangeConf{
 		Pending:    []string{State_InProgress, State_Inactive, State_Provisioning},
 		Target:     []string{State_Active},
@@ -145,7 +158,7 @@ func waitForResourceWorkspaceCreate(ctx context.Context, client *instance.IBMPIW
 }
 
 func isIBMPIWorkspaceCreateRefreshFunc(client *instance.IBMPIWorkspacesClient, id string) retry.StateRefreshFunc {
-	return func() (interface{}, string, error) {
+	return func() (any, string, error) {
 		controller, _, err := client.GetRC(id)
 		if err != nil {
 			return nil, "", err
@@ -157,7 +170,7 @@ func isIBMPIWorkspaceCreateRefreshFunc(client *instance.IBMPIWorkspacesClient, i
 	}
 }
 
-func resourceIBMPIWorkspaceRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceIBMPIWorkspaceRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	// session
 	sess, err := meta.(conns.ClientSession).IBMPISession()
 	if err != nil {
@@ -171,6 +184,7 @@ func resourceIBMPIWorkspaceRead(ctx context.Context, d *schema.ResourceData, met
 		return diag.FromErr(err)
 	}
 	d.Set(Arg_Name, controller.Name)
+	d.Set(Arg_Parameters, controller.Parameters)
 	tags, err := flex.GetGlobalTagsUsingCRN(meta, *controller.CRN, "", UserTagType)
 	if err != nil {
 		log.Printf("Error on get of workspace (%s) pi_user_tags: %s", cloudInstanceID, err)
@@ -178,9 +192,8 @@ func resourceIBMPIWorkspaceRead(ctx context.Context, d *schema.ResourceData, met
 	d.Set(Arg_UserTags, tags)
 
 	d.Set(Attr_CRN, controller.CRN)
-
 	// Deprecated Workspace Details Set
-	wsDetails := map[string]interface{}{
+	wsDetails := map[string]any{
 		Attr_CreationDate: controller.CreatedAt,
 		Attr_CRN:          controller.CRN,
 	}
@@ -189,7 +202,7 @@ func resourceIBMPIWorkspaceRead(ctx context.Context, d *schema.ResourceData, met
 	return nil
 }
 
-func resourceIBMPIWorkspaceDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceIBMPIWorkspaceDelete(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	sess, err := meta.(conns.ClientSession).IBMPISession()
 	if err != nil {
 		return diag.FromErr(err)
@@ -210,7 +223,7 @@ func resourceIBMPIWorkspaceDelete(ctx context.Context, d *schema.ResourceData, m
 	return nil
 }
 
-func waitForResourceWorkspaceDelete(ctx context.Context, client *instance.IBMPIWorkspacesClient, id string, timeout time.Duration) (interface{}, error) {
+func waitForResourceWorkspaceDelete(ctx context.Context, client *instance.IBMPIWorkspacesClient, id string, timeout time.Duration) (any, error) {
 	stateConf := &retry.StateChangeConf{
 		Pending:    []string{State_InProgress, State_Inactive, State_Active},
 		Target:     []string{State_Removed, State_PendingReclamation},
@@ -223,7 +236,7 @@ func waitForResourceWorkspaceDelete(ctx context.Context, client *instance.IBMPIW
 }
 
 func isIBMPIResourceDeleteRefreshFunc(client *instance.IBMPIWorkspacesClient, id string) retry.StateRefreshFunc {
-	return func() (interface{}, string, error) {
+	return func() (any, string, error) {
 		controller, response, err := client.GetRC(id)
 		if err != nil {
 			if response != nil && response.StatusCode == 404 {
@@ -242,7 +255,7 @@ func isIBMPIResourceDeleteRefreshFunc(client *instance.IBMPIWorkspacesClient, id
 	}
 }
 
-func resourceIBMPIWorkspaceUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceIBMPIWorkspaceUpdate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	if d.HasChange(Arg_UserTags) {
 		if crn, ok := d.GetOk(Attr_CRN); ok {
 			oldList, newList := d.GetChange(Arg_UserTags)
