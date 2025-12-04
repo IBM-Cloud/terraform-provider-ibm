@@ -138,8 +138,10 @@ func dataSourceIBMPIWorkspacesRead(ctx context.Context, d *schema.ResourceData, 
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
-
-	cloudInstanceID := d.Get(Arg_CloudInstanceID).(string)
+	cloudInstanceID := ""
+	if v, ok := d.GetOk(Arg_CloudInstanceID); ok {
+		cloudInstanceID = v.(string)
+	}
 	client := instance.NewIBMPIWorkspacesClient(ctx, sess, cloudInstanceID)
 	wsData, err := client.GetAll()
 	if err != nil {
