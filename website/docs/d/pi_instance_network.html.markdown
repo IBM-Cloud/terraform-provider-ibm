@@ -48,8 +48,9 @@ Review the argument references that you can specify for your data source.
 
 In addition to all argument reference list, you can access the following attribute references after your data source is created.
 
-- `id` - (String) The unique identifier of the data source in the form <pi_cloud_instance_id>/<pi_instance_id>/<pi_network_id>.
 - `external_ip` - (String) TThe external IP address of the network (for pub-VLAN networks).
+- `href` - (String) Link to this PVM instance network.
+- `id` - (String) The unique identifier of the data source in the form <pi_cloud_instance_id>/<pi_instance_id>/<pi_network_id>.
 - `ip_address` - (String) The IP address of the network interface.
 - `mac_address` - (String) The MAC address of the network interface.
 - `network_id` - (String) The network ID.
@@ -58,5 +59,4 @@ In addition to all argument reference list, you can access the following attribu
 - `network_security_group_ids` - (List) IDs of the network security groups that the network interface is a member of.
 - `network_security_groups_href` - (List) Links to the network security groups that the network interface is a member of.
 - `type` - (String) The address type (for example, fixed or dynamic).
-- `href` - (String) Link to this PVM instance network.
 - `version` - (Float) Version of the network information.
