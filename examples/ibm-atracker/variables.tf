@@ -19,22 +19,25 @@ variable "atracker_target_region" {
   type        = string
   default     = "us-south"
 }
-variable "atracker_target_managed_by" {
-  description = "Identifies who manages the target."
-  type        = string
-  default     = "enterprise"
-}
 
+variable "atracker_route_receive_global_events" {
+  description = "Indicates whether or not all global events should be forwarded to this region."
+  type        = bool
+  default     = false
+}
+variable "atracker_route_rules" {
+  description = "Routing rules that will be evaluated in their order of the array."
+  type        = list(object({
+    target_ids = list(string)
+    locations = list(string)
+  }))
+  default     = [ ]
+}
 // Resource arguments for atracker_route
 variable "atracker_route_name" {
   description = "The name of the route."
   type        = string
   default     = "my-route"
-}
-variable "atracker_route_managed_by" {
-  description = "Present when the route is enterprise-managed (`managed_by: enterprise`)."
-  type        = string
-  default     = "enterprise"
 }
 
 // Resource arguments for atracker_settings

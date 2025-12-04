@@ -59,10 +59,20 @@ func ResourceIBMAtrackerRoute() *schema.Resource {
 				},
 			},
 			"managed_by": &schema.Schema{
-				Type:         schema.TypeString,
-				Optional:     true,
-				ForceNew:     true,
-				Default:      "account",
+				Type:     schema.TypeString,
+				Optional: true,
+				ForceNew: true,
+				Default:  "account",
+				// Suppress the diff state transition from nil, account as they are equivalent.
+				DiffSuppressFunc: func(k, old, newv string, d *schema.ResourceData) bool {
+					if old == "" && newv == "account" {
+						return true
+					} else if old == "account" && newv == "" {
+						return true
+					} else {
+						return false
+					}
+				},
 				ValidateFunc: validate.InvokeValidator("ibm_atracker_route", "managed_by"),
 				Description:  "Present when the route is enterprise-managed (`managed_by: enterprise`).",
 			},
@@ -158,7 +168,7 @@ func resourceIBMAtrackerRouteCreate(context context.Context, d *schema.ResourceD
 	}
 
 	d.SetId(*route.ID)
-	d.Set("api_version", 3)
+	d.Set("api_version", 2)
 
 	return resourceIBMAtrackerRouteRead(context, d, meta)
 }

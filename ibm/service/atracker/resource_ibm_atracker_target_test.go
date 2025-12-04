@@ -230,13 +230,13 @@ func TestResourceIBMAtrackerTargetEventstreamsEndpointToMap(t *testing.T) {
 func TestResourceIBMAtrackerTargetCloudLogsEndpointToMap(t *testing.T) {
 	checkResult := func(result map[string]interface{}) {
 		model := make(map[string]interface{})
-		model["target_crn"] = "crn:v1:bluemix:public:eu-es:a/11111111111111111111111111111111:22222222-2222-2222-2222-222222222222::"
+		model["target_crn"] = "crn:v1:bluemix:public:logs:eu-es:a/11111111111111111111111111111111:22222222-2222-2222-2222-222222222222::"
 
 		assert.Equal(t, result, model)
 	}
 
 	model := new(atrackerv2.CloudLogsEndpoint)
-	model.TargetCRN = core.StringPtr("crn:v1:bluemix:public:eu-es:a/11111111111111111111111111111111:22222222-2222-2222-2222-222222222222::")
+	model.TargetCRN = core.StringPtr("crn:v1:bluemix:public:logs:eu-es:a/11111111111111111111111111111111:22222222-2222-2222-2222-222222222222::")
 
 	result, err := atracker.ResourceIBMAtrackerTargetCloudLogsEndpointToMap(model)
 	assert.Nil(t, err)

@@ -139,10 +139,20 @@ func ResourceIBMAtrackerTarget() *schema.Resource {
 				},
 			},
 			"managed_by": &schema.Schema{
-				Type:         schema.TypeString,
-				Optional:     true,
-				Default:      "account",
-				ForceNew:     true,
+				Type:     schema.TypeString,
+				Optional: true,
+				Default:  "account",
+				ForceNew: true,
+				// Suppress the diff state transition from nil, account as they are equivalent.
+				DiffSuppressFunc: func(k, old, newv string, d *schema.ResourceData) bool {
+					if old == "" && newv == "account" {
+						return true
+					} else if old == "account" && newv == "" {
+						return true
+					} else {
+						return false
+					}
+				},
 				ValidateFunc: validate.InvokeValidator("ibm_atracker_target", "managed_by"),
 				Description:  "Identifies who manages the target.",
 			},
@@ -569,9 +579,8 @@ func ResourceIBMAtrackerTargetEventstreamsEndpointToMap(model *atrackerv2.Events
 	modelMap["target_crn"] = *model.TargetCRN
 	modelMap["brokers"] = model.Brokers
 	modelMap["topic"] = *model.Topic
-	if model.APIKey != nil {
-		modelMap["api_key"] = *model.APIKey
-	}
+	// TODO: remove after deprecation
+	modelMap["api_key"] = REDACTED_TEXT // pragma: whitelist secret
 	if model.ServiceToServiceEnabled != nil {
 		modelMap["service_to_service_enabled"] = *model.ServiceToServiceEnabled
 	}

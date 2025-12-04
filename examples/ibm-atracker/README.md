@@ -80,7 +80,7 @@ resource "ibm_atracker_route" "atracker_route_instance" {
 | ibmcloud\_api\_key | IBM Cloud API key | `string` | true |
 | name | The name of the route. | `string` | true |
 | rules | The routing rules that will be evaluated in their order of the array. Once a rule is matched, the remaining rules in the route definition will be skipped. | `list()` | true |
-| managed_by | Present when the route is enterprise-managed (`managed_by: enterprise`). | `string` | false |
+| managed_by | Identifies who manages the target. | `string` | false |
 
 #### Outputs
 
