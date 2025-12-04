@@ -106,6 +106,7 @@ func testAccCheckIBMAtrackerSettingsConfig(metadataRegionPrimary string, metadat
 				api_key = "xxxxxxxxxxxxxx" # pragma: whitelist secret
 				service_to_service_enabled = false
 			}
+			managed_by = "account"
 		}
 
 		resource "ibm_atracker_settings" "atracker_settings" {

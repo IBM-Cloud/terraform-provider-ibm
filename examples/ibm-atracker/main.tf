@@ -6,18 +6,13 @@ provider "ibm" {
 resource "ibm_atracker_target" "atracker_target_instance" {
   name = var.atracker_target_name
   target_type = var.atracker_target_target_type
+  region = var.atracker_target_region
   cos_endpoint {
     endpoint = "s3.private.us-east.cloud-object-storage.appdomain.cloud"
     target_crn = "crn:v1:bluemix:public:cloud-object-storage:global:a/11111111111111111111111111111111:22222222-2222-2222-2222-222222222222::"
     bucket = "my-atracker-bucket"
-    api_key = "xxxxxxxxxxxxxx"
+    service_to_service_enabled = true
   }
-  region = var.atracker_target_region
-}
-
-resource "ibm_atracker_target" atracker_target_eventstreams_instance {
-  name = var.atracker_target_name
-  target_type = "event_streams"
   eventstreams_endpoint {
     target_crn = "crn:v1:bluemix:public:messagehub:us-south:a/11111111111111111111111111111111:22222222-2222-2222-2222-222222222222::"
     brokers = [ "kafka-x:9094" ]
@@ -25,16 +20,10 @@ resource "ibm_atracker_target" atracker_target_eventstreams_instance {
     api_key = "xxxxxxxxxxxxxx"
     service_to_service_enabled = false
   }
-  region = var.atracker_target_region
-}
-
-resource "ibm_atracker_target" atracker_target_cloudlogs_instance {
-  name = var.atracker_target_name
-  target_type = "cloud_logs"
   cloudlogs_endpoint {
-    target_crn = "crn:v1:bluemix:public:logs:eu-es:a/11111111111111111111111111111111:22222222-2222-2222-2222-222222222222::"
+    target_crn = "crn:v1:bluemix:public:eu-es:a/11111111111111111111111111111111:22222222-2222-2222-2222-222222222222::"
   }
-  region = var.atracker_target_region
+  managed_by = var.atracker_target_managed_by
 }
 
 // Provision atracker_route resource instance
@@ -44,6 +33,7 @@ resource "ibm_atracker_route" "atracker_route_instance" {
     target_ids = [ ibm_atracker_target.atracker_target_instance.id ]
     locations = [ "us-south" ]
   }
+  managed_by = var.atracker_route_managed_by
 }
 
 // Provision atracker_settings resource instance
@@ -55,12 +45,21 @@ resource "ibm_atracker_settings" "atracker_settings_instance" {
   private_api_endpoint_only = var.atracker_settings_private_api_endpoint_only
 }
 
+// Data source is not linked to a resource instance
+// Uncomment if an existing data source instance exists
+/*
 // Create atracker_targets data source
 data "ibm_atracker_targets" "atracker_targets_instance" {
+  region = var.atracker_targets_region
   name = var.atracker_targets_name
 }
+*/
 
+// Data source is not linked to a resource instance
+// Uncomment if an existing data source instance exists
+/*
 // Create atracker_routes data source
 data "ibm_atracker_routes" "atracker_routes_instance" {
   name = var.atracker_routes_name
 }
+*/

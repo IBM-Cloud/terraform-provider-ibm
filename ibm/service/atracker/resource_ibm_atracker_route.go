@@ -2,7 +2,7 @@
 // Licensed under the Mozilla Public License v2.0
 
 /*
- * IBM OpenAPI Terraform Generator Version: 3.101.0-62624c1e-20250225-192301
+ * IBM OpenAPI Terraform Generator Version: 3.108.0-56772134-20251111-102802
  */
 
 package atracker
@@ -58,6 +58,14 @@ func ResourceIBMAtrackerRoute() *schema.Resource {
 					},
 				},
 			},
+			"managed_by": &schema.Schema{
+				Type:         schema.TypeString,
+				Optional:     true,
+				ForceNew:     true,
+				Default:      "account",
+				ValidateFunc: validate.InvokeValidator("ibm_atracker_route", "managed_by"),
+				Description:  "Present when the route is enterprise-managed (`managed_by: enterprise`).",
+			},
 			"crn": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -104,6 +112,13 @@ func ResourceIBMAtrackerRouteValidator() *validate.ResourceValidator {
 			MinValueLength:             1,
 			MaxValueLength:             1000,
 		},
+		validate.ValidateSchema{
+			Identifier:                 "managed_by",
+			ValidateFunctionIdentifier: validate.ValidateAllowedStringValue,
+			Type:                       validate.TypeString,
+			Optional:                   true,
+			AllowedValues:              "account, enterprise",
+		},
 	)
 
 	resourceValidator := validate.ResourceValidator{ResourceName: "ibm_atracker_route", Schema: validateSchema}
@@ -131,6 +146,9 @@ func resourceIBMAtrackerRouteCreate(context context.Context, d *schema.ResourceD
 		rules = append(rules, *rulesItem)
 	}
 	createRouteOptions.SetRules(rules)
+	if _, ok := d.GetOk("managed_by"); ok {
+		createRouteOptions.SetManagedBy(d.Get("managed_by").(string))
+	}
 
 	route, _, err := atrackerClient.CreateRouteWithContext(context, createRouteOptions)
 	if err != nil {
@@ -140,7 +158,7 @@ func resourceIBMAtrackerRouteCreate(context context.Context, d *schema.ResourceD
 	}
 
 	d.SetId(*route.ID)
-	d.Set("api_version", 2)
+	d.Set("api_version", 3)
 
 	return resourceIBMAtrackerRouteRead(context, d, meta)
 }
@@ -183,6 +201,12 @@ func resourceIBMAtrackerRouteRead(context context.Context, d *schema.ResourceDat
 	if err = d.Set("rules", rules); err != nil {
 		err = fmt.Errorf("Error setting rules: %s", err)
 		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_atracker_route", "read", "set-rules").GetDiag()
+	}
+	if !core.IsNil(route.ManagedBy) {
+		if err = d.Set("managed_by", route.ManagedBy); err != nil {
+			err = fmt.Errorf("Error setting managed_by: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_atracker_route", "read", "set-managed_by").GetDiag()
+		}
 	}
 	if err = d.Set("crn", route.CRN); err != nil {
 		err = fmt.Errorf("Error setting crn: %s", err)
@@ -238,6 +262,9 @@ func resourceIBMAtrackerRouteUpdate(context context.Context, d *schema.ResourceD
 		rules = append(rules, *rulesItem)
 	}
 	replaceRouteOptions.SetRules(rules)
+	if _, ok := d.GetOk("managed_by"); ok {
+		replaceRouteOptions.SetManagedBy(d.Get("managed_by").(string))
+	}
 
 	_, _, err = atrackerClient.ReplaceRouteWithContext(context, replaceRouteOptions)
 	if err != nil {

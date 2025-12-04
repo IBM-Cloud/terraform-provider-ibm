@@ -2,7 +2,7 @@
 // Licensed under the Mozilla Public License v2.0
 
 /*
- * IBM OpenAPI Terraform Generator Version: 3.101.0-62624c1e-20250225-192301
+ * IBM OpenAPI Terraform Generator Version: 3.108.0-56772134-20251111-102802
  */
 
 package atracker
@@ -34,7 +34,7 @@ func ResourceIBMAtrackerSettings() *schema.Resource {
 			"default_targets": &schema.Schema{
 				Type:        schema.TypeList,
 				Optional:    true,
-				Description: "The target ID List. In the event that no routing rule causes the event to be sent to a target, these targets will receive the event.",
+				Description: "The target ID List. In the event that no routing rule causes the event to be sent to a target, these targets will receive the event. Enterprise-managed targets are not supported.",
 				Elem:        &schema.Schema{Type: schema.TypeString},
 			},
 			"permitted_target_regions": &schema.Schema{
@@ -263,8 +263,8 @@ func resourceIBMAtrackerSettingsDelete(context context.Context, d *schema.Resour
 	}
 	putSettingsOptions := &atrackerv2.PutSettingsOptions{}
 
-	putSettingsOptions.MetadataRegionPrimary = settings.MetadataRegionPrimary
-	putSettingsOptions.PrivateAPIEndpointOnly = settings.PrivateAPIEndpointOnly
+	putSettingsOptions.SetMetadataRegionPrimary(*settings.MetadataRegionPrimary)
+	putSettingsOptions.SetPrivateAPIEndpointOnly(*settings.PrivateAPIEndpointOnly)
 	putSettingsOptions.PermittedTargetRegions = []string{}
 	putSettingsOptions.DefaultTargets = []string{}
 

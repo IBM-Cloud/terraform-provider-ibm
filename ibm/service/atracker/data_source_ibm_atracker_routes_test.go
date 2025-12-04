@@ -2,7 +2,7 @@
 // Licensed under the Mozilla Public License v2.0
 
 /*
- * IBM OpenAPI Terraform Generator Version: 3.101.0-62624c1e-20250225-192301
+ * IBM OpenAPI Terraform Generator Version: 3.108.0-56772134-20251111-102802
  */
 
 package atracker_test
@@ -41,6 +41,35 @@ func TestAccIBMAtrackerRoutesDataSourceBasic(t *testing.T) {
 	})
 }
 
+func TestAccIBMAtrackerRoutesDataSourceAllArgs(t *testing.T) {
+	routeName := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
+	routeManagedBy := "enterprise"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { acc.TestAccPreCheck(t) },
+		Providers: acc.TestAccProviders,
+		Steps: []resource.TestStep{
+			resource.TestStep{
+				Config: testAccCheckIBMAtrackerRoutesDataSourceConfig(routeName, routeManagedBy),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet("data.ibm_atracker_routes.atracker_routes_instance", "id"),
+					resource.TestCheckResourceAttrSet("data.ibm_atracker_routes.atracker_routes_instance", "name"),
+					resource.TestCheckResourceAttrSet("data.ibm_atracker_routes.atracker_routes_instance", "routes.#"),
+					resource.TestCheckResourceAttrSet("data.ibm_atracker_routes.atracker_routes_instance", "routes.0.id"),
+					resource.TestCheckResourceAttr("data.ibm_atracker_routes.atracker_routes_instance", "routes.0.name", routeName),
+					resource.TestCheckResourceAttrSet("data.ibm_atracker_routes.atracker_routes_instance", "routes.0.crn"),
+					resource.TestCheckResourceAttrSet("data.ibm_atracker_routes.atracker_routes_instance", "routes.0.version"),
+					resource.TestCheckResourceAttrSet("data.ibm_atracker_routes.atracker_routes_instance", "routes.0.created_at"),
+					resource.TestCheckResourceAttrSet("data.ibm_atracker_routes.atracker_routes_instance", "routes.0.updated_at"),
+					resource.TestCheckResourceAttrSet("data.ibm_atracker_routes.atracker_routes_instance", "routes.0.api_version"),
+					// resource.TestCheckResourceAttrSet("data.ibm_atracker_routes.atracker_routes_instance", "routes.0.message"),
+					resource.TestCheckResourceAttr("data.ibm_atracker_routes.atracker_routes_instance", "routes.0.managed_by", routeManagedBy),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckIBMAtrackerRoutesDataSourceConfigBasic(routeName string) string {
 	return fmt.Sprintf(`
 		resource "ibm_atracker_target" "atracker_target_instance" {
@@ -53,6 +82,7 @@ func testAccCheckIBMAtrackerRoutesDataSourceConfigBasic(routeName string) string
 				bucket = "my-atracker-bucket"
 				api_key = "xxxxxxxxxxxxxx"
 			}
+			managed_by = "enterprise"
 		}
 
 		resource "ibm_atracker_route" "atracker_route_instance" {
@@ -61,12 +91,42 @@ func testAccCheckIBMAtrackerRoutesDataSourceConfigBasic(routeName string) string
 				target_ids = [ ibm_atracker_target.atracker_target_instance.id ]
 				locations = [ "us-south" ]
 			}
+			managed_by = "enterprise"
 		}
 
 		data "ibm_atracker_routes" "atracker_routes_instance" {
 			name = ibm_atracker_route.atracker_route_instance.name
 		}
 	`, routeName)
+}
+
+func testAccCheckIBMAtrackerRoutesDataSourceConfig(routeName string, routeManagedBy string) string {
+	return fmt.Sprintf(`
+		resource "ibm_atracker_target" "atracker_target_instance" {
+			name = "my-cos-target"
+			target_type = "cloud_object_storage"
+			cos_endpoint {
+				endpoint = "s3.private.us-east.cloud-object-storage.appdomain.cloud"
+				target_crn = "crn:v1:bluemix:public:cloud-object-storage:global:a/11111111111111111111111111111111:22222222-2222-2222-2222-222222222222::"
+				bucket = "my-atracker-bucket"
+				api_key = "xxxxxxxxxxxxxx"
+			}
+			managed_by = "enterprise"
+		}
+
+		resource "ibm_atracker_route" "atracker_route_instance" {
+			name = "%s"
+			rules {
+				target_ids = [ ibm_atracker_target.atracker_target_instance.id ]
+				locations = [ "us-south" ]
+			}
+			managed_by = "%s"			
+		}
+
+		data "ibm_atracker_routes" "atracker_routes_instance" {
+			name = ibm_atracker_route.atracker_route_instance.name
+		}
+	`, routeName, routeManagedBy)
 }
 
 func TestDataSourceIBMAtrackerRoutesRouteToMap(t *testing.T) {
@@ -85,6 +145,7 @@ func TestDataSourceIBMAtrackerRoutesRouteToMap(t *testing.T) {
 		model["updated_at"] = "2021-05-18T20:15:12.353Z"
 		model["api_version"] = int(2)
 		model["message"] = "Route was created successfully."
+		model["managed_by"] = "enterprise"
 
 		assert.Equal(t, result, model)
 	}
@@ -103,6 +164,7 @@ func TestDataSourceIBMAtrackerRoutesRouteToMap(t *testing.T) {
 	model.UpdatedAt = CreateMockDateTime("2021-05-18T20:15:12.353Z")
 	model.APIVersion = core.Int64Ptr(int64(2))
 	model.Message = core.StringPtr("Route was created successfully.")
+	model.ManagedBy = core.StringPtr("enterprise")
 
 	result, err := atracker.DataSourceIBMAtrackerRoutesRouteToMap(model)
 	assert.Nil(t, err)
