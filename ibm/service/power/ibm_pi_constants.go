@@ -549,6 +549,7 @@ const (
 	Attr_UserTags                            = "user_tags"
 	Attr_VCPUs                               = "vcpus"
 	Attr_Vendor                              = "vendor"
+	Attr_Version                             = "version"
 	Attr_VirtualCoresAssigned                = "virtual_cores_assigned"
 	Attr_VirtualSerialNumber                 = "virtual_serial_number"
 	Attr_VirtualSerialNumbers                = "virtual_serial_numbers"

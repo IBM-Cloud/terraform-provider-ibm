@@ -762,6 +762,8 @@ func Provider() *schema.Provider {
 			"ibm_pi_image":                                  power.DataSourceIBMPIImage(),
 			"ibm_pi_images":                                 power.DataSourceIBMPIImages(),
 			"ibm_pi_instance_ip":                            power.DataSourceIBMPIInstanceIP(),
+			"ibm_pi_instance_network":                       power.DataSourceIBMPIInstanceNetwork(),
+			"ibm_pi_instance_networks":                      power.DataSourceIBMPIInstanceNetworks(),
 			"ibm_pi_instance_snapshot":                      power.DataSourceIBMPIInstanceSnapshot(),
 			"ibm_pi_instance_snapshots":                     power.DataSourceIBMPIInstanceSnapshots(),
 			"ibm_pi_instance_volumes":                       power.DataSourceIBMPIInstanceVolumes(),
