@@ -30,7 +30,7 @@ func TestAccIBMPIImageDataSource_basic(t *testing.T) {
 func testAccCheckIBMPIImageDataSourceConfig() string {
 	return fmt.Sprintf(`
 		data "ibm_pi_image" "testacc_ds_image" {
-			pi_image_name = "%s"
-			pi_cloud_instance_id = "%s"
-		}`, acc.Pi_image, acc.Pi_cloud_instance_id)
+			pi_cloud_instance_id = "%[1]s"
+			pi_image_id = "%[2]s"
+		}`, acc.Pi_cloud_instance_id, acc.Pi_image)
 }
