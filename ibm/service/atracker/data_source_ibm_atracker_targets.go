@@ -2,7 +2,7 @@
 // Licensed under the Mozilla Public License v2.0
 
 /*
- * IBM OpenAPI Terraform Generator Version: 3.101.0-62624c1e-20250225-192301
+ * IBM OpenAPI Terraform Generator Version: 3.108.0-56772134-20251111-102802
  */
 
 package atracker
@@ -88,12 +88,6 @@ func DataSourceIBMAtrackerTargets() *schema.Resource {
 										Computed:    true,
 										Description: "The bucket name under the Cloud Object Storage instance.",
 									},
-									"api_key": &schema.Schema{
-										Type:        schema.TypeString,
-										Computed:    true,
-										Sensitive:   true,
-										Description: "The IAM API key that has writer access to the Cloud Object Storage instance. This credential is masked in the response. This is required if service_to_service is not enabled.",
-									},
 									"service_to_service_enabled": &schema.Schema{
 										Type:        schema.TypeBool,
 										Computed:    true,
@@ -129,8 +123,7 @@ func DataSourceIBMAtrackerTargets() *schema.Resource {
 									"api_key": &schema.Schema{
 										Type:        schema.TypeString,
 										Computed:    true,
-										Sensitive:   true,
-										Description: "The user password (api key) for the message hub topic in the Event Streams instance. This is required if service_to_service is not enabled.",
+										Description: "The user password (api key) for the message hub topic in the Event Streams instance.",
 									},
 									"service_to_service_enabled": &schema.Schema{
 										Type:        schema.TypeBool,
@@ -197,6 +190,11 @@ func DataSourceIBMAtrackerTargets() *schema.Resource {
 							Type:        schema.TypeInt,
 							Computed:    true,
 							Description: "The API version of the target.",
+						},
+						"managed_by": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Identifies who manages the target.",
 						},
 					},
 				},
@@ -275,18 +273,10 @@ func dataSourceIBMAtrackerTargetsID(d *schema.ResourceData) string {
 
 func DataSourceIBMAtrackerTargetsTargetToMap(model *atrackerv2.Target) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	if model.ID != nil {
-		modelMap["id"] = *model.ID
-	}
-	if model.Name != nil {
-		modelMap["name"] = *model.Name
-	}
-	if model.CRN != nil {
-		modelMap["crn"] = *model.CRN
-	}
-	if model.TargetType != nil {
-		modelMap["target_type"] = *model.TargetType
-	}
+	modelMap["id"] = *model.ID
+	modelMap["name"] = *model.Name
+	modelMap["crn"] = *model.CRN
+	modelMap["target_type"] = *model.TargetType
 	if model.Region != nil {
 		modelMap["region"] = *model.Region
 	}
@@ -311,55 +301,37 @@ func DataSourceIBMAtrackerTargetsTargetToMap(model *atrackerv2.Target) (map[stri
 		}
 		modelMap["cloudlogs_endpoint"] = []map[string]interface{}{cloudlogsEndpointMap}
 	}
-	if model.WriteStatus != nil {
-		writeStatusMap, err := DataSourceIBMAtrackerTargetsWriteStatusToMap(model.WriteStatus)
-		if err != nil {
-			return modelMap, err
-		}
-		modelMap["write_status"] = []map[string]interface{}{writeStatusMap}
+	writeStatusMap, err := DataSourceIBMAtrackerTargetsWriteStatusToMap(model.WriteStatus)
+	if err != nil {
+		return modelMap, err
 	}
-	if model.CreatedAt != nil {
-		modelMap["created_at"] = model.CreatedAt.String()
+	modelMap["write_status"] = []map[string]interface{}{writeStatusMap}
+	modelMap["created_at"] = model.CreatedAt.String()
+	modelMap["updated_at"] = model.UpdatedAt.String()
+	if model.Message != nil {
+		modelMap["message"] = *model.Message
 	}
-	if model.UpdatedAt != nil {
-		modelMap["updated_at"] = model.UpdatedAt.String()
-	}
-	if model.APIVersion != nil {
-		modelMap["api_version"] = *model.APIVersion
-	}
+	modelMap["api_version"] = flex.IntValue(model.APIVersion)
+	modelMap["managed_by"] = *model.ManagedBy
 	return modelMap, nil
 }
 
 func DataSourceIBMAtrackerTargetsCosEndpointToMap(model *atrackerv2.CosEndpoint) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	if model.Endpoint != nil {
-		modelMap["endpoint"] = *model.Endpoint
-	}
-	if model.TargetCRN != nil {
-		modelMap["target_crn"] = *model.TargetCRN
-	}
-	if model.Bucket != nil {
-		modelMap["bucket"] = *model.Bucket
-	}
-	if model.ServiceToServiceEnabled != nil {
-		modelMap["service_to_service_enabled"] = *model.ServiceToServiceEnabled
-	}
+	modelMap["endpoint"] = *model.Endpoint
+	modelMap["target_crn"] = *model.TargetCRN
+	modelMap["bucket"] = *model.Bucket
+	modelMap["service_to_service_enabled"] = *model.ServiceToServiceEnabled
 	return modelMap, nil
 }
 
 func DataSourceIBMAtrackerTargetsEventstreamsEndpointToMap(model *atrackerv2.EventstreamsEndpoint) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	if model.TargetCRN != nil {
-		modelMap["target_crn"] = *model.TargetCRN
-	}
-	if model.Brokers != nil {
-		modelMap["brokers"] = model.Brokers
-	}
-	if model.Topic != nil {
-		modelMap["topic"] = *model.Topic
-	}
+	modelMap["target_crn"] = *model.TargetCRN
+	modelMap["brokers"] = model.Brokers
+	modelMap["topic"] = *model.Topic
 	if model.APIKey != nil {
-		modelMap["api_key"] = *model.APIKey // pragma: allowlist secret
+		modelMap["api_key"] = *model.APIKey
 	}
 	if model.ServiceToServiceEnabled != nil {
 		modelMap["service_to_service_enabled"] = *model.ServiceToServiceEnabled
@@ -369,17 +341,13 @@ func DataSourceIBMAtrackerTargetsEventstreamsEndpointToMap(model *atrackerv2.Eve
 
 func DataSourceIBMAtrackerTargetsCloudLogsEndpointToMap(model *atrackerv2.CloudLogsEndpoint) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	if model.TargetCRN != nil {
-		modelMap["target_crn"] = *model.TargetCRN
-	}
+	modelMap["target_crn"] = *model.TargetCRN
 	return modelMap, nil
 }
 
 func DataSourceIBMAtrackerTargetsWriteStatusToMap(model *atrackerv2.WriteStatus) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	if model.Status != nil {
-		modelMap["status"] = *model.Status
-	}
+	modelMap["status"] = *model.Status
 	if model.LastFailure != nil {
 		modelMap["last_failure"] = model.LastFailure.String()
 	}

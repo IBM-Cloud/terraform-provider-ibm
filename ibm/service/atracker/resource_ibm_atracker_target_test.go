@@ -38,7 +38,7 @@ func TestAccIBMAtrackerTargetBasic(t *testing.T) {
 					resource.TestCheckResourceAttr("ibm_atracker_target.atracker_target_instance", "target_type", targetType),
 				),
 			},
-			{
+			resource.TestStep{
 				Config: testAccCheckIBMAtrackerTargetConfigBasic(nameUpdate, targetType),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("ibm_atracker_target.atracker_target_instance", "name", nameUpdate),
@@ -54,6 +54,7 @@ func TestAccIBMAtrackerTargetAllArgs(t *testing.T) {
 	name := fmt.Sprintf("tf_all_name_1")
 	targetType := "cloud_object_storage"
 	region := fmt.Sprintf("us-south")
+	managedBy := "enterprise"
 	// targetType and region cannot be changed
 	nameUpdate := fmt.Sprintf("tf_all_name_2")
 
@@ -63,20 +64,22 @@ func TestAccIBMAtrackerTargetAllArgs(t *testing.T) {
 		CheckDestroy: testAccCheckIBMAtrackerTargetDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIBMAtrackerTargetConfig(name, targetType, region),
+				Config: testAccCheckIBMAtrackerTargetConfig(name, targetType, region, managedBy),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMAtrackerTargetExists("ibm_atracker_target.atracker_target_instance", conf),
 					resource.TestCheckResourceAttr("ibm_atracker_target.atracker_target_instance", "name", name),
 					resource.TestCheckResourceAttr("ibm_atracker_target.atracker_target_instance", "target_type", targetType),
 					resource.TestCheckResourceAttr("ibm_atracker_target.atracker_target_instance", "region", region),
+					resource.TestCheckResourceAttr("ibm_atracker_target.atracker_target_instance", "managed_by", managedBy),
 				),
 			},
 			resource.TestStep{
-				Config: testAccCheckIBMAtrackerTargetConfig(nameUpdate, targetType, region),
+				Config: testAccCheckIBMAtrackerTargetConfig(nameUpdate, targetType, region, managedBy),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("ibm_atracker_target.atracker_target_instance", "name", nameUpdate),
 					resource.TestCheckResourceAttr("ibm_atracker_target.atracker_target_instance", "target_type", targetType),
 					resource.TestCheckResourceAttr("ibm_atracker_target.atracker_target_instance", "region", region),
+					resource.TestCheckResourceAttr("ibm_atracker_target.atracker_target_instance", "managed_by", managedBy),
 				),
 			},
 			resource.TestStep{
@@ -104,8 +107,9 @@ func testAccCheckIBMAtrackerTargetConfigBasic(name string, targetType string) st
 	`, name, targetType)
 }
 
-func testAccCheckIBMAtrackerTargetConfig(name string, targetType string, region string) string {
+func testAccCheckIBMAtrackerTargetConfig(name string, targetType string, region string, managedBy string) string {
 	return fmt.Sprintf(`
+
 		resource "ibm_atracker_target" "atracker_target_instance" {
 			name = "%s"
 			target_type = "%s"
@@ -117,8 +121,9 @@ func testAccCheckIBMAtrackerTargetConfig(name string, targetType string, region 
 				api_key = "xxxxxxxxxxxxxx"
 				service_to_service_enabled = true
 			}
+			managed_by = "%s"
 		}
-	`, name, targetType, region)
+	`, name, targetType, region, managedBy)
 }
 
 func testAccCheckIBMAtrackerTargetExists(n string, obj atrackerv2.Target) resource.TestCheckFunc {
@@ -168,7 +173,7 @@ func testAccCheckIBMAtrackerTargetDestroy(s *terraform.State) error {
 		if err == nil {
 			return fmt.Errorf("Activity Tracker Target still exists: %s", rs.Primary.ID)
 		} else if response.StatusCode != 404 {
-			return fmt.Errorf("[ERROR] Error checking for Activity Tracker Target (%s) has been destroyed: %s", rs.Primary.ID, err)
+			return fmt.Errorf("Error checking for atracker_target (%s) has been destroyed: %s", rs.Primary.ID, err)
 		}
 	}
 
@@ -178,10 +183,10 @@ func testAccCheckIBMAtrackerTargetDestroy(s *terraform.State) error {
 func TestResourceIBMAtrackerTargetCosEndpointToMap(t *testing.T) {
 	checkResult := func(result map[string]interface{}) {
 		model := make(map[string]interface{})
-		model["endpoint"] = core.StringPtr("s3.private.us-east.cloud-object-storage.appdomain.cloud")
-		model["target_crn"] = core.StringPtr("crn:v1:bluemix:public:cloud-object-storage:global:a/11111111111111111111111111111111:22222222-2222-2222-2222-222222222222::")
-		model["bucket"] = core.StringPtr("my-atracker-bucket")
-		model["service_to_service_enabled"] = core.BoolPtr(true)
+		model["endpoint"] = "s3.private.us-east.cloud-object-storage.appdomain.cloud"
+		model["target_crn"] = "crn:v1:bluemix:public:cloud-object-storage:global:a/11111111111111111111111111111111:22222222-2222-2222-2222-222222222222::"
+		model["bucket"] = "my-atracker-bucket"
+		model["service_to_service_enabled"] = true
 		model["api_key"] = "REDACTED"
 
 		assert.Equal(t, result, model)
@@ -201,11 +206,11 @@ func TestResourceIBMAtrackerTargetCosEndpointToMap(t *testing.T) {
 func TestResourceIBMAtrackerTargetEventstreamsEndpointToMap(t *testing.T) {
 	checkResult := func(result map[string]interface{}) {
 		model := make(map[string]interface{})
-		model["target_crn"] = core.StringPtr("crn:v1:bluemix:public:messagehub:us-south:a/11111111111111111111111111111111:22222222-2222-2222-2222-222222222222::")
+		model["target_crn"] = "crn:v1:bluemix:public:messagehub:us-south:a/11111111111111111111111111111111:22222222-2222-2222-2222-222222222222::"
 		model["brokers"] = []string{"kafka-x:9094"}
-		model["topic"] = core.StringPtr("my-topic")
-		model["api_key"] = "REDACTED"
-		model["service_to_service_enabled"] = core.BoolPtr(false)
+		model["topic"] = "my-topic"
+		model["api_key"] = "xxxxxxxxxxxxxx"
+		model["service_to_service_enabled"] = false
 
 		assert.Equal(t, result, model)
 	}
@@ -225,13 +230,13 @@ func TestResourceIBMAtrackerTargetEventstreamsEndpointToMap(t *testing.T) {
 func TestResourceIBMAtrackerTargetCloudLogsEndpointToMap(t *testing.T) {
 	checkResult := func(result map[string]interface{}) {
 		model := make(map[string]interface{})
-		model["target_crn"] = core.StringPtr("crn:v1:bluemix:public:logs:eu-es:a/11111111111111111111111111111111:22222222-2222-2222-2222-222222222222::")
+		model["target_crn"] = "crn:v1:bluemix:public:eu-es:a/11111111111111111111111111111111:22222222-2222-2222-2222-222222222222::"
 
 		assert.Equal(t, result, model)
 	}
 
 	model := new(atrackerv2.CloudLogsEndpoint)
-	model.TargetCRN = core.StringPtr("crn:v1:bluemix:public:logs:eu-es:a/11111111111111111111111111111111:22222222-2222-2222-2222-222222222222::")
+	model.TargetCRN = core.StringPtr("crn:v1:bluemix:public:eu-es:a/11111111111111111111111111111111:22222222-2222-2222-2222-222222222222::")
 
 	result, err := atracker.ResourceIBMAtrackerTargetCloudLogsEndpointToMap(model)
 	assert.Nil(t, err)
@@ -241,9 +246,9 @@ func TestResourceIBMAtrackerTargetCloudLogsEndpointToMap(t *testing.T) {
 func TestResourceIBMAtrackerTargetWriteStatusToMap(t *testing.T) {
 	checkResult := func(result map[string]interface{}) {
 		model := make(map[string]interface{})
-		model["status"] = core.StringPtr("success")
+		model["status"] = "success"
 		model["last_failure"] = "2021-05-18T20:15:12.353Z"
-		model["reason_for_last_failure"] = core.StringPtr("Provided API key could not be found")
+		model["reason_for_last_failure"] = "Provided API key could not be found"
 
 		assert.Equal(t, result, model)
 	}

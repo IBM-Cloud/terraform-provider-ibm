@@ -2,7 +2,7 @@
 // Licensed under the Mozilla Public License v2.0
 
 /*
- * IBM OpenAPI Terraform Generator Version: 3.101.0-62624c1e-20250225-192301
+ * IBM OpenAPI Terraform Generator Version: 3.108.0-56772134-20251111-102802
  */
 
 package atracker
@@ -102,6 +102,11 @@ func DataSourceIBMAtrackerRoutes() *schema.Resource {
 							Computed:    true,
 							Description: "An optional message containing information about the route.",
 						},
+						"managed_by": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Present when the route is enterprise-managed (`managed_by: enterprise`).",
+						},
 					},
 				},
 			},
@@ -175,15 +180,9 @@ func dataSourceIBMAtrackerRoutesID(d *schema.ResourceData) string {
 
 func DataSourceIBMAtrackerRoutesRouteToMap(model *atrackerv2.Route) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	if model.ID != nil {
-		modelMap["id"] = *model.ID
-	}
-	if model.Name != nil {
-		modelMap["name"] = *model.Name
-	}
-	if model.CRN != nil {
-		modelMap["crn"] = *model.CRN
-	}
+	modelMap["id"] = *model.ID
+	modelMap["name"] = *model.Name
+	modelMap["crn"] = *model.CRN
 	if model.Version != nil {
 		modelMap["version"] = flex.IntValue(model.Version)
 	}
@@ -196,30 +195,21 @@ func DataSourceIBMAtrackerRoutesRouteToMap(model *atrackerv2.Route) (map[string]
 		rules = append(rules, rulesItemMap)
 	}
 	modelMap["rules"] = rules
-	if model.CreatedAt != nil {
-		modelMap["created_at"] = model.CreatedAt.String()
-	}
-	if model.UpdatedAt != nil {
-		modelMap["updated_at"] = model.UpdatedAt.String()
-	}
-	if model.APIVersion != nil {
-		modelMap["api_version"] = flex.IntValue(model.APIVersion)
-	} else {
-		modelMap["api_version"] = 1
-	}
+	modelMap["created_at"] = model.CreatedAt.String()
+	modelMap["updated_at"] = model.UpdatedAt.String()
+	modelMap["api_version"] = flex.IntValue(model.APIVersion)
 	if model.Message != nil {
 		modelMap["message"] = *model.Message
+	}
+	if model.ManagedBy != nil {
+		modelMap["managed_by"] = *model.ManagedBy
 	}
 	return modelMap, nil
 }
 
 func DataSourceIBMAtrackerRoutesRuleToMap(model *atrackerv2.Rule) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	if model.TargetIds != nil {
-		modelMap["target_ids"] = model.TargetIds
-	}
-	if model.Locations != nil {
-		modelMap["locations"] = model.Locations
-	}
+	modelMap["target_ids"] = model.TargetIds
+	modelMap["locations"] = model.Locations
 	return modelMap, nil
 }
