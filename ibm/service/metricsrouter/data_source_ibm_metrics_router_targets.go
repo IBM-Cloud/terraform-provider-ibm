@@ -1,5 +1,9 @@
-// Copyright IBM Corp. 2023 All Rights Reserved.
+// Copyright IBM Corp. 2025 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
+
+/*
+ * IBM OpenAPI Terraform Generator Version: 3.108.0-56772134-20251111-102802
+ */
 
 package metricsrouter
 
@@ -50,7 +54,7 @@ func DataSourceIBMMetricsRouterTargets() *schema.Resource {
 						"destination_crn": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "The CRN of the destination service instance or resource. Ensure you have a service authorization between IBM Cloud Metrics Routing and your Cloud resource. Read [S2S authorization](https://cloud.ibm.com/docs/metrics-router?topic=metrics-router-target-monitoring&interface=ui#target-monitoring-ui) for details.",
+							Description: "Cloud Resource Name (CRN) of the destination resource. Ensure you have a service authorization between IBM Cloud Metrics Routing and your Cloud resource. See [service-to-service authorization](https://cloud.ibm.com/docs/metrics-router?topic=metrics-router-target-monitoring&interface=ui#target-monitoring-ui) for details.",
 						},
 						"target_type": &schema.Schema{
 							Type:        schema.TypeString,
@@ -71,6 +75,11 @@ func DataSourceIBMMetricsRouterTargets() *schema.Resource {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "The timestamp of the target last updated time.",
+						},
+						"managed_by": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Present when the target is enterprise-managed (`managed_by: enterprise`). For account-managed targets this field is omitted.",
 						},
 					},
 				},
@@ -123,7 +132,7 @@ func dataSourceIBMMetricsRouterTargetsRead(context context.Context, d *schema.Re
 	targets := []map[string]interface{}{}
 	if targetCollection.Targets != nil {
 		for _, modelItem := range targetCollection.Targets {
-			modelMap, err := dataSourceIBMMetricsRouterTargetsTargetToMap(&modelItem)
+			modelMap, err := DataSourceIBMMetricsRouterTargetsTargetToMap(&modelItem)
 			if err != nil {
 				return diag.FromErr(err)
 			}
@@ -142,13 +151,16 @@ func dataSourceIBMMetricsRouterTargetsID(d *schema.ResourceData) string {
 	return time.Now().UTC().String()
 }
 
-func dataSourceIBMMetricsRouterTargetsTargetToMap(model *metricsrouterv3.Target) (map[string]interface{}, error) {
+func DataSourceIBMMetricsRouterTargetsTargetToMap(model *metricsrouterv3.Target) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.ID != nil {
 		modelMap["id"] = *model.ID
 	}
 	if model.Name != nil {
 		modelMap["name"] = *model.Name
+	}
+	if model.ManagedBy != nil {
+		modelMap["managed_by"] = *model.ManagedBy
 	}
 	if model.CRN != nil {
 		modelMap["crn"] = *model.CRN
