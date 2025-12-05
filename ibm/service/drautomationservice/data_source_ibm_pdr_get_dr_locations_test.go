@@ -40,7 +40,7 @@ func TestAccIBMPdrGetDrLocationsDataSourceBasic(t *testing.T) {
 func testAccCheckIBMPdrGetDrLocationsDataSourceConfigBasic() string {
 	return fmt.Sprintf(`
 		data "ibm_pdr_get_dr_locations" "pdr_get_dr_locations_instance" {
-			instance_id = "crn:v1:staging:public:power-dr-automation:global:a/b68c234e719144b18598ae4a7b80c44c:492fef47-3ebf-4090-b089-e9b4199878b6::"
+			instance_id = "123456d3-1122-3344-b67d-4389b44b7bf9"
 		}
 	`)
 }

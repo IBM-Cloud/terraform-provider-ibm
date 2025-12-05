@@ -67,13 +67,14 @@ var _ = Describe(`DrAutomationServiceV1`, func() {
 		Context(`Using external config, construct service client instances`, func() {
 			// Map containing environment variables used in testing.
 			var testEnvironment = map[string]string{
-				"DR_AUTOMATION_SERVICE_URL":       "https://drautomationservicev1/api",
+				"DR_AUTOMATION_SERVICE_URL": "https://drautomationservicev1/api",
 				"DR_AUTOMATION_SERVICE_AUTH_TYPE": "noauth",
 			}
 
 			It(`Create service client using external config successfully`, func() {
 				SetTestEnvironment(testEnvironment)
-				drAutomationServiceService, serviceErr := drautomationservicev1.NewDrAutomationServiceV1UsingExternalConfig(&drautomationservicev1.DrAutomationServiceV1Options{})
+				drAutomationServiceService, serviceErr := drautomationservicev1.NewDrAutomationServiceV1UsingExternalConfig(&drautomationservicev1.DrAutomationServiceV1Options{
+				})
 				Expect(drAutomationServiceService).ToNot(BeNil())
 				Expect(serviceErr).To(BeNil())
 				ClearTestEnvironment(testEnvironment)
@@ -102,7 +103,8 @@ var _ = Describe(`DrAutomationServiceV1`, func() {
 			})
 			It(`Create service client using external config and set url programatically successfully`, func() {
 				SetTestEnvironment(testEnvironment)
-				drAutomationServiceService, serviceErr := drautomationservicev1.NewDrAutomationServiceV1UsingExternalConfig(&drautomationservicev1.DrAutomationServiceV1Options{})
+				drAutomationServiceService, serviceErr := drautomationservicev1.NewDrAutomationServiceV1UsingExternalConfig(&drautomationservicev1.DrAutomationServiceV1Options{
+				})
 				err := drAutomationServiceService.SetServiceURL("https://testService/api")
 				Expect(err).To(BeNil())
 				Expect(drAutomationServiceService).ToNot(BeNil())
@@ -120,12 +122,13 @@ var _ = Describe(`DrAutomationServiceV1`, func() {
 		Context(`Using external config, construct service client instances with error: Invalid Auth`, func() {
 			// Map containing environment variables used in testing.
 			var testEnvironment = map[string]string{
-				"DR_AUTOMATION_SERVICE_URL":       "https://drautomationservicev1/api",
+				"DR_AUTOMATION_SERVICE_URL": "https://drautomationservicev1/api",
 				"DR_AUTOMATION_SERVICE_AUTH_TYPE": "someOtherAuth",
 			}
 
 			SetTestEnvironment(testEnvironment)
-			drAutomationServiceService, serviceErr := drautomationservicev1.NewDrAutomationServiceV1UsingExternalConfig(&drautomationservicev1.DrAutomationServiceV1Options{})
+			drAutomationServiceService, serviceErr := drautomationservicev1.NewDrAutomationServiceV1UsingExternalConfig(&drautomationservicev1.DrAutomationServiceV1Options{
+			})
 
 			It(`Instantiate service client with error`, func() {
 				Expect(drAutomationServiceService).To(BeNil())
@@ -136,7 +139,7 @@ var _ = Describe(`DrAutomationServiceV1`, func() {
 		Context(`Using external config, construct service client instances with error: Invalid URL`, func() {
 			// Map containing environment variables used in testing.
 			var testEnvironment = map[string]string{
-				"DR_AUTOMATION_SERVICE_AUTH_TYPE": "NOAuth",
+				"DR_AUTOMATION_SERVICE_AUTH_TYPE":   "NOAuth",
 			}
 
 			SetTestEnvironment(testEnvironment)
@@ -162,7 +165,7 @@ var _ = Describe(`DrAutomationServiceV1`, func() {
 		})
 	})
 	Describe(`GetApikey(getApikeyOptions *GetApikeyOptions) - Operation response error`, func() {
-		getApikeyPath := "/drautomation/v1/apikey/crn:v1:staging:public:power-dr-automation:global:a%2Fa123456fb04ceebfb4a9fd38c22334455:123456d3-1122-3344-b67d-4389b44b7bf9::"
+		getApikeyPath := "/drautomation/v1/apikey/123456d3-1122-3344-b67d-4389b44b7bf9"
 		Context(`Using mock server endpoint with invalid JSON response`, func() {
 			BeforeEach(func() {
 				testServer = httptest.NewServer(http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
@@ -173,8 +176,6 @@ var _ = Describe(`DrAutomationServiceV1`, func() {
 					Expect(req.Method).To(Equal("GET"))
 					Expect(req.Header["Accept-Language"]).ToNot(BeNil())
 					Expect(req.Header["Accept-Language"][0]).To(Equal(fmt.Sprintf("%v", "testString")))
-					Expect(req.Header["If-None-Match"]).ToNot(BeNil())
-					Expect(req.Header["If-None-Match"][0]).To(Equal(fmt.Sprintf("%v", "testString")))
 					res.Header().Set("Content-type", "application/json")
 					res.WriteHeader(200)
 					fmt.Fprint(res, `} this is not valid json {`)
@@ -190,9 +191,8 @@ var _ = Describe(`DrAutomationServiceV1`, func() {
 
 				// Construct an instance of the GetApikeyOptions model
 				getApikeyOptionsModel := new(drautomationservicev1.GetApikeyOptions)
-				getApikeyOptionsModel.InstanceID = core.StringPtr("crn:v1:staging:public:power-dr-automation:global:a/a123456fb04ceebfb4a9fd38c22334455:123456d3-1122-3344-b67d-4389b44b7bf9::")
+				getApikeyOptionsModel.InstanceID = core.StringPtr("123456d3-1122-3344-b67d-4389b44b7bf9")
 				getApikeyOptionsModel.AcceptLanguage = core.StringPtr("testString")
-				getApikeyOptionsModel.IfNoneMatch = core.StringPtr("testString")
 				getApikeyOptionsModel.Headers = map[string]string{"x-custom-header": "x-custom-value"}
 				// Expect response parsing to fail since we are receiving a text/plain response
 				result, response, operationErr := drAutomationServiceService.GetApikey(getApikeyOptionsModel)
@@ -213,7 +213,7 @@ var _ = Describe(`DrAutomationServiceV1`, func() {
 		})
 	})
 	Describe(`GetApikey(getApikeyOptions *GetApikeyOptions)`, func() {
-		getApikeyPath := "/drautomation/v1/apikey/crn:v1:staging:public:power-dr-automation:global:a%2Fa123456fb04ceebfb4a9fd38c22334455:123456d3-1122-3344-b67d-4389b44b7bf9::"
+		getApikeyPath := "/drautomation/v1/apikey/123456d3-1122-3344-b67d-4389b44b7bf9"
 		Context(`Using mock server endpoint with timeout`, func() {
 			BeforeEach(func() {
 				testServer = httptest.NewServer(http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
@@ -225,8 +225,6 @@ var _ = Describe(`DrAutomationServiceV1`, func() {
 
 					Expect(req.Header["Accept-Language"]).ToNot(BeNil())
 					Expect(req.Header["Accept-Language"][0]).To(Equal(fmt.Sprintf("%v", "testString")))
-					Expect(req.Header["If-None-Match"]).ToNot(BeNil())
-					Expect(req.Header["If-None-Match"][0]).To(Equal(fmt.Sprintf("%v", "testString")))
 					// Sleep a short time to support a timeout test
 					time.Sleep(100 * time.Millisecond)
 
@@ -247,9 +245,8 @@ var _ = Describe(`DrAutomationServiceV1`, func() {
 
 				// Construct an instance of the GetApikeyOptions model
 				getApikeyOptionsModel := new(drautomationservicev1.GetApikeyOptions)
-				getApikeyOptionsModel.InstanceID = core.StringPtr("crn:v1:staging:public:power-dr-automation:global:a/a123456fb04ceebfb4a9fd38c22334455:123456d3-1122-3344-b67d-4389b44b7bf9::")
+				getApikeyOptionsModel.InstanceID = core.StringPtr("123456d3-1122-3344-b67d-4389b44b7bf9")
 				getApikeyOptionsModel.AcceptLanguage = core.StringPtr("testString")
-				getApikeyOptionsModel.IfNoneMatch = core.StringPtr("testString")
 				getApikeyOptionsModel.Headers = map[string]string{"x-custom-header": "x-custom-value"}
 
 				// Invoke operation with a Context to test a timeout error
@@ -288,8 +285,6 @@ var _ = Describe(`DrAutomationServiceV1`, func() {
 
 					Expect(req.Header["Accept-Language"]).ToNot(BeNil())
 					Expect(req.Header["Accept-Language"][0]).To(Equal(fmt.Sprintf("%v", "testString")))
-					Expect(req.Header["If-None-Match"]).ToNot(BeNil())
-					Expect(req.Header["If-None-Match"][0]).To(Equal(fmt.Sprintf("%v", "testString")))
 					// Set mock response
 					res.Header().Set("Content-type", "application/json")
 					res.WriteHeader(200)
@@ -312,9 +307,8 @@ var _ = Describe(`DrAutomationServiceV1`, func() {
 
 				// Construct an instance of the GetApikeyOptions model
 				getApikeyOptionsModel := new(drautomationservicev1.GetApikeyOptions)
-				getApikeyOptionsModel.InstanceID = core.StringPtr("crn:v1:staging:public:power-dr-automation:global:a/a123456fb04ceebfb4a9fd38c22334455:123456d3-1122-3344-b67d-4389b44b7bf9::")
+				getApikeyOptionsModel.InstanceID = core.StringPtr("123456d3-1122-3344-b67d-4389b44b7bf9")
 				getApikeyOptionsModel.AcceptLanguage = core.StringPtr("testString")
-				getApikeyOptionsModel.IfNoneMatch = core.StringPtr("testString")
 				getApikeyOptionsModel.Headers = map[string]string{"x-custom-header": "x-custom-value"}
 
 				// Invoke operation with valid options model (positive test)
@@ -334,9 +328,8 @@ var _ = Describe(`DrAutomationServiceV1`, func() {
 
 				// Construct an instance of the GetApikeyOptions model
 				getApikeyOptionsModel := new(drautomationservicev1.GetApikeyOptions)
-				getApikeyOptionsModel.InstanceID = core.StringPtr("crn:v1:staging:public:power-dr-automation:global:a/a123456fb04ceebfb4a9fd38c22334455:123456d3-1122-3344-b67d-4389b44b7bf9::")
+				getApikeyOptionsModel.InstanceID = core.StringPtr("123456d3-1122-3344-b67d-4389b44b7bf9")
 				getApikeyOptionsModel.AcceptLanguage = core.StringPtr("testString")
-				getApikeyOptionsModel.IfNoneMatch = core.StringPtr("testString")
 				getApikeyOptionsModel.Headers = map[string]string{"x-custom-header": "x-custom-value"}
 				// Invoke operation with empty URL (negative test)
 				err := drAutomationServiceService.SetServiceURL("")
@@ -377,9 +370,8 @@ var _ = Describe(`DrAutomationServiceV1`, func() {
 
 				// Construct an instance of the GetApikeyOptions model
 				getApikeyOptionsModel := new(drautomationservicev1.GetApikeyOptions)
-				getApikeyOptionsModel.InstanceID = core.StringPtr("crn:v1:staging:public:power-dr-automation:global:a/a123456fb04ceebfb4a9fd38c22334455:123456d3-1122-3344-b67d-4389b44b7bf9::")
+				getApikeyOptionsModel.InstanceID = core.StringPtr("123456d3-1122-3344-b67d-4389b44b7bf9")
 				getApikeyOptionsModel.AcceptLanguage = core.StringPtr("testString")
-				getApikeyOptionsModel.IfNoneMatch = core.StringPtr("testString")
 				getApikeyOptionsModel.Headers = map[string]string{"x-custom-header": "x-custom-value"}
 
 				// Invoke operation
@@ -396,7 +388,7 @@ var _ = Describe(`DrAutomationServiceV1`, func() {
 		})
 	})
 	Describe(`CreateApikey(createApikeyOptions *CreateApikeyOptions) - Operation response error`, func() {
-		createApikeyPath := "/drautomation/v1/apikey/crn:v1:staging:public:power-dr-automation:global:a%2Fa123456fb04ceebfb4a9fd38c22334455:123456d3-1122-3344-b67d-4389b44b7bf9::"
+		createApikeyPath := "/drautomation/v1/apikey/123456d3-1122-3344-b67d-4389b44b7bf9"
 		Context(`Using mock server endpoint with invalid JSON response`, func() {
 			BeforeEach(func() {
 				testServer = httptest.NewServer(http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
@@ -407,8 +399,6 @@ var _ = Describe(`DrAutomationServiceV1`, func() {
 					Expect(req.Method).To(Equal("POST"))
 					Expect(req.Header["Accept-Language"]).ToNot(BeNil())
 					Expect(req.Header["Accept-Language"][0]).To(Equal(fmt.Sprintf("%v", "testString")))
-					Expect(req.Header["If-None-Match"]).ToNot(BeNil())
-					Expect(req.Header["If-None-Match"][0]).To(Equal(fmt.Sprintf("%v", "testString")))
 					res.Header().Set("Content-type", "application/json")
 					res.WriteHeader(200)
 					fmt.Fprint(res, `} this is not valid json {`)
@@ -424,10 +414,9 @@ var _ = Describe(`DrAutomationServiceV1`, func() {
 
 				// Construct an instance of the CreateApikeyOptions model
 				createApikeyOptionsModel := new(drautomationservicev1.CreateApikeyOptions)
-				createApikeyOptionsModel.InstanceID = core.StringPtr("crn:v1:staging:public:power-dr-automation:global:a/a123456fb04ceebfb4a9fd38c22334455:123456d3-1122-3344-b67d-4389b44b7bf9::")
+				createApikeyOptionsModel.InstanceID = core.StringPtr("123456d3-1122-3344-b67d-4389b44b7bf9")
 				createApikeyOptionsModel.APIKey = core.StringPtr("abcdefrg_izklmnop_fxbEED")
 				createApikeyOptionsModel.AcceptLanguage = core.StringPtr("testString")
-				createApikeyOptionsModel.IfNoneMatch = core.StringPtr("testString")
 				createApikeyOptionsModel.Headers = map[string]string{"x-custom-header": "x-custom-value"}
 				// Expect response parsing to fail since we are receiving a text/plain response
 				result, response, operationErr := drAutomationServiceService.CreateApikey(createApikeyOptionsModel)
@@ -448,7 +437,7 @@ var _ = Describe(`DrAutomationServiceV1`, func() {
 		})
 	})
 	Describe(`CreateApikey(createApikeyOptions *CreateApikeyOptions)`, func() {
-		createApikeyPath := "/drautomation/v1/apikey/crn:v1:staging:public:power-dr-automation:global:a%2Fa123456fb04ceebfb4a9fd38c22334455:123456d3-1122-3344-b67d-4389b44b7bf9::"
+		createApikeyPath := "/drautomation/v1/apikey/123456d3-1122-3344-b67d-4389b44b7bf9"
 		Context(`Using mock server endpoint with timeout`, func() {
 			BeforeEach(func() {
 				testServer = httptest.NewServer(http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
@@ -476,8 +465,6 @@ var _ = Describe(`DrAutomationServiceV1`, func() {
 
 					Expect(req.Header["Accept-Language"]).ToNot(BeNil())
 					Expect(req.Header["Accept-Language"][0]).To(Equal(fmt.Sprintf("%v", "testString")))
-					Expect(req.Header["If-None-Match"]).ToNot(BeNil())
-					Expect(req.Header["If-None-Match"][0]).To(Equal(fmt.Sprintf("%v", "testString")))
 					// Sleep a short time to support a timeout test
 					time.Sleep(100 * time.Millisecond)
 
@@ -498,10 +485,9 @@ var _ = Describe(`DrAutomationServiceV1`, func() {
 
 				// Construct an instance of the CreateApikeyOptions model
 				createApikeyOptionsModel := new(drautomationservicev1.CreateApikeyOptions)
-				createApikeyOptionsModel.InstanceID = core.StringPtr("crn:v1:staging:public:power-dr-automation:global:a/a123456fb04ceebfb4a9fd38c22334455:123456d3-1122-3344-b67d-4389b44b7bf9::")
+				createApikeyOptionsModel.InstanceID = core.StringPtr("123456d3-1122-3344-b67d-4389b44b7bf9")
 				createApikeyOptionsModel.APIKey = core.StringPtr("abcdefrg_izklmnop_fxbEED")
 				createApikeyOptionsModel.AcceptLanguage = core.StringPtr("testString")
-				createApikeyOptionsModel.IfNoneMatch = core.StringPtr("testString")
 				createApikeyOptionsModel.Headers = map[string]string{"x-custom-header": "x-custom-value"}
 
 				// Invoke operation with a Context to test a timeout error
@@ -556,8 +542,6 @@ var _ = Describe(`DrAutomationServiceV1`, func() {
 
 					Expect(req.Header["Accept-Language"]).ToNot(BeNil())
 					Expect(req.Header["Accept-Language"][0]).To(Equal(fmt.Sprintf("%v", "testString")))
-					Expect(req.Header["If-None-Match"]).ToNot(BeNil())
-					Expect(req.Header["If-None-Match"][0]).To(Equal(fmt.Sprintf("%v", "testString")))
 					// Set mock response
 					res.Header().Set("Content-type", "application/json")
 					res.WriteHeader(200)
@@ -580,10 +564,9 @@ var _ = Describe(`DrAutomationServiceV1`, func() {
 
 				// Construct an instance of the CreateApikeyOptions model
 				createApikeyOptionsModel := new(drautomationservicev1.CreateApikeyOptions)
-				createApikeyOptionsModel.InstanceID = core.StringPtr("crn:v1:staging:public:power-dr-automation:global:a/a123456fb04ceebfb4a9fd38c22334455:123456d3-1122-3344-b67d-4389b44b7bf9::")
+				createApikeyOptionsModel.InstanceID = core.StringPtr("123456d3-1122-3344-b67d-4389b44b7bf9")
 				createApikeyOptionsModel.APIKey = core.StringPtr("abcdefrg_izklmnop_fxbEED")
 				createApikeyOptionsModel.AcceptLanguage = core.StringPtr("testString")
-				createApikeyOptionsModel.IfNoneMatch = core.StringPtr("testString")
 				createApikeyOptionsModel.Headers = map[string]string{"x-custom-header": "x-custom-value"}
 
 				// Invoke operation with valid options model (positive test)
@@ -603,10 +586,9 @@ var _ = Describe(`DrAutomationServiceV1`, func() {
 
 				// Construct an instance of the CreateApikeyOptions model
 				createApikeyOptionsModel := new(drautomationservicev1.CreateApikeyOptions)
-				createApikeyOptionsModel.InstanceID = core.StringPtr("crn:v1:staging:public:power-dr-automation:global:a/a123456fb04ceebfb4a9fd38c22334455:123456d3-1122-3344-b67d-4389b44b7bf9::")
+				createApikeyOptionsModel.InstanceID = core.StringPtr("123456d3-1122-3344-b67d-4389b44b7bf9")
 				createApikeyOptionsModel.APIKey = core.StringPtr("abcdefrg_izklmnop_fxbEED")
 				createApikeyOptionsModel.AcceptLanguage = core.StringPtr("testString")
-				createApikeyOptionsModel.IfNoneMatch = core.StringPtr("testString")
 				createApikeyOptionsModel.Headers = map[string]string{"x-custom-header": "x-custom-value"}
 				// Invoke operation with empty URL (negative test)
 				err := drAutomationServiceService.SetServiceURL("")
@@ -647,10 +629,9 @@ var _ = Describe(`DrAutomationServiceV1`, func() {
 
 				// Construct an instance of the CreateApikeyOptions model
 				createApikeyOptionsModel := new(drautomationservicev1.CreateApikeyOptions)
-				createApikeyOptionsModel.InstanceID = core.StringPtr("crn:v1:staging:public:power-dr-automation:global:a/a123456fb04ceebfb4a9fd38c22334455:123456d3-1122-3344-b67d-4389b44b7bf9::")
+				createApikeyOptionsModel.InstanceID = core.StringPtr("123456d3-1122-3344-b67d-4389b44b7bf9")
 				createApikeyOptionsModel.APIKey = core.StringPtr("abcdefrg_izklmnop_fxbEED")
 				createApikeyOptionsModel.AcceptLanguage = core.StringPtr("testString")
-				createApikeyOptionsModel.IfNoneMatch = core.StringPtr("testString")
 				createApikeyOptionsModel.Headers = map[string]string{"x-custom-header": "x-custom-value"}
 
 				// Invoke operation
@@ -667,7 +648,7 @@ var _ = Describe(`DrAutomationServiceV1`, func() {
 		})
 	})
 	Describe(`UpdateApikey(updateApikeyOptions *UpdateApikeyOptions) - Operation response error`, func() {
-		updateApikeyPath := "/drautomation/v1/apikey/crn:v1:staging:public:power-dr-automation:global:a%2Fa123456fb04ceebfb4a9fd38c22334455:123456d3-1122-3344-b67d-4389b44b7bf9::"
+		updateApikeyPath := "/drautomation/v1/apikey/123456d3-1122-3344-b67d-4389b44b7bf9"
 		Context(`Using mock server endpoint with invalid JSON response`, func() {
 			BeforeEach(func() {
 				testServer = httptest.NewServer(http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
@@ -678,8 +659,6 @@ var _ = Describe(`DrAutomationServiceV1`, func() {
 					Expect(req.Method).To(Equal("PUT"))
 					Expect(req.Header["Accept-Language"]).ToNot(BeNil())
 					Expect(req.Header["Accept-Language"][0]).To(Equal(fmt.Sprintf("%v", "testString")))
-					Expect(req.Header["If-None-Match"]).ToNot(BeNil())
-					Expect(req.Header["If-None-Match"][0]).To(Equal(fmt.Sprintf("%v", "testString")))
 					res.Header().Set("Content-type", "application/json")
 					res.WriteHeader(200)
 					fmt.Fprint(res, `} this is not valid json {`)
@@ -695,10 +674,9 @@ var _ = Describe(`DrAutomationServiceV1`, func() {
 
 				// Construct an instance of the UpdateApikeyOptions model
 				updateApikeyOptionsModel := new(drautomationservicev1.UpdateApikeyOptions)
-				updateApikeyOptionsModel.InstanceID = core.StringPtr("crn:v1:staging:public:power-dr-automation:global:a/a123456fb04ceebfb4a9fd38c22334455:123456d3-1122-3344-b67d-4389b44b7bf9::")
+				updateApikeyOptionsModel.InstanceID = core.StringPtr("123456d3-1122-3344-b67d-4389b44b7bf9")
 				updateApikeyOptionsModel.APIKey = core.StringPtr("adfadfdsafsdfdsf")
 				updateApikeyOptionsModel.AcceptLanguage = core.StringPtr("testString")
-				updateApikeyOptionsModel.IfNoneMatch = core.StringPtr("testString")
 				updateApikeyOptionsModel.Headers = map[string]string{"x-custom-header": "x-custom-value"}
 				// Expect response parsing to fail since we are receiving a text/plain response
 				result, response, operationErr := drAutomationServiceService.UpdateApikey(updateApikeyOptionsModel)
@@ -719,7 +697,7 @@ var _ = Describe(`DrAutomationServiceV1`, func() {
 		})
 	})
 	Describe(`UpdateApikey(updateApikeyOptions *UpdateApikeyOptions)`, func() {
-		updateApikeyPath := "/drautomation/v1/apikey/crn:v1:staging:public:power-dr-automation:global:a%2Fa123456fb04ceebfb4a9fd38c22334455:123456d3-1122-3344-b67d-4389b44b7bf9::"
+		updateApikeyPath := "/drautomation/v1/apikey/123456d3-1122-3344-b67d-4389b44b7bf9"
 		Context(`Using mock server endpoint with timeout`, func() {
 			BeforeEach(func() {
 				testServer = httptest.NewServer(http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
@@ -747,8 +725,6 @@ var _ = Describe(`DrAutomationServiceV1`, func() {
 
 					Expect(req.Header["Accept-Language"]).ToNot(BeNil())
 					Expect(req.Header["Accept-Language"][0]).To(Equal(fmt.Sprintf("%v", "testString")))
-					Expect(req.Header["If-None-Match"]).ToNot(BeNil())
-					Expect(req.Header["If-None-Match"][0]).To(Equal(fmt.Sprintf("%v", "testString")))
 					// Sleep a short time to support a timeout test
 					time.Sleep(100 * time.Millisecond)
 
@@ -769,10 +745,9 @@ var _ = Describe(`DrAutomationServiceV1`, func() {
 
 				// Construct an instance of the UpdateApikeyOptions model
 				updateApikeyOptionsModel := new(drautomationservicev1.UpdateApikeyOptions)
-				updateApikeyOptionsModel.InstanceID = core.StringPtr("crn:v1:staging:public:power-dr-automation:global:a/a123456fb04ceebfb4a9fd38c22334455:123456d3-1122-3344-b67d-4389b44b7bf9::")
+				updateApikeyOptionsModel.InstanceID = core.StringPtr("123456d3-1122-3344-b67d-4389b44b7bf9")
 				updateApikeyOptionsModel.APIKey = core.StringPtr("adfadfdsafsdfdsf")
 				updateApikeyOptionsModel.AcceptLanguage = core.StringPtr("testString")
-				updateApikeyOptionsModel.IfNoneMatch = core.StringPtr("testString")
 				updateApikeyOptionsModel.Headers = map[string]string{"x-custom-header": "x-custom-value"}
 
 				// Invoke operation with a Context to test a timeout error
@@ -827,8 +802,6 @@ var _ = Describe(`DrAutomationServiceV1`, func() {
 
 					Expect(req.Header["Accept-Language"]).ToNot(BeNil())
 					Expect(req.Header["Accept-Language"][0]).To(Equal(fmt.Sprintf("%v", "testString")))
-					Expect(req.Header["If-None-Match"]).ToNot(BeNil())
-					Expect(req.Header["If-None-Match"][0]).To(Equal(fmt.Sprintf("%v", "testString")))
 					// Set mock response
 					res.Header().Set("Content-type", "application/json")
 					res.WriteHeader(200)
@@ -851,10 +824,9 @@ var _ = Describe(`DrAutomationServiceV1`, func() {
 
 				// Construct an instance of the UpdateApikeyOptions model
 				updateApikeyOptionsModel := new(drautomationservicev1.UpdateApikeyOptions)
-				updateApikeyOptionsModel.InstanceID = core.StringPtr("crn:v1:staging:public:power-dr-automation:global:a/a123456fb04ceebfb4a9fd38c22334455:123456d3-1122-3344-b67d-4389b44b7bf9::")
+				updateApikeyOptionsModel.InstanceID = core.StringPtr("123456d3-1122-3344-b67d-4389b44b7bf9")
 				updateApikeyOptionsModel.APIKey = core.StringPtr("adfadfdsafsdfdsf")
 				updateApikeyOptionsModel.AcceptLanguage = core.StringPtr("testString")
-				updateApikeyOptionsModel.IfNoneMatch = core.StringPtr("testString")
 				updateApikeyOptionsModel.Headers = map[string]string{"x-custom-header": "x-custom-value"}
 
 				// Invoke operation with valid options model (positive test)
@@ -874,10 +846,9 @@ var _ = Describe(`DrAutomationServiceV1`, func() {
 
 				// Construct an instance of the UpdateApikeyOptions model
 				updateApikeyOptionsModel := new(drautomationservicev1.UpdateApikeyOptions)
-				updateApikeyOptionsModel.InstanceID = core.StringPtr("crn:v1:staging:public:power-dr-automation:global:a/a123456fb04ceebfb4a9fd38c22334455:123456d3-1122-3344-b67d-4389b44b7bf9::")
+				updateApikeyOptionsModel.InstanceID = core.StringPtr("123456d3-1122-3344-b67d-4389b44b7bf9")
 				updateApikeyOptionsModel.APIKey = core.StringPtr("adfadfdsafsdfdsf")
 				updateApikeyOptionsModel.AcceptLanguage = core.StringPtr("testString")
-				updateApikeyOptionsModel.IfNoneMatch = core.StringPtr("testString")
 				updateApikeyOptionsModel.Headers = map[string]string{"x-custom-header": "x-custom-value"}
 				// Invoke operation with empty URL (negative test)
 				err := drAutomationServiceService.SetServiceURL("")
@@ -918,10 +889,9 @@ var _ = Describe(`DrAutomationServiceV1`, func() {
 
 				// Construct an instance of the UpdateApikeyOptions model
 				updateApikeyOptionsModel := new(drautomationservicev1.UpdateApikeyOptions)
-				updateApikeyOptionsModel.InstanceID = core.StringPtr("crn:v1:staging:public:power-dr-automation:global:a/a123456fb04ceebfb4a9fd38c22334455:123456d3-1122-3344-b67d-4389b44b7bf9::")
+				updateApikeyOptionsModel.InstanceID = core.StringPtr("123456d3-1122-3344-b67d-4389b44b7bf9")
 				updateApikeyOptionsModel.APIKey = core.StringPtr("adfadfdsafsdfdsf")
 				updateApikeyOptionsModel.AcceptLanguage = core.StringPtr("testString")
-				updateApikeyOptionsModel.IfNoneMatch = core.StringPtr("testString")
 				updateApikeyOptionsModel.Headers = map[string]string{"x-custom-header": "x-custom-value"}
 
 				// Invoke operation
@@ -938,7 +908,7 @@ var _ = Describe(`DrAutomationServiceV1`, func() {
 		})
 	})
 	Describe(`GetDrGrsLocationPair(getDrGrsLocationPairOptions *GetDrGrsLocationPairOptions) - Operation response error`, func() {
-		getDrGrsLocationPairPath := "/drautomation/v1/dr_grs_location_pairs/crn:v1:staging:public:power-dr-automation:global:a%2Fa123456fb04ceebfb4a9fd38c22334455:123456d3-1122-3344-b67d-4389b44b7bf9::"
+		getDrGrsLocationPairPath := "/drautomation/v1/dr_grs_location_pairs/123456d3-1122-3344-b67d-4389b44b7bf9"
 		Context(`Using mock server endpoint with invalid JSON response`, func() {
 			BeforeEach(func() {
 				testServer = httptest.NewServer(http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
@@ -949,8 +919,6 @@ var _ = Describe(`DrAutomationServiceV1`, func() {
 					Expect(req.Method).To(Equal("GET"))
 					Expect(req.Header["Accept-Language"]).ToNot(BeNil())
 					Expect(req.Header["Accept-Language"][0]).To(Equal(fmt.Sprintf("%v", "testString")))
-					Expect(req.Header["If-None-Match"]).ToNot(BeNil())
-					Expect(req.Header["If-None-Match"][0]).To(Equal(fmt.Sprintf("%v", "testString")))
 					res.Header().Set("Content-type", "application/json")
 					res.WriteHeader(200)
 					fmt.Fprint(res, `} this is not valid json {`)
@@ -966,9 +934,8 @@ var _ = Describe(`DrAutomationServiceV1`, func() {
 
 				// Construct an instance of the GetDrGrsLocationPairOptions model
 				getDrGrsLocationPairOptionsModel := new(drautomationservicev1.GetDrGrsLocationPairOptions)
-				getDrGrsLocationPairOptionsModel.InstanceID = core.StringPtr("crn:v1:staging:public:power-dr-automation:global:a/a123456fb04ceebfb4a9fd38c22334455:123456d3-1122-3344-b67d-4389b44b7bf9::")
+				getDrGrsLocationPairOptionsModel.InstanceID = core.StringPtr("123456d3-1122-3344-b67d-4389b44b7bf9")
 				getDrGrsLocationPairOptionsModel.AcceptLanguage = core.StringPtr("testString")
-				getDrGrsLocationPairOptionsModel.IfNoneMatch = core.StringPtr("testString")
 				getDrGrsLocationPairOptionsModel.Headers = map[string]string{"x-custom-header": "x-custom-value"}
 				// Expect response parsing to fail since we are receiving a text/plain response
 				result, response, operationErr := drAutomationServiceService.GetDrGrsLocationPair(getDrGrsLocationPairOptionsModel)
@@ -989,7 +956,7 @@ var _ = Describe(`DrAutomationServiceV1`, func() {
 		})
 	})
 	Describe(`GetDrGrsLocationPair(getDrGrsLocationPairOptions *GetDrGrsLocationPairOptions)`, func() {
-		getDrGrsLocationPairPath := "/drautomation/v1/dr_grs_location_pairs/crn:v1:staging:public:power-dr-automation:global:a%2Fa123456fb04ceebfb4a9fd38c22334455:123456d3-1122-3344-b67d-4389b44b7bf9::"
+		getDrGrsLocationPairPath := "/drautomation/v1/dr_grs_location_pairs/123456d3-1122-3344-b67d-4389b44b7bf9"
 		Context(`Using mock server endpoint with timeout`, func() {
 			BeforeEach(func() {
 				testServer = httptest.NewServer(http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
@@ -1001,8 +968,6 @@ var _ = Describe(`DrAutomationServiceV1`, func() {
 
 					Expect(req.Header["Accept-Language"]).ToNot(BeNil())
 					Expect(req.Header["Accept-Language"][0]).To(Equal(fmt.Sprintf("%v", "testString")))
-					Expect(req.Header["If-None-Match"]).ToNot(BeNil())
-					Expect(req.Header["If-None-Match"][0]).To(Equal(fmt.Sprintf("%v", "testString")))
 					// Sleep a short time to support a timeout test
 					time.Sleep(100 * time.Millisecond)
 
@@ -1023,9 +988,8 @@ var _ = Describe(`DrAutomationServiceV1`, func() {
 
 				// Construct an instance of the GetDrGrsLocationPairOptions model
 				getDrGrsLocationPairOptionsModel := new(drautomationservicev1.GetDrGrsLocationPairOptions)
-				getDrGrsLocationPairOptionsModel.InstanceID = core.StringPtr("crn:v1:staging:public:power-dr-automation:global:a/a123456fb04ceebfb4a9fd38c22334455:123456d3-1122-3344-b67d-4389b44b7bf9::")
+				getDrGrsLocationPairOptionsModel.InstanceID = core.StringPtr("123456d3-1122-3344-b67d-4389b44b7bf9")
 				getDrGrsLocationPairOptionsModel.AcceptLanguage = core.StringPtr("testString")
-				getDrGrsLocationPairOptionsModel.IfNoneMatch = core.StringPtr("testString")
 				getDrGrsLocationPairOptionsModel.Headers = map[string]string{"x-custom-header": "x-custom-value"}
 
 				// Invoke operation with a Context to test a timeout error
@@ -1064,8 +1028,6 @@ var _ = Describe(`DrAutomationServiceV1`, func() {
 
 					Expect(req.Header["Accept-Language"]).ToNot(BeNil())
 					Expect(req.Header["Accept-Language"][0]).To(Equal(fmt.Sprintf("%v", "testString")))
-					Expect(req.Header["If-None-Match"]).ToNot(BeNil())
-					Expect(req.Header["If-None-Match"][0]).To(Equal(fmt.Sprintf("%v", "testString")))
 					// Set mock response
 					res.Header().Set("Content-type", "application/json")
 					res.WriteHeader(200)
@@ -1088,9 +1050,8 @@ var _ = Describe(`DrAutomationServiceV1`, func() {
 
 				// Construct an instance of the GetDrGrsLocationPairOptions model
 				getDrGrsLocationPairOptionsModel := new(drautomationservicev1.GetDrGrsLocationPairOptions)
-				getDrGrsLocationPairOptionsModel.InstanceID = core.StringPtr("crn:v1:staging:public:power-dr-automation:global:a/a123456fb04ceebfb4a9fd38c22334455:123456d3-1122-3344-b67d-4389b44b7bf9::")
+				getDrGrsLocationPairOptionsModel.InstanceID = core.StringPtr("123456d3-1122-3344-b67d-4389b44b7bf9")
 				getDrGrsLocationPairOptionsModel.AcceptLanguage = core.StringPtr("testString")
-				getDrGrsLocationPairOptionsModel.IfNoneMatch = core.StringPtr("testString")
 				getDrGrsLocationPairOptionsModel.Headers = map[string]string{"x-custom-header": "x-custom-value"}
 
 				// Invoke operation with valid options model (positive test)
@@ -1110,9 +1071,8 @@ var _ = Describe(`DrAutomationServiceV1`, func() {
 
 				// Construct an instance of the GetDrGrsLocationPairOptions model
 				getDrGrsLocationPairOptionsModel := new(drautomationservicev1.GetDrGrsLocationPairOptions)
-				getDrGrsLocationPairOptionsModel.InstanceID = core.StringPtr("crn:v1:staging:public:power-dr-automation:global:a/a123456fb04ceebfb4a9fd38c22334455:123456d3-1122-3344-b67d-4389b44b7bf9::")
+				getDrGrsLocationPairOptionsModel.InstanceID = core.StringPtr("123456d3-1122-3344-b67d-4389b44b7bf9")
 				getDrGrsLocationPairOptionsModel.AcceptLanguage = core.StringPtr("testString")
-				getDrGrsLocationPairOptionsModel.IfNoneMatch = core.StringPtr("testString")
 				getDrGrsLocationPairOptionsModel.Headers = map[string]string{"x-custom-header": "x-custom-value"}
 				// Invoke operation with empty URL (negative test)
 				err := drAutomationServiceService.SetServiceURL("")
@@ -1153,9 +1113,8 @@ var _ = Describe(`DrAutomationServiceV1`, func() {
 
 				// Construct an instance of the GetDrGrsLocationPairOptions model
 				getDrGrsLocationPairOptionsModel := new(drautomationservicev1.GetDrGrsLocationPairOptions)
-				getDrGrsLocationPairOptionsModel.InstanceID = core.StringPtr("crn:v1:staging:public:power-dr-automation:global:a/a123456fb04ceebfb4a9fd38c22334455:123456d3-1122-3344-b67d-4389b44b7bf9::")
+				getDrGrsLocationPairOptionsModel.InstanceID = core.StringPtr("123456d3-1122-3344-b67d-4389b44b7bf9")
 				getDrGrsLocationPairOptionsModel.AcceptLanguage = core.StringPtr("testString")
-				getDrGrsLocationPairOptionsModel.IfNoneMatch = core.StringPtr("testString")
 				getDrGrsLocationPairOptionsModel.Headers = map[string]string{"x-custom-header": "x-custom-value"}
 
 				// Invoke operation
@@ -1172,7 +1131,7 @@ var _ = Describe(`DrAutomationServiceV1`, func() {
 		})
 	})
 	Describe(`GetDrLocations(getDrLocationsOptions *GetDrLocationsOptions) - Operation response error`, func() {
-		getDrLocationsPath := "/drautomation/v1/dr_locations/crn:v1:staging:public:power-dr-automation:global:a%2Fa123456fb04ceebfb4a9fd38c22334455:123456d3-1122-3344-b67d-4389b44b7bf9::"
+		getDrLocationsPath := "/drautomation/v1/dr_locations/123456d3-1122-3344-b67d-4389b44b7bf9"
 		Context(`Using mock server endpoint with invalid JSON response`, func() {
 			BeforeEach(func() {
 				testServer = httptest.NewServer(http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
@@ -1183,8 +1142,6 @@ var _ = Describe(`DrAutomationServiceV1`, func() {
 					Expect(req.Method).To(Equal("GET"))
 					Expect(req.Header["Accept-Language"]).ToNot(BeNil())
 					Expect(req.Header["Accept-Language"][0]).To(Equal(fmt.Sprintf("%v", "testString")))
-					Expect(req.Header["If-None-Match"]).ToNot(BeNil())
-					Expect(req.Header["If-None-Match"][0]).To(Equal(fmt.Sprintf("%v", "testString")))
 					res.Header().Set("Content-type", "application/json")
 					res.WriteHeader(200)
 					fmt.Fprint(res, `} this is not valid json {`)
@@ -1200,9 +1157,8 @@ var _ = Describe(`DrAutomationServiceV1`, func() {
 
 				// Construct an instance of the GetDrLocationsOptions model
 				getDrLocationsOptionsModel := new(drautomationservicev1.GetDrLocationsOptions)
-				getDrLocationsOptionsModel.InstanceID = core.StringPtr("crn:v1:staging:public:power-dr-automation:global:a/a123456fb04ceebfb4a9fd38c22334455:123456d3-1122-3344-b67d-4389b44b7bf9::")
+				getDrLocationsOptionsModel.InstanceID = core.StringPtr("123456d3-1122-3344-b67d-4389b44b7bf9")
 				getDrLocationsOptionsModel.AcceptLanguage = core.StringPtr("testString")
-				getDrLocationsOptionsModel.IfNoneMatch = core.StringPtr("testString")
 				getDrLocationsOptionsModel.Headers = map[string]string{"x-custom-header": "x-custom-value"}
 				// Expect response parsing to fail since we are receiving a text/plain response
 				result, response, operationErr := drAutomationServiceService.GetDrLocations(getDrLocationsOptionsModel)
@@ -1223,7 +1179,7 @@ var _ = Describe(`DrAutomationServiceV1`, func() {
 		})
 	})
 	Describe(`GetDrLocations(getDrLocationsOptions *GetDrLocationsOptions)`, func() {
-		getDrLocationsPath := "/drautomation/v1/dr_locations/crn:v1:staging:public:power-dr-automation:global:a%2Fa123456fb04ceebfb4a9fd38c22334455:123456d3-1122-3344-b67d-4389b44b7bf9::"
+		getDrLocationsPath := "/drautomation/v1/dr_locations/123456d3-1122-3344-b67d-4389b44b7bf9"
 		Context(`Using mock server endpoint with timeout`, func() {
 			BeforeEach(func() {
 				testServer = httptest.NewServer(http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
@@ -1235,8 +1191,6 @@ var _ = Describe(`DrAutomationServiceV1`, func() {
 
 					Expect(req.Header["Accept-Language"]).ToNot(BeNil())
 					Expect(req.Header["Accept-Language"][0]).To(Equal(fmt.Sprintf("%v", "testString")))
-					Expect(req.Header["If-None-Match"]).ToNot(BeNil())
-					Expect(req.Header["If-None-Match"][0]).To(Equal(fmt.Sprintf("%v", "testString")))
 					// Sleep a short time to support a timeout test
 					time.Sleep(100 * time.Millisecond)
 
@@ -1257,9 +1211,8 @@ var _ = Describe(`DrAutomationServiceV1`, func() {
 
 				// Construct an instance of the GetDrLocationsOptions model
 				getDrLocationsOptionsModel := new(drautomationservicev1.GetDrLocationsOptions)
-				getDrLocationsOptionsModel.InstanceID = core.StringPtr("crn:v1:staging:public:power-dr-automation:global:a/a123456fb04ceebfb4a9fd38c22334455:123456d3-1122-3344-b67d-4389b44b7bf9::")
+				getDrLocationsOptionsModel.InstanceID = core.StringPtr("123456d3-1122-3344-b67d-4389b44b7bf9")
 				getDrLocationsOptionsModel.AcceptLanguage = core.StringPtr("testString")
-				getDrLocationsOptionsModel.IfNoneMatch = core.StringPtr("testString")
 				getDrLocationsOptionsModel.Headers = map[string]string{"x-custom-header": "x-custom-value"}
 
 				// Invoke operation with a Context to test a timeout error
@@ -1298,8 +1251,6 @@ var _ = Describe(`DrAutomationServiceV1`, func() {
 
 					Expect(req.Header["Accept-Language"]).ToNot(BeNil())
 					Expect(req.Header["Accept-Language"][0]).To(Equal(fmt.Sprintf("%v", "testString")))
-					Expect(req.Header["If-None-Match"]).ToNot(BeNil())
-					Expect(req.Header["If-None-Match"][0]).To(Equal(fmt.Sprintf("%v", "testString")))
 					// Set mock response
 					res.Header().Set("Content-type", "application/json")
 					res.WriteHeader(200)
@@ -1322,9 +1273,8 @@ var _ = Describe(`DrAutomationServiceV1`, func() {
 
 				// Construct an instance of the GetDrLocationsOptions model
 				getDrLocationsOptionsModel := new(drautomationservicev1.GetDrLocationsOptions)
-				getDrLocationsOptionsModel.InstanceID = core.StringPtr("crn:v1:staging:public:power-dr-automation:global:a/a123456fb04ceebfb4a9fd38c22334455:123456d3-1122-3344-b67d-4389b44b7bf9::")
+				getDrLocationsOptionsModel.InstanceID = core.StringPtr("123456d3-1122-3344-b67d-4389b44b7bf9")
 				getDrLocationsOptionsModel.AcceptLanguage = core.StringPtr("testString")
-				getDrLocationsOptionsModel.IfNoneMatch = core.StringPtr("testString")
 				getDrLocationsOptionsModel.Headers = map[string]string{"x-custom-header": "x-custom-value"}
 
 				// Invoke operation with valid options model (positive test)
@@ -1344,9 +1294,8 @@ var _ = Describe(`DrAutomationServiceV1`, func() {
 
 				// Construct an instance of the GetDrLocationsOptions model
 				getDrLocationsOptionsModel := new(drautomationservicev1.GetDrLocationsOptions)
-				getDrLocationsOptionsModel.InstanceID = core.StringPtr("crn:v1:staging:public:power-dr-automation:global:a/a123456fb04ceebfb4a9fd38c22334455:123456d3-1122-3344-b67d-4389b44b7bf9::")
+				getDrLocationsOptionsModel.InstanceID = core.StringPtr("123456d3-1122-3344-b67d-4389b44b7bf9")
 				getDrLocationsOptionsModel.AcceptLanguage = core.StringPtr("testString")
-				getDrLocationsOptionsModel.IfNoneMatch = core.StringPtr("testString")
 				getDrLocationsOptionsModel.Headers = map[string]string{"x-custom-header": "x-custom-value"}
 				// Invoke operation with empty URL (negative test)
 				err := drAutomationServiceService.SetServiceURL("")
@@ -1387,9 +1336,8 @@ var _ = Describe(`DrAutomationServiceV1`, func() {
 
 				// Construct an instance of the GetDrLocationsOptions model
 				getDrLocationsOptionsModel := new(drautomationservicev1.GetDrLocationsOptions)
-				getDrLocationsOptionsModel.InstanceID = core.StringPtr("crn:v1:staging:public:power-dr-automation:global:a/a123456fb04ceebfb4a9fd38c22334455:123456d3-1122-3344-b67d-4389b44b7bf9::")
+				getDrLocationsOptionsModel.InstanceID = core.StringPtr("123456d3-1122-3344-b67d-4389b44b7bf9")
 				getDrLocationsOptionsModel.AcceptLanguage = core.StringPtr("testString")
-				getDrLocationsOptionsModel.IfNoneMatch = core.StringPtr("testString")
 				getDrLocationsOptionsModel.Headers = map[string]string{"x-custom-header": "x-custom-value"}
 
 				// Invoke operation
@@ -1406,7 +1354,7 @@ var _ = Describe(`DrAutomationServiceV1`, func() {
 		})
 	})
 	Describe(`GetDrManagedVM(getDrManagedVMOptions *GetDrManagedVMOptions) - Operation response error`, func() {
-		getDrManagedVMPath := "/drautomation/v1/dr_managed_vms/crn:v1:staging:public:power-dr-automation:global:a%2Fa123456fb04ceebfb4a9fd38c22334455:123456d3-1122-3344-b67d-4389b44b7bf9::"
+		getDrManagedVMPath := "/drautomation/v1/dr_managed_vms/123456d3-1122-3344-b67d-4389b44b7bf9"
 		Context(`Using mock server endpoint with invalid JSON response`, func() {
 			BeforeEach(func() {
 				testServer = httptest.NewServer(http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
@@ -1417,8 +1365,6 @@ var _ = Describe(`DrAutomationServiceV1`, func() {
 					Expect(req.Method).To(Equal("GET"))
 					Expect(req.Header["Accept-Language"]).ToNot(BeNil())
 					Expect(req.Header["Accept-Language"][0]).To(Equal(fmt.Sprintf("%v", "testString")))
-					Expect(req.Header["If-None-Match"]).ToNot(BeNil())
-					Expect(req.Header["If-None-Match"][0]).To(Equal(fmt.Sprintf("%v", "testString")))
 					res.Header().Set("Content-type", "application/json")
 					res.WriteHeader(200)
 					fmt.Fprint(res, `} this is not valid json {`)
@@ -1434,9 +1380,8 @@ var _ = Describe(`DrAutomationServiceV1`, func() {
 
 				// Construct an instance of the GetDrManagedVMOptions model
 				getDrManagedVMOptionsModel := new(drautomationservicev1.GetDrManagedVMOptions)
-				getDrManagedVMOptionsModel.InstanceID = core.StringPtr("crn:v1:staging:public:power-dr-automation:global:a/a123456fb04ceebfb4a9fd38c22334455:123456d3-1122-3344-b67d-4389b44b7bf9::")
+				getDrManagedVMOptionsModel.InstanceID = core.StringPtr("123456d3-1122-3344-b67d-4389b44b7bf9")
 				getDrManagedVMOptionsModel.AcceptLanguage = core.StringPtr("testString")
-				getDrManagedVMOptionsModel.IfNoneMatch = core.StringPtr("testString")
 				getDrManagedVMOptionsModel.Headers = map[string]string{"x-custom-header": "x-custom-value"}
 				// Expect response parsing to fail since we are receiving a text/plain response
 				result, response, operationErr := drAutomationServiceService.GetDrManagedVM(getDrManagedVMOptionsModel)
@@ -1457,7 +1402,7 @@ var _ = Describe(`DrAutomationServiceV1`, func() {
 		})
 	})
 	Describe(`GetDrManagedVM(getDrManagedVMOptions *GetDrManagedVMOptions)`, func() {
-		getDrManagedVMPath := "/drautomation/v1/dr_managed_vms/crn:v1:staging:public:power-dr-automation:global:a%2Fa123456fb04ceebfb4a9fd38c22334455:123456d3-1122-3344-b67d-4389b44b7bf9::"
+		getDrManagedVMPath := "/drautomation/v1/dr_managed_vms/123456d3-1122-3344-b67d-4389b44b7bf9"
 		Context(`Using mock server endpoint with timeout`, func() {
 			BeforeEach(func() {
 				testServer = httptest.NewServer(http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
@@ -1469,8 +1414,6 @@ var _ = Describe(`DrAutomationServiceV1`, func() {
 
 					Expect(req.Header["Accept-Language"]).ToNot(BeNil())
 					Expect(req.Header["Accept-Language"][0]).To(Equal(fmt.Sprintf("%v", "testString")))
-					Expect(req.Header["If-None-Match"]).ToNot(BeNil())
-					Expect(req.Header["If-None-Match"][0]).To(Equal(fmt.Sprintf("%v", "testString")))
 					// Sleep a short time to support a timeout test
 					time.Sleep(100 * time.Millisecond)
 
@@ -1491,9 +1434,8 @@ var _ = Describe(`DrAutomationServiceV1`, func() {
 
 				// Construct an instance of the GetDrManagedVMOptions model
 				getDrManagedVMOptionsModel := new(drautomationservicev1.GetDrManagedVMOptions)
-				getDrManagedVMOptionsModel.InstanceID = core.StringPtr("crn:v1:staging:public:power-dr-automation:global:a/a123456fb04ceebfb4a9fd38c22334455:123456d3-1122-3344-b67d-4389b44b7bf9::")
+				getDrManagedVMOptionsModel.InstanceID = core.StringPtr("123456d3-1122-3344-b67d-4389b44b7bf9")
 				getDrManagedVMOptionsModel.AcceptLanguage = core.StringPtr("testString")
-				getDrManagedVMOptionsModel.IfNoneMatch = core.StringPtr("testString")
 				getDrManagedVMOptionsModel.Headers = map[string]string{"x-custom-header": "x-custom-value"}
 
 				// Invoke operation with a Context to test a timeout error
@@ -1532,8 +1474,6 @@ var _ = Describe(`DrAutomationServiceV1`, func() {
 
 					Expect(req.Header["Accept-Language"]).ToNot(BeNil())
 					Expect(req.Header["Accept-Language"][0]).To(Equal(fmt.Sprintf("%v", "testString")))
-					Expect(req.Header["If-None-Match"]).ToNot(BeNil())
-					Expect(req.Header["If-None-Match"][0]).To(Equal(fmt.Sprintf("%v", "testString")))
 					// Set mock response
 					res.Header().Set("Content-type", "application/json")
 					res.WriteHeader(200)
@@ -1556,9 +1496,8 @@ var _ = Describe(`DrAutomationServiceV1`, func() {
 
 				// Construct an instance of the GetDrManagedVMOptions model
 				getDrManagedVMOptionsModel := new(drautomationservicev1.GetDrManagedVMOptions)
-				getDrManagedVMOptionsModel.InstanceID = core.StringPtr("crn:v1:staging:public:power-dr-automation:global:a/a123456fb04ceebfb4a9fd38c22334455:123456d3-1122-3344-b67d-4389b44b7bf9::")
+				getDrManagedVMOptionsModel.InstanceID = core.StringPtr("123456d3-1122-3344-b67d-4389b44b7bf9")
 				getDrManagedVMOptionsModel.AcceptLanguage = core.StringPtr("testString")
-				getDrManagedVMOptionsModel.IfNoneMatch = core.StringPtr("testString")
 				getDrManagedVMOptionsModel.Headers = map[string]string{"x-custom-header": "x-custom-value"}
 
 				// Invoke operation with valid options model (positive test)
@@ -1578,9 +1517,8 @@ var _ = Describe(`DrAutomationServiceV1`, func() {
 
 				// Construct an instance of the GetDrManagedVMOptions model
 				getDrManagedVMOptionsModel := new(drautomationservicev1.GetDrManagedVMOptions)
-				getDrManagedVMOptionsModel.InstanceID = core.StringPtr("crn:v1:staging:public:power-dr-automation:global:a/a123456fb04ceebfb4a9fd38c22334455:123456d3-1122-3344-b67d-4389b44b7bf9::")
+				getDrManagedVMOptionsModel.InstanceID = core.StringPtr("123456d3-1122-3344-b67d-4389b44b7bf9")
 				getDrManagedVMOptionsModel.AcceptLanguage = core.StringPtr("testString")
-				getDrManagedVMOptionsModel.IfNoneMatch = core.StringPtr("testString")
 				getDrManagedVMOptionsModel.Headers = map[string]string{"x-custom-header": "x-custom-value"}
 				// Invoke operation with empty URL (negative test)
 				err := drAutomationServiceService.SetServiceURL("")
@@ -1621,9 +1559,8 @@ var _ = Describe(`DrAutomationServiceV1`, func() {
 
 				// Construct an instance of the GetDrManagedVMOptions model
 				getDrManagedVMOptionsModel := new(drautomationservicev1.GetDrManagedVMOptions)
-				getDrManagedVMOptionsModel.InstanceID = core.StringPtr("crn:v1:staging:public:power-dr-automation:global:a/a123456fb04ceebfb4a9fd38c22334455:123456d3-1122-3344-b67d-4389b44b7bf9::")
+				getDrManagedVMOptionsModel.InstanceID = core.StringPtr("123456d3-1122-3344-b67d-4389b44b7bf9")
 				getDrManagedVMOptionsModel.AcceptLanguage = core.StringPtr("testString")
-				getDrManagedVMOptionsModel.IfNoneMatch = core.StringPtr("testString")
 				getDrManagedVMOptionsModel.Headers = map[string]string{"x-custom-header": "x-custom-value"}
 
 				// Invoke operation
@@ -1640,7 +1577,7 @@ var _ = Describe(`DrAutomationServiceV1`, func() {
 		})
 	})
 	Describe(`GetDrSummary(getDrSummaryOptions *GetDrSummaryOptions) - Operation response error`, func() {
-		getDrSummaryPath := "/drautomation/v1/dr_summary/crn:v1:staging:public:power-dr-automation:global:a%2Fa123456fb04ceebfb4a9fd38c22334455:123456d3-1122-3344-b67d-4389b44b7bf9::"
+		getDrSummaryPath := "/drautomation/v1/dr_summary/123456d3-1122-3344-b67d-4389b44b7bf9"
 		Context(`Using mock server endpoint with invalid JSON response`, func() {
 			BeforeEach(func() {
 				testServer = httptest.NewServer(http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
@@ -1651,8 +1588,6 @@ var _ = Describe(`DrAutomationServiceV1`, func() {
 					Expect(req.Method).To(Equal("GET"))
 					Expect(req.Header["Accept-Language"]).ToNot(BeNil())
 					Expect(req.Header["Accept-Language"][0]).To(Equal(fmt.Sprintf("%v", "testString")))
-					Expect(req.Header["If-None-Match"]).ToNot(BeNil())
-					Expect(req.Header["If-None-Match"][0]).To(Equal(fmt.Sprintf("%v", "testString")))
 					res.Header().Set("Content-type", "application/json")
 					res.WriteHeader(200)
 					fmt.Fprint(res, `} this is not valid json {`)
@@ -1668,9 +1603,8 @@ var _ = Describe(`DrAutomationServiceV1`, func() {
 
 				// Construct an instance of the GetDrSummaryOptions model
 				getDrSummaryOptionsModel := new(drautomationservicev1.GetDrSummaryOptions)
-				getDrSummaryOptionsModel.InstanceID = core.StringPtr("crn:v1:staging:public:power-dr-automation:global:a/a123456fb04ceebfb4a9fd38c22334455:123456d3-1122-3344-b67d-4389b44b7bf9::")
+				getDrSummaryOptionsModel.InstanceID = core.StringPtr("123456d3-1122-3344-b67d-4389b44b7bf9")
 				getDrSummaryOptionsModel.AcceptLanguage = core.StringPtr("testString")
-				getDrSummaryOptionsModel.IfNoneMatch = core.StringPtr("testString")
 				getDrSummaryOptionsModel.Headers = map[string]string{"x-custom-header": "x-custom-value"}
 				// Expect response parsing to fail since we are receiving a text/plain response
 				result, response, operationErr := drAutomationServiceService.GetDrSummary(getDrSummaryOptionsModel)
@@ -1691,7 +1625,7 @@ var _ = Describe(`DrAutomationServiceV1`, func() {
 		})
 	})
 	Describe(`GetDrSummary(getDrSummaryOptions *GetDrSummaryOptions)`, func() {
-		getDrSummaryPath := "/drautomation/v1/dr_summary/crn:v1:staging:public:power-dr-automation:global:a%2Fa123456fb04ceebfb4a9fd38c22334455:123456d3-1122-3344-b67d-4389b44b7bf9::"
+		getDrSummaryPath := "/drautomation/v1/dr_summary/123456d3-1122-3344-b67d-4389b44b7bf9"
 		Context(`Using mock server endpoint with timeout`, func() {
 			BeforeEach(func() {
 				testServer = httptest.NewServer(http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
@@ -1703,8 +1637,6 @@ var _ = Describe(`DrAutomationServiceV1`, func() {
 
 					Expect(req.Header["Accept-Language"]).ToNot(BeNil())
 					Expect(req.Header["Accept-Language"][0]).To(Equal(fmt.Sprintf("%v", "testString")))
-					Expect(req.Header["If-None-Match"]).ToNot(BeNil())
-					Expect(req.Header["If-None-Match"][0]).To(Equal(fmt.Sprintf("%v", "testString")))
 					// Sleep a short time to support a timeout test
 					time.Sleep(100 * time.Millisecond)
 
@@ -1725,9 +1657,8 @@ var _ = Describe(`DrAutomationServiceV1`, func() {
 
 				// Construct an instance of the GetDrSummaryOptions model
 				getDrSummaryOptionsModel := new(drautomationservicev1.GetDrSummaryOptions)
-				getDrSummaryOptionsModel.InstanceID = core.StringPtr("crn:v1:staging:public:power-dr-automation:global:a/a123456fb04ceebfb4a9fd38c22334455:123456d3-1122-3344-b67d-4389b44b7bf9::")
+				getDrSummaryOptionsModel.InstanceID = core.StringPtr("123456d3-1122-3344-b67d-4389b44b7bf9")
 				getDrSummaryOptionsModel.AcceptLanguage = core.StringPtr("testString")
-				getDrSummaryOptionsModel.IfNoneMatch = core.StringPtr("testString")
 				getDrSummaryOptionsModel.Headers = map[string]string{"x-custom-header": "x-custom-value"}
 
 				// Invoke operation with a Context to test a timeout error
@@ -1766,8 +1697,6 @@ var _ = Describe(`DrAutomationServiceV1`, func() {
 
 					Expect(req.Header["Accept-Language"]).ToNot(BeNil())
 					Expect(req.Header["Accept-Language"][0]).To(Equal(fmt.Sprintf("%v", "testString")))
-					Expect(req.Header["If-None-Match"]).ToNot(BeNil())
-					Expect(req.Header["If-None-Match"][0]).To(Equal(fmt.Sprintf("%v", "testString")))
 					// Set mock response
 					res.Header().Set("Content-type", "application/json")
 					res.WriteHeader(200)
@@ -1790,9 +1719,8 @@ var _ = Describe(`DrAutomationServiceV1`, func() {
 
 				// Construct an instance of the GetDrSummaryOptions model
 				getDrSummaryOptionsModel := new(drautomationservicev1.GetDrSummaryOptions)
-				getDrSummaryOptionsModel.InstanceID = core.StringPtr("crn:v1:staging:public:power-dr-automation:global:a/a123456fb04ceebfb4a9fd38c22334455:123456d3-1122-3344-b67d-4389b44b7bf9::")
+				getDrSummaryOptionsModel.InstanceID = core.StringPtr("123456d3-1122-3344-b67d-4389b44b7bf9")
 				getDrSummaryOptionsModel.AcceptLanguage = core.StringPtr("testString")
-				getDrSummaryOptionsModel.IfNoneMatch = core.StringPtr("testString")
 				getDrSummaryOptionsModel.Headers = map[string]string{"x-custom-header": "x-custom-value"}
 
 				// Invoke operation with valid options model (positive test)
@@ -1812,9 +1740,8 @@ var _ = Describe(`DrAutomationServiceV1`, func() {
 
 				// Construct an instance of the GetDrSummaryOptions model
 				getDrSummaryOptionsModel := new(drautomationservicev1.GetDrSummaryOptions)
-				getDrSummaryOptionsModel.InstanceID = core.StringPtr("crn:v1:staging:public:power-dr-automation:global:a/a123456fb04ceebfb4a9fd38c22334455:123456d3-1122-3344-b67d-4389b44b7bf9::")
+				getDrSummaryOptionsModel.InstanceID = core.StringPtr("123456d3-1122-3344-b67d-4389b44b7bf9")
 				getDrSummaryOptionsModel.AcceptLanguage = core.StringPtr("testString")
-				getDrSummaryOptionsModel.IfNoneMatch = core.StringPtr("testString")
 				getDrSummaryOptionsModel.Headers = map[string]string{"x-custom-header": "x-custom-value"}
 				// Invoke operation with empty URL (negative test)
 				err := drAutomationServiceService.SetServiceURL("")
@@ -1855,9 +1782,8 @@ var _ = Describe(`DrAutomationServiceV1`, func() {
 
 				// Construct an instance of the GetDrSummaryOptions model
 				getDrSummaryOptionsModel := new(drautomationservicev1.GetDrSummaryOptions)
-				getDrSummaryOptionsModel.InstanceID = core.StringPtr("crn:v1:staging:public:power-dr-automation:global:a/a123456fb04ceebfb4a9fd38c22334455:123456d3-1122-3344-b67d-4389b44b7bf9::")
+				getDrSummaryOptionsModel.InstanceID = core.StringPtr("123456d3-1122-3344-b67d-4389b44b7bf9")
 				getDrSummaryOptionsModel.AcceptLanguage = core.StringPtr("testString")
-				getDrSummaryOptionsModel.IfNoneMatch = core.StringPtr("testString")
 				getDrSummaryOptionsModel.Headers = map[string]string{"x-custom-header": "x-custom-value"}
 
 				// Invoke operation
@@ -1874,7 +1800,7 @@ var _ = Describe(`DrAutomationServiceV1`, func() {
 		})
 	})
 	Describe(`GetMachineType(getMachineTypeOptions *GetMachineTypeOptions) - Operation response error`, func() {
-		getMachineTypePath := "/drautomation/v1/machinetypes/crn:v1:staging:public:power-dr-automation:global:a%2Fa123456fb04ceebfb4a9fd38c22334455:123456d3-1122-3344-b67d-4389b44b7bf9::"
+		getMachineTypePath := "/drautomation/v1/machinetypes/123456d3-1122-3344-b67d-4389b44b7bf9"
 		Context(`Using mock server endpoint with invalid JSON response`, func() {
 			BeforeEach(func() {
 				testServer = httptest.NewServer(http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
@@ -1885,8 +1811,6 @@ var _ = Describe(`DrAutomationServiceV1`, func() {
 					Expect(req.Method).To(Equal("GET"))
 					Expect(req.Header["Accept-Language"]).ToNot(BeNil())
 					Expect(req.Header["Accept-Language"][0]).To(Equal(fmt.Sprintf("%v", "testString")))
-					Expect(req.Header["If-None-Match"]).ToNot(BeNil())
-					Expect(req.Header["If-None-Match"][0]).To(Equal(fmt.Sprintf("%v", "testString")))
 					Expect(req.URL.Query()["primary_workspace_name"]).To(Equal([]string{"Test-workspace-wdc06"}))
 					Expect(req.URL.Query()["standby_workspace_name"]).To(Equal([]string{"Test-workspace-wdc07"}))
 					res.Header().Set("Content-type", "application/json")
@@ -1904,10 +1828,9 @@ var _ = Describe(`DrAutomationServiceV1`, func() {
 
 				// Construct an instance of the GetMachineTypeOptions model
 				getMachineTypeOptionsModel := new(drautomationservicev1.GetMachineTypeOptions)
-				getMachineTypeOptionsModel.InstanceID = core.StringPtr("crn:v1:staging:public:power-dr-automation:global:a/a123456fb04ceebfb4a9fd38c22334455:123456d3-1122-3344-b67d-4389b44b7bf9::")
+				getMachineTypeOptionsModel.InstanceID = core.StringPtr("123456d3-1122-3344-b67d-4389b44b7bf9")
 				getMachineTypeOptionsModel.PrimaryWorkspaceName = core.StringPtr("Test-workspace-wdc06")
 				getMachineTypeOptionsModel.AcceptLanguage = core.StringPtr("testString")
-				getMachineTypeOptionsModel.IfNoneMatch = core.StringPtr("testString")
 				getMachineTypeOptionsModel.StandbyWorkspaceName = core.StringPtr("Test-workspace-wdc07")
 				getMachineTypeOptionsModel.Headers = map[string]string{"x-custom-header": "x-custom-value"}
 				// Expect response parsing to fail since we are receiving a text/plain response
@@ -1929,7 +1852,7 @@ var _ = Describe(`DrAutomationServiceV1`, func() {
 		})
 	})
 	Describe(`GetMachineType(getMachineTypeOptions *GetMachineTypeOptions)`, func() {
-		getMachineTypePath := "/drautomation/v1/machinetypes/crn:v1:staging:public:power-dr-automation:global:a%2Fa123456fb04ceebfb4a9fd38c22334455:123456d3-1122-3344-b67d-4389b44b7bf9::"
+		getMachineTypePath := "/drautomation/v1/machinetypes/123456d3-1122-3344-b67d-4389b44b7bf9"
 		Context(`Using mock server endpoint with timeout`, func() {
 			BeforeEach(func() {
 				testServer = httptest.NewServer(http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
@@ -1941,8 +1864,6 @@ var _ = Describe(`DrAutomationServiceV1`, func() {
 
 					Expect(req.Header["Accept-Language"]).ToNot(BeNil())
 					Expect(req.Header["Accept-Language"][0]).To(Equal(fmt.Sprintf("%v", "testString")))
-					Expect(req.Header["If-None-Match"]).ToNot(BeNil())
-					Expect(req.Header["If-None-Match"][0]).To(Equal(fmt.Sprintf("%v", "testString")))
 					Expect(req.URL.Query()["primary_workspace_name"]).To(Equal([]string{"Test-workspace-wdc06"}))
 					Expect(req.URL.Query()["standby_workspace_name"]).To(Equal([]string{"Test-workspace-wdc07"}))
 					// Sleep a short time to support a timeout test
@@ -1965,10 +1886,9 @@ var _ = Describe(`DrAutomationServiceV1`, func() {
 
 				// Construct an instance of the GetMachineTypeOptions model
 				getMachineTypeOptionsModel := new(drautomationservicev1.GetMachineTypeOptions)
-				getMachineTypeOptionsModel.InstanceID = core.StringPtr("crn:v1:staging:public:power-dr-automation:global:a/a123456fb04ceebfb4a9fd38c22334455:123456d3-1122-3344-b67d-4389b44b7bf9::")
+				getMachineTypeOptionsModel.InstanceID = core.StringPtr("123456d3-1122-3344-b67d-4389b44b7bf9")
 				getMachineTypeOptionsModel.PrimaryWorkspaceName = core.StringPtr("Test-workspace-wdc06")
 				getMachineTypeOptionsModel.AcceptLanguage = core.StringPtr("testString")
-				getMachineTypeOptionsModel.IfNoneMatch = core.StringPtr("testString")
 				getMachineTypeOptionsModel.StandbyWorkspaceName = core.StringPtr("Test-workspace-wdc07")
 				getMachineTypeOptionsModel.Headers = map[string]string{"x-custom-header": "x-custom-value"}
 
@@ -2008,8 +1928,6 @@ var _ = Describe(`DrAutomationServiceV1`, func() {
 
 					Expect(req.Header["Accept-Language"]).ToNot(BeNil())
 					Expect(req.Header["Accept-Language"][0]).To(Equal(fmt.Sprintf("%v", "testString")))
-					Expect(req.Header["If-None-Match"]).ToNot(BeNil())
-					Expect(req.Header["If-None-Match"][0]).To(Equal(fmt.Sprintf("%v", "testString")))
 					Expect(req.URL.Query()["primary_workspace_name"]).To(Equal([]string{"Test-workspace-wdc06"}))
 					Expect(req.URL.Query()["standby_workspace_name"]).To(Equal([]string{"Test-workspace-wdc07"}))
 					// Set mock response
@@ -2034,10 +1952,9 @@ var _ = Describe(`DrAutomationServiceV1`, func() {
 
 				// Construct an instance of the GetMachineTypeOptions model
 				getMachineTypeOptionsModel := new(drautomationservicev1.GetMachineTypeOptions)
-				getMachineTypeOptionsModel.InstanceID = core.StringPtr("crn:v1:staging:public:power-dr-automation:global:a/a123456fb04ceebfb4a9fd38c22334455:123456d3-1122-3344-b67d-4389b44b7bf9::")
+				getMachineTypeOptionsModel.InstanceID = core.StringPtr("123456d3-1122-3344-b67d-4389b44b7bf9")
 				getMachineTypeOptionsModel.PrimaryWorkspaceName = core.StringPtr("Test-workspace-wdc06")
 				getMachineTypeOptionsModel.AcceptLanguage = core.StringPtr("testString")
-				getMachineTypeOptionsModel.IfNoneMatch = core.StringPtr("testString")
 				getMachineTypeOptionsModel.StandbyWorkspaceName = core.StringPtr("Test-workspace-wdc07")
 				getMachineTypeOptionsModel.Headers = map[string]string{"x-custom-header": "x-custom-value"}
 
@@ -2058,10 +1975,9 @@ var _ = Describe(`DrAutomationServiceV1`, func() {
 
 				// Construct an instance of the GetMachineTypeOptions model
 				getMachineTypeOptionsModel := new(drautomationservicev1.GetMachineTypeOptions)
-				getMachineTypeOptionsModel.InstanceID = core.StringPtr("crn:v1:staging:public:power-dr-automation:global:a/a123456fb04ceebfb4a9fd38c22334455:123456d3-1122-3344-b67d-4389b44b7bf9::")
+				getMachineTypeOptionsModel.InstanceID = core.StringPtr("123456d3-1122-3344-b67d-4389b44b7bf9")
 				getMachineTypeOptionsModel.PrimaryWorkspaceName = core.StringPtr("Test-workspace-wdc06")
 				getMachineTypeOptionsModel.AcceptLanguage = core.StringPtr("testString")
-				getMachineTypeOptionsModel.IfNoneMatch = core.StringPtr("testString")
 				getMachineTypeOptionsModel.StandbyWorkspaceName = core.StringPtr("Test-workspace-wdc07")
 				getMachineTypeOptionsModel.Headers = map[string]string{"x-custom-header": "x-custom-value"}
 				// Invoke operation with empty URL (negative test)
@@ -2103,10 +2019,9 @@ var _ = Describe(`DrAutomationServiceV1`, func() {
 
 				// Construct an instance of the GetMachineTypeOptions model
 				getMachineTypeOptionsModel := new(drautomationservicev1.GetMachineTypeOptions)
-				getMachineTypeOptionsModel.InstanceID = core.StringPtr("crn:v1:staging:public:power-dr-automation:global:a/a123456fb04ceebfb4a9fd38c22334455:123456d3-1122-3344-b67d-4389b44b7bf9::")
+				getMachineTypeOptionsModel.InstanceID = core.StringPtr("123456d3-1122-3344-b67d-4389b44b7bf9")
 				getMachineTypeOptionsModel.PrimaryWorkspaceName = core.StringPtr("Test-workspace-wdc06")
 				getMachineTypeOptionsModel.AcceptLanguage = core.StringPtr("testString")
-				getMachineTypeOptionsModel.IfNoneMatch = core.StringPtr("testString")
 				getMachineTypeOptionsModel.StandbyWorkspaceName = core.StringPtr("Test-workspace-wdc07")
 				getMachineTypeOptionsModel.Headers = map[string]string{"x-custom-header": "x-custom-value"}
 
@@ -2124,7 +2039,7 @@ var _ = Describe(`DrAutomationServiceV1`, func() {
 		})
 	})
 	Describe(`GetPowervsWorkspaces(getPowervsWorkspacesOptions *GetPowervsWorkspacesOptions) - Operation response error`, func() {
-		getPowervsWorkspacesPath := "/drautomation/v1/powervs_workspaces/crn:v1:staging:public:power-dr-automation:global:a%2Fa123456fb04ceebfb4a9fd38c22334455:123456d3-1122-3344-b67d-4389b44b7bf9::"
+		getPowervsWorkspacesPath := "/drautomation/v1/powervs_workspaces/123456d3-1122-3344-b67d-4389b44b7bf9"
 		Context(`Using mock server endpoint with invalid JSON response`, func() {
 			BeforeEach(func() {
 				testServer = httptest.NewServer(http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
@@ -2133,8 +2048,6 @@ var _ = Describe(`DrAutomationServiceV1`, func() {
 					// Verify the contents of the request
 					Expect(req.URL.EscapedPath()).To(Equal(getPowervsWorkspacesPath))
 					Expect(req.Method).To(Equal("GET"))
-					Expect(req.Header["If-None-Match"]).ToNot(BeNil())
-					Expect(req.Header["If-None-Match"][0]).To(Equal(fmt.Sprintf("%v", "testString")))
 					Expect(req.URL.Query()["location_id"]).To(Equal([]string{"testString"}))
 					res.Header().Set("Content-type", "application/json")
 					res.WriteHeader(200)
@@ -2151,9 +2064,8 @@ var _ = Describe(`DrAutomationServiceV1`, func() {
 
 				// Construct an instance of the GetPowervsWorkspacesOptions model
 				getPowervsWorkspacesOptionsModel := new(drautomationservicev1.GetPowervsWorkspacesOptions)
-				getPowervsWorkspacesOptionsModel.InstanceID = core.StringPtr("crn:v1:staging:public:power-dr-automation:global:a/a123456fb04ceebfb4a9fd38c22334455:123456d3-1122-3344-b67d-4389b44b7bf9::")
+				getPowervsWorkspacesOptionsModel.InstanceID = core.StringPtr("123456d3-1122-3344-b67d-4389b44b7bf9")
 				getPowervsWorkspacesOptionsModel.LocationID = core.StringPtr("testString")
-				getPowervsWorkspacesOptionsModel.IfNoneMatch = core.StringPtr("testString")
 				getPowervsWorkspacesOptionsModel.Headers = map[string]string{"x-custom-header": "x-custom-value"}
 				// Expect response parsing to fail since we are receiving a text/plain response
 				result, response, operationErr := drAutomationServiceService.GetPowervsWorkspaces(getPowervsWorkspacesOptionsModel)
@@ -2174,7 +2086,7 @@ var _ = Describe(`DrAutomationServiceV1`, func() {
 		})
 	})
 	Describe(`GetPowervsWorkspaces(getPowervsWorkspacesOptions *GetPowervsWorkspacesOptions)`, func() {
-		getPowervsWorkspacesPath := "/drautomation/v1/powervs_workspaces/crn:v1:staging:public:power-dr-automation:global:a%2Fa123456fb04ceebfb4a9fd38c22334455:123456d3-1122-3344-b67d-4389b44b7bf9::"
+		getPowervsWorkspacesPath := "/drautomation/v1/powervs_workspaces/123456d3-1122-3344-b67d-4389b44b7bf9"
 		Context(`Using mock server endpoint with timeout`, func() {
 			BeforeEach(func() {
 				testServer = httptest.NewServer(http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
@@ -2184,8 +2096,6 @@ var _ = Describe(`DrAutomationServiceV1`, func() {
 					Expect(req.URL.EscapedPath()).To(Equal(getPowervsWorkspacesPath))
 					Expect(req.Method).To(Equal("GET"))
 
-					Expect(req.Header["If-None-Match"]).ToNot(BeNil())
-					Expect(req.Header["If-None-Match"][0]).To(Equal(fmt.Sprintf("%v", "testString")))
 					Expect(req.URL.Query()["location_id"]).To(Equal([]string{"testString"}))
 					// Sleep a short time to support a timeout test
 					time.Sleep(100 * time.Millisecond)
@@ -2207,9 +2117,8 @@ var _ = Describe(`DrAutomationServiceV1`, func() {
 
 				// Construct an instance of the GetPowervsWorkspacesOptions model
 				getPowervsWorkspacesOptionsModel := new(drautomationservicev1.GetPowervsWorkspacesOptions)
-				getPowervsWorkspacesOptionsModel.InstanceID = core.StringPtr("crn:v1:staging:public:power-dr-automation:global:a/a123456fb04ceebfb4a9fd38c22334455:123456d3-1122-3344-b67d-4389b44b7bf9::")
+				getPowervsWorkspacesOptionsModel.InstanceID = core.StringPtr("123456d3-1122-3344-b67d-4389b44b7bf9")
 				getPowervsWorkspacesOptionsModel.LocationID = core.StringPtr("testString")
-				getPowervsWorkspacesOptionsModel.IfNoneMatch = core.StringPtr("testString")
 				getPowervsWorkspacesOptionsModel.Headers = map[string]string{"x-custom-header": "x-custom-value"}
 
 				// Invoke operation with a Context to test a timeout error
@@ -2246,8 +2155,6 @@ var _ = Describe(`DrAutomationServiceV1`, func() {
 					Expect(req.URL.EscapedPath()).To(Equal(getPowervsWorkspacesPath))
 					Expect(req.Method).To(Equal("GET"))
 
-					Expect(req.Header["If-None-Match"]).ToNot(BeNil())
-					Expect(req.Header["If-None-Match"][0]).To(Equal(fmt.Sprintf("%v", "testString")))
 					Expect(req.URL.Query()["location_id"]).To(Equal([]string{"testString"}))
 					// Set mock response
 					res.Header().Set("Content-type", "application/json")
@@ -2271,9 +2178,8 @@ var _ = Describe(`DrAutomationServiceV1`, func() {
 
 				// Construct an instance of the GetPowervsWorkspacesOptions model
 				getPowervsWorkspacesOptionsModel := new(drautomationservicev1.GetPowervsWorkspacesOptions)
-				getPowervsWorkspacesOptionsModel.InstanceID = core.StringPtr("crn:v1:staging:public:power-dr-automation:global:a/a123456fb04ceebfb4a9fd38c22334455:123456d3-1122-3344-b67d-4389b44b7bf9::")
+				getPowervsWorkspacesOptionsModel.InstanceID = core.StringPtr("123456d3-1122-3344-b67d-4389b44b7bf9")
 				getPowervsWorkspacesOptionsModel.LocationID = core.StringPtr("testString")
-				getPowervsWorkspacesOptionsModel.IfNoneMatch = core.StringPtr("testString")
 				getPowervsWorkspacesOptionsModel.Headers = map[string]string{"x-custom-header": "x-custom-value"}
 
 				// Invoke operation with valid options model (positive test)
@@ -2293,9 +2199,8 @@ var _ = Describe(`DrAutomationServiceV1`, func() {
 
 				// Construct an instance of the GetPowervsWorkspacesOptions model
 				getPowervsWorkspacesOptionsModel := new(drautomationservicev1.GetPowervsWorkspacesOptions)
-				getPowervsWorkspacesOptionsModel.InstanceID = core.StringPtr("crn:v1:staging:public:power-dr-automation:global:a/a123456fb04ceebfb4a9fd38c22334455:123456d3-1122-3344-b67d-4389b44b7bf9::")
+				getPowervsWorkspacesOptionsModel.InstanceID = core.StringPtr("123456d3-1122-3344-b67d-4389b44b7bf9")
 				getPowervsWorkspacesOptionsModel.LocationID = core.StringPtr("testString")
-				getPowervsWorkspacesOptionsModel.IfNoneMatch = core.StringPtr("testString")
 				getPowervsWorkspacesOptionsModel.Headers = map[string]string{"x-custom-header": "x-custom-value"}
 				// Invoke operation with empty URL (negative test)
 				err := drAutomationServiceService.SetServiceURL("")
@@ -2336,9 +2241,8 @@ var _ = Describe(`DrAutomationServiceV1`, func() {
 
 				// Construct an instance of the GetPowervsWorkspacesOptions model
 				getPowervsWorkspacesOptionsModel := new(drautomationservicev1.GetPowervsWorkspacesOptions)
-				getPowervsWorkspacesOptionsModel.InstanceID = core.StringPtr("crn:v1:staging:public:power-dr-automation:global:a/a123456fb04ceebfb4a9fd38c22334455:123456d3-1122-3344-b67d-4389b44b7bf9::")
+				getPowervsWorkspacesOptionsModel.InstanceID = core.StringPtr("123456d3-1122-3344-b67d-4389b44b7bf9")
 				getPowervsWorkspacesOptionsModel.LocationID = core.StringPtr("testString")
-				getPowervsWorkspacesOptionsModel.IfNoneMatch = core.StringPtr("testString")
 				getPowervsWorkspacesOptionsModel.Headers = map[string]string{"x-custom-header": "x-custom-value"}
 
 				// Invoke operation
@@ -2355,7 +2259,7 @@ var _ = Describe(`DrAutomationServiceV1`, func() {
 		})
 	})
 	Describe(`GetManageDr(getManageDrOptions *GetManageDrOptions) - Operation response error`, func() {
-		getManageDrPath := "/drautomation/v1/manage_dr/crn:v1:staging:public:power-dr-automation:global:a%2Fa123456fb04ceebfb4a9fd38c22334455:123456d3-1122-3344-b67d-4389b44b7bf9::"
+		getManageDrPath := "/drautomation/v1/manage_dr/123456d3-1122-3344-b67d-4389b44b7bf9"
 		Context(`Using mock server endpoint with invalid JSON response`, func() {
 			BeforeEach(func() {
 				testServer = httptest.NewServer(http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
@@ -2366,8 +2270,6 @@ var _ = Describe(`DrAutomationServiceV1`, func() {
 					Expect(req.Method).To(Equal("GET"))
 					Expect(req.Header["Accept-Language"]).ToNot(BeNil())
 					Expect(req.Header["Accept-Language"][0]).To(Equal(fmt.Sprintf("%v", "testString")))
-					Expect(req.Header["If-None-Match"]).ToNot(BeNil())
-					Expect(req.Header["If-None-Match"][0]).To(Equal(fmt.Sprintf("%v", "testString")))
 					res.Header().Set("Content-type", "application/json")
 					res.WriteHeader(200)
 					fmt.Fprint(res, `} this is not valid json {`)
@@ -2383,9 +2285,8 @@ var _ = Describe(`DrAutomationServiceV1`, func() {
 
 				// Construct an instance of the GetManageDrOptions model
 				getManageDrOptionsModel := new(drautomationservicev1.GetManageDrOptions)
-				getManageDrOptionsModel.InstanceID = core.StringPtr("crn:v1:staging:public:power-dr-automation:global:a/a123456fb04ceebfb4a9fd38c22334455:123456d3-1122-3344-b67d-4389b44b7bf9::")
+				getManageDrOptionsModel.InstanceID = core.StringPtr("123456d3-1122-3344-b67d-4389b44b7bf9")
 				getManageDrOptionsModel.AcceptLanguage = core.StringPtr("testString")
-				getManageDrOptionsModel.IfNoneMatch = core.StringPtr("testString")
 				getManageDrOptionsModel.Headers = map[string]string{"x-custom-header": "x-custom-value"}
 				// Expect response parsing to fail since we are receiving a text/plain response
 				result, response, operationErr := drAutomationServiceService.GetManageDr(getManageDrOptionsModel)
@@ -2406,7 +2307,7 @@ var _ = Describe(`DrAutomationServiceV1`, func() {
 		})
 	})
 	Describe(`GetManageDr(getManageDrOptions *GetManageDrOptions)`, func() {
-		getManageDrPath := "/drautomation/v1/manage_dr/crn:v1:staging:public:power-dr-automation:global:a%2Fa123456fb04ceebfb4a9fd38c22334455:123456d3-1122-3344-b67d-4389b44b7bf9::"
+		getManageDrPath := "/drautomation/v1/manage_dr/123456d3-1122-3344-b67d-4389b44b7bf9"
 		Context(`Using mock server endpoint with timeout`, func() {
 			BeforeEach(func() {
 				testServer = httptest.NewServer(http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
@@ -2418,8 +2319,6 @@ var _ = Describe(`DrAutomationServiceV1`, func() {
 
 					Expect(req.Header["Accept-Language"]).ToNot(BeNil())
 					Expect(req.Header["Accept-Language"][0]).To(Equal(fmt.Sprintf("%v", "testString")))
-					Expect(req.Header["If-None-Match"]).ToNot(BeNil())
-					Expect(req.Header["If-None-Match"][0]).To(Equal(fmt.Sprintf("%v", "testString")))
 					// Sleep a short time to support a timeout test
 					time.Sleep(100 * time.Millisecond)
 
@@ -2440,9 +2339,8 @@ var _ = Describe(`DrAutomationServiceV1`, func() {
 
 				// Construct an instance of the GetManageDrOptions model
 				getManageDrOptionsModel := new(drautomationservicev1.GetManageDrOptions)
-				getManageDrOptionsModel.InstanceID = core.StringPtr("crn:v1:staging:public:power-dr-automation:global:a/a123456fb04ceebfb4a9fd38c22334455:123456d3-1122-3344-b67d-4389b44b7bf9::")
+				getManageDrOptionsModel.InstanceID = core.StringPtr("123456d3-1122-3344-b67d-4389b44b7bf9")
 				getManageDrOptionsModel.AcceptLanguage = core.StringPtr("testString")
-				getManageDrOptionsModel.IfNoneMatch = core.StringPtr("testString")
 				getManageDrOptionsModel.Headers = map[string]string{"x-custom-header": "x-custom-value"}
 
 				// Invoke operation with a Context to test a timeout error
@@ -2481,8 +2379,6 @@ var _ = Describe(`DrAutomationServiceV1`, func() {
 
 					Expect(req.Header["Accept-Language"]).ToNot(BeNil())
 					Expect(req.Header["Accept-Language"][0]).To(Equal(fmt.Sprintf("%v", "testString")))
-					Expect(req.Header["If-None-Match"]).ToNot(BeNil())
-					Expect(req.Header["If-None-Match"][0]).To(Equal(fmt.Sprintf("%v", "testString")))
 					// Set mock response
 					res.Header().Set("Content-type", "application/json")
 					res.WriteHeader(200)
@@ -2505,9 +2401,8 @@ var _ = Describe(`DrAutomationServiceV1`, func() {
 
 				// Construct an instance of the GetManageDrOptions model
 				getManageDrOptionsModel := new(drautomationservicev1.GetManageDrOptions)
-				getManageDrOptionsModel.InstanceID = core.StringPtr("crn:v1:staging:public:power-dr-automation:global:a/a123456fb04ceebfb4a9fd38c22334455:123456d3-1122-3344-b67d-4389b44b7bf9::")
+				getManageDrOptionsModel.InstanceID = core.StringPtr("123456d3-1122-3344-b67d-4389b44b7bf9")
 				getManageDrOptionsModel.AcceptLanguage = core.StringPtr("testString")
-				getManageDrOptionsModel.IfNoneMatch = core.StringPtr("testString")
 				getManageDrOptionsModel.Headers = map[string]string{"x-custom-header": "x-custom-value"}
 
 				// Invoke operation with valid options model (positive test)
@@ -2527,9 +2422,8 @@ var _ = Describe(`DrAutomationServiceV1`, func() {
 
 				// Construct an instance of the GetManageDrOptions model
 				getManageDrOptionsModel := new(drautomationservicev1.GetManageDrOptions)
-				getManageDrOptionsModel.InstanceID = core.StringPtr("crn:v1:staging:public:power-dr-automation:global:a/a123456fb04ceebfb4a9fd38c22334455:123456d3-1122-3344-b67d-4389b44b7bf9::")
+				getManageDrOptionsModel.InstanceID = core.StringPtr("123456d3-1122-3344-b67d-4389b44b7bf9")
 				getManageDrOptionsModel.AcceptLanguage = core.StringPtr("testString")
-				getManageDrOptionsModel.IfNoneMatch = core.StringPtr("testString")
 				getManageDrOptionsModel.Headers = map[string]string{"x-custom-header": "x-custom-value"}
 				// Invoke operation with empty URL (negative test)
 				err := drAutomationServiceService.SetServiceURL("")
@@ -2570,9 +2464,8 @@ var _ = Describe(`DrAutomationServiceV1`, func() {
 
 				// Construct an instance of the GetManageDrOptions model
 				getManageDrOptionsModel := new(drautomationservicev1.GetManageDrOptions)
-				getManageDrOptionsModel.InstanceID = core.StringPtr("crn:v1:staging:public:power-dr-automation:global:a/a123456fb04ceebfb4a9fd38c22334455:123456d3-1122-3344-b67d-4389b44b7bf9::")
+				getManageDrOptionsModel.InstanceID = core.StringPtr("123456d3-1122-3344-b67d-4389b44b7bf9")
 				getManageDrOptionsModel.AcceptLanguage = core.StringPtr("testString")
-				getManageDrOptionsModel.IfNoneMatch = core.StringPtr("testString")
 				getManageDrOptionsModel.Headers = map[string]string{"x-custom-header": "x-custom-value"}
 
 				// Invoke operation
@@ -2589,7 +2482,7 @@ var _ = Describe(`DrAutomationServiceV1`, func() {
 		})
 	})
 	Describe(`CreateManageDr(createManageDrOptions *CreateManageDrOptions) - Operation response error`, func() {
-		createManageDrPath := "/drautomation/v1/manage_dr/crn:v1:staging:public:power-dr-automation:global:a%2Fa123456fb04ceebfb4a9fd38c22334455:123456d3-1122-3344-b67d-4389b44b7bf9::"
+		createManageDrPath := "/drautomation/v1/manage_dr/123456d3-1122-3344-b67d-4389b44b7bf9"
 		Context(`Using mock server endpoint with invalid JSON response`, func() {
 			BeforeEach(func() {
 				testServer = httptest.NewServer(http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
@@ -2600,8 +2493,6 @@ var _ = Describe(`DrAutomationServiceV1`, func() {
 					Expect(req.Method).To(Equal("POST"))
 					Expect(req.Header["Accept-Language"]).ToNot(BeNil())
 					Expect(req.Header["Accept-Language"][0]).To(Equal(fmt.Sprintf("%v", "testString")))
-					Expect(req.Header["If-None-Match"]).ToNot(BeNil())
-					Expect(req.Header["If-None-Match"][0]).To(Equal(fmt.Sprintf("%v", "testString")))
 					Expect(req.URL.Query()["stand_by_redeploy"]).To(Equal([]string{"testString"}))
 					// TODO: Add check for accepts_incomplete query parameter
 					res.Header().Set("Content-type", "application/json")
@@ -2619,36 +2510,32 @@ var _ = Describe(`DrAutomationServiceV1`, func() {
 
 				// Construct an instance of the CreateManageDrOptions model
 				createManageDrOptionsModel := new(drautomationservicev1.CreateManageDrOptions)
-				createManageDrOptionsModel.InstanceID = core.StringPtr("crn:v1:staging:public:power-dr-automation:global:a/a123456fb04ceebfb4a9fd38c22334455:123456d3-1122-3344-b67d-4389b44b7bf9::")
-				createManageDrOptionsModel.APIKey = core.StringPtr("testString")
-				createManageDrOptionsModel.ClientID = core.StringPtr("d9f2c83a-97d2-4b14-bf62-8eaecc67a122")
-				createManageDrOptionsModel.ClientSecret = core.StringPtr("N8lQ4tP2xM1yT5rS8wK6qR9dD7vF1hU4sA3bE2jG0pL9oX7yC")
-				createManageDrOptionsModel.GUID = core.StringPtr("123e4567-e89b-12d3-a456-426614174000")
+				createManageDrOptionsModel.InstanceID = core.StringPtr("123456d3-1122-3344-b67d-4389b44b7bf9")
 				createManageDrOptionsModel.LocationID = core.StringPtr("dal10")
 				createManageDrOptionsModel.MachineType = core.StringPtr("bx2-4x16")
-				createManageDrOptionsModel.OrchestratorHa = core.BoolPtr(true)
 				createManageDrOptionsModel.OrchestratorLocationType = core.StringPtr("off-premises")
 				createManageDrOptionsModel.OrchestratorName = core.StringPtr("adminUser")
 				createManageDrOptionsModel.OrchestratorPassword = core.StringPtr("testString")
 				createManageDrOptionsModel.OrchestratorWorkspaceID = core.StringPtr("orch-workspace-01")
-				createManageDrOptionsModel.OrchestratorWorkspaceLocation = core.StringPtr("us-south")
+				createManageDrOptionsModel.APIKey = core.StringPtr("testString")
+				createManageDrOptionsModel.ClientID = core.StringPtr("abcd-97d2-1234-bf62-8eaecc67a1234")
+				createManageDrOptionsModel.ClientSecret = core.StringPtr("abcd1234xM1y123wK6qR9123456789bE2jG0pabcdefgh")
+				createManageDrOptionsModel.GUID = core.StringPtr("123e4567-e89b-12d3-a456-426614174000")
+				createManageDrOptionsModel.OrchestratorHa = core.BoolPtr(true)
 				createManageDrOptionsModel.ProxyIP = core.StringPtr("10.40.30.10:8888")
 				createManageDrOptionsModel.RegionID = core.StringPtr("us-south")
 				createManageDrOptionsModel.ResourceInstance = core.StringPtr("crn:v1:bluemix:public:resource-controller::res123")
-				createManageDrOptionsModel.SecondaryWorkspaceID = core.StringPtr("secondary-workspace789")
 				createManageDrOptionsModel.Secret = core.StringPtr("testString")
 				createManageDrOptionsModel.SecretGroup = core.StringPtr("default-secret-group")
 				createManageDrOptionsModel.SSHKeyName = core.StringPtr("my-ssh-key")
 				createManageDrOptionsModel.StandbyMachineType = core.StringPtr("bx2-8x32")
 				createManageDrOptionsModel.StandbyOrchestratorName = core.StringPtr("standbyAdmin")
 				createManageDrOptionsModel.StandbyOrchestratorWorkspaceID = core.StringPtr("orch-standby-02")
-				createManageDrOptionsModel.StandbyOrchestratorWorkspaceLocation = core.StringPtr("us-east")
 				createManageDrOptionsModel.StandbyTier = core.StringPtr("Premium")
 				createManageDrOptionsModel.TenantName = core.StringPtr("xxx.ibm.com")
 				createManageDrOptionsModel.Tier = core.StringPtr("Standard")
 				createManageDrOptionsModel.StandByRedeploy = core.StringPtr("testString")
 				createManageDrOptionsModel.AcceptLanguage = core.StringPtr("testString")
-				createManageDrOptionsModel.IfNoneMatch = core.StringPtr("testString")
 				createManageDrOptionsModel.AcceptsIncomplete = core.BoolPtr(true)
 				createManageDrOptionsModel.Headers = map[string]string{"x-custom-header": "x-custom-value"}
 				// Expect response parsing to fail since we are receiving a text/plain response
@@ -2670,7 +2557,7 @@ var _ = Describe(`DrAutomationServiceV1`, func() {
 		})
 	})
 	Describe(`CreateManageDr(createManageDrOptions *CreateManageDrOptions)`, func() {
-		createManageDrPath := "/drautomation/v1/manage_dr/crn:v1:staging:public:power-dr-automation:global:a%2Fa123456fb04ceebfb4a9fd38c22334455:123456d3-1122-3344-b67d-4389b44b7bf9::"
+		createManageDrPath := "/drautomation/v1/manage_dr/123456d3-1122-3344-b67d-4389b44b7bf9"
 		Context(`Using mock server endpoint with timeout`, func() {
 			BeforeEach(func() {
 				testServer = httptest.NewServer(http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
@@ -2698,8 +2585,6 @@ var _ = Describe(`DrAutomationServiceV1`, func() {
 
 					Expect(req.Header["Accept-Language"]).ToNot(BeNil())
 					Expect(req.Header["Accept-Language"][0]).To(Equal(fmt.Sprintf("%v", "testString")))
-					Expect(req.Header["If-None-Match"]).ToNot(BeNil())
-					Expect(req.Header["If-None-Match"][0]).To(Equal(fmt.Sprintf("%v", "testString")))
 					Expect(req.URL.Query()["stand_by_redeploy"]).To(Equal([]string{"testString"}))
 					// TODO: Add check for accepts_incomplete query parameter
 					// Sleep a short time to support a timeout test
@@ -2722,36 +2607,32 @@ var _ = Describe(`DrAutomationServiceV1`, func() {
 
 				// Construct an instance of the CreateManageDrOptions model
 				createManageDrOptionsModel := new(drautomationservicev1.CreateManageDrOptions)
-				createManageDrOptionsModel.InstanceID = core.StringPtr("crn:v1:staging:public:power-dr-automation:global:a/a123456fb04ceebfb4a9fd38c22334455:123456d3-1122-3344-b67d-4389b44b7bf9::")
-				createManageDrOptionsModel.APIKey = core.StringPtr("testString")
-				createManageDrOptionsModel.ClientID = core.StringPtr("d9f2c83a-97d2-4b14-bf62-8eaecc67a122")
-				createManageDrOptionsModel.ClientSecret = core.StringPtr("N8lQ4tP2xM1yT5rS8wK6qR9dD7vF1hU4sA3bE2jG0pL9oX7yC")
-				createManageDrOptionsModel.GUID = core.StringPtr("123e4567-e89b-12d3-a456-426614174000")
+				createManageDrOptionsModel.InstanceID = core.StringPtr("123456d3-1122-3344-b67d-4389b44b7bf9")
 				createManageDrOptionsModel.LocationID = core.StringPtr("dal10")
 				createManageDrOptionsModel.MachineType = core.StringPtr("bx2-4x16")
-				createManageDrOptionsModel.OrchestratorHa = core.BoolPtr(true)
 				createManageDrOptionsModel.OrchestratorLocationType = core.StringPtr("off-premises")
 				createManageDrOptionsModel.OrchestratorName = core.StringPtr("adminUser")
 				createManageDrOptionsModel.OrchestratorPassword = core.StringPtr("testString")
 				createManageDrOptionsModel.OrchestratorWorkspaceID = core.StringPtr("orch-workspace-01")
-				createManageDrOptionsModel.OrchestratorWorkspaceLocation = core.StringPtr("us-south")
+				createManageDrOptionsModel.APIKey = core.StringPtr("testString")
+				createManageDrOptionsModel.ClientID = core.StringPtr("abcd-97d2-1234-bf62-8eaecc67a1234")
+				createManageDrOptionsModel.ClientSecret = core.StringPtr("abcd1234xM1y123wK6qR9123456789bE2jG0pabcdefgh")
+				createManageDrOptionsModel.GUID = core.StringPtr("123e4567-e89b-12d3-a456-426614174000")
+				createManageDrOptionsModel.OrchestratorHa = core.BoolPtr(true)
 				createManageDrOptionsModel.ProxyIP = core.StringPtr("10.40.30.10:8888")
 				createManageDrOptionsModel.RegionID = core.StringPtr("us-south")
 				createManageDrOptionsModel.ResourceInstance = core.StringPtr("crn:v1:bluemix:public:resource-controller::res123")
-				createManageDrOptionsModel.SecondaryWorkspaceID = core.StringPtr("secondary-workspace789")
 				createManageDrOptionsModel.Secret = core.StringPtr("testString")
 				createManageDrOptionsModel.SecretGroup = core.StringPtr("default-secret-group")
 				createManageDrOptionsModel.SSHKeyName = core.StringPtr("my-ssh-key")
 				createManageDrOptionsModel.StandbyMachineType = core.StringPtr("bx2-8x32")
 				createManageDrOptionsModel.StandbyOrchestratorName = core.StringPtr("standbyAdmin")
 				createManageDrOptionsModel.StandbyOrchestratorWorkspaceID = core.StringPtr("orch-standby-02")
-				createManageDrOptionsModel.StandbyOrchestratorWorkspaceLocation = core.StringPtr("us-east")
 				createManageDrOptionsModel.StandbyTier = core.StringPtr("Premium")
 				createManageDrOptionsModel.TenantName = core.StringPtr("xxx.ibm.com")
 				createManageDrOptionsModel.Tier = core.StringPtr("Standard")
 				createManageDrOptionsModel.StandByRedeploy = core.StringPtr("testString")
 				createManageDrOptionsModel.AcceptLanguage = core.StringPtr("testString")
-				createManageDrOptionsModel.IfNoneMatch = core.StringPtr("testString")
 				createManageDrOptionsModel.AcceptsIncomplete = core.BoolPtr(true)
 				createManageDrOptionsModel.Headers = map[string]string{"x-custom-header": "x-custom-value"}
 
@@ -2807,8 +2688,6 @@ var _ = Describe(`DrAutomationServiceV1`, func() {
 
 					Expect(req.Header["Accept-Language"]).ToNot(BeNil())
 					Expect(req.Header["Accept-Language"][0]).To(Equal(fmt.Sprintf("%v", "testString")))
-					Expect(req.Header["If-None-Match"]).ToNot(BeNil())
-					Expect(req.Header["If-None-Match"][0]).To(Equal(fmt.Sprintf("%v", "testString")))
 					Expect(req.URL.Query()["stand_by_redeploy"]).To(Equal([]string{"testString"}))
 					// TODO: Add check for accepts_incomplete query parameter
 					// Set mock response
@@ -2833,36 +2712,32 @@ var _ = Describe(`DrAutomationServiceV1`, func() {
 
 				// Construct an instance of the CreateManageDrOptions model
 				createManageDrOptionsModel := new(drautomationservicev1.CreateManageDrOptions)
-				createManageDrOptionsModel.InstanceID = core.StringPtr("crn:v1:staging:public:power-dr-automation:global:a/a123456fb04ceebfb4a9fd38c22334455:123456d3-1122-3344-b67d-4389b44b7bf9::")
-				createManageDrOptionsModel.APIKey = core.StringPtr("testString")
-				createManageDrOptionsModel.ClientID = core.StringPtr("d9f2c83a-97d2-4b14-bf62-8eaecc67a122")
-				createManageDrOptionsModel.ClientSecret = core.StringPtr("N8lQ4tP2xM1yT5rS8wK6qR9dD7vF1hU4sA3bE2jG0pL9oX7yC")
-				createManageDrOptionsModel.GUID = core.StringPtr("123e4567-e89b-12d3-a456-426614174000")
+				createManageDrOptionsModel.InstanceID = core.StringPtr("123456d3-1122-3344-b67d-4389b44b7bf9")
 				createManageDrOptionsModel.LocationID = core.StringPtr("dal10")
 				createManageDrOptionsModel.MachineType = core.StringPtr("bx2-4x16")
-				createManageDrOptionsModel.OrchestratorHa = core.BoolPtr(true)
 				createManageDrOptionsModel.OrchestratorLocationType = core.StringPtr("off-premises")
 				createManageDrOptionsModel.OrchestratorName = core.StringPtr("adminUser")
 				createManageDrOptionsModel.OrchestratorPassword = core.StringPtr("testString")
 				createManageDrOptionsModel.OrchestratorWorkspaceID = core.StringPtr("orch-workspace-01")
-				createManageDrOptionsModel.OrchestratorWorkspaceLocation = core.StringPtr("us-south")
+				createManageDrOptionsModel.APIKey = core.StringPtr("testString")
+				createManageDrOptionsModel.ClientID = core.StringPtr("abcd-97d2-1234-bf62-8eaecc67a1234")
+				createManageDrOptionsModel.ClientSecret = core.StringPtr("abcd1234xM1y123wK6qR9123456789bE2jG0pabcdefgh")
+				createManageDrOptionsModel.GUID = core.StringPtr("123e4567-e89b-12d3-a456-426614174000")
+				createManageDrOptionsModel.OrchestratorHa = core.BoolPtr(true)
 				createManageDrOptionsModel.ProxyIP = core.StringPtr("10.40.30.10:8888")
 				createManageDrOptionsModel.RegionID = core.StringPtr("us-south")
 				createManageDrOptionsModel.ResourceInstance = core.StringPtr("crn:v1:bluemix:public:resource-controller::res123")
-				createManageDrOptionsModel.SecondaryWorkspaceID = core.StringPtr("secondary-workspace789")
 				createManageDrOptionsModel.Secret = core.StringPtr("testString")
 				createManageDrOptionsModel.SecretGroup = core.StringPtr("default-secret-group")
 				createManageDrOptionsModel.SSHKeyName = core.StringPtr("my-ssh-key")
 				createManageDrOptionsModel.StandbyMachineType = core.StringPtr("bx2-8x32")
 				createManageDrOptionsModel.StandbyOrchestratorName = core.StringPtr("standbyAdmin")
 				createManageDrOptionsModel.StandbyOrchestratorWorkspaceID = core.StringPtr("orch-standby-02")
-				createManageDrOptionsModel.StandbyOrchestratorWorkspaceLocation = core.StringPtr("us-east")
 				createManageDrOptionsModel.StandbyTier = core.StringPtr("Premium")
 				createManageDrOptionsModel.TenantName = core.StringPtr("xxx.ibm.com")
 				createManageDrOptionsModel.Tier = core.StringPtr("Standard")
 				createManageDrOptionsModel.StandByRedeploy = core.StringPtr("testString")
 				createManageDrOptionsModel.AcceptLanguage = core.StringPtr("testString")
-				createManageDrOptionsModel.IfNoneMatch = core.StringPtr("testString")
 				createManageDrOptionsModel.AcceptsIncomplete = core.BoolPtr(true)
 				createManageDrOptionsModel.Headers = map[string]string{"x-custom-header": "x-custom-value"}
 
@@ -2883,36 +2758,32 @@ var _ = Describe(`DrAutomationServiceV1`, func() {
 
 				// Construct an instance of the CreateManageDrOptions model
 				createManageDrOptionsModel := new(drautomationservicev1.CreateManageDrOptions)
-				createManageDrOptionsModel.InstanceID = core.StringPtr("crn:v1:staging:public:power-dr-automation:global:a/a123456fb04ceebfb4a9fd38c22334455:123456d3-1122-3344-b67d-4389b44b7bf9::")
-				createManageDrOptionsModel.APIKey = core.StringPtr("testString")
-				createManageDrOptionsModel.ClientID = core.StringPtr("d9f2c83a-97d2-4b14-bf62-8eaecc67a122")
-				createManageDrOptionsModel.ClientSecret = core.StringPtr("N8lQ4tP2xM1yT5rS8wK6qR9dD7vF1hU4sA3bE2jG0pL9oX7yC")
-				createManageDrOptionsModel.GUID = core.StringPtr("123e4567-e89b-12d3-a456-426614174000")
+				createManageDrOptionsModel.InstanceID = core.StringPtr("123456d3-1122-3344-b67d-4389b44b7bf9")
 				createManageDrOptionsModel.LocationID = core.StringPtr("dal10")
 				createManageDrOptionsModel.MachineType = core.StringPtr("bx2-4x16")
-				createManageDrOptionsModel.OrchestratorHa = core.BoolPtr(true)
 				createManageDrOptionsModel.OrchestratorLocationType = core.StringPtr("off-premises")
 				createManageDrOptionsModel.OrchestratorName = core.StringPtr("adminUser")
 				createManageDrOptionsModel.OrchestratorPassword = core.StringPtr("testString")
 				createManageDrOptionsModel.OrchestratorWorkspaceID = core.StringPtr("orch-workspace-01")
-				createManageDrOptionsModel.OrchestratorWorkspaceLocation = core.StringPtr("us-south")
+				createManageDrOptionsModel.APIKey = core.StringPtr("testString")
+				createManageDrOptionsModel.ClientID = core.StringPtr("abcd-97d2-1234-bf62-8eaecc67a1234")
+				createManageDrOptionsModel.ClientSecret = core.StringPtr("abcd1234xM1y123wK6qR9123456789bE2jG0pabcdefgh")
+				createManageDrOptionsModel.GUID = core.StringPtr("123e4567-e89b-12d3-a456-426614174000")
+				createManageDrOptionsModel.OrchestratorHa = core.BoolPtr(true)
 				createManageDrOptionsModel.ProxyIP = core.StringPtr("10.40.30.10:8888")
 				createManageDrOptionsModel.RegionID = core.StringPtr("us-south")
 				createManageDrOptionsModel.ResourceInstance = core.StringPtr("crn:v1:bluemix:public:resource-controller::res123")
-				createManageDrOptionsModel.SecondaryWorkspaceID = core.StringPtr("secondary-workspace789")
 				createManageDrOptionsModel.Secret = core.StringPtr("testString")
 				createManageDrOptionsModel.SecretGroup = core.StringPtr("default-secret-group")
 				createManageDrOptionsModel.SSHKeyName = core.StringPtr("my-ssh-key")
 				createManageDrOptionsModel.StandbyMachineType = core.StringPtr("bx2-8x32")
 				createManageDrOptionsModel.StandbyOrchestratorName = core.StringPtr("standbyAdmin")
 				createManageDrOptionsModel.StandbyOrchestratorWorkspaceID = core.StringPtr("orch-standby-02")
-				createManageDrOptionsModel.StandbyOrchestratorWorkspaceLocation = core.StringPtr("us-east")
 				createManageDrOptionsModel.StandbyTier = core.StringPtr("Premium")
 				createManageDrOptionsModel.TenantName = core.StringPtr("xxx.ibm.com")
 				createManageDrOptionsModel.Tier = core.StringPtr("Standard")
 				createManageDrOptionsModel.StandByRedeploy = core.StringPtr("testString")
 				createManageDrOptionsModel.AcceptLanguage = core.StringPtr("testString")
-				createManageDrOptionsModel.IfNoneMatch = core.StringPtr("testString")
 				createManageDrOptionsModel.AcceptsIncomplete = core.BoolPtr(true)
 				createManageDrOptionsModel.Headers = map[string]string{"x-custom-header": "x-custom-value"}
 				// Invoke operation with empty URL (negative test)
@@ -2954,36 +2825,32 @@ var _ = Describe(`DrAutomationServiceV1`, func() {
 
 				// Construct an instance of the CreateManageDrOptions model
 				createManageDrOptionsModel := new(drautomationservicev1.CreateManageDrOptions)
-				createManageDrOptionsModel.InstanceID = core.StringPtr("crn:v1:staging:public:power-dr-automation:global:a/a123456fb04ceebfb4a9fd38c22334455:123456d3-1122-3344-b67d-4389b44b7bf9::")
-				createManageDrOptionsModel.APIKey = core.StringPtr("testString")
-				createManageDrOptionsModel.ClientID = core.StringPtr("d9f2c83a-97d2-4b14-bf62-8eaecc67a122")
-				createManageDrOptionsModel.ClientSecret = core.StringPtr("N8lQ4tP2xM1yT5rS8wK6qR9dD7vF1hU4sA3bE2jG0pL9oX7yC")
-				createManageDrOptionsModel.GUID = core.StringPtr("123e4567-e89b-12d3-a456-426614174000")
+				createManageDrOptionsModel.InstanceID = core.StringPtr("123456d3-1122-3344-b67d-4389b44b7bf9")
 				createManageDrOptionsModel.LocationID = core.StringPtr("dal10")
 				createManageDrOptionsModel.MachineType = core.StringPtr("bx2-4x16")
-				createManageDrOptionsModel.OrchestratorHa = core.BoolPtr(true)
 				createManageDrOptionsModel.OrchestratorLocationType = core.StringPtr("off-premises")
 				createManageDrOptionsModel.OrchestratorName = core.StringPtr("adminUser")
 				createManageDrOptionsModel.OrchestratorPassword = core.StringPtr("testString")
 				createManageDrOptionsModel.OrchestratorWorkspaceID = core.StringPtr("orch-workspace-01")
-				createManageDrOptionsModel.OrchestratorWorkspaceLocation = core.StringPtr("us-south")
+				createManageDrOptionsModel.APIKey = core.StringPtr("testString")
+				createManageDrOptionsModel.ClientID = core.StringPtr("abcd-97d2-1234-bf62-8eaecc67a1234")
+				createManageDrOptionsModel.ClientSecret = core.StringPtr("abcd1234xM1y123wK6qR9123456789bE2jG0pabcdefgh")
+				createManageDrOptionsModel.GUID = core.StringPtr("123e4567-e89b-12d3-a456-426614174000")
+				createManageDrOptionsModel.OrchestratorHa = core.BoolPtr(true)
 				createManageDrOptionsModel.ProxyIP = core.StringPtr("10.40.30.10:8888")
 				createManageDrOptionsModel.RegionID = core.StringPtr("us-south")
 				createManageDrOptionsModel.ResourceInstance = core.StringPtr("crn:v1:bluemix:public:resource-controller::res123")
-				createManageDrOptionsModel.SecondaryWorkspaceID = core.StringPtr("secondary-workspace789")
 				createManageDrOptionsModel.Secret = core.StringPtr("testString")
 				createManageDrOptionsModel.SecretGroup = core.StringPtr("default-secret-group")
 				createManageDrOptionsModel.SSHKeyName = core.StringPtr("my-ssh-key")
 				createManageDrOptionsModel.StandbyMachineType = core.StringPtr("bx2-8x32")
 				createManageDrOptionsModel.StandbyOrchestratorName = core.StringPtr("standbyAdmin")
 				createManageDrOptionsModel.StandbyOrchestratorWorkspaceID = core.StringPtr("orch-standby-02")
-				createManageDrOptionsModel.StandbyOrchestratorWorkspaceLocation = core.StringPtr("us-east")
 				createManageDrOptionsModel.StandbyTier = core.StringPtr("Premium")
 				createManageDrOptionsModel.TenantName = core.StringPtr("xxx.ibm.com")
 				createManageDrOptionsModel.Tier = core.StringPtr("Standard")
 				createManageDrOptionsModel.StandByRedeploy = core.StringPtr("testString")
 				createManageDrOptionsModel.AcceptLanguage = core.StringPtr("testString")
-				createManageDrOptionsModel.IfNoneMatch = core.StringPtr("testString")
 				createManageDrOptionsModel.AcceptsIncomplete = core.BoolPtr(true)
 				createManageDrOptionsModel.Headers = map[string]string{"x-custom-header": "x-custom-value"}
 
@@ -3001,7 +2868,7 @@ var _ = Describe(`DrAutomationServiceV1`, func() {
 		})
 	})
 	Describe(`GetLastOperation(getLastOperationOptions *GetLastOperationOptions) - Operation response error`, func() {
-		getLastOperationPath := "/drautomation/v1/last_operation/crn:v1:staging:public:power-dr-automation:global:a%2Fa123456fb04ceebfb4a9fd38c22334455:123456d3-1122-3344-b67d-4389b44b7bf9::"
+		getLastOperationPath := "/drautomation/v1/last_operation/123456d3-1122-3344-b67d-4389b44b7bf9"
 		Context(`Using mock server endpoint with invalid JSON response`, func() {
 			BeforeEach(func() {
 				testServer = httptest.NewServer(http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
@@ -3012,8 +2879,6 @@ var _ = Describe(`DrAutomationServiceV1`, func() {
 					Expect(req.Method).To(Equal("GET"))
 					Expect(req.Header["Accept-Language"]).ToNot(BeNil())
 					Expect(req.Header["Accept-Language"][0]).To(Equal(fmt.Sprintf("%v", "testString")))
-					Expect(req.Header["If-None-Match"]).ToNot(BeNil())
-					Expect(req.Header["If-None-Match"][0]).To(Equal(fmt.Sprintf("%v", "testString")))
 					res.Header().Set("Content-type", "application/json")
 					res.WriteHeader(200)
 					fmt.Fprint(res, `} this is not valid json {`)
@@ -3029,9 +2894,8 @@ var _ = Describe(`DrAutomationServiceV1`, func() {
 
 				// Construct an instance of the GetLastOperationOptions model
 				getLastOperationOptionsModel := new(drautomationservicev1.GetLastOperationOptions)
-				getLastOperationOptionsModel.InstanceID = core.StringPtr("crn:v1:staging:public:power-dr-automation:global:a/a123456fb04ceebfb4a9fd38c22334455:123456d3-1122-3344-b67d-4389b44b7bf9::")
+				getLastOperationOptionsModel.InstanceID = core.StringPtr("123456d3-1122-3344-b67d-4389b44b7bf9")
 				getLastOperationOptionsModel.AcceptLanguage = core.StringPtr("testString")
-				getLastOperationOptionsModel.IfNoneMatch = core.StringPtr("testString")
 				getLastOperationOptionsModel.Headers = map[string]string{"x-custom-header": "x-custom-value"}
 				// Expect response parsing to fail since we are receiving a text/plain response
 				result, response, operationErr := drAutomationServiceService.GetLastOperation(getLastOperationOptionsModel)
@@ -3052,7 +2916,7 @@ var _ = Describe(`DrAutomationServiceV1`, func() {
 		})
 	})
 	Describe(`GetLastOperation(getLastOperationOptions *GetLastOperationOptions)`, func() {
-		getLastOperationPath := "/drautomation/v1/last_operation/crn:v1:staging:public:power-dr-automation:global:a%2Fa123456fb04ceebfb4a9fd38c22334455:123456d3-1122-3344-b67d-4389b44b7bf9::"
+		getLastOperationPath := "/drautomation/v1/last_operation/123456d3-1122-3344-b67d-4389b44b7bf9"
 		Context(`Using mock server endpoint with timeout`, func() {
 			BeforeEach(func() {
 				testServer = httptest.NewServer(http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
@@ -3064,8 +2928,6 @@ var _ = Describe(`DrAutomationServiceV1`, func() {
 
 					Expect(req.Header["Accept-Language"]).ToNot(BeNil())
 					Expect(req.Header["Accept-Language"][0]).To(Equal(fmt.Sprintf("%v", "testString")))
-					Expect(req.Header["If-None-Match"]).ToNot(BeNil())
-					Expect(req.Header["If-None-Match"][0]).To(Equal(fmt.Sprintf("%v", "testString")))
 					// Sleep a short time to support a timeout test
 					time.Sleep(100 * time.Millisecond)
 
@@ -3086,9 +2948,8 @@ var _ = Describe(`DrAutomationServiceV1`, func() {
 
 				// Construct an instance of the GetLastOperationOptions model
 				getLastOperationOptionsModel := new(drautomationservicev1.GetLastOperationOptions)
-				getLastOperationOptionsModel.InstanceID = core.StringPtr("crn:v1:staging:public:power-dr-automation:global:a/a123456fb04ceebfb4a9fd38c22334455:123456d3-1122-3344-b67d-4389b44b7bf9::")
+				getLastOperationOptionsModel.InstanceID = core.StringPtr("123456d3-1122-3344-b67d-4389b44b7bf9")
 				getLastOperationOptionsModel.AcceptLanguage = core.StringPtr("testString")
-				getLastOperationOptionsModel.IfNoneMatch = core.StringPtr("testString")
 				getLastOperationOptionsModel.Headers = map[string]string{"x-custom-header": "x-custom-value"}
 
 				// Invoke operation with a Context to test a timeout error
@@ -3127,8 +2988,6 @@ var _ = Describe(`DrAutomationServiceV1`, func() {
 
 					Expect(req.Header["Accept-Language"]).ToNot(BeNil())
 					Expect(req.Header["Accept-Language"][0]).To(Equal(fmt.Sprintf("%v", "testString")))
-					Expect(req.Header["If-None-Match"]).ToNot(BeNil())
-					Expect(req.Header["If-None-Match"][0]).To(Equal(fmt.Sprintf("%v", "testString")))
 					// Set mock response
 					res.Header().Set("Content-type", "application/json")
 					res.WriteHeader(200)
@@ -3151,9 +3010,8 @@ var _ = Describe(`DrAutomationServiceV1`, func() {
 
 				// Construct an instance of the GetLastOperationOptions model
 				getLastOperationOptionsModel := new(drautomationservicev1.GetLastOperationOptions)
-				getLastOperationOptionsModel.InstanceID = core.StringPtr("crn:v1:staging:public:power-dr-automation:global:a/a123456fb04ceebfb4a9fd38c22334455:123456d3-1122-3344-b67d-4389b44b7bf9::")
+				getLastOperationOptionsModel.InstanceID = core.StringPtr("123456d3-1122-3344-b67d-4389b44b7bf9")
 				getLastOperationOptionsModel.AcceptLanguage = core.StringPtr("testString")
-				getLastOperationOptionsModel.IfNoneMatch = core.StringPtr("testString")
 				getLastOperationOptionsModel.Headers = map[string]string{"x-custom-header": "x-custom-value"}
 
 				// Invoke operation with valid options model (positive test)
@@ -3173,9 +3031,8 @@ var _ = Describe(`DrAutomationServiceV1`, func() {
 
 				// Construct an instance of the GetLastOperationOptions model
 				getLastOperationOptionsModel := new(drautomationservicev1.GetLastOperationOptions)
-				getLastOperationOptionsModel.InstanceID = core.StringPtr("crn:v1:staging:public:power-dr-automation:global:a/a123456fb04ceebfb4a9fd38c22334455:123456d3-1122-3344-b67d-4389b44b7bf9::")
+				getLastOperationOptionsModel.InstanceID = core.StringPtr("123456d3-1122-3344-b67d-4389b44b7bf9")
 				getLastOperationOptionsModel.AcceptLanguage = core.StringPtr("testString")
-				getLastOperationOptionsModel.IfNoneMatch = core.StringPtr("testString")
 				getLastOperationOptionsModel.Headers = map[string]string{"x-custom-header": "x-custom-value"}
 				// Invoke operation with empty URL (negative test)
 				err := drAutomationServiceService.SetServiceURL("")
@@ -3216,9 +3073,8 @@ var _ = Describe(`DrAutomationServiceV1`, func() {
 
 				// Construct an instance of the GetLastOperationOptions model
 				getLastOperationOptionsModel := new(drautomationservicev1.GetLastOperationOptions)
-				getLastOperationOptionsModel.InstanceID = core.StringPtr("crn:v1:staging:public:power-dr-automation:global:a/a123456fb04ceebfb4a9fd38c22334455:123456d3-1122-3344-b67d-4389b44b7bf9::")
+				getLastOperationOptionsModel.InstanceID = core.StringPtr("123456d3-1122-3344-b67d-4389b44b7bf9")
 				getLastOperationOptionsModel.AcceptLanguage = core.StringPtr("testString")
-				getLastOperationOptionsModel.IfNoneMatch = core.StringPtr("testString")
 				getLastOperationOptionsModel.Headers = map[string]string{"x-custom-header": "x-custom-value"}
 
 				// Invoke operation
@@ -3235,7 +3091,7 @@ var _ = Describe(`DrAutomationServiceV1`, func() {
 		})
 	})
 	Describe(`ListEvents(listEventsOptions *ListEventsOptions) - Operation response error`, func() {
-		listEventsPath := "/drautomation/v1/service_instances/crn:v1:staging:public:power-dr-automation:global:a%2Fa123456fb04ceebfb4a9fd38c22334455:123456d3-1122-3344-b67d-4389b44b7bf9::/events"
+		listEventsPath := "/drautomation/v1/service_instances/123456d3-1122-3344-b67d-4389b44b7bf9/events"
 		Context(`Using mock server endpoint with invalid JSON response`, func() {
 			BeforeEach(func() {
 				testServer = httptest.NewServer(http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
@@ -3246,8 +3102,6 @@ var _ = Describe(`DrAutomationServiceV1`, func() {
 					Expect(req.Method).To(Equal("GET"))
 					Expect(req.Header["Accept-Language"]).ToNot(BeNil())
 					Expect(req.Header["Accept-Language"][0]).To(Equal(fmt.Sprintf("%v", "testString")))
-					Expect(req.Header["If-None-Match"]).ToNot(BeNil())
-					Expect(req.Header["If-None-Match"][0]).To(Equal(fmt.Sprintf("%v", "testString")))
 					Expect(req.URL.Query()["time"]).To(Equal([]string{"2025-06-19T23:59:59Z"}))
 					Expect(req.URL.Query()["from_time"]).To(Equal([]string{"2025-06-19T00:00:00Z"}))
 					Expect(req.URL.Query()["to_time"]).To(Equal([]string{"2025-06-19T23:59:59Z"}))
@@ -3266,12 +3120,11 @@ var _ = Describe(`DrAutomationServiceV1`, func() {
 
 				// Construct an instance of the ListEventsOptions model
 				listEventsOptionsModel := new(drautomationservicev1.ListEventsOptions)
-				listEventsOptionsModel.InstanceID = core.StringPtr("crn:v1:staging:public:power-dr-automation:global:a/a123456fb04ceebfb4a9fd38c22334455:123456d3-1122-3344-b67d-4389b44b7bf9::")
+				listEventsOptionsModel.InstanceID = core.StringPtr("123456d3-1122-3344-b67d-4389b44b7bf9")
 				listEventsOptionsModel.Time = core.StringPtr("2025-06-19T23:59:59Z")
 				listEventsOptionsModel.FromTime = core.StringPtr("2025-06-19T00:00:00Z")
 				listEventsOptionsModel.ToTime = core.StringPtr("2025-06-19T23:59:59Z")
 				listEventsOptionsModel.AcceptLanguage = core.StringPtr("testString")
-				listEventsOptionsModel.IfNoneMatch = core.StringPtr("testString")
 				listEventsOptionsModel.Headers = map[string]string{"x-custom-header": "x-custom-value"}
 				// Expect response parsing to fail since we are receiving a text/plain response
 				result, response, operationErr := drAutomationServiceService.ListEvents(listEventsOptionsModel)
@@ -3292,7 +3145,7 @@ var _ = Describe(`DrAutomationServiceV1`, func() {
 		})
 	})
 	Describe(`ListEvents(listEventsOptions *ListEventsOptions)`, func() {
-		listEventsPath := "/drautomation/v1/service_instances/crn:v1:staging:public:power-dr-automation:global:a%2Fa123456fb04ceebfb4a9fd38c22334455:123456d3-1122-3344-b67d-4389b44b7bf9::/events"
+		listEventsPath := "/drautomation/v1/service_instances/123456d3-1122-3344-b67d-4389b44b7bf9/events"
 		Context(`Using mock server endpoint with timeout`, func() {
 			BeforeEach(func() {
 				testServer = httptest.NewServer(http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
@@ -3304,8 +3157,6 @@ var _ = Describe(`DrAutomationServiceV1`, func() {
 
 					Expect(req.Header["Accept-Language"]).ToNot(BeNil())
 					Expect(req.Header["Accept-Language"][0]).To(Equal(fmt.Sprintf("%v", "testString")))
-					Expect(req.Header["If-None-Match"]).ToNot(BeNil())
-					Expect(req.Header["If-None-Match"][0]).To(Equal(fmt.Sprintf("%v", "testString")))
 					Expect(req.URL.Query()["time"]).To(Equal([]string{"2025-06-19T23:59:59Z"}))
 					Expect(req.URL.Query()["from_time"]).To(Equal([]string{"2025-06-19T00:00:00Z"}))
 					Expect(req.URL.Query()["to_time"]).To(Equal([]string{"2025-06-19T23:59:59Z"}))
@@ -3329,12 +3180,11 @@ var _ = Describe(`DrAutomationServiceV1`, func() {
 
 				// Construct an instance of the ListEventsOptions model
 				listEventsOptionsModel := new(drautomationservicev1.ListEventsOptions)
-				listEventsOptionsModel.InstanceID = core.StringPtr("crn:v1:staging:public:power-dr-automation:global:a/a123456fb04ceebfb4a9fd38c22334455:123456d3-1122-3344-b67d-4389b44b7bf9::")
+				listEventsOptionsModel.InstanceID = core.StringPtr("123456d3-1122-3344-b67d-4389b44b7bf9")
 				listEventsOptionsModel.Time = core.StringPtr("2025-06-19T23:59:59Z")
 				listEventsOptionsModel.FromTime = core.StringPtr("2025-06-19T00:00:00Z")
 				listEventsOptionsModel.ToTime = core.StringPtr("2025-06-19T23:59:59Z")
 				listEventsOptionsModel.AcceptLanguage = core.StringPtr("testString")
-				listEventsOptionsModel.IfNoneMatch = core.StringPtr("testString")
 				listEventsOptionsModel.Headers = map[string]string{"x-custom-header": "x-custom-value"}
 
 				// Invoke operation with a Context to test a timeout error
@@ -3373,8 +3223,6 @@ var _ = Describe(`DrAutomationServiceV1`, func() {
 
 					Expect(req.Header["Accept-Language"]).ToNot(BeNil())
 					Expect(req.Header["Accept-Language"][0]).To(Equal(fmt.Sprintf("%v", "testString")))
-					Expect(req.Header["If-None-Match"]).ToNot(BeNil())
-					Expect(req.Header["If-None-Match"][0]).To(Equal(fmt.Sprintf("%v", "testString")))
 					Expect(req.URL.Query()["time"]).To(Equal([]string{"2025-06-19T23:59:59Z"}))
 					Expect(req.URL.Query()["from_time"]).To(Equal([]string{"2025-06-19T00:00:00Z"}))
 					Expect(req.URL.Query()["to_time"]).To(Equal([]string{"2025-06-19T23:59:59Z"}))
@@ -3400,12 +3248,11 @@ var _ = Describe(`DrAutomationServiceV1`, func() {
 
 				// Construct an instance of the ListEventsOptions model
 				listEventsOptionsModel := new(drautomationservicev1.ListEventsOptions)
-				listEventsOptionsModel.InstanceID = core.StringPtr("crn:v1:staging:public:power-dr-automation:global:a/a123456fb04ceebfb4a9fd38c22334455:123456d3-1122-3344-b67d-4389b44b7bf9::")
+				listEventsOptionsModel.InstanceID = core.StringPtr("123456d3-1122-3344-b67d-4389b44b7bf9")
 				listEventsOptionsModel.Time = core.StringPtr("2025-06-19T23:59:59Z")
 				listEventsOptionsModel.FromTime = core.StringPtr("2025-06-19T00:00:00Z")
 				listEventsOptionsModel.ToTime = core.StringPtr("2025-06-19T23:59:59Z")
 				listEventsOptionsModel.AcceptLanguage = core.StringPtr("testString")
-				listEventsOptionsModel.IfNoneMatch = core.StringPtr("testString")
 				listEventsOptionsModel.Headers = map[string]string{"x-custom-header": "x-custom-value"}
 
 				// Invoke operation with valid options model (positive test)
@@ -3425,12 +3272,11 @@ var _ = Describe(`DrAutomationServiceV1`, func() {
 
 				// Construct an instance of the ListEventsOptions model
 				listEventsOptionsModel := new(drautomationservicev1.ListEventsOptions)
-				listEventsOptionsModel.InstanceID = core.StringPtr("crn:v1:staging:public:power-dr-automation:global:a/a123456fb04ceebfb4a9fd38c22334455:123456d3-1122-3344-b67d-4389b44b7bf9::")
+				listEventsOptionsModel.InstanceID = core.StringPtr("123456d3-1122-3344-b67d-4389b44b7bf9")
 				listEventsOptionsModel.Time = core.StringPtr("2025-06-19T23:59:59Z")
 				listEventsOptionsModel.FromTime = core.StringPtr("2025-06-19T00:00:00Z")
 				listEventsOptionsModel.ToTime = core.StringPtr("2025-06-19T23:59:59Z")
 				listEventsOptionsModel.AcceptLanguage = core.StringPtr("testString")
-				listEventsOptionsModel.IfNoneMatch = core.StringPtr("testString")
 				listEventsOptionsModel.Headers = map[string]string{"x-custom-header": "x-custom-value"}
 				// Invoke operation with empty URL (negative test)
 				err := drAutomationServiceService.SetServiceURL("")
@@ -3471,12 +3317,11 @@ var _ = Describe(`DrAutomationServiceV1`, func() {
 
 				// Construct an instance of the ListEventsOptions model
 				listEventsOptionsModel := new(drautomationservicev1.ListEventsOptions)
-				listEventsOptionsModel.InstanceID = core.StringPtr("crn:v1:staging:public:power-dr-automation:global:a/a123456fb04ceebfb4a9fd38c22334455:123456d3-1122-3344-b67d-4389b44b7bf9::")
+				listEventsOptionsModel.InstanceID = core.StringPtr("123456d3-1122-3344-b67d-4389b44b7bf9")
 				listEventsOptionsModel.Time = core.StringPtr("2025-06-19T23:59:59Z")
 				listEventsOptionsModel.FromTime = core.StringPtr("2025-06-19T00:00:00Z")
 				listEventsOptionsModel.ToTime = core.StringPtr("2025-06-19T23:59:59Z")
 				listEventsOptionsModel.AcceptLanguage = core.StringPtr("testString")
-				listEventsOptionsModel.IfNoneMatch = core.StringPtr("testString")
 				listEventsOptionsModel.Headers = map[string]string{"x-custom-header": "x-custom-value"}
 
 				// Invoke operation
@@ -3493,7 +3338,7 @@ var _ = Describe(`DrAutomationServiceV1`, func() {
 		})
 	})
 	Describe(`GetEvent(getEventOptions *GetEventOptions) - Operation response error`, func() {
-		getEventPath := "/drautomation/v1/service_instances/crn:v1:staging:public:power-dr-automation:global:a%2Fa123456fb04ceebfb4a9fd38c22334455:123456d3-1122-3344-b67d-4389b44b7bf9::/events/00116b2a-9326-4024-839e-fb5364b76898"
+		getEventPath := "/drautomation/v1/service_instances/123456d3-1122-3344-b67d-4389b44b7bf9/events/00116b2a-9326-4024-839e-fb5364b76898"
 		Context(`Using mock server endpoint with invalid JSON response`, func() {
 			BeforeEach(func() {
 				testServer = httptest.NewServer(http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
@@ -3504,8 +3349,6 @@ var _ = Describe(`DrAutomationServiceV1`, func() {
 					Expect(req.Method).To(Equal("GET"))
 					Expect(req.Header["Accept-Language"]).ToNot(BeNil())
 					Expect(req.Header["Accept-Language"][0]).To(Equal(fmt.Sprintf("%v", "testString")))
-					Expect(req.Header["If-None-Match"]).ToNot(BeNil())
-					Expect(req.Header["If-None-Match"][0]).To(Equal(fmt.Sprintf("%v", "testString")))
 					res.Header().Set("Content-type", "application/json")
 					res.WriteHeader(200)
 					fmt.Fprint(res, `} this is not valid json {`)
@@ -3521,10 +3364,9 @@ var _ = Describe(`DrAutomationServiceV1`, func() {
 
 				// Construct an instance of the GetEventOptions model
 				getEventOptionsModel := new(drautomationservicev1.GetEventOptions)
-				getEventOptionsModel.InstanceID = core.StringPtr("crn:v1:staging:public:power-dr-automation:global:a/a123456fb04ceebfb4a9fd38c22334455:123456d3-1122-3344-b67d-4389b44b7bf9::")
+				getEventOptionsModel.InstanceID = core.StringPtr("123456d3-1122-3344-b67d-4389b44b7bf9")
 				getEventOptionsModel.EventID = core.StringPtr("00116b2a-9326-4024-839e-fb5364b76898")
 				getEventOptionsModel.AcceptLanguage = core.StringPtr("testString")
-				getEventOptionsModel.IfNoneMatch = core.StringPtr("testString")
 				getEventOptionsModel.Headers = map[string]string{"x-custom-header": "x-custom-value"}
 				// Expect response parsing to fail since we are receiving a text/plain response
 				result, response, operationErr := drAutomationServiceService.GetEvent(getEventOptionsModel)
@@ -3545,7 +3387,7 @@ var _ = Describe(`DrAutomationServiceV1`, func() {
 		})
 	})
 	Describe(`GetEvent(getEventOptions *GetEventOptions)`, func() {
-		getEventPath := "/drautomation/v1/service_instances/crn:v1:staging:public:power-dr-automation:global:a%2Fa123456fb04ceebfb4a9fd38c22334455:123456d3-1122-3344-b67d-4389b44b7bf9::/events/00116b2a-9326-4024-839e-fb5364b76898"
+		getEventPath := "/drautomation/v1/service_instances/123456d3-1122-3344-b67d-4389b44b7bf9/events/00116b2a-9326-4024-839e-fb5364b76898"
 		Context(`Using mock server endpoint with timeout`, func() {
 			BeforeEach(func() {
 				testServer = httptest.NewServer(http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
@@ -3557,8 +3399,6 @@ var _ = Describe(`DrAutomationServiceV1`, func() {
 
 					Expect(req.Header["Accept-Language"]).ToNot(BeNil())
 					Expect(req.Header["Accept-Language"][0]).To(Equal(fmt.Sprintf("%v", "testString")))
-					Expect(req.Header["If-None-Match"]).ToNot(BeNil())
-					Expect(req.Header["If-None-Match"][0]).To(Equal(fmt.Sprintf("%v", "testString")))
 					// Sleep a short time to support a timeout test
 					time.Sleep(100 * time.Millisecond)
 
@@ -3579,10 +3419,9 @@ var _ = Describe(`DrAutomationServiceV1`, func() {
 
 				// Construct an instance of the GetEventOptions model
 				getEventOptionsModel := new(drautomationservicev1.GetEventOptions)
-				getEventOptionsModel.InstanceID = core.StringPtr("crn:v1:staging:public:power-dr-automation:global:a/a123456fb04ceebfb4a9fd38c22334455:123456d3-1122-3344-b67d-4389b44b7bf9::")
+				getEventOptionsModel.InstanceID = core.StringPtr("123456d3-1122-3344-b67d-4389b44b7bf9")
 				getEventOptionsModel.EventID = core.StringPtr("00116b2a-9326-4024-839e-fb5364b76898")
 				getEventOptionsModel.AcceptLanguage = core.StringPtr("testString")
-				getEventOptionsModel.IfNoneMatch = core.StringPtr("testString")
 				getEventOptionsModel.Headers = map[string]string{"x-custom-header": "x-custom-value"}
 
 				// Invoke operation with a Context to test a timeout error
@@ -3621,8 +3460,6 @@ var _ = Describe(`DrAutomationServiceV1`, func() {
 
 					Expect(req.Header["Accept-Language"]).ToNot(BeNil())
 					Expect(req.Header["Accept-Language"][0]).To(Equal(fmt.Sprintf("%v", "testString")))
-					Expect(req.Header["If-None-Match"]).ToNot(BeNil())
-					Expect(req.Header["If-None-Match"][0]).To(Equal(fmt.Sprintf("%v", "testString")))
 					// Set mock response
 					res.Header().Set("Content-type", "application/json")
 					res.WriteHeader(200)
@@ -3645,10 +3482,9 @@ var _ = Describe(`DrAutomationServiceV1`, func() {
 
 				// Construct an instance of the GetEventOptions model
 				getEventOptionsModel := new(drautomationservicev1.GetEventOptions)
-				getEventOptionsModel.InstanceID = core.StringPtr("crn:v1:staging:public:power-dr-automation:global:a/a123456fb04ceebfb4a9fd38c22334455:123456d3-1122-3344-b67d-4389b44b7bf9::")
+				getEventOptionsModel.InstanceID = core.StringPtr("123456d3-1122-3344-b67d-4389b44b7bf9")
 				getEventOptionsModel.EventID = core.StringPtr("00116b2a-9326-4024-839e-fb5364b76898")
 				getEventOptionsModel.AcceptLanguage = core.StringPtr("testString")
-				getEventOptionsModel.IfNoneMatch = core.StringPtr("testString")
 				getEventOptionsModel.Headers = map[string]string{"x-custom-header": "x-custom-value"}
 
 				// Invoke operation with valid options model (positive test)
@@ -3668,10 +3504,9 @@ var _ = Describe(`DrAutomationServiceV1`, func() {
 
 				// Construct an instance of the GetEventOptions model
 				getEventOptionsModel := new(drautomationservicev1.GetEventOptions)
-				getEventOptionsModel.InstanceID = core.StringPtr("crn:v1:staging:public:power-dr-automation:global:a/a123456fb04ceebfb4a9fd38c22334455:123456d3-1122-3344-b67d-4389b44b7bf9::")
+				getEventOptionsModel.InstanceID = core.StringPtr("123456d3-1122-3344-b67d-4389b44b7bf9")
 				getEventOptionsModel.EventID = core.StringPtr("00116b2a-9326-4024-839e-fb5364b76898")
 				getEventOptionsModel.AcceptLanguage = core.StringPtr("testString")
-				getEventOptionsModel.IfNoneMatch = core.StringPtr("testString")
 				getEventOptionsModel.Headers = map[string]string{"x-custom-header": "x-custom-value"}
 				// Invoke operation with empty URL (negative test)
 				err := drAutomationServiceService.SetServiceURL("")
@@ -3712,10 +3547,9 @@ var _ = Describe(`DrAutomationServiceV1`, func() {
 
 				// Construct an instance of the GetEventOptions model
 				getEventOptionsModel := new(drautomationservicev1.GetEventOptions)
-				getEventOptionsModel.InstanceID = core.StringPtr("crn:v1:staging:public:power-dr-automation:global:a/a123456fb04ceebfb4a9fd38c22334455:123456d3-1122-3344-b67d-4389b44b7bf9::")
+				getEventOptionsModel.InstanceID = core.StringPtr("123456d3-1122-3344-b67d-4389b44b7bf9")
 				getEventOptionsModel.EventID = core.StringPtr("00116b2a-9326-4024-839e-fb5364b76898")
 				getEventOptionsModel.AcceptLanguage = core.StringPtr("testString")
-				getEventOptionsModel.IfNoneMatch = core.StringPtr("testString")
 				getEventOptionsModel.Headers = map[string]string{"x-custom-header": "x-custom-value"}
 
 				// Invoke operation
@@ -3739,275 +3573,247 @@ var _ = Describe(`DrAutomationServiceV1`, func() {
 			})
 			It(`Invoke NewCreateApikeyOptions successfully`, func() {
 				// Construct an instance of the CreateApikeyOptions model
-				instanceID := "crn:v1:staging:public:power-dr-automation:global:a/a123456fb04ceebfb4a9fd38c22334455:123456d3-1122-3344-b67d-4389b44b7bf9::"
+				instanceID := "123456d3-1122-3344-b67d-4389b44b7bf9"
 				createApikeyOptionsAPIKey := "abcdefrg_izklmnop_fxbEED"
 				createApikeyOptionsModel := drAutomationServiceService.NewCreateApikeyOptions(instanceID, createApikeyOptionsAPIKey)
-				createApikeyOptionsModel.SetInstanceID("crn:v1:staging:public:power-dr-automation:global:a/a123456fb04ceebfb4a9fd38c22334455:123456d3-1122-3344-b67d-4389b44b7bf9::")
+				createApikeyOptionsModel.SetInstanceID("123456d3-1122-3344-b67d-4389b44b7bf9")
 				createApikeyOptionsModel.SetAPIKey("abcdefrg_izklmnop_fxbEED")
 				createApikeyOptionsModel.SetAcceptLanguage("testString")
-				createApikeyOptionsModel.SetIfNoneMatch("testString")
 				createApikeyOptionsModel.SetHeaders(map[string]string{"foo": "bar"})
 				Expect(createApikeyOptionsModel).ToNot(BeNil())
-				Expect(createApikeyOptionsModel.InstanceID).To(Equal(core.StringPtr("crn:v1:staging:public:power-dr-automation:global:a/a123456fb04ceebfb4a9fd38c22334455:123456d3-1122-3344-b67d-4389b44b7bf9::")))
+				Expect(createApikeyOptionsModel.InstanceID).To(Equal(core.StringPtr("123456d3-1122-3344-b67d-4389b44b7bf9")))
 				Expect(createApikeyOptionsModel.APIKey).To(Equal(core.StringPtr("abcdefrg_izklmnop_fxbEED")))
 				Expect(createApikeyOptionsModel.AcceptLanguage).To(Equal(core.StringPtr("testString")))
-				Expect(createApikeyOptionsModel.IfNoneMatch).To(Equal(core.StringPtr("testString")))
 				Expect(createApikeyOptionsModel.Headers).To(Equal(map[string]string{"foo": "bar"}))
 			})
 			It(`Invoke NewCreateManageDrOptions successfully`, func() {
 				// Construct an instance of the CreateManageDrOptions model
-				instanceID := "crn:v1:staging:public:power-dr-automation:global:a/a123456fb04ceebfb4a9fd38c22334455:123456d3-1122-3344-b67d-4389b44b7bf9::"
-				createManageDrOptionsModel := drAutomationServiceService.NewCreateManageDrOptions(instanceID)
-				createManageDrOptionsModel.SetInstanceID("crn:v1:staging:public:power-dr-automation:global:a/a123456fb04ceebfb4a9fd38c22334455:123456d3-1122-3344-b67d-4389b44b7bf9::")
-				createManageDrOptionsModel.SetAPIKey("testString")
-				createManageDrOptionsModel.SetClientID("d9f2c83a-97d2-4b14-bf62-8eaecc67a122")
-				createManageDrOptionsModel.SetClientSecret("N8lQ4tP2xM1yT5rS8wK6qR9dD7vF1hU4sA3bE2jG0pL9oX7yC")
-				createManageDrOptionsModel.SetGUID("123e4567-e89b-12d3-a456-426614174000")
+				instanceID := "123456d3-1122-3344-b67d-4389b44b7bf9"
+				createManageDrOptionsLocationID := "dal10"
+				createManageDrOptionsMachineType := "bx2-4x16"
+				createManageDrOptionsOrchestratorLocationType := "off-premises"
+				createManageDrOptionsOrchestratorName := "adminUser"
+				createManageDrOptionsOrchestratorPassword := "testString"
+				createManageDrOptionsOrchestratorWorkspaceID := "orch-workspace-01"
+				createManageDrOptionsModel := drAutomationServiceService.NewCreateManageDrOptions(instanceID, createManageDrOptionsLocationID, createManageDrOptionsMachineType, createManageDrOptionsOrchestratorLocationType, createManageDrOptionsOrchestratorName, createManageDrOptionsOrchestratorPassword, createManageDrOptionsOrchestratorWorkspaceID)
+				createManageDrOptionsModel.SetInstanceID("123456d3-1122-3344-b67d-4389b44b7bf9")
 				createManageDrOptionsModel.SetLocationID("dal10")
 				createManageDrOptionsModel.SetMachineType("bx2-4x16")
-				createManageDrOptionsModel.SetOrchestratorHa(true)
 				createManageDrOptionsModel.SetOrchestratorLocationType("off-premises")
 				createManageDrOptionsModel.SetOrchestratorName("adminUser")
 				createManageDrOptionsModel.SetOrchestratorPassword("testString")
 				createManageDrOptionsModel.SetOrchestratorWorkspaceID("orch-workspace-01")
-				createManageDrOptionsModel.SetOrchestratorWorkspaceLocation("us-south")
+				createManageDrOptionsModel.SetAPIKey("testString")
+				createManageDrOptionsModel.SetClientID("abcd-97d2-1234-bf62-8eaecc67a1234")
+				createManageDrOptionsModel.SetClientSecret("abcd1234xM1y123wK6qR9123456789bE2jG0pabcdefgh")
+				createManageDrOptionsModel.SetGUID("123e4567-e89b-12d3-a456-426614174000")
+				createManageDrOptionsModel.SetOrchestratorHa(true)
 				createManageDrOptionsModel.SetProxyIP("10.40.30.10:8888")
 				createManageDrOptionsModel.SetRegionID("us-south")
 				createManageDrOptionsModel.SetResourceInstance("crn:v1:bluemix:public:resource-controller::res123")
-				createManageDrOptionsModel.SetSecondaryWorkspaceID("secondary-workspace789")
 				createManageDrOptionsModel.SetSecret("testString")
 				createManageDrOptionsModel.SetSecretGroup("default-secret-group")
 				createManageDrOptionsModel.SetSSHKeyName("my-ssh-key")
 				createManageDrOptionsModel.SetStandbyMachineType("bx2-8x32")
 				createManageDrOptionsModel.SetStandbyOrchestratorName("standbyAdmin")
 				createManageDrOptionsModel.SetStandbyOrchestratorWorkspaceID("orch-standby-02")
-				createManageDrOptionsModel.SetStandbyOrchestratorWorkspaceLocation("us-east")
 				createManageDrOptionsModel.SetStandbyTier("Premium")
 				createManageDrOptionsModel.SetTenantName("xxx.ibm.com")
 				createManageDrOptionsModel.SetTier("Standard")
 				createManageDrOptionsModel.SetStandByRedeploy("testString")
 				createManageDrOptionsModel.SetAcceptLanguage("testString")
-				createManageDrOptionsModel.SetIfNoneMatch("testString")
 				createManageDrOptionsModel.SetAcceptsIncomplete(true)
 				createManageDrOptionsModel.SetHeaders(map[string]string{"foo": "bar"})
 				Expect(createManageDrOptionsModel).ToNot(BeNil())
-				Expect(createManageDrOptionsModel.InstanceID).To(Equal(core.StringPtr("crn:v1:staging:public:power-dr-automation:global:a/a123456fb04ceebfb4a9fd38c22334455:123456d3-1122-3344-b67d-4389b44b7bf9::")))
-				Expect(createManageDrOptionsModel.APIKey).To(Equal(core.StringPtr("testString")))
-				Expect(createManageDrOptionsModel.ClientID).To(Equal(core.StringPtr("d9f2c83a-97d2-4b14-bf62-8eaecc67a122")))
-				Expect(createManageDrOptionsModel.ClientSecret).To(Equal(core.StringPtr("N8lQ4tP2xM1yT5rS8wK6qR9dD7vF1hU4sA3bE2jG0pL9oX7yC")))
-				Expect(createManageDrOptionsModel.GUID).To(Equal(core.StringPtr("123e4567-e89b-12d3-a456-426614174000")))
+				Expect(createManageDrOptionsModel.InstanceID).To(Equal(core.StringPtr("123456d3-1122-3344-b67d-4389b44b7bf9")))
 				Expect(createManageDrOptionsModel.LocationID).To(Equal(core.StringPtr("dal10")))
 				Expect(createManageDrOptionsModel.MachineType).To(Equal(core.StringPtr("bx2-4x16")))
-				Expect(createManageDrOptionsModel.OrchestratorHa).To(Equal(core.BoolPtr(true)))
 				Expect(createManageDrOptionsModel.OrchestratorLocationType).To(Equal(core.StringPtr("off-premises")))
 				Expect(createManageDrOptionsModel.OrchestratorName).To(Equal(core.StringPtr("adminUser")))
 				Expect(createManageDrOptionsModel.OrchestratorPassword).To(Equal(core.StringPtr("testString")))
 				Expect(createManageDrOptionsModel.OrchestratorWorkspaceID).To(Equal(core.StringPtr("orch-workspace-01")))
-				Expect(createManageDrOptionsModel.OrchestratorWorkspaceLocation).To(Equal(core.StringPtr("us-south")))
+				Expect(createManageDrOptionsModel.APIKey).To(Equal(core.StringPtr("testString")))
+				Expect(createManageDrOptionsModel.ClientID).To(Equal(core.StringPtr("abcd-97d2-1234-bf62-8eaecc67a1234")))
+				Expect(createManageDrOptionsModel.ClientSecret).To(Equal(core.StringPtr("abcd1234xM1y123wK6qR9123456789bE2jG0pabcdefgh")))
+				Expect(createManageDrOptionsModel.GUID).To(Equal(core.StringPtr("123e4567-e89b-12d3-a456-426614174000")))
+				Expect(createManageDrOptionsModel.OrchestratorHa).To(Equal(core.BoolPtr(true)))
 				Expect(createManageDrOptionsModel.ProxyIP).To(Equal(core.StringPtr("10.40.30.10:8888")))
 				Expect(createManageDrOptionsModel.RegionID).To(Equal(core.StringPtr("us-south")))
 				Expect(createManageDrOptionsModel.ResourceInstance).To(Equal(core.StringPtr("crn:v1:bluemix:public:resource-controller::res123")))
-				Expect(createManageDrOptionsModel.SecondaryWorkspaceID).To(Equal(core.StringPtr("secondary-workspace789")))
 				Expect(createManageDrOptionsModel.Secret).To(Equal(core.StringPtr("testString")))
 				Expect(createManageDrOptionsModel.SecretGroup).To(Equal(core.StringPtr("default-secret-group")))
 				Expect(createManageDrOptionsModel.SSHKeyName).To(Equal(core.StringPtr("my-ssh-key")))
 				Expect(createManageDrOptionsModel.StandbyMachineType).To(Equal(core.StringPtr("bx2-8x32")))
 				Expect(createManageDrOptionsModel.StandbyOrchestratorName).To(Equal(core.StringPtr("standbyAdmin")))
 				Expect(createManageDrOptionsModel.StandbyOrchestratorWorkspaceID).To(Equal(core.StringPtr("orch-standby-02")))
-				Expect(createManageDrOptionsModel.StandbyOrchestratorWorkspaceLocation).To(Equal(core.StringPtr("us-east")))
 				Expect(createManageDrOptionsModel.StandbyTier).To(Equal(core.StringPtr("Premium")))
 				Expect(createManageDrOptionsModel.TenantName).To(Equal(core.StringPtr("xxx.ibm.com")))
 				Expect(createManageDrOptionsModel.Tier).To(Equal(core.StringPtr("Standard")))
 				Expect(createManageDrOptionsModel.StandByRedeploy).To(Equal(core.StringPtr("testString")))
 				Expect(createManageDrOptionsModel.AcceptLanguage).To(Equal(core.StringPtr("testString")))
-				Expect(createManageDrOptionsModel.IfNoneMatch).To(Equal(core.StringPtr("testString")))
 				Expect(createManageDrOptionsModel.AcceptsIncomplete).To(Equal(core.BoolPtr(true)))
 				Expect(createManageDrOptionsModel.Headers).To(Equal(map[string]string{"foo": "bar"}))
 			})
 			It(`Invoke NewGetApikeyOptions successfully`, func() {
 				// Construct an instance of the GetApikeyOptions model
-				instanceID := "crn:v1:staging:public:power-dr-automation:global:a/a123456fb04ceebfb4a9fd38c22334455:123456d3-1122-3344-b67d-4389b44b7bf9::"
+				instanceID := "123456d3-1122-3344-b67d-4389b44b7bf9"
 				getApikeyOptionsModel := drAutomationServiceService.NewGetApikeyOptions(instanceID)
-				getApikeyOptionsModel.SetInstanceID("crn:v1:staging:public:power-dr-automation:global:a/a123456fb04ceebfb4a9fd38c22334455:123456d3-1122-3344-b67d-4389b44b7bf9::")
+				getApikeyOptionsModel.SetInstanceID("123456d3-1122-3344-b67d-4389b44b7bf9")
 				getApikeyOptionsModel.SetAcceptLanguage("testString")
-				getApikeyOptionsModel.SetIfNoneMatch("testString")
 				getApikeyOptionsModel.SetHeaders(map[string]string{"foo": "bar"})
 				Expect(getApikeyOptionsModel).ToNot(BeNil())
-				Expect(getApikeyOptionsModel.InstanceID).To(Equal(core.StringPtr("crn:v1:staging:public:power-dr-automation:global:a/a123456fb04ceebfb4a9fd38c22334455:123456d3-1122-3344-b67d-4389b44b7bf9::")))
+				Expect(getApikeyOptionsModel.InstanceID).To(Equal(core.StringPtr("123456d3-1122-3344-b67d-4389b44b7bf9")))
 				Expect(getApikeyOptionsModel.AcceptLanguage).To(Equal(core.StringPtr("testString")))
-				Expect(getApikeyOptionsModel.IfNoneMatch).To(Equal(core.StringPtr("testString")))
 				Expect(getApikeyOptionsModel.Headers).To(Equal(map[string]string{"foo": "bar"}))
 			})
 			It(`Invoke NewGetDrGrsLocationPairOptions successfully`, func() {
 				// Construct an instance of the GetDrGrsLocationPairOptions model
-				instanceID := "crn:v1:staging:public:power-dr-automation:global:a/a123456fb04ceebfb4a9fd38c22334455:123456d3-1122-3344-b67d-4389b44b7bf9::"
+				instanceID := "123456d3-1122-3344-b67d-4389b44b7bf9"
 				getDrGrsLocationPairOptionsModel := drAutomationServiceService.NewGetDrGrsLocationPairOptions(instanceID)
-				getDrGrsLocationPairOptionsModel.SetInstanceID("crn:v1:staging:public:power-dr-automation:global:a/a123456fb04ceebfb4a9fd38c22334455:123456d3-1122-3344-b67d-4389b44b7bf9::")
+				getDrGrsLocationPairOptionsModel.SetInstanceID("123456d3-1122-3344-b67d-4389b44b7bf9")
 				getDrGrsLocationPairOptionsModel.SetAcceptLanguage("testString")
-				getDrGrsLocationPairOptionsModel.SetIfNoneMatch("testString")
 				getDrGrsLocationPairOptionsModel.SetHeaders(map[string]string{"foo": "bar"})
 				Expect(getDrGrsLocationPairOptionsModel).ToNot(BeNil())
-				Expect(getDrGrsLocationPairOptionsModel.InstanceID).To(Equal(core.StringPtr("crn:v1:staging:public:power-dr-automation:global:a/a123456fb04ceebfb4a9fd38c22334455:123456d3-1122-3344-b67d-4389b44b7bf9::")))
+				Expect(getDrGrsLocationPairOptionsModel.InstanceID).To(Equal(core.StringPtr("123456d3-1122-3344-b67d-4389b44b7bf9")))
 				Expect(getDrGrsLocationPairOptionsModel.AcceptLanguage).To(Equal(core.StringPtr("testString")))
-				Expect(getDrGrsLocationPairOptionsModel.IfNoneMatch).To(Equal(core.StringPtr("testString")))
 				Expect(getDrGrsLocationPairOptionsModel.Headers).To(Equal(map[string]string{"foo": "bar"}))
 			})
 			It(`Invoke NewGetDrLocationsOptions successfully`, func() {
 				// Construct an instance of the GetDrLocationsOptions model
-				instanceID := "crn:v1:staging:public:power-dr-automation:global:a/a123456fb04ceebfb4a9fd38c22334455:123456d3-1122-3344-b67d-4389b44b7bf9::"
+				instanceID := "123456d3-1122-3344-b67d-4389b44b7bf9"
 				getDrLocationsOptionsModel := drAutomationServiceService.NewGetDrLocationsOptions(instanceID)
-				getDrLocationsOptionsModel.SetInstanceID("crn:v1:staging:public:power-dr-automation:global:a/a123456fb04ceebfb4a9fd38c22334455:123456d3-1122-3344-b67d-4389b44b7bf9::")
+				getDrLocationsOptionsModel.SetInstanceID("123456d3-1122-3344-b67d-4389b44b7bf9")
 				getDrLocationsOptionsModel.SetAcceptLanguage("testString")
-				getDrLocationsOptionsModel.SetIfNoneMatch("testString")
 				getDrLocationsOptionsModel.SetHeaders(map[string]string{"foo": "bar"})
 				Expect(getDrLocationsOptionsModel).ToNot(BeNil())
-				Expect(getDrLocationsOptionsModel.InstanceID).To(Equal(core.StringPtr("crn:v1:staging:public:power-dr-automation:global:a/a123456fb04ceebfb4a9fd38c22334455:123456d3-1122-3344-b67d-4389b44b7bf9::")))
+				Expect(getDrLocationsOptionsModel.InstanceID).To(Equal(core.StringPtr("123456d3-1122-3344-b67d-4389b44b7bf9")))
 				Expect(getDrLocationsOptionsModel.AcceptLanguage).To(Equal(core.StringPtr("testString")))
-				Expect(getDrLocationsOptionsModel.IfNoneMatch).To(Equal(core.StringPtr("testString")))
 				Expect(getDrLocationsOptionsModel.Headers).To(Equal(map[string]string{"foo": "bar"}))
 			})
 			It(`Invoke NewGetDrManagedVMOptions successfully`, func() {
 				// Construct an instance of the GetDrManagedVMOptions model
-				instanceID := "crn:v1:staging:public:power-dr-automation:global:a/a123456fb04ceebfb4a9fd38c22334455:123456d3-1122-3344-b67d-4389b44b7bf9::"
+				instanceID := "123456d3-1122-3344-b67d-4389b44b7bf9"
 				getDrManagedVMOptionsModel := drAutomationServiceService.NewGetDrManagedVMOptions(instanceID)
-				getDrManagedVMOptionsModel.SetInstanceID("crn:v1:staging:public:power-dr-automation:global:a/a123456fb04ceebfb4a9fd38c22334455:123456d3-1122-3344-b67d-4389b44b7bf9::")
+				getDrManagedVMOptionsModel.SetInstanceID("123456d3-1122-3344-b67d-4389b44b7bf9")
 				getDrManagedVMOptionsModel.SetAcceptLanguage("testString")
-				getDrManagedVMOptionsModel.SetIfNoneMatch("testString")
 				getDrManagedVMOptionsModel.SetHeaders(map[string]string{"foo": "bar"})
 				Expect(getDrManagedVMOptionsModel).ToNot(BeNil())
-				Expect(getDrManagedVMOptionsModel.InstanceID).To(Equal(core.StringPtr("crn:v1:staging:public:power-dr-automation:global:a/a123456fb04ceebfb4a9fd38c22334455:123456d3-1122-3344-b67d-4389b44b7bf9::")))
+				Expect(getDrManagedVMOptionsModel.InstanceID).To(Equal(core.StringPtr("123456d3-1122-3344-b67d-4389b44b7bf9")))
 				Expect(getDrManagedVMOptionsModel.AcceptLanguage).To(Equal(core.StringPtr("testString")))
-				Expect(getDrManagedVMOptionsModel.IfNoneMatch).To(Equal(core.StringPtr("testString")))
 				Expect(getDrManagedVMOptionsModel.Headers).To(Equal(map[string]string{"foo": "bar"}))
 			})
 			It(`Invoke NewGetDrSummaryOptions successfully`, func() {
 				// Construct an instance of the GetDrSummaryOptions model
-				instanceID := "crn:v1:staging:public:power-dr-automation:global:a/a123456fb04ceebfb4a9fd38c22334455:123456d3-1122-3344-b67d-4389b44b7bf9::"
+				instanceID := "123456d3-1122-3344-b67d-4389b44b7bf9"
 				getDrSummaryOptionsModel := drAutomationServiceService.NewGetDrSummaryOptions(instanceID)
-				getDrSummaryOptionsModel.SetInstanceID("crn:v1:staging:public:power-dr-automation:global:a/a123456fb04ceebfb4a9fd38c22334455:123456d3-1122-3344-b67d-4389b44b7bf9::")
+				getDrSummaryOptionsModel.SetInstanceID("123456d3-1122-3344-b67d-4389b44b7bf9")
 				getDrSummaryOptionsModel.SetAcceptLanguage("testString")
-				getDrSummaryOptionsModel.SetIfNoneMatch("testString")
 				getDrSummaryOptionsModel.SetHeaders(map[string]string{"foo": "bar"})
 				Expect(getDrSummaryOptionsModel).ToNot(BeNil())
-				Expect(getDrSummaryOptionsModel.InstanceID).To(Equal(core.StringPtr("crn:v1:staging:public:power-dr-automation:global:a/a123456fb04ceebfb4a9fd38c22334455:123456d3-1122-3344-b67d-4389b44b7bf9::")))
+				Expect(getDrSummaryOptionsModel.InstanceID).To(Equal(core.StringPtr("123456d3-1122-3344-b67d-4389b44b7bf9")))
 				Expect(getDrSummaryOptionsModel.AcceptLanguage).To(Equal(core.StringPtr("testString")))
-				Expect(getDrSummaryOptionsModel.IfNoneMatch).To(Equal(core.StringPtr("testString")))
 				Expect(getDrSummaryOptionsModel.Headers).To(Equal(map[string]string{"foo": "bar"}))
 			})
 			It(`Invoke NewGetEventOptions successfully`, func() {
 				// Construct an instance of the GetEventOptions model
-				instanceID := "crn:v1:staging:public:power-dr-automation:global:a/a123456fb04ceebfb4a9fd38c22334455:123456d3-1122-3344-b67d-4389b44b7bf9::"
+				instanceID := "123456d3-1122-3344-b67d-4389b44b7bf9"
 				eventID := "00116b2a-9326-4024-839e-fb5364b76898"
 				getEventOptionsModel := drAutomationServiceService.NewGetEventOptions(instanceID, eventID)
-				getEventOptionsModel.SetInstanceID("crn:v1:staging:public:power-dr-automation:global:a/a123456fb04ceebfb4a9fd38c22334455:123456d3-1122-3344-b67d-4389b44b7bf9::")
+				getEventOptionsModel.SetInstanceID("123456d3-1122-3344-b67d-4389b44b7bf9")
 				getEventOptionsModel.SetEventID("00116b2a-9326-4024-839e-fb5364b76898")
 				getEventOptionsModel.SetAcceptLanguage("testString")
-				getEventOptionsModel.SetIfNoneMatch("testString")
 				getEventOptionsModel.SetHeaders(map[string]string{"foo": "bar"})
 				Expect(getEventOptionsModel).ToNot(BeNil())
-				Expect(getEventOptionsModel.InstanceID).To(Equal(core.StringPtr("crn:v1:staging:public:power-dr-automation:global:a/a123456fb04ceebfb4a9fd38c22334455:123456d3-1122-3344-b67d-4389b44b7bf9::")))
+				Expect(getEventOptionsModel.InstanceID).To(Equal(core.StringPtr("123456d3-1122-3344-b67d-4389b44b7bf9")))
 				Expect(getEventOptionsModel.EventID).To(Equal(core.StringPtr("00116b2a-9326-4024-839e-fb5364b76898")))
 				Expect(getEventOptionsModel.AcceptLanguage).To(Equal(core.StringPtr("testString")))
-				Expect(getEventOptionsModel.IfNoneMatch).To(Equal(core.StringPtr("testString")))
 				Expect(getEventOptionsModel.Headers).To(Equal(map[string]string{"foo": "bar"}))
 			})
 			It(`Invoke NewGetLastOperationOptions successfully`, func() {
 				// Construct an instance of the GetLastOperationOptions model
-				instanceID := "crn:v1:staging:public:power-dr-automation:global:a/a123456fb04ceebfb4a9fd38c22334455:123456d3-1122-3344-b67d-4389b44b7bf9::"
+				instanceID := "123456d3-1122-3344-b67d-4389b44b7bf9"
 				getLastOperationOptionsModel := drAutomationServiceService.NewGetLastOperationOptions(instanceID)
-				getLastOperationOptionsModel.SetInstanceID("crn:v1:staging:public:power-dr-automation:global:a/a123456fb04ceebfb4a9fd38c22334455:123456d3-1122-3344-b67d-4389b44b7bf9::")
+				getLastOperationOptionsModel.SetInstanceID("123456d3-1122-3344-b67d-4389b44b7bf9")
 				getLastOperationOptionsModel.SetAcceptLanguage("testString")
-				getLastOperationOptionsModel.SetIfNoneMatch("testString")
 				getLastOperationOptionsModel.SetHeaders(map[string]string{"foo": "bar"})
 				Expect(getLastOperationOptionsModel).ToNot(BeNil())
-				Expect(getLastOperationOptionsModel.InstanceID).To(Equal(core.StringPtr("crn:v1:staging:public:power-dr-automation:global:a/a123456fb04ceebfb4a9fd38c22334455:123456d3-1122-3344-b67d-4389b44b7bf9::")))
+				Expect(getLastOperationOptionsModel.InstanceID).To(Equal(core.StringPtr("123456d3-1122-3344-b67d-4389b44b7bf9")))
 				Expect(getLastOperationOptionsModel.AcceptLanguage).To(Equal(core.StringPtr("testString")))
-				Expect(getLastOperationOptionsModel.IfNoneMatch).To(Equal(core.StringPtr("testString")))
 				Expect(getLastOperationOptionsModel.Headers).To(Equal(map[string]string{"foo": "bar"}))
 			})
 			It(`Invoke NewGetMachineTypeOptions successfully`, func() {
 				// Construct an instance of the GetMachineTypeOptions model
-				instanceID := "crn:v1:staging:public:power-dr-automation:global:a/a123456fb04ceebfb4a9fd38c22334455:123456d3-1122-3344-b67d-4389b44b7bf9::"
+				instanceID := "123456d3-1122-3344-b67d-4389b44b7bf9"
 				primaryWorkspaceName := "Test-workspace-wdc06"
 				getMachineTypeOptionsModel := drAutomationServiceService.NewGetMachineTypeOptions(instanceID, primaryWorkspaceName)
-				getMachineTypeOptionsModel.SetInstanceID("crn:v1:staging:public:power-dr-automation:global:a/a123456fb04ceebfb4a9fd38c22334455:123456d3-1122-3344-b67d-4389b44b7bf9::")
+				getMachineTypeOptionsModel.SetInstanceID("123456d3-1122-3344-b67d-4389b44b7bf9")
 				getMachineTypeOptionsModel.SetPrimaryWorkspaceName("Test-workspace-wdc06")
 				getMachineTypeOptionsModel.SetAcceptLanguage("testString")
-				getMachineTypeOptionsModel.SetIfNoneMatch("testString")
 				getMachineTypeOptionsModel.SetStandbyWorkspaceName("Test-workspace-wdc07")
 				getMachineTypeOptionsModel.SetHeaders(map[string]string{"foo": "bar"})
 				Expect(getMachineTypeOptionsModel).ToNot(BeNil())
-				Expect(getMachineTypeOptionsModel.InstanceID).To(Equal(core.StringPtr("crn:v1:staging:public:power-dr-automation:global:a/a123456fb04ceebfb4a9fd38c22334455:123456d3-1122-3344-b67d-4389b44b7bf9::")))
+				Expect(getMachineTypeOptionsModel.InstanceID).To(Equal(core.StringPtr("123456d3-1122-3344-b67d-4389b44b7bf9")))
 				Expect(getMachineTypeOptionsModel.PrimaryWorkspaceName).To(Equal(core.StringPtr("Test-workspace-wdc06")))
 				Expect(getMachineTypeOptionsModel.AcceptLanguage).To(Equal(core.StringPtr("testString")))
-				Expect(getMachineTypeOptionsModel.IfNoneMatch).To(Equal(core.StringPtr("testString")))
 				Expect(getMachineTypeOptionsModel.StandbyWorkspaceName).To(Equal(core.StringPtr("Test-workspace-wdc07")))
 				Expect(getMachineTypeOptionsModel.Headers).To(Equal(map[string]string{"foo": "bar"}))
 			})
 			It(`Invoke NewGetManageDrOptions successfully`, func() {
 				// Construct an instance of the GetManageDrOptions model
-				instanceID := "crn:v1:staging:public:power-dr-automation:global:a/a123456fb04ceebfb4a9fd38c22334455:123456d3-1122-3344-b67d-4389b44b7bf9::"
+				instanceID := "123456d3-1122-3344-b67d-4389b44b7bf9"
 				getManageDrOptionsModel := drAutomationServiceService.NewGetManageDrOptions(instanceID)
-				getManageDrOptionsModel.SetInstanceID("crn:v1:staging:public:power-dr-automation:global:a/a123456fb04ceebfb4a9fd38c22334455:123456d3-1122-3344-b67d-4389b44b7bf9::")
+				getManageDrOptionsModel.SetInstanceID("123456d3-1122-3344-b67d-4389b44b7bf9")
 				getManageDrOptionsModel.SetAcceptLanguage("testString")
-				getManageDrOptionsModel.SetIfNoneMatch("testString")
 				getManageDrOptionsModel.SetHeaders(map[string]string{"foo": "bar"})
 				Expect(getManageDrOptionsModel).ToNot(BeNil())
-				Expect(getManageDrOptionsModel.InstanceID).To(Equal(core.StringPtr("crn:v1:staging:public:power-dr-automation:global:a/a123456fb04ceebfb4a9fd38c22334455:123456d3-1122-3344-b67d-4389b44b7bf9::")))
+				Expect(getManageDrOptionsModel.InstanceID).To(Equal(core.StringPtr("123456d3-1122-3344-b67d-4389b44b7bf9")))
 				Expect(getManageDrOptionsModel.AcceptLanguage).To(Equal(core.StringPtr("testString")))
-				Expect(getManageDrOptionsModel.IfNoneMatch).To(Equal(core.StringPtr("testString")))
 				Expect(getManageDrOptionsModel.Headers).To(Equal(map[string]string{"foo": "bar"}))
 			})
 			It(`Invoke NewGetPowervsWorkspacesOptions successfully`, func() {
 				// Construct an instance of the GetPowervsWorkspacesOptions model
-				instanceID := "crn:v1:staging:public:power-dr-automation:global:a/a123456fb04ceebfb4a9fd38c22334455:123456d3-1122-3344-b67d-4389b44b7bf9::"
+				instanceID := "123456d3-1122-3344-b67d-4389b44b7bf9"
 				locationID := "testString"
 				getPowervsWorkspacesOptionsModel := drAutomationServiceService.NewGetPowervsWorkspacesOptions(instanceID, locationID)
-				getPowervsWorkspacesOptionsModel.SetInstanceID("crn:v1:staging:public:power-dr-automation:global:a/a123456fb04ceebfb4a9fd38c22334455:123456d3-1122-3344-b67d-4389b44b7bf9::")
+				getPowervsWorkspacesOptionsModel.SetInstanceID("123456d3-1122-3344-b67d-4389b44b7bf9")
 				getPowervsWorkspacesOptionsModel.SetLocationID("testString")
-				getPowervsWorkspacesOptionsModel.SetIfNoneMatch("testString")
 				getPowervsWorkspacesOptionsModel.SetHeaders(map[string]string{"foo": "bar"})
 				Expect(getPowervsWorkspacesOptionsModel).ToNot(BeNil())
-				Expect(getPowervsWorkspacesOptionsModel.InstanceID).To(Equal(core.StringPtr("crn:v1:staging:public:power-dr-automation:global:a/a123456fb04ceebfb4a9fd38c22334455:123456d3-1122-3344-b67d-4389b44b7bf9::")))
+				Expect(getPowervsWorkspacesOptionsModel.InstanceID).To(Equal(core.StringPtr("123456d3-1122-3344-b67d-4389b44b7bf9")))
 				Expect(getPowervsWorkspacesOptionsModel.LocationID).To(Equal(core.StringPtr("testString")))
-				Expect(getPowervsWorkspacesOptionsModel.IfNoneMatch).To(Equal(core.StringPtr("testString")))
 				Expect(getPowervsWorkspacesOptionsModel.Headers).To(Equal(map[string]string{"foo": "bar"}))
 			})
 			It(`Invoke NewListEventsOptions successfully`, func() {
 				// Construct an instance of the ListEventsOptions model
-				instanceID := "crn:v1:staging:public:power-dr-automation:global:a/a123456fb04ceebfb4a9fd38c22334455:123456d3-1122-3344-b67d-4389b44b7bf9::"
+				instanceID := "123456d3-1122-3344-b67d-4389b44b7bf9"
 				listEventsOptionsModel := drAutomationServiceService.NewListEventsOptions(instanceID)
-				listEventsOptionsModel.SetInstanceID("crn:v1:staging:public:power-dr-automation:global:a/a123456fb04ceebfb4a9fd38c22334455:123456d3-1122-3344-b67d-4389b44b7bf9::")
+				listEventsOptionsModel.SetInstanceID("123456d3-1122-3344-b67d-4389b44b7bf9")
 				listEventsOptionsModel.SetTime("2025-06-19T23:59:59Z")
 				listEventsOptionsModel.SetFromTime("2025-06-19T00:00:00Z")
 				listEventsOptionsModel.SetToTime("2025-06-19T23:59:59Z")
 				listEventsOptionsModel.SetAcceptLanguage("testString")
-				listEventsOptionsModel.SetIfNoneMatch("testString")
 				listEventsOptionsModel.SetHeaders(map[string]string{"foo": "bar"})
 				Expect(listEventsOptionsModel).ToNot(BeNil())
-				Expect(listEventsOptionsModel.InstanceID).To(Equal(core.StringPtr("crn:v1:staging:public:power-dr-automation:global:a/a123456fb04ceebfb4a9fd38c22334455:123456d3-1122-3344-b67d-4389b44b7bf9::")))
+				Expect(listEventsOptionsModel.InstanceID).To(Equal(core.StringPtr("123456d3-1122-3344-b67d-4389b44b7bf9")))
 				Expect(listEventsOptionsModel.Time).To(Equal(core.StringPtr("2025-06-19T23:59:59Z")))
 				Expect(listEventsOptionsModel.FromTime).To(Equal(core.StringPtr("2025-06-19T00:00:00Z")))
 				Expect(listEventsOptionsModel.ToTime).To(Equal(core.StringPtr("2025-06-19T23:59:59Z")))
 				Expect(listEventsOptionsModel.AcceptLanguage).To(Equal(core.StringPtr("testString")))
-				Expect(listEventsOptionsModel.IfNoneMatch).To(Equal(core.StringPtr("testString")))
 				Expect(listEventsOptionsModel.Headers).To(Equal(map[string]string{"foo": "bar"}))
 			})
 			It(`Invoke NewUpdateApikeyOptions successfully`, func() {
 				// Construct an instance of the UpdateApikeyOptions model
-				instanceID := "crn:v1:staging:public:power-dr-automation:global:a/a123456fb04ceebfb4a9fd38c22334455:123456d3-1122-3344-b67d-4389b44b7bf9::"
+				instanceID := "123456d3-1122-3344-b67d-4389b44b7bf9"
 				updateApikeyOptionsAPIKey := "adfadfdsafsdfdsf"
 				updateApikeyOptionsModel := drAutomationServiceService.NewUpdateApikeyOptions(instanceID, updateApikeyOptionsAPIKey)
-				updateApikeyOptionsModel.SetInstanceID("crn:v1:staging:public:power-dr-automation:global:a/a123456fb04ceebfb4a9fd38c22334455:123456d3-1122-3344-b67d-4389b44b7bf9::")
+				updateApikeyOptionsModel.SetInstanceID("123456d3-1122-3344-b67d-4389b44b7bf9")
 				updateApikeyOptionsModel.SetAPIKey("adfadfdsafsdfdsf")
 				updateApikeyOptionsModel.SetAcceptLanguage("testString")
-				updateApikeyOptionsModel.SetIfNoneMatch("testString")
 				updateApikeyOptionsModel.SetHeaders(map[string]string{"foo": "bar"})
 				Expect(updateApikeyOptionsModel).ToNot(BeNil())
-				Expect(updateApikeyOptionsModel.InstanceID).To(Equal(core.StringPtr("crn:v1:staging:public:power-dr-automation:global:a/a123456fb04ceebfb4a9fd38c22334455:123456d3-1122-3344-b67d-4389b44b7bf9::")))
+				Expect(updateApikeyOptionsModel.InstanceID).To(Equal(core.StringPtr("123456d3-1122-3344-b67d-4389b44b7bf9")))
 				Expect(updateApikeyOptionsModel.APIKey).To(Equal(core.StringPtr("adfadfdsafsdfdsf")))
 				Expect(updateApikeyOptionsModel.AcceptLanguage).To(Equal(core.StringPtr("testString")))
-				Expect(updateApikeyOptionsModel.IfNoneMatch).To(Equal(core.StringPtr("testString")))
 				Expect(updateApikeyOptionsModel.Headers).To(Equal(map[string]string{"foo": "bar"}))
 			})
 		})
