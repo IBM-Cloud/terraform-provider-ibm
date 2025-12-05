@@ -1,6 +1,7 @@
 package backuprecovery
 
 import (
+	"encoding/json"
 	"fmt"
 	"os"
 	"strings"
@@ -92,4 +93,92 @@ func AddInstanceFields(resource *schema.Resource) *schema.Resource {
 	}
 
 	return resource
+}
+
+func BackupRecoverManagerEnvFallBack(endpointsFile, endpointType, region, str string) string {
+	if v := os.Getenv(str); v != "" {
+		return v
+	}
+	return fileFallBack(endpointsFile, endpointType, region, "IBMCLOUD_BACKUP_RECOVERY_MANAGER_API_KEY")
+
+}
+
+func fileFallBack(f, visibility, region, key string) string {
+	fileMap := map[string]interface{}{}
+	err := json.Unmarshal([]byte(f), &fileMap)
+	if err != nil {
+		return ""
+	}
+	if val, ok := fileMap[key]; ok {
+		if v, ok := val.(map[string]interface{})[visibility]; ok {
+			if r, ok := v.(map[string]interface{})[region]; ok && r.(string) != "" {
+				return r.(string)
+			}
+		}
+	}
+	return ""
+}
+
+// Clone the base backup recovery client and set the API endpoint per the instance
+func setManagerClientAuth(originalClient *backuprecoveryv1.BackupRecoveryManagementSreApiV1, bmxsession *session.Session, region, endpointType string) (*backuprecoveryv1.BackupRecoveryManagementSreApiV1, error) {
+	// build the api endpoint
+
+	endpointsFile := bmxsession.Config.EndpointsFile
+
+	apiKey := BackupRecoverManagerEnvFallBack(endpointsFile, endpointType, region, "IBMCLOUD_BACKUP_RECOVERY_MANAGER_API_KEY")
+
+	if apiKey == "" {
+		err := fmt.Errorf("IBMCLOUD_BACKUP_RECOVERY_MANAGER_API_KEY not set in env or endpoints file")
+		return nil, err
+	}
+	authconfig := &backuprecoveryv1.ManagementSreAuthenticatorConfig{
+		ApiKey: apiKey,
+	}
+	authenticator, err := backuprecoveryv1.NewManagementSreAuthenticator(authconfig)
+	if err != nil {
+		return nil, err
+	}
+
+	// clone the client and set endpoint
+	newClient := &backuprecoveryv1.BackupRecoveryManagementSreApiV1{
+		Service: originalClient.Service.Clone(),
+	}
+	newClient.Service.Options.Authenticator = authenticator
+	return newClient, nil
+}
+
+// Clone the base backup recovery client and set the API endpoint per the instance
+func getManagerClientWithInstanceEndpoint(originalClient *backuprecoveryv1.BackupRecoveryManagementSreApiV1, bmxsession *session.Session, instanceId, region, endpointType string) *backuprecoveryv1.BackupRecoveryManagementSreApiV1 {
+	// build the api endpoint
+
+	// default endpoint_type is set to public
+	if instanceId == "" {
+		return originalClient
+	}
+
+	domain := "cloud.ibm.com"
+	serviceName := "backup-recovery"
+	endpointsFile := bmxsession.Config.EndpointsFile
+
+	iamUrl := os.Getenv("IBMCLOUD_IAM_API_ENDPOINT")
+	if iamUrl == "" {
+		iamUrl = conns.FileFallBack(endpointsFile, endpointType, "IBMCLOUD_IAM_API_ENDPOINT", region, "https://iam.cloud.ibm.com")
+	}
+	if strings.Contains(iamUrl, "test") {
+		domain = "test.cloud.ibm.com"
+	}
+
+	var endpoint string
+	if endpointType == "private" {
+		endpoint = fmt.Sprintf("https://%s.sre.private.%s.%s.%s/v2", instanceId, region, serviceName, domain)
+	} else {
+		endpoint = fmt.Sprintf("https://%s.sre.%s.%s.%s/v2", instanceId, region, serviceName, domain)
+	}
+
+	// clone the client and set endpoint
+	newClient := &backuprecoveryv1.BackupRecoveryManagementSreApiV1{
+		Service: originalClient.Service.Clone(),
+	}
+	newClient.Service.SetServiceURL(endpoint)
+	return newClient
 }
