@@ -37,7 +37,6 @@ const (
 	Arg_CloudConnectionVPCEnabled            = "pi_cloud_connection_vpc_enabled"
 	Arg_CloudInstanceID                      = "pi_cloud_instance_id"
 	Arg_ConsistencyGroupName                 = "pi_consistency_group_name"
-	// Arg_Count                                = "pi_count"
 	Arg_CustomerASN                         = "pi_customer_asn"
 	Arg_CustomerCIDR                        = "pi_customer_cidr"
 	Arg_Datacenter                          = "pi_datacenter"
