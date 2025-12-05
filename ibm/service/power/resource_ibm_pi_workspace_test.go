@@ -55,6 +55,10 @@ func TestAccIBMPIWorkspaceUserTags(t *testing.T) {
 		},
 	})
 }
+
+// NOTE: This test only applies to PUBLIC PowerVS workspaces. The data source
+// relies on the Resource Controller "workspace get" API, which is not available
+// for on-prem environments. Therefore parameter validation cannot run on on-prem.
 func TestAccIBMPIWorkspaceParametersSharedImages(t *testing.T) {
 	name := fmt.Sprintf("tf-pi-workspace-%d", acctest.RandIntRange(10, 100))
 
@@ -75,7 +79,6 @@ func TestAccIBMPIWorkspaceParametersSharedImages(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "pi_parameters.sharedImages", "true"),
 					resource.TestCheckResourceAttr(datasourceName, "pi_workspace_capabilities.shared-images", "true"),
 				),
-				
 			},
 			// Step 2: sharedImages = "false" (will ForceNew and recreate)
 			{
