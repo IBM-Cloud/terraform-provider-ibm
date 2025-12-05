@@ -57,7 +57,7 @@ In addition to the argument reference list, you can access the following attribu
   - `crn` - (String) The CRN of this resource.
   - `description` - (String) The description of an image.
   - `disk_format` - (String) The disk format.
-  - `endianness` - (String) The `Endianness` order.
+  - `endianness` - (String) The endianness order.
   - `href` - (String) The `href` of an image.
   - `hypervisor_type` - (String) Hypervisor type.
   - `image_id` - (String) The unique identifier of an image.
@@ -65,6 +65,8 @@ In addition to the argument reference list, you can access the following attribu
   - `last_update_date` - (String) The last updated date of an image.
   - `name` - (String) The name of the image.
   - `operating_system` - (String)  Operating System.
+  - `shared` - (String) Indicates whether the image is shared.
+  - `source_checksum` - (String) Checksum of the image.
   - `state` - (String) The state of an Operating System.
   - `storage_pool` - (String) Storage pool where image resides.
   - `storage_type` - (String) The storage type of an image.

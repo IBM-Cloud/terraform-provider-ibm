@@ -5,9 +5,9 @@ go 1.24.2
 replace github.ibm.com/DRAutomation/dra-go-sdk => ./ibm/service/drautomationservice/dra-go-sdk
 
 require (
-	github.com/IBM-Cloud/bluemix-go v0.0.0-20251001005609-37dbcddbe871
+	github.com/IBM-Cloud/bluemix-go v0.0.0-20251201140418-17dfa457ce31
 	github.com/IBM-Cloud/container-services-go-sdk v0.0.0-20240725064144-454a2ae23113
-	github.com/IBM-Cloud/power-go-client v1.13.0
+	github.com/IBM-Cloud/power-go-client v1.14.3
 	github.com/IBM/appconfiguration-go-admin-sdk v0.5.1
 	github.com/IBM/appid-management-go-sdk v0.0.0-20210908164609-dd0e0eaf732f
 	github.com/IBM/cloud-databases-go-sdk v0.8.1
@@ -29,9 +29,9 @@ require (
 	github.com/IBM/logs-go-sdk v0.5.0
 	github.com/IBM/logs-router-go-sdk v1.0.8
 	github.com/IBM/mqcloud-go-sdk v0.4.0
-	github.com/IBM/networking-go-sdk v0.51.12
+	github.com/IBM/networking-go-sdk v0.51.14
 	github.com/IBM/platform-services-go-sdk v0.90.0
-	github.com/IBM/project-go-sdk v0.3.9
+	github.com/IBM/project-go-sdk v0.4.0
 	github.com/IBM/push-notifications-go-sdk v0.0.0-20210310100607-5790b96c47f5
 	github.com/IBM/sarama v1.45.0
 	github.com/IBM/scc-go-sdk/v5 v5.5.3
