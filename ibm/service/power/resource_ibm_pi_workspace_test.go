@@ -59,6 +59,7 @@ func TestAccIBMPIWorkspaceParametersSharedImages(t *testing.T) {
 	name := fmt.Sprintf("tf-pi-workspace-%d", acctest.RandIntRange(10, 100))
 
 	resourceName := "ibm_pi_workspace.powervs_service_instance"
+	datasourceName := "ibm_pi_workspace.shared_images_workspace"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
@@ -71,9 +72,10 @@ func TestAccIBMPIWorkspaceParametersSharedImages(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckIBMPIWorkspaceExists(resourceName),
 					resource.TestCheckResourceAttrSet(resourceName, "id"),
-					// parameters map should contain sharedmages = "true"
 					resource.TestCheckResourceAttr(resourceName, "pi_parameters.sharedImages", "true"),
+					resource.TestCheckResourceAttr(datasourceName, "pi_workspace_capabilities.shared-images", "true"),
 				),
+				
 			},
 			// Step 2: sharedImages = "false" (will ForceNew and recreate)
 			{
@@ -117,7 +119,11 @@ func testAccCheckIBMPIWorkspaceParametersConfig(name, sharedImages string) strin
 			pi_parameters = {
 				"sharedImages" = "%[3]s"
 			}
-		}`, name, acc.Pi_resource_group_id, sharedImages)
+		}
+		data "ibm_pi_workspace" "shared_images_workspace" {
+			pi_cloud_instance_id = ibm_pi_workspace.powervs_service_instance.id
+		}
+		`, name, acc.Pi_resource_group_id, sharedImages)
 }
 
 func testAccIBMPIWorkspaceDestroy(s *terraform.State) error {
