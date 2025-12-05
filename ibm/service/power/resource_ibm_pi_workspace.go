@@ -53,7 +53,7 @@ func ResourceIBMPIWorkspace() *schema.Resource {
 				ValidateFunc: validation.NoZeroValues,
 			},
 			Arg_Parameters: {
-				Description: `Optional parameters to pass to the workspace (for example: {"sharedImages" = "true"}).`,
+				Description: "Parameters to pass to the workspace. For example: sharedImages = true.",
 				Elem: &schema.Schema{
 					Type: schema.TypeString,
 				},
