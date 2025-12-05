@@ -59,7 +59,7 @@ func TestAccIBMPIWorkspaceParametersSharedImages(t *testing.T) {
 	name := fmt.Sprintf("tf-pi-workspace-%d", acctest.RandIntRange(10, 100))
 
 	resourceName := "ibm_pi_workspace.powervs_service_instance"
-	datasourceName := "ibm_pi_workspace.shared_images_workspace"
+	datasourceName := "data.ibm_pi_workspace.shared_images_workspace"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
@@ -84,6 +84,7 @@ func TestAccIBMPIWorkspaceParametersSharedImages(t *testing.T) {
 					testAccCheckIBMPIWorkspaceExists(resourceName),
 					resource.TestCheckResourceAttrSet(resourceName, "id"),
 					resource.TestCheckResourceAttr(resourceName, "pi_parameters.sharedImages", "false"),
+					resource.TestCheckResourceAttr(datasourceName, "pi_workspace_capabilities.shared-images", "false"),
 				),
 			},
 		},
