@@ -19,7 +19,7 @@ import (
 
 func TestAccIBMPdrValidateApikeyBasic(t *testing.T) {
 	var conf drautomationservicev1.ValidationKeyResponse
-	instanceID := "crn:v1:staging:public:power-dr-automation:global:a/b68c234e719144b18598ae4a7b80c44c:492fef47-3ebf-4090-b089-e9b4199878b6::"
+	instanceID := "123456d3-1122-3344-b67d-4389b44b7bf9"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheck(t) },
@@ -38,7 +38,7 @@ func TestAccIBMPdrValidateApikeyBasic(t *testing.T) {
 
 func TestAccIBMPdrValidateApikeyAllArgs(t *testing.T) {
 	var conf drautomationservicev1.ValidationKeyResponse
-	instanceID := "crn:v1:staging:public:power-dr-automation:global:a/b68c234e719144b18598ae4a7b80c44c:492fef47-3ebf-4090-b089-e9b4199878b6::"
+	instanceID := "123456d3-1122-3344-b67d-4389b44b7bf9"
 	acceptLanguage := fmt.Sprintf("tf_accept_language_%d", acctest.RandIntRange(10, 100))
 	acceptLanguageUpdate := fmt.Sprintf("tf_accept_language_%d", acctest.RandIntRange(10, 100))
 

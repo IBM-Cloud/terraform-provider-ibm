@@ -105,7 +105,7 @@ var _ = Describe(`DrAutomationServiceV1 Examples Tests`, func() {
 			// begin-get_apikey
 
 			getApikeyOptions := drAutomationServiceService.NewGetApikeyOptions(
-				"crn:v1:staging:public:power-dr-automation:global:a/a123456fb04ceebfb4a9fd38c22334455:123456d3-1122-3344-b67d-4389b44b7bf9::",
+				"123456d3-1122-3344-b67d-4389b44b7bf9",
 			)
 
 			validationKeyResponse, response, err := drAutomationServiceService.GetApikey(getApikeyOptions)
@@ -126,7 +126,7 @@ var _ = Describe(`DrAutomationServiceV1 Examples Tests`, func() {
 			// begin-create_apikey
 
 			createApikeyOptions := drAutomationServiceService.NewCreateApikeyOptions(
-				"crn:v1:staging:public:power-dr-automation:global:a/a123456fb04ceebfb4a9fd38c22334455:123456d3-1122-3344-b67d-4389b44b7bf9::",
+				"123456d3-1122-3344-b67d-4389b44b7bf9",
 				"abcdefrg_izklmnop_fxbEED",
 			)
 
@@ -148,7 +148,7 @@ var _ = Describe(`DrAutomationServiceV1 Examples Tests`, func() {
 			// begin-update_apikey
 
 			updateApikeyOptions := drAutomationServiceService.NewUpdateApikeyOptions(
-				"crn:v1:staging:public:power-dr-automation:global:a/a123456fb04ceebfb4a9fd38c22334455:123456d3-1122-3344-b67d-4389b44b7bf9::",
+				"123456d3-1122-3344-b67d-4389b44b7bf9",
 				"adfadfdsafsdfdsf",
 			)
 
@@ -170,7 +170,7 @@ var _ = Describe(`DrAutomationServiceV1 Examples Tests`, func() {
 			// begin-get_dr_grs_location_pair
 
 			getDrGrsLocationPairOptions := drAutomationServiceService.NewGetDrGrsLocationPairOptions(
-				"crn:v1:staging:public:power-dr-automation:global:a/a123456fb04ceebfb4a9fd38c22334455:123456d3-1122-3344-b67d-4389b44b7bf9::",
+				"123456d3-1122-3344-b67d-4389b44b7bf9",
 			)
 
 			getGrsLocationPairResponse, response, err := drAutomationServiceService.GetDrGrsLocationPair(getDrGrsLocationPairOptions)
@@ -191,7 +191,7 @@ var _ = Describe(`DrAutomationServiceV1 Examples Tests`, func() {
 			// begin-get_dr_locations
 
 			getDrLocationsOptions := drAutomationServiceService.NewGetDrLocationsOptions(
-				"crn:v1:staging:public:power-dr-automation:global:a/a123456fb04ceebfb4a9fd38c22334455:123456d3-1122-3344-b67d-4389b44b7bf9::",
+				"123456d3-1122-3344-b67d-4389b44b7bf9",
 			)
 
 			getDrLocationsResponse, response, err := drAutomationServiceService.GetDrLocations(getDrLocationsOptions)
@@ -212,7 +212,7 @@ var _ = Describe(`DrAutomationServiceV1 Examples Tests`, func() {
 			// begin-get_dr_managed_vm
 
 			getDrManagedVMOptions := drAutomationServiceService.NewGetDrManagedVMOptions(
-				"crn:v1:staging:public:power-dr-automation:global:a/a123456fb04ceebfb4a9fd38c22334455:123456d3-1122-3344-b67d-4389b44b7bf9::",
+				"123456d3-1122-3344-b67d-4389b44b7bf9",
 			)
 
 			managedVMMapResponse, response, err := drAutomationServiceService.GetDrManagedVM(getDrManagedVMOptions)
@@ -233,7 +233,7 @@ var _ = Describe(`DrAutomationServiceV1 Examples Tests`, func() {
 			// begin-get_dr_summary
 
 			getDrSummaryOptions := drAutomationServiceService.NewGetDrSummaryOptions(
-				"crn:v1:staging:public:power-dr-automation:global:a/a123456fb04ceebfb4a9fd38c22334455:123456d3-1122-3344-b67d-4389b44b7bf9::",
+				"123456d3-1122-3344-b67d-4389b44b7bf9",
 			)
 
 			drAutomationGetSummaryResponse, response, err := drAutomationServiceService.GetDrSummary(getDrSummaryOptions)
@@ -254,7 +254,7 @@ var _ = Describe(`DrAutomationServiceV1 Examples Tests`, func() {
 			// begin-get_machine_type
 
 			getMachineTypeOptions := drAutomationServiceService.NewGetMachineTypeOptions(
-				"crn:v1:staging:public:power-dr-automation:global:a/a123456fb04ceebfb4a9fd38c22334455:123456d3-1122-3344-b67d-4389b44b7bf9::",
+				"123456d3-1122-3344-b67d-4389b44b7bf9",
 				"Test-workspace-wdc06",
 			)
 			getMachineTypeOptions.SetStandbyWorkspaceName("Test-workspace-wdc07")
@@ -277,7 +277,7 @@ var _ = Describe(`DrAutomationServiceV1 Examples Tests`, func() {
 			// begin-get_powervs_workspaces
 
 			getPowervsWorkspacesOptions := drAutomationServiceService.NewGetPowervsWorkspacesOptions(
-				"crn:v1:staging:public:power-dr-automation:global:a/a123456fb04ceebfb4a9fd38c22334455:123456d3-1122-3344-b67d-4389b44b7bf9::",
+				"123456d3-1122-3344-b67d-4389b44b7bf9",
 				"testString",
 			)
 
@@ -299,7 +299,7 @@ var _ = Describe(`DrAutomationServiceV1 Examples Tests`, func() {
 			// begin-get_manage_dr
 
 			getManageDrOptions := drAutomationServiceService.NewGetManageDrOptions(
-				"crn:v1:staging:public:power-dr-automation:global:a/a123456fb04ceebfb4a9fd38c22334455:123456d3-1122-3344-b67d-4389b44b7bf9::",
+				"123456d3-1122-3344-b67d-4389b44b7bf9",
 			)
 
 			serviceInstanceManageDr, response, err := drAutomationServiceService.GetManageDr(getManageDrOptions)
@@ -320,7 +320,7 @@ var _ = Describe(`DrAutomationServiceV1 Examples Tests`, func() {
 			// begin-create_manage_dr
 
 			createManageDrOptions := drAutomationServiceService.NewCreateManageDrOptions(
-				"crn:v1:staging:public:power-dr-automation:global:a/a123456fb04ceebfb4a9fd38c22334455:123456d3-1122-3344-b67d-4389b44b7bf9::",
+				"123456d3-1122-3344-b67d-4389b44b7bf9",
 			)
 			createManageDrOptions.SetOrchestratorHa(true)
 			createManageDrOptions.SetOrchestratorLocationType("off-premises")
@@ -361,7 +361,7 @@ var _ = Describe(`DrAutomationServiceV1 Examples Tests`, func() {
 			// begin-get_last_operation
 
 			getLastOperationOptions := drAutomationServiceService.NewGetLastOperationOptions(
-				"crn:v1:staging:public:power-dr-automation:global:a/a123456fb04ceebfb4a9fd38c22334455:123456d3-1122-3344-b67d-4389b44b7bf9::",
+				"123456d3-1122-3344-b67d-4389b44b7bf9",
 			)
 
 			serviceInstanceStatus, response, err := drAutomationServiceService.GetLastOperation(getLastOperationOptions)
@@ -382,7 +382,7 @@ var _ = Describe(`DrAutomationServiceV1 Examples Tests`, func() {
 			// begin-list_events
 
 			listEventsOptions := drAutomationServiceService.NewListEventsOptions(
-				"crn:v1:staging:public:power-dr-automation:global:a/a123456fb04ceebfb4a9fd38c22334455:123456d3-1122-3344-b67d-4389b44b7bf9::",
+				"123456d3-1122-3344-b67d-4389b44b7bf9",
 			)
 			listEventsOptions.SetTime("2025-06-19T23:59:59Z")
 			listEventsOptions.SetFromTime("2025-06-19T00:00:00Z")
@@ -406,7 +406,7 @@ var _ = Describe(`DrAutomationServiceV1 Examples Tests`, func() {
 			// begin-get_event
 
 			getEventOptions := drAutomationServiceService.NewGetEventOptions(
-				"crn:v1:staging:public:power-dr-automation:global:a/a123456fb04ceebfb4a9fd38c22334455:123456d3-1122-3344-b67d-4389b44b7bf9::",
+				"123456d3-1122-3344-b67d-4389b44b7bf9",
 				"00116b2a-9326-4024-839e-fb5364b76898",
 			)
 

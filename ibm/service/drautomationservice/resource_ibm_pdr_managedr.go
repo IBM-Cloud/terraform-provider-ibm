@@ -130,38 +130,33 @@ func ResourceIbmPdrManagedr() *schema.Resource {
 			"location_id": {
 				Type:     schema.TypeString,
 				ForceNew: true,
-				Optional: true,
+				Required: true,
 			},
 			"machine_type": {
 				Type:     schema.TypeString,
-				Optional: true,
+				Required: true,
 				ForceNew: true,
 			},
 			"orchestrator_location_type": {
 				Type:     schema.TypeString,
-				Optional: true,
+				Required: true,
 				ForceNew: true,
 			},
 			"orchestrator_name": {
 				Type:     schema.TypeString,
+				Required: true,
 				ForceNew: true,
-				Optional: true,
 			},
 			"orchestrator_password": {
 				Type:      schema.TypeString,
 				Sensitive: true,
 				ForceNew:  true,
-				Optional:  true,
+				Required:  true,
 			},
 			"orchestrator_workspace_id": {
 				Type:     schema.TypeString,
 				ForceNew: true,
-				Optional: true,
-			},
-			"orchestrator_workspace_location": {
-				Type:     schema.TypeString,
-				ForceNew: true,
-				Optional: true,
+				Required: true,
 			},
 			"region_id": {
 				Type:     schema.TypeString,
@@ -172,11 +167,6 @@ func ResourceIbmPdrManagedr() *schema.Resource {
 				Type:     schema.TypeString,
 				ForceNew: true,
 				Optional: true,
-			},
-			"secondary_workspace_id": {
-				Type:     schema.TypeString,
-				Optional: true,
-				ForceNew: true,
 			},
 			"secret": {
 				Type:     schema.TypeString,
@@ -204,11 +194,6 @@ func ResourceIbmPdrManagedr() *schema.Resource {
 				ForceNew: true,
 			},
 			"standby_orchestrator_workspace_id": {
-				Type:     schema.TypeString,
-				Optional: true,
-				ForceNew: true,
-			},
-			"standby_orchestrator_workspace_location": {
 				Type:     schema.TypeString,
 				Optional: true,
 				ForceNew: true,
@@ -286,9 +271,6 @@ func resourceIbmPdrManagedrCreate(ctx context.Context, d *schema.ResourceData, m
 	if _, ok := d.GetOk("orchestrator_workspace_id"); ok {
 		createManageDrOptions.SetOrchestratorWorkspaceID(d.Get("orchestrator_workspace_id").(string))
 	}
-	if _, ok := d.GetOk("orchestrator_workspace_location"); ok {
-		createManageDrOptions.SetOrchestratorWorkspaceLocation(d.Get("orchestrator_workspace_location").(string))
-	}
 	if _, ok := d.GetOk("region_id"); ok {
 		createManageDrOptions.SetRegionID(d.Get("region_id").(string))
 	}
@@ -303,9 +285,6 @@ func resourceIbmPdrManagedrCreate(ctx context.Context, d *schema.ResourceData, m
 	}
 	if _, ok := d.GetOk("resource_instance"); ok {
 		createManageDrOptions.SetResourceInstance(d.Get("resource_instance").(string))
-	}
-	if _, ok := d.GetOk("secondary_workspace_id"); ok {
-		createManageDrOptions.SetSecondaryWorkspaceID(d.Get("secondary_workspace_id").(string))
 	}
 	if _, ok := d.GetOk("secret"); ok {
 		createManageDrOptions.SetSecret(d.Get("secret").(string))
@@ -325,9 +304,6 @@ func resourceIbmPdrManagedrCreate(ctx context.Context, d *schema.ResourceData, m
 	if _, ok := d.GetOk("standby_orchestrator_workspace_id"); ok {
 		createManageDrOptions.SetStandbyOrchestratorWorkspaceID(d.Get("standby_orchestrator_workspace_id").(string))
 	}
-	if _, ok := d.GetOk("standby_orchestrator_workspace_location"); ok {
-		createManageDrOptions.SetStandbyOrchestratorWorkspaceLocation(d.Get("standby_orchestrator_workspace_location").(string))
-	}
 	if _, ok := d.GetOk("standby_tier"); ok {
 		createManageDrOptions.SetStandbyTier(d.Get("standby_tier").(string))
 	}
@@ -337,14 +313,11 @@ func resourceIbmPdrManagedrCreate(ctx context.Context, d *schema.ResourceData, m
 	if _, ok := d.GetOk("accept_language"); ok {
 		createManageDrOptions.SetAcceptLanguage(d.Get("accept_language").(string))
 	}
-	// if _, ok := d.GetOk("if_none_match"); ok {
-	// 	createManageDrOptions.SetIfNoneMatch(d.Get("if_none_match").(string))
-	// }
 	if _, ok := d.GetOk("accepts_incomplete"); ok {
 		createManageDrOptions.SetAcceptsIncomplete(d.Get("accepts_incomplete").(bool))
 	}
 
-	serviceInstanceManageDr, response, err := drAutomationServiceClient.CreateManageDrWithContext(ctx, createManageDrOptions)
+	_, response, err := drAutomationServiceClient.CreateManageDrWithContext(ctx, createManageDrOptions)
 	if err != nil {
 		detailedMsg := fmt.Sprintf("CreateManageDrWithContext failed: %s", err.Error())
 		// Include HTTP status & raw body if available
@@ -359,7 +332,7 @@ func resourceIbmPdrManagedrCreate(ctx context.Context, d *schema.ResourceData, m
 		return tfErr.GetDiag()
 	}
 
-	d.SetId(fmt.Sprintf("%s", *serviceInstanceManageDr.ID))
+	d.SetId(d.Get("instance_id").(string))
 	// Step 2: Poll Last Operation status every 5 minutes until Active or Fail
 	instanceID := *createManageDrOptions.InstanceID
 	const (
@@ -482,7 +455,7 @@ func resourceIbmPdrManagedrRead(context context.Context, d *schema.ResourceData,
 
 	getManageDrOptions := &drautomationservicev1.GetManageDrOptions{}
 
-	instanceID := d.Get("instance_id").(string)
+	instanceID := d.Id()
 
 	log.Printf("[DEBUG] Read operation using instance ID from resource: %s", instanceID)
 
@@ -490,9 +463,6 @@ func resourceIbmPdrManagedrRead(context context.Context, d *schema.ResourceData,
 
 	// if _, ok := d.GetOk("accept_language"); ok {
 	// 	getManageDrOptions.SetAcceptLanguage(d.Get("accept_language").(string))
-	// }
-	// if _, ok := d.GetOk("if_none_match"); ok {
-	// 	getManageDrOptions.SetIfNoneMatch(d.Get("if_none_match").(string))
 	// }
 
 	serviceInstanceManageDr, response, err := drAutomationServiceClient.GetManageDrWithContext(context, getManageDrOptions)

@@ -15,7 +15,7 @@
  */
 
 /*
- * IBM OpenAPI SDK Code Generator Version: 3.105.0-3c13b041-20250605-193116
+ * IBM OpenAPI SDK Code Generator Version: 3.108.0-56772134-20251111-102802
  */
 
 // Package drautomationservicev1 : Operations and models for the DrAutomationServiceV1 service
@@ -43,7 +43,7 @@ type DrAutomationServiceV1 struct {
 }
 
 // DefaultServiceURL is the default URL to make service requests to.
-const DefaultServiceURL = "https://powerdra-test.1lcv1smi8d9z.us-south.codeengine.appdomain.cloud"
+const DefaultServiceURL = "https://power-dra.test.cloud.ibm.com"
 
 // DefaultServiceName is the default key used to find external configuration information.
 const DefaultServiceName = "dr_automation_service"
@@ -205,20 +205,17 @@ func (drAutomationService *DrAutomationServiceV1) GetApikeyWithContext(ctx conte
 		return
 	}
 
-	for headerName, headerValue := range getApikeyOptions.Headers {
+	sdkHeaders := common.GetSdkHeaders("dr_automation_service", "V1", "GetApikey")
+	for headerName, headerValue := range sdkHeaders {
 		builder.AddHeader(headerName, headerValue)
 	}
 
-	sdkHeaders := common.GetSdkHeaders("dr_automation_service", "V1", "GetApikey")
-	for headerName, headerValue := range sdkHeaders {
+	for headerName, headerValue := range getApikeyOptions.Headers {
 		builder.AddHeader(headerName, headerValue)
 	}
 	builder.AddHeader("Accept", "application/json")
 	if getApikeyOptions.AcceptLanguage != nil {
 		builder.AddHeader("Accept-Language", fmt.Sprint(*getApikeyOptions.AcceptLanguage))
-	}
-	if getApikeyOptions.IfNoneMatch != nil {
-		builder.AddHeader("If-None-Match", fmt.Sprint(*getApikeyOptions.IfNoneMatch))
 	}
 
 	request, err := builder.Build()
@@ -280,21 +277,18 @@ func (drAutomationService *DrAutomationServiceV1) CreateApikeyWithContext(ctx co
 		return
 	}
 
-	for headerName, headerValue := range createApikeyOptions.Headers {
+	sdkHeaders := common.GetSdkHeaders("dr_automation_service", "V1", "CreateApikey")
+	for headerName, headerValue := range sdkHeaders {
 		builder.AddHeader(headerName, headerValue)
 	}
 
-	sdkHeaders := common.GetSdkHeaders("dr_automation_service", "V1", "CreateApikey")
-	for headerName, headerValue := range sdkHeaders {
+	for headerName, headerValue := range createApikeyOptions.Headers {
 		builder.AddHeader(headerName, headerValue)
 	}
 	builder.AddHeader("Accept", "application/json")
 	builder.AddHeader("Content-Type", "application/json")
 	if createApikeyOptions.AcceptLanguage != nil {
 		builder.AddHeader("Accept-Language", fmt.Sprint(*createApikeyOptions.AcceptLanguage))
-	}
-	if createApikeyOptions.IfNoneMatch != nil {
-		builder.AddHeader("If-None-Match", fmt.Sprint(*createApikeyOptions.IfNoneMatch))
 	}
 
 	body := make(map[string]interface{})
@@ -366,21 +360,18 @@ func (drAutomationService *DrAutomationServiceV1) UpdateApikeyWithContext(ctx co
 		return
 	}
 
-	for headerName, headerValue := range updateApikeyOptions.Headers {
+	sdkHeaders := common.GetSdkHeaders("dr_automation_service", "V1", "UpdateApikey")
+	for headerName, headerValue := range sdkHeaders {
 		builder.AddHeader(headerName, headerValue)
 	}
 
-	sdkHeaders := common.GetSdkHeaders("dr_automation_service", "V1", "UpdateApikey")
-	for headerName, headerValue := range sdkHeaders {
+	for headerName, headerValue := range updateApikeyOptions.Headers {
 		builder.AddHeader(headerName, headerValue)
 	}
 	builder.AddHeader("Accept", "application/json")
 	builder.AddHeader("Content-Type", "application/json")
 	if updateApikeyOptions.AcceptLanguage != nil {
 		builder.AddHeader("Accept-Language", fmt.Sprint(*updateApikeyOptions.AcceptLanguage))
-	}
-	if updateApikeyOptions.IfNoneMatch != nil {
-		builder.AddHeader("If-None-Match", fmt.Sprint(*updateApikeyOptions.IfNoneMatch))
 	}
 
 	body := make(map[string]interface{})
@@ -452,20 +443,17 @@ func (drAutomationService *DrAutomationServiceV1) GetDrGrsLocationPairWithContex
 		return
 	}
 
-	for headerName, headerValue := range getDrGrsLocationPairOptions.Headers {
+	sdkHeaders := common.GetSdkHeaders("dr_automation_service", "V1", "GetDrGrsLocationPair")
+	for headerName, headerValue := range sdkHeaders {
 		builder.AddHeader(headerName, headerValue)
 	}
 
-	sdkHeaders := common.GetSdkHeaders("dr_automation_service", "V1", "GetDrGrsLocationPair")
-	for headerName, headerValue := range sdkHeaders {
+	for headerName, headerValue := range getDrGrsLocationPairOptions.Headers {
 		builder.AddHeader(headerName, headerValue)
 	}
 	builder.AddHeader("Accept", "application/json")
 	if getDrGrsLocationPairOptions.AcceptLanguage != nil {
 		builder.AddHeader("Accept-Language", fmt.Sprint(*getDrGrsLocationPairOptions.AcceptLanguage))
-	}
-	if getDrGrsLocationPairOptions.IfNoneMatch != nil {
-		builder.AddHeader("If-None-Match", fmt.Sprint(*getDrGrsLocationPairOptions.IfNoneMatch))
 	}
 
 	request, err := builder.Build()
@@ -527,20 +515,17 @@ func (drAutomationService *DrAutomationServiceV1) GetDrLocationsWithContext(ctx 
 		return
 	}
 
-	for headerName, headerValue := range getDrLocationsOptions.Headers {
+	sdkHeaders := common.GetSdkHeaders("dr_automation_service", "V1", "GetDrLocations")
+	for headerName, headerValue := range sdkHeaders {
 		builder.AddHeader(headerName, headerValue)
 	}
 
-	sdkHeaders := common.GetSdkHeaders("dr_automation_service", "V1", "GetDrLocations")
-	for headerName, headerValue := range sdkHeaders {
+	for headerName, headerValue := range getDrLocationsOptions.Headers {
 		builder.AddHeader(headerName, headerValue)
 	}
 	builder.AddHeader("Accept", "application/json")
 	if getDrLocationsOptions.AcceptLanguage != nil {
 		builder.AddHeader("Accept-Language", fmt.Sprint(*getDrLocationsOptions.AcceptLanguage))
-	}
-	if getDrLocationsOptions.IfNoneMatch != nil {
-		builder.AddHeader("If-None-Match", fmt.Sprint(*getDrLocationsOptions.IfNoneMatch))
 	}
 
 	request, err := builder.Build()
@@ -602,20 +587,17 @@ func (drAutomationService *DrAutomationServiceV1) GetDrManagedVMWithContext(ctx 
 		return
 	}
 
-	for headerName, headerValue := range getDrManagedVMOptions.Headers {
+	sdkHeaders := common.GetSdkHeaders("dr_automation_service", "V1", "GetDrManagedVM")
+	for headerName, headerValue := range sdkHeaders {
 		builder.AddHeader(headerName, headerValue)
 	}
 
-	sdkHeaders := common.GetSdkHeaders("dr_automation_service", "V1", "GetDrManagedVM")
-	for headerName, headerValue := range sdkHeaders {
+	for headerName, headerValue := range getDrManagedVMOptions.Headers {
 		builder.AddHeader(headerName, headerValue)
 	}
 	builder.AddHeader("Accept", "application/json")
 	if getDrManagedVMOptions.AcceptLanguage != nil {
 		builder.AddHeader("Accept-Language", fmt.Sprint(*getDrManagedVMOptions.AcceptLanguage))
-	}
-	if getDrManagedVMOptions.IfNoneMatch != nil {
-		builder.AddHeader("If-None-Match", fmt.Sprint(*getDrManagedVMOptions.IfNoneMatch))
 	}
 
 	request, err := builder.Build()
@@ -678,20 +660,17 @@ func (drAutomationService *DrAutomationServiceV1) GetDrSummaryWithContext(ctx co
 		return
 	}
 
-	for headerName, headerValue := range getDrSummaryOptions.Headers {
+	sdkHeaders := common.GetSdkHeaders("dr_automation_service", "V1", "GetDrSummary")
+	for headerName, headerValue := range sdkHeaders {
 		builder.AddHeader(headerName, headerValue)
 	}
 
-	sdkHeaders := common.GetSdkHeaders("dr_automation_service", "V1", "GetDrSummary")
-	for headerName, headerValue := range sdkHeaders {
+	for headerName, headerValue := range getDrSummaryOptions.Headers {
 		builder.AddHeader(headerName, headerValue)
 	}
 	builder.AddHeader("Accept", "application/json")
 	if getDrSummaryOptions.AcceptLanguage != nil {
 		builder.AddHeader("Accept-Language", fmt.Sprint(*getDrSummaryOptions.AcceptLanguage))
-	}
-	if getDrSummaryOptions.IfNoneMatch != nil {
-		builder.AddHeader("If-None-Match", fmt.Sprint(*getDrSummaryOptions.IfNoneMatch))
 	}
 
 	request, err := builder.Build()
@@ -754,20 +733,17 @@ func (drAutomationService *DrAutomationServiceV1) GetMachineTypeWithContext(ctx 
 		return
 	}
 
-	for headerName, headerValue := range getMachineTypeOptions.Headers {
+	sdkHeaders := common.GetSdkHeaders("dr_automation_service", "V1", "GetMachineType")
+	for headerName, headerValue := range sdkHeaders {
 		builder.AddHeader(headerName, headerValue)
 	}
 
-	sdkHeaders := common.GetSdkHeaders("dr_automation_service", "V1", "GetMachineType")
-	for headerName, headerValue := range sdkHeaders {
+	for headerName, headerValue := range getMachineTypeOptions.Headers {
 		builder.AddHeader(headerName, headerValue)
 	}
 	builder.AddHeader("Accept", "application/json")
 	if getMachineTypeOptions.AcceptLanguage != nil {
 		builder.AddHeader("Accept-Language", fmt.Sprint(*getMachineTypeOptions.AcceptLanguage))
-	}
-	if getMachineTypeOptions.IfNoneMatch != nil {
-		builder.AddHeader("If-None-Match", fmt.Sprint(*getMachineTypeOptions.IfNoneMatch))
 	}
 
 	builder.AddQuery("primary_workspace_name", fmt.Sprint(*getMachineTypeOptions.PrimaryWorkspaceName))
@@ -834,18 +810,15 @@ func (drAutomationService *DrAutomationServiceV1) GetPowervsWorkspacesWithContex
 		return
 	}
 
-	for headerName, headerValue := range getPowervsWorkspacesOptions.Headers {
-		builder.AddHeader(headerName, headerValue)
-	}
-
 	sdkHeaders := common.GetSdkHeaders("dr_automation_service", "V1", "GetPowervsWorkspaces")
 	for headerName, headerValue := range sdkHeaders {
 		builder.AddHeader(headerName, headerValue)
 	}
-	builder.AddHeader("Accept", "application/json")
-	if getPowervsWorkspacesOptions.IfNoneMatch != nil {
-		builder.AddHeader("If-None-Match", fmt.Sprint(*getPowervsWorkspacesOptions.IfNoneMatch))
+
+	for headerName, headerValue := range getPowervsWorkspacesOptions.Headers {
+		builder.AddHeader(headerName, headerValue)
 	}
+	builder.AddHeader("Accept", "application/json")
 
 	builder.AddQuery("location_id", fmt.Sprint(*getPowervsWorkspacesOptions.LocationID))
 
@@ -908,20 +881,17 @@ func (drAutomationService *DrAutomationServiceV1) GetManageDrWithContext(ctx con
 		return
 	}
 
-	for headerName, headerValue := range getManageDrOptions.Headers {
+	sdkHeaders := common.GetSdkHeaders("dr_automation_service", "V1", "GetManageDr")
+	for headerName, headerValue := range sdkHeaders {
 		builder.AddHeader(headerName, headerValue)
 	}
 
-	sdkHeaders := common.GetSdkHeaders("dr_automation_service", "V1", "GetManageDr")
-	for headerName, headerValue := range sdkHeaders {
+	for headerName, headerValue := range getManageDrOptions.Headers {
 		builder.AddHeader(headerName, headerValue)
 	}
 	builder.AddHeader("Accept", "application/json")
 	if getManageDrOptions.AcceptLanguage != nil {
 		builder.AddHeader("Accept-Language", fmt.Sprint(*getManageDrOptions.AcceptLanguage))
-	}
-	if getManageDrOptions.IfNoneMatch != nil {
-		builder.AddHeader("If-None-Match", fmt.Sprint(*getManageDrOptions.IfNoneMatch))
 	}
 
 	request, err := builder.Build()
@@ -950,8 +920,9 @@ func (drAutomationService *DrAutomationServiceV1) GetManageDrWithContext(ctx con
 }
 
 // CreateManageDr : Create DR Deployment
-// Creates Orchestrator VM in the given workspace and configuration. Orchestrator VM can be used to manage multiple
-// virtual servers and help ensure continuous availability. For more details, refer Deploying the Orchestrator -
+// Creates DR Deployment by creating Orchestrator instance in the given PowerVS workspace and configuration.
+// Orchestrator instance can be used to manage multiple virtual servers and ensure continuous availability. For more
+// details, refer Deploying the Orchestrator -
 // https://cloud.ibm.com/docs/dr-automation-powervs?topic=dr-automation-powervs-idep-the-orch.
 func (drAutomationService *DrAutomationServiceV1) CreateManageDr(createManageDrOptions *CreateManageDrOptions) (result *ServiceInstanceManageDr, response *core.DetailedResponse, err error) {
 	result, response, err = drAutomationService.CreateManageDrWithContext(context.Background(), createManageDrOptions)
@@ -985,21 +956,18 @@ func (drAutomationService *DrAutomationServiceV1) CreateManageDrWithContext(ctx 
 		return
 	}
 
-	for headerName, headerValue := range createManageDrOptions.Headers {
+	sdkHeaders := common.GetSdkHeaders("dr_automation_service", "V1", "CreateManageDr")
+	for headerName, headerValue := range sdkHeaders {
 		builder.AddHeader(headerName, headerValue)
 	}
 
-	sdkHeaders := common.GetSdkHeaders("dr_automation_service", "V1", "CreateManageDr")
-	for headerName, headerValue := range sdkHeaders {
+	for headerName, headerValue := range createManageDrOptions.Headers {
 		builder.AddHeader(headerName, headerValue)
 	}
 	builder.AddHeader("Accept", "application/json")
 	builder.AddHeader("Content-Type", "application/json")
 	if createManageDrOptions.AcceptLanguage != nil {
 		builder.AddHeader("Accept-Language", fmt.Sprint(*createManageDrOptions.AcceptLanguage))
-	}
-	if createManageDrOptions.IfNoneMatch != nil {
-		builder.AddHeader("If-None-Match", fmt.Sprint(*createManageDrOptions.IfNoneMatch))
 	}
 
 	if createManageDrOptions.StandByRedeploy != nil {
@@ -1010,26 +978,11 @@ func (drAutomationService *DrAutomationServiceV1) CreateManageDrWithContext(ctx 
 	}
 
 	body := make(map[string]interface{})
-	if createManageDrOptions.APIKey != nil {
-		body["api_key"] = createManageDrOptions.APIKey
-	}
-	if createManageDrOptions.ClientID != nil {
-		body["client_id"] = createManageDrOptions.ClientID
-	}
-	if createManageDrOptions.ClientSecret != nil {
-		body["client_secret"] = createManageDrOptions.ClientSecret
-	}
-	if createManageDrOptions.GUID != nil {
-		body["guid"] = createManageDrOptions.GUID
-	}
 	if createManageDrOptions.LocationID != nil {
 		body["location_id"] = createManageDrOptions.LocationID
 	}
 	if createManageDrOptions.MachineType != nil {
 		body["machine_type"] = createManageDrOptions.MachineType
-	}
-	if createManageDrOptions.OrchestratorHa != nil {
-		body["orchestrator_ha"] = createManageDrOptions.OrchestratorHa
 	}
 	if createManageDrOptions.OrchestratorLocationType != nil {
 		body["orchestrator_location_type"] = createManageDrOptions.OrchestratorLocationType
@@ -1043,8 +996,20 @@ func (drAutomationService *DrAutomationServiceV1) CreateManageDrWithContext(ctx 
 	if createManageDrOptions.OrchestratorWorkspaceID != nil {
 		body["orchestrator_workspace_id"] = createManageDrOptions.OrchestratorWorkspaceID
 	}
-	if createManageDrOptions.OrchestratorWorkspaceLocation != nil {
-		body["orchestrator_workspace_location"] = createManageDrOptions.OrchestratorWorkspaceLocation
+	if createManageDrOptions.APIKey != nil {
+		body["api_key"] = createManageDrOptions.APIKey
+	}
+	if createManageDrOptions.ClientID != nil {
+		body["client_id"] = createManageDrOptions.ClientID
+	}
+	if createManageDrOptions.ClientSecret != nil {
+		body["client_secret"] = createManageDrOptions.ClientSecret
+	}
+	if createManageDrOptions.GUID != nil {
+		body["guid"] = createManageDrOptions.GUID
+	}
+	if createManageDrOptions.OrchestratorHa != nil {
+		body["orchestrator_ha"] = createManageDrOptions.OrchestratorHa
 	}
 	if createManageDrOptions.ProxyIP != nil {
 		body["proxy_ip"] = createManageDrOptions.ProxyIP
@@ -1054,9 +1019,6 @@ func (drAutomationService *DrAutomationServiceV1) CreateManageDrWithContext(ctx 
 	}
 	if createManageDrOptions.ResourceInstance != nil {
 		body["resource_instance"] = createManageDrOptions.ResourceInstance
-	}
-	if createManageDrOptions.SecondaryWorkspaceID != nil {
-		body["secondary_workspace_id"] = createManageDrOptions.SecondaryWorkspaceID
 	}
 	if createManageDrOptions.Secret != nil {
 		body["secret"] = createManageDrOptions.Secret
@@ -1075,9 +1037,6 @@ func (drAutomationService *DrAutomationServiceV1) CreateManageDrWithContext(ctx 
 	}
 	if createManageDrOptions.StandbyOrchestratorWorkspaceID != nil {
 		body["standby_orchestrator_workspace_id"] = createManageDrOptions.StandbyOrchestratorWorkspaceID
-	}
-	if createManageDrOptions.StandbyOrchestratorWorkspaceLocation != nil {
-		body["standby_orchestrator_workspace_location"] = createManageDrOptions.StandbyOrchestratorWorkspaceLocation
 	}
 	if createManageDrOptions.StandbyTier != nil {
 		body["standby_tier"] = createManageDrOptions.StandbyTier
@@ -1154,20 +1113,17 @@ func (drAutomationService *DrAutomationServiceV1) GetLastOperationWithContext(ct
 		return
 	}
 
-	for headerName, headerValue := range getLastOperationOptions.Headers {
+	sdkHeaders := common.GetSdkHeaders("dr_automation_service", "V1", "GetLastOperation")
+	for headerName, headerValue := range sdkHeaders {
 		builder.AddHeader(headerName, headerValue)
 	}
 
-	sdkHeaders := common.GetSdkHeaders("dr_automation_service", "V1", "GetLastOperation")
-	for headerName, headerValue := range sdkHeaders {
+	for headerName, headerValue := range getLastOperationOptions.Headers {
 		builder.AddHeader(headerName, headerValue)
 	}
 	builder.AddHeader("Accept", "application/json")
 	if getLastOperationOptions.AcceptLanguage != nil {
 		builder.AddHeader("Accept-Language", fmt.Sprint(*getLastOperationOptions.AcceptLanguage))
-	}
-	if getLastOperationOptions.IfNoneMatch != nil {
-		builder.AddHeader("If-None-Match", fmt.Sprint(*getLastOperationOptions.IfNoneMatch))
 	}
 
 	request, err := builder.Build()
@@ -1229,20 +1185,17 @@ func (drAutomationService *DrAutomationServiceV1) ListEventsWithContext(ctx cont
 		return
 	}
 
-	for headerName, headerValue := range listEventsOptions.Headers {
+	sdkHeaders := common.GetSdkHeaders("dr_automation_service", "V1", "ListEvents")
+	for headerName, headerValue := range sdkHeaders {
 		builder.AddHeader(headerName, headerValue)
 	}
 
-	sdkHeaders := common.GetSdkHeaders("dr_automation_service", "V1", "ListEvents")
-	for headerName, headerValue := range sdkHeaders {
+	for headerName, headerValue := range listEventsOptions.Headers {
 		builder.AddHeader(headerName, headerValue)
 	}
 	builder.AddHeader("Accept", "application/json")
 	if listEventsOptions.AcceptLanguage != nil {
 		builder.AddHeader("Accept-Language", fmt.Sprint(*listEventsOptions.AcceptLanguage))
-	}
-	if listEventsOptions.IfNoneMatch != nil {
-		builder.AddHeader("If-None-Match", fmt.Sprint(*listEventsOptions.IfNoneMatch))
 	}
 
 	if listEventsOptions.Time != nil {
@@ -1303,7 +1256,7 @@ func (drAutomationService *DrAutomationServiceV1) GetEventWithContext(ctx contex
 
 	pathParamsMap := map[string]string{
 		"instance_id": *getEventOptions.InstanceID,
-		"event_id":    *getEventOptions.EventID,
+		"event_id": *getEventOptions.EventID,
 	}
 
 	builder := core.NewRequestBuilder(core.GET)
@@ -1315,20 +1268,17 @@ func (drAutomationService *DrAutomationServiceV1) GetEventWithContext(ctx contex
 		return
 	}
 
-	for headerName, headerValue := range getEventOptions.Headers {
+	sdkHeaders := common.GetSdkHeaders("dr_automation_service", "V1", "GetEvent")
+	for headerName, headerValue := range sdkHeaders {
 		builder.AddHeader(headerName, headerValue)
 	}
 
-	sdkHeaders := common.GetSdkHeaders("dr_automation_service", "V1", "GetEvent")
-	for headerName, headerValue := range sdkHeaders {
+	for headerName, headerValue := range getEventOptions.Headers {
 		builder.AddHeader(headerName, headerValue)
 	}
 	builder.AddHeader("Accept", "application/json")
 	if getEventOptions.AcceptLanguage != nil {
 		builder.AddHeader("Accept-Language", fmt.Sprint(*getEventOptions.AcceptLanguage))
-	}
-	if getEventOptions.IfNoneMatch != nil {
-		builder.AddHeader("If-None-Match", fmt.Sprint(*getEventOptions.IfNoneMatch))
 	}
 
 	request, err := builder.Build()
@@ -1370,9 +1320,6 @@ type CreateApikeyOptions struct {
 	// The language requested for the return document.
 	AcceptLanguage *string `json:"Accept-Language,omitempty"`
 
-	// ETag for conditional requests (optional).
-	IfNoneMatch *string `json:"If-None-Match,omitempty"`
-
 	// Allows users to set headers on API requests.
 	Headers map[string]string
 }
@@ -1381,7 +1328,7 @@ type CreateApikeyOptions struct {
 func (*DrAutomationServiceV1) NewCreateApikeyOptions(instanceID string, apiKey string) *CreateApikeyOptions {
 	return &CreateApikeyOptions{
 		InstanceID: core.StringPtr(instanceID),
-		APIKey:     core.StringPtr(apiKey),
+		APIKey: core.StringPtr(apiKey),
 	}
 }
 
@@ -1403,12 +1350,6 @@ func (_options *CreateApikeyOptions) SetAcceptLanguage(acceptLanguage string) *C
 	return _options
 }
 
-// SetIfNoneMatch : Allow user to set IfNoneMatch
-func (_options *CreateApikeyOptions) SetIfNoneMatch(ifNoneMatch string) *CreateApikeyOptions {
-	_options.IfNoneMatch = core.StringPtr(ifNoneMatch)
-	return _options
-}
-
 // SetHeaders : Allow user to set Headers
 func (options *CreateApikeyOptions) SetHeaders(param map[string]string) *CreateApikeyOptions {
 	options.Headers = param
@@ -1419,6 +1360,24 @@ func (options *CreateApikeyOptions) SetHeaders(param map[string]string) *CreateA
 type CreateManageDrOptions struct {
 	// instance id of instance to provision.
 	InstanceID *string `json:"instance_id" validate:"required,ne="`
+
+	// The location or data center identifier where the service instance is deployed.
+	LocationID *string `json:"location_id" validate:"required"`
+
+	// The machine type used for deploying orchestrator.
+	MachineType *string `json:"machine_type" validate:"required"`
+
+	// The cloud location where your orchestator need to be created.
+	OrchestratorLocationType *string `json:"orchestrator_location_type" validate:"required"`
+
+	// The username used for the orchestrator.
+	OrchestratorName *string `json:"orchestrator_name" validate:"required"`
+
+	// The password that you can use to access your orchestrator.
+	OrchestratorPassword *string `json:"orchestrator_password" validate:"required"`
+
+	// The unique identifier orchestrator workspace.
+	OrchestratorWorkspaceID *string `json:"orchestrator_workspace_id" validate:"required"`
 
 	// The api Key of the service instance for deploying the disaster recovery service.
 	APIKey *string `json:"api_key,omitempty"`
@@ -1432,29 +1391,8 @@ type CreateManageDrOptions struct {
 	// The global unique identifier of the service instance.
 	GUID *string `json:"guid,omitempty"`
 
-	// The location or data center identifier where the service instance is deployed.
-	LocationID *string `json:"location_id,omitempty"`
-
-	// The machine type used for deploying orchestrator.
-	MachineType *string `json:"machine_type,omitempty"`
-
 	// Indicates whether the orchestrator High Availability (HA) is enabled for the service instance.
 	OrchestratorHa *bool `json:"orchestrator_ha,omitempty"`
-
-	// The cloud location where your orchestator need to be created.
-	OrchestratorLocationType *string `json:"orchestrator_location_type,omitempty"`
-
-	// The username used for the orchestrator.
-	OrchestratorName *string `json:"orchestrator_name,omitempty"`
-
-	// The password that you can use to access your orchestrator.
-	OrchestratorPassword *string `json:"orchestrator_password,omitempty"`
-
-	// The unique identifier orchestrator workspace.
-	OrchestratorWorkspaceID *string `json:"orchestrator_workspace_id,omitempty"`
-
-	// The location of the orchestrator workspace.
-	OrchestratorWorkspaceLocation *string `json:"orchestrator_workspace_location,omitempty"`
 
 	// Proxy IP for the Communication between Orchestrator and Service broker.
 	ProxyIP *string `json:"proxy_ip,omitempty"`
@@ -1464,9 +1402,6 @@ type CreateManageDrOptions struct {
 
 	// The uniquie identifier of the associated IBM Cloud resource instance.
 	ResourceInstance *string `json:"resource_instance,omitempty"`
-
-	// The unique identifier of the secondary workspace used for the disaster recovery.
-	SecondaryWorkspaceID *string `json:"secondary_workspace_id,omitempty"`
 
 	// The secret name or identifier used for retrieving credentials from secrets manager.
 	Secret *string `json:"secret,omitempty"`
@@ -1486,9 +1421,6 @@ type CreateManageDrOptions struct {
 	// The unique identifier of the standby orchestrator workspace.
 	StandbyOrchestratorWorkspaceID *string `json:"standby_orchestrator_workspace_id,omitempty"`
 
-	// The location of the standby orchestrator workspace.
-	StandbyOrchestratorWorkspaceLocation *string `json:"standby_orchestrator_workspace_location,omitempty"`
-
 	// The storage tier used for deploying standby orchestrator.
 	StandbyTier *string `json:"standby_tier,omitempty"`
 
@@ -1504,9 +1436,6 @@ type CreateManageDrOptions struct {
 	// The language requested for the return document.
 	AcceptLanguage *string `json:"Accept-Language,omitempty"`
 
-	// ETag for conditional requests (optional).
-	IfNoneMatch *string `json:"If-None-Match,omitempty"`
-
 	// A value of true indicates that both the IBM Cloud platform and the requesting client support asynchronous
 	// deprovisioning.
 	AcceptsIncomplete *bool `json:"accepts_incomplete,omitempty"`
@@ -1516,39 +1445,21 @@ type CreateManageDrOptions struct {
 }
 
 // NewCreateManageDrOptions : Instantiate CreateManageDrOptions
-func (*DrAutomationServiceV1) NewCreateManageDrOptions(instanceID string) *CreateManageDrOptions {
+func (*DrAutomationServiceV1) NewCreateManageDrOptions(instanceID string, locationID string, machineType string, orchestratorLocationType string, orchestratorName string, orchestratorPassword string, orchestratorWorkspaceID string) *CreateManageDrOptions {
 	return &CreateManageDrOptions{
 		InstanceID: core.StringPtr(instanceID),
+		LocationID: core.StringPtr(locationID),
+		MachineType: core.StringPtr(machineType),
+		OrchestratorLocationType: core.StringPtr(orchestratorLocationType),
+		OrchestratorName: core.StringPtr(orchestratorName),
+		OrchestratorPassword: core.StringPtr(orchestratorPassword),
+		OrchestratorWorkspaceID: core.StringPtr(orchestratorWorkspaceID),
 	}
 }
 
 // SetInstanceID : Allow user to set InstanceID
 func (_options *CreateManageDrOptions) SetInstanceID(instanceID string) *CreateManageDrOptions {
 	_options.InstanceID = core.StringPtr(instanceID)
-	return _options
-}
-
-// SetAPIKey : Allow user to set APIKey
-func (_options *CreateManageDrOptions) SetAPIKey(apiKey string) *CreateManageDrOptions {
-	_options.APIKey = core.StringPtr(apiKey)
-	return _options
-}
-
-// SetClientID : Allow user to set ClientID
-func (_options *CreateManageDrOptions) SetClientID(clientID string) *CreateManageDrOptions {
-	_options.ClientID = core.StringPtr(clientID)
-	return _options
-}
-
-// SetClientSecret : Allow user to set ClientSecret
-func (_options *CreateManageDrOptions) SetClientSecret(clientSecret string) *CreateManageDrOptions {
-	_options.ClientSecret = core.StringPtr(clientSecret)
-	return _options
-}
-
-// SetGUID : Allow user to set GUID
-func (_options *CreateManageDrOptions) SetGUID(guid string) *CreateManageDrOptions {
-	_options.GUID = core.StringPtr(guid)
 	return _options
 }
 
@@ -1561,12 +1472,6 @@ func (_options *CreateManageDrOptions) SetLocationID(locationID string) *CreateM
 // SetMachineType : Allow user to set MachineType
 func (_options *CreateManageDrOptions) SetMachineType(machineType string) *CreateManageDrOptions {
 	_options.MachineType = core.StringPtr(machineType)
-	return _options
-}
-
-// SetOrchestratorHa : Allow user to set OrchestratorHa
-func (_options *CreateManageDrOptions) SetOrchestratorHa(orchestratorHa bool) *CreateManageDrOptions {
-	_options.OrchestratorHa = core.BoolPtr(orchestratorHa)
 	return _options
 }
 
@@ -1594,9 +1499,33 @@ func (_options *CreateManageDrOptions) SetOrchestratorWorkspaceID(orchestratorWo
 	return _options
 }
 
-// SetOrchestratorWorkspaceLocation : Allow user to set OrchestratorWorkspaceLocation
-func (_options *CreateManageDrOptions) SetOrchestratorWorkspaceLocation(orchestratorWorkspaceLocation string) *CreateManageDrOptions {
-	_options.OrchestratorWorkspaceLocation = core.StringPtr(orchestratorWorkspaceLocation)
+// SetAPIKey : Allow user to set APIKey
+func (_options *CreateManageDrOptions) SetAPIKey(apiKey string) *CreateManageDrOptions {
+	_options.APIKey = core.StringPtr(apiKey)
+	return _options
+}
+
+// SetClientID : Allow user to set ClientID
+func (_options *CreateManageDrOptions) SetClientID(clientID string) *CreateManageDrOptions {
+	_options.ClientID = core.StringPtr(clientID)
+	return _options
+}
+
+// SetClientSecret : Allow user to set ClientSecret
+func (_options *CreateManageDrOptions) SetClientSecret(clientSecret string) *CreateManageDrOptions {
+	_options.ClientSecret = core.StringPtr(clientSecret)
+	return _options
+}
+
+// SetGUID : Allow user to set GUID
+func (_options *CreateManageDrOptions) SetGUID(guid string) *CreateManageDrOptions {
+	_options.GUID = core.StringPtr(guid)
+	return _options
+}
+
+// SetOrchestratorHa : Allow user to set OrchestratorHa
+func (_options *CreateManageDrOptions) SetOrchestratorHa(orchestratorHa bool) *CreateManageDrOptions {
+	_options.OrchestratorHa = core.BoolPtr(orchestratorHa)
 	return _options
 }
 
@@ -1615,12 +1544,6 @@ func (_options *CreateManageDrOptions) SetRegionID(regionID string) *CreateManag
 // SetResourceInstance : Allow user to set ResourceInstance
 func (_options *CreateManageDrOptions) SetResourceInstance(resourceInstance string) *CreateManageDrOptions {
 	_options.ResourceInstance = core.StringPtr(resourceInstance)
-	return _options
-}
-
-// SetSecondaryWorkspaceID : Allow user to set SecondaryWorkspaceID
-func (_options *CreateManageDrOptions) SetSecondaryWorkspaceID(secondaryWorkspaceID string) *CreateManageDrOptions {
-	_options.SecondaryWorkspaceID = core.StringPtr(secondaryWorkspaceID)
 	return _options
 }
 
@@ -1660,12 +1583,6 @@ func (_options *CreateManageDrOptions) SetStandbyOrchestratorWorkspaceID(standby
 	return _options
 }
 
-// SetStandbyOrchestratorWorkspaceLocation : Allow user to set StandbyOrchestratorWorkspaceLocation
-func (_options *CreateManageDrOptions) SetStandbyOrchestratorWorkspaceLocation(standbyOrchestratorWorkspaceLocation string) *CreateManageDrOptions {
-	_options.StandbyOrchestratorWorkspaceLocation = core.StringPtr(standbyOrchestratorWorkspaceLocation)
-	return _options
-}
-
 // SetStandbyTier : Allow user to set StandbyTier
 func (_options *CreateManageDrOptions) SetStandbyTier(standbyTier string) *CreateManageDrOptions {
 	_options.StandbyTier = core.StringPtr(standbyTier)
@@ -1693,12 +1610,6 @@ func (_options *CreateManageDrOptions) SetStandByRedeploy(standByRedeploy string
 // SetAcceptLanguage : Allow user to set AcceptLanguage
 func (_options *CreateManageDrOptions) SetAcceptLanguage(acceptLanguage string) *CreateManageDrOptions {
 	_options.AcceptLanguage = core.StringPtr(acceptLanguage)
-	return _options
-}
-
-// SetIfNoneMatch : Allow user to set IfNoneMatch
-func (_options *CreateManageDrOptions) SetIfNoneMatch(ifNoneMatch string) *CreateManageDrOptions {
-	_options.IfNoneMatch = core.StringPtr(ifNoneMatch)
 	return _options
 }
 
@@ -1981,9 +1892,9 @@ type Event struct {
 // Constants associated with the Event.Level property.
 // Level of the event (notice, info, warning, error).
 const (
-	EventLevelErrorConst   = "error"
-	EventLevelInfoConst    = "info"
-	EventLevelNoticeConst  = "notice"
+	EventLevelErrorConst = "error"
+	EventLevelInfoConst = "info"
+	EventLevelNoticeConst = "notice"
 	EventLevelWarningConst = "warning"
 )
 
@@ -2109,9 +2020,6 @@ type GetApikeyOptions struct {
 	// The language requested for the return document.
 	AcceptLanguage *string `json:"Accept-Language,omitempty"`
 
-	// ETag for conditional requests (optional).
-	IfNoneMatch *string `json:"If-None-Match,omitempty"`
-
 	// Allows users to set headers on API requests.
 	Headers map[string]string
 }
@@ -2135,12 +2043,6 @@ func (_options *GetApikeyOptions) SetAcceptLanguage(acceptLanguage string) *GetA
 	return _options
 }
 
-// SetIfNoneMatch : Allow user to set IfNoneMatch
-func (_options *GetApikeyOptions) SetIfNoneMatch(ifNoneMatch string) *GetApikeyOptions {
-	_options.IfNoneMatch = core.StringPtr(ifNoneMatch)
-	return _options
-}
-
 // SetHeaders : Allow user to set Headers
 func (options *GetApikeyOptions) SetHeaders(param map[string]string) *GetApikeyOptions {
 	options.Headers = param
@@ -2154,9 +2056,6 @@ type GetDrGrsLocationPairOptions struct {
 
 	// The language requested for the return document.
 	AcceptLanguage *string `json:"Accept-Language,omitempty"`
-
-	// ETag for conditional requests (optional).
-	IfNoneMatch *string `json:"If-None-Match,omitempty"`
 
 	// Allows users to set headers on API requests.
 	Headers map[string]string
@@ -2181,12 +2080,6 @@ func (_options *GetDrGrsLocationPairOptions) SetAcceptLanguage(acceptLanguage st
 	return _options
 }
 
-// SetIfNoneMatch : Allow user to set IfNoneMatch
-func (_options *GetDrGrsLocationPairOptions) SetIfNoneMatch(ifNoneMatch string) *GetDrGrsLocationPairOptions {
-	_options.IfNoneMatch = core.StringPtr(ifNoneMatch)
-	return _options
-}
-
 // SetHeaders : Allow user to set Headers
 func (options *GetDrGrsLocationPairOptions) SetHeaders(param map[string]string) *GetDrGrsLocationPairOptions {
 	options.Headers = param
@@ -2200,9 +2093,6 @@ type GetDrLocationsOptions struct {
 
 	// The language requested for the return document.
 	AcceptLanguage *string `json:"Accept-Language,omitempty"`
-
-	// ETag for conditional requests (optional).
-	IfNoneMatch *string `json:"If-None-Match,omitempty"`
 
 	// Allows users to set headers on API requests.
 	Headers map[string]string
@@ -2224,12 +2114,6 @@ func (_options *GetDrLocationsOptions) SetInstanceID(instanceID string) *GetDrLo
 // SetAcceptLanguage : Allow user to set AcceptLanguage
 func (_options *GetDrLocationsOptions) SetAcceptLanguage(acceptLanguage string) *GetDrLocationsOptions {
 	_options.AcceptLanguage = core.StringPtr(acceptLanguage)
-	return _options
-}
-
-// SetIfNoneMatch : Allow user to set IfNoneMatch
-func (_options *GetDrLocationsOptions) SetIfNoneMatch(ifNoneMatch string) *GetDrLocationsOptions {
-	_options.IfNoneMatch = core.StringPtr(ifNoneMatch)
 	return _options
 }
 
@@ -2265,9 +2149,6 @@ type GetDrManagedVMOptions struct {
 	// The language requested for the return document.
 	AcceptLanguage *string `json:"Accept-Language,omitempty"`
 
-	// ETag for conditional requests (optional).
-	IfNoneMatch *string `json:"If-None-Match,omitempty"`
-
 	// Allows users to set headers on API requests.
 	Headers map[string]string
 }
@@ -2291,12 +2172,6 @@ func (_options *GetDrManagedVMOptions) SetAcceptLanguage(acceptLanguage string) 
 	return _options
 }
 
-// SetIfNoneMatch : Allow user to set IfNoneMatch
-func (_options *GetDrManagedVMOptions) SetIfNoneMatch(ifNoneMatch string) *GetDrManagedVMOptions {
-	_options.IfNoneMatch = core.StringPtr(ifNoneMatch)
-	return _options
-}
-
 // SetHeaders : Allow user to set Headers
 func (options *GetDrManagedVMOptions) SetHeaders(param map[string]string) *GetDrManagedVMOptions {
 	options.Headers = param
@@ -2310,9 +2185,6 @@ type GetDrSummaryOptions struct {
 
 	// The language requested for the return document.
 	AcceptLanguage *string `json:"Accept-Language,omitempty"`
-
-	// ETag for conditional requests (optional).
-	IfNoneMatch *string `json:"If-None-Match,omitempty"`
 
 	// Allows users to set headers on API requests.
 	Headers map[string]string
@@ -2337,12 +2209,6 @@ func (_options *GetDrSummaryOptions) SetAcceptLanguage(acceptLanguage string) *G
 	return _options
 }
 
-// SetIfNoneMatch : Allow user to set IfNoneMatch
-func (_options *GetDrSummaryOptions) SetIfNoneMatch(ifNoneMatch string) *GetDrSummaryOptions {
-	_options.IfNoneMatch = core.StringPtr(ifNoneMatch)
-	return _options
-}
-
 // SetHeaders : Allow user to set Headers
 func (options *GetDrSummaryOptions) SetHeaders(param map[string]string) *GetDrSummaryOptions {
 	options.Headers = param
@@ -2360,9 +2226,6 @@ type GetEventOptions struct {
 	// The language requested for the return document.
 	AcceptLanguage *string `json:"Accept-Language,omitempty"`
 
-	// ETag for conditional requests (optional).
-	IfNoneMatch *string `json:"If-None-Match,omitempty"`
-
 	// Allows users to set headers on API requests.
 	Headers map[string]string
 }
@@ -2371,7 +2234,7 @@ type GetEventOptions struct {
 func (*DrAutomationServiceV1) NewGetEventOptions(instanceID string, eventID string) *GetEventOptions {
 	return &GetEventOptions{
 		InstanceID: core.StringPtr(instanceID),
-		EventID:    core.StringPtr(eventID),
+		EventID: core.StringPtr(eventID),
 	}
 }
 
@@ -2390,12 +2253,6 @@ func (_options *GetEventOptions) SetEventID(eventID string) *GetEventOptions {
 // SetAcceptLanguage : Allow user to set AcceptLanguage
 func (_options *GetEventOptions) SetAcceptLanguage(acceptLanguage string) *GetEventOptions {
 	_options.AcceptLanguage = core.StringPtr(acceptLanguage)
-	return _options
-}
-
-// SetIfNoneMatch : Allow user to set IfNoneMatch
-func (_options *GetEventOptions) SetIfNoneMatch(ifNoneMatch string) *GetEventOptions {
-	_options.IfNoneMatch = core.StringPtr(ifNoneMatch)
 	return _options
 }
 
@@ -2431,9 +2288,6 @@ type GetLastOperationOptions struct {
 	// The language requested for the return document.
 	AcceptLanguage *string `json:"Accept-Language,omitempty"`
 
-	// ETag for conditional requests (optional).
-	IfNoneMatch *string `json:"If-None-Match,omitempty"`
-
 	// Allows users to set headers on API requests.
 	Headers map[string]string
 }
@@ -2457,12 +2311,6 @@ func (_options *GetLastOperationOptions) SetAcceptLanguage(acceptLanguage string
 	return _options
 }
 
-// SetIfNoneMatch : Allow user to set IfNoneMatch
-func (_options *GetLastOperationOptions) SetIfNoneMatch(ifNoneMatch string) *GetLastOperationOptions {
-	_options.IfNoneMatch = core.StringPtr(ifNoneMatch)
-	return _options
-}
-
 // SetHeaders : Allow user to set Headers
 func (options *GetLastOperationOptions) SetHeaders(param map[string]string) *GetLastOperationOptions {
 	options.Headers = param
@@ -2480,9 +2328,6 @@ type GetMachineTypeOptions struct {
 	// The language requested for the return document.
 	AcceptLanguage *string `json:"Accept-Language,omitempty"`
 
-	// ETag for conditional requests (optional).
-	IfNoneMatch *string `json:"If-None-Match,omitempty"`
-
 	// The standby Power virtual server workspace name.
 	StandbyWorkspaceName *string `json:"standby_workspace_name,omitempty"`
 
@@ -2493,7 +2338,7 @@ type GetMachineTypeOptions struct {
 // NewGetMachineTypeOptions : Instantiate GetMachineTypeOptions
 func (*DrAutomationServiceV1) NewGetMachineTypeOptions(instanceID string, primaryWorkspaceName string) *GetMachineTypeOptions {
 	return &GetMachineTypeOptions{
-		InstanceID:           core.StringPtr(instanceID),
+		InstanceID: core.StringPtr(instanceID),
 		PrimaryWorkspaceName: core.StringPtr(primaryWorkspaceName),
 	}
 }
@@ -2516,12 +2361,6 @@ func (_options *GetMachineTypeOptions) SetAcceptLanguage(acceptLanguage string) 
 	return _options
 }
 
-// SetIfNoneMatch : Allow user to set IfNoneMatch
-func (_options *GetMachineTypeOptions) SetIfNoneMatch(ifNoneMatch string) *GetMachineTypeOptions {
-	_options.IfNoneMatch = core.StringPtr(ifNoneMatch)
-	return _options
-}
-
 // SetStandbyWorkspaceName : Allow user to set StandbyWorkspaceName
 func (_options *GetMachineTypeOptions) SetStandbyWorkspaceName(standbyWorkspaceName string) *GetMachineTypeOptions {
 	_options.StandbyWorkspaceName = core.StringPtr(standbyWorkspaceName)
@@ -2541,9 +2380,6 @@ type GetManageDrOptions struct {
 
 	// The language requested for the return document.
 	AcceptLanguage *string `json:"Accept-Language,omitempty"`
-
-	// ETag for conditional requests (optional).
-	IfNoneMatch *string `json:"If-None-Match,omitempty"`
 
 	// Allows users to set headers on API requests.
 	Headers map[string]string
@@ -2568,12 +2404,6 @@ func (_options *GetManageDrOptions) SetAcceptLanguage(acceptLanguage string) *Ge
 	return _options
 }
 
-// SetIfNoneMatch : Allow user to set IfNoneMatch
-func (_options *GetManageDrOptions) SetIfNoneMatch(ifNoneMatch string) *GetManageDrOptions {
-	_options.IfNoneMatch = core.StringPtr(ifNoneMatch)
-	return _options
-}
-
 // SetHeaders : Allow user to set Headers
 func (options *GetManageDrOptions) SetHeaders(param map[string]string) *GetManageDrOptions {
 	options.Headers = param
@@ -2587,9 +2417,6 @@ type GetPowervsWorkspacesOptions struct {
 
 	// Location ID value.
 	LocationID *string `json:"location_id" validate:"required"`
-
-	// ETag for conditional requests (optional).
-	IfNoneMatch *string `json:"If-None-Match,omitempty"`
 
 	// Allows users to set headers on API requests.
 	Headers map[string]string
@@ -2615,12 +2442,6 @@ func (_options *GetPowervsWorkspacesOptions) SetLocationID(locationID string) *G
 	return _options
 }
 
-// SetIfNoneMatch : Allow user to set IfNoneMatch
-func (_options *GetPowervsWorkspacesOptions) SetIfNoneMatch(ifNoneMatch string) *GetPowervsWorkspacesOptions {
-	_options.IfNoneMatch = core.StringPtr(ifNoneMatch)
-	return _options
-}
-
 // SetHeaders : Allow user to set Headers
 func (options *GetPowervsWorkspacesOptions) SetHeaders(param map[string]string) *GetPowervsWorkspacesOptions {
 	options.Headers = param
@@ -2643,9 +2464,6 @@ type ListEventsOptions struct {
 
 	// The language requested for the return document.
 	AcceptLanguage *string `json:"Accept-Language,omitempty"`
-
-	// ETag for conditional requests (optional).
-	IfNoneMatch *string `json:"If-None-Match,omitempty"`
 
 	// Allows users to set headers on API requests.
 	Headers map[string]string
@@ -2685,12 +2503,6 @@ func (_options *ListEventsOptions) SetToTime(toTime string) *ListEventsOptions {
 // SetAcceptLanguage : Allow user to set AcceptLanguage
 func (_options *ListEventsOptions) SetAcceptLanguage(acceptLanguage string) *ListEventsOptions {
 	_options.AcceptLanguage = core.StringPtr(acceptLanguage)
-	return _options
-}
-
-// SetIfNoneMatch : Allow user to set IfNoneMatch
-func (_options *ListEventsOptions) SetIfNoneMatch(ifNoneMatch string) *ListEventsOptions {
-	_options.IfNoneMatch = core.StringPtr(ifNoneMatch)
 	return _options
 }
 
@@ -3368,9 +3180,6 @@ type UpdateApikeyOptions struct {
 	// The language requested for the return document.
 	AcceptLanguage *string `json:"Accept-Language,omitempty"`
 
-	// ETag for conditional requests (optional).
-	IfNoneMatch *string `json:"If-None-Match,omitempty"`
-
 	// Allows users to set headers on API requests.
 	Headers map[string]string
 }
@@ -3379,7 +3188,7 @@ type UpdateApikeyOptions struct {
 func (*DrAutomationServiceV1) NewUpdateApikeyOptions(instanceID string, apiKey string) *UpdateApikeyOptions {
 	return &UpdateApikeyOptions{
 		InstanceID: core.StringPtr(instanceID),
-		APIKey:     core.StringPtr(apiKey),
+		APIKey: core.StringPtr(apiKey),
 	}
 }
 
@@ -3398,12 +3207,6 @@ func (_options *UpdateApikeyOptions) SetAPIKey(apiKey string) *UpdateApikeyOptio
 // SetAcceptLanguage : Allow user to set AcceptLanguage
 func (_options *UpdateApikeyOptions) SetAcceptLanguage(acceptLanguage string) *UpdateApikeyOptions {
 	_options.AcceptLanguage = core.StringPtr(acceptLanguage)
-	return _options
-}
-
-// SetIfNoneMatch : Allow user to set IfNoneMatch
-func (_options *UpdateApikeyOptions) SetIfNoneMatch(ifNoneMatch string) *UpdateApikeyOptions {
-	_options.IfNoneMatch = core.StringPtr(ifNoneMatch)
 	return _options
 }
 
