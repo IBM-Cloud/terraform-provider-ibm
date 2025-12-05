@@ -1,5 +1,9 @@
-// Copyright IBM Corp. 2023 All Rights Reserved.
+// Copyright IBM Corp. 2025 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
+
+/*
+ * IBM OpenAPI Terraform Generator Version: 3.108.0-56772134-20251111-102802
+ */
 
 package metricsrouter
 
@@ -117,7 +121,7 @@ func resourceIBMMetricsRouterSettingsCreate(context context.Context, d *schema.R
 		var defaultTargets []metricsrouterv3.TargetIdentity
 		for _, e := range d.Get("default_targets").([]interface{}) {
 			value := e.(map[string]interface{})
-			defaultTargetsItem, err := resourceIBMMetricsRouterSettingsMapToTargetIdentity(value)
+			defaultTargetsItem, err := ResourceIBMMetricsRouterSettingsMapToTargetIdentity(value)
 			if err != nil {
 				return diag.FromErr(err)
 			}
@@ -219,7 +223,7 @@ func resourceIBMMetricsRouterSettingsUpdate(context context.Context, d *schema.R
 			var defaultTargets []metricsrouterv3.TargetIdentity
 			for _, e := range d.Get("default_targets").([]interface{}) {
 				value := e.(map[string]interface{})
-				defaultTargetsItem, err := resourceIBMMetricsRouterSettingsMapToTargetIdentity(value)
+				defaultTargetsItem, err := ResourceIBMMetricsRouterSettingsMapToTargetIdentity(value)
 				if err != nil {
 					return diag.FromErr(err)
 				}
@@ -297,7 +301,7 @@ func resourceIBMMetricsRouterSettingsDelete(context context.Context, d *schema.R
 	return nil
 }
 
-func resourceIBMMetricsRouterSettingsMapToTargetIdentity(modelMap map[string]interface{}) (*metricsrouterv3.TargetIdentity, error) {
+func ResourceIBMMetricsRouterSettingsMapToTargetIdentity(modelMap map[string]interface{}) (*metricsrouterv3.TargetIdentity, error) {
 	model := &metricsrouterv3.TargetIdentity{}
 	model.ID = core.StringPtr(modelMap["id"].(string))
 	return model, nil
@@ -312,7 +316,7 @@ func resourceIBMMetricsRouterSettingsMapToTargetRefernce(modelMap map[string]int
 	return model, nil
 }
 
-func resourceIBMMetricsRouterSettingsTargetReferanceToMap(model *metricsrouterv3.TargetReference) (map[string]interface{}, error) {
+func ResourceIBMMetricsRouterSettingsTargetReferenceToMap(model *metricsrouterv3.TargetReference) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["id"] = model.ID
 	modelMap["crn"] = model.CRN
