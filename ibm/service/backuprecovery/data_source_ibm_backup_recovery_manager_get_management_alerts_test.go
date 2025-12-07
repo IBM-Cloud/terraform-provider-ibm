@@ -35,22 +35,7 @@ func TestAccIbmBackupRecoveryManagerGetManagementAlertsDataSourceBasic(t *testin
 func testAccCheckIbmBackupRecoveryManagerGetManagementAlertsDataSourceConfigBasic() string {
 	return fmt.Sprintf(`
 		data "ibm_backup_recovery_manager_get_management_alerts" "backup_recovery_manager_get_management_alerts_instance" {
-			alertIdList = [ "alertIdList" ]
-			alertStateList = [ "alertStateList" ]
-			alertTypeList = [ 1 ]
-			alertSeverityList = [ "kCritical" ]
-			regionIds = [ "regionIds" ]
-			clusterIdentifiers = [ "clusterIdentifiers" ]
-			startDateUsecs = 1
-			endDateUsecs = 1
-			maxAlerts = 1
-			alertCategoryList = [ "kDisk" ]
-			tenantIds = [ "tenantIds" ]
-			alertTypeBucketList = [ "kHardware" ]
-			alertPropertyKeyList = [ "alertPropertyKeyList" ]
-			alertPropertyValueList = [ "alertPropertyValueList" ]
-			alertName = "alertName"
-			serviceInstanceIds = [ "serviceInstanceIds" ]
+
 		}
 	`)
 }

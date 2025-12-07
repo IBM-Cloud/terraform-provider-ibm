@@ -34,10 +34,6 @@ func TestAccIbmBackupRecoveryManagerGetManagementAlertsSummaryDataSourceBasic(t 
 func testAccCheckIbmBackupRecoveryManagerGetManagementAlertsSummaryDataSourceConfigBasic() string {
 	return fmt.Sprintf(`
 		data "ibm_backup_recovery_manager_get_management_alerts_summary" "backup_recovery_manager_get_management_alerts_summary_instance" {
-			clusterIdentifiers = [ "clusterIdentifiers" ]
-			startTimeUsecs = 1
-			endTimeUsecs = 1
-			statesList = [ "kResolved" ]
 		}
 	`)
 }

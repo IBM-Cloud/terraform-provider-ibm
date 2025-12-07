@@ -34,7 +34,7 @@ func TestAccIbmBackupRecoveryManagerGetUpgradesInfoDataSourceBasic(t *testing.T)
 func testAccCheckIbmBackupRecoveryManagerGetUpgradesInfoDataSourceConfigBasic() string {
 	return fmt.Sprintf(`
 		data "ibm_backup_recovery_manager_get_upgrades_info" "backup_recovery_manager_get_upgrades_info_instance" {
-			clusterIdentifiers = [ "clusterIdentifiers" ]
+			cluster_identifiers = [ "3524800407225868","8305184241232842","7463743295903869","1589079364046703","90858563991288","4532338433036076" ]
 		}
 	`)
 }

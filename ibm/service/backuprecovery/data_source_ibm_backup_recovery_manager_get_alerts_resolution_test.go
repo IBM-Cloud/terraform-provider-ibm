@@ -35,9 +35,7 @@ func TestAccIbmBackupRecoveryManagerGetAlertsResolutionDataSourceBasic(t *testin
 func testAccCheckIbmBackupRecoveryManagerGetAlertsResolutionDataSourceConfigBasic() string {
 	return fmt.Sprintf(`
 		data "ibm_backup_recovery_manager_get_alerts_resolution" "backup_recovery_manager_get_alerts_resolution_instance" {
-			maxResolutions = 1
-			resolutionName = "resolutionName"
-			resolutionId = "resolutionId"
+			max_resolutions = 1
 		}
 	`)
 }

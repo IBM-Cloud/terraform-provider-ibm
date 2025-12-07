@@ -36,14 +36,8 @@ func TestAccIbmBackupRecoveryManagerGetAlertsStatsDataSourceBasic(t *testing.T) 
 func testAccCheckIbmBackupRecoveryManagerGetAlertsStatsDataSourceConfigBasic() string {
 	return fmt.Sprintf(`
 		data "ibm_backup_recovery_manager_get_alerts_stats" "backup_recovery_manager_get_alerts_stats_instance" {
-			startTimeUsecs = 1
-			endTimeUsecs = 1
-			clusterIds = [ 1 ]
-			serviceInstanceIds = [ "serviceInstanceIds" ]
-			regionIds = [ "regionIds" ]
-			excludeStatsByCluster = true
-			alertSource = "kCluster"
-			tenantIds = [ "tenantIds" ]
+			start_time_usecs = 1748739600000
+			end_time_usecs = 1848739600000
 		}
 	`)
 }

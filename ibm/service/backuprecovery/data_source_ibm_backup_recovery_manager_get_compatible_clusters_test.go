@@ -34,7 +34,6 @@ func TestAccIbmBackupRecoveryManagerGetCompatibleClustersDataSourceBasic(t *test
 func testAccCheckIbmBackupRecoveryManagerGetCompatibleClustersDataSourceConfigBasic() string {
 	return fmt.Sprintf(`
 		data "ibm_backup_recovery_manager_get_compatible_clusters" "backup_recovery_manager_get_compatible_clusters_instance" {
-			releaseVersion = "releaseVersion"
 		}
 	`)
 }
