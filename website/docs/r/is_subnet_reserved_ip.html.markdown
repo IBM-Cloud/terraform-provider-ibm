@@ -114,16 +114,19 @@ In addition to all argument reference list, you can access the following attribu
 - `target_crn` - (String) The crn of the target for the reserved IP.
 
 ## Import
-The `ibm_is_subnet_reserved_ip` resource can be imported by using subnet ID and reserved IP ID separated by **/**.
 
-**Syntax**
+In Terraform v1.5.0 and later, use an [`import` block](https://developer.hashicorp.com/terraform/language/import) to import the `ibm_is_subnet_reserved_ip` resource by using `id`.
+The `id` property can be formed from `subnet ID`, and `reserved IP ID separated by **/**`. For example:
 
+```terraform
+import {
+  to = ibm_is_subnet_reserved_ip.example
+  id = "<subnet_ID>/<subnet_reserved_IP_ID>"
+}
 ```
-$ terraform import ibm_is_subnet_reserved_ip.example <subnet_ID>/<subnet_reserved_IP_ID>
-```
 
-**Example**
+Using `terraform import`. For example:
 
-```
-$ terraform import ibm_is_subnet_reserved_ip.example 0716-13315ad8-d355-4041-bb60-62342000423/0716-617de4d8-5e2f-4d4a-b0d6-1000023
+```console
+% terraform import ibm_is_subnet_reserved_ip.example <subnet_ID>/<subnet_reserved_IP_ID>
 ```

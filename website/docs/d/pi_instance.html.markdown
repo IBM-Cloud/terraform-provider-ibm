@@ -14,8 +14,8 @@ Retrieve information about a Power Systems Virtual Server instance. For more inf
 
 ```terraform
 data "ibm_pi_instance" "ds_instance" {
-  pi_instance_name     = "terraform-test-instance"
   pi_cloud_instance_id = "49fba6c9-23f8-40bc-9899-aca322ee7d5b"
+  pi_instance_id       = "e6b579b7-d94b-42e5-a19d-5d1e0b2547c4"
 }
 ```
 
@@ -40,7 +40,8 @@ Example usage:
 Review the argument references that you can specify for your data source.
 
 - `pi_cloud_instance_id` - (Required, String) The GUID of the service instance associated with an account.
-- `pi_instance_name` - (Required, String) The unique identifier or name of the instance.
+- `pi_instance_id` - (Optional, String) The PVM instance ID.
+- `pi_instance_name` - (Deprecated, Optional, String) The unique identifier or name of the instance. Passing the name of the instance could fail or fetch stale data. Please pass an id and use `pi_instance_id` instead.
 
 ## Attribute Reference
 
@@ -110,3 +111,17 @@ In addition to all argument reference list, you can access the following attribu
   - `serial` - (String) Virtual serial number.
   - `software_tier` - (String) Software tier of virtual serial number.
 - `volumes` - (List) List of volume IDs that are attached to the instance.
+- `vpmem_volumes` - (List) List of vPMEM volumes.
+   Nested schema for `vpmem_volumes`:
+  - `creation_date` - (String) The date and time when the volume was created.
+  - `crn` - (String) The CRN for this resource.
+  - `error_code` - (String) Error code for the vPMEM volume.
+  - `href` - (String) Link to vPMEM volume resource.
+  - `name` - (String) Volume Name.
+  - `pvm_instance_id` - (String) PVM Instance ID which the volume is attached to.
+  - `reason` - (String) Reason for error.
+  - `size` - (Float) Volume Size (GB).
+  - `status` - (String) Status of the volume.
+  - `updated_date` - (String) The date and time when the volume was updated.
+  - `user_tags` - (List) List of user tags.
+  - `volume_id` - (String) Volume ID.

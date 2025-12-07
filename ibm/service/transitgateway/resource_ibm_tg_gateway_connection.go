@@ -45,6 +45,7 @@ const (
 	tgGreTunnelId                       = "tunnel_id"
 	tgGreTunnelStatus                   = "status"
 	tgconTunnelName                     = "name"
+	tgCidr                              = "cidr"
 )
 
 func ResourceIBMTransitGatewayConnection() *schema.Resource {
@@ -82,7 +83,7 @@ func ResourceIBMTransitGatewayConnection() *schema.Resource {
 				Required:     true,
 				ForceNew:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_tg_connection", tgNetworkType),
-				Description:  "Defines what type of network is connected via this connection. Allowable values (classic,directlink,vpc,gre_tunnel,unbound_gre_tunnel,power_virtual_server,redundant_gre)",
+				Description:  "Defines what type of network is connected via this connection. Allowable values (classic,directlink,vpc,gre_tunnel,unbound_gre_tunnel,power_virtual_server,redundant_gre,vpn_gateway)",
 			},
 			tgName: {
 				Type:         schema.TypeString,
@@ -152,7 +153,13 @@ func ResourceIBMTransitGatewayConnection() *schema.Resource {
 				Type:        schema.TypeString,
 				Optional:    true,
 				ForceNew:    true,
-				Description: "Location of GRE tunnel. This field only applies to network type 'gre_tunnel' and 'unbound_gre_tunnel' connections.",
+				Description: "Location of connection. This field only applies to network type 'gre_tunnel' and 'unbound_gre_tunnel' connections and optional for network type 'vpn_gateway' connections",
+			},
+			tgCidr: {
+				Type:        schema.TypeString,
+				Optional:    true,
+				ForceNew:    true,
+				Description: "The network_type 'vpn_gateway' connections use 'cidr' to specify the CIDR to use for the VPN GRE tunnels",
 			},
 			tgCreatedAt: {
 				Type:        schema.TypeString,
@@ -275,7 +282,7 @@ func ResourceIBMTransitGatewayConnection() *schema.Resource {
 func ResourceIBMTransitGatewayConnectionValidator() *validate.ResourceValidator {
 
 	validateSchema := make([]validate.ValidateSchema, 0)
-	networkType := "classic, directlink, vpc, gre_tunnel, unbound_gre_tunnel, power_virtual_server,redundant_gre"
+	networkType := "classic, directlink, vpc, gre_tunnel, unbound_gre_tunnel, power_virtual_server, redundant_gre, vpn_gateway"
 	validateSchema = append(validateSchema,
 		validate.ValidateSchema{
 			Identifier:                 tgNetworkType,
@@ -356,6 +363,10 @@ func resourceIBMTransitGatewayConnectionCreate(d *schema.ResourceData, meta inte
 		zoneName := d.Get(tgZone).(string)
 		zoneIdentity.Name = &zoneName
 		createTransitGatewayConnectionOptions.SetZone(zoneIdentity)
+	}
+	if _, ok := d.GetOk(tgCidr); ok {
+		cidr := d.Get(tgCidr).(string)
+		createTransitGatewayConnectionOptions.SetCidr(cidr)
 	}
 
 	if _, ok := d.GetOk(tgDefaultPrefixFilter); ok {
@@ -521,6 +532,14 @@ func resourceIBMTransitGatewayConnectionRead(d *schema.ResourceData, meta interf
 		d.Set(tgDefaultPrefixFilter, *instance.PrefixFiltersDefault)
 	}
 
+	if instance.Zone != nil {
+		d.Set(tgZone, *instance.Zone)
+	}
+
+	if instance.Cidr != nil {
+		d.Set(tgCidr, *instance.Cidr)
+	}
+
 	d.Set(tgConnectionId, *instance.ID)
 	d.Set(tgGatewayId, gatewayId)
 	getTransitGatewayOptions := &transitgatewayapisv1.GetTransitGatewayOptions{
@@ -552,7 +571,7 @@ func resourceIBMTransitGatewayConnectionRead(d *schema.ResourceData, meta interf
 		if rGREtunnel.RemoteTunnelIp != nil {
 			tunnel[tgRemoteTunnelIp] = *rGREtunnel.RemoteTunnelIp
 		}
-		if rGREtunnel.Mtu != nil {
+		if rGREtunnel.Mtu != nil && *instance.NetworkType != "vpn_gateway" {
 			tunnel[tgMtu] = *rGREtunnel.Mtu
 		}
 		if rGREtunnel.RemoteBgpAsn != nil {

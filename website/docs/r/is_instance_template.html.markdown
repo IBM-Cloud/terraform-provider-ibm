@@ -557,10 +557,19 @@ In addition to all arguments listed, you can access the following attribute refe
     - `id` - (String) The URL for this placement target.
 
 ## Import
-The `ibm_is_instance_template` resource can be imported by using instance template ID.
 
-**Example**
+In Terraform v1.5.0 and later, use an [`import` block](https://developer.hashicorp.com/terraform/language/import) to import the `ibm_is_instance_template` resource by using `id`.
+The `id` property can be formed from `instance template ID`. For example:
 
+```terraform
+import {
+  to = ibm_is_instance_template.template
+  id = "<instance_template_id>"
+}
 ```
-$ terraform import ibm_is_instance_template.template r006-14140f94-fcc4-1349-96e7-a71212125115
+
+Using `terraform import`. For example:
+
+```console
+% terraform import ibm_is_instance_template.template <instance_template_id>
 ```

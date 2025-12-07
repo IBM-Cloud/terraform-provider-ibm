@@ -61,6 +61,7 @@ In addition to all argument reference list, you can access the following attribu
 - `peer` - (List) 
 	Nested schema for **peer**:
 	- `address` - (String) The IP address of the peer VPN gateway for this connection.
+	- `asn` - (Integer) The peer autonomous system number (ASN) for this VPN gateway connection. 
 	- `fqdn` - (String) The FQDN of the peer VPN gateway for this connection.
 	- `ike_identity` - (List) The peer IKE identity.
 		Nested schema for **ike_identity**:
@@ -75,9 +76,11 @@ In addition to all argument reference list, you can access the following attribu
 - `tunnels` - (List) The VPN tunnel configuration for the VPN gateway connection (in static route mode).
 
   Nested scheme for `tunnels`:
-	- `address` - (String) The IP address of the VPN gateway member in which the tunnel resides.
+	- `neighbor_ip` - (String) The IP address of the neighbor on the virtual tunnel interface.
+	- `protocol_state` -  (String) BGP routing protocol state.
 	- `status` - (String) The status of the VPN tunnel.
-- `status_reasons` - (List) Array of reasons for the current status (if any).
+	- `status_reasons` - (List) Array of reasons for the current status (if any).
+	- `tunnel_interface_ip` - (String) 	The IP address of the virtual tunnel interface.
 
   Nested `status_reasons`:
   - `code` - (String) The status reason code.

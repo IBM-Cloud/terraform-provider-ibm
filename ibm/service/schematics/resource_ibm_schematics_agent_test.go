@@ -58,11 +58,11 @@ func TestAccIbmSchematicsAgentBasic(t *testing.T) {
 func TestAccIbmSchematicsAgentAllArgs(t *testing.T) {
 	var conf schematicsv1.AgentData
 	name := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
-	version := "1.1.0"
+	version := "1.4.0"
 	schematicsLocation := "us-south"
 	agentLocation := "eu-de"
 	nameUpdate := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
-	versionUpdate := "1.2.0"
+	versionUpdate := "1.5.0"
 	schematicsLocationUpdate := "us-east"
 	agentLocationUpdate := "eu-gb"
 	description := fmt.Sprintf("tf_description_%d", acctest.RandIntRange(10, 100))
@@ -92,6 +92,19 @@ func TestAccIbmSchematicsAgentAllArgs(t *testing.T) {
 					resource.TestCheckResourceAttr("ibm_schematics_agent.schematics_agent_instance", "schematics_location", schematicsLocationUpdate),
 					resource.TestCheckResourceAttr("ibm_schematics_agent.schematics_agent_instance", "agent_location", agentLocationUpdate),
 					resource.TestCheckResourceAttr("ibm_schematics_agent.schematics_agent_instance", "description", descriptionUpdate),
+				),
+			},
+			resource.TestStep{
+				Config: testAccIbmSchematicsAgentConfig_withMetadata(name, version, schematicsLocation, agentLocation),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIbmSchematicsAgentExists("ibm_schematics_agent.schematics_agent_instance", conf),
+					resource.TestCheckResourceAttr("ibm_schematics_agent.schematics_agent_instance", "name", name),
+					resource.TestCheckResourceAttr("ibm_schematics_agent.schematics_agent_instance", "version", version),
+					resource.TestCheckResourceAttr("ibm_schematics_agent.schematics_agent_instance", "schematics_location", schematicsLocation),
+					resource.TestCheckResourceAttr("ibm_schematics_agent.schematics_agent_instance", "agent_location", agentLocation),
+					resource.TestCheckResourceAttr("ibm_schematics_agent.schematics_agent_instance", "agent_metadata.#", "2"),
+					resource.TestCheckResourceAttr("ibm_schematics_agent.schematics_agent_instance", "agent_metadata.0.name", "purpose"),
+					resource.TestCheckResourceAttr("ibm_schematics_agent.schematics_agent_instance", "agent_metadata.0.value.0", "terraform"),
 				),
 			},
 			resource.TestStep{
@@ -149,6 +162,39 @@ func testAccCheckIbmSchematicsAgentConfig(name string, version string, schematic
 			}
 		}
 	`, name, version, schematicsLocation, agentLocation, description)
+}
+
+func testAccIbmSchematicsAgentConfig_withMetadata(name, version, schematicsLocation, agentLocation string) string {
+	return fmt.Sprintf(`
+		resource "ibm_schematics_agent" "schematics_agent_instance" {
+			name = "%s"
+			resource_group = "Default"
+			version = "%s"
+			schematics_location = "%s"
+			agent_location = "%s"
+            tags           = ["test-tag"]
+			agent_infrastructure {
+				infra_type = "ibm_kubernetes"
+				cluster_id = "cluster_id"
+				cluster_resource_group = "cluster_resource_group"
+				cos_instance_name = "cos_instance_name"
+				cos_bucket_name = "cos_bucket_name"
+				cos_bucket_region = "cos_bucket_region"
+			}
+
+			// This block triggers the loop at line 589          
+            agent_metadata {
+                name = "purpose"
+				value = ["terraform"]
+            }
+			// Adding a second block to ensure the loop handles multiple items
+			agent_metadata {
+				name  = "purpose"
+				value = ["testing"]
+			}
+            
+		}
+	`, name, version, schematicsLocation, agentLocation)
 }
 
 func testAccCheckIbmSchematicsAgentExists(n string, obj schematicsv1.AgentData) resource.TestCheckFunc {

@@ -86,6 +86,16 @@ Nested schema for **assigned_templates**:
 	  * Constraints: The default value is `NOT_SET`. Allowable values are: `RESTRICTED`, `NOT_RESTRICTED`, `NOT_SET`.
 	* `restrict_create_service_id` - (String) Defines whether or not creating the resource is access controlled. Valid values:  * RESTRICTED - only users assigned the 'Service ID creator' role on the IAM Identity Service can create service IDs, including the account owner  * NOT_RESTRICTED - all members of an account can create service IDs  * NOT_SET - to 'unset' a previous set value.
 	  * Constraints: The default value is `NOT_SET`. Allowable values are: `RESTRICTED`, `NOT_RESTRICTED`, `NOT_SET`.
+	* `restrict_user_domains` - (List)
+		Nested schema for **restrict_user_domains**:
+			* `account_sufficient` - (Boolean)
+			* `restrictions` - (List) Defines if account invitations are restricted to specified domains. To remove an entry for a realm_id, perform an update (PUT) request with only the realm_id set.
+			Nested schema for **restrictions**:
+				* `invitation_email_allow_patterns` - (List) The list of allowed email patterns. Wildcard syntax is supported, '*' represents any sequence of zero or more characters in the string, except for '.' and '@'. The sequence ends if a '.' or '@' was found. '**' represents any sequence of zero or more characters in the string - without limit.
+				* `realm_id` - (String) The realm that the restrictions apply to.
+				* `restrict_invitation` - (Boolean) When true invites will only be possible to the domain patterns provided, otherwise invites are unrestricted.
+	* `restrict_user_list_visibility` - (String) Defines whether or not user visibility is access controlled. Valid values:  * RESTRICTED - users can view only specific types of users in the account, such as those the user has invited to the account, or descendants of those users based on the classic infrastructure hierarchy  * NOT_RESTRICTED - any user in the account can view other users from the Users page in IBM Cloud console  * NOT_SET - to 'unset' a previous set value.
+		  * Constraints: Allowable values are: `RESTRICTED`, `NOT_RESTRICTED`, `NOT_SET`.
 	* `session_expiration_in_seconds` - (String) Defines the session expiration in seconds for the account. Valid values:  * Any whole number between between '900' and '86400'  * NOT_SET - To unset account setting and use service default.
 	  * Constraints: The default value is `86400`.
 	* `session_invalidation_in_seconds` - (String) Defines the period of time in seconds in which a session will be invalidated due to inactivity. Valid values:  * Any whole number between '900' and '7200'  * NOT_SET - To unset account setting and use service default.

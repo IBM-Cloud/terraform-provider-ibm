@@ -49,12 +49,18 @@ In addition to all argument references listed, you can access the following attr
 
 ## Import
 
-You can import the `ibm_is_private_path_service_gateway_account_policy` resource by using `id` in the following format `<private_path_service_gateway_id>/<id>`
+In Terraform v1.5.0 and later, use an [`import` block](https://developer.hashicorp.com/terraform/language/import) to import the `ibm_is_private_path_service_gateway_account_policy` resource by using `id`.
+The `id` property can be formed using the appropriate identifier(s) in the following format `<private_path_service_gateway_id>/<id>`. For example:
 
-- `private_path_service_gateway`: A string. The private path service gateway identifier.
-- `id`: A string. The account policy identifier.
-
-# Syntax
+```terraform
+import {
+  to = ibm_is_private_path_service_gateway_account_policy.example
+  id = "<private_path_service_gateway_id>/<id>"
+}
 ```
-$ terraform import ibm_is_private_path_service_gateway_account_policy.example 0767-fa41aecb-4f21-423d-8082-630bfba1e1d9/d7bec597-4726-451f-8a63-e62e6f19c32c
+
+Using `terraform import`. For example:
+
+```console
+% terraform import ibm_is_private_path_service_gateway_account_policy.example <private_path_service_gateway_id>/<id>
 ```

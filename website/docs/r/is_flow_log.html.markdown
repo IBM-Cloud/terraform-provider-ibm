@@ -110,10 +110,19 @@ In addition to all argument reference list, you can access the following attribu
 
 
 ## Import
-The `ibm_is_flow_log` resource can be imported by using VPC flow log ID.
 
-**Example**
+In Terraform v1.5.0 and later, use an [`import` block](https://developer.hashicorp.com/terraform/language/import) to import the `ibm_is_flow_log` resource by using `id`.
+The `id` property can be formed from `VPC flow log ID`. For example:
 
+```terraform
+import {
+  to = ibm_is_flow_log.example
+  id = "<vpc_flow_log_id>"
+}
 ```
-$ terraform import ibm_is_flow_log.example d7bec597-4726-451f-8a53-e62e6f19c32c
+
+Using `terraform import`. For example:
+
+```console
+% terraform import ibm_is_flow_log.example <vpc_flow_log_id>
 ```

@@ -60,10 +60,19 @@ In addition to all argument reference list, you can access the following attribu
 
 
 ## Import
-The `ibm_is_dedicated_host_group` resource can be imported by using dedicated host group ID.
 
-**Example**
+In Terraform v1.5.0 and later, use an [`import` block](https://developer.hashicorp.com/terraform/language/import) to import the `ibm_is_dedicated_host_group` resource by using `id`.
+The `id` property can be formed from `dedicated host group ID`. For example:
 
+```terraform
+import {
+  to = ibm_is_dedicated_host_group.example
+  id = "<dedicated_host_group_id>"
+}
 ```
-$ terraform import ibm_is_dedicated_host_group.example 0716-5fa4a9c4-a194-4915-854b-10101111
+
+Using `terraform import`. For example:
+
+```console
+% terraform import ibm_is_dedicated_host_group.example <dedicated_host_group_id>
 ```

@@ -100,7 +100,7 @@ Nested schema for **connections**:
 * `connector_group_id` - (Optional, Integer) Specifies the connector group id of connector groups.
 * `data_source_connection_id` - (Optional, String) Specifies the id of the connection from where this source is reachable. This should only be set for a source being registered by a tenant user. Also, this is the 'string' of connectionId. This property was added to accommodate for ID values that exceed 2^53 - 1, which is the max value for which JS maintains precision.
 * `environment` - (Required, String) Specifies the environment type of the Protection Source.
-  * Constraints: Allowable values are: `kPhysical`, `kSQL`.
+  * Constraints: Allowable values are: `kPhysical`, `kSQL`, `kKubernetes`.
 * `kubernetes_params` - (Optional, List) Specifies the parameters to register a Kubernetes source.
 Nested schema for **kubernetes_params**:
 	* `auto_protect_config` - (Optional, List) Specifies the parameters to auto protect the source after registration.

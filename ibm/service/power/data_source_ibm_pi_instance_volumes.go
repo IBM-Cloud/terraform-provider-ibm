@@ -29,11 +29,20 @@ func DataSourceIBMPIInstanceVolumes() *schema.Resource {
 				Type:         schema.TypeString,
 				ValidateFunc: validation.NoZeroValues,
 			},
+			Arg_InstanceID: {
+				AtLeastOneOf:  []string{Arg_InstanceID, Arg_InstanceName},
+				ConflictsWith: []string{Arg_InstanceName},
+				Description:   "The PVM instance ID.",
+				Optional:      true,
+				Type:          schema.TypeString,
+			},
 			Arg_InstanceName: {
-				Description:  "The unique identifier or name of the instance.",
-				Required:     true,
-				Type:         schema.TypeString,
-				ValidateFunc: validation.NoZeroValues,
+				AtLeastOneOf:  []string{Arg_InstanceID, Arg_InstanceName},
+				ConflictsWith: []string{Arg_InstanceID},
+				Deprecated:    "The pi_instance_name field is deprecated. Please use pi_instance_id instead",
+				Description:   "The name of the PVM instance.",
+				Optional:      true,
+				Type:          schema.TypeString,
 			},
 
 			// Attribute
@@ -47,10 +56,25 @@ func DataSourceIBMPIInstanceVolumes() *schema.Resource {
 				Description: "List of volumes attached to instance.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
+						Attr_Auxiliary: {
+							Computed:    true,
+							Description: "Indicates if the volume is auxiliary or not.",
+							Type:        schema.TypeBool,
+						},
+						Attr_AuxiliaryVolumeName: {
+							Computed:    true,
+							Description: "The auxiliary volume name.",
+							Type:        schema.TypeString,
+						},
 						Attr_Bootable: {
 							Computed:    true,
 							Description: "Indicates if the volume is boot capable.",
 							Type:        schema.TypeBool,
+						},
+						Attr_ConsistencyGroupName: {
+							Computed:    true,
+							Description: "The name of consistency group at storage controller level.",
+							Type:        schema.TypeString,
 						},
 						Attr_CreationDate: {
 							Computed:    true,
@@ -62,9 +86,19 @@ func DataSourceIBMPIInstanceVolumes() *schema.Resource {
 							Description: "The CRN of this resource.",
 							Type:        schema.TypeString,
 						},
+						Attr_DeleteOnTermination: {
+							Computed:    true,
+							Description: "Indicates if the volume should be deleted when the server terminates.",
+							Type:        schema.TypeBool,
+						},
 						Attr_FreezeTime: {
 							Computed:    true,
 							Description: "The freeze time of remote copy.",
+							Type:        schema.TypeString,
+						},
+						Attr_GroupID: {
+							Computed:    true,
+							Description: "The volume group id in which the volume belongs.",
 							Type:        schema.TypeString,
 						},
 						Attr_Href: {
@@ -77,9 +111,24 @@ func DataSourceIBMPIInstanceVolumes() *schema.Resource {
 							Description: "The unique identifier of the volume.",
 							Type:        schema.TypeString,
 						},
+						Attr_IOThrottleRate: {
+							Computed:    true,
+							Description: "Amount of iops assigned to the volume",
+							Type:        schema.TypeString,
+						},
 						Attr_LastUpdateDate: {
 							Computed:    true,
 							Description: "The last updated date of the volume.",
+							Type:        schema.TypeString,
+						},
+						Attr_MasterVolumeName: {
+							Computed:    true,
+							Description: "Indicates master volume name",
+							Type:        schema.TypeString,
+						},
+						Attr_MirroringState: {
+							Computed:    true,
+							Description: "Mirroring state for replication enabled volume",
 							Type:        schema.TypeString,
 						},
 						Attr_Name: {
@@ -87,9 +136,19 @@ func DataSourceIBMPIInstanceVolumes() *schema.Resource {
 							Description: "The name of the volume.",
 							Type:        schema.TypeString,
 						},
+						Attr_OutOfBandDeleted: {
+							Computed:    true,
+							Description: "Indicates if the volume does not exist on storage controller.",
+							Type:        schema.TypeBool,
+						},
 						Attr_Pool: {
 							Computed:    true,
 							Description: "Volume pool, name of storage pool where the volume is located.",
+							Type:        schema.TypeString,
+						},
+						Attr_PrimaryRole: {
+							Computed:    true,
+							Description: "Indicates whether master/aux volume is playing the primary role.",
 							Type:        schema.TypeString,
 						},
 						Attr_ReplicationEnabled: {
@@ -102,6 +161,16 @@ func DataSourceIBMPIInstanceVolumes() *schema.Resource {
 							Description: "List of replication sites for volume replication.",
 							Elem:        &schema.Schema{Type: schema.TypeString},
 							Type:        schema.TypeList,
+						},
+						Attr_ReplicationStatus: {
+							Computed:    true,
+							Description: "The replication status of the volume.",
+							Type:        schema.TypeString,
+						},
+						Attr_ReplicationType: {
+							Computed:    true,
+							Description: "The replication type of the volume, 'metro' or 'global'.",
+							Type:        schema.TypeString,
 						},
 						Attr_Shareable: {
 							Computed:    true,
@@ -130,6 +199,21 @@ func DataSourceIBMPIInstanceVolumes() *schema.Resource {
 							Set:         schema.HashString,
 							Type:        schema.TypeSet,
 						},
+						Attr_VolumePool: {
+							Computed:    true,
+							Description: "Name of the storage pool where the volume is located.",
+							Type:        schema.TypeString,
+						},
+						Attr_VolumeType: {
+							Computed:    true,
+							Description: "Name of storage template used to create the volume.",
+							Type:        schema.TypeString,
+						},
+						Attr_WWN: {
+							Computed:    true,
+							Description: "The world wide name of the volume.",
+							Type:        schema.TypeString,
+						},
 					},
 				},
 				Type: schema.TypeList,
@@ -147,9 +231,15 @@ func dataSourceIBMPIInstanceVolumesRead(ctx context.Context, d *schema.ResourceD
 	}
 
 	cloudInstanceID := d.Get(Arg_CloudInstanceID).(string)
+	var instanceID string
+	if v, ok := d.GetOk(Arg_InstanceID); ok {
+		instanceID = v.(string)
+	} else if v, ok := d.GetOk(Arg_InstanceName); ok {
+		instanceID = v.(string)
+	}
 
 	volumeC := instance.NewIBMPIVolumeClient(ctx, sess, cloudInstanceID)
-	volumedata, err := volumeC.GetAllInstanceVolumes(d.Get(Arg_InstanceName).(string))
+	volumedata, err := volumeC.GetAllInstanceVolumes(instanceID)
 	if err != nil {
 		tfErr := flex.TerraformErrorf(err, fmt.Sprintf(" failed: %s", err.Error()), "(Data) ibm_pi_instance_volumes", "read")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
@@ -171,18 +261,32 @@ func flattenVolumesInstances(list []*models.VolumeReference, meta any) []map[str
 	result := make([]map[string]any, 0, len(list))
 	for _, i := range list {
 		l := map[string]any{
-			Attr_Bootable:           *i.Bootable,
-			Attr_CreationDate:       i.CreationDate.String(),
-			Attr_Href:               *i.Href,
-			Attr_ID:                 *i.VolumeID,
-			Attr_LastUpdateDate:     i.LastUpdateDate.String(),
-			Attr_Name:               *i.Name,
-			Attr_Pool:               i.VolumePool,
-			Attr_ReplicationEnabled: i.ReplicationEnabled,
-			Attr_Shareable:          *i.Shareable,
-			Attr_Size:               *i.Size,
-			Attr_State:              *i.State,
-			Attr_Type:               *i.DiskType,
+			Attr_Auxiliary:            *i.Auxiliary,
+			Attr_AuxiliaryVolumeName:  i.AuxVolumeName,
+			Attr_Bootable:             *i.Bootable,
+			Attr_ConsistencyGroupName: i.ConsistencyGroupName,
+			Attr_CreationDate:         i.CreationDate.String(),
+			Attr_GroupID:              i.GroupID,
+			Attr_Href:                 *i.Href,
+			Attr_ID:                   *i.VolumeID,
+			Attr_IOThrottleRate:       i.IoThrottleRate,
+			Attr_LastUpdateDate:       i.LastUpdateDate.String(),
+			Attr_MasterVolumeName:     i.MasterVolumeName,
+			Attr_MirroringState:       i.MirroringState,
+			Attr_Name:                 *i.Name,
+			Attr_OutOfBandDeleted:     i.OutOfBandDeleted,
+			Attr_Pool:                 i.VolumePool,
+			Attr_PrimaryRole:          i.PrimaryRole,
+			Attr_ReplicationEnabled:   i.ReplicationEnabled,
+			Attr_ReplicationStatus:    i.ReplicationStatus,
+			Attr_ReplicationType:      i.ReplicationType,
+			Attr_Shareable:            *i.Shareable,
+			Attr_Size:                 *i.Size,
+			Attr_State:                *i.State,
+			Attr_Type:                 *i.DiskType,
+			Attr_VolumePool:           i.VolumePool,
+			Attr_VolumeType:           i.VolumeType,
+			Attr_WWN:                  *i.Wwn,
 		}
 		if i.Crn != "" {
 			l[Attr_CRN] = i.Crn
@@ -191,6 +295,9 @@ func flattenVolumesInstances(list []*models.VolumeReference, meta any) []map[str
 				log.Printf("Error on get of volume (%s) user_tags: %s", *i.VolumeID, err)
 			}
 			l[Attr_UserTags] = tags
+		}
+		if i.DeleteOnTermination != nil {
+			l[Attr_DeleteOnTermination] = *i.DeleteOnTermination
 		}
 		if i.FreezeTime != nil {
 			l[Attr_FreezeTime] = i.FreezeTime.String()

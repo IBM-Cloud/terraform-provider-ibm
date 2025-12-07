@@ -173,6 +173,15 @@ func testAccCheckIBMAccountSettingsTemplateConfig(enterpriseAccountId string, na
 				max_sessions_per_identity = "5"
 				system_access_token_expiration_in_seconds = "NOT_SET"
 				system_refresh_token_expiration_in_seconds = "NOT_SET"
+				restrict_user_list_visibility = "RESTRICTED"
+				restrict_user_domains {
+					account_sufficient = true
+					restrictions {
+						realm_id = "IBMid"
+						invitation_email_allow_patterns = ["*.*@company.com"]
+						restrict_invitation = true
+					}
+				}
 			}
 		}
 	`, enterpriseAccountId, name, description, committed, mfa)
