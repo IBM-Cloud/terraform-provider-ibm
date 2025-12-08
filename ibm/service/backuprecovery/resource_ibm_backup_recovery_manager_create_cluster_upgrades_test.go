@@ -20,12 +20,10 @@ func TestAccIbmBackupRecoveryManagerCreateClusterUpgradesBasic(t *testing.T) {
 		Steps: []resource.TestStep{
 			resource.TestStep{
 				Config: testAccCheckIbmBackupRecoveryManagerCreateClusterUpgradesConfigBasic(),
-				Check:  resource.ComposeAggregateTestCheckFunc(),
-			},
-			resource.TestStep{
-				ResourceName:      "ibm_backup_recovery_manager_create_cluster_upgrades.backup_recovery_manager_create_cluster_upgrades",
-				ImportState:       true,
-				ImportStateVerify: true,
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet("resource.ibm_backup_recovery_manager_create_cluster_upgrades.backup_recovery_manager_create_cluster_upgrades_instance", "id"),
+				),
+				Destroy: false,
 			},
 		},
 	})
@@ -34,6 +32,11 @@ func TestAccIbmBackupRecoveryManagerCreateClusterUpgradesBasic(t *testing.T) {
 func testAccCheckIbmBackupRecoveryManagerCreateClusterUpgradesConfigBasic() string {
 	return fmt.Sprintf(`
 		resource "ibm_backup_recovery_manager_create_cluster_upgrades" "backup_recovery_manager_create_cluster_upgrades_instance" {
+			clusters {
+				cluster_id = "3524800407225868"
+				cluster_incarnation_id = "1758305184241232842"
+			}
+			package_url = "https://s3.us-east.cloud-object-storage.appdomain.cloud/7.2.15/cluster_artifacts/cohesity-7.2.15_release-20250721_6aa24701.tar.gz"
 		}
 	`)
 }

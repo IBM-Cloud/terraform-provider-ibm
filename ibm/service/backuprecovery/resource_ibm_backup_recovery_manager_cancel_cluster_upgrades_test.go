@@ -19,8 +19,11 @@ func TestAccIbmBackupRecoveryManagerCancelClusterUpgradesBasic(t *testing.T) {
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIbmBackupRecoveryManagerCancelClusterUpgradesConfigBasic(),
-				Check:  resource.ComposeAggregateTestCheckFunc(),
+				Config:  testAccCheckIbmBackupRecoveryManagerCancelClusterUpgradesConfigBasic(),
+				Destroy: false,
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet("resource.ibm_backup_recovery_manager_cancel_cluster_upgrades.backup_recovery_manager_cancel_cluster_upgrades_instance", "id"),
+				),
 			},
 		},
 	})
@@ -29,6 +32,7 @@ func TestAccIbmBackupRecoveryManagerCancelClusterUpgradesBasic(t *testing.T) {
 func testAccCheckIbmBackupRecoveryManagerCancelClusterUpgradesConfigBasic() string {
 	return fmt.Sprintf(`
 		resource "ibm_backup_recovery_manager_cancel_cluster_upgrades" "backup_recovery_manager_cancel_cluster_upgrades_instance" {
+			cluster_identifiers = ["3524800407225868"]
 		}
 	`)
 }
