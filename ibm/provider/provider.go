@@ -37,6 +37,7 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/db2"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/directlink"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/dnsservices"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/drautomationservice"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/enterprise"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/eventnotification"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/eventstreams"
@@ -468,6 +469,10 @@ func Provider() *schema.Provider {
 			"ibm_iam_action_control_template_version":       iampolicy.DataSourceIBMIAMActionControlTemplateVersion(),
 			"ibm_iam_action_control_assignments":            iampolicy.DataSourceIBMIAMActionControlAssignments(),
 			"ibm_iam_action_control_assignment":             iampolicy.DataSourceIBMIAMActionControlAssignment(),
+			"ibm_iam_role_template":                         iampolicy.DataSourceIBMIAMRoleTemplate(),
+			"ibm_iam_role_template_version":                 iampolicy.DataSourceIBMIAMRoleTemplateVersion(),
+			"ibm_iam_role_assignments":                      iampolicy.DataSourceIBMIAMRoleAssignments(),
+			"ibm_iam_role_assignment":                       iampolicy.DataSourceIBMIAMRoleAssignment(),
 
 			// backup as Service
 			"ibm_is_backup_policy":       vpc.DataSourceIBMIsBackupPolicy(),
@@ -650,6 +655,9 @@ func Provider() *schema.Provider {
 
 			"ibm_is_vpn_gateway_connection_local_cidrs": vpc.DataSourceIBMIsVPNGatewayConnectionLocalCidrs(),
 			"ibm_is_vpn_gateway_connection_peer_cidrs":  vpc.DataSourceIBMIsVPNGatewayConnectionPeerCidrs(),
+			"ibm_is_vpn_gateway_advertised_cidrs":       vpc.DataSourceIBMIsVPNGatewayAdvertisedCidrs(),
+			"ibm_is_vpn_gateway_service_connection":     vpc.DataSourceIBMIsVPNGatewayServiceConnection(),
+			"ibm_is_vpn_gateway_service_connections":    vpc.DataSourceIBMIsVPNGatewayServiceConnections(),
 
 			"ibm_is_vpc_default_routing_table":       vpc.DataSourceIBMISVPCDefaultRoutingTable(),
 			"ibm_is_vpc_routing_table":               vpc.DataSourceIBMIsVPCRoutingTable(),
@@ -704,8 +712,12 @@ func Provider() *schema.Provider {
 			"ibm_app_config_integration_en":          appconfiguration.DataSourceIBMAppConfigIntegrationEn(),
 			"ibm_app_config_integration_kms":         appconfiguration.DataSourceIBMAppConfigIntegrationKms(),
 
+			// resource_reclamations
+			"ibm_resource_reclamations": resourcecontroller.DataSourceIBMResourceReclamations(),
+
 			"ibm_resource_quota":    resourcecontroller.DataSourceIBMResourceQuota(),
 			"ibm_resource_group":    resourcemanager.DataSourceIBMResourceGroup(),
+			"ibm_resource_groups":   resourcemanager.DataSourceIBMResourceGroups(),
 			"ibm_resource_instance": resourcecontroller.DataSourceIBMResourceInstance(),
 			"ibm_resource_key":      resourcecontroller.DataSourceIBMResourceKey(),
 			"ibm_security_group":    classicinfrastructure.DataSourceIBMSecurityGroup(),
@@ -1124,6 +1136,17 @@ func Provider() *schema.Provider {
 			// Logs Router Service
 			"ibm_logs_router_tenants": logsrouting.DataSourceIBMLogsRouterTenants(),
 			"ibm_logs_router_targets": logsrouting.DataSourceIBMLogsRouterTargets(),
+
+			// DR Automation Service
+			"ibm_pdr_get_dr_summary_response": drautomationservice.DataSourceIBMPdrGetDrSummaryResponse(),
+			"ibm_pdr_get_powervs_workspace":   drautomationservice.DataSourceIBMPdrGetPowervsWorkspace(),
+			"ibm_pdr_get_event":               drautomationservice.DataSourceIBMPdrGetEvent(),
+			"ibm_pdr_get_events":              drautomationservice.DataSourceIBMPdrGetEvents(),
+			"ibm_pdr_get_dr_locations":        drautomationservice.DataSourceIBMPdrGetDrLocations(),
+			"ibm_pdr_get_machine_types":       drautomationservice.DataSourceIBMPdrGetMachineTypes(),
+			"ibm_pdr_get_managed_vm_list":     drautomationservice.DataSourceIBMPdrGetManagedVMList(),
+			"ibm_pdr_last_operation":          drautomationservice.DataSourceIBMPdrLastOperation(),
+			"ibm_pdr_get_grs_location_pairs":  drautomationservice.DataSourceIBMPdrGetGrsLocationPairs(),
 		},
 
 		ResourcesMap: map[string]*schema.Resource{
@@ -1324,6 +1347,9 @@ func Provider() *schema.Provider {
 			"ibm_iam_action_control_template":               iampolicy.ResourceIBMIAMActionControlTemplate(),
 			"ibm_iam_action_control_template_version":       iampolicy.ResourceIBMIAMActionControlTemplateVersion(),
 			"ibm_iam_action_control_assignment":             iampolicy.ResourceIBMIAMActionControlAssignment(),
+			"ibm_iam_role_template":                         iampolicy.ResourceIBMIAMRoleTemplate(),
+			"ibm_iam_role_template_version":                 iampolicy.ResourceIBMIAMRoleTemplateVersion(),
+			"ibm_iam_role_assignment":                       iampolicy.ResourceIBMIAMRoleAssignment(),
 
 			"ibm_is_backup_policy":      vpc.ResourceIBMIsBackupPolicy(),
 			"ibm_is_backup_policy_plan": vpc.ResourceIBMIsBackupPolicyPlan(),
@@ -1408,6 +1434,7 @@ func Provider() *schema.Provider {
 			"ibm_is_volume":                                vpc.ResourceIBMISVolume(),
 			"ibm_is_vpn_gateway":                           vpc.ResourceIBMISVPNGateway(),
 			"ibm_is_vpn_gateway_connection":                vpc.ResourceIBMISVPNGatewayConnection(),
+			"ibm_is_vpn_gateway_advertised_cidr":           vpc.ResourceIBMISVPNGatewayAdvertisedCidr(),
 			"ibm_is_vpc":                                   vpc.ResourceIBMISVPC(),
 			"ibm_is_vpc_address_prefix":                    vpc.ResourceIBMISVpcAddressPrefix(),
 			"ibm_is_vpc_dns_resolution_binding":            vpc.ResourceIBMIsVPCDnsResolutionBinding(),
@@ -1458,21 +1485,25 @@ func Provider() *schema.Provider {
 			"ibm_kms_kmip_adapter":                         kms.ResourceIBMKmsKMIPAdapter(),
 			"ibm_kms_kmip_client_cert":                     kms.ResourceIBMKmsKMIPClientCertificate(),
 			"ibm_resource_group":                           resourcemanager.ResourceIBMResourceGroup(),
-			"ibm_resource_instance":                        resourcecontroller.ResourceIBMResourceInstance(),
-			"ibm_resource_key":                             resourcecontroller.ResourceIBMResourceKey(),
-			"ibm_security_group":                           classicinfrastructure.ResourceIBMSecurityGroup(),
-			"ibm_security_group_rule":                      classicinfrastructure.ResourceIBMSecurityGroupRule(),
-			"ibm_service_instance":                         cloudfoundry.ResourceIBMServiceInstance(),
-			"ibm_service_key":                              cloudfoundry.ResourceIBMServiceKey(),
-			"ibm_space":                                    cloudfoundry.ResourceIBMSpace(),
-			"ibm_storage_evault":                           classicinfrastructure.ResourceIBMStorageEvault(),
-			"ibm_storage_block":                            classicinfrastructure.ResourceIBMStorageBlock(),
-			"ibm_storage_file":                             classicinfrastructure.ResourceIBMStorageFile(),
-			"ibm_subnet":                                   classicinfrastructure.ResourceIBMSubnet(),
-			"ibm_dns_reverse_record":                       classicinfrastructure.ResourceIBMDNSReverseRecord(),
-			"ibm_ssl_certificate":                          classicinfrastructure.ResourceIBMSSLCertificate(),
-			"ibm_cdn":                                      classicinfrastructure.ResourceIBMCDN(),
-			"ibm_hardware_firewall_shared":                 classicinfrastructure.ResourceIBMFirewallShared(),
+
+			// resource_reclamation
+			"ibm_resource_reclamation_delete": resourcecontroller.ResourceIBMResourceReclamationDelete(),
+
+			"ibm_resource_instance":        resourcecontroller.ResourceIBMResourceInstance(),
+			"ibm_resource_key":             resourcecontroller.ResourceIBMResourceKey(),
+			"ibm_security_group":           classicinfrastructure.ResourceIBMSecurityGroup(),
+			"ibm_security_group_rule":      classicinfrastructure.ResourceIBMSecurityGroupRule(),
+			"ibm_service_instance":         cloudfoundry.ResourceIBMServiceInstance(),
+			"ibm_service_key":              cloudfoundry.ResourceIBMServiceKey(),
+			"ibm_space":                    cloudfoundry.ResourceIBMSpace(),
+			"ibm_storage_evault":           classicinfrastructure.ResourceIBMStorageEvault(),
+			"ibm_storage_block":            classicinfrastructure.ResourceIBMStorageBlock(),
+			"ibm_storage_file":             classicinfrastructure.ResourceIBMStorageFile(),
+			"ibm_subnet":                   classicinfrastructure.ResourceIBMSubnet(),
+			"ibm_dns_reverse_record":       classicinfrastructure.ResourceIBMDNSReverseRecord(),
+			"ibm_ssl_certificate":          classicinfrastructure.ResourceIBMSSLCertificate(),
+			"ibm_cdn":                      classicinfrastructure.ResourceIBMCDN(),
+			"ibm_hardware_firewall_shared": classicinfrastructure.ResourceIBMFirewallShared(),
 
 			// Software Defined Storage as a Service
 			"ibm_sds_volume":         sdsaas.ResourceIBMSdsVolume(),
@@ -1799,6 +1830,10 @@ func Provider() *schema.Provider {
 
 			// Logs Router Service
 			"ibm_logs_router_tenant": logsrouting.ResourceIBMLogsRouterTenant(),
+
+			// DR Automation Service
+			"ibm_pdr_managedr":        drautomationservice.ResourceIbmPdrManagedr(),
+			"ibm_pdr_validate_apikey": drautomationservice.ResourceIBMPdrValidateApikey(),
 		},
 
 		ConfigureFunc: providerConfigure,
@@ -2324,6 +2359,7 @@ func Validator() validate.ValidatorDict {
 				"ibm_resource_instance":             resourcecontroller.DataSourceIBMResourceInstanceValidator(),
 				"ibm_resource_key":                  resourcecontroller.DataSourceIBMResourceKeyValidator(),
 				"ibm_resource_group":                resourcemanager.DataSourceIBMResourceGroupValidator(),
+				"ibm_resource_groups":               resourcemanager.DataSourceIBMResourceGroupsValidator(),
 
 				// bare_metal_server
 				"ibm_is_bare_metal_server": vpc.DataSourceIBMIsBareMetalServerValidator(),

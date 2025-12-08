@@ -324,14 +324,22 @@ In addition to all argument reference list, you can access the following attribu
 - `manager_id` - (String) The ID of the instance group manager.
 
 ## Import
-The `ibm_is_instance_group_manager` resource can be imported by using the instance group ID and instance group manager ID.
 
-**Example**
+In Terraform v1.5.0 and later, use an [`import` block](https://developer.hashicorp.com/terraform/language/import) to import the `ibm_is_instance_group_manager` resource by using `id`.
+The `id` property can be formed from `instance group ID`, and `instance group manager ID`. For example:
 
+```terraform
+import {
+  to = ibm_is_instance_group_manager.manager
+  id = "<instance_group_id>/<instance_group_manager_id>"
+}
 ```
-$ terraform import ibm_is_instance_group_manager.manager r006-eea6b0b7-babd-47a8-82c5-ad73d1e10bef/r006-160b9a68-58c8-4ec3-84b0-ad553c111115a
-```
 
+Using `terraform import`. For example:
+
+```console
+% terraform import ibm_is_instance_group_manager.manager <instance_group_id>/<instance_group_manager_id>
+```
 ## Related Resources
 
 - [`ibm_is_instance_group`](https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/resources/is_instance_group) - Creates the instance group

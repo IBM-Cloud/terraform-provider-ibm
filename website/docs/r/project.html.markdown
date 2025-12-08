@@ -36,6 +36,8 @@ You can specify the following arguments for this resource.
 Nested schema for **configs**:
 	* `approved_version` - (Optional, List) A summary of a project configuration version.
 	Nested schema for **approved_version**:
+		* `container_state` - (Computed, String) The aggregate state from all deployabe architectures that are included in this configuration.
+		  * Constraints: Allowable values are: `approved`, `deleted`, `deleting`, `deleting_failed`, `discarded`, `draft`, `deployed`, `deploying_failed`, `deploying`, `superseded`, `undeploying`, `undeploying_failed`, `validated`, `validating`, `validating_failed`, `working`.
 		* `definition` - (Required, List) A summary of the definition in a project configuration version.
 		Nested schema for **definition**:
 			* `environment_id` - (Computed, String) The ID of the project environment.
@@ -48,6 +50,10 @@ Nested schema for **configs**:
 		  * Constraints: Allowable values are: `approved`, `deleted`, `deleting`, `deleting_failed`, `discarded`, `draft`, `deployed`, `deploying_failed`, `deploying`, `superseded`, `undeploying`, `undeploying_failed`, `validated`, `validating`, `validating_failed`, `applied`, `apply_failed`.
 		* `version` - (Computed, Integer) The version number of the configuration.
 		  * Constraints: The maximum value is `10000`. The minimum value is `0`.
+	* `container_state` - (Computed, String) The aggregate state from all deployabe architectures that are included in this configuration.
+	  * Constraints: Allowable values are: `approved`, `deleted`, `deleting`, `deleting_failed`, `discarded`, `draft`, `deployed`, `deploying_failed`, `deploying`, `superseded`, `undeploying`, `undeploying_failed`, `validated`, `validating`, `validating_failed`, `working`.
+	* `container_state_code` - (Computed, String) Computed state code clarifying the prerequisites for validation for the configuration.
+	  * Constraints: Allowable values are: `awaiting_input`, `awaiting_prerequisite`, `awaiting_validation`, `awaiting_member_deployment`, `awaiting_stack_setup`.
 	* `created_at` - (Computed, String) A date and time value in the format YYYY-MM-DDTHH:mm:ssZ or YYYY-MM-DDTHH:mm:ss.sssZ to match the date and time format as specified by RFC 3339.
 	* `definition` - (Required, List) The description of a project configuration.
 	Nested schema for **definition**:
@@ -59,6 +65,8 @@ Nested schema for **configs**:
 		  * Constraints: The maximum length is `128` characters. The minimum length is `1` character. The value must match regular expression `/^[a-zA-Z0-9][a-zA-Z0-9-_ ]*$/`.
 	* `deployed_version` - (Optional, List) A summary of a project configuration version.
 	Nested schema for **deployed_version**:
+		* `container_state` - (Computed, String) The aggregate state from all deployabe architectures that are included in this configuration.
+		  * Constraints: Allowable values are: `approved`, `deleted`, `deleting`, `deleting_failed`, `discarded`, `draft`, `deployed`, `deploying_failed`, `deploying`, `superseded`, `undeploying`, `undeploying_failed`, `validated`, `validating`, `validating_failed`, `working`.
 		* `definition` - (Required, List) A summary of the definition in a project configuration version.
 		Nested schema for **definition**:
 			* `environment_id` - (Computed, String) The ID of the project environment.
@@ -92,6 +100,8 @@ Nested schema for **configs**:
 		  * Constraints: The maximum length is `128` characters. The value must match regular expression `/^[\\.\\-0-9a-zA-Z]+$/`.
 	* `state` - (Computed, String) The state of the configuration.
 	  * Constraints: Allowable values are: `approved`, `deleted`, `deleting`, `deleting_failed`, `discarded`, `draft`, `deployed`, `deploying_failed`, `deploying`, `superseded`, `undeploying`, `undeploying_failed`, `validated`, `validating`, `validating_failed`, `applied`, `apply_failed`.
+	* `state_code` - (Computed, String) Computed state code clarifying the prerequisites for validation for the configuration.
+	  * Constraints: Allowable values are: `awaiting_input`, `awaiting_prerequisite`, `awaiting_validation`, `awaiting_member_deployment`, `awaiting_stack_setup`.
 	* `version` - (Computed, Integer) The version of the configuration.
 	  * Constraints: The maximum value is `10000`. The minimum value is `0`.
 * `definition` - (Required, List) The definition of the project.

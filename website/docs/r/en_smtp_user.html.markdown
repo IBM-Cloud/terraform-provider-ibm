@@ -28,6 +28,11 @@ You can specify the following arguments for this resource.
   * Constraints: The maximum length is `250` characters. The minimum length is `1` character. The value must match regular expression `/[a-zA-Z 0-9-_\/.?:'";,+=!#@$%^&*() ]*/`.
 * `instance_id` - (Required, Forces new resource, String) Unique identifier for IBM Cloud Event Notifications instance.
   * Constraints: The maximum length is `256` characters. The minimum length is `10` characters. The value must match regular expression `/[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]/`.
+* `smtp_config_id` - (Required, String) SMTP confg Id.
+  * Constraints: The maximum length is `100` characters. The minimum length is `32` characters. The value must match regular expression `/[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}/`.    
+* `username_to_clone` - (Optional, String) Provide the userame of another SMTP configuration which you want to clone in current SMTP configuration.
+  * The maximum length is `20` characters. The value must match regular expression `/^[a-z0-9]{18}\\d{2}$/`.
+
 
 ## Attribute Reference
 

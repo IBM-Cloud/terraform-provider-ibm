@@ -113,16 +113,19 @@ In addition to all argument reference list, you can access the following attribu
 - `health` - (String) The health of the server member in the pool.
 
 ## Import
-The `ibm_is_lb_pool_member` resource can be imported by using the load balancer ID, pool ID, pool member ID.
 
-**Syntax**
+In Terraform v1.5.0 and later, use an [`import` block](https://developer.hashicorp.com/terraform/language/import) to import the `ibm_is_lb_pool_member` resource by using `id`.
+The `id` property can be formed from `load balancer ID`, `pool ID`, and `pool member ID`. For example:
 
+```terraform
+import {
+  to = ibm_is_lb_pool_member.example
+  id = "<loadbalancer_ID>/<pool_ID>/<pool_member_ID>"
+}
 ```
-$ terraform import ibm_is_lb_pool_member.example <loadbalancer_ID>/<pool_ID>/<pool_member_ID>
-```
 
-**Example**
+Using `terraform import`. For example:
 
-```
-$ terraform import ibm_is_lb_pool_member.example d7bec597-4726-451f-8a63-e62e6f19c32c/cea6651a-bc0a-4438-9f8a-a0770bbf3ebb/gfe6651a-bc0a-5538-8h8a-b0770bbf32cc
+```console
+% terraform import ibm_is_lb_pool_member.example <loadbalancer_ID>/<pool_ID>/<pool_member_ID>
 ```

@@ -33,17 +33,39 @@ resource "ibm_app_config_feature" "app_config_feature" {
   guid = "guid"
   name = "name"
   type = "type"
-  tags = "tags"
+  tags = "tag1,tag2"
   format="format"
   feature_id = "feature_id"
   enabled_value = "enabled_value"
   environment_id = "environment_id"
   disabled_value = "disabled_value"
   rollout_percentage = "rollout_percentage"
-  collections {
-    collection_id = "collection_id"
-  }
   enabled = true
+  collections {
+    collection_id = "collection_id1"
+  }
+  # only use this deleted attribute during 
+  # update of feature
+  collections {
+    collection_id = "collection_id2"
+    deleted = true
+  }
+  segment_rules {
+    rules {
+      segments = [ "segment_id1","segment_id2" ]
+    }
+    value = "value1"
+    rollout_percentage = 80
+    order = 1
+  }
+  segment_rules {
+    rules {
+      segments = [ "segment_id3","segment_id4" ]
+    }
+    value = "value2"
+    rollout_percentage = 50
+    order = 2
+  }
 }
 ```
 
@@ -67,10 +89,12 @@ Review the argument reference that you can specify for your resource.
   - `rules` - (Required, []interface{}) The rules array.
     - `segments` - (Required, Array of Strings) The list of segment IDs that are used for targeting using the rule.
   - `value` - (Required, String) The value to be used for evaluation for this rule. The value can be Boolean, String or a Numeric value as per the `type` attribute.
-  - `order` - (Required, Integer) The order of the rule, used during evaluation. The evaluation is performed in the order defined and the value associated with the first matching rule is used for evaluation.
+  - `order` - (Required, Integer) The order of the rule, used during evaluation. The evaluation is performed in the order defined and the value associated with the first matching rule is used for evaluation. **Index 1 based numbering is used for order**.
   - `rollout_percentage` - (String) Rollout percentage for the segment rule.
 - `collections` - (Optional, List) The list of collection ID representing the collections that are associated with the specified feature flag.
   - `collection_id` - (Required, String) Collection ID.
+  - `deleted` - (Optional, Boolean) Delete resource association with collection.
+  Note:- Only to be used during update operation
 
 ## Attribute reference
 

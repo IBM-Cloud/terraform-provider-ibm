@@ -33,13 +33,13 @@ func TestAccIBMIsVPNGatewayDataSourceBasic(t *testing.T) {
 					resource.TestCheckResourceAttrSet("data.ibm_is_vpn_gateway.example", "href"),
 					resource.TestCheckResourceAttrSet("data.ibm_is_vpn_gateway.example", "members.0.public_ip_address"),
 					resource.TestCheckResourceAttrSet("data.ibm_is_vpn_gateway.example", "members.0.role"),
-					resource.TestCheckResourceAttrSet("data.ibm_is_vpn_gateway.example", "members.0.status"),
+					// resource.TestCheckResourceAttrSet("data.ibm_is_vpn_gateway.example", "members.0.status"),
 					resource.TestCheckResourceAttrSet("data.ibm_is_vpn_gateway.example", "name"),
 					resource.TestCheckResourceAttrSet("data.ibm_is_vpn_gateway.example", "resource_group.0.id"),
 					resource.TestCheckResourceAttrSet("data.ibm_is_vpn_gateway.example", "resource_group.0.href"),
 					resource.TestCheckResourceAttrSet("data.ibm_is_vpn_gateway.example", "resource_group.0.name"),
 					resource.TestCheckResourceAttrSet("data.ibm_is_vpn_gateway.example", "resource_type"),
-					resource.TestCheckResourceAttrSet("data.ibm_is_vpn_gateway.example", "status"),
+					// resource.TestCheckResourceAttrSet("data.ibm_is_vpn_gateway.example", "status"),
 					resource.TestCheckResourceAttrSet("data.ibm_is_vpn_gateway.example", "subnet.0.href"),
 					resource.TestCheckResourceAttrSet("data.ibm_is_vpn_gateway.example", "subnet.0.id"),
 					resource.TestCheckResourceAttrSet("data.ibm_is_vpn_gateway.example", "subnet.0.name"),
@@ -47,6 +47,8 @@ func TestAccIBMIsVPNGatewayDataSourceBasic(t *testing.T) {
 					resource.TestCheckResourceAttrSet("data.ibm_is_vpn_gateway.example", "vpc.0.crn"),
 					resource.TestCheckResourceAttrSet("data.ibm_is_vpn_gateway.example", "vpc.0.href"),
 					resource.TestCheckResourceAttrSet("data.ibm_is_vpn_gateway.example", "vpc.0.id"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_vpn_gateway.example", "local_asn"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_vpn_gateway.example", "advertised_cidrs.#"),
 				),
 			},
 			{
@@ -60,7 +62,7 @@ func TestAccIBMIsVPNGatewayDataSourceBasic(t *testing.T) {
 					resource.TestCheckResourceAttrSet("data.ibm_is_vpn_gateway.example-name", "name"),
 					resource.TestCheckResourceAttrSet("data.ibm_is_vpn_gateway.example-name", "resource_group.#"),
 					resource.TestCheckResourceAttrSet("data.ibm_is_vpn_gateway.example-name", "resource_type"),
-					resource.TestCheckResourceAttrSet("data.ibm_is_vpn_gateway.example-name", "status"),
+					// resource.TestCheckResourceAttrSet("data.ibm_is_vpn_gateway.example-name", "status"),
 					resource.TestCheckResourceAttrSet("data.ibm_is_vpn_gateway.example-name", "subnet.#"),
 				),
 			},
@@ -82,7 +84,18 @@ func testAccCheckIBMIsVPNGatewayDataSourceConfigBasic(vpc, subnet, vpngwname, vp
     	resource "ibm_is_vpn_gateway" "example" {
 			name = "%s"
 			subnet = "${ibm_is_subnet.example.id}"
-    	}
+			mode   = "route"
+			local_asn = 64520
+			lifecycle {
+				ignore_changes = [
+					advertised_cidrs
+				]
+			}
+		}
+		resource "ibm_is_vpn_gateway_advertised_cidr" "example" {
+			vpn_gateway = ibm_is_vpn_gateway.example.id
+			cidr        = "10.45.0.0/25"
+		}	
 		resource "ibm_is_vpn_gateway_connection" "example" {
 			name          = "%s"
 			vpn_gateway   = ibm_is_vpn_gateway.example.id

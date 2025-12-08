@@ -42,16 +42,18 @@ After your resource is created, you can read values from the listed arguments an
 
 ## Import
 
-You can import the `ibm_is_virtual_network_interface_ip` resource by using `id`.
-The `id` property can be formed from `virtual_network_interface`, and `reserved_ip` in the following format:
+In Terraform v1.5.0 and later, use an [`import` block](https://developer.hashicorp.com/terraform/language/import) to import the `ibm_is_virtual_network_interface_ip` resource by using `id`.
+The `id` property can be formed from `virtual_network_interface`, and `reserved_ip`. For example:
 
+```terraform
+import {
+  to = ibm_is_virtual_network_interface_ip.is_reserved_ip
+  id = "<virtual_network_interface>/<reserved_ip>"
+}
 ```
-<virtual_network_interface>/<reserved_ip>
-```
-* `virtual_network_interface`: A string. The subnet identifier.
-* `reserved_ip`: A string. The reserved IP identifier.
 
-# Syntax
-```
-$ terraform import ibm_is_virtual_network_interface_ip.is_reserved_ip <virtual_network_interface>/<reserved_ip>
+Using `terraform import`. For example:
+
+```console
+% terraform import ibm_is_virtual_network_interface_ip.is_reserved_ip <virtual_network_interface>/<reserved_ip>
 ```
