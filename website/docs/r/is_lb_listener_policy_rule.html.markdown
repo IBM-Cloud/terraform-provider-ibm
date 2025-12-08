@@ -142,27 +142,18 @@ In addition to all argument reference list, you can access the following attribu
 
 ## Import
 
-In Terraform v1.5.0 and later, use an [`import` block](https://developer.hashicorp.com/terraform/language/import) to import the **listener policy rule** using `lb_ID`, `listener_ID`, `policy_ID`, and `rule_ID`.
+In Terraform v1.5.0 and later, use an [`import` block](https://developer.hashicorp.com/terraform/language/import) to import the `ibm_is_lb_listener_policy_rule` resource by using `id`.
+The `id` property can be formed using the appropriate identifier(s) `lb_ID`, `listener_ID`, `policy_ID`, and `rule_ID`. For example:
 
-**Example**
-
-```hcl
+```terraform
 import {
   to = ibm_is_lb_listener_policy_rule.example
-  id = "c1e3d5d3-8836-4328-b473-a90e0c9ba941/3ea13dc7-25b4-4c62-8cc7-0f7e092e7a8f/2161a3fb-123c-4a33-9a3d-b3154ef42009/356789523dc7-25b4-4c62-8cc7-0f7e092e7a8f"
+  id = "<loadbalancer_ID>/<listener_ID>/<policy_ID>/<rule_ID>"
 }
 ```
 
-For versions prior to Terraform v1.5.0, use the `terraform import` command:
-
-**Syntax**
+Using `terraform import`. For example:
 
 ```console
-$ terraform import ibm_is_lb_listener_policy_rule.example <loadbalancer_ID>/<listener_ID>/<policy_ID>/<rule_ID>
-```
-
-**Example**
-
-```console
-$ terraform import ibm_is_lb_listener_policy_rule.example c1e3d5d3-8836-4328-b473-a90e0c9ba941/3ea13dc7-25b4-4c62-8cc7-0f7e092e7a8f/2161a3fb-123c-4a33-9a3d-b3154ef42009/356789523dc7-25b4-4c62-8cc7-0f7e092e7a8f
+% terraform import ibm_is_lb_listener_policy_rule.example <loadbalancer_ID>/<listener_ID>/<policy_ID>/<rule_ID>
 ```

@@ -48,6 +48,36 @@ func validateServiceTags(v interface{}, k string) (ws []string, errors []error) 
 	return
 }
 
+func validateAllowedICDPlanValues(validValues []string) schema.SchemaValidateFunc {
+	return func(v interface{}, k string) (ws []string, errors []error) {
+		input := v.(string)
+		gen2Pattern := regexp.MustCompile(`-gen2($|-.+)`)
+		if gen2Pattern.MatchString(input) {
+			errors = append(errors, fmt.Errorf(
+				"The plan %q corresponds to a Gen 2 database. Gen 2 instances are not supported by the ibm_database resource. "+
+					"Use the ibm_resource_instance resource instead for provisioning and management. "+
+					"More info: ibm.biz/Gen2-overview",
+				input,
+			))
+			return
+		}
+
+		existed := false
+		for _, s := range validValues {
+			if s == input {
+				existed = true
+				break
+			}
+		}
+		if !existed {
+			errors = append(errors, fmt.Errorf(
+				"%q must contain a value from %#v, got %q",
+				k, validValues, input))
+		}
+		return
+	}
+}
+
 func ValidateAllowedStringValues(validValues []string) schema.SchemaValidateFunc {
 	return func(v interface{}, k string) (ws []string, errors []error) {
 		input := v.(string)
@@ -1076,6 +1106,7 @@ const (
 	IntAtLeast
 	IntAtMost
 	ValidateAllowedStringValue
+	ValidateAllowedICDPlanValue
 	StringLenBetween
 	ValidateIPorCIDR
 	ValidateCIDRAddress
@@ -1100,7 +1131,7 @@ func (f FunctionIdentifier) MarshalText() ([]byte, error) {
 
 // Use stringer tool to generate this later.
 func (i FunctionIdentifier) String() string {
-	return [...]string{"IntBetween", "IntAtLeast", "IntAtMost", "ValidateAllowedStringValue", "StringLenBetween", "ValidateIPorCIDR", "ValidateCIDRAddress", "ValidateAllowedIntValue", "ValidateRegexpLen", "ValidateRegexp", "ValidateNoZeroValues", "ValidateJSONString", "ValidateJSONParam", "ValidateBindedPackageName", "ValidateOverlappingAddress", "ValidateCloudData"}[i]
+	return [...]string{"IntBetween", "IntAtLeast", "IntAtMost", "ValidateAllowedStringValue", "ValidateAllowedICDPlanValue", "StringLenBetween", "ValidateIPorCIDR", "ValidateCIDRAddress", "ValidateAllowedIntValue", "ValidateRegexpLen", "ValidateRegexp", "ValidateNoZeroValues", "ValidateJSONString", "ValidateJSONParam", "ValidateBindedPackageName", "ValidateOverlappingAddress", "ValidateCloudData"}[i]
 }
 
 // ValueType -- Copied from Terraform for now. You can refer to Terraform ValueType directly.
@@ -1276,6 +1307,9 @@ func invokeValidatorInternal(schema ValidateSchema) schema.SchemaValidateFunc {
 	case ValidateAllowedStringValue:
 		allowedValues := schema.GetValue(AllowedValues)
 		return ValidateAllowedStringValues(allowedValues.([]string))
+	case ValidateAllowedICDPlanValue:
+		allowedValues := schema.GetValue(AllowedValues)
+		return validateAllowedICDPlanValues(allowedValues.([]string))
 	case StringLenBetween:
 		return validation.StringLenBetween(schema.MinValueLength, schema.MaxValueLength)
 	case ValidateIPorCIDR:

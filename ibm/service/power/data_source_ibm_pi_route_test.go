@@ -31,7 +31,7 @@ func TestAccIBMPIRouteDataSource_basic(t *testing.T) {
 func testAccCheckIBMPIRouteDataSourceConfig() string {
 	return fmt.Sprintf(`
 		data "ibm_pi_route" "route_data" {
-			pi_cloud_instance_id = "%[2]s"
-			pi_route_id          = "%[1]s"
-		}`, acc.Pi_route_id, acc.Pi_cloud_instance_id)
+			pi_cloud_instance_id = "%[1]s"
+			pi_route_id          = "%[2]s"
+		}`, acc.Pi_cloud_instance_id, acc.Pi_route_id)
 }

@@ -35,6 +35,8 @@ After your data source is created, you can read values from the following attrib
 * `id` - The unique identifier of the project_config.
 * `approved_version` - (List) A summary of a project configuration version.
 Nested schema for **approved_version**:
+	* `container_state` - (String) The aggregate state from all deployabe architectures that are included in this configuration.
+	  * Constraints: Allowable values are: `approved`, `deleted`, `deleting`, `deleting_failed`, `discarded`, `draft`, `deployed`, `deploying_failed`, `deploying`, `superseded`, `undeploying`, `undeploying_failed`, `validated`, `validating`, `validating_failed`, `working`.
 	* `definition` - (List) A summary of the definition in a project configuration version.
 	Nested schema for **definition**:
 		* `environment_id` - (String) The ID of the project environment.
@@ -53,6 +55,10 @@ Nested schema for **config_error**:
 	Nested schema for **details**:
 	* `message` - (String) The error message from config actions.
 	  * Constraints: The maximum length is `1024` characters. The minimum length is `0` characters. The value must match regular expression `/^$|^(?!\\s)(?!.*\\s$)[^\\x00-\\x1F]*$/`.
+* `container_state` - (String) The aggregate state from all deployabe architectures that are included in this configuration.
+  * Constraints: Allowable values are: `approved`, `deleted`, `deleting`, `deleting_failed`, `discarded`, `draft`, `deployed`, `deploying_failed`, `deploying`, `superseded`, `undeploying`, `undeploying_failed`, `validated`, `validating`, `validating_failed`, `working`.
+* `container_state_code` - (String) Computed state code clarifying the prerequisites for validation for the configuration.
+  * Constraints: Allowable values are: `awaiting_input`, `awaiting_prerequisite`, `awaiting_validation`, `awaiting_member_deployment`, `awaiting_stack_setup`.
 * `created_at` - (String) A date and time value in the format YYYY-MM-DDTHH:mm:ssZ or YYYY-MM-DDTHH:mm:ss.sssZ to match the date and time format as specified by RFC 3339.
 * `definition` - (List) 
 Nested schema for **definition**:
@@ -109,8 +115,17 @@ Nested schema for **definition**:
 	* `resource_crns` - (List) The CRNs of the resources that are associated with this configuration.
 	  * Constraints: The list items must match regular expression `/^(?!\\s)(?!.*\\s$)(crn)[^'"<>{}\\s\\x00-\\x1F]*$/`. The maximum length is `110` items. The minimum length is `0` items.
 	* `settings` - (Map) The Schematics environment variables to use to deploy the configuration. Settings are only available if they are specified when the configuration is initially created.
+	* `uses` - (List) The depending deployabe architectures that are referenced by this configuration.
+	  * Constraints: The maximum length is `100` items. The minimum length is `0` items.
+	Nested schema for **uses**:
+		* `config_id` - (String) The unique ID.
+		  * Constraints: The maximum length is `128` characters. The value must match regular expression `/^[\\.\\-0-9a-zA-Z]+$/`.
+		* `project_id` - (String) The unique ID.
+		  * Constraints: The maximum length is `128` characters. The value must match regular expression `/^[\\.\\-0-9a-zA-Z]+$/`.
 * `deployed_version` - (List) A summary of a project configuration version.
 Nested schema for **deployed_version**:
+	* `container_state` - (String) The aggregate state from all deployabe architectures that are included in this configuration.
+	  * Constraints: Allowable values are: `approved`, `deleted`, `deleting`, `deleting_failed`, `discarded`, `draft`, `deployed`, `deploying_failed`, `deploying`, `superseded`, `undeploying`, `undeploying_failed`, `validated`, `validating`, `validating_failed`, `working`.
 	* `definition` - (List) A summary of the definition in a project configuration version.
 	Nested schema for **definition**:
 		* `environment_id` - (String) The ID of the project environment.
@@ -172,6 +187,7 @@ Nested schema for **outputs**:
 	  * Constraints: The maximum length is `1024` characters. The minimum length is `0` characters. The value must match regular expression `/^$|^(?!\\s)(?!.*\\s$)[^\\x00-\\x1F]*$/`.
 	* `name` - (String) The variable name.
 	  * Constraints: The maximum length is `256` characters. The minimum length is `1` character. The value must match regular expression `/^(?!\\s)(?!.*\\s$).+$/`.
+	* `sensitive` - (Boolean) Flag if the output value is sensitive. If not present, the output sensitivity is indeterminate.
 	* `value` - (String) This property can be any value - a string, number, boolean, array, or object.
 * `project` - (List) The project that is referenced by this resource.
 Nested schema for **project**:

@@ -28,8 +28,8 @@ func ResourceIBMPINetworkSecurityGroupAction() *schema.Resource {
 		Importer:      &schema.ResourceImporter{},
 
 		Timeouts: &schema.ResourceTimeout{
-			Create: schema.DefaultTimeout(5 * time.Minute),
-			Update: schema.DefaultTimeout(5 * time.Minute),
+			Create: schema.DefaultTimeout(50 * time.Minute),
+			Update: schema.DefaultTimeout(50 * time.Minute),
 		},
 
 		Schema: map[string]*schema.Schema{
