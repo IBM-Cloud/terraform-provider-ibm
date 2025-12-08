@@ -274,9 +274,10 @@ func ResourceIbmBackupRecoverySourceRegistration() *schema.Resource {
 							Description: "Specifies the distribution type of Kubernetes source.",
 						},
 						"kubernetes_type": &schema.Schema{
-							Type:        schema.TypeString,
-							Optional:    true,
-							Description: "Specifies the type of kubernetes source.",
+							Type:             schema.TypeString,
+							Optional:         true,
+							DiffSuppressFunc: suppressParameterDuringRefresh,
+							Description:      "Specifies the type of kubernetes source.",
 						},
 						"priority_class_name": &schema.Schema{
 							Type:        schema.TypeString,
@@ -1330,12 +1331,12 @@ func suppressParameterDuringRefresh(k, o, n string, d *schema.ResourceData) bool
 			d.HasChange("kubernetes_params.0.resource_annotations") ||
 			d.HasChange("kubernetes_params.0.resource_labels") ||
 			d.HasChange("kubernetes_params.0.velero_openshift_plugin_image_location") ||
+			d.HasChange("kubernetes_params.0.cohesity_dataprotect_plugin_image_location") ||
 			d.HasChange("kubernetes_params.0.velero_image_location") ||
 			d.HasChange("kubernetes_params.0.velero_aws_plugin_image_location") ||
 			d.HasChange("kubernetes_params.0.san_fields") ||
 			d.HasChange("kubernetes_params.0.service_annotations") ||
 			d.HasChange("kubernetes_params.0.priority_class_name") ||
-			d.HasChange("kubernetes_params.0.kubernetes_type") ||
 			d.HasChange("kubernetes_params.0.kubernetes_distribution") ||
 			d.HasChange("kubernetes_params.0.init_container_image_location") ||
 			d.HasChange("kubernetes_params.0.auto_protect_config") ||
