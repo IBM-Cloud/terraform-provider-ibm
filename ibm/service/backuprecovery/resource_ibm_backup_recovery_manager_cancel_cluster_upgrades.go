@@ -155,10 +155,9 @@ func resourceIbmBackupRecoveryManagerCancelClusterUpgradesUpdate(context context
 	warning := diag.Diagnostic{
 		Severity: diag.Warning,
 		Summary:  "Update Not Supported",
-		Detail:   "The resource definition will be only be removed from the terraform statefile. This resource cannot be deleted from the backend. ",
+		Detail:   "Update operation for this resource is not supported and will only affect the terraform statefile. No changes will be made to the backend resource.",
 	}
 	diags = append(diags, warning)
-	d.SetId("")
 	return diags
 }
 
