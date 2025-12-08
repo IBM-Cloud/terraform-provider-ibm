@@ -245,5 +245,3 @@ exclude (
 	k8s.io/client-go v11.0.1-0.20190409021438-1a26190bd76a+incompatible
 	k8s.io/client-go v12.0.0+incompatible
 )
-
-replace github.com/IBM/ibm-backup-recovery-sdk-go => /Users/deekshasharma/Documents/git/baas-go-sdk/helios-baas-go/ibm-backup-recovery-sdk-go
