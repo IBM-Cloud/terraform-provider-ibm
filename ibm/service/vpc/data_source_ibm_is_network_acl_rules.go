@@ -64,7 +64,7 @@ func DataSourceIBMISNetworkACLRules() *schema.Resource {
 						isNetworkACLRuleProtocol: {
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "The protocol to enforce.",
+							Description: "The name of the network protocol",
 						},
 						isNetworkACLRuleAction: {
 							Type:        schema.TypeString,
@@ -290,9 +290,47 @@ func networkACLRulesList(context context.Context, d *schema.ResourceData, meta i
 					l[isNetworkACLRuleUDP] = udp
 				}
 			}
-		case "*vpcv1.NetworkACLRuleItemNetworkACLRuleProtocolAll":
+		case "*vpcv1.NetworkACLRuleItemNetworkACLRuleProtocolAny":
 			{
-				rulex := rule.(*vpcv1.NetworkACLRuleItemNetworkACLRuleProtocolAll)
+				rulex := rule.(*vpcv1.NetworkACLRuleItemNetworkACLRuleProtocolAny)
+				l[isNwACLRuleId] = *rulex.ID
+				l[isNetworkACLRuleHref] = *rulex.Href
+				l[isNetworkACLRuleProtocol] = *rulex.Protocol
+				if rulex.Before != nil {
+					l[isNwACLRuleBefore] = *rulex.Before.ID
+				}
+				l[isNetworkACLRuleName] = *rulex.Name
+				l[isNetworkACLRuleAction] = *rulex.Action
+				l[isNetworkACLRuleIPVersion] = *rulex.IPVersion
+				l[isNetworkACLRuleSource] = *rulex.Source
+				l[isNetworkACLRuleDestination] = *rulex.Destination
+				l[isNetworkACLRuleDirection] = *rulex.Direction
+				l[isNetworkACLRuleICMP] = make([]map[string]int, 0, 0)
+				l[isNetworkACLRuleTCP] = make([]map[string]int, 0, 0)
+				l[isNetworkACLRuleUDP] = make([]map[string]int, 0, 0)
+			}
+		case "*vpcv1.NetworkACLRuleItemNetworkACLRuleProtocolIndividual":
+			{
+				rulex := rule.(*vpcv1.NetworkACLRuleItemNetworkACLRuleProtocolIndividual)
+				l[isNwACLRuleId] = *rulex.ID
+				l[isNetworkACLRuleHref] = *rulex.Href
+				l[isNetworkACLRuleProtocol] = *rulex.Protocol
+				if rulex.Before != nil {
+					l[isNwACLRuleBefore] = *rulex.Before.ID
+				}
+				l[isNetworkACLRuleName] = *rulex.Name
+				l[isNetworkACLRuleAction] = *rulex.Action
+				l[isNetworkACLRuleIPVersion] = *rulex.IPVersion
+				l[isNetworkACLRuleSource] = *rulex.Source
+				l[isNetworkACLRuleDestination] = *rulex.Destination
+				l[isNetworkACLRuleDirection] = *rulex.Direction
+				l[isNetworkACLRuleICMP] = make([]map[string]int, 0, 0)
+				l[isNetworkACLRuleTCP] = make([]map[string]int, 0, 0)
+				l[isNetworkACLRuleUDP] = make([]map[string]int, 0, 0)
+			}
+		case "*vpcv1.NetworkACLRuleItemNetworkACLRuleProtocolIcmptcpudp":
+			{
+				rulex := rule.(*vpcv1.NetworkACLRuleItemNetworkACLRuleProtocolIcmptcpudp)
 				l[isNwACLRuleId] = *rulex.ID
 				l[isNetworkACLRuleHref] = *rulex.Href
 				l[isNetworkACLRuleProtocol] = *rulex.Protocol
