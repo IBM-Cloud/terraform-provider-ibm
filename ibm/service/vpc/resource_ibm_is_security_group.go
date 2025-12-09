@@ -302,6 +302,9 @@ func resourceIBMISSecurityGroupRead(context context.Context, d *schema.ResourceD
 						r[isSecurityGroupRuleType] = int(*rule.Type)
 					}
 					r[isSecurityGroupRuleDirection] = *rule.Direction
+					if rule.Name != nil {
+						r[isSecurityGroupRuleName] = *rule.Name
+					}
 					r[isSecurityGroupRuleIPVersion] = *rule.IPVersion
 					if rule.Protocol != nil {
 						r[isSecurityGroupRuleProtocol] = *rule.Protocol
@@ -336,6 +339,9 @@ func resourceIBMISSecurityGroupRead(context context.Context, d *schema.ResourceD
 					r := make(map[string]interface{})
 					r[isSecurityGroupRuleDirection] = *rule.Direction
 					r[isSecurityGroupRuleIPVersion] = *rule.IPVersion
+					if rule.Name != nil {
+						r[isSecurityGroupRuleName] = *rule.Name
+					}
 					if rule.Protocol != nil {
 						r[isSecurityGroupRuleProtocol] = *rule.Protocol
 					}
@@ -375,6 +381,9 @@ func resourceIBMISSecurityGroupRead(context context.Context, d *schema.ResourceD
 					}
 					r[isSecurityGroupRuleDirection] = *rule.Direction
 					r[isSecurityGroupRuleIPVersion] = *rule.IPVersion
+					if rule.Name != nil {
+						r[isSecurityGroupRuleName] = *rule.Name
+					}
 					if rule.Protocol != nil {
 						r[isSecurityGroupRuleProtocol] = *rule.Protocol
 					}
@@ -657,6 +666,12 @@ func makeIBMISSecurityRuleSchema() map[string]*schema.Schema {
 			Type:        schema.TypeString,
 			Computed:    true,
 			Description: "IP version: ipv4",
+		},
+
+		isSecurityGroupRuleName: {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The name for this security group rule. The name is unique across all rules in the security group.",
 		},
 
 		isSecurityGroupRuleRemote: {

@@ -21,6 +21,7 @@ const (
 	isSgRuleID        = "rule_id"
 	isSgRuleDirection = "direction"
 	isSgRuleIPVersion = "ip_version"
+	isSgRuleName      = "name"
 	isSgRuleRemote    = "remote"
 	isSgRuleLocal     = "local"
 	isSgRuleType      = "type"
@@ -90,6 +91,12 @@ func DataSourceIBMISSecurityGroup() *schema.Resource {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "IP version: ipv4",
+						},
+
+						isSgRuleName: {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The name for this security group rule. The name is unique across all rules in the security group.",
 						},
 
 						isSgRuleRemote: {
@@ -310,6 +317,7 @@ func securityGroupGet(context context.Context, d *schema.ResourceData, meta inte
 						}
 						r[isSgRuleDirection] = *rule.Direction
 						r[isSgRuleIPVersion] = *rule.IPVersion
+						r[isSgRuleName] = rule.Name
 						if rule.Protocol != nil {
 							r[isSgRuleProtocol] = *rule.Protocol
 						}
@@ -344,6 +352,7 @@ func securityGroupGet(context context.Context, d *schema.ResourceData, meta inte
 						r := make(map[string]interface{})
 						r[isSgRuleDirection] = *rule.Direction
 						r[isSgRuleIPVersion] = *rule.IPVersion
+						r[isSgRuleName] = rule.Name
 						if rule.Protocol != nil {
 							r[isSgRuleProtocol] = *rule.Protocol
 						}
@@ -384,6 +393,7 @@ func securityGroupGet(context context.Context, d *schema.ResourceData, meta inte
 						}
 						r[isSgRuleDirection] = *rule.Direction
 						r[isSgRuleIPVersion] = *rule.IPVersion
+						r[isSgRuleName] = rule.Name
 						if rule.Protocol != nil {
 							r[isSgRuleProtocol] = *rule.Protocol
 						}

@@ -233,6 +233,8 @@ replace github.com/softlayer/softlayer-go v1.0.3 => github.com/IBM-Cloud/softlay
 // add sdk changes.
 replace github.com/portworx/sched-ops v0.0.0-20200831185134-3e8010dc7056 => github.com/portworx/sched-ops v0.20.4-openstorage-rc3 // required by rook v1.7
 
+replace github.com/IBM/vpc-go-sdk v0.75.0 => ./common/github.com/IBM/vpc-go-sdk
+
 replace github.com/hashicorp/consul/api v1.1.0 => github.com/hashicorp/consul/api v1.30.0
 
 replace github.com/hashicorp/vault => github.com/hashicorp/vault v1.18.2

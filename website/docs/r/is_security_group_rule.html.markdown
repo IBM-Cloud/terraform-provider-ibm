@@ -92,6 +92,7 @@ resource "ibm_is_security_group_rule" "example_security_group_rule_tcp_any" {
   remote     = "127.0.0.1"
   tcp {
   }
+  name = "my-test-sg-rule-name"
 }
 
 ```
@@ -104,6 +105,7 @@ Review the argument references that you can specify for your resource.
 - `local` - (String) 	The local IP address or range of local IP addresses to which this rule will allow inbound traffic (or from which, for outbound traffic). A CIDR block of 0.0.0.0/0 allows traffic to all local IP addresses (or from all local IP addresses, for outbound rules). an IP address, a `CIDR` block.
 - `ip_version` - (Optional, String) The IP version to enforce. The format of local.address, remote.address, local.cidr_block or remote.cidr_block must match this property, if they are used. If remote references a security group, then this rule only applies to IP addresses (network interfaces) in that group matching this IP version. Supported value is [`ipv4`].
 - `icmp` - (Optional, List) A nested block describes the `icmp` protocol of this security group rule.
+- `name` - (String) The name for this security group rule. The name must not be used by another rule in the security group.
 
   Nested scheme for `icmp`:
   - `type`- (Optional, Integer) The ICMP traffic type to allow. Valid values from 0 to 254. If unspecified, all codes are allowed.
