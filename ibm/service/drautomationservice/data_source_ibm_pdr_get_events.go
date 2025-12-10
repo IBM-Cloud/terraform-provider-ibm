@@ -2,7 +2,7 @@
 // Licensed under the Mozilla Public License v2.0
 
 /*
- * IBM OpenAPI Terraform Generator Version: 3.105.0-3c13b041-20250605-193116
+ * IBM OpenAPI Terraform Generator Version: 3.108.0-56772134-20251111-102802
  */
 
 package drautomationservice
@@ -18,7 +18,8 @@ import (
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
-	"github.ibm.com/DRAutomation/dra-go-sdk/drautomationservicev1"
+
+	"github.com/IBM/dra-go-sdk/drautomationservicev1"
 )
 
 func DataSourceIBMPdrGetEvents() *schema.Resource {
@@ -185,7 +186,7 @@ func dataSourceIBMPdrGetEventsRead(context context.Context, d *schema.ResourceDa
 	d.SetId(dataSourceIBMPdrGetEventsID(d))
 
 	event := []map[string]interface{}{}
-	for _, eventItem := range eventCollection.Event {
+	for _, eventItem := range eventCollection.Events {
 		eventItemMap, err := DataSourceIBMPdrGetEventsEventToMap(&eventItem) // #nosec G601
 		if err != nil {
 			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_pdr_get_events", "read", "event-to-map").GetDiag()

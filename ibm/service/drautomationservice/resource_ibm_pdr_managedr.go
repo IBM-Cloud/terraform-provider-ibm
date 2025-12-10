@@ -21,7 +21,8 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 	"github.com/IBM/go-sdk-core/v5/core"
-	"github.ibm.com/DRAutomation/dra-go-sdk/drautomationservicev1"
+
+	"github.com/IBM/dra-go-sdk/drautomationservicev1"
 )
 
 func ResourceIbmPdrManagedr() *schema.Resource {
@@ -88,21 +89,29 @@ func ResourceIbmPdrManagedr() *schema.Resource {
 				ForceNew: true,
 			},
 			"action": {
-				Type:     schema.TypeString,
-				ForceNew: true,
-				Optional: true,
+				Type:        schema.TypeString,
+				ForceNew:    true,
+				Optional:    true,
+				Description: "Indicates whether to proceed with asynchronous operation after all configuration details are updated in the database.",
 			},
 			"api_key": {
-				Type:      schema.TypeString,
-				Sensitive: true,
-				ForceNew:  true,
-				Optional:  true,
+				Type:        schema.TypeString,
+				Sensitive:   true,
+				ForceNew:    true,
+				Optional:    true,
+				Description: "The API key associated with the IBM Cloud service instance.",
 			},
 			"client_id": {
 				Type:        schema.TypeString,
 				Optional:    true,
 				ForceNew:    true,
 				Description: "Client ID for MFA Authentication.",
+			},
+			"proxy_ip": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				ForceNew:    true,
+				Description: "Proxy IP for the Communication between Orchestrator and Service.",
 			},
 			"client_secret": {
 				Type:        schema.TypeString,
@@ -118,95 +127,113 @@ func ResourceIbmPdrManagedr() *schema.Resource {
 				Description: "Tenant Name for MFA Authentication.",
 			},
 			"orchestrator_ha": {
-				Type:     schema.TypeBool,
-				Optional: true,
-				ForceNew: true,
+				Type:        schema.TypeBool,
+				Optional:    true,
+				ForceNew:    true,
+				Description: "Flag to enable or disable High Availability (HA) for the service instance.",
 			},
 			"guid": {
-				Type:     schema.TypeString,
-				ForceNew: true,
-				Optional: true,
+				Type:        schema.TypeString,
+				ForceNew:    true,
+				Optional:    true,
+				Description: "The globally unique identifier of the service instance.",
 			},
 			"location_id": {
-				Type:     schema.TypeString,
-				ForceNew: true,
-				Required: true,
+				Type:        schema.TypeString,
+				ForceNew:    true,
+				Required:    true,
+				Description: "The Location or data center identifier where the service instance is deployed.",
 			},
 			"machine_type": {
-				Type:     schema.TypeString,
-				Required: true,
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				ForceNew:    true,
+				Description: "The Machine type or flavor used for virtual machines in the service instance.",
 			},
 			"orchestrator_location_type": {
-				Type:     schema.TypeString,
-				Required: true,
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				ForceNew:    true,
+				Description: "The Type of orchestrator cluster used in the service instance.",
 			},
 			"orchestrator_name": {
-				Type:     schema.TypeString,
-				Required: true,
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				ForceNew:    true,
+				Description: "Username for the orchestrator management interface.",
 			},
 			"orchestrator_password": {
-				Type:      schema.TypeString,
-				Sensitive: true,
-				ForceNew:  true,
-				Required:  true,
+				Type:        schema.TypeString,
+				Sensitive:   true,
+				ForceNew:    true,
+				Required:    true,
+				Description: "Password for the orchestrator management interface.",
 			},
 			"orchestrator_workspace_id": {
-				Type:     schema.TypeString,
-				ForceNew: true,
-				Required: true,
+				Type:        schema.TypeString,
+				ForceNew:    true,
+				Required:    true,
+				Description: "ID of the orchestrator workspace.",
 			},
 			"region_id": {
-				Type:     schema.TypeString,
-				ForceNew: true,
-				Optional: true,
+				Type:        schema.TypeString,
+				ForceNew:    true,
+				Optional:    true,
+				Description: "Cloud region where the service instance is deployed.",
 			},
 			"resource_instance": {
-				Type:     schema.TypeString,
-				ForceNew: true,
-				Optional: true,
+				Type:        schema.TypeString,
+				ForceNew:    true,
+				Optional:    true,
+				Description: "ID of the associated IBM Cloud resource instance.",
 			},
 			"secret": {
-				Type:     schema.TypeString,
-				Optional: true,
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				ForceNew:    true,
+				Description: "The Secret name or identifier used for retrieving credentials from Secrets Manager.",
 			},
 			"secret_group": {
-				Type:     schema.TypeString,
-				Optional: true,
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				ForceNew:    true,
+				Description: "The Secret group name in IBM Cloud Secrets Manager containing sensitive data for * the service instance.",
 			},
 			"ssh_key_name": {
-				Type:     schema.TypeString,
-				Optional: true,
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				ForceNew:    true,
+				Description: "The Name of the SSH key stored in the cloud provider.",
 			},
 			"standby_machine_type": {
-				Type:     schema.TypeString,
-				Optional: true,
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				ForceNew:    true,
+				Description: "The Machine type or flavor used for standby virtual machines.",
 			},
 			"standby_orchestrator_name": {
-				Type:     schema.TypeString,
-				Optional: true,
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				ForceNew:    true,
+				Description: "The Username for the standby orchestrator management interface.",
 			},
 			"standby_orchestrator_workspace_id": {
-				Type:     schema.TypeString,
-				Optional: true,
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				ForceNew:    true,
+				Description: "ID of the standby orchestrator workspace.",
 			},
 			"standby_tier": {
-				Type:     schema.TypeString,
-				Optional: true,
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				ForceNew:    true,
+				Description: "Tier of the standby service instance.",
 			},
 			"tier": {
-				Type:     schema.TypeString,
-				Optional: true,
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				ForceNew:    true,
+				Description: "Tier of the service instance.",
 			},
 		},
 	}
@@ -276,6 +303,9 @@ func resourceIbmPdrManagedrCreate(ctx context.Context, d *schema.ResourceData, m
 	}
 	if _, ok := d.GetOk("client_id"); ok {
 		createManageDrOptions.SetClientID(d.Get("client_id").(string))
+	}
+	if _, ok := d.GetOk("proxy_ip"); ok {
+		createManageDrOptions.SetProxyIP(d.Get("proxy_ip").(string))
 	}
 	if _, ok := d.GetOk("client_secret"); ok {
 		createManageDrOptions.SetClientSecret(d.Get("client_secret").(string))
@@ -487,7 +517,7 @@ func resourceIbmPdrManagedrRead(context context.Context, d *schema.ResourceData,
 		}
 	}
 	if !core.IsNil(serviceInstanceManageDr.ID) {
-		if err = d.Set("instance_id", serviceInstanceManageDr.ID); err != nil {
+		if err = d.Set("instance_id", d.Id()); err != nil {
 			err = fmt.Errorf("Error setting instance_id: %s", err)
 			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_pdr_managedr", "read", "set-instance_id").GetDiag()
 		}

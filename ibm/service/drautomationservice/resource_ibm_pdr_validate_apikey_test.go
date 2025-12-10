@@ -14,16 +14,18 @@ import (
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
-	"github.ibm.com/DRAutomation/dra-go-sdk/drautomationservicev1"
+
+	"github.com/IBM/dra-go-sdk/drautomationservicev1"
 )
 
 func TestAccIBMPdrValidateApikeyBasic(t *testing.T) {
 	var conf drautomationservicev1.ValidationKeyResponse
-	instanceID := "123456d3-1122-3344-b67d-4389b44b7bf9"
+	instanceID := fmt.Sprintf("tf_instance_id_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { acc.TestAccPreCheck(t) },
-		Providers: acc.TestAccProviders,
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMPdrValidateApikeyDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
 				Config: testAccCheckIBMPdrValidateApikeyConfigBasic(instanceID),
@@ -38,13 +40,14 @@ func TestAccIBMPdrValidateApikeyBasic(t *testing.T) {
 
 func TestAccIBMPdrValidateApikeyAllArgs(t *testing.T) {
 	var conf drautomationservicev1.ValidationKeyResponse
-	instanceID := "123456d3-1122-3344-b67d-4389b44b7bf9"
-	acceptLanguage := fmt.Sprintf("tf_accept_language_%d", acctest.RandIntRange(10, 100))
-	acceptLanguageUpdate := fmt.Sprintf("tf_accept_language_%d", acctest.RandIntRange(10, 100))
+	instanceID := "ac645fe5-fba1-4cb3-952e-e1b09fa0df26"
+	acceptLanguage := "it"
+	acceptLanguageUpdate := "it"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { acc.TestAccPreCheck(t) },
-		Providers: acc.TestAccProviders,
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMPdrValidateApikeyDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
 				Config: testAccCheckIBMPdrValidateApikeyConfig(instanceID, acceptLanguage),
@@ -62,7 +65,7 @@ func TestAccIBMPdrValidateApikeyAllArgs(t *testing.T) {
 				),
 			},
 			resource.TestStep{
-				ResourceName:      "ibm_pdr_validate_apikey.pdr_validate_apikey",
+				ResourceName:      "ibm_pdr_validate_apikey.pdr_validate_apikey_instance",
 				ImportState:       true,
 				ImportStateVerify: true,
 			},
@@ -82,13 +85,12 @@ func testAccCheckIBMPdrValidateApikeyConfigBasic(instanceID string) string {
 
 func testAccCheckIBMPdrValidateApikeyConfig(instanceID string, acceptLanguage string) string {
 	apiKey := acc.DRApiKey
-	return fmt.Sprintf(`		
+	return fmt.Sprintf(`
 		resource "ibm_pdr_validate_apikey" "pdr_validate_apikey_instance" {
 			instance_id = "%s"
-			accept_language = "%s"
 			api_key = "%s"
 		}
-	`, instanceID, acceptLanguage, apiKey)
+	`, instanceID, apiKey)
 }
 
 func testAccCheckIBMPdrValidateApikeyExists(n string, obj drautomationservicev1.ValidationKeyResponse) resource.TestCheckFunc {
@@ -106,12 +108,13 @@ func testAccCheckIBMPdrValidateApikeyExists(n string, obj drautomationservicev1.
 
 		getApikeyOptions := &drautomationservicev1.GetApikeyOptions{}
 
-		// parts, err := flex.SepIdParts(rs.Primary.ID, "/")
-		// if err != nil {
-		// 	return err
-		// }
+		parts, err := flex.SepIdParts(rs.Primary.ID, "/")
+		if err != nil {
+			return err
+		}
 
-		getApikeyOptions.SetInstanceID(rs.Primary.ID)
+		getApikeyOptions.SetInstanceID(parts[0])
+		getApikeyOptions.SetInstanceID(parts[1])
 
 		validationKeyResponse, _, err := drAutomationServiceClient.GetApikey(getApikeyOptions)
 		if err != nil {
@@ -141,6 +144,7 @@ func testAccCheckIBMPdrValidateApikeyDestroy(s *terraform.State) error {
 		}
 
 		getApikeyOptions.SetInstanceID(parts[0])
+		getApikeyOptions.SetInstanceID(parts[1])
 
 		// Try to find the key
 		_, response, err := drAutomationServiceClient.GetApikey(getApikeyOptions)

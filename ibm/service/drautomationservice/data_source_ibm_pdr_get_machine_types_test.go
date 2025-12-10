@@ -2,7 +2,7 @@
 // Licensed under the Mozilla Public License v2.0
 
 /*
- * IBM OpenAPI Terraform Generator Version: 3.105.0-3c13b041-20250605-193116
+ * IBM OpenAPI Terraform Generator Version: 3.108.0-56772134-20251111-102802
  */
 
 package drautomationservice_test
@@ -36,7 +36,7 @@ func TestAccIBMPdrGetMachineTypesDataSourceBasic(t *testing.T) {
 func testAccCheckIBMPdrGetMachineTypesDataSourceConfigBasic() string {
 	return fmt.Sprintf(`
 		data "ibm_pdr_get_machine_types" "pdr_get_machine_types_instance" {
-			instance_id = "123456d3-1122-3344-b67d-4389b44b7bf9"
+			instance_id = "ac645fe5-fba1-4cb3-952e-e1b09fa0df26"
 			primary_workspace_name = "Test-workspace-wdc06"
 			standby_workspace_name = "Test-workspace-wdc07"
 		}

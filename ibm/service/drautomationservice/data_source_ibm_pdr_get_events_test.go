@@ -2,7 +2,7 @@
 // Licensed under the Mozilla Public License v2.0
 
 /*
- * IBM OpenAPI Terraform Generator Version: 3.105.0-3c13b041-20250605-193116
+ * IBM OpenAPI Terraform Generator Version: 3.108.0-56772134-20251111-102802
  */
 
 package drautomationservice_test
@@ -16,9 +16,9 @@ import (
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/drautomationservice"
 	. "github.com/IBM-Cloud/terraform-provider-ibm/ibm/unittest"
+	"github.com/IBM/dra-go-sdk/drautomationservicev1"
 	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/stretchr/testify/assert"
-	"github.ibm.com/DRAutomation/dra-go-sdk/drautomationservicev1"
 )
 
 func TestAccIBMPdrGetEventsDataSourceBasic(t *testing.T) {
@@ -41,10 +41,10 @@ func TestAccIBMPdrGetEventsDataSourceBasic(t *testing.T) {
 func testAccCheckIBMPdrGetEventsDataSourceConfigBasic() string {
 	return fmt.Sprintf(`
 		data "ibm_pdr_get_events" "pdr_get_events_instance" {
-			instance_id = "123456d3-1122-3344-b67d-4389b44b7bf9"
-			time = "2025-11-30T23:59:59Z"
-			from_time = "2025-06-19T00:00:00Z"
-			to_time = "2025-12-01T23:59:59Z"
+			instance_id = "ac645fe5-fba1-4cb3-952e-e1b09fa0df26"
+			time = "2025-06-19T23:59:59Z"
+			from_time = "2025-12-08T00:00:00Z"
+			to_time = "2025-12-10T23:59:59Z"
 		}
 	`)
 }
