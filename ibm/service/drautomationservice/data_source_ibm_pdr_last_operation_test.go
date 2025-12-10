@@ -21,7 +21,7 @@ func TestAccIBMPdrLastOperationDataSourceBasic(t *testing.T) {
 		PreCheck:  func() { acc.TestAccPreCheck(t) },
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
-			{
+			resource.TestStep{
 				Config: testAccCheckIBMPdrLastOperationDataSourceConfigBasic(),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_pdr_last_operation.pdr_last_operation_instance", "id"),
@@ -31,7 +31,7 @@ func TestAccIBMPdrLastOperationDataSourceBasic(t *testing.T) {
 					resource.TestCheckResourceAttrSet("data.ibm_pdr_last_operation.pdr_last_operation_instance", "last_updated_orchestrator_deployment_time"),
 					resource.TestCheckResourceAttrSet("data.ibm_pdr_last_operation.pdr_last_operation_instance", "last_updated_standby_orchestrator_deployment_time"),
 					resource.TestCheckResourceAttrSet("data.ibm_pdr_last_operation.pdr_last_operation_instance", "mfa_enabled"),
-					resource.TestCheckResourceAttr("data.ibm_pdr_last_operation.pdr_last_operation_instance", "orch_standby_node_addtion_status", ""),
+					resource.TestCheckResourceAttrSet("data.ibm_pdr_last_operation.pdr_last_operation_instance", "orch_standby_node_addtion_status"),
 					resource.TestCheckResourceAttrSet("data.ibm_pdr_last_operation.pdr_last_operation_instance", "orchestrator_cluster_message"),
 					resource.TestCheckResourceAttrSet("data.ibm_pdr_last_operation.pdr_last_operation_instance", "orchestrator_config_status"),
 					resource.TestCheckResourceAttrSet("data.ibm_pdr_last_operation.pdr_last_operation_instance", "orchestrator_ha"),
@@ -39,11 +39,11 @@ func TestAccIBMPdrLastOperationDataSourceBasic(t *testing.T) {
 					resource.TestCheckResourceAttrSet("data.ibm_pdr_last_operation.pdr_last_operation_instance", "primary_description"),
 					resource.TestCheckResourceAttrSet("data.ibm_pdr_last_operation.pdr_last_operation_instance", "primary_ip_address"),
 					resource.TestCheckResourceAttrSet("data.ibm_pdr_last_operation.pdr_last_operation_instance", "primary_orchestrator_status"),
-					resource.TestCheckResourceAttr("data.ibm_pdr_last_operation.pdr_last_operation_instance", "recovery_location", ""),
+					resource.TestCheckResourceAttrSet("data.ibm_pdr_last_operation.pdr_last_operation_instance", "recovery_location"),
 					resource.TestCheckResourceAttrSet("data.ibm_pdr_last_operation.pdr_last_operation_instance", "resource_group"),
-					resource.TestCheckResourceAttr("data.ibm_pdr_last_operation.pdr_last_operation_instance", "standby_description", ""),
-					resource.TestCheckResourceAttr("data.ibm_pdr_last_operation.pdr_last_operation_instance", "standby_ip_address", ""),
-					resource.TestCheckResourceAttr("data.ibm_pdr_last_operation.pdr_last_operation_instance", "standby_status", ""),
+					resource.TestCheckResourceAttrSet("data.ibm_pdr_last_operation.pdr_last_operation_instance", "standby_description"),
+					resource.TestCheckResourceAttrSet("data.ibm_pdr_last_operation.pdr_last_operation_instance", "standby_ip_address"),
+					resource.TestCheckResourceAttrSet("data.ibm_pdr_last_operation.pdr_last_operation_instance", "standby_status"),
 					resource.TestCheckResourceAttrSet("data.ibm_pdr_last_operation.pdr_last_operation_instance", "status"),
 				),
 			},
@@ -54,7 +54,11 @@ func TestAccIBMPdrLastOperationDataSourceBasic(t *testing.T) {
 func testAccCheckIBMPdrLastOperationDataSourceConfigBasic() string {
 	return fmt.Sprintf(`
 		data "ibm_pdr_last_operation" "pdr_last_operation_instance" {
+<<<<<<< HEAD
 			instance_id = "xxxx2ec4-xxxx-4f84-xxxx-c2aa834dd4ed"
+=======
+			instance_id = "ac645fe5-fba1-4cb3-952e-e1b09fa0df26"
+>>>>>>> 41ece7831 (removed accept-complete)
 		}
 	`)
 }
