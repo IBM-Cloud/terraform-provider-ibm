@@ -1048,21 +1048,12 @@ func validateInlineRules(d *schema.ResourceData, rules []interface{}) error {
 		portMax := fmt.Sprintf("rules.%d.port_max", i)
 		srcPortMin := fmt.Sprintf("rules.%d.source_port_min", i)
 		srcPortMax := fmt.Sprintf("rules.%d.source_port_max", i)
-		var okIcmpType, okIcmpCode bool
 		if protocol != "icmp" && protocol != "" {
 			if _, ok := d.GetOk(icmpType); ok {
 				return fmt.Errorf("attribute 'type' conflicts with protocol %q; 'type' is only valid for icmp protocol", protocol)
 			}
 			if _, ok := d.GetOk(icmpCode); ok {
 				return fmt.Errorf("attribute 'code' conflicts with protocol %q; 'code' is only valid for icmp protocol", protocol)
-			}
-		}
-
-		if protocol == "icmp" {
-			_, okIcmpType = d.GetOk(icmpType)
-			_, okIcmpCode = d.GetOk(icmpCode)
-			if (okIcmpType && !okIcmpCode) || (!okIcmpType && okIcmpCode) {
-				return fmt.Errorf("'code' and 'type' must both be specified together for icmp protocol")
 			}
 		}
 
