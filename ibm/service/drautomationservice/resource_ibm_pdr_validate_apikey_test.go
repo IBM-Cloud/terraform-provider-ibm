@@ -21,8 +21,9 @@ func TestAccIBMPdrValidateApikeyBasic(t *testing.T) {
 	instanceID := "xxxx2ec4-xxxx-4f84-xxxx-c2aa834dd4ed"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { acc.TestAccPreCheck(t) },
-		Providers: acc.TestAccProviders,
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMPdrValidateApikeyDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
 				Config: testAccCheckIBMPdrValidateApikeyConfigBasic(instanceID),
@@ -42,8 +43,9 @@ func TestAccIBMPdrValidateApikeyAllArgs(t *testing.T) {
 	acceptLanguageUpdate := "it"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { acc.TestAccPreCheck(t) },
-		Providers: acc.TestAccProviders,
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMPdrValidateApikeyDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
 				Config: testAccCheckIBMPdrValidateApikeyConfig(instanceID, acceptLanguage),
@@ -104,12 +106,13 @@ func testAccCheckIBMPdrValidateApikeyExists(n string, obj drautomationservicev1.
 
 		getApikeyOptions := &drautomationservicev1.GetApikeyOptions{}
 
-		// parts, err := flex.SepIdParts(rs.Primary.ID, "/")
-		// if err != nil {
-		// 	return err
-		// }
+		parts, err := flex.SepIdParts(rs.Primary.ID, "/")
+		if err != nil {
+			return err
+		}
 
-		getApikeyOptions.SetInstanceID(rs.Primary.ID)
+		getApikeyOptions.SetInstanceID(parts[0])
+		getApikeyOptions.SetInstanceID(parts[1])
 
 		validationKeyResponse, _, err := drAutomationServiceClient.GetApikey(getApikeyOptions)
 		if err != nil {
@@ -139,6 +142,7 @@ func testAccCheckIBMPdrValidateApikeyDestroy(s *terraform.State) error {
 		}
 
 		getApikeyOptions.SetInstanceID(parts[0])
+		getApikeyOptions.SetInstanceID(parts[1])
 
 		// Try to find the key
 		_, response, err := drAutomationServiceClient.GetApikey(getApikeyOptions)
