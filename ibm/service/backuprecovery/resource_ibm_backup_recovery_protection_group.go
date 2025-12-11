@@ -1460,11 +1460,13 @@ func ResourceIbmBackupRecoveryProtectionGroup() *schema.Resource {
 												"key": &schema.Schema{
 													Type:        schema.TypeString,
 													Computed:    true,
+													Optional:    true,
 													Description: "The key of the label, used to identify the label.",
 												},
 												"value": &schema.Schema{
 													Type:        schema.TypeString,
 													Computed:    true,
+													Optional:    true,
 													Description: "The value associated with the label key.",
 												},
 											},
@@ -1553,11 +1555,13 @@ func ResourceIbmBackupRecoveryProtectionGroup() *schema.Resource {
 												"key": &schema.Schema{
 													Type:        schema.TypeString,
 													Computed:    true,
+													Optional:    true,
 													Description: "The key of the label, used to identify the label.",
 												},
 												"value": &schema.Schema{
 													Type:        schema.TypeString,
 													Computed:    true,
+													Optional:    true,
 													Description: "The value associated with the label key.",
 												},
 											},
@@ -1673,11 +1677,13 @@ func ResourceIbmBackupRecoveryProtectionGroup() *schema.Resource {
 															"key": &schema.Schema{
 																Type:        schema.TypeString,
 																Computed:    true,
+																Optional:    true,
 																Description: "The key of the label, used to identify the label.",
 															},
 															"value": &schema.Schema{
 																Type:        schema.TypeString,
 																Computed:    true,
+																Optional:    true,
 																Description: "The value associated with the label key.",
 															},
 														},
@@ -1801,11 +1807,13 @@ func ResourceIbmBackupRecoveryProtectionGroup() *schema.Resource {
 															"key": &schema.Schema{
 																Type:        schema.TypeString,
 																Computed:    true,
+																Optional:    true,
 																Description: "The key of the label, used to identify the label.",
 															},
 															"value": &schema.Schema{
 																Type:        schema.TypeString,
 																Computed:    true,
+																Optional:    true,
 																Description: "The value associated with the label key.",
 															},
 														},
@@ -1923,7 +1931,7 @@ func ResourceIbmBackupRecoveryProtectionGroup() *schema.Resource {
 													Elem: &schema.Resource{
 														Schema: map[string]*schema.Schema{
 															"pod_selector_labels": &schema.Schema{
-																Type:        schema.TypeList,
+																Type:        schema.TypeSet,
 																Optional:    true,
 																Description: "Specifies the labels to select a pod.",
 																Elem: &schema.Resource{
@@ -7388,7 +7396,7 @@ func ResourceIbmBackupRecoveryProtectionGroupMapToQuiesceRule(modelMap map[strin
 	model := &backuprecoveryv1.QuiesceRule{}
 	if modelMap["pod_selector_labels"] != nil {
 		podSelectorLabels := []backuprecoveryv1.KubernetesLabel{}
-		for _, podSelectorLabelsItem := range modelMap["pod_selector_labels"].([]interface{}) {
+		for _, podSelectorLabelsItem := range modelMap["pod_selector_labels"].(*schema.Set).List() {
 			podSelectorLabelsItemModel, err := ResourceIbmBackupRecoveryProtectionGroupMapToKubernetesLabel(podSelectorLabelsItem.(map[string]interface{}))
 			if err != nil {
 				return model, err

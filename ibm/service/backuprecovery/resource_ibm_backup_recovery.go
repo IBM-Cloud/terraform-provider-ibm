@@ -3794,11 +3794,13 @@ func ResourceIbmBackupRecovery() *schema.Resource {
 																					"key": &schema.Schema{
 																						Type:        schema.TypeString,
 																						Computed:    true,
+																						Optional:    true,
 																						Description: "The key of the label, used to identify the label.",
 																					},
 																					"value": &schema.Schema{
 																						Type:        schema.TypeString,
 																						Computed:    true,
+																						Optional:    true,
 																						Description: "The value associated with the label key.",
 																					},
 																				},
@@ -3879,7 +3881,7 @@ func ResourceIbmBackupRecovery() *schema.Resource {
 																Elem: &schema.Resource{
 																	Schema: map[string]*schema.Schema{
 																		"storage_class_mapping": &schema.Schema{
-																			Type:        schema.TypeList,
+																			Type:        schema.TypeSet,
 																			Optional:    true,
 																			Description: "Specifies mapping of storage classes.",
 																			Elem: &schema.Resource{
@@ -3887,11 +3889,13 @@ func ResourceIbmBackupRecovery() *schema.Resource {
 																					"key": &schema.Schema{
 																						Type:        schema.TypeString,
 																						Computed:    true,
+																						Optional:    true,
 																						Description: "The key of the label, used to identify the label.",
 																					},
 																					"value": &schema.Schema{
 																						Type:        schema.TypeString,
 																						Computed:    true,
+																						Optional:    true,
 																						Description: "The value associated with the label key.",
 																					},
 																				},
@@ -4084,7 +4088,7 @@ func ResourceIbmBackupRecovery() *schema.Resource {
 													Elem: &schema.Resource{
 														Schema: map[string]*schema.Schema{
 															"storage_class_mapping": &schema.Schema{
-																Type:        schema.TypeList,
+																Type:        schema.TypeSet,
 																Optional:    true,
 																Description: "Specifies mapping of storage classes.",
 																Elem: &schema.Resource{
@@ -4092,11 +4096,13 @@ func ResourceIbmBackupRecovery() *schema.Resource {
 																		"key": &schema.Schema{
 																			Type:        schema.TypeString,
 																			Computed:    true,
+																			Optional:    true,
 																			Description: "The key of the label, used to identify the label.",
 																		},
 																		"value": &schema.Schema{
 																			Type:        schema.TypeString,
 																			Computed:    true,
+																			Optional:    true,
 																			Description: "The value associated with the label key.",
 																		},
 																	},
@@ -6257,7 +6263,7 @@ func ResourceIbmBackupRecoveryMapToKubernetesStorageClassParams(modelMap map[str
 	model := &backuprecoveryv1.KubernetesStorageClassParams{}
 	if modelMap["storage_class_mapping"] != nil {
 		storageClassMapping := []backuprecoveryv1.KubernetesLabel{}
-		for _, storageClassMappingItem := range modelMap["storage_class_mapping"].([]interface{}) {
+		for _, storageClassMappingItem := range modelMap["storage_class_mapping"].(*schema.Set).List() {
 			storageClassMappingItemModel, err := ResourceIbmBackupRecoveryMapToKubernetesLabel(storageClassMappingItem.(map[string]interface{}))
 			if err != nil {
 				return model, err
