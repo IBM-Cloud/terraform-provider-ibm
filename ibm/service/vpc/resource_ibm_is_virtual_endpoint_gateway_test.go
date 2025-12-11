@@ -653,15 +653,15 @@ func TestAccIBMISVirtualEndpointGateway_DnsResolutionBindingMode(t *testing.T) {
 				),
 			},
 			// Step 9: Update VPE Gateway 3 - Change to per_resource_binding (in-place update)
-			// {
-			// 	Config: testAccCheckIBMISVirtualEndpointGatewayComprehensiveConfig(vpcName, gatewayName3, "vpe_gateway_3", "new", "", "per_resource_binding"),
-			// 	Check: resource.ComposeTestCheckFunc(
-			// 		testAccCheckisVirtualEndpointGatewayExists("ibm_is_virtual_endpoint_gateway.vpe_gateway_3", &endpointGateway),
-			// 		resource.TestCheckResourceAttr("ibm_is_virtual_endpoint_gateway.vpe_gateway_3", "name", gatewayName3),
-			// 		resource.TestCheckResourceAttr("ibm_is_virtual_endpoint_gateway.vpe_gateway_3", "dns_resolution_binding_mode", "per_resource_binding"),
-			// 		resource.TestCheckResourceAttr("ibm_is_virtual_endpoint_gateway.vpe_gateway_3", "allow_dns_resolution_binding", "true"),
-			// 	),
-			// },
+			{
+				Config: testAccCheckIBMISVirtualEndpointGatewayComprehensiveConfig(vpcName, gatewayName3, "vpe_gateway_3", "new", "", "per_resource_binding"),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckisVirtualEndpointGatewayExists("ibm_is_virtual_endpoint_gateway.vpe_gateway_3", &endpointGateway),
+					resource.TestCheckResourceAttr("ibm_is_virtual_endpoint_gateway.vpe_gateway_3", "name", gatewayName3),
+					resource.TestCheckResourceAttr("ibm_is_virtual_endpoint_gateway.vpe_gateway_3", "dns_resolution_binding_mode", "per_resource_binding"),
+					resource.TestCheckResourceAttr("ibm_is_virtual_endpoint_gateway.vpe_gateway_3", "allow_dns_resolution_binding", "true"),
+				),
+			},
 			// Step 10: Remove VPE Gateway 3 - VPC only
 			{
 				Config: testAccCheckIBMISVirtualEndpointGatewayComprehensiveVPCOnly(vpcName),
@@ -690,15 +690,15 @@ func TestAccIBMISVirtualEndpointGateway_DnsResolutionBindingMode(t *testing.T) {
 				),
 			},
 			// Step 13: Update to per_resource_binding (new capability not available in deprecated field)
-			// {
-			// 	Config: testAccCheckIBMISVirtualEndpointGatewayComprehensiveConfig(vpcName, gatewayName4, "vpe_gateway_4", "new", "", "per_resource_binding"),
-			// 	Check: resource.ComposeTestCheckFunc(
-			// 		testAccCheckisVirtualEndpointGatewayExists("ibm_is_virtual_endpoint_gateway.vpe_gateway_4", &endpointGateway),
-			// 		resource.TestCheckResourceAttr("ibm_is_virtual_endpoint_gateway.vpe_gateway_4", "name", gatewayName4),
-			// 		resource.TestCheckResourceAttr("ibm_is_virtual_endpoint_gateway.vpe_gateway_4", "dns_resolution_binding_mode", "per_resource_binding"),
-			// 		resource.TestCheckResourceAttr("ibm_is_virtual_endpoint_gateway.vpe_gateway_4", "allow_dns_resolution_binding", "true"),
-			// 	),
-			// },
+			{
+				Config: testAccCheckIBMISVirtualEndpointGatewayComprehensiveConfig(vpcName, gatewayName4, "vpe_gateway_4", "new", "", "per_resource_binding"),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckisVirtualEndpointGatewayExists("ibm_is_virtual_endpoint_gateway.vpe_gateway_4", &endpointGateway),
+					resource.TestCheckResourceAttr("ibm_is_virtual_endpoint_gateway.vpe_gateway_4", "name", gatewayName4),
+					resource.TestCheckResourceAttr("ibm_is_virtual_endpoint_gateway.vpe_gateway_4", "dns_resolution_binding_mode", "per_resource_binding"),
+					resource.TestCheckResourceAttr("ibm_is_virtual_endpoint_gateway.vpe_gateway_4", "allow_dns_resolution_binding", "true"),
+				),
+			},
 			// Step 14: Remove VPE Gateway 4 - VPC only
 			{
 				Config: testAccCheckIBMISVirtualEndpointGatewayComprehensiveVPCOnly(vpcName),
@@ -778,13 +778,13 @@ func TestAccIBMISVirtualEndpointGateway_DnsResolutionBindingMode(t *testing.T) {
 				),
 			},
 			// Step 23: Update VPE Gateway 7 to per_resource_binding
-			// {
-			// 	Config: testAccCheckIBMISVirtualEndpointGatewayComprehensiveConfig(vpcName, gatewayName7, "vpe_gateway_7", "new", "", "per_resource_binding"),
-			// 	Check: resource.ComposeTestCheckFunc(
-			// 		testAccCheckisVirtualEndpointGatewayExists("ibm_is_virtual_endpoint_gateway.vpe_gateway_7", &endpointGateway),
-			// 		resource.TestCheckResourceAttr("ibm_is_virtual_endpoint_gateway.vpe_gateway_7", "dns_resolution_binding_mode", "per_resource_binding"),
-			// 	),
-			// },
+			{
+				Config: testAccCheckIBMISVirtualEndpointGatewayComprehensiveConfig(vpcName, gatewayName7, "vpe_gateway_7", "new", "", "per_resource_binding"),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckisVirtualEndpointGatewayExists("ibm_is_virtual_endpoint_gateway.vpe_gateway_7", &endpointGateway),
+					resource.TestCheckResourceAttr("ibm_is_virtual_endpoint_gateway.vpe_gateway_7", "dns_resolution_binding_mode", "per_resource_binding"),
+				),
+			},
 			// Step 24: Update VPE Gateway 7 back to disabled (full cycle)
 			{
 				Config: testAccCheckIBMISVirtualEndpointGatewayComprehensiveConfig(vpcName, gatewayName7, "vpe_gateway_7", "new", "", "disabled"),
@@ -831,12 +831,12 @@ func testAccCheckIBMISVirtualEndpointGatewayComprehensiveConfig(vpcName, gateway
 		vpc  = ibm_is_vpc.testacc_vpc.id
 
 		target {
-			name          = "ibm-ntp-server"
-			resource_type = "provider_infrastructure_service"
+			crn           = "%s"
+			resource_type = "%s"
 		}
 		
 		allow_dns_resolution_binding = %s
-	}`, resourceName, gatewayName, deprecatedValue)
+	}`, resourceName, gatewayName, acc.IsEndpointGatewayTargetCRN, acc.IsEndpointGatewayTargetType, deprecatedValue)
 	} else if fieldType == "new" {
 		// Using new field
 		gatewayConfig = fmt.Sprintf(`
@@ -845,12 +845,12 @@ func testAccCheckIBMISVirtualEndpointGatewayComprehensiveConfig(vpcName, gateway
 		vpc  = ibm_is_vpc.testacc_vpc.id
 
 		target {
-			name          = "ibm-ntp-server"
-			resource_type = "provider_infrastructure_service"
+			crn           = "%s"
+			resource_type = "%s"
 		}
 		
 		dns_resolution_binding_mode = "%s"
-	}`, resourceName, gatewayName, newValue)
+	}`, resourceName, gatewayName, acc.IsEndpointGatewayTargetCRN, acc.IsEndpointGatewayTargetType, newValue)
 	} else if fieldType == "none" {
 		// No DNS field specified - test defaults
 		gatewayConfig = fmt.Sprintf(`
@@ -859,10 +859,10 @@ func testAccCheckIBMISVirtualEndpointGatewayComprehensiveConfig(vpcName, gateway
 		vpc  = ibm_is_vpc.testacc_vpc.id
 
 		target {
-			name          = "ibm-ntp-server"
-			resource_type = "provider_infrastructure_service"
+			crn           = "%s"
+			resource_type = "%s"
 		}
-	}`, resourceName, gatewayName)
+	}`, resourceName, gatewayName, acc.IsEndpointGatewayTargetCRN, acc.IsEndpointGatewayTargetType)
 	}
 
 	return baseConfig + gatewayConfig

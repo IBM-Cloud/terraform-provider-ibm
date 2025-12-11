@@ -59,7 +59,7 @@ func DataSourceIBMISEndpointGateways() *schema.Resource {
 						"dns_resolution_binding_mode": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "The DNS resolution binding mode used for this endpoint gateway:- `disabled`: The endpoint gateway is not participating in [DNS sharing for VPE   gateways](/docs/vpc?topic=vpc-vpe-dns-sharing).- `primary`: The endpoint gateway is participating in [DNS sharing for VPE gateways]   (/docs/vpc?topic=vpc-vpe-dns-sharing) if the VPC this endpoint gateway resides in   has a DNS resolution binding to another VPC.- `per_resource_binding`: The endpoint gateway is participating in [DNS sharing for VPE   gateways](/docs/vpc?topic=vpc-vpe-dns-sharing) if the VPC this endpoint gateway   resides in has a DNS resolution binding to another VPC, and resource binding is   enabled for the `target` service.",
+							Description: "The DNS resolution binding mode used for this endpoint gateway:- `disabled`: The endpoint gateway is not participating in [DNS sharing for VPE   gateways](https://cloud.ibm.com/docs/vpc?topic=vpc-vpe-dns-sharing).- `primary`: The endpoint gateway is participating in [DNS sharing for VPE gateways]   (https://cloud.ibm.com/docs/vpc?topic=vpc-vpe-dns-sharing) if the VPC this endpoint gateway resides in   has a DNS resolution binding to another VPC.- `per_resource_binding`: The endpoint gateway is participating in [DNS sharing for VPE   gateways](https://cloud.ibm.com/docs/vpc?topic=vpc-vpe-dns-sharing) if the VPC this endpoint gateway   resides in has a DNS resolution binding to another VPC, and resource binding is   enabled for the `target` service.",
 						},
 						isVirtualEndpointGatewayResourceType: {
 							Type:        schema.TypeString,

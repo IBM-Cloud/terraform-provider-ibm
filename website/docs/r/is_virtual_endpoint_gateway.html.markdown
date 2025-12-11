@@ -140,9 +140,9 @@ Review the argument references that you can specify for your resource.
   ~> **Important:** Do not use both `allow_dns_resolution_binding` and `dns_resolution_binding_mode` in the same configuration. Use only `dns_resolution_binding_mode`.
 
 - `dns_resolution_binding_mode` - (Optional, String) The DNS resolution binding mode used for this endpoint gateway:
-  - `disabled`: The endpoint gateway is not participating in [DNS sharing for VPE gateways](/docs/vpc?topic=vpc-vpe-dns-sharing).
-  - `primary`: The endpoint gateway is participating in [DNS sharing for VPE gateways](/docs/vpc?topic=vpc-vpe-dns-sharing) if the VPC this endpoint gateway resides in has a DNS resolution binding to another VPC.
-  - `per_resource_binding`: The endpoint gateway is participating in [DNS sharing for VPE gateways](/docs/vpc?topic=vpc-vpe-dns-sharing) if the VPC this endpoint gateway resides in has a DNS resolution binding to another VPC, and resource binding is enabled for the `target` service.
+  - `disabled`: The endpoint gateway is not participating in [DNS sharing for VPE gateways](https://cloud.ibm.com/docs/vpc?topic=vpc-vpe-dns-sharing).
+  - `primary`: The endpoint gateway is participating in [DNS sharing for VPE gateways](https://cloud.ibm.com/docs/vpc?topic=vpc-vpe-dns-sharing) if the VPC this endpoint gateway resides in has a DNS resolution binding to another VPC.
+  - `per_resource_binding`: The endpoint gateway is participating in [DNS sharing for VPE gateways](https://cloud.ibm.com/docs/vpc?topic=vpc-vpe-dns-sharing) if the VPC this endpoint gateway resides in has a DNS resolution binding to another VPC, and resource binding is enabled for the `target` service.
   - Constraints: Allowable values are: `disabled`, `per_resource_binding`, `primary`.
 
 - `name` - (Required, Forces new resource, String) The endpoint gateway name.
