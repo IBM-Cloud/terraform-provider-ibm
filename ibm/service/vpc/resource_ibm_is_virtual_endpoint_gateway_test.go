@@ -867,3 +867,193 @@ func testAccCheckIBMISVirtualEndpointGatewayComprehensiveConfig(vpcName, gateway
 
 	return baseConfig + gatewayConfig
 }
+
+func TestAccIBMISVirtualEndpointGateway_DNSHubDelegatedModel(t *testing.T) {
+	var vpeHubID, vpeSpokeID string
+
+	prefix := fmt.Sprintf("tf-vpe-%d", acctest.RandIntRange(10, 100))
+
+	spokeBindingName := prefix + "-spoke-binding"
+
+	nameHub := "ibm_is_virtual_endpoint_gateway.vpe_hub"
+	nameSpoke := "ibm_is_virtual_endpoint_gateway.vpe_spoke"
+	nameSpokeBinding := "ibm_is_virtual_endpoint_gateway_resource_binding.vpe_spoke_binding"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { acc.TestAccPreCheck(t) },
+		Providers: acc.TestAccProviders,
+		Steps: []resource.TestStep{
+
+			// Step 1: Create hub + spoke VPCs, resolver, and VPEs (hub=primary, spoke=disabled)
+			{
+				Config: testAccVPEHubSpokeDNSConfigCreateSpoke(
+					prefix,
+					acc.ISZoneName,
+					acc.IsResourceBindingCRN,
+					acc.IsEndpointGatewayTargetCRN,
+					acc.IsEndpointGatewayTargetType,
+				),
+				Check: resource.ComposeTestCheckFunc(
+					// Hub VPE checks
+					testAccCheckisVirtualEndpointGatewayExists(nameHub, &vpeHubID),
+					resource.TestCheckResourceAttr(nameHub, "dns_resolution_binding_mode", "primary"),
+
+					// Spoke VPE checks (disabled)
+					testAccCheckisVirtualEndpointGatewayExists(nameSpoke, &vpeSpokeID),
+					resource.TestCheckResourceAttr(nameSpoke, "dns_resolution_binding_mode", "disabled"),
+					resource.TestCheckResourceAttr(nameSpoke, "target.0.resource_type", acc.IsEndpointGatewayTargetType),
+					resource.TestCheckResourceAttr(nameSpoke, "target.0.crn", acc.IsEndpointGatewayTargetCRN),
+				),
+			},
+
+			// Step 2: Update spoke VPE → per_resource_binding
+			{
+				Config: testAccVPEHubSpokeDNSConfigUpdateSpoke(
+					prefix,
+					acc.ISZoneName,
+					acc.IsResourceBindingCRN,
+					acc.IsEndpointGatewayTargetCRN,
+					acc.IsEndpointGatewayTargetType,
+				),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(nameSpoke, "dns_resolution_binding_mode", "per_resource_binding"),
+				),
+			},
+
+			// Step 3: Create resource binding for spoke VPE
+			{
+				Config: testAccVPEHubSpokeDNSConfigWithBinding(
+					prefix,
+					acc.ISZoneName,
+					acc.IsResourceBindingCRN,
+					acc.IsEndpointGatewayTargetCRN,
+					acc.IsEndpointGatewayTargetType,
+				),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(nameSpokeBinding, "name", spokeBindingName),
+					resource.TestCheckResourceAttr(nameSpokeBinding, "target.0.crn", acc.IsResourceBindingCRN),
+				),
+			},
+		},
+	})
+}
+func testAccVPEHubSpokeDNSConfig(prefix, zone, bindingCRN, targetCRN, targetType string) string {
+	return fmt.Sprintf(`
+data "ibm_resource_group" "default" {
+  is_default = true
+}
+
+resource "ibm_is_vpc" "hub" {
+  name = "%[1]s-vpc-hub"
+  dns { enable_hub = true }
+}
+
+resource "ibm_is_vpc" "spoke" {
+  depends_on = [ibm_dns_custom_resolver.hub_resolver]
+  name = "%[1]s-vpc-spoke"
+  dns {
+    enable_hub = false
+    resolver {
+      type   = "delegated"
+      vpc_id = ibm_is_vpc.hub.id
+    }
+  }
+}
+
+resource "ibm_is_subnet" "hub_subnet_1" {
+  name                     = "%[1]s-hub-sub1"
+  vpc                      = ibm_is_vpc.hub.id
+  zone                     = "%[2]s"
+  total_ipv4_address_count = 16
+}
+
+resource "ibm_is_subnet" "hub_subnet_2" {
+  name                     = "%[1]s-hub-sub2"
+  vpc                      = ibm_is_vpc.hub.id
+  zone                     = "%[2]s"
+  total_ipv4_address_count = 16
+}
+
+resource "ibm_resource_instance" "dns_services" {
+  name              = "%[1]s-dns-svcs"
+  resource_group_id = data.ibm_resource_group.default.id
+  location          = "global"
+  service           = "dns-svcs"
+  plan              = "standard-dns"
+}
+
+resource "ibm_dns_custom_resolver" "hub_resolver" {
+  name        = "%[1]s-hub-resolver"
+  instance_id = ibm_resource_instance.dns_services.guid
+  enabled     = true
+  high_availability = true
+
+  locations {
+    subnet_crn = ibm_is_subnet.hub_subnet_1.crn
+    enabled    = true
+  }
+  locations {
+    subnet_crn = ibm_is_subnet.hub_subnet_2.crn
+    enabled    = true
+  }
+}
+
+resource "ibm_is_virtual_endpoint_gateway" "vpe_hub" {
+  name = "%[1]s-vpe-hub"
+  vpc  = ibm_is_vpc.hub.id
+  dns_resolution_binding_mode = "primary"
+
+  target {
+    resource_type = "%[4]s"
+    crn           = "%[3]s"
+  }
+}
+
+`, prefix, zone, targetCRN, targetType)
+}
+func testAccVPEHubSpokeDNSConfigCreateSpoke(prefix, zone, bindingCRN, targetCRN, targetType string) string {
+	base := testAccVPEHubSpokeDNSConfig(prefix, zone, bindingCRN, targetCRN, targetType)
+	return base + `
+resource "ibm_is_virtual_endpoint_gateway" "vpe_spoke" {
+  depends_on = [ ibm_is_virtual_endpoint_gateway.vpe_hub ]
+  name = "` + prefix + `-vpe-spoke"
+  vpc  = ibm_is_vpc.spoke.id
+  dns_resolution_binding_mode = "disabled"
+
+  target {
+    resource_type = "` + targetType + `"
+    crn           = "` + targetCRN + `"
+  }
+}
+`
+}
+func testAccVPEHubSpokeDNSConfigUpdateSpoke(prefix, zone, bindingCRN, targetCRN, targetType string) string {
+	base := testAccVPEHubSpokeDNSConfig(prefix, zone, bindingCRN, targetCRN, targetType)
+	return base + `
+resource "ibm_is_virtual_endpoint_gateway" "vpe_spoke" {
+  depends_on = [ ibm_is_virtual_endpoint_gateway.vpe_hub ]
+  name = "` + prefix + `-vpe-spoke"
+  vpc  = ibm_is_vpc.spoke.id
+  dns_resolution_binding_mode = "per_resource_binding"
+
+  target {
+    resource_type = "` + targetType + `"
+    crn           = "` + targetCRN + `"
+  }
+}
+`
+}
+
+func testAccVPEHubSpokeDNSConfigWithBinding(prefix, zone, bindingCRN, targetCRN, targetType string) string {
+	updated := testAccVPEHubSpokeDNSConfigUpdateSpoke(prefix, zone, bindingCRN, targetCRN, targetType)
+	return updated + `
+resource "ibm_is_virtual_endpoint_gateway_resource_binding" "vpe_spoke_binding" {
+  name                = "` + prefix + `-spoke-binding"
+  endpoint_gateway_id = ibm_is_virtual_endpoint_gateway.vpe_spoke.id
+
+  target {
+    crn = "` + bindingCRN + `"
+  }
+}
+`
+}
