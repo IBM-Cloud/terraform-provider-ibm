@@ -37,6 +37,7 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/db2"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/directlink"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/dnsservices"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/drautomationservice"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/enterprise"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/eventnotification"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/eventstreams"
@@ -266,31 +267,41 @@ func Provider() *schema.Provider {
 			"ibm_config_aggregator_resource_collection_status": configurationaggregator.AddConfigurationAggregatorInstanceFields(configurationaggregator.DataSourceIbmConfigAggregatorResourceCollectionStatus()),
 
 			// // BackupAndRecovery
-			"ibm_backup_recovery_agent_upgrade_tasks":      backuprecovery.AddInstanceFields(backuprecovery.DataSourceIbmBackupRecoveryAgentUpgradeTasks()),
-			"ibm_backup_recovery_download_agent":           backuprecovery.AddInstanceFields(backuprecovery.DataSourceIbmBackupRecoveryDownloadAgent()),
-			"ibm_backup_recovery_search_indexed_object":    backuprecovery.AddInstanceFields(backuprecovery.DataSourceIbmBackupRecoverySearchIndexedObject()),
-			"ibm_backup_recovery_object_snapshots":         backuprecovery.AddInstanceFields(backuprecovery.DataSourceIbmBackupRecoveryObjectSnapshots()),
-			"ibm_backup_recovery_connectors_metadata":      backuprecovery.AddInstanceFields(backuprecovery.DataSourceIbmBackupRecoveryConnectorsMetadata()),
-			"ibm_backup_recovery_connector_logs":           backuprecovery.AddInstanceFields(backuprecovery.DataSourceIbmBackupRecoveryConnectorLogs()),
-			"ibm_backup_recovery_connector_status":         backuprecovery.AddInstanceFields(backuprecovery.DataSourceIbmBackupRecoveryConnectorStatus()),
-			"ibm_backup_recovery_data_source_connections":  backuprecovery.AddInstanceFields(backuprecovery.DataSourceIbmBackupRecoveryDataSourceConnections()),
-			"ibm_backup_recovery_data_source_connectors":   backuprecovery.AddInstanceFields(backuprecovery.DataSourceIbmBackupRecoveryDataSourceConnectors()),
-			"ibm_backup_recovery_search_objects":           backuprecovery.AddInstanceFields(backuprecovery.DataSourceIbmBackupRecoverySearchObjects()),
-			"ibm_backup_recovery_search_protected_objects": backuprecovery.AddInstanceFields(backuprecovery.DataSourceIbmBackupRecoverySearchProtectedObjects()),
-			"ibm_backup_recovery_protection_group":         backuprecovery.AddInstanceFields(backuprecovery.DataSourceIbmBackupRecoveryProtectionGroup()),
-			"ibm_backup_recovery_protection_groups":        backuprecovery.AddInstanceFields(backuprecovery.DataSourceIbmBackupRecoveryProtectionGroups()),
-			"ibm_backup_recovery_protection_group_runs":    backuprecovery.AddInstanceFields(backuprecovery.DataSourceIbmBackupRecoveryProtectionGroupRuns()),
-			"ibm_backup_recovery_protection_policies":      backuprecovery.AddInstanceFields(backuprecovery.DataSourceIbmBackupRecoveryProtectionPolicies()),
-			"ibm_backup_recovery_protection_policy":        backuprecovery.AddInstanceFields(backuprecovery.DataSourceIbmBackupRecoveryProtectionPolicy()),
-			"ibm_backup_recovery":                          backuprecovery.AddInstanceFields(backuprecovery.DataSourceIbmBackupRecovery()),
-			"ibm_backup_recoveries":                        backuprecovery.AddInstanceFields(backuprecovery.DataSourceIbmBackupRecoveries()),
-			"ibm_backup_recovery_download_files":           backuprecovery.AddInstanceFields(backuprecovery.DataSourceIbmBackupRecoveryDownloadFiles()),
-			"ibm_backup_recovery_source_registrations":     backuprecovery.AddInstanceFields(backuprecovery.DataSourceIbmBackupRecoverySourceRegistrations()),
-			"ibm_backup_recovery_source_registration":      backuprecovery.AddInstanceFields(backuprecovery.DataSourceIbmBackupRecoverySourceRegistration()),
-			"ibm_backup_recovery_download_indexed_files":   backuprecovery.AddInstanceFields(backuprecovery.DataSourceIbmBackupRecoveryDownloadIndexedFiles()),
-			"ibm_backup_recovery_protection_sources":       backuprecovery.AddInstanceFields(backuprecovery.DataSourceIbmBackupRecoveryProtectionSources()),
-			"ibm_backup_recovery_connector_get_users":      backuprecovery.AddInstanceFields(backuprecovery.DataSourceIbmBackupRecoveryConnectorGetUsers()),
-			"ibm_backup_recovery_registration_info":        backuprecovery.AddInstanceFields(backuprecovery.DataSourceIbmBackupRecoveryRegistrationInfo()),
+			"ibm_backup_recovery_agent_upgrade_tasks":                   backuprecovery.AddInstanceFields(backuprecovery.DataSourceIbmBackupRecoveryAgentUpgradeTasks()),
+			"ibm_backup_recovery_download_agent":                        backuprecovery.AddInstanceFields(backuprecovery.DataSourceIbmBackupRecoveryDownloadAgent()),
+			"ibm_backup_recovery_search_indexed_object":                 backuprecovery.AddInstanceFields(backuprecovery.DataSourceIbmBackupRecoverySearchIndexedObject()),
+			"ibm_backup_recovery_object_snapshots":                      backuprecovery.AddInstanceFields(backuprecovery.DataSourceIbmBackupRecoveryObjectSnapshots()),
+			"ibm_backup_recovery_connectors_metadata":                   backuprecovery.AddInstanceFields(backuprecovery.DataSourceIbmBackupRecoveryConnectorsMetadata()),
+			"ibm_backup_recovery_connector_logs":                        backuprecovery.AddInstanceFields(backuprecovery.DataSourceIbmBackupRecoveryConnectorLogs()),
+			"ibm_backup_recovery_connector_status":                      backuprecovery.AddInstanceFields(backuprecovery.DataSourceIbmBackupRecoveryConnectorStatus()),
+			"ibm_backup_recovery_data_source_connections":               backuprecovery.AddInstanceFields(backuprecovery.DataSourceIbmBackupRecoveryDataSourceConnections()),
+			"ibm_backup_recovery_data_source_connectors":                backuprecovery.AddInstanceFields(backuprecovery.DataSourceIbmBackupRecoveryDataSourceConnectors()),
+			"ibm_backup_recovery_search_objects":                        backuprecovery.AddInstanceFields(backuprecovery.DataSourceIbmBackupRecoverySearchObjects()),
+			"ibm_backup_recovery_search_protected_objects":              backuprecovery.AddInstanceFields(backuprecovery.DataSourceIbmBackupRecoverySearchProtectedObjects()),
+			"ibm_backup_recovery_protection_group":                      backuprecovery.AddInstanceFields(backuprecovery.DataSourceIbmBackupRecoveryProtectionGroup()),
+			"ibm_backup_recovery_protection_groups":                     backuprecovery.AddInstanceFields(backuprecovery.DataSourceIbmBackupRecoveryProtectionGroups()),
+			"ibm_backup_recovery_protection_group_runs":                 backuprecovery.AddInstanceFields(backuprecovery.DataSourceIbmBackupRecoveryProtectionGroupRuns()),
+			"ibm_backup_recovery_protection_policies":                   backuprecovery.AddInstanceFields(backuprecovery.DataSourceIbmBackupRecoveryProtectionPolicies()),
+			"ibm_backup_recovery_protection_policy":                     backuprecovery.AddInstanceFields(backuprecovery.DataSourceIbmBackupRecoveryProtectionPolicy()),
+			"ibm_backup_recovery":                                       backuprecovery.AddInstanceFields(backuprecovery.DataSourceIbmBackupRecovery()),
+			"ibm_backup_recoveries":                                     backuprecovery.AddInstanceFields(backuprecovery.DataSourceIbmBackupRecoveries()),
+			"ibm_backup_recovery_download_files":                        backuprecovery.AddInstanceFields(backuprecovery.DataSourceIbmBackupRecoveryDownloadFiles()),
+			"ibm_backup_recovery_source_registrations":                  backuprecovery.AddInstanceFields(backuprecovery.DataSourceIbmBackupRecoverySourceRegistrations()),
+			"ibm_backup_recovery_source_registration":                   backuprecovery.AddInstanceFields(backuprecovery.DataSourceIbmBackupRecoverySourceRegistration()),
+			"ibm_backup_recovery_download_indexed_files":                backuprecovery.AddInstanceFields(backuprecovery.DataSourceIbmBackupRecoveryDownloadIndexedFiles()),
+			"ibm_backup_recovery_protection_sources":                    backuprecovery.AddInstanceFields(backuprecovery.DataSourceIbmBackupRecoveryProtectionSources()),
+			"ibm_backup_recovery_connector_get_users":                   backuprecovery.AddInstanceFields(backuprecovery.DataSourceIbmBackupRecoveryConnectorGetUsers()),
+			"ibm_backup_recovery_registration_info":                     backuprecovery.AddInstanceFields(backuprecovery.DataSourceIbmBackupRecoveryRegistrationInfo()),
+			"ibm_backup_recovery_manager_get_management_alerts":         backuprecovery.AddInstanceFields(backuprecovery.DataSourceIbmBackupRecoveryManagerGetManagementAlerts()),
+			"ibm_backup_recovery_manager_get_alerts_stats":              backuprecovery.AddInstanceFields(backuprecovery.DataSourceIbmBackupRecoveryManagerGetAlertsStats()),
+			"ibm_backup_recovery_manager_get_alerts_resolution":         backuprecovery.AddInstanceFields(backuprecovery.DataSourceIbmBackupRecoveryManagerGetAlertsResolution()),
+			"ibm_backup_recovery_manager_get_alerts_summary":            backuprecovery.AddInstanceFields(backuprecovery.DataSourceIbmBackupRecoveryManagerGetAlertsSummary()),
+			"ibm_backup_recovery_manager_get_management_alerts_summary": backuprecovery.AddInstanceFields(backuprecovery.DataSourceIbmBackupRecoveryManagerGetManagementAlertsSummary()),
+			"ibm_backup_recovery_manager_get_alerts":                    backuprecovery.AddInstanceFields(backuprecovery.DataSourceIbmBackupRecoveryManagerGetAlerts()),
+			"ibm_backup_recovery_manager_get_upgrades_info":             backuprecovery.AddInstanceFields(backuprecovery.DataSourceIbmBackupRecoveryManagerGetUpgradesInfo()),
+			"ibm_backup_recovery_manager_get_compatible_clusters":       backuprecovery.AddInstanceFields(backuprecovery.DataSourceIbmBackupRecoveryManagerGetCompatibleClusters()),
+			"ibm_backup_recovery_manager_get_cluster_info":              backuprecovery.AddInstanceFields(backuprecovery.DataSourceIbmBackupRecoveryManagerGetClusterInfo()),
+
 			// // AppID
 			"ibm_appid_action_url":               appid.DataSourceIBMAppIDActionURL(),
 			"ibm_appid_apm":                      appid.DataSourceIBMAppIDAPM(),
@@ -468,6 +479,10 @@ func Provider() *schema.Provider {
 			"ibm_iam_action_control_template_version":       iampolicy.DataSourceIBMIAMActionControlTemplateVersion(),
 			"ibm_iam_action_control_assignments":            iampolicy.DataSourceIBMIAMActionControlAssignments(),
 			"ibm_iam_action_control_assignment":             iampolicy.DataSourceIBMIAMActionControlAssignment(),
+			"ibm_iam_role_template":                         iampolicy.DataSourceIBMIAMRoleTemplate(),
+			"ibm_iam_role_template_version":                 iampolicy.DataSourceIBMIAMRoleTemplateVersion(),
+			"ibm_iam_role_assignments":                      iampolicy.DataSourceIBMIAMRoleAssignments(),
+			"ibm_iam_role_assignment":                       iampolicy.DataSourceIBMIAMRoleAssignment(),
 
 			// backup as Service
 			"ibm_is_backup_policy":       vpc.DataSourceIBMIsBackupPolicy(),
@@ -711,6 +726,9 @@ func Provider() *schema.Provider {
 			"ibm_app_config_integration_en":          appconfiguration.DataSourceIBMAppConfigIntegrationEn(),
 			"ibm_app_config_integration_kms":         appconfiguration.DataSourceIBMAppConfigIntegrationKms(),
 
+			// resource_reclamations
+			"ibm_resource_reclamations": resourcecontroller.DataSourceIBMResourceReclamations(),
+
 			"ibm_resource_quota":    resourcecontroller.DataSourceIBMResourceQuota(),
 			"ibm_resource_group":    resourcemanager.DataSourceIBMResourceGroup(),
 			"ibm_resource_groups":   resourcemanager.DataSourceIBMResourceGroups(),
@@ -758,9 +776,13 @@ func Provider() *schema.Provider {
 			"ibm_pi_image":                                  power.DataSourceIBMPIImage(),
 			"ibm_pi_images":                                 power.DataSourceIBMPIImages(),
 			"ibm_pi_instance_ip":                            power.DataSourceIBMPIInstanceIP(),
+			"ibm_pi_instance_network":                       power.DataSourceIBMPIInstanceNetwork(),
+			"ibm_pi_instance_networks":                      power.DataSourceIBMPIInstanceNetworks(),
 			"ibm_pi_instance_snapshot":                      power.DataSourceIBMPIInstanceSnapshot(),
 			"ibm_pi_instance_snapshots":                     power.DataSourceIBMPIInstanceSnapshots(),
 			"ibm_pi_instance_volumes":                       power.DataSourceIBMPIInstanceVolumes(),
+			"ibm_pi_instance_vpmem_volume":                  power.DataSourceIBMPIInstanceVpmemVolume(),
+			"ibm_pi_instance_vpmem_volumes":                 power.DataSourceIBMPIInstanceVpmemVolumes(),
 			"ibm_pi_instance":                               power.DataSourceIBMPIInstance(),
 			"ibm_pi_instances":                              power.DataSourceIBMPIInstances(),
 			"ibm_pi_key":                                    power.DataSourceIBMPIKey(),
@@ -1132,6 +1154,17 @@ func Provider() *schema.Provider {
 			// Logs Router Service
 			"ibm_logs_router_tenants": logsrouting.DataSourceIBMLogsRouterTenants(),
 			"ibm_logs_router_targets": logsrouting.DataSourceIBMLogsRouterTargets(),
+
+			// DR Automation Service
+			"ibm_pdr_get_dr_summary_response": drautomationservice.DataSourceIBMPdrGetDrSummaryResponse(),
+			"ibm_pdr_get_powervs_workspace":   drautomationservice.DataSourceIBMPdrGetPowervsWorkspace(),
+			"ibm_pdr_get_event":               drautomationservice.DataSourceIBMPdrGetEvent(),
+			"ibm_pdr_get_events":              drautomationservice.DataSourceIBMPdrGetEvents(),
+			"ibm_pdr_get_dr_locations":        drautomationservice.DataSourceIBMPdrGetDrLocations(),
+			"ibm_pdr_get_machine_types":       drautomationservice.DataSourceIBMPdrGetMachineTypes(),
+			"ibm_pdr_get_managed_vm_list":     drautomationservice.DataSourceIBMPdrGetManagedVMList(),
+			"ibm_pdr_last_operation":          drautomationservice.DataSourceIBMPdrLastOperation(),
+			"ibm_pdr_get_grs_location_pairs":  drautomationservice.DataSourceIBMPdrGetGrsLocationPairs(),
 		},
 
 		ResourcesMap: map[string]*schema.Resource{
@@ -1151,6 +1184,9 @@ func Provider() *schema.Provider {
 			"ibm_backup_recovery_connector_registration":                         backuprecovery.AddInstanceFields(backuprecovery.ResourceIbmBackupRecoveryConnectorRegistration()),
 			"ibm_backup_recovery_connector_access_token":                         backuprecovery.AddInstanceFields(backuprecovery.ResourceIbmBackupRecoveryConnectorAccessToken()),
 			"ibm_backup_recovery_connector_update_user":                          backuprecovery.AddInstanceFields(backuprecovery.ResourceIbmBackupRecoveryConnectorUpdateUser()),
+			"ibm_backup_recovery_manager_create_cluster_upgrades":                backuprecovery.AddInstanceFields(backuprecovery.ResourceIbmBackupRecoveryManagerCreateClusterUpgrades()),
+			"ibm_backup_recovery_manager_update_cluster_upgrades":                backuprecovery.AddInstanceFields(backuprecovery.ResourceIbmBackupRecoveryManagerUpdateClusterUpgrades()),
+			"ibm_backup_recovery_manager_cancel_cluster_upgrades":                backuprecovery.AddInstanceFields(backuprecovery.ResourceIbmBackupRecoveryManagerCancelClusterUpgrades()),
 
 			"ibm_app":                        cloudfoundry.ResourceIBMApp(),
 			"ibm_app_domain_private":         cloudfoundry.ResourceIBMAppDomainPrivate(),
@@ -1332,6 +1368,9 @@ func Provider() *schema.Provider {
 			"ibm_iam_action_control_template":               iampolicy.ResourceIBMIAMActionControlTemplate(),
 			"ibm_iam_action_control_template_version":       iampolicy.ResourceIBMIAMActionControlTemplateVersion(),
 			"ibm_iam_action_control_assignment":             iampolicy.ResourceIBMIAMActionControlAssignment(),
+			"ibm_iam_role_template":                         iampolicy.ResourceIBMIAMRoleTemplate(),
+			"ibm_iam_role_template_version":                 iampolicy.ResourceIBMIAMRoleTemplateVersion(),
+			"ibm_iam_role_assignment":                       iampolicy.ResourceIBMIAMRoleAssignment(),
 
 			"ibm_is_backup_policy":      vpc.ResourceIBMIsBackupPolicy(),
 			"ibm_is_backup_policy_plan": vpc.ResourceIBMIsBackupPolicyPlan(),
@@ -1468,21 +1507,25 @@ func Provider() *schema.Provider {
 			"ibm_kms_kmip_adapter":                         kms.ResourceIBMKmsKMIPAdapter(),
 			"ibm_kms_kmip_client_cert":                     kms.ResourceIBMKmsKMIPClientCertificate(),
 			"ibm_resource_group":                           resourcemanager.ResourceIBMResourceGroup(),
-			"ibm_resource_instance":                        resourcecontroller.ResourceIBMResourceInstance(),
-			"ibm_resource_key":                             resourcecontroller.ResourceIBMResourceKey(),
-			"ibm_security_group":                           classicinfrastructure.ResourceIBMSecurityGroup(),
-			"ibm_security_group_rule":                      classicinfrastructure.ResourceIBMSecurityGroupRule(),
-			"ibm_service_instance":                         cloudfoundry.ResourceIBMServiceInstance(),
-			"ibm_service_key":                              cloudfoundry.ResourceIBMServiceKey(),
-			"ibm_space":                                    cloudfoundry.ResourceIBMSpace(),
-			"ibm_storage_evault":                           classicinfrastructure.ResourceIBMStorageEvault(),
-			"ibm_storage_block":                            classicinfrastructure.ResourceIBMStorageBlock(),
-			"ibm_storage_file":                             classicinfrastructure.ResourceIBMStorageFile(),
-			"ibm_subnet":                                   classicinfrastructure.ResourceIBMSubnet(),
-			"ibm_dns_reverse_record":                       classicinfrastructure.ResourceIBMDNSReverseRecord(),
-			"ibm_ssl_certificate":                          classicinfrastructure.ResourceIBMSSLCertificate(),
-			"ibm_cdn":                                      classicinfrastructure.ResourceIBMCDN(),
-			"ibm_hardware_firewall_shared":                 classicinfrastructure.ResourceIBMFirewallShared(),
+
+			// resource_reclamation
+			"ibm_resource_reclamation_delete": resourcecontroller.ResourceIBMResourceReclamationDelete(),
+
+			"ibm_resource_instance":        resourcecontroller.ResourceIBMResourceInstance(),
+			"ibm_resource_key":             resourcecontroller.ResourceIBMResourceKey(),
+			"ibm_security_group":           classicinfrastructure.ResourceIBMSecurityGroup(),
+			"ibm_security_group_rule":      classicinfrastructure.ResourceIBMSecurityGroupRule(),
+			"ibm_service_instance":         cloudfoundry.ResourceIBMServiceInstance(),
+			"ibm_service_key":              cloudfoundry.ResourceIBMServiceKey(),
+			"ibm_space":                    cloudfoundry.ResourceIBMSpace(),
+			"ibm_storage_evault":           classicinfrastructure.ResourceIBMStorageEvault(),
+			"ibm_storage_block":            classicinfrastructure.ResourceIBMStorageBlock(),
+			"ibm_storage_file":             classicinfrastructure.ResourceIBMStorageFile(),
+			"ibm_subnet":                   classicinfrastructure.ResourceIBMSubnet(),
+			"ibm_dns_reverse_record":       classicinfrastructure.ResourceIBMDNSReverseRecord(),
+			"ibm_ssl_certificate":          classicinfrastructure.ResourceIBMSSLCertificate(),
+			"ibm_cdn":                      classicinfrastructure.ResourceIBMCDN(),
+			"ibm_hardware_firewall_shared": classicinfrastructure.ResourceIBMFirewallShared(),
 
 			// Software Defined Storage as a Service
 			"ibm_sds_volume":         sdsaas.ResourceIBMSdsVolume(),
@@ -1511,6 +1554,7 @@ func Provider() *schema.Provider {
 			"ibm_pi_image":                           power.ResourceIBMPIImage(),
 			"ibm_pi_instance_action":                 power.ResourceIBMPIInstanceAction(),
 			"ibm_pi_instance_snapshot":               power.ResourceIBMPIInstanceSnapshot(),
+			"ibm_pi_instance_vpmem_volumes":          power.ResourceIBMPIInstanceVpmemVolumes(),
 			"ibm_pi_instance":                        power.ResourceIBMPIInstance(),
 			"ibm_pi_ipsec_policy":                    power.ResourceIBMPIIPSecPolicy(),
 			"ibm_pi_key":                             power.ResourceIBMPIKey(),
@@ -1809,6 +1853,10 @@ func Provider() *schema.Provider {
 
 			// Logs Router Service
 			"ibm_logs_router_tenant": logsrouting.ResourceIBMLogsRouterTenant(),
+
+			// DR Automation Service
+			"ibm_pdr_managedr":        drautomationservice.ResourceIbmPdrManagedr(),
+			"ibm_pdr_validate_apikey": drautomationservice.ResourceIBMPdrValidateApikey(),
 		},
 
 		ConfigureFunc: providerConfigure,

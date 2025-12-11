@@ -173,6 +173,11 @@ var (
 	LogsEventNotificationInstanceRegion string
 )
 
+// Reclamation
+var (
+	ReclamationId string
+)
+
 // Secrets Manager
 var (
 	SecretsManagerInstanceID                                                        string
@@ -396,6 +401,10 @@ var (
 	COSApiKey    string
 )
 
+var (
+	DRApiKey string
+)
+
 // For Code Engine
 var (
 	CeResourceGroupID   string
@@ -473,6 +482,11 @@ func init() {
 	testlogger := os.Getenv("TF_LOG")
 	if testlogger != "" {
 		os.Setenv("IBMCLOUD_BLUEMIX_GO_TRACE", "true")
+	}
+
+	ReclamationId = os.Getenv("IBM_RECLAMATION_ID")
+	if ReclamationId == "" {
+		fmt.Println("[WARN] Set the environment variable IBM_RECLAMATION_ID for testing reclamation, reclamation_delete tests will fail if this is not set")
 	}
 
 	IamIdentityAssignmentTargetAccountId = os.Getenv("IAM_IDENTITY_ASSIGNMENT_TARGET_ACCOUNT")
@@ -1979,6 +1993,12 @@ func init() {
 	IesApiKey = os.Getenv("IES_API_KEY")
 	if IesApiKey == "" {
 		IesApiKey = "xxxxxxxxxxxx" // pragma: allowlist secret
+		fmt.Println("[WARN] Set the environment variable IES_API_KEY for testing Event streams targets, the tests will fail if this is not set")
+	}
+
+	DRApiKey = os.Getenv("DR_API_KEY")
+	if DRApiKey == "" {
+		DRApiKey = "xxxxxxxxxxxx" // pragma: allowlist secret
 		fmt.Println("[WARN] Set the environment variable IES_API_KEY for testing Event streams targets, the tests will fail if this is not set")
 	}
 
