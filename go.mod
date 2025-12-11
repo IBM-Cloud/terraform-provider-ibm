@@ -30,7 +30,7 @@ require (
 	github.com/IBM/logs-router-go-sdk v1.0.8
 	github.com/IBM/mqcloud-go-sdk v0.4.0
 	github.com/IBM/networking-go-sdk v0.51.14
-	github.com/IBM/platform-services-go-sdk v0.90.0
+	github.com/IBM/platform-services-go-sdk v0.90.4
 	github.com/IBM/project-go-sdk v0.4.0
 	github.com/IBM/push-notifications-go-sdk v0.0.0-20210310100607-5790b96c47f5
 	github.com/IBM/sarama v1.45.0
@@ -138,10 +138,10 @@ require (
 	github.com/hashicorp/hcl v1.0.1-vault-7 // indirect
 	github.com/hashicorp/hcl/v2 v2.24.0 // indirect
 	github.com/hashicorp/logutils v1.0.0 // indirect
-	github.com/hashicorp/terraform-exec v0.23.1 // indirect
-	github.com/hashicorp/terraform-json v0.27.1 // indirect
+	github.com/hashicorp/terraform-exec v0.24.0 // indirect
+	github.com/hashicorp/terraform-json v0.27.2 // indirect
 	github.com/hashicorp/terraform-plugin-go v0.29.0 // indirect
-	github.com/hashicorp/terraform-plugin-log v0.9.0 // indirect
+	github.com/hashicorp/terraform-plugin-log v0.10.0 // indirect
 	github.com/hashicorp/terraform-registry-address v0.4.0 // indirect
 	github.com/hashicorp/terraform-svchost v0.1.1 // indirect
 	github.com/hashicorp/vault/api v1.16.0 // indirect
