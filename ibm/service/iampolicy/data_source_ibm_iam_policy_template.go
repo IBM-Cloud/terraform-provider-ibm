@@ -199,12 +199,12 @@ func DataSourceIBMIAMPolicyTemplate() *schema.Resource {
 											Schema: map[string]*schema.Schema{
 												"version": {
 													Type:        schema.TypeString,
-													Required:    true,
+													Computed:    true,
 													Description: "Role template version",
 												},
 												"id": {
 													Type:        schema.TypeString,
-													Required:    true,
+													Computed:    true,
 													Description: "Role template id",
 												},
 											},
@@ -218,23 +218,23 @@ func DataSourceIBMIAMPolicyTemplate() *schema.Resource {
 											Schema: map[string]*schema.Schema{
 												"attributes": {
 													Type:        schema.TypeList,
-													Required:    true,
+													Computed:    true,
 													Description: "List of resource attributes to which the policy grants access.",
 													Elem: &schema.Resource{
 														Schema: map[string]*schema.Schema{
 															"key": {
 																Type:        schema.TypeString,
-																Required:    true,
+																Computed:    true,
 																Description: "The name of a resource attribute.",
 															},
 															"operator": {
 																Type:        schema.TypeString,
-																Required:    true,
+																Computed:    true,
 																Description: "The operator of an attribute.",
 															},
 															"value": {
 																Type:        schema.TypeString,
-																Required:    true,
+																Computed:    true,
 																Description: "The value of a rule or resource attribute; can be boolean or string for resource attribute. Can be string or an array of strings (e.g., array of days to permit access) for rule attribute.",
 															},
 														},

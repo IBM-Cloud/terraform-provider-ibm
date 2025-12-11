@@ -198,12 +198,12 @@ func DataSourceIBMIAMPolicyTemplateVersion() *schema.Resource {
 								Schema: map[string]*schema.Schema{
 									"version": {
 										Type:        schema.TypeString,
-										Required:    true,
+										Computed:    true,
 										Description: "Role template version",
 									},
 									"id": {
 										Type:        schema.TypeString,
-										Required:    true,
+										Computed:    true,
 										Description: "Role template id",
 									},
 								},
