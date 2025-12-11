@@ -2,7 +2,7 @@
 // Licensed under the Mozilla Public License v2.0
 
 /*
- * IBM OpenAPI Terraform Generator Version: 3.107.1-41b0fbd0-20250825-080732
+ * IBM OpenAPI Terraform Generator Version: 3.108.0-56772134-20251111-102802
  */
 
 package project
@@ -317,6 +317,25 @@ func ResourceIbmProjectConfig() *schema.Resource {
 								},
 							},
 						},
+						"uses": &schema.Schema{
+							Type:        schema.TypeList,
+							Optional:    true,
+							Description: "The depending deployabe architectures that are referenced by this configuration.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"config_id": &schema.Schema{
+										Type:        schema.TypeString,
+										Required:    true,
+										Description: "The unique ID.",
+									},
+									"project_id": &schema.Schema{
+										Type:        schema.TypeString,
+										Required:    true,
+										Description: "The unique ID.",
+									},
+								},
+							},
+						},
 						"description": &schema.Schema{
 							Type:        schema.TypeString,
 							Optional:    true,
@@ -465,6 +484,12 @@ func ResourceIbmProjectConfig() *schema.Resource {
 							Computed:    true,
 							Description: "This property can be any value - a string, number, boolean, array, or object.",
 						},
+						"sensitive": &schema.Schema{
+							Type:        schema.TypeBool,
+							Optional:    true,
+							Computed:    true,
+							Description: "Flag if the output value is sensitive. If not present, the output sensitivity is indeterminate.",
+						},
 					},
 				},
 			},
@@ -475,11 +500,6 @@ func ResourceIbmProjectConfig() *schema.Resource {
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{},
 				},
-			},
-			"state": &schema.Schema{
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The state of the configuration.",
 			},
 			"state_code": &schema.Schema{
 				Type:        schema.TypeString,
@@ -515,6 +535,16 @@ func ResourceIbmProjectConfig() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "A Url.",
+			},
+			"container_state": &schema.Schema{
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The aggregate state from all deployabe architectures that are included in this configuration.",
+			},
+			"container_state_code": &schema.Schema{
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Computed state code clarifying the prerequisites for validation for the configuration.",
 			},
 			"is_draft": &schema.Schema{
 				Type:        schema.TypeBool,
@@ -563,6 +593,11 @@ func ResourceIbmProjectConfig() *schema.Resource {
 						},
 					},
 				},
+			},
+			"state": &schema.Schema{
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The state of the configuration.",
 			},
 			"update_available": &schema.Schema{
 				Type:        schema.TypeBool,
@@ -666,6 +701,12 @@ func ResourceIbmProjectConfig() *schema.Resource {
 								},
 							},
 						},
+						"container_state": &schema.Schema{
+							Type:        schema.TypeString,
+							Optional:    true,
+							Computed:    true,
+							Description: "The aggregate state from all deployabe architectures that are included in this configuration.",
+						},
 						"state": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
@@ -712,6 +753,12 @@ func ResourceIbmProjectConfig() *schema.Resource {
 									},
 								},
 							},
+						},
+						"container_state": &schema.Schema{
+							Type:        schema.TypeString,
+							Optional:    true,
+							Computed:    true,
+							Description: "The aggregate state from all deployabe architectures that are included in this configuration.",
 						},
 						"state": &schema.Schema{
 							Type:        schema.TypeString,
@@ -874,10 +921,6 @@ func resourceIbmProjectConfigRead(context context.Context, d *schema.ResourceDat
 		err = fmt.Errorf("Error setting references: %s", err)
 		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_project_config", "read", "set-references").GetDiag()
 	}
-	if err = d.Set("state", projectConfig.State); err != nil {
-		err = fmt.Errorf("Error setting state: %s", err)
-		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_project_config", "read", "set-state").GetDiag()
-	}
 	if !core.IsNil(projectConfig.StateCode) {
 		if err = d.Set("state_code", projectConfig.StateCode); err != nil {
 			err = fmt.Errorf("Error setting state_code: %s", err)
@@ -898,6 +941,18 @@ func resourceIbmProjectConfigRead(context context.Context, d *schema.ResourceDat
 		err = fmt.Errorf("Error setting href: %s", err)
 		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_project_config", "read", "set-href").GetDiag()
 	}
+	if !core.IsNil(projectConfig.ContainerState) {
+		if err = d.Set("container_state", projectConfig.ContainerState); err != nil {
+			err = fmt.Errorf("Error setting container_state: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_project_config", "read", "set-container_state").GetDiag()
+		}
+	}
+	if !core.IsNil(projectConfig.ContainerStateCode) {
+		if err = d.Set("container_state_code", projectConfig.ContainerStateCode); err != nil {
+			err = fmt.Errorf("Error setting container_state_code: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_project_config", "read", "set-container_state_code").GetDiag()
+		}
+	}
 	if err = d.Set("is_draft", projectConfig.IsDraft); err != nil {
 		err = fmt.Errorf("Error setting is_draft: %s", err)
 		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_project_config", "read", "set-is_draft").GetDiag()
@@ -915,6 +970,10 @@ func resourceIbmProjectConfigRead(context context.Context, d *schema.ResourceDat
 	if err = d.Set("project", []map[string]interface{}{projectMap}); err != nil {
 		err = fmt.Errorf("Error setting project: %s", err)
 		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_project_config", "read", "set-project").GetDiag()
+	}
+	if err = d.Set("state", projectConfig.State); err != nil {
+		err = fmt.Errorf("Error setting state: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_project_config", "read", "set-state").GetDiag()
 	}
 	if !core.IsNil(projectConfig.UpdateAvailable) {
 		if err = d.Set("update_available", projectConfig.UpdateAvailable); err != nil {
@@ -1069,6 +1128,17 @@ func ResourceIbmProjectConfigMapToProjectConfigDefinitionPrototype(modelMap map[
 		}
 		model.Members = members
 	}
+	if modelMap["uses"] != nil {
+		uses := []projectv1.ProjectConfigUses{}
+		for _, usesItem := range modelMap["uses"].([]interface{}) {
+			usesItemModel, err := ResourceIbmProjectConfigMapToProjectConfigUses(usesItem.(map[string]interface{}))
+			if err != nil {
+				return model, err
+			}
+			uses = append(uses, *usesItemModel)
+		}
+		model.Uses = uses
+	}
 	if modelMap["description"] != nil && modelMap["description"].(string) != "" {
 		model.Description = core.StringPtr(modelMap["description"].(string))
 	}
@@ -1195,6 +1265,13 @@ func ResourceIbmProjectConfigMapToStackMember(modelMap map[string]interface{}) (
 	return model, nil
 }
 
+func ResourceIbmProjectConfigMapToProjectConfigUses(modelMap map[string]interface{}) (*projectv1.ProjectConfigUses, error) {
+	model := &projectv1.ProjectConfigUses{}
+	model.ConfigID = core.StringPtr(modelMap["config_id"].(string))
+	model.ProjectID = core.StringPtr(modelMap["project_id"].(string))
+	return model, nil
+}
+
 func ResourceIbmProjectConfigMapToProjectConfigAuth(modelMap map[string]interface{}) (*projectv1.ProjectConfigAuth, error) {
 	model := &projectv1.ProjectConfigAuth{}
 	if modelMap["trusted_profile_id"] != nil && modelMap["trusted_profile_id"].(string) != "" {
@@ -1231,6 +1308,17 @@ func ResourceIbmProjectConfigMapToProjectConfigDefinitionPrototypeDAConfigDefini
 			members = append(members, *membersItemModel)
 		}
 		model.Members = members
+	}
+	if modelMap["uses"] != nil {
+		uses := []projectv1.ProjectConfigUses{}
+		for _, usesItem := range modelMap["uses"].([]interface{}) {
+			usesItemModel, err := ResourceIbmProjectConfigMapToProjectConfigUses(usesItem.(map[string]interface{}))
+			if err != nil {
+				return model, err
+			}
+			uses = append(uses, *usesItemModel)
+		}
+		model.Uses = uses
 	}
 	if modelMap["description"] != nil && modelMap["description"].(string) != "" {
 		model.Description = core.StringPtr(modelMap["description"].(string))
@@ -1318,6 +1406,17 @@ func ResourceIbmProjectConfigMapToProjectConfigDefinitionPatch(modelMap map[stri
 		}
 		model.Members = members
 	}
+	if modelMap["uses"] != nil {
+		uses := []projectv1.ProjectConfigUses{}
+		for _, usesItem := range modelMap["uses"].([]interface{}) {
+			usesItemModel, err := ResourceIbmProjectConfigMapToProjectConfigUses(usesItem.(map[string]interface{}))
+			if err != nil {
+				return model, err
+			}
+			uses = append(uses, *usesItemModel)
+		}
+		model.Uses = uses
+	}
 	if modelMap["description"] != nil && modelMap["description"].(string) != "" {
 		model.Description = core.StringPtr(modelMap["description"].(string))
 	}
@@ -1372,6 +1471,17 @@ func ResourceIbmProjectConfigMapToProjectConfigDefinitionPatchDAConfigDefinition
 			members = append(members, *membersItemModel)
 		}
 		model.Members = members
+	}
+	if modelMap["uses"] != nil {
+		uses := []projectv1.ProjectConfigUses{}
+		for _, usesItem := range modelMap["uses"].([]interface{}) {
+			usesItemModel, err := ResourceIbmProjectConfigMapToProjectConfigUses(usesItem.(map[string]interface{}))
+			if err != nil {
+				return model, err
+			}
+			uses = append(uses, *usesItemModel)
+		}
+		model.Uses = uses
 	}
 	if modelMap["description"] != nil && modelMap["description"].(string) != "" {
 		model.Description = core.StringPtr(modelMap["description"].(string))
@@ -1527,6 +1637,17 @@ func ResourceIbmProjectConfigProjectConfigDefinitionResponseToMap(model projectv
 			}
 			modelMap["members"] = members
 		}
+		if model.Uses != nil {
+			uses := []map[string]interface{}{}
+			for _, usesItem := range model.Uses {
+				usesItemMap, err := ResourceIbmProjectConfigProjectConfigUsesToMap(&usesItem) // #nosec G601
+				if err != nil {
+					return modelMap, err
+				}
+				uses = append(uses, usesItemMap)
+			}
+			modelMap["uses"] = uses
+		}
 		if model.Description != nil {
 			modelMap["description"] = *model.Description
 		}
@@ -1669,6 +1790,13 @@ func ResourceIbmProjectConfigStackMemberToMap(model *projectv1.StackMember) (map
 	return modelMap, nil
 }
 
+func ResourceIbmProjectConfigProjectConfigUsesToMap(model *projectv1.ProjectConfigUses) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	modelMap["config_id"] = *model.ConfigID
+	modelMap["project_id"] = *model.ProjectID
+	return modelMap, nil
+}
+
 func ResourceIbmProjectConfigProjectConfigAuthToMap(model *projectv1.ProjectConfigAuth) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.TrustedProfileID != nil {
@@ -1705,6 +1833,17 @@ func ResourceIbmProjectConfigProjectConfigDefinitionResponseDAConfigDefinitionPr
 			members = append(members, membersItemMap)
 		}
 		modelMap["members"] = members
+	}
+	if model.Uses != nil {
+		uses := []map[string]interface{}{}
+		for _, usesItem := range model.Uses {
+			usesItemMap, err := ResourceIbmProjectConfigProjectConfigUsesToMap(&usesItem) // #nosec G601
+			if err != nil {
+				return modelMap, err
+			}
+			uses = append(uses, usesItemMap)
+		}
+		modelMap["uses"] = uses
 	}
 	modelMap["description"] = *model.Description
 	modelMap["name"] = *model.Name
@@ -1796,6 +1935,9 @@ func ResourceIbmProjectConfigOutputValueToMap(model *projectv1.OutputValue) (map
 	if model.Value != nil {
 		modelMap["value"] = flex.Stringify(model.Value)
 	}
+	if model.Sensitive != nil {
+		modelMap["sensitive"] = *model.Sensitive
+	}
 	return modelMap, nil
 }
 
@@ -1878,6 +2020,9 @@ func ResourceIbmProjectConfigProjectConfigVersionSummaryToMap(model *projectv1.P
 		return modelMap, err
 	}
 	modelMap["definition"] = []map[string]interface{}{definitionMap}
+	if model.ContainerState != nil {
+		modelMap["container_state"] = *model.ContainerState
+	}
 	modelMap["state"] = *model.State
 	modelMap["version"] = flex.IntValue(model.Version)
 	modelMap["href"] = *model.Href

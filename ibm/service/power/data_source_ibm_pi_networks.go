@@ -5,6 +5,7 @@ package power
 
 import (
 	"context"
+	"fmt"
 	"log"
 
 	"github.com/IBM-Cloud/power-go-client/clients/instance"
@@ -106,10 +107,12 @@ func DataSourceIBMPINetworks() *schema.Resource {
 	}
 }
 
-func dataSourceIBMPINetworksRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataSourceIBMPINetworksRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	sess, err := meta.(conns.ClientSession).IBMPISession()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("IBMPISession failed: %s", err.Error()), "(Data) ibm_pi_networks", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	cloudInstanceID := d.Get(Arg_CloudInstanceID).(string)
@@ -117,7 +120,9 @@ func dataSourceIBMPINetworksRead(ctx context.Context, d *schema.ResourceData, me
 	networkC := instance.NewIBMPINetworkClient(ctx, sess, cloudInstanceID)
 	networkdata, err := networkC.GetAll()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetAll failed: %s", err.Error()), "(Data) ibm_pi_networks", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	var clientgenU, _ = uuid.GenerateUUID()
@@ -127,10 +132,10 @@ func dataSourceIBMPINetworksRead(ctx context.Context, d *schema.ResourceData, me
 	return nil
 }
 
-func flattenNetworks(list []*models.NetworkReference, meta interface{}) []map[string]interface{} {
-	result := make([]map[string]interface{}, 0, len(list))
+func flattenNetworks(list []*models.NetworkReference, meta any) []map[string]any {
+	result := make([]map[string]any, 0, len(list))
 	for _, i := range list {
-		l := map[string]interface{}{
+		l := map[string]any{
 			Attr_Advertise:    i.Advertise,
 			Attr_ARPBroadcast: i.ArpBroadcast,
 			Attr_DhcpManaged:  i.DhcpManaged,

@@ -66,6 +66,48 @@ Thank you for contributing! Here you will find the information on what to includ
  * For PRs that follow the guidelines, we expect to review and merge very quickly.
  * PRs that do not follow the guidelines is annotated with what they are missing. A community or core team member may be able to swing around and help finish up the work, but these PRs generally hang out much longer until completed and merged.
 
+---
+
+# **Provider-wide Best Practices (Mandatory for all PRs)**  
+
+### Schema Rules
+- **Required** fields must be supplied by the user; if changing them requires recreation, mark as **ForceNew**.
+- **Optional** fields must not be sent when unset; avoid sending empty strings.
+- **Computed** fields are assigned only in `Read`, never in Create/Update.
+- **Optional + Computed** fields are used when APIs provide defaults or canonicalized values.
+- **Sensitive** must be applied to passwords, tokens, and secret fields.
+- **ForceNew** must be used for:  
+  - identity fields (instance, region, zone, VPC, subnet, binding IDs)  
+  - create-only parameters (clone-from, image IDs, snapshot IDs)  
+  - structural choices (mode, type, topology, binding)
+
+### CRUD Lifecycle Guidance
+- **Create:** Only send meaningful values. Always return to `Read` afterwards.
+- **Read:** Canonicalize; normalize sets/lists; clear ID on 404.
+- **Update:** Only update attributes supported by API. Never simulate recreate inside Update.
+- **Delete:** Treat 404 as success. Always clear ID.
+
+### Diff & Normalization
+- Avoid `DiffSuppressFunc` unless equivalence is provably correct.
+- Normalize unordered results in **Read** using sorted lists/sets.
+- Don’t ignore user changes unless API truly ignores them.
+
+### Validation
+- Always use validators for string length, patterns, enums.
+- Fail early when invalid input is easier for user to correct.
+
+### Acceptance Tests
+- Include idempotency checks: second apply should produce **0 changes**.
+- Always include a `CheckDestroy`.
+- Never rely solely on state; verify against API responses.
+- Randomize resource names to avoid collisions.
+
+### Documentation
+- Every schema change must update docs in the same PR.
+- New resources require a complete doc page + examples.
+
+---
+
 ### Checklists for contribution
 
 There are different kinds of contribution, each of which has its own standards for a speedy review. The following sections describe the guidelines for each type of the contribution.
@@ -278,6 +320,7 @@ The `IBM Cloud Provider for Terraform` release can be mainly classified in to th
 - Dev release
 
 ### Production release
+
 Typically, the production release of the `IBM Cloud Provider for Terraform` will be made, once in a month. The release can be major or minor based on the PR's commited. The production release is targetted from branch **release**. Once the release is published, users can download the binary from [Terraform registry](https://registry.terraform.io/providers/IBM-Cloud/ibm/latest).
 
 #### How to use this provider
@@ -306,6 +349,7 @@ Typically, the pre-production releases of the `IBM Cloud Provider for Terraform`
 ~> **Note** A pre-release version is a version number that contains a suffix introduced by a dash, such as **1.38.0-pre**. A pre-release version can be selected only by an exact version constraint (the = operator or no operator). Pre-release versions do not match inexact operators such as `>=`, `~>`, etc.
 
 #### How to use this provider
+
 To install Terraform 0.13 or higher version provider, copy and paste this code into your Terraform configuration. Then, run `terraform init`.
 
 ```terraform
@@ -325,7 +369,7 @@ provider "ibm" {
 
 ### Dev release
 
-The individual developers or the IBM Cloud Service team can make their own `dev` releases, from their respective Git repository (forked from https://github.com/IBM-Cloud/terraform-provider-ibm).  
+The individual developers or the IBM Cloud Service team can make their own `dev` releases, from their respective Git repository (forked from [https://github.com/IBM-Cloud/terraform-provider-ibm](https://github.com/IBM-Cloud/terraform-provider-ibm)).
 
 Note: You can use the existing GitHub actions to run the release workflows, in your forked repository. You can prepare a `dev` release by adding a new version tag in your repository.
 
@@ -347,6 +391,7 @@ Note: You can use the existing GitHub actions to run the release workflows, in y
   - On Windows, the file must be named **terraform.rc** and placed in the relevant user's %APPDATA% directory. 
   - On all other systems, the file must be named **.terraformrc** (note the leading period) and placed directly in the home directory of the relevant user.
 - Add below content to CLI configuration file
+
   ```terraform
   provider_installation {
     filesystem_mirror {
@@ -358,3 +403,4 @@ Note: You can use the existing GitHub actions to run the release workflows, in y
     }
   } 
   ```
+

@@ -13,9 +13,7 @@ Retrieve information about  Power Systems workspaces.
 ## Example Usage
 
 ```terraform
-data "ibm_pi_workspaces" "workspaces" {
-  pi_cloud_instance_id = "99fba9c9-66f9-99bc-9999-aca999ee9d9b"
-}
+data "ibm_pi_workspaces" "workspaces" {}
 ```
 
 ### Notes
@@ -38,7 +36,7 @@ Example usage:
 
 Review the argument references that you can specify for your data source.
 
-- `pi_cloud_instance_id` - (Required, String) The GUID of the service instance associated with an account.
+- `pi_cloud_instance_id` - (Optional, Deprecated, String) The GUID of the service instance associated with an account. This field is deprecated and will be removed in a future release.
 
 ## Attribute Reference
 
