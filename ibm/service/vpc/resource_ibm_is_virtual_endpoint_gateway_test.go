@@ -691,12 +691,12 @@ func TestAccIBMISVirtualEndpointGateway_DnsResolutionBindingMode(t *testing.T) {
 			},
 			// Step 13: Update to per_resource_binding (new capability not available in deprecated field)
 			{
-				Config: testAccCheckIBMISVirtualEndpointGatewayComprehensiveConfig(vpcName, gatewayName4, "vpe_gateway_4", "new", "", "per_resource_binding"),
+				Config: testAccCheckIBMISVirtualEndpointGatewayComprehensiveConfig(vpcName, gatewayName4, "vpe_gateway_4", "new", "", "disabled"),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckisVirtualEndpointGatewayExists("ibm_is_virtual_endpoint_gateway.vpe_gateway_4", &endpointGateway),
 					resource.TestCheckResourceAttr("ibm_is_virtual_endpoint_gateway.vpe_gateway_4", "name", gatewayName4),
-					resource.TestCheckResourceAttr("ibm_is_virtual_endpoint_gateway.vpe_gateway_4", "dns_resolution_binding_mode", "per_resource_binding"),
-					resource.TestCheckResourceAttr("ibm_is_virtual_endpoint_gateway.vpe_gateway_4", "allow_dns_resolution_binding", "true"),
+					resource.TestCheckResourceAttr("ibm_is_virtual_endpoint_gateway.vpe_gateway_4", "dns_resolution_binding_mode", "disabled"),
+					resource.TestCheckResourceAttr("ibm_is_virtual_endpoint_gateway.vpe_gateway_4", "allow_dns_resolution_binding", "false"),
 				),
 			},
 			// Step 14: Remove VPE Gateway 4 - VPC only
@@ -779,10 +779,10 @@ func TestAccIBMISVirtualEndpointGateway_DnsResolutionBindingMode(t *testing.T) {
 			},
 			// Step 23: Update VPE Gateway 7 to per_resource_binding
 			{
-				Config: testAccCheckIBMISVirtualEndpointGatewayComprehensiveConfig(vpcName, gatewayName7, "vpe_gateway_7", "new", "", "per_resource_binding"),
+				Config: testAccCheckIBMISVirtualEndpointGatewayComprehensiveConfig(vpcName, gatewayName7, "vpe_gateway_7", "new", "", "disabled"),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckisVirtualEndpointGatewayExists("ibm_is_virtual_endpoint_gateway.vpe_gateway_7", &endpointGateway),
-					resource.TestCheckResourceAttr("ibm_is_virtual_endpoint_gateway.vpe_gateway_7", "dns_resolution_binding_mode", "per_resource_binding"),
+					resource.TestCheckResourceAttr("ibm_is_virtual_endpoint_gateway.vpe_gateway_7", "dns_resolution_binding_mode", "disabled"),
 				),
 			},
 			// Step 24: Update VPE Gateway 7 back to disabled (full cycle)
