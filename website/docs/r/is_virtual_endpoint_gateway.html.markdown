@@ -132,8 +132,8 @@ Review the argument references that you can specify for your resource.
   Previously indicated whether to allow this endpoint gateway to participate in DNS resolution bindings with a VPC that has dns.enable_hub set to true.
   
   **Migration Guide:**
-  - `false` → use `dns_resolution_binding_mode = "disabled"`
-  - `true` → use `dns_resolution_binding_mode = "primary"`
+  - `false` -> use `dns_resolution_binding_mode = "disabled"`
+  - `true` -> use `dns_resolution_binding_mode = "primary"`
   
   **Note:** The new `dns_resolution_binding_mode` field also supports `"per_resource_binding"` for advanced DNS sharing scenarios not available with this boolean field.
   
