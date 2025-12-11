@@ -17,6 +17,7 @@ import (
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
+	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/IBM/platform-services-go-sdk/iampolicymanagementv1"
 )
 
@@ -172,4 +173,20 @@ func resourceIBMIAMRoleTemplateCreate(context context.Context, d *schema.Resourc
 	d.SetId(fmt.Sprintf("%s/%s", *roleTemplate.ID, *roleTemplate.Version))
 
 	return resourceIBMIAMRoleTemplateVersionRead(context, d, meta)
+}
+
+func ResourceIBMIAMRoleTemplateMapToTemplateRole(modelMap map[string]interface{}) (*iampolicymanagementv1.RoleTemplatePrototypeRole, error) {
+	model := &iampolicymanagementv1.RoleTemplatePrototypeRole{}
+	model.Name = core.StringPtr(modelMap["name"].(string))
+	model.DisplayName = core.StringPtr(modelMap["display_name"].(string))
+	model.ServiceName = core.StringPtr(modelMap["service_name"].(string))
+	if modelMap["description"] != nil && modelMap["description"].(string) != "" {
+		model.Description = core.StringPtr(modelMap["description"].(string))
+	}
+	actions := []string{}
+	for _, actionsItem := range modelMap["actions"].([]interface{}) {
+		actions = append(actions, actionsItem.(string))
+	}
+	model.Actions = actions
+	return model, nil
 }
