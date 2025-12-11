@@ -211,32 +211,32 @@ func ResourceIBMISNetworkACL() *schema.Resource {
 							Description:  "The ICMP traffic type to allow. Valid values from 0 to 254.",
 						},
 						isNetworkACLRulePortMax: {
-							Type:         schema.TypeInt,
-							Optional:     true,
-							Computed:     true,
-							ValidateFunc: validate.InvokeValidator("ibm_is_network_acl", isNetworkACLRulePortMax),
-							Description:  "The highest port in the range of ports to be matched",
+							Type:             schema.TypeInt,
+							Optional:         true,
+							DiffSuppressFunc: suppressNullValues,
+							ValidateFunc:     validate.InvokeValidator("ibm_is_network_acl", isNetworkACLRulePortMax),
+							Description:      "The highest port in the range of ports to be matched",
 						},
 						isNetworkACLRulePortMin: {
-							Type:         schema.TypeInt,
-							Optional:     true,
-							Computed:     true,
-							ValidateFunc: validate.InvokeValidator("ibm_is_network_acl", isNetworkACLRulePortMin),
-							Description:  "The lowest port in the range of ports to be matched",
+							Type:             schema.TypeInt,
+							Optional:         true,
+							DiffSuppressFunc: suppressNullValues,
+							ValidateFunc:     validate.InvokeValidator("ibm_is_network_acl", isNetworkACLRulePortMin),
+							Description:      "The lowest port in the range of ports to be matched",
 						},
 						isNetworkACLRuleSourcePortMax: {
-							Type:         schema.TypeInt,
-							Optional:     true,
-							Computed:     true,
-							ValidateFunc: validate.InvokeValidator("ibm_is_network_acl", isNetworkACLRuleSourcePortMax),
-							Description:  "The highest port in the range of ports to be matched",
+							Type:             schema.TypeInt,
+							Optional:         true,
+							DiffSuppressFunc: suppressNullValues,
+							ValidateFunc:     validate.InvokeValidator("ibm_is_network_acl", isNetworkACLRuleSourcePortMax),
+							Description:      "The highest port in the range of ports to be matched",
 						},
 						isNetworkACLRuleSourcePortMin: {
-							Type:         schema.TypeInt,
-							Optional:     true,
-							Computed:     true,
-							ValidateFunc: validate.InvokeValidator("ibm_is_network_acl", isNetworkACLRuleSourcePortMin),
-							Description:  "The lowest port in the range of ports to be matched",
+							Type:             schema.TypeInt,
+							Optional:         true,
+							DiffSuppressFunc: suppressNullValues,
+							ValidateFunc:     validate.InvokeValidator("ibm_is_network_acl", isNetworkACLRuleSourcePortMin),
+							Description:      "The lowest port in the range of ports to be matched",
 						},
 						isNetworkACLRuleICMP: {
 							Type:       schema.TypeList,
@@ -336,6 +336,37 @@ func ResourceIBMISNetworkACL() *schema.Resource {
 			},
 		},
 	}
+}
+
+func suppressNullValues(k, old, new string, d *schema.ResourceData) bool {
+	parts := strings.Split(k, ".")
+	if len(parts) < 3 {
+		return false
+	}
+
+	// Build the path to the protocol field
+	ruleIndex := parts[1]
+	protocolKey := fmt.Sprintf("rules.%s.protocol", ruleIndex)
+
+	// Get the protocol value
+	protocol, ok := d.GetOk(protocolKey)
+	if !ok {
+		return false
+	}
+
+	protocolStr := protocol.(string)
+
+	// Only suppress for TCP or UDP protocols
+	if protocolStr != "tcp" && protocolStr != "udp" {
+		return false
+	}
+
+	// When TypeInt field is null, it comes as "0"
+	// Suppress if new is "0" and old was a positive value
+	if new == "0" && old != "" && old != "0" && d.Id() != "" {
+		return true
+	}
+	return false
 }
 
 func ResourceIBMISNetworkACLValidator() *validate.ResourceValidator {
