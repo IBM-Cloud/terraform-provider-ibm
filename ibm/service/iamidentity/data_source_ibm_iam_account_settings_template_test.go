@@ -70,6 +70,10 @@ func TestAccIBMAccountSettingsTemplateDataSourceAllArgs(t *testing.T) {
 					resource.TestCheckResourceAttrSet("data.ibm_iam_account_settings_template.account_settings_template", "account_settings.0.max_sessions_per_identity"),
 					resource.TestCheckResourceAttrSet("data.ibm_iam_account_settings_template.account_settings_template", "account_settings.0.system_access_token_expiration_in_seconds"),
 					resource.TestCheckResourceAttrSet("data.ibm_iam_account_settings_template.account_settings_template", "account_settings.0.system_refresh_token_expiration_in_seconds"),
+					resource.TestCheckResourceAttrSet("data.ibm_iam_account_settings_template.account_settings_template", "account_settings.0.restrict_user_list_visibility"),
+					resource.TestCheckResourceAttrSet("data.ibm_iam_account_settings_template.account_settings_template", "account_settings.0.restrict_user_domains.#"),
+					resource.TestCheckResourceAttrSet("data.ibm_iam_account_settings_template.account_settings_template", "account_settings.0.restrict_user_domains.0.account_sufficient"),
+					resource.TestCheckResourceAttrSet("data.ibm_iam_account_settings_template.account_settings_template", "account_settings.0.restrict_user_domains.0.restrictions.0.realm_id"),
 					resource.TestCheckResourceAttrSet("data.ibm_iam_account_settings_template.account_settings_template", "entity_tag"),
 					resource.TestCheckResourceAttrSet("data.ibm_iam_account_settings_template.account_settings_template", "crn"),
 					resource.TestCheckResourceAttrSet("data.ibm_iam_account_settings_template.account_settings_template", "created_at"),
@@ -119,6 +123,15 @@ func testAccCheckIBMAccountSettingsTemplateDataSourceConfig(enterpriseAccountId 
 				max_sessions_per_identity = "5"
 				system_access_token_expiration_in_seconds = "NOT_SET"
 				system_refresh_token_expiration_in_seconds = "NOT_SET"
+				restrict_user_list_visibility = "RESTRICTED"
+				restrict_user_domains {
+					account_sufficient = true
+					restrictions {
+						realm_id = "IBMid"
+						invitation_email_allow_patterns = ["*.*@company.com"]
+						restrict_invitation = true
+					}
+				}
 			}
 		}
 

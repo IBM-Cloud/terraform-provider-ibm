@@ -3172,7 +3172,11 @@ func ResourceIbmLogsAlertDefinitionMapToAlertDefinitionPrototype(modelMap map[st
 		model.NotificationGroup = NotificationGroupModel
 	}
 	if modelMap["entity_labels"] != nil {
-		// TODO: handle EntityLabels, map with entry type 'string'
+		entityLabelsModel := map[string]string{}
+		for key, value := range modelMap["entity_labels"].(map[string]interface{}) {
+			entityLabelsModel[key] = value.(string)
+		}
+		model.EntityLabels = entityLabelsModel
 	}
 	if modelMap["phantom_mode"] != nil {
 		model.PhantomMode = core.BoolPtr(modelMap["phantom_mode"].(bool))
@@ -3295,7 +3299,11 @@ func ResourceIbmLogsAlertDefinitionMapToAlertDefinitionPrototypeApisAlertDefinit
 		model.NotificationGroup = NotificationGroupModel
 	}
 	if modelMap["entity_labels"] != nil {
-		// TODO: handle EntityLabels, map with entry type 'string'
+		entityLabelsModel := map[string]string{}
+		for key, value := range modelMap["entity_labels"].(map[string]interface{}) {
+			entityLabelsModel[key] = value.(string)
+		}
+		model.EntityLabels = entityLabelsModel
 	}
 	if modelMap["phantom_mode"] != nil {
 		model.PhantomMode = core.BoolPtr(modelMap["phantom_mode"].(bool))
@@ -3355,7 +3363,11 @@ func ResourceIbmLogsAlertDefinitionMapToAlertDefinitionPrototypeApisAlertDefinit
 		model.NotificationGroup = NotificationGroupModel
 	}
 	if modelMap["entity_labels"] != nil {
-		// TODO: handle EntityLabels, map with entry type 'string'
+		entityLabelsModel := map[string]string{}
+		for key, value := range modelMap["entity_labels"].(map[string]interface{}) {
+			entityLabelsModel[key] = value.(string)
+		}
+		model.EntityLabels = entityLabelsModel
 	}
 	if modelMap["phantom_mode"] != nil {
 		model.PhantomMode = core.BoolPtr(modelMap["phantom_mode"].(bool))
@@ -3415,7 +3427,11 @@ func ResourceIbmLogsAlertDefinitionMapToAlertDefinitionPrototypeApisAlertDefinit
 		model.NotificationGroup = NotificationGroupModel
 	}
 	if modelMap["entity_labels"] != nil {
-		// TODO: handle EntityLabels, map with entry type 'string'
+		entityLabelsModel := map[string]string{}
+		for key, value := range modelMap["entity_labels"].(map[string]interface{}) {
+			entityLabelsModel[key] = value.(string)
+		}
+		model.EntityLabels = entityLabelsModel
 	}
 	if modelMap["phantom_mode"] != nil {
 		model.PhantomMode = core.BoolPtr(modelMap["phantom_mode"].(bool))
@@ -3475,7 +3491,11 @@ func ResourceIbmLogsAlertDefinitionMapToAlertDefinitionPrototypeApisAlertDefinit
 		model.NotificationGroup = NotificationGroupModel
 	}
 	if modelMap["entity_labels"] != nil {
-		// TODO: handle EntityLabels, map with entry type 'string'
+		entityLabelsModel := map[string]string{}
+		for key, value := range modelMap["entity_labels"].(map[string]interface{}) {
+			entityLabelsModel[key] = value.(string)
+		}
+		model.EntityLabels = entityLabelsModel
 	}
 	if modelMap["phantom_mode"] != nil {
 		model.PhantomMode = core.BoolPtr(modelMap["phantom_mode"].(bool))
@@ -3535,7 +3555,11 @@ func ResourceIbmLogsAlertDefinitionMapToAlertDefinitionPrototypeApisAlertDefinit
 		model.NotificationGroup = NotificationGroupModel
 	}
 	if modelMap["entity_labels"] != nil {
-		// TODO: handle EntityLabels, map with entry type 'string'
+		entityLabelsModel := map[string]string{}
+		for key, value := range modelMap["entity_labels"].(map[string]interface{}) {
+			entityLabelsModel[key] = value.(string)
+		}
+		model.EntityLabels = entityLabelsModel
 	}
 	if modelMap["phantom_mode"] != nil {
 		model.PhantomMode = core.BoolPtr(modelMap["phantom_mode"].(bool))
@@ -3595,7 +3619,11 @@ func ResourceIbmLogsAlertDefinitionMapToAlertDefinitionPrototypeApisAlertDefinit
 		model.NotificationGroup = NotificationGroupModel
 	}
 	if modelMap["entity_labels"] != nil {
-		// TODO: handle EntityLabels, map with entry type 'string'
+		entityLabelsModel := map[string]string{}
+		for key, value := range modelMap["entity_labels"].(map[string]interface{}) {
+			entityLabelsModel[key] = value.(string)
+		}
+		model.EntityLabels = entityLabelsModel
 	}
 	if modelMap["phantom_mode"] != nil {
 		model.PhantomMode = core.BoolPtr(modelMap["phantom_mode"].(bool))
@@ -3655,7 +3683,11 @@ func ResourceIbmLogsAlertDefinitionMapToAlertDefinitionPrototypeApisAlertDefinit
 		model.NotificationGroup = NotificationGroupModel
 	}
 	if modelMap["entity_labels"] != nil {
-		// TODO: handle EntityLabels, map with entry type 'string'
+		entityLabelsModel := map[string]string{}
+		for key, value := range modelMap["entity_labels"].(map[string]interface{}) {
+			entityLabelsModel[key] = value.(string)
+		}
+		model.EntityLabels = entityLabelsModel
 	}
 	if modelMap["phantom_mode"] != nil {
 		model.PhantomMode = core.BoolPtr(modelMap["phantom_mode"].(bool))
@@ -3715,7 +3747,11 @@ func ResourceIbmLogsAlertDefinitionMapToAlertDefinitionPrototypeApisAlertDefinit
 		model.NotificationGroup = NotificationGroupModel
 	}
 	if modelMap["entity_labels"] != nil {
-		// TODO: handle EntityLabels, map with entry type 'string'
+		entityLabelsModel := map[string]string{}
+		for key, value := range modelMap["entity_labels"].(map[string]interface{}) {
+			entityLabelsModel[key] = value.(string)
+		}
+		model.EntityLabels = entityLabelsModel
 	}
 	if modelMap["phantom_mode"] != nil {
 		model.PhantomMode = core.BoolPtr(modelMap["phantom_mode"].(bool))
@@ -3775,7 +3811,11 @@ func ResourceIbmLogsAlertDefinitionMapToAlertDefinitionPrototypeApisAlertDefinit
 		model.NotificationGroup = NotificationGroupModel
 	}
 	if modelMap["entity_labels"] != nil {
-		// TODO: handle EntityLabels, map with entry type 'string'
+		entityLabelsModel := map[string]string{}
+		for key, value := range modelMap["entity_labels"].(map[string]interface{}) {
+			entityLabelsModel[key] = value.(string)
+		}
+		model.EntityLabels = entityLabelsModel
 	}
 	if modelMap["phantom_mode"] != nil {
 		model.PhantomMode = core.BoolPtr(modelMap["phantom_mode"].(bool))
@@ -3835,7 +3875,11 @@ func ResourceIbmLogsAlertDefinitionMapToAlertDefinitionPrototypeApisAlertDefinit
 		model.NotificationGroup = NotificationGroupModel
 	}
 	if modelMap["entity_labels"] != nil {
-		// TODO: handle EntityLabels, map with entry type 'string'
+		entityLabelsModel := map[string]string{}
+		for key, value := range modelMap["entity_labels"].(map[string]interface{}) {
+			entityLabelsModel[key] = value.(string)
+		}
+		model.EntityLabels = entityLabelsModel
 	}
 	if modelMap["phantom_mode"] != nil {
 		model.PhantomMode = core.BoolPtr(modelMap["phantom_mode"].(bool))

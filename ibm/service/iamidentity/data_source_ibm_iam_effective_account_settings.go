@@ -417,6 +417,50 @@ func DataSourceIBMIamEffectiveAccountSettings() *schema.Resource {
 								},
 							},
 						},
+						"restrict_user_list_visibility": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Defines whether or not user visibility is access controlled. Valid values:  * RESTRICTED - users can view only specific types of users in the account, such as those the user has invited to the account, or descendants of those users based on the classic infrastructure hierarchy  * NOT_RESTRICTED - any user in the account can view other users from the Users page in IBM Cloud console.",
+						},
+						"restrict_user_domains": {
+							Type:     schema.TypeList,
+							Computed: true,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"account_sufficient": {
+										Type:     schema.TypeBool,
+										Computed: true,
+									},
+									"restrictions": &schema.Schema{
+										Type:        schema.TypeList,
+										Computed:    true,
+										Description: "Defines if account invitations are restricted to specified domains. To remove an entry for a realm_id, perform an update (PUT) request with only the realm_id set.",
+										Elem: &schema.Resource{
+											Schema: map[string]*schema.Schema{
+												"realm_id": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "The realm that the restrictions apply to.",
+												},
+												"invitation_email_allow_patterns": &schema.Schema{
+													Type:        schema.TypeList,
+													Computed:    true,
+													Description: "The list of allowed email patterns. Wildcard syntax is supported, '*' represents any sequence of zero or more characters in the string, except for '.' and '@'. The sequence ends if a '.' or '@' was found. '**' represents any sequence of zero or more characters in the string - without limit.",
+													Elem: &schema.Schema{
+														Type: schema.TypeString,
+													},
+												},
+												"restrict_invitation": &schema.Schema{
+													Type:        schema.TypeBool,
+													Computed:    true,
+													Description: "When true invites will only be possible to the domain patterns provided, otherwise invites are unrestricted.",
+												},
+											},
+										},
+									},
+								},
+							},
+						},
 					},
 				},
 			},
@@ -536,7 +580,7 @@ func DataSourceIBMIamEffectiveAccountSettingsAccountSettingsEffectiveSectionToMa
 
 func DataSourceIBMIamEffectiveAccountSettingsAccountSettingsAccountSectionToMap(model *iamidentityv1.AccountSettingsResponse) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-
+	//modelMap["account_id"] = "testString"
 	modelMap["entity_tag"] = *model.EntityTag
 	if model.History != nil {
 		var history []map[string]interface{}
@@ -598,15 +642,11 @@ func DataSourceIBMIamEffectiveAccountSettingsAccountSettingsAssignedTemplatesSec
 		modelMap["restrict_user_list_visibility"] = *model.RestrictUserListVisibility
 	}
 	if model.RestrictUserDomains != nil {
-		var restrictUserDomains []map[string]interface{}
-		for _, restrictUserDomainsItem := range model.RestrictUserDomains {
-			restrictUserDomainsItemMap, err := AccountSettingsUserDomainRestrictionToMap(&restrictUserDomainsItem)
-			if err != nil {
-				return modelMap, err
-			}
-			restrictUserDomains = append(restrictUserDomains, restrictUserDomainsItemMap)
+		restrictUserDomainsMap, err := DataSourceIBMEffectiveAccountSettingsAssignedTemplatesAccountSettingsRestrictUserDomainsToMap(model.RestrictUserDomains)
+		if err != nil {
+			return modelMap, err
 		}
-		modelMap["restrict_user_domains"] = restrictUserDomains
+		modelMap["restrict_user_domains"] = []map[string]interface{}{restrictUserDomainsMap}
 	}
 	if model.AllowedIPAddresses != nil {
 		modelMap["allowed_ip_addresses"] = *model.AllowedIPAddresses
@@ -639,6 +679,37 @@ func DataSourceIBMIamEffectiveAccountSettingsAccountSettingsAssignedTemplatesSec
 			userMfa = append(userMfa, userMfaItemMap)
 		}
 		modelMap["user_mfa"] = userMfa
+	}
+	return modelMap, nil
+}
+
+func DataSourceIBMEffectiveAccountSettingsAssignedTemplatesAccountSettingsRestrictUserDomainsToMap(model *iamidentityv1.AssignedTemplatesAccountSettingsRestrictUserDomains) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.AccountSufficient != nil {
+		modelMap["account_sufficient"] = *model.AccountSufficient
+	}
+	if model.Restrictions != nil {
+		restrictions := []map[string]interface{}{}
+		for _, restrictionsItem := range model.Restrictions {
+			restrictionsItemMap, err := DataSourceIBMEffectiveAccountSettingsAccountSettingsUserDomainRestrictionToMap(&restrictionsItem) // #nosec G601
+			if err != nil {
+				return modelMap, err
+			}
+			restrictions = append(restrictions, restrictionsItemMap)
+		}
+		modelMap["restrictions"] = restrictions
+	}
+	return modelMap, nil
+}
+
+func DataSourceIBMEffectiveAccountSettingsAccountSettingsUserDomainRestrictionToMap(model *iamidentityv1.AccountSettingsUserDomainRestriction) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	modelMap["realm_id"] = *model.RealmID
+	if model.InvitationEmailAllowPatterns != nil {
+		modelMap["invitation_email_allow_patterns"] = model.InvitationEmailAllowPatterns
+	}
+	if model.RestrictInvitation != nil {
+		modelMap["restrict_invitation"] = *model.RestrictInvitation
 	}
 	return modelMap, nil
 }

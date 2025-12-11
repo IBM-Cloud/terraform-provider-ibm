@@ -149,16 +149,19 @@ In addition to all argument reference list, you can access the following attribu
 
 
 ## Import
-The `ibm_is_lb` resource can be imported by using the load balancer ID. 
 
-**Syntax**
+In Terraform v1.5.0 and later, use an [`import` block](https://developer.hashicorp.com/terraform/language/import) to import the `ibm_is_lb` resource by using `id`.
+The `id` property can be formed from `load balancer ID`. For example:
 
+```terraform
+import {
+  to = ibm_is_lb.example
+  id = "<lb_ID>"
+}
 ```
-$ terraform import ibm_is_lb.example <lb_ID>
-```
 
-**Example**
+Using `terraform import`. For example:
 
+```console
+% terraform import ibm_is_lb.example <lb_ID>
 ```
-$ terraform import ibm_is_lb.example d7bec597-4726-451f-8a63-e62e6f133332c
-``` 

@@ -54,13 +54,15 @@ resource "ibm_project_config" "project_config_instance" {
 | modified_at | A date and time value in the format YYYY-MM-DDTHH:mm:ssZ or YYYY-MM-DDTHH:mm:ss.sssZ to match the date and time format as specified by RFC 3339. |
 | outputs | The outputs of a Schematics template property. |
 | references | The resolved references that are used by the configuration. |
-| state | The state of the configuration. |
 | state_code | Computed state code clarifying the prerequisites for validation for the configuration. |
 | config_error | The error from config actions. |
 | href | A Url. |
+| container_state | The aggregate state from all deployabe architectures that are included in this configuration. |
+| container_state_code | Computed state code clarifying the prerequisites for validation for the configuration. |
 | is_draft | The flag that indicates whether the version of the configuration is draft, or active. |
 | last_saved_at | A date and time value in the format YYYY-MM-DDTHH:mm:ssZ or YYYY-MM-DDTHH:mm:ss.sssZ to match the date and time format as specified by RFC 3339. |
 | project | The project that is referenced by this resource. |
+| state | The state of the configuration. |
 | update_available | The flag that indicates whether a configuration update is available. |
 | template_id | The stack definition identifier. |
 | member_of | The stack config parent of which this configuration is a member of. |
@@ -159,14 +161,16 @@ data "ibm_project_config" "project_config_instance" {
 | modified_at | A date and time value in the format YYYY-MM-DDTHH:mm:ssZ or YYYY-MM-DDTHH:mm:ss.sssZ to match the date and time format as specified by RFC 3339. |
 | outputs | The outputs of a Schematics template property. |
 | references | The resolved references that are used by the configuration. |
-| state | The state of the configuration. |
 | state_code | Computed state code clarifying the prerequisites for validation for the configuration. |
 | config_error | The error from config actions. |
 | href | A Url. |
+| container_state | The aggregate state from all deployabe architectures that are included in this configuration. |
+| container_state_code | Computed state code clarifying the prerequisites for validation for the configuration. |
 | is_draft | The flag that indicates whether the version of the configuration is draft, or active. |
 | last_saved_at | A date and time value in the format YYYY-MM-DDTHH:mm:ssZ or YYYY-MM-DDTHH:mm:ss.sssZ to match the date and time format as specified by RFC 3339. |
 | project | The project that is referenced by this resource. |
 | schematics | A Schematics workspace that is associated to a project configuration, with scripts. |
+| state | The state of the configuration. |
 | update_available | The flag that indicates whether a configuration update is available. |
 | template_id | The stack definition identifier. |
 | member_of | The stack config parent of which this configuration is a member of. |

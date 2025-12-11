@@ -68,16 +68,18 @@ In addition to all argument references listed, you can access the following attr
 
 ## Import
 
-You can import the `ibm_is_vpn_server_route` resource by using `id`.
-The `id` property can be formed from `vpn_server`, and `vpn_route` in the following format:
-- `vpn_server`: A string. The VPN server identifier.
-- `vpn_route`: A string. The VPN route identifier.
+In Terraform v1.5.0 and later, use an [`import` block](https://developer.hashicorp.com/terraform/language/import) to import the `ibm_is_vpn_server_route` resource by using `id`.
+The `id` property can be formed from `vpn_server_id`, and `vpn_route_id`. For example:
 
-```
- r134-0b5b3bed-8c95-4ded-81bf-913bf8ec5fa9/r134-299ed4f0-b279-4db3-8dfe-eff69a9fb66a
+```terraform
+import {
+  to = ibm_is_vpn_server_route.is_vpn_server_route
+  id = "<vpn_server_id>/<vpn_route_id>"
+}
 ```
 
-# Syntax
-```
-$ terraform import ibm_is_vpn_server_route.is_vpn_server_route r134-0b5b3bed-8c95-4ded-81bf-913bf8ec5fa9/r134-299ed4f0-b279-4db3-8dfe-eff69a9fb66a
+Using `terraform import`. For example:
+
+```console
+% terraform import ibm_is_vpn_server_route.is_vpn_server_route <vpn_server_id>/<vpn_route_id>
 ```

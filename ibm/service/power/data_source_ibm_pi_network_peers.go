@@ -5,15 +5,17 @@ package power
 
 import (
 	"context"
-
-	"github.com/hashicorp/go-uuid"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
+	"fmt"
+	"log"
 
 	"github.com/IBM-Cloud/power-go-client/clients/instance"
 	"github.com/IBM-Cloud/power-go-client/power/models"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
+	"github.com/hashicorp/go-uuid"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
 
 func DataSourceIBMPINetworkPeers() *schema.Resource {
@@ -125,22 +127,26 @@ func DataSourceIBMPINetworkPeers() *schema.Resource {
 	}
 }
 
-func dataSourceIBMPINetworkPeersRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataSourceIBMPINetworkPeersRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	sess, err := meta.(conns.ClientSession).IBMPISession()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("IBMPISession failed: %s", err.Error()), "(Data) ibm_pi_network_peers", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	cloudInstanceID := d.Get(Arg_CloudInstanceID).(string)
 
 	networkC := instance.NewIBMPINetworkPeerClient(ctx, sess, cloudInstanceID)
 	networkdata, err := networkC.GetNetworkPeers()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetNetworkPeers failed: %s", err.Error()), "(Data) ibm_pi_network_peers", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	var clientgenU, _ = uuid.GenerateUUID()
 	d.SetId(clientgenU)
 
-	networkPeers := []map[string]interface{}{}
+	networkPeers := []map[string]any{}
 	if networkdata.NetworkPeers != nil {
 		for _, np := range networkdata.NetworkPeers {
 			npMap := dataSourceIBMPINetworkPeersNetworkPeerToMap(np)
@@ -153,15 +159,15 @@ func dataSourceIBMPINetworkPeersRead(ctx context.Context, d *schema.ResourceData
 	return nil
 }
 
-func dataSourceIBMPINetworkPeersNetworkPeerToMap(np *models.NetworkPeer) map[string]interface{} {
-	npMap := make(map[string]interface{})
+func dataSourceIBMPINetworkPeersNetworkPeerToMap(np *models.NetworkPeer) map[string]any {
+	npMap := make(map[string]any)
 	npMap[Attr_CreationDate] = np.CreationDate
 	npMap[Attr_CustomerASN] = np.CustomerASN
 	npMap[Attr_CustomerCIDR] = np.CustomerCidr
 	npMap[Attr_DefaultExportRouteFilter] = np.DefaultExportRouteFilter
 	npMap[Attr_DefaultImportRouteFilter] = np.DefaultImportRouteFilter
 	npMap[Attr_Error] = np.Error
-	exportRouteFilters := []map[string]interface{}{}
+	exportRouteFilters := []map[string]any{}
 	if len(np.ExportRouteFilters) > 0 {
 		for _, erf := range np.ExportRouteFilters {
 			exportRouteFilter := dataSourceIBMPINetworkPeerRouteFilterToMap(erf)
@@ -172,7 +178,7 @@ func dataSourceIBMPINetworkPeersNetworkPeerToMap(np *models.NetworkPeer) map[str
 	npMap[Attr_IBMASN] = np.IbmASN
 	npMap[Attr_IBMCIDR] = np.IbmCidr
 	npMap[Attr_ID] = np.ID
-	importRouteFilters := []map[string]interface{}{}
+	importRouteFilters := []map[string]any{}
 	if len(np.ImportRouteFilters) > 0 {
 		for _, irf := range np.ImportRouteFilters {
 			importRouteFilter := dataSourceIBMPINetworkPeerRouteFilterToMap(irf)
@@ -194,8 +200,8 @@ func dataSourceIBMPINetworkPeersNetworkPeerToMap(np *models.NetworkPeer) map[str
 	return npMap
 }
 
-func dataSourceIBMPINetworkPeerRouteFilterToMap(rf *models.RouteFilter) map[string]interface{} {
-	rfMap := make(map[string]interface{})
+func dataSourceIBMPINetworkPeerRouteFilterToMap(rf *models.RouteFilter) map[string]any {
+	rfMap := make(map[string]any)
 
 	if rf.Action != nil {
 		rfMap[Attr_Action] = rf.Action

@@ -78,7 +78,7 @@ func DataSourceIBMPICatalogImages() *schema.Resource {
 						},
 						Attr_Endianness: {
 							Computed:    true,
-							Description: "The Endianness order.",
+							Description: "The endianness order.",
 							Type:        schema.TypeString,
 						},
 						Attr_Href: {
@@ -114,6 +114,16 @@ func DataSourceIBMPICatalogImages() *schema.Resource {
 						Attr_OperatingSystem: {
 							Computed:    true,
 							Description: "Operating System.",
+							Type:        schema.TypeString,
+						},
+						Attr_Shared: {
+							Computed:    true,
+							Description: "Indicates whether the image is shared.",
+							Type:        schema.TypeBool,
+						},
+						Attr_SourceChecksum: {
+							Computed:    true,
+							Description: "Checksum of the image.",
 							Type:        schema.TypeString,
 						},
 						Attr_State: {
@@ -201,6 +211,12 @@ func dataSourceIBMPICatalogImagesRead(ctx context.Context, d *schema.ResourceDat
 			}
 			if s.OperatingSystem != "" {
 				image[Attr_OperatingSystem] = s.OperatingSystem
+			}
+			if s.Shared != nil {
+				image[Attr_Shared] = *s.Shared
+			}
+			if s.SourceChecksum != "" {
+				image[Attr_SourceChecksum] = s.SourceChecksum
 			}
 		}
 		if i.State != nil {

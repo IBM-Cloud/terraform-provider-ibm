@@ -27,11 +27,20 @@ func DataSourceIBMPIInstance() *schema.Resource {
 				Type:         schema.TypeString,
 				ValidateFunc: validation.NoZeroValues,
 			},
+			Arg_InstanceID: {
+				AtLeastOneOf:  []string{Arg_InstanceID, Arg_InstanceName},
+				ConflictsWith: []string{Arg_InstanceName},
+				Description:   "The ID of the PVM instance.",
+				Optional:      true,
+				Type:          schema.TypeString,
+			},
 			Arg_InstanceName: {
-				Description:  "The unique identifier or name of the instance.",
-				Required:     true,
-				Type:         schema.TypeString,
-				ValidateFunc: validation.NoZeroValues,
+				AtLeastOneOf:  []string{Arg_InstanceID, Arg_InstanceName},
+				ConflictsWith: []string{Arg_InstanceID},
+				Deprecated:    "The pi_instance_name field is deprecated. Please use pi_instance_id instead",
+				Description:   "The name of the PVM instance.",
+				Optional:      true,
+				Type:          schema.TypeString,
 			},
 
 			// Attributes
@@ -288,10 +297,10 @@ func DataSourceIBMPIInstance() *schema.Resource {
 				Elem:        &schema.Schema{Type: schema.TypeString},
 				Type:        schema.TypeList,
 			},
+			Attr_VPMEMVolumes: vpmemVolumeSchema(),
 		},
 	}
 }
-
 func dataSourceIBMPIInstancesRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	sess, err := meta.(conns.ClientSession).IBMPISession()
 	if err != nil {
@@ -301,9 +310,15 @@ func dataSourceIBMPIInstancesRead(ctx context.Context, d *schema.ResourceData, m
 	}
 
 	cloudInstanceID := d.Get(Arg_CloudInstanceID).(string)
+	var instanceID string
+	if v, ok := d.GetOk(Arg_InstanceID); ok {
+		instanceID = v.(string)
+	} else if v, ok := d.GetOk(Arg_InstanceName); ok {
+		instanceID = v.(string)
+	}
 
 	powerC := instance.NewIBMPIInstanceClient(ctx, sess, cloudInstanceID)
-	powervmdata, err := powerC.Get(d.Get(Arg_InstanceName).(string))
+	powervmdata, err := powerC.Get(instanceID)
 	if err != nil {
 		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Get failed: %s", err.Error()), "(Data) ibm_pi_instance", "read")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
@@ -372,6 +387,13 @@ func dataSourceIBMPIInstancesRead(ctx context.Context, d *schema.ResourceData, m
 	if powervmdata.VirtualSerialNumber != nil {
 		d.Set(Attr_VirtualSerialNumber, flattenVirtualSerialNumberToList(powervmdata.VirtualSerialNumber))
 	}
-
+	vpmemVolumes := []map[string]any{}
+	if len(powervmdata.VpmemVolumes) > 0 {
+		for _, volume := range powervmdata.VpmemVolumes {
+			vpmemVol := dataSourceIBMPIVPMEMVolumeToMap(volume, meta)
+			vpmemVolumes = append(vpmemVolumes, vpmemVol)
+		}
+	}
+	d.Set(Attr_VPMEMVolumes, vpmemVolumes)
 	return nil
 }
