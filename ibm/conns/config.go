@@ -257,6 +257,7 @@ type ClientSession interface {
 	ResourceControllerAPIV2() (controllerv2.ResourceControllerAPIV2, error)
 	BackupRecoveryV1() (*backuprecoveryv1.BackupRecoveryV1, error)
 	BackupRecoveryV1Connector() (*backuprecoveryv1.BackupRecoveryV1Connector, error)
+	BackupRecoveryManagerV1() (*backuprecoveryv1.BackupRecoveryManagementSreApiV1, error)
 	IBMCloudLogsRoutingV0() (*ibmcloudlogsroutingv0.IBMCloudLogsRoutingV0, error)
 	SoftLayerSession() *slsession.Session
 	IBMPISession() (*ibmpisession.IBMPISession, error)
@@ -595,6 +596,9 @@ type clientSession struct {
 
 	backupRecoveryConnectorClient    *backuprecoveryv1.BackupRecoveryV1Connector
 	backupRecoveryConnectorClientErr error
+
+	backupRecoveryManagerClient    *backuprecoveryv1.BackupRecoveryManagementSreApiV1
+	backupRecoveryManagerClientErr error
 
 	secretsManagerClient    *secretsmanagerv2.SecretsManagerV2
 	secretsManagerClientErr error
@@ -1210,6 +1214,10 @@ func (session clientSession) BackupRecoveryV1Connector() (*backuprecoveryv1.Back
 	return session.backupRecoveryConnectorClient, session.backupRecoveryConnectorClientErr
 }
 
+func (session clientSession) BackupRecoveryManagerV1() (*backuprecoveryv1.BackupRecoveryManagementSreApiV1, error) {
+	return session.backupRecoveryManagerClient, session.backupRecoveryManagerClientErr
+}
+
 // IBM Cloud Secrets Manager V2 Basic API
 func (session clientSession) SecretsManagerV2() (*secretsmanagerv2.SecretsManagerV2, error) {
 	return session.secretsManagerClient, session.secretsManagerClientErr
@@ -1408,6 +1416,8 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.resourceControllerErr = errEmptyBluemixCredentials
 		session.backupRecoveryClientErr = errEmptyBluemixCredentials
 		session.backupRecoveryConnectorClientErr = errEmptyBluemixCredentials
+		session.backupRecoveryManagerClientErr = errEmptyBluemixCredentials
+		session.backupRecoveryManagerClientErr = errEmptyBluemixCredentials
 		session.catalogManagementClientErr = errEmptyBluemixCredentials
 		session.partnerCenterSellClientErr = errEmptyBluemixCredentials
 		session.ibmpiConfigErr = errEmptyBluemixCredentials
@@ -1662,10 +1672,12 @@ func (c *Config) ClientSession() (interface{}, error) {
 	// Construct the service options.
 	var backupRecoveryURL string = "https://default.backup-recovery.cloud.ibm.com/v2"
 	var backupRecoveryConnectorURL string
+	var backupRecoveryManagerURL string = "https://manager.backup-recovery.cloud.ibm.com/v2"
 
 	if fileMap != nil && c.Visibility != "public-and-private" {
 		backupRecoveryURL = fileFallBack(fileMap, c.Visibility, "IBMCLOUD_BACKUP_RECOVERY_ENDPOINT", c.Region, backupRecoveryURL)
 		backupRecoveryConnectorURL = fileFallBack(fileMap, c.Visibility, "IBMCLOUD_BACKUP_RECOVERY_CONNECTOR_ENDPOINT", c.Region, backupRecoveryConnectorURL)
+		backupRecoveryManagerURL = fileFallBack(fileMap, c.Visibility, "IBMCLOUD_BACKUP_RECOVERY_MANAGER_ENDPOINT", c.Region, backupRecoveryConnectorURL)
 	}
 
 	backupRecoveryClientOptions := &backuprecoveryv1.BackupRecoveryV1Options{
@@ -1706,6 +1718,27 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.backupRecoveryConnectorClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
 		// Add custom header for analytics
 		session.backupRecoveryConnectorClient.SetDefaultHeaders(gohttp.Header{
+			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
+		})
+	}
+
+	var backupRecoveryManagerClientAuthenticator core.Authenticator
+	backupRecoveryManagerClientAuthenticator = &core.NoAuthAuthenticator{}
+
+	backupRecoveryManagerClientOptions := &backuprecoveryv1.BackupRecoveryManagementSreApiV1Options{
+		Authenticator: backupRecoveryManagerClientAuthenticator,
+		URL:           EnvFallBack([]string{"IBMCLOUD_BACKUP_RECOVERY_MANAGER_ENDPOINT"}, backupRecoveryManagerURL),
+	}
+	// Construct the service client.
+	session.backupRecoveryManagerClient, err = backuprecoveryv1.NewBackupRecoveryManagementSreApiV1(backupRecoveryManagerClientOptions)
+	if err != nil {
+		session.backupRecoveryManagerClientErr = fmt.Errorf("Error occurred while configuring IBM Backup recovery API service: %q", err)
+	}
+	if session.backupRecoveryManagerClient != nil && session.backupRecoveryManagerClient.Service != nil {
+		// Enable retries for API calls
+		session.backupRecoveryManagerClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+		// Add custom header for analytics
+		session.backupRecoveryManagerClient.SetDefaultHeaders(gohttp.Header{
 			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
 		})
 	}
