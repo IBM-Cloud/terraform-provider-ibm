@@ -30,6 +30,135 @@ resource "ibm_backup_recovery_protection_group" "backup_recovery_protection_grou
 		raise_object_level_failure_alert_after_each_attempt = true
   }
   environment = "kPhysical"
+    kubernetes_params {
+		enable_indexing = true
+		exclude_label_ids = [ [ 1 ] ]
+		exclude_object_ids = [ 1 ]
+		exclude_params {
+			label_combination_method = "AND"
+			label_vector {
+				key = "key"
+				value = "value"
+			}
+			objects = [ 1 ]
+			selected_resources {
+				api_group = "api_group"
+				is_cluster_scoped = true
+				kind = "kind"
+				name = "name"
+				resource_list {
+					entity_id = 1
+					name = "name"
+				}
+				version = "version"
+			}
+		}
+		include_params {
+			label_combination_method = "AND"
+			label_vector {
+				key = "key"
+				value = "value"
+			}
+			objects = [ 1 ]
+			selected_resources {
+				api_group = "api_group"
+				is_cluster_scoped = true
+				kind = "kind"
+				name = "name"
+				resource_list {
+					entity_id = 1
+					name = "name"
+				}
+				version = "version"
+			}
+		}
+		label_ids = [ [ 1 ] ]
+		leverage_csi_snapshot = true
+		non_snapshot_backup = true
+		objects {
+			backup_only_pvc = true
+			exclude_params {
+				label_combination_method = "AND"
+				label_vector {
+					key = "key"
+					value = "value"
+				}
+				objects = [ 1 ]
+				selected_resources {
+					api_group = "api_group"
+					is_cluster_scoped = true
+					kind = "kind"
+					name = "name"
+					resource_list {
+						entity_id = 1
+						name = "name"
+					}
+					version = "version"
+				}
+			}
+			exclude_pvcs {
+				id = 1
+				name = "name"
+			}
+			excluded_resources = [ "excludedResources" ]
+			fail_backup_on_hook_failure = true
+			id = 1
+			include_params {
+				label_combination_method = "AND"
+				label_vector {
+					key = "key"
+					value = "value"
+				}
+				objects = [ 1 ]
+				selected_resources {
+					api_group = "api_group"
+					is_cluster_scoped = true
+					kind = "kind"
+					name = "name"
+					resource_list {
+						entity_id = 1
+						name = "name"
+					}
+					version = "version"
+				}
+			}
+			include_pvcs {
+				id = 1
+				name = "name"
+			}
+			included_resources = [ "includedResources" ]
+			name = "name"
+			quiesce_groups {
+				quiesce_mode = "kQuiesceTogether"
+				quiesce_rules {
+					pod_selector_labels {
+						key = "key"
+						value = "value"
+					}
+					post_snapshot_hooks {
+						commands = [ "commands" ]
+						container = "container"
+						fail_on_error = true
+						timeout = 1
+					}
+					pre_snapshot_hooks {
+						commands = [ "commands" ]
+						container = "container"
+						fail_on_error = true
+						timeout = 1
+					}
+				}
+			}
+		}
+		source_id = 1
+		source_name = "source_name"
+		vlan_params {
+			disable_vlan = true
+			interface_name = "interface_name"
+			vlan_id = 1
+		}
+		volume_backup_failure = true
+  }
   mssql_params {
 		file_protection_type_params {
 			aag_backup_preference_type = "kPrimaryReplicaOnly"
@@ -178,74 +307,7 @@ resource "ibm_backup_recovery_protection_group" "backup_recovery_protection_grou
 		}
   }
   name = "name"
-    kubernetes_params {
-		enable_indexing = true
-		exclude_label_ids = [ [ 1 ] ]
-		exclude_object_ids = [ 1 ]
-		exclude_params {
-			label_combination_method = "AND"
-			label_vector {
-				key = "key"
-				value = "value"
-			}
-			objects = [ 1 ]
-		}
-		include_params {
-			label_combination_method = "AND"
-			label_vector {
-				key = "key"
-				value = "value"
-			}
-			objects = [ 1 ]
-		}
-		label_ids = [ [ 1 ] ]
-		leverage_csi_snapshot = true
-		non_snapshot_backup = true
-		objects {
-			backup_only_pvc = true
-			exclude_pvcs {
-				id = 1
-				name = "name"
-			}
-			excluded_resources = [ "excludedResources" ]
-			id = 1
-			include_pvcs {
-				id = 1
-				name = "name"
-			}
-			included_resources = [ "includedResources" ]
-			name = "name"
-			quiesce_groups {
-				quiesce_mode = "kQuiesceTogether"
-				quiesce_rules {
-					pod_selector_labels {
-						key = "key"
-						value = "value"
-					}
-					post_snapshot_hooks {
-						commands = [ "commands" ]
-						container = "container"
-						fail_on_error = true
-						timeout = 1
-					}
-					pre_snapshot_hooks {
-						commands = [ "commands" ]
-						container = "container"
-						fail_on_error = true
-						timeout = 1
-					}
-				}
-			}
-		}
-		source_id = 1
-		source_name = "source_name"
-		vlan_params {
-			disable_vlan = true
-			interface_name = "interface_name"
-			vlan_id = 1
-		}
-		volume_backup_failure = true
-  }
+    
   physical_params {
 		protection_type = "kFile"
 		volume_protection_type_params {
@@ -376,7 +438,7 @@ Nested schema for **alert_policy**:
 * `description` - (Optional, String) Specifies a description of the Protection Group.
 * `end_time_usecs` - (Optional, Integer) Specifies the end time in micro seconds for this Protection Group. If this is not specified, the Protection Group won't be ended.
 * `environment` - (Required, String) Specifies the environment of the Protection Group.
-  * Constraints: Allowable values are: `kPhysical`, `kSQL`.
+  * Constraints: Allowable values are: `kPhysical`, `kSQL`, `kKubernetes`.
 * `is_paused` - (Optional, Boolean) Specifies if the the Protection Group is paused. New runs are not scheduled for the paused Protection Groups. Active run if any is not impacted.
 * `kubernetes_params` - (Optional, List) Specifies the parameters which are related to Kubernetes Protection Groups.
 Nested schema for **kubernetes_params**:
@@ -392,6 +454,17 @@ Nested schema for **kubernetes_params**:
 			* `key` - (Computed, String) The key of the label, used to identify the label.
 			* `value` - (Computed, String) The value associated with the label key.
 		* `objects` - (Optional, List) Array of objects that are to be included.
+		* `selected_resources` - (Optional, List) Array of Object which has group, version, kind, etc. as its fields to identify a resource type and a resource list which is essentially the list of instances of that resource type.
+		Nested schema for **selected_resources**:
+			* `api_group` - (Optional, String) API group name of the resource (excluding the version). (Eg. apps, kubevirt.io).
+			* `is_cluster_scoped` - (Optional, Boolean) Boolean indicating whether the resource is cluster scoped or not. This field is ignored for resource selection during recovery.
+			* `kind` - (Optional, String) The kind of the resource type. (Eg. VirtualMachine).
+			* `name` - (Optional, String) The name of the resource. This field is ignored for resource selection during recovery.
+			* `resource_list` - (Optional, List) Array of the instances of the resource with group, version and kind mentioned above.
+			Nested schema for **resource_list**:
+				* `entity_id` - (Optional, Integer) The id of the specific entity to be backed up or restored.
+				* `name` - (Optional, String) The name of the specific entity/resource to be backed up or restored.
+			* `version` - (Optional, String) The version under the API group for the resource. This field is ignored for resource selection during recovery.
 	* `include_params` - (Optional, List) Specifies the parameters to in/exclude objects (e.g.: volumes). An object satisfying any of these criteria will be included by this filter.
 	Nested schema for **include_params**:
 		* `label_combination_method` - (Optional, String) Whether to include all the labels or any of them while performing inclusion/exclusion of objects.
@@ -401,18 +474,70 @@ Nested schema for **kubernetes_params**:
 			* `key` - (Computed, String) The key of the label, used to identify the label.
 			* `value` - (Computed, String) The value associated with the label key.
 		* `objects` - (Optional, List) Array of objects that are to be included.
+		* `selected_resources` - (Optional, List) Array of Object which has group, version, kind, etc. as its fields to identify a resource type and a resource list which is essentially the list of instances of that resource type.
+		Nested schema for **selected_resources**:
+			* `api_group` - (Optional, String) API group name of the resource (excluding the version). (Eg. apps, kubevirt.io).
+			* `is_cluster_scoped` - (Optional, Boolean) Boolean indicating whether the resource is cluster scoped or not. This field is ignored for resource selection during recovery.
+			* `kind` - (Optional, String) The kind of the resource type. (Eg. VirtualMachine).
+			* `name` - (Optional, String) The name of the resource. This field is ignored for resource selection during recovery.
+			* `resource_list` - (Optional, List) Array of the instances of the resource with group, version and kind mentioned above.
+			Nested schema for **resource_list**:
+				* `entity_id` - (Optional, Integer) The id of the specific entity to be backed up or restored.
+				* `name` - (Optional, String) The name of the specific entity/resource to be backed up or restored.
+			* `version` - (Optional, String) The version under the API group for the resource. This field is ignored for resource selection during recovery.
 	* `label_ids` - (Optional, List) Array of array of label IDs that specify labels to protect. Optionally specify a list of labels to protect by listing protection source ids of labels in this two dimensional array. Using this two dimensional array of label IDs, the cluster generates a list of namespaces to protect, which are derived from intersections of the inner arrays and union of the outer array.
 	* `leverage_csi_snapshot` - (Optional, Boolean) Specifies if CSI snapshots should be used for backup of namespaces.
 	* `non_snapshot_backup` - (Optional, Boolean) Specifies if snapshot backup fails, non-snapshot backup will be proceeded.
 	* `objects` - (Optional, List) Specifies the objects included in the Protection Group.
 	Nested schema for **objects**:
 		* `backup_only_pvc` - (Optional, Boolean) Specifies whether to backup pvc and related resources only.
+		* `exclude_params` - (Optional, List) Specifies the parameters to in/exclude objects (e.g.: volumes). An object satisfying any of these criteria will be included by this filter.
+		Nested schema for **exclude_params**:
+			* `label_combination_method` - (Optional, String) Whether to include all the labels or any of them while performing inclusion/exclusion of objects.
+			  * Constraints: Allowable values are: `AND`, `OR`.
+			* `label_vector` - (Optional, List) Array of Object to represent Label that Specify Objects (e.g.: Persistent Volumes and Persistent Volume Claims) to Include or Exclude.It will be a two-dimensional array, where each inner array will consist of a key and value representing labels. Using this two dimensional array of Labels, the Cluster generates a list of items to include in the filter, which are derived from intersections or the union of these labels, as decided by operation parameter.
+			Nested schema for **label_vector**:
+				* `key` - (Computed, String) The key of the label, used to identify the label.
+				* `value` - (Computed, String) The value associated with the label key.
+			* `objects` - (Optional, List) Array of objects that are to be included.
+			* `selected_resources` - (Optional, List) Array of Object which has group, version, kind, etc. as its fields to identify a resource type and a resource list which is essentially the list of instances of that resource type.
+			Nested schema for **selected_resources**:
+				* `api_group` - (Optional, String) API group name of the resource (excluding the version). (Eg. apps, kubevirt.io).
+				* `is_cluster_scoped` - (Optional, Boolean) Boolean indicating whether the resource is cluster scoped or not. This field is ignored for resource selection during recovery.
+				* `kind` - (Optional, String) The kind of the resource type. (Eg. VirtualMachine).
+				* `name` - (Optional, String) The name of the resource. This field is ignored for resource selection during recovery.
+				* `resource_list` - (Optional, List) Array of the instances of the resource with group, version and kind mentioned above.
+				Nested schema for **resource_list**:
+					* `entity_id` - (Optional, Integer) The id of the specific entity to be backed up or restored.
+					* `name` - (Optional, String) The name of the specific entity/resource to be backed up or restored.
+				* `version` - (Optional, String) The version under the API group for the resource. This field is ignored for resource selection during recovery.
 		* `exclude_pvcs` - (Optional, List) Specifies a list of pvcs to exclude from being protected. This is only applicable to kubernetes.
 		Nested schema for **exclude_pvcs**:
 			* `id` - (Computed, Integer) Specifies the id of the pvc.
 			* `name` - (Computed, String) Name of the pvc.
 		* `excluded_resources` - (Optional, List) Specifies the resources to exclude during backup.
+		* `fail_backup_on_hook_failure` - (Optional, Boolean) If true, fail backups when quiesce hook executions fail.
 		* `id` - (Required, Integer) Specifies the id of the object.
+		* `include_params` - (Optional, List) Specifies the parameters to in/exclude objects (e.g.: volumes). An object satisfying any of these criteria will be included by this filter.
+		Nested schema for **include_params**:
+			* `label_combination_method` - (Optional, String) Whether to include all the labels or any of them while performing inclusion/exclusion of objects.
+			  * Constraints: Allowable values are: `AND`, `OR`.
+			* `label_vector` - (Optional, List) Array of Object to represent Label that Specify Objects (e.g.: Persistent Volumes and Persistent Volume Claims) to Include or Exclude.It will be a two-dimensional array, where each inner array will consist of a key and value representing labels. Using this two dimensional array of Labels, the Cluster generates a list of items to include in the filter, which are derived from intersections or the union of these labels, as decided by operation parameter.
+			Nested schema for **label_vector**:
+				* `key` - (Computed, String) The key of the label, used to identify the label.
+				* `value` - (Computed, String) The value associated with the label key.
+			* `objects` - (Optional, List) Array of objects that are to be included.
+			* `selected_resources` - (Optional, List) Array of Object which has group, version, kind, etc. as its fields to identify a resource type and a resource list which is essentially the list of instances of that resource type.
+			Nested schema for **selected_resources**:
+				* `api_group` - (Optional, String) API group name of the resource (excluding the version). (Eg. apps, kubevirt.io).
+				* `is_cluster_scoped` - (Optional, Boolean) Boolean indicating whether the resource is cluster scoped or not. This field is ignored for resource selection during recovery.
+				* `kind` - (Optional, String) The kind of the resource type. (Eg. VirtualMachine).
+				* `name` - (Optional, String) The name of the resource. This field is ignored for resource selection during recovery.
+				* `resource_list` - (Optional, List) Array of the instances of the resource with group, version and kind mentioned above.
+				Nested schema for **resource_list**:
+					* `entity_id` - (Optional, Integer) The id of the specific entity to be backed up or restored.
+					* `name` - (Optional, String) The name of the specific entity/resource to be backed up or restored.
+				* `version` - (Optional, String) The version under the API group for the resource. This field is ignored for resource selection during recovery.
 		* `include_pvcs` - (Optional, List) Specifies a list of Pvcs to include in the protection. This is only applicable to kubernetes.
 		Nested schema for **include_pvcs**:
 			* `id` - (Computed, Integer) Specifies the id of the pvc.

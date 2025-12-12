@@ -4807,6 +4807,59 @@ func DataSourceIbmBackupRecoveryProtectionGroups() *schema.Resource {
 														Type: schema.TypeInt,
 													},
 												},
+												"selected_resources": &schema.Schema{
+													Type:        schema.TypeList,
+													Computed:    true,
+													Description: "Array of Object which has group, version, kind, etc. as its fields to identify a resource type and a resource list which is essentially the list of instances of that resource type.",
+													Elem: &schema.Resource{
+														Schema: map[string]*schema.Schema{
+															"api_group": &schema.Schema{
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "API group name of the resource (excluding the version). (Eg. apps, kubevirt.io).",
+															},
+															"is_cluster_scoped": &schema.Schema{
+																Type:        schema.TypeBool,
+																Computed:    true,
+																Description: "Boolean indicating whether the resource is cluster scoped or not. This field is ignored for resource selection during recovery.",
+															},
+															"kind": &schema.Schema{
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "The kind of the resource type. (Eg. VirtualMachine).",
+															},
+															"name": &schema.Schema{
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "The name of the resource. This field is ignored for resource selection during recovery.",
+															},
+															"resource_list": &schema.Schema{
+																Type:        schema.TypeList,
+																Computed:    true,
+																Description: "Array of the instances of the resource with group, version and kind mentioned above.",
+																Elem: &schema.Resource{
+																	Schema: map[string]*schema.Schema{
+																		"entity_id": &schema.Schema{
+																			Type:        schema.TypeInt,
+																			Computed:    true,
+																			Description: "The id of the specific entity to be backed up or restored.",
+																		},
+																		"name": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Computed:    true,
+																			Description: "The name of the specific entity/resource to be backed up or restored.",
+																		},
+																	},
+																},
+															},
+															"version": &schema.Schema{
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "The version under the API group for the resource. This field is ignored for resource selection during recovery.",
+															},
+														},
+													},
+												},
 											},
 										},
 									},
@@ -4848,6 +4901,59 @@ func DataSourceIbmBackupRecoveryProtectionGroups() *schema.Resource {
 														Type: schema.TypeInt,
 													},
 												},
+												"selected_resources": &schema.Schema{
+													Type:        schema.TypeList,
+													Computed:    true,
+													Description: "Array of Object which has group, version, kind, etc. as its fields to identify a resource type and a resource list which is essentially the list of instances of that resource type.",
+													Elem: &schema.Resource{
+														Schema: map[string]*schema.Schema{
+															"api_group": &schema.Schema{
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "API group name of the resource (excluding the version). (Eg. apps, kubevirt.io).",
+															},
+															"is_cluster_scoped": &schema.Schema{
+																Type:        schema.TypeBool,
+																Computed:    true,
+																Description: "Boolean indicating whether the resource is cluster scoped or not. This field is ignored for resource selection during recovery.",
+															},
+															"kind": &schema.Schema{
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "The kind of the resource type. (Eg. VirtualMachine).",
+															},
+															"name": &schema.Schema{
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "The name of the resource. This field is ignored for resource selection during recovery.",
+															},
+															"resource_list": &schema.Schema{
+																Type:        schema.TypeList,
+																Computed:    true,
+																Description: "Array of the instances of the resource with group, version and kind mentioned above.",
+																Elem: &schema.Resource{
+																	Schema: map[string]*schema.Schema{
+																		"entity_id": &schema.Schema{
+																			Type:        schema.TypeInt,
+																			Computed:    true,
+																			Description: "The id of the specific entity to be backed up or restored.",
+																		},
+																		"name": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Computed:    true,
+																			Description: "The name of the specific entity/resource to be backed up or restored.",
+																		},
+																	},
+																},
+															},
+															"version": &schema.Schema{
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "The version under the API group for the resource. This field is ignored for resource selection during recovery.",
+															},
+														},
+													},
+												},
 											},
 										},
 									},
@@ -4880,6 +4986,100 @@ func DataSourceIbmBackupRecoveryProtectionGroups() *schema.Resource {
 													Computed:    true,
 													Description: "Specifies whether to backup pvc and related resources only.",
 												},
+												"exclude_params": &schema.Schema{
+													Type:        schema.TypeList,
+													Computed:    true,
+													Description: "Specifies the parameters to in/exclude objects (e.g.: volumes). An object satisfying any of these criteria will be included by this filter.",
+													Elem: &schema.Resource{
+														Schema: map[string]*schema.Schema{
+															"label_combination_method": &schema.Schema{
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "Whether to include all the labels or any of them while performing inclusion/exclusion of objects.",
+															},
+															"label_vector": &schema.Schema{
+																Type:        schema.TypeList,
+																Computed:    true,
+																Description: "Array of Object to represent Label that Specify Objects (e.g.: Persistent Volumes and Persistent Volume Claims) to Include or Exclude.It will be a two-dimensional array, where each inner array will consist of a key and value representing labels. Using this two dimensional array of Labels, the Cluster generates a list of items to include in the filter, which are derived from intersections or the union of these labels, as decided by operation parameter.",
+																Elem: &schema.Resource{
+																	Schema: map[string]*schema.Schema{
+																		"key": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Computed:    true,
+																			Description: "The key of the label, used to identify the label.",
+																		},
+																		"value": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Computed:    true,
+																			Description: "The value associated with the label key.",
+																		},
+																	},
+																},
+															},
+															"objects": &schema.Schema{
+																Type:        schema.TypeList,
+																Computed:    true,
+																Description: "Array of objects that are to be included.",
+																Elem: &schema.Schema{
+																	Type: schema.TypeInt,
+																},
+															},
+															"selected_resources": &schema.Schema{
+																Type:        schema.TypeList,
+																Computed:    true,
+																Description: "Array of Object which has group, version, kind, etc. as its fields to identify a resource type and a resource list which is essentially the list of instances of that resource type.",
+																Elem: &schema.Resource{
+																	Schema: map[string]*schema.Schema{
+																		"api_group": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Computed:    true,
+																			Description: "API group name of the resource (excluding the version). (Eg. apps, kubevirt.io).",
+																		},
+																		"is_cluster_scoped": &schema.Schema{
+																			Type:        schema.TypeBool,
+																			Computed:    true,
+																			Description: "Boolean indicating whether the resource is cluster scoped or not. This field is ignored for resource selection during recovery.",
+																		},
+																		"kind": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Computed:    true,
+																			Description: "The kind of the resource type. (Eg. VirtualMachine).",
+																		},
+																		"name": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Computed:    true,
+																			Description: "The name of the resource. This field is ignored for resource selection during recovery.",
+																		},
+																		"resource_list": &schema.Schema{
+																			Type:        schema.TypeList,
+																			Computed:    true,
+																			Description: "Array of the instances of the resource with group, version and kind mentioned above.",
+																			Elem: &schema.Resource{
+																				Schema: map[string]*schema.Schema{
+																					"entity_id": &schema.Schema{
+																						Type:        schema.TypeInt,
+																						Computed:    true,
+																						Description: "The id of the specific entity to be backed up or restored.",
+																					},
+																					"name": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Computed:    true,
+																						Description: "The name of the specific entity/resource to be backed up or restored.",
+																					},
+																				},
+																			},
+																		},
+																		"version": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Computed:    true,
+																			Description: "The version under the API group for the resource. This field is ignored for resource selection during recovery.",
+																		},
+																	},
+																},
+															},
+														},
+													},
+												},
 												"exclude_pvcs": &schema.Schema{
 													Type:        schema.TypeList,
 													Computed:    true,
@@ -4907,10 +5107,109 @@ func DataSourceIbmBackupRecoveryProtectionGroups() *schema.Resource {
 														Type: schema.TypeString,
 													},
 												},
+												"fail_backup_on_hook_failure": &schema.Schema{
+													Type:        schema.TypeBool,
+													Computed:    true,
+													Description: "If true, fail backups when quiesce hook executions fail.",
+												},
 												"id": &schema.Schema{
 													Type:        schema.TypeInt,
 													Computed:    true,
 													Description: "Specifies the id of the object.",
+												},
+												"include_params": &schema.Schema{
+													Type:        schema.TypeList,
+													Computed:    true,
+													Description: "Specifies the parameters to in/exclude objects (e.g.: volumes). An object satisfying any of these criteria will be included by this filter.",
+													Elem: &schema.Resource{
+														Schema: map[string]*schema.Schema{
+															"label_combination_method": &schema.Schema{
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "Whether to include all the labels or any of them while performing inclusion/exclusion of objects.",
+															},
+															"label_vector": &schema.Schema{
+																Type:        schema.TypeList,
+																Computed:    true,
+																Description: "Array of Object to represent Label that Specify Objects (e.g.: Persistent Volumes and Persistent Volume Claims) to Include or Exclude.It will be a two-dimensional array, where each inner array will consist of a key and value representing labels. Using this two dimensional array of Labels, the Cluster generates a list of items to include in the filter, which are derived from intersections or the union of these labels, as decided by operation parameter.",
+																Elem: &schema.Resource{
+																	Schema: map[string]*schema.Schema{
+																		"key": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Computed:    true,
+																			Description: "The key of the label, used to identify the label.",
+																		},
+																		"value": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Computed:    true,
+																			Description: "The value associated with the label key.",
+																		},
+																	},
+																},
+															},
+															"objects": &schema.Schema{
+																Type:        schema.TypeList,
+																Computed:    true,
+																Description: "Array of objects that are to be included.",
+																Elem: &schema.Schema{
+																	Type: schema.TypeInt,
+																},
+															},
+															"selected_resources": &schema.Schema{
+																Type:        schema.TypeList,
+																Computed:    true,
+																Description: "Array of Object which has group, version, kind, etc. as its fields to identify a resource type and a resource list which is essentially the list of instances of that resource type.",
+																Elem: &schema.Resource{
+																	Schema: map[string]*schema.Schema{
+																		"api_group": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Computed:    true,
+																			Description: "API group name of the resource (excluding the version). (Eg. apps, kubevirt.io).",
+																		},
+																		"is_cluster_scoped": &schema.Schema{
+																			Type:        schema.TypeBool,
+																			Computed:    true,
+																			Description: "Boolean indicating whether the resource is cluster scoped or not. This field is ignored for resource selection during recovery.",
+																		},
+																		"kind": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Computed:    true,
+																			Description: "The kind of the resource type. (Eg. VirtualMachine).",
+																		},
+																		"name": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Computed:    true,
+																			Description: "The name of the resource. This field is ignored for resource selection during recovery.",
+																		},
+																		"resource_list": &schema.Schema{
+																			Type:        schema.TypeList,
+																			Computed:    true,
+																			Description: "Array of the instances of the resource with group, version and kind mentioned above.",
+																			Elem: &schema.Resource{
+																				Schema: map[string]*schema.Schema{
+																					"entity_id": &schema.Schema{
+																						Type:        schema.TypeInt,
+																						Computed:    true,
+																						Description: "The id of the specific entity to be backed up or restored.",
+																					},
+																					"name": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Computed:    true,
+																						Description: "The name of the specific entity/resource to be backed up or restored.",
+																					},
+																				},
+																			},
+																		},
+																		"version": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Computed:    true,
+																			Description: "The version under the API group for the resource. This field is ignored for resource selection during recovery.",
+																		},
+																	},
+																},
+															},
+														},
+													},
 												},
 												"include_pvcs": &schema.Schema{
 													Type:        schema.TypeList,
@@ -7579,6 +7878,17 @@ func DataSourceIbmBackupRecoveryProtectionGroupsKubernetesFilterParamsToMap(mode
 	if model.Objects != nil {
 		modelMap["objects"] = model.Objects
 	}
+	if model.SelectedResources != nil {
+		selectedResources := []map[string]interface{}{}
+		for _, selectedResourcesItem := range model.SelectedResources {
+			selectedResourcesItemMap, err := DataSourceIbmBackupRecoveryProtectionGroupsResourceInfoToMap(&selectedResourcesItem) // #nosec G601
+			if err != nil {
+				return modelMap, err
+			}
+			selectedResources = append(selectedResources, selectedResourcesItemMap)
+		}
+		modelMap["selected_resources"] = selectedResources
+	}
 	return modelMap, nil
 }
 
@@ -7593,10 +7903,59 @@ func DataSourceIbmBackupRecoveryProtectionGroupsKubernetesLabelToMap(model *back
 	return modelMap, nil
 }
 
+func DataSourceIbmBackupRecoveryProtectionGroupsResourceInfoToMap(model *backuprecoveryv1.ResourceInfo) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.ApiGroup != nil {
+		modelMap["api_group"] = *model.ApiGroup
+	}
+	if model.IsClusterScoped != nil {
+		modelMap["is_cluster_scoped"] = *model.IsClusterScoped
+	}
+	if model.Kind != nil {
+		modelMap["kind"] = *model.Kind
+	}
+	if model.Name != nil {
+		modelMap["name"] = *model.Name
+	}
+	if model.ResourceList != nil {
+		resourceList := []map[string]interface{}{}
+		for _, resourceListItem := range model.ResourceList {
+			resourceListItemMap, err := DataSourceIbmBackupRecoveryProtectionGroupsResourceInstanceToMap(&resourceListItem) // #nosec G601
+			if err != nil {
+				return modelMap, err
+			}
+			resourceList = append(resourceList, resourceListItemMap)
+		}
+		modelMap["resource_list"] = resourceList
+	}
+	if model.Version != nil {
+		modelMap["version"] = *model.Version
+	}
+	return modelMap, nil
+}
+
+func DataSourceIbmBackupRecoveryProtectionGroupsResourceInstanceToMap(model *backuprecoveryv1.ResourceInstance) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.EntityID != nil {
+		modelMap["entity_id"] = flex.IntValue(model.EntityID)
+	}
+	if model.Name != nil {
+		modelMap["name"] = *model.Name
+	}
+	return modelMap, nil
+}
+
 func DataSourceIbmBackupRecoveryProtectionGroupsKubernetesProtectionGroupObjectParamsToMap(model *backuprecoveryv1.KubernetesProtectionGroupObjectParams) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.BackupOnlyPvc != nil {
 		modelMap["backup_only_pvc"] = *model.BackupOnlyPvc
+	}
+	if model.ExcludeParams != nil {
+		excludeParamsMap, err := DataSourceIbmBackupRecoveryProtectionGroupsKubernetesFilterParamsToMap(model.ExcludeParams)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["exclude_params"] = []map[string]interface{}{excludeParamsMap}
 	}
 	if model.ExcludePvcs != nil {
 		excludePvcs := []map[string]interface{}{}
@@ -7612,7 +7971,17 @@ func DataSourceIbmBackupRecoveryProtectionGroupsKubernetesProtectionGroupObjectP
 	if model.ExcludedResources != nil {
 		modelMap["excluded_resources"] = model.ExcludedResources
 	}
+	if model.FailBackupOnHookFailure != nil {
+		modelMap["fail_backup_on_hook_failure"] = *model.FailBackupOnHookFailure
+	}
 	modelMap["id"] = flex.IntValue(model.ID)
+	if model.IncludeParams != nil {
+		includeParamsMap, err := DataSourceIbmBackupRecoveryProtectionGroupsKubernetesFilterParamsToMap(model.IncludeParams)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["include_params"] = []map[string]interface{}{includeParamsMap}
+	}
 	if model.IncludePvcs != nil {
 		includePvcs := []map[string]interface{}{}
 		for _, includePvcsItem := range model.IncludePvcs {
