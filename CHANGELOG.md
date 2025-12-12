@@ -1,3 +1,9 @@
+# 1.86.1 (December 12, 2025)
+
+## Enhancements
+### VPC Infrastructure
+* feat(is): support for endpoint gateway resource bindings ([6568](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6568))
+
 # 1.86.0 (December 3, 2025)
 
 ## Bug Fixes
