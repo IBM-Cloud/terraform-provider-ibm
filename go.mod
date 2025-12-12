@@ -21,7 +21,7 @@ require (
 	github.com/IBM/event-notifications-go-admin-sdk v0.21.0
 	github.com/IBM/eventstreams-go-sdk v1.4.0
 	github.com/IBM/go-sdk-core/v5 v5.21.2
-	github.com/IBM/ibm-backup-recovery-sdk-go v1.0.5
+	github.com/IBM/ibm-backup-recovery-sdk-go v1.2.0
 	github.com/IBM/ibm-cos-sdk-go v1.12.2
 	github.com/IBM/ibm-cos-sdk-go-config/v2 v2.3.0
 	github.com/IBM/ibm-hpcs-tke-sdk v0.0.0-20250305134146-e023c2e84762
@@ -41,7 +41,7 @@ require (
 	github.com/IBM/secrets-manager-go-sdk/v2 v2.0.15
 	github.com/IBM/vmware-go-sdk v0.1.5
 	github.com/IBM/vpc-beta-go-sdk v0.8.0
-	github.com/IBM/vpc-go-sdk v0.75.0
+	github.com/IBM/vpc-go-sdk v0.76.0
 	github.com/ScaleFT/sshkeys v0.0.0-20200327173127-6142f742bca5
 	github.com/akamai/AkamaiOPEN-edgegrid-golang v1.2.2
 	github.com/akamai/AkamaiOPEN-edgegrid-golang/v5 v5.0.0
