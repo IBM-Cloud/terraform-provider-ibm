@@ -7,19 +7,19 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
-	"github.ibm.com/DRAutomation/dra-go-sdk/drautomationservicev1"
+
+	"github.com/IBM/dra-go-sdk/drautomationservicev1"
 )
 
 func TestAccIBMPdrManagedrBasic(t *testing.T) {
 	var conf drautomationservicev1.ServiceInstanceManageDr
-	instanceID := "crn:v1:staging:public:power-dr-automation:global:a/b68c234e719144b18598ae4a7b80c44c:579bb45a-e8e3-4f43-a3cf-0d693440b804::"
+	instanceID := "ac645fe5-fba1-4cb3-952e-e1b09fa0df26"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheck(t) },
@@ -38,9 +38,9 @@ func TestAccIBMPdrManagedrBasic(t *testing.T) {
 
 func TestAccIBMPdrManagedrAllArgs(t *testing.T) {
 	var conf drautomationservicev1.ServiceInstanceManageDr
-	instanceID := "crn:v1:staging:public:power-dr-automation:global:a/b68c234e719144b18598ae4a7b80c44c:579bb45a-e8e3-4f43-a3cf-0d693440b804::"
+	instanceID := "ac645fe5-fba1-4cb3-952e-e1b09fa0df26"
+	acceptLanguage := "it"
 	standByRedeploy := "false"
-	acceptLanguage := fmt.Sprintf("tf_accept_language_%d", acctest.RandIntRange(10, 100))
 	acceptsIncomplete := "true"
 
 	resource.Test(t, resource.TestCase{
@@ -124,12 +124,13 @@ func testAccCheckIBMPdrManagedrExists(n string, obj drautomationservicev1.Servic
 
 		getManageDrOptions := &drautomationservicev1.GetManageDrOptions{}
 
-		// parts, err := flex.SepIdParts(rs.Primary.ID, "/")
-		// if err != nil {
-		// 	return err
-		// }
+		parts, err := flex.SepIdParts(rs.Primary.ID, "/")
+		if err != nil {
+			return err
+		}
 
-		getManageDrOptions.SetInstanceID(rs.Primary.ID)
+		getManageDrOptions.SetInstanceID(parts[0])
+		getManageDrOptions.SetInstanceID(parts[1])
 
 		serviceInstanceManageDr, _, err := drAutomationServiceClient.GetManageDr(getManageDrOptions)
 		if err != nil {

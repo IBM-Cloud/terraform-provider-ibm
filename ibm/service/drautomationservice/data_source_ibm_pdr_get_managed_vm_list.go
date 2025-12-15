@@ -2,7 +2,7 @@
 // Licensed under the Mozilla Public License v2.0
 
 /*
- * IBM OpenAPI Terraform Generator Version: 3.105.0-3c13b041-20250605-193116
+ * IBM OpenAPI Terraform Generator Version: 3.108.0-56772134-20251111-102802
  */
 
 package drautomationservice
@@ -18,8 +18,8 @@ import (
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
-	"github.com/IBM/go-sdk-core/v5/core"
-	"github.ibm.com/DRAutomation/dra-go-sdk/drautomationservicev1"
+
+	"github.com/IBM/dra-go-sdk/drautomationservicev1"
 )
 
 func DataSourceIBMPdrGetManagedVMList() *schema.Resource {
@@ -72,9 +72,6 @@ func dataSourceIBMPdrGetManagedVMListRead(context context.Context, d *schema.Res
 	if _, ok := d.GetOk("accept_language"); ok {
 		getDrManagedVMOptions.SetAcceptLanguage(d.Get("accept_language").(string))
 	}
-	if _, ok := d.GetOk("if_none_match"); ok {
-		getDrManagedVMOptions.SetIfNoneMatch(d.Get("if_none_match").(string))
-	}
 
 	managedVMMapResponse, response, err := drAutomationServiceClient.GetDrManagedVMWithContext(context, getDrManagedVMOptions)
 	if err != nil {
@@ -93,51 +90,45 @@ func dataSourceIBMPdrGetManagedVMListRead(context context.Context, d *schema.Res
 
 	d.SetId(dataSourceIBMPdrGetManagedVMListID(d))
 
-	if !core.IsNil(managedVMMapResponse.ManagedVMList) {
-		// convertedMap := make(map[string]interface{}, len(managedVMMapResponse.ManagedVMList))
-		list := make([]map[string]interface{}, 0, len(managedVMMapResponse.ManagedVMList))
+	// convertedMap := make(map[string]interface{}, len(managedVMMapResponse.ManagedVMList))
+	list := make([]map[string]interface{}, 0, len(managedVMMapResponse.ManagedVMList))
 
-		for vmID, vmDetails := range managedVMMapResponse.ManagedVMList {
+	for vmID, vmDetails := range managedVMMapResponse.ManagedVMList {
 
-			obj := map[string]interface{}{
-				"vm_id": vmID,
-			}
-
-			if vmDetails.Core != nil {
-				obj["core"] = *vmDetails.Core
-			}
-			if vmDetails.DrAverageTime != nil {
-				obj["dr_average_time"] = *vmDetails.DrAverageTime
-			}
-			if vmDetails.DrRegion != nil {
-				obj["dr_region"] = *vmDetails.DrRegion
-			}
-			if vmDetails.Memory != nil {
-				obj["memory"] = *vmDetails.Memory
-			}
-			if vmDetails.Region != nil {
-				obj["region"] = *vmDetails.Region
-			}
-			if vmDetails.VMName != nil {
-				obj["vm_name"] = *vmDetails.VMName
-			}
-			if vmDetails.WorkgroupName != nil {
-				obj["workgroup_name"] = *vmDetails.WorkgroupName
-			}
-			if vmDetails.WorkspaceName != nil {
-				obj["workspace_name"] = *vmDetails.WorkspaceName
-			}
-
-			list = append(list, obj)
+		obj := map[string]interface{}{
+			"vm_id": vmID,
 		}
 
-		// if err := d.Set("managed_vm_list", list); err != nil {
-		// 	return diag.FromErr(err)
-		// }
-
-		if err = d.Set("managed_vm_list", list); err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting managed_vm_list: %s", err), "(Data) ibm_pdr_get_managed_vm_list", "read", "set-managed_vm_list").GetDiag()
+		if vmDetails.Core != nil {
+			obj["core"] = *vmDetails.Core
 		}
+		if vmDetails.DrAverageTime != nil {
+			obj["dr_average_time"] = *vmDetails.DrAverageTime
+		}
+		if vmDetails.DrRegion != nil {
+			obj["dr_region"] = *vmDetails.DrRegion
+		}
+		if vmDetails.Memory != nil {
+			obj["memory"] = *vmDetails.Memory
+		}
+		if vmDetails.Region != nil {
+			obj["region"] = *vmDetails.Region
+		}
+		if vmDetails.VMName != nil {
+			obj["vm_name"] = *vmDetails.VMName
+		}
+		if vmDetails.WorkgroupName != nil {
+			obj["workgroup_name"] = *vmDetails.WorkgroupName
+		}
+		if vmDetails.WorkspaceName != nil {
+			obj["workspace_name"] = *vmDetails.WorkspaceName
+		}
+
+		list = append(list, obj)
+	}
+
+	if err = d.Set("managed_vm_list", list); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting managed_vm_list: %s", err), "(Data) ibm_pdr_get_managed_vm_list", "read", "set-managed_vm_list").GetDiag()
 	}
 
 	return nil
