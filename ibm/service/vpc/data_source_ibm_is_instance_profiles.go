@@ -803,6 +803,25 @@ func DataSourceIBMISInstanceProfiles() *schema.Resource {
 								},
 							},
 						},
+						"zones": &schema.Schema{
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "The zones in this region that support this instance profile.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"href": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The URL for this zone.",
+									},
+									"name": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The globally unique name for this zone.",
+									},
+								},
+							},
+						},
 					},
 				},
 			},
@@ -980,6 +999,13 @@ func instanceProfilesList(context context.Context, d *schema.ResourceData, meta 
 			volumeBandwidthQosModesList = append(volumeBandwidthQosModesList, volumeBandwidthQosModesMap)
 			l["volume_bandwidth_qos_modes"] = volumeBandwidthQosModesList
 		}
+		// changes for image availability
+		zones := []map[string]interface{}{}
+		for _, zonesItem := range profile.Zones {
+			zonesItemMap := DataSourceIBMIsInstanceProfilesZoneReferenceToMap(&zonesItem)
+			zones = append(zones, zonesItemMap)
+		}
+		l["zones"] = zones
 		// Changes for manufacturer for AMD Support.
 		// reduce the line of code here. - sumit's suggestions
 		if profile.VcpuManufacturer != nil {
@@ -1077,4 +1103,10 @@ func DataSourceIBMIsInstanceProfilesInstanceProfileClusterNetworkAttachmentCount
 	}
 	modelMap["type"] = *model.Type
 	return modelMap, nil
+}
+func DataSourceIBMIsInstanceProfilesZoneReferenceToMap(model *vpcv1.ZoneReference) map[string]interface{} {
+	modelMap := make(map[string]interface{})
+	modelMap["href"] = *model.Href
+	modelMap["name"] = *model.Name
+	return modelMap
 }
