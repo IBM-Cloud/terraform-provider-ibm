@@ -1322,6 +1322,7 @@ func ResourceIBMISInstanceTemplate() *schema.Resource {
 						"percentage": &schema.Schema{
 							Type:        schema.TypeInt,
 							Optional:    true,
+							ForceNew:    true,
 							Description: "The percentage of VCPU clock cycles allocated to the instance.The virtual server instance `vcpu.percentage` must be `100` when:- The virtual server instance `placement_target` is a dedicated host or dedicated  host group.- The virtual server instance `reservation_affinity.policy` is not `disabled`.If unspecified, the default for `vcpu_percentage` from the profile will be used.",
 						},
 					},
