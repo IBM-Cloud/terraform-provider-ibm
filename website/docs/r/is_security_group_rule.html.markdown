@@ -38,6 +38,7 @@ resource "ibm_is_security_group_rule" "example" {
   group     = ibm_is_security_group.example.id
   direction = "inbound"
   remote    = "127.0.0.1"
+  name      = "my-test-sg-rule-name" // name for the security group rule
 }
 
 resource "ibm_is_security_group_rule" "example1" {
@@ -134,6 +135,7 @@ Review the argument references that you can specify for your resource.
   Nested scheme for `icmp`:
   - `type`- (Optional, Integer) The ICMP traffic type to allow. Valid values from 0 to 254. If unspecified, all codes are allowed. 
   - `code` - (Optional, Integer) The ICMP traffic code to allow. Valid values from 0 to 255. If unspecified, all codes are allowed.
+- `name` - (String) The name for this security group rule. The name must not be used by another rule in the security group.
 - `port_min`- (Required, Integer) The TCP port range that includes the minimum bound. Valid values are from 1 to 65535.
 - `port_max`- (Required, Integer) The TCP port range that includes the maximum bound. Valid values are from 1 to 65535.
 - `protocol` - (Optional, String) The name of the network protocol.
