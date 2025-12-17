@@ -1312,6 +1312,21 @@ func ResourceIBMISInstanceTemplate() *schema.Resource {
 				Description: "Instance template resource group",
 			},
 
+			"vcpu": &schema.Schema{
+				Type:     schema.TypeList,
+				MaxItems: 1,
+				Optional: true,
+				ForceNew: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"percentage": &schema.Schema{
+							Type:        schema.TypeInt,
+							Optional:    true,
+							Description: "The percentage of VCPU clock cycles allocated to the instance.The virtual server instance `vcpu.percentage` must be `100` when:- The virtual server instance `placement_target` is a dedicated host or dedicated  host group.- The virtual server instance `reservation_affinity.policy` is not `disabled`.If unspecified, the default for `vcpu_percentage` from the profile will be used.",
+						},
+					},
+				},
+			},
 			isInstanceTemplatePlacementTarget: {
 				Type:        schema.TypeList,
 				Computed:    true,
@@ -1525,6 +1540,15 @@ func instanceTemplateCreateBySourceSnapshot(context context.Context, d *schema.R
 
 	if name != "" {
 		instanceproto.Name = &name
+	}
+
+	// shared core
+	if vcpuOk, ok := d.GetOk("vcpu"); ok && len(vcpuOk.([]interface{})) > 0 {
+		VcpuModel, err := ResourceIBMIsInstanceTemplateMapToInstanceVcpuPrototype(vcpuOk.([]interface{})[0].(map[string]interface{}))
+		if err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance_template", "create", "parse-vcpu").GetDiag()
+		}
+		instanceproto.Vcpu = VcpuModel
 	}
 
 	// cluster changes
@@ -2083,6 +2107,14 @@ func instanceTemplateCreateByCatalogOffering(context context.Context, d *schema.
 		VPC: &vpcv1.VPCIdentity{
 			ID: &vpcID,
 		},
+	}
+	// shared core
+	if vcpuOk, ok := d.GetOk("vcpu"); ok && len(vcpuOk.([]interface{})) > 0 {
+		VcpuModel, err := ResourceIBMIsInstanceTemplateMapToInstanceVcpuPrototype(vcpuOk.([]interface{})[0].(map[string]interface{}))
+		if err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance_template", "create", "parse-vcpu").GetDiag()
+		}
+		instanceproto.Vcpu = VcpuModel
 	}
 	// cluster changes
 	if clusterNetworkAttachmentOk, ok := d.GetOk("cluster_network_attachments"); ok {
@@ -2649,6 +2681,14 @@ func instanceTemplateCreate(context context.Context, d *schema.ResourceData, met
 	if name != "" {
 		instanceproto.Name = &name
 	}
+	// shared core
+	if vcpuOk, ok := d.GetOk("vcpu"); ok && len(vcpuOk.([]interface{})) > 0 {
+		VcpuModel, err := ResourceIBMIsInstanceTemplateMapToInstanceVcpuPrototype(vcpuOk.([]interface{})[0].(map[string]interface{}))
+		if err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance_template", "create", "parse-vcpu").GetDiag()
+		}
+		instanceproto.Vcpu = VcpuModel
+	}
 	// cluster changes
 	if clusterNetworkAttachmentOk, ok := d.GetOk("cluster_network_attachments"); ok {
 		clusterNetworkAttachmentList := clusterNetworkAttachmentOk.([]interface{})
@@ -3194,7 +3234,17 @@ func instanceTemplateGet(context context.Context, d *schema.ResourceData, meta i
 	switch v := instanceIntf.(type) {
 	case *vpcv1.InstanceTemplate:
 		instanceTemplate := v
-
+		// shared core
+		if !core.IsNil(instanceTemplate.Vcpu) {
+			vcpuMap, err := ResourceIBMIsInstanceTemplateInstanceVcpuPrototypeToMap(instanceTemplate.Vcpu)
+			if err != nil {
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance_template", "read", "vcpu-to-map").GetDiag()
+			}
+			if err = d.Set("vcpu", []map[string]interface{}{vcpuMap}); err != nil {
+				err = fmt.Errorf("Error setting vcpu: %s", err)
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance_template", "read", "set-vcpu").GetDiag()
+			}
+		}
 		if !core.IsNil(instanceTemplate.Name) {
 			if err = d.Set("name", instanceTemplate.Name); err != nil {
 				err = fmt.Errorf("Error setting name: %s", err)
@@ -3651,7 +3701,17 @@ func instanceTemplateGet(context context.Context, d *schema.ResourceData, meta i
 		}
 	case *vpcv1.InstanceTemplateInstanceBySourceSnapshotInstanceTemplateContext:
 		instanceTemplate := v
-
+		// shared core
+		if !core.IsNil(instanceTemplate.Vcpu) {
+			vcpuMap, err := ResourceIBMIsInstanceTemplateInstanceVcpuPrototypeToMap(instanceTemplate.Vcpu)
+			if err != nil {
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance_template", "read", "vcpu-to-map").GetDiag()
+			}
+			if err = d.Set("vcpu", []map[string]interface{}{vcpuMap}); err != nil {
+				err = fmt.Errorf("Error setting vcpu: %s", err)
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance_template", "read", "set-vcpu").GetDiag()
+			}
+		}
 		if !core.IsNil(instanceTemplate.Name) {
 			if err = d.Set("name", instanceTemplate.Name); err != nil {
 				err = fmt.Errorf("Error setting name: %s", err)
@@ -4797,4 +4857,19 @@ func ResourceIBMIsInstanceTemplateMapToInstanceClusterNetworkAttachmentPrototype
 	model := &vpcv1.InstanceClusterNetworkAttachmentPrototypeClusterNetworkInterfaceClusterNetworkInterfaceIdentityClusterNetworkInterfaceIdentityByHref{}
 	model.Href = core.StringPtr(modelMap["href"].(string))
 	return model, nil
+}
+
+func ResourceIBMIsInstanceTemplateMapToInstanceVcpuPrototype(modelMap map[string]interface{}) (*vpcv1.InstanceVcpuPrototype, error) {
+	model := &vpcv1.InstanceVcpuPrototype{}
+	if modelMap["percentage"] != nil {
+		model.Percentage = core.Int64Ptr(int64(modelMap["percentage"].(int)))
+	}
+	return model, nil
+}
+func ResourceIBMIsInstanceTemplateInstanceVcpuPrototypeToMap(model *vpcv1.InstanceVcpuPrototype) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.Percentage != nil {
+		modelMap["percentage"] = flex.IntValue(model.Percentage)
+	}
+	return modelMap, nil
 }
