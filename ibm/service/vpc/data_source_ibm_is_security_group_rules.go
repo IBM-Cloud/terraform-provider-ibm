@@ -289,8 +289,12 @@ func dataSourceIBMIsSecurityGroupRulesRead(context context.Context, d *schema.Re
 				l["id"] = *rulex.ID
 				l["ip_version"] = *rulex.IPVersion
 				l["protocol"] = *rulex.Protocol
-				l["port_max"] = *rulex.PortMax
-				l["port_min"] = *rulex.PortMin
+				if rulex.PortMin != nil {
+					l["port_min"] = *rulex.PortMin
+				}
+				if rulex.PortMax != nil {
+					l["port_max"] = *rulex.PortMax
+				}
 				// remote
 				if rulex.Remote != nil {
 					remoteList := []map[string]interface{}{}
