@@ -45,6 +45,10 @@ After your data source is created, you can read values from the following attrib
 * `policy` - (List) The core set of properties associated with the template's policy objet.
 Nested schema for **policy**:
 	* `roles` - (List) A set of displayNames.
+	* `role_template_references` - (Optional, List) A set of role templates.
+	Nested schema for **role_template_references**:
+		* `id` - (Required, String) The role template id
+		* `version` - (Required, String) The role template version
 	* `description` - (String) Description of the policy. This is shown in child accounts when an access group or trusted profile template uses the policy template to assign access.
 	* `pattern` - (String) Indicates pattern of rule, either 'time-based-conditions:once', 'time-based-conditions:weekly:all-day', or 'time-based-conditions:weekly:custom-hours'.
 	* `resource` - (List) The resource attributes to which the policy grants access.

@@ -153,7 +153,9 @@ func dataSourceIBMRoleTemplateRead(context context.Context, d *schema.ResourceDa
 
 func DataSourceIBMListRoleTemplatesRoleTemplateToMap(model *iampolicymanagementv1.RoleTemplate) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	modelMap["name"] = *model.Name
+	if model.Name != nil {
+		modelMap["name"] = *model.Name
+	}
 	if model.Description != nil {
 		modelMap["description"] = *model.Description
 	}
@@ -162,7 +164,7 @@ func DataSourceIBMListRoleTemplatesRoleTemplateToMap(model *iampolicymanagementv
 		modelMap["committed"] = *model.Committed
 	}
 	if model.Role != nil {
-		roleMap, err := DataSourceIBMListRoleTemplatesTemplateRoleToMap(model.Role)
+		roleMap, err := ResourceIBMIAMRoleTemplateVersionTemplateRoleToMap(model.Role)
 		if err != nil {
 			return modelMap, err
 		}
@@ -172,17 +174,5 @@ func DataSourceIBMListRoleTemplatesRoleTemplateToMap(model *iampolicymanagementv
 		modelMap["id"] = *model.ID
 	}
 	modelMap["version"] = *model.Version
-	return modelMap, nil
-}
-
-func DataSourceIBMListRoleTemplatesTemplateRoleToMap(model *iampolicymanagementv1.TemplateRole) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	modelMap["name"] = *model.Name
-	modelMap["display_name"] = *model.DisplayName
-	modelMap["service_name"] = *model.ServiceName
-	if model.Description != nil {
-		modelMap["description"] = *model.Description
-	}
-	modelMap["actions"] = model.Actions
 	return modelMap, nil
 }
