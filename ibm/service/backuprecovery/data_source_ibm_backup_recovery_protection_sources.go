@@ -1815,6 +1815,267 @@ func DataSourceIbmBackupRecoveryProtectionSources() *schema.Resource {
 																	},
 																},
 															},
+															"kubernetes_protection_source": &schema.Schema{
+																Type:        schema.TypeList,
+																Computed:    true,
+																Description: "Specifies a Protection Source in Kubernetes environment.",
+																Elem: &schema.Resource{
+																	Schema: map[string]*schema.Schema{
+																		"datamover_image_location": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Computed:    true,
+																			Description: "Specifies the location of Datamover image in private registry.",
+																		},
+																		"datamover_service_type": &schema.Schema{
+																			Type:        schema.TypeInt,
+																			Computed:    true,
+																			Description: "Specifies Type of service to be deployed for communication with DataMover pods. Currently, LoadBalancer and NodePort are supported. [default = kNodePort].",
+																		},
+																		"datamover_upgradability": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Computed:    true,
+																			Description: "Specifies if the deployed Datamover image needs to be upgraded for this kubernetes entity.",
+																		},
+																		"default_vlan_params": &schema.Schema{
+																			Type:        schema.TypeList,
+																			Computed:    true,
+																			Description: "Specifies VLAN parameters for the restore operation.",
+																			Elem: &schema.Resource{
+																				Schema: map[string]*schema.Schema{
+																					"disable_vlan": &schema.Schema{
+																						Type:        schema.TypeBool,
+																						Computed:    true,
+																						Description: "Specifies whether to use the VIPs even when VLANs are configured on the Cluster. If configured, VLAN IP addresses are used by default. If VLANs are not configured, this flag is ignored. Set this flag to true to force using the partition VIPs when VLANs are configured on the Cluster.",
+																					},
+																					"interface_name": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Computed:    true,
+																						Description: "Specifies the physical interface group name to use for mounting Cohesity's view on the remote host. If specified, Cohesity hostname or the IP address on this VLAN is used.",
+																					},
+																					"vlan": &schema.Schema{
+																						Type:        schema.TypeInt,
+																						Computed:    true,
+																						Description: "Specifies the VLAN to use for mounting Cohesity's view on the remote host. If specified, Cohesity hostname or the IP address on this VLAN is used.",
+																					},
+																				},
+																			},
+																		},
+																		"description": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Computed:    true,
+																			Description: "Specifies an optional description of the object.",
+																		},
+																		"distribution": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Computed:    true,
+																			Description: "Specifies the type of the entity in a Kubernetes environment. Determines the K8s distribution. kIKS, kROKS.",
+																		},
+																		"init_container_image_location": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Computed:    true,
+																			Description: "Specifies the location of the image for init containers.",
+																		},
+																		"label_attributes": &schema.Schema{
+																			Type:        schema.TypeList,
+																			Computed:    true,
+																			Description: "Specifies the list of label attributes of this source.",
+																			Elem: &schema.Resource{
+																				Schema: map[string]*schema.Schema{
+																					"id": &schema.Schema{
+																						Type:        schema.TypeInt,
+																						Computed:    true,
+																						Description: "Specifies the Cohesity id of the K8s label.",
+																					},
+																					"name": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Computed:    true,
+																						Description: "Specifies the appended key and value of the K8s label.",
+																					},
+																					"uuid": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Computed:    true,
+																						Description: "Specifies Kubernetes Unique Identifier (UUID) of the K8s label.",
+																					},
+																				},
+																			},
+																		},
+																		"name": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Computed:    true,
+																			Description: "Specifies a unique name of the Protection Source.",
+																		},
+																		"priority_class_name": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Computed:    true,
+																			Description: "Specifies the pritority class name during registration.",
+																		},
+																		"resource_annotation_list": &schema.Schema{
+																			Type:        schema.TypeList,
+																			Computed:    true,
+																			Description: "Specifies resource Annotations information provided during registration.",
+																			Elem: &schema.Resource{
+																				Schema: map[string]*schema.Schema{
+																					"key": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Computed:    true,
+																						Description: "Key for label.",
+																					},
+																					"value": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Computed:    true,
+																						Description: "Value for label.",
+																					},
+																				},
+																			},
+																		},
+																		"resource_label_list": &schema.Schema{
+																			Type:        schema.TypeList,
+																			Computed:    true,
+																			Description: "Specifies resource labels information provided during registration.",
+																			Elem: &schema.Resource{
+																				Schema: map[string]*schema.Schema{
+																					"key": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Computed:    true,
+																						Description: "Key for label.",
+																					},
+																					"value": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Computed:    true,
+																						Description: "Value for label.",
+																					},
+																				},
+																			},
+																		},
+																		"san_field": &schema.Schema{
+																			Type:        schema.TypeList,
+																			Computed:    true,
+																			Description: "Specifies the SAN field for agent certificate.",
+																			Elem: &schema.Schema{
+																				Type: schema.TypeString,
+																			},
+																		},
+																		"service_annotations": &schema.Schema{
+																			Type:        schema.TypeList,
+																			Computed:    true,
+																			Description: "Specifies annotations to be put on services for IP allocation. Applicable only when service is of type LoadBalancer.",
+																			Elem: &schema.Resource{
+																				Schema: map[string]*schema.Schema{
+																					"key": &schema.Schema{
+																						Type:     schema.TypeString,
+																						Computed: true,
+																					},
+																					"value": &schema.Schema{
+																						Type:     schema.TypeString,
+																						Computed: true,
+																					},
+																				},
+																			},
+																		},
+																		"storage_class": &schema.Schema{
+																			Type:        schema.TypeList,
+																			Computed:    true,
+																			Description: "Specifies storage class information of source.",
+																			Elem: &schema.Resource{
+																				Schema: map[string]*schema.Schema{
+																					"name": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Computed:    true,
+																						Description: "Specifies name of storage class.",
+																					},
+																					"provisioner": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Computed:    true,
+																						Description: "specifies provisioner of storage class.",
+																					},
+																				},
+																			},
+																		},
+																		"type": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Computed:    true,
+																			Description: "Specifies the type of the entity in a Kubernetes environment. Specifies the type of a Kubernetes Protection Source. 'kCluster' indicates a Kubernetes Cluster. 'kNamespace' indicates a namespace in a Kubernetes Cluster. 'kService' indicates a service running on a Kubernetes Cluster.",
+																		},
+																		"uuid": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Computed:    true,
+																			Description: "Specifies the UUID of the object.",
+																		},
+																		"velero_aws_plugin_image_location": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Computed:    true,
+																			Description: "Specifies the location of Velero AWS plugin image in private registry.",
+																		},
+																		"velero_image_location": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Computed:    true,
+																			Description: "Specifies the location of Velero image in private registry.",
+																		},
+																		"velero_openshift_plugin_image_location": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Computed:    true,
+																			Description: "Specifies the location of the image for openshift plugin container.",
+																		},
+																		"velero_upgradability": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Computed:    true,
+																			Description: "Specifies if the deployed Velero image needs to be upgraded for this kubernetes entity.",
+																		},
+																		"vlan_info_vec": &schema.Schema{
+																			Type:        schema.TypeList,
+																			Computed:    true,
+																			Description: "Specifies VLAN information provided during registration.",
+																			Elem: &schema.Resource{
+																				Schema: map[string]*schema.Schema{
+																					"service_annotations": &schema.Schema{
+																						Type:        schema.TypeList,
+																						Computed:    true,
+																						Description: "Specifies annotations to be put on services for IP allocation. Applicable only when service is of type LoadBalancer.",
+																						Elem: &schema.Resource{
+																							Schema: map[string]*schema.Schema{
+																								"key": &schema.Schema{
+																									Type:        schema.TypeString,
+																									Computed:    true,
+																									Description: "Specifies the service annotation key value.",
+																								},
+																								"value": &schema.Schema{
+																									Type:        schema.TypeString,
+																									Computed:    true,
+																									Description: "Specifies the service annotation value.",
+																								},
+																							},
+																						},
+																					},
+																					"vlan_params": &schema.Schema{
+																						Type:        schema.TypeList,
+																						Computed:    true,
+																						Description: "Specifies VLAN params associated with the backup/restore operation.",
+																						Elem: &schema.Resource{
+																							Schema: map[string]*schema.Schema{
+																								"disable_vlan": &schema.Schema{
+																									Type:        schema.TypeBool,
+																									Computed:    true,
+																									Description: "If this is set to true, then even if VLANs are configured on the system, the partition VIPs will be used for the restore.",
+																								},
+																								"interface_name": &schema.Schema{
+																									Type:        schema.TypeString,
+																									Computed:    true,
+																									Description: "Interface group to use for backup/restore. If this is not specified, primary interface group for the cluster will be used.",
+																								},
+																								"vlan_id": &schema.Schema{
+																									Type:        schema.TypeInt,
+																									Computed:    true,
+																									Description: "If this is set, then the Cohesity host name or the IP address associated with this VLAN is used for mounting Cohesity's view on the remote host.",
+																								},
+																							},
+																						},
+																					},
+																				},
+																			},
+																		},
+																	},
+																},
+															},
 															"sql_protection_source": &schema.Schema{
 																Type:        schema.TypeList,
 																Computed:    true,
@@ -4710,6 +4971,267 @@ func DataSourceIbmBackupRecoveryProtectionSources() *schema.Resource {
 																									Type:        schema.TypeBool,
 																									Computed:    true,
 																									Description: "Specifies the name of the writer.",
+																								},
+																							},
+																						},
+																					},
+																				},
+																			},
+																		},
+																		"kubernetes_protection_source": &schema.Schema{
+																			Type:        schema.TypeList,
+																			Computed:    true,
+																			Description: "Specifies a Protection Source in Kubernetes environment.",
+																			Elem: &schema.Resource{
+																				Schema: map[string]*schema.Schema{
+																					"datamover_image_location": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Computed:    true,
+																						Description: "Specifies the location of Datamover image in private registry.",
+																					},
+																					"datamover_service_type": &schema.Schema{
+																						Type:        schema.TypeInt,
+																						Computed:    true,
+																						Description: "Specifies Type of service to be deployed for communication with DataMover pods. Currently, LoadBalancer and NodePort are supported. [default = kNodePort].",
+																					},
+																					"datamover_upgradability": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Computed:    true,
+																						Description: "Specifies if the deployed Datamover image needs to be upgraded for this kubernetes entity.",
+																					},
+																					"default_vlan_params": &schema.Schema{
+																						Type:        schema.TypeList,
+																						Computed:    true,
+																						Description: "Specifies VLAN parameters for the restore operation.",
+																						Elem: &schema.Resource{
+																							Schema: map[string]*schema.Schema{
+																								"disable_vlan": &schema.Schema{
+																									Type:        schema.TypeBool,
+																									Computed:    true,
+																									Description: "Specifies whether to use the VIPs even when VLANs are configured on the Cluster. If configured, VLAN IP addresses are used by default. If VLANs are not configured, this flag is ignored. Set this flag to true to force using the partition VIPs when VLANs are configured on the Cluster.",
+																								},
+																								"interface_name": &schema.Schema{
+																									Type:        schema.TypeString,
+																									Computed:    true,
+																									Description: "Specifies the physical interface group name to use for mounting Cohesity's view on the remote host. If specified, Cohesity hostname or the IP address on this VLAN is used.",
+																								},
+																								"vlan": &schema.Schema{
+																									Type:        schema.TypeInt,
+																									Computed:    true,
+																									Description: "Specifies the VLAN to use for mounting Cohesity's view on the remote host. If specified, Cohesity hostname or the IP address on this VLAN is used.",
+																								},
+																							},
+																						},
+																					},
+																					"description": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Computed:    true,
+																						Description: "Specifies an optional description of the object.",
+																					},
+																					"distribution": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Computed:    true,
+																						Description: "Specifies the type of the entity in a Kubernetes environment. Determines the K8s distribution. kIKS, kROKS.",
+																					},
+																					"init_container_image_location": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Computed:    true,
+																						Description: "Specifies the location of the image for init containers.",
+																					},
+																					"label_attributes": &schema.Schema{
+																						Type:        schema.TypeList,
+																						Computed:    true,
+																						Description: "Specifies the list of label attributes of this source.",
+																						Elem: &schema.Resource{
+																							Schema: map[string]*schema.Schema{
+																								"id": &schema.Schema{
+																									Type:        schema.TypeInt,
+																									Computed:    true,
+																									Description: "Specifies the Cohesity id of the K8s label.",
+																								},
+																								"name": &schema.Schema{
+																									Type:        schema.TypeString,
+																									Computed:    true,
+																									Description: "Specifies the appended key and value of the K8s label.",
+																								},
+																								"uuid": &schema.Schema{
+																									Type:        schema.TypeString,
+																									Computed:    true,
+																									Description: "Specifies Kubernetes Unique Identifier (UUID) of the K8s label.",
+																								},
+																							},
+																						},
+																					},
+																					"name": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Computed:    true,
+																						Description: "Specifies a unique name of the Protection Source.",
+																					},
+																					"priority_class_name": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Computed:    true,
+																						Description: "Specifies the pritority class name during registration.",
+																					},
+																					"resource_annotation_list": &schema.Schema{
+																						Type:        schema.TypeList,
+																						Computed:    true,
+																						Description: "Specifies resource Annotations information provided during registration.",
+																						Elem: &schema.Resource{
+																							Schema: map[string]*schema.Schema{
+																								"key": &schema.Schema{
+																									Type:        schema.TypeString,
+																									Computed:    true,
+																									Description: "Key for label.",
+																								},
+																								"value": &schema.Schema{
+																									Type:        schema.TypeString,
+																									Computed:    true,
+																									Description: "Value for label.",
+																								},
+																							},
+																						},
+																					},
+																					"resource_label_list": &schema.Schema{
+																						Type:        schema.TypeList,
+																						Computed:    true,
+																						Description: "Specifies resource labels information provided during registration.",
+																						Elem: &schema.Resource{
+																							Schema: map[string]*schema.Schema{
+																								"key": &schema.Schema{
+																									Type:        schema.TypeString,
+																									Computed:    true,
+																									Description: "Key for label.",
+																								},
+																								"value": &schema.Schema{
+																									Type:        schema.TypeString,
+																									Computed:    true,
+																									Description: "Value for label.",
+																								},
+																							},
+																						},
+																					},
+																					"san_field": &schema.Schema{
+																						Type:        schema.TypeList,
+																						Computed:    true,
+																						Description: "Specifies the SAN field for agent certificate.",
+																						Elem: &schema.Schema{
+																							Type: schema.TypeString,
+																						},
+																					},
+																					"service_annotations": &schema.Schema{
+																						Type:        schema.TypeList,
+																						Computed:    true,
+																						Description: "Specifies annotations to be put on services for IP allocation. Applicable only when service is of type LoadBalancer.",
+																						Elem: &schema.Resource{
+																							Schema: map[string]*schema.Schema{
+																								"key": &schema.Schema{
+																									Type:     schema.TypeString,
+																									Computed: true,
+																								},
+																								"value": &schema.Schema{
+																									Type:     schema.TypeString,
+																									Computed: true,
+																								},
+																							},
+																						},
+																					},
+																					"storage_class": &schema.Schema{
+																						Type:        schema.TypeList,
+																						Computed:    true,
+																						Description: "Specifies storage class information of source.",
+																						Elem: &schema.Resource{
+																							Schema: map[string]*schema.Schema{
+																								"name": &schema.Schema{
+																									Type:        schema.TypeString,
+																									Computed:    true,
+																									Description: "Specifies name of storage class.",
+																								},
+																								"provisioner": &schema.Schema{
+																									Type:        schema.TypeString,
+																									Computed:    true,
+																									Description: "specifies provisioner of storage class.",
+																								},
+																							},
+																						},
+																					},
+																					"type": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Computed:    true,
+																						Description: "Specifies the type of the entity in a Kubernetes environment. Specifies the type of a Kubernetes Protection Source. 'kCluster' indicates a Kubernetes Cluster. 'kNamespace' indicates a namespace in a Kubernetes Cluster. 'kService' indicates a service running on a Kubernetes Cluster.",
+																					},
+																					"uuid": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Computed:    true,
+																						Description: "Specifies the UUID of the object.",
+																					},
+																					"velero_aws_plugin_image_location": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Computed:    true,
+																						Description: "Specifies the location of Velero AWS plugin image in private registry.",
+																					},
+																					"velero_image_location": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Computed:    true,
+																						Description: "Specifies the location of Velero image in private registry.",
+																					},
+																					"velero_openshift_plugin_image_location": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Computed:    true,
+																						Description: "Specifies the location of the image for openshift plugin container.",
+																					},
+																					"velero_upgradability": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Computed:    true,
+																						Description: "Specifies if the deployed Velero image needs to be upgraded for this kubernetes entity.",
+																					},
+																					"vlan_info_vec": &schema.Schema{
+																						Type:        schema.TypeList,
+																						Computed:    true,
+																						Description: "Specifies VLAN information provided during registration.",
+																						Elem: &schema.Resource{
+																							Schema: map[string]*schema.Schema{
+																								"service_annotations": &schema.Schema{
+																									Type:        schema.TypeList,
+																									Computed:    true,
+																									Description: "Specifies annotations to be put on services for IP allocation. Applicable only when service is of type LoadBalancer.",
+																									Elem: &schema.Resource{
+																										Schema: map[string]*schema.Schema{
+																											"key": &schema.Schema{
+																												Type:        schema.TypeString,
+																												Computed:    true,
+																												Description: "Specifies the service annotation key value.",
+																											},
+																											"value": &schema.Schema{
+																												Type:        schema.TypeString,
+																												Computed:    true,
+																												Description: "Specifies the service annotation value.",
+																											},
+																										},
+																									},
+																								},
+																								"vlan_params": &schema.Schema{
+																									Type:        schema.TypeList,
+																									Computed:    true,
+																									Description: "Specifies VLAN params associated with the backup/restore operation.",
+																									Elem: &schema.Resource{
+																										Schema: map[string]*schema.Schema{
+																											"disable_vlan": &schema.Schema{
+																												Type:        schema.TypeBool,
+																												Computed:    true,
+																												Description: "If this is set to true, then even if VLANs are configured on the system, the partition VIPs will be used for the restore.",
+																											},
+																											"interface_name": &schema.Schema{
+																												Type:        schema.TypeString,
+																												Computed:    true,
+																												Description: "Interface group to use for backup/restore. If this is not specified, primary interface group for the cluster will be used.",
+																											},
+																											"vlan_id": &schema.Schema{
+																												Type:        schema.TypeInt,
+																												Computed:    true,
+																												Description: "If this is set, then the Cohesity host name or the IP address associated with this VLAN is used for mounting Cohesity's view on the remote host.",
+																											},
+																										},
+																									},
 																								},
 																							},
 																						},
@@ -7619,6 +8141,267 @@ func DataSourceIbmBackupRecoveryProtectionSources() *schema.Resource {
 																							},
 																						},
 																					},
+																					"kubernetes_protection_source": &schema.Schema{
+																						Type:        schema.TypeList,
+																						Computed:    true,
+																						Description: "Specifies a Protection Source in Kubernetes environment.",
+																						Elem: &schema.Resource{
+																							Schema: map[string]*schema.Schema{
+																								"datamover_image_location": &schema.Schema{
+																									Type:        schema.TypeString,
+																									Computed:    true,
+																									Description: "Specifies the location of Datamover image in private registry.",
+																								},
+																								"datamover_service_type": &schema.Schema{
+																									Type:        schema.TypeInt,
+																									Computed:    true,
+																									Description: "Specifies Type of service to be deployed for communication with DataMover pods. Currently, LoadBalancer and NodePort are supported. [default = kNodePort].",
+																								},
+																								"datamover_upgradability": &schema.Schema{
+																									Type:        schema.TypeString,
+																									Computed:    true,
+																									Description: "Specifies if the deployed Datamover image needs to be upgraded for this kubernetes entity.",
+																								},
+																								"default_vlan_params": &schema.Schema{
+																									Type:        schema.TypeList,
+																									Computed:    true,
+																									Description: "Specifies VLAN parameters for the restore operation.",
+																									Elem: &schema.Resource{
+																										Schema: map[string]*schema.Schema{
+																											"disable_vlan": &schema.Schema{
+																												Type:        schema.TypeBool,
+																												Computed:    true,
+																												Description: "Specifies whether to use the VIPs even when VLANs are configured on the Cluster. If configured, VLAN IP addresses are used by default. If VLANs are not configured, this flag is ignored. Set this flag to true to force using the partition VIPs when VLANs are configured on the Cluster.",
+																											},
+																											"interface_name": &schema.Schema{
+																												Type:        schema.TypeString,
+																												Computed:    true,
+																												Description: "Specifies the physical interface group name to use for mounting Cohesity's view on the remote host. If specified, Cohesity hostname or the IP address on this VLAN is used.",
+																											},
+																											"vlan": &schema.Schema{
+																												Type:        schema.TypeInt,
+																												Computed:    true,
+																												Description: "Specifies the VLAN to use for mounting Cohesity's view on the remote host. If specified, Cohesity hostname or the IP address on this VLAN is used.",
+																											},
+																										},
+																									},
+																								},
+																								"description": &schema.Schema{
+																									Type:        schema.TypeString,
+																									Computed:    true,
+																									Description: "Specifies an optional description of the object.",
+																								},
+																								"distribution": &schema.Schema{
+																									Type:        schema.TypeString,
+																									Computed:    true,
+																									Description: "Specifies the type of the entity in a Kubernetes environment. Determines the K8s distribution. kIKS, kROKS.",
+																								},
+																								"init_container_image_location": &schema.Schema{
+																									Type:        schema.TypeString,
+																									Computed:    true,
+																									Description: "Specifies the location of the image for init containers.",
+																								},
+																								"label_attributes": &schema.Schema{
+																									Type:        schema.TypeList,
+																									Computed:    true,
+																									Description: "Specifies the list of label attributes of this source.",
+																									Elem: &schema.Resource{
+																										Schema: map[string]*schema.Schema{
+																											"id": &schema.Schema{
+																												Type:        schema.TypeInt,
+																												Computed:    true,
+																												Description: "Specifies the Cohesity id of the K8s label.",
+																											},
+																											"name": &schema.Schema{
+																												Type:        schema.TypeString,
+																												Computed:    true,
+																												Description: "Specifies the appended key and value of the K8s label.",
+																											},
+																											"uuid": &schema.Schema{
+																												Type:        schema.TypeString,
+																												Computed:    true,
+																												Description: "Specifies Kubernetes Unique Identifier (UUID) of the K8s label.",
+																											},
+																										},
+																									},
+																								},
+																								"name": &schema.Schema{
+																									Type:        schema.TypeString,
+																									Computed:    true,
+																									Description: "Specifies a unique name of the Protection Source.",
+																								},
+																								"priority_class_name": &schema.Schema{
+																									Type:        schema.TypeString,
+																									Computed:    true,
+																									Description: "Specifies the pritority class name during registration.",
+																								},
+																								"resource_annotation_list": &schema.Schema{
+																									Type:        schema.TypeList,
+																									Computed:    true,
+																									Description: "Specifies resource Annotations information provided during registration.",
+																									Elem: &schema.Resource{
+																										Schema: map[string]*schema.Schema{
+																											"key": &schema.Schema{
+																												Type:        schema.TypeString,
+																												Computed:    true,
+																												Description: "Key for label.",
+																											},
+																											"value": &schema.Schema{
+																												Type:        schema.TypeString,
+																												Computed:    true,
+																												Description: "Value for label.",
+																											},
+																										},
+																									},
+																								},
+																								"resource_label_list": &schema.Schema{
+																									Type:        schema.TypeList,
+																									Computed:    true,
+																									Description: "Specifies resource labels information provided during registration.",
+																									Elem: &schema.Resource{
+																										Schema: map[string]*schema.Schema{
+																											"key": &schema.Schema{
+																												Type:        schema.TypeString,
+																												Computed:    true,
+																												Description: "Key for label.",
+																											},
+																											"value": &schema.Schema{
+																												Type:        schema.TypeString,
+																												Computed:    true,
+																												Description: "Value for label.",
+																											},
+																										},
+																									},
+																								},
+																								"san_field": &schema.Schema{
+																									Type:        schema.TypeList,
+																									Computed:    true,
+																									Description: "Specifies the SAN field for agent certificate.",
+																									Elem: &schema.Schema{
+																										Type: schema.TypeString,
+																									},
+																								},
+																								"service_annotations": &schema.Schema{
+																									Type:        schema.TypeList,
+																									Computed:    true,
+																									Description: "Specifies annotations to be put on services for IP allocation. Applicable only when service is of type LoadBalancer.",
+																									Elem: &schema.Resource{
+																										Schema: map[string]*schema.Schema{
+																											"key": &schema.Schema{
+																												Type:     schema.TypeString,
+																												Computed: true,
+																											},
+																											"value": &schema.Schema{
+																												Type:     schema.TypeString,
+																												Computed: true,
+																											},
+																										},
+																									},
+																								},
+																								"storage_class": &schema.Schema{
+																									Type:        schema.TypeList,
+																									Computed:    true,
+																									Description: "Specifies storage class information of source.",
+																									Elem: &schema.Resource{
+																										Schema: map[string]*schema.Schema{
+																											"name": &schema.Schema{
+																												Type:        schema.TypeString,
+																												Computed:    true,
+																												Description: "Specifies name of storage class.",
+																											},
+																											"provisioner": &schema.Schema{
+																												Type:        schema.TypeString,
+																												Computed:    true,
+																												Description: "specifies provisioner of storage class.",
+																											},
+																										},
+																									},
+																								},
+																								"type": &schema.Schema{
+																									Type:        schema.TypeString,
+																									Computed:    true,
+																									Description: "Specifies the type of the entity in a Kubernetes environment. Specifies the type of a Kubernetes Protection Source. 'kCluster' indicates a Kubernetes Cluster. 'kNamespace' indicates a namespace in a Kubernetes Cluster. 'kService' indicates a service running on a Kubernetes Cluster.",
+																								},
+																								"uuid": &schema.Schema{
+																									Type:        schema.TypeString,
+																									Computed:    true,
+																									Description: "Specifies the UUID of the object.",
+																								},
+																								"velero_aws_plugin_image_location": &schema.Schema{
+																									Type:        schema.TypeString,
+																									Computed:    true,
+																									Description: "Specifies the location of Velero AWS plugin image in private registry.",
+																								},
+																								"velero_image_location": &schema.Schema{
+																									Type:        schema.TypeString,
+																									Computed:    true,
+																									Description: "Specifies the location of Velero image in private registry.",
+																								},
+																								"velero_openshift_plugin_image_location": &schema.Schema{
+																									Type:        schema.TypeString,
+																									Computed:    true,
+																									Description: "Specifies the location of the image for openshift plugin container.",
+																								},
+																								"velero_upgradability": &schema.Schema{
+																									Type:        schema.TypeString,
+																									Computed:    true,
+																									Description: "Specifies if the deployed Velero image needs to be upgraded for this kubernetes entity.",
+																								},
+																								"vlan_info_vec": &schema.Schema{
+																									Type:        schema.TypeList,
+																									Computed:    true,
+																									Description: "Specifies VLAN information provided during registration.",
+																									Elem: &schema.Resource{
+																										Schema: map[string]*schema.Schema{
+																											"service_annotations": &schema.Schema{
+																												Type:        schema.TypeList,
+																												Computed:    true,
+																												Description: "Specifies annotations to be put on services for IP allocation. Applicable only when service is of type LoadBalancer.",
+																												Elem: &schema.Resource{
+																													Schema: map[string]*schema.Schema{
+																														"key": &schema.Schema{
+																															Type:        schema.TypeString,
+																															Computed:    true,
+																															Description: "Specifies the service annotation key value.",
+																														},
+																														"value": &schema.Schema{
+																															Type:        schema.TypeString,
+																															Computed:    true,
+																															Description: "Specifies the service annotation value.",
+																														},
+																													},
+																												},
+																											},
+																											"vlan_params": &schema.Schema{
+																												Type:        schema.TypeList,
+																												Computed:    true,
+																												Description: "Specifies VLAN params associated with the backup/restore operation.",
+																												Elem: &schema.Resource{
+																													Schema: map[string]*schema.Schema{
+																														"disable_vlan": &schema.Schema{
+																															Type:        schema.TypeBool,
+																															Computed:    true,
+																															Description: "If this is set to true, then even if VLANs are configured on the system, the partition VIPs will be used for the restore.",
+																														},
+																														"interface_name": &schema.Schema{
+																															Type:        schema.TypeString,
+																															Computed:    true,
+																															Description: "Interface group to use for backup/restore. If this is not specified, primary interface group for the cluster will be used.",
+																														},
+																														"vlan_id": &schema.Schema{
+																															Type:        schema.TypeInt,
+																															Computed:    true,
+																															Description: "If this is set, then the Cohesity host name or the IP address associated with this VLAN is used for mounting Cohesity's view on the remote host.",
+																														},
+																													},
+																												},
+																											},
+																										},
+																									},
+																								},
+																							},
+																						},
+																					},
 																					"sql_protection_source": &schema.Schema{
 																						Type:        schema.TypeList,
 																						Computed:    true,
@@ -10516,6 +11299,267 @@ func DataSourceIbmBackupRecoveryProtectionSources() *schema.Resource {
 																										},
 																									},
 																								},
+																								"kubernetes_protection_source": &schema.Schema{
+																									Type:        schema.TypeList,
+																									Computed:    true,
+																									Description: "Specifies a Protection Source in Kubernetes environment.",
+																									Elem: &schema.Resource{
+																										Schema: map[string]*schema.Schema{
+																											"datamover_image_location": &schema.Schema{
+																												Type:        schema.TypeString,
+																												Computed:    true,
+																												Description: "Specifies the location of Datamover image in private registry.",
+																											},
+																											"datamover_service_type": &schema.Schema{
+																												Type:        schema.TypeInt,
+																												Computed:    true,
+																												Description: "Specifies Type of service to be deployed for communication with DataMover pods. Currently, LoadBalancer and NodePort are supported. [default = kNodePort].",
+																											},
+																											"datamover_upgradability": &schema.Schema{
+																												Type:        schema.TypeString,
+																												Computed:    true,
+																												Description: "Specifies if the deployed Datamover image needs to be upgraded for this kubernetes entity.",
+																											},
+																											"default_vlan_params": &schema.Schema{
+																												Type:        schema.TypeList,
+																												Computed:    true,
+																												Description: "Specifies VLAN parameters for the restore operation.",
+																												Elem: &schema.Resource{
+																													Schema: map[string]*schema.Schema{
+																														"disable_vlan": &schema.Schema{
+																															Type:        schema.TypeBool,
+																															Computed:    true,
+																															Description: "Specifies whether to use the VIPs even when VLANs are configured on the Cluster. If configured, VLAN IP addresses are used by default. If VLANs are not configured, this flag is ignored. Set this flag to true to force using the partition VIPs when VLANs are configured on the Cluster.",
+																														},
+																														"interface_name": &schema.Schema{
+																															Type:        schema.TypeString,
+																															Computed:    true,
+																															Description: "Specifies the physical interface group name to use for mounting Cohesity's view on the remote host. If specified, Cohesity hostname or the IP address on this VLAN is used.",
+																														},
+																														"vlan": &schema.Schema{
+																															Type:        schema.TypeInt,
+																															Computed:    true,
+																															Description: "Specifies the VLAN to use for mounting Cohesity's view on the remote host. If specified, Cohesity hostname or the IP address on this VLAN is used.",
+																														},
+																													},
+																												},
+																											},
+																											"description": &schema.Schema{
+																												Type:        schema.TypeString,
+																												Computed:    true,
+																												Description: "Specifies an optional description of the object.",
+																											},
+																											"distribution": &schema.Schema{
+																												Type:        schema.TypeString,
+																												Computed:    true,
+																												Description: "Specifies the type of the entity in a Kubernetes environment. Determines the K8s distribution. kIKS, kROKS.",
+																											},
+																											"init_container_image_location": &schema.Schema{
+																												Type:        schema.TypeString,
+																												Computed:    true,
+																												Description: "Specifies the location of the image for init containers.",
+																											},
+																											"label_attributes": &schema.Schema{
+																												Type:        schema.TypeList,
+																												Computed:    true,
+																												Description: "Specifies the list of label attributes of this source.",
+																												Elem: &schema.Resource{
+																													Schema: map[string]*schema.Schema{
+																														"id": &schema.Schema{
+																															Type:        schema.TypeInt,
+																															Computed:    true,
+																															Description: "Specifies the Cohesity id of the K8s label.",
+																														},
+																														"name": &schema.Schema{
+																															Type:        schema.TypeString,
+																															Computed:    true,
+																															Description: "Specifies the appended key and value of the K8s label.",
+																														},
+																														"uuid": &schema.Schema{
+																															Type:        schema.TypeString,
+																															Computed:    true,
+																															Description: "Specifies Kubernetes Unique Identifier (UUID) of the K8s label.",
+																														},
+																													},
+																												},
+																											},
+																											"name": &schema.Schema{
+																												Type:        schema.TypeString,
+																												Computed:    true,
+																												Description: "Specifies a unique name of the Protection Source.",
+																											},
+																											"priority_class_name": &schema.Schema{
+																												Type:        schema.TypeString,
+																												Computed:    true,
+																												Description: "Specifies the pritority class name during registration.",
+																											},
+																											"resource_annotation_list": &schema.Schema{
+																												Type:        schema.TypeList,
+																												Computed:    true,
+																												Description: "Specifies resource Annotations information provided during registration.",
+																												Elem: &schema.Resource{
+																													Schema: map[string]*schema.Schema{
+																														"key": &schema.Schema{
+																															Type:        schema.TypeString,
+																															Computed:    true,
+																															Description: "Key for label.",
+																														},
+																														"value": &schema.Schema{
+																															Type:        schema.TypeString,
+																															Computed:    true,
+																															Description: "Value for label.",
+																														},
+																													},
+																												},
+																											},
+																											"resource_label_list": &schema.Schema{
+																												Type:        schema.TypeList,
+																												Computed:    true,
+																												Description: "Specifies resource labels information provided during registration.",
+																												Elem: &schema.Resource{
+																													Schema: map[string]*schema.Schema{
+																														"key": &schema.Schema{
+																															Type:        schema.TypeString,
+																															Computed:    true,
+																															Description: "Key for label.",
+																														},
+																														"value": &schema.Schema{
+																															Type:        schema.TypeString,
+																															Computed:    true,
+																															Description: "Value for label.",
+																														},
+																													},
+																												},
+																											},
+																											"san_field": &schema.Schema{
+																												Type:        schema.TypeList,
+																												Computed:    true,
+																												Description: "Specifies the SAN field for agent certificate.",
+																												Elem: &schema.Schema{
+																													Type: schema.TypeString,
+																												},
+																											},
+																											"service_annotations": &schema.Schema{
+																												Type:        schema.TypeList,
+																												Computed:    true,
+																												Description: "Specifies annotations to be put on services for IP allocation. Applicable only when service is of type LoadBalancer.",
+																												Elem: &schema.Resource{
+																													Schema: map[string]*schema.Schema{
+																														"key": &schema.Schema{
+																															Type:     schema.TypeString,
+																															Computed: true,
+																														},
+																														"value": &schema.Schema{
+																															Type:     schema.TypeString,
+																															Computed: true,
+																														},
+																													},
+																												},
+																											},
+																											"storage_class": &schema.Schema{
+																												Type:        schema.TypeList,
+																												Computed:    true,
+																												Description: "Specifies storage class information of source.",
+																												Elem: &schema.Resource{
+																													Schema: map[string]*schema.Schema{
+																														"name": &schema.Schema{
+																															Type:        schema.TypeString,
+																															Computed:    true,
+																															Description: "Specifies name of storage class.",
+																														},
+																														"provisioner": &schema.Schema{
+																															Type:        schema.TypeString,
+																															Computed:    true,
+																															Description: "specifies provisioner of storage class.",
+																														},
+																													},
+																												},
+																											},
+																											"type": &schema.Schema{
+																												Type:        schema.TypeString,
+																												Computed:    true,
+																												Description: "Specifies the type of the entity in a Kubernetes environment. Specifies the type of a Kubernetes Protection Source. 'kCluster' indicates a Kubernetes Cluster. 'kNamespace' indicates a namespace in a Kubernetes Cluster. 'kService' indicates a service running on a Kubernetes Cluster.",
+																											},
+																											"uuid": &schema.Schema{
+																												Type:        schema.TypeString,
+																												Computed:    true,
+																												Description: "Specifies the UUID of the object.",
+																											},
+																											"velero_aws_plugin_image_location": &schema.Schema{
+																												Type:        schema.TypeString,
+																												Computed:    true,
+																												Description: "Specifies the location of Velero AWS plugin image in private registry.",
+																											},
+																											"velero_image_location": &schema.Schema{
+																												Type:        schema.TypeString,
+																												Computed:    true,
+																												Description: "Specifies the location of Velero image in private registry.",
+																											},
+																											"velero_openshift_plugin_image_location": &schema.Schema{
+																												Type:        schema.TypeString,
+																												Computed:    true,
+																												Description: "Specifies the location of the image for openshift plugin container.",
+																											},
+																											"velero_upgradability": &schema.Schema{
+																												Type:        schema.TypeString,
+																												Computed:    true,
+																												Description: "Specifies if the deployed Velero image needs to be upgraded for this kubernetes entity.",
+																											},
+																											"vlan_info_vec": &schema.Schema{
+																												Type:        schema.TypeList,
+																												Computed:    true,
+																												Description: "Specifies VLAN information provided during registration.",
+																												Elem: &schema.Resource{
+																													Schema: map[string]*schema.Schema{
+																														"service_annotations": &schema.Schema{
+																															Type:        schema.TypeList,
+																															Computed:    true,
+																															Description: "Specifies annotations to be put on services for IP allocation. Applicable only when service is of type LoadBalancer.",
+																															Elem: &schema.Resource{
+																																Schema: map[string]*schema.Schema{
+																																	"key": &schema.Schema{
+																																		Type:        schema.TypeString,
+																																		Computed:    true,
+																																		Description: "Specifies the service annotation key value.",
+																																	},
+																																	"value": &schema.Schema{
+																																		Type:        schema.TypeString,
+																																		Computed:    true,
+																																		Description: "Specifies the service annotation value.",
+																																	},
+																																},
+																															},
+																														},
+																														"vlan_params": &schema.Schema{
+																															Type:        schema.TypeList,
+																															Computed:    true,
+																															Description: "Specifies VLAN params associated with the backup/restore operation.",
+																															Elem: &schema.Resource{
+																																Schema: map[string]*schema.Schema{
+																																	"disable_vlan": &schema.Schema{
+																																		Type:        schema.TypeBool,
+																																		Computed:    true,
+																																		Description: "If this is set to true, then even if VLANs are configured on the system, the partition VIPs will be used for the restore.",
+																																	},
+																																	"interface_name": &schema.Schema{
+																																		Type:        schema.TypeString,
+																																		Computed:    true,
+																																		Description: "Interface group to use for backup/restore. If this is not specified, primary interface group for the cluster will be used.",
+																																	},
+																																	"vlan_id": &schema.Schema{
+																																		Type:        schema.TypeInt,
+																																		Computed:    true,
+																																		Description: "If this is set, then the Cohesity host name or the IP address associated with this VLAN is used for mounting Cohesity's view on the remote host.",
+																																	},
+																																},
+																															},
+																														},
+																													},
+																												},
+																											},
+																										},
+																									},
+																								},
 																								"sql_protection_source": &schema.Schema{
 																									Type:        schema.TypeList,
 																									Computed:    true,
@@ -13231,6 +14275,267 @@ func DataSourceIbmBackupRecoveryProtectionSources() *schema.Resource {
 																				},
 																			},
 																		},
+																		"kubernetes_protection_source": &schema.Schema{
+																			Type:        schema.TypeList,
+																			Computed:    true,
+																			Description: "Specifies a Protection Source in Kubernetes environment.",
+																			Elem: &schema.Resource{
+																				Schema: map[string]*schema.Schema{
+																					"datamover_image_location": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Computed:    true,
+																						Description: "Specifies the location of Datamover image in private registry.",
+																					},
+																					"datamover_service_type": &schema.Schema{
+																						Type:        schema.TypeInt,
+																						Computed:    true,
+																						Description: "Specifies Type of service to be deployed for communication with DataMover pods. Currently, LoadBalancer and NodePort are supported. [default = kNodePort].",
+																					},
+																					"datamover_upgradability": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Computed:    true,
+																						Description: "Specifies if the deployed Datamover image needs to be upgraded for this kubernetes entity.",
+																					},
+																					"default_vlan_params": &schema.Schema{
+																						Type:        schema.TypeList,
+																						Computed:    true,
+																						Description: "Specifies VLAN parameters for the restore operation.",
+																						Elem: &schema.Resource{
+																							Schema: map[string]*schema.Schema{
+																								"disable_vlan": &schema.Schema{
+																									Type:        schema.TypeBool,
+																									Computed:    true,
+																									Description: "Specifies whether to use the VIPs even when VLANs are configured on the Cluster. If configured, VLAN IP addresses are used by default. If VLANs are not configured, this flag is ignored. Set this flag to true to force using the partition VIPs when VLANs are configured on the Cluster.",
+																								},
+																								"interface_name": &schema.Schema{
+																									Type:        schema.TypeString,
+																									Computed:    true,
+																									Description: "Specifies the physical interface group name to use for mounting Cohesity's view on the remote host. If specified, Cohesity hostname or the IP address on this VLAN is used.",
+																								},
+																								"vlan": &schema.Schema{
+																									Type:        schema.TypeInt,
+																									Computed:    true,
+																									Description: "Specifies the VLAN to use for mounting Cohesity's view on the remote host. If specified, Cohesity hostname or the IP address on this VLAN is used.",
+																								},
+																							},
+																						},
+																					},
+																					"description": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Computed:    true,
+																						Description: "Specifies an optional description of the object.",
+																					},
+																					"distribution": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Computed:    true,
+																						Description: "Specifies the type of the entity in a Kubernetes environment. Determines the K8s distribution. kIKS, kROKS.",
+																					},
+																					"init_container_image_location": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Computed:    true,
+																						Description: "Specifies the location of the image for init containers.",
+																					},
+																					"label_attributes": &schema.Schema{
+																						Type:        schema.TypeList,
+																						Computed:    true,
+																						Description: "Specifies the list of label attributes of this source.",
+																						Elem: &schema.Resource{
+																							Schema: map[string]*schema.Schema{
+																								"id": &schema.Schema{
+																									Type:        schema.TypeInt,
+																									Computed:    true,
+																									Description: "Specifies the Cohesity id of the K8s label.",
+																								},
+																								"name": &schema.Schema{
+																									Type:        schema.TypeString,
+																									Computed:    true,
+																									Description: "Specifies the appended key and value of the K8s label.",
+																								},
+																								"uuid": &schema.Schema{
+																									Type:        schema.TypeString,
+																									Computed:    true,
+																									Description: "Specifies Kubernetes Unique Identifier (UUID) of the K8s label.",
+																								},
+																							},
+																						},
+																					},
+																					"name": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Computed:    true,
+																						Description: "Specifies a unique name of the Protection Source.",
+																					},
+																					"priority_class_name": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Computed:    true,
+																						Description: "Specifies the pritority class name during registration.",
+																					},
+																					"resource_annotation_list": &schema.Schema{
+																						Type:        schema.TypeList,
+																						Computed:    true,
+																						Description: "Specifies resource Annotations information provided during registration.",
+																						Elem: &schema.Resource{
+																							Schema: map[string]*schema.Schema{
+																								"key": &schema.Schema{
+																									Type:        schema.TypeString,
+																									Computed:    true,
+																									Description: "Key for label.",
+																								},
+																								"value": &schema.Schema{
+																									Type:        schema.TypeString,
+																									Computed:    true,
+																									Description: "Value for label.",
+																								},
+																							},
+																						},
+																					},
+																					"resource_label_list": &schema.Schema{
+																						Type:        schema.TypeList,
+																						Computed:    true,
+																						Description: "Specifies resource labels information provided during registration.",
+																						Elem: &schema.Resource{
+																							Schema: map[string]*schema.Schema{
+																								"key": &schema.Schema{
+																									Type:        schema.TypeString,
+																									Computed:    true,
+																									Description: "Key for label.",
+																								},
+																								"value": &schema.Schema{
+																									Type:        schema.TypeString,
+																									Computed:    true,
+																									Description: "Value for label.",
+																								},
+																							},
+																						},
+																					},
+																					"san_field": &schema.Schema{
+																						Type:        schema.TypeList,
+																						Computed:    true,
+																						Description: "Specifies the SAN field for agent certificate.",
+																						Elem: &schema.Schema{
+																							Type: schema.TypeString,
+																						},
+																					},
+																					"service_annotations": &schema.Schema{
+																						Type:        schema.TypeList,
+																						Computed:    true,
+																						Description: "Specifies annotations to be put on services for IP allocation. Applicable only when service is of type LoadBalancer.",
+																						Elem: &schema.Resource{
+																							Schema: map[string]*schema.Schema{
+																								"key": &schema.Schema{
+																									Type:     schema.TypeString,
+																									Computed: true,
+																								},
+																								"value": &schema.Schema{
+																									Type:     schema.TypeString,
+																									Computed: true,
+																								},
+																							},
+																						},
+																					},
+																					"storage_class": &schema.Schema{
+																						Type:        schema.TypeList,
+																						Computed:    true,
+																						Description: "Specifies storage class information of source.",
+																						Elem: &schema.Resource{
+																							Schema: map[string]*schema.Schema{
+																								"name": &schema.Schema{
+																									Type:        schema.TypeString,
+																									Computed:    true,
+																									Description: "Specifies name of storage class.",
+																								},
+																								"provisioner": &schema.Schema{
+																									Type:        schema.TypeString,
+																									Computed:    true,
+																									Description: "specifies provisioner of storage class.",
+																								},
+																							},
+																						},
+																					},
+																					"type": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Computed:    true,
+																						Description: "Specifies the type of the entity in a Kubernetes environment. Specifies the type of a Kubernetes Protection Source. 'kCluster' indicates a Kubernetes Cluster. 'kNamespace' indicates a namespace in a Kubernetes Cluster. 'kService' indicates a service running on a Kubernetes Cluster.",
+																					},
+																					"uuid": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Computed:    true,
+																						Description: "Specifies the UUID of the object.",
+																					},
+																					"velero_aws_plugin_image_location": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Computed:    true,
+																						Description: "Specifies the location of Velero AWS plugin image in private registry.",
+																					},
+																					"velero_image_location": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Computed:    true,
+																						Description: "Specifies the location of Velero image in private registry.",
+																					},
+																					"velero_openshift_plugin_image_location": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Computed:    true,
+																						Description: "Specifies the location of the image for openshift plugin container.",
+																					},
+																					"velero_upgradability": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Computed:    true,
+																						Description: "Specifies if the deployed Velero image needs to be upgraded for this kubernetes entity.",
+																					},
+																					"vlan_info_vec": &schema.Schema{
+																						Type:        schema.TypeList,
+																						Computed:    true,
+																						Description: "Specifies VLAN information provided during registration.",
+																						Elem: &schema.Resource{
+																							Schema: map[string]*schema.Schema{
+																								"service_annotations": &schema.Schema{
+																									Type:        schema.TypeList,
+																									Computed:    true,
+																									Description: "Specifies annotations to be put on services for IP allocation. Applicable only when service is of type LoadBalancer.",
+																									Elem: &schema.Resource{
+																										Schema: map[string]*schema.Schema{
+																											"key": &schema.Schema{
+																												Type:        schema.TypeString,
+																												Computed:    true,
+																												Description: "Specifies the service annotation key value.",
+																											},
+																											"value": &schema.Schema{
+																												Type:        schema.TypeString,
+																												Computed:    true,
+																												Description: "Specifies the service annotation value.",
+																											},
+																										},
+																									},
+																								},
+																								"vlan_params": &schema.Schema{
+																									Type:        schema.TypeList,
+																									Computed:    true,
+																									Description: "Specifies VLAN params associated with the backup/restore operation.",
+																									Elem: &schema.Resource{
+																										Schema: map[string]*schema.Schema{
+																											"disable_vlan": &schema.Schema{
+																												Type:        schema.TypeBool,
+																												Computed:    true,
+																												Description: "If this is set to true, then even if VLANs are configured on the system, the partition VIPs will be used for the restore.",
+																											},
+																											"interface_name": &schema.Schema{
+																												Type:        schema.TypeString,
+																												Computed:    true,
+																												Description: "Interface group to use for backup/restore. If this is not specified, primary interface group for the cluster will be used.",
+																											},
+																											"vlan_id": &schema.Schema{
+																												Type:        schema.TypeInt,
+																												Computed:    true,
+																												Description: "If this is set, then the Cohesity host name or the IP address associated with this VLAN is used for mounting Cohesity's view on the remote host.",
+																											},
+																										},
+																									},
+																								},
+																							},
+																						},
+																					},
+																				},
+																			},
+																		},
 																		"sql_protection_source": &schema.Schema{
 																			Type:        schema.TypeList,
 																			Computed:    true,
@@ -15788,6 +17093,267 @@ func DataSourceIbmBackupRecoveryProtectionSources() *schema.Resource {
 																						Type:        schema.TypeBool,
 																						Computed:    true,
 																						Description: "Specifies the name of the writer.",
+																					},
+																				},
+																			},
+																		},
+																	},
+																},
+															},
+															"kubernetes_protection_source": &schema.Schema{
+																Type:        schema.TypeList,
+																Computed:    true,
+																Description: "Specifies a Protection Source in Kubernetes environment.",
+																Elem: &schema.Resource{
+																	Schema: map[string]*schema.Schema{
+																		"datamover_image_location": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Computed:    true,
+																			Description: "Specifies the location of Datamover image in private registry.",
+																		},
+																		"datamover_service_type": &schema.Schema{
+																			Type:        schema.TypeInt,
+																			Computed:    true,
+																			Description: "Specifies Type of service to be deployed for communication with DataMover pods. Currently, LoadBalancer and NodePort are supported. [default = kNodePort].",
+																		},
+																		"datamover_upgradability": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Computed:    true,
+																			Description: "Specifies if the deployed Datamover image needs to be upgraded for this kubernetes entity.",
+																		},
+																		"default_vlan_params": &schema.Schema{
+																			Type:        schema.TypeList,
+																			Computed:    true,
+																			Description: "Specifies VLAN parameters for the restore operation.",
+																			Elem: &schema.Resource{
+																				Schema: map[string]*schema.Schema{
+																					"disable_vlan": &schema.Schema{
+																						Type:        schema.TypeBool,
+																						Computed:    true,
+																						Description: "Specifies whether to use the VIPs even when VLANs are configured on the Cluster. If configured, VLAN IP addresses are used by default. If VLANs are not configured, this flag is ignored. Set this flag to true to force using the partition VIPs when VLANs are configured on the Cluster.",
+																					},
+																					"interface_name": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Computed:    true,
+																						Description: "Specifies the physical interface group name to use for mounting Cohesity's view on the remote host. If specified, Cohesity hostname or the IP address on this VLAN is used.",
+																					},
+																					"vlan": &schema.Schema{
+																						Type:        schema.TypeInt,
+																						Computed:    true,
+																						Description: "Specifies the VLAN to use for mounting Cohesity's view on the remote host. If specified, Cohesity hostname or the IP address on this VLAN is used.",
+																					},
+																				},
+																			},
+																		},
+																		"description": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Computed:    true,
+																			Description: "Specifies an optional description of the object.",
+																		},
+																		"distribution": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Computed:    true,
+																			Description: "Specifies the type of the entity in a Kubernetes environment. Determines the K8s distribution. kIKS, kROKS.",
+																		},
+																		"init_container_image_location": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Computed:    true,
+																			Description: "Specifies the location of the image for init containers.",
+																		},
+																		"label_attributes": &schema.Schema{
+																			Type:        schema.TypeList,
+																			Computed:    true,
+																			Description: "Specifies the list of label attributes of this source.",
+																			Elem: &schema.Resource{
+																				Schema: map[string]*schema.Schema{
+																					"id": &schema.Schema{
+																						Type:        schema.TypeInt,
+																						Computed:    true,
+																						Description: "Specifies the Cohesity id of the K8s label.",
+																					},
+																					"name": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Computed:    true,
+																						Description: "Specifies the appended key and value of the K8s label.",
+																					},
+																					"uuid": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Computed:    true,
+																						Description: "Specifies Kubernetes Unique Identifier (UUID) of the K8s label.",
+																					},
+																				},
+																			},
+																		},
+																		"name": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Computed:    true,
+																			Description: "Specifies a unique name of the Protection Source.",
+																		},
+																		"priority_class_name": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Computed:    true,
+																			Description: "Specifies the pritority class name during registration.",
+																		},
+																		"resource_annotation_list": &schema.Schema{
+																			Type:        schema.TypeList,
+																			Computed:    true,
+																			Description: "Specifies resource Annotations information provided during registration.",
+																			Elem: &schema.Resource{
+																				Schema: map[string]*schema.Schema{
+																					"key": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Computed:    true,
+																						Description: "Key for label.",
+																					},
+																					"value": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Computed:    true,
+																						Description: "Value for label.",
+																					},
+																				},
+																			},
+																		},
+																		"resource_label_list": &schema.Schema{
+																			Type:        schema.TypeList,
+																			Computed:    true,
+																			Description: "Specifies resource labels information provided during registration.",
+																			Elem: &schema.Resource{
+																				Schema: map[string]*schema.Schema{
+																					"key": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Computed:    true,
+																						Description: "Key for label.",
+																					},
+																					"value": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Computed:    true,
+																						Description: "Value for label.",
+																					},
+																				},
+																			},
+																		},
+																		"san_field": &schema.Schema{
+																			Type:        schema.TypeList,
+																			Computed:    true,
+																			Description: "Specifies the SAN field for agent certificate.",
+																			Elem: &schema.Schema{
+																				Type: schema.TypeString,
+																			},
+																		},
+																		"service_annotations": &schema.Schema{
+																			Type:        schema.TypeList,
+																			Computed:    true,
+																			Description: "Specifies annotations to be put on services for IP allocation. Applicable only when service is of type LoadBalancer.",
+																			Elem: &schema.Resource{
+																				Schema: map[string]*schema.Schema{
+																					"key": &schema.Schema{
+																						Type:     schema.TypeString,
+																						Computed: true,
+																					},
+																					"value": &schema.Schema{
+																						Type:     schema.TypeString,
+																						Computed: true,
+																					},
+																				},
+																			},
+																		},
+																		"storage_class": &schema.Schema{
+																			Type:        schema.TypeList,
+																			Computed:    true,
+																			Description: "Specifies storage class information of source.",
+																			Elem: &schema.Resource{
+																				Schema: map[string]*schema.Schema{
+																					"name": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Computed:    true,
+																						Description: "Specifies name of storage class.",
+																					},
+																					"provisioner": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Computed:    true,
+																						Description: "specifies provisioner of storage class.",
+																					},
+																				},
+																			},
+																		},
+																		"type": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Computed:    true,
+																			Description: "Specifies the type of the entity in a Kubernetes environment. Specifies the type of a Kubernetes Protection Source. 'kCluster' indicates a Kubernetes Cluster. 'kNamespace' indicates a namespace in a Kubernetes Cluster. 'kService' indicates a service running on a Kubernetes Cluster.",
+																		},
+																		"uuid": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Computed:    true,
+																			Description: "Specifies the UUID of the object.",
+																		},
+																		"velero_aws_plugin_image_location": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Computed:    true,
+																			Description: "Specifies the location of Velero AWS plugin image in private registry.",
+																		},
+																		"velero_image_location": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Computed:    true,
+																			Description: "Specifies the location of Velero image in private registry.",
+																		},
+																		"velero_openshift_plugin_image_location": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Computed:    true,
+																			Description: "Specifies the location of the image for openshift plugin container.",
+																		},
+																		"velero_upgradability": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Computed:    true,
+																			Description: "Specifies if the deployed Velero image needs to be upgraded for this kubernetes entity.",
+																		},
+																		"vlan_info_vec": &schema.Schema{
+																			Type:        schema.TypeList,
+																			Computed:    true,
+																			Description: "Specifies VLAN information provided during registration.",
+																			Elem: &schema.Resource{
+																				Schema: map[string]*schema.Schema{
+																					"service_annotations": &schema.Schema{
+																						Type:        schema.TypeList,
+																						Computed:    true,
+																						Description: "Specifies annotations to be put on services for IP allocation. Applicable only when service is of type LoadBalancer.",
+																						Elem: &schema.Resource{
+																							Schema: map[string]*schema.Schema{
+																								"key": &schema.Schema{
+																									Type:        schema.TypeString,
+																									Computed:    true,
+																									Description: "Specifies the service annotation key value.",
+																								},
+																								"value": &schema.Schema{
+																									Type:        schema.TypeString,
+																									Computed:    true,
+																									Description: "Specifies the service annotation value.",
+																								},
+																							},
+																						},
+																					},
+																					"vlan_params": &schema.Schema{
+																						Type:        schema.TypeList,
+																						Computed:    true,
+																						Description: "Specifies VLAN params associated with the backup/restore operation.",
+																						Elem: &schema.Resource{
+																							Schema: map[string]*schema.Schema{
+																								"disable_vlan": &schema.Schema{
+																									Type:        schema.TypeBool,
+																									Computed:    true,
+																									Description: "If this is set to true, then even if VLANs are configured on the system, the partition VIPs will be used for the restore.",
+																								},
+																								"interface_name": &schema.Schema{
+																									Type:        schema.TypeString,
+																									Computed:    true,
+																									Description: "Interface group to use for backup/restore. If this is not specified, primary interface group for the cluster will be used.",
+																								},
+																								"vlan_id": &schema.Schema{
+																									Type:        schema.TypeInt,
+																									Computed:    true,
+																									Description: "If this is set, then the Cohesity host name or the IP address associated with this VLAN is used for mounting Cohesity's view on the remote host.",
+																								},
+																							},
+																						},
 																					},
 																				},
 																			},
@@ -18354,6 +19920,267 @@ func DataSourceIbmBackupRecoveryProtectionSources() *schema.Resource {
 														},
 													},
 												},
+												"kubernetes_protection_source": &schema.Schema{
+													Type:        schema.TypeList,
+													Computed:    true,
+													Description: "Specifies a Protection Source in Kubernetes environment.",
+													Elem: &schema.Resource{
+														Schema: map[string]*schema.Schema{
+															"datamover_image_location": &schema.Schema{
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "Specifies the location of Datamover image in private registry.",
+															},
+															"datamover_service_type": &schema.Schema{
+																Type:        schema.TypeInt,
+																Computed:    true,
+																Description: "Specifies Type of service to be deployed for communication with DataMover pods. Currently, LoadBalancer and NodePort are supported. [default = kNodePort].",
+															},
+															"datamover_upgradability": &schema.Schema{
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "Specifies if the deployed Datamover image needs to be upgraded for this kubernetes entity.",
+															},
+															"default_vlan_params": &schema.Schema{
+																Type:        schema.TypeList,
+																Computed:    true,
+																Description: "Specifies VLAN parameters for the restore operation.",
+																Elem: &schema.Resource{
+																	Schema: map[string]*schema.Schema{
+																		"disable_vlan": &schema.Schema{
+																			Type:        schema.TypeBool,
+																			Computed:    true,
+																			Description: "Specifies whether to use the VIPs even when VLANs are configured on the Cluster. If configured, VLAN IP addresses are used by default. If VLANs are not configured, this flag is ignored. Set this flag to true to force using the partition VIPs when VLANs are configured on the Cluster.",
+																		},
+																		"interface_name": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Computed:    true,
+																			Description: "Specifies the physical interface group name to use for mounting Cohesity's view on the remote host. If specified, Cohesity hostname or the IP address on this VLAN is used.",
+																		},
+																		"vlan": &schema.Schema{
+																			Type:        schema.TypeInt,
+																			Computed:    true,
+																			Description: "Specifies the VLAN to use for mounting Cohesity's view on the remote host. If specified, Cohesity hostname or the IP address on this VLAN is used.",
+																		},
+																	},
+																},
+															},
+															"description": &schema.Schema{
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "Specifies an optional description of the object.",
+															},
+															"distribution": &schema.Schema{
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "Specifies the type of the entity in a Kubernetes environment. Determines the K8s distribution. kIKS, kROKS.",
+															},
+															"init_container_image_location": &schema.Schema{
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "Specifies the location of the image for init containers.",
+															},
+															"label_attributes": &schema.Schema{
+																Type:        schema.TypeList,
+																Computed:    true,
+																Description: "Specifies the list of label attributes of this source.",
+																Elem: &schema.Resource{
+																	Schema: map[string]*schema.Schema{
+																		"id": &schema.Schema{
+																			Type:        schema.TypeInt,
+																			Computed:    true,
+																			Description: "Specifies the Cohesity id of the K8s label.",
+																		},
+																		"name": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Computed:    true,
+																			Description: "Specifies the appended key and value of the K8s label.",
+																		},
+																		"uuid": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Computed:    true,
+																			Description: "Specifies Kubernetes Unique Identifier (UUID) of the K8s label.",
+																		},
+																	},
+																},
+															},
+															"name": &schema.Schema{
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "Specifies a unique name of the Protection Source.",
+															},
+															"priority_class_name": &schema.Schema{
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "Specifies the pritority class name during registration.",
+															},
+															"resource_annotation_list": &schema.Schema{
+																Type:        schema.TypeList,
+																Computed:    true,
+																Description: "Specifies resource Annotations information provided during registration.",
+																Elem: &schema.Resource{
+																	Schema: map[string]*schema.Schema{
+																		"key": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Computed:    true,
+																			Description: "Key for label.",
+																		},
+																		"value": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Computed:    true,
+																			Description: "Value for label.",
+																		},
+																	},
+																},
+															},
+															"resource_label_list": &schema.Schema{
+																Type:        schema.TypeList,
+																Computed:    true,
+																Description: "Specifies resource labels information provided during registration.",
+																Elem: &schema.Resource{
+																	Schema: map[string]*schema.Schema{
+																		"key": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Computed:    true,
+																			Description: "Key for label.",
+																		},
+																		"value": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Computed:    true,
+																			Description: "Value for label.",
+																		},
+																	},
+																},
+															},
+															"san_field": &schema.Schema{
+																Type:        schema.TypeList,
+																Computed:    true,
+																Description: "Specifies the SAN field for agent certificate.",
+																Elem: &schema.Schema{
+																	Type: schema.TypeString,
+																},
+															},
+															"service_annotations": &schema.Schema{
+																Type:        schema.TypeList,
+																Computed:    true,
+																Description: "Specifies annotations to be put on services for IP allocation. Applicable only when service is of type LoadBalancer.",
+																Elem: &schema.Resource{
+																	Schema: map[string]*schema.Schema{
+																		"key": &schema.Schema{
+																			Type:     schema.TypeString,
+																			Computed: true,
+																		},
+																		"value": &schema.Schema{
+																			Type:     schema.TypeString,
+																			Computed: true,
+																		},
+																	},
+																},
+															},
+															"storage_class": &schema.Schema{
+																Type:        schema.TypeList,
+																Computed:    true,
+																Description: "Specifies storage class information of source.",
+																Elem: &schema.Resource{
+																	Schema: map[string]*schema.Schema{
+																		"name": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Computed:    true,
+																			Description: "Specifies name of storage class.",
+																		},
+																		"provisioner": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Computed:    true,
+																			Description: "specifies provisioner of storage class.",
+																		},
+																	},
+																},
+															},
+															"type": &schema.Schema{
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "Specifies the type of the entity in a Kubernetes environment. Specifies the type of a Kubernetes Protection Source. 'kCluster' indicates a Kubernetes Cluster. 'kNamespace' indicates a namespace in a Kubernetes Cluster. 'kService' indicates a service running on a Kubernetes Cluster.",
+															},
+															"uuid": &schema.Schema{
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "Specifies the UUID of the object.",
+															},
+															"velero_aws_plugin_image_location": &schema.Schema{
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "Specifies the location of Velero AWS plugin image in private registry.",
+															},
+															"velero_image_location": &schema.Schema{
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "Specifies the location of Velero image in private registry.",
+															},
+															"velero_openshift_plugin_image_location": &schema.Schema{
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "Specifies the location of the image for openshift plugin container.",
+															},
+															"velero_upgradability": &schema.Schema{
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "Specifies if the deployed Velero image needs to be upgraded for this kubernetes entity.",
+															},
+															"vlan_info_vec": &schema.Schema{
+																Type:        schema.TypeList,
+																Computed:    true,
+																Description: "Specifies VLAN information provided during registration.",
+																Elem: &schema.Resource{
+																	Schema: map[string]*schema.Schema{
+																		"service_annotations": &schema.Schema{
+																			Type:        schema.TypeList,
+																			Computed:    true,
+																			Description: "Specifies annotations to be put on services for IP allocation. Applicable only when service is of type LoadBalancer.",
+																			Elem: &schema.Resource{
+																				Schema: map[string]*schema.Schema{
+																					"key": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Computed:    true,
+																						Description: "Specifies the service annotation key value.",
+																					},
+																					"value": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Computed:    true,
+																						Description: "Specifies the service annotation value.",
+																					},
+																				},
+																			},
+																		},
+																		"vlan_params": &schema.Schema{
+																			Type:        schema.TypeList,
+																			Computed:    true,
+																			Description: "Specifies VLAN params associated with the backup/restore operation.",
+																			Elem: &schema.Resource{
+																				Schema: map[string]*schema.Schema{
+																					"disable_vlan": &schema.Schema{
+																						Type:        schema.TypeBool,
+																						Computed:    true,
+																						Description: "If this is set to true, then even if VLANs are configured on the system, the partition VIPs will be used for the restore.",
+																					},
+																					"interface_name": &schema.Schema{
+																						Type:        schema.TypeString,
+																						Computed:    true,
+																						Description: "Interface group to use for backup/restore. If this is not specified, primary interface group for the cluster will be used.",
+																					},
+																					"vlan_id": &schema.Schema{
+																						Type:        schema.TypeInt,
+																						Computed:    true,
+																						Description: "If this is set, then the Cohesity host name or the IP address associated with this VLAN is used for mounting Cohesity's view on the remote host.",
+																					},
+																				},
+																			},
+																		},
+																	},
+																},
+															},
+														},
+													},
+												},
 												"sql_protection_source": &schema.Schema{
 													Type:        schema.TypeList,
 													Computed:    true,
@@ -20913,6 +22740,267 @@ func DataSourceIbmBackupRecoveryProtectionSources() *schema.Resource {
 											},
 										},
 									},
+									"kubernetes_protection_source": &schema.Schema{
+										Type:        schema.TypeList,
+										Computed:    true,
+										Description: "Specifies a Protection Source in Kubernetes environment.",
+										Elem: &schema.Resource{
+											Schema: map[string]*schema.Schema{
+												"datamover_image_location": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "Specifies the location of Datamover image in private registry.",
+												},
+												"datamover_service_type": &schema.Schema{
+													Type:        schema.TypeInt,
+													Computed:    true,
+													Description: "Specifies Type of service to be deployed for communication with DataMover pods. Currently, LoadBalancer and NodePort are supported. [default = kNodePort].",
+												},
+												"datamover_upgradability": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "Specifies if the deployed Datamover image needs to be upgraded for this kubernetes entity.",
+												},
+												"default_vlan_params": &schema.Schema{
+													Type:        schema.TypeList,
+													Computed:    true,
+													Description: "Specifies VLAN parameters for the restore operation.",
+													Elem: &schema.Resource{
+														Schema: map[string]*schema.Schema{
+															"disable_vlan": &schema.Schema{
+																Type:        schema.TypeBool,
+																Computed:    true,
+																Description: "Specifies whether to use the VIPs even when VLANs are configured on the Cluster. If configured, VLAN IP addresses are used by default. If VLANs are not configured, this flag is ignored. Set this flag to true to force using the partition VIPs when VLANs are configured on the Cluster.",
+															},
+															"interface_name": &schema.Schema{
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "Specifies the physical interface group name to use for mounting Cohesity's view on the remote host. If specified, Cohesity hostname or the IP address on this VLAN is used.",
+															},
+															"vlan": &schema.Schema{
+																Type:        schema.TypeInt,
+																Computed:    true,
+																Description: "Specifies the VLAN to use for mounting Cohesity's view on the remote host. If specified, Cohesity hostname or the IP address on this VLAN is used.",
+															},
+														},
+													},
+												},
+												"description": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "Specifies an optional description of the object.",
+												},
+												"distribution": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "Specifies the type of the entity in a Kubernetes environment. Determines the K8s distribution. kIKS, kROKS.",
+												},
+												"init_container_image_location": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "Specifies the location of the image for init containers.",
+												},
+												"label_attributes": &schema.Schema{
+													Type:        schema.TypeList,
+													Computed:    true,
+													Description: "Specifies the list of label attributes of this source.",
+													Elem: &schema.Resource{
+														Schema: map[string]*schema.Schema{
+															"id": &schema.Schema{
+																Type:        schema.TypeInt,
+																Computed:    true,
+																Description: "Specifies the Cohesity id of the K8s label.",
+															},
+															"name": &schema.Schema{
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "Specifies the appended key and value of the K8s label.",
+															},
+															"uuid": &schema.Schema{
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "Specifies Kubernetes Unique Identifier (UUID) of the K8s label.",
+															},
+														},
+													},
+												},
+												"name": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "Specifies a unique name of the Protection Source.",
+												},
+												"priority_class_name": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "Specifies the pritority class name during registration.",
+												},
+												"resource_annotation_list": &schema.Schema{
+													Type:        schema.TypeList,
+													Computed:    true,
+													Description: "Specifies resource Annotations information provided during registration.",
+													Elem: &schema.Resource{
+														Schema: map[string]*schema.Schema{
+															"key": &schema.Schema{
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "Key for label.",
+															},
+															"value": &schema.Schema{
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "Value for label.",
+															},
+														},
+													},
+												},
+												"resource_label_list": &schema.Schema{
+													Type:        schema.TypeList,
+													Computed:    true,
+													Description: "Specifies resource labels information provided during registration.",
+													Elem: &schema.Resource{
+														Schema: map[string]*schema.Schema{
+															"key": &schema.Schema{
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "Key for label.",
+															},
+															"value": &schema.Schema{
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "Value for label.",
+															},
+														},
+													},
+												},
+												"san_field": &schema.Schema{
+													Type:        schema.TypeList,
+													Computed:    true,
+													Description: "Specifies the SAN field for agent certificate.",
+													Elem: &schema.Schema{
+														Type: schema.TypeString,
+													},
+												},
+												"service_annotations": &schema.Schema{
+													Type:        schema.TypeList,
+													Computed:    true,
+													Description: "Specifies annotations to be put on services for IP allocation. Applicable only when service is of type LoadBalancer.",
+													Elem: &schema.Resource{
+														Schema: map[string]*schema.Schema{
+															"key": &schema.Schema{
+																Type:     schema.TypeString,
+																Computed: true,
+															},
+															"value": &schema.Schema{
+																Type:     schema.TypeString,
+																Computed: true,
+															},
+														},
+													},
+												},
+												"storage_class": &schema.Schema{
+													Type:        schema.TypeList,
+													Computed:    true,
+													Description: "Specifies storage class information of source.",
+													Elem: &schema.Resource{
+														Schema: map[string]*schema.Schema{
+															"name": &schema.Schema{
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "Specifies name of storage class.",
+															},
+															"provisioner": &schema.Schema{
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "specifies provisioner of storage class.",
+															},
+														},
+													},
+												},
+												"type": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "Specifies the type of the entity in a Kubernetes environment. Specifies the type of a Kubernetes Protection Source. 'kCluster' indicates a Kubernetes Cluster. 'kNamespace' indicates a namespace in a Kubernetes Cluster. 'kService' indicates a service running on a Kubernetes Cluster.",
+												},
+												"uuid": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "Specifies the UUID of the object.",
+												},
+												"velero_aws_plugin_image_location": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "Specifies the location of Velero AWS plugin image in private registry.",
+												},
+												"velero_image_location": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "Specifies the location of Velero image in private registry.",
+												},
+												"velero_openshift_plugin_image_location": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "Specifies the location of the image for openshift plugin container.",
+												},
+												"velero_upgradability": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "Specifies if the deployed Velero image needs to be upgraded for this kubernetes entity.",
+												},
+												"vlan_info_vec": &schema.Schema{
+													Type:        schema.TypeList,
+													Computed:    true,
+													Description: "Specifies VLAN information provided during registration.",
+													Elem: &schema.Resource{
+														Schema: map[string]*schema.Schema{
+															"service_annotations": &schema.Schema{
+																Type:        schema.TypeList,
+																Computed:    true,
+																Description: "Specifies annotations to be put on services for IP allocation. Applicable only when service is of type LoadBalancer.",
+																Elem: &schema.Resource{
+																	Schema: map[string]*schema.Schema{
+																		"key": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Computed:    true,
+																			Description: "Specifies the service annotation key value.",
+																		},
+																		"value": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Computed:    true,
+																			Description: "Specifies the service annotation value.",
+																		},
+																	},
+																},
+															},
+															"vlan_params": &schema.Schema{
+																Type:        schema.TypeList,
+																Computed:    true,
+																Description: "Specifies VLAN params associated with the backup/restore operation.",
+																Elem: &schema.Resource{
+																	Schema: map[string]*schema.Schema{
+																		"disable_vlan": &schema.Schema{
+																			Type:        schema.TypeBool,
+																			Computed:    true,
+																			Description: "If this is set to true, then even if VLANs are configured on the system, the partition VIPs will be used for the restore.",
+																		},
+																		"interface_name": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Computed:    true,
+																			Description: "Interface group to use for backup/restore. If this is not specified, primary interface group for the cluster will be used.",
+																		},
+																		"vlan_id": &schema.Schema{
+																			Type:        schema.TypeInt,
+																			Computed:    true,
+																			Description: "If this is set, then the Cohesity host name or the IP address associated with this VLAN is used for mounting Cohesity's view on the remote host.",
+																		},
+																	},
+																},
+															},
+														},
+													},
+												},
+											},
+										},
+									},
 									"sql_protection_source": &schema.Schema{
 										Type:        schema.TypeList,
 										Computed:    true,
@@ -22508,12 +24596,251 @@ func DataSourceIbmBackupRecoveryProtectionSourcesProtectionSourceNodeToMap(model
 		}
 		modelMap["physical_protection_source"] = []map[string]interface{}{physicalProtectionSourceMap}
 	}
+	if model.KubernetesProtectionSource != nil {
+		kubernetesProtectionSourceMap, err := DataSourceIbmBackupRecoveryProtectionSourcesKubernetesProtectionSourceToMap(model.KubernetesProtectionSource)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["kubernetes_protection_source"] = []map[string]interface{}{kubernetesProtectionSourceMap}
+	}
 	if model.SqlProtectionSource != nil {
 		sqlProtectionSourceMap, err := DataSourceIbmBackupRecoveryProtectionSourcesSqlProtectionSourceToMap(model.SqlProtectionSource)
 		if err != nil {
 			return modelMap, err
 		}
 		modelMap["sql_protection_source"] = []map[string]interface{}{sqlProtectionSourceMap}
+	}
+	return modelMap, nil
+}
+
+func DataSourceIbmBackupRecoveryProtectionSourcesKubernetesProtectionSourceToMap(model *backuprecoveryv1.KubernetesProtectionSource) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.DatamoverImageLocation != nil {
+		modelMap["datamover_image_location"] = *model.DatamoverImageLocation
+	}
+	if model.DatamoverServiceType != nil {
+		modelMap["datamover_service_type"] = flex.IntValue(model.DatamoverServiceType)
+	}
+	if model.DatamoverUpgradability != nil {
+		modelMap["datamover_upgradability"] = flex.StringValue(model.DatamoverUpgradability)
+	}
+	if model.DefaultVlanParams != nil {
+		defaultVlanParamsMap, err := DataSourceIbmBackupRecoveryProtectionSourcesVlanParametersToMap(model.DefaultVlanParams)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["default_vlan_params"] = []map[string]interface{}{defaultVlanParamsMap}
+	}
+	if model.Description != nil {
+		modelMap["description"] = *model.Description
+	}
+	if model.Distribution != nil {
+		modelMap["distribution"] = *model.Distribution
+	}
+	if model.InitContainerImageLocation != nil {
+		modelMap["init_container_image_location"] = *model.InitContainerImageLocation
+	}
+	if model.LabelAttributes != nil {
+		labelAttributes := []map[string]interface{}{}
+		for _, labelAttributesItem := range model.LabelAttributes {
+			labelAttributesItemMap, err := DataSourceIbmBackupRecoveryProtectionSourcesKubernetesLabelAttributeToMap(&labelAttributesItem) // #nosec G601
+			if err != nil {
+				return modelMap, err
+			}
+			labelAttributes = append(labelAttributes, labelAttributesItemMap)
+		}
+		modelMap["label_attributes"] = labelAttributes
+	}
+	if model.Name != nil {
+		modelMap["name"] = *model.Name
+	}
+	if model.PriorityClassName != nil {
+		modelMap["priority_class_name"] = *model.PriorityClassName
+	}
+	if model.ResourceAnnotationList != nil {
+		resourceAnnotationList := []map[string]interface{}{}
+		for _, resourceAnnotationListItem := range model.ResourceAnnotationList {
+			resourceAnnotationListItemMap, err := DataSourceIbmBackupRecoveryProtectionSourcesK8sLabelToMap(&resourceAnnotationListItem) // #nosec G601
+			if err != nil {
+				return modelMap, err
+			}
+			resourceAnnotationList = append(resourceAnnotationList, resourceAnnotationListItemMap)
+		}
+		modelMap["resource_annotation_list"] = resourceAnnotationList
+	}
+	if model.ResourceLabelList != nil {
+		resourceLabelList := []map[string]interface{}{}
+		for _, resourceLabelListItem := range model.ResourceLabelList {
+			resourceLabelListItemMap, err := DataSourceIbmBackupRecoveryProtectionSourcesK8sLabelToMap(&resourceLabelListItem) // #nosec G601
+			if err != nil {
+				return modelMap, err
+			}
+			resourceLabelList = append(resourceLabelList, resourceLabelListItemMap)
+		}
+		modelMap["resource_label_list"] = resourceLabelList
+	}
+	if model.SanField != nil {
+		modelMap["san_field"] = model.SanField
+	}
+	if model.ServiceAnnotations != nil {
+		serviceAnnotations := []map[string]interface{}{}
+		for _, serviceAnnotationsItem := range model.ServiceAnnotations {
+			serviceAnnotationsItemMap, err := DataSourceIbmBackupRecoveryProtectionSourcesServiceAnnotationsEntryToMap(&serviceAnnotationsItem) // #nosec G601
+			if err != nil {
+				return modelMap, err
+			}
+			serviceAnnotations = append(serviceAnnotations, serviceAnnotationsItemMap)
+		}
+		modelMap["service_annotations"] = serviceAnnotations
+	}
+	if model.StorageClass != nil {
+		storageClass := []map[string]interface{}{}
+		for _, storageClassItem := range model.StorageClass {
+			storageClassItemMap, err := DataSourceIbmBackupRecoveryProtectionSourcesKubernetesStorageClassInfoToMap(&storageClassItem) // #nosec G601
+			if err != nil {
+				return modelMap, err
+			}
+			storageClass = append(storageClass, storageClassItemMap)
+		}
+		modelMap["storage_class"] = storageClass
+	}
+	if model.Type != nil {
+		modelMap["type"] = *model.Type
+	}
+	if model.UUID != nil {
+		modelMap["uuid"] = *model.UUID
+	}
+	if model.VeleroAwsPluginImageLocation != nil {
+		modelMap["velero_aws_plugin_image_location"] = *model.VeleroAwsPluginImageLocation
+	}
+	if model.VeleroImageLocation != nil {
+		modelMap["velero_image_location"] = *model.VeleroImageLocation
+	}
+	if model.VeleroOpenshiftPluginImageLocation != nil {
+		modelMap["velero_openshift_plugin_image_location"] = *model.VeleroOpenshiftPluginImageLocation
+	}
+	if model.VeleroUpgradability != nil {
+		modelMap["velero_upgradability"] = *model.VeleroUpgradability
+	}
+	if model.VlanInfoVec != nil {
+		vlanInfoVec := []map[string]interface{}{}
+		for _, vlanInfoVecItem := range model.VlanInfoVec {
+			vlanInfoVecItemMap, err := DataSourceIbmBackupRecoveryProtectionSourcesKubernetesVlanInfoToMap(&vlanInfoVecItem) // #nosec G601
+			if err != nil {
+				return modelMap, err
+			}
+			vlanInfoVec = append(vlanInfoVec, vlanInfoVecItemMap)
+		}
+		modelMap["vlan_info_vec"] = vlanInfoVec
+	}
+	return modelMap, nil
+}
+
+func DataSourceIbmBackupRecoveryProtectionSourcesVlanParametersToMap(model *backuprecoveryv1.VlanParameters) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.DisableVlan != nil {
+		modelMap["disable_vlan"] = *model.DisableVlan
+	}
+	if model.InterfaceName != nil {
+		modelMap["interface_name"] = *model.InterfaceName
+	}
+	if model.Vlan != nil {
+		modelMap["vlan"] = flex.IntValue(model.Vlan)
+	}
+	return modelMap, nil
+}
+
+func DataSourceIbmBackupRecoveryProtectionSourcesKubernetesLabelAttributeToMap(model *backuprecoveryv1.KubernetesLabelAttribute) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.ID != nil {
+		modelMap["id"] = flex.IntValue(model.ID)
+	}
+	if model.Name != nil {
+		modelMap["name"] = *model.Name
+	}
+	if model.UUID != nil {
+		modelMap["uuid"] = *model.UUID
+	}
+	return modelMap, nil
+}
+
+func DataSourceIbmBackupRecoveryProtectionSourcesK8sLabelToMap(model *backuprecoveryv1.K8sLabel) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.Key != nil {
+		modelMap["key"] = *model.Key
+	}
+	if model.Value != nil {
+		modelMap["value"] = *model.Value
+	}
+	return modelMap, nil
+}
+
+func DataSourceIbmBackupRecoveryProtectionSourcesServiceAnnotationsEntryToMap(model *backuprecoveryv1.ServiceAnnotationsEntry) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.Key != nil {
+		modelMap["key"] = *model.Key
+	}
+	if model.Value != nil {
+		modelMap["value"] = *model.Value
+	}
+	return modelMap, nil
+}
+
+func DataSourceIbmBackupRecoveryProtectionSourcesKubernetesStorageClassInfoToMap(model *backuprecoveryv1.KubernetesStorageClassInfo) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.Name != nil {
+		modelMap["name"] = *model.Name
+	}
+	if model.Provisioner != nil {
+		modelMap["provisioner"] = *model.Provisioner
+	}
+	return modelMap, nil
+}
+
+func DataSourceIbmBackupRecoveryProtectionSourcesKubernetesVlanInfoToMap(model *backuprecoveryv1.KubernetesVlanInfo) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.ServiceAnnotations != nil {
+		serviceAnnotations := []map[string]interface{}{}
+		for _, serviceAnnotationsItem := range model.ServiceAnnotations {
+			serviceAnnotationsItemMap, err := DataSourceIbmBackupRecoveryProtectionSourcesKubernetesServiceAnnotationObjectToMap(&serviceAnnotationsItem) // #nosec G601
+			if err != nil {
+				return modelMap, err
+			}
+			serviceAnnotations = append(serviceAnnotations, serviceAnnotationsItemMap)
+		}
+		modelMap["service_annotations"] = serviceAnnotations
+	}
+	if model.VlanParams != nil {
+		vlanParamsMap, err := DataSourceIbmBackupRecoveryProtectionSourcesVlanParamsToMap(model.VlanParams)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["vlan_params"] = []map[string]interface{}{vlanParamsMap}
+	}
+	return modelMap, nil
+}
+
+func DataSourceIbmBackupRecoveryProtectionSourcesKubernetesServiceAnnotationObjectToMap(model *backuprecoveryv1.KubernetesServiceAnnotationObject) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.Key != nil {
+		modelMap["key"] = *model.Key
+	}
+	if model.Value != nil {
+		modelMap["value"] = *model.Value
+	}
+	return modelMap, nil
+}
+
+func DataSourceIbmBackupRecoveryProtectionSourcesVlanParamsToMap(model *backuprecoveryv1.VlanParams) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.DisableVlan != nil {
+		modelMap["disable_vlan"] = *model.DisableVlan
+	}
+	if model.InterfaceName != nil {
+		modelMap["interface_name"] = *model.InterfaceName
+	}
+	if model.VlanID != nil {
+		modelMap["vlan_id"] = flex.IntValue(model.VlanID)
 	}
 	return modelMap, nil
 }

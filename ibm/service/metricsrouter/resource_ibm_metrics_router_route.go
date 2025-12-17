@@ -1,5 +1,9 @@
-// Copyright IBM Corp. 2023 All Rights Reserved.
+// Copyright IBM Corp. 2025 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
+
+/*
+ * IBM OpenAPI Terraform Generator Version: 3.108.0-56772134-20251111-102802
+ */
 
 package metricsrouter
 
@@ -91,6 +95,24 @@ func ResourceIBMMetricsRouterRoute() *schema.Resource {
 					},
 				},
 			},
+			"managed_by": &schema.Schema{
+				Type:     schema.TypeString,
+				Optional: true,
+				ForceNew: true,
+				// Suppress the diff state transition from nil, account as they are equivalent.
+				DiffSuppressFunc: func(k, old, newv string, d *schema.ResourceData) bool {
+					if old == "" && newv == "account" {
+						return true
+					} else if old == "account" && newv == "" {
+						return true
+					} else {
+						return false
+					}
+				},
+				DiffSuppressOnRefresh: true,
+				ValidateFunc:          validate.InvokeValidator("ibm_metrics_router_route", "managed_by"),
+				Description:           "Present when the route is enterprise-managed (`managed_by: enterprise`).",
+			},
 			"crn": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -170,13 +192,18 @@ func resourceIBMMetricsRouterRouteCreate(context context.Context, d *schema.Reso
 	var rules []metricsrouterv3.RulePrototype
 	for _, e := range d.Get("rules").([]interface{}) {
 		value := e.(map[string]interface{})
-		rulesItem, err := resourceIBMMetricsRouterRouteMapToRulePrototype(value)
+		rulesItem, err := ResourceIBMMetricsRouterRouteMapToRulePrototype(value)
 		if err != nil {
 			return diag.FromErr(err)
 		}
 		rules = append(rules, *rulesItem)
 	}
 	createRouteOptions.SetRules(rules)
+
+	createRouteOptions.SetManagedBy("account")
+	if _, ok := d.GetOk("managed_by"); ok {
+		createRouteOptions.SetManagedBy(d.Get("managed_by").(string))
+	}
 
 	route, response, err := metricsRouterClient.CreateRouteWithContext(context, createRouteOptions)
 	if err != nil {
@@ -214,7 +241,7 @@ func resourceIBMMetricsRouterRouteRead(context context.Context, d *schema.Resour
 	}
 	rules := []map[string]interface{}{}
 	for _, rulesItem := range route.Rules {
-		rulesItemMap, err := resourceIBMMetricsRouterRouteRulePrototypeToMap(&rulesItem)
+		rulesItemMap, err := ResourceIBMMetricsRouterRouteRuleToMap(&rulesItem) // #nosec G601
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -222,6 +249,11 @@ func resourceIBMMetricsRouterRouteRead(context context.Context, d *schema.Resour
 	}
 	if err = d.Set("rules", rules); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting rules: %s", err))
+	}
+	if !core.IsNil(route.ManagedBy) {
+		if err = d.Set("managed_by", route.ManagedBy); err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting managed_by: %s", err))
+		}
 	}
 	if err = d.Set("crn", route.CRN); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting crn: %s", err))
@@ -255,7 +287,7 @@ func resourceIBMMetricsRouterRouteUpdate(context context.Context, d *schema.Reso
 		var rules []metricsrouterv3.RulePrototype
 		for _, e := range d.Get("rules").([]interface{}) {
 			value := e.(map[string]interface{})
-			rulesItem, err := resourceIBMMetricsRouterRouteMapToRulePrototype(value)
+			rulesItem, err := ResourceIBMMetricsRouterRouteMapToRulePrototype(value)
 			if err != nil {
 				return diag.FromErr(err)
 			}
@@ -297,14 +329,14 @@ func resourceIBMMetricsRouterRouteDelete(context context.Context, d *schema.Reso
 	return nil
 }
 
-func resourceIBMMetricsRouterRouteMapToRulePrototype(modelMap map[string]interface{}) (*metricsrouterv3.RulePrototype, error) {
+func ResourceIBMMetricsRouterRouteMapToRulePrototype(modelMap map[string]interface{}) (*metricsrouterv3.RulePrototype, error) {
 	model := &metricsrouterv3.RulePrototype{}
 	if modelMap["action"] != nil && modelMap["action"].(string) != "" {
 		model.Action = core.StringPtr(modelMap["action"].(string))
 	}
 	targets := []metricsrouterv3.TargetIdentity{}
 	for _, targetsItem := range modelMap["targets"].([]interface{}) {
-		targetsItemModel, err := resourceIBMMetricsRouterRouteMapToTargetIdentity(targetsItem.(map[string]interface{}))
+		targetsItemModel, err := ResourceIBMMetricsRouterRouteMapToTargetIdentity(targetsItem.(map[string]interface{}))
 		if err != nil {
 			return model, err
 		}
@@ -313,7 +345,7 @@ func resourceIBMMetricsRouterRouteMapToRulePrototype(modelMap map[string]interfa
 	model.Targets = targets
 	inclusionFilters := []metricsrouterv3.InclusionFilterPrototype{}
 	for _, inclusionFiltersItem := range modelMap["inclusion_filters"].([]interface{}) {
-		inclusionFiltersItemModel, err := resourceIBMMetricsRouterRouteMapToInclusionFilterPrototype(inclusionFiltersItem.(map[string]interface{}))
+		inclusionFiltersItemModel, err := ResourceIBMMetricsRouterRouteMapToInclusionFilterPrototype(inclusionFiltersItem.(map[string]interface{}))
 		if err != nil {
 			return model, err
 		}
@@ -323,13 +355,13 @@ func resourceIBMMetricsRouterRouteMapToRulePrototype(modelMap map[string]interfa
 	return model, nil
 }
 
-func resourceIBMMetricsRouterRouteMapToTargetIdentity(modelMap map[string]interface{}) (*metricsrouterv3.TargetIdentity, error) {
+func ResourceIBMMetricsRouterRouteMapToTargetIdentity(modelMap map[string]interface{}) (*metricsrouterv3.TargetIdentity, error) {
 	model := &metricsrouterv3.TargetIdentity{}
 	model.ID = core.StringPtr(modelMap["id"].(string))
 	return model, nil
 }
 
-func resourceIBMMetricsRouterRouteMapToInclusionFilterPrototype(modelMap map[string]interface{}) (*metricsrouterv3.InclusionFilterPrototype, error) {
+func ResourceIBMMetricsRouterRouteMapToInclusionFilterPrototype(modelMap map[string]interface{}) (*metricsrouterv3.InclusionFilterPrototype, error) {
 	model := &metricsrouterv3.InclusionFilterPrototype{}
 	model.Operand = core.StringPtr(modelMap["operand"].(string))
 	model.Operator = core.StringPtr(modelMap["operator"].(string))
@@ -341,14 +373,14 @@ func resourceIBMMetricsRouterRouteMapToInclusionFilterPrototype(modelMap map[str
 	return model, nil
 }
 
-func resourceIBMMetricsRouterRouteRulePrototypeToMap(model *metricsrouterv3.Rule) (map[string]interface{}, error) {
+func ResourceIBMMetricsRouterRouteRuleToMap(model *metricsrouterv3.Rule) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.Action != nil {
-		modelMap["action"] = model.Action
+		modelMap["action"] = *model.Action
 	}
 	targets := []map[string]interface{}{}
 	for _, targetsItem := range model.Targets {
-		targetsItemMap, err := resourceIBMMetricsRouterRouteTargetIdentityToMap(&targetsItem)
+		targetsItemMap, err := ResourceIBMMetricsRouterRouteTargetReferenceToMap(&targetsItem) // #nosec G601
 		if err != nil {
 			return modelMap, err
 		}
@@ -357,7 +389,7 @@ func resourceIBMMetricsRouterRouteRulePrototypeToMap(model *metricsrouterv3.Rule
 	modelMap["targets"] = targets
 	inclusionFilters := []map[string]interface{}{}
 	for _, inclusionFiltersItem := range model.InclusionFilters {
-		inclusionFiltersItemMap, err := resourceIBMMetricsRouterRouteInclusionFilterPrototypeToMap(&inclusionFiltersItem)
+		inclusionFiltersItemMap, err := ResourceIBMMetricsRouterRouteInclusionFilterToMap(&inclusionFiltersItem) // #nosec G601
 		if err != nil {
 			return modelMap, err
 		}
@@ -367,16 +399,16 @@ func resourceIBMMetricsRouterRouteRulePrototypeToMap(model *metricsrouterv3.Rule
 	return modelMap, nil
 }
 
-func resourceIBMMetricsRouterRouteTargetIdentityToMap(model *metricsrouterv3.TargetReference) (map[string]interface{}, error) {
+func ResourceIBMMetricsRouterRouteTargetReferenceToMap(model *metricsrouterv3.TargetReference) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	modelMap["id"] = model.ID
+	modelMap["id"] = *model.ID
 	return modelMap, nil
 }
 
-func resourceIBMMetricsRouterRouteInclusionFilterPrototypeToMap(model *metricsrouterv3.InclusionFilter) (map[string]interface{}, error) {
+func ResourceIBMMetricsRouterRouteInclusionFilterToMap(model *metricsrouterv3.InclusionFilter) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	modelMap["operand"] = model.Operand
-	modelMap["operator"] = model.Operator
+	modelMap["operand"] = *model.Operand
+	modelMap["operator"] = *model.Operator
 	modelMap["values"] = model.Values
 	return modelMap, nil
 }

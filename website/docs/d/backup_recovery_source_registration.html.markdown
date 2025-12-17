@@ -102,6 +102,7 @@ Nested schema for **external_metadata**:
 			* `protection_group_id` - (String) Specifies the protection group Id after it is successfully created.
 			* `storage_domain_id` - (Integer) Specifies the storage domain id for the protection job.
 		* `client_private_key` - (String) Specifies the bearer token or private key of Kubernetes source.
+		* `cohesity_dataprotect_plugin_image_location` - (String) Specifies the custom Cohesity Dataprotect plugin image location of the Kubernetes source.		
 		* `data_mover_image_location` - (String) Specifies the datamover image location of Kubernetes source.
 		* `datamover_service_type` - (String) Specifies the data mover service type of Kubernetes source.
 		  * Constraints: Allowable values are: `kNodePort`, `kLoadBalancer`, `kClusterIp`.

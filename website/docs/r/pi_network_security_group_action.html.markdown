@@ -39,8 +39,8 @@ Example usage:
 
 The `ibm_pi_network_security_group_action` provides the following [Timeouts](https://www.terraform.io/docs/language/resources/syntax.html) configuration options:
 
-- **create** - (Default 5 minutes) Used for enabling a network security group.
-- **update** - (Default 5 minutes) Used for disabling a network security group.
+- **create** - (Default 50 minutes) Used for enabling a network security group.
+- **update** - (Default 50 minutes) Used for disabling a network security group.
 
 ## Argument Reference
 

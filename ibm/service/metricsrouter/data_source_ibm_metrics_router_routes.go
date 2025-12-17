@@ -1,5 +1,9 @@
-// Copyright IBM Corp. 2023 All Rights Reserved.
+// Copyright IBM Corp. 2025 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
+
+/*
+ * IBM OpenAPI Terraform Generator Version: 3.108.0-56772134-20251111-102802
+ */
 
 package metricsrouter
 
@@ -127,6 +131,11 @@ func DataSourceIBMMetricsRouterRoutes() *schema.Resource {
 							Computed:    true,
 							Description: "The timestamp of the route last updated time.",
 						},
+						"managed_by": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Present when the route is enterprise-managed (`managed_by: enterprise`).",
+						},
 					},
 				},
 			},
@@ -168,7 +177,7 @@ func dataSourceIBMMetricsRouterRoutesRead(context context.Context, d *schema.Res
 
 	if suppliedFilter {
 		if len(routeCollection.Routes) == 0 {
-			return diag.FromErr(fmt.Errorf("no Routes found with name %s", name))
+			return diag.FromErr(fmt.Errorf("no routes found with name %s", name))
 		}
 		d.SetId(name)
 	} else {
@@ -178,7 +187,7 @@ func dataSourceIBMMetricsRouterRoutesRead(context context.Context, d *schema.Res
 	routes := []map[string]interface{}{}
 	if routeCollection.Routes != nil {
 		for _, modelItem := range routeCollection.Routes {
-			modelMap, err := dataSourceIBMMetricsRouterRoutesRouteToMap(&modelItem)
+			modelMap, err := DataSourceIBMMetricsRouterRoutesRouteToMap(&modelItem)
 			if err != nil {
 				return diag.FromErr(err)
 			}
@@ -186,7 +195,7 @@ func dataSourceIBMMetricsRouterRoutesRead(context context.Context, d *schema.Res
 		}
 	}
 	if err = d.Set("routes", routes); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting routes %s", err))
+		return diag.FromErr(fmt.Errorf("error setting routes %s", err))
 	}
 
 	return nil
@@ -197,7 +206,7 @@ func dataSourceIBMMetricsRouterRoutesID(d *schema.ResourceData) string {
 	return time.Now().UTC().String()
 }
 
-func dataSourceIBMMetricsRouterRoutesRouteToMap(model *metricsrouterv3.Route) (map[string]interface{}, error) {
+func DataSourceIBMMetricsRouterRoutesRouteToMap(model *metricsrouterv3.Route) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.ID != nil {
 		modelMap["id"] = *model.ID
@@ -211,13 +220,16 @@ func dataSourceIBMMetricsRouterRoutesRouteToMap(model *metricsrouterv3.Route) (m
 	if model.Rules != nil {
 		rules := []map[string]interface{}{}
 		for _, rulesItem := range model.Rules {
-			rulesItemMap, err := dataSourceIBMMetricsRouterRoutesRuleToMap(&rulesItem)
+			rulesItemMap, err := DataSourceIBMMetricsRouterRoutesRuleToMap(&rulesItem)
 			if err != nil {
 				return modelMap, err
 			}
 			rules = append(rules, rulesItemMap)
 		}
 		modelMap["rules"] = rules
+	}
+	if model.ManagedBy != nil {
+		modelMap["managed_by"] = *model.ManagedBy
 	}
 	if model.CreatedAt != nil {
 		modelMap["created_at"] = model.CreatedAt.String()
@@ -228,7 +240,7 @@ func dataSourceIBMMetricsRouterRoutesRouteToMap(model *metricsrouterv3.Route) (m
 	return modelMap, nil
 }
 
-func dataSourceIBMMetricsRouterRoutesRuleToMap(model *metricsrouterv3.Rule) (map[string]interface{}, error) {
+func DataSourceIBMMetricsRouterRoutesRuleToMap(model *metricsrouterv3.Rule) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.Action != nil {
 		modelMap["action"] = *model.Action
@@ -236,7 +248,7 @@ func dataSourceIBMMetricsRouterRoutesRuleToMap(model *metricsrouterv3.Rule) (map
 	if model.Targets != nil {
 		targets := []map[string]interface{}{}
 		for _, targetsItem := range model.Targets {
-			targetsItemMap, err := dataSourceIBMMetricsRouterRoutesTargetReferenceToMap(&targetsItem)
+			targetsItemMap, err := DataSourceIBMMetricsRouterRoutesTargetReferenceToMap(&targetsItem)
 			if err != nil {
 				return modelMap, err
 			}
@@ -247,7 +259,7 @@ func dataSourceIBMMetricsRouterRoutesRuleToMap(model *metricsrouterv3.Rule) (map
 	if model.InclusionFilters != nil {
 		inclusionFilters := []map[string]interface{}{}
 		for _, inclusionFiltersItem := range model.InclusionFilters {
-			inclusionFiltersItemMap, err := dataSourceIBMMetricsRouterRoutesInclusionFilterToMap(&inclusionFiltersItem)
+			inclusionFiltersItemMap, err := DataSourceIBMMetricsRouterRoutesInclusionFilterToMap(&inclusionFiltersItem)
 			if err != nil {
 				return modelMap, err
 			}
@@ -258,7 +270,7 @@ func dataSourceIBMMetricsRouterRoutesRuleToMap(model *metricsrouterv3.Rule) (map
 	return modelMap, nil
 }
 
-func dataSourceIBMMetricsRouterRoutesTargetReferenceToMap(model *metricsrouterv3.TargetReference) (map[string]interface{}, error) {
+func DataSourceIBMMetricsRouterRoutesTargetReferenceToMap(model *metricsrouterv3.TargetReference) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.ID != nil {
 		modelMap["id"] = *model.ID
@@ -275,7 +287,7 @@ func dataSourceIBMMetricsRouterRoutesTargetReferenceToMap(model *metricsrouterv3
 	return modelMap, nil
 }
 
-func dataSourceIBMMetricsRouterRoutesInclusionFilterToMap(model *metricsrouterv3.InclusionFilter) (map[string]interface{}, error) {
+func DataSourceIBMMetricsRouterRoutesInclusionFilterToMap(model *metricsrouterv3.InclusionFilter) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.Operand != nil {
 		modelMap["operand"] = *model.Operand

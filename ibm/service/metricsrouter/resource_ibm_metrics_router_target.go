@@ -1,5 +1,9 @@
-// Copyright IBM Corp. 2023 All Rights Reserved.
+// Copyright IBM Corp. 2025 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
+
+/*
+ * IBM OpenAPI Terraform Generator Version: 3.108.0-56772134-20251111-102802
+ */
 
 package metricsrouter
 
@@ -14,6 +18,7 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
+	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/IBM/platform-services-go-sdk/metricsrouterv3"
 )
 
@@ -24,7 +29,6 @@ func ResourceIBMMetricsRouterTarget() *schema.Resource {
 		UpdateContext: resourceIBMMetricsRouterTargetUpdate,
 		DeleteContext: resourceIBMMetricsRouterTargetDelete,
 		Importer:      &schema.ResourceImporter{},
-
 		Schema: map[string]*schema.Schema{
 			"name": &schema.Schema{
 				Type:         schema.TypeString,
@@ -44,6 +48,24 @@ func ResourceIBMMetricsRouterTarget() *schema.Resource {
 				ForceNew:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_metrics_router_target", "region"),
 				Description:  "Include this optional field if you want to create a target in a different region other than the one you are connected.",
+			},
+			"managed_by": &schema.Schema{
+				Type:     schema.TypeString,
+				Optional: true,
+				ForceNew: true,
+				Default:  "account",
+				// Suppress the diff state transition from nil, account as they are equivalent.
+				DiffSuppressFunc: func(k, old, newv string, d *schema.ResourceData) bool {
+					if old == "" && newv == "account" {
+						return true
+					} else if old == "account" && newv == "" {
+						return true
+					} else {
+						return false
+					}
+				},
+				ValidateFunc: validate.InvokeValidator("ibm_metrics_router_target", "managed_by"),
+				Description:  "Present when the target is enterprise-managed (`managed_by: enterprise`). For account-managed targets this field is omitted.",
 			},
 			"crn": &schema.Schema{
 				Type:        schema.TypeString,
@@ -99,6 +121,13 @@ func ResourceIBMMetricsRouterTargetValidator() *validate.ResourceValidator {
 			MinValueLength:             3,
 			MaxValueLength:             1000,
 		},
+		validate.ValidateSchema{
+			Identifier:                 "managed_by",
+			ValidateFunctionIdentifier: validate.ValidateAllowedStringValue,
+			Type:                       validate.TypeString,
+			Optional:                   true,
+			AllowedValues:              "account, enterprise",
+		},
 	)
 
 	resourceValidator := validate.ResourceValidator{ResourceName: "ibm_metrics_router_target", Schema: validateSchema}
@@ -117,6 +146,11 @@ func resourceIBMMetricsRouterTargetCreate(context context.Context, d *schema.Res
 	createTargetOptions.SetDestinationCRN(d.Get("destination_crn").(string))
 	if _, ok := d.GetOk("region"); ok {
 		createTargetOptions.SetRegion(d.Get("region").(string))
+	}
+	// default assume account
+	createTargetOptions.SetManagedBy("account")
+	if _, ok := d.GetOk("managed_by"); ok {
+		createTargetOptions.SetManagedBy(d.Get("managed_by").(string))
 	}
 
 	target, response, err := metricsRouterClient.CreateTargetWithContext(context, createTargetOptions)
@@ -162,6 +196,11 @@ func resourceIBMMetricsRouterTargetRead(context context.Context, d *schema.Resou
 			if err = d.Set("region", *target.Region); err != nil {
 				return diag.FromErr(fmt.Errorf("Error setting region: %s", err))
 			}
+		}
+	}
+	if !core.IsNil(target.ManagedBy) {
+		if err = d.Set("managed_by", target.ManagedBy); err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting managed_by: %s", err))
 		}
 	}
 	if err = d.Set("crn", target.CRN); err != nil {
