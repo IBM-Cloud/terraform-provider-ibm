@@ -1220,13 +1220,13 @@ func createInlineRules(d *schema.ResourceData, nwaclC *vpcv1.VpcV1, nwaclid stri
 			if minport == 0 {
 				ruleTemplate.DestinationPortMin = nil
 			}
-			if minport == 0 {
+			if maxport == 0 {
 				ruleTemplate.DestinationPortMax = nil
 			}
-			if minport == 0 {
+			if sourceminport == 0 {
 				ruleTemplate.SourcePortMin = nil
 			}
-			if minport == 0 {
+			if sourcemaxport == 0 {
 				ruleTemplate.SourcePortMax = nil
 			}
 		}
@@ -1272,13 +1272,13 @@ func createInlineRules(d *schema.ResourceData, nwaclC *vpcv1.VpcV1, nwaclid stri
 			if minport == 0 {
 				ruleTemplate.DestinationPortMin = nil
 			}
-			if minport == 0 {
+			if maxport == 0 {
 				ruleTemplate.DestinationPortMax = nil
 			}
-			if minport == 0 {
+			if sourceminport == 0 {
 				ruleTemplate.SourcePortMin = nil
 			}
-			if minport == 0 {
+			if sourcemaxport == 0 {
 				ruleTemplate.SourcePortMax = nil
 			}
 		}
