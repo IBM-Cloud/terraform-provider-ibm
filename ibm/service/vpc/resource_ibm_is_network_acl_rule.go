@@ -387,7 +387,7 @@ func ResourceIBMISNetworkACLRuleValidator() *validate.ResourceValidator {
 			MaxValueLength:             128})
 	validateSchema = append(validateSchema,
 		validate.ValidateSchema{
-			Identifier:                 isSecurityGroupRuleProtocol,
+			Identifier:                 isNetworkACLRuleProtocol,
 			ValidateFunctionIdentifier: validate.ValidateAllowedStringValue,
 			Type:                       validate.TypeString,
 			AllowedValues:              protocol})
