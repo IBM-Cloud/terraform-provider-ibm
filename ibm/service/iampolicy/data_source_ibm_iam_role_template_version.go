@@ -165,7 +165,7 @@ func dataSourceIBMListRoleTemplatesRead(context context.Context, d *schema.Resou
 
 	if !core.IsNil(roleTemplate.Role) {
 		role := []map[string]interface{}{}
-		roleMap, err := DataSourceIBMListRoleTemplatesTemplateRoleToMap(roleTemplate.Role)
+		roleMap, err := ResourceIBMIAMRoleTemplateVersionTemplateRoleToMap(roleTemplate.Role)
 		if err != nil {
 			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_list_role_templates", "read", "role-to-map").GetDiag()
 		}

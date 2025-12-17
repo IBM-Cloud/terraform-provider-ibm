@@ -62,8 +62,7 @@ In addition to all argument reference list, you can access the following attribu
   - `direction`-  (String) The direction of the traffic either `inbound` or `outbound`.
   - `ip_version` - (String) IP version: `ipv4`
   - `local` - (String) 	The local IP address or range of local IP addresses to which this rule will allow inbound traffic (or from which, for outbound traffic). A CIDR block of 0.0.0.0/0 allows traffic to all local IP addresses (or from all local IP addresses, for outbound rules). an IP address, a `CIDR` block.
-  - `protocol` - (String) The type of the protocol `all`, `icmp`, `tcp`, `udp`.
-  - `name` - (String) The name for this security group rule. The name must not be used by another rule in the security group.
+  - `protocol` - (String) The name of the network protocol.
   - `port_max`- (Integer) The `TCP/UDP` port range that includes the maximum bound.
   - `port_min`- (Integer) The `TCP/UDP` port range that includes the minimum bound.
   - `remote` - (String) Security group id, an IP address, a `CIDR` block, or a single security group identifier.

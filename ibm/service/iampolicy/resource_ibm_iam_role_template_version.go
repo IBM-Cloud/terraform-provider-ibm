@@ -62,7 +62,7 @@ func ResourceIBMIAMRoleTemplateVersion() *schema.Resource {
 					Schema: map[string]*schema.Schema{
 						"name": {
 							Type:        schema.TypeString,
-							Required:    true,
+							Computed:    true,
 							Description: "The name of the role that is used in the CRN. This must be alphanumeric and capitalized.",
 						},
 						"display_name": {
@@ -72,7 +72,7 @@ func ResourceIBMIAMRoleTemplateVersion() *schema.Resource {
 						},
 						"service_name": {
 							Type:        schema.TypeString,
-							Required:    true,
+							Computed:    true,
 							Description: "The service name that the role refers.",
 						},
 						"description": {
@@ -151,7 +151,7 @@ func resourceIBMIAMRoleTemplateVersionCreate(context context.Context, d *schema.
 	createRoleTemplateVersionOptions.SetRoleTemplateID(d.Get("role_template_id").(string))
 
 	if _, ok := d.GetOk("role"); ok {
-		roleModel, err := ResourceIBMIAMRoleTemplateMapToTemplateRole(d.Get("role.0").(map[string]interface{}))
+		roleModel, err := ResourceIBMIAMRoleTemplateMapToTemplateVersionRole(d.Get("role.0").(map[string]interface{}))
 		if err != nil {
 			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_role_template_version", "create", "parse-role").GetDiag()
 		}
@@ -334,7 +334,7 @@ func resourceIBMIAMRoleTemplateVersionUpdate(context context.Context, d *schema.
 			replaceRoleTemplateOptions.SetDescription(d.Get("description").(string))
 		}
 		if _, ok := d.GetOk("role"); ok {
-			role, err := ResourceIBMIAMRoleTemplateMapToTemplateRole(d.Get("role.0").(map[string]interface{}))
+			role, err := ResourceIBMIAMRoleTemplateMapToTemplateVersionRole(d.Get("role.0").(map[string]interface{}))
 			if err != nil {
 				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_role_template_version", "update", "parse-role").GetDiag()
 			}
@@ -383,30 +383,55 @@ func resourceIBMIAMRoleTemplateVersionDelete(context context.Context, d *schema.
 	return nil
 }
 
-func ResourceIBMIAMRoleTemplateMapToTemplateRole(modelMap map[string]interface{}) (*iampolicymanagementv1.TemplateRole, error) {
+func ResourceIBMIAMRoleTemplateMapToTemplateVersionRole(modelMap map[string]interface{}) (*iampolicymanagementv1.TemplateRole, error) {
 	model := &iampolicymanagementv1.TemplateRole{}
-	model.Name = core.StringPtr(modelMap["name"].(string))
-	model.DisplayName = core.StringPtr(modelMap["display_name"].(string))
-	model.ServiceName = core.StringPtr(modelMap["service_name"].(string))
-	if modelMap["description"] != nil && modelMap["description"].(string) != "" {
-		model.Description = core.StringPtr(modelMap["description"].(string))
+	if v, ok := modelMap["display_name"]; ok && v != nil {
+		if str, ok := v.(string); ok && str != "" {
+			model.DisplayName = core.StringPtr(str)
+		}
 	}
-	actions := []string{}
-	for _, actionsItem := range modelMap["actions"].([]interface{}) {
-		actions = append(actions, actionsItem.(string))
+	if v, ok := modelMap["description"]; ok && v != nil {
+		if str, ok := v.(string); ok && str != "" {
+			model.Description = core.StringPtr(str)
+		}
 	}
-	model.Actions = actions
+	if v, ok := modelMap["actions"]; ok && v != nil {
+		if list, ok := v.([]interface{}); ok {
+			actions := make([]string, 0, len(list))
+			for _, item := range list {
+				if s, ok := item.(string); ok && s != "" {
+					actions = append(actions, s)
+				}
+			}
+			if len(actions) > 0 {
+				model.Actions = actions
+			}
+		}
+	}
 	return model, nil
 }
 
-func ResourceIBMIAMRoleTemplateVersionTemplateRoleToMap(model *iampolicymanagementv1.TemplateRole) (map[string]interface{}, error) {
+func ResourceIBMIAMRoleTemplateVersionTemplateRoleToMap(model *iampolicymanagementv1.RoleTemplatePrototypeRole) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	modelMap["name"] = *model.Name
-	modelMap["display_name"] = *model.DisplayName
-	modelMap["service_name"] = *model.ServiceName
+	if model.Name != nil {
+		modelMap["name"] = *model.Name
+	}
+
+	if model.DisplayName != nil {
+		modelMap["display_name"] = *model.DisplayName
+	}
+
+	if model.ServiceName != nil {
+		modelMap["service_name"] = *model.ServiceName
+	}
+
 	if model.Description != nil {
 		modelMap["description"] = *model.Description
 	}
-	modelMap["actions"] = model.Actions
+
+	if model.Actions != nil {
+		modelMap["actions"] = model.Actions
+	}
+
 	return modelMap, nil
 }

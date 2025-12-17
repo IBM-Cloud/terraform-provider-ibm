@@ -2,7 +2,7 @@
 // Licensed under the Mozilla Public License v2.0
 
 /*
- * IBM OpenAPI Terraform Generator Version: 3.105.0-3c13b041-20250605-193116
+ * IBM OpenAPI Terraform Generator Version: 3.108.0-56772134-20251111-102802
  */
 
 package drautomationservice_test
@@ -35,8 +35,7 @@ func TestAccIBMPdrGetGrsLocationPairsDataSourceBasic(t *testing.T) {
 func testAccCheckIBMPdrGetGrsLocationPairsDataSourceConfigBasic() string {
 	return fmt.Sprintf(`
 		data "ibm_pdr_get_grs_location_pairs" "pdr_get_grs_location_pairs_instance" {
-			instance_id = "crn:v1:staging:public:power-dr-automation:global:a/b68c234e719144b18598ae4a7b80c44c:492fef47-3ebf-4090-b089-e9b4199878b6::"
-
+			instance_id = "ac645fe5-fba1-4cb3-952e-e1b09fa0df26"
 		}
 	`)
 }

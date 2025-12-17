@@ -946,9 +946,57 @@ func setVpcDetails(context context.Context, d *schema.ResourceData, vpc *vpcv1.V
 						rules = append(rules, r)
 					}
 
-				case "*vpcv1.SecurityGroupRuleSecurityGroupRuleProtocolAll":
+				case "*vpcv1.SecurityGroupRuleProtocolAny":
 					{
-						rule := sgrule.(*vpcv1.SecurityGroupRuleSecurityGroupRuleProtocolAll)
+						rule := sgrule.(*vpcv1.SecurityGroupRuleProtocolAny)
+						r := make(map[string]interface{})
+						r[isVPCSecurityGroupRuleDirection] = *rule.Direction
+						r[isVPCSecurityGroupRuleIPVersion] = *rule.IPVersion
+						if rule.Protocol != nil {
+							r[isVPCSecurityGroupRuleProtocol] = *rule.Protocol
+						}
+						r[isVPCSecurityGroupRuleID] = *rule.ID
+						remote, ok := rule.Remote.(*vpcv1.SecurityGroupRuleRemote)
+						if ok {
+							if remote != nil && reflect.ValueOf(remote).IsNil() == false {
+								if remote.ID != nil {
+									r[isVPCSecurityGroupRuleRemote] = remote.ID
+								} else if remote.Address != nil {
+									r[isVPCSecurityGroupRuleRemote] = remote.Address
+								} else if remote.CIDRBlock != nil {
+									r[isVPCSecurityGroupRuleRemote] = remote.CIDRBlock
+								}
+							}
+						}
+						rules = append(rules, r)
+					}
+				case "*vpcv1.SecurityGroupRuleProtocolIndividual":
+					{
+						rule := sgrule.(*vpcv1.SecurityGroupRuleProtocolIndividual)
+						r := make(map[string]interface{})
+						r[isVPCSecurityGroupRuleDirection] = *rule.Direction
+						r[isVPCSecurityGroupRuleIPVersion] = *rule.IPVersion
+						if rule.Protocol != nil {
+							r[isVPCSecurityGroupRuleProtocol] = *rule.Protocol
+						}
+						r[isVPCSecurityGroupRuleID] = *rule.ID
+						remote, ok := rule.Remote.(*vpcv1.SecurityGroupRuleRemote)
+						if ok {
+							if remote != nil && reflect.ValueOf(remote).IsNil() == false {
+								if remote.ID != nil {
+									r[isVPCSecurityGroupRuleRemote] = remote.ID
+								} else if remote.Address != nil {
+									r[isVPCSecurityGroupRuleRemote] = remote.Address
+								} else if remote.CIDRBlock != nil {
+									r[isVPCSecurityGroupRuleRemote] = remote.CIDRBlock
+								}
+							}
+						}
+						rules = append(rules, r)
+					}
+				case "*vpcv1.SecurityGroupRuleProtocolIcmptcpudp":
+					{
+						rule := sgrule.(*vpcv1.SecurityGroupRuleProtocolIcmptcpudp)
 						r := make(map[string]interface{})
 						r[isVPCSecurityGroupRuleDirection] = *rule.Direction
 						r[isVPCSecurityGroupRuleIPVersion] = *rule.IPVersion

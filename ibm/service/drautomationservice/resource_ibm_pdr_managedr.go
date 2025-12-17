@@ -21,7 +21,8 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 	"github.com/IBM/go-sdk-core/v5/core"
-	"github.ibm.com/DRAutomation/dra-go-sdk/drautomationservicev1"
+
+	"github.com/IBM/dra-go-sdk/drautomationservicev1"
 )
 
 func ResourceIbmPdrManagedr() *schema.Resource {
@@ -88,21 +89,29 @@ func ResourceIbmPdrManagedr() *schema.Resource {
 				ForceNew: true,
 			},
 			"action": {
-				Type:     schema.TypeString,
-				ForceNew: true,
-				Optional: true,
+				Type:        schema.TypeString,
+				ForceNew:    true,
+				Optional:    true,
+				Description: "Indicates whether to proceed with asynchronous operation after all configuration details are updated in the database.",
 			},
 			"api_key": {
-				Type:      schema.TypeString,
-				Sensitive: true,
-				ForceNew:  true,
-				Optional:  true,
+				Type:        schema.TypeString,
+				Sensitive:   true,
+				ForceNew:    true,
+				Optional:    true,
+				Description: "The API key associated with the IBM Cloud service instance.",
 			},
 			"client_id": {
 				Type:        schema.TypeString,
 				Optional:    true,
 				ForceNew:    true,
 				Description: "Client ID for MFA Authentication.",
+			},
+			"proxy_ip": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				ForceNew:    true,
+				Description: "Proxy IP for the Communication between Orchestrator and Service.",
 			},
 			"client_secret": {
 				Type:        schema.TypeString,
@@ -118,110 +127,113 @@ func ResourceIbmPdrManagedr() *schema.Resource {
 				Description: "Tenant Name for MFA Authentication.",
 			},
 			"orchestrator_ha": {
-				Type:     schema.TypeBool,
-				Optional: true,
-				ForceNew: true,
+				Type:        schema.TypeBool,
+				Optional:    true,
+				ForceNew:    true,
+				Description: "Flag to enable or disable High Availability (HA) for the service instance.",
 			},
 			"guid": {
-				Type:     schema.TypeString,
-				ForceNew: true,
-				Optional: true,
+				Type:        schema.TypeString,
+				ForceNew:    true,
+				Optional:    true,
+				Description: "The globally unique identifier of the service instance.",
 			},
 			"location_id": {
-				Type:     schema.TypeString,
-				ForceNew: true,
-				Optional: true,
+				Type:        schema.TypeString,
+				ForceNew:    true,
+				Required:    true,
+				Description: "The Location or data center identifier where the service instance is deployed.",
 			},
 			"machine_type": {
-				Type:     schema.TypeString,
-				Optional: true,
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				ForceNew:    true,
+				Description: "The Machine type or flavor used for virtual machines in the service instance.",
 			},
 			"orchestrator_location_type": {
-				Type:     schema.TypeString,
-				Optional: true,
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				ForceNew:    true,
+				Description: "The Type of orchestrator cluster used in the service instance.",
 			},
 			"orchestrator_name": {
-				Type:     schema.TypeString,
-				ForceNew: true,
-				Optional: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				ForceNew:    true,
+				Description: "Username for the orchestrator management interface.",
 			},
 			"orchestrator_password": {
-				Type:      schema.TypeString,
-				Sensitive: true,
-				ForceNew:  true,
-				Optional:  true,
+				Type:        schema.TypeString,
+				Sensitive:   true,
+				ForceNew:    true,
+				Required:    true,
+				Description: "Password for the orchestrator management interface.",
 			},
 			"orchestrator_workspace_id": {
-				Type:     schema.TypeString,
-				ForceNew: true,
-				Optional: true,
-			},
-			"orchestrator_workspace_location": {
-				Type:     schema.TypeString,
-				ForceNew: true,
-				Optional: true,
+				Type:        schema.TypeString,
+				ForceNew:    true,
+				Required:    true,
+				Description: "ID of the orchestrator workspace.",
 			},
 			"region_id": {
-				Type:     schema.TypeString,
-				ForceNew: true,
-				Optional: true,
+				Type:        schema.TypeString,
+				ForceNew:    true,
+				Optional:    true,
+				Description: "Cloud region where the service instance is deployed.",
 			},
 			"resource_instance": {
-				Type:     schema.TypeString,
-				ForceNew: true,
-				Optional: true,
-			},
-			"secondary_workspace_id": {
-				Type:     schema.TypeString,
-				Optional: true,
-				ForceNew: true,
+				Type:        schema.TypeString,
+				ForceNew:    true,
+				Optional:    true,
+				Description: "ID of the associated IBM Cloud resource instance.",
 			},
 			"secret": {
-				Type:     schema.TypeString,
-				Optional: true,
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				ForceNew:    true,
+				Description: "The Secret name or identifier used for retrieving credentials from Secrets Manager.",
 			},
 			"secret_group": {
-				Type:     schema.TypeString,
-				Optional: true,
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				ForceNew:    true,
+				Description: "The Secret group name in IBM Cloud Secrets Manager containing sensitive data for * the service instance.",
 			},
 			"ssh_key_name": {
-				Type:     schema.TypeString,
-				Optional: true,
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				ForceNew:    true,
+				Description: "The Name of the SSH key stored in the cloud provider.",
 			},
 			"standby_machine_type": {
-				Type:     schema.TypeString,
-				Optional: true,
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				ForceNew:    true,
+				Description: "The Machine type or flavor used for standby virtual machines.",
 			},
 			"standby_orchestrator_name": {
-				Type:     schema.TypeString,
-				Optional: true,
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				ForceNew:    true,
+				Description: "The Username for the standby orchestrator management interface.",
 			},
 			"standby_orchestrator_workspace_id": {
-				Type:     schema.TypeString,
-				Optional: true,
-				ForceNew: true,
-			},
-			"standby_orchestrator_workspace_location": {
-				Type:     schema.TypeString,
-				Optional: true,
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				ForceNew:    true,
+				Description: "ID of the standby orchestrator workspace.",
 			},
 			"standby_tier": {
-				Type:     schema.TypeString,
-				Optional: true,
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				ForceNew:    true,
+				Description: "Tier of the standby service instance.",
 			},
 			"tier": {
-				Type:     schema.TypeString,
-				Optional: true,
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				ForceNew:    true,
+				Description: "Tier of the service instance.",
 			},
 		},
 	}
@@ -286,14 +298,14 @@ func resourceIbmPdrManagedrCreate(ctx context.Context, d *schema.ResourceData, m
 	if _, ok := d.GetOk("orchestrator_workspace_id"); ok {
 		createManageDrOptions.SetOrchestratorWorkspaceID(d.Get("orchestrator_workspace_id").(string))
 	}
-	if _, ok := d.GetOk("orchestrator_workspace_location"); ok {
-		createManageDrOptions.SetOrchestratorWorkspaceLocation(d.Get("orchestrator_workspace_location").(string))
-	}
 	if _, ok := d.GetOk("region_id"); ok {
 		createManageDrOptions.SetRegionID(d.Get("region_id").(string))
 	}
 	if _, ok := d.GetOk("client_id"); ok {
 		createManageDrOptions.SetClientID(d.Get("client_id").(string))
+	}
+	if _, ok := d.GetOk("proxy_ip"); ok {
+		createManageDrOptions.SetProxyIP(d.Get("proxy_ip").(string))
 	}
 	if _, ok := d.GetOk("client_secret"); ok {
 		createManageDrOptions.SetClientSecret(d.Get("client_secret").(string))
@@ -303,9 +315,6 @@ func resourceIbmPdrManagedrCreate(ctx context.Context, d *schema.ResourceData, m
 	}
 	if _, ok := d.GetOk("resource_instance"); ok {
 		createManageDrOptions.SetResourceInstance(d.Get("resource_instance").(string))
-	}
-	if _, ok := d.GetOk("secondary_workspace_id"); ok {
-		createManageDrOptions.SetSecondaryWorkspaceID(d.Get("secondary_workspace_id").(string))
 	}
 	if _, ok := d.GetOk("secret"); ok {
 		createManageDrOptions.SetSecret(d.Get("secret").(string))
@@ -325,9 +334,6 @@ func resourceIbmPdrManagedrCreate(ctx context.Context, d *schema.ResourceData, m
 	if _, ok := d.GetOk("standby_orchestrator_workspace_id"); ok {
 		createManageDrOptions.SetStandbyOrchestratorWorkspaceID(d.Get("standby_orchestrator_workspace_id").(string))
 	}
-	if _, ok := d.GetOk("standby_orchestrator_workspace_location"); ok {
-		createManageDrOptions.SetStandbyOrchestratorWorkspaceLocation(d.Get("standby_orchestrator_workspace_location").(string))
-	}
 	if _, ok := d.GetOk("standby_tier"); ok {
 		createManageDrOptions.SetStandbyTier(d.Get("standby_tier").(string))
 	}
@@ -337,14 +343,11 @@ func resourceIbmPdrManagedrCreate(ctx context.Context, d *schema.ResourceData, m
 	if _, ok := d.GetOk("accept_language"); ok {
 		createManageDrOptions.SetAcceptLanguage(d.Get("accept_language").(string))
 	}
-	// if _, ok := d.GetOk("if_none_match"); ok {
-	// 	createManageDrOptions.SetIfNoneMatch(d.Get("if_none_match").(string))
-	// }
 	if _, ok := d.GetOk("accepts_incomplete"); ok {
 		createManageDrOptions.SetAcceptsIncomplete(d.Get("accepts_incomplete").(bool))
 	}
 
-	serviceInstanceManageDr, response, err := drAutomationServiceClient.CreateManageDrWithContext(ctx, createManageDrOptions)
+	_, response, err := drAutomationServiceClient.CreateManageDrWithContext(ctx, createManageDrOptions)
 	if err != nil {
 		detailedMsg := fmt.Sprintf("CreateManageDrWithContext failed: %s", err.Error())
 		// Include HTTP status & raw body if available
@@ -359,7 +362,7 @@ func resourceIbmPdrManagedrCreate(ctx context.Context, d *schema.ResourceData, m
 		return tfErr.GetDiag()
 	}
 
-	d.SetId(fmt.Sprintf("%s", *serviceInstanceManageDr.ID))
+	d.SetId(d.Get("instance_id").(string))
 	// Step 2: Poll Last Operation status every 5 minutes until Active or Fail
 	instanceID := *createManageDrOptions.InstanceID
 	const (
@@ -482,7 +485,7 @@ func resourceIbmPdrManagedrRead(context context.Context, d *schema.ResourceData,
 
 	getManageDrOptions := &drautomationservicev1.GetManageDrOptions{}
 
-	instanceID := d.Get("instance_id").(string)
+	instanceID := d.Id()
 
 	log.Printf("[DEBUG] Read operation using instance ID from resource: %s", instanceID)
 
@@ -490,9 +493,6 @@ func resourceIbmPdrManagedrRead(context context.Context, d *schema.ResourceData,
 
 	// if _, ok := d.GetOk("accept_language"); ok {
 	// 	getManageDrOptions.SetAcceptLanguage(d.Get("accept_language").(string))
-	// }
-	// if _, ok := d.GetOk("if_none_match"); ok {
-	// 	getManageDrOptions.SetIfNoneMatch(d.Get("if_none_match").(string))
 	// }
 
 	serviceInstanceManageDr, response, err := drAutomationServiceClient.GetManageDrWithContext(context, getManageDrOptions)
@@ -517,7 +517,7 @@ func resourceIbmPdrManagedrRead(context context.Context, d *schema.ResourceData,
 		}
 	}
 	if !core.IsNil(serviceInstanceManageDr.ID) {
-		if err = d.Set("instance_id", serviceInstanceManageDr.ID); err != nil {
+		if err = d.Set("instance_id", d.Id()); err != nil {
 			err = fmt.Errorf("Error setting instance_id: %s", err)
 			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_pdr_managedr", "read", "set-instance_id").GetDiag()
 		}
