@@ -421,6 +421,12 @@ func DataSourceIBMISVPC() *schema.Resource {
 										Computed: true,
 									},
 
+									isVPCSecurityGroupRuleName: {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The name for this security group rule. The name must not be used by another rule in the security group.",
+									},
+
 									isVPCSecurityGroupRulePortMin: {
 										Type:     schema.TypeInt,
 										Computed: true,
@@ -921,6 +927,9 @@ func setVpcDetails(context context.Context, d *schema.ResourceData, vpc *vpcv1.V
 						if rule.Protocol != nil {
 							r[isVPCSecurityGroupRuleProtocol] = *rule.Protocol
 						}
+						if rule.Name != nil {
+							r[isVPCSecurityGroupRuleName] = *rule.Name
+						}
 						r[isVPCSecurityGroupRuleID] = *rule.ID
 						remote, ok := rule.Remote.(*vpcv1.SecurityGroupRuleRemote)
 						if ok {
@@ -946,6 +955,9 @@ func setVpcDetails(context context.Context, d *schema.ResourceData, vpc *vpcv1.V
 						if rule.Protocol != nil {
 							r[isVPCSecurityGroupRuleProtocol] = *rule.Protocol
 						}
+						if rule.Name != nil {
+							r[isVPCSecurityGroupRuleName] = *rule.Name
+						}
 						r[isVPCSecurityGroupRuleID] = *rule.ID
 						remote, ok := rule.Remote.(*vpcv1.SecurityGroupRuleRemote)
 						if ok {
@@ -970,6 +982,9 @@ func setVpcDetails(context context.Context, d *schema.ResourceData, vpc *vpcv1.V
 						if rule.Protocol != nil {
 							r[isVPCSecurityGroupRuleProtocol] = *rule.Protocol
 						}
+						if rule.Name != nil {
+							r[isVPCSecurityGroupRuleName] = *rule.Name
+						}
 						r[isVPCSecurityGroupRuleID] = *rule.ID
 						remote, ok := rule.Remote.(*vpcv1.SecurityGroupRuleRemote)
 						if ok {
@@ -991,6 +1006,9 @@ func setVpcDetails(context context.Context, d *schema.ResourceData, vpc *vpcv1.V
 						r := make(map[string]interface{})
 						r[isVPCSecurityGroupRuleDirection] = *rule.Direction
 						r[isVPCSecurityGroupRuleIPVersion] = *rule.IPVersion
+						if rule.Name != nil {
+							r[isVPCSecurityGroupRuleName] = *rule.Name
+						}
 						if rule.Protocol != nil {
 							r[isVPCSecurityGroupRuleProtocol] = *rule.Protocol
 						}
@@ -1016,6 +1034,9 @@ func setVpcDetails(context context.Context, d *schema.ResourceData, vpc *vpcv1.V
 						r := make(map[string]interface{})
 						r[isVPCSecurityGroupRuleDirection] = *rule.Direction
 						r[isVPCSecurityGroupRuleIPVersion] = *rule.IPVersion
+						if rule.Name != nil {
+							r[isVPCSecurityGroupRuleName] = *rule.Name
+						}
 						if rule.PortMin != nil {
 							r[isVPCSecurityGroupRulePortMin] = int(*rule.PortMin)
 						}

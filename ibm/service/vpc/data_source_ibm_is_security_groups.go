@@ -128,6 +128,11 @@ func DataSourceIBMIsSecurityGroups() *schema.Resource {
 										Computed:    true,
 										Description: "The name of the network protocol.",
 									},
+									"name": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The name for this security group rule. The name is unique across all rules in the security group.",
+									},
 									"local": &schema.Schema{
 										Type:        schema.TypeList,
 										Computed:    true,
@@ -486,6 +491,9 @@ func dataSourceSecurityGroupCollectionSecurityGroupsRulesToMap(rulesItem vpcv1.S
 			if securityGroupRule.Href != nil {
 				resultMap["href"] = securityGroupRule.Href
 			}
+			if securityGroupRule.Name != nil {
+				resultMap["name"] = securityGroupRule.Name
+			}
 			if securityGroupRule.IPVersion != nil {
 				resultMap["ip_version"] = securityGroupRule.IPVersion
 			}
@@ -523,6 +531,9 @@ func dataSourceSecurityGroupCollectionSecurityGroupsRulesToMap(rulesItem vpcv1.S
 			if securityGroupRule.Protocol != nil {
 				resultMap["protocol"] = securityGroupRule.Protocol
 			}
+			if securityGroupRule.Name != nil {
+				resultMap["name"] = securityGroupRule.Name
+			}
 			if securityGroupRule.Remote != nil {
 				remoteList := []map[string]interface{}{}
 				remoteMap := dataSourceSecurityGroupsRemoteToMap(*securityGroupRule.Remote.(*vpcv1.SecurityGroupRuleRemote))
@@ -554,6 +565,9 @@ func dataSourceSecurityGroupCollectionSecurityGroupsRulesToMap(rulesItem vpcv1.S
 			if securityGroupRule.Protocol != nil {
 				resultMap["protocol"] = securityGroupRule.Protocol
 			}
+			if securityGroupRule.Name != nil {
+				resultMap["name"] = securityGroupRule.Name
+			}
 			if securityGroupRule.Remote != nil {
 				remoteList := []map[string]interface{}{}
 				remoteMap := dataSourceSecurityGroupsRemoteToMap(*securityGroupRule.Remote.(*vpcv1.SecurityGroupRuleRemote))
@@ -584,6 +598,9 @@ func dataSourceSecurityGroupCollectionSecurityGroupsRulesToMap(rulesItem vpcv1.S
 			}
 			if securityGroupRule.Protocol != nil {
 				resultMap["protocol"] = securityGroupRule.Protocol
+			}
+			if securityGroupRule.Name != nil {
+				resultMap["name"] = securityGroupRule.Name
 			}
 			if securityGroupRule.Href != nil {
 				resultMap["href"] = securityGroupRule.Href
@@ -625,6 +642,9 @@ func dataSourceSecurityGroupCollectionSecurityGroupsRulesToMap(rulesItem vpcv1.S
 			}
 			if securityGroupRule.Protocol != nil {
 				resultMap["protocol"] = securityGroupRule.Protocol
+			}
+			if securityGroupRule.Name != nil {
+				resultMap["name"] = securityGroupRule.Name
 			}
 			if securityGroupRule.Href != nil {
 				resultMap["href"] = securityGroupRule.Href

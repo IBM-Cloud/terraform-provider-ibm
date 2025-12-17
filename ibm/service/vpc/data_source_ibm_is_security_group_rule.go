@@ -37,6 +37,11 @@ func DataSourceIBMIsSecurityGroupRule() *schema.Resource {
 				Computed:    true,
 				Description: "The direction of traffic to enforce, either `inbound` or `outbound`.",
 			},
+			"name": &schema.Schema{
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The name for this security group rule. The name is unique across all rules in the security group.",
+			},
 			"href": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -257,6 +262,9 @@ func dataSourceIBMIsSecurityGroupRuleRead(context context.Context, d *schema.Res
 			if err = d.Set("ip_version", securityGroupRule.IPVersion); err != nil {
 				return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting ip_version: %s", err), "(Data) ibm_is_security_group_rule", "read", "set-ip_version").GetDiag()
 			}
+			if err = d.Set("name", securityGroupRule.Name); err != nil {
+				return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting name: %s", err), "(Data) ibm_is_security_group_rule", "read", "set-name").GetDiag()
+			}
 			if err = d.Set("protocol", securityGroupRule.Protocol); err != nil {
 				return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting protocol: %s", err), "(Data) ibm_is_security_group_rule", "read", "set-protocol").GetDiag()
 			}
@@ -290,6 +298,9 @@ func dataSourceIBMIsSecurityGroupRuleRead(context context.Context, d *schema.Res
 			}
 			if err = d.Set("href", securityGroupRule.Href); err != nil {
 				return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting href: %s", err), "(Data) ibm_is_security_group_rule", "read", "set-href").GetDiag()
+			}
+			if err = d.Set("name", securityGroupRule.Name); err != nil {
+				return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting name: %s", err), "(Data) ibm_is_security_group_rule", "read", "set-name").GetDiag()
 			}
 			if err = d.Set("ip_version", securityGroupRule.IPVersion); err != nil {
 				return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting ip_version: %s", err), "(Data) ibm_is_security_group_rule", "read", "set-ip_version").GetDiag()
@@ -340,6 +351,9 @@ func dataSourceIBMIsSecurityGroupRuleRead(context context.Context, d *schema.Res
 			}
 			if err = d.Set("ip_version", securityGroupRule.IPVersion); err != nil {
 				return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting ip_version: %s", err), "(Data) ibm_is_security_group_rule", "read", "set-ip_version").GetDiag()
+			}
+			if err = d.Set("name", securityGroupRule.Name); err != nil {
+				return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting name: %s", err), "(Data) ibm_is_security_group_rule", "read", "set-name").GetDiag()
 			}
 			if err = d.Set("protocol", securityGroupRule.Protocol); err != nil {
 				return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting protocol: %s", err), "(Data) ibm_is_security_group_rule", "read", "set-protocol").GetDiag()
