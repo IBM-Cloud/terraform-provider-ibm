@@ -342,6 +342,9 @@ func resourceIBMISSecurityGroupRead(context context.Context, d *schema.ResourceD
 					if rule.Protocol != nil {
 						r[isSecurityGroupRuleProtocol] = *rule.Protocol
 					}
+					if rule.Name != nil {
+						r[isSecurityGroupRuleName] = *rule.Name
+					}
 					remote, ok := rule.Remote.(*vpcv1.SecurityGroupRuleRemote)
 					if ok {
 						if remote != nil && reflect.ValueOf(remote).IsNil() == false {
@@ -374,6 +377,9 @@ func resourceIBMISSecurityGroupRead(context context.Context, d *schema.ResourceD
 					r[isSecurityGroupRuleIPVersion] = *rule.IPVersion
 					if rule.Protocol != nil {
 						r[isSecurityGroupRuleProtocol] = *rule.Protocol
+					}
+					if rule.Name != nil {
+						r[isSecurityGroupRuleName] = *rule.Name
 					}
 					remote, ok := rule.Remote.(*vpcv1.SecurityGroupRuleRemote)
 					if ok {

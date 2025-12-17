@@ -191,6 +191,9 @@ func dataSourceIBMIsSecurityGroupRulesRead(context context.Context, d *schema.Re
 				l["direction"] = *rulex.Direction
 				l["href"] = *rulex.Href
 				l["id"] = *rulex.ID
+				if rulex.Name != nil {
+					l["name"] = rulex.Name
+				}
 				l["ip_version"] = *rulex.IPVersion
 				l["protocol"] = *rulex.Protocol
 				// nested map for remote.
@@ -215,6 +218,9 @@ func dataSourceIBMIsSecurityGroupRulesRead(context context.Context, d *schema.Re
 				l["direction"] = *rulex.Direction
 				l["href"] = *rulex.Href
 				l["id"] = *rulex.ID
+				if rulex.Name != nil {
+					l["name"] = rulex.Name
+				}
 				l["ip_version"] = *rulex.IPVersion
 				l["protocol"] = *rulex.Protocol
 				// nested map for remote.

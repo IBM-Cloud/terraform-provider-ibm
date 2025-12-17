@@ -491,6 +491,9 @@ func dataSourceSecurityGroupCollectionSecurityGroupsRulesToMap(rulesItem vpcv1.S
 			if securityGroupRule.Href != nil {
 				resultMap["href"] = securityGroupRule.Href
 			}
+			if securityGroupRule.Name != nil {
+				resultMap["name"] = securityGroupRule.Name
+			}
 			if securityGroupRule.IPVersion != nil {
 				resultMap["ip_version"] = securityGroupRule.IPVersion
 			}
@@ -527,6 +530,9 @@ func dataSourceSecurityGroupCollectionSecurityGroupsRulesToMap(rulesItem vpcv1.S
 			}
 			if securityGroupRule.Protocol != nil {
 				resultMap["protocol"] = securityGroupRule.Protocol
+			}
+			if securityGroupRule.Name != nil {
+				resultMap["name"] = securityGroupRule.Name
 			}
 			if securityGroupRule.Remote != nil {
 				remoteList := []map[string]interface{}{}

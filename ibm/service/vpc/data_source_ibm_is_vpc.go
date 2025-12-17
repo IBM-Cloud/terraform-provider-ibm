@@ -955,6 +955,9 @@ func setVpcDetails(context context.Context, d *schema.ResourceData, vpc *vpcv1.V
 						if rule.Protocol != nil {
 							r[isVPCSecurityGroupRuleProtocol] = *rule.Protocol
 						}
+						if rule.Name != nil {
+							r[isVPCSecurityGroupRuleName] = *rule.Name
+						}
 						r[isVPCSecurityGroupRuleID] = *rule.ID
 						remote, ok := rule.Remote.(*vpcv1.SecurityGroupRuleRemote)
 						if ok {
@@ -978,6 +981,9 @@ func setVpcDetails(context context.Context, d *schema.ResourceData, vpc *vpcv1.V
 						r[isVPCSecurityGroupRuleIPVersion] = *rule.IPVersion
 						if rule.Protocol != nil {
 							r[isVPCSecurityGroupRuleProtocol] = *rule.Protocol
+						}
+						if rule.Name != nil {
+							r[isVPCSecurityGroupRuleName] = *rule.Name
 						}
 						r[isVPCSecurityGroupRuleID] = *rule.ID
 						remote, ok := rule.Remote.(*vpcv1.SecurityGroupRuleRemote)
