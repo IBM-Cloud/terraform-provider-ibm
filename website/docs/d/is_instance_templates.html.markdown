@@ -227,6 +227,10 @@ You can access the following attribute references after your data source is crea
 	- `resource_group` - (String) The resource group ID.
 	- `total_volume_bandwidth` - (Integer) The amount of bandwidth (in megabits per second) allocated exclusively to instance storage volumes	
 	- `user_data` -  (String) The user data provided for the instance.
+	- `vcpu` - (List) Vcpu details.
+
+		Nested schema for **vcpu**:
+		- `percentage` - (Integer) The percentage of VCPU clock cycles allocated to the instance.The virtual server instance `vcpu.percentage` must be `100` when:- The virtual server instance `placement_target` is a dedicated host or dedicated  host group.- The virtual server instance `reservation_affinity.policy` is not `disabled`.If unspecified, the default for `vcpu_percentage` from the profile will be used.
 	- `volume_attachments` - (List) A nested block describes the storage volume configuration for the template.
 
 	  Nested scheme for `volume_attachments`:
