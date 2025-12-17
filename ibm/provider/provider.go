@@ -1066,6 +1066,7 @@ func Provider() *schema.Provider {
 			"ibm_en_destination_app_configuration":  eventnotification.DataSourceIBMEnAppConfigurationDestination(),
 			"ibm_en_subscription_app_configuration": eventnotification.DataSourceIBMEnAppConfigurationSubscription(),
 			"ibm_en_app_configuration_template":     eventnotification.DataSourceIBMEnAppConfigurationTemplate(),
+			"ibm_en_bounce_metrics":                 eventnotification.DataSourceIBMEnBounceMetrics(),
 
 			// Added for Toolchain
 			"ibm_cd_toolchain":                         cdtoolchain.DataSourceIBMCdToolchain(),
