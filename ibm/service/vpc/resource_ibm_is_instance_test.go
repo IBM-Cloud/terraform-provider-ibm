@@ -4803,7 +4803,7 @@ ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVE
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckIBMISInstanceExists("ibm_is_instance.is_instance", instance),
 					resource.TestCheckResourceAttr("ibm_is_instance.is_instance", "name", fmt.Sprintf("%s-ins", prefix)),
-					resource.TestCheckResourceAttr("ibm_is_instance.is_instance", "vcpu.0.percentage", "100"),
+					resource.TestCheckResourceAttr("ibm_is_instance.is_instance", "vcpu.0.percentage", "10"),
 					resource.TestCheckResourceAttr("ibm_is_instance.is_instance", "reservation_affinity.0.policy", "disabled"),
 					resource.TestCheckResourceAttr("ibm_is_instance.is_instance", "zone", acc.ISZoneName),
 					resource.TestCheckResourceAttrSet("ibm_is_instance.is_instance", "primary_network_attachment.0.name"),
@@ -4856,7 +4856,7 @@ func testAccCheckIBMISInstanceVCPUConfig(vpcname, subnetname, sshname, publicKey
 				policy = "disabled"
 			}
 			vcpu {
-				percentage = 100
+				percentage = 10
 			}
 		}
 `, vpcname, subnetname, acc.ISZoneName, acc.ISCIDR, sshname, publicKey, prefix, acc.IsImage, acc.InstanceProfileName, prefix)
