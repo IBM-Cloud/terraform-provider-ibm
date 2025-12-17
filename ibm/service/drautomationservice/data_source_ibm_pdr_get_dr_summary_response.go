@@ -2,7 +2,7 @@
 // Licensed under the Mozilla Public License v2.0
 
 /*
- * IBM OpenAPI Terraform Generator Version: 3.105.0-3c13b041-20250605-193116
+ * IBM OpenAPI Terraform Generator Version: 3.108.0-56772134-20251111-102802
  */
 
 package drautomationservice
@@ -18,7 +18,7 @@ import (
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
-	"github.ibm.com/DRAutomation/dra-go-sdk/drautomationservicev1"
+	"github.com/IBM/dra-go-sdk/drautomationservicev1"
 )
 
 func DataSourceIBMPdrGetDrSummaryResponse() *schema.Resource {
@@ -37,11 +37,20 @@ func DataSourceIBMPdrGetDrSummaryResponse() *schema.Resource {
 				Description: "The language requested for the return document.",
 			},
 			"managed_vm_list": &schema.Schema{
-				Type:        schema.TypeMap,
-				Computed:    true,
-				Description: "A flexible schema placeholder to allow any JSON value (aligns with interface{} in Go).",
-				Elem: &schema.Schema{
-					Type: schema.TypeString,
+				Type:     schema.TypeList,
+				Computed: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"vm_id":           {Type: schema.TypeString, Computed: true},
+						"core":            {Type: schema.TypeString, Computed: true},
+						"dr_average_time": {Type: schema.TypeString, Computed: true},
+						"dr_region":       {Type: schema.TypeString, Computed: true},
+						"memory":          {Type: schema.TypeString, Computed: true},
+						"region":          {Type: schema.TypeString, Computed: true},
+						"vm_name":         {Type: schema.TypeString, Computed: true},
+						"workgroup_name":  {Type: schema.TypeString, Computed: true},
+						"workspace_name":  {Type: schema.TypeString, Computed: true},
+					},
 				},
 			},
 			"orchestrator_details": &schema.Schema{
@@ -282,13 +291,66 @@ func dataSourceIBMPdrGetDrSummaryResponseRead(context context.Context, d *schema
 
 	d.SetId(dataSourceIBMPdrGetDrSummaryResponseID(d))
 
-	convertedMap := make(map[string]interface{}, len(drAutomationGetSummaryResponse.ManagedVMList))
-	for k, v := range drAutomationGetSummaryResponse.ManagedVMList {
-		convertedMap[k] = v
+	vmList := make([]map[string]interface{}, 0)
+
+	for vmID, rawVM := range drAutomationGetSummaryResponse.ManagedVMList {
+
+		vmMap, ok := rawVM.(map[string]interface{})
+		if !ok {
+			return flex.DiscriminatedTerraformErrorf(
+				fmt.Errorf("managed_vm_list[%s] is not an object", vmID),
+				"(Data) ibm_pdr_get_dr_summary_response",
+				"read",
+				"invalid-managed_vm_list",
+				"",
+			).GetDiag()
+		}
+
+		item := map[string]interface{}{
+			"vm_id": vmID,
+		}
+
+		if v, ok := vmMap["core"]; ok {
+			item["core"] = fmt.Sprintf("%v", v)
+		}
+		if v, ok := vmMap["dr_average_time"]; ok {
+			item["dr_average_time"] = fmt.Sprintf("%v", v)
+		}
+		if v, ok := vmMap["dr_region"]; ok {
+			item["dr_region"] = fmt.Sprintf("%v", v)
+		}
+		if v, ok := vmMap["memory"]; ok {
+			item["memory"] = fmt.Sprintf("%v", v)
+		}
+		if v, ok := vmMap["region"]; ok {
+			item["region"] = fmt.Sprintf("%v", v)
+		}
+		if v, ok := vmMap["vm_name"]; ok {
+			item["vm_name"] = fmt.Sprintf("%v", v)
+		}
+		if v, ok := vmMap["workgroup_name"]; ok {
+			item["workgroup_name"] = fmt.Sprintf("%v", v)
+		}
+		if v, ok := vmMap["workspace_name"]; ok {
+			item["workspace_name"] = fmt.Sprintf("%v", v)
+		}
+
+		vmList = append(vmList, item)
 	}
-	if err = d.Set("managed_vm_list", flex.Flatten(convertedMap)); err != nil {
-		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting managed_vm_list: %s", err), "(Data) ibm_pdr_get_dr_summary_response", "read", "set-managed_vm_list").GetDiag()
+
+	if err := d.Set("managed_vm_list", vmList); err != nil {
+		return flex.DiscriminatedTerraformErrorf(
+			err,
+			fmt.Sprintf("Error setting managed_vm_list: %s", err),
+			"(Data) ibm_pdr_get_dr_summary_response",
+			"read",
+			"set-managed_vm_list",
+		).GetDiag()
 	}
+
+	// if err = d.Set("managed_vm_lists", converted); err != nil {
+	// 	return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting managed_vm_list: %s", err), "(Data) ibm_pdr_get_dr_summary_response", "read", "set-managed_vm_list").GetDiag()
+	// }
 
 	orchestratorDetails := []map[string]interface{}{}
 	orchestratorDetailsMap, err := DataSourceIBMPdrGetDrSummaryResponseOrchestratorDetailsToMap(drAutomationGetSummaryResponse.OrchestratorDetails)

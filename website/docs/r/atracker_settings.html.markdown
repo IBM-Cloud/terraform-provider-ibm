@@ -3,7 +3,7 @@ layout: "ibm"
 page_title: "IBM : ibm_atracker_settings"
 description: |-
   Manages atracker_settings.
-subcategory: "Activity Tracker Event Routing"
+subcategory: "Activity Tracker API Version 2"
 ---
 
 # ibm_atracker_settings
@@ -26,7 +26,7 @@ resource "ibm_atracker_settings" "atracker_settings_instance" {
 
 You can specify the following arguments for this resource.
 
-* `default_targets` - (Optional, List) The target ID List. In the event that no routing rule causes the event to be sent to a target, these targets will receive the event.
+* `default_targets` - (Optional, List) The target ID List. In the event that no routing rule causes the event to be sent to a target, these targets will receive the event. Enterprise-managed targets are not supported.
   * Constraints: The list items must match regular expression `/^[a-zA-Z0-9 -]/`.
 * `metadata_region_backup` - (Optional, String) To store all your meta data in a backup region.
   * Constraints: The maximum length is `256` characters. The minimum length is `3` characters. The value must match regular expression `/^[a-zA-Z0-9 -_]/`.

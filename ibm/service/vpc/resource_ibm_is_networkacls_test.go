@@ -55,7 +55,7 @@ func TestNetworkACLResourceGroupUpdate(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"ibm_is_subnet.testacc_subnet", "name", "tf-nwacl-subnet"),
 					resource.TestCheckResourceAttr(
-						"ibm_is_network_acl.isExampleACL", "rules.#", "2"),
+						"ibm_is_network_acl.isExampleACL", "rules.#", "5"),
 					resource.TestCheckResourceAttr(
 						"ibm_is_network_acl.isExampleACL", "tags.#", "2"),
 					resource.TestCheckResourceAttr(
@@ -71,7 +71,7 @@ func TestNetworkACLResourceGroupUpdate(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"ibm_is_subnet.testacc_subnet", "name", "tf-nwacl-subnet"),
 					resource.TestCheckResourceAttr(
-						"ibm_is_network_acl.isExampleACL", "rules.#", "2"),
+						"ibm_is_network_acl.isExampleACL", "rules.#", "5"),
 					resource.TestCheckResourceAttr(
 						"ibm_is_network_acl.isExampleACL", "tags.#", "2"),
 					resource.TestCheckResourceAttrWith("ibm_is_network_acl.isExampleACL", "resource_group_name", func(v string) error {
@@ -99,7 +99,7 @@ func TestNetworkACLGen2(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"ibm_is_network_acl.isExampleACL", "name", "is-example-acl"),
 					resource.TestCheckResourceAttr(
-						"ibm_is_network_acl.isExampleACL", "rules.#", "2"),
+						"ibm_is_network_acl.isExampleACL", "rules.#", "6"),
 					resource.TestCheckResourceAttr(
 						"ibm_is_network_acl.isExampleACL", "tags.#", "2"),
 				),
@@ -229,6 +229,41 @@ func testAccCheckIBMISNetworkACLConfig1() string {
 		  # Optionals :
 		  # port_max =
 		  # port_min =
+		}
+		rules {
+		  name        = "icmnew"
+		  action      = "allow"
+		  source      = "0.0.0.0/0"
+		  destination = "0.0.0.0/0"
+		  direction   = "inbound"
+		  protocol    = "icmp"
+		  code 		  = 8
+		  type 		  = 1
+		}
+		rules {
+		  name        = "anyprotocol"
+		  action      = "allow"
+		  source      = "0.0.0.0/0"
+		  destination = "0.0.0.0/0"
+		  direction   = "inbound"
+		  protocol    = "any"
+		} 
+		
+		rules {
+		  name        = "icmptcpudp"
+		  action      = "allow"
+		  source      = "0.0.0.0/0"
+		  destination = "0.0.0.0/0"
+		  direction   = "inbound"
+		  protocol    = "icmp_tcp_udp"
+		}
+		rules {
+		  name        = "individual"
+		  action      = "allow"
+		  source      = "0.0.0.0/0"
+		  destination = "0.0.0.0/0"
+		  direction   = "inbound"
+		  protocol    = "number_99"
 		}
 	  }
 	`)

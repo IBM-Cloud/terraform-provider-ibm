@@ -36,6 +36,25 @@ func TestAccIBMIAMPolicyTemplateVersionBasic(t *testing.T) {
 	})
 }
 
+func TestAccIBMIAMPolicyTemplateVersionBasicWithRoleReference(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMPolicyTemplateDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMPolicyRoleTemplateVersionConfigBasic(name, serviceName, "iam-identity"),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMPolicyTemplateExists("ibm_iam_policy_template.policy_template", conf),
+					resource.TestCheckResourceAttr("ibm_iam_policy_template_version.template_version", "name", name),
+					resource.TestCheckResourceAttr("ibm_iam_policy_template.policy_template", "policy.0.resource.0.attributes.0.value", serviceName),
+					resource.TestCheckResourceAttr("ibm_iam_policy_template_version.template_version", "policy.0.resource.0.attributes.0.value", "iam-identity"),
+				),
+			},
+		},
+	})
+}
+
 func TestAccIBMIAMPolicyTemplateVersionBasicWithPolcyType(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
@@ -70,6 +89,34 @@ func TestAccIBMIAMPolicyTemplateVersionUpdateCommit(t *testing.T) {
 			},
 			{
 				Config: testAccCheckIBMPolicyTemplateVersionUpdateCommit(name, serviceName, "iam-identity"),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMPolicyTemplateExists("ibm_iam_policy_template.policy_template", conf),
+					resource.TestCheckResourceAttr("ibm_iam_policy_template_version.template_version", "name", name),
+					resource.TestCheckResourceAttr("ibm_iam_policy_template.policy_template", "policy.0.resource.0.attributes.0.value", serviceName),
+					resource.TestCheckResourceAttr("ibm_iam_policy_template_version.template_version", "committed", "true"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccIBMIAMPolicyTemplateVersionUpdateWithRoleReference(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMPolicyTemplateDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMPolicyTemplateVersionConfigBasic(name, serviceName, "iam-identity"),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMPolicyTemplateExists("ibm_iam_policy_template.policy_template", conf),
+					resource.TestCheckResourceAttr("ibm_iam_policy_template_version.template_version", "name", name),
+					resource.TestCheckResourceAttr("ibm_iam_policy_template.policy_template", "policy.0.resource.0.attributes.0.value", serviceName),
+					resource.TestCheckResourceAttr("ibm_iam_policy_template_version.template_version", "policy.0.resource.0.attributes.0.value", "iam-identity"),
+				),
+			},
+			{
+				Config: testAccCheckIBMPolicyRoleTemplateVersionUpdate(name, serviceName, "iam-identity"),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMPolicyTemplateExists("ibm_iam_policy_template.policy_template", conf),
 					resource.TestCheckResourceAttr("ibm_iam_policy_template_version.template_version", "name", name),
@@ -166,6 +213,58 @@ func testAccCheckIBMPolicyTemplateVersionConfigBasic(name string, serviceName st
 	`, name, serviceName, updatedService)
 }
 
+func testAccCheckIBMPolicyRoleTemplateVersionConfigBasic(name string, serviceName string, updatedService string) string {
+	return fmt.Sprintf(`
+		resource "ibm_iam_policy_template" "policy_template" {
+			name = "%s"
+			policy {
+				type = "access"
+				description = "description"
+				resource {
+					attributes {
+						key = "serviceName"
+						operator = "stringEquals"
+						value = "%s"
+					}
+				}
+				roles = ["Operator"]
+			}
+		}
+		resource "ibm_iam_role_template" "role_template" {
+			name = "TerraformPolicyRoleUpdateTest"
+			description = "Create role template and reference in update policy template through Terraform resources"
+			role {
+			    name = "TerrPolicyRoleCreate"
+				display_name = "TestingTerraformPolicyRole"
+				actions = ["iam-identity.serviceid.create" ]
+				service_name="iam-identity"
+			}
+			committed = true
+		}
+	
+		resource "ibm_iam_policy_template_version" "template_version" {
+			template_id = ibm_iam_policy_template.policy_template.template_id
+			policy {
+				type = "access"
+				description = "description"
+				resource {
+					attributes {
+						key = "serviceName"
+						operator = "stringEquals"
+						value = "%s"
+					}
+				}
+				roles = ["Service ID creator", "Operator"]
+				role_template_references {
+					id = ibm_iam_role_template.role_template.role_template_id
+					version = ibm_iam_role_template.role_template.version
+				}
+			}
+			description = "Template version"
+		}
+	`, name, serviceName, updatedService)
+}
+
 func testAccCheckIBMPolicyTemplateVersionConfigBasicWithPolicyType(name string) string {
 	return fmt.Sprintf(`
 		resource "ibm_iam_policy_template" "policy_template" {
@@ -218,6 +317,60 @@ func testAccCheckIBMPolicyTemplateVersionUpdateCommit(name string, serviceName s
 					}
 				}
 				roles = ["Service ID creator", "Operator"]
+			}
+			description = "Template version"
+			committed = true
+		}
+	`, name, serviceName, updatedService)
+}
+
+func testAccCheckIBMPolicyRoleTemplateVersionUpdate(name string, serviceName string, updatedService string) string {
+	return fmt.Sprintf(`
+		resource "ibm_iam_policy_template" "policy_template" {
+			name = "%s"
+			policy {
+				type = "access"
+				description = "description"
+				resource {
+					attributes {
+						key = "serviceName"
+						operator = "stringEquals"
+						value = "%s"
+					}
+				}
+				roles = ["Operator"]
+			}
+		}
+
+		resource "ibm_iam_role_template" "role_template" {
+			name = "TerraformPolicyRoleUpdateTest"
+			description = "Create role template and reference in update policy template through Terraform resources"
+			role {
+			    name = "TerrPolicyRoleCreate"
+				display_name = "TestingTerraformPolicyRole"
+				actions = ["iam-identity.serviceid.create" ]
+				service_name="iam-identity"
+			}
+			committed = true
+		}
+
+		resource "ibm_iam_policy_template_version" "template_version" {
+			template_id = ibm_iam_policy_template.policy_template.template_id
+			policy {
+				type = "access"
+				description = "description"
+				resource {
+					attributes {
+						key = "serviceName"
+						operator = "stringEquals"
+						value = "%s"
+					}
+				}
+				roles = ["Service ID creator", "Operator"]
+				role_template_references {
+					id = ibm_iam_role_template.role_template.role_template_id
+					version = ibm_iam_role_template.role_template.version
+				}
 			}
 			description = "Template version"
 			committed = true

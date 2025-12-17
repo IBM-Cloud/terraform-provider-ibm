@@ -177,6 +177,25 @@ func ResourceIBMIAMPolicyTemplate() *schema.Resource {
 							Elem:        &schema.Schema{Type: schema.TypeString},
 							Description: "Role names of the policy definition",
 						},
+						"role_template_references": {
+							Type:        schema.TypeList,
+							Optional:    true,
+							Description: "Role template references for assignment.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"version": {
+										Type:        schema.TypeString,
+										Required:    true,
+										Description: "Role template version",
+									},
+									"id": {
+										Type:        schema.TypeString,
+										Required:    true,
+										Description: "Role template id",
+									},
+								},
+							},
+						},
 						"subject": {
 							Type:        schema.TypeSet,
 							Optional:    true,
@@ -430,14 +449,40 @@ func generateTemplatePolicy(d *schema.ResourceData, iamPolicyManagementClient *i
 		return model, err
 	}
 
-	if _, ok := d.GetOk("policy.0.roles"); ok && roleList != nil {
-		controlModel, err := generateTemplatePolicyControl(modelMap["roles"].([]interface{}), roleList)
-		if err != nil {
-			return nil, err
-		}
-
-		model.Control = controlModel
+	policyList, ok := d.Get("policy").([]interface{})
+	if !ok || len(policyList) == 0 || policyList[0] == nil {
+		return model, nil
 	}
+
+	policyData, ok := policyList[0].(map[string]interface{})
+	if !ok {
+		return model, nil
+	}
+
+	platformRoles := []interface{}{}
+	if v, exists := policyData["roles"]; exists {
+		if items, ok := v.([]interface{}); ok && len(items) > 0 {
+			platformRoles = items
+		}
+	}
+
+	roleTemplateRefs := []interface{}{}
+	if v, exists := policyData["role_template_references"]; exists {
+		if items, ok := v.([]interface{}); ok && len(items) > 0 {
+			roleTemplateRefs = items
+		}
+	}
+
+	if len(platformRoles) == 0 && len(roleTemplateRefs) == 0 {
+		return model, nil
+	}
+
+	controlModel, err := generateTemplatePolicyControl(platformRoles, roleTemplateRefs, roleList)
+	if err != nil {
+		return nil, err
+	}
+
+	model.Control = controlModel
 
 	if modelMap["pattern"] != nil && modelMap["pattern"].(string) != "" {
 		model.Pattern = core.StringPtr(modelMap["pattern"].(string))
@@ -494,20 +539,52 @@ func generateTemplatePolicyTag(modelMap map[string]interface{}) (*iampolicymanag
 	return model, nil
 }
 
-func generateTemplatePolicyControl(roles []interface{}, roleList *iampolicymanagementv1.RoleCollection) (*iampolicymanagementv1.Control, error) {
-	policyRoles := flex.MapRoleListToPolicyRoles(*roleList)
+func generateTemplatePolicyControl(roles []interface{},
+	roleTemplateRefs []interface{},
+	roleList *iampolicymanagementv1.RoleCollection,
+) (*iampolicymanagementv1.TemplateControl, error) {
+	var mappedPolicyRoles []iampolicymanagementv1.PolicyRole
 
-	policyRoles, err := flex.GetRolesFromRoleNames(flex.ExpandStringList(roles), policyRoles)
-	if err != nil {
-		return &iampolicymanagementv1.Control{}, err
+	if len(roles) > 0 {
+		policyRoles := flex.MapRoleListToPolicyRoles(*roleList)
+		expandedRoleNames := flex.ExpandStringList(roles)
+		resolvedRoles, err := flex.GetRolesFromRoleNames(expandedRoleNames, policyRoles)
+		if err != nil {
+			return &iampolicymanagementv1.TemplateControl{}, err
+		}
+
+		mappedPolicyRoles = resolvedRoles
 	}
-	policyGrant := &iampolicymanagementv1.Grant{
-		Roles: flex.MapPolicyRolesToRoles(policyRoles),
+	mappedRoleTemplateRefs := []iampolicymanagementv1.RoleTemplateReferencesItem{}
+
+	for _, ref := range roleTemplateRefs {
+		role, ok := ref.(map[string]interface{})
+		if !ok {
+			continue
+		}
+		id, _ := role["id"].(string)
+		version, _ := role["version"].(string)
+		mappedRoleTemplateRefs = append(mappedRoleTemplateRefs,
+			iampolicymanagementv1.RoleTemplateReferencesItem{
+				ID:      core.StringPtr(id),
+				Version: core.StringPtr(version),
+			})
 	}
-	policyControl := &iampolicymanagementv1.Control{
-		Grant: policyGrant,
+	grant := &iampolicymanagementv1.TemplateGrant{}
+
+	if len(mappedPolicyRoles) > 0 {
+		grant.Roles = flex.MapPolicyRolesToRoles(mappedPolicyRoles)
 	}
-	return policyControl, nil
+
+	if len(mappedRoleTemplateRefs) > 0 {
+		grant.RoleTemplateReferences = mappedRoleTemplateRefs
+	}
+
+	control := &iampolicymanagementv1.TemplateControl{
+		Grant: grant,
+	}
+
+	return control, nil
 }
 
 func flattenTemplatePolicy(model *iampolicymanagementv1.TemplatePolicy, iamPolicyManagementClient *iampolicymanagementv1.IamPolicyManagementV1) (map[string]interface{}, error) {
@@ -536,8 +613,14 @@ func flattenTemplatePolicy(model *iampolicymanagementv1.TemplatePolicy, iamPolic
 		if err != nil {
 			return nil, err
 		}
+		modelMap["resource"] = []map[string]interface{}{resourceMap}
 		controlResponse := model.Control
-		policyRoles := flex.MapRolesToPolicyRoles(controlResponse.Grant.Roles)
+		grant, ok := controlResponse.Grant.(*iampolicymanagementv1.TemplateGrant)
+		if !ok {
+			return nil, fmt.Errorf("unexpected type for Grant: %T", controlResponse.Grant)
+		}
+
+		policyRoles := flex.MapRolesToPolicyRoles(grant.Roles)
 
 		rolesWithCrn := flex.MapRoleListToPolicyRoles(*roleList)
 		roleNames := []string{}
@@ -548,8 +631,24 @@ func flattenTemplatePolicy(model *iampolicymanagementv1.TemplatePolicy, iamPolic
 			}
 			roleNames = append(roleNames, *role.DisplayName)
 		}
-		modelMap["resource"] = []map[string]interface{}{resourceMap}
 		modelMap["roles"] = roleNames
+
+		// Role Template references
+		roleTemplateRefs := []map[string]interface{}{}
+
+		for _, ref := range grant.RoleTemplateReferences {
+			item := map[string]interface{}{}
+
+			if ref.ID != nil {
+				item["id"] = *ref.ID
+			}
+			if ref.Version != nil {
+				item["version"] = *ref.Version
+			}
+
+			roleTemplateRefs = append(roleTemplateRefs, item)
+		}
+		modelMap["role_template_references"] = roleTemplateRefs
 	}
 
 	if model.Pattern != nil {
