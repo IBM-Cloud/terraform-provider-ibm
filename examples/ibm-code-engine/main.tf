@@ -204,3 +204,16 @@ locals {
   }
   function_code_reference = format("data:text/plain;base64,%s", filebase64(var.code_engine_function_code_reference_file_path))
 }
+
+//////////////////
+// Actions
+
+// Action: Trigger build run
+// Invoke with: terraform apply -invoke action.ibm_code_engine_build_run.trigger
+action "ibm_code_engine_build_run" "trigger" {
+  config {
+    project_id = ibm_code_engine_project.code_engine_project_instance.project_id
+    build_name = ibm_code_engine_build.code_engine_build_instance.name
+    timeout    = 30
+  }
+}

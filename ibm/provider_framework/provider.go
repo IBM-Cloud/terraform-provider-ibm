@@ -6,7 +6,10 @@ package provider_framework
 import (
 	"context"
 	"os"
+	"time"
 
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/codeengine"
 	"github.com/hashicorp/terraform-plugin-framework/action"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/provider"
@@ -80,17 +83,15 @@ func (p *frameworkProvider) Metadata(ctx context.Context, req provider.MetadataR
 // All defaults are removed and handled in Configure() method.
 func (p *frameworkProvider) Schema(ctx context.Context, req provider.SchemaRequest, resp *provider.SchemaResponse) {
 	resp.Schema = schema.Schema{
-		Description: "The IBM Cloud provider is used to manage IBM Cloud resources. " +
-			"The provider needs to be configured with the proper credentials before it can be used.",
 		Attributes: map[string]schema.Attribute{
 			"bluemix_api_key": schema.StringAttribute{
 				Optional:           true,
-				Description:        "The Bluemix API Key (deprecated, use ibmcloud_api_key)",
+				Description:        "The Bluemix API Key",
 				DeprecationMessage: "This field is deprecated please use ibmcloud_api_key",
 			},
 			"bluemix_timeout": schema.Int64Attribute{
 				Optional:           true,
-				Description:        "The timeout (in seconds) to set for any Bluemix API calls made (deprecated, use ibmcloud_timeout)",
+				Description:        "The timeout (in seconds) to set for any Bluemix API calls made.",
 				DeprecationMessage: "This field is deprecated please use ibmcloud_timeout",
 			},
 			"ibmcloud_api_key": schema.StringAttribute{
@@ -115,22 +116,22 @@ func (p *frameworkProvider) Schema(ctx context.Context, req provider.SchemaReque
 			},
 			"softlayer_api_key": schema.StringAttribute{
 				Optional:           true,
-				Description:        "The SoftLayer API Key (deprecated, use iaas_classic_api_key)",
+				Description:        "The SoftLayer API Key",
 				DeprecationMessage: "This field is deprecated please use iaas_classic_api_key",
 			},
 			"softlayer_username": schema.StringAttribute{
 				Optional:           true,
-				Description:        "The SoftLayer user name (deprecated, use iaas_classic_username)",
+				Description:        "The SoftLayer user name",
 				DeprecationMessage: "This field is deprecated please use iaas_classic_username",
 			},
 			"softlayer_endpoint_url": schema.StringAttribute{
 				Optional:           true,
-				Description:        "The Softlayer Endpoint (deprecated, use iaas_classic_endpoint_url)",
+				Description:        "The Softlayer Endpoint",
 				DeprecationMessage: "This field is deprecated please use iaas_classic_endpoint_url",
 			},
 			"softlayer_timeout": schema.Int64Attribute{
 				Optional:           true,
-				Description:        "The timeout (in seconds) to set for any SoftLayer API calls made (deprecated, use iaas_classic_timeout)",
+				Description:        "The timeout (in seconds) to set for any SoftLayer API calls made.",
 				DeprecationMessage: "This field is deprecated please use iaas_classic_timeout",
 			},
 			"iaas_classic_api_key": schema.StringAttribute{
@@ -155,12 +156,12 @@ func (p *frameworkProvider) Schema(ctx context.Context, req provider.SchemaReque
 			},
 			"function_namespace": schema.StringAttribute{
 				Optional:           true,
-				Description:        "The IBM Cloud Function namespace (deprecated)",
+				Description:        "The IBM Cloud Function namespace",
 				DeprecationMessage: "This field will be deprecated soon",
 			},
 			"riaas_endpoint": schema.StringAttribute{
 				Optional:           true,
-				Description:        "The next generation infrastructure service endpoint url (deprecated, use generation)",
+				Description:        "The next generation infrastructure service endpoint url.",
 				DeprecationMessage: "This field is deprecated use generation",
 			},
 			"generation": schema.Int64Attribute{
@@ -283,9 +284,94 @@ func (p *frameworkProvider) Configure(ctx context.Context, req provider.Configur
 		}
 	}
 
-	// Note: Actual client configuration will be implemented when needed
-	// For now, this provider only supports Actions, not resources/data sources
-	// The SDKv2 provider continues to handle all existing resources
+	// Get API key from config or environment
+	apiKey := config.IBMCloudAPIKey.ValueString()
+	if apiKey == "" {
+		apiKey = config.BluemixAPIKey.ValueString()
+	}
+	if apiKey == "" {
+		if key := os.Getenv("IC_API_KEY"); key != "" {
+			apiKey = key
+		} else if key := os.Getenv("IBMCLOUD_API_KEY"); key != "" {
+			apiKey = key
+		} else if key := os.Getenv("BM_API_KEY"); key != "" {
+			apiKey = key
+		} else if key := os.Getenv("BLUEMIX_API_KEY"); key != "" {
+			apiKey = key
+		}
+	}
+
+	// Create conns.Config to initialize client session
+	connConfig := conns.Config{
+		BluemixAPIKey:    apiKey,
+		Region:           config.Region.ValueString(),
+		BluemixTimeout:   time.Duration(config.IBMCloudTimeout.ValueInt64()) * time.Second,
+		SoftLayerTimeout: time.Duration(config.IAASClassicTimeout.ValueInt64()) * time.Second,
+		RetryCount:       int(config.MaxRetries.ValueInt64()),
+		RetryDelay:       conns.RetryAPIDelay,
+		Visibility:       config.Visibility.ValueString(),
+	}
+
+	// Handle optional fields
+	if !config.ResourceGroup.IsNull() {
+		connConfig.ResourceGroup = config.ResourceGroup.ValueString()
+	}
+	if !config.Zone.IsNull() {
+		connConfig.Zone = config.Zone.ValueString()
+	}
+	if !config.IAASClassicUsername.IsNull() {
+		connConfig.SoftLayerUserName = config.IAASClassicUsername.ValueString()
+	}
+	if !config.IAASClassicAPIKey.IsNull() {
+		connConfig.SoftLayerAPIKey = config.IAASClassicAPIKey.ValueString()
+	}
+	if !config.IAASClassicEndpointURL.IsNull() {
+		connConfig.SoftLayerEndpointURL = config.IAASClassicEndpointURL.ValueString()
+	}
+	if !config.FunctionNamespace.IsNull() {
+		connConfig.FunctionNameSpace = config.FunctionNamespace.ValueString()
+	}
+	if !config.RIAASEndpoint.IsNull() {
+		connConfig.RiaasEndPoint = config.RIAASEndpoint.ValueString()
+	}
+	if !config.IAMToken.IsNull() {
+		connConfig.IAMToken = config.IAMToken.ValueString()
+	}
+	if !config.IAMRefreshToken.IsNull() {
+		connConfig.IAMRefreshToken = config.IAMRefreshToken.ValueString()
+	}
+	if !config.PrivateEndpointType.IsNull() {
+		connConfig.PrivateEndpointType = config.PrivateEndpointType.ValueString()
+	}
+	if !config.EndpointsFilePath.IsNull() {
+		connConfig.EndpointsFile = config.EndpointsFilePath.ValueString()
+	}
+	if !config.IAMProfileID.IsNull() {
+		connConfig.IAMTrustedProfileID = config.IAMProfileID.ValueString()
+	}
+	if !config.IAMProfileName.IsNull() {
+		connConfig.IAMTrustedProfileName = config.IAMProfileName.ValueString()
+	}
+	if !config.IBMCloudAccountID.IsNull() {
+		connConfig.Account = config.IBMCloudAccountID.ValueString()
+	}
+
+	// Initialize client session
+	session, err := connConfig.ClientSession()
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"Unable to Create IBM Cloud Client",
+			"An unexpected error occurred when creating the IBM Cloud client. "+
+				"If the error is not clear, please contact the provider developers.\n\n"+
+				"IBM Cloud Client Error: "+err.Error(),
+		)
+		return
+	}
+
+	// Set the client session for resources, data sources, and actions
+	resp.DataSourceData = session
+	resp.ResourceData = session
+	resp.ActionData = session
 }
 
 // Resources defines the resources implemented in the provider.
@@ -301,7 +387,8 @@ func (p *frameworkProvider) DataSources(ctx context.Context) []func() datasource
 }
 
 // Actions defines the actions implemented in the provider.
-// Initially empty - actions will be added in Phase 2.
 func (p *frameworkProvider) Actions(ctx context.Context) []func() action.Action {
-	return []func() action.Action{}
+	return []func() action.Action{
+		codeengine.NewCodeEngineBuildRunAction,
+	}
 }

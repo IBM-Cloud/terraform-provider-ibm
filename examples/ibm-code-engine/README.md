@@ -1,6 +1,6 @@
 # Examples for Code Engine
 
-These examples illustrate how to use the resources and data sources associated with Code Engine.
+These examples illustrate how to use the resources, data sources, and actions associated with Code Engine.
 
 The following resources are supported:
 * ibm_code_engine_allowed_outbound_destination
@@ -25,6 +25,9 @@ The following data sources are supported:
 * ibm_code_engine_job
 * ibm_code_engine_project
 * ibm_code_engine_secret
+
+The following actions are supported:
+* ibm_code_engine_build_run
 
 ## Usage
 
@@ -782,3 +785,48 @@ data "ibm_code_engine_secret" "code_engine_secret_instance" {
 | resource_type | The type of the secret. |
 | service_access | Properties for Service Access Secrets. |
 | service_operator | Properties for the IBM Cloud Operator Secret. |
+
+## Code Engine actions
+
+### Action: ibm_code_engine_build_run
+
+```hcl
+action "ibm_code_engine_build_run" "trigger" {
+  config {
+    project_id = ibm_code_engine_project.code_engine_project_instance.project_id
+    build_name = ibm_code_engine_build.code_engine_build_instance.name
+    timeout    = 30
+  }
+}
+```
+
+#### Inputs
+
+| Name | Description | Type | Required |
+|------|-------------|------|---------|
+| project_id | The ID of the Code Engine project. | `string` | true |
+| build_name | The name of the Code Engine build configuration to execute. | `string` | true |
+| timeout | Build run timeout in minutes (default: 30, min: 5, max: 60). | `number` | false |
+
+#### Usage
+
+Actions are invoked explicitly using the `-invoke` flag:
+
+```bash
+# Invoke the build run action
+terraform apply -invoke action.ibm_code_engine_build_run.trigger
+```
+
+#### Behavior
+
+When invoked, this action:
+1. Validates the build configuration exists and is in "ready" state during `terraform plan`
+2. Creates a new build run in Code Engine
+3. Polls the build run status until completion or timeout
+4. Reports success or failure via Terraform diagnostics
+
+#### Notes
+
+- Requires Terraform 1.14.0 or later (for Actions support)
+- Build run results can be accessed via Code Engine console or IBM Cloud CLI
+- Actions do not persist state or return outputs
