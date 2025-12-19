@@ -1,3 +1,57 @@
+# 1.87.0-beta0 (December 17, 2025)
+
+## Bug Fixes
+
+
+### DR AutomationService
+* Dra terraform apis ([6582](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6582))
+
+### IAM
+* Fix role templates and add policy template to support role templates ([6591](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6591))
+
+### Power Systems
+* Add dumprestart action to ibm_pi_instance_action resource ([6560](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6560))
+
+
+## Enhancements
+
+### VPC Infrastructure
+* support for endpoint gateway resource bindings ([6568](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6568))
+* Add support for all ipv4 protocol in security group rule and network acl rule ([6586](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6586))
+* adding security group rule name ([6587](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6587))
+* added VCPU models support for instance resources ([6595](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6595))
+
+
+### Power Systems
+* [R][D] vPMEM ([6561](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6561))
+* Add PowerVS data sources: ibm_pi_instance_network and ibm_pi_instance_networks ([6564](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6564))
+* Increase NSG action timeout ([6576](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6576))
+* [D] Add missing image attributes to data sources ([6558](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6558))
+* Update Workspace Arg ([6559](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6559))
+* Parameter option and corresponding tests with shared image ([6584](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6584))
+* Update Power Go Client ([6592](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6592))
+
+### BackupRecovery
+* Helios reporting apis support ([6309](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6309))
+* update code for latest iks-roks changes in v7.2.16 ([6572](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6572))
+
+### Activity Tracker
+* support for managed_by property in iac. ([6581](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6581))
+
+
+### Metrics Router
+* support managed_by field ([6583](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6583))
+
+
+
+
+## Documentation
+
+### Toolchain
+* EOS SCC-CSPM :removing the SCC Docs related to resources and Datasources
+
+
+
 # 1.86.0 (December 3, 2025)
 
 ## Bug Fixes
