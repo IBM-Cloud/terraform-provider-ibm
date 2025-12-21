@@ -677,6 +677,52 @@ func nwaclRuleGet(context context.Context, d *schema.ResourceData, meta interfac
 			d.Set(isNetworkACLRuleTCP, make([]map[string]int, 0, 0))
 			d.Set(isNetworkACLRuleUDP, make([]map[string]int, 0, 0))
 		}
+	case "*vpcv1.NetworkACLRule":
+		{
+			var err error
+			networkACLRule := nwaclRule.(*vpcv1.NetworkACLRule)
+			d.SetId(makeTerraformACLRuleID(nwACLID, *networkACLRule.ID))
+			d.Set(isNwACLRuleId, *networkACLRule.ID)
+			if networkACLRule.Before != nil {
+				if err = d.Set(isNwACLRuleBefore, *networkACLRule.Before.ID); err != nil {
+					err = fmt.Errorf("Error setting before: %s", err)
+					return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_network_acl_rule", "read", "set-before").GetDiag()
+				}
+			}
+			if err = d.Set("href", networkACLRule.Href); err != nil {
+				err = fmt.Errorf("Error setting href: %s", err)
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_network_acl_rule", "read", "set-href").GetDiag()
+			}
+			if err = d.Set("protocol", networkACLRule.Protocol); err != nil {
+				err = fmt.Errorf("Error setting protocol: %s", err)
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_network_acl_rule", "read", "set-protocol").GetDiag()
+			}
+			if err = d.Set("action", networkACLRule.Action); err != nil {
+				err = fmt.Errorf("Error setting action: %s", err)
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_network_acl_rule", "read", "set-action").GetDiag()
+			}
+			if !core.IsNil(networkACLRule.IPVersion) {
+				if err = d.Set("ip_version", networkACLRule.IPVersion); err != nil {
+					err = fmt.Errorf("Error setting ip_version: %s", err)
+					return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_network_acl_rule", "read", "set-ip_version").GetDiag()
+				}
+			}
+			if err = d.Set("source", networkACLRule.Source); err != nil {
+				err = fmt.Errorf("Error setting source: %s", err)
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_network_acl_rule", "read", "set-source").GetDiag()
+			}
+			if err = d.Set("destination", networkACLRule.Destination); err != nil {
+				err = fmt.Errorf("Error setting destination: %s", err)
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_network_acl_rule", "read", "set-destination").GetDiag()
+			}
+			if err = d.Set("direction", networkACLRule.Direction); err != nil {
+				err = fmt.Errorf("Error setting direction: %s", err)
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_network_acl_rule", "read", "set-direction").GetDiag()
+			}
+			d.Set(isNetworkACLRuleICMP, make([]map[string]int, 0, 0))
+			d.Set(isNetworkACLRuleTCP, make([]map[string]int, 0, 0))
+			d.Set(isNetworkACLRuleUDP, make([]map[string]int, 0, 0))
+		}
 	}
 	return nil
 }

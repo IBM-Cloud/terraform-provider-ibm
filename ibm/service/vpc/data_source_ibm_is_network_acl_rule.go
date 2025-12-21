@@ -364,6 +364,47 @@ func nawaclRuleDataGet(context context.Context, d *schema.ResourceData, meta int
 					break
 				}
 			}
+		case "*vpcv1.NetworkACLRuleItem":
+			{
+				networkACLRule := rule.(*vpcv1.NetworkACLRuleItem)
+				if *networkACLRule.Name == name {
+					d.SetId(makeTerraformACLRuleID(nwACLID, *networkACLRule.ID))
+					d.Set(isNwACLRuleId, *networkACLRule.ID)
+					if networkACLRule.Before != nil {
+						if err = d.Set("before", *networkACLRule.Before.ID); err != nil {
+							return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting before: %s", err), "(Data) ibm_is_network_acl_rule", "read", "set-before").GetDiag()
+						}
+					}
+					if err = d.Set("href", networkACLRule.Href); err != nil {
+						return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting href: %s", err), "(Data) ibm_is_network_acl_rule", "read", "set-href").GetDiag()
+					}
+					if err = d.Set("protocol", networkACLRule.Protocol); err != nil {
+						return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting protocol: %s", err), "(Data) ibm_is_network_acl_rule", "read", "set-protocol").GetDiag()
+					}
+					if err = d.Set("name", networkACLRule.Name); err != nil {
+						return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting name: %s", err), "(Data) ibm_is_network_acl_rule", "read", "set-name").GetDiag()
+					}
+					if err = d.Set("action", networkACLRule.Action); err != nil {
+						return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting action: %s", err), "(Data) ibm_is_network_acl_rule", "read", "set-action").GetDiag()
+					}
+					if err = d.Set("ip_version", networkACLRule.IPVersion); err != nil {
+						return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting ip_version: %s", err), "(Data) ibm_is_network_acl_rule", "read", "set-ip_version").GetDiag()
+					}
+					if err = d.Set("source", networkACLRule.Source); err != nil {
+						return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting source: %s", err), "(Data) ibm_is_network_acl_rule", "read", "set-source").GetDiag()
+					}
+					if err = d.Set("destination", networkACLRule.Destination); err != nil {
+						return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting destination: %s", err), "(Data) ibm_is_network_acl_rule", "read", "set-destination").GetDiag()
+					}
+					if err = d.Set("direction", networkACLRule.Direction); err != nil {
+						return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting direction: %s", err), "(Data) ibm_is_network_acl_rule", "read", "set-direction").GetDiag()
+					}
+					d.Set(isNetworkACLRuleICMP, make([]map[string]int, 0, 0))
+					d.Set(isNetworkACLRuleTCP, make([]map[string]int, 0, 0))
+					d.Set(isNetworkACLRuleUDP, make([]map[string]int, 0, 0))
+					break
+				}
+			}
 		}
 	}
 	return nil

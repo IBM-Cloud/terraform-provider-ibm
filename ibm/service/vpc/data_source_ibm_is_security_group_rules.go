@@ -204,6 +204,30 @@ func dataSourceIBMIsSecurityGroupRulesRead(context context.Context, d *schema.Re
 				}
 
 			}
+		case "*vpcv1.SecurityGroupRule":
+			{
+				rulex := rule.(*vpcv1.SecurityGroupRule)
+				l["direction"] = *rulex.Direction
+				l["href"] = *rulex.Href
+				l["id"] = *rulex.ID
+				l["ip_version"] = *rulex.IPVersion
+				l["protocol"] = *rulex.Protocol
+				// nested map for remote.
+				if rulex.Remote != nil {
+					remoteList := []map[string]interface{}{}
+					remoteMap := dataSourceSecurityGroupRuleRemoteToMap(rulex.Remote.(*vpcv1.SecurityGroupRuleRemote))
+					remoteList = append(remoteList, remoteMap)
+					l["remote"] = remoteList
+				}
+				// nested map for local.
+				if rulex.Local != nil {
+					localList := []map[string]interface{}{}
+					localMap := dataSourceSecurityGroupRuleLocalToMap(rulex.Local.(*vpcv1.SecurityGroupRuleLocal))
+					localList = append(localList, localMap)
+					l["local"] = localList
+				}
+
+			}
 		case "*vpcv1.SecurityGroupRuleSecurityGroupRuleProtocolIcmp":
 			{
 				rulex := rule.(*vpcv1.SecurityGroupRuleSecurityGroupRuleProtocolIcmp)

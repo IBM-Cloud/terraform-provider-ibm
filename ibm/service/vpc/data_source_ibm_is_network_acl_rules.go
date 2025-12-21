@@ -309,6 +309,25 @@ func networkACLRulesList(context context.Context, d *schema.ResourceData, meta i
 				l[isNetworkACLRuleTCP] = make([]map[string]int, 0, 0)
 				l[isNetworkACLRuleUDP] = make([]map[string]int, 0, 0)
 			}
+		case "*vpcv1.NetworkACLRuleItem":
+			{
+				rulex := rule.(*vpcv1.NetworkACLRuleItem)
+				l[isNwACLRuleId] = *rulex.ID
+				l[isNetworkACLRuleHref] = *rulex.Href
+				l[isNetworkACLRuleProtocol] = *rulex.Protocol
+				if rulex.Before != nil {
+					l[isNwACLRuleBefore] = *rulex.Before.ID
+				}
+				l[isNetworkACLRuleName] = *rulex.Name
+				l[isNetworkACLRuleAction] = *rulex.Action
+				l[isNetworkACLRuleIPVersion] = *rulex.IPVersion
+				l[isNetworkACLRuleSource] = *rulex.Source
+				l[isNetworkACLRuleDestination] = *rulex.Destination
+				l[isNetworkACLRuleDirection] = *rulex.Direction
+				l[isNetworkACLRuleICMP] = make([]map[string]int, 0, 0)
+				l[isNetworkACLRuleTCP] = make([]map[string]int, 0, 0)
+				l[isNetworkACLRuleUDP] = make([]map[string]int, 0, 0)
+			}
 		}
 		rulesInfo = append(rulesInfo, l)
 	}

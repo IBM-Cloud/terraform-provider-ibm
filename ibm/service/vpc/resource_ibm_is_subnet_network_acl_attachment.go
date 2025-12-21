@@ -353,6 +353,20 @@ func resourceIBMISSubnetNetworkACLAttachmentRead(context context.Context, d *sch
 					rule[isNetworkACLRuleTCP] = make([]map[string]int, 0, 0)
 					rule[isNetworkACLRuleUDP] = make([]map[string]int, 0, 0)
 				}
+			case "*vpcv1.NetworkACLRuleItem":
+				{
+					rulex := rulex.(*vpcv1.NetworkACLRuleItem)
+					rule[isNetworkACLRuleID] = *rulex.ID
+					rule[isNetworkACLRuleName] = *rulex.Name
+					rule[isNetworkACLRuleAction] = *rulex.Action
+					rule[isNetworkACLRuleIPVersion] = *rulex.IPVersion
+					rule[isNetworkACLRuleSource] = *rulex.Source
+					rule[isNetworkACLRuleDestination] = *rulex.Destination
+					rule[isNetworkACLRuleDirection] = *rulex.Direction
+					rule[isNetworkACLRuleICMP] = make([]map[string]int, 0, 0)
+					rule[isNetworkACLRuleTCP] = make([]map[string]int, 0, 0)
+					rule[isNetworkACLRuleUDP] = make([]map[string]int, 0, 0)
+				}
 			}
 			rules = append(rules, rule)
 		}

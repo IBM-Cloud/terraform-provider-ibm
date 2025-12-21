@@ -278,6 +278,12 @@ func testAccCheckIBMISNetworkACLRuleExists(n, nwACLRule string) resource.TestChe
 				nwACLRule = makeTerraformACLRuleID(nwACLID, *rulex.ID)
 
 			}
+		case "*vpcv1.NetworkACLRule":
+			{
+				rulex := foundNwACLRule.(*vpcv1.NetworkACLRule)
+				nwACLRule = makeTerraformACLRuleID(nwACLID, *rulex.ID)
+
+			}
 		}
 		return nil
 	}
