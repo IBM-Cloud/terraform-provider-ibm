@@ -806,6 +806,20 @@ func nwaclGet(context context.Context, d *schema.ResourceData, meta interface{},
 					rule[isNetworkACLRuleTCP] = make([]map[string]int, 0, 0)
 					rule[isNetworkACLRuleUDP] = make([]map[string]int, 0, 0)
 				}
+			case "*vpcv1.NetworkACLRuleItem":
+				{
+					rulex := rulex.(*vpcv1.NetworkACLRuleItem)
+					rule[isNetworkACLRuleID] = *rulex.ID
+					rule[isNetworkACLRuleName] = *rulex.Name
+					rule[isNetworkACLRuleAction] = *rulex.Action
+					rule[isNetworkACLRuleIPVersion] = *rulex.IPVersion
+					rule[isNetworkACLRuleSource] = *rulex.Source
+					rule[isNetworkACLRuleDestination] = *rulex.Destination
+					rule[isNetworkACLRuleDirection] = *rulex.Direction
+					rule[isNetworkACLRuleICMP] = make([]map[string]int, 0, 0)
+					rule[isNetworkACLRuleTCP] = make([]map[string]int, 0, 0)
+					rule[isNetworkACLRuleUDP] = make([]map[string]int, 0, 0)
+				}
 			}
 			rules = append(rules, rule)
 		}
@@ -1042,6 +1056,9 @@ func clearRules(nwaclC *vpcv1.VpcV1, nwaclid string) error {
 			deleteNetworkAclRuleOptions.ID = rule.ID
 		case "*vpcv1.NetworkACLRuleItemNetworkACLRuleProtocolIndividual":
 			rule := rule.(*vpcv1.NetworkACLRuleItemNetworkACLRuleProtocolIndividual)
+			deleteNetworkAclRuleOptions.ID = rule.ID
+		case "*vpcv1.NetworkACLRuleItem":
+			rule := rule.(*vpcv1.NetworkACLRuleItem)
 			deleteNetworkAclRuleOptions.ID = rule.ID
 		}
 

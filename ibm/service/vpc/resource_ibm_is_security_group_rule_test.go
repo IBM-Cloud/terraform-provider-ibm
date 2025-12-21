@@ -121,6 +121,11 @@ func testAccCheckIBMISSecurityGroupRuleExists(n, securityGroupRuleID string) res
 				sgr := foundSecurityGroupRule.(*vpcv1.SecurityGroupRuleProtocolIndividual)
 				securityGroupRuleID = *sgr.ID
 			}
+		case "*vpcv1.SecurityGroupRule":
+			{
+				sgr := foundSecurityGroupRule.(*vpcv1.SecurityGroupRule)
+				securityGroupRuleID = *sgr.ID
+			}
 		case "*vpcv1.SecurityGroupRuleSecurityGroupRuleProtocolTcpudp":
 			{
 				sgr := foundSecurityGroupRule.(*vpcv1.SecurityGroupRuleSecurityGroupRuleProtocolTcpudp)
