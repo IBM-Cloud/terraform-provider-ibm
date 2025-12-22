@@ -115,7 +115,6 @@ In addition to all argument reference list, you can access the following attribu
 	- `id` - (String) The unique identifier of the Network ACL rule.
 	- `ip_version` - (String) The IP version of the rule.
 	- `name` - (String) The user-defined name of the rule.
-- `protocol` - (Optional, String) The name of the network protocol.  
 
 ## Import
 

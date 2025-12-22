@@ -167,7 +167,7 @@ func DataSourceIBMIsNetworkACL() *schema.Resource {
 						isNetworkACLRuleProtocol: {
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "The name of the network protocol",
+							Description: "The protocol to enforce.",
 						},
 						isNetworkACLRuleSource: {
 							Type:        schema.TypeString,
@@ -581,55 +581,9 @@ func dataSourceNetworkACLRulesToMap(rule vpcv1.NetworkACLRuleItemIntf) (rulesMap
 				rulesMap[isNetworkACLRuleUDP] = udp
 			}
 		}
-	case "*vpcv1.NetworkACLRuleItemNetworkACLRuleProtocolAny":
+	case "*vpcv1.NetworkACLRuleItemNetworkACLRuleProtocolAll":
 		{
-			rulex := rule.(*vpcv1.NetworkACLRuleItemNetworkACLRuleProtocolAny)
-			rulesMap["id"] = *rulex.ID
-			rulesMap[isNetworkACLRuleHref] = *rulex.Href
-			rulesMap[isNetworkACLRuleProtocol] = *rulex.Protocol
-			if rulex.Before != nil {
-				beforeList := []map[string]interface{}{}
-				beforeMap := dataSourceNetworkACLRulesBeforeToMap(*rulex.Before)
-				beforeList = append(beforeList, beforeMap)
-				rulesMap["before"] = beforeList
-			}
-			rulesMap["created_at"] = flex.DateTimeToString(rulex.CreatedAt)
-			rulesMap[isNetworkACLRuleName] = *rulex.Name
-			rulesMap[isNetworkACLRuleAction] = *rulex.Action
-			rulesMap[isNetworkACLRuleIPVersion] = *rulex.IPVersion
-			rulesMap[isNetworkACLRuleSource] = *rulex.Source
-			rulesMap[isNetworkACLRuleDestination] = *rulex.Destination
-			rulesMap[isNetworkACLRuleDirection] = *rulex.Direction
-			rulesMap[isNetworkACLRuleICMP] = make([]map[string]int, 0, 0)
-			rulesMap[isNetworkACLRuleTCP] = make([]map[string]int, 0, 0)
-			rulesMap[isNetworkACLRuleUDP] = make([]map[string]int, 0, 0)
-		}
-	case "*vpcv1.NetworkACLRuleItemNetworkACLRuleProtocolIndividual":
-		{
-			rulex := rule.(*vpcv1.NetworkACLRuleItemNetworkACLRuleProtocolIndividual)
-			rulesMap["id"] = *rulex.ID
-			rulesMap[isNetworkACLRuleHref] = *rulex.Href
-			rulesMap[isNetworkACLRuleProtocol] = *rulex.Protocol
-			if rulex.Before != nil {
-				beforeList := []map[string]interface{}{}
-				beforeMap := dataSourceNetworkACLRulesBeforeToMap(*rulex.Before)
-				beforeList = append(beforeList, beforeMap)
-				rulesMap["before"] = beforeList
-			}
-			rulesMap["created_at"] = flex.DateTimeToString(rulex.CreatedAt)
-			rulesMap[isNetworkACLRuleName] = *rulex.Name
-			rulesMap[isNetworkACLRuleAction] = *rulex.Action
-			rulesMap[isNetworkACLRuleIPVersion] = *rulex.IPVersion
-			rulesMap[isNetworkACLRuleSource] = *rulex.Source
-			rulesMap[isNetworkACLRuleDestination] = *rulex.Destination
-			rulesMap[isNetworkACLRuleDirection] = *rulex.Direction
-			rulesMap[isNetworkACLRuleICMP] = make([]map[string]int, 0, 0)
-			rulesMap[isNetworkACLRuleTCP] = make([]map[string]int, 0, 0)
-			rulesMap[isNetworkACLRuleUDP] = make([]map[string]int, 0, 0)
-		}
-	case "*vpcv1.NetworkACLRuleItemNetworkACLRuleProtocolIcmptcpudp":
-		{
-			rulex := rule.(*vpcv1.NetworkACLRuleItemNetworkACLRuleProtocolIcmptcpudp)
+			rulex := rule.(*vpcv1.NetworkACLRuleItemNetworkACLRuleProtocolAll)
 			rulesMap["id"] = *rulex.ID
 			rulesMap[isNetworkACLRuleHref] = *rulex.Href
 			rulesMap[isNetworkACLRuleProtocol] = *rulex.Protocol

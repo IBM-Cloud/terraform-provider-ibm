@@ -55,7 +55,7 @@ func DataSourceIBMIsSecurityGroupRules() *schema.Resource {
 						"protocol": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "The name of the network protocol.",
+							Description: "The protocol to enforce.",
 						},
 						"remote": &schema.Schema{
 							Type:        schema.TypeList,
@@ -180,57 +180,9 @@ func dataSourceIBMIsSecurityGroupRulesRead(context context.Context, d *schema.Re
 	for _, rule := range ruleList.Rules {
 		l := map[string]interface{}{}
 		switch reflect.TypeOf(rule).String() {
-		case "*vpcv1.SecurityGroupRuleProtocolAny":
+		case "*vpcv1.SecurityGroupRuleSecurityGroupRuleProtocolAll":
 			{
-				rulex := rule.(*vpcv1.SecurityGroupRuleProtocolAny)
-				l["direction"] = *rulex.Direction
-				l["href"] = *rulex.Href
-				l["id"] = *rulex.ID
-				l["ip_version"] = *rulex.IPVersion
-				l["protocol"] = *rulex.Protocol
-				// nested map for remote.
-				if rulex.Remote != nil {
-					remoteList := []map[string]interface{}{}
-					remoteMap := dataSourceSecurityGroupRuleRemoteToMap(rulex.Remote.(*vpcv1.SecurityGroupRuleRemote))
-					remoteList = append(remoteList, remoteMap)
-					l["remote"] = remoteList
-				}
-				// nested map for local.
-				if rulex.Local != nil {
-					localList := []map[string]interface{}{}
-					localMap := dataSourceSecurityGroupRuleLocalToMap(rulex.Local.(*vpcv1.SecurityGroupRuleLocal))
-					localList = append(localList, localMap)
-					l["local"] = localList
-				}
-
-			}
-		case "*vpcv1.SecurityGroupRuleProtocolIndividual":
-			{
-				rulex := rule.(*vpcv1.SecurityGroupRuleProtocolIndividual)
-				l["direction"] = *rulex.Direction
-				l["href"] = *rulex.Href
-				l["id"] = *rulex.ID
-				l["ip_version"] = *rulex.IPVersion
-				l["protocol"] = *rulex.Protocol
-				// nested map for remote.
-				if rulex.Remote != nil {
-					remoteList := []map[string]interface{}{}
-					remoteMap := dataSourceSecurityGroupRuleRemoteToMap(rulex.Remote.(*vpcv1.SecurityGroupRuleRemote))
-					remoteList = append(remoteList, remoteMap)
-					l["remote"] = remoteList
-				}
-				// nested map for local.
-				if rulex.Local != nil {
-					localList := []map[string]interface{}{}
-					localMap := dataSourceSecurityGroupRuleLocalToMap(rulex.Local.(*vpcv1.SecurityGroupRuleLocal))
-					localList = append(localList, localMap)
-					l["local"] = localList
-				}
-
-			}
-		case "*vpcv1.SecurityGroupRuleProtocolIcmptcpudp":
-			{
-				rulex := rule.(*vpcv1.SecurityGroupRuleProtocolIcmptcpudp)
+				rulex := rule.(*vpcv1.SecurityGroupRuleSecurityGroupRuleProtocolAll)
 				l["direction"] = *rulex.Direction
 				l["href"] = *rulex.Href
 				l["id"] = *rulex.ID
@@ -289,12 +241,8 @@ func dataSourceIBMIsSecurityGroupRulesRead(context context.Context, d *schema.Re
 				l["id"] = *rulex.ID
 				l["ip_version"] = *rulex.IPVersion
 				l["protocol"] = *rulex.Protocol
-				if rulex.PortMin != nil {
-					l["port_min"] = *rulex.PortMin
-				}
-				if rulex.PortMax != nil {
-					l["port_max"] = *rulex.PortMax
-				}
+				l["port_max"] = *rulex.PortMax
+				l["port_min"] = *rulex.PortMin
 				// remote
 				if rulex.Remote != nil {
 					remoteList := []map[string]interface{}{}

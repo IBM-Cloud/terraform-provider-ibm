@@ -37,50 +37,10 @@ resource "ibm_is_network_acl" "example" {
     source      = "0.0.0.0/0"
     destination = "0.0.0.0/0"
     direction   = "outbound"
-    # Deprecated block: replaced with 'protocol', 'code', and 'type' arguments
-    # icmp {
-    #   code = 1
-    #   type = 1
-    # }
-    protocol = "icmp"
-    code     = 1
-    type     = 1
-  }
-  rules {
-    name        = "inbound"
-    action      = "allow"
-    source      = "0.0.0.0/0"
-    destination = "0.0.0.0/0"
-    direction   = "inbound"
-    # Deprecated block: replaced with 'protocol', 'code', and 'type' arguments
-    # icmp {
-    #   code = 1
-    #   type = 1
-    # }
-    protocol = "icmp"
-    code     = 1
-    type     = 1
+    icmp {
+      code = 1
+      type = 1
     }
-}
-```
-
-## Example usage (any)
-
-```terraform
-resource "ibm_is_vpc" "example" {
-  name = "example-vpc"
-}
-
-resource "ibm_is_network_acl" "example" {
-  name = "example-acl"
-  vpc  = ibm_is_vpc.example.id
-  rules {
-    name        = "outbound"
-    action      = "allow"
-    source      = "0.0.0.0/0"
-    destination = "0.0.0.0/0"
-    direction   = "outbound"
-    protocol    = "any"
   }
   rules {
     name        = "inbound"
@@ -88,7 +48,10 @@ resource "ibm_is_network_acl" "example" {
     source      = "0.0.0.0/0"
     destination = "0.0.0.0/0"
     direction   = "inbound"
-    protocol    = "any" 
+    icmp {
+      code = 1
+      type = 1
+    }
   }
 }
 ```
@@ -111,28 +74,21 @@ Review the argument references that you can specify for your resource.
   - `name` - (Optional, String) The user-defined name for this rule.
   - `action` - (Required, String)  `Allow` or `deny` matching network traffic.
   - `source` - (Required, String) The source IP address or CIDR block.
-  - `code` - (Optional, Integer) The ICMP traffic code to allow. Valid values from 0 to 255. If unspecified, all codes are allowed. This can only be specified if type is also specified.
   - `destination` - (Required, String) The destination IP address or CIDR block.
   - `direction` - (Required, String) Indicates whether the traffic to be matched is `inbound` or `outbound`.
-  - `icmp`- (Optional, DEPRECATED, List) The protocol ICMP. `icmp` is deprecated and use `protocol`, `code`, and `type` argument instead.
+  - `icmp`- (Optional, List) The protocol ICMP.
 
     Nested scheme for `icmp`:
     - `code` - (Optional, Integer) The ICMP traffic code to allow. Valid values from 0 to 255. If unspecified, all codes are allowed. This can only be specified if type is also specified.
     - `type` - (Optional, Integer) The ICMP traffic type to allow. Valid values from 0 to 254. If unspecified, all types are allowed by this rule.
-  - `port_max` - (Optional, Integer) The highest port in the range of ports to be matched; if unspecified, **65535** is used.
-  - `port_min` - (Optional, Integer) The lowest port in the range of ports to be matched; if unspecified, **1** is used.  
-  - `protocol` - (Optional, String) The name of the network protocol.  
-  - `source_port_max` - (Optional, Integer) The highest port in the range of ports to be matched; if unspecified, **65535** is used.
-  - `source_port_min` - (Optional, Integer) The lowest port in the range of ports to be matched; if unspecified, **1** is used.
-  - `tcp`- (Optional, DEPRECATED, List) TCP protocol. `tcp` is deprecated and use `protocol`, `port_min`, `port_max`, `source_port_max` and `source_port_min` argument instead.
+  - `tcp`- (Optional, List) The TCP protocol.
 
     Nested scheme for `tcp`:
     - `port_max` - (Optional, Integer) The highest port in the range of ports to be matched; if unspecified, 65535 is used.
     - `port_min` - (Optional, Integer) The lowest port in the range of ports to be matched, if unspecified, 1 is used as default.
     - `source_port_max` - (Optional, Integer) The highest port in the range of ports to be matched; if unspecified, 65535 is used as default.
     - `source_port_min` - (Optional, Integer) The lowest port in the range of ports to be matched; if unspecified, 1 is used as default.
-  - `type` - (Optional, Integer) The ICMP traffic type to allow. Valid values from 0 to 254. If unspecified, all types are allowed by this rule.
-  - `udp` - (Optional, DEPRECATED, List) UDP protocol. `udp` is deprecated and use `protocol`, `port_min`, `port_max`,  `source_port_max` and `source_port_min` argument instead.
+  - `udp`- (Optional, List) The UDP protocol.
 
     Nested scheme for `udp`:
     - `port_max` - (Optional, Integer) The highest port in the range of ports to be matched; if unspecified, 65535 is used.
