@@ -60,7 +60,6 @@ const (
 	isVPCSecurityGroupRuleRemote              = "remote"
 	isVPCSecurityGroupRuleType                = "type"
 	isVPCSecurityGroupRuleCode                = "code"
-	isVPCSecurityGroupRuleName                = "name"
 	isVPCSecurityGroupRulePortMax             = "port_max"
 	isVPCSecurityGroupRulePortMin             = "port_min"
 	isVPCSecurityGroupRuleProtocol            = "protocol"

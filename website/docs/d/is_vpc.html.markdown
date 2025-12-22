@@ -111,7 +111,6 @@ In addition to all argument reference list, you can access the following attribu
     - `port_max` - (String) The inclusive upper bound of TCP port range. 
     - `remote` - (String) The security group ID, an IP address, a CIDR block, or a single security group identifier.
     - `rule_id` - (String) ID of the rule.
-    - `name` - (String) The name for this security group rule. The name must not be used by another rule in the security group.
     - `type` - (String) The ICMP traffic type to allow.
 - `status` - (String) The status of the VPC.
 - `subnets`- (List) A list of subnets that are attached to a VPC.

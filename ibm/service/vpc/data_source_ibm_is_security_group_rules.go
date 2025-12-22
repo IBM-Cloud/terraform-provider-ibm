@@ -47,11 +47,6 @@ func DataSourceIBMIsSecurityGroupRules() *schema.Resource {
 							Computed:    true,
 							Description: "The unique identifier for this security group rule.",
 						},
-						"name": &schema.Schema{
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The name for this security group rule. The name is unique across all rules in the security group.",
-						},
 						"ip_version": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
@@ -191,9 +186,6 @@ func dataSourceIBMIsSecurityGroupRulesRead(context context.Context, d *schema.Re
 				l["direction"] = *rulex.Direction
 				l["href"] = *rulex.Href
 				l["id"] = *rulex.ID
-				if rulex.Name != nil {
-					l["name"] = rulex.Name
-				}
 				l["ip_version"] = *rulex.IPVersion
 				l["protocol"] = *rulex.Protocol
 				// nested map for remote.
@@ -218,9 +210,6 @@ func dataSourceIBMIsSecurityGroupRulesRead(context context.Context, d *schema.Re
 				l["direction"] = *rulex.Direction
 				l["href"] = *rulex.Href
 				l["id"] = *rulex.ID
-				if rulex.Name != nil {
-					l["name"] = rulex.Name
-				}
 				l["ip_version"] = *rulex.IPVersion
 				l["protocol"] = *rulex.Protocol
 				// nested map for remote.
@@ -245,9 +234,6 @@ func dataSourceIBMIsSecurityGroupRulesRead(context context.Context, d *schema.Re
 				l["direction"] = *rulex.Direction
 				l["href"] = *rulex.Href
 				l["id"] = *rulex.ID
-				if rulex.Name != nil {
-					l["name"] = rulex.Name
-				}
 				l["ip_version"] = *rulex.IPVersion
 				l["protocol"] = *rulex.Protocol
 				// nested map for remote.
@@ -272,9 +258,6 @@ func dataSourceIBMIsSecurityGroupRulesRead(context context.Context, d *schema.Re
 				l["direction"] = *rulex.Direction
 				l["href"] = *rulex.Href
 				l["id"] = *rulex.ID
-				if rulex.Name != nil {
-					l["name"] = rulex.Name
-				}
 				l["ip_version"] = *rulex.IPVersion
 				if rulex.Code != nil {
 					l["code"] = *rulex.Code
@@ -304,9 +287,6 @@ func dataSourceIBMIsSecurityGroupRulesRead(context context.Context, d *schema.Re
 				l["direction"] = *rulex.Direction
 				l["href"] = *rulex.Href
 				l["id"] = *rulex.ID
-				if rulex.Name != nil {
-					l["name"] = rulex.Name
-				}
 				l["ip_version"] = *rulex.IPVersion
 				l["protocol"] = *rulex.Protocol
 				if rulex.PortMin != nil {

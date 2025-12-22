@@ -22,7 +22,6 @@ import (
 const (
 	isSecurityGroupRuleCode             = "code"
 	isSecurityGroupRuleDirection        = "direction"
-	isSecurityGroupRuleName             = "name"
 	isSecurityGroupRuleIPVersion        = "ip_version"
 	isSecurityGroupRuleIPVersionDefault = "ipv4"
 	isSecurityGroupRulePortMax          = "port_max"
@@ -90,12 +89,6 @@ func ResourceIBMISSecurityGroupRule() *schema.Resource {
 				Optional:    true,
 				Computed:    true,
 				Description: "Security group id: an IP address, a CIDR block, or a single security group identifier",
-			},
-
-			isSecurityGroupRuleName: {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The name for this security group rule. The name must not be used by another rule in the security group. If unspecified, the name will be a hyphenated list of randomly-selected words.",
 			},
 
 			isSecurityGroupRuleProtocolICMP: {
@@ -412,12 +405,6 @@ func resourceIBMISSecurityGroupRuleRead(context context.Context, d *schema.Resou
 					return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_security_group_rule", "read", "set-ip_version").GetDiag()
 				}
 			}
-			if !core.IsNil(securityGroupRule.Name) {
-				if err = d.Set("name", securityGroupRule.Name); err != nil {
-					err = fmt.Errorf("Error setting name: %s", err)
-					return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_security_group_rule", "read", "set-name").GetDiag()
-				}
-			}
 			if err = d.Set("protocol", securityGroupRule.Protocol); err != nil {
 				err = fmt.Errorf("Error setting protocol: %s", err)
 				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_security_group_rule", "read", "set-protocol").GetDiag()
@@ -493,12 +480,6 @@ func resourceIBMISSecurityGroupRuleRead(context context.Context, d *schema.Resou
 					return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_security_group_rule", "read", "set-ip_version").GetDiag()
 				}
 			}
-			if !core.IsNil(securityGroupRule.Name) {
-				if err = d.Set("name", securityGroupRule.Name); err != nil {
-					err = fmt.Errorf("Error setting name: %s", err)
-					return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_security_group_rule", "read", "set-name").GetDiag()
-				}
-			}
 			if err = d.Set("protocol", securityGroupRule.Protocol); err != nil {
 				err = fmt.Errorf("Error setting protocol: %s", err)
 				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_security_group_rule", "read", "set-protocol").GetDiag()
@@ -555,12 +536,6 @@ func resourceIBMISSecurityGroupRuleRead(context context.Context, d *schema.Resou
 				if err = d.Set("ip_version", securityGroupRule.IPVersion); err != nil {
 					err = fmt.Errorf("Error setting ip_version: %s", err)
 					return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_security_group_rule", "read", "set-ip_version").GetDiag()
-				}
-			}
-			if !core.IsNil(securityGroupRule.Name) {
-				if err = d.Set("name", securityGroupRule.Name); err != nil {
-					err = fmt.Errorf("Error setting name: %s", err)
-					return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_security_group_rule", "read", "set-name").GetDiag()
 				}
 			}
 			if err = d.Set("protocol", securityGroupRule.Protocol); err != nil {
@@ -622,12 +597,6 @@ func resourceIBMISSecurityGroupRuleRead(context context.Context, d *schema.Resou
 					return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_security_group_rule", "read", "set-ip_version").GetDiag()
 				}
 			}
-			if !core.IsNil(securityGroupRule.Name) {
-				if err = d.Set("name", securityGroupRule.Name); err != nil {
-					err = fmt.Errorf("Error setting name: %s", err)
-					return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_security_group_rule", "read", "set-name").GetDiag()
-				}
-			}
 			if err = d.Set("protocol", securityGroupRule.Protocol); err != nil {
 				err = fmt.Errorf("Error setting protocol: %s", err)
 				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_security_group_rule", "read", "set-protocol").GetDiag()
@@ -684,12 +653,6 @@ func resourceIBMISSecurityGroupRuleRead(context context.Context, d *schema.Resou
 				if err = d.Set("ip_version", securityGroupRule.IPVersion); err != nil {
 					err = fmt.Errorf("Error setting ip_version: %s", err)
 					return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_security_group_rule", "read", "set-ip_version").GetDiag()
-				}
-			}
-			if !core.IsNil(securityGroupRule.Name) {
-				if err = d.Set("name", securityGroupRule.Name); err != nil {
-					err = fmt.Errorf("Error setting name: %s", err)
-					return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_security_group_rule", "read", "set-name").GetDiag()
 				}
 			}
 			if err = d.Set("protocol", securityGroupRule.Protocol); err != nil {
@@ -883,7 +846,6 @@ type parsedIBMISSecurityGroupRuleDictionary struct {
 	ruleID         string
 	direction      string
 	ipversion      string
-	name           string
 	remote         string
 	remoteAddress  string
 	remoteCIDR     string
@@ -945,11 +907,6 @@ func parseIBMISSecurityGroupRuleDictionary(d *schema.ResourceData, tag string, s
 	parsed.direction = d.Get(isSecurityGroupRuleDirection).(string)
 	sgTemplate.Direction = &parsed.direction
 	securityGroupRulePatchModel.Direction = &parsed.direction
-
-	if v, ok := d.GetOk(isSecurityGroupRuleName); ok && v.(string) != "" {
-		name := v.(string)
-		securityGroupRulePatchModel.Name = &name
-	}
 
 	if version, ok := d.GetOk(isSecurityGroupRuleIPVersion); ok {
 		parsed.ipversion = version.(string)

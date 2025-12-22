@@ -102,7 +102,6 @@ In addition to all argument reference list, you can access the following attribu
   - `ip_version` - (String) IP version: IPv4
   - `protocol` - (String) The type of the protocol `all`, `icmp`, `tcp`, `udp`.
   - `type` - (String) The traffic type to allow.
-  - `name` - (String) The name for this security group rule. The name must not be used by another rule in the security group.
   - `code` - (String) The traffic code to allow.
   - `port_max`- (Integer) The TCP/UDP port range that includes the maximum bound.
   - `port_min`- (Integer) The TCP/UDP port range that includes the minimum bound.
