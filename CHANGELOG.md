@@ -1,3 +1,12 @@
+# 1.87.0-beta1 (December 22, 2025)
+
+## Bug Fixes
+
+
+### VPC Infrastructure
+* fixed the validation for protocols in sg and network acl
+
+
 # 1.87.0-beta0 (December 17, 2025)
 
 ## Bug Fixes
