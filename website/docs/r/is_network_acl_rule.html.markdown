@@ -9,8 +9,7 @@ description: |-
 
 # ibm_is_network_acl_rule
 
-Provides a network ACL rule resource with `icmp`, `tcp`, `udp`, `any`, `icmp_tcp_udp`, `ah`, `gre`, `ip_in_ip`, `l2tp`, `rsvp`, `sctp`, `vrrp`. For other protocols, value of number_<N>, where <N> is the protocol number in decimal from 0 to 255 (e.g., number_99).
-(Note: A selection of well-known protocols uses their standard names (e.g., tcp for protocol 6). For these, the corresponding number_<N> value must not be used (e.g., number_6 is invalid — use tcp instead). Each protocol has exactly one valid identifier, either a named protocol or a number_<N> ). 
+Provides a network ACL rule resource with `icmp`, `tcp`, `udp`, `icmp_tcp_udp`. Protocol `all` in older versions is replaced with `icmp_tcp_udp` from `1.87.0-beta1`.
 This allows Network ACL rule to create, update, and delete an existing network ACL. For more information, about managing IBM Cloud Network ACL , see [about network acl](https://cloud.ibm.com/docs/vpc?topic=vpc-using-acls).
 
 **Note:** 
@@ -53,30 +52,6 @@ resource "ibm_is_network_acl_rule" "example1" {
   direction   = "inbound"
   protocol    = "icmp_tcp_udp"
 }
-```
-
-## Example usage (any)
-
-```terraform
-resource "ibm_is_network_acl_rule" "example" {
-  network_acl = ibm_is_network_acl.example.id
-  name        = "outbound"
-  action      = "allow"
-  source      = "0.0.0.0/0"
-  destination = "0.0.0.0/0"
-  direction   = "outbound"
-  protocol    = "any"
-}
-resource "ibm_is_network_acl_rule" "example1" {
-  network_acl = ibm_is_network_acl.example.id
-  name        = "inbound"
-  action      = "allow"
-  source      = "0.0.0.0/0"
-  destination = "0.0.0.0/0"
-  direction   = "inbound"
-  protocol   = "any"
-}
-
 ```
 
 ## Example usage (icmp)
@@ -165,7 +140,7 @@ resource "ibm_is_network_acl_rule" "example1" {
 ## Argument reference
 Review the argument references that you can specify for your resource.
 
-- `action` - (Required, String) Whether to **allow** or **deny** matching traffic.
+- `action` - (Required, String) Whether to **allow** or **deny** matching traffic. Provide `protocol` if actions is `deny`, otherwise `any` protocol gets denied which may cause discrepancies in older versions of provider. 
 - `before` - (Optional, String) The unique identifier of the rule that this rule is immediately before. If unspecified, this rule will be inserted after all existing rules. While modifying the resource, specify **"null"** (within double quotes) to move this rule after all existing rules.
 
 ~> **NOTE:** When using the `before` attribute to specify rule ordering:</br>
