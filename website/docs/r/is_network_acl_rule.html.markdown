@@ -140,7 +140,7 @@ resource "ibm_is_network_acl_rule" "example1" {
 ## Argument reference
 Review the argument references that you can specify for your resource.
 
-- `action` - (Required, String) Whether to **allow** or **deny** matching traffic. Provide `protocol` if actions is `deny`, otherwise `any` protocol gets denied which may cause discrepancies in older versions of provider. 
+- `action` - (Required, String) Whether to **allow** or **deny** matching traffic. Provide `protocol` mandatory if actions is `deny`, otherwise `any` protocol gets denied which may cause discrepancies in older versions of provider. 
 - `before` - (Optional, String) The unique identifier of the rule that this rule is immediately before. If unspecified, this rule will be inserted after all existing rules. While modifying the resource, specify **"null"** (within double quotes) to move this rule after all existing rules.
 
 ~> **NOTE:** When using the `before` attribute to specify rule ordering:</br>
