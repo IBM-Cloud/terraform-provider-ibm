@@ -352,6 +352,7 @@ func securityGroupGet(context context.Context, d *schema.ResourceData, meta inte
 						r := make(map[string]interface{})
 						r[isSgRuleDirection] = *rule.Direction
 						r[isSgRuleIPVersion] = *rule.IPVersion
+						r[isSgRuleName] = rule.Name
 						if rule.Protocol != nil {
 							r[isSgRuleProtocol] = *rule.Protocol
 						}
@@ -385,6 +386,7 @@ func securityGroupGet(context context.Context, d *schema.ResourceData, meta inte
 						r := make(map[string]interface{})
 						r[isSgRuleDirection] = *rule.Direction
 						r[isSgRuleIPVersion] = *rule.IPVersion
+						r[isSgRuleName] = rule.Name
 						if rule.Protocol != nil {
 							r[isSgRuleProtocol] = *rule.Protocol
 						}
