@@ -414,9 +414,17 @@ func generateTemplatePolicy(d *schema.ResourceData, iamPolicyManagementClient *i
 					sourceServiceName = item.((map[string]interface{}))["value"].(string)
 				}
 				if *attributesItemModel.Operator == "stringExists" {
-					if attributesItemModel.Value == "true" {
+					var valueStr string
+					if strPtr, ok := attributesItemModel.Value.(*string); ok {
+						valueStr = *strPtr
+					} else {
+						valueStr = fmt.Sprintf("%v", attributesItemModel.Value)
+					}
+					//
+					fmt.Printf("howdy valueStr: %+v\n", valueStr)
+					if valueStr == "true" {
 						attributesItemModel.Value = true
-					} else if attributesItemModel.Value == "false" {
+					} else if valueStr == "false" {
 						attributesItemModel.Value = false
 					} else {
 						return model, fmt.Errorf("[ERROR] Only values \"true\" and \"false\" are allowed when operator is \"stringExists\". Received %s.", attributesItemModel.Value)
