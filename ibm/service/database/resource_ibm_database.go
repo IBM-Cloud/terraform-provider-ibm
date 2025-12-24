@@ -267,9 +267,10 @@ func ResourceIBMDatabaseInstance() *schema.Resource {
 				ValidateFunc: validate.InvokeValidator("ibm_database", "service_endpoints"),
 			},
 			"backup_id": {
-				Description: "The CRN of backup source database",
-				Type:        schema.TypeString,
-				Optional:    true,
+				Description:      "The CRN of backup source database",
+				Type:             schema.TypeString,
+				Optional:         true,
+				DiffSuppressFunc: flex.ApplyOnce,
 			},
 			"remote_leader_id": {
 				Description: "The CRN of leader database",
