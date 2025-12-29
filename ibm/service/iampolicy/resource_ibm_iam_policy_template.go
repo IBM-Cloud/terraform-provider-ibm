@@ -420,8 +420,7 @@ func generateTemplatePolicy(d *schema.ResourceData, iamPolicyManagementClient *i
 					} else {
 						valueStr = fmt.Sprintf("%v", attributesItemModel.Value)
 					}
-					//
-					fmt.Printf("howdy valueStr: %+v\n", valueStr)
+
 					if valueStr == "true" {
 						attributesItemModel.Value = true
 					} else if valueStr == "false" {
