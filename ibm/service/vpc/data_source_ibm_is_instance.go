@@ -63,6 +63,49 @@ func DataSourceIBMISInstance() *schema.Resource {
 				Required:    true,
 				Description: "Instance name",
 			},
+			// shared core
+			"vcpu": &schema.Schema{
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "The virtual server instance VCPU configuration.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"architecture": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The VCPU architecture.The enumerated values for this property may[expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) in the future.",
+						},
+						"burst": &schema.Schema{
+							Type:     schema.TypeList,
+							Computed: true,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"limit": &schema.Schema{
+										Type:        schema.TypeInt,
+										Computed:    true,
+										Description: "The maximum percentage the virtual server instance will exceed its allocated share of VCPU time.The maximum value for this property may[expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) in the future.",
+									},
+								},
+							},
+						},
+						"count": &schema.Schema{
+							Type:        schema.TypeInt,
+							Computed:    true,
+							Description: "The number of VCPUs assigned.",
+						},
+						"manufacturer": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The VCPU manufacturer.The enumerated values for this property may[expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) in the future.",
+						},
+						"percentage": &schema.Schema{
+							Type:        schema.TypeInt,
+							Computed:    true,
+							Description: "The percentage of VCPU time allocated to the virtual server instance.The virtual server instance `vcpu.percentage` will be `100` when:- The virtual server instance `placement_target` is a dedicated host or dedicated  host group.- The virtual server instance `reservation_affinity.policy` is `disabled`.",
+						},
+					},
+				},
+			},
 			// cluster changes
 			"cluster_network": &schema.Schema{
 				Type:        schema.TypeList,
@@ -935,33 +978,6 @@ func DataSourceIBMISInstance() *schema.Resource {
 				Computed:    true,
 				Description: "Instance resource group",
 			},
-
-			isInstanceCPU: {
-				Type:        schema.TypeList,
-				Computed:    true,
-				Description: "Instance vCPU",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						isInstanceCPUArch: {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "Instance vCPU Architecture",
-						},
-						isInstanceCPUCount: {
-							Type:        schema.TypeInt,
-							Computed:    true,
-							Description: "Instance vCPU count",
-						},
-						// Added for AMD support, manufacturer details.
-						isInstanceCPUManufacturer: {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "Instance vCPU Manufacturer",
-						},
-					},
-				},
-			},
-
 			isInstanceGpu: {
 				Type:        schema.TypeList,
 				Computed:    true,
@@ -1435,16 +1451,16 @@ func instanceGetByName(context context.Context, d *schema.ResourceData, meta int
 			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting availability_policy_host_failure: %s", err), "(Data) ibm_is_instance", "read", "set-availability_policy_host_failure").GetDiag()
 		}
 	}
-	cpuList := make([]map[string]interface{}, 0)
 	if instance.Vcpu != nil {
-		currentCPU := map[string]interface{}{}
-		currentCPU[isInstanceCPUArch] = *instance.Vcpu.Architecture
-		currentCPU[isInstanceCPUCount] = *instance.Vcpu.Count
-		currentCPU[isInstanceCPUManufacturer] = *instance.Vcpu.Manufacturer // Added for AMD support, manufacturer details.
-		cpuList = append(cpuList, currentCPU)
-	}
-	if err = d.Set(isInstanceCPU, cpuList); err != nil {
-		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting vcpu: %s", err), "(Data) ibm_is_instance", "read", "set-vcpu").GetDiag()
+		vcpu := []map[string]interface{}{}
+		vcpuMap, err := DataSourceIBMIsInstanceInstanceVcpuToMap(instance.Vcpu)
+		if err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_instance", "read", "vcpu-to-map").GetDiag()
+		}
+		vcpu = append(vcpu, vcpuMap)
+		if err = d.Set("vcpu", vcpu); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting vcpu: %s", err), "(Data) ibm_is_instance", "read", "set-vcpu").GetDiag()
+		}
 	}
 	if instance.PlacementTarget != nil {
 		placementTargetMap := resourceIbmIsInstanceInstancePlacementToMap(*instance.PlacementTarget.(*vpcv1.InstancePlacementTarget))
@@ -2182,5 +2198,27 @@ func DataSourceIBMIsInstanceInstanceClusterNetworkAttachmentReferenceToMap(model
 func DataSourceIBMIsInstanceDeletedToMap(model *vpcv1.Deleted) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["more_info"] = *model.MoreInfo
+	return modelMap, nil
+}
+
+func DataSourceIBMIsInstanceInstanceVcpuToMap(model *vpcv1.InstanceVcpu) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	modelMap["architecture"] = model.Architecture
+	if model.Burst != nil {
+		burstMap, err := DataSourceIBMIsInstanceInstanceVcpuBurstToMap(model.Burst)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["burst"] = []map[string]interface{}{burstMap}
+	}
+	modelMap["count"] = flex.IntValue(model.Count)
+	modelMap["manufacturer"] = model.Manufacturer
+	modelMap["percentage"] = flex.IntValue(model.Percentage)
+	return modelMap, nil
+}
+
+func DataSourceIBMIsInstanceInstanceVcpuBurstToMap(model *vpcv1.InstanceVcpuBurst) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	modelMap["limit"] = flex.IntValue(model.Limit)
 	return modelMap, nil
 }

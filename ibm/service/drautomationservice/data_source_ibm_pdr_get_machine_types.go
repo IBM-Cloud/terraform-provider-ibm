@@ -2,7 +2,7 @@
 // Licensed under the Mozilla Public License v2.0
 
 /*
- * IBM OpenAPI Terraform Generator Version: 3.105.0-3c13b041-20250605-193116
+ * IBM OpenAPI Terraform Generator Version: 3.108.0-56772134-20251111-102802
  */
 
 package drautomationservice
@@ -19,7 +19,8 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM/go-sdk-core/v5/core"
-	"github.ibm.com/DRAutomation/dra-go-sdk/drautomationservicev1"
+
+	"github.com/IBM/dra-go-sdk/drautomationservicev1"
 )
 
 func DataSourceIBMPdrGetMachineTypes() *schema.Resource {

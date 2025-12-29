@@ -13,6 +13,18 @@ Create, update, and delete a policy_template versions with this resource.
 ## Example Usage
 
 ```hcl
+resource "ibm_iam_role_template" "role_template" {
+	name = "TerraformPolicyRoleTest"
+	description = "Create role template and reference in policy template through Terraform resources"
+	role {
+		name = "TerrPolicyRole"
+		display_name = "TestingTerraformPolicyRole"
+		actions = ["cloud-object-storage.bucket.get", "cloud-object-storage.bucket.delete_bucket" ]
+		service_name="cloud-object-storage"
+	}
+	committed = true
+}
+
 resource "ibm_iam_policy_template_version" "policy_template_v2" {
   template_id = ibm_iam_policy_template.policy_template_v1.template_id
   description = "Template description"
@@ -38,6 +50,10 @@ resource "ibm_iam_policy_template_version" "policy_template_v2" {
 			value = "anything as a string"
 		}
 		roles = ["Viewer"]
+		role_template_references {
+			id = ibm_iam_role_template.role_template.role_template_id
+			version = ibm_iam_role_template.role_template.version
+		}
   }
   committed = "true"
 }
@@ -53,11 +69,6 @@ You can specify the following arguments for this resource.
 * `description` - (Optional, String) Description of the policy template. This is shown to users in the enterprise account. Use this to describe the purpose or context of the policy for enterprise users managing IAM templates.
 * `policy` - (Required, List) The core set of properties associated with the template's policy objet.
 Nested schema for **policy**:
-	* `control` - (Required, List) Specifies the type of access granted by the policy.
-	Nested schema for **control**:
-		* `grant` - (Required, List) Permission granted by the policy.
-		Nested schema for **grant**:
-			* `roles` - (Required, List) A set of displayNames.
 	* `description` - (Optional, String) Description of the policy. This is shown in child accounts when an access group or trusted profile template uses the policy template to assign access.
 	* `pattern` - (Optional, String) Indicates pattern of rule, either 'time-based-conditions:once', 'time-based-conditions:weekly:all-day', or 'time-based-conditions:weekly:custom-hours'.
 	* `resource` - (Required, List) The resource attributes to which the policy grants access.
@@ -83,7 +94,13 @@ Nested schema for **policy**:
 		* `operator` - (Optional, String) The operator of an attribute.
 		* `value` - (Optional, String) The value of a rule or resource attribute; can be boolean or string for resource attribute. Can be string or an array of strings (e.g., array of days to permit access) for rule attribute.
 	* `type` - (Required, String) The policy type: 'access'.
-
+	* `roles` - (Optional, List) A set of displayNames.
+	* `role_template_references` - (Optional, List) A set of role templates.
+	Nested schema for **role_template_references**:
+		* `id` - (Required, String) The role template id
+		* `version` - (Required, String) The role template version
+	
+	**NOTE**: Policies may include roles, role_template_references, or a combination of both
 ## Attribute Reference
 
 After your resource is created, you can read values from the listed arguments and the following attributes.

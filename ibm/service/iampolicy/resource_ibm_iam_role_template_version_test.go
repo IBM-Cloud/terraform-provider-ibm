@@ -24,31 +24,13 @@ func TestAccIBMIAMRoleVersionTemplate(t *testing.T) {
 		CheckDestroy: testAccCheckIBMRoleTemplateDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIBMRoleTemplateVersionTemplateConfig(roleVersionName, basicRoleName, actCreateAction, basicRoleTemplateVersionName, actDeleteAction),
+				Config: testAccCheckIBMRoleTemplateVersionTemplateConfig(roleVersionName, basicRoleName, actCreateAction, actDeleteAction),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMRoleTemplateExists("ibm_iam_role_template.role_template", roleConf),
 					resource.TestCheckResourceAttr("ibm_iam_role_template.role_template", "name", roleVersionName),
 					resource.TestCheckResourceAttr("ibm_iam_role_template_version.role_template_version", "name", roleVersionName),
 					resource.TestCheckResourceAttr("ibm_iam_role_template.role_template", "role.0.actions.0", actCreateAction),
 					resource.TestCheckResourceAttr("ibm_iam_role_template_version.role_template_version", "role.0.actions.0", actDeleteAction),
-				),
-			},
-		},
-	})
-}
-func TestAccIBMIAMRoleVersionTemplateBasic(t *testing.T) {
-	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acc.TestAccPreCheck(t) },
-		Providers:    acc.TestAccProviders,
-		CheckDestroy: testAccCheckIBMRoleTemplateDestroy,
-		Steps: []resource.TestStep{
-			{
-				Config: testAccCheckIBMRoleTemplateVersionTemplateConfigBasic(roleVersionName, basicRoleName, actCreateAction),
-				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckIBMRoleTemplateExists("ibm_iam_role_template.role_template", roleConf),
-					resource.TestCheckResourceAttr("ibm_iam_role_template.role_template", "name", roleVersionName),
-					resource.TestCheckResourceAttr("ibm_iam_role_template_version.role_template_version", "name", roleVersionName),
-					resource.TestCheckResourceAttr("ibm_iam_role_template_version.role_template_version", "role.0.actions.0", actCreateAction),
 				),
 			},
 		},
@@ -62,7 +44,7 @@ func TestAccIBMIAMRoleVersionTemplateUpdate(t *testing.T) {
 		CheckDestroy: testAccCheckIBMRoleTemplateDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIBMRoleTemplateVersionTemplateConfig(roleVersionName, basicRoleName, actCreateAction, basicRoleTemplateVersionName, actDeleteAction),
+				Config: testAccCheckIBMRoleTemplateVersionTemplateConfig(roleVersionName, basicRoleName, actCreateAction, actDeleteAction),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMRoleTemplateExists("ibm_iam_role_template.role_template", roleConf),
 					resource.TestCheckResourceAttr("ibm_iam_role_template.role_template", "name", roleVersionName),
@@ -72,7 +54,7 @@ func TestAccIBMIAMRoleVersionTemplateUpdate(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccCheckIBMRoleTemplateVersionTemplateUpdateConfig(roleVersionName, basicRoleName, actCreateAction, basicRoleTemplateVersionName, actCreateAction, actDeleteAction, false),
+				Config: testAccCheckIBMRoleTemplateVersionTemplateUpdateConfig(roleVersionName, basicRoleName, actCreateAction, actCreateAction, actDeleteAction, false),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMRoleTemplateExists("ibm_iam_role_template.role_template", roleConf),
 					resource.TestCheckResourceAttr("ibm_iam_role_template.role_template", "name", roleVersionName),
@@ -92,7 +74,7 @@ func TestAccIBMIAMRoleVersionTemplateUpdateCommit(t *testing.T) {
 		CheckDestroy: testAccCheckIBMRoleTemplateDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIBMRoleTemplateVersionTemplateConfig(roleVersionName, basicRoleName, actCreateAction, basicRoleTemplateVersionName, actDeleteAction),
+				Config: testAccCheckIBMRoleTemplateVersionTemplateConfig(roleVersionName, basicRoleName, actCreateAction, actDeleteAction),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMRoleTemplateExists("ibm_iam_role_template.role_template", roleConf),
 					resource.TestCheckResourceAttr("ibm_iam_role_template.role_template", "name", roleVersionName),
@@ -102,7 +84,7 @@ func TestAccIBMIAMRoleVersionTemplateUpdateCommit(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccCheckIBMRoleTemplateVersionTemplateUpdateConfig(roleVersionName, basicRoleName, actCreateAction, basicRoleTemplateVersionName, actCreateAction, actDeleteAction, true),
+				Config: testAccCheckIBMRoleTemplateVersionTemplateUpdateConfig(roleVersionName, basicRoleName, actCreateAction, actCreateAction, actDeleteAction, true),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMRoleTemplateExists("ibm_iam_role_template.role_template", roleConf),
 					resource.TestCheckResourceAttr("ibm_iam_role_template.role_template", "name", roleVersionName),
@@ -115,7 +97,7 @@ func TestAccIBMIAMRoleVersionTemplateUpdateCommit(t *testing.T) {
 	})
 }
 
-func testAccCheckIBMRoleTemplateVersionTemplateConfig(name string, basicRoleName string, actionControl string, basicRoleTemplateVersionName string, actionControl1 string) string {
+func testAccCheckIBMRoleTemplateVersionTemplateConfig(name string, basicRoleName string, actionControl string, actionControl1 string) string {
 	return fmt.Sprintf(`
 		resource "ibm_iam_role_template" "role_template" {
 			name = "%s"
@@ -131,16 +113,14 @@ func testAccCheckIBMRoleTemplateVersionTemplateConfig(name string, basicRoleName
 			role_template_id = ibm_iam_role_template.role_template.role_template_id
 			description = "Create Role template versions through Terraform resources"
 			role {
-				name = "%s"
 				display_name = "BasicRoleTemplateVersion"
 				actions = ["%s"]
-				service_name="am-test-service"
 			}
 		}
-	`, name, basicRoleName, actionControl, basicRoleTemplateVersionName, actionControl1)
+	`, name, basicRoleName, actionControl, actionControl1)
 }
 
-func testAccCheckIBMRoleTemplateVersionTemplateUpdateConfig(name string, basicRoleName string, actionControl string, basicRoleTemplateVersionName string, actionControl1 string, actionControl2 string, committed bool) string {
+func testAccCheckIBMRoleTemplateVersionTemplateUpdateConfig(name string, basicRoleName string, actionControl string, actionControl1 string, actionControl2 string, committed bool) string {
 	return fmt.Sprintf(`
 		resource "ibm_iam_role_template" "role_template" {
 			name = "%s"
@@ -156,31 +136,10 @@ func testAccCheckIBMRoleTemplateVersionTemplateUpdateConfig(name string, basicRo
 			role_template_id = ibm_iam_role_template.role_template.role_template_id
 			description = "Update Role template versions through Terraform resources"
 			role {
-				name = "%s"
 				display_name = "UpdateRoleVersionTemplateActions"
 				actions = ["%s", "%s"]
-				service_name="am-test-service"
 			}
 			committed = %t
 		}
-	`, name, basicRoleName, actionControl, basicRoleTemplateVersionName, actionControl1, actionControl2, committed)
-}
-
-func testAccCheckIBMRoleTemplateVersionTemplateConfigBasic(name string, basicRoleName string, actionControl string) string {
-	return fmt.Sprintf(`
-		resource "ibm_iam_role_template" "role_template" {
-			name = "%s"
-			description = "Create Role basic template through Terraform resources"
-		}
-		resource "ibm_iam_role_template_version" "role_template_version" {
-			role_template_id = ibm_iam_role_template.role_template.role_template_id
-			description = "Create Role template versions under basic template through Terraform resources"
-			role {
-				name = "%s"
-				display_name = "UpdateRoleTemplate"
-				actions = ["%s"]
-				service_name="am-test-service"
-			}
-		}
-	`, name, basicRoleName, actionControl)
+	`, name, basicRoleName, actionControl, actionControl1, actionControl2, committed)
 }

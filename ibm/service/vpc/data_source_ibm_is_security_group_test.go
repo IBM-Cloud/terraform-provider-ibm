@@ -55,6 +55,7 @@ func TestAccIBMISSecurityGroupDatasource_Filters(t *testing.T) {
 					resource.TestCheckResourceAttr(dataSourceName, "vpc_name", vpcname),
 					resource.TestCheckResourceAttrSet(dataSourceName2, "vpc"),
 					resource.TestCheckResourceAttrSet(dataSourceName2, "rules.#"),
+					resource.TestCheckResourceAttrSet(dataSourceName2, "rules.name"),
 					resource.TestCheckResourceAttrSet(dataSourceName2, "tags.#"),
 					resource.TestCheckResourceAttr(dataSourceName2, "vpc_name", vpcname2),
 				),
@@ -75,14 +76,27 @@ func testAccCheckIBMISSgRuleConfig(vpcname, sgname string) string {
 		vpc  = ibm_is_vpc.testacc_vpc.id
 	  }
 	  
-	  resource "ibm_is_security_group_rule" "testacc_security_group_rule_all" {
+	  resource "ibm_is_security_group_rule" "testacc_security_group_rule_icmp_tcp_udp" {
 		group     = ibm_is_security_group.testacc_security_group.id
 		direction = "inbound"
 		remote    = "127.0.0.1"
 	  }
+	
+	  resource "ibm_is_security_group_rule" "testacc_security_group_rule_any" {
+		group     = ibm_is_security_group.testacc_security_group.id
+		direction = "inbound"
+		remote    = "127.0.0.1"
+		protocol  = "any"
+	  }
+
+	  resource "ibm_is_security_group_rule" "testacc_security_group_rule_individual" {
+		group     = ibm_is_security_group.testacc_security_group.id
+		direction = "inbound"
+		remote    = "127.0.0.1"
+		protocol  = "number_99"
+	  }
 
 	  resource "ibm_is_security_group_rule" "testacc_security_group_rule_icmp" {
-        depends_on = [ibm_is_security_group_rule.testacc_security_group_rule_all]
         group      = ibm_is_security_group.testacc_security_group.id
         direction  = "inbound"
         remote     = "127.0.0.1"

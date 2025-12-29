@@ -216,6 +216,11 @@ func ResourceIbmBackupRecoverySourceRegistration() *schema.Resource {
 							DiffSuppressFunc: suppressParameterDuringRefresh,
 							Description:      "Specifies the bearer token or private key of Kubernetes source.",
 						},
+						"cohesity_dataprotect_plugin_image_location": &schema.Schema{
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "Specifies the custom Cohesity Dataprotect plugin image location of the Kubernetes source.",
+						},
 						"data_mover_image_location": &schema.Schema{
 							Type:        schema.TypeString,
 							Required:    true,
@@ -269,9 +274,10 @@ func ResourceIbmBackupRecoverySourceRegistration() *schema.Resource {
 							Description: "Specifies the distribution type of Kubernetes source.",
 						},
 						"kubernetes_type": &schema.Schema{
-							Type:        schema.TypeString,
-							Optional:    true,
-							Description: "Specifies the type of kubernetes source.",
+							Type:             schema.TypeString,
+							Optional:         true,
+							DiffSuppressFunc: suppressParameterDuringRefresh,
+							Description:      "Specifies the type of kubernetes source.",
 						},
 						"priority_class_name": &schema.Schema{
 							Type:        schema.TypeString,
@@ -1325,12 +1331,12 @@ func suppressParameterDuringRefresh(k, o, n string, d *schema.ResourceData) bool
 			d.HasChange("kubernetes_params.0.resource_annotations") ||
 			d.HasChange("kubernetes_params.0.resource_labels") ||
 			d.HasChange("kubernetes_params.0.velero_openshift_plugin_image_location") ||
+			d.HasChange("kubernetes_params.0.cohesity_dataprotect_plugin_image_location") ||
 			d.HasChange("kubernetes_params.0.velero_image_location") ||
 			d.HasChange("kubernetes_params.0.velero_aws_plugin_image_location") ||
 			d.HasChange("kubernetes_params.0.san_fields") ||
 			d.HasChange("kubernetes_params.0.service_annotations") ||
 			d.HasChange("kubernetes_params.0.priority_class_name") ||
-			d.HasChange("kubernetes_params.0.kubernetes_type") ||
 			d.HasChange("kubernetes_params.0.kubernetes_distribution") ||
 			d.HasChange("kubernetes_params.0.init_container_image_location") ||
 			d.HasChange("kubernetes_params.0.auto_protect_config") ||
@@ -1895,6 +1901,9 @@ func ResourceIbmBackupRecoverySourceRegistrationMapToKubernetesSourceRegistratio
 		model.AutoProtectConfig = AutoProtectConfigModel
 	}
 	model.ClientPrivateKey = core.StringPtr(modelMap["client_private_key"].(string))
+	if modelMap["cohesity_dataprotect_plugin_image_location"] != nil && modelMap["cohesity_dataprotect_plugin_image_location"].(string) != "" {
+		model.CohesityDataprotectPluginImageLocation = core.StringPtr(modelMap["cohesity_dataprotect_plugin_image_location"].(string))
+	}
 	model.DataMoverImageLocation = core.StringPtr(modelMap["data_mover_image_location"].(string))
 	if modelMap["datamover_service_type"] != nil && modelMap["datamover_service_type"].(string) != "" {
 		model.DatamoverServiceType = core.StringPtr(modelMap["datamover_service_type"].(string))
@@ -2129,6 +2138,9 @@ func ResourceIbmBackupRecoverySourceRegistrationKubernetesSourceRegistrationPara
 	}
 	if model.ClientPrivateKey != nil {
 		modelMap["client_private_key"] = *model.ClientPrivateKey
+	}
+	if model.CohesityDataprotectPluginImageLocation != nil {
+		modelMap["cohesity_dataprotect_plugin_image_location"] = *model.CohesityDataprotectPluginImageLocation
 	}
 	if model.DataMoverImageLocation != nil {
 		modelMap["data_mover_image_location"] = *model.DataMoverImageLocation

@@ -274,6 +274,10 @@ You can access the following attribute references after your data source is crea
 		- `profile` - (String) The global unique name for the volume profile to use for the volume.
 		- `source_snapshot` - The snapshot to use as a source for the volume's data. To create a volume from a `source_snapshot`, the volume profile and the source snapshot must have the same `storage_generation` value.		
 		- `tags` - (String) User Tags associated with the volume. (https://cloud.ibm.com/apidocs/tagging#types-of-tags)
+- `vcpu` - (List) vcpu details.
+	
+	Nested schema for **vcpu**:
+	- `percentage` - (Integer) The percentage of VCPU clock cycles allocated to the instance.The virtual server instance `vcpu.percentage` must be `100` when:- The virtual server instance `placement_target` is a dedicated host or dedicated  host group.- The virtual server instance `reservation_affinity.policy` is not `disabled`.If unspecified, the default for `vcpu_percentage` from the profile will be used.
 - `volume_bandwidth_qos_mode` - (String) The volume bandwidth QoS mode to use for this virtual server instance.
 - `vpc` - (String) The VPC ID that the instance templates needs to be created.
 - `zone` - (String) The name of the zone.

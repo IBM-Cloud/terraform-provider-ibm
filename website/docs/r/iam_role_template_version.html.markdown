@@ -15,9 +15,7 @@ Create, update, and delete iam_role_template_versions with this resource.
 ```hcl
 resource "ibm_iam_role_template_version" "iam_role_template_version_instance" {
   role {
-		name = "name"
 		display_name = "display_name"
-		service_name = "service_name"
 		description = "description"
 		actions = [ "actions" ]
   }
@@ -42,10 +40,6 @@ Nested schema for **role**:
 	  * Constraints: The maximum length is `300` characters. The minimum length is `1` character. The value must match regular expression `/^.*$/`.
 	* `display_name` - (Required, String) The display the name of the role that is shown in the console.
 	  * Constraints: The maximum length is `50` characters. The minimum length is `1` character. The value must match regular expression `/^((?!<|>).)*$/`.
-	* `name` - (Required, String) The name of the role that is used in the CRN. This must be alphanumeric and capitalized.
-	  * Constraints: The maximum length is `30` characters. The minimum length is `1` character. The value must match regular expression `/^[A-Z]{1}[A-Za-z0-9]{0,29}$/`.
-	* `service_name` - (Required, String) The service name that the role refers.
-	  * Constraints: The maximum length is `300` characters. The minimum length is `1` character.
 * `role_template_id` - (Required, Forces new resource, String) The role template ID.
   * Constraints: The maximum length is `49` characters. The minimum length is `1` character. The value must match regular expression `/^roleTemplate-[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/`.
 
@@ -68,6 +62,14 @@ After your resource is created, you can read values from the listed arguments an
 * `state` - (String) State of role template.
   * Constraints: Allowable values are: `active`, `deleted`.
 * `etag` - ETag identifier for iam_role_template_version.
+* `role` - (List) The role properties that are created in an action resource when the template is assigned.
+Nested schema for **role**:
+	* `actions` - The actions of the role.
+	  * Constraints: The minimum length is `1` item.
+	* `description` - Description of the role.
+	* `display_name` - (Required, String) The display the name of the role that is shown in the console.
+	* `name` - (Required, String) The name of the role that is used in the CRN. This must be alphanumeric and capitalized.
+	* `service_name` - (Required, String) The service name that the role refers.
 
 ## Import
 
