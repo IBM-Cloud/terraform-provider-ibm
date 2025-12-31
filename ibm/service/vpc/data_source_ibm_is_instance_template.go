@@ -865,6 +865,19 @@ func DataSourceIBMISInstanceTemplate() *schema.Resource {
 					},
 				},
 			},
+			"vcpu": &schema.Schema{
+				Type:     schema.TypeList,
+				Computed: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"percentage": &schema.Schema{
+							Type:        schema.TypeInt,
+							Computed:    true,
+							Description: "The percentage of VCPU clock cycles allocated to the instance.The virtual server instance `vcpu.percentage` must be `100` when:- The virtual server instance `placement_target` is a dedicated host or dedicated  host group.- The virtual server instance `reservation_affinity.policy` is not `disabled`.If unspecified, the default for `vcpu_percentage` from the profile will be used.",
+						},
+					},
+				},
+			},
 			isInstanceTemplateUserData: {
 				Type:     schema.TypeString,
 				Computed: true,
@@ -1045,6 +1058,19 @@ func dataSourceIBMISInstanceTemplateRead(context context.Context, d *schema.Reso
 
 			if err = d.Set(isInstanceTemplateUserData, instanceTemplate.UserData); err != nil {
 				return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting user_data: %s", err), "(Data) ibm_is_instance_template", "read", "set-user_data").GetDiag()
+			}
+
+			// shared core
+			if !core.IsNil(instanceTemplate.Vcpu) {
+				vcpu := []map[string]interface{}{}
+				vcpuMap, err := DataSourceIBMIsInstanceTemplateInstanceVcpuPrototypeToMap(instanceTemplate.Vcpu)
+				if err != nil {
+					return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_instance_template", "read", "vcpu-to-map").GetDiag()
+				}
+				vcpu = append(vcpu, vcpuMap)
+				if err = d.Set("vcpu", vcpu); err != nil {
+					return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting vcpu: %s", err), "(Data) ibm_is_instance_template", "read", "set-vcpu").GetDiag()
+				}
 			}
 
 			if err = d.Set("confidential_compute_mode", instanceTemplate.ConfidentialComputeMode); err != nil {
@@ -1488,6 +1514,18 @@ func dataSourceIBMISInstanceTemplateRead(context context.Context, d *schema.Reso
 			if err = d.Set(isInstanceTemplateName, instanceTemplate.Name); err != nil {
 				return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting name: %s", err), "(Data) ibm_is_instance_template", "read", "set-name").GetDiag()
 			}
+			// shared core
+			if !core.IsNil(instanceTemplate.Vcpu) {
+				vcpu := []map[string]interface{}{}
+				vcpuMap, err := DataSourceIBMIsInstanceTemplateInstanceVcpuPrototypeToMap(instanceTemplate.Vcpu)
+				if err != nil {
+					return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_instance_template", "read", "vcpu-to-map").GetDiag()
+				}
+				vcpu = append(vcpu, vcpuMap)
+				if err = d.Set("vcpu", vcpu); err != nil {
+					return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting vcpu: %s", err), "(Data) ibm_is_instance_template", "read", "set-vcpu").GetDiag()
+				}
+			}
 
 			if err = d.Set(isInstanceTemplateUserData, instanceTemplate.UserData); err != nil {
 				return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting user_data: %s", err), "(Data) ibm_is_instance_template", "read", "set-user_data").GetDiag()
@@ -1922,6 +1960,18 @@ func dataSourceIBMISInstanceTemplateRead(context context.Context, d *schema.Reso
 					if err = d.Set("name", instanceTemplate.Name); err != nil {
 						return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting name: %s", err), "(Data) ibm_is_instance_template", "read", "set-name").GetDiag()
 					}
+					// shared core
+					if !core.IsNil(instanceTemplate.Vcpu) {
+						vcpu := []map[string]interface{}{}
+						vcpuMap, err := DataSourceIBMIsInstanceTemplateInstanceVcpuPrototypeToMap(instanceTemplate.Vcpu)
+						if err != nil {
+							return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_instance_template", "read", "vcpu-to-map").GetDiag()
+						}
+						vcpu = append(vcpu, vcpuMap)
+						if err = d.Set("vcpu", vcpu); err != nil {
+							return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting vcpu: %s", err), "(Data) ibm_is_instance_template", "read", "set-vcpu").GetDiag()
+						}
+					}
 					if err = d.Set("user_data", instanceTemplate.UserData); err != nil {
 						return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting user_data: %s", err), "(Data) ibm_is_instance_template", "read", "set-user_data").GetDiag()
 					}
@@ -2328,6 +2378,18 @@ func dataSourceIBMISInstanceTemplateRead(context context.Context, d *schema.Reso
 					}
 					if err = d.Set("name", instanceTemplate.Name); err != nil {
 						return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting name: %s", err), "(Data) ibm_is_instance_template", "read", "set-name").GetDiag()
+					}
+					// shared core
+					if !core.IsNil(instanceTemplate.Vcpu) {
+						vcpu := []map[string]interface{}{}
+						vcpuMap, err := DataSourceIBMIsInstanceTemplateInstanceVcpuPrototypeToMap(instanceTemplate.Vcpu)
+						if err != nil {
+							return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_instance_template", "read", "vcpu-to-map").GetDiag()
+						}
+						vcpu = append(vcpu, vcpuMap)
+						if err = d.Set("vcpu", vcpu); err != nil {
+							return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting vcpu: %s", err), "(Data) ibm_is_instance_template", "read", "set-vcpu").GetDiag()
+						}
 					}
 					if err = d.Set("user_data", instanceTemplate.UserData); err != nil {
 						return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting user_data: %s", err), "(Data) ibm_is_instance_template", "read", "set-user_data").GetDiag()
@@ -3627,6 +3689,13 @@ func DataSourceIBMIsVolumeAllowedUseToMap(model *vpcv1.VolumeAllowedUsePrototype
 	}
 	if model.ApiVersion != nil {
 		modelMap["api_version"] = *model.ApiVersion
+	}
+	return modelMap, nil
+}
+func DataSourceIBMIsInstanceTemplateInstanceVcpuPrototypeToMap(model *vpcv1.InstanceVcpuPrototype) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.Percentage != nil {
+		modelMap["percentage"] = flex.IntValue(model.Percentage)
 	}
 	return modelMap, nil
 }

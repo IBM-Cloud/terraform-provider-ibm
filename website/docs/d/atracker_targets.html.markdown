@@ -3,7 +3,7 @@ layout: "ibm"
 page_title: "IBM : ibm_atracker_targets"
 description: |-
   Get information about atracker_targets
-subcategory: "Activity Tracker Event Routing"
+subcategory: "Activity Tracker API Version 2"
 ---
 
 # ibm_atracker_targets
@@ -12,9 +12,9 @@ Provides a read-only data source to retrieve information about atracker_targets.
 
 ## Example Usage
 
-```terraform
+```hcl
 data "ibm_atracker_targets" "atracker_targets" {
-	name = "a-cos-target-us-south"
+	name = ibm_atracker_target.atracker_target_instance.name
 }
 ```
 
@@ -62,6 +62,8 @@ Nested schema for **targets**:
 		* `topic` - (String) The messsage hub topic defined in the Event Streams instance.
 		  * Constraints: The maximum length is `1000` characters. The minimum length is `3` characters. The value must match regular expression `/^[a-zA-Z0-9 -._:\/]+$/`.
 	* `id` - (String) The uuid of the target resource.
+	* `managed_by` - (String) Identifies who manages the target.
+	  * Constraints: Allowable values are: `enterprise`, `account`.
 	* `message` - (String) An optional message containing information about the target.
 	* `name` - (String) The name of the target resource.
 	* `region` - (String) Included this optional field if you used it to create a target in a different region other than the one you are connected.
@@ -73,3 +75,4 @@ Nested schema for **targets**:
 		* `last_failure` - (String) The timestamp of the failure.
 		* `reason_for_last_failure` - (String) Detailed description of the cause of the failure.
 		* `status` - (String) The status such as failed or success.
+

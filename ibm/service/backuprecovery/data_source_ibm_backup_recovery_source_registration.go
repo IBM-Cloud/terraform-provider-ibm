@@ -988,6 +988,11 @@ func DataSourceIbmBackupRecoverySourceRegistration() *schema.Resource {
 							Computed:    true,
 							Description: "Specifies the bearer token or private key of Kubernetes source.",
 						},
+						"cohesity_dataprotect_plugin_image_location": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Specifies the custom Cohesity Dataprotect plugin image location of the Kubernetes source.",
+						},
 						"data_mover_image_location": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
@@ -2064,8 +2069,15 @@ func DataSourceIbmBackupRecoverySourceRegistrationKubernetesSourceRegistrationPa
 		}
 		modelMap["auto_protect_config"] = []map[string]interface{}{autoProtectConfigMap}
 	}
-	modelMap["client_private_key"] = *model.ClientPrivateKey
-	modelMap["data_mover_image_location"] = *model.DataMoverImageLocation
+	if model.ClientPrivateKey != nil {
+		modelMap["client_private_key"] = *model.ClientPrivateKey
+	}
+	if model.CohesityDataprotectPluginImageLocation != nil {
+		modelMap["cohesity_dataprotect_plugin_image_location"] = *model.CohesityDataprotectPluginImageLocation
+	}
+	if model.DataMoverImageLocation != nil {
+		modelMap["data_mover_image_location"] = *model.DataMoverImageLocation
+	}
 	if model.DatamoverServiceType != nil {
 		modelMap["datamover_service_type"] = *model.DatamoverServiceType
 	}
@@ -2076,11 +2088,15 @@ func DataSourceIbmBackupRecoverySourceRegistrationKubernetesSourceRegistrationPa
 		}
 		modelMap["default_vlan_params"] = []map[string]interface{}{defaultVlanParamsMap}
 	}
-	modelMap["endpoint"] = *model.Endpoint
+	if model.Endpoint != nil {
+		modelMap["endpoint"] = *model.Endpoint
+	}
 	if model.InitContainerImageLocation != nil {
 		modelMap["init_container_image_location"] = *model.InitContainerImageLocation
 	}
-	modelMap["kubernetes_distribution"] = *model.KubernetesDistribution
+	if model.KubernetesDistribution != nil {
+		modelMap["kubernetes_distribution"] = *model.KubernetesDistribution
+	}
 	if model.KubernetesType != nil {
 		modelMap["kubernetes_type"] = *model.KubernetesType
 	}

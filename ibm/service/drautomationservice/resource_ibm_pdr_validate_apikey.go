@@ -18,7 +18,8 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM/go-sdk-core/v5/core"
-	"github.ibm.com/DRAutomation/dra-go-sdk/drautomationservicev1"
+
+	"github.com/IBM/dra-go-sdk/drautomationservicev1"
 )
 
 func ResourceIBMPdrValidateApikey() *schema.Resource {
@@ -31,6 +32,7 @@ func ResourceIBMPdrValidateApikey() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"instance_id": &schema.Schema{
+
 				Type:        schema.TypeString,
 				Required:    true,
 				ForceNew:    true,
@@ -44,7 +46,6 @@ func ResourceIBMPdrValidateApikey() *schema.Resource {
 			"api_key": &schema.Schema{
 				Type:        schema.TypeString,
 				Required:    true,
-				ForceNew:    true,
 				Sensitive:   true,
 				Description: "api key",
 			},
@@ -87,7 +88,7 @@ func resourceIBMPdrValidateApikeyCreate(context context.Context, d *schema.Resou
 		createApikeyOptions.SetAcceptLanguage(d.Get("accept_language").(string))
 	}
 
-	validationKeyResponse, response, err := drAutomationServiceClient.CreateApikeyWithContext(context, createApikeyOptions)
+	_, response, err := drAutomationServiceClient.CreateApikeyWithContext(context, createApikeyOptions)
 	if err != nil {
 		detailedMsg := fmt.Sprintf("CreateApikeyWithContext failed: %s", err.Error())
 		// Include HTTP status & raw body if available
@@ -102,7 +103,7 @@ func resourceIBMPdrValidateApikeyCreate(context context.Context, d *schema.Resou
 		return tfErr.GetDiag()
 	}
 
-	d.SetId(fmt.Sprintf("%s/%s", *createApikeyOptions.InstanceID, *validationKeyResponse.ID))
+	d.SetId(fmt.Sprintf("%s", *createApikeyOptions.InstanceID))
 
 	return resourceIBMPdrValidateApikeyRead(context, d, meta)
 }
@@ -117,12 +118,9 @@ func resourceIBMPdrValidateApikeyRead(context context.Context, d *schema.Resourc
 
 	getApikeyOptions := &drautomationservicev1.GetApikeyOptions{}
 
-	getApikeyOptions.SetInstanceID(d.Get("instance_id").(string))
+	getApikeyOptions.SetInstanceID(d.Id())
 	// if _, ok := d.GetOk("accept_language"); ok {
 	// 	getApikeyOptions.SetAcceptLanguage(d.Get("accept_language").(string))
-	// }
-	// if _, ok := d.GetOk("if_none_match"); ok {
-	// 	getApikeyOptions.SetIfNoneMatch(d.Get("if_none_match").(string))
 	// }
 
 	validationKeyResponse, response, err := drAutomationServiceClient.GetApikeyWithContext(context, getApikeyOptions)
@@ -156,7 +154,7 @@ func resourceIBMPdrValidateApikeyRead(context context.Context, d *schema.Resourc
 		}
 	}
 	if !core.IsNil(validationKeyResponse.ID) {
-		if err = d.Set("instance_id", validationKeyResponse.ID); err != nil {
+		if err = d.Set("instance_id", d.Id()); err != nil {
 			err = fmt.Errorf("Error setting instance_id: %s", err)
 			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_pdr_validate_apikey", "read", "set-instance_id").GetDiag()
 		}
@@ -182,9 +180,6 @@ func resourceIBMPdrValidateApikeyUpdate(context context.Context, d *schema.Resou
 	if _, ok := d.GetOk("accept_language"); ok {
 		updateApikeyOptions.SetAcceptLanguage(d.Get("accept_language").(string))
 	}
-	// if _, ok := d.GetOk("if_none_match"); ok {
-	// 	updateApikeyOptions.SetIfNoneMatch(d.Get("if_none_match").(string))
-	// }
 	updateApikeyOptions.SetAPIKey(d.Get("api_key").(string))
 
 	_, response, err := drAutomationServiceClient.UpdateApikeyWithContext(context, updateApikeyOptions)

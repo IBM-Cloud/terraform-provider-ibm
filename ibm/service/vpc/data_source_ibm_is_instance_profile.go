@@ -780,6 +780,55 @@ func DataSourceIBMISInstanceProfile() *schema.Resource {
 					},
 				},
 			},
+
+			// shared core changes
+
+			"vcpu_burst_limit": &schema.Schema{
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "The permitted value for VCPU burst limit percentage for an instance with this profile.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"type": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The type for this profile field.",
+						},
+						"value": &schema.Schema{
+							Type:        schema.TypeInt,
+							Computed:    true,
+							Description: "The value for this profile field.",
+						},
+					},
+				},
+			},
+			"vcpu_percentage": &schema.Schema{
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "The permitted values for VCPU percentage for an instance with this profile.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"default": &schema.Schema{
+							Type:        schema.TypeInt,
+							Computed:    true,
+							Description: "The default value for this profile field.",
+						},
+						"type": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The type for this profile field.",
+						},
+						"values": &schema.Schema{
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "The permitted values for this profile field.",
+							Elem: &schema.Schema{
+								Type: schema.TypeInt,
+							},
+						},
+					},
+				},
+			},
 			"volume_bandwidth_qos_modes": &schema.Schema{
 				Type:     schema.TypeList,
 				Computed: true,
@@ -1011,7 +1060,28 @@ func instanceProfileGet(context context.Context, d *schema.ResourceData, meta in
 			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting vcpu_manufacturer: %s", err), "(Data) ibm_is_instance_profile", "read", "set-vcpu_manufacturer").GetDiag()
 		}
 	}
-
+	if profile.VcpuBurstLimit != nil {
+		vcpuBurstLimit := []map[string]interface{}{}
+		vcpuBurstLimitMap, err := DataSourceIBMIsInstanceProfileInstanceProfileVcpuBurstLimitToMap(profile.VcpuBurstLimit.(*vpcv1.InstanceProfileVcpuBurstLimit))
+		if err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_instance_profile", "read", "vcpu_burst_limit-to-map").GetDiag()
+		}
+		vcpuBurstLimit = append(vcpuBurstLimit, vcpuBurstLimitMap)
+		if err = d.Set("vcpu_burst_limit", vcpuBurstLimit); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting vcpu_burst_limit: %s", err), "(Data) ibm_is_instance_profile", "read", "set-vcpu_burst_limit").GetDiag()
+		}
+	}
+	if profile.VcpuPercentage != nil {
+		vcpuPercentage := []map[string]interface{}{}
+		vcpuPercentageMap, err := DataSourceIBMIsInstanceProfileInstanceProfileVcpuPercentageToMap(profile.VcpuPercentage)
+		if err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_instance_profile", "read", "vcpu_percentage-to-map").GetDiag()
+		}
+		vcpuPercentage = append(vcpuPercentage, vcpuPercentageMap)
+		if err = d.Set("vcpu_percentage", vcpuPercentage); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting vcpu_percentage: %s", err), "(Data) ibm_is_instance_profile", "read", "set-vcpu_percentage").GetDiag()
+		}
+	}
 	if profile.VcpuCount != nil {
 		err = d.Set("vcpu_count", dataSourceInstanceProfileFlattenVcpuCount(*profile.VcpuCount.(*vpcv1.InstanceProfileVcpu)))
 		if err != nil {
@@ -1649,5 +1719,18 @@ func DataSourceIBMIsInstanceProfileClusterNetworkProfileReferenceToMap(model *vp
 	modelMap["href"] = *model.Href
 	modelMap["name"] = *model.Name
 	modelMap["resource_type"] = *model.ResourceType
+	return modelMap, nil
+}
+func DataSourceIBMIsInstanceProfileInstanceProfileVcpuBurstLimitToMap(model *vpcv1.InstanceProfileVcpuBurstLimit) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	modelMap["type"] = *model.Type
+	modelMap["value"] = flex.IntValue(model.Value)
+	return modelMap, nil
+}
+func DataSourceIBMIsInstanceProfileInstanceProfileVcpuPercentageToMap(model *vpcv1.InstanceProfileVcpuPercentage) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	modelMap["default"] = flex.IntValue(model.Default)
+	modelMap["type"] = *model.Type
+	modelMap["values"] = model.Values
 	return modelMap, nil
 }

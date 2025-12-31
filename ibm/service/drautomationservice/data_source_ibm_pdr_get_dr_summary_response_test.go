@@ -2,7 +2,7 @@
 // Licensed under the Mozilla Public License v2.0
 
 /*
- * IBM OpenAPI Terraform Generator Version: 3.105.0-3c13b041-20250605-193116
+ * IBM OpenAPI Terraform Generator Version: 3.108.0-56772134-20251111-102802
  */
 
 package drautomationservice_test
@@ -16,9 +16,9 @@ import (
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/drautomationservice"
 	. "github.com/IBM-Cloud/terraform-provider-ibm/ibm/unittest"
+	"github.com/IBM/dra-go-sdk/drautomationservicev1"
 	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/stretchr/testify/assert"
-	"github.ibm.com/DRAutomation/dra-go-sdk/drautomationservicev1"
 )
 
 func TestAccIBMPdrGetDrSummaryResponseDataSourceBasic(t *testing.T) {
@@ -31,7 +31,7 @@ func TestAccIBMPdrGetDrSummaryResponseDataSourceBasic(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_pdr_get_dr_summary_response.pdr_get_dr_summary_response_instance", "id"),
 					resource.TestCheckResourceAttrSet("data.ibm_pdr_get_dr_summary_response.pdr_get_dr_summary_response_instance", "instance_id"),
-					resource.TestCheckResourceAttrSet("data.ibm_pdr_get_dr_summary_response.pdr_get_dr_summary_response_instance", "managed_vm_list.%"),
+					resource.TestCheckResourceAttrSet("data.ibm_pdr_get_dr_summary_response.pdr_get_dr_summary_response_instance", "managed_vm_list.#"),
 					resource.TestCheckResourceAttrSet("data.ibm_pdr_get_dr_summary_response.pdr_get_dr_summary_response_instance", "orchestrator_details.#"),
 					resource.TestCheckResourceAttrSet("data.ibm_pdr_get_dr_summary_response.pdr_get_dr_summary_response_instance", "service_details.#"),
 				),
@@ -43,7 +43,7 @@ func TestAccIBMPdrGetDrSummaryResponseDataSourceBasic(t *testing.T) {
 func testAccCheckIBMPdrGetDrSummaryResponseDataSourceConfigBasic() string {
 	return fmt.Sprintf(`
 		data "ibm_pdr_get_dr_summary_response" "pdr_get_dr_summary_response_instance" {
-			instance_id = "crn:v1:staging:public:power-dr-automation:global:a/b68c234e719144b18598ae4a7b80c44c:492fef47-3ebf-4090-b089-e9b4199878b6::"
+			instance_id = "ac645fe5-fba1-4cb3-952e-e1b09fa0df26"
 		}
 	`)
 }

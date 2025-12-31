@@ -3,7 +3,7 @@ layout: "ibm"
 page_title: "IBM : ibm_atracker_target"
 description: |-
   Manages atracker_target.
-subcategory: "Activity Tracker Event Routing"
+subcategory: "Activity Tracker API Version 2"
 ---
 
 # ibm_atracker_target
@@ -23,33 +23,18 @@ resource "ibm_atracker_target" "atracker_target_instance" {
 		bucket = "my-atracker-bucket"
 		service_to_service_enabled = true
   }
-  name = "my-cos-target"
-  target_type = "cloud_object_storage"
-  region = "us-south"
-}
-
-resource "ibm_atracker_target" "atracker_eventstreams_target" {
   eventstreams_endpoint {
 		target_crn = "crn:v1:bluemix:public:messagehub:us-south:a/11111111111111111111111111111111:22222222-2222-2222-2222-222222222222::"
 		brokers = [ "kafka-x:9094" ]
 		topic = "my-topic"
-		api_key = "xxxxxxxxxxxxxx" // pragma: allowlist secret
+		api_key = "xxxxxxxxxxxxxx"
 		service_to_service_enabled = false
   }
-  name = "my-eventstreams-target"
-  target_type = "event_streams"
+  managed_by = "enterprise"
+  name = "my-cos-target"
   region = "us-south"
+  target_type = "cloud_object_storage"
 }
-
-resource "ibm_atracker_target" "atracker_cloudlogs_target" {
-  cloudlogs_endpoint {
-    target_crn = "crn:v1:bluemix:public:logs:eu-es:a/11111111111111111111111111111111:22222222-2222-2222-2222-222222222222::"
-  }
-  name = "my-cloudlogs-target"
-  target_type = "cloud_logs"
-  region = "us-south"
-}
-
 ```
 
 ## Argument Reference
@@ -80,6 +65,8 @@ Nested schema for **eventstreams_endpoint**:
 	  * Constraints: The maximum length is `1000` characters. The minimum length is `3` characters. The value must match regular expression `/^[a-zA-Z0-9 -._:\/]+$/`.
 	* `topic` - (Required, String) The messsage hub topic defined in the Event Streams instance.
 	  * Constraints: The maximum length is `1000` characters. The minimum length is `3` characters. The value must match regular expression `/^[a-zA-Z0-9 -._:\/]+$/`.
+* `managed_by` - (Optional, String) Identifies who manages the target.
+  * Constraints: Allowable values are: `enterprise`, `account`.
 * `name` - (Required, String) The name of the target resource.
 * `region` - (Optional, String) Included this optional field if you used it to create a target in a different region other than the one you are connected.
 * `target_type` - (Required, String) The type of the target.

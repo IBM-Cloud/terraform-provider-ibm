@@ -22,6 +22,7 @@ import (
 const (
 	isSecurityGroupRuleCode             = "code"
 	isSecurityGroupRuleDirection        = "direction"
+	isSecurityGroupRuleName             = "name"
 	isSecurityGroupRuleIPVersion        = "ip_version"
 	isSecurityGroupRuleIPVersionDefault = "ipv4"
 	isSecurityGroupRulePortMax          = "port_max"
@@ -91,13 +92,20 @@ func ResourceIBMISSecurityGroupRule() *schema.Resource {
 				Description: "Security group id: an IP address, a CIDR block, or a single security group identifier",
 			},
 
+			isSecurityGroupRuleName: {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The name for this security group rule. The name must not be used by another rule in the security group. If unspecified, the name will be a hyphenated list of randomly-selected words.",
+			},
+
 			isSecurityGroupRuleProtocolICMP: {
 				Type:          schema.TypeList,
 				MaxItems:      1,
 				Optional:      true,
 				ForceNew:      true,
 				MinItems:      1,
-				ConflictsWith: []string{isSecurityGroupRuleProtocolTCP, isSecurityGroupRuleProtocolUDP},
+				ConflictsWith: []string{isSecurityGroupRuleProtocolTCP, isSecurityGroupRuleProtocolUDP, isSecurityGroupRuleProtocol},
+				Deprecated:    "icmp is deprecated, use 'protocol', 'code', and 'type' instead.",
 				Description:   "protocol=icmp",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -124,7 +132,8 @@ func ResourceIBMISSecurityGroupRule() *schema.Resource {
 				MinItems:      1,
 				ForceNew:      true,
 				Description:   "protocol=tcp",
-				ConflictsWith: []string{isSecurityGroupRuleProtocolUDP, isSecurityGroupRuleProtocolICMP},
+				Deprecated:    "tcp is deprecated, use 'protocol', 'code', and 'type' instead.",
+				ConflictsWith: []string{isSecurityGroupRuleProtocolUDP, isSecurityGroupRuleProtocolICMP, isSecurityGroupRuleProtocol, isSecurityGroupRuleType, isSecurityGroupRuleCode},
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						isSecurityGroupRulePortMin: {
@@ -152,7 +161,8 @@ func ResourceIBMISSecurityGroupRule() *schema.Resource {
 				ForceNew:      true,
 				MinItems:      1,
 				Description:   "protocol=udp",
-				ConflictsWith: []string{isSecurityGroupRuleProtocolTCP, isSecurityGroupRuleProtocolICMP},
+				Deprecated:    "udp is deprecated, use 'protocol', 'port_min', and 'port_max' instead.",
+				ConflictsWith: []string{isSecurityGroupRuleProtocolTCP, isSecurityGroupRuleProtocolICMP, isSecurityGroupRuleProtocol},
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						isSecurityGroupRulePortMin: {
@@ -179,9 +189,41 @@ func ResourceIBMISSecurityGroupRule() *schema.Resource {
 				Description: "The crn of the Security Group",
 			},
 			isSecurityGroupRuleProtocol: {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The Security Group Rule Protocol",
+				Type:          schema.TypeString,
+				Optional:      true,
+				Computed:      true,
+				ForceNew:      true,
+				Description:   "The name of the network protocol",
+				ConflictsWith: []string{isSecurityGroupRuleProtocolTCP, isSecurityGroupRuleProtocolICMP, isSecurityGroupRuleProtocolUDP},
+				ValidateFunc:  validate.InvokeValidator("ibm_is_security_group_rule", isSecurityGroupRuleProtocol),
+			},
+			isSecurityGroupRuleType: {
+				Type:          schema.TypeInt,
+				Optional:      true,
+				RequiredWith:  []string{isSecurityGroupRuleProtocol},
+				ConflictsWith: []string{isSecurityGroupRuleProtocolICMP, isSecurityGroupRuleProtocolUDP, isSecurityGroupRuleProtocolTCP, isSecurityGroupRulePortMin, isSecurityGroupRulePortMax},
+				ValidateFunc:  validate.InvokeValidator("ibm_is_security_group_rule", isSecurityGroupRuleType),
+			},
+			isSecurityGroupRuleCode: {
+				Type:          schema.TypeInt,
+				Optional:      true,
+				RequiredWith:  []string{isSecurityGroupRuleProtocol},
+				ConflictsWith: []string{isSecurityGroupRuleProtocolICMP, isSecurityGroupRuleProtocolUDP, isSecurityGroupRuleProtocolTCP, isSecurityGroupRulePortMin, isSecurityGroupRulePortMax},
+				ValidateFunc:  validate.InvokeValidator("ibm_is_security_group_rule", isSecurityGroupRuleCode),
+			},
+			isSecurityGroupRulePortMin: {
+				Type:          schema.TypeInt,
+				Optional:      true,
+				RequiredWith:  []string{isSecurityGroupRuleProtocol, isSecurityGroupRulePortMax},
+				ConflictsWith: []string{isSecurityGroupRuleProtocolICMP, isSecurityGroupRuleProtocolTCP, isSecurityGroupRuleProtocolUDP, isSecurityGroupRuleType, isSecurityGroupRuleCode},
+				ValidateFunc:  validate.InvokeValidator("ibm_is_security_group_rule", isSecurityGroupRulePortMin),
+			},
+			isSecurityGroupRulePortMax: {
+				Type:          schema.TypeInt,
+				Optional:      true,
+				RequiredWith:  []string{isSecurityGroupRuleProtocol, isSecurityGroupRulePortMin},
+				ConflictsWith: []string{isSecurityGroupRuleProtocolICMP, isSecurityGroupRuleProtocolTCP, isSecurityGroupRuleProtocolUDP, isSecurityGroupRuleType, isSecurityGroupRuleCode},
+				ValidateFunc:  validate.InvokeValidator("ibm_is_security_group_rule", isSecurityGroupRulePortMax),
 			},
 		},
 	}
@@ -190,6 +232,7 @@ func ResourceIBMISSecurityGroupRule() *schema.Resource {
 func ResourceIBMISSecurityGroupRuleValidator() *validate.ResourceValidator {
 	validateSchema := make([]validate.ValidateSchema, 0)
 	direction := "inbound, outbound"
+	protocol := "tcp, udp, icmp, icmp_tcp_udp"
 	ip_version := "ipv4"
 
 	validateSchema = append(validateSchema,
@@ -234,6 +277,12 @@ func ResourceIBMISSecurityGroupRuleValidator() *validate.ResourceValidator {
 			Type:                       validate.TypeInt,
 			MinValue:                   "1",
 			MaxValue:                   "65535"})
+	validateSchema = append(validateSchema,
+		validate.ValidateSchema{
+			Identifier:                 isSecurityGroupRuleProtocol,
+			ValidateFunctionIdentifier: validate.ValidateAllowedStringValue,
+			Type:                       validate.TypeString,
+			AllowedValues:              protocol})
 
 	ibmISSecurityGroupRuleResourceValidator := validate.ResourceValidator{ResourceName: "ibm_is_security_group_rule", Schema: validateSchema}
 	return &ibmISSecurityGroupRuleResourceValidator
@@ -274,9 +323,30 @@ func resourceIBMISSecurityGroupRuleCreate(context context.Context, d *schema.Res
 			tfID := makeTerraformRuleID(parsed.secgrpID, *sgrule.ID)
 			d.SetId(tfID)
 		}
-	case "*vpcv1.SecurityGroupRuleSecurityGroupRuleProtocolAll":
+	case "*vpcv1.SecurityGroupRuleProtocolAny":
 		{
-			sgrule := rule.(*vpcv1.SecurityGroupRuleSecurityGroupRuleProtocolAll)
+			sgrule := rule.(*vpcv1.SecurityGroupRuleProtocolAny)
+			d.Set(isSecurityGroupRuleID, *sgrule.ID)
+			tfID := makeTerraformRuleID(parsed.secgrpID, *sgrule.ID)
+			d.SetId(tfID)
+		}
+	case "*vpcv1.SecurityGroupRuleProtocolIndividual":
+		{
+			sgrule := rule.(*vpcv1.SecurityGroupRuleProtocolIndividual)
+			d.Set(isSecurityGroupRuleID, *sgrule.ID)
+			tfID := makeTerraformRuleID(parsed.secgrpID, *sgrule.ID)
+			d.SetId(tfID)
+		}
+	case "*vpcv1.SecurityGroupRuleProtocolIcmptcpudp":
+		{
+			sgrule := rule.(*vpcv1.SecurityGroupRuleProtocolIcmptcpudp)
+			d.Set(isSecurityGroupRuleID, *sgrule.ID)
+			tfID := makeTerraformRuleID(parsed.secgrpID, *sgrule.ID)
+			d.SetId(tfID)
+		}
+	case "*vpcv1.SecurityGroupRule":
+		{
+			sgrule := rule.(*vpcv1.SecurityGroupRule)
 			d.Set(isSecurityGroupRuleID, *sgrule.ID)
 			tfID := makeTerraformRuleID(parsed.secgrpID, *sgrule.ID)
 			d.SetId(tfID)
@@ -349,23 +419,32 @@ func resourceIBMISSecurityGroupRuleRead(context context.Context, d *schema.Resou
 					return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_security_group_rule", "read", "set-ip_version").GetDiag()
 				}
 			}
+			if !core.IsNil(securityGroupRule.Name) {
+				if err = d.Set("name", securityGroupRule.Name); err != nil {
+					err = fmt.Errorf("Error setting name: %s", err)
+					return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_security_group_rule", "read", "set-name").GetDiag()
+				}
+			}
 			if err = d.Set("protocol", securityGroupRule.Protocol); err != nil {
 				err = fmt.Errorf("Error setting protocol: %s", err)
 				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_security_group_rule", "read", "set-protocol").GetDiag()
 			}
-			icmpProtocol := map[string]interface{}{}
+			icmpList := d.Get("icmp").([]interface{})
+			if len(icmpList) > 0 {
+				icmpProtocol := map[string]interface{}{}
 
-			if securityGroupRule.Type != nil {
-				icmpProtocol["type"] = *securityGroupRule.Type
-			}
-			if securityGroupRule.Code != nil {
-				icmpProtocol["code"] = *securityGroupRule.Code
-			}
-			protocolList := make([]map[string]interface{}, 0)
-			protocolList = append(protocolList, icmpProtocol)
-			if err = d.Set(isSecurityGroupRuleProtocolICMP, protocolList); err != nil {
-				err = fmt.Errorf("Error setting icmp: %s", err)
-				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_security_group_rule", "read", "set-icmp").GetDiag()
+				if securityGroupRule.Type != nil {
+					icmpProtocol["type"] = *securityGroupRule.Type
+				}
+				if securityGroupRule.Code != nil {
+					icmpProtocol["code"] = *securityGroupRule.Code
+				}
+				protocolList := make([]map[string]interface{}, 0)
+				protocolList = append(protocolList, icmpProtocol)
+				if err = d.Set(isSecurityGroupRuleProtocolICMP, protocolList); err != nil {
+					err = fmt.Errorf("Error setting icmp: %s", err)
+					return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_security_group_rule", "read", "set-icmp").GetDiag()
+				}
 			}
 			remote, ok := securityGroupRule.Remote.(*vpcv1.SecurityGroupRuleRemote)
 			if ok {
@@ -405,9 +484,202 @@ func resourceIBMISSecurityGroupRuleRead(context context.Context, d *schema.Resou
 				}
 			}
 		}
-	case "*vpcv1.SecurityGroupRuleSecurityGroupRuleProtocolAll":
+	case "*vpcv1.SecurityGroupRuleProtocolAny":
 		{
-			securityGroupRule := sgrule.(*vpcv1.SecurityGroupRuleSecurityGroupRuleProtocolAll)
+			securityGroupRule := sgrule.(*vpcv1.SecurityGroupRuleProtocolAny)
+			d.Set(isSecurityGroupRuleID, *securityGroupRule.ID)
+			tfID := makeTerraformRuleID(secgrpID, *securityGroupRule.ID)
+			d.SetId(tfID)
+			if err = d.Set("direction", securityGroupRule.Direction); err != nil {
+				err = fmt.Errorf("Error setting direction: %s", err)
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_security_group_rule", "read", "set-direction").GetDiag()
+			}
+			if !core.IsNil(securityGroupRule.IPVersion) {
+				if err = d.Set("ip_version", securityGroupRule.IPVersion); err != nil {
+					err = fmt.Errorf("Error setting ip_version: %s", err)
+					return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_security_group_rule", "read", "set-ip_version").GetDiag()
+				}
+			}
+			if !core.IsNil(securityGroupRule.Name) {
+				if err = d.Set("name", securityGroupRule.Name); err != nil {
+					err = fmt.Errorf("Error setting name: %s", err)
+					return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_security_group_rule", "read", "set-name").GetDiag()
+				}
+			}
+			if err = d.Set("protocol", securityGroupRule.Protocol); err != nil {
+				err = fmt.Errorf("Error setting protocol: %s", err)
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_security_group_rule", "read", "set-protocol").GetDiag()
+			}
+			remote, ok := securityGroupRule.Remote.(*vpcv1.SecurityGroupRuleRemote)
+			if ok {
+				if remote != nil && reflect.ValueOf(remote).IsNil() == false {
+					if remote.ID != nil {
+						if err = d.Set(isSecurityGroupRuleRemote, remote.ID); err != nil {
+							err = fmt.Errorf("Error setting remote: %s", err)
+							return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_security_group_rule", "read", "set-remote").GetDiag()
+						}
+					} else if remote.Address != nil {
+						if err = d.Set(isSecurityGroupRuleRemote, remote.Address); err != nil {
+							err = fmt.Errorf("Error setting remote: %s", err)
+							return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_security_group_rule", "read", "set-remote").GetDiag()
+						}
+					} else if remote.CIDRBlock != nil {
+						if err = d.Set(isSecurityGroupRuleRemote, remote.CIDRBlock); err != nil {
+							err = fmt.Errorf("Error setting remote: %s", err)
+							return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_security_group_rule", "read", "set-remote").GetDiag()
+						}
+					}
+				}
+			}
+			local, ok := securityGroupRule.Local.(*vpcv1.SecurityGroupRuleLocal)
+			if ok {
+				if local != nil && reflect.ValueOf(local).IsNil() == false {
+					if local.Address != nil {
+						if err = d.Set(isSecurityGroupRuleLocal, local.Address); err != nil {
+							err = fmt.Errorf("Error setting local: %s", err)
+							return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_security_group_rule", "read", "set-local").GetDiag()
+						}
+					} else if local.CIDRBlock != nil {
+						if err = d.Set(isSecurityGroupRuleLocal, local.CIDRBlock); err != nil {
+							err = fmt.Errorf("Error setting local: %s", err)
+							return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_security_group_rule", "read", "set-local").GetDiag()
+						}
+					}
+				}
+			}
+		}
+	case "*vpcv1.SecurityGroupRuleProtocolIndividual":
+		{
+			securityGroupRule := sgrule.(*vpcv1.SecurityGroupRuleProtocolIndividual)
+			d.Set(isSecurityGroupRuleID, *securityGroupRule.ID)
+			tfID := makeTerraformRuleID(secgrpID, *securityGroupRule.ID)
+			d.SetId(tfID)
+			if err = d.Set("direction", securityGroupRule.Direction); err != nil {
+				err = fmt.Errorf("Error setting direction: %s", err)
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_security_group_rule", "read", "set-direction").GetDiag()
+			}
+			if !core.IsNil(securityGroupRule.IPVersion) {
+				if err = d.Set("ip_version", securityGroupRule.IPVersion); err != nil {
+					err = fmt.Errorf("Error setting ip_version: %s", err)
+					return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_security_group_rule", "read", "set-ip_version").GetDiag()
+				}
+			}
+			if !core.IsNil(securityGroupRule.Name) {
+				if err = d.Set("name", securityGroupRule.Name); err != nil {
+					err = fmt.Errorf("Error setting name: %s", err)
+					return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_security_group_rule", "read", "set-name").GetDiag()
+				}
+			}
+			if err = d.Set("protocol", securityGroupRule.Protocol); err != nil {
+				err = fmt.Errorf("Error setting protocol: %s", err)
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_security_group_rule", "read", "set-protocol").GetDiag()
+			}
+			remote, ok := securityGroupRule.Remote.(*vpcv1.SecurityGroupRuleRemote)
+			if ok {
+				if remote != nil && reflect.ValueOf(remote).IsNil() == false {
+					if remote.ID != nil {
+						if err = d.Set(isSecurityGroupRuleRemote, remote.ID); err != nil {
+							err = fmt.Errorf("Error setting remote: %s", err)
+							return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_security_group_rule", "read", "set-remote").GetDiag()
+						}
+					} else if remote.Address != nil {
+						if err = d.Set(isSecurityGroupRuleRemote, remote.Address); err != nil {
+							err = fmt.Errorf("Error setting remote: %s", err)
+							return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_security_group_rule", "read", "set-remote").GetDiag()
+						}
+					} else if remote.CIDRBlock != nil {
+						if err = d.Set(isSecurityGroupRuleRemote, remote.CIDRBlock); err != nil {
+							err = fmt.Errorf("Error setting remote: %s", err)
+							return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_security_group_rule", "read", "set-remote").GetDiag()
+						}
+					}
+				}
+			}
+			local, ok := securityGroupRule.Local.(*vpcv1.SecurityGroupRuleLocal)
+			if ok {
+				if local != nil && reflect.ValueOf(local).IsNil() == false {
+					if local.Address != nil {
+						if err = d.Set(isSecurityGroupRuleLocal, local.Address); err != nil {
+							err = fmt.Errorf("Error setting local: %s", err)
+							return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_security_group_rule", "read", "set-local").GetDiag()
+						}
+					} else if local.CIDRBlock != nil {
+						if err = d.Set(isSecurityGroupRuleLocal, local.CIDRBlock); err != nil {
+							err = fmt.Errorf("Error setting local: %s", err)
+							return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_security_group_rule", "read", "set-local").GetDiag()
+						}
+					}
+				}
+			}
+		}
+
+	case "*vpcv1.SecurityGroupRuleProtocolIcmptcpudp":
+		{
+			securityGroupRule := sgrule.(*vpcv1.SecurityGroupRuleProtocolIcmptcpudp)
+			d.Set(isSecurityGroupRuleID, *securityGroupRule.ID)
+			tfID := makeTerraformRuleID(secgrpID, *securityGroupRule.ID)
+			d.SetId(tfID)
+			if err = d.Set("direction", securityGroupRule.Direction); err != nil {
+				err = fmt.Errorf("Error setting direction: %s", err)
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_security_group_rule", "read", "set-direction").GetDiag()
+			}
+			if !core.IsNil(securityGroupRule.IPVersion) {
+				if err = d.Set("ip_version", securityGroupRule.IPVersion); err != nil {
+					err = fmt.Errorf("Error setting ip_version: %s", err)
+					return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_security_group_rule", "read", "set-ip_version").GetDiag()
+				}
+			}
+			if !core.IsNil(securityGroupRule.Name) {
+				if err = d.Set("name", securityGroupRule.Name); err != nil {
+					err = fmt.Errorf("Error setting name: %s", err)
+					return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_security_group_rule", "read", "set-name").GetDiag()
+				}
+			}
+			if err = d.Set("protocol", securityGroupRule.Protocol); err != nil {
+				err = fmt.Errorf("Error setting protocol: %s", err)
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_security_group_rule", "read", "set-protocol").GetDiag()
+			}
+			remote, ok := securityGroupRule.Remote.(*vpcv1.SecurityGroupRuleRemote)
+			if ok {
+				if remote != nil && reflect.ValueOf(remote).IsNil() == false {
+					if remote.ID != nil {
+						if err = d.Set(isSecurityGroupRuleRemote, remote.ID); err != nil {
+							err = fmt.Errorf("Error setting remote: %s", err)
+							return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_security_group_rule", "read", "set-remote").GetDiag()
+						}
+					} else if remote.Address != nil {
+						if err = d.Set(isSecurityGroupRuleRemote, remote.Address); err != nil {
+							err = fmt.Errorf("Error setting remote: %s", err)
+							return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_security_group_rule", "read", "set-remote").GetDiag()
+						}
+					} else if remote.CIDRBlock != nil {
+						if err = d.Set(isSecurityGroupRuleRemote, remote.CIDRBlock); err != nil {
+							err = fmt.Errorf("Error setting remote: %s", err)
+							return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_security_group_rule", "read", "set-remote").GetDiag()
+						}
+					}
+				}
+			}
+			local, ok := securityGroupRule.Local.(*vpcv1.SecurityGroupRuleLocal)
+			if ok {
+				if local != nil && reflect.ValueOf(local).IsNil() == false {
+					if local.Address != nil {
+						if err = d.Set(isSecurityGroupRuleLocal, local.Address); err != nil {
+							err = fmt.Errorf("Error setting local: %s", err)
+							return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_security_group_rule", "read", "set-local").GetDiag()
+						}
+					} else if local.CIDRBlock != nil {
+						if err = d.Set(isSecurityGroupRuleLocal, local.CIDRBlock); err != nil {
+							err = fmt.Errorf("Error setting local: %s", err)
+							return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_security_group_rule", "read", "set-local").GetDiag()
+						}
+					}
+				}
+			}
+		}
+	case "*vpcv1.SecurityGroupRule":
+		{
+			securityGroupRule := sgrule.(*vpcv1.SecurityGroupRule)
 			d.Set(isSecurityGroupRuleID, *securityGroupRule.ID)
 			tfID := makeTerraformRuleID(secgrpID, *securityGroupRule.ID)
 			d.SetId(tfID)
@@ -479,29 +751,39 @@ func resourceIBMISSecurityGroupRuleRead(context context.Context, d *schema.Resou
 					return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_security_group_rule", "read", "set-ip_version").GetDiag()
 				}
 			}
+			if !core.IsNil(securityGroupRule.Name) {
+				if err = d.Set("name", securityGroupRule.Name); err != nil {
+					err = fmt.Errorf("Error setting name: %s", err)
+					return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_security_group_rule", "read", "set-name").GetDiag()
+				}
+			}
 			if err = d.Set("protocol", securityGroupRule.Protocol); err != nil {
 				err = fmt.Errorf("Error setting protocol: %s", err)
 				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_security_group_rule", "read", "set-protocol").GetDiag()
 			}
-			tcpProtocol := map[string]interface{}{}
+			tcpList := d.Get("tcp").([]interface{})
+			udpList := d.Get("udp").([]interface{})
+			if len(tcpList) > 0 || len(udpList) > 0 {
+				tcpProtocol := map[string]interface{}{}
 
-			if securityGroupRule.PortMin != nil {
-				tcpProtocol["port_min"] = *securityGroupRule.PortMin
-			}
-			if securityGroupRule.PortMax != nil {
-				tcpProtocol["port_max"] = *securityGroupRule.PortMax
-			}
-			protocolList := make([]map[string]interface{}, 0)
-			protocolList = append(protocolList, tcpProtocol)
-			if *securityGroupRule.Protocol == isSecurityGroupRuleProtocolTCP {
-				if err = d.Set(isSecurityGroupRuleProtocolTCP, protocolList); err != nil {
-					err = fmt.Errorf("Error setting tcp: %s", err)
-					return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_security_group_rule", "read", "set-tcp").GetDiag()
+				if securityGroupRule.PortMin != nil {
+					tcpProtocol["port_min"] = *securityGroupRule.PortMin
 				}
-			} else {
-				if err = d.Set(isSecurityGroupRuleProtocolUDP, protocolList); err != nil {
-					err = fmt.Errorf("Error setting udp: %s", err)
-					return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_security_group_rule", "read", "set-udp").GetDiag()
+				if securityGroupRule.PortMax != nil {
+					tcpProtocol["port_max"] = *securityGroupRule.PortMax
+				}
+				protocolList := make([]map[string]interface{}, 0)
+				protocolList = append(protocolList, tcpProtocol)
+				if *securityGroupRule.Protocol == isSecurityGroupRuleProtocolTCP {
+					if err = d.Set(isSecurityGroupRuleProtocolTCP, protocolList); err != nil {
+						err = fmt.Errorf("Error setting tcp: %s", err)
+						return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_security_group_rule", "read", "set-tcp").GetDiag()
+					}
+				} else {
+					if err = d.Set(isSecurityGroupRuleProtocolUDP, protocolList); err != nil {
+						err = fmt.Errorf("Error setting udp: %s", err)
+						return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_security_group_rule", "read", "set-udp").GetDiag()
+					}
 				}
 			}
 			remote, ok := securityGroupRule.Remote.(*vpcv1.SecurityGroupRuleRemote)
@@ -666,6 +948,7 @@ type parsedIBMISSecurityGroupRuleDictionary struct {
 	ruleID         string
 	direction      string
 	ipversion      string
+	name           string
 	remote         string
 	remoteAddress  string
 	remoteCIDR     string
@@ -728,6 +1011,11 @@ func parseIBMISSecurityGroupRuleDictionary(d *schema.ResourceData, tag string, s
 	sgTemplate.Direction = &parsed.direction
 	securityGroupRulePatchModel.Direction = &parsed.direction
 
+	if v, ok := d.GetOk(isSecurityGroupRuleName); ok && v.(string) != "" {
+		name := v.(string)
+		securityGroupRulePatchModel.Name = &name
+	}
+
 	if version, ok := d.GetOk(isSecurityGroupRuleIPVersion); ok {
 		parsed.ipversion = version.(string)
 		sgTemplate.IPVersion = &parsed.ipversion
@@ -780,6 +1068,30 @@ func parseIBMISSecurityGroupRuleDictionary(d *schema.ResourceData, tag string, s
 		return nil, nil, nil, err
 	}
 
+	parsed.protocol = "icmp_tcp_udp"
+	if protocol, ok := d.GetOk(isSecurityGroupRuleProtocol); ok {
+		parsed.protocol = protocol.(string)
+	}
+	sgTemplate.Protocol = &parsed.protocol
+
+	if parsed.protocol != "icmp" {
+		if _, ok := d.GetOk("type"); ok {
+			return nil, nil, nil, fmt.Errorf("attribute 'type' conflicts with protocol %s; 'type' is only valid for icmp protocol", parsed.protocol)
+		}
+		if _, ok := d.GetOk("code"); ok {
+			return nil, nil, nil, fmt.Errorf("attribute 'code' conflicts with protocol %q; 'code' is only valid for icmp protocol", parsed.protocol)
+		}
+	}
+
+	if parsed.protocol != "tcp" && parsed.protocol != "udp" {
+		if _, ok := d.GetOk("port_min"); ok {
+			return nil, nil, nil, fmt.Errorf("attribute 'port_min' conflicts with protocol %s; ports apply only to tcp/udp protocol", parsed.protocol)
+		}
+		if _, ok := d.GetOk("port_max"); ok {
+			return nil, nil, nil, fmt.Errorf("attribute 'port_max' conflicts with protocol %s; ports apply only to tcp/udp protocol", parsed.protocol)
+		}
+	}
+
 	//Local
 	parsed.local = ""
 	if pl, ok := d.GetOk(isSecurityGroupRuleLocal); ok {
@@ -806,8 +1118,6 @@ func parseIBMISSecurityGroupRuleDictionary(d *schema.ResourceData, tag string, s
 		return nil, nil, nil, err
 	}
 
-	parsed.protocol = "all"
-
 	if icmpInterface, ok := d.GetOk("icmp"); ok {
 		if icmpInterface.([]interface{})[0] != nil {
 			haveType := false
@@ -828,6 +1138,24 @@ func parseIBMISSecurityGroupRuleDictionary(d *schema.ResourceData, tag string, s
 		}
 		parsed.protocol = "icmp"
 		sgTemplate.Protocol = &parsed.protocol
+	} else {
+		if parsed.protocol == "icmp" {
+			haveType := false
+			if value, ok := d.GetOk("type"); ok {
+				parsed.icmpType = int64(value.(int))
+				haveType = true
+				sgTemplate.Type = &parsed.icmpType
+				securityGroupRulePatchModel.Type = &parsed.icmpType
+			}
+			if value, ok := d.GetOk("code"); ok {
+				if !haveType {
+					return nil, nil, nil, fmt.Errorf("icmp code requires icmp type")
+				}
+				parsed.icmpCode = int64(value.(int))
+				sgTemplate.Code = &parsed.icmpCode
+				securityGroupRulePatchModel.Code = &parsed.icmpCode
+			}
+		}
 	}
 	for _, prot := range []string{"tcp", "udp"} {
 		if tcpInterface, ok := d.GetOk(prot); ok {
@@ -862,11 +1190,32 @@ func parseIBMISSecurityGroupRuleDictionary(d *schema.ResourceData, tag string, s
 			sgTemplate.PortMin = &parsed.portMin
 			securityGroupRulePatchModel.PortMax = &parsed.portMax
 			securityGroupRulePatchModel.PortMin = &parsed.portMin
+		} else {
+			if parsed.protocol == prot {
+				if value, ok := d.GetOk("port_min"); ok {
+					parsed.portMin = int64(value.(int))
+				}
+				if value, ok := d.GetOk("port_max"); ok {
+					parsed.portMax = int64(value.(int))
+				}
+				parsed.protocol = prot
+				sgTemplate.Protocol = &parsed.protocol
+				if parsed.portMin == -1 && parsed.portMax == -1 {
+					sgTemplate.PortMax = nil
+					sgTemplate.PortMin = nil
+					securityGroupRulePatchModel.PortMax = nil
+					securityGroupRulePatchModel.PortMin = nil
+				} else {
+					sgTemplate.PortMax = &parsed.portMax
+					sgTemplate.PortMin = &parsed.portMin
+					securityGroupRulePatchModel.PortMax = &parsed.portMax
+					securityGroupRulePatchModel.PortMin = &parsed.portMin
+				}
+			}
 		}
 	}
-	if parsed.protocol == "all" {
-		sgTemplate.Protocol = &parsed.protocol
-	}
+
+	sgTemplate.Protocol = &parsed.protocol
 	securityGroupRulePatch, err := securityGroupRulePatchModel.AsPatch()
 	if err != nil {
 		return nil, nil, nil, fmt.Errorf("[ERROR] Error calling asPatch for SecurityGroupRulePatch: %s", err)
