@@ -30,38 +30,38 @@ func ResourceIbmCodeEngineAllowedOutboundDestination() *schema.Resource {
 		Importer:      &schema.ResourceImporter{},
 
 		Schema: map[string]*schema.Schema{
-			"project_id": {
+			"project_id": &schema.Schema{
 				Type:         schema.TypeString,
 				Required:     true,
 				ForceNew:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_code_engine_allowed_outbound_destination", "project_id"),
 				Description:  "The ID of the project.",
 			},
-			"type": {
+			"type": &schema.Schema{
 				Type:         schema.TypeString,
 				Required:     true,
 				ForceNew:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_code_engine_allowed_outbound_destination", "type"),
 				Description:  "Specify the type of the allowed outbound destination. Allowed types are: 'cidr_block'.",
 			},
-			"cidr_block": {
+			"cidr_block": &schema.Schema{
 				Type:         schema.TypeString,
 				Optional:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_code_engine_allowed_outbound_destination", "cidr_block"),
 				Description:  "The IPv4 address range.",
 			},
-			"name": {
+			"name": &schema.Schema{
 				Type:         schema.TypeString,
 				Optional:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_code_engine_allowed_outbound_destination", "name"),
 				Description:  "The name of the CIDR block.",
 			},
-			"entity_tag": {
+			"entity_tag": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The version of the allowed outbound destination, which is used to achieve optimistic locking.",
 			},
-			"etag": {
+			"etag": &schema.Schema{
 				Type:     schema.TypeString,
 				Computed: true,
 			},

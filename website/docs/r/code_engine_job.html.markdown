@@ -8,7 +8,7 @@ subcategory: "Code Engine"
 
 # ibm_code_engine_job
 
-Create, update, and delete code_engine_job with this resource.
+Create, update, and delete code_engine_jobs with this resource.
 
 ## Example Usage
 
@@ -43,14 +43,16 @@ You can specify the following arguments for this resource.
 * `name` - (Required, Forces new resource, String) The name of the job.
   * Constraints: The maximum length is `63` characters. The minimum length is `1` character. The value must match regular expression `/^[a-z0-9]([\\-a-z0-9]*[a-z0-9])?$/`.
 * `project_id` - (Required, Forces new resource, String) The ID of the project.
-  * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[0-9a-z]{8}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{12}$/`.
+  * Constraints: Length must be `36` characters. The value must match regular expression `/^[0-9a-z]{8}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{12}$/`.
 * `run_arguments` - (Optional, List) Set arguments for the job that are passed to start job run containers. If not specified an empty string array will be applied and the arguments specified by the container image, will be used to start the container.
   * Constraints: The list items must match regular expression `/^.*$/`. The maximum length is `100` items. The minimum length is `0` items.
-* `run_as_user` - (Optional, Integer) The user ID (UID) to run the job (e.g., 1001).
+* `run_as_user` - (Optional, Integer) The user ID (UID) to run the job.
   * Constraints: The default value is `0`.
 * `run_commands` - (Optional, List) Set commands for the job that are passed to start job run containers. If not specified an empty string array will be applied and the command specified by the container image, will be used to start the container.
   * Constraints: The list items must match regular expression `/^.*$/`. The maximum length is `100` items. The minimum length is `0` items.
-* `run_env_variables` - (Optional, List) References to config maps, secrets or literal values, which are exposed as environment variables in the job run.
+* `run_compute_resource_token_enabled` - (Optional, Boolean) Optional flag to enable the use of a compute resource token mounted to the container file system.
+  * Constraints: The default value is `false`.
+* `run_env_variables` - (Optional, List) References to config maps, secrets or literal values, which are defined by the function owner and are exposed as environment variables in the job run.
   * Constraints: The maximum length is `100` items. The minimum length is `0` items.
 Nested schema for **run_env_variables**:
 	* `key` - (Optional, String) The key to reference as environment variable.
@@ -61,25 +63,29 @@ Nested schema for **run_env_variables**:
 	  * Constraints: The maximum length is `253` characters. The minimum length is `0` characters. The value must match regular expression `/^[a-zA-Z_][a-zA-Z0-9_]*$/`.
 	* `reference` - (Optional, String) The name of the secret or config map.
 	  * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[a-z0-9]([\\-a-z0-9]*[a-z0-9])?(\\.[a-z0-9]([\\-a-z0-9]*[a-z0-9])?)*$/`.
-	* `type` - (Optional, String) Specify the type of the environment variable.
-	  * Constraints: The default value is `literal`. Allowable values are: `literal`, `config_map_full_reference`, `secret_full_reference`, `config_map_key_reference`, `secret_key_reference`. The value must match regular expression `/^(literal|config_map_full_reference|secret_full_reference|config_map_key_reference|secret_key_reference)$/`. When referencing a secret or configmap, the `reference` must be specified. When referencing a secret or configmap key, a `key` must also be specified.
+	* `type` - (Required, String) Specify the type of the environment variable.
+	  * Constraints: The default value is `literal`. Allowable values are: `literal`, `config_map_full_reference`, `secret_full_reference`, `config_map_key_reference`, `secret_key_reference`. The value must match regular expression `/^(literal|config_map_full_reference|secret_full_reference|config_map_key_reference|secret_key_reference)$/`.
 	* `value` - (Optional, String) The literal value of the environment variable.
-	  * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[\\-._a-zA-Z0-9]+$/`.
+	  * Constraints: The maximum length is `1048576` characters. The minimum length is `0` characters. The value must match regular expression `/^.*$/`.
 * `run_mode` - (Optional, String) The mode for runs of the job. Valid values are `task` and `daemon`. In `task` mode, the `max_execution_time` and `retry_limit` properties apply. In `daemon` mode, since there is no timeout and failed instances are restarted indefinitely, the `max_execution_time` and `retry_limit` properties are not allowed.
-  * Constraints: The default value is `task`. Allowable values are: `task`, `daemon`. The minimum length is `0` characters. The value must match regular expression `/^(task|daemon)$/`.
+  * Constraints: The default value is `task`. Allowable values are: `task`, `daemon`. The value must match regular expression `/^(task|daemon)$/`.
 * `run_service_account` - (Optional, String) The name of the service account. For built-in service accounts, you can use the shortened names `manager`, `none`, `reader`, and `writer`. This property must not be set on a job run, which references a job template.
-  * Constraints: The default value is `default`. Allowable values are: `default`, `manager`, `reader`, `writer`, `none`. The minimum length is `0` characters. The value must match regular expression `/^(manager|reader|writer|none|default)$/`.
+  * Constraints: The default value is `default`. Allowable values are: `default`, `manager`, `reader`, `writer`, `none`. The value must match regular expression `/^(manager|reader|writer|none|default)$/`.
 * `run_volume_mounts` - (Optional, List) Optional mounts of config maps or secrets.
   * Constraints: The maximum length is `100` items. The minimum length is `0` items.
 Nested schema for **run_volume_mounts**:
 	* `mount_path` - (Required, String) The path that should be mounted.
 	  * Constraints: The maximum length is `256` characters. The minimum length is `1` character. The value must match regular expression `/^\/([^\/\\0]+\/?)+$/`.
-	* `name` - (Required, String) The name of the mount.
+	* `name` - (Optional, String) The name of the mount.
 	  * Constraints: The maximum length is `63` characters. The minimum length is `0` characters. The value must match regular expression `/^[a-z]([-a-z0-9]*[a-z0-9])?$/`.
-	* `reference` - (Required, String) The name of the referenced secret or config map.
+	* `read_only` - (Optional, Boolean) Optional flag for a volume mount of type 'persistent_data_store' to specify whether it is read-only.
+    * Constraints: The default value is `true`.
+	* `reference` - (Required, String) The name of the referenced secret, config map, or persistent data store.
 	  * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[a-z0-9]([\\-a-z0-9]*[a-z0-9])?(\\.[a-z0-9]([\\-a-z0-9]*[a-z0-9])?)*$/`.
-	* `type` - (Required, String) Specify the type of the volume mount. Allowed types are: 'config_map', 'secret'.
-	  * Constraints: The default value is `secret`. Allowable values are: `config_map`, `secret`. The value must match regular expression `/^(config_map|secret)$/`.
+	* `sub_path` - (Optional, String) The path mounted at the mount path.
+	  * Constraints: The maximum length is `1000` characters. The minimum length is `1` character. The value must match regular expression `/^.+$/`.
+	* `type` - (Required, String) Specify the type of the volume mount. Allowed types are: 'config_map', 'persistent_data_store', 'secret'.
+	  * Constraints: The default value is `secret`. Allowable values are: `config_map`, `persistent_data_store`, `secret`. The value must match regular expression `/^(config_map|persistent_data_store|secret)$/`.
 * `scale_array_spec` - (Optional, String) Define a custom set of array indices as a comma-separated list containing single values and hyphen-separated ranges, such as  5,12-14,23,27. Each instance gets its array index value from the environment variable JOB_INDEX. The number of unique array indices that you specify with this parameter determines the number of job instances to run.
   * Constraints: The default value is `0`. The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^(?:[1-9]\\d\\d\\d\\d\\d\\d|[1-9]\\d\\d\\d\\d\\d|[1-9]\\d\\d\\d\\d|[1-9]\\d\\d\\d|[1-9]\\d\\d|[1-9]?\\d)(?:-(?:[1-9]\\d\\d\\d\\d\\d\\d|[1-9]\\d\\d\\d\\d\\d|[1-9]\\d\\d\\d\\d|[1-9]\\d\\d\\d|[1-9]\\d\\d|[1-9]?\\d))?(?:,(?:[1-9]\\d\\d\\d\\d\\d\\d|[1-9]\\d\\d\\d\\d\\d|[1-9]\\d\\d\\d\\d|[1-9]\\d\\d\\d|[1-9]\\d\\d|[1-9]?\\d)(?:-(?:[1-9]\\d\\d\\d\\d\\d\\d|[1-9]\\d\\d\\d\\d\\d|[1-9]\\d\\d\\d\\d|[1-9]\\d\\d\\d|[1-9]\\d\\d|[1-9]?\\d))?)*$/`.
 * `scale_cpu_limit` - (Optional, String) Optional amount of CPU set for the instance of the job. For valid values see [Supported memory and CPU combinations](https://cloud.ibm.com/docs/codeengine?topic=codeengine-mem-cpu-combo).
@@ -87,11 +93,11 @@ Nested schema for **run_volume_mounts**:
 * `scale_ephemeral_storage_limit` - (Optional, String) Optional amount of ephemeral storage to set for the instance of the job. The amount specified as ephemeral storage, must not exceed the amount of `scale_memory_limit`. The units for specifying ephemeral storage are Megabyte (M) or Gigabyte (G), whereas G and M are the shorthand expressions for GB and MB. For more information see [Units of measurement](https://cloud.ibm.com/docs/codeengine?topic=codeengine-mem-cpu-combo#unit-measurements).
   * Constraints: The default value is `400M`. The maximum length is `10` characters. The minimum length is `0` characters. The value must match regular expression `/^([0-9.]+)([eEinumkKMGTPB]*)$/`.
 * `scale_max_execution_time` - (Optional, Integer) The maximum execution time in seconds for runs of the job. This property can only be specified if `run_mode` is `task`.
-  * Constraints: The default value is `7200`.
+  * Constraints: The default value is `7200`. The maximum value is `86400`. The minimum value is `1`.
 * `scale_memory_limit` - (Optional, String) Optional amount of memory set for the instance of the job. For valid values see [Supported memory and CPU combinations](https://cloud.ibm.com/docs/codeengine?topic=codeengine-mem-cpu-combo). The units for specifying memory are Megabyte (M) or Gigabyte (G), whereas G and M are the shorthand expressions for GB and MB. For more information see [Units of measurement](https://cloud.ibm.com/docs/codeengine?topic=codeengine-mem-cpu-combo#unit-measurements).
   * Constraints: The default value is `4G`. The maximum length is `10` characters. The minimum length is `0` characters. The value must match regular expression `/^([0-9.]+)([eEinumkKMGTPB]*)$/`.
 * `scale_retry_limit` - (Optional, Integer) The number of times to rerun an instance of the job before the job is marked as failed. This property can only be specified if `run_mode` is `task`.
-  * Constraints: The default value is `3`.
+  * Constraints: The default value is `3`. The maximum value is `5`. The minimum value is `0`.
 
 ## Attribute Reference
 
@@ -116,15 +122,16 @@ Nested schema for **computed_env_variables**:
 	* `type` - (String) Specify the type of the environment variable.
 	  * Constraints: The default value is `literal`. Allowable values are: `literal`, `config_map_full_reference`, `secret_full_reference`, `config_map_key_reference`, `secret_key_reference`. The value must match regular expression `/^(literal|config_map_full_reference|secret_full_reference|config_map_key_reference|secret_key_reference)$/`.
 	* `value` - (String) The literal value of the environment variable.
-      * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[\\-._a-zA-Z0-9]+$/`.
+	  * Constraints: The maximum length is `1048576` characters. The minimum length is `0` characters. The value must match regular expression `/^.*$/`.
 * `created_at` - (String) The timestamp when the resource was created.
 * `entity_tag` - (String) The version of the job instance, which is used to achieve optimistic locking.
   * Constraints: The maximum length is `63` characters. The minimum length is `1` character. The value must match regular expression `/^[\\*\\-a-z0-9]+$/`.
 * `href` - (String) When you provision a new job,  a URL is created identifying the location of the instance.
-  * Constraints: The maximum length is `2048` characters. The minimum length is `0` characters. The value must match regular expression `/(([^:\/?#]+):)?(\/\/([^\/?#]*))?([^?#]*)(\\?([^#]*))?(#(.*))?$/`.
+  * Constraints: The maximum length is `2048` characters. The minimum length is `0` characters. The value must match regular expression `/^(([^:\/?#]+):)?(\/\/([^\/?#]*))?([^?#]*)(\\?([^#]*))?(#(.*))?$/`.
 * `region` - (String) The region of the project the resource is located in. Possible values: 'au-syd', 'br-sao', 'ca-tor', 'eu-de', 'eu-gb', 'jp-osa', 'jp-tok', 'us-east', 'us-south'.
 * `resource_type` - (String) The type of the job.
   * Constraints: Allowable values are: `job_v2`.
+
 * `etag` - ETag identifier for code_engine_job.
 
 ## Import
