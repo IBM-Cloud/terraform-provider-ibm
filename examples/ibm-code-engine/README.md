@@ -790,43 +790,69 @@ data "ibm_code_engine_secret" "code_engine_secret_instance" {
 
 ### Action: ibm_code_engine_build_run
 
+Triggers a Code Engine build run and optionally waits for completion. This action enables declarative build triggering without requiring local-exec provisioners or bash scripts.
+
 ```hcl
+# Example 1: Trigger build run and wait for completion
 action "ibm_code_engine_build_run" "trigger" {
+  config {
+    project_id   = ibm_code_engine_project.code_engine_project_instance.project_id
+    build_name   = ibm_code_engine_build.code_engine_build_instance.name
+    name         = "my-build-run"
+    timeout      = 600  # Build execution timeout in seconds (10 minutes)
+    wait_timeout = 660  # Wait timeout in seconds (11 minutes)
+  }
+}
+
+# Example 2: Trigger build run without waiting (fire-and-forget)
+action "ibm_code_engine_build_run" "trigger_no_wait" {
   config {
     project_id = ibm_code_engine_project.code_engine_project_instance.project_id
     build_name = ibm_code_engine_build.code_engine_build_instance.name
-    timeout    = 30
+    no_wait    = true
   }
 }
 ```
 
 #### Inputs
 
-| Name | Description | Type | Required |
-|------|-------------|------|---------|
-| project_id | The ID of the Code Engine project. | `string` | true |
-| build_name | The name of the Code Engine build configuration to execute. | `string` | true |
-| timeout | Build run timeout in minutes (default: 30, min: 5, max: 60). | `number` | false |
+| Name | Description | Type | Required | Default |
+|------|-------------|------|---------|---------|
+| project_id | The ID of the Code Engine project containing the build configuration. | `string` | true | - |
+| build_name | The name of the Code Engine build configuration to execute. The build must be in 'ready' state. | `string` | true | - |
+| name | Name of the build run. If not specified, auto-generated as `[BUILD_NAME]-run-[YYMMDD-hhmmss]`. | `string` | false | auto-generated |
+| timeout | Build run execution timeout in seconds. Controls how long the build process can run. | `number` | false | 600 (10 min) |
+| wait_timeout | Maximum time in seconds to wait for build run completion. Defaults to `timeout + 60` seconds. Ignored when `no_wait` is true. | `number` | false | timeout + 60 |
+| no_wait | If true, returns immediately after creating the build run without waiting for completion. | `bool` | false | false |
 
 #### Usage
 
 Actions are invoked explicitly using the `-invoke` flag:
 
 ```bash
-# Invoke the build run action
+# Invoke the build run action and wait for completion
 terraform apply -invoke action.ibm_code_engine_build_run.trigger
+
+# Invoke the no-wait action (fire-and-forget)
+terraform apply -invoke action.ibm_code_engine_build_run.trigger_no_wait
 ```
 
 #### Behavior
 
 When invoked, this action:
-1. Validates the build configuration exists and is in "ready" state during `terraform plan`
-2. Creates a new build run in Code Engine
-3. Polls the build run status until completion or timeout
-4. Reports success or failure via Terraform diagnostics
+1. Creates a new build run in Code Engine
+2. If `no_wait` is false (default):
+   - Polls the build run status with exponential backoff (10s → 30s max interval)
+   - Waits until build reaches terminal state (succeeded/failed) or timeout
+   - Reports success or failure via Terraform diagnostics
+3. If `no_wait` is true:
+   - Returns immediately after creating the build run
+   - Build continues running in the background
 
 #### Notes
 
-- Requires Terraform 1.14.0 or later (for Actions support)
+- **Requires Terraform 1.14+** (for Plugin Framework protocol v6 support)
+- **Actions vs Resources**: This action is for triggering builds. For full CRUD lifecycle management of build runs, use the `ibm_code_engine_build_run` resource (when available)
 - Build run results can be accessed via Code Engine console or IBM Cloud CLI
-- Actions do not persist state or return outputs
+- Actions do not persist state or return output values
+- The action enables lifecycle-triggered builds using Terraform's action framework
