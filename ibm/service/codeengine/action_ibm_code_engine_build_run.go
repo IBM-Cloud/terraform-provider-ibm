@@ -11,10 +11,8 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM/code-engine-go-sdk/codeenginev2"
 	"github.com/IBM/go-sdk-core/v5/core"
-	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
 	"github.com/hashicorp/terraform-plugin-framework/action"
 	"github.com/hashicorp/terraform-plugin-framework/action/schema"
-	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
@@ -32,9 +30,12 @@ type codeEngineBuildRunAction struct {
 }
 
 type buildRunModel struct {
-	ProjectID types.String `tfsdk:"project_id"`
-	BuildName types.String `tfsdk:"build_name"`
-	Timeout   types.Int64  `tfsdk:"timeout"`
+	ProjectID   types.String `tfsdk:"project_id"`
+	BuildName   types.String `tfsdk:"build_name"`
+	Name        types.String `tfsdk:"name"`
+	Timeout     types.Int64  `tfsdk:"timeout"`
+	WaitTimeout types.Int64  `tfsdk:"wait_timeout"`
+	NoWait      types.Bool   `tfsdk:"no_wait"`
 }
 
 func (a *codeEngineBuildRunAction) Metadata(ctx context.Context, req action.MetadataRequest, resp *action.MetadataResponse) {
@@ -43,7 +44,7 @@ func (a *codeEngineBuildRunAction) Metadata(ctx context.Context, req action.Meta
 
 func (a *codeEngineBuildRunAction) Schema(ctx context.Context, req action.SchemaRequest, resp *action.SchemaResponse) {
 	resp.Schema = schema.Schema{
-		Description: "Triggers a Code Engine build run and waits for completion. This action initiates a build run for an existing Code Engine build configuration, polls for completion status, and reports success or failure via diagnostics. Actions do not return output values.",
+		Description: "Triggers a Code Engine build run and optionally waits for completion. This action initiates a build run for an existing Code Engine build configuration, and can either wait for completion or return immediately. Actions do not return output values.",
 		Attributes: map[string]schema.Attribute{
 			"project_id": schema.StringAttribute{
 				Required:    true,
@@ -53,12 +54,21 @@ func (a *codeEngineBuildRunAction) Schema(ctx context.Context, req action.Schema
 				Required:    true,
 				Description: "The name of the Code Engine build configuration to execute. The build must be in 'ready' state.",
 			},
+			"name": schema.StringAttribute{
+				Optional:    true,
+				Description: "Name of the build run. If not specified, the name will be auto-generated in the format: [BUILD_NAME]-run-[timestamp with format: YYMMDD-hhmmss].",
+			},
 			"timeout": schema.Int64Attribute{
 				Optional:    true,
-				Description: "Build run timeout in minutes. If not specified, defaults to 30 minutes. Minimum: 5 minutes",
-				Validators: []validator.Int64{
-					int64validator.AtLeast(5),
-				},
+				Description: "Build run execution timeout in seconds. Controls how long the build process can run. If not specified, defaults to 600 seconds (10 minutes).",
+			},
+			"wait_timeout": schema.Int64Attribute{
+				Optional:    true,
+				Description: "Maximum time in seconds to wait for build run completion. If not specified, defaults to timeout + 60 seconds to account for polling overhead and ensure the build has time to complete. Ignored when no_wait is true.",
+			},
+			"no_wait": schema.BoolAttribute{
+				Optional:    true,
+				Description: "If true, the action returns immediately after creating the build run without waiting for completion. Default: false",
 			},
 		},
 	}
@@ -101,17 +111,47 @@ func (a *codeEngineBuildRunAction) Invoke(ctx context.Context, req action.Invoke
 		return
 	}
 
-	timeout := 30 * time.Minute
+	// Build execution timeout (sent to API)
+	buildTimeout := 600 * time.Second // align with the default timeout of the Code Engine API (10 minutes)
 	if !config.Timeout.IsNull() {
-		timeout = time.Duration(config.Timeout.ValueInt64()) * time.Minute
+		buildTimeout = time.Duration(config.Timeout.ValueInt64()) * time.Second
+	}
+
+	// Wait timeout (for polling) - defaults to build timeout + 60s padding for polling overhead
+	const waitPadding = 60 * time.Second
+	waitTimeout := buildTimeout + waitPadding
+	if !config.WaitTimeout.IsNull() {
+		waitTimeout = time.Duration(config.WaitTimeout.ValueInt64()) * time.Second
+	}
+
+	// Warn if wait_timeout is less than build timeout
+	if !config.WaitTimeout.IsNull() && waitTimeout < buildTimeout {
+		resp.SendProgress(action.InvokeProgressEvent{
+			Message: fmt.Sprintf("Warning: wait_timeout (%v) is less than timeout (%v). Polling may stop before the build completes execution.", waitTimeout, buildTimeout),
+		})
+	}
+
+	// No-wait flag - defaults to false
+	noWait := false
+	if !config.NoWait.IsNull() {
+		noWait = config.NoWait.ValueBool()
 	}
 
 	projectID := config.ProjectID.ValueString()
 	buildName := config.BuildName.ValueString()
 
+	buildTimeoutSeconds := int64(buildTimeout.Seconds())
+
 	createOptions := &codeenginev2.CreateBuildRunOptions{
-		ProjectID: core.StringPtr(projectID),
-		BuildName: core.StringPtr(buildName),
+		ProjectID: &projectID,
+		BuildName: &buildName,
+		Timeout:   &buildTimeoutSeconds,
+	}
+
+	// Set optional name if provided
+	if !config.Name.IsNull() {
+		name := config.Name.ValueString()
+		createOptions.Name = &name
 	}
 
 	buildRun, response, err := a.client.CreateBuildRunWithContext(ctx, createOptions)
@@ -123,10 +163,23 @@ func (a *codeEngineBuildRunAction) Invoke(ctx context.Context, req action.Invoke
 	buildRunName := *buildRun.Name
 
 	resp.SendProgress(action.InvokeProgressEvent{
-		Message: fmt.Sprintf("Build run '%s' created, waiting for completion...", buildRunName),
+		Message: fmt.Sprintf("Build run '%s' created", buildRunName),
 	})
 
-	finalBuildRun, err := a.waitForCompletion(ctx, projectID, buildRunName, timeout, resp.SendProgress)
+	// If no_wait is true, return immediately without waiting for completion
+	if noWait {
+		resp.SendProgress(action.InvokeProgressEvent{
+			Message: fmt.Sprintf("Build run '%s' submitted (no-wait mode)", buildRunName),
+		})
+		return
+	}
+
+	// Otherwise, wait for completion
+	resp.SendProgress(action.InvokeProgressEvent{
+		Message: fmt.Sprintf("Waiting for build run '%s' to complete (timeout: %v)...", buildRunName, waitTimeout),
+	})
+
+	finalBuildRun, err := a.waitForCompletion(ctx, projectID, buildRunName, waitTimeout, resp.SendProgress)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Build Run Failed",

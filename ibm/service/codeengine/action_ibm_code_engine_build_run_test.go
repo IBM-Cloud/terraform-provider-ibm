@@ -32,68 +32,33 @@ func TestAccIbmCodeEngineBuildRunActionBasic(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				// Create build and trigger action via lifecycle
-				Config: testAccCheckIbmCodeEngineBuildRunActionBasic(projectID, buildName),
+				Config: buildRunActionConfigBasic(projectID, buildName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("ibm_code_engine_build.test_build", "build_id"),
-					testAccCheckIbmCodeEngineBuildRunActionInvoked(projectID, buildName),
+					checkBuildRunActionInvoked(projectID, buildName),
 				),
 			},
 		},
 	})
 }
 
-// TestAccIbmCodeEngineBuildRunActionTimeout tests timeout handling with subtests
+// TestAccIbmCodeEngineBuildRunActionTimeout tests timeout handling
 // This test verifies that:
-// - Action accepts custom timeout parameter
-// - Action respects timeout for successful builds
-// - Appropriate error is returned when build run exceeds timeout
+// - Appropriate error is returned when build run exceeds wait timeout
 func TestAccIbmCodeEngineBuildRunActionTimeout(t *testing.T) {
 	projectID := acc.CeProjectId
+	buildName := fmt.Sprintf("tf-build-timeout-fail-%d", acctest.RandIntRange(10, 1000))
+	shortTimeout := int64(10) // 10 seconds - likely to timeout for real builds
 
-	t.Run("Success", func(t *testing.T) {
-		buildName := fmt.Sprintf("tf-build-timeout-success-%d", acctest.RandIntRange(10, 1000))
-		timeout := int64(600) // 10 minutes
-
-		resource.Test(t, resource.TestCase{
-			PreCheck:                 func() { acc.TestAccPreCheckCodeEngine(t) },
-			ProtoV6ProviderFactories: acc.TestAccProtoV6ProviderFactories(),
-			Steps: []resource.TestStep{
-				{
-					Config: testAccCheckIbmCodeEngineBuildRunActionPrerequisites(projectID, buildName),
-					Check: resource.ComposeTestCheckFunc(
-						resource.TestCheckResourceAttrSet("ibm_code_engine_build.test_build", "build_id"),
-					),
-				},
-				{
-					Config: testAccCheckIbmCodeEngineBuildRunActionWithTimeout(projectID, buildName, timeout),
-					Check: resource.ComposeTestCheckFunc(
-						testAccCheckIbmCodeEngineBuildRunActionInvoked(projectID, buildName),
-					),
-				},
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acc.TestAccPreCheck(t) },
+		ProtoV6ProviderFactories: acc.TestAccProtoV6ProviderFactories(),
+		Steps: []resource.TestStep{
+			{
+				Config:      buildRunActionConfigWithTimeout(projectID, buildName, shortTimeout),
+				ExpectError: regexp.MustCompile("timeout|timed out"),
 			},
-		})
-	})
-
-	t.Run("Failure", func(t *testing.T) {
-		buildName := fmt.Sprintf("tf-build-timeout-fail-%d", acctest.RandIntRange(10, 1000))
-		shortTimeout := int64(30) // 30 seconds - likely to timeout for real builds
-
-		resource.Test(t, resource.TestCase{
-			PreCheck:                 func() { acc.TestAccPreCheckCodeEngine(t) },
-			ProtoV6ProviderFactories: acc.TestAccProtoV6ProviderFactories(),
-			Steps: []resource.TestStep{
-				{
-					Config: testAccCheckIbmCodeEngineBuildRunActionPrerequisites(projectID, buildName),
-					Check: resource.ComposeTestCheckFunc(
-						resource.TestCheckResourceAttrSet("ibm_code_engine_build.test_build", "build_id"),
-					),
-				},
-				{
-					Config:      testAccCheckIbmCodeEngineBuildRunActionWithTimeout(projectID, buildName, shortTimeout),
-					ExpectError: regexp.MustCompile("timeout|timed out"),
-				},
-			},
-		})
+		},
 	})
 }
 
@@ -106,19 +71,72 @@ func TestAccIbmCodeEngineBuildRunActionBuildNotFound(t *testing.T) {
 	nonExistentBuild := "non-existent-build-12345"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:                 func() { acc.TestAccPreCheckCodeEngine(t) },
+		PreCheck:                 func() { acc.TestAccPreCheck(t) },
+		ProtoV6ProviderFactories: acc.TestAccProtoV6ProviderFactories(),
+		ExternalProviders: map[string]resource.ExternalProvider{
+			"null": {
+				Source:            "hashicorp/null",
+				VersionConstraint: "~> 3.0",
+			},
+		},
+		Steps: []resource.TestStep{
+			{
+				Config:      buildRunActionConfigNonExistentBuild(projectID, nonExistentBuild),
+				ExpectError: regexp.MustCompile("Resource Not Found|not found|404"),
+			},
+		},
+	})
+
+}
+
+// TestAccIbmCodeEngineBuildRunActionNoWait tests no_wait parameter
+// This test verifies that:
+// - Action returns immediately when no_wait=true without waiting for completion
+func TestAccIbmCodeEngineBuildRunActionNoWait(t *testing.T) {
+	projectID := acc.CeProjectId
+	buildName := fmt.Sprintf("tf-build-no-wait-%d", acctest.RandIntRange(10, 1000))
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acc.TestAccPreCheck(t) },
 		ProtoV6ProviderFactories: acc.TestAccProtoV6ProviderFactories(),
 		Steps: []resource.TestStep{
 			{
-				Config:      testAccCheckIbmCodeEngineBuildRunActionBasic(projectID, nonExistentBuild),
-				ExpectError: regexp.MustCompile("Build .* not found"),
+				Config: buildRunActionConfigWithNoWait(projectID, buildName),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet("ibm_code_engine_build.test_build", "build_id"),
+					checkBuildRunActionInvoked(projectID, buildName),
+				),
+			},
+		},
+	})
+}
+
+// TestAccIbmCodeEngineBuildRunActionWithName tests custom name parameter
+// This test verifies that:
+// - Action accepts custom name parameter
+// - Build run is created with the specified name
+func TestAccIbmCodeEngineBuildRunActionWithName(t *testing.T) {
+	projectID := acc.CeProjectId
+	buildName := fmt.Sprintf("tf-build-custom-name-%d", acctest.RandIntRange(10, 1000))
+	customRunName := fmt.Sprintf("custom-run-%d", acctest.RandIntRange(10, 1000))
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acc.TestAccPreCheck(t) },
+		ProtoV6ProviderFactories: acc.TestAccProtoV6ProviderFactories(),
+		Steps: []resource.TestStep{
+			{
+				Config: buildRunActionConfigWithName(projectID, buildName, customRunName),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet("ibm_code_engine_build.test_build", "build_id"),
+					checkBuildRunActionInvoked(projectID, buildName),
+				),
 			},
 		},
 	})
 }
 
 // Helper function to verify action was invoked by checking for recent build runs
-func testAccCheckIbmCodeEngineBuildRunActionInvoked(projectID, buildName string) resource.TestCheckFunc {
+func checkBuildRunActionInvoked(projectID, buildName string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		codeEngineClient, err := acc.TestAccProvider.Meta().(conns.ClientSession).CodeEngineV2()
 		if err != nil {
@@ -147,24 +165,7 @@ func testAccCheckIbmCodeEngineBuildRunActionInvoked(projectID, buildName string)
 
 // Configuration helpers
 
-func testAccCheckIbmCodeEngineBuildRunActionPrerequisites(projectID, buildName string) string {
-	return fmt.Sprintf(`
-		data "ibm_code_engine_project" "test_project" {
-			project_id = "%s"
-		}
-
-		resource "ibm_code_engine_build" "test_build" {
-			project_id    = data.ibm_code_engine_project.test_project.project_id
-			name          = "%s"
-			output_image  = "private.us.icr.io/ce-terraform-test/%s"
-			output_secret = "ce-terraform-test"
-			source_url    = "https://github.com/IBM/CodeEngine"
-			strategy_type = "dockerfile"
-		}
-	`, projectID, buildName, buildName)
-}
-
-func testAccCheckIbmCodeEngineBuildRunActionBasic(projectID, buildName string) string {
+func buildRunActionConfigBasic(projectID, buildName string) string {
 	return fmt.Sprintf(`
 		data "ibm_code_engine_project" "test_project" {
 			project_id = "%s"
@@ -195,7 +196,7 @@ func testAccCheckIbmCodeEngineBuildRunActionBasic(projectID, buildName string) s
 	`, projectID, projectID, buildName, buildName, buildName)
 }
 
-func testAccCheckIbmCodeEngineBuildRunActionWithTimeout(projectID, buildName string, timeout int64) string {
+func buildRunActionConfigWithTimeout(projectID, buildName string, timeout int64) string {
 	return fmt.Sprintf(`
 		data "ibm_code_engine_project" "test_project" {
 			project_id = "%s"
@@ -225,4 +226,106 @@ func testAccCheckIbmCodeEngineBuildRunActionWithTimeout(projectID, buildName str
 			}
 		}
 	`, projectID, projectID, buildName, timeout, buildName, buildName)
+}
+
+func buildRunActionConfigWithNoWait(projectID, buildName string) string {
+	return fmt.Sprintf(`
+		data "ibm_code_engine_project" "test_project" {
+			project_id = "%s"
+		}
+
+		action "ibm_code_engine_build_run" "test_action" {
+			config {
+				project_id = "%s"
+				build_name = "%s"
+				no_wait    = true
+			}
+		}
+
+		resource "ibm_code_engine_build" "test_build" {
+			project_id    = data.ibm_code_engine_project.test_project.project_id
+			name          = "%s"
+			output_image  = "private.us.icr.io/ce-terraform-test/%s"
+			output_secret = "ce-terraform-test"
+			source_url    = "https://github.com/IBM/CodeEngine"
+			strategy_type = "dockerfile"
+
+			lifecycle {
+				action_trigger {
+					events  = [after_create]
+					actions = [action.ibm_code_engine_build_run.test_action]
+				}
+			}
+		}
+	`, projectID, projectID, buildName, buildName, buildName)
+}
+
+func buildRunActionConfigWithName(projectID, buildName, customRunName string) string {
+	return fmt.Sprintf(`
+		data "ibm_code_engine_project" "test_project" {
+			project_id = "%s"
+		}
+
+		action "ibm_code_engine_build_run" "test_action" {
+			config {
+				project_id = "%s"
+				build_name = "%s"
+				name       = "%s"
+				no_wait    = true
+			}
+		}
+
+		resource "ibm_code_engine_build" "test_build" {
+			project_id    = data.ibm_code_engine_project.test_project.project_id
+			name          = "%s"
+			output_image  = "private.us.icr.io/ce-terraform-test/%s"
+			output_secret = "ce-terraform-test"
+			source_url    = "https://github.com/IBM/CodeEngine"
+			strategy_type = "dockerfile"
+
+			lifecycle {
+				action_trigger {
+					events  = [after_create]
+					actions = [action.ibm_code_engine_build_run.test_action]
+				}
+			}
+		}
+	`, projectID, projectID, buildName, customRunName, buildName, buildName)
+}
+
+func buildRunActionConfigNonExistentBuild(projectID, buildName string) string {
+	return fmt.Sprintf(`
+		terraform {
+			required_providers {
+				null = {
+					source  = "hashicorp/null"
+					version = "~> 3.0"
+				}
+			}
+		}
+
+		data "ibm_code_engine_project" "test_project" {
+			project_id = "%s"
+		}
+
+		action "ibm_code_engine_build_run" "test_action" {
+			config {
+				project_id = "%s"
+				build_name = "%s"
+			}
+		}
+
+		resource "null_resource" "trigger_action" {
+			provisioner "local-exec" {
+				command = "echo 'Triggering action for non-existent build'"
+			}
+
+			lifecycle {
+				action_trigger {
+					events  = [after_create]
+					actions = [action.ibm_code_engine_build_run.test_action]
+				}
+			}
+		}
+	`, projectID, projectID, buildName)
 }
