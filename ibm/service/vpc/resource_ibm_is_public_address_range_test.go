@@ -49,7 +49,7 @@ func TestAccIBMPublicAddressRangeNameValidation(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config:      testAccCheckIBMPublicAddressRangeConfigBasic(vpcName, invalidName, ipv4AddressCount),
-				ExpectError: regexp.MustCompile(`"name" \("ibm-test"\) should match regexp`),
+				ExpectError: regexp.MustCompile(`"name" cannot start with 'ibm-'`),
 			},
 		},
 	})
