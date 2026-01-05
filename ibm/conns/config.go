@@ -74,6 +74,7 @@ import (
 	"github.com/IBM/platform-services-go-sdk/atrackerv2"
 	"github.com/IBM/platform-services-go-sdk/catalogmanagementv1"
 	"github.com/IBM/platform-services-go-sdk/contextbasedrestrictionsv1"
+	"github.com/IBM/platform-services-go-sdk/distributionlistapiv1"
 	"github.com/IBM/platform-services-go-sdk/enterprisemanagementv1"
 	"github.com/IBM/platform-services-go-sdk/globalcatalogv1"
 	searchv2 "github.com/IBM/platform-services-go-sdk/globalsearchv2"
@@ -322,6 +323,7 @@ type ClientSession interface {
 	CisFiltersSession() (*cisfiltersv1.FiltersV1, error)
 	CisFirewallRulesSession() (*cisfirewallrulesv1.FirewallRulesV1, error)
 	AtrackerV2() (*atrackerv2.AtrackerV2, error)
+	DistributionListApiV1() (*distributionlistapiv1.DistributionListApiV1, error)
 	MetricsRouterV3() (*metricsrouterv3.MetricsRouterV3, error)
 	ESschemaRegistrySession() (*schemaregistryv1.SchemaregistryV1, error)
 	ESadminRestSession() (*adminrestv1.AdminrestV1, error)
@@ -646,6 +648,10 @@ type clientSession struct {
 	// Atracker
 	atrackerClientV2    *atrackerv2.AtrackerV2
 	atrackerClientV2Err error
+
+	// Distribution List API
+	distributionListApiClient    *distributionlistapiv1.DistributionListApiV1
+	distributionListApiClientErr error
 
 	// Metrics Router
 	metricsRouterClient    *metricsrouterv3.MetricsRouterV3
@@ -1294,6 +1300,11 @@ func (sess clientSession) CisFirewallRulesSession() (*cisfirewallrulesv1.Firewal
 // Activity Tracker API
 func (session clientSession) AtrackerV2() (*atrackerv2.AtrackerV2, error) {
 	return session.atrackerClientV2, session.atrackerClientV2Err
+}
+
+// Distribution List API
+func (session clientSession) DistributionListApiV1() (*distributionlistapiv1.DistributionListApiV1, error) {
+	return session.distributionListApiClient, session.distributionListApiClientErr
 }
 
 // Metrics Router API Version 3
@@ -2027,6 +2038,22 @@ func (c *Config) ClientSession() (interface{}, error) {
 		})
 	} else {
 		session.atrackerClientV2Err = fmt.Errorf("Error occurred while configuring Activity Tracker API Version 2 service: %q", err)
+	}
+
+	// Construct an "options" struct for creating the service client for Distribution List API
+	distributionListApiClientOptions := &distributionlistapiv1.DistributionListApiV1Options{
+		Authenticator: authenticator,
+	}
+	session.distributionListApiClient, err = distributionlistapiv1.NewDistributionListApiV1(distributionListApiClientOptions)
+	if err == nil {
+		// Enable retries for API calls
+		session.distributionListApiClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+		// Add custom header for analytics
+		session.distributionListApiClient.SetDefaultHeaders(gohttp.Header{
+			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
+		})
+	} else {
+		session.distributionListApiClientErr = fmt.Errorf("Error occurred while configuring Distribution List API service: %q", err)
 	}
 
 	// Construct an "options" struct for creating the service client for Metrics Router
