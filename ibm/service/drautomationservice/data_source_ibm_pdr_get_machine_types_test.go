@@ -36,7 +36,7 @@ func TestAccIBMPdrGetMachineTypesDataSourceBasic(t *testing.T) {
 func testAccCheckIBMPdrGetMachineTypesDataSourceConfigBasic() string {
 	return fmt.Sprintf(`
 		data "ibm_pdr_get_machine_types" "pdr_get_machine_types_instance" {
-			instance_id = "ac645fe5-fba1-4cb3-952e-e1b09fa0df26"
+			instance_id = "xxxx2ec4-xxxx-4f84-xxxx-c2aa834dd4ed"
 			primary_workspace_name = "Test-workspace-wdc06"
 			standby_workspace_name = "Test-workspace-wdc07"
 		}

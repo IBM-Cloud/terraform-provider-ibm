@@ -16,7 +16,6 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/drautomationservice"
 	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/stretchr/testify/assert"
-
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 	"github.com/IBM/dra-go-sdk/drautomationservicev1"
 )
@@ -43,7 +42,7 @@ func TestAccIBMPdrGetPowervsWorkspaceDataSourceBasic(t *testing.T) {
 func testAccCheckIBMPdrGetPowervsWorkspaceDataSourceConfigBasic() string {
 	return fmt.Sprintf(`
 		data "ibm_pdr_get_powervs_workspace" "pdr_get_powervs_workspace_instance" {
-			instance_id = "ac645fe5-fba1-4cb3-952e-e1b09fa0df26"
+			instance_id = "xxxx2ec4-xxxx-4f84-xxxx-c2aa834dd4ed"
 			location_id = "syd04"
 		}
 	`)

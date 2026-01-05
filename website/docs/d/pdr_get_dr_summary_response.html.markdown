@@ -8,13 +8,13 @@ subcategory: "DrAutomation Service"
 
 # ibm_pdr_get_dr_summary_response
 
-Provides a read-only data source to retrieve information about a pdr_get_dr_summary_response. You can then reference the fields of the data source in other resources within the same configuration by using interpolation syntax.
+Retrieves the disaster recovery (DR) summary details for the specified service instance, including key configuration, status information and managed vm details.
 
 ## Example Usage
 
 ```hcl
 data "ibm_pdr_get_dr_summary_response" "pdr_get_dr_summary_response" {
-	instance_id = "crn:v1:staging:public:power-dr-automation:global:a/a123456fb04ceebfb4a9fd38c22334455:123456d3-1122-3344-b67d-4389b44b7bf9::"
+	instance_id = "123456d3-1122-3344-b67d-4389b44b7bf9:"
 }
 ```
 
@@ -22,8 +22,8 @@ data "ibm_pdr_get_dr_summary_response" "pdr_get_dr_summary_response" {
 
 You can specify the following arguments for this data source.
 
-* `accept_language` - (Optional, String) The language requested for the return document.
-* `instance_id` - (Required, Forces new resource, String) instance id of instance to provision.
+* `accept_language` - (Optional, String) The language requested for the return document (Required, Forces new resource, String) (ex., en,it,fr,es,de,ja,ko,pt-BR,zh-HANS,zh-HANT)
+* `instance_id` - (Required, Forces new resource, String) ID of the service instance.
 
 ## Attribute Reference
 
@@ -72,4 +72,3 @@ Nested schema for **service_details**:
 	* `standby_orchestrator_dashboard_url` - (String) The Standby Orchestrator Dashboard URL.
 	* `standby_status` - (String) The standby orchestrator current status.
 	* `status` - (String) The Status of the service.
-
