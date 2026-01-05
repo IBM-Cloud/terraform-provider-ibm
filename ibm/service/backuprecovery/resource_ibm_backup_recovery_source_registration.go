@@ -1448,6 +1448,7 @@ func resourceIbmBackupRecoverySourceRegistrationCreate(context context.Context, 
 	d.SetId(registrationId)
 
 	if sourceRegistrationReponseParams.KubernetesParams != nil && sourceRegistrationReponseParams.KubernetesParams.AutoProtectConfig != nil && sourceRegistrationReponseParams.KubernetesParams.AutoProtectConfig.ProtectionGroupID != nil {
+
 		err := d.Set("auto_proetction_group_id", *sourceRegistrationReponseParams.KubernetesParams.AutoProtectConfig.ProtectionGroupID)
 		if err != nil {
 			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("RegisterProtectionSourceWithContext failed: %s", err.Error()), "ibm_backup_recovery_source_registration", "create")
