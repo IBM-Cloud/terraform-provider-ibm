@@ -45,7 +45,7 @@ func testAccCheckIBMPdrGetEventsDataSourceConfigBasic() string {
 			time = "2025-06-19T23:59:59Z"
 			from_time = "2025-06-19T00:00:00Z"
 			to_time = "2025-06-19T23:59:59Z"
-			Accept-Language = "it"
+			accept_language = "it"
 		}
 	`)
 }
