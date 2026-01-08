@@ -54,6 +54,7 @@ func TestAccIBMAtrackerRouteBasicMultipleRules(t *testing.T) {
 	var conf atrackerv2.Route
 	name := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 	nameUpdate := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
+	managedBy := "enterprise"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
@@ -61,14 +62,15 @@ func TestAccIBMAtrackerRouteBasicMultipleRules(t *testing.T) {
 		CheckDestroy: testAccCheckIBMAtrackerRouteDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIBMAtrackerRouteConfigBasicMultipleRules(name),
+				Config: testAccCheckIBMAtrackerRouteConfigBasicMultipleRules(name, managedBy),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMAtrackerRouteExists("ibm_atracker_route.atracker_route_instance", conf),
 					resource.TestCheckResourceAttr("ibm_atracker_route.atracker_route_instance", "name", name),
+					resource.TestCheckResourceAttr("ibm_atracker_route.atracker_route_instance", "managed_by", managedBy),
 				),
 			},
 			{
-				Config: testAccCheckIBMAtrackerRouteConfigBasicMultipleRules(nameUpdate),
+				Config: testAccCheckIBMAtrackerRouteConfigBasicMultipleRules(nameUpdate, managedBy),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("ibm_atracker_route.atracker_route_instance", "name", nameUpdate),
 				),
@@ -95,6 +97,7 @@ func testAccCheckIBMAtrackerRouteConfigBasic(name string) string {
 				api_key = "xxxxxxxxxxxxxx"
 				service_to_service_enabled = false
 			}
+			managed_by = "enterprise"
 		}
 
 		resource "ibm_atracker_route" "atracker_route_instance" {
@@ -103,11 +106,12 @@ func testAccCheckIBMAtrackerRouteConfigBasic(name string) string {
 				target_ids = [ ibm_atracker_target.atracker_target_instance.id ]
 				locations = [ "us-south" ]
 			}
+			managed_by = "enterprise"
 		}
 	`, name)
 }
 
-func testAccCheckIBMAtrackerRouteConfigBasicMultipleRules(name string) string {
+func testAccCheckIBMAtrackerRouteConfigBasicMultipleRules(name string, managedBy string) string {
 	return fmt.Sprintf(`
 		resource "ibm_atracker_target" "atracker_target_instance" {
 			name = "my-cos-target"
@@ -119,6 +123,7 @@ func testAccCheckIBMAtrackerRouteConfigBasicMultipleRules(name string) string {
 				bucket = "my-atracker-bucket"
 				api_key = "xxxxxxxxxxxxxx"
 			}
+			managed_by = "enterprise"
 		}
 
 		resource "ibm_atracker_route" "atracker_route_instance" {
@@ -131,8 +136,9 @@ func testAccCheckIBMAtrackerRouteConfigBasicMultipleRules(name string) string {
 				target_ids = [ ibm_atracker_target.atracker_target_instance.id ]
 				locations = [ "us-east" ]
 			}
+			managed_by = "%s"
 		}
-	`, name)
+	`, name, managedBy)
 }
 
 func testAccCheckIBMAtrackerRouteExists(n string, obj atrackerv2.Route) resource.TestCheckFunc {

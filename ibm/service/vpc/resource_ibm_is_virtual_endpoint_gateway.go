@@ -243,10 +243,23 @@ func ResourceIBMISEndpointGateway() *schema.Resource {
 				Description: "The VPC id",
 			},
 			isVirtualEndpointGatewayAllowDnsResolutionBinding: {
-				Type:        schema.TypeBool,
-				Optional:    true,
-				Computed:    true,
+				Type:          schema.TypeBool,
+				Optional:      true,
+				Computed:      true,
+				ConflictsWith: []string{"dns_resolution_binding_mode"},
+				Deprecated: "This field has been deprecated in favor of `dns_resolution_binding_mode` and will be removed in a future version. " +
+					"Migration: false='disabled', true='primary'. " +
+					"The new field also supports 'per_resource_binding' for advanced DNS sharing scenarios. " +
+					"Please update your configuration to use `dns_resolution_binding_mode`.",
 				Description: "Indicates whether to allow this endpoint gateway to participate in DNS resolution bindings with a VPC that has dns.enable_hub set to true.",
+			},
+			"dns_resolution_binding_mode": &schema.Schema{
+				Type:          schema.TypeString,
+				Optional:      true,
+				Computed:      true,
+				ConflictsWith: []string{"allow_dns_resolution_binding"},
+				ValidateFunc:  validate.InvokeValidator("ibm_is_virtual_endpoint_gateway", "dns_resolution_binding_mode"),
+				Description:   "The DNS resolution binding mode used for this endpoint gateway:- `disabled`: The endpoint gateway is not participating in [DNS sharing for VPE   gateways](https://cloud.ibm.com/docs/vpc?topic=vpc-vpe-dns-sharing).- `primary`: The endpoint gateway is participating in [DNS sharing for VPE gateways]   (https://cloud.ibm.com/docs/vpc?topic=vpc-vpe-dns-sharing) if the VPC this endpoint gateway resides in   has a DNS resolution binding to another VPC.- `per_resource_binding`: The endpoint gateway is participating in [DNS sharing for VPE   gateways](https://cloud.ibm.com/docs/vpc?topic=vpc-vpe-dns-sharing) if the VPC this endpoint gateway   resides in has a DNS resolution binding to another VPC, and resource binding is   enabled for the `target` service.",
 			},
 			isVirtualEndpointGatewayTags: {
 				Type:        schema.TypeSet,
@@ -380,9 +393,40 @@ func resourceIBMisVirtualEndpointGatewayCreate(context context.Context, d *schem
 
 	}
 	// dns resolution binding change
+	// Handle both new and deprecated fields with priority to new field
+	dnsResolutionBindingMode := ""
+	allowDnsResolutionBindingProvided := false
+	dnsResolutionBindingModeProvided := false
+
+	// Check if deprecated field is provided
 	if allowDnsResolutionBindingOk, ok := d.GetOkExists(isVirtualEndpointGatewayAllowDnsResolutionBinding); ok {
 		allowDnsResolutionBinding := allowDnsResolutionBindingOk.(bool)
-		opt.AllowDnsResolutionBinding = &allowDnsResolutionBinding
+		allowDnsResolutionBindingProvided = true
+		// Map deprecated boolean to new enum
+		if allowDnsResolutionBinding {
+			dnsResolutionBindingMode = "primary"
+		} else {
+			dnsResolutionBindingMode = "disabled"
+		}
+	}
+
+	// Check if new field is provided (takes priority)
+	if dnsResolutionBindingModeOk, ok := d.GetOkExists("dns_resolution_binding_mode"); ok {
+		dnsResolutionBindingModeProvided = true
+		dnsResolutionBindingMode = dnsResolutionBindingModeOk.(string)
+
+		// Validate that both fields don't conflict if both are provided
+		if allowDnsResolutionBindingProvided {
+			allowDnsResolutionBinding := d.Get(isVirtualEndpointGatewayAllowDnsResolutionBinding).(bool)
+			if !validateFieldConsistency(allowDnsResolutionBinding, dnsResolutionBindingMode) {
+				return diag.Errorf("Conflicting values for allow_dns_resolution_binding and dns_resolution_binding_mode. Please use only dns_resolution_binding_mode.")
+			}
+		}
+	}
+
+	// Set the new field in the API request if either field was provided
+	if dnsResolutionBindingModeProvided || allowDnsResolutionBindingProvided {
+		opt.DnsResolutionBindingMode = &dnsResolutionBindingMode
 	}
 	endpointGateway, response, err := sess.CreateEndpointGateway(opt)
 	if err != nil {
@@ -456,9 +500,34 @@ func resourceIBMisVirtualEndpointGatewayUpdate(context context.Context, d *schem
 		name := d.Get(isVirtualEndpointGatewayName).(string)
 		endpointGatewayPatchModel.Name = core.StringPtr(name)
 	}
-	if d.HasChange(isVirtualEndpointGatewayAllowDnsResolutionBinding) {
-		allowDnsResolutionBinding := d.Get(isVirtualEndpointGatewayAllowDnsResolutionBinding).(bool)
-		endpointGatewayPatchModel.AllowDnsResolutionBinding = &allowDnsResolutionBinding
+	// Check if either field has changed
+	if d.HasChange(isVirtualEndpointGatewayAllowDnsResolutionBinding) || d.HasChange("dns_resolution_binding_mode") {
+		dnsResolutionBindingMode := ""
+		allowDnsResolutionBindingChanged := d.HasChange(isVirtualEndpointGatewayAllowDnsResolutionBinding)
+		dnsResolutionBindingModeChanged := d.HasChange("dns_resolution_binding_mode")
+
+		// Priority: new field takes precedence over deprecated field
+		if dnsResolutionBindingModeChanged {
+			dnsResolutionBindingMode = d.Get("dns_resolution_binding_mode").(string)
+
+			// Validate consistency if both fields changed
+			if allowDnsResolutionBindingChanged {
+				allowDnsResolutionBinding := d.Get(isVirtualEndpointGatewayAllowDnsResolutionBinding).(bool)
+				if !validateFieldConsistency(allowDnsResolutionBinding, dnsResolutionBindingMode) {
+					return diag.Errorf("Conflicting values for allow_dns_resolution_binding and dns_resolution_binding_mode. Please use only dns_resolution_binding_mode.")
+				}
+			}
+		} else if allowDnsResolutionBindingChanged {
+			// Only deprecated field changed, map it to new field
+			allowDnsResolutionBinding := d.Get(isVirtualEndpointGatewayAllowDnsResolutionBinding).(bool)
+			if allowDnsResolutionBinding {
+				dnsResolutionBindingMode = "primary"
+			} else {
+				dnsResolutionBindingMode = "disabled"
+			}
+		}
+
+		endpointGatewayPatchModel.DnsResolutionBindingMode = &dnsResolutionBindingMode
 	}
 	endpointGatewayPatchModelAsPatch, _ := endpointGatewayPatchModel.AsPatch()
 	opt := sess.NewUpdateEndpointGatewayOptions(d.Id(), endpointGatewayPatchModelAsPatch)
@@ -574,7 +643,23 @@ func resourceIBMisVirtualEndpointGatewayRead(context context.Context, d *schema.
 	if err := d.Set(isVirtualEndpointGatewayLifecycleReasons, resourceEGWFlattenLifecycleReasons(endpointGateway.LifecycleReasons)); err != nil {
 		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("[ERROR] Error setting lifecycle_reasons: %s", err), "ibm_is_virtual_endpoint_gateway", "read", "set-lifecycle-reasons").GetDiag()
 	}
-	d.Set(isVirtualEndpointGatewayAllowDnsResolutionBinding, endpointGateway.AllowDnsResolutionBinding)
+	// Set the new field from API response
+	if err = d.Set("dns_resolution_binding_mode", endpointGateway.DnsResolutionBindingMode); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("[ERROR] Error setting dns_resolution_binding_mode: %s", err), "ibm_is_virtual_endpoint_gateway", "read", "set-dns_resolution_binding_mode").GetDiag()
+	}
+
+	// Compute and set deprecated field for backward compatibility
+	if endpointGateway.DnsResolutionBindingMode != nil {
+		allowDnsResolutionBinding := mapDnsResolutionBindingModeToBoolean(*endpointGateway.DnsResolutionBindingMode)
+		if err = d.Set(isVirtualEndpointGatewayAllowDnsResolutionBinding, allowDnsResolutionBinding); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("[ERROR] Error setting dns_resolution_binding_mode: %s", err), "ibm_is_virtual_endpoint_gateway", "read", "set-allow_dns_resolution_binding").GetDiag()
+		}
+	} else {
+		// Handle case where new field might be nil/empty - default to false for backward compatibility
+		if err = d.Set(isVirtualEndpointGatewayAllowDnsResolutionBinding, false); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("[ERROR] Error setting dns_resolution_binding_mode: %s", err), "ibm_is_virtual_endpoint_gateway", "read", "set-allow_dns_resolution_binding").GetDiag()
+		}
+	}
 	d.Set(isVirtualEndpointGatewayResourceType, endpointGateway.ResourceType)
 	d.Set(isVirtualEndpointGatewayCRN, endpointGateway.CRN)
 	d.Set(isVirtualEndpointGatewayIPs, flattenIPs(endpointGateway.Ips))
@@ -813,4 +898,16 @@ func resourceEGWFlattenLifecycleReasons(lifecycleReasons []vpcv1.EndpointGateway
 		}
 	}
 	return lifecycleReasonsList
+}
+
+// Validate that deprecated and new fields are consistent
+func validateFieldConsistency(allowDnsResolutionBinding bool, dnsResolutionBindingMode string) bool {
+	switch dnsResolutionBindingMode {
+	case "disabled":
+		return !allowDnsResolutionBinding
+	case "primary", "per_resource_binding":
+		return allowDnsResolutionBinding
+	default:
+		return false // Unknown mode
+	}
 }

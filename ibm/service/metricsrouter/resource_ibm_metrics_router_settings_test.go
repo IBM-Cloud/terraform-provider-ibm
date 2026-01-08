@@ -1,4 +1,4 @@
-// Copyright IBM Corp. 2023 All Rights Reserved.
+// Copyright IBM Corp. 2025 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 package metricsrouter_test
@@ -13,7 +13,10 @@ import (
 
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/metricsrouter"
+	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/IBM/platform-services-go-sdk/metricsrouterv3"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestAccIBMMetricsRouterSettingsBasic(t *testing.T) {
@@ -201,4 +204,42 @@ func testAccCheckIBMMetricsRouterSettingsDestroy(s *terraform.State) error {
 	}
 
 	return nil
+}
+
+func TestResourceIBMMetricsRouterSettingsTargetReferenceToMap(t *testing.T) {
+	checkResult := func(result map[string]interface{}) {
+		model := make(map[string]interface{})
+		model["id"] = core.StringPtr("c3af557f-fb0e-4476-85c3-0889e7fe7bc4")
+		model["crn"] = core.StringPtr("crn:v1:bluemix:public:sysdig-monitor:us-south:a/0be5ad401ae913d8ff665d92680664ed:22222222-2222-2222-2222-222222222222::")
+		model["name"] = core.StringPtr("a-mr-target-us-south")
+		model["target_type"] = core.StringPtr("sysdig_monitor")
+
+		assert.Equal(t, result, model)
+	}
+
+	model := new(metricsrouterv3.TargetReference)
+	model.ID = core.StringPtr("c3af557f-fb0e-4476-85c3-0889e7fe7bc4")
+	model.CRN = core.StringPtr("crn:v1:bluemix:public:sysdig-monitor:us-south:a/0be5ad401ae913d8ff665d92680664ed:22222222-2222-2222-2222-222222222222::")
+	model.Name = core.StringPtr("a-mr-target-us-south")
+	model.TargetType = core.StringPtr("sysdig_monitor")
+
+	result, err := metricsrouter.ResourceIBMMetricsRouterSettingsTargetReferenceToMap(model)
+	assert.Nil(t, err)
+	checkResult(result)
+}
+
+func TestResourceIBMMetricsRouterSettingsMapToTargetIdentity(t *testing.T) {
+	checkResult := func(result *metricsrouterv3.TargetIdentity) {
+		model := new(metricsrouterv3.TargetIdentity)
+		model.ID = core.StringPtr("c3af557f-fb0e-4476-85c3-0889e7fe7bc4")
+
+		assert.Equal(t, result, model)
+	}
+
+	model := make(map[string]interface{})
+	model["id"] = "c3af557f-fb0e-4476-85c3-0889e7fe7bc4"
+
+	result, err := metricsrouter.ResourceIBMMetricsRouterSettingsMapToTargetIdentity(model)
+	assert.Nil(t, err)
+	checkResult(result)
 }

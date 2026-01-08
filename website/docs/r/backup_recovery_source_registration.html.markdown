@@ -18,12 +18,9 @@ resource "ibm_backup_recovery_source_registration" "backup_recovery_source_regis
 		key = "key"
 		value = "value"
   }
-  connections {
-		connection_id = 1
-		entity_id = 1
-		connector_group_id = 1
-		data_source_connection_id = "data_source_connection_id"
-  }
+
+  connection_id = 1
+
   environment = "kPhysical"
     kubernetes_params {
 		auto_protect_config {
@@ -103,7 +100,7 @@ Nested schema for **connections**:
 * `connector_group_id` - (Optional, Integer) Specifies the connector group id of connector groups.
 * `data_source_connection_id` - (Optional, String) Specifies the id of the connection from where this source is reachable. This should only be set for a source being registered by a tenant user. Also, this is the 'string' of connectionId. This property was added to accommodate for ID values that exceed 2^53 - 1, which is the max value for which JS maintains precision.
 * `environment` - (Required, String) Specifies the environment type of the Protection Source.
-  * Constraints: Allowable values are: `kPhysical`, `kSQL`.
+  * Constraints: Allowable values are: `kPhysical`, `kSQL`, `kKubernetes`.
 * `kubernetes_params` - (Optional, List) Specifies the parameters to register a Kubernetes source.
 Nested schema for **kubernetes_params**:
 	* `auto_protect_config` - (Optional, List) Specifies the parameters to auto protect the source after registration.
@@ -114,6 +111,7 @@ Nested schema for **kubernetes_params**:
 		* `protection_group_id` - (Optional, String) Specifies the protection group Id after it is successfully created.
 		* `storage_domain_id` - (Optional, Integer) Specifies the storage domain id for the protection job.
 	* `client_private_key` - (Required, String) Specifies the bearer token or private key of Kubernetes source.
+	* `cohesity_dataprotect_plugin_image_location` - (Optional, String) Specifies the custom Cohesity Dataprotect plugin image location of the Kubernetes source.
 	* `data_mover_image_location` - (Required, String) Specifies the datamover image location of Kubernetes source.
 	* `datamover_service_type` - (Optional, String) Specifies the data mover service type of Kubernetes source.
 	  * Constraints: Allowable values are: `kNodePort`, `kLoadBalancer`, `kClusterIp`.
@@ -359,58 +357,6 @@ Nested schema for **source_info**:
 	* `v_center_summary` - (List)
 	Nested schema for **v_center_summary**:
 		* `is_cloud_env` - (Boolean) Specifies that registered vCenter source is a VMC (VMware Cloud) environment or not.
-	* `kubernetes_params` - (Optional, List) Specifies the parameters to register a Kubernetes source.
-Nested schema for **kubernetes_params**:
-	* `auto_protect_config` - (Optional, List) Specifies the parameters to auto protect the source after registration.
-	Nested schema for **auto_protect_config**:
-		* `error_message` - (Optional, String) Specifies the error message in case source registration is successful but protection job creation fails.
-		* `is_default_auto_protected` - (Required, Boolean) Specifies if entire source should be auto protected after registration. Default: False.
-		* `policy_id` - (Required, String) Specifies the protection policy to auto protect the source with.
-		* `protection_group_id` - (Optional, String) Specifies the protection group Id after it is successfully created.
-		* `storage_domain_id` - (Optional, Integer) Specifies the storage domain id for the protection job.
-	* `client_private_key` - (Required, String) Specifies the bearer token or private key of Kubernetes source.
-	* `data_mover_image_location` - (Required, String) Specifies the datamover image location of Kubernetes source.
-	* `datamover_service_type` - (Optional, String) Specifies the data mover service type of Kubernetes source.
-	  * Constraints: Allowable values are: `kNodePort`, `kLoadBalancer`, `kClusterIp`.
-	* `default_vlan_params` - (Optional, List) Specifies VLAN params associated with the backup/restore operation.
-	Nested schema for **default_vlan_params**:
-		* `disable_vlan` - (Optional, Boolean) If this is set to true, then even if VLANs are configured on the system, the partition VIPs will be used for the restore.
-		* `interface_name` - (Optional, String) Interface group to use for backup/restore. If this is not specified, primary interface group for the cluster will be used.
-		* `vlan_id` - (Optional, Integer) If this is set, then the Cohesity host name or the IP address associated with this VLAN is used for mounting Cohesity's view on the remote host.
-	* `endpoint` - (Required, String) Specifies the endpoint of Kubernetes source.
-	* `init_container_image_location` - (Optional, String) Specifies the initial container image location of Kubernetes source.
-	* `kubernetes_distribution` - (Required, String) Specifies the distribution type of Kubernetes source.
-	  * Constraints: Allowable values are: `kOpenshift`, `kMainline`, `kVMwareTanzu`, `kRancher`, `kEKS`, `kGKE`, `kAKS`, `kIKS`, `kROKS`.
-	* `kubernetes_type` - (Optional, String) Specifies the type of kubernetes source.
-	  * Constraints: Allowable values are: `kCluster`, `kNamespace`, `kService`, `kPVC`, `kPersistentVolumeClaim`, `kPersistentVolume`, `kLabel`.
-	* `priority_class_name` - (Optional, String) Specifies the priority class name for cohesity resources.
-	* `resource_annotations` - (Optional, List) Specifies resource annotations to be applied on cohesity resources.
-	Nested schema for **resource_annotations**:
-		* `key` - (Required, String) Specifies the label key.
-		* `value` - (Optional, String) Specifies the label value.
-	* `resource_labels` - (Optional, List) Specifies resource label to be applied on cohesity resources.
-	Nested schema for **resource_labels**:
-		* `key` - (Required, String) Specifies the label key.
-		* `value` - (Optional, String) Specifies the label value.
-	* `san_fields` - (Optional, List) Specifies the SAN field for agent certificate.
-	* `service_annotations` - (Optional, List) Specifies the service annotation object of Kubernetes source.
-	Nested schema for **service_annotations**:
-		* `key` - (Optional, String) Specifies the service annotation key value.
-		* `value` - (Optional, String) Specifies the service annotation value.
-	* `velero_aws_plugin_image_location` - (Optional, String) Specifies the velero AWS plugin image location of the Kubernetes source.
-	* `velero_image_location` - (Optional, String) Specifies the velero image location of the Kubernetes source.
-	* `velero_openshift_plugin_image_location` - (Optional, String) Specifies the velero open shift plugin image for the Kubernetes source.
-	* `vlan_info_vec` - (Optional, List) Specifies VLAN information provided during registration.
-	Nested schema for **vlan_info_vec**:
-		* `service_annotations` - (Optional, List) Specifies annotations to be put on services for IP allocation. Applicable only when service is of type LoadBalancer.
-		Nested schema for **service_annotations**:
-			* `key` - (Optional, String) Specifies the service annotation key value.
-			* `value` - (Optional, String) Specifies the service annotation value.
-		* `vlan_params` - (Optional, List) Specifies VLAN params associated with the backup/restore operation.
-		Nested schema for **vlan_params**:
-			* `disable_vlan` - (Optional, Boolean) If this is set to true, then even if VLANs are configured on the system, the partition VIPs will be used for the restore.
-			* `interface_name` - (Optional, String) Interface group to use for backup/restore. If this is not specified, primary interface group for the cluster will be used.
-			* `vlan_id` - (Optional, Integer) If this is set, then the Cohesity host name or the IP address associated with this VLAN is used for mounting Cohesity's view on the remote host.
 	* `windows_cluster_summary` - (List)
 	Nested schema for **windows_cluster_summary**:
 		* `cluster_source_type` - (String) Specifies the type of cluster resource this source represents.

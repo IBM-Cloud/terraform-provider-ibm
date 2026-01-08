@@ -62,17 +62,27 @@ In addition to all argument reference list, you can access the following attribu
   - `direction`-  (String) The direction of the traffic either `inbound` or `outbound`.
   - `ip_version` - (String) IP version: `ipv4`
   - `local` - (String) 	The local IP address or range of local IP addresses to which this rule will allow inbound traffic (or from which, for outbound traffic). A CIDR block of 0.0.0.0/0 allows traffic to all local IP addresses (or from all local IP addresses, for outbound rules). an IP address, a `CIDR` block.
-  - `protocol` - (String) The type of the protocol `all`, `icmp`, `tcp`, `udp`.
+  - `protocol` - (String) The name of the network protocol.
+  - `name` - (String) The name for this security group rule. The name must not be used by another rule in the security group.
   - `port_max`- (Integer) The `TCP/UDP` port range that includes the maximum bound.
   - `port_min`- (Integer) The `TCP/UDP` port range that includes the minimum bound.
   - `remote` - (String) Security group id, an IP address, a `CIDR` block, or a single security group identifier.
   - `type` - (String) The `ICMP` traffic type to allow.
 
 ## Import
-The `ibm_is_security_group` resource can be imported by using security group ID. 
 
-**Example**
+In Terraform v1.5.0 and later, use an [`import` block](https://developer.hashicorp.com/terraform/language/import) to import the `ibm_is_security_group` resource by using `id`.
+The `id` property can be formed from `security group ID`. For example:
 
+```terraform
+import {
+  to = ibm_is_security_group.example
+  id = "<security_group_id>"
+}
 ```
-$ terraform import ibm_is_security_group.example a1aaa111-1111-111a-1a11-a11a1a11a11a
+
+Using `terraform import`. For example:
+
+```console
+% terraform import ibm_is_security_group.example <security_group_id>
 ```

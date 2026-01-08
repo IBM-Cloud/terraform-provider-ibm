@@ -34,6 +34,7 @@ website/vendor
 *.old
 vendor/
 *.lock.hcl
+.envrc
 
 # Test exclusions
 !command/test-fixtures/**/*.tfstate

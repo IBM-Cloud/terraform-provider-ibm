@@ -1,3 +1,122 @@
+# 1.87.0-beta1 (December 22, 2025)
+
+## Bug Fixes
+
+
+### VPC Infrastructure
+* fixed the validation for protocols in sg and network acl
+
+
+# 1.87.0-beta0 (December 17, 2025)
+
+## Bug Fixes
+
+
+### DR AutomationService
+* Dra terraform apis ([6582](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6582))
+
+### IAM
+* Fix role templates and add policy template to support role templates ([6591](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6591))
+
+### Power Systems
+* Add dumprestart action to ibm_pi_instance_action resource ([6560](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6560))
+
+
+## Enhancements
+
+### VPC Infrastructure
+* support for endpoint gateway resource bindings ([6568](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6568))
+* Add support for all ipv4 protocol in security group rule and network acl rule ([6586](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6586))
+* adding security group rule name ([6587](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6587))
+* added VCPU models support for instance resources ([6595](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6595))
+
+
+### Power Systems
+* [R][D] vPMEM ([6561](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6561))
+* Add PowerVS data sources: ibm_pi_instance_network and ibm_pi_instance_networks ([6564](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6564))
+* Increase NSG action timeout ([6576](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6576))
+* [D] Add missing image attributes to data sources ([6558](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6558))
+* Update Workspace Arg ([6559](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6559))
+* Parameter option and corresponding tests with shared image ([6584](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6584))
+* Update Power Go Client ([6592](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6592))
+
+### BackupRecovery
+* Helios reporting apis support ([6309](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6309))
+* update code for latest iks-roks changes in v7.2.16 ([6572](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6572))
+
+### Activity Tracker
+* support for managed_by property in iac. ([6581](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6581))
+
+
+### Metrics Router
+* support managed_by field ([6583](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6583))
+
+
+
+
+## Documentation
+
+### Toolchain
+* EOS SCC-CSPM :removing the SCC Docs related to resources and Datasources
+
+
+
+# 1.86.0 (December 3, 2025)
+
+## Bug Fixes
+
+### Cloud Logs
+* fix entity_label in logs_alert_Definition resource ([6554](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6554))
+### AppConfig
+* Fixing Issues in App Configuration Service ([6545](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6545))
+### Global Catalog
+* fixed import of ibm_cm_object ([6553](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6553))
+* renamed error variable for GlobalSearchV2 ([6547](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6547))
+### IAM
+* fix(ibm_iam_account_settings) when only updating user domain restrictions ([6549](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6549))
+* update trusted profile id policies to support both iam_id and profile_id ([6543](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6543))
+### Power Systems
+* Fix instance data sources to use id ([6506](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6506))
+* Refactor terraform errors to use new toolchain in network and route data sources ([6552](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6552))
+### Schematics
+* Fixed agent create crash ([6570](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6570))
+### CIS
+* handled nil pointer exceptions during runtime ([6550](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6550))
+
+## Enhancements
+### VPC Infrastructure
+* feat(vpn-gateway) - Add support for VPN Gateway as spoke of Transit Gateway ([6546](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6546))
+* updated the import for vpc resources ([6548](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6548))
+### Resource Management
+* added support for resource_groups datasource ([6499](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6499))
+* Added support for working with resource reclamations ([6396](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6396))
+### DR Automation 
+* DR Automation Terraform Apis ([6481](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6481))
+### Backup/Recovery
+* Add instance and region update in connection token resource ([6566](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6566))
+### Cloud Databases
+* block unsupported Gen 2 plans with helpful validation message ([6571](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6571))
+### Event Notification
+* support for smtp user credentials clone ([6535](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6535))
+
+### General
+* bump actions/checkout from 5.0.0 to 5.0.1 ([6556](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6556))
+* bump golang.org/x/crypto from 0.41.0 to 0.45.0 ([6562](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6562))
+* bump `bluemix-go` ([6574](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6574))
+### IAM
+* add role templates & assignments ([6539](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6539))
+### Transit Gateway
+* tgw95 - vpn gateway changes ([6339](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6339))
+
+
+## Documentation
+### General
+* add provider-wide best practices section to CONTRIBUTING.md ([6573](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6573))
+### Project
+* regenerate projects provider with new go sdk level and API doc ([6557](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6557))
+
+
+
 # 1.85.0 (November 9, 2025)
 
 ## Bug Fixes

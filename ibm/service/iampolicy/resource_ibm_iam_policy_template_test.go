@@ -44,6 +44,42 @@ func TestAccIBMIAMPolicyTemplateBasic(t *testing.T) {
 	})
 }
 
+func TestAccIBMIAMPolicyTemplateBasicWithRoleAndRoleReference(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMPolicyTemplateDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMPolicyRoleTemplateConfigBasic(name, "cloud-object-storage"),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMPolicyTemplateExists("ibm_iam_policy_template.policy_template", conf),
+					resource.TestCheckResourceAttr("ibm_iam_policy_template.policy_template", "name", name),
+					resource.TestCheckResourceAttr("ibm_iam_policy_template.policy_template", "policy.0.resource.0.attributes.0.value", "cloud-object-storage"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccIBMIAMPolicyTemplateBasicWithOnlyRoleReference(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMPolicyTemplateDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMPolicyRoleReferenceTemplateConfigBasic(name, "cloud-object-storage"),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMPolicyTemplateExists("ibm_iam_policy_template.policy_template", conf),
+					resource.TestCheckResourceAttr("ibm_iam_policy_template.policy_template", "name", name),
+					resource.TestCheckResourceAttr("ibm_iam_policy_template.policy_template", "policy.0.resource.0.attributes.0.value", "cloud-object-storage"),
+				),
+			},
+		},
+	})
+}
+
 func TestAccIBMIAMPolicyTemplateBasicS2SUpdateTest(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
@@ -92,6 +128,32 @@ func TestAccIBMIAMPolicyTemplateBasicUpdate(t *testing.T) {
 					testAccCheckIBMPolicyTemplateExists("ibm_iam_policy_template.policy_template", conf),
 					resource.TestCheckResourceAttr("ibm_iam_policy_template.policy_template", "name", name),
 					resource.TestCheckResourceAttr("ibm_iam_policy_template.policy_template", "policy.0.resource.0.attributes.0.value", updatedServiceName),
+				),
+			},
+		},
+	})
+}
+
+func TestAccIBMIAMPolicyTemplateBasicUpdateWithRoleReference(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMPolicyTemplateDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMPolicyTemplateConfigBasic(name, beforeUpdateServiceName),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMPolicyTemplateExists("ibm_iam_policy_template.policy_template", conf),
+					resource.TestCheckResourceAttr("ibm_iam_policy_template.policy_template", "name", name),
+					resource.TestCheckResourceAttr("ibm_iam_policy_template.policy_template", "policy.0.resource.0.attributes.0.value", beforeUpdateServiceName),
+				),
+			},
+			{
+				Config: testAccCheckIBMPolicyRoleTemplateConfigBasicUpdate(name, "cloud-object-storage"),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMPolicyTemplateExists("ibm_iam_policy_template.policy_template", conf),
+					resource.TestCheckResourceAttr("ibm_iam_policy_template.policy_template", "name", name),
+					resource.TestCheckResourceAttr("ibm_iam_policy_template.policy_template", "policy.0.resource.0.attributes.0.value", "cloud-object-storage"),
 				),
 			},
 		},
@@ -307,6 +369,93 @@ func testAccCheckIBMPolicyTemplateConfigBasic(name string, serviceName string) s
 	`, name, serviceName)
 }
 
+func testAccCheckIBMPolicyRoleTemplateConfigBasic(name string, serviceName string) string {
+	return fmt.Sprintf(`
+		resource "ibm_iam_role_template" "role_template" {
+			name = "TerraformPolicyRoleTest"
+			description = "Create role template and reference in policy template through Terraform resources"
+			role {
+			    name = "TerrPolicyRole"
+				display_name = "TestingTerraformPolicyRole"
+				actions = ["cloud-object-storage.bucket.get", "cloud-object-storage.bucket.delete_bucket" ]
+				service_name="cloud-object-storage"
+			}
+			committed = true
+		}
+	
+		resource "ibm_iam_policy_template" "policy_template" {
+			name = "%s"
+			policy {
+				type = "access"
+				description = "description"
+				resource {
+					attributes {
+						key = "serviceName"
+						operator = "stringEquals"
+						value = "%s"
+					}
+				}
+				roles = ["Operator"]
+				role_template_references {
+					id = ibm_iam_role_template.role_template.role_template_id
+					version = ibm_iam_role_template.role_template.version
+				}
+			}
+		}
+	`, name, serviceName)
+}
+
+func testAccCheckIBMPolicyRoleReferenceTemplateConfigBasic(name string, serviceName string) string {
+	return fmt.Sprintf(`
+		resource "ibm_iam_role_template" "role_template" {
+			name = "TerraformPolicyRoleReferenceTest"
+			description = "Create role template and reference in policy template through Terraform resources"
+			role {
+			    name = "TerrPolicyRoleReference"
+				display_name = "TestingTerraformPolicyRole"
+				actions = ["cloud-object-storage.bucket.get", "cloud-object-storage.bucket.delete_bucket" ]
+				service_name="cloud-object-storage"
+			}
+			committed = true
+		}
+
+		resource "ibm_iam_role_template" "role_template1" {
+			name = "TerraformPolicyRoleReferenceTes1"
+			description = "Create role template and reference in policy template through Terraform resources"
+			role {
+			    name = "TerrPolicyRoleReference1"
+				display_name = "TestingTerraformPolicyRole"
+				actions = ["cloud-object-storage.bucket.get", "cloud-object-storage.bucket.delete_bucket", "cloud-object-storage.bucket.delete_public_access_block" ]
+				service_name="cloud-object-storage"
+			}
+			committed = true
+		}
+
+		resource "ibm_iam_policy_template" "policy_template" {
+			name = "%s"
+			policy {
+				type = "access"
+				description = "description"
+				resource {
+					attributes {
+						key = "serviceName"
+						operator = "stringEquals"
+						value = "%s"
+					}
+				}
+				role_template_references {
+					id = ibm_iam_role_template.role_template.role_template_id
+					version = ibm_iam_role_template.role_template.version
+				}
+				role_template_references {
+					id = ibm_iam_role_template.role_template1.role_template_id
+					version = ibm_iam_role_template.role_template1.version
+				}
+			}
+		}
+	`, name, serviceName)
+}
+
 func testAccCheckIBMPolicyS2STemplateUpdateConfigBasicTest(name string, role string, resourceServiceName string, subjectServiceName string) string {
 	return fmt.Sprintf(`
 
@@ -450,6 +599,43 @@ func testAccCheckIBMPolicyTemplateConfigBasicUpdate(name string, serviceName str
 					}
 				}
 				roles = ["Operator", "KeyPurge"]
+			}
+		}
+	`, name, serviceName)
+}
+
+func testAccCheckIBMPolicyRoleTemplateConfigBasicUpdate(name string, serviceName string) string {
+	return fmt.Sprintf(`
+
+		resource "ibm_iam_role_template" "role_template" {
+			name = "TerraformPolicyRoleTest"
+			description = "Create role template and reference in policy template through Terraform resources"
+			role {
+			    name = "TerrPolicyRole"
+				display_name = "TestingTerraformPolicyRole"
+				actions = ["cloud-object-storage.bucket.get", "cloud-object-storage.bucket.delete_bucket" ]
+				service_name="cloud-object-storage"
+			}
+			committed = true
+		}
+
+		resource "ibm_iam_policy_template" "policy_template" {
+			name = "%s"
+			policy {
+				type = "access"
+				description = "description"
+				resource {
+					attributes {
+						key = "serviceName"
+						operator = "stringEquals"
+						value = "%s"
+					}
+				}
+				roles = ["Operator"]
+				role_template_references {
+					id = ibm_iam_role_template.role_template.role_template_id
+					version = ibm_iam_role_template.role_template.version
+				}
 			}
 		}
 	`, name, serviceName)

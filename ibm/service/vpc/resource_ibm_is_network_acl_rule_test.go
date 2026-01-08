@@ -57,7 +57,7 @@ func TestNetworkACLRule_basicICMP(t *testing.T) {
 	})
 }
 
-func TestNetworkACLRule_basicAll(t *testing.T) {
+func TestNetworkACLRule_basicIcmpTcpUdp(t *testing.T) {
 	var nwACLRule string
 	vpcName := fmt.Sprintf("tf-nacl-vpc-%d", acctest.RandIntRange(10, 100))
 	ruleName := fmt.Sprintf("tf-outbound-all-%d", acctest.RandIntRange(10, 100))
@@ -77,6 +77,66 @@ func TestNetworkACLRule_basicAll(t *testing.T) {
 			},
 			{
 				Config: testAccCheckIBMISNetworkACLRuleConfig2Update(vpcName, updatedRuleName),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISNetworkACLRuleExists("ibm_is_network_acl_rule.testacc_nacl", nwACLRule),
+					resource.TestCheckResourceAttr(
+						"ibm_is_network_acl_rule.testacc_nacl", "name", updatedRuleName),
+				),
+			},
+		},
+	})
+}
+
+func TestNetworkACLRule_basicAny(t *testing.T) {
+	var nwACLRule string
+	vpcName := fmt.Sprintf("tf-nacl-vpc-%d", acctest.RandIntRange(10, 100))
+	ruleName := fmt.Sprintf("tf-outbound-all-%d", acctest.RandIntRange(10, 100))
+	updatedRuleName := fmt.Sprintf("%s-update", ruleName)
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: checkNetworkACLRuleDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMISNetworkACLRuleConfig5(vpcName, ruleName),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISNetworkACLRuleExists("ibm_is_network_acl_rule.testacc_nacl", nwACLRule),
+					resource.TestCheckResourceAttr(
+						"ibm_is_network_acl_rule.testacc_nacl", "name", ruleName),
+				),
+			},
+			{
+				Config: testAccCheckIBMISNetworkACLRuleConfig5Update(vpcName, updatedRuleName),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISNetworkACLRuleExists("ibm_is_network_acl_rule.testacc_nacl", nwACLRule),
+					resource.TestCheckResourceAttr(
+						"ibm_is_network_acl_rule.testacc_nacl", "name", updatedRuleName),
+				),
+			},
+		},
+	})
+}
+
+func TestNetworkACLRule_basicIndividual(t *testing.T) {
+	var nwACLRule string
+	vpcName := fmt.Sprintf("tf-nacl-vpc-%d", acctest.RandIntRange(10, 100))
+	ruleName := fmt.Sprintf("tf-outbound-all-%d", acctest.RandIntRange(10, 100))
+	updatedRuleName := fmt.Sprintf("%s-update", ruleName)
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: checkNetworkACLRuleDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMISNetworkACLRuleConfig6(vpcName, ruleName),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISNetworkACLRuleExists("ibm_is_network_acl_rule.testacc_nacl", nwACLRule),
+					resource.TestCheckResourceAttr(
+						"ibm_is_network_acl_rule.testacc_nacl", "name", ruleName),
+				),
+			},
+			{
+				Config: testAccCheckIBMISNetworkACLRuleConfig6Update(vpcName, updatedRuleName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckIBMISNetworkACLRuleExists("ibm_is_network_acl_rule.testacc_nacl", nwACLRule),
 					resource.TestCheckResourceAttr(
@@ -272,9 +332,26 @@ func testAccCheckIBMISNetworkACLRuleExists(n, nwACLRule string) resource.TestChe
 				nwACLRule = makeTerraformACLRuleID(nwACLID, *rulex.ID)
 
 			}
-		case "*vpcv1.NetworkACLRuleNetworkACLRuleProtocolAll":
+		case "*vpcv1.NetworkACLRuleNetworkACLRuleProtocolAny":
 			{
-				rulex := foundNwACLRule.(*vpcv1.NetworkACLRuleNetworkACLRuleProtocolAll)
+				rulex := foundNwACLRule.(*vpcv1.NetworkACLRuleNetworkACLRuleProtocolAny)
+				nwACLRule = makeTerraformACLRuleID(nwACLID, *rulex.ID)
+
+			}
+		case "*vpcv1.NetworkACLRuleNetworkACLRuleProtocolIcmptcpudp":
+			{
+				rulex := foundNwACLRule.(*vpcv1.NetworkACLRuleNetworkACLRuleProtocolIcmptcpudp)
+				nwACLRule = makeTerraformACLRuleID(nwACLID, *rulex.ID)
+
+			}
+		case "*vpcv1.NetworkACLRuleNetworkACLRuleProtocolIndividual":
+			{
+				rulex := foundNwACLRule.(*vpcv1.NetworkACLRuleNetworkACLRuleProtocolIndividual)
+				nwACLRule = makeTerraformACLRuleID(nwACLID, *rulex.ID)
+			}
+		case "*vpcv1.NetworkACLRule":
+			{
+				rulex := foundNwACLRule.(*vpcv1.NetworkACLRule)
 				nwACLRule = makeTerraformACLRuleID(nwACLID, *rulex.ID)
 
 			}
@@ -303,6 +380,71 @@ func testAccCheckIBMISNetworkACLRuleConfig1(vpcName, name string) string {
 	`, vpcName, name)
 }
 
+func testAccCheckIBMISNetworkACLRuleConfig5(vpcName, name string) string {
+	return fmt.Sprintf(`
+	  resource "ibm_is_vpc" "testacc_vpc" {
+		name = "%s"
+	  }
+	  resource "ibm_is_network_acl_rule" "testacc_nacl" {
+		network_acl = ibm_is_vpc.testacc_vpc.default_network_acl
+		name           = "%s"
+		action         = "allow"
+		source         = "0.0.0.0/0"
+		destination    = "0.0.0.0/0"
+		direction      = "outbound"
+		protocol       = "any"
+		}
+	`, vpcName, name)
+}
+
+func testAccCheckIBMISNetworkACLRuleConfig5Update(vpcName, name string) string {
+	return fmt.Sprintf(`
+	  resource "ibm_is_vpc" "testacc_vpc" {
+		name = "%s"
+	  }
+	  resource "ibm_is_network_acl_rule" "testacc_nacl" {
+		network_acl = ibm_is_vpc.testacc_vpc.default_network_acl
+		name           = "%s"
+		action         = "allow"
+		source         = "0.0.0.0/0"
+		destination    = "0.0.0.0/0"
+		direction      = "outbound"
+		}
+	`, vpcName, name)
+}
+
+func testAccCheckIBMISNetworkACLRuleConfig6(vpcName, name string) string {
+	return fmt.Sprintf(`
+	  resource "ibm_is_vpc" "testacc_vpc" {
+		name = "%s"
+	  }
+	  resource "ibm_is_network_acl_rule" "testacc_nacl" {
+		network_acl = ibm_is_vpc.testacc_vpc.default_network_acl
+		name           = "%s"
+		action         = "allow"
+		source         = "0.0.0.0/0"
+		destination    = "0.0.0.0/0"
+		direction      = "outbound"
+		protocol       = "number_99"
+		}
+	`, vpcName, name)
+}
+
+func testAccCheckIBMISNetworkACLRuleConfig6Update(vpcName, name string) string {
+	return fmt.Sprintf(`
+	  resource "ibm_is_vpc" "testacc_vpc" {
+		name = "%s"
+	  }
+	  resource "ibm_is_network_acl_rule" "testacc_nacl" {
+		network_acl = ibm_is_vpc.testacc_vpc.default_network_acl
+		name           = "%s"
+		action         = "allow"
+		source         = "0.0.0.0/0"
+		destination    = "0.0.0.0/0"
+		direction      = "outbound"
+		}
+	`, vpcName, name)
+}
 func testAccCheckIBMISNetworkACLRuleConfig1Update(vpcName, name string) string {
 	return fmt.Sprintf(`
 	  resource "ibm_is_vpc" "testacc_vpc" {

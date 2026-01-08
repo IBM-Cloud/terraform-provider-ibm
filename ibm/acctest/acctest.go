@@ -143,6 +143,13 @@ var (
 	trustedMachineType              string
 )
 
+// For VPC Endpoint Gateway
+var (
+	IsResourceBindingCRN        string
+	IsEndpointGatewayTargetCRN  string
+	IsEndpointGatewayTargetType string
+)
+
 // MQ on Cloud
 var (
 	MqcloudConfigEndpoint                       string
@@ -164,6 +171,11 @@ var (
 	LogsInstanceRegion                  string
 	LogsEventNotificationInstanceId     string
 	LogsEventNotificationInstanceRegion string
+)
+
+// Reclamation
+var (
+	ReclamationId string
 )
 
 // Secrets Manager
@@ -389,6 +401,10 @@ var (
 	COSApiKey    string
 )
 
+var (
+	DRApiKey string
+)
+
 // For Code Engine
 var (
 	CeResourceGroupID   string
@@ -466,6 +482,11 @@ func init() {
 	testlogger := os.Getenv("TF_LOG")
 	if testlogger != "" {
 		os.Setenv("IBMCLOUD_BLUEMIX_GO_TRACE", "true")
+	}
+
+	ReclamationId = os.Getenv("IBM_RECLAMATION_ID")
+	if ReclamationId == "" {
+		fmt.Println("[WARN] Set the environment variable IBM_RECLAMATION_ID for testing reclamation, reclamation_delete tests will fail if this is not set")
 	}
 
 	IamIdentityAssignmentTargetAccountId = os.Getenv("IAM_IDENTITY_ASSIGNMENT_TARGET_ACCOUNT")
@@ -807,6 +828,19 @@ func init() {
 	if RegionName == "" {
 		RegionName = "us-south"
 		fmt.Println("[INFO] Set the environment variable SL_REGION for testing ibm_is_region datasource else it is set to default value 'us-south'")
+	}
+
+	IsResourceBindingCRN = os.Getenv("IBM_IS_RESOURCE_BINDING_CRN")
+	if IsResourceBindingCRN == "" {
+		fmt.Println("[WARN] Set the environment variable IBM_IS_RESOURCE_BINDING_CRN for testing IBM VPC Endpoint gateway resources, the tests will fail if this is not set")
+	}
+	IsEndpointGatewayTargetCRN = os.Getenv("IBM_IS_ENDPOINT_BINDING_TARGET_CRN")
+	if IsEndpointGatewayTargetCRN == "" {
+		fmt.Println("[WARN] Set the environment variable IBM_IS_ENDPOINT_BINDING_TARGET_CRN for testing IBM VPC Endpoint gateway resources, the tests will fail if this is not set")
+	}
+	IsEndpointGatewayTargetType = os.Getenv("IBM_IS_ENDPOINT_BINDING_TARGET_TYPE")
+	if IsEndpointGatewayTargetType == "" {
+		fmt.Println("[WARN] Set the environment variable IBM_IS_ENDPOINT_BINDING_TARGET_TYPE for testing IBM VPC Endpoint gateway resources, the tests will fail if this is not set")
 	}
 
 	ISZoneName = os.Getenv("SL_ZONE")
@@ -1959,6 +1993,12 @@ func init() {
 	IesApiKey = os.Getenv("IES_API_KEY")
 	if IesApiKey == "" {
 		IesApiKey = "xxxxxxxxxxxx" // pragma: allowlist secret
+		fmt.Println("[WARN] Set the environment variable IES_API_KEY for testing Event streams targets, the tests will fail if this is not set")
+	}
+
+	DRApiKey = os.Getenv("DR_API_KEY")
+	if DRApiKey == "" {
+		DRApiKey = "xxxxxxxxxxxx" // pragma: allowlist secret
 		fmt.Println("[WARN] Set the environment variable IES_API_KEY for testing Event streams targets, the tests will fail if this is not set")
 	}
 

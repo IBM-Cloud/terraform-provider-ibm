@@ -5,27 +5,28 @@ variable "ibmcloud_api_key" {
 
 // Resource arguments for metrics_router_target
 variable "metrics_router_target_name" {
-  description = "The name of the target. The name must be 1000 characters or less, and cannot include any special characters other than `(space) - . _ :`. Do not include any personal identifying information (PII) in any resource names."
+  description = "The name of the target resource."
   type        = string
   default     = "my-mr-target"
 }
 variable "metrics_router_target_destination_crn" {
-  description = "The CRN of a destination service instance or resource. Ensure you have a service authorization between IBM Cloud Metrics Routing and your Cloud resource. Read [S2S authorization](https://cloud.ibm.com/docs/metrics-router?topic=metrics-router-target-monitoring&interface=ui#target-monitoring-ui) for details."
+  description = "Cloud Resource Name (CRN) of the destination resource. Ensure you have a service authorization between IBM Cloud Metrics Routing and your Cloud resource. See [service-to-service authorization](https://cloud.ibm.com/docs/metrics-router?topic=metrics-router-target-monitoring&interface=ui#target-monitoring-ui) for details."
   type        = string
   default     = "crn:v1:bluemix:public:sysdig-monitor:us-south:a/0be5ad401ae913d8ff665d92680664ed:22222222-2222-2222-2222-222222222222::"
 }
 variable "metrics_router_target_region" {
-  description = "Include this optional field if you want to create a target in a different region other than the one you are connected."
+  description = "Include this optional field if you used it to create a target in a different region other than the one you are connected."
   type        = string
   default     = "us-south"
 }
 
 // Resource arguments for metrics_router_route
 variable "metrics_router_route_name" {
-  description = "The name of the route. The name must be 1000 characters or less and cannot include any special characters other than `(space) - . _ :`. Do not include any personal identifying information (PII) in any resource names."
+  description = "The name of the route."
   type        = string
   default     = "my-route"
 }
+
 
 // Resource arguments for metrics_router_settings
 variable "metrics_router_settings_permitted_target_regions" {

@@ -62,11 +62,19 @@ In addition to all argument reference list, you can access the following attribu
 	- `href` - (String) The VPN connection's canonical URL.
 
 ## Import
-The `ibm_is_ike_policy` resource can be imported by using IKE Policy ID.
 
-**Example**
+In Terraform v1.5.0 and later, use an [`import` block](https://developer.hashicorp.com/terraform/language/import) to import the `ibm_is_ike_policy` resource by using `id`.
+The `id` property can be formed from `IKE Policy ID`. For example:
 
+```terraform
+import {
+  to = ibm_is_ike_policy.example
+  id = "<ike_policy_id>"
+}
 ```
-$ terraform import ibm_is_ike_policy.example d7bec597-4726-451f-8a63-e62e6f19c32c
-```
 
+Using `terraform import`. For example:
+
+```console
+% terraform import ibm_is_ike_policy.example <ike_policy_id>
+```

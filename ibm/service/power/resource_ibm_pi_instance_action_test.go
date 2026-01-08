@@ -9,10 +9,10 @@ import (
 	"testing"
 
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
-	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/power"
 
-	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
-	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/power"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 )
 
 func TestAccIBMPIInstanceAction(t *testing.T) {
@@ -87,6 +87,25 @@ func TestAccIBMPIInstanceActionResetState(t *testing.T) {
 						"ibm_pi_instance_action.example", "status", strings.ToUpper(power.State_Active)),
 					resource.TestCheckResourceAttr(
 						"ibm_pi_instance_action.example", "health_status", power.Critical),
+				),
+			},
+		},
+	})
+}
+
+func TestAccIBMPIInstanceActionDumprestart(t *testing.T) {
+	name := fmt.Sprintf("tf-pi-instance-%d", acctest.RandIntRange(10, 100))
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { acc.TestAccPreCheck(t) },
+		Providers: acc.TestAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMPIInstanceActionWithHealthStatusConfig(name, power.Action_Dumprestart, power.Warning),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(
+						"ibm_pi_instance_action.example", "status", strings.ToUpper(power.State_Active)),
+					resource.TestCheckResourceAttr(
+						"ibm_pi_instance_action.example", "health_status", power.Warning),
 				),
 			},
 		},

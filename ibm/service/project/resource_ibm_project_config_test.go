@@ -313,6 +313,24 @@ func TestResourceIbmProjectConfigStackMemberToMap(t *testing.T) {
 	checkResult(result)
 }
 
+func TestResourceIbmProjectConfigProjectConfigUsesToMap(t *testing.T) {
+	checkResult := func(result map[string]interface{}) {
+		model := make(map[string]interface{})
+		model["config_id"] = "testString"
+		model["project_id"] = "testString"
+
+		assert.Equal(t, result, model)
+	}
+
+	model := new(projectv1.ProjectConfigUses)
+	model.ConfigID = core.StringPtr("testString")
+	model.ProjectID = core.StringPtr("testString")
+
+	result, err := project.ResourceIbmProjectConfigProjectConfigUsesToMap(model)
+	assert.Nil(t, err)
+	checkResult(result)
+}
+
 func TestResourceIbmProjectConfigProjectConfigAuthToMap(t *testing.T) {
 	checkResult := func(result map[string]interface{}) {
 		model := make(map[string]interface{})
@@ -341,6 +359,10 @@ func TestResourceIbmProjectConfigProjectConfigDefinitionResponseDAConfigDefiniti
 		stackMemberModel["name"] = "testString"
 		stackMemberModel["config_id"] = "testString"
 
+		projectConfigUsesModel := make(map[string]interface{})
+		projectConfigUsesModel["config_id"] = "testString"
+		projectConfigUsesModel["project_id"] = "testString"
+
 		projectConfigAuthModel := make(map[string]interface{})
 		projectConfigAuthModel["trusted_profile_id"] = "Profile-9ac10c5c-195c-41ef-b465-68a6b6dg5f12"
 		projectConfigAuthModel["method"] = "trusted_profile"
@@ -350,6 +372,7 @@ func TestResourceIbmProjectConfigProjectConfigDefinitionResponseDAConfigDefiniti
 		model["compliance_profile"] = []map[string]interface{}{projectComplianceProfileModel}
 		model["locator_id"] = "testString"
 		model["members"] = []map[string]interface{}{stackMemberModel}
+		model["uses"] = []map[string]interface{}{projectConfigUsesModel}
 		model["description"] = "testString"
 		model["name"] = "testString"
 		model["authorizations"] = []map[string]interface{}{projectConfigAuthModel}
@@ -366,6 +389,10 @@ func TestResourceIbmProjectConfigProjectConfigDefinitionResponseDAConfigDefiniti
 	stackMemberModel.Name = core.StringPtr("testString")
 	stackMemberModel.ConfigID = core.StringPtr("testString")
 
+	projectConfigUsesModel := new(projectv1.ProjectConfigUses)
+	projectConfigUsesModel.ConfigID = core.StringPtr("testString")
+	projectConfigUsesModel.ProjectID = core.StringPtr("testString")
+
 	projectConfigAuthModel := new(projectv1.ProjectConfigAuth)
 	projectConfigAuthModel.TrustedProfileID = core.StringPtr("Profile-9ac10c5c-195c-41ef-b465-68a6b6dg5f12")
 	projectConfigAuthModel.Method = core.StringPtr("trusted_profile")
@@ -375,6 +402,7 @@ func TestResourceIbmProjectConfigProjectConfigDefinitionResponseDAConfigDefiniti
 	model.ComplianceProfile = projectComplianceProfileModel
 	model.LocatorID = core.StringPtr("testString")
 	model.Members = []projectv1.StackMember{*stackMemberModel}
+	model.Uses = []projectv1.ProjectConfigUses{*projectConfigUsesModel}
 	model.Description = core.StringPtr("testString")
 	model.Name = core.StringPtr("testString")
 	model.Authorizations = projectConfigAuthModel
@@ -459,6 +487,7 @@ func TestResourceIbmProjectConfigOutputValueToMap(t *testing.T) {
 		model["name"] = "testString"
 		model["description"] = "testString"
 		model["value"] = "testString"
+		model["sensitive"] = true
 
 		assert.Equal(t, result, model)
 	}
@@ -467,6 +496,7 @@ func TestResourceIbmProjectConfigOutputValueToMap(t *testing.T) {
 	model.Name = core.StringPtr("testString")
 	model.Description = core.StringPtr("testString")
 	model.Value = "testString"
+	model.Sensitive = core.BoolPtr(true)
 
 	result, err := project.ResourceIbmProjectConfigOutputValueToMap(model)
 	assert.Nil(t, err)
@@ -639,6 +669,7 @@ func TestResourceIbmProjectConfigProjectConfigVersionSummaryToMap(t *testing.T) 
 
 		model := make(map[string]interface{})
 		model["definition"] = []map[string]interface{}{projectConfigVersionDefinitionSummaryModel}
+		model["container_state"] = "approved"
 		model["state"] = "approved"
 		model["version"] = int(0)
 		model["href"] = "testString"
@@ -652,6 +683,7 @@ func TestResourceIbmProjectConfigProjectConfigVersionSummaryToMap(t *testing.T) 
 
 	model := new(projectv1.ProjectConfigVersionSummary)
 	model.Definition = projectConfigVersionDefinitionSummaryModel
+	model.ContainerState = core.StringPtr("approved")
 	model.State = core.StringPtr("approved")
 	model.Version = core.Int64Ptr(int64(0))
 	model.Href = core.StringPtr("testString")
@@ -783,6 +815,24 @@ func TestResourceIbmProjectConfigMapToStackMember(t *testing.T) {
 	model["config_id"] = "testString"
 
 	result, err := project.ResourceIbmProjectConfigMapToStackMember(model)
+	assert.Nil(t, err)
+	checkResult(result)
+}
+
+func TestResourceIbmProjectConfigMapToProjectConfigUses(t *testing.T) {
+	checkResult := func(result *projectv1.ProjectConfigUses) {
+		model := new(projectv1.ProjectConfigUses)
+		model.ConfigID = core.StringPtr("testString")
+		model.ProjectID = core.StringPtr("testString")
+
+		assert.Equal(t, result, model)
+	}
+
+	model := make(map[string]interface{})
+	model["config_id"] = "testString"
+	model["project_id"] = "testString"
+
+	result, err := project.ResourceIbmProjectConfigMapToProjectConfigUses(model)
 	assert.Nil(t, err)
 	checkResult(result)
 }

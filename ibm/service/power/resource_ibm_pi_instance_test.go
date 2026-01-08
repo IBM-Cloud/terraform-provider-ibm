@@ -1050,6 +1050,69 @@ func testAccCheckIBMPInstanceCompMode(name, instanceHealthStatus, proc, memory, 
 	}
 	`, acc.Pi_cloud_instance_id, name, acc.Pi_image, acc.Pi_network_name, instanceHealthStatus, proc, memory, compMode)
 }
+func TestAccIBMPIInstanceVPMEM(t *testing.T) {
+	instanceRes := "ibm_pi_instance.power_instance"
+	name := fmt.Sprintf("tf-pvm-vpmem-%d", acctest.RandIntRange(10, 100))
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMPIInstanceDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMPIInstanceVPMEMConfig(name, power.OK),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMPIInstanceExists(instanceRes),
+					resource.TestCheckResourceAttr(instanceRes, "pi_instance_name", name),
+					resource.TestCheckResourceAttr(instanceRes, "vpmem_volumes.#", "2"),
+				),
+			},
+		},
+	})
+}
+func testAccCheckIBMPIInstanceVPMEMConfig(name, instanceHealthStatus string) string {
+	return fmt.Sprintf(`
+	  data "ibm_pi_image" "power_image" {
+		pi_cloud_instance_id = "%[1]s"
+		pi_image_name        = "%[3]s"
+	  }
+	  data "ibm_pi_network" "power_networks" {
+		pi_cloud_instance_id = "%[1]s"
+		pi_network_name      = "%[4]s"
+	  }
+	  resource "ibm_pi_volume" "power_volume" {
+		pi_cloud_instance_id = "%[1]s"
+		pi_volume_name       = "%[2]s-vol"
+		pi_volume_pool       = data.ibm_pi_image.power_image.storage_pool
+		pi_volume_shareable  = true
+		pi_volume_size       = 20
+		pi_volume_type       = "%[6]s"
+	  }
+	  resource "ibm_pi_instance" "power_instance" {
+		pi_cloud_instance_id  = "%[1]s"
+		pi_health_status      = "%[5]s"
+		pi_image_id           = data.ibm_pi_image.power_image.id
+		pi_instance_name      = "%[2]s"
+		pi_memory             = "2"
+		pi_proc_type          = "shared"
+		pi_processors         = "0.25"
+		pi_storage_pool       = data.ibm_pi_image.power_image.storage_pool
+		pi_storage_type       = "%[6]s"
+		pi_sys_type           = "s1022"
+		pi_volume_ids         = [ibm_pi_volume.power_volume.volume_id]
+		pi_network {
+			network_id = data.ibm_pi_network.power_networks.id
+		}
+		pi_vpmem_volumes {
+			name = "%[2]s-1"
+			size = 2
+		}
+		pi_vpmem_volumes {
+			name = "%[2]s-2"
+			size = 3
+		}
+	  }
+	`, acc.Pi_cloud_instance_id, name, acc.Pi_image, acc.Pi_network_name, instanceHealthStatus, acc.PiStorageType)
+}
 func testAccCheckIBMPIInstanceDestroy(s *terraform.State) error {
 	sess, err := acc.TestAccProvider.Meta().(conns.ClientSession).IBMPISession()
 	if err != nil {

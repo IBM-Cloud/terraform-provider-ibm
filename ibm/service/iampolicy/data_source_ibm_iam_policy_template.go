@@ -187,9 +187,61 @@ func DataSourceIBMIAMPolicyTemplate() *schema.Resource {
 									},
 									"roles": {
 										Type:        schema.TypeList,
-										Required:    true,
+										Optional:    true,
 										Elem:        &schema.Schema{Type: schema.TypeString},
 										Description: "Role names of the policy definition",
+									},
+									"role_template_references": {
+										Type:        schema.TypeList,
+										Optional:    true,
+										Description: "Role template references for assignment.",
+										Elem: &schema.Resource{
+											Schema: map[string]*schema.Schema{
+												"version": {
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "Role template version",
+												},
+												"id": {
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "Role template id",
+												},
+											},
+										},
+									},
+									"subject": {
+										Type:        schema.TypeSet,
+										Computed:    true,
+										Description: "The subject attributes for authorization type templates",
+										Elem: &schema.Resource{
+											Schema: map[string]*schema.Schema{
+												"attributes": {
+													Type:        schema.TypeList,
+													Computed:    true,
+													Description: "List of resource attributes to which the policy grants access.",
+													Elem: &schema.Resource{
+														Schema: map[string]*schema.Schema{
+															"key": {
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "The name of a resource attribute.",
+															},
+															"operator": {
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "The operator of an attribute.",
+															},
+															"value": {
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "The value of a rule or resource attribute; can be boolean or string for resource attribute. Can be string or an array of strings (e.g., array of days to permit access) for rule attribute.",
+															},
+														},
+													},
+												},
+											},
+										},
 									},
 								},
 							},
