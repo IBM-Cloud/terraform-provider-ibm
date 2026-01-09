@@ -407,15 +407,17 @@ var (
 
 // For Code Engine
 var (
-	CeResourceGroupID   string
-	CeProjectId         string
-	CeServiceInstanceID string
-	CeResourceKeyID     string
-	CeDomainMappingName string
-	CeTLSCert           string
-	CeTLSKey            string
-	CeTLSKeyFilePath    string
-	CeTLSCertFilePath   string
+	CeResourceGroupID    string
+	CeProjectId          string
+	CeServiceInstanceID  string
+	CeResourceKeyID      string
+	CeDomainMappingName  string
+	CeTLSCertFilePath    string
+	CeTLSKeyFilePath     string
+	CeCosAccessKeyID     string
+	CeCosSecretAccessKey string
+	CeCosBucketName      string
+	CeCosBucketLocation  string
 )
 
 // Satellite tests
@@ -2037,28 +2039,40 @@ func init() {
 		fmt.Println("[WARN] Set the environment variable IBM_CODE_ENGINE_DOMAIN_MAPPING_NAME with the name of a domain mapping")
 	}
 
-	CeTLSCert = os.Getenv("IBM_CODE_ENGINE_TLS_CERT")
-	if CeTLSCert == "" {
-		CeTLSCert = ""
-		fmt.Println("[WARN] Set the environment variable IBM_CODE_ENGINE_TLS_CERT with the TLS certificate in base64 format")
+	CeCosBucketLocation = os.Getenv("IBM_CODE_ENGINE_COS_BUCKET_LOCATION")
+	if CeCosBucketLocation == "" {
+		CeCosBucketLocation = ""
+		fmt.Println("[WARN] Set the environment variable IBM_CODE_ENGINE_COS_BUCKET_LOCATION with the location of a COS bucket")
 	}
 
-	CeTLSKey = os.Getenv("IBM_CODE_ENGINE_TLS_KEY")
-	if CeTLSKey == "" {
-		CeTLSKey = ""
-		fmt.Println("[WARN] Set the environment variable IBM_CODE_ENGINE_TLS_KEY with a TLS key in base64 format")
-	}
-
-	CeTLSKeyFilePath = os.Getenv("IBM_CODE_ENGINE_TLS_CERT_KEY_PATH")
-	if CeTLSKeyFilePath == "" {
-		CeTLSKeyFilePath = ""
-		fmt.Println("[WARN] Set the environment variable IBM_CODE_ENGINE_TLS_CERT_KEY_PATH to point to CERT KEY file path")
-	}
-
-	CeTLSCertFilePath = os.Getenv("IBM_CODE_ENGINE_TLS_CERT_PATH")
+	CeTLSCertFilePath = os.Getenv("IBM_CODE_ENGINE_TLS_CERT_FILE_PATH")
 	if CeTLSCertFilePath == "" {
 		CeTLSCertFilePath = ""
-		fmt.Println("[WARN] Set the environment variable IBM_CODE_ENGINE_TLS_CERT_PATH to point to CERT file path")
+		fmt.Println("[WARN] Set the environment variable IBM_CODE_ENGINE_TLS_CERT_FILE_PATH to the path of the .crt file containing the signed TLS certificate")
+	}
+
+	CeCosAccessKeyID = os.Getenv("IBM_CODE_ENGINE_COS_ACCESS_KEY_ID")
+	if CeCosAccessKeyID == "" {
+		CeCosAccessKeyID = ""
+		fmt.Println("[WARN] Set the environment variable IBM_CODE_ENGINE_COS_ACCESS_KEY_ID with the access key ID of a COS instance")
+	}
+
+	CeCosSecretAccessKey = os.Getenv("IBM_CODE_ENGINE_COS_SECRET_ACCESS_KEY")
+	if CeCosSecretAccessKey == "" {
+		CeCosSecretAccessKey = ""
+		fmt.Println("[WARN] Set the environment variable IBM_CODE_ENGINE_COS_SECRET_ACCESS_KEY with the secret access key of a COS instance")
+	}
+
+	CeCosBucketName = os.Getenv("IBM_CODE_ENGINE_COS_BUCKET_NAME")
+	if CeCosBucketName == "" {
+		CeCosBucketName = ""
+		fmt.Println("[WARN] Set the environment variable IBM_CODE_ENGINE_COS_BUCKET_NAME with the name of a COS bucket")
+	}
+
+	CeTLSKeyFilePath = os.Getenv("IBM_CODE_ENGINE_TLS_KEY_FILE_PATH")
+	if CeTLSKeyFilePath == "" {
+		CeTLSKeyFilePath = ""
+		fmt.Println("[WARN] Set the environment variable IBM_CODE_ENGINE_TLS_KEY_FILE_PATH to the path of the .key file containing the TLS private key")
 	}
 
 	SatelliteSSHPubKey = os.Getenv("IBM_SATELLITE_SSH_PUB_KEY")
@@ -2456,11 +2470,23 @@ func TestAccPreCheckCodeEngine(t *testing.T) {
 	if CeDomainMappingName == "" {
 		t.Fatal("IBM_CODE_ENGINE_DOMAIN_MAPPING_NAME must be set for acceptance tests")
 	}
-	if CeTLSKeyFilePath == "" {
-		t.Fatal("IBM_CODE_ENGINE_TLS_CERT_KEY_PATH must be set for acceptance tests")
-	}
 	if CeTLSCertFilePath == "" {
-		t.Fatal("IBM_CODE_ENGINE_TLS_CERT_PATH must be set for acceptance tests")
+		t.Fatal("IBM_CODE_ENGINE_TLS_CERT_FILE_PATH must be set for acceptance tests")
+	}
+	if CeTLSKeyFilePath == "" {
+		t.Fatal("IBM_CODE_ENGINE_TLS_KEY_FILE_PATH must be set for acceptance tests")
+	}
+	if CeCosAccessKeyID == "" {
+		t.Fatal("IBM_CODE_ENGINE_COS_ACCESS_KEY_ID must be set for acceptance tests")
+	}
+	if CeCosSecretAccessKey == "" {
+		t.Fatal("IBM_CODE_ENGINE_COS_SECRET_ACCESS_KEY must be set for acceptance tests")
+	}
+	if CeCosBucketName == "" {
+		t.Fatal("IBM_CODE_ENGINE_COS_BUCKET_NAME must be set for acceptance tests")
+	}
+	if CeCosBucketLocation == "" {
+		t.Fatal("IBM_CODE_ENGINE_COS_BUCKET_LOCATION must be set for acceptance tests")
 	}
 }
 
