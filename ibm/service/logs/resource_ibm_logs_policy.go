@@ -553,7 +553,7 @@ func ResourceIbmLogsPolicyMapToQuotaV1LogRules(modelMap map[string]interface{}) 
 func ResourceIbmLogsPolicyMapToPolicyPrototype(modelMap map[string]interface{}) (logsv0.PolicyPrototypeIntf, error) {
 	model := &logsv0.PolicyPrototype{}
 	model.Name = core.StringPtr(modelMap["name"].(string))
-	if modelMap["before"] != nil && len(modelMap["before"].([]interface{})) > 0 {
+	if modelMap["before"] != nil && len(modelMap["before"].([]interface{})) > 0 && modelMap["before"].([]interface{})[0] != nil {
 		BeforeModel, err := ResourceIbmLogsPolicyMapToPolicyBeforePrototype(modelMap["before"].([]interface{})[0].(map[string]interface{}))
 		if err != nil {
 			return model, err
