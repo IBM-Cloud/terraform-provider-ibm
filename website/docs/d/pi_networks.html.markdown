@@ -50,7 +50,8 @@ In addition to all argument reference list, you can access the following attribu
   - `advertise` - (String) Indicates if the network is advertised.
   - `arp_broadcast` - (String) Indicates if ARP Broadcast is enabled.
   - `crn` - (String) The CRN of this resource.
-  - `dhcp_managed` - (Boolean) Indicates if the network DHCP Managed.
+  - `dhcp_managed` - (Boolean) DHCP enabled network.
+  - `enable_dhcp` - (Boolean) DHCP enabled network.
   - `href` - (String) The hyper link of a network.
   - `mtu` - (Boolean) Maximum Transmission Unit option of the network.
   - `name` - (String) The name of a network.
