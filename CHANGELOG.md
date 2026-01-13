@@ -1,3 +1,10 @@
+# 1.87.1 (January 13, 2026)
+
+## Enhancements
+
+### Enterprise Management
+* support redhat regex expression to owner id validation ([6617](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6617))
+
 # 1.87.0 (January 12, 2026)
 
 ## Bug Fixes
