@@ -158,7 +158,7 @@ func TestAccIBMIAMAccessGroupPolicy_With_Resource_Type(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMIAMAccessGroupPolicyExists("ibm_iam_access_group_policy.policy", conf),
 					resource.TestCheckResourceAttr("ibm_iam_access_group.accgrp", "name", name),
-					resource.TestCheckResourceAttr("ibm_iam_access_group_policy.policy", "roles.#", "1"),
+					resource.TestCheckResourceAttr("ibm_iam_access_group_policy.policy", "roles.#", "2"),
 				),
 			},
 		},
@@ -787,7 +787,7 @@ func testAccCheckIBMIAMAccessGroupPolicyResourceType(name string) string {
 	  
 	  	resource "ibm_iam_access_group_policy" "policy" {
 			access_group_id = ibm_iam_access_group.accgrp.id
-			roles           = ["Administrator"]
+			roles           = ["Administrator", "Key Manager"]
 	  
 			resources {
 		  		resource_type = "resource-group"
