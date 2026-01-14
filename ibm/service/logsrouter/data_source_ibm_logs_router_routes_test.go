@@ -1,0 +1,275 @@
+// Copyright IBM Corp. 2026 All Rights Reserved.
+// Licensed under the Mozilla Public License v2.0
+
+/*
+ * IBM OpenAPI Terraform Generator Version: 3.108.0-56772134-20251111-102802
+*/
+
+package logsrouter_test
+
+import (
+	"fmt"
+	"testing"
+
+	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/logsrouter"
+	"github.com/IBM/go-sdk-core/v5/core"
+	"github.com/IBM/platform-services-go-sdk/logsrouterv3"
+	"github.com/stretchr/testify/assert"
+	. "github.com/IBM-Cloud/terraform-provider-ibm/ibm/unittest"
+	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
+)
+
+func TestAccIBMLogsRouterRoutesDataSourceBasic(t *testing.T) {
+	routeName := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { acc.TestAccPreCheck(t) },
+		Providers: acc.TestAccProviders,
+		Steps: []resource.TestStep{
+			resource.TestStep{
+				Config: testAccCheckIBMLogsRouterRoutesDataSourceConfigBasic(routeName),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet("data.ibm_logs_router_routes.logs_router_routes_instance", "id"),
+					resource.TestCheckResourceAttrSet("data.ibm_logs_router_routes.logs_router_routes_instance", "routes.#"),
+					resource.TestCheckResourceAttr("data.ibm_logs_router_routes.logs_router_routes_instance", "routes.0.name", routeName),
+				),
+			},
+		},
+	})
+}
+
+func TestAccIBMLogsRouterRoutesDataSourceAllArgs(t *testing.T) {
+	routeName := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
+	routeManagedBy := "enterprise"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { acc.TestAccPreCheck(t) },
+		Providers: acc.TestAccProviders,
+		Steps: []resource.TestStep{
+			resource.TestStep{
+				Config: testAccCheckIBMLogsRouterRoutesDataSourceConfig(routeName, routeManagedBy),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet("data.ibm_logs_router_routes.logs_router_routes_instance", "id"),
+					resource.TestCheckResourceAttrSet("data.ibm_logs_router_routes.logs_router_routes_instance", "name"),
+					resource.TestCheckResourceAttrSet("data.ibm_logs_router_routes.logs_router_routes_instance", "routes.#"),
+					resource.TestCheckResourceAttrSet("data.ibm_logs_router_routes.logs_router_routes_instance", "routes.0.id"),
+					resource.TestCheckResourceAttr("data.ibm_logs_router_routes.logs_router_routes_instance", "routes.0.name", routeName),
+					resource.TestCheckResourceAttrSet("data.ibm_logs_router_routes.logs_router_routes_instance", "routes.0.crn"),
+					resource.TestCheckResourceAttrSet("data.ibm_logs_router_routes.logs_router_routes_instance", "routes.0.created_at"),
+					resource.TestCheckResourceAttrSet("data.ibm_logs_router_routes.logs_router_routes_instance", "routes.0.updated_at"),
+					resource.TestCheckResourceAttr("data.ibm_logs_router_routes.logs_router_routes_instance", "routes.0.managed_by", routeManagedBy),
+				),
+			},
+		},
+	})
+}
+
+func testAccCheckIBMLogsRouterRoutesDataSourceConfigBasic(routeName string) string {
+	return fmt.Sprintf(`
+		resource "ibm_logs_router_target" "logs_router_target_instance" {
+			name = "my-lr-target"
+			destination_crn = "crn:v1:bluemix:public:logs:us-south:a/0be5ad401ae913d8ff665d92680664ed:22222222-2222-2222-2222-222222222222::"
+		}
+
+		resource "ibm_logs_router_route" "logs_router_route_instance" {
+			name = "%s"
+			rules {
+				action = "send"
+				targets {
+					id = "c3af557f-fb0e-4476-85c3-0889e7fe7bc4"
+					crn = "crn:v1:bluemix:public:logs:us-south:a/0be5ad401ae913d8ff665d92680664ed:22222222-2222-2222-2222-222222222222::"
+					name = "a-lr-target-us-south"
+					target_type = "cloud_logs"
+				}
+				inclusion_filters {
+					operand = "location"
+					operator = "is"
+					values = [ "us-south" ]
+				}
+			}
+		}
+
+		data "ibm_logs_router_routes" "logs_router_routes_instance" {
+			name = ibm_logs_router_route.logs_router_route_instance.name
+		}
+	`, routeName)
+}
+
+func testAccCheckIBMLogsRouterRoutesDataSourceConfig(routeName string, routeManagedBy string) string {
+	return fmt.Sprintf(`
+		resource "ibm_logs_router_target" "logs_router_target_instance" {
+			name = "my-lr-target"
+			destination_crn = "crn:v1:bluemix:public:logs:us-south:a/0be5ad401ae913d8ff665d92680664ed:22222222-2222-2222-2222-222222222222::"
+		}
+
+		resource "ibm_logs_router_route" "logs_router_route_instance" {
+			name = "%s"
+			rules {
+				action = "send"
+				targets {
+					id = "c3af557f-fb0e-4476-85c3-0889e7fe7bc4"
+					crn = "crn:v1:bluemix:public:logs:us-south:a/0be5ad401ae913d8ff665d92680664ed:22222222-2222-2222-2222-222222222222::"
+					name = "a-lr-target-us-south"
+					target_type = "cloud_logs"
+				}
+				inclusion_filters {
+					operand = "location"
+					operator = "is"
+					values = [ "us-south" ]
+				}
+			}
+			managed_by = "%s"
+		}
+
+		data "ibm_logs_router_routes" "logs_router_routes_instance" {
+			name = ibm_logs_router_route.logs_router_route_instance.name
+		}
+	`, routeName, routeManagedBy)
+}
+
+func TestDataSourceIBMLogsRouterRoutesRouteToMap(t *testing.T) {
+	checkResult := func(result map[string]interface{}) {
+		targetReferenceModel := make(map[string]interface{})
+		targetReferenceModel["id"] = "c3af557f-fb0e-4476-85c3-0889e7fe7bc4"
+		targetReferenceModel["crn"] = "crn:v1:bluemix:public:logs:us-south:a/0be5ad401ae913d8ff665d92680664ed:22222222-2222-2222-2222-222222222222::"
+		targetReferenceModel["name"] = "a-lr-target-us-south"
+		targetReferenceModel["target_type"] = "cloud_logs"
+
+		inclusionFilterModel := make(map[string]interface{})
+		inclusionFilterModel["operand"] = "location"
+		inclusionFilterModel["operator"] = "is"
+		inclusionFilterModel["values"] = []string{"us-south"}
+
+		ruleModel := make(map[string]interface{})
+		ruleModel["action"] = "send"
+		ruleModel["targets"] = []map[string]interface{}{targetReferenceModel}
+		ruleModel["inclusion_filters"] = []map[string]interface{}{inclusionFilterModel}
+
+		model := make(map[string]interface{})
+		model["id"] = "c3af557f-fb0e-4476-85c3-0889e7fe7bc4"
+		model["name"] = "my-route"
+		model["crn"] = "crn:v1:bluemix:public:logs-router:global:a/0be5ad401ae913d8ff665d92680664ed:b6eec08b-5201-08ca-451b-cd71523e3626:route:c3af557f-fb0e-4476-85c3-0889e7fe7bc4"
+		model["rules"] = []map[string]interface{}{ruleModel}
+		model["created_at"] = "2021-05-18T20:15:12.353Z"
+		model["updated_at"] = "2021-05-18T20:15:12.353Z"
+		model["managed_by"] = "enterprise"
+
+		assert.Equal(t, result, model)
+	}
+
+	targetReferenceModel := new(logsrouterv3.TargetReference)
+	targetReferenceModel.ID = core.StringPtr("c3af557f-fb0e-4476-85c3-0889e7fe7bc4")
+	targetReferenceModel.CRN = core.StringPtr("crn:v1:bluemix:public:logs:us-south:a/0be5ad401ae913d8ff665d92680664ed:22222222-2222-2222-2222-222222222222::")
+	targetReferenceModel.Name = core.StringPtr("a-lr-target-us-south")
+	targetReferenceModel.TargetType = core.StringPtr("cloud_logs")
+
+	inclusionFilterModel := new(logsrouterv3.InclusionFilter)
+	inclusionFilterModel.Operand = core.StringPtr("location")
+	inclusionFilterModel.Operator = core.StringPtr("is")
+	inclusionFilterModel.Values = []string{"us-south"}
+
+	ruleModel := new(logsrouterv3.Rule)
+	ruleModel.Action = core.StringPtr("send")
+	ruleModel.Targets = []logsrouterv3.TargetReference{*targetReferenceModel}
+	ruleModel.InclusionFilters = []logsrouterv3.InclusionFilter{*inclusionFilterModel}
+
+	model := new(logsrouterv3.Route)
+	model.ID = core.StringPtr("c3af557f-fb0e-4476-85c3-0889e7fe7bc4")
+	model.Name = core.StringPtr("my-route")
+	model.CRN = core.StringPtr("crn:v1:bluemix:public:logs-router:global:a/0be5ad401ae913d8ff665d92680664ed:b6eec08b-5201-08ca-451b-cd71523e3626:route:c3af557f-fb0e-4476-85c3-0889e7fe7bc4")
+	model.Rules = []logsrouterv3.Rule{*ruleModel}
+	model.CreatedAt = CreateMockDateTime("2021-05-18T20:15:12.353Z")
+	model.UpdatedAt = CreateMockDateTime("2021-05-18T20:15:12.353Z")
+	model.ManagedBy = core.StringPtr("enterprise")
+
+	result, err := logsrouter.DataSourceIBMLogsRouterRoutesRouteToMap(model)
+	assert.Nil(t, err)
+	checkResult(result)
+}
+
+func TestDataSourceIBMLogsRouterRoutesRuleToMap(t *testing.T) {
+	checkResult := func(result map[string]interface{}) {
+		targetReferenceModel := make(map[string]interface{})
+		targetReferenceModel["id"] = "c3af557f-fb0e-4476-85c3-0889e7fe7bc4"
+		targetReferenceModel["crn"] = "crn:v1:bluemix:public:logs:us-south:a/0be5ad401ae913d8ff665d92680664ed:22222222-2222-2222-2222-222222222222::"
+		targetReferenceModel["name"] = "a-lr-target-us-south"
+		targetReferenceModel["target_type"] = "cloud_logs"
+
+		inclusionFilterModel := make(map[string]interface{})
+		inclusionFilterModel["operand"] = "location"
+		inclusionFilterModel["operator"] = "is"
+		inclusionFilterModel["values"] = []string{"us-south"}
+
+		model := make(map[string]interface{})
+		model["action"] = "send"
+		model["targets"] = []map[string]interface{}{targetReferenceModel}
+		model["inclusion_filters"] = []map[string]interface{}{inclusionFilterModel}
+
+		assert.Equal(t, result, model)
+	}
+
+	targetReferenceModel := new(logsrouterv3.TargetReference)
+	targetReferenceModel.ID = core.StringPtr("c3af557f-fb0e-4476-85c3-0889e7fe7bc4")
+	targetReferenceModel.CRN = core.StringPtr("crn:v1:bluemix:public:logs:us-south:a/0be5ad401ae913d8ff665d92680664ed:22222222-2222-2222-2222-222222222222::")
+	targetReferenceModel.Name = core.StringPtr("a-lr-target-us-south")
+	targetReferenceModel.TargetType = core.StringPtr("cloud_logs")
+
+	inclusionFilterModel := new(logsrouterv3.InclusionFilter)
+	inclusionFilterModel.Operand = core.StringPtr("location")
+	inclusionFilterModel.Operator = core.StringPtr("is")
+	inclusionFilterModel.Values = []string{"us-south"}
+
+	model := new(logsrouterv3.Rule)
+	model.Action = core.StringPtr("send")
+	model.Targets = []logsrouterv3.TargetReference{*targetReferenceModel}
+	model.InclusionFilters = []logsrouterv3.InclusionFilter{*inclusionFilterModel}
+
+	result, err := logsrouter.DataSourceIBMLogsRouterRoutesRuleToMap(model)
+	assert.Nil(t, err)
+	checkResult(result)
+}
+
+func TestDataSourceIBMLogsRouterRoutesTargetReferenceToMap(t *testing.T) {
+	checkResult := func(result map[string]interface{}) {
+		model := make(map[string]interface{})
+		model["id"] = "c3af557f-fb0e-4476-85c3-0889e7fe7bc4"
+		model["crn"] = "crn:v1:bluemix:public:logs:us-south:a/0be5ad401ae913d8ff665d92680664ed:22222222-2222-2222-2222-222222222222::"
+		model["name"] = "a-lr-target-us-south"
+		model["target_type"] = "cloud_logs"
+
+		assert.Equal(t, result, model)
+	}
+
+	model := new(logsrouterv3.TargetReference)
+	model.ID = core.StringPtr("c3af557f-fb0e-4476-85c3-0889e7fe7bc4")
+	model.CRN = core.StringPtr("crn:v1:bluemix:public:logs:us-south:a/0be5ad401ae913d8ff665d92680664ed:22222222-2222-2222-2222-222222222222::")
+	model.Name = core.StringPtr("a-lr-target-us-south")
+	model.TargetType = core.StringPtr("cloud_logs")
+
+	result, err := logsrouter.DataSourceIBMLogsRouterRoutesTargetReferenceToMap(model)
+	assert.Nil(t, err)
+	checkResult(result)
+}
+
+func TestDataSourceIBMLogsRouterRoutesInclusionFilterToMap(t *testing.T) {
+	checkResult := func(result map[string]interface{}) {
+		model := make(map[string]interface{})
+		model["operand"] = "location"
+		model["operator"] = "is"
+		model["values"] = []string{"us-south"}
+
+		assert.Equal(t, result, model)
+	}
+
+	model := new(logsrouterv3.InclusionFilter)
+	model.Operand = core.StringPtr("location")
+	model.Operator = core.StringPtr("is")
+	model.Values = []string{"us-south"}
+
+	result, err := logsrouter.DataSourceIBMLogsRouterRoutesInclusionFilterToMap(model)
+	assert.Nil(t, err)
+	checkResult(result)
+}

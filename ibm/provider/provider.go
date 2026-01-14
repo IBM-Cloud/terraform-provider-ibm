@@ -50,6 +50,7 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/kms"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/kubernetes"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/logs"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/logsrouter"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/logsrouting"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/metricsrouter"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/mqcloud"
@@ -1151,9 +1152,13 @@ func Provider() *schema.Provider {
 			"ibm_logs_alert_definition":   logs.AddLogsInstanceFields(logs.DataSourceIbmLogsAlertDefinition()),
 			"ibm_logs_alert_definitions":  logs.AddLogsInstanceFields(logs.DataSourceIbmLogsAlertDefinitions()),
 
-			// Logs Router Service
+			// Logs Router Service v1
 			"ibm_logs_router_tenants": logsrouting.DataSourceIBMLogsRouterTenants(),
-			"ibm_logs_router_targets": logsrouting.DataSourceIBMLogsRouterTargets(),
+			"ibm_logs_router_target":  logsrouting.DataSourceIBMLogsRouterTargets(),
+
+			// Logs Router Service v3
+			"ibm_logs_router_targets": logsrouter.DataSourceIBMLogsRouterTargets(),
+			"ibm_logs_router_routes":  logsrouter.DataSourceIBMLogsRouterRoutes(),
 
 			// DR Automation Service
 			"ibm_pdr_get_dr_summary_response": drautomationservice.DataSourceIBMPdrGetDrSummaryResponse(),
@@ -1851,8 +1856,13 @@ func Provider() *schema.Provider {
 			"ibm_logs_stream":             logs.AddLogsInstanceFields(logs.ResourceIbmLogsStream()),
 			"ibm_logs_alert_definition":   logs.AddLogsInstanceFields(logs.ResourceIbmLogsAlertDefinition()),
 
-			// Logs Router Service
+			// Logs Router Service v1
 			"ibm_logs_router_tenant": logsrouting.ResourceIBMLogsRouterTenant(),
+
+			// Logs Router Service v3
+			"ibm_logs_router_target":   logsrouter.ResourceIBMLogsRouterTarget(),
+			"ibm_logs_router_route":    logsrouter.ResourceIBMLogsRouterRoute(),
+			"ibm_logs_router_settings": logsrouter.ResourceIBMLogsRouterSettings(),
 
 			// DR Automation Service
 			"ibm_pdr_managedr":        drautomationservice.ResourceIbmPdrManagedr(),
@@ -2224,6 +2234,9 @@ func Validator() validate.ValidatorDict {
 				"ibm_atracker_target":                                atracker.ResourceIBMAtrackerTargetValidator(),
 				"ibm_atracker_route":                                 atracker.ResourceIBMAtrackerRouteValidator(),
 				"ibm_atracker_settings":                              atracker.ResourceIBMAtrackerSettingsValidator(),
+				"ibm_logs_router_target":                             logsrouter.ResourceIBMLogsRouterTargetValidator(),
+				"ibm_logs_router_route":                              logsrouter.ResourceIBMLogsRouterRouteValidator(),
+				"ibm_logs_router_settings":                           logsrouter.ResourceIBMLogsRouterSettingsValidator(),
 				"ibm_metrics_router_target":                          metricsrouter.ResourceIBMMetricsRouterTargetValidator(),
 				"ibm_metrics_router_route":                           metricsrouter.ResourceIBMMetricsRouterRouteValidator(),
 				"ibm_metrics_router_settings":                        metricsrouter.ResourceIBMMetricsRouterSettingsValidator(),
