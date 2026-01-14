@@ -50,6 +50,7 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/kms"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/kubernetes"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/logs"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/logsrouter"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/logsrouting"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/metricsrouter"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/mqcloud"
@@ -954,6 +955,10 @@ func Provider() *schema.Provider {
 			"ibm_atracker_targets": atracker.DataSourceIBMAtrackerTargets(),
 			"ibm_atracker_routes":  atracker.DataSourceIBMAtrackerRoutes(),
 
+			// Logs Router v3
+			"ibm_logs_router_targets": logsrouter.DataSourceIBMLogsRouterTargets(),
+			"ibm_logs_router_routes":  logsrouter.DataSourceIBMLogsRouterRoutes(),
+
 			// Metrics Router
 			"ibm_metrics_router_targets": metricsrouter.DataSourceIBMMetricsRouterTargets(),
 			"ibm_metrics_router_routes":  metricsrouter.DataSourceIBMMetricsRouterRoutes(),
@@ -1152,8 +1157,8 @@ func Provider() *schema.Provider {
 			"ibm_logs_alert_definitions":  logs.AddLogsInstanceFields(logs.DataSourceIbmLogsAlertDefinitions()),
 
 			// Logs Router Service
-			"ibm_logs_router_tenants": logsrouting.DataSourceIBMLogsRouterTenants(),
-			"ibm_logs_router_targets": logsrouting.DataSourceIBMLogsRouterTargets(),
+			"ibm_logs_router_tenants":   logsrouting.DataSourceIBMLogsRouterTenants(),
+			"ibm_logs_router_target_v1": logsrouting.DataSourceIBMLogsRouterTargets(),
 
 			// DR Automation Service
 			"ibm_pdr_get_dr_summary_response": drautomationservice.DataSourceIBMPdrGetDrSummaryResponse(),
@@ -1691,6 +1696,11 @@ func Provider() *schema.Provider {
 			"ibm_atracker_route":    atracker.ResourceIBMAtrackerRoute(),
 			"ibm_atracker_settings": atracker.ResourceIBMAtrackerSettings(),
 
+			// Logs Router
+			"ibm_logs_router_target":   logsrouter.ResourceIBMLogsRouterTarget(),
+			"ibm_logs_router_route":    logsrouter.ResourceIBMLogsRouterRoute(),
+			"ibm_logs_router_settings": logsrouter.ResourceIBMLogsRouterSettings(),
+
 			// Metrics Router
 			"ibm_metrics_router_target":   metricsrouter.ResourceIBMMetricsRouterTarget(),
 			"ibm_metrics_router_route":    metricsrouter.ResourceIBMMetricsRouterRoute(),
@@ -2224,6 +2234,9 @@ func Validator() validate.ValidatorDict {
 				"ibm_atracker_target":                                atracker.ResourceIBMAtrackerTargetValidator(),
 				"ibm_atracker_route":                                 atracker.ResourceIBMAtrackerRouteValidator(),
 				"ibm_atracker_settings":                              atracker.ResourceIBMAtrackerSettingsValidator(),
+				"ibm_logs_router_target":                             logsrouter.ResourceIBMLogsRouterTargetValidator(),
+				"ibm_logs_router_route":                              logsrouter.ResourceIBMLogsRouterRouteValidator(),
+				"ibm_logs_router_settings":                           logsrouter.ResourceIBMLogsRouterSettingsValidator(),
 				"ibm_metrics_router_target":                          metricsrouter.ResourceIBMMetricsRouterTargetValidator(),
 				"ibm_metrics_router_route":                           metricsrouter.ResourceIBMMetricsRouterRouteValidator(),
 				"ibm_metrics_router_settings":                        metricsrouter.ResourceIBMMetricsRouterSettingsValidator(),

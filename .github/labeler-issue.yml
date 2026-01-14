@@ -84,6 +84,8 @@ service/Key Management Services:
   - '((\*|-) ?`?|(data|resource) "?)ibm_(kms_|kp_)'
 service/Kubernetes Service:
   - '((\*|-) ?`?|(data|resource) "?)ibm_(container_|ob_)'
+service/Logs Router:
+  - '((\*|-) ?`?|(data|resource) "?)ibm_logs_router'
 service/Object Storage:
   - '((\*|-) ?`?|(data|resource) "?)ibm_cos_'
 service/Power Systems:
