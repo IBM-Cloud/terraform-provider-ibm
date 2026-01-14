@@ -59,21 +59,6 @@ func ResourceIBMLogsRouterRoute() *schema.Resource {
 										Required:    true,
 										Description: "The target uuid for a pre-defined platform logs router target.",
 									},
-									"crn": &schema.Schema{
-										Type:        schema.TypeString,
-										Required:    true,
-										Description: "The CRN of a pre-defined logs-router target.",
-									},
-									"name": &schema.Schema{
-										Type:        schema.TypeString,
-										Required:    true,
-										Description: "The name of a pre-defined logs-router target.",
-									},
-									"target_type": &schema.Schema{
-										Type:        schema.TypeString,
-										Required:    true,
-										Description: "The type of the target.",
-									},
 								},
 							},
 						},
@@ -394,9 +379,6 @@ func ResourceIBMLogsRouterRouteRuleToMap(model *logsrouterv3.Rule) (map[string]i
 func ResourceIBMLogsRouterRouteTargetReferenceToMap(model *logsrouterv3.TargetReference) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["id"] = *model.ID
-	modelMap["crn"] = *model.CRN
-	modelMap["name"] = *model.Name
-	modelMap["target_type"] = *model.TargetType
 	return modelMap, nil
 }
 

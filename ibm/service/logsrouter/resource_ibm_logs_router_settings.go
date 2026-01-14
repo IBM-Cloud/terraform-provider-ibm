@@ -42,21 +42,6 @@ func ResourceIBMLogsRouterSettings() *schema.Resource {
 							Required:    true,
 							Description: "The target uuid for a pre-defined platform logs router target.",
 						},
-						"crn": &schema.Schema{
-							Type:        schema.TypeString,
-							Required:    true,
-							Description: "The CRN of a pre-defined logs-router target.",
-						},
-						"name": &schema.Schema{
-							Type:        schema.TypeString,
-							Required:    true,
-							Description: "The name of a pre-defined logs-router target.",
-						},
-						"target_type": &schema.Schema{
-							Type:        schema.TypeString,
-							Required:    true,
-							Description: "The type of the target.",
-						},
 					},
 				},
 			},
@@ -181,8 +166,6 @@ func resourceIBMLogsRouterSettingsRead(context context.Context, d *schema.Resour
 
 	getSettingsOptions := &logsrouterv3.GetSettingsOptions{}
 
-	getSettingsOptions.SetPrimaryMetadataRegion(d.Id())
-
 	setting, response, err := logsRouterClient.GetSettingsWithContext(context, getSettingsOptions)
 	if err != nil {
 		if response != nil && response.StatusCode == 404 {
@@ -255,25 +238,35 @@ func resourceIBMLogsRouterSettingsUpdate(context context.Context, d *schema.Reso
 	hasChange := false
 
 	if d.HasChange("default_targets") {
-		var defaultTargets []logsrouterv3.TargetIdentity
-		for _, v := range d.Get("default_targets").([]interface{}) {
-			value := v.(map[string]interface{})
-			defaultTargetsItem, err := ResourceIBMLogsRouterSettingsMapToTargetIdentity(value)
-			if err != nil {
-				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_logs_router_settings", "delete", "parse-default_targets").GetDiag()
+		if _, ok := d.GetOk("default_targets"); ok {
+			var defaultTargets []logsrouterv3.TargetIdentity
+			for _, e := range d.Get("default_targets").([]interface{}) {
+				value := e.(map[string]interface{})
+				defaultTargetsItem, err := ResourceIBMLogsRouterSettingsMapToTargetIdentity(value)
+				if err != nil {
+					return diag.FromErr(err)
+				}
+				defaultTargets = append(defaultTargets, *defaultTargetsItem)
 			}
-			defaultTargets = append(defaultTargets, *defaultTargetsItem)
+			updateSettingsOptions.SetDefaultTargets(defaultTargets)
+		} else {
+			// In this case, need to remove all the default_targets
+			updateSettingsOptions.SetDefaultTargets([]logsrouterv3.TargetIdentity{})
 		}
-		updateSettingsOptions.SetDefaultTargets(defaultTargets)
 		hasChange = true
 	}
 	if d.HasChange("permitted_target_regions") {
-		var permittedTargetRegions []string
-		for _, v := range d.Get("permitted_target_regions").([]interface{}) {
-			permittedTargetRegionsItem := v.(string)
-			permittedTargetRegions = append(permittedTargetRegions, permittedTargetRegionsItem)
+		if _, ok := d.GetOk("permitted_target_regions"); ok {
+			var permittedTargetRegions []string
+			for _, v := range d.Get("permitted_target_regions").([]interface{}) {
+				permittedTargetRegionsItem := v.(string)
+				permittedTargetRegions = append(permittedTargetRegions, permittedTargetRegionsItem)
+			}
+			updateSettingsOptions.SetPermittedTargetRegions(permittedTargetRegions)
+		} else {
+			// In this case, need to remove all the permitted_target_regions
+			updateSettingsOptions.SetPermittedTargetRegions([]string{})
 		}
-		updateSettingsOptions.SetPermittedTargetRegions(permittedTargetRegions)
 		hasChange = true
 	}
 	if d.HasChange("primary_metadata_region") {
@@ -309,15 +302,25 @@ func resourceIBMLogsRouterSettingsDelete(context context.Context, d *schema.Reso
 		return tfErr.GetDiag()
 	}
 
+	// Retrieve old settings and put them for required fields.  Remove all other fields
+	settings, response, err := logsRouterClient.GetSettingsWithContext(context, &logsrouterv3.GetSettingsOptions{})
+	if err != nil {
+		log.Printf("[DEBUG] UpdateSettingsWithContext with GetSettingsWithContext failed %s\n%s", err, response)
+		return diag.FromErr(fmt.Errorf("with GetSettingsWithContext failed %s\n%s", err, response))
+	}
+
 	updateSettingsOptions := &logsrouterv3.UpdateSettingsOptions{}
 
-	updateSettingsOptions.SetPrimaryMetadataRegion(d.Id())
+	updateSettingsOptions.PrimaryMetadataRegion = settings.PrimaryMetadataRegion
+	updateSettingsOptions.BackupMetadataRegion = settings.BackupMetadataRegion
+	updateSettingsOptions.PrivateAPIEndpointOnly = settings.PrivateAPIEndpointOnly
+	updateSettingsOptions.PermittedTargetRegions = []string{}
+	updateSettingsOptions.DefaultTargets = []logsrouterv3.TargetIdentity{}
 
-	_, _, err = logsRouterClient.UpdateSettingsWithContext(context, updateSettingsOptions)
+	_, res, err := logsRouterClient.UpdateSettingsWithContext(context, updateSettingsOptions)
 	if err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("UpdateSettingsWithContext failed: %s", err.Error()), "ibm_logs_router_settings", "delete")
-		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
-		return tfErr.GetDiag()
+		log.Printf("[DEBUG] UpdateSettingsWithContext failed %s\n%s", err, res)
+		return diag.FromErr(fmt.Errorf("UpdateSettingsWithContext failed %s\n%s", err, res))
 	}
 
 	d.SetId("")
@@ -334,8 +337,5 @@ func ResourceIBMLogsRouterSettingsMapToTargetIdentity(modelMap map[string]interf
 func ResourceIBMLogsRouterSettingsTargetReferenceToMap(model *logsrouterv3.TargetReference) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["id"] = *model.ID
-	modelMap["crn"] = *model.CRN
-	modelMap["name"] = *model.Name
-	modelMap["target_type"] = *model.TargetType
 	return modelMap, nil
 }

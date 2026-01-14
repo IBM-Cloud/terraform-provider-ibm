@@ -7,9 +7,9 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
-	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
-	"github.com/hashicorp/terraform-plugin-testing/terraform"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
@@ -50,8 +50,8 @@ func TestAccIBMLogsRouterRouteAllArgs(t *testing.T) {
 	var conf logsrouterv3.Route
 	name := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 	managedBy := "enterprise"
-	nameUpdate := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
-	managedByUpdate := "account"
+	nameUpdate := fmt.Sprintf("%s_update", name)
+	managedByUpdate := "enterprise" // managedBy is immutable
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
@@ -85,18 +85,17 @@ func TestAccIBMLogsRouterRouteAllArgs(t *testing.T) {
 func testAccCheckIBMLogsRouterRouteConfigBasic(name string) string {
 	return fmt.Sprintf(`
 		resource "ibm_logs_router_target" "logs_router_target_instance" {
-			name = "my-lr-target"
+			name = "my-lr-target1"
 			destination_crn = "crn:v1:bluemix:public:logs:us-south:a/0be5ad401ae913d8ff665d92680664ed:22222222-2222-2222-2222-222222222222::"
+			region = "us-south"
+			managed_by = "account"
 		}
 		resource "ibm_logs_router_route" "logs_router_route_instance" {
 			name = "%s"
 			rules {
 				action = "send"
 				targets {
-					id = "c3af557f-fb0e-4476-85c3-0889e7fe7bc4"
-					crn = "crn:v1:bluemix:public:logs:us-south:a/0be5ad401ae913d8ff665d92680664ed:22222222-2222-2222-2222-222222222222::"
-					name = "a-lr-target-us-south"
-					target_type = "cloud_logs"
+					id = ibm_logs_router_target.logs_router_target_instance.id
 				}
 				inclusion_filters {
 					operand = "location"
@@ -104,16 +103,18 @@ func testAccCheckIBMLogsRouterRouteConfigBasic(name string) string {
 					values = [ "us-south" ]
 				}
 			}
+			managed_by = "account"
 		}
 	`, name)
 }
 
 func testAccCheckIBMLogsRouterRouteConfig(name string, managedBy string) string {
 	return fmt.Sprintf(`
-
 		resource "ibm_logs_router_target" "logs_router_target_instance" {
-			name = "my-lr-target"
+			name = "my-lr-target2"
 			destination_crn = "crn:v1:bluemix:public:logs:us-south:a/0be5ad401ae913d8ff665d92680664ed:22222222-2222-2222-2222-222222222222::"
+            managed_by = "%s"
+			region = "us-south"
 		}
 
 		resource "ibm_logs_router_route" "logs_router_route_instance" {
@@ -121,10 +122,7 @@ func testAccCheckIBMLogsRouterRouteConfig(name string, managedBy string) string 
 			rules {
 				action = "send"
 				targets {
-					id = "c3af557f-fb0e-4476-85c3-0889e7fe7bc4"
-					crn = "crn:v1:bluemix:public:logs:us-south:a/0be5ad401ae913d8ff665d92680664ed:22222222-2222-2222-2222-222222222222::"
-					name = "a-lr-target-us-south"
-					target_type = "cloud_logs"
+					id = ibm_logs_router_target.logs_router_target_instance.id
 				}
 				inclusion_filters {
 					operand = "location"
@@ -134,7 +132,7 @@ func testAccCheckIBMLogsRouterRouteConfig(name string, managedBy string) string 
 			}
 			managed_by = "%s"
 		}
-	`, name, managedBy)
+	`, managedBy, name, managedBy)
 }
 
 func testAccCheckIBMLogsRouterRouteExists(n string, obj logsrouterv3.Route) resource.TestCheckFunc {

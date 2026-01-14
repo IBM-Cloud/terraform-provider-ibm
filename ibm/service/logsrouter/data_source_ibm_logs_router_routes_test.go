@@ -11,8 +11,8 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
-	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/logsrouter"
@@ -24,11 +24,19 @@ import (
 
 func TestAccIBMLogsRouterRoutesDataSourceBasic(t *testing.T) {
 	routeName := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
+	primaryMetadataRegion := "us-south"
 
+	// Must set primary metadata region before creating a target
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheck(t) },
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
+			resource.TestStep{
+				Config: testSettingsPrimaryMetadataRegion(primaryMetadataRegion, "us-east", "false"),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("ibm_logs_router_settings.logs_router_settings_instance", "primary_metadata_region", primaryMetadataRegion),
+				),
+			},
 			resource.TestStep{
 				Config: testAccCheckIBMLogsRouterRoutesDataSourceConfigBasic(routeName),
 				Check: resource.ComposeTestCheckFunc(
@@ -68,10 +76,14 @@ func TestAccIBMLogsRouterRoutesDataSourceAllArgs(t *testing.T) {
 }
 
 func testAccCheckIBMLogsRouterRoutesDataSourceConfigBasic(routeName string) string {
+	// Manually add code to update settings
+	// target_type = ibm_logs_router_target.logs_router_target_instance.target_type
 	return fmt.Sprintf(`
 		resource "ibm_logs_router_target" "logs_router_target_instance" {
 			name = "my-lr-target"
-			destination_crn = "crn:v1:bluemix:public:logs:us-south:a/0be5ad401ae913d8ff665d92680664ed:22222222-2222-2222-2222-222222222222::"
+			destination_crn = "%s"
+			region = "us-south"
+			managed_by = "account"
 		}
 
 		resource "ibm_logs_router_route" "logs_router_route_instance" {
@@ -79,10 +91,7 @@ func testAccCheckIBMLogsRouterRoutesDataSourceConfigBasic(routeName string) stri
 			rules {
 				action = "send"
 				targets {
-					id = "c3af557f-fb0e-4476-85c3-0889e7fe7bc4"
-					crn = "crn:v1:bluemix:public:logs:us-south:a/0be5ad401ae913d8ff665d92680664ed:22222222-2222-2222-2222-222222222222::"
-					name = "a-lr-target-us-south"
-					target_type = "cloud_logs"
+					id = ibm_logs_router_target.logs_router_target_instance.id
 				}
 				inclusion_filters {
 					operand = "location"
@@ -90,19 +99,27 @@ func testAccCheckIBMLogsRouterRoutesDataSourceConfigBasic(routeName string) stri
 					values = [ "us-south" ]
 				}
 			}
+			managed_by = "account"
 		}
 
 		data "ibm_logs_router_routes" "logs_router_routes_instance" {
 			name = ibm_logs_router_route.logs_router_route_instance.name
 		}
-	`, routeName)
+	`, iclDestinationCRN, routeName)
 }
 
 func testAccCheckIBMLogsRouterRoutesDataSourceConfig(routeName string, routeManagedBy string) string {
 	return fmt.Sprintf(`
+        resource "ibm_logs_router_settings" "lr_settings_instance1" {
+            primary_metadata_region = "us-south"
+            backup_metadata_region = "us-east"
+        }
+
 		resource "ibm_logs_router_target" "logs_router_target_instance" {
 			name = "my-lr-target"
-			destination_crn = "crn:v1:bluemix:public:logs:us-south:a/0be5ad401ae913d8ff665d92680664ed:22222222-2222-2222-2222-222222222222::"
+			destination_crn = "%s"
+			managed_by = "%s"
+			region = "us-south"
 		}
 
 		resource "ibm_logs_router_route" "logs_router_route_instance" {
@@ -110,10 +127,7 @@ func testAccCheckIBMLogsRouterRoutesDataSourceConfig(routeName string, routeMana
 			rules {
 				action = "send"
 				targets {
-					id = "c3af557f-fb0e-4476-85c3-0889e7fe7bc4"
-					crn = "crn:v1:bluemix:public:logs:us-south:a/0be5ad401ae913d8ff665d92680664ed:22222222-2222-2222-2222-222222222222::"
-					name = "a-lr-target-us-south"
-					target_type = "cloud_logs"
+					id = ibm_logs_router_target.logs_router_target_instance.id
 				}
 				inclusion_filters {
 					operand = "location"
@@ -127,7 +141,7 @@ func testAccCheckIBMLogsRouterRoutesDataSourceConfig(routeName string, routeMana
 		data "ibm_logs_router_routes" "logs_router_routes_instance" {
 			name = ibm_logs_router_route.logs_router_route_instance.name
 		}
-	`, routeName, routeManagedBy)
+	`, iclDestinationCRN, routeManagedBy, routeName, routeManagedBy)
 }
 
 func TestDataSourceIBMLogsRouterRoutesRouteToMap(t *testing.T) {

@@ -955,10 +955,6 @@ func Provider() *schema.Provider {
 			"ibm_atracker_targets": atracker.DataSourceIBMAtrackerTargets(),
 			"ibm_atracker_routes":  atracker.DataSourceIBMAtrackerRoutes(),
 
-			// Logs Router v3
-			"ibm_logs_router_targets": logsrouter.DataSourceIBMLogsRouterTargets(),
-			"ibm_logs_router_routes":  logsrouter.DataSourceIBMLogsRouterRoutes(),
-
 			// Metrics Router
 			"ibm_metrics_router_targets": metricsrouter.DataSourceIBMMetricsRouterTargets(),
 			"ibm_metrics_router_routes":  metricsrouter.DataSourceIBMMetricsRouterRoutes(),
@@ -1156,9 +1152,13 @@ func Provider() *schema.Provider {
 			"ibm_logs_alert_definition":   logs.AddLogsInstanceFields(logs.DataSourceIbmLogsAlertDefinition()),
 			"ibm_logs_alert_definitions":  logs.AddLogsInstanceFields(logs.DataSourceIbmLogsAlertDefinitions()),
 
-			// Logs Router Service
-			"ibm_logs_router_tenants":   logsrouting.DataSourceIBMLogsRouterTenants(),
-			"ibm_logs_router_target_v1": logsrouting.DataSourceIBMLogsRouterTargets(),
+			// Logs Router Service v1
+			"ibm_logs_router_tenants": logsrouting.DataSourceIBMLogsRouterTenants(),
+			"ibm_logs_router_target":  logsrouting.DataSourceIBMLogsRouterTargets(),
+
+			// Logs Router Service v3
+			"ibm_logs_router_targets": logsrouter.DataSourceIBMLogsRouterTargets(),
+			"ibm_logs_router_routes":  logsrouter.DataSourceIBMLogsRouterRoutes(),
 
 			// DR Automation Service
 			"ibm_pdr_get_dr_summary_response": drautomationservice.DataSourceIBMPdrGetDrSummaryResponse(),
@@ -1696,11 +1696,6 @@ func Provider() *schema.Provider {
 			"ibm_atracker_route":    atracker.ResourceIBMAtrackerRoute(),
 			"ibm_atracker_settings": atracker.ResourceIBMAtrackerSettings(),
 
-			// Logs Router
-			"ibm_logs_router_target":   logsrouter.ResourceIBMLogsRouterTarget(),
-			"ibm_logs_router_route":    logsrouter.ResourceIBMLogsRouterRoute(),
-			"ibm_logs_router_settings": logsrouter.ResourceIBMLogsRouterSettings(),
-
 			// Metrics Router
 			"ibm_metrics_router_target":   metricsrouter.ResourceIBMMetricsRouterTarget(),
 			"ibm_metrics_router_route":    metricsrouter.ResourceIBMMetricsRouterRoute(),
@@ -1861,8 +1856,13 @@ func Provider() *schema.Provider {
 			"ibm_logs_stream":             logs.AddLogsInstanceFields(logs.ResourceIbmLogsStream()),
 			"ibm_logs_alert_definition":   logs.AddLogsInstanceFields(logs.ResourceIbmLogsAlertDefinition()),
 
-			// Logs Router Service
+			// Logs Router Service v1
 			"ibm_logs_router_tenant": logsrouting.ResourceIBMLogsRouterTenant(),
+
+			// Logs Router Service v3
+			"ibm_logs_router_target":   logsrouter.ResourceIBMLogsRouterTarget(),
+			"ibm_logs_router_route":    logsrouter.ResourceIBMLogsRouterRoute(),
+			"ibm_logs_router_settings": logsrouter.ResourceIBMLogsRouterSettings(),
 
 			// DR Automation Service
 			"ibm_pdr_managedr":        drautomationservice.ResourceIbmPdrManagedr(),

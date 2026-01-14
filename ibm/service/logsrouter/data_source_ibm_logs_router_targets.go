@@ -194,7 +194,11 @@ func DataSourceIBMLogsRouterTargetsTargetToMap(model *logsrouterv3.Target) (map[
 	modelMap["write_status"] = []map[string]interface{}{writeStatusMap}
 	modelMap["created_at"] = model.CreatedAt.String()
 	modelMap["updated_at"] = model.UpdatedAt.String()
-	modelMap["managed_by"] = *model.ManagedBy
+
+	if model.ManagedBy != nil {
+		modelMap["managed_by"] = *model.ManagedBy
+	}
+
 	return modelMap, nil
 }
 
