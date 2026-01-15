@@ -54,13 +54,13 @@ func ResourceIBMLogsRouterSettings() *schema.Resource {
 			"primary_metadata_region": &schema.Schema{
 				Type:         schema.TypeString,
 				Optional:     true,
-				ValidateFunc: validate.InvokeValidator("ibm_logs_router_v3_settings", "primary_metadata_region"),
+				ValidateFunc: validate.InvokeValidator("ibm_logs_router_settings", "primary_metadata_region"),
 				Description:  "To store all your meta data in a single region.",
 			},
 			"backup_metadata_region": &schema.Schema{
 				Type:         schema.TypeString,
 				Optional:     true,
-				ValidateFunc: validate.InvokeValidator("ibm_logs_router_v3_settings", "backup_metadata_region"),
+				ValidateFunc: validate.InvokeValidator("ibm_logs_router_settings", "backup_metadata_region"),
 				Description:  "To backup all your meta data in a different region.",
 			},
 			"private_api_endpoint_only": &schema.Schema{
@@ -100,14 +100,14 @@ func ResourceIBMLogsRouterSettingsValidator() *validate.ResourceValidator {
 		},
 	)
 
-	resourceValidator := validate.ResourceValidator{ResourceName: "ibm_logs_router_v3_settings", Schema: validateSchema}
+	resourceValidator := validate.ResourceValidator{ResourceName: "ibm_logs_router_settings", Schema: validateSchema}
 	return &resourceValidator
 }
 
 func resourceIBMLogsRouterSettingsCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	logsRouterClient, err := meta.(conns.ClientSession).LogsRouterV3()
 	if err != nil {
-		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_logs_router_v3_settings", "delete", "initialize-client")
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_logs_router_settings", "delete", "initialize-client")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
@@ -120,7 +120,7 @@ func resourceIBMLogsRouterSettingsCreate(context context.Context, d *schema.Reso
 			value := v.(map[string]interface{})
 			defaultTargetsItem, err := ResourceIBMLogsRouterSettingsMapToTargetIdentity(value)
 			if err != nil {
-				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_logs_router_v3_settings", "delete", "parse-default_targets").GetDiag()
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_logs_router_settings", "delete", "parse-default_targets").GetDiag()
 			}
 			defaultTargets = append(defaultTargets, *defaultTargetsItem)
 		}
@@ -146,7 +146,7 @@ func resourceIBMLogsRouterSettingsCreate(context context.Context, d *schema.Reso
 
 	setting, _, err := logsRouterClient.UpdateSettingsWithContext(context, updateSettingsOptions)
 	if err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("UpdateSettingsWithContext failed: %s", err.Error()), "ibm_logs_router_v3_settings", "delete")
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("UpdateSettingsWithContext failed: %s", err.Error()), "ibm_logs_router_settings", "delete")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
@@ -159,7 +159,7 @@ func resourceIBMLogsRouterSettingsCreate(context context.Context, d *schema.Reso
 func resourceIBMLogsRouterSettingsRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	logsRouterClient, err := meta.(conns.ClientSession).LogsRouterV3()
 	if err != nil {
-		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_logs_router_v3_settings", "read", "initialize-client")
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_logs_router_settings", "read", "initialize-client")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
@@ -172,7 +172,7 @@ func resourceIBMLogsRouterSettingsRead(context context.Context, d *schema.Resour
 			d.SetId("")
 			return nil
 		}
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetSettingsWithContext failed: %s", err.Error()), "ibm_logs_router_v3_settings", "read")
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetSettingsWithContext failed: %s", err.Error()), "ibm_logs_router_settings", "read")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
@@ -182,42 +182,42 @@ func resourceIBMLogsRouterSettingsRead(context context.Context, d *schema.Resour
 		for _, defaultTargetsItem := range setting.DefaultTargets {
 			defaultTargetsItemMap, err := ResourceIBMLogsRouterSettingsTargetReferenceToMap(&defaultTargetsItem) // #nosec G601
 			if err != nil {
-				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_logs_router_v3_settings", "read", "default_targets-to-map").GetDiag()
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_logs_router_settings", "read", "default_targets-to-map").GetDiag()
 			}
 			defaultTargets = append(defaultTargets, defaultTargetsItemMap)
 		}
 		if err = d.Set("default_targets", defaultTargets); err != nil {
 			err = fmt.Errorf("Error setting default_targets: %s", err)
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_logs_router_v3_settings", "read", "set-default_targets").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_logs_router_settings", "read", "set-default_targets").GetDiag()
 		}
 	}
 	if !core.IsNil(setting.PermittedTargetRegions) {
 		if err = d.Set("permitted_target_regions", setting.PermittedTargetRegions); err != nil {
 			err = fmt.Errorf("Error setting permitted_target_regions: %s", err)
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_logs_router_v3_settings", "read", "set-permitted_target_regions").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_logs_router_settings", "read", "set-permitted_target_regions").GetDiag()
 		}
 	}
 	if !core.IsNil(setting.PrimaryMetadataRegion) {
 		if err = d.Set("primary_metadata_region", setting.PrimaryMetadataRegion); err != nil {
 			err = fmt.Errorf("Error setting primary_metadata_region: %s", err)
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_logs_router_v3_settings", "read", "set-primary_metadata_region").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_logs_router_settings", "read", "set-primary_metadata_region").GetDiag()
 		}
 	}
 	if !core.IsNil(setting.BackupMetadataRegion) {
 		if err = d.Set("backup_metadata_region", setting.BackupMetadataRegion); err != nil {
 			err = fmt.Errorf("Error setting backup_metadata_region: %s", err)
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_logs_router_v3_settings", "read", "set-backup_metadata_region").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_logs_router_settings", "read", "set-backup_metadata_region").GetDiag()
 		}
 	}
 	if !core.IsNil(setting.PrivateAPIEndpointOnly) {
 		if err = d.Set("private_api_endpoint_only", setting.PrivateAPIEndpointOnly); err != nil {
 			err = fmt.Errorf("Error setting private_api_endpoint_only: %s", err)
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_logs_router_v3_settings", "read", "set-private_api_endpoint_only").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_logs_router_settings", "read", "set-private_api_endpoint_only").GetDiag()
 		}
 	}
 	if err = d.Set("api_version", flex.IntValue(setting.APIVersion)); err != nil {
 		err = fmt.Errorf("Error setting api_version: %s", err)
-		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_logs_router_v3_settings", "read", "set-api_version").GetDiag()
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_logs_router_settings", "read", "set-api_version").GetDiag()
 	}
 
 	return nil
@@ -226,7 +226,7 @@ func resourceIBMLogsRouterSettingsRead(context context.Context, d *schema.Resour
 func resourceIBMLogsRouterSettingsUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	logsRouterClient, err := meta.(conns.ClientSession).LogsRouterV3()
 	if err != nil {
-		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_logs_router_v3_settings", "delete", "initialize-client")
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_logs_router_settings", "delete", "initialize-client")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
@@ -285,7 +285,7 @@ func resourceIBMLogsRouterSettingsUpdate(context context.Context, d *schema.Reso
 	if hasChange {
 		_, _, err = logsRouterClient.UpdateSettingsWithContext(context, updateSettingsOptions)
 		if err != nil {
-			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("UpdateSettingsWithContext failed: %s", err.Error()), "ibm_logs_router_v3_settings", "delete")
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("UpdateSettingsWithContext failed: %s", err.Error()), "ibm_logs_router_settings", "delete")
 			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 			return tfErr.GetDiag()
 		}
@@ -297,7 +297,7 @@ func resourceIBMLogsRouterSettingsUpdate(context context.Context, d *schema.Reso
 func resourceIBMLogsRouterSettingsDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	logsRouterClient, err := meta.(conns.ClientSession).LogsRouterV3()
 	if err != nil {
-		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_logs_router_v3_settings", "delete", "initialize-client")
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_logs_router_settings", "delete", "initialize-client")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}

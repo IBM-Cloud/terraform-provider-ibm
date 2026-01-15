@@ -1877,7 +1877,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.logsRouterClientErr = fmt.Errorf("Error occurred while determining endpoint URL for 'Logs Routing API Version 3' service: %q", err)
 	}
 	if fileMap != nil && c.Visibility != "public-and-private" {
-		logsRouterV3ClientURL = fileFallBack(fileMap, c.Visibility, "IBMCLOUD_LOGS_ROUTING_V3_API_ENDPOINT", c.Region, logsRouterV3ClientURL)
+		logsRouterV3ClientURL = fileFallBack(fileMap, c.Visibility, "IBMCLOUD_LOGS_ROUTING_API_ENDPOINT", c.Region, logsRouterV3ClientURL)
 	}
 
 	// Construct an instance of the 'Logs Routing API Version 3' service.
@@ -1885,7 +1885,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 		// Construct the service options.
 		logsRouterClientOptions := &logsrouterv3.LogsRouterV3Options{
 			Authenticator: authenticator,
-			URL:           EnvFallBack([]string{"IBMCLOUD_LOGS_ROUTING_V3_API_ENDPOINT"}, logsRouterV3ClientURL),
+			URL:           EnvFallBack([]string{"IBMCLOUD_LOGS_ROUTING_API_ENDPOINT"}, logsRouterV3ClientURL),
 		}
 
 		// Construct the service client.

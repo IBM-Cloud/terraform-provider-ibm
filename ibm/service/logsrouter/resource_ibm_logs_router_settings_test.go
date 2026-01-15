@@ -31,7 +31,7 @@ func TestAccIBMLogsRouterSettingsBasic(t *testing.T) {
 			resource.TestStep{
 				Config: testAccCheckIBMLogsRouterSettingsConfigBasic(primaryMetadataRegion, backupMetadataRegion),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckIBMLogsRouterSettingsExists("ibm_logs_router_v3_settings.logs_router_settings_instance", conf),
+					testAccCheckIBMLogsRouterSettingsExists("ibm_logs_router_settings.logs_router_settings_instance", conf),
 				),
 			},
 		},
@@ -56,22 +56,22 @@ func TestAccIBMLogsRouterSettingsAllArgs(t *testing.T) {
 			resource.TestStep{
 				Config: testAccCheckIBMLogsRouterSettingsConfig(primaryMetadataRegion, backupMetadataRegion, privateAPIEndpointOnly),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckIBMLogsRouterSettingsExists("ibm_logs_router_v3_settings.logs_router_settings_instance", conf),
-					resource.TestCheckResourceAttr("ibm_logs_router_v3_settings.logs_router_settings_instance", "primary_metadata_region", primaryMetadataRegion),
-					resource.TestCheckResourceAttr("ibm_logs_router_v3_settings.logs_router_settings_instance", "backup_metadata_region", backupMetadataRegion),
-					resource.TestCheckResourceAttr("ibm_logs_router_v3_settings.logs_router_settings_instance", "private_api_endpoint_only", privateAPIEndpointOnly),
+					testAccCheckIBMLogsRouterSettingsExists("ibm_logs_router_settings.logs_router_settings_instance", conf),
+					resource.TestCheckResourceAttr("ibm_logs_router_settings.logs_router_settings_instance", "primary_metadata_region", primaryMetadataRegion),
+					resource.TestCheckResourceAttr("ibm_logs_router_settings.logs_router_settings_instance", "backup_metadata_region", backupMetadataRegion),
+					resource.TestCheckResourceAttr("ibm_logs_router_settings.logs_router_settings_instance", "private_api_endpoint_only", privateAPIEndpointOnly),
 				),
 			},
 			resource.TestStep{
 				Config: testAccCheckIBMLogsRouterSettingsConfig(primaryMetadataRegionUpdate, backupMetadataRegionUpdate, privateAPIEndpointOnlyUpdate),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("ibm_logs_router_v3_settings.logs_router_settings_instance", "primary_metadata_region", primaryMetadataRegionUpdate),
-					resource.TestCheckResourceAttr("ibm_logs_router_v3_settings.logs_router_settings_instance", "backup_metadata_region", backupMetadataRegionUpdate),
-					resource.TestCheckResourceAttr("ibm_logs_router_v3_settings.logs_router_settings_instance", "private_api_endpoint_only", privateAPIEndpointOnlyUpdate),
+					resource.TestCheckResourceAttr("ibm_logs_router_settings.logs_router_settings_instance", "primary_metadata_region", primaryMetadataRegionUpdate),
+					resource.TestCheckResourceAttr("ibm_logs_router_settings.logs_router_settings_instance", "backup_metadata_region", backupMetadataRegionUpdate),
+					resource.TestCheckResourceAttr("ibm_logs_router_settings.logs_router_settings_instance", "private_api_endpoint_only", privateAPIEndpointOnlyUpdate),
 				),
 			},
 			resource.TestStep{
-				ResourceName:      "ibm_logs_router_v3_settings.logs_router_settings_instance",
+				ResourceName:      "ibm_logs_router_settings.logs_router_settings_instance",
 				ImportState:       true,
 				ImportStateVerify: true,
 			},
@@ -82,7 +82,7 @@ func TestAccIBMLogsRouterSettingsAllArgs(t *testing.T) {
 // Add this function to configure primary_metadata_region before creating targets
 func testSettingsPrimaryMetadataRegion(primaryMetadataRegion, backupMetadataRegion, privateAPIEndpointOnly string) string {
 	return fmt.Sprintf(`
-		resource "ibm_logs_router_v3_settings" "logs_router_settings_instance" {
+		resource "ibm_logs_router_settings" "logs_router_settings_instance" {
 			primary_metadata_region = "%s"
 			backup_metadata_region = "%s"
 			private_api_endpoint_only = %s
@@ -92,7 +92,7 @@ func testSettingsPrimaryMetadataRegion(primaryMetadataRegion, backupMetadataRegi
 
 func testAccCheckIBMLogsRouterSettingsConfigBasic(primaryMetadataRegion, backupMetadataRegion string) string {
 	return fmt.Sprintf(`
-		resource "ibm_logs_router_v3_settings" "logs_router_settings_instance" {
+		resource "ibm_logs_router_settings" "logs_router_settings_instance" {
 			primary_metadata_region = "%s"
 			backup_metadata_region = "%s"
 		}
@@ -102,16 +102,16 @@ func testAccCheckIBMLogsRouterSettingsConfigBasic(primaryMetadataRegion, backupM
 func testAccCheckIBMLogsRouterSettingsConfig(primaryMetadataRegion string, backupMetadataRegion string, privateAPIEndpointOnly string) string {
 	return fmt.Sprintf(`
 
-		resource "ibm_logs_router_v3_target" "logs_router_target_instance" {
+		resource "ibm_logs_router_target" "logs_router_target_instance" {
 			name = "my-lr-target"
 			destination_crn = "%s"
 			region = "%s"
 			managed_by = "account"
 		}
 
-		resource "ibm_logs_router_v3_settings" "logs_router_settings_instance" {
+		resource "ibm_logs_router_settings" "logs_router_settings_instance" {
 			default_targets {
-				id = ibm_logs_router_v3_target.logs_router_target_instance.id
+				id = ibm_logs_router_target.logs_router_target_instance.id
 			}
 			permitted_target_regions = ["%s"]
 			primary_metadata_region = "%s"
@@ -152,7 +152,7 @@ func testAccCheckIBMLogsRouterSettingsDestroy(s *terraform.State) error {
 		return err
 	}
 	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "ibm_logs_router_v3_settings" {
+		if rs.Type != "ibm_logs_router_settings" {
 			continue
 		}
 

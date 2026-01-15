@@ -11,8 +11,11 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"os"
+	"strings"
 	"time"
 
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/logsrouting"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
@@ -20,6 +23,18 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM/platform-services-go-sdk/logsrouterv3"
 )
+
+// Manually add the function to handle duplicate "ibm_logs_router_targets" name between logs router v1 and v3.
+// After an account migrates from logs router v1 to v3, v1 resources will stop working.
+// Determine the data source version based on api endpoint.
+func DataSourceIBMLogsRouterTargetsByApiEndpoint() *schema.Resource {
+	apiEndpoint := os.Getenv("IBMCLOUD_LOGS_ROUTING_API_ENDPOINT")
+	if strings.Contains(apiEndpoint, "/api/v3") {
+		return DataSourceIBMLogsRouterTargets() // v3
+	} else {
+		return logsrouting.DataSourceIBMLogsRouterTargets() // v1
+	}
+}
 
 func DataSourceIBMLogsRouterTargets() *schema.Resource {
 	return &schema.Resource{
@@ -116,7 +131,7 @@ func DataSourceIBMLogsRouterTargets() *schema.Resource {
 func dataSourceIBMLogsRouterTargetsRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	logsRouterClient, err := meta.(conns.ClientSession).LogsRouterV3()
 	if err != nil {
-		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_logs_router_v3_targets", "read", "initialize-client")
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_logs_router_targets", "read", "initialize-client")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
@@ -125,7 +140,7 @@ func dataSourceIBMLogsRouterTargetsRead(context context.Context, d *schema.Resou
 
 	targetCollection, _, err := logsRouterClient.ListTargetsWithContext(context, listTargetsOptions)
 	if err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("ListTargetsWithContext failed: %s", err.Error()), "(Data) ibm_logs_router_v3_targets", "read")
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("ListTargetsWithContext failed: %s", err.Error()), "(Data) ibm_logs_router_targets", "read")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
@@ -150,7 +165,7 @@ func dataSourceIBMLogsRouterTargetsRead(context context.Context, d *schema.Resou
 
 	if suppliedFilter {
 		if len(targetCollection.Targets) == 0 {
-			return flex.DiscriminatedTerraformErrorf(nil, fmt.Sprintf("no Targets found with name %s", name), "(Data) ibm_logs_router_v3_targets", "read", "no-collection-found").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(nil, fmt.Sprintf("no Targets found with name %s", name), "(Data) ibm_logs_router_targets", "read", "no-collection-found").GetDiag()
 		}
 		d.SetId(name)
 	} else {
@@ -161,12 +176,12 @@ func dataSourceIBMLogsRouterTargetsRead(context context.Context, d *schema.Resou
 	for _, targetsItem := range targetCollection.Targets {
 		targetsItemMap, err := DataSourceIBMLogsRouterTargetsTargetToMap(&targetsItem) // #nosec G601
 		if err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_logs_router_v3_targets", "read", "targets-to-map").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_logs_router_targets", "read", "targets-to-map").GetDiag()
 		}
 		targets = append(targets, targetsItemMap)
 	}
 	if err = d.Set("targets", targets); err != nil {
-		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting targets: %s", err), "(Data) ibm_logs_router_v3_targets", "read", "set-targets").GetDiag()
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting targets: %s", err), "(Data) ibm_logs_router_targets", "read", "set-targets").GetDiag()
 	}
 
 	return nil

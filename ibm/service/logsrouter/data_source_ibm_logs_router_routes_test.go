@@ -34,15 +34,15 @@ func TestAccIBMLogsRouterRoutesDataSourceBasic(t *testing.T) {
 			resource.TestStep{
 				Config: testSettingsPrimaryMetadataRegion(primaryMetadataRegion, "us-east", "false"),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("ibm_logs_router_v3_settings.logs_router_settings_instance", "primary_metadata_region", primaryMetadataRegion),
+					resource.TestCheckResourceAttr("ibm_logs_router_settings.logs_router_settings_instance", "primary_metadata_region", primaryMetadataRegion),
 				),
 			},
 			resource.TestStep{
 				Config: testAccCheckIBMLogsRouterRoutesDataSourceConfigBasic(routeName),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet("data.ibm_logs_router_v3_routes.logs_router_routes_instance", "id"),
-					resource.TestCheckResourceAttrSet("data.ibm_logs_router_v3_routes.logs_router_routes_instance", "routes.#"),
-					resource.TestCheckResourceAttr("data.ibm_logs_router_v3_routes.logs_router_routes_instance", "routes.0.name", routeName),
+					resource.TestCheckResourceAttrSet("data.ibm_logs_router_routes.logs_router_routes_instance", "id"),
+					resource.TestCheckResourceAttrSet("data.ibm_logs_router_routes.logs_router_routes_instance", "routes.#"),
+					resource.TestCheckResourceAttr("data.ibm_logs_router_routes.logs_router_routes_instance", "routes.0.name", routeName),
 				),
 			},
 		},
@@ -60,15 +60,15 @@ func TestAccIBMLogsRouterRoutesDataSourceAllArgs(t *testing.T) {
 			resource.TestStep{
 				Config: testAccCheckIBMLogsRouterRoutesDataSourceConfig(routeName, routeManagedBy),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet("data.ibm_logs_router_v3_routes.logs_router_routes_instance", "id"),
-					resource.TestCheckResourceAttrSet("data.ibm_logs_router_v3_routes.logs_router_routes_instance", "name"),
-					resource.TestCheckResourceAttrSet("data.ibm_logs_router_v3_routes.logs_router_routes_instance", "routes.#"),
-					resource.TestCheckResourceAttrSet("data.ibm_logs_router_v3_routes.logs_router_routes_instance", "routes.0.id"),
-					resource.TestCheckResourceAttr("data.ibm_logs_router_v3_routes.logs_router_routes_instance", "routes.0.name", routeName),
-					resource.TestCheckResourceAttrSet("data.ibm_logs_router_v3_routes.logs_router_routes_instance", "routes.0.crn"),
-					resource.TestCheckResourceAttrSet("data.ibm_logs_router_v3_routes.logs_router_routes_instance", "routes.0.created_at"),
-					resource.TestCheckResourceAttrSet("data.ibm_logs_router_v3_routes.logs_router_routes_instance", "routes.0.updated_at"),
-					resource.TestCheckResourceAttr("data.ibm_logs_router_v3_routes.logs_router_routes_instance", "routes.0.managed_by", routeManagedBy),
+					resource.TestCheckResourceAttrSet("data.ibm_logs_router_routes.logs_router_routes_instance", "id"),
+					resource.TestCheckResourceAttrSet("data.ibm_logs_router_routes.logs_router_routes_instance", "name"),
+					resource.TestCheckResourceAttrSet("data.ibm_logs_router_routes.logs_router_routes_instance", "routes.#"),
+					resource.TestCheckResourceAttrSet("data.ibm_logs_router_routes.logs_router_routes_instance", "routes.0.id"),
+					resource.TestCheckResourceAttr("data.ibm_logs_router_routes.logs_router_routes_instance", "routes.0.name", routeName),
+					resource.TestCheckResourceAttrSet("data.ibm_logs_router_routes.logs_router_routes_instance", "routes.0.crn"),
+					resource.TestCheckResourceAttrSet("data.ibm_logs_router_routes.logs_router_routes_instance", "routes.0.created_at"),
+					resource.TestCheckResourceAttrSet("data.ibm_logs_router_routes.logs_router_routes_instance", "routes.0.updated_at"),
+					resource.TestCheckResourceAttr("data.ibm_logs_router_routes.logs_router_routes_instance", "routes.0.managed_by", routeManagedBy),
 				),
 			},
 		},
@@ -77,21 +77,21 @@ func TestAccIBMLogsRouterRoutesDataSourceAllArgs(t *testing.T) {
 
 func testAccCheckIBMLogsRouterRoutesDataSourceConfigBasic(routeName string) string {
 	// Manually add code to update settings
-	// target_type = ibm_logs_router_v3_target.logs_router_target_instance.target_type
+	// target_type = ibm_logs_router_target.logs_router_target_instance.target_type
 	return fmt.Sprintf(`
-		resource "ibm_logs_router_v3_target" "logs_router_target_instance" {
+		resource "ibm_logs_router_target" "logs_router_target_instance" {
 			name = "my-lr-target"
 			destination_crn = "%s"
 			region = "us-south"
 			managed_by = "account"
 		}
 
-		resource "ibm_logs_router_v3_route" "logs_router_route_instance" {
+		resource "ibm_logs_router_route" "logs_router_route_instance" {
 			name = "%s"
 			rules {
 				action = "send"
 				targets {
-					id = ibm_logs_router_v3_target.logs_router_target_instance.id
+					id = ibm_logs_router_target.logs_router_target_instance.id
 				}
 				inclusion_filters {
 					operand = "location"
@@ -102,32 +102,32 @@ func testAccCheckIBMLogsRouterRoutesDataSourceConfigBasic(routeName string) stri
 			managed_by = "account"
 		}
 
-		data "ibm_logs_router_v3_routes" "logs_router_routes_instance" {
-			name = ibm_logs_router_v3_route.logs_router_route_instance.name
+		data "ibm_logs_router_routes" "logs_router_routes_instance" {
+			name = ibm_logs_router_route.logs_router_route_instance.name
 		}
 	`, iclDestinationCRN, routeName)
 }
 
 func testAccCheckIBMLogsRouterRoutesDataSourceConfig(routeName string, routeManagedBy string) string {
 	return fmt.Sprintf(`
-        resource "ibm_logs_router_v3_settings" "lr_settings_instance1" {
+        resource "ibm_logs_router_settings" "lr_settings_instance1" {
             primary_metadata_region = "us-south"
             backup_metadata_region = "us-east"
         }
 
-		resource "ibm_logs_router_v3_target" "logs_router_target_instance" {
+		resource "ibm_logs_router_target" "logs_router_target_instance" {
 			name = "my-lr-target"
 			destination_crn = "%s"
 			managed_by = "%s"
 			region = "us-south"
 		}
 
-		resource "ibm_logs_router_v3_route" "logs_router_route_instance" {
+		resource "ibm_logs_router_route" "logs_router_route_instance" {
 			name = "%s"
 			rules {
 				action = "send"
 				targets {
-					id = ibm_logs_router_v3_target.logs_router_target_instance.id
+					id = ibm_logs_router_target.logs_router_target_instance.id
 				}
 				inclusion_filters {
 					operand = "location"
@@ -138,8 +138,8 @@ func testAccCheckIBMLogsRouterRoutesDataSourceConfig(routeName string, routeMana
 			managed_by = "%s"
 		}
 
-		data "ibm_logs_router_v3_routes" "logs_router_routes_instance" {
-			name = ibm_logs_router_v3_route.logs_router_route_instance.name
+		data "ibm_logs_router_routes" "logs_router_routes_instance" {
+			name = ibm_logs_router_route.logs_router_route_instance.name
 		}
 	`, iclDestinationCRN, routeManagedBy, routeName, routeManagedBy)
 }

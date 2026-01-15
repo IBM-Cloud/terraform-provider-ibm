@@ -1154,12 +1154,12 @@ func Provider() *schema.Provider {
 
 			// Logs Router Service v1
 			"ibm_logs_router_tenants": logsrouting.DataSourceIBMLogsRouterTenants(),
-			"ibm_logs_router_targets": logsrouting.DataSourceIBMLogsRouterTargets(),
 
 			// Logs Router Service v3
-			// Have to append v3 because logs router v1 data source uses the same name "ibm_logs_router_targets"
-			"ibm_logs_router_v3_targets": logsrouter.DataSourceIBMLogsRouterTargets(),
-			"ibm_logs_router_v3_routes":  logsrouter.DataSourceIBMLogsRouterRoutes(),
+			// ibm_logs_router_targets is for either v1 or v3
+			// call DataSourceIBMLogsRouterTargetsByVersion to get the correct version based on api endpoint
+			"ibm_logs_router_targets": logsrouter.DataSourceIBMLogsRouterTargetsByApiEndpoint(),
+			"ibm_logs_router_routes":  logsrouter.DataSourceIBMLogsRouterRoutes(),
 
 			// DR Automation Service
 			"ibm_pdr_get_dr_summary_response": drautomationservice.DataSourceIBMPdrGetDrSummaryResponse(),
@@ -1861,10 +1861,9 @@ func Provider() *schema.Provider {
 			"ibm_logs_router_tenant": logsrouting.ResourceIBMLogsRouterTenant(),
 
 			// Logs Router Service v3
-			// Have to append v3 because logs router v1 data source uses the same name "ibm_logs_router_targets"
-			"ibm_logs_router_v3_target":   logsrouter.ResourceIBMLogsRouterTarget(),
-			"ibm_logs_router_v3_route":    logsrouter.ResourceIBMLogsRouterRoute(),
-			"ibm_logs_router_v3_settings": logsrouter.ResourceIBMLogsRouterSettings(),
+			"ibm_logs_router_target":   logsrouter.ResourceIBMLogsRouterTarget(),
+			"ibm_logs_router_route":    logsrouter.ResourceIBMLogsRouterRoute(),
+			"ibm_logs_router_settings": logsrouter.ResourceIBMLogsRouterSettings(),
 
 			// DR Automation Service
 			"ibm_pdr_managedr":        drautomationservice.ResourceIbmPdrManagedr(),
@@ -2381,9 +2380,9 @@ func Validator() validate.ValidatorDict {
 				"ibm_logs_router_tenant": logsrouting.ResourceIBMLogsRouterTenantValidator(),
 
 				// Added for Logs Router Service v3
-				"ibm_logs_router_v3_target":   logsrouter.ResourceIBMLogsRouterTargetValidator(),
-				"ibm_logs_router_v3_route":    logsrouter.ResourceIBMLogsRouterRouteValidator(),
-				"ibm_logs_router_v3_settings": logsrouter.ResourceIBMLogsRouterSettingsValidator(),
+				"ibm_logs_router_target":   logsrouter.ResourceIBMLogsRouterTargetValidator(),
+				"ibm_logs_router_route":    logsrouter.ResourceIBMLogsRouterRouteValidator(),
+				"ibm_logs_router_settings": logsrouter.ResourceIBMLogsRouterSettingsValidator(),
 
 				// Added for Software Defined Storage as a Service
 				"ibm_sds_volume":         sdsaas.ResourceIBMSdsVolumeValidator(),
