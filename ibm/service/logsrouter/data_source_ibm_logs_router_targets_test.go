@@ -33,10 +33,10 @@ func TestAccIBMLogsRouterTargetsDataSourceBasic(t *testing.T) {
 			resource.TestStep{
 				Config: testAccCheckIBMLogsRouterTargetsDataSourceConfigBasic(targetName, targetDestinationCRN),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet("data.ibm_logs_router_targets.logs_router_targets_instance", "id"),
-					resource.TestCheckResourceAttrSet("data.ibm_logs_router_targets.logs_router_targets_instance", "targets.#"),
-					resource.TestCheckResourceAttr("data.ibm_logs_router_targets.logs_router_targets_instance", "targets.0.name", targetName),
-					resource.TestCheckResourceAttr("data.ibm_logs_router_targets.logs_router_targets_instance", "targets.0.destination_crn", targetDestinationCRN),
+					resource.TestCheckResourceAttrSet("data.ibm_logs_router_v3_targets.logs_router_targets_instance", "id"),
+					resource.TestCheckResourceAttrSet("data.ibm_logs_router_v3_targets.logs_router_targets_instance", "targets.#"),
+					resource.TestCheckResourceAttr("data.ibm_logs_router_v3_targets.logs_router_targets_instance", "targets.0.name", targetName),
+					resource.TestCheckResourceAttr("data.ibm_logs_router_v3_targets.logs_router_targets_instance", "targets.0.destination_crn", targetDestinationCRN),
 				),
 			},
 		},
@@ -56,18 +56,18 @@ func TestAccIBMLogsRouterTargetsDataSourceAllArgs(t *testing.T) {
 			resource.TestStep{
 				Config: testAccCheckIBMLogsRouterTargetsDataSourceConfig(targetName, targetDestinationCRN, targetRegion, targetManagedBy),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet("data.ibm_logs_router_targets.logs_router_targets_instance", "id"),
-					resource.TestCheckResourceAttrSet("data.ibm_logs_router_targets.logs_router_targets_instance", "name"),
-					resource.TestCheckResourceAttrSet("data.ibm_logs_router_targets.logs_router_targets_instance", "targets.#"),
-					resource.TestCheckResourceAttrSet("data.ibm_logs_router_targets.logs_router_targets_instance", "targets.0.id"),
-					resource.TestCheckResourceAttr("data.ibm_logs_router_targets.logs_router_targets_instance", "targets.0.name", targetName),
-					resource.TestCheckResourceAttrSet("data.ibm_logs_router_targets.logs_router_targets_instance", "targets.0.crn"),
-					resource.TestCheckResourceAttr("data.ibm_logs_router_targets.logs_router_targets_instance", "targets.0.destination_crn", targetDestinationCRN),
-					resource.TestCheckResourceAttrSet("data.ibm_logs_router_targets.logs_router_targets_instance", "targets.0.target_type"),
-					resource.TestCheckResourceAttr("data.ibm_logs_router_targets.logs_router_targets_instance", "targets.0.region", targetRegion),
-					resource.TestCheckResourceAttrSet("data.ibm_logs_router_targets.logs_router_targets_instance", "targets.0.created_at"),
-					resource.TestCheckResourceAttrSet("data.ibm_logs_router_targets.logs_router_targets_instance", "targets.0.updated_at"),
-					resource.TestCheckResourceAttr("data.ibm_logs_router_targets.logs_router_targets_instance", "targets.0.managed_by", targetManagedBy),
+					resource.TestCheckResourceAttrSet("data.ibm_logs_router_v3_targets.logs_router_targets_instance", "id"),
+					resource.TestCheckResourceAttrSet("data.ibm_logs_router_v3_targets.logs_router_targets_instance", "name"),
+					resource.TestCheckResourceAttrSet("data.ibm_logs_router_v3_targets.logs_router_targets_instance", "targets.#"),
+					resource.TestCheckResourceAttrSet("data.ibm_logs_router_v3_targets.logs_router_targets_instance", "targets.0.id"),
+					resource.TestCheckResourceAttr("data.ibm_logs_router_v3_targets.logs_router_targets_instance", "targets.0.name", targetName),
+					resource.TestCheckResourceAttrSet("data.ibm_logs_router_v3_targets.logs_router_targets_instance", "targets.0.crn"),
+					resource.TestCheckResourceAttr("data.ibm_logs_router_v3_targets.logs_router_targets_instance", "targets.0.destination_crn", targetDestinationCRN),
+					resource.TestCheckResourceAttrSet("data.ibm_logs_router_v3_targets.logs_router_targets_instance", "targets.0.target_type"),
+					resource.TestCheckResourceAttr("data.ibm_logs_router_v3_targets.logs_router_targets_instance", "targets.0.region", targetRegion),
+					resource.TestCheckResourceAttrSet("data.ibm_logs_router_v3_targets.logs_router_targets_instance", "targets.0.created_at"),
+					resource.TestCheckResourceAttrSet("data.ibm_logs_router_v3_targets.logs_router_targets_instance", "targets.0.updated_at"),
+					resource.TestCheckResourceAttr("data.ibm_logs_router_v3_targets.logs_router_targets_instance", "targets.0.managed_by", targetManagedBy),
 				),
 			},
 		},
@@ -76,30 +76,30 @@ func TestAccIBMLogsRouterTargetsDataSourceAllArgs(t *testing.T) {
 
 func testAccCheckIBMLogsRouterTargetsDataSourceConfigBasic(targetName string, targetDestinationCRN string) string {
 	return fmt.Sprintf(`
-		resource "ibm_logs_router_target" "logs_router_target_instance" {
+		resource "ibm_logs_router_v3_target" "logs_router_target_instance" {
 			name = "%s"
 			destination_crn = "%s"
 			region = "us-south"
 			managed_by = "account"
 		}
 
-		data "ibm_logs_router_targets" "logs_router_targets_instance" {
-			name = ibm_logs_router_target.logs_router_target_instance.name
+		data "ibm_logs_router_v3_targets" "logs_router_targets_instance" {
+			name = ibm_logs_router_v3_target.logs_router_target_instance.name
 		}
 	`, targetName, targetDestinationCRN)
 }
 
 func testAccCheckIBMLogsRouterTargetsDataSourceConfig(targetName string, targetDestinationCRN string, targetRegion string, targetManagedBy string) string {
 	return fmt.Sprintf(`
-		resource "ibm_logs_router_target" "logs_router_target_instance" {
+		resource "ibm_logs_router_v3_target" "logs_router_target_instance" {
 			name = "%s"
 			destination_crn = "%s"
 			region = "%s"
 			managed_by = "%s"
 		}
 
-		data "ibm_logs_router_targets" "logs_router_targets_instance" {
-			name = ibm_logs_router_target.logs_router_target_instance.name
+		data "ibm_logs_router_v3_targets" "logs_router_targets_instance" {
+			name = ibm_logs_router_v3_target.logs_router_target_instance.name
 		}
 	`, targetName, targetDestinationCRN, targetRegion, targetManagedBy)
 }

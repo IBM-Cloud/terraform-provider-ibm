@@ -35,16 +35,16 @@ func TestAccIBMLogsRouterTargetBasic(t *testing.T) {
 			resource.TestStep{
 				Config: testAccCheckIBMLogsRouterTargetConfigBasic(name, destinationCRN),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckIBMLogsRouterTargetExists("ibm_logs_router_target.logs_router_target_instance", conf),
-					resource.TestCheckResourceAttr("ibm_logs_router_target.logs_router_target_instance", "name", name),
-					resource.TestCheckResourceAttr("ibm_logs_router_target.logs_router_target_instance", "destination_crn", destinationCRN),
+					testAccCheckIBMLogsRouterTargetExists("ibm_logs_router_v3_target.logs_router_target_instance", conf),
+					resource.TestCheckResourceAttr("ibm_logs_router_v3_target.logs_router_target_instance", "name", name),
+					resource.TestCheckResourceAttr("ibm_logs_router_v3_target.logs_router_target_instance", "destination_crn", destinationCRN),
 				),
 			},
 			resource.TestStep{
 				Config: testAccCheckIBMLogsRouterTargetConfigBasic(nameUpdate, destinationCRNUpdate),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("ibm_logs_router_target.logs_router_target_instance", "name", nameUpdate),
-					resource.TestCheckResourceAttr("ibm_logs_router_target.logs_router_target_instance", "destination_crn", destinationCRNUpdate),
+					resource.TestCheckResourceAttr("ibm_logs_router_v3_target.logs_router_target_instance", "name", nameUpdate),
+					resource.TestCheckResourceAttr("ibm_logs_router_v3_target.logs_router_target_instance", "destination_crn", destinationCRNUpdate),
 				),
 			},
 		},
@@ -70,24 +70,24 @@ func TestAccIBMLogsRouterTargetAllArgs(t *testing.T) {
 			resource.TestStep{
 				Config: testAccCheckIBMLogsRouterTargetConfig(name, destinationCRN, region, managedBy),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckIBMLogsRouterTargetExists("ibm_logs_router_target.logs_router_target_instance", conf),
-					resource.TestCheckResourceAttr("ibm_logs_router_target.logs_router_target_instance", "name", name),
-					resource.TestCheckResourceAttr("ibm_logs_router_target.logs_router_target_instance", "destination_crn", destinationCRN),
-					resource.TestCheckResourceAttr("ibm_logs_router_target.logs_router_target_instance", "region", region),
-					resource.TestCheckResourceAttr("ibm_logs_router_target.logs_router_target_instance", "managed_by", managedBy),
+					testAccCheckIBMLogsRouterTargetExists("ibm_logs_router_v3_target.logs_router_target_instance", conf),
+					resource.TestCheckResourceAttr("ibm_logs_router_v3_target.logs_router_target_instance", "name", name),
+					resource.TestCheckResourceAttr("ibm_logs_router_v3_target.logs_router_target_instance", "destination_crn", destinationCRN),
+					resource.TestCheckResourceAttr("ibm_logs_router_v3_target.logs_router_target_instance", "region", region),
+					resource.TestCheckResourceAttr("ibm_logs_router_v3_target.logs_router_target_instance", "managed_by", managedBy),
 				),
 			},
 			resource.TestStep{
 				Config: testAccCheckIBMLogsRouterTargetConfig(nameUpdate, destinationCRNUpdate, regionUpdate, managedByUpdate),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("ibm_logs_router_target.logs_router_target_instance", "name", nameUpdate),
-					resource.TestCheckResourceAttr("ibm_logs_router_target.logs_router_target_instance", "destination_crn", destinationCRNUpdate),
-					resource.TestCheckResourceAttr("ibm_logs_router_target.logs_router_target_instance", "region", regionUpdate),
-					resource.TestCheckResourceAttr("ibm_logs_router_target.logs_router_target_instance", "managed_by", managedByUpdate),
+					resource.TestCheckResourceAttr("ibm_logs_router_v3_target.logs_router_target_instance", "name", nameUpdate),
+					resource.TestCheckResourceAttr("ibm_logs_router_v3_target.logs_router_target_instance", "destination_crn", destinationCRNUpdate),
+					resource.TestCheckResourceAttr("ibm_logs_router_v3_target.logs_router_target_instance", "region", regionUpdate),
+					resource.TestCheckResourceAttr("ibm_logs_router_v3_target.logs_router_target_instance", "managed_by", managedByUpdate),
 				),
 			},
 			resource.TestStep{
-				ResourceName:      "ibm_logs_router_target.logs_router_target_instance",
+				ResourceName:      "ibm_logs_router_v3_target.logs_router_target_instance",
 				ImportState:       true,
 				ImportStateVerify: true,
 			},
@@ -97,7 +97,7 @@ func TestAccIBMLogsRouterTargetAllArgs(t *testing.T) {
 
 func testAccCheckIBMLogsRouterTargetConfigBasic(name string, destinationCRN string) string {
 	return fmt.Sprintf(`
-		resource "ibm_logs_router_target" "logs_router_target_instance" {
+		resource "ibm_logs_router_v3_target" "logs_router_target_instance" {
 			name = "%s"
 			destination_crn = "%s"
 			region = "us-south"
@@ -109,7 +109,7 @@ func testAccCheckIBMLogsRouterTargetConfigBasic(name string, destinationCRN stri
 func testAccCheckIBMLogsRouterTargetConfig(name string, destinationCRN string, region string, managedBy string) string {
 	return fmt.Sprintf(`
 
-		resource "ibm_logs_router_target" "logs_router_target_instance" {
+		resource "ibm_logs_router_v3_target" "logs_router_target_instance" {
 			name = "%s"
 			destination_crn = "%s"
 			region = "%s"
@@ -151,7 +151,7 @@ func testAccCheckIBMLogsRouterTargetDestroy(s *terraform.State) error {
 		return err
 	}
 	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "ibm_logs_router_target" {
+		if rs.Type != "ibm_logs_router_v3_target" {
 			continue
 		}
 

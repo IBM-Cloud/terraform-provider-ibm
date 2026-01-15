@@ -34,7 +34,7 @@ func ResourceIBMLogsRouterRoute() *schema.Resource {
 			"name": &schema.Schema{
 				Type:         schema.TypeString,
 				Required:     true,
-				ValidateFunc: validate.InvokeValidator("ibm_logs_router_route", "name"),
+				ValidateFunc: validate.InvokeValidator("ibm_logs_router_v3_route", "name"),
 				Description:  "The name of the route.",
 			},
 			"rules": &schema.Schema{
@@ -93,7 +93,7 @@ func ResourceIBMLogsRouterRoute() *schema.Resource {
 			"managed_by": &schema.Schema{
 				Type:         schema.TypeString,
 				Optional:     true,
-				ValidateFunc: validate.InvokeValidator("ibm_logs_router_route", "managed_by"),
+				ValidateFunc: validate.InvokeValidator("ibm_logs_router_v3_route", "managed_by"),
 				Description:  "Present when the route is enterprise-managed (`managed_by: enterprise`).",
 			},
 			"crn": &schema.Schema{
@@ -136,14 +136,14 @@ func ResourceIBMLogsRouterRouteValidator() *validate.ResourceValidator {
 		},
 	)
 
-	resourceValidator := validate.ResourceValidator{ResourceName: "ibm_logs_router_route", Schema: validateSchema}
+	resourceValidator := validate.ResourceValidator{ResourceName: "ibm_logs_router_v3_route", Schema: validateSchema}
 	return &resourceValidator
 }
 
 func resourceIBMLogsRouterRouteCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	logsRouterClient, err := meta.(conns.ClientSession).LogsRouterV3()
 	if err != nil {
-		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_logs_router_route", "create", "initialize-client")
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_logs_router_v3_route", "create", "initialize-client")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
@@ -156,7 +156,7 @@ func resourceIBMLogsRouterRouteCreate(context context.Context, d *schema.Resourc
 		value := v.(map[string]interface{})
 		rulesItem, err := ResourceIBMLogsRouterRouteMapToRulePrototype(value)
 		if err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_logs_router_route", "create", "parse-rules").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_logs_router_v3_route", "create", "parse-rules").GetDiag()
 		}
 		rules = append(rules, *rulesItem)
 	}
@@ -167,7 +167,7 @@ func resourceIBMLogsRouterRouteCreate(context context.Context, d *schema.Resourc
 
 	route, _, err := logsRouterClient.CreateRouteWithContext(context, createRouteOptions)
 	if err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateRouteWithContext failed: %s", err.Error()), "ibm_logs_router_route", "create")
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateRouteWithContext failed: %s", err.Error()), "ibm_logs_router_v3_route", "create")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
@@ -180,7 +180,7 @@ func resourceIBMLogsRouterRouteCreate(context context.Context, d *schema.Resourc
 func resourceIBMLogsRouterRouteRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	logsRouterClient, err := meta.(conns.ClientSession).LogsRouterV3()
 	if err != nil {
-		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_logs_router_route", "read", "initialize-client")
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_logs_router_v3_route", "read", "initialize-client")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
@@ -195,44 +195,44 @@ func resourceIBMLogsRouterRouteRead(context context.Context, d *schema.ResourceD
 			d.SetId("")
 			return nil
 		}
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetRouteWithContext failed: %s", err.Error()), "ibm_logs_router_route", "read")
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetRouteWithContext failed: %s", err.Error()), "ibm_logs_router_v3_route", "read")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
 
 	if err = d.Set("name", route.Name); err != nil {
 		err = fmt.Errorf("Error setting name: %s", err)
-		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_logs_router_route", "read", "set-name").GetDiag()
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_logs_router_v3_route", "read", "set-name").GetDiag()
 	}
 	rules := []map[string]interface{}{}
 	for _, rulesItem := range route.Rules {
 		rulesItemMap, err := ResourceIBMLogsRouterRouteRuleToMap(&rulesItem) // #nosec G601
 		if err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_logs_router_route", "read", "rules-to-map").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_logs_router_v3_route", "read", "rules-to-map").GetDiag()
 		}
 		rules = append(rules, rulesItemMap)
 	}
 	if err = d.Set("rules", rules); err != nil {
 		err = fmt.Errorf("Error setting rules: %s", err)
-		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_logs_router_route", "read", "set-rules").GetDiag()
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_logs_router_v3_route", "read", "set-rules").GetDiag()
 	}
 	if !core.IsNil(route.ManagedBy) {
 		if err = d.Set("managed_by", route.ManagedBy); err != nil {
 			err = fmt.Errorf("Error setting managed_by: %s", err)
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_logs_router_route", "read", "set-managed_by").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_logs_router_v3_route", "read", "set-managed_by").GetDiag()
 		}
 	}
 	if err = d.Set("crn", route.CRN); err != nil {
 		err = fmt.Errorf("Error setting crn: %s", err)
-		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_logs_router_route", "read", "set-crn").GetDiag()
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_logs_router_v3_route", "read", "set-crn").GetDiag()
 	}
 	if err = d.Set("created_at", flex.DateTimeToString(route.CreatedAt)); err != nil {
 		err = fmt.Errorf("Error setting created_at: %s", err)
-		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_logs_router_route", "read", "set-created_at").GetDiag()
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_logs_router_v3_route", "read", "set-created_at").GetDiag()
 	}
 	if err = d.Set("updated_at", flex.DateTimeToString(route.UpdatedAt)); err != nil {
 		err = fmt.Errorf("Error setting updated_at: %s", err)
-		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_logs_router_route", "read", "set-updated_at").GetDiag()
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_logs_router_v3_route", "read", "set-updated_at").GetDiag()
 	}
 
 	return nil
@@ -241,7 +241,7 @@ func resourceIBMLogsRouterRouteRead(context context.Context, d *schema.ResourceD
 func resourceIBMLogsRouterRouteUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	logsRouterClient, err := meta.(conns.ClientSession).LogsRouterV3()
 	if err != nil {
-		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_logs_router_route", "update", "initialize-client")
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_logs_router_v3_route", "update", "initialize-client")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
@@ -262,7 +262,7 @@ func resourceIBMLogsRouterRouteUpdate(context context.Context, d *schema.Resourc
 			value := v.(map[string]interface{})
 			rulesItem, err := ResourceIBMLogsRouterRouteMapToRulePrototype(value)
 			if err != nil {
-				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_logs_router_route", "update", "parse-rules").GetDiag()
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_logs_router_v3_route", "update", "parse-rules").GetDiag()
 			}
 			rules = append(rules, *rulesItem)
 		}
@@ -273,7 +273,7 @@ func resourceIBMLogsRouterRouteUpdate(context context.Context, d *schema.Resourc
 	if hasChange {
 		_, _, err = logsRouterClient.UpdateRouteWithContext(context, updateRouteOptions)
 		if err != nil {
-			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("UpdateRouteWithContext failed: %s", err.Error()), "ibm_logs_router_route", "update")
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("UpdateRouteWithContext failed: %s", err.Error()), "ibm_logs_router_v3_route", "update")
 			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 			return tfErr.GetDiag()
 		}
@@ -285,7 +285,7 @@ func resourceIBMLogsRouterRouteUpdate(context context.Context, d *schema.Resourc
 func resourceIBMLogsRouterRouteDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	logsRouterClient, err := meta.(conns.ClientSession).LogsRouterV3()
 	if err != nil {
-		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_logs_router_route", "delete", "initialize-client")
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_logs_router_v3_route", "delete", "initialize-client")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
@@ -296,7 +296,7 @@ func resourceIBMLogsRouterRouteDelete(context context.Context, d *schema.Resourc
 
 	_, err = logsRouterClient.DeleteRouteWithContext(context, deleteRouteOptions)
 	if err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("DeleteRouteWithContext failed: %s", err.Error()), "ibm_logs_router_route", "delete")
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("DeleteRouteWithContext failed: %s", err.Error()), "ibm_logs_router_v3_route", "delete")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}

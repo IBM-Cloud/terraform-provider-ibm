@@ -147,7 +147,7 @@ func DataSourceIBMLogsRouterRoutes() *schema.Resource {
 func dataSourceIBMLogsRouterRoutesRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	logsRouterClient, err := meta.(conns.ClientSession).LogsRouterV3()
 	if err != nil {
-		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_logs_router_routes", "read", "initialize-client")
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_logs_router_v3_routes", "read", "initialize-client")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
@@ -156,7 +156,7 @@ func dataSourceIBMLogsRouterRoutesRead(context context.Context, d *schema.Resour
 
 	routeCollection, _, err := logsRouterClient.ListRoutesWithContext(context, listRoutesOptions)
 	if err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("ListRoutesWithContext failed: %s", err.Error()), "(Data) ibm_logs_router_routes", "read")
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("ListRoutesWithContext failed: %s", err.Error()), "(Data) ibm_logs_router_v3_routes", "read")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
@@ -181,7 +181,7 @@ func dataSourceIBMLogsRouterRoutesRead(context context.Context, d *schema.Resour
 
 	if suppliedFilter {
 		if len(routeCollection.Routes) == 0 {
-			return flex.DiscriminatedTerraformErrorf(nil, fmt.Sprintf("no Routes found with name %s", name), "(Data) ibm_logs_router_routes", "read", "no-collection-found").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(nil, fmt.Sprintf("no Routes found with name %s", name), "(Data) ibm_logs_router_v3_routes", "read", "no-collection-found").GetDiag()
 		}
 		d.SetId(name)
 	} else {
@@ -192,12 +192,12 @@ func dataSourceIBMLogsRouterRoutesRead(context context.Context, d *schema.Resour
 	for _, routesItem := range routeCollection.Routes {
 		routesItemMap, err := DataSourceIBMLogsRouterRoutesRouteToMap(&routesItem) // #nosec G601
 		if err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_logs_router_routes", "read", "routes-to-map").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_logs_router_v3_routes", "read", "routes-to-map").GetDiag()
 		}
 		routes = append(routes, routesItemMap)
 	}
 	if err = d.Set("routes", routes); err != nil {
-		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting routes: %s", err), "(Data) ibm_logs_router_routes", "read", "set-routes").GetDiag()
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting routes: %s", err), "(Data) ibm_logs_router_v3_routes", "read", "set-routes").GetDiag()
 	}
 
 	return nil

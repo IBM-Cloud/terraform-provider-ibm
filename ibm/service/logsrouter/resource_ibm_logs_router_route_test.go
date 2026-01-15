@@ -32,14 +32,14 @@ func TestAccIBMLogsRouterRouteBasic(t *testing.T) {
 			resource.TestStep{
 				Config: testAccCheckIBMLogsRouterRouteConfigBasic(name),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckIBMLogsRouterRouteExists("ibm_logs_router_route.logs_router_route_instance", conf),
-					resource.TestCheckResourceAttr("ibm_logs_router_route.logs_router_route_instance", "name", name),
+					testAccCheckIBMLogsRouterRouteExists("ibm_logs_router_v3_route.logs_router_route_instance", conf),
+					resource.TestCheckResourceAttr("ibm_logs_router_v3_route.logs_router_route_instance", "name", name),
 				),
 			},
 			resource.TestStep{
 				Config: testAccCheckIBMLogsRouterRouteConfigBasic(nameUpdate),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("ibm_logs_router_route.logs_router_route_instance", "name", nameUpdate),
+					resource.TestCheckResourceAttr("ibm_logs_router_v3_route.logs_router_route_instance", "name", nameUpdate),
 				),
 			},
 		},
@@ -61,20 +61,20 @@ func TestAccIBMLogsRouterRouteAllArgs(t *testing.T) {
 			resource.TestStep{
 				Config: testAccCheckIBMLogsRouterRouteConfig(name, managedBy),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckIBMLogsRouterRouteExists("ibm_logs_router_route.logs_router_route_instance", conf),
-					resource.TestCheckResourceAttr("ibm_logs_router_route.logs_router_route_instance", "name", name),
-					resource.TestCheckResourceAttr("ibm_logs_router_route.logs_router_route_instance", "managed_by", managedBy),
+					testAccCheckIBMLogsRouterRouteExists("ibm_logs_router_v3_route.logs_router_route_instance", conf),
+					resource.TestCheckResourceAttr("ibm_logs_router_v3_route.logs_router_route_instance", "name", name),
+					resource.TestCheckResourceAttr("ibm_logs_router_v3_route.logs_router_route_instance", "managed_by", managedBy),
 				),
 			},
 			resource.TestStep{
 				Config: testAccCheckIBMLogsRouterRouteConfig(nameUpdate, managedByUpdate),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("ibm_logs_router_route.logs_router_route_instance", "name", nameUpdate),
-					resource.TestCheckResourceAttr("ibm_logs_router_route.logs_router_route_instance", "managed_by", managedByUpdate),
+					resource.TestCheckResourceAttr("ibm_logs_router_v3_route.logs_router_route_instance", "name", nameUpdate),
+					resource.TestCheckResourceAttr("ibm_logs_router_v3_route.logs_router_route_instance", "managed_by", managedByUpdate),
 				),
 			},
 			resource.TestStep{
-				ResourceName:      "ibm_logs_router_route.logs_router_route_instance",
+				ResourceName:      "ibm_logs_router_v3_route.logs_router_route_instance",
 				ImportState:       true,
 				ImportStateVerify: true,
 			},
@@ -84,18 +84,18 @@ func TestAccIBMLogsRouterRouteAllArgs(t *testing.T) {
 
 func testAccCheckIBMLogsRouterRouteConfigBasic(name string) string {
 	return fmt.Sprintf(`
-		resource "ibm_logs_router_target" "logs_router_target_instance" {
+		resource "ibm_logs_router_v3_target" "logs_router_target_instance" {
 			name = "my-lr-target1"
 			destination_crn = "crn:v1:bluemix:public:logs:us-south:a/0be5ad401ae913d8ff665d92680664ed:22222222-2222-2222-2222-222222222222::"
 			region = "us-south"
 			managed_by = "account"
 		}
-		resource "ibm_logs_router_route" "logs_router_route_instance" {
+		resource "ibm_logs_router_v3_route" "logs_router_route_instance" {
 			name = "%s"
 			rules {
 				action = "send"
 				targets {
-					id = ibm_logs_router_target.logs_router_target_instance.id
+					id = ibm_logs_router_v3_target.logs_router_target_instance.id
 				}
 				inclusion_filters {
 					operand = "location"
@@ -110,19 +110,19 @@ func testAccCheckIBMLogsRouterRouteConfigBasic(name string) string {
 
 func testAccCheckIBMLogsRouterRouteConfig(name string, managedBy string) string {
 	return fmt.Sprintf(`
-		resource "ibm_logs_router_target" "logs_router_target_instance" {
+		resource "ibm_logs_router_v3_target" "logs_router_target_instance" {
 			name = "my-lr-target2"
 			destination_crn = "crn:v1:bluemix:public:logs:us-south:a/0be5ad401ae913d8ff665d92680664ed:22222222-2222-2222-2222-222222222222::"
             managed_by = "%s"
 			region = "us-south"
 		}
 
-		resource "ibm_logs_router_route" "logs_router_route_instance" {
+		resource "ibm_logs_router_v3_route" "logs_router_route_instance" {
 			name = "%s"
 			rules {
 				action = "send"
 				targets {
-					id = ibm_logs_router_target.logs_router_target_instance.id
+					id = ibm_logs_router_v3_target.logs_router_target_instance.id
 				}
 				inclusion_filters {
 					operand = "location"
@@ -168,7 +168,7 @@ func testAccCheckIBMLogsRouterRouteDestroy(s *terraform.State) error {
 		return err
 	}
 	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "ibm_logs_router_route" {
+		if rs.Type != "ibm_logs_router_v3_route" {
 			continue
 		}
 

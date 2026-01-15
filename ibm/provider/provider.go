@@ -1154,11 +1154,12 @@ func Provider() *schema.Provider {
 
 			// Logs Router Service v1
 			"ibm_logs_router_tenants": logsrouting.DataSourceIBMLogsRouterTenants(),
-			"ibm_logs_router_target":  logsrouting.DataSourceIBMLogsRouterTargets(),
+			"ibm_logs_router_targets": logsrouting.DataSourceIBMLogsRouterTargets(),
 
 			// Logs Router Service v3
-			"ibm_logs_router_targets": logsrouter.DataSourceIBMLogsRouterTargets(),
-			"ibm_logs_router_routes":  logsrouter.DataSourceIBMLogsRouterRoutes(),
+			// Have to append v3 because logs router v1 data source uses the same name "ibm_logs_router_targets"
+			"ibm_logs_router_v3_targets": logsrouter.DataSourceIBMLogsRouterTargets(),
+			"ibm_logs_router_v3_routes":  logsrouter.DataSourceIBMLogsRouterRoutes(),
 
 			// DR Automation Service
 			"ibm_pdr_get_dr_summary_response": drautomationservice.DataSourceIBMPdrGetDrSummaryResponse(),
@@ -1860,9 +1861,10 @@ func Provider() *schema.Provider {
 			"ibm_logs_router_tenant": logsrouting.ResourceIBMLogsRouterTenant(),
 
 			// Logs Router Service v3
-			"ibm_logs_router_target":   logsrouter.ResourceIBMLogsRouterTarget(),
-			"ibm_logs_router_route":    logsrouter.ResourceIBMLogsRouterRoute(),
-			"ibm_logs_router_settings": logsrouter.ResourceIBMLogsRouterSettings(),
+			// Have to append v3 because logs router v1 data source uses the same name "ibm_logs_router_targets"
+			"ibm_logs_router_v3_target":   logsrouter.ResourceIBMLogsRouterTarget(),
+			"ibm_logs_router_v3_route":    logsrouter.ResourceIBMLogsRouterRoute(),
+			"ibm_logs_router_v3_settings": logsrouter.ResourceIBMLogsRouterSettings(),
 
 			// DR Automation Service
 			"ibm_pdr_managedr":        drautomationservice.ResourceIbmPdrManagedr(),
@@ -2234,9 +2236,6 @@ func Validator() validate.ValidatorDict {
 				"ibm_atracker_target":                                atracker.ResourceIBMAtrackerTargetValidator(),
 				"ibm_atracker_route":                                 atracker.ResourceIBMAtrackerRouteValidator(),
 				"ibm_atracker_settings":                              atracker.ResourceIBMAtrackerSettingsValidator(),
-				"ibm_logs_router_target":                             logsrouter.ResourceIBMLogsRouterTargetValidator(),
-				"ibm_logs_router_route":                              logsrouter.ResourceIBMLogsRouterRouteValidator(),
-				"ibm_logs_router_settings":                           logsrouter.ResourceIBMLogsRouterSettingsValidator(),
 				"ibm_metrics_router_target":                          metricsrouter.ResourceIBMMetricsRouterTargetValidator(),
 				"ibm_metrics_router_route":                           metricsrouter.ResourceIBMMetricsRouterRouteValidator(),
 				"ibm_metrics_router_settings":                        metricsrouter.ResourceIBMMetricsRouterSettingsValidator(),
@@ -2378,8 +2377,13 @@ func Validator() validate.ValidatorDict {
 				"ibm_logs_stream":           logs.ResourceIbmLogsStreamValidator(),
 				"ibm_logs_alert_definition": logs.ResourceIbmLogsAlertDefinitionValidator(),
 
-				// Added for Logs Router Service
+				// Added for Logs Router Service v1
 				"ibm_logs_router_tenant": logsrouting.ResourceIBMLogsRouterTenantValidator(),
+
+				// Added for Logs Router Service v3
+				"ibm_logs_router_v3_target":   logsrouter.ResourceIBMLogsRouterTargetValidator(),
+				"ibm_logs_router_v3_route":    logsrouter.ResourceIBMLogsRouterRouteValidator(),
+				"ibm_logs_router_v3_settings": logsrouter.ResourceIBMLogsRouterSettingsValidator(),
 
 				// Added for Software Defined Storage as a Service
 				"ibm_sds_volume":         sdsaas.ResourceIBMSdsVolumeValidator(),
