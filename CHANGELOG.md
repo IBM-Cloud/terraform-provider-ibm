@@ -1,3 +1,39 @@
+# 1.87.1 (January 13, 2026)
+
+## Enhancements
+
+### Enterprise Management
+* support redhat regex expression to owner id validation ([6617](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6617))
+
+# 1.87.0 (January 12, 2026)
+
+## Bug Fixes
+
+### Cloud Databases
+* Fix the attribute in backup_id parameter ([6567](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6567))
+
+### IAM
+* fix(IAM Policy Management): Fix subject stringExists ([6598](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6598))
+
+### Cloud Logs
+* prevent panic when before list contains nil element ([6580](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6580))
+
+### DR AutomationService
+* Dra terraform apis- fmt issue fixed ([6612](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6612))
+* Dra terraform apis ([6600](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6600))
+
+### VPC Infrastructure
+* added validation for public address range name ([6608](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6608))
+
+
+## Enhancements
+
+### Backup/Recovery
+* add auto_proetction_group_id ([6607](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6607))
+
+
+
+
 # 1.87.0-beta1 (December 22, 2025)
 
 ## Bug Fixes

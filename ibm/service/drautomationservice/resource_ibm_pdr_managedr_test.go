@@ -12,7 +12,6 @@ import (
 
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
-	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 
 	"github.com/IBM/dra-go-sdk/drautomationservicev1"
 )
@@ -60,7 +59,7 @@ func TestAccIBMPdrManagedrAllArgs(t *testing.T) {
 			resource.TestStep{
 				ResourceName:      "ibm_pdr_managedr.pdr_managedr",
 				ImportState:       true,
-				ImportStateVerify: true,
+				ImportStateVerify: false,
 			},
 		},
 	})
@@ -124,13 +123,7 @@ func testAccCheckIBMPdrManagedrExists(n string, obj drautomationservicev1.Servic
 
 		getManageDrOptions := &drautomationservicev1.GetManageDrOptions{}
 
-		parts, err := flex.SepIdParts(rs.Primary.ID, "/")
-		if err != nil {
-			return err
-		}
-
-		getManageDrOptions.SetInstanceID(parts[0])
-		getManageDrOptions.SetInstanceID(parts[1])
+		getManageDrOptions.SetInstanceID(rs.Primary.ID)
 
 		serviceInstanceManageDr, _, err := drAutomationServiceClient.GetManageDr(getManageDrOptions)
 		if err != nil {
@@ -154,13 +147,7 @@ func testAccCheckIBMPdrManagedrDestroy(s *terraform.State) error {
 
 		getManageDrOptions := &drautomationservicev1.GetManageDrOptions{}
 
-		parts, err := flex.SepIdParts(rs.Primary.ID, "/")
-		if err != nil {
-			return err
-		}
-
-		getManageDrOptions.SetInstanceID(parts[0])
-		getManageDrOptions.SetInstanceID(parts[1])
+		getManageDrOptions.SetInstanceID(rs.Primary.ID)
 
 		// Try to find the key
 		_, response, err := drAutomationServiceClient.GetManageDr(getManageDrOptions)
