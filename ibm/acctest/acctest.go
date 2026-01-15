@@ -478,6 +478,12 @@ var (
 	ISClusterNetworkSubnetPrefixesCidr string
 )
 
+// For Platform Notifications
+var (
+	NotificationDistributionListAccountId     string
+	NotificationDistributionListDestinationId string
+)
+
 func init() {
 	testlogger := os.Getenv("TF_LOG")
 	if testlogger != "" {
@@ -1185,6 +1191,17 @@ func init() {
 		IcdDbTaskId = "crn:v1:bluemix:public:databases-for-redis:au-syd:a/40ddc34a953a8c02f10987b59085b60e:367b0a22-05bb-41e3-a1ed-ded1ff0889e5:task:882013a6-2751-4df7-a77a-98d258638704"
 		fmt.Println("[INFO] Set the environment variable ICD_DB_TASK_ID for testing ibm_cloud_databases else it is set to default value 'crn:v1:bluemix:public:databases-for-redis:au-syd:a/40ddc34a953a8c02f10987b59085b60e:367b0a22-05bb-41e3-a1ed-ded1ff0889e5:task:882013a6-2751-4df7-a77a-98d258638704'")
 	}
+
+	NotificationDistributionListAccountId = os.Getenv("DIST_ACCOUNT_ID")
+	if NotificationDistributionListAccountId == "" {
+		fmt.Println("[WARN] Set the environment variable DIST_ACCOUNT_ID for testing ibm_distribution_list resource else tests will fail if this is not set correctly")
+	}
+
+	NotificationDistributionListDestinationId = os.Getenv("DIST_DESTINATION_ID")
+	if NotificationDistributionListDestinationId == "" {
+		fmt.Println("[WARN] Set the environment variable DIST_DESTINATION_ID for testing ibm_distribution_list resource else tests will fail if this is not set correctly")
+	}
+
 	// Added for Power Colo Testing
 	Pi_image = os.Getenv("PI_IMAGE")
 	if Pi_image == "" {
