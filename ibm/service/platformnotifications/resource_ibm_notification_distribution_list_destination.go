@@ -11,6 +11,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -39,10 +40,11 @@ func ResourceIbmNotificationDistributionListDestination() *schema.Resource {
 				Description:  "The IBM Cloud account ID.",
 			},
 			"destination_id": &schema.Schema{
-				Type:        schema.TypeString,
-				Optional:    true,
-				ForceNew:    true,
-				Description: "The GUID of the Event Notifications instance.",
+				Type:         schema.TypeString,
+				Optional:     true,
+				ForceNew:     true,
+				ValidateFunc: validate.InvokeValidator("ibm_notification_distribution_list_destination", "destination_id"),
+				Description:  "The GUID of the Event Notifications instance.",
 			},
 			"destination_type": &schema.Schema{
 				Type:         schema.TypeString,
@@ -73,6 +75,15 @@ func ResourceIbmNotificationDistributionListDestinationValidator() *validate.Res
 			Type:                       validate.TypeString,
 			Required:                   true,
 			AllowedValues:              "event_notifications",
+		},
+		validate.ValidateSchema{
+			Identifier:                 "destination_id",
+			Type:                       validate.TypeString,
+			ValidateFunctionIdentifier: validate.ValidateRegexpLen,
+			Optional:                   true,
+			Regexp:                     `^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$`,
+			MinValueLength:             36,
+			MaxValueLength:             36,
 		},
 	)
 
@@ -231,8 +242,42 @@ func ResourceIbmNotificationDistributionListDestinationMapToAddDestinationProtot
 	}
 }
 
+func ValidateDiscriminationFields(modelMap map[string]interface{}, allowedKeys []string, destinationType string) error {
+	allowedKeysMap := make(map[string]bool)
+	for _, key := range allowedKeys {
+		allowedKeysMap[key] = true
+	}
+
+	var unexpectedKeys []string
+	for key, value := range modelMap {
+		if !allowedKeysMap[key] && value != nil {
+			unexpectedKeys = append(unexpectedKeys, key)
+		}
+	}
+
+	if len(unexpectedKeys) > 0 {
+		return fmt.Errorf("unexpected properties (%s) should not be present for destination_type '%s'", strings.Join(unexpectedKeys, " "), destinationType)
+	}
+
+	return nil
+}
+
 func ResourceIbmNotificationDistributionListDestinationMapToAddDestinationPrototypeEventNotificationDestinationPrototype(modelMap map[string]interface{}) (*platformnotificationsv1.AddDestinationPrototypeEventNotificationDestinationPrototype, error) {
 	model := &platformnotificationsv1.AddDestinationPrototypeEventNotificationDestinationPrototype{}
+
+	if _, ok := modelMap["destination_id"]; !ok {
+		return nil, fmt.Errorf("destination_id not found in map")
+	}
+
+	if _, ok := modelMap["destination_type"]; !ok {
+		return nil, fmt.Errorf("destination_type not found in map")
+	}
+
+	allowedKeys := []string{"destination_id", "destination_type"}
+	if err := ValidateDiscriminationFields(modelMap, allowedKeys, "event_notifications"); err != nil {
+		return nil, err
+	}
+
 	model.DestinationID = core.UUIDPtr(strfmt.UUID(modelMap["destination_id"].(string)))
 	model.DestinationType = core.StringPtr(modelMap["destination_type"].(string))
 	return model, nil
