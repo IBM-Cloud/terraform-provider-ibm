@@ -83,6 +83,7 @@ import (
 	iampolicymanagement "github.com/IBM/platform-services-go-sdk/iampolicymanagementv1"
 	ibmcloudshellv1 "github.com/IBM/platform-services-go-sdk/ibmcloudshellv1"
 	"github.com/IBM/platform-services-go-sdk/metricsrouterv3"
+	"github.com/IBM/platform-services-go-sdk/platformnotificationsv1"
 	resourcecontroller "github.com/IBM/platform-services-go-sdk/resourcecontrollerv2"
 	resourcemanager "github.com/IBM/platform-services-go-sdk/resourcemanagerv2"
 	"github.com/IBM/platform-services-go-sdk/usagereportsv4"
@@ -338,6 +339,7 @@ type ClientSession interface {
 	LogsV0() (*logsv0.LogsV0, error)
 	SdsaasV1() (*sdsaasv1.SdsaasV1, error)
 	DrAutomationServiceV1() (*drautomationservicev1.DrAutomationServiceV1, error)
+	PlatformNotificationsV1() (*platformnotificationsv1.PlatformNotificationsV1, error)
 }
 
 type clientSession struct {
@@ -719,6 +721,10 @@ type clientSession struct {
 	// DR Automation
 	drAutomationServiceClient    *drautomationservicev1.DrAutomationServiceV1
 	drAutomationServiceClientErr error
+
+	// Platform Notifications
+	platformNotificationsClient    *platformnotificationsv1.PlatformNotificationsV1
+	platformNotificationsClientErr error
 }
 
 // Usage Reports
@@ -1374,6 +1380,11 @@ func (sess clientSession) GlobalCatalogV1API() (*globalcatalogv1.GlobalCatalogV1
 	return sess.globalCatalogClient, sess.globalCatalogClientErr
 }
 
+// Platform Notifications
+func (session clientSession) PlatformNotificationsV1() (*platformnotificationsv1.PlatformNotificationsV1, error) {
+	return session.platformNotificationsClient, session.platformNotificationsClientErr
+}
+
 // ClientSession configures and returns a fully initialized ClientSession
 func (c *Config) ClientSession() (interface{}, error) {
 	sess, fileMap, err := newSession(c)
@@ -2027,6 +2038,33 @@ func (c *Config) ClientSession() (interface{}, error) {
 		})
 	} else {
 		session.atrackerClientV2Err = fmt.Errorf("Error occurred while configuring Activity Tracker API Version 2 service: %q", err)
+	}
+
+	var distAuthenticator = &core.IamAuthenticator{ //TODO: remove it once we are submitting a pr
+		ApiKey: c.BluemixAPIKey,
+		URL:    "https://iam.test.cloud.ibm.com/identity/token", // Test IAM endpoint
+	}
+
+	// Construct an instance of the 'Platform Notifications' service.
+	if session.platformNotificationsClientErr == nil {
+		// Construct the service options.
+		platformNotificationsClientOptions := &platformnotificationsv1.PlatformNotificationsV1Options{
+			Authenticator: distAuthenticator,
+			URL:           "http://localhost:8080/notification-api",
+		}
+
+		// Construct the service client.
+		session.platformNotificationsClient, err = platformnotificationsv1.NewPlatformNotificationsV1(platformNotificationsClientOptions)
+		if err == nil {
+			// Enable retries for API calls
+			session.platformNotificationsClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+			// Add custom header for analytics
+			session.platformNotificationsClient.SetDefaultHeaders(gohttp.Header{
+				"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
+			})
+		} else {
+			session.platformNotificationsClientErr = fmt.Errorf("Error occurred while constructing 'Platform Notifications' service client: %q", err)
+		}
 	}
 
 	// Construct an "options" struct for creating the service client for Metrics Router
