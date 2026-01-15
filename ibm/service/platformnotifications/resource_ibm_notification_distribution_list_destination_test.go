@@ -24,6 +24,7 @@ import (
 func TestAccIbmNotificationDistributionListDestinationBasic(t *testing.T) {
 	var conf platformnotificationsv1.AddDestination
 	accountID := fmt.Sprintf("tf_account_id_%d", acctest.RandIntRange(10, 100))
+	destinationId := acc.DistributionListDestinationId
 	destinationType := "event_notifications"
 
 	resource.Test(t, resource.TestCase{
@@ -53,6 +54,7 @@ func testAccCheckIbmNotificationDistributionListDestinationConfigBasic(accountID
 		resource "ibm_notification_distribution_list_destination" "notification_distribution_list_destination_instance" {
 			account_id = "%s"
 			destination_type = "%s"
+			destination_id = "%s"
 		}
 	`, accountID, destinationType)
 }
@@ -85,8 +87,17 @@ func testAccCheckIbmNotificationDistributionListDestinationExists(n string, obj 
 			return err
 		}
 
-		addDestination := addDestinationIntf.(*platformnotificationsv1.AddDestination)
-		obj = *addDestination
+		switch v := addDestinationIntf.(type) {
+		case *distributionlistv1.AddDestinationEventNotificationDestination:
+			obj = distributionlistv1.AddDestination{
+				DestinationID:   v.DestinationID,
+				DestinationType: v.DestinationType,
+			}
+		case *distributionlistv1.AddDestination:
+			obj = *v
+		default:
+			return fmt.Errorf("unexpected destination type: %T", addDestinationIntf)
+		}
 		return nil
 	}
 }
@@ -128,7 +139,7 @@ func TestResourceIbmNotificationDistributionListDestinationMapToAddDestinationPr
 	// Checking the result is disabled for this model, because it has a discriminator
 	// and there are separate tests for each child model below.
 	model := make(map[string]interface{})
-	model["destination_id"] = "12345678-1234-1234-1234-123456789012"
+	model["destination_id"] = acc.DistributionListDestinationId
 	model["destination_type"] = "event_notifications"
 
 	_, err := platformnotifications.ResourceIbmNotificationDistributionListDestinationMapToAddDestinationPrototype(model)

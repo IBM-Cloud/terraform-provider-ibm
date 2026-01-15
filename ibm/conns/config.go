@@ -2040,17 +2040,11 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.atrackerClientV2Err = fmt.Errorf("Error occurred while configuring Activity Tracker API Version 2 service: %q", err)
 	}
 
-	var distAuthenticator = &core.IamAuthenticator{ //TODO: remove it once we are submitting a pr
-		ApiKey: c.BluemixAPIKey,
-		URL:    "https://iam.test.cloud.ibm.com/identity/token", // Test IAM endpoint
-	}
-
 	// Construct an instance of the 'Platform Notifications' service.
 	if session.platformNotificationsClientErr == nil {
 		// Construct the service options.
 		platformNotificationsClientOptions := &platformnotificationsv1.PlatformNotificationsV1Options{
-			Authenticator: distAuthenticator,
-			URL:           "http://localhost:8080/notification-api",
+			Authenticator: authenticator,
 		}
 
 		// Construct the service client.
