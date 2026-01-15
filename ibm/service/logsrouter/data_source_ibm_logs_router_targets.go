@@ -3,7 +3,7 @@
 
 /*
  * IBM OpenAPI Terraform Generator Version: 3.108.0-56772134-20251111-102802
-*/
+ */
 
 package logsrouter
 
@@ -194,7 +194,11 @@ func DataSourceIBMLogsRouterTargetsTargetToMap(model *logsrouterv3.Target) (map[
 	modelMap["write_status"] = []map[string]interface{}{writeStatusMap}
 	modelMap["created_at"] = model.CreatedAt.String()
 	modelMap["updated_at"] = model.UpdatedAt.String()
-	modelMap["managed_by"] = *model.ManagedBy
+
+	if model.ManagedBy != nil {
+		modelMap["managed_by"] = *model.ManagedBy
+	}
+
 	return modelMap, nil
 }
 

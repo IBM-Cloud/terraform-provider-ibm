@@ -86,6 +86,7 @@ provider "ibm" {
 |User Management|IBMCLOUD_USER_MANAGEMENT_ENDPOINT|
 |Event Notifications|IBMCLOUD_EVENT_NOTIFICATIONS_API_ENDPOINT|
 |Logs Routing|IBMCLOUD_LOGS_ROUTING_API_ENDPOINT|
+|Logs Routing v3|IBMCLOUD_LOGS_ROUTING_V3_API_ENDPOINT|
 
 ## File structure for endpoints file
 

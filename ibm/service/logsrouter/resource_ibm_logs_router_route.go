@@ -3,7 +3,7 @@
 
 /*
  * IBM OpenAPI Terraform Generator Version: 3.108.0-56772134-20251111-102802
-*/
+ */
 
 package logsrouter
 
@@ -24,18 +24,18 @@ import (
 
 func ResourceIBMLogsRouterRoute() *schema.Resource {
 	return &schema.Resource{
-		CreateContext:   resourceIBMLogsRouterRouteCreate,
-		ReadContext:     resourceIBMLogsRouterRouteRead,
-		UpdateContext:   resourceIBMLogsRouterRouteUpdate,
-		DeleteContext:   resourceIBMLogsRouterRouteDelete,
-		Importer: &schema.ResourceImporter{},
+		CreateContext: resourceIBMLogsRouterRouteCreate,
+		ReadContext:   resourceIBMLogsRouterRouteRead,
+		UpdateContext: resourceIBMLogsRouterRouteUpdate,
+		DeleteContext: resourceIBMLogsRouterRouteDelete,
+		Importer:      &schema.ResourceImporter{},
 
 		Schema: map[string]*schema.Schema{
 			"name": &schema.Schema{
-				Type:        schema.TypeString,
-				Required:    true,
+				Type:         schema.TypeString,
+				Required:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_logs_router_route", "name"),
-				Description: "The name of the route.",
+				Description:  "The name of the route.",
 			},
 			"rules": &schema.Schema{
 				Type:        schema.TypeList,
@@ -58,21 +58,6 @@ func ResourceIBMLogsRouterRoute() *schema.Resource {
 										Type:        schema.TypeString,
 										Required:    true,
 										Description: "The target uuid for a pre-defined platform logs router target.",
-									},
-									"crn": &schema.Schema{
-										Type:        schema.TypeString,
-										Required:    true,
-										Description: "The CRN of a pre-defined logs-router target.",
-									},
-									"name": &schema.Schema{
-										Type:        schema.TypeString,
-										Required:    true,
-										Description: "The name of a pre-defined logs-router target.",
-									},
-									"target_type": &schema.Schema{
-										Type:        schema.TypeString,
-										Required:    true,
-										Description: "The type of the target.",
 									},
 								},
 							},
@@ -106,10 +91,10 @@ func ResourceIBMLogsRouterRoute() *schema.Resource {
 				},
 			},
 			"managed_by": &schema.Schema{
-				Type:        schema.TypeString,
-				Optional:    true,
+				Type:         schema.TypeString,
+				Optional:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_logs_router_route", "managed_by"),
-				Description: "Present when the route is enterprise-managed (`managed_by: enterprise`).",
+				Description:  "Present when the route is enterprise-managed (`managed_by: enterprise`).",
 			},
 			"crn": &schema.Schema{
 				Type:        schema.TypeString,
@@ -394,9 +379,6 @@ func ResourceIBMLogsRouterRouteRuleToMap(model *logsrouterv3.Rule) (map[string]i
 func ResourceIBMLogsRouterRouteTargetReferenceToMap(model *logsrouterv3.TargetReference) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["id"] = *model.ID
-	modelMap["crn"] = *model.CRN
-	modelMap["name"] = *model.Name
-	modelMap["target_type"] = *model.TargetType
 	return modelMap, nil
 }
 

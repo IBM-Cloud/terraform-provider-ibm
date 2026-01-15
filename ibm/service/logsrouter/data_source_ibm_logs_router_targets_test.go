@@ -3,7 +3,7 @@
 
 /*
  * IBM OpenAPI Terraform Generator Version: 3.108.0-56772134-20251111-102802
-*/
+ */
 
 package logsrouter_test
 
@@ -11,20 +11,20 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
-	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 
+	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/logsrouter"
+	. "github.com/IBM-Cloud/terraform-provider-ibm/ibm/unittest"
 	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/IBM/platform-services-go-sdk/logsrouterv3"
 	"github.com/stretchr/testify/assert"
-	. "github.com/IBM-Cloud/terraform-provider-ibm/ibm/unittest"
-	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 )
 
 func TestAccIBMLogsRouterTargetsDataSourceBasic(t *testing.T) {
 	targetName := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
-	targetDestinationCRN := fmt.Sprintf("tf_destination_crn_%d", acctest.RandIntRange(10, 100))
+	targetDestinationCRN := iclDestinationCRN
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheck(t) },
@@ -45,8 +45,8 @@ func TestAccIBMLogsRouterTargetsDataSourceBasic(t *testing.T) {
 
 func TestAccIBMLogsRouterTargetsDataSourceAllArgs(t *testing.T) {
 	targetName := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
-	targetDestinationCRN := fmt.Sprintf("tf_destination_crn_%d", acctest.RandIntRange(10, 100))
-	targetRegion := fmt.Sprintf("tf_region_%d", acctest.RandIntRange(10, 100))
+	targetDestinationCRN := iclDestinationCRN
+	targetRegion := "us-south"
 	targetManagedBy := "enterprise"
 
 	resource.Test(t, resource.TestCase{
@@ -79,6 +79,8 @@ func testAccCheckIBMLogsRouterTargetsDataSourceConfigBasic(targetName string, ta
 		resource "ibm_logs_router_target" "logs_router_target_instance" {
 			name = "%s"
 			destination_crn = "%s"
+			region = "us-south"
+			managed_by = "account"
 		}
 
 		data "ibm_logs_router_targets" "logs_router_targets_instance" {

@@ -1840,6 +1840,68 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.ibmCloudLogsRoutingClientErr = fmt.Errorf("Error occurred while configuring IBM Cloud Logs Routing service: %q", err)
 	}
 
+	// LOGS ROUTER V3
+	// Determine the correct region-based endpoint URL to use
+	var logsRouterV3ClientURL string
+	if c.Visibility == "private" || c.Visibility == "public-and-private" {
+		logsRouterV3ClientURL, err = logsrouterv3.GetServiceURLForRegion("private." + c.Region)
+		if err != nil && c.Visibility == "public-and-private" {
+			logsRouterV3ClientURL, err = logsrouterv3.GetServiceURLForRegion(c.Region)
+		}
+	} else {
+		logsRouterV3ClientURL, err = logsrouterv3.GetServiceURLForRegion(c.Region)
+	}
+	if err != nil {
+		// Developer: For some services that support regional endpoints it may be appropriate to use the service's
+		// default endpoint URL if a specific region was not configured by the user, but for other services that
+		// support regional endpoints, it may NOT be appropriate to use the default endpoint URL.
+		//
+		// Choose the appropriate code block below when you copy/paste this code into the official copy of config.go
+		// (https://github.com/IBM-Cloud/terraform-provider-ibm/blob/master/ibm/conns/config.go):
+		//
+		// 1. If it is appropriate to use your service's default endpoint URL if a region-based endpoint URL
+		// cannot be successfully obtained from the user's configuration, then use "Code block 1" and remove
+		// "Code block 2" below.
+		//
+		// 2. If your service should ONLY use a region-based endpoint URL and instead return an error if a
+		// region-based endpoint URL cannot be obtained from the user's configuration, then use "Code block 2"
+		// and remove "Code block 1" below.
+
+		// Code block 1:
+		// If a suitable region-based endpoint URL could not be obtained, fall back to the service's default endpoint URL.
+		logsRouterV3ClientURL = logsrouterv3.DefaultServiceURL
+
+		// Code block 2:
+		// If a suitable region-based endpoint URL could not be obtained, then report an error and prevent the service client
+		// from being constructed below.
+		session.logsRouterClientErr = fmt.Errorf("Error occurred while determining endpoint URL for 'Logs Routing API Version 3' service: %q", err)
+	}
+	if fileMap != nil && c.Visibility != "public-and-private" {
+		logsRouterV3ClientURL = fileFallBack(fileMap, c.Visibility, "IBMCLOUD_LOGS_ROUTING_V3_API_ENDPOINT", c.Region, logsRouterV3ClientURL)
+	}
+
+	// Construct an instance of the 'Logs Routing API Version 3' service.
+	if session.logsRouterClientErr == nil {
+		// Construct the service options.
+		logsRouterClientOptions := &logsrouterv3.LogsRouterV3Options{
+			Authenticator: authenticator,
+			URL:           EnvFallBack([]string{"IBMCLOUD_LOGS_ROUTING_V3_API_ENDPOINT"}, logsRouterV3ClientURL),
+		}
+
+		// Construct the service client.
+		session.logsRouterClient, err = logsrouterv3.NewLogsRouterV3(logsRouterClientOptions)
+		if err == nil {
+			// Enable retries for API calls
+			session.logsRouterClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+			// Add custom header for analytics
+			session.logsRouterClient.SetDefaultHeaders(gohttp.Header{
+				"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
+			})
+		} else {
+			session.logsRouterClientErr = fmt.Errorf("Error occurred while constructing 'Logs Routing API Version 3' service client: %q", err)
+		}
+	}
+
 	// Construct an "options" struct for creating the service client.
 	ukoClientOptions := &ukov4.UkoV4Options{
 		Authenticator: authenticator,
@@ -2038,67 +2100,6 @@ func (c *Config) ClientSession() (interface{}, error) {
 		})
 	} else {
 		session.atrackerClientV2Err = fmt.Errorf("Error occurred while configuring Activity Tracker API Version 2 service: %q", err)
-	}
-
-	// Determine the correct region-based endpoint URL to use for the 'Logs Routing API Version 3' service.
-	var logsRouterClientURL string
-	if c.Visibility == "private" || c.Visibility == "public-and-private" {
-		logsRouterClientURL, err = logsrouterv3.GetServiceURLForRegion("private." + c.Region)
-		if err != nil && c.Visibility == "public-and-private" {
-			logsRouterClientURL, err = logsrouterv3.GetServiceURLForRegion(c.Region)
-		}
-	} else {
-		logsRouterClientURL, err = logsrouterv3.GetServiceURLForRegion(c.Region)
-	}
-	if err != nil {
-		// Developer: For some services that support regional endpoints it may be appropriate to use the service's
-		// default endpoint URL if a specific region was not configured by the user, but for other services that
-		// support regional endpoints, it may NOT be appropriate to use the default endpoint URL.
-		//
-		// Choose the appropriate code block below when you copy/paste this code into the official copy of config.go
-		// (https://github.com/IBM-Cloud/terraform-provider-ibm/blob/master/ibm/conns/config.go):
-		//
-		// 1. If it is appropriate to use your service's default endpoint URL if a region-based endpoint URL
-		// cannot be successfully obtained from the user's configuration, then use "Code block 1" and remove
-		// "Code block 2" below.
-		//
-		// 2. If your service should ONLY use a region-based endpoint URL and instead return an error if a
-		// region-based endpoint URL cannot be obtained from the user's configuration, then use "Code block 2"
-		// and remove "Code block 1" below.
-
-		// Code block 1:
-		// If a suitable region-based endpoint URL could not be obtained, fall back to the service's default endpoint URL.
-		logsRouterClientURL = logsrouterv3.DefaultServiceURL
-
-		// Code block 2:
-		// If a suitable region-based endpoint URL could not be obtained, then report an error and prevent the service client
-		// from being constructed below.
-		session.logsRouterClientErr = fmt.Errorf("Error occurred while determining endpoint URL for 'Logs Routing API Version 3' service: %q", err)
-	}
-	if fileMap != nil && c.Visibility != "public-and-private" {
-		logsRouterClientURL = fileFallBack(fileMap, c.Visibility, "IBMCLOUD_LOGS_ROUTER_API_ENDPOINT", c.Region, logsRouterClientURL)
-	}
-
-	// Construct an instance of the 'Logs Routing API Version 3' service.
-	if session.logsRouterClientErr == nil {
-		// Construct the service options.
-		logsRouterClientOptions := &logsrouterv3.LogsRouterV3Options{
-			Authenticator: authenticator,
-			URL:           EnvFallBack([]string{"IBMCLOUD_LOGS_ROUTER_API_ENDPOINT"}, logsRouterClientURL),
-		}
-
-		// Construct the service client.
-		session.logsRouterClient, err = logsrouterv3.NewLogsRouterV3(logsRouterClientOptions)
-		if err == nil {
-			// Enable retries for API calls
-			session.logsRouterClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
-			// Add custom header for analytics
-			session.logsRouterClient.SetDefaultHeaders(gohttp.Header{
-				"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
-			})
-		} else {
-			session.logsRouterClientErr = fmt.Errorf("Error occurred while constructing 'Logs Routing API Version 3' service client: %q", err)
-		}
 	}
 
 	// Construct an "options" struct for creating the service client for Metrics Router

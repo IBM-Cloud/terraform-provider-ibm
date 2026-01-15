@@ -7,25 +7,25 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
-	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
-	"github.com/hashicorp/terraform-plugin-testing/terraform"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 
+	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/logsrouter"
+	. "github.com/IBM-Cloud/terraform-provider-ibm/ibm/unittest"
 	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/IBM/platform-services-go-sdk/logsrouterv3"
 	"github.com/stretchr/testify/assert"
-	. "github.com/IBM-Cloud/terraform-provider-ibm/ibm/unittest"
-	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 )
 
 func TestAccIBMLogsRouterTargetBasic(t *testing.T) {
 	var conf logsrouterv3.Target
 	name := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
-	destinationCRN := fmt.Sprintf("tf_destination_crn_%d", acctest.RandIntRange(10, 100))
+	destinationCRN := iclDestinationCRN
 	nameUpdate := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
-	destinationCRNUpdate := fmt.Sprintf("tf_destination_crn_%d", acctest.RandIntRange(10, 100))
+	destinationCRNUpdate := iclDestinationCRNUpdate
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
@@ -54,13 +54,13 @@ func TestAccIBMLogsRouterTargetBasic(t *testing.T) {
 func TestAccIBMLogsRouterTargetAllArgs(t *testing.T) {
 	var conf logsrouterv3.Target
 	name := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
-	destinationCRN := fmt.Sprintf("tf_destination_crn_%d", acctest.RandIntRange(10, 100))
-	region := fmt.Sprintf("tf_region_%d", acctest.RandIntRange(10, 100))
+	destinationCRN := iclDestinationCRN
+	region := "us-south"
 	managedBy := "enterprise"
-	nameUpdate := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
-	destinationCRNUpdate := fmt.Sprintf("tf_destination_crn_%d", acctest.RandIntRange(10, 100))
-	regionUpdate := fmt.Sprintf("tf_region_%d", acctest.RandIntRange(10, 100))
-	managedByUpdate := "account"
+	nameUpdate := fmt.Sprintf("%s_update", name)
+	destinationCRNUpdate := iclDestinationCRNUpdate
+	regionUpdate := region          // region is immutable
+	managedByUpdate := "enterprise" // managedBy is immutable
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
@@ -100,6 +100,8 @@ func testAccCheckIBMLogsRouterTargetConfigBasic(name string, destinationCRN stri
 		resource "ibm_logs_router_target" "logs_router_target_instance" {
 			name = "%s"
 			destination_crn = "%s"
+			region = "us-south"
+			managed_by = "account"
 		}
 	`, name, destinationCRN)
 }

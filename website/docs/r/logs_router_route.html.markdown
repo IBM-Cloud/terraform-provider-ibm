@@ -20,9 +20,6 @@ resource "ibm_logs_router_route" "logs_router_route_instance" {
 		action = "send"
 		targets {
 			id = "c3af557f-fb0e-4476-85c3-0889e7fe7bc4"
-			crn = "crn:v1:bluemix:public:logs:us-south:a/0be5ad401ae913d8ff665d92680664ed:22222222-2222-2222-2222-222222222222::"
-			name = "a-lr-target-us-south"
-			target_type = "cloud_logs"
 		}
 		inclusion_filters {
 			operand = "location"

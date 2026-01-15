@@ -3,7 +3,7 @@
 
 /*
  * IBM OpenAPI Terraform Generator Version: 3.108.0-56772134-20251111-102802
-*/
+ */
 
 package logsrouter
 
@@ -24,36 +24,36 @@ import (
 
 func ResourceIBMLogsRouterTarget() *schema.Resource {
 	return &schema.Resource{
-		CreateContext:   resourceIBMLogsRouterTargetCreate,
-		ReadContext:     resourceIBMLogsRouterTargetRead,
-		UpdateContext:   resourceIBMLogsRouterTargetUpdate,
-		DeleteContext:   resourceIBMLogsRouterTargetDelete,
-		Importer: &schema.ResourceImporter{},
+		CreateContext: resourceIBMLogsRouterTargetCreate,
+		ReadContext:   resourceIBMLogsRouterTargetRead,
+		UpdateContext: resourceIBMLogsRouterTargetUpdate,
+		DeleteContext: resourceIBMLogsRouterTargetDelete,
+		Importer:      &schema.ResourceImporter{},
 
 		Schema: map[string]*schema.Schema{
 			"name": &schema.Schema{
-				Type:        schema.TypeString,
-				Required:    true,
+				Type:         schema.TypeString,
+				Required:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_logs_router_target", "name"),
-				Description: "The name of the target resource.",
+				Description:  "The name of the target resource.",
 			},
 			"destination_crn": &schema.Schema{
-				Type:        schema.TypeString,
-				Required:    true,
+				Type:         schema.TypeString,
+				Required:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_logs_router_target", "destination_crn"),
-				Description: "Cloud Resource Name (CRN) of the destination resource. Ensure you have a service authorization between IBM Cloud Logs Routing and your Cloud resource. See [service-to-service authorization](https://cloud.ibm.com/docs/logs-router?topic=logs-router-target-monitoring&interface=ui#target-monitoring-ui) for details.",
+				Description:  "Cloud Resource Name (CRN) of the destination resource. Ensure you have a service authorization between IBM Cloud Logs Routing and your Cloud resource. See [service-to-service authorization](https://cloud.ibm.com/docs/logs-router?topic=logs-router-target-monitoring&interface=ui#target-monitoring-ui) for details.",
 			},
 			"region": &schema.Schema{
-				Type:        schema.TypeString,
-				Optional:    true,
+				Type:         schema.TypeString,
+				Optional:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_logs_router_target", "region"),
-				Description: "Include this optional field if you used it to create a target in a different region other than the one you are connected.",
+				Description:  "Include this optional field if you used it to create a target in a different region other than the one you are connected.",
 			},
 			"managed_by": &schema.Schema{
-				Type:        schema.TypeString,
-				Optional:    true,
+				Type:         schema.TypeString,
+				Optional:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_logs_router_target", "managed_by"),
-				Description: "Present when the target is enterprise-managed (`managed_by: enterprise`). For account-managed targets this field is omitted.",
+				Description:  "Present when the target is enterprise-managed (`managed_by: enterprise`). For account-managed targets this field is omitted.",
 			},
 			"crn": &schema.Schema{
 				Type:        schema.TypeString,

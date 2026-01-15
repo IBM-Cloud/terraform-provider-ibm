@@ -3,7 +3,7 @@
 
 /*
  * IBM OpenAPI Terraform Generator Version: 3.108.0-56772134-20251111-102802
-*/
+ */
 
 package logsrouter
 
