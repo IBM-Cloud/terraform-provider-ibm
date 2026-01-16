@@ -193,9 +193,6 @@ func TestResourceIBMLogsRouterRouteRuleToMap(t *testing.T) {
 	checkResult := func(result map[string]interface{}) {
 		targetReferenceModel := make(map[string]interface{})
 		targetReferenceModel["id"] = "c3af557f-fb0e-4476-85c3-0889e7fe7bc4"
-		targetReferenceModel["crn"] = "crn:v1:bluemix:public:logs:us-south:a/0be5ad401ae913d8ff665d92680664ed:22222222-2222-2222-2222-222222222222::"
-		targetReferenceModel["name"] = "a-lr-target-us-south"
-		targetReferenceModel["target_type"] = "cloud_logs"
 
 		inclusionFilterModel := make(map[string]interface{})
 		inclusionFilterModel["operand"] = "location"
@@ -212,9 +209,6 @@ func TestResourceIBMLogsRouterRouteRuleToMap(t *testing.T) {
 
 	targetReferenceModel := new(logsrouterv3.TargetReference)
 	targetReferenceModel.ID = core.StringPtr("c3af557f-fb0e-4476-85c3-0889e7fe7bc4")
-	targetReferenceModel.CRN = core.StringPtr("crn:v1:bluemix:public:logs:us-south:a/0be5ad401ae913d8ff665d92680664ed:22222222-2222-2222-2222-222222222222::")
-	targetReferenceModel.Name = core.StringPtr("a-lr-target-us-south")
-	targetReferenceModel.TargetType = core.StringPtr("cloud_logs")
 
 	inclusionFilterModel := new(logsrouterv3.InclusionFilter)
 	inclusionFilterModel.Operand = core.StringPtr("location")
@@ -235,18 +229,12 @@ func TestResourceIBMLogsRouterRouteTargetReferenceToMap(t *testing.T) {
 	checkResult := func(result map[string]interface{}) {
 		model := make(map[string]interface{})
 		model["id"] = "c3af557f-fb0e-4476-85c3-0889e7fe7bc4"
-		model["crn"] = "crn:v1:bluemix:public:logs:us-south:a/0be5ad401ae913d8ff665d92680664ed:22222222-2222-2222-2222-222222222222::"
-		model["name"] = "a-lr-target-us-south"
-		model["target_type"] = "cloud_logs"
 
 		assert.Equal(t, result, model)
 	}
 
 	model := new(logsrouterv3.TargetReference)
 	model.ID = core.StringPtr("c3af557f-fb0e-4476-85c3-0889e7fe7bc4")
-	model.CRN = core.StringPtr("crn:v1:bluemix:public:logs:us-south:a/0be5ad401ae913d8ff665d92680664ed:22222222-2222-2222-2222-222222222222::")
-	model.Name = core.StringPtr("a-lr-target-us-south")
-	model.TargetType = core.StringPtr("cloud_logs")
 
 	result, err := logsrouter.ResourceIBMLogsRouterRouteTargetReferenceToMap(model)
 	assert.Nil(t, err)
