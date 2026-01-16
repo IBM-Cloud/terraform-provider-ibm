@@ -164,6 +164,10 @@ func resourceIbmNotificationDistributionListDestinationRead(context context.Cont
 
 	if _, ok := addDestinationIntf.(*platformnotificationsv1.AddDestinationEventNotificationDestination); ok {
 		addDestination := addDestinationIntf.(*platformnotificationsv1.AddDestinationEventNotificationDestination)
+		if err = d.Set("account_id", getDistributionListDestinationOptions.AccountID); err != nil {
+			err = fmt.Errorf("Error setting account_id: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_distribution_list_destination", "read", "set-account_id").GetDiag()
+		}
 		if !core.IsNil(addDestination.DestinationID) {
 			if err = d.Set("destination_id", addDestination.DestinationID); err != nil {
 				err = fmt.Errorf("Error setting destination_id: %s", err)

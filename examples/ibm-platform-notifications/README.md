@@ -38,15 +38,6 @@ resource "ibm_notification_distribution_list_destination" "notification_distribu
 | destination_id | The GUID of the Event Notifications instance. | `` | false |
 | destination_type | The type of the destination. | `string` | true |
 
-
-## Assumptions
-
-1. TODO
-
-## Notes
-
-1. TODO
-
 ## Requirements
 
 | Name | Version |

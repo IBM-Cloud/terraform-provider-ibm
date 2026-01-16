@@ -5,12 +5,12 @@ package platformnotifications_test
 
 import (
 	"fmt"
+	"os"
 	"testing"
 
 	"github.com/go-openapi/strfmt"
-	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
-	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
-	"github.com/hashicorp/terraform-plugin-testing/terraform"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
@@ -21,19 +21,26 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func testAccPreCheckPlatformNotifications(t *testing.T) {
+	if v := os.Getenv("IC_API_KEY"); v == "" {
+		t.Fatal("IC_API_KEY must be set for acceptance tests")
+	}
+	// Provider configuration is handled by the test framework
+}
+
 func TestAccIbmNotificationDistributionListDestinationBasic(t *testing.T) {
 	var conf platformnotificationsv1.AddDestination
-	accountID := fmt.Sprintf("tf_account_id_%d", acctest.RandIntRange(10, 100))
-	destinationId := acc.DistributionListDestinationId
+	accountID := acc.NotificationDistributionListAccountId
+	destinationId := acc.NotificationDistributionListDestinationId
 	destinationType := "event_notifications"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		PreCheck:     func() { testAccPreCheckPlatformNotifications(t) },
 		Providers:    acc.TestAccProviders,
 		CheckDestroy: testAccCheckIbmNotificationDistributionListDestinationDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIbmNotificationDistributionListDestinationConfigBasic(accountID, destinationType),
+				Config: testAccCheckIbmNotificationDistributionListDestinationConfigBasic(accountID, destinationType, destinationId),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIbmNotificationDistributionListDestinationExists("ibm_notification_distribution_list_destination.notification_distribution_list_destination_instance", conf),
 					resource.TestCheckResourceAttr("ibm_notification_distribution_list_destination.notification_distribution_list_destination_instance", "account_id", accountID),
@@ -49,14 +56,14 @@ func TestAccIbmNotificationDistributionListDestinationBasic(t *testing.T) {
 	})
 }
 
-func testAccCheckIbmNotificationDistributionListDestinationConfigBasic(accountID string, destinationType string) string {
+func testAccCheckIbmNotificationDistributionListDestinationConfigBasic(accountID string, destinationType string, destinationId string) string {
 	return fmt.Sprintf(`
 		resource "ibm_notification_distribution_list_destination" "notification_distribution_list_destination_instance" {
 			account_id = "%s"
 			destination_type = "%s"
 			destination_id = "%s"
 		}
-	`, accountID, destinationType)
+	`, accountID, destinationType, destinationId)
 }
 
 func testAccCheckIbmNotificationDistributionListDestinationExists(n string, obj platformnotificationsv1.AddDestination) resource.TestCheckFunc {
@@ -88,12 +95,12 @@ func testAccCheckIbmNotificationDistributionListDestinationExists(n string, obj 
 		}
 
 		switch v := addDestinationIntf.(type) {
-		case *distributionlistv1.AddDestinationEventNotificationDestination:
-			obj = distributionlistv1.AddDestination{
+		case *platformnotificationsv1.AddDestinationEventNotificationDestination:
+			obj = platformnotificationsv1.AddDestination{
 				DestinationID:   v.DestinationID,
 				DestinationType: v.DestinationType,
 			}
-		case *distributionlistv1.AddDestination:
+		case *platformnotificationsv1.AddDestination:
 			obj = *v
 		default:
 			return fmt.Errorf("unexpected destination type: %T", addDestinationIntf)
@@ -139,7 +146,7 @@ func TestResourceIbmNotificationDistributionListDestinationMapToAddDestinationPr
 	// Checking the result is disabled for this model, because it has a discriminator
 	// and there are separate tests for each child model below.
 	model := make(map[string]interface{})
-	model["destination_id"] = acc.DistributionListDestinationId
+	model["destination_id"] = acc.NotificationDistributionListDestinationId
 	model["destination_type"] = "event_notifications"
 
 	_, err := platformnotifications.ResourceIbmNotificationDistributionListDestinationMapToAddDestinationPrototype(model)
