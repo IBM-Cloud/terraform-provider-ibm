@@ -152,6 +152,17 @@ func testAccCheckIBMISsecurityGroupRuleConfig(vpcname, name string) string {
 		direction = "inbound"
 		remote    = "127.0.0.1"
 	  }
+
+	  resource "ibm_is_security_group_rule" "testacc_security_group_rule" {
+		group     = ibm_is_security_group.testacc_security_group.id
+		direction = "inbound"
+		remote    = "127.0.0.1"
+		icmp {
+		  code = 21
+		  type = 31
+		}
+		name 	  = "test-name"
+	  }
 	  
 	  resource "ibm_is_security_group_rule" "testacc_security_group_rule_icmp" {
 		depends_on = [ibm_is_security_group_rule.testacc_security_group_rule_all]
@@ -272,7 +283,7 @@ func testAccCheckIBMISsecurityGroupRuleConfig(vpcname, name string) string {
 		port_min = 8080
 		port_max = 8080
 	  }
-	}
+
  `, vpcname, name)
 
 }

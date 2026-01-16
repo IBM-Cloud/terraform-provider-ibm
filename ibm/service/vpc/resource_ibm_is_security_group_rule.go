@@ -94,6 +94,7 @@ func ResourceIBMISSecurityGroupRule() *schema.Resource {
 
 			isSecurityGroupRuleName: {
 				Type:        schema.TypeString,
+				Optional:    true,
 				Computed:    true,
 				Description: "The name for this security group rule. The name must not be used by another rule in the security group. If unspecified, the name will be a hyphenated list of randomly-selected words.",
 			},
@@ -1012,8 +1013,9 @@ func parseIBMISSecurityGroupRuleDictionary(d *schema.ResourceData, tag string, s
 	securityGroupRulePatchModel.Direction = &parsed.direction
 
 	if v, ok := d.GetOk(isSecurityGroupRuleName); ok && v.(string) != "" {
-		name := v.(string)
-		securityGroupRulePatchModel.Name = &name
+		parsed.name = v.(string)
+		sgTemplate.Name = &parsed.name
+		securityGroupRulePatchModel.Name = &parsed.name
 	}
 
 	if version, ok := d.GetOk(isSecurityGroupRuleIPVersion); ok {
