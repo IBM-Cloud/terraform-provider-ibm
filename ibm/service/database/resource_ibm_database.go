@@ -281,6 +281,11 @@ func ResourceIBMDatabaseInstance() *schema.Resource {
 				Type:        schema.TypeBool,
 				Optional:    true,
 			},
+			"restore_skip_initial_backup": {
+				Description: "Option to support FAST PG Restore",
+				Type:        schema.TypeBool,
+				Optional:    true,
+			},
 			"key_protect_instance": {
 				Description: "The CRN of Key protect instance",
 				Type:        schema.TypeString,
