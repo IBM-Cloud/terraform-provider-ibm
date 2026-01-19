@@ -2425,7 +2425,7 @@ func instanceCreateByImage(context context.Context, d *schema.ResourceData, meta
 				volumeattItemPrototypeModel.UserTags = userTagsArray
 			}
 			//allowed use
-			if _, ok := d.GetOk(fmt.Sprintf("volume_prototypes.%d.allowed_use", i)); ok {
+			if v, ok := d.GetOk(fmt.Sprintf("volume_prototypes.%d.allowed_use", i)); ok && len(v.([]interface{})) > 0 {
 				allowedUseModel, _ := ResourceIBMIsVolumeAllowedUseMapToVolumeAllowedUsePrototype(d.Get(fmt.Sprintf("volume_prototypes.%d.allowed_use", i)).([]interface{})[0].(map[string]interface{}))
 				volumeattItemPrototypeModel.AllowedUse = allowedUseModel
 			}
@@ -3011,7 +3011,7 @@ func instanceCreateByCatalogOffering(context context.Context, d *schema.Resource
 			}
 
 			//allowed use
-			if _, ok := d.GetOk(fmt.Sprintf("volume_prototypes.%d.allowed_use", i)); ok {
+			if v, ok := d.GetOk(fmt.Sprintf("volume_prototypes.%d.allowed_use", i)); ok && len(v.([]interface{})) > 0 {
 				allowedUseModel, _ := ResourceIBMIsVolumeAllowedUseMapToVolumeAllowedUsePrototype(d.Get(fmt.Sprintf("volume_prototypes.%d.allowed_use", i)).([]interface{})[0].(map[string]interface{}))
 				volumeattItemPrototypeModel.AllowedUse = allowedUseModel
 			}
@@ -3608,7 +3608,7 @@ func instanceCreateByTemplate(context context.Context, d *schema.ResourceData, m
 			}
 
 			//allowed use
-			if _, ok := d.GetOk(fmt.Sprintf("volume_prototypes.%d.allowed_use", i)); ok {
+			if v, ok := d.GetOk(fmt.Sprintf("volume_prototypes.%d.allowed_use", i)); ok && len(v.([]interface{})) > 0 {
 				allowedUseModel, _ := ResourceIBMIsVolumeAllowedUseMapToVolumeAllowedUsePrototype(d.Get(fmt.Sprintf("volume_prototypes.%d.allowed_use", i)).([]interface{})[0].(map[string]interface{}))
 				volumeattItemPrototypeModel.AllowedUse = allowedUseModel
 			}
@@ -4199,7 +4199,7 @@ func instanceCreateBySnapshot(context context.Context, d *schema.ResourceData, m
 				}
 			}
 			//allowed use
-			if _, ok := d.GetOk(fmt.Sprintf("volume_prototypes.%d.allowed_use", i)); ok {
+			if v, ok := d.GetOk(fmt.Sprintf("volume_prototypes.%d.allowed_use", i)); ok && len(v.([]interface{})) > 0 {
 				allowedUseModel, _ := ResourceIBMIsVolumeAllowedUseMapToVolumeAllowedUsePrototype(d.Get(fmt.Sprintf("volume_prototypes.%d.allowed_use", i)).([]interface{})[0].(map[string]interface{}))
 				volumeattItemPrototypeModel.AllowedUse = allowedUseModel
 			}
@@ -4809,7 +4809,7 @@ func instanceCreateByVolume(context context.Context, d *schema.ResourceData, met
 			}
 
 			//allowed use
-			if _, ok := d.GetOk(fmt.Sprintf("volume_prototypes.%d.allowed_use", i)); ok {
+			if v, ok := d.GetOk(fmt.Sprintf("volume_prototypes.%d.allowed_use", i)); ok && len(v.([]interface{})) > 0 {
 				allowedUseModel, _ := ResourceIBMIsVolumeAllowedUseMapToVolumeAllowedUsePrototype(d.Get(fmt.Sprintf("volume_prototypes.%d.allowed_use", i)).([]interface{})[0].(map[string]interface{}))
 				volumeattItemPrototypeModel.AllowedUse = allowedUseModel
 			}
@@ -9022,7 +9022,7 @@ func handleVolumePrototypesUpdate(d *schema.ResourceData, instanceC *vpcv1.VpcV1
 			}
 
 			//allowed use
-			if _, ok := d.GetOk(fmt.Sprintf("volume_prototypes.%d.allowed_use", i)); ok {
+			if v, ok := d.GetOk(fmt.Sprintf("volume_prototypes.%d.allowed_use", i)); ok && len(v.([]interface{})) > 0 {
 				allowedUseModel, err := ResourceIBMIsVolumeAllowedUseMapToVolumeAllowedUsePrototype(d.Get(fmt.Sprintf("volume_prototypes.%d.allowed_use", i)).([]interface{})[0].(map[string]interface{}))
 				if err != nil {
 					return err
