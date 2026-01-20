@@ -237,6 +237,52 @@ func TestAccIBMDatabaseInstancePostgresPITR(t *testing.T) {
 	})
 }
 
+func TestAccIBMDatabaseInstancePostgresAsyncRestore(t *testing.T) {
+	t.Parallel()
+
+	databaseResourceGroup := "default"
+
+	var databaseInstanceOne string
+	var databaseInstanceTwo string
+
+	serviceName := fmt.Sprintf("tf-Pgress-%d", acctest.RandIntRange(10, 100))
+	restrServiceName := serviceName + "-async" + "-restore"
+
+	sourceResource := "ibm_database." + serviceName
+	restrResource := "ibm_database." + restrServiceName
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMDatabaseInstanceDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMDatabaseInstancePostgresMinimal(databaseResourceGroup, serviceName),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMDatabaseInstanceExists(sourceResource, &databaseInstanceOne),
+					resource.TestCheckResourceAttr(sourceResource, "name", serviceName),
+					resource.TestCheckResourceAttr(sourceResource, "service", "databases-for-postgresql"),
+					resource.TestCheckResourceAttr(sourceResource, "plan", "standard"),
+					resource.TestCheckResourceAttr(sourceResource, "location", acc.Region()),
+				),
+			},
+			{
+				Config: acc.ConfigCompose(
+					testAccCheckIBMDatabaseInstancePostgresMinimal(databaseResourceGroup, serviceName),
+					testAccCheckIBMDatabaseInstancePostgresAsyncRestoreBackup(databaseResourceGroup, restrServiceName)),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMDatabaseInstanceExists(restrResource, &databaseInstanceTwo),
+					resource.TestCheckResourceAttr(restrResource, "name", restrServiceName),
+					resource.TestCheckResourceAttr(restrResource, "service", "databases-for-postgresql"),
+					resource.TestCheckResourceAttr(restrResource, "plan", "standard"),
+					resource.TestCheckResourceAttr(restrResource, "location", acc.Region()),
+					resource.TestCheckResourceAttr(restrResource, "restore_skip_initial_backup", "true"),
+				),
+			},
+		},
+	})
+}
+
 func TestAccIBMDatabaseInstancePostgresReadReplicaPromotion(t *testing.T) {
 	t.Parallel()
 
@@ -667,6 +713,20 @@ func testAccCheckIBMDatabaseInstancePostgresReadReplicaPromote(databaseResourceG
 		service_endpoints   = "public-and-private"
 		remote_leader_id    = ""
 		skip_initial_backup = true
+	}
+	`, databaseResourceGroup, readReplicaName, acc.Region())
+}
+
+func testAccCheckIBMDatabaseInstancePostgresAsyncRestoreBackup(databaseResourceGroup string, readReplicaName string) string {
+	return fmt.Sprintf(`
+	resource "ibm_database" "%[2]s" {
+		resource_group_id = data.ibm_resource_group.test_acc.id
+		name                = "%[2]s"
+		service             = "databases-for-postgresql"
+		plan                = "standard"
+		location            = "%[3]s"
+		service_endpoints   = "public-and-private"
+		restore_skip_initial_backup = true
 	}
 	`, databaseResourceGroup, readReplicaName, acc.Region())
 }
