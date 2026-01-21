@@ -276,7 +276,7 @@ func TestAccIBMDatabaseInstancePostgresAsyncRestore(t *testing.T) {
 					resource.TestCheckResourceAttr(restrResource, "service", "databases-for-postgresql"),
 					resource.TestCheckResourceAttr(restrResource, "plan", "standard"),
 					resource.TestCheckResourceAttr(restrResource, "location", acc.Region()),
-					resource.TestCheckResourceAttr(restrResource, "restore_skip_initial_backup", "true"),
+					resource.TestCheckResourceAttr(restrResource, "async_restore", "true"),
 				),
 			},
 		},
@@ -726,7 +726,7 @@ func testAccCheckIBMDatabaseInstancePostgresAsyncRestoreBackup(databaseResourceG
 		plan                = "standard"
 		location            = "%[3]s"
 		service_endpoints   = "public-and-private"
-		restore_skip_initial_backup = true
+		async_restore = true
 	}
 	`, databaseResourceGroup, readReplicaName, acc.Region())
 }

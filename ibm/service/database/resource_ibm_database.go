@@ -281,7 +281,7 @@ func ResourceIBMDatabaseInstance() *schema.Resource {
 				Type:        schema.TypeBool,
 				Optional:    true,
 			},
-			"restore_skip_initial_backup": {
+			"async_restore": {
 				Description: "Option to support FAST PG Restore",
 				Type:        schema.TypeBool,
 				Optional:    true,
