@@ -27,16 +27,25 @@ data "ibm_resource_group" "group" {
 }
 ```
 
-## Argument reference
-Review the argument references that you can specify for your data source. 
+### Example to import a resource group by ID
 
-- `is_default` - (Optional, Bool) Specifies whether you want to import default resource group.  **Note**: Conflicts with the  `name`.
-- `name` - (Optional, String) The name of an IBM Cloud resource group. You can retrieve the value by running the `ibmcloud resource groups` command in the [IBM Cloud CLI](https://cloud.ibm.com/docs/cli?topic=cloud-cli-getting-started).  **Note**: Conflicts with `is_default`.
+```terraform
+data "ibm_resource_group" "group" {
+  id = "5ffda12064634723b079acdb018ef308"
+}
+```
+
+## Argument reference
+Review the argument references that you can specify for your data source.
+
+- `is_default` - (Optional, Bool) Specifies whether you want to import default resource group.  **Note**: Conflicts with `name` and `id`.
+- `name` - (Optional, String) The name of an IBM Cloud resource group. You can retrieve the value by running the `ibmcloud resource groups` command in the [IBM Cloud CLI](https://cloud.ibm.com/docs/cli?topic=cloud-cli-getting-started).  **Note**: Conflicts with `is_default` and `id`.
+- `id` - (Optional, String) The ID of the resource group. You can retrieve the value by running the `ibmcloud resource groups` command in the [IBM Cloud CLI](https://cloud.ibm.com/docs/cli?topic=cloud-cli-getting-started).  **Note**: Conflicts with `is_default` and `name`.
 
 ## Attribute reference
 In addition to all argument reference list, you can access the following attribute references after your data source is created. 
 
-- `account_id` - (String) Account ID.  
+- `account_id` - (String) Account ID.
 - `crn` - (String) The full CRN associated with the resource group.
 - `created_at` - (Timestamp) The date when the resource group initially created.
 - `id` - (String) The unique identifier of the new resource group.
