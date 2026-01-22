@@ -940,6 +940,7 @@ type Params struct {
 	PITRDeploymentID    string  `json:"point_in_time_recovery_deployment_id,omitempty"`
 	PITRTimeStamp       *string `json:"point_in_time_recovery_time,omitempty"`
 	OfflineRestore      bool    `json:"offline_restore,omitempty"`
+	AsyncRestore        bool    `json:"async_restore,omitempty"`
 }
 
 type Group struct {
@@ -1232,6 +1233,10 @@ func resourceIBMDatabaseInstanceCreate(context context.Context, d *schema.Resour
 
 	if offlineRestore, ok := d.GetOk("offline_restore"); ok {
 		params.OfflineRestore = offlineRestore.(bool)
+	}
+
+	if asyncRestore, ok := d.GetOk("async_restore"); ok {
+		params.AsyncRestore = asyncRestore.(bool)
 	}
 
 	var initialNodeCount int
