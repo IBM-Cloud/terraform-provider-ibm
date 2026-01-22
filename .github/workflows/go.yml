@@ -20,7 +20,7 @@ jobs:
       id: go
 
     - name: Check out code into the Go module directory
-      uses: actions/checkout@v5.0.1
+      uses: actions/checkout@v6.0.2
 
     - name: Get dependencies
       run: |
