@@ -11,8 +11,6 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"os"
-	"strings"
 	"time"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/logsrouting"
@@ -24,18 +22,7 @@ import (
 	"github.com/IBM/platform-services-go-sdk/logsrouterv3"
 )
 
-// Manually add the function to handle duplicate "ibm_logs_router_targets" name between logs router v1 and v3.
-// After an account migrates from logs router v1 to v3, v1 resources will stop working.
-// Determine the data source version based on api endpoint.
-func DataSourceIBMLogsRouterTargetsByApiEndpoint() *schema.Resource {
-	apiEndpoint := os.Getenv("IBMCLOUD_LOGS_ROUTING_API_ENDPOINT")
-	if strings.Contains(apiEndpoint, "/api/v3") {
-		return DataSourceIBMLogsRouterTargets() // v3
-	} else {
-		return logsrouting.DataSourceIBMLogsRouterTargets() // v1
-	}
-}
-
+// Logs Router v3 schema auto generated based on v3 sdk
 func DataSourceIBMLogsRouterTargets() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: dataSourceIBMLogsRouterTargetsRead,
@@ -125,6 +112,160 @@ func DataSourceIBMLogsRouterTargets() *schema.Resource {
 				},
 			},
 		},
+	}
+}
+
+// Combine v1 and v3 schema because both v1 and v3 define the same data source name.
+// It is needed to support the coexistence of v1 and v3 target data sources
+func CombinedDataSourceIBMLogsRouterTargets() *schema.Resource {
+	return &schema.Resource{
+		ReadContext: dataSourceIBMLogsRouterTargetsReadWrapper,
+
+		Schema: map[string]*schema.Schema{
+			// v3 schema
+			"name": &schema.Schema{
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The name of the target resource.",
+			},
+			"targets": &schema.Schema{
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "A list of target resources.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"id": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The UUID of the target resource.",
+						},
+						"name": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The name of the target resource.",
+						},
+						"crn": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The crn of the target resource.",
+						},
+						"destination_crn": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Cloud Resource Name (CRN) of the destination resource. Ensure you have a service authorization between IBM Cloud Logs Routing and your Cloud resource. See [service-to-service authorization](https://cloud.ibm.com/docs/logs-router?topic=logs-router-target-monitoring&interface=ui#target-monitoring-ui) for details.",
+						},
+						"target_type": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The type of the target.",
+						},
+						"region": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Include this optional field if you used it to create a target in a different region other than the one you are connected.",
+						},
+						"write_status": &schema.Schema{
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "The status of the write attempt to the target with the provided endpoint parameters.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"status": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The status such as failed or success.",
+									},
+									"last_failure": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The timestamp of the failure.",
+									},
+									"reason_for_last_failure": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "Detailed description of the cause of the failure.",
+									},
+								},
+							},
+						},
+						"created_at": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The timestamp of the target creation time.",
+						},
+						"updated_at": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The timestamp of the target last updated time.",
+						},
+						"managed_by": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Present when the target is enterprise-managed (`managed_by: enterprise`). For account-managed targets this field is omitted.",
+						},
+
+						// v1 schema
+						"log_sink_crn": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Cloud resource name of the log-sink target instance.",
+						},
+						"etag": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Resource version identifier.",
+						},
+						"type": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Type of log-sink. Identical to the <code>service-name</code> segment of <code>log_sink_crn</code>.",
+						},
+						"parameters": &schema.Schema{
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "List of properties returned from a successful list operation for a log-sink of type IBM Log Analysis (logdna).",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"host": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "Host name of the log-sink.",
+									},
+									"port": &schema.Schema{
+										Type:        schema.TypeInt,
+										Computed:    true,
+										Description: "Network port of the log-sink.",
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			// v1 schema
+			"tenant_id": &schema.Schema{
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The instance ID of the v1 tenant.",
+			},
+			"region": &schema.Schema{
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The region of the v1 tenant.",
+			},
+		},
+	}
+}
+
+// A wrapper function to determine if the data source is v1 or v3 and then call the correct version.
+// It is needed to support the coexistence of v1 and v3 target data sources
+func dataSourceIBMLogsRouterTargetsReadWrapper(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	if _, ok := d.GetOk("tenant_id"); ok {
+		log.Printf("[DEBUG]\ntenant_id exists, call logs-router v1")
+		return logsrouting.DataSourceIBMLogsRouterTargetsRead(context, d, meta)
+	} else {
+		log.Printf("[DEBUG]\ntenant_id does not exist, call logs-router v3")
+		return dataSourceIBMLogsRouterTargetsRead(context, d, meta)
 	}
 }
 

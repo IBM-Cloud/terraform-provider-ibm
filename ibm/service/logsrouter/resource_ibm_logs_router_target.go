@@ -46,12 +46,25 @@ func ResourceIBMLogsRouterTarget() *schema.Resource {
 			"region": &schema.Schema{
 				Type:         schema.TypeString,
 				Optional:     true,
+				ForceNew:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_logs_router_target", "region"),
 				Description:  "Include this optional field if you used it to create a target in a different region other than the one you are connected.",
 			},
 			"managed_by": &schema.Schema{
-				Type:         schema.TypeString,
-				Optional:     true,
+				Type:     schema.TypeString,
+				Optional: true,
+				Default:  "account",
+				ForceNew: true,
+				// Suppress the diff state transition from nil, account as they are equivalent.
+				DiffSuppressFunc: func(k, old, newv string, d *schema.ResourceData) bool {
+					if old == "" && newv == "account" {
+						return true
+					} else if old == "account" && newv == "" {
+						return true
+					} else {
+						return false
+					}
+				},
 				ValidateFunc: validate.InvokeValidator("ibm_logs_router_target", "managed_by"),
 				Description:  "Present when the target is enterprise-managed (`managed_by: enterprise`). For account-managed targets this field is omitted.",
 			},

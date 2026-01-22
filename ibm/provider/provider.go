@@ -1156,9 +1156,8 @@ func Provider() *schema.Provider {
 			"ibm_logs_router_tenants": logsrouting.DataSourceIBMLogsRouterTenants(),
 
 			// Logs Router Service v3
-			// ibm_logs_router_targets is for either v1 or v3
-			// call DataSourceIBMLogsRouterTargetsByVersion to get the correct version based on api endpoint
-			"ibm_logs_router_targets": logsrouter.DataSourceIBMLogsRouterTargetsByApiEndpoint(),
+			// "ibm_logs_router_targets" has the same data source name for both v1 and v3, so get v1&v3 combined schema
+			"ibm_logs_router_targets": logsrouter.CombinedDataSourceIBMLogsRouterTargets(),
 			"ibm_logs_router_routes":  logsrouter.DataSourceIBMLogsRouterRoutes(),
 
 			// DR Automation Service

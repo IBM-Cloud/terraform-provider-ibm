@@ -91,10 +91,22 @@ func ResourceIBMLogsRouterRoute() *schema.Resource {
 				},
 			},
 			"managed_by": &schema.Schema{
-				Type:         schema.TypeString,
-				Optional:     true,
-				ValidateFunc: validate.InvokeValidator("ibm_logs_router_route", "managed_by"),
-				Description:  "Present when the route is enterprise-managed (`managed_by: enterprise`).",
+				Type:     schema.TypeString,
+				Optional: true,
+				Default:  "account",
+				ForceNew: true,
+				// Suppress the diff state transition from nil, account as they are equivalent.
+				DiffSuppressFunc: func(k, old, newv string, d *schema.ResourceData) bool {
+					if old == "" && newv == "account" {
+						return true
+					} else if old == "account" && newv == "" {
+						return true
+					} else {
+						return false
+					}
+				},
+				ValidateFunc: validate.InvokeValidator("ibm_logs_router_target", "managed_by"),
+				Description:  "Identifies who manages the target.",
 			},
 			"crn": &schema.Schema{
 				Type:        schema.TypeString,
