@@ -150,6 +150,7 @@ func ResourceIBMDatabaseInstance() *schema.Resource {
 			validateUsersDiff,
 			validateRemoteLeaderIDDiff,
 			validateVersionDiff,
+			validateAsyncRestoreDiff,
 		),
 
 		Importer: &schema.ResourceImporter{},
@@ -3199,6 +3200,17 @@ func validateRemoteLeaderIDDiff(_ context.Context, diff *schema.ResourceDiff, me
 
 	if remoteLeaderIdOk && (service != "databases-for-postgresql" && service != "databases-for-mysql" && service != "databases-for-enterprisedb") {
 		return fmt.Errorf("[ERROR] remote_leader_id is only supported for databases-for-postgresql, databases-for-enterprisedb and databases-for-mysql")
+	}
+
+	return nil
+}
+
+func validateAsyncRestoreDiff(_ context.Context, diff *schema.ResourceDiff, meta interface{}) (err error) {
+	_, asyncRestoreOk := diff.GetOk("async_restore")
+	service := diff.Get("service").(string)
+
+	if asyncRestoreOk && (service != "databases-for-postgresql") {
+		return fmt.Errorf("[ERROR] `async_restore` is only supported for `databases-for-postgresql` for Fast PG Restore")
 	}
 
 	return nil
