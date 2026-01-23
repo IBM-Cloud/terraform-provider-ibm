@@ -2040,11 +2040,13 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.atrackerClientV2Err = fmt.Errorf("Error occurred while configuring Activity Tracker API Version 2 service: %q", err)
 	}
 
+	platformNotificationsUrl := platformnotificationsv1.DefaultServiceURL
 	// Construct an instance of the 'Platform Notifications' service.
 	if session.platformNotificationsClientErr == nil {
 		// Construct the service options.
 		platformNotificationsClientOptions := &platformnotificationsv1.PlatformNotificationsV1Options{
 			Authenticator: authenticator,
+			URL:           EnvFallBack([]string{"IBMCLOUD_PLATFORM_NOTIFICATIONS_API_ENDPOINT"}, platformNotificationsUrl),
 		}
 
 		// Construct the service client.
