@@ -727,6 +727,8 @@ func testAccCheckIBMDatabaseInstancePostgresAsyncRestoreBackup(databaseResourceG
 		location            = "%[3]s"
 		service_endpoints   = "public-and-private"
 		async_restore = true
+		point_in_time_recovery_time = ""
+	    point_in_time_recovery_deployment_id = "crn:v1:bluemix:public:databases-for-postgresql:us-south:a/40ddc34a953a8c02f10987b59085b60e:a00bee8b-1134-4f0f-8428-4f32428f5e4a::"
 	}
 	`, databaseResourceGroup, readReplicaName, acc.Region())
 }
