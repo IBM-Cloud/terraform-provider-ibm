@@ -283,7 +283,7 @@ func ResourceIBMDatabaseInstance() *schema.Resource {
 				Optional:    true,
 			},
 			"async_restore": {
-				Description: "Option to support FAST PG Restore",
+				Description: "Option to support FAST PG Restore. Only applicable when restoring a PostgresSQL instance",
 				Type:        schema.TypeBool,
 				Optional:    true,
 			},
