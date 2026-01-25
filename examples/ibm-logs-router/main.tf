@@ -31,6 +31,7 @@ resource "ibm_logs_router_route" "logs_router_route_instance" {
 }
 
 // Provision logs_router_settings resource instance
+// Default target cannot be created with managed_by="enterprise"
 resource "ibm_logs_router_settings" "logs_router_settings_instance" {
   default_targets {
     id = ibm_logs_router_target.logs_router_target_instance.id

@@ -260,6 +260,7 @@ type ClientSession interface {
 	BackupRecoveryV1Connector() (*backuprecoveryv1.BackupRecoveryV1Connector, error)
 	BackupRecoveryManagerV1() (*backuprecoveryv1.BackupRecoveryManagementSreApiV1, error)
 	IBMCloudLogsRoutingV0() (*ibmcloudlogsroutingv0.IBMCloudLogsRoutingV0, error)
+	LogsRouterV3() (*logsrouterv3.LogsRouterV3, error)
 	SoftLayerSession() *slsession.Session
 	IBMPISession() (*ibmpisession.IBMPISession, error)
 	UserManagementAPI() (usermanagementv2.UserManagementAPI, error)
@@ -323,7 +324,6 @@ type ClientSession interface {
 	CisFiltersSession() (*cisfiltersv1.FiltersV1, error)
 	CisFirewallRulesSession() (*cisfirewallrulesv1.FirewallRulesV1, error)
 	AtrackerV2() (*atrackerv2.AtrackerV2, error)
-	LogsRouterV3() (*logsrouterv3.LogsRouterV3, error)
 	MetricsRouterV3() (*metricsrouterv3.MetricsRouterV3, error)
 	ESschemaRegistrySession() (*schemaregistryv1.SchemaregistryV1, error)
 	ESadminRestSession() (*adminrestv1.AdminrestV1, error)
@@ -649,10 +649,6 @@ type clientSession struct {
 	atrackerClientV2    *atrackerv2.AtrackerV2
 	atrackerClientV2Err error
 
-	// Logs Router
-	logsRouterClient    *logsrouterv3.LogsRouterV3
-	logsRouterClientErr error
-
 	// Metrics Router
 	metricsRouterClient    *metricsrouterv3.MetricsRouterV3
 	metricsRouterClientErr error
@@ -706,9 +702,13 @@ type clientSession struct {
 	logsClient    *logsv0.LogsV0
 	logsClientErr error
 
-	// Logs Routing
+	// Logs Routing v1
 	ibmCloudLogsRoutingClient    *ibmcloudlogsroutingv0.IBMCloudLogsRoutingV0
 	ibmCloudLogsRoutingClientErr error
+
+	// Logs Router v3
+	logsRouterClient    *logsrouterv3.LogsRouterV3
+	logsRouterClientErr error
 
 	// db2 saas
 	db2saasClient    *db2saasv1.Db2saasV1
@@ -1302,11 +1302,6 @@ func (session clientSession) AtrackerV2() (*atrackerv2.AtrackerV2, error) {
 	return session.atrackerClientV2, session.atrackerClientV2Err
 }
 
-// Logs Routing API Version 3
-func (session clientSession) LogsRouterV3() (*logsrouterv3.LogsRouterV3, error) {
-	return session.logsRouterClient, session.logsRouterClientErr
-}
-
 // Metrics Router API Version 3
 func (session clientSession) MetricsRouterV3() (*metricsrouterv3.MetricsRouterV3, error) {
 	return session.metricsRouterClient, session.metricsRouterClientErr
@@ -1375,9 +1370,14 @@ func (session clientSession) LogsV0() (*logsv0.LogsV0, error) {
 	return session.logsClient, session.logsClientErr
 }
 
-// IBM Cloud Logs Routing
+// IBM Cloud Logs Routing V1
 func (session clientSession) IBMCloudLogsRoutingV0() (*ibmcloudlogsroutingv0.IBMCloudLogsRoutingV0, error) {
 	return session.ibmCloudLogsRoutingClient, session.ibmCloudLogsRoutingClientErr
+}
+
+// Logs Routing API V3
+func (session clientSession) LogsRouterV3() (*logsrouterv3.LogsRouterV3, error) {
+	return session.logsRouterClient, session.logsRouterClientErr
 }
 
 // GlobalCatalog Session
@@ -1841,7 +1841,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 	}
 
 	// LOGS ROUTER V3
-	// Determine the correct region-based endpoint URL to use
+	// Determine the correct region-based endpoint URL to use for the 'Logs Routing API Version 3' service.
 	var logsRouterV3ClientURL string
 	if c.Visibility == "private" || c.Visibility == "public-and-private" {
 		logsRouterV3ClientURL, err = logsrouterv3.GetServiceURLForRegion("private." + c.Region)
@@ -1871,13 +1871,10 @@ func (c *Config) ClientSession() (interface{}, error) {
 		// If a suitable region-based endpoint URL could not be obtained, fall back to the service's default endpoint URL.
 		logsRouterV3ClientURL = logsrouterv3.DefaultServiceURL
 
-		// Code block 2:
-		// If a suitable region-based endpoint URL could not be obtained, then report an error and prevent the service client
-		// from being constructed below.
-		session.logsRouterClientErr = fmt.Errorf("Error occurred while determining endpoint URL for 'Logs Routing API Version 3' service: %q", err)
+		// Code block 2 removed. Fall back to service's default endpoint URL.
 	}
 	if fileMap != nil && c.Visibility != "public-and-private" {
-		logsRouterV3ClientURL = fileFallBack(fileMap, c.Visibility, "IBMCLOUD_LOGS_ROUTING_API_ENDPOINT", c.Region, logsRouterV3ClientURL)
+		logsRouterV3ClientURL = fileFallBack(fileMap, c.Visibility, "IBMCLOUD_LOGS_ROUTING_API_ENDPOINT_V3", c.Region, logsRouterV3ClientURL)
 	}
 
 	// Construct an instance of the 'Logs Routing API Version 3' service.
@@ -1885,7 +1882,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 		// Construct the service options.
 		logsRouterClientOptions := &logsrouterv3.LogsRouterV3Options{
 			Authenticator: authenticator,
-			URL:           EnvFallBack([]string{"IBMCLOUD_LOGS_ROUTING_API_ENDPOINT"}, logsRouterV3ClientURL),
+			URL:           EnvFallBack([]string{"IBMCLOUD_LOGS_ROUTING_API_ENDPOINT_V3"}, logsRouterV3ClientURL),
 		}
 
 		// Construct the service client.

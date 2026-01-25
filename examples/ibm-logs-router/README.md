@@ -173,3 +173,32 @@ data "ibm_logs_router_routes" "logs_router_routes_instance" {
 | Name | Version |
 |------|---------|
 | ibm | 1.13.1 |
+
+## Notes
+
+### The Logs Routing V3 URL can be set in endpoints.json
+
+By default Logs Routing V3 uses the service's endpoint URL based on the `region` configuration in your provider block.
+
+Optionally, if you want to explicitly set the API endpoint, either set the endpoint in the `IBMCLOUD_LOGS_ROUTING_API_ENDPOINT_V3` environment variable or create an endpoint json file. To use an endpoint json file, you can either reference this file in your provider block by setting the `endpoints_file_path` field, or export the file path with the `IBMCLOUD_ENDPOINTS_FILE_PATH` or `IC_ENDPOINTS_FILE_PATH` environment variable. Also set the `visibility` field in your provider block or export the `IC_VISIBILITY` or `IBMCLOUD_VISIBILITY` environment variable.
+
+**Example**:
+
+```json
+{
+    "IBMCLOUD_LOGS_ROUTING_API_ENDPOINT_V3":{
+        "public":{
+            "us-south":"<endpoint>",
+            "us-east":"<endpoint>",
+            "eu-gb":"<endpoint>",
+            "eu-de":"<endpoint>"
+        },
+        "private":{
+            "us-south":"<endpoint>",
+            "us-east":"<endpoint>",
+            "eu-gb":"<endpoint>",
+            "eu-de":"<endpoint>"
+        }
+    }
+}
+```
