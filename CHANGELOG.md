@@ -1,3 +1,27 @@
+# 1.87.2 (January 19, 2026)
+
+## Bug Fixes
+
+### Enterprise Management
+* fix the redhat regex length range and add - to allowed strings ([6623](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6623))
+
+### Transit Gateway
+* fix update logic of vpn gateway connection peer ([6622](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6622))
+
+
+## Enhancements
+
+### VPC Infrastructure
+* added name field in other protocols ([6602](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6602))
+
+
+## Code Refactoring
+
+### Power Systems
+* Refactor volume resource ([6625](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6625))
+* Refactor ssh-key resource ([6626](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6626))
+
+
 # 1.87.1 (January 13, 2026)
 
 ## Enhancements

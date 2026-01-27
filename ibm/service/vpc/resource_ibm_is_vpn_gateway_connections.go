@@ -1040,7 +1040,7 @@ func vpngwconUpdate(context context.Context, d *schema.ResourceData, meta interf
 	}
 
 	if d.HasChange("peer") {
-		peer, err := resourceIBMIsVPNGatewayConnectionMapToVPNGatewayConnectionPeerPatch(d.Get("peer.0").(map[string]interface{}))
+		peer, err := resourceIBMIsVPNGatewayConnectionMapToVPNGatewayConnectionPeerPatch(d, d.Get("peer.0").(map[string]interface{}))
 		if err != nil {
 			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_vpn_gateway_connection", "update", "parse-peer").GetDiag()
 		}
@@ -1493,17 +1493,17 @@ func resourceIBMIsVPNGatewayConnectionMapToVPNGatewayConnectionDynamicRouteModeP
 	return model, nil
 }
 
-func resourceIBMIsVPNGatewayConnectionMapToVPNGatewayConnectionPeerPatch(modelMap map[string]interface{}) (vpcv1.VPNGatewayConnectionPeerPatchIntf, error) {
+func resourceIBMIsVPNGatewayConnectionMapToVPNGatewayConnectionPeerPatch(d *schema.ResourceData, modelMap map[string]interface{}) (vpcv1.VPNGatewayConnectionPeerPatchIntf, error) {
 	model := &vpcv1.VPNGatewayConnectionPeerPatch{}
-	if modelMap["address"] != nil && modelMap["address"].(string) != "" {
+	if d.HasChange("peer.0.address") && modelMap["address"] != nil && modelMap["address"].(string) != "" {
 		model.Address = core.StringPtr(modelMap["address"].(string))
 	}
-	if modelMap["fqdn"] != nil && modelMap["fqdn"].(string) != "" {
+	if d.HasChange("peer.0.fqdn") && modelMap["fqdn"] != nil && modelMap["fqdn"].(string) != "" {
 		model.Fqdn = core.StringPtr(modelMap["fqdn"].(string))
 	}
-	if modelMap["asn"] != nil {
-		localAsn := core.Int64Ptr(int64(modelMap["asn"].(int)))
-		model.Asn = localAsn
+	if d.HasChange("peer.0.asn") && modelMap["asn"] != nil && modelMap["asn"].(int) > 0 {
+		asn := core.Int64Ptr(int64(modelMap["asn"].(int)))
+		model.Asn = asn
 	}
 	return model, nil
 }

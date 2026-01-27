@@ -1,4 +1,4 @@
-// Copyright IBM Corp. 2024 All Rights Reserved.
+// Copyright IBM Corp. 2025 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 package conns
@@ -3742,7 +3742,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 	codeEngineClientOptions := &codeengine.CodeEngineV2Options{
 		Authenticator: authenticator,
 		URL:           EnvFallBack([]string{"IBMCLOUD_CODE_ENGINE_API_ENDPOINT"}, codeEngineEndpoint),
-		Version:       core.StringPtr("2025-01-10"),
+		Version:       core.StringPtr("2025-07-10"),
 	}
 
 	// Construct the service client.

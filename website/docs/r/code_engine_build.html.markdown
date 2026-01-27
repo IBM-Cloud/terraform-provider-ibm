@@ -48,7 +48,7 @@ You can specify the following arguments for this resource.
 * `strategy_size` - (Optional, String) Optional size for the build, which determines the amount of resources used. Build sizes are `small`, `medium`, `large`, `xlarge`, `xxlarge`.
   * Constraints: The default value is `medium`. The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/[\\S]*/`.
 * `strategy_spec_file` - (Optional, String) Optional path to the specification file that is used for build strategies for building an image.
-  * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[\\S]*$/`.
+  * Constraints: The default value is `Dockerfile`. The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[\\S]*$/`.
 * `strategy_type` - (Required, String) The strategy to use for building the image.
   * Constraints: The default value is `dockerfile`. The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/[\\S]*/`.
 * `timeout` - (Optional, Integer) The maximum amount of time, in seconds, that can pass before the build must succeed or fail.

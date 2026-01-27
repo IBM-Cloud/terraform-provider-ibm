@@ -1115,6 +1115,7 @@ func Provider() *schema.Provider {
 			"ibm_code_engine_domain_mapping":               codeengine.DataSourceIbmCodeEngineDomainMapping(),
 			"ibm_code_engine_function":                     codeengine.DataSourceIbmCodeEngineFunction(),
 			"ibm_code_engine_job":                          codeengine.DataSourceIbmCodeEngineJob(),
+			"ibm_code_engine_persistent_data_store":        codeengine.DataSourceIbmCodeEnginePersistentDataStore(),
 			"ibm_code_engine_project":                      codeengine.DataSourceIbmCodeEngineProject(),
 			"ibm_code_engine_secret":                       codeengine.DataSourceIbmCodeEngineSecret(),
 
@@ -1824,6 +1825,7 @@ func Provider() *schema.Provider {
 			"ibm_code_engine_domain_mapping":               codeengine.ResourceIbmCodeEngineDomainMapping(),
 			"ibm_code_engine_function":                     codeengine.ResourceIbmCodeEngineFunction(),
 			"ibm_code_engine_job":                          codeengine.ResourceIbmCodeEngineJob(),
+			"ibm_code_engine_persistent_data_store":        codeengine.ResourceIbmCodeEnginePersistentDataStore(),
 			"ibm_code_engine_project":                      codeengine.ResourceIbmCodeEngineProject(),
 			"ibm_code_engine_secret":                       codeengine.ResourceIbmCodeEngineSecret(),
 
@@ -2338,6 +2340,7 @@ func Validator() validate.ValidatorDict {
 				"ibm_code_engine_domain_mapping":               codeengine.ResourceIbmCodeEngineDomainMappingValidator(),
 				"ibm_code_engine_function":                     codeengine.ResourceIbmCodeEngineFunctionValidator(),
 				"ibm_code_engine_job":                          codeengine.ResourceIbmCodeEngineJobValidator(),
+				"ibm_code_engine_persistent_data_store":        codeengine.ResourceIbmCodeEnginePersistentDataStoreValidator(),
 				"ibm_code_engine_project":                      codeengine.ResourceIbmCodeEngineProjectValidator(),
 				"ibm_code_engine_secret":                       codeengine.ResourceIbmCodeEngineSecretValidator(),
 
