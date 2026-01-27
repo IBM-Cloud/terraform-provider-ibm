@@ -283,9 +283,10 @@ func ResourceIBMDatabaseInstance() *schema.Resource {
 				Optional:    true,
 			},
 			"async_restore": {
-				Description: "Option to support FAST PG Restore. Only applicable when restoring a PostgresSQL instance",
-				Type:        schema.TypeBool,
-				Optional:    true,
+				Description:      "Option to support FAST PG Restore. Only applicable when restoring a PostgresSQL instance",
+				Type:             schema.TypeBool,
+				Optional:         true,
+				DiffSuppressFunc: flex.ApplyOnce,
 			},
 			"key_protect_instance": {
 				Description: "The CRN of Key protect instance",
