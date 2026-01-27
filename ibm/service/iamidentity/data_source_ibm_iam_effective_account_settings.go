@@ -580,7 +580,9 @@ func DataSourceIBMIamEffectiveAccountSettingsAccountSettingsEffectiveSectionToMa
 
 func DataSourceIBMIamEffectiveAccountSettingsAccountSettingsAccountSectionToMap(model *iamidentityv1.AccountSettingsResponse) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	//modelMap["account_id"] = "testString"
+	if model.AccountID != nil {
+		modelMap["account_id"] = *model.AccountID
+	}
 	modelMap["entity_tag"] = *model.EntityTag
 	if model.History != nil {
 		var history []map[string]interface{}

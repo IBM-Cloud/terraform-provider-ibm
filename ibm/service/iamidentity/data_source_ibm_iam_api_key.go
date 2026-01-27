@@ -25,6 +25,26 @@ func DataSourceIBMIamApiKey() *schema.Resource {
 				Required:    true,
 				Description: "Unique ID of the API key.",
 			},
+			"name": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Name of the API key. The name is not checked for uniqueness. Therefore multiple names with the same value can exist. Access is done via the UUID of the API key.",
+			},
+			"iam_id": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The iam_id that this API key authenticates.",
+			},
+			"description": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The optional description of the API key. The 'description' property is only available if a description was provided during a create of an API key.",
+			},
+			"account_id": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "ID of the account that this API key authenticates for.",
+			},
 			"entity_tag": {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -40,6 +60,16 @@ func DataSourceIBMIamApiKey() *schema.Resource {
 				Computed:    true,
 				Description: "The API key cannot be changed if set to true.",
 			},
+			"action_when_leaked": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Defines the action to take when API key is leaked, valid values are 'none', 'disable' and 'delete'.",
+			},
+			"expires_at": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Date and time when the API key becomes invalid, ISO 8601 datetime in the format 'yyyy-MM-ddTHH:mm+0000'.",
+			},
 			"created_at": {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -54,26 +84,6 @@ func DataSourceIBMIamApiKey() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "If set contains a date time string of the last modification date in ISO format.",
-			},
-			"name": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "Name of the API key. The name is not checked for uniqueness. Therefore multiple names with the same value can exist. Access is done via the UUID of the API key.",
-			},
-			"description": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The optional description of the API key. The 'description' property is only available if a description was provided during a create of an API key.",
-			},
-			"iam_id": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The iam_id that this API key authenticates.",
-			},
-			"account_id": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "ID of the account that this API key authenticates for.",
 			},
 		},
 	}
@@ -97,6 +107,18 @@ func dataSourceIbmIamApiKeyRead(context context.Context, d *schema.ResourceData,
 
 	d.SetId(*apiKey.ID)
 
+	if err = d.Set("name", apiKey.Name); err != nil {
+		return diag.FromErr(fmt.Errorf("[ERROR] Error setting name: %s", err))
+	}
+	if err = d.Set("iam_id", apiKey.IamID); err != nil {
+		return diag.FromErr(fmt.Errorf("[ERROR] Error setting iam_id: %s", err))
+	}
+	if err = d.Set("description", apiKey.Description); err != nil {
+		return diag.FromErr(fmt.Errorf("[ERROR] Error setting description: %s", err))
+	}
+	if err = d.Set("account_id", apiKey.AccountID); err != nil {
+		return diag.FromErr(fmt.Errorf("[ERROR] Error setting account_id: %s", err))
+	}
 	if err = d.Set("entity_tag", apiKey.EntityTag); err != nil {
 		return diag.FromErr(fmt.Errorf("[ERROR] Error setting entity_tag: %s", err))
 	}
@@ -106,6 +128,14 @@ func dataSourceIbmIamApiKeyRead(context context.Context, d *schema.ResourceData,
 	if err = d.Set("locked", apiKey.Locked); err != nil {
 		return diag.FromErr(fmt.Errorf("[ERROR] Error setting locked: %s", err))
 	}
+	if apiKey.ActionWhenLeaked != nil && *apiKey.ActionWhenLeaked != "" {
+		if err = d.Set("action_when_leaked", apiKey.ActionWhenLeaked); err != nil {
+			return diag.FromErr(fmt.Errorf("[ERROR] Error setting action_when_leaked: %s", err))
+		}
+	}
+	if err = d.Set("expires_at", apiKey.ExpiresAt); err != nil {
+		return diag.FromErr(fmt.Errorf("[ERROR] Error setting expires_at: %s", err))
+	}
 	if err = d.Set("created_at", apiKey.CreatedAt.String()); err != nil {
 		return diag.FromErr(fmt.Errorf("[ERROR] Error setting created_at: %s", err))
 	}
@@ -114,18 +144,6 @@ func dataSourceIbmIamApiKeyRead(context context.Context, d *schema.ResourceData,
 	}
 	if err = d.Set("modified_at", apiKey.ModifiedAt.String()); err != nil {
 		return diag.FromErr(fmt.Errorf("[ERROR] Error setting modified_at: %s", err))
-	}
-	if err = d.Set("name", apiKey.Name); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting name: %s", err))
-	}
-	if err = d.Set("description", apiKey.Description); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting description: %s", err))
-	}
-	if err = d.Set("iam_id", apiKey.IamID); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting iam_id: %s", err))
-	}
-	if err = d.Set("account_id", apiKey.AccountID); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting account_id: %s", err))
 	}
 
 	return nil
