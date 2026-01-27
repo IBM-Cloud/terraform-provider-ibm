@@ -99,11 +99,11 @@ func ResourceIBMISInstanceTemplate() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			isInstanceTemplateAvailablePolicyHostFailure: {
-				Type:        schema.TypeString,
-				Optional:    true,
-				ForceNew:    true,
-				Computed:    true,
-				Description: "The availability policy to use for this virtual server instance",
+				Type:          schema.TypeString,
+				Optional:      true,
+				ForceNew:      true,
+				ConflictsWith: []string{"availability_policy.0.host_failure"},
+				Description:   "The availability policy to use for this virtual server instance template",
 			},
 
 			isInstanceTemplateName: {
@@ -112,6 +112,46 @@ func ResourceIBMISInstanceTemplate() *schema.Resource {
 				ForceNew:     false,
 				ValidateFunc: validate.ValidateISName,
 				Description:  "Instance Template name",
+			},
+			// spot changes
+			"availability": &schema.Schema{
+				Type:     schema.TypeList,
+				MaxItems: 1,
+				Optional: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"class": &schema.Schema{
+							Type:        schema.TypeString,
+							Optional:    true,
+							ForceNew:    true,
+							Description: "The availability class for the virtual server instance.- `spot`: The virtual server instance may be preempted.- `standard`: The virtual server instance will not be preempted.If `spot` is specified, the virtual server instance:- `reservation_affinity.policy` must be `disabled`- `placement_target` must not specify a dedicated host or dedicated host group.",
+						},
+					},
+				},
+			},
+			"availability_policy": &schema.Schema{
+				Type:        schema.TypeList,
+				MaxItems:    1,
+				Optional:    true,
+				Description: "The availability policy to use for this virtual server instance.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"preemption": &schema.Schema{
+							Type:        schema.TypeString,
+							ForceNew:    true,
+							Optional:    true,
+							Description: "The action to perform if the virtual server instance is preempted:- `delete`: Delete the virtual server instance- `stop`: Leave the virtual server instance stopped. See [virtual server instance preemption](https://cloud.ibm.com/docs/vpc?topic=__TBD__) for details.",
+						},
+						"host_failure": &schema.Schema{
+							Type:          schema.TypeString,
+							Optional:      true,
+							ForceNew:      true,
+							ConflictsWith: []string{"availability_policy_host_failure"},
+
+							Description: "The action to perform if the compute host experiences a failure:- `restart`: Restart the virtual server instance- `stop`: Leave the virtual server instance stopped. See [handling host failures](https://cloud.ibm.com/docs/vpc?topic=vpc-host-failure-recovery-policies) for details.The enumerated values for this property may[expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) in the future.",
+						},
+					},
+				},
 			},
 
 			// cluster changes
@@ -1542,6 +1582,27 @@ func instanceTemplateCreateBySourceSnapshot(context context.Context, d *schema.R
 	if name != "" {
 		instanceproto.Name = &name
 	}
+	// spot changes
+	if availabilityOk, ok := d.GetOk("availability"); ok && len(availabilityOk.([]interface{})) > 0 {
+		AvailabilityModel, err := ResourceIBMIsInstanceTemplateMapToInstanceAvailabilityPrototype(availabilityOk.([]interface{})[0].(map[string]interface{}))
+		if err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance_template", "create", "parse-availability").GetDiag()
+		}
+		instanceproto.Availability = AvailabilityModel
+	}
+	if availablePolicyHostFailureIntf, ok := d.GetOk(isInstanceTemplateAvailablePolicyHostFailure); ok {
+		availablePolicyHostFailure := availablePolicyHostFailureIntf.(string)
+		instanceproto.AvailabilityPolicy = &vpcv1.InstanceAvailabilityPolicyPrototype{
+			HostFailure: &availablePolicyHostFailure,
+		}
+	}
+	if availabilityPolicyOk, ok := d.GetOk("availability_policy"); ok && len(availabilityPolicyOk.([]interface{})) > 0 {
+		AvailabilityPolicyModel, err := ResourceIBMIsInstanceTemplateMapToInstanceAvailabilityPolicyPrototype(availabilityPolicyOk.([]interface{})[0].(map[string]interface{}))
+		if err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance_template", "create", "parse-availability_policy").GetDiag()
+		}
+		instanceproto.AvailabilityPolicy = AvailabilityPolicyModel
+	}
 
 	// shared core
 	if vcpuOk, ok := d.GetOk("vcpu"); ok && len(vcpuOk.([]interface{})) > 0 {
@@ -1626,12 +1687,6 @@ func instanceTemplateCreateBySourceSnapshot(context context.Context, d *schema.R
 		if defaultTrustedProfileAutoLinkIntf, ok := d.GetOkExists(isInstanceDefaultTrustedProfileAutoLink); ok {
 			defaultTrustedProfileAutoLink := defaultTrustedProfileAutoLinkIntf.(bool)
 			instanceproto.DefaultTrustedProfile.AutoLink = &defaultTrustedProfileAutoLink
-		}
-	}
-	if availablePolicyHostFailureIntf, ok := d.GetOk(isInstanceTemplateAvailablePolicyHostFailure); ok {
-		availablePolicyHostFailure := availablePolicyHostFailureIntf.(string)
-		instanceproto.AvailabilityPolicy = &vpcv1.InstanceAvailabilityPolicyPrototype{
-			HostFailure: &availablePolicyHostFailure,
 		}
 	}
 	if dHostIdInf, ok := d.GetOk(isPlacementTargetDedicatedHost); ok {
@@ -2109,6 +2164,27 @@ func instanceTemplateCreateByCatalogOffering(context context.Context, d *schema.
 			ID: &vpcID,
 		},
 	}
+	// spot changes
+	if availabilityOk, ok := d.GetOk("availability"); ok && len(availabilityOk.([]interface{})) > 0 {
+		AvailabilityModel, err := ResourceIBMIsInstanceTemplateMapToInstanceAvailabilityPrototype(availabilityOk.([]interface{})[0].(map[string]interface{}))
+		if err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance_template", "create", "parse-availability").GetDiag()
+		}
+		instanceproto.Availability = AvailabilityModel
+	}
+	if availablePolicyHostFailureIntf, ok := d.GetOk(isInstanceTemplateAvailablePolicyHostFailure); ok {
+		availablePolicyHostFailure := availablePolicyHostFailureIntf.(string)
+		instanceproto.AvailabilityPolicy = &vpcv1.InstanceAvailabilityPolicyPrototype{
+			HostFailure: &availablePolicyHostFailure,
+		}
+	}
+	if availabilityPolicyOk, ok := d.GetOk("availability_policy"); ok && len(availabilityPolicyOk.([]interface{})) > 0 {
+		AvailabilityPolicyModel, err := ResourceIBMIsInstanceTemplateMapToInstanceAvailabilityPolicyPrototype(availabilityPolicyOk.([]interface{})[0].(map[string]interface{}))
+		if err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance_template", "create", "parse-availability_policy").GetDiag()
+		}
+		instanceproto.AvailabilityPolicy = AvailabilityPolicyModel
+	}
 	// shared core
 	if vcpuOk, ok := d.GetOk("vcpu"); ok && len(vcpuOk.([]interface{})) > 0 {
 		VcpuModel, err := ResourceIBMIsInstanceTemplateMapToInstanceVcpuPrototype(vcpuOk.([]interface{})[0].(map[string]interface{}))
@@ -2226,12 +2302,7 @@ func instanceTemplateCreateByCatalogOffering(context context.Context, d *schema.
 			instanceproto.DefaultTrustedProfile.AutoLink = &defaultTrustedProfileAutoLink
 		}
 	}
-	if availablePolicyHostFailureIntf, ok := d.GetOk(isInstanceTemplateAvailablePolicyHostFailure); ok {
-		availablePolicyHostFailure := availablePolicyHostFailureIntf.(string)
-		instanceproto.AvailabilityPolicy = &vpcv1.InstanceAvailabilityPolicyPrototype{
-			HostFailure: &availablePolicyHostFailure,
-		}
-	}
+
 	if dHostIdInf, ok := d.GetOk(isPlacementTargetDedicatedHost); ok {
 		dHostIdStr := dHostIdInf.(string)
 		dHostPlaementTarget := &vpcv1.InstancePlacementTargetPrototypeDedicatedHostIdentity{
@@ -2682,6 +2753,27 @@ func instanceTemplateCreate(context context.Context, d *schema.ResourceData, met
 	if name != "" {
 		instanceproto.Name = &name
 	}
+	// spot changes
+	if availabilityOk, ok := d.GetOk("availability"); ok && len(availabilityOk.([]interface{})) > 0 {
+		AvailabilityModel, err := ResourceIBMIsInstanceTemplateMapToInstanceAvailabilityPrototype(availabilityOk.([]interface{})[0].(map[string]interface{}))
+		if err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance_template", "create", "parse-availability").GetDiag()
+		}
+		instanceproto.Availability = AvailabilityModel
+	}
+	if availablePolicyHostFailureIntf, ok := d.GetOk(isInstanceTemplateAvailablePolicyHostFailure); ok {
+		availablePolicyHostFailure := availablePolicyHostFailureIntf.(string)
+		instanceproto.AvailabilityPolicy = &vpcv1.InstanceAvailabilityPolicyPrototype{
+			HostFailure: &availablePolicyHostFailure,
+		}
+	}
+	if availabilityPolicyOk, ok := d.GetOk("availability_policy"); ok && len(availabilityPolicyOk.([]interface{})) > 0 {
+		AvailabilityPolicyModel, err := ResourceIBMIsInstanceTemplateMapToInstanceAvailabilityPolicyPrototype(availabilityPolicyOk.([]interface{})[0].(map[string]interface{}))
+		if err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance_template", "create", "parse-availability_policy").GetDiag()
+		}
+		instanceproto.AvailabilityPolicy = AvailabilityPolicyModel
+	}
 	// shared core
 	if vcpuOk, ok := d.GetOk("vcpu"); ok && len(vcpuOk.([]interface{})) > 0 {
 		VcpuModel, err := ResourceIBMIsInstanceTemplateMapToInstanceVcpuPrototype(vcpuOk.([]interface{})[0].(map[string]interface{}))
@@ -2764,12 +2856,6 @@ func instanceTemplateCreate(context context.Context, d *schema.ResourceData, met
 		if defaultTrustedProfileAutoLinkIntf, ok := d.GetOkExists(isInstanceDefaultTrustedProfileAutoLink); ok {
 			defaultTrustedProfileAutoLink := defaultTrustedProfileAutoLinkIntf.(bool)
 			instanceproto.DefaultTrustedProfile.AutoLink = &defaultTrustedProfileAutoLink
-		}
-	}
-	if availablePolicyHostFailureIntf, ok := d.GetOk(isInstanceTemplateAvailablePolicyHostFailure); ok {
-		availablePolicyHostFailure := availablePolicyHostFailureIntf.(string)
-		instanceproto.AvailabilityPolicy = &vpcv1.InstanceAvailabilityPolicyPrototype{
-			HostFailure: &availablePolicyHostFailure,
 		}
 	}
 	if dHostIdInf, ok := d.GetOk(isPlacementTargetDedicatedHost); ok {
@@ -3235,6 +3321,28 @@ func instanceTemplateGet(context context.Context, d *schema.ResourceData, meta i
 	switch v := instanceIntf.(type) {
 	case *vpcv1.InstanceTemplate:
 		instanceTemplate := v
+
+		// spot changes
+		if !core.IsNil(instanceTemplate.Availability) {
+			availabilityMap, err := ResourceIBMIsInstanceTemplateInstanceAvailabilityPrototypeToMap(instanceTemplate.Availability)
+			if err != nil {
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance_template", "read", "availability-to-map").GetDiag()
+			}
+			if err = d.Set("availability", []map[string]interface{}{availabilityMap}); err != nil {
+				err = fmt.Errorf("Error setting availability: %s", err)
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance_template", "read", "set-availability").GetDiag()
+			}
+		}
+		if !core.IsNil(instanceTemplate.AvailabilityPolicy) {
+			availabilityPolicyMap, err := ResourceIBMIsInstanceTemplateInstanceAvailabilityPolicyPrototypeToMap(instanceTemplate.AvailabilityPolicy)
+			if err != nil {
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance_template", "read", "availability_policy-to-map").GetDiag()
+			}
+			if err = d.Set("availability_policy", []map[string]interface{}{availabilityPolicyMap}); err != nil {
+				err = fmt.Errorf("Error setting availability_policy: %s", err)
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance_template", "read", "set-availability_policy").GetDiag()
+			}
+		}
 		// shared core
 		if !core.IsNil(instanceTemplate.Vcpu) {
 			vcpuMap, err := ResourceIBMIsInstanceTemplateInstanceVcpuPrototypeToMap(instanceTemplate.Vcpu)
@@ -3256,6 +3364,7 @@ func instanceTemplateGet(context context.Context, d *schema.ResourceData, meta i
 			err = fmt.Errorf("Error setting crn: %s", err)
 			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance_template", "read", "set-crn").GetDiag()
 		}
+		// deprecated
 		if instanceTemplate.AvailabilityPolicy != nil && instanceTemplate.AvailabilityPolicy.HostFailure != nil {
 			if err = d.Set("availability_policy_host_failure", instanceTemplate.AvailabilityPolicy.HostFailure); err != nil {
 				err = fmt.Errorf("Error setting availability_policy_host_failure: %s", err)
@@ -3702,6 +3811,27 @@ func instanceTemplateGet(context context.Context, d *schema.ResourceData, meta i
 		}
 	case *vpcv1.InstanceTemplateInstanceBySourceSnapshotInstanceTemplateContext:
 		instanceTemplate := v
+		// spot changes
+		if !core.IsNil(instanceTemplate.Availability) {
+			availabilityMap, err := ResourceIBMIsInstanceTemplateInstanceAvailabilityPrototypeToMap(instanceTemplate.Availability)
+			if err != nil {
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance_template", "read", "availability-to-map").GetDiag()
+			}
+			if err = d.Set("availability", []map[string]interface{}{availabilityMap}); err != nil {
+				err = fmt.Errorf("Error setting availability: %s", err)
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance_template", "read", "set-availability").GetDiag()
+			}
+		}
+		if !core.IsNil(instanceTemplate.AvailabilityPolicy) {
+			availabilityPolicyMap, err := ResourceIBMIsInstanceTemplateInstanceAvailabilityPolicyPrototypeToMap(instanceTemplate.AvailabilityPolicy)
+			if err != nil {
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance_template", "read", "availability_policy-to-map").GetDiag()
+			}
+			if err = d.Set("availability_policy", []map[string]interface{}{availabilityPolicyMap}); err != nil {
+				err = fmt.Errorf("Error setting availability_policy: %s", err)
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance_template", "read", "set-availability_policy").GetDiag()
+			}
+		}
 		// shared core
 		if !core.IsNil(instanceTemplate.Vcpu) {
 			vcpuMap, err := ResourceIBMIsInstanceTemplateInstanceVcpuPrototypeToMap(instanceTemplate.Vcpu)
@@ -3723,6 +3853,7 @@ func instanceTemplateGet(context context.Context, d *schema.ResourceData, meta i
 			err = fmt.Errorf("Error setting crn: %s", err)
 			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance_template", "read", "set-crn").GetDiag()
 		}
+		// deprecated
 		if instanceTemplate.AvailabilityPolicy != nil && instanceTemplate.AvailabilityPolicy.HostFailure != nil {
 			if err = d.Set("availability_policy_host_failure", instanceTemplate.AvailabilityPolicy.HostFailure); err != nil {
 				err = fmt.Errorf("Error setting availability_policy_host_failure: %s", err)
@@ -4860,6 +4991,41 @@ func ResourceIBMIsInstanceTemplateMapToInstanceClusterNetworkAttachmentPrototype
 	return model, nil
 }
 
+func ResourceIBMIsInstanceTemplateInstanceAvailabilityPrototypeToMap(model *vpcv1.InstanceAvailabilityPrototype) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.Class != nil {
+		modelMap["class"] = *model.Class
+	}
+	return modelMap, nil
+}
+
+func ResourceIBMIsInstanceTemplateInstanceAvailabilityPolicyPrototypeToMap(model *vpcv1.InstanceAvailabilityPolicyPrototype) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.HostFailure != nil {
+		modelMap["host_failure"] = *model.HostFailure
+	}
+	if model.Preemption != nil {
+		modelMap["preemption"] = *model.Preemption
+	}
+	return modelMap, nil
+}
+func ResourceIBMIsInstanceTemplateMapToInstanceAvailabilityPrototype(modelMap map[string]interface{}) (*vpcv1.InstanceAvailabilityPrototype, error) {
+	model := &vpcv1.InstanceAvailabilityPrototype{}
+	if modelMap["class"] != nil && modelMap["class"].(string) != "" {
+		model.Class = core.StringPtr(modelMap["class"].(string))
+	}
+	return model, nil
+}
+func ResourceIBMIsInstanceTemplateMapToInstanceAvailabilityPolicyPrototype(modelMap map[string]interface{}) (*vpcv1.InstanceAvailabilityPolicyPrototype, error) {
+	model := &vpcv1.InstanceAvailabilityPolicyPrototype{}
+	if modelMap["host_failure"] != nil && modelMap["host_failure"].(string) != "" {
+		model.HostFailure = core.StringPtr(modelMap["host_failure"].(string))
+	}
+	if modelMap["preemption"] != nil && modelMap["preemption"].(string) != "" {
+		model.Preemption = core.StringPtr(modelMap["preemption"].(string))
+	}
+	return model, nil
+}
 func ResourceIBMIsInstanceTemplateMapToInstanceVcpuPrototype(modelMap map[string]interface{}) (*vpcv1.InstanceVcpuPrototype, error) {
 	model := &vpcv1.InstanceVcpuPrototype{}
 	if modelMap["percentage"] != nil {
