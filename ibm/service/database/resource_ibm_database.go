@@ -150,6 +150,7 @@ func ResourceIBMDatabaseInstance() *schema.Resource {
 			validateUsersDiff,
 			validateRemoteLeaderIDDiff,
 			validateVersionDiff,
+			validateAsyncRestoreDiff,
 		),
 
 		Importer: &schema.ResourceImporter{},
@@ -281,6 +282,12 @@ func ResourceIBMDatabaseInstance() *schema.Resource {
 				Description: "Option to skip the initial backup when promoting a read-only replica. Skipping the initial backup means that your replica becomes available more quickly, but there is no immediate backup available.",
 				Type:        schema.TypeBool,
 				Optional:    true,
+			},
+			"async_restore": {
+				Description:      "Option to support FAST PG Restore. Only applicable when restoring a PostgreSQL instance",
+				Type:             schema.TypeBool,
+				Optional:         true,
+				DiffSuppressFunc: flex.ApplyOnce,
 			},
 			"key_protect_instance": {
 				Description: "The CRN of Key protect instance",
@@ -936,6 +943,7 @@ type Params struct {
 	PITRDeploymentID    string  `json:"point_in_time_recovery_deployment_id,omitempty"`
 	PITRTimeStamp       *string `json:"point_in_time_recovery_time,omitempty"`
 	OfflineRestore      bool    `json:"offline_restore,omitempty"`
+	AsyncRestore        bool    `json:"async_restore,omitempty"`
 }
 
 type Group struct {
@@ -1228,6 +1236,10 @@ func resourceIBMDatabaseInstanceCreate(context context.Context, d *schema.Resour
 
 	if offlineRestore, ok := d.GetOk("offline_restore"); ok {
 		params.OfflineRestore = offlineRestore.(bool)
+	}
+
+	if asyncRestore, ok := d.GetOk("async_restore"); ok {
+		params.AsyncRestore = asyncRestore.(bool)
 	}
 
 	var initialNodeCount int
@@ -3190,6 +3202,17 @@ func validateRemoteLeaderIDDiff(_ context.Context, diff *schema.ResourceDiff, me
 
 	if remoteLeaderIdOk && (service != "databases-for-postgresql" && service != "databases-for-mysql" && service != "databases-for-enterprisedb") {
 		return fmt.Errorf("[ERROR] remote_leader_id is only supported for databases-for-postgresql, databases-for-enterprisedb and databases-for-mysql")
+	}
+
+	return nil
+}
+
+func validateAsyncRestoreDiff(_ context.Context, diff *schema.ResourceDiff, meta interface{}) (err error) {
+	_, asyncRestoreOk := diff.GetOk("async_restore")
+	service := diff.Get("service").(string)
+
+	if asyncRestoreOk && (service != "databases-for-postgresql") {
+		return fmt.Errorf("[ERROR] `async_restore` is only supported for `databases-for-postgresql` for Fast PG Restore")
 	}
 
 	return nil
