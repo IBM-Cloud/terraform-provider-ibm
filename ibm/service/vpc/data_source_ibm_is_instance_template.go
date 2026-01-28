@@ -2031,6 +2031,34 @@ func dataSourceIBMISInstanceTemplateRead(context context.Context, d *schema.Reso
 				if name == *instanceTemplate.Name {
 					flag = true
 					d.SetId(*instanceTemplate.ID)
+					// spot changes
+					if !core.IsNil(instanceTemplate.Availability) {
+						availability := []map[string]interface{}{}
+						availabilityMap, err := DataSourceIBMIsInstanceTemplateInstanceAvailabilityPrototypeToMap(instanceTemplate.Availability)
+						if err != nil {
+							return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_instance_template", "read", "availability-to-map").GetDiag()
+						}
+						availability = append(availability, availabilityMap)
+						if err = d.Set("availability", availability); err != nil {
+							return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting availability: %s", err), "(Data) ibm_is_instance_template", "read", "set-availability").GetDiag()
+						}
+					}
+					if instanceTemplate.AvailabilityPolicy != nil && instanceTemplate.AvailabilityPolicy.HostFailure != nil {
+						if err = d.Set(isInstanceTemplateAvailablePolicyHostFailure, *instanceTemplate.AvailabilityPolicy.HostFailure); err != nil {
+							return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting availability_policy_host_failure: %s", err), "(Data) ibm_is_instance_template", "read", "set-availability_policy_host_failure").GetDiag()
+						}
+					}
+					if !core.IsNil(instanceTemplate.AvailabilityPolicy) {
+						availabilityPolicy := []map[string]interface{}{}
+						availabilityPolicyMap, err := DataSourceIBMIsInstanceTemplateInstanceAvailabilityPolicyPrototypeToMap(instanceTemplate.AvailabilityPolicy)
+						if err != nil {
+							return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_instance_template", "read", "availability_policy-to-map").GetDiag()
+						}
+						availabilityPolicy = append(availabilityPolicy, availabilityPolicyMap)
+						if err = d.Set("availability_policy", availabilityPolicy); err != nil {
+							return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting availability_policy: %s", err), "(Data) ibm_is_instance_template", "read", "set-availability_policy").GetDiag()
+						}
+					}
 					if err = d.Set("href", instanceTemplate.Href); err != nil {
 						return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting href: %s", err), "(Data) ibm_is_instance_template", "read", "set-href").GetDiag()
 					}
@@ -2450,6 +2478,34 @@ func dataSourceIBMISInstanceTemplateRead(context context.Context, d *schema.Reso
 				if name == *instanceTemplate.Name {
 					flag = true
 					d.SetId(*instanceTemplate.ID)
+					// spot changes
+					if !core.IsNil(instanceTemplate.Availability) {
+						availability := []map[string]interface{}{}
+						availabilityMap, err := DataSourceIBMIsInstanceTemplateInstanceAvailabilityPrototypeToMap(instanceTemplate.Availability)
+						if err != nil {
+							return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_instance_template", "read", "availability-to-map").GetDiag()
+						}
+						availability = append(availability, availabilityMap)
+						if err = d.Set("availability", availability); err != nil {
+							return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting availability: %s", err), "(Data) ibm_is_instance_template", "read", "set-availability").GetDiag()
+						}
+					}
+					if instanceTemplate.AvailabilityPolicy != nil && instanceTemplate.AvailabilityPolicy.HostFailure != nil {
+						if err = d.Set(isInstanceTemplateAvailablePolicyHostFailure, *instanceTemplate.AvailabilityPolicy.HostFailure); err != nil {
+							return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting availability_policy_host_failure: %s", err), "(Data) ibm_is_instance_template", "read", "set-availability_policy_host_failure").GetDiag()
+						}
+					}
+					if !core.IsNil(instanceTemplate.AvailabilityPolicy) {
+						availabilityPolicy := []map[string]interface{}{}
+						availabilityPolicyMap, err := DataSourceIBMIsInstanceTemplateInstanceAvailabilityPolicyPrototypeToMap(instanceTemplate.AvailabilityPolicy)
+						if err != nil {
+							return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_instance_template", "read", "availability_policy-to-map").GetDiag()
+						}
+						availabilityPolicy = append(availabilityPolicy, availabilityPolicyMap)
+						if err = d.Set("availability_policy", availabilityPolicy); err != nil {
+							return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting availability_policy: %s", err), "(Data) ibm_is_instance_template", "read", "set-availability_policy").GetDiag()
+						}
+					}
 					if err = d.Set("href", instanceTemplate.Href); err != nil {
 						return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting href: %s", err), "(Data) ibm_is_instance_template", "read", "set-href").GetDiag()
 					}

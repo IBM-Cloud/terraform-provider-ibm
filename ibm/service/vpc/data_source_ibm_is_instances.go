@@ -123,7 +123,7 @@ func DataSourceIBMISInstances() *schema.Resource {
 									"class": &schema.Schema{
 										Type:        schema.TypeString,
 										Computed:    true,
-										Description: "The availability class for the virtual server instance.- `spot`: The virtual server instance may be preempted.- `standard`: The virtual server instance will not be preempted.See [virtual server instance availability class](https://cloud.ibm.com/docs/vpc?topic=__TBD__) for details.The enumerated values for this property may[expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) in the future.",
+										Description: "The availability class for the virtual server instance.- `spot`: The virtual server instance may be preempted.- `standard`: The virtual server instance will not be preempted.See [virtual server instance availability class](https://cloud.ibm.com/docs/vpc?topic=vpc-spot-instances-virtual-servers) for details.The enumerated values for this property may[expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) in the future.",
 									},
 								},
 							},
