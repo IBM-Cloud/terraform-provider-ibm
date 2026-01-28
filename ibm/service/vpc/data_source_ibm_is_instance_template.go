@@ -104,7 +104,7 @@ func DataSourceIBMISInstanceTemplate() *schema.Resource {
 						"preemption": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "The action to perform if the virtual server instance is preempted:- `delete`: Delete the virtual server instance- `stop`: Leave the virtual server instance stopped. See [virtual server instance preemption](https://cloud.ibm.com/docs/vpc?topic=__TBD__) for details.",
+							Description: "The action to perform if the virtual server instance is preempted:- `delete`: Delete the virtual server instance- `stop`: Leave the virtual server instance stopped. See [virtual server instance preemption](https://cloud.ibm.com/docs/vpc?topic=vpc-spot-instances-virtual-servers#spot-instances-preemption) for details.",
 						},
 					},
 				},
