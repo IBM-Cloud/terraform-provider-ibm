@@ -204,6 +204,7 @@ func ResourceIBMISInstance() *schema.Resource {
 				Type:     schema.TypeList,
 				MaxItems: 1,
 				Optional: true,
+				Computed: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"class": &schema.Schema{
@@ -219,6 +220,7 @@ func ResourceIBMISInstance() *schema.Resource {
 				Type:        schema.TypeList,
 				MaxItems:    1,
 				Optional:    true,
+				Computed:    true,
 				Description: "The availability policy for this virtual server instance.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
