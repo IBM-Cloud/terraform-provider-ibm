@@ -4967,11 +4967,9 @@ func testAccCheckIBMISInstanceConfigWithAvailabilityPolicy_Default(vpcname, subn
 		image   = "%s"
 		profile = "%s"
 		availability {
-			class = "standard"
+			class = "spot"
 		}
-		availability_policy {
-			host_failure = "restart"
-		}
+		availability_policy_host_failure = "restart"
 		primary_network_interface {
 		  subnet     = ibm_is_subnet.testacc_subnet.id
 		}
@@ -5008,10 +5006,11 @@ func testAccCheckIBMISInstanceConfigWithAvailabilityPolicy_Updated(vpcname, subn
 		image   = "%s"
 		profile = "%s"
 		availability {
-			class = "standard"
+			class = "spot"
 		}
 		availability_policy {
-			host_failure = "stop"
+			host_failure = "restart"
+			preemption = "delete"
 		}
 		primary_network_interface {
 		  subnet     = ibm_is_subnet.testacc_subnet.id
