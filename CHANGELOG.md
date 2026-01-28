@@ -1,3 +1,15 @@
+# 1.87.3 (January 28, 2026)
+
+## Bug Fixes
+
+### Global Catalog
+* issue 6085 - fix import of ibm_cm_offering ([6636](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6636))
+
+## Enhancements
+
+### Cloud Databases
+* Add `async_restore` field for fast PG restore ([6630](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6630))
+
 # 1.87.2 (January 19, 2026)
 
 ## Bug Fixes
