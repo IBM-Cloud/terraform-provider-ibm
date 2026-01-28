@@ -590,7 +590,8 @@ For more informaton, see [here](https://registry.terraform.io/providers/IBM-Clou
 ## Import
 
 You can import the `ibm_cm_offering` resource by using `id`.
-The `id` property is just the `offering_id`.
+The `id` value specified should be a combination of the `catalog_id` and the `offering_id` separated by a `:`.  For example 
+`00000000-0000-0000-0000-000000000000:11111111-1111-1111-1111-111111111111` .
 
 * `offering_id`: A string. Offering identification.
 
