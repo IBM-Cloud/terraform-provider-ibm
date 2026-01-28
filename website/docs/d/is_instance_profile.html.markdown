@@ -42,6 +42,12 @@ In addition to the argument reference list, you can access the following attribu
 - `architecture` - (String) The default Operating System architecture for an instance of the profile.
 - `architecture_type` - (String) The type for this OS architecture.
 - `architecture_values` - (String) The supported OS architecture(s) for an instance with this profile.
+- `availability_class` - (List) The availability class for this OS architecture.
+  Nested schema for **availability_class**:
+	- `default` - (String) The default availability class for an instance with this profile. Allowable values are: `spot`, `standard`.
+	- `type` - (String) The type for this profile field. Allowable values are: `enum`.
+	- `value` - (String) The value for this profile field.
+	- `values` - (List) The permitted values for this profile field. Allowable list items are: `spot`, `standard`.
 - `bandwidth` - (List) Nested `bandwidth` blocks have the following structure:
 
   Nested scheme for `bandwidth`:
