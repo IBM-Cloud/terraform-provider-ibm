@@ -855,6 +855,25 @@ func DataSourceIBMISInstanceProfile() *schema.Resource {
 					},
 				},
 			},
+			"zones": &schema.Schema{
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "The zones in this region that support this instance profile.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"href": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The URL for this zone.",
+						},
+						"name": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The globally unique name for this zone.",
+						},
+					},
+				},
+			},
 		},
 	}
 }
@@ -1093,6 +1112,17 @@ func instanceProfileGet(context context.Context, d *schema.ResourceData, meta in
 		if err != nil {
 			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting volume_bandwidth_qos_modes: %s", err), "(Data) ibm_is_instance_profile", "read", "set-volume_bandwidth_qos_modes").GetDiag()
 		}
+	}
+	zones := []map[string]interface{}{}
+	for _, zonesItem := range profile.Zones {
+		zonesItemMap, err := DataSourceIBMIsInstanceProfileZoneReferenceToMap(&zonesItem) // #nosec G601
+		if err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_instance_profile", "read", "zones-to-map").GetDiag()
+		}
+		zones = append(zones, zonesItemMap)
+	}
+	if err = d.Set("zones", zones); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting zones: %s", err), "(Data) ibm_is_instance_profile", "read", "set-zones").GetDiag()
 	}
 	return nil
 }
@@ -1719,6 +1749,12 @@ func DataSourceIBMIsInstanceProfileClusterNetworkProfileReferenceToMap(model *vp
 	modelMap["href"] = *model.Href
 	modelMap["name"] = *model.Name
 	modelMap["resource_type"] = *model.ResourceType
+	return modelMap, nil
+}
+func DataSourceIBMIsInstanceProfileZoneReferenceToMap(model *vpcv1.ZoneReference) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	modelMap["href"] = *model.Href
+	modelMap["name"] = *model.Name
 	return modelMap, nil
 }
 func DataSourceIBMIsInstanceProfileInstanceProfileVcpuBurstLimitToMap(model *vpcv1.InstanceProfileVcpuBurstLimit) (map[string]interface{}, error) {
