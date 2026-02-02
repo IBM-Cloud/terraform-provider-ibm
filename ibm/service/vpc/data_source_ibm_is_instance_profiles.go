@@ -1174,7 +1174,7 @@ func DataSourceIBMIsInstanceProfilesZoneReferenceToMap(model *vpcv1.ZoneReferenc
 	modelMap := make(map[string]interface{})
 	modelMap["href"] = *model.Href
 	modelMap["name"] = *model.Name
-	return modelMap, nil
+	return modelMap
 }
 
 func DataSourceIBMIsInstanceProfilesInstanceProfileVcpuBurstLimitToMap(model *vpcv1.InstanceProfileVcpuBurstLimit) (map[string]interface{}, error) {
