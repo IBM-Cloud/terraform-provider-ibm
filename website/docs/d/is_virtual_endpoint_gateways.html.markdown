@@ -31,6 +31,8 @@ data "ibm_is_virtual_endpoint_gateways" "example" {
 
 Review the argument references that you can specify for your data source. 
 
+- `dns_resolution_binding_mode` - (Optional, List) Filters the collection to endpoint gateways with a `dns_resolution_binding_mode` property matching one of the specified comma-separated values.
+  - Constraints: Allowable list items are: `disabled`, `per_resource_binding`, `primary`.
 - `resource_group` - (String) The ID of the Resource group this endpoint gateway belongs to
 - `name` - (String) The name of the endpoint gateway
 
@@ -42,9 +44,21 @@ In addition to the argument reference list, you can access the following attribu
   Nested scheme for `virtual_endpoint_gateways`:
   - `access_tags`  - (List) Access management tags associated for the virtual endpoint gateway.
 
-  - `allow_dns_resolution_binding` - (Bool) Indicates whether to allow this endpoint gateway to participate in DNS resolution bindings with a VPC that has dns.enable_hub set to true.
+  - `allow_dns_resolution_binding` - (**Deprecated**, Optional, bool) **This field has been deprecated in favor of `dns_resolution_binding_mode` and will be removed in a future version.** 
+    
+    Previously indicated whether to allow this endpoint gateway to participate in DNS resolution bindings with a VPC that has dns.enable_hub set to true.
+    
+    **Migration Guide:**
+    - `false` -> use `dns_resolution_binding_mode = "disabled"`
+    - `true` -> use `dns_resolution_binding_mode = "primary"`
+    
+    **Note:** The new `dns_resolution_binding_mode` field also supports `"per_resource_binding"` for advanced DNS sharing scenarios not available with this boolean field.
+    
+    ~> **Important:** Do not use both `allow_dns_resolution_binding` and `dns_resolution_binding_mode` in the same configuration. Use only `dns_resolution_binding_mode`.
   - `created_at` - (Timestamp) The created date and time of the endpoint gateway.
   - `crn` - (String) The CRN for this endpoint gateway.
+  - `dns_resolution_binding_mode` - (String) The DNS resolution binding mode used for this endpoint gateway:- `disabled`: The endpoint gateway is not participating in [DNS sharing for VPE   gateways](https://cloud.ibm.com/docs/vpc?topic=vpc-vpe-dns-sharing).- `primary`: The endpoint gateway is participating in [DNS sharing for VPE gateways]   (https://cloud.ibm.com/docs/vpc?topic=vpc-vpe-dns-sharing) if the VPC this endpoint gateway resides in   has a DNS resolution binding to another VPC.- `per_resource_binding`: The endpoint gateway is participating in [DNS sharing for VPE   gateways](https://cloud.ibm.com/docs/vpc?topic=vpc-vpe-dns-sharing) if the VPC this endpoint gateway   resides in has a DNS resolution binding to another VPC, and resource binding is   enabled for the `target` service.
+    - Constraints: Allowable values are: `disabled`, `per_resource_binding`, `primary`.
   - `health_state` - (String) The endpoint gateway health state. **ok: Healthy**, **degraded: Suffering from compromised performance, capacity, or connectivity**, **faulted: Completely unreachable, inoperative, or entirely incapacitated**, **inapplicable: The health state does not apply because of the current lifecycle state**. A resource with a lifecycle state of failed or deleting will have a health state of inapplicable. A pending resource may have this state.
   - `lifecycle_state` - (String) The endpoint gateway lifecycle state, supported values are `deleted`, `deleting`, `failed`, `pending`, `stable`, `updating`, `waiting`, `suspended`.
   - `id` - (String) The endpoint gateway ID.

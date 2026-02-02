@@ -1,4 +1,4 @@
-// Copyright IBM Corp. 2024 All Rights Reserved.
+// Copyright IBM Corp. 2025 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 package conns
@@ -82,7 +82,9 @@ import (
 	iamidentity "github.com/IBM/platform-services-go-sdk/iamidentityv1"
 	iampolicymanagement "github.com/IBM/platform-services-go-sdk/iampolicymanagementv1"
 	ibmcloudshellv1 "github.com/IBM/platform-services-go-sdk/ibmcloudshellv1"
+	"github.com/IBM/platform-services-go-sdk/logsrouterv3"
 	"github.com/IBM/platform-services-go-sdk/metricsrouterv3"
+	"github.com/IBM/platform-services-go-sdk/platformnotificationsv1"
 	resourcecontroller "github.com/IBM/platform-services-go-sdk/resourcecontrollerv2"
 	resourcemanager "github.com/IBM/platform-services-go-sdk/resourcemanagerv2"
 	"github.com/IBM/platform-services-go-sdk/usagereportsv4"
@@ -126,6 +128,7 @@ import (
 	codeengine "github.com/IBM/code-engine-go-sdk/codeenginev2"
 	"github.com/IBM/continuous-delivery-go-sdk/v2/cdtektonpipelinev2"
 	"github.com/IBM/continuous-delivery-go-sdk/v2/cdtoolchainv2"
+	"github.com/IBM/dra-go-sdk/drautomationservicev1"
 	"github.com/IBM/event-notifications-go-admin-sdk/eventnotificationsv1"
 	"github.com/IBM/eventstreams-go-sdk/pkg/adminrestv1"
 	"github.com/IBM/eventstreams-go-sdk/pkg/schemaregistryv1"
@@ -256,7 +259,9 @@ type ClientSession interface {
 	ResourceControllerAPIV2() (controllerv2.ResourceControllerAPIV2, error)
 	BackupRecoveryV1() (*backuprecoveryv1.BackupRecoveryV1, error)
 	BackupRecoveryV1Connector() (*backuprecoveryv1.BackupRecoveryV1Connector, error)
+	BackupRecoveryManagerV1() (*backuprecoveryv1.BackupRecoveryManagementSreApiV1, error)
 	IBMCloudLogsRoutingV0() (*ibmcloudlogsroutingv0.IBMCloudLogsRoutingV0, error)
+	LogsRouterV3() (*logsrouterv3.LogsRouterV3, error)
 	SoftLayerSession() *slsession.Session
 	IBMPISession() (*ibmpisession.IBMPISession, error)
 	UserManagementAPI() (usermanagementv2.UserManagementAPI, error)
@@ -335,6 +340,8 @@ type ClientSession interface {
 	VmwareV1() (*vmwarev1.VmwareV1, error)
 	LogsV0() (*logsv0.LogsV0, error)
 	SdsaasV1() (*sdsaasv1.SdsaasV1, error)
+	DrAutomationServiceV1() (*drautomationservicev1.DrAutomationServiceV1, error)
+	PlatformNotificationsV1() (*platformnotificationsv1.PlatformNotificationsV1, error)
 }
 
 type clientSession struct {
@@ -594,6 +601,9 @@ type clientSession struct {
 	backupRecoveryConnectorClient    *backuprecoveryv1.BackupRecoveryV1Connector
 	backupRecoveryConnectorClientErr error
 
+	backupRecoveryManagerClient    *backuprecoveryv1.BackupRecoveryManagementSreApiV1
+	backupRecoveryManagerClientErr error
+
 	secretsManagerClient    *secretsmanagerv2.SecretsManagerV2
 	secretsManagerClientErr error
 
@@ -694,9 +704,13 @@ type clientSession struct {
 	logsClient    *logsv0.LogsV0
 	logsClientErr error
 
-	// Logs Routing
+	// Logs Routing v1
 	ibmCloudLogsRoutingClient    *ibmcloudlogsroutingv0.IBMCloudLogsRoutingV0
 	ibmCloudLogsRoutingClientErr error
+
+	// Logs Router v3
+	logsRouterClient    *logsrouterv3.LogsRouterV3
+	logsRouterClientErr error
 
 	// db2 saas
 	db2saasClient    *db2saasv1.Db2saasV1
@@ -709,6 +723,14 @@ type clientSession struct {
 	// Global Catalog Management Option
 	globalCatalogClient    *globalcatalogv1.GlobalCatalogV1
 	globalCatalogClientErr error
+
+	// DR Automation
+	drAutomationServiceClient    *drautomationservicev1.DrAutomationServiceV1
+	drAutomationServiceClientErr error
+
+	// Platform Notifications
+	platformNotificationsClient    *platformnotificationsv1.PlatformNotificationsV1
+	platformNotificationsClientErr error
 }
 
 // Usage Reports
@@ -1052,6 +1074,11 @@ func (sess clientSession) CisSSLClientSession() (*cissslv1.SslCertificateApiV1, 
 	return sess.cisSSLClient.Clone(), nil
 }
 
+// DrAutomation Service
+func (session clientSession) DrAutomationServiceV1() (*drautomationservicev1.DrAutomationServiceV1, error) {
+	return session.drAutomationServiceClient, session.drAutomationServiceClientErr
+}
+
 // CIS WAF Packages
 func (sess clientSession) CisWAFPackageClientSession() (*ciswafpackagev1.WafRulePackagesApiV1, error) {
 	if sess.cisWAFPackageErr != nil {
@@ -1197,6 +1224,10 @@ func (session clientSession) BackupRecoveryV1() (*backuprecoveryv1.BackupRecover
 
 func (session clientSession) BackupRecoveryV1Connector() (*backuprecoveryv1.BackupRecoveryV1Connector, error) {
 	return session.backupRecoveryConnectorClient, session.backupRecoveryConnectorClientErr
+}
+
+func (session clientSession) BackupRecoveryManagerV1() (*backuprecoveryv1.BackupRecoveryManagementSreApiV1, error) {
+	return session.backupRecoveryManagerClient, session.backupRecoveryManagerClientErr
 }
 
 // IBM Cloud Secrets Manager V2 Basic API
@@ -1345,14 +1376,24 @@ func (session clientSession) LogsV0() (*logsv0.LogsV0, error) {
 	return session.logsClient, session.logsClientErr
 }
 
-// IBM Cloud Logs Routing
+// IBM Cloud Logs Routing V1
 func (session clientSession) IBMCloudLogsRoutingV0() (*ibmcloudlogsroutingv0.IBMCloudLogsRoutingV0, error) {
 	return session.ibmCloudLogsRoutingClient, session.ibmCloudLogsRoutingClientErr
+}
+
+// Logs Routing API V3
+func (session clientSession) LogsRouterV3() (*logsrouterv3.LogsRouterV3, error) {
+	return session.logsRouterClient, session.logsRouterClientErr
 }
 
 // GlobalCatalog Session
 func (sess clientSession) GlobalCatalogV1API() (*globalcatalogv1.GlobalCatalogV1, error) {
 	return sess.globalCatalogClient, sess.globalCatalogClientErr
+}
+
+// Platform Notifications
+func (session clientSession) PlatformNotificationsV1() (*platformnotificationsv1.PlatformNotificationsV1, error) {
+	return session.platformNotificationsClient, session.platformNotificationsClientErr
 }
 
 // ClientSession configures and returns a fully initialized ClientSession
@@ -1397,6 +1438,8 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.resourceControllerErr = errEmptyBluemixCredentials
 		session.backupRecoveryClientErr = errEmptyBluemixCredentials
 		session.backupRecoveryConnectorClientErr = errEmptyBluemixCredentials
+		session.backupRecoveryManagerClientErr = errEmptyBluemixCredentials
+		session.backupRecoveryManagerClientErr = errEmptyBluemixCredentials
 		session.catalogManagementClientErr = errEmptyBluemixCredentials
 		session.partnerCenterSellClientErr = errEmptyBluemixCredentials
 		session.ibmpiConfigErr = errEmptyBluemixCredentials
@@ -1651,10 +1694,12 @@ func (c *Config) ClientSession() (interface{}, error) {
 	// Construct the service options.
 	var backupRecoveryURL string = "https://default.backup-recovery.cloud.ibm.com/v2"
 	var backupRecoveryConnectorURL string
+	var backupRecoveryManagerURL string = "https://manager.backup-recovery.cloud.ibm.com/v2"
 
 	if fileMap != nil && c.Visibility != "public-and-private" {
 		backupRecoveryURL = fileFallBack(fileMap, c.Visibility, "IBMCLOUD_BACKUP_RECOVERY_ENDPOINT", c.Region, backupRecoveryURL)
 		backupRecoveryConnectorURL = fileFallBack(fileMap, c.Visibility, "IBMCLOUD_BACKUP_RECOVERY_CONNECTOR_ENDPOINT", c.Region, backupRecoveryConnectorURL)
+		backupRecoveryManagerURL = fileFallBack(fileMap, c.Visibility, "IBMCLOUD_BACKUP_RECOVERY_MANAGER_ENDPOINT", c.Region, backupRecoveryConnectorURL)
 	}
 
 	backupRecoveryClientOptions := &backuprecoveryv1.BackupRecoveryV1Options{
@@ -1695,6 +1740,27 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.backupRecoveryConnectorClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
 		// Add custom header for analytics
 		session.backupRecoveryConnectorClient.SetDefaultHeaders(gohttp.Header{
+			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
+		})
+	}
+
+	var backupRecoveryManagerClientAuthenticator core.Authenticator
+	backupRecoveryManagerClientAuthenticator = &core.NoAuthAuthenticator{}
+
+	backupRecoveryManagerClientOptions := &backuprecoveryv1.BackupRecoveryManagementSreApiV1Options{
+		Authenticator: backupRecoveryManagerClientAuthenticator,
+		URL:           EnvFallBack([]string{"IBMCLOUD_BACKUP_RECOVERY_MANAGER_ENDPOINT"}, backupRecoveryManagerURL),
+	}
+	// Construct the service client.
+	session.backupRecoveryManagerClient, err = backuprecoveryv1.NewBackupRecoveryManagementSreApiV1(backupRecoveryManagerClientOptions)
+	if err != nil {
+		session.backupRecoveryManagerClientErr = fmt.Errorf("Error occurred while configuring IBM Backup recovery API service: %q", err)
+	}
+	if session.backupRecoveryManagerClient != nil && session.backupRecoveryManagerClient.Service != nil {
+		// Enable retries for API calls
+		session.backupRecoveryManagerClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+		// Add custom header for analytics
+		session.backupRecoveryManagerClient.SetDefaultHeaders(gohttp.Header{
 			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
 		})
 	}
@@ -1783,6 +1849,65 @@ func (c *Config) ClientSession() (interface{}, error) {
 		})
 	} else {
 		session.ibmCloudLogsRoutingClientErr = fmt.Errorf("Error occurred while configuring IBM Cloud Logs Routing service: %q", err)
+	}
+
+	// LOGS ROUTER V3
+	// Determine the correct region-based endpoint URL to use for the 'Logs Routing API Version 3' service.
+	var logsRouterV3ClientURL string
+	if c.Visibility == "private" || c.Visibility == "public-and-private" {
+		logsRouterV3ClientURL, err = logsrouterv3.GetServiceURLForRegion("private." + c.Region)
+		if err != nil && c.Visibility == "public-and-private" {
+			logsRouterV3ClientURL, err = logsrouterv3.GetServiceURLForRegion(c.Region)
+		}
+	} else {
+		logsRouterV3ClientURL, err = logsrouterv3.GetServiceURLForRegion(c.Region)
+	}
+	if err != nil {
+		// Developer: For some services that support regional endpoints it may be appropriate to use the service's
+		// default endpoint URL if a specific region was not configured by the user, but for other services that
+		// support regional endpoints, it may NOT be appropriate to use the default endpoint URL.
+		//
+		// Choose the appropriate code block below when you copy/paste this code into the official copy of config.go
+		// (https://github.com/IBM-Cloud/terraform-provider-ibm/blob/master/ibm/conns/config.go):
+		//
+		// 1. If it is appropriate to use your service's default endpoint URL if a region-based endpoint URL
+		// cannot be successfully obtained from the user's configuration, then use "Code block 1" and remove
+		// "Code block 2" below.
+		//
+		// 2. If your service should ONLY use a region-based endpoint URL and instead return an error if a
+		// region-based endpoint URL cannot be obtained from the user's configuration, then use "Code block 2"
+		// and remove "Code block 1" below.
+
+		// Code block 1:
+		// If a suitable region-based endpoint URL could not be obtained, fall back to the service's default endpoint URL.
+		logsRouterV3ClientURL = logsrouterv3.DefaultServiceURL
+
+		// Code block 2 removed. Fall back to service's default endpoint URL.
+	}
+	if fileMap != nil && c.Visibility != "public-and-private" {
+		logsRouterV3ClientURL = fileFallBack(fileMap, c.Visibility, "IBMCLOUD_LOGS_ROUTING_API_ENDPOINT_V3", c.Region, logsRouterV3ClientURL)
+	}
+
+	// Construct an instance of the 'Logs Routing API Version 3' service.
+	if session.logsRouterClientErr == nil {
+		// Construct the service options.
+		logsRouterClientOptions := &logsrouterv3.LogsRouterV3Options{
+			Authenticator: authenticator,
+			URL:           EnvFallBack([]string{"IBMCLOUD_LOGS_ROUTING_API_ENDPOINT_V3"}, logsRouterV3ClientURL),
+		}
+
+		// Construct the service client.
+		session.logsRouterClient, err = logsrouterv3.NewLogsRouterV3(logsRouterClientOptions)
+		if err == nil {
+			// Enable retries for API calls
+			session.logsRouterClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+			// Add custom header for analytics
+			session.logsRouterClient.SetDefaultHeaders(gohttp.Header{
+				"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
+			})
+		} else {
+			session.logsRouterClientErr = fmt.Errorf("Error occurred while constructing 'Logs Routing API Version 3' service client: %q", err)
+		}
 	}
 
 	// Construct an "options" struct for creating the service client.
@@ -1983,6 +2108,29 @@ func (c *Config) ClientSession() (interface{}, error) {
 		})
 	} else {
 		session.atrackerClientV2Err = fmt.Errorf("Error occurred while configuring Activity Tracker API Version 2 service: %q", err)
+	}
+
+	platformNotificationsUrl := platformnotificationsv1.DefaultServiceURL
+	// Construct an instance of the 'Platform Notifications' service.
+	if session.platformNotificationsClientErr == nil {
+		// Construct the service options.
+		platformNotificationsClientOptions := &platformnotificationsv1.PlatformNotificationsV1Options{
+			Authenticator: authenticator,
+			URL:           EnvFallBack([]string{"IBMCLOUD_PLATFORM_NOTIFICATIONS_API_ENDPOINT"}, platformNotificationsUrl),
+		}
+
+		// Construct the service client.
+		session.platformNotificationsClient, err = platformnotificationsv1.NewPlatformNotificationsV1(platformNotificationsClientOptions)
+		if err == nil {
+			// Enable retries for API calls
+			session.platformNotificationsClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+			// Add custom header for analytics
+			session.platformNotificationsClient.SetDefaultHeaders(gohttp.Header{
+				"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
+			})
+		} else {
+			session.platformNotificationsClientErr = fmt.Errorf("Error occurred while constructing 'Platform Notifications' service client: %q", err)
+		}
 	}
 
 	// Construct an "options" struct for creating the service client for Metrics Router
@@ -2297,7 +2445,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 	}
 	globalSearchAPIV2, err := searchv2.NewGlobalSearchV2(globalSearchV2Options)
 	if err != nil {
-		session.globalTaggingConfigErrV1 = fmt.Errorf("[ERROR] Error occured while configuring Global Search: %q", err)
+		session.globalSearchConfigErrV2 = fmt.Errorf("[ERROR] Error occured while configuring Global Search: %q", err)
 	}
 	if globalSearchAPIV2 != nil && globalSearchAPIV2.Service != nil {
 		session.globalSearchServiceAPIV2 = *globalSearchAPIV2
@@ -3410,6 +3558,27 @@ func (c *Config) ClientSession() (interface{}, error) {
 	}
 	session.resourceControllerAPI = resourceControllerClient
 
+	// Construct an instance of the 'DrAutomation Service' service.
+	if session.drAutomationServiceClientErr == nil {
+		// Construct the service options.
+		drAutomationServiceClientOptions := &drautomationservicev1.DrAutomationServiceV1Options{
+			Authenticator: authenticator,
+		}
+
+		// Construct the service client.
+		session.drAutomationServiceClient, err = drautomationservicev1.NewDrAutomationServiceV1(drAutomationServiceClientOptions)
+		if err == nil {
+			// Enable retries for API calls
+			session.drAutomationServiceClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+			// Add custom header for analytics
+			session.drAutomationServiceClient.SetDefaultHeaders(gohttp.Header{
+				"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
+			})
+		} else {
+			session.drAutomationServiceClientErr = fmt.Errorf("error occurred while constructing 'DrAutomation Service' service client: %q", err)
+		}
+	}
+
 	// SECRETS MANAGER Service V2
 	// Construct an "options" struct for creating the service client.
 	var smBaseUrl string
@@ -3643,7 +3812,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 	codeEngineClientOptions := &codeengine.CodeEngineV2Options{
 		Authenticator: authenticator,
 		URL:           EnvFallBack([]string{"IBMCLOUD_CODE_ENGINE_API_ENDPOINT"}, codeEngineEndpoint),
-		Version:       core.StringPtr("2025-01-10"),
+		Version:       core.StringPtr("2025-07-10"),
 	}
 
 	// Construct the service client.

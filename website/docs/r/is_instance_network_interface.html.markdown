@@ -120,15 +120,18 @@ In addition to all arguments above, the following attributes are exported:
 
 ## Import
 
-You can import the `ibm_is_instance_network_interface` resource by using `id`.
-The `id` property can be formed from `instance_ID`, and `network_interface_ID` in the following format:
+In Terraform v1.5.0 and later, use an [`import` block](https://developer.hashicorp.com/terraform/language/import) to import the `ibm_is_instance_network_interface` resource by using `id`.
+The `id` property can be formed from `instance_ID`, and `network_interface_ID`. For example:
 
+```terraform
+import {
+  to = ibm_is_instance_network_interface.is_instance_network_interface
+  id = "<instance>/<network_interface_ID>"
+}
 ```
-instance/network_interface
-```
-- `instance`: A string. The instance identifier.
-- `network_interface`: A string. The network interface identifier.
 
-```
-$ terraform import ibm_is_instance_network_interface.is_instance_network_interface <instance>/<network_interface>
+Using `terraform import`. For example:
+
+```console
+% terraform import ibm_is_instance_network_interface.is_instance_network_interface <instance>/<network_interface_ID>
 ```

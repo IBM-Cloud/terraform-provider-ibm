@@ -822,6 +822,53 @@ func DataSourceIBMISInstanceProfiles() *schema.Resource {
 								},
 							},
 						},
+						// shared core changes
+						"vcpu_burst_limit": &schema.Schema{
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "The permitted value for VCPU burst limit percentage for an instance with this profile.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"type": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The type for this profile field.",
+									},
+									"value": &schema.Schema{
+										Type:        schema.TypeInt,
+										Computed:    true,
+										Description: "The value for this profile field.",
+									},
+								},
+							},
+						},
+						"vcpu_percentage": &schema.Schema{
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "The permitted values for VCPU percentage for an instance with this profile.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"default": &schema.Schema{
+										Type:        schema.TypeInt,
+										Computed:    true,
+										Description: "The default value for this profile field.",
+									},
+									"type": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The type for this profile field.",
+									},
+									"values": &schema.Schema{
+										Type:        schema.TypeList,
+										Computed:    true,
+										Description: "The permitted values for this profile field.",
+										Elem: &schema.Schema{
+											Type: schema.TypeInt,
+										},
+									},
+								},
+							},
+						},
 					},
 				},
 			},
@@ -1016,7 +1063,6 @@ func instanceProfilesList(context context.Context, d *schema.ResourceData, meta 
 		}
 		l["zones"] = zones
 		// Changes for manufacturer for AMD Support.
-		// reduce the line of code here. - sumit's suggestions
 		if profile.VcpuManufacturer != nil {
 			vcpuManufacturerList := []map[string]interface{}{}
 			vcpuManufacturerMap := dataSourceInstanceProfileVcpuManufacturerToMap(*profile.VcpuManufacturer.(*vpcv1.InstanceProfileVcpuManufacturer))
@@ -1027,6 +1073,17 @@ func instanceProfilesList(context context.Context, d *schema.ResourceData, meta 
 		if profile.Disks != nil {
 			l[isInstanceDisks] = dataSourceInstanceProfileFlattenDisks(profile.Disks)
 		}
+
+		vcpuBurstLimitMap, err := DataSourceIBMIsInstanceProfilesInstanceProfileVcpuBurstLimitToMap(profile.VcpuBurstLimit.(*vpcv1.InstanceProfileVcpuBurstLimit))
+		if err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting vcpu_percentage: %s", err), "(Data) ibm_is_instance_profiles", "read", "set-vcpu_percentage").GetDiag()
+		}
+		l["vcpu_burst_limit"] = []map[string]interface{}{vcpuBurstLimitMap}
+		vcpuPercentageMap, err := DataSourceIBMIsInstanceProfilesInstanceProfileVcpuPercentageToMap(profile.VcpuPercentage)
+		if err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting vcpu_percentage: %s", err), "(Data) ibm_is_instance_profiles", "read", "set-vcpu_burst_limit").GetDiag()
+		}
+		l["vcpu_percentage"] = []map[string]interface{}{vcpuPercentageMap}
 		profilesInfo = append(profilesInfo, l)
 	}
 	d.SetId(dataSourceIBMISInstanceProfilesID(d))
@@ -1117,5 +1174,19 @@ func DataSourceIBMIsInstanceProfilesZoneReferenceToMap(model *vpcv1.ZoneReferenc
 	modelMap := make(map[string]interface{})
 	modelMap["href"] = *model.Href
 	modelMap["name"] = *model.Name
-	return modelMap
+	return modelMap, nil
+}
+
+func DataSourceIBMIsInstanceProfilesInstanceProfileVcpuBurstLimitToMap(model *vpcv1.InstanceProfileVcpuBurstLimit) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	modelMap["type"] = *model.Type
+	modelMap["value"] = flex.IntValue(model.Value)
+	return modelMap, nil
+}
+func DataSourceIBMIsInstanceProfilesInstanceProfileVcpuPercentageToMap(model *vpcv1.InstanceProfileVcpuPercentage) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	modelMap["default"] = flex.IntValue(model.Default)
+	modelMap["type"] = *model.Type
+	modelMap["values"] = model.Values
+	return modelMap, nil
 }

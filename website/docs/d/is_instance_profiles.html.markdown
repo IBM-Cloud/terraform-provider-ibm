@@ -192,6 +192,11 @@ You can access the following attribute references after your data source is crea
       - `default` - (String) The default VCPU architecture for an instance with this profile.
       - `type` - (String) The type for this profile field.
       - `value` - (String) The VCPU architecture for an instance with this profile.
+  - `vcpu_burst_limit` - (List) The permitted value for VCPU burst limit percentage for an instance with this profile.
+	    
+        Nested schema for **vcpu_burst_limit**:
+		- `type` - (String) The type for this profile field.
+		- `value` - (Integer) The value for this profile field.
   - `vcpu_count` - (List) Nested `vcpu_count` blocks have the following structure:
 
       Nested scheme for `vcpu_count`:
@@ -204,10 +209,17 @@ You can access the following attribute references after your data source is crea
       - `values` - (String) The permitted values for this profile field.
   - `vcpu_manufacturer` - (List) Nested `vcpu_manufacturer` blocks have the following structure:
 
-    Nested scheme for `vcpu_manufacturer`:
-    - `default` - (String) The default VCPU manufacturer for an instance with this profile.
-    - `type` - (String) The type for this profile field.
-    - `value` - (String) The VCPU manufacturer for an instance with this profile.
+        Nested scheme for `vcpu_manufacturer`:
+        - `default` - (String) The default VCPU manufacturer for an instance with this profile.
+        - `type` - (String) The type for this profile field.
+        - `value` - (String) The VCPU manufacturer for an instance with this profile.
+  - `vcpu_percentage` - (List) The permitted values for VCPU percentage for an instance with this profile.
+      
+      Nested schema for **vcpu_percentage**:
+      - `default` - (Integer) The default value for this profile field.
+      - `type` - (String) The type for this profile field. 
+      - `values` - (List) The permitted values for this profile field.
+
   - `volume_bandwidth_qos_modes` - (List) Nested `volume_bandwidth_qos_modes` blocks have the following structure:
 
       Nested scheme for `volume_bandwidth_qos_modes`:
@@ -220,3 +232,4 @@ You can access the following attribute references after your data source is crea
       Nested schema for **zones**:
       - `href` - (String) The URL for this zone.
       - `name` - (String) The globally unique name for this zone.
+

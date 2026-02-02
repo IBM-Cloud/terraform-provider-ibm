@@ -106,9 +106,24 @@ func testAccCheckIBMISSecurityGroupRuleExists(n, securityGroupRuleID string) res
 				sgr := foundSecurityGroupRule.(*vpcv1.SecurityGroupRuleSecurityGroupRuleProtocolIcmp)
 				securityGroupRuleID = *sgr.ID
 			}
-		case "*vpcv1.SecurityGroupRuleSecurityGroupRuleProtocolAll":
+		case "*vpcv1.SecurityGroupRuleProtocolAny":
 			{
-				sgr := foundSecurityGroupRule.(*vpcv1.SecurityGroupRuleSecurityGroupRuleProtocolAll)
+				sgr := foundSecurityGroupRule.(*vpcv1.SecurityGroupRuleProtocolAny)
+				securityGroupRuleID = *sgr.ID
+			}
+		case "*vpcv1.SecurityGroupRuleProtocolIcmptcpudp":
+			{
+				sgr := foundSecurityGroupRule.(*vpcv1.SecurityGroupRuleProtocolIcmptcpudp)
+				securityGroupRuleID = *sgr.ID
+			}
+		case "*vpcv1.SecurityGroupRuleProtocolIndividual":
+			{
+				sgr := foundSecurityGroupRule.(*vpcv1.SecurityGroupRuleProtocolIndividual)
+				securityGroupRuleID = *sgr.ID
+			}
+		case "*vpcv1.SecurityGroupRule":
+			{
+				sgr := foundSecurityGroupRule.(*vpcv1.SecurityGroupRule)
 				securityGroupRuleID = *sgr.ID
 			}
 		case "*vpcv1.SecurityGroupRuleSecurityGroupRuleProtocolTcpudp":
@@ -136,6 +151,17 @@ func testAccCheckIBMISsecurityGroupRuleConfig(vpcname, name string) string {
 		group     = ibm_is_security_group.testacc_security_group.id
 		direction = "inbound"
 		remote    = "127.0.0.1"
+	  }
+
+	  resource "ibm_is_security_group_rule" "testacc_security_group_rule" {
+		group     = ibm_is_security_group.testacc_security_group.id
+		direction = "inbound"
+		remote    = "127.0.0.1"
+		icmp {
+		  code = 21
+		  type = 31
+		}
+		name 	  = "test-name"
 	  }
 	  
 	  resource "ibm_is_security_group_rule" "testacc_security_group_rule_icmp" {
@@ -208,6 +234,56 @@ func testAccCheckIBMISsecurityGroupRuleConfig(vpcname, name string) string {
 		tcp {
 		}
 	  }
+
+	  resource "ibm_is_security_group_rule" "testacc_security_group_rule_any" {
+		depends_on = [ibm_is_security_group_rule.testacc_security_group_rule_tcp]
+		group      = ibm_is_security_group.testacc_security_group.id
+		direction  = "inbound"
+		remote     = "127.0.0.1"
+		protocol   = "any"
+	  }
+	  resource "ibm_is_security_group_rule" "testacc_security_group_rule_icmp_tcp_udp" {
+		depends_on = [ibm_is_security_group_rule.testacc_security_group_rule_tcp]
+		group      = ibm_is_security_group.testacc_security_group.id
+		direction  = "inbound"
+		remote     = "127.0.0.1"
+		protocol   = "icmp_tcp_udp"
+	  }
+	  resource "ibm_is_security_group_rule" "testacc_security_group_rule_individual" {
+		depends_on = [ibm_is_security_group_rule.testacc_security_group_rule_tcp]
+		group      = ibm_is_security_group.testacc_security_group.id
+		direction  = "inbound"
+		remote     = "127.0.0.1"
+		protocol   = "number_99"
+	  }
+	  resource "ibm_is_security_group_rule" "testacc_security_group_rule_icmp_new" {
+		depends_on = [ibm_is_security_group_rule.testacc_security_group_rule_tcp]
+		group      = ibm_is_security_group.testacc_security_group.id
+		direction  = "inbound"
+		remote     = "127.0.0.1"
+		protocol   = "icmp"
+		code = 20
+		type = 30
+	  }	
+	  resource "ibm_is_security_group_rule" "testacc_security_group_rule_tcp_new" {
+		depends_on = [ibm_is_security_group_rule.testacc_security_group_rule_tcp]
+		group      = ibm_is_security_group.testacc_security_group.id
+		direction  = "inbound"
+		remote     = "127.0.0.1"
+		protocol   = "tcp"
+		port_min = 8080
+		port_max = 8080
+	  }		
+	  resource "ibm_is_security_group_rule" "testacc_security_group_rule_udp_new" {
+		depends_on = [ibm_is_security_group_rule.testacc_security_group_rule_tcp]
+		group      = ibm_is_security_group.testacc_security_group.id
+		direction  = "inbound"
+		remote     = "127.0.0.1"
+		protocol   = "udp"
+		port_min = 8080
+		port_max = 8080
+	  }
+
  `, vpcname, name)
 
 }

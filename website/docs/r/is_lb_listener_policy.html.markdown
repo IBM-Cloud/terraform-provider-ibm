@@ -261,16 +261,19 @@ In addition to all argument reference list, you can access the following attribu
 
 
 ## Import
-The resource can be imported by using the ID. The ID is composed of `<lb_ID>/<listener_ID>/<policy_ID>`.
 
-**Synatx**
+In Terraform v1.5.0 and later, use an [`import` block](https://developer.hashicorp.com/terraform/language/import) to import the `ibm_is_lb_listener_policy` resource by using `id`.
+The `id` property can be formed from `<lb_ID>/<listener_ID>/<policy_ID>` . For example:
 
+```terraform
+import {
+  to = ibm_is_lb_listener_policy.example
+  id = "<lb_ID>/<listener_ID>/<policy_ID>"
+}
 ```
-$ terraform import ibm_is_lb_listener_policy.example <lb_ID>/<listener_ID>/<policy_ID>
-```
 
-**Example**
+Using `terraform import`. For example:
 
-```
-$ terraform import ibm_is_lb_listener_policy.example c1e3d5d3-8836-4328-b473-a90e0c9ba941/3ea13dc7-25b4-4c62-8cc7-0f7e092e7a8f/2161a3fb-123c-4a33-9a3d-b3154ef42009
+```console
+% terraform import ibm_is_lb_listener_policy.example <lb_ID>/<listener_ID>/<policy_ID>
 ```

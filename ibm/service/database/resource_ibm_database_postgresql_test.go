@@ -5,6 +5,7 @@ package database_test
 
 import (
 	"fmt"
+	"regexp"
 	"testing"
 
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
@@ -61,6 +62,25 @@ func TestAccIBMDatabaseInstancePostgresBasic(t *testing.T) {
 					resource.TestCheckResourceAttr(name, "tags.#", "1"),
 					resource.TestCheckResourceAttr(name, "logical_replication_slot.#", "2"),
 				),
+			},
+		},
+	})
+}
+
+func TestAccIBMDatabaseInstancePostgresGen2(t *testing.T) {
+	t.Parallel()
+	databaseResourceGroup := "default"
+	rnd := fmt.Sprintf("tf-Pgress-%d", acctest.RandIntRange(10, 100))
+	testName := rnd
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMDatabaseInstanceDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config:      testAccCheckIBMDatabaseInstancePostgreGen2(databaseResourceGroup, testName),
+				ExpectError: regexp.MustCompile(`The plan "standard-gen2" corresponds to a Gen 2 database\. Gen 2 instances are not supported by the ibm_database resource\.`),
 			},
 		},
 	})
@@ -237,6 +257,52 @@ func TestAccIBMDatabaseInstancePostgresPITR(t *testing.T) {
 	})
 }
 
+func TestAccIBMDatabaseInstancePostgresAsyncRestore(t *testing.T) {
+	t.Parallel()
+
+	databaseResourceGroup := "default"
+
+	var databaseInstanceOne string
+	var databaseInstanceTwo string
+
+	serviceName := fmt.Sprintf("tf-Pgress-%d", acctest.RandIntRange(10, 100))
+	restrServiceName := serviceName + "-async" + "-restore"
+
+	sourceResource := "ibm_database." + serviceName
+	restrResource := "ibm_database." + restrServiceName
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMDatabaseInstanceDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMDatabaseInstancePostgresMinimal(databaseResourceGroup, serviceName),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMDatabaseInstanceExists(sourceResource, &databaseInstanceOne),
+					resource.TestCheckResourceAttr(sourceResource, "name", serviceName),
+					resource.TestCheckResourceAttr(sourceResource, "service", "databases-for-postgresql"),
+					resource.TestCheckResourceAttr(sourceResource, "plan", "standard"),
+					resource.TestCheckResourceAttr(sourceResource, "location", acc.Region()),
+				),
+			},
+			{
+				Config: acc.ConfigCompose(
+					testAccCheckIBMDatabaseInstancePostgresMinimal(databaseResourceGroup, serviceName),
+					testAccCheckIBMDatabaseInstancePostgresAsyncRestoreBackup(databaseResourceGroup, restrServiceName)),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMDatabaseInstanceExists(restrResource, &databaseInstanceTwo),
+					resource.TestCheckResourceAttr(restrResource, "name", restrServiceName),
+					resource.TestCheckResourceAttr(restrResource, "service", "databases-for-postgresql"),
+					resource.TestCheckResourceAttr(restrResource, "plan", "standard"),
+					resource.TestCheckResourceAttr(restrResource, "location", acc.Region()),
+					resource.TestCheckResourceAttr(restrResource, "async_restore", "true"),
+				),
+			},
+		},
+	})
+}
+
 func TestAccIBMDatabaseInstancePostgresReadReplicaPromotion(t *testing.T) {
 	t.Parallel()
 
@@ -307,6 +373,58 @@ func testAccCheckIBMDatabaseInstancePostgresBasic(databaseResourceGroup string, 
 		name                         = "%[2]s"
 		service                      = "databases-for-postgresql"
 		plan                         = "standard"
+		location                     = "%[3]s"
+		adminpassword                = "secure-Password12345"
+		service_endpoints            = "public"
+		group {
+			group_id = "member"
+
+			memory {
+			  allocation_mb = 4096
+			}
+			host_flavor {
+				id = "multitenant"
+			}
+			disk {
+			  allocation_mb = 10240
+			}
+		}
+		tags                         = ["one:two"]
+		users {
+			name     = "user123"
+			password = "secure-Password12345"
+		}
+		allowlist {
+			address     = "172.168.1.2/32"
+			description = "desc1"
+		}
+		configuration                = <<CONFIGURATION
+		{
+		  "wal_level": "logical",
+		  "max_replication_slots": 21,
+		  "max_wal_senders": 21
+		}
+		CONFIGURATION
+		logical_replication_slot {
+			name = "wj123"
+			database_name = "ibmclouddb"
+			plugin_type = "wal2json"
+		}
+	}
+	`, databaseResourceGroup, name, acc.Region())
+}
+
+func testAccCheckIBMDatabaseInstancePostgreGen2(databaseResourceGroup string, name string) string {
+	return fmt.Sprintf(`
+	data "ibm_resource_group" "test_acc" {
+		name = "%[1]s"
+	}
+
+	resource "ibm_database" "%[2]s" {
+		resource_group_id            = data.ibm_resource_group.test_acc.id
+		name                         = "%[2]s"
+		service                      = "databases-for-postgresql"
+		plan                         = "standard-gen2"
 		location                     = "%[3]s"
 		adminpassword                = "secure-Password12345"
 		service_endpoints            = "public"
@@ -667,6 +785,22 @@ func testAccCheckIBMDatabaseInstancePostgresReadReplicaPromote(databaseResourceG
 		service_endpoints   = "public-and-private"
 		remote_leader_id    = ""
 		skip_initial_backup = true
+	}
+	`, databaseResourceGroup, readReplicaName, acc.Region())
+}
+
+func testAccCheckIBMDatabaseInstancePostgresAsyncRestoreBackup(databaseResourceGroup string, readReplicaName string) string {
+	return fmt.Sprintf(`
+	resource "ibm_database" "%[2]s" {
+		resource_group_id = data.ibm_resource_group.test_acc.id
+		name                = "%[2]s"
+		service             = "databases-for-postgresql"
+		plan                = "standard"
+		location            = "%[3]s"
+		service_endpoints   = "public-and-private"
+		async_restore = true
+		point_in_time_recovery_time = ""
+	    point_in_time_recovery_deployment_id = "crn:v1:bluemix:public:databases-for-postgresql:us-south:a/40ddc34a953a8c02f10987b59085b60e:a00bee8b-1134-4f0f-8428-4f32428f5e4a::"
 	}
 	`, databaseResourceGroup, readReplicaName, acc.Region())
 }

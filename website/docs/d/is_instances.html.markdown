@@ -299,6 +299,15 @@ In addition to all argument reference list, you can access the following attribu
 		- `more_info` - (String) Link to documentation about this status reason
 	- `total_volume_bandwidth` - (Integer) The amount of bandwidth (in megabits per second) allocated exclusively to instance storage volumes
     - `total_network_bandwidth` - (Integer) The amount of bandwidth (in megabits per second) allocated exclusively to instance network interfaces.
+	- `vcpu` - (List) The virtual server instance VCPU configuration.
+		Nested schema for **vcpu**:
+		- `architecture` - (String) The VCPU architecture.The enumerated values for this property may[expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) in the future. Allowable values are: `amd64`, `s390x`.
+		- `burst` - (List)
+			Nested schema for **burst**:
+			- `limit` - (Integer) The maximum percentage the virtual server instance will exceed its allocated share of VCPU time.The maximum value for this property may[expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) in the future. Allowable values are: `200`. The maximum value is `800`. The minimum value is `100`.
+		- `count` - (Integer) The number of VCPUs assigned.
+		- `manufacturer` - (String) The VCPU manufacturer.The enumerated values for this property may[expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) in the future. Allowable values are: `amd`, `ibm`, `intel`. 
+		- `percentage` - (Integer) The percentage of VCPU time allocated to the virtual server instance.The virtual server instance `vcpu.percentage` will be `100` when:- The virtual server instance `placement_target` is a dedicated host or dedicated  host group.- The virtual server instance `reservation_affinity.policy` is `disabled`. The maximum value is `100`. The minimum value is `1`.
 	- `volume_attachments`- (List) A list of volume attachments that were created for the instance.
 
 	  Nested scheme for `volume_attachments`: 

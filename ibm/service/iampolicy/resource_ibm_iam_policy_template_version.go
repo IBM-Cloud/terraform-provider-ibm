@@ -210,6 +210,25 @@ func ResourceIBMIAMPolicyTemplateVersion() *schema.Resource {
 							Elem:        &schema.Schema{Type: schema.TypeString},
 							Description: "Role names of the policy definition",
 						},
+						"role_template_references": {
+							Type:        schema.TypeList,
+							Optional:    true,
+							Description: "Role template references for assignment.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"version": {
+										Type:        schema.TypeString,
+										Required:    true,
+										Description: "Role template version",
+									},
+									"id": {
+										Type:        schema.TypeString,
+										Required:    true,
+										Description: "Role template id",
+									},
+								},
+							},
+						},
 					},
 				},
 			},

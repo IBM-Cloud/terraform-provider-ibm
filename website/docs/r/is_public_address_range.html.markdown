@@ -119,14 +119,18 @@ In addition to all argument reference list, you can access the following attribu
 
 ## Import
 
-You can import the `ibm_is_public_address_range` resource by using `id`. The unique identifier for this public address range.
+In Terraform v1.5.0 and later, use an [`import` block](https://developer.hashicorp.com/terraform/language/import) to import the `ibm_is_public_address_range` resource by using `id`.
+The `id` property can be formed using the public_address_range id. For example:
 
-# Syntax
-```
-$ terraform import ibm_is_public_address_range.is_public_address_range <id>
+```terraform
+import {
+  to = ibm_is_public_address_range.is_public_address_range
+  id = "<id>"
+}
 ```
 
-# Example
-```
-$ terraform import ibm_is_public_address_range.is_public_address_range r006-a4841334-b584-4293-938e-3bc63b4a5b6a
+Using `terraform import`. For example:
+
+```console
+% terraform import ibm_is_public_address_range.is_public_address_range <id>
 ```

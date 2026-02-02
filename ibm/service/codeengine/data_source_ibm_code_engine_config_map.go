@@ -25,22 +25,22 @@ func DataSourceIbmCodeEngineConfigMap() *schema.Resource {
 		ReadContext: dataSourceIbmCodeEngineConfigMapRead,
 
 		Schema: map[string]*schema.Schema{
-			"project_id": {
+			"project_id": &schema.Schema{
 				Type:        schema.TypeString,
 				Required:    true,
 				Description: "The ID of the project.",
 			},
-			"name": {
+			"name": &schema.Schema{
 				Type:        schema.TypeString,
 				Required:    true,
 				Description: "The name of your configmap.",
 			},
-			"created_at": {
+			"created_at": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The timestamp when the resource was created.",
 			},
-			"data": {
+			"data": &schema.Schema{
 				Type:        schema.TypeMap,
 				Computed:    true,
 				Description: "The key-value pair for the config map. Values must be specified in `KEY=VALUE` format.",
@@ -48,27 +48,27 @@ func DataSourceIbmCodeEngineConfigMap() *schema.Resource {
 					Type: schema.TypeString,
 				},
 			},
-			"entity_tag": {
+			"entity_tag": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The version of the config map instance, which is used to achieve optimistic locking.",
 			},
-			"href": {
+			"href": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "When you provision a new config map,  a URL is created identifying the location of the instance.",
 			},
-			"config_map_id": {
+			"config_map_id": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The identifier of the resource.",
 			},
-			"region": {
+			"region": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The region of the project the resource is located in. Possible values: 'au-syd', 'br-sao', 'ca-tor', 'eu-de', 'eu-gb', 'jp-osa', 'jp-tok', 'us-east', 'us-south'.",
 			},
-			"resource_type": {
+			"resource_type": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The type of the config map.",

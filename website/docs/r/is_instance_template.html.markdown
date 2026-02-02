@@ -497,6 +497,9 @@ Review the argument references that you can specify for your resource.
     - `id` - The unique identifier for this reservation
 - `resource_group` - (Optional, Forces new resource, String) The resource group ID.
 - `total_volume_bandwidth` - (Optional, int) The amount of bandwidth (in megabits per second) allocated exclusively to instance storage volumes
+- `vcpu` - (Optional, List)  The virtual server instance VCPU configuration.
+  Nested schema for **vcpu**:
+	- `percentage` - (Optional, Integer) The percentage of VCPU clock cycles allocated to the instance.The virtual server instance `vcpu.percentage` must be `100` when:- The virtual server instance `placement_target` is a dedicated host or dedicated  host group.- The virtual server instance `reservation_affinity.policy` is not `disabled`.If unspecified, the default for `vcpu_percentage` from the profile will be used.
 - `volume_attachments` - (Optional, Force new resource, List) A nested block describes the storage volume configuration for the template. 
 
   Nested scheme for `volume_attachments`:
@@ -557,10 +560,19 @@ In addition to all arguments listed, you can access the following attribute refe
     - `id` - (String) The URL for this placement target.
 
 ## Import
-The `ibm_is_instance_template` resource can be imported by using instance template ID.
 
-**Example**
+In Terraform v1.5.0 and later, use an [`import` block](https://developer.hashicorp.com/terraform/language/import) to import the `ibm_is_instance_template` resource by using `id`.
+The `id` property can be formed from `instance template ID`. For example:
 
+```terraform
+import {
+  to = ibm_is_instance_template.template
+  id = "<instance_template_id>"
+}
 ```
-$ terraform import ibm_is_instance_template.template r006-14140f94-fcc4-1349-96e7-a71212125115
+
+Using `terraform import`. For example:
+
+```console
+% terraform import ibm_is_instance_template.template <instance_template_id>
 ```
