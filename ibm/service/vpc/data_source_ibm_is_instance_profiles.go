@@ -845,14 +845,23 @@ func instanceProfilesList(context context.Context, d *schema.ResourceData, meta 
 		return tfErr.GetDiag()
 	}
 	listInstanceProfilesOptions := &vpcv1.ListInstanceProfilesOptions{}
-	availableProfiles, _, err := sess.ListInstanceProfilesWithContext(context, listInstanceProfilesOptions)
+
+	var pager *vpcv1.InstanceProfilesPager
+	pager, err = sess.NewInstanceProfilesPager(listInstanceProfilesOptions)
 	if err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("ListInstanceProfilesWithContext failed: %s", err.Error()), "(Data) ibm_is_instance_profiles", "read")
+		tfErr := flex.TerraformErrorf(err, err.Error(), "(Data) ibm_is_instance_profiles", "read")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
+
+	allItems, err := pager.GetAll()
+	if err != nil {
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("InstanceProfilesPager.GetAll() failed %s", err), "(Data) ibm_is_instance_profiles", "read")
+		log.Printf("[DEBUG] %s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
+	}
 	profilesInfo := make([]map[string]interface{}, 0)
-	for _, profile := range availableProfiles.Profiles {
+	for _, profile := range allItems {
 
 		l := map[string]interface{}{
 			"name":   *profile.Name,
