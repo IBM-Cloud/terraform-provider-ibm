@@ -127,6 +127,11 @@ func DataSourceIBMPIInstance() *schema.Resource {
 				Description: "IBMi Power High Availability",
 				Type:        schema.TypeBool,
 			},
+			Attr_IBMiPHAFSM: {
+				Computed:    true,
+				Description: "IBM PHA Full System Manager (FSM) software license associated with the instance.",
+				Type:        schema.TypeBool,
+			},
 			Attr_IBMiRDS: {
 				Computed:    true,
 				Description: "IBMi Rational Dev Studio",
@@ -431,6 +436,7 @@ func dataSourceIBMPIInstancesRead(ctx context.Context, d *schema.ResourceData, m
 	if powervmdata.SoftwareLicenses != nil {
 		d.Set(Attr_IBMiCSS, powervmdata.SoftwareLicenses.IbmiCSS)
 		d.Set(Attr_IBMiPHA, powervmdata.SoftwareLicenses.IbmiPHA)
+		d.Set(Attr_IBMiPHAFSM, powervmdata.SoftwareLicenses.IbmiPHAFSM)
 		d.Set(Attr_IBMiRDS, powervmdata.SoftwareLicenses.IbmiRDS)
 		if *powervmdata.SoftwareLicenses.IbmiRDS {
 			d.Set(Attr_IBMiRDSUsers, powervmdata.SoftwareLicenses.IbmiRDSUsers)
