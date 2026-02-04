@@ -270,6 +270,11 @@ func ResourceIBMPIInstance() *schema.Resource {
 				Optional:    true,
 				Type:        schema.TypeBool,
 			},
+			Arg_IBMiPHAFSM: {
+				Description: "IBM PHA Full System Manager (FSM) software license associated with the instance.",
+				Optional:    true,
+				Type:        schema.TypeBool,
+			},
 			Arg_IBMiRDSUsers: {
 				Description: "IBM i Rational Dev Studio Number of User Licenses",
 				Optional:    true,
@@ -593,6 +598,7 @@ func ResourceIBMPIInstance() *schema.Resource {
 				Optional: true,
 				Type:     schema.TypeList,
 			},
+
 			// Attributes
 			Attr_CRN: {
 				Computed:    true,
@@ -910,6 +916,7 @@ func resourceIBMPIInstanceRead(ctx context.Context, d *schema.ResourceData, meta
 	if powervmdata.SoftwareLicenses != nil {
 		d.Set(Arg_IBMiCSS, powervmdata.SoftwareLicenses.IbmiCSS)
 		d.Set(Arg_IBMiPHA, powervmdata.SoftwareLicenses.IbmiPHA)
+		d.Set(Arg_IBMiPHAFSM, powervmdata.SoftwareLicenses.IbmiPHAFSM)
 		d.Set(Attr_IBMiRDS, powervmdata.SoftwareLicenses.IbmiRDS)
 		if *powervmdata.SoftwareLicenses.IbmiRDS {
 			d.Set(Arg_IBMiRDSUsers, powervmdata.SoftwareLicenses.IbmiRDSUsers)
@@ -1264,7 +1271,8 @@ func resourceIBMPIInstanceUpdate(ctx context.Context, d *schema.ResourceData, me
 		}
 	}
 
-	if d.HasChanges(Arg_IBMiCSS, Arg_IBMiPHA, Arg_IBMiRDSUsers) {
+	// === LICENSE UPDATE (includes new FSM) ===
+	if d.HasChanges(Arg_IBMiCSS, Arg_IBMiPHA, Arg_IBMiPHAFSM, Arg_IBMiRDSUsers) {
 		status := d.Get(Attr_Status).(string)
 		if strings.ToLower(status) == State_Active {
 			log.Printf("the lpar is in the Active state, continuing with update")
@@ -1278,6 +1286,7 @@ func resourceIBMPIInstanceUpdate(ctx context.Context, d *schema.ResourceData, me
 		sl := &models.SoftwareLicenses{}
 		sl.IbmiCSS = flex.PtrToBool(d.Get(Arg_IBMiCSS).(bool))
 		sl.IbmiPHA = flex.PtrToBool(d.Get(Arg_IBMiPHA).(bool))
+		sl.IbmiPHAFSM = flex.PtrToBool(d.Get(Arg_IBMiPHAFSM).(bool))
 		ibmrdsUsers := d.Get(Arg_IBMiRDSUsers).(int)
 		if ibmrdsUsers < 0 {
 			return diag.Errorf("request with  IBM i Rational Dev Studio property requires IBM i Rational Dev Studio number of users")
@@ -1771,6 +1780,12 @@ func isPIInstanceSoftwareLicensesRefreshFunc(client *instance.IBMPIInstanceClien
 
 		if softwareLicenses.IbmiPHA != nil {
 			if *softwareLicenses.IbmiPHA != *pvm.SoftwareLicenses.IbmiPHA {
+				return pvm, State_InProgress, nil
+			}
+		}
+
+		if softwareLicenses.IbmiPHAFSM != nil {
+			if *softwareLicenses.IbmiPHAFSM != *pvm.SoftwareLicenses.IbmiPHAFSM {
 				return pvm, State_InProgress, nil
 			}
 		}
@@ -2324,6 +2339,7 @@ func createPVMInstance(d *schema.ResourceData, client *instance.IBMPIInstanceCli
 		sl := &models.SoftwareLicenses{
 			IbmiCSS:      &falseBool,
 			IbmiPHA:      &falseBool,
+			IbmiPHAFSM:   &falseBool,
 			IbmiRDS:      &falseBool,
 			IbmiRDSUsers: 0,
 		}
@@ -2332,6 +2348,9 @@ func createPVMInstance(d *schema.ResourceData, client *instance.IBMPIInstanceCli
 		}
 		if ibmiPHA, ok := d.GetOk(Arg_IBMiPHA); ok {
 			sl.IbmiPHA = flex.PtrToBool(ibmiPHA.(bool))
+		}
+		if ibmiPHAFSM, ok := d.GetOk(Arg_IBMiPHAFSM); ok {
+			sl.IbmiPHAFSM = flex.PtrToBool(ibmiPHAFSM.(bool))
 		}
 		if ibmrdsUsers, ok := d.GetOk(Arg_IBMiRDSUsers); ok {
 			if ibmrdsUsers.(int) < 0 {
