@@ -24132,7 +24132,7 @@ func DataSourceIbmBackupRecoveryProtectionSourcesProtectionSourceNodesToMap(mode
 	modelMap := make(map[string]interface{})
 	if model.ApplicationNodes != nil {
 		nodes := []map[string]interface{}{}
-		for _, appNodesItem := range model.ApplicationNodes {
+		for _, appNodesItem := range model.Nodes {
 			nodesItemMap, err := DataSourceIbmBackupRecoveryProtectionSourcesProtectionSourceNodesToMap(&appNodesItem) // #nosec G601
 			if err != nil {
 				return modelMap, err
