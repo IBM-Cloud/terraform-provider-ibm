@@ -85,6 +85,82 @@ func testAccCheckIBMPIInstanceConfig(name, instanceHealthStatus string) string {
 	`, acc.Pi_cloud_instance_id, name, acc.Pi_image, acc.Pi_network_name, instanceHealthStatus, acc.PiStorageType)
 }
 
+func TestAccIBMPIInstanceIBMiPHAFSM(t *testing.T) {
+	instanceRes := "ibm_pi_instance.power_instance"
+	name := fmt.Sprintf("tf-pi-ibmi-pha-fsm-%d", acctest.RandIntRange(10, 100))
+
+	// This test assumes acc.Pi_image is an IBM i image via .env (same pattern as other tests).
+	ibmiImage := acc.Pi_image
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMPIInstanceDestroy,
+		Steps: []resource.TestStep{
+			// Step 1: Enable both PHA and FSM
+			{
+				Config: testAccIBMPIInstanceIBMiPHAFSMConfig(name, ibmiImage, power.OK, true, true),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMPIInstanceExists(instanceRes),
+					resource.TestCheckResourceAttr(instanceRes, "pi_instance_name", name),
+					resource.TestCheckResourceAttr(instanceRes, "pi_ibmi_pha", "true"),
+					resource.TestCheckResourceAttr(instanceRes, "pi_ibmi_pha_fsm", "true"),
+				),
+			},
+			// Step 2: Keep PHA enabled, disable FSM
+			{
+				Config: testAccIBMPIInstanceIBMiPHAFSMConfig(name, ibmiImage, power.OK, true, false),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMPIInstanceExists(instanceRes),
+					resource.TestCheckResourceAttr(instanceRes, "pi_instance_name", name),
+					resource.TestCheckResourceAttr(instanceRes, "pi_ibmi_pha", "true"),
+					resource.TestCheckResourceAttr(instanceRes, "pi_ibmi_pha_fsm", "false"),
+				),
+			},
+		},
+	})
+}
+
+func testAccIBMPIInstanceIBMiPHAFSMConfig(name, imageName, instanceHealthStatus string, enablePHA, enableFSM bool) string {
+	return fmt.Sprintf(`
+      data "ibm_pi_image" "power_image" {
+        pi_cloud_instance_id = "%[1]s"
+        pi_image_name        = "%[3]s"
+      }
+      data "ibm_pi_network" "power_networks" {
+        pi_cloud_instance_id = "%[1]s"
+        pi_network_name      = "%[4]s"
+      }
+      resource "ibm_pi_volume" "power_volume" {
+        pi_cloud_instance_id = "%[1]s"
+        pi_volume_name       = "%[2]s-vol"
+        pi_volume_size       = 1
+        pi_volume_type       = "%[6]s"
+      }
+      resource "ibm_pi_instance" "power_instance" {
+        pi_cloud_instance_id  = "%[1]s"
+        pi_health_status      = "%[5]s"
+        pi_image_id           = data.ibm_pi_image.power_image.id
+        pi_instance_name      = "%[2]s"
+        pi_memory             = "2"
+        pi_proc_type          = "shared"
+        pi_processors         = "0.25"
+        pi_storage_pool       = data.ibm_pi_image.power_image.storage_pool
+        pi_storage_type       = "%[6]s"
+        pi_sys_type           = "s922"
+
+        # IBM i licenses under test
+        pi_ibmi_pha   = %[7]t
+        ibmi_pha_fsm  = %[8]t
+
+        pi_volume_ids = [ibm_pi_volume.power_volume.volume_id]
+        pi_network {
+            network_id = data.ibm_pi_network.power_networks.id
+        }
+      }
+    `, acc.Pi_cloud_instance_id, name, imageName, acc.Pi_network_name, instanceHealthStatus, acc.PiStorageType, enablePHA, enableFSM)
+}
+
 func TestAccIBMPIInstanceStorageConnection(t *testing.T) {
 	instanceRes := "ibm_pi_instance.power_instance"
 	name := fmt.Sprintf("tf-pi-instance-%d", acctest.RandIntRange(10, 100))
