@@ -179,8 +179,8 @@ func resourceIbmBackupRecoveryDataSourceConnectionRead(context context.Context, 
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
-	if !core.IsNil(dataSourceConnectionList.ConnectionEnvType) {
-		if err = d.Set("connection_env_type", dataSourceConnectionList.ConnectionEnvType); err != nil {
+	if !core.IsNil(dataSourceConnectionList.Connections[0].ConnectionEnvType) {
+		if err = d.Set("connection_env_type", dataSourceConnectionList.Connections[0].ConnectionEnvType); err != nil {
 			err = fmt.Errorf("Error setting connection_env_type: %s", err)
 			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_data_source_connection", "read", "set-connection_env_type").GetDiag()
 		}
