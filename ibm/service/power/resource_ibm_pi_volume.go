@@ -130,7 +130,7 @@ func ResourceIBMPIVolume() *schema.Resource {
 				Type:        schema.TypeBool,
 			},
 			Arg_VolumeSize: {
-				Description:  "The size of the volume in GB.",
+				Description:  "The size of the volume in GiB.",
 				Required:     true,
 				Type:         schema.TypeFloat,
 				ValidateFunc: validation.NoZeroValues,
