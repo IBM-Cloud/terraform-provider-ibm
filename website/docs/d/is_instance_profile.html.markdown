@@ -157,6 +157,14 @@ In addition to the argument reference list, you can access the following attribu
   - `min` - (Integer) The minimum number of network attachments supported by an instance using this profile.
   - `type` - (String) The type for this profile field, Ex: range or dependent.
 
+- `network_bandwidth_mode` - (List) The permitted network bandwidth modes for an instance with this profile
+
+  Nested schema for `network_bandwidth_mode`:
+  - `default` - (string) The default network bandwidth mode for this profile.
+  - `type` - (string) The type for this profile field.
+  - `values` - (String) The supported network bandwidth modes for an instance with this profile.
+  - `value` - (String) The value for this profile field.
+
 - `network_interface_count` - (List)
 
   Nested scheme for `network_interface_count`:

@@ -172,6 +172,8 @@ github.com/IBM/vpc-beta-go-sdk v0.8.0 h1:cEPpv4iw3Ba5W2d0AWg3TIbKeJ8y1nPuUuibR5J
 github.com/IBM/vpc-beta-go-sdk v0.8.0/go.mod h1:hORgIyTFRzXrZIK9IohaWmCRBBlYiDRagsufi7M6akE=
 github.com/IBM/vpc-go-sdk v0.78.1 h1:vzc1GIoTYZsQCoDWpvS5Ah13qfBfN7wWgTGnHhpBg0M=
 github.com/IBM/vpc-go-sdk v0.78.1/go.mod h1:85bJ/0FS7vYAifHdZvlnXypf8pQSmuf9kxReDDI5ZdY=
+github.com/IBM/vpc-go-sdk v0.80.0 h1:F9x5n/X6NLdBOFcrtNv1hFtRVpiR7iHeqnjniyjkSY0=
+github.com/IBM/vpc-go-sdk v0.80.0/go.mod h1:85bJ/0FS7vYAifHdZvlnXypf8pQSmuf9kxReDDI5ZdY=
 github.com/Logicalis/asn1 v0.0.0-20190312173541-d60463189a56 h1:vuquMR410psHNax14XKNWa0Ae/kYgWJcXi0IFuX60N0=
 github.com/Logicalis/asn1 v0.0.0-20190312173541-d60463189a56/go.mod h1:Zb3OT4l0mf7P/GOs2w2Ilj5sdm5Whoq3pa24dAEBHFc=
 github.com/Masterminds/semver/v3 v3.4.0 h1:Zog+i5UMtVoCU8oKka5P7i9q9HgrJeGzI9SA1Xbatp0=
