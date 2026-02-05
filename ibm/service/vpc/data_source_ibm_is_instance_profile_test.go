@@ -228,6 +228,7 @@ func TestAccIBMISInstanceProfileDataSourceNetworkBandwidth(t *testing.T) {
 					resource.TestCheckResourceAttrSet("data.ibm_is_instance_profile.test1", "network_interface_count.0.type"),
 					resource.TestCheckResourceAttrSet("data.ibm_is_instance_profile.test1", "network_attachment_count.0.type"),
 					resource.TestCheckResourceAttrSet("data.ibm_is_instance_profile.test1", "network_bandwidth_mode.0.type"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_instance_profile.test1", "network_bandwidth_mode.0.value"),
 				),
 			},
 		},
@@ -239,5 +240,12 @@ func testAccCheckIBMISInstanceProfileDataSourceConfig() string {
 
 data "ibm_is_instance_profile" "test1" {
 	name = "%s"
-}`, acc.InstanceProfileName)
+}
+
+data "ibm_is_instance_profiles" "test1" {
+
+}
+
+`, acc.InstanceProfileName)
+
 }
