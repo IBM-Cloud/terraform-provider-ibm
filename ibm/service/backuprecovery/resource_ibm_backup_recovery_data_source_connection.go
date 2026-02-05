@@ -39,10 +39,9 @@ func ResourceIbmBackupRecoveryDataSourceConnection() *schema.Resource {
 				Description: "Id of the tenant accessing the cluster.",
 			},
 			"connection_env_type": &schema.Schema{
-				Type:         schema.TypeString,
-				Optional:     true,
-				ValidateFunc: validate.InvokeValidator("ibm_backup_recovery_data_source_connection", "connection_env_type"),
-				Description:  "Specifies the environment type of the connection.",
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "Specifies the environment type of the connection.",
 			},
 			"connection_id": &schema.Schema{
 				Type:        schema.TypeString,
