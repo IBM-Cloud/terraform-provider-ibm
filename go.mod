@@ -23,7 +23,7 @@ require (
 	github.com/IBM/event-notifications-go-admin-sdk v0.21.0
 	github.com/IBM/eventstreams-go-sdk v1.4.0
 	github.com/IBM/go-sdk-core/v5 v5.21.2
-	github.com/IBM/ibm-backup-recovery-sdk-go v1.2.0
+	github.com/IBM/ibm-backup-recovery-sdk-go v1.2.1
 	github.com/IBM/ibm-cos-sdk-go v1.12.2
 	github.com/IBM/ibm-cos-sdk-go-config/v2 v2.3.0
 	github.com/IBM/ibm-hpcs-tke-sdk v0.0.0-20250305134146-e023c2e84762
@@ -65,7 +65,7 @@ require (
 	github.com/rook/rook/pkg/apis v0.0.0-20250619203122-80563e28b685
 	github.com/softlayer/softlayer-go v1.0.3
 	github.com/stretchr/testify v1.11.1
-	golang.org/x/crypto v0.45.0
+	golang.org/x/crypto v0.47.0
 	gopkg.in/yaml.v3 v3.0.1
 	gotest.tools v2.2.0+incompatible
 	k8s.io/api v0.33.4
@@ -205,15 +205,15 @@ require (
 	go.uber.org/ratelimit v0.2.0 // indirect
 	go.uber.org/zap v1.27.0 // indirect
 	go.yaml.in/yaml/v2 v2.4.3 // indirect
-	golang.org/x/mod v0.29.0 // indirect
-	golang.org/x/net v0.47.0 // indirect
+	golang.org/x/mod v0.31.0 // indirect
+	golang.org/x/net v0.49.0 // indirect
 	golang.org/x/oauth2 v0.30.0 // indirect
-	golang.org/x/sync v0.18.0 // indirect
-	golang.org/x/sys v0.39.0 // indirect
-	golang.org/x/term v0.37.0 // indirect
-	golang.org/x/text v0.31.0 // indirect
+	golang.org/x/sync v0.19.0 // indirect
+	golang.org/x/sys v0.40.0 // indirect
+	golang.org/x/term v0.39.0 // indirect
+	golang.org/x/text v0.33.0 // indirect
 	golang.org/x/time v0.9.0 // indirect
-	golang.org/x/tools v0.38.0 // indirect
+	golang.org/x/tools v0.40.0 // indirect
 	google.golang.org/appengine v1.6.8 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20250707201910-8d1bb00bc6a7 // indirect
 	google.golang.org/grpc v1.75.1 // indirect
