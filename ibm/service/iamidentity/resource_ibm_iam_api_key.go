@@ -89,6 +89,11 @@ func ResourceIBMIAMApiKey() *schema.Resource {
 				Computed:    true,
 				Description: "The API key cannot be changed if set to true.",
 			},
+			"expires_at": &schema.Schema{
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "Date and time when the API key becomes invalid, ISO 8601 datetime in the format 'yyyy-MM-ddTHH:mm+0000'.",
+			},
 			"created_at": {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -138,6 +143,9 @@ func resourceIbmIamApiKeyCreate(context context.Context, d *schema.ResourceData,
 	}
 	if _, ok := d.GetOk("locked"); ok {
 		createApiKeyOptions.SetEntityLock(d.Get("locked").(string))
+	}
+	if _, ok := d.GetOk("expires_at"); ok {
+		createApiKeyOptions.SetExpiresAt(d.Get("expires_at").(string))
 	}
 
 	apiKey, response, err := iamIdentityClient.CreateAPIKey(createApiKeyOptions)
@@ -193,6 +201,9 @@ func resourceIbmIamApiKeyRead(context context.Context, d *schema.ResourceData, m
 	if err = d.Set("locked", apiKey.Locked); err != nil {
 		return diag.FromErr(fmt.Errorf("[ERROR] Error setting entity_lock: %s", err))
 	}
+	if err = d.Set("expires_at", apiKey.ExpiresAt); err != nil {
+		return diag.FromErr(fmt.Errorf("[ERROR] Error setting expires_at: %s", err))
+	}
 	if err = d.Set("apikey_id", apiKey.ID); err != nil {
 		return diag.FromErr(fmt.Errorf("[ERROR] Error setting id: %s", err))
 	}
@@ -228,6 +239,9 @@ func resourceIbmIamApiKeyUpdate(context context.Context, d *schema.ResourceData,
 	updateApiKeyOptions.SetName(d.Get("name").(string))
 	if _, ok := d.GetOk("description"); ok {
 		updateApiKeyOptions.SetDescription(d.Get("description").(string))
+	}
+	if _, ok := d.GetOk("expires_at"); ok {
+		updateApiKeyOptions.SetExpiresAt(d.Get("expires_at").(string))
 	}
 	_, response, err := iamIdentityClient.UpdateAPIKey(updateApiKeyOptions)
 	if err != nil {
