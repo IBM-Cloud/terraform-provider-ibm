@@ -2425,7 +2425,7 @@ func instanceCreateByImage(context context.Context, d *schema.ResourceData, meta
 				volumeattItemPrototypeModel.UserTags = userTagsArray
 			}
 			//allowed use
-			if _, ok := d.GetOk(fmt.Sprintf("volume_prototypes.%d.allowed_use", i)); ok {
+			if v, ok := d.GetOk(fmt.Sprintf("volume_prototypes.%d.allowed_use", i)); ok && len(v.([]interface{})) > 0 {
 				allowedUseModel, _ := ResourceIBMIsVolumeAllowedUseMapToVolumeAllowedUsePrototype(d.Get(fmt.Sprintf("volume_prototypes.%d.allowed_use", i)).([]interface{})[0].(map[string]interface{}))
 				volumeattItemPrototypeModel.AllowedUse = allowedUseModel
 			}
@@ -3011,7 +3011,7 @@ func instanceCreateByCatalogOffering(context context.Context, d *schema.Resource
 			}
 
 			//allowed use
-			if _, ok := d.GetOk(fmt.Sprintf("volume_prototypes.%d.allowed_use", i)); ok {
+			if v, ok := d.GetOk(fmt.Sprintf("volume_prototypes.%d.allowed_use", i)); ok && len(v.([]interface{})) > 0 {
 				allowedUseModel, _ := ResourceIBMIsVolumeAllowedUseMapToVolumeAllowedUsePrototype(d.Get(fmt.Sprintf("volume_prototypes.%d.allowed_use", i)).([]interface{})[0].(map[string]interface{}))
 				volumeattItemPrototypeModel.AllowedUse = allowedUseModel
 			}
@@ -3608,7 +3608,7 @@ func instanceCreateByTemplate(context context.Context, d *schema.ResourceData, m
 			}
 
 			//allowed use
-			if _, ok := d.GetOk(fmt.Sprintf("volume_prototypes.%d.allowed_use", i)); ok {
+			if v, ok := d.GetOk(fmt.Sprintf("volume_prototypes.%d.allowed_use", i)); ok && len(v.([]interface{})) > 0 {
 				allowedUseModel, _ := ResourceIBMIsVolumeAllowedUseMapToVolumeAllowedUsePrototype(d.Get(fmt.Sprintf("volume_prototypes.%d.allowed_use", i)).([]interface{})[0].(map[string]interface{}))
 				volumeattItemPrototypeModel.AllowedUse = allowedUseModel
 			}
@@ -4199,7 +4199,7 @@ func instanceCreateBySnapshot(context context.Context, d *schema.ResourceData, m
 				}
 			}
 			//allowed use
-			if _, ok := d.GetOk(fmt.Sprintf("volume_prototypes.%d.allowed_use", i)); ok {
+			if v, ok := d.GetOk(fmt.Sprintf("volume_prototypes.%d.allowed_use", i)); ok && len(v.([]interface{})) > 0 {
 				allowedUseModel, _ := ResourceIBMIsVolumeAllowedUseMapToVolumeAllowedUsePrototype(d.Get(fmt.Sprintf("volume_prototypes.%d.allowed_use", i)).([]interface{})[0].(map[string]interface{}))
 				volumeattItemPrototypeModel.AllowedUse = allowedUseModel
 			}
@@ -4809,7 +4809,7 @@ func instanceCreateByVolume(context context.Context, d *schema.ResourceData, met
 			}
 
 			//allowed use
-			if _, ok := d.GetOk(fmt.Sprintf("volume_prototypes.%d.allowed_use", i)); ok {
+			if v, ok := d.GetOk(fmt.Sprintf("volume_prototypes.%d.allowed_use", i)); ok && len(v.([]interface{})) > 0 {
 				allowedUseModel, _ := ResourceIBMIsVolumeAllowedUseMapToVolumeAllowedUsePrototype(d.Get(fmt.Sprintf("volume_prototypes.%d.allowed_use", i)).([]interface{})[0].(map[string]interface{}))
 				volumeattItemPrototypeModel.AllowedUse = allowedUseModel
 			}
@@ -6818,42 +6818,45 @@ func instanceUpdate(context context.Context, d *schema.ResourceData, meta interf
 
 	bootVolAllowedUse := "boot_volume.0.allowed_use"
 	if d.HasChange(bootVolAllowedUse) && !d.IsNewResource() {
-		volId := d.Get("boot_volume.0.volume_id").(string)
-		allowedUseModel, _ := ResourceIBMIsInstanceMapToVolumeAllowedUsePatchPrototype(d.Get("boot_volume.0.allowed_use").([]interface{})[0].(map[string]interface{}))
-		optionsget := &vpcv1.GetVolumeOptions{
-			ID: &volId,
-		}
-		_, response, err := instanceC.GetVolumeWithContext(context, optionsget)
-		if err != nil {
-			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetVolumeWithContext failed: %s", err.Error()), "ibm_is_instance", "update")
-			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
-			return tfErr.GetDiag()
-		}
-		eTag := response.Headers.Get("ETag")
-		options := &vpcv1.UpdateVolumeOptions{
-			ID: &volId,
-		}
-		options.IfMatch = &eTag
-		volumeAllowedUsePatchModel := &vpcv1.VolumePatch{}
-		volumeAllowedUsePatchModel.AllowedUse = allowedUseModel
-		volumeNamePatch, err := volumeAllowedUsePatchModel.AsPatch()
-		if err != nil {
-			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("bootvolumeTagsPatchModel.AsPatch() failed: %s", err.Error()), "ibm_is_instance", "update")
-			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
-			return tfErr.GetDiag()
-		}
-		options.VolumePatch = volumeNamePatch
-		vol, _, err := instanceC.UpdateVolumeWithContext(context, options)
-		if vol == nil || err != nil {
-			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("UpdateVolumeWithContext failed: %s", err.Error()), "ibm_is_instance", "update")
-			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
-			return tfErr.GetDiag()
-		}
-		_, err = isWaitForVolumeAvailable(instanceC, volId, d.Timeout(schema.TimeoutCreate))
-		if err != nil {
-			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("isWaitForVolumeAvailable failed: %s", err.Error()), "ibm_is_instance", "update")
-			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
-			return tfErr.GetDiag()
+
+		if v, ok := d.GetOk("boot_volume.0.allowed_use"); ok && len(v.([]interface{})) > 0 {
+			volId := d.Get("boot_volume.0.volume_id").(string)
+			allowedUseModel, _ := ResourceIBMIsInstanceMapToVolumeAllowedUsePatchPrototype(d.Get("boot_volume.0.allowed_use").([]interface{})[0].(map[string]interface{}))
+			optionsget := &vpcv1.GetVolumeOptions{
+				ID: &volId,
+			}
+			_, response, err := instanceC.GetVolumeWithContext(context, optionsget)
+			if err != nil {
+				tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetVolumeWithContext failed: %s", err.Error()), "ibm_is_instance", "update")
+				log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+				return tfErr.GetDiag()
+			}
+			eTag := response.Headers.Get("ETag")
+			options := &vpcv1.UpdateVolumeOptions{
+				ID: &volId,
+			}
+			options.IfMatch = &eTag
+			volumeAllowedUsePatchModel := &vpcv1.VolumePatch{}
+			volumeAllowedUsePatchModel.AllowedUse = allowedUseModel
+			volumeNamePatch, err := volumeAllowedUsePatchModel.AsPatch()
+			if err != nil {
+				tfErr := flex.TerraformErrorf(err, fmt.Sprintf("bootvolumeTagsPatchModel.AsPatch() failed: %s", err.Error()), "ibm_is_instance", "update")
+				log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+				return tfErr.GetDiag()
+			}
+			options.VolumePatch = volumeNamePatch
+			vol, _, err := instanceC.UpdateVolumeWithContext(context, options)
+			if vol == nil || err != nil {
+				tfErr := flex.TerraformErrorf(err, fmt.Sprintf("UpdateVolumeWithContext failed: %s", err.Error()), "ibm_is_instance", "update")
+				log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+				return tfErr.GetDiag()
+			}
+			_, err = isWaitForVolumeAvailable(instanceC, volId, d.Timeout(schema.TimeoutCreate))
+			if err != nil {
+				tfErr := flex.TerraformErrorf(err, fmt.Sprintf("isWaitForVolumeAvailable failed: %s", err.Error()), "ibm_is_instance", "update")
+				log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+				return tfErr.GetDiag()
+			}
 		}
 	}
 
@@ -9022,7 +9025,7 @@ func handleVolumePrototypesUpdate(d *schema.ResourceData, instanceC *vpcv1.VpcV1
 			}
 
 			//allowed use
-			if _, ok := d.GetOk(fmt.Sprintf("volume_prototypes.%d.allowed_use", i)); ok {
+			if v, ok := d.GetOk(fmt.Sprintf("volume_prototypes.%d.allowed_use", i)); ok && len(v.([]interface{})) > 0 {
 				allowedUseModel, err := ResourceIBMIsVolumeAllowedUseMapToVolumeAllowedUsePrototype(d.Get(fmt.Sprintf("volume_prototypes.%d.allowed_use", i)).([]interface{})[0].(map[string]interface{}))
 				if err != nil {
 					return err
