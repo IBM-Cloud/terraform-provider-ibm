@@ -270,11 +270,6 @@ func ResourceIBMPIInstance() *schema.Resource {
 				Optional:    true,
 				Type:        schema.TypeBool,
 			},
-			Arg_IBMiPHAFSM: {
-				Description: "IBM PHA Full System Manager (FSM) software license associated with the instance.",
-				Optional:    true,
-				Type:        schema.TypeBool,
-			},
 			Arg_IBMiRDSUsers: {
 				Description: "IBM i Rational Dev Studio Number of User Licenses",
 				Optional:    true,
@@ -2393,10 +2388,6 @@ func createPVMInstance(d *schema.ResourceData, client *instance.IBMPIInstanceCli
 			}
 			sl.IbmiPHAFSM = flex.PtrToBool(count > 0)
 			sl.IbmiPHAFSMCount = int64(count)
-		} else {
-			// Not provided => disabled
-			sl.IbmiPHAFSM = flex.PtrToBool(false)
-			sl.IbmiPHAFSMCount = 0
 		}
 		if ibmrdsUsers, ok := d.GetOk(Arg_IBMiRDSUsers); ok {
 			if ibmrdsUsers.(int) < 0 {

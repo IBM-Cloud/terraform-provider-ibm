@@ -74,7 +74,6 @@ const (
 	Arg_IBMCIDR                              = "pi_ibm_cidr"
 	Arg_IBMiCSS                              = "pi_ibmi_css"
 	Arg_IBMiPHA                              = "pi_ibmi_pha"
-	Arg_IBMiPHAFSM                           = "pi_ibmi_pha_fsm"
 	Arg_IBMiPHAFSMCount                      = "pi_ibmi_pha_fsm_count"
 	Arg_IBMiRDSUsers                         = "pi_ibmi_rds_users"
 	Arg_ImageAccessKey                       = "pi_image_access_key"
