@@ -115,6 +115,38 @@ func DataSourceIBMISInstances() *schema.Resource {
 				Computed:    true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
+						"availability": &schema.Schema{
+							Type:     schema.TypeList,
+							Computed: true,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"class": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The availability class for the virtual server instance.- `spot`: The virtual server instance may be preempted.- `standard`: The virtual server instance will not be preempted.See [virtual server instance availability class](https://cloud.ibm.com/docs/vpc?topic=vpc-spot-instances-virtual-servers) for details.The enumerated values for this property may[expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) in the future.",
+									},
+								},
+							},
+						},
+						"availability_policy": &schema.Schema{
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "The availability policy for this virtual server instance.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"host_failure": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The action to perform if the compute host experiences a failure:- `restart`: Restart the virtual server instance- `stop`: Leave the virtual server instance stopped. See [handling host failures](https://cloud.ibm.com/docs/vpc?topic=vpc-host-failure-recovery-policies) for details.The enumerated values for this property may[expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) in the future.",
+									},
+									"preemption": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The action to perform if the virtual server instance is preempted:- `delete`: Delete the virtual server instance- `stop`: Leave the virtual server instance stopped. See [virtual server instance preemption](https://cloud.ibm.com/docs/vpc?topic=vpc-spot-instances-virtual-servers#spot-instances-preemption) for details.The enumerated values for this property may[expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) in the future.",
+									},
+								},
+							},
+						},
 						"id": {
 							Type:        schema.TypeString,
 							Computed:    true,
@@ -1490,6 +1522,17 @@ func instancesList(context context.Context, d *schema.ResourceData, meta interfa
 	for _, instance := range allrecs {
 		id := *instance.ID
 		l := map[string]interface{}{}
+
+		availabilityMap, err := DataSourceIBMIsInstancesInstanceAvailabilityToMap(instance.Availability)
+		if err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_instances", "read", "availability-to-map").GetDiag()
+		}
+		l["availability"] = []map[string]interface{}{availabilityMap}
+		availabilityPolicyMap, err := DataSourceIBMIsInstancesInstanceAvailabilityPolicyToMap(instance.AvailabilityPolicy)
+		if err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_instances", "read", "availability_policy-to-map").GetDiag()
+		}
+		l["availability_policy"] = []map[string]interface{}{availabilityPolicyMap}
 		l["id"] = id
 		l["crn"] = *instance.CRN
 		l["name"] = *instance.Name
@@ -1919,6 +1962,19 @@ func dataSourceInstancesCollectionHealthReasonsToMap(statusReasonsItem vpcv1.Ins
 	}
 
 	return healthReasonsMap
+}
+
+func DataSourceIBMIsInstancesInstanceAvailabilityToMap(model *vpcv1.InstanceAvailability) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	modelMap["class"] = *model.Class
+	return modelMap, nil
+}
+
+func DataSourceIBMIsInstancesInstanceAvailabilityPolicyToMap(model *vpcv1.InstanceAvailabilityPolicy) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	modelMap["host_failure"] = *model.HostFailure
+	modelMap["preemption"] = *model.Preemption
+	return modelMap, nil
 }
 
 func DataSourceIBMIsInstancesInstanceVcpuToMap(model *vpcv1.InstanceVcpu) (map[string]interface{}, error) {

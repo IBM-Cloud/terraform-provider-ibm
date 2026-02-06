@@ -144,9 +144,9 @@ output "primary_ipv4_address" {
 
 The following example shows how you can create a virtual server instance using reserved ip as the primary ip reference of the network interface
 
-// Example to provision instance using reserved ip
 
 ```terraform
+// Example to provision instance using reserved ip
 resource "ibm_is_subnet_reserved_ip" "example" {
   subnet    = ibm_is_subnet.example.id
   name      = "example-reserved-ip1"
@@ -181,8 +181,41 @@ resource "ibm_is_instance" "example1" {
   zone = "us-south-1"
   keys = [ibm_is_ssh_key.example.id]
 }
-
 ```
+
+### Sample for creating a spot instance
+
+The following example shows how to create a spot virtual server instance with preemption policy:
+
+```terraform
+resource "ibm_is_instance" "example_spot" {
+  name    = "example-spot-instance"
+  image   = ibm_is_image.example.id
+  profile = "nxf-2x1"
+  # Configure as spot instance
+  availability {
+    class = "spot"
+  }
+  # Configure preemption behavior (only valid for spot instances)
+  availability_policy {
+    preemption   = "stop"  # or "delete"
+    host_failure = "restart"
+  }
+  primary_network_interface {
+    subnet = ibm_is_subnet.example.id
+  }
+  vpc  = ibm_is_vpc.example.id
+  zone = "us-south-1"
+  keys = [ibm_is_ssh_key.example.id]
+}
+```
+
+**Note:** 
+- Spot instances may be preempted when IBM Cloud needs the capacity
+- The `preemption` policy determines what happens when preempted: `stop` leaves the instance stopped, `delete` removes it entirely
+- Spot instances cannot use dedicated hosts or dedicated host groups
+- Spot instances require special account approval - contact IBM Support if interested
+
 
 ### Sample for creating an instance in a VPC with reservation
 
@@ -607,7 +640,16 @@ Review the argument references that you can specify for your resource.
   ~> **Note** 
     `action` allows to start, stop and reboot the instance and it is not recommended to manage the instance from terraform and other clients (UI/CLI) simultaneously, as it would cause unknown behaviour. `start` action can be performed only when the instance is in `stopped` state. `stop` and `reboot` actions can be performed only when the instance is in `running` state. It is also recommended to remove the `action` configuration from terraform once it is applied succesfully, to avoid instability in the terraform configuration later.
 - `auto_delete_volume`- (Optional, Bool) If set to **true**, automatically deletes the volumes that are attached to an instance. **Note** Setting this argument can bring some inconsistency in the volume resource, as the volumes is destroyed along with instances.
-- `availability_policy_host_failure` - (Optional, String) The availability policy to use for this virtual server instance. The action to perform if the compute host experiences a failure. Supported values are `restart` and `stop`.
+- `availability` - (Optional, List) The availability for this virtual server instance. **Note:** Spot instances are available only to accounts that have been granted special approval. Contact IBM Support if you are interested in using spot instances.
+  Nested schema for **availability**:
+	- `class` - (Optional, String) The availability class for the virtual server instance.- `spot`: The virtual server instance may be preempted.- `standard`: The virtual server instance will not be preempted.See [virtual server instance availability class](https://cloud.ibm.com/docs/vpc?topic=vpc-spot-instances-virtual-servers) for details.The enumerated values for this property may[expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) in the future. Allowable values are: `spot`, `standard`. **Note:** To change the availability class, the instance status must be stopping or stopped.
+- `availability_policy` - (Optional, List) The availability policy for this virtual server instance.
+  Nested schema for **availability_policy**:
+	- `host_failure` - (Optional, String) The action to perform if the compute host experiences a failure:- `restart`: Restart the virtual server instance- `stop`: Leave the virtual server instance stopped. See [handling host failures](https://cloud.ibm.com/docs/vpc?topic=vpc-host-failure-recovery-policies) for details.The enumerated values for this property may[expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) in the future. Allowable values are: `restart`, `stop`.
+	- `preemption` - (Optional, String) The action to perform if the virtual server instance is preempted:- `delete`: Delete the virtual server instance- `stop`: Leave the virtual server instance stopped. See [virtual server instance preemption](https://cloud.ibm.com/docs/vpc?topic=vpc-spot-instances-virtual-servers#spot-instances-preemption) for details.The enumerated values for this property may[expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) in the future. Allowable values are: `delete`, `stop`.
+
+	-> **Note:** The `preemption` property is only applicable when availability class is set to `spot`. Setting preemption on a standard instance will result in an error.
+- `availability_policy_host_failure` - (Deprecated, Optional, String) The availability policy to use for this virtual server instance. The action to perform if the compute host experiences a failure. Supported values are `restart` and `stop`. Use availability_policy.0.host_failure instead. Existing configurations can continue using this attribute, switching attributes with the same value will not trigger replacement.
 - `boot_volume`  (Optional, List) A list of boot volumes for an instance.
 
   Nested scheme for `boot_volume`:
