@@ -97,31 +97,35 @@ func TestAccIBMPIInstanceIBMiPHAFSM(t *testing.T) {
 		Providers:    acc.TestAccProviders,
 		CheckDestroy: testAccCheckIBMPIInstanceDestroy,
 		Steps: []resource.TestStep{
-			// Step 1: Enable both PHA and FSM
+			// Step 1: PHA enabled, FSM enabled via count=2
 			{
-				Config: testAccIBMPIInstanceIBMiPHAFSMConfig(name, ibmiImage, power.OK, true, true),
+				Config: testAccIBMPIInstanceIBMiPHAFSMConfig(name, ibmiImage, power.OK, 2),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckIBMPIInstanceExists(instanceRes),
 					resource.TestCheckResourceAttr(instanceRes, "pi_instance_name", name),
+					// PHA remains a boolean argument
 					resource.TestCheckResourceAttr(instanceRes, "pi_ibmi_pha", "true"),
-					resource.TestCheckResourceAttr(instanceRes, "pi_ibmi_pha_fsm", "true"),
+					// FSM: boolean is computed; count is the argument
+					resource.TestCheckResourceAttr(instanceRes, "ibmi_pha_fsm", "true"),
+					resource.TestCheckResourceAttr(instanceRes, "pi_ibmi_pha_fsm_count", "2"),
 				),
 			},
-			// Step 2: Keep PHA enabled, disable FSM
+			// Step 2: Keep PHA enabled, disable FSM by setting count=0
 			{
-				Config: testAccIBMPIInstanceIBMiPHAFSMConfig(name, ibmiImage, power.OK, true, false),
+				Config: testAccIBMPIInstanceIBMiPHAFSMConfig(name, ibmiImage, power.OK, 0),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckIBMPIInstanceExists(instanceRes),
 					resource.TestCheckResourceAttr(instanceRes, "pi_instance_name", name),
 					resource.TestCheckResourceAttr(instanceRes, "pi_ibmi_pha", "true"),
-					resource.TestCheckResourceAttr(instanceRes, "pi_ibmi_pha_fsm", "false"),
+					resource.TestCheckResourceAttr(instanceRes, "ibmi_pha_fsm", "false"),
+					resource.TestCheckResourceAttr(instanceRes, "pi_ibmi_pha_fsm_count", "0"),
 				),
 			},
 		},
 	})
 }
 
-func testAccIBMPIInstanceIBMiPHAFSMConfig(name, imageName, instanceHealthStatus string, enablePHA, enableFSM bool) string {
+func testAccIBMPIInstanceIBMiPHAFSMConfig(name, imageName, instanceHealthStatus string, fsmCount int) string {
 	return fmt.Sprintf(`
       data "ibm_pi_image" "power_image" {
         pi_cloud_instance_id = "%[1]s"
@@ -150,15 +154,15 @@ func testAccIBMPIInstanceIBMiPHAFSMConfig(name, imageName, instanceHealthStatus 
         pi_sys_type           = "s922"
 
         # IBM i licenses under test
-        pi_ibmi_pha   = %[7]t
-        ibmi_pha_fsm  = %[8]t
+        pi_ibmi_pha            = true
+        pi_ibmi_pha_fsm_count  = %[7]d
 
         pi_volume_ids = [ibm_pi_volume.power_volume.volume_id]
         pi_network {
             network_id = data.ibm_pi_network.power_networks.id
         }
       }
-    `, acc.Pi_cloud_instance_id, name, imageName, acc.Pi_network_name, instanceHealthStatus, acc.PiStorageType, enablePHA, enableFSM)
+    `, acc.Pi_cloud_instance_id, name, imageName, acc.Pi_network_name, instanceHealthStatus, acc.PiStorageType, fsmCount)
 }
 
 func TestAccIBMPIInstanceStorageConnection(t *testing.T) {
