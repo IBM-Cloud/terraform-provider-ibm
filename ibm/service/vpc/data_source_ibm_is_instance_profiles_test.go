@@ -204,6 +204,27 @@ func TestAccIBMISInstanceProfilesDataSource_sharedcore(t *testing.T) {
 	})
 }
 
+func TestAccIBMISInstanceProfilesDataSource_AvailabilityClass(t *testing.T) {
+	resName := "data.ibm_is_instance_profiles.test1"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { acc.TestAccPreCheck(t) },
+		Providers: acc.TestAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMISInstanceProfilesDataSourceConfig(),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet(resName, "profiles.0.name"),
+					resource.TestCheckResourceAttrSet(resName, "profiles.0.family"),
+					resource.TestCheckResourceAttrSet(resName, "profiles.0.availability_class.#"),
+					resource.TestCheckResourceAttrSet(resName, "profiles.0.availability_class.0.type"),
+					resource.TestCheckResourceAttrSet(resName, "profiles.0.availability_class.0.values.#"),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckIBMISInstanceProfilesDataSourceConfig() string {
 	// status filter defaults to empty
 	return fmt.Sprintf(`
