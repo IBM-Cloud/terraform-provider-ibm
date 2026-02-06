@@ -2372,11 +2372,12 @@ func createPVMInstance(d *schema.ResourceData, client *instance.IBMPIInstanceCli
 		// Default value
 		falseBool := false
 		sl := &models.SoftwareLicenses{
-			IbmiCSS:      &falseBool,
-			IbmiPHA:      &falseBool,
-			IbmiPHAFSM:   &falseBool,
-			IbmiRDS:      &falseBool,
-			IbmiRDSUsers: 0,
+			IbmiCSS:         &falseBool,
+			IbmiPHA:         &falseBool,
+			IbmiPHAFSM:      &falseBool,
+			IbmiRDS:         &falseBool,
+			IbmiRDSUsers:    0,
+			IbmiPHAFSMCount: 0,
 		}
 		if ibmiCSS, ok := d.GetOk(Arg_IBMiCSS); ok {
 			sl.IbmiCSS = flex.PtrToBool(ibmiCSS.(bool))

@@ -64,7 +64,7 @@ func TestAccIBMPIInstanceDataSource_IBMiPHAFSM(t *testing.T) {
 }
 
 func testAccCheckIBMPIInstanceDataSourcePHAFSMConfig(name, imageName string, fsmCount int) string {
-    return fmt.Sprintf(`
+	return fmt.Sprintf(`
       data "ibm_pi_image" "power_image" {
         pi_cloud_instance_id = "%[1]s"
         pi_image_name        = "%[3]s"
