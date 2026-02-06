@@ -458,7 +458,7 @@ func DataSourceIBMISInstanceProfile() *schema.Resource {
 							Computed:    true,
 							Description: "The permitted values for this profile field.",
 							Elem: &schema.Schema{
-								Type: schema.TypeInt,
+								Type: schema.TypeString,
 							},
 						},
 					},
