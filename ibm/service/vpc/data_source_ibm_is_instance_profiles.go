@@ -415,6 +415,37 @@ func DataSourceIBMISInstanceProfiles() *schema.Resource {
 								},
 							},
 						},
+						"network_bandwidth_mode": {
+							Type:     schema.TypeList,
+							Computed: true,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"type": {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The type for this profile field.",
+									},
+									"value": {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The value for this profile field.",
+									},
+									"default": {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The default value for this profile field.",
+									},
+									"values": {
+										Type:        schema.TypeList,
+										Computed:    true,
+										Description: "The permitted values for this profile field.",
+										Elem: &schema.Schema{
+											Type: schema.TypeString,
+										},
+									},
+								},
+							},
+						},
 						"total_volume_bandwidth": {
 							Type:        schema.TypeList,
 							Computed:    true,
@@ -985,6 +1016,13 @@ func instanceProfilesList(context context.Context, d *schema.ResourceData, meta 
 
 		if profile.TotalVolumeBandwidth != nil {
 			l["total_volume_bandwidth"] = dataSourceInstanceProfileFlattenTotalVolumeBandwidth(*profile.TotalVolumeBandwidth.(*vpcv1.InstanceProfileVolumeBandwidth))
+		}
+
+		if profile.NetworkBandwidthMode != nil {
+			l["network_bandwidth_mode"], err = dataSourceInstanceProfileFlattenNetworkBandwidthMode(*profile.NetworkBandwidthMode.(*vpcv1.InstanceProfileNetworkBandwidthMode))
+			if err != nil {
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_instance_profiles", "read", "network_bandwidth_mode").GetDiag()
+			}
 		}
 
 		if profile.Disks != nil {

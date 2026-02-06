@@ -76,6 +76,7 @@ func TestAccIBMISInstanceProfilesDataSource_QoS(t *testing.T) {
 					resource.TestCheckResourceAttrSet("data.ibm_is_instance_profiles.test1", "profiles.0.vcpu_manufacturer.0.type"),
 					resource.TestCheckResourceAttrSet("data.ibm_is_instance_profiles.test1", "profiles.0.vcpu_manufacturer.0.value"),
 					resource.TestCheckResourceAttrSet("data.ibm_is_instance_profiles.test1", "profiles.0.volume_bandwidth_qos_modes.#"),
+					resource.TestCheckResourceAttrSet(resName, "profiles.0.network_bandwidth_mode.0.type"),
 				),
 			},
 		},
