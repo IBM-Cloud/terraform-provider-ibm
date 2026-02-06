@@ -924,7 +924,11 @@ func resourceIBMPIInstanceRead(ctx context.Context, d *schema.ResourceData, meta
 
 		// FSM: boolean is computed attribute; count is the argument echoed back
 		d.Set(Attr_IBMiPHAFSM, powervmdata.SoftwareLicenses.IbmiPHAFSM)
-		d.Set(Arg_IBMiPHAFSMCount, powervmdata.SoftwareLicenses.IbmiPHAFSMCount)
+		if *powervmdata.SoftwareLicenses.IbmiPHAFSMCount {
+			d.Set(Arg_IBMiPHAFSMCount, powervmdata.SoftwareLicenses.IbmiPHAFSMCount)
+		} else {
+			d.Set(Arg_IBMiPHAFSMCount, 0)
+		}
 
 		d.Set(Attr_IBMiRDS, powervmdata.SoftwareLicenses.IbmiRDS)
 		if *powervmdata.SoftwareLicenses.IbmiRDS {
