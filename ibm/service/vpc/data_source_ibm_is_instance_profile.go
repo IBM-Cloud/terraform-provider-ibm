@@ -32,7 +32,38 @@ func DataSourceIBMISInstanceProfile() *schema.Resource {
 				Type:     schema.TypeString,
 				Required: true,
 			},
-
+			// spot changes
+			"availability_class": &schema.Schema{
+				Type:     schema.TypeList,
+				Computed: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"default": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The default availability class for an instance with this profile.",
+						},
+						"type": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The type for this profile field.",
+						},
+						"values": &schema.Schema{
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "The permitted values for this profile field.",
+							Elem: &schema.Schema{
+								Type: schema.TypeString,
+							},
+						},
+						"value": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The value for this profile field.",
+						},
+					},
+				},
+			},
 			// cluster changes
 			"cluster_network_attachment_count": &schema.Schema{
 				Type:     schema.TypeList,
@@ -887,6 +918,14 @@ func instanceProfileGet(context context.Context, d *schema.ResourceData, meta in
 	}
 	// For lack of anything better, compose our id from profile name.
 	d.SetId(*profile.Name)
+	// spot changes
+	availabilityClassMap, err := DataSourceIBMIsInstanceProfilesInstanceProfileAvailabilityClassToMap(profile.AvailabilityClass)
+	if err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting name: %s", err), "(Data) ibm_is_instance_profile", "read", "availability_class-to-map").GetDiag()
+	}
+	if err = d.Set("availability_class", []map[string]interface{}{availabilityClassMap}); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting name: %s", err), "(Data) ibm_is_instance_profile", "read", "set-availability_class").GetDiag()
+	}
 	if err = d.Set(isInstanceProfileName, *profile.Name); err != nil {
 		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting name: %s", err), "(Data) ibm_is_instance_profile", "read", "set-name").GetDiag()
 	}
@@ -1721,16 +1760,57 @@ func DataSourceIBMIsInstanceProfileClusterNetworkProfileReferenceToMap(model *vp
 	modelMap["resource_type"] = *model.ResourceType
 	return modelMap, nil
 }
+
+func DataSourceIBMIsInstanceProfileInstanceProfileAvailabilityClassToMap(model vpcv1.InstanceProfileAvailabilityClassIntf) (map[string]interface{}, error) {
+	if _, ok := model.(*vpcv1.InstanceProfileAvailabilityClassEnum); ok {
+		return DataSourceIBMIsInstanceProfileInstanceProfileAvailabilityClassEnumToMap(model.(*vpcv1.InstanceProfileAvailabilityClassEnum))
+	} else if _, ok := model.(*vpcv1.InstanceProfileAvailabilityClassFixed); ok {
+		return DataSourceIBMIsInstanceProfileInstanceProfileAvailabilityClassFixedToMap(model.(*vpcv1.InstanceProfileAvailabilityClassFixed))
+	} else if _, ok := model.(*vpcv1.InstanceProfileAvailabilityClass); ok {
+		modelMap := make(map[string]interface{})
+		model := model.(*vpcv1.InstanceProfileAvailabilityClass)
+		if model.Default != nil {
+			modelMap["default"] = *model.Default
+		}
+		if model.Type != nil {
+			modelMap["type"] = *model.Type
+		}
+		if model.Values != nil {
+			modelMap["values"] = model.Values
+		}
+		if model.Value != nil {
+			modelMap["value"] = *model.Value
+		}
+		return modelMap, nil
+	} else {
+		return nil, fmt.Errorf("Unrecognized vpcv1.InstanceProfileAvailabilityClassIntf subtype encountered")
+	}
+}
+
+func DataSourceIBMIsInstanceProfileInstanceProfileAvailabilityClassEnumToMap(model *vpcv1.InstanceProfileAvailabilityClassEnum) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	modelMap["default"] = *model.Default
+	return modelMap, nil
+}
+
 func DataSourceIBMIsInstanceProfileInstanceProfileVcpuBurstLimitToMap(model *vpcv1.InstanceProfileVcpuBurstLimit) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["type"] = *model.Type
 	modelMap["value"] = flex.IntValue(model.Value)
 	return modelMap, nil
 }
+
 func DataSourceIBMIsInstanceProfileInstanceProfileVcpuPercentageToMap(model *vpcv1.InstanceProfileVcpuPercentage) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["default"] = flex.IntValue(model.Default)
 	modelMap["type"] = *model.Type
 	modelMap["values"] = model.Values
+	return modelMap, nil
+}
+
+func DataSourceIBMIsInstanceProfileInstanceProfileAvailabilityClassFixedToMap(model *vpcv1.InstanceProfileAvailabilityClassFixed) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	modelMap["type"] = *model.Type
+	modelMap["value"] = *model.Value
 	return modelMap, nil
 }
