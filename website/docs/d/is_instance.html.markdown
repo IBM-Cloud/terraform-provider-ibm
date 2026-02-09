@@ -107,7 +107,16 @@ Review the argument references that you can specify for your data source.
 ## Attribute reference
 In addition to all argument reference list, you can access the following attribute references after your data source is created. 
 - `access_tags`  - (List) Access management tags associated for instance.
-- `availability_policy_host_failure` - (String) The availability policy for this virtual server instance. The action to perform if the compute host experiences a failure. 
+- `availability_policy_host_failure` - (String) The availability policy for this virtual server instance. The action to perform if the compute host experiences a failure.
+- `availability` - (List) The availability for this virtual server instance. **Note:** Spot instances are available only to accounts that have been granted special approval. Contact IBM Support if you are interested in using spot instances.
+  Nested schema for **availability**:
+	- `class` - (String) The availability class for the virtual server instance.- `spot`: The virtual server instance may be preempted.- `standard`: The virtual server instance will not be preempted.See [virtual server instance availability class](https://cloud.ibm.com/docs/vpc?topic=vpc-spot-instances-virtual-servers) for details.The enumerated values for this property may[expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) in the future. Allowable values are: `spot`, `standard`.
+- `availability_policy` - (List) The availability policy for this virtual server instance.
+  Nested schema for **availability_policy**:
+	- `host_failure` - (String) The action to perform if the compute host experiences a failure:- `restart`: Restart the virtual server instance- `stop`: Leave the virtual server instance stopped. See [handling host failures](https://cloud.ibm.com/docs/vpc?topic=vpc-host-failure-recovery-policies) for details.The enumerated values for this property may[expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) in the future. Allowable values are: `restart`, `stop`.
+	- `preemption` - (String) The action to perform if the virtual server instance is preempted:- `delete`: Delete the virtual server instance- `stop`: Leave the virtual server instance stopped. See [virtual server instance preemption](https://cloud.ibm.com/docs/vpc?topic=vpc-spot-instances-virtual-servers#spot-instances-preemption) for details.The enumerated values for this property may[expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) in the future. Allowable values are: `delete`, `stop`.
+	
+  -> **Note:** This property is only applicable when availability class is set to `spot`.
 - `bandwidth` - (Integer) The total bandwidth (in megabits per second) shared across the instance's network interfaces and storage volumes
 - `boot_volume` - (List of Objects) A list of boot volumes that were created for the instance.
 

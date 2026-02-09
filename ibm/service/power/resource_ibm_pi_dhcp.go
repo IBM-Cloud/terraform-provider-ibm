@@ -263,20 +263,23 @@ func resourceIBMPIDhcpDelete(ctx context.Context, d *schema.ResourceData, meta i
 	return nil
 }
 
-func waitForIBMPIDhcpStatus(ctx context.Context, client *instance.IBMPIDhcpClient, dhcpID string, timeout time.Duration) (interface{}, error) {
+func waitForIBMPIDhcpStatus(ctx context.Context, client *instance.IBMPIDhcpClient, dhcpID string, timeout time.Duration) (any, error) {
 	stateConf := &retry.StateChangeConf{
 		Pending: []string{State_Building},
-		Target:  []string{State_Active},
-		Refresh: func() (interface{}, string, error) {
+		Target:  []string{State_Active, State_Error},
+		Refresh: func() (any, string, error) {
 			dhcpServer, err := client.Get(dhcpID)
 			if err != nil {
 				log.Printf("[DEBUG] get DHCP failed %v", err)
 				return nil, "", err
 			}
-			if strings.ToLower(*dhcpServer.Status) != State_Active {
-				return dhcpServer, State_Building, nil
+			if strings.ToLower(*dhcpServer.Status) == State_Active {
+				return dhcpServer, State_Active, nil
 			}
-			return dhcpServer, State_Active, nil
+			if strings.ToLower(*dhcpServer.Status) == State_Error {
+				return dhcpServer, State_Error, fmt.Errorf("[ERROR] The resource resulted in %s state", *dhcpServer.Status)
+			}
+			return dhcpServer, State_Building, nil
 		},
 		Timeout:    timeout,
 		Delay:      10 * time.Second,
