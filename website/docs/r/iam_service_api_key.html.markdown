@@ -34,6 +34,7 @@ Review the argument references that you can specify for your resource.
 - `locked`- (Optional, Bool) The API key cannot be changed if set to **true**.
 - `name` - (Required, String) The name of the service API key.
 - `store_value`- (Optional, Bool) The boolean value whether API key value is retrievable in the future.
+- `expires_at` - (Optional, String) Date and time when the API key becomes invalid, ISO 8601 datetime in the format 'yyyy-MM-ddTHH:mm+0000'. WARNING An API key will be permanently and irrevocably deleted when both the expires_at and modified_at timestamps are more than ninety (90) days in the past, regardless of the key's locked status or any other state.
 
 ## Attribute reference
 In addition to all argument reference list, you can access the following attribute reference after your resource is created.

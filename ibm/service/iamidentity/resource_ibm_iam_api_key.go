@@ -92,7 +92,7 @@ func ResourceIBMIAMApiKey() *schema.Resource {
 			"expires_at": &schema.Schema{
 				Type:        schema.TypeString,
 				Optional:    true,
-				Description: "Date and time when the API key becomes invalid, ISO 8601 datetime in the format 'yyyy-MM-ddTHH:mm+0000'.",
+				Description: "Date and time when the API key becomes invalid, ISO 8601 datetime in the format 'yyyy-MM-ddTHH:mm+0000'. WARNING An API key will be permanently and irrevocably deleted when both the expires_at and modified_at timestamps are more than ninety (90) days in the past, regardless of the key's locked status or any other state.",
 			},
 			"created_at": {
 				Type:        schema.TypeString,

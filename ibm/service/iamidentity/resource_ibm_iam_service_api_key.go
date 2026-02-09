@@ -72,6 +72,12 @@ func ResourceIBMIAMServiceAPIKey() *schema.Resource {
 				Description:      "The API key cannot be changed if set to true",
 			},
 
+			"expires_at": &schema.Schema{
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "Date and time when the API key becomes invalid, ISO 8601 datetime in the format 'yyyy-MM-ddTHH:mm+0000'. WARNING An API key will be permanently and irrevocably deleted when both the expires_at and modified_at timestamps are more than ninety (90) days in the past, regardless of the key's locked status or any other state.",
+			},
+
 			"store_value": {
 				Type:             schema.TypeBool,
 				Optional:         true,
@@ -182,6 +188,11 @@ func resourceIBMIAMServiceAPIkeyCreate(d *schema.ResourceData, meta interface{})
 		createAPIKeyOptions.EntityLock = &elockstr
 	}
 
+	if exp, ok := d.GetOk("expires_at"); ok {
+		expString := exp.(string)
+		createAPIKeyOptions.ExpiresAt = &expString
+	}
+
 	apiKey, response, err := iamIdentityClient.CreateAPIKey(createAPIKeyOptions)
 	if err != nil || apiKey == nil {
 		return fmt.Errorf("[DEBUG] Service API Key creation Error: %s\n%s", err, response)
@@ -242,6 +253,9 @@ func resourceIBMIAMServiceAPIKeyRead(d *schema.ResourceData, meta interface{}) e
 	if apiKey.Locked != nil {
 		d.Set("locked", *apiKey.Locked)
 	}
+	if apiKey.ExpiresAt != nil {
+		d.Set("expires_at", *apiKey.ExpiresAt)
+	}
 	if apiKey.CreatedBy != nil {
 		d.Set("created_by", *apiKey.CreatedBy)
 	}
@@ -290,6 +304,13 @@ func resourceIBMIAMServiceAPIKeyUpdate(d *schema.ResourceData, meta interface{})
 		updateAPIKeyOptions.Description = &desc
 		hasChange = true
 	}
+
+	if d.HasChange("expires_at") {
+		exp := d.Get("expires_at").(string)
+		updateAPIKeyOptions.ExpiresAt = &exp
+		hasChange = true
+	}
+
 	if hasChange {
 		_, response, err := iamIdentityClient.UpdateAPIKey(updateAPIKeyOptions)
 		if err != nil {
