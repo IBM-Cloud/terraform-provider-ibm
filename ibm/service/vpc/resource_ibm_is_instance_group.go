@@ -285,7 +285,7 @@ func resourceIBMISInstanceGroupCreate(context context.Context, d *schema.Resourc
 
 	_, healthError := waitForHealthyInstanceGroup(d.Id(), meta, d.Timeout(schema.TimeoutCreate))
 	if healthError != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("waitForHealthyInstanceGroup failed: %s", err.Error()), "ibm_is_instance_group", "create")
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("waitForHealthyInstanceGroup failed: %s", healthError.Error()), "ibm_is_instance_group", "create")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
