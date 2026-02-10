@@ -144,7 +144,7 @@ func resourceIBMISInstanceGroupManagerPolicyCreate(context context.Context, d *s
 
 	_, healthError := waitForHealthyInstanceGroup(instanceGroupID, meta, d.Timeout(schema.TimeoutCreate))
 	if healthError != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("waitForHealthyInstanceGroup failed: %s", err.Error()), "ibm_is_instance_group_manager_policy", "create")
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("waitForHealthyInstanceGroup failed: %s", healthError.Error()), "ibm_is_instance_group_manager_policy", "create")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
@@ -207,7 +207,7 @@ func resourceIBMISInstanceGroupManagerPolicyUpdate(context context.Context, d *s
 
 		instanceGroupManagerPolicyAsPatch, asPatchErr := instanceGroupManagerPolicyPatchModel.AsPatch()
 		if asPatchErr != nil {
-			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("instanceGroupManagerPolicyPatchModel.AsPatch() failed: %s", err.Error()), "ibm_is_instance_group_manager_policy", "update")
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("instanceGroupManagerPolicyPatchModel.AsPatch() failed: %s", asPatchErr.Error()), "ibm_is_instance_group_manager_policy", "update")
 			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 			return tfErr.GetDiag()
 		}
@@ -219,7 +219,7 @@ func resourceIBMISInstanceGroupManagerPolicyUpdate(context context.Context, d *s
 
 		_, healthError := waitForHealthyInstanceGroup(instanceGroupID, meta, d.Timeout(schema.TimeoutUpdate))
 		if healthError != nil {
-			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("waitForHealthyInstanceGroup failed: %s", err.Error()), "ibm_is_instance_group_manager_policy", "update")
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("waitForHealthyInstanceGroup failed: %s", healthError.Error()), "ibm_is_instance_group_manager_policy", "update")
 			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 			return tfErr.GetDiag()
 		}
@@ -333,7 +333,7 @@ func resourceIBMISInstanceGroupManagerPolicyDelete(context context.Context, d *s
 
 	_, healthError := waitForHealthyInstanceGroup(instanceGroupID, meta, d.Timeout(schema.TimeoutDelete))
 	if healthError != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("waitForHealthyInstanceGroup failed: %s", err.Error()), "ibm_is_instance_group_manager_policy", "delete")
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("waitForHealthyInstanceGroup failed: %s", healthError.Error()), "ibm_is_instance_group_manager_policy", "delete")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
