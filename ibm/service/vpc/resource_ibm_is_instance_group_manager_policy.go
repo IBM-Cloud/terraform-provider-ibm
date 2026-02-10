@@ -207,7 +207,7 @@ func resourceIBMISInstanceGroupManagerPolicyUpdate(context context.Context, d *s
 
 		instanceGroupManagerPolicyAsPatch, asPatchErr := instanceGroupManagerPolicyPatchModel.AsPatch()
 		if asPatchErr != nil {
-			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("instanceGroupManagerPolicyPatchModel.AsPatch() failed: %s", err.Error()), "ibm_is_instance_group_manager_policy", "update")
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("instanceGroupManagerPolicyPatchModel.AsPatch() failed: %s", asPatchErr.Error()), "ibm_is_instance_group_manager_policy", "update")
 			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 			return tfErr.GetDiag()
 		}
