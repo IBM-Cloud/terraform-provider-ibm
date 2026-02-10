@@ -1,3 +1,19 @@
+# 1.88.1 (February 10, 2026)
+
+## Bug Fixes
+
+### Cloud Object Storage
+* Fix the docs related to COs backup vault policies ([6650](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6650))
+
+### VPC Infrastructure
+* fix(instance-group): fixed error on instance group wait ([6655](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6655))
+
+## Enhancements
+
+### IAM
+* Add expires_at to service_api_key ([6654](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6654))
+
+
 # 1.88.0 (February 6, 2026)
 
 ## Bug Fixes
