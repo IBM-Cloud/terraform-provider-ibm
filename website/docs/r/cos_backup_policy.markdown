@@ -40,7 +40,6 @@ resource "ibm_cos_bucket" "backup-source-bucket" {
 
 }
 
-
 resource "ibm_cos_backup_vault" "backup-vault" {
   backup_vault_name           = "backup_vault_name"
   service_instance_id  = "cos_instance_id to create backup vault"
@@ -50,10 +49,9 @@ resource "ibm_cos_backup_vault" "backup-vault" {
   kms_key_crn = "crn:v1:staging:public:kms:us-south:a/997xxxxxxxxxxxxxxxxxxxxxx54:5xxxxxxxa-fxxb-4xx8-9xx4-f1xxxxxxxxx5:key:af5667d5-dxx5-4xxf-8xxf-exxxxxxxf1d"
 }
 
-
 resource "ibm_iam_authorization_policy" "policy" {
 		roles                  = [
-			"Backup Manager", "Writer" , "Manager"
+			"Backup Manager", "Writer"
 		]
 		subject_attributes {
 		  name  = "accountId"
@@ -103,6 +101,7 @@ resource "ibm_iam_authorization_policy" "policy" {
 	}
 
 resource "ibm_cos_backup_policy" "policy" {
+  depends_on      = [ibm_iam_authorization_policy.policy]
   bucket_crn      = ibm_cos_bucket.bucket.crn
   initial_delete_after_days = 2
   policy_name = "policy_name"
