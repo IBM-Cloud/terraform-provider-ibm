@@ -24,7 +24,7 @@ import (
 
 func TestAccIbmLogsViewBasic(t *testing.T) {
 	var conf logsv0.View
-	name := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
+	name := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 1000))
 	nameUpdate := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
@@ -54,12 +54,54 @@ func TestAccIbmLogsViewBasic(t *testing.T) {
 	})
 }
 
+func TestAccIbmLogsViewAllFields(t *testing.T) {
+	var conf logsv0.View
+	name := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 1000))
+	tier := "all_logs"
+	syntaxType := "dataprime"
+
+	nameUpdate := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
+	tierUpdate := "priority_insights"
+	syntaxTypeUpdate := "lucene"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheckCloudLogs(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIbmLogsViewDestroy,
+		Steps: []resource.TestStep{
+			resource.TestStep{
+				Config: testAccCheckIbmLogsViewConfigAllFields(name, tier, syntaxType),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIbmLogsViewExists("ibm_logs_view.logs_view_instance", conf),
+					resource.TestCheckResourceAttr("ibm_logs_view.logs_view_instance", "name", name),
+					resource.TestCheckResourceAttr("ibm_logs_view.logs_view_instance", "tier", tier),
+					resource.TestCheckResourceAttr("ibm_logs_view.logs_view_instance", "search_query.0.syntax_type", syntaxType),
+				),
+			},
+			resource.TestStep{
+				Config: testAccCheckIbmLogsViewConfigAllFields(nameUpdate, tierUpdate, syntaxTypeUpdate),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("ibm_logs_view.logs_view_instance", "name", nameUpdate),
+					resource.TestCheckResourceAttr("ibm_logs_view.logs_view_instance", "tier", tierUpdate),
+					resource.TestCheckResourceAttr("ibm_logs_view.logs_view_instance", "search_query.0.syntax_type", syntaxTypeUpdate),
+				),
+			},
+			resource.TestStep{
+				ResourceName:      "ibm_logs_view.logs_view_instance",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
 func testAccCheckIbmLogsViewConfigBasic(name string) string {
 	return fmt.Sprintf(`
 	resource "ibm_logs_view" "logs_view_instance" {
 		instance_id = "%s"
 		region      = "%s"
 		name        = "%s"
+		tier        = "priority_insights"
 		filters {
 		  filters {
 			name = "applicationName"
@@ -94,6 +136,7 @@ func testAccCheckIbmLogsViewConfigBasic(name string) string {
 		}
 		search_query {
 		  query = "logs"
+		  syntax_type = "dataprime"
 		}
 		time_selection {
 		  custom_selection {
@@ -103,6 +146,59 @@ func testAccCheckIbmLogsViewConfigBasic(name string) string {
 		}
 	}
 	`, acc.LogsInstanceId, acc.LogsInstanceRegion, name)
+}
+
+func testAccCheckIbmLogsViewConfigAllFields(name string, tier string, syntaxType string) string {
+	return fmt.Sprintf(`
+	resource "ibm_logs_view" "logs_view_instance" {
+		instance_id = "%s"
+		region      = "%s"
+		name        = "%s"
+		tier        = "%s"
+		filters {
+		  filters {
+			name = "applicationName"
+			selected_values = {
+			  demo = true
+			}
+		  }
+		  filters {
+			name = "subsystemName"
+			selected_values = {
+			  demo = true
+			}
+		  }
+		  filters {
+			name = "operationName"
+			selected_values = {
+			  demo = true
+			}
+		  }
+		  filters {
+			name = "serviceName"
+			selected_values = {
+			  demo = true
+			}
+		  }
+		  filters {
+			name = "severity"
+			selected_values = {
+			  demo = true
+			}
+		  }
+		}
+		search_query {
+		  query = "logs"
+		  syntax_type = "%s"
+		}
+		time_selection {
+		  custom_selection {
+			from_time = "2024-01-25T11:31:43.152Z"
+			to_time   = "2024-01-25T11:37:13.238Z"
+		  }
+		}
+	}
+	`, acc.LogsInstanceId, acc.LogsInstanceRegion, name, tier, syntaxType)
 }
 
 func testAccCheckIbmLogsViewExists(n string, obj logsv0.View) resource.TestCheckFunc {
