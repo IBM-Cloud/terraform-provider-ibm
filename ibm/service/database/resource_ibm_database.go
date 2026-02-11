@@ -1411,7 +1411,7 @@ func resourceIBMDatabaseInstanceCreate(context context.Context, d *schema.Resour
 		getDeploymentInfoResponse, response, err := cloudDatabasesClient.GetDeploymentInfo(getDeploymentInfoOptions)
 
 		if err != nil {
-			if response.StatusCode == 404 {
+			if response != nil && response.StatusCode == 404 {
 				return diag.FromErr(fmt.Errorf("[ERROR] The database instance was not found in the region set for the Provider, or the default of us-south. Specify the correct region in the provider definition, or create a provider alias for the correct region. %v", err))
 			}
 			return diag.FromErr(fmt.Errorf("[ERROR] Error getting database config while updating adminpassword for: %s with error %s", instanceID, err))
@@ -1705,7 +1705,7 @@ func resourceIBMDatabaseInstanceRead(context context.Context, d *schema.Resource
 	getDeploymentInfoResponse, response, err := cloudDatabasesClient.GetDeploymentInfo(getDeploymentInfoOptions)
 
 	if err != nil {
-		if response.StatusCode == 404 {
+		if response != nil && response.StatusCode == 404 {
 			return diag.FromErr(fmt.Errorf("[ERROR] The database instance was not found in the region set for the Provider, or the default of us-south. Specify the correct region in the provider definition, or create a provider alias for the correct region. %v", err))
 		}
 		return diag.FromErr(fmt.Errorf("[ERROR] Error getting database config while updating adminpassword for: %s with error %s", instanceID, err))
