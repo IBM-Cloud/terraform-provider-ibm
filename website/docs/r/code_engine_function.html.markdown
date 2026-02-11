@@ -45,6 +45,8 @@ You can specify the following arguments for this resource.
   * Constraints: The maximum length is `63` characters. The minimum length is `1` character. The value must match regular expression `/^[a-z]([-a-z0-9]*[a-z0-9])?$/`.
 * `project_id` - (Required, Forces new resource, String) The ID of the project.
   * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[0-9a-z]{8}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{12}$/`.
+* `run_compute_resource_token_enabled` - (Optional, Boolean) Optional flag to enable the use of a compute resource token mounted to the container file system.
+  * Constraints: The default value is `false`.
 * `run_env_variables` - (Optional, List) References to config maps, secrets or literal values, which are defined by the function owner and are exposed as environment variables in the function.
   * Constraints: The maximum length is `100` items. The minimum length is `0` items.
 Nested schema for **run_env_variables**:

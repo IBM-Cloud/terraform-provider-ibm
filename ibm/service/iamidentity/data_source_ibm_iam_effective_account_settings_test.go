@@ -133,7 +133,6 @@ func TestDataSourceIBMIamEffectiveAccountSettingsAccountSettingsResponseToMap(t 
 		accountSettingsUserMfaResponseModel["description"] = "testString"
 
 		model := make(map[string]interface{})
-		model["account_id"] = "testString"
 		model["entity_tag"] = "testString"
 		model["history"] = []map[string]interface{}{enityHistoryRecordModel}
 		model["restrict_create_service_id"] = "NOT_SET"

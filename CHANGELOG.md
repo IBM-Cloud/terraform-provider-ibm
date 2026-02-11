@@ -1,3 +1,89 @@
+# 1.88.1 (February 10, 2026)
+
+## Bug Fixes
+
+### Cloud Object Storage
+* Fix the docs related to COs backup vault policies ([6650](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6650))
+
+### VPC Infrastructure
+* fix(instance-group): fixed error on instance group wait ([6655](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6655))
+
+## Enhancements
+
+### IAM
+* Add expires_at to service_api_key ([6654](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6654))
+
+
+# 1.88.0 (February 6, 2026)
+
+## Bug Fixes
+
+### Catalog Management
+* fix import of ibm_cm_offering ([6636](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6636))
+
+### Cloud Logs
+* change inclusion_filters to optional ([6649](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6649))
+
+### IAM
+* Fix policy creation when resourceType is set to 'resource-group' ([6621](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6621))
+
+
+## Enhancements
+
+### Code Engine
+* add support for code engine pds, hmac secrets and trusted profiles ([6610](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6610))
+
+### Schematics
+* extend template type validation regex ([6593](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6593))
+
+### Cloud Databases
+* Add `async_restore` field for fast PG restore ([6630](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6630))
+
+### Cloud Logs
+* add terraform support for logs router v3 ([6627](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6627))
+
+### IAM
+* add api key expiration field ([6640](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6640))
+
+### Platform Notifications
+* Platform Notification Distribution List API: Terraform support ([6628](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6628))
+
+### Power Systems
+* Update DHCP status check for polling ([6642](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6642))
+
+### VPC Infrastructure
+* Added an empty check on allowed_use for is_instance and is_volume ([6631](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6631))
+* added support for spot virtual server instances ([6637](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6637))
+* add network-bandwidth-mode support ([6648](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6648))
+
+### General
+* Update MR in-che endpoint ([6647](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6647))
+
+
+# 1.87.2 (January 19, 2026)
+
+## Bug Fixes
+
+### Enterprise Management
+* fix the redhat regex length range and add - to allowed strings ([6623](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6623))
+
+### Transit Gateway
+* fix update logic of vpn gateway connection peer ([6622](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6622))
+
+
+## Enhancements
+
+### VPC Infrastructure
+* added name field in other protocols ([6602](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6602))
+
+
+## Code Refactoring
+
+### Power Systems
+* Refactor volume resource ([6625](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6625))
+* Refactor ssh-key resource ([6626](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6626))
+
+
 # 1.87.1 (January 13, 2026)
 
 ## Enhancements

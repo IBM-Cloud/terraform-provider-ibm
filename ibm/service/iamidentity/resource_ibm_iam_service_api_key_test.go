@@ -23,6 +23,8 @@ func TestAccIBMIAMServiceAPIKey_Basic(t *testing.T) {
 	name := fmt.Sprintf("terraform_iam_%d", acctest.RandIntRange(10, 100))
 	updateName := fmt.Sprintf("terraform_iam_%d", acctest.RandIntRange(10, 100))
 	storeValue := true
+	expiresAt := "2040-01-28T15:00+0000"
+	expiresAtUpdate := "2035-01-28T15:00+0000"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
@@ -30,25 +32,28 @@ func TestAccIBMIAMServiceAPIKey_Basic(t *testing.T) {
 		CheckDestroy: testAccCheckIBMIAMServiceAPIKeyDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIBMIAMServiceAPIKeyBasic(serviceName, name, storeValue),
+				Config: testAccCheckIBMIAMServiceAPIKeyBasic(serviceName, name, storeValue, expiresAt),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMIAMServiceAPIKeyExistsWithValidation("ibm_iam_service_api_key.testacc_apiKey", apiKey, storeValue),
 					resource.TestCheckResourceAttr("ibm_iam_service_api_key.testacc_apiKey", "name", name),
+					resource.TestCheckResourceAttr("ibm_iam_service_api_key.testacc_apiKey", "expires_at", expiresAt),
 					resource.TestCheckResourceAttrSet("ibm_iam_service_api_key.testacc_apiKey", "apikey"),
 				),
 			},
 			{
-				Config: testAccCheckIBMIAMServiceAPIKeyUpdateWithSameName(serviceName, name),
+				Config: testAccCheckIBMIAMServiceAPIKeyUpdateWithSameName(serviceName, name, expiresAtUpdate),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMIAMServiceAPIKeyExistsWithValidation("ibm_iam_service_api_key.testacc_apiKey", apiKey, storeValue),
 					resource.TestCheckResourceAttr("ibm_iam_service_api_key.testacc_apiKey", "name", name),
+					resource.TestCheckResourceAttr("ibm_iam_service_api_key.testacc_apiKey", "expires_at", expiresAtUpdate),
 					resource.TestCheckResourceAttr("ibm_iam_service_api_key.testacc_apiKey", "description", "Service API Key for test scenario1"),
 				),
 			},
 			{
-				Config: testAccCheckIBMIAMServiceAPIKeyUpdate(serviceName, updateName),
+				Config: testAccCheckIBMIAMServiceAPIKeyUpdate(serviceName, updateName, expiresAt),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("ibm_iam_service_api_key.testacc_apiKey", "name", updateName),
+					resource.TestCheckResourceAttr("ibm_iam_service_api_key.testacc_apiKey", "expires_at", expiresAt),
 					resource.TestCheckResourceAttr("ibm_iam_service_api_key.testacc_apiKey", "description", "Service API Key for test scenario2"),
 				),
 			},
@@ -61,6 +66,7 @@ func TestAccIBMIAMServiceAPIKey_doNotStoreApikeyValue(t *testing.T) {
 	serviceName := fmt.Sprintf("terraform_iam_ser_%d", acctest.RandIntRange(10, 100))
 	name := fmt.Sprintf("terraform_iam_%d", acctest.RandIntRange(10, 100))
 	storeValue := false
+	expiresAt := "2040-01-28T15:00+0000"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
@@ -68,7 +74,7 @@ func TestAccIBMIAMServiceAPIKey_doNotStoreApikeyValue(t *testing.T) {
 		CheckDestroy: testAccCheckIBMIAMServiceAPIKeyDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIBMIAMServiceAPIKeyBasic(serviceName, name, storeValue),
+				Config: testAccCheckIBMIAMServiceAPIKeyBasic(serviceName, name, storeValue, expiresAt),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMIAMServiceAPIKeyExistsWithValidation("ibm_iam_service_api_key.testacc_apiKey", apiKey, storeValue),
 					resource.TestCheckResourceAttr("ibm_iam_service_api_key.testacc_apiKey", "name", name),
@@ -170,7 +176,7 @@ func testAccCheckIBMIAMServiceAPIKeyExistsWithValidation(n string, apiKey string
 	}
 }
 
-func testAccCheckIBMIAMServiceAPIKeyBasic(serviceName, name string, storeValue bool) string {
+func testAccCheckIBMIAMServiceAPIKeyBasic(serviceName, name string, storeValue bool, expiresAt string) string {
 	return fmt.Sprintf(`
 		
 		resource "ibm_iam_service_id" "serviceID" {
@@ -181,11 +187,12 @@ func testAccCheckIBMIAMServiceAPIKeyBasic(serviceName, name string, storeValue b
 			name = "%s"
 			iam_service_id = ibm_iam_service_id.serviceID.iam_id
 			store_value = "%t"
+			expires_at = "%s"
 	  	}
-	`, serviceName, name, storeValue)
+	`, serviceName, name, storeValue, expiresAt)
 }
 
-func testAccCheckIBMIAMServiceAPIKeyUpdateWithSameName(serviceName, name string) string {
+func testAccCheckIBMIAMServiceAPIKeyUpdateWithSameName(serviceName, name string, expiresAt string) string {
 	return fmt.Sprintf(`
 		
 		resource "ibm_iam_service_id" "serviceID" {
@@ -196,11 +203,12 @@ func testAccCheckIBMIAMServiceAPIKeyUpdateWithSameName(serviceName, name string)
 			name = "%s"
 			description = "Service API Key for test scenario1"
 			iam_service_id = ibm_iam_service_id.serviceID.iam_id
+			expires_at = "%s"
 	  	}
-	`, serviceName, name)
+	`, serviceName, name, expiresAt)
 }
 
-func testAccCheckIBMIAMServiceAPIKeyUpdate(serviceName, updateName string) string {
+func testAccCheckIBMIAMServiceAPIKeyUpdate(serviceName, updateName string, expiresAt string) string {
 	return fmt.Sprintf(`
 
 		resource "ibm_iam_service_id" "serviceID" {
@@ -212,8 +220,9 @@ func testAccCheckIBMIAMServiceAPIKeyUpdate(serviceName, updateName string) strin
 			name = "%s"
 			description = "Service API Key for test scenario2"
 			iam_service_id = ibm_iam_service_id.serviceID.iam_id
+			expires_at = "%s"
 	  	}
-	`, serviceName, updateName)
+	`, serviceName, updateName, expiresAt)
 }
 
 func testAccCheckIBMIAMServiceAPIKeyImport(serviceName, name string) string {

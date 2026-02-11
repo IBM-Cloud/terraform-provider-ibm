@@ -50,11 +50,13 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/kms"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/kubernetes"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/logs"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/logsrouter"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/logsrouting"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/metricsrouter"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/mqcloud"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/pag"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/partnercentersell"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/platformnotifications"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/power"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/project"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/pushnotification"
@@ -1114,6 +1116,7 @@ func Provider() *schema.Provider {
 			"ibm_code_engine_domain_mapping":               codeengine.DataSourceIbmCodeEngineDomainMapping(),
 			"ibm_code_engine_function":                     codeengine.DataSourceIbmCodeEngineFunction(),
 			"ibm_code_engine_job":                          codeengine.DataSourceIbmCodeEngineJob(),
+			"ibm_code_engine_persistent_data_store":        codeengine.DataSourceIbmCodeEnginePersistentDataStore(),
 			"ibm_code_engine_project":                      codeengine.DataSourceIbmCodeEngineProject(),
 			"ibm_code_engine_secret":                       codeengine.DataSourceIbmCodeEngineSecret(),
 
@@ -1151,9 +1154,13 @@ func Provider() *schema.Provider {
 			"ibm_logs_alert_definition":   logs.AddLogsInstanceFields(logs.DataSourceIbmLogsAlertDefinition()),
 			"ibm_logs_alert_definitions":  logs.AddLogsInstanceFields(logs.DataSourceIbmLogsAlertDefinitions()),
 
-			// Logs Router Service
+			// Logs Router Service v1
 			"ibm_logs_router_tenants": logsrouting.DataSourceIBMLogsRouterTenants(),
-			"ibm_logs_router_targets": logsrouting.DataSourceIBMLogsRouterTargets(),
+
+			// Logs Router Service v3
+			// "ibm_logs_router_targets" has the same data source name for both v1 and v3, so get v1&v3 combined schema
+			"ibm_logs_router_targets": logsrouter.CombinedDataSourceIBMLogsRouterTargets(),
+			"ibm_logs_router_routes":  logsrouter.DataSourceIBMLogsRouterRoutes(),
 
 			// DR Automation Service
 			"ibm_pdr_get_dr_summary_response": drautomationservice.DataSourceIBMPdrGetDrSummaryResponse(),
@@ -1823,6 +1830,7 @@ func Provider() *schema.Provider {
 			"ibm_code_engine_domain_mapping":               codeengine.ResourceIbmCodeEngineDomainMapping(),
 			"ibm_code_engine_function":                     codeengine.ResourceIbmCodeEngineFunction(),
 			"ibm_code_engine_job":                          codeengine.ResourceIbmCodeEngineJob(),
+			"ibm_code_engine_persistent_data_store":        codeengine.ResourceIbmCodeEnginePersistentDataStore(),
 			"ibm_code_engine_project":                      codeengine.ResourceIbmCodeEngineProject(),
 			"ibm_code_engine_secret":                       codeengine.ResourceIbmCodeEngineSecret(),
 
@@ -1851,12 +1859,20 @@ func Provider() *schema.Provider {
 			"ibm_logs_stream":             logs.AddLogsInstanceFields(logs.ResourceIbmLogsStream()),
 			"ibm_logs_alert_definition":   logs.AddLogsInstanceFields(logs.ResourceIbmLogsAlertDefinition()),
 
-			// Logs Router Service
+			// Logs Router Service v1
 			"ibm_logs_router_tenant": logsrouting.ResourceIBMLogsRouterTenant(),
+
+			// Logs Router Service v3
+			"ibm_logs_router_target":   logsrouter.ResourceIBMLogsRouterTarget(),
+			"ibm_logs_router_route":    logsrouter.ResourceIBMLogsRouterRoute(),
+			"ibm_logs_router_settings": logsrouter.ResourceIBMLogsRouterSettings(),
 
 			// DR Automation Service
 			"ibm_pdr_managedr":        drautomationservice.ResourceIbmPdrManagedr(),
 			"ibm_pdr_validate_apikey": drautomationservice.ResourceIBMPdrValidateApikey(),
+
+			// Platform Notifications
+			"ibm_notification_distribution_list_destination": platformnotifications.ResourceIbmNotificationDistributionListDestination(),
 		},
 
 		ConfigureFunc: providerConfigure,
@@ -2041,80 +2057,81 @@ func Validator() validate.ValidatorDict {
 	initOnce.Do(func() {
 		globalValidatorDict = validate.ValidatorDict{
 			ResourceValidatorDictionary: map[string]*validate.ResourceValidator{
-				"ibm_iam_trusted_profile_template_assignment":  iamidentity.ResourceIBMTrustedProfileTemplateAssignmentValidator(),
-				"ibm_iam_account_settings_template_assignment": iamidentity.ResourceIBMAccountSettingsTemplateAssignmentValidator(),
-				"ibm_iam_account_settings":                     iamidentity.ResourceIBMIAMAccountSettingsValidator(),
-				"ibm_iam_custom_role":                          iampolicy.ResourceIBMIAMCustomRoleValidator(),
-				"ibm_cis_healthcheck":                          cis.ResourceIBMCISHealthCheckValidator(),
-				"ibm_cis_rate_limit":                           cis.ResourceIBMCISRateLimitValidator(),
-				"ibm_cis":                                      cis.ResourceIBMCISValidator(),
-				"ibm_cis_domain_settings":                      cis.ResourceIBMCISDomainSettingValidator(),
-				"ibm_cis_domain":                               cis.ResourceIBMCISDomainValidator(),
-				"ibm_cis_tls_settings":                         cis.ResourceIBMCISTLSSettingsValidator(),
-				"ibm_cis_routing":                              cis.ResourceIBMCISRoutingValidator(),
-				"ibm_cis_page_rule":                            cis.ResourceIBMCISPageRuleValidator(),
-				"ibm_cis_waf_package":                          cis.ResourceIBMCISWAFPackageValidator(),
-				"ibm_cis_waf_group":                            cis.ResourceIBMCISWAFGroupValidator(),
-				"ibm_cis_certificate_upload":                   cis.ResourceIBMCISCertificateUploadValidator(),
-				"ibm_cis_cache_settings":                       cis.ResourceIBMCISCacheSettingsValidator(),
-				"ibm_cis_custom_page":                          cis.ResourceIBMCISCustomPageValidator(),
-				"ibm_cis_firewall":                             cis.ResourceIBMCISFirewallValidator(),
-				"ibm_cis_range_app":                            cis.ResourceIBMCISRangeAppValidator(),
-				"ibm_cis_waf_rule":                             cis.ResourceIBMCISWAFRuleValidator(),
-				"ibm_cis_certificate_order":                    cis.ResourceIBMCISCertificateOrderValidator(),
-				"ibm_cis_filter":                               cis.ResourceIBMCISFilterValidator(),
-				"ibm_cis_firewall_rules":                       cis.ResourceIBMCISFirewallrulesValidator(),
-				"ibm_cis_webhook":                              cis.ResourceIBMCISWebhooksValidator(),
-				"ibm_cis_alert":                                cis.ResourceIBMCISAlertValidator(),
-				"ibm_cis_dns_record":                           cis.ResourceIBMCISDnsRecordValidator(),
-				"ibm_cis_dns_records_import":                   cis.ResourceIBMCISDnsRecordsImportValidator(),
-				"ibm_cis_edge_functions_action":                cis.ResourceIBMCISEdgeFunctionsActionValidator(),
-				"ibm_cis_edge_functions_trigger":               cis.ResourceIBMCISEdgeFunctionsTriggerValidator(),
-				"ibm_cis_global_load_balancer":                 cis.ResourceIBMCISGlbValidator(),
-				"ibm_cis_logpush_job":                          cis.ResourceIBMCISLogPushJobValidator(),
-				"ibm_cis_mtls_app":                             cis.ResourceIBMCISMtlsAppValidator(),
-				"ibm_cis_mtls":                                 cis.ResourceIBMCISMtlsValidator(),
-				"ibm_cis_bot_management":                       cis.ResourceIBMCISBotManagementValidator(),
-				"ibm_cis_origin_auth":                          cis.ResourceIBMCISOriginAuthPullValidator(),
-				"ibm_cis_origin_pool":                          cis.ResourceIBMCISPoolValidator(),
-				"ibm_cis_ruleset":                              cis.ResourceIBMCISRulesetValidator(),
-				"ibm_cis_ruleset_entrypoint_version":           cis.ResourceIBMCISRulesetEntryPointVersionValidator(),
-				"ibm_cis_ruleset_rule":                         cis.ResourceIBMCISRulesetRuleValidator(),
-				"ibm_cis_ruleset_version_detach":               cis.ResourceIBMCISRulesetVersionDetachValidator(),
-				"ibm_cis_advanced_certificate_pack_order":      cis.ResourceIBMCISAdvancedCertificatePackOrderValidator(),
-				"ibm_cis_origin_certificate_order":             cis.ResourceIBMCISOriginCertificateOrderValidator(),
-				"ibm_cis_custom_list":                          cis.ResourceIBMCISCustomListValidator(),
-				"ibm_cis_custom_list_items":                    cis.ResourceIBMCISCustomListItemsValidator(),
-				"ibm_container_cluster":                        kubernetes.ResourceIBMContainerClusterValidator(),
-				"ibm_container_worker_pool":                    kubernetes.ResourceIBMContainerWorkerPoolValidator(),
-				"ibm_container_vpc_worker_pool":                kubernetes.ResourceIBMContainerVPCWorkerPoolValidator(),
-				"ibm_container_vpc_worker":                     kubernetes.ResourceIBMContainerVPCWorkerValidator(),
-				"ibm_container_vpc_cluster":                    kubernetes.ResourceIBMContainerVpcClusterValidator(),
-				"ibm_cos_bucket":                               cos.ResourceIBMCOSBucketValidator(),
-				"ibm_cr_namespace":                             registry.ResourceIBMCrNamespaceValidator(),
-				"ibm_tg_gateway":                               transitgateway.ResourceIBMTGValidator(),
-				"ibm_app_config_feature":                       appconfiguration.ResourceIBMAppConfigFeatureValidator(),
-				"ibm_tg_connection":                            transitgateway.ResourceIBMTransitGatewayConnectionValidator(),
-				"ibm_tg_connection_action":                     transitgateway.ResourceIBMTransitGatewayConnectionActionValidator(),
-				"ibm_tg_connection_prefix_filter":              transitgateway.ResourceIBMTransitGatewayConnectionPrefixFilterValidator(),
-				"ibm_tg_connection_rgre_tunnel":                transitgateway.ResourceIBMTransitGatewayConnectionRgreTunnelValidator(),
-				"ibm_dl_virtual_connection":                    directlink.ResourceIBMDLGatewayVCValidator(),
-				"ibm_dl_gateway":                               directlink.ResourceIBMDLGatewayValidator(),
-				"ibm_dl_provider_gateway":                      directlink.ResourceIBMDLProviderGatewayValidator(),
-				"ibm_dl_gateway_action":                        directlink.ResourceIBMDLGatewayActionValidator(),
-				"ibm_dl_gateway_macsec_cak":                    directlink.ResourceIBMdlGatewayMacsecCakValidator(),
-				"ibm_database":                                 database.ResourceIBMICDValidator(),
-				"ibm_function_package":                         functions.ResourceIBMFuncPackageValidator(),
-				"ibm_function_action":                          functions.ResourceIBMFuncActionValidator(),
-				"ibm_function_rule":                            functions.ResourceIBMFuncRuleValidator(),
-				"ibm_function_trigger":                         functions.ResourceIBMFuncTriggerValidator(),
-				"ibm_function_namespace":                       functions.ResourceIBMFuncNamespaceValidator(),
-				"ibm_hpcs":                                     hpcs.ResourceIBMHPCSValidator(),
-				"ibm_hpcs_managed_key":                         hpcs.ResourceIbmManagedKeyValidator(),
-				"ibm_hpcs_keystore":                            hpcs.ResourceIbmKeystoreValidator(),
-				"ibm_hpcs_key_template":                        hpcs.ResourceIbmKeyTemplateValidator(),
-				"ibm_hpcs_vault":                               hpcs.ResourceIbmVaultValidator(),
-				"ibm_config_aggregator_settings":               configurationaggregator.ResourceIbmConfigAggregatorSettingsValidator(),
+				"ibm_iam_trusted_profile_template_assignment":    iamidentity.ResourceIBMTrustedProfileTemplateAssignmentValidator(),
+				"ibm_iam_account_settings_template_assignment":   iamidentity.ResourceIBMAccountSettingsTemplateAssignmentValidator(),
+				"ibm_iam_account_settings":                       iamidentity.ResourceIBMIAMAccountSettingsValidator(),
+				"ibm_iam_custom_role":                            iampolicy.ResourceIBMIAMCustomRoleValidator(),
+				"ibm_cis_healthcheck":                            cis.ResourceIBMCISHealthCheckValidator(),
+				"ibm_cis_rate_limit":                             cis.ResourceIBMCISRateLimitValidator(),
+				"ibm_cis":                                        cis.ResourceIBMCISValidator(),
+				"ibm_cis_domain_settings":                        cis.ResourceIBMCISDomainSettingValidator(),
+				"ibm_cis_domain":                                 cis.ResourceIBMCISDomainValidator(),
+				"ibm_cis_tls_settings":                           cis.ResourceIBMCISTLSSettingsValidator(),
+				"ibm_cis_routing":                                cis.ResourceIBMCISRoutingValidator(),
+				"ibm_cis_page_rule":                              cis.ResourceIBMCISPageRuleValidator(),
+				"ibm_cis_waf_package":                            cis.ResourceIBMCISWAFPackageValidator(),
+				"ibm_cis_waf_group":                              cis.ResourceIBMCISWAFGroupValidator(),
+				"ibm_cis_certificate_upload":                     cis.ResourceIBMCISCertificateUploadValidator(),
+				"ibm_cis_cache_settings":                         cis.ResourceIBMCISCacheSettingsValidator(),
+				"ibm_cis_custom_page":                            cis.ResourceIBMCISCustomPageValidator(),
+				"ibm_cis_firewall":                               cis.ResourceIBMCISFirewallValidator(),
+				"ibm_cis_range_app":                              cis.ResourceIBMCISRangeAppValidator(),
+				"ibm_cis_waf_rule":                               cis.ResourceIBMCISWAFRuleValidator(),
+				"ibm_cis_certificate_order":                      cis.ResourceIBMCISCertificateOrderValidator(),
+				"ibm_cis_filter":                                 cis.ResourceIBMCISFilterValidator(),
+				"ibm_cis_firewall_rules":                         cis.ResourceIBMCISFirewallrulesValidator(),
+				"ibm_cis_webhook":                                cis.ResourceIBMCISWebhooksValidator(),
+				"ibm_cis_alert":                                  cis.ResourceIBMCISAlertValidator(),
+				"ibm_cis_dns_record":                             cis.ResourceIBMCISDnsRecordValidator(),
+				"ibm_cis_dns_records_import":                     cis.ResourceIBMCISDnsRecordsImportValidator(),
+				"ibm_cis_edge_functions_action":                  cis.ResourceIBMCISEdgeFunctionsActionValidator(),
+				"ibm_cis_edge_functions_trigger":                 cis.ResourceIBMCISEdgeFunctionsTriggerValidator(),
+				"ibm_cis_global_load_balancer":                   cis.ResourceIBMCISGlbValidator(),
+				"ibm_cis_logpush_job":                            cis.ResourceIBMCISLogPushJobValidator(),
+				"ibm_cis_mtls_app":                               cis.ResourceIBMCISMtlsAppValidator(),
+				"ibm_cis_mtls":                                   cis.ResourceIBMCISMtlsValidator(),
+				"ibm_cis_bot_management":                         cis.ResourceIBMCISBotManagementValidator(),
+				"ibm_cis_origin_auth":                            cis.ResourceIBMCISOriginAuthPullValidator(),
+				"ibm_cis_origin_pool":                            cis.ResourceIBMCISPoolValidator(),
+				"ibm_cis_ruleset":                                cis.ResourceIBMCISRulesetValidator(),
+				"ibm_cis_ruleset_entrypoint_version":             cis.ResourceIBMCISRulesetEntryPointVersionValidator(),
+				"ibm_cis_ruleset_rule":                           cis.ResourceIBMCISRulesetRuleValidator(),
+				"ibm_cis_ruleset_version_detach":                 cis.ResourceIBMCISRulesetVersionDetachValidator(),
+				"ibm_cis_advanced_certificate_pack_order":        cis.ResourceIBMCISAdvancedCertificatePackOrderValidator(),
+				"ibm_cis_origin_certificate_order":               cis.ResourceIBMCISOriginCertificateOrderValidator(),
+				"ibm_cis_custom_list":                            cis.ResourceIBMCISCustomListValidator(),
+				"ibm_cis_custom_list_items":                      cis.ResourceIBMCISCustomListItemsValidator(),
+				"ibm_container_cluster":                          kubernetes.ResourceIBMContainerClusterValidator(),
+				"ibm_container_worker_pool":                      kubernetes.ResourceIBMContainerWorkerPoolValidator(),
+				"ibm_container_vpc_worker_pool":                  kubernetes.ResourceIBMContainerVPCWorkerPoolValidator(),
+				"ibm_container_vpc_worker":                       kubernetes.ResourceIBMContainerVPCWorkerValidator(),
+				"ibm_container_vpc_cluster":                      kubernetes.ResourceIBMContainerVpcClusterValidator(),
+				"ibm_cos_bucket":                                 cos.ResourceIBMCOSBucketValidator(),
+				"ibm_cr_namespace":                               registry.ResourceIBMCrNamespaceValidator(),
+				"ibm_tg_gateway":                                 transitgateway.ResourceIBMTGValidator(),
+				"ibm_app_config_feature":                         appconfiguration.ResourceIBMAppConfigFeatureValidator(),
+				"ibm_tg_connection":                              transitgateway.ResourceIBMTransitGatewayConnectionValidator(),
+				"ibm_tg_connection_action":                       transitgateway.ResourceIBMTransitGatewayConnectionActionValidator(),
+				"ibm_tg_connection_prefix_filter":                transitgateway.ResourceIBMTransitGatewayConnectionPrefixFilterValidator(),
+				"ibm_tg_connection_rgre_tunnel":                  transitgateway.ResourceIBMTransitGatewayConnectionRgreTunnelValidator(),
+				"ibm_dl_virtual_connection":                      directlink.ResourceIBMDLGatewayVCValidator(),
+				"ibm_dl_gateway":                                 directlink.ResourceIBMDLGatewayValidator(),
+				"ibm_dl_provider_gateway":                        directlink.ResourceIBMDLProviderGatewayValidator(),
+				"ibm_dl_gateway_action":                          directlink.ResourceIBMDLGatewayActionValidator(),
+				"ibm_dl_gateway_macsec_cak":                      directlink.ResourceIBMdlGatewayMacsecCakValidator(),
+				"ibm_database":                                   database.ResourceIBMICDValidator(),
+				"ibm_function_package":                           functions.ResourceIBMFuncPackageValidator(),
+				"ibm_function_action":                            functions.ResourceIBMFuncActionValidator(),
+				"ibm_function_rule":                              functions.ResourceIBMFuncRuleValidator(),
+				"ibm_function_trigger":                           functions.ResourceIBMFuncTriggerValidator(),
+				"ibm_function_namespace":                         functions.ResourceIBMFuncNamespaceValidator(),
+				"ibm_hpcs":                                       hpcs.ResourceIBMHPCSValidator(),
+				"ibm_hpcs_managed_key":                           hpcs.ResourceIbmManagedKeyValidator(),
+				"ibm_hpcs_keystore":                              hpcs.ResourceIbmKeystoreValidator(),
+				"ibm_hpcs_key_template":                          hpcs.ResourceIbmKeyTemplateValidator(),
+				"ibm_hpcs_vault":                                 hpcs.ResourceIbmVaultValidator(),
+				"ibm_config_aggregator_settings":                 configurationaggregator.ResourceIbmConfigAggregatorSettingsValidator(),
+				"ibm_notification_distribution_list_destination": platformnotifications.ResourceIbmNotificationDistributionListDestinationValidator(),
 
 				// Cloudshell
 				"ibm_cloud_shell_account_settings": cloudshell.ResourceIBMCloudShellAccountSettingsValidator(),
@@ -2333,6 +2350,7 @@ func Validator() validate.ValidatorDict {
 				"ibm_code_engine_domain_mapping":               codeengine.ResourceIbmCodeEngineDomainMappingValidator(),
 				"ibm_code_engine_function":                     codeengine.ResourceIbmCodeEngineFunctionValidator(),
 				"ibm_code_engine_job":                          codeengine.ResourceIbmCodeEngineJobValidator(),
+				"ibm_code_engine_persistent_data_store":        codeengine.ResourceIbmCodeEnginePersistentDataStoreValidator(),
 				"ibm_code_engine_project":                      codeengine.ResourceIbmCodeEngineProjectValidator(),
 				"ibm_code_engine_secret":                       codeengine.ResourceIbmCodeEngineSecretValidator(),
 
@@ -2365,8 +2383,13 @@ func Validator() validate.ValidatorDict {
 				"ibm_logs_stream":           logs.ResourceIbmLogsStreamValidator(),
 				"ibm_logs_alert_definition": logs.ResourceIbmLogsAlertDefinitionValidator(),
 
-				// Added for Logs Router Service
+				// Added for Logs Router Service v1
 				"ibm_logs_router_tenant": logsrouting.ResourceIBMLogsRouterTenantValidator(),
+
+				// Added for Logs Router Service v3
+				"ibm_logs_router_target":   logsrouter.ResourceIBMLogsRouterTargetValidator(),
+				"ibm_logs_router_route":    logsrouter.ResourceIBMLogsRouterRouteValidator(),
+				"ibm_logs_router_settings": logsrouter.ResourceIBMLogsRouterSettingsValidator(),
 
 				// Added for Software Defined Storage as a Service
 				"ibm_sds_volume":         sdsaas.ResourceIBMSdsVolumeValidator(),
