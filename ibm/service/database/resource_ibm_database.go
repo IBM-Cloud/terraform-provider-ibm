@@ -3317,7 +3317,7 @@ func (u *DatabaseUser) Update(instanceID string, d *schema.ResourceData, meta in
 	updateUserResponse, response, err := cloudDatabasesClient.UpdateUser(updateUserOptions)
 
 	// user was found but an error occurs while triggering task
-	if err != nil || (response.StatusCode < 200 || response.StatusCode >= 300) {
+	if err != nil || (response != nil && (response.StatusCode < 200 || response.StatusCode >= 300)) {
 		return fmt.Errorf("[ERROR] UpdateUser (%s) failed %w\n%s", *updateUserOptions.Username, err, response)
 	}
 
