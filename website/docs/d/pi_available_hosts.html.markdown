@@ -50,7 +50,7 @@ In addition to the argument reference list, you can access the following attribu
 
     Nested scheme for `available_hosts`:
        - `available_cores`- (Float) Core capacity of the host.
-       - `available_memory`- (Float) Memory capacity of the host (in GB).
+       - `available_memory`- (Float) Memory capacity of the host (in GiB).
        - `count`- (int) The number of hosts with similar types/capacities that are available.
        - `sys_type`- (String) System type.
   
