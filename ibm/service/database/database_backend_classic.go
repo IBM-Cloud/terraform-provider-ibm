@@ -7,38 +7,38 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-type classicBackend struct {
+type classicResourceBackend struct {
 	meta interface{}
 }
 
-func newClassicBackend(meta interface{}) dbBackend {
-	return &classicBackend{meta: meta}
+func newClassicResourceBackend(meta interface{}) dbResourceBackend {
+	return &classicResourceBackend{meta: meta}
 }
 
-func (c *classicBackend) WarnUnsupported(ctx context.Context, d *schema.ResourceData) diag.Diagnostics {
+func (c *classicResourceBackend) WarnUnsupported(ctx context.Context, d *schema.ResourceData) diag.Diagnostics {
 	return nil
 }
 
-func (c *classicBackend) Create(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func (c *classicResourceBackend) Create(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	return classicDatabaseInstanceCreate(ctx, d, meta)
 }
 
-func (c *classicBackend) Read(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func (c *classicResourceBackend) Read(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	return classicDatabaseInstanceRead(ctx, d, meta)
 }
 
-func (c *classicBackend) Update(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func (c *classicResourceBackend) Update(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	return classicDatabaseInstanceUpdate(ctx, d, meta)
 }
 
-func (c *classicBackend) Delete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func (c *classicResourceBackend) Delete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	return classicDatabaseInstanceDelete(ctx, d, meta)
 }
 
-func (c *classicBackend) Exists(d *schema.ResourceData, meta interface{}) (bool, error) {
+func (c *classicResourceBackend) Exists(d *schema.ResourceData, meta interface{}) (bool, error) {
 	return classicDatabaseInstanceExists(d, meta)
 }
 
-func (c *classicBackend) ValidateUnsupportedAttrsDiff(ctx context.Context, d *schema.ResourceDiff, meta interface{}) error {
+func (c *classicResourceBackend) ValidateUnsupportedAttrsDiff(ctx context.Context, d *schema.ResourceDiff, meta interface{}) error {
 	return nil
 }

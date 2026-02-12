@@ -8,7 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-type dbBackend interface {
+type dbResourceBackend interface {
 	Create(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics
 	Read(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics
 	Update(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics
@@ -26,28 +26,28 @@ func isGen2Plan(plan string) bool {
 	return strings.Contains(strings.ToLower(plan), "gen2")
 }
 
-func pickBackend(d *schema.ResourceData, meta interface{}) dbBackend {
+func pickResourceBackend(d *schema.ResourceData, meta interface{}) dbResourceBackend {
 	plan := d.Get("plan").(string)
 	if isGen2Plan(plan) {
-		return newGen2Backend(meta)
+		return newGen2ResourceBackend(meta)
 	}
-	return newClassicBackend(meta)
+	return newClassicResourceBackend(meta)
 }
 
-func pickBackendFromDiff(d *schema.ResourceDiff, meta interface{}) dbBackend {
+func pickResourceBackendFromDiff(d *schema.ResourceDiff, meta interface{}) dbResourceBackend {
 	planRaw, ok := d.GetOk("plan")
 	if !ok {
 		// No plan yet; default to classic to avoid blocking planning unexpectedly.
-		return newClassicBackend(meta)
+		return newClassicResourceBackend(meta)
 	}
 
 	plan, ok := planRaw.(string)
 	if !ok {
-		return newClassicBackend(meta)
+		return newClassicResourceBackend(meta)
 	}
 
 	if isGen2Plan(plan) {
-		return newGen2Backend(meta)
+		return newGen2ResourceBackend(meta)
 	}
-	return newClassicBackend(meta)
+	return newClassicResourceBackend(meta)
 }

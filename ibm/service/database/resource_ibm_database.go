@@ -1135,7 +1135,7 @@ func resourceIBMDatabaseInstanceDiff(_ context.Context, diff *schema.ResourceDif
 
 // Replace with func wrapper for resourceIBMResourceInstanceCreate specifying serviceName := "database......."
 func resourceIBMDatabaseInstanceCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	b := pickBackend(d, meta)
+	b := pickResourceBackend(d, meta)
 	diags := b.WarnUnsupported(context, d)
 	diags = append(diags, b.Create(context, d, meta)...)
 	return diags
@@ -1617,7 +1617,7 @@ func classicDatabaseInstanceCreate(context context.Context, d *schema.ResourceDa
 }
 
 func resourceIBMDatabaseInstanceRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	return pickBackend(d, meta).Read(context, d, meta)
+	return pickResourceBackend(d, meta).Read(context, d, meta)
 }
 
 func classicDatabaseInstanceRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -1811,7 +1811,7 @@ func classicDatabaseInstanceRead(context context.Context, d *schema.ResourceData
 }
 
 func resourceIBMDatabaseInstanceUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	b := pickBackend(d, meta)
+	b := pickResourceBackend(d, meta)
 	diags := b.WarnUnsupported(context, d)
 	diags = append(diags, b.Update(context, d, meta)...)
 	return diags
@@ -2290,7 +2290,7 @@ func classicDatabaseInstanceUpdate(context context.Context, d *schema.ResourceDa
 }
 
 func resourceIBMDatabaseInstanceDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	return pickBackend(d, meta).Delete(context, d, meta)
+	return pickResourceBackend(d, meta).Delete(context, d, meta)
 }
 
 func classicDatabaseInstanceDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -2329,7 +2329,7 @@ func classicDatabaseInstanceDelete(context context.Context, d *schema.ResourceDa
 }
 
 func resourceIBMDatabaseInstanceExists(d *schema.ResourceData, meta interface{}) (bool, error) {
-	return pickBackend(d, meta).Exists(d, meta)
+	return pickResourceBackend(d, meta).Exists(d, meta)
 }
 
 func classicDatabaseInstanceExists(d *schema.ResourceData, meta interface{}) (bool, error) {
