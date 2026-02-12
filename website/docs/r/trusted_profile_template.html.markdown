@@ -208,14 +208,6 @@ After your resource is created, you can read values from the listed arguments an
 * `created_by_id` - (String) IAMid of the creator.
 * `crn` - (String) Cloud resource name.
 * `entity_tag` - (String) Entity tag for this templateId-version combination.
-* `history` - (List) History of the trusted profile template.
-Nested schema for **history**:
-	* `action` - (String) Action of the history entry.
-	* `iam_id` - (String) IAM ID of the identity which triggered the action.
-	* `iam_id_account` - (String) Account of the identity which triggered the action.
-	* `message` - (String) Message which summarizes the executed action.
-	* `params` - (List) Params of the history entry.
-	* `timestamp` - (String) Timestamp when the action was triggered.
 * `last_modified_at` - (String) Timestamp of when the template was last modified.
 * `last_modified_by_id` - (String) IAMid of the identity that made the latest modification.
 

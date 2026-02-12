@@ -167,14 +167,6 @@ After your resource is created, you can read values from the listed arguments an
   * `session_invalidation_in_seconds` - (String) Defines the period of time in seconds in which a session is invalid due to inactivity.
   * `system_access_token_expiration_in_seconds` - (String) Defines the access token expiration in seconds.
   * `system_refresh_token_expiration_in_seconds` - (String) Defines the refresh token expiration in seconds.
-* `history` - (List) History of the Template.
-Nested schema for **history**:
-	* `action` - (String) Action of the history entry.
-	* `iam_id` - (String) IAM ID of the identity which triggered the action.
-	* `iam_id_account` - (String) Account of the identity which triggered the action.
-	* `message` - (String) Message which summarizes the executed action.
-	* `params` - (List) Params of the history entry.
-	* `timestamp` - (String) Timestamp when the action was triggered.
 * `last_modified_at` - (String) Template last modified at.
 * `last_modified_by_id` - (String) IAMid of the identity that made the latest modification.
 
