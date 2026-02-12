@@ -30,7 +30,6 @@ resource "ibm_atracker_target" "atracker_target_instance" {
 		api_key = "xxxxxxxxxxxxxx"
 		service_to_service_enabled = false
   }
-  managed_by = "enterprise"
   name = "my-cos-target"
   region = "us-south"
   target_type = "cloud_object_storage"
