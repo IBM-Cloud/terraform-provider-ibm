@@ -50,7 +50,7 @@ func ResourceIbmLogsView() *schema.Resource {
 						},
 						"syntax_type": &schema.Schema{
 							Type:         schema.TypeString,
-							Required:     true,
+							Optional:     true,
 							ValidateFunc: validate.InvokeValidator("ibm_logs_view", "syntax_type"),
 							Description:  "Syntax type for the query used in views.",
 						},
@@ -175,7 +175,7 @@ func ResourceIbmLogsViewValidator() *validate.ResourceValidator {
 			Identifier:                 "syntax_type",
 			ValidateFunctionIdentifier: validate.ValidateAllowedStringValue,
 			Type:                       validate.TypeString,
-			Required:                   true,
+			Optional:                   true,
 			AllowedValues:              "lucene, dataprime",
 		},
 		validate.ValidateSchema{
@@ -485,7 +485,14 @@ func ResourceIbmLogsViewMapToApisViewsV1TimeSelectionSelectionTypeCustomSelectio
 
 func ResourceIbmLogsViewMapToApisViewsV1SearchQuery(modelMap map[string]interface{}) (*logsv0.ApisViewsV1SearchQuery, error) {
 	model := &logsv0.ApisViewsV1SearchQuery{}
-	model.Query = core.StringPtr(modelMap["query"].(string))
+	// Initialize query with empty string as default. This is necessary because
+	// query = "" is a valid query value, but Terraform treats empty strings as null values.
+	// By initializing with an empty string, we ensure the query field is properly set even when empty.
+	query := ""
+	if modelMap["query"] != nil {
+		query = modelMap["query"].(string)
+	}
+	model.Query = &query
 	if modelMap["syntax_type"] != nil && modelMap["syntax_type"].(string) != "" {
 		model.SyntaxType = core.StringPtr(modelMap["syntax_type"].(string))
 	}
@@ -519,8 +526,6 @@ func ResourceIbmLogsViewMapToApisViewsV1Filter(modelMap map[string]interface{}) 
 		}
 		model.SelectedValues = SelectedValuesMap
 	}
-
-	// TODO: handle SelectedValues, map with entry type ''
 	return model, nil
 }
 
@@ -617,13 +622,11 @@ func ResourceIbmLogsViewApisViewsV1SelectedFiltersToMap(model *logsv0.ApisViewsV
 
 func ResourceIbmLogsViewApisViewsV1FilterToMap(model *logsv0.ApisViewsV1Filter) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	modelMap["name"] = model.Name
-	if model.SelectedValues != nil {
-		selectedValues := make(map[string]interface{})
-		for k, v := range model.SelectedValues {
-			selectedValues[k] = v
-		}
-		modelMap["selected_values"] = selectedValues
+	modelMap["name"] = *model.Name
+	selectedValues := make(map[string]interface{})
+	for k, v := range model.SelectedValues {
+		selectedValues[k] = flex.PtrToBool(v)
 	}
+	modelMap["selected_values"] = selectedValues
 	return modelMap, nil
 }

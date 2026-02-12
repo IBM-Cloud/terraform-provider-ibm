@@ -87,7 +87,7 @@ Nested schema for **filters**:
 Nested schema for **search_query**:
 	* `query` - (Required, String) View search query.
 	  * Constraints: The maximum length is `4096` characters. The minimum length is `1` character. The value must match regular expression `/^[\\p{L}\\p{N}\\p{P}\\p{Z}\\p{S}\\p{M}]+$/`.
-	* `syntax_type` - (Required, String) Syntax type for the query used in views.
+	* `syntax_type` - (Optional, String) Syntax type for the query used in views.
 	  * Constraints: Allowable values are: `lucene`, `dataprime`.
 * `tier` - (Optional, String) Type of view.
   * Constraints: Allowable values are: `priority_insights`, `priority_insights_templates`, `all_logs`, `all_logs_templates`.
@@ -114,13 +114,14 @@ After your resource is created, you can read values from the listed arguments an
 
 ## Import
 
-You can import the `ibm_logs_view` resource by using `id`. The ID is composed of `region/instance_id/view_id`.
+You can import the `ibm_logs_view` resource by using `id`. `id` combination of `region`, `instance_id` and `view_id`.
 
 # Syntax
 <pre>
-$ terraform import ibm_logs_view.logs_view <region>/<instance_id>/<view_id>
+$ terraform import ibm_logs_view.logs_view < region >/< instance_id >/< view_id >
 </pre>
 
 # Example
-```
+<pre>
 $ terraform import ibm_logs_view.logs_view eu-gb/3dc02998-0b50-4ea8-b68a-4779d716fa1f/52
+</pre>
