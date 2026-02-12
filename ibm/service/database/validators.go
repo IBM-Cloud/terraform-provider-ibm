@@ -4,11 +4,13 @@
 package database
 
 import (
+	"context"
 	"fmt"
 	"log"
 
 	"github.com/IBM/cloud-databases-go-sdk/clouddatabasesv5"
 	"github.com/IBM/go-sdk-core/v5/core"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 /* TODO move other validators in here */
@@ -150,3 +152,7 @@ func validateUpgradeVersion(instanceId string, location string, oldVersion strin
 }
 
 /* VERSION VALIDATOR END */
+
+func validateUnsupportedAttrsDiff(ctx context.Context, d *schema.ResourceDiff, meta interface{}) error {
+	return pickBackendFromDiff(d, meta).ValidateUnsupportedAttrsDiff(ctx, d, meta)
+}

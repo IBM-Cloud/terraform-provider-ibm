@@ -11,6 +11,7 @@ import (
 	"github.com/IBM/cloud-databases-go-sdk/clouddatabasesv5"
 	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/go-openapi/strfmt"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 /*  TODO Move other helper functions here */
@@ -79,4 +80,21 @@ func (tm *TaskManager) matchingTaskInProgress(taskType string) (bool, *clouddata
 	}
 
 	return false, nil, nil
+}
+
+func isAttrConfiguredInDiff(d *schema.ResourceDiff, k string) bool {
+	v, ok := d.GetOkExists(k)
+	if !ok {
+		return false
+	}
+	switch t := v.(type) {
+	case string:
+		return t != ""
+	case []interface{}:
+		return len(t) > 0
+	case map[string]interface{}:
+		return len(t) > 0
+	default:
+		return true
+	}
 }
