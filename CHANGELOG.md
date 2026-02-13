@@ -1,3 +1,19 @@
+# 1.88.2 (February 13, 2026)
+
+## Bug Fixes
+
+### CIS
+* Fix instance ruleset rule handling to enable OWASP logging ([6644](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6644))
+
+### Power
+* Update unit wording to conform to new standard ([6652](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6652))
+
+### Activity tracker
+* remove managed by example ([6659](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6659))
+
+### IAM
+* Fix: prevent duplicate user invite API calls causing 409 error ([6665](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6665))
+
 # 1.88.1 (February 10, 2026)
 
 ## Bug Fixes
