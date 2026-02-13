@@ -67,6 +67,7 @@ var (
 	FloatingIpID                    string
 	HpcsInstanceID                  string
 	HpcsInstanceName                string
+	IAMAccessGroupId                string
 	IAMAccountId                    string
 	IAMServiceId                    string
 	IAMTrustedProfileID             string
@@ -536,6 +537,11 @@ func init() {
 	IAMUser = os.Getenv("IBM_IAMUSER")
 	if IAMUser == "" {
 		fmt.Println("[WARN] Set the environment variable IBM_IAMUSER for testing ibm_iam_user_policy resource Some tests for that resource will fail if this is not set correctly")
+	}
+
+	IAMAccessGroupId = os.Getenv("IBM_IAM_ACCESS_GROUP_ID")
+	if IAMAccessGroupId == "" {
+		fmt.Println("[WARN] Set the environment variable IBM_IAM_ACCESS_GROUP_ID for testing ibm_iam_user_invite resource Some tests for that resource will fail if this is not set correctly")
 	}
 
 	IAMAccountId = os.Getenv("IBM_IAMACCOUNTID")

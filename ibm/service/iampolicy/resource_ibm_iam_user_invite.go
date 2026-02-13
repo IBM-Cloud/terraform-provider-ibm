@@ -682,7 +682,7 @@ func resourceIBMIAMUpdateUserProfile(d *schema.ResourceData, meta interface{}) e
 	}
 	Client := userManagement.UserInvite()
 
-	if d.HasChange("users") {
+	if d.HasChange("users") && !d.IsNewResource() {
 		//var removedUsers, addedUsers []string
 		accountID, err := getAccountID(d, meta)
 		if err != nil {
