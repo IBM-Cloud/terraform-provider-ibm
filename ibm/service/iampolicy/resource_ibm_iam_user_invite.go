@@ -498,6 +498,13 @@ func resourceIBMIAMInviteUsers(d *schema.ResourceData, meta interface{}) error {
 	if len(users) == 0 {
 		return fmt.Errorf("[ERROR] Users email not provided")
 	}
+
+	// Set ID early to prevent duplicate creation attempts
+	accountID, err := getAccountID(d, meta)
+	if err != nil {
+		return err
+	}
+	d.SetId(fmt.Sprintf("%s/%s", accountID, time.Now().UTC().Format("20060102150405")))
 	var accessGroups = make([]string, 0)
 	if data, ok := d.GetOk("access_groups"); ok {
 		for _, accessGroup := range data.([]interface{}) {
@@ -535,16 +542,29 @@ func resourceIBMIAMInviteUsers(d *schema.ResourceData, meta interface{}) error {
 		inviteUserPayload.OrganizationRoles = orgRoles
 	}
 
-	accountID, err := getAccountID(d, meta)
+	// Invite users
+	inviteResponse, err := client.InviteUsers(accountID, inviteUserPayload)
 	if err != nil {
-		return err
+		// Check if error is 409 Conflict (user already in processing state)
+		// This means the invitation is already being processed, which is acceptable
+		if strings.Contains(err.Error(), "409") &&
+			strings.Contains(err.Error(), "already in processing state") {
+			log.Printf("[DEBUG] User invitation already in progress (409), treating as success: %s", err.Error())
+			// Don't return error - the invitation is being processed
+		} else {
+			// For other errors, fail
+			return fmt.Errorf("[ERROR] Failed to invite users: %s", err)
+		}
+	} else {
+		log.Printf("[DEBUG] User invitation successful, response: %v", inviteResponse)
 	}
 
-	_, InviteUserError := client.InviteUsers(accountID, inviteUserPayload)
-	if InviteUserError != nil {
-		return InviteUserError
-	}
-	d.SetId(time.Now().UTC().String())
+	// Wait a bit for IBM Cloud to process the invitation before reading
+	// This helps populate invited_users on first apply
+	time.Sleep(5 * time.Second)
+
+	// Call Update to handle any additional configuration
+	// Update function will skip re-inviting users during initial creation
 	return resourceIBMIAMUpdateUserProfile(d, meta)
 }
 
@@ -575,98 +595,101 @@ func resourceIBMIAMGetUsers(d *schema.ResourceData, meta interface{}) error {
 
 	for _, user := range res {
 
-		if user.AccountID != accountID {
+		// Skip the account owner (user whose AccountID doesn't match)
+		// Process all other users (invited users who have AccountID == accountID)
+		if user.AccountID == accountID {
 			users = append(users, user.Email)
-		}
-		/****** For each user *******************
-		    1) user_id
-		    2) user_level_policies
-		    3) List of access groups
-		            > Name of access group
-		            > acees group level policies
-		********************************************/
-		//Get User level IAM policies
-		policyList, _, err := iamPolicyManagementClient.ListPolicies(&iampolicymanagementv1.ListPoliciesOptions{
-			AccountID: core.StringPtr(accountID),
-			IamID:     core.StringPtr(user.IamID),
-			Type:      core.StringPtr("access"),
-		})
-		policies := policyList.Policies
 
-		if err != nil {
-			return fmt.Errorf("[ERROR] Error retrieving user policies: %s", err)
-		}
-		userPolicies := make([]map[string]interface{}, 0, len(policies))
-		for _, policy := range policies {
-			//populate ploicy Roles
-			roles := make([]string, len(policy.Roles))
-			for i, role := range policy.Roles {
-				roles[i] = *role.DisplayName
-			}
-			//populate policy resources
-			// userResources := make([]map[string]interface{}, 0)
-			userResources := flex.FlattenPolicyResource(policy.Resources)
-			p := map[string]interface{}{
-				"id":        policy.ID,
-				"roles":     roles,
-				"resources": userResources,
-			}
-			userPolicies = append(userPolicies, p)
-
-		}
-
-		listAccessGroupOptions := &iamaccessgroupsv2.ListAccessGroupsOptions{
-			AccountID: &accountID,
-			IamID:     &user.IamID,
-		}
-		retreivedGroups, _, err := iamAccessGroupsClient.ListAccessGroups(listAccessGroupOptions)
-		if err != nil {
-			return fmt.Errorf("[ERROR] Error retrieving access groups: %s", err)
-		}
-
-		accGroupList := make([]map[string]interface{}, 0, len(retreivedGroups.Groups))
-		//Get the policies for each access group
-		for _, grpData := range retreivedGroups.Groups {
+			/****** For each invited user *******************
+			    1) user_id
+			    2) user_level_policies
+			    3) List of access groups
+			            > Name of access group
+			            > acees group level policies
+			********************************************/
+			//Get User level IAM policies
 			policyList, _, err := iamPolicyManagementClient.ListPolicies(&iampolicymanagementv1.ListPoliciesOptions{
-				AccountID:     core.StringPtr(accountID),
-				AccessGroupID: core.StringPtr(user.IamID),
+				AccountID: core.StringPtr(accountID),
+				IamID:     core.StringPtr(user.IamID),
+				Type:      core.StringPtr("access"),
 			})
-			accgrpPolicy := policyList.Policies
-			if err != nil {
-				return fmt.Errorf("[ERROR] Error retrieving access group policy: %s", err)
-			}
+			policies := policyList.Policies
 
-			//Fetch access group policies
-			grpPolicies := make([]map[string]interface{}, 0, len(accgrpPolicy))
-			for _, policy := range accgrpPolicy {
+			if err != nil {
+				return fmt.Errorf("[ERROR] Error retrieving user policies: %s", err)
+			}
+			userPolicies := make([]map[string]interface{}, 0, len(policies))
+			for _, policy := range policies {
 				//populate ploicy Roles
 				roles := make([]string, len(policy.Roles))
 				for i, role := range policy.Roles {
 					roles[i] = *role.DisplayName
 				}
 				//populate policy resources
-				grpResources := flex.FlattenPolicyResource(policy.Resources)
+				// userResources := make([]map[string]interface{}, 0)
+				userResources := flex.FlattenPolicyResource(policy.Resources)
 				p := map[string]interface{}{
 					"id":        policy.ID,
 					"roles":     roles,
-					"resources": grpResources,
+					"resources": userResources,
 				}
-				grpPolicies = append(grpPolicies, p)
+				userPolicies = append(userPolicies, p)
+
 			}
-			//populate name & policies of a access group
-			agInfo := map[string]interface{}{
-				"name":     *grpData.Name,
-				"policies": grpPolicies,
+
+			listAccessGroupOptions := &iamaccessgroupsv2.ListAccessGroupsOptions{
+				AccountID: &accountID,
+				IamID:     &user.IamID,
 			}
-			//add agInfo to list of access groups
-			accGroupList = append(accGroupList, agInfo)
+			retreivedGroups, _, err := iamAccessGroupsClient.ListAccessGroups(listAccessGroupOptions)
+			if err != nil {
+				return fmt.Errorf("[ERROR] Error retrieving access groups: %s", err)
+			}
+
+			accGroupList := make([]map[string]interface{}, 0, len(retreivedGroups.Groups))
+			//Get the policies for each access group
+			for _, grpData := range retreivedGroups.Groups {
+				policyList, _, err := iamPolicyManagementClient.ListPolicies(&iampolicymanagementv1.ListPoliciesOptions{
+					AccountID:     core.StringPtr(accountID),
+					AccessGroupID: core.StringPtr(*grpData.ID),
+				})
+				accgrpPolicy := policyList.Policies
+				if err != nil {
+					return fmt.Errorf("[ERROR] Error retrieving access group policy: %s", err)
+				}
+
+				//Fetch access group policies
+				grpPolicies := make([]map[string]interface{}, 0, len(accgrpPolicy))
+				for _, policy := range accgrpPolicy {
+					//populate ploicy Roles
+					roles := make([]string, len(policy.Roles))
+					for i, role := range policy.Roles {
+						roles[i] = *role.DisplayName
+					}
+					//populate policy resources
+					grpResources := flex.FlattenPolicyResource(policy.Resources)
+					p := map[string]interface{}{
+						"id":        policy.ID,
+						"roles":     roles,
+						"resources": grpResources,
+					}
+					grpPolicies = append(grpPolicies, p)
+				}
+				//populate name & policies of a access group
+				agInfo := map[string]interface{}{
+					"name":     *grpData.Name,
+					"policies": grpPolicies,
+				}
+				//add agInfo to list of access groups
+				accGroupList = append(accGroupList, agInfo)
+			}
+			userInfo := map[string]interface{}{
+				"user_id":       user.Email,
+				"user_policies": userPolicies,
+				"access_groups": accGroupList,
+			}
+			invitedUsers = append(invitedUsers, userInfo)
 		}
-		userInfo := map[string]interface{}{
-			"user_id":       user.Email,
-			"user_policies": userPolicies,
-			"access_groups": accGroupList,
-		}
-		invitedUsers = append(invitedUsers, userInfo)
 	}
 	//set the number of users in an account
 	d.Set("number_of_invited_users", len(res)-1)
@@ -682,7 +705,7 @@ func resourceIBMIAMUpdateUserProfile(d *schema.ResourceData, meta interface{}) e
 	}
 	Client := userManagement.UserInvite()
 
-	if d.HasChange("users") {
+	if d.HasChange("users") && !d.IsNewResource() {
 		//var removedUsers, addedUsers []string
 		accountID, err := getAccountID(d, meta)
 		if err != nil {
@@ -742,9 +765,20 @@ func resourceIBMIAMUpdateUserProfile(d *schema.ResourceData, meta interface{}) e
 			if len(orgRoles) != 0 {
 				inviteUserPayload.OrganizationRoles = orgRoles
 			}
-			_, InviteUserError := Client.InviteUsers(accountID, inviteUserPayload)
-			if InviteUserError != nil {
-				return InviteUserError
+
+			// Invite new users
+			_, err = Client.InviteUsers(accountID, inviteUserPayload)
+			if err != nil {
+				// Check if error is 409 Conflict (user already in processing state)
+				// This means the invitation is already being processed, which is acceptable
+				if strings.Contains(err.Error(), "409") &&
+					strings.Contains(err.Error(), "already in processing state") {
+					log.Printf("[DEBUG] User invitation already in progress (409) during update, treating as success: %s", err.Error())
+					// Don't return error - the invitation is being processed
+				} else {
+					// For other errors, fail
+					return fmt.Errorf("[ERROR] Failed to invite users during update: %s", err)
+				}
 			}
 		}
 
@@ -814,12 +848,14 @@ func resourceIBMIAMGetUserProfileExists(d *schema.ResourceData, meta interface{}
 	if err != nil {
 		return false, err
 	}
-	var isFound bool
-	for _, user := range usersList {
 
+	// Check if all users in the config exist in the account
+	for _, user := range usersList {
+		isFound := false
 		for _, userInfo := range res {
 			if strings.EqualFold(userInfo.Email, user) {
 				isFound = true
+				break
 			}
 		}
 		if !isFound {
