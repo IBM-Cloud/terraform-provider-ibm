@@ -136,6 +136,50 @@ func retry(f func() error) (err error) {
 	}
 }
 
+type resourceIbmDatabaseBackend interface {
+	Create(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics
+	Read(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics
+	Update(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics
+	Delete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics
+	Exists(d *schema.ResourceData, meta interface{}) (bool, error)
+
+	// WarnUnsupported should emit warnings (diag.Warning) for fields you will ignore.
+	// For classic backend this should return nil.
+	WarnUnsupported(context context.Context, d *schema.ResourceData) diag.Diagnostics
+
+	ValidateUnsupportedAttrsDiff(context context.Context, d *schema.ResourceDiff, meta interface{}) error
+}
+
+func isGen2Plan(plan string) bool {
+	return strings.Contains(strings.ToLower(plan), "gen2")
+}
+
+func pickResourceBackend(d *schema.ResourceData, meta interface{}) resourceIbmDatabaseBackend {
+	plan := d.Get("plan").(string)
+	if isGen2Plan(plan) {
+		return newResourceIbmDatabaseGen2Backend(meta)
+	}
+	return newResourceIbmDatabaseClassicBackend(meta)
+}
+
+func pickResourceBackendFromDiff(d *schema.ResourceDiff, meta interface{}) resourceIbmDatabaseBackend {
+	planRaw, ok := d.GetOk("plan")
+	if !ok {
+		// No plan yet; default to classic to avoid blocking planning unexpectedly.
+		return newResourceIbmDatabaseClassicBackend(meta)
+	}
+
+	plan, ok := planRaw.(string)
+	if !ok {
+		return newResourceIbmDatabaseClassicBackend(meta)
+	}
+
+	if isGen2Plan(plan) {
+		return newResourceIbmDatabaseGen2Backend(meta)
+	}
+	return newResourceIbmDatabaseClassicBackend(meta)
+}
+
 func ResourceIBMDatabaseInstance() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceIBMDatabaseInstanceCreate,
