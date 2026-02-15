@@ -150,10 +150,6 @@ type resourceIbmDatabaseBackend interface {
 	ValidateUnsupportedAttrsDiff(context context.Context, d *schema.ResourceDiff, meta interface{}) error
 }
 
-func isGen2Plan(plan string) bool {
-	return strings.Contains(strings.ToLower(plan), "gen2")
-}
-
 func pickResourceBackend(d *schema.ResourceData, meta interface{}) resourceIbmDatabaseBackend {
 	plan := d.Get("plan").(string)
 	if isGen2Plan(plan) {

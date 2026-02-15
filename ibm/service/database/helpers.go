@@ -6,6 +6,8 @@ package database
 import (
 	"fmt"
 	"log"
+	"regexp"
+	"strings"
 	"time"
 
 	"github.com/IBM/cloud-databases-go-sdk/clouddatabasesv5"
@@ -97,4 +99,9 @@ func isAttrConfiguredInDiff(d *schema.ResourceDiff, k string) bool {
 	default:
 		return true
 	}
+}
+
+func isGen2Plan(plan string) bool {
+	gen2Pattern := regexp.MustCompile(`-gen2($|-.+)`)
+	return gen2Pattern.MatchString(strings.ToLower(plan))
 }
