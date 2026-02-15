@@ -626,7 +626,12 @@ func dataSourceIBMDatabaseInstanceRead(d *schema.ResourceData, meta interface{})
 
 func classicDataSourceIBMDatabaseInstanceRead(d *schema.ResourceData, meta interface{}) error {
 	instance, err := findInstance(d, meta)
-
+	if err != nil {
+		return err
+	}
+	if instance == nil || instance.ID == nil {
+		return fmt.Errorf("database instance not found")
+	}
 	d.SetId(*instance.ID)
 
 	tags, err := flex.GetTagsUsingCRN(meta, d.Id())
