@@ -7,12 +7,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-type resourceIbmDatabaseClassicBackend struct {
-	meta interface{}
-}
+type resourceIbmDatabaseClassicBackend struct{}
 
-func newResourceIbmDatabaseClassicBackend(meta interface{}) resourceIbmDatabaseBackend {
-	return &resourceIbmDatabaseClassicBackend{meta: meta}
+func newResourceIbmDatabaseClassicBackend() resourceIbmDatabaseBackend {
+	return &resourceIbmDatabaseClassicBackend{}
 }
 
 func (c *resourceIbmDatabaseClassicBackend) WarnUnsupported(context context.Context, d *schema.ResourceData) diag.Diagnostics {

@@ -150,30 +150,30 @@ type resourceIbmDatabaseBackend interface {
 	ValidateUnsupportedAttrsDiff(context context.Context, d *schema.ResourceDiff, meta interface{}) error
 }
 
-func pickResourceBackend(d *schema.ResourceData, meta interface{}) resourceIbmDatabaseBackend {
+func pickResourceBackend(d *schema.ResourceData) resourceIbmDatabaseBackend {
 	plan := d.Get("plan").(string)
 	if isGen2Plan(plan) {
-		return newResourceIbmDatabaseGen2Backend(meta)
+		return newResourceIbmDatabaseGen2Backend()
 	}
-	return newResourceIbmDatabaseClassicBackend(meta)
+	return newResourceIbmDatabaseClassicBackend()
 }
 
-func pickResourceBackendFromDiff(d *schema.ResourceDiff, meta interface{}) resourceIbmDatabaseBackend {
+func pickResourceBackendFromDiff(d *schema.ResourceDiff) resourceIbmDatabaseBackend {
 	planRaw, ok := d.GetOk("plan")
 	if !ok {
 		// No plan yet; default to classic to avoid blocking planning unexpectedly.
-		return newResourceIbmDatabaseClassicBackend(meta)
+		return newResourceIbmDatabaseClassicBackend()
 	}
 
 	plan, ok := planRaw.(string)
 	if !ok {
-		return newResourceIbmDatabaseClassicBackend(meta)
+		return newResourceIbmDatabaseClassicBackend()
 	}
 
 	if isGen2Plan(plan) {
-		return newResourceIbmDatabaseGen2Backend(meta)
+		return newResourceIbmDatabaseGen2Backend()
 	}
-	return newResourceIbmDatabaseClassicBackend(meta)
+	return newResourceIbmDatabaseClassicBackend()
 }
 
 func ResourceIBMDatabaseInstance() *schema.Resource {
@@ -1175,7 +1175,7 @@ func resourceIBMDatabaseInstanceDiff(_ context.Context, diff *schema.ResourceDif
 
 // Replace with func wrapper for resourceIBMResourceInstanceCreate specifying serviceName := "database......."
 func resourceIBMDatabaseInstanceCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	b := pickResourceBackend(d, meta)
+	b := pickResourceBackend(d)
 	diags := b.WarnUnsupported(context, d)
 	diags = append(diags, b.Create(context, d, meta)...)
 	return diags
@@ -1657,7 +1657,7 @@ func classicDatabaseInstanceCreate(context context.Context, d *schema.ResourceDa
 }
 
 func resourceIBMDatabaseInstanceRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	return pickResourceBackend(d, meta).Read(context, d, meta)
+	return pickResourceBackend(d).Read(context, d, meta)
 }
 
 func classicDatabaseInstanceRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -1851,7 +1851,7 @@ func classicDatabaseInstanceRead(context context.Context, d *schema.ResourceData
 }
 
 func resourceIBMDatabaseInstanceUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	b := pickResourceBackend(d, meta)
+	b := pickResourceBackend(d)
 	diags := b.WarnUnsupported(context, d)
 	diags = append(diags, b.Update(context, d, meta)...)
 	return diags
@@ -2330,7 +2330,7 @@ func classicDatabaseInstanceUpdate(context context.Context, d *schema.ResourceDa
 }
 
 func resourceIBMDatabaseInstanceDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	return pickResourceBackend(d, meta).Delete(context, d, meta)
+	return pickResourceBackend(d).Delete(context, d, meta)
 }
 
 func classicDatabaseInstanceDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -2369,7 +2369,7 @@ func classicDatabaseInstanceDelete(context context.Context, d *schema.ResourceDa
 }
 
 func resourceIBMDatabaseInstanceExists(d *schema.ResourceData, meta interface{}) (bool, error) {
-	return pickResourceBackend(d, meta).Exists(d, meta)
+	return pickResourceBackend(d).Exists(d, meta)
 }
 
 func classicDatabaseInstanceExists(d *schema.ResourceData, meta interface{}) (bool, error) {

@@ -17,12 +17,10 @@ var gen2UnsupportedAttrs = []string{
 	"groups",
 }
 
-type resourceIbmDatabaseGen2Backend struct {
-	meta interface{}
-}
+type resourceIbmDatabaseGen2Backend struct{}
 
-func newResourceIbmDatabaseGen2Backend(meta interface{}) resourceIbmDatabaseBackend {
-	return &resourceIbmDatabaseGen2Backend{meta: meta}
+func newResourceIbmDatabaseGen2Backend() resourceIbmDatabaseBackend {
+	return &resourceIbmDatabaseGen2Backend{}
 }
 
 func (g *resourceIbmDatabaseGen2Backend) WarnUnsupported(context context.Context, d *schema.ResourceData) diag.Diagnostics {
