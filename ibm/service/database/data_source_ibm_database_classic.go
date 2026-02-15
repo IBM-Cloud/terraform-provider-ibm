@@ -4,12 +4,12 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-type dataSourceIbmDatabaseClassicBackend struct{}
+type dataSourceIBMDatabaseClassicBackend struct{}
 
-func newDataSourceIbmDatabaseClassicBackend() dataSourceIbmDatabaseBackend {
-	return &dataSourceIbmDatabaseClassicBackend{}
+func newDataSourceIBMDatabaseClassicBackend() dataSourceIBMDatabaseBackend {
+	return &dataSourceIBMDatabaseClassicBackend{}
 }
 
-func (c *dataSourceIbmDatabaseClassicBackend) Read(d *schema.ResourceData, meta interface{}) error {
+func (c *dataSourceIBMDatabaseClassicBackend) Read(d *schema.ResourceData, meta interface{}) error {
 	return classicDataSourceIBMDatabaseInstanceRead(d, meta)
 }

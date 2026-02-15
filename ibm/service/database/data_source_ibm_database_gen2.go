@@ -6,13 +6,13 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-type dataSourceIbmDatabaseGen2Backend struct{}
+type dataSourceIBMDatabaseGen2Backend struct{}
 
-func newDataSourceIbmDatabaseGen2Backend() dataSourceIbmDatabaseBackend {
-	return &dataSourceIbmDatabaseGen2Backend{}
+func newDataSourceIBMDatabaseGen2Backend() dataSourceIBMDatabaseBackend {
+	return &dataSourceIBMDatabaseGen2Backend{}
 }
 
-func (g *dataSourceIbmDatabaseGen2Backend) Read(d *schema.ResourceData, meta interface{}) error {
+func (g *dataSourceIBMDatabaseGen2Backend) Read(d *schema.ResourceData, meta interface{}) error {
 	// TODO
 	// Document clearly in the datasource docs which attributes are Classic-only.
 	// In Gen2 Read:

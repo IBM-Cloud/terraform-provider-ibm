@@ -21,20 +21,20 @@ import (
 	rg "github.com/IBM/platform-services-go-sdk/resourcemanagerv2"
 )
 
-type dataSourceIbmDatabaseBackend interface {
+type dataSourceIBMDatabaseBackend interface {
 	Read(d *schema.ResourceData, meta interface{}) error
 }
 
-func pickDataSourceBackend(d *schema.ResourceData, meta interface{}) dataSourceIbmDatabaseBackend {
+func pickDataSourceBackend(d *schema.ResourceData, meta interface{}) dataSourceIBMDatabaseBackend {
 	instance, err := findInstance(d, meta)
 	if err != nil {
 		return nil
 	}
 	plan := *instance.ResourcePlanID
 	if isGen2Plan(plan) {
-		return newDataSourceIbmDatabaseGen2Backend()
+		return newDataSourceIBMDatabaseGen2Backend()
 	}
-	return newDataSourceIbmDatabaseClassicBackend()
+	return newDataSourceIBMDatabaseClassicBackend()
 }
 
 func DataSourceIBMDatabaseInstance() *schema.Resource {

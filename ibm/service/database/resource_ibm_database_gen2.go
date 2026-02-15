@@ -17,37 +17,37 @@ var gen2UnsupportedAttrs = []string{
 	"groups",
 }
 
-type resourceIbmDatabaseGen2Backend struct{}
+type resourceIBMDatabaseGen2Backend struct{}
 
-func newResourceIbmDatabaseGen2Backend() resourceIbmDatabaseBackend {
-	return &resourceIbmDatabaseGen2Backend{}
+func newResourceIBMDatabaseGen2Backend() resourceIBMDatabaseBackend {
+	return &resourceIBMDatabaseGen2Backend{}
 }
 
-func (g *resourceIbmDatabaseGen2Backend) WarnUnsupported(context context.Context, d *schema.ResourceData) diag.Diagnostics {
+func (g *resourceIBMDatabaseGen2Backend) WarnUnsupported(context context.Context, d *schema.ResourceData) diag.Diagnostics {
 	return nil
 }
 
-func (g *resourceIbmDatabaseGen2Backend) Create(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func (g *resourceIBMDatabaseGen2Backend) Create(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	return diag.Errorf("gen2 backend not implemented yet (plan=%q)", d.Get("plan").(string))
 }
 
-func (g *resourceIbmDatabaseGen2Backend) Read(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func (g *resourceIBMDatabaseGen2Backend) Read(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	return diag.Errorf("gen2 backend not implemented yet")
 }
 
-func (g *resourceIbmDatabaseGen2Backend) Update(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func (g *resourceIBMDatabaseGen2Backend) Update(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	return diag.Errorf("gen2 backend not implemented yet")
 }
 
-func (g *resourceIbmDatabaseGen2Backend) Delete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func (g *resourceIBMDatabaseGen2Backend) Delete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	return diag.Errorf("gen2 backend not implemented yet")
 }
 
-func (g *resourceIbmDatabaseGen2Backend) Exists(d *schema.ResourceData, meta interface{}) (bool, error) {
+func (g *resourceIBMDatabaseGen2Backend) Exists(d *schema.ResourceData, meta interface{}) (bool, error) {
 	return false, fmt.Errorf("gen2 backend not implemented yet")
 }
 
-func (g *resourceIbmDatabaseGen2Backend) ValidateUnsupportedAttrsDiff(context context.Context, d *schema.ResourceDiff, meta interface{}) error {
+func (g *resourceIBMDatabaseGen2Backend) ValidateUnsupportedAttrsDiff(context context.Context, d *schema.ResourceDiff, meta interface{}) error {
 	var bad []string
 	for _, k := range gen2UnsupportedAttrs {
 		if isAttrConfiguredInDiff(d, k) {

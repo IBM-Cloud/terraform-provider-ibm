@@ -7,36 +7,36 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-type resourceIbmDatabaseClassicBackend struct{}
+type resourceIBMDatabaseClassicBackend struct{}
 
-func newResourceIbmDatabaseClassicBackend() resourceIbmDatabaseBackend {
-	return &resourceIbmDatabaseClassicBackend{}
+func newResourceIBMDatabaseClassicBackend() resourceIBMDatabaseBackend {
+	return &resourceIBMDatabaseClassicBackend{}
 }
 
-func (c *resourceIbmDatabaseClassicBackend) WarnUnsupported(context context.Context, d *schema.ResourceData) diag.Diagnostics {
+func (c *resourceIBMDatabaseClassicBackend) WarnUnsupported(context context.Context, d *schema.ResourceData) diag.Diagnostics {
 	return nil
 }
 
-func (c *resourceIbmDatabaseClassicBackend) Create(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func (c *resourceIBMDatabaseClassicBackend) Create(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	return classicDatabaseInstanceCreate(context, d, meta)
 }
 
-func (c *resourceIbmDatabaseClassicBackend) Read(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func (c *resourceIBMDatabaseClassicBackend) Read(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	return classicDatabaseInstanceRead(context, d, meta)
 }
 
-func (c *resourceIbmDatabaseClassicBackend) Update(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func (c *resourceIBMDatabaseClassicBackend) Update(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	return classicDatabaseInstanceUpdate(context, d, meta)
 }
 
-func (c *resourceIbmDatabaseClassicBackend) Delete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func (c *resourceIBMDatabaseClassicBackend) Delete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	return classicDatabaseInstanceDelete(context, d, meta)
 }
 
-func (c *resourceIbmDatabaseClassicBackend) Exists(d *schema.ResourceData, meta interface{}) (bool, error) {
+func (c *resourceIBMDatabaseClassicBackend) Exists(d *schema.ResourceData, meta interface{}) (bool, error) {
 	return classicDatabaseInstanceExists(d, meta)
 }
 
-func (c *resourceIbmDatabaseClassicBackend) ValidateUnsupportedAttrsDiff(context context.Context, d *schema.ResourceDiff, meta interface{}) error {
+func (c *resourceIBMDatabaseClassicBackend) ValidateUnsupportedAttrsDiff(context context.Context, d *schema.ResourceDiff, meta interface{}) error {
 	return nil
 }

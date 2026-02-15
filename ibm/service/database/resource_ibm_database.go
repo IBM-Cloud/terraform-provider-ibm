@@ -136,7 +136,7 @@ func retry(f func() error) (err error) {
 	}
 }
 
-type resourceIbmDatabaseBackend interface {
+type resourceIBMDatabaseBackend interface {
 	Create(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics
 	Read(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics
 	Update(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics
@@ -150,30 +150,30 @@ type resourceIbmDatabaseBackend interface {
 	ValidateUnsupportedAttrsDiff(context context.Context, d *schema.ResourceDiff, meta interface{}) error
 }
 
-func pickResourceBackend(d *schema.ResourceData) resourceIbmDatabaseBackend {
+func pickResourceBackend(d *schema.ResourceData) resourceIBMDatabaseBackend {
 	plan := d.Get("plan").(string)
 	if isGen2Plan(plan) {
-		return newResourceIbmDatabaseGen2Backend()
+		return newResourceIBMDatabaseGen2Backend()
 	}
-	return newResourceIbmDatabaseClassicBackend()
+	return newResourceIBMDatabaseClassicBackend()
 }
 
-func pickResourceBackendFromDiff(d *schema.ResourceDiff) resourceIbmDatabaseBackend {
+func pickResourceBackendFromDiff(d *schema.ResourceDiff) resourceIBMDatabaseBackend {
 	planRaw, ok := d.GetOk("plan")
 	if !ok {
 		// No plan yet; default to classic to avoid blocking planning unexpectedly.
-		return newResourceIbmDatabaseClassicBackend()
+		return newResourceIBMDatabaseClassicBackend()
 	}
 
 	plan, ok := planRaw.(string)
 	if !ok {
-		return newResourceIbmDatabaseClassicBackend()
+		return newResourceIBMDatabaseClassicBackend()
 	}
 
 	if isGen2Plan(plan) {
-		return newResourceIbmDatabaseGen2Backend()
+		return newResourceIBMDatabaseGen2Backend()
 	}
-	return newResourceIbmDatabaseClassicBackend()
+	return newResourceIBMDatabaseClassicBackend()
 }
 
 func ResourceIBMDatabaseInstance() *schema.Resource {
