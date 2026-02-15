@@ -13,18 +13,17 @@ func newDataSourceIBMDatabaseGen2Backend() dataSourceIBMDatabaseBackend {
 }
 
 func (g *dataSourceIBMDatabaseGen2Backend) Read(d *schema.ResourceData, meta interface{}) error {
-	// TODO
-	// Document clearly in the datasource docs which attributes are Classic-only.
-	// In Gen2 Read:
-	// do not set Classic-only string fields (adminuser, adminpassword) at all, or set them to null if your SDK path supports it safely.
-	// set collection fields to empty lists/sets for stability if they’re not supported.
-
-	// NOTE - EDGE CASE: Possibility of having stale values in unsupported Gen2 attributes
-	// If the data source state was previously initialized with Classic, all attrib values would have set, including those not supported by Gen2
-	// Now if the instance becomes gen2 (because, the filtering name/location/service etc matched to gen2)
-	// unlike a TF resource which would ForceNew when plan changes; a datasource will not clear stale attribute values.
-	// Now, Gen2 will call d.Set only for Gen2 valid attribs - which will result in data-source having stale values for those unsupported attributes
-	// There is no direct way to "clean" everything in the state - it is also anti-patern.
-	// If this becomes a real concern, the option we have is to set all those unsupported attributes explicity to `null` using d.Set()
+	// NOTE - Edge case: potential stale values for unsupported Gen2 attributes.
+	// If this data source was previously resolved to a Classic instance, all
+	// attributes (including ones not supported by Gen2) would have been set.
+	// If the same filters later resolve to a Gen2 instance (e.g., name/location/service),
+	// Terraform will not automatically clear attributes that are no longer set,
+	// unlike a resource which would ForceNew on such changes.
+	// As a result, the Gen2 read path may only set supported attributes while
+	// previously populated Classic-only attributes remain stale in state.
+	// There is no clean mechanism to fully reset datasource state, and doing so
+	// is generally considered an anti-pattern.
+	// If this becomes an issue, unsupported attributes could be explicitly set
+	// to null via d.Set() to ensure stale values are cleared.
 	return fmt.Errorf("gen2 backend not implemented yet")
 }

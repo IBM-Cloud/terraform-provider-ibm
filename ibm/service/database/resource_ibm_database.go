@@ -143,10 +143,7 @@ type resourceIBMDatabaseBackend interface {
 	Delete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics
 	Exists(d *schema.ResourceData, meta interface{}) (bool, error)
 
-	// WarnUnsupported should emit warnings (diag.Warning) for fields you will ignore.
-	// For classic backend this should return nil.
 	WarnUnsupported(context context.Context, d *schema.ResourceData) diag.Diagnostics
-
 	ValidateUnsupportedAttrsDiff(context context.Context, d *schema.ResourceDiff, meta interface{}) error
 }
 
