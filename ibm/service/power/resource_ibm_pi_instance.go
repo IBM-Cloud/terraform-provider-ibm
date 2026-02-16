@@ -633,7 +633,6 @@ func ResourceIBMPIInstance() *schema.Resource {
 			Attr_IBMiRDS: {
 				Computed:    true,
 				Description: "IBM i Rational Dev Studio",
-				Optional:    false,
 				Required:    false,
 				Type:        schema.TypeBool,
 			},
@@ -924,12 +923,7 @@ func resourceIBMPIInstanceRead(ctx context.Context, d *schema.ResourceData, meta
 
 		// FSM: boolean is computed attribute; count is the argument echoed back
 		d.Set(Attr_IBMiPHAFSM, powervmdata.SoftwareLicenses.IbmiPHAFSM)
-		if *powervmdata.SoftwareLicenses.IbmiPHAFSMCount {
-			d.Set(Arg_IBMiPHAFSMCount, powervmdata.SoftwareLicenses.IbmiPHAFSMCount)
-		} else {
-			d.Set(Arg_IBMiPHAFSMCount, 0)
-		}
-
+		d.Set(Arg_IBMiPHAFSMCount, int(powervmdata.SoftwareLicenses.IbmiPHAFSMCount))
 		d.Set(Attr_IBMiRDS, powervmdata.SoftwareLicenses.IbmiRDS)
 		if *powervmdata.SoftwareLicenses.IbmiRDS {
 			d.Set(Arg_IBMiRDSUsers, powervmdata.SoftwareLicenses.IbmiRDSUsers)
@@ -1301,7 +1295,7 @@ func resourceIBMPIInstanceUpdate(ctx context.Context, d *schema.ResourceData, me
 		sl.IbmiCSS = flex.PtrToBool(d.Get(Arg_IBMiCSS).(bool))
 		sl.IbmiPHA = flex.PtrToBool(d.Get(Arg_IBMiPHA).(bool))
 
-		// FSM: count drives the license; boolean is computed
+		// FSM: only set if count is provided; otherwise omit (leave unchanged)
 		if v, ok := d.GetOk(Arg_IBMiPHAFSMCount); ok {
 			count := v.(int)
 			if count < 0 {
@@ -1309,10 +1303,6 @@ func resourceIBMPIInstanceUpdate(ctx context.Context, d *schema.ResourceData, me
 			}
 			sl.IbmiPHAFSM = flex.PtrToBool(count > 0)
 			sl.IbmiPHAFSMCount = int64(count)
-		} else {
-			// Not provided => disabled
-			sl.IbmiPHAFSM = flex.PtrToBool(false)
-			sl.IbmiPHAFSMCount = 0
 		}
 
 		// RDS: true/x or false/0
