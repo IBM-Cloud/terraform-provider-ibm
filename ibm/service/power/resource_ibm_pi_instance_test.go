@@ -89,9 +89,6 @@ func TestAccIBMPIInstanceIBMiPHAFSM(t *testing.T) {
 	instanceRes := "ibm_pi_instance.power_instance"
 	name := fmt.Sprintf("tf-pi-ibmi-pha-fsm-%d", acctest.RandIntRange(10, 100))
 
-	// This test assumes acc.Pi_image is an IBM i image via .env (same pattern as other tests).
-	ibmiImage := acc.Pi_image
-
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
 		Providers:    acc.TestAccProviders,
@@ -99,7 +96,7 @@ func TestAccIBMPIInstanceIBMiPHAFSM(t *testing.T) {
 		Steps: []resource.TestStep{
 			// Step 1: PHA enabled, FSM enabled via count=2
 			{
-				Config: testAccIBMPIInstanceIBMiPHAFSMConfig(name, ibmiImage, power.OK, 2),
+				Config: testAccIBMPIInstanceIBMiPHAFSMConfig(name, power.OK, 2),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckIBMPIInstanceExists(instanceRes),
 					resource.TestCheckResourceAttr(instanceRes, "pi_instance_name", name),
@@ -112,7 +109,7 @@ func TestAccIBMPIInstanceIBMiPHAFSM(t *testing.T) {
 			},
 			// Step 2: Keep PHA enabled, disable FSM by setting count=0
 			{
-				Config: testAccIBMPIInstanceIBMiPHAFSMConfig(name, ibmiImage, power.OK, 0),
+				Config: testAccIBMPIInstanceIBMiPHAFSMConfig(name, power.OK, 0),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckIBMPIInstanceExists(instanceRes),
 					resource.TestCheckResourceAttr(instanceRes, "pi_instance_name", name),
@@ -125,7 +122,7 @@ func TestAccIBMPIInstanceIBMiPHAFSM(t *testing.T) {
 	})
 }
 
-func testAccIBMPIInstanceIBMiPHAFSMConfig(name, imageName, instanceHealthStatus string, fsmCount int) string {
+func testAccIBMPIInstanceIBMiPHAFSMConfig(name, instanceHealthStatus string, fsmCount int) string {
 	return fmt.Sprintf(`
       data "ibm_pi_image" "power_image" {
         pi_cloud_instance_id = "%[1]s"
@@ -162,7 +159,15 @@ func testAccIBMPIInstanceIBMiPHAFSMConfig(name, imageName, instanceHealthStatus 
             network_id = data.ibm_pi_network.power_networks.id
         }
       }
-    `, acc.Pi_cloud_instance_id, name, imageName, acc.Pi_network_name, instanceHealthStatus, acc.PiStorageType, fsmCount)
+    `,
+		acc.Pi_cloud_instance_id, // %[1]s
+		name,                     // %[2]s
+		acc.Pi_image,             // %[3]s
+		acc.Pi_network_name,      // %[4]s
+		instanceHealthStatus,     // %[5]s
+		acc.PiStorageType,        // %[6]s
+		fsmCount,                 // %[7]d
+	)
 }
 
 func TestAccIBMPIInstanceStorageConnection(t *testing.T) {
@@ -1715,24 +1720,28 @@ func testAccCheckIBMPIInstanceStatus(n, status string) resource.TestCheckFunc {
 		}
 
 		cloudInstanceID, instanceID, err := splitID(rs.Primary.ID)
-		if err == nil {
+		if err != nil {
 			return err
 		}
 		client := st.NewIBMPIInstanceClient(context.Background(), sess, cloudInstanceID)
 
-		instance, err := client.Get(instanceID)
-		if err != nil {
-			return err
-		}
-
+		// Poll until status matches or we time out
+		deadline := time.Now().Add(30 * time.Minute)
 		for {
-			if instance.Status != &status {
-				time.Sleep(2 * time.Minute)
-			} else {
-				break
+			if time.Now().After(deadline) {
+				return fmt.Errorf("timeout waiting for instance %s to reach status %s", instanceID, status)
 			}
-		}
 
-		return nil
+			instance, err := client.Get(instanceID)
+			if err != nil {
+				return err
+			}
+
+			if instance.Status != nil && strings.ToUpper(*instance.Status) == status {
+				return nil
+			}
+
+			time.Sleep(30 * time.Second)
+		}
 	}
 }
