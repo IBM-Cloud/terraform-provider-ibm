@@ -1135,40 +1135,43 @@ func buildNetworkACLRuleUpdatePatch(d *schema.ResourceData) (*vpcv1.NetworkACLRu
 
 	// TCP block (deprecated)
 	if d.HasChange(isNetworkACLRuleTCP) {
-		tcp := d.Get(isNetworkACLRuleTCP).([]interface{})
-		if len(tcp) > 0 {
-			tcpval := tcp[0].(map[string]interface{})
-			max := fmt.Sprint(isNetworkACLRuleTCP, ".0.", isNetworkACLRulePortMax)
-			min := fmt.Sprint(isNetworkACLRuleTCP, ".0.", isNetworkACLRulePortMin)
-			maxSource := fmt.Sprint(isNetworkACLRuleTCP, ".0.", isNetworkACLRuleSourcePortMax)
-			minSource := fmt.Sprint(isNetworkACLRuleTCP, ".0.", isNetworkACLRuleSourcePortMin)
+		// Use GetOk to get NEW values from configuration, not old state values
+		if tcpInterface, ok := d.GetOk(isNetworkACLRuleTCP); ok {
+			tcp := tcpInterface.([]interface{})
+			if len(tcp) > 0 {
+				tcpval := tcp[0].(map[string]interface{})
+				max := fmt.Sprint(isNetworkACLRuleTCP, ".0.", isNetworkACLRulePortMax)
+				min := fmt.Sprint(isNetworkACLRuleTCP, ".0.", isNetworkACLRulePortMin)
+				maxSource := fmt.Sprint(isNetworkACLRuleTCP, ".0.", isNetworkACLRuleSourcePortMax)
+				minSource := fmt.Sprint(isNetworkACLRuleTCP, ".0.", isNetworkACLRuleSourcePortMin)
 
-			if d.HasChange(max) {
-				if destinationVar, ok := tcpval[isNetworkACLRulePortMax]; ok {
-					destination := int64(destinationVar.(int))
-					patchModel.DestinationPortMax = &destination
-					hasChanged = true
+				if d.HasChange(max) {
+					if destinationVar, ok := tcpval[isNetworkACLRulePortMax]; ok {
+						destination := int64(destinationVar.(int))
+						patchModel.DestinationPortMax = &destination
+						hasChanged = true
+					}
 				}
-			}
-			if d.HasChange(min) {
-				if destinationVar, ok := tcpval[isNetworkACLRulePortMin]; ok {
-					destination := int64(destinationVar.(int))
-					patchModel.DestinationPortMin = &destination
-					hasChanged = true
+				if d.HasChange(min) {
+					if destinationVar, ok := tcpval[isNetworkACLRulePortMin]; ok {
+						destination := int64(destinationVar.(int))
+						patchModel.DestinationPortMin = &destination
+						hasChanged = true
+					}
 				}
-			}
-			if d.HasChange(maxSource) {
-				if sourceVar, ok := tcpval[isNetworkACLRuleSourcePortMax]; ok {
-					source := int64(sourceVar.(int))
-					patchModel.SourcePortMax = &source
-					hasChanged = true
+				if d.HasChange(maxSource) {
+					if sourceVar, ok := tcpval[isNetworkACLRuleSourcePortMax]; ok {
+						source := int64(sourceVar.(int))
+						patchModel.SourcePortMax = &source
+						hasChanged = true
+					}
 				}
-			}
-			if d.HasChange(minSource) {
-				if sourceVar, ok := tcpval[isNetworkACLRuleSourcePortMin]; ok {
-					source := int64(sourceVar.(int))
-					patchModel.SourcePortMin = &source
-					hasChanged = true
+				if d.HasChange(minSource) {
+					if sourceVar, ok := tcpval[isNetworkACLRuleSourcePortMin]; ok {
+						source := int64(sourceVar.(int))
+						patchModel.SourcePortMin = &source
+						hasChanged = true
+					}
 				}
 			}
 		}
@@ -1212,40 +1215,43 @@ func buildNetworkACLRuleUpdatePatch(d *schema.ResourceData) (*vpcv1.NetworkACLRu
 
 	// UDP block (deprecated)
 	if d.HasChange(isNetworkACLRuleUDP) {
-		udp := d.Get(isNetworkACLRuleUDP).([]interface{})
-		if len(udp) > 0 {
-			udpval := udp[0].(map[string]interface{})
-			max := fmt.Sprint(isNetworkACLRuleUDP, ".0.", isNetworkACLRulePortMax)
-			min := fmt.Sprint(isNetworkACLRuleUDP, ".0.", isNetworkACLRulePortMin)
-			maxSource := fmt.Sprint(isNetworkACLRuleUDP, ".0.", isNetworkACLRuleSourcePortMax)
-			minSource := fmt.Sprint(isNetworkACLRuleUDP, ".0.", isNetworkACLRuleSourcePortMin)
+		// Use GetOk to get NEW values from configuration, not old state values
+		if udpInterface, ok := d.GetOk(isNetworkACLRuleUDP); ok {
+			udp := udpInterface.([]interface{})
+			if len(udp) > 0 {
+				udpval := udp[0].(map[string]interface{})
+				max := fmt.Sprint(isNetworkACLRuleUDP, ".0.", isNetworkACLRulePortMax)
+				min := fmt.Sprint(isNetworkACLRuleUDP, ".0.", isNetworkACLRulePortMin)
+				maxSource := fmt.Sprint(isNetworkACLRuleUDP, ".0.", isNetworkACLRuleSourcePortMax)
+				minSource := fmt.Sprint(isNetworkACLRuleUDP, ".0.", isNetworkACLRuleSourcePortMin)
 
-			if d.HasChange(max) {
-				if destinationVar, ok := udpval[isNetworkACLRulePortMax]; ok {
-					destination := int64(destinationVar.(int))
-					patchModel.DestinationPortMax = &destination
-					hasChanged = true
+				if d.HasChange(max) {
+					if destinationVar, ok := udpval[isNetworkACLRulePortMax]; ok {
+						destination := int64(destinationVar.(int))
+						patchModel.DestinationPortMax = &destination
+						hasChanged = true
+					}
 				}
-			}
-			if d.HasChange(min) {
-				if destinationVar, ok := udpval[isNetworkACLRulePortMin]; ok {
-					destination := int64(destinationVar.(int))
-					patchModel.DestinationPortMin = &destination
-					hasChanged = true
+				if d.HasChange(min) {
+					if destinationVar, ok := udpval[isNetworkACLRulePortMin]; ok {
+						destination := int64(destinationVar.(int))
+						patchModel.DestinationPortMin = &destination
+						hasChanged = true
+					}
 				}
-			}
-			if d.HasChange(maxSource) {
-				if sourceVar, ok := udpval[isNetworkACLRuleSourcePortMax]; ok {
-					source := int64(sourceVar.(int))
-					patchModel.SourcePortMax = &source
-					hasChanged = true
+				if d.HasChange(maxSource) {
+					if sourceVar, ok := udpval[isNetworkACLRuleSourcePortMax]; ok {
+						source := int64(sourceVar.(int))
+						patchModel.SourcePortMax = &source
+						hasChanged = true
+					}
 				}
-			}
-			if d.HasChange(minSource) {
-				if sourceVar, ok := udpval[isNetworkACLRuleSourcePortMin]; ok {
-					source := int64(sourceVar.(int))
-					patchModel.SourcePortMin = &source
-					hasChanged = true
+				if d.HasChange(minSource) {
+					if sourceVar, ok := udpval[isNetworkACLRuleSourcePortMin]; ok {
+						source := int64(sourceVar.(int))
+						patchModel.SourcePortMin = &source
+						hasChanged = true
+					}
 				}
 			}
 		}

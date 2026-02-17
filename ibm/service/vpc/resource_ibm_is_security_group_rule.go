@@ -918,38 +918,105 @@ func buildSecurityGroupRuleUpdatePatch(d *schema.ResourceData, sess *vpcv1.VpcV1
 		}
 	}
 
-	// Protocol - get current protocol to determine what other fields to check
+	// Check if using new protocol attribute or deprecated blocks
+	// These are mutually exclusive due to ConflictsWith in schema
+	// Check if deprecated blocks exist in the configuration (not state)
+	_, hasTCP := d.GetOk(isSecurityGroupRuleProtocolTCP)
+	_, hasUDP := d.GetOk(isSecurityGroupRuleProtocolUDP)
+	_, hasICMP := d.GetOk(isSecurityGroupRuleProtocolICMP)
+	usingDeprecatedBlocks := hasTCP || hasUDP || hasICMP
+
 	protocol := d.Get(isSecurityGroupRuleProtocol).(string)
 
-	// Handle port_min and port_max for TCP/UDP protocols
-	if protocol == "tcp" || protocol == "udp" {
-		// For Computed attributes, we need to check HasChange to get the new value
-		if d.HasChange(isSecurityGroupRulePortMin) {
-			if v, ok := d.GetOk(isSecurityGroupRulePortMin); ok {
-				portMin := int64(v.(int))
-				securityGroupRulePatchModel.PortMin = &portMin
+	if usingDeprecatedBlocks {
+		// Handle deprecated TCP block
+		if d.HasChange(isSecurityGroupRuleProtocolTCP) {
+			// Use GetOk to get NEW values from configuration, not old state values
+			if tcpInterface, ok := d.GetOk(isSecurityGroupRuleProtocolTCP); ok {
+				tcp := tcpInterface.([]interface{})
+				if len(tcp) > 0 {
+					tcpval := tcp[0].(map[string]interface{})
+					if portMin, ok := tcpval[isSecurityGroupRulePortMin]; ok {
+						portMinInt := int64(portMin.(int))
+						securityGroupRulePatchModel.PortMin = &portMinInt
+					}
+					if portMax, ok := tcpval[isSecurityGroupRulePortMax]; ok {
+						portMaxInt := int64(portMax.(int))
+						securityGroupRulePatchModel.PortMax = &portMaxInt
+					}
+				}
 			}
 		}
-		if d.HasChange(isSecurityGroupRulePortMax) {
-			if v, ok := d.GetOk(isSecurityGroupRulePortMax); ok {
-				portMax := int64(v.(int))
-				securityGroupRulePatchModel.PortMax = &portMax
-			}
-		}
-	}
 
-	// Handle type and code for ICMP protocol
-	if protocol == "icmp" {
-		if d.HasChange(isSecurityGroupRuleType) {
-			if v, ok := d.GetOk(isSecurityGroupRuleType); ok {
-				icmpType := int64(v.(int))
-				securityGroupRulePatchModel.Type = &icmpType
+		// Handle deprecated UDP block
+		if d.HasChange(isSecurityGroupRuleProtocolUDP) {
+			// Use GetOk to get NEW values from configuration, not old state values
+			if udpInterface, ok := d.GetOk(isSecurityGroupRuleProtocolUDP); ok {
+				udp := udpInterface.([]interface{})
+				if len(udp) > 0 {
+					udpval := udp[0].(map[string]interface{})
+					if portMin, ok := udpval[isSecurityGroupRulePortMin]; ok {
+						portMinInt := int64(portMin.(int))
+						securityGroupRulePatchModel.PortMin = &portMinInt
+					}
+					if portMax, ok := udpval[isSecurityGroupRulePortMax]; ok {
+						portMaxInt := int64(portMax.(int))
+						securityGroupRulePatchModel.PortMax = &portMaxInt
+					}
+				}
 			}
 		}
-		if d.HasChange(isSecurityGroupRuleCode) {
-			if v, ok := d.GetOk(isSecurityGroupRuleCode); ok {
-				icmpCode := int64(v.(int))
-				securityGroupRulePatchModel.Code = &icmpCode
+
+		// Handle deprecated ICMP block
+		if d.HasChange(isSecurityGroupRuleProtocolICMP) {
+			// Use GetOk to get NEW values from configuration, not old state values
+			if icmpInterface, ok := d.GetOk(isSecurityGroupRuleProtocolICMP); ok {
+				icmp := icmpInterface.([]interface{})
+				if len(icmp) > 0 {
+					icmpval := icmp[0].(map[string]interface{})
+					if icmpType, ok := icmpval[isSecurityGroupRuleType]; ok {
+						icmpTypeInt := int64(icmpType.(int))
+						securityGroupRulePatchModel.Type = &icmpTypeInt
+					}
+					if icmpCode, ok := icmpval[isSecurityGroupRuleCode]; ok {
+						icmpCodeInt := int64(icmpCode.(int))
+						securityGroupRulePatchModel.Code = &icmpCodeInt
+					}
+				}
+			}
+		}
+	} else {
+		// Handle new top-level attributes (when protocol is set)
+		// Handle port_min and port_max for TCP/UDP protocols
+		if protocol == "tcp" || protocol == "udp" {
+			// For Computed attributes, we need to check HasChange to get the new value
+			if d.HasChange(isSecurityGroupRulePortMin) {
+				if v, ok := d.GetOk(isSecurityGroupRulePortMin); ok {
+					portMin := int64(v.(int))
+					securityGroupRulePatchModel.PortMin = &portMin
+				}
+			}
+			if d.HasChange(isSecurityGroupRulePortMax) {
+				if v, ok := d.GetOk(isSecurityGroupRulePortMax); ok {
+					portMax := int64(v.(int))
+					securityGroupRulePatchModel.PortMax = &portMax
+				}
+			}
+		}
+
+		// Handle type and code for ICMP protocol
+		if protocol == "icmp" {
+			if d.HasChange(isSecurityGroupRuleType) {
+				if v, ok := d.GetOk(isSecurityGroupRuleType); ok {
+					icmpType := int64(v.(int))
+					securityGroupRulePatchModel.Type = &icmpType
+				}
+			}
+			if d.HasChange(isSecurityGroupRuleCode) {
+				if v, ok := d.GetOk(isSecurityGroupRuleCode); ok {
+					icmpCode := int64(v.(int))
+					securityGroupRulePatchModel.Code = &icmpCode
+				}
 			}
 		}
 	}
