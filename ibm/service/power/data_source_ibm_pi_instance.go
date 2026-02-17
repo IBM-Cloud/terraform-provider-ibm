@@ -442,7 +442,11 @@ func dataSourceIBMPIInstancesRead(ctx context.Context, d *schema.ResourceData, m
 		d.Set(Attr_IBMiCSS, powervmdata.SoftwareLicenses.IbmiCSS)
 		d.Set(Attr_IBMiPHA, powervmdata.SoftwareLicenses.IbmiPHA)
 		d.Set(Attr_IBMiPHAFSM, powervmdata.SoftwareLicenses.IbmiPHAFSM)
-		d.Set(Attr_IBMiPHAFSMCount, int(powervmdata.SoftwareLicenses.IbmiPHAFSMCount))
+		if powervmdata.SoftwareLicenses.IbmiPHAFSM != nil && *powervmdata.SoftwareLicenses.IbmiPHAFSM {
+			d.Set(Attr_IBMiPHAFSMCount, powervmdata.SoftwareLicenses.IbmiPHAFSMCount)
+		} else {
+			d.Set(Attr_IBMiPHAFSMCount, 0)
+		}
 		d.Set(Attr_IBMiRDS, powervmdata.SoftwareLicenses.IbmiRDS)
 		if *powervmdata.SoftwareLicenses.IbmiRDS {
 			d.Set(Attr_IBMiRDSUsers, powervmdata.SoftwareLicenses.IbmiRDSUsers)
