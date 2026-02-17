@@ -201,12 +201,14 @@ func ResourceIBMISNetworkACL() *schema.Resource {
 						isNetworkACLRuleICMPCode: {
 							Type:         schema.TypeInt,
 							Optional:     true,
+							Computed:     true,
 							ValidateFunc: validate.InvokeValidator("ibm_is_network_acl_rule", isNetworkACLRuleICMPCode),
 							Description:  "The ICMP traffic code to allow. Valid values from 0 to 255.",
 						},
 						isNetworkACLRuleICMPType: {
 							Type:         schema.TypeInt,
 							Optional:     true,
+							Computed:     true,
 							ValidateFunc: validate.InvokeValidator("ibm_is_network_acl", isNetworkACLRuleICMPType),
 							Description:  "The ICMP traffic type to allow. Valid values from 0 to 254.",
 						},
