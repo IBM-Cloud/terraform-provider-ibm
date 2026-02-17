@@ -36,6 +36,7 @@ const (
 	isBareMetalServerProfileRT              = "resource_type"
 	isBareMetalServerProfileSIFs            = "supported_image_flags"
 	isBareMetalServerProfileSTPMMs          = "supported_trusted_platform_module_modes"
+	isBareMetalServerProfileZones           = "zones"
 )
 
 func DataSourceIBMIsBareMetalServerProfile() *schema.Resource {
@@ -431,6 +432,25 @@ func DataSourceIBMIsBareMetalServerProfile() *schema.Resource {
 					},
 				},
 			},
+			isBareMetalServerProfileZones: {
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "The zones in this region that have bare metal servers that match this profile.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"href": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The URL for this zone.",
+						},
+						"name": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The globally unique name for this zone.",
+						},
+					},
+				},
+			},
 		},
 	}
 }
@@ -669,6 +689,17 @@ func dataSourceIBMISBMSProfileRead(context context.Context, d *schema.ResourceDa
 			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting reservation_terms: %s", err), "(Data) ibm_is_bare_metal_server_profile", "read", "set-reservation_terms").GetDiag()
 		}
 	}
+	zones := []map[string]interface{}{}
+	for _, zonesItem := range bareMetalServerProfile.Zones {
+		zonesItemMap, err := dataSourceIBMIsBareMetalServerProfileZoneReferenceToMap(&zonesItem)
+		if err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_bare_metal_server_profile", "read", "zones-to-map").GetDiag()
+		}
+		zones = append(zones, zonesItemMap)
+	}
+	if err = d.Set("zones", zones); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting zones: %s", err), "(Data)  ibm_is_bare_metal_server_profile", "read", "set-zones").GetDiag()
+	}
 
 	return nil
 }
@@ -787,5 +818,12 @@ func dataSourceIBMIsBareMetalServerProfileBareMetalServerProfileNetworkAttachmen
 func dataSourceIBMIsBareMetalServerProfileBareMetalServerProfileNetworkAttachmentCountDependentToMap(model *vpcv1.BareMetalServerProfileNetworkAttachmentCountDependent) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["type"] = model.Type
+	return modelMap, nil
+}
+
+func dataSourceIBMIsBareMetalServerProfileZoneReferenceToMap(model *vpcv1.ZoneReference) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	modelMap["href"] = *model.Href
+	modelMap["name"] = *model.Name
 	return modelMap, nil
 }

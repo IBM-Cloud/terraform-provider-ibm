@@ -493,6 +493,7 @@ func Provider() *schema.Provider {
 			"ibm_is_backup_policy_jobs":  vpc.DataSourceIBMIsBackupPolicyJobs(),
 
 			// bare_metal_server
+			"ibm_is_bare_metal_server_capacities":                     vpc.DataSourceIBMIsBareMetalServerCapacities(),
 			"ibm_is_bare_metal_server_disk":                           vpc.DataSourceIBMIsBareMetalServerDisk(),
 			"ibm_is_bare_metal_server_disks":                          vpc.DataSourceIBMIsBareMetalServerDisks(),
 			"ibm_is_bare_metal_server_initialization":                 vpc.DataSourceIBMIsBareMetalServerInitialization(),

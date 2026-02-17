@@ -123,6 +123,7 @@ func TestAccIBMISBMSProfileDataSource_vni(t *testing.T) {
 					resource.TestCheckResourceAttrSet(resName, "os_architecture.#"),
 					resource.TestCheckResourceAttrSet(resName, "resource_type"),
 					resource.TestCheckResourceAttrSet(resName, "supported_trusted_platform_module_modes.#"),
+					resource.TestCheckResourceAttrSet(resName, "zones.#"),
 				),
 			},
 		},
