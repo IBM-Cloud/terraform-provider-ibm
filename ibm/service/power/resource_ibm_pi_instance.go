@@ -270,6 +270,11 @@ func ResourceIBMPIInstance() *schema.Resource {
 				Optional:    true,
 				Type:        schema.TypeBool,
 			},
+			Arg_IBMiPHAFSMCount: {
+				Description: "Number of IBM i PHA Full System Manager (FSM) managed servers. Set to 0 to disable the FSM license.",
+				Optional:    true,
+				Type:        schema.TypeInt,
+			},
 			Arg_IBMiRDSUsers: {
 				Description: "IBM i Rational Dev Studio Number of User Licenses",
 				Optional:    true,
@@ -386,11 +391,6 @@ func ResourceIBMPIInstance() *schema.Resource {
 				},
 				Required: true,
 				Type:     schema.TypeList,
-			},
-			Arg_IBMiPHAFSMCount: {
-				Description: "Number of IBM i PHA Full System Manager (FSM) managed servers. Set to 0 to disable the FSM license.",
-				Optional:    true,
-				Type:        schema.TypeInt,
 			},
 			Arg_PinPolicy: {
 				Default:      None,
@@ -919,7 +919,12 @@ func resourceIBMPIInstanceRead(ctx context.Context, d *schema.ResourceData, meta
 	if powervmdata.SoftwareLicenses != nil {
 		d.Set(Arg_IBMiCSS, powervmdata.SoftwareLicenses.IbmiCSS)
 		d.Set(Arg_IBMiPHA, powervmdata.SoftwareLicenses.IbmiPHA)
-
+		d.Set(Attr_IBMiRDS, powervmdata.SoftwareLicenses.IbmiRDS)
+		if *powervmdata.SoftwareLicenses.IbmiRDS {
+			d.Set(Arg_IBMiRDSUsers, powervmdata.SoftwareLicenses.IbmiRDSUsers)
+		} else {
+			d.Set(Arg_IBMiRDSUsers, 0)
+		}
 		// FSM: boolean is computed attribute; count is optional in response when false.
 		// If FSM is false (or missing), set the count to 0 explicitly.
 		d.Set(Attr_IBMiPHAFSM, powervmdata.SoftwareLicenses.IbmiPHAFSM)
