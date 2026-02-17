@@ -198,18 +198,19 @@ func resourceIBMCISMtlsUpdate(context context.Context, d *schema.ResourceData, m
 		d.HasChange(cisMtlsHostNames) {
 
 		updateOption := sess.NewUpdateAccessCertificateOptions(zoneID, certID)
-		if _, ok := d.GetOk(cisMtlsHostNames); ok {
-
-			updateOption.SetAssociatedHostnames(flex.ExpandStringList(d.Get(cisMtlsHostNames).([]interface{})))
+		if d.HasChange(cisMtlsHostNames) {
+			hostnames := flex.ExpandStringList(
+				d.Get(cisMtlsHostNames).([]interface{}))
+			updateOption.SetAssociatedHostnames(hostnames)
 		}
 
-		if name, ok := d.GetOk(cisMtlsCertName); ok {
-			updateOption.SetName(name.(string))
+		if d.HasChange(cisMtlsCertName) {
+			updateOption.SetName(d.Get(cisMtlsCertName).(string))
 		}
 
 		_, updateResp, updateErr := sess.UpdateAccessCertificate(updateOption)
 		if updateErr != nil {
-			tfErr := flex.TerraformErrorf(err,
+			tfErr := flex.TerraformErrorf(updateErr,
 				fmt.Sprintf("resourceIBMCISMtlsUpdate UpdateAccessCertificate failed: %s \nResponse: %v", updateErr.Error(), updateResp),
 				"ibm_cis_mtls", "update")
 			return tfErr.GetDiag()
