@@ -198,14 +198,10 @@ func resourceIBMCISMtlsUpdate(context context.Context, d *schema.ResourceData, m
 		d.HasChange(cisMtlsHostNames) {
 
 		updateOption := sess.NewUpdateAccessCertificateOptions(zoneID, certID)
-		if d.HasChange(cisMtlsHostNames) {
-			hostnames := flex.ExpandStringList(
-				d.Get(cisMtlsHostNames).([]interface{}))
-			updateOption.SetAssociatedHostnames(hostnames)
-		}
-
-		if d.HasChange(cisMtlsCertName) {
-			updateOption.SetName(d.Get(cisMtlsCertName).(string))
+		// Allowing hostnames to be set empty. Resource cannot be deleted until hostname is attached.
+		updateOption.SetAssociatedHostnames(flex.ExpandStringList(d.Get(cisMtlsHostNames).([]interface{})))
+		if name, ok := d.GetOk(cisMtlsCertName); ok {
+			updateOption.SetName(name.(string))
 		}
 
 		_, updateResp, updateErr := sess.UpdateAccessCertificate(updateOption)
