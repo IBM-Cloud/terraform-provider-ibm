@@ -673,7 +673,7 @@ func nwaclGet(context context.Context, d *schema.ResourceData, meta interface{},
 	}
 	rules := make([]interface{}, 0)
 	if len(nwacl.Rules) > 0 {
-		for _, rulex := range nwacl.Rules {
+		for index, rulex := range nwacl.Rules {
 			log.Println("[DEBUG] Type of the Rule", reflect.TypeOf(rulex))
 			rule := make(map[string]interface{})
 			rule[isNetworkACLSubnets] = len(nwacl.Subnets)
@@ -690,7 +690,7 @@ func nwaclGet(context context.Context, d *schema.ResourceData, meta interface{},
 					rule[isNetworkACLRuleDestination] = *rulex.Destination
 					rule[isNetworkACLRuleDirection] = *rulex.Direction
 
-					// Populate new design fields
+					// Always populate new design fields
 					if rulex.Code != nil {
 						rule[isNetworkACLRuleICMPCode] = int(*rulex.Code)
 					}
@@ -698,19 +698,30 @@ func nwaclGet(context context.Context, d *schema.ResourceData, meta interface{},
 						rule[isNetworkACLRuleICMPType] = int(*rulex.Type)
 					}
 
-					// Also populate old design block for backward compatibility
-					icmpProtocol := map[string]int{}
-					if rulex.Code != nil {
-						icmpProtocol[isNetworkACLRuleICMPCode] = int(*rulex.Code)
+					// Only populate deprecated icmp block if user was using old-style
+					icmpPath := fmt.Sprintf("rules.%d.icmp", index)
+					usingDeprecatedIcmp := false
+					if v, ok := d.GetOk(icmpPath); ok {
+						if icmpList, ok := v.([]interface{}); ok && len(icmpList) > 0 {
+							usingDeprecatedIcmp = true
+						}
 					}
-					if rulex.Type != nil {
-						icmpProtocol[isNetworkACLRuleICMPType] = int(*rulex.Type)
+					if usingDeprecatedIcmp {
+						icmpProtocol := map[string]int{}
+						if rulex.Code != nil {
+							icmpProtocol[isNetworkACLRuleICMPCode] = int(*rulex.Code)
+						}
+						if rulex.Type != nil {
+							icmpProtocol[isNetworkACLRuleICMPType] = int(*rulex.Type)
+						}
+						protocolList := make([]map[string]int, 0)
+						if len(icmpProtocol) > 0 {
+							protocolList = append(protocolList, icmpProtocol)
+						}
+						rule[isNetworkACLRuleICMP] = protocolList
+					} else {
+						rule[isNetworkACLRuleICMP] = make([]map[string]int, 0, 0)
 					}
-					protocolList := make([]map[string]int, 0)
-					if len(icmpProtocol) > 0 {
-						protocolList = append(protocolList, icmpProtocol)
-					}
-					rule[isNetworkACLRuleICMP] = protocolList
 					rule[isNetworkACLRuleTCP] = make([]map[string]int, 0, 0)
 					rule[isNetworkACLRuleUDP] = make([]map[string]int, 0, 0)
 				}
@@ -726,39 +737,58 @@ func nwaclGet(context context.Context, d *schema.ResourceData, meta interface{},
 					rule[isNetworkACLRuleDestination] = *rulex.Destination
 					rule[isNetworkACLRuleDirection] = *rulex.Direction
 
-					// Populate new design fields
+					// Always populate new design fields
 					rule[isNetworkACLRuleSourcePortMax] = checkNetworkACLNil(rulex.SourcePortMax)
 					rule[isNetworkACLRuleSourcePortMin] = checkNetworkACLNil(rulex.SourcePortMin)
 					rule[isNetworkACLRulePortMax] = checkNetworkACLNil(rulex.DestinationPortMax)
 					rule[isNetworkACLRulePortMin] = checkNetworkACLNil(rulex.DestinationPortMin)
 
-					// Also populate old design block for backward compatibility
-					tcpudpProtocol := map[string]int{}
-					if rulex.SourcePortMax != nil {
-						tcpudpProtocol[isNetworkACLRuleSourcePortMax] = checkNetworkACLNil(rulex.SourcePortMax)
+					// Only populate deprecated tcp/udp blocks if user was using old-style
+					tcpPath := fmt.Sprintf("rules.%d.tcp", index)
+					udpPath := fmt.Sprintf("rules.%d.udp", index)
+					usingDeprecatedBlock := false
+					if v, ok := d.GetOk(tcpPath); ok {
+						if tcpList, ok := v.([]interface{}); ok && len(tcpList) > 0 {
+							usingDeprecatedBlock = true
+						}
 					}
-					if rulex.SourcePortMin != nil {
-						tcpudpProtocol[isNetworkACLRuleSourcePortMin] = checkNetworkACLNil(rulex.SourcePortMin)
-					}
-					if rulex.DestinationPortMax != nil {
-						tcpudpProtocol[isNetworkACLRulePortMax] = checkNetworkACLNil(rulex.DestinationPortMax)
-					}
-					if rulex.DestinationPortMin != nil {
-						tcpudpProtocol[isNetworkACLRulePortMin] = checkNetworkACLNil(rulex.DestinationPortMin)
-					}
-					protocolList := make([]map[string]int, 0)
-					if len(tcpudpProtocol) > 0 {
-						protocolList = append(protocolList, tcpudpProtocol)
+					if v, ok := d.GetOk(udpPath); ok {
+						if udpList, ok := v.([]interface{}); ok && len(udpList) > 0 {
+							usingDeprecatedBlock = true
+						}
 					}
 
-					if *rulex.Protocol == "tcp" {
-						rule[isNetworkACLRuleICMP] = make([]map[string]int, 0, 0)
-						rule[isNetworkACLRuleUDP] = make([]map[string]int, 0, 0)
-						rule[isNetworkACLRuleTCP] = protocolList
-					} else if *rulex.Protocol == "udp" {
+					if usingDeprecatedBlock {
+						tcpudpProtocol := map[string]int{}
+						if rulex.SourcePortMax != nil {
+							tcpudpProtocol[isNetworkACLRuleSourcePortMax] = checkNetworkACLNil(rulex.SourcePortMax)
+						}
+						if rulex.SourcePortMin != nil {
+							tcpudpProtocol[isNetworkACLRuleSourcePortMin] = checkNetworkACLNil(rulex.SourcePortMin)
+						}
+						if rulex.DestinationPortMax != nil {
+							tcpudpProtocol[isNetworkACLRulePortMax] = checkNetworkACLNil(rulex.DestinationPortMax)
+						}
+						if rulex.DestinationPortMin != nil {
+							tcpudpProtocol[isNetworkACLRulePortMin] = checkNetworkACLNil(rulex.DestinationPortMin)
+						}
+						protocolList := make([]map[string]int, 0)
+						if len(tcpudpProtocol) > 0 {
+							protocolList = append(protocolList, tcpudpProtocol)
+						}
+						if *rulex.Protocol == "tcp" {
+							rule[isNetworkACLRuleICMP] = make([]map[string]int, 0, 0)
+							rule[isNetworkACLRuleUDP] = make([]map[string]int, 0, 0)
+							rule[isNetworkACLRuleTCP] = protocolList
+						} else if *rulex.Protocol == "udp" {
+							rule[isNetworkACLRuleICMP] = make([]map[string]int, 0, 0)
+							rule[isNetworkACLRuleTCP] = make([]map[string]int, 0, 0)
+							rule[isNetworkACLRuleUDP] = protocolList
+						}
+					} else {
 						rule[isNetworkACLRuleICMP] = make([]map[string]int, 0, 0)
 						rule[isNetworkACLRuleTCP] = make([]map[string]int, 0, 0)
-						rule[isNetworkACLRuleUDP] = protocolList
+						rule[isNetworkACLRuleUDP] = make([]map[string]int, 0, 0)
 					}
 				}
 			case "*vpcv1.NetworkACLRuleItemNetworkACLRuleProtocolAny":
@@ -1168,7 +1198,29 @@ func createInlineRules(d *schema.ResourceData, nwaclC *vpcv1.VpcV1, nwaclid stri
 			}
 		}
 
-		if len(icmp) > 0 && !isNil(icmp[0]) {
+		// Detect if user is using new-style top-level fields vs deprecated blocks
+		// by checking which set of fields has actually changed
+		useTopLevelPorts := false
+		if protocol == "tcp" || protocol == "udp" {
+			portMinPath := fmt.Sprintf("rules.%d.port_min", i)
+			portMaxPath := fmt.Sprintf("rules.%d.port_max", i)
+			srcPortMinPath := fmt.Sprintf("rules.%d.source_port_min", i)
+			srcPortMaxPath := fmt.Sprintf("rules.%d.source_port_max", i)
+			if d.HasChange(portMinPath) || d.HasChange(portMaxPath) ||
+				d.HasChange(srcPortMinPath) || d.HasChange(srcPortMaxPath) {
+				useTopLevelPorts = true
+			}
+		}
+		useTopLevelIcmp := false
+		if protocol == "icmp" {
+			icmpTypePath := fmt.Sprintf("rules.%d.type", i)
+			icmpCodePath := fmt.Sprintf("rules.%d.code", i)
+			if d.HasChange(icmpTypePath) || d.HasChange(icmpCodePath) {
+				useTopLevelIcmp = true
+			}
+		}
+
+		if len(icmp) > 0 && !isNil(icmp[0]) && !useTopLevelIcmp {
 			protocol = "icmp"
 			ruleTemplate.Protocol = &protocol
 			icmpval := icmp[0].(map[string]interface{})
@@ -1194,7 +1246,7 @@ func createInlineRules(d *schema.ResourceData, nwaclC *vpcv1.VpcV1, nwaclid stri
 			}
 		}
 
-		if len(tcp) > 0 && !isNil(tcp[0]) {
+		if len(tcp) > 0 && !isNil(tcp[0]) && !useTopLevelPorts {
 			protocol = "tcp"
 			ruleTemplate.Protocol = &protocol
 			tcpval := tcp[0].(map[string]interface{})
@@ -1246,7 +1298,7 @@ func createInlineRules(d *schema.ResourceData, nwaclC *vpcv1.VpcV1, nwaclid stri
 			}
 		}
 
-		if len(udp) > 0 && !isNil(udp[0]) {
+		if len(udp) > 0 && !isNil(udp[0]) && !useTopLevelPorts {
 			protocol = "udp"
 			ruleTemplate.Protocol = &protocol
 			udpval := udp[0].(map[string]interface{})
