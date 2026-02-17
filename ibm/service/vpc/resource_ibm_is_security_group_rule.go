@@ -131,24 +131,24 @@ func ResourceIBMISSecurityGroupRule() *schema.Resource {
 				MaxItems:      1,
 				Optional:      true,
 				MinItems:      1,
-				ForceNew:      true,
+				Computed:      true,
 				Description:   "protocol=tcp",
 				Deprecated:    "tcp is deprecated, use 'protocol', 'code', and 'type' instead.",
 				ConflictsWith: []string{isSecurityGroupRuleProtocolUDP, isSecurityGroupRuleProtocolICMP, isSecurityGroupRuleProtocol, isSecurityGroupRuleType, isSecurityGroupRuleCode},
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						isSecurityGroupRulePortMin: {
-							Type:         schema.TypeInt,
-							Optional:     true,
-							ForceNew:     false,
-							Default:      1,
+							Type:     schema.TypeInt,
+							Optional: true,
+							Computed: true,
+							// Default:      1,
 							ValidateFunc: validate.InvokeValidator("ibm_is_security_group_rule", isSecurityGroupRulePortMin),
 						},
 						isSecurityGroupRulePortMax: {
-							Type:         schema.TypeInt,
-							Optional:     true,
-							ForceNew:     false,
-							Default:      65535,
+							Type:     schema.TypeInt,
+							Optional: true,
+							Computed: true,
+							// Default:      65535,
 							ValidateFunc: validate.InvokeValidator("ibm_is_security_group_rule", isSecurityGroupRulePortMax),
 						},
 					},
@@ -190,10 +190,10 @@ func ResourceIBMISSecurityGroupRule() *schema.Resource {
 				Description: "The crn of the Security Group",
 			},
 			isSecurityGroupRuleProtocol: {
-				Type:          schema.TypeString,
-				Optional:      true,
-				Computed:      true,
-				ForceNew:      true,
+				Type:     schema.TypeString,
+				Optional: true,
+				Computed: true,
+				// ForceNew:      true,
 				Description:   "The name of the network protocol",
 				ConflictsWith: []string{isSecurityGroupRuleProtocolTCP, isSecurityGroupRuleProtocolICMP, isSecurityGroupRuleProtocolUDP},
 				ValidateFunc:  validate.InvokeValidator("ibm_is_security_group_rule", isSecurityGroupRuleProtocol),
@@ -215,6 +215,7 @@ func ResourceIBMISSecurityGroupRule() *schema.Resource {
 			isSecurityGroupRulePortMin: {
 				Type:          schema.TypeInt,
 				Optional:      true,
+				Computed:      true,
 				RequiredWith:  []string{isSecurityGroupRuleProtocol, isSecurityGroupRulePortMax},
 				ConflictsWith: []string{isSecurityGroupRuleProtocolICMP, isSecurityGroupRuleProtocolTCP, isSecurityGroupRuleProtocolUDP, isSecurityGroupRuleType, isSecurityGroupRuleCode},
 				ValidateFunc:  validate.InvokeValidator("ibm_is_security_group_rule", isSecurityGroupRulePortMin),
@@ -222,6 +223,7 @@ func ResourceIBMISSecurityGroupRule() *schema.Resource {
 			isSecurityGroupRulePortMax: {
 				Type:          schema.TypeInt,
 				Optional:      true,
+				Computed:      true,
 				RequiredWith:  []string{isSecurityGroupRuleProtocol, isSecurityGroupRulePortMin},
 				ConflictsWith: []string{isSecurityGroupRuleProtocolICMP, isSecurityGroupRuleProtocolTCP, isSecurityGroupRuleProtocolUDP, isSecurityGroupRuleType, isSecurityGroupRuleCode},
 				ValidateFunc:  validate.InvokeValidator("ibm_is_security_group_rule", isSecurityGroupRulePortMax),
@@ -770,8 +772,16 @@ func resourceIBMISSecurityGroupRuleRead(context context.Context, d *schema.Resou
 				if securityGroupRule.PortMin != nil {
 					tcpProtocol["port_min"] = *securityGroupRule.PortMin
 				}
+				if err = d.Set("port_min", securityGroupRule.PortMin); err != nil {
+					err = fmt.Errorf("Error setting port_min: %s", err)
+					return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_security_group_rule", "read", "set-port_min").GetDiag()
+				}
 				if securityGroupRule.PortMax != nil {
 					tcpProtocol["port_max"] = *securityGroupRule.PortMax
+				}
+				if err = d.Set("port_max", securityGroupRule.PortMax); err != nil {
+					err = fmt.Errorf("Error setting port_max: %s", err)
+					return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_security_group_rule", "read", "set-port_max").GetDiag()
 				}
 				protocolList := make([]map[string]interface{}, 0)
 				protocolList = append(protocolList, tcpProtocol)
