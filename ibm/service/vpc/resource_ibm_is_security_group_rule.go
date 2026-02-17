@@ -839,6 +839,137 @@ func resourceIBMISSecurityGroupRuleRead(context context.Context, d *schema.Resou
 	return nil
 }
 
+func buildSecurityGroupRuleUpdatePatch(d *schema.ResourceData, sess *vpcv1.VpcV1) (*vpcv1.UpdateSecurityGroupRuleOptions, error) {
+	secgrpID, ruleID, err := parseISTerraformID(d.Id())
+	if err != nil {
+		return nil, err
+	}
+
+	securityGroupRulePatchModel := &vpcv1.SecurityGroupRulePatch{}
+
+	// Direction
+	if d.HasChange(isSecurityGroupRuleDirection) {
+		direction := d.Get(isSecurityGroupRuleDirection).(string)
+		securityGroupRulePatchModel.Direction = &direction
+	}
+
+	// Name
+	if d.HasChange(isSecurityGroupRuleName) {
+		if v, ok := d.GetOk(isSecurityGroupRuleName); ok && v.(string) != "" {
+			name := v.(string)
+			securityGroupRulePatchModel.Name = &name
+		}
+	}
+
+	// IP Version
+	if d.HasChange(isSecurityGroupRuleIPVersion) {
+		if v, ok := d.GetOk(isSecurityGroupRuleIPVersion); ok {
+			ipversion := v.(string)
+			securityGroupRulePatchModel.IPVersion = &ipversion
+		}
+	}
+
+	// Remote
+	if d.HasChange(isSecurityGroupRuleRemote) {
+		if pr, ok := d.GetOk(isSecurityGroupRuleRemote); ok {
+			remote := pr.(string)
+			remoteAddress, remoteCIDR, remoteSecGrpID, err := inferRemoteSecurityGroup(remote)
+			if err != nil {
+				return nil, err
+			}
+			remoteTemplateUpdate := &vpcv1.SecurityGroupRuleRemotePatch{}
+			if remoteAddress != "" {
+				remoteTemplateUpdate.Address = &remoteAddress
+			} else if remoteCIDR != "" {
+				remoteTemplateUpdate.CIDRBlock = &remoteCIDR
+			} else if remoteSecGrpID != "" {
+				remoteTemplateUpdate.ID = &remoteSecGrpID
+				// Verify it's a valid security group
+				getSecurityGroupOptions := &vpcv1.GetSecurityGroupOptions{
+					ID: &remoteSecGrpID,
+				}
+				sg, res, err := sess.GetSecurityGroup(getSecurityGroupOptions)
+				if err != nil || sg == nil {
+					if res != nil && res.StatusCode == 404 {
+						return nil, fmt.Errorf("[ERROR] Invalid remote provided (%s): %s\n%s", remoteSecGrpID, err, res)
+					}
+					return nil, fmt.Errorf("[ERROR] Invalid remote provided (%s): %s", remoteSecGrpID, err)
+				}
+			}
+			securityGroupRulePatchModel.Remote = remoteTemplateUpdate
+		}
+	}
+
+	// Local
+	if d.HasChange(isSecurityGroupRuleLocal) {
+		if pl, ok := d.GetOk(isSecurityGroupRuleLocal); ok {
+			local := pl.(string)
+			localAddress, localCIDR, err := inferLocalSecurityGroup(local)
+			if err != nil {
+				return nil, err
+			}
+			localTemplateUpdate := &vpcv1.SecurityGroupRuleLocalPatch{}
+			if localAddress != "" {
+				localTemplateUpdate.Address = &localAddress
+			} else if localCIDR != "" {
+				localTemplateUpdate.CIDRBlock = &localCIDR
+			}
+			securityGroupRulePatchModel.Local = localTemplateUpdate
+		}
+	}
+
+	// Protocol - get current protocol to determine what other fields to check
+	protocol := d.Get(isSecurityGroupRuleProtocol).(string)
+
+	// Handle port_min and port_max for TCP/UDP protocols
+	if protocol == "tcp" || protocol == "udp" {
+		// For Computed attributes, we need to check HasChange to get the new value
+		if d.HasChange(isSecurityGroupRulePortMin) {
+			if v, ok := d.GetOk(isSecurityGroupRulePortMin); ok {
+				portMin := int64(v.(int))
+				securityGroupRulePatchModel.PortMin = &portMin
+			}
+		}
+		if d.HasChange(isSecurityGroupRulePortMax) {
+			if v, ok := d.GetOk(isSecurityGroupRulePortMax); ok {
+				portMax := int64(v.(int))
+				securityGroupRulePatchModel.PortMax = &portMax
+			}
+		}
+	}
+
+	// Handle type and code for ICMP protocol
+	if protocol == "icmp" {
+		if d.HasChange(isSecurityGroupRuleType) {
+			if v, ok := d.GetOk(isSecurityGroupRuleType); ok {
+				icmpType := int64(v.(int))
+				securityGroupRulePatchModel.Type = &icmpType
+			}
+		}
+		if d.HasChange(isSecurityGroupRuleCode) {
+			if v, ok := d.GetOk(isSecurityGroupRuleCode); ok {
+				icmpCode := int64(v.(int))
+				securityGroupRulePatchModel.Code = &icmpCode
+			}
+		}
+	}
+
+	// Convert patch model to map
+	securityGroupRulePatch, err := securityGroupRulePatchModel.AsPatch()
+	if err != nil {
+		return nil, fmt.Errorf("[ERROR] Error calling asPatch for SecurityGroupRulePatch: %s", err)
+	}
+
+	// Build update options
+	updateOptions := &vpcv1.UpdateSecurityGroupRuleOptions{
+		SecurityGroupID:        &secgrpID,
+		ID:                     &ruleID,
+		SecurityGroupRulePatch: securityGroupRulePatch,
+	}
+
+	return updateOptions, nil
+}
+
 func resourceIBMISSecurityGroupRuleUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	sess, err := vpcClient(meta)
 	if err != nil {
@@ -847,15 +978,21 @@ func resourceIBMISSecurityGroupRuleUpdate(context context.Context, d *schema.Res
 		return tfErr.GetDiag()
 	}
 
-	parsed, _, sgTemplate, err := parseIBMISSecurityGroupRuleDictionary(d, "update", sess)
+	// Build the update patch using the dedicated function
+	updateSecurityGroupRuleOptions, err := buildSecurityGroupRuleUpdatePatch(d, sess)
 	if err != nil {
-		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_security_group_rule", "update", "sep-id-parts").GetDiag()
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_security_group_rule", "update", "build-patch").GetDiag()
 	}
-	isSecurityGroupRuleKey := "security_group_rule_key_" + parsed.secgrpID
+
+	secgrpID, _, err := parseISTerraformID(d.Id())
+	if err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_security_group_rule", "update", "parse-id").GetDiag()
+	}
+
+	isSecurityGroupRuleKey := "security_group_rule_key_" + secgrpID
 	conns.IbmMutexKV.Lock(isSecurityGroupRuleKey)
 	defer conns.IbmMutexKV.Unlock(isSecurityGroupRuleKey)
 
-	updateSecurityGroupRuleOptions := sgTemplate
 	_, _, err = sess.UpdateSecurityGroupRuleWithContext(context, updateSecurityGroupRuleOptions)
 	if err != nil {
 		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("UpdateSecurityGroupRuleWithContext failed: %s", err.Error()), "ibm_is_security_group_rule", "update")
