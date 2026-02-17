@@ -1204,12 +1204,34 @@ func parseIBMISSecurityGroupRuleDictionary(d *schema.ResourceData, tag string, s
 			securityGroupRulePatchModel.PortMin = &parsed.portMin
 		} else {
 			if parsed.protocol == prot {
+				// First try to get from new attributes
 				if value, ok := d.GetOk("port_min"); ok {
 					parsed.portMin = int64(value.(int))
 				}
 				if value, ok := d.GetOk("port_max"); ok {
 					parsed.portMax = int64(value.(int))
 				}
+
+				// If not found in new attributes, try to get from deprecated block in state
+				// This handles the migration case where values are still in the old block
+				if parsed.portMin == -1 || parsed.portMax == -1 {
+					if tcpInterface, ok := d.GetOk(prot); ok {
+						if tcpInterface.([]interface{})[0] != nil {
+							ports := tcpInterface.([]interface{})[0].(map[string]interface{})
+							if parsed.portMin == -1 {
+								if value, ok := ports["port_min"]; ok {
+									parsed.portMin = int64(value.(int))
+								}
+							}
+							if parsed.portMax == -1 {
+								if value, ok := ports["port_max"]; ok {
+									parsed.portMax = int64(value.(int))
+								}
+							}
+						}
+					}
+				}
+
 				parsed.protocol = prot
 				sgTemplate.Protocol = &parsed.protocol
 				if parsed.portMin == -1 && parsed.portMax == -1 {
