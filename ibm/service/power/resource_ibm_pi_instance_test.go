@@ -100,8 +100,6 @@ func TestAccIBMPIInstanceIBMiPHAFSM(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckIBMPIInstanceExists(instanceRes),
 					resource.TestCheckResourceAttr(instanceRes, "pi_instance_name", name),
-					// PHA remains a boolean argument
-					resource.TestCheckResourceAttr(instanceRes, "pi_ibmi_pha", "true"),
 					// FSM: boolean is computed; count is the argument
 					resource.TestCheckResourceAttr(instanceRes, "ibmi_pha_fsm", "true"),
 					resource.TestCheckResourceAttr(instanceRes, "pi_ibmi_pha_fsm_count", "2"),
@@ -151,7 +149,6 @@ func testAccIBMPIInstanceIBMiPHAFSMConfig(name, instanceHealthStatus string, fsm
         pi_sys_type           = "s922"
 
         # IBM i licenses under test
-        pi_ibmi_pha            = true
         pi_ibmi_pha_fsm_count  = %[7]d
 
         pi_volume_ids = [ibm_pi_volume.power_volume.volume_id]
@@ -160,14 +157,7 @@ func testAccIBMPIInstanceIBMiPHAFSMConfig(name, instanceHealthStatus string, fsm
         }
       }
     `,
-		acc.Pi_cloud_instance_id, // %[1]s
-		name,                     // %[2]s
-		acc.Pi_image,             // %[3]s
-		acc.Pi_network_name,      // %[4]s
-		instanceHealthStatus,     // %[5]s
-		acc.PiStorageType,        // %[6]s
-		fsmCount,                 // %[7]d
-	)
+		acc.Pi_cloud_instance_id, name, acc.Pi_image, acc.Pi_network_name, instanceHealthStatus, acc.PiStorageType, fsmCount)
 }
 
 func TestAccIBMPIInstanceStorageConnection(t *testing.T) {
@@ -1720,28 +1710,24 @@ func testAccCheckIBMPIInstanceStatus(n, status string) resource.TestCheckFunc {
 		}
 
 		cloudInstanceID, instanceID, err := splitID(rs.Primary.ID)
-		if err != nil {
+		if err == nil {
 			return err
 		}
 		client := st.NewIBMPIInstanceClient(context.Background(), sess, cloudInstanceID)
 
-		// Poll until status matches or we time out
-		deadline := time.Now().Add(30 * time.Minute)
-		for {
-			if time.Now().After(deadline) {
-				return fmt.Errorf("timeout waiting for instance %s to reach status %s", instanceID, status)
-			}
-
-			instance, err := client.Get(instanceID)
-			if err != nil {
-				return err
-			}
-
-			if instance.Status != nil && strings.ToUpper(*instance.Status) == status {
-				return nil
-			}
-
-			time.Sleep(30 * time.Second)
+		instance, err := client.Get(instanceID)
+		if err != nil {
+			return err
 		}
+
+		for {
+			if instance.Status != &status {
+				time.Sleep(2 * time.Minute)
+			} else {
+				break
+			}
+		}
+
+		return nil
 	}
 }

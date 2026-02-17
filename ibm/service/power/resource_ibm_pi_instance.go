@@ -387,6 +387,11 @@ func ResourceIBMPIInstance() *schema.Resource {
 				Required: true,
 				Type:     schema.TypeList,
 			},
+			Arg_IBMiPHAFSMCount: {
+				Description: "Number of IBM i PHA Full System Manager (FSM) managed servers. Set to 0 to disable the FSM license.",
+				Optional:    true,
+				Type:        schema.TypeInt,
+			},
 			Arg_PinPolicy: {
 				Default:      None,
 				Description:  "Pin Policy of the instance",
@@ -523,11 +528,6 @@ func ResourceIBMPIInstance() *schema.Resource {
 			Arg_VirtualCoresAssigned: {
 				Computed:    true,
 				Description: "Virtual Cores Assigned to the PVMInstance",
-				Optional:    true,
-				Type:        schema.TypeInt,
-			},
-			Arg_IBMiPHAFSMCount: {
-				Description: "Number of IBM i PHA Full System Manager (FSM) managed servers. Set to 0 to disable the FSM license.",
 				Optional:    true,
 				Type:        schema.TypeInt,
 			},
@@ -920,14 +920,13 @@ func resourceIBMPIInstanceRead(ctx context.Context, d *schema.ResourceData, meta
 		d.Set(Arg_IBMiCSS, powervmdata.SoftwareLicenses.IbmiCSS)
 		d.Set(Arg_IBMiPHA, powervmdata.SoftwareLicenses.IbmiPHA)
 
-		// FSM: boolean is computed attribute; count is the argument echoed back
+		// FSM: boolean is computed attribute; count is optional in response when false.
+		// If FSM is false (or missing), set the count to 0 explicitly.
 		d.Set(Attr_IBMiPHAFSM, powervmdata.SoftwareLicenses.IbmiPHAFSM)
-		d.Set(Arg_IBMiPHAFSMCount, int(powervmdata.SoftwareLicenses.IbmiPHAFSMCount))
-		d.Set(Attr_IBMiRDS, powervmdata.SoftwareLicenses.IbmiRDS)
-		if *powervmdata.SoftwareLicenses.IbmiRDS {
-			d.Set(Arg_IBMiRDSUsers, powervmdata.SoftwareLicenses.IbmiRDSUsers)
+		if powervmdata.SoftwareLicenses.IbmiPHAFSM != nil && *powervmdata.SoftwareLicenses.IbmiPHAFSM {
+			d.Set(Arg_IBMiPHAFSMCount, int(powervmdata.SoftwareLicenses.IbmiPHAFSMCount))
 		} else {
-			d.Set(Arg_IBMiRDSUsers, 0)
+			d.Set(Arg_IBMiPHAFSMCount, 0)
 		}
 	}
 
@@ -1808,9 +1807,18 @@ func isPIInstanceSoftwareLicensesRefreshFunc(client *instance.IBMPIInstanceClien
 			}
 		}
 
-		// FSM count: always compare (server sets 0 when disabled)
-		if softwareLicenses.IbmiPHAFSMCount != pvm.SoftwareLicenses.IbmiPHAFSMCount {
-			return pvm, State_InProgress, nil
+		// FSM: compare boolean, and only compare count when target FSM is true.
+		// When target FSM=false, the server may omit the count, so ignore it (like RDS).
+		if softwareLicenses.IbmiPHAFSM != nil {
+			if *softwareLicenses.IbmiPHAFSM != *pvm.SoftwareLicenses.IbmiPHAFSM {
+				return pvm, State_InProgress, nil
+			}
+			// Only when target FSM is enabled do we also require the count to match.
+			if *softwareLicenses.IbmiPHAFSM {
+				if softwareLicenses.IbmiPHAFSMCount != pvm.SoftwareLicenses.IbmiPHAFSMCount {
+					return pvm, State_InProgress, nil
+				}
+			}
 		}
 
 		if softwareLicenses.IbmiRDS != nil {
