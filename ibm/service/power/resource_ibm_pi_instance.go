@@ -929,7 +929,7 @@ func resourceIBMPIInstanceRead(ctx context.Context, d *schema.ResourceData, meta
 		// If FSM is false (or missing), set the count to 0 explicitly.
 		d.Set(Attr_IBMiPHAFSM, powervmdata.SoftwareLicenses.IbmiPHAFSM)
 		if powervmdata.SoftwareLicenses.IbmiPHAFSM != nil && *powervmdata.SoftwareLicenses.IbmiPHAFSM {
-			d.Set(Arg_IBMiPHAFSMCount, int(powervmdata.SoftwareLicenses.IbmiPHAFSMCount))
+			d.Set(Arg_IBMiPHAFSMCount, powervmdata.SoftwareLicenses.IbmiPHAFSMCount)
 		} else {
 			d.Set(Arg_IBMiPHAFSMCount, 0)
 		}
@@ -1299,19 +1299,17 @@ func resourceIBMPIInstanceUpdate(ctx context.Context, d *schema.ResourceData, me
 		sl.IbmiPHA = flex.PtrToBool(d.Get(Arg_IBMiPHA).(bool))
 
 		// FSM: only set if count is provided; otherwise omit (leave unchanged)
-		if v, ok := d.GetOk(Arg_IBMiPHAFSMCount); ok {
-			count := v.(int)
-			if count < 0 {
-				return diag.Errorf("%s must be >= 0", Arg_IBMiPHAFSMCount)
-			}
-			sl.IbmiPHAFSM = flex.PtrToBool(count > 0)
-			sl.IbmiPHAFSMCount = int64(count)
+		ibmiphafsmCount := d.Get(Arg_IBMiPHAFSMCount).(int)
+		if ibmiphafsmCount < 0 {
+			return diag.Errorf("please set %v to 0 to disable the IBMiPHAFSM license or set it to a value greater than 0 to enable it", Arg_IBMiPHAFSMCount)
 		}
+		sl.IbmiPHAFSM = flex.PtrToBool(ibmiphafsmCount > 0)
+		sl.IbmiPHAFSMCount = int64(ibmiphafsmCount)
 
 		// RDS: true/x or false/0
 		ibmrdsUsers := d.Get(Arg_IBMiRDSUsers).(int)
 		if ibmrdsUsers < 0 {
-			return diag.Errorf("request with  IBM i Rational Dev Studio property requires IBM i Rational Dev Studio number of users")
+			return diag.Errorf("request with IBM i Rational Dev Studio property requires IBM i Rational Dev Studio number of users")
 		}
 		sl.IbmiRDS = flex.PtrToBool(ibmrdsUsers > 0)
 		sl.IbmiRDSUsers = int64(ibmrdsUsers)
@@ -1806,23 +1804,15 @@ func isPIInstanceSoftwareLicensesRefreshFunc(client *instance.IBMPIInstanceClien
 			}
 		}
 
-		if softwareLicenses.IbmiPHAFSM != nil {
-			if *softwareLicenses.IbmiPHAFSM != *pvm.SoftwareLicenses.IbmiPHAFSM {
-				return pvm, State_InProgress, nil
-			}
-		}
-
 		// FSM: compare boolean, and only compare count when target FSM is true.
 		// When target FSM=false, the server may omit the count, so ignore it (like RDS).
 		if softwareLicenses.IbmiPHAFSM != nil {
-			if *softwareLicenses.IbmiPHAFSM != *pvm.SoftwareLicenses.IbmiPHAFSM {
-				return pvm, State_InProgress, nil
-			}
-			// Only when target FSM is enabled do we also require the count to match.
-			if *softwareLicenses.IbmiPHAFSM {
-				if softwareLicenses.IbmiPHAFSMCount != pvm.SoftwareLicenses.IbmiPHAFSMCount {
+			if !*softwareLicenses.IbmiPHAFSM {
+				if *softwareLicenses.IbmiPHAFSM != *pvm.SoftwareLicenses.IbmiPHAFSM {
 					return pvm, State_InProgress, nil
 				}
+			} else if (*softwareLicenses.IbmiPHAFSM != *pvm.SoftwareLicenses.IbmiPHAFSM) || (softwareLicenses.IbmiPHAFSMCount != pvm.SoftwareLicenses.IbmiPHAFSMCount) {
+				return pvm, State_InProgress, nil
 			}
 		}
 
@@ -2386,21 +2376,21 @@ func createPVMInstance(d *schema.ResourceData, client *instance.IBMPIInstanceCli
 		if ibmiPHA, ok := d.GetOk(Arg_IBMiPHA); ok {
 			sl.IbmiPHA = flex.PtrToBool(ibmiPHA.(bool))
 		}
-		// FSM: count drives the license; boolean is computed
 		if v, ok := d.GetOk(Arg_IBMiPHAFSMCount); ok {
-			count := v.(int)
-			if count < 0 {
-				return nil, fmt.Errorf("%s must be >= 0", Arg_IBMiPHAFSMCount)
+			ibmiphafsmCount := v.(int)
+			if ibmiphafsmCount < 0 {
+				return nil, fmt.Errorf("please set %v to 0 to disable the IBMiPHAFSM license or set it to a value greater than 0 to enable it", Arg_IBMiPHAFSMCount)
 			}
-			sl.IbmiPHAFSM = flex.PtrToBool(count > 0)
-			sl.IbmiPHAFSMCount = int64(count)
+			sl.IbmiPHAFSM = flex.PtrToBool(ibmiphafsmCount > 0)
+			sl.IbmiPHAFSMCount = int64(ibmiphafsmCount)
 		}
-		if ibmrdsUsers, ok := d.GetOk(Arg_IBMiRDSUsers); ok {
-			if ibmrdsUsers.(int) < 0 {
+		if v, ok := d.GetOk(Arg_IBMiRDSUsers); ok {
+			ibmrdsUsers := v.(int)
+			if ibmrdsUsers < 0 {
 				return nil, fmt.Errorf("request with IBM i Rational Dev Studio property requires IBM i Rational Dev Studio number of users")
 			}
-			sl.IbmiRDS = flex.PtrToBool(ibmrdsUsers.(int) > 0)
-			sl.IbmiRDSUsers = int64(ibmrdsUsers.(int))
+			sl.IbmiRDS = flex.PtrToBool(ibmrdsUsers > 0)
+			sl.IbmiRDSUsers = int64(ibmrdsUsers)
 		}
 		body.SoftwareLicenses = sl
 	}
