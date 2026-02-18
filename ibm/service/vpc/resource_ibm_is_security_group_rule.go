@@ -103,7 +103,7 @@ func ResourceIBMISSecurityGroupRule() *schema.Resource {
 				Type:          schema.TypeList,
 				MaxItems:      1,
 				Optional:      true,
-				ForceNew:      true,
+				Computed:      true,
 				MinItems:      1,
 				ConflictsWith: []string{isSecurityGroupRuleProtocolTCP, isSecurityGroupRuleProtocolUDP, isSecurityGroupRuleProtocol},
 				Deprecated:    "icmp is deprecated, use 'protocol', 'code', and 'type' instead.",
@@ -113,13 +113,13 @@ func ResourceIBMISSecurityGroupRule() *schema.Resource {
 						isSecurityGroupRuleType: {
 							Type:         schema.TypeInt,
 							Optional:     true,
-							ForceNew:     false,
+							Computed:     true,
 							ValidateFunc: validate.InvokeValidator("ibm_is_security_group_rule", isSecurityGroupRuleType),
 						},
 						isSecurityGroupRuleCode: {
 							Type:         schema.TypeInt,
 							Optional:     true,
-							ForceNew:     false,
+							Computed:     true,
 							ValidateFunc: validate.InvokeValidator("ibm_is_security_group_rule", isSecurityGroupRuleCode),
 						},
 					},
@@ -159,7 +159,7 @@ func ResourceIBMISSecurityGroupRule() *schema.Resource {
 				Type:          schema.TypeList,
 				MaxItems:      1,
 				Optional:      true,
-				ForceNew:      true,
+				Computed:      true,
 				MinItems:      1,
 				Description:   "protocol=udp",
 				Deprecated:    "udp is deprecated, use 'protocol', 'port_min', and 'port_max' instead.",
@@ -167,17 +167,17 @@ func ResourceIBMISSecurityGroupRule() *schema.Resource {
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						isSecurityGroupRulePortMin: {
-							Type:         schema.TypeInt,
-							Optional:     true,
-							ForceNew:     false,
-							Default:      1,
+							Type:     schema.TypeInt,
+							Optional: true,
+							Computed: true,
+							// Default:      1,
 							ValidateFunc: validate.InvokeValidator("ibm_is_security_group_rule", isSecurityGroupRulePortMin),
 						},
 						isSecurityGroupRulePortMax: {
-							Type:         schema.TypeInt,
-							Optional:     true,
-							ForceNew:     false,
-							Default:      65535,
+							Type:     schema.TypeInt,
+							Optional: true,
+							Computed: true,
+							// Default:      65535,
 							ValidateFunc: validate.InvokeValidator("ibm_is_security_group_rule", isSecurityGroupRulePortMax),
 						},
 					},
@@ -201,6 +201,7 @@ func ResourceIBMISSecurityGroupRule() *schema.Resource {
 			isSecurityGroupRuleType: {
 				Type:          schema.TypeInt,
 				Optional:      true,
+				Computed:      true,
 				RequiredWith:  []string{isSecurityGroupRuleProtocol},
 				ConflictsWith: []string{isSecurityGroupRuleProtocolICMP, isSecurityGroupRuleProtocolUDP, isSecurityGroupRuleProtocolTCP, isSecurityGroupRulePortMin, isSecurityGroupRulePortMax},
 				ValidateFunc:  validate.InvokeValidator("ibm_is_security_group_rule", isSecurityGroupRuleType),
@@ -208,6 +209,7 @@ func ResourceIBMISSecurityGroupRule() *schema.Resource {
 			isSecurityGroupRuleCode: {
 				Type:          schema.TypeInt,
 				Optional:      true,
+				Computed:      true,
 				RequiredWith:  []string{isSecurityGroupRuleProtocol},
 				ConflictsWith: []string{isSecurityGroupRuleProtocolICMP, isSecurityGroupRuleProtocolUDP, isSecurityGroupRuleProtocolTCP, isSecurityGroupRulePortMin, isSecurityGroupRulePortMax},
 				ValidateFunc:  validate.InvokeValidator("ibm_is_security_group_rule", isSecurityGroupRuleCode),
@@ -448,6 +450,12 @@ func resourceIBMISSecurityGroupRuleRead(context context.Context, d *schema.Resou
 					err = fmt.Errorf("Error setting icmp: %s", err)
 					return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_security_group_rule", "read", "set-icmp").GetDiag()
 				}
+			}
+			if securityGroupRule.Type != nil {
+				d.Set(isSecurityGroupRuleType, int(*securityGroupRule.Type))
+			}
+			if securityGroupRule.Code != nil {
+				d.Set(isSecurityGroupRuleCode, int(*securityGroupRule.Code))
 			}
 			remote, ok := securityGroupRule.Remote.(*vpcv1.SecurityGroupRuleRemote)
 			if ok {
@@ -921,9 +929,9 @@ func buildSecurityGroupRuleUpdatePatch(d *schema.ResourceData, sess *vpcv1.VpcV1
 	// Check if using new protocol attribute or deprecated blocks
 	// These are mutually exclusive due to ConflictsWith in schema
 	// Check if deprecated blocks exist in the configuration (not state)
-	_, hasTCP := d.GetOk(isSecurityGroupRuleProtocolTCP)
-	_, hasUDP := d.GetOk(isSecurityGroupRuleProtocolUDP)
-	_, hasICMP := d.GetOk(isSecurityGroupRuleProtocolICMP)
+	hasTCP := d.HasChange(isSecurityGroupRuleProtocolTCP)
+	hasUDP := d.HasChange(isSecurityGroupRuleProtocolUDP)
+	hasICMP := d.HasChange(isSecurityGroupRuleProtocolICMP)
 	usingDeprecatedBlocks := hasTCP || hasUDP || hasICMP
 
 	protocol := d.Get(isSecurityGroupRuleProtocol).(string)
@@ -1400,6 +1408,12 @@ func parseIBMISSecurityGroupRuleDictionary(d *schema.ResourceData, tag string, s
 			sgTemplate.Protocol = &parsed.protocol
 			if tcpInterface.([]interface{})[0] == nil {
 				parsed.portMax = 65535
+				parsed.portMin = 1
+			}
+			if parsed.portMax <= 0 {
+				parsed.portMax = 65535
+			}
+			if parsed.portMin <= 0 {
 				parsed.portMin = 1
 			}
 			sgTemplate.PortMax = &parsed.portMax
