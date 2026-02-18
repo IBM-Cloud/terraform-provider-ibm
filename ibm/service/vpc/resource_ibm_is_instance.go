@@ -2156,6 +2156,51 @@ func ResourceIBMISInstance() *schema.Resource {
 					},
 				},
 			},
+			// software attachments
+			"software_attachments": &schema.Schema{
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "The software attachments for this instance.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"deleted": &schema.Schema{
+							Type:        schema.TypeList,
+							Optional:    true,
+							Computed:    true,
+							Description: "If present, this property indicates the referenced resource has been deleted, and providessome supplementary information.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"more_info": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "A link to documentation about deleted resources.",
+									},
+								},
+							},
+						},
+						"href": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The URL for this instance software attachment.",
+						},
+						"id": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The unique identifier for this instance software attachment.",
+						},
+						"name": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The name for this instance software attachment. The name is unique across all instance software attachments for the instance.",
+						},
+						"resource_type": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The resource type.",
+						},
+					},
+				},
+			},
 			isReservationAffinity: {
 				Type:     schema.TypeList,
 				Optional: true,
@@ -6230,6 +6275,20 @@ func instanceGet(context context.Context, d *schema.ResourceData, meta interface
 		err = fmt.Errorf("Error setting placement_target: %s", err)
 		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance", "read", "set-placement_target").GetDiag()
 	}
+
+	// software attachments
+	softwareAttachments := []map[string]interface{}{}
+	for _, softwareAttachmentsItem := range instance.SoftwareAttachments {
+		softwareAttachmentsItemMap, err := ResourceIBMIsInstanceInstanceSoftwareAttachmentReferenceToMap(&softwareAttachmentsItem) // #nosec G601
+		if err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance", "read", "software_attachments-to-map").GetDiag()
+		}
+		softwareAttachments = append(softwareAttachments, softwareAttachmentsItemMap)
+	}
+	if err = d.Set("software_attachments", softwareAttachments); err != nil {
+		err = fmt.Errorf("Error setting software_attachments: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance", "read", "set-software_attachments").GetDiag()
+	}
 	return nil
 }
 
@@ -9823,4 +9882,20 @@ func ResourceIBMIsInstanceMapToInstanceVcpuPrototype(modelMap map[string]interfa
 		model.Percentage = core.Int64Ptr(int64(modelMap["percentage"].(int)))
 	}
 	return model, nil
+}
+
+func ResourceIBMIsInstanceInstanceSoftwareAttachmentReferenceToMap(model *vpcv1.InstanceSoftwareAttachmentReference) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.Deleted != nil {
+		deletedMap, err := ResourceIBMIsInstanceDeletedToMap(model.Deleted)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["deleted"] = []map[string]interface{}{deletedMap}
+	}
+	modelMap["href"] = *model.Href
+	modelMap["id"] = *model.ID
+	modelMap["name"] = *model.Name
+	modelMap["resource_type"] = *model.ResourceType
+	return modelMap, nil
 }

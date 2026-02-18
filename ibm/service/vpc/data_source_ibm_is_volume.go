@@ -351,6 +351,49 @@ func DataSourceIBMISVolume() *schema.Resource {
 					},
 				},
 			},
+			"software_attachments": &schema.Schema{
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "The software attachments for this volume.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"deleted": &schema.Schema{
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "If present, this property indicates the referenced resource has been deleted, and providessome supplementary information.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"more_info": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "A link to documentation about deleted resources.",
+									},
+								},
+							},
+						},
+						"href": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The URL for this volume software attachment.",
+						},
+						"id": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The unique identifier for this volume software attachment.",
+						},
+						"name": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The name for this volume software attachment. The name is unique across all software attachments for the volume.",
+						},
+						"resource_type": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The resource type.",
+						},
+					},
+				},
+			},
 		},
 	}
 }
@@ -462,6 +505,18 @@ func volumeGet(context context.Context, d *schema.ResourceData, meta interface{}
 		if err = d.Set(isVolumesOperatingSystem, operatingSystemList); err != nil {
 			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting operating_system: %s", err), "(Data) ibm_is_volume", "read", "set-operating_system").GetDiag()
 		}
+	}
+	// software attachments
+	softwareAttachments := []map[string]interface{}{}
+	for _, softwareAttachmentsItem := range volume.SoftwareAttachments {
+		softwareAttachmentsItemMap, err := DataSourceIBMIsVolumeVolumeSoftwareAttachmentReferenceToMap(&softwareAttachmentsItem) // #nosec G601
+		if err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_volume", "read", "software_attachments-to-map").GetDiag()
+		}
+		softwareAttachments = append(softwareAttachments, softwareAttachmentsItemMap)
+	}
+	if err = d.Set("software_attachments", softwareAttachments); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting software_attachments: %s", err), "(Data) ibm_is_volume", "read", "set-software_attachments").GetDiag()
 	}
 	if err = d.Set(isVolumeProfileName, *volume.Profile.Name); err != nil {
 		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting profile: %s", err), "(Data) ibm_is_volume", "read", "set-profile").GetDiag()
@@ -634,4 +689,26 @@ func resourceIbmIsVolumeCatalogOfferingVersionPlanReferenceDeletedToMap(catalogO
 	catalogOfferingVersionPlanReferenceDeletedMap["more_info"] = catalogOfferingVersionPlanReferenceDeleted.MoreInfo
 
 	return catalogOfferingVersionPlanReferenceDeletedMap
+}
+
+func DataSourceIBMIsVolumeVolumeSoftwareAttachmentReferenceToMap(model *vpcv1.VolumeSoftwareAttachmentReference) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.Deleted != nil {
+		deletedMap, err := DataSourceIBMIsVolumeDeletedToMap(model.Deleted)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["deleted"] = []map[string]interface{}{deletedMap}
+	}
+	modelMap["href"] = *model.Href
+	modelMap["id"] = *model.ID
+	modelMap["name"] = *model.Name
+	modelMap["resource_type"] = *model.ResourceType
+	return modelMap, nil
+}
+
+func DataSourceIBMIsVolumeDeletedToMap(model *vpcv1.Deleted) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	modelMap["more_info"] = *model.MoreInfo
+	return modelMap, nil
 }
