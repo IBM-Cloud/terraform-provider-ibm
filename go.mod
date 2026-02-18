@@ -246,6 +246,8 @@ replace github.com/hashicorp/vault => github.com/hashicorp/vault v1.18.2
 
 replace github.com/hashicorp/vault/api/auth/approle => github.com/hashicorp/vault/api/auth/approle v0.8.0
 
+replace github.com/IBM/vpc-go-sdk v0.75.0 => ./common/github.com/IBM/vpc-go-sdk
+
 exclude (
 	github.com/kubernetes-incubator/external-storage v0.0.0-00010101000000-000000000000
 	github.com/kubernetes-incubator/external-storage v0.20.4-openstorage-rc2
