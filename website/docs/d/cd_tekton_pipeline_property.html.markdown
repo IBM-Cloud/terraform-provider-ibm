@@ -45,5 +45,5 @@ After your data source is created, you can read values from the following attrib
 * `type` - (Forces new resource, String) Property type.
   * Constraints: Allowable values are: `secure`, `text`, `integration`, `single_select`, `appconfig`.
 * `value` - (String) Property value. Any string value is valid.
-  * Constraints: The maximum length is `4096` characters. The minimum length is `0` characters. The value must match regular expression `/^.*$/`.
+  * Constraints: The maximum length is `4096` characters. The minimum length is `0` characters. The value must match regular expression `/^(\\s|.)*$/`.
 

@@ -1,4 +1,4 @@
-// Copyright IBM Corp. 2025 All Rights Reserved.
+// Copyright IBM Corp. 2026 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 /*
@@ -112,7 +112,7 @@ func ResourceIBMCdTektonPipelinePropertyValidator() *validate.ResourceValidator 
 			ValidateFunctionIdentifier: validate.ValidateRegexpLen,
 			Type:                       validate.TypeString,
 			Optional:                   true,
-			Regexp:                     `^.*$`,
+			Regexp:                     `^(\s|.)*$`,
 			MinValueLength:             0,
 			MaxValueLength:             4096,
 		},

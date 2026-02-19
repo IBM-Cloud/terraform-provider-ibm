@@ -120,7 +120,7 @@ Nested schema for **properties**:
 	* `type` - (Forces new resource, String) Property type.
 	  * Constraints: Allowable values are: `secure`, `text`, `integration`, `single_select`, `appconfig`.
 	* `value` - (String) Property value. Any string value is valid.
-	  * Constraints: The maximum length is `4096` characters. The minimum length is `0` characters. The value must match regular expression `/^.*$/`.
+	  * Constraints: The maximum length is `4096` characters. The minimum length is `0` characters. The value must match regular expression `/^(\\s|.)*$/`.
 * `trigger_id` - (String) The Trigger ID.
   * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[-0-9a-z]+$/`.
 * `webhook_url` - (String) Webhook URL that can be used to trigger pipeline runs.

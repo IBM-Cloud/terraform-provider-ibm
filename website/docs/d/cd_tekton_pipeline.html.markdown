@@ -83,7 +83,7 @@ Nested schema for **properties**:
 	* `type` - (Forces new resource, String) Property type.
 	  * Constraints: Allowable values are: `secure`, `text`, `integration`, `single_select`, `appconfig`.
 	* `value` - (String) Property value. Any string value is valid.
-	  * Constraints: The maximum length is `4096` characters. The minimum length is `0` characters. The value must match regular expression `/^.*$/`.
+	  * Constraints: The maximum length is `4096` characters. The minimum length is `0` characters. The value must match regular expression `/^(\\s|.)*$/`.
 * `resource_group` - (List) The resource group in which the pipeline was created.
 Nested schema for **resource_group**:
 	* `id` - (String) ID.
@@ -141,7 +141,7 @@ Nested schema for **triggers**:
 		* `type` - (Forces new resource, String) Property type.
 		  * Constraints: Allowable values are: `secure`, `text`, `integration`, `single_select`, `appconfig`.
 		* `value` - (String) Property value. Any string value is valid.
-		  * Constraints: The maximum length is `4096` characters. The minimum length is `0` characters. The value must match regular expression `/^.*$/`.
+		  * Constraints: The maximum length is `4096` characters. The minimum length is `0` characters. The value must match regular expression `/^(\\s|.)*$/`.
 	* `secret` - (List) Only needed for Generic Webhook trigger type. The secret is used to start the Generic Webhook trigger.
 	Nested schema for **secret**:
 		* `algorithm` - (String) Algorithm used for `digest_matches` secret type. Only needed for `digest_matches` secret type.
