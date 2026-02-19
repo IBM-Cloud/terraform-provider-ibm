@@ -151,7 +151,7 @@ func ResourceIBMPIHostGroup() *schema.Resource {
 	}
 }
 
-func resourceIBMPIHostGroupCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceIBMPIHostGroupCreate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	sess, err := meta.(conns.ClientSession).IBMPISession()
 	if err != nil {
 		return diag.FromErr(err)
@@ -162,7 +162,7 @@ func resourceIBMPIHostGroupCreate(ctx context.Context, d *schema.ResourceData, m
 	body := models.HostGroupCreate{}
 	var hosts []*models.AddHost
 	for _, v := range d.Get(Arg_Hosts).(*schema.Set).List() {
-		hostData := v.(map[string]interface{})
+		hostData := v.(map[string]any)
 		host := hostMapToAddHost(hostData)
 		hosts = append(hosts, host)
 	}
@@ -172,7 +172,7 @@ func resourceIBMPIHostGroupCreate(ctx context.Context, d *schema.ResourceData, m
 	if _, ok := d.GetOk(Arg_Secondaries); ok {
 		var secondaries []*models.Secondary
 		for _, v := range d.Get(Arg_Secondaries).(*schema.Set).List() {
-			secData := v.(map[string]interface{})
+			secData := v.(map[string]any)
 			secondary := secondaryMapToSecondary(secData)
 			secondaries = append(secondaries, secondary)
 		}
@@ -188,7 +188,7 @@ func resourceIBMPIHostGroupCreate(ctx context.Context, d *schema.ResourceData, m
 	return resourceIBMPIHostGroupRead(ctx, d, meta)
 }
 
-func resourceIBMPIHostGroupRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceIBMPIHostGroupRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	sess, err := meta.(conns.ClientSession).IBMPISession()
 	if err != nil {
 		return diag.FromErr(err)
@@ -215,7 +215,7 @@ func resourceIBMPIHostGroupRead(ctx context.Context, d *schema.ResourceData, met
 	return nil
 }
 
-func resourceIBMPIHostGroupUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceIBMPIHostGroupUpdate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	sess, err := meta.(conns.ClientSession).IBMPISession()
 	if err != nil {
 		return diag.FromErr(err)
@@ -225,30 +225,12 @@ func resourceIBMPIHostGroupUpdate(ctx context.Context, d *schema.ResourceData, m
 		return diag.FromErr(err)
 	}
 	client := instance.NewIBMPIHostGroupsClient(ctx, sess, cloudInstanceID)
-	hostGroupUpdateBody := models.HostGroupShareOp{}
-	hasChange := false
+
 	if d.HasChange(Arg_Remove) {
-		hostGroupUpdateBody.Remove = d.Get(Arg_Remove).(string)
-		hasChange = true
-	}
-
-	if d.HasChange(Arg_Secondaries) {
-		oldSecondaries, newSecondaries := d.GetChange(Arg_Secondaries)
-		if len(oldSecondaries.([]interface{})) == len(newSecondaries.([]interface{})) {
-			return diag.FromErr(fmt.Errorf("change in place not supported for: %v", Arg_Secondaries))
+		removeBody := models.HostGroupShareOp{
+			Remove: d.Get(Arg_Remove).(string),
 		}
-		var add []*models.Secondary
-		for _, v := range d.Get(Arg_Secondaries).([]interface{}) {
-			secData := v.(map[string]interface{})
-			addItem := secondaryMapToSecondary(secData)
-			add = append(add, addItem)
-		}
-		hostGroupUpdateBody.Add = add
-		hasChange = true
-	}
-
-	if hasChange {
-		_, err := client.UpdateHostGroup(&hostGroupUpdateBody, hostGroupID)
+		_, err := client.UpdateHostGroup(&removeBody, hostGroupID)
 		if err != nil {
 			if strings.Contains(err.Error(), NotFound) {
 				d.SetId("")
@@ -258,10 +240,57 @@ func resourceIBMPIHostGroupUpdate(ctx context.Context, d *schema.ResourceData, m
 		}
 	}
 
+	if d.HasChange(Arg_Secondaries) {
+		oldSecondaries, newSecondaries := d.GetChange(Arg_Secondaries)
+		oldSet := oldSecondaries.(*schema.Set)
+		newSet := newSecondaries.(*schema.Set)
+
+		// Remove secondaries that are no longer in the set.
+		// API accepts one removal at a time, so loop individually.
+		removed := oldSet.Difference(newSet)
+		for _, v := range removed.List() {
+			secData := v.(map[string]any)
+			workspaceID := secData[Attr_Workspace].(string)
+			removeBody := models.HostGroupShareOp{
+				Remove: workspaceID,
+			}
+			_, err := client.UpdateHostGroup(&removeBody, hostGroupID)
+			if err != nil {
+				if strings.Contains(err.Error(), NotFound) {
+					d.SetId("")
+					return nil
+				}
+				return diag.FromErr(err)
+			}
+		}
+		// Add secondaries that are new in the set.
+		added := newSet.Difference(oldSet)
+		if added.Len() > 0 {
+			var add []*models.Secondary
+			for _, v := range added.List() {
+				secData := v.(map[string]any)
+				addItem := secondaryMapToSecondary(secData)
+				add = append(add, addItem)
+			}
+			addBody := models.HostGroupShareOp{
+				Add: add,
+			}
+			_, err := client.UpdateHostGroup(&addBody, hostGroupID)
+			if err != nil {
+				if strings.Contains(err.Error(), NotFound) {
+					d.SetId("")
+					return nil
+				}
+				return diag.FromErr(err)
+			}
+		}
+
+	}
+
 	return resourceIBMPIHostGroupRead(ctx, d, meta)
 }
 
-func resourceIBMPIHostGroupDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceIBMPIHostGroupDelete(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	sess, err := meta.(conns.ClientSession).IBMPISession()
 	if err != nil {
 		return diag.FromErr(err)
@@ -306,7 +335,7 @@ func resourceIBMPIHostGroupDelete(ctx context.Context, d *schema.ResourceData, m
 	return nil
 }
 
-func isWaitForHostGroupDeleted(ctx context.Context, client *instance.IBMPIHostGroupsClient, id string, timeout time.Duration) (interface{}, error) {
+func isWaitForHostGroupDeleted(ctx context.Context, client *instance.IBMPIHostGroupsClient, id string, timeout time.Duration) (any, error) {
 	stateConf := &retry.StateChangeConf{
 		Pending:    []string{State_Deleting},
 		Target:     []string{NotFound},
@@ -319,7 +348,7 @@ func isWaitForHostGroupDeleted(ctx context.Context, client *instance.IBMPIHostGr
 }
 
 func isHostGroupDeleteRefresh(client *instance.IBMPIHostGroupsClient, id string) retry.StateRefreshFunc {
-	return func() (interface{}, string, error) {
+	return func() (any, string, error) {
 		hg, err := client.GetHostGroup(id)
 		if err != nil {
 			if strings.Contains(strings.ToLower(err.Error()), NotFound) {
@@ -331,7 +360,7 @@ func isHostGroupDeleteRefresh(client *instance.IBMPIHostGroupsClient, id string)
 	}
 }
 
-func isWaitForHostDeleted(ctx context.Context, client *instance.IBMPIHostGroupsClient, id string, timeout time.Duration) (interface{}, error) {
+func isWaitForHostDeleted(ctx context.Context, client *instance.IBMPIHostGroupsClient, id string, timeout time.Duration) (any, error) {
 	log.Printf("Waiting for host (%s) to be deleted.", id)
 	stateConf := &retry.StateChangeConf{
 		Pending:    []string{State_Deleting},
@@ -346,7 +375,7 @@ func isWaitForHostDeleted(ctx context.Context, client *instance.IBMPIHostGroupsC
 }
 
 func isHostDeleteRefreshFunc(client *instance.IBMPIHostGroupsClient, id string) retry.StateRefreshFunc {
-	return func() (interface{}, string, error) {
+	return func() (any, string, error) {
 		host, err := client.GetHost(id)
 		if err != nil {
 			if strings.Contains(strings.ToLower(err.Error()), NotFound) {
@@ -357,7 +386,7 @@ func isHostDeleteRefreshFunc(client *instance.IBMPIHostGroupsClient, id string) 
 	}
 }
 
-func hostMapToAddHost(modelMap map[string]interface{}) *models.AddHost {
+func hostMapToAddHost(modelMap map[string]any) *models.AddHost {
 	host := &models.AddHost{}
 	host.DisplayName = core.StringPtr(modelMap[Attr_DisplayName].(string))
 	host.SysType = core.StringPtr(modelMap[Attr_SysType].(string))
@@ -365,7 +394,7 @@ func hostMapToAddHost(modelMap map[string]interface{}) *models.AddHost {
 	return host
 }
 
-func secondaryMapToSecondary(modelMap map[string]interface{}) *models.Secondary {
+func secondaryMapToSecondary(modelMap map[string]any) *models.Secondary {
 	secondary := &models.Secondary{}
 	if modelMap[Attr_Name].(string) != "" {
 		secondary.Name = modelMap[Attr_Name].(string)
