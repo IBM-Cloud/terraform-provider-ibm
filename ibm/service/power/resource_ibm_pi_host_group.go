@@ -234,11 +234,13 @@ func resourceIBMPIHostGroupUpdate(ctx context.Context, d *schema.ResourceData, m
 
 	if d.HasChange(Arg_Secondaries) {
 		oldSecondaries, newSecondaries := d.GetChange(Arg_Secondaries)
-		if len(oldSecondaries.([]interface{})) == len(newSecondaries.([]interface{})) {
+		oldList := oldSecondaries.(*schema.Set).List()
+		newList := newSecondaries.(*schema.Set).List()
+		if len(oldList) == len(newList) {
 			return diag.FromErr(fmt.Errorf("change in place not supported for: %v", Arg_Secondaries))
 		}
 		var add []*models.Secondary
-		for _, v := range d.Get(Arg_Secondaries).([]interface{}) {
+		for _, v := range newList {
 			secData := v.(map[string]interface{})
 			addItem := secondaryMapToSecondary(secData)
 			add = append(add, addItem)
