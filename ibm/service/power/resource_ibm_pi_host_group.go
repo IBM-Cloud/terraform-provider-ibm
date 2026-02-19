@@ -51,12 +51,14 @@ func ResourceIBMPIHostGroup() *schema.Resource {
 					Schema: map[string]*schema.Schema{
 						Attr_DisplayName: {
 							Description:  "Name of the host chosen by the user.",
+							ForceNew:     true,
 							Required:     true,
 							Type:         schema.TypeString,
 							ValidateFunc: validation.NoZeroValues,
 						},
 						Attr_SysType: {
 							Description:  "System type.",
+							ForceNew:     true,
 							Required:     true,
 							Type:         schema.TypeString,
 							ValidateFunc: validation.NoZeroValues,
@@ -64,6 +66,7 @@ func ResourceIBMPIHostGroup() *schema.Resource {
 						Attr_UserTags: {
 							Description: "List of user tags attached to the resource.",
 							Elem:        &schema.Schema{Type: schema.TypeString},
+							ForceNew:    true,
 							Optional:    true,
 							Set:         schema.HashString,
 							Type:        schema.TypeSet,
