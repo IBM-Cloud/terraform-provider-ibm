@@ -154,6 +154,15 @@ func dataSourceIBMCdToolchainsRead(context context.Context, d *schema.ResourceDa
 		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting toolchains %s", err), "(Data) ibm_cd_toolchains", "read", "toolchains-set").GetDiag()
 	}
 
+	session, err := meta.(conns.ClientSession).BluemixSession()
+	if err != nil {
+		return flex.TerraformErrorf(err, fmt.Sprintf("dataSourceIBMCdToolchainsRead bluemixClient initialization failed: %s", err), "(Data) ibm_cd_toolchains", "read").GetDiag()
+	}
+
+	if IsRegionDeprecated(session.Config.Region) {
+		return append(diag.Diagnostics{}, GetRegionDeprecationWarning())
+	}
+
 	return nil
 }
 
