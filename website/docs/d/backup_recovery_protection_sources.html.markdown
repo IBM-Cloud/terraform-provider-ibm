@@ -126,6 +126,64 @@ Nested schema for **protection_sources**:
 		* `environment` - (String) Specifies the environment (such as 'kVMware' or 'kSQL') where the Protection Source exists. Depending on the environment, one of the following Protection Sources are initialized.
 		  * Constraints: Allowable values are: `kPhysical`, `kPhysicalFiles`, `kSQL`, `kAgent`.
 		* `id` - (Integer) Specifies an id of the Protection Source.
+		* `kubernetes_protection_source` - (List) Specifies a Protection Source in Kubernetes environment.
+		Nested schema for **kubernetes_protection_source**:
+			* `datamover_image_location` - (String) Specifies the location of Datamover image in private registry.
+			* `datamover_service_type` - (Integer) Specifies Type of service to be deployed for communication with DataMover pods. Currently, LoadBalancer and NodePort are supported. [default = kNodePort].
+			* `datamover_upgradability` - (String) Specifies if the deployed Datamover image needs to be upgraded for this kubernetes entity.
+			  * Constraints: Allowable values are: `kUpgradable`, `kCurrent`, `kUnknown`, `kNonUpgradableInvalidVersion`, `kNonUpgradableIsNewer`, `kNonUpgradableIsOld`.
+			* `default_vlan_params` - (List) Specifies VLAN parameters for the restore operation.
+			Nested schema for **default_vlan_params**:
+				* `disable_vlan` - (Boolean) Specifies whether to use the VIPs even when VLANs are configured on the Cluster. If configured, VLAN IP addresses are used by default. If VLANs are not configured, this flag is ignored. Set this flag to true to force using the partition VIPs when VLANs are configured on the Cluster.
+				* `interface_name` - (String) Specifies the physical interface group name to use for mounting Cohesity's view on the remote host. If specified, Cohesity hostname or the IP address on this VLAN is used.
+				* `vlan` - (Integer) Specifies the VLAN to use for mounting Cohesity's view on the remote host. If specified, Cohesity hostname or the IP address on this VLAN is used.
+			* `description` - (String) Specifies an optional description of the object.
+			* `distribution` - (String) Specifies the type of the entity in a Kubernetes environment. Determines the K8s distribution. kIKS, kROKS.
+			  * Constraints: Allowable values are: `kMainline`, `kOpenshift`, `kRancher`, `kEKS`, `kGKE`, `kAKS`, `kVMwareTanzu`.
+			* `init_container_image_location` - (String) Specifies the location of the image for init containers.
+			* `label_attributes` - (List) Specifies the list of label attributes of this source.
+			Nested schema for **label_attributes**:
+				* `id` - (Integer) Specifies the Cohesity id of the K8s label.
+				* `name` - (String) Specifies the appended key and value of the K8s label.
+				* `uuid` - (String) Specifies Kubernetes Unique Identifier (UUID) of the K8s label.
+			* `name` - (String) Specifies a unique name of the Protection Source.
+			* `priority_class_name` - (String) Specifies the pritority class name during registration.
+			* `resource_annotation_list` - (List) Specifies resource Annotations information provided during registration.
+			Nested schema for **resource_annotation_list**:
+				* `key` - (String) Key for label.
+				* `value` - (String) Value for label.
+			* `resource_label_list` - (List) Specifies resource labels information provided during registration.
+			Nested schema for **resource_label_list**:
+				* `key` - (String) Key for label.
+				* `value` - (String) Value for label.
+			* `san_field` - (List) Specifies the SAN field for agent certificate.
+			* `service_annotations` - (List) Specifies annotations to be put on services for IP allocation. Applicable only when service is of type LoadBalancer.
+			Nested schema for **service_annotations**:
+				* `key` - (String)
+				* `value` - (String)
+			* `storage_class` - (List) Specifies storage class information of source.
+			Nested schema for **storage_class**:
+				* `name` - (String) Specifies name of storage class.
+				* `provisioner` - (String) specifies provisioner of storage class.
+			* `type` - (String) Specifies the type of the entity in a Kubernetes environment. Specifies the type of a Kubernetes Protection Source. 'kCluster' indicates a Kubernetes Cluster. 'kNamespace' indicates a namespace in a Kubernetes Cluster. 'kService' indicates a service running on a Kubernetes Cluster.
+			  * Constraints: Allowable values are: `kCluster`, `kNamespace`, `kService`.
+			* `uuid` - (String) Specifies the UUID of the object.
+			* `velero_aws_plugin_image_location` - (String) Specifies the location of Velero AWS plugin image in private registry.
+			* `velero_image_location` - (String) Specifies the location of Velero image in private registry.
+			* `velero_openshift_plugin_image_location` - (String) Specifies the location of the image for openshift plugin container.
+			* `velero_upgradability` - (String) Specifies if the deployed Velero image needs to be upgraded for this kubernetes entity.
+			  * Constraints: Allowable values are: `kUpgradable`, `kCurrent`, `kUnknown`, `kNonUpgradableInvalidVersion`, `kNonUpgradableIsNewer`, `kNonUpgradableIsOld`.
+			* `vlan_info_vec` - (List) Specifies VLAN information provided during registration.
+			Nested schema for **vlan_info_vec**:
+				* `service_annotations` - (List) Specifies annotations to be put on services for IP allocation. Applicable only when service is of type LoadBalancer.
+				Nested schema for **service_annotations**:
+					* `key` - (String) Specifies the service annotation key value.
+					* `value` - (String) Specifies the service annotation value.
+				* `vlan_params` - (List) Specifies VLAN params associated with the backup/restore operation.
+				Nested schema for **vlan_params**:
+					* `disable_vlan` - (Boolean) If this is set to true, then even if VLANs are configured on the system, the partition VIPs will be used for the restore.
+					* `interface_name` - (String) Interface group to use for backup/restore. If this is not specified, primary interface group for the cluster will be used.
+					* `vlan_id` - (Integer) If this is set, then the Cohesity host name or the IP address associated with this VLAN is used for mounting Cohesity's view on the remote host.
 		* `name` - (String) Specifies a name of the Protection Source.
 		* `parent_id` - (Integer) Specifies an id of the parent of the Protection Source.
 		* `physical_protection_source` - (List) Specifies a Protection Source in a Physical environment.
@@ -247,7 +305,7 @@ Nested schema for **protection_sources**:
 						* `authentication_status` - (String) Specifies the status of authenticating to the Protection Source when registering this application with Cohesity Cluster. If the status is 'kFinished' and there is no error, registration is successful. Specifies the status of the authentication during the registration of a Protection Source. 'kPending' indicates the authentication is in progress. 'kScheduled' indicates the authentication is scheduled. 'kFinished' indicates the authentication is completed. 'kRefreshInProgress' indicates the refresh is in progress.
 						  * Constraints: Allowable values are: `kPending`, `kScheduled`, `kFinished`, `kRefreshInProgress`.
 						* `environment` - (String) Specifies the application environment. Supported environment types such as 'kView', 'kSQL', 'kVMware', etc.
-						  * Constraints: Allowable values are: `kPhysical`, `kPhysicalFiles`, `kSQL`, `kAgent`.
+						  * Constraints: Allowable values are: `kPhysical`, `kPhysicalFiles`, `kSQL`, `kAgent`, `kVMware`, `kHyperV`, `kPure`, `kNimble`, `kView`, `kPuppeteer`.
 						* `host_settings_check_results` - (List)
 						Nested schema for **host_settings_check_results**:
 							* `check_type` - (String) Specifies the type of the check internally performed. Specifies the type of the host check performed internally. 'kIsAgentPortAccessible' indicates the check for agent port access. 'kIsAgentRunning' indicates the status for the Cohesity agent service. 'kIsSQLWriterRunning' indicates the status for SQLWriter service. 'kAreSQLInstancesRunning' indicates the run status for all the SQL instances in the host. 'kCheckServiceLoginsConfig' checks the privileges and sysadmin status of the logins used by the SQL instance services, Cohesity agent service and the SQLWriter service. 'kCheckSQLFCIVIP' checks whether the SQL FCI is registered with a valid VIP or FQDN. 'kCheckSQLDiskSpace' checks whether volumes containing SQL DBs have at least 10% free space.
@@ -561,7 +619,7 @@ Nested schema for **protection_sources**:
 			* `authentication_status` - (String) Specifies the status of authenticating to the Protection Source when registering this application with Cohesity Cluster. If the status is 'kFinished' and there is no error, registration is successful. Specifies the status of the authentication during the registration of a Protection Source. 'kPending' indicates the authentication is in progress. 'kScheduled' indicates the authentication is scheduled. 'kFinished' indicates the authentication is completed. 'kRefreshInProgress' indicates the refresh is in progress.
 			  * Constraints: Allowable values are: `kPending`, `kScheduled`, `kFinished`, `kRefreshInProgress`.
 			* `environment` - (String) Specifies the application environment. Supported environment types such as 'kView', 'kSQL', 'kVMware', etc.
-			  * Constraints: Allowable values are: `kPhysical`, `kPhysicalFiles`, `kSQL`, `kAgent`.
+			  * Constraints: Allowable values are: `kPhysical`, `kPhysicalFiles`, `kSQL`, `kAgent`, `kVMware`, `kHyperV`, `kPure`, `kNimble`, `kView`, `kPuppeteer`.
 			* `host_settings_check_results` - (List)
 			Nested schema for **host_settings_check_results**:
 				* `check_type` - (String) Specifies the type of the check internally performed. Specifies the type of the host check performed internally. 'kIsAgentPortAccessible' indicates the check for agent port access. 'kIsAgentRunning' indicates the status for the Cohesity agent service. 'kIsSQLWriterRunning' indicates the status for SQLWriter service. 'kAreSQLInstancesRunning' indicates the run status for all the SQL instances in the host. 'kCheckServiceLoginsConfig' checks the privileges and sysadmin status of the logins used by the SQL instance services, Cohesity agent service and the SQLWriter service. 'kCheckSQLFCIVIP' checks whether the SQL FCI is registered with a valid VIP or FQDN. 'kCheckSQLDiskSpace' checks whether volumes containing SQL DBs have at least 10% free space.

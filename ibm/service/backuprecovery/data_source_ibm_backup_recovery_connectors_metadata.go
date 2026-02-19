@@ -60,6 +60,64 @@ func DataSourceIbmBackupRecoveryConnectorsMetadata() *schema.Resource {
 					},
 				},
 			},
+			"k8s_connector_info_list": &schema.Schema{
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "k8sConnectorInfoList specifies information about supported kubernetes environments where Data-Source Connectors can be deployed. Also, specifies the helm chart location (OCI URL) for each supported Kubernetes environment and instructions for installing it.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"helm_chart_oci_ref": &schema.Schema{
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "Represents the structured components of an OCI (Open Container Initiative) artifact reference. A full reference string can be constructed from these parts. See Also: https://github.com/opencontainers/distribution-spec/blob/main/spec.md.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"digest": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The immutable, content-addressable digest of the artifact's manifest. If only digest is set, the artifact is fetched by its immutable reference. If both tag and digest are set, the application should verify that the tag resolves to the given digest before proceeding. This should include the algorithm prefix.",
+									},
+									"namespace": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The namespace or organization within the registry. For public registries like Docker Hub, this can be 'library' for official images or a user's account name. May be optional for certain registry configurations.",
+									},
+									"registry_host": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The address of the OCI-compliant container registry. This can be a hostname or an IP address, and may optionally include a port number.",
+									},
+									"repository": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The name of the repository that holds the artifact.",
+									},
+									"tag": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The mutable tag for the artifact.",
+									},
+								},
+							},
+						},
+						"helm_install_cmd": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Specifies the Helm install command for this type of k8s connector.",
+						},
+						"k8s_platform_type": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Enum representing the different supported Kubernetes platform types.",
+						},
+						"ugrade_doc_url": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "URL for upgrade documentation for this type of k8s connector.",
+						},
+					},
+				},
+			},
 		},
 	}
 }
@@ -107,6 +165,19 @@ func dataSourceIbmBackupRecoveryConnectorsMetadataRead(context context.Context, 
 			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting connector_image_metadata: %s", err), "(Data) ibm_backup_recovery_connectors_metadata", "read", "set-connector_image_metadata").GetDiag()
 		}
 	}
+	if !core.IsNil(connectorMetadata.K8sConnectorInfoList) {
+		k8sConnectorInfoList := []map[string]interface{}{}
+		for _, k8sConnectorInfoListItem := range connectorMetadata.K8sConnectorInfoList {
+			k8sConnectorInfoListItemMap, err := DataSourceIbmBackupRecoveryConnectorsMetadataK8sConnectorInfoToMap(&k8sConnectorInfoListItem) // #nosec G601
+			if err != nil {
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_backup_recovery_connectors_metadata", "read", "k8s_connector_info_list-to-map").GetDiag()
+			}
+			k8sConnectorInfoList = append(k8sConnectorInfoList, k8sConnectorInfoListItemMap)
+		}
+		if err = d.Set("k8s_connector_info_list", k8sConnectorInfoList); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting k8s_connector_info_list: %s", err), "(Data) ibm_backup_recovery_connectors_metadata", "read", "set-k8s_connector_info_list").GetDiag()
+		}
+	}
 
 	return nil
 }
@@ -134,5 +205,36 @@ func DataSourceIbmBackupRecoveryConnectorsMetadataConnectorImageFileToMap(model 
 	modelMap := make(map[string]interface{})
 	modelMap["image_type"] = *model.ImageType
 	modelMap["url"] = *model.URL
+	return modelMap, nil
+}
+
+func DataSourceIbmBackupRecoveryConnectorsMetadataK8sConnectorInfoToMap(model *backuprecoveryv1.K8sConnectorInfo) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.HelmChartOciRef != nil {
+		helmChartOciRefMap, err := DataSourceIbmBackupRecoveryConnectorsMetadataOciArtifactReferenceToMap(model.HelmChartOciRef)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["helm_chart_oci_ref"] = []map[string]interface{}{helmChartOciRefMap}
+	}
+	if model.HelmInstallCmd != nil {
+		modelMap["helm_install_cmd"] = *model.HelmInstallCmd
+	}
+	modelMap["k8s_platform_type"] = *model.K8sPlatformType
+	if model.UgradeDocURL != nil {
+		modelMap["ugrade_doc_url"] = *model.UgradeDocURL
+	}
+	return modelMap, nil
+}
+
+func DataSourceIbmBackupRecoveryConnectorsMetadataOciArtifactReferenceToMap(model *backuprecoveryv1.OciArtifactReference) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	modelMap["digest"] = *model.Digest
+	if model.Namespace != nil {
+		modelMap["namespace"] = *model.Namespace
+	}
+	modelMap["registry_host"] = *model.RegistryHost
+	modelMap["repository"] = *model.Repository
+	modelMap["tag"] = *model.Tag
 	return modelMap, nil
 }
