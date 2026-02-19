@@ -503,12 +503,13 @@ func nwaclRuleCreate(context context.Context, d *schema.ResourceData, meta inter
 		protocol = "icmp"
 		ruleTemplate.Protocol = &protocol
 		if !isNil(icmp[0]) {
-			icmpval := icmp[0].(map[string]interface{})
-			if val, ok := icmpval[isNetworkACLRuleICMPType]; ok {
+			icmpTypePath := fmt.Sprint(isNetworkACLRuleICMP, ".0.", isNetworkACLRuleICMPType)
+			icmpCodePath := fmt.Sprint(isNetworkACLRuleICMP, ".0.", isNetworkACLRuleICMPCode)
+			if val, ok := d.GetOk(icmpTypePath); ok {
 				icmptype = int64(val.(int))
 				ruleTemplate.Type = &icmptype
 			}
-			if val, ok := icmpval[isNetworkACLRuleICMPCode]; ok {
+			if val, ok := d.GetOk(icmpCodePath); ok {
 				icmpcode = int64(val.(int))
 				ruleTemplate.Code = &icmpcode
 			}

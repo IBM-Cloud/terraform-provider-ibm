@@ -1225,12 +1225,13 @@ func createInlineRules(d *schema.ResourceData, nwaclC *vpcv1.VpcV1, nwaclid stri
 		if len(icmp) > 0 && !isNil(icmp[0]) && !useTopLevelIcmp {
 			protocol = "icmp"
 			ruleTemplate.Protocol = &protocol
-			icmpval := icmp[0].(map[string]interface{})
-			if val, ok := icmpval[isNetworkACLRuleICMPType]; ok {
+			icmpTypePath := fmt.Sprintf("rules.%d.icmp.0.%s", i, isNetworkACLRuleICMPType)
+			icmpCodePath := fmt.Sprintf("rules.%d.icmp.0.%s", i, isNetworkACLRuleICMPCode)
+			if val, ok := d.GetOk(icmpTypePath); ok {
 				icmptype = int64(val.(int))
 				ruleTemplate.Type = &icmptype
 			}
-			if val, ok := icmpval[isNetworkACLRuleICMPCode]; ok {
+			if val, ok := d.GetOk(icmpCodePath); ok {
 				icmpcode = int64(val.(int))
 				ruleTemplate.Code = &icmpcode
 			}
