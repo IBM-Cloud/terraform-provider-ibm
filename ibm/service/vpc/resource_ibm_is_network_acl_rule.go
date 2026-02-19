@@ -68,7 +68,6 @@ func ResourceIBMISNetworkACLRule() *schema.Resource {
 				Type:          schema.TypeString,
 				Optional:      true,
 				Computed:      true,
-				ForceNew:      true,
 				ConflictsWith: []string{isNetworkACLRuleTCP, isNetworkACLRuleUDP, isNetworkACLRuleICMP},
 				Description:   "The name of the network protocol",
 				ValidateFunc:  validate.InvokeValidator("ibm_is_network_acl_rule", isNetworkACLRuleProtocol),
@@ -76,6 +75,7 @@ func ResourceIBMISNetworkACLRule() *schema.Resource {
 			isNetworkACLRuleICMPCode: {
 				Type:          schema.TypeInt,
 				Optional:      true,
+				Computed:      true,
 				RequiredWith:  []string{isNetworkACLRuleProtocol},
 				ConflictsWith: []string{isNetworkACLRuleICMP, isNetworkACLRuleUDP, isNetworkACLRuleTCP, isNetworkACLRulePortMin, isNetworkACLRulePortMax, isNetworkACLRuleSourcePortMax, isNetworkACLRuleSourcePortMin},
 				ValidateFunc:  validate.InvokeValidator("ibm_is_network_acl_rule", isNetworkACLRuleICMPCode),
@@ -84,6 +84,7 @@ func ResourceIBMISNetworkACLRule() *schema.Resource {
 			isNetworkACLRuleICMPType: {
 				Type:          schema.TypeInt,
 				Optional:      true,
+				Computed:      true,
 				RequiredWith:  []string{isNetworkACLRuleProtocol},
 				ConflictsWith: []string{isNetworkACLRuleICMP, isNetworkACLRuleUDP, isNetworkACLRuleTCP, isNetworkACLRulePortMin, isNetworkACLRulePortMax, isNetworkACLRuleSourcePortMax, isNetworkACLRuleSourcePortMin},
 				ValidateFunc:  validate.InvokeValidator("ibm_is_network_acl", isNetworkACLRuleICMPType),
@@ -175,20 +176,22 @@ func ResourceIBMISNetworkACLRule() *schema.Resource {
 				MinItems:      0,
 				MaxItems:      1,
 				Optional:      true,
+				Computed:      true,
 				ConflictsWith: []string{isNetworkACLRuleTCP, isNetworkACLRuleUDP, isNetworkACLRuleProtocol},
-				ForceNew:      true,
 				Deprecated:    "icmp is deprecated, use 'protocol', 'code', and 'type' instead.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						isNetworkACLRuleICMPCode: {
 							Type:         schema.TypeInt,
 							Optional:     true,
+							Computed:     true,
 							ValidateFunc: validate.InvokeValidator("ibm_is_network_acl_rule", isNetworkACLRuleICMPCode),
 							Description:  "The ICMP traffic code to allow. Valid values from 0 to 255.",
 						},
 						isNetworkACLRuleICMPType: {
 							Type:         schema.TypeInt,
 							Optional:     true,
+							Computed:     true,
 							ValidateFunc: validate.InvokeValidator("ibm_is_network_acl_rule", isNetworkACLRuleICMPType),
 							Description:  "The ICMP traffic type to allow. Valid values from 0 to 254.",
 						},
@@ -201,36 +204,36 @@ func ResourceIBMISNetworkACLRule() *schema.Resource {
 				MinItems:      0,
 				MaxItems:      1,
 				Optional:      true,
+				Computed:      true,
 				ConflictsWith: []string{isNetworkACLRuleICMP, isNetworkACLRuleUDP, isNetworkACLRuleProtocol},
-				ForceNew:      true,
 				Deprecated:    "tcp is deprecated, use 'protocol', 'port_min', 'port_max', 'source_port_min', and 'source_port_max' instead.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						isNetworkACLRulePortMax: {
 							Type:         schema.TypeInt,
 							Optional:     true,
-							Default:      65535,
+							Computed:     true,
 							ValidateFunc: validate.InvokeValidator("ibm_is_network_acl_rule", isNetworkACLRulePortMax),
 							Description:  "The highest port in the range of ports to be matched",
 						},
 						isNetworkACLRulePortMin: {
 							Type:         schema.TypeInt,
 							Optional:     true,
-							Default:      1,
+							Computed:     true,
 							ValidateFunc: validate.InvokeValidator("ibm_is_network_acl_rule", isNetworkACLRulePortMin),
 							Description:  "The lowest port in the range of ports to be matched",
 						},
 						isNetworkACLRuleSourcePortMax: {
 							Type:         schema.TypeInt,
 							Optional:     true,
-							Default:      65535,
+							Computed:     true,
 							ValidateFunc: validate.InvokeValidator("ibm_is_network_acl_rule", isNetworkACLRuleSourcePortMax),
 							Description:  "The highest port in the range of ports to be matched",
 						},
 						isNetworkACLRuleSourcePortMin: {
 							Type:         schema.TypeInt,
 							Optional:     true,
-							Default:      1,
+							Computed:     true,
 							ValidateFunc: validate.InvokeValidator("ibm_is_network_acl_rule", isNetworkACLRuleSourcePortMin),
 							Description:  "The lowest port in the range of ports to be matched",
 						},
@@ -243,36 +246,36 @@ func ResourceIBMISNetworkACLRule() *schema.Resource {
 				MinItems:      0,
 				MaxItems:      1,
 				Optional:      true,
+				Computed:      true,
 				ConflictsWith: []string{isNetworkACLRuleICMP, isNetworkACLRuleTCP, isNetworkACLRuleProtocol},
-				ForceNew:      true,
 				Deprecated:    "udp is deprecated, use 'protocol', 'port_min', 'port_max', 'source_port_min', and 'source_port_max' instead.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						isNetworkACLRulePortMax: {
 							Type:         schema.TypeInt,
 							Optional:     true,
-							Default:      65535,
+							Computed:     true,
 							ValidateFunc: validate.InvokeValidator("ibm_is_network_acl_rule", isNetworkACLRulePortMax),
 							Description:  "The highest port in the range of ports to be matched",
 						},
 						isNetworkACLRulePortMin: {
 							Type:         schema.TypeInt,
 							Optional:     true,
-							Default:      1,
+							Computed:     true,
 							ValidateFunc: validate.InvokeValidator("ibm_is_network_acl_rule", isNetworkACLRulePortMin),
 							Description:  "The lowest port in the range of ports to be matched",
 						},
 						isNetworkACLRuleSourcePortMax: {
 							Type:         schema.TypeInt,
 							Optional:     true,
-							Default:      65535,
+							Computed:     true,
 							ValidateFunc: validate.InvokeValidator("ibm_is_network_acl_rule", isNetworkACLRuleSourcePortMax),
 							Description:  "The highest port in the range of ports to be matched",
 						},
 						isNetworkACLRuleSourcePortMin: {
 							Type:         schema.TypeInt,
 							Optional:     true,
-							Default:      1,
+							Computed:     true,
 							ValidateFunc: validate.InvokeValidator("ibm_is_network_acl_rule", isNetworkACLRuleSourcePortMin),
 							Description:  "The lowest port in the range of ports to be matched",
 						},
@@ -525,23 +528,37 @@ func nwaclRuleCreate(context context.Context, d *schema.ResourceData, meta inter
 	if len(tcp) > 0 {
 		protocol = "tcp"
 		ruleTemplate.Protocol = &protocol
-		tcpval := tcp[0].(map[string]interface{})
-		if val, ok := tcpval[isNetworkACLRulePortMin]; ok {
-			minport = int64(val.(int))
-			ruleTemplate.DestinationPortMin = &minport
+		if !isNil(tcp[0]) {
+			tcpval := tcp[0].(map[string]interface{})
+			if val, ok := tcpval[isNetworkACLRulePortMin]; ok {
+				minport = int64(val.(int))
+			}
+			if val, ok := tcpval[isNetworkACLRulePortMax]; ok {
+				maxport = int64(val.(int))
+			}
+			if val, ok := tcpval[isNetworkACLRuleSourcePortMin]; ok {
+				sourceminport = int64(val.(int))
+			}
+			if val, ok := tcpval[isNetworkACLRuleSourcePortMax]; ok {
+				sourcemaxport = int64(val.(int))
+			}
 		}
-		if val, ok := tcpval[isNetworkACLRulePortMax]; ok {
-			maxport = int64(val.(int))
-			ruleTemplate.DestinationPortMax = &maxport
+		if minport <= 0 {
+			minport = 1
 		}
-		if val, ok := tcpval[isNetworkACLRuleSourcePortMin]; ok {
-			sourceminport = int64(val.(int))
-			ruleTemplate.SourcePortMin = &sourceminport
+		if maxport <= 0 {
+			maxport = 65535
 		}
-		if val, ok := tcpval[isNetworkACLRuleSourcePortMax]; ok {
-			sourcemaxport = int64(val.(int))
-			ruleTemplate.SourcePortMax = &sourcemaxport
+		if sourceminport <= 0 {
+			sourceminport = 1
 		}
+		if sourcemaxport <= 0 {
+			sourcemaxport = 65535
+		}
+		ruleTemplate.DestinationPortMin = &minport
+		ruleTemplate.DestinationPortMax = &maxport
+		ruleTemplate.SourcePortMin = &sourceminport
+		ruleTemplate.SourcePortMax = &sourcemaxport
 	} else if protocol == "tcp" {
 		ruleTemplate.Protocol = &protocol
 		if val, ok := d.GetOk(isNetworkACLRulePortMin); ok {
@@ -578,23 +595,37 @@ func nwaclRuleCreate(context context.Context, d *schema.ResourceData, meta inter
 	if len(udp) > 0 {
 		protocol = "udp"
 		ruleTemplate.Protocol = &protocol
-		udpval := udp[0].(map[string]interface{})
-		if val, ok := udpval[isNetworkACLRulePortMin]; ok {
-			minport = int64(val.(int))
-			ruleTemplate.DestinationPortMin = &minport
+		if !isNil(udp[0]) {
+			udpval := udp[0].(map[string]interface{})
+			if val, ok := udpval[isNetworkACLRulePortMin]; ok {
+				minport = int64(val.(int))
+			}
+			if val, ok := udpval[isNetworkACLRulePortMax]; ok {
+				maxport = int64(val.(int))
+			}
+			if val, ok := udpval[isNetworkACLRuleSourcePortMin]; ok {
+				sourceminport = int64(val.(int))
+			}
+			if val, ok := udpval[isNetworkACLRuleSourcePortMax]; ok {
+				sourcemaxport = int64(val.(int))
+			}
 		}
-		if val, ok := udpval[isNetworkACLRulePortMax]; ok {
-			maxport = int64(val.(int))
-			ruleTemplate.DestinationPortMax = &maxport
+		if minport <= 0 {
+			minport = 1
 		}
-		if val, ok := udpval[isNetworkACLRuleSourcePortMin]; ok {
-			sourceminport = int64(val.(int))
-			ruleTemplate.SourcePortMin = &sourceminport
+		if maxport <= 0 {
+			maxport = 65535
 		}
-		if val, ok := udpval[isNetworkACLRuleSourcePortMax]; ok {
-			sourcemaxport = int64(val.(int))
-			ruleTemplate.SourcePortMax = &sourcemaxport
+		if sourceminport <= 0 {
+			sourceminport = 1
 		}
+		if sourcemaxport <= 0 {
+			sourcemaxport = 65535
+		}
+		ruleTemplate.DestinationPortMin = &minport
+		ruleTemplate.DestinationPortMax = &maxport
+		ruleTemplate.SourcePortMin = &sourceminport
+		ruleTemplate.SourcePortMax = &sourcemaxport
 	} else if protocol == "udp" {
 		ruleTemplate.Protocol = &protocol
 		if val, ok := d.GetOk(isNetworkACLRulePortMin); ok {
@@ -733,7 +764,12 @@ func nwaclRuleGet(context context.Context, d *schema.ResourceData, meta interfac
 			}
 			d.Set(isNetworkACLRuleTCP, make([]map[string]int, 0, 0))
 			d.Set(isNetworkACLRuleUDP, make([]map[string]int, 0, 0))
-			// To determine to set values only for old config and skip for new config as it sets '0' for nil values
+			if networkACLRule.Type != nil {
+				d.Set(isNetworkACLRuleICMPType, int(*networkACLRule.Type))
+			}
+			if networkACLRule.Code != nil {
+				d.Set(isNetworkACLRuleICMPCode, int(*networkACLRule.Code))
+			}
 			icmpList := d.Get("icmp").([]interface{})
 			if len(icmpList) > 0 {
 				icmp := make([]map[string]int, 1, 1)
@@ -794,7 +830,10 @@ func nwaclRuleGet(context context.Context, d *schema.ResourceData, meta interfac
 				err = fmt.Errorf("Error setting direction: %s", err)
 				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_network_acl_rule", "read", "set-direction").GetDiag()
 			}
-			// To determine to set values for old or new config. New config is set as it has default values
+			d.Set(isNetworkACLRuleSourcePortMax, checkNetworkACLNil(networkACLRule.SourcePortMax))
+			d.Set(isNetworkACLRuleSourcePortMin, checkNetworkACLNil(networkACLRule.SourcePortMin))
+			d.Set(isNetworkACLRulePortMax, checkNetworkACLNil(networkACLRule.DestinationPortMax))
+			d.Set(isNetworkACLRulePortMin, checkNetworkACLNil(networkACLRule.DestinationPortMin))
 			tcpList := d.Get("tcp").([]interface{})
 			udpList := d.Get("udp").([]interface{})
 			if len(tcpList) > 0 || len(udpList) > 0 {
@@ -827,11 +866,6 @@ func nwaclRuleGet(context context.Context, d *schema.ResourceData, meta interfac
 						return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_network_acl_rule", "read", "set-udp").GetDiag()
 					}
 				}
-			} else {
-				d.Set(isNetworkACLRuleSourcePortMax, checkNetworkACLNil(networkACLRule.SourcePortMax))
-				d.Set(isNetworkACLRuleSourcePortMin, checkNetworkACLNil(networkACLRule.SourcePortMin))
-				d.Set(isNetworkACLRulePortMax, checkNetworkACLNil(networkACLRule.DestinationPortMax))
-				d.Set(isNetworkACLRulePortMin, checkNetworkACLNil(networkACLRule.DestinationPortMin))
 			}
 		}
 	case "*vpcv1.NetworkACLRuleNetworkACLRuleProtocolAny":
