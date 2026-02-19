@@ -136,6 +136,15 @@ In addition to all argument reference list, you can access the following attribu
     - `id` - (String) The unique identifier for the snapshot consistency group.
     - `name` - (String) TThe name for the snapshot consistency group. The name is unique across all snapshot consistency groups in the region.
     - `resource_type` - (String) The resource type.
+	- `software_attachments` - (List) The software attachments for this snapshot.
+	  Nested schema for **software_attachments**:
+		- `deleted` - (List) If present, this property indicates the referenced resource has been deleted, and providessome supplementary information.
+		  Nested schema for **deleted**:
+			- `more_info` - (String) A link to documentation about deleted resources.
+		- `href` - (String) The URL for this snapshot software attachment.
+		- `id` - (String) The unique identifier for this snapshot software attachment.
+		- `name` - (String) The name for this snapshot software attachment. The name is unique across all software attachments for the snapshot.
+		- `resource_type` - (String) The resource type.
   - `source_image` - (String) If present, the unique identifier for the image from which the data on this volume was most directly provisioned.
   - `source_snapshot` - (String) If present, the source snapshot this snapshot was created from.
     
