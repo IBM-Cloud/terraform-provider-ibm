@@ -232,8 +232,7 @@ func ResourceIBMCISFilterValidator() *validate.ResourceValidator {
 			Identifier:                 cisFilterDescription,
 			ValidateFunctionIdentifier: validate.ValidateAllowedStringValue,
 			Type:                       validate.TypeString,
-			Required:                   true,
-			AllowedValues:              "Filter-creation"})
+			Required:                   true})
 
 	ibmCISFiltersResourceValidator := validate.ResourceValidator{ResourceName: ibmCISFilters, Schema: validateSchema}
 	return &ibmCISFiltersResourceValidator
