@@ -24,7 +24,7 @@ data "ibm_cd_tekton_pipeline_property" "cd_tekton_pipeline_property" {
 You can specify the following arguments for this data source.
 
 * `pipeline_id` - (Required, Forces new resource, String) The Tekton pipeline ID.
-  * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[-0-9a-z]+$/`.
+  * Constraints: Length must be `36` characters. The value must match regular expression `/^[-0-9a-z]+$/`.
 * `property_name` - (Required, Forces new resource, String) The property name.
   * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[-0-9a-zA-Z_.]{1,253}$/`.
 

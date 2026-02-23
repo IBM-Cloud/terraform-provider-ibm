@@ -51,7 +51,7 @@ You can specify the following arguments for this resource.
 * `name` - (Required, String) Trigger name.
   * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^([a-zA-Z0-9]{1,2}|[a-zA-Z0-9][0-9a-zA-Z-_.: \/\\(\\)\\[\\]]{1,251}[a-zA-Z0-9])$/`.
 * `pipeline_id` - (Required, Forces new resource, String) The Tekton pipeline ID.
-  * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[-0-9a-z]+$/`.
+  * Constraints: Length must be `36` characters. The value must match regular expression `/^[-0-9a-z]+$/`.
 * `secret` - (Optional, List) Only needed for Generic Webhook trigger type. The secret is used to start the Generic Webhook trigger.
 Nested schema for **secret**:
 	* `algorithm` - (Optional, String) Algorithm used for `digest_matches` secret type. Only needed for `digest_matches` secret type.
@@ -78,7 +78,7 @@ Nested schema for **source**:
 		* `tool` - (Required, List) Reference to the repository tool in the parent toolchain.
 		Nested schema for **tool**:
 			* `id` - (Computed, String) ID of the repository tool instance in the parent toolchain.
-			  * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[-0-9a-z]+$/`.
+			  * Constraints: Length must be `36` characters. The value must match regular expression `/^[-0-9a-z]+$/`.
 		* `url` - (Required, Forces new resource, String) URL of the repository to which the trigger is listening.
 		  * Constraints: The maximum length is `2048` characters. The minimum length is `10` characters. The value must match regular expression `/^http(s)?:\/\/([^\/?#]*)([^?#]*)(\\?([^#]*))?(#(.*))?$/`.
 	* `type` - (Required, String) The only supported source type is "git", indicating that the source is a git repository.
@@ -122,7 +122,7 @@ Nested schema for **properties**:
 	* `value` - (String) Property value. Any string value is valid.
 	  * Constraints: The maximum length is `4096` characters. The minimum length is `0` characters. The value must match regular expression `/^(\\s|.)*$/`.
 * `trigger_id` - (String) The Trigger ID.
-  * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[-0-9a-z]+$/`.
+  * Constraints: Length must be `36` characters. The value must match regular expression `/^[-0-9a-z]+$/`.
 * `webhook_url` - (String) Webhook URL that can be used to trigger pipeline runs.
   * Constraints: The maximum length is `2048` characters. The minimum length is `10` characters. The value must match regular expression `/^http(s)?:\/\/([^\/?#]*)([^?#]*)(\\?([^#]*))?(#(.*))?$/`.
 

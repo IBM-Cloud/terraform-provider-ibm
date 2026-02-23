@@ -34,9 +34,9 @@ You can specify the following arguments for this resource.
 * `path` - (Optional, String) A dot notation path for `integration` type properties only, that selects a value from the tool integration. If left blank the full tool integration data will be used.
   * Constraints: The maximum length is `4096` characters. The minimum length is `0` characters. The value must match regular expression `/^[-0-9a-zA-Z_.]*$/`.
 * `pipeline_id` - (Required, Forces new resource, String) The Tekton pipeline ID.
-  * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[-0-9a-z]+$/`.
+  * Constraints: Length must be `36` characters. The value must match regular expression `/^[-0-9a-z]+$/`.
 * `trigger_id` - (Required, Forces new resource, String) The trigger ID.
-  * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[-0-9a-z]+$/`.
+  * Constraints: Length must be `36` characters. The value must match regular expression `/^[-0-9a-z]+$/`.
 * `type` - (Required, Forces new resource, String) Property type.
   * Constraints: Allowable values are: `secure`, `text`, `integration`, `single_select`, `appconfig`.
 * `value` - (Optional, String) Property value. Any string value is valid.

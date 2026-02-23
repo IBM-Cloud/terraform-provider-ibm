@@ -54,7 +54,7 @@ Nested schema for **definitions**:
 	* `href` - (String) API URL for interacting with the definition.
 	  * Constraints: The maximum length is `2048` characters. The minimum length is `10` characters. The value must match regular expression `/^http(s)?:\/\/([^\/?#]*)([^?#]*)(\\?([^#]*))?(#(.*))?$/`.
 	* `id` - (String) The aggregated definition ID.
-	  * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[-0-9a-z]+$/`.
+	  * Constraints: Length must be `36` characters. The value must match regular expression `/^[-0-9a-z]+$/`.
 	* `source` - (List) Source repository containing the Tekton pipeline definition.
 	Nested schema for **source**:
 		* `properties` - (List) Properties of the source, which define the URL of the repository and a branch or tag.
@@ -68,7 +68,7 @@ Nested schema for **definitions**:
 			* `tool` - (List) Reference to the repository tool in the parent toolchain.
 			Nested schema for **tool**:
 				* `id` - (String) ID of the repository tool instance in the parent toolchain.
-				  * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[-0-9a-z]+$/`.
+				  * Constraints: Length must be `36` characters. The value must match regular expression `/^[-0-9a-z]+$/`.
 			* `url` - (Forces new resource, String) URL of the definition repository.
 			  * Constraints: The maximum length is `2048` characters. The minimum length is `10` characters. The value must match regular expression `/^http(s)?:\/\/([^\/?#]*)([^?#]*)(\\?([^#]*))?(#(.*))?$/`.
 		* `type` - (String) The only supported source type is "git", indicating that the source is a git repository.
@@ -108,7 +108,7 @@ Nested schema for **toolchain**:
 	* `crn` - (String) The CRN for the toolchain that contains the Tekton pipeline.
 	  * Constraints: The maximum length is `512` characters. The minimum length is `9` characters. The value must match regular expression `/^crn:v[0-9](:([A-Za-z0-9-._~!$&'()*+,;=@\/]|%[0-9A-Z]{2})*){8}$/`.
 	* `id` - (String) Universally Unique Identifier.
-	  * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[-0-9a-z]+$/`.
+	  * Constraints: Length must be `36` characters. The value must match regular expression `/^[-0-9a-z]+$/`.
 * `triggers` - (List) Tekton pipeline triggers list.
   * Constraints: The maximum length is `1024` items. The minimum length is `0` items.
 Nested schema for **triggers**:
@@ -131,7 +131,7 @@ Nested schema for **triggers**:
 	* `href` - (String) API URL for interacting with the trigger. Only included when fetching the list of pipeline triggers.
 	  * Constraints: The maximum length is `2048` characters. The minimum length is `10` characters. The value must match regular expression `/^http(s)?:\/\/([^\/?#]*)([^?#]*)(\\?([^#]*))?(#(.*))?$/`.
 	* `id` - (String) The Trigger ID.
-	  * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[-0-9a-z]+$/`.
+	  * Constraints: Length must be `36` characters. The value must match regular expression `/^[-0-9a-z]+$/`.
 	* `limit_waiting_runs` - (Boolean) Flag that will limit the trigger to a maximum of one waiting run. A newly triggered run will cause any other waiting run(s) to be automatically cancelled.
 	  * Constraints: The default value is `false`.
 	* `max_concurrent_runs` - (Integer) Defines the maximum number of concurrent runs for this trigger. If omitted then the concurrency limit is disabled for this trigger.
@@ -179,7 +179,7 @@ Nested schema for **triggers**:
 			* `tool` - (List) Reference to the repository tool in the parent toolchain.
 			Nested schema for **tool**:
 				* `id` - (String) ID of the repository tool instance in the parent toolchain.
-				  * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[-0-9a-z]+$/`.
+				  * Constraints: Length must be `36` characters. The value must match regular expression `/^[-0-9a-z]+$/`.
 			* `url` - (Forces new resource, String) URL of the repository to which the trigger is listening.
 			  * Constraints: The maximum length is `2048` characters. The minimum length is `10` characters. The value must match regular expression `/^http(s)?:\/\/([^\/?#]*)([^?#]*)(\\?([^#]*))?(#(.*))?$/`.
 		* `type` - (String) The only supported source type is "git", indicating that the source is a git repository.
