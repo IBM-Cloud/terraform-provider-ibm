@@ -71,9 +71,21 @@ func ResourceIBMResourceInstance() *schema.Resource {
 			},
 
 			"plan": {
-				Type:        schema.TypeString,
-				Required:    true,
-				Description: "The plan type of the service",
+				Type:          schema.TypeString,
+				Optional:      true,
+				Computed:      true,
+				Description:   "The plan type of the service",
+				ConflictsWith: []string{"plan_id"},
+				AtLeastOneOf:  []string{"plan", "plan_id"},
+			},
+
+			"plan_id": {
+				Type:          schema.TypeString,
+				Optional:      true,
+				Computed:      true,
+				Description:   "The plan ID of the service",
+				ConflictsWith: []string{"plan"},
+				AtLeastOneOf:  []string{"plan", "plan_id"},
 			},
 
 			"location": {
@@ -411,7 +423,6 @@ func ResourceIBMResourceInstanceCreate(d *schema.ResourceData, meta interface{})
 	}
 
 	serviceName := d.Get("service").(string)
-	plan := d.Get("plan").(string)
 	name := d.Get("name").(string)
 	location := d.Get("location").(string)
 
@@ -438,18 +449,26 @@ func ResourceIBMResourceInstanceCreate(d *schema.ResourceData, meta interface{})
 		return fmt.Errorf("[ERROR] Cannot create instance of resource %s\nUse 'ibm_service_instance' if the resource is a Cloud Foundry service", serviceName)
 	}
 
-	servicePlan, err := rsCatRepo.GetServicePlanID(serviceOff[0], plan)
-	if err != nil {
-		return fmt.Errorf("[ERROR] Error retrieving plan: %s", err)
+	var servicePlan string
+	if planID, ok := d.GetOk("plan_id"); ok {
+		// Use plan_id directly if provided
+		servicePlan = planID.(string)
+	} else if plan, ok := d.GetOk("plan"); ok {
+		// Lookup plan ID from plan name
+		var err error
+		servicePlan, err = rsCatRepo.GetServicePlanID(serviceOff[0], plan.(string))
+		if err != nil {
+			return fmt.Errorf("[ERROR] Error retrieving plan: %s", err)
+		}
 	}
 	rsInst.ResourcePlanID = &servicePlan
 
 	deployments, err := rsCatRepo.ListDeployments(servicePlan)
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error retrieving deployment for plan %s : %s", plan, err)
+		return fmt.Errorf("[ERROR] Error retrieving deployment for plan %s : %s", servicePlan, err)
 	}
 	if len(deployments) == 0 {
-		return fmt.Errorf("[ERROR] No deployment found for service plan : %s", plan)
+		return fmt.Errorf("[ERROR] No deployment found for service plan : %s", servicePlan)
 	}
 	deployments, supportedLocations := FilterDeployments(deployments, location)
 
@@ -458,7 +477,7 @@ func ResourceIBMResourceInstanceCreate(d *schema.ResourceData, meta interface{})
 		for l := range supportedLocations {
 			locationList = append(locationList, l)
 		}
-		return fmt.Errorf("[ERROR] No deployment found for service plan %s at location %s.\nValid location(s) are: %q.\nUse 'ibm_service_instance' if the service is a Cloud Foundry service", plan, location, locationList)
+		return fmt.Errorf("[ERROR] No deployment found for service plan %s at location %s.\nValid location(s) are: %q.\nUse 'ibm_service_instance' if the service is a Cloud Foundry service", servicePlan, location, locationList)
 	}
 
 	rsInst.Target = &deployments[0].CatalogCRN
@@ -603,6 +622,10 @@ func ResourceIBMResourceInstanceRead(d *schema.ResourceData, meta interface{}) e
 	}
 	d.Set(flex.ResourceControllerURL, rcontroller+"/services/")
 
+	// Set plan_id from the instance
+	d.Set("plan_id", instance.ResourcePlanID)
+
+	// Set plan name
 	// Note: Once the Compliance service (SCC) reaches its end of life, this conditional check can be revisited or safely removed.
 	if *instance.ResourceID == "compliance" {
 		d.Set("plan", "security-compliance-center-standard-plan")
@@ -690,8 +713,7 @@ func ResourceIBMResourceInstanceUpdate(d *schema.ResourceData, meta interface{})
 		resourceInstanceUpdate.Name = &name
 	}
 
-	if d.HasChange("plan") {
-		plan := d.Get("plan").(string)
+	if d.HasChange("plan") || d.HasChange("plan_id") {
 		service := d.Get("service").(string)
 		rsCatClient, err := meta.(conns.ClientSession).ResourceCatalogAPI()
 		if err != nil {
@@ -704,9 +726,17 @@ func ResourceIBMResourceInstanceUpdate(d *schema.ResourceData, meta interface{})
 			return fmt.Errorf("[ERROR] Error retrieving service offering: %s", err)
 		}
 
-		servicePlan, err := rsCatRepo.GetServicePlanID(serviceOff[0], plan)
-		if err != nil {
-			return fmt.Errorf("[ERROR] Error retrieving plan: %s", err)
+		var servicePlan string
+		if planID, ok := d.GetOk("plan_id"); ok {
+			// Use plan_id directly if provided
+			servicePlan = planID.(string)
+		} else if plan, ok := d.GetOk("plan"); ok {
+			// Lookup plan ID from plan name
+			var err error
+			servicePlan, err = rsCatRepo.GetServicePlanID(serviceOff[0], plan.(string))
+			if err != nil {
+				return fmt.Errorf("[ERROR] Error retrieving plan: %s", err)
+			}
 		}
 
 		resourceInstanceUpdate.ResourcePlanID = &servicePlan

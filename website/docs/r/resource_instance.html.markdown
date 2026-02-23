@@ -191,7 +191,8 @@ Review the argument references that you can specify for your resource.
 - `location` - (Required, Forces new resource, String) Target location or environment to create the resource instance.
 - `parameters` (Optional, Map) Arbitrary parameters to create instance. The value must be a JSON object. Conflicts with `parameters_json`.
 - `parameters_json` (Optional,String) Arbitrary parameters to create instance. The value must be a JSON string. Conflicts with `parameters`.
-- `plan` - (Required, String) The name of the plan type supported by service. You can retrieve the value by running the `ibmcloud catalog service <servicename>` command.
+- `plan` - (Optional, String) The name of the plan type supported by service. You can retrieve the value by running the `ibmcloud catalog service <servicename>` command. Conflicts with `plan_id`. Either `plan` or `plan_id` must be provided.
+- `plan_id` - (Optional, String) The unique ID of the plan associated with the offering. This value is provided by and stored in the global catalog. Conflicts with `plan`. Either `plan` or `plan_id` must be provided.
 - `name` - (Required, String) A descriptive name used to identify the resource instance.
 - `resource_group_id` - (Optional, Forces new resource, String) The ID of the resource group where you want to create the service. You can retrieve the value from data source `ibm_resource_group`. If not provided creates the service in default resource group.
 - `tags` (Optional, Array of Strings) Tags associated with the instance.
