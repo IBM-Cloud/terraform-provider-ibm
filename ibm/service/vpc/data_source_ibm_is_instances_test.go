@@ -395,7 +395,7 @@ func testAccCheckIBMISInstancesDataSourceConfigInstanceGroup(insGrpName, insGrpC
 		instance_group_name = "%s"
 	}
 
-	data "ibm_is_instances" "ds_instances1" {
+	data "ibm_is_instances" "ds_instances2" {
 		instance_group_crn = "%s"
 	}`, insGrpName, insGrpCRN)
 }
