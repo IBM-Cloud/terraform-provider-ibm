@@ -1,4 +1,4 @@
-// Copyright IBM Corp. 2025 All Rights Reserved.
+// Copyright IBM Corp. 2026 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 package cdtektonpipeline_test
@@ -70,6 +70,7 @@ func TestAccIBMCdTektonPipelineTriggerAllArgs(t *testing.T) {
 	filter := "test"
 	favorite := "false"
 	enableEventsFromForks := "false"
+	disableDraftEvents := "false"
 	limitWaitingRuns := "false"
 	typeVarUpdate := "generic"
 	nameUpdate := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
@@ -81,6 +82,7 @@ func TestAccIBMCdTektonPipelineTriggerAllArgs(t *testing.T) {
 	filterUpdate := "true"
 	favoriteUpdate := "true"
 	enableEventsFromForksUpdate := "true"
+	disableDraftEventsUpdate := "true"
 	limitWaitingRunsUpdate := "true"
 
 	resource.Test(t, resource.TestCase{
@@ -89,7 +91,7 @@ func TestAccIBMCdTektonPipelineTriggerAllArgs(t *testing.T) {
 		CheckDestroy: testAccCheckIBMCdTektonPipelineTriggerDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIBMCdTektonPipelineTriggerConfig(pipelineID, typeVar, name, eventListener, maxConcurrentRuns, enabled, favorite, limitWaitingRuns, enableEventsFromForks, filter, cron, timezone),
+				Config: testAccCheckIBMCdTektonPipelineTriggerConfig(pipelineID, typeVar, name, eventListener, maxConcurrentRuns, enabled, favorite, limitWaitingRuns, enableEventsFromForks, disableDraftEvents, filter, cron, timezone),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMCdTektonPipelineTriggerExists("ibm_cd_tekton_pipeline_trigger.cd_tekton_pipeline_trigger_instance", conf),
 					testAccCheckIBMCdTektonPipelineTriggerExists("ibm_cd_tekton_pipeline_trigger.cd_tekton_pipeline_trigger2_instance", conf),
@@ -116,7 +118,7 @@ func TestAccIBMCdTektonPipelineTriggerAllArgs(t *testing.T) {
 				),
 			},
 			resource.TestStep{
-				Config: testAccCheckIBMCdTektonPipelineTriggerConfig(pipelineID, typeVarUpdate, nameUpdate, eventListenerUpdate, maxConcurrentRunsUpdate, enabledUpdate, favoriteUpdate, limitWaitingRunsUpdate, enableEventsFromForksUpdate, filterUpdate, cronUpdate, timezoneUpdate),
+				Config: testAccCheckIBMCdTektonPipelineTriggerConfig(pipelineID, typeVarUpdate, nameUpdate, eventListenerUpdate, maxConcurrentRunsUpdate, enabledUpdate, favoriteUpdate, limitWaitingRunsUpdate, enableEventsFromForksUpdate, disableDraftEventsUpdate, filterUpdate, cronUpdate, timezoneUpdate),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("ibm_cd_tekton_pipeline_trigger.cd_tekton_pipeline_trigger_instance", "name", nameUpdate),
 					resource.TestCheckResourceAttr("ibm_cd_tekton_pipeline_trigger.cd_tekton_pipeline_trigger_instance", "limit_waiting_runs", limitWaitingRunsUpdate),
@@ -143,7 +145,7 @@ func TestAccIBMCdTektonPipelineTriggerAllArgs(t *testing.T) {
 				ResourceName:            "ibm_cd_tekton_pipeline_trigger.cd_tekton_pipeline_trigger_instance",
 				ImportState:             true,
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"pipeline_id", "enable_events_from_forks"},
+				ImportStateVerifyIgnore: []string{"pipeline_id", "enable_events_from_forks", "disable_draft_events"},
 			},
 		},
 	})
@@ -211,7 +213,7 @@ func testAccCheckIBMCdTektonPipelineTriggerConfigBasic(pipelineID string, typeVa
 	`, rgName, tcName, typeVar, name, eventListener)
 }
 
-func testAccCheckIBMCdTektonPipelineTriggerConfig(pipelineID string, typeVar string, name string, eventListener string, maxConcurrentRuns string, enabled string, favorite string, limitWaitingRuns string, enableEventsFromForks string, filter string, cron string, timezone string) string {
+func testAccCheckIBMCdTektonPipelineTriggerConfig(pipelineID string, typeVar string, name string, eventListener string, maxConcurrentRuns string, enabled string, favorite string, limitWaitingRuns string, enableEventsFromForks string, disableDraftEvents string, filter string, cron string, timezone string) string {
 	rgName := acc.CdResourceGroupName
 	tcName := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 	return fmt.Sprintf(`
