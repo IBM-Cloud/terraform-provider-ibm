@@ -228,7 +228,7 @@ func resourceIBMCdTektonPipelineTriggerPropertyRead(context context.Context, d *
 		return tfErr.GetDiag()
 	}
 
-	if err = d.Set("pipeline_id", d.Get("pipeline_id").(string)); err != nil {
+	if err = d.Set("pipeline_id", parts[0]); err != nil {
 		err = fmt.Errorf("Error setting pipeline_id: %s", err)
 		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_cd_tekton_pipeline_trigger_property", "read", "set-pipeline_id").GetDiag()
 	}
