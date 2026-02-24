@@ -429,6 +429,49 @@ func DataSourceSnapshot() *schema.Resource {
 					},
 				},
 			},
+			"software_attachments": &schema.Schema{
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "The software attachments for this snapshot.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"deleted": &schema.Schema{
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "If present, this property indicates the referenced resource has been deleted, and providessome supplementary information.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"more_info": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "A link to documentation about deleted resources.",
+									},
+								},
+							},
+						},
+						"href": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The URL for this snapshot software attachment.",
+						},
+						"id": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The unique identifier for this snapshot software attachment.",
+						},
+						"name": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The name for this snapshot software attachment. The name is unique across all software attachments for the snapshot.",
+						},
+						"resource_type": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The resource type.",
+						},
+					},
+				},
+			},
 		},
 	}
 }
@@ -776,6 +819,19 @@ func snapshotGetByNameOrID(context context.Context, d *schema.ResourceData, meta
 			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting copies: %s", err), "(Data) ibm_is_snapshot", "read", "set-copies").GetDiag()
 		}
 
+		// software attachments
+		softwareAttachments := []map[string]interface{}{}
+		for _, softwareAttachmentsItem := range snapshot.SoftwareAttachments {
+			softwareAttachmentsItemMap, err := DataSourceIBMIsSnapshotSnapshotSoftwareAttachmentReferenceToMap(&softwareAttachmentsItem) // #nosec G601
+			if err != nil {
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_snapshot", "read", "software_attachments-to-map").GetDiag()
+			}
+			softwareAttachments = append(softwareAttachments, softwareAttachmentsItemMap)
+		}
+		if err = d.Set("software_attachments", softwareAttachments); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting software_attachments: %s", err), "(Data) ibm_is_snapshot", "read", "set-software_attachments").GetDiag()
+		}
+
 		if !core.IsNil(snapshot.CapturedAt) {
 			if err = d.Set("captured_at", flex.DateTimeToString(snapshot.CapturedAt)); err != nil {
 				return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting captured_at: %s", err), "(Data) ibm_is_snapshot", "read", "set-captured_at").GetDiag()
@@ -908,5 +964,27 @@ func DataSourceIBMIsSnapshotAllowedUseToMap(model *vpcv1.SnapshotAllowedUse) (ma
 	if model.ApiVersion != nil {
 		modelMap["api_version"] = *model.ApiVersion
 	}
+	return modelMap, nil
+}
+
+func DataSourceIBMIsSnapshotSnapshotSoftwareAttachmentReferenceToMap(model *vpcv1.SnapshotSoftwareAttachmentReference) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.Deleted != nil {
+		deletedMap, err := DataSourceIBMIsSnapshotDeletedToMap(model.Deleted)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["deleted"] = []map[string]interface{}{deletedMap}
+	}
+	modelMap["href"] = *model.Href
+	modelMap["id"] = *model.ID
+	modelMap["name"] = *model.Name
+	modelMap["resource_type"] = *model.ResourceType
+	return modelMap, nil
+}
+
+func DataSourceIBMIsSnapshotDeletedToMap(model *vpcv1.Deleted) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	modelMap["more_info"] = *model.MoreInfo
 	return modelMap, nil
 }

@@ -58,7 +58,7 @@ gox \
     -arch="${XC_ARCH}" \
     -osarch="${XC_EXCLUDE_OSARCH}" \
     -ldflags "${LD_FLAGS}" \
-    -output "pkg/{{.OS}}_{{.Arch}}/terraform-provider-ibm" \
+    -output "pkg/{{.OS}}_{{.Arch}}/terraform-provider-ibm_${VERSION}_{{.OS}}_{{.Arch}}" \
     .
 
 # Move all the compiled things to the $GOPATH/bin
@@ -92,10 +92,11 @@ if [ "${TF_DEV}x" = "x" ]; then
     echo "==> Packaging..."
     for PLATFORM in $(find ./pkg -mindepth 1 -maxdepth 1 -type d); do
         OSARCH=$(basename ${PLATFORM})
+        ZIPNAME="terraform-provider-ibm_${VERSION}_${OSARCH}"
         echo "--> ${OSARCH}"
 
         pushd $PLATFORM >/dev/null 2>&1
-        zip ../${OSARCH}.zip ./*
+        zip ../${ZIPNAME}.zip ./*
         popd >/dev/null 2>&1
     done
 fi
