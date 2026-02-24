@@ -56,7 +56,7 @@ func TestAccResourceTag_FakeCrnExpectingError(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config:      testAccCheckResourceTagCreateFakeCrnExpectingError(tags),
-				ExpectError: regexp.MustCompile(`"is_error":\s*true.*"message":`),
+				ExpectError: regexp.MustCompile(`(?s)"is_error":\s*true.*"message":`),
 			},
 		},
 	})
