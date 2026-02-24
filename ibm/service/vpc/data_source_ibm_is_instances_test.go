@@ -335,7 +335,6 @@ func TestAccIBMISInstancesDataSource_InsGroupfilter(t *testing.T) {
 	publicKey := strings.TrimSpace(`
 	ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQDVtuCfWKVGKaRmaRG6JQZY8YdxnDgGzVOK93IrV9R5Hl0JP1oiLLWlZQS2reAKb8lBqyDVEREpaoRUDjqDqXG8J/kR42FKN51su914pjSBc86wJ02VtT1Wm1zRbSg67kT+g8/T1jCgB5XBODqbcICHVP8Z1lXkgbiHLwlUrbz6OZkGJHo/M/kD1Eme8lctceIYNz/Ilm7ewMXZA4fsidpto9AjyarrJLufrOBl4MRVcZTDSJ7rLP982aHpu9pi5eJAjOZc7Og7n4ns3NFppiCwgVMCVUQbN5GBlWhZ1OsT84ZiTf+Zy8ew+Yg5T7Il8HuC7loWnz+esQPf0s3xhC/kTsGgZreIDoh/rxJfD67wKXetNSh5RH/n5BqjaOuXPFeNXmMhKlhj9nJ8scayx/wsvOGuocEIkbyJSLj3sLUU403OafgatEdnJOwbqg6rUNNF5RIjpJpL7eEWlKIi1j9LyhmPJ+fEO7TmOES82VpCMHpLbe4gf/MhhJ/Xy8DKh9s= root@ffd8363b1226
 	`)
-	insGrpCRN := fmt.Sprintf("crn:v1:bluemix:public:is:us-south:a/%d::::instance-group:%d", randInt, randInt)
 	vpcName := fmt.Sprintf("testvpc%d", randInt)
 	subnetName := fmt.Sprintf("testsubnet%d", randInt)
 	templateName := fmt.Sprintf("testtemplate%d", randInt)
@@ -354,7 +353,7 @@ func TestAccIBMISInstancesDataSource_InsGroupfilter(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccCheckIBMISInstancesDataSourceConfigInstanceGroup(instanceGroupName, insGrpCRN),
+				Config: testAccCheckIBMISInstancesDataSourceConfigInstanceGroup(vpcName, subnetName, sshKeyName, publicKey, templateName, instanceGroupName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(resName, "instances.0.name"),
 				),
@@ -389,15 +388,15 @@ func testAccCheckIBMISInstancesDataSourceConfig1(vpcname string) string {
 		vpc_name = "%s"
 	}`, vpcname)
 }
-func testAccCheckIBMISInstancesDataSourceConfigInstanceGroup(insGrpName, insGrpCRN string) string {
-	return fmt.Sprintf(`
+func testAccCheckIBMISInstancesDataSourceConfigInstanceGroup(vpcName, subnetName, sshKeyName, publicKey, templateName, instanceGroupName string) string {
+	return testAccCheckIBMISInstanceGroupConfig(vpcName, subnetName, sshKeyName, publicKey, templateName, instanceGroupName) + fmt.Sprintf(`
 	data "ibm_is_instances" "ds_instances1" {
 		instance_group_name = "%s"
 	}
 
 	data "ibm_is_instances" "ds_instances2" {
-		instance_group_crn = "%s"
-	}`, insGrpName, insGrpCRN)
+		instance_group_crn = ibm_is_instance_group.instance_group.crn
+	}`, instanceGroupName)
 }
 
 func testAccCheckIBMISInstancesDataSourceConfigWithCatalogOffering(vpcname, subnetname, sshname, instanceName, planCrn, versionCrn string) string {
