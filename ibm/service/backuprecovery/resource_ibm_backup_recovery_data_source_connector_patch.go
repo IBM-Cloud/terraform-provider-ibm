@@ -318,7 +318,7 @@ func resourceIbmBackupRecoveryDataSourceConnectorPatchUpdate(context context.Con
 	return diags
 }
 
-func ResourceIbmBackupRecoveryDataSourceConnectorPatchDataSourceConnectivityStatusToMap(model *backuprecoveryv1.DataSourceConnectorConnectivityStatus) (map[string]interface{}, error) {
+func ResourceIbmBackupRecoveryDataSourceConnectorPatchDataSourceConnectivityStatusToMap(model *backuprecoveryv1.ConnectorConnectivityStatus) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["is_connected"] = *model.IsConnected
 	if model.LastConnectedTimestampSecs != nil {

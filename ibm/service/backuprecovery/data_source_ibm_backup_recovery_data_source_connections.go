@@ -53,6 +53,11 @@ func DataSourceIbmBackupRecoveryDataSourceConnections() *schema.Resource {
 				Computed: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
+						"connection_env_type": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Specifies the environment type of the connection.",
+						},
 						"connection_id": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
@@ -165,6 +170,9 @@ func dataSourceIbmBackupRecoveryDataSourceConnectionsID(d *schema.ResourceData) 
 
 func DataSourceIbmBackupRecoveryDataSourceConnectionsDataSourceConnectionToMap(model *backuprecoveryv1.DataSourceConnection) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
+	if model.ConnectionEnvType != nil {
+		modelMap["connection_env_type"] = *model.ConnectionEnvType
+	}
 	if model.ConnectionID != nil {
 		modelMap["connection_id"] = *model.ConnectionID
 	}
