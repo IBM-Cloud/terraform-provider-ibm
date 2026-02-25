@@ -11,8 +11,10 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
@@ -653,7 +655,21 @@ func resourceIBMCdTektonPipelineRead(context context.Context, d *schema.Resource
 
 	getTektonPipelineOptions.SetID(d.Id())
 
-	tektonPipeline, response, err := cdTektonPipelineClient.GetTektonPipelineWithContext(context, getTektonPipelineOptions)
+	var tektonPipeline *cdtektonpipelinev2.TektonPipeline
+	var response *core.DetailedResponse
+	err = resource.RetryContext(context, 10*time.Second, func() *resource.RetryError {
+		tektonPipeline, response, err = cdTektonPipelineClient.GetTektonPipelineWithContext(context, getTektonPipelineOptions)
+		if err != nil || tektonPipeline == nil {
+			if response != nil && response.StatusCode == 404 {
+				return resource.RetryableError(err)
+			}
+			return resource.NonRetryableError(err)
+		}
+		return nil
+	})
+	if conns.IsResourceTimeoutError(err) {
+		tektonPipeline, response, err = cdTektonPipelineClient.GetTektonPipelineWithContext(context, getTektonPipelineOptions)
+	}
 	if err != nil {
 		if response != nil && response.StatusCode == 404 {
 			d.SetId("")
