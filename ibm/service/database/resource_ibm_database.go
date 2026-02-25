@@ -1005,7 +1005,7 @@ func getDefaultScalingGroups(_service string, _plan string, _hostFlavor string, 
 	}
 
 	getDefaultScalingGroupsResponse, response, err := cloudDatabasesClient.GetDefaultScalingGroups(getDefaultScalingGroupsOptions)
-	if err != nil {
+	if err != nil && response != nil {
 		if response.StatusCode == 422 {
 			return groups, fmt.Errorf("%s is not available on multitenant", service)
 		}
@@ -1411,7 +1411,7 @@ func resourceIBMDatabaseInstanceCreate(context context.Context, d *schema.Resour
 		getDeploymentInfoResponse, response, err := cloudDatabasesClient.GetDeploymentInfo(getDeploymentInfoOptions)
 
 		if err != nil {
-			if response.StatusCode == 404 {
+			if response != nil && response.StatusCode == 404 {
 				return diag.FromErr(fmt.Errorf("[ERROR] The database instance was not found in the region set for the Provider, or the default of us-south. Specify the correct region in the provider definition, or create a provider alias for the correct region. %v", err))
 			}
 			return diag.FromErr(fmt.Errorf("[ERROR] Error getting database config while updating adminpassword for: %s with error %s", instanceID, err))
@@ -1705,7 +1705,7 @@ func resourceIBMDatabaseInstanceRead(context context.Context, d *schema.Resource
 	getDeploymentInfoResponse, response, err := cloudDatabasesClient.GetDeploymentInfo(getDeploymentInfoOptions)
 
 	if err != nil {
-		if response.StatusCode == 404 {
+		if response != nil && response.StatusCode == 404 {
 			return diag.FromErr(fmt.Errorf("[ERROR] The database instance was not found in the region set for the Provider, or the default of us-south. Specify the correct region in the provider definition, or create a provider alias for the correct region. %v", err))
 		}
 		return diag.FromErr(fmt.Errorf("[ERROR] Error getting database config while updating adminpassword for: %s with error %s", instanceID, err))
@@ -3317,7 +3317,7 @@ func (u *DatabaseUser) Update(instanceID string, d *schema.ResourceData, meta in
 	updateUserResponse, response, err := cloudDatabasesClient.UpdateUser(updateUserOptions)
 
 	// user was found but an error occurs while triggering task
-	if err != nil || (response.StatusCode < 200 || response.StatusCode >= 300) {
+	if err != nil || (response != nil && (response.StatusCode < 200 || response.StatusCode >= 300)) {
 		return fmt.Errorf("[ERROR] UpdateUser (%s) failed %w\n%s", *updateUserOptions.Username, err, response)
 	}
 
