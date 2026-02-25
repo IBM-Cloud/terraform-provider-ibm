@@ -413,6 +413,7 @@ func ResourceIBMDatabaseInstance() *schema.Resource {
 			"group": {
 				Type:     schema.TypeSet,
 				Optional: true,
+				Computed: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"group_id": {
@@ -2960,6 +2961,8 @@ func validateGroupsDiff(_ context.Context, diff *schema.ResourceDiff, meta inter
 			}
 		}
 
+		suppressChange := true
+
 		// Get default or current group scaling values
 		for _, group := range tfGroups {
 			if group == nil {
@@ -2973,6 +2976,8 @@ func validateGroupsDiff(_ context.Context, diff *schema.ResourceDiff, meta inter
 					break
 				}
 			}
+
+			suppressChange = suppressChange && suppressGroupDiff(group, groupDefaults)
 
 			// set current nodeCount
 			nodeCount := groupDefaults.Members.Allocation
@@ -3019,9 +3024,48 @@ func validateGroupsDiff(_ context.Context, diff *schema.ResourceDiff, meta inter
 				}
 			}
 		}
+
+		if suppressChange {
+			oldGroup, _ := diff.GetChange("group")
+
+			log.Printf(
+				"suppressing change (%v)", oldGroup)
+
+			diff.SetNew("group", oldGroup)
+		}
 	}
 
 	return nil
+}
+
+func suppressGroupDiff(proposed *Group, current *Group) bool {
+	var currentMemberCount, proposedMemberCount int
+
+	currentMemberCount = current.Members.Allocation
+
+	if proposed.Members != nil {
+		proposedMemberCount = proposed.Members.Allocation
+	} else {
+		proposedMemberCount = currentMemberCount
+	}
+
+	if currentMemberCount != proposedMemberCount {
+		return false
+	}
+
+	if proposed.Memory != nil && current.Memory.Allocation != proposed.Memory.Allocation*proposedMemberCount {
+		return false
+	}
+
+	if proposed.Disk != nil && current.Disk.Allocation != proposed.Disk.Allocation*proposedMemberCount {
+		return false
+	}
+
+	if proposed.CPU != nil && current.CPU.Allocation != proposed.CPU.Allocation*proposedMemberCount {
+		return false
+	}
+
+	return true
 }
 
 func getCpuEnforcementRatios(service string, plan string, hostFlavor string, meta interface{}, group interface{}) (err error, cpuEnforcementRatioCeiling int, cpuEnforcementRatioMb int) {
