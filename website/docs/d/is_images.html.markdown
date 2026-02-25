@@ -31,7 +31,6 @@ data "ibm_is_images" "ds_images" {
   visibility = "public"
 }
 
-```terraform
 data "ibm_is_image" "example" {
   remote_account_id = "provider"
 }
