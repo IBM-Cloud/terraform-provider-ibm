@@ -317,6 +317,25 @@ func DataSourceIBMISImage() *schema.Resource {
 				Set:         flex.ResourceIBMVPCHash,
 				Description: "List of access tags",
 			},
+			"zones": &schema.Schema{
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "The zones in which this image is available for use.If the image has a status of `available` or `deprecated`, this will include all zones in the region.If the image has a status of `partially_available`, this will include one or more zones in the region.If the image has a status of `failed`, `obsolete`, `pending`, or `unusable`, this will be empty.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"href": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The URL for this zone.",
+						},
+						"name": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The globally unique name for this zone.",
+						},
+					},
+				},
+			},
 		},
 	}
 }
@@ -618,6 +637,17 @@ func imageGetById(context context.Context, d *schema.ResourceData, meta interfac
 		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting allowed_use: %s", err), "(Data) ibm_is_image", "read")
 		log.Println(tfErr.GetDiag())
 	}
+	zones := []map[string]interface{}{}
+	for _, zonesItem := range image.Zones {
+		zonesItemMap, err := DataSourceIBMIsImageZoneReferenceToMap(&zonesItem) // #nosec G601
+		if err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_image", "read", "zones-to-map").GetDiag()
+		}
+		zones = append(zones, zonesItemMap)
+	}
+	if err = d.Set("zones", zones); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting zones: %s", err), "(Data) ibm_is_image", "read", "set-zones").GetDiag()
+	}
 	return nil
 }
 
@@ -749,5 +779,11 @@ func DataSourceIBMIsImageAllowedUseToMap(model *vpcv1.ImageAllowedUse) (map[stri
 	if model.ApiVersion != nil {
 		modelMap["api_version"] = *model.ApiVersion
 	}
+	return modelMap, nil
+}
+func DataSourceIBMIsImageZoneReferenceToMap(model *vpcv1.ZoneReference) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	modelMap["href"] = *model.Href
+	modelMap["name"] = *model.Name
 	return modelMap, nil
 }

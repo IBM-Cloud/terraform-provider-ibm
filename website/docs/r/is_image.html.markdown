@@ -203,7 +203,10 @@ In addition to all argument reference list, you can access the following attribu
   **&#x2022;**  `ipxe`: user_data will be interpreted as a single URL to an iPXE script or as the text of an iPXE script.</br>
   
 - `visibility` - (String) The access scope of an image such as `private` or `public`.
-
+- `zones` - (List) The zones in which this image is available for use.If the image has a status of `available` or `deprecated`, this will include all zones in the region.If the image has a status of `partially_available`, this will include one or more zones in the region. If the image has a status of `failed`, `obsolete`, `pending`, or `unusable`, this will be empty.
+    Nested schema for **zones**:
+    - `href` - (String) The URL for this zone.
+    - `name` - (String) The globally unique name for this zone.
 
 ## Import
 

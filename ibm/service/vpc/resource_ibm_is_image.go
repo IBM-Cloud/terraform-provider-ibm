@@ -291,6 +291,25 @@ func ResourceIBMISImage() *schema.Resource {
 					},
 				},
 			},
+			"zones": &schema.Schema{
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "The zones in which this image is available for use.If the image has a status of `available` or `deprecated`, this will include all zones in the region.If the image has a status of `partially_available`, this will include one or more zones in the region.If the image has a status of `failed`, `obsolete`, `pending`, or `unusable`, this will be empty.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"href": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The URL for this zone.",
+						},
+						"name": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The globally unique name for this zone.",
+						},
+					},
+				},
+			},
 		},
 	}
 }
@@ -999,6 +1018,18 @@ func imgGet(context context.Context, d *schema.ResourceData, meta interface{}, i
 			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_image", "read", "set-resource_group").GetDiag()
 		}
 	}
+	zones := []map[string]interface{}{}
+	for _, zonesItem := range image.Zones {
+		zonesItemMap, err := ResourceIBMIsImageZoneReferenceToMap(&zonesItem) // #nosec G601
+		if err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_image", "read", "zones-to-map").GetDiag()
+		}
+		zones = append(zones, zonesItemMap)
+	}
+	if err = d.Set("zones", zones); err != nil {
+		err = fmt.Errorf("Error setting zones: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_image", "read", "set-zones").GetDiag()
+	}
 	return nil
 }
 
@@ -1133,5 +1164,11 @@ func ResourceIBMIsImageImageAllowUseToMap(model *vpcv1.ImageAllowedUse) (map[str
 	if model.Instance != nil {
 		modelMap["api_version"] = *model.ApiVersion
 	}
+	return modelMap, nil
+}
+func ResourceIBMIsImageZoneReferenceToMap(model *vpcv1.ZoneReference) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	modelMap["href"] = *model.Href
+	modelMap["name"] = *model.Name
 	return modelMap, nil
 }
