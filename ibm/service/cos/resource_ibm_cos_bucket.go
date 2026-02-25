@@ -7,11 +7,13 @@ import (
 	"context"
 	"fmt"
 	"log"
+	gohttp "net/http"
 	"os"
 	"regexp"
 	"strings"
 	"time"
 
+	bxsession "github.com/IBM-Cloud/bluemix-go/session"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
@@ -738,8 +740,98 @@ func expireRuleList(expireList []interface{}) []*s3.LifecycleRule {
 	return rules
 }
 
+// getS3ConfigForCOS creates an S3 configuration with proper authentication handling
+// including support for trusted profiles
+func getS3ConfigForCOS(meta interface{}, rsConClient *bxsession.Session, apiEndpoint, serviceID string) (*aws.Config, error) {
+	authEndpoint, err := rsConClient.Config.EndpointLocator.IAMEndpoint()
+	if err != nil {
+		return nil, err
+	}
+	authEndpointPath := fmt.Sprintf("%s%s", authEndpoint, "/identity/token")
+
+	apiKey := rsConClient.Config.BluemixAPIKey
+	iamAccessToken := rsConClient.Config.IAMAccessToken
+
+	// Get provider config to access trusted profile settings
+	providerConfig := meta.(conns.ClientSession)
+	sess, err := providerConfig.BluemixSession()
+	if err != nil {
+		return nil, err
+	}
+
+	// Access the provider's Config struct through environment or meta
+	// We need to check if trusted profile is configured
+	iamTrustedProfileID := os.Getenv("IC_IAM_TRUSTED_PROFILE_ID")
+	if iamTrustedProfileID == "" {
+		iamTrustedProfileID = os.Getenv("IBMCLOUD_IAM_TRUSTED_PROFILE_ID")
+	}
+
+	// Handle trusted profile scenario
+	if apiKey != "" && iamTrustedProfileID != "" {
+		initFunc := func() (*token.Token, error) {
+			iamURL := conns.EnvFallBack([]string{"IBMCLOUD_IAM_API_ENDPOINT"}, authEndpoint)
+
+			authenticator, err := core.NewIamAssumeAuthenticatorBuilder().
+				SetApiKey(apiKey).
+				SetIAMProfileID(iamTrustedProfileID).
+				SetURL(iamURL).
+				Build()
+
+			if err != nil {
+				return nil, fmt.Errorf("error building trusted profile authenticator: %v", err)
+			}
+
+			// Create a dummy HTTP request to get the access token
+			req, _ := gohttp.NewRequest("GET", "https://dummy.com", nil)
+
+			// Authenticate the request to populate the Authorization header
+			err = authenticator.Authenticate(req)
+			if err != nil {
+				return nil, fmt.Errorf("error authenticating with trusted profile: %v", err)
+			}
+
+			// Extract the Bearer token from the Authorization header
+			authHeader := req.Header.Get("Authorization")
+			accessToken := strings.TrimPrefix(authHeader, "Bearer ")
+
+			return &token.Token{
+				AccessToken:  accessToken,
+				RefreshToken: "",
+				TokenType:    "Bearer",
+				ExpiresIn:    int64((time.Hour * 1).Seconds()),
+				Expiration:   time.Now().Add(time.Hour).Unix(),
+			}, nil
+		}
+
+		s3Conf := aws.NewConfig().WithEndpoint(apiEndpoint).WithCredentials(ibmiam.NewCustomInitFuncCredentials(aws.NewConfig(), initFunc, authEndpointPath, serviceID)).WithS3ForcePathStyle(true)
+		return s3Conf, nil
+	}
+
+	// Handle API key scenario (without trusted profile)
+	if apiKey != "" {
+		s3Conf := aws.NewConfig().WithEndpoint(apiEndpoint).WithCredentials(ibmiam.NewStaticCredentials(aws.NewConfig(), authEndpointPath, apiKey, serviceID)).WithS3ForcePathStyle(true)
+		return s3Conf, nil
+	}
+
+	// Handle IAM access token scenario
+	if iamAccessToken != "" {
+		initFunc := func() (*token.Token, error) {
+			return &token.Token{
+				AccessToken:  sess.Config.IAMAccessToken,
+				RefreshToken: sess.Config.IAMRefreshToken,
+				TokenType:    "Bearer",
+				ExpiresIn:    int64((time.Hour * 248).Seconds()) * -1,
+				Expiration:   time.Now().Add(-1 * time.Hour).Unix(),
+			}, nil
+		}
+		s3Conf := aws.NewConfig().WithEndpoint(apiEndpoint).WithCredentials(ibmiam.NewCustomInitFuncCredentials(aws.NewConfig(), initFunc, authEndpointPath, serviceID)).WithS3ForcePathStyle(true)
+		return s3Conf, nil
+	}
+
+	return nil, fmt.Errorf("no valid authentication method found")
+}
+
 func resourceIBMCOSBucketUpdate(d *schema.ResourceData, meta interface{}) error {
-	var s3Conf *aws.Config
 	rsConClient, err := meta.(conns.ClientSession).BluemixSession()
 	if err != nil {
 		return err
@@ -779,28 +871,9 @@ func resourceIBMCOSBucketUpdate(d *schema.ResourceData, meta interface{}) error 
 	apiEndpoint = conns.FileFallBack(rsConClient.Config.EndpointsFile, visibility, "IBMCLOUD_COS_ENDPOINT", bLocation, apiEndpoint)
 	apiEndpoint = conns.EnvFallBack([]string{"IBMCLOUD_COS_ENDPOINT"}, apiEndpoint)
 
-	authEndpoint, err := rsConClient.Config.EndpointLocator.IAMEndpoint()
-
+	s3Conf, err := getS3ConfigForCOS(meta, rsConClient, apiEndpoint, serviceID)
 	if err != nil {
 		return err
-	}
-	authEndpointPath := fmt.Sprintf("%s%s", authEndpoint, "/identity/token")
-	apiKey := rsConClient.Config.BluemixAPIKey
-	if apiKey != "" {
-		s3Conf = aws.NewConfig().WithEndpoint(apiEndpoint).WithCredentials(ibmiam.NewStaticCredentials(aws.NewConfig(), authEndpointPath, apiKey, serviceID)).WithS3ForcePathStyle(true)
-	}
-	iamAccessToken := rsConClient.Config.IAMAccessToken
-	if iamAccessToken != "" {
-		initFunc := func() (*token.Token, error) {
-			return &token.Token{
-				AccessToken:  rsConClient.Config.IAMAccessToken,
-				RefreshToken: rsConClient.Config.IAMRefreshToken,
-				TokenType:    "Bearer",
-				ExpiresIn:    int64((time.Hour * 248).Seconds()) * -1,
-				Expiration:   time.Now().Add(-1 * time.Hour).Unix(),
-			}, nil
-		}
-		s3Conf = aws.NewConfig().WithEndpoint(apiEndpoint).WithCredentials(ibmiam.NewCustomInitFuncCredentials(aws.NewConfig(), initFunc, authEndpointPath, serviceID)).WithS3ForcePathStyle(true)
 	}
 	s3Sess := session.Must(session.NewSession())
 	s3Client := s3.New(s3Sess, s3Conf)
@@ -1146,29 +1219,9 @@ func resourceIBMCOSBucketRead(d *schema.ResourceData, meta interface{}) error {
 	apiEndpoint = conns.FileFallBack(rsConClient.Config.EndpointsFile, visibility, "IBMCLOUD_COS_ENDPOINT", bLocation, apiEndpoint)
 	apiEndpoint = conns.EnvFallBack([]string{"IBMCLOUD_COS_ENDPOINT"}, apiEndpoint)
 
-	authEndpoint, err := rsConClient.Config.EndpointLocator.IAMEndpoint()
-
+	s3Conf, err = getS3ConfigForCOS(meta, rsConClient, apiEndpoint, serviceID)
 	if err != nil {
-
 		return err
-	}
-	authEndpointPath := fmt.Sprintf("%s%s", authEndpoint, "/identity/token")
-	apiKey := rsConClient.Config.BluemixAPIKey
-	if apiKey != "" {
-		s3Conf = aws.NewConfig().WithEndpoint(apiEndpoint).WithCredentials(ibmiam.NewStaticCredentials(aws.NewConfig(), authEndpointPath, apiKey, serviceID)).WithS3ForcePathStyle(true)
-	}
-	iamAccessToken := rsConClient.Config.IAMAccessToken
-	if iamAccessToken != "" && apiKey == "" {
-		initFunc := func() (*token.Token, error) {
-			return &token.Token{
-				AccessToken:  rsConClient.Config.IAMAccessToken,
-				RefreshToken: rsConClient.Config.IAMRefreshToken,
-				TokenType:    "Bearer",
-				ExpiresIn:    int64((time.Hour * 248).Seconds()) * -1,
-				Expiration:   time.Now().Add(-1 * time.Hour).Unix(),
-			}, nil
-		}
-		s3Conf = aws.NewConfig().WithEndpoint(apiEndpoint).WithCredentials(ibmiam.NewCustomInitFuncCredentials(aws.NewConfig(), initFunc, authEndpointPath, serviceID)).WithS3ForcePathStyle(true)
 	}
 	s3Sess := session.Must(session.NewSession())
 	s3Client := s3.New(s3Sess, s3Conf)
@@ -1483,27 +1536,9 @@ func resourceIBMCOSBucketCreate(d *schema.ResourceData, meta interface{}) error 
 		create.IBMSSEKPEncryptionAlgorithm = aws.String(keyAlgorithm)
 	}
 
-	authEndpoint, err := rsConClient.Config.EndpointLocator.IAMEndpoint()
+	s3Conf, err = getS3ConfigForCOS(meta, rsConClient, apiEndpoint, serviceID)
 	if err != nil {
 		return err
-	}
-	authEndpointPath := fmt.Sprintf("%s%s", authEndpoint, "/identity/token")
-	apiKey := rsConClient.Config.BluemixAPIKey
-	if apiKey != "" {
-		s3Conf = aws.NewConfig().WithEndpoint(apiEndpoint).WithCredentials(ibmiam.NewStaticCredentials(aws.NewConfig(), authEndpointPath, apiKey, serviceID)).WithS3ForcePathStyle(true)
-	}
-	iamAccessToken := rsConClient.Config.IAMAccessToken
-	if iamAccessToken != "" && apiKey == "" {
-		initFunc := func() (*token.Token, error) {
-			return &token.Token{
-				AccessToken:  rsConClient.Config.IAMAccessToken,
-				RefreshToken: rsConClient.Config.IAMRefreshToken,
-				TokenType:    "Bearer",
-				ExpiresIn:    int64((time.Hour * 248).Seconds()) * -1,
-				Expiration:   time.Now().Add(-1 * time.Hour).Unix(),
-			}, nil
-		}
-		s3Conf = aws.NewConfig().WithEndpoint(apiEndpoint).WithCredentials(ibmiam.NewCustomInitFuncCredentials(aws.NewConfig(), initFunc, authEndpointPath, serviceID)).WithS3ForcePathStyle(true)
 	}
 
 	s3Sess := session.Must(session.NewSession())
@@ -1577,28 +1612,9 @@ func resourceIBMCOSBucketDelete(d *schema.ResourceData, meta interface{}) error 
 	if apiEndpoint == "" {
 		return fmt.Errorf("[ERROR] The endpoint doesn't exists for given location %s and endpoint type %s", bLocation, endpointType)
 	}
-	authEndpoint, err := rsConClient.Config.EndpointLocator.IAMEndpoint()
+	s3Conf, err := getS3ConfigForCOS(meta, rsConClient, apiEndpoint, serviceID)
 	if err != nil {
 		return err
-	}
-	authEndpointPath := fmt.Sprintf("%s%s", authEndpoint, "/identity/token")
-
-	apiKey := rsConClient.Config.BluemixAPIKey
-	if apiKey != "" {
-		s3Conf = aws.NewConfig().WithEndpoint(apiEndpoint).WithCredentials(ibmiam.NewStaticCredentials(aws.NewConfig(), authEndpointPath, apiKey, serviceID)).WithS3ForcePathStyle(true)
-	}
-	iamAccessToken := rsConClient.Config.IAMAccessToken
-	if iamAccessToken != "" && apiKey == "" {
-		initFunc := func() (*token.Token, error) {
-			return &token.Token{
-				AccessToken:  rsConClient.Config.IAMAccessToken,
-				RefreshToken: rsConClient.Config.IAMRefreshToken,
-				TokenType:    "Bearer",
-				ExpiresIn:    int64((time.Hour * 248).Seconds()) * -1,
-				Expiration:   time.Now().Add(-1 * time.Hour).Unix(),
-			}, nil
-		}
-		s3Conf = aws.NewConfig().WithEndpoint(apiEndpoint).WithCredentials(ibmiam.NewCustomInitFuncCredentials(aws.NewConfig(), initFunc, authEndpointPath, serviceID)).WithS3ForcePathStyle(true)
 	}
 
 	s3Sess := session.Must(session.NewSession())
@@ -1712,28 +1728,9 @@ func resourceIBMCOSBucketExists(d *schema.ResourceData, meta interface{}) (bool,
 	if apiEndpoint == "" {
 		return false, fmt.Errorf("[ERROR] The endpoint doesn't exists for given endpoint type %s", endpointType)
 	}
-	authEndpoint, err := rsConClient.Config.EndpointLocator.IAMEndpoint()
+	s3Conf, err = getS3ConfigForCOS(meta, rsConClient, apiEndpoint, serviceID)
 	if err != nil {
 		return false, err
-	}
-	authEndpointPath := fmt.Sprintf("%s%s", authEndpoint, "/identity/token")
-
-	apiKey := rsConClient.Config.BluemixAPIKey
-	if apiKey != "" {
-		s3Conf = aws.NewConfig().WithEndpoint(apiEndpoint).WithCredentials(ibmiam.NewStaticCredentials(aws.NewConfig(), authEndpointPath, apiKey, serviceID)).WithS3ForcePathStyle(true)
-	}
-	iamAccessToken := rsConClient.Config.IAMAccessToken
-	if iamAccessToken != "" && apiKey == "" {
-		initFunc := func() (*token.Token, error) {
-			return &token.Token{
-				AccessToken:  rsConClient.Config.IAMAccessToken,
-				RefreshToken: rsConClient.Config.IAMRefreshToken,
-				TokenType:    "Bearer",
-				ExpiresIn:    int64((time.Hour * 248).Seconds()) * -1,
-				Expiration:   time.Now().Add(-1 * time.Hour).Unix(),
-			}, nil
-		}
-		s3Conf = aws.NewConfig().WithEndpoint(apiEndpoint).WithCredentials(ibmiam.NewCustomInitFuncCredentials(aws.NewConfig(), initFunc, authEndpointPath, serviceID)).WithS3ForcePathStyle(true)
 	}
 
 	s3Sess := session.Must(session.NewSession())
