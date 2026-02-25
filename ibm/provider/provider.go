@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strconv"
 	"sync"
 	"time"
 
@@ -83,116 +84,98 @@ func Provider() *schema.Provider {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Description: "The Bluemix API Key",
-				DefaultFunc: schema.MultiEnvDefaultFunc([]string{"BM_API_KEY", "BLUEMIX_API_KEY"}, nil),
 				Deprecated:  "This field is deprecated please use ibmcloud_api_key",
 			},
 			"bluemix_timeout": {
 				Type:        schema.TypeInt,
 				Optional:    true,
 				Description: "The timeout (in seconds) to set for any Bluemix API calls made.",
-				DefaultFunc: schema.MultiEnvDefaultFunc([]string{"BM_TIMEOUT", "BLUEMIX_TIMEOUT"}, nil),
 				Deprecated:  "This field is deprecated please use ibmcloud_timeout",
 			},
 			"ibmcloud_api_key": {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Description: "The IBM Cloud API Key",
-				DefaultFunc: schema.MultiEnvDefaultFunc([]string{"IC_API_KEY", "IBMCLOUD_API_KEY"}, nil),
 			},
 			"ibmcloud_timeout": {
 				Type:        schema.TypeInt,
 				Optional:    true,
 				Description: "The timeout (in seconds) to set for any IBM Cloud API calls made.",
-				DefaultFunc: schema.MultiEnvDefaultFunc([]string{"IC_TIMEOUT", "IBMCLOUD_TIMEOUT"}, 60),
 			},
 			"region": {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Description: "The IBM cloud Region (for example 'us-south').",
-				DefaultFunc: schema.MultiEnvDefaultFunc([]string{"IC_REGION", "IBMCLOUD_REGION", "BM_REGION", "BLUEMIX_REGION"}, "us-south"),
 			},
 			"zone": {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Description: "The IBM cloud Region zone (for example 'us-south-1') for power resources.",
-				DefaultFunc: schema.MultiEnvDefaultFunc([]string{"IC_ZONE", "IBMCLOUD_ZONE"}, ""),
 			},
 			"resource_group": {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Description: "The Resource group id.",
-				DefaultFunc: schema.MultiEnvDefaultFunc([]string{"IC_RESOURCE_GROUP", "IBMCLOUD_RESOURCE_GROUP", "BM_RESOURCE_GROUP", "BLUEMIX_RESOURCE_GROUP"}, ""),
 			},
 			"softlayer_api_key": {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Description: "The SoftLayer API Key",
-				DefaultFunc: schema.MultiEnvDefaultFunc([]string{"SL_API_KEY", "SOFTLAYER_API_KEY"}, nil),
 				Deprecated:  "This field is deprecated please use iaas_classic_api_key",
 			},
 			"softlayer_username": {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Description: "The SoftLayer user name",
-				DefaultFunc: schema.MultiEnvDefaultFunc([]string{"SL_USERNAME", "SOFTLAYER_USERNAME"}, nil),
 				Deprecated:  "This field is deprecated please use iaas_classic_username",
 			},
 			"softlayer_endpoint_url": {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Description: "The Softlayer Endpoint",
-				DefaultFunc: schema.MultiEnvDefaultFunc([]string{"SL_ENDPOINT_URL", "SOFTLAYER_ENDPOINT_URL"}, nil),
 				Deprecated:  "This field is deprecated please use iaas_classic_endpoint_url",
 			},
 			"softlayer_timeout": {
 				Type:        schema.TypeInt,
 				Optional:    true,
 				Description: "The timeout (in seconds) to set for any SoftLayer API calls made.",
-				DefaultFunc: schema.MultiEnvDefaultFunc([]string{"SL_TIMEOUT", "SOFTLAYER_TIMEOUT"}, nil),
 				Deprecated:  "This field is deprecated please use iaas_classic_timeout",
 			},
 			"iaas_classic_api_key": {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Description: "The Classic Infrastructure API Key",
-				DefaultFunc: schema.MultiEnvDefaultFunc([]string{"IAAS_CLASSIC_API_KEY"}, nil),
 			},
 			"iaas_classic_username": {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Description: "The Classic Infrastructure API user name",
-				DefaultFunc: schema.MultiEnvDefaultFunc([]string{"IAAS_CLASSIC_USERNAME"}, nil),
 			},
 			"iaas_classic_endpoint_url": {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Description: "The Classic Infrastructure Endpoint",
-				DefaultFunc: schema.MultiEnvDefaultFunc([]string{"IAAS_CLASSIC_ENDPOINT_URL"}, "https://api.softlayer.com/rest/v3"),
 			},
 			"iaas_classic_timeout": {
 				Type:        schema.TypeInt,
 				Optional:    true,
 				Description: "The timeout (in seconds) to set for any Classic Infrastructure API calls made.",
-				DefaultFunc: schema.MultiEnvDefaultFunc([]string{"IAAS_CLASSIC_TIMEOUT"}, 60),
 			},
 			"max_retries": {
 				Type:        schema.TypeInt,
 				Optional:    true,
 				Description: "The retry count to set for API calls.",
-				DefaultFunc: schema.EnvDefaultFunc("MAX_RETRIES", 10),
 			},
 			"function_namespace": {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Description: "The IBM Cloud Function namespace",
-				DefaultFunc: schema.EnvDefaultFunc("FUNCTION_NAMESPACE", nil),
 				Deprecated:  "This field will be deprecated soon",
 			},
 			"riaas_endpoint": {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Description: "The next generation infrastructure service endpoint url.",
-				DefaultFunc: schema.MultiEnvDefaultFunc([]string{"RIAAS_ENDPOINT"}, nil),
 				Deprecated:  "This field is deprecated use generation",
 			},
 			"generation": {
@@ -207,7 +190,6 @@ func Provider() *schema.Provider {
 				Optional:      true,
 				Description:   "IAM Trusted Profile ID",
 				ConflictsWith: []string{"iam_profile_name"},
-				DefaultFunc:   schema.MultiEnvDefaultFunc([]string{"IC_IAM_PROFILE_ID", "IBMCLOUD_IAM_PROFILE_ID"}, nil),
 			},
 			"iam_profile_name": {
 				Type:          schema.TypeString,
@@ -215,46 +197,39 @@ func Provider() *schema.Provider {
 				ConflictsWith: []string{"iam_profile_id"},
 				RequiredWith:  []string{"ibmcloud_account_id"},
 				Description:   "IAM Trusted Profile Name",
-				DefaultFunc:   schema.MultiEnvDefaultFunc([]string{"IC_IAM_PROFILE_NAME", "IBMCLOUD_IAM_PROFILE_NAME"}, nil),
 			},
 			"iam_token": {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Description: "IAM Authentication token",
-				DefaultFunc: schema.MultiEnvDefaultFunc([]string{"IC_IAM_TOKEN", "IBMCLOUD_IAM_TOKEN"}, nil),
 			},
 			"iam_refresh_token": {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Description: "IAM Authentication refresh token",
-				DefaultFunc: schema.MultiEnvDefaultFunc([]string{"IC_IAM_REFRESH_TOKEN", "IBMCLOUD_IAM_REFRESH_TOKEN"}, nil),
 			},
 			"visibility": {
 				Type:         schema.TypeString,
 				Optional:     true,
 				ValidateFunc: validate.ValidateAllowedStringValues([]string{"public", "private", "public-and-private"}),
 				Description:  "Visibility of the provider if it is private or public.",
-				DefaultFunc:  schema.MultiEnvDefaultFunc([]string{"IC_VISIBILITY", "IBMCLOUD_VISIBILITY"}, "public"),
 			},
 			"private_endpoint_type": {
 				Type:         schema.TypeString,
 				Optional:     true,
 				ValidateFunc: validate.ValidateAllowedStringValues([]string{"vpe"}),
 				Description:  "Private Endpoint type used by the service endpoints. Example: vpe.",
-				DefaultFunc:  schema.MultiEnvDefaultFunc([]string{"IC_PRIVATE_ENDPOINT_TYPE", "IBMCLOUD_PRIVATE_ENDPOINT_TYPE"}, nil),
 			},
 			"endpoints_file_path": {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Description: "Path of the file that contains private and public regional endpoints mapping",
-				DefaultFunc: schema.MultiEnvDefaultFunc([]string{"IC_ENDPOINTS_FILE_PATH", "IBMCLOUD_ENDPOINTS_FILE_PATH"}, nil),
 			},
 			"ibmcloud_account_id": {
 				Type:         schema.TypeString,
 				Optional:     true,
 				Description:  "The IBM Cloud account ID",
 				RequiredWith: []string{"iam_profile_name"},
-				DefaultFunc:  schema.MultiEnvDefaultFunc([]string{"IC_ACCOUNT_ID", "IBMCLOUD_ACCOUNT_ID"}, nil),
 			},
 		},
 
@@ -2564,12 +2539,202 @@ func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 		file = f.(string)
 	}
 
+	// Apply default values for fields that had DefaultFunc removed for mux compatibility
+	// These defaults match the framework provider's Configure() behavior
+
+	// bluemix_api_key / ibmcloud_api_key - check environment variables
+	if bluemixAPIKey == "" {
+		if envKey := os.Getenv("IC_API_KEY"); envKey != "" {
+			bluemixAPIKey = envKey
+		} else if envKey := os.Getenv("IBMCLOUD_API_KEY"); envKey != "" {
+			bluemixAPIKey = envKey
+		}
+	}
+
+	// bluemix_timeout / ibmcloud_timeout - default: 60
+	if bluemixTimeout == 0 {
+		if timeout := os.Getenv("IC_TIMEOUT"); timeout != "" {
+			// Try to parse, default to 60 if parsing fails
+			if parsed, err := strconv.Atoi(timeout); err == nil {
+				bluemixTimeout = parsed
+			} else {
+				bluemixTimeout = 60
+			}
+		} else if timeout := os.Getenv("IBMCLOUD_TIMEOUT"); timeout != "" {
+			if parsed, err := strconv.Atoi(timeout); err == nil {
+				bluemixTimeout = parsed
+			} else {
+				bluemixTimeout = 60
+			}
+		} else {
+			bluemixTimeout = 60
+		}
+	}
+
+	// softlayer_username / iaas_classic_username - check environment variables
+	if softlayerUsername == "" {
+		if envUser := os.Getenv("SL_USERNAME"); envUser != "" {
+			softlayerUsername = envUser
+		} else if envUser := os.Getenv("SOFTLAYER_USERNAME"); envUser != "" {
+			softlayerUsername = envUser
+		} else if envUser := os.Getenv("IAAS_CLASSIC_USERNAME"); envUser != "" {
+			softlayerUsername = envUser
+		}
+	}
+
+	// softlayer_api_key / iaas_classic_api_key - check environment variables
+	if softlayerAPIKey == "" {
+		if envKey := os.Getenv("SL_API_KEY"); envKey != "" {
+			softlayerAPIKey = envKey
+		} else if envKey := os.Getenv("SOFTLAYER_API_KEY"); envKey != "" {
+			softlayerAPIKey = envKey
+		} else if envKey := os.Getenv("IAAS_CLASSIC_API_KEY"); envKey != "" {
+			softlayerAPIKey = envKey
+		}
+	}
+
+	// softlayer_endpoint_url / iaas_classic_endpoint_url - default: "https://api.softlayer.com/rest/v3"
+	if softlayerEndpointUrl == "" {
+		if endpoint := os.Getenv("SL_ENDPOINT_URL"); endpoint != "" {
+			softlayerEndpointUrl = endpoint
+		} else if endpoint := os.Getenv("SOFTLAYER_ENDPOINT_URL"); endpoint != "" {
+			softlayerEndpointUrl = endpoint
+		} else if endpoint := os.Getenv("IAAS_CLASSIC_ENDPOINT_URL"); endpoint != "" {
+			softlayerEndpointUrl = endpoint
+		} else {
+			softlayerEndpointUrl = "https://api.softlayer.com/rest/v3"
+		}
+	}
+
+	// softlayer_timeout / iaas_classic_timeout - default: 60
+	if softlayerTimeout == 0 {
+		if timeout := os.Getenv("SL_TIMEOUT"); timeout != "" {
+			if parsed, err := strconv.Atoi(timeout); err == nil {
+				softlayerTimeout = parsed
+			} else {
+				softlayerTimeout = 60
+			}
+		} else if timeout := os.Getenv("SOFTLAYER_TIMEOUT"); timeout != "" {
+			if parsed, err := strconv.Atoi(timeout); err == nil {
+				softlayerTimeout = parsed
+			} else {
+				softlayerTimeout = 60
+			}
+		} else if timeout := os.Getenv("IAAS_CLASSIC_TIMEOUT"); timeout != "" {
+			if parsed, err := strconv.Atoi(timeout); err == nil {
+				softlayerTimeout = parsed
+			} else {
+				softlayerTimeout = 60
+			}
+		} else {
+			softlayerTimeout = 60
+		}
+	}
+
+	// visibility - default: "public"
+	if visibility == "" {
+		if vis := os.Getenv("IC_VISIBILITY"); vis != "" {
+			visibility = vis
+		} else if vis := os.Getenv("IBMCLOUD_VISIBILITY"); vis != "" {
+			visibility = vis
+		} else {
+			visibility = "public"
+		}
+	}
+
+	// private_endpoint_type - check environment variable
+	if privateEndpointType == "" {
+		if pet := os.Getenv("PRIVATE_ENDPOINT_TYPE"); pet != "" {
+			privateEndpointType = pet
+		}
+	}
+
+	// endpoints_file_path - check environment variable
+	if file == "" {
+		if path := os.Getenv("ENDPOINTS_FILE_PATH"); path != "" {
+			file = path
+		}
+	}
+
+	// iam_profile_id - check environment variable
+	if iamTrustedProfileId == "" {
+		if profileId := os.Getenv("IC_IAM_PROFILE_ID"); profileId != "" {
+			iamTrustedProfileId = profileId
+		} else if profileId := os.Getenv("IBMCLOUD_IAM_PROFILE_ID"); profileId != "" {
+			iamTrustedProfileId = profileId
+		}
+	}
+
+	// iam_profile_name - check environment variable
+	if iamTrustedProfileName == "" {
+		if profileName := os.Getenv("IC_IAM_PROFILE_NAME"); profileName != "" {
+			iamTrustedProfileName = profileName
+		} else if profileName := os.Getenv("IBMCLOUD_IAM_PROFILE_NAME"); profileName != "" {
+			iamTrustedProfileName = profileName
+		}
+	}
+
+	// iam_token - check environment variable
+	if iamToken == "" {
+		if token := os.Getenv("IC_IAM_TOKEN"); token != "" {
+			iamToken = token
+		} else if token := os.Getenv("IBMCLOUD_IAM_TOKEN"); token != "" {
+			iamToken = token
+		}
+	}
+
+	// iam_refresh_token - check environment variable
+	if iamRefreshToken == "" {
+		if refreshToken := os.Getenv("IC_IAM_REFRESH_TOKEN"); refreshToken != "" {
+			iamRefreshToken = refreshToken
+		} else if refreshToken := os.Getenv("IBMCLOUD_IAM_REFRESH_TOKEN"); refreshToken != "" {
+			iamRefreshToken = refreshToken
+		}
+	}
+
+	// ibmcloud_account_id - check environment variable
+	if account == "" {
+		if accountId := os.Getenv("IC_ACCOUNT_ID"); accountId != "" {
+			account = accountId
+		} else if accountId := os.Getenv("IBMCLOUD_ACCOUNT_ID"); accountId != "" {
+			account = accountId
+		}
+	}
+
 	resourceGrp := d.Get("resource_group").(string)
 	region := d.Get("region").(string)
 	zone := d.Get("zone").(string)
 	retryCount := d.Get("max_retries").(int)
 	wskNameSpace := d.Get("function_namespace").(string)
 	riaasEndPoint := d.Get("riaas_endpoint").(string)
+
+	// region - default: "us-south"
+	if region == "" {
+		if reg := os.Getenv("IC_REGION"); reg != "" {
+			region = reg
+		} else if reg := os.Getenv("IBMCLOUD_REGION"); reg != "" {
+			region = reg
+		} else if reg := os.Getenv("BM_REGION"); reg != "" {
+			region = reg
+		} else if reg := os.Getenv("BLUEMIX_REGION"); reg != "" {
+			region = reg
+		} else {
+			region = "us-south"
+		}
+	}
+
+	// max_retries - default: 10
+	if retryCount == 0 {
+		if retries := os.Getenv("MAX_RETRIES"); retries != "" {
+			if parsed, err := strconv.Atoi(retries); err == nil {
+				retryCount = parsed
+			} else {
+				retryCount = 10
+			}
+		} else {
+			retryCount = 10
+		}
+	}
 
 	wskEnvVal, err := schema.EnvDefaultFunc("FUNCTION_NAMESPACE", "")()
 	if err != nil {
