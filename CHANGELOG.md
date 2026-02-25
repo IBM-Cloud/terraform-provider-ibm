@@ -1,3 +1,16 @@
+# 1.88.3 (February 23, 2026)
+
+## Bug Fixes
+
+### Backup/Recovery
+* update connection schema ([6645](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6645))
+
+
+## Enhancements
+
+### General
+* updated code owners ([6674](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6674))
+
 # 1.88.2 (February 13, 2026)
 
 ## Bug Fixes
