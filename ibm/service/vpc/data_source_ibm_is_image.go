@@ -514,6 +514,17 @@ func imageGetByName(context context.Context, d *schema.ResourceData, meta interf
 		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting allowed_use: %s", err), "(Data) ibm_is_image", "read")
 		log.Println(tfErr.GetDiag())
 	}
+	zones := []map[string]interface{}{}
+	for _, zonesItem := range image.Zones {
+		zonesItemMap, err := DataSourceIBMIsImageZoneReferenceToMap(&zonesItem) // #nosec G601
+		if err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_image", "read", "zones-to-map").GetDiag()
+		}
+		zones = append(zones, zonesItemMap)
+	}
+	if err = d.Set("zones", zones); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting zones: %s", err), "(Data) ibm_is_image", "read", "set-zones").GetDiag()
+	}
 	return nil
 
 }
