@@ -300,44 +300,29 @@ func resourceIBMCdTektonPipelineTriggerPropertyUpdate(context context.Context, d
 	replaceTektonPipelineTriggerPropertyOptions.SetTriggerID(d.Get("trigger_id").(string))
 	replaceTektonPipelineTriggerPropertyOptions.SetName(d.Get("name").(string))
 	replaceTektonPipelineTriggerPropertyOptions.SetType(d.Get("type").(string))
-
-	hasChange := false
-
-	if d.HasChange("locked") {
+	if _, ok := d.GetOk("value"); ok {
+		replaceTektonPipelineTriggerPropertyOptions.SetValue(d.Get("value").(string))
+	}
+	if _, ok := d.GetOk("enum"); ok {
+		var enum []string
+		for _, v := range d.Get("enum").([]interface{}) {
+			enumItem := v.(string)
+			enum = append(enum, enumItem)
+		}
+		replaceTektonPipelineTriggerPropertyOptions.SetEnum(enum)
+	}
+	if _, ok := d.GetOk("path"); ok {
+		replaceTektonPipelineTriggerPropertyOptions.SetPath(d.Get("path").(string))
+	}
+	if _, ok := d.GetOkExists("locked"); ok {
 		replaceTektonPipelineTriggerPropertyOptions.SetLocked(d.Get("locked").(bool))
-		hasChange = true
-	}
-	if d.Get("type").(string) == "integration" {
-		if d.HasChange("value") || d.HasChange("path") || d.HasChange("locked") {
-			replaceTektonPipelineTriggerPropertyOptions.SetValue(d.Get("value").(string))
-			replaceTektonPipelineTriggerPropertyOptions.SetPath(d.Get("path").(string))
-			hasChange = true
-		}
-	} else if d.Get("type").(string) == "single_select" {
-		if d.HasChange("enum") || d.HasChange("value") || d.HasChange("locked") {
-			var enum []string
-			for _, v := range d.Get("enum").([]interface{}) {
-				enumItem := v.(string)
-				enum = append(enum, enumItem)
-			}
-			replaceTektonPipelineTriggerPropertyOptions.SetEnum(enum)
-			replaceTektonPipelineTriggerPropertyOptions.SetValue(d.Get("value").(string))
-			hasChange = true
-		}
-	} else {
-		if d.HasChange("value") || d.HasChange("locked") {
-			replaceTektonPipelineTriggerPropertyOptions.SetValue(d.Get("value").(string))
-			hasChange = true
-		}
 	}
 
-	if hasChange {
-		_, _, err = cdTektonPipelineClient.ReplaceTektonPipelineTriggerPropertyWithContext(context, replaceTektonPipelineTriggerPropertyOptions)
-		if err != nil {
-			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("ReplaceTektonPipelineTriggerPropertyWithContext failed: %s", err.Error()), "ibm_cd_tekton_pipeline_trigger_property", "update")
-			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
-			return tfErr.GetDiag()
-		}
+	_, _, err = cdTektonPipelineClient.ReplaceTektonPipelineTriggerPropertyWithContext(context, replaceTektonPipelineTriggerPropertyOptions)
+	if err != nil {
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("ReplaceTektonPipelineTriggerPropertyWithContext failed: %s", err.Error()), "ibm_cd_tekton_pipeline_trigger_property", "update")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	return resourceIBMCdTektonPipelineTriggerPropertyRead(context, d, meta)

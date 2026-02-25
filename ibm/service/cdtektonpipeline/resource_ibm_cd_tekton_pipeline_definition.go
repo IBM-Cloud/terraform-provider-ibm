@@ -235,24 +235,17 @@ func resourceIBMCdTektonPipelineDefinitionUpdate(context context.Context, d *sch
 	replaceTektonPipelineDefinitionOptions.SetPipelineID(parts[0])
 	replaceTektonPipelineDefinitionOptions.SetDefinitionID(parts[1])
 	replaceTektonPipelineDefinitionOptions.SetPipelineID(d.Get("pipeline_id").(string))
-
-	hasChange := false
-
-	if d.HasChange("source") {
-		source, err := ResourceIBMCdTektonPipelineDefinitionMapToDefinitionSource(d.Get("source.0").(map[string]interface{}))
-		if err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_cd_tekton_pipeline_definition", "update", "parse-source").GetDiag()
-		}
-		replaceTektonPipelineDefinitionOptions.SetSource(source)
-		hasChange = true
+	source, err := ResourceIBMCdTektonPipelineDefinitionMapToDefinitionSource(d.Get("source.0").(map[string]interface{}))
+	if err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_cd_tekton_pipeline_definition", "update", "parse-source").GetDiag()
 	}
-	if hasChange {
-		_, _, err = cdTektonPipelineClient.ReplaceTektonPipelineDefinitionWithContext(context, replaceTektonPipelineDefinitionOptions)
-		if err != nil {
-			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("ReplaceTektonPipelineDefinitionWithContext failed: %s", err.Error()), "ibm_cd_tekton_pipeline_definition", "update")
-			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
-			return tfErr.GetDiag()
-		}
+	replaceTektonPipelineDefinitionOptions.SetSource(source)
+
+	_, _, err = cdTektonPipelineClient.ReplaceTektonPipelineDefinitionWithContext(context, replaceTektonPipelineDefinitionOptions)
+	if err != nil {
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("ReplaceTektonPipelineDefinitionWithContext failed: %s", err.Error()), "ibm_cd_tekton_pipeline_definition", "update")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	return resourceIBMCdTektonPipelineDefinitionRead(context, d, meta)

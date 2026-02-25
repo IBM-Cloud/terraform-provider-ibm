@@ -276,44 +276,29 @@ func resourceIBMCdTektonPipelinePropertyUpdate(context context.Context, d *schem
 	replaceTektonPipelinePropertyOptions.SetPipelineID(d.Get("pipeline_id").(string))
 	replaceTektonPipelinePropertyOptions.SetName(d.Get("name").(string))
 	replaceTektonPipelinePropertyOptions.SetType(d.Get("type").(string))
-
-	hasChange := false
-
-	if d.HasChange("locked") {
+	if _, ok := d.GetOk("value"); ok {
+		replaceTektonPipelinePropertyOptions.SetValue(d.Get("value").(string))
+	}
+	if _, ok := d.GetOk("enum"); ok {
+		var enum []string
+		for _, v := range d.Get("enum").([]interface{}) {
+			enumItem := v.(string)
+			enum = append(enum, enumItem)
+		}
+		replaceTektonPipelinePropertyOptions.SetEnum(enum)
+	}
+	if _, ok := d.GetOkExists("locked"); ok {
 		replaceTektonPipelinePropertyOptions.SetLocked(d.Get("locked").(bool))
-		hasChange = true
 	}
-	if d.Get("type").(string) == "integration" {
-		if d.HasChange("value") || d.HasChange("path") || d.HasChange("locked") {
-			replaceTektonPipelinePropertyOptions.SetValue(d.Get("value").(string))
-			replaceTektonPipelinePropertyOptions.SetPath(d.Get("path").(string))
-			hasChange = true
-		}
-	} else if d.Get("type").(string) == "single_select" {
-		if d.HasChange("enum") || d.HasChange("value") || d.HasChange("locked") {
-			var enum []string
-			for _, v := range d.Get("enum").([]interface{}) {
-				enumItem := v.(string)
-				enum = append(enum, enumItem)
-			}
-			replaceTektonPipelinePropertyOptions.SetEnum(enum)
-			replaceTektonPipelinePropertyOptions.SetValue(d.Get("value").(string))
-			hasChange = true
-		}
-	} else {
-		if d.HasChange("value") || d.HasChange("locked") {
-			replaceTektonPipelinePropertyOptions.SetValue(d.Get("value").(string))
-			hasChange = true
-		}
+	if _, ok := d.GetOk("path"); ok {
+		replaceTektonPipelinePropertyOptions.SetPath(d.Get("path").(string))
 	}
 
-	if hasChange {
-		_, _, err = cdTektonPipelineClient.ReplaceTektonPipelinePropertyWithContext(context, replaceTektonPipelinePropertyOptions)
-		if err != nil {
-			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("ReplaceTektonPipelinePropertyWithContext failed: %s", err.Error()), "ibm_cd_tekton_pipeline_property", "update")
-			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
-			return tfErr.GetDiag()
-		}
+	_, _, err = cdTektonPipelineClient.ReplaceTektonPipelinePropertyWithContext(context, replaceTektonPipelinePropertyOptions)
+	if err != nil {
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("ReplaceTektonPipelinePropertyWithContext failed: %s", err.Error()), "ibm_cd_tekton_pipeline_property", "update")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	return resourceIBMCdTektonPipelinePropertyRead(context, d, meta)
