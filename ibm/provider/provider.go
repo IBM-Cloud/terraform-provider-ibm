@@ -1813,6 +1813,7 @@ func Provider() *schema.Provider {
 			"ibm_cd_toolchain_tool_saucelabs":          cdtoolchain.ResourceIBMCdToolchainToolSaucelabs(),
 			"ibm_cd_toolchain_tool_jira":               cdtoolchain.ResourceIBMCdToolchainToolJira(),
 			"ibm_cd_toolchain_tool_eventnotifications": cdtoolchain.ResourceIBMCdToolchainToolEventnotifications(),
+			"ibm_cd_toolchain_tool_draservicebroker":   cdtoolchain.ResourceIBMCdToolchainToolDRAServiceBroker(),
 
 			// Added for Tekton Pipeline
 			"ibm_cd_tekton_pipeline_definition":       cdtektonpipeline.ResourceIBMCdTektonPipelineDefinition(),
