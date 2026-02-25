@@ -7,7 +7,6 @@ import (
 	"context"
 	"fmt"
 	"log"
-	gohttp "net/http"
 	"os"
 	"regexp"
 	"strings"
@@ -17,8 +16,8 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
-	"github.com/IBM/go-sdk-core/v5/core"
 
+	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/IBM/ibm-cos-sdk-go-config/v2/resourceconfigurationv1"
 	"github.com/IBM/ibm-cos-sdk-go/aws"
 	"github.com/IBM/ibm-cos-sdk-go/aws/credentials/ibmiam"
@@ -752,59 +751,35 @@ func getS3ConfigForCOS(meta interface{}, rsConClient *bxsession.Session, apiEndp
 	apiKey := rsConClient.Config.BluemixAPIKey
 	iamAccessToken := rsConClient.Config.IAMAccessToken
 
-	// Get provider config to access trusted profile settings
-	providerConfig := meta.(conns.ClientSession)
-	sess, err := providerConfig.BluemixSession()
-	if err != nil {
-		return nil, err
-	}
+	// Check if authenticator is of type IamAssumeAuthenticator (trusted profile scenario)
+	// The authenticator is set during session creation in config.go
+	if rsConClient.Config.Authenticator != nil {
+		if _, ok := rsConClient.Config.Authenticator.(*core.IamAssumeAuthenticator); ok {
+			// Use custom init function to refresh token on-the-fly for trusted profiles
+			initFunc := func() (*token.Token, error) {
+				// Refresh the token using the authenticator
+				err := conns.RefreshToken(rsConClient)
+				if err != nil {
+					return nil, fmt.Errorf("error refreshing token: %v", err)
+				}
 
-	// Access the provider's Config struct through environment or meta
-	// We need to check if trusted profile is configured
-	iamTrustedProfileID := os.Getenv("IC_IAM_TRUSTED_PROFILE_ID")
-	if iamTrustedProfileID == "" {
-		iamTrustedProfileID = os.Getenv("IBMCLOUD_IAM_TRUSTED_PROFILE_ID")
-	}
+				// Return the refreshed access token
+				accessToken := rsConClient.Config.IAMAccessToken
+				if strings.HasPrefix(accessToken, "Bearer ") {
+					accessToken = accessToken[7:]
+				}
 
-	// Handle trusted profile scenario
-	if apiKey != "" && iamTrustedProfileID != "" {
-		initFunc := func() (*token.Token, error) {
-			iamURL := conns.EnvFallBack([]string{"IBMCLOUD_IAM_API_ENDPOINT"}, authEndpoint)
-
-			authenticator, err := core.NewIamAssumeAuthenticatorBuilder().
-				SetApiKey(apiKey).
-				SetIAMProfileID(iamTrustedProfileID).
-				SetURL(iamURL).
-				Build()
-
-			if err != nil {
-				return nil, fmt.Errorf("error building trusted profile authenticator: %v", err)
+				return &token.Token{
+					AccessToken: accessToken,
+					TokenType:   "Bearer",
+					ExpiresIn:   int64((time.Hour * 1).Seconds()),
+					Expiration:  time.Now().Add(time.Hour).Unix(),
+				}, nil
 			}
 
-			// Create a dummy HTTP request to get the access token
-			req, _ := gohttp.NewRequest("GET", "https://dummy.com", nil)
-
-			// Authenticate the request to populate the Authorization header
-			err = authenticator.Authenticate(req)
-			if err != nil {
-				return nil, fmt.Errorf("error authenticating with trusted profile: %v", err)
-			}
-
-			// Extract the Bearer token from the Authorization header
-			authHeader := req.Header.Get("Authorization")
-			accessToken := strings.TrimPrefix(authHeader, "Bearer ")
-
-			return &token.Token{
-				AccessToken:  accessToken,
-				RefreshToken: "",
-				TokenType:    "Bearer",
-				ExpiresIn:    int64((time.Hour * 1).Seconds()),
-				Expiration:   time.Now().Add(time.Hour).Unix(),
-			}, nil
+			s3Conf := aws.NewConfig().WithEndpoint(apiEndpoint).WithCredentials(ibmiam.NewCustomInitFuncCredentials(aws.NewConfig(), initFunc, authEndpointPath, serviceID)).WithS3ForcePathStyle(true)
+			return s3Conf, nil
 		}
-
-		s3Conf := aws.NewConfig().WithEndpoint(apiEndpoint).WithCredentials(ibmiam.NewCustomInitFuncCredentials(aws.NewConfig(), initFunc, authEndpointPath, serviceID)).WithS3ForcePathStyle(true)
-		return s3Conf, nil
 	}
 
 	// Handle API key scenario (without trusted profile)
@@ -817,8 +792,8 @@ func getS3ConfigForCOS(meta interface{}, rsConClient *bxsession.Session, apiEndp
 	if iamAccessToken != "" {
 		initFunc := func() (*token.Token, error) {
 			return &token.Token{
-				AccessToken:  sess.Config.IAMAccessToken,
-				RefreshToken: sess.Config.IAMRefreshToken,
+				AccessToken:  rsConClient.Config.IAMAccessToken,
+				RefreshToken: rsConClient.Config.IAMRefreshToken,
 				TokenType:    "Bearer",
 				ExpiresIn:    int64((time.Hour * 248).Seconds()) * -1,
 				Expiration:   time.Now().Add(-1 * time.Hour).Unix(),
