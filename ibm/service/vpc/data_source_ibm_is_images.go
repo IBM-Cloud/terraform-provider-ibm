@@ -583,7 +583,7 @@ func imageList(context context.Context, d *schema.ResourceData, meta interface{}
 
 		zones := []map[string]interface{}{}
 		for _, zonesItem := range image.Zones {
-			zonesItemMap, _ := DataSourceIBMIsImagesZoneReferenceToMap(&zonesItem) // #nosec G601
+			zonesItemMap, err := DataSourceIBMIsImagesZoneReferenceToMap(&zonesItem) // #nosec G601
 			if err != nil {
 				tfErr := flex.TerraformErrorf(err, err.Error(), "(Data) ibm_is_image", "read")
 				log.Println(tfErr.GetDiag())
