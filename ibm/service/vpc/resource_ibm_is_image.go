@@ -170,6 +170,11 @@ func ResourceIBMISImage() *schema.Resource {
 				Computed:    true,
 				Description: "The status of this image",
 			},
+			"minimum_acceptable_status": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The status of this image",
+			},
 
 			isImageMinimumProvisionedSize: {
 				Type:        schema.TypeInt,
@@ -457,7 +462,8 @@ func imgCreateByFile(context context.Context, d *schema.ResourceData, meta inter
 	}
 	d.SetId(*image.ID)
 	log.Printf("[INFO] Image ID : %s", *image.ID)
-	_, err = isWaitForImageAvailable(sess, d.Id(), d.Timeout(schema.TimeoutCreate))
+	minimumAcceptableStatus := d.Get("minimum_acceptable_status").(string)
+	_, err = isWaitForImageAvailable(sess, d.Id(), minimumAcceptableStatus, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
 		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("isWaitForImageAvailable failed: %s", err.Error()), "ibm_is_image", "create")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
@@ -599,7 +605,8 @@ func imgCreateByVolume(context context.Context, d *schema.ResourceData, meta int
 	}
 	d.SetId(*image.ID)
 	log.Printf("[INFO] Image ID : %s", *image.ID)
-	_, err = isWaitForImageAvailable(sess, d.Id(), d.Timeout(schema.TimeoutCreate))
+	minimumAcceptableStatus := d.Get("minimum_acceptable_status").(string)
+	_, err = isWaitForImageAvailable(sess, d.Id(), minimumAcceptableStatus, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
 		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("isWaitForImageAvailable failed: %s", err.Error()), "ibm_is_image", "create")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
@@ -625,13 +632,18 @@ func imgCreateByVolume(context context.Context, d *schema.ResourceData, meta int
 	return nil
 }
 
-func isWaitForImageAvailable(imageC *vpcv1.VpcV1, id string, timeout time.Duration) (interface{}, error) {
+func isWaitForImageAvailable(imageC *vpcv1.VpcV1, id, minimumAcceptableStatus string, timeout time.Duration) (interface{}, error) {
 	log.Printf("Waiting for image (%s) to be available.", id)
+
+	targetStates := []string{isImageProvisioningDone, ""}
+	if minimumAcceptableStatus != "" {
+		targetStates = append(targetStates, minimumAcceptableStatus)
+	}
 
 	stateConf := &resource.StateChangeConf{
 		Pending:    []string{"retry", isImageProvisioning},
-		Target:     []string{isImageProvisioningDone, ""},
-		Refresh:    isImageRefreshFunc(imageC, id),
+		Target:     targetStates,
+		Refresh:    isImageRefreshFunc(imageC, id, minimumAcceptableStatus),
 		Timeout:    timeout,
 		Delay:      10 * time.Second,
 		MinTimeout: 10 * time.Second,
@@ -639,7 +651,7 @@ func isWaitForImageAvailable(imageC *vpcv1.VpcV1, id string, timeout time.Durati
 
 	return stateConf.WaitForState()
 }
-func isImageRefreshFunc(imageC *vpcv1.VpcV1, id string) resource.StateRefreshFunc {
+func isImageRefreshFunc(imageC *vpcv1.VpcV1, id, minimumAcceptableStatus string) resource.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		getimgoptions := &vpcv1.GetImageOptions{
 			ID: &id,
@@ -651,6 +663,10 @@ func isImageRefreshFunc(imageC *vpcv1.VpcV1, id string) resource.StateRefreshFun
 
 		if *image.Status == "available" || *image.Status == "failed" {
 			return image, isImageProvisioningDone, nil
+		}
+
+		if minimumAcceptableStatus != "" && *image.Status == minimumAcceptableStatus {
+			return image, *image.Status, nil
 		}
 
 		return image, isImageProvisioning, nil
