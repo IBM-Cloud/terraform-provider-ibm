@@ -452,10 +452,16 @@ func resourceIBMISSecurityGroupRuleRead(context context.Context, d *schema.Resou
 				}
 			}
 			if securityGroupRule.Type != nil {
-				d.Set(isSecurityGroupRuleType, int(*securityGroupRule.Type))
+				if err = d.Set(isSecurityGroupRuleType, int(*securityGroupRule.Type)); err != nil {
+					err = fmt.Errorf("Error setting type: %s", err)
+					return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_security_group_rule", "read", "set-type").GetDiag()
+				}
 			}
 			if securityGroupRule.Code != nil {
-				d.Set(isSecurityGroupRuleCode, int(*securityGroupRule.Code))
+				if err = d.Set(isSecurityGroupRuleCode, int(*securityGroupRule.Code)); err != nil {
+					err = fmt.Errorf("Error setting code: %s", err)
+					return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_security_group_rule", "read", "set-code").GetDiag()
+				}
 			}
 			remote, ok := securityGroupRule.Remote.(*vpcv1.SecurityGroupRuleRemote)
 			if ok {

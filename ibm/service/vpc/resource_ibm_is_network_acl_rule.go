@@ -766,10 +766,16 @@ func nwaclRuleGet(context context.Context, d *schema.ResourceData, meta interfac
 			d.Set(isNetworkACLRuleTCP, make([]map[string]int, 0, 0))
 			d.Set(isNetworkACLRuleUDP, make([]map[string]int, 0, 0))
 			if networkACLRule.Type != nil {
-				d.Set(isNetworkACLRuleICMPType, int(*networkACLRule.Type))
+				if err = d.Set(isNetworkACLRuleICMPType, int(*networkACLRule.Type)); err != nil {
+					err = fmt.Errorf("Error setting type: %s", err)
+					return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_network_acl_rule", "read", "set-type").GetDiag()
+				}
 			}
 			if networkACLRule.Code != nil {
-				d.Set(isNetworkACLRuleICMPCode, int(*networkACLRule.Code))
+				if err = d.Set(isNetworkACLRuleICMPCode, int(*networkACLRule.Code)); err != nil {
+					err = fmt.Errorf("Error setting code: %s", err)
+					return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_network_acl_rule", "read", "set-code").GetDiag()
+				}
 			}
 			icmpList := d.Get("icmp").([]interface{})
 			if len(icmpList) > 0 {
@@ -831,10 +837,22 @@ func nwaclRuleGet(context context.Context, d *schema.ResourceData, meta interfac
 				err = fmt.Errorf("Error setting direction: %s", err)
 				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_network_acl_rule", "read", "set-direction").GetDiag()
 			}
-			d.Set(isNetworkACLRuleSourcePortMax, checkNetworkACLNil(networkACLRule.SourcePortMax))
-			d.Set(isNetworkACLRuleSourcePortMin, checkNetworkACLNil(networkACLRule.SourcePortMin))
-			d.Set(isNetworkACLRulePortMax, checkNetworkACLNil(networkACLRule.DestinationPortMax))
-			d.Set(isNetworkACLRulePortMin, checkNetworkACLNil(networkACLRule.DestinationPortMin))
+			if err = d.Set(isNetworkACLRuleSourcePortMax, checkNetworkACLNil(networkACLRule.SourcePortMax)); err != nil {
+				err = fmt.Errorf("Error setting source port max: %s", err)
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_network_acl_rule", "read", "set-source-port-max").GetDiag()
+			}
+			if err = d.Set(isNetworkACLRuleSourcePortMin, checkNetworkACLNil(networkACLRule.SourcePortMin)); err != nil {
+				err = fmt.Errorf("Error setting source port min: %s", err)
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_network_acl_rule", "read", "set-source-port-min").GetDiag()
+			}
+			if err = d.Set(isNetworkACLRulePortMax, checkNetworkACLNil(networkACLRule.DestinationPortMax)); err != nil {
+				err = fmt.Errorf("Error setting port max: %s", err)
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_network_acl_rule", "read", "set-port-max").GetDiag()
+			}
+			if err = d.Set(isNetworkACLRulePortMin, checkNetworkACLNil(networkACLRule.DestinationPortMin)); err != nil {
+				err = fmt.Errorf("Error setting port min: %s", err)
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_network_acl_rule", "read", "set-port-min").GetDiag()
+			}
 			tcpList := d.Get("tcp").([]interface{})
 			udpList := d.Get("udp").([]interface{})
 			if len(tcpList) > 0 || len(udpList) > 0 {

@@ -1222,18 +1222,20 @@ func createInlineRules(d *schema.ResourceData, nwaclC *vpcv1.VpcV1, nwaclid stri
 			}
 		}
 
-		if len(icmp) > 0 && !isNil(icmp[0]) && !useTopLevelIcmp {
+		if len(icmp) > 0 && !useTopLevelIcmp {
 			protocol = "icmp"
 			ruleTemplate.Protocol = &protocol
-			icmpTypePath := fmt.Sprintf("rules.%d.icmp.0.%s", i, isNetworkACLRuleICMPType)
-			icmpCodePath := fmt.Sprintf("rules.%d.icmp.0.%s", i, isNetworkACLRuleICMPCode)
-			if val, ok := d.GetOk(icmpTypePath); ok {
-				icmptype = int64(val.(int))
-				ruleTemplate.Type = &icmptype
-			}
-			if val, ok := d.GetOk(icmpCodePath); ok {
-				icmpcode = int64(val.(int))
-				ruleTemplate.Code = &icmpcode
+			if !isNil(icmp[0]) {
+				icmpTypePath := fmt.Sprintf("rules.%d.icmp.0.%s", i, isNetworkACLRuleICMPType)
+				icmpCodePath := fmt.Sprintf("rules.%d.icmp.0.%s", i, isNetworkACLRuleICMPCode)
+				if val, ok := d.GetOk(icmpTypePath); ok {
+					icmptype = int64(val.(int))
+					ruleTemplate.Type = &icmptype
+				}
+				if val, ok := d.GetOk(icmpCodePath); ok {
+					icmpcode = int64(val.(int))
+					ruleTemplate.Code = &icmpcode
+				}
 			}
 		} else if protocol == "icmp" {
 			icmpType := fmt.Sprintf("rules.%d.type", i)
@@ -1249,25 +1251,27 @@ func createInlineRules(d *schema.ResourceData, nwaclC *vpcv1.VpcV1, nwaclid stri
 			}
 		}
 
-		if len(tcp) > 0 && !isNil(tcp[0]) && !useTopLevelPorts {
+		if len(tcp) > 0 && !useTopLevelPorts {
 			protocol = "tcp"
 			ruleTemplate.Protocol = &protocol
-			tcpval := tcp[0].(map[string]interface{})
-			if val, ok := tcpval[isNetworkACLRulePortMin]; ok {
-				minport = int64(val.(int))
-				ruleTemplate.DestinationPortMin = &minport
-			}
-			if val, ok := tcpval[isNetworkACLRulePortMax]; ok {
-				maxport = int64(val.(int))
-				ruleTemplate.DestinationPortMax = &maxport
-			}
-			if val, ok := tcpval[isNetworkACLRuleSourcePortMin]; ok {
-				sourceminport = int64(val.(int))
-				ruleTemplate.SourcePortMin = &sourceminport
-			}
-			if val, ok := tcpval[isNetworkACLRuleSourcePortMax]; ok {
-				sourcemaxport = int64(val.(int))
-				ruleTemplate.SourcePortMax = &sourcemaxport
+			if !isNil(tcp[0]) {
+				tcpval := tcp[0].(map[string]interface{})
+				if val, ok := tcpval[isNetworkACLRulePortMin]; ok {
+					minport = int64(val.(int))
+					ruleTemplate.DestinationPortMin = &minport
+				}
+				if val, ok := tcpval[isNetworkACLRulePortMax]; ok {
+					maxport = int64(val.(int))
+					ruleTemplate.DestinationPortMax = &maxport
+				}
+				if val, ok := tcpval[isNetworkACLRuleSourcePortMin]; ok {
+					sourceminport = int64(val.(int))
+					ruleTemplate.SourcePortMin = &sourceminport
+				}
+				if val, ok := tcpval[isNetworkACLRuleSourcePortMax]; ok {
+					sourcemaxport = int64(val.(int))
+					ruleTemplate.SourcePortMax = &sourcemaxport
+				}
 			}
 		} else if protocol == "tcp" {
 			ruleTemplate.Protocol = &protocol
@@ -1301,25 +1305,27 @@ func createInlineRules(d *schema.ResourceData, nwaclC *vpcv1.VpcV1, nwaclid stri
 			}
 		}
 
-		if len(udp) > 0 && !isNil(udp[0]) && !useTopLevelPorts {
+		if len(udp) > 0 && !useTopLevelPorts {
 			protocol = "udp"
 			ruleTemplate.Protocol = &protocol
-			udpval := udp[0].(map[string]interface{})
-			if val, ok := udpval[isNetworkACLRulePortMin]; ok {
-				minport = int64(val.(int))
-				ruleTemplate.DestinationPortMin = &minport
-			}
-			if val, ok := udpval[isNetworkACLRulePortMax]; ok {
-				maxport = int64(val.(int))
-				ruleTemplate.DestinationPortMax = &maxport
-			}
-			if val, ok := udpval[isNetworkACLRuleSourcePortMin]; ok {
-				sourceminport = int64(val.(int))
-				ruleTemplate.SourcePortMin = &sourceminport
-			}
-			if val, ok := udpval[isNetworkACLRuleSourcePortMax]; ok {
-				sourcemaxport = int64(val.(int))
-				ruleTemplate.SourcePortMax = &sourcemaxport
+			if !isNil(udp[0]) {
+				udpval := udp[0].(map[string]interface{})
+				if val, ok := udpval[isNetworkACLRulePortMin]; ok {
+					minport = int64(val.(int))
+					ruleTemplate.DestinationPortMin = &minport
+				}
+				if val, ok := udpval[isNetworkACLRulePortMax]; ok {
+					maxport = int64(val.(int))
+					ruleTemplate.DestinationPortMax = &maxport
+				}
+				if val, ok := udpval[isNetworkACLRuleSourcePortMin]; ok {
+					sourceminport = int64(val.(int))
+					ruleTemplate.SourcePortMin = &sourceminport
+				}
+				if val, ok := udpval[isNetworkACLRuleSourcePortMax]; ok {
+					sourcemaxport = int64(val.(int))
+					ruleTemplate.SourcePortMax = &sourcemaxport
+				}
 			}
 		} else if protocol == "udp" {
 			ruleTemplate.Protocol = &protocol
