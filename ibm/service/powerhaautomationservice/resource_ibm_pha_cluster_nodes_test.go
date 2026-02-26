@@ -38,7 +38,7 @@ func TestAccIBMPhaClusterNodesBasic(t *testing.T) {
 					resource.TestCheckTypeSetElemAttr(
 						"ibm_pha_cluster_nodes.pha_cluster_nodes_instance",
 						"primary_cluster_nodes.*",
-						"049a8b09-a1ff-4434-acda-92946f3f4ab5",
+						"049a8b09-zxcvcv-92946f3f4ab5",
 					),
 				),
 			},
@@ -78,7 +78,7 @@ func testAccCheckIBMPhaClusterNodesConfigBasic(phaInstanceID string) string {
 	return fmt.Sprintf(`
 		resource "ibm_pha_cluster_nodes" "pha_cluster_nodes_instance" {
 			pha_instance_id = "%s"
-			primary_cluster_nodes = ["049a8b09-a1ff-4434-acda-92946f3f4ab5"]
+			primary_cluster_nodes = ["049a8b09-asdfsfvs-acda-92946f3f4ab5"]
 		}
 	`, phaInstanceID)
 }

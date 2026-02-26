@@ -18,7 +18,6 @@ import (
 func TestAccIBMPhaAPIKeyBasic(t *testing.T) {
 	var conf powerhaautomationservicev1.APIKeyResponse
 	phaInstanceID := "8ce2a099-a463-479a-9a1d-eedc19287a62"
-
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheck(t) },
 		Providers: acc.TestAccProviders,
@@ -38,7 +37,7 @@ func TestAccIBMPhaAPIKeyAllArgs(t *testing.T) {
 	var conf powerhaautomationservicev1.APIKeyResponse
 	phaInstanceID := "8ce2a099-a463-479a-9a1d-eedc19287a62"
 	acceptLanguage := "en"
-	apiKey := "54eqeY3IT7CGKUk97-EvcHs9x5kCaLw8Sy5hzFCiDCTK"
+	apiKey := ""
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheck(t) },
@@ -66,7 +65,7 @@ func testAccCheckIBMPhaAPIKeyConfigBasic(phaInstanceID string) string {
 	return fmt.Sprintf(`
 		resource "ibm_pha_api_key" "pha_api_key_instance" {
 			pha_instance_id = "%s"
-			api_key = "54eqeY3IT7CGKUk97-EvcHs9x5kCaLw8Sy5hzFCiDCTK"
+			api_key = ""
 		}
 	`, phaInstanceID)
 }
