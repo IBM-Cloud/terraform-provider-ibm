@@ -645,14 +645,14 @@ In addition to all argument reference list, you can access the following attribu
 - `s3_endpoint_direct` - (string) Direct endpoint for cos bucket.
 
 
-# Cross account access for COS
+## Cross account access for COS
 Access to a cos instance across different accounts can be granted using a service ID from source account and adding it to a access group in target account.
 
   **Note:**
   Currently granting cross account access using trusted profile and service ID authentication method is not supported.
 
 
-## Steps to follow
+### Steps to follow
 1. Create a service ID in source account Manage > Access > Servics IDs > Create.
 2. Create an api key in the service ID.
 3. Create an access group in the target account or use an existing one and assign the appropriate access to the access group.
