@@ -136,6 +136,7 @@ import (
 	"github.com/IBM/platform-services-go-sdk/partnercentersellv1"
 	scc "github.com/IBM/scc-go-sdk/v5/securityandcompliancecenterapiv3"
 	"github.com/IBM/secrets-manager-go-sdk/v2/secretsmanagerv2"
+	"github.ibm.com/DRAutomation/dra-go-sdk/powerhaautomationservicev1"
 )
 
 // RetryAPIDelay - retry api delay
@@ -338,6 +339,7 @@ type ClientSession interface {
 	LogsV0() (*logsv0.LogsV0, error)
 	SdsaasV1() (*sdsaasv1.SdsaasV1, error)
 	DrAutomationServiceV1() (*drautomationservicev1.DrAutomationServiceV1, error)
+	PowerhaAutomationServiceV1() (*powerhaautomationservicev1.PowerhaAutomationServiceV1, error)
 }
 
 type clientSession struct {
@@ -717,8 +719,10 @@ type clientSession struct {
 	globalCatalogClientErr error
 
 	// DR Automation
-	drAutomationServiceClient    *drautomationservicev1.DrAutomationServiceV1
-	drAutomationServiceClientErr error
+	drAutomationServiceClient         *drautomationservicev1.DrAutomationServiceV1
+	drAutomationServiceClientErr      error
+	powerhaAutomationServiceClient    *powerhaautomationservicev1.PowerhaAutomationServiceV1
+	powerhaAutomationServiceClientErr error
 }
 
 // Usage Reports
@@ -1372,6 +1376,11 @@ func (session clientSession) IBMCloudLogsRoutingV0() (*ibmcloudlogsroutingv0.IBM
 // GlobalCatalog Session
 func (sess clientSession) GlobalCatalogV1API() (*globalcatalogv1.GlobalCatalogV1, error) {
 	return sess.globalCatalogClient, sess.globalCatalogClientErr
+}
+
+// PowerhaAutomation Service
+func (session clientSession) PowerhaAutomationServiceV1() (*powerhaautomationservicev1.PowerhaAutomationServiceV1, error) {
+	return session.powerhaAutomationServiceClient, session.powerhaAutomationServiceClientErr
 }
 
 // ClientSession configures and returns a fully initialized ClientSession
@@ -3472,6 +3481,27 @@ func (c *Config) ClientSession() (interface{}, error) {
 			})
 		} else {
 			session.drAutomationServiceClientErr = fmt.Errorf("error occurred while constructing 'DrAutomation Service' service client: %q", err)
+		}
+	}
+
+	// Construct an instance of the 'PowerhaAutomation Service' service.
+	if session.powerhaAutomationServiceClientErr == nil {
+		// Construct the service options.
+		powerhaAutomationServiceClientOptions := &powerhaautomationservicev1.PowerhaAutomationServiceV1Options{
+			Authenticator: authenticator,
+		}
+
+		// Construct the service client.
+		session.powerhaAutomationServiceClient, err = powerhaautomationservicev1.NewPowerhaAutomationServiceV1(powerhaAutomationServiceClientOptions)
+		if err == nil {
+			// Enable retries for API calls
+			session.powerhaAutomationServiceClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+			// Add custom header for analytics
+			session.powerhaAutomationServiceClient.SetDefaultHeaders(gohttp.Header{
+				"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
+			})
+		} else {
+			session.powerhaAutomationServiceClientErr = fmt.Errorf("Error occurred while constructing 'PowerhaAutomation Service' service client: %q", err)
 		}
 	}
 

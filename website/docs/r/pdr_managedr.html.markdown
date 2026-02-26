@@ -156,6 +156,9 @@ You can specify the following arguments for this resource:
 * `standby_machine_type` - (Optional, String) The machine type used for deploying standby virtual machines.
 * `standby_tier` - (Optional, String) The storage tier used for deploying standby orchestrator.
 * `stand_by_redeploy` - (Optional, String)  Flag to indicate if standby should be redeployed only for HA case (must be "true" or "false").
+* `standby_ssh_key_name`  - (Optional, String) standy ssh key name of the service instance.
+* `orchestrator_network_ids` - (Optional) List of network IDs for primary orchestrator VM.
+* `standby_orchestrator_network_ids` - (Optional) List of network IDs for standby orchestrator VM.
 
 ## Attribute Reference
 

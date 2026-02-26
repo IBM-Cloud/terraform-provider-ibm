@@ -56,6 +56,8 @@ Nested schema for **orchestrator_details**:
 	* `standby_orchestrator_workspace_name` - (String) The name of the standby orchestrator workspace.
 	* `transit_gateway_name` - (String) The name of the transit gateway.
 	* `vpc_name` - (String) The name of the VPC.
+	* `api_key` - (String) api key.  
+	* `standby_ssh_key_name` - (String) SSH key name used for the standby orchestrator.
 * `service_details` - (List) Contains details about the DR automation service.
 Nested schema for **service_details**:
 	* `crn` - (String) The deployment crn.

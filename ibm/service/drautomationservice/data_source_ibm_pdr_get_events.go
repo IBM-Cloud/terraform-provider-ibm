@@ -52,7 +52,7 @@ func DataSourceIBMPdrGetEvents() *schema.Resource {
 				Optional:    true,
 				Description: "The language requested for the return document.",
 			},
-			"event": &schema.Schema{
+			"events": &schema.Schema{
 				Type:        schema.TypeList,
 				Computed:    true,
 				Description: "Events.",
@@ -185,15 +185,15 @@ func dataSourceIBMPdrGetEventsRead(context context.Context, d *schema.ResourceDa
 
 	d.SetId(dataSourceIBMPdrGetEventsID(d))
 
-	event := []map[string]interface{}{}
+	events := []map[string]interface{}{}
 	for _, eventItem := range eventCollection.Events {
 		eventItemMap, err := DataSourceIBMPdrGetEventsEventToMap(&eventItem) // #nosec G601
 		if err != nil {
 			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_pdr_get_events", "read", "event-to-map").GetDiag()
 		}
-		event = append(event, eventItemMap)
+		events = append(events, eventItemMap)
 	}
-	if err = d.Set("event", event); err != nil {
+	if err = d.Set("events", events); err != nil {
 		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting event: %s", err), "(Data) ibm_pdr_get_events", "read", "set-event").GetDiag()
 	}
 
