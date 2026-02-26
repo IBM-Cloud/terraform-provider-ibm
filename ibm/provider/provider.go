@@ -56,6 +56,7 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/pag"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/partnercentersell"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/power"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/powerhaautomationservice"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/project"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/pushnotification"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/registry"
@@ -1165,6 +1166,12 @@ func Provider() *schema.Provider {
 			"ibm_pdr_get_managed_vm_list":     drautomationservice.DataSourceIBMPdrGetManagedVMList(),
 			"ibm_pdr_last_operation":          drautomationservice.DataSourceIBMPdrLastOperation(),
 			"ibm_pdr_get_grs_location_pairs":  drautomationservice.DataSourceIBMPdrGetGrsLocationPairs(),
+
+			"ibm_pha_get_last_operation":           powerhaautomationservice.DataSourceIBMPhaGetLastOperation(),
+			"ibm_pha_get_service_instance_event":   powerhaautomationservice.DataSourceIBMPhaGetServiceInstanceEvent(),
+			"ibm_pha_list_service_instance_events": powerhaautomationservice.DataSourceIBMPhaListServiceInstanceEvents(),
+			"ibm_pha_get_supported_location":       powerhaautomationservice.DataSourceIBMPhaGetSupportedLocation(),
+			"ibm_pha_get_powervs_workspace":        powerhaautomationservice.DataSourceIBMPhaGetPowervsWorkspace(),
 		},
 
 		ResourcesMap: map[string]*schema.Resource{
@@ -1857,6 +1864,10 @@ func Provider() *schema.Provider {
 			// DR Automation Service
 			"ibm_pdr_managedr":        drautomationservice.ResourceIbmPdrManagedr(),
 			"ibm_pdr_validate_apikey": drautomationservice.ResourceIBMPdrValidateApikey(),
+			// pha DR Automation Service
+			"ibm_pha_api_key":       powerhaautomationservice.ResourceIBMPhaAPIKey(),
+			"ibm_pha_cluster_nodes": powerhaautomationservice.ResourceIBMPhaClusterNodes(),
+			"ibm_pha_deployment":    powerhaautomationservice.ResourceIBMPhaDeployment(),
 		},
 
 		ConfigureFunc: providerConfigure,
@@ -2372,6 +2383,11 @@ func Validator() validate.ValidatorDict {
 				"ibm_sds_volume":         sdsaas.ResourceIBMSdsVolumeValidator(),
 				"ibm_sds_volume_mapping": sdsaas.ResourceIBMSdsVolumeValidator(),
 				"ibm_sds_host":           sdsaas.ResourceIBMSdsHostValidator(),
+
+				// Added for Pha Dr automation service
+				"ibm_pha_api_key":       powerhaautomationservice.ResourceIBMPhaAPIKeyValidator(),
+				"ibm_pha_cluster_nodes": powerhaautomationservice.ResourceIBMPhaClusterNodesValidator(),
+				"ibm_pha_deployment":    powerhaautomationservice.ResourceIBMPhaDeploymentValidator(),
 			},
 			DataSourceValidatorDictionary: map[string]*validate.ResourceValidator{
 				"ibm_is_subnet":                     vpc.DataSourceIBMISSubnetValidator(),

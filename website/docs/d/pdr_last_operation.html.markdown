@@ -50,3 +50,5 @@ After your data source is created, you can read values from the following attrib
 * `standby_ip_address` - (String) The IP address of the standby orchestrator VM.
 * `standby_status` - (String) The current state of the standby orchestrator.
 * `status` - (String) The current state of the primary orchestrator.
+* `primary_error_description` - (String) Capture the error while creating primary orchestrator.
+* `standby_error_description` - (String) Capture the error while creating standby orchestrator.
