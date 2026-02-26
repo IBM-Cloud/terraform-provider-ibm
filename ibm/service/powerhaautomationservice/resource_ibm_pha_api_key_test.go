@@ -18,7 +18,6 @@ import (
 func TestAccIBMPhaAPIKeyBasic(t *testing.T) {
 	var conf powerhaautomationservicev1.APIKeyResponse
 	phaInstanceID := "8ce2a099-a463-479a-9a1d-eedc19287a62"
-
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheck(t) },
 		Providers: acc.TestAccProviders,
