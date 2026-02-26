@@ -703,10 +703,8 @@ func nwaclGet(context context.Context, d *schema.ResourceData, meta interface{},
 					// Only populate deprecated icmp block if user was using old-style
 					icmpPath := fmt.Sprintf("rules.%d.icmp", index)
 					usingDeprecatedIcmp := false
-					if v, ok := d.GetOk(icmpPath); ok {
-						if icmpList, ok := v.([]interface{}); ok && len(icmpList) > 0 {
-							usingDeprecatedIcmp = true
-						}
+					if _, ok := d.GetOk(icmpPath); ok {
+						usingDeprecatedIcmp = true
 					}
 					if usingDeprecatedIcmp {
 						icmpProtocol := map[string]int{}
@@ -716,9 +714,9 @@ func nwaclGet(context context.Context, d *schema.ResourceData, meta interface{},
 						if rulex.Type != nil {
 							icmpProtocol[isNetworkACLRuleICMPType] = int(*rulex.Type)
 						}
-						protocolList := make([]map[string]int, 0)
+						protocolList := make([]map[string]int, 1, 1)
 						if len(icmpProtocol) > 0 {
-							protocolList = append(protocolList, icmpProtocol)
+							protocolList[0] = icmpProtocol
 						}
 						rule[isNetworkACLRuleICMP] = protocolList
 					} else {
