@@ -491,6 +491,7 @@ resource "ibm_cos_bucket_lifecycle_configuration"  "lifecycle" {
 **Note:**
 To manage changes of Lifecycle rules to an cos bucket, use the ibm_cos_bucket_lifecycle_configuration resource instead. If you use `expire_rule` , `archive_rule` , `noncurrent_version_expiration`, `abort_incomplete_multipart_upload_days`  on an ibm_cos_bucket, Terraform will assume management over the full set of Lifecycle rules for the cos bucket, treating additional Lifecycle rules as drift. For this reason, lifecycle_rule cannot be mixed with the external ibm_cos_bucket_lifecycle_configuration resource for a given S3 bucket.
 
+
 ## Argument reference
 Review the argument references that you can specify for your resource. 
 
@@ -642,6 +643,33 @@ In addition to all argument reference list, you can access the following attribu
 - `s3_endpoint_public` - (string) Public endpoint for cos bucket.
 - `s3_endpoint_private` - (string) Private endpoint for cos bucket.
 - `s3_endpoint_direct` - (string) Direct endpoint for cos bucket.
+
+
+## Cross account access for COS
+Access to a cos instance across different accounts can be granted using a service ID from source account and adding it to a access group in target account.
+
+  **Note:**
+  Currently granting cross account access using trusted profile and service ID authentication method is not supported.
+
+
+### Steps to follow
+1. Create a service ID in source account Manage > Access > Servics IDs > Create.
+2. Create an api key in the service ID.
+3. Create an access group in the target account or use an existing one and assign the appropriate access to the access group.
+4. Add the service ID to access group.
+**Note:**
+     To add the service ID to the access group use the api key of the target account to authenticate.
+**Example**
+```
+ resource "ibm_iam_access_group_members" "accgroupmem" {
+   access_group_id = "ID of access group" // eg: AccessGroupId-axxxxxxx0-xxxx-xxxx-xxxx-41xxxxxxxxx6
+   iam_service_ids = ["ID of service ID"] // eg: ServiceId-axxxxxxa-xxxx-xxxx-xxxx-0xxxxxxxx0c
+}
+```
+5. Now use the api key of the service ID to perform the cos operations across accounts.
+
+
+
 
 ## Import IBM COS Bucket
 The `ibm_cos_bucket` resource can be imported by using the `id`. The ID is formed from the `CRN` (Cloud Resource Name), the `bucket type` which must be `ssl` for single_site_location, `rl` for region_location or `crl` for cross_region_location, and the bucket location. The `CRN` and bucket location can be found on the portal.
