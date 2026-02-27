@@ -1,8 +1,8 @@
-// Copyright IBM Corp. 2025 All Rights Reserved.
+// Copyright IBM Corp. 2026 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 /*
- * IBM OpenAPI Terraform Generator Version: 3.103.0-e8b84313-20250402-201816
+ * IBM OpenAPI Terraform Generator Version: 3.112.0-f88e9264-20260220-115155
  */
 
 package cdtektonpipeline
@@ -514,7 +514,7 @@ func resourceIBMCdTektonPipelineTriggerRead(context context.Context, d *schema.R
 	}
 
 	trigger := triggerIntf.(*cdtektonpipelinev2.Trigger)
-	if err = d.Set("pipeline_id", d.Get("pipeline_id").(string)); err != nil {
+	if err = d.Set("pipeline_id", parts[0]); err != nil {
 		err = fmt.Errorf("Error setting pipeline_id: %s", err)
 		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_cd_tekton_pipeline_trigger", "read", "set-pipeline_id").GetDiag()
 	}

@@ -1,8 +1,8 @@
-// Copyright IBM Corp. 2025 All Rights Reserved.
+// Copyright IBM Corp. 2026 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 /*
- * IBM OpenAPI Terraform Generator Version: 3.103.0-e8b84313-20250402-201816
+ * IBM OpenAPI Terraform Generator Version: 3.112.0-f88e9264-20260220-115155
  */
 
 package cdtektonpipeline
@@ -112,7 +112,7 @@ func ResourceIBMCdTektonPipelinePropertyValidator() *validate.ResourceValidator 
 			ValidateFunctionIdentifier: validate.ValidateRegexpLen,
 			Type:                       validate.TypeString,
 			Optional:                   true,
-			Regexp:                     `^.*$`,
+			Regexp:                     `^(\s|.)*$`,
 			MinValueLength:             0,
 			MaxValueLength:             4096,
 		},
@@ -210,7 +210,7 @@ func resourceIBMCdTektonPipelinePropertyRead(context context.Context, d *schema.
 		return tfErr.GetDiag()
 	}
 
-	if err = d.Set("pipeline_id", d.Get("pipeline_id").(string)); err != nil {
+	if err = d.Set("pipeline_id", parts[0]); err != nil {
 		err = fmt.Errorf("Error setting pipeline_id: %s", err)
 		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_cd_tekton_pipeline_property", "read", "set-pipeline_id").GetDiag()
 	}
@@ -276,44 +276,29 @@ func resourceIBMCdTektonPipelinePropertyUpdate(context context.Context, d *schem
 	replaceTektonPipelinePropertyOptions.SetPipelineID(d.Get("pipeline_id").(string))
 	replaceTektonPipelinePropertyOptions.SetName(d.Get("name").(string))
 	replaceTektonPipelinePropertyOptions.SetType(d.Get("type").(string))
-
-	hasChange := false
-
-	if d.HasChange("locked") {
+	if _, ok := d.GetOk("value"); ok {
+		replaceTektonPipelinePropertyOptions.SetValue(d.Get("value").(string))
+	}
+	if _, ok := d.GetOk("enum"); ok {
+		var enum []string
+		for _, v := range d.Get("enum").([]interface{}) {
+			enumItem := v.(string)
+			enum = append(enum, enumItem)
+		}
+		replaceTektonPipelinePropertyOptions.SetEnum(enum)
+	}
+	if _, ok := d.GetOkExists("locked"); ok {
 		replaceTektonPipelinePropertyOptions.SetLocked(d.Get("locked").(bool))
-		hasChange = true
 	}
-	if d.Get("type").(string) == "integration" {
-		if d.HasChange("value") || d.HasChange("path") || d.HasChange("locked") {
-			replaceTektonPipelinePropertyOptions.SetValue(d.Get("value").(string))
-			replaceTektonPipelinePropertyOptions.SetPath(d.Get("path").(string))
-			hasChange = true
-		}
-	} else if d.Get("type").(string) == "single_select" {
-		if d.HasChange("enum") || d.HasChange("value") || d.HasChange("locked") {
-			var enum []string
-			for _, v := range d.Get("enum").([]interface{}) {
-				enumItem := v.(string)
-				enum = append(enum, enumItem)
-			}
-			replaceTektonPipelinePropertyOptions.SetEnum(enum)
-			replaceTektonPipelinePropertyOptions.SetValue(d.Get("value").(string))
-			hasChange = true
-		}
-	} else {
-		if d.HasChange("value") || d.HasChange("locked") {
-			replaceTektonPipelinePropertyOptions.SetValue(d.Get("value").(string))
-			hasChange = true
-		}
+	if _, ok := d.GetOk("path"); ok {
+		replaceTektonPipelinePropertyOptions.SetPath(d.Get("path").(string))
 	}
 
-	if hasChange {
-		_, _, err = cdTektonPipelineClient.ReplaceTektonPipelinePropertyWithContext(context, replaceTektonPipelinePropertyOptions)
-		if err != nil {
-			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("ReplaceTektonPipelinePropertyWithContext failed: %s", err.Error()), "ibm_cd_tekton_pipeline_property", "update")
-			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
-			return tfErr.GetDiag()
-		}
+	_, _, err = cdTektonPipelineClient.ReplaceTektonPipelinePropertyWithContext(context, replaceTektonPipelinePropertyOptions)
+	if err != nil {
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("ReplaceTektonPipelinePropertyWithContext failed: %s", err.Error()), "ibm_cd_tekton_pipeline_property", "update")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	return resourceIBMCdTektonPipelinePropertyRead(context, d, meta)

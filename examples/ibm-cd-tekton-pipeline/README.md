@@ -1,18 +1,24 @@
-# Example for CdTektonPipelineV2
+# Examples for CD Tekton Pipeline
 
-This example illustrates how to use the CdTektonPipelineV2
+These examples illustrate how to use the resources and data sources associated with CD Tekton Pipeline.
 
-These types of resources are supported:
+The following resources are supported:
+* ibm_cd_tekton_pipeline_definition
+* ibm_cd_tekton_pipeline_trigger_property
+* ibm_cd_tekton_pipeline_property
+* ibm_cd_tekton_pipeline_trigger
+* ibm_cd_tekton_pipeline
 
-* cd_tekton_pipeline
-* cd_tekton_pipeline_definition
-* cd_tekton_pipeline_trigger_property
-* cd_tekton_pipeline_property
-* cd_tekton_pipeline_trigger
+The following data sources are supported:
+* ibm_cd_tekton_pipeline_definition
+* ibm_cd_tekton_pipeline_trigger_property
+* ibm_cd_tekton_pipeline_property
+* ibm_cd_tekton_pipeline_trigger
+* ibm_cd_tekton_pipeline
 
 ## Usage
 
-To run this example you need to execute:
+To run this example, execute the following commands:
 
 ```bash
 $ terraform init
@@ -22,12 +28,12 @@ $ terraform apply
 
 Run `terraform destroy` when you don't need these resources.
 
-## CdTektonPipelineV2 resources
+## CD Tekton Pipeline resources
 
-cd_tekton_pipeline resource:
+### Resource: ibm_cd_tekton_pipeline_definition
 
 ```terraform
-resource "cd_tekton_pipeline" "cd_tekton_pipeline_instance" {
+resource "ibm_cd_tekton_pipeline" "cd_tekton_pipeline_instance" {
   pipeline_id = ibm_cd_toolchain_tool_pipeline.cd_pipeline.tool_id
   enable_notifications = false
   enable_partial_cloning = false
@@ -37,10 +43,10 @@ resource "cd_tekton_pipeline" "cd_tekton_pipeline_instance" {
 }
 ```
 
-cd_tekton_pipeline_definition resource:
+ibm_cd_tekton_pipeline_definition resource:
 
 ```terraform
-resource "cd_tekton_pipeline_definition" "cd_tekton_pipeline_definition_instance" {
+resource "ibm_cd_tekton_pipeline_definition" "cd_tekton_pipeline_definition_instance" {
   pipeline_id = ibm_cd_tekton_pipeline.cd_pipeline_instance.pipeline_id
   source {
     type = "git"
@@ -53,10 +59,10 @@ resource "cd_tekton_pipeline_definition" "cd_tekton_pipeline_definition_instance
 }
 ```
 
-cd_tekton_pipeline_property resource:
+ibm_cd_tekton_pipeline_property resource:
 
 ```terraform
-resource "cd_tekton_pipeline_property" "cd_tekton_pipeline_property_instance" {
+resource "ibm_cd_tekton_pipeline_property" "cd_tekton_pipeline_property_instance" {
   pipeline_id = ibm_cd_tekton_pipeline.cd_pipeline_instance.pipeline_id
   name = "env-prop-1"
   value = "Environment text property 1"
@@ -64,10 +70,10 @@ resource "cd_tekton_pipeline_property" "cd_tekton_pipeline_property_instance" {
 }
 ```
 
-cd_tekton_pipeline_trigger resource:
+ibm_cd_tekton_pipeline_trigger resource:
 
 ```terraform
-resource "cd_tekton_pipeline_trigger" "cd_tekton_pipeline_trigger_instance" {
+resource "ibm_cd_tekton_pipeline_trigger" "cd_tekton_pipeline_trigger_instance" {
   pipeline_id = ibm_cd_tekton_pipeline.cd_pipeline_instance.pipeline_id
   type = "manual"
   name = "trigger1"
@@ -80,10 +86,10 @@ resource "cd_tekton_pipeline_trigger" "cd_tekton_pipeline_trigger_instance" {
 }
 ```
 
-cd_tekton_pipeline_trigger_property resource:
+ibm_cd_tekton_pipeline_trigger_property resource:
 
 ```terraform
-resource "cd_tekton_pipeline_trigger_property" "cd_tekton_pipeline_trigger_property_instance" {
+resource "ibm_cd_tekton_pipeline_trigger_property" "cd_tekton_pipeline_trigger_property_instance" {
   pipeline_id = ibm_cd_tekton_pipeline.cd_pipeline_instance.pipeline_id
   trigger_id = ibm_cd_tekton_pipeline_trigger.cd_tekton_pipeline_trigger_instance.trigger_id
   name = "trig-prop-1"
@@ -92,47 +98,47 @@ resource "cd_tekton_pipeline_trigger_property" "cd_tekton_pipeline_trigger_prope
 }
 ```
 
-## CdTektonPipelineV2 Data sources
+## Cd Tekton Pipeline Data sources
 
-cd_tekton_pipeline data source:
+ibm_cd_tekton_pipeline data source:
 
 ```terraform
-data "cd_tekton_pipeline" "cd_tekton_pipeline_instance" {
+data "ibm_cd_tekton_pipeline" "cd_tekton_pipeline_instance" {
   id = var.cd_tekton_pipeline_id
 }
 ```
 
-cd_tekton_pipeline_definition data source:
+ibm_cd_tekton_pipeline_definition data source:
 
 ```terraform
-data "cd_tekton_pipeline_definition" "cd_tekton_pipeline_definition_instance" {
+data "ibm_cd_tekton_pipeline_definition" "cd_tekton_pipeline_definition_instance" {
   pipeline_id = var.cd_tekton_pipeline_definition_pipeline_id
   definition_id = var.cd_tekton_pipeline_definition_definition_id
 }
 ```
 
-cd_tekton_pipeline_property data source:
+ibm_cd_tekton_pipeline_property data source:
 
 ```terraform
-data "cd_tekton_pipeline_property" "cd_tekton_pipeline_property_instance" {
+data "ibm_d_tekton_pipeline_property" "cd_tekton_pipeline_property_instance" {
   pipeline_id = var.cd_tekton_pipeline_property_pipeline_id
   property_name = var.cd_tekton_pipeline_property_property_name
 }
 ```
 
-cd_tekton_pipeline_trigger data source:
+ibm_cd_tekton_pipeline_trigger data source:
 
 ```terraform
-data "cd_tekton_pipeline_trigger" "cd_tekton_pipeline_trigger_instance" {
+data "ibm_cd_tekton_pipeline_trigger" "cd_tekton_pipeline_trigger_instance" {
   pipeline_id = var.cd_tekton_pipeline_trigger_pipeline_id
   trigger_id = var.cd_tekton_pipeline_trigger_trigger_id
 }
 ```
 
-cd_tekton_pipeline_trigger_property data source:
+ibm_cd_tekton_pipeline_trigger_property data source:
 
 ```terraform
-data "cd_tekton_pipeline_trigger_property" "cd_tekton_pipeline_trigger_property_instance" {
+data "ibm_cd_tekton_pipeline_trigger_property" "cd_tekton_pipeline_trigger_property_instance" {
   pipeline_id = var.cd_tekton_pipeline_trigger_property_pipeline_id
   trigger_id = var.cd_tekton_pipeline_trigger_property_trigger_id
   property_name = var.cd_tekton_pipeline_trigger_property_property_name
