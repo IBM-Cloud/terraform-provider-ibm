@@ -10,6 +10,8 @@ subcategory: "Continuous Delivery"
 
 Create, update, and delete cd_toolchains with this resource.
 
+~> **Warning:** Continuous Delivery (CD) will be discontinued in these regions on 12 February 2027: `au-syd`, `ca-mon`, `ca-tor`, `eu-es`, `jp-osa`, `us-east`. Follow the [migration guide](https://cloud.ibm.com/docs/ContinuousDelivery?topic=ContinuousDelivery-cd-migrate-region) to avoid disruption. [Learn more](https://cloud.ibm.com/docs/ContinuousDelivery?topic=ContinuousDelivery-cd-migrate-region)
+
 ## Example Usage
 
 ```hcl

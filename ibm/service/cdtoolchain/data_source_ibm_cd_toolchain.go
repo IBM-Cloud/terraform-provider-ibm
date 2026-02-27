@@ -167,5 +167,9 @@ func dataSourceIBMCdToolchainRead(context context.Context, d *schema.ResourceDat
 		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting created_by: %s", err), "(Data) ibm_cd_toolchain", "read", "set-created_by").GetDiag()
 	}
 
+	if IsRegionDeprecated(*toolchain.Location) {
+		return append(diag.Diagnostics{}, GetRegionDeprecationWarning())
+	}
+
 	return nil
 }
