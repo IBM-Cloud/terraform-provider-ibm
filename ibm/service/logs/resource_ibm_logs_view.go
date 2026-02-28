@@ -1,4 +1,4 @@
-// Copyright IBM Corp. 2024 All Rights Reserved.
+// Copyright IBM Corp. 2026 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 package logs
@@ -48,6 +48,12 @@ func ResourceIbmLogsView() *schema.Resource {
 							Required:    true,
 							Description: "View search query.",
 						},
+						"syntax_type": &schema.Schema{
+							Type:         schema.TypeString,
+							Optional:     true,
+							ValidateFunc: validate.InvokeValidator("ibm_logs_view", "syntax_type"),
+							Description:  "Syntax type for the query used in views.",
+						},
 					},
 				},
 			},
@@ -74,7 +80,7 @@ func ResourceIbmLogsView() *schema.Resource {
 									"seconds": &schema.Schema{
 										Type:        schema.TypeInt,
 										Required:    true,
-										Description: "Quick time selection amount of seconds.",
+										Description: "Quick time selection amount in seconds.",
 									},
 								},
 							},
@@ -89,12 +95,12 @@ func ResourceIbmLogsView() *schema.Resource {
 									"from_time": &schema.Schema{
 										Type:        schema.TypeString,
 										Required:    true,
-										Description: "Custom time selection start timestamp.",
+										Description: "Custom time selection starting timestamp.",
 									},
 									"to_time": &schema.Schema{
 										Type:        schema.TypeString,
 										Required:    true,
-										Description: "Custom time selection end timestamp.",
+										Description: "Custom time selection ending timestamp.",
 									},
 								},
 							},
@@ -123,7 +129,7 @@ func ResourceIbmLogsView() *schema.Resource {
 									},
 									"selected_values": &schema.Schema{
 										Type:        schema.TypeMap,
-										Required:    true,
+										Optional:    true,
 										Description: "Filter selected values.",
 										Elem:        &schema.Schema{Type: schema.TypeBool},
 									},
@@ -137,6 +143,12 @@ func ResourceIbmLogsView() *schema.Resource {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Description: "View folder ID.",
+			},
+			"tier": &schema.Schema{
+				Type:         schema.TypeString,
+				Optional:     true,
+				ValidateFunc: validate.InvokeValidator("ibm_logs_view", "tier"),
+				Description:  "Type of view.",
 			},
 			"view_id": &schema.Schema{
 				Type:        schema.TypeString,
@@ -159,6 +171,20 @@ func ResourceIbmLogsViewValidator() *validate.ResourceValidator {
 			MinValueLength:             1,
 			MaxValueLength:             4096,
 		},
+		validate.ValidateSchema{
+			Identifier:                 "syntax_type",
+			ValidateFunctionIdentifier: validate.ValidateAllowedStringValue,
+			Type:                       validate.TypeString,
+			Optional:                   true,
+			AllowedValues:              "lucene, dataprime",
+		},
+		validate.ValidateSchema{
+			Identifier:                 "tier",
+			ValidateFunctionIdentifier: validate.ValidateAllowedStringValue,
+			Type:                       validate.TypeString,
+			Optional:                   true,
+			AllowedValues:              "all_logs, all_logs_templates, priority_insights, priority_insights_templates",
+		},
 	)
 
 	resourceValidator := validate.ResourceValidator{ResourceName: "ibm_logs_view", Schema: validateSchema}
@@ -179,16 +205,15 @@ func resourceIbmLogsViewCreate(context context.Context, d *schema.ResourceData, 
 	if err != nil {
 		return diag.FromErr(fmt.Errorf("Unable to get updated logs instance client"))
 	}
+
 	createViewOptions := &logsv0.CreateViewOptions{}
 
 	createViewOptions.SetName(d.Get("name").(string))
-
 	timeSelectionModel, err := ResourceIbmLogsViewMapToApisViewsV1TimeSelection(d.Get("time_selection.0").(map[string]interface{}))
 	if err != nil {
 		return diag.FromErr(err)
 	}
 	createViewOptions.SetTimeSelection(timeSelectionModel)
-
 	if _, ok := d.GetOk("search_query"); ok {
 		searchQueryModel, err := ResourceIbmLogsViewMapToApisViewsV1SearchQuery(d.Get("search_query.0").(map[string]interface{}))
 		if err != nil {
@@ -206,12 +231,14 @@ func resourceIbmLogsViewCreate(context context.Context, d *schema.ResourceData, 
 	if _, ok := d.GetOk("folder_id"); ok {
 		createViewOptions.SetFolderID(core.UUIDPtr(strfmt.UUID(d.Get("folder_id").(string))))
 	}
+	if _, ok := d.GetOk("tier"); ok {
+		createViewOptions.SetTier(d.Get("tier").(string))
+	}
 
-	view, _, err := logsClient.CreateViewWithContext(context, createViewOptions)
+	view, response, err := logsClient.CreateViewWithContext(context, createViewOptions)
 	if err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateViewWithContext failed: %s", err.Error()), "ibm_logs_view", "create")
-		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
-		return tfErr.GetDiag()
+		log.Printf("[DEBUG] CreateViewWithContext failed %s\n%s", err, response)
+		return diag.FromErr(fmt.Errorf("CreateViewWithContext failed %s\n%s", err, response))
 	}
 
 	viewId := fmt.Sprintf("%s/%s/%d", region, instanceId, *view.ID)
@@ -242,9 +269,8 @@ func resourceIbmLogsViewRead(context context.Context, d *schema.ResourceData, me
 			d.SetId("")
 			return nil
 		}
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetViewWithContext failed: %s", err.Error()), "ibm_logs_view", "read")
-		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
-		return tfErr.GetDiag()
+		log.Printf("[DEBUG] GetViewWithContext failed %s\n%s", err, response)
+		return diag.FromErr(fmt.Errorf("GetViewWithContext failed %s\n%s", err, response))
 	}
 
 	if err = d.Set("view_id", viewId); err != nil {
@@ -289,6 +315,11 @@ func resourceIbmLogsViewRead(context context.Context, d *schema.ResourceData, me
 			return diag.FromErr(fmt.Errorf("Error setting folder_id: %s", err))
 		}
 	}
+	if !core.IsNil(view.Tier) {
+		if err = d.Set("tier", view.Tier); err != nil {
+			return diag.FromErr(fmt.Errorf("Error setting tier: %s", err))
+		}
+	}
 
 	return nil
 }
@@ -312,47 +343,46 @@ func resourceIbmLogsViewUpdate(context context.Context, d *schema.ResourceData, 
 
 	hasChange := false
 
-	if d.HasChange("name") ||
-		d.HasChange("search_query") ||
-		d.HasChange("time_selection") ||
-		d.HasChange("filters") ||
-		d.HasChange("folder_id") {
-
+	if d.HasChange("name") || d.HasChange("time_selection") || d.HasChange("search_query") || d.HasChange("filters") || d.HasChange("folder_id") || d.HasChange("tier") {
+		// Replace operation requires all fields to be sent
 		replaceViewOptions.SetName(d.Get("name").(string))
 
-		timeSelectionModel, err := ResourceIbmLogsViewMapToApisViewsV1TimeSelection(d.Get("time_selection.0").(map[string]interface{}))
+		timeSelection, err := ResourceIbmLogsViewMapToApisViewsV1TimeSelection(d.Get("time_selection.0").(map[string]interface{}))
 		if err != nil {
 			return diag.FromErr(err)
 		}
-		replaceViewOptions.SetTimeSelection(timeSelectionModel)
+		replaceViewOptions.SetTimeSelection(timeSelection)
 
-		if _, ok := d.GetOk("search_query"); ok {
-			searchQueryModel, err := ResourceIbmLogsViewMapToApisViewsV1SearchQuery(d.Get("search_query.0").(map[string]interface{}))
-			if err != nil {
-				return diag.FromErr(err)
-			}
-			replaceViewOptions.SetSearchQuery(searchQueryModel)
+		searchQuery, err := ResourceIbmLogsViewMapToApisViewsV1SearchQuery(d.Get("search_query.0").(map[string]interface{}))
+		if err != nil {
+			return diag.FromErr(err)
 		}
+		replaceViewOptions.SetSearchQuery(searchQuery)
+
 		if _, ok := d.GetOk("filters"); ok {
-			filtersModel, err := ResourceIbmLogsViewMapToApisViewsV1SelectedFilters(d.Get("filters.0").(map[string]interface{}))
+			filters, err := ResourceIbmLogsViewMapToApisViewsV1SelectedFilters(d.Get("filters.0").(map[string]interface{}))
 			if err != nil {
 				return diag.FromErr(err)
 			}
-			replaceViewOptions.SetFilters(filtersModel)
+			replaceViewOptions.SetFilters(filters)
 		}
+
 		if _, ok := d.GetOk("folder_id"); ok {
 			replaceViewOptions.SetFolderID(core.UUIDPtr(strfmt.UUID(d.Get("folder_id").(string))))
+		}
+
+		if _, ok := d.GetOk("tier"); ok {
+			replaceViewOptions.SetTier(d.Get("tier").(string))
 		}
 
 		hasChange = true
 	}
 
 	if hasChange {
-		_, _, err = logsClient.ReplaceViewWithContext(context, replaceViewOptions)
+		_, response, err := logsClient.ReplaceViewWithContext(context, replaceViewOptions)
 		if err != nil {
-			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("ReplaceViewWithContext failed: %s", err.Error()), "ibm_logs_view", "update")
-			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
-			return tfErr.GetDiag()
+			log.Printf("[DEBUG] ReplaceViewWithContext failed %s\n%s", err, response)
+			return diag.FromErr(fmt.Errorf("ReplaceViewWithContext failed %s\n%s", err, response))
 		}
 	}
 
@@ -377,11 +407,10 @@ func resourceIbmLogsViewDelete(context context.Context, d *schema.ResourceData, 
 	viewIdInt, _ := strconv.ParseInt(viewId, 10, 64)
 	deleteViewOptions.SetID(viewIdInt)
 
-	_, err = logsClient.DeleteViewWithContext(context, deleteViewOptions)
+	response, err := logsClient.DeleteViewWithContext(context, deleteViewOptions)
 	if err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("DeleteViewWithContext failed: %s", err.Error()), "ibm_logs_view", "delete")
-		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
-		return tfErr.GetDiag()
+		log.Printf("[DEBUG] DeleteViewWithContext failed %s\n%s", err, response)
+		return diag.FromErr(fmt.Errorf("DeleteViewWithContext failed %s\n%s", err, response))
 	}
 
 	d.SetId("")
@@ -456,11 +485,17 @@ func ResourceIbmLogsViewMapToApisViewsV1TimeSelectionSelectionTypeCustomSelectio
 
 func ResourceIbmLogsViewMapToApisViewsV1SearchQuery(modelMap map[string]interface{}) (*logsv0.ApisViewsV1SearchQuery, error) {
 	model := &logsv0.ApisViewsV1SearchQuery{}
+	// Initialize query with empty string as default. This is necessary because
+	// query = "" is a valid query value, but Terraform treats empty strings as null values.
+	// By initializing with an empty string, we ensure the query field is properly set even when empty.
 	query := ""
 	if modelMap["query"] != nil {
 		query = modelMap["query"].(string)
 	}
 	model.Query = &query
+	if modelMap["syntax_type"] != nil && modelMap["syntax_type"].(string) != "" {
+		model.SyntaxType = core.StringPtr(modelMap["syntax_type"].(string))
+	}
 	return model, nil
 }
 
@@ -491,14 +526,15 @@ func ResourceIbmLogsViewMapToApisViewsV1Filter(modelMap map[string]interface{}) 
 		}
 		model.SelectedValues = SelectedValuesMap
 	}
-
-	// TODO: handle SelectedValues, map with entry type 'bool'
 	return model, nil
 }
 
 func ResourceIbmLogsViewApisViewsV1SearchQueryToMap(model *logsv0.ApisViewsV1SearchQuery) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["query"] = *model.Query
+	if model.SyntaxType != nil {
+		modelMap["syntax_type"] = model.SyntaxType
+	}
 	return modelMap, nil
 }
 

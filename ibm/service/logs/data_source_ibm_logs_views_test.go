@@ -1,4 +1,4 @@
-// Copyright IBM Corp. 2024 All Rights Reserved.
+// Copyright IBM Corp. 2026 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 package logs_test
@@ -11,11 +11,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
-	// . "github.com/IBM-Cloud/terraform-provider-ibm/ibm/unittest"
 )
 
 func TestAccIbmLogsViewsDataSourceBasic(t *testing.T) {
-	viewName := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
+	viewName := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 1000))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheckCloudLogs(t) },
@@ -31,63 +30,85 @@ func TestAccIbmLogsViewsDataSourceBasic(t *testing.T) {
 	})
 }
 
+func TestAccIbmLogsViewsDataSourceAllArgs(t *testing.T) {
+	viewName := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 1000))
+	viewTier := "priority_insights"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { acc.TestAccPreCheckCloudLogs(t) },
+		Providers: acc.TestAccProviders,
+		Steps: []resource.TestStep{
+			resource.TestStep{
+				Config: testAccCheckIbmLogsViewsDataSourceConfig(viewName, viewTier),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet("data.ibm_logs_views.logs_views_instance", "id"),
+					resource.TestCheckResourceAttrSet("data.ibm_logs_views.logs_views_instance", "views.#"),
+					resource.TestCheckResourceAttrSet("data.ibm_logs_views.logs_views_instance", "views.0.id"),
+					resource.TestCheckResourceAttrSet("data.ibm_logs_views.logs_views_instance", "views.0.name"),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckIbmLogsViewsDataSourceConfigBasic(viewName string) string {
 	return fmt.Sprintf(`
-	resource "ibm_logs_view" "logs_view_instance" {
-		instance_id = "%s"
-		region      = "%s"
-		name        = "%s"
-		filters {
-		  filters {
-			name = "applicationName"
-			selected_values = {
-			  demo = true
+		resource "ibm_logs_view" "logs_view_instance" {
+			instance_id = "%s"
+			region      = "%s"
+			name        = "%s"
+			time_selection {
+				quick_selection {
+					caption = "Last 1 hour"
+					seconds = 3600
+				}
 			}
-		  }
-		  filters {
-			name = "subsystemName"
-			selected_values = {
-			  demo = true
-			}
-		  }
-		  filters {
-			name = "operationName"
-			selected_values = {
-			  demo = true
-			}
-		  }
-		  filters {
-			name = "serviceName"
-			selected_values = {
-			  demo = true
-			}
-		  }
-		  filters {
-			name = "severity"
-			selected_values = {
-			  demo = true
-			}
-		  }
+			tier = "priority_insights"
 		}
-		search_query {
-		  query = "logs"
-		}
-		time_selection {
-		  custom_selection {
-			from_time = "2024-01-25T11:31:43.152Z"
-			to_time   = "2024-01-25T11:37:13.238Z"
-		  }
-		}
-	}
 
-	data "ibm_logs_views" "logs_views_instance" {
-		depends_on  = [
-			ibm_logs_view.logs_view_instance
-		]
-		instance_id = ibm_logs_view.logs_view_instance.instance_id
-		region      = ibm_logs_view.logs_view_instance.region
-	}
+		data "ibm_logs_views" "logs_views_instance" {
+			instance_id = ibm_logs_view.logs_view_instance.instance_id
+			region      = ibm_logs_view.logs_view_instance.region
+			depends_on = [
+				ibm_logs_view.logs_view_instance
+			]
+		}
 	`, acc.LogsInstanceId, acc.LogsInstanceRegion, viewName)
+}
+
+func testAccCheckIbmLogsViewsDataSourceConfig(viewName string, viewTier string) string {
+	return fmt.Sprintf(`
+		resource "ibm_logs_view" "logs_view_instance" {
+			instance_id = "%s"
+			region      = "%s"
+			name        = "%s"
+			search_query {
+				query = "error"
+				syntax_type = "dataprime"
+			}
+			time_selection {
+				quick_selection {
+					caption = "Last 1 hour"
+					seconds = 3600
+				}
+			}
+			filters {
+				filters {
+					name = "applicationName"
+					selected_values = {"cs-rest-test1":true,"demo":true}
+				}
+			}
+			tier = "%s"
+		}
+
+		data "ibm_logs_views" "logs_views_instance" {
+			instance_id = ibm_logs_view.logs_view_instance.instance_id
+			region      = ibm_logs_view.logs_view_instance.region
+			depends_on = [
+				ibm_logs_view.logs_view_instance
+			]
+		}
+	`, acc.LogsInstanceId, acc.LogsInstanceRegion, viewName, viewTier)
 }
 
 // Todo @kavya498: Fix unit testcases

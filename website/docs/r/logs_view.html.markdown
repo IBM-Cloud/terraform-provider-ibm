@@ -51,13 +51,15 @@ resource "ibm_logs_view" "logs_view_instance" {
     }
   }
   search_query {
-    query = "logs"
+		query = "error"
+		syntax_type = "dataprime"
   }
+  tier = "all_logs"
   time_selection {
-    custom_selection {
-      from_time = "2024-01-25T11:31:43.152Z"
-      to_time   = "2024-01-25T11:37:13.238Z"
-    }
+		quick_selection {
+			caption = "Last hour"
+			seconds = 3600
+		}
   }
 }
 ```
@@ -66,7 +68,7 @@ resource "ibm_logs_view" "logs_view_instance" {
 
 You can specify the following arguments for this resource.
 
-* `instance_id` - (Required, Forces new resource, String)  Cloud Logs Instance GUID.
+* `instance_id` - (Required, Forces new resource, String) Cloud Logs Instance GUID.
 * `region` - (Optional, Forces new resource, String) Cloud Logs Instance Region.
 * `endpoint_type` - (Optional, String) Cloud Logs Instance Endpoint type. Allowed values `public` and `private`.
 * `filters` - (Optional, List) View selected filters.
@@ -75,27 +77,31 @@ Nested schema for **filters**:
 	  * Constraints: The maximum length is `4096` items. The minimum length is `1` item.
 	Nested schema for **filters**:
 		* `name` - (Required, String) Filter name.
-		  * Constraints: The maximum length is `4096` characters. The minimum length is `1` character. The value must match regular expression `^[\\p{L}\\p{N}\\p{P}\\p{Z}\\p{S}\\p{M}]+$`.
+		  * Constraints: The maximum length is `4096` characters. The minimum length is `1` character. The value must match regular expression `/^[\\p{L}\\p{N}\\p{P}\\p{Z}\\p{S}\\p{M}]+$/`.
 		* `selected_values` - (Required, Map) Filter selected values.
 * `folder_id` - (Optional, String) View folder ID.
   * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/`.
 * `name` - (Required, String) View name.
-  * Constraints: The maximum length is `4096` characters. The minimum length is `1` character. The value must match regular expression `^[\\p{L}\\p{N}\\p{P}\\p{Z}\\p{S}\\p{M}]+$`.
+  * Constraints: The maximum length is `4096` characters. The minimum length is `1` character. The value must match regular expression `/^[\\p{L}\\p{N}\\p{P}\\p{Z}\\p{S}\\p{M}]+$/`.
 * `search_query` - (Optional, List) View search query.
 Nested schema for **search_query**:
 	* `query` - (Required, String) View search query.
-	  * Constraints: The maximum length is `4096` characters. The minimum length is `1` character. The value must match regular expression `^[\\p{L}\\p{N}\\p{P}\\p{Z}\\p{S}\\p{M}]+$`.
+	  * Constraints: The maximum length is `4096` characters. The minimum length is `1` character. The value must match regular expression `/^[\\p{L}\\p{N}\\p{P}\\p{Z}\\p{S}\\p{M}]+$/`.
+	* `syntax_type` - (Optional, String) Syntax type for the query used in views.
+	  * Constraints: Allowable values are: `lucene`, `dataprime`.
+* `tier` - (Optional, String) Type of view.
+  * Constraints: Allowable values are: `priority_insights`, `priority_insights_templates`, `all_logs`, `all_logs_templates`.
 * `time_selection` - (Required, List) View time selection.
 Nested schema for **time_selection**:
 	* `custom_selection` - (Optional, List) Custom time selection.
 	Nested schema for **custom_selection**:
-		* `from_time` - (Required, String) Custom time selection start timestamp.
-		* `to_time` - (Required, String) Custom time selection end timestamp.
+		* `from_time` - (Required, String) Custom time selection starting timestamp.
+		* `to_time` - (Required, String) Custom time selection ending timestamp.
 	* `quick_selection` - (Optional, List) Quick time selection.
 	Nested schema for **quick_selection**:
 		* `caption` - (Required, String) Quick time selection caption.
-		  * Constraints: The maximum length is `4096` characters. The minimum length is `1` character. The value must match regular expression `^[\\p{L}\\p{N}\\p{P}\\p{Z}\\p{S}\\p{M}]+$`.
-		* `seconds` - (Required, Integer) Quick time selection amount of seconds.
+		  * Constraints: The maximum length is `4096` characters. The minimum length is `1` character. The value must match regular expression `/^[\\p{L}\\p{N}\\p{P}\\p{Z}\\p{S}\\p{M}]+$/`.
+		* `seconds` - (Required, Integer) Quick time selection amount in seconds.
 		  * Constraints: The maximum value is `4294967295`. The minimum value is `0`.
 
 ## Attribute Reference
@@ -112,10 +118,10 @@ You can import the `ibm_logs_view` resource by using `id`. `id` combination of `
 
 # Syntax
 <pre>
-$ terraform import ibm_logs_view.logs_view < region >/< instance_id >/< view_id >;
+$ terraform import ibm_logs_view.logs_view < region >/< instance_id >/< view_id >
 </pre>
 
 # Example
-```
+<pre>
 $ terraform import ibm_logs_view.logs_view eu-gb/3dc02998-0b50-4ea8-b68a-4779d716fa1f/52
-```
+</pre>
