@@ -1,3 +1,38 @@
+# 1.89.0 (March 2, 2026)
+
+## Bug Fixes
+
+### General
+* removed redundant checks to fix build on 1.26 ([6682](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6682))
+
+### CIS
+* fix mtls empty hostmanes issue ([6669](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6669))
+
+### Global Tagging
+* Fix tagging is error ([6681](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6681))
+
+
+## Enhancements
+
+### CD Tekton Pipeline
+* Fix multiline properties ([6680](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6680))
+
+### Cloud Databases
+* added a nil check on response in ibm_database ([6660](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6660))
+
+### Cloud Object Storage
+* Updating the documentation for COS for cross account access. ([6685](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6685))
+
+### IAM
+* Terraform should not plan update-in-place when no resources exist for template assignment ([6216](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6216))
+
+### Power Systems
+* Refactor host group update logic ([6677](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6677))
+
+### Toolchain
+* Continuous Delivery (CD): Region discontinuation warnings ([6687](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6687))
+
+
 # 1.88.3 (February 23, 2026)
 
 ## Bug Fixes
