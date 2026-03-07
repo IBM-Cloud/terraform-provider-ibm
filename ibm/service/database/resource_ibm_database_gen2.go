@@ -23,10 +23,6 @@ func newResourceIBMDatabaseGen2Backend() resourceIBMDatabaseBackend {
 	return &resourceIBMDatabaseGen2Backend{}
 }
 
-func (g *resourceIBMDatabaseGen2Backend) WarnUnsupported(context context.Context, d *schema.ResourceData) diag.Diagnostics {
-	return nil
-}
-
 func (g *resourceIBMDatabaseGen2Backend) Create(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	return diag.Errorf("gen2 backend not implemented yet (plan=%q)", d.Get("plan").(string))
 }
@@ -45,6 +41,10 @@ func (g *resourceIBMDatabaseGen2Backend) Delete(context context.Context, d *sche
 
 func (g *resourceIBMDatabaseGen2Backend) Exists(d *schema.ResourceData, meta interface{}) (bool, error) {
 	return false, fmt.Errorf("gen2 backend not implemented yet")
+}
+
+func (g *resourceIBMDatabaseGen2Backend) WarnUnsupported(context context.Context, d *schema.ResourceData) diag.Diagnostics {
+	return nil
 }
 
 func (g *resourceIBMDatabaseGen2Backend) ValidateUnsupportedAttrsDiff(context context.Context, d *schema.ResourceDiff, meta interface{}) error {

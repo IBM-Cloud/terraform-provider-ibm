@@ -13,10 +13,6 @@ func newResourceIBMDatabaseClassicBackend() resourceIBMDatabaseBackend {
 	return &resourceIBMDatabaseClassicBackend{}
 }
 
-func (c *resourceIBMDatabaseClassicBackend) WarnUnsupported(context context.Context, d *schema.ResourceData) diag.Diagnostics {
-	return nil
-}
-
 func (c *resourceIBMDatabaseClassicBackend) Create(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	return classicDatabaseInstanceCreate(context, d, meta)
 }
@@ -35,6 +31,10 @@ func (c *resourceIBMDatabaseClassicBackend) Delete(context context.Context, d *s
 
 func (c *resourceIBMDatabaseClassicBackend) Exists(d *schema.ResourceData, meta interface{}) (bool, error) {
 	return classicDatabaseInstanceExists(d, meta)
+}
+
+func (c *resourceIBMDatabaseClassicBackend) WarnUnsupported(context context.Context, d *schema.ResourceData) diag.Diagnostics {
+	return nil
 }
 
 func (c *resourceIBMDatabaseClassicBackend) ValidateUnsupportedAttrsDiff(context context.Context, d *schema.ResourceDiff, meta interface{}) error {
