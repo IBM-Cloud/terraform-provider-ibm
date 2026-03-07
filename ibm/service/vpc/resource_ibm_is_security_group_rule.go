@@ -16,6 +16,7 @@ import (
 	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -48,6 +49,12 @@ func ResourceIBMISSecurityGroupRule() *schema.Resource {
 		Exists:        resourceIBMISSecurityGroupRuleExists,
 		Importer:      &schema.ResourceImporter{},
 
+		CustomizeDiff: customdiff.All(
+			customdiff.Sequence(
+				func(_ context.Context, diff *schema.ResourceDiff, v interface{}) error {
+					return ResourceSgRuleProtocolValidate(diff)
+				}),
+		),
 		Schema: map[string]*schema.Schema{
 
 			isSecurityGroupID: {
@@ -232,6 +239,56 @@ func ResourceIBMISSecurityGroupRule() *schema.Resource {
 			},
 		},
 	}
+}
+
+func ResourceSgRuleProtocolValidate(d *schema.ResourceDiff) error {
+	var protocol string
+	if protocolVal, ok := d.GetOk(isNetworkACLRuleProtocol); ok {
+		protocol = protocolVal.(string)
+	}
+	if d.Id() != "" {
+		if d.HasChange(isSecurityGroupRuleProtocol) {
+			return fmt.Errorf("updating '%s' is not supported after creation. Please recreate the security group rule to change the protocol", isSecurityGroupRuleProtocol)
+		} else {
+			hasTCP := d.HasChange(isSecurityGroupRuleProtocolTCP)
+			hasUDP := d.HasChange(isSecurityGroupRuleProtocolUDP)
+			hasICMP := d.HasChange(isSecurityGroupRuleProtocolICMP)
+
+			switch protocol {
+			case "icmp":
+				if hasTCP || hasUDP {
+					return fmt.Errorf("updating '%s' is not supported after creation. Please recreate the security group rule to change the protocol", isSecurityGroupRuleProtocol)
+				}
+			case "tcp":
+				if hasUDP || hasICMP {
+					return fmt.Errorf("updating '%s' is not supported after creation. Please recreate the security group rule to change the protocol", isSecurityGroupRuleProtocol)
+				}
+			case "udp":
+				if hasTCP || hasICMP {
+					return fmt.Errorf("updating '%s' is not supported after creation. Please recreate the security group rule to change the protocol", isSecurityGroupRuleProtocol)
+				}
+			}
+		}
+	}
+
+	if protocol != "icmp" {
+		if _, ok := d.GetOk("type"); ok {
+			return fmt.Errorf("attribute 'type' conflicts with protocol %s; 'type' is only valid for icmp protocol", protocol)
+		}
+		if _, ok := d.GetOk("code"); ok {
+			return fmt.Errorf("attribute 'code' conflicts with protocol %q; 'code' is only valid for icmp protocol", protocol)
+		}
+	}
+
+	if protocol != "tcp" && protocol != "udp" {
+		if _, ok := d.GetOk("port_min"); ok {
+			return fmt.Errorf("attribute 'port_min' conflicts with protocol %s; ports apply only to tcp/udp protocol", protocol)
+		}
+		if _, ok := d.GetOk("port_max"); ok {
+			return fmt.Errorf("attribute 'port_max' conflicts with protocol %s; ports apply only to tcp/udp protocol", protocol)
+		}
+	}
+	return nil
 }
 
 func ResourceIBMISSecurityGroupRuleValidator() *validate.ResourceValidator {
@@ -953,7 +1010,7 @@ func buildSecurityGroupRuleUpdatePatch(d *schema.ResourceData, sess *vpcv1.VpcV1
 			// Use GetOk to get NEW values from configuration, not old state values
 			if tcpInterface, ok := d.GetOk(isSecurityGroupRuleProtocolTCP); ok {
 				tcp := tcpInterface.([]interface{})
-				if len(tcp) > 0 {
+				if len(tcp) > 0 && tcp[0] != nil {
 					tcpval := tcp[0].(map[string]interface{})
 					if portMin, ok := tcpval[isSecurityGroupRulePortMin]; ok {
 						portMinInt := int64(portMin.(int))
@@ -1309,23 +1366,23 @@ func parseIBMISSecurityGroupRuleDictionary(d *schema.ResourceData, tag string, s
 	}
 	sgTemplate.Protocol = &parsed.protocol
 
-	if parsed.protocol != "icmp" {
-		if _, ok := d.GetOk("type"); ok {
-			return nil, nil, nil, fmt.Errorf("attribute 'type' conflicts with protocol %s; 'type' is only valid for icmp protocol", parsed.protocol)
-		}
-		if _, ok := d.GetOk("code"); ok {
-			return nil, nil, nil, fmt.Errorf("attribute 'code' conflicts with protocol %q; 'code' is only valid for icmp protocol", parsed.protocol)
-		}
-	}
+	// if parsed.protocol != "icmp" {
+	// 	if _, ok := d.GetOk("type"); ok {
+	// 		return nil, nil, nil, fmt.Errorf("attribute 'type' conflicts with protocol %s; 'type' is only valid for icmp protocol", parsed.protocol)
+	// 	}
+	// 	if _, ok := d.GetOk("code"); ok {
+	// 		return nil, nil, nil, fmt.Errorf("attribute 'code' conflicts with protocol %q; 'code' is only valid for icmp protocol", parsed.protocol)
+	// 	}
+	// }
 
-	if parsed.protocol != "tcp" && parsed.protocol != "udp" {
-		if _, ok := d.GetOk("port_min"); ok {
-			return nil, nil, nil, fmt.Errorf("attribute 'port_min' conflicts with protocol %s; ports apply only to tcp/udp protocol", parsed.protocol)
-		}
-		if _, ok := d.GetOk("port_max"); ok {
-			return nil, nil, nil, fmt.Errorf("attribute 'port_max' conflicts with protocol %s; ports apply only to tcp/udp protocol", parsed.protocol)
-		}
-	}
+	// if parsed.protocol != "tcp" && parsed.protocol != "udp" {
+	// 	if _, ok := d.GetOk("port_min"); ok {
+	// 		return nil, nil, nil, fmt.Errorf("attribute 'port_min' conflicts with protocol %s; ports apply only to tcp/udp protocol", parsed.protocol)
+	// 	}
+	// 	if _, ok := d.GetOk("port_max"); ok {
+	// 		return nil, nil, nil, fmt.Errorf("attribute 'port_max' conflicts with protocol %s; ports apply only to tcp/udp protocol", parsed.protocol)
+	// 	}
+	// }
 
 	//Local
 	parsed.local = ""
