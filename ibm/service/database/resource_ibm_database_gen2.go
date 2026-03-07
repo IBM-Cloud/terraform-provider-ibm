@@ -12,9 +12,7 @@ import (
 var gen2UnsupportedAttrs = []string{
 	// TODO: update the list
 	"backup_policy",
-	"service_endpoints",
 	"users",
-	"groups",
 }
 
 type resourceIBMDatabaseGen2Backend struct{}

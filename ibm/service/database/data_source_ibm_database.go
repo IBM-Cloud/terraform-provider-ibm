@@ -25,16 +25,16 @@ type dataSourceIBMDatabaseBackend interface {
 	Read(d *schema.ResourceData, meta interface{}) error
 }
 
-func pickDataSourceBackend(d *schema.ResourceData, meta interface{}) dataSourceIBMDatabaseBackend {
+func pickDataSourceBackend(d *schema.ResourceData, meta interface{}) (dataSourceIBMDatabaseBackend, error) {
 	instance, err := findInstance(d, meta)
 	if err != nil {
-		return nil
+		return nil, err
 	}
 	plan := *instance.ResourcePlanID
 	if isGen2Plan(plan) {
-		return newDataSourceIBMDatabaseGen2Backend()
+		return newDataSourceIBMDatabaseGen2Backend(), nil
 	}
-	return newDataSourceIBMDatabaseClassicBackend()
+	return newDataSourceIBMDatabaseClassicBackend(), nil
 }
 
 func DataSourceIBMDatabaseInstance() *schema.Resource {
@@ -620,7 +620,11 @@ func findInstance(d *schema.ResourceData, meta interface{}) (*rc.ResourceInstanc
 }
 
 func dataSourceIBMDatabaseInstanceRead(d *schema.ResourceData, meta interface{}) error {
-	b := pickDataSourceBackend(d, meta)
+	b, err := pickDataSourceBackend(d, meta)
+	if err != nil {
+		return err
+	}
+
 	return b.Read(d, meta)
 }
 
