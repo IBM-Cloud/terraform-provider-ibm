@@ -14,6 +14,7 @@ import (
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
+	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 
@@ -1111,9 +1112,29 @@ func validateInlineRules(d *schema.ResourceData, rules []interface{}) error {
 		direction := rulex[isNetworkACLRuleDirection].(string)
 		direction = strings.ToLower(direction)
 
-		icmp := len(rulex[isNetworkACLRuleICMP].([]interface{})) > 0
-		tcp := len(rulex[isNetworkACLRuleTCP].([]interface{})) > 0
-		udp := len(rulex[isNetworkACLRuleUDP].([]interface{})) > 0
+		// Use GetRawConfig to get the actual HCL configuration without state merging
+		// This correctly detects which protocol blocks are defined in the user's config
+		rawConfig := d.GetRawConfig()
+		rulesAttr := rawConfig.GetAttr("rules")
+
+		icmp := false
+		tcp := false
+		udp := false
+
+		if !rulesAttr.IsNull() && rulesAttr.LengthInt() > i {
+			ruleVal := rulesAttr.Index(cty.NumberIntVal(int64(i)))
+			if !ruleVal.IsNull() {
+				icmpAttr := ruleVal.GetAttr("icmp")
+				tcpAttr := ruleVal.GetAttr("tcp")
+				udpAttr := ruleVal.GetAttr("udp")
+
+				icmp = !icmpAttr.IsNull() && icmpAttr.LengthInt() > 0
+				tcp = !tcpAttr.IsNull() && tcpAttr.LengthInt() > 0
+				udp = !udpAttr.IsNull() && udpAttr.LengthInt() > 0
+			}
+		}
+
+		log.Printf("[DEBUG] validateInlineRules rule[%d] from RawConfig: icmp=%t, tcp=%t, udp=%t", i, icmp, tcp, udp)
 
 		if (icmp && tcp) || (icmp && udp) || (tcp && udp) {
 			return fmt.Errorf("Only one of icmp|tcp|udp can be defined per rule")

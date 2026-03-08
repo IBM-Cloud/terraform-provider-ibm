@@ -507,48 +507,6 @@ func nwaclRuleCreate(context context.Context, d *schema.ResourceData, meta inter
 		protocol = protocolVal.(string)
 	}
 
-	// if protocol != "icmp" {
-	// 	if _, ok := d.GetOk(isNetworkACLRuleICMPType); ok {
-	// 		err = fmt.Errorf("attribute 'type' conflicts with protocol %s; 'type' is only valid for icmp protocol", protocol)
-	// 		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_network_acl_rule", "create", "initialize-client")
-	// 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
-	// 		return tfErr.GetDiag()
-	// 	}
-	// 	if _, ok := d.GetOk(isNetworkACLRuleICMPCode); ok {
-	// 		err = fmt.Errorf("attribute 'code' conflicts with protocol %q; 'code' is only valid for icmp protocol", protocol)
-	// 		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_network_acl_rule", "create", "initialize-client")
-	// 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
-	// 		return tfErr.GetDiag()
-	// 	}
-	// }
-
-	// if protocol != "tcp" && protocol != "udp" {
-	// 	if _, ok := d.GetOk(isNetworkACLRulePortMin); ok {
-	// 		err = fmt.Errorf("attribute 'port_min' conflicts with protocol %s; ports apply only to tcp/udp protocol", protocol)
-	// 		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_network_acl_rule", "create", "")
-	// 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
-	// 		return tfErr.GetDiag()
-	// 	}
-	// 	if _, ok := d.GetOk(isNetworkACLRulePortMax); ok {
-	// 		err = fmt.Errorf("attribute 'port_max' conflicts with protocol %s; ports apply only to tcp/udp protocol", protocol)
-	// 		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_network_acl_rule", "create", "")
-	// 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
-	// 		return tfErr.GetDiag()
-	// 	}
-	// 	if _, ok := d.GetOk(isNetworkACLRuleSourcePortMax); ok {
-	// 		err = fmt.Errorf("attribute 'source_port_max' conflicts with protocol %s; ports apply only to tcp/udp protocol", protocol)
-	// 		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_network_acl_rule", "create", "")
-	// 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
-	// 		return tfErr.GetDiag()
-	// 	}
-	// 	if _, ok := d.GetOk(isNetworkACLRuleSourcePortMin); ok {
-	// 		err = fmt.Errorf("attribute 'source_port_min' conflicts with protocol %s; ports apply only to tcp/udp protocol", protocol)
-	// 		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_network_acl_rule", "create", "")
-	// 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
-	// 		return tfErr.GetDiag()
-	// 	}
-	// }
-
 	ruleTemplate := &vpcv1.NetworkACLRulePrototype{
 		Action:      &action,
 		Destination: &destination,

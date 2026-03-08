@@ -1366,24 +1366,6 @@ func parseIBMISSecurityGroupRuleDictionary(d *schema.ResourceData, tag string, s
 	}
 	sgTemplate.Protocol = &parsed.protocol
 
-	// if parsed.protocol != "icmp" {
-	// 	if _, ok := d.GetOk("type"); ok {
-	// 		return nil, nil, nil, fmt.Errorf("attribute 'type' conflicts with protocol %s; 'type' is only valid for icmp protocol", parsed.protocol)
-	// 	}
-	// 	if _, ok := d.GetOk("code"); ok {
-	// 		return nil, nil, nil, fmt.Errorf("attribute 'code' conflicts with protocol %q; 'code' is only valid for icmp protocol", parsed.protocol)
-	// 	}
-	// }
-
-	// if parsed.protocol != "tcp" && parsed.protocol != "udp" {
-	// 	if _, ok := d.GetOk("port_min"); ok {
-	// 		return nil, nil, nil, fmt.Errorf("attribute 'port_min' conflicts with protocol %s; ports apply only to tcp/udp protocol", parsed.protocol)
-	// 	}
-	// 	if _, ok := d.GetOk("port_max"); ok {
-	// 		return nil, nil, nil, fmt.Errorf("attribute 'port_max' conflicts with protocol %s; ports apply only to tcp/udp protocol", parsed.protocol)
-	// 	}
-	// }
-
 	//Local
 	parsed.local = ""
 	if pl, ok := d.GetOk(isSecurityGroupRuleLocal); ok {
