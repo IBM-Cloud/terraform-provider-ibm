@@ -38,6 +38,12 @@ You can access the following attribute references after your data source is crea
   - `architecture` - (String) The default Operating System architecture for an instance of the profile.
   - `architecture_type` - (String) The type for this OS architecture.
   - `architecture_values` - (String) The supported OS architecture(s) for an instance with this profile.
+  - `availability_class` - (List) The availability class for this OS architecture.
+      Nested schema for **availability_class**:
+      - `default` - (String) The default availability class for an instance with this profile. Allowable values are:   `spot`, `standard`.
+      - `type` - (String) The type for this profile field. Allowable values are: `enum`.
+      - `value` - (String) The value for this profile field.
+      - `values` - (List) The permitted values for this profile field. Allowable list items are: `spot`, `standard`.
   - `name` - (String) The name of the virtual server instance profile.
   - `family` - (String) The family of the virtual server instance profile.
   - `bandwidth`  - (List) The collection of bandwidth information.
@@ -157,6 +163,14 @@ You can access the following attribute references after your data source is crea
         - `max` - (Integer) The maximum number of network attachments supported by an instance using this profile.
         - `min` - (Integer) The minimum number of network attachments supported by an instance using this profile.
         - `type` - (String) The type for this profile field, Ex: range or dependent.
+    
+    - `network_bandwidth_mode` - (List) The permitted network bandwidth modes for an instance with this profile
+
+        Nested schema for `network_bandwidth_mode`:
+        - `default` - (string) The default network bandwidth mode for this profile.
+        - `type` - (string) The type for this profile field.
+        - `values` - (String) The supported network bandwidth modes for an instance with this profile.
+        - `value` - (String) The value for this profile field.
 
 
   - `network_interface_count` - (List)

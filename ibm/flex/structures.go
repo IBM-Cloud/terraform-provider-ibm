@@ -4126,6 +4126,7 @@ func GeneratePolicyOptions(d *schema.ResourceData, meta interface{}) (iampolicym
 			}
 
 			if r, ok := r["resource_type"]; ok {
+				resourceType = r.(string)
 				if r.(string) != "" {
 					resourceAttr := iampolicymanagementv1.ResourceAttribute{
 						Name:     core.StringPtr("resourceType"),
@@ -4188,6 +4189,9 @@ func GeneratePolicyOptions(d *schema.ResourceData, meta interface{}) (iampolicym
 			if name == "service_group_id" {
 				serviceGroupID = value
 			}
+			if name == "resourceType" {
+				resourceType = value
+			}
 			at := iampolicymanagementv1.ResourceAttribute{
 				Name:     &name,
 				Value:    &value,
@@ -4235,6 +4239,11 @@ func GeneratePolicyOptions(d *schema.ResourceData, meta interface{}) (iampolicym
 	listRoleOptions := &iampolicymanagementv1.ListRolesOptions{
 		AccountID: &userDetails.UserAccount,
 	}
+
+	if serviceName == "" && resourceType == "resource-group" {
+		serviceName = "resource-controller"
+	}
+
 	if serviceName == "" && // no specific service specified
 		!d.Get("account_management").(bool) && // not all account management services
 		resourceType != "resource-group" && // not to a resource group
@@ -4321,6 +4330,7 @@ func GenerateV2PolicyOptions(d *schema.ResourceData, meta interface{}) (iampolic
 			}
 
 			if r, ok := r["resource_type"]; ok {
+				resourceType = r.(string)
 				if r.(string) != "" {
 					resourceAttr := iampolicymanagementv1.V2PolicyResourceAttribute{
 						Key:      core.StringPtr("resourceType"),
@@ -4383,6 +4393,9 @@ func GenerateV2PolicyOptions(d *schema.ResourceData, meta interface{}) (iampolic
 			if name == "service_group_id" {
 				serviceGroupID = value
 			}
+			if name == "resourceType" {
+				resourceType = value
+			}
 			at := iampolicymanagementv1.V2PolicyResourceAttribute{
 				Key:      &name,
 				Value:    &value,
@@ -4429,6 +4442,10 @@ func GenerateV2PolicyOptions(d *schema.ResourceData, meta interface{}) (iampolic
 
 	listRoleOptions := &iampolicymanagementv1.ListRolesOptions{
 		AccountID: &userDetails.UserAccount,
+	}
+
+	if serviceName == "" && resourceType == "resource-group" {
+		serviceName = "resource-controller"
 	}
 
 	if serviceName == "" && // no specific service specified

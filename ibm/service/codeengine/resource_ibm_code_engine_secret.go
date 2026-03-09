@@ -1,8 +1,8 @@
-// Copyright IBM Corp. 2024 All Rights Reserved.
+// Copyright IBM Corp. 2025 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 /*
- * IBM OpenAPI Terraform Generator Version: 3.94.1-71478489-20240820-161623
+ * IBM OpenAPI Terraform Generator Version: 3.108.0-56772134-20251111-102802
  */
 
 package codeengine
@@ -12,13 +12,14 @@ import (
 	"fmt"
 	"log"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 	"github.com/IBM/code-engine-go-sdk/codeenginev2"
 	"github.com/IBM/go-sdk-core/v5/core"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 func ResourceIbmCodeEngineSecret() *schema.Resource {
@@ -30,34 +31,34 @@ func ResourceIbmCodeEngineSecret() *schema.Resource {
 		Importer:      &schema.ResourceImporter{},
 
 		Schema: map[string]*schema.Schema{
-			"project_id": {
+			"project_id": &schema.Schema{
 				Type:         schema.TypeString,
 				Required:     true,
 				ForceNew:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_code_engine_secret", "project_id"),
 				Description:  "The ID of the project.",
 			},
-			"data": {
+			"data": &schema.Schema{
 				Type:        schema.TypeMap,
 				Optional:    true,
 				Description: "Data container that allows to specify config parameters and their values as a key-value map. Each key field must consist of alphanumeric characters, `-`, `_` or `.` and must not exceed a max length of 253 characters. Each value field can consists of any character and must not exceed a max length of 1048576 characters.",
 				Elem:        &schema.Schema{Type: schema.TypeString},
 			},
-			"format": {
+			"format": &schema.Schema{
 				Type:         schema.TypeString,
 				Required:     true,
 				ForceNew:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_code_engine_secret", "format"),
 				Description:  "Specify the format of the secret.",
 			},
-			"name": {
+			"name": &schema.Schema{
 				Type:         schema.TypeString,
 				Required:     true,
 				ForceNew:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_code_engine_secret", "name"),
 				Description:  "The name of the secret.",
 			},
-			"service_access": {
+			"service_access": &schema.Schema{
 				Type:        schema.TypeList,
 				MaxItems:    1,
 				Optional:    true,
@@ -65,7 +66,7 @@ func ResourceIbmCodeEngineSecret() *schema.Resource {
 				Description: "Properties for Service Access Secrets.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"resource_key": {
+						"resource_key": &schema.Schema{
 							Type:        schema.TypeList,
 							MinItems:    1,
 							MaxItems:    1,
@@ -73,12 +74,12 @@ func ResourceIbmCodeEngineSecret() *schema.Resource {
 							Description: "The service credential associated with the secret.",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
-									"id": {
+									"id": &schema.Schema{
 										Type:        schema.TypeString,
 										Optional:    true,
 										Description: "ID of the service credential associated with the secret.",
 									},
-									"name": {
+									"name": &schema.Schema{
 										Type:        schema.TypeString,
 										Computed:    true,
 										Description: "Name of the service credential associated with the secret.",
@@ -86,19 +87,19 @@ func ResourceIbmCodeEngineSecret() *schema.Resource {
 								},
 							},
 						},
-						"role": {
+						"role": &schema.Schema{
 							Type:        schema.TypeList,
 							MaxItems:    1,
 							Optional:    true,
 							Description: "A reference to the Role and Role CRN for service binding.",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
-									"crn": {
+									"crn": &schema.Schema{
 										Type:        schema.TypeString,
 										Optional:    true,
 										Description: "CRN of the IAM Role for this service access secret.",
 									},
-									"name": {
+									"name": &schema.Schema{
 										Type:        schema.TypeString,
 										Computed:    true,
 										Description: "Role of the service credential.",
@@ -106,7 +107,7 @@ func ResourceIbmCodeEngineSecret() *schema.Resource {
 								},
 							},
 						},
-						"service_instance": {
+						"service_instance": &schema.Schema{
 							Type:        schema.TypeList,
 							MinItems:    1,
 							MaxItems:    1,
@@ -114,12 +115,12 @@ func ResourceIbmCodeEngineSecret() *schema.Resource {
 							Description: "The IBM Cloud service instance associated with the secret.",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
-									"id": {
+									"id": &schema.Schema{
 										Type:        schema.TypeString,
 										Optional:    true,
 										Description: "ID of the IBM Cloud service instance associated with the secret.",
 									},
-									"type": {
+									"type": &schema.Schema{
 										Type:        schema.TypeString,
 										Computed:    true,
 										Description: "Type of IBM Cloud service associated with the secret.",
@@ -127,19 +128,19 @@ func ResourceIbmCodeEngineSecret() *schema.Resource {
 								},
 							},
 						},
-						"serviceid": {
+						"serviceid": &schema.Schema{
 							Type:        schema.TypeList,
 							MaxItems:    1,
 							Optional:    true,
 							Description: "A reference to a Service ID.",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
-									"crn": {
+									"crn": &schema.Schema{
 										Type:        schema.TypeString,
 										Computed:    true,
 										Description: "CRN value of a Service ID.",
 									},
-									"id": {
+									"id": &schema.Schema{
 										Type:        schema.TypeString,
 										Optional:    true,
 										Description: "The ID of the Service ID.",
@@ -150,25 +151,25 @@ func ResourceIbmCodeEngineSecret() *schema.Resource {
 					},
 				},
 			},
-			"service_operator": {
+			"service_operator": &schema.Schema{
 				Type:        schema.TypeList,
 				MaxItems:    1,
 				Optional:    true,
 				Description: "Properties for the IBM Cloud Operator Secret.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"apikey_id": {
+						"apikey_id": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "The ID of the apikey associated with the operator secret.",
 						},
-						"resource_group_ids": {
+						"resource_group_ids": &schema.Schema{
 							Type:        schema.TypeList,
 							Required:    true,
 							Description: "The list of resource groups (by ID) that the operator secret can bind services in.",
 							Elem:        &schema.Schema{Type: schema.TypeString},
 						},
-						"serviceid": {
+						"serviceid": &schema.Schema{
 							Type:        schema.TypeList,
 							MinItems:    1,
 							MaxItems:    1,
@@ -176,12 +177,12 @@ func ResourceIbmCodeEngineSecret() *schema.Resource {
 							Description: "A reference to a Service ID.",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
-									"crn": {
+									"crn": &schema.Schema{
 										Type:        schema.TypeString,
 										Computed:    true,
 										Description: "CRN value of a Service ID.",
 									},
-									"id": {
+									"id": &schema.Schema{
 										Type:        schema.TypeString,
 										Optional:    true,
 										Description: "The ID of the Service ID.",
@@ -189,7 +190,7 @@ func ResourceIbmCodeEngineSecret() *schema.Resource {
 								},
 							},
 						},
-						"user_managed": {
+						"user_managed": &schema.Schema{
 							Type:        schema.TypeBool,
 							Computed:    true,
 							Description: "Specifies whether the operator secret is user managed.",
@@ -197,37 +198,42 @@ func ResourceIbmCodeEngineSecret() *schema.Resource {
 					},
 				},
 			},
-			"created_at": {
+			"created_at": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The timestamp when the resource was created.",
 			},
-			"entity_tag": {
+			"entity_tag": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The version of the secret instance, which is used to achieve optimistic locking.",
 			},
-			"href": {
+			"generated_by": &schema.Schema{
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Specifies whether the secret is user generated.",
+			},
+			"href": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "When you provision a new secret,  a URL is created identifying the location of the instance.",
 			},
-			"region": {
+			"region": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The region of the project the resource is located in. Possible values: 'au-syd', 'br-sao', 'ca-tor', 'eu-de', 'eu-gb', 'jp-osa', 'jp-tok', 'us-east', 'us-south'.",
 			},
-			"resource_type": {
+			"resource_type": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The type of the secret.",
 			},
-			"secret_id": {
+			"secret_id": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The identifier of the resource.",
 			},
-			"etag": {
+			"etag": &schema.Schema{
 				Type:     schema.TypeString,
 				Computed: true,
 			},
@@ -252,8 +258,8 @@ func ResourceIbmCodeEngineSecretValidator() *validate.ResourceValidator {
 			ValidateFunctionIdentifier: validate.ValidateAllowedStringValue,
 			Type:                       validate.TypeString,
 			Required:                   true,
-			AllowedValues:              "basic_auth, generic, other, registry, service_access, service_operator, ssh_auth, tls",
-			Regexp:                     `^(generic|ssh_auth|basic_auth|tls|service_access|registry|service_operator|other)$`,
+			AllowedValues:              "basic_auth, generic, hmac_auth, other, registry, service_access, service_operator, ssh_auth, tls",
+			Regexp:                     `^(generic|ssh_auth|basic_auth|hmac_auth|tls|service_access|registry|service_operator|other)$`,
 		},
 		validate.ValidateSchema{
 			Identifier:                 "name",
@@ -398,6 +404,12 @@ func resourceIbmCodeEngineSecretRead(context context.Context, d *schema.Resource
 		err = fmt.Errorf("Error setting entity_tag: %s", err)
 		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_code_engine_secret", "read", "set-entity_tag").GetDiag()
 	}
+	if !core.IsNil(secret.GeneratedBy) {
+		if err = d.Set("generated_by", secret.GeneratedBy); err != nil {
+			err = fmt.Errorf("Error setting generated_by: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_code_engine_secret", "read", "set-generated_by").GetDiag()
+		}
+	}
 	if !core.IsNil(secret.Href) {
 		if err = d.Set("href", secret.Href); err != nil {
 			err = fmt.Errorf("Error setting href: %s", err)
@@ -446,37 +458,22 @@ func resourceIbmCodeEngineSecretUpdate(context context.Context, d *schema.Resour
 
 	replaceSecretOptions.SetProjectID(parts[0])
 	replaceSecretOptions.SetName(parts[1])
+	replaceSecretOptions.SetProjectID(d.Get("project_id").(string))
 	replaceSecretOptions.SetFormat(d.Get("format").(string))
-
-	hasChange := false
-
-	if d.HasChange("project_id") {
-		errMsg := fmt.Sprintf("Cannot update resource property \"%s\" with the ForceNew annotation."+
-			" The resource must be re-created to update this property.", "project_id")
-		return flex.DiscriminatedTerraformErrorf(nil, errMsg, "ibm_code_engine_secret", "update", "project_id-forces-new").GetDiag()
-	}
-	if d.HasChange("format") {
-		errMsg := fmt.Sprintf("Cannot update resource property \"%s\" with the ForceNew annotation."+
-			" The resource must be re-created to update this property.", "format")
-		return flex.DiscriminatedTerraformErrorf(nil, errMsg, "ibm_code_engine_secret", "update", "format-forces-new").GetDiag()
-	}
-	if d.HasChange("data") {
+	if _, ok := d.GetOk("data"); ok {
 		data, err := ResourceIbmCodeEngineSecretMapToSecretData(d.Get("data").(map[string]interface{}))
 		if err != nil {
 			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_code_engine_secret", "update", "parse-data").GetDiag()
 		}
 		replaceSecretOptions.SetData(data)
-		hasChange = true
 	}
 	replaceSecretOptions.SetIfMatch(d.Get("etag").(string))
 
-	if hasChange {
-		_, _, err = codeEngineClient.ReplaceSecretWithContext(context, replaceSecretOptions)
-		if err != nil {
-			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("ReplaceSecretWithContext failed: %s", err.Error()), "ibm_code_engine_secret", "update")
-			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
-			return tfErr.GetDiag()
-		}
+	_, _, err = codeEngineClient.ReplaceSecretWithContext(context, replaceSecretOptions)
+	if err != nil {
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("ReplaceSecretWithContext failed: %s", err.Error()), "ibm_code_engine_secret", "update")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	return resourceIbmCodeEngineSecretRead(context, d, meta)
@@ -524,6 +521,11 @@ func ResourceIbmCodeEngineSecretMapToSecretData(modelMap map[string]interface{})
 	return model, nil
 }
 
+func ResourceIbmCodeEngineSecretMapToSecretDataGenericSecretData(modelMap map[string]interface{}) (*codeenginev2.SecretDataGenericSecretData, error) {
+	model := &codeenginev2.SecretDataGenericSecretData{}
+	return model, nil
+}
+
 func ResourceIbmCodeEngineSecretMapToSecretDataBasicAuthSecretData(modelMap map[string]interface{}) (*codeenginev2.SecretDataBasicAuthSecretData, error) {
 	model := &codeenginev2.SecretDataBasicAuthSecretData{}
 	model.Username = core.StringPtr(modelMap["username"].(string))
@@ -551,6 +553,13 @@ func ResourceIbmCodeEngineSecretMapToSecretDataSSHSecretData(modelMap map[string
 	return model, nil
 }
 
+func ResourceIbmCodeEngineSecretMapToSecretDataHMACAuthSecretData(modelMap map[string]interface{}) (*codeenginev2.SecretDataHMACAuthSecretData, error) {
+	model := &codeenginev2.SecretDataHMACAuthSecretData{}
+	model.AccessKeyID = core.StringPtr(modelMap["access_key_id"].(string))
+	model.SecretAccessKey = core.StringPtr(modelMap["secret_access_key"].(string))
+	return model, nil
+}
+
 func ResourceIbmCodeEngineSecretMapToSecretDataTLSSecretData(modelMap map[string]interface{}) (*codeenginev2.SecretDataTLSSecretData, error) {
 	model := &codeenginev2.SecretDataTLSSecretData{}
 	model.TlsCert = core.StringPtr(modelMap["tls_cert"].(string))
@@ -560,11 +569,13 @@ func ResourceIbmCodeEngineSecretMapToSecretDataTLSSecretData(modelMap map[string
 
 func ResourceIbmCodeEngineSecretMapToServiceAccessSecretPrototypeProps(modelMap map[string]interface{}) (*codeenginev2.ServiceAccessSecretPrototypeProps, error) {
 	model := &codeenginev2.ServiceAccessSecretPrototypeProps{}
-	ResourceKeyModel, err := ResourceIbmCodeEngineSecretMapToResourceKeyRefPrototype(modelMap["resource_key"].([]interface{})[0].(map[string]interface{}))
-	if err != nil {
-		return model, err
+	if modelMap["resource_key"] != nil && len(modelMap["resource_key"].([]interface{})) > 0 {
+		ResourceKeyModel, err := ResourceIbmCodeEngineSecretMapToResourceKeyRefPrototype(modelMap["resource_key"].([]interface{})[0].(map[string]interface{}))
+		if err != nil {
+			return model, err
+		}
+		model.ResourceKey = ResourceKeyModel
 	}
-	model.ResourceKey = ResourceKeyModel
 	if modelMap["role"] != nil && len(modelMap["role"].([]interface{})) > 0 {
 		RoleModel, err := ResourceIbmCodeEngineSecretMapToRoleRefPrototype(modelMap["role"].([]interface{})[0].(map[string]interface{}))
 		if err != nil {
@@ -651,11 +662,13 @@ func ResourceIbmCodeEngineSecretMapToServiceIDRefPrototype(modelMap map[string]i
 
 func ResourceIbmCodeEngineSecretServiceAccessSecretPropsToMap(model *codeenginev2.ServiceAccessSecretProps) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	resourceKeyMap, err := ResourceIbmCodeEngineSecretResourceKeyRefToMap(model.ResourceKey)
-	if err != nil {
-		return modelMap, err
+	if model.ResourceKey != nil {
+		resourceKeyMap, err := ResourceIbmCodeEngineSecretResourceKeyRefToMap(model.ResourceKey)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["resource_key"] = []map[string]interface{}{resourceKeyMap}
 	}
-	modelMap["resource_key"] = []map[string]interface{}{resourceKeyMap}
 	if model.Role != nil {
 		roleMap, err := ResourceIbmCodeEngineSecretRoleRefToMap(model.Role)
 		if err != nil {

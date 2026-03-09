@@ -52,7 +52,7 @@ func ResourceIBMEnterpriseAccount() *schema.Resource {
 				Computed:     true,
 				Description:  "The IAM ID of the account owner, such as `IBMid-0123ABC`. The IAM ID must already exist.",
 				ForceNew:     true,
-				ValidateFunc: validate.ValidateRegexps("^IBMid\\-[A-Z,0-9]{10}$"),
+				ValidateFunc: validate.ValidateRegexps("^IBMid\\-[A-Z,0-9]{10}$", "^RedHat\\-[A-Z,0-9,-]{1,10}$"),
 			},
 			"traits": {
 				Type:             schema.TypeSet,

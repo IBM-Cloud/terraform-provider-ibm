@@ -41,6 +41,38 @@ func DataSourceIBMISInstanceProfiles() *schema.Resource {
 							Description: "The product family this virtual server instance profile belongs to.",
 						},
 
+						// spot changes
+						"availability_class": &schema.Schema{
+							Type:     schema.TypeList,
+							Computed: true,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"default": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The default availability class for an instance with this profile.",
+									},
+									"type": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The type for this profile field.",
+									},
+									"values": &schema.Schema{
+										Type:        schema.TypeList,
+										Computed:    true,
+										Description: "The permitted values for this profile field.",
+										Elem: &schema.Schema{
+											Type: schema.TypeString,
+										},
+									},
+									"value": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The value for this profile field.",
+									},
+								},
+							},
+						},
 						// cluster changes
 						"cluster_network_attachment_count": &schema.Schema{
 							Type:     schema.TypeList,
@@ -376,6 +408,37 @@ func DataSourceIBMISInstanceProfiles() *schema.Resource {
 										Type:        schema.TypeList,
 										Computed:    true,
 										Description: "The supported committed use terms for a reservation using this profile",
+										Elem: &schema.Schema{
+											Type: schema.TypeString,
+										},
+									},
+								},
+							},
+						},
+						"network_bandwidth_mode": {
+							Type:     schema.TypeList,
+							Computed: true,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"type": {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The type for this profile field.",
+									},
+									"value": {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The value for this profile field.",
+									},
+									"default": {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The default value for this profile field.",
+									},
+									"values": {
+										Type:        schema.TypeList,
+										Computed:    true,
+										Description: "The permitted values for this profile field.",
 										Elem: &schema.Schema{
 											Type: schema.TypeString,
 										},
@@ -886,6 +949,12 @@ func instanceProfilesList(context context.Context, d *schema.ResourceData, meta 
 			"name":   *profile.Name,
 			"family": *profile.Family,
 		}
+		availabilityClassMap, err := DataSourceIBMIsInstanceProfilesInstanceProfileAvailabilityClassToMap(profile.AvailabilityClass)
+		if err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_instance_profiles", "read", "availability_class-to-map").GetDiag()
+		}
+		l["availability_class"] = []map[string]interface{}{availabilityClassMap}
+
 		if profile.OsArchitecture != nil {
 			if profile.OsArchitecture.Default != nil {
 				l["architecture"] = *profile.OsArchitecture.Default
@@ -947,6 +1016,13 @@ func instanceProfilesList(context context.Context, d *schema.ResourceData, meta 
 
 		if profile.TotalVolumeBandwidth != nil {
 			l["total_volume_bandwidth"] = dataSourceInstanceProfileFlattenTotalVolumeBandwidth(*profile.TotalVolumeBandwidth.(*vpcv1.InstanceProfileVolumeBandwidth))
+		}
+
+		if profile.NetworkBandwidthMode != nil {
+			l["network_bandwidth_mode"], err = dataSourceInstanceProfileFlattenNetworkBandwidthMode(*profile.NetworkBandwidthMode.(*vpcv1.InstanceProfileNetworkBandwidthMode))
+			if err != nil {
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_instance_profiles", "read", "network_bandwidth_mode").GetDiag()
+			}
 		}
 
 		if profile.Disks != nil {
@@ -1135,6 +1211,39 @@ func DataSourceIBMIsInstanceProfilesInstanceProfileClusterNetworkAttachmentCount
 	modelMap["type"] = *model.Type
 	return modelMap, nil
 }
+
+func DataSourceIBMIsInstanceProfilesInstanceProfileAvailabilityClassToMap(model vpcv1.InstanceProfileAvailabilityClassIntf) (map[string]interface{}, error) {
+	if _, ok := model.(*vpcv1.InstanceProfileAvailabilityClassEnum); ok {
+		return DataSourceIBMIsInstanceProfilesInstanceProfileAvailabilityClassEnumToMap(model.(*vpcv1.InstanceProfileAvailabilityClassEnum))
+	} else if _, ok := model.(*vpcv1.InstanceProfileAvailabilityClassFixed); ok {
+		return DataSourceIBMIsInstanceProfilesInstanceProfileAvailabilityClassFixedToMap(model.(*vpcv1.InstanceProfileAvailabilityClassFixed))
+	} else if _, ok := model.(*vpcv1.InstanceProfileAvailabilityClass); ok {
+		modelMap := make(map[string]interface{})
+		model := model.(*vpcv1.InstanceProfileAvailabilityClass)
+		if model.Default != nil {
+			modelMap["default"] = *model.Default
+		}
+		if model.Type != nil {
+			modelMap["type"] = *model.Type
+		}
+		if model.Values != nil {
+			modelMap["values"] = model.Values
+		}
+		if model.Value != nil {
+			modelMap["value"] = *model.Value
+		}
+		return modelMap, nil
+	} else {
+		return nil, fmt.Errorf("Unrecognized vpcv1.InstanceProfileAvailabilityClassIntf subtype encountered")
+	}
+}
+
+func DataSourceIBMIsInstanceProfilesInstanceProfileAvailabilityClassEnumToMap(model *vpcv1.InstanceProfileAvailabilityClassEnum) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	modelMap["default"] = *model.Default
+	return modelMap, nil
+}
+
 func DataSourceIBMIsInstanceProfilesInstanceProfileVcpuBurstLimitToMap(model *vpcv1.InstanceProfileVcpuBurstLimit) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["type"] = *model.Type
@@ -1146,5 +1255,12 @@ func DataSourceIBMIsInstanceProfilesInstanceProfileVcpuPercentageToMap(model *vp
 	modelMap["default"] = flex.IntValue(model.Default)
 	modelMap["type"] = *model.Type
 	modelMap["values"] = model.Values
+	return modelMap, nil
+}
+
+func DataSourceIBMIsInstanceProfilesInstanceProfileAvailabilityClassFixedToMap(model *vpcv1.InstanceProfileAvailabilityClassFixed) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	modelMap["type"] = *model.Type
+	modelMap["value"] = *model.Value
 	return modelMap, nil
 }

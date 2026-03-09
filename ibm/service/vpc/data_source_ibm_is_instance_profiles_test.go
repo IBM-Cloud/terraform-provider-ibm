@@ -76,6 +76,7 @@ func TestAccIBMISInstanceProfilesDataSource_QoS(t *testing.T) {
 					resource.TestCheckResourceAttrSet("data.ibm_is_instance_profiles.test1", "profiles.0.vcpu_manufacturer.0.type"),
 					resource.TestCheckResourceAttrSet("data.ibm_is_instance_profiles.test1", "profiles.0.vcpu_manufacturer.0.value"),
 					resource.TestCheckResourceAttrSet("data.ibm_is_instance_profiles.test1", "profiles.0.volume_bandwidth_qos_modes.#"),
+					resource.TestCheckResourceAttrSet(resName, "profiles.0.network_bandwidth_mode.0.type"),
 				),
 			},
 		},
@@ -197,6 +198,27 @@ func TestAccIBMISInstanceProfilesDataSource_sharedcore(t *testing.T) {
 					resource.TestCheckResourceAttrSet("data.ibm_is_instance_profiles.test1", "profiles.0.vcpu_percentage.#"),
 					resource.TestCheckResourceAttrSet("data.ibm_is_instance_profiles.test1", "profiles.0.vcpu_percentage.0.type"),
 					resource.TestCheckResourceAttrSet("data.ibm_is_instance_profiles.test1", "profiles.0.vcpu_percentage.0.values.#"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccIBMISInstanceProfilesDataSource_AvailabilityClass(t *testing.T) {
+	resName := "data.ibm_is_instance_profiles.test1"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { acc.TestAccPreCheck(t) },
+		Providers: acc.TestAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMISInstanceProfilesDataSourceConfig(),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet(resName, "profiles.0.name"),
+					resource.TestCheckResourceAttrSet(resName, "profiles.0.family"),
+					resource.TestCheckResourceAttrSet(resName, "profiles.0.availability_class.#"),
+					resource.TestCheckResourceAttrSet(resName, "profiles.0.availability_class.0.type"),
+					resource.TestCheckResourceAttrSet(resName, "profiles.0.availability_class.0.values.#"),
 				),
 			},
 		},

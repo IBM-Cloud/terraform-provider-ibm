@@ -91,7 +91,6 @@ func testRunExists(n string) resource.TestCheckFunc {
 			if performActionOnProtectionGroupRunResponse != nil &&
 				len(performActionOnProtectionGroupRunResponse.Runs) > 0 &&
 				*(performActionOnProtectionGroupRunResponse.Runs[0].ProtectionGroupID) == rs.Primary.ID &&
-				len(performActionOnProtectionGroupRunResponse.Runs) > 0 &&
 				performActionOnProtectionGroupRunResponse.Runs[0].ArchivalInfo != nil &&
 				len(performActionOnProtectionGroupRunResponse.Runs[0].ArchivalInfo.ArchivalTargetResults) > 0 &&
 				*(performActionOnProtectionGroupRunResponse.Runs[0].ArchivalInfo.ArchivalTargetResults[0].ArchivalTaskID) != "" {
@@ -193,7 +192,6 @@ func testAccCheckProtectionRunCancelled(n string) resource.TestCheckFunc {
 			if performActionOnProtectionGroupRunResponse != nil &&
 				len(performActionOnProtectionGroupRunResponse.Runs) > 0 &&
 				*(performActionOnProtectionGroupRunResponse.Runs[0].ProtectionGroupID) == groupId &&
-				len(performActionOnProtectionGroupRunResponse.Runs) > 0 &&
 				performActionOnProtectionGroupRunResponse.Runs[0].ArchivalInfo != nil &&
 				len(performActionOnProtectionGroupRunResponse.Runs[0].ArchivalInfo.ArchivalTargetResults) > 0 &&
 				*(performActionOnProtectionGroupRunResponse.Runs[0].ArchivalInfo.ArchivalTargetResults[0].Status) == "Canceled" {

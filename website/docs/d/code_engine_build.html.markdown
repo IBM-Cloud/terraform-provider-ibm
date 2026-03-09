@@ -83,7 +83,7 @@ Nested schema for **status_details**:
   * Constraints: The default value is `medium`. The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/[\\S]*/`.
 
 * `strategy_spec_file` - (String) Optional path to the specification file that is used for build strategies for building an image.
-  * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[\\S]*$/`.
+  * Constraints: The default value is `Dockerfile`. The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[\\S]*$/`.
 
 * `strategy_type` - (String) The strategy to use for building the image.
   * Constraints: The default value is `dockerfile`. The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/[\\S]*/`.

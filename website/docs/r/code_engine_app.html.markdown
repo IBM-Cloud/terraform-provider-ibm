@@ -44,7 +44,7 @@ code_engine_app provides the following [Timeouts](https://www.terraform.io/docs/
 You can specify the following arguments for this resource.
 
 * `image_port` - (Optional, Integer) Optional port the app listens on. While the app will always be exposed via port `443` for end users, this port is used to connect to the port that is exposed by the container image.
-  * Constraints: The default value is `8080`.
+  * Constraints: The default value is `8080`. The maximum value is `65535`. The minimum value is `0`.
 * `image_reference` - (Required, String) The name of the image that is used for this app. The format is `REGISTRY/NAMESPACE/REPOSITORY:TAG` where `REGISTRY` and `TAG` are optional. If `REGISTRY` is not specified, the default is `docker.io`. If `TAG` is not specified, the default is `latest`. If the image reference points to a registry that requires authentication, make sure to also specify the property `image_secret`.
   * Constraints: The maximum length is `256` characters. The minimum length is `1` character. The value must match regular expression `/^([a-z0-9][a-z0-9\\-_.]+[a-z0-9][\/])?([a-z0-9][a-z0-9\\-_]+[a-z0-9][\/])?[a-z0-9][a-z0-9\\-_.\/]+[a-z0-9](:[\\w][\\w.\\-]{0,127})?(@sha256:[a-fA-F0-9]{64})?$/`.
 * `image_secret` - (Optional, String) Optional name of the image registry access secret. The image registry access secret is used to authenticate with a private registry when you download the container image. If the image reference points to a registry that requires authentication, the app will be created but cannot reach the ready status, until this property is provided, too.
@@ -67,7 +67,7 @@ Nested schema for **probe_liveness**:
 	  * Constraints: The maximum value is `65535`. The minimum value is `1`.
 	* `timeout` - (Optional, Integer) The amount of time in seconds that the probe waits for a response from the application before it times out and fails.
 	  * Constraints: The default value is `1`. The maximum value is `3600`. The minimum value is `1`.
-	* `type` - (Optional, String) Specifies whether to use HTTP or TCP for the probe checks. The default is TCP.
+	* `type` - (Required, String) Specifies whether to use HTTP or TCP for the probe checks. The default is TCP.
 	  * Constraints: Allowable values are: `tcp`, `http`.
 * `probe_readiness` - (Optional, List) Response model for probes.
 Nested schema for **probe_readiness**:
@@ -83,17 +83,19 @@ Nested schema for **probe_readiness**:
 	  * Constraints: The maximum value is `65535`. The minimum value is `1`.
 	* `timeout` - (Optional, Integer) The amount of time in seconds that the probe waits for a response from the application before it times out and fails.
 	  * Constraints: The default value is `1`. The maximum value is `3600`. The minimum value is `1`.
-	* `type` - (Optional, String) Specifies whether to use HTTP or TCP for the probe checks. The default is TCP.
+	* `type` - (Required, String) Specifies whether to use HTTP or TCP for the probe checks. The default is TCP.
 	  * Constraints: Allowable values are: `tcp`, `http`.
 * `project_id` - (Required, Forces new resource, String) The ID of the project.
-  * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[0-9a-z]{8}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{12}$/`.
+  * Constraints: Length must be `36` characters. The value must match regular expression `/^[0-9a-z]{8}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{12}$/`.
 * `run_arguments` - (Optional, List) Optional arguments for the app that are passed to start the container. If not specified an empty string array will be applied and the arguments specified by the container image, will be used to start the container.
   * Constraints: The list items must match regular expression `/^.*$/`. The maximum length is `100` items. The minimum length is `0` items.
 * `run_as_user` - (Optional, Integer) Optional user ID (UID) to run the app.
   * Constraints: The default value is `0`.
 * `run_commands` - (Optional, List) Optional commands for the app that are passed to start the container. If not specified an empty string array will be applied and the command specified by the container image, will be used to start the container.
   * Constraints: The list items must match regular expression `/^.*$/`. The maximum length is `100` items. The minimum length is `0` items.
-* `run_env_variables` - (Optional, List) References to config maps, secrets or literal values, which are exposed as environment variables in the application.
+* `run_compute_resource_token_enabled` - (Optional, Boolean) Optional flag to enable the use of a compute resource token mounted to the container file system.
+  * Constraints: The default value is `false`.
+* `run_env_variables` - (Optional, List) References to config maps, secrets or literal values, which are defined by the app owner and are exposed as environment variables in the application.
   * Constraints: The maximum length is `100` items. The minimum length is `0` items.
 Nested schema for **run_env_variables**:
 	* `key` - (Optional, String) The key to reference as environment variable.
@@ -104,27 +106,31 @@ Nested schema for **run_env_variables**:
 	  * Constraints: The maximum length is `253` characters. The minimum length is `0` characters. The value must match regular expression `/^[a-zA-Z_][a-zA-Z0-9_]*$/`.
 	* `reference` - (Optional, String) The name of the secret or config map.
 	  * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[a-z0-9]([\\-a-z0-9]*[a-z0-9])?(\\.[a-z0-9]([\\-a-z0-9]*[a-z0-9])?)*$/`.
-	* `type` - (Optional, String) Specify the type of the environment variable.
-	  * Constraints: The default value is `literal`. Allowable values are: `literal`, `config_map_full_reference`, `secret_full_reference`, `config_map_key_reference`, `secret_key_reference`. The value must match regular expression `/^(literal|config_map_full_reference|secret_full_reference|config_map_key_reference|secret_key_reference)$/`. When referencing a secret or configmap, the `reference` must be specified. When referencing a secret or configmap key, a `key` must also be specified.
+	* `type` - (Required, String) Specify the type of the environment variable.
+	  * Constraints: The default value is `literal`. Allowable values are: `literal`, `config_map_full_reference`, `secret_full_reference`, `config_map_key_reference`, `secret_key_reference`. The value must match regular expression `/^(literal|config_map_full_reference|secret_full_reference|config_map_key_reference|secret_key_reference)$/`.
 	* `value` - (Optional, String) The literal value of the environment variable.
-	  * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[\\-._a-zA-Z0-9]+$/`.
+	  * Constraints: The maximum length is `1048576` characters. The minimum length is `0` characters. The value must match regular expression `/^.*$/`.
 * `run_service_account` - (Optional, String) Optional name of the service account. For built-in service accounts, you can use the shortened names `manager` , `none`, `reader`, and `writer`.
-  * Constraints: The default value is `default`. Allowable values are: `default`, `manager`, `reader`, `writer`, `none`. The minimum length is `0` characters. The value must match regular expression `/^(manager|reader|writer|none|default)$/`.
+  * Constraints: The default value is `default`. Allowable values are: `default`, `manager`, `reader`, `writer`, `none`. The value must match regular expression `/^(manager|reader|writer|none|default)$/`.
 * `run_volume_mounts` - (Optional, List) Mounts of config maps or secrets.
   * Constraints: The maximum length is `100` items. The minimum length is `0` items.
 Nested schema for **run_volume_mounts**:
 	* `mount_path` - (Required, String) The path that should be mounted.
 	  * Constraints: The maximum length is `256` characters. The minimum length is `1` character. The value must match regular expression `/^\/([^\/\\0]+\/?)+$/`.
-	* `name` - (Required, String) The name of the mount.
+	* `name` - (Optional, String) The name of the mount.
 	  * Constraints: The maximum length is `63` characters. The minimum length is `0` characters. The value must match regular expression `/^[a-z]([-a-z0-9]*[a-z0-9])?$/`.
-	* `reference` - (Required, String) The name of the referenced secret or config map.
+	* `read_only` - (Optional, Boolean) Optional flag for a volume mount of type 'persistent_data_store' to specify whether it is read-only.
+		* Constraints: The default value is `true`.
+	* `reference` - (Required, String) The name of the referenced secret, config map, or persistent data store.
 	  * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[a-z0-9]([\\-a-z0-9]*[a-z0-9])?(\\.[a-z0-9]([\\-a-z0-9]*[a-z0-9])?)*$/`.
-	* `type` - (Required, String) Specify the type of the volume mount. Allowed types are: 'config_map', 'secret'.
-	  * Constraints: The default value is `secret`. Allowable values are: `config_map`, `secret`. The value must match regular expression `/^(config_map|secret)$/`.
+	* `sub_path` - (Optional, String) The path mounted at the mount path.
+	  * Constraints: The maximum length is `1000` characters. The minimum length is `1` character. The value must match regular expression `/^.+$/`.
+	* `type` - (Required, String) Specify the type of the volume mount. Allowed types are: 'config_map', 'persistent_data_store', 'secret'.
+	  * Constraints: The default value is `secret`. Allowable values are: `config_map`, `persistent_data_store`, `secret`. The value must match regular expression `/^(config_map|persistent_data_store|secret)$/`.
 * `scale_concurrency` - (Optional, Integer) Optional maximum number of requests that can be processed concurrently per instance.
-  * Constraints: The default value is `100`.
-* `scale_concurrency_target` - (Optional, Integer) Optional threshold of concurrent requests per instance at which one or more additional instances are created. Use this value to scale up instances based on concurrent number of requests. This option defaults to the value of the `scale_concurrency` option, if not specified.
   * Constraints: The default value is `100`. The maximum value is `1000`. The minimum value is `1`.
+* `scale_concurrency_target` - (Optional, Integer) Optional threshold of concurrent requests per instance at which one or more additional instances are created. Use this value to scale up instances based on concurrent number of requests. This option defaults to the value of the `scale_concurrency` option, if not specified.
+  * Constraints: The maximum value is `1000`. The minimum value is `1`.
 * `scale_cpu_limit` - (Optional, String) Optional number of CPU set for the instance of the app. For valid values see [Supported memory and CPU combinations](https://cloud.ibm.com/docs/codeengine?topic=codeengine-mem-cpu-combo).
   * Constraints: The default value is `1`. The maximum length is `10` characters. The minimum length is `0` characters. The value must match regular expression `/^([0-9.]+)([eEinumkKMGTPB]*)$/`.
 * `scale_down_delay` - (Optional, Integer) Optional amount of time in seconds that delays the scale-down behavior for an app instance.
@@ -165,14 +171,14 @@ Nested schema for **computed_env_variables**:
 	* `type` - (String) Specify the type of the environment variable.
 	  * Constraints: The default value is `literal`. Allowable values are: `literal`, `config_map_full_reference`, `secret_full_reference`, `config_map_key_reference`, `secret_key_reference`. The value must match regular expression `/^(literal|config_map_full_reference|secret_full_reference|config_map_key_reference|secret_key_reference)$/`.
 	* `value` - (String) The literal value of the environment variable.
-      * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[\\-._a-zA-Z0-9]+$/`.
+	  * Constraints: The maximum length is `1048576` characters. The minimum length is `0` characters. The value must match regular expression `/^.*$/`.
 * `created_at` - (String) The timestamp when the resource was created.
 * `endpoint` - (String) Optional URL to invoke the app. Depending on visibility,  this is accessible publicly or in the private network only. Empty in case 'managed_domain_mappings' is set to 'local'.
 * `endpoint_internal` - (String) The URL to the app that is only visible within the project.
 * `entity_tag` - (String) The version of the app instance, which is used to achieve optimistic locking.
   * Constraints: The maximum length is `63` characters. The minimum length is `1` character. The value must match regular expression `/^[\\*\\-a-z0-9]+$/`.
 * `href` - (String) When you provision a new app,  a URL is created identifying the location of the instance.
-  * Constraints: The maximum length is `2048` characters. The minimum length is `0` characters. The value must match regular expression `/(([^:\/?#]+):)?(\/\/([^\/?#]*))?([^?#]*)(\\?([^#]*))?(#(.*))?$/`.
+  * Constraints: The maximum length is `2048` characters. The minimum length is `0` characters. The value must match regular expression `/^(([^:\/?#]+):)?(\/\/([^\/?#]*))?([^?#]*)(\\?([^#]*))?(#(.*))?$/`.
 * `region` - (String) The region of the project the resource is located in. Possible values: 'au-syd', 'br-sao', 'ca-tor', 'eu-de', 'eu-gb', 'jp-osa', 'jp-tok', 'us-east', 'us-south'.
 * `resource_type` - (String) The type of the app.
   * Constraints: Allowable values are: `app_v2`.
@@ -184,6 +190,7 @@ Nested schema for **status_details**:
 	* `latest_ready_revision` - (String) Latest app revision that reached a ready state.
 	* `reason` - (String) Optional information to provide more context in case of a 'failed' or 'warning' status.
 	  * Constraints: Allowable values are: `ready`, `deploying`, `waiting_for_resources`, `no_revision_ready`, `ready_but_latest_revision_failed`.
+
 * `etag` - ETag identifier for code_engine_app.
 
 ## Import

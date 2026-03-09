@@ -30,6 +30,7 @@ func TestAccIbmBackupRecoveryConnectorsMetadataDataSourceBasic(t *testing.T) {
 					resource.TestCheckResourceAttrSet("data.ibm_backup_recovery_connectors_metadata.baas_connectors_metadata_instance", "connector_image_metadata.0.connector_image_file_list.#"),
 					resource.TestCheckResourceAttrSet("data.ibm_backup_recovery_connectors_metadata.baas_connectors_metadata_instance", "connector_image_metadata.0.connector_image_file_list.0.image_type"),
 					resource.TestCheckResourceAttrSet("data.ibm_backup_recovery_connectors_metadata.baas_connectors_metadata_instance", "connector_image_metadata.0.connector_image_file_list.0.url"),
+					resource.TestCheckResourceAttrSet("data.ibm_backup_recovery_connectors_metadata.baas_connectors_metadata_instance", "k8s_connector_info_list.#"),
 				),
 			},
 		},

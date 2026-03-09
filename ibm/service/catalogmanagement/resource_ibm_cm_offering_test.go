@@ -5,6 +5,7 @@ package catalogmanagement_test
 
 import (
 	"fmt"
+	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
@@ -184,4 +185,76 @@ func testAccCheckIBMCmOfferingDestroy(s *terraform.State) error {
 	}
 
 	return nil
+}
+
+func TestAccIBMCmOfferingImport(t *testing.T) {
+	var conf catalogmanagementv1.Offering
+
+	badId_too_short := "11111111-1111-1111-1111-111111111111"
+	badId_missing_part1 := ":11111111-1111-1111-1111-111111111111"
+	badId_missing_part2 := "11111111-1111-1111-1111-111111111111:"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMCmOfferingDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMCmOfferingConfigBasic(),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMCmOfferingExists("ibm_cm_offering.cm_offering", conf),
+				),
+			},
+
+			{
+				ResourceName:  "ibm_cm_offering.cm_offering",
+				ImportState:   true,
+				ImportStateId: badId_too_short,
+				ExpectError: regexp.MustCompile(
+					`invalid import Id format for ibm_cm_offering import\. Value given "` +
+						regexp.QuoteMeta(badId_too_short) + `" \. Expected format <catalogId>:<offeringId>`,
+				),
+			},
+
+			{
+				ResourceName:  "ibm_cm_offering.cm_offering",
+				ImportState:   true,
+				ImportStateId: badId_missing_part1,
+				ExpectError: regexp.MustCompile(
+					`invalid import Id format for ibm_cm_offering import\. Value given "` +
+						regexp.QuoteMeta(badId_missing_part1) + `" \. Expected format <catalogId>:<offeringId>`,
+				),
+			},
+
+			{
+				ResourceName:  "ibm_cm_offering.cm_offering",
+				ImportState:   true,
+				ImportStateId: badId_missing_part2,
+				ExpectError: regexp.MustCompile(
+					`invalid import Id format for ibm_cm_offering import\. Value given "` +
+						regexp.QuoteMeta(badId_missing_part2) + `" \. Expected format <catalogId>:<offeringId>`,
+				),
+			},
+
+			{
+				ResourceName: "ibm_cm_offering.cm_offering",
+				ImportState:  true,
+				ImportStateIdFunc: func(s *terraform.State) (string, error) {
+					// Get the resource
+					rs, ok := s.RootModule().Resources["ibm_cm_offering.cm_offering"]
+					if !ok {
+						return "", fmt.Errorf("Resource not found: ibm_cm_offering.cm_offering")
+					}
+
+					// get the parts that make up the import id - catalog and offering ids
+					catalogID := rs.Primary.Attributes["catalog_id"]
+					offeringID := rs.Primary.ID
+
+					// return the id - a combination of catalog and offeringid separated by a ':'
+					return fmt.Sprintf("%s:%s", catalogID, offeringID), nil
+				},
+				ImportStateVerify: true,
+			},
+		},
+	})
 }

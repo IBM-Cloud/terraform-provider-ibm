@@ -14,7 +14,6 @@ Create, update, and delete metrics_router_routes with this resource.
 
 ```hcl
 resource "ibm_metrics_router_route" "metrics_router_route_instance" {
-  managed_by = "enterprise"
   name = "my-route"
   rules {
 		action = "send"

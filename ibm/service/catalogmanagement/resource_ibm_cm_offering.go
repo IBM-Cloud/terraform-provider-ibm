@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"log"
 	"strconv"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -25,7 +26,32 @@ func ResourceIBMCmOffering() *schema.Resource {
 		ReadContext:   resourceIBMCmOfferingRead,
 		UpdateContext: resourceIBMCmOfferingUpdate,
 		DeleteContext: resourceIBMCmOfferingDelete,
-		Importer:      &schema.ResourceImporter{},
+		Importer: &schema.ResourceImporter{
+			StateContext: func(ctx context.Context, d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
+				id := d.Id()
+
+				// the id is of the form "<catalogId>:<offeringId>".  Need to get the parts.
+				parts := strings.Split(id, ":")
+				if len(parts) != 2 || parts[0] == "" || parts[1] == "" {
+					return nil, fmt.Errorf("invalid import Id format for ibm_cm_offering import. Value given %q . Expected format <catalogId>:<offeringId>", id)
+				}
+
+				catalogId := parts[0]
+				offeringId := parts[1]
+
+				// Put 'catalog_id' identifier into state so read will find it
+				if err := d.Set("catalog_id", catalogId); err != nil {
+					tfErr := flex.TerraformErrorf(err, err.Error(), "ibm_cm_offering", "import")
+					log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+					return nil, fmt.Errorf("error setting catalog_id during import: %w", err)
+				}
+
+				// Put only the offeringId portion back onto the schema for subsequent read
+				d.SetId(offeringId)
+
+				return []*schema.ResourceData{d}, nil
+			},
+		},
 
 		Schema: map[string]*schema.Schema{
 			"catalog_id": &schema.Schema{
