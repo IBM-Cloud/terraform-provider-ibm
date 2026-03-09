@@ -67,6 +67,7 @@ var (
 	FloatingIpID                    string
 	HpcsInstanceID                  string
 	HpcsInstanceName                string
+	IAMAccessGroupId                string
 	IAMAccountId                    string
 	IAMServiceId                    string
 	IAMTrustedProfileID             string
@@ -269,6 +270,8 @@ var (
 	Pi_route_id                       string
 	Pi_sap_image                      string
 	Pi_sap_profile_id                 string
+	Pi_secondary_workspace_id_1       string
+	Pi_secondary_workspace_id_2       string
 	Pi_shared_processor_pool_id       string
 	Pi_snapshot_id                    string
 	Pi_spp_placement_group_id         string
@@ -407,15 +410,17 @@ var (
 
 // For Code Engine
 var (
-	CeResourceGroupID   string
-	CeProjectId         string
-	CeServiceInstanceID string
-	CeResourceKeyID     string
-	CeDomainMappingName string
-	CeTLSCert           string
-	CeTLSKey            string
-	CeTLSKeyFilePath    string
-	CeTLSCertFilePath   string
+	CeResourceGroupID    string
+	CeProjectId          string
+	CeServiceInstanceID  string
+	CeResourceKeyID      string
+	CeDomainMappingName  string
+	CeTLSCertFilePath    string
+	CeTLSKeyFilePath     string
+	CeCosAccessKeyID     string
+	CeCosSecretAccessKey string
+	CeCosBucketName      string
+	CeCosBucketLocation  string
 )
 
 // Satellite tests
@@ -478,6 +483,12 @@ var (
 	ISClusterNetworkSubnetPrefixesCidr string
 )
 
+// For Platform Notifications
+var (
+	NotificationDistributionListAccountId     string
+	NotificationDistributionListDestinationId string
+)
+
 func init() {
 	testlogger := os.Getenv("TF_LOG")
 	if testlogger != "" {
@@ -528,6 +539,11 @@ func init() {
 	IAMUser = os.Getenv("IBM_IAMUSER")
 	if IAMUser == "" {
 		fmt.Println("[WARN] Set the environment variable IBM_IAMUSER for testing ibm_iam_user_policy resource Some tests for that resource will fail if this is not set correctly")
+	}
+
+	IAMAccessGroupId = os.Getenv("IBM_IAM_ACCESS_GROUP_ID")
+	if IAMAccessGroupId == "" {
+		fmt.Println("[WARN] Set the environment variable IBM_IAM_ACCESS_GROUP_ID for testing ibm_iam_user_invite resource Some tests for that resource will fail if this is not set correctly")
 	}
 
 	IAMAccountId = os.Getenv("IBM_IAMACCOUNTID")
@@ -1185,6 +1201,17 @@ func init() {
 		IcdDbTaskId = "crn:v1:bluemix:public:databases-for-redis:au-syd:a/40ddc34a953a8c02f10987b59085b60e:367b0a22-05bb-41e3-a1ed-ded1ff0889e5:task:882013a6-2751-4df7-a77a-98d258638704"
 		fmt.Println("[INFO] Set the environment variable ICD_DB_TASK_ID for testing ibm_cloud_databases else it is set to default value 'crn:v1:bluemix:public:databases-for-redis:au-syd:a/40ddc34a953a8c02f10987b59085b60e:367b0a22-05bb-41e3-a1ed-ded1ff0889e5:task:882013a6-2751-4df7-a77a-98d258638704'")
 	}
+
+	NotificationDistributionListAccountId = os.Getenv("NOTIFICATION_DIST_ACCOUNT_ID")
+	if NotificationDistributionListAccountId == "" {
+		fmt.Println("[WARN] Set the environment variable NOTIFICATION_DIST_ACCOUNT_ID for testing ibm_notification_distribution_list resource else tests will fail if this is not set correctly")
+	}
+
+	NotificationDistributionListDestinationId = os.Getenv("NOTIFICATION_DIST_DESTINATION_ID")
+	if NotificationDistributionListDestinationId == "" {
+		fmt.Println("[WARN] Set the environment variable NOTIFICATION_DIST_DESTINATION_ID for testing ibm_notification_distribution_list resource else tests will fail if this is not set correctly")
+	}
+
 	// Added for Power Colo Testing
 	Pi_image = os.Getenv("PI_IMAGE")
 	if Pi_image == "" {
@@ -1493,6 +1520,16 @@ func init() {
 	if Pi_host_group_id == "" {
 		Pi_host_group_id = ""
 		fmt.Println("[WARN] Set the environment variable PI_HOST_GROUP_ID for testing ibm_pi_host resource else it is set to default value ''")
+	}
+	Pi_secondary_workspace_id_1 = os.Getenv("PI_SECONDARY_WORKSPACE_ID_1")
+	if Pi_secondary_workspace_id_1 == "" {
+		Pi_secondary_workspace_id_1 = ""
+		fmt.Println("[WARN] Set the environment variable PI_SECONDARY_WORKSPACE_ID_1 for testing ibm_pi_host_group update else it is set to default value ''")
+	}
+	Pi_secondary_workspace_id_2 = os.Getenv("PI_SECONDARY_WORKSPACE_ID_2")
+	if Pi_secondary_workspace_id_2 == "" {
+		Pi_secondary_workspace_id_2 = ""
+		fmt.Println("[WARN] Set the environment variable PI_SECONDARY_WORKSPACE_ID_2 for testing ibm_pi_host_group update else it is set to default value ''")
 	}
 	Pi_host_id = os.Getenv("PI_HOST_ID")
 	if Pi_host_id == "" {
@@ -2037,28 +2074,40 @@ func init() {
 		fmt.Println("[WARN] Set the environment variable IBM_CODE_ENGINE_DOMAIN_MAPPING_NAME with the name of a domain mapping")
 	}
 
-	CeTLSCert = os.Getenv("IBM_CODE_ENGINE_TLS_CERT")
-	if CeTLSCert == "" {
-		CeTLSCert = ""
-		fmt.Println("[WARN] Set the environment variable IBM_CODE_ENGINE_TLS_CERT with the TLS certificate in base64 format")
+	CeCosBucketLocation = os.Getenv("IBM_CODE_ENGINE_COS_BUCKET_LOCATION")
+	if CeCosBucketLocation == "" {
+		CeCosBucketLocation = ""
+		fmt.Println("[WARN] Set the environment variable IBM_CODE_ENGINE_COS_BUCKET_LOCATION with the location of a COS bucket")
 	}
 
-	CeTLSKey = os.Getenv("IBM_CODE_ENGINE_TLS_KEY")
-	if CeTLSKey == "" {
-		CeTLSKey = ""
-		fmt.Println("[WARN] Set the environment variable IBM_CODE_ENGINE_TLS_KEY with a TLS key in base64 format")
-	}
-
-	CeTLSKeyFilePath = os.Getenv("IBM_CODE_ENGINE_TLS_CERT_KEY_PATH")
-	if CeTLSKeyFilePath == "" {
-		CeTLSKeyFilePath = ""
-		fmt.Println("[WARN] Set the environment variable IBM_CODE_ENGINE_TLS_CERT_KEY_PATH to point to CERT KEY file path")
-	}
-
-	CeTLSCertFilePath = os.Getenv("IBM_CODE_ENGINE_TLS_CERT_PATH")
+	CeTLSCertFilePath = os.Getenv("IBM_CODE_ENGINE_TLS_CERT_FILE_PATH")
 	if CeTLSCertFilePath == "" {
 		CeTLSCertFilePath = ""
-		fmt.Println("[WARN] Set the environment variable IBM_CODE_ENGINE_TLS_CERT_PATH to point to CERT file path")
+		fmt.Println("[WARN] Set the environment variable IBM_CODE_ENGINE_TLS_CERT_FILE_PATH to the path of the .crt file containing the signed TLS certificate")
+	}
+
+	CeCosAccessKeyID = os.Getenv("IBM_CODE_ENGINE_COS_ACCESS_KEY_ID")
+	if CeCosAccessKeyID == "" {
+		CeCosAccessKeyID = ""
+		fmt.Println("[WARN] Set the environment variable IBM_CODE_ENGINE_COS_ACCESS_KEY_ID with the access key ID of a COS instance")
+	}
+
+	CeCosSecretAccessKey = os.Getenv("IBM_CODE_ENGINE_COS_SECRET_ACCESS_KEY")
+	if CeCosSecretAccessKey == "" {
+		CeCosSecretAccessKey = ""
+		fmt.Println("[WARN] Set the environment variable IBM_CODE_ENGINE_COS_SECRET_ACCESS_KEY with the secret access key of a COS instance")
+	}
+
+	CeCosBucketName = os.Getenv("IBM_CODE_ENGINE_COS_BUCKET_NAME")
+	if CeCosBucketName == "" {
+		CeCosBucketName = ""
+		fmt.Println("[WARN] Set the environment variable IBM_CODE_ENGINE_COS_BUCKET_NAME with the name of a COS bucket")
+	}
+
+	CeTLSKeyFilePath = os.Getenv("IBM_CODE_ENGINE_TLS_KEY_FILE_PATH")
+	if CeTLSKeyFilePath == "" {
+		CeTLSKeyFilePath = ""
+		fmt.Println("[WARN] Set the environment variable IBM_CODE_ENGINE_TLS_KEY_FILE_PATH to the path of the .key file containing the TLS private key")
 	}
 
 	SatelliteSSHPubKey = os.Getenv("IBM_SATELLITE_SSH_PUB_KEY")
@@ -2456,11 +2505,23 @@ func TestAccPreCheckCodeEngine(t *testing.T) {
 	if CeDomainMappingName == "" {
 		t.Fatal("IBM_CODE_ENGINE_DOMAIN_MAPPING_NAME must be set for acceptance tests")
 	}
-	if CeTLSKeyFilePath == "" {
-		t.Fatal("IBM_CODE_ENGINE_TLS_CERT_KEY_PATH must be set for acceptance tests")
-	}
 	if CeTLSCertFilePath == "" {
-		t.Fatal("IBM_CODE_ENGINE_TLS_CERT_PATH must be set for acceptance tests")
+		t.Fatal("IBM_CODE_ENGINE_TLS_CERT_FILE_PATH must be set for acceptance tests")
+	}
+	if CeTLSKeyFilePath == "" {
+		t.Fatal("IBM_CODE_ENGINE_TLS_KEY_FILE_PATH must be set for acceptance tests")
+	}
+	if CeCosAccessKeyID == "" {
+		t.Fatal("IBM_CODE_ENGINE_COS_ACCESS_KEY_ID must be set for acceptance tests")
+	}
+	if CeCosSecretAccessKey == "" {
+		t.Fatal("IBM_CODE_ENGINE_COS_SECRET_ACCESS_KEY must be set for acceptance tests")
+	}
+	if CeCosBucketName == "" {
+		t.Fatal("IBM_CODE_ENGINE_COS_BUCKET_NAME must be set for acceptance tests")
+	}
+	if CeCosBucketLocation == "" {
+		t.Fatal("IBM_CODE_ENGINE_COS_BUCKET_LOCATION must be set for acceptance tests")
 	}
 }
 

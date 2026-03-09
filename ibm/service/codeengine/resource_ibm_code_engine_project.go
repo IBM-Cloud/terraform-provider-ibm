@@ -34,56 +34,56 @@ func ResourceIbmCodeEngineProject() *schema.Resource {
 		},
 
 		Schema: map[string]*schema.Schema{
-			"name": {
+			"name": &schema.Schema{
 				Type:         schema.TypeString,
 				Required:     true,
 				ForceNew:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_code_engine_project", "name"),
 				Description:  "The name of the project.",
 			},
-			"project_id": {
+			"project_id": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The ID of the project.",
 			},
-			"resource_group_id": {
+			"resource_group_id": &schema.Schema{
 				Type:         schema.TypeString,
 				Optional:     true,
 				ForceNew:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_code_engine_project", "resource_group_id"),
 				Description:  "The ID of the resource group.",
 			},
-			"account_id": {
+			"account_id": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "An alphanumeric value identifying the account ID.",
 			},
-			"created_at": {
+			"created_at": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The timestamp when the project was created.",
 			},
-			"crn": {
+			"crn": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The CRN of the project.",
 			},
-			"href": {
+			"href": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "When you provision a new resource, a URL is created identifying the location of the instance.",
 			},
-			"region": {
+			"region": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The region for your project deployment. Possible values: 'au-syd', 'br-sao', 'ca-tor', 'eu-de', 'eu-gb', 'jp-osa', 'jp-tok', 'us-east', 'us-south'.",
 			},
-			"resource_type": {
+			"resource_type": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The type of the project.",
 			},
-			"status": {
+			"status": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The current state of the project. For example, when the project is created and is ready for use, the status of the project is active.",

@@ -1,8 +1,8 @@
-// Copyright IBM Corp. 2024 All Rights Reserved.
+// Copyright IBM Corp. 2025 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 /*
- * IBM OpenAPI Terraform Generator Version: 3.94.1-71478489-20240820-161623
+ * IBM OpenAPI Terraform Generator Version: 3.108.0-56772134-20251111-102802
  */
 
 package codeengine
@@ -12,12 +12,13 @@ import (
 	"fmt"
 	"log"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM/code-engine-go-sdk/codeenginev2"
 	"github.com/IBM/go-sdk-core/v5/core"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 func DataSourceIbmCodeEngineSecret() *schema.Resource {
@@ -25,22 +26,22 @@ func DataSourceIbmCodeEngineSecret() *schema.Resource {
 		ReadContext: dataSourceIbmCodeEngineSecretRead,
 
 		Schema: map[string]*schema.Schema{
-			"project_id": {
+			"project_id": &schema.Schema{
 				Type:        schema.TypeString,
 				Required:    true,
 				Description: "The ID of the project.",
 			},
-			"name": {
+			"name": &schema.Schema{
 				Type:        schema.TypeString,
 				Required:    true,
 				Description: "The name of your secret.",
 			},
-			"created_at": {
+			"created_at": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The timestamp when the resource was created.",
 			},
-			"data": {
+			"data": &schema.Schema{
 				Type:        schema.TypeMap,
 				Computed:    true,
 				Description: "Data container that allows to specify config parameters and their values as a key-value map. Each key field must consist of alphanumeric characters, `-`, `_` or `.` and must not exceed a max length of 253 characters. Each value field can consists of any character and must not exceed a max length of 1048576 characters.",
@@ -48,54 +49,59 @@ func DataSourceIbmCodeEngineSecret() *schema.Resource {
 					Type: schema.TypeString,
 				},
 			},
-			"entity_tag": {
+			"entity_tag": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The version of the secret instance, which is used to achieve optimistic locking.",
 			},
-			"format": {
+			"format": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "Specify the format of the secret.",
 			},
-			"href": {
+			"generated_by": &schema.Schema{
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Specifies whether the secret is user generated.",
+			},
+			"href": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "When you provision a new secret,  a URL is created identifying the location of the instance.",
 			},
-			"secret_id": {
+			"secret_id": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The identifier of the resource.",
 			},
-			"region": {
+			"region": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The region of the project the resource is located in. Possible values: 'au-syd', 'br-sao', 'ca-tor', 'eu-de', 'eu-gb', 'jp-osa', 'jp-tok', 'us-east', 'us-south'.",
 			},
-			"resource_type": {
+			"resource_type": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The type of the secret.",
 			},
-			"service_access": {
+			"service_access": &schema.Schema{
 				Type:        schema.TypeList,
 				Computed:    true,
 				Description: "Properties for Service Access Secrets.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"resource_key": {
+						"resource_key": &schema.Schema{
 							Type:        schema.TypeList,
 							Computed:    true,
 							Description: "The service credential associated with the secret.",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
-									"id": {
+									"id": &schema.Schema{
 										Type:        schema.TypeString,
 										Computed:    true,
 										Description: "ID of the service credential associated with the secret.",
 									},
-									"name": {
+									"name": &schema.Schema{
 										Type:        schema.TypeString,
 										Computed:    true,
 										Description: "Name of the service credential associated with the secret.",
@@ -103,18 +109,18 @@ func DataSourceIbmCodeEngineSecret() *schema.Resource {
 								},
 							},
 						},
-						"role": {
+						"role": &schema.Schema{
 							Type:        schema.TypeList,
 							Computed:    true,
 							Description: "A reference to the Role and Role CRN for service binding.",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
-									"crn": {
+									"crn": &schema.Schema{
 										Type:        schema.TypeString,
 										Computed:    true,
 										Description: "CRN of the IAM Role for this service access secret.",
 									},
-									"name": {
+									"name": &schema.Schema{
 										Type:        schema.TypeString,
 										Computed:    true,
 										Description: "Role of the service credential.",
@@ -122,18 +128,18 @@ func DataSourceIbmCodeEngineSecret() *schema.Resource {
 								},
 							},
 						},
-						"service_instance": {
+						"service_instance": &schema.Schema{
 							Type:        schema.TypeList,
 							Computed:    true,
 							Description: "The IBM Cloud service instance associated with the secret.",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
-									"id": {
+									"id": &schema.Schema{
 										Type:        schema.TypeString,
 										Computed:    true,
 										Description: "ID of the IBM Cloud service instance associated with the secret.",
 									},
-									"type": {
+									"type": &schema.Schema{
 										Type:        schema.TypeString,
 										Computed:    true,
 										Description: "Type of IBM Cloud service associated with the secret.",
@@ -141,18 +147,18 @@ func DataSourceIbmCodeEngineSecret() *schema.Resource {
 								},
 							},
 						},
-						"serviceid": {
+						"serviceid": &schema.Schema{
 							Type:        schema.TypeList,
 							Computed:    true,
 							Description: "A reference to a Service ID.",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
-									"crn": {
+									"crn": &schema.Schema{
 										Type:        schema.TypeString,
 										Computed:    true,
 										Description: "CRN value of a Service ID.",
 									},
-									"id": {
+									"id": &schema.Schema{
 										Type:        schema.TypeString,
 										Computed:    true,
 										Description: "The ID of the Service ID.",
@@ -163,18 +169,18 @@ func DataSourceIbmCodeEngineSecret() *schema.Resource {
 					},
 				},
 			},
-			"service_operator": {
+			"service_operator": &schema.Schema{
 				Type:        schema.TypeList,
 				Computed:    true,
 				Description: "Properties for the IBM Cloud Operator Secret.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"apikey_id": {
+						"apikey_id": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "The ID of the apikey associated with the operator secret.",
 						},
-						"resource_group_ids": {
+						"resource_group_ids": &schema.Schema{
 							Type:        schema.TypeList,
 							Computed:    true,
 							Description: "The list of resource groups (by ID) that the operator secret can bind services in.",
@@ -182,18 +188,18 @@ func DataSourceIbmCodeEngineSecret() *schema.Resource {
 								Type: schema.TypeString,
 							},
 						},
-						"serviceid": {
+						"serviceid": &schema.Schema{
 							Type:        schema.TypeList,
 							Computed:    true,
 							Description: "A reference to a Service ID.",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
-									"crn": {
+									"crn": &schema.Schema{
 										Type:        schema.TypeString,
 										Computed:    true,
 										Description: "CRN value of a Service ID.",
 									},
-									"id": {
+									"id": &schema.Schema{
 										Type:        schema.TypeString,
 										Computed:    true,
 										Description: "The ID of the Service ID.",
@@ -201,7 +207,7 @@ func DataSourceIbmCodeEngineSecret() *schema.Resource {
 								},
 							},
 						},
-						"user_managed": {
+						"user_managed": &schema.Schema{
 							Type:        schema.TypeBool,
 							Computed:    true,
 							Description: "Specifies whether the operator secret is user managed.",
@@ -310,11 +316,13 @@ func dataSourceIbmCodeEngineSecretRead(context context.Context, d *schema.Resour
 
 func DataSourceIbmCodeEngineSecretServiceAccessSecretPropsToMap(model *codeenginev2.ServiceAccessSecretProps) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	resourceKeyMap, err := DataSourceIbmCodeEngineSecretResourceKeyRefToMap(model.ResourceKey)
-	if err != nil {
-		return modelMap, err
+	if model.ResourceKey != nil {
+		resourceKeyMap, err := DataSourceIbmCodeEngineSecretResourceKeyRefToMap(model.ResourceKey)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["resource_key"] = []map[string]interface{}{resourceKeyMap}
 	}
-	modelMap["resource_key"] = []map[string]interface{}{resourceKeyMap}
 	if model.Role != nil {
 		roleMap, err := DataSourceIbmCodeEngineSecretRoleRefToMap(model.Role)
 		if err != nil {

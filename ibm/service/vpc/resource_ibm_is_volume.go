@@ -1039,7 +1039,7 @@ func volUpdate(context context.Context, d *schema.ResourceData, meta interface{}
 		}
 	}
 
-	if d.HasChange("allowed_use") {
+	if d.HasChange("allowed_use") && len(d.Get("allowed_use").([]interface{})) > 0 {
 		allowedUseModel, _ := ResourceIBMIsInstanceMapToVolumeAllowedUsePatchPrototype(d.Get("allowed_use").([]interface{})[0].(map[string]interface{}))
 		optionsget := &vpcv1.GetVolumeOptions{
 			ID: &id,

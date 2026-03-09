@@ -59,7 +59,7 @@ In addition to all argument reference list, you can access the following attribu
         - `message` -  (String) The fault message of the server.
 
   - `health_status` - (String) The health of the instance.
-  - `license_repository_capacity` - (Integer) The VTL license repository capacity TB value. Only available with VTL instances.
+  - `license_repository_capacity` - (Integer) The VTL license repository capacity TiB value. Only available with VTL instances.
   - `memory` - (Float) The amount of memory that is allocated to the instance.
   - `minproc`- (Float) The minimum number of processors that must be allocated to the instance.
   - `maxproc`- (Float) The maximum number of processors that can be allocated to the instance without shutting down or rebooting the `LPAR`.

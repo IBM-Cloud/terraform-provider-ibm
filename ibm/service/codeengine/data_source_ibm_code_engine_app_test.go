@@ -42,6 +42,7 @@ func TestAccIbmCodeEngineAppDataSourceBasic(t *testing.T) {
 					resource.TestCheckResourceAttr("data.ibm_code_engine_app.code_engine_app_instance", "scale_memory_limit", "4G"),
 					resource.TestCheckResourceAttr("data.ibm_code_engine_app.code_engine_app_instance", "scale_min_instances", "0"),
 					resource.TestCheckResourceAttr("data.ibm_code_engine_app.code_engine_app_instance", "scale_request_timeout", "300"),
+					resource.TestCheckResourceAttr("data.ibm_code_engine_app.code_engine_app_instance", "run_compute_resource_token_enabled", "false"),
 					resource.TestCheckResourceAttr("data.ibm_code_engine_app.code_engine_app_instance", "computed_env_variables.#", "6"),
 				),
 			},
@@ -58,7 +59,7 @@ func TestAccIbmCodeEngineAppDataSourceExtended(t *testing.T) {
 	appRunServiceAccount := "default"
 	appScaleConcurrency := fmt.Sprintf("%d", acctest.RandIntRange(50, 100))
 	appScaleConcurrencyTarget := fmt.Sprintf("%d", acctest.RandIntRange(20, 50))
-	appScaleCpuLimit := "0.5"
+	appScaleCPULimit := "0.5"
 	appScaleEphemeralStorageLimit := "500M"
 	appScaleInitialInstances := "2"
 	appScaleMaxInstances := "2"
@@ -73,7 +74,7 @@ func TestAccIbmCodeEngineAppDataSourceExtended(t *testing.T) {
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIbmCodeEngineAppDataSourceConfig(projectID, appImageReference, appName, appImagePort, appManagedDomainMappings, appRunAsUser, appRunServiceAccount, appScaleConcurrency, appScaleConcurrencyTarget, appScaleCpuLimit, appScaleEphemeralStorageLimit, appScaleInitialInstances, appScaleMaxInstances, appScaleMemoryLimit, appScaleMinInstances, appScaleRequestTimeout),
+				Config: testAccCheckIbmCodeEngineAppDataSourceConfig(projectID, appImageReference, appName, appImagePort, appManagedDomainMappings, appRunAsUser, appRunServiceAccount, appScaleConcurrency, appScaleConcurrencyTarget, appScaleCPULimit, appScaleEphemeralStorageLimit, appScaleInitialInstances, appScaleMaxInstances, appScaleMemoryLimit, appScaleMinInstances, appScaleRequestTimeout),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("data.ibm_code_engine_app.code_engine_app_instance", "project_id", projectID),
 					resource.TestCheckResourceAttr("data.ibm_code_engine_app.code_engine_app_instance", "image_reference", appImageReference),
@@ -84,13 +85,14 @@ func TestAccIbmCodeEngineAppDataSourceExtended(t *testing.T) {
 					resource.TestCheckResourceAttr("data.ibm_code_engine_app.code_engine_app_instance", "run_service_account", appRunServiceAccount),
 					resource.TestCheckResourceAttr("data.ibm_code_engine_app.code_engine_app_instance", "scale_concurrency", appScaleConcurrency),
 					resource.TestCheckResourceAttr("data.ibm_code_engine_app.code_engine_app_instance", "scale_concurrency_target", appScaleConcurrencyTarget),
-					resource.TestCheckResourceAttr("data.ibm_code_engine_app.code_engine_app_instance", "scale_cpu_limit", appScaleCpuLimit),
+					resource.TestCheckResourceAttr("data.ibm_code_engine_app.code_engine_app_instance", "scale_cpu_limit", appScaleCPULimit),
 					resource.TestCheckResourceAttr("data.ibm_code_engine_app.code_engine_app_instance", "scale_ephemeral_storage_limit", appScaleEphemeralStorageLimit),
 					resource.TestCheckResourceAttr("data.ibm_code_engine_app.code_engine_app_instance", "scale_initial_instances", appScaleInitialInstances),
 					resource.TestCheckResourceAttr("data.ibm_code_engine_app.code_engine_app_instance", "scale_max_instances", appScaleMaxInstances),
 					resource.TestCheckResourceAttr("data.ibm_code_engine_app.code_engine_app_instance", "scale_memory_limit", appScaleMemoryLimit),
 					resource.TestCheckResourceAttr("data.ibm_code_engine_app.code_engine_app_instance", "scale_min_instances", appScaleMinInstances),
 					resource.TestCheckResourceAttr("data.ibm_code_engine_app.code_engine_app_instance", "scale_request_timeout", appScaleRequestTimeout),
+					resource.TestCheckResourceAttr("data.ibm_code_engine_app.code_engine_app_instance", "run_compute_resource_token_enabled", "true"),
 					resource.TestCheckResourceAttr("data.ibm_code_engine_app.code_engine_app_instance", "computed_env_variables.#", "6"),
 					resource.TestCheckResourceAttr("data.ibm_code_engine_app.code_engine_app_instance", "run_env_variables.#", "1"),
 				),
@@ -125,7 +127,7 @@ func testAccCheckIbmCodeEngineAppDataSourceConfigBasic(projectID string, appImag
 	`, projectID, appImageReference, appName)
 }
 
-func testAccCheckIbmCodeEngineAppDataSourceConfig(projectID string, appImageReference string, appName string, appImagePort string, appManagedDomainMappings string, appRunAsUser string, appRunServiceAccount string, appScaleConcurrency string, appScaleConcurrencyTarget string, appScaleCpuLimit string, appScaleEphemeralStorageLimit string, appScaleInitialInstances string, appScaleMaxInstances string, appScaleMemoryLimit string, appScaleMinInstances string, appScaleRequestTimeout string) string {
+func testAccCheckIbmCodeEngineAppDataSourceConfig(projectID string, appImageReference string, appName string, appImagePort string, appManagedDomainMappings string, appRunAsUser string, appRunServiceAccount string, appScaleConcurrency string, appScaleConcurrencyTarget string, appScaleCPULimit string, appScaleEphemeralStorageLimit string, appScaleInitialInstances string, appScaleMaxInstances string, appScaleMemoryLimit string, appScaleMinInstances string, appScaleRequestTimeout string) string {
 	return fmt.Sprintf(`
 		data "ibm_code_engine_project" "code_engine_project_instance" {
 			project_id = "%s"
@@ -148,6 +150,7 @@ func testAccCheckIbmCodeEngineAppDataSourceConfig(projectID string, appImageRefe
 			scale_memory_limit = "%s"
 			scale_min_instances = %s
 			scale_request_timeout = %s
+			run_compute_resource_token_enabled = true
 
 			run_env_variables {
 				type  = "literal"
@@ -167,5 +170,5 @@ func testAccCheckIbmCodeEngineAppDataSourceConfig(projectID string, appImageRefe
 			project_id = ibm_code_engine_app.code_engine_app_instance.project_id
 			name = ibm_code_engine_app.code_engine_app_instance.name
 		}
-	`, projectID, appImageReference, appName, appImagePort, appManagedDomainMappings, appRunAsUser, appRunServiceAccount, appScaleConcurrency, appScaleConcurrencyTarget, appScaleCpuLimit, appScaleEphemeralStorageLimit, appScaleInitialInstances, appScaleMaxInstances, appScaleMemoryLimit, appScaleMinInstances, appScaleRequestTimeout)
+	`, projectID, appImageReference, appName, appImagePort, appManagedDomainMappings, appRunAsUser, appRunServiceAccount, appScaleConcurrency, appScaleConcurrencyTarget, appScaleCPULimit, appScaleEphemeralStorageLimit, appScaleInitialInstances, appScaleMaxInstances, appScaleMemoryLimit, appScaleMinInstances, appScaleRequestTimeout)
 }

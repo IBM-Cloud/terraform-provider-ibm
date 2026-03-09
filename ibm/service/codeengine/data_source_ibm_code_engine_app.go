@@ -1,8 +1,8 @@
-// Copyright IBM Corp. 2024 All Rights Reserved.
+// Copyright IBM Corp. 2025 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 /*
- * IBM OpenAPI Terraform Generator Version: 3.94.1-71478489-20240820-161623
+ * IBM OpenAPI Terraform Generator Version: 3.108.0-56772134-20251111-102802
  */
 
 package codeengine
@@ -12,12 +12,13 @@ import (
 	"fmt"
 	"log"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM/code-engine-go-sdk/codeenginev2"
 	"github.com/IBM/go-sdk-core/v5/core"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 func DataSourceIbmCodeEngineApp() *schema.Resource {
@@ -25,58 +26,58 @@ func DataSourceIbmCodeEngineApp() *schema.Resource {
 		ReadContext: dataSourceIbmCodeEngineAppRead,
 
 		Schema: map[string]*schema.Schema{
-			"project_id": {
+			"project_id": &schema.Schema{
 				Type:        schema.TypeString,
 				Required:    true,
 				Description: "The ID of the project.",
 			},
-			"name": {
+			"name": &schema.Schema{
 				Type:        schema.TypeString,
 				Required:    true,
 				Description: "The name of your application.",
 			},
-			"build": {
+			"build": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "Reference to a build that is associated with the application.",
 			},
-			"build_run": {
+			"build_run": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "Reference to a build run that is associated with the application.",
 			},
-			"computed_env_variables": {
+			"computed_env_variables": &schema.Schema{
 				Type:        schema.TypeList,
 				Computed:    true,
 				Description: "References to config maps, secrets or literal values, which are defined and set by Code Engine and are exposed as environment variables in the application.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"key": {
+						"key": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "The key to reference as environment variable.",
 						},
-						"name": {
+						"name": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "The name of the environment variable.",
 						},
-						"prefix": {
+						"prefix": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "A prefix that can be added to all keys of a full secret or config map reference.",
 						},
-						"reference": {
+						"reference": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "The name of the secret or config map.",
 						},
-						"type": {
+						"type": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "Specify the type of the environment variable.",
 						},
-						"value": {
+						"value": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "The literal value of the environment variable.",
@@ -84,93 +85,93 @@ func DataSourceIbmCodeEngineApp() *schema.Resource {
 					},
 				},
 			},
-			"created_at": {
+			"created_at": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The timestamp when the resource was created.",
 			},
-			"endpoint": {
+			"endpoint": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "Optional URL to invoke the app. Depending on visibility,  this is accessible publicly or in the private network only. Empty in case 'managed_domain_mappings' is set to 'local'.",
 			},
-			"endpoint_internal": {
+			"endpoint_internal": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The URL to the app that is only visible within the project.",
 			},
-			"entity_tag": {
+			"entity_tag": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The version of the app instance, which is used to achieve optimistic locking.",
 			},
-			"href": {
+			"href": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "When you provision a new app,  a URL is created identifying the location of the instance.",
 			},
-			"app_id": {
+			"app_id": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The identifier of the resource.",
 			},
-			"image_port": {
+			"image_port": &schema.Schema{
 				Type:        schema.TypeInt,
 				Computed:    true,
 				Description: "Optional port the app listens on. While the app will always be exposed via port `443` for end users, this port is used to connect to the port that is exposed by the container image.",
 			},
-			"image_reference": {
+			"image_reference": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The name of the image that is used for this app. The format is `REGISTRY/NAMESPACE/REPOSITORY:TAG` where `REGISTRY` and `TAG` are optional. If `REGISTRY` is not specified, the default is `docker.io`. If `TAG` is not specified, the default is `latest`. If the image reference points to a registry that requires authentication, make sure to also specify the property `image_secret`.",
 			},
-			"image_secret": {
+			"image_secret": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "Optional name of the image registry access secret. The image registry access secret is used to authenticate with a private registry when you download the container image. If the image reference points to a registry that requires authentication, the app will be created but cannot reach the ready status, until this property is provided, too.",
 			},
-			"managed_domain_mappings": {
+			"managed_domain_mappings": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "Optional value controlling which of the system managed domain mappings will be setup for the application. Valid values are 'local_public', 'local_private' and 'local'. Visibility can only be 'local_private' if the project supports application private visibility.",
 			},
-			"probe_liveness": {
+			"probe_liveness": &schema.Schema{
 				Type:        schema.TypeList,
 				Computed:    true,
 				Description: "Response model for probes.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"failure_threshold": {
+						"failure_threshold": &schema.Schema{
 							Type:        schema.TypeInt,
 							Computed:    true,
 							Description: "The number of consecutive, unsuccessful checks for the probe to be considered failed.",
 						},
-						"initial_delay": {
+						"initial_delay": &schema.Schema{
 							Type:        schema.TypeInt,
 							Computed:    true,
 							Description: "The amount of time in seconds to wait before the first probe check is performed.",
 						},
-						"interval": {
+						"interval": &schema.Schema{
 							Type:        schema.TypeInt,
 							Computed:    true,
 							Description: "The amount of time in seconds between probe checks.",
 						},
-						"path": {
+						"path": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "The path of the HTTP request to the resource. A path is only supported for a probe with a `type` of `http`.",
 						},
-						"port": {
+						"port": &schema.Schema{
 							Type:        schema.TypeInt,
 							Computed:    true,
 							Description: "The port on which to probe the resource.",
 						},
-						"timeout": {
+						"timeout": &schema.Schema{
 							Type:        schema.TypeInt,
 							Computed:    true,
 							Description: "The amount of time in seconds that the probe waits for a response from the application before it times out and fails.",
 						},
-						"type": {
+						"type": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "Specifies whether to use HTTP or TCP for the probe checks. The default is TCP.",
@@ -178,43 +179,43 @@ func DataSourceIbmCodeEngineApp() *schema.Resource {
 					},
 				},
 			},
-			"probe_readiness": {
+			"probe_readiness": &schema.Schema{
 				Type:        schema.TypeList,
 				Computed:    true,
 				Description: "Response model for probes.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"failure_threshold": {
+						"failure_threshold": &schema.Schema{
 							Type:        schema.TypeInt,
 							Computed:    true,
 							Description: "The number of consecutive, unsuccessful checks for the probe to be considered failed.",
 						},
-						"initial_delay": {
+						"initial_delay": &schema.Schema{
 							Type:        schema.TypeInt,
 							Computed:    true,
 							Description: "The amount of time in seconds to wait before the first probe check is performed.",
 						},
-						"interval": {
+						"interval": &schema.Schema{
 							Type:        schema.TypeInt,
 							Computed:    true,
 							Description: "The amount of time in seconds between probe checks.",
 						},
-						"path": {
+						"path": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "The path of the HTTP request to the resource. A path is only supported for a probe with a `type` of `http`.",
 						},
-						"port": {
+						"port": &schema.Schema{
 							Type:        schema.TypeInt,
 							Computed:    true,
 							Description: "The port on which to probe the resource.",
 						},
-						"timeout": {
+						"timeout": &schema.Schema{
 							Type:        schema.TypeInt,
 							Computed:    true,
 							Description: "The amount of time in seconds that the probe waits for a response from the application before it times out and fails.",
 						},
-						"type": {
+						"type": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "Specifies whether to use HTTP or TCP for the probe checks. The default is TCP.",
@@ -222,17 +223,17 @@ func DataSourceIbmCodeEngineApp() *schema.Resource {
 					},
 				},
 			},
-			"region": {
+			"region": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The region of the project the resource is located in. Possible values: 'au-syd', 'br-sao', 'ca-tor', 'eu-de', 'eu-gb', 'jp-osa', 'jp-tok', 'us-east', 'us-south'.",
 			},
-			"resource_type": {
+			"resource_type": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The type of the app.",
 			},
-			"run_arguments": {
+			"run_arguments": &schema.Schema{
 				Type:        schema.TypeList,
 				Computed:    true,
 				Description: "Optional arguments for the app that are passed to start the container. If not specified an empty string array will be applied and the arguments specified by the container image, will be used to start the container.",
@@ -240,12 +241,12 @@ func DataSourceIbmCodeEngineApp() *schema.Resource {
 					Type: schema.TypeString,
 				},
 			},
-			"run_as_user": {
+			"run_as_user": &schema.Schema{
 				Type:        schema.TypeInt,
 				Computed:    true,
 				Description: "Optional user ID (UID) to run the app.",
 			},
-			"run_commands": {
+			"run_commands": &schema.Schema{
 				Type:        schema.TypeList,
 				Computed:    true,
 				Description: "Optional commands for the app that are passed to start the container. If not specified an empty string array will be applied and the command specified by the container image, will be used to start the container.",
@@ -253,38 +254,43 @@ func DataSourceIbmCodeEngineApp() *schema.Resource {
 					Type: schema.TypeString,
 				},
 			},
-			"run_env_variables": {
+			"run_compute_resource_token_enabled": &schema.Schema{
+				Type:        schema.TypeBool,
+				Computed:    true,
+				Description: "Optional flag to enable the use of a compute resource token mounted to the container file system.",
+			},
+			"run_env_variables": &schema.Schema{
 				Type:        schema.TypeList,
 				Computed:    true,
-				Description: "References to config maps, secrets or literal values, which are exposed as environment variables in the application.",
+				Description: "References to config maps, secrets or literal values, which are defined by the app owner and are exposed as environment variables in the application.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"key": {
+						"key": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "The key to reference as environment variable.",
 						},
-						"name": {
+						"name": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "The name of the environment variable.",
 						},
-						"prefix": {
+						"prefix": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "A prefix that can be added to all keys of a full secret or config map reference.",
 						},
-						"reference": {
+						"reference": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "The name of the secret or config map.",
 						},
-						"type": {
+						"type": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "Specify the type of the environment variable.",
 						},
-						"value": {
+						"value": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "The literal value of the environment variable.",
@@ -292,112 +298,122 @@ func DataSourceIbmCodeEngineApp() *schema.Resource {
 					},
 				},
 			},
-			"run_service_account": {
+			"run_service_account": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "Optional name of the service account. For built-in service accounts, you can use the shortened names `manager` , `none`, `reader`, and `writer`.",
 			},
-			"run_volume_mounts": {
+			"run_volume_mounts": &schema.Schema{
 				Type:        schema.TypeList,
 				Computed:    true,
 				Description: "Mounts of config maps or secrets.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"mount_path": {
+						"mount_path": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "The path that should be mounted.",
 						},
-						"name": {
+						"name": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "The name of the mount.",
 						},
-						"reference": {
-							Type:        schema.TypeString,
+						"read_only": &schema.Schema{
+							Type:        schema.TypeBool,
 							Computed:    true,
-							Description: "The name of the referenced secret or config map.",
+							Description: "Optional flag for a volume mount of type 'persistent_data_store' to specify whether it is read-only.",
 						},
-						"type": {
+						"reference": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "Specify the type of the volume mount. Allowed types are: 'config_map', 'secret'.",
+							Description: "The name of the referenced secret, config map, or persistent data store.",
+						},
+						"sub_path": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The path mounted at the mount path.",
+						},
+						"type": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Specify the type of the volume mount. Allowed types are: 'config_map', 'persistent_data_store', 'secret'.",
 						},
 					},
 				},
 			},
-			"scale_concurrency": {
+			"scale_concurrency": &schema.Schema{
 				Type:        schema.TypeInt,
 				Computed:    true,
 				Description: "Optional maximum number of requests that can be processed concurrently per instance.",
 			},
-			"scale_concurrency_target": {
+			"scale_concurrency_target": &schema.Schema{
 				Type:        schema.TypeInt,
 				Computed:    true,
 				Description: "Optional threshold of concurrent requests per instance at which one or more additional instances are created. Use this value to scale up instances based on concurrent number of requests. This option defaults to the value of the `scale_concurrency` option, if not specified.",
 			},
-			"scale_cpu_limit": {
+			"scale_cpu_limit": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "Optional number of CPU set for the instance of the app. For valid values see [Supported memory and CPU combinations](https://cloud.ibm.com/docs/codeengine?topic=codeengine-mem-cpu-combo).",
 			},
-			"scale_down_delay": {
+			"scale_down_delay": &schema.Schema{
 				Type:        schema.TypeInt,
 				Computed:    true,
 				Description: "Optional amount of time in seconds that delays the scale-down behavior for an app instance.",
 			},
-			"scale_ephemeral_storage_limit": {
+			"scale_ephemeral_storage_limit": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "Optional amount of ephemeral storage to set for the instance of the app. The amount specified as ephemeral storage, must not exceed the amount of `scale_memory_limit`. The units for specifying ephemeral storage are Megabyte (M) or Gigabyte (G), whereas G and M are the shorthand expressions for GB and MB. For more information see [Units of measurement](https://cloud.ibm.com/docs/codeengine?topic=codeengine-mem-cpu-combo#unit-measurements).",
 			},
-			"scale_initial_instances": {
+			"scale_initial_instances": &schema.Schema{
 				Type:        schema.TypeInt,
 				Computed:    true,
 				Description: "Optional initial number of instances that are created upon app creation or app update.",
 			},
-			"scale_max_instances": {
+			"scale_max_instances": &schema.Schema{
 				Type:        schema.TypeInt,
 				Computed:    true,
 				Description: "Optional maximum number of instances for this app. If you set this value to `0`, this property does not set a upper scaling limit. However, the app scaling is still limited by the project quota for instances. See [Limits and quotas for Code Engine](https://cloud.ibm.com/docs/codeengine?topic=codeengine-limits).",
 			},
-			"scale_memory_limit": {
+			"scale_memory_limit": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "Optional amount of memory set for the instance of the app. For valid values see [Supported memory and CPU combinations](https://cloud.ibm.com/docs/codeengine?topic=codeengine-mem-cpu-combo). The units for specifying memory are Megabyte (M) or Gigabyte (G), whereas G and M are the shorthand expressions for GB and MB. For more information see [Units of measurement](https://cloud.ibm.com/docs/codeengine?topic=codeengine-mem-cpu-combo#unit-measurements).",
 			},
-			"scale_min_instances": {
+			"scale_min_instances": &schema.Schema{
 				Type:        schema.TypeInt,
 				Computed:    true,
 				Description: "Optional minimum number of instances for this app. If you set this value to `0`, the app will scale down to zero, if not hit by any request for some time.",
 			},
-			"scale_request_timeout": {
+			"scale_request_timeout": &schema.Schema{
 				Type:        schema.TypeInt,
 				Computed:    true,
 				Description: "Optional amount of time in seconds that is allowed for a running app to respond to a request.",
 			},
-			"status": {
+			"status": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The current status of the app.",
 			},
-			"status_details": {
+			"status_details": &schema.Schema{
 				Type:        schema.TypeList,
 				Computed:    true,
 				Description: "The detailed status of the application.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"latest_created_revision": {
+						"latest_created_revision": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "Latest app revision that has been created.",
 						},
-						"latest_ready_revision": {
+						"latest_ready_revision": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "Latest app revision that reached a ready state.",
 						},
-						"reason": {
+						"reason": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "Optional information to provide more context in case of a 'failed' or 'warning' status.",
@@ -443,18 +459,16 @@ func dataSourceIbmCodeEngineAppRead(context context.Context, d *schema.ResourceD
 		}
 	}
 
-	if !core.IsNil(app.ComputedEnvVariables) {
-		computedEnvVariables := []map[string]interface{}{}
-		for _, computedEnvVariablesItem := range app.ComputedEnvVariables {
-			computedEnvVariablesItemMap, err := DataSourceIbmCodeEngineAppEnvVarToMap(&computedEnvVariablesItem) // #nosec G601
-			if err != nil {
-				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_code_engine_app", "read", "computed_env_variables-to-map").GetDiag()
-			}
-			computedEnvVariables = append(computedEnvVariables, computedEnvVariablesItemMap)
+	computedEnvVariables := []map[string]interface{}{}
+	for _, computedEnvVariablesItem := range app.ComputedEnvVariables {
+		computedEnvVariablesItemMap, err := DataSourceIbmCodeEngineAppEnvVarToMap(&computedEnvVariablesItem) // #nosec G601
+		if err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_code_engine_app", "read", "computed_env_variables-to-map").GetDiag()
 		}
-		if err = d.Set("computed_env_variables", computedEnvVariables); err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting computed_env_variables: %s", err), "(Data) ibm_code_engine_app", "read", "set-computed_env_variables").GetDiag()
-		}
+		computedEnvVariables = append(computedEnvVariables, computedEnvVariablesItemMap)
+	}
+	if err = d.Set("computed_env_variables", computedEnvVariables); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting computed_env_variables: %s", err), "(Data) ibm_code_engine_app", "read", "set-computed_env_variables").GetDiag()
 	}
 
 	if !core.IsNil(app.CreatedAt) {
@@ -567,6 +581,12 @@ func dataSourceIbmCodeEngineAppRead(context context.Context, d *schema.ResourceD
 	}
 	if err = d.Set("run_commands", runCommands); err != nil {
 		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting run_commands: %s", err), "(Data) ibm_code_engine_app", "read", "set-run_commands").GetDiag()
+	}
+
+	if !core.IsNil(app.RunComputeResourceTokenEnabled) {
+		if err = d.Set("run_compute_resource_token_enabled", app.RunComputeResourceTokenEnabled); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting run_compute_resource_token_enabled: %s", err), "(Data) ibm_code_engine_app", "read", "set-run_compute_resource_token_enabled").GetDiag()
+		}
 	}
 
 	runEnvVariables := []map[string]interface{}{}
@@ -718,8 +738,16 @@ func DataSourceIbmCodeEngineAppProbeToMap(model *codeenginev2.Probe) (map[string
 func DataSourceIbmCodeEngineAppVolumeMountToMap(model *codeenginev2.VolumeMount) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["mount_path"] = *model.MountPath
-	modelMap["name"] = *model.Name
+	if model.Name != nil {
+		modelMap["name"] = *model.Name
+	}
+	if model.ReadOnly != nil {
+		modelMap["read_only"] = *model.ReadOnly
+	}
 	modelMap["reference"] = *model.Reference
+	if model.SubPath != nil {
+		modelMap["sub_path"] = *model.SubPath
+	}
 	modelMap["type"] = *model.Type
 	return modelMap, nil
 }

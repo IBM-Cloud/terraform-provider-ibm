@@ -161,7 +161,7 @@ func TestAccIBMIAMServicePolicy_With_Resource_Type(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMIAMServicePolicyExists("ibm_iam_service_policy.policy", conf),
 					resource.TestCheckResourceAttr("ibm_iam_service_id.serviceID", "name", name),
-					resource.TestCheckResourceAttr("ibm_iam_service_policy.policy", "roles.#", "1"),
+					resource.TestCheckResourceAttr("ibm_iam_service_policy.policy", "roles.#", "2"),
 				),
 			},
 		},
@@ -749,11 +749,15 @@ func testAccCheckIBMIAMServicePolicyResourceType(name string) string {
 	  
 	  	resource "ibm_iam_service_policy" "policy" {
 			iam_service_id = ibm_iam_service_id.serviceID.id
-			roles          = ["Administrator"]
-	  
-			resources {
-		  		resource_type = "resource-group"
-		  		resource      = data.ibm_resource_group.group.id
+			roles          = ["Administrator", "Service Configuration Reader"]
+	
+			resource_attributes {
+				name   = "resourceType"
+				value  = "resource-group"
+			}
+			resource_attributes {
+				name   = "resource"
+				value  = data.ibm_resource_group.group.id
 			}
 	  	}
 	`, name)

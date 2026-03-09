@@ -19,8 +19,8 @@ import (
 
 func TestAccIbmCodeEngineFunctionBasic(t *testing.T) {
 	var conf codeenginev2.Function
-	functionName := fmt.Sprintf("%s", acctest.RandStringFromCharSet(10, acctest.CharSetAlpha))
-	functionRuntime := "nodejs-20"
+	functionName := fmt.Sprintf("tf-function-basic-%s", acctest.RandStringFromCharSet(10, acctest.CharSetAlpha))
+	functionRuntime := "nodejs-22"
 	functionCodeReference := "data:text/plain;base64,foo"
 
 	projectID := acc.CeProjectId
@@ -82,23 +82,25 @@ func TestAccIbmCodeEngineFunctionBasic(t *testing.T) {
 func TestAccIbmCodeEngineFunctionExtended(t *testing.T) {
 	var conf codeenginev2.Function
 
-	functionName := fmt.Sprintf("%s", acctest.RandStringFromCharSet(10, acctest.CharSetAlpha))
-	functionRuntime := "nodejs-20"
+	functionName := fmt.Sprintf("tf-function-extended-%s", acctest.RandStringFromCharSet(10, acctest.CharSetAlpha))
+	functionRuntime := "nodejs-22"
 	functionCodeReference := "data:text/plain;base64,foo"
 	functionManagedDomainMappings := "local_public"
-	functionScaleCpuLimit := "1"
+	functionScaleCPULimit := "1"
 	functionScaleDownDelay := "1"
 	functionScaleMaxExecutionTime := "60"
 	functionScaleMemoryLimit := "4G"
+	runComputeResourceTokenEnabled := "true"
 
 	projectID := acc.CeProjectId
 
 	functionCodeReferenceUpdate := "data:text/plain;base64,bar"
 	functionManagedDomainMappingsUpdate := "local_private"
-	functionScaleCpuLimitUpdate := "0.5"
+	functionScaleCPULimitUpdate := "0.5"
 	functionScaleDownDelayUpdate := "20"
 	functionScaleMaxExecutionTimeUpdate := "30"
 	functionScaleMemoryLimitUpdate := "2G"
+	runComputeResourceTokenEnabledUpdate := "false"
 
 	envVars := `run_env_variables {
 		type  = "literal"
@@ -118,7 +120,7 @@ func TestAccIbmCodeEngineFunctionExtended(t *testing.T) {
 		CheckDestroy: testAccCheckIbmCodeEngineFunctionDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIbmCodeEngineFunctionConfig(projectID, functionCodeReference, functionManagedDomainMappings, functionName, functionRuntime, functionScaleCpuLimit, functionScaleDownDelay, functionScaleMaxExecutionTime, functionScaleMemoryLimit, envVars),
+				Config: testAccCheckIbmCodeEngineFunctionConfig(projectID, functionCodeReference, functionManagedDomainMappings, functionName, functionRuntime, functionScaleCPULimit, functionScaleDownDelay, functionScaleMaxExecutionTime, functionScaleMemoryLimit, runComputeResourceTokenEnabled, envVars),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIbmCodeEngineFunctionExists("ibm_code_engine_function.code_engine_function_instance", conf),
 					resource.TestCheckResourceAttr("ibm_code_engine_function.code_engine_function_instance", "project_id", projectID),
@@ -128,7 +130,7 @@ func TestAccIbmCodeEngineFunctionExtended(t *testing.T) {
 					resource.TestCheckResourceAttr("ibm_code_engine_function.code_engine_function_instance", "code_reference", functionCodeReference),
 					resource.TestCheckResourceAttr("ibm_code_engine_function.code_engine_function_instance", "managed_domain_mappings", functionManagedDomainMappings),
 					resource.TestCheckResourceAttr("ibm_code_engine_function.code_engine_function_instance", "scale_concurrency", "1"),
-					resource.TestCheckResourceAttr("ibm_code_engine_function.code_engine_function_instance", "scale_cpu_limit", functionScaleCpuLimit),
+					resource.TestCheckResourceAttr("ibm_code_engine_function.code_engine_function_instance", "scale_cpu_limit", functionScaleCPULimit),
 					resource.TestCheckResourceAttr("ibm_code_engine_function.code_engine_function_instance", "scale_down_delay", functionScaleDownDelay),
 					resource.TestCheckResourceAttr("ibm_code_engine_function.code_engine_function_instance", "scale_max_execution_time", functionScaleMaxExecutionTime),
 					resource.TestCheckResourceAttr("ibm_code_engine_function.code_engine_function_instance", "scale_memory_limit", functionScaleMemoryLimit),
@@ -137,7 +139,7 @@ func TestAccIbmCodeEngineFunctionExtended(t *testing.T) {
 				),
 			},
 			resource.TestStep{
-				Config: testAccCheckIbmCodeEngineFunctionConfig(projectID, functionCodeReferenceUpdate, functionManagedDomainMappingsUpdate, functionName, functionRuntime, functionScaleCpuLimitUpdate, functionScaleDownDelayUpdate, functionScaleMaxExecutionTimeUpdate, functionScaleMemoryLimitUpdate, ""),
+				Config: testAccCheckIbmCodeEngineFunctionConfig(projectID, functionCodeReferenceUpdate, functionManagedDomainMappingsUpdate, functionName, functionRuntime, functionScaleCPULimitUpdate, functionScaleDownDelayUpdate, functionScaleMaxExecutionTimeUpdate, functionScaleMemoryLimitUpdate, runComputeResourceTokenEnabledUpdate, ""),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("ibm_code_engine_function.code_engine_function_instance", "project_id", projectID),
 					resource.TestCheckResourceAttr("ibm_code_engine_function.code_engine_function_instance", "name", functionName),
@@ -146,7 +148,7 @@ func TestAccIbmCodeEngineFunctionExtended(t *testing.T) {
 					resource.TestCheckResourceAttr("ibm_code_engine_function.code_engine_function_instance", "code_reference", functionCodeReferenceUpdate),
 					resource.TestCheckResourceAttr("ibm_code_engine_function.code_engine_function_instance", "managed_domain_mappings", functionManagedDomainMappingsUpdate),
 					resource.TestCheckResourceAttr("ibm_code_engine_function.code_engine_function_instance", "scale_concurrency", "1"),
-					resource.TestCheckResourceAttr("ibm_code_engine_function.code_engine_function_instance", "scale_cpu_limit", functionScaleCpuLimitUpdate),
+					resource.TestCheckResourceAttr("ibm_code_engine_function.code_engine_function_instance", "scale_cpu_limit", functionScaleCPULimitUpdate),
 					resource.TestCheckResourceAttr("ibm_code_engine_function.code_engine_function_instance", "scale_down_delay", functionScaleDownDelayUpdate),
 					resource.TestCheckResourceAttr("ibm_code_engine_function.code_engine_function_instance", "scale_max_execution_time", functionScaleMaxExecutionTimeUpdate),
 					resource.TestCheckResourceAttr("ibm_code_engine_function.code_engine_function_instance", "scale_memory_limit", functionScaleMemoryLimitUpdate),
@@ -175,7 +177,7 @@ func testAccCheckIbmCodeEngineFunctionConfigBasic(projectID string, codeReferenc
 	`, projectID, codeReference, name, runtime, envVars)
 }
 
-func testAccCheckIbmCodeEngineFunctionConfig(projectID string, codeReference string, managedDomainMappings string, name string, runtime string, scaleCpuLimit string, scaleDownDelay string, scaleMaxExecutionTime string, scaleMemoryLimit string, envVars string) string {
+func testAccCheckIbmCodeEngineFunctionConfig(projectID string, codeReference string, managedDomainMappings string, name string, runtime string, scaleCPULimit string, scaleDownDelay string, scaleMaxExecutionTime string, scaleMemoryLimit string, runComputeResourceTokenEnabled string, envVars string) string {
 	return fmt.Sprintf(`
 		data "ibm_code_engine_project" "code_engine_project_instance" {
 			project_id = "%s"
@@ -191,6 +193,7 @@ func testAccCheckIbmCodeEngineFunctionConfig(projectID string, codeReference str
 			scale_down_delay = %s
 			scale_max_execution_time = %s
 			scale_memory_limit = "%s"
+			run_compute_resource_token_enabled = %s
 
 			run_env_variables {
 				type  = "literal"
@@ -200,7 +203,7 @@ func testAccCheckIbmCodeEngineFunctionConfig(projectID string, codeReference str
 
 			%s
 		}
-	`, projectID, codeReference, managedDomainMappings, name, runtime, scaleCpuLimit, scaleDownDelay, scaleMaxExecutionTime, scaleMemoryLimit, envVars)
+	`, projectID, codeReference, managedDomainMappings, name, runtime, scaleCPULimit, scaleDownDelay, scaleMaxExecutionTime, scaleMemoryLimit, runComputeResourceTokenEnabled, envVars)
 }
 
 func testAccCheckIbmCodeEngineFunctionExists(n string, obj codeenginev2.Function) resource.TestCheckFunc {
