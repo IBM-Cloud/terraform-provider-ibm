@@ -64,7 +64,7 @@ func ResourceIBMLogsRouterRoute() *schema.Resource {
 						},
 						"inclusion_filters": &schema.Schema{
 							Type:        schema.TypeList,
-							Required:    true,
+							Optional:    true,
 							Description: "A list of conditions to be satisfied for routing platform logs to pre-defined target.",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
@@ -333,12 +333,14 @@ func ResourceIBMLogsRouterRouteMapToRulePrototype(modelMap map[string]interface{
 	}
 	model.Targets = targets
 	inclusionFilters := []logsrouterv3.InclusionFilterPrototype{}
-	for _, inclusionFiltersItem := range modelMap["inclusion_filters"].([]interface{}) {
-		inclusionFiltersItemModel, err := ResourceIBMLogsRouterRouteMapToInclusionFilterPrototype(inclusionFiltersItem.(map[string]interface{}))
-		if err != nil {
-			return model, err
+	if modelMap["inclusion_filters"] != nil {
+		for _, inclusionFiltersItem := range modelMap["inclusion_filters"].([]interface{}) {
+			inclusionFiltersItemModel, err := ResourceIBMLogsRouterRouteMapToInclusionFilterPrototype(inclusionFiltersItem.(map[string]interface{}))
+			if err != nil {
+				return model, err
+			}
+			inclusionFilters = append(inclusionFilters, *inclusionFiltersItemModel)
 		}
-		inclusionFilters = append(inclusionFilters, *inclusionFiltersItemModel)
 	}
 	model.InclusionFilters = inclusionFilters
 	return model, nil

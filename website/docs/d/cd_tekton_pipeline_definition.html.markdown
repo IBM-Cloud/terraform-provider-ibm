@@ -24,9 +24,9 @@ data "ibm_cd_tekton_pipeline_definition" "cd_tekton_pipeline_definition" {
 You can specify the following arguments for this data source.
 
 * `definition_id` - (Required, Forces new resource, String) The definition ID.
-  * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[-0-9a-z]+$/`.
+  * Constraints: Length must be `36` characters. The value must match regular expression `/^[-0-9a-z]+$/`.
 * `pipeline_id` - (Required, Forces new resource, String) The Tekton pipeline ID.
-  * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[-0-9a-z]+$/`.
+  * Constraints: Length must be `36` characters. The value must match regular expression `/^[-0-9a-z]+$/`.
 
 ## Attribute Reference
 
@@ -48,7 +48,7 @@ Nested schema for **source**:
 		* `tool` - (List) Reference to the repository tool in the parent toolchain.
 		Nested schema for **tool**:
 			* `id` - (String) ID of the repository tool instance in the parent toolchain.
-			  * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[-0-9a-z]+$/`.
+			  * Constraints: Length must be `36` characters. The value must match regular expression `/^[-0-9a-z]+$/`.
 		* `url` - (Forces new resource, String) URL of the definition repository.
 		  * Constraints: The maximum length is `2048` characters. The minimum length is `10` characters. The value must match regular expression `/^http(s)?:\/\/([^\/?#]*)([^?#]*)(\\?([^#]*))?(#(.*))?$/`.
 	* `type` - (String) The only supported source type is "git", indicating that the source is a git repository.

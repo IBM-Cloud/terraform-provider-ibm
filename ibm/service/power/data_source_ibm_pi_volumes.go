@@ -149,7 +149,7 @@ func DataSourceIBMPIVolumes() *schema.Resource {
 						},
 						Attr_Size: {
 							Computed:    true,
-							Description: "The size of the volume in GB.",
+							Description: "The size of the volume in GiB.",
 							Type:        schema.TypeInt,
 						},
 						Attr_State: {

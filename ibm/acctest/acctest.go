@@ -67,6 +67,7 @@ var (
 	FloatingIpID                    string
 	HpcsInstanceID                  string
 	HpcsInstanceName                string
+	IAMAccessGroupId                string
 	IAMAccountId                    string
 	IAMServiceId                    string
 	IAMTrustedProfileID             string
@@ -269,6 +270,8 @@ var (
 	Pi_route_id                       string
 	Pi_sap_image                      string
 	Pi_sap_profile_id                 string
+	Pi_secondary_workspace_id_1       string
+	Pi_secondary_workspace_id_2       string
 	Pi_shared_processor_pool_id       string
 	Pi_snapshot_id                    string
 	Pi_spp_placement_group_id         string
@@ -480,6 +483,12 @@ var (
 	ISClusterNetworkSubnetPrefixesCidr string
 )
 
+// For Platform Notifications
+var (
+	NotificationDistributionListAccountId     string
+	NotificationDistributionListDestinationId string
+)
+
 func init() {
 	testlogger := os.Getenv("TF_LOG")
 	if testlogger != "" {
@@ -530,6 +539,11 @@ func init() {
 	IAMUser = os.Getenv("IBM_IAMUSER")
 	if IAMUser == "" {
 		fmt.Println("[WARN] Set the environment variable IBM_IAMUSER for testing ibm_iam_user_policy resource Some tests for that resource will fail if this is not set correctly")
+	}
+
+	IAMAccessGroupId = os.Getenv("IBM_IAM_ACCESS_GROUP_ID")
+	if IAMAccessGroupId == "" {
+		fmt.Println("[WARN] Set the environment variable IBM_IAM_ACCESS_GROUP_ID for testing ibm_iam_user_invite resource Some tests for that resource will fail if this is not set correctly")
 	}
 
 	IAMAccountId = os.Getenv("IBM_IAMACCOUNTID")
@@ -1187,6 +1201,17 @@ func init() {
 		IcdDbTaskId = "crn:v1:bluemix:public:databases-for-redis:au-syd:a/40ddc34a953a8c02f10987b59085b60e:367b0a22-05bb-41e3-a1ed-ded1ff0889e5:task:882013a6-2751-4df7-a77a-98d258638704"
 		fmt.Println("[INFO] Set the environment variable ICD_DB_TASK_ID for testing ibm_cloud_databases else it is set to default value 'crn:v1:bluemix:public:databases-for-redis:au-syd:a/40ddc34a953a8c02f10987b59085b60e:367b0a22-05bb-41e3-a1ed-ded1ff0889e5:task:882013a6-2751-4df7-a77a-98d258638704'")
 	}
+
+	NotificationDistributionListAccountId = os.Getenv("NOTIFICATION_DIST_ACCOUNT_ID")
+	if NotificationDistributionListAccountId == "" {
+		fmt.Println("[WARN] Set the environment variable NOTIFICATION_DIST_ACCOUNT_ID for testing ibm_notification_distribution_list resource else tests will fail if this is not set correctly")
+	}
+
+	NotificationDistributionListDestinationId = os.Getenv("NOTIFICATION_DIST_DESTINATION_ID")
+	if NotificationDistributionListDestinationId == "" {
+		fmt.Println("[WARN] Set the environment variable NOTIFICATION_DIST_DESTINATION_ID for testing ibm_notification_distribution_list resource else tests will fail if this is not set correctly")
+	}
+
 	// Added for Power Colo Testing
 	Pi_image = os.Getenv("PI_IMAGE")
 	if Pi_image == "" {
@@ -1495,6 +1520,16 @@ func init() {
 	if Pi_host_group_id == "" {
 		Pi_host_group_id = ""
 		fmt.Println("[WARN] Set the environment variable PI_HOST_GROUP_ID for testing ibm_pi_host resource else it is set to default value ''")
+	}
+	Pi_secondary_workspace_id_1 = os.Getenv("PI_SECONDARY_WORKSPACE_ID_1")
+	if Pi_secondary_workspace_id_1 == "" {
+		Pi_secondary_workspace_id_1 = ""
+		fmt.Println("[WARN] Set the environment variable PI_SECONDARY_WORKSPACE_ID_1 for testing ibm_pi_host_group update else it is set to default value ''")
+	}
+	Pi_secondary_workspace_id_2 = os.Getenv("PI_SECONDARY_WORKSPACE_ID_2")
+	if Pi_secondary_workspace_id_2 == "" {
+		Pi_secondary_workspace_id_2 = ""
+		fmt.Println("[WARN] Set the environment variable PI_SECONDARY_WORKSPACE_ID_2 for testing ibm_pi_host_group update else it is set to default value ''")
 	}
 	Pi_host_id = os.Getenv("PI_HOST_ID")
 	if Pi_host_id == "" {
