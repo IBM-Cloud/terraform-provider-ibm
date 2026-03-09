@@ -452,43 +452,25 @@ func flattenPvmInstances(list []*models.PVMInstanceReference, meta any) []map[st
 		if i.MetadataService != nil {
 			l[Attr_MetadataService] = flattenMetadataService(i.MetadataService)
 		}
-		// --- IBM i software licenses (if present) ---
+		// --- IBM i software licenses (match singular DS semantics) ---
 		if i.SoftwareLicenses != nil {
-			// CSS and PHA (nil-safe)
-			if i.SoftwareLicenses.IbmiCSS != nil {
-				l[Attr_IBMiCSS] = i.SoftwareLicenses.IbmiCSS
-			} else {
-				l[Attr_IBMiCSS] = false
-			}
-			if i.SoftwareLicenses.IbmiPHA != nil {
-				l[Attr_IBMiPHA] = i.SoftwareLicenses.IbmiPHA
-			} else {
-				l[Attr_IBMiPHA] = false
-			}
+			// Set booleans directly (pointers are fine; same as singular DS)
+			l[Attr_IBMiCSS] = i.SoftwareLicenses.IbmiCSS
+			l[Attr_IBMiPHA] = i.SoftwareLicenses.IbmiPHA
+			l[Attr_IBMiPHAFSM] = i.SoftwareLicenses.IbmiPHAFSM
+			l[Attr_IBMiRDS] = i.SoftwareLicenses.IbmiRDS
 
-			// FSM: boolean + count (count may be omitted by API when disabled)
-			if i.SoftwareLicenses.IbmiPHAFSM != nil {
-				l[Attr_IBMiPHAFSM] = i.SoftwareLicenses.IbmiPHAFSM
-				if *i.SoftwareLicenses.IbmiPHAFSM {
-					l[Attr_IBMiPHAFSMCount] = int(i.SoftwareLicenses.IbmiPHAFSMCount)
-				} else {
-					l[Attr_IBMiPHAFSMCount] = 0
-				}
+			// PHAFSM count: API may omit when disabled → set 0 explicitly
+			if i.SoftwareLicenses.IbmiPHAFSM != nil && *i.SoftwareLicenses.IbmiPHAFSM {
+				l[Attr_IBMiPHAFSMCount] = i.SoftwareLicenses.IbmiPHAFSMCount
 			} else {
-				l[Attr_IBMiPHAFSM] = false
 				l[Attr_IBMiPHAFSMCount] = 0
 			}
 
-			// RDS: boolean + users
-			if i.SoftwareLicenses.IbmiRDS != nil {
-				l[Attr_IBMiRDS] = i.SoftwareLicenses.IbmiRDS
-				if *i.SoftwareLicenses.IbmiRDS {
-					l[Attr_IBMiRDSUsers] = int(i.SoftwareLicenses.IbmiRDSUsers)
-				} else {
-					l[Attr_IBMiRDSUsers] = 0
-				}
+			// RDS users: API may omit when disabled → set 0 explicitly
+			if i.SoftwareLicenses.IbmiRDS != nil && *i.SoftwareLicenses.IbmiRDS {
+				l[Attr_IBMiRDSUsers] = i.SoftwareLicenses.IbmiRDSUsers
 			} else {
-				l[Attr_IBMiRDS] = false
 				l[Attr_IBMiRDSUsers] = 0
 			}
 		}
