@@ -105,6 +105,39 @@ func DataSourceIBMPIInstances() *schema.Resource {
 							Description: "The health of the instance.",
 							Type:        schema.TypeString,
 						},
+
+						// IBM i software licenses (computed; only meaningful for IBM i instances)
+						Attr_IBMiCSS: {
+							Computed:    true,
+							Description: "IBM i Cloud Storage Solution.",
+							Type:        schema.TypeBool,
+						},
+						Attr_IBMiPHA: {
+							Computed:    true,
+							Description: "IBM i Power High Availability.",
+							Type:        schema.TypeBool,
+						},
+						Attr_IBMiPHAFSM: {
+							Computed:    true,
+							Description: "IBM i PHA Full System Manager (FSM) license enabled.",
+							Type:        schema.TypeBool,
+						},
+						Attr_IBMiPHAFSMCount: {
+							Computed:    true,
+							Description: "Number of IBM i PHA FSM managed servers. 0 when FSM is disabled.",
+							Type:        schema.TypeInt,
+						},
+						Attr_IBMiRDS: {
+							Computed:    true,
+							Description: "IBM i Rational Dev Studio.",
+							Type:        schema.TypeBool,
+						},
+						Attr_IBMiRDSUsers: {
+							Computed:    true,
+							Description: "IBM i Rational Dev Studio number of user licenses.",
+							Type:        schema.TypeInt,
+						},
+
 						Attr_LicenseRepositoryCapacity: {
 							Computed:    true,
 							Description: "The VTL license repository capacity TiB value.",
@@ -195,7 +228,7 @@ func DataSourceIBMPIInstances() *schema.Resource {
 									},
 									Attr_NetworkSecurityGroupIDs: {
 										Computed:    true,
-										Description: "IDs of the network necurity groups that the network interface is a member of.",
+										Description: "IDs of the network security groups that the network interface is a member of.",
 										Elem:        &schema.Schema{Type: schema.TypeString},
 										Type:        schema.TypeSet,
 									},
@@ -330,7 +363,6 @@ func DataSourceIBMPIInstances() *schema.Resource {
 
 func dataSourceIBMPIInstancesAllRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	sess, err := meta.(conns.ClientSession).IBMPISession()
-
 	if err != nil {
 		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("IBMPISession failed: %s", err.Error()), "ibm_pi_instances", "read")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
@@ -341,7 +373,6 @@ func dataSourceIBMPIInstancesAllRead(ctx context.Context, d *schema.ResourceData
 
 	powerC := instance.NewIBMPIInstanceClient(ctx, sess, cloudInstanceID)
 	powervmdata, err := powerC.GetAll()
-
 	if err != nil {
 		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetAll failed: %s", err.Error()), "ibm_pi_instances", "read")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
@@ -421,6 +452,47 @@ func flattenPvmInstances(list []*models.PVMInstanceReference, meta any) []map[st
 		if i.MetadataService != nil {
 			l[Attr_MetadataService] = flattenMetadataService(i.MetadataService)
 		}
+		// --- IBM i software licenses (if present) ---
+		if i.SoftwareLicenses != nil {
+			// CSS and PHA (nil-safe)
+			if i.SoftwareLicenses.IbmiCSS != nil {
+				l[Attr_IBMiCSS] = i.SoftwareLicenses.IbmiCSS
+			} else {
+				l[Attr_IBMiCSS] = false
+			}
+			if i.SoftwareLicenses.IbmiPHA != nil {
+				l[Attr_IBMiPHA] = i.SoftwareLicenses.IbmiPHA
+			} else {
+				l[Attr_IBMiPHA] = false
+			}
+
+			// FSM: boolean + count (count may be omitted by API when disabled)
+			if i.SoftwareLicenses.IbmiPHAFSM != nil {
+				l[Attr_IBMiPHAFSM] = i.SoftwareLicenses.IbmiPHAFSM
+				if *i.SoftwareLicenses.IbmiPHAFSM {
+					l[Attr_IBMiPHAFSMCount] = int(i.SoftwareLicenses.IbmiPHAFSMCount)
+				} else {
+					l[Attr_IBMiPHAFSMCount] = 0
+				}
+			} else {
+				l[Attr_IBMiPHAFSM] = false
+				l[Attr_IBMiPHAFSMCount] = 0
+			}
+
+			// RDS: boolean + users
+			if i.SoftwareLicenses.IbmiRDS != nil {
+				l[Attr_IBMiRDS] = i.SoftwareLicenses.IbmiRDS
+				if *i.SoftwareLicenses.IbmiRDS {
+					l[Attr_IBMiRDSUsers] = int(i.SoftwareLicenses.IbmiRDSUsers)
+				} else {
+					l[Attr_IBMiRDSUsers] = 0
+				}
+			} else {
+				l[Attr_IBMiRDS] = false
+				l[Attr_IBMiRDSUsers] = 0
+			}
+		}
+
 		result = append(result, l)
 	}
 	return result
