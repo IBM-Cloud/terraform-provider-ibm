@@ -2,7 +2,15 @@ package database
 
 import (
 	"fmt"
+	"log"
+	"net/url"
 
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
+	"github.com/IBM/cloud-databases-go-sdk/clouddatabasesv5"
+	"github.com/IBM/go-sdk-core/v5/core"
+	"github.com/IBM/platform-services-go-sdk/globalcatalogv1"
+	rg "github.com/IBM/platform-services-go-sdk/resourcemanagerv2"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -25,5 +33,135 @@ func (g *dataSourceIBMDatabaseGen2Backend) Read(d *schema.ResourceData, meta int
 	// is generally considered an anti-pattern.
 	// If this becomes an issue, unsupported attributes could be explicitly set
 	// to null via d.Set() to ensure stale values are cleared.
-	return fmt.Errorf("gen2 backend not implemented yet")
+
+	instance, err := findInstance(d, meta)
+	if err != nil {
+		return err
+	}
+	if instance == nil || instance.ID == nil {
+		return fmt.Errorf("database instance not found")
+	}
+	d.SetId(*instance.ID)
+
+	tags, err := flex.GetTagsUsingCRN(meta, d.Id())
+	if err != nil {
+		log.Printf(
+			"Error on get of ibm Database tags (%s) tags: %s", d.Id(), err)
+	}
+	d.Set("tags", tags)
+
+	d.Set("name", instance.Name)
+	d.Set("status", instance.State)
+	d.Set("resource_group_id", instance.ResourceGroupID)
+	d.Set("location", instance.RegionID)
+	d.Set("guid", instance.GUID)
+	globalClient, err := meta.(conns.ClientSession).GlobalCatalogV1API()
+	if err != nil {
+		return err
+	}
+	options := globalcatalogv1.GetCatalogEntryOptions{
+
+		ID: instance.ResourceID,
+	}
+	service, _, err := globalClient.GetCatalogEntry(&options)
+	if err != nil {
+		return fmt.Errorf("[ERROR] Error retrieving service offering: %s", err)
+	}
+
+	d.Set("service", service.Name)
+
+	planOptions := globalcatalogv1.GetCatalogEntryOptions{
+
+		ID: instance.ResourcePlanID,
+	}
+	plan, _, err := globalClient.GetCatalogEntry(&planOptions)
+	if err != nil {
+		return fmt.Errorf("[ERROR] Error retrieving plan: %s", err)
+	}
+	d.Set("plan", plan.Name)
+
+	d.Set(flex.ResourceName, instance.Name)
+	d.Set(flex.ResourceCRN, instance.CRN)
+	d.Set(flex.ResourceStatus, instance.State)
+
+	rMgtClient, err := meta.(conns.ClientSession).ResourceManagerV2API()
+	if err != nil {
+		return err
+	}
+	GetResourceGroup := rg.GetResourceGroupOptions{
+		ID: instance.ResourceGroupID,
+	}
+	resourceGroup, resp, err := rMgtClient.GetResourceGroup(&GetResourceGroup)
+	if err != nil || resourceGroup == nil {
+		log.Printf("[ERROR] Error retrieving resource group: %s %s", err, resp)
+	}
+	if resourceGroup != nil && resourceGroup.Name != nil {
+		d.Set(flex.ResourceGroupName, resourceGroup.Name)
+	}
+
+	rcontroller, err := flex.GetBaseController(meta)
+	if err != nil {
+		return err
+	}
+	d.Set(flex.ResourceControllerURL, rcontroller+"/services/"+url.QueryEscape(*instance.CRN))
+
+	cloudDatabasesClient, err := meta.(conns.ClientSession).CloudDatabasesV5()
+	if err != nil {
+		return fmt.Errorf("[ERROR] Error getting database client settings: %s", err)
+	}
+
+	getDeploymentInfoOptions := &clouddatabasesv5.GetDeploymentInfoOptions{
+		ID: instance.ID,
+	}
+	getDeploymentInfoResponse, response, err := cloudDatabasesClient.GetDeploymentInfo(getDeploymentInfoOptions)
+	if err != nil {
+		if response.StatusCode == 404 {
+			return fmt.Errorf("[ERROR] The database instance was not found in the region set for the Provider, or the default of us-south. Specify the correct region in the provider definition, or create a provider alias for the correct region. %v", err)
+		}
+		return fmt.Errorf("[ERROR] Error getting database config while updating adminpassword for: %s with error %s", *instance.ID, err)
+	}
+
+	deployment := getDeploymentInfoResponse.Deployment
+	adminUser := deployment.AdminUsernames["database"]
+
+	d.Set("adminuser", adminUser)
+	d.Set("version", deployment.Version)
+
+	if deployment.PlatformOptions != nil {
+		d.Set("platform_options", flex.ExpandPlatformOptions(*deployment))
+	}
+
+	listDeploymentScalingGroupsOptions := &clouddatabasesv5.ListDeploymentScalingGroupsOptions{
+		ID: instance.ID,
+	}
+
+	groupList, _, err := cloudDatabasesClient.ListDeploymentScalingGroups(listDeploymentScalingGroupsOptions)
+	if err != nil {
+		return fmt.Errorf("[ERROR] Error getting database groups: %s", err)
+	}
+	d.Set("groups", flex.FlattenIcdGroups(groupList))
+
+	getAutoscalingConditionsOptions := &clouddatabasesv5.GetAutoscalingConditionsOptions{
+		ID:      instance.ID,
+		GroupID: core.StringPtr("member"),
+	}
+
+	autoscalingGroup, _, err := cloudDatabasesClient.GetAutoscalingConditions(getAutoscalingConditionsOptions)
+	if err != nil {
+		return fmt.Errorf("[ERROR] Error getting database autoscaling groups: %s\n Hint: Check if there is a mismatch between your database location and IBMCLOUD_REGION", err)
+	}
+	d.Set("auto_scaling", flattenAutoScalingGroup(*autoscalingGroup))
+
+	alEntry := &clouddatabasesv5.GetAllowlistOptions{
+		ID: instance.ID,
+	}
+
+	allowlist, _, err := cloudDatabasesClient.GetAllowlist(alEntry)
+
+	if err != nil {
+		return fmt.Errorf("[ERROR] Error getting database allowlist: %s", err)
+	}
+
+	d.Set("allowlist", flex.FlattenAllowlist(allowlist.IPAddresses))
+	return nil
 }
