@@ -58,7 +58,16 @@ In addition to all argument reference list, you can access the following attribu
    
    Nested scheme for `instances`:
     - `access_tags`  - (List) Access management tags associated for the instances.
-    - `availability_policy_host_failure` - (String) The availability policy for this virtual server instance. The action to perform if the compute host experiences a failure. 
+    - `availability_policy_host_failure` - (String) The availability policy for this virtual server instance. The action to perform if the compute host experiences a failure.
+	- `availability` - (List) The availability for this virtual server instance. **Note:** Spot instances are available only to accounts that have been granted special approval. Contact IBM Support if you are interested in using spot instances.
+		Nested schema for **availability**:
+		- `class` - (String) The availability class for the virtual server instance.- `spot`: The virtual server instance may be preempted.- `standard`: The virtual server instance will not be preempted.See [virtual server instance availability class](https://cloud.ibm.com/docs/vpc?topic=vpc-spot-instances-virtual-servers) for details.The enumerated values for this property may[expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) in the future. Allowable values are: `spot`, `standard`.
+	- `availability_policy` - (List) The availability policy for this virtual server instance.
+		Nested schema for **availability_policy**:
+		- `host_failure` - (String) The action to perform if the compute host experiences a failure:- `restart`: Restart the virtual server instance- `stop`: Leave the virtual server instance stopped. See [handling host failures](https://cloud.ibm.com/docs/vpc?topic=vpc-host-failure-recovery-policies) for details.The enumerated values for this property may[expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) in the future. Allowable values are: `restart`, `stop`.
+		- `preemption` - (String) The action to perform if the virtual server instance is preempted:- `delete`: Delete the virtual server instance- `stop`: Leave the virtual server instance stopped. See [virtual server instance preemption](https://cloud.ibm.com/docs/vpc?topic=vpc-spot-instances-virtual-servers#spot-instances-preemption) for details.The enumerated values for this property may[expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) in the future. Allowable values are: `delete`, `stop`.
+		
+		-> **Note:** This property is only applicable when availability class is set to `spot`.
     - `bandwidth` - (Integer) The total bandwidth (in megabits per second) shared across the instance's network interfaces and storage volumes
 	- `boot_volume`- (List) A list of boot volumes that were created for the instance.
 
@@ -299,6 +308,15 @@ In addition to all argument reference list, you can access the following attribu
 		- `more_info` - (String) Link to documentation about this status reason
 	- `total_volume_bandwidth` - (Integer) The amount of bandwidth (in megabits per second) allocated exclusively to instance storage volumes
     - `total_network_bandwidth` - (Integer) The amount of bandwidth (in megabits per second) allocated exclusively to instance network interfaces.
+	- `vcpu` - (List) The virtual server instance VCPU configuration.
+		Nested schema for **vcpu**:
+		- `architecture` - (String) The VCPU architecture.The enumerated values for this property may[expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) in the future. Allowable values are: `amd64`, `s390x`.
+		- `burst` - (List)
+			Nested schema for **burst**:
+			- `limit` - (Integer) The maximum percentage the virtual server instance will exceed its allocated share of VCPU time.The maximum value for this property may[expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) in the future. Allowable values are: `200`. The maximum value is `800`. The minimum value is `100`.
+		- `count` - (Integer) The number of VCPUs assigned.
+		- `manufacturer` - (String) The VCPU manufacturer.The enumerated values for this property may[expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) in the future. Allowable values are: `amd`, `ibm`, `intel`. 
+		- `percentage` - (Integer) The percentage of VCPU time allocated to the virtual server instance.The virtual server instance `vcpu.percentage` will be `100` when:- The virtual server instance `placement_target` is a dedicated host or dedicated  host group.- The virtual server instance `reservation_affinity.policy` is `disabled`. The maximum value is `100`. The minimum value is `1`.
 	- `volume_attachments`- (List) A list of volume attachments that were created for the instance.
 
 	  Nested scheme for `volume_attachments`: 

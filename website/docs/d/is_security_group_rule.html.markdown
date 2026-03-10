@@ -39,6 +39,8 @@ In addition to all argument references listed, you can access the following attr
 
 - `href` - (String) The URL for this security group rule.
 
+- `name` - (String) The name for this security group rule. The name must not be used by another rule in the security group.
+
 - `local` - (List) The local IP address or range of local IP addresses to which this rule will allow inbound traffic (or from which, for outbound traffic). A CIDR block of 0.0.0.0/0 allows traffic to all local IP addresses (or from all local IP addresses, for outbound rules).
 	
 	Nested scheme for `local`:

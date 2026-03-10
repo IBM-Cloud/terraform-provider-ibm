@@ -8,13 +8,13 @@ subcategory: "DrAutomation Service"
 
 # ibm_pdr_last_operation
 
-Provides a read-only data source to retrieve information about a pdr_last_operation. You can then reference the fields of the data source in other resources within the same configuration by using interpolation syntax.
+Retrieves the status of the last operation performed on the specified service instance, such as provisioning, updating, or deprovisioning.
 
 ## Example Usage
 
 ```hcl
 data "ibm_pdr_last_operation" "pdr_last_operation" {
-	instance_id = "crn:v1:staging:public:power-dr-automation:global:a/a123456fb04ceebfb4a9fd38c22334455:123456d3-1122-3344-b67d-4389b44b7bf9::"
+	instance_id = "123456d3-1122-3344-b67d-4389b44b7bf9"
 }
 ```
 
@@ -22,8 +22,8 @@ data "ibm_pdr_last_operation" "pdr_last_operation" {
 
 You can specify the following arguments for this data source.
 
-* `accept_language` - (Optional, String) The language requested for the return document.
-* `instance_id` - (Required, Forces new resource, String) instance id of instance to provision.
+* `accept_language` - (Optional, String) The language requested for the return document. (ex., en,it,fr,es,de,ja,ko,pt-BR,zh-HANS,zh-HANT)
+* `instance_id` - (Required, Forces new resource, String) ID of the service instance.
 
 ## Attribute Reference
 
@@ -50,4 +50,3 @@ After your data source is created, you can read values from the following attrib
 * `standby_ip_address` - (String) The IP address of the standby orchestrator VM.
 * `standby_status` - (String) The current state of the standby orchestrator.
 * `status` - (String) The current state of the primary orchestrator.
-

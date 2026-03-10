@@ -344,6 +344,50 @@ func TestAccIBMISInstanceTemplate_withAvailabilityPolicy(t *testing.T) {
 	})
 }
 
+func TestAccIBMISInstanceTemplateAvailabilityPolicy_basic(t *testing.T) {
+	randInt := acctest.RandIntRange(10, 100)
+
+	publicKey := strings.TrimSpace(`
+	ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQDVtuCfWKVGKaRmaRG6JQZY8YdxnDgGzVOK93IrV9R5Hl0JP1oiLLWlZQS2reAKb8lBqyDVEREpaoRUDjqDqXG8J/kR42FKN51su914pjSBc86wJ02VtT1Wm1zRbSg67kT+g8/T1jCgB5XBODqbcICHVP8Z1lXkgbiHLwlUrbz6OZkGJHo/M/kD1Eme8lctceIYNz/Ilm7ewMXZA4fsidpto9AjyarrJLufrOBl4MRVcZTDSJ7rLP982aHpu9pi5eJAjOZc7Og7n4ns3NFppiCwgVMCVUQbN5GBlWhZ1OsT84ZiTf+Zy8ew+Yg5T7Il8HuC7loWnz+esQPf0s3xhC/kTsGgZreIDoh/rxJfD67wKXetNSh5RH/n5BqjaOuXPFeNXmMhKlhj9nJ8scayx/wsvOGuocEIkbyJSLj3sLUU403OafgatEdnJOwbqg6rUNNF5RIjpJpL7eEWlKIi1j9LyhmPJ+fEO7TmOES82VpCMHpLbe4gf/MhhJ/Xy8DKh9s= root@ffd8363b1226
+	`)
+	vpcName := fmt.Sprintf("tf-testvpc%d", randInt)
+	subnetName := fmt.Sprintf("tf-testsubnet%d", randInt)
+	templateName := fmt.Sprintf("tf-testtemplate%d", randInt)
+	templateUpdateName := fmt.Sprintf("tf-testtemplateupdated%d", randInt)
+	sshKeyName := fmt.Sprintf("tf-testsshkey%d", randInt)
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMISInstanceTemplateDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMISInstanceTemplateConfigAvailabilityPolicy_Default(vpcName, subnetName, sshKeyName, publicKey, templateName),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(
+						"ibm_is_instance_template.instancetemplate1", "name", templateName),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_instance_template.instancetemplate1", "profile"),
+					resource.TestCheckResourceAttr("ibm_is_instance_template.instancetemplate1", "availability.0.class", "spot"),
+					resource.TestCheckResourceAttr("ibm_is_instance_template.instancetemplate1", "availability_policy.0.preemption", "stop"),
+					resource.TestCheckResourceAttr("ibm_is_instance_template.instancetemplate1", "availability_policy_host_failure", "restart"),
+				),
+			},
+			{
+				Config: testAccCheckIBMISInstanceTemplateConfigAvailabilityPolicy_Default(vpcName, subnetName, sshKeyName, publicKey, templateUpdateName),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(
+						"ibm_is_instance_template.instancetemplate1", "name", templateUpdateName),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_instance_template.instancetemplate1", "profile"),
+					resource.TestCheckResourceAttr("ibm_is_instance_template.instancetemplate1", "availability.0.class", "spot"),
+					resource.TestCheckResourceAttr("ibm_is_instance_template.instancetemplate1", "availability_policy.0.preemption", "stop"),
+					resource.TestCheckResourceAttr("ibm_is_instance_template.instancetemplate1", "availability_policy_host_failure", "restart"),
+				),
+			},
+		},
+	})
+}
+
 func TestAccIBMISInstanceTemplate_WithVolumeAttachment(t *testing.T) {
 	randInt := acctest.RandIntRange(10, 100)
 
@@ -479,12 +523,9 @@ func testAccCheckIBMISInstanceTemplateConfig(vpcName, subnetName, sshKeyName, pu
 	  public_key = "%s"
 	}
 
-	data "ibm_is_images" "is_images" {
-	}
-
 	resource "ibm_is_instance_template" "instancetemplate1" {
 	   name    = "%s"
-	   image   = data.ibm_is_images.is_images.images.0.id
+	   image   = "%s"
 	   profile = "bx2-8x32"
 	
 	   primary_network_interface {
@@ -497,7 +538,7 @@ func testAccCheckIBMISInstanceTemplateConfig(vpcName, subnetName, sshKeyName, pu
 	 }
 		
 	
-	`, vpcName, subnetName, sshKeyName, publicKey, templateName)
+	`, vpcName, subnetName, sshKeyName, publicKey, templateName, acc.IsImage)
 
 }
 func testAccCheckIBMISInstanceTemplateConComConfig(vpcName, subnetName, sshKeyName, publicKey, templateName, ccmode string, esb bool) string {
@@ -1603,4 +1644,120 @@ func testAccCheckIBMISInstanceTemplateConfig_QoSMode(vpcName, subnetName, sshKey
 	
 	`, vpcName, subnetName, sshKeyName, publicKey, templateName, qosMode)
 
+}
+
+// shared core
+func TestAccIBMISInstanceTemplate_vcpu(t *testing.T) {
+	randInt := acctest.RandIntRange(10, 100)
+
+	publicKey := strings.TrimSpace(`
+ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQDVtuCfWKVGKaRmaRG6JQZY8YdxnDgGzVOK93IrV9R5Hl0JP1oiLLWlZQS2reAKb8lBqyDVEREpaoRUDjqDqXG8J/kR42FKN51su914pjSBc86wJ02VtT1Wm1zRbSg67kT+g8/T1jCgB5XBODqbcICHVP8Z1lXkgbiHLwlUrbz6OZkGJHo/M/kD1Eme8lctceIYNz/Ilm7ewMXZA4fsidpto9AjyarrJLufrOBl4MRVcZTDSJ7rLP982aHpu9pi5eJAjOZc7Og7n4ns3NFppiCwgVMCVUQbN5GBlWhZ1OsT84ZiTf+Zy8ew+Yg5T7Il8HuC7loWnz+esQPf0s3xhC/kTsGgZreIDoh/rxJfD67wKXetNSh5RH/n5BqjaOuXPFeNXmMhKlhj9nJ8scayx/wsvOGuocEIkbyJSLj3sLUU403OafgatEdnJOwbqg6rUNNF5RIjpJpL7eEWlKIi1j9LyhmPJ+fEO7TmOES82VpCMHpLbe4gf/MhhJ/Xy8DKh9s= root@ffd8363b1226
+`)
+	vpcName := fmt.Sprintf("tf-testvpc%d", randInt)
+	subnetName := fmt.Sprintf("tf-testsubnet%d", randInt)
+	sshKeyName := fmt.Sprintf("tf-testsshkey%d", randInt)
+	prefix := fmt.Sprintf("tf-%d", randInt)
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMISInstanceTemplateDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMISInstanceTemplateVCPUConfig(vpcName, subnetName, sshKeyName, publicKey, prefix),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(
+						"ibm_is_instance_template.is_instance_template", "name", fmt.Sprintf("%s-ins", prefix)),
+					resource.TestCheckResourceAttr(
+						"ibm_is_instance_template.is_instance_template", "vcpu.0.percentage", "100"),
+					resource.TestCheckResourceAttr(
+						"ibm_is_instance_template.is_instance_template", "reservation_affinity.0.policy", "disabled"),
+					resource.TestCheckResourceAttr(
+						"ibm_is_instance_template.is_instance_template", "zone", acc.ISZoneName),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_instance_template.is_instance_template", "profile"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_instance_template.is_instance_template", "primary_network_attachment.0.name"),
+				),
+			},
+		},
+	})
+}
+
+func testAccCheckIBMISInstanceTemplateVCPUConfig(vpcName, subnetName, sshKeyName, publicKey, prefix string) string {
+	return fmt.Sprintf(`
+resource "ibm_is_vpc" "vpc1" {
+  name = "%s"
+}
+resource "ibm_is_subnet" "subnet1" {
+  name            = "%s"
+  vpc             = ibm_is_vpc.vpc1.id
+  zone            = "%s"
+  ipv4_cidr_block = "%s"
+}
+resource "ibm_is_ssh_key" "is_key" {
+  name       = "%s"
+  public_key = "%s"
+}
+data "ibm_is_images" "is_images" {
+}
+resource "ibm_is_instance_template" "is_instance_template" {
+  name    = "%s-ins"
+  image   = data.ibm_is_images.is_images.images.0.id
+  profile = "%s"
+  vpc     = ibm_is_vpc.vpc1.id
+  zone    = ibm_is_subnet.subnet1.zone
+  keys    = [ibm_is_ssh_key.is_key.id]
+  primary_network_attachment {
+    name = "%s-pna2"
+    virtual_network_interface {
+      subnet = ibm_is_subnet.subnet1.id
+    }
+  }
+  reservation_affinity {
+    policy = "disabled"
+  }
+  vcpu {
+    percentage = 100
+  }
+}
+`, vpcName, subnetName, acc.ISZoneName, acc.ISCIDR, sshKeyName, publicKey, prefix, acc.InstanceProfileName, prefix)
+}
+
+func testAccCheckIBMISInstanceTemplateConfigAvailabilityPolicy_Default(vpcName, subnetName, sshKeyName, publicKey, templateName string) string {
+	return fmt.Sprintf(`
+	resource "ibm_is_vpc" "testacc_vpc" {
+		name = "%s"
+	}
+	
+	resource "ibm_is_subnet" "testacc_subnet" {
+		name            = "%s"
+		vpc             = ibm_is_vpc.testacc_vpc.id
+		zone            = "%s"
+		ipv4_cidr_block = "%s"
+	}
+	
+	resource "ibm_is_ssh_key" "testacc_sshkey" {
+		name       = "%s"
+		public_key = "%s"
+	}
+
+	resource "ibm_is_instance_template" "instancetemplate1" {
+		name    = "%s"
+		image   = "%s"
+		profile = "%s"
+		availability {
+			class = "spot"
+		}
+		availability_policy_host_failure = "restart"
+		availability_policy {
+			preemption = "stop"
+		}
+		primary_network_interface {
+			subnet = ibm_is_subnet.testacc_subnet.id
+		}
+		vpc       = ibm_is_vpc.testacc_vpc.id
+		zone      = "%s"
+		keys      = [ibm_is_ssh_key.testacc_sshkey.id]
+	}`, vpcName, subnetName, acc.ISZoneName, acc.ISCIDR, sshKeyName, publicKey, templateName, acc.IsImage, acc.ISInstanceGPUProfileName, acc.ISZoneName)
 }

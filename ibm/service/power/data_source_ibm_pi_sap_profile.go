@@ -58,7 +58,7 @@ func DataSourceIBMPISAPProfile() *schema.Resource {
 			},
 			Attr_Memory: {
 				Computed:    true,
-				Description: "Amount of memory (in GB).",
+				Description: "Amount of memory (in GiB).",
 				Type:        schema.TypeInt,
 			},
 			Attr_SAPS: {

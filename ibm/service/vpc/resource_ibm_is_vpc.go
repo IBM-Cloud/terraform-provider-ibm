@@ -60,6 +60,7 @@ const (
 	isVPCSecurityGroupRuleRemote              = "remote"
 	isVPCSecurityGroupRuleType                = "type"
 	isVPCSecurityGroupRuleCode                = "code"
+	isVPCSecurityGroupRuleName                = "name"
 	isVPCSecurityGroupRulePortMax             = "port_max"
 	isVPCSecurityGroupRulePortMin             = "port_min"
 	isVPCSecurityGroupRuleProtocol            = "protocol"
@@ -1428,6 +1429,30 @@ func vpcGet(context context.Context, d *schema.ResourceData, meta interface{}, i
 						}
 						rules = append(rules, r)
 					}
+				case "*vpcv1.SecurityGroupRule":
+					{
+						rule := sgrule.(*vpcv1.SecurityGroupRule)
+						r := make(map[string]interface{})
+						r[isVPCSecurityGroupRuleDirection] = *rule.Direction
+						r[isVPCSecurityGroupRuleIPVersion] = *rule.IPVersion
+						if rule.Protocol != nil {
+							r[isVPCSecurityGroupRuleProtocol] = *rule.Protocol
+						}
+						r[isVPCSecurityGroupRuleID] = *rule.ID
+						remote, ok := rule.Remote.(*vpcv1.SecurityGroupRuleRemote)
+						if ok {
+							if remote != nil && reflect.ValueOf(remote).IsNil() == false {
+								if remote.ID != nil {
+									r[isVPCSecurityGroupRuleRemote] = remote.ID
+								} else if remote.Address != nil {
+									r[isVPCSecurityGroupRuleRemote] = remote.Address
+								} else if remote.CIDRBlock != nil {
+									r[isVPCSecurityGroupRuleRemote] = remote.CIDRBlock
+								}
+							}
+						}
+						rules = append(rules, r)
+					}
 
 				case "*vpcv1.SecurityGroupRuleSecurityGroupRuleProtocolTcpudp":
 					{
@@ -1775,7 +1800,7 @@ func vpcUpdate(context context.Context, d *schema.ResourceData, meta interface{}
 				updateVpcOptions.IfMatch = nil
 				_, _, nestederr := sess.UpdateVPCWithContext(context, updateVpcOptions)
 				if nestederr != nil {
-					tfErr := flex.TerraformErrorf(err, fmt.Sprintf("UpdateVPCWithContext(retry) failed: %s", err.Error()), "ibm_is_vpc", "update")
+					tfErr := flex.TerraformErrorf(nestederr, fmt.Sprintf("UpdateVPCWithContext(retry) failed: %s", nestederr.Error()), "ibm_is_vpc", "update")
 					log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 					return tfErr.GetDiag()
 				}

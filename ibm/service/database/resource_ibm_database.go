@@ -150,6 +150,7 @@ func ResourceIBMDatabaseInstance() *schema.Resource {
 			validateUsersDiff,
 			validateRemoteLeaderIDDiff,
 			validateVersionDiff,
+			validateAsyncRestoreDiff,
 		),
 
 		Importer: &schema.ResourceImporter{},
@@ -267,9 +268,10 @@ func ResourceIBMDatabaseInstance() *schema.Resource {
 				ValidateFunc: validate.InvokeValidator("ibm_database", "service_endpoints"),
 			},
 			"backup_id": {
-				Description: "The CRN of backup source database",
-				Type:        schema.TypeString,
-				Optional:    true,
+				Description:      "The CRN of backup source database",
+				Type:             schema.TypeString,
+				Optional:         true,
+				DiffSuppressFunc: flex.ApplyOnce,
 			},
 			"remote_leader_id": {
 				Description: "The CRN of leader database",
@@ -280,6 +282,12 @@ func ResourceIBMDatabaseInstance() *schema.Resource {
 				Description: "Option to skip the initial backup when promoting a read-only replica. Skipping the initial backup means that your replica becomes available more quickly, but there is no immediate backup available.",
 				Type:        schema.TypeBool,
 				Optional:    true,
+			},
+			"async_restore": {
+				Description:      "Option to support FAST PG Restore. Only applicable when restoring a PostgreSQL instance",
+				Type:             schema.TypeBool,
+				Optional:         true,
+				DiffSuppressFunc: flex.ApplyOnce,
 			},
 			"key_protect_instance": {
 				Description: "The CRN of Key protect instance",
@@ -935,6 +943,7 @@ type Params struct {
 	PITRDeploymentID    string  `json:"point_in_time_recovery_deployment_id,omitempty"`
 	PITRTimeStamp       *string `json:"point_in_time_recovery_time,omitempty"`
 	OfflineRestore      bool    `json:"offline_restore,omitempty"`
+	AsyncRestore        bool    `json:"async_restore,omitempty"`
 }
 
 type Group struct {
@@ -996,7 +1005,7 @@ func getDefaultScalingGroups(_service string, _plan string, _hostFlavor string, 
 	}
 
 	getDefaultScalingGroupsResponse, response, err := cloudDatabasesClient.GetDefaultScalingGroups(getDefaultScalingGroupsOptions)
-	if err != nil {
+	if err != nil && response != nil {
 		if response.StatusCode == 422 {
 			return groups, fmt.Errorf("%s is not available on multitenant", service)
 		}
@@ -1229,6 +1238,10 @@ func resourceIBMDatabaseInstanceCreate(context context.Context, d *schema.Resour
 		params.OfflineRestore = offlineRestore.(bool)
 	}
 
+	if asyncRestore, ok := d.GetOk("async_restore"); ok {
+		params.AsyncRestore = asyncRestore.(bool)
+	}
+
 	var initialNodeCount int
 	var sourceCRN string
 
@@ -1398,7 +1411,7 @@ func resourceIBMDatabaseInstanceCreate(context context.Context, d *schema.Resour
 		getDeploymentInfoResponse, response, err := cloudDatabasesClient.GetDeploymentInfo(getDeploymentInfoOptions)
 
 		if err != nil {
-			if response.StatusCode == 404 {
+			if response != nil && response.StatusCode == 404 {
 				return diag.FromErr(fmt.Errorf("[ERROR] The database instance was not found in the region set for the Provider, or the default of us-south. Specify the correct region in the provider definition, or create a provider alias for the correct region. %v", err))
 			}
 			return diag.FromErr(fmt.Errorf("[ERROR] Error getting database config while updating adminpassword for: %s with error %s", instanceID, err))
@@ -1692,7 +1705,7 @@ func resourceIBMDatabaseInstanceRead(context context.Context, d *schema.Resource
 	getDeploymentInfoResponse, response, err := cloudDatabasesClient.GetDeploymentInfo(getDeploymentInfoOptions)
 
 	if err != nil {
-		if response.StatusCode == 404 {
+		if response != nil && response.StatusCode == 404 {
 			return diag.FromErr(fmt.Errorf("[ERROR] The database instance was not found in the region set for the Provider, or the default of us-south. Specify the correct region in the provider definition, or create a provider alias for the correct region. %v", err))
 		}
 		return diag.FromErr(fmt.Errorf("[ERROR] Error getting database config while updating adminpassword for: %s with error %s", instanceID, err))
@@ -3194,6 +3207,17 @@ func validateRemoteLeaderIDDiff(_ context.Context, diff *schema.ResourceDiff, me
 	return nil
 }
 
+func validateAsyncRestoreDiff(_ context.Context, diff *schema.ResourceDiff, meta interface{}) (err error) {
+	_, asyncRestoreOk := diff.GetOk("async_restore")
+	service := diff.Get("service").(string)
+
+	if asyncRestoreOk && (service != "databases-for-postgresql") {
+		return fmt.Errorf("[ERROR] `async_restore` is only supported for `databases-for-postgresql` for Fast PG Restore")
+	}
+
+	return nil
+}
+
 func validateVersionDiff(_ context.Context, diff *schema.ResourceDiff, meta interface{}) (err error) {
 	instanceID := diff.Id()
 	oldVersion, newVersion := diff.GetChange("version")
@@ -3293,7 +3317,7 @@ func (u *DatabaseUser) Update(instanceID string, d *schema.ResourceData, meta in
 	updateUserResponse, response, err := cloudDatabasesClient.UpdateUser(updateUserOptions)
 
 	// user was found but an error occurs while triggering task
-	if err != nil || (response.StatusCode < 200 || response.StatusCode >= 300) {
+	if err != nil || (response != nil && (response.StatusCode < 200 || response.StatusCode >= 300)) {
 		return fmt.Errorf("[ERROR] UpdateUser (%s) failed %w\n%s", *updateUserOptions.Username, err, response)
 	}
 

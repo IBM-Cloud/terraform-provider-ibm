@@ -289,8 +289,16 @@ resource "ibm_is_instance_template" "instancetemplate1" {
 ```
 
 ## Argument reference
-Review the argument references that you can specify for your resource. 
-- `availability_policy_host_failure` - (Optional, String) The availability policy to use for this virtual server instance. The action to perform if the compute host experiences a failure. Supported values are `restart` and `stop`.
+Review the argument references that you can specify for your resource.
+- `availability` - (Optional, List) The availability for this virtual server instance. **Note:** Spot instances are available only to accounts that have been granted special approval. Contact IBM Support if you are interested in using spot instances.
+  Nested schema for **availability**:
+	- `class` - (Required, String) The availability class for the virtual server instance.- `spot`: The virtual server instance may be preempted.- `standard`: The virtual server instance will not be preempted.See [virtual server instance availability class](https://cloud.ibm.com/docs/vpc?topic=vpc-spot-instances-virtual-servers) for details.The enumerated values for this property may[expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) in the future. Allowable values are: `spot`, `standard`.
+- `availability_policy` - (Optional, List) The availability policy for this virtual server instance.
+  Nested schema for **availability_policy**:
+	- `preemption` - (Required, String) The action to perform if the virtual server instance is preempted:- `delete`: Delete the virtual server instance- `stop`: Leave the virtual server instance stopped. See [virtual server instance preemption](https://cloud.ibm.com/docs/vpc?topic=vpc-spot-instances-virtual-servers#spot-instances-preemption) for details.The enumerated values for this property may [expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) in the future. Allowable values are: [ `delete`, `stop`. ]
+  
+ -> **Note:** This property is only applicable when availability class is set to `spot`.
+- `availability_policy_host_failure` - (Optional, String) The availability policy to use for this virtual server instance. The action to perform if the compute host experiences a failure. Supported values are `restart` and `stop`. Use availability_policy.0.host_failure instead. Existing configurations can continue using this attribute, switching attributes with the same value will not trigger replacement.
 
 - `boot_volume` - (Optional, List) A nested block describes the boot volume configuration for the template.
 
@@ -497,6 +505,9 @@ Review the argument references that you can specify for your resource.
     - `id` - The unique identifier for this reservation
 - `resource_group` - (Optional, Forces new resource, String) The resource group ID.
 - `total_volume_bandwidth` - (Optional, int) The amount of bandwidth (in megabits per second) allocated exclusively to instance storage volumes
+- `vcpu` - (Optional, List)  The virtual server instance VCPU configuration.
+  Nested schema for **vcpu**:
+	- `percentage` - (Optional, Integer) The percentage of VCPU clock cycles allocated to the instance.The virtual server instance `vcpu.percentage` must be `100` when:- The virtual server instance `placement_target` is a dedicated host or dedicated  host group.- The virtual server instance `reservation_affinity.policy` is not `disabled`.If unspecified, the default for `vcpu_percentage` from the profile will be used.
 - `volume_attachments` - (Optional, Force new resource, List) A nested block describes the storage volume configuration for the template. 
 
   Nested scheme for `volume_attachments`:

@@ -8,14 +8,14 @@ subcategory: "DrAutomation Service"
 
 # ibm_pdr_get_powervs_workspace
 
-Provides a read-only data source to retrieve information about a pdr_get_powervs_workspace. You can then reference the fields of the data source in other resources within the same configuration by using interpolation syntax.
+Retrieves the power virtual server workspaces for primary and standby orchestrator based on location id.
 
 ## Example Usage
 
 ```hcl
 data "ibm_pdr_get_powervs_workspace" "pdr_get_powervs_workspace" {
-	instance_id = "crn:v1:staging:public:power-dr-automation:global:a/a123456fb04ceebfb4a9fd38c22334455:123456d3-1122-3344-b67d-4389b44b7bf9::"
-	location_id = "location_id"
+	instance_id = "123456d3-1122-3344-b67d-4389b44b7bf9"
+	location_id = "syd04"
 }
 ```
 
@@ -23,8 +23,8 @@ data "ibm_pdr_get_powervs_workspace" "pdr_get_powervs_workspace" {
 
 You can specify the following arguments for this data source.
 
-* `instance_id` - (Required, Forces new resource, String) instance id of instance to provision.
-* `location_id` - (Required, String) Location ID value.
+* `instance_id` - (Required, Forces new resource, String) ID of the service instance.
+* `location_id` - (Required, String) Location ID value. You can use datsource ibm_pdr_get_dr_locations to fetch location id.
 
 ## Attribute Reference
 
@@ -60,4 +60,3 @@ Nested schema for **dr_workspaces**:
 		* `url` - (String) The URL endpoint to access the DR location.
 	* `name` - (String) The name of the DR workspace.
 	* `status` - (String) The status of the DR workspace.
-

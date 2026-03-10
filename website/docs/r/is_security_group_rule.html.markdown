@@ -8,7 +8,7 @@ description: |-
 ---
 
 # ibm_is_security_group_rule
-Create, update, or delete a security group rule. When you want to create a security group and security group rule for a virtual server instance in your VPC, you must create these resources in a specific order to avoid errors during the creation of your virtual server instance. For more information, about security group rule, see [security in your VPC](https://cloud.ibm.com/docs/vpc?topic=vpc-security-in-your-vpc).
+Create, update, or delete a security group rule. When you want to create a security group and security group rule for a virtual server instance in your VPC, you must create these resources in a specific order to avoid errors during the creation of your virtual server instance. For more information, about security group rule, see [security in your VPC](https://cloud.ibm.com/docs/vpc?topic=vpc-security-in-your-vpc). Protocol `all` in older versions is replaced with `icmp_tcp_udp` from `1.87.0-beta1`.
 
 **Note:** 
 VPC infrastructure services are a regional specific based endpoint, by default targets to `us-south`. Please make sure to target right region in the provider block as shown in the `provider.tf` file, if VPC service is created in region other than `us-south`.
@@ -38,6 +38,7 @@ resource "ibm_is_security_group_rule" "example" {
   group     = ibm_is_security_group.example.id
   direction = "inbound"
   remote    = "127.0.0.1"
+  name      = "my-test-sg-rule-name" // name for the security group rule
 }
 
 resource "ibm_is_security_group_rule" "example1" {
@@ -80,13 +81,6 @@ resource "ibm_is_security_group_rule" "example3" {
   protocol  = "tcp"
   port_min = 8080
   port_max = 8080
-}
-
-resource "ibm_is_security_group_rule" "example4" {
-  group      = ibm_is_security_group.example_security_group.id
-  direction  = "inbound"
-  remote     = "127.0.0.1"
-  protocol   = "any"
 }
 
 resource "ibm_is_security_group_rule" "example_security_group_rule_icmp" {
@@ -134,6 +128,7 @@ Review the argument references that you can specify for your resource.
   Nested scheme for `icmp`:
   - `type`- (Optional, Integer) The ICMP traffic type to allow. Valid values from 0 to 254. If unspecified, all codes are allowed. 
   - `code` - (Optional, Integer) The ICMP traffic code to allow. Valid values from 0 to 255. If unspecified, all codes are allowed.
+- `name` - (String) The name for this security group rule. The name must not be used by another rule in the security group.
 - `port_min`- (Required, Integer) The TCP port range that includes the minimum bound. Valid values are from 1 to 65535.
 - `port_max`- (Required, Integer) The TCP port range that includes the maximum bound. Valid values are from 1 to 65535.
 - `protocol` - (Optional, String) The name of the network protocol.
@@ -150,7 +145,7 @@ Review the argument references that you can specify for your resource.
   - `port_min`- (Required, Integer) The UDP port range that includes minimum bound. Valid values are from 1 to 65535.
   - `port_max`- (Required, Integer) The UDP port range that includes maximum bound. Valid values are from 1 to 65535.
 
-~> **Note:** Note: If no `protocol` block is specified; it creates a rule with protocol `icmp_tcp_udp`.
+~> **Note:** Note: If no `protocol` block is specified; it creates a rule with protocol `icmp_tcp_udp`. Protocol `all` in older versions is replaced with `icmp_tcp_udp` from `1.87.0-beta1`.
 
 ## Attribute reference
 In addition to all argument reference list, you can access the following attribute reference after your resource is created.

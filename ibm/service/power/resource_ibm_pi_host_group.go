@@ -51,12 +51,14 @@ func ResourceIBMPIHostGroup() *schema.Resource {
 					Schema: map[string]*schema.Schema{
 						Attr_DisplayName: {
 							Description:  "Name of the host chosen by the user.",
+							ForceNew:     true,
 							Required:     true,
 							Type:         schema.TypeString,
 							ValidateFunc: validation.NoZeroValues,
 						},
 						Attr_SysType: {
 							Description:  "System type.",
+							ForceNew:     true,
 							Required:     true,
 							Type:         schema.TypeString,
 							ValidateFunc: validation.NoZeroValues,
@@ -64,6 +66,7 @@ func ResourceIBMPIHostGroup() *schema.Resource {
 						Attr_UserTags: {
 							Description: "List of user tags attached to the resource.",
 							Elem:        &schema.Schema{Type: schema.TypeString},
+							ForceNew:    true,
 							Optional:    true,
 							Set:         schema.HashString,
 							Type:        schema.TypeSet,
@@ -225,30 +228,12 @@ func resourceIBMPIHostGroupUpdate(ctx context.Context, d *schema.ResourceData, m
 		return diag.FromErr(err)
 	}
 	client := instance.NewIBMPIHostGroupsClient(ctx, sess, cloudInstanceID)
-	hostGroupUpdateBody := models.HostGroupShareOp{}
-	hasChange := false
+
 	if d.HasChange(Arg_Remove) {
-		hostGroupUpdateBody.Remove = d.Get(Arg_Remove).(string)
-		hasChange = true
-	}
-
-	if d.HasChange(Arg_Secondaries) {
-		oldSecondaries, newSecondaries := d.GetChange(Arg_Secondaries)
-		if len(oldSecondaries.([]interface{})) == len(newSecondaries.([]interface{})) {
-			return diag.FromErr(fmt.Errorf("change in place not supported for: %v", Arg_Secondaries))
+		removeBody := models.HostGroupShareOp{
+			Remove: d.Get(Arg_Remove).(string),
 		}
-		var add []*models.Secondary
-		for _, v := range d.Get(Arg_Secondaries).([]interface{}) {
-			secData := v.(map[string]interface{})
-			addItem := secondaryMapToSecondary(secData)
-			add = append(add, addItem)
-		}
-		hostGroupUpdateBody.Add = add
-		hasChange = true
-	}
-
-	if hasChange {
-		_, err := client.UpdateHostGroup(&hostGroupUpdateBody, hostGroupID)
+		_, err := client.UpdateHostGroup(&removeBody, hostGroupID)
 		if err != nil {
 			if strings.Contains(err.Error(), NotFound) {
 				d.SetId("")
@@ -256,6 +241,53 @@ func resourceIBMPIHostGroupUpdate(ctx context.Context, d *schema.ResourceData, m
 			}
 			return diag.FromErr(err)
 		}
+	}
+
+	if d.HasChange(Arg_Secondaries) {
+		oldSecondaries, newSecondaries := d.GetChange(Arg_Secondaries)
+		oldSet := oldSecondaries.(*schema.Set)
+		newSet := newSecondaries.(*schema.Set)
+
+		// Remove secondaries that are no longer in the set.
+		// API accepts one removal at a time, so loop individually.
+		removed := oldSet.Difference(newSet)
+		for _, v := range removed.List() {
+			secData := v.(map[string]any)
+			workspaceID := secData[Attr_Workspace].(string)
+			removeBody := models.HostGroupShareOp{
+				Remove: workspaceID,
+			}
+			_, err := client.UpdateHostGroup(&removeBody, hostGroupID)
+			if err != nil {
+				if strings.Contains(err.Error(), NotFound) {
+					d.SetId("")
+					return nil
+				}
+				return diag.FromErr(err)
+			}
+		}
+		// Add secondaries that are new in the set.
+		added := newSet.Difference(oldSet)
+		if added.Len() > 0 {
+			var add []*models.Secondary
+			for _, v := range added.List() {
+				secData := v.(map[string]any)
+				addItem := secondaryMapToSecondary(secData)
+				add = append(add, addItem)
+			}
+			addBody := models.HostGroupShareOp{
+				Add: add,
+			}
+			_, err := client.UpdateHostGroup(&addBody, hostGroupID)
+			if err != nil {
+				if strings.Contains(err.Error(), NotFound) {
+					d.SetId("")
+					return nil
+				}
+				return diag.FromErr(err)
+			}
+		}
+
 	}
 
 	return resourceIBMPIHostGroupRead(ctx, d, meta)

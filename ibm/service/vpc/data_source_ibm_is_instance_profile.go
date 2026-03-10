@@ -32,7 +32,38 @@ func DataSourceIBMISInstanceProfile() *schema.Resource {
 				Type:     schema.TypeString,
 				Required: true,
 			},
-
+			// spot changes
+			"availability_class": &schema.Schema{
+				Type:     schema.TypeList,
+				Computed: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"default": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The default availability class for an instance with this profile.",
+						},
+						"type": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The type for this profile field.",
+						},
+						"values": &schema.Schema{
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "The permitted values for this profile field.",
+							Elem: &schema.Schema{
+								Type: schema.TypeString,
+							},
+						},
+						"value": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The value for this profile field.",
+						},
+					},
+				},
+			},
 			// cluster changes
 			"cluster_network_attachment_count": &schema.Schema{
 				Type:     schema.TypeList,
@@ -433,6 +464,37 @@ func DataSourceIBMISInstanceProfile() *schema.Resource {
 					},
 				},
 			},
+			"network_bandwidth_mode": {
+				Type:     schema.TypeList,
+				Computed: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"type": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The type for this profile field.",
+						},
+						"value": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The value for this profile field.",
+						},
+						"default": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The default value for this profile field.",
+						},
+						"values": {
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "The permitted values for this profile field.",
+							Elem: &schema.Schema{
+								Type: schema.TypeString,
+							},
+						},
+					},
+				},
+			},
 			"disks": {
 				Type:        schema.TypeList,
 				Computed:    true,
@@ -780,6 +842,55 @@ func DataSourceIBMISInstanceProfile() *schema.Resource {
 					},
 				},
 			},
+
+			// shared core changes
+
+			"vcpu_burst_limit": &schema.Schema{
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "The permitted value for VCPU burst limit percentage for an instance with this profile.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"type": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The type for this profile field.",
+						},
+						"value": &schema.Schema{
+							Type:        schema.TypeInt,
+							Computed:    true,
+							Description: "The value for this profile field.",
+						},
+					},
+				},
+			},
+			"vcpu_percentage": &schema.Schema{
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "The permitted values for VCPU percentage for an instance with this profile.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"default": &schema.Schema{
+							Type:        schema.TypeInt,
+							Computed:    true,
+							Description: "The default value for this profile field.",
+						},
+						"type": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The type for this profile field.",
+						},
+						"values": &schema.Schema{
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "The permitted values for this profile field.",
+							Elem: &schema.Schema{
+								Type: schema.TypeInt,
+							},
+						},
+					},
+				},
+			},
 			"volume_bandwidth_qos_modes": &schema.Schema{
 				Type:     schema.TypeList,
 				Computed: true,
@@ -838,6 +949,14 @@ func instanceProfileGet(context context.Context, d *schema.ResourceData, meta in
 	}
 	// For lack of anything better, compose our id from profile name.
 	d.SetId(*profile.Name)
+	// spot changes
+	availabilityClassMap, err := DataSourceIBMIsInstanceProfilesInstanceProfileAvailabilityClassToMap(profile.AvailabilityClass)
+	if err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting name: %s", err), "(Data) ibm_is_instance_profile", "read", "availability_class-to-map").GetDiag()
+	}
+	if err = d.Set("availability_class", []map[string]interface{}{availabilityClassMap}); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting name: %s", err), "(Data) ibm_is_instance_profile", "read", "set-availability_class").GetDiag()
+	}
 	if err = d.Set(isInstanceProfileName, *profile.Name); err != nil {
 		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting name: %s", err), "(Data) ibm_is_instance_profile", "read", "set-name").GetDiag()
 	}
@@ -956,6 +1075,15 @@ func instanceProfileGet(context context.Context, d *schema.ResourceData, meta in
 			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting total_volume_bandwidth: %s", err), "(Data) ibm_is_instance_profile", "read", "set-total_volume_bandwidth").GetDiag()
 		}
 	}
+	if profile.NetworkBandwidthMode != nil {
+		bandwidthList, err := dataSourceInstanceProfileFlattenNetworkBandwidthMode(*profile.NetworkBandwidthMode.(*vpcv1.InstanceProfileNetworkBandwidthMode))
+		if err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting network_bandwidth_mode: %s", err), "(Data) ibm_is_instance_profile", "read", "set-network_bandwidth_mode").GetDiag()
+		}
+		if err = d.Set("network_bandwidth_mode", bandwidthList); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting network_bandwidth_mode: %s", err), "(Data) ibm_is_instance_profile", "read", "set-network_bandwidth_mode").GetDiag()
+		}
+	}
 	if profile.Disks != nil {
 		err = d.Set("disks", dataSourceInstanceProfileFlattenDisks(profile.Disks))
 		if err != nil {
@@ -1011,7 +1139,28 @@ func instanceProfileGet(context context.Context, d *schema.ResourceData, meta in
 			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting vcpu_manufacturer: %s", err), "(Data) ibm_is_instance_profile", "read", "set-vcpu_manufacturer").GetDiag()
 		}
 	}
-
+	if profile.VcpuBurstLimit != nil {
+		vcpuBurstLimit := []map[string]interface{}{}
+		vcpuBurstLimitMap, err := DataSourceIBMIsInstanceProfileInstanceProfileVcpuBurstLimitToMap(profile.VcpuBurstLimit.(*vpcv1.InstanceProfileVcpuBurstLimit))
+		if err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_instance_profile", "read", "vcpu_burst_limit-to-map").GetDiag()
+		}
+		vcpuBurstLimit = append(vcpuBurstLimit, vcpuBurstLimitMap)
+		if err = d.Set("vcpu_burst_limit", vcpuBurstLimit); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting vcpu_burst_limit: %s", err), "(Data) ibm_is_instance_profile", "read", "set-vcpu_burst_limit").GetDiag()
+		}
+	}
+	if profile.VcpuPercentage != nil {
+		vcpuPercentage := []map[string]interface{}{}
+		vcpuPercentageMap, err := DataSourceIBMIsInstanceProfileInstanceProfileVcpuPercentageToMap(profile.VcpuPercentage)
+		if err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_instance_profile", "read", "vcpu_percentage-to-map").GetDiag()
+		}
+		vcpuPercentage = append(vcpuPercentage, vcpuPercentageMap)
+		if err = d.Set("vcpu_percentage", vcpuPercentage); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting vcpu_percentage: %s", err), "(Data) ibm_is_instance_profile", "read", "set-vcpu_percentage").GetDiag()
+		}
+	}
 	if profile.VcpuCount != nil {
 		err = d.Set("vcpu_count", dataSourceInstanceProfileFlattenVcpuCount(*profile.VcpuCount.(*vpcv1.InstanceProfileVcpu)))
 		if err != nil {
@@ -1542,6 +1691,36 @@ func dataSourceInstanceProfileTotalVolumeBandwidthToMap(bandwidthItem vpcv1.Inst
 	return bandwidthMap
 }
 
+func dataSourceInstanceProfileFlattenNetworkBandwidthMode(result vpcv1.InstanceProfileNetworkBandwidthMode) (bandwidthList []map[string]interface{}, err error) {
+	bandwidthList = []map[string]interface{}{}
+	finalMap, err := dataSourceInstanceProfileTotalNetworkBandwidthModeToMap(result)
+	if err != nil {
+		return bandwidthList, err
+	}
+	bandwidthList = append(bandwidthList, finalMap)
+
+	return bandwidthList, err
+}
+
+func dataSourceInstanceProfileTotalNetworkBandwidthModeToMap(bandwidthItem vpcv1.InstanceProfileNetworkBandwidthMode) (bandwidthMap map[string]interface{}, err error) {
+	bandwidthMap = map[string]interface{}{}
+
+	if bandwidthItem.Type != nil {
+		bandwidthMap["type"] = bandwidthItem.Type
+	}
+	if bandwidthItem.Value != nil {
+		bandwidthMap["value"] = bandwidthItem.Value
+	}
+	if bandwidthItem.Default != nil {
+		bandwidthMap["default"] = bandwidthItem.Default
+	}
+	if bandwidthItem.Values != nil {
+		bandwidthMap["values"] = bandwidthItem.Values
+	}
+
+	return bandwidthMap, err
+}
+
 func dataSourceInstanceProfileFlattenNumaCount(result vpcv1.InstanceProfileNumaCount) (finalList []map[string]interface{}) {
 	finalList = []map[string]interface{}{}
 	finalMap := dataSourceInstanceProfileNumaCountToMap(result)
@@ -1649,5 +1828,59 @@ func DataSourceIBMIsInstanceProfileClusterNetworkProfileReferenceToMap(model *vp
 	modelMap["href"] = *model.Href
 	modelMap["name"] = *model.Name
 	modelMap["resource_type"] = *model.ResourceType
+	return modelMap, nil
+}
+
+func DataSourceIBMIsInstanceProfileInstanceProfileAvailabilityClassToMap(model vpcv1.InstanceProfileAvailabilityClassIntf) (map[string]interface{}, error) {
+	if _, ok := model.(*vpcv1.InstanceProfileAvailabilityClassEnum); ok {
+		return DataSourceIBMIsInstanceProfileInstanceProfileAvailabilityClassEnumToMap(model.(*vpcv1.InstanceProfileAvailabilityClassEnum))
+	} else if _, ok := model.(*vpcv1.InstanceProfileAvailabilityClassFixed); ok {
+		return DataSourceIBMIsInstanceProfileInstanceProfileAvailabilityClassFixedToMap(model.(*vpcv1.InstanceProfileAvailabilityClassFixed))
+	} else if _, ok := model.(*vpcv1.InstanceProfileAvailabilityClass); ok {
+		modelMap := make(map[string]interface{})
+		model := model.(*vpcv1.InstanceProfileAvailabilityClass)
+		if model.Default != nil {
+			modelMap["default"] = *model.Default
+		}
+		if model.Type != nil {
+			modelMap["type"] = *model.Type
+		}
+		if model.Values != nil {
+			modelMap["values"] = model.Values
+		}
+		if model.Value != nil {
+			modelMap["value"] = *model.Value
+		}
+		return modelMap, nil
+	} else {
+		return nil, fmt.Errorf("Unrecognized vpcv1.InstanceProfileAvailabilityClassIntf subtype encountered")
+	}
+}
+
+func DataSourceIBMIsInstanceProfileInstanceProfileAvailabilityClassEnumToMap(model *vpcv1.InstanceProfileAvailabilityClassEnum) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	modelMap["default"] = *model.Default
+	return modelMap, nil
+}
+
+func DataSourceIBMIsInstanceProfileInstanceProfileVcpuBurstLimitToMap(model *vpcv1.InstanceProfileVcpuBurstLimit) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	modelMap["type"] = *model.Type
+	modelMap["value"] = flex.IntValue(model.Value)
+	return modelMap, nil
+}
+
+func DataSourceIBMIsInstanceProfileInstanceProfileVcpuPercentageToMap(model *vpcv1.InstanceProfileVcpuPercentage) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	modelMap["default"] = flex.IntValue(model.Default)
+	modelMap["type"] = *model.Type
+	modelMap["values"] = model.Values
+	return modelMap, nil
+}
+
+func DataSourceIBMIsInstanceProfileInstanceProfileAvailabilityClassFixedToMap(model *vpcv1.InstanceProfileAvailabilityClassFixed) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	modelMap["type"] = *model.Type
+	modelMap["value"] = *model.Value
 	return modelMap, nil
 }

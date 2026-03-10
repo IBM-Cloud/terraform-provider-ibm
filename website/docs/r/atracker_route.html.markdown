@@ -14,7 +14,6 @@ Create, update, and delete atracker_routes with this resource.
 
 ```hcl
 resource "ibm_atracker_route" "atracker_route_instance" {
-  managed_by = "enterprise"
   name = "my-route"
   rules {
 		target_ids = [ "c3af557f-fb0e-4476-85c3-0889e7fe7bc4" ]

@@ -83,6 +83,7 @@ In addition to all argument references listed, you can access the following attr
 		- `direction` - (String) The direction of traffic to enforce, either `inbound` or `outbound`.
 		- `href` - (String) The URL for this security group rule.
 		- `id` - (String) The unique identifier for this security group rule.
+		- `name` - (String) The name for this security group rule. The name must not be used by another rule in the security group.
 		- `ip_version` - (String) The IP version to enforce. The format of `remote.address` or `remote.cidr_block` must match this property, if they are used. Alternatively, if `remote` references a security group, then this rule only applies to IP addresses (network interfaces) in that group matching this IP version.
 		- `local` - (List) The local IP address or range of local IP addresses to which this rule will allow inbound traffic (or from which, for outbound traffic). A CIDR block of 0.0.0.0/0 allows traffic to all local IP addresses (or from all local IP addresses, for outbound rules).
 			

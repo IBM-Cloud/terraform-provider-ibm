@@ -55,6 +55,7 @@ func TestAccIBMISSecurityGroupDatasource_Filters(t *testing.T) {
 					resource.TestCheckResourceAttr(dataSourceName, "vpc_name", vpcname),
 					resource.TestCheckResourceAttrSet(dataSourceName2, "vpc"),
 					resource.TestCheckResourceAttrSet(dataSourceName2, "rules.#"),
+					resource.TestCheckResourceAttrSet(dataSourceName2, "rules.name"),
 					resource.TestCheckResourceAttrSet(dataSourceName2, "tags.#"),
 					resource.TestCheckResourceAttr(dataSourceName2, "vpc_name", vpcname2),
 				),

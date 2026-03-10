@@ -25,27 +25,27 @@ func DataSourceIbmCodeEngineAllowedOutboundDestination() *schema.Resource {
 		ReadContext: dataSourceIbmCodeEngineAllowedOutboundDestinationRead,
 
 		Schema: map[string]*schema.Schema{
-			"project_id": {
+			"project_id": &schema.Schema{
 				Type:        schema.TypeString,
 				Required:    true,
 				Description: "The ID of the project.",
 			},
-			"name": {
+			"name": &schema.Schema{
 				Type:        schema.TypeString,
 				Required:    true,
 				Description: "The name of your allowed outbound destination.",
 			},
-			"entity_tag": {
+			"entity_tag": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The version of the allowed outbound destination, which is used to achieve optimistic locking.",
 			},
-			"type": {
+			"type": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "Specify the type of the allowed outbound destination. Allowed types are: 'cidr_block'.",
 			},
-			"cidr_block": {
+			"cidr_block": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The IPv4 address range.",

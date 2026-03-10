@@ -27,6 +27,7 @@ func TestAccIBMIsSecurityGroupRulesDataSourceBasic(t *testing.T) {
 					resource.TestCheckResourceAttrSet("data.ibm_is_security_group_rules.example", "rules.0.direction"),
 					resource.TestCheckResourceAttrSet("data.ibm_is_security_group_rules.example", "rules.0.href"),
 					resource.TestCheckResourceAttrSet("data.ibm_is_security_group_rules.example", "rules.0.ip_version"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_security_group_rules.example", "rules.0.name"),
 					resource.TestCheckResourceAttrSet("data.ibm_is_security_group_rules.example", "rules.0.protocol"),
 					resource.TestCheckResourceAttrSet("data.ibm_is_security_group_rules.example", "rules.0.remote.#"),
 				),

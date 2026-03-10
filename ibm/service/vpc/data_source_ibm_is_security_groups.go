@@ -128,6 +128,11 @@ func DataSourceIBMIsSecurityGroups() *schema.Resource {
 										Computed:    true,
 										Description: "The name of the network protocol.",
 									},
+									"name": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The name for this security group rule. The name is unique across all rules in the security group.",
+									},
 									"local": &schema.Schema{
 										Type:        schema.TypeList,
 										Computed:    true,
@@ -486,6 +491,9 @@ func dataSourceSecurityGroupCollectionSecurityGroupsRulesToMap(rulesItem vpcv1.S
 			if securityGroupRule.Href != nil {
 				resultMap["href"] = securityGroupRule.Href
 			}
+			if securityGroupRule.Name != nil {
+				resultMap["name"] = securityGroupRule.Name
+			}
 			if securityGroupRule.IPVersion != nil {
 				resultMap["ip_version"] = securityGroupRule.IPVersion
 			}
@@ -523,6 +531,9 @@ func dataSourceSecurityGroupCollectionSecurityGroupsRulesToMap(rulesItem vpcv1.S
 			if securityGroupRule.Protocol != nil {
 				resultMap["protocol"] = securityGroupRule.Protocol
 			}
+			if securityGroupRule.Name != nil {
+				resultMap["name"] = securityGroupRule.Name
+			}
 			if securityGroupRule.Remote != nil {
 				remoteList := []map[string]interface{}{}
 				remoteMap := dataSourceSecurityGroupsRemoteToMap(*securityGroupRule.Remote.(*vpcv1.SecurityGroupRuleRemote))
@@ -539,6 +550,40 @@ func dataSourceSecurityGroupCollectionSecurityGroupsRulesToMap(rulesItem vpcv1.S
 	case "*vpcv1.SecurityGroupRuleProtocolIcmptcpudp":
 		{
 			securityGroupRule := rulesItem.(*vpcv1.SecurityGroupRuleProtocolIcmptcpudp)
+			if securityGroupRule.ID != nil {
+				resultMap["id"] = securityGroupRule.ID
+			}
+			if securityGroupRule.Direction != nil {
+				resultMap["direction"] = securityGroupRule.Direction
+			}
+			if securityGroupRule.Href != nil {
+				resultMap["href"] = securityGroupRule.Href
+			}
+			if securityGroupRule.IPVersion != nil {
+				resultMap["ip_version"] = securityGroupRule.IPVersion
+			}
+			if securityGroupRule.Protocol != nil {
+				resultMap["protocol"] = securityGroupRule.Protocol
+			}
+			if securityGroupRule.Name != nil {
+				resultMap["name"] = securityGroupRule.Name
+			}
+			if securityGroupRule.Remote != nil {
+				remoteList := []map[string]interface{}{}
+				remoteMap := dataSourceSecurityGroupsRemoteToMap(*securityGroupRule.Remote.(*vpcv1.SecurityGroupRuleRemote))
+				remoteList = append(remoteList, remoteMap)
+				resultMap["remote"] = remoteList
+			}
+			if securityGroupRule.Local != nil {
+				localList := []map[string]interface{}{}
+				localMap := dataSourceSecurityGroupsLocalToMap(*securityGroupRule.Local.(*vpcv1.SecurityGroupRuleLocal))
+				localList = append(localList, localMap)
+				resultMap["local"] = localList
+			}
+		}
+	case "*vpcv1.SecurityGroupRule":
+		{
+			securityGroupRule := rulesItem.(*vpcv1.SecurityGroupRule)
 			if securityGroupRule.ID != nil {
 				resultMap["id"] = securityGroupRule.ID
 			}
@@ -585,6 +630,9 @@ func dataSourceSecurityGroupCollectionSecurityGroupsRulesToMap(rulesItem vpcv1.S
 			if securityGroupRule.Protocol != nil {
 				resultMap["protocol"] = securityGroupRule.Protocol
 			}
+			if securityGroupRule.Name != nil {
+				resultMap["name"] = securityGroupRule.Name
+			}
 			if securityGroupRule.Href != nil {
 				resultMap["href"] = securityGroupRule.Href
 			}
@@ -625,6 +673,9 @@ func dataSourceSecurityGroupCollectionSecurityGroupsRulesToMap(rulesItem vpcv1.S
 			}
 			if securityGroupRule.Protocol != nil {
 				resultMap["protocol"] = securityGroupRule.Protocol
+			}
+			if securityGroupRule.Name != nil {
+				resultMap["name"] = securityGroupRule.Name
 			}
 			if securityGroupRule.Href != nil {
 				resultMap["href"] = securityGroupRule.Href

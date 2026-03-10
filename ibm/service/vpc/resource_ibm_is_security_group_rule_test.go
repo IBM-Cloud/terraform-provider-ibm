@@ -121,6 +121,11 @@ func testAccCheckIBMISSecurityGroupRuleExists(n, securityGroupRuleID string) res
 				sgr := foundSecurityGroupRule.(*vpcv1.SecurityGroupRuleProtocolIndividual)
 				securityGroupRuleID = *sgr.ID
 			}
+		case "*vpcv1.SecurityGroupRule":
+			{
+				sgr := foundSecurityGroupRule.(*vpcv1.SecurityGroupRule)
+				securityGroupRuleID = *sgr.ID
+			}
 		case "*vpcv1.SecurityGroupRuleSecurityGroupRuleProtocolTcpudp":
 			{
 				sgr := foundSecurityGroupRule.(*vpcv1.SecurityGroupRuleSecurityGroupRuleProtocolTcpudp)
@@ -146,6 +151,17 @@ func testAccCheckIBMISsecurityGroupRuleConfig(vpcname, name string) string {
 		group     = ibm_is_security_group.testacc_security_group.id
 		direction = "inbound"
 		remote    = "127.0.0.1"
+	  }
+
+	  resource "ibm_is_security_group_rule" "testacc_security_group_rule" {
+		group     = ibm_is_security_group.testacc_security_group.id
+		direction = "inbound"
+		remote    = "127.0.0.1"
+		icmp {
+		  code = 21
+		  type = 31
+		}
+		name 	  = "test-name"
 	  }
 	  
 	  resource "ibm_is_security_group_rule" "testacc_security_group_rule_icmp" {
@@ -267,7 +283,7 @@ func testAccCheckIBMISsecurityGroupRuleConfig(vpcname, name string) string {
 		port_min = 8080
 		port_max = 8080
 	  }
-	}
+
  `, vpcname, name)
 
 }
