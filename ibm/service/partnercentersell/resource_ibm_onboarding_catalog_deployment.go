@@ -1,8 +1,8 @@
-// Copyright IBM Corp. 2025 All Rights Reserved.
+// Copyright IBM Corp. 2026 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 /*
- * IBM OpenAPI Terraform Generator Version: 3.107.1-41b0fbd0-20250825-080732
+ * IBM OpenAPI Terraform Generator Version: 3.112.0-f88e9264-20260220-115155
  */
 
 package partnercentersell
@@ -183,7 +183,7 @@ func ResourceIbmOnboardingCatalogDeployment() *schema.Resource {
 									},
 									"plan_updateable": &schema.Schema{
 										Type:        schema.TypeBool,
-										Computed:    true,
+										Optional:    true,
 										Description: "Indicates plan update support and controls the Plan tab on the Resource Details page.",
 									},
 									"service_key_supported": &schema.Schema{
@@ -1315,6 +1315,9 @@ func ResourceIbmOnboardingCatalogDeploymentMapToGlobalCatalogDeploymentMetadataS
 	if modelMap["service_key_supported"] != nil {
 		model.ServiceKeySupported = core.BoolPtr(modelMap["service_key_supported"].(bool))
 	}
+	if modelMap["plan_updateable"] != nil {
+		model.PlanUpdateable = core.BoolPtr(modelMap["plan_updateable"].(bool))
+	}
 	if modelMap["parameters"] != nil {
 		parameters := []partnercentersellv1.GlobalCatalogMetadataServiceCustomParameters{}
 		for _, parametersItem := range modelMap["parameters"].([]interface{}) {
@@ -2125,6 +2128,12 @@ func ResourceIbmOnboardingCatalogDeploymentGlobalCatalogDeploymentMetadataServic
 		patch["service_key_supported"] = nil
 	} else if !exists {
 		delete(patch, "service_key_supported")
+	}
+	path = rootPath + ".plan_updateable"
+	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
+		patch["plan_updateable"] = nil
+	} else if !exists {
+		delete(patch, "plan_updateable")
 	}
 	path = rootPath + ".parameters"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
