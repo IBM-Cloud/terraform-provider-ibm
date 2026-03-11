@@ -536,6 +536,14 @@ func nwaclRuleCreate(context context.Context, d *schema.ResourceData, meta inter
 				icmpcode = int64(val.(int))
 				ruleTemplate.Code = &icmpcode
 			}
+			if ruleTemplate.Type != nil && ruleTemplate.Code == nil {
+				v := int64(0)
+				ruleTemplate.Code = &v
+			}
+			if ruleTemplate.Code != nil && ruleTemplate.Type == nil {
+				v := int64(0)
+				ruleTemplate.Type = &v
+			}
 		}
 	} else if protocol == "icmp" {
 		ruleTemplate.Protocol = &protocol

@@ -1255,6 +1255,14 @@ func createInlineRules(d *schema.ResourceData, nwaclC *vpcv1.VpcV1, nwaclid stri
 					icmpcode = int64(val.(int))
 					ruleTemplate.Code = &icmpcode
 				}
+				if ruleTemplate.Type != nil && ruleTemplate.Code == nil {
+					v := int64(0)
+					ruleTemplate.Code = &v
+				}
+				if ruleTemplate.Code != nil && ruleTemplate.Type == nil {
+					v := int64(0)
+					ruleTemplate.Type = &v
+				}
 			}
 		} else if protocol == "icmp" {
 			icmpType := fmt.Sprintf("rules.%d.type", i)
