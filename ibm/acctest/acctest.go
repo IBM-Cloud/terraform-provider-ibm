@@ -410,17 +410,18 @@ var (
 
 // For Code Engine
 var (
-	CeResourceGroupID    string
-	CeProjectId          string
-	CeServiceInstanceID  string
-	CeResourceKeyID      string
-	CeDomainMappingName  string
-	CeTLSCertFilePath    string
-	CeTLSKeyFilePath     string
-	CeCosAccessKeyID     string
-	CeCosSecretAccessKey string
-	CeCosBucketName      string
-	CeCosBucketLocation  string
+	CeResourceGroupID              string
+	CeProjectId                    string
+	CeServiceInstanceID            string
+	CeResourceKeyID                string
+	CeDomainMappingName            string
+	CeTLSCertFilePath              string
+	CeTLSKeyFilePath               string
+	CeCosAccessKeyID               string
+	CeCosSecretAccessKey           string
+	CeCosBucketName                string
+	CeCosBucketLocation            string
+	CePrivatePathServiceGatewayCrn string
 )
 
 // Satellite tests
@@ -2110,6 +2111,10 @@ func init() {
 		fmt.Println("[WARN] Set the environment variable IBM_CODE_ENGINE_TLS_KEY_FILE_PATH to the path of the .key file containing the TLS private key")
 	}
 
+	if CePrivatePathServiceGatewayCrn = os.Getenv("IBM_CODE_ENGINE_PRIVATE_PATH_SERVICE_GATEWAY_CRN"); CePrivatePathServiceGatewayCrn == "" {
+		fmt.Println("[WARN] Set the environment variable IBM_CODE_ENGINE_PRIVATE_PATH_SERVICE_GATEWAY_CRN to the Private Path Service Gateway CRN to be used in tests")
+	}
+
 	SatelliteSSHPubKey = os.Getenv("IBM_SATELLITE_SSH_PUB_KEY")
 	if SatelliteSSHPubKey == "" {
 		fmt.Println("[WARN] Set the environment variable IBM_SATELLITE_SSH_PUB_KEY with a ssh public key or ibm_satellite_* tests may fail")
@@ -2522,6 +2527,9 @@ func TestAccPreCheckCodeEngine(t *testing.T) {
 	}
 	if CeCosBucketLocation == "" {
 		t.Fatal("IBM_CODE_ENGINE_COS_BUCKET_LOCATION must be set for acceptance tests")
+	}
+	if CePrivatePathServiceGatewayCrn == "" {
+		t.Fatal("CePrivatePathServiceGatewayCrn must be set for acceptance tests")
 	}
 }
 
