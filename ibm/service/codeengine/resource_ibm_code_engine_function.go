@@ -1,8 +1,8 @@
-// Copyright IBM Corp. 2025 All Rights Reserved.
+// Copyright IBM Corp. 2026 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 /*
- * IBM OpenAPI Terraform Generator Version: 3.108.0-56772134-20251111-102802
+ * IBM OpenAPI Terraform Generator Version: 3.102.0-615ec964-20250307-203034
  */
 
 package codeengine
@@ -34,6 +34,7 @@ func ResourceIbmCodeEngineFunction() *schema.Resource {
 		Timeouts: &schema.ResourceTimeout{
 			Create: schema.DefaultTimeout(10 * time.Minute),
 			Update: schema.DefaultTimeout(10 * time.Minute),
+			Delete: schema.DefaultTimeout(10 * time.Minute),
 		},
 
 		Schema: map[string]*schema.Schema{
@@ -500,7 +501,7 @@ func waitForIbmCodeEngineFunctionCreate(d *schema.ResourceData, meta interface{}
 			return stateObj, *stateObj.Status, nil
 		},
 		Timeout:    d.Timeout(schema.TimeoutCreate),
-		Delay:      60 * time.Second,
+		Delay:      5 * time.Second,
 		MinTimeout: 60 * time.Second,
 	}
 
@@ -941,7 +942,7 @@ func ResourceIbmCodeEngineFunctionFunctionPatchAsPatch(patchVals *codeenginev2.F
 	}
 	path = "run_compute_resource_token_enabled"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
-		patch["run_compute_resource_token_enabled"] = func(b bool) *bool { return &b }(false) // func necessary to be able to deteremine if user tries to set value to `nil`, which we evaluate to default `false`
+		patch["run_compute_resource_token_enabled"] = core.BoolPtr(false) // func necessary to be able to deteremine if user tries to set value to nil, which we evaluate to default false
 	} else if !exists {
 		delete(patch, "run_compute_resource_token_enabled")
 	}

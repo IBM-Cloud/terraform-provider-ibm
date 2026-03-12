@@ -1,8 +1,8 @@
-// Copyright IBM Corp. 2025 All Rights Reserved.
+// Copyright IBM Corp. 2026 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 /*
- * IBM OpenAPI Terraform Generator Version: 3.108.0-56772134-20251111-102802
+ * IBM OpenAPI Terraform Generator Version: 3.102.0-615ec964-20250307-203034
  */
 
 package codeengine
@@ -144,11 +144,6 @@ func ResourceIbmCodeEngineJob() *schema.Resource {
 							Type:        schema.TypeString,
 							Required:    true,
 							Description: "The path that should be mounted.",
-						},
-						"name": &schema.Schema{
-							Type:        schema.TypeString,
-							Optional:    true,
-							Description: "The name of the mount.",
 						},
 						"read_only": &schema.Schema{
 							Type:        schema.TypeBool,
@@ -921,9 +916,6 @@ func ResourceIbmCodeEngineJobMapToEnvVarPrototype(modelMap map[string]interface{
 func ResourceIbmCodeEngineJobMapToVolumeMountPrototype(modelMap map[string]interface{}) (*codeenginev2.VolumeMountPrototype, error) {
 	model := &codeenginev2.VolumeMountPrototype{}
 	model.MountPath = core.StringPtr(modelMap["mount_path"].(string))
-	if modelMap["name"] != nil && modelMap["name"].(string) != "" {
-		model.Name = core.StringPtr(modelMap["name"].(string))
-	}
 	if modelMap["read_only"] != nil {
 		model.ReadOnly = core.BoolPtr(modelMap["read_only"].(bool))
 	}
@@ -959,9 +951,6 @@ func ResourceIbmCodeEngineJobEnvVarToMap(model *codeenginev2.EnvVar) (map[string
 func ResourceIbmCodeEngineJobVolumeMountToMap(model *codeenginev2.VolumeMount) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["mount_path"] = *model.MountPath
-	if model.Name != nil {
-		modelMap["name"] = *model.Name
-	}
 	if model.ReadOnly != nil {
 		modelMap["read_only"] = *model.ReadOnly
 	}
@@ -1009,7 +998,7 @@ func ResourceIbmCodeEngineJobJobPatchAsPatch(patchVals *codeenginev2.JobPatch, d
 	}
 	path = "run_compute_resource_token_enabled"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
-		patch["run_compute_resource_token_enabled"] = func(b bool) *bool { return &b }(false) // func necessary to be able to deteremine if user tries to set value to `nil`, which we evaluate to default `false`
+		patch["run_compute_resource_token_enabled"] = core.BoolPtr(false) // func necessary to be able to deteremine if user tries to set value to nil, which we evaluate to default false
 	} else if !exists {
 		delete(patch, "run_compute_resource_token_enabled")
 	}
@@ -1090,12 +1079,6 @@ func ResourceIbmCodeEngineJobJobPatchAsPatch(patchVals *codeenginev2.JobPatch, d
 func ResourceIbmCodeEngineJobVolumeMountPrototypeAsPatch(patch map[string]interface{}, d *schema.ResourceData, rootPath string) {
 	var path string
 
-	path = rootPath + ".name"
-	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
-		patch["name"] = nil
-	} else if !exists {
-		delete(patch, "name")
-	}
 	path = rootPath + ".read_only"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["read_only"] = nil

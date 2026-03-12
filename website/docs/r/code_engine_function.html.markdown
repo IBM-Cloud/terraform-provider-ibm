@@ -58,10 +58,10 @@ Nested schema for **run_env_variables**:
 	  * Constraints: The maximum length is `253` characters. The minimum length is `0` characters. The value must match regular expression `/^[a-zA-Z_][a-zA-Z0-9_]*$/`.
 	* `reference` - (Optional, String) The name of the secret or config map.
 	  * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[a-z0-9]([\\-a-z0-9]*[a-z0-9])?(\\.[a-z0-9]([\\-a-z0-9]*[a-z0-9])?)*$/`.
-	* `type` - (Optional, String) Specify the type of the environment variable.
-	  * Constraints: The default value is `literal`. Allowable values are: `literal`, `config_map_full_reference`, `secret_full_reference`, `config_map_key_reference`, `secret_key_reference`. The value must match regular expression `/^(literal|config_map_full_reference|secret_full_reference|config_map_key_reference|secret_key_reference)$/`. When referencing a secret or configmap, the `reference` must be specified. When referencing a secret or configmap key, a `key` must also be specified.
+	* `type` - (Required, String) Specify the type of the environment variable.
+	  * Constraints: The default value is `literal`. Allowable values are: `literal`, `config_map_full_reference`, `secret_full_reference`, `config_map_key_reference`, `secret_key_reference`. The value must match regular expression `/^(literal|config_map_full_reference|secret_full_reference|config_map_key_reference|secret_key_reference)$/`.
 	* `value` - (Optional, String) The literal value of the environment variable.
-	  * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[\\-._a-zA-Z0-9]+$/`.
+	  * Constraints: The maximum length is `1048576` characters. The minimum length is `0` characters. The value must match regular expression `/^.*$/`.
 * `runtime` - (Required, String) The managed runtime used to execute the injected code.
   * Constraints: The maximum length is `63` characters. The minimum length is `1` character. The value must match regular expression `/^[a-z]*\\-[0-9]*(\\.[0-9]*)?$/`.
 * `scale_concurrency` - (Optional, Integer) Number of parallel requests handled by a single instance, supported only by Node.js, default is `1`.
@@ -96,16 +96,16 @@ Nested schema for **computed_env_variables**:
 	* `type` - (String) Specify the type of the environment variable.
 	  * Constraints: The default value is `literal`. Allowable values are: `literal`, `config_map_full_reference`, `secret_full_reference`, `config_map_key_reference`, `secret_key_reference`. The value must match regular expression `/^(literal|config_map_full_reference|secret_full_reference|config_map_key_reference|secret_key_reference)$/`.
 	* `value` - (String) The literal value of the environment variable.
-      * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[\\-._a-zA-Z0-9]+$/`.
+	  * Constraints: The maximum length is `1048576` characters. The minimum length is `0` characters. The value must match regular expression `/^.*$/`.
 * `created_at` - (String) The timestamp when the resource was created.
 * `endpoint` - (String) URL to invoke the function.
-  * Constraints: The maximum length is `2048` characters. The minimum length is `0` characters. The value must match regular expression `/(([^:\/?#]+):)?(\/\/([^\/?#]*))?([^?#]*)(\\?([^#]*))?(#(.*))?$/`.
+  * Constraints: The maximum length is `2048` characters. The minimum length is `0` characters. The value must match regular expression `/^(([^:\/?#]+):)?(\/\/([^\/?#]*))?([^?#]*)(\\?([^#]*))?(#(.*))?$/`.
 * `endpoint_internal` - (String) URL to function that is only visible within the project.
-  * Constraints: The maximum length is `2048` characters. The minimum length is `0` characters. The value must match regular expression `/(([^:\/?#]+):)?(\/\/([^\/?#]*))?([^?#]*)(\\?([^#]*))?(#(.*))?$/`.
+  * Constraints: The maximum length is `2048` characters. The minimum length is `0` characters. The value must match regular expression `/^(([^:\/?#]+):)?(\/\/([^\/?#]*))?([^?#]*)(\\?([^#]*))?(#(.*))?$/`.
 * `entity_tag` - (String) The version of the function instance, which is used to achieve optimistic locking.
   * Constraints: The maximum length is `63` characters. The minimum length is `1` character. The value must match regular expression `/^[\\*\\-a-z0-9]+$/`.
 * `href` - (String) When you provision a new function, a relative URL path is created identifying the location of the instance.
-  * Constraints: The maximum length is `2048` characters. The minimum length is `0` characters. The value must match regular expression `/(([^:\/?#]+):)?(\/\/([^\/?#]*))?([^?#]*)(\\?([^#]*))?(#(.*))?$/`.
+  * Constraints: The maximum length is `2048` characters. The minimum length is `0` characters. The value must match regular expression `/^(([^:\/?#]+):)?(\/\/([^\/?#]*))?([^?#]*)(\\?([^#]*))?(#(.*))?$/`.
 * `region` - (String) The region of the project the resource is located in. Possible values: 'au-syd', 'br-sao', 'ca-tor', 'eu-de', 'eu-gb', 'jp-osa', 'jp-tok', 'us-east', 'us-south'.
 * `resource_type` - (String) The type of the function.
   * Constraints: Allowable values are: `function_v2`.
@@ -115,6 +115,7 @@ Nested schema for **computed_env_variables**:
 Nested schema for **status_details**:
 	* `reason` - (String) Provides additional information about the status of the function.
 	  * Constraints: Allowable values are: `offline`, `deploying_configuring_routes`, `ready_update_in_progress`, `deploying`, `ready_last_update_failed`, `ready`, `unknown_reason`, `no_code_bundle`.
+
 * `etag` - ETag identifier for code_engine_function.
 
 ## Import
