@@ -193,6 +193,7 @@ func ResourceIBMPhaDeployment() *schema.Resource {
 			"api_key": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
+				Sensitive:   true,
 				Description: "API key used for authentication to the deployment service.",
 			},
 			"cloud_account_id": &schema.Schema{

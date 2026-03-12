@@ -177,6 +177,7 @@ func DataSourceIBMPdrGetDrSummaryResponse() *schema.Resource {
 						"api_key": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
+							Sensitive:   true,
 							Description: "api key.",
 						},
 						"standby_ssh_key_name": &schema.Schema{
