@@ -126,7 +126,21 @@ func (g *dataSourceIBMDatabaseGen2Backend) Read(d *schema.ResourceData, meta int
 	// Clear it from state if it was previously set (e.g., if the state was carried forward from a Classic instance).
 	d.Set("adminuser", nil)
 
-	d.Set("version", deployment.Version)
+	// Extract version from instance.Extensions based on database type
+	var version string
+	if instance.Extensions != nil {
+		dbType := getDatabaseTypeFromResourceID(*instance.ResourceID)
+		if dbType != "" {
+			if dataservices, ok := instance.Extensions["dataservices"].(map[string]interface{}); ok {
+				if dbTypeData, ok := dataservices[dbType].(map[string]interface{}); ok {
+					if v, ok := dbTypeData["version"].(string); ok {
+						version = v
+					}
+				}
+			}
+		}
+	}
+	d.Set("version", version)
 
 	if deployment.PlatformOptions != nil {
 		d.Set("platform_options", flex.ExpandPlatformOptions(*deployment))

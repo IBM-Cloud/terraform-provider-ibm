@@ -105,3 +105,25 @@ func isGen2Plan(plan string) bool {
 	gen2Pattern := regexp.MustCompile(`-gen2($|-.+)`)
 	return gen2Pattern.MatchString(strings.ToLower(plan))
 }
+
+// getDatabaseTypeFromResourceID maps the resource ID to the database type key used in extensions
+func getDatabaseTypeFromResourceID(resourceID string) string {
+	if strings.HasPrefix(resourceID, "databases-for-etcd") {
+		return "etcd"
+	} else if strings.HasPrefix(resourceID, "databases-for-postgresql") {
+		return "postgresql"
+	} else if strings.HasPrefix(resourceID, "databases-for-redis") {
+		return "redis"
+	} else if strings.HasPrefix(resourceID, "databases-for-elasticsearch") {
+		return "elasticsearch"
+	} else if strings.HasPrefix(resourceID, "databases-for-mongodb") {
+		return "mongodb"
+	} else if strings.HasPrefix(resourceID, "messages-for-rabbitmq") {
+		return "rabbitmq"
+	} else if strings.HasPrefix(resourceID, "databases-for-mysql") {
+		return "mysql"
+	} else if strings.HasPrefix(resourceID, "databases-for-enterprisedb") {
+		return "enterprisedb"
+	}
+	return ""
+}
