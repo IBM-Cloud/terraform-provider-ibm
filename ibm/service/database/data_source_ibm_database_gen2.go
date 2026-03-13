@@ -126,7 +126,7 @@ func (g *dataSourceIBMDatabaseGen2Backend) Read(d *schema.ResourceData, meta int
 
 	// Extract platform_options from instance.Extensions for Gen2
 	if instance.Extensions != nil {
-		d.Set("platform_options", expandPlatformOptionsFromInstance(instance.Extensions))
+		d.Set("platform_options", expandPlatformOptionsFromRCExtension(instance.Extensions))
 	}
 
 	cloudDatabasesClient, err := meta.(conns.ClientSession).CloudDatabasesV5()
