@@ -8,7 +8,6 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM/cloud-databases-go-sdk/clouddatabasesv5"
-	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/IBM/platform-services-go-sdk/globalcatalogv1"
 	rg "github.com/IBM/platform-services-go-sdk/resourcemanagerv2"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -122,9 +121,11 @@ func (g *dataSourceIBMDatabaseGen2Backend) Read(d *schema.ResourceData, meta int
 	}
 
 	deployment := getDeploymentInfoResponse.Deployment
-	adminUser := deployment.AdminUsernames["database"]
 
-	d.Set("adminuser", adminUser)
+	// Admin user is not available in Gen2. Users should manage credentials using ibm_resource_key.
+	// Clear it from state if it was previously set (e.g., if the state was carried forward from a Classic instance).
+	d.Set("adminuser", nil)
+
 	d.Set("version", deployment.Version)
 
 	if deployment.PlatformOptions != nil {
@@ -141,27 +142,13 @@ func (g *dataSourceIBMDatabaseGen2Backend) Read(d *schema.ResourceData, meta int
 	}
 	d.Set("groups", flex.FlattenIcdGroups(groupList))
 
-	getAutoscalingConditionsOptions := &clouddatabasesv5.GetAutoscalingConditionsOptions{
-		ID:      instance.ID,
-		GroupID: core.StringPtr("member"),
-	}
+	// Auto scaling is currently not supported in Gen2. Clear it from state if it was previously set
+	// (e.g., if the state was carried forward from a Classic instance).
+	d.Set("auto_scaling", nil)
 
-	autoscalingGroup, _, err := cloudDatabasesClient.GetAutoscalingConditions(getAutoscalingConditionsOptions)
-	if err != nil {
-		return fmt.Errorf("[ERROR] Error getting database autoscaling groups: %s\n Hint: Check if there is a mismatch between your database location and IBMCLOUD_REGION", err)
-	}
-	d.Set("auto_scaling", flattenAutoScalingGroup(*autoscalingGroup))
+	// Allowlist is not supported in Gen2. Clear it from state if it was previously set
+	// (e.g., if the state was carried forward from a Classic instance).
+	d.Set("allowlist", nil)
 
-	alEntry := &clouddatabasesv5.GetAllowlistOptions{
-		ID: instance.ID,
-	}
-
-	allowlist, _, err := cloudDatabasesClient.GetAllowlist(alEntry)
-
-	if err != nil {
-		return fmt.Errorf("[ERROR] Error getting database allowlist: %s", err)
-	}
-
-	d.Set("allowlist", flex.FlattenAllowlist(allowlist.IPAddresses))
 	return nil
 }
