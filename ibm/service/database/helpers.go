@@ -127,3 +127,23 @@ func getDatabaseTypeFromResourceID(resourceID string) string {
 	}
 	return ""
 }
+
+// expandPlatformOptionsFromInstance extracts platform options from instance extensions for Gen2
+func expandPlatformOptionsFromInstance(instance map[string]interface{}) []map[string]interface{} {
+	pltOptions := make([]map[string]interface{}, 0, 1)
+	pltOption := make(map[string]interface{})
+
+	if dataservices, ok := instance["dataservices"].(map[string]interface{}); ok {
+		if encryption, ok := dataservices["encryption"].(map[string]interface{}); ok {
+			if disk, ok := encryption["disk"].(string); ok {
+				pltOption["disk_encryption_key_crn"] = disk
+			}
+			if backup, ok := encryption["backup"].(string); ok {
+				pltOption["backup_encryption_key_crn"] = backup
+			}
+		}
+	}
+
+	pltOptions = append(pltOptions, pltOption)
+	return pltOptions
+}

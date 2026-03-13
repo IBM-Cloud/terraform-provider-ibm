@@ -104,24 +104,6 @@ func (g *dataSourceIBMDatabaseGen2Backend) Read(d *schema.ResourceData, meta int
 	}
 	d.Set(flex.ResourceControllerURL, rcontroller+"/services/"+url.QueryEscape(*instance.CRN))
 
-	cloudDatabasesClient, err := meta.(conns.ClientSession).CloudDatabasesV5()
-	if err != nil {
-		return fmt.Errorf("[ERROR] Error getting database client settings: %s", err)
-	}
-
-	getDeploymentInfoOptions := &clouddatabasesv5.GetDeploymentInfoOptions{
-		ID: instance.ID,
-	}
-	getDeploymentInfoResponse, response, err := cloudDatabasesClient.GetDeploymentInfo(getDeploymentInfoOptions)
-	if err != nil {
-		if response.StatusCode == 404 {
-			return fmt.Errorf("[ERROR] The database instance was not found in the region set for the Provider, or the default of us-south. Specify the correct region in the provider definition, or create a provider alias for the correct region. %v", err)
-		}
-		return fmt.Errorf("[ERROR] Error getting database config while updating adminpassword for: %s with error %s", *instance.ID, err)
-	}
-
-	deployment := getDeploymentInfoResponse.Deployment
-
 	// Admin user is not available in Gen2. Users should manage credentials using ibm_resource_key.
 	// Clear it from state if it was previously set (e.g., if the state was carried forward from a Classic instance).
 	d.Set("adminuser", nil)
@@ -142,8 +124,14 @@ func (g *dataSourceIBMDatabaseGen2Backend) Read(d *schema.ResourceData, meta int
 	}
 	d.Set("version", version)
 
-	if deployment.PlatformOptions != nil {
-		d.Set("platform_options", flex.ExpandPlatformOptions(*deployment))
+	// Extract platform_options from instance.Extensions for Gen2
+	if instance.Extensions != nil {
+		d.Set("platform_options", expandPlatformOptionsFromInstance(instance.Extensions))
+	}
+
+	cloudDatabasesClient, err := meta.(conns.ClientSession).CloudDatabasesV5()
+	if err != nil {
+		return fmt.Errorf("[ERROR] Error getting database client settings: %s", err)
 	}
 
 	listDeploymentScalingGroupsOptions := &clouddatabasesv5.ListDeploymentScalingGroupsOptions{
