@@ -7,7 +7,6 @@ import (
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
-	"github.com/IBM/cloud-databases-go-sdk/clouddatabasesv5"
 	"github.com/IBM/platform-services-go-sdk/globalcatalogv1"
 	rg "github.com/IBM/platform-services-go-sdk/resourcemanagerv2"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -129,20 +128,28 @@ func (g *dataSourceIBMDatabaseGen2Backend) Read(d *schema.ResourceData, meta int
 		d.Set("platform_options", expandPlatformOptionsFromRCExtension(instance.Extensions))
 	}
 
-	cloudDatabasesClient, err := meta.(conns.ClientSession).CloudDatabasesV5()
+	// Get groups data from GlobalCatalog for Gen2
+	catalogID := *instance.ResourcePlanID + ":" + *instance.RegionID
+	deploymentOptions := globalcatalogv1.GetCatalogEntryOptions{
+		ID: &catalogID,
+	}
+	deployment, _, err := globalClient.GetCatalogEntry(&deploymentOptions)
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error getting database client settings: %s", err)
+		return fmt.Errorf("[ERROR] Error retrieving deployment catalog entry: %s", err)
 	}
 
-	listDeploymentScalingGroupsOptions := &clouddatabasesv5.ListDeploymentScalingGroupsOptions{
-		ID: instance.ID,
+	// Extract resources from deployment metadata
+	var catalogResources []interface{}
+	if deployment.Metadata != nil && deployment.Metadata.Other != nil {
+		if resources, ok := deployment.Metadata.Other["resources"].([]interface{}); ok {
+			catalogResources = resources
+		}
 	}
 
-	groupList, _, err := cloudDatabasesClient.ListDeploymentScalingGroups(listDeploymentScalingGroupsOptions)
-	if err != nil {
-		return fmt.Errorf("[ERROR] Error getting database groups: %s", err)
+	// Flatten groups using instance extensions and catalog metadata
+	if instance.Extensions != nil && len(catalogResources) > 0 {
+		d.Set("groups", flattenIcdGroupsFromInstanceAndCatalog(instance.Extensions, catalogResources))
 	}
-	d.Set("groups", flex.FlattenIcdGroups(groupList))
 
 	// Auto scaling is currently not supported in Gen2. Clear it from state if it was previously set
 	// (e.g., if the state was carried forward from a Classic instance).
