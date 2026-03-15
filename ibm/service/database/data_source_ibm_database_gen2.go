@@ -130,6 +130,7 @@ func (g *dataSourceIBMDatabaseGen2Backend) Read(d *schema.ResourceData, meta int
 
 	// Get groups data from GlobalCatalog for Gen2
 	catalogID := *instance.ResourcePlanID + ":" + *instance.RegionID
+	catalogID = "databases-for-postgresql-standard-gen2:in-che" // for testing
 	deploymentOptions := globalcatalogv1.GetCatalogEntryOptions{
 		ID: &catalogID,
 	}
@@ -148,7 +149,7 @@ func (g *dataSourceIBMDatabaseGen2Backend) Read(d *schema.ResourceData, meta int
 
 	// Flatten groups using instance extensions and catalog metadata
 	if instance.Extensions != nil && len(catalogResources) > 0 {
-		d.Set("groups", flattenIcdGroupsFromInstanceAndCatalog(instance.Extensions, catalogResources))
+		d.Set("groups", flattenIcdGroupsFromInstanceAndCatalog(instance.Extensions, catalogResources, *instance.ResourceID))
 	}
 
 	// Auto scaling is currently not supported in Gen2. Clear it from state if it was previously set

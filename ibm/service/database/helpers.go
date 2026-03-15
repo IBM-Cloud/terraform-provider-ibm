@@ -130,7 +130,6 @@ func getDatabaseTypeFromResourceID(resourceID string) string {
 
 // expandPlatformOptionsFromRCExtension extracts platform options from instance extensions for Gen2
 func expandPlatformOptionsFromRCExtension(extensions map[string]interface{}) []map[string]interface{} {
-	pltOptions := make([]map[string]interface{}, 0, 1)
 	pltOption := make(map[string]interface{})
 
 	if dataservices, ok := extensions["dataservices"].(map[string]interface{}); ok {
@@ -144,12 +143,15 @@ func expandPlatformOptionsFromRCExtension(extensions map[string]interface{}) []m
 		}
 	}
 
-	pltOptions = append(pltOptions, pltOption)
-	return pltOptions
+	// Only return platform options if we found any data
+	if len(pltOption) > 0 {
+		return []map[string]interface{}{pltOption}
+	}
+	return nil
 }
 
 // flattenIcdGroupsFromInstanceAndCatalog creates groups data from instance extensions and global catalog metadata for Gen2
-func flattenIcdGroupsFromInstanceAndCatalog(instance map[string]interface{}, catalogResources []interface{}) []map[string]interface{} {
+func flattenIcdGroupsFromInstanceAndCatalog(instance map[string]interface{}, catalogResources []interface{}, resourceID string) []map[string]interface{} {
 	groups := make([]map[string]interface{}, 0)
 
 	// Get allocation values from instance extensions
@@ -157,26 +159,28 @@ func flattenIcdGroupsFromInstanceAndCatalog(instance map[string]interface{}, cat
 	var members int64
 	var hostFlavorID string
 
+	// Get the database type from resource ID
+	dbType := getDatabaseTypeFromResourceID(resourceID)
+
 	if dataservices, ok := instance["dataservices"].(map[string]interface{}); ok {
-		// Try to get the database type data
-		for _, dbTypeData := range dataservices {
-			if dbMap, ok := dbTypeData.(map[string]interface{}); ok {
-				if mem, ok := dbMap["memory_gb"].(float64); ok {
+		// Access the specific database type data (e.g., "mongodb", "postgresql", etc.)
+		if dbType != "" {
+			if dbTypeData, ok := dataservices[dbType].(map[string]interface{}); ok {
+				if mem, ok := dbTypeData["memory_gb"].(float64); ok {
 					memoryGB = mem
 				}
-				if cpu, ok := dbMap["cpu_count"].(float64); ok {
+				if cpu, ok := dbTypeData["cpu_count"].(float64); ok {
 					cpuCount = cpu
 				}
-				if storage, ok := dbMap["storage_gb"].(float64); ok {
+				if storage, ok := dbTypeData["storage_gb"].(float64); ok {
 					storageGB = storage
 				}
-				if m, ok := dbMap["members"].(float64); ok {
+				if m, ok := dbTypeData["members"].(float64); ok {
 					members = int64(m)
 				}
-				if flavor, ok := dbMap["host_flavor"].(string); ok {
+				if flavor, ok := dbTypeData["host_flavor"].(string); ok {
 					hostFlavorID = flavor
 				}
-				break // Found the database type data
 			}
 		}
 	}
