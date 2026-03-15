@@ -132,6 +132,10 @@ func getDatabaseTypeFromResourceID(resourceID string) string {
 func expandPlatformOptionsFromRCExtension(extensions map[string]interface{}) []map[string]interface{} {
 	pltOption := make(map[string]interface{})
 
+	// Initialize with empty strings
+	pltOption["disk_encryption_key_crn"] = ""
+	pltOption["backup_encryption_key_crn"] = ""
+
 	if dataservices, ok := extensions["dataservices"].(map[string]interface{}); ok {
 		if encryption, ok := dataservices["encryption"].(map[string]interface{}); ok {
 			if disk, ok := encryption["disk"].(string); ok {
@@ -143,11 +147,8 @@ func expandPlatformOptionsFromRCExtension(extensions map[string]interface{}) []m
 		}
 	}
 
-	// Only return platform options if we found any data
-	if len(pltOption) > 0 {
-		return []map[string]interface{}{pltOption}
-	}
-	return nil
+	// Always return platform options with empty strings if keys are not found
+	return []map[string]interface{}{pltOption}
 }
 
 // flattenIcdGroupsFromInstanceAndCatalog creates groups data from instance extensions and global catalog metadata for Gen2
