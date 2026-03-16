@@ -138,6 +138,16 @@ func DataSourceIBMPdrLastOperation() *schema.Resource {
 				Computed:    true,
 				Description: "The current state of the primary orchestrator.",
 			},
+			"primary_error_description": &schema.Schema{
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Capture the error while creating primary orchestrator.",
+			},
+			"standby_error_description": &schema.Schema{
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Capture the error while creating standby orchestrator.",
+			},
 		},
 	}
 }
@@ -235,7 +245,17 @@ func dataSourceIBMPdrLastOperationRead(context context.Context, d *schema.Resour
 	if err = d.Set("primary_description", serviceInstanceStatus.PrimaryDescription); err != nil {
 		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting primary_description: %s", err), "(Data) ibm_pdr_last_operation", "read", "set-primary_description").GetDiag()
 	}
+	if !core.IsNil(serviceInstanceStatus.PrimaryErrorDescription) {
+		if err = d.Set("primary_error_description", serviceInstanceStatus.PrimaryErrorDescription); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting primary_error_description: %s", err), "(Data) ibm_pdr_last_operation", "read", "set-primary_error_description").GetDiag()
+		}
+	}
 
+	if !core.IsNil(serviceInstanceStatus.StandbyErrorDescription) {
+		if err = d.Set("standby_error_description", serviceInstanceStatus.StandbyErrorDescription); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting standby_error_description: %s", err), "(Data) ibm_pdr_last_operation", "read", "set-standby_error_description").GetDiag()
+		}
+	}
 	if err = d.Set("primary_ip_address", serviceInstanceStatus.PrimaryIPAddress); err != nil {
 		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting primary_ip_address: %s", err), "(Data) ibm_pdr_last_operation", "read", "set-primary_ip_address").GetDiag()
 	}

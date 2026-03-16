@@ -11,11 +11,13 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"regexp"
 	"strings"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
@@ -235,6 +237,46 @@ func ResourceIbmPdrManagedr() *schema.Resource {
 				ForceNew:    true,
 				Description: "Tier of the service instance.",
 			},
+			"standby_ssh_key_name": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				ForceNew:    true,
+				Description: "standy ssh key name of the service instance.",
+			},
+			"orchestrator_network_ids": {
+				Type:     schema.TypeList,
+				Optional: true,
+				ForceNew: true,
+				MaxItems: 10,
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+					ValidateFunc: validation.All(
+						validation.StringLenBetween(36, 64),
+						validation.StringMatch(
+							regexp.MustCompile(`^[a-zA-Z0-9\-_]+$`),
+							"must contain only alphanumeric characters, hyphen, or underscore",
+						),
+					),
+				},
+				Description: "List of network IDs for primary orchestrator VM.",
+			},
+			"standby_orchestrator_network_ids": {
+				Type:     schema.TypeList,
+				Optional: true,
+				ForceNew: true,
+				MaxItems: 10,
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+					ValidateFunc: validation.All(
+						validation.StringLenBetween(36, 64),
+						validation.StringMatch(
+							regexp.MustCompile(`^[a-zA-Z0-9\-_]+$`),
+							"must contain only alphanumeric characters, hyphen, or underscore",
+						),
+					),
+				},
+				Description: "List of network IDs for standby orchestrator VM.",
+			},
 		},
 	}
 }
@@ -345,6 +387,25 @@ func resourceIbmPdrManagedrCreate(ctx context.Context, d *schema.ResourceData, m
 	}
 	if _, ok := d.GetOk("accepts_incomplete"); ok {
 		createManageDrOptions.SetAcceptsIncomplete(d.Get("accepts_incomplete").(bool))
+	}
+	if _, ok := d.GetOk("standby_ssh_key_name"); ok {
+		createManageDrOptions.SetStandbySSHKeyName(d.Get("standby_ssh_key_name").(string))
+	}
+	if _, ok := d.GetOk("orchestrator_network_ids"); ok {
+		var orchestratorNetworkIds []string
+		for _, v := range d.Get("orchestrator_network_ids").([]interface{}) {
+			orchestratorNetworkIdsItem := v.(string)
+			orchestratorNetworkIds = append(orchestratorNetworkIds, orchestratorNetworkIdsItem)
+		}
+		createManageDrOptions.SetOrchestratorNetworkIds(orchestratorNetworkIds)
+	}
+	if _, ok := d.GetOk("standby_orchestrator_network_ids"); ok {
+		var standbyOrchestratorNetworkIds []string
+		for _, v := range d.Get("standby_orchestrator_network_ids").([]interface{}) {
+			standbyOrchestratorNetworkIdsItem := v.(string)
+			standbyOrchestratorNetworkIds = append(standbyOrchestratorNetworkIds, standbyOrchestratorNetworkIdsItem)
+		}
+		createManageDrOptions.SetStandbyOrchestratorNetworkIds(standbyOrchestratorNetworkIds)
 	}
 
 	_, response, err := drAutomationServiceClient.CreateManageDrWithContext(ctx, createManageDrOptions)

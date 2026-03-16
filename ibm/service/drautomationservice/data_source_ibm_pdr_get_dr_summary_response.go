@@ -174,6 +174,17 @@ func DataSourceIBMPdrGetDrSummaryResponse() *schema.Resource {
 							Computed:    true,
 							Description: "The name of the VPC.",
 						},
+						"api_key": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Sensitive:   true,
+							Description: "api key.",
+						},
+						"standby_ssh_key_name": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "SSH key name used for the standby orchestrator.",
+						},
 					},
 				},
 			},
@@ -391,6 +402,7 @@ func DataSourceIBMPdrGetDrSummaryResponseOrchestratorDetailsToMap(model *drautom
 	if model.LatestOrchestratorTime != nil {
 		modelMap["latest_orchestrator_time"] = model.LatestOrchestratorTime.String()
 	}
+	modelMap["api_key"] = *model.APIKey
 	modelMap["location_id"] = *model.LocationID
 	modelMap["mfa_enabled"] = *model.MfaEnabled
 	modelMap["orch_ext_connectivity_status"] = *model.OrchExtConnectivityStatus
@@ -411,6 +423,7 @@ func DataSourceIBMPdrGetDrSummaryResponseOrchestratorDetailsToMap(model *drautom
 	modelMap["standby_orchestrator_workspace_name"] = *model.StandbyOrchestratorWorkspaceName
 	modelMap["transit_gateway_name"] = *model.TransitGatewayName
 	modelMap["vpc_name"] = *model.VPCName
+	modelMap["standby_ssh_key_name"] = *model.StandbySSHKeyName
 	return modelMap, nil
 }
 
