@@ -14,6 +14,7 @@ import (
 
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM/platform-services-go-sdk/iamaccessgroupsv2"
 )
 
@@ -181,7 +182,7 @@ func testAccCheckIBMIAMAccessGroupTemplateAssignmentExists(n string, obj iamacce
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
-			return fmt.Errorf("Not found: %s", n)
+			return flex.FmtErrorf("Not found: %s", n)
 		}
 
 		iamAccessGroupsClient, err := acc.TestAccProvider.Meta().(conns.ClientSession).IAMAccessGroupsV2()
@@ -221,9 +222,9 @@ func testAccCheckIBMIAMAccessGroupTemplateAssignmentDestroy(s *terraform.State) 
 		_, response, err := iamAccessGroupsClient.GetAssignment(getAssignmentOptions)
 
 		if err == nil {
-			return fmt.Errorf("iam_access_group_template_assignment still exists: %s", rs.Primary.ID)
+			return flex.FmtErrorf("iam_access_group_template_assignment still exists: %s", rs.Primary.ID)
 		} else if response.StatusCode != 404 {
-			return fmt.Errorf("Error checking for iam_access_group_template_assignment (%s) has been destroyed: %s", rs.Primary.ID, err)
+			return flex.FmtErrorf("Error checking for iam_access_group_template_assignment (%s) has been destroyed: %s", rs.Primary.ID, err)
 		}
 	}
 
