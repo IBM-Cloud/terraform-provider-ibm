@@ -129,14 +129,33 @@ func (g *dataSourceIBMDatabaseGen2Backend) Read(d *schema.ResourceData, meta int
 	}
 
 	// Get groups data from GlobalCatalog for Gen2
-	catalogID := *instance.ResourcePlanID + ":" + *instance.RegionID
-	catalogID = "databases-for-postgresql-standard-gen2:in-che" // for testing
-	deploymentOptions := globalcatalogv1.GetCatalogEntryOptions{
-		ID: &catalogID,
+	// Find the deployment by getting plan's children and matching by location
+	var deployment *globalcatalogv1.CatalogEntry
+	kind := "deployment"
+	childOptions := globalcatalogv1.GetChildObjectsOptions{
+		ID:   instance.ResourcePlanID,
+		Kind: &kind,
 	}
-	deployment, _, err := globalClient.GetCatalogEntry(&deploymentOptions)
+	children, _, err := globalClient.GetChildObjects(&childOptions)
 	if err != nil {
-		return fmt.Errorf("[ERROR] Error retrieving deployment catalog entry: %s", err)
+		return fmt.Errorf("[ERROR] Error retrieving plan children: %s", err)
+	}
+
+	if children != nil && children.Resources != nil {
+		for _, child := range children.Resources {
+			// Check if this deployment's location matches the instance region
+			if child.Metadata != nil &&
+				child.Metadata.Deployment != nil &&
+				child.Metadata.Deployment.Location != nil &&
+				*child.Metadata.Deployment.Location == *instance.RegionID {
+				deployment = &child
+				break
+			}
+		}
+	}
+
+	if deployment == nil {
+		return fmt.Errorf("[ERROR] Could not find deployment catalog entry for region %s", *instance.RegionID)
 	}
 
 	// Extract resources from deployment metadata
