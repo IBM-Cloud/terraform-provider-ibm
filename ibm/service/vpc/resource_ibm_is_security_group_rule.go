@@ -1083,13 +1083,13 @@ func buildSecurityGroupRuleUpdatePatch(d *schema.ResourceData, sess *vpcv1.VpcV1
 		// Handle type and code for ICMP protocol
 		if protocol == "icmp" {
 			if d.HasChange(isSecurityGroupRuleType) {
-				if v, ok := d.GetOk(isSecurityGroupRuleType); ok {
+				if v, ok := d.GetOkExists(isSecurityGroupRuleType); ok {
 					icmpType := int64(v.(int))
 					securityGroupRulePatchModel.Type = &icmpType
 				}
 			}
 			if d.HasChange(isSecurityGroupRuleCode) {
-				if v, ok := d.GetOk(isSecurityGroupRuleCode); ok {
+				if v, ok := d.GetOkExists(isSecurityGroupRuleCode); ok {
 					icmpCode := int64(v.(int))
 					securityGroupRulePatchModel.Code = &icmpCode
 				}
@@ -1395,13 +1395,13 @@ func parseIBMISSecurityGroupRuleDictionary(d *schema.ResourceData, tag string, s
 	if icmpInterface, ok := d.GetOk("icmp"); ok {
 		if icmpInterface.([]interface{})[0] != nil {
 			haveType := false
-			if value, ok := d.GetOk("icmp.0.type"); ok {
+			if value, ok := d.GetOkExists("icmp.0.type"); ok {
 				parsed.icmpType = int64(value.(int))
 				haveType = true
 				sgTemplate.Type = &parsed.icmpType
 				securityGroupRulePatchModel.Type = &parsed.icmpType
 			}
-			if value, ok := d.GetOk("icmp.0.code"); ok {
+			if value, ok := d.GetOkExists("icmp.0.code"); ok {
 				if !haveType {
 					return nil, nil, nil, fmt.Errorf("icmp code requires icmp type")
 				}
@@ -1415,13 +1415,13 @@ func parseIBMISSecurityGroupRuleDictionary(d *schema.ResourceData, tag string, s
 	} else {
 		if parsed.protocol == "icmp" {
 			haveType := false
-			if value, ok := d.GetOk("type"); ok {
+			if value, ok := d.GetOkExists("type"); ok {
 				parsed.icmpType = int64(value.(int))
 				haveType = true
 				sgTemplate.Type = &parsed.icmpType
 				securityGroupRulePatchModel.Type = &parsed.icmpType
 			}
-			if value, ok := d.GetOk("code"); ok {
+			if value, ok := d.GetOkExists("code"); ok {
 				if !haveType {
 					return nil, nil, nil, fmt.Errorf("icmp code requires icmp type")
 				}

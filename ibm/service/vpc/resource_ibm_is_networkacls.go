@@ -1247,11 +1247,11 @@ func createInlineRules(d *schema.ResourceData, nwaclC *vpcv1.VpcV1, nwaclid stri
 			if !isNil(icmp[0]) {
 				icmpTypePath := fmt.Sprintf("rules.%d.icmp.0.%s", i, isNetworkACLRuleICMPType)
 				icmpCodePath := fmt.Sprintf("rules.%d.icmp.0.%s", i, isNetworkACLRuleICMPCode)
-				if val, ok := d.GetOk(icmpTypePath); ok {
+				if val, ok := d.GetOkExists(icmpTypePath); ok {
 					icmptype = int64(val.(int))
 					ruleTemplate.Type = &icmptype
 				}
-				if val, ok := d.GetOk(icmpCodePath); ok {
+				if val, ok := d.GetOkExists(icmpCodePath); ok {
 					icmpcode = int64(val.(int))
 					ruleTemplate.Code = &icmpcode
 				}
@@ -1268,11 +1268,11 @@ func createInlineRules(d *schema.ResourceData, nwaclC *vpcv1.VpcV1, nwaclid stri
 			icmpType := fmt.Sprintf("rules.%d.type", i)
 			icmpCode := fmt.Sprintf("rules.%d.code", i)
 			ruleTemplate.Protocol = &protocol
-			if val, ok := d.GetOk(icmpType); ok {
+			if val, ok := d.GetOkExists(icmpType); ok {
 				icmptype = int64(val.(int))
 				ruleTemplate.Type = &icmptype
 			}
-			if val, ok := d.GetOk(icmpCode); ok {
+			if val, ok := d.GetOkExists(icmpCode); ok {
 				icmpcode = int64(val.(int))
 				ruleTemplate.Code = &icmpcode
 			}

@@ -528,11 +528,11 @@ func nwaclRuleCreate(context context.Context, d *schema.ResourceData, meta inter
 		if !isNil(icmp[0]) {
 			icmpTypePath := fmt.Sprint(isNetworkACLRuleICMP, ".0.", isNetworkACLRuleICMPType)
 			icmpCodePath := fmt.Sprint(isNetworkACLRuleICMP, ".0.", isNetworkACLRuleICMPCode)
-			if val, ok := d.GetOk(icmpTypePath); ok {
+			if val, ok := d.GetOkExists(icmpTypePath); ok {
 				icmptype = int64(val.(int))
 				ruleTemplate.Type = &icmptype
 			}
-			if val, ok := d.GetOk(icmpCodePath); ok {
+			if val, ok := d.GetOkExists(icmpCodePath); ok {
 				icmpcode = int64(val.(int))
 				ruleTemplate.Code = &icmpcode
 			}
@@ -547,11 +547,11 @@ func nwaclRuleCreate(context context.Context, d *schema.ResourceData, meta inter
 		}
 	} else if protocol == "icmp" {
 		ruleTemplate.Protocol = &protocol
-		if val, ok := d.GetOk(isNetworkACLRuleICMPType); ok {
+		if val, ok := d.GetOkExists(isNetworkACLRuleICMPType); ok {
 			icmptype = int64(val.(int))
 			ruleTemplate.Type = &icmptype
 		}
-		if val, ok := d.GetOk(isNetworkACLRuleICMPCode); ok {
+		if val, ok := d.GetOkExists(isNetworkACLRuleICMPCode); ok {
 			icmpcode = int64(val.(int))
 			ruleTemplate.Code = &icmpcode
 		}
@@ -1187,14 +1187,14 @@ func buildNetworkACLRuleUpdatePatch(d *schema.ResourceData) (*vpcv1.NetworkACLRu
 		icmpCode := fmt.Sprint(isNetworkACLRuleICMP, ".0.", isNetworkACLRuleICMPCode)
 		icmpType := fmt.Sprint(isNetworkACLRuleICMP, ".0.", isNetworkACLRuleICMPType)
 		if d.HasChange(icmpCode) {
-			if codeVar, ok := d.GetOk(icmpCode); ok {
+			if codeVar, ok := d.GetOkExists(icmpCode); ok {
 				code := int64(codeVar.(int))
 				patchModel.Code = &code
 				hasChanged = true
 			}
 		}
 		if d.HasChange(icmpType) {
-			if typeVar, ok := d.GetOk(icmpType); ok {
+			if typeVar, ok := d.GetOkExists(icmpType); ok {
 				typeInt := int64(typeVar.(int))
 				patchModel.Type = &typeInt
 				hasChanged = true
@@ -1204,7 +1204,7 @@ func buildNetworkACLRuleUpdatePatch(d *schema.ResourceData) (*vpcv1.NetworkACLRu
 
 	// ICMP Code (new top-level attribute)
 	if d.HasChange(isNetworkACLRuleICMPCode) {
-		if codeVar, ok := d.GetOk(isNetworkACLRuleICMPCode); ok {
+		if codeVar, ok := d.GetOkExists(isNetworkACLRuleICMPCode); ok {
 			code := int64(codeVar.(int))
 			patchModel.Code = &code
 			hasChanged = true
@@ -1213,7 +1213,7 @@ func buildNetworkACLRuleUpdatePatch(d *schema.ResourceData) (*vpcv1.NetworkACLRu
 
 	// ICMP Type (new top-level attribute)
 	if d.HasChange(isNetworkACLRuleICMPType) {
-		if typeVar, ok := d.GetOk(isNetworkACLRuleICMPType); ok {
+		if typeVar, ok := d.GetOkExists(isNetworkACLRuleICMPType); ok {
 			typeInt := int64(typeVar.(int))
 			patchModel.Type = &typeInt
 			hasChanged = true
