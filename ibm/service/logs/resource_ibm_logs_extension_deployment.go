@@ -261,14 +261,16 @@ func resourceIbmLogsExtensionDeploymentUpdate(context context.Context, d *schema
 
 	hasChange := false
 
+	// Version and item_ids are required fields for the update API
+	updateExtensionDeploymentOptions.SetVersion(d.Get("version").(string))
+	var newItemIds []string
+	for _, v := range d.Get("item_ids").([]interface{}) {
+		newItemIdsItem := v.(string)
+		newItemIds = append(newItemIds, newItemIdsItem)
+	}
+	updateExtensionDeploymentOptions.SetItemIds(newItemIds)
+
 	if d.HasChange("version") || d.HasChange("item_ids") {
-		updateExtensionDeploymentOptions.SetVersion(d.Get("version").(string))
-		var newItemIds []string
-		for _, v := range d.Get("item_ids").([]interface{}) {
-			newItemIdsItem := v.(string)
-			newItemIds = append(newItemIds, newItemIdsItem)
-		}
-		updateExtensionDeploymentOptions.SetItemIds(newItemIds)
 		hasChange = true
 	}
 	if d.HasChange("applications") {
