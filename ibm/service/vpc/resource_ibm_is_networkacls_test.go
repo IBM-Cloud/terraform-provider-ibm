@@ -315,3 +315,231 @@ func testAccCheckIBMISNetworkACLResourceGroupConfig(resourceGroupSelect bool) st
 	  }
 	`, acc.ISZoneName, resourceGroupSelect, acc.IsResourceGroupID)
 }
+
+// TestNetworkACL_DeprecatedICMPToFlatMigration tests migration of inline rules from
+// TestNetworkACL_DeprecatedToFlatMigration tests migration of inline rules from
+// deprecated blocks (icmp{}, tcp{}, udp{}) to new flat struct (protocol + top-level attributes)
+// and also tests switching between protocol blocks (icmp{} to tcp{})
+func TestNetworkACL_DeprecatedToFlatMigration(t *testing.T) {
+	var nwACL string
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: checkNetworkACLDestroy,
+		Steps: []resource.TestStep{
+			{
+				// Step 1: Create with deprecated icmp{} block
+				Config: testAccCheckIBMISNetworkACLDeprecatedICMP(),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISNetworkACLExists("ibm_is_network_acl.test_acl", nwACL),
+					resource.TestCheckResourceAttr(
+						"ibm_is_network_acl.test_acl", "rules.#", "1"),
+					resource.TestCheckResourceAttr(
+						"ibm_is_network_acl.test_acl", "rules.0.protocol", "icmp"),
+				),
+			},
+			{
+				// Step 2: Migrate icmp{} to flat struct with protocol = "icmp"
+				Config: testAccCheckIBMISNetworkACLFlatICMP(),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISNetworkACLExists("ibm_is_network_acl.test_acl", nwACL),
+					resource.TestCheckResourceAttr(
+						"ibm_is_network_acl.test_acl", "rules.#", "1"),
+					resource.TestCheckResourceAttr(
+						"ibm_is_network_acl.test_acl", "rules.0.protocol", "icmp"),
+				),
+			},
+			{
+				// Step 3: Switch from icmp to tcp{} block (tests protocol switch)
+				Config: testAccCheckIBMISNetworkACLDeprecatedTCP(),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISNetworkACLExists("ibm_is_network_acl.test_acl", nwACL),
+					resource.TestCheckResourceAttr(
+						"ibm_is_network_acl.test_acl", "rules.#", "1"),
+					resource.TestCheckResourceAttr(
+						"ibm_is_network_acl.test_acl", "rules.0.protocol", "tcp"),
+				),
+			},
+			{
+				// Step 4: Migrate tcp{} to flat struct with protocol = "tcp"
+				Config: testAccCheckIBMISNetworkACLFlatTCP(),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISNetworkACLExists("ibm_is_network_acl.test_acl", nwACL),
+					resource.TestCheckResourceAttr(
+						"ibm_is_network_acl.test_acl", "rules.#", "1"),
+					resource.TestCheckResourceAttr(
+						"ibm_is_network_acl.test_acl", "rules.0.protocol", "tcp"),
+				),
+			},
+			{
+				// Step 5: Switch from tcp to udp{} block
+				Config: testAccCheckIBMISNetworkACLDeprecatedUDP(),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISNetworkACLExists("ibm_is_network_acl.test_acl", nwACL),
+					resource.TestCheckResourceAttr(
+						"ibm_is_network_acl.test_acl", "rules.#", "1"),
+					resource.TestCheckResourceAttr(
+						"ibm_is_network_acl.test_acl", "rules.0.protocol", "udp"),
+				),
+			},
+			{
+				// Step 6: Migrate udp{} to flat struct with protocol = "udp"
+				Config: testAccCheckIBMISNetworkACLFlatUDP(),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISNetworkACLExists("ibm_is_network_acl.test_acl", nwACL),
+					resource.TestCheckResourceAttr(
+						"ibm_is_network_acl.test_acl", "rules.#", "1"),
+					resource.TestCheckResourceAttr(
+						"ibm_is_network_acl.test_acl", "rules.0.protocol", "udp"),
+				),
+			},
+		},
+	})
+}
+
+// Config: Deprecated icmp{} block in inline rules
+func testAccCheckIBMISNetworkACLDeprecatedICMP() string {
+	return `
+    resource "ibm_is_vpc" "testacc_vpc" {
+        name = "tf-nwacl-migrate-vpc"
+    }
+
+    resource "ibm_is_network_acl" "test_acl" {
+        name = "tf-nwacl-migrate"
+        vpc  = ibm_is_vpc.testacc_vpc.id
+        rules {
+            name        = "test-rule"
+            action      = "allow"
+            source      = "0.0.0.0/0"
+            destination = "0.0.0.0/0"
+            direction   = "inbound"
+            icmp {
+                type = 8
+                code = 0
+            }
+        }
+    }
+    `
+}
+
+// Config: Flat struct with protocol = "icmp" in inline rules
+func testAccCheckIBMISNetworkACLFlatICMP() string {
+	return `
+    resource "ibm_is_vpc" "testacc_vpc" {
+        name = "tf-nwacl-migrate-vpc"
+    }
+
+    resource "ibm_is_network_acl" "test_acl" {
+        name = "tf-nwacl-migrate"
+        vpc  = ibm_is_vpc.testacc_vpc.id
+        rules {
+            name        = "test-rule"
+            action      = "allow"
+            source      = "0.0.0.0/0"
+            destination = "0.0.0.0/0"
+            direction   = "inbound"
+            protocol    = "icmp"
+            type        = 8
+            code        = 0
+        }
+    }
+    `
+}
+
+// Config: Deprecated tcp{} block in inline rules
+func testAccCheckIBMISNetworkACLDeprecatedTCP() string {
+	return `
+    resource "ibm_is_vpc" "testacc_vpc" {
+        name = "tf-nwacl-migrate-vpc"
+    }
+
+    resource "ibm_is_network_acl" "test_acl" {
+        name = "tf-nwacl-migrate"
+        vpc  = ibm_is_vpc.testacc_vpc.id
+        rules {
+            name        = "test-rule"
+            action      = "allow"
+            source      = "0.0.0.0/0"
+            destination = "0.0.0.0/0"
+            direction   = "inbound"
+            tcp {
+                port_min = 80
+                port_max = 80
+            }
+        }
+    }
+    `
+}
+
+// Config: Flat struct with protocol = "tcp" in inline rules
+func testAccCheckIBMISNetworkACLFlatTCP() string {
+	return `
+    resource "ibm_is_vpc" "testacc_vpc" {
+        name = "tf-nwacl-migrate-vpc"
+    }
+
+    resource "ibm_is_network_acl" "test_acl" {
+        name = "tf-nwacl-migrate"
+        vpc  = ibm_is_vpc.testacc_vpc.id
+        rules {
+            name        = "test-rule"
+            action      = "allow"
+            source      = "0.0.0.0/0"
+            destination = "0.0.0.0/0"
+            direction   = "inbound"
+            protocol    = "tcp"
+            port_min    = 443
+            port_max    = 443
+        }
+    }
+    `
+}
+
+// Config: Deprecated udp{} block in inline rules
+func testAccCheckIBMISNetworkACLDeprecatedUDP() string {
+	return `
+    resource "ibm_is_vpc" "testacc_vpc" {
+        name = "tf-nwacl-migrate-vpc"
+    }
+
+    resource "ibm_is_network_acl" "test_acl" {
+        name = "tf-nwacl-migrate"
+        vpc  = ibm_is_vpc.testacc_vpc.id
+        rules {
+            name        = "test-rule"
+            action      = "allow"
+            source      = "0.0.0.0/0"
+            destination = "0.0.0.0/0"
+            direction   = "inbound"
+            udp {
+                port_min = 53
+                port_max = 53
+            }
+        }
+    }
+    `
+}
+
+// Config: Flat struct with protocol = "udp" in inline rules
+func testAccCheckIBMISNetworkACLFlatUDP() string {
+	return `
+    resource "ibm_is_vpc" "testacc_vpc" {
+        name = "tf-nwacl-migrate-vpc"
+    }
+
+    resource "ibm_is_network_acl" "test_acl" {
+        name = "tf-nwacl-migrate"
+        vpc  = ibm_is_vpc.testacc_vpc.id
+        rules {
+            name        = "test-rule"
+            action      = "allow"
+            source      = "0.0.0.0/0"
+            destination = "0.0.0.0/0"
+            direction   = "inbound"
+            protocol    = "udp"
+            port_min    = 53
+            port_max    = 53
+        }
+    }
+    `
+}
