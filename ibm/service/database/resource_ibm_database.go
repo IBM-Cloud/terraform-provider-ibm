@@ -254,7 +254,7 @@ func ResourceIBMDatabaseInstance() *schema.Resource {
 			},
 
 			"adminuser": {
-				Description: "The admin user id for the instance",
+				Description: "The admin user id for the instance. Note: In Gen2, there is no default admin user. Users should manage credentials using the ibm_resource_key resource (https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/resources/resource_key).",
 				Type:        schema.TypeString,
 				Computed:    true,
 			},
@@ -286,7 +286,7 @@ func ResourceIBMDatabaseInstance() *schema.Resource {
 			"configuration_schema": {
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "The configuration schema in JSON format",
+				Description: "The configuration schema in JSON format. Note: This attribute is currently not supported for Gen2 database instances.",
 			},
 			"version": {
 				Description: "The database version to provision if specified or the database version to upgrade to",
@@ -371,8 +371,9 @@ func ResourceIBMDatabaseInstance() *schema.Resource {
 				DiffSuppressFunc: flex.ApplyOnce,
 			},
 			"users": {
-				Type:     schema.TypeSet,
-				Optional: true,
+				Type:        schema.TypeSet,
+				Optional:    true,
+				Description: "Database users. Note: In Gen2, users should manage credentials using the ibm_resource_key resource (https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/resources/resource_key).",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"name": {
@@ -406,8 +407,9 @@ func ResourceIBMDatabaseInstance() *schema.Resource {
 				},
 			},
 			"allowlist": {
-				Type:     schema.TypeSet,
-				Optional: true,
+				Type:        schema.TypeSet,
+				Optional:    true,
+				Description: "Allowlist for database access. Note: This attribute is not supported for Gen2 database instances.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"address": {
@@ -701,7 +703,7 @@ func ResourceIBMDatabaseInstance() *schema.Resource {
 			},
 			"auto_scaling": {
 				Type:        schema.TypeList,
-				Description: "ICD Auto Scaling",
+				Description: "ICD Auto Scaling. Note: This attribute is currently not supported for Gen2 database instances.",
 				Optional:    true,
 				Computed:    true,
 				MaxItems:    1,
