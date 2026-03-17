@@ -101,7 +101,6 @@ func testAccCheckIbmLogsViewConfigBasic(name string) string {
 		instance_id = "%s"
 		region      = "%s"
 		name        = "%s"
-		tier        = "priority_insights"
 		filters {
 		  filters {
 			name = "applicationName"

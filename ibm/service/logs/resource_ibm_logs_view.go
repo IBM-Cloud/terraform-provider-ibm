@@ -149,6 +149,7 @@ func ResourceIbmLogsView() *schema.Resource {
 				Optional:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_logs_view", "tier"),
 				Description:  "Type of view.",
+				Computed:     true,
 			},
 			"view_id": &schema.Schema{
 				Type:        schema.TypeString,
