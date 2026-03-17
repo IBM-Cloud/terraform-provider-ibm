@@ -19,7 +19,11 @@ import (
 func TestAccIbmLogsExtensionDeploymentBasic(t *testing.T) {
 	// This test uses the IBMCloudant extension which is available in all Cloud Logs instances
 	// The test fetches the extension first to get available versions and item IDs dynamically
-	extensionId := "IBMCloudant"
+	extensionID := "IBMCloudant"
+	applications := "test-app"
+	subsystems := "test-subsystem"
+	updateApplications := "update-app"
+	updateSubsystems := "update-subsystem"
 
 	var conf logsv0.ExtensionDeployment
 
@@ -29,22 +33,36 @@ func TestAccIbmLogsExtensionDeploymentBasic(t *testing.T) {
 		CheckDestroy: testAccCheckIbmLogsExtensionDeploymentDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIbmLogsExtensionDeploymentConfigBasic(extensionId),
+				Config: testAccCheckIbmLogsExtensionDeploymentConfigBasic(extensionID),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIbmLogsExtensionDeploymentExists("ibm_logs_extension_deployment.logs_extension_deployment_instance", conf),
+					resource.TestCheckResourceAttr("ibm_logs_extension_deployment.logs_extension_deployment_instance", "logs_extension_id", extensionID),
 					resource.TestCheckResourceAttrSet("ibm_logs_extension_deployment.logs_extension_deployment_instance", "version"),
 					resource.TestCheckResourceAttrSet("ibm_logs_extension_deployment.logs_extension_deployment_instance", "item_ids.#"),
 				),
 			},
 			resource.TestStep{
-				Config: testAccCheckIbmLogsExtensionDeploymentConfigUpdate(extensionId),
+				Config: testAccCheckIbmLogsExtensionDeploymentConfigUpdate(extensionID, applications, subsystems),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckIbmLogsExtensionDeploymentExists("ibm_logs_extension_deployment.logs_extension_deployment_instance", conf),
+					resource.TestCheckResourceAttr("ibm_logs_extension_deployment.logs_extension_deployment_instance", "logs_extension_id", extensionID),
 					resource.TestCheckResourceAttrSet("ibm_logs_extension_deployment.logs_extension_deployment_instance", "version"),
+					resource.TestCheckResourceAttrSet("ibm_logs_extension_deployment.logs_extension_deployment_instance", "item_ids.#"),
 					resource.TestCheckResourceAttr("ibm_logs_extension_deployment.logs_extension_deployment_instance", "applications.#", "1"),
-					resource.TestCheckResourceAttr("ibm_logs_extension_deployment.logs_extension_deployment_instance", "applications.0", "test-app"),
+					resource.TestCheckResourceAttr("ibm_logs_extension_deployment.logs_extension_deployment_instance", "applications.0", applications),
 					resource.TestCheckResourceAttr("ibm_logs_extension_deployment.logs_extension_deployment_instance", "subsystems.#", "1"),
-					resource.TestCheckResourceAttr("ibm_logs_extension_deployment.logs_extension_deployment_instance", "subsystems.0", "test-subsystem"),
+					resource.TestCheckResourceAttr("ibm_logs_extension_deployment.logs_extension_deployment_instance", "subsystems.0", subsystems),
+				),
+			},
+			resource.TestStep{
+				Config: testAccCheckIbmLogsExtensionDeploymentConfigUpdate(extensionID, updateApplications, updateSubsystems),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("ibm_logs_extension_deployment.logs_extension_deployment_instance", "logs_extension_id", extensionID),
+					resource.TestCheckResourceAttrSet("ibm_logs_extension_deployment.logs_extension_deployment_instance", "version"),
+					resource.TestCheckResourceAttr("ibm_logs_extension_deployment.logs_extension_deployment_instance", "item_ids.#", "2"),
+					resource.TestCheckResourceAttr("ibm_logs_extension_deployment.logs_extension_deployment_instance", "applications.#", "1"),
+					resource.TestCheckResourceAttr("ibm_logs_extension_deployment.logs_extension_deployment_instance", "applications.0", updateApplications),
+					resource.TestCheckResourceAttr("ibm_logs_extension_deployment.logs_extension_deployment_instance", "subsystems.#", "1"),
+					resource.TestCheckResourceAttr("ibm_logs_extension_deployment.logs_extension_deployment_instance", "subsystems.0", updateSubsystems),
 				),
 			},
 			resource.TestStep{
@@ -56,42 +74,42 @@ func TestAccIbmLogsExtensionDeploymentBasic(t *testing.T) {
 	})
 }
 
-func testAccCheckIbmLogsExtensionDeploymentConfigBasic(extensionId string) string {
+func testAccCheckIbmLogsExtensionDeploymentConfigBasic(extensionID string) string {
 	return fmt.Sprintf(`
 		data "ibm_logs_extension" "extension" {
-			instance_id = "%s"
-			region = "%s"
-			logs_extension_id = "%s"
+			instance_id       = "%[1]s"
+			region            = "%[2]s"
+			logs_extension_id = "%[3]s"
 		}
 
 		resource "ibm_logs_extension_deployment" "logs_extension_deployment_instance" {
-			instance_id = "%s"
-			region = "%s"
-			extension_id = "%s"
-			version = data.ibm_logs_extension.extension.revisions.0.version
-			item_ids = [for item in data.ibm_logs_extension.extension.revisions.0.items : item.id]
+			instance_id       = "%[1]s"
+			region            = "%[2]s"
+			logs_extension_id = "%[3]s"
+			version           = data.ibm_logs_extension.extension.revisions[0].version
+			item_ids          = [for item in data.ibm_logs_extension.extension.revisions[0].items : item.id]
 		}
-	`, acc.LogsInstanceId, acc.LogsInstanceRegion, extensionId, acc.LogsInstanceId, acc.LogsInstanceRegion, extensionId)
+	`, acc.LogsInstanceId, acc.LogsInstanceRegion, extensionID)
 }
 
-func testAccCheckIbmLogsExtensionDeploymentConfigUpdate(extensionId string) string {
+func testAccCheckIbmLogsExtensionDeploymentConfigUpdate(extensionID, applications, subsystems string) string {
 	return fmt.Sprintf(`
 		data "ibm_logs_extension" "extension" {
-			instance_id = "%s"
-			region = "%s"
-			logs_extension_id = "%s"
+			instance_id       = "%[1]s"
+			region            = "%[2]s"
+			logs_extension_id = "%[3]s"
 		}
 
 		resource "ibm_logs_extension_deployment" "logs_extension_deployment_instance" {
-			instance_id = "%s"
-			region = "%s"
-			extension_id = "%s"
-			version = data.ibm_logs_extension.extension.revisions.0.version
-			item_ids = [for item in data.ibm_logs_extension.extension.revisions.0.items : item.id]
-			applications = ["test-app"]
-			subsystems = ["test-subsystem"]
+			instance_id       = "%[1]s"
+			region            = "%[2]s"
+			logs_extension_id = "%[3]s"
+			version           = data.ibm_logs_extension.extension.revisions[0].version
+			item_ids          = slice([for item in data.ibm_logs_extension.extension.revisions[0].items : item.id], 0, 2)
+			applications      = ["%[4]s"]
+			subsystems        = ["%[5]s"]
 		}
-	`, acc.LogsInstanceId, acc.LogsInstanceRegion, extensionId, acc.LogsInstanceId, acc.LogsInstanceRegion, extensionId)
+	`, acc.LogsInstanceId, acc.LogsInstanceRegion, extensionID, applications, subsystems)
 }
 
 func testAccCheckIbmLogsExtensionDeploymentExists(n string, obj logsv0.ExtensionDeployment) resource.TestCheckFunc {
@@ -113,10 +131,10 @@ func testAccCheckIbmLogsExtensionDeploymentExists(n string, obj logsv0.Extension
 			return err
 		}
 
-		extensionId := resourceID[2]
+		extensionID := resourceID[2]
 
 		getExtensionDeploymentOptions := &logsv0.GetExtensionDeploymentOptions{}
-		getExtensionDeploymentOptions.SetID(extensionId)
+		getExtensionDeploymentOptions.SetID(extensionID)
 
 		extensionDeployment, _, err := logsClient.GetExtensionDeployment(getExtensionDeploymentOptions)
 		if err != nil {
@@ -145,10 +163,10 @@ func testAccCheckIbmLogsExtensionDeploymentDestroy(s *terraform.State) error {
 			return err
 		}
 
-		extensionId := resourceID[2]
+		extensionID := resourceID[2]
 
 		getExtensionDeploymentOptions := &logsv0.GetExtensionDeploymentOptions{}
-		getExtensionDeploymentOptions.SetID(extensionId)
+		getExtensionDeploymentOptions.SetID(extensionID)
 
 		// Try to find the key
 		_, response, err := logsClient.GetExtensionDeployment(getExtensionDeploymentOptions)

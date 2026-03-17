@@ -2,7 +2,7 @@
 layout: "ibm"
 page_title: "IBM : ibm_logs_extensions"
 description: |-
-  Get information about Get list of extensions response
+  Get list of all extensions. If deployed is true, this datasource lists all deployed extension.
 subcategory: "Cloud Logs"
 ---
 
@@ -12,14 +12,31 @@ Provides a read-only data source to retrieve information about a Get list of ext
 
 ## Example Usage
 
+### List all extensions
 ```hcl
-data "ibm_logs_extensions" "logs_extensions" {
+data "ibm_logs_extensions" "logs_extensions_instance" {
+  instance_id       = ibm_resource_instance.logs_instance.guid
+  region            = ibm_resource_instance.logs_instance.location
+}
+```
+
+### List all deployed extensions
+
+```hcl
+data "ibm_logs_extensions" "deployments" {
+  instance_id       = ibm_resource_instance.logs_instance.guid
+  region            = ibm_resource_instance.logs_instance.location
+  deployed    = true
 }
 ```
 
 ## Argument Reference
 
 You can specify the following arguments for this data source.
+
+* `instance_id` - (Required, String) Cloud Logs Instance GUID.
+* `region` - (Optional, String) Cloud Logs Instance Region.
+* `endpoint_type` - (Optional, String) Cloud Logs Instance Endpoint type. Allowed values `public` and `private`.
 
 * `deployed` - (Optional, Boolean) Optional deployment filter. If omitted, returns all extensions. If true, returns only deployed extensions. If false, returns only non-deployed extensions.
 
