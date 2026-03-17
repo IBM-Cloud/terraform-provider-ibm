@@ -97,83 +97,25 @@ func (g *resourceIBMDatabaseGen2Backend) Create(context context.Context, d *sche
 		rsInst.ResourceGroup = &defaultRg
 	}
 
-	params := Params{}
+	// Gen2 uses a different parameter structure
+	// Get the database type for the dataservices key (service name and resource ID have same format)
+	dbType := getDatabaseTypeFromResourceID(serviceName)
+	if dbType == "" {
+		return diag.FromErr(fmt.Errorf("[ERROR] Unable to determine database type from service name: %s", serviceName))
+	}
 
+	// Build the database-specific configuration
+	dbConfig := make(map[string]interface{})
+
+	// Version
 	if version, ok := d.GetOk("version"); ok {
-		params.Version = version.(string)
-	}
-	if keyProtect, ok := d.GetOk("key_protect_key"); ok {
-		params.KeyProtectKey = keyProtect.(string)
-	}
-	if keyProtectInstance, ok := d.GetOk("key_protect_instance"); ok {
-		params.KeyProtectInstance = keyProtectInstance.(string)
-	}
-	if backupID, ok := d.GetOk("backup_id"); ok {
-		params.BackupID = backupID.(string)
-	}
-	if backUpEncryptionKey, ok := d.GetOk("backup_encryption_key_crn"); ok {
-		params.BackUpEncryptionCRN = backUpEncryptionKey.(string)
-	}
-	if remoteLeader, ok := d.GetOk("remote_leader_id"); ok {
-		params.RemoteLeaderID = remoteLeader.(string)
+		dbConfig["version"] = version.(string)
 	}
 
-	if pitrID, ok := d.GetOk("point_in_time_recovery_deployment_id"); ok {
-		params.PITRDeploymentID = pitrID.(string)
-	}
-
-	pitrOk := !d.GetRawConfig().AsValueMap()["point_in_time_recovery_time"].IsNull()
-	if pitrTime, ok := d.GetOk("point_in_time_recovery_time"); pitrOk {
-		if !ok {
-			pitrTime = ""
-		}
-
-		pitrTimeTrimmed := strings.TrimSpace(pitrTime.(string))
-		params.PITRTimeStamp = &pitrTimeTrimmed
-	}
-
-	if offlineRestore, ok := d.GetOk("offline_restore"); ok {
-		params.OfflineRestore = offlineRestore.(bool)
-	}
-
-	if asyncRestore, ok := d.GetOk("async_restore"); ok {
-		params.AsyncRestore = asyncRestore.(bool)
-	}
-
-	var initialNodeCount int
-	var sourceCRN string
-
-	if params.PITRDeploymentID != "" {
-		sourceCRN = params.PITRDeploymentID
-	}
-
-	if params.RemoteLeaderID != "" {
-		sourceCRN = params.RemoteLeaderID
-	}
-
-	if sourceCRN != "" {
-		group, err := getMemberGroup(sourceCRN, meta)
-
-		if err != nil {
-			return diag.FromErr(
-				fmt.Errorf("[ERROR] Error fetching source formation group: %s", err)) // raise error
-		}
-
-		if group != nil {
-			initialNodeCount = group.Members.Allocation
-		}
-	} else {
-		initialNodeCount, err = getInitialNodeCount(serviceName, plan, meta)
-		if err != nil {
-			return diag.FromErr(err)
-		}
-	}
-
+	// Get member group configuration
 	var memberGroup *Group
-
 	if group, ok := d.GetOk("group"); ok {
 		groups := expandGroups(group.(*schema.Set).List())
-
 		for _, g := range groups {
 			if g.ID == "member" {
 				memberGroup = g
@@ -182,29 +124,93 @@ func (g *resourceIBMDatabaseGen2Backend) Create(context context.Context, d *sche
 		}
 	}
 
-	if memberGroup != nil && memberGroup.Memory != nil {
-		params.Memory = memberGroup.Memory.Allocation * initialNodeCount
+	// Members count
+	var members int
+	if memberGroup != nil && memberGroup.Members != nil {
+		members = memberGroup.Members.Allocation
+	} else {
+		// Get initial node count if not specified
+		var err error
+		members, err = getInitialNodeCount(serviceName, plan, meta)
+		if err != nil {
+			return diag.FromErr(err)
+		}
 	}
+	dbConfig["members"] = members
 
+	// Storage in GB (not MB!)
 	if memberGroup != nil && memberGroup.Disk != nil {
-		params.Disk = memberGroup.Disk.Allocation * initialNodeCount
+		// Disk allocation is per member in MB, convert to GB for total
+		storageGB := (memberGroup.Disk.Allocation * members) / 1024
+		dbConfig["storage_gb"] = storageGB
 	}
 
-	if memberGroup != nil && memberGroup.CPU != nil {
-		params.CPU = memberGroup.CPU.Allocation * initialNodeCount
-	}
-
+	// Host flavor
 	if memberGroup != nil && memberGroup.HostFlavor != nil {
-		params.HostFlavor = memberGroup.HostFlavor.ID
+		dbConfig["host_flavor"] = memberGroup.HostFlavor.ID
 	}
 
+	// Build dataservices structure
+	dataservices := map[string]interface{}{
+		dbType: dbConfig,
+	}
+
+	// Handle encryption
+	encryption := make(map[string]interface{})
+	if keyProtect, ok := d.GetOk("key_protect_key"); ok {
+		encryption["disk"] = keyProtect.(string)
+	}
+	if backUpEncryptionKey, ok := d.GetOk("backup_encryption_key_crn"); ok {
+		encryption["backup"] = backUpEncryptionKey.(string)
+	}
+	if len(encryption) > 0 {
+		dataservices["encryption"] = encryption
+	}
+
+	// Handle restore from backup (Gen2 uses restore_backup_id)
+	if backupID, ok := d.GetOk("backup_id"); ok {
+		dataservices["restore_backup_id"] = backupID.(string)
+	}
+
+	// Handle point-in-time recovery
+	if pitrID, ok := d.GetOk("point_in_time_recovery_deployment_id"); ok {
+		dataservices["point_in_time_recovery_deployment_id"] = pitrID.(string)
+	}
+
+	pitrOk := !d.GetRawConfig().AsValueMap()["point_in_time_recovery_time"].IsNull()
+	if pitrTime, ok := d.GetOk("point_in_time_recovery_time"); pitrOk {
+		if !ok {
+			pitrTime = ""
+		}
+		pitrTimeTrimmed := strings.TrimSpace(pitrTime.(string))
+		dataservices["point_in_time_recovery_time"] = pitrTimeTrimmed
+	}
+
+	if offlineRestore, ok := d.GetOk("offline_restore"); ok {
+		dataservices["offline_restore"] = offlineRestore.(bool)
+	}
+
+	if asyncRestore, ok := d.GetOk("async_restore"); ok {
+		dataservices["async_restore"] = asyncRestore.(bool)
+	}
+
+	// Handle read replica
+	if remoteLeader, ok := d.GetOk("remote_leader_id"); ok {
+		dataservices["remote_leader_id"] = remoteLeader.(string)
+	}
+
+	// Service endpoints
 	serviceEndpoint := d.Get("service_endpoints").(string)
-	params.ServiceEndpoints = serviceEndpoint
-	parameters, _ := json.Marshal(params)
-	var raw map[string]interface{}
-	json.Unmarshal(parameters, &raw)
-	//paramString := string(parameters[:])
-	rsInst.Parameters = raw
+	if serviceEndpoint != "" {
+		dataservices["service-endpoints"] = serviceEndpoint
+	}
+
+	// Build final parameters structure
+	parameters := map[string]interface{}{
+		"dataservices": dataservices,
+	}
+
+	rsInst.Parameters = parameters
 
 	instance, response, err := rsConClient.CreateResourceInstance(&rsInst)
 	if err != nil {
@@ -213,7 +219,7 @@ func (g *resourceIBMDatabaseGen2Backend) Create(context context.Context, d *sche
 	}
 	d.SetId(*instance.ID)
 
-	_, err = waitForDatabaseInstanceCreate(d, meta, *instance.ID)
+	_, err = waitForDatabaseInstanceCreate(d, meta, *instance.ID, false)
 	if err != nil {
 		return diag.FromErr(
 			fmt.Errorf(

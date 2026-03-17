@@ -1362,7 +1362,7 @@ func classicDatabaseInstanceCreate(context context.Context, d *schema.ResourceDa
 	}
 	d.SetId(*instance.ID)
 
-	_, err = waitForDatabaseInstanceCreate(d, meta, *instance.ID)
+	_, err = waitForDatabaseInstanceCreate(d, meta, *instance.ID, true)
 	if err != nil {
 		return diag.FromErr(
 			fmt.Errorf(
@@ -2422,7 +2422,7 @@ func waitForICDReady(meta interface{}, instanceID string) error {
 	return nil
 }
 
-func waitForDatabaseInstanceCreate(d *schema.ResourceData, meta interface{}, instanceID string) (interface{}, error) {
+func waitForDatabaseInstanceCreate(d *schema.ResourceData, meta interface{}, instanceID string, waitForICD bool) (interface{}, error) {
 	rsConClient, err := meta.(conns.ClientSession).ResourceControllerV2API()
 	if err != nil {
 		return false, err
@@ -2452,9 +2452,11 @@ func waitForDatabaseInstanceCreate(d *schema.ResourceData, meta interface{}, ins
 		MinTimeout: 10 * time.Second,
 	}
 
-	waitErr := waitForICDReady(meta, instanceID)
-	if waitErr != nil {
-		return false, fmt.Errorf("[ERROR] Error ICD interface not ready after create: %s with error %s\n", instanceID, waitErr)
+	if waitForICD {
+		waitErr := waitForICDReady(meta, instanceID)
+		if waitErr != nil {
+			return false, fmt.Errorf("[ERROR] Error ICD interface not ready after create: %s with error %s\n", instanceID, waitErr)
+		}
 	}
 
 	return stateConf.WaitForState()

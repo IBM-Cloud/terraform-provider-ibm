@@ -106,7 +106,8 @@ func isGen2Plan(plan string) bool {
 	return gen2Pattern.MatchString(strings.ToLower(plan))
 }
 
-// getDatabaseTypeFromResourceID maps the resource ID to the database type key used in extensions
+// getDatabaseTypeFromResourceID maps the resource ID or service name to the database type key
+// Used in extensions for Gen2 and in parameters structure
 func getDatabaseTypeFromResourceID(resourceID string) string {
 	if strings.HasPrefix(resourceID, "databases-for-etcd") {
 		return "etcd"
