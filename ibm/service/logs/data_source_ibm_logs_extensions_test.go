@@ -21,6 +21,15 @@ func TestAccIbmLogsExtensionsDataSourceBasic(t *testing.T) {
 				Config: testAccCheckIbmLogsExtensionsDataSourceConfigBasic(),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_logs_extensions.logs_extensions_instance", "id"),
+					resource.TestCheckResourceAttrSet("data.ibm_logs_extensions.logs_extensions_instance", "extensions.#"),
+					resource.TestCheckResourceAttrSet("data.ibm_logs_extensions.logs_extensions_instance", "extensions.0.revisions.#"),
+				),
+			},
+			resource.TestStep{
+				Config: testAccCheckIbmLogsExtensionDeploymentssDataSourceConfigBasic(),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet("data.ibm_logs_extensions.logs_extensions_instance", "id"),
+					resource.TestCheckResourceAttrSet("data.ibm_logs_extensions.logs_extensions_instance", "extensions.#"),
 				),
 			},
 		},
@@ -31,8 +40,17 @@ func testAccCheckIbmLogsExtensionsDataSourceConfigBasic() string {
 	return fmt.Sprintf(`
 		data "ibm_logs_extensions" "logs_extensions_instance" {
 			instance_id = "%s"
-			region = "%s"
-			deployed = true
+			region      = "%s"
+		}
+	`, acc.LogsInstanceId, acc.LogsInstanceRegion)
+}
+
+func testAccCheckIbmLogsExtensionDeploymentssDataSourceConfigBasic() string {
+	return fmt.Sprintf(`
+		data "ibm_logs_extensions" "logs_extensions_instance" {
+			instance_id = "%s"
+			region      = "%s"
+			deployed    = true
 		}
 	`, acc.LogsInstanceId, acc.LogsInstanceRegion)
 }

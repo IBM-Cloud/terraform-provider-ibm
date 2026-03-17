@@ -13,6 +13,7 @@ import (
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
+	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/IBM/logs-go-sdk/logsv0"
 )
 
@@ -21,21 +22,6 @@ func DataSourceIbmLogsExtension() *schema.Resource {
 		ReadContext: dataSourceIbmLogsExtensionRead,
 
 		Schema: map[string]*schema.Schema{
-			"instance_id": &schema.Schema{
-				Type:        schema.TypeString,
-				Required:    true,
-				Description: "The ID of the IBM Cloud Logs instance.",
-			},
-			"region": &schema.Schema{
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "The region of the IBM Cloud Logs instance.",
-			},
-			"endpoint_type": &schema.Schema{
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "public or private.",
-			},
 			"logs_extension_id": &schema.Schema{
 				Type:        schema.TypeString,
 				Required:    true,
@@ -211,7 +197,7 @@ func DataSourceIbmLogsExtension() *schema.Resource {
 func dataSourceIbmLogsExtensionRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	logsClient, err := meta.(conns.ClientSession).LogsV0()
 	if err != nil {
-		tfErr := flex.TerraformErrorf(err, err.Error(), "ibm_logs_extension", "read")
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_logs_extension", "read", "initialize-client")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
@@ -229,79 +215,90 @@ func dataSourceIbmLogsExtensionRead(context context.Context, d *schema.ResourceD
 
 	extension, response, err := logsClient.GetExtensionWithContext(context, getExtensionOptions)
 	if err != nil {
-		log.Printf("[DEBUG] GetExtensionWithContext failed %s\n%s", err, response)
-		return diag.FromErr(fmt.Errorf("GetExtensionWithContext failed %s\n%s", err, response))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetExtensionWithContext failed: %s, %s", err.Error(), response), "(Data) ibm_logs_extension", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	d.SetId(*extension.ID)
 
 	if err = d.Set("name", extension.Name); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting name: %s", err))
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting name: %s", err), "(Data) ibm_logs_extension", "read", "set-name").GetDiag()
 	}
 
-	revisions := []map[string]interface{}{}
-	if extension.Revisions != nil {
-		for _, modelItem := range extension.Revisions {
-			modelMap, err := dataSourceIbmLogsExtensionExtensionsV1ExtensionRevisionToMap(&modelItem)
+	if !core.IsNil(extension.Revisions) {
+		revisions := []map[string]interface{}{}
+		for _, revisionsItem := range extension.Revisions {
+			revisionsItemMap, err := DataSourceIbmLogsExtensionExtensionsV1ExtensionRevisionToMap(&revisionsItem) // #nosec G601
 			if err != nil {
-				return diag.FromErr(err)
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_logs_extension", "read", "revisions-to-map").GetDiag()
 			}
-			revisions = append(revisions, modelMap)
+			revisions = append(revisions, revisionsItemMap)
+		}
+		if err = d.Set("revisions", revisions); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting revisions: %s", err), "(Data) ibm_logs_extension", "read", "set-revisions").GetDiag()
 		}
 	}
-	if err = d.Set("revisions", revisions); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting revisions %s", err))
+
+	if !core.IsNil(extension.Keywords) {
+		keywords := []interface{}{}
+		for _, keywordsItem := range extension.Keywords {
+			keywords = append(keywords, keywordsItem)
+		}
+		if err = d.Set("keywords", keywords); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting keywords: %s", err), "(Data) ibm_logs_extension", "read", "set-keywords").GetDiag()
+		}
 	}
 
-	changelog := []map[string]interface{}{}
-	if extension.Changelog != nil {
-		for _, modelItem := range extension.Changelog {
-			modelMap, err := dataSourceIbmLogsExtensionExtensionsV1ChangelogEntryToMap(&modelItem)
+	if !core.IsNil(extension.Changelog) {
+		changelog := []map[string]interface{}{}
+		for _, changelogItem := range extension.Changelog {
+			changelogItemMap, err := DataSourceIbmLogsExtensionExtensionsV1ChangelogEntryToMap(&changelogItem) // #nosec G601
 			if err != nil {
-				return diag.FromErr(err)
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_logs_extension", "read", "changelog-to-map").GetDiag()
 			}
-			changelog = append(changelog, modelMap)
+			changelog = append(changelog, changelogItemMap)
 		}
-	}
-	if err = d.Set("changelog", changelog); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting changelog %s", err))
+		if err = d.Set("changelog", changelog); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting changelog: %s", err), "(Data) ibm_logs_extension", "read", "set-changelog").GetDiag()
+		}
 	}
 
-	deployment := []map[string]interface{}{}
-	if extension.Deployment != nil {
-		modelMap, err := dataSourceIbmLogsExtensionExtensionDeploymentToMap(extension.Deployment)
+	if !core.IsNil(extension.Deployment) {
+		deployment := []map[string]interface{}{}
+		deploymentMap, err := DataSourceIbmLogsExtensionExtensionDeploymentToMap(extension.Deployment)
 		if err != nil {
-			return diag.FromErr(err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_logs_extension", "read", "deployment-to-map").GetDiag()
 		}
-		deployment = append(deployment, modelMap)
-	}
-	if err = d.Set("deployment", deployment); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting deployment %s", err))
+		deployment = append(deployment, deploymentMap)
+		if err = d.Set("deployment", deployment); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting deployment: %s", err), "(Data) ibm_logs_extension", "read", "set-deployment").GetDiag()
+		}
 	}
 
-	deprecation := []map[string]interface{}{}
-	if extension.Deprecation != nil {
-		modelMap, err := dataSourceIbmLogsExtensionExtensionsV1DeprecationToMap(extension.Deprecation)
+	if !core.IsNil(extension.Deprecation) {
+		deprecation := []map[string]interface{}{}
+		deprecationMap, err := DataSourceIbmLogsExtensionExtensionsV1DeprecationToMap(extension.Deprecation)
 		if err != nil {
-			return diag.FromErr(err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_logs_extension", "read", "deprecation-to-map").GetDiag()
 		}
-		deprecation = append(deprecation, modelMap)
-	}
-	if err = d.Set("deprecation", deprecation); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting deprecation %s", err))
+		deprecation = append(deprecation, deprecationMap)
+		if err = d.Set("deprecation", deprecation); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting deprecation: %s", err), "(Data) ibm_logs_extension", "read", "set-deprecation").GetDiag()
+		}
 	}
 
 	return nil
 }
 
-func dataSourceIbmLogsExtensionExtensionsV1ExtensionRevisionToMap(model *logsv0.ExtensionsV1ExtensionRevision) (map[string]interface{}, error) {
+func DataSourceIbmLogsExtensionExtensionsV1ExtensionRevisionToMap(model *logsv0.ExtensionsV1ExtensionRevision) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	modelMap["version"] = model.Version
+	modelMap["version"] = *model.Version
 	if model.Description != nil {
-		modelMap["description"] = model.Description
+		modelMap["description"] = *model.Description
 	}
 	if model.Excerpt != nil {
-		modelMap["excerpt"] = model.Excerpt
+		modelMap["excerpt"] = *model.Excerpt
 	}
 	if model.Labels != nil {
 		modelMap["labels"] = model.Labels
@@ -309,7 +306,7 @@ func dataSourceIbmLogsExtensionExtensionsV1ExtensionRevisionToMap(model *logsv0.
 	if model.Items != nil {
 		items := []map[string]interface{}{}
 		for _, itemsItem := range model.Items {
-			itemsItemMap, err := dataSourceIbmLogsExtensionExtensionsV1ExtensionItemToMap(&itemsItem)
+			itemsItemMap, err := DataSourceIbmLogsExtensionExtensionsV1ExtensionItemToMap(&itemsItem) // #nosec G601
 			if err != nil {
 				return modelMap, err
 			}
@@ -320,30 +317,30 @@ func dataSourceIbmLogsExtensionExtensionsV1ExtensionRevisionToMap(model *logsv0.
 	return modelMap, nil
 }
 
-func dataSourceIbmLogsExtensionExtensionsV1ExtensionItemToMap(model *logsv0.ExtensionsV1ExtensionItem) (map[string]interface{}, error) {
+func DataSourceIbmLogsExtensionExtensionsV1ExtensionItemToMap(model *logsv0.ExtensionsV1ExtensionItem) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	modelMap["id"] = model.ID
+	modelMap["id"] = *model.ID
 	modelMap["name"] = *model.Name
 	if model.Description != nil {
-		modelMap["description"] = model.Description
+		modelMap["description"] = *model.Description
 	}
-	modelMap["target_domain"] = model.TargetDomain
+	modelMap["target_domain"] = *model.TargetDomain
 	if model.IsMandatory != nil {
-		modelMap["is_mandatory"] = model.IsMandatory
+		modelMap["is_mandatory"] = *model.IsMandatory
 	}
 	return modelMap, nil
 }
 
-func dataSourceIbmLogsExtensionExtensionsV1ChangelogEntryToMap(model *logsv0.ExtensionsV1ChangelogEntry) (map[string]interface{}, error) {
+func DataSourceIbmLogsExtensionExtensionsV1ChangelogEntryToMap(model *logsv0.ExtensionsV1ChangelogEntry) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	modelMap["version"] = model.Version
-	modelMap["description_md"] = model.DescriptionMd
+	modelMap["version"] = *model.Version
+	modelMap["description_md"] = *model.DescriptionMd
 	return modelMap, nil
 }
 
-func dataSourceIbmLogsExtensionExtensionDeploymentToMap(model *logsv0.ExtensionDeployment) (map[string]interface{}, error) {
+func DataSourceIbmLogsExtensionExtensionDeploymentToMap(model *logsv0.ExtensionDeployment) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	modelMap["version"] = model.Version
+	modelMap["version"] = *model.Version
 	modelMap["item_ids"] = model.ItemIds
 	if model.Applications != nil {
 		modelMap["applications"] = model.Applications
@@ -355,9 +352,9 @@ func dataSourceIbmLogsExtensionExtensionDeploymentToMap(model *logsv0.ExtensionD
 	return modelMap, nil
 }
 
-func dataSourceIbmLogsExtensionExtensionsV1DeprecationToMap(model *logsv0.ExtensionsV1Deprecation) (map[string]interface{}, error) {
+func DataSourceIbmLogsExtensionExtensionsV1DeprecationToMap(model *logsv0.ExtensionsV1Deprecation) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	modelMap["reason"] = model.Reason
+	modelMap["reason"] = *model.Reason
 	if model.ReplacementExtensions != nil {
 		modelMap["replacement_extensions"] = model.ReplacementExtensions
 	}

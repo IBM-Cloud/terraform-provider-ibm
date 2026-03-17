@@ -18,7 +18,7 @@ data "ibm_logs_extension" "cloudant_extension" {
 resource "ibm_logs_extension_deployment" "cloudant_deployment" {
   instance_id  = var.logs_instance_id
   region       = var.region
-  extension_id = "IBMCloudant"
+  logs_extension_id = "IBMCloudant"
   
   # Use the latest version from the extension data source
   version = data.ibm_logs_extension.cloudant_extension.revisions[0].version
@@ -37,7 +37,7 @@ resource "ibm_logs_extension_deployment" "cloudant_deployment" {
 data "ibm_logs_extension_deployment" "read_deployment" {
   instance_id                   = var.logs_instance_id
   region                        = var.region
-  logs_extension_deployment_id  = ibm_logs_extension_deployment.cloudant_deployment.extension_deployment_id
+  logs_extension_id  = ibm_logs_extension_deployment.cloudant_deployment.extension_deployment_id
   
   depends_on = [ibm_logs_extension_deployment.cloudant_deployment]
 }
@@ -65,7 +65,7 @@ output "deployment_id" {
 output "deployment_details" {
   value = {
     id           = ibm_logs_extension_deployment.cloudant_deployment.id
-    extension_id = ibm_logs_extension_deployment.cloudant_deployment.extension_id
+    extension_id = ibm_logs_extension_deployment.cloudant_deployment.logs_extension_id
     version      = ibm_logs_extension_deployment.cloudant_deployment.version
     item_ids     = ibm_logs_extension_deployment.cloudant_deployment.item_ids
     applications = ibm_logs_extension_deployment.cloudant_deployment.applications

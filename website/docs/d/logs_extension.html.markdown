@@ -12,12 +12,14 @@ Provides a read-only data source to retrieve information about an Extension meta
 
 ## Example Usage
 
+### Get details of IBMCloudKubernetes extension
 ```hcl
 data "ibm_logs_extension" "logs_extension" {
-  instance_id  = ibm_resource_instance.logs_instance.guid
-  region       = ibm_resource_instance.logs_instance.location
-  logs_extension_id = "logs_extension_id"
+  instance_id       = ibm_resource_instance.logs_instance.guid
+  region            = ibm_resource_instance.logs_instance.location
+  logs_extension_id = "IBMCloudKubernetes"
 }
+
 ```
 
 ## Argument Reference
@@ -42,7 +44,6 @@ Nested schema for **changelog**:
 	  * Constraints: The maximum length is `4096` characters. The minimum length is `1` character. The value must match regular expression `/^[\\p{L}\\p{N}\\p{P}\\p{Z}\\p{S}\\p{M}\\r\\n\\t]+$/`.
 	* `version` - (String) The version of the Extension this changelog entry refers to.
 	  * Constraints: The maximum length is `4096` characters. The minimum length is `1` character. The value must match regular expression `/^[\\p{L}\\p{N}\\p{P}\\p{Z}\\p{S}\\p{M}]+$/`.
-
 * `deployment` - (List) Deployment details of an Extension scoped by extension ID in the path.
 Nested schema for **deployment**:
 	* `applications` - (List) Applications that the Extension is deployed for. When this is empty, it is applied to all applications.
@@ -55,20 +56,16 @@ Nested schema for **deployment**:
 	  * Constraints: The list items must match regular expression `/^[\\p{L}\\p{N}\\p{P}\\p{Z}\\p{S}\\p{M}]+$/`. The maximum length is `4096` items. The minimum length is `0` items.
 	* `version` - (String) The version of the Extension revision to deploy.
 	  * Constraints: The maximum length is `4096` characters. The minimum length is `1` character. The value must match regular expression `/^[\\p{L}\\p{N}\\p{P}\\p{Z}\\p{S}\\p{M}]+$/`.
-
 * `deprecation` - (List) Deprecation details of the Extension.
 Nested schema for **deprecation**:
 	* `reason` - (String) The reason why the element (e.g., an Extension or a version of it) is being deprecated.
 	  * Constraints: The maximum length is `4096` characters. The minimum length is `1` character. The value must match regular expression `/^[\\p{L}\\p{N}\\p{P}\\p{Z}\\p{S}\\p{M}\\r\\n\\t]+$/`.
 	* `replacement_extensions` - (List) The list of Extension IDs that serve as replacements for the deprecated element.
 	  * Constraints: The list items must match regular expression `/^[\\p{L}\\p{N}\\p{P}\\p{Z}\\p{S}\\p{M}]+$/`. The maximum length is `4096` items. The minimum length is `0` items.
-
 * `keywords` - (List) The list of keywords to enhance search capabilities on the front-end side.
   * Constraints: The list items must match regular expression `/^[\\p{L}\\p{N}\\p{P}\\p{Z}\\p{S}\\p{M}]+$/`. The maximum length is `4096` items. The minimum length is `0` items.
-
 * `name` - (String) The name of the Extension.
   * Constraints: The maximum length is `4096` characters. The minimum length is `1` character. The value must match regular expression `/^[\\p{L}\\p{N}\\p{P}\\p{Z}\\p{S}\\p{M}]+$/`.
-
 * `revisions` - (List) The list of all revisions of the Extension, each representing a versioned snapshot of the Extension's functionality and appearance.
   * Constraints: The maximum length is `4096` items. The minimum length is `0` items.
 Nested schema for **revisions**:

@@ -15,17 +15,17 @@ import (
 func TestAccIbmLogsExtensionDeploymentDataSourceBasic(t *testing.T) {
 	// This test uses the IBMCloudant extension which is available in all Cloud Logs instances
 	// The test fetches the extension first to get available versions and item IDs dynamically
-	extensionId := "IBMCloudant"
+	extensionID := "IBMCloudant"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheckCloudLogs(t) },
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIbmLogsExtensionDeploymentDataSourceConfigBasic(extensionId),
+				Config: testAccCheckIbmLogsExtensionDeploymentDataSourceConfigBasic(extensionID),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_logs_extension_deployment.logs_extension_deployment_instance", "id"),
-					resource.TestCheckResourceAttrSet("data.ibm_logs_extension_deployment.logs_extension_deployment_instance", "logs_extension_deployment_id"),
+					resource.TestCheckResourceAttrSet("data.ibm_logs_extension_deployment.logs_extension_deployment_instance", "logs_extension_id"),
 					resource.TestCheckResourceAttrSet("data.ibm_logs_extension_deployment.logs_extension_deployment_instance", "version"),
 					resource.TestCheckResourceAttrSet("data.ibm_logs_extension_deployment.logs_extension_deployment_instance", "item_ids.#"),
 				),
@@ -34,26 +34,27 @@ func TestAccIbmLogsExtensionDeploymentDataSourceBasic(t *testing.T) {
 	})
 }
 
-func testAccCheckIbmLogsExtensionDeploymentDataSourceConfigBasic(extensionId string) string {
+func testAccCheckIbmLogsExtensionDeploymentDataSourceConfigBasic(extensionID string) string {
 	return fmt.Sprintf(`
 		data "ibm_logs_extension" "extension" {
-			instance_id = "%s"
-			region = "%s"
-			logs_extension_id = "%s"
+			instance_id       = "%[1]s"
+			region            = "%[2]s"
+			logs_extension_id = "%[3]s"
 		}
 
 		resource "ibm_logs_extension_deployment" "logs_extension_deployment_instance" {
-			instance_id = "%s"
-			region = "%s"
-			extension_id = "%s"
-			version = data.ibm_logs_extension.extension.revisions.0.version
-			item_ids = [for item in data.ibm_logs_extension.extension.revisions.0.items : item.id]
+			instance_id       = "%[1]s"
+			region            = "%[2]s"
+			logs_extension_id = "%[3]s"
+			version           = data.ibm_logs_extension.extension.revisions.0.version
+			item_ids          = [for item in data.ibm_logs_extension.extension.revisions.0.items : item.id]
 		}
 
 		data "ibm_logs_extension_deployment" "logs_extension_deployment_instance" {
-			instance_id = "%s"
-			region = "%s"
-			logs_extension_deployment_id = ibm_logs_extension_deployment.logs_extension_deployment_instance.extension_deployment_id
+			depends_on        = [ibm_logs_extension_deployment.logs_extension_deployment_instance]
+			instance_id       = "%[1]s"
+			region            = "%[2]s"
+			logs_extension_id = ibm_logs_extension_deployment.logs_extension_deployment_instance.logs_extension_id
 		}
-	`, acc.LogsInstanceId, acc.LogsInstanceRegion, extensionId, acc.LogsInstanceId, acc.LogsInstanceRegion, extensionId, acc.LogsInstanceId, acc.LogsInstanceRegion)
+	`, acc.LogsInstanceId, acc.LogsInstanceRegion, extensionID)
 }

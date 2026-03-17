@@ -27,55 +27,37 @@ func ResourceIbmLogsExtensionDeployment() *schema.Resource {
 		Importer:      &schema.ResourceImporter{},
 
 		Schema: map[string]*schema.Schema{
-			"instance_id": &schema.Schema{
-				Type:        schema.TypeString,
-				Required:    true,
-				Description: "The ID of the IBM Cloud Logs instance.",
-			},
-			"region": &schema.Schema{
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "The region of the IBM Cloud Logs instance.",
-			},
-			"endpoint_type": &schema.Schema{
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "public or private.",
-			},
-			"extension_id": &schema.Schema{
+			"logs_extension_id": &schema.Schema{
 				Type:        schema.TypeString,
 				Required:    true,
 				ForceNew:    true,
-				Description: "The ID of the extension to deploy.",
-			},
-			"extension_deployment_id": &schema.Schema{
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "ExtensionDeployment Id.",
+				Description: "The unique identifier of the extension.",
 			},
 			"version": &schema.Schema{
-				Type:         schema.TypeString,
-				Required:     true,
-				ValidateFunc: validate.InvokeValidator("ibm_logs_extension_deployment", "version"),
-				Description:  "The version of the Extension revision to deploy.",
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: "The version of the Extension revision to deploy.",
 			},
 			"item_ids": &schema.Schema{
-				Type:        schema.TypeList,
+				Type:        schema.TypeSet,
 				Required:    true,
 				Description: "The list of Extension item IDs to deploy.",
 				Elem:        &schema.Schema{Type: schema.TypeString},
+				Set:         schema.HashString,
 			},
 			"applications": &schema.Schema{
-				Type:        schema.TypeList,
+				Type:        schema.TypeSet,
 				Optional:    true,
 				Description: "Applications that the Extension is deployed for. When this is empty, it is applied to all applications.",
 				Elem:        &schema.Schema{Type: schema.TypeString},
+				Set:         schema.HashString,
 			},
 			"subsystems": &schema.Schema{
-				Type:        schema.TypeList,
+				Type:        schema.TypeSet,
 				Optional:    true,
 				Description: "Subsystems that the Extension is deployed. When this is empty, it is applied to all subsystems.",
 				Elem:        &schema.Schema{Type: schema.TypeString},
+				Set:         schema.HashString,
 			},
 		},
 	}
@@ -94,25 +76,6 @@ func ResourceIbmLogsExtensionDeploymentValidator() *validate.ResourceValidator {
 			MaxValueLength:             4096,
 		},
 	)
-
-	validateSchema = append(validateSchema,
-		validate.ValidateSchema{
-			Identifier:                 "code",
-			ValidateFunctionIdentifier: validate.ValidateAllowedStringValue,
-			Type:                       validate.TypeString,
-			Optional:                   true,
-			AllowedValues:              "bad_request_or_unspecified, unauthorized, forbidden, not_found, method_internal_error, conflict, unauthenticated, resource_exhausted, deadline_exceeded",
-		},
-	)
-	validateSchema = append(validateSchema,
-		validate.ValidateSchema{
-			Identifier:                 "target_domain",
-			ValidateFunctionIdentifier: validate.ValidateAllowedStringValue,
-			Type:                       validate.TypeString,
-			Optional:                   true,
-			AllowedValues:              "alert_definition, alert, enrichment, rule_group, view, dashboard, events_to_metrics",
-		},
-	)
 	resourceValidator := validate.ResourceValidator{ResourceName: "ibm_logs_extension_deployment", Schema: validateSchema}
 	return &resourceValidator
 }
@@ -120,7 +83,7 @@ func ResourceIbmLogsExtensionDeploymentValidator() *validate.ResourceValidator {
 func resourceIbmLogsExtensionDeploymentCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	logsClient, err := meta.(conns.ClientSession).LogsV0()
 	if err != nil {
-		tfErr := flex.TerraformErrorf(err, err.Error(), "ibm_logs_extension_deployment", "create")
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_logs_extension_deployment", "create", "initialize-client")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
@@ -132,35 +95,51 @@ func resourceIbmLogsExtensionDeploymentCreate(context context.Context, d *schema
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
-
+	extensionID := d.Get("logs_extension_id").(string)
 	updateExtensionDeploymentOptions := &logsv0.UpdateExtensionDeploymentOptions{}
-
-	// Set the extension ID - deployment is tied to a specific extension
-	extensionId := d.Get("extension_id").(string)
-	updateExtensionDeploymentOptions.SetID(extensionId)
+	updateExtensionDeploymentOptions.SetID(extensionID)
 
 	updateExtensionDeploymentOptions.SetVersion(d.Get("version").(string))
-	var newItemIds []string
-	for _, v := range d.Get("item_ids").([]interface{}) {
-		newItemIdsItem := v.(string)
-		newItemIds = append(newItemIds, newItemIdsItem)
-	}
-	updateExtensionDeploymentOptions.SetItemIds(newItemIds)
-	if _, ok := d.GetOk("applications"); ok {
-		var newApplications []string
-		for _, v := range d.Get("applications").([]interface{}) {
-			newApplicationsItem := v.(string)
-			newApplications = append(newApplications, newApplicationsItem)
+
+	// var newItemIds []string
+	// for _, v := range d.Get("item_ids").([]interface{}) {
+	// 	newItemIdsItem := v.(string)
+	// 	newItemIds = append(newItemIds, newItemIdsItem)
+	// }
+
+	itemIDSet := d.Get("item_ids").(*schema.Set)
+	if itemIDSet.Len() != 0 {
+		var newItemIds []string
+		for _, v := range itemIDSet.List() {
+			newItemIdsItem := v.(string)
+			newItemIds = append(newItemIds, newItemIdsItem)
 		}
-		updateExtensionDeploymentOptions.SetApplications(newApplications)
+		updateExtensionDeploymentOptions.SetItemIds(newItemIds)
 	}
-	if _, ok := d.GetOk("subsystems"); ok {
-		var newSubsystems []string
-		for _, v := range d.Get("subsystems").([]interface{}) {
-			newSubsystemsItem := v.(string)
-			newSubsystems = append(newSubsystems, newSubsystemsItem)
+
+	if applications, ok := d.GetOk("applications"); ok {
+		applicationsSet := applications.(*schema.Set)
+		if applicationsSet.Len() != 0 {
+			var newApplications []string
+			for _, v := range applicationsSet.List() {
+				newApplicationsItem := v.(string)
+				newApplications = append(newApplications, newApplicationsItem)
+			}
+			updateExtensionDeploymentOptions.SetApplications(newApplications)
 		}
-		updateExtensionDeploymentOptions.SetSubsystems(newSubsystems)
+	}
+
+	if subsystems, ok := d.GetOk("subsystems"); ok {
+		subsystemsSet := subsystems.(*schema.Set)
+		if subsystemsSet.Len() != 0 {
+			var newSubsystems []string
+			for _, v := range subsystemsSet.List() {
+				newSubsystemsItem := v.(string)
+				newSubsystems = append(newSubsystems, newSubsystemsItem)
+			}
+			updateExtensionDeploymentOptions.SetSubsystems(newSubsystems)
+		}
+
 	}
 
 	_, _, err = logsClient.UpdateExtensionDeploymentWithContext(context, updateExtensionDeploymentOptions)
@@ -169,9 +148,8 @@ func resourceIbmLogsExtensionDeploymentCreate(context context.Context, d *schema
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
-
 	// Use extension ID as the deployment identifier
-	d.SetId(fmt.Sprintf("%s/%s/%s", region, instanceId, extensionId))
+	d.SetId(fmt.Sprintf("%s/%s/%s", region, instanceId, extensionID))
 
 	return resourceIbmLogsExtensionDeploymentRead(context, d, meta)
 }
@@ -179,11 +157,11 @@ func resourceIbmLogsExtensionDeploymentCreate(context context.Context, d *schema
 func resourceIbmLogsExtensionDeploymentRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	logsClient, err := meta.(conns.ClientSession).LogsV0()
 	if err != nil {
-		tfErr := flex.TerraformErrorf(err, err.Error(), "ibm_logs_extension_deployment", "read")
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_logs_extension_deployment", "read", "initialize-client")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
-	logsClient, region, instanceId, extensionId, err := updateClientURLWithInstanceEndpoint(d.Id(), meta, logsClient, d)
+	logsClient, region, instanceId, extensionID, err := updateClientURLWithInstanceEndpoint(d.Id(), meta, logsClient, d)
 	if err != nil {
 		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("updateClientURLWithInstanceEndpoint failed: %s", err.Error()), "ibm_logs_extension_deployment", "read")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
@@ -191,7 +169,8 @@ func resourceIbmLogsExtensionDeploymentRead(context context.Context, d *schema.R
 	}
 
 	getExtensionDeploymentOptions := &logsv0.GetExtensionDeploymentOptions{}
-	getExtensionDeploymentOptions.SetID(extensionId)
+
+	getExtensionDeploymentOptions.SetID(extensionID)
 
 	extensionDeployment, response, err := logsClient.GetExtensionDeploymentWithContext(context, getExtensionDeploymentOptions)
 	if err != nil {
@@ -204,35 +183,34 @@ func resourceIbmLogsExtensionDeploymentRead(context context.Context, d *schema.R
 		return tfErr.GetDiag()
 	}
 
-	// Set additional attributes required for import
-	if err = d.Set("extension_id", extensionId); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting extension_id: %s", err))
-	}
-	// extension_deployment_id is the same as extension_id since deployments are identified by extension ID
-	if err = d.Set("extension_deployment_id", extensionId); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting extension_deployment_id: %s", err))
-	}
 	if err = d.Set("instance_id", instanceId); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting instance_id: %s", err))
 	}
 	if err = d.Set("region", region); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting region: %s", err))
 	}
+	if err = d.Set("logs_extension_id", extensionID); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting region: %s", err))
+	}
 
 	if err = d.Set("version", extensionDeployment.Version); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting version: %s", err))
+		err = fmt.Errorf("Error setting version: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_logs_extension_deployment", "read", "set-version").GetDiag()
 	}
-	if err = d.Set("item_ids", extensionDeployment.ItemIds); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting item_ids: %s", err))
+	if err = d.Set("item_ids", flex.NewStringSet(schema.HashString, extensionDeployment.ItemIds)); err != nil {
+		err = fmt.Errorf("Error setting item_ids: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_logs_extension_deployment", "read", "set-item_ids").GetDiag()
 	}
 	if !core.IsNil(extensionDeployment.Applications) {
-		if err = d.Set("applications", extensionDeployment.Applications); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting applications: %s", err))
+		if err = d.Set("applications", flex.NewStringSet(schema.HashString, extensionDeployment.Applications)); err != nil {
+			err = fmt.Errorf("Error setting applications: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_logs_extension_deployment", "read", "set-applications").GetDiag()
 		}
 	}
 	if !core.IsNil(extensionDeployment.Subsystems) {
-		if err = d.Set("subsystems", extensionDeployment.Subsystems); err != nil {
-			return diag.FromErr(fmt.Errorf("Error setting subsystems: %s", err))
+		if err = d.Set("subsystems", flex.NewStringSet(schema.HashString, extensionDeployment.Subsystems)); err != nil {
+			err = fmt.Errorf("Error setting subsystems: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_logs_extension_deployment", "read", "set-subsystems").GetDiag()
 		}
 	}
 
@@ -242,11 +220,11 @@ func resourceIbmLogsExtensionDeploymentRead(context context.Context, d *schema.R
 func resourceIbmLogsExtensionDeploymentUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	logsClient, err := meta.(conns.ClientSession).LogsV0()
 	if err != nil {
-		tfErr := flex.TerraformErrorf(err, err.Error(), "ibm_logs_extension_deployment", "update")
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_logs_extension_deployment", "update", "initialize-client")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
-	logsClient, _, _, _, err = updateClientURLWithInstanceEndpoint(d.Id(), meta, logsClient, d)
+	logsClient, _, _, extensionID, err := updateClientURLWithInstanceEndpoint(d.Id(), meta, logsClient, d)
 	if err != nil {
 		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("updateClientURLWithInstanceEndpoint failed: %s", err.Error()), "ibm_logs_extension_deployment", "update")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
@@ -256,42 +234,51 @@ func resourceIbmLogsExtensionDeploymentUpdate(context context.Context, d *schema
 	updateExtensionDeploymentOptions := &logsv0.UpdateExtensionDeploymentOptions{}
 
 	// Use extension_id from the resource
-	extensionId := d.Get("extension_id").(string)
-	updateExtensionDeploymentOptions.SetID(extensionId)
+	updateExtensionDeploymentOptions.SetID(extensionID)
 
 	hasChange := false
 
-	// Version and item_ids are required fields for the update API
-	updateExtensionDeploymentOptions.SetVersion(d.Get("version").(string))
-	var newItemIds []string
-	for _, v := range d.Get("item_ids").([]interface{}) {
-		newItemIdsItem := v.(string)
-		newItemIds = append(newItemIds, newItemIdsItem)
-	}
-	updateExtensionDeploymentOptions.SetItemIds(newItemIds)
+	if d.HasChange("version") ||
+		d.HasChange("item_ids") ||
+		d.HasChange("applications") ||
+		d.HasChange("subsystems") {
+		updateExtensionDeploymentOptions.SetVersion(d.Get("version").(string))
 
-	if d.HasChange("version") || d.HasChange("item_ids") {
-		hasChange = true
-	}
-	if d.HasChange("applications") {
-		var newApplications []string
-		for _, v := range d.Get("applications").([]interface{}) {
-			newApplicationsItem := v.(string)
-			newApplications = append(newApplications, newApplicationsItem)
+		itemIDSet := d.Get("item_ids").(*schema.Set)
+		if itemIDSet.Len() != 0 {
+			var newItemIds []string
+			for _, v := range itemIDSet.List() {
+				newItemIdsItem := v.(string)
+				newItemIds = append(newItemIds, newItemIdsItem)
+			}
+			updateExtensionDeploymentOptions.SetItemIds(newItemIds)
 		}
-		updateExtensionDeploymentOptions.SetApplications(newApplications)
-		hasChange = true
-	}
-	if d.HasChange("subsystems") {
-		var newSubsystems []string
-		for _, v := range d.Get("subsystems").([]interface{}) {
-			newSubsystemsItem := v.(string)
-			newSubsystems = append(newSubsystems, newSubsystemsItem)
+		if applications, ok := d.GetOk("applications"); ok {
+			applicationsSet := applications.(*schema.Set)
+			if applicationsSet.Len() != 0 {
+				var newApplications []string
+				for _, v := range applicationsSet.List() {
+					newApplicationsItem := v.(string)
+					newApplications = append(newApplications, newApplicationsItem)
+				}
+				updateExtensionDeploymentOptions.SetApplications(newApplications)
+			}
 		}
-		updateExtensionDeploymentOptions.SetSubsystems(newSubsystems)
+
+		if subsystems, ok := d.GetOk("subsystems"); ok {
+			subsystemsSet := subsystems.(*schema.Set)
+			if subsystemsSet.Len() != 0 {
+				var newSubsystems []string
+				for _, v := range subsystemsSet.List() {
+					newSubsystemsItem := v.(string)
+					newSubsystems = append(newSubsystems, newSubsystemsItem)
+				}
+				updateExtensionDeploymentOptions.SetSubsystems(newSubsystems)
+			}
+
+		}
 		hasChange = true
 	}
-	// Sub-resource: id field not updatable
 
 	if hasChange {
 		_, _, err := logsClient.UpdateExtensionDeploymentWithContext(context, updateExtensionDeploymentOptions)
@@ -308,11 +295,12 @@ func resourceIbmLogsExtensionDeploymentUpdate(context context.Context, d *schema
 func resourceIbmLogsExtensionDeploymentDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	logsClient, err := meta.(conns.ClientSession).LogsV0()
 	if err != nil {
-		tfErr := flex.TerraformErrorf(err, err.Error(), "ibm_logs_extension_deployment", "delete")
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_logs_extension_deployment", "delete", "initialize-client")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
-	logsClient, _, _, extensionId, err := updateClientURLWithInstanceEndpoint(d.Id(), meta, logsClient, d)
+
+	logsClient, _, _, extensionID, err := updateClientURLWithInstanceEndpoint(d.Id(), meta, logsClient, d)
 	if err != nil {
 		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("updateClientURLWithInstanceEndpoint failed: %s", err.Error()), "ibm_logs_extension_deployment", "delete")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
@@ -320,7 +308,8 @@ func resourceIbmLogsExtensionDeploymentDelete(context context.Context, d *schema
 	}
 
 	deleteExtensionDeploymentOptions := &logsv0.DeleteExtensionDeploymentOptions{}
-	deleteExtensionDeploymentOptions.SetID(extensionId)
+
+	deleteExtensionDeploymentOptions.SetID(extensionID)
 
 	_, _, err = logsClient.DeleteExtensionDeploymentWithContext(context, deleteExtensionDeploymentOptions)
 	if err != nil {

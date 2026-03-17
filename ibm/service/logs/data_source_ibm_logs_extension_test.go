@@ -20,30 +20,32 @@ func TestAccIbmLogsExtensionDataSourceBasic(t *testing.T) {
 	// 3. Replace the hardcoded extension ID below with a real one
 
 	// TODO: Replace with actual extension ID from your Cloud Logs instance
-	extensionId := "IBMCloudant" // Replace with real UUID
+	extensionID := "IBMCloudant" // Replace with real UUID
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheckCloudLogs(t) },
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIbmLogsExtensionDataSourceConfigBasic(extensionId),
+				Config: testAccCheckIbmLogsExtensionDataSourceConfigBasic(extensionID),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_logs_extension.logs_extension_instance", "id"),
 					resource.TestCheckResourceAttrSet("data.ibm_logs_extension.logs_extension_instance", "logs_extension_id"),
 					resource.TestCheckResourceAttrSet("data.ibm_logs_extension.logs_extension_instance", "name"),
+					resource.TestCheckResourceAttrSet("data.ibm_logs_extension.logs_extension_instance", "revisions.#"),
+					resource.TestCheckResourceAttrSet("data.ibm_logs_extension.logs_extension_instance", "revisions.0.items.#"),
 				),
 			},
 		},
 	})
 }
 
-func testAccCheckIbmLogsExtensionDataSourceConfigBasic(extensionId string) string {
+func testAccCheckIbmLogsExtensionDataSourceConfigBasic(extensionID string) string {
 	return fmt.Sprintf(`
 		data "ibm_logs_extension" "logs_extension_instance" {
-			instance_id = "%s"
-			region = "%s"
+			instance_id       = "%s"
+			region            = "%s"
 			logs_extension_id = "%s"
 		}
-	`, acc.LogsInstanceId, acc.LogsInstanceRegion, extensionId)
+	`, acc.LogsInstanceId, acc.LogsInstanceRegion, extensionID)
 }

@@ -106,7 +106,7 @@ terraform output deployment_details
 ### Test 6: Import Deployment
 
 ```bash
-# Get the resource ID format: region/instance_id/extension_id
+# Get the resource ID format: region/instance_id/logs_extension_id
 terraform import ibm_logs_extension_deployment.cloudant_deployment \
   us-south/YOUR_INSTANCE_GUID/IBMCloudant
 ```
@@ -164,7 +164,7 @@ To test with a different extension (e.g., IBMElasticsearch):
    }
    
    resource "ibm_logs_extension_deployment" "my_deployment" {
-     extension_id = "IBMElasticsearch"  # Change this
+     logs_extension_id = "IBMElasticsearch"  # Change this
      # ... rest of config
    }
    ```

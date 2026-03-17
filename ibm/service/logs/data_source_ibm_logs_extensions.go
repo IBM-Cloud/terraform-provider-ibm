@@ -7,13 +7,13 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
+	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/IBM/logs-go-sdk/logsv0"
 )
 
@@ -22,21 +22,6 @@ func DataSourceIbmLogsExtensions() *schema.Resource {
 		ReadContext: dataSourceIbmLogsExtensionsRead,
 
 		Schema: map[string]*schema.Schema{
-			"instance_id": &schema.Schema{
-				Type:        schema.TypeString,
-				Required:    true,
-				Description: "The ID of the IBM Cloud Logs instance.",
-			},
-			"region": &schema.Schema{
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "The region of the IBM Cloud Logs instance.",
-			},
-			"endpoint_type": &schema.Schema{
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "public or private.",
-			},
 			"deployed": &schema.Schema{
 				Type:        schema.TypeBool,
 				Optional:    true,
@@ -226,7 +211,7 @@ func DataSourceIbmLogsExtensions() *schema.Resource {
 func dataSourceIbmLogsExtensionsRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	logsClient, err := meta.(conns.ClientSession).LogsV0()
 	if err != nil {
-		tfErr := flex.TerraformErrorf(err, err.Error(), "ibm_logs_extensions", "read")
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_logs_extensions", "read", "initialize-client")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
@@ -246,42 +231,38 @@ func dataSourceIbmLogsExtensionsRead(context context.Context, d *schema.Resource
 
 	extensionCollection, response, err := logsClient.GetExtensionsWithContext(context, getExtensionsOptions)
 	if err != nil {
-		log.Printf("[DEBUG] GetExtensionsWithContext failed %s\n%s", err, response)
-		return diag.FromErr(fmt.Errorf("GetExtensionsWithContext failed %s\n%s", err, response))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetExtensionsWithContext failed: %s, %s", err.Error(), response), "(Data) ibm_logs_extensions", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
-	d.SetId(dataSourceIbmLogsExtensionsID(d))
+	d.SetId(instanceId)
 
-	extensions := []map[string]interface{}{}
-	if extensionCollection.Extensions != nil {
-		for _, modelItem := range extensionCollection.Extensions {
-			modelMap, err := dataSourceIbmLogsExtensionsExtensionToMap(&modelItem)
+	if !core.IsNil(extensionCollection.Extensions) {
+		extensions := []map[string]interface{}{}
+		for _, extensionsItem := range extensionCollection.Extensions {
+			extensionsItemMap, err := DataSourceIbmLogsExtensionsExtensionToMap(&extensionsItem) // #nosec G601
 			if err != nil {
-				return diag.FromErr(err)
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_logs_extensions", "read", "extensions-to-map").GetDiag()
 			}
-			extensions = append(extensions, modelMap)
+			extensions = append(extensions, extensionsItemMap)
 		}
-	}
-	if err = d.Set("extensions", extensions); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting extensions %s", err))
+		if err = d.Set("extensions", extensions); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting extensions: %s", err), "(Data) ibm_logs_extensions", "read", "set-extensions").GetDiag()
+		}
 	}
 
 	return nil
 }
 
-// dataSourceIbmLogsExtensionsID returns a reasonable ID for the list.
-func dataSourceIbmLogsExtensionsID(d *schema.ResourceData) string {
-	return time.Now().UTC().String()
-}
-
-func dataSourceIbmLogsExtensionsExtensionToMap(model *logsv0.Extension) (map[string]interface{}, error) {
+func DataSourceIbmLogsExtensionsExtensionToMap(model *logsv0.Extension) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	modelMap["id"] = model.ID
+	modelMap["id"] = *model.ID
 	modelMap["name"] = *model.Name
 	if model.Revisions != nil {
 		revisions := []map[string]interface{}{}
 		for _, revisionsItem := range model.Revisions {
-			revisionsItemMap, err := dataSourceIbmLogsExtensionsExtensionsV1ExtensionRevisionToMap(&revisionsItem)
+			revisionsItemMap, err := DataSourceIbmLogsExtensionsExtensionsV1ExtensionRevisionToMap(&revisionsItem) // #nosec G601
 			if err != nil {
 				return modelMap, err
 			}
@@ -295,7 +276,7 @@ func dataSourceIbmLogsExtensionsExtensionToMap(model *logsv0.Extension) (map[str
 	if model.Changelog != nil {
 		changelog := []map[string]interface{}{}
 		for _, changelogItem := range model.Changelog {
-			changelogItemMap, err := dataSourceIbmLogsExtensionsExtensionsV1ChangelogEntryToMap(&changelogItem)
+			changelogItemMap, err := DataSourceIbmLogsExtensionsExtensionsV1ChangelogEntryToMap(&changelogItem) // #nosec G601
 			if err != nil {
 				return modelMap, err
 			}
@@ -304,14 +285,14 @@ func dataSourceIbmLogsExtensionsExtensionToMap(model *logsv0.Extension) (map[str
 		modelMap["changelog"] = changelog
 	}
 	if model.Deployment != nil {
-		deploymentMap, err := dataSourceIbmLogsExtensionsExtensionDeploymentToMap(model.Deployment)
+		deploymentMap, err := DataSourceIbmLogsExtensionsExtensionDeploymentToMap(model.Deployment)
 		if err != nil {
 			return modelMap, err
 		}
 		modelMap["deployment"] = []map[string]interface{}{deploymentMap}
 	}
 	if model.Deprecation != nil {
-		deprecationMap, err := dataSourceIbmLogsExtensionsExtensionsV1DeprecationToMap(model.Deprecation)
+		deprecationMap, err := DataSourceIbmLogsExtensionsExtensionsV1DeprecationToMap(model.Deprecation)
 		if err != nil {
 			return modelMap, err
 		}
@@ -320,14 +301,14 @@ func dataSourceIbmLogsExtensionsExtensionToMap(model *logsv0.Extension) (map[str
 	return modelMap, nil
 }
 
-func dataSourceIbmLogsExtensionsExtensionsV1ExtensionRevisionToMap(model *logsv0.ExtensionsV1ExtensionRevision) (map[string]interface{}, error) {
+func DataSourceIbmLogsExtensionsExtensionsV1ExtensionRevisionToMap(model *logsv0.ExtensionsV1ExtensionRevision) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	modelMap["version"] = model.Version
+	modelMap["version"] = *model.Version
 	if model.Description != nil {
-		modelMap["description"] = model.Description
+		modelMap["description"] = *model.Description
 	}
 	if model.Excerpt != nil {
-		modelMap["excerpt"] = model.Excerpt
+		modelMap["excerpt"] = *model.Excerpt
 	}
 	if model.Labels != nil {
 		modelMap["labels"] = model.Labels
@@ -335,7 +316,7 @@ func dataSourceIbmLogsExtensionsExtensionsV1ExtensionRevisionToMap(model *logsv0
 	if model.Items != nil {
 		items := []map[string]interface{}{}
 		for _, itemsItem := range model.Items {
-			itemsItemMap, err := dataSourceIbmLogsExtensionsExtensionsV1ExtensionItemToMap(&itemsItem)
+			itemsItemMap, err := DataSourceIbmLogsExtensionsExtensionsV1ExtensionItemToMap(&itemsItem) // #nosec G601
 			if err != nil {
 				return modelMap, err
 			}
@@ -346,30 +327,30 @@ func dataSourceIbmLogsExtensionsExtensionsV1ExtensionRevisionToMap(model *logsv0
 	return modelMap, nil
 }
 
-func dataSourceIbmLogsExtensionsExtensionsV1ExtensionItemToMap(model *logsv0.ExtensionsV1ExtensionItem) (map[string]interface{}, error) {
+func DataSourceIbmLogsExtensionsExtensionsV1ExtensionItemToMap(model *logsv0.ExtensionsV1ExtensionItem) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	modelMap["id"] = model.ID
+	modelMap["id"] = *model.ID
 	modelMap["name"] = *model.Name
 	if model.Description != nil {
-		modelMap["description"] = model.Description
+		modelMap["description"] = *model.Description
 	}
-	modelMap["target_domain"] = model.TargetDomain
+	modelMap["target_domain"] = *model.TargetDomain
 	if model.IsMandatory != nil {
-		modelMap["is_mandatory"] = model.IsMandatory
+		modelMap["is_mandatory"] = *model.IsMandatory
 	}
 	return modelMap, nil
 }
 
-func dataSourceIbmLogsExtensionsExtensionsV1ChangelogEntryToMap(model *logsv0.ExtensionsV1ChangelogEntry) (map[string]interface{}, error) {
+func DataSourceIbmLogsExtensionsExtensionsV1ChangelogEntryToMap(model *logsv0.ExtensionsV1ChangelogEntry) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	modelMap["version"] = model.Version
-	modelMap["description_md"] = model.DescriptionMd
+	modelMap["version"] = *model.Version
+	modelMap["description_md"] = *model.DescriptionMd
 	return modelMap, nil
 }
 
-func dataSourceIbmLogsExtensionsExtensionDeploymentToMap(model *logsv0.ExtensionDeployment) (map[string]interface{}, error) {
+func DataSourceIbmLogsExtensionsExtensionDeploymentToMap(model *logsv0.ExtensionDeployment) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	modelMap["version"] = model.Version
+	modelMap["version"] = *model.Version
 	modelMap["item_ids"] = model.ItemIds
 	if model.Applications != nil {
 		modelMap["applications"] = model.Applications
@@ -381,9 +362,9 @@ func dataSourceIbmLogsExtensionsExtensionDeploymentToMap(model *logsv0.Extension
 	return modelMap, nil
 }
 
-func dataSourceIbmLogsExtensionsExtensionsV1DeprecationToMap(model *logsv0.ExtensionsV1Deprecation) (map[string]interface{}, error) {
+func DataSourceIbmLogsExtensionsExtensionsV1DeprecationToMap(model *logsv0.ExtensionsV1Deprecation) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	modelMap["reason"] = model.Reason
+	modelMap["reason"] = *model.Reason
 	if model.ReplacementExtensions != nil {
 		modelMap["replacement_extensions"] = model.ReplacementExtensions
 	}
