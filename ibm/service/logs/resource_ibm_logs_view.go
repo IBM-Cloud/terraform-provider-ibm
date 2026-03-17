@@ -353,11 +353,13 @@ func resourceIbmLogsViewUpdate(context context.Context, d *schema.ResourceData, 
 		}
 		replaceViewOptions.SetTimeSelection(timeSelection)
 
-		searchQuery, err := ResourceIbmLogsViewMapToApisViewsV1SearchQuery(d.Get("search_query.0").(map[string]interface{}))
-		if err != nil {
-			return diag.FromErr(err)
+		if _, ok := d.GetOk("search_query"); ok {
+			searchQuery, err := ResourceIbmLogsViewMapToApisViewsV1SearchQuery(d.Get("search_query.0").(map[string]interface{}))
+			if err != nil {
+				return diag.FromErr(err)
+			}
+			replaceViewOptions.SetSearchQuery(searchQuery)
 		}
-		replaceViewOptions.SetSearchQuery(searchQuery)
 
 		if _, ok := d.GetOk("filters"); ok {
 			filters, err := ResourceIbmLogsViewMapToApisViewsV1SelectedFilters(d.Get("filters.0").(map[string]interface{}))

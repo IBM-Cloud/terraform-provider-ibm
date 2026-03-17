@@ -77,7 +77,7 @@ Nested schema for **filters**:
 	  * Constraints: The maximum length is `4096` items. The minimum length is `1` item.
 	Nested schema for **filters**:
 		* `name` - (Required, String) Filter name.
-		  * Constraints: The maximum length is `4096` characters. The minimum length is `1` character. The value must match regular expression `/^[\\p{L}\\p{N}\\p{P}\\p{Z}\\p{S}\\p{M}]+$/`.
+		  * Constraints: The maximum length is `4096` characters. The minimum length is `1` character. The value must match regular expression `^[\\p{L}\\p{N}\\p{P}\\p{Z}\\p{S}\\p{M}]+$`.
 		* `selected_values` - (Required, Map) Filter selected values.
 * `folder_id` - (Optional, String) View folder ID.
   * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/`.
