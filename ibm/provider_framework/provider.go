@@ -300,6 +300,129 @@ func (p *frameworkProvider) Configure(ctx context.Context, req provider.Configur
 			apiKey = key
 		}
 	}
+	// softlayer_api_key / iaas_classic_api_key - check environment variables
+	if config.IAASClassicAPIKey.IsNull() || config.IAASClassicAPIKey.ValueString() == "" {
+		if config.SoftlayerAPIKey.IsNull() || config.SoftlayerAPIKey.ValueString() == "" {
+			if key := os.Getenv("SL_API_KEY"); key != "" {
+				config.IAASClassicAPIKey = types.StringValue(key)
+			} else if key := os.Getenv("SOFTLAYER_API_KEY"); key != "" {
+				config.IAASClassicAPIKey = types.StringValue(key)
+			} else if key := os.Getenv("IAAS_CLASSIC_API_KEY"); key != "" {
+				config.IAASClassicAPIKey = types.StringValue(key)
+			}
+		} else {
+			config.IAASClassicAPIKey = config.SoftlayerAPIKey
+		}
+	}
+
+	// softlayer_username / iaas_classic_username - check environment variables
+	if config.IAASClassicUsername.IsNull() || config.IAASClassicUsername.ValueString() == "" {
+		if config.SoftlayerUsername.IsNull() || config.SoftlayerUsername.ValueString() == "" {
+			if username := os.Getenv("SL_USERNAME"); username != "" {
+				config.IAASClassicUsername = types.StringValue(username)
+			} else if username := os.Getenv("SOFTLAYER_USERNAME"); username != "" {
+				config.IAASClassicUsername = types.StringValue(username)
+			} else if username := os.Getenv("IAAS_CLASSIC_USERNAME"); username != "" {
+				config.IAASClassicUsername = types.StringValue(username)
+			}
+		} else {
+			config.IAASClassicUsername = config.SoftlayerUsername
+		}
+	}
+
+	// softlayer_endpoint_url - check environment variables (deprecated, falls back to iaas_classic_endpoint_url)
+	if config.SoftlayerEndpointURL.IsNull() || config.SoftlayerEndpointURL.ValueString() == "" {
+		if endpoint := os.Getenv("SL_ENDPOINT_URL"); endpoint != "" {
+			config.SoftlayerEndpointURL = types.StringValue(endpoint)
+		} else if endpoint := os.Getenv("SOFTLAYER_ENDPOINT_URL"); endpoint != "" {
+			config.SoftlayerEndpointURL = types.StringValue(endpoint)
+		}
+	}
+
+	// iam_profile_id - check environment variables
+	if config.IAMProfileID.IsNull() || config.IAMProfileID.ValueString() == "" {
+		if profileId := os.Getenv("IC_IAM_PROFILE_ID"); profileId != "" {
+			config.IAMProfileID = types.StringValue(profileId)
+		} else if profileId := os.Getenv("IBMCLOUD_IAM_PROFILE_ID"); profileId != "" {
+			config.IAMProfileID = types.StringValue(profileId)
+		}
+	}
+
+	// iam_profile_name - check environment variables
+	if config.IAMProfileName.IsNull() || config.IAMProfileName.ValueString() == "" {
+		if profileName := os.Getenv("IC_IAM_PROFILE_NAME"); profileName != "" {
+			config.IAMProfileName = types.StringValue(profileName)
+		} else if profileName := os.Getenv("IBMCLOUD_IAM_PROFILE_NAME"); profileName != "" {
+			config.IAMProfileName = types.StringValue(profileName)
+		}
+	}
+
+	// iam_token - check environment variables
+	if config.IAMToken.IsNull() || config.IAMToken.ValueString() == "" {
+		if token := os.Getenv("IC_IAM_TOKEN"); token != "" {
+			config.IAMToken = types.StringValue(token)
+		} else if token := os.Getenv("IBMCLOUD_IAM_TOKEN"); token != "" {
+			config.IAMToken = types.StringValue(token)
+		}
+	}
+
+	// iam_refresh_token - check environment variables
+	if config.IAMRefreshToken.IsNull() || config.IAMRefreshToken.ValueString() == "" {
+		if refreshToken := os.Getenv("IC_IAM_REFRESH_TOKEN"); refreshToken != "" {
+			config.IAMRefreshToken = types.StringValue(refreshToken)
+		} else if refreshToken := os.Getenv("IBMCLOUD_IAM_REFRESH_TOKEN"); refreshToken != "" {
+			config.IAMRefreshToken = types.StringValue(refreshToken)
+		}
+	}
+
+	// ibmcloud_account_id - check environment variables
+	if config.IBMCloudAccountID.IsNull() || config.IBMCloudAccountID.ValueString() == "" {
+		if accountId := os.Getenv("IC_ACCOUNT_ID"); accountId != "" {
+			config.IBMCloudAccountID = types.StringValue(accountId)
+		} else if accountId := os.Getenv("IBMCLOUD_ACCOUNT_ID"); accountId != "" {
+			config.IBMCloudAccountID = types.StringValue(accountId)
+		}
+	}
+
+	// zone - check environment variables
+	if config.Zone.IsNull() || config.Zone.ValueString() == "" {
+		if zone := os.Getenv("IC_ZONE"); zone != "" {
+			config.Zone = types.StringValue(zone)
+		} else if zone := os.Getenv("IBMCLOUD_ZONE"); zone != "" {
+			config.Zone = types.StringValue(zone)
+		}
+	}
+
+	// resource_group - check environment variables
+	if config.ResourceGroup.IsNull() || config.ResourceGroup.ValueString() == "" {
+		if rg := os.Getenv("IC_RESOURCE_GROUP"); rg != "" {
+			config.ResourceGroup = types.StringValue(rg)
+		} else if rg := os.Getenv("IBMCLOUD_RESOURCE_GROUP"); rg != "" {
+			config.ResourceGroup = types.StringValue(rg)
+		} else if rg := os.Getenv("BM_RESOURCE_GROUP"); rg != "" {
+			config.ResourceGroup = types.StringValue(rg)
+		} else if rg := os.Getenv("BLUEMIX_RESOURCE_GROUP"); rg != "" {
+			config.ResourceGroup = types.StringValue(rg)
+		}
+	}
+
+	// private_endpoint_type - check environment variables
+	if config.PrivateEndpointType.IsNull() || config.PrivateEndpointType.ValueString() == "" {
+		if pet := os.Getenv("IC_PRIVATE_ENDPOINT_TYPE"); pet != "" {
+			config.PrivateEndpointType = types.StringValue(pet)
+		} else if pet := os.Getenv("IBMCLOUD_PRIVATE_ENDPOINT_TYPE"); pet != "" {
+			config.PrivateEndpointType = types.StringValue(pet)
+		}
+	}
+
+	// endpoints_file_path - check environment variables
+	if config.EndpointsFilePath.IsNull() || config.EndpointsFilePath.ValueString() == "" {
+		if path := os.Getenv("IC_ENDPOINTS_FILE_PATH"); path != "" {
+			config.EndpointsFilePath = types.StringValue(path)
+		} else if path := os.Getenv("IBMCLOUD_ENDPOINTS_FILE_PATH"); path != "" {
+			config.EndpointsFilePath = types.StringValue(path)
+		}
+	}
 
 	// Create conns.Config to initialize client session
 	connConfig := conns.Config{
