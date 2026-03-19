@@ -11,6 +11,7 @@ import (
 	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/go-openapi/strfmt"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"gotest.tools/assert"
 )
 
@@ -254,5 +255,38 @@ func TestUpgradeInProgressWarning(t *testing.T) {
 
 	if diags[0].Detail != detail {
 		t.Errorf("expected detail %v, got %v", detail, diags[0].Detail)
+	}
+}
+
+func TestPickResourceBackend(t *testing.T) {
+	resource := &schema.Resource{
+		Schema: map[string]*schema.Schema{
+			"plan": {
+				Type:     schema.TypeString,
+				Required: true,
+			},
+		},
+	}
+
+	dataClassic := schema.TestResourceDataRaw(t, resource.Schema, map[string]interface{}{
+		"plan": "standard",
+	})
+	if b := pickResourceBackend(dataClassic); b == nil {
+		t.Fatalf("pickResourceBackend returned nil for classic plan")
+	} else {
+		if _, ok := b.(*resourceIBMDatabaseClassicBackend); !ok {
+			t.Fatalf("pickResourceBackend(classic) returned wrong type: %T", b)
+		}
+	}
+
+	dataGen2 := schema.TestResourceDataRaw(t, resource.Schema, map[string]interface{}{
+		"plan": "standard-gen2",
+	})
+	if b := pickResourceBackend(dataGen2); b == nil {
+		t.Fatalf("pickResourceBackend returned nil for gen2 plan")
+	} else {
+		if _, ok := b.(*resourceIBMDatabaseGen2Backend); !ok {
+			t.Fatalf("pickResourceBackend(gen2) returned wrong type: %T", b)
+		}
 	}
 }
