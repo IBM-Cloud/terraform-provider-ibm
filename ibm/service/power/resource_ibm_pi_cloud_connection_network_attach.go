@@ -56,10 +56,12 @@ func ResourceIBMPICloudConnectionNetworkAttach() *schema.Resource {
 	}
 }
 
-func resourceIBMPICloudConnectionNetworkAttachCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceIBMPICloudConnectionNetworkAttachCreate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	sess, err := meta.(conns.ClientSession).IBMPISession()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("IBMPISession failed: %s", err.Error()), "ibm_pi_cloud_connection_network_attach", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	cloudInstanceID := d.Get(Arg_CloudInstanceID).(string)
@@ -71,24 +73,29 @@ func resourceIBMPICloudConnectionNetworkAttachCreate(ctx context.Context, d *sch
 
 	_, jobReference, err := client.AddNetwork(cloudConnectionID, networkID)
 	if err != nil {
-		log.Printf("[ERROR] attach network to cloud connection failed %v", err)
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("AddNetwork failed: %s", err.Error()), "ibm_pi_cloud_connection_network_attach", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	d.SetId(fmt.Sprintf("%s/%s/%s", cloudInstanceID, cloudConnectionID, networkID))
 	if jobReference != nil {
 		_, err = waitForIBMPIJobCompleted(ctx, jobClient, *jobReference.ID, d.Timeout(schema.TimeoutCreate))
 		if err != nil {
-			return diag.FromErr(err)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("waitForIBMPIJobCompleted failed: %s", err.Error()), "ibm_pi_cloud_connection_network_attach", "create")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 	}
 
 	return resourceIBMPICloudConnectionNetworkAttachRead(ctx, d, meta)
 }
 
-func resourceIBMPICloudConnectionNetworkAttachRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceIBMPICloudConnectionNetworkAttachRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	parts, err := flex.IdParts(d.Id())
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("IdParts failed: %s", err.Error()), "ibm_pi_cloud_connection_network_attach", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	cloudInstanceID := parts[0]
@@ -102,15 +109,19 @@ func resourceIBMPICloudConnectionNetworkAttachRead(ctx context.Context, d *schem
 	return nil
 }
 
-func resourceIBMPICloudConnectionNetworkAttachDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceIBMPICloudConnectionNetworkAttachDelete(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	sess, err := meta.(conns.ClientSession).IBMPISession()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("IBMPISession failed: %s", err.Error()), "ibm_pi_cloud_connection_network_attach", "delete")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	parts, err := flex.IdParts(d.Id())
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("IdParts failed: %s", err.Error()), "ibm_pi_cloud_connection_network_attach", "delete")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	cloudInstanceID := parts[0]
@@ -122,13 +133,16 @@ func resourceIBMPICloudConnectionNetworkAttachDelete(ctx context.Context, d *sch
 
 	_, jobReference, err := client.DeleteNetwork(cloudConnectionID, networkID)
 	if err != nil {
-		log.Printf("[DEBUG] detach network from cloud connection failed %v", err)
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("DeleteNetwork failed: %s", err.Error()), "ibm_pi_cloud_connection_network_attach", "delete")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	if jobReference != nil {
 		_, err = waitForIBMPIJobCompleted(ctx, jobClient, *jobReference.ID, d.Timeout(schema.TimeoutDelete))
 		if err != nil {
-			return diag.FromErr(err)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("waitForIBMPIJobCompleted failed: %s", err.Error()), "ibm_pi_cloud_connection_network_attach", "delete")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 	}
 
