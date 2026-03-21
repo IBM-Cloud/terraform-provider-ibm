@@ -432,11 +432,35 @@ func resourceIBMTransitGatewayConnectionCreate(d *schema.ResourceData, meta inte
 		d.Set(tgNetworkAccountID, *tgConnections.NetworkAccountID)
 		return resourceIBMTransitGatewayConnectionRead(d, meta)
 	}
+
+	// Wait for connection to become available
 	_, err = isWaitForTransitGatewayConnectionAvailable(client, d.Id(), d.Timeout(schema.TimeoutCreate))
 
 	if err != nil {
+		log.Printf("[DEBUG] Wait failed, verifying resource existence")
+
+		parts, errParts := flex.IdParts(d.Id())
+		if errParts != nil {
+			return errParts
+		}
+
+		gatewayId := parts[0]
+		ID := parts[1]
+
+		getOpts := &transitgatewayapisv1.GetTransitGatewayConnectionOptions{}
+		getOpts.SetTransitGatewayID(gatewayId)
+		getOpts.SetID(ID)
+
+		conn, _, getErr := client.GetTransitGatewayConnection(getOpts)
+
+		if getErr == nil && conn != nil && conn.ID != nil {
+			log.Printf("[DEBUG] Resource exists after timeout, adopting it")
+			return resourceIBMTransitGatewayConnectionRead(d, meta)
+		}
+
 		return err
 	}
+
 	return resourceIBMTransitGatewayConnectionRead(d, meta)
 }
 func isWaitForTransitGatewayConnectionAvailable(client *transitgatewayapisv1.TransitGatewayApisV1, id string, timeout time.Duration) (interface{}, error) {
