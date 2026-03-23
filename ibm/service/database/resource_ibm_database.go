@@ -189,6 +189,7 @@ func ResourceIBMDatabaseInstance() *schema.Resource {
 			validateRemoteLeaderIDDiff,
 			validateVersionDiff,
 			validateAsyncRestoreDiff,
+			validateServiceEndpointsDiff,
 		),
 
 		Importer: &schema.ResourceImporter{},
@@ -300,9 +301,9 @@ func ResourceIBMDatabaseInstance() *schema.Resource {
 				Optional:    true,
 			},
 			"service_endpoints": {
-				Description:  "Types of the service endpoints. Possible values are 'public', 'private', 'public-and-private'.",
+				Description:  "Types of the service endpoints. Possible values are 'public', 'private', 'public-and-private'. Required for Classic plans. For Gen2 plans, this field cannot be set and defaults to 'private'.",
 				Type:         schema.TypeString,
-				Required:     true,
+				Optional:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_database", "service_endpoints"),
 			},
 			"backup_id": {
@@ -523,6 +524,7 @@ func ResourceIBMDatabaseInstance() *schema.Resource {
 										Required: true,
 										ValidateFunc: validation.StringInSlice([]string{
 											"multitenant",
+											"bx3d.4x20",
 											"b3c.4x16.encrypted",
 											"b3c.8x32.encrypted",
 											"m3c.8x64.encrypted",
@@ -1046,7 +1048,7 @@ func getDefaultScalingGroups(_service string, _plan string, _hostFlavor string, 
 
 	getDefaultScalingGroupsResponse, response, err := cloudDatabasesClient.GetDefaultScalingGroups(getDefaultScalingGroupsOptions)
 	if err != nil {
-		if response.StatusCode == 422 {
+		if response != nil && response.StatusCode == 422 {
 			return groups, fmt.Errorf("%s is not available on multitenant", service)
 		}
 		return groups, err
@@ -2974,6 +2976,29 @@ func validateGroupsDiff(_ context.Context, diff *schema.ResourceDiff, meta inter
 	service := diff.Get("service").(string)
 	plan := diff.Get("plan").(string)
 
+	// For Gen2 plans, skip Classic API validation during plan phase
+	// Gen2 uses different APIs (GlobalCatalog) and validation happens at apply time
+	if instanceID == "" && isGen2Plan(plan) {
+		// Only validate basic group structure for Gen2 during plan
+		if group, ok := diff.GetOk("group"); ok {
+			groups := expandGroups(group.(*schema.Set).List())
+			var groupIds []string
+			groupIds = make([]string, 0, len(groups))
+			for _, g := range groups {
+				groupIds = append(groupIds, g.ID)
+			}
+			// validate group_ids are unique
+			for n1, i1 := range groupIds {
+				for n2, i2 := range groupIds {
+					if i1 == i2 && n1 != n2 {
+						return fmt.Errorf("found 2 or more instances of group with group_id %v", i1)
+					}
+				}
+			}
+		}
+		return nil
+	}
+
 	if group, ok := diff.GetOk("group"); ok {
 		var currentGroups []Group
 		var groupList []clouddatabasesv5.Group
@@ -2990,7 +3015,7 @@ func validateGroupsDiff(_ context.Context, diff *schema.ResourceDiff, meta inter
 		if instanceID != "" {
 			groupList, err = getGroups(instanceID, meta)
 		} else {
-			if memberGroup.HostFlavor != nil {
+			if memberGroup != nil && memberGroup.HostFlavor != nil {
 				groupList, err = getDefaultScalingGroups(service, plan, memberGroup.HostFlavor.ID, meta)
 			} else {
 				groupList, err = getDefaultScalingGroups(service, plan, "", meta)
@@ -3284,6 +3309,22 @@ func validateAsyncRestoreDiff(_ context.Context, diff *schema.ResourceDiff, meta
 		return fmt.Errorf("[ERROR] `async_restore` is only supported for `databases-for-postgresql` for Fast PG Restore")
 	}
 
+	return nil
+}
+
+func validateServiceEndpointsDiff(_ context.Context, diff *schema.ResourceDiff, meta interface{}) (err error) {
+	serviceEndpoint, serviceEndpointOk := diff.GetOk("service_endpoints")
+	plan := diff.Get("plan").(string)
+
+	// For Gen2 plans, service_endpoints should not be set
+	if isGen2Plan(plan) && serviceEndpointOk && serviceEndpoint.(string) != "" {
+		return fmt.Errorf("[ERROR] service_endpoints cannot be set for Gen2 plans (plans ending with -gen2). Gen2 defaults to 'private' endpoints")
+	}
+
+	// For Classic plans, service_endpoints is required
+	if !isGen2Plan(plan) && (!serviceEndpointOk || serviceEndpoint.(string) == "") {
+		return fmt.Errorf("[ERROR] service_endpoints is required for Classic plans")
+	}
 	return nil
 }
 

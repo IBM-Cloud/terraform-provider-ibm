@@ -129,9 +129,10 @@ func (g *resourceIBMDatabaseGen2Backend) Create(context context.Context, d *sche
 	if memberGroup != nil && memberGroup.Members != nil {
 		members = memberGroup.Members.Allocation
 	} else {
-		// Get initial node count if not specified
+		// Get initial node count if not specified (use Gen2-specific function)
+		// Pass the deployment ID to get catalog entry with member count
 		var err error
-		members, err = getInitialNodeCount(serviceName, plan, meta)
+		members, err = getInitialNodeCountGen2(deployments[0].ID, meta)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -199,11 +200,8 @@ func (g *resourceIBMDatabaseGen2Backend) Create(context context.Context, d *sche
 		dataservices["remote_leader_id"] = remoteLeader.(string)
 	}
 
-	// Service endpoints
-	serviceEndpoint := d.Get("service_endpoints").(string)
-	if serviceEndpoint != "" {
-		dataservices["service-endpoints"] = serviceEndpoint
-	}
+	// Note: service_endpoints is not supported in Gen2 and defaults to 'private'
+	// Do not send it to the API as it will cause an error
 
 	// Build final parameters structure
 	parameters := map[string]interface{}{

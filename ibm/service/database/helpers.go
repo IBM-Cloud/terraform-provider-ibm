@@ -10,8 +10,10 @@ import (
 	"strings"
 	"time"
 
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM/cloud-databases-go-sdk/clouddatabasesv5"
 	"github.com/IBM/go-sdk-core/v5/core"
+	"github.com/IBM/platform-services-go-sdk/globalcatalogv1"
 	"github.com/go-openapi/strfmt"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
@@ -274,4 +276,39 @@ func flattenIcdGroupsFromInstanceAndCatalog(instance map[string]interface{}, cat
 	}
 
 	return groups
+}
+
+// getInitialNodeCountGen2 gets the default member count for Gen2 plans from Global Catalog
+func getInitialNodeCountGen2(deploymentID string, meta interface{}) (int, error) {
+	globalClient, err := meta.(conns.ClientSession).GlobalCatalogV1API()
+	if err != nil {
+		return 0, err
+	}
+
+	// Get the deployment catalog entry
+	options := globalcatalogv1.GetCatalogEntryOptions{
+		ID: &deploymentID,
+	}
+	deployment, _, err := globalClient.GetCatalogEntry(&options)
+	if err != nil {
+		return 0, fmt.Errorf("[ERROR] Error retrieving deployment catalog entry: %s", err)
+	}
+
+	// Extract member count from deployment metadata resources
+	if deployment.Metadata != nil && deployment.Metadata.Other != nil {
+		if resources, ok := deployment.Metadata.Other["resources"].([]interface{}); ok {
+			for _, resource := range resources {
+				if resourceMap, ok := resource.(map[string]interface{}); ok {
+					if groupID, ok := resourceMap["id"].(string); ok && groupID == "member" {
+						if count, ok := resourceMap["count"].(float64); ok {
+							return int(count), nil
+						}
+					}
+				}
+			}
+		}
+	}
+
+	// Default to 3 if not found in metadata
+	return 3, nil
 }
