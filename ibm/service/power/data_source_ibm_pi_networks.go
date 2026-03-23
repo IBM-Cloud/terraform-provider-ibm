@@ -138,7 +138,7 @@ func flattenNetworks(list []*models.NetworkReference, meta any) []map[string]any
 		l := map[string]any{
 			Attr_Advertise:    i.Advertise,
 			Attr_ARPBroadcast: i.ArpBroadcast,
-			Attr_DhcpManaged:  i.DhcpManaged,
+			Attr_DhcpManaged:  i.EnableDHCP,
 			Attr_Href:         *i.Href,
 			Attr_MTU:          i.Mtu,
 			Attr_Name:         *i.Name,

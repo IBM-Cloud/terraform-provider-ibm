@@ -44,6 +44,11 @@ func DataSourceIBMPIInstance() *schema.Resource {
 			},
 
 			// Attributes
+			Attr_AllowRemoteRestart: {
+				Computed:    true,
+				Description: "Indicates if the server allows server to be restarted from remote.",
+				Type:        schema.TypeBool,
+			},
 			Attr_CRN: {
 				Computed:    true,
 				Description: "The CRN of this resource.",
@@ -335,7 +340,7 @@ func dataSourceIBMPIInstancesRead(ctx context.Context, d *schema.ResourceData, m
 		}
 		d.Set(Attr_UserTags, tags)
 	}
-
+	d.Set(Attr_AllowRemoteRestart, powervmdata.AllowRemoteRestart)
 	d.Set(Attr_DedicatedHostID, powervmdata.DedicatedHostID)
 	d.Set(Attr_DeploymentType, powervmdata.DeploymentType)
 	d.Set(Attr_EffectiveProcessorCompatibilityMode, powervmdata.EffectiveProcessorCompatibilityMode)
