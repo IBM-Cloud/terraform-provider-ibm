@@ -206,6 +206,7 @@ const (
 	Attr_AllocatedCores                      = "allocated_cores"
 	Attr_Architecture                        = "architecture"
 	Attr_ARPBroadcast                        = "arp_broadcast"
+	Attr_Asaps                               = "asaps"
 	Attr_AsynchronousReplication             = "asynchronous_replication"
 	Attr_Auxiliary                           = "auxiliary"
 	Attr_AuxiliaryChangedVolumeName          = "auxiliary_changed_volume_name"

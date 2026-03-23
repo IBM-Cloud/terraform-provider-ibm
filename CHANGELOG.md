@@ -1,3 +1,67 @@
+# 1.89.0 (March 2, 2026)
+
+## Bug Fixes
+
+### General
+* removed redundant checks to fix build on 1.26 ([6682](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6682))
+
+### CIS
+* fix mtls empty hostmanes issue ([6669](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6669))
+
+### Global Tagging
+* Fix tagging is error ([6681](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6681))
+
+
+## Enhancements
+
+### CD Tekton Pipeline
+* Fix multiline properties ([6680](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6680))
+
+### Cloud Databases
+* added a nil check on response in ibm_database ([6660](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6660))
+
+### Cloud Object Storage
+* Updating the documentation for COS for cross account access. ([6685](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6685))
+
+### IAM
+* Terraform should not plan update-in-place when no resources exist for template assignment ([6216](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6216))
+
+### Power Systems
+* Refactor host group update logic ([6677](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6677))
+
+### Toolchain
+* Continuous Delivery (CD): Region discontinuation warnings ([6687](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6687))
+
+
+# 1.88.3 (February 23, 2026)
+
+## Bug Fixes
+
+### Backup/Recovery
+* update connection schema ([6645](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6645))
+
+
+## Enhancements
+
+### General
+* updated code owners ([6674](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6674))
+
+# 1.88.2 (February 13, 2026)
+
+## Bug Fixes
+
+### CIS
+* Fix instance ruleset rule handling to enable OWASP logging ([6644](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6644))
+
+### Power
+* Update unit wording to conform to new standard ([6652](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6652))
+
+### Activity tracker
+* remove managed by example ([6659](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6659))
+
+### IAM
+* Fix: prevent duplicate user invite API calls causing 409 error ([6665](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6665))
+
 # 1.88.1 (February 10, 2026)
 
 ## Bug Fixes

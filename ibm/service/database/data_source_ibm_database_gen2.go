@@ -9,6 +9,7 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM/platform-services-go-sdk/globalcatalogv1"
 	rg "github.com/IBM/platform-services-go-sdk/resourcemanagerv2"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
