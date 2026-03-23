@@ -2644,14 +2644,18 @@ func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 
 	// private_endpoint_type - check environment variable
 	if privateEndpointType == "" {
-		if pet := os.Getenv("PRIVATE_ENDPOINT_TYPE"); pet != "" {
+		if pet := os.Getenv("IC_PRIVATE_ENDPOINT_TYPE"); pet != "" {
+			privateEndpointType = pet
+		} else if pet := os.Getenv("IBMCLOUD_PRIVATE_ENDPOINT_TYPE"); pet != "" {
 			privateEndpointType = pet
 		}
 	}
 
 	// endpoints_file_path - check environment variable
 	if file == "" {
-		if path := os.Getenv("ENDPOINTS_FILE_PATH"); path != "" {
+		if path := os.Getenv("IC_ENDPOINTS_FILE_PATH"); path != "" {
+			file = path
+		} else if path := os.Getenv("IBMCLOUD_ENDPOINTS_FILE_PATH"); path != "" {
 			file = path
 		}
 	}
@@ -2720,6 +2724,27 @@ func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 			region = reg
 		} else {
 			region = "us-south"
+		}
+	}
+	// zone - check environment variables
+	if zone == "" {
+		if z := os.Getenv("IC_ZONE"); z != "" {
+			zone = z
+		} else if z := os.Getenv("IBMCLOUD_ZONE"); z != "" {
+			zone = z
+		}
+	}
+
+	// resource_group - check environment variables
+	if resourceGrp == "" {
+		if rg := os.Getenv("IC_RESOURCE_GROUP"); rg != "" {
+			resourceGrp = rg
+		} else if rg := os.Getenv("IBMCLOUD_RESOURCE_GROUP"); rg != "" {
+			resourceGrp = rg
+		} else if rg := os.Getenv("BM_RESOURCE_GROUP"); rg != "" {
+			resourceGrp = rg
+		} else if rg := os.Getenv("BLUEMIX_RESOURCE_GROUP"); rg != "" {
+			resourceGrp = rg
 		}
 	}
 
