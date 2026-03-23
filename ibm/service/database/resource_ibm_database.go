@@ -136,6 +136,43 @@ func retry(f func() error) (err error) {
 	}
 }
 
+type resourceIBMDatabaseBackend interface {
+	Create(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics
+	Read(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics
+	Update(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics
+	Delete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics
+	Exists(d *schema.ResourceData, meta interface{}) (bool, error)
+
+	WarnUnsupported(context context.Context, d *schema.ResourceData) diag.Diagnostics
+	ValidateUnsupportedAttrsDiff(context context.Context, d *schema.ResourceDiff, meta interface{}) error
+}
+
+func pickResourceBackend(d *schema.ResourceData) resourceIBMDatabaseBackend {
+	plan := d.Get("plan").(string)
+	if isGen2Plan(plan) {
+		return newResourceIBMDatabaseGen2Backend()
+	}
+	return newResourceIBMDatabaseClassicBackend()
+}
+
+func pickResourceBackendFromDiff(d *schema.ResourceDiff) resourceIBMDatabaseBackend {
+	planRaw, ok := d.GetOk("plan")
+	if !ok {
+		// No plan yet; default to classic to avoid blocking planning unexpectedly.
+		return newResourceIBMDatabaseClassicBackend()
+	}
+
+	plan, ok := planRaw.(string)
+	if !ok {
+		return newResourceIBMDatabaseClassicBackend()
+	}
+
+	if isGen2Plan(plan) {
+		return newResourceIBMDatabaseGen2Backend()
+	}
+	return newResourceIBMDatabaseClassicBackend()
+}
+
 func ResourceIBMDatabaseInstance() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceIBMDatabaseInstanceCreate,
@@ -145,6 +182,7 @@ func ResourceIBMDatabaseInstance() *schema.Resource {
 		Exists:        resourceIBMDatabaseInstanceExists,
 
 		CustomizeDiff: customdiff.All(
+			validateUnsupportedAttrsDiff,
 			resourceIBMDatabaseInstanceDiff,
 			validateGroupsDiff,
 			validateUsersDiff,
@@ -1134,6 +1172,13 @@ func resourceIBMDatabaseInstanceDiff(_ context.Context, diff *schema.ResourceDif
 
 // Replace with func wrapper for resourceIBMResourceInstanceCreate specifying serviceName := "database......."
 func resourceIBMDatabaseInstanceCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	b := pickResourceBackend(d)
+	diags := b.WarnUnsupported(context, d)
+	diags = append(diags, b.Create(context, d, meta)...)
+	return diags
+}
+
+func classicDatabaseInstanceCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	rsConClient, err := meta.(conns.ClientSession).ResourceControllerV2API()
 	if err != nil {
 		return diag.FromErr(err)
@@ -1609,6 +1654,10 @@ func resourceIBMDatabaseInstanceCreate(context context.Context, d *schema.Resour
 }
 
 func resourceIBMDatabaseInstanceRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	return pickResourceBackend(d).Read(context, d, meta)
+}
+
+func classicDatabaseInstanceRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	rsConClient, err := meta.(conns.ClientSession).ResourceControllerV2API()
 	if err != nil {
 		return diag.FromErr(err)
@@ -1799,6 +1848,13 @@ func resourceIBMDatabaseInstanceRead(context context.Context, d *schema.Resource
 }
 
 func resourceIBMDatabaseInstanceUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	b := pickResourceBackend(d)
+	diags := b.WarnUnsupported(context, d)
+	diags = append(diags, b.Update(context, d, meta)...)
+	return diags
+}
+
+func classicDatabaseInstanceUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	rsConClient, err := meta.(conns.ClientSession).ResourceControllerV2API()
 	if err != nil {
 		return diag.FromErr(err)
@@ -2271,6 +2327,10 @@ func resourceIBMDatabaseInstanceUpdate(context context.Context, d *schema.Resour
 }
 
 func resourceIBMDatabaseInstanceDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	return pickResourceBackend(d).Delete(context, d, meta)
+}
+
+func classicDatabaseInstanceDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	rsConClient, err := meta.(conns.ClientSession).ResourceControllerV2API()
 	if err != nil {
 		return diag.FromErr(err)
@@ -2304,7 +2364,12 @@ func resourceIBMDatabaseInstanceDelete(context context.Context, d *schema.Resour
 
 	return nil
 }
+
 func resourceIBMDatabaseInstanceExists(d *schema.ResourceData, meta interface{}) (bool, error) {
+	return pickResourceBackend(d).Exists(d, meta)
+}
+
+func classicDatabaseInstanceExists(d *schema.ResourceData, meta interface{}) (bool, error) {
 	rsConClient, err := meta.(conns.ClientSession).ResourceControllerV2API()
 	if err != nil {
 		return false, err
