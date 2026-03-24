@@ -2373,7 +2373,7 @@ func resourceIBMDatabaseInstanceExists(d *schema.ResourceData, meta interface{})
 	return pickResourceBackend(d).Exists(d, meta)
 }
 
-func classicDatabaseInstanceExists(d *schema.ResourceData, meta interface{}) (bool, error) {
+func databaseInstanceExists(d *schema.ResourceData, meta interface{}) (bool, error) {
 	rsConClient, err := meta.(conns.ClientSession).ResourceControllerV2API()
 	if err != nil {
 		return false, err

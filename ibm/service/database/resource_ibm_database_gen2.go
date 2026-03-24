@@ -935,7 +935,7 @@ func (g *resourceIBMDatabaseGen2Backend) Delete(ctx context.Context, d *schema.R
 // TODO: Gen2 exists check is not yet implemented. This is a known limitation.
 // Users should use the Classic backend until this is implemented.
 func (g *resourceIBMDatabaseGen2Backend) Exists(d *schema.ResourceData, meta interface{}) (bool, error) {
-	return false, fmt.Errorf("Exists check for Gen2 backend is not yet implemented. Please contact support or use the Classic backend")
+	return databaseInstanceExists(d, meta)
 }
 
 // WarnUnsupported returns warnings for unsupported features.
