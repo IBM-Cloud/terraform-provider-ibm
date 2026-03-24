@@ -27,6 +27,7 @@ var gen2UnsupportedAttrs = []string{
 	"auto_scaling",
 	"allowlist",
 	"configuration_schema",
+	"logical_replication_slot",
 }
 
 type resourceIBMDatabaseGen2Backend struct{}
@@ -921,7 +922,238 @@ func (g *resourceIBMDatabaseGen2Backend) clearUnsupportedAttributes(d *schema.Re
 // TODO: Gen2 update logic is not yet implemented. This is a known limitation.
 // Users should use the Classic backend for update operations until this is implemented.
 func (g *resourceIBMDatabaseGen2Backend) Update(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	return diag.Errorf("Update operation for Gen2 backend is not yet implemented. Please contact support or use the Classic backend for update operations.")
+	rsConClient, err := meta.(conns.ClientSession).ResourceControllerV2API()
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	instanceID := d.Id()
+	updateReq := rc.UpdateResourceInstanceOptions{
+		ID: &instanceID,
+	}
+	update := false
+	if d.HasChange("name") {
+		name := d.Get("name").(string)
+		updateReq.Name = &name
+		update = true
+	}
+	if d.HasChange("service_endpoints") {
+		params := Params{}
+		params.ServiceEndpoints = d.Get("service_endpoints").(string)
+		parameters, _ := json.Marshal(params)
+		var raw map[string]interface{}
+		json.Unmarshal(parameters, &raw)
+		updateReq.Parameters = raw
+		update = true
+	}
+
+	if update {
+		_, response, err := rsConClient.UpdateResourceInstance(&updateReq)
+		if err != nil {
+			return diag.FromErr(fmt.Errorf("[ERROR] Error updating resource instance: %s %s", err, response))
+		}
+
+		_, err = waitForDatabaseInstanceUpdate(d, meta)
+		if err != nil {
+			return diag.FromErr(fmt.Errorf(
+				"[ERROR] Error waiting for update of resource instance (%s) to complete: %s", d.Id(), err))
+		}
+	}
+
+	if d.HasChange("tags") {
+		oldList, newList := d.GetChange("tags")
+		err = flex.UpdateTagsUsingCRN(oldList, newList, meta, instanceID)
+		if err != nil {
+			log.Printf(
+				"[ERROR] Error on update of Database (%s) tags: %s", d.Id(), err)
+		}
+	}
+
+	cloudDatabasesClient, err := meta.(conns.ClientSession).CloudDatabasesV5()
+	if err != nil {
+		return diag.FromErr(fmt.Errorf("[ERROR] Error getting database client settings: %s", err))
+	}
+
+	if err != nil {
+		return diag.FromErr(fmt.Errorf("[ERROR] Error getting database client settings: %s", err))
+	}
+	icdId := flex.EscapeUrlParm(instanceID)
+
+	if d.HasChange("configuration") {
+		if config, ok := d.GetOk("configuration"); ok {
+			var rawConfig map[string]json.RawMessage
+			err = json.Unmarshal([]byte(config.(string)), &rawConfig)
+			if err != nil {
+				return diag.FromErr(fmt.Errorf("[ERROR] configuration JSON invalid\n%s", err))
+			}
+
+			var configuration clouddatabasesv5.ConfigurationIntf = new(clouddatabasesv5.Configuration)
+			err = core.UnmarshalModel(rawConfig, "", &configuration, clouddatabasesv5.UnmarshalConfiguration)
+			if err != nil {
+				return diag.FromErr(err)
+			}
+
+			updateDatabaseConfigurationOptions := &clouddatabasesv5.UpdateDatabaseConfigurationOptions{
+				ID:            &instanceID,
+				Configuration: configuration,
+			}
+
+			updateDatabaseConfigurationResponse, response, err := cloudDatabasesClient.UpdateDatabaseConfiguration(updateDatabaseConfigurationOptions)
+
+			if err != nil {
+				return diag.FromErr(fmt.Errorf(
+					"[ERROR] Error updating database configuration failed %s\n%s", err, response))
+			}
+
+			taskID := *updateDatabaseConfigurationResponse.Task.ID
+
+			_, err = waitForDatabaseTaskComplete(taskID, d, meta, d.Timeout(schema.TimeoutUpdate))
+			if err != nil {
+				return diag.FromErr(fmt.Errorf(
+					"[ERROR] Error waiting for database (%s) configuration update task to complete: %s", icdId, err))
+			}
+		}
+	}
+
+	if d.HasChange("group") {
+		oldGroup, newGroup := d.GetChange("group")
+		if oldGroup == nil {
+			oldGroup = new(schema.Set)
+		}
+		if newGroup == nil {
+			newGroup = new(schema.Set)
+		}
+
+		os := oldGroup.(*schema.Set)
+		ns := newGroup.(*schema.Set)
+
+		groupChanges := expandGroups(ns.Difference(os).List())
+
+		groupsResponse, err := getGroups(instanceID, meta)
+		if err != nil {
+			return diag.FromErr(fmt.Errorf(
+				"[ERROR] Error geting group (%s) scaling group update task to complete: %s", icdId, err))
+		}
+
+		currentGroups := normalizeGroups(groupsResponse)
+
+		for _, group := range groupChanges {
+			groupScaling := &clouddatabasesv5.GroupScaling{}
+			var currentGroup *Group
+			for _, g := range currentGroups {
+				if g.ID == group.ID {
+					currentGroup = &g
+					break
+				}
+			}
+
+			if currentGroup == nil {
+				return diag.FromErr(fmt.Errorf(
+					"[ERROR]  (%s) group does not exist: %s", icdId, err))
+			}
+			nodeCount := currentGroup.Members.Allocation
+
+			if group.Members != nil && group.Members.Allocation != currentGroup.Members.Allocation {
+				groupScaling.Members = &clouddatabasesv5.GroupScalingMembers{AllocationCount: core.Int64Ptr(int64(group.Members.Allocation))}
+				nodeCount = group.Members.Allocation
+			}
+			if group.Memory != nil && group.Memory.Allocation*nodeCount != currentGroup.Memory.Allocation {
+				groupScaling.Memory = &clouddatabasesv5.GroupScalingMemory{AllocationMb: core.Int64Ptr(int64(group.Memory.Allocation * nodeCount))}
+			}
+			if group.Disk != nil && group.Disk.Allocation*nodeCount != currentGroup.Disk.Allocation {
+				groupScaling.Disk = &clouddatabasesv5.GroupScalingDisk{AllocationMb: core.Int64Ptr(int64(group.Disk.Allocation * nodeCount))}
+			}
+			if group.CPU != nil && group.CPU.Allocation*nodeCount != currentGroup.CPU.Allocation {
+				groupScaling.CPU = &clouddatabasesv5.GroupScalingCPU{AllocationCount: core.Int64Ptr(int64(group.CPU.Allocation * nodeCount))}
+			}
+			if group.HostFlavor != nil {
+				groupScaling.HostFlavor = &clouddatabasesv5.GroupScalingHostFlavor{ID: core.StringPtr(group.HostFlavor.ID)}
+			}
+
+			if groupScaling.Members != nil || groupScaling.Memory != nil || groupScaling.Disk != nil || groupScaling.CPU != nil || groupScaling.HostFlavor != nil {
+				setDeploymentScalingGroupOptions := &clouddatabasesv5.SetDeploymentScalingGroupOptions{
+					ID:      &instanceID,
+					GroupID: &group.ID,
+					Group:   groupScaling,
+				}
+
+				setDeploymentScalingGroupResponse, response, err := cloudDatabasesClient.SetDeploymentScalingGroup(setDeploymentScalingGroupOptions)
+
+				if err != nil {
+					return diag.FromErr(fmt.Errorf("[ERROR] SetDeploymentScalingGroup (%s) failed %s\n%s", group.ID, err, response))
+				}
+
+				// API may return HTTP 204 No Content if no change made
+				if response.StatusCode == 202 {
+					taskIDLink := *setDeploymentScalingGroupResponse.Task.ID
+
+					_, err = waitForDatabaseTaskComplete(taskIDLink, d, meta, d.Timeout(schema.TimeoutCreate))
+
+					if err != nil {
+						return diag.FromErr(err)
+					}
+				}
+			}
+		}
+	}
+
+	if d.HasChange("auto_scaling.0") {
+		return diag.FromErr(fmt.Errorf("[ERROR] Auto scaling is not supported for Gen2 database instances"))
+	}
+
+	if d.HasChange("adminpassword") {
+		return diag.FromErr(fmt.Errorf("[ERROR] Admin password management is not supported for Gen2 database instances. In Gen2, there is no default admin user. Users should manage credentials using the ibm_resource_key resource (https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/resources/resource_key)"))
+	}
+
+	if d.HasChange("allowlist") {
+		return diag.FromErr(fmt.Errorf("[ERROR] Allowlist is not supported for Gen2 database instances"))
+	}
+
+	if d.HasChange("users") {
+		return diag.FromErr(fmt.Errorf("[ERROR] User management is not supported for Gen2 database instances. Users should manage credentials using the ibm_resource_key resource (https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/resources/resource_key)"))
+	}
+
+	if d.HasChange("logical_replication_slot") {
+		return diag.FromErr(fmt.Errorf("[ERROR] Logical replication slot management is not supported for Gen2 database instances. Please use the Classic backend for logical replication slot operations"))
+	}
+
+	if d.HasChange("remote_leader_id") {
+		remoteLeaderId := d.Get("remote_leader_id").(string)
+
+		if remoteLeaderId == "" {
+			skipInitialBackup := false
+			if skip, ok := d.GetOk("skip_initial_backup"); ok {
+				skipInitialBackup = skip.(bool)
+			}
+
+			promoteReadOnlyReplicaOptions := &clouddatabasesv5.PromoteReadOnlyReplicaOptions{
+				ID: &instanceID,
+				Promotion: map[string]interface{}{
+					"skip_initial_backup": skipInitialBackup,
+				},
+			}
+
+			promoteReadReplicaResponse, response, err := cloudDatabasesClient.PromoteReadOnlyReplica(promoteReadOnlyReplicaOptions)
+
+			if err != nil {
+				return diag.FromErr(fmt.Errorf("[ERROR] Error promoting read replica: %s\n%s", err, response))
+			}
+
+			taskID := *promoteReadReplicaResponse.Task.ID
+			_, err = waitForDatabaseTaskComplete(taskID, d, meta, d.Timeout(schema.TimeoutUpdate))
+
+			if err != nil {
+				return diag.FromErr(fmt.Errorf("[ERROR] Error promoting read replica: %s", err))
+			}
+		}
+	}
+
+	if d.HasChange("version") {
+		return diag.FromErr(fmt.Errorf("[ERROR] Version changes are not supported for Gen2 database instances."))
+	}
+
+	return g.Read(ctx, d, meta)
+
 }
 
 // Delete removes a database instance.

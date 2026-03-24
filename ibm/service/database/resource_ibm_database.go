@@ -260,7 +260,7 @@ func ResourceIBMDatabaseInstance() *schema.Resource {
 				Computed:    true,
 			},
 			"adminpassword": {
-				Description: "The admin user password for the instance",
+				Description: "The admin user password for the instance. Note: In Gen2, there is no default admin user. Users should manage credentials using the ibm_resource_key resource (https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/resources/resource_key).",
 				Type:        schema.TypeString,
 				Optional:    true,
 				ValidateFunc: validation.All(
@@ -429,8 +429,9 @@ func ResourceIBMDatabaseInstance() *schema.Resource {
 				},
 			},
 			"logical_replication_slot": {
-				Type:     schema.TypeSet,
-				Optional: true,
+				Type:        schema.TypeSet,
+				Optional:    true,
+				Description: "Logical replication slots for PostgreSQL. Note: This attribute is not supported for Gen2 database instances.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"name": {
