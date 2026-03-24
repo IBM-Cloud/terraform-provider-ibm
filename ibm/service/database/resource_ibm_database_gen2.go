@@ -928,7 +928,7 @@ func (g *resourceIBMDatabaseGen2Backend) Update(ctx context.Context, d *schema.R
 // TODO: Gen2 delete logic is not yet implemented. This is a known limitation.
 // Users should use the Classic backend for delete operations until this is implemented.
 func (g *resourceIBMDatabaseGen2Backend) Delete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	return diag.Errorf("Delete operation for Gen2 backend is not yet implemented. Please contact support or use the Classic backend for delete operations.")
+	return databaseInstanceDelete(ctx, d, meta)
 }
 
 // Exists checks if a database instance exists.

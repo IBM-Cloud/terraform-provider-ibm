@@ -26,7 +26,7 @@ func (c *resourceIBMDatabaseClassicBackend) Update(context context.Context, d *s
 }
 
 func (c *resourceIBMDatabaseClassicBackend) Delete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	return classicDatabaseInstanceDelete(context, d, meta)
+	return databaseInstanceDelete(context, d, meta)
 }
 
 func (c *resourceIBMDatabaseClassicBackend) Exists(d *schema.ResourceData, meta interface{}) (bool, error) {

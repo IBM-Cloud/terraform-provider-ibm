@@ -2334,7 +2334,7 @@ func resourceIBMDatabaseInstanceDelete(context context.Context, d *schema.Resour
 	return pickResourceBackend(d).Delete(context, d, meta)
 }
 
-func classicDatabaseInstanceDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func databaseInstanceDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	rsConClient, err := meta.(conns.ClientSession).ResourceControllerV2API()
 	if err != nil {
 		return diag.FromErr(err)
