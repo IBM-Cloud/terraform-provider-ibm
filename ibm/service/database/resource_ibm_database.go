@@ -2693,7 +2693,7 @@ func flattenAutoScalingGroup(autoScalingGroup clouddatabasesv5.AutoscalingGroup)
 		memory["io_above_percent"] = memoryIO.AbovePercent
 	}
 
-	if &autoScalingGroup.Autoscaling.Memory.Rate != nil {
+	if autoScalingGroup.Autoscaling.Memory.Rate != nil {
 		ip := autoScalingGroup.Autoscaling.Memory.Rate.IncreasePercent
 		memory["rate_increase_percent"] = *ip
 		memory["rate_period_seconds"] = autoScalingGroup.Autoscaling.Memory.Rate.PeriodSeconds
@@ -2707,7 +2707,7 @@ func flattenAutoScalingGroup(autoScalingGroup clouddatabasesv5.AutoscalingGroup)
 	cpus := make([]map[string]interface{}, 0)
 	cpu := make(map[string]interface{})
 
-	if &autoScalingGroup.Autoscaling.CPU.Rate != nil {
+	if autoScalingGroup.Autoscaling.CPU.Rate != nil {
 		ip := autoScalingGroup.Autoscaling.CPU.Rate.IncreasePercent
 		cpu["rate_increase_percent"] = *ip
 		cpu["rate_period_seconds"] = autoScalingGroup.Autoscaling.CPU.Rate.PeriodSeconds
@@ -2732,7 +2732,7 @@ func flattenAutoScalingGroup(autoScalingGroup clouddatabasesv5.AutoscalingGroup)
 		disk["io_above_percent"] = diskIO.AbovePercent
 	}
 
-	if &autoScalingGroup.Autoscaling.Disk.Rate != nil {
+	if autoScalingGroup.Autoscaling.Disk.Rate != nil {
 		ip := autoScalingGroup.Autoscaling.Disk.Rate.IncreasePercent
 		disk["rate_increase_percent"] = ip
 		disk["rate_period_seconds"] = autoScalingGroup.Autoscaling.Disk.Rate.PeriodSeconds
