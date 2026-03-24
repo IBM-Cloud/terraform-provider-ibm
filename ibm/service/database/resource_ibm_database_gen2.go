@@ -16,21 +16,9 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM/cloud-databases-go-sdk/clouddatabasesv5"
 	"github.com/IBM/go-sdk-core/v5/core"
-	"github.com/IBM/platform-services-go-sdk/globalcatalogv1"
 	rc "github.com/IBM/platform-services-go-sdk/resourcecontrollerv2"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-)
-
-const (
-	// Conversion constants
-	mbToGbConversion = 1024
-
-	// HTTP status codes
-	httpNotFound = 404
-
-	// Default values
-	defaultGroupID = "member"
 )
 
 var gen2UnsupportedAttrs = []string{
@@ -82,7 +70,8 @@ func (g *resourceIBMDatabaseGen2Backend) Create(ctx context.Context, d *schema.R
 	return resourceIBMDatabaseInstanceRead(ctx, d, meta)
 }
 
-// createResourceInstance handles the initial resource instance creation
+// createResourceInstance handles the initial resource instance creation.
+// It retrieves service and plan information, builds Gen2 parameters, and creates the instance.
 func (g *resourceIBMDatabaseGen2Backend) createResourceInstance(ctx context.Context, d *schema.ResourceData, meta interface{}) (*rc.ResourceInstance, error) {
 	rsConClient, err := meta.(conns.ClientSession).ResourceControllerV2API()
 	if err != nil {
@@ -128,7 +117,8 @@ func (g *resourceIBMDatabaseGen2Backend) createResourceInstance(ctx context.Cont
 	return instance, nil
 }
 
-// getServicePlanAndCatalog retrieves the service plan ID and catalog CRN
+// getServicePlanAndCatalog retrieves the service plan ID and catalog CRN.
+// It validates that the plan is available in the specified location.
 func (g *resourceIBMDatabaseGen2Backend) getServicePlanAndCatalog(serviceName, plan, location string, meta interface{}) (string, string, error) {
 	rsCatClient, err := meta.(conns.ClientSession).ResourceCatalogAPI()
 	if err != nil {
@@ -176,7 +166,8 @@ func (g *resourceIBMDatabaseGen2Backend) getServicePlanAndCatalog(serviceName, p
 	return servicePlan, deployments[0].CatalogCRN, nil
 }
 
-// setResourceGroup sets the resource group for the instance
+// setResourceGroup sets the resource group for the instance.
+// Uses the configured resource group or defaults to the account's default resource group.
 func (g *resourceIBMDatabaseGen2Backend) setResourceGroup(d *schema.ResourceData, meta interface{}, rsInst *rc.CreateResourceInstanceOptions) error {
 	if rsGrpID, ok := d.GetOk("resource_group_id"); ok {
 		rgID := rsGrpID.(string)
@@ -191,7 +182,8 @@ func (g *resourceIBMDatabaseGen2Backend) setResourceGroup(d *schema.ResourceData
 	return nil
 }
 
-// buildGen2Parameters constructs the Gen2-specific parameters structure
+// buildGen2Parameters constructs the Gen2-specific parameters structure.
+// Includes database configuration, encryption, restore, and PITR settings.
 func (g *resourceIBMDatabaseGen2Backend) buildGen2Parameters(d *schema.ResourceData, serviceName string, meta interface{}, catalogCRN string) (map[string]interface{}, error) {
 	// Get the database type for the dataservices key
 	dbType := getDatabaseTypeFromResourceID(serviceName)
@@ -220,7 +212,7 @@ func (g *resourceIBMDatabaseGen2Backend) buildGen2Parameters(d *schema.ResourceD
 	// Storage in GB (not MB!)
 	if memberGroup != nil && memberGroup.Disk != nil {
 		// Disk allocation is per member in MB, convert to GB for total
-		storageGB := (memberGroup.Disk.Allocation * members) / mbToGbConversion
+		storageGB := (memberGroup.Disk.Allocation * members) / mbPerGb
 		dbConfig["storage_gb"] = storageGB
 	}
 
@@ -256,7 +248,8 @@ func (g *resourceIBMDatabaseGen2Backend) buildGen2Parameters(d *schema.ResourceD
 	return parameters, nil
 }
 
-// getMemberGroup extracts the member group configuration from schema
+// getMemberGroup extracts the member group configuration from schema.
+// Returns the group with ID "member" or nil if not found.
 func (g *resourceIBMDatabaseGen2Backend) getMemberGroup(d *schema.ResourceData) *Group {
 	if group, ok := d.GetOk("group"); ok {
 		groups := expandGroups(group.(*schema.Set).List())
@@ -269,7 +262,8 @@ func (g *resourceIBMDatabaseGen2Backend) getMemberGroup(d *schema.ResourceData) 
 	return nil
 }
 
-// getMembersCount determines the number of members for the instance
+// getMembersCount determines the number of members for the instance.
+// Uses the configured member count or retrieves the default from the catalog.
 func (g *resourceIBMDatabaseGen2Backend) getMembersCount(d *schema.ResourceData, memberGroup *Group, catalogCRN string, meta interface{}) (int, error) {
 	if memberGroup != nil && memberGroup.Members != nil {
 		return memberGroup.Members.Allocation, nil
@@ -283,7 +277,8 @@ func (g *resourceIBMDatabaseGen2Backend) getMembersCount(d *schema.ResourceData,
 	return members, nil
 }
 
-// addEncryptionConfig adds encryption configuration to dataservices
+// addEncryptionConfig adds encryption configuration to dataservices.
+// Includes disk and backup encryption key CRNs if configured.
 func (g *resourceIBMDatabaseGen2Backend) addEncryptionConfig(d *schema.ResourceData, dataservices map[string]interface{}) {
 	encryption := make(map[string]interface{}, 2)
 	if keyProtect, ok := d.GetOk("key_protect_key"); ok {
@@ -297,7 +292,8 @@ func (g *resourceIBMDatabaseGen2Backend) addEncryptionConfig(d *schema.ResourceD
 	}
 }
 
-// addRestoreConfig adds restore configuration to dataservices
+// addRestoreConfig adds restore configuration to dataservices.
+// Includes backup ID and restore mode settings if configured.
 func (g *resourceIBMDatabaseGen2Backend) addRestoreConfig(d *schema.ResourceData, dataservices map[string]interface{}) {
 	if backupID, ok := d.GetOk("backup_id"); ok {
 		dataservices["restore_backup_id"] = backupID.(string)
@@ -312,7 +308,8 @@ func (g *resourceIBMDatabaseGen2Backend) addRestoreConfig(d *schema.ResourceData
 	}
 }
 
-// addPITRConfig adds point-in-time recovery configuration to dataservices
+// addPITRConfig adds point-in-time recovery configuration to dataservices.
+// Includes deployment ID and recovery time if configured.
 func (g *resourceIBMDatabaseGen2Backend) addPITRConfig(d *schema.ResourceData, dataservices map[string]interface{}) {
 	if pitrID, ok := d.GetOk("point_in_time_recovery_deployment_id"); ok {
 		dataservices["point_in_time_recovery_deployment_id"] = pitrID.(string)
@@ -328,14 +325,15 @@ func (g *resourceIBMDatabaseGen2Backend) addPITRConfig(d *schema.ResourceData, d
 	}
 }
 
-// createInstanceWithRetry creates an instance (simplified without retry to avoid import conflicts)
+// createInstanceWithRetry creates an instance.
+// Note: Retry logic can be added in the future if needed.
 func (g *resourceIBMDatabaseGen2Backend) createInstanceWithRetry(ctx context.Context, client *rc.ResourceControllerV2, opts *rc.CreateResourceInstanceOptions) (*rc.ResourceInstance, *core.DetailedResponse, error) {
-	// Direct call - retry logic can be added later if needed
 	instance, response, err := client.CreateResourceInstance(opts)
 	return instance, response, err
 }
 
-// configureInstance applies post-creation configuration to the instance
+// configureInstance applies post-creation configuration to the instance.
+// Includes scaling, tags, passwords, allowlist, auto-scaling, users, and database settings.
 func (g *resourceIBMDatabaseGen2Backend) configureInstance(ctx context.Context, d *schema.ResourceData, meta interface{}, instance *rc.ResourceInstance) error {
 	if instance == nil || instance.ID == nil {
 		return fmt.Errorf("instance or instance ID is nil")
@@ -391,7 +389,8 @@ func (g *resourceIBMDatabaseGen2Backend) configureInstance(ctx context.Context, 
 	return nil
 }
 
-// applyGroupScaling applies scaling configuration to instance groups
+// applyGroupScaling applies scaling configuration to instance groups.
+// Compares desired configuration with current state and applies changes as needed.
 func (g *resourceIBMDatabaseGen2Backend) applyGroupScaling(ctx context.Context, d *schema.ResourceData, instanceID string, client *clouddatabasesv5.CloudDatabasesV5, meta interface{}) error {
 	group, ok := d.GetOk("group")
 	if !ok {
@@ -414,7 +413,8 @@ func (g *resourceIBMDatabaseGen2Backend) applyGroupScaling(ctx context.Context, 
 	return nil
 }
 
-// scaleGroup scales a specific group if needed
+// scaleGroup scales a specific group if needed.
+// Handles horizontal and vertical scaling for members, memory, disk, CPU, and host flavor.
 func (g *resourceIBMDatabaseGen2Backend) scaleGroup(ctx context.Context, d *schema.ResourceData, instanceID string, grp *Group, currentGroups []Group, client *clouddatabasesv5.CloudDatabasesV5, meta interface{}) error {
 	groupScaling := &clouddatabasesv5.GroupScaling{}
 	var currentGroup *Group
@@ -477,7 +477,8 @@ func (g *resourceIBMDatabaseGen2Backend) scaleGroup(ctx context.Context, d *sche
 	return nil
 }
 
-// updateTags updates resource tags
+// updateTags updates resource tags.
+// Compares old and new tags and applies changes using the CRN.
 func (g *resourceIBMDatabaseGen2Backend) updateTags(d *schema.ResourceData, instance *rc.ResourceInstance, meta interface{}) error {
 	v := os.Getenv("IC_ENV_TAGS")
 	if _, ok := d.GetOk("tags"); ok || v != "" {
@@ -490,7 +491,8 @@ func (g *resourceIBMDatabaseGen2Backend) updateTags(d *schema.ResourceData, inst
 	return nil
 }
 
-// updateAdminPassword updates the admin password if provided
+// updateAdminPassword updates the admin password if provided.
+// Retrieves the admin username from deployment info and updates the password.
 func (g *resourceIBMDatabaseGen2Backend) updateAdminPassword(ctx context.Context, d *schema.ResourceData, instanceID string, client *clouddatabasesv5.CloudDatabasesV5, meta interface{}) error {
 	pw, ok := d.GetOk("adminpassword")
 	if !ok {
@@ -516,7 +518,7 @@ func (g *resourceIBMDatabaseGen2Backend) updateAdminPassword(ctx context.Context
 	}
 
 	deployment := getDeploymentInfoResponse.Deployment
-	adminUser := deployment.AdminUsernames["database"]
+	adminUser := deployment.AdminUsernames[databaseUserType]
 
 	user := &clouddatabasesv5.UserUpdatePasswordSetting{
 		Password: &adminPassword,
@@ -524,7 +526,7 @@ func (g *resourceIBMDatabaseGen2Backend) updateAdminPassword(ctx context.Context
 
 	updateUserOptions := &clouddatabasesv5.UpdateUserOptions{
 		ID:       core.StringPtr(instanceID),
-		UserType: core.StringPtr("database"),
+		UserType: core.StringPtr(databaseUserType),
 		Username: core.StringPtr(adminUser),
 		User:     user,
 	}
@@ -544,7 +546,8 @@ func (g *resourceIBMDatabaseGen2Backend) updateAdminPassword(ctx context.Context
 	return nil
 }
 
-// configureAllowlist configures the IP allowlist
+// configureAllowlist configures the IP allowlist.
+// Sets the list of allowed IP addresses for database access.
 func (g *resourceIBMDatabaseGen2Backend) configureAllowlist(ctx context.Context, d *schema.ResourceData, instanceID string, client *clouddatabasesv5.CloudDatabasesV5, meta interface{}) error {
 	_, hasAllowlist := d.GetOk("allowlist")
 	if !hasAllowlist {
@@ -574,7 +577,8 @@ func (g *resourceIBMDatabaseGen2Backend) configureAllowlist(ctx context.Context,
 	return nil
 }
 
-// configureAutoScaling configures auto-scaling settings
+// configureAutoScaling configures auto-scaling settings.
+// Sets disk and memory auto-scaling conditions if configured.
 func (g *resourceIBMDatabaseGen2Backend) configureAutoScaling(ctx context.Context, d *schema.ResourceData, instanceID string, client *clouddatabasesv5.CloudDatabasesV5, meta interface{}) error {
 	if _, ok := d.GetOk("auto_scaling.0"); !ok {
 		return nil
@@ -621,7 +625,8 @@ func (g *resourceIBMDatabaseGen2Backend) configureAutoScaling(ctx context.Contex
 	return nil
 }
 
-// configureUsers configures database users
+// configureUsers configures database users.
+// Attempts to update existing users or creates new ones if they don't exist.
 func (g *resourceIBMDatabaseGen2Backend) configureUsers(ctx context.Context, d *schema.ResourceData, instanceID string, meta interface{}) error {
 	userList, ok := d.GetOk("users")
 	if !ok {
@@ -646,7 +651,8 @@ func (g *resourceIBMDatabaseGen2Backend) configureUsers(ctx context.Context, d *
 	return nil
 }
 
-// configureDatabaseSettings configures database-specific settings
+// configureDatabaseSettings configures database-specific settings.
+// Applies custom configuration JSON to the database instance.
 func (g *resourceIBMDatabaseGen2Backend) configureDatabaseSettings(ctx context.Context, d *schema.ResourceData, instanceID string, client *clouddatabasesv5.CloudDatabasesV5, meta interface{}) error {
 	config, ok := d.GetOk("configuration")
 	if !ok {
@@ -687,7 +693,8 @@ func (g *resourceIBMDatabaseGen2Backend) configureDatabaseSettings(ctx context.C
 	return nil
 }
 
-// configureLogicalReplication configures logical replication slots for PostgreSQL
+// configureLogicalReplication configures logical replication slots for PostgreSQL.
+// Only applicable to PostgreSQL databases; creates replication slots as configured.
 func (g *resourceIBMDatabaseGen2Backend) configureLogicalReplication(ctx context.Context, d *schema.ResourceData, instanceID string, client *clouddatabasesv5.CloudDatabasesV5, meta interface{}) error {
 	if _, ok := d.GetOk("logical_replication_slot"); !ok {
 		return nil
@@ -730,7 +737,8 @@ func (g *resourceIBMDatabaseGen2Backend) configureLogicalReplication(ctx context
 	return nil
 }
 
-// Read retrieves the current state of a database instance
+// Read retrieves the current state of a database instance.
+// Fetches instance details, service info, version, groups, and clears unsupported attributes.
 func (g *resourceIBMDatabaseGen2Backend) Read(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	rsConClient, err := meta.(conns.ClientSession).ResourceControllerV2API()
 	if err != nil {
@@ -782,7 +790,8 @@ func (g *resourceIBMDatabaseGen2Backend) Read(ctx context.Context, d *schema.Res
 	return nil
 }
 
-// setBasicAttributes sets basic instance attributes
+// setBasicAttributes sets basic instance attributes.
+// Includes tags, name, status, location, GUID, and resource controller URLs.
 func (g *resourceIBMDatabaseGen2Backend) setBasicAttributes(d *schema.ResourceData, instance *rc.ResourceInstance, meta interface{}) error {
 	tags, err := flex.GetTagsUsingCRN(meta, *instance.CRN)
 	if err != nil {
@@ -823,7 +832,8 @@ func (g *resourceIBMDatabaseGen2Backend) setBasicAttributes(d *schema.ResourceDa
 	return nil
 }
 
-// setServiceInfo sets service and plan information
+// setServiceInfo sets service and plan information.
+// Retrieves service and plan names from the catalog and clears admin user (not available in Gen2).
 func (g *resourceIBMDatabaseGen2Backend) setServiceInfo(d *schema.ResourceData, instance *rc.ResourceInstance, meta interface{}) error {
 	rsCatClient, err := meta.(conns.ClientSession).ResourceCatalogAPI()
 	if err != nil {
@@ -844,30 +854,23 @@ func (g *resourceIBMDatabaseGen2Backend) setServiceInfo(d *schema.ResourceData, 
 	d.Set("plan", servicePlan)
 
 	// Admin user is not available in Gen2
-	d.Set("adminuser", nil)
+	d.Set(adminUserKey, nil)
 
 	return nil
 }
 
-// setVersionInfo extracts and sets version information
+// setVersionInfo extracts and sets version information.
+// Uses the helper function to extract version from instance extensions.
 func (g *resourceIBMDatabaseGen2Backend) setVersionInfo(d *schema.ResourceData, instance *rc.ResourceInstance) {
-	var version string
+	version := ""
 	if instance.Extensions != nil && instance.ResourceID != nil {
-		dbType := getDatabaseTypeFromResourceID(*instance.ResourceID)
-		if dbType != "" {
-			if dataservices, ok := instance.Extensions["dataservices"].(map[string]interface{}); ok {
-				if dbTypeData, ok := dataservices[dbType].(map[string]interface{}); ok {
-					if v, ok := dbTypeData["version"].(string); ok {
-						version = v
-					}
-				}
-			}
-		}
+		version = extractVersionFromExtensions(instance.Extensions, *instance.ResourceID)
 	}
-	d.Set("version", version)
+	d.Set(versionKey, version)
 }
 
-// setGroupsInfo retrieves and sets groups information from catalog
+// setGroupsInfo retrieves and sets groups information from catalog.
+// Combines instance extensions with catalog metadata to build group configurations.
 func (g *resourceIBMDatabaseGen2Backend) setGroupsInfo(d *schema.ResourceData, instance *rc.ResourceInstance, meta interface{}) error {
 	if instance.CRN == nil {
 		return fmt.Errorf("instance CRN is nil")
@@ -884,37 +887,15 @@ func (g *resourceIBMDatabaseGen2Backend) setGroupsInfo(d *schema.ResourceData, i
 		return fmt.Errorf("failed to initialize global catalog client: %w", err)
 	}
 
-	var catalogDeployment *globalcatalogv1.CatalogEntry
-	kind := "deployment"
-	childOptions := globalcatalogv1.GetChildObjectsOptions{
-		ID:   instance.ResourcePlanID,
-		Kind: &kind,
-	}
-	children, _, err := globalClient.GetChildObjects(&childOptions)
+	catalogDeployment, err := findDeploymentByLocation(globalClient, *instance.ResourcePlanID, instanceLocation)
 	if err != nil {
-		return fmt.Errorf("error retrieving plan children: %w", err)
-	}
-
-	if children != nil && children.Resources != nil {
-		for _, child := range children.Resources {
-			if child.Metadata != nil &&
-				child.Metadata.Deployment != nil &&
-				child.Metadata.Deployment.Location != nil &&
-				*child.Metadata.Deployment.Location == instanceLocation {
-				catalogDeployment = &child
-				break
-			}
-		}
-	}
-
-	if catalogDeployment == nil {
-		return fmt.Errorf("could not find deployment catalog entry for region %s", instanceLocation)
+		return err
 	}
 
 	// Extract resources from deployment metadata
 	var catalogResources []interface{}
 	if catalogDeployment.Metadata != nil && catalogDeployment.Metadata.Other != nil {
-		if resources, ok := catalogDeployment.Metadata.Other["resources"].([]interface{}); ok {
+		if resources, ok := catalogDeployment.Metadata.Other[resourcesKey].([]interface{}); ok {
 			catalogResources = resources
 		}
 	}
@@ -927,41 +908,44 @@ func (g *resourceIBMDatabaseGen2Backend) setGroupsInfo(d *schema.ResourceData, i
 	return nil
 }
 
-// clearUnsupportedAttributes clears attributes not supported in Gen2
+// clearUnsupportedAttributes clears attributes not supported in Gen2.
+// Sets auto_scaling, allowlist, users, and configuration_schema to nil.
 func (g *resourceIBMDatabaseGen2Backend) clearUnsupportedAttributes(d *schema.ResourceData) {
-	d.Set("auto_scaling", nil)
-	d.Set("allowlist", nil)
+	d.Set(autoScalingKey, nil)
+	d.Set(allowlistKey, nil)
 	d.Set("users", nil)
 	d.Set("configuration_schema", nil)
 }
 
-// Update updates an existing database instance
+// Update updates an existing database instance.
+// TODO: Gen2 update logic is not yet implemented. This is a known limitation.
+// Users should use the Classic backend for update operations until this is implemented.
 func (g *resourceIBMDatabaseGen2Backend) Update(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	// TODO: Implement Gen2 update logic
-	// For now, return a more informative error
 	return diag.Errorf("Update operation for Gen2 backend is not yet implemented. Please contact support or use the Classic backend for update operations.")
 }
 
-// Delete removes a database instance
+// Delete removes a database instance.
+// TODO: Gen2 delete logic is not yet implemented. This is a known limitation.
+// Users should use the Classic backend for delete operations until this is implemented.
 func (g *resourceIBMDatabaseGen2Backend) Delete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	// TODO: Implement Gen2 delete logic
-	// For now, return a more informative error
 	return diag.Errorf("Delete operation for Gen2 backend is not yet implemented. Please contact support or use the Classic backend for delete operations.")
 }
 
-// Exists checks if a database instance exists
+// Exists checks if a database instance exists.
+// TODO: Gen2 exists check is not yet implemented. This is a known limitation.
+// Users should use the Classic backend until this is implemented.
 func (g *resourceIBMDatabaseGen2Backend) Exists(d *schema.ResourceData, meta interface{}) (bool, error) {
-	// TODO: Implement Gen2 exists check
-	// For now, return a more informative error
 	return false, fmt.Errorf("Exists check for Gen2 backend is not yet implemented. Please contact support or use the Classic backend")
 }
 
-// WarnUnsupported returns warnings for unsupported features
+// WarnUnsupported returns warnings for unsupported features.
+// Currently returns no warnings; reserved for future use.
 func (g *resourceIBMDatabaseGen2Backend) WarnUnsupported(ctx context.Context, d *schema.ResourceData) diag.Diagnostics {
 	return nil
 }
 
-// ValidateUnsupportedAttrsDiff validates that unsupported attributes are not configured
+// ValidateUnsupportedAttrsDiff validates that unsupported attributes are not configured.
+// Returns an error if any Gen2-unsupported attributes are set in the configuration.
 func (g *resourceIBMDatabaseGen2Backend) ValidateUnsupportedAttrsDiff(ctx context.Context, d *schema.ResourceDiff, meta interface{}) error {
 	var bad []string
 	for _, k := range gen2UnsupportedAttrs {

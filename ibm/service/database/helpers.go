@@ -18,7 +18,29 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-/*  TODO Move other helper functions here */
+const (
+	// Conversion constants
+	mbPerGb = 1024
+
+	// HTTP status codes
+	httpNotFound = 404
+
+	// Default values
+	defaultGroupID     = "member"
+	defaultMemberCount = 3
+
+	// Gen2 database operation keys
+	deploymentKind     = "deployment"
+	dataservicesKey    = "dataservices"
+	versionKey         = "version"
+	resourcesKey       = "resources"
+	platformOptionsKey = "platform_options"
+	adminUserKey       = "adminuser"
+	autoScalingKey     = "auto_scaling"
+	allowlistKey       = "allowlist"
+	databaseUserType   = "database"
+)
+
 type TimeoutHelper struct {
 	Now time.Time
 }
@@ -201,10 +223,11 @@ func flattenIcdGroupsFromInstanceAndCatalog(instance map[string]interface{}, cat
 	return groups
 }
 
-// databaseAllocations holds resource allocation values extracted from instance extensions
+// databaseAllocations holds resource allocation values extracted from instance extensions.
+// Fields are ordered by type for consistency.
 type databaseAllocations struct {
-	memoryGB     float64
 	cpuCount     float64
+	memoryGB     float64
 	storageGB    float64
 	members      int64
 	hostFlavorID string
@@ -248,21 +271,18 @@ func extractDatabaseAllocations(instance map[string]interface{}, resourceID stri
 	return alloc
 }
 
-// gbToMB converts gigabytes to megabytes
-const gbToMB = 1024
-
 // buildMemoryConfig creates memory configuration from catalog metadata and actual allocation
 func buildMemoryConfig(resourceMap map[string]interface{}, memoryGB float64) []map[string]interface{} {
 	memory := make(map[string]interface{})
 
 	if memoryData, ok := resourceMap["memory"].(map[string]interface{}); ok {
 		memory["units"] = memoryData["units"]
-		memory["allocation_mb"] = int64(memoryGB * gbToMB)
+		memory["allocation_mb"] = int64(memoryGB * mbPerGb)
 		if minGB, ok := memoryData["minimum_gb"].(float64); ok {
-			memory["minimum_mb"] = int64(minGB * gbToMB)
+			memory["minimum_mb"] = int64(minGB * mbPerGb)
 		}
 		if stepGB, ok := memoryData["step_size_gb"].(float64); ok {
-			memory["step_size_mb"] = int64(stepGB * gbToMB)
+			memory["step_size_mb"] = int64(stepGB * mbPerGb)
 		}
 		memory["is_adjustable"] = memoryData["is_adjustable"]
 		memory["can_scale_down"] = memoryData["can_scale_down"]
@@ -293,12 +313,12 @@ func buildDiskConfig(resourceMap map[string]interface{}, storageGB float64) []ma
 
 	if diskData, ok := resourceMap["disk"].(map[string]interface{}); ok {
 		disk["units"] = diskData["units"]
-		disk["allocation_mb"] = int64(storageGB * gbToMB)
+		disk["allocation_mb"] = int64(storageGB * mbPerGb)
 		if minGB, ok := diskData["minimum_gb"].(float64); ok {
-			disk["minimum_mb"] = int64(minGB * gbToMB)
+			disk["minimum_mb"] = int64(minGB * mbPerGb)
 		}
 		if stepGB, ok := diskData["step_size_gb"].(float64); ok {
-			disk["step_size_mb"] = int64(stepGB * gbToMB)
+			disk["step_size_mb"] = int64(stepGB * mbPerGb)
 		}
 		disk["is_adjustable"] = diskData["is_adjustable"]
 		disk["can_scale_down"] = diskData["can_scale_down"]
@@ -321,9 +341,6 @@ func buildHostFlavorConfig(hostFlavorID string) []map[string]interface{} {
 
 	return []map[string]interface{}{hostflavor}
 }
-
-// Default member count when not found in catalog metadata
-const defaultMemberCount = 3
 
 // getInitialNodeCountGen2 retrieves the default member count for Gen2 plans from Global Catalog.
 // Returns the member count from the catalog metadata, or a default value of 3 if not found.
@@ -381,4 +398,68 @@ func extractMemberCountFromMetadata(deployment *globalcatalogv1.CatalogEntry) in
 	}
 
 	return 0
+}
+
+// extractVersionFromExtensions extracts the database version from instance extensions.
+// Returns an empty string if the version cannot be found.
+func extractVersionFromExtensions(extensions map[string]interface{}, resourceID string) string {
+	if extensions == nil {
+		return ""
+	}
+
+	dbType := getDatabaseTypeFromResourceID(resourceID)
+	if dbType == "" {
+		return ""
+	}
+
+	dataservices, ok := extensions[dataservicesKey].(map[string]interface{})
+	if !ok {
+		return ""
+	}
+
+	dbTypeData, ok := dataservices[dbType].(map[string]interface{})
+	if !ok {
+		return ""
+	}
+
+	version, ok := dbTypeData[versionKey].(string)
+	if !ok {
+		return ""
+	}
+
+	return version
+}
+
+// findDeploymentByLocation finds a deployment catalog entry matching the specified location.
+// Returns the deployment entry or an error if not found.
+func findDeploymentByLocation(globalClient *globalcatalogv1.GlobalCatalogV1, planID string, location string) (*globalcatalogv1.CatalogEntry, error) {
+	if globalClient == nil {
+		return nil, fmt.Errorf("global catalog client is nil")
+	}
+
+	kind := deploymentKind
+	childOptions := globalcatalogv1.GetChildObjectsOptions{
+		ID:   &planID,
+		Kind: &kind,
+	}
+
+	children, _, err := globalClient.GetChildObjects(&childOptions)
+	if err != nil {
+		return nil, fmt.Errorf("failed to retrieve plan children: %w", err)
+	}
+
+	if children == nil || children.Resources == nil {
+		return nil, fmt.Errorf("no deployments found for plan")
+	}
+
+	for _, child := range children.Resources {
+		if child.Metadata != nil &&
+			child.Metadata.Deployment != nil &&
+			child.Metadata.Deployment.Location != nil &&
+			*child.Metadata.Deployment.Location == location {
+			return &child, nil
+		}
+	}
+
+	return nil, fmt.Errorf("could not find deployment catalog entry for region %s", location)
 }

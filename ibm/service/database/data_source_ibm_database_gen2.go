@@ -13,18 +13,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-const (
-	// Constants for Gen2 database operations
-	deploymentKind     = "deployment"
-	dataservicesKey    = "dataservices"
-	versionKey         = "version"
-	resourcesKey       = "resources"
-	platformOptionsKey = "platform_options"
-	adminUserKey       = "adminuser"
-	autoScalingKey     = "auto_scaling"
-	allowlistKey       = "allowlist"
-)
-
 type dataSourceIBMDatabaseGen2Backend struct{}
 
 func newDataSourceIBMDatabaseGen2Backend() dataSourceIBMDatabaseBackend {
@@ -133,19 +121,7 @@ func (g *dataSourceIBMDatabaseGen2Backend) Read(d *schema.ResourceData, meta int
 	d.Set(adminUserKey, nil)
 
 	// Extract version from instance.Extensions based on database type
-	var version string
-	if instance.Extensions != nil {
-		dbType := getDatabaseTypeFromResourceID(*instance.ResourceID)
-		if dbType != "" {
-			if dataservices, ok := instance.Extensions[dataservicesKey].(map[string]interface{}); ok {
-				if dbTypeData, ok := dataservices[dbType].(map[string]interface{}); ok {
-					if v, ok := dbTypeData[versionKey].(string); ok {
-						version = v
-					}
-				}
-			}
-		}
-	}
+	version := extractVersionFromExtensions(instance.Extensions, *instance.ResourceID)
 	d.Set(versionKey, version)
 
 	// Extract platform_options from instance.Extensions for Gen2
@@ -155,32 +131,9 @@ func (g *dataSourceIBMDatabaseGen2Backend) Read(d *schema.ResourceData, meta int
 
 	// Get groups data from GlobalCatalog for Gen2
 	// Find the deployment by getting plan's children and matching by location
-	var deployment *globalcatalogv1.CatalogEntry
-	kind := deploymentKind
-	childOptions := globalcatalogv1.GetChildObjectsOptions{
-		ID:   instance.ResourcePlanID,
-		Kind: &kind,
-	}
-	children, _, err := globalClient.GetChildObjects(&childOptions)
+	deployment, err := findDeploymentByLocation(globalClient, *instance.ResourcePlanID, *instance.RegionID)
 	if err != nil {
-		return fmt.Errorf("failed to retrieve plan children: %w", err)
-	}
-
-	if children != nil && children.Resources != nil {
-		for _, child := range children.Resources {
-			// Check if this deployment's location matches the instance region
-			if child.Metadata != nil &&
-				child.Metadata.Deployment != nil &&
-				child.Metadata.Deployment.Location != nil &&
-				*child.Metadata.Deployment.Location == *instance.RegionID {
-				deployment = &child
-				break
-			}
-		}
-	}
-
-	if deployment == nil {
-		return fmt.Errorf("could not find deployment catalog entry for region %s", *instance.RegionID)
+		return err
 	}
 
 	// Extract resources from deployment metadata
