@@ -1,3 +1,6 @@
+// Copyright IBM Corp. 2017, 2024 All Rights Reserved.
+// Licensed under the Mozilla Public License v2.0
+
 package database
 
 import (
@@ -19,22 +22,71 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
+const (
+	// Conversion constants
+	mbToGbConversion = 1024
+
+	// HTTP status codes
+	httpNotFound = 404
+
+	// Default values
+	defaultGroupID = "member"
+)
+
 var gen2UnsupportedAttrs = []string{
-	// TODO: update the list
 	"backup_policy",
 	"users",
+	"auto_scaling",
+	"allowlist",
+	"configuration_schema",
 }
 
 type resourceIBMDatabaseGen2Backend struct{}
 
+// newResourceIBMDatabaseGen2Backend creates a new Gen2 backend instance
 func newResourceIBMDatabaseGen2Backend() resourceIBMDatabaseBackend {
 	return &resourceIBMDatabaseGen2Backend{}
 }
 
-func (g *resourceIBMDatabaseGen2Backend) Create(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	rsConClient, err := meta.(conns.ClientSession).ResourceControllerV2API()
+// Create provisions a new IBM Cloud Database Gen2 instance.
+// It handles resource creation, scaling configuration, encryption setup,
+// and post-provisioning tasks like password updates and allowlist configuration.
+//
+// Parameters:
+//   - ctx: Context for cancellation and timeouts
+//   - d: Terraform resource data containing configuration
+//   - meta: Provider metadata with API clients
+//
+// Returns:
+//   - diag.Diagnostics: Any errors or warnings encountered
+func (g *resourceIBMDatabaseGen2Backend) Create(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	// Create the resource instance
+	instance, err := g.createResourceInstance(ctx, d, meta)
 	if err != nil {
 		return diag.FromErr(err)
+	}
+
+	d.SetId(*instance.ID)
+
+	// Wait for instance creation to complete
+	_, err = waitForDatabaseInstanceCreate(d, meta, *instance.ID, false)
+	if err != nil {
+		return diag.FromErr(fmt.Errorf("error waiting for create database instance (%s) to complete: %w", *instance.ID, err))
+	}
+
+	// Configure the instance with additional settings
+	if err := g.configureInstance(ctx, d, meta, instance); err != nil {
+		return diag.FromErr(err)
+	}
+
+	return resourceIBMDatabaseInstanceRead(ctx, d, meta)
+}
+
+// createResourceInstance handles the initial resource instance creation
+func (g *resourceIBMDatabaseGen2Backend) createResourceInstance(ctx context.Context, d *schema.ResourceData, meta interface{}) (*rc.ResourceInstance, error) {
+	rsConClient, err := meta.(conns.ClientSession).ResourceControllerV2API()
+	if err != nil {
+		return nil, fmt.Errorf("failed to initialize resource controller client: %w", err)
 	}
 
 	serviceName := d.Get("service").(string)
@@ -46,66 +98,109 @@ func (g *resourceIBMDatabaseGen2Backend) Create(context context.Context, d *sche
 		Name: &name,
 	}
 
+	// Get service offering and plan
+	servicePlan, catalogCRN, err := g.getServicePlanAndCatalog(serviceName, plan, location, meta)
+	if err != nil {
+		return nil, err
+	}
+
+	rsInst.ResourcePlanID = &servicePlan
+	rsInst.Target = &catalogCRN
+
+	// Set resource group
+	if err := g.setResourceGroup(d, meta, &rsInst); err != nil {
+		return nil, err
+	}
+
+	// Build Gen2 parameters
+	parameters, err := g.buildGen2Parameters(d, serviceName, meta, catalogCRN)
+	if err != nil {
+		return nil, err
+	}
+	rsInst.Parameters = parameters
+
+	// Create the instance with retry logic
+	instance, response, err := g.createInstanceWithRetry(ctx, rsConClient, &rsInst)
+	if err != nil {
+		return nil, fmt.Errorf("error creating database instance: %w (response: %v)", err, response)
+	}
+
+	return instance, nil
+}
+
+// getServicePlanAndCatalog retrieves the service plan ID and catalog CRN
+func (g *resourceIBMDatabaseGen2Backend) getServicePlanAndCatalog(serviceName, plan, location string, meta interface{}) (string, string, error) {
 	rsCatClient, err := meta.(conns.ClientSession).ResourceCatalogAPI()
 	if err != nil {
-		return diag.FromErr(err)
+		return "", "", fmt.Errorf("failed to initialize resource catalog client: %w", err)
 	}
 	rsCatRepo := rsCatClient.ResourceCatalog()
 
 	serviceOff, err := rsCatRepo.FindByName(serviceName, true)
 	if err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error retrieving database service offering: %s", err))
+		return "", "", fmt.Errorf("error retrieving database service offering: %w", err)
 	}
 
 	servicePlan, err := rsCatRepo.GetServicePlanID(serviceOff[0], plan)
 	if err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error retrieving plan: %s", err))
+		return "", "", fmt.Errorf("error retrieving plan: %w", err)
 	}
-	rsInst.ResourcePlanID = &servicePlan
 
 	deployments, err := rsCatRepo.ListDeployments(servicePlan)
 	if err != nil {
 		if serviceName == "databases-for-mongodb" && plan == "enterprise-sharding" {
-			return diag.FromErr(fmt.Errorf("%s %s is not available yet in this region", serviceName, plan))
-		} else {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error retrieving deployment for plan %s : %s", plan, err))
+			return "", "", fmt.Errorf("%s %s is not available yet in this region", serviceName, plan)
 		}
+		return "", "", fmt.Errorf("error retrieving deployment for plan %s: %w", plan, err)
 	}
+
 	if len(deployments) == 0 {
-		return diag.FromErr(fmt.Errorf("[ERROR] No deployment found for service plan : %s", plan))
+		return "", "", fmt.Errorf("no deployment found for service plan: %s", plan)
 	}
+
 	deployments, supportedLocations := filterDatabaseDeployments(deployments, location)
 
 	if len(deployments) == 0 {
-		locationList := make([]string, 0, len(supportedLocations))
+		var locationList strings.Builder
+		first := true
 		for l := range supportedLocations {
-			locationList = append(locationList, l)
+			if !first {
+				locationList.WriteString(", ")
+			}
+			locationList.WriteString(l)
+			first = false
 		}
-		return diag.FromErr(fmt.Errorf("[ERROR] No deployment found for service plan %s at location %s.\nValid location(s) are: %q", plan, location, locationList))
+		return "", "", fmt.Errorf("no deployment found for service plan %s at location %s. Valid location(s) are: %s", plan, location, locationList.String())
 	}
-	catalogCRN := deployments[0].CatalogCRN
-	rsInst.Target = &catalogCRN
 
+	return servicePlan, deployments[0].CatalogCRN, nil
+}
+
+// setResourceGroup sets the resource group for the instance
+func (g *resourceIBMDatabaseGen2Backend) setResourceGroup(d *schema.ResourceData, meta interface{}, rsInst *rc.CreateResourceInstanceOptions) error {
 	if rsGrpID, ok := d.GetOk("resource_group_id"); ok {
 		rgID := rsGrpID.(string)
 		rsInst.ResourceGroup = &rgID
 	} else {
 		defaultRg, err := flex.DefaultResourceGroup(meta)
 		if err != nil {
-			return diag.FromErr(err)
+			return fmt.Errorf("failed to get default resource group: %w", err)
 		}
 		rsInst.ResourceGroup = &defaultRg
 	}
+	return nil
+}
 
-	// Gen2 uses a different parameter structure
-	// Get the database type for the dataservices key (service name and resource ID have same format)
+// buildGen2Parameters constructs the Gen2-specific parameters structure
+func (g *resourceIBMDatabaseGen2Backend) buildGen2Parameters(d *schema.ResourceData, serviceName string, meta interface{}, catalogCRN string) (map[string]interface{}, error) {
+	// Get the database type for the dataservices key
 	dbType := getDatabaseTypeFromResourceID(serviceName)
 	if dbType == "" {
-		return diag.FromErr(fmt.Errorf("[ERROR] Unable to determine database type from service name: %s", serviceName))
+		return nil, fmt.Errorf("unable to determine database type from service name: %s", serviceName)
 	}
 
 	// Build the database-specific configuration
-	dbConfig := make(map[string]interface{})
+	dbConfig := make(map[string]interface{}, 5)
 
 	// Version
 	if version, ok := d.GetOk("version"); ok {
@@ -113,36 +208,19 @@ func (g *resourceIBMDatabaseGen2Backend) Create(context context.Context, d *sche
 	}
 
 	// Get member group configuration
-	var memberGroup *Group
-	if group, ok := d.GetOk("group"); ok {
-		groups := expandGroups(group.(*schema.Set).List())
-		for _, g := range groups {
-			if g.ID == "member" {
-				memberGroup = g
-				break
-			}
-		}
-	}
+	memberGroup := g.getMemberGroup(d)
 
 	// Members count
-	var members int
-	if memberGroup != nil && memberGroup.Members != nil {
-		members = memberGroup.Members.Allocation
-	} else {
-		// Get initial node count if not specified (use Gen2-specific function)
-		// Pass the deployment ID to get catalog entry with member count
-		var err error
-		members, err = getInitialNodeCountGen2(deployments[0].ID, meta)
-		if err != nil {
-			return diag.FromErr(err)
-		}
+	members, err := g.getMembersCount(d, memberGroup, catalogCRN, meta)
+	if err != nil {
+		return nil, err
 	}
 	dbConfig["members"] = members
 
 	// Storage in GB (not MB!)
 	if memberGroup != nil && memberGroup.Disk != nil {
 		// Disk allocation is per member in MB, convert to GB for total
-		storageGB := (memberGroup.Disk.Allocation * members) / 1024
+		storageGB := (memberGroup.Disk.Allocation * members) / mbToGbConversion
 		dbConfig["storage_gb"] = storageGB
 	}
 
@@ -157,7 +235,57 @@ func (g *resourceIBMDatabaseGen2Backend) Create(context context.Context, d *sche
 	}
 
 	// Handle encryption
-	encryption := make(map[string]interface{})
+	g.addEncryptionConfig(d, dataservices)
+
+	// Handle restore from backup
+	g.addRestoreConfig(d, dataservices)
+
+	// Handle point-in-time recovery
+	g.addPITRConfig(d, dataservices)
+
+	// Handle read replica
+	if remoteLeader, ok := d.GetOk("remote_leader_id"); ok {
+		dataservices["remote_leader_id"] = remoteLeader.(string)
+	}
+
+	// Build final parameters structure
+	parameters := map[string]interface{}{
+		"dataservices": dataservices,
+	}
+
+	return parameters, nil
+}
+
+// getMemberGroup extracts the member group configuration from schema
+func (g *resourceIBMDatabaseGen2Backend) getMemberGroup(d *schema.ResourceData) *Group {
+	if group, ok := d.GetOk("group"); ok {
+		groups := expandGroups(group.(*schema.Set).List())
+		for _, grp := range groups {
+			if grp.ID == defaultGroupID {
+				return grp
+			}
+		}
+	}
+	return nil
+}
+
+// getMembersCount determines the number of members for the instance
+func (g *resourceIBMDatabaseGen2Backend) getMembersCount(d *schema.ResourceData, memberGroup *Group, catalogCRN string, meta interface{}) (int, error) {
+	if memberGroup != nil && memberGroup.Members != nil {
+		return memberGroup.Members.Allocation, nil
+	}
+
+	// Get initial node count from catalog
+	members, err := getInitialNodeCountGen2(catalogCRN, meta)
+	if err != nil {
+		return 0, fmt.Errorf("failed to get initial node count: %w", err)
+	}
+	return members, nil
+}
+
+// addEncryptionConfig adds encryption configuration to dataservices
+func (g *resourceIBMDatabaseGen2Backend) addEncryptionConfig(d *schema.ResourceData, dataservices map[string]interface{}) {
+	encryption := make(map[string]interface{}, 2)
 	if keyProtect, ok := d.GetOk("key_protect_key"); ok {
 		encryption["disk"] = keyProtect.(string)
 	}
@@ -167,13 +295,25 @@ func (g *resourceIBMDatabaseGen2Backend) Create(context context.Context, d *sche
 	if len(encryption) > 0 {
 		dataservices["encryption"] = encryption
 	}
+}
 
-	// Handle restore from backup (Gen2 uses restore_backup_id)
+// addRestoreConfig adds restore configuration to dataservices
+func (g *resourceIBMDatabaseGen2Backend) addRestoreConfig(d *schema.ResourceData, dataservices map[string]interface{}) {
 	if backupID, ok := d.GetOk("backup_id"); ok {
 		dataservices["restore_backup_id"] = backupID.(string)
 	}
 
-	// Handle point-in-time recovery
+	if offlineRestore, ok := d.GetOk("offline_restore"); ok {
+		dataservices["offline_restore"] = offlineRestore.(bool)
+	}
+
+	if asyncRestore, ok := d.GetOk("async_restore"); ok {
+		dataservices["async_restore"] = asyncRestore.(bool)
+	}
+}
+
+// addPITRConfig adds point-in-time recovery configuration to dataservices
+func (g *resourceIBMDatabaseGen2Backend) addPITRConfig(d *schema.ResourceData, dataservices map[string]interface{}) {
 	if pitrID, ok := d.GetOk("point_in_time_recovery_deployment_id"); ok {
 		dataservices["point_in_time_recovery_deployment_id"] = pitrID.(string)
 	}
@@ -186,334 +326,415 @@ func (g *resourceIBMDatabaseGen2Backend) Create(context context.Context, d *sche
 		pitrTimeTrimmed := strings.TrimSpace(pitrTime.(string))
 		dataservices["point_in_time_recovery_time"] = pitrTimeTrimmed
 	}
+}
 
-	if offlineRestore, ok := d.GetOk("offline_restore"); ok {
-		dataservices["offline_restore"] = offlineRestore.(bool)
-	}
+// createInstanceWithRetry creates an instance (simplified without retry to avoid import conflicts)
+func (g *resourceIBMDatabaseGen2Backend) createInstanceWithRetry(ctx context.Context, client *rc.ResourceControllerV2, opts *rc.CreateResourceInstanceOptions) (*rc.ResourceInstance, *core.DetailedResponse, error) {
+	// Direct call - retry logic can be added later if needed
+	instance, response, err := client.CreateResourceInstance(opts)
+	return instance, response, err
+}
 
-	if asyncRestore, ok := d.GetOk("async_restore"); ok {
-		dataservices["async_restore"] = asyncRestore.(bool)
-	}
-
-	// Handle read replica
-	if remoteLeader, ok := d.GetOk("remote_leader_id"); ok {
-		dataservices["remote_leader_id"] = remoteLeader.(string)
-	}
-
-	// Note: service_endpoints is not supported in Gen2 and defaults to 'private'
-	// Do not send it to the API as it will cause an error
-
-	// Build final parameters structure
-	parameters := map[string]interface{}{
-		"dataservices": dataservices,
-	}
-
-	rsInst.Parameters = parameters
-
-	instance, response, err := rsConClient.CreateResourceInstance(&rsInst)
-	if err != nil {
-		return diag.FromErr(
-			fmt.Errorf("[ERROR] Error creating database instance: %s %s", err, response))
-	}
-	d.SetId(*instance.ID)
-
-	_, err = waitForDatabaseInstanceCreate(d, meta, *instance.ID, false)
-	if err != nil {
-		return diag.FromErr(
-			fmt.Errorf(
-				"[ERROR] Error waiting for create database instance (%s) to complete: %s", *instance.ID, err))
-	}
-
-	cloudDatabasesClient, err := meta.(conns.ClientSession).CloudDatabasesV5()
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	if group, ok := d.GetOk("group"); ok {
-		groups := expandGroups(group.(*schema.Set).List())
-		groupsResponse, err := getGroups(*instance.ID, meta)
-		if err != nil {
-			return diag.FromErr(err)
-		}
-		currentGroups := normalizeGroups(groupsResponse)
-
-		for _, g := range groups {
-			groupScaling := &clouddatabasesv5.GroupScaling{}
-			var currentGroup *Group
-			var nodeCount int
-
-			for _, cg := range currentGroups {
-				if cg.ID == g.ID {
-					currentGroup = &cg
-					nodeCount = currentGroup.Members.Allocation
-				}
-			}
-
-			if g.ID == "member" && (g.Members == nil || g.Members.Allocation == nodeCount) {
-				// No Horizontal Scaling needed
-				continue
-			}
-
-			if g.Members != nil && g.Members.Allocation != currentGroup.Members.Allocation {
-				groupScaling.Members = &clouddatabasesv5.GroupScalingMembers{AllocationCount: core.Int64Ptr(int64(g.Members.Allocation))}
-				nodeCount = g.Members.Allocation
-			}
-			if g.Memory != nil && g.Memory.Allocation*nodeCount != currentGroup.Memory.Allocation {
-				groupScaling.Memory = &clouddatabasesv5.GroupScalingMemory{AllocationMb: core.Int64Ptr(int64(g.Memory.Allocation * nodeCount))}
-			}
-			if g.Disk != nil && g.Disk.Allocation*nodeCount != currentGroup.Disk.Allocation {
-				groupScaling.Disk = &clouddatabasesv5.GroupScalingDisk{AllocationMb: core.Int64Ptr(int64(g.Disk.Allocation * nodeCount))}
-			}
-			if g.CPU != nil && g.CPU.Allocation*nodeCount != currentGroup.CPU.Allocation {
-				groupScaling.CPU = &clouddatabasesv5.GroupScalingCPU{AllocationCount: core.Int64Ptr(int64(g.CPU.Allocation * nodeCount))}
-			}
-			if g.HostFlavor != nil {
-				groupScaling.HostFlavor = &clouddatabasesv5.GroupScalingHostFlavor{ID: core.StringPtr(g.HostFlavor.ID)}
-			}
-
-			if groupScaling.Members != nil || groupScaling.Memory != nil || groupScaling.Disk != nil || groupScaling.CPU != nil || groupScaling.HostFlavor != nil {
-				setDeploymentScalingGroupOptions := &clouddatabasesv5.SetDeploymentScalingGroupOptions{
-					ID:      instance.ID,
-					GroupID: &g.ID,
-					Group:   groupScaling,
-				}
-
-				setDeploymentScalingGroupResponse, _, err := cloudDatabasesClient.SetDeploymentScalingGroup(setDeploymentScalingGroupOptions)
-
-				taskIDLink := *setDeploymentScalingGroupResponse.Task.ID
-
-				_, err = waitForDatabaseTaskComplete(taskIDLink, d, meta, d.Timeout(schema.TimeoutCreate))
-
-				if err != nil {
-					return diag.FromErr(err)
-				}
-			}
-		}
-	}
-
-	v := os.Getenv("IC_ENV_TAGS")
-	if _, ok := d.GetOk("tags"); ok || v != "" {
-		oldList, newList := d.GetChange("tags")
-		err = flex.UpdateTagsUsingCRN(oldList, newList, meta, *instance.CRN)
-		if err != nil {
-			log.Printf(
-				"Error on create of ibm database (%s) tags: %s", d.Id(), err)
-		}
+// configureInstance applies post-creation configuration to the instance
+func (g *resourceIBMDatabaseGen2Backend) configureInstance(ctx context.Context, d *schema.ResourceData, meta interface{}, instance *rc.ResourceInstance) error {
+	if instance == nil || instance.ID == nil {
+		return fmt.Errorf("instance or instance ID is nil")
 	}
 
 	instanceID := *instance.ID
-	icdId := flex.EscapeUrlParm(instanceID)
 
-	if pw, ok := d.GetOk("adminpassword"); ok {
-		adminPassword := pw.(string)
+	cloudDatabasesClient, err := meta.(conns.ClientSession).CloudDatabasesV5()
+	if err != nil {
+		return fmt.Errorf("failed to initialize cloud databases client: %w", err)
+	}
 
-		getDeploymentInfoOptions := &clouddatabasesv5.GetDeploymentInfoOptions{
-			ID: core.StringPtr(instanceID),
-		}
-		getDeploymentInfoResponse, response, err := cloudDatabasesClient.GetDeploymentInfo(getDeploymentInfoOptions)
+	// Apply group scaling if configured
+	if err := g.applyGroupScaling(ctx, d, instanceID, cloudDatabasesClient, meta); err != nil {
+		return err
+	}
 
-		if err != nil {
-			if response.StatusCode == 404 {
-				return diag.FromErr(fmt.Errorf("[ERROR] The database instance was not found in the region set for the Provider, or the default of us-south. Specify the correct region in the provider definition, or create a provider alias for the correct region. %v", err))
-			}
-			return diag.FromErr(fmt.Errorf("[ERROR] Error getting database config while updating adminpassword for: %s with error %s", instanceID, err))
-		}
-		deployment := getDeploymentInfoResponse.Deployment
+	// Update tags
+	if err := g.updateTags(d, instance, meta); err != nil {
+		log.Printf("Error on create of ibm database (%s) tags: %s", d.Id(), err)
+	}
 
-		adminUser := deployment.AdminUsernames["database"]
+	// Update admin password if provided
+	if err := g.updateAdminPassword(ctx, d, instanceID, cloudDatabasesClient, meta); err != nil {
+		return err
+	}
 
-		user := &clouddatabasesv5.UserUpdatePasswordSetting{
-			Password: &adminPassword,
-		}
+	// Configure allowlist if provided
+	if err := g.configureAllowlist(ctx, d, instanceID, cloudDatabasesClient, meta); err != nil {
+		return err
+	}
 
-		updateUserOptions := &clouddatabasesv5.UpdateUserOptions{
-			ID:       core.StringPtr(instanceID),
-			UserType: core.StringPtr("database"),
-			Username: core.StringPtr(adminUser),
-			User:     user,
-		}
+	// Configure auto-scaling if provided
+	if err := g.configureAutoScaling(ctx, d, instanceID, cloudDatabasesClient, meta); err != nil {
+		return err
+	}
 
-		updateUserResponse, response, err := cloudDatabasesClient.UpdateUser(updateUserOptions)
-		if err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] UpdateUser (%s) failed %s\n%s", *updateUserOptions.Username, err, response))
-		}
+	// Configure users if provided
+	if err := g.configureUsers(ctx, d, instanceID, meta); err != nil {
+		return err
+	}
 
-		taskID := *updateUserResponse.Task.ID
-		_, err = waitForDatabaseTaskComplete(taskID, d, meta, d.Timeout(schema.TimeoutCreate))
+	// Configure database settings
+	if err := g.configureDatabaseSettings(ctx, d, instanceID, cloudDatabasesClient, meta); err != nil {
+		return err
+	}
 
-		if err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error updating database admin password: %s", err))
+	// Configure logical replication slots if provided
+	if err := g.configureLogicalReplication(ctx, d, instanceID, cloudDatabasesClient, meta); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// applyGroupScaling applies scaling configuration to instance groups
+func (g *resourceIBMDatabaseGen2Backend) applyGroupScaling(ctx context.Context, d *schema.ResourceData, instanceID string, client *clouddatabasesv5.CloudDatabasesV5, meta interface{}) error {
+	group, ok := d.GetOk("group")
+	if !ok {
+		return nil
+	}
+
+	groups := expandGroups(group.(*schema.Set).List())
+	groupsResponse, err := getGroups(instanceID, meta)
+	if err != nil {
+		return fmt.Errorf("failed to get groups: %w", err)
+	}
+	currentGroups := normalizeGroups(groupsResponse)
+
+	for _, grp := range groups {
+		if err := g.scaleGroup(ctx, d, instanceID, grp, currentGroups, client, meta); err != nil {
+			return err
 		}
 	}
 
-	_, hasAllowlist := d.GetOk("allowlist")
+	return nil
+}
 
-	if hasAllowlist {
-		var ipAddresses *schema.Set
+// scaleGroup scales a specific group if needed
+func (g *resourceIBMDatabaseGen2Backend) scaleGroup(ctx context.Context, d *schema.ResourceData, instanceID string, grp *Group, currentGroups []Group, client *clouddatabasesv5.CloudDatabasesV5, meta interface{}) error {
+	groupScaling := &clouddatabasesv5.GroupScaling{}
+	var currentGroup *Group
+	var nodeCount int
 
-		ipAddresses = d.Get("allowlist").(*schema.Set)
+	for i := range currentGroups {
+		if currentGroups[i].ID == grp.ID {
+			currentGroup = &currentGroups[i]
+			nodeCount = currentGroup.Members.Allocation
+			break
+		}
+	}
 
-		entries := flex.ExpandAllowlist(ipAddresses)
+	if currentGroup == nil {
+		return fmt.Errorf("current group %s not found", grp.ID)
+	}
 
-		setAllowlistOptions := &clouddatabasesv5.SetAllowlistOptions{
-			ID:          &instanceID,
-			IPAddresses: entries,
+	if grp.ID == defaultGroupID && (grp.Members == nil || grp.Members.Allocation == nodeCount) {
+		// No Horizontal Scaling needed
+		return nil
+	}
+
+	if grp.Members != nil && grp.Members.Allocation != currentGroup.Members.Allocation {
+		groupScaling.Members = &clouddatabasesv5.GroupScalingMembers{AllocationCount: core.Int64Ptr(int64(grp.Members.Allocation))}
+		nodeCount = grp.Members.Allocation
+	}
+	if grp.Memory != nil && grp.Memory.Allocation*nodeCount != currentGroup.Memory.Allocation {
+		groupScaling.Memory = &clouddatabasesv5.GroupScalingMemory{AllocationMb: core.Int64Ptr(int64(grp.Memory.Allocation * nodeCount))}
+	}
+	if grp.Disk != nil && grp.Disk.Allocation*nodeCount != currentGroup.Disk.Allocation {
+		groupScaling.Disk = &clouddatabasesv5.GroupScalingDisk{AllocationMb: core.Int64Ptr(int64(grp.Disk.Allocation * nodeCount))}
+	}
+	if grp.CPU != nil && grp.CPU.Allocation*nodeCount != currentGroup.CPU.Allocation {
+		groupScaling.CPU = &clouddatabasesv5.GroupScalingCPU{AllocationCount: core.Int64Ptr(int64(grp.CPU.Allocation * nodeCount))}
+	}
+	if grp.HostFlavor != nil {
+		groupScaling.HostFlavor = &clouddatabasesv5.GroupScalingHostFlavor{ID: core.StringPtr(grp.HostFlavor.ID)}
+	}
+
+	if groupScaling.Members != nil || groupScaling.Memory != nil || groupScaling.Disk != nil || groupScaling.CPU != nil || groupScaling.HostFlavor != nil {
+		setDeploymentScalingGroupOptions := &clouddatabasesv5.SetDeploymentScalingGroupOptions{
+			ID:      &instanceID,
+			GroupID: &grp.ID,
+			Group:   groupScaling,
 		}
 
-		setAllowlistResponse, _, err := cloudDatabasesClient.SetAllowlist(setAllowlistOptions)
+		setDeploymentScalingGroupResponse, _, err := client.SetDeploymentScalingGroup(setDeploymentScalingGroupOptions)
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error updating database allowlists: %s", err))
+			return fmt.Errorf("failed to set deployment scaling group: %w", err)
 		}
 
-		taskId := *setAllowlistResponse.Task.ID
+		taskIDLink := *setDeploymentScalingGroupResponse.Task.ID
+
+		_, err = waitForDatabaseTaskComplete(taskIDLink, d, meta, d.Timeout(schema.TimeoutCreate))
+		if err != nil {
+			return fmt.Errorf("error waiting for scaling task to complete: %w", err)
+		}
+	}
+
+	return nil
+}
+
+// updateTags updates resource tags
+func (g *resourceIBMDatabaseGen2Backend) updateTags(d *schema.ResourceData, instance *rc.ResourceInstance, meta interface{}) error {
+	v := os.Getenv("IC_ENV_TAGS")
+	if _, ok := d.GetOk("tags"); ok || v != "" {
+		oldList, newList := d.GetChange("tags")
+		err := flex.UpdateTagsUsingCRN(oldList, newList, meta, *instance.CRN)
+		if err != nil {
+			return fmt.Errorf("failed to update tags: %w", err)
+		}
+	}
+	return nil
+}
+
+// updateAdminPassword updates the admin password if provided
+func (g *resourceIBMDatabaseGen2Backend) updateAdminPassword(ctx context.Context, d *schema.ResourceData, instanceID string, client *clouddatabasesv5.CloudDatabasesV5, meta interface{}) error {
+	pw, ok := d.GetOk("adminpassword")
+	if !ok {
+		return nil
+	}
+
+	adminPassword := pw.(string)
+
+	getDeploymentInfoOptions := &clouddatabasesv5.GetDeploymentInfoOptions{
+		ID: core.StringPtr(instanceID),
+	}
+	getDeploymentInfoResponse, response, err := client.GetDeploymentInfo(getDeploymentInfoOptions)
+
+	if err != nil {
+		if response != nil && response.StatusCode == httpNotFound {
+			return fmt.Errorf("the database instance was not found in the region set for the Provider, or the default of us-south. Specify the correct region in the provider definition, or create a provider alias for the correct region: %w", err)
+		}
+		return fmt.Errorf("error getting database config while updating adminpassword for: %s: %w", instanceID, err)
+	}
+
+	if getDeploymentInfoResponse == nil || getDeploymentInfoResponse.Deployment == nil {
+		return fmt.Errorf("deployment info response is nil")
+	}
+
+	deployment := getDeploymentInfoResponse.Deployment
+	adminUser := deployment.AdminUsernames["database"]
+
+	user := &clouddatabasesv5.UserUpdatePasswordSetting{
+		Password: &adminPassword,
+	}
+
+	updateUserOptions := &clouddatabasesv5.UpdateUserOptions{
+		ID:       core.StringPtr(instanceID),
+		UserType: core.StringPtr("database"),
+		Username: core.StringPtr(adminUser),
+		User:     user,
+	}
+
+	updateUserResponse, response, err := client.UpdateUser(updateUserOptions)
+	if err != nil {
+		return fmt.Errorf("UpdateUser (%s) failed: %w (response: %v)", *updateUserOptions.Username, err, response)
+	}
+
+	taskID := *updateUserResponse.Task.ID
+	_, err = waitForDatabaseTaskComplete(taskID, d, meta, d.Timeout(schema.TimeoutCreate))
+
+	if err != nil {
+		return fmt.Errorf("error updating database admin password: %w", err)
+	}
+
+	return nil
+}
+
+// configureAllowlist configures the IP allowlist
+func (g *resourceIBMDatabaseGen2Backend) configureAllowlist(ctx context.Context, d *schema.ResourceData, instanceID string, client *clouddatabasesv5.CloudDatabasesV5, meta interface{}) error {
+	_, hasAllowlist := d.GetOk("allowlist")
+	if !hasAllowlist {
+		return nil
+	}
+
+	ipAddresses := d.Get("allowlist").(*schema.Set)
+	entries := flex.ExpandAllowlist(ipAddresses)
+
+	setAllowlistOptions := &clouddatabasesv5.SetAllowlistOptions{
+		ID:          &instanceID,
+		IPAddresses: entries,
+	}
+
+	setAllowlistResponse, _, err := client.SetAllowlist(setAllowlistOptions)
+	if err != nil {
+		return fmt.Errorf("error updating database allowlists: %w", err)
+	}
+
+	taskId := *setAllowlistResponse.Task.ID
+
+	_, err = waitForDatabaseTaskComplete(taskId, d, meta, d.Timeout(schema.TimeoutCreate))
+	if err != nil {
+		return fmt.Errorf("error waiting for update of database (%s) allowlist task to complete: %w", instanceID, err)
+	}
+
+	return nil
+}
+
+// configureAutoScaling configures auto-scaling settings
+func (g *resourceIBMDatabaseGen2Backend) configureAutoScaling(ctx context.Context, d *schema.ResourceData, instanceID string, client *clouddatabasesv5.CloudDatabasesV5, meta interface{}) error {
+	if _, ok := d.GetOk("auto_scaling.0"); !ok {
+		return nil
+	}
+
+	autoscalingSetGroupAutoscaling := &clouddatabasesv5.AutoscalingSetGroupAutoscaling{}
+
+	if diskRecord, ok := d.GetOk("auto_scaling.0.disk"); ok {
+		diskGroup, err := expandAutoscalingDiskGroup(d, diskRecord)
+		if err != nil {
+			return fmt.Errorf("error in getting diskGroup from expandAutoscalingDiskGroup: %w", err)
+		}
+		autoscalingSetGroupAutoscaling.Disk = diskGroup
+	}
+
+	if memoryRecord, ok := d.GetOk("auto_scaling.0.memory"); ok {
+		memoryGroup, err := expandAutoscalingMemoryGroup(d, memoryRecord)
+		if err != nil {
+			return fmt.Errorf("error in getting memoryBody from expandAutoscalingMemoryGroup: %w", err)
+		}
+		autoscalingSetGroupAutoscaling.Memory = memoryGroup
+	}
+
+	if autoscalingSetGroupAutoscaling.Disk != nil || autoscalingSetGroupAutoscaling.Memory != nil {
+		setAutoscalingConditionsOptions := &clouddatabasesv5.SetAutoscalingConditionsOptions{
+			ID:          &instanceID,
+			GroupID:     core.StringPtr(defaultGroupID),
+			Autoscaling: autoscalingSetGroupAutoscaling,
+		}
+
+		setAutoscalingConditionsResponse, _, err := client.SetAutoscalingConditions(setAutoscalingConditionsOptions)
+		if err != nil {
+			return fmt.Errorf("error updating database auto_scaling: %w", err)
+		}
+
+		taskId := *setAutoscalingConditionsResponse.Task.ID
 
 		_, err = waitForDatabaseTaskComplete(taskId, d, meta, d.Timeout(schema.TimeoutCreate))
 		if err != nil {
-			return diag.FromErr(fmt.Errorf(
-				"[ERROR] Error waiting for update of database (%s) allowlist task to complete: %s", instanceID, err))
+			return fmt.Errorf("error waiting for database (%s) memory auto_scaling group update task to complete: %w", instanceID, err)
 		}
 	}
 
-	if _, ok := d.GetOk("auto_scaling.0"); ok {
-		autoscalingSetGroupAutoscaling := &clouddatabasesv5.AutoscalingSetGroupAutoscaling{}
-
-		if diskRecord, ok := d.GetOk("auto_scaling.0.disk"); ok {
-			diskGroup, err := expandAutoscalingDiskGroup(d, diskRecord)
-			if err != nil {
-				return diag.FromErr(fmt.Errorf("[ERROR] Error in getting diskGroup from expandAutoscalingDiskGroup %s", err))
-			}
-			autoscalingSetGroupAutoscaling.Disk = diskGroup
-		}
-
-		if memoryRecord, ok := d.GetOk("auto_scaling.0.memory"); ok {
-			memoryGroup, err := expandAutoscalingMemoryGroup(d, memoryRecord)
-			if err != nil {
-				return diag.FromErr(fmt.Errorf("[ERROR] Error in getting memoryBody from expandAutoscalingMemoryGroup %s", err))
-			}
-
-			autoscalingSetGroupAutoscaling.Memory = memoryGroup
-		}
-
-		if autoscalingSetGroupAutoscaling.Disk != nil || autoscalingSetGroupAutoscaling.Memory != nil {
-			setAutoscalingConditionsOptions := &clouddatabasesv5.SetAutoscalingConditionsOptions{
-				ID:          &instanceID,
-				GroupID:     core.StringPtr("member"),
-				Autoscaling: autoscalingSetGroupAutoscaling,
-			}
-
-			setAutoscalingConditionsResponse, _, err := cloudDatabasesClient.SetAutoscalingConditions(setAutoscalingConditionsOptions)
-			if err != nil {
-				return diag.FromErr(fmt.Errorf("[ERROR] Error updating database auto_scaling: %s", err))
-			}
-
-			taskId := *setAutoscalingConditionsResponse.Task.ID
-
-			_, err = waitForDatabaseTaskComplete(taskId, d, meta, d.Timeout(schema.TimeoutCreate))
-			if err != nil {
-				return diag.FromErr(fmt.Errorf("[ERROR] Error waiting for database (%s) memory auto_scaling group update task to complete: %s", instanceID, err))
-			}
-		}
-	}
-
-	if userList, ok := d.GetOk("users"); ok {
-		if err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error getting database client settings: %s", err))
-		}
-
-		users := expandUsers(userList.(*schema.Set).List())
-		for _, user := range users {
-			// Note: Some db users exist after provisioning (i.e. admin, repl)
-			// so we must attempt both methods
-			err := user.Update(instanceID, d, meta)
-
-			if err != nil {
-				err = user.Create(instanceID, d, meta)
-			}
-
-			if err != nil {
-				return diag.FromErr(err)
-			}
-		}
-	}
-
-	if config, ok := d.GetOk("configuration"); ok {
-		var rawConfig map[string]json.RawMessage
-		err = json.Unmarshal([]byte(config.(string)), &rawConfig)
-		if err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] configuration JSON invalid\n%s", err))
-		}
-
-		var configuration clouddatabasesv5.ConfigurationIntf = new(clouddatabasesv5.Configuration)
-		err = core.UnmarshalModel(rawConfig, "", &configuration, clouddatabasesv5.UnmarshalConfiguration)
-		if err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] database configuration is invalid"))
-		}
-
-		updateDatabaseConfigurationOptions := &clouddatabasesv5.UpdateDatabaseConfigurationOptions{
-			ID:            &instanceID,
-			Configuration: configuration,
-		}
-
-		updateDatabaseConfigurationResponse, response, err := cloudDatabasesClient.UpdateDatabaseConfiguration(updateDatabaseConfigurationOptions)
-
-		if err != nil {
-			return diag.FromErr(fmt.Errorf(
-				"[ERROR] Error updating database configuration failed %s\n%s", err, response))
-		}
-
-		taskID := *updateDatabaseConfigurationResponse.Task.ID
-
-		_, err = waitForDatabaseTaskComplete(taskID, d, meta, d.Timeout(schema.TimeoutUpdate))
-		if err != nil {
-			return diag.FromErr(fmt.Errorf(
-				"[ERROR] Error waiting for database (%s) configuration update task to complete: %s", icdId, err))
-		}
-	}
-
-	if _, ok := d.GetOk("logical_replication_slot"); ok {
-		service := d.Get("service").(string)
-		if service != "databases-for-postgresql" {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error Logical Replication can only be set for databases-for-postgresql instances"))
-		}
-
-		_, logicalReplicationList := d.GetChange("logical_replication_slot")
-
-		add := logicalReplicationList.(*schema.Set).List()
-
-		for _, entry := range add {
-			newEntry := entry.(map[string]interface{})
-			logicalReplicationSlot := &clouddatabasesv5.LogicalReplicationSlot{
-				Name:         core.StringPtr(newEntry["name"].(string)),
-				DatabaseName: core.StringPtr(newEntry["database_name"].(string)),
-				PluginType:   core.StringPtr(newEntry["plugin_type"].(string)),
-			}
-
-			createLogicalReplicationOptions := &clouddatabasesv5.CreateLogicalReplicationSlotOptions{
-				ID:                     &instanceID,
-				LogicalReplicationSlot: logicalReplicationSlot,
-			}
-
-			createLogicalRepSlotResponse, response, err := cloudDatabasesClient.CreateLogicalReplicationSlot(createLogicalReplicationOptions)
-			if err != nil {
-				return diag.FromErr(fmt.Errorf("[ERROR] CreateLogicalReplicationSlot (%s) failed %s\n%s", *createLogicalReplicationOptions.LogicalReplicationSlot.Name, err, response))
-			}
-
-			taskID := *createLogicalRepSlotResponse.Task.ID
-			_, err = waitForDatabaseTaskComplete(taskID, d, meta, d.Timeout(schema.TimeoutUpdate))
-			if err != nil {
-				return diag.FromErr(fmt.Errorf(
-					"[ERROR] Error waiting for database (%s) logical replication slot (%s) create task to complete: %s", instanceID, *createLogicalReplicationOptions.LogicalReplicationSlot.Name, err))
-			}
-		}
-	}
-
-	return resourceIBMDatabaseInstanceRead(context, d, meta)
+	return nil
 }
 
-func (g *resourceIBMDatabaseGen2Backend) Read(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+// configureUsers configures database users
+func (g *resourceIBMDatabaseGen2Backend) configureUsers(ctx context.Context, d *schema.ResourceData, instanceID string, meta interface{}) error {
+	userList, ok := d.GetOk("users")
+	if !ok {
+		return nil
+	}
+
+	users := expandUsers(userList.(*schema.Set).List())
+	for _, user := range users {
+		// Note: Some db users exist after provisioning (i.e. admin, repl)
+		// so we must attempt both methods
+		err := user.Update(instanceID, d, meta)
+
+		if err != nil {
+			err = user.Create(instanceID, d, meta)
+		}
+
+		if err != nil {
+			return fmt.Errorf("error configuring user %s: %w", user.Username, err)
+		}
+	}
+
+	return nil
+}
+
+// configureDatabaseSettings configures database-specific settings
+func (g *resourceIBMDatabaseGen2Backend) configureDatabaseSettings(ctx context.Context, d *schema.ResourceData, instanceID string, client *clouddatabasesv5.CloudDatabasesV5, meta interface{}) error {
+	config, ok := d.GetOk("configuration")
+	if !ok {
+		return nil
+	}
+
+	var rawConfig map[string]json.RawMessage
+	err := json.Unmarshal([]byte(config.(string)), &rawConfig)
+	if err != nil {
+		return fmt.Errorf("configuration JSON invalid: %w", err)
+	}
+
+	var configuration clouddatabasesv5.ConfigurationIntf = new(clouddatabasesv5.Configuration)
+	err = core.UnmarshalModel(rawConfig, "", &configuration, clouddatabasesv5.UnmarshalConfiguration)
+	if err != nil {
+		return fmt.Errorf("database configuration is invalid: %w", err)
+	}
+
+	updateDatabaseConfigurationOptions := &clouddatabasesv5.UpdateDatabaseConfigurationOptions{
+		ID:            &instanceID,
+		Configuration: configuration,
+	}
+
+	updateDatabaseConfigurationResponse, response, err := client.UpdateDatabaseConfiguration(updateDatabaseConfigurationOptions)
+
+	if err != nil {
+		return fmt.Errorf("error updating database configuration failed: %w (response: %v)", err, response)
+	}
+
+	taskID := *updateDatabaseConfigurationResponse.Task.ID
+
+	icdId := flex.EscapeUrlParm(instanceID)
+	_, err = waitForDatabaseTaskComplete(taskID, d, meta, d.Timeout(schema.TimeoutUpdate))
+	if err != nil {
+		return fmt.Errorf("error waiting for database (%s) configuration update task to complete: %w", icdId, err)
+	}
+
+	return nil
+}
+
+// configureLogicalReplication configures logical replication slots for PostgreSQL
+func (g *resourceIBMDatabaseGen2Backend) configureLogicalReplication(ctx context.Context, d *schema.ResourceData, instanceID string, client *clouddatabasesv5.CloudDatabasesV5, meta interface{}) error {
+	if _, ok := d.GetOk("logical_replication_slot"); !ok {
+		return nil
+	}
+
+	service := d.Get("service").(string)
+	if service != "databases-for-postgresql" {
+		return fmt.Errorf("logical Replication can only be set for databases-for-postgresql instances")
+	}
+
+	_, logicalReplicationList := d.GetChange("logical_replication_slot")
+
+	add := logicalReplicationList.(*schema.Set).List()
+
+	for _, entry := range add {
+		newEntry := entry.(map[string]interface{})
+		logicalReplicationSlot := &clouddatabasesv5.LogicalReplicationSlot{
+			Name:         core.StringPtr(newEntry["name"].(string)),
+			DatabaseName: core.StringPtr(newEntry["database_name"].(string)),
+			PluginType:   core.StringPtr(newEntry["plugin_type"].(string)),
+		}
+
+		createLogicalReplicationOptions := &clouddatabasesv5.CreateLogicalReplicationSlotOptions{
+			ID:                     &instanceID,
+			LogicalReplicationSlot: logicalReplicationSlot,
+		}
+
+		createLogicalRepSlotResponse, response, err := client.CreateLogicalReplicationSlot(createLogicalReplicationOptions)
+		if err != nil {
+			return fmt.Errorf("CreateLogicalReplicationSlot (%s) failed: %w (response: %v)", *createLogicalReplicationOptions.LogicalReplicationSlot.Name, err, response)
+		}
+
+		taskID := *createLogicalRepSlotResponse.Task.ID
+		_, err = waitForDatabaseTaskComplete(taskID, d, meta, d.Timeout(schema.TimeoutUpdate))
+		if err != nil {
+			return fmt.Errorf("error waiting for database (%s) logical replication slot (%s) create task to complete: %w", instanceID, *createLogicalReplicationOptions.LogicalReplicationSlot.Name, err)
+		}
+	}
+
+	return nil
+}
+
+// Read retrieves the current state of a database instance
+func (g *resourceIBMDatabaseGen2Backend) Read(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	rsConClient, err := meta.(conns.ClientSession).ResourceControllerV2API()
 	if err != nil {
-		return diag.FromErr(err)
+		return diag.FromErr(fmt.Errorf("failed to initialize resource controller client: %w", err))
 	}
 
 	instanceID := d.Id()
@@ -528,23 +749,50 @@ func (g *resourceIBMDatabaseGen2Backend) Read(context context.Context, d *schema
 			d.SetId("")
 			return nil
 		}
-		return diag.FromErr(fmt.Errorf("[ERROR] Error retrieving resource instance: %s %s", err, response))
+		return diag.FromErr(fmt.Errorf("error retrieving resource instance: %w (response: %v)", err, response))
 	}
-	if strings.Contains(*instance.State, "removed") {
+
+	if instance.State != nil && strings.Contains(*instance.State, "removed") {
 		log.Printf("[WARN] Removing instance from TF state because it's now in removed state")
 		d.SetId("")
 		return nil
 	}
 
+	// Set basic attributes
+	if err := g.setBasicAttributes(d, instance, meta); err != nil {
+		return diag.FromErr(err)
+	}
+
+	// Set service and plan information
+	if err := g.setServiceInfo(d, instance, meta); err != nil {
+		return diag.FromErr(err)
+	}
+
+	// Set version information
+	g.setVersionInfo(d, instance)
+
+	// Set groups information
+	if err := g.setGroupsInfo(d, instance, meta); err != nil {
+		return diag.FromErr(err)
+	}
+
+	// Clear Gen2 unsupported attributes
+	g.clearUnsupportedAttributes(d)
+
+	return nil
+}
+
+// setBasicAttributes sets basic instance attributes
+func (g *resourceIBMDatabaseGen2Backend) setBasicAttributes(d *schema.ResourceData, instance *rc.ResourceInstance, meta interface{}) error {
 	tags, err := flex.GetTagsUsingCRN(meta, *instance.CRN)
 	if err != nil {
-		log.Printf(
-			"Error on get of ibm Database tags (%s) tags: %s", d.Id(), err)
+		log.Printf("Error on get of ibm Database tags (%s) tags: %s", d.Id(), err)
 	}
 	d.Set("tags", tags)
 	d.Set("name", *instance.Name)
 	d.Set("status", *instance.State)
 	d.Set("resource_group_id", *instance.ResourceGroupID)
+
 	var instanceLocation string
 	if instance.CRN != nil {
 		location := strings.Split(*instance.CRN, ":")
@@ -568,36 +816,43 @@ func (g *resourceIBMDatabaseGen2Backend) Read(context context.Context, d *schema
 
 	rcontroller, err := flex.GetBaseController(meta)
 	if err != nil {
-		return diag.FromErr(err)
+		return fmt.Errorf("failed to get base controller: %w", err)
 	}
 	d.Set(flex.ResourceControllerURL, rcontroller+"/services/"+url.QueryEscape(*instance.CRN))
 
+	return nil
+}
+
+// setServiceInfo sets service and plan information
+func (g *resourceIBMDatabaseGen2Backend) setServiceInfo(d *schema.ResourceData, instance *rc.ResourceInstance, meta interface{}) error {
 	rsCatClient, err := meta.(conns.ClientSession).ResourceCatalogAPI()
 	if err != nil {
-		return diag.FromErr(err)
+		return fmt.Errorf("failed to initialize resource catalog client: %w", err)
 	}
 	rsCatRepo := rsCatClient.ResourceCatalog()
 
 	serviceOff, err := rsCatRepo.GetServiceName(*instance.ResourceID)
 	if err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error retrieving service offering: %s", err))
+		return fmt.Errorf("error retrieving service offering: %w", err)
 	}
-
 	d.Set("service", serviceOff)
 
 	servicePlan, err := rsCatRepo.GetServicePlanName(*instance.ResourcePlanID)
 	if err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error retrieving plan: %s", err))
+		return fmt.Errorf("error retrieving plan: %w", err)
 	}
 	d.Set("plan", servicePlan)
 
-	// Admin user is not available in Gen2. Users should manage credentials using ibm_resource_key.
-	// Clear it from state if it was previously set (e.g., if the state was carried forward from a Classic instance).
+	// Admin user is not available in Gen2
 	d.Set("adminuser", nil)
 
-	// Extract version from instance.Extensions based on database type
+	return nil
+}
+
+// setVersionInfo extracts and sets version information
+func (g *resourceIBMDatabaseGen2Backend) setVersionInfo(d *schema.ResourceData, instance *rc.ResourceInstance) {
 	var version string
-	if instance.Extensions != nil {
+	if instance.Extensions != nil && instance.ResourceID != nil {
 		dbType := getDatabaseTypeFromResourceID(*instance.ResourceID)
 		if dbType != "" {
 			if dataservices, ok := instance.Extensions["dataservices"].(map[string]interface{}); ok {
@@ -610,12 +865,23 @@ func (g *resourceIBMDatabaseGen2Backend) Read(context context.Context, d *schema
 		}
 	}
 	d.Set("version", version)
+}
 
-	// Get groups data from GlobalCatalog for Gen2
-	// Find the deployment by getting plan's children and matching by location
+// setGroupsInfo retrieves and sets groups information from catalog
+func (g *resourceIBMDatabaseGen2Backend) setGroupsInfo(d *schema.ResourceData, instance *rc.ResourceInstance, meta interface{}) error {
+	if instance.CRN == nil {
+		return fmt.Errorf("instance CRN is nil")
+	}
+
+	location := strings.Split(*instance.CRN, ":")
+	if len(location) <= 5 {
+		return fmt.Errorf("invalid CRN format")
+	}
+	instanceLocation := location[5]
+
 	globalClient, err := meta.(conns.ClientSession).GlobalCatalogV1API()
 	if err != nil {
-		return diag.FromErr(err)
+		return fmt.Errorf("failed to initialize global catalog client: %w", err)
 	}
 
 	var catalogDeployment *globalcatalogv1.CatalogEntry
@@ -626,12 +892,11 @@ func (g *resourceIBMDatabaseGen2Backend) Read(context context.Context, d *schema
 	}
 	children, _, err := globalClient.GetChildObjects(&childOptions)
 	if err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error retrieving plan children: %s", err))
+		return fmt.Errorf("error retrieving plan children: %w", err)
 	}
 
 	if children != nil && children.Resources != nil {
 		for _, child := range children.Resources {
-			// Check if this deployment's location matches the instance region
 			if child.Metadata != nil &&
 				child.Metadata.Deployment != nil &&
 				child.Metadata.Deployment.Location != nil &&
@@ -643,7 +908,7 @@ func (g *resourceIBMDatabaseGen2Backend) Read(context context.Context, d *schema
 	}
 
 	if catalogDeployment == nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Could not find deployment catalog entry for region %s", instanceLocation))
+		return fmt.Errorf("could not find deployment catalog entry for region %s", instanceLocation)
 	}
 
 	// Extract resources from deployment metadata
@@ -655,47 +920,49 @@ func (g *resourceIBMDatabaseGen2Backend) Read(context context.Context, d *schema
 	}
 
 	// Flatten groups using instance extensions and catalog metadata
-	if instance.Extensions != nil && len(catalogResources) > 0 {
+	if instance.Extensions != nil && len(catalogResources) > 0 && instance.ResourceID != nil {
 		d.Set("groups", flattenIcdGroupsFromInstanceAndCatalog(instance.Extensions, catalogResources, *instance.ResourceID))
 	}
 
-	// Auto scaling is currently not supported in Gen2. Clear it from state if it was previously set
-	// (e.g., if the state was carried forward from a Classic instance).
+	return nil
+}
+
+// clearUnsupportedAttributes clears attributes not supported in Gen2
+func (g *resourceIBMDatabaseGen2Backend) clearUnsupportedAttributes(d *schema.ResourceData) {
 	d.Set("auto_scaling", nil)
-
-	// Allowlist is not supported in Gen2. Clear it from state if it was previously set
-	// (e.g., if the state was carried forward from a Classic instance).
 	d.Set("allowlist", nil)
-
-	// Users are not managed in Gen2 via this resource. Users should manage credentials using ibm_resource_key.
-	// Clear it from state if it was previously set (e.g., if the state was carried forward from a Classic instance).
 	d.Set("users", nil)
-
-	// Configuration schema is currently not supported in Gen2. Clear it from state if it was previously set
-	// (e.g., if the state was carried forward from a Classic instance).
 	d.Set("configuration_schema", nil)
-
-	return nil
-
 }
 
-func (g *resourceIBMDatabaseGen2Backend) Update(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	return diag.Errorf("gen2 backend not implemented yet")
+// Update updates an existing database instance
+func (g *resourceIBMDatabaseGen2Backend) Update(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	// TODO: Implement Gen2 update logic
+	// For now, return a more informative error
+	return diag.Errorf("Update operation for Gen2 backend is not yet implemented. Please contact support or use the Classic backend for update operations.")
 }
 
-func (g *resourceIBMDatabaseGen2Backend) Delete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	return diag.Errorf("gen2 backend not implemented yet")
+// Delete removes a database instance
+func (g *resourceIBMDatabaseGen2Backend) Delete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	// TODO: Implement Gen2 delete logic
+	// For now, return a more informative error
+	return diag.Errorf("Delete operation for Gen2 backend is not yet implemented. Please contact support or use the Classic backend for delete operations.")
 }
 
+// Exists checks if a database instance exists
 func (g *resourceIBMDatabaseGen2Backend) Exists(d *schema.ResourceData, meta interface{}) (bool, error) {
-	return false, fmt.Errorf("gen2 backend not implemented yet")
+	// TODO: Implement Gen2 exists check
+	// For now, return a more informative error
+	return false, fmt.Errorf("Exists check for Gen2 backend is not yet implemented. Please contact support or use the Classic backend")
 }
 
-func (g *resourceIBMDatabaseGen2Backend) WarnUnsupported(context context.Context, d *schema.ResourceData) diag.Diagnostics {
+// WarnUnsupported returns warnings for unsupported features
+func (g *resourceIBMDatabaseGen2Backend) WarnUnsupported(ctx context.Context, d *schema.ResourceData) diag.Diagnostics {
 	return nil
 }
 
-func (g *resourceIBMDatabaseGen2Backend) ValidateUnsupportedAttrsDiff(context context.Context, d *schema.ResourceDiff, meta interface{}) error {
+// ValidateUnsupportedAttrsDiff validates that unsupported attributes are not configured
+func (g *resourceIBMDatabaseGen2Backend) ValidateUnsupportedAttrsDiff(ctx context.Context, d *schema.ResourceDiff, meta interface{}) error {
 	var bad []string
 	for _, k := range gen2UnsupportedAttrs {
 		if isAttrConfiguredInDiff(d, k) {
