@@ -31,7 +31,7 @@ func DataSourceIBMIsVolumeJob() *schema.Resource {
 				Required:    true,
 				Description: "The volume identifier.",
 			},
-			"is_volume_job_id": &schema.Schema{
+			"volume_job_id": &schema.Schema{
 				Type:        schema.TypeString,
 				Required:    true,
 				Description: "The volume job identifier.",
@@ -163,7 +163,7 @@ func dataSourceIBMIsVolumeJobRead(context context.Context, d *schema.ResourceDat
 	getVolumeJobOptions := &vpcv1.GetVolumeJobOptions{}
 
 	getVolumeJobOptions.SetVolumeID(d.Get("volume_id").(string))
-	getVolumeJobOptions.SetID(d.Get("is_volume_job_id").(string))
+	getVolumeJobOptions.SetID(d.Get("volume_job_id").(string))
 
 	volumeJobIntf, _, err := vpcClient.GetVolumeJobWithContext(context, getVolumeJobOptions)
 	if err != nil {

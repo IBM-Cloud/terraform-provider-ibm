@@ -169,7 +169,7 @@ func ResourceIBMIsVolumeJob() *schema.Resource {
 					},
 				},
 			},
-			"is_volume_job_id": &schema.Schema{
+			"volume_job_id": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The unique identifier for this volume job.",
@@ -376,9 +376,9 @@ func resourceIBMIsVolumeJobRead(context context.Context, d *schema.ResourceData,
 		err = fmt.Errorf("Error setting status_reasons: %s", err)
 		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_volume_job", "read", "set-status_reasons").GetDiag()
 	}
-	if err = d.Set("is_volume_job_id", volumeJob.ID); err != nil {
-		err = fmt.Errorf("Error setting is_volume_job_id: %s", err)
-		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_volume_job", "read", "set-is_volume_job_id").GetDiag()
+	if err = d.Set("volume_job_id", volumeJob.ID); err != nil {
+		err = fmt.Errorf("Error setting volume_job_id: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_volume_job", "read", "set-volume_job_id").GetDiag()
 	}
 
 	return nil

@@ -14,7 +14,7 @@ Provides a read-only data source to retrieve information about an is_volume_job.
 
 ```hcl
 data "ibm_is_volume_job" "is_volume_job" {
-	is_volume_job_id = ibm_is_volume_job.is_volume_job_instance.is_volume_job_id
+	volume_job_id = ibm_is_volume_job.is_volume_job_instance.volume_job_id
 	volume_id = ibm_is_volume_job.is_volume_job_instance.volume_id
 }
 ```
@@ -23,7 +23,7 @@ data "ibm_is_volume_job" "is_volume_job" {
 
 You can specify the following arguments for this data source.
 
-* `is_volume_job_id` - (Required, Forces new resource, String) The volume job identifier.
+* `volume_job_id` - (Required, Forces new resource, String) The volume job identifier.
   * Constraints: The maximum length is `64` characters. The minimum length is `1` character. The value must match regular expression `/^[-0-9a-z_]+$/`.
 * `volume_id` - (Required, Forces new resource, String) The volume identifier.
   * Constraints: The maximum length is `64` characters. The minimum length is `1` character. The value must match regular expression `/^[-0-9a-z_]+$/`.

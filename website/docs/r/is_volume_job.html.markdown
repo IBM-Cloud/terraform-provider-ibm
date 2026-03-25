@@ -64,7 +64,7 @@ After your resource is created, you can read values from the listed arguments an
 * `estimated_completion_at` - (String) The date and time that the volume job is estimated to complete.If absent, the volume job is still queued and has not yet started.
 * `href` - (String) The URL for this volume job.
   * Constraints: The maximum length is `8000` characters. The minimum length is `10` characters. The value must match regular expression `/^http(s)?:\/\/([^\/?#]*)([^?#]*)(\\?([^#]*))?(#(.*))?$/`.
-* `is_volume_job_id` - (String) The unique identifier for this volume job.
+* `volume_job_id` - (String) The unique identifier for this volume job.
   * Constraints: The maximum length is `64` characters. The minimum length is `1` character. The value must match regular expression `/^[-0-9a-z_]+$/`.
 * `resource_type` - (String) The resource type.
   * Constraints: Allowable values are: `volume_job`. The maximum length is `128` characters. The minimum length is `1` character. The value must match regular expression `/^[a-z][a-z0-9]*(_[a-z0-9]+)*$/`.
@@ -85,15 +85,15 @@ Nested schema for **status_reasons**:
 ## Import
 
 You can import the `ibm_is_volume_job` resource by using `id`.
-The `id` property can be formed from `volume_id`, and `is_volume_job_id` in the following format:
+The `id` property can be formed from `volume_id`, and `volume_job_id` in the following format:
 
 <pre>
-&lt;volume_id&gt;/&lt;is_volume_job_id&gt;
+&lt;volume_id&gt;/&lt;volume_job_id&gt;
 </pre>
 * `volume_id`: A string. The volume identifier.
-* `is_volume_job_id`: A string in the format `r006-095e9baf-01d4-4e29-986e-20d26606b82a`. The unique identifier for this volume job.
+* `volume_job_id`: A string in the format `r006-095e9baf-01d4-4e29-986e-20d26606b82a`. The unique identifier for this volume job.
 
 # Syntax
 <pre>
-$ terraform import ibm_is_volume_job.is_volume_job &lt;volume_id&gt;/&lt;is_volume_job_id&gt;
+$ terraform import ibm_is_volume_job.is_volume_job &lt;volume_id&gt;/&lt;volume_job_id&gt;
 </pre>

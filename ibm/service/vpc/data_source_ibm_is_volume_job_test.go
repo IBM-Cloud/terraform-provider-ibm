@@ -34,7 +34,7 @@ func TestAccIBMIsVolumeJobDataSourceBasic(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_is_volume_job.is_volume_job_instance", "id"),
 					resource.TestCheckResourceAttrSet("data.ibm_is_volume_job.is_volume_job_instance", "volume_id"),
-					resource.TestCheckResourceAttrSet("data.ibm_is_volume_job.is_volume_job_instance", "is_volume_job_id"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_volume_job.is_volume_job_instance", "volume_job_id"),
 					resource.TestCheckResourceAttrSet("data.ibm_is_volume_job.is_volume_job_instance", "auto_delete"),
 					resource.TestCheckResourceAttrSet("data.ibm_is_volume_job.is_volume_job_instance", "created_at"),
 					resource.TestCheckResourceAttrSet("data.ibm_is_volume_job.is_volume_job_instance", "href"),
@@ -65,7 +65,7 @@ func TestAccIBMIsVolumeJobDataSourceAllArgs(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_is_volume_job.is_volume_job_instance", "id"),
 					resource.TestCheckResourceAttrSet("data.ibm_is_volume_job.is_volume_job_instance", "volume_id"),
-					resource.TestCheckResourceAttrSet("data.ibm_is_volume_job.is_volume_job_instance", "is_volume_job_id"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_volume_job.is_volume_job_instance", "volume_job_id"),
 					resource.TestCheckResourceAttrSet("data.ibm_is_volume_job.is_volume_job_instance", "auto_delete"),
 					resource.TestCheckResourceAttrSet("data.ibm_is_volume_job.is_volume_job_instance", "completed_at"),
 					resource.TestCheckResourceAttrSet("data.ibm_is_volume_job.is_volume_job_instance", "created_at"),
@@ -96,7 +96,7 @@ func testAccCheckIBMIsVolumeJobDataSourceConfigBasic(volumeJobVolumeID string, v
 
 		data "ibm_is_volume_job" "is_volume_job_instance" {
 			volume_id = ibm_is_volume_job.is_volume_job_instance.volume_id
-			is_volume_job_id = ibm_is_volume_job.is_volume_job_instance.is_volume_job_id
+			volume_job_id = ibm_is_volume_job.is_volume_job_instance.volume_job_id
 		}
 	`, volumeJobVolumeID, volumeJobJobType)
 }
@@ -120,7 +120,7 @@ func testAccCheckIBMIsVolumeJobDataSourceConfig(volumeJobVolumeID string, volume
 
 		data "ibm_is_volume_job" "is_volume_job_instance" {
 			volume_id = ibm_is_volume_job.is_volume_job_instance.volume_id
-			is_volume_job_id = ibm_is_volume_job.is_volume_job_instance.is_volume_job_id
+			volume_job_id = ibm_is_volume_job.is_volume_job_instance.volume_job_id
 		}
 	`, volumeJobVolumeID, volumeJobStart, volumeJobLimit, volumeJobJobType, volumeJobName)
 }
