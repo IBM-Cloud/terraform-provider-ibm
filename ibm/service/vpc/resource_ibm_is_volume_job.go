@@ -11,8 +11,10 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
@@ -29,6 +31,11 @@ func ResourceIBMIsVolumeJob() *schema.Resource {
 		UpdateContext: resourceIBMIsVolumeJobUpdate,
 		DeleteContext: resourceIBMIsVolumeJobDelete,
 		Importer:      &schema.ResourceImporter{},
+
+		Timeouts: &schema.ResourceTimeout{
+			Create: schema.DefaultTimeout(10 * time.Minute),
+			Delete: schema.DefaultTimeout(10 * time.Minute),
+		},
 
 		Schema: map[string]*schema.Schema{
 			"volume_id": &schema.Schema{
@@ -266,6 +273,13 @@ func resourceIBMIsVolumeJobCreate(context context.Context, d *schema.ResourceDat
 	volumeJobIntf, _, err := vpcClient.CreateVolumeJobWithContext(context, createVolumeJobOptions)
 	if err != nil {
 		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateVolumeJobWithContext failed: %s", err.Error()), "ibm_is_volume_job", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
+	}
+
+	_, err = isWaitForVolumeJobSucceeded(vpcClient, d.Id(), d.Timeout(schema.TimeoutCreate))
+	if err != nil {
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("isWaitForVolumeJobSucceeded failed: %s", err.Error()), "ibm_is_volume_job", "create")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
@@ -588,4 +602,33 @@ func ResourceIBMIsVolumeJobVolumeJobPatchAsPatch(patchVals *vpcv1.VolumeJobPatch
 	}
 
 	return patch
+}
+
+func isWaitForVolumeJobSucceeded(client *vpcv1.VpcV1, id string, timeout time.Duration) (interface{}, error) {
+	log.Printf("Waiting for Volume Job (%s) to be succeeded.", id)
+
+	stateConf := &resource.StateChangeConf{
+		Pending:    []string{"queued", "running"},
+		Target:     []string{"canceled", "canceling", "deleting", "failed", "succeeded"},
+		Refresh:    isVolumeJobRefreshFunc(client, id),
+		Timeout:    timeout,
+		Delay:      10 * time.Second,
+		MinTimeout: 10 * time.Second,
+	}
+
+	return stateConf.WaitForState()
+}
+
+func isVolumeJobRefreshFunc(client *vpcv1.VpcV1, id string) resource.StateRefreshFunc {
+	return func() (interface{}, string, error) {
+		getVolumeJobOptions := &vpcv1.GetVolumeJobOptions{
+			ID: &id,
+		}
+		vol, response, err := client.GetVolumeJob(getVolumeJobOptions)
+		if err != nil {
+			return nil, "", fmt.Errorf("[ERROR] Error getting volume job: %s\n%s", err, response)
+		}
+		volJob := vol.(*vpcv1.VolumeJob)
+		return volJob, *volJob.Status, nil
+	}
 }
