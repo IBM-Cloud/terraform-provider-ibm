@@ -27,7 +27,7 @@ resource "ibm_logs_extension_deployment" "cloudant_deployment" {
   item_ids = [for item in data.ibm_logs_extension.cloudant_extension.revisions[0].items : item.id]
   
   # Optional: Filter by applications
-  applications = ["test-app"]
+  applications = ["test-app1"]
   
   # Optional: Filter by subsystems
   subsystems = ["test-subsystem"]
@@ -35,9 +35,9 @@ resource "ibm_logs_extension_deployment" "cloudant_deployment" {
 
 # Data Source: Read the created extension deployment
 data "ibm_logs_extension_deployment" "read_deployment" {
-  instance_id                   = var.logs_instance_id
-  region                        = var.region
-  logs_extension_id  = ibm_logs_extension_deployment.cloudant_deployment.extension_deployment_id
+  instance_id        = var.logs_instance_id
+  region             = var.region
+  logs_extension_id  = ibm_logs_extension_deployment.cloudant_deployment.logs_extension_id
   
   depends_on = [ibm_logs_extension_deployment.cloudant_deployment]
 }
@@ -58,7 +58,7 @@ output "cloudant_extension_details" {
 }
 
 output "deployment_id" {
-  value       = ibm_logs_extension_deployment.cloudant_deployment.extension_deployment_id
+  value       = ibm_logs_extension_deployment.cloudant_deployment.id
   description = "ID of the created extension deployment"
 }
 
