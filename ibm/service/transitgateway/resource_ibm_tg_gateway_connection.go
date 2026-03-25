@@ -29,6 +29,7 @@ const (
 	isTransitGatewayConnectionDeleted   = "detached"
 	isTransitGatewayConnectionPending   = "pending"
 	isTransitGatewayConnectionAttached  = "attached"
+	isTransitGatewayConnectionFailed    = "failed"
 	tgRequestStatus                     = "request_status"
 	tgConnectionId                      = "connection_id"
 	tgBaseConnectionId                  = "base_connection_id"
@@ -453,9 +454,19 @@ func resourceIBMTransitGatewayConnectionCreate(d *schema.ResourceData, meta inte
 
 		conn, _, getErr := client.GetTransitGatewayConnection(getOpts)
 
-		if getErr == nil && conn != nil && conn.ID != nil {
-			log.Printf("[DEBUG] Resource exists after timeout, adopting it")
-			return resourceIBMTransitGatewayConnectionRead(d, meta)
+		if getErr == nil && conn != nil && conn.ID != nil && conn.Status != nil {
+			status := *conn.Status
+
+			log.Printf("[DEBUG] Timeout recovery: TGW connection (%s) status = %s", d.Id(), status)
+
+			if status == isTransitGatewayConnectionAttached || status == isTransitGatewayConnectionPending {
+				log.Printf("[DEBUG] Timeout recovery: adopting TGW connection (%s) in state %s", d.Id(), status)
+				return resourceIBMTransitGatewayConnectionRead(d, meta)
+			}
+
+			if status == isTransitGatewayConnectionFailed {
+				return flex.FmtErrorf("[ERROR] Transit Gateway connection is in failed state")
+			}
 		}
 
 		return err
@@ -494,8 +505,16 @@ func isTransitGatewayConnectionRefreshFunc(client *transitgatewayapisv1.TransitG
 		if err != nil {
 			return nil, "", flex.FmtErrorf("[ERROR] Error Getting Transit Gateway Connection (%s): %s\n%s", ID, err, response)
 		}
-		if *tgConnection.Status == "attached" || *tgConnection.Status == "failed" {
+		if tgConnection == nil || tgConnection.Status == nil {
+			return tgConnection, isTransitGatewayConnectionPending, nil
+		}
+
+		if *tgConnection.Status == isTransitGatewayConnectionAttached {
 			return tgConnection, isTransitGatewayConnectionAttached, nil
+		}
+
+		if *tgConnection.Status == isTransitGatewayConnectionFailed {
+			return nil, "", flex.FmtErrorf("[ERROR] Transit Gateway connection is in failed state")
 		}
 
 		return tgConnection, isTransitGatewayConnectionPending, nil
