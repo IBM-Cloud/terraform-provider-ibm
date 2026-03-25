@@ -257,7 +257,7 @@ func resourceIBMIsVolumeJobCreate(context context.Context, d *schema.ResourceDat
 	if _, ok := d.GetOk("limit"); ok {
 		createVolumeJobOptions.SetLimit(int64(d.Get("limit").(int)))
 	}
-	convertedModel, err := ResourceIBMIsVolumeJobMapToVolumeJobPrototype(bodyModelMap)
+	convertedModel, err := ResourceIBMIsVolumeJobMapToVolumeJobPrototype(d, bodyModelMap)
 	if err != nil {
 		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_volume_job", "create", "parse-request-body").GetDiag()
 	}
@@ -463,12 +463,12 @@ func resourceIBMIsVolumeJobDelete(context context.Context, d *schema.ResourceDat
 	return nil
 }
 
-func ResourceIBMIsVolumeJobMapToVolumeJobTypeMigrateParameters(modelMap map[string]interface{}) (*vpcv1.VolumeJobTypeMigrateParameters, error) {
+func ResourceIBMIsVolumeJobMapToVolumeJobTypeMigrateParameters(d *schema.ResourceData, modelMap map[string]interface{}) (*vpcv1.VolumeJobTypeMigrateParameters, error) {
 	model := &vpcv1.VolumeJobTypeMigrateParameters{}
-	if modelMap["bandwidth"] != nil {
+	if _, ok := d.GetOk("parameters.0.bandwidth"); ok && modelMap["bandwidth"] != nil {
 		model.Bandwidth = core.Int64Ptr(int64(modelMap["bandwidth"].(int)))
 	}
-	if modelMap["iops"] != nil {
+	if _, ok := d.GetOk("parameters.0.iops"); ok && modelMap["iops"] != nil {
 		model.Iops = core.Int64Ptr(int64(modelMap["iops"].(int)))
 	}
 	ProfileModel, err := ResourceIBMIsVolumeJobMapToVolumeProfileIdentity(modelMap["profile"].([]interface{})[0].(map[string]interface{}))
@@ -502,33 +502,19 @@ func ResourceIBMIsVolumeJobMapToVolumeProfileIdentityByHref(modelMap map[string]
 	return model, nil
 }
 
-func ResourceIBMIsVolumeJobMapToVolumeJobPrototype(modelMap map[string]interface{}) (vpcv1.VolumeJobPrototypeIntf, error) {
+func ResourceIBMIsVolumeJobMapToVolumeJobPrototype(d *schema.ResourceData, modelMap map[string]interface{}) (vpcv1.VolumeJobPrototypeIntf, error) {
 	model := &vpcv1.VolumeJobPrototype{}
 	model.JobType = core.StringPtr(modelMap["job_type"].(string))
 	if modelMap["name"] != nil && modelMap["name"].(string) != "" {
 		model.Name = core.StringPtr(modelMap["name"].(string))
 	}
 	if modelMap["parameters"] != nil && len(modelMap["parameters"].([]interface{})) > 0 {
-		ParametersModel, err := ResourceIBMIsVolumeJobMapToVolumeJobTypeMigrateParameters(modelMap["parameters"].([]interface{})[0].(map[string]interface{}))
+		ParametersModel, err := ResourceIBMIsVolumeJobMapToVolumeJobTypeMigrateParameters(d, modelMap["parameters"].([]interface{})[0].(map[string]interface{}))
 		if err != nil {
 			return model, err
 		}
 		model.Parameters = ParametersModel
 	}
-	return model, nil
-}
-
-func ResourceIBMIsVolumeJobMapToVolumeJobPrototypeVolumeJobTypeMigratePrototype(modelMap map[string]interface{}) (*vpcv1.VolumeJobPrototypeVolumeJobTypeMigratePrototype, error) {
-	model := &vpcv1.VolumeJobPrototypeVolumeJobTypeMigratePrototype{}
-	if modelMap["name"] != nil && modelMap["name"].(string) != "" {
-		model.Name = core.StringPtr(modelMap["name"].(string))
-	}
-	model.JobType = core.StringPtr(modelMap["job_type"].(string))
-	ParametersModel, err := ResourceIBMIsVolumeJobMapToVolumeJobTypeMigrateParameters(modelMap["parameters"].([]interface{})[0].(map[string]interface{}))
-	if err != nil {
-		return model, err
-	}
-	model.Parameters = ParametersModel
 	return model, nil
 }
 
