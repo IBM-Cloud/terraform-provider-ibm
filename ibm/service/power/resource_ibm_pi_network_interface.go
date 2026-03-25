@@ -88,6 +88,11 @@ func ResourceIBMPINetworkInterface() *schema.Resource {
 				Description: "The network interface's crn.",
 				Type:        schema.TypeString,
 			},
+			Attr_ExternalIP: {
+				Computed:    true,
+				Description: "The external ip address for pub-vlan networks.",
+				Type:        schema.TypeString,
+			},
 			Attr_Instance: {
 				Computed:    true,
 				Optional:    true,
@@ -222,6 +227,7 @@ func resourceIBMPINetworkInterfaceRead(ctx context.Context, d *schema.ResourceDa
 		return diag.FromErr(err)
 	}
 
+	d.Set(Attr_ExternalIP, networkInterface.ExternalIP)
 	d.Set(Attr_IPAddress, networkInterface.IPAddress)
 	d.Set(Attr_MacAddress, networkInterface.MacAddress)
 	d.Set(Attr_Name, networkInterface.Name)

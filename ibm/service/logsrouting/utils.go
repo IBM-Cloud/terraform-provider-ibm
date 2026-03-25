@@ -1,6 +1,7 @@
 package logsrouting
 
 import (
+	"fmt"
 	"log"
 	"strings"
 
@@ -17,26 +18,46 @@ func updateClientURLWithEndpoint(logsRoutingClient *ibmcloudlogsroutingv0.IBMClo
 	originalConfigServiceURL := logsRoutingClient.GetServiceURL()
 	endpointsFile := sess.Config.EndpointsFile
 	visibility := sess.Config.Visibility
+	privateEndpointType := sess.Config.PrivateEndpointType
 	region := d.Get("region").(string)
+
+	log.Printf("[DEBUG] Logs Routing Visibility:: %s, PrivateEndpointType: %s, Region: %s", visibility, privateEndpointType, region)
 
 	if endpointsFile != "" && visibility != "public-and-private" {
 		newServiceURL = conns.FileFallBack(endpointsFile, visibility, "IBMCLOUD_LOGS_ROUTING_API_ENDPOINT", region, originalConfigServiceURL)
 	} else {
-		newServiceURL = replaceRegion(originalConfigServiceURL, region)
+		newServiceURL = buildEndpointURL(originalConfigServiceURL, region, visibility, privateEndpointType)
 	}
 
 	newClient := &ibmcloudlogsroutingv0.IBMCloudLogsRoutingV0{
 		Service: logsRoutingClient.Service.Clone(),
 	}
 
-	log.Printf("Constructing client with new service URL %s", newServiceURL)
+	log.Printf("[DEBUG] Constructing client with new service URL %s", newServiceURL)
 
 	newClient.Service.SetServiceURL(newServiceURL)
 
 	return newClient, region, nil
 }
 
-// Function to replace the region in the URL
+func buildEndpointURL(originalURL, region, visibility, privateEndpointType string) string {
+	// Default endpoint format: https://management.<region>.logs-router.cloud.ibm.com/v1
+	// Private VPE format: https://management.private.<region>.logs-router.cloud.ibm.com/v1
+	// Private CSE format: https://management.private.<region>.logs-router.cloud.ibm.com:3443/v1
+
+	if visibility == "private" {
+		if privateEndpointType == "vpe" {
+			return fmt.Sprintf("https://management.private.%s.logs-router.cloud.ibm.com/v1", region)
+		} else {
+			return fmt.Sprintf("https://management.private.%s.logs-router.cloud.ibm.com:3443/v1", region)
+		}
+	} else if visibility == "public-and-private" {
+		return replaceRegion(originalURL, region)
+	} else {
+		return fmt.Sprintf("https://management.%s.logs-router.cloud.ibm.com/v1", region)
+	}
+}
+
 func replaceRegion(url, region string) string {
 	// Split the URL by "." to isolate the relevant parts
 	parts := strings.Split(url, ".")
