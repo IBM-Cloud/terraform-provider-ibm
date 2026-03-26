@@ -49,6 +49,7 @@ In addition to all argument reference list, you can access the following attribu
 - `profiles` - (List) List of all the SAP Profiles.
 
   Nested scheme for `profiles`:
+  - `asaps` - (Integer) Accelerated SAP Application Performance Standard.
   - `certified` - (Boolean) Has certification been performed on profile.
   - `cores` - (Integer) Amount of cores.
   - `default_system` - (String) System to use if not provided.
