@@ -76,6 +76,18 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 )
 
+var regionLocationMap = map[string]struct{}{
+	"au-syd":   {},
+	"ca-tor":   {},
+	"eu-de":    {},
+	"eu-gb":    {},
+	"jp-tok":   {},
+	"jp-osa":   {},
+	"us-east":  {},
+	"us-south": {},
+	"br-sao":   {},
+}
+
 // Provider returns a *schema.Provider.
 func Provider() *schema.Provider {
 	provider := schema.Provider{
@@ -2765,6 +2777,11 @@ func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	if isValidRegion(region) == false {
+		return nil, fmt.Errorf("[ERROR] Provider region %q is not supported. Valid provider region(s) are: %q", region, getValidRegions())
+	}
+
 	// Set environment variable to be used in DiffSupressFunction
 	if wskEnvVal.(string) == "" {
 		os.Setenv("FUNCTION_NAMESPACE", wskNameSpace)
@@ -2795,4 +2812,17 @@ func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 	}
 
 	return config.ClientSession()
+}
+
+func isValidRegion(region string) bool {
+	_, exists := regionLocationMap[region]
+	return exists
+}
+
+func getValidRegions() []string {
+	regions := make([]string, 0, len(regionLocationMap))
+	for region := range regionLocationMap {
+		regions = append(regions, region)
+	}
+	return regions
 }
