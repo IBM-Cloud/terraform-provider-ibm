@@ -30,7 +30,7 @@ func (c *resourceIBMDatabaseClassicBackend) Delete(context context.Context, d *s
 }
 
 func (c *resourceIBMDatabaseClassicBackend) Exists(d *schema.ResourceData, meta interface{}) (bool, error) {
-	return classicDatabaseInstanceExists(d, meta)
+	return databaseInstanceExists(d, meta)
 }
 
 func (c *resourceIBMDatabaseClassicBackend) WarnUnsupported(context context.Context, d *schema.ResourceData) diag.Diagnostics {
