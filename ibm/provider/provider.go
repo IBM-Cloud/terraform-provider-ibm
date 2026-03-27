@@ -18,6 +18,7 @@ import (
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/accountmanagement"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/appconfiguration"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/appid"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/atracker"
@@ -234,6 +235,7 @@ func Provider() *schema.Provider {
 		},
 
 		DataSourcesMap: map[string]*schema.Resource{
+			"ibm_account_info":                     accountmanagement.DataSourceIbmAccount(),
 			"ibm_account":                          cloudfoundry.DataSourceIBMAccount(),
 			"ibm_app":                              cloudfoundry.DataSourceIBMApp(),
 			"ibm_app_domain_private":               cloudfoundry.DataSourceIBMAppDomainPrivate(),
