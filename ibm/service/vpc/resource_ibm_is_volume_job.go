@@ -33,7 +33,7 @@ func ResourceIBMIsVolumeJob() *schema.Resource {
 		Importer:      &schema.ResourceImporter{},
 
 		Timeouts: &schema.ResourceTimeout{
-			Create: schema.DefaultTimeout(10 * time.Minute),
+			Create: schema.DefaultTimeout(60 * time.Minute),
 			Delete: schema.DefaultTimeout(10 * time.Minute),
 		},
 
@@ -276,6 +276,8 @@ func resourceIBMIsVolumeJobCreate(context context.Context, d *schema.ResourceDat
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
+	volumeJob := volumeJobIntf.(*vpcv1.VolumeJob)
+	d.SetId(fmt.Sprintf("%s/%s", *createVolumeJobOptions.VolumeID, *volumeJob.ID))
 
 	_, err = isWaitForVolumeJobSucceeded(vpcClient, d.Id(), d.Timeout(schema.TimeoutCreate))
 	if err != nil {
@@ -283,9 +285,6 @@ func resourceIBMIsVolumeJobCreate(context context.Context, d *schema.ResourceDat
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
-
-	volumeJob := volumeJobIntf.(*vpcv1.VolumeJob)
-	d.SetId(fmt.Sprintf("%s/%s", *createVolumeJobOptions.VolumeID, *volumeJob.ID))
 
 	return resourceIBMIsVolumeJobRead(context, d, meta)
 }
@@ -606,11 +605,14 @@ func ResourceIBMIsVolumeJobVolumeJobPatchAsPatch(patchVals *vpcv1.VolumeJobPatch
 
 func isWaitForVolumeJobSucceeded(client *vpcv1.VpcV1, id string, timeout time.Duration) (interface{}, error) {
 	log.Printf("Waiting for Volume Job (%s) to be succeeded.", id)
-
+	parts, err := flex.SepIdParts(id, "/")
+	if err != nil {
+		return nil, err
+	}
 	stateConf := &resource.StateChangeConf{
 		Pending:    []string{"queued", "running"},
 		Target:     []string{"canceled", "canceling", "deleting", "failed", "succeeded"},
-		Refresh:    isVolumeJobRefreshFunc(client, id),
+		Refresh:    isVolumeJobRefreshFunc(client, parts),
 		Timeout:    timeout,
 		Delay:      10 * time.Second,
 		MinTimeout: 10 * time.Second,
@@ -619,11 +621,14 @@ func isWaitForVolumeJobSucceeded(client *vpcv1.VpcV1, id string, timeout time.Du
 	return stateConf.WaitForState()
 }
 
-func isVolumeJobRefreshFunc(client *vpcv1.VpcV1, id string) resource.StateRefreshFunc {
+func isVolumeJobRefreshFunc(client *vpcv1.VpcV1, parts []string) resource.StateRefreshFunc {
 	return func() (interface{}, string, error) {
-		getVolumeJobOptions := &vpcv1.GetVolumeJobOptions{
-			ID: &id,
-		}
+
+		getVolumeJobOptions := &vpcv1.GetVolumeJobOptions{}
+
+		getVolumeJobOptions.SetVolumeID(parts[0])
+		getVolumeJobOptions.SetID(parts[1])
+
 		vol, response, err := client.GetVolumeJob(getVolumeJobOptions)
 		if err != nil {
 			return nil, "", fmt.Errorf("[ERROR] Error getting volume job: %s\n%s", err, response)
