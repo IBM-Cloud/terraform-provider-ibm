@@ -3812,7 +3812,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 	codeEngineClientOptions := &codeengine.CodeEngineV2Options{
 		Authenticator: authenticator,
 		URL:           EnvFallBack([]string{"IBMCLOUD_CODE_ENGINE_API_ENDPOINT"}, codeEngineEndpoint),
-		Version:       core.StringPtr("2025-07-10"),
+		Version:       core.StringPtr("2026-02-20"),
 	}
 
 	// Construct the service client.
