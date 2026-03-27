@@ -291,10 +291,14 @@ resource "ibm_is_security_group_rule" "example2" {
   group     = ibm_is_security_group.example.id
   direction = "inbound"
   remote    = "127.0.0.1"
-  icmp {
-    code = 20
-    type = 30
-  }
+  # Deprecated block: replaced with 'protocol', 'code', and 'type' arguments
+  # icmp {
+  #   code = 20
+  #   type = 30
+  # }
+  protocol  = "icmp"
+  code      = 20
+  type      = 30
   depends_on = [ibm_is_security_group_rule.example1]
 
 }
@@ -303,10 +307,14 @@ resource "ibm_is_security_group_rule" "example3" {
   group     = ibm_is_security_group.example.id
   direction = "inbound"
   remote    = "127.0.0.1"
-  udp {
-    port_min = 805
-    port_max = 807
-  }
+  # Deprecated block: replaced with 'protocol', 'port_min', and 'port_max' arguments
+  # udp {
+  #   port_min = 805
+  #   port_max = 807
+  # }
+  protocol  = "udp"
+  port_min = 805
+  port_max = 807
   depends_on = [ibm_is_security_group_rule.example2]
 }
 
@@ -314,10 +322,14 @@ resource "ibm_is_security_group_rule" "example3" {
   group     = ibm_is_security_group.example.id
   direction = "outbound"
   remote    = "127.0.0.1"
-  tcp {
-    port_min = 8080
-    port_max = 8080
-  }
+  # Deprecated block: replaced with 'protocol', 'port_min', and 'port_max' arguments
+  # tcp {
+  #  port_min = 8080
+  #  port_max = 8080
+  # }
+  protocol  = "tcp"
+  port_min = 8080
+  port_max = 8080
   depends_on = [ibm_is_security_group_rule.example2]
 }
 
