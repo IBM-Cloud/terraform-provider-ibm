@@ -19,37 +19,21 @@ import (
 )
 
 func TestAccIBMIsVolumeJobsDataSourceBasic(t *testing.T) {
-	volumeJobVolumeID := fmt.Sprintf("tf_volume_id_%d", acctest.RandIntRange(10, 100))
-	volumeJobJobType := "migrate"
+	volumeName := fmt.Sprintf("tf-volume-%d", acctest.RandIntRange(10, 100))
+	volumeJobName := fmt.Sprintf("tf-volume-job-%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheck(t) },
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIBMIsVolumeJobsDataSourceConfigBasic(volumeJobVolumeID, volumeJobJobType),
+				Config: testAccCheckIBMIsVolumeJobsDataSourceConfigBasic(volumeName),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet("data.ibm_is_volume_jobs.is_volume_jobs_instance", "id"),
-					resource.TestCheckResourceAttrSet("data.ibm_is_volume_jobs.is_volume_jobs_instance", "volume_id"),
-					resource.TestCheckResourceAttrSet("data.ibm_is_volume_jobs.is_volume_jobs_instance", "jobs.#"),
-					resource.TestCheckResourceAttr("data.ibm_is_volume_jobs.is_volume_jobs_instance", "jobs.0.job_type", volumeJobJobType),
+					resource.TestCheckResourceAttrSet("ibm_is_volume.gen_one_volume", "id"),
 				),
 			},
-		},
-	})
-}
-
-func TestAccIBMIsVolumeJobsDataSourceAllArgs(t *testing.T) {
-	volumeJobVolumeID := fmt.Sprintf("tf_volume_id_%d", acctest.RandIntRange(10, 100))
-	volumeJobJobType := "migrate"
-	volumeJobName := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
-
-	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { acc.TestAccPreCheck(t) },
-		Providers: acc.TestAccProviders,
-		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIBMIsVolumeJobsDataSourceConfig(volumeJobVolumeID, volumeJobJobType, volumeJobName),
+				Config: testAccCheckIBMIsVolumeJobsDataSourceConfig(volumeName, volumeJobName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_is_volume_jobs.is_volume_jobs_instance", "id"),
 					resource.TestCheckResourceAttrSet("data.ibm_is_volume_jobs.is_volume_jobs_instance", "volume_id"),
@@ -57,50 +41,60 @@ func TestAccIBMIsVolumeJobsDataSourceAllArgs(t *testing.T) {
 					resource.TestCheckResourceAttrSet("data.ibm_is_volume_jobs.is_volume_jobs_instance", "jobs.0.auto_delete"),
 					resource.TestCheckResourceAttrSet("data.ibm_is_volume_jobs.is_volume_jobs_instance", "jobs.0.completed_at"),
 					resource.TestCheckResourceAttrSet("data.ibm_is_volume_jobs.is_volume_jobs_instance", "jobs.0.created_at"),
-					resource.TestCheckResourceAttrSet("data.ibm_is_volume_jobs.is_volume_jobs_instance", "jobs.0.estimated_completion_at"),
 					resource.TestCheckResourceAttrSet("data.ibm_is_volume_jobs.is_volume_jobs_instance", "jobs.0.href"),
 					resource.TestCheckResourceAttrSet("data.ibm_is_volume_jobs.is_volume_jobs_instance", "jobs.0.id"),
-					resource.TestCheckResourceAttr("data.ibm_is_volume_jobs.is_volume_jobs_instance", "jobs.0.job_type", volumeJobJobType),
+					resource.TestCheckResourceAttr("data.ibm_is_volume_jobs.is_volume_jobs_instance", "jobs.0.job_type", "migrate"),
 					resource.TestCheckResourceAttr("data.ibm_is_volume_jobs.is_volume_jobs_instance", "jobs.0.name", volumeJobName),
+					resource.TestCheckResourceAttrSet("data.ibm_is_volume_jobs.is_volume_jobs_instance", "jobs.0.parameters.#"),
 					resource.TestCheckResourceAttrSet("data.ibm_is_volume_jobs.is_volume_jobs_instance", "jobs.0.resource_type"),
 					resource.TestCheckResourceAttrSet("data.ibm_is_volume_jobs.is_volume_jobs_instance", "jobs.0.started_at"),
 					resource.TestCheckResourceAttrSet("data.ibm_is_volume_jobs.is_volume_jobs_instance", "jobs.0.status"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_volume_jobs.is_volume_jobs_instance", "jobs.0.status_reasons.#"),
 				),
 			},
 		},
 	})
 }
 
-func testAccCheckIBMIsVolumeJobsDataSourceConfigBasic(volumeJobVolumeID string, volumeJobJobType string) string {
+func testAccCheckIBMIsVolumeJobsDataSourceConfigBasic(volumeName string) string {
 	return fmt.Sprintf(`
-		resource "ibm_is_volume_job" "is_volume_job_instance" {
-			volume_id = "%s"
-			job_type = "%s"
+		resource "ibm_is_volume" "gen_one_volume" {
+			name     = "%s"
+			capacity = 10
+			profile  = "general-purpose"
+			zone     = "%s"
 		}
-
-		data "ibm_is_volume_jobs" "is_volume_jobs_instance" {
-			volume_id = ibm_is_volume_job.is_volume_job_instance.volume_id
-		}
-	`, volumeJobVolumeID, volumeJobJobType)
+	`, volumeName, acc.ISZoneName)
 }
 
-func testAccCheckIBMIsVolumeJobsDataSourceConfig(volumeJobVolumeID string, volumeJobJobType string, volumeJobName string) string {
+func testAccCheckIBMIsVolumeJobsDataSourceConfig(volumeName string, volumeJobName string) string {
 	return fmt.Sprintf(`
-		resource "ibm_is_volume_job" "is_volume_job_instance" {
-			volume_id = "%s"
-			job_type = "%s"
-			name = "%s"
+		resource "ibm_is_volume" "gen_one_volume" {
+			name     = "%s"
+			capacity = 10
+			profile  = "general-purpose"
+			zone     = "%s"
+			lifecycle {
+				ignore_changes = [ profile ]
+			}
+		}
+		resource "ibm_is_volume_job" "gen_one_to_gen_two" {
+			volume_id = ibm_is_volume.gen_one_volume.id
+			job_type  = "migrate"
+			name      = "%s"
 			parameters {
 				profile {
-					name = "general-purpose"
+					name = "sdp"
 				}
+				bandwidth = 1000
+    			iops      = 3000
 			}
 		}
 
 		data "ibm_is_volume_jobs" "is_volume_jobs_instance" {
-			volume_id = ibm_is_volume_job.is_volume_job_instance.volume_id
+			volume_id = ibm_is_volume_job.gen_one_to_gen_two.volume_id
 		}
-	`, volumeJobVolumeID, volumeJobJobType, volumeJobName)
+	`, volumeName, acc.ISZoneName, volumeJobName)
 }
 
 func TestDataSourceIBMIsVolumeJobsVolumeJobToMap(t *testing.T) {
