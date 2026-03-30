@@ -1,8 +1,8 @@
-// Copyright IBM Corp. 2025 All Rights Reserved.
+// Copyright IBM Corp. 2026 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 /*
- * IBM OpenAPI Terraform Generator Version: 3.107.1-41b0fbd0-20250825-080732
+ * IBM OpenAPI Terraform Generator Version: 3.112.0-f88e9264-20260220-115155
  */
 
 package partnercentersell
@@ -1208,6 +1208,11 @@ func ResourceIbmOnboardingCatalogProduct() *schema.Resource {
 																Optional:    true,
 																Description: "The name of the composite child.",
 															},
+															"id": &schema.Schema{
+																Type:        schema.TypeString,
+																Optional:    true,
+																Description: "The id of the composite child.",
+															},
 														},
 													},
 												},
@@ -2354,6 +2359,9 @@ func ResourceIbmOnboardingCatalogProductMapToGlobalCatalogProductMetadataOtherCo
 	if modelMap["name"] != nil && modelMap["name"].(string) != "" {
 		model.Name = core.StringPtr(modelMap["name"].(string))
 	}
+	if modelMap["id"] != nil && modelMap["id"].(string) != "" {
+		model.ID = core.StringPtr(modelMap["id"].(string))
+	}
 	return model, nil
 }
 
@@ -3068,6 +3076,9 @@ func ResourceIbmOnboardingCatalogProductGlobalCatalogProductMetadataOtherComposi
 	if model.Name != nil {
 		modelMap["name"] = *model.Name
 	}
+	if model.ID != nil {
+		modelMap["id"] = *model.ID
+	}
 	return modelMap, nil
 }
 
@@ -3227,6 +3238,12 @@ func ResourceIbmOnboardingCatalogProductGlobalCatalogProductMetadataOtherComposi
 		patch["name"] = nil
 	} else if !exists {
 		delete(patch, "name")
+	}
+	path = rootPath + ".id"
+	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
+		patch["id"] = nil
+	} else if !exists {
+		delete(patch, "id")
 	}
 }
 
