@@ -1,5 +1,5 @@
 # 1.89.0 (March 2, 2026)
-
+Note: This is the last release of the provider before the support for plugin framework in 2.0.0 
 ## Bug Fixes
 
 ### General
