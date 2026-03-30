@@ -14,6 +14,7 @@ Create, update, and delete is_volume_jobs with this resource.
 
 ```hcl
 resource "ibm_is_volume_job" "is_volume_job_instance" {
+  volume_id = ibm_is_volume.example.id
   job_type = "migrate"
   name = "my-volume-job"
   parameters {
@@ -23,7 +24,6 @@ resource "ibm_is_volume_job" "is_volume_job_instance" {
 			name = "general-purpose"
 		}
   }
-  volume_id = "volume_id"
 }
 ```
 
@@ -31,10 +31,10 @@ resource "ibm_is_volume_job" "is_volume_job_instance" {
 
 You can specify the following arguments for this resource.
 
+* `volume_id` - (Required, Forces new resource, String) The volume identifier.
+  * Constraints: The maximum length is `64` characters. The minimum length is `1` character. The value must match regular expression `/^[-0-9a-z_]+$/`.
 * `job_type` - (Required, String) The type of volume job.The enumerated values for this property may[expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) in the future.
   * Constraints: Allowable values are: `migrate`. The maximum length is `128` characters. The minimum length is `1` character. The value must match regular expression `/^[a-z][a-z0-9]*(_[a-z0-9]+)*$/`.
-* `limit` - (Optional, Integer) The number of resources to return on a page.
-  * Constraints: The default value is `50`. The maximum value is `100`. The minimum value is `1`.
 * `name` - (Optional, String) The name for this volume job. The name must not be used by another volume job for this volume.
   * Constraints: The maximum length is `63` characters. The minimum length is `1` character. The value must match regular expression `/^([a-z]|[a-z][-a-z0-9]*[a-z0-9]|[0-9][-a-z0-9]*([a-z]|[-a-z][-a-z0-9]*[a-z0-9]))$/`.
 * `parameters` - (Optional, List) The parameters to use after the volume is migrated.
@@ -48,10 +48,6 @@ Nested schema for **parameters**:
 		  * Constraints: The maximum length is `8000` characters. The minimum length is `10` characters. The value must match regular expression `/^http(s)?:\/\/([^\/?#]*)([^?#]*)(\\?([^#]*))?(#(.*))?$/`.
 		* `name` - (Optional, String) The globally unique name for this volume profile.
 		  * Constraints: The maximum length is `63` characters. The minimum length is `1` character. The value must match regular expression `/^([a-z]|[a-z][-a-z0-9]*[a-z0-9]|[0-9][-a-z0-9]*([a-z]|[-a-z][-a-z0-9]*[a-z0-9]))$/`.
-* `start` - (Optional, String) A server-provided token determining what resource to start the page on.
-  * Constraints: The maximum length is `4096` characters. The minimum length is `1` character. The value must match regular expression `/^[ -~]+$/`.
-* `volume_id` - (Required, Forces new resource, String) The volume identifier.
-  * Constraints: The maximum length is `64` characters. The minimum length is `1` character. The value must match regular expression `/^[-0-9a-z_]+$/`.
 
 ## Attribute Reference
 

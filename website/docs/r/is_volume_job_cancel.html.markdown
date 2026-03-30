@@ -14,6 +14,7 @@ Cancel ibm_is_volume_job with this resource.
 
 ```hcl
 resource "ibm_is_volume_job" "is_volume_job_instance" {
+  volume_id = ibm_is_volume.example.id
   job_type = "migrate"
   name = "my-volume-job"
   parameters {
@@ -23,11 +24,11 @@ resource "ibm_is_volume_job" "is_volume_job_instance" {
 			name = "general-purpose"
 		}
   }
-  volume_id = "volume_id"
 }
+
 resource "ibm_is_volume_job_cancel" "cancel_migration" {
-  volume_id        = ibm_is_volume_job.is_volume_job_instance.volume_id
-  volume_job_id    = ibm_is_volume_job.is_volume_job_instance.volume_job_id
+  volume_id     = ibm_is_volume_job.is_volume_job_instance.volume_id
+  volume_job_id = ibm_is_volume_job.is_volume_job_instance.volume_job_id
 }
 ```
 
@@ -44,7 +45,19 @@ You can specify the following arguments for this resource.
 
 After your resource is created, you can read values from the listed arguments and the following attributes.
 
-* `id` - The unique identifier of the is_volume_job.
+* `id` - The unique identifier of the is_volume_job_cancel.
+* `job_type` - (String) The type of volume job.
+  * Constraints: Allowable values are: `migrate`.
+* `name` - (String) The name for this volume job.
+* `parameters` - (List) The parameters to use after the volume is migrated.
+Nested schema for **parameters**:
+	* `bandwidth` - (Integer) The maximum bandwidth (in megabits per second) for the volume.
+	  * Constraints: The maximum value is `8192`. The minimum value is `1000`.
+	* `iops` - (Integer) The maximum I/O operations per second (IOPS) for this volume.
+	* `profile` - (List) Identifies a volume profile by a unique property.
+	Nested schema for **profile**:
+		* `href` - (String) The URL for this volume profile.
+		* `name` - (String) The globally unique name for this volume profile.
 * `auto_delete` - (Boolean) Indicates whether this volume job will be automatically deleted after it completes. At present, this is always `false`, but may be modifiable in the future.
 * `completed_at` - (String) The date and time that the volume job was completed.If absent, the volume job has not yet completed.
 * `created_at` - (String) The date and time that the volume job was created.
@@ -71,16 +84,16 @@ Nested schema for **status_reasons**:
 
 ## Import
 
-You can import the `ibm_is_volume_job` resource by using `id`.
+You can import the `ibm_is_volume_job_cancel` resource by using `id`.
 The `id` property can be formed from `volume_id`, and `volume_job_id` in the following format:
 
 <pre>
-&lt;volume_id&gt;/&lt;volume_job_id&gt;
+<volume_id>/<volume_job_id>
 </pre>
 * `volume_id`: A string. The volume identifier.
 * `volume_job_id`: A string in the format `r006-095e9baf-01d4-4e29-986e-20d26606b82a`. The unique identifier for this volume job.
 
 # Syntax
 <pre>
-$ terraform import ibm_is_volume_job.is_volume_job &lt;volume_id&gt;/&lt;volume_job_id&gt;
+$ terraform import ibm_is_volume_job_cancel.cancel_migration <volume_id>/<volume_job_id>
 </pre>
