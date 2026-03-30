@@ -93,7 +93,7 @@ func testAccCheckIBMIsVolumeJobConfigBasic(volumeName string) string {
 
 		resource "ibm_is_volume" "gen_one_volume" {
 			name     = "%s"
-			capacity = 200
+			capacity = 10
 			profile  = "general-purpose"
 			zone     = "%s"
 		}
@@ -104,7 +104,7 @@ func testAccCheckIBMIsVolumeJobUpdateConfigBasic(volumeName, volumeJobName strin
 
 		resource "ibm_is_volume" "gen_one_volume" {
 			name     = "%s"
-			capacity = 200
+			capacity = 10
 			profile  = "general-purpose"
 			zone     = "%s"
 			lifecycle {
@@ -119,8 +119,6 @@ func testAccCheckIBMIsVolumeJobUpdateConfigBasic(volumeName, volumeJobName strin
 				profile {
 					name = "sdp"
 				}
-				bandwidth = 2000
-				iops      = 5000
 			}
 		}
 	`, volumeName, acc.ISZoneName, volumeJobName)
@@ -134,8 +132,6 @@ func testAccCheckIBMIsVolumeJobConfig(volumeID string, jobType string, name stri
 			job_type = "%s"
 			name = "%s"
 			parameters {
-				bandwidth = 1000
-				iops = 10000
 				profile {
 					name = "general-purpose"
 				}

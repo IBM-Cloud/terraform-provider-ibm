@@ -91,8 +91,6 @@ func testAccCheckIBMIsVolumeJobsDataSourceConfig(volumeJobVolumeID string, volum
 			job_type = "%s"
 			name = "%s"
 			parameters {
-				bandwidth = 1000
-				iops = 10000
 				profile {
 					name = "general-purpose"
 				}
