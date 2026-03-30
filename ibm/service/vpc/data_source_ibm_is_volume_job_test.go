@@ -47,8 +47,6 @@ func TestAccIBMIsVolumeJobDataSourceBasic(t *testing.T) {
 
 func TestAccIBMIsVolumeJobDataSourceAllArgs(t *testing.T) {
 	volumeJobVolumeID := fmt.Sprintf("tf_volume_id_%d", acctest.RandIntRange(10, 100))
-	volumeJobStart := fmt.Sprintf("tf_start_%d", acctest.RandIntRange(10, 100))
-	volumeJobLimit := fmt.Sprintf("%d", acctest.RandIntRange(1, 100))
 	volumeJobJobType := "migrate"
 	volumeJobName := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 
@@ -57,7 +55,7 @@ func TestAccIBMIsVolumeJobDataSourceAllArgs(t *testing.T) {
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIBMIsVolumeJobDataSourceConfig(volumeJobVolumeID, volumeJobStart, volumeJobLimit, volumeJobJobType, volumeJobName),
+				Config: testAccCheckIBMIsVolumeJobDataSourceConfig(volumeJobVolumeID, volumeJobJobType, volumeJobName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_is_volume_job.is_volume_job_instance", "id"),
 					resource.TestCheckResourceAttrSet("data.ibm_is_volume_job.is_volume_job_instance", "volume_id"),
@@ -97,12 +95,10 @@ func testAccCheckIBMIsVolumeJobDataSourceConfigBasic(volumeJobVolumeID string, v
 	`, volumeJobVolumeID, volumeJobJobType)
 }
 
-func testAccCheckIBMIsVolumeJobDataSourceConfig(volumeJobVolumeID string, volumeJobStart string, volumeJobLimit string, volumeJobJobType string, volumeJobName string) string {
+func testAccCheckIBMIsVolumeJobDataSourceConfig(volumeJobVolumeID string, volumeJobJobType string, volumeJobName string) string {
 	return fmt.Sprintf(`
 		resource "ibm_is_volume_job" "is_volume_job_instance" {
 			volume_id = "%s"
-			start = "%s"
-			limit = %s
 			job_type = "%s"
 			name = "%s"
 			parameters {
@@ -118,7 +114,7 @@ func testAccCheckIBMIsVolumeJobDataSourceConfig(volumeJobVolumeID string, volume
 			volume_id = ibm_is_volume_job.is_volume_job_instance.volume_id
 			volume_job_id = ibm_is_volume_job.is_volume_job_instance.volume_job_id
 		}
-	`, volumeJobVolumeID, volumeJobStart, volumeJobLimit, volumeJobJobType, volumeJobName)
+	`, volumeJobVolumeID, volumeJobJobType, volumeJobName)
 }
 
 func TestDataSourceIBMIsVolumeJobVolumeJobStatusReasonToMap(t *testing.T) {

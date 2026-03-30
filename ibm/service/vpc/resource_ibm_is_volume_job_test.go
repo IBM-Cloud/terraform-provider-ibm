@@ -22,9 +22,8 @@ import (
 
 func TestAccIBMIsVolumeJobBasic(t *testing.T) {
 	var conf vpcv1.VolumeJob
-	volumeID := fmt.Sprintf("tf_volume_id_%d", acctest.RandIntRange(10, 100))
-	jobType := "migrate"
-	jobTypeUpdate := "migrate"
+	volumeName := fmt.Sprintf("tf-volume-%d", acctest.RandIntRange(10, 100))
+	volumeJobName := fmt.Sprintf("tf-volume-job-%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
@@ -32,18 +31,18 @@ func TestAccIBMIsVolumeJobBasic(t *testing.T) {
 		CheckDestroy: testAccCheckIBMIsVolumeJobDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIBMIsVolumeJobConfigBasic(volumeID, jobType),
+				Config: testAccCheckIBMIsVolumeJobConfigBasic(volumeName),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckIBMIsVolumeJobExists("ibm_is_volume_job.is_volume_job_instance", conf),
-					resource.TestCheckResourceAttr("ibm_is_volume_job.is_volume_job_instance", "volume_id", volumeID),
-					resource.TestCheckResourceAttr("ibm_is_volume_job.is_volume_job_instance", "job_type", jobType),
+					resource.TestCheckResourceAttr("ibm_is_volume.gen_one_volume", "name", volumeName),
 				),
 			},
 			resource.TestStep{
-				Config: testAccCheckIBMIsVolumeJobConfigBasic(volumeID, jobTypeUpdate),
+				Config: testAccCheckIBMIsVolumeJobUpdateConfigBasic(volumeName, volumeJobName),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("ibm_is_volume_job.is_volume_job_instance", "volume_id", volumeID),
-					resource.TestCheckResourceAttr("ibm_is_volume_job.is_volume_job_instance", "job_type", jobTypeUpdate),
+					testAccCheckIBMIsVolumeJobExists("ibm_is_volume_job.gen_one_to_gen_two", conf),
+					resource.TestCheckResourceAttr("ibm_is_volume.gen_one_volume", "name", volumeName),
+					resource.TestCheckResourceAttr("ibm_is_volume_job.gen_one_to_gen_two", "name", volumeJobName),
+					resource.TestCheckResourceAttr("ibm_is_volume_job.gen_one_to_gen_two", "job_type", "migrate"),
 				),
 			},
 		},
@@ -53,12 +52,8 @@ func TestAccIBMIsVolumeJobBasic(t *testing.T) {
 func TestAccIBMIsVolumeJobAllArgs(t *testing.T) {
 	var conf vpcv1.VolumeJob
 	volumeID := fmt.Sprintf("tf_volume_id_%d", acctest.RandIntRange(10, 100))
-	start := fmt.Sprintf("tf_start_%d", acctest.RandIntRange(10, 100))
-	limit := fmt.Sprintf("%d", acctest.RandIntRange(1, 100))
 	jobType := "migrate"
 	name := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
-	startUpdate := fmt.Sprintf("tf_start_%d", acctest.RandIntRange(10, 100))
-	limitUpdate := fmt.Sprintf("%d", acctest.RandIntRange(1, 100))
 	jobTypeUpdate := "migrate"
 	nameUpdate := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 
@@ -68,22 +63,18 @@ func TestAccIBMIsVolumeJobAllArgs(t *testing.T) {
 		CheckDestroy: testAccCheckIBMIsVolumeJobDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIBMIsVolumeJobConfig(volumeID, start, limit, jobType, name),
+				Config: testAccCheckIBMIsVolumeJobConfig(volumeID, jobType, name),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMIsVolumeJobExists("ibm_is_volume_job.is_volume_job_instance", conf),
 					resource.TestCheckResourceAttr("ibm_is_volume_job.is_volume_job_instance", "volume_id", volumeID),
-					resource.TestCheckResourceAttr("ibm_is_volume_job.is_volume_job_instance", "start", start),
-					resource.TestCheckResourceAttr("ibm_is_volume_job.is_volume_job_instance", "limit", limit),
 					resource.TestCheckResourceAttr("ibm_is_volume_job.is_volume_job_instance", "job_type", jobType),
 					resource.TestCheckResourceAttr("ibm_is_volume_job.is_volume_job_instance", "name", name),
 				),
 			},
 			resource.TestStep{
-				Config: testAccCheckIBMIsVolumeJobConfig(volumeID, startUpdate, limitUpdate, jobTypeUpdate, nameUpdate),
+				Config: testAccCheckIBMIsVolumeJobConfig(volumeID, jobTypeUpdate, nameUpdate),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("ibm_is_volume_job.is_volume_job_instance", "volume_id", volumeID),
-					resource.TestCheckResourceAttr("ibm_is_volume_job.is_volume_job_instance", "start", startUpdate),
-					resource.TestCheckResourceAttr("ibm_is_volume_job.is_volume_job_instance", "limit", limitUpdate),
 					resource.TestCheckResourceAttr("ibm_is_volume_job.is_volume_job_instance", "job_type", jobTypeUpdate),
 					resource.TestCheckResourceAttr("ibm_is_volume_job.is_volume_job_instance", "name", nameUpdate),
 				),
@@ -97,22 +88,49 @@ func TestAccIBMIsVolumeJobAllArgs(t *testing.T) {
 	})
 }
 
-func testAccCheckIBMIsVolumeJobConfigBasic(volumeID string, jobType string) string {
+func testAccCheckIBMIsVolumeJobConfigBasic(volumeName string) string {
 	return fmt.Sprintf(`
-		resource "ibm_is_volume_job" "is_volume_job_instance" {
-			volume_id = "%s"
-			job_type = "%s"
+
+		resource "ibm_is_volume" "gen_one_volume" {
+			name     = "%s"
+			capacity = 200
+			profile  = "general-purpose"
+			zone     = "%s"
 		}
-	`, volumeID, jobType)
+	`, volumeName, acc.ISZoneName)
+}
+func testAccCheckIBMIsVolumeJobUpdateConfigBasic(volumeName, volumeJobName string) string {
+	return fmt.Sprintf(`
+
+		resource "ibm_is_volume" "gen_one_volume" {
+			name     = "%s"
+			capacity = 200
+			profile  = "general-purpose"
+			zone     = "%s"
+			lifecycle {
+				ignore_changes = [ profile ]
+			}
+		}
+		resource "ibm_is_volume_job" "gen_one_to_gen_two" {
+			volume_id = ibm_is_volume.gen_one_volume.id
+			job_type  = "migrate"
+			name      = "%s"
+			parameters {
+				profile {
+					name = "sdp"
+				}
+				bandwidth = 2000
+				iops      = 5000
+			}
+		}
+	`, volumeName, acc.ISZoneName, volumeJobName)
 }
 
-func testAccCheckIBMIsVolumeJobConfig(volumeID string, start string, limit string, jobType string, name string) string {
+func testAccCheckIBMIsVolumeJobConfig(volumeID string, jobType string, name string) string {
 	return fmt.Sprintf(`
 
 		resource "ibm_is_volume_job" "is_volume_job_instance" {
 			volume_id = "%s"
-			start = "%s"
-			limit = %s
 			job_type = "%s"
 			name = "%s"
 			parameters {
@@ -123,7 +141,7 @@ func testAccCheckIBMIsVolumeJobConfig(volumeID string, start string, limit strin
 				}
 			}
 		}
-	`, volumeID, start, limit, jobType, name)
+	`, volumeID, jobType, name)
 }
 
 func testAccCheckIBMIsVolumeJobExists(n string, obj vpcv1.VolumeJob) resource.TestCheckFunc {
