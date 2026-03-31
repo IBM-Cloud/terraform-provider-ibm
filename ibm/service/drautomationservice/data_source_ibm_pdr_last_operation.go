@@ -20,7 +20,8 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM/go-sdk-core/v5/core"
 
-	"github.com/IBM/dra-go-sdk/drautomationservicev1"
+	// "github.com/IBM/dra-go-sdk/drautomationservicev1"
+	"github.ibm.com/DRAutomation/dra-go-sdk/drautomationservicev1"
 )
 
 func DataSourceIBMPdrLastOperation() *schema.Resource {
@@ -98,6 +99,16 @@ func DataSourceIBMPdrLastOperation() *schema.Resource {
 				Computed:    true,
 				Description: "Indicates the progress details of primary orchestrator creation.",
 			},
+			"primary_error_description": &schema.Schema{
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Capture the error while creating primary orchestrator.",
+			},
+			"standby_error_description": &schema.Schema{
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Capture the error while creating standby orchestrator.",
+			},
 			"primary_ip_address": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -137,16 +148,6 @@ func DataSourceIBMPdrLastOperation() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The current state of the primary orchestrator.",
-			},
-			"primary_error_description": &schema.Schema{
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "Capture the error while creating primary orchestrator.",
-			},
-			"standby_error_description": &schema.Schema{
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "Capture the error while creating standby orchestrator.",
 			},
 		},
 	}
@@ -204,18 +205,6 @@ func dataSourceIBMPdrLastOperationRead(context context.Context, d *schema.Resour
 		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting mfa_enabled: %s", err), "(Data) ibm_pdr_last_operation", "read", "set-mfa_enabled").GetDiag()
 	}
 
-	if err = d.Set("last_updated_orchestrator_deployment_time", flex.DateTimeToString(serviceInstanceStatus.LastUpdatedOrchestratorDeploymentTime)); err != nil {
-		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting last_updated_orchestrator_deployment_time: %s", err), "(Data) ibm_pdr_last_operation", "read", "set-last_updated_orchestrator_deployment_time").GetDiag()
-	}
-
-	if err = d.Set("last_updated_standby_orchestrator_deployment_time", flex.DateTimeToString(serviceInstanceStatus.LastUpdatedStandbyOrchestratorDeploymentTime)); err != nil {
-		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting last_updated_standby_orchestrator_deployment_time: %s", err), "(Data) ibm_pdr_last_operation", "read", "set-last_updated_standby_orchestrator_deployment_time").GetDiag()
-	}
-
-	if err = d.Set("mfa_enabled", serviceInstanceStatus.MfaEnabled); err != nil {
-		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting mfa_enabled: %s", err), "(Data) ibm_pdr_last_operation", "read", "set-mfa_enabled").GetDiag()
-	}
-
 	if !core.IsNil(serviceInstanceStatus.OrchExtConnectivityStatus) {
 		if err = d.Set("orch_ext_connectivity_status", serviceInstanceStatus.OrchExtConnectivityStatus); err != nil {
 			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting orch_ext_connectivity_status: %s", err), "(Data) ibm_pdr_last_operation", "read", "set-orch_ext_connectivity_status").GetDiag()
@@ -245,6 +234,7 @@ func dataSourceIBMPdrLastOperationRead(context context.Context, d *schema.Resour
 	if err = d.Set("primary_description", serviceInstanceStatus.PrimaryDescription); err != nil {
 		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting primary_description: %s", err), "(Data) ibm_pdr_last_operation", "read", "set-primary_description").GetDiag()
 	}
+
 	if !core.IsNil(serviceInstanceStatus.PrimaryErrorDescription) {
 		if err = d.Set("primary_error_description", serviceInstanceStatus.PrimaryErrorDescription); err != nil {
 			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting primary_error_description: %s", err), "(Data) ibm_pdr_last_operation", "read", "set-primary_error_description").GetDiag()
@@ -256,6 +246,7 @@ func dataSourceIBMPdrLastOperationRead(context context.Context, d *schema.Resour
 			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting standby_error_description: %s", err), "(Data) ibm_pdr_last_operation", "read", "set-standby_error_description").GetDiag()
 		}
 	}
+
 	if err = d.Set("primary_ip_address", serviceInstanceStatus.PrimaryIPAddress); err != nil {
 		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting primary_ip_address: %s", err), "(Data) ibm_pdr_last_operation", "read", "set-primary_ip_address").GetDiag()
 	}

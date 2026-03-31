@@ -2,8 +2,8 @@
 // Licensed under the Mozilla Public License v2.0
 
 /*
- * IBM OpenAPI Terraform Generator Version: 3.108.0-56772134-20251111-102802
- */
+ * IBM OpenAPI Terraform Generator Version: 3.113.1-d76630af-20260320-135953
+*/
 
 package powerhaautomationservice
 
@@ -11,7 +11,7 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"time"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -26,10 +26,10 @@ func DataSourceIBMPhaListServiceInstanceEvents() *schema.Resource {
 		ReadContext: dataSourceIBMPhaListServiceInstanceEventsRead,
 
 		Schema: map[string]*schema.Schema{
-			"pha_instance_id": &schema.Schema{
+			"instance_id": &schema.Schema{
 				Type:        schema.TypeString,
 				Required:    true,
-				Description: "instance id of instance to provision.",
+				Description: "Unique identifier of the provisioned instance.",
 			},
 			"time": &schema.Schema{
 				Type:        schema.TypeString,
@@ -159,7 +159,7 @@ func dataSourceIBMPhaListServiceInstanceEventsRead(context context.Context, d *s
 
 	listServiceInstanceEventsOptions := &powerhaautomationservicev1.ListServiceInstanceEventsOptions{}
 
-	listServiceInstanceEventsOptions.SetPhaInstanceID(d.Get("pha_instance_id").(string))
+	listServiceInstanceEventsOptions.SetPhaInstanceID(d.Get("instance_id").(string))
 	if _, ok := d.GetOk("time"); ok {
 		listServiceInstanceEventsOptions.SetTime(d.Get("time").(string))
 	}
@@ -189,9 +189,6 @@ func dataSourceIBMPhaListServiceInstanceEventsRead(context context.Context, d *s
 		tfErr := flex.TerraformErrorf(err, detailedMsg, "ibm_pha_list_service_instance_events", "create")
 		log.Printf("[ERROR] %s", detailedMsg)
 		return tfErr.GetDiag()
-		// tfErr := flex.TerraformErrorf(err, fmt.Sprintf("ListServiceInstanceEventsWithContext failed: %s", err.Error()), "(Data) ibm_pha_list_service_instance_events", "read")
-		// log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
-		// return tfErr.GetDiag()
 	}
 
 	d.SetId(dataSourceIBMPhaListServiceInstanceEventsID(d))
@@ -213,7 +210,11 @@ func dataSourceIBMPhaListServiceInstanceEventsRead(context context.Context, d *s
 
 // dataSourceIBMPhaListServiceInstanceEventsID returns a reasonable ID for the list.
 func dataSourceIBMPhaListServiceInstanceEventsID(d *schema.ResourceData) string {
-	return time.Now().UTC().String()
+	parts := strings.Split(d.Get("instance_id").(string), ":")
+	if len(parts) > 7 {
+		return parts[7]
+	}
+	return d.Get("instance_id").(string)
 }
 
 // func DataSourceIBMPhaListServiceInstanceEventsPhaEventToMap(model *powerhaautomationservicev1.PhaEvent) (map[string]interface{}, error) {
@@ -256,7 +257,7 @@ func DataSourceIBMPhaListServiceInstanceEventsPhaEventToMap(model *powerhaautoma
 	modelMap := make(map[string]interface{})
 
 	if model.Action != nil {
-		modelMap["action"] = *model.Action
+	modelMap["action"] = *model.Action
 	}
 	if model.APISource != nil {
 		modelMap["api_source"] = *model.APISource
@@ -268,7 +269,7 @@ func DataSourceIBMPhaListServiceInstanceEventsPhaEventToMap(model *powerhaautoma
 		modelMap["level"] = *model.Level
 	}
 	if model.Message != nil {
-		modelMap["message"] = *model.Message
+	modelMap["message"] = *model.Message
 	}
 
 	if model.MessageData != nil {
@@ -278,7 +279,6 @@ func DataSourceIBMPhaListServiceInstanceEventsPhaEventToMap(model *powerhaautoma
 		}
 		modelMap["message_data"] = messageData
 	}
-
 	if model.MetaData != nil {
 		metaData := make(map[string]interface{})
 		for k, v := range model.MetaData {
@@ -306,7 +306,6 @@ func DataSourceIBMPhaListServiceInstanceEventsPhaEventToMap(model *powerhaautoma
 		}
 		modelMap["user"] = []map[string]interface{}{userMap}
 	}
-
 	return modelMap, nil
 }
 

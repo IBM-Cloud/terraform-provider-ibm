@@ -2,9 +2,8 @@
 // Licensed under the Mozilla Public License v2.0
 
 /*
- * IBM OpenAPI Terraform Generator Version: 3.108.0-56772134-20251111-102802
+ * IBM OpenAPI Terraform Generator Version: 3.113.1-d76630af-20260320-135953
  */
-
 package powerhaautomationservice
 
 import (
@@ -33,26 +32,28 @@ func ResourceIBMPhaDeployment() *schema.Resource {
 		Importer:      &schema.ResourceImporter{},
 
 		Schema: map[string]*schema.Schema{
-			"pha_instance_id": &schema.Schema{
+			"instance_id": &schema.Schema{
 				Type:         schema.TypeString,
 				Required:     true,
 				ForceNew:     true,
-				ValidateFunc: validate.InvokeValidator("ibm_pha_deployment", "pha_instance_id"),
+				ValidateFunc: validate.InvokeValidator("ibm_pha_deployment", "instance_id"),
 				Description:  "instance id of instance to provision.",
 			},
 			"accept_language": &schema.Schema{
-				Type:         schema.TypeString,
-				Optional:     true,
-				ForceNew:     true,
-				ValidateFunc: validate.InvokeValidator("ibm_pha_deployment", "accept_language"),
-				Description:  "The language requested for the return document.",
+				Type:             schema.TypeString,
+				Optional:         true,
+				ForceNew:         true,
+				DiffSuppressFunc: flex.ApplyOnce,
+				ValidateFunc:     validate.InvokeValidator("ibm_pha_deployment", "accept_language"),
+				Description:      "The language requested for the return document.",
 			},
 			"if_none_match": &schema.Schema{
-				Type:         schema.TypeString,
-				Optional:     true,
-				ForceNew:     true,
-				ValidateFunc: validate.InvokeValidator("ibm_pha_deployment", "if_none_match"),
-				Description:  "ETag for conditional requests (optional).",
+				Type:             schema.TypeString,
+				Optional:         true,
+				ForceNew:         true,
+				DiffSuppressFunc: flex.ApplyOnce,
+				ValidateFunc:     validate.InvokeValidator("ibm_pha_deployment", "if_none_match"),
+				Description:      "ETag for conditional requests (optional).",
 			},
 			"cluster_type": {
 				Type:         schema.TypeString,
@@ -61,7 +62,15 @@ func ResourceIBMPhaDeployment() *schema.Resource {
 				Description:  "Type of PowerHA cluster being deployed.",
 				ValidateFunc: validation.StringMatch(regexp.MustCompile(`^[a-zA-Z0-9._:-]+$`), "invalid format"),
 			},
-
+			"api_key": {
+				Type:             schema.TypeString,
+				Optional:         true,
+				ForceNew:         true,
+				Sensitive:        true,
+				DiffSuppressFunc: flex.ApplyOnce,
+				Description:      "The API key associated with the request.",
+				ValidateFunc:     validation.StringMatch(regexp.MustCompile(`^[a-zA-Z0-9._:-]+$`), "invalid format"),
+			},
 			"configure_type": {
 				Type:         schema.TypeString,
 				Optional:     true,
@@ -71,25 +80,85 @@ func ResourceIBMPhaDeployment() *schema.Resource {
 			},
 
 			"location_id": {
-				Type:         schema.TypeString,
-				Required:     true,
-				ForceNew:     true,
-				Description:  "Identifier for the deployment location.",
-				ValidateFunc: validation.StringMatch(regexp.MustCompile(`^[a-zA-Z0-9._:-]+$`), "invalid format"),
+				Type:     schema.TypeString,
+				Required: true,
+				ForceNew: true,
+				// Computed:     true,
+				DiffSuppressFunc: flex.ApplyOnce,
+				Description:      "Identifier for the deployment location.",
+				ValidateFunc:     validation.StringMatch(regexp.MustCompile(`^[a-zA-Z0-9._:-]+$`), "invalid format"),
 			},
 
 			"primary_cluster_nodes": {
 				Type:        schema.TypeList,
 				Optional:    true,
 				ForceNew:    true,
-				Description: "List of primary cluster node VM IDs.",
-				MaxItems:    50,
+				Description: "List of primary cluster node VM IDs (input).",
+				MaxItems:    100,
 				Elem: &schema.Schema{
 					Type:         schema.TypeString,
 					ValidateFunc: validation.StringLenBetween(1, 36),
 				},
 			},
-
+			"primary_cluster_nodes_details": {
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "Detailed information of primary cluster nodes (output).",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"vm_id": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Unique identifier of the virtual machine.",
+						},
+						"vm_name": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Name of the virtual machine.",
+						},
+						"vm_status": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Current operational status of the virtual machine.",
+						},
+						"ip_address": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "IP address assigned to the virtual machine.",
+						},
+						"agent_status": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Status of the PHA agent running on the node.",
+						},
+						"cores": {
+							Type:        schema.TypeFloat,
+							Computed:    true,
+							Description: "Number of CPU cores allocated to the node.",
+						},
+						"memory": {
+							Type:        schema.TypeInt,
+							Computed:    true,
+							Description: "Memory allocated to the virtual machine.",
+						},
+						"pha_level": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "PowerHA version level installed on the node.",
+						},
+						"region": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Region where the virtual machine is deployed.",
+						},
+						"workspace_id": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Workspace identifier associated with the node.",
+						},
+					},
+				},
+			},
 			"standby_cluster_nodes": {
 				Type:        schema.TypeList,
 				Optional:    true,
@@ -99,67 +168,6 @@ func ResourceIBMPhaDeployment() *schema.Resource {
 				Elem: &schema.Schema{
 					Type:         schema.TypeString,
 					ValidateFunc: validation.StringLenBetween(0, 36),
-				},
-			},
-			"primary_cluster_node": &schema.Schema{
-				Type: schema.TypeList,
-				// Optional:    true,
-				// ForceNew:    true,
-				Computed:    true,
-				Description: "List of primary cluster nodes.",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"agent_status": &schema.Schema{
-							Type:        schema.TypeString,
-							Optional:    true,
-							Description: "Status of the PHA agent running on the node.",
-						},
-						"cores": &schema.Schema{
-							Type:        schema.TypeFloat,
-							Optional:    true,
-							Description: "Number of CPU cores allocated to the node.",
-						},
-						"ip_address": &schema.Schema{
-							Type:        schema.TypeString,
-							Optional:    true,
-							Description: "IP address assigned to the virtual machine.",
-						},
-						"memory": &schema.Schema{
-							Type:        schema.TypeInt,
-							Optional:    true,
-							Description: "Memory allocated to the virtual machine in MB or GB.",
-						},
-						"pha_level": &schema.Schema{
-							Type:        schema.TypeString,
-							Optional:    true,
-							Description: "PowerHA version level installed on the node.",
-						},
-						"region": &schema.Schema{
-							Type:        schema.TypeString,
-							Optional:    true,
-							Description: "Region where the virtual machine is deployed.",
-						},
-						"vm_id": &schema.Schema{
-							Type:        schema.TypeString,
-							Optional:    true,
-							Description: "Unique identifier of the virtual machine.",
-						},
-						"vm_name": &schema.Schema{
-							Type:        schema.TypeString,
-							Optional:    true,
-							Description: "Name of the virtual machine.",
-						},
-						"vm_status": &schema.Schema{
-							Type:        schema.TypeString,
-							Optional:    true,
-							Description: "Current operational status of the virtual machine.",
-						},
-						"workspace_id": &schema.Schema{
-							Type:        schema.TypeString,
-							Optional:    true,
-							Description: "Workspace identifier associated with the node.",
-						},
-					},
 				},
 			},
 			"primary_location": &schema.Schema{
@@ -190,10 +198,10 @@ func ResourceIBMPhaDeployment() *schema.Resource {
 				ValidateFunc: validate.InvokeValidator("ibm_pha_deployment", "secondary_workspace"),
 				Description:  "Secondary workspace identifier.",
 			},
-			"api_key": &schema.Schema{
-				Type:        schema.TypeString,
-				Computed:    true,
-				Sensitive:   true,
+			"apikey": &schema.Schema{
+				Type:     schema.TypeString,
+				Computed: true,
+				// DiffSuppressFunc: flex.ApplyOnce,
 				Description: "API key used for authentication to the deployment service.",
 			},
 			"cloud_account_id": &schema.Schema{
@@ -418,7 +426,7 @@ func ResourceIBMPhaDeploymentValidator() *validate.ResourceValidator {
 	validateSchema := make([]validate.ValidateSchema, 0)
 	validateSchema = append(validateSchema,
 		validate.ValidateSchema{
-			Identifier:                 "pha_instance_id",
+			Identifier:                 "instance_id",
 			ValidateFunctionIdentifier: validate.ValidateRegexpLen,
 			Type:                       validate.TypeString,
 			Required:                   true,
@@ -496,22 +504,70 @@ func resourceIBMPhaDeploymentCreate(context context.Context, d *schema.ResourceD
 
 	createPhaDeploymentOptions := &powerhaautomationservicev1.CreatePhaDeploymentOptions{}
 
-	createPhaDeploymentOptions.SetPhaInstanceID(d.Get("pha_instance_id").(string))
+	createPhaDeploymentOptions.SetPhaInstanceID(d.Get("instance_id").(string))
 	createPhaDeploymentOptions.SetLocationID(d.Get("location_id").(string))
 	createPhaDeploymentOptions.SetPrimaryWorkspace(d.Get("primary_workspace").(string))
 	if _, ok := d.GetOk("cluster_type"); ok {
 		createPhaDeploymentOptions.SetClusterType(d.Get("cluster_type").(string))
 	}
+	if _, ok := d.GetOk("api_key"); ok {
+		createPhaDeploymentOptions.SetAPIKey(d.Get("api_key").(string))
+	}
 	if _, ok := d.GetOk("configure_type"); ok {
 		createPhaDeploymentOptions.SetConfigureType(d.Get("configure_type").(string))
 	}
-	if _, ok := d.GetOk("primary_cluster_nodes"); ok {
-		var primaryClusterNodes []string
-		for _, v := range d.Get("primary_cluster_nodes").([]interface{}) {
-			primaryClusterNodesItem := v.(string)
-			primaryClusterNodes = append(primaryClusterNodes, primaryClusterNodesItem)
+	// if inputNodes , ok := d.GetOk("primary_cluster_nodes"); ok {
+	// 	// var primaryClusterNodes []string
+	// 	// Transform to API request format (just VM IDs)
+	// 	vmIDs := make([]string, len(inputNodes))
+	// 	 for i, node := range inputNodes {
+	// 		nodeMap := node.(map[string]interface{})
+	// 		vmIDs[i] = nodeMap["vm_id"].(string)
+	// 	}
+	// 	// for _, v := range d.Get("primary_cluster_nodes").([]interface{}) {
+	// 	// 	primaryClusterNodesItem := v.(string)
+	// 	// 	primaryClusterNodes = append(primaryClusterNodes, primaryClusterNodesItem)
+	// 	// }
+	// 	createPhaDeploymentOptions.SetPrimaryClusterNodes(vmIDs)
+	// }
+	// if inputNodes, ok := d.GetOk("primary_cluster_nodes"); ok {
+	// 	nodesList := inputNodes.([]interface{})
+	// 	vmIDs := make([]string, 0, len(nodesList))
+
+	// 	for i, node := range nodesList {
+	// 		nodeMap, ok := node.(map[string]interface{})
+	// 		if !ok {
+	// 			return diag.Errorf("invalid node structure at index %d", i)
+	// 		}
+
+	// 		// Safely extract vm_id with type assertion
+	// 		vmID, ok := nodeMap["vm_id"].(string)
+	// 		if !ok || vmID == "" {
+	// 			return diag.Errorf("vm_id is required and must be a string at index %d", i)
+	// 		}
+
+	// 		vmIDs = append(vmIDs, vmID)
+	// 	}
+
+	// 	if len(vmIDs) > 0 {
+	// 		createPhaDeploymentOptions.SetPrimaryClusterNodes(vmIDs)
+	// 	}
+	// }
+	if inputNodes, ok := d.GetOk("primary_cluster_nodes"); ok {
+		nodesList := inputNodes.([]interface{})
+		vmIDs := make([]string, 0, len(nodesList))
+
+		for i, node := range nodesList {
+			vmID, ok := node.(string)
+			if !ok || strings.TrimSpace(vmID) == "" {
+				return diag.Errorf("primary_cluster_nodes must contain valid string VM IDs at index %d", i)
+			}
+			vmIDs = append(vmIDs, vmID)
 		}
-		createPhaDeploymentOptions.SetPrimaryClusterNodes(primaryClusterNodes)
+
+		if len(vmIDs) > 0 {
+			createPhaDeploymentOptions.SetPrimaryClusterNodes(vmIDs)
+		}
 	}
 	if _, ok := d.GetOk("standby_cluster_nodes"); ok {
 		var standbyClusterNodes []string
@@ -600,18 +656,21 @@ func resourceIBMPhaDeploymentRead(context context.Context, d *schema.ResourceDat
 		// return tfErr.GetDiag()
 	}
 
-	if !core.IsNil(phaDeploymentResponse.PrimaryClusterNodes) {
-		primaryClusterNodes := []map[string]interface{}{}
-		for _, primaryClusterNodesItem := range phaDeploymentResponse.PrimaryClusterNodes {
-			primaryClusterNodesItemMap, err := ResourceIBMPhaDeploymentClusterNodeInfoToMap(&primaryClusterNodesItem) // #nosec G601
+	if !core.IsNil(phaDeploymentResponse.PrimaryClusterNodesDetails) {
+		primaryNodesInfo := []map[string]interface{}{}
+
+		for _, node := range phaDeploymentResponse.PrimaryClusterNodesDetails {
+			nodeMap, err := ResourceIBMPhaDeploymentClusterNodeInfoToMap(&node)
 			if err != nil {
-				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_pha_deployment", "read", "primary_cluster_nodes-to-map").GetDiag()
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(),
+					"ibm_pha_deployment", "read", "primary_cluster_nodes_details-to-map").GetDiag()
 			}
-			primaryClusterNodes = append(primaryClusterNodes, primaryClusterNodesItemMap)
+			primaryNodesInfo = append(primaryNodesInfo, nodeMap)
 		}
-		if err = d.Set("primary_cluster_node", primaryClusterNodes); err != nil {
-			err = fmt.Errorf("Error setting primary_cluster_nodes: %s", err)
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_pha_deployment", "read", "set-primary_cluster_nodes").GetDiag()
+
+		if err := d.Set("primary_cluster_nodes_details", primaryNodesInfo); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(),
+				"ibm_pha_deployment", "read", "set-primary_cluster_nodes_details").GetDiag()
 		}
 	}
 	if !core.IsNil(phaDeploymentResponse.PrimaryLocation) {
@@ -637,7 +696,7 @@ func resourceIBMPhaDeploymentRead(context context.Context, d *schema.ResourceDat
 		}
 	}
 	if !core.IsNil(phaDeploymentResponse.APIKey) {
-		if err = d.Set("api_key", phaDeploymentResponse.APIKey); err != nil {
+		if err = d.Set("apikey", phaDeploymentResponse.APIKey); err != nil {
 			err = fmt.Errorf("Error setting api_key: %s", err)
 			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_pha_deployment", "read", "set-api_key").GetDiag()
 		}
@@ -816,9 +875,9 @@ func resourceIBMPhaDeploymentRead(context context.Context, d *schema.ResourceDat
 	}
 	if !core.IsNil(phaDeploymentResponse.ID) {
 
-		if err = d.Set("pha_instance_id", extractInstanceIDFromCRN(*phaDeploymentResponse.ID)); err != nil {
-			err = fmt.Errorf("Error setting pha_instance_id: %s", err)
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_pha_deployment", "read", "set-pha_instance_id").GetDiag()
+		if err = d.Set("instance_id", extractInstanceIDFromCRN(*phaDeploymentResponse.ID)); err != nil {
+			err = fmt.Errorf("Error setting instance_id: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_pha_deployment", "read", "set-instance_id").GetDiag()
 		}
 	}
 	if err = d.Set("etag", response.Headers.Get("Etag")); err != nil {

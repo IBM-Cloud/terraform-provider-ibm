@@ -20,7 +20,8 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM/go-sdk-core/v5/core"
 
-	"github.com/IBM/dra-go-sdk/drautomationservicev1"
+	// "github.com/IBM/dra-go-sdk/drautomationservicev1"
+	"github.ibm.com/DRAutomation/dra-go-sdk/drautomationservicev1"
 )
 
 func DataSourceIBMPdrGetMachineTypes() *schema.Resource {
@@ -82,12 +83,6 @@ func dataSourceIBMPdrGetMachineTypesRead(context context.Context, d *schema.Reso
 
 	getMachineTypeOptions.SetInstanceID(d.Get("instance_id").(string))
 	getMachineTypeOptions.SetPrimaryWorkspaceName(d.Get("primary_workspace_name").(string))
-	if _, ok := d.GetOk("accept_language"); ok {
-		getMachineTypeOptions.SetAcceptLanguage(d.Get("accept_language").(string))
-	}
-	if _, ok := d.GetOk("standby_workspace_name"); ok {
-		getMachineTypeOptions.SetStandbyWorkspaceName(d.Get("standby_workspace_name").(string))
-	}
 	if _, ok := d.GetOk("accept_language"); ok {
 		getMachineTypeOptions.SetAcceptLanguage(d.Get("accept_language").(string))
 	}

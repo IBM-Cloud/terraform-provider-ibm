@@ -7,18 +7,21 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/terraform"
 
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 
-	"github.com/IBM/dra-go-sdk/drautomationservicev1"
+	// "github.ibm.com/dra-go-sdk/drautomationservicev1"
+	"github.ibm.com/DRAutomation/dra-go-sdk/drautomationservicev1"
 )
 
 func TestAccIBMPdrManagedrBasic(t *testing.T) {
 	var conf drautomationservicev1.ServiceInstanceManageDr
-	instanceID := "xxxx2ec4-xxxx-4f84-xxxx-c2aa834dd4ed"
+	instanceID := fmt.Sprintf("tf_instance_id_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheck(t) },
@@ -37,9 +40,9 @@ func TestAccIBMPdrManagedrBasic(t *testing.T) {
 
 func TestAccIBMPdrManagedrAllArgs(t *testing.T) {
 	var conf drautomationservicev1.ServiceInstanceManageDr
-	instanceID := "xxxxxfe5-fba1-4cb3-xxxx-e1b09fa0df26"
-	acceptLanguage := "it"
-	standByRedeploy := "false"
+	instanceID := fmt.Sprintf("tf_instance_id_%d", acctest.RandIntRange(10, 100))
+	standByRedeploy := fmt.Sprintf("tf_stand_by_redeploy_%d", acctest.RandIntRange(10, 100))
+	acceptLanguage := fmt.Sprintf("tf_accept_language_%d", acctest.RandIntRange(10, 100))
 	acceptsIncomplete := "true"
 
 	resource.Test(t, resource.TestCase{
@@ -59,53 +62,30 @@ func TestAccIBMPdrManagedrAllArgs(t *testing.T) {
 			resource.TestStep{
 				ResourceName:      "ibm_pdr_managedr.pdr_managedr",
 				ImportState:       true,
-				ImportStateVerify: false,
+				ImportStateVerify: true,
 			},
 		},
 	})
 }
 
 func testAccCheckIBMPdrManagedrConfigBasic(instanceID string) string {
-	apiKey := acc.DRApiKey
 	return fmt.Sprintf(`
 		resource "ibm_pdr_managedr" "pdr_managedr_instance" {
 			instance_id = "%s"
-			orchestrator_ha             = "false"
-			orchestrator_location_type  = "off-premises"
-			location_id                 = "mad04"
-			orchestrator_workspace_id   = "dbc77621-e7cb-4d70-b662-776ff2c3317f"
-			orchestrator_name           = "terraform_orch_vm_04"
-			orchestrator_password       = "Password1234567"
-			machine_type                = "e1080"
-			tier                        = "tier1"
-			ssh_key_name                = "vijaykey"
-			action                      = "done"
-			api_key                     = "%s"
 		}
-	`, instanceID, apiKey)
+	`, instanceID)
 }
 
 func testAccCheckIBMPdrManagedrConfig(instanceID string, standByRedeploy string, acceptLanguage string, acceptsIncomplete string) string {
-	apiKey := acc.DRApiKey
 	return fmt.Sprintf(`
 
 		resource "ibm_pdr_managedr" "pdr_managedr_instance" {
 			instance_id = "%s"
+			stand_by_redeploy = "%s"
 			accept_language = "%s"
 			accepts_incomplete = %s
-			orchestrator_ha             = "false"
-			orchestrator_location_type  = "off-premises"
-			location_id                 = "mad04"
-			orchestrator_workspace_id   = "dbc77621-e7cb-4d70-b662-776ff2c3317f"
-			orchestrator_name           = "terraform_orch_vm_04"
-			orchestrator_password       = "Password1234567"
-			machine_type                = "e1080"
-			tier                        = "tier1"
-			ssh_key_name                = "vijaykey"
-			action                      = "done"
-			api_key                     = "%s"
 		}
-	`, instanceID, acceptLanguage, acceptsIncomplete, apiKey)
+	`, instanceID, standByRedeploy, acceptLanguage, acceptsIncomplete)
 }
 
 func testAccCheckIBMPdrManagedrExists(n string, obj drautomationservicev1.ServiceInstanceManageDr) resource.TestCheckFunc {
@@ -123,7 +103,13 @@ func testAccCheckIBMPdrManagedrExists(n string, obj drautomationservicev1.Servic
 
 		getManageDrOptions := &drautomationservicev1.GetManageDrOptions{}
 
-		getManageDrOptions.SetInstanceID(rs.Primary.ID)
+		parts, err := flex.SepIdParts(rs.Primary.ID, "/")
+		if err != nil {
+			return err
+		}
+
+		getManageDrOptions.SetInstanceID(parts[0])
+		getManageDrOptions.SetInstanceID(parts[1])
 
 		serviceInstanceManageDr, _, err := drAutomationServiceClient.GetManageDr(getManageDrOptions)
 		if err != nil {
@@ -147,7 +133,13 @@ func testAccCheckIBMPdrManagedrDestroy(s *terraform.State) error {
 
 		getManageDrOptions := &drautomationservicev1.GetManageDrOptions{}
 
-		getManageDrOptions.SetInstanceID(rs.Primary.ID)
+		parts, err := flex.SepIdParts(rs.Primary.ID, "/")
+		if err != nil {
+			return err
+		}
+
+		getManageDrOptions.SetInstanceID(parts[0])
+		getManageDrOptions.SetInstanceID(parts[1])
 
 		// Try to find the key
 		_, response, err := drAutomationServiceClient.GetManageDr(getManageDrOptions)

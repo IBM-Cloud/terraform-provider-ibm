@@ -11,14 +11,16 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/drautomationservice"
 	. "github.com/IBM-Cloud/terraform-provider-ibm/ibm/unittest"
-	"github.com/IBM/dra-go-sdk/drautomationservicev1"
 	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/stretchr/testify/assert"
+	// "github.com/IBM/dra-go-sdk/drautomationservicev1"
+	"github.ibm.com/DRAutomation/dra-go-sdk/drautomationservicev1"
+
 )
 
 func TestAccIBMPdrGetDrSummaryResponseDataSourceBasic(t *testing.T) {
@@ -31,7 +33,7 @@ func TestAccIBMPdrGetDrSummaryResponseDataSourceBasic(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_pdr_get_dr_summary_response.pdr_get_dr_summary_response_instance", "id"),
 					resource.TestCheckResourceAttrSet("data.ibm_pdr_get_dr_summary_response.pdr_get_dr_summary_response_instance", "instance_id"),
-					resource.TestCheckResourceAttrSet("data.ibm_pdr_get_dr_summary_response.pdr_get_dr_summary_response_instance", "managed_vm_list.#"),
+					resource.TestCheckResourceAttrSet("data.ibm_pdr_get_dr_summary_response.pdr_get_dr_summary_response_instance", "managed_vm_list.%"),
 					resource.TestCheckResourceAttrSet("data.ibm_pdr_get_dr_summary_response.pdr_get_dr_summary_response_instance", "orchestrator_details.#"),
 					resource.TestCheckResourceAttrSet("data.ibm_pdr_get_dr_summary_response.pdr_get_dr_summary_response_instance", "service_details.#"),
 				),
@@ -43,7 +45,8 @@ func TestAccIBMPdrGetDrSummaryResponseDataSourceBasic(t *testing.T) {
 func testAccCheckIBMPdrGetDrSummaryResponseDataSourceConfigBasic() string {
 	return fmt.Sprintf(`
 		data "ibm_pdr_get_dr_summary_response" "pdr_get_dr_summary_response_instance" {
-			instance_id = "xxxx2ec4-xxxx-4f84-xxxx-c2aa834dd4ed"
+			instance_id = "123456d3-1122-3344-b67d-4389b44b7bf9"
+			Accept-Language = "Accept-Language"
 		}
 	`)
 }

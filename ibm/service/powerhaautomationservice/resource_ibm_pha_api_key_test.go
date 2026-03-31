@@ -7,8 +7,9 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/terraform"
 
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
@@ -17,16 +18,17 @@ import (
 
 func TestAccIBMPhaAPIKeyBasic(t *testing.T) {
 	var conf powerhaautomationservicev1.APIKeyResponse
-	phaInstanceID := "8ce2a099-a463-479a-9a1d-eedc19287a62"
+	instanceID := fmt.Sprintf("tf_instance_id_%d", acctest.RandIntRange(10, 100))
+
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheck(t) },
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIBMPhaAPIKeyConfigBasic(phaInstanceID),
+				Config: testAccCheckIBMPhaAPIKeyConfigBasic(instanceID),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMPhaAPIKeyExists("ibm_pha_api_key.pha_api_key_instance", conf),
-					resource.TestCheckResourceAttr("ibm_pha_api_key.pha_api_key_instance", "pha_instance_id", phaInstanceID),
+					resource.TestCheckResourceAttr("ibm_pha_api_key.pha_api_key_instance", "instance_id", instanceID),
 				),
 			},
 		},
@@ -35,20 +37,22 @@ func TestAccIBMPhaAPIKeyBasic(t *testing.T) {
 
 func TestAccIBMPhaAPIKeyAllArgs(t *testing.T) {
 	var conf powerhaautomationservicev1.APIKeyResponse
-	phaInstanceID := "8ce2a099-a463-479a-9a1d-eedc19287a62"
-	acceptLanguage := "en"
-	apiKey := ""
+	instanceID := fmt.Sprintf("tf_instance_id_%d", acctest.RandIntRange(10, 100))
+	acceptLanguage := fmt.Sprintf("tf_accept_language_%d", acctest.RandIntRange(10, 100))
+	ifNoneMatch := fmt.Sprintf("tf_if_none_match_%d", acctest.RandIntRange(10, 100))
+	apiKey := fmt.Sprintf("tf_api_key_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheck(t) },
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIBMPhaAPIKeyConfig(phaInstanceID, acceptLanguage, apiKey),
+				Config: testAccCheckIBMPhaAPIKeyConfig(instanceID, acceptLanguage, ifNoneMatch, apiKey),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMPhaAPIKeyExists("ibm_pha_api_key.pha_api_key_instance", conf),
-					resource.TestCheckResourceAttr("ibm_pha_api_key.pha_api_key_instance", "pha_instance_id", phaInstanceID),
+					resource.TestCheckResourceAttr("ibm_pha_api_key.pha_api_key_instance", "instance_id", instanceID),
 					resource.TestCheckResourceAttr("ibm_pha_api_key.pha_api_key_instance", "accept_language", acceptLanguage),
+					resource.TestCheckResourceAttr("ibm_pha_api_key.pha_api_key_instance", "if_none_match", ifNoneMatch),
 					resource.TestCheckResourceAttr("ibm_pha_api_key.pha_api_key_instance", "api_key", apiKey),
 				),
 			},
@@ -61,24 +65,24 @@ func TestAccIBMPhaAPIKeyAllArgs(t *testing.T) {
 	})
 }
 
-func testAccCheckIBMPhaAPIKeyConfigBasic(phaInstanceID string) string {
+func testAccCheckIBMPhaAPIKeyConfigBasic(instanceID string) string {
 	return fmt.Sprintf(`
 		resource "ibm_pha_api_key" "pha_api_key_instance" {
-			pha_instance_id = "%s"
-			api_key = ""
+			instance_id = "%s"
 		}
-	`, phaInstanceID)
+	`, instanceID)
 }
 
-func testAccCheckIBMPhaAPIKeyConfig(phaInstanceID string, acceptLanguage string, apiKey string) string {
+func testAccCheckIBMPhaAPIKeyConfig(instanceID string, acceptLanguage string, ifNoneMatch string, apiKey string) string {
 	return fmt.Sprintf(`
 
 		resource "ibm_pha_api_key" "pha_api_key_instance" {
-			pha_instance_id = "%s"
+			instance_id = "%s"
 			accept_language = "%s"
+			if_none_match = "%s"
 			api_key = "%s"
 		}
-	`, phaInstanceID, acceptLanguage, apiKey)
+	`, instanceID, acceptLanguage, ifNoneMatch, apiKey)
 }
 
 func testAccCheckIBMPhaAPIKeyExists(n string, obj powerhaautomationservicev1.APIKeyResponse) resource.TestCheckFunc {

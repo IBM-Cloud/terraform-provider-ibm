@@ -2,7 +2,7 @@
 // Licensed under the Mozilla Public License v2.0
 
 /*
- * IBM OpenAPI Terraform Generator Version: 3.108.0-56772134-20251111-102802
+ * IBM OpenAPI Terraform Generator Version: 3.113.1-d76630af-20260320-135953
  */
 
 package powerhaautomationservice
@@ -11,7 +11,7 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"time"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -26,7 +26,7 @@ func DataSourceIBMPhaGetLastOperation() *schema.Resource {
 		ReadContext: dataSourceIBMPhaGetLastOperationRead,
 
 		Schema: map[string]*schema.Schema{
-			"pha_instance_id": &schema.Schema{
+			"instance_id": &schema.Schema{
 				Type:        schema.TypeString,
 				Required:    true,
 				Description: "instance id of instance to provision.",
@@ -73,33 +73,29 @@ func dataSourceIBMPhaGetLastOperationRead(context context.Context, d *schema.Res
 		return tfErr.GetDiag()
 	}
 
-	getLastOperationOptions := &powerhaautomationservicev1.GetLastOperationOptions{}
+	getPhaLastOperationOptions := &powerhaautomationservicev1.GetPhaLastOperationOptions{}
 
-	getLastOperationOptions.SetPhaInstanceID(d.Get("pha_instance_id").(string))
+	getPhaLastOperationOptions.SetPhaInstanceID(d.Get("instance_id").(string))
 	if _, ok := d.GetOk("accept_language"); ok {
-		getLastOperationOptions.SetAcceptLanguage(d.Get("accept_language").(string))
+		getPhaLastOperationOptions.SetAcceptLanguage(d.Get("accept_language").(string))
 	}
 	if _, ok := d.GetOk("if_none_match"); ok {
-		getLastOperationOptions.SetIfNoneMatch(d.Get("if_none_match").(string))
+		getPhaLastOperationOptions.SetIfNoneMatch(d.Get("if_none_match").(string))
 	}
 
-	serviceInstancePhaStatus, response, err := powerhaAutomationServiceClient.GetLastOperationWithContext(context, getLastOperationOptions)
+	serviceInstancePhaStatus, response, err := powerhaAutomationServiceClient.GetPhaLastOperationWithContext(context, getPhaLastOperationOptions)
 	if err != nil {
-		detailedMsg := fmt.Sprintf("GetLastOperationWithContext failed: %s", err.Error())
+		detailedMsg := fmt.Sprintf("GetphaLastOperationWithContext failed: %s", err.Error())
 		// Include HTTP status & raw body if available
 		if response != nil {
 			detailedMsg = fmt.Sprintf(
-				"GetLastOperationWithContext failed: %s (status: %d, response: %s)",
+				"GetphaLastOperationWithContext failed: %s (status: %d, response: %s)",
 				err.Error(), response.StatusCode, response.Result,
 			)
 		}
 		tfErr := flex.TerraformErrorf(err, detailedMsg, "ibm_pha_get_last_operation", "create")
 		log.Printf("[ERROR] %s", detailedMsg)
 		return tfErr.GetDiag()
-
-		// tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetLastOperationWithContext failed: %s", err.Error()), "(Data) ibm_pha_get_last_operation", "read")
-		// log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
-		// return tfErr.GetDiag()
 	}
 
 	d.SetId(dataSourceIBMPhaGetLastOperationID(d))
@@ -125,5 +121,9 @@ func dataSourceIBMPhaGetLastOperationRead(context context.Context, d *schema.Res
 
 // dataSourceIBMPhaGetLastOperationID returns a reasonable ID for the list.
 func dataSourceIBMPhaGetLastOperationID(d *schema.ResourceData) string {
-	return time.Now().UTC().String()
+	parts := strings.Split(d.Get("instance_id").(string), ":")
+	if len(parts) > 7 {
+		return parts[7]
+	}
+	return d.Get("instance_id").(string)
 }

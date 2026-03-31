@@ -7,14 +7,12 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/terraform"
 
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
-
-	// "github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/powerhaautomationservice"
 	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/stretchr/testify/assert"
@@ -23,22 +21,22 @@ import (
 
 func TestAccIBMPhaClusterNodesBasic(t *testing.T) {
 	var conf powerhaautomationservicev1.ClusterNodeResponse
-	phaInstanceID := "2cfb7a06-623b-4eb9-a9ac-daa03dc0b5a6"
+	instanceID := "2cfb7a06-623b-4eb9-a9ac-daa03dc0b5a6"
 	// primary_cluster_nodes :="d6feda7b-f679-4869-9e9e-133d9467ba5c"
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheck(t) },
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIBMPhaClusterNodesConfigBasic(phaInstanceID),
+				Config: testAccCheckIBMPhaClusterNodesConfigBasic(instanceID),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMPhaClusterNodesExists("ibm_pha_cluster_nodes.pha_cluster_nodes_instance", conf),
-					resource.TestCheckResourceAttr("ibm_pha_cluster_nodes.pha_cluster_nodes_instance", "pha_instance_id", phaInstanceID),
+					resource.TestCheckResourceAttr("ibm_pha_cluster_nodes.pha_cluster_nodes_instance", "instance_id", instanceID),
 					// resource.TestCheckResourceAttr("ibm_pha_cluster_nodes.pha_cluster_nodes_instance", "primary_cluster_nodes.0", primary_cluster_nodes),
 					resource.TestCheckTypeSetElemAttr(
 						"ibm_pha_cluster_nodes.pha_cluster_nodes_instance",
 						"primary_cluster_nodes.*",
-						"049a8b09-zxcvcv-92946f3f4ab5",
+						"049a8b09-a1ff-4434-acda-92946f3f4ab5",
 					),
 				),
 			},
@@ -48,7 +46,7 @@ func TestAccIBMPhaClusterNodesBasic(t *testing.T) {
 
 func TestAccIBMPhaClusterNodesAllArgs(t *testing.T) {
 	var conf powerhaautomationservicev1.ClusterNodeResponse
-	phaInstanceID := "2cfb7a06-623b-4eb9-a9ac-daa03dc0b5a6"
+	instanceID := fmt.Sprintf("tf_instance_id_%d", acctest.RandIntRange(10, 100))
 	acceptLanguage := fmt.Sprintf("tf_accept_language_%d", acctest.RandIntRange(10, 100))
 	ifNoneMatch := fmt.Sprintf("tf_if_none_match_%d", acctest.RandIntRange(10, 100))
 
@@ -57,42 +55,42 @@ func TestAccIBMPhaClusterNodesAllArgs(t *testing.T) {
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIBMPhaClusterNodesConfig(phaInstanceID, acceptLanguage, ifNoneMatch),
+				Config: testAccCheckIBMPhaClusterNodesConfig(instanceID, acceptLanguage, ifNoneMatch),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMPhaClusterNodesExists("ibm_pha_cluster_nodes.pha_cluster_nodes_instance", conf),
-					resource.TestCheckResourceAttr("ibm_pha_cluster_nodes.pha_cluster_nodes_instance", "pha_instance_id", phaInstanceID),
+					resource.TestCheckResourceAttr("ibm_pha_cluster_nodes.pha_cluster_nodes_instance", "instance_id", instanceID),
 					resource.TestCheckResourceAttr("ibm_pha_cluster_nodes.pha_cluster_nodes_instance", "accept_language", acceptLanguage),
 					resource.TestCheckResourceAttr("ibm_pha_cluster_nodes.pha_cluster_nodes_instance", "if_none_match", ifNoneMatch),
 				),
 			},
-			// resource.TestStep{
-			// 	ResourceName:      "ibm_pha_cluster_nodes.pha_cluster_nodes_instance",
-			// 	ImportState:       true,
-			// 	ImportStateVerify: true,
-			// },
+			resource.TestStep{
+				ResourceName:      "ibm_pha_cluster_nodes.pha_cluster_nodes_instance",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
 		},
 	})
 }
 
-func testAccCheckIBMPhaClusterNodesConfigBasic(phaInstanceID string) string {
+func testAccCheckIBMPhaClusterNodesConfigBasic(instanceID string) string {
 	return fmt.Sprintf(`
 		resource "ibm_pha_cluster_nodes" "pha_cluster_nodes_instance" {
-			pha_instance_id = "%s"
-			primary_cluster_nodes = ["049a8b09-asdfsfvs-acda-92946f3f4ab5"]
+			instance_id = "%s"
+			primary_cluster_nodes = ["049a8b09-a1ff-4434-acda-92946f3f4ab5"]
 		}
-	`, phaInstanceID)
+	`, instanceID)
 }
 
-func testAccCheckIBMPhaClusterNodesConfig(phaInstanceID string, acceptLanguage string, ifNoneMatch string) string {
+func testAccCheckIBMPhaClusterNodesConfig(instanceID string, acceptLanguage string, ifNoneMatch string) string {
 	return fmt.Sprintf(`
 
 		resource "ibm_pha_cluster_nodes" "pha_cluster_nodes_instance" {
-			pha_instance_id = "%s"
+			instance_id = "%s"
 			primary_cluster_nodes = ["9cdd4756-da0f-449e-a1a6-bb24291bea16"]
 			accept_language = "%s"
 			if_none_match = "%s"
 		}
-	`, phaInstanceID, acceptLanguage, ifNoneMatch)
+	`, instanceID, acceptLanguage, ifNoneMatch)
 }
 
 func testAccCheckIBMPhaClusterNodesExists(n string, obj powerhaautomationservicev1.ClusterNodeResponse) resource.TestCheckFunc {

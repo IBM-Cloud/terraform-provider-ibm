@@ -11,14 +11,15 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/drautomationservice"
 	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/stretchr/testify/assert"
 
-	"github.com/IBM/dra-go-sdk/drautomationservicev1"
+	// "github.com/IBM/dra-go-sdk/drautomationservicev1"
+	"github.ibm.com/DRAutomation/dra-go-sdk/drautomationservicev1"
 )
 
 func TestAccIBMPdrGetEventDataSourceBasic(t *testing.T) {
@@ -47,8 +48,9 @@ func TestAccIBMPdrGetEventDataSourceBasic(t *testing.T) {
 func testAccCheckIBMPdrGetEventDataSourceConfigBasic() string {
 	return fmt.Sprintf(`
 		data "ibm_pdr_get_event" "pdr_get_event_instance" {
-			instance_id = "xxxx2ec4-xxxx-4f84-xxxx-c2aa834dd4ed"
-			event_id = "ac645fe5-fba1-4cb3-952e-e1b09fa0df26-1765348121005392848"
+			instance_id = "123456d3-1122-3344-b67d-4389b44b7bf9"
+			event_id = "00116b2a-9326-4024-839e-fb5364b76898"
+			Accept-Language = "Accept-Language"
 		}
 	`)
 }

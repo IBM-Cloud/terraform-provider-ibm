@@ -11,13 +11,15 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 
-	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/drautomationservice"
-	"github.com/IBM/dra-go-sdk/drautomationservicev1"
 	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/stretchr/testify/assert"
+
+	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
+	// "github.com/IBM/dra-go-sdk/drautomationservicev1"
+	"github.ibm.com/DRAutomation/dra-go-sdk/drautomationservicev1"
 )
 
 func TestAccIBMPdrGetPowervsWorkspaceDataSourceBasic(t *testing.T) {
@@ -42,8 +44,8 @@ func TestAccIBMPdrGetPowervsWorkspaceDataSourceBasic(t *testing.T) {
 func testAccCheckIBMPdrGetPowervsWorkspaceDataSourceConfigBasic() string {
 	return fmt.Sprintf(`
 		data "ibm_pdr_get_powervs_workspace" "pdr_get_powervs_workspace_instance" {
-			instance_id = "xxxx2ec4-xxxx-4f84-xxxx-c2aa834dd4ed"
-			location_id = "syd04"
+			instance_id = "123456d3-1122-3344-b67d-4389b44b7bf9"
+			location_id = "location_id"
 		}
 	`)
 }

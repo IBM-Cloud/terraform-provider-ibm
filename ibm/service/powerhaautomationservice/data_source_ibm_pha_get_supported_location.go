@@ -2,8 +2,8 @@
 // Licensed under the Mozilla Public License v2.0
 
 /*
- * IBM OpenAPI Terraform Generator Version: 3.108.0-56772134-20251111-102802
- */
+ * IBM OpenAPI Terraform Generator Version: 3.113.1-d76630af-20260320-135953
+*/
 
 package powerhaautomationservice
 
@@ -11,7 +11,7 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"time"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -26,20 +26,20 @@ func DataSourceIBMPhaGetSupportedLocation() *schema.Resource {
 		ReadContext: dataSourceIBMPhaGetSupportedLocationRead,
 
 		Schema: map[string]*schema.Schema{
-			"pha_instance_id": &schema.Schema{
+			"instance_id": &schema.Schema{
 				Type:        schema.TypeString,
 				Required:    true,
-				Description: "instance id of instance to provision.",
+				Description: "Unique identifier of the provisioned instance.",
 			},
 			"if_none_match": &schema.Schema{
 				Type:        schema.TypeString,
 				Optional:    true,
 				Description: "ETag for conditional requests (optional).",
 			},
-			"dr_locations": &schema.Schema{
+			"locations": &schema.Schema{
 				Type:        schema.TypeList,
 				Computed:    true,
-				Description: "Array of supported DR locations.",
+				Description: "Array of PowerVS locations where PowerHA service is supported.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"id": &schema.Schema{
@@ -69,7 +69,7 @@ func dataSourceIBMPhaGetSupportedLocationRead(context context.Context, d *schema
 
 	getSupportedLocationOptions := &powerhaautomationservicev1.GetSupportedLocationOptions{}
 
-	getSupportedLocationOptions.SetPhaInstanceID(d.Get("pha_instance_id").(string))
+	getSupportedLocationOptions.SetPhaInstanceID(d.Get("instance_id").(string))
 	if _, ok := d.GetOk("if_none_match"); ok {
 		getSupportedLocationOptions.SetIfNoneMatch(d.Get("if_none_match").(string))
 	}
@@ -87,24 +87,20 @@ func dataSourceIBMPhaGetSupportedLocationRead(context context.Context, d *schema
 		tfErr := flex.TerraformErrorf(err, detailedMsg, "ibm_pha_get_supported_location", "create")
 		log.Printf("[ERROR] %s", detailedMsg)
 		return tfErr.GetDiag()
-
-		// tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetSupportedLocationWithContext failed: %s", err.Error()), "(Data) ibm_pha_get_supported_location", "read")
-		// log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
-		// return tfErr.GetDiag()
 	}
 
 	d.SetId(dataSourceIBMPhaGetSupportedLocationID(d))
 
-	drLocations := []map[string]interface{}{}
-	for _, drLocationsItem := range phaSupportedLocationsResponse.DrLocations {
-		drLocationsItemMap, err := DataSourceIBMPhaGetSupportedLocationPhaLocationToMap(&drLocationsItem) // #nosec G601
+	locations := []map[string]interface{}{}
+	for _, locationsItem := range phaSupportedLocationsResponse.Locations {
+		locationsItemMap, err := DataSourceIBMPhaGetSupportedLocationPhaLocationToMap(&locationsItem) // #nosec G601
 		if err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_pha_get_supported_location", "read", "dr_locations-to-map").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_pha_get_supported_location", "read", "locations-to-map").GetDiag()
 		}
-		drLocations = append(drLocations, drLocationsItemMap)
+		locations = append(locations, locationsItemMap)
 	}
-	if err = d.Set("dr_locations", drLocations); err != nil {
-		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting dr_locations: %s", err), "(Data) ibm_pha_get_supported_location", "read", "set-dr_locations").GetDiag()
+	if err = d.Set("locations", locations); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting locations: %s", err), "(Data) ibm_pha_get_supported_location", "read", "set-locations").GetDiag()
 	}
 
 	return nil
@@ -112,7 +108,11 @@ func dataSourceIBMPhaGetSupportedLocationRead(context context.Context, d *schema
 
 // dataSourceIBMPhaGetSupportedLocationID returns a reasonable ID for the list.
 func dataSourceIBMPhaGetSupportedLocationID(d *schema.ResourceData) string {
-	return time.Now().UTC().String()
+	parts := strings.Split(d.Get("instance_id").(string), ":")
+	if len(parts) > 7 {
+		return parts[7]
+	}
+	return d.Get("instance_id").(string)
 }
 
 func DataSourceIBMPhaGetSupportedLocationPhaLocationToMap(model *powerhaautomationservicev1.PhaLocation) (map[string]interface{}, error) {

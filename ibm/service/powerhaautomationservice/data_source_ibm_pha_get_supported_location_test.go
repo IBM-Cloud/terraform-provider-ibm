@@ -2,8 +2,8 @@
 // Licensed under the Mozilla Public License v2.0
 
 /*
- * IBM OpenAPI Terraform Generator Version: 3.108.0-56772134-20251111-102802
- */
+ * IBM OpenAPI Terraform Generator Version: 3.113.1-d76630af-20260320-135953
+*/
 
 package powerhaautomationservice_test
 
@@ -11,13 +11,13 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 
-	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/powerhaautomationservice"
 	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/stretchr/testify/assert"
 	"github.ibm.com/DRAutomation/dra-go-sdk/powerhaautomationservicev1"
+	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 )
 
 func TestAccIBMPhaGetSupportedLocationDataSourceBasic(t *testing.T) {
@@ -29,8 +29,8 @@ func TestAccIBMPhaGetSupportedLocationDataSourceBasic(t *testing.T) {
 				Config: testAccCheckIBMPhaGetSupportedLocationDataSourceConfigBasic(),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_pha_get_supported_location.pha_get_supported_location_instance", "id"),
-					resource.TestCheckResourceAttrSet("data.ibm_pha_get_supported_location.pha_get_supported_location_instance", "pha_instance_id"),
-					resource.TestCheckResourceAttrSet("data.ibm_pha_get_supported_location.pha_get_supported_location_instance", "dr_locations.#"),
+					resource.TestCheckResourceAttrSet("data.ibm_pha_get_supported_location.pha_get_supported_location_instance", "instance_id"),
+					resource.TestCheckResourceAttrSet("data.ibm_pha_get_supported_location.pha_get_supported_location_instance", "locations.#"),
 				),
 			},
 		},
@@ -40,7 +40,8 @@ func TestAccIBMPhaGetSupportedLocationDataSourceBasic(t *testing.T) {
 func testAccCheckIBMPhaGetSupportedLocationDataSourceConfigBasic() string {
 	return fmt.Sprintf(`
 		data "ibm_pha_get_supported_location" "pha_get_supported_location_instance" {
-			pha_instance_id = "8ce2a099-a463-479a-9a1d-eedc19287a62"
+			instance_id = "8eefautr-4c02-0009-0086-8bd4d8cf61b6"
+			If-None-Match = "abcdef"
 		}
 	`)
 }

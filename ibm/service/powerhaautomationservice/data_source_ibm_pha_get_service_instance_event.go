@@ -2,7 +2,7 @@
 // Licensed under the Mozilla Public License v2.0
 
 /*
- * IBM OpenAPI Terraform Generator Version: 3.108.0-56772134-20251111-102802
+ * IBM OpenAPI Terraform Generator Version: 3.113.1-d76630af-20260320-135953
  */
 
 package powerhaautomationservice
@@ -11,7 +11,7 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"time"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -27,10 +27,10 @@ func DataSourceIBMPhaGetServiceInstanceEvent() *schema.Resource {
 		ReadContext: dataSourceIBMPhaGetServiceInstanceEventRead,
 
 		Schema: map[string]*schema.Schema{
-			"pha_instance_id": &schema.Schema{
+			"instance_id": &schema.Schema{
 				Type:        schema.TypeString,
 				Required:    true,
-				Description: "instance id of instance to provision.",
+				Description: "Unique identifier of the provisioned instance.",
 			},
 			"event_id": &schema.Schema{
 				Type:        schema.TypeString,
@@ -136,7 +136,7 @@ func dataSourceIBMPhaGetServiceInstanceEventRead(context context.Context, d *sch
 
 	getServiceInstanceEventOptions := &powerhaautomationservicev1.GetServiceInstanceEventOptions{}
 
-	getServiceInstanceEventOptions.SetPhaInstanceID(d.Get("pha_instance_id").(string))
+	getServiceInstanceEventOptions.SetPhaInstanceID(d.Get("instance_id").(string))
 	getServiceInstanceEventOptions.SetEventID(d.Get("event_id").(string))
 	if _, ok := d.GetOk("accept_language"); ok {
 		getServiceInstanceEventOptions.SetAcceptLanguage(d.Get("accept_language").(string))
@@ -158,10 +158,6 @@ func dataSourceIBMPhaGetServiceInstanceEventRead(context context.Context, d *sch
 		tfErr := flex.TerraformErrorf(err, detailedMsg, "ibm_pha_get_service_instance_event", "create")
 		log.Printf("[ERROR] %s", detailedMsg)
 		return tfErr.GetDiag()
-
-		// tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetServiceInstanceEventWithContext failed: %s", err.Error()), "(Data) ibm_pha_get_service_instance_event", "read")
-		// log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
-		// return tfErr.GetDiag()
 	}
 
 	d.SetId(dataSourceIBMPhaGetServiceInstanceEventID(d))
@@ -229,7 +225,11 @@ func dataSourceIBMPhaGetServiceInstanceEventRead(context context.Context, d *sch
 
 // dataSourceIBMPhaGetServiceInstanceEventID returns a reasonable ID for the list.
 func dataSourceIBMPhaGetServiceInstanceEventID(d *schema.ResourceData) string {
-	return time.Now().UTC().String()
+	parts := strings.Split(d.Get("instance_id").(string), ":")
+	if len(parts) > 7 {
+		return parts[7]
+	}
+	return d.Get("instance_id").(string)
 }
 
 func DataSourceIBMPhaGetServiceInstanceEventPhaEventUserToMap(model *powerhaautomationservicev1.PhaEventUser) (map[string]interface{}, error) {

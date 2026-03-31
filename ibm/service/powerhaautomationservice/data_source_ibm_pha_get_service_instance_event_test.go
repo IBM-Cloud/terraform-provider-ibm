@@ -2,7 +2,7 @@
 // Licensed under the Mozilla Public License v2.0
 
 /*
- * IBM OpenAPI Terraform Generator Version: 3.108.0-56772134-20251111-102802
+ * IBM OpenAPI Terraform Generator Version: 3.113.1-d76630af-20260320-135953
 */
 
 package powerhaautomationservice_test
@@ -11,7 +11,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/powerhaautomationservice"
 	"github.com/IBM/go-sdk-core/v5/core"
@@ -29,7 +29,7 @@ func TestAccIBMPhaGetServiceInstanceEventDataSourceBasic(t *testing.T) {
 				Config: testAccCheckIBMPhaGetServiceInstanceEventDataSourceConfigBasic(),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_pha_get_service_instance_event.pha_get_service_instance_event_instance", "id"),
-					resource.TestCheckResourceAttrSet("data.ibm_pha_get_service_instance_event.pha_get_service_instance_event_instance", "pha_instance_id"),
+					resource.TestCheckResourceAttrSet("data.ibm_pha_get_service_instance_event.pha_get_service_instance_event_instance", "instance_id"),
 					resource.TestCheckResourceAttrSet("data.ibm_pha_get_service_instance_event.pha_get_service_instance_event_instance", "event_id"),
 					resource.TestCheckResourceAttrSet("data.ibm_pha_get_service_instance_event.pha_get_service_instance_event_instance", "action"),
 					resource.TestCheckResourceAttrSet("data.ibm_pha_get_service_instance_event.pha_get_service_instance_event_instance", "level"),
@@ -46,8 +46,10 @@ func TestAccIBMPhaGetServiceInstanceEventDataSourceBasic(t *testing.T) {
 func testAccCheckIBMPhaGetServiceInstanceEventDataSourceConfigBasic() string {
 	return fmt.Sprintf(`
 		data "ibm_pha_get_service_instance_event" "pha_get_service_instance_event_instance" {
-			pha_instance_id = "8ce2a099-a463-479a-9a1d-eedc19287a62"
-			event_id = "8ce2a099-a463-479a-9a1d-eedc19287a62-1772012788623714351"
+			instance_id = "8eefautr-4c02-0009-0086-8bd4d8cf61b6"
+			event_id = "00116b2a-9326-4024-839e-fb5364b76898"
+			Accept-Language = "en-US"
+			If-None-Match = "abcdef"
 		}
 	`)
 }

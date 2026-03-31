@@ -11,14 +11,16 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 
-	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/drautomationservice"
-	. "github.com/IBM-Cloud/terraform-provider-ibm/ibm/unittest"
-	"github.com/IBM/dra-go-sdk/drautomationservicev1"
 	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/stretchr/testify/assert"
+
+	// "github.com/IBM/dra-go-sdk/drautomationservicev1"
+	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
+	. "github.com/IBM-Cloud/terraform-provider-ibm/ibm/unittest"
+	"github.ibm.com/DRAutomation/dra-go-sdk/drautomationservicev1"
 )
 
 func TestAccIBMPdrGetEventsDataSourceBasic(t *testing.T) {
@@ -41,11 +43,11 @@ func TestAccIBMPdrGetEventsDataSourceBasic(t *testing.T) {
 func testAccCheckIBMPdrGetEventsDataSourceConfigBasic() string {
 	return fmt.Sprintf(`
 		data "ibm_pdr_get_events" "pdr_get_events_instance" {
-			instance_id = "xxxx2ec4-xxxx-4f84-xxxx-c2aa834dd4ed"
+			instance_id = "123456d3-1122-3344-b67d-4389b44b7bf9"
 			time = "2025-06-19T23:59:59Z"
 			from_time = "2025-06-19T00:00:00Z"
 			to_time = "2025-06-19T23:59:59Z"
-			accept_language = "it"
+			Accept-Language = "Accept-Language"
 		}
 	`)
 }

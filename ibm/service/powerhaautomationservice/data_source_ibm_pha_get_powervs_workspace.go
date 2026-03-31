@@ -2,7 +2,7 @@
 // Licensed under the Mozilla Public License v2.0
 
 /*
- * IBM OpenAPI Terraform Generator Version: 3.108.0-56772134-20251111-102802
+ * IBM OpenAPI Terraform Generator Version: 3.113.1-d76630af-20260320-135953
  */
 
 package powerhaautomationservice
@@ -11,7 +11,7 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"time"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -26,10 +26,10 @@ func DataSourceIBMPhaGetPowervsWorkspace() *schema.Resource {
 		ReadContext: dataSourceIBMPhaGetPowervsWorkspaceRead,
 
 		Schema: map[string]*schema.Schema{
-			"pha_instance_id": &schema.Schema{
+			"instance_id": &schema.Schema{
 				Type:        schema.TypeString,
 				Required:    true,
-				Description: "instance id of instance to provision.",
+				Description: "Unique identifier of the provisioned instance.",
 			},
 			"location_id": &schema.Schema{
 				Type:        schema.TypeString,
@@ -79,7 +79,7 @@ func dataSourceIBMPhaGetPowervsWorkspaceRead(context context.Context, d *schema.
 
 	getPowervsWorkspaceOptions := &powerhaautomationservicev1.GetPowervsWorkspaceOptions{}
 
-	getPowervsWorkspaceOptions.SetPhaInstanceID(d.Get("pha_instance_id").(string))
+	getPowervsWorkspaceOptions.SetPhaInstanceID(d.Get("instance_id").(string))
 	getPowervsWorkspaceOptions.SetLocationID(d.Get("location_id").(string))
 	if _, ok := d.GetOk("accept_language"); ok {
 		getPowervsWorkspaceOptions.SetAcceptLanguage(d.Get("accept_language").(string))
@@ -101,10 +101,6 @@ func dataSourceIBMPhaGetPowervsWorkspaceRead(context context.Context, d *schema.
 		tfErr := flex.TerraformErrorf(err, detailedMsg, "ibm_pha_get_powervs_workspace", "create")
 		log.Printf("[ERROR] %s", detailedMsg)
 		return tfErr.GetDiag()
-
-		// tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetPowervsWorkspaceWithContext failed: %s", err.Error()), "(Data) ibm_pha_get_powervs_workspace", "read")
-		// log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
-		// return tfErr.GetDiag()
 	}
 
 	d.SetId(dataSourceIBMPhaGetPowervsWorkspaceID(d))
@@ -126,7 +122,11 @@ func dataSourceIBMPhaGetPowervsWorkspaceRead(context context.Context, d *schema.
 
 // dataSourceIBMPhaGetPowervsWorkspaceID returns a reasonable ID for the list.
 func dataSourceIBMPhaGetPowervsWorkspaceID(d *schema.ResourceData) string {
-	return time.Now().UTC().String()
+	parts := strings.Split(d.Get("instance_id").(string), ":")
+	if len(parts) > 7 {
+		return parts[7]
+	}
+	return d.Get("instance_id").(string)
 }
 
 func DataSourceIBMPhaGetPowervsWorkspacePhaWorkspaceSummaryToMap(model *powerhaautomationservicev1.PhaWorkspaceSummary) (map[string]interface{}, error) {

@@ -19,7 +19,8 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 
-	"github.com/IBM/dra-go-sdk/drautomationservicev1"
+	// "github.com/IBM/dra-go-sdk/drautomationservicev1"
+	"github.ibm.com/DRAutomation/dra-go-sdk/drautomationservicev1"
 )
 
 func DataSourceIBMPdrGetEvents() *schema.Resource {
@@ -156,9 +157,6 @@ func dataSourceIBMPdrGetEventsRead(context context.Context, d *schema.ResourceDa
 	listEventsOptions := &drautomationservicev1.ListEventsOptions{}
 
 	listEventsOptions.SetInstanceID(d.Get("instance_id").(string))
-	if _, ok := d.GetOk("time"); ok {
-		listEventsOptions.SetTime(d.Get("time").(string))
-	}
 	if _, ok := d.GetOk("from_time"); ok {
 		listEventsOptions.SetFromTime(d.Get("from_time").(string))
 	}
@@ -185,15 +183,15 @@ func dataSourceIBMPdrGetEventsRead(context context.Context, d *schema.ResourceDa
 
 	d.SetId(dataSourceIBMPdrGetEventsID(d))
 
-	events := []map[string]interface{}{}
+	event := []map[string]interface{}{}
 	for _, eventItem := range eventCollection.Events {
 		eventItemMap, err := DataSourceIBMPdrGetEventsEventToMap(&eventItem) // #nosec G601
 		if err != nil {
 			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_pdr_get_events", "read", "event-to-map").GetDiag()
 		}
-		events = append(events, eventItemMap)
+		event = append(event, eventItemMap)
 	}
-	if err = d.Set("events", events); err != nil {
+	if err = d.Set("events", event); err != nil {
 		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting event: %s", err), "(Data) ibm_pdr_get_events", "read", "set-event").GetDiag()
 	}
 

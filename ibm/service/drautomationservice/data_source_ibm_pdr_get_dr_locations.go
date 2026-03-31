@@ -19,7 +19,8 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 
-	"github.com/IBM/dra-go-sdk/drautomationservicev1"
+	// "github.com/IBM/dra-go-sdk/drautomationservicev1"
+	"github.ibm.com/DRAutomation/dra-go-sdk/drautomationservicev1"
 )
 
 func DataSourceIBMPdrGetDrLocations() *schema.Resource {

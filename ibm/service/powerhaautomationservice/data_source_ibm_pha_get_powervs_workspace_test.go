@@ -2,7 +2,7 @@
 // Licensed under the Mozilla Public License v2.0
 
 /*
- * IBM OpenAPI Terraform Generator Version: 3.108.0-56772134-20251111-102802
+ * IBM OpenAPI Terraform Generator Version: 3.113.1-d76630af-20260320-135953
  */
 
 package powerhaautomationservice_test
@@ -11,7 +11,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/powerhaautomationservice"
@@ -41,8 +41,10 @@ func TestAccIBMPhaGetPowervsWorkspaceDataSourceBasic(t *testing.T) {
 func testAccCheckIBMPhaGetPowervsWorkspaceDataSourceConfigBasic() string {
 	return fmt.Sprintf(`
 		data "ibm_pha_get_powervs_workspace" "pha_get_powervs_workspace_instance" {
-			pha_instance_id = "8ce2a099-a463-479a-9a1d-eedc19287a62"
+			instance_id = "8eefautr-4c02-0009-0086-8bd4d8cf61b6"
 			location_id = "us-south"
+			Accept-Language = "en-US"
+			If-None-Match = "abcdef"
 		}
 	`)
 }

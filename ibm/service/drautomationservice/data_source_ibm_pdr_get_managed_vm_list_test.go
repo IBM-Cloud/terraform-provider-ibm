@@ -11,14 +11,15 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/drautomationservice"
 	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/stretchr/testify/assert"
 
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
-	"github.com/IBM/dra-go-sdk/drautomationservicev1"
+	// "github.com/IBM/dra-go-sdk/drautomationservicev1"m
+	"github.ibm.com/DRAutomation/dra-go-sdk/drautomationservicev1"
 )
 
 func TestAccIBMPdrGetManagedVMListDataSourceBasic(t *testing.T) {
@@ -40,7 +41,8 @@ func TestAccIBMPdrGetManagedVMListDataSourceBasic(t *testing.T) {
 func testAccCheckIBMPdrGetManagedVMListDataSourceConfigBasic() string {
 	return fmt.Sprintf(`
 		data "ibm_pdr_get_managed_vm_list" "pdr_get_managed_vm_list_instance" {
-			instance_id = "xxxx2ec4-xxxx-4f84-xxxx-c2aa834dd4ed"
+			instance_id = "123456d3-1122-3344-b67d-4389b44b7bf9"
+			Accept-Language = "Accept-Language"
 		}
 	`)
 }

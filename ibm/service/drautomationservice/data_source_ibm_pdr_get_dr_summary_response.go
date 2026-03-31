@@ -18,7 +18,8 @@ import (
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
-	"github.com/IBM/dra-go-sdk/drautomationservicev1"
+	// "github.com/IBM/dra-go-sdk/drautomationservicev1"
+	"github.ibm.com/DRAutomation/dra-go-sdk/drautomationservicev1"
 )
 
 func DataSourceIBMPdrGetDrSummaryResponse() *schema.Resource {
@@ -63,6 +64,11 @@ func DataSourceIBMPdrGetDrSummaryResponse() *schema.Resource {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "The deployment time of primary orchestrator VM.",
+						},
+						"api_key": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "api key.",
 						},
 						"last_updated_standby_orchestrator_deployment_time": &schema.Schema{
 							Type:        schema.TypeString,
@@ -173,12 +179,6 @@ func DataSourceIBMPdrGetDrSummaryResponse() *schema.Resource {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "The name of the VPC.",
-						},
-						"api_key": &schema.Schema{
-							Type:        schema.TypeString,
-							Computed:    true,
-							Sensitive:   true,
-							Description: "api key.",
 						},
 						"standby_ssh_key_name": &schema.Schema{
 							Type:        schema.TypeString,
