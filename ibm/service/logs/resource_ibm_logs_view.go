@@ -51,6 +51,7 @@ func ResourceIbmLogsView() *schema.Resource {
 						"syntax_type": &schema.Schema{
 							Type:         schema.TypeString,
 							Optional:     true,
+							Computed:     true,
 							ValidateFunc: validate.InvokeValidator("ibm_logs_view", "syntax_type"),
 							Description:  "Syntax type for the query used in views.",
 						},
