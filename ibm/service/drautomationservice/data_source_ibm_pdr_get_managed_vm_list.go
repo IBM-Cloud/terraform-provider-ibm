@@ -22,9 +22,9 @@ import (
 	"github.com/IBM/dra-go-sdk/drautomationservicev1"
 )
 
-func DataSourceIBMPdrGetManagedVMList() *schema.Resource {
+func dataSourceIBMPdrManagedVMListCommon() *schema.Resource {
 	return &schema.Resource{
-		ReadContext: dataSourceIBMPdrGetManagedVMListRead,
+		ReadContext: dataSourceIBMPdrManagedVMListRead,
 
 		Schema: map[string]*schema.Schema{
 			"instance_id": &schema.Schema{
@@ -58,10 +58,20 @@ func DataSourceIBMPdrGetManagedVMList() *schema.Resource {
 	}
 }
 
-func dataSourceIBMPdrGetManagedVMListRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func DataSourceIBMPdrManagedVMList() *schema.Resource {
+	return dataSourceIBMPdrManagedVMListCommon()
+}
+
+func DataSourceIBMPdrGetManagedVMList() *schema.Resource {
+	res := dataSourceIBMPdrManagedVMListCommon()
+	res.DeprecationMessage = "This data source is deprecated. Use `ibm_pdr_managed_vm_list` instead."
+	return res
+}
+
+func dataSourceIBMPdrManagedVMListRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	drAutomationServiceClient, err := meta.(conns.ClientSession).DrAutomationServiceV1()
 	if err != nil {
-		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_pdr_get_managed_vm_list", "read", "initialize-client")
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_pdr_managed_vm_list", "read", "initialize-client")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
@@ -83,7 +93,7 @@ func dataSourceIBMPdrGetManagedVMListRead(context context.Context, d *schema.Res
 				err.Error(), response.StatusCode, response.Result,
 			)
 		}
-		tfErr := flex.TerraformErrorf(err, detailedMsg, "(Data) ibm_pdr_get_managed_vm_list", "read")
+		tfErr := flex.TerraformErrorf(err, detailedMsg, "(Data) ibm_pdr_managed_vm_list", "read")
 		log.Printf("[ERROR] %s", detailedMsg)
 		return tfErr.GetDiag()
 	}
@@ -128,7 +138,7 @@ func dataSourceIBMPdrGetManagedVMListRead(context context.Context, d *schema.Res
 	}
 
 	if err = d.Set("managed_vm_list", list); err != nil {
-		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting managed_vm_list: %s", err), "(Data) ibm_pdr_get_managed_vm_list", "read", "set-managed_vm_list").GetDiag()
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting managed_vm_list: %s", err), "(Data) ibm_pdr_managed_vm_list", "read", "set-managed_vm_list").GetDiag()
 	}
 
 	return nil

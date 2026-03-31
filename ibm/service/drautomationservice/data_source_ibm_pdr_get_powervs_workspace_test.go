@@ -20,28 +20,28 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestAccIBMPdrGetPowervsWorkspaceDataSourceBasic(t *testing.T) {
+func TestAccIBMPdrPowervsWorkspaceDataSourceBasic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheck(t) },
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIBMPdrGetPowervsWorkspaceDataSourceConfigBasic(),
+				Config: testAccCheckIBMPdrPowervsWorkspaceDataSourceConfigBasic(),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet("data.ibm_pdr_get_powervs_workspace.pdr_get_powervs_workspace_instance", "id"),
-					resource.TestCheckResourceAttrSet("data.ibm_pdr_get_powervs_workspace.pdr_get_powervs_workspace_instance", "instance_id"),
-					resource.TestCheckResourceAttrSet("data.ibm_pdr_get_powervs_workspace.pdr_get_powervs_workspace_instance", "location_id"),
-					resource.TestCheckResourceAttrSet("data.ibm_pdr_get_powervs_workspace.pdr_get_powervs_workspace_instance", "dr_standby_workspaces.#"),
-					resource.TestCheckResourceAttrSet("data.ibm_pdr_get_powervs_workspace.pdr_get_powervs_workspace_instance", "dr_workspaces.#"),
+					resource.TestCheckResourceAttrSet("data.ibm_pdr_powervs_workspace.pdr_powervs_workspace_instance", "id"),
+					resource.TestCheckResourceAttrSet("data.ibm_pdr_powervs_workspace.pdr_powervs_workspace_instance", "instance_id"),
+					resource.TestCheckResourceAttrSet("data.ibm_pdr_powervs_workspace.pdr_powervs_workspace_instance", "location_id"),
+					resource.TestCheckResourceAttrSet("data.ibm_pdr_powervs_workspace.pdr_powervs_workspace_instance", "dr_standby_workspaces.#"),
+					resource.TestCheckResourceAttrSet("data.ibm_pdr_powervs_workspace.pdr_powervs_workspace_instance", "dr_workspaces.#"),
 				),
 			},
 		},
 	})
 }
 
-func testAccCheckIBMPdrGetPowervsWorkspaceDataSourceConfigBasic() string {
+func testAccCheckIBMPdrPowervsWorkspaceDataSourceConfigBasic() string {
 	return fmt.Sprintf(`
-		data "ibm_pdr_get_powervs_workspace" "pdr_get_powervs_workspace_instance" {
+		data "ibm_pdr_powervs_workspace" "pdr_powervs_workspace_instance" {
 			instance_id = "xxxx2ec4-xxxx-4f84-xxxx-c2aa834dd4ed"
 			location_id = "syd04"
 		}

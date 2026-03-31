@@ -1,9 +1,9 @@
-// Copyright IBM Corp. 2026 All Rights Reserved.
-// Licensed under the Mozilla Public License v2.0
+// // Copyright IBM Corp. 2026 All Rights Reserved.
+// // Licensed under the Mozilla Public License v2.0
 
-/*
- * IBM OpenAPI Terraform Generator Version: 3.108.0-56772134-20251111-102802
- */
+// /*
+//  * IBM OpenAPI Terraform Generator Version: 3.108.0-56772134-20251111-102802
+//  */
 
 package powerhaautomationservice_test
 

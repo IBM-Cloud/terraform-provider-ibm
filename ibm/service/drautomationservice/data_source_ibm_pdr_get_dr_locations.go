@@ -22,9 +22,9 @@ import (
 	"github.com/IBM/dra-go-sdk/drautomationservicev1"
 )
 
-func DataSourceIBMPdrGetDrLocations() *schema.Resource {
+func dataSourceIBMPdrDrLocationsCommon() *schema.Resource {
 	return &schema.Resource{
-		ReadContext: dataSourceIBMPdrGetDrLocationsRead,
+		ReadContext: dataSourceIBMPdrDrLocationsRead,
 
 		Schema: map[string]*schema.Schema{
 			"instance_id": &schema.Schema{
@@ -60,10 +60,22 @@ func DataSourceIBMPdrGetDrLocations() *schema.Resource {
 	}
 }
 
-func dataSourceIBMPdrGetDrLocationsRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func DataSourceIBMPdrDrLocations() *schema.Resource {
+	return dataSourceIBMPdrDrLocationsCommon()
+}
+
+func DataSourceIBMPdrGetDrLocations() *schema.Resource {
+	res := dataSourceIBMPdrDrLocationsCommon()
+
+	res.DeprecationMessage = "This data source is deprecated. Use `ibm_pdr_dr_locations` instead."
+
+	return res
+}
+
+func dataSourceIBMPdrDrLocationsRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	drAutomationServiceClient, err := meta.(conns.ClientSession).DrAutomationServiceV1()
 	if err != nil {
-		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_pdr_get_dr_locations", "read", "initialize-client")
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_pdr_dr_locations", "read", "initialize-client")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
@@ -86,7 +98,7 @@ func dataSourceIBMPdrGetDrLocationsRead(context context.Context, d *schema.Resou
 				err.Error(), response.StatusCode, response.Result,
 			)
 		}
-		tfErr := flex.TerraformErrorf(err, detailedMsg, "(Data) ibm_pdr_get_dr_locations", "read")
+		tfErr := flex.TerraformErrorf(err, detailedMsg, "(Data) ibm_pdr_dr_locations", "read")
 		log.Printf("[ERROR] %s", detailedMsg)
 		return tfErr.GetDiag()
 	}
@@ -97,13 +109,13 @@ func dataSourceIBMPdrGetDrLocationsRead(context context.Context, d *schema.Resou
 	for _, drLocationsItem := range getDrLocationsResponse.DrLocations {
 		drLocationsItemMap, err := DataSourceIBMPdrGetDrLocationsDrLocationToMap(&drLocationsItem) // #nosec G601
 		if err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_pdr_get_dr_locations", "read", "dr_locations-to-map").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_pdr_dr_locations", "read", "dr_locations-to-map").GetDiag()
 		}
 		drLocations = append(drLocations, drLocationsItemMap)
 	}
 
 	if err = d.Set("dr_locations", drLocations); err != nil {
-		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting dr_locations: %s", err), "(Data) ibm_pdr_get_dr_locations", "read", "set-dr_locations").GetDiag()
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting dr_locations: %s", err), "(Data) ibm_pdr_dr_locations", "read", "set-dr_locations").GetDiag()
 	}
 
 	return nil

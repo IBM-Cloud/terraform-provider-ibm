@@ -1164,6 +1164,20 @@ func Provider() *schema.Provider {
 			"ibm_logs_router_routes":  logsrouter.DataSourceIBMLogsRouterRoutes(),
 
 			// DR Automation Service
+			// Stable (no change needed)
+			"ibm_pdr_last_operation":          drautomationservice.DataSourceIBMPdrLastOperation(),
+			
+			// NEW Data Sources
+			"ibm_pdr_dr_summary_response": drautomationservice.DataSourceIBMPdrDrSummaryResponse(),
+			"ibm_pdr_powervs_workspace":  drautomationservice.DataSourceIBMPdrPowervsWorkspace(),
+			"ibm_pdr_event":              drautomationservice.DataSourceIBMPdrEvent(),
+			"ibm_pdr_events":             drautomationservice.DataSourceIBMPdrEvents(),
+			"ibm_pdr_dr_locations":       drautomationservice.DataSourceIBMPdrDrLocations(),
+			"ibm_pdr_machine_types":      drautomationservice.DataSourceIBMPdrMachineTypes(),
+			"ibm_pdr_managed_vm_list":    drautomationservice.DataSourceIBMPdrManagedVMList(),
+			"ibm_pdr_grs_location_pairs": drautomationservice.DataSourceIBMPdrGrsLocationPairs(),
+            
+			// DEPRECATED Data Sources
 			"ibm_pdr_get_dr_summary_response": drautomationservice.DataSourceIBMPdrGetDrSummaryResponse(),
 			"ibm_pdr_get_powervs_workspace":   drautomationservice.DataSourceIBMPdrGetPowervsWorkspace(),
 			"ibm_pdr_get_event":               drautomationservice.DataSourceIBMPdrGetEvent(),
@@ -1171,10 +1185,9 @@ func Provider() *schema.Provider {
 			"ibm_pdr_get_dr_locations":        drautomationservice.DataSourceIBMPdrGetDrLocations(),
 			"ibm_pdr_get_machine_types":       drautomationservice.DataSourceIBMPdrGetMachineTypes(),
 			"ibm_pdr_get_managed_vm_list":     drautomationservice.DataSourceIBMPdrGetManagedVMList(),
-			"ibm_pdr_last_operation":          drautomationservice.DataSourceIBMPdrLastOperation(),
 			"ibm_pdr_get_grs_location_pairs":  drautomationservice.DataSourceIBMPdrGetGrsLocationPairs(),
 
-			// PHA service
+			 // PHA service
 			"ibm_pha_last_operation":          powerhaautomationservice.DataSourceIBMPhaGetLastOperation(),
 			"ibm_pha_service_instance_event":  powerhaautomationservice.DataSourceIBMPhaGetServiceInstanceEvent(),
 			"ibm_pha_service_instance_events": powerhaautomationservice.DataSourceIBMPhaListServiceInstanceEvents(),
@@ -1880,9 +1893,9 @@ func Provider() *schema.Provider {
 			"ibm_pdr_validate_apikey": drautomationservice.ResourceIBMPdrValidateApikey(),
 
 			// Added for Pha Dr automation service
-			"ibm_pha_api_key":       powerhaautomationservice.ResourceIBMPhaAPIKeyValidator(),
-			"ibm_pha_cluster_nodes": powerhaautomationservice.ResourceIBMPhaClusterNodesValidator(),
-			"ibm_pha_deployment":    powerhaautomationservice.ResourceIBMPhaDeploymentValidator(),
+			"ibm_pha_api_key":       powerhaautomationservice.ResourceIBMPhaAPIKey(),
+			"ibm_pha_cluster_nodes": powerhaautomationservice.ResourceIBMPhaClusterNodes(),
+			"ibm_pha_deployment":    powerhaautomationservice.ResourceIBMPhaDeployment(),
 
 			// Platform Notifications
 			"ibm_notification_distribution_list_destination": platformnotifications.ResourceIbmNotificationDistributionListDestination(),

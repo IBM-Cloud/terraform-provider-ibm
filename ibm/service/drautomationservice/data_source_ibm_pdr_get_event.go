@@ -23,9 +23,9 @@ import (
 	"github.com/IBM/dra-go-sdk/drautomationservicev1"
 )
 
-func DataSourceIBMPdrGetEvent() *schema.Resource {
+func dataSourceIBMPdrEventCommon() *schema.Resource {
 	return &schema.Resource{
-		ReadContext: dataSourceIBMPdrGetEventRead,
+		ReadContext: dataSourceIBMPdrEventRead,
 
 		Schema: map[string]*schema.Schema{
 			"instance_id": &schema.Schema{
@@ -122,7 +122,19 @@ func DataSourceIBMPdrGetEvent() *schema.Resource {
 	}
 }
 
-func dataSourceIBMPdrGetEventRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func DataSourceIBMPdrEvent() *schema.Resource {
+	return dataSourceIBMPdrEventCommon()
+}
+
+func DataSourceIBMPdrGetEvent() *schema.Resource {
+	res := dataSourceIBMPdrEventCommon()
+
+	res.DeprecationMessage = "This data source is deprecated. Use `ibm_pdr_event` instead."
+
+	return res
+}
+
+func dataSourceIBMPdrEventRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	drAutomationServiceClient, err := meta.(conns.ClientSession).DrAutomationServiceV1()
 	if err != nil {
 		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_pdr_get_event", "read", "initialize-client")

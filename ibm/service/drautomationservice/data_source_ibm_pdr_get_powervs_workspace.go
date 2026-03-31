@@ -23,9 +23,9 @@ import (
 	"github.com/IBM/dra-go-sdk/drautomationservicev1"
 )
 
-func DataSourceIBMPdrGetPowervsWorkspace() *schema.Resource {
+func dataSourceIBMPdrPowervsWorkspaceCommon() *schema.Resource {
 	return &schema.Resource{
-		ReadContext: dataSourceIBMPdrGetPowervsWorkspaceRead,
+		ReadContext: dataSourceIBMPdrPowervsWorkspaceRead,
 
 		Schema: map[string]*schema.Schema{
 			"instance_id": &schema.Schema{
@@ -186,10 +186,20 @@ func DataSourceIBMPdrGetPowervsWorkspace() *schema.Resource {
 	}
 }
 
-func dataSourceIBMPdrGetPowervsWorkspaceRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func DataSourceIBMPdrPowervsWorkspace() *schema.Resource {
+	return dataSourceIBMPdrPowervsWorkspaceCommon()
+}
+
+func DataSourceIBMPdrGetPowervsWorkspace() *schema.Resource {
+	res := dataSourceIBMPdrPowervsWorkspaceCommon()
+	res.DeprecationMessage = "This data source is deprecated. Use `ibm_pdr_powervs_workspace` instead."
+	return res
+}
+
+func dataSourceIBMPdrPowervsWorkspaceRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	drAutomationServiceClient, err := meta.(conns.ClientSession).DrAutomationServiceV1()
 	if err != nil {
-		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_pdr_get_powervs_workspace", "read", "initialize-client")
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_pdr_powervs_workspace", "read", "initialize-client")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
@@ -209,7 +219,7 @@ func dataSourceIBMPdrGetPowervsWorkspaceRead(context context.Context, d *schema.
 				err.Error(), response.StatusCode, response.Result,
 			)
 		}
-		tfErr := flex.TerraformErrorf(err, detailedMsg, "(Data) ibm_pdr_get_powervs_workspace", "read")
+		tfErr := flex.TerraformErrorf(err, detailedMsg, "(Data) ibm_pdr_powervs_workspace", "read")
 		log.Printf("[ERROR] %s", detailedMsg)
 		return tfErr.GetDiag()
 	}
@@ -218,7 +228,7 @@ func dataSourceIBMPdrGetPowervsWorkspaceRead(context context.Context, d *schema.
 
 	if !core.IsNil(drData.DrStandbyWorkspaceDescription) {
 		if err = d.Set("dr_standby_workspace_description", flex.Stringify(drData.DrStandbyWorkspaceDescription)); err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting dr_standby_workspace_description: %s", err), "(Data) ibm_pdr_get_powervs_workspace", "read", "set-dr_standby_workspace_description").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting dr_standby_workspace_description: %s", err), "(Data) ibm_pdr_powervs_workspace", "read", "set-dr_standby_workspace_description").GetDiag()
 		}
 	}
 
@@ -226,17 +236,17 @@ func dataSourceIBMPdrGetPowervsWorkspaceRead(context context.Context, d *schema.
 	for _, drStandbyWorkspacesItem := range drData.DrStandbyWorkspaces {
 		drStandbyWorkspacesItemMap, err := DataSourceIBMPdrGetPowervsWorkspaceDrStandbyWorkspaceToMap(&drStandbyWorkspacesItem) // #nosec G601
 		if err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_pdr_get_powervs_workspace", "read", "dr_standby_workspaces-to-map").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_pdr_powervs_workspace", "read", "dr_standby_workspaces-to-map").GetDiag()
 		}
 		drStandbyWorkspaces = append(drStandbyWorkspaces, drStandbyWorkspacesItemMap)
 	}
 	if err = d.Set("dr_standby_workspaces", drStandbyWorkspaces); err != nil {
-		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting dr_standby_workspaces: %s", err), "(Data) ibm_pdr_get_powervs_workspace", "read", "set-dr_standby_workspaces").GetDiag()
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting dr_standby_workspaces: %s", err), "(Data) ibm_pdr_powervs_workspace", "read", "set-dr_standby_workspaces").GetDiag()
 	}
 
 	if !core.IsNil(drData.DrWorkspaceDescription) {
 		if err = d.Set("dr_workspace_description", flex.Stringify(drData.DrWorkspaceDescription)); err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting dr_workspace_description: %s", err), "(Data) ibm_pdr_get_powervs_workspace", "read", "set-dr_workspace_description").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting dr_workspace_description: %s", err), "(Data) ibm_pdr_powervs_workspace", "read", "set-dr_workspace_description").GetDiag()
 		}
 	}
 
@@ -244,12 +254,12 @@ func dataSourceIBMPdrGetPowervsWorkspaceRead(context context.Context, d *schema.
 	for _, drWorkspacesItem := range drData.DrWorkspaces {
 		drWorkspacesItemMap, err := DataSourceIBMPdrGetPowervsWorkspaceDrWorkspaceToMap(&drWorkspacesItem) // #nosec G601
 		if err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_pdr_get_powervs_workspace", "read", "dr_workspaces-to-map").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_pdr_powervs_workspace", "read", "dr_workspaces-to-map").GetDiag()
 		}
 		drWorkspaces = append(drWorkspaces, drWorkspacesItemMap)
 	}
 	if err = d.Set("dr_workspaces", drWorkspaces); err != nil {
-		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting dr_workspaces: %s", err), "(Data) ibm_pdr_get_powervs_workspace", "read", "set-dr_workspaces").GetDiag()
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting dr_workspaces: %s", err), "(Data) ibm_pdr_powervs_workspace", "read", "set-dr_workspaces").GetDiag()
 	}
 
 	return nil

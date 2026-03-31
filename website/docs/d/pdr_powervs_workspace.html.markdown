@@ -10,8 +10,6 @@ subcategory: "DrAutomation Service"
 
 Retrieves the power virtual server workspaces for primary and standby orchestrator based on location id.
 
-~> **This data source is deprecated and will be removed in the next major version. Use `ibm_pdr_powervs_workspace` instead.**
-
 ## Example Usage
 
 ```hcl

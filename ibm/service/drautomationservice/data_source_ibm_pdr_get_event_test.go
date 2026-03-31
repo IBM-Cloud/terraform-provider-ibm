@@ -21,30 +21,30 @@ import (
 	"github.com/IBM/dra-go-sdk/drautomationservicev1"
 )
 
-func TestAccIBMPdrGetEventDataSourceBasic(t *testing.T) {
+func TestAccIBMPdrEventDataSourceBasic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheck(t) },
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIBMPdrGetEventDataSourceConfigBasic(),
+				Config: testAccCheckIBMPdrEventDataSourceConfigBasic(),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet("data.ibm_pdr_get_event.pdr_get_event_instance", "id"),
-					resource.TestCheckResourceAttrSet("data.ibm_pdr_get_event.pdr_get_event_instance", "instance_id"),
-					resource.TestCheckResourceAttrSet("data.ibm_pdr_get_event.pdr_get_event_instance", "event_id"),
-					resource.TestCheckResourceAttrSet("data.ibm_pdr_get_event.pdr_get_event_instance", "action"),
-					resource.TestCheckResourceAttrSet("data.ibm_pdr_get_event.pdr_get_event_instance", "level"),
-					resource.TestCheckResourceAttrSet("data.ibm_pdr_get_event.pdr_get_event_instance", "message"),
-					resource.TestCheckResourceAttrSet("data.ibm_pdr_get_event.pdr_get_event_instance", "resource"),
-					resource.TestCheckResourceAttrSet("data.ibm_pdr_get_event.pdr_get_event_instance", "time"),
-					resource.TestCheckResourceAttrSet("data.ibm_pdr_get_event.pdr_get_event_instance", "timestamp"),
+					resource.TestCheckResourceAttrSet("data.ibm_pdr_event.pdr_event_instance", "id"),
+					resource.TestCheckResourceAttrSet("data.ibm_pdr_event.pdr_event_instance", "instance_id"),
+					resource.TestCheckResourceAttrSet("data.ibm_pdr_event.pdr_event_instance", "event_id"),
+					resource.TestCheckResourceAttrSet("data.ibm_pdr_event.pdr_event_instance", "action"),
+					resource.TestCheckResourceAttrSet("data.ibm_pdr_event.pdr_event_instance", "level"),
+					resource.TestCheckResourceAttrSet("data.ibm_pdr_event.pdr_event_instance", "message"),
+					resource.TestCheckResourceAttrSet("data.ibm_pdr_event.pdr_event_instance", "resource"),
+					resource.TestCheckResourceAttrSet("data.ibm_pdr_event.pdr_event_instance", "time"),
+					resource.TestCheckResourceAttrSet("data.ibm_pdr_event.pdr_event_instance", "timestamp"),
 				),
 			},
 		},
 	})
 }
 
-func testAccCheckIBMPdrGetEventDataSourceConfigBasic() string {
+func testAccCheckIBMPdrEventDataSourceConfigBasic() string {
 	return fmt.Sprintf(`
 		data "ibm_pdr_get_event" "pdr_get_event_instance" {
 			instance_id = "xxxx2ec4-xxxx-4f84-xxxx-c2aa834dd4ed"

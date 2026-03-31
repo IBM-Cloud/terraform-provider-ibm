@@ -21,7 +21,7 @@ import (
 	"github.com/IBM/dra-go-sdk/drautomationservicev1"
 )
 
-func DataSourceIBMPdrGetDrSummaryResponse() *schema.Resource {
+func dataSourceIBMPdrDrSummaryResponseCommon() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: dataSourceIBMPdrGetDrSummaryResponseRead,
 
@@ -269,6 +269,19 @@ func DataSourceIBMPdrGetDrSummaryResponse() *schema.Resource {
 			},
 		},
 	}
+}
+
+func DataSourceIBMPdrDrSummaryResponse() *schema.Resource {
+	res := dataSourceIBMPdrDrSummaryResponseCommon()
+	return res
+}
+
+func DataSourceIBMPdrGetDrSummaryResponse() *schema.Resource {
+	res := dataSourceIBMPdrDrSummaryResponseCommon()
+
+	res.DeprecationMessage = "This data source is deprecated. Use `ibm_pdr_dr_summary_response` instead."
+
+	return res
 }
 
 func dataSourceIBMPdrGetDrSummaryResponseRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {

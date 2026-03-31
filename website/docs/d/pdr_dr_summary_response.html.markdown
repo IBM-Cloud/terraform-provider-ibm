@@ -1,21 +1,19 @@
 ---
 layout: "ibm"
-page_title: "IBM : ibm_pdr_get_dr_summary_response"
+page_title: "IBM : ibm_pdr_dr_summary_response"
 description: |-
-  Get information about pdr_get_dr_summary_response
+  Get information about pdr_dr_summary_response
 subcategory: "DrAutomation Service"
 ---
 
-# ibm_pdr_get_dr_summary_response
+# ibm_pdr_dr_summary_response
 
 Retrieves the disaster recovery (DR) summary details for the specified service instance, including key configuration, status information and managed vm details.
-
-~> **This data source is deprecated and will be removed in the next major version. Use `ibm_pdr_dr_summary_response` instead.**
 
 ## Example Usage
 
 ```hcl
-data "ibm_pdr_get_dr_summary_response" "pdr_get_dr_summary_response" {
+data "ibm_pdr_dr_summary_response" "pdr_dr_summary_response" {
 	instance_id = "123456d3-1122-3344-b67d-4389b44b7bf9:"
 }
 ```
@@ -31,7 +29,7 @@ You can specify the following arguments for this data source.
 
 After your data source is created, you can read values from the following attributes.
 
-* `id` - The unique identifier of the pdr_get_dr_summary_response.
+* `id` - The unique identifier of the pdr_dr_summary_response.
 * `managed_vm_list` - (Map) A flexible schema placeholder to allow any JSON value (aligns with interface{} in Go).
 * `orchestrator_details` - (List) Contains details about the orchestrator configuration.
 Nested schema for **orchestrator_details**:
