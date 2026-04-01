@@ -29,6 +29,7 @@ func ResourceIBMPhaDeployment() *schema.Resource {
 		CreateContext: resourceIBMPhaDeploymentCreate,
 		ReadContext:   resourceIBMPhaDeploymentRead,
 		DeleteContext: resourceIBMPhaDeploymentDelete,
+		UpdateContext: resourceIBMPhaDeploymentUpdate,
 		Importer:      &schema.ResourceImporter{},
 
 		Schema: map[string]*schema.Schema{
@@ -82,17 +83,18 @@ func ResourceIBMPhaDeployment() *schema.Resource {
 			"location_id": {
 				Type:     schema.TypeString,
 				Required: true,
-				ForceNew: true,
+				// ForceNew: true,
 				// Computed:     true,
-				DiffSuppressFunc: flex.ApplyOnce,
-				Description:      "Identifier for the deployment location.",
-				ValidateFunc:     validation.StringMatch(regexp.MustCompile(`^[a-zA-Z0-9._:-]+$`), "invalid format"),
+				// DiffSuppressFunc: flex.ApplyOnce,
+				Description:  "Identifier for the deployment location.",
+				ValidateFunc: validation.StringMatch(regexp.MustCompile(`^[a-zA-Z0-9._:-]+$`), "invalid format"),
 			},
 
 			"primary_cluster_nodes": {
-				Type:        schema.TypeList,
-				Optional:    true,
-				ForceNew:    true,
+				Type:     schema.TypeList,
+				Optional: true,
+				// ForceNew:         true,
+				// DiffSuppressFunc: flex.ApplyOnce,
 				Description: "List of primary cluster node VM IDs (input).",
 				MaxItems:    100,
 				Elem: &schema.Schema{
@@ -170,17 +172,17 @@ func ResourceIBMPhaDeployment() *schema.Resource {
 					ValidateFunc: validation.StringLenBetween(0, 36),
 				},
 			},
-			"primary_location": &schema.Schema{
-				Type:         schema.TypeString,
-				Optional:     true,
-				ForceNew:     true,
-				ValidateFunc: validate.InvokeValidator("ibm_pha_deployment", "primary_location"),
-				Description:  "Primary cluster location.",
-			},
+			// "primary_location": &schema.Schema{
+			// 	Type:         schema.TypeString,
+			// 	Optional:     true,
+			// 	// ForceNew:     true,
+			// 	ValidateFunc: validate.InvokeValidator("ibm_pha_deployment", "primary_location"),
+			// 	Description:  "Primary cluster location.",
+			// },
 			"primary_workspace": &schema.Schema{
-				Type:         schema.TypeString,
-				Required:     true,
-				ForceNew:     true,
+				Type:     schema.TypeString,
+				Required: true,
+				// ForceNew:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_pha_deployment", "primary_workspace"),
 				Description:  "Primary workspace identifier.",
 			},
@@ -452,15 +454,15 @@ func ResourceIBMPhaDeploymentValidator() *validate.ResourceValidator {
 			MinValueLength:             1,
 			MaxValueLength:             50,
 		},
-		validate.ValidateSchema{
-			Identifier:                 "primary_location",
-			ValidateFunctionIdentifier: validate.ValidateRegexpLen,
-			Type:                       validate.TypeString,
-			Optional:                   true,
-			Regexp:                     `^[a-zA-Z0-9._:-]+$`,
-			MinValueLength:             1,
-			MaxValueLength:             16,
-		},
+		// validate.ValidateSchema{
+		// 	Identifier:                 "primary_location",
+		// 	ValidateFunctionIdentifier: validate.ValidateRegexpLen,
+		// 	Type:                       validate.TypeString,
+		// 	Optional:                   true,
+		// 	Regexp:                     `^[a-zA-Z0-9._:-]+$`,
+		// 	MinValueLength:             1,
+		// 	MaxValueLength:             16,
+		// },
 		validate.ValidateSchema{
 			Identifier:                 "primary_workspace",
 			ValidateFunctionIdentifier: validate.ValidateRegexpLen,
@@ -577,9 +579,9 @@ func resourceIBMPhaDeploymentCreate(context context.Context, d *schema.ResourceD
 		}
 		createPhaDeploymentOptions.SetStandbyClusterNodes(standbyClusterNodes)
 	}
-	if _, ok := d.GetOk("primary_location"); ok {
-		createPhaDeploymentOptions.SetPrimaryLocation(d.Get("primary_location").(string))
-	}
+	// if _, ok := d.GetOk("primary_location"); ok {
+	// 	createPhaDeploymentOptions.SetPrimaryLocation(d.Get("primary_location").(string))
+	// }
 	if _, ok := d.GetOk("secondary_location"); ok {
 		createPhaDeploymentOptions.SetSecondaryLocation(d.Get("secondary_location").(string))
 	}
@@ -615,6 +617,11 @@ func resourceIBMPhaDeploymentCreate(context context.Context, d *schema.ResourceD
 	d.SetId(fmt.Sprintf("%s", *createPhaDeploymentOptions.PhaInstanceID))
 
 	return resourceIBMPhaDeploymentRead(context, d, meta)
+}
+
+func resourceIBMPhaDeploymentUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	return resourceIBMPhaDeploymentCreate(ctx, d, meta)
+
 }
 
 func resourceIBMPhaDeploymentRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -673,12 +680,23 @@ func resourceIBMPhaDeploymentRead(context context.Context, d *schema.ResourceDat
 				"ibm_pha_deployment", "read", "set-primary_cluster_nodes_details").GetDiag()
 		}
 	}
-	if !core.IsNil(phaDeploymentResponse.PrimaryLocation) {
-		if err = d.Set("primary_location", phaDeploymentResponse.PrimaryLocation); err != nil {
-			err = fmt.Errorf("Error setting primary_location: %s", err)
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_pha_deployment", "read", "set-primary_location").GetDiag()
+	if phaDeploymentResponse.PrimaryClusterNodesDetails != nil {
+		var vmIDs []string
+
+		for _, node := range phaDeploymentResponse.PrimaryClusterNodesDetails {
+			if node.VMID != nil {
+				vmIDs = append(vmIDs, *node.VMID)
+			}
 		}
+
+		d.Set("primary_cluster_nodes", vmIDs)
 	}
+	// if !core.IsNil(phaDeploymentResponse.PrimaryLocation) {
+	// 	if err = d.Set("primary_location", phaDeploymentResponse.PrimaryLocation); err != nil {
+	// 		err = fmt.Errorf("Error setting primary_location: %s", err)
+	// 		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_pha_deployment", "read", "set-primary_location").GetDiag()
+	// 	}
+	// }
 	if err = d.Set("primary_workspace", phaDeploymentResponse.PrimaryWorkspace); err != nil {
 		err = fmt.Errorf("Error setting primary_workspace: %s", err)
 		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_pha_deployment", "read", "set-primary_workspace").GetDiag()

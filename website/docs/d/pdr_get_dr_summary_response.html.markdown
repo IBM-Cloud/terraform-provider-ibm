@@ -10,6 +10,8 @@ subcategory: "DrAutomation Service"
 
 Retrieves the disaster recovery (DR) summary details for the specified service instance, including key configuration, status information and managed vm details.
 
+~> **This data source is deprecated and will be removed in the next major version. Use `ibm_pdr_dr_summary_response` instead.**
+
 ## Example Usage
 
 ```hcl

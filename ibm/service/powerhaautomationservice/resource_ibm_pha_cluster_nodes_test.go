@@ -7,9 +7,9 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
-	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
-	"github.com/hashicorp/terraform-plugin-testing/terraform"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
@@ -22,7 +22,7 @@ import (
 func TestAccIBMPhaClusterNodesBasic(t *testing.T) {
 	var conf powerhaautomationservicev1.ClusterNodeResponse
 	instanceID := "2cfb7a06-623b-4eb9-a9ac-daa03dc0b5a6"
-	// primary_cluster_nodes :="d6feda7b-f679-4869-9e9e-133d9467ba5c"
+	primary_cluster_nodes :=["xxxxxxxx-xxxx-xxxx-9e9e-133d946xxxx"]
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheck(t) },
 		Providers: acc.TestAccProviders,
@@ -46,9 +46,9 @@ func TestAccIBMPhaClusterNodesBasic(t *testing.T) {
 
 func TestAccIBMPhaClusterNodesAllArgs(t *testing.T) {
 	var conf powerhaautomationservicev1.ClusterNodeResponse
-	instanceID := fmt.Sprintf("tf_instance_id_%d", acctest.RandIntRange(10, 100))
-	acceptLanguage := fmt.Sprintf("tf_accept_language_%d", acctest.RandIntRange(10, 100))
-	ifNoneMatch := fmt.Sprintf("tf_if_none_match_%d", acctest.RandIntRange(10, 100))
+	instanceID := "8eefautr-4c02-0009-0086-8bd4d8cf61b6"
+	acceptLanguage := "en"
+	ifNoneMatch := ""
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheck(t) },
@@ -76,7 +76,7 @@ func testAccCheckIBMPhaClusterNodesConfigBasic(instanceID string) string {
 	return fmt.Sprintf(`
 		resource "ibm_pha_cluster_nodes" "pha_cluster_nodes_instance" {
 			instance_id = "%s"
-			primary_cluster_nodes = ["049a8b09-a1ff-4434-acda-92946f3f4ab5"]
+			primary_cluster_nodes = ["xxxxxxxx-xxxx-xxxx-xxxx-92946f3xxxxx"]
 		}
 	`, instanceID)
 }
@@ -86,7 +86,7 @@ func testAccCheckIBMPhaClusterNodesConfig(instanceID string, acceptLanguage stri
 
 		resource "ibm_pha_cluster_nodes" "pha_cluster_nodes_instance" {
 			instance_id = "%s"
-			primary_cluster_nodes = ["9cdd4756-da0f-449e-a1a6-bb24291bea16"]
+			primary_cluster_nodes = ["xxxxxxxx-xxxx-xxxx-xxxx-92946f3xxxxx"]
 			accept_language = "%s"
 			if_none_match = "%s"
 		}

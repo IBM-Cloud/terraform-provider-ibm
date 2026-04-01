@@ -9,6 +9,8 @@ subcategory: "DrAutomation Service"
 # ibm_pdr_get_event
 Retrieves the details of a specific event for the given service instance provision ID.
 
+~> **This data source is deprecated and will be removed in the next major version. Use `ibm_pdr_event` instead.**
+
 ## Example Usage
 
 ```hcl

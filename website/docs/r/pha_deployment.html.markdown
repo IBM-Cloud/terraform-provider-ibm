@@ -8,22 +8,35 @@ subcategory: "PowerhaAutomation Service"
 
 # ibm_pha_deployment
 
-Create and get a PowerHA deployment for the specified instance.
+Create, update, and delete pha_deployments for the specified instance.
 
 ## Example Usage
 
 ```hcl
 resource "ibm_pha_deployment" "pha_deployment_instance" {
+  # Required
+  instance_id       = "8eefautr-xxxx-xxxx-xxxx-4345f6axxxxx"
+  primary_workspace = "workspace-primary"
+  location_id       = "loc-us-south-01"
+
+  # Optional
   accept_language = "en-US"
-  pha_instance_id = "8eefautr-4c02-0009-0086-8bd4d8cf61b6"
-  api_key = "adfadfd-safsdfdsf-fhsjdfs"
+  api_key         = "<apikey>"
+  cluster_type    = "standard"
+  configure_type  = "automatic"
+
   primary_cluster_nodes = [
-  "ce7fad04-f2cc-408e-843c-0751109vfvdfs"
-	]
-  primary_location = "us-south"
-  primary_workspace = "3a1b98d8-dbad-4f3e-bb27-57069fsfvsv987"
+    "ede4c36e-xxxx-xxxx-xxxx-6039d23xxxxx",
+    "b4e0fc15-xxxx-xxxx-xxxx-4345f6axxxxx"
+  ]
+
+  standby_cluster_nodes = [
+    "843a8e1f-xxxx-xxxx-xxxx-4345f6axxxxx"
+  ]
+
   secondary_location = "us-east"
-  secondary_workspace = "3a1b98d8-dbad-4f3e-bb27-57069767bn"
+
+  secondary_workspace = "workspace-secondary"
 }
 ```
 
@@ -31,42 +44,25 @@ resource "ibm_pha_deployment" "pha_deployment_instance" {
 
 You can specify the following arguments for this resource.
 
-* `accept_language` - (Optional, Forces new resource, String) The language requested for the return document.
+* `accept_language` - (Optional, String) The language requested for the return document.
   * Constraints: The maximum length is `50` characters. The minimum length is `1` character. The value must match regular expression `/^[a-zA-Z0-9\\-_,;=.*]+$/`.
-* `if_none_match` - (Optional, Forces new resource, String) ETag for conditional requests (optional).
+* `api_key` - (Optional, String) API key used for authentication to the deployment service.
+  * Constraints: The maximum length is `16` characters. The minimum length is `1` character. The value must match regular expression `/^[A-Za-z0-9._:\\-*]+$/`.
+* `cluster_type` - (Optional, String) Type of PowerHA cluster being deployed.
+  * Constraints: The maximum length is 16 characters. The minimum length is 1 character. The value must match regular expression /^[A-Za-z0-9._:-]+$/.
+* `configure_type` - (Optional, String) Configuration type for the deployment.
+  * Constraints: The maximum length is 16 characters. The minimum length is 1 character. The value must match regular expression /^[A-Za-z0-9._:-]+$/.
+* `if_none_match` - (Optional, String) ETag for conditional requests (optional).
   * Constraints: The maximum length is `50` characters. The minimum length is `1` character. The value must match regular expression `/^[a-zA-Z0-9\\-_,;=.*]+$/`.
-* `pha_instance_id` - (Required, Forces new resource, String) instance id of instance to provision.
+* `instance_id` - (Required, String) Unique identifier of the provisioned instance.
   * Constraints: The maximum length is `50` characters. The minimum length is `1` character. The value must match regular expression `/^[a-zA-Z0-9-]+$/`.
-* `api_key`: (Optional, Forces new resource, String) The API key associated with the request.
-* `primary_cluster_nodes` - (Optional, Forces new resource, List) List of primary cluster nodes.
-  * Constraints: The maximum length is `8` items. The minimum length is `0` items.
-Nested schema for **primary_cluster_nodes**:
-	* `agent_status` - (Optional, String) Status of the PHA agent running on the node.
-	  * Constraints: The maximum length is `16` characters. The minimum length is `1` character. The value must match regular expression `/^[A-Za-z0-9._:-]+$/`.
-	* `cores` - (Optional, Float) Number of CPU cores allocated to the node.
-	* `ip_address` - (Optional, String) IP address assigned to the virtual machine.
-	  * Constraints: The maximum length is `16` characters. The minimum length is `1` character. The value must match regular expression `/^[0-9.:]+$/`.
-	* `memory` - (Optional, Integer) Memory allocated to the virtual machine in MB or GB.
-	  * Constraints: The maximum value is `64`. The minimum value is `1`.
-	* `pha_level` - (Optional, String) PowerHA version level installed on the node.
-	  * Constraints: The maximum length is `16` characters. The minimum length is `1` character. The value must match regular expression `/^[0-9.]+$/`.
-	* `region` - (Optional, String) Region where the virtual machine is deployed.
-	  * Constraints: The maximum length is `16` characters. The minimum length is `1` character. The value must match regular expression `/^[A-Za-z0-9._:-]+$/`.
-	* `vm_id` - (Optional, String) Unique identifier of the virtual machine.
-	  * Constraints: The maximum length is `16` characters. The minimum length is `1` character. The value must match regular expression `/^[A-Za-z0-9._:-]+$/`.
-	* `vm_name` - (Optional, String) Name of the virtual machine.
-	  * Constraints: The maximum length is `16` characters. The minimum length is `1` character. The value must match regular expression `/^[A-Za-z0-9._:-]+$/`.
-	* `vm_status` - (Optional, String) Current operational status of the virtual machine.
-	  * Constraints: The maximum length is `16` characters. The minimum length is `1` character. The value must match regular expression `/^[A-Za-z0-9._:-]+$/`.
-	* `workspace_id` - (Optional, String) Workspace identifier associated with the node.
-	  * Constraints: The maximum length is `2048` characters. The minimum length is `1` character. The value must match regular expression `/^[A-Za-z0-9._:-]+$/`.
-* `primary_location` - (Optional, Forces new resource, String) Primary cluster location.
+* `location_id` - (Required, String) Identifier for the deployment location.
+  * Constraints: The maximum length is 16 characters. The minimum length is 1 character. The value must match regular expression /^[A-Za-z0-9._:-]+$/.
+* `primary_workspace` - (Required, String) Primary workspace identifier.
   * Constraints: The maximum length is `16` characters. The minimum length is `1` character. The value must match regular expression `/^[A-Za-z0-9._:-]+$/`.
-* `primary_workspace` - (Required, Forces new resource, String) Primary workspace identifier.
+* `secondary_location` - (Optional, String) Secondary cluster location.
   * Constraints: The maximum length is `16` characters. The minimum length is `1` character. The value must match regular expression `/^[A-Za-z0-9._:-]+$/`.
-* `secondary_location` - (Optional, Forces new resource, String) Secondary cluster location.
-  * Constraints: The maximum length is `16` characters. The minimum length is `1` character. The value must match regular expression `/^[A-Za-z0-9._:-]+$/`.
-* `secondary_workspace` - (Optional, Forces new resource, String) Secondary workspace identifier.
+* `secondary_workspace` - (Optional, String) Secondary workspace identifier.
   * Constraints: The maximum length is `16` characters. The minimum length is `1` character. The value must match regular expression `/^[A-Za-z0-9._:-]+$/`.
 
 ## Attribute Reference
@@ -74,8 +70,6 @@ Nested schema for **primary_cluster_nodes**:
 After your resource is created, you can read values from the listed arguments and the following attributes.
 
 * `id` - The unique identifier of the pha_deployment.
-* `api_key` - (String) API key used for authentication to the deployment service.
-  * Constraints: The maximum length is `16` characters. The minimum length is `1` character. The value must match regular expression `/^[A-Za-z0-9._:\\-*]+$/`.
 * `cloud_account_id` - (String) Cloud account identifier.
   * Constraints: The maximum length is `16` characters. The minimum length is `1` character. The value must match regular expression `/^[A-Za-z0-9._:-]+$/`.
 * `connectivity_type` - (String) Type of network connectivity.
@@ -88,9 +82,9 @@ After your resource is created, you can read values from the listed arguments an
   * Constraints: The maximum length is `2048` characters. The minimum length is `1` character. The value must match regular expression `/^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z$/`.
 * `guid` - (String) Global unique identifier.
   * Constraints: The maximum length is `2048` characters. The minimum length is `1` character. The value must match regular expression `/^[A-Za-z0-9._:-]+$/`.
-* `is_duplicate` - (Boolean) Indicates whether deployment is duplicate.
-* `pha_instance_id` - (String) Provision request identifier.
+* `instance_id` - (String) Provision request identifier.
   * Constraints: The maximum length is `16` characters. The minimum length is `1` character. The value must match regular expression `/^[A-Za-z0-9._:-]+$/`.
+* `is_duplicate` - (Boolean) Indicates whether deployment is duplicate.
 * `plan_id` - (String) Identifier for the service plan.
   * Constraints: The maximum length is `16` characters. The minimum length is `1` character. The value must match regular expression `/^[A-Za-z0-9._:-]+$/`.
 * `plan_name` - (String) Name of service plan.
@@ -119,6 +113,28 @@ After your resource is created, you can read values from the listed arguments an
   * Constraints: The maximum length is `2048` characters. The minimum length is `1` character. The value must match regular expression `/^[A-Za-z0-9._:\/-]+$/`.
 * `resource_instance` - (String) Resource instance identifier.
   * Constraints: The maximum length is `2048` characters. The minimum length is `1` character. The value must match regular expression `/^[A-Za-z0-9._:-]+$/`.
+* `primary_cluster_nodes_details` - (Optional, List) List of primary cluster nodes.
+  * Constraints: The maximum length is `8` items. The minimum length is `0` items.
+Nested schema for **primary_cluster_nodes**:
+	* `agent_status` - (Optional, String) Status of the PHA agent running on the node.
+	  * Constraints: The maximum length is `16` characters. The minimum length is `1` character. The value must match regular expression `/^[A-Za-z0-9._:-]+$/`.
+	* `cores` - (Optional, Float) Number of CPU cores allocated to the node.
+	* `ip_address` - (Optional, String) IP address assigned to the virtual machine.
+	  * Constraints: The maximum length is `16` characters. The minimum length is `1` character. The value must match regular expression `/^[0-9.:]+$/`.
+	* `memory` - (Optional, Integer) Memory allocated to the virtual machine in MB or GB.
+	  * Constraints: The maximum value is `64`. The minimum value is `1`.
+	* `pha_level` - (Optional, String) PowerHA version level installed on the node.
+	  * Constraints: The maximum length is `16` characters. The minimum length is `1` character. The value must match regular expression `/^[0-9.]+$/`.
+	* `region` - (Optional, String) Region where the virtual machine is deployed.
+	  * Constraints: The maximum length is `16` characters. The minimum length is `1` character. The value must match regular expression `/^[A-Za-z0-9._:-]+$/`.
+	* `vm_id` - (Optional, String) Unique identifier of the virtual machine.
+	  * Constraints: The maximum length is `16` characters. The minimum length is `1` character. The value must match regular expression `/^[A-Za-z0-9._:-]+$/`.
+	* `vm_name` - (Optional, String) Name of the virtual machine.
+	  * Constraints: The maximum length is `16` characters. The minimum length is `1` character. The value must match regular expression `/^[A-Za-z0-9._:-]+$/`.
+	* `vm_status` - (Optional, String) Current operational status of the virtual machine.
+	  * Constraints: The maximum length is `16` characters. The minimum length is `1` character. The value must match regular expression `/^[A-Za-z0-9._:-]+$/`.
+	* `workspace_id` - (Optional, String) Workspace identifier associated with the node.
+	  * Constraints: The maximum length is `2048` characters. The minimum length is `1` character. The value must match regular expression `/^[A-Za-z0-9._:-]+$/`.
 * `secondary_cluster_nodes` - (List) List of secondary cluster nodes.
   * Constraints: The maximum length is `8` items. The minimum length is `0` items.
 Nested schema for **secondary_cluster_nodes**:
@@ -159,15 +175,14 @@ Nested schema for **secondary_cluster_nodes**:
 ## Import
 
 You can import the `ibm_pha_deployment` resource by using `id`.
-The `id` property can be formed from `pha_instance_id`, and `pha_instance_id` in the following format:
+The `id` property can be formed from `instance_id`, and `instance_id` in the following format:
 
 <pre>
-&lt;pha_instance_id&gt;/&lt;pha_instance_id&gt;
+&lt;instance_id&gt;
 </pre>
-* `pha_instance_id`: A string in the format `8eefautr-4c02-0009-0086-8bd4d8cf61b6`. instance id of instance to provision.
-* `pha_instance_id`: A string in the format `prov-9f8a7b6c`. Provision request identifier.
+* `instance_id`: A string in the format `8eefautr-4c02-0009-0086-8bd4d8cf61b6`. Unique identifier of the provisioned instance.
 
 # Syntax
 <pre>
-$ terraform import ibm_pha_deployment.pha_deployment &lt;pha_instance_id&gt;/&lt;pha_instance_id&gt;
+$ terraform import ibm_pha_deployment.pha_deployment &lt;instance_id&gt;
 </pre>

@@ -1,20 +1,23 @@
 ---
 layout: "ibm"
-page_title: "IBM : ibm_pdr_last_operation"
+page_title: "IBM : ibm_pdr_powervs_workspace"
 description: |-
-  Get information about pdr_last_operation
+  Get information about pdr_powervs_workspace
 subcategory: "DrAutomation Service"
 ---
 
-# ibm_pdr_last_operation
+# ibm_pdr_powervs_workspace
 
-Retrieves the status of the last operation performed on the specified service instance, such as provisioning, updating, or deprovisioning.
+Retrieves the power virtual server workspaces for primary and standby orchestrator based on location id.
+
+~> **This data source is deprecated and will be removed in the next major version. Use `ibm_pdr_powervs_workspaces` instead.**
 
 ## Example Usage
 
 ```hcl
-data "ibm_pdr_last_operation" "pdr_last_operation" {
+data "ibm_pdr_powervs_workspace" "pdr_powervs_workspace" {
 	instance_id = "123456d3-1122-3344-b67d-4389b44b7bf9"
+	location_id = "syd04"
 }
 ```
 
@@ -22,31 +25,40 @@ data "ibm_pdr_last_operation" "pdr_last_operation" {
 
 You can specify the following arguments for this data source.
 
-* `accept_language` - (Optional, String) The language requested for the return document. (ex., en,it,fr,es,de,ja,ko,pt-BR,zh-HANS,zh-HANT)
 * `instance_id` - (Required, Forces new resource, String) ID of the service instance.
+* `location_id` - (Required, String) Location ID value. You can use datsource ibm_pdr_get_dr_locations to fetch location id.
 
 ## Attribute Reference
 
 After your data source is created, you can read values from the following attributes.
 
-* `id` - The unique identifier of the pdr_last_operation.
-* `crn` - (String) The service instance crn.
-* `deployment_name` - (String) The name of the service instance deployment.
-* `last_updated_orchestrator_deployment_time` - (String) The deployment time of primary orchestrator VM.
-* `last_updated_standby_orchestrator_deployment_time` - (String) The deployment time of StandBy orchestrator VM.
-* `mfa_enabled` - (String) Indicated whether multi factor authentication is ennabled or not.
-* `orch_ext_connectivity_status` - (String) Status of standby node addition to the orchestrator cluster.
-* `orch_standby_node_addtion_status` - (String) The status of standby node in the Orchestrator cluster.
-* `orchestrator_cluster_message` - (String) The current status of the primary orchestrator VM.
-* `orchestrator_config_status` - (String) The configuration status of the orchestrator cluster.
-* `orchestrator_ha` - (Boolean) Indicates whether high availability (HA) is enabled for the orchestrator.
-* `plan_name` - (String) The name of the DR Automation plan.
-* `primary_description` - (String) Indicates the progress details of primary orchestrator creation.
-* `primary_ip_address` - (String) The IP address of the primary orchestrator VM.
-* `primary_orchestrator_status` - (String) The configuration status of the orchestrator cluster.
-* `recovery_location` - (String) The disaster recovery location associated with the instance.
-* `resource_group` - (String) The resource group to which the service instance belongs.
-* `standby_description` - (String) Indicates the progress details of primary orchestrator creation.
-* `standby_ip_address` - (String) The IP address of the standby orchestrator VM.
-* `standby_status` - (String) The current state of the standby orchestrator.
-* `status` - (String) The current state of the primary orchestrator.
+* `id` - The unique identifier of the pdr_powervs_workspace.
+* `dr_standby_workspace_description` - (String) Description of Standby Workspace.
+* `dr_standby_workspaces` - (List) The list of standby disaster recovery workspaces.
+Nested schema for **dr_standby_workspaces**:
+	* `details` - (List) The detailed information of the standby DR workspace.
+	Nested schema for **details**:
+		* `crn` - (String) Cloud Resource Name (CRN) of the DR workspace.
+	* `id` - (String) The unique identifier of the standby workspace.
+	* `location` - (List) The location information of the standby workspace.
+	Nested schema for **location**:
+		* `region` - (String) The region identifier of the DR location.
+		* `type` - (String) The type of location (e.g., data-center, cloud-region).
+		* `url` - (String) The URL endpoint to access the DR location.
+	* `name` - (String) The name of the standby workspace.
+	* `status` - (String) The status of the standby workspace.
+* `dr_workspace_description` - (String) Description of Workspace.
+* `dr_workspaces` - (List) The list of primary disaster recovery workspaces.
+Nested schema for **dr_workspaces**:
+	* `default` - (Boolean) Indicates if this is the default DR workspace.
+	* `details` - (List) The detailed information about the DR workspace.
+	Nested schema for **details**:
+		* `crn` - (String) Cloud Resource Name (CRN) of the DR workspace.
+	* `id` - (String) The unique identifier of the DR workspace.
+	* `location` - (List) The location information of the DR workspace.
+	Nested schema for **location**:
+		* `region` - (String) The region identifier of the DR location.
+		* `type` - (String) The type of location (e.g., data-center, cloud-region).
+		* `url` - (String) The URL endpoint to access the DR location.
+	* `name` - (String) The name of the DR workspace.
+	* `status` - (String) The status of the DR workspace.

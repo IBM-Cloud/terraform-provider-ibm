@@ -32,6 +32,14 @@
 ### Toolchain
 * Continuous Delivery (CD): Region discontinuation warnings ([6687](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6687))
 
+### DRAutomation
+
+## ENHANCEMENTS
+- Added `events` attribute to ibm_pdr_get_events data source
+
+## DEPRECATIONS
+- `event` attribute is deprecated, use `events` instead
+
 
 # 1.88.3 (February 23, 2026)
 

@@ -8,17 +8,14 @@ subcategory: "PowerhaAutomation Service"
 
 # ibm_pha_cluster_nodes
 
-Manage cluster nodes (add, delete, or retrieve) for the specified PowerHA instance.
+Create, update, and delete pha_cluster_nodess with this resource.
 
 ## Example Usage
 
 ```hcl
 resource "ibm_pha_cluster_nodes" "pha_cluster_nodes_instance" {
-  accept_language = "en-US"
-  pha_instance_id = "8eefautr-4c02-0009-0086-8bd4d8cf61b6"
-  primary_cluster_nodes = [
-   "ce7fad04-f2cc-408e-843c-0751109vfvdfs"
-	]
+  instance_id = "8eefautr-4c02-0009-0086-8bd4d8cf61b6"
+  primary_cluster_nodes = ["]
 }
 ```
 
@@ -26,19 +23,24 @@ resource "ibm_pha_cluster_nodes" "pha_cluster_nodes_instance" {
 
 You can specify the following arguments for this resource.
 
-* `accept_language` - (Optional, Forces new resource, String) The language requested for the return document.
+* `accept_language` - (Optional, String) The language requested for the return document.
   * Constraints: The maximum length is `50` characters. The minimum length is `1` character. The value must match regular expression `/^[a-zA-Z0-9\\-_,;=.*]+$/`.
-* `if_none_match` - (Optional, Forces new resource, String) ETag for conditional requests (optional).
+* `if_none_match` - (Optional, String) ETag for conditional requests (optional).
   * Constraints: The maximum length is `50` characters. The minimum length is `1` character. The value must match regular expression `/^[a-zA-Z0-9\\-_,;=.*]+$/`.
-* `pha_instance_id` - (Required, Forces new resource, String) instance id of instance to provision.
+* `instance_id` - (Required, String) Unique identifier of the provisioned instance.
   * Constraints: The maximum length is `50` characters. The minimum length is `1` character. The value must match regular expression `/^[a-zA-Z0-9-]+$/`.
+* `primary_cluster_nodes` - (Required, List of String) List of primary cluster node VM IDs.
+  * Constraints: Minimum items are 1. Maximum items allowed are 8. Each value must match /^[A-Za-z0-9._:-]+$/. Length between 1 and 36 characters
+* `secondary_cluster_nodes` - (Optional, List of String) List of secondary cluster node VM IDs.
+  * Constraints: Minimum items are 1. Maximum items allowed are 8. Each value must match /^[A-Za-z0-9._:-]+$/. Length between 1 and 36 characters
+
 
 ## Attribute Reference
 
 After your resource is created, you can read values from the listed arguments and the following attributes.
 
 * `id` - The unique identifier of the pha_cluster_nodes.
-* `pha_instance_id` - (String) Identifier for this cluster node response.
+* `instance_id` - (String) Identifier for this cluster node response.
   * Constraints: The maximum length is `2048` characters. The minimum length is `1` character. The value must match regular expression `/^[A-Za-z0-9_-]+$/`.
 * `primary_node_details` - (List) Details of the primary cluster nodes.
   * Constraints: The maximum length is `16` items. The minimum length is `0` items.
@@ -88,15 +90,14 @@ Nested schema for **secondary_node_details**:
 ## Import
 
 You can import the `ibm_pha_cluster_nodes` resource by using `id`.
-The `id` property can be formed from `pha_instance_id`, and `pha_instance_id` in the following format:
+The `id` property can be formed from `instance_id`, and `instance_id` in the following format:
 
 <pre>
-&lt;pha_instance_id&gt;/&lt;pha_instance_id&gt;
+&lt;instance_id&gt;
 </pre>
-* `pha_instance_id`: A string in the format `8eefautr-4c02-0009-0086-8bd4d8cf61b6`. instance id of instance to provision.
-* `pha_instance_id`: A string in the format `cluster-response-01`. Identifier for this cluster node response.
+* `instance_id`: A string in the format `8eefautr-4c02-0009-0086-8bd4d8cf61b6`. Unique identifier of the provisioned instance.
 
 # Syntax
 <pre>
-$ terraform import ibm_pha_cluster_nodes.pha_cluster_nodes &lt;pha_instance_id&gt;/&lt;pha_instance_id&gt;
+$ terraform import ibm_pha_deployment.pha_deployment &lt;instance_id&gt;
 </pre>

@@ -7,16 +7,15 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
-	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
-	"github.com/hashicorp/terraform-plugin-testing/terraform"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 
-	// "github.ibm.com/dra-go-sdk/drautomationservicev1"
-	"github.ibm.com/DRAutomation/dra-go-sdk/drautomationservicev1"
+	"github.com/IBM/dra-go-sdk/drautomationservicev1"
 )
 
 func TestAccIBMPdrManagedrBasic(t *testing.T) {

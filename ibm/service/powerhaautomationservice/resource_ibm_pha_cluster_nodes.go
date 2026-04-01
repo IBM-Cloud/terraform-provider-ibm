@@ -62,26 +62,13 @@ func ResourceIBMPhaClusterNodes() *schema.Resource {
 				Description:  "ETag for conditional requests (optional).",
 			},
 
-			// "primary_cluster_node": {
-			// 	Type:     schema.TypeString,
-			// 	Optional: true,
-			// 	ForceNew: true,
-			// 	// DiffSuppressFunc: flex.ApplyOnce,
-			// 	Description: "List of primary cluster node VM IDs.",
-			// },
-			// "secondary_cluster_node": {
-			// 	Type:     schema.TypeString,
-			// 	Optional: true,
-			// 	ForceNew: true,
-			// 	// DiffSuppressFunc: flex.ApplyOnce,
-			// 	Description: "List of primary cluster node VM IDs.",
-			// },
 			"primary_cluster_nodes": {
-				Type:     schema.TypeSet,
-				Optional: true,
+				Type: schema.TypeSet,
+				// Optional: true,
+				Required: true,
 				// ForceNew:         true,
-				MinItems: 1,
-				MaxItems: 100,
+				MinItems: 0,
+				MaxItems: 8,
 				// DiffSuppressFunc: flex.ApplyOnce,
 				Description: "List of primary cluster node VM IDs.",
 				Elem: &schema.Schema{
@@ -419,6 +406,28 @@ func resourceIBMPhaClusterNodesRead(context context.Context, d *schema.ResourceD
 		err = fmt.Errorf("Error setting primary_node_details: %s", err)
 		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_pha_cluster_nodes", "read", "set-primary_node_details").GetDiag()
 	}
+
+	// Extract vm_ids from primary_node_details
+	primaryNodeDetailsresp := d.Get("primary_node_details").([]interface{})
+
+	var primaryClusterNodeIDs []string
+
+	for _, node := range primaryNodeDetailsresp {
+		if node == nil {
+			continue
+		}
+
+		nodeMap := node.(map[string]interface{})
+
+		if vmID, ok := nodeMap["vm_id"].(string); ok && vmID != "" {
+			primaryClusterNodeIDs = append(primaryClusterNodeIDs, vmID)
+		}
+	}
+
+	// Set into primary_cluster_nodes (TypeSet)
+	if err := d.Set("primary_cluster_nodes", schema.NewSet(schema.HashString, convertToInterfaceSlice(primaryClusterNodeIDs))); err != nil {
+		return diag.FromErr(err)
+	}
 	// d.Set("vm_id",primaryNodeDetailsItemMap)
 	secondaryNodeDetails := []map[string]interface{}{}
 	for _, secondaryNodeDetailsItem := range clusterNodeResponse.SecondaryNodeDetails {
@@ -432,6 +441,29 @@ func resourceIBMPhaClusterNodesRead(context context.Context, d *schema.ResourceD
 		err = fmt.Errorf("Error setting secondary_node_details: %s", err)
 		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_pha_cluster_nodes", "read", "set-secondary_node_details").GetDiag()
 	}
+
+	// Extract vm_ids from primary_node_details
+	// secondaryNodeDetailsresp := d.Get("primary_node_details").([]interface{})
+
+	// var secondaryClusterNodeIDs []string
+
+	// for _, node := range secondaryNodeDetailsresp {
+	// 	if node == nil {
+	// 		continue
+	// 	}
+
+	// 	nodeMap := node.(map[string]interface{})
+
+	// 	if vmID, ok := nodeMap["vm_id"].(string); ok && vmID != "" {
+	// 		primaryClusterNodeIDs = append(secondaryClusterNodeIDs, vmID)
+	// 	}
+	// }
+
+	// // Set into primary_cluster_nodes (TypeSet)
+	// if err := d.Set("secondary_cluster_nodes", schema.NewSet(schema.HashString, convertToInterfaceSlice(primaryClusterNodeIDs))); err != nil {
+	// 	return diag.FromErr(err)
+	// }
+
 	if !core.IsNil(clusterNodeResponse.ID) {
 		if err = d.Set("instance_id", extractInstanceIDFromCRN(*clusterNodeResponse.ID)); err != nil {
 			err = fmt.Errorf("Error setting instance_id: %s", err)
@@ -445,6 +477,13 @@ func resourceIBMPhaClusterNodesRead(context context.Context, d *schema.ResourceD
 	return nil
 }
 
+func convertToInterfaceSlice(input []string) []interface{} {
+	result := make([]interface{}, len(input))
+	for i, v := range input {
+		result[i] = v
+	}
+	return result
+}
 func resourceIBMPhaClusterNodesUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client, err := meta.(conns.ClientSession).PowerhaAutomationServiceV1()
 	if err != nil {
@@ -522,62 +561,6 @@ func resourceIBMPhaClusterNodesUpdate(ctx context.Context, d *schema.ResourceDat
 	// -------------------------
 	return resourceIBMPhaClusterNodesRead(ctx, d, meta)
 }
-
-// func resourceIBMPhaClusterNodesDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-// 	powerhaAutomationServiceClient, err := meta.(conns.ClientSession).PowerhaAutomationServiceV1()
-// 	if err != nil {
-// 		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_pha_cluster_nodes", "delete", "initialize-client")
-// 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
-// 		return tfErr.GetDiag()
-// 	}
-
-// 	deleteClusterNodeOptions := &powerhaautomationservicev1.DeleteClusterNodeOptions{}
-
-// 	deleteClusterNodeOptions.SetPhaInstanceID(d.Id())
-// 	// deleteClusterNodeOptions.SetVMID()
-// 	fmt.Println("=======================================================")
-// 	fmt.Println("=======================================================")
-// 	fmt.Println(d.GetOk("vm_id"))
-// 	fmt.Println("=======================================================")
-// 	fmt.Println("=======================================================")
-// 	if v, ok := d.GetOk("vm_id"); ok {
-// 		fmt.Println("=======================inside if block================================")
-// 		fmt.Println("=======================================================")
-// 		fmt.Println(v.(string))
-// 		fmt.Println("=======================================================")
-// 		fmt.Println("=======================================================")
-// 		deleteClusterNodeOptions.SetVMID(d.Get("vm_id").(string))
-// 	}
-// 	// if v, ok := d.GetOk("primary_cluster_node"); ok {
-// 	// 	vmID := v.(string)
-// 	// 	deleteClusterNodeOptions.SetVMID(vmID)
-// 	// } else {
-// 	// 	return diag.Errorf("primary_cluster_node is required for delete")
-// 	// }
-// 	_, response, err := powerhaAutomationServiceClient.DeleteClusterNodeWithContext(context, deleteClusterNodeOptions)
-// 	if err != nil {
-// 		detailedMsg := fmt.Sprintf("DeleteClusterNodeWithContext failed: %s", err.Error())
-// 		// Include HTTP status & raw body if available
-// 		if response != nil {
-// 			detailedMsg = fmt.Sprintf(
-// 				"DeleteClusterNodeWithContext failed: %s (status: %d, response: %s)",
-// 				err.Error(), response.StatusCode, response.Result,
-// 			)
-// 		}
-// 		tfErr := flex.TerraformErrorf(err, detailedMsg, "ibm_pha_cluster_nodes", "delete")
-// 		log.Printf("[ERROR] %s", detailedMsg)
-// 		return tfErr.GetDiag()
-// 	}
-// 	if err != nil {
-// 		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("DeleteClusterNodeWithContext failed: %s", err.Error()), "ibm_pha_cluster_nodes", "delete")
-// 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
-// 		return tfErr.GetDiag()
-// 	}
-
-// 	d.SetId("")
-
-// 	return nil
-// }
 
 func resourceIBMPhaClusterNodesDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	// This resource does not support a "delete" operation.

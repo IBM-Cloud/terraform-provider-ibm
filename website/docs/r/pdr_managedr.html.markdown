@@ -184,4 +184,15 @@ After your resource is created, you can read values from the listed arguments an
 
 ## Import
 
-currently not supported
+You can import the `ibm_pdr_managedr` resource by using `id`.
+The `id` property can be formed from `instance_id`, and `instance_id` in the following format:
+
+<pre>
+&lt;instance_id&gt;
+</pre>
+* `instance_id`: A string in the format `050ebe3b-13f4-4db8-8ece-501a3c13be80mh1`. Unique identifier of the provisioned instance.
+
+# Syntax
+<pre>
+$ terraform import ibm_pha_deployment.pha_deployment &lt;instance_id&gt;
+</pre>

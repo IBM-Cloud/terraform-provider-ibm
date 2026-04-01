@@ -7,9 +7,8 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
-	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
-	"github.com/hashicorp/terraform-plugin-testing/terraform"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
@@ -18,7 +17,7 @@ import (
 
 func TestAccIBMPhaAPIKeyBasic(t *testing.T) {
 	var conf powerhaautomationservicev1.APIKeyResponse
-	instanceID := fmt.Sprintf("tf_instance_id_%d", acctest.RandIntRange(10, 100))
+	instanceID := "8eefautr-4c02-0009-0086-8bd4d8cf61b6"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheck(t) },
@@ -37,10 +36,10 @@ func TestAccIBMPhaAPIKeyBasic(t *testing.T) {
 
 func TestAccIBMPhaAPIKeyAllArgs(t *testing.T) {
 	var conf powerhaautomationservicev1.APIKeyResponse
-	instanceID := fmt.Sprintf("tf_instance_id_%d", acctest.RandIntRange(10, 100))
-	acceptLanguage := fmt.Sprintf("tf_accept_language_%d", acctest.RandIntRange(10, 100))
-	ifNoneMatch := fmt.Sprintf("tf_if_none_match_%d", acctest.RandIntRange(10, 100))
-	apiKey := fmt.Sprintf("tf_api_key_%d", acctest.RandIntRange(10, 100))
+	instanceID := "8eefautr-4c02-0009-0086-8bd4d8cf61b6"
+	acceptLanguage := "en"
+	ifNoneMatch := ""
+	apiKey := ""
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheck(t) },

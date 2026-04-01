@@ -24,8 +24,7 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 	"github.com/IBM/go-sdk-core/v5/core"
 
-	// "github.com/IBM/dra-go-sdk/drautomationservicev1"
-	"github.ibm.com/DRAutomation/dra-go-sdk/drautomationservicev1"
+	"github.com/IBM/dra-go-sdk/drautomationservicev1"
 )
 
 func ResourceIbmPdrManagedr() *schema.Resource {

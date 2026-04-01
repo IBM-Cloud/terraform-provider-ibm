@@ -7,9 +7,9 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
-	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
-	"github.com/hashicorp/terraform-plugin-testing/terraform"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
@@ -22,7 +22,7 @@ import (
 func TestAccIBMPhaDeploymentBasic(t *testing.T) {
 	var conf powerhaautomationservicev1.PhaDeploymentResponse
 	instanceID := "2cfb7a06-623b-4eb9-a9ac-daa03dc0b5a6"
-	primaryWorkspace := "9aa63e8a-6cd8-4998-95c0-d2bf121f3010"
+	primaryWorkspace := "xxxxxxxx-xxxx-xxxx-xxxx-xxxxx21f3010"
 	// location_id := "us-south"
 
 	resource.Test(t, resource.TestCase{

@@ -10,6 +10,8 @@ subcategory: "DrAutomation Service"
 
 Retrieves the list of supported machine types for the given workspace. This endpoint is used to identify machine types available for disaster recovery automation.
 
+~> **This data source is deprecated and will be removed in the next major version. Use `ibm_pdr_machine_types` instead.**
+
 ## Example Usage
 
 ```hcl
