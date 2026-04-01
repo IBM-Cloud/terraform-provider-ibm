@@ -147,6 +147,7 @@ A system-provided image is not allowed to be deprecated.
 
   ~> **NOTE**
       either `href` or `source_volume` is required
+- `minimum_acceptable_status` - (Optional, String) Specifies the minimum lifecycle status that an image must reach before Terraform considers the resource creation successful and proceeds. This allows users to control when the `ibm_is_image` resource should complete its provisioning cycle. For example, if set to "partially_available", Terraform will wait until the image reaches the "available" status before marking the resource as successfully created.
 - `name` - (Required, String) The descriptive name used to identify an image.
 - `obsolete` - (Optional, Bool) This flag obsoletes an image, resulting in its status becoming obsolete and obsolescence_at being set to the current date and time. The image must:
 

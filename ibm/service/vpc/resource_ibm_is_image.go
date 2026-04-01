@@ -173,7 +173,7 @@ func ResourceIBMISImage() *schema.Resource {
 			"minimum_acceptable_status": {
 				Type:        schema.TypeString,
 				Optional:    true,
-				Description: "The status of this image",
+				Description: "Specifies the minimum lifecycle status that an image must reach before Terraform considers the resource creation successful and proceeds. This allows users to control when the ibm_is_image resource should complete its provisioning cycle.",
 			},
 
 			isImageMinimumProvisionedSize: {
