@@ -52,6 +52,7 @@ In addition to all argument reference listed, you can access the following attri
   
   Nested scheme for `interfaces`:
   - `crn` - (String) The network interface's crn.
+  - `external_ip` - (String) The external ip address for pub-vlan networks.
   - `id` - (String) The unique network interface id.
   - `instance` - (List) The attached instance to this network interface.
 

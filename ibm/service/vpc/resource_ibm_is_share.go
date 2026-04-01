@@ -1084,7 +1084,7 @@ func ResourceIbmIsShareValidator() *validate.ResourceValidator {
 			ValidateFunctionIdentifier: validate.IntBetween,
 			Type:                       validate.TypeInt,
 			Optional:                   true,
-			MinValue:                   "10",
+			MinValue:                   "1",
 			MaxValue:                   "32000",
 		},
 		validate.ValidateSchema{

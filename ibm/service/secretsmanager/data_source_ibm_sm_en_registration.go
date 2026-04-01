@@ -42,11 +42,16 @@ func dataSourceIbmSmEnRegistrationRead(context context.Context, d *schema.Resour
 
 	getNotificationsRegistrationOptions := &secretsmanagerv2.GetNotificationsRegistrationOptions{}
 
+	enInstanceCrn := "" // default value if event notification registration doesn't exist
 	notificationsRegistration, response, err := secretsManagerClient.GetNotificationsRegistrationWithContext(context, getNotificationsRegistrationOptions)
 	if err != nil {
-		log.Printf("[DEBUG] GetNotificationsRegistrationWithContext failed %s\n%s", err, response)
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetNotificationsRegistrationWithContext failed %s\n%s", err, response), fmt.Sprintf("(Data) %s", EnRegistrationResourceName), "read")
-		return tfErr.GetDiag()
+		if response.StatusCode != 404 {
+			log.Printf("[DEBUG] GetNotificationsRegistrationWithContext failed %s\n%s", err, response)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetNotificationsRegistrationWithContext failed %s\n%s", err, response), fmt.Sprintf("(Data) %s", EnRegistrationResourceName), "read")
+			return tfErr.GetDiag()
+		}
+	} else {
+		enInstanceCrn = *notificationsRegistration.EventNotificationsInstanceCrn
 	}
 
 	d.SetId(fmt.Sprintf("%s/%s", region, instanceId))
@@ -55,7 +60,7 @@ func dataSourceIbmSmEnRegistrationRead(context context.Context, d *schema.Resour
 		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting region"), fmt.Sprintf("(Data) %s", EnRegistrationResourceName), "read")
 		return tfErr.GetDiag()
 	}
-	if err = d.Set("event_notifications_instance_crn", notificationsRegistration.EventNotificationsInstanceCrn); err != nil {
+	if err = d.Set("event_notifications_instance_crn", enInstanceCrn); err != nil {
 		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting event_notifications_instance_crn"), fmt.Sprintf("(Data) %s", EnRegistrationResourceName), "read")
 		return tfErr.GetDiag()
 	}

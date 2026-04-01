@@ -1,8 +1,8 @@
-// Copyright IBM Corp. 2024 All Rights Reserved.
+// Copyright IBM Corp. 2026 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 /*
- * IBM OpenAPI Terraform Generator Version: 3.94.1-71478489-20240820-161623
+ * IBM OpenAPI Terraform Generator Version: 3.102.0-615ec964-20250307-203034
  */
 
 package codeengine
@@ -13,14 +13,15 @@ import (
 	"log"
 	"time"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 	"github.com/IBM/code-engine-go-sdk/codeenginev2"
 	"github.com/IBM/go-sdk-core/v5/core"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 func ResourceIbmCodeEngineDomainMapping() *schema.Resource {
@@ -33,6 +34,7 @@ func ResourceIbmCodeEngineDomainMapping() *schema.Resource {
 		Timeouts: &schema.ResourceTimeout{
 			Create: schema.DefaultTimeout(10 * time.Minute),
 			Update: schema.DefaultTimeout(10 * time.Minute),
+			Delete: schema.DefaultTimeout(10 * time.Minute),
 		},
 
 		Schema: map[string]*schema.Schema{
@@ -256,7 +258,7 @@ func waitForIbmCodeEngineDomainMappingCreate(d *schema.ResourceData, meta interf
 			return stateObj, *stateObj.Status, nil
 		},
 		Timeout:    d.Timeout(schema.TimeoutCreate),
-		Delay:      60 * time.Second,
+		Delay:      10 * time.Second,
 		MinTimeout: 60 * time.Second,
 	}
 
@@ -504,10 +506,14 @@ func ResourceIbmCodeEngineDomainMappingDomainMappingPatchAsPatch(patchVals *code
 	path = "component"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["component"] = nil
+	} else if !exists {
+		delete(patch, "component")
 	}
 	path = "tls_secret"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["tls_secret"] = nil
+	} else if !exists {
+		delete(patch, "tls_secret")
 	}
 
 	return patch

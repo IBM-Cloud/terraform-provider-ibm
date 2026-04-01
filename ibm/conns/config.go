@@ -71,6 +71,7 @@ import (
 	cisratelimitv1 "github.com/IBM/networking-go-sdk/zoneratelimitsv1"
 	cisdomainsettingsv1 "github.com/IBM/networking-go-sdk/zonessettingsv1"
 	ciszonesv1 "github.com/IBM/networking-go-sdk/zonesv1"
+	"github.com/IBM/platform-services-go-sdk/accountmanagementv4"
 	"github.com/IBM/platform-services-go-sdk/atrackerv2"
 	"github.com/IBM/platform-services-go-sdk/catalogmanagementv1"
 	"github.com/IBM/platform-services-go-sdk/contextbasedrestrictionsv1"
@@ -312,6 +313,7 @@ type ClientSession interface {
 	CisRangeAppClientSession() (*cisrangeappv1.RangeApplicationsV1, error)
 	CisWAFRuleClientSession() (*ciswafrulev1.WafRulesApiV1, error)
 	CisListsSession() (*cislistsapiv1.ListsApiV1, error)
+	AccountManagementV4() (*accountmanagementv4.AccountManagementV4, error)
 	IAMIdentityV1API() (*iamidentity.IamIdentityV1, error)
 	IBMCloudShellV1() (*ibmcloudshellv1.IBMCloudShellV1, error)
 	ResourceManagerV2API() (*resourcemanager.ResourceManagerV2, error)
@@ -573,6 +575,10 @@ type clientSession struct {
 	// CIS LISTS
 	cisListsClient *cislistsapiv1.ListsApiV1
 	cisListsErr    error
+
+	// Account Management Option
+	accountManagementErr error
+	accountManagementAPI *accountmanagementv4.AccountManagementV4
 
 	// IAM Identity Option
 	iamIdentityErr error
@@ -1210,6 +1216,11 @@ func (sess clientSession) CisListsSession() (*cislistsapiv1.ListsApiV1, error) {
 	return sess.cisListsClient.Clone(), nil
 }
 
+// Account Management Session
+func (sess clientSession) AccountManagementV4() (*accountmanagementv4.AccountManagementV4, error) {
+	return sess.accountManagementAPI, sess.accountManagementErr
+}
+
 // IAM Identity Session
 func (sess clientSession) IAMIdentityV1API() (*iamidentity.IamIdentityV1, error) {
 	return sess.iamIdentityAPI, sess.iamIdentityErr
@@ -1488,6 +1499,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 		session.cisLockdownErr = errEmptyBluemixCredentials
 		session.cisRangeAppErr = errEmptyBluemixCredentials
 		session.cisWAFRuleErr = errEmptyBluemixCredentials
+		session.accountManagementErr = errEmptyBluemixCredentials
 		session.iamIdentityErr = errEmptyBluemixCredentials
 		session.secretsManagerClientErr = errEmptyBluemixCredentials
 		session.cisFiltersErr = errEmptyBluemixCredentials
@@ -3368,6 +3380,29 @@ func (c *Config) ClientSession() (interface{}, error) {
 	if fileMap != nil && c.Visibility != "public-and-private" {
 		iamIdenityURL = fileFallBack(fileMap, c.Visibility, "IBMCLOUD_IAM_API_ENDPOINT", c.Region, iamIdenityURL)
 	}
+	// ACCOUNT MANAGEMENT Service
+	accountManagementURL := accountmanagementv4.DefaultServiceURL
+	if c.Visibility == "private" || c.Visibility == "public-and-private" {
+		if c.Region == "us-south" || c.Region == "us-east" {
+			accountManagementURL = ContructEndpoint(fmt.Sprintf("private.%s.iam", c.Region), cloudEndpoint)
+		}
+	}
+	accountManagementOptions := &accountmanagementv4.AccountManagementV4Options{
+		Authenticator: authenticator,
+		URL:           EnvFallBack([]string{"IBMCLOUD_ACCOUNT_MANAGEMENT_API_ENDPOINT"}, accountManagementURL),
+	}
+	accountManagementClient, err := accountmanagementv4.NewAccountManagementV4(accountManagementOptions)
+	if err != nil {
+		session.accountManagementErr = fmt.Errorf("[ERROR] Error occurred while configuring Account Management service: %q", err)
+	}
+	if accountManagementClient != nil && accountManagementClient.Service != nil {
+		accountManagementClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+		accountManagementClient.SetDefaultHeaders(gohttp.Header{
+			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
+		})
+	}
+	session.accountManagementAPI = accountManagementClient
+
 	iamIdentityOptions := &iamidentity.IamIdentityV1Options{
 		Authenticator: authenticator,
 		URL:           EnvFallBack([]string{"IBMCLOUD_IAM_API_ENDPOINT"}, iamIdenityURL),
@@ -3844,7 +3879,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 	codeEngineClientOptions := &codeengine.CodeEngineV2Options{
 		Authenticator: authenticator,
 		URL:           EnvFallBack([]string{"IBMCLOUD_CODE_ENGINE_API_ENDPOINT"}, codeEngineEndpoint),
-		Version:       core.StringPtr("2025-07-10"),
+		Version:       core.StringPtr("2026-02-20"),
 	}
 
 	// Construct the service client.
