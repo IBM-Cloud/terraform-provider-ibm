@@ -306,6 +306,16 @@ In addition to all argument reference list, you can access the following attribu
 		- `code` - (String)  A snake case string identifying the status reason.
 		- `message` - (String)  An explanation of the status reason
 		- `more_info` - (String) Link to documentation about this status reason
+	- `software_attachments` - (List) The software attachments for this instance.
+	  * Constraints: The minimum length is `0` items.
+		Nested schema for **software_attachments**:
+		- `deleted` - (List) If present, this property indicates the referenced resource has been deleted, and providessome supplementary information.
+			Nested schema for **deleted**:
+			- `more_info` - (String) A link to documentation about deleted resources.
+		- `href` - (String) The URL for this instance software attachment.
+		- `id` - (String) The unique identifier for this instance software attachment.
+		- `name` - (String) The name for this instance software attachment. The name is unique across all instance software attachments for the instance.
+		- `resource_type` - (String) The resource type.
 	- `total_volume_bandwidth` - (Integer) The amount of bandwidth (in megabits per second) allocated exclusively to instance storage volumes
     - `total_network_bandwidth` - (Integer) The amount of bandwidth (in megabits per second) allocated exclusively to instance network interfaces.
 	- `vcpu` - (List) The virtual server instance VCPU configuration.
