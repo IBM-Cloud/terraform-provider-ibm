@@ -17,7 +17,7 @@ require (
 	github.com/IBM/cloudant-go-sdk v0.8.0
 	github.com/IBM/code-engine-go-sdk v0.0.0-20260304141634-773f5cd0b0ed
 	github.com/IBM/configuration-aggregator-go-sdk v0.0.2
-	github.com/IBM/container-registry-go-sdk v1.2.0
+	github.com/IBM/container-registry-go-sdk v1.3.0
 	github.com/IBM/continuous-delivery-go-sdk/v2 v2.0.6
 	github.com/IBM/dra-go-sdk v0.0.0-20251210070042-5072d22c26d0
 	github.com/IBM/event-notifications-go-admin-sdk v0.21.0
