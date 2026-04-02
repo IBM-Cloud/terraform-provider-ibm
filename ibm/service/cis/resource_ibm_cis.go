@@ -312,9 +312,18 @@ func ResourceIBMCISInstanceRead(d *schema.ResourceData, meta interface{}) error 
 
 	servicePlan, err := rsCatRepo.GetServicePlanName(*instance.ResourcePlanID)
 	if err != nil {
-		return flex.FmtErrorf("[ERROR] Error retrieving plan: %s", err)
+		// Handle EOM (End-of-Market) plans that are no longer in the Global Catalog
+		// For existing instances with EOM plans, use the plan ID directly
+		// This allows import and management of existing instances even if the plan is deprecated
+		if apiErr, ok := err.(bmxerror.RequestFailure); ok && apiErr.StatusCode() == 403 {
+			log.Printf("[WARN] Unable to retrieve plan name from catalog (likely EOM plan): %s. Using plan ID instead.", err)
+			d.Set("plan", *instance.ResourcePlanID)
+		} else {
+			return flex.FmtErrorf("[ERROR] Error retrieving plan: %s", err)
+		}
+	} else {
+		d.Set("plan", servicePlan)
 	}
-	d.Set("plan", servicePlan)
 
 	d.Set(flex.ResourceName, *instance.Name)
 	d.Set(flex.ResourceCRN, *instance.CRN)
