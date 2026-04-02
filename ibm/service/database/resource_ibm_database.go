@@ -189,6 +189,7 @@ func ResourceIBMDatabaseInstance() *schema.Resource {
 			validateRemoteLeaderIDDiff,
 			validateVersionDiff,
 			validateAsyncRestoreDiff,
+			validateServiceEndpointsDiff,
 		),
 
 		Importer: &schema.ResourceImporter{},
@@ -254,7 +255,7 @@ func ResourceIBMDatabaseInstance() *schema.Resource {
 			},
 
 			"adminuser": {
-				Description: "The admin user id for the instance",
+				Description: "The admin user id for the instance. Note: In Gen2, there is no default admin user. Users should manage credentials using the ibm_resource_key resource (https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/resources/resource_key).",
 				Type:        schema.TypeString,
 				Computed:    true,
 			},
@@ -286,7 +287,7 @@ func ResourceIBMDatabaseInstance() *schema.Resource {
 			"configuration_schema": {
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "The configuration schema in JSON format",
+				Description: "The configuration schema in JSON format. Note: This attribute is currently not supported for Gen2 database instances.",
 			},
 			"version": {
 				Description: "The database version to provision if specified or the database version to upgrade to",
@@ -300,9 +301,9 @@ func ResourceIBMDatabaseInstance() *schema.Resource {
 				Optional:    true,
 			},
 			"service_endpoints": {
-				Description:  "Types of the service endpoints. Possible values are 'public', 'private', 'public-and-private'.",
+				Description:  "Types of the service endpoints. Possible values are 'public', 'private', 'public-and-private'. Required for Classic plans. For Gen2 plans, this field cannot be set and defaults to 'private'.",
 				Type:         schema.TypeString,
-				Required:     true,
+				Optional:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_database", "service_endpoints"),
 			},
 			"backup_id": {
@@ -371,8 +372,9 @@ func ResourceIBMDatabaseInstance() *schema.Resource {
 				DiffSuppressFunc: flex.ApplyOnce,
 			},
 			"users": {
-				Type:     schema.TypeSet,
-				Optional: true,
+				Type:        schema.TypeSet,
+				Optional:    true,
+				Description: "Database users. Note: In Gen2, users should manage credentials using the ibm_resource_key resource (https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/resources/resource_key).",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"name": {
@@ -406,8 +408,9 @@ func ResourceIBMDatabaseInstance() *schema.Resource {
 				},
 			},
 			"allowlist": {
-				Type:     schema.TypeSet,
-				Optional: true,
+				Type:        schema.TypeSet,
+				Optional:    true,
+				Description: "Allowlist for database access. Note: This attribute is not supported for Gen2 database instances.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"address": {
@@ -521,6 +524,7 @@ func ResourceIBMDatabaseInstance() *schema.Resource {
 										Required: true,
 										ValidateFunc: validation.StringInSlice([]string{
 											"multitenant",
+											"bx3d.4x20",
 											"b3c.4x16.encrypted",
 											"b3c.8x32.encrypted",
 											"m3c.8x64.encrypted",
@@ -701,7 +705,7 @@ func ResourceIBMDatabaseInstance() *schema.Resource {
 			},
 			"auto_scaling": {
 				Type:        schema.TypeList,
-				Description: "ICD Auto Scaling",
+				Description: "ICD Auto Scaling. Note: This attribute is currently not supported for Gen2 database instances.",
 				Optional:    true,
 				Computed:    true,
 				MaxItems:    1,
@@ -1043,8 +1047,8 @@ func getDefaultScalingGroups(_service string, _plan string, _hostFlavor string, 
 	}
 
 	getDefaultScalingGroupsResponse, response, err := cloudDatabasesClient.GetDefaultScalingGroups(getDefaultScalingGroupsOptions)
-	if err != nil && response != nil {
-		if response.StatusCode == 422 {
+	if err != nil {
+		if response != nil && response.StatusCode == 422 {
 			return groups, fmt.Errorf("%s is not available on multitenant", service)
 		}
 		return groups, err
@@ -1360,7 +1364,7 @@ func classicDatabaseInstanceCreate(context context.Context, d *schema.ResourceDa
 	}
 	d.SetId(*instance.ID)
 
-	_, err = waitForDatabaseInstanceCreate(d, meta, *instance.ID)
+	_, err = waitForDatabaseInstanceCreate(d, meta, *instance.ID, true)
 	if err != nil {
 		return diag.FromErr(
 			fmt.Errorf(
@@ -2369,7 +2373,7 @@ func resourceIBMDatabaseInstanceExists(d *schema.ResourceData, meta interface{})
 	return pickResourceBackend(d).Exists(d, meta)
 }
 
-func classicDatabaseInstanceExists(d *schema.ResourceData, meta interface{}) (bool, error) {
+func databaseInstanceExists(d *schema.ResourceData, meta interface{}) (bool, error) {
 	rsConClient, err := meta.(conns.ClientSession).ResourceControllerV2API()
 	if err != nil {
 		return false, err
@@ -2420,7 +2424,7 @@ func waitForICDReady(meta interface{}, instanceID string) error {
 	return nil
 }
 
-func waitForDatabaseInstanceCreate(d *schema.ResourceData, meta interface{}, instanceID string) (interface{}, error) {
+func waitForDatabaseInstanceCreate(d *schema.ResourceData, meta interface{}, instanceID string, waitForICD bool) (interface{}, error) {
 	rsConClient, err := meta.(conns.ClientSession).ResourceControllerV2API()
 	if err != nil {
 		return false, err
@@ -2450,9 +2454,11 @@ func waitForDatabaseInstanceCreate(d *schema.ResourceData, meta interface{}, ins
 		MinTimeout: 10 * time.Second,
 	}
 
-	waitErr := waitForICDReady(meta, instanceID)
-	if waitErr != nil {
-		return false, fmt.Errorf("[ERROR] Error ICD interface not ready after create: %s with error %s\n", instanceID, waitErr)
+	if waitForICD {
+		waitErr := waitForICDReady(meta, instanceID)
+		if waitErr != nil {
+			return false, fmt.Errorf("[ERROR] Error ICD interface not ready after create: %s with error %s\n", instanceID, waitErr)
+		}
 	}
 
 	return stateConf.WaitForState()
@@ -2687,7 +2693,7 @@ func flattenAutoScalingGroup(autoScalingGroup clouddatabasesv5.AutoscalingGroup)
 		memory["io_above_percent"] = memoryIO.AbovePercent
 	}
 
-	if &autoScalingGroup.Autoscaling.Memory.Rate != nil {
+	if autoScalingGroup.Autoscaling.Memory.Rate != nil {
 		ip := autoScalingGroup.Autoscaling.Memory.Rate.IncreasePercent
 		memory["rate_increase_percent"] = *ip
 		memory["rate_period_seconds"] = autoScalingGroup.Autoscaling.Memory.Rate.PeriodSeconds
@@ -2701,7 +2707,7 @@ func flattenAutoScalingGroup(autoScalingGroup clouddatabasesv5.AutoscalingGroup)
 	cpus := make([]map[string]interface{}, 0)
 	cpu := make(map[string]interface{})
 
-	if &autoScalingGroup.Autoscaling.CPU.Rate != nil {
+	if autoScalingGroup.Autoscaling.CPU.Rate != nil {
 		ip := autoScalingGroup.Autoscaling.CPU.Rate.IncreasePercent
 		cpu["rate_increase_percent"] = *ip
 		cpu["rate_period_seconds"] = autoScalingGroup.Autoscaling.CPU.Rate.PeriodSeconds
@@ -2726,7 +2732,7 @@ func flattenAutoScalingGroup(autoScalingGroup clouddatabasesv5.AutoscalingGroup)
 		disk["io_above_percent"] = diskIO.AbovePercent
 	}
 
-	if &autoScalingGroup.Autoscaling.Disk.Rate != nil {
+	if autoScalingGroup.Autoscaling.Disk.Rate != nil {
 		ip := autoScalingGroup.Autoscaling.Disk.Rate.IncreasePercent
 		disk["rate_increase_percent"] = ip
 		disk["rate_period_seconds"] = autoScalingGroup.Autoscaling.Disk.Rate.PeriodSeconds
@@ -2970,6 +2976,29 @@ func validateGroupsDiff(_ context.Context, diff *schema.ResourceDiff, meta inter
 	service := diff.Get("service").(string)
 	plan := diff.Get("plan").(string)
 
+	// For Gen2 plans, skip Classic API validation during plan phase
+	// Gen2 uses different APIs (GlobalCatalog) and validation happens at apply time
+	if instanceID == "" && isGen2Plan(plan) {
+		// Only validate basic group structure for Gen2 during plan
+		if group, ok := diff.GetOk("group"); ok {
+			groups := expandGroups(group.(*schema.Set).List())
+			var groupIds []string
+			groupIds = make([]string, 0, len(groups))
+			for _, g := range groups {
+				groupIds = append(groupIds, g.ID)
+			}
+			// validate group_ids are unique
+			for n1, i1 := range groupIds {
+				for n2, i2 := range groupIds {
+					if i1 == i2 && n1 != n2 {
+						return fmt.Errorf("found 2 or more instances of group with group_id %v", i1)
+					}
+				}
+			}
+		}
+		return nil
+	}
+
 	if group, ok := diff.GetOk("group"); ok {
 		var currentGroups []Group
 		var groupList []clouddatabasesv5.Group
@@ -2986,7 +3015,7 @@ func validateGroupsDiff(_ context.Context, diff *schema.ResourceDiff, meta inter
 		if instanceID != "" {
 			groupList, err = getGroups(instanceID, meta)
 		} else {
-			if memberGroup.HostFlavor != nil {
+			if memberGroup != nil && memberGroup.HostFlavor != nil {
 				groupList, err = getDefaultScalingGroups(service, plan, memberGroup.HostFlavor.ID, meta)
 			} else {
 				groupList, err = getDefaultScalingGroups(service, plan, "", meta)
@@ -3280,6 +3309,22 @@ func validateAsyncRestoreDiff(_ context.Context, diff *schema.ResourceDiff, meta
 		return fmt.Errorf("[ERROR] `async_restore` is only supported for `databases-for-postgresql` for Fast PG Restore")
 	}
 
+	return nil
+}
+
+func validateServiceEndpointsDiff(_ context.Context, diff *schema.ResourceDiff, meta interface{}) (err error) {
+	serviceEndpoint, serviceEndpointOk := diff.GetOk("service_endpoints")
+	plan := diff.Get("plan").(string)
+
+	// For Gen2 plans, service_endpoints should not be set
+	if isGen2Plan(plan) && serviceEndpointOk && serviceEndpoint.(string) != "" {
+		return fmt.Errorf("[ERROR] service_endpoints cannot be set for Gen2 plans (plans ending with -gen2). Gen2 defaults to 'private' endpoints")
+	}
+
+	// For Classic plans, service_endpoints is required
+	if !isGen2Plan(plan) && (!serviceEndpointOk || serviceEndpoint.(string) == "") {
+		return fmt.Errorf("[ERROR] service_endpoints is required for Classic plans")
+	}
 	return nil
 }
 
