@@ -21,26 +21,26 @@ import (
 	"github.com/IBM/dra-go-sdk/drautomationservicev1"
 )
 
-func TestAccIBMPdrGetDrLocationsDataSourceBasic(t *testing.T) {
+func TestAccIBMPdrDrLocationsDataSourceBasic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheck(t) },
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIBMPdrGetDrLocationsDataSourceConfigBasic(),
+				Config: testAccCheckIBMPdrDrLocationsDataSourceConfigBasic(),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet("data.ibm_pdr_get_dr_locations.pdr_get_dr_locations_instance", "id"),
-					resource.TestCheckResourceAttrSet("data.ibm_pdr_get_dr_locations.pdr_get_dr_locations_instance", "instance_id"),
-					resource.TestCheckResourceAttrSet("data.ibm_pdr_get_dr_locations.pdr_get_dr_locations_instance", "dr_locations.#"),
+					resource.TestCheckResourceAttrSet("data.ibm_pdr_dr_locations.pdr_dr_locations_instance", "id"),
+					resource.TestCheckResourceAttrSet("data.ibm_pdr_dr_locations.pdr_dr_locations_instance", "instance_id"),
+					resource.TestCheckResourceAttrSet("data.ibm_pdr_dr_locations.pdr_dr_locations_instance", "dr_locations.#"),
 				),
 			},
 		},
 	})
 }
 
-func testAccCheckIBMPdrGetDrLocationsDataSourceConfigBasic() string {
+func testAccCheckIBMPdrDrLocationsDataSourceConfigBasic() string {
 	return fmt.Sprintf(`
-		data "ibm_pdr_get_dr_locations" "pdr_get_dr_locations_instance" {
+		data "ibm_pdr_dr_locations" "pdr_dr_locations_instance" {
 			instance_id = "xxxx2ec4-xxxx-4f84-xxxx-c2aa834dd4ed"
 		}
 	`)

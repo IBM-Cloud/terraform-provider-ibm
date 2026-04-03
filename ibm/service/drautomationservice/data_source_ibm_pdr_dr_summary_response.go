@@ -21,9 +21,9 @@ import (
 	"github.com/IBM/dra-go-sdk/drautomationservicev1"
 )
 
-func DataSourceIBMPdrGetDrSummaryResponse() *schema.Resource {
+func dataSourceIBMPdrDrSummaryResponseCommon() *schema.Resource {
 	return &schema.Resource{
-		ReadContext: dataSourceIBMPdrGetDrSummaryResponseRead,
+
 
 		Schema: map[string]*schema.Schema{
 			"instance_id": &schema.Schema{
@@ -63,6 +63,11 @@ func DataSourceIBMPdrGetDrSummaryResponse() *schema.Resource {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "The deployment time of primary orchestrator VM.",
+						},
+						"api_key": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "api key.",
 						},
 						"last_updated_standby_orchestrator_deployment_time": &schema.Schema{
 							Type:        schema.TypeString,
@@ -174,6 +179,11 @@ func DataSourceIBMPdrGetDrSummaryResponse() *schema.Resource {
 							Computed:    true,
 							Description: "The name of the VPC.",
 						},
+						"standby_ssh_key_name": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "SSH key name used for the standby orchestrator.",
+						},
 					},
 				},
 			},
@@ -260,10 +270,31 @@ func DataSourceIBMPdrGetDrSummaryResponse() *schema.Resource {
 	}
 }
 
-func dataSourceIBMPdrGetDrSummaryResponseRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func DataSourceIBMPdrDrSummaryResponse() *schema.Resource {
+	res := dataSourceIBMPdrDrSummaryResponseCommon()
+	res.ReadContext = dataSourceIBMPdrDrSummaryResponseRead
+	return res
+}
+
+func DataSourceIBMPdrGetDrSummaryResponse() *schema.Resource {
+	res := dataSourceIBMPdrDrSummaryResponseCommon()
+	res.ReadContext = dataSourceIBMPdrGetDrSummaryResponseRead
+	res.DeprecationMessage = "This data source is deprecated. Use `ibm_pdr_dr_summary_response` instead."
+	return res
+}
+
+func dataSourceIBMPdrDrSummaryResponseRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	return dataSourceIBMPdrDrSummaryResponseReadCommon(ctx, d, meta, "ibm_pdr_dr_summary_response")
+}
+
+func dataSourceIBMPdrGetDrSummaryResponseRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	return dataSourceIBMPdrDrSummaryResponseReadCommon(ctx, d, meta, "ibm_pdr_get_dr_summary_response")
+}
+
+func dataSourceIBMPdrDrSummaryResponseReadCommon(context context.Context, d *schema.ResourceData, meta interface{}, dsname string) diag.Diagnostics {
 	drAutomationServiceClient, err := meta.(conns.ClientSession).DrAutomationServiceV1()
 	if err != nil {
-		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_pdr_get_dr_summary_response", "read", "initialize-client")
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) "+dsname, "read", "initialize-client")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
@@ -284,7 +315,7 @@ func dataSourceIBMPdrGetDrSummaryResponseRead(context context.Context, d *schema
 				err.Error(), response.StatusCode, response.Result,
 			)
 		}
-		tfErr := flex.TerraformErrorf(err, detailedMsg, "(Data) ibm_pdr_get_dr_summary_response", "read")
+		tfErr := flex.TerraformErrorf(err, detailedMsg, "(Data) "+dsname, "read")
 		log.Printf("[ERROR] %s", detailedMsg)
 		return tfErr.GetDiag()
 	}
@@ -299,7 +330,7 @@ func dataSourceIBMPdrGetDrSummaryResponseRead(context context.Context, d *schema
 		if !ok {
 			return flex.DiscriminatedTerraformErrorf(
 				fmt.Errorf("managed_vm_list[%s] is not an object", vmID),
-				"(Data) ibm_pdr_get_dr_summary_response",
+				"(Data) "+dsname,
 				"read",
 				"invalid-managed_vm_list",
 				"",
@@ -342,34 +373,34 @@ func dataSourceIBMPdrGetDrSummaryResponseRead(context context.Context, d *schema
 		return flex.DiscriminatedTerraformErrorf(
 			err,
 			fmt.Sprintf("Error setting managed_vm_list: %s", err),
-			"(Data) ibm_pdr_get_dr_summary_response",
+			"(Data) "+dsname,
 			"read",
 			"set-managed_vm_list",
 		).GetDiag()
 	}
 
 	// if err = d.Set("managed_vm_lists", converted); err != nil {
-	// 	return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting managed_vm_list: %s", err), "(Data) ibm_pdr_get_dr_summary_response", "read", "set-managed_vm_list").GetDiag()
+	// 	return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting managed_vm_list: %s", err), "(Data) "+dsname, "read", "set-managed_vm_list").GetDiag()
 	// }
 
 	orchestratorDetails := []map[string]interface{}{}
 	orchestratorDetailsMap, err := DataSourceIBMPdrGetDrSummaryResponseOrchestratorDetailsToMap(drAutomationGetSummaryResponse.OrchestratorDetails)
 	if err != nil {
-		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_pdr_get_dr_summary_response", "read", "orchestrator_details-to-map").GetDiag()
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) "+dsname, "read", "orchestrator_details-to-map").GetDiag()
 	}
 	orchestratorDetails = append(orchestratorDetails, orchestratorDetailsMap)
 	if err = d.Set("orchestrator_details", orchestratorDetails); err != nil {
-		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting orchestrator_details: %s", err), "(Data) ibm_pdr_get_dr_summary_response", "read", "set-orchestrator_details").GetDiag()
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting orchestrator_details: %s", err), "(Data) "+dsname, "read", "set-orchestrator_details").GetDiag()
 	}
 
 	serviceDetails := []map[string]interface{}{}
 	serviceDetailsMap, err := DataSourceIBMPdrGetDrSummaryResponseServiceDetailsToMap(drAutomationGetSummaryResponse.ServiceDetails)
 	if err != nil {
-		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_pdr_get_dr_summary_response", "read", "service_details-to-map").GetDiag()
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) "+dsname, "read", "service_details-to-map").GetDiag()
 	}
 	serviceDetails = append(serviceDetails, serviceDetailsMap)
 	if err = d.Set("service_details", serviceDetails); err != nil {
-		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting service_details: %s", err), "(Data) ibm_pdr_get_dr_summary_response", "read", "set-service_details").GetDiag()
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting service_details: %s", err), "(Data) "+dsname, "read", "set-service_details").GetDiag()
 	}
 
 	return nil
@@ -391,6 +422,7 @@ func DataSourceIBMPdrGetDrSummaryResponseOrchestratorDetailsToMap(model *drautom
 	if model.LatestOrchestratorTime != nil {
 		modelMap["latest_orchestrator_time"] = model.LatestOrchestratorTime.String()
 	}
+	modelMap["api_key"] = *model.APIKey
 	modelMap["location_id"] = *model.LocationID
 	modelMap["mfa_enabled"] = *model.MfaEnabled
 	modelMap["orch_ext_connectivity_status"] = *model.OrchExtConnectivityStatus
@@ -411,6 +443,7 @@ func DataSourceIBMPdrGetDrSummaryResponseOrchestratorDetailsToMap(model *drautom
 	modelMap["standby_orchestrator_workspace_name"] = *model.StandbyOrchestratorWorkspaceName
 	modelMap["transit_gateway_name"] = *model.TransitGatewayName
 	modelMap["vpc_name"] = *model.VPCName
+	modelMap["standby_ssh_key_name"] = *model.StandbySSHKeyName
 	return modelMap, nil
 }
 

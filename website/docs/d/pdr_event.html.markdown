@@ -1,20 +1,18 @@
 ---
 layout: "ibm"
-page_title: "IBM : ibm_pdr_get_event"
+page_title: "IBM : ibm_pdr_event"
 description: |-
-  Get information about pdr_get_event
+  Get information about pdr_event
 subcategory: "DrAutomation Service"
 ---
 
-# ibm_pdr_get_event
+# ibm_pdr_event
 Retrieves the details of a specific event for the given service instance provision ID.
-
-~> **This data source is deprecated and will be removed in the next major version. Use `ibm_pdr_event` instead.**
 
 ## Example Usage
 
 ```hcl
-data "ibm_pdr_get_event" "pdr_get_event" {
+data "ibm_pdr_event" "pdr_event" {
 	event_id = "00116b2a-9326-4024-839e-fb5364b76898"
 	instance_id = "123456d3-1122-3344-b67d-4389b44b7bf9"
 }
@@ -32,7 +30,7 @@ You can specify the following arguments for this data source.
 
 After your data source is created, you can read values from the following attributes.
 
-* `id` - The unique identifier of the pdr_get_event.
+* `id` - The unique identifier of the pdr_event.
 * `action` - (String) Type of action for this event.
 * `api_source` - (String) Source of API when it being executed.
 * `level` - (String) Level of the event (notice, info, warning, error).

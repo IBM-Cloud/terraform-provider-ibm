@@ -1,21 +1,19 @@
 ---
 layout: "ibm"
-page_title: "IBM : ibm_pdr_get_events"
+page_title: "IBM : ibm_pdr_events"
 description: |-
-  Get information about pdr_get_events
+  Get information about pdr_events
 subcategory: "DrAutomation Service"
 ---
 
-# ibm_pdr_get_events
+# ibm_pdr_events
 
 Retrieves the list of events from the specified service instance ID.
-
-~> **This data source is deprecated and will be removed in the next major version. Use `ibm_pdr_events` instead.**
 
 ## Example Usage
 
 ```hcl
-data "ibm_pdr_get_events" "pdr_get_events" {
+data "ibm_pdr_events" "pdr_events" {
 	from_time = "2025-06-19T00:00:00Z"
 	instance_id = "123456d3-1122-3344-b67d-4389b44b7bf9"
 	to_time = "2025-06-19T23:59:59Z"
@@ -35,7 +33,7 @@ You can specify the following arguments for this data source.
 
 After your data source is created, you can read values from the following attributes.
 
-* `id` - The unique identifier of the pdr_get_events.
+* `id` - The unique identifier of the pdr_events.
 * `event` - (List) **Deprecated**: Use `events` instead.
 Nested schema for **event**:
 	* `action` - (String) Type of action for this event.
