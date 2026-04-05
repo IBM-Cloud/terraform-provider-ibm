@@ -282,7 +282,7 @@ func ResourceIBMDatabaseInstance() *schema.Resource {
 					}
 					return json
 				},
-				Description: "The configuration in JSON format",
+				Description: "The configuration in JSON format. Note: This attribute is currently not supported for Gen2 database instances.",
 			},
 			"configuration_schema": {
 				Type:        schema.TypeString,
@@ -313,7 +313,7 @@ func ResourceIBMDatabaseInstance() *schema.Resource {
 				DiffSuppressFunc: flex.ApplyOnce,
 			},
 			"remote_leader_id": {
-				Description: "The CRN of leader database",
+				Description: "The CRN of leader database. Note: This attribute is currently not supported for Gen2 database instances.",
 				Type:        schema.TypeString,
 				Optional:    true,
 			},

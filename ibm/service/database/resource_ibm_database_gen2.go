@@ -15,7 +15,6 @@ import (
 	"github.com/IBM-Cloud/bluemix-go/models"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
-	"github.com/IBM/cloud-databases-go-sdk/clouddatabasesv5"
 	"github.com/IBM/go-sdk-core/v5/core"
 	rc "github.com/IBM/platform-services-go-sdk/resourcecontrollerv2"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -42,13 +41,13 @@ type DBConfig struct {
 
 // instanceConfigContext encapsulates shared context for instance configuration steps.
 // This reduces parameter passing and makes the configuration flow more maintainable.
+// Note: Gen2 uses Resource Controller API only, no CloudDatabasesV5 client needed.
 type instanceConfigContext struct {
-	ctx                  context.Context
-	d                    *schema.ResourceData
-	instanceID           string
-	cloudDatabasesClient *clouddatabasesv5.CloudDatabasesV5
-	meta                 interface{}
-	instance             *rc.ResourceInstance
+	ctx        context.Context
+	d          *schema.ResourceData
+	instanceID string
+	meta       interface{}
+	instance   *rc.ResourceInstance
 }
 
 type resourceIBMDatabaseGen2Backend struct{}
@@ -56,12 +55,6 @@ type resourceIBMDatabaseGen2Backend struct{}
 // newResourceIBMDatabaseGen2Backend creates a new Gen2 backend instance
 func newResourceIBMDatabaseGen2Backend() resourceIBMDatabaseBackend {
 	return &resourceIBMDatabaseGen2Backend{}
-}
-
-// wrapErr wraps an error with a context string for better error messages.
-// Reduces duplication of fmt.Errorf calls throughout the codebase.
-func wrapErr(ctx string, err error) error {
-	return fmt.Errorf("%s: %w", ctx, err)
 }
 
 // emptyStringsWithErr returns two empty strings and an error.
@@ -432,12 +425,6 @@ func (g *resourceIBMDatabaseGen2Backend) configureInstance(ctx context.Context, 
 	configSteps := []configStep{
 		{name: "group scaling", fn: g.applyGroupScaling},
 		{name: "tags", fn: g.updateTags},
-		{name: "admin password", fn: g.updateAdminPassword},
-		{name: "allowlist", fn: g.configureAllowlist},
-		{name: "auto-scaling", fn: g.configureAutoScaling},
-		{name: "users", fn: g.configureUsers},
-		{name: "database settings", fn: g.configureDatabaseSettings},
-		{name: "logical replication", fn: g.configureLogicalReplication},
 	}
 
 	// Execute configuration steps sequentially
@@ -450,163 +437,81 @@ func (g *resourceIBMDatabaseGen2Backend) configureInstance(ctx context.Context, 
 	return nil
 }
 
-// initConfigContext initializes the configuration context with validated instance and client.
+// initConfigContext initializes the configuration context with validated instance.
+// Note: CloudDatabasesV5 client removed as Gen2 uses Resource Controller for all operations.
 func (g *resourceIBMDatabaseGen2Backend) initConfigContext(ctx context.Context, d *schema.ResourceData, meta interface{}, instance *rc.ResourceInstance) (*instanceConfigContext, error) {
 	if instance == nil || instance.ID == nil {
 		return nil, fmt.Errorf("instance or instance ID is nil")
 	}
 
-	clientSession := meta.(conns.ClientSession)
-	cloudDatabasesClient, err := clientSession.CloudDatabasesV5()
-	if err != nil {
-		return nil, fmt.Errorf("failed to initialize cloud databases client: %w", err)
-	}
-
 	return &instanceConfigContext{
-		ctx:                  ctx,
-		d:                    d,
-		instanceID:           *instance.ID,
-		cloudDatabasesClient: cloudDatabasesClient,
-		meta:                 meta,
-		instance:             instance,
+		ctx:        ctx,
+		d:          d,
+		instanceID: *instance.ID,
+		meta:       meta,
+		instance:   instance,
 	}, nil
 }
 
-// applyGroupScaling applies scaling configuration to instance groups.
-// Compares desired configuration with current state and applies changes as needed.
+// applyGroupScaling applies scaling configuration to instance groups using Resource Controller.
+// Flattens group configuration into parameters and updates the instance via UpdateResourceInstance API.
+// This approach is consistent with how groups are handled at CREATE time and removes CloudDatabasesV5 dependency.
 func (g *resourceIBMDatabaseGen2Backend) applyGroupScaling(configCtx *instanceConfigContext) error {
-	group, ok := configCtx.d.GetOk("group")
-	if !ok {
+	if _, ok := configCtx.d.GetOk("group"); !ok {
 		return nil
 	}
 
-	groups := expandGroups(group.(*schema.Set).List())
-	groupsResponse, err := getGroups(configCtx.instanceID, configCtx.meta)
+	// Get Resource Controller client
+	rsConClient, err := configCtx.meta.(conns.ClientSession).ResourceControllerV2API()
 	if err != nil {
-		return fmt.Errorf("failed to get groups: %w", err)
+		return fmt.Errorf("failed to initialize resource controller client: %w", err)
 	}
-	currentGroups := normalizeGroups(groupsResponse)
 
-	for _, grp := range groups {
-		if err := g.scaleGroup(configCtx, grp, currentGroups); err != nil {
-			return err
-		}
+	// Get service name for building parameters
+	serviceName := configCtx.d.Get("service").(string)
+
+	// Get catalog CRN from instance
+	if configCtx.instance.CRN == nil {
+		return fmt.Errorf("instance CRN is nil")
+	}
+
+	location := strings.Split(*configCtx.instance.CRN, ":")
+	if len(location) <= 5 {
+		return fmt.Errorf("invalid CRN format")
+	}
+	instanceLocation := location[5]
+
+	// Get catalog CRN for building parameters
+	clientSession := configCtx.meta.(conns.ClientSession)
+	_, catalogCRN, err := g.getServicePlanAndCatalog(serviceName, configCtx.d.Get("plan").(string), instanceLocation, clientSession)
+	if err != nil {
+		return fmt.Errorf("failed to get catalog CRN: %w", err)
+	}
+
+	// Build Gen2 parameters with updated group configuration
+	parameters, err := g.buildGen2Parameters(configCtx.d, serviceName, configCtx.meta, catalogCRN)
+	if err != nil {
+		return fmt.Errorf("failed to build parameters: %w", err)
+	}
+
+	// Update the instance with new parameters
+	updateReq := rc.UpdateResourceInstanceOptions{
+		ID:         &configCtx.instanceID,
+		Parameters: parameters,
+	}
+
+	_, response, err := rsConClient.UpdateResourceInstance(&updateReq)
+	if err != nil {
+		return fmt.Errorf("failed to update resource instance: %w (response: %v)", err, response)
+	}
+
+	// Wait for update to complete
+	_, err = waitForDatabaseInstanceUpdate(configCtx.d, configCtx.meta)
+	if err != nil {
+		return fmt.Errorf("error waiting for instance update to complete: %w", err)
 	}
 
 	return nil
-}
-
-// scaleGroup scales a specific group if needed.
-// buildGroupScaling constructs scaling configuration and returns whether scaling is needed.
-// It compares the desired group configuration with the current state and builds the appropriate
-// scaling request. The nodeCount parameter is updated if member allocation changes.
-func (g *resourceIBMDatabaseGen2Backend) buildGroupScaling(grp, currentGroup *Group, nodeCount int) (*clouddatabasesv5.GroupScaling, bool) {
-	groupScaling := &clouddatabasesv5.GroupScaling{}
-	needsScaling := false
-
-	if grp.Members != nil && grp.Members.Allocation != currentGroup.Members.Allocation {
-		groupScaling.Members = &clouddatabasesv5.GroupScalingMembers{
-			AllocationCount: core.Int64Ptr(int64(grp.Members.Allocation)),
-		}
-		nodeCount = grp.Members.Allocation
-		needsScaling = true
-	}
-
-	if grp.Memory != nil && grp.Memory.Allocation*nodeCount != currentGroup.Memory.Allocation {
-		groupScaling.Memory = &clouddatabasesv5.GroupScalingMemory{
-			AllocationMb: core.Int64Ptr(int64(grp.Memory.Allocation * nodeCount)),
-		}
-		needsScaling = true
-	}
-
-	if grp.Disk != nil && grp.Disk.Allocation*nodeCount != currentGroup.Disk.Allocation {
-		groupScaling.Disk = &clouddatabasesv5.GroupScalingDisk{
-			AllocationMb: core.Int64Ptr(int64(grp.Disk.Allocation * nodeCount)),
-		}
-		needsScaling = true
-	}
-
-	if grp.CPU != nil && grp.CPU.Allocation*nodeCount != currentGroup.CPU.Allocation {
-		groupScaling.CPU = &clouddatabasesv5.GroupScalingCPU{
-			AllocationCount: core.Int64Ptr(int64(grp.CPU.Allocation * nodeCount)),
-		}
-		needsScaling = true
-	}
-
-	if grp.HostFlavor != nil {
-		groupScaling.HostFlavor = &clouddatabasesv5.GroupScalingHostFlavor{
-			ID: core.StringPtr(grp.HostFlavor.ID),
-		}
-		needsScaling = true
-	}
-
-	return groupScaling, needsScaling
-}
-
-// findGroupByID locates a group in the slice by ID using a map for O(1) lookup.
-// Returns the group and true if found, nil and false otherwise.
-func findGroupByID(groups []Group, id string) (*Group, bool) {
-	groupMap := make(map[string]*Group, len(groups))
-	for i := range groups {
-		groupMap[groups[i].ID] = &groups[i]
-	}
-	group, exists := groupMap[id]
-	return group, exists
-}
-
-// executeGroupScaling sends the scaling request to the API and returns the task ID.
-func (g *resourceIBMDatabaseGen2Backend) executeGroupScaling(configCtx *instanceConfigContext, groupID string, groupScaling *clouddatabasesv5.GroupScaling) (string, error) {
-	opts := &clouddatabasesv5.SetDeploymentScalingGroupOptions{
-		ID:      &configCtx.instanceID,
-		GroupID: &groupID,
-		Group:   groupScaling,
-	}
-
-	resp, _, err := configCtx.cloudDatabasesClient.SetDeploymentScalingGroup(opts)
-	if err != nil {
-		return "", fmt.Errorf("failed to set deployment scaling group: %w", err)
-	}
-
-	return *resp.Task.ID, nil
-}
-
-// waitForScalingTaskComplete waits for the scaling task to complete.
-func (g *resourceIBMDatabaseGen2Backend) waitForScalingTaskComplete(configCtx *instanceConfigContext, taskID string) error {
-	_, err := waitForDatabaseTaskComplete(taskID, configCtx.d, configCtx.meta, configCtx.d.Timeout(schema.TimeoutUpdate))
-	if err != nil {
-		return fmt.Errorf("error waiting for scaling task to complete: %w", err)
-	}
-	return nil
-}
-
-// scaleGroup handles horizontal and vertical scaling for members, memory, disk, CPU, and host flavor.
-// It compares the desired group configuration with the current state and applies changes as needed.
-func (g *resourceIBMDatabaseGen2Backend) scaleGroup(configCtx *instanceConfigContext, grp *Group, currentGroups []Group) error {
-	currentGroup, exists := findGroupByID(currentGroups, grp.ID)
-	if !exists {
-		return fmt.Errorf("current group %s not found", grp.ID)
-	}
-
-	nodeCount := currentGroup.Members.Allocation
-
-	// Skip scaling if this is the default group with no member changes
-	if grp.ID == defaultGroupID && (grp.Members == nil || grp.Members.Allocation == nodeCount) {
-		return nil
-	}
-
-	// Build scaling configuration and check if any changes are needed
-	groupScaling, needsScaling := g.buildGroupScaling(grp, currentGroup, nodeCount)
-	if !needsScaling {
-		return nil
-	}
-
-	// Apply scaling changes
-	taskID, err := g.executeGroupScaling(configCtx, grp.ID, groupScaling)
-	if err != nil {
-		return err
-	}
-
-	return g.waitForScalingTaskComplete(configCtx, taskID)
 }
 
 // updateTags updates resource tags.
@@ -620,263 +525,6 @@ func (g *resourceIBMDatabaseGen2Backend) updateTags(configCtx *instanceConfigCon
 			return fmt.Errorf("failed to update tags: %w", err)
 		}
 	}
-	return nil
-}
-
-// updateAdminPassword updates the admin password if provided.
-// getAdminUsername retrieves the admin username from deployment info.
-// Extracts and returns the database admin username for the specified instance.
-func (g *resourceIBMDatabaseGen2Backend) getAdminUsername(configCtx *instanceConfigContext) (string, error) {
-	getDeploymentInfoOptions := &clouddatabasesv5.GetDeploymentInfoOptions{
-		ID: core.StringPtr(configCtx.instanceID),
-	}
-
-	response, httpResp, err := configCtx.cloudDatabasesClient.GetDeploymentInfoWithContext(configCtx.ctx, getDeploymentInfoOptions)
-	if err != nil {
-		if httpResp != nil && httpResp.StatusCode == httpNotFound {
-			return "", fmt.Errorf("database instance not found in configured region: %w", err)
-		}
-		return "", fmt.Errorf("failed to get deployment info: %w", err)
-	}
-
-	if response == nil || response.Deployment == nil {
-		return "", fmt.Errorf("deployment info response is nil")
-	}
-
-	return response.Deployment.AdminUsernames[databaseUserType], nil
-}
-
-// waitForTaskCompletion waits for a database task to complete.
-// Provides consistent task waiting with proper timeout handling.
-func (g *resourceIBMDatabaseGen2Backend) waitForTaskCompletion(taskID string, configCtx *instanceConfigContext, timeoutType string) error {
-	_, err := waitForDatabaseTaskComplete(taskID, configCtx.d, configCtx.meta, configCtx.d.Timeout(timeoutType))
-	if err != nil {
-		return fmt.Errorf("task %s failed: %w", taskID, err)
-	}
-	return nil
-}
-
-// updateAdminPassword updates the admin password if provided.
-// Retrieves the admin username from deployment info and updates the password.
-func (g *resourceIBMDatabaseGen2Backend) updateAdminPassword(configCtx *instanceConfigContext) error {
-	pw, ok := configCtx.d.GetOk("adminpassword")
-	if !ok {
-		return nil
-	}
-
-	adminPassword, ok := pw.(string)
-	if !ok {
-		return fmt.Errorf("adminpassword must be a string, got %T", pw)
-	}
-
-	adminUser, err := g.getAdminUsername(configCtx)
-	if err != nil {
-		return err
-	}
-
-	updateUserOptions := &clouddatabasesv5.UpdateUserOptions{
-		ID:       core.StringPtr(configCtx.instanceID),
-		UserType: core.StringPtr(databaseUserType),
-		Username: core.StringPtr(adminUser),
-		User: &clouddatabasesv5.UserUpdatePasswordSetting{
-			Password: &adminPassword,
-		},
-	}
-
-	updateUserResponse, response, err := configCtx.cloudDatabasesClient.UpdateUserWithContext(configCtx.ctx, updateUserOptions)
-	if err != nil {
-		return fmt.Errorf("UpdateUser (%s) failed: %w (response: %v)", *updateUserOptions.Username, err, response)
-	}
-
-	return g.waitForTaskCompletion(*updateUserResponse.Task.ID, configCtx, schema.TimeoutCreate)
-}
-
-// configureAllowlist configures the IP allowlist.
-// Sets the list of allowed IP addresses for database access.
-func (g *resourceIBMDatabaseGen2Backend) configureAllowlist(configCtx *instanceConfigContext) error {
-	_, hasAllowlist := configCtx.d.GetOk("allowlist")
-	if !hasAllowlist {
-		return nil
-	}
-
-	ipAddresses := configCtx.d.Get("allowlist").(*schema.Set)
-	entries := flex.ExpandAllowlist(ipAddresses)
-
-	setAllowlistOptions := &clouddatabasesv5.SetAllowlistOptions{
-		ID:          &configCtx.instanceID,
-		IPAddresses: entries,
-	}
-
-	setAllowlistResponse, _, err := configCtx.cloudDatabasesClient.SetAllowlist(setAllowlistOptions)
-	if err != nil {
-		return fmt.Errorf("error updating database allowlists: %w", err)
-	}
-
-	taskId := *setAllowlistResponse.Task.ID
-
-	_, err = waitForDatabaseTaskComplete(taskId, configCtx.d, configCtx.meta, configCtx.d.Timeout(schema.TimeoutCreate))
-	if err != nil {
-		return fmt.Errorf("error waiting for update of database (%s) allowlist task to complete: %w", configCtx.instanceID, err)
-	}
-
-	return nil
-}
-
-// configureAutoScaling configures auto-scaling settings.
-// Sets disk and memory auto-scaling conditions if configured.
-func (g *resourceIBMDatabaseGen2Backend) configureAutoScaling(configCtx *instanceConfigContext) error {
-	autoScaling := configCtx.d.Get("auto_scaling").([]interface{})
-	if len(autoScaling) == 0 {
-		return nil
-	}
-
-	autoscalingSetGroupAutoscaling := &clouddatabasesv5.AutoscalingSetGroupAutoscaling{}
-
-	if diskRecord, ok := configCtx.d.GetOk("auto_scaling.0.disk"); ok {
-		diskGroup, err := expandAutoscalingDiskGroup(configCtx.d, diskRecord)
-		if err != nil {
-			return fmt.Errorf("error expanding disk autoscaling: %w", err)
-		}
-		autoscalingSetGroupAutoscaling.Disk = diskGroup
-	}
-
-	if memoryRecord, ok := configCtx.d.GetOk("auto_scaling.0.memory"); ok {
-		memoryGroup, err := expandAutoscalingMemoryGroup(configCtx.d, memoryRecord)
-		if err != nil {
-			return fmt.Errorf("error expanding memory autoscaling: %w", err)
-		}
-		autoscalingSetGroupAutoscaling.Memory = memoryGroup
-	}
-
-	if autoscalingSetGroupAutoscaling.Disk != nil || autoscalingSetGroupAutoscaling.Memory != nil {
-		setAutoscalingConditionsOptions := &clouddatabasesv5.SetAutoscalingConditionsOptions{
-			ID:          &configCtx.instanceID,
-			GroupID:     core.StringPtr(defaultGroupID),
-			Autoscaling: autoscalingSetGroupAutoscaling,
-		}
-
-		setAutoscalingConditionsResponse, _, err := configCtx.cloudDatabasesClient.SetAutoscalingConditionsWithContext(configCtx.ctx, setAutoscalingConditionsOptions)
-		if err != nil {
-			return fmt.Errorf("error updating database auto_scaling: %w", err)
-		}
-
-		if err := g.waitForTaskCompletion(*setAutoscalingConditionsResponse.Task.ID, configCtx, schema.TimeoutCreate); err != nil {
-			return fmt.Errorf("error waiting for database (%s) auto_scaling update: %w", configCtx.instanceID, err)
-		}
-	}
-
-	return nil
-}
-
-// configureUsers configures database users.
-// Attempts to update existing users or creates new ones if they don't exist.
-func (g *resourceIBMDatabaseGen2Backend) configureUsers(configCtx *instanceConfigContext) error {
-	userList, ok := configCtx.d.GetOk("users")
-	if !ok {
-		return nil
-	}
-
-	users := expandUsers(userList.(*schema.Set).List())
-	for _, user := range users {
-		// Note: Some db users exist after provisioning (i.e. admin, repl)
-		// so we must attempt both methods
-		err := user.Update(configCtx.instanceID, configCtx.d, configCtx.meta)
-
-		if err != nil {
-			err = user.Create(configCtx.instanceID, configCtx.d, configCtx.meta)
-		}
-
-		if err != nil {
-			return fmt.Errorf("error configuring user %s: %w", user.Username, err)
-		}
-	}
-
-	return nil
-}
-
-// configureDatabaseSettings configures database-specific settings.
-// Applies custom configuration JSON to the database instance.
-func (g *resourceIBMDatabaseGen2Backend) configureDatabaseSettings(configCtx *instanceConfigContext) error {
-	config, ok := configCtx.d.GetOk("configuration")
-	if !ok {
-		return nil
-	}
-
-	var rawConfig map[string]json.RawMessage
-	err := json.Unmarshal([]byte(config.(string)), &rawConfig)
-	if err != nil {
-		return fmt.Errorf("configuration JSON invalid: %w", err)
-	}
-
-	var configuration clouddatabasesv5.ConfigurationIntf = new(clouddatabasesv5.Configuration)
-	err = core.UnmarshalModel(rawConfig, "", &configuration, clouddatabasesv5.UnmarshalConfiguration)
-	if err != nil {
-		return fmt.Errorf("database configuration is invalid: %w", err)
-	}
-
-	updateDatabaseConfigurationOptions := &clouddatabasesv5.UpdateDatabaseConfigurationOptions{
-		ID:            &configCtx.instanceID,
-		Configuration: configuration,
-	}
-
-	updateDatabaseConfigurationResponse, response, err := configCtx.cloudDatabasesClient.UpdateDatabaseConfiguration(updateDatabaseConfigurationOptions)
-
-	if err != nil {
-		return fmt.Errorf("error updating database configuration failed: %w (response: %v)", err, response)
-	}
-
-	taskID := *updateDatabaseConfigurationResponse.Task.ID
-
-	icdId := flex.EscapeUrlParm(configCtx.instanceID)
-	_, err = waitForDatabaseTaskComplete(taskID, configCtx.d, configCtx.meta, configCtx.d.Timeout(schema.TimeoutUpdate))
-	if err != nil {
-		return fmt.Errorf("error waiting for database (%s) configuration update task to complete: %w", icdId, err)
-	}
-
-	return nil
-}
-
-// configureLogicalReplication configures logical replication slots for PostgreSQL.
-// Only applicable to PostgreSQL databases; creates replication slots as configured.
-func (g *resourceIBMDatabaseGen2Backend) configureLogicalReplication(configCtx *instanceConfigContext) error {
-	if _, ok := configCtx.d.GetOk("logical_replication_slot"); !ok {
-		return nil
-	}
-
-	service := configCtx.d.Get("service").(string)
-	if service != "databases-for-postgresql" {
-		return fmt.Errorf("logical Replication can only be set for databases-for-postgresql instances")
-	}
-
-	_, logicalReplicationList := configCtx.d.GetChange("logical_replication_slot")
-
-	add := logicalReplicationList.(*schema.Set).List()
-
-	for _, entry := range add {
-		newEntry := entry.(map[string]interface{})
-		logicalReplicationSlot := &clouddatabasesv5.LogicalReplicationSlot{
-			Name:         core.StringPtr(newEntry["name"].(string)),
-			DatabaseName: core.StringPtr(newEntry["database_name"].(string)),
-			PluginType:   core.StringPtr(newEntry["plugin_type"].(string)),
-		}
-
-		createLogicalReplicationOptions := &clouddatabasesv5.CreateLogicalReplicationSlotOptions{
-			ID:                     &configCtx.instanceID,
-			LogicalReplicationSlot: logicalReplicationSlot,
-		}
-
-		createLogicalRepSlotResponse, response, err := configCtx.cloudDatabasesClient.CreateLogicalReplicationSlot(createLogicalReplicationOptions)
-		if err != nil {
-			return fmt.Errorf("CreateLogicalReplicationSlot (%s) failed: %w (response: %v)", *createLogicalReplicationOptions.LogicalReplicationSlot.Name, err, response)
-		}
-
-		taskID := *createLogicalRepSlotResponse.Task.ID
-		_, err = waitForDatabaseTaskComplete(taskID, configCtx.d, configCtx.meta, configCtx.d.Timeout(schema.TimeoutUpdate))
-		if err != nil {
-			return fmt.Errorf("error waiting for database (%s) logical replication slot (%s) create task to complete: %w", configCtx.instanceID, *createLogicalReplicationOptions.LogicalReplicationSlot.Name, err)
-		}
-	}
-
 	return nil
 }
 
@@ -1137,131 +785,31 @@ func (g *resourceIBMDatabaseGen2Backend) Update(ctx context.Context, d *schema.R
 		}
 	}
 
-	cloudDatabasesClient, err := meta.(conns.ClientSession).CloudDatabasesV5()
-	if err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error getting database client settings: %s", err))
-	}
-
-	if err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error getting database client settings: %s", err))
-	}
-	icdId := flex.EscapeUrlParm(instanceID)
-
 	if d.HasChange("configuration") {
-		if config, ok := d.GetOk("configuration"); ok {
-			var rawConfig map[string]json.RawMessage
-			err = json.Unmarshal([]byte(config.(string)), &rawConfig)
-			if err != nil {
-				return diag.FromErr(fmt.Errorf("[ERROR] configuration JSON invalid\n%s", err))
-			}
-
-			var configuration clouddatabasesv5.ConfigurationIntf = new(clouddatabasesv5.Configuration)
-			err = core.UnmarshalModel(rawConfig, "", &configuration, clouddatabasesv5.UnmarshalConfiguration)
-			if err != nil {
-				return diag.FromErr(err)
-			}
-
-			updateDatabaseConfigurationOptions := &clouddatabasesv5.UpdateDatabaseConfigurationOptions{
-				ID:            &instanceID,
-				Configuration: configuration,
-			}
-
-			updateDatabaseConfigurationResponse, response, err := cloudDatabasesClient.UpdateDatabaseConfiguration(updateDatabaseConfigurationOptions)
-
-			if err != nil {
-				return diag.FromErr(fmt.Errorf(
-					"[ERROR] Error updating database configuration failed %s\n%s", err, response))
-			}
-
-			taskID := *updateDatabaseConfigurationResponse.Task.ID
-
-			_, err = waitForDatabaseTaskComplete(taskID, d, meta, d.Timeout(schema.TimeoutUpdate))
-			if err != nil {
-				return diag.FromErr(fmt.Errorf(
-					"[ERROR] Error waiting for database (%s) configuration update task to complete: %s", icdId, err))
-			}
-		}
+		return diag.FromErr(fmt.Errorf("[ERROR] Configuration management is not supported for Gen2 database instances yet"))
 	}
 
 	if d.HasChange("group") {
-		oldGroup, newGroup := d.GetChange("group")
-		if oldGroup == nil {
-			oldGroup = new(schema.Set)
-		}
-		if newGroup == nil {
-			newGroup = new(schema.Set)
-		}
-
-		os := oldGroup.(*schema.Set)
-		ns := newGroup.(*schema.Set)
-
-		groupChanges := expandGroups(ns.Difference(os).List())
-
-		groupsResponse, err := getGroups(instanceID, meta)
+		// Get the resource instance for configuration context
+		instance, _, err := rsConClient.GetResourceInstance(&rc.GetResourceInstanceOptions{
+			ID: &instanceID,
+		})
 		if err != nil {
-			return diag.FromErr(fmt.Errorf(
-				"[ERROR] Error geting group (%s) scaling group update task to complete: %s", icdId, err))
+			return diag.FromErr(fmt.Errorf("[ERROR] Error getting resource instance: %s", err))
 		}
 
-		currentGroups := normalizeGroups(groupsResponse)
+		// Initialize configuration context (without CloudDatabasesV5 client)
+		configCtx := &instanceConfigContext{
+			ctx:        ctx,
+			d:          d,
+			instanceID: instanceID,
+			meta:       meta,
+			instance:   instance,
+		}
 
-		for _, group := range groupChanges {
-			groupScaling := &clouddatabasesv5.GroupScaling{}
-			var currentGroup *Group
-			for _, g := range currentGroups {
-				if g.ID == group.ID {
-					currentGroup = &g
-					break
-				}
-			}
-
-			if currentGroup == nil {
-				return diag.FromErr(fmt.Errorf(
-					"[ERROR]  (%s) group does not exist: %s", icdId, err))
-			}
-			nodeCount := currentGroup.Members.Allocation
-
-			if group.Members != nil && group.Members.Allocation != currentGroup.Members.Allocation {
-				groupScaling.Members = &clouddatabasesv5.GroupScalingMembers{AllocationCount: core.Int64Ptr(int64(group.Members.Allocation))}
-				nodeCount = group.Members.Allocation
-			}
-			if group.Memory != nil && group.Memory.Allocation*nodeCount != currentGroup.Memory.Allocation {
-				groupScaling.Memory = &clouddatabasesv5.GroupScalingMemory{AllocationMb: core.Int64Ptr(int64(group.Memory.Allocation * nodeCount))}
-			}
-			if group.Disk != nil && group.Disk.Allocation*nodeCount != currentGroup.Disk.Allocation {
-				groupScaling.Disk = &clouddatabasesv5.GroupScalingDisk{AllocationMb: core.Int64Ptr(int64(group.Disk.Allocation * nodeCount))}
-			}
-			if group.CPU != nil && group.CPU.Allocation*nodeCount != currentGroup.CPU.Allocation {
-				groupScaling.CPU = &clouddatabasesv5.GroupScalingCPU{AllocationCount: core.Int64Ptr(int64(group.CPU.Allocation * nodeCount))}
-			}
-			if group.HostFlavor != nil {
-				groupScaling.HostFlavor = &clouddatabasesv5.GroupScalingHostFlavor{ID: core.StringPtr(group.HostFlavor.ID)}
-			}
-
-			if groupScaling.Members != nil || groupScaling.Memory != nil || groupScaling.Disk != nil || groupScaling.CPU != nil || groupScaling.HostFlavor != nil {
-				setDeploymentScalingGroupOptions := &clouddatabasesv5.SetDeploymentScalingGroupOptions{
-					ID:      &instanceID,
-					GroupID: &group.ID,
-					Group:   groupScaling,
-				}
-
-				setDeploymentScalingGroupResponse, response, err := cloudDatabasesClient.SetDeploymentScalingGroup(setDeploymentScalingGroupOptions)
-
-				if err != nil {
-					return diag.FromErr(fmt.Errorf("[ERROR] SetDeploymentScalingGroup (%s) failed %s\n%s", group.ID, err, response))
-				}
-
-				// API may return HTTP 204 No Content if no change made
-				if response.StatusCode == 202 {
-					taskIDLink := *setDeploymentScalingGroupResponse.Task.ID
-
-					_, err = waitForDatabaseTaskComplete(taskIDLink, d, meta, d.Timeout(schema.TimeoutCreate))
-
-					if err != nil {
-						return diag.FromErr(err)
-					}
-				}
-			}
+		// Apply group scaling using Resource Controller
+		if err := g.applyGroupScaling(configCtx); err != nil {
+			return diag.FromErr(fmt.Errorf("[ERROR] Error applying group scaling: %s", err))
 		}
 	}
 
@@ -1286,42 +834,14 @@ func (g *resourceIBMDatabaseGen2Backend) Update(ctx context.Context, d *schema.R
 	}
 
 	if d.HasChange("remote_leader_id") {
-		remoteLeaderId := d.Get("remote_leader_id").(string)
-
-		if remoteLeaderId == "" {
-			skipInitialBackup := false
-			if skip, ok := d.GetOk("skip_initial_backup"); ok {
-				skipInitialBackup = skip.(bool)
-			}
-
-			promoteReadOnlyReplicaOptions := &clouddatabasesv5.PromoteReadOnlyReplicaOptions{
-				ID: &instanceID,
-				Promotion: map[string]interface{}{
-					"skip_initial_backup": skipInitialBackup,
-				},
-			}
-
-			promoteReadReplicaResponse, response, err := cloudDatabasesClient.PromoteReadOnlyReplica(promoteReadOnlyReplicaOptions)
-
-			if err != nil {
-				return diag.FromErr(fmt.Errorf("[ERROR] Error promoting read replica: %s\n%s", err, response))
-			}
-
-			taskID := *promoteReadReplicaResponse.Task.ID
-			_, err = waitForDatabaseTaskComplete(taskID, d, meta, d.Timeout(schema.TimeoutUpdate))
-
-			if err != nil {
-				return diag.FromErr(fmt.Errorf("[ERROR] Error promoting read replica: %s", err))
-			}
-		}
+		return diag.FromErr(fmt.Errorf("[ERROR] Read replica promotion (remote_leader_id) is not supported for Gen2 database instances yet"))
 	}
 
 	if d.HasChange("version") {
-		return diag.FromErr(fmt.Errorf("[ERROR] Version changes are not supported for Gen2 database instances."))
+		return diag.FromErr(fmt.Errorf("[ERROR] Version changes are not supported for Gen2 database instances"))
 	}
 
 	return g.Read(ctx, d, meta)
-
 }
 
 // Delete removes a database instance.
