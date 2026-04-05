@@ -5,7 +5,6 @@ package database
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"log"
 	"net/url"
@@ -50,6 +49,20 @@ type instanceConfigContext struct {
 	instance   *rc.ResourceInstance
 }
 
+// serviceMetadata encapsulates service-related metadata for database operations.
+// Reduces parameter extraction boilerplate and improves testability.
+type serviceMetadata struct {
+	serviceName string
+	catalogCRN  string
+}
+
+// updateContext encapsulates the client and location needed for update operations.
+// Provides a single point of initialization for update-related operations.
+type updateContext struct {
+	client   *rc.ResourceControllerV2
+	location string
+}
+
 type resourceIBMDatabaseGen2Backend struct{}
 
 // newResourceIBMDatabaseGen2Backend creates a new Gen2 backend instance
@@ -76,7 +89,7 @@ func emptyStringsWithErr(format string, args ...interface{}) (string, string, er
 //   - diag.Diagnostics: Any errors or warnings encountered
 func (g *resourceIBMDatabaseGen2Backend) Create(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	// Create the resource instance
-	instance, err := g.createResourceInstance(ctx, d, meta)
+	instance, err := g.createResourceInstance(d, meta)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -99,7 +112,7 @@ func (g *resourceIBMDatabaseGen2Backend) Create(ctx context.Context, d *schema.R
 
 // createResourceInstance handles the initial resource instance creation.
 // It retrieves service and plan information, builds Gen2 parameters, and creates the instance.
-func (g *resourceIBMDatabaseGen2Backend) createResourceInstance(ctx context.Context, d *schema.ResourceData, meta interface{}) (*rc.ResourceInstance, error) {
+func (g *resourceIBMDatabaseGen2Backend) createResourceInstance(d *schema.ResourceData, meta interface{}) (*rc.ResourceInstance, error) {
 	clientSession := meta.(conns.ClientSession)
 	rsConClient, err := clientSession.ResourceControllerV2API()
 	if err != nil {
@@ -137,7 +150,7 @@ func (g *resourceIBMDatabaseGen2Backend) createResourceInstance(ctx context.Cont
 	rsInst.Parameters = parameters
 
 	// Create the instance with retry logic
-	instance, response, err := g.createInstanceWithRetry(ctx, rsConClient, &rsInst)
+	instance, response, err := g.createInstanceWithRetry(rsConClient, &rsInst)
 	if err != nil {
 		return nil, fmt.Errorf("error creating database instance: %w (response: %v)", err, response)
 	}
@@ -278,7 +291,7 @@ func (g *resourceIBMDatabaseGen2Backend) buildDBConfig(d *schema.ResourceData, c
 	memberGroup := g.getMemberGroup(d)
 
 	// Members count
-	members, err := g.getMembersCount(d, memberGroup, catalogCRN, meta)
+	members, err := g.getMembersCount(memberGroup, catalogCRN, meta)
 	if err != nil {
 		return nil, err
 	}
@@ -339,7 +352,7 @@ func (g *resourceIBMDatabaseGen2Backend) getMemberGroup(d *schema.ResourceData) 
 
 // getMembersCount determines the number of members for the instance.
 // Uses the configured member count or retrieves the default from the catalog.
-func (g *resourceIBMDatabaseGen2Backend) getMembersCount(d *schema.ResourceData, memberGroup *Group, catalogCRN string, meta interface{}) (int, error) {
+func (g *resourceIBMDatabaseGen2Backend) getMembersCount(memberGroup *Group, catalogCRN string, meta interface{}) (int, error) {
 	if memberGroup != nil && memberGroup.Members != nil {
 		return memberGroup.Members.Allocation, nil
 	}
@@ -402,7 +415,7 @@ func (g *resourceIBMDatabaseGen2Backend) addPITRConfig(d *schema.ResourceData, d
 
 // createInstanceWithRetry creates an instance.
 // Note: Retry logic can be added in the future if needed.
-func (g *resourceIBMDatabaseGen2Backend) createInstanceWithRetry(ctx context.Context, client *rc.ResourceControllerV2, opts *rc.CreateResourceInstanceOptions) (*rc.ResourceInstance, *core.DetailedResponse, error) {
+func (g *resourceIBMDatabaseGen2Backend) createInstanceWithRetry(client *rc.ResourceControllerV2, opts *rc.CreateResourceInstanceOptions) (*rc.ResourceInstance, *core.DetailedResponse, error) {
 	instance, response, err := client.CreateResourceInstance(opts)
 	return instance, response, err
 }
@@ -453,6 +466,64 @@ func (g *resourceIBMDatabaseGen2Backend) initConfigContext(ctx context.Context, 
 	}, nil
 }
 
+// getServiceMetadata retrieves service name and catalog CRN for the database instance.
+// Consolidates parameter extraction and catalog lookup into a single operation.
+func (g *resourceIBMDatabaseGen2Backend) getServiceMetadata(d *schema.ResourceData, location string, session conns.ClientSession) (*serviceMetadata, error) {
+	serviceName := d.Get("service").(string)
+	plan := d.Get("plan").(string)
+
+	_, catalogCRN, err := g.getServicePlanAndCatalog(serviceName, plan, location, session)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get catalog CRN: %w", err)
+	}
+
+	return &serviceMetadata{
+		serviceName: serviceName,
+		catalogCRN:  catalogCRN,
+	}, nil
+}
+
+// prepareUpdateContext initializes the Resource Controller client and extracts instance location.
+// Provides a single point of initialization for update operations, improving testability.
+func (g *resourceIBMDatabaseGen2Backend) prepareUpdateContext(configCtx *instanceConfigContext) (*updateContext, error) {
+	clientSession := configCtx.meta.(conns.ClientSession)
+
+	rsConClient, err := clientSession.ResourceControllerV2API()
+	if err != nil {
+		return nil, fmt.Errorf("failed to initialize resource controller client: %w", err)
+	}
+
+	instanceLocation, err := extractLocationFromCRN(configCtx.instance.CRN)
+	if err != nil {
+		return nil, err
+	}
+
+	return &updateContext{
+		client:   rsConClient,
+		location: instanceLocation,
+	}, nil
+}
+
+// updateResourceInstanceParameters updates a resource instance with new parameters.
+// Encapsulates the update request construction and execution for reusability.
+func (g *resourceIBMDatabaseGen2Backend) updateResourceInstanceParameters(
+	rsConClient *rc.ResourceControllerV2,
+	instanceID string,
+	parameters map[string]interface{},
+) error {
+	updateReq := rc.UpdateResourceInstanceOptions{
+		ID:         &instanceID,
+		Parameters: parameters,
+	}
+
+	_, response, err := rsConClient.UpdateResourceInstance(&updateReq)
+	if err != nil {
+		return wrapAPIError("update resource instance", err, response)
+	}
+
+	return nil
+}
+
 // applyGroupScaling applies scaling configuration to instance groups using Resource Controller.
 // Flattens group configuration into parameters and updates the instance via UpdateResourceInstance API.
 // This approach is consistent with how groups are handled at CREATE time and removes CloudDatabasesV5 dependency.
@@ -461,48 +532,28 @@ func (g *resourceIBMDatabaseGen2Backend) applyGroupScaling(configCtx *instanceCo
 		return nil
 	}
 
-	// Get Resource Controller client
-	rsConClient, err := configCtx.meta.(conns.ClientSession).ResourceControllerV2API()
+	// Initialize clients and extract location
+	updateCtx, err := g.prepareUpdateContext(configCtx)
 	if err != nil {
-		return fmt.Errorf("failed to initialize resource controller client: %w", err)
+		return err
 	}
 
-	// Get service name for building parameters
-	serviceName := configCtx.d.Get("service").(string)
-
-	// Get catalog CRN from instance
-	if configCtx.instance.CRN == nil {
-		return fmt.Errorf("instance CRN is nil")
-	}
-
-	location := strings.Split(*configCtx.instance.CRN, ":")
-	if len(location) <= 5 {
-		return fmt.Errorf("invalid CRN format")
-	}
-	instanceLocation := location[5]
-
-	// Get catalog CRN for building parameters
+	// Get service metadata
 	clientSession := configCtx.meta.(conns.ClientSession)
-	_, catalogCRN, err := g.getServicePlanAndCatalog(serviceName, configCtx.d.Get("plan").(string), instanceLocation, clientSession)
+	metadata, err := g.getServiceMetadata(configCtx.d, updateCtx.location, clientSession)
 	if err != nil {
-		return fmt.Errorf("failed to get catalog CRN: %w", err)
+		return err
 	}
 
 	// Build Gen2 parameters with updated group configuration
-	parameters, err := g.buildGen2Parameters(configCtx.d, serviceName, configCtx.meta, catalogCRN)
+	parameters, err := g.buildGen2Parameters(configCtx.d, metadata.serviceName, configCtx.meta, metadata.catalogCRN)
 	if err != nil {
 		return fmt.Errorf("failed to build parameters: %w", err)
 	}
 
-	// Update the instance with new parameters
-	updateReq := rc.UpdateResourceInstanceOptions{
-		ID:         &configCtx.instanceID,
-		Parameters: parameters,
-	}
-
-	_, response, err := rsConClient.UpdateResourceInstance(&updateReq)
-	if err != nil {
-		return fmt.Errorf("failed to update resource instance: %w (response: %v)", err, response)
+	// Update the instance
+	if err := g.updateResourceInstanceParameters(updateCtx.client, configCtx.instanceID, parameters); err != nil {
+		return err
 	}
 
 	// Wait for update to complete
@@ -621,9 +672,9 @@ func (g *resourceIBMDatabaseGen2Backend) setBasicAttributes(d *schema.ResourceDa
 
 	var instanceLocation string
 	if instance.CRN != nil {
-		location := strings.Split(*instance.CRN, ":")
-		if len(location) > 5 {
-			instanceLocation = location[5]
+		var err error
+		instanceLocation, err = extractLocationFromCRN(instance.CRN)
+		if err == nil {
 			d.Set("location", instanceLocation)
 		}
 	}
@@ -689,15 +740,11 @@ func (g *resourceIBMDatabaseGen2Backend) setVersionInfo(d *schema.ResourceData, 
 // setGroupsInfo retrieves and sets groups information from catalog.
 // Combines instance extensions with catalog metadata to build group configurations.
 func (g *resourceIBMDatabaseGen2Backend) setGroupsInfo(d *schema.ResourceData, instance *rc.ResourceInstance, meta interface{}) error {
-	if instance.CRN == nil {
-		return fmt.Errorf("instance CRN is nil")
+	// Extract location from instance CRN
+	instanceLocation, err := extractLocationFromCRN(instance.CRN)
+	if err != nil {
+		return err
 	}
-
-	location := strings.Split(*instance.CRN, ":")
-	if len(location) <= 5 {
-		return fmt.Errorf("invalid CRN format")
-	}
-	instanceLocation := location[5]
 
 	globalClient, err := meta.(conns.ClientSession).GlobalCatalogV1API()
 	if err != nil {
@@ -736,7 +783,100 @@ func (g *resourceIBMDatabaseGen2Backend) clearUnsupportedAttributes(d *schema.Re
 
 // Update updates an existing database instance.
 // TODO: Gen2 update logic is not yet implemented. This is a known limitation.
-// Users should use the Classic backend for update operations until this is implemented.
+// diagError creates a diagnostic error with consistent formatting.
+func diagError(format string, args ...interface{}) diag.Diagnostics {
+	return diag.FromErr(fmt.Errorf("[ERROR] "+format, args...))
+}
+
+// updateBasicAttributes updates basic instance attributes (name and service_endpoints).
+// Returns true if any updates were made.
+func (g *resourceIBMDatabaseGen2Backend) updateBasicAttributes(d *schema.ResourceData, updateReq *rc.UpdateResourceInstanceOptions) bool {
+	update := false
+
+	if d.HasChange("name") {
+		name := d.Get("name").(string)
+		updateReq.Name = &name
+		update = true
+	}
+
+	if d.HasChange("service_endpoints") {
+		updateReq.Parameters = map[string]interface{}{
+			"service-endpoints": d.Get("service_endpoints").(string),
+		}
+		update = true
+	}
+
+	return update
+}
+
+// applyBasicAttributeUpdates updates basic instance attributes and waits for completion.
+// Returns diagnostics if any errors occur during the update process.
+func (g *resourceIBMDatabaseGen2Backend) applyBasicAttributeUpdates(d *schema.ResourceData, rsConClient *rc.ResourceControllerV2, instanceID string, meta interface{}) diag.Diagnostics {
+	updateReq := rc.UpdateResourceInstanceOptions{
+		ID: &instanceID,
+	}
+
+	if !g.updateBasicAttributes(d, &updateReq) {
+		return nil
+	}
+
+	_, response, err := rsConClient.UpdateResourceInstance(&updateReq)
+	if err != nil {
+		return diagError("Error updating resource instance: %s %s", err, response)
+	}
+
+	_, err = waitForDatabaseInstanceUpdate(d, meta)
+	if err != nil {
+		return diagError("Error waiting for update of resource instance (%s) to complete: %s", d.Id(), err)
+	}
+
+	return nil
+}
+
+// updateTagsWithDiagnostics updates resource tags and returns diagnostic errors on failure.
+// Returns diagnostics if tag update fails.
+func (g *resourceIBMDatabaseGen2Backend) updateTagsWithDiagnostics(d *schema.ResourceData, instanceID string, meta interface{}) diag.Diagnostics {
+	if !d.HasChange("tags") {
+		return nil
+	}
+
+	oldList, newList := d.GetChange("tags")
+	err := flex.UpdateTagsUsingCRN(oldList, newList, meta, instanceID)
+	if err != nil {
+		log.Printf("[ERROR] Error on update of Database (%s) tags: %s", d.Id(), err)
+		return diagError("Error updating tags: %s", err)
+	}
+
+	return nil
+}
+
+// checkUnsupportedChanges validates that no unsupported Gen2 features are being modified.
+// Returns a diagnostic error if any unsupported changes are detected.
+func (g *resourceIBMDatabaseGen2Backend) checkUnsupportedChanges(d *schema.ResourceData) diag.Diagnostics {
+	// Map of unsupported fields to their error messages
+	unsupportedChanges := map[string]string{
+		"configuration":            "Configuration management is not supported for Gen2 database instances yet",
+		"auto_scaling.0":           "Auto scaling is not supported for Gen2 database instances",
+		"adminpassword":            "Admin password management is not supported for Gen2 database instances. In Gen2, there is no default admin user. Users should manage credentials using the ibm_resource_key resource (https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/resources/resource_key)",
+		"allowlist":                "Allowlist is not supported for Gen2 database instances",
+		"users":                    "User management is not supported for Gen2 database instances. Users should manage credentials using the ibm_resource_key resource (https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/resources/resource_key)",
+		"logical_replication_slot": "Logical replication slot management is not supported for Gen2 database instances. Please use the Classic backend for logical replication slot operations",
+		"remote_leader_id":         "Read replica promotion (remote_leader_id) is not supported for Gen2 database instances yet",
+		"version":                  "Version changes are not supported for Gen2 database instances",
+	}
+
+	for field, errMsg := range unsupportedChanges {
+		if d.HasChange(field) {
+			return diagError(errMsg)
+		}
+	}
+
+	return nil
+}
+
+// Update modifies an existing IBM Cloud Database Gen2 instance.
+// Supports updates to name, service_endpoints, tags, and group scaling.
+// Many features are not yet supported in Gen2 and will return errors if modified.
 func (g *resourceIBMDatabaseGen2Backend) Update(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	rsConClient, err := meta.(conns.ClientSession).ResourceControllerV2API()
 	if err != nil {
@@ -744,61 +884,31 @@ func (g *resourceIBMDatabaseGen2Backend) Update(ctx context.Context, d *schema.R
 	}
 
 	instanceID := d.Id()
-	updateReq := rc.UpdateResourceInstanceOptions{
-		ID: &instanceID,
-	}
-	update := false
-	if d.HasChange("name") {
-		name := d.Get("name").(string)
-		updateReq.Name = &name
-		update = true
-	}
-	if d.HasChange("service_endpoints") {
-		params := Params{}
-		params.ServiceEndpoints = d.Get("service_endpoints").(string)
-		parameters, _ := json.Marshal(params)
-		var raw map[string]interface{}
-		json.Unmarshal(parameters, &raw)
-		updateReq.Parameters = raw
-		update = true
+
+	// Check for unsupported feature changes first
+	if diags := g.checkUnsupportedChanges(d); len(diags) > 0 {
+		return diags
 	}
 
-	if update {
-		_, response, err := rsConClient.UpdateResourceInstance(&updateReq)
-		if err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error updating resource instance: %s %s", err, response))
-		}
-
-		_, err = waitForDatabaseInstanceUpdate(d, meta)
-		if err != nil {
-			return diag.FromErr(fmt.Errorf(
-				"[ERROR] Error waiting for update of resource instance (%s) to complete: %s", d.Id(), err))
-		}
+	// Update basic attributes (name, service_endpoints)
+	if diags := g.applyBasicAttributeUpdates(d, rsConClient, instanceID, meta); len(diags) > 0 {
+		return diags
 	}
 
-	if d.HasChange("tags") {
-		oldList, newList := d.GetChange("tags")
-		err = flex.UpdateTagsUsingCRN(oldList, newList, meta, instanceID)
-		if err != nil {
-			log.Printf(
-				"[ERROR] Error on update of Database (%s) tags: %s", d.Id(), err)
-		}
+	// Update tags
+	if diags := g.updateTagsWithDiagnostics(d, instanceID, meta); len(diags) > 0 {
+		return diags
 	}
 
-	if d.HasChange("configuration") {
-		return diag.FromErr(fmt.Errorf("[ERROR] Configuration management is not supported for Gen2 database instances yet"))
-	}
-
+	// Update group scaling
 	if d.HasChange("group") {
-		// Get the resource instance for configuration context
 		instance, _, err := rsConClient.GetResourceInstance(&rc.GetResourceInstanceOptions{
 			ID: &instanceID,
 		})
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error getting resource instance: %s", err))
+			return diagError("Error getting resource instance: %s", err)
 		}
 
-		// Initialize configuration context (without CloudDatabasesV5 client)
 		configCtx := &instanceConfigContext{
 			ctx:        ctx,
 			d:          d,
@@ -807,40 +917,12 @@ func (g *resourceIBMDatabaseGen2Backend) Update(ctx context.Context, d *schema.R
 			instance:   instance,
 		}
 
-		// Apply group scaling using Resource Controller
 		if err := g.applyGroupScaling(configCtx); err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error applying group scaling: %s", err))
+			return diagError("Error applying group scaling: %s", err)
 		}
 	}
 
-	if d.HasChange("auto_scaling.0") {
-		return diag.FromErr(fmt.Errorf("[ERROR] Auto scaling is not supported for Gen2 database instances"))
-	}
-
-	if d.HasChange("adminpassword") {
-		return diag.FromErr(fmt.Errorf("[ERROR] Admin password management is not supported for Gen2 database instances. In Gen2, there is no default admin user. Users should manage credentials using the ibm_resource_key resource (https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/resources/resource_key)"))
-	}
-
-	if d.HasChange("allowlist") {
-		return diag.FromErr(fmt.Errorf("[ERROR] Allowlist is not supported for Gen2 database instances"))
-	}
-
-	if d.HasChange("users") {
-		return diag.FromErr(fmt.Errorf("[ERROR] User management is not supported for Gen2 database instances. Users should manage credentials using the ibm_resource_key resource (https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/resources/resource_key)"))
-	}
-
-	if d.HasChange("logical_replication_slot") {
-		return diag.FromErr(fmt.Errorf("[ERROR] Logical replication slot management is not supported for Gen2 database instances. Please use the Classic backend for logical replication slot operations"))
-	}
-
-	if d.HasChange("remote_leader_id") {
-		return diag.FromErr(fmt.Errorf("[ERROR] Read replica promotion (remote_leader_id) is not supported for Gen2 database instances yet"))
-	}
-
-	if d.HasChange("version") {
-		return diag.FromErr(fmt.Errorf("[ERROR] Version changes are not supported for Gen2 database instances"))
-	}
-
+	// Read the current state
 	return g.Read(ctx, d, meta)
 }
 

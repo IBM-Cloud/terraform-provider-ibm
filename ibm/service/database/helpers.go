@@ -133,6 +133,26 @@ func isGen2Plan(plan string) bool {
 	return gen2Pattern.MatchString(strings.ToLower(plan))
 }
 
+// extractLocationFromCRN extracts the location (region) from an IBM Cloud CRN.
+// CRN format: crn:version:cname:ctype:service-name:location:scope:service-instance:resource-type:resource
+// Returns the location field (index 5) or an error if the CRN is invalid.
+func extractLocationFromCRN(crn *string) (string, error) {
+	if crn == nil {
+		return "", fmt.Errorf("CRN is nil")
+	}
+	parts := strings.Split(*crn, ":")
+	if len(parts) <= 5 {
+		return "", fmt.Errorf("invalid CRN format: expected at least 6 parts, got %d", len(parts))
+	}
+	return parts[5], nil
+}
+
+// wrapAPIError wraps an API error with operation context and response details.
+// Provides consistent error formatting across API calls.
+func wrapAPIError(operation string, err error, response interface{}) error {
+	return fmt.Errorf("failed to %s: %w (response: %v)", operation, err, response)
+}
+
 // Database service name prefixes mapped to their type keys
 var databaseServicePrefixes = map[string]string{
 	"databases-for-etcd":          "etcd",
