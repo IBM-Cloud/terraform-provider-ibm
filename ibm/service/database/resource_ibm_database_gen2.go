@@ -29,6 +29,22 @@ var gen2UnsupportedAttrs = []string{
 	"logical_replication_slot",
 }
 
+const (
+	// Parameter keys for Gen2 database configuration
+	serviceEndpointsKey = "service-endpoints"
+	remoteLeaderIDKey   = "remote_leader_id"
+	pitrDeploymentIDKey = "point_in_time_recovery_deployment_id"
+	pitrTimeKey         = "point_in_time_recovery_time"
+	restoreBackupIDKey  = "restore_backup_id"
+	offlineRestoreKey   = "offline_restore"
+	asyncRestoreKey     = "async_restore"
+
+	// Encryption keys
+	diskEncryptionKey   = "disk"
+	backupEncryptionKey = "backup"
+	encryptionKey       = "encryption"
+)
+
 // DBConfig represents database-specific configuration for Gen2 parameters.
 // Replaces map[string]interface{} for type safety and compile-time validation.
 type DBConfig struct {
@@ -70,10 +86,14 @@ func newResourceIBMDatabaseGen2Backend() resourceIBMDatabaseBackend {
 	return &resourceIBMDatabaseGen2Backend{}
 }
 
-// emptyStringsWithErr returns two empty strings and an error.
-// Helper to reduce duplication of `return "", "", fmt.Errorf(...)` statements.
-func emptyStringsWithErr(format string, args ...interface{}) (string, string, error) {
-	return "", "", fmt.Errorf(format, args...)
+// getResourceControllerClient initializes and returns the Resource Controller V2 client.
+// Centralizes client initialization to reduce duplication and improve testability.
+func (g *resourceIBMDatabaseGen2Backend) getResourceControllerClient(meta interface{}) (*rc.ResourceControllerV2, error) {
+	rsConClient, err := meta.(conns.ClientSession).ResourceControllerV2API()
+	if err != nil {
+		return nil, fmt.Errorf("failed to initialize resource controller client: %w", err)
+	}
+	return rsConClient, nil
 }
 
 // Create provisions a new IBM Cloud Database Gen2 instance.
@@ -114,9 +134,9 @@ func (g *resourceIBMDatabaseGen2Backend) Create(ctx context.Context, d *schema.R
 // It retrieves service and plan information, builds Gen2 parameters, and creates the instance.
 func (g *resourceIBMDatabaseGen2Backend) createResourceInstance(d *schema.ResourceData, meta interface{}) (*rc.ResourceInstance, error) {
 	clientSession := meta.(conns.ClientSession)
-	rsConClient, err := clientSession.ResourceControllerV2API()
+	rsConClient, err := g.getResourceControllerClient(meta)
 	if err != nil {
-		return nil, fmt.Errorf("failed to initialize resource controller client: %w", err)
+		return nil, err
 	}
 
 	serviceName := d.Get("service").(string)
@@ -163,38 +183,38 @@ func (g *resourceIBMDatabaseGen2Backend) createResourceInstance(d *schema.Resour
 func (g *resourceIBMDatabaseGen2Backend) getServicePlanAndCatalog(serviceName, plan, location string, meta conns.ClientSession) (string, string, error) {
 	rsCatClient, err := meta.ResourceCatalogAPI()
 	if err != nil {
-		return emptyStringsWithErr("failed to initialize resource catalog client: %w", err)
+		return "", "", fmt.Errorf("failed to initialize resource catalog client: %w", err)
 	}
 	rsCatRepo := rsCatClient.ResourceCatalog()
 
 	serviceOff, err := rsCatRepo.FindByName(serviceName, true)
 	if err != nil {
-		return emptyStringsWithErr("error retrieving database service offering: %w", err)
+		return "", "", fmt.Errorf("error retrieving database service offering: %w", err)
 	}
 
 	servicePlan, err := rsCatRepo.GetServicePlanID(serviceOff[0], plan)
 	if err != nil {
-		return emptyStringsWithErr("error retrieving plan: %w", err)
+		return "", "", fmt.Errorf("error retrieving plan: %w", err)
 	}
 
 	// Check special case before calling ListDeployments to avoid unnecessary API call
 	if serviceName == "databases-for-mongodb" && plan == "enterprise-sharding" {
-		return emptyStringsWithErr("%s %s is not available yet in this region", serviceName, plan)
+		return "", "", fmt.Errorf("%s %s is not available yet in this region", serviceName, plan)
 	}
 
 	deployments, err := rsCatRepo.ListDeployments(servicePlan)
 	if err != nil {
-		return emptyStringsWithErr("error retrieving deployment for plan %s: %w", plan, err)
+		return "", "", fmt.Errorf("error retrieving deployment for plan %s: %w", plan, err)
 	}
 
 	if len(deployments) == 0 {
-		return emptyStringsWithErr("no deployment found for service plan: %s", plan)
+		return "", "", fmt.Errorf("no deployment found for service plan: %s", plan)
 	}
 
 	// Filter and validate deployment location
 	catalogCRN, err := g.validateAndGetCatalogCRN(deployments, location, plan)
 	if err != nil {
-		return emptyStringsWithErr("%v", err)
+		return "", "", fmt.Errorf("%v", err)
 	}
 
 	return servicePlan, catalogCRN, nil
@@ -266,7 +286,7 @@ func (g *resourceIBMDatabaseGen2Backend) buildGen2Parameters(d *schema.ResourceD
 
 	// Handle read replica
 	if remoteLeader, ok := d.GetOk("remote_leader_id"); ok {
-		dataservices["remote_leader_id"] = remoteLeader.(string)
+		dataservices[remoteLeaderIDKey] = remoteLeader.(string)
 	}
 
 	// Build final parameters structure
@@ -370,13 +390,13 @@ func (g *resourceIBMDatabaseGen2Backend) getMembersCount(memberGroup *Group, cat
 func (g *resourceIBMDatabaseGen2Backend) addEncryptionConfig(d *schema.ResourceData, dataservices map[string]interface{}) {
 	encryption := make(map[string]interface{}, 2)
 	if keyProtect, ok := d.GetOk("key_protect_key"); ok {
-		encryption["disk"] = keyProtect.(string)
+		encryption[diskEncryptionKey] = keyProtect.(string)
 	}
 	if backUpEncryptionKey, ok := d.GetOk("backup_encryption_key_crn"); ok {
-		encryption["backup"] = backUpEncryptionKey.(string)
+		encryption[backupEncryptionKey] = backUpEncryptionKey.(string)
 	}
 	if len(encryption) > 0 {
-		dataservices["encryption"] = encryption
+		dataservices[encryptionKey] = encryption
 	}
 }
 
@@ -384,33 +404,36 @@ func (g *resourceIBMDatabaseGen2Backend) addEncryptionConfig(d *schema.ResourceD
 // Includes backup ID and restore mode settings if configured.
 func (g *resourceIBMDatabaseGen2Backend) addRestoreConfig(d *schema.ResourceData, dataservices map[string]interface{}) {
 	if backupID, ok := d.GetOk("backup_id"); ok {
-		dataservices["restore_backup_id"] = backupID.(string)
+		dataservices[restoreBackupIDKey] = backupID.(string)
 	}
 
 	if offlineRestore, ok := d.GetOk("offline_restore"); ok {
-		dataservices["offline_restore"] = offlineRestore.(bool)
+		dataservices[offlineRestoreKey] = offlineRestore.(bool)
 	}
 
 	if asyncRestore, ok := d.GetOk("async_restore"); ok {
-		dataservices["async_restore"] = asyncRestore.(bool)
+		dataservices[asyncRestoreKey] = asyncRestore.(bool)
 	}
 }
 
 // addPITRConfig adds point-in-time recovery configuration to dataservices.
 // Includes deployment ID and recovery time if configured.
+// Simplified logic: checks if PITR time is explicitly set (even if empty string).
 func (g *resourceIBMDatabaseGen2Backend) addPITRConfig(d *schema.ResourceData, dataservices map[string]interface{}) {
 	if pitrID, ok := d.GetOk("point_in_time_recovery_deployment_id"); ok {
-		dataservices["point_in_time_recovery_deployment_id"] = pitrID.(string)
+		dataservices[pitrDeploymentIDKey] = pitrID.(string)
 	}
 
-	pitrOk := !d.GetRawConfig().AsValueMap()["point_in_time_recovery_time"].IsNull()
-	if pitrTime, ok := d.GetOk("point_in_time_recovery_time"); pitrOk {
-		if !ok {
-			pitrTime = ""
-		}
-		pitrTimeTrimmed := strings.TrimSpace(pitrTime.(string))
-		dataservices["point_in_time_recovery_time"] = pitrTimeTrimmed
+	// Check if PITR time is explicitly set (even if empty string)
+	if d.GetRawConfig().AsValueMap()["point_in_time_recovery_time"].IsNull() {
+		return
 	}
+
+	pitrTime := ""
+	if val, ok := d.GetOk("point_in_time_recovery_time"); ok {
+		pitrTime = val.(string)
+	}
+	dataservices[pitrTimeKey] = strings.TrimSpace(pitrTime)
 }
 
 // createInstanceWithRetry creates an instance.
@@ -486,11 +509,9 @@ func (g *resourceIBMDatabaseGen2Backend) getServiceMetadata(d *schema.ResourceDa
 // prepareUpdateContext initializes the Resource Controller client and extracts instance location.
 // Provides a single point of initialization for update operations, improving testability.
 func (g *resourceIBMDatabaseGen2Backend) prepareUpdateContext(configCtx *instanceConfigContext) (*updateContext, error) {
-	clientSession := configCtx.meta.(conns.ClientSession)
-
-	rsConClient, err := clientSession.ResourceControllerV2API()
+	rsConClient, err := g.getResourceControllerClient(configCtx.meta)
 	if err != nil {
-		return nil, fmt.Errorf("failed to initialize resource controller client: %w", err)
+		return nil, err
 	}
 
 	instanceLocation, err := extractLocationFromCRN(configCtx.instance.CRN)
@@ -582,9 +603,9 @@ func (g *resourceIBMDatabaseGen2Backend) updateTags(configCtx *instanceConfigCon
 // Read retrieves the current state of a database instance.
 // Fetches instance details, service info, version, groups, and clears unsupported attributes.
 func (g *resourceIBMDatabaseGen2Backend) Read(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	rsConClient, err := meta.(conns.ClientSession).ResourceControllerV2API()
+	rsConClient, err := g.getResourceControllerClient(meta)
 	if err != nil {
-		return diag.FromErr(fmt.Errorf("failed to initialize resource controller client: %w", err))
+		return diag.FromErr(err)
 	}
 
 	instanceID := d.Id()
@@ -681,7 +702,7 @@ func (g *resourceIBMDatabaseGen2Backend) setBasicAttributes(d *schema.ResourceDa
 	d.Set("guid", *instance.GUID)
 
 	if instance.Parameters != nil {
-		if endpoint, ok := instance.Parameters["service-endpoints"]; ok {
+		if endpoint, ok := instance.Parameters[serviceEndpointsKey]; ok {
 			d.Set("service_endpoints", endpoint)
 		}
 	}
@@ -801,7 +822,7 @@ func (g *resourceIBMDatabaseGen2Backend) updateBasicAttributes(d *schema.Resourc
 
 	if d.HasChange("service_endpoints") {
 		updateReq.Parameters = map[string]interface{}{
-			"service-endpoints": d.Get("service_endpoints").(string),
+			serviceEndpointsKey: d.Get("service_endpoints").(string),
 		}
 		update = true
 	}
@@ -822,12 +843,12 @@ func (g *resourceIBMDatabaseGen2Backend) applyBasicAttributeUpdates(d *schema.Re
 
 	_, response, err := rsConClient.UpdateResourceInstance(&updateReq)
 	if err != nil {
-		return diagError("Error updating resource instance: %s %s", err, response)
+		return diagError("error updating resource instance: %s %s", err, response)
 	}
 
 	_, err = waitForDatabaseInstanceUpdate(d, meta)
 	if err != nil {
-		return diagError("Error waiting for update of resource instance (%s) to complete: %s", d.Id(), err)
+		return diagError("error waiting for update of resource instance (%s) to complete: %s", d.Id(), err)
 	}
 
 	return nil
@@ -844,7 +865,7 @@ func (g *resourceIBMDatabaseGen2Backend) updateTagsWithDiagnostics(d *schema.Res
 	err := flex.UpdateTagsUsingCRN(oldList, newList, meta, instanceID)
 	if err != nil {
 		log.Printf("[ERROR] Error on update of Database (%s) tags: %s", d.Id(), err)
-		return diagError("Error updating tags: %s", err)
+		return diagError("error updating tags: %s", err)
 	}
 
 	return nil
@@ -874,11 +895,40 @@ func (g *resourceIBMDatabaseGen2Backend) checkUnsupportedChanges(d *schema.Resou
 	return nil
 }
 
+// applyGroupScalingWithDiagnostics applies group scaling and returns diagnostics.
+// Wraps applyGroupScaling to provide consistent diagnostic handling.
+func (g *resourceIBMDatabaseGen2Backend) applyGroupScalingWithDiagnostics(ctx context.Context, d *schema.ResourceData, rsConClient *rc.ResourceControllerV2, instanceID string, meta interface{}) diag.Diagnostics {
+	if !d.HasChange("group") {
+		return nil
+	}
+
+	instance, _, err := rsConClient.GetResourceInstance(&rc.GetResourceInstanceOptions{
+		ID: &instanceID,
+	})
+	if err != nil {
+		return diagError("error getting resource instance: %s", err)
+	}
+
+	configCtx := &instanceConfigContext{
+		ctx:        ctx,
+		d:          d,
+		instanceID: instanceID,
+		meta:       meta,
+		instance:   instance,
+	}
+
+	if err := g.applyGroupScaling(configCtx); err != nil {
+		return diagError("error applying group scaling: %s", err)
+	}
+
+	return nil
+}
+
 // Update modifies an existing IBM Cloud Database Gen2 instance.
 // Supports updates to name, service_endpoints, tags, and group scaling.
 // Many features are not yet supported in Gen2 and will return errors if modified.
 func (g *resourceIBMDatabaseGen2Backend) Update(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	rsConClient, err := meta.(conns.ClientSession).ResourceControllerV2API()
+	rsConClient, err := g.getResourceControllerClient(meta)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -901,25 +951,8 @@ func (g *resourceIBMDatabaseGen2Backend) Update(ctx context.Context, d *schema.R
 	}
 
 	// Update group scaling
-	if d.HasChange("group") {
-		instance, _, err := rsConClient.GetResourceInstance(&rc.GetResourceInstanceOptions{
-			ID: &instanceID,
-		})
-		if err != nil {
-			return diagError("Error getting resource instance: %s", err)
-		}
-
-		configCtx := &instanceConfigContext{
-			ctx:        ctx,
-			d:          d,
-			instanceID: instanceID,
-			meta:       meta,
-			instance:   instance,
-		}
-
-		if err := g.applyGroupScaling(configCtx); err != nil {
-			return diagError("Error applying group scaling: %s", err)
-		}
+	if diags := g.applyGroupScalingWithDiagnostics(ctx, d, rsConClient, instanceID, meta); len(diags) > 0 {
+		return diags
 	}
 
 	// Read the current state
