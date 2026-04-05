@@ -29,6 +29,9 @@ const (
 	defaultGroupID     = "member"
 	defaultMemberCount = 3
 
+	// Instance states
+	instanceStateRemoved = "removed"
+
 	// Gen2 database operation keys
 	deploymentKind     = "deployment"
 	dataservicesKey    = "dataservices"

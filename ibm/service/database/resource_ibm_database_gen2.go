@@ -751,22 +751,48 @@ func (g *resourceIBMDatabaseGen2Backend) Read(ctx context.Context, d *schema.Res
 		ID: &instanceID,
 	}
 	instance, response, err := rsConClient.GetResourceInstance(&rsInst)
+
+	// Check if resource is unavailable (not found or removed)
+	if unavailable, diags := g.isResourceUnavailable(instance, response, err, d); unavailable {
+		return diags
+	}
+
 	if err != nil {
-		if strings.Contains(err.Error(), "Object not found") ||
-			strings.Contains(err.Error(), "status code: 404") {
-			log.Printf("[WARN] Removing record from state because it's not found via the API")
-			d.SetId("")
-			return nil
-		}
 		return diag.FromErr(fmt.Errorf("error retrieving resource instance: %w (response: %v)", err, response))
 	}
 
-	if instance.State != nil && strings.Contains(*instance.State, "removed") {
-		log.Printf("[WARN] Removing instance from TF state because it's now in removed state")
+	// Populate all resource attributes
+	return g.populateResourceData(d, instance, meta)
+}
+
+// isResourceUnavailable checks if the resource is not found or in a removed state.
+// Implements recommendations #1, #2, and #4:
+// - Extracts duplicate error handling logic
+// - Uses HTTP status code instead of string matching
+// - Consolidates state validation logic
+// Returns true if the resource should be removed from state, along with any diagnostics.
+func (g *resourceIBMDatabaseGen2Backend) isResourceUnavailable(instance *rc.ResourceInstance, response *core.DetailedResponse, err error, d *schema.ResourceData) (bool, diag.Diagnostics) {
+	// Check for 404 errors using status code (more robust than string matching)
+	if err != nil && response != nil && response.StatusCode == httpNotFound {
+		log.Printf("[WARN] Removing record from state because it's not found via the API")
 		d.SetId("")
-		return nil
+		return true, nil
 	}
 
+	// Check for removed state using constant
+	if instance != nil && instance.State != nil && strings.Contains(*instance.State, instanceStateRemoved) {
+		log.Printf("[WARN] Removing instance from TF state because it's now in removed state")
+		d.SetId("")
+		return true, nil
+	}
+
+	return false, nil
+}
+
+// populateResourceData orchestrates setting all resource attributes.
+// Implements recommendation #5: Extract attribute setting logic.
+// Calls individual setter methods in sequence and returns any errors encountered.
+func (g *resourceIBMDatabaseGen2Backend) populateResourceData(d *schema.ResourceData, instance *rc.ResourceInstance, meta interface{}) diag.Diagnostics {
 	// Set basic attributes
 	if err := g.setBasicAttributes(d, instance, meta); err != nil {
 		return diag.FromErr(err)
