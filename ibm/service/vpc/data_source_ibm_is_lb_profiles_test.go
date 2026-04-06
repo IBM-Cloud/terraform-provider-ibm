@@ -29,6 +29,7 @@ func TestAccIBMISLBProfilesDatasource_basic(t *testing.T) {
 					resource.TestCheckResourceAttrSet("data.ibm_is_lb_profiles.test_profiles", "lb_profiles.0.route_mode_supported"),
 					resource.TestCheckResourceAttrSet("data.ibm_is_lb_profiles.test_profiles", "lb_profiles.0.href"),
 					resource.TestCheckResourceAttrSet("data.ibm_is_lb_profiles.test_profiles", "lb_profiles.0.udp_supported"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_lb_profiles.test_profiles", "lb_profiles.0.asymmetric_routing_supported.#"),
 				),
 			},
 		},

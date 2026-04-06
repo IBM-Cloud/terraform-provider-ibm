@@ -61,6 +61,8 @@ func TestAccIBMISLB_basic_udp(t *testing.T) {
 						"ibm_is_lb.testacc_LB", "udp_supported", "true"),
 					resource.TestCheckResourceAttrSet(
 						"ibm_is_lb.testacc_LB", "udp_supported"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_lb.testacc_LB", "asymmetric_routing_supported"),
 				),
 			},
 

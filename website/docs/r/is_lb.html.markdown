@@ -146,6 +146,7 @@ In addition to all argument reference list, you can access the following attribu
 - `security_groups_supported`- (Bool) Indicates if this load balancer supports security groups.
 - `source_ip_session_persistence_supported` - (Boolean) Indicates whether this load balancer supports source IP session persistence.
 - `udp_supported`- (Bool) Indicates whether this load balancer supports UDP.
+- `asymmetric_routing_supported` - (Boolean) Indicates whether this load balancer supports asymmetric routing.
 
 
 ## Import

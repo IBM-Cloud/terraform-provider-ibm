@@ -153,6 +153,25 @@ func DataSourceIBMISLbProfile() *schema.Resource {
 					},
 				},
 			},
+			"asymmetric_routing_supported": {
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "The asymmetric routing support for a load balancer with this profile",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"type": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The type for this profile field",
+						},
+						"value": {
+							Type:        schema.TypeBool,
+							Computed:    true,
+							Description: "The asymmetric routing support for this profile",
+						},
+					},
+				},
+			},
 		},
 	}
 }
@@ -303,6 +322,46 @@ func dataSourceIBMISLbProfileRead(context context.Context, d *schema.ResourceDat
 			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting targetable_resource_types: %s", err), "(Data) ibm_is_lb_profile", "read", "set-targetable_resource_types").GetDiag()
 		}
 	}
+
+	if loadBalancerProfile.AsymmetricRoutingSupported != nil {
+		asymmetricRoutingSupport := loadBalancerProfile.AsymmetricRoutingSupported
+		asymmetricRoutingSupportMap := map[string]interface{}{}
+		asymmetricRoutingSupportList := []map[string]interface{}{}
+		switch reflect.TypeOf(asymmetricRoutingSupport).String() {
+		case "*vpcv1.LoadBalancerProfileAsymmetricRoutingSupportedFixed":
+			{
+				asymmetricRs := asymmetricRoutingSupport.(*vpcv1.LoadBalancerProfileAsymmetricRoutingSupportedFixed)
+				if asymmetricRs.Type != nil {
+					asymmetricRoutingSupportMap["type"] = *asymmetricRs.Type
+				}
+				if asymmetricRs.Value != nil {
+					asymmetricRoutingSupportMap["value"] = *asymmetricRs.Value
+				}
+			}
+		case "*vpcv1.LoadBalancerProfileAsymmetricRoutingSupportedDependent":
+			{
+				ars := asymmetricRoutingSupport.(*vpcv1.LoadBalancerProfileAsymmetricRoutingSupportedDependent)
+				if ars.Type != nil {
+					asymmetricRoutingSupportMap["type"] = *ars.Type
+				}
+			}
+		case "*vpcv1.LoadBalancerProfileAsymmetricRoutingSupported":
+			{
+				ars := asymmetricRoutingSupport.(*vpcv1.LoadBalancerProfileAsymmetricRoutingSupported)
+				if ars.Type != nil {
+					asymmetricRoutingSupportMap["type"] = *ars.Type
+				}
+				if ars.Value != nil {
+					asymmetricRoutingSupportMap["value"] = *ars.Value
+				}
+			}
+		}
+		asymmetricRoutingSupportList = append(asymmetricRoutingSupportList, asymmetricRoutingSupportMap)
+		if err = d.Set("asymmetric_routing_supported", asymmetricRoutingSupportList); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting asymmetric_routing_supported: %s", err), "(Data) ibm_is_lb_profile", "read", "set-asymmetric_routing_supported").GetDiag()
+		}
+	}
+
 	d.SetId(*loadBalancerProfile.Name)
 	return nil
 }

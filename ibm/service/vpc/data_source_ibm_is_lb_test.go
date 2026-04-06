@@ -32,6 +32,7 @@ func TestAccIBMISLBDatasource_basic(t *testing.T) {
 					resource.TestCheckResourceAttrSet("data.ibm_is_lb.ds_lb", "availability"),
 					resource.TestCheckResourceAttrSet("data.ibm_is_lb.ds_lb", "instance_groups_supported"),
 					resource.TestCheckResourceAttrSet("data.ibm_is_lb.ds_lb", "source_ip_persistence_supported"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_lb.ds_lb", "asymmetric_routing_supported"),
 				),
 			},
 		},

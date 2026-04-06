@@ -251,7 +251,7 @@ func ResourceIBMISLBPool() *schema.Resource {
 func ResourceIBMISLBPoolValidator() *validate.ResourceValidator {
 
 	validateSchema := make([]validate.ValidateSchema, 0)
-	algorithm := "round_robin, weighted_round_robin, least_connections"
+	algorithm := "round_robin, weighted_round_robin, least_connections, weighted_forwarding"
 	protocol := "http, tcp, https, udp"
 	persistanceType := "source_ip, app_cookie, http_cookie"
 	proxyProtocol := "disabled, v1, v2"

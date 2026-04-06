@@ -103,6 +103,12 @@ func DataSourceIBMISLB() *schema.Resource {
 				Description: "Indicates whether this load balancer supports UDP.",
 			},
 
+			"asymmetric_routing_supported": {
+				Type:        schema.TypeBool,
+				Computed:    true,
+				Description: "Indicates whether this load balancer supports asymmetric routing.",
+			},
+
 			isLBStatus: {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -486,6 +492,11 @@ func lbGetByName(context context.Context, d *schema.ResourceData, meta interface
 			}
 			if err = d.Set("udp_supported", loadBalancer.UDPSupported); err != nil {
 				return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting udp_supported: %s", err), "(Data) ibm_is_lb", "read", "set-udp_supported").GetDiag()
+			}
+			if loadBalancer.AsymmetricRoutingSupported != nil {
+				if err = d.Set("asymmetric_routing_supported", *loadBalancer.AsymmetricRoutingSupported); err != nil {
+					return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting asymmetric_routing_supported: %s", err), "(Data) ibm_is_lb", "read", "set-asymmetric_routing_supported").GetDiag()
+				}
 			}
 			if err = d.Set("crn", loadBalancer.CRN); err != nil {
 				return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting crn: %s", err), "(Data) ibm_is_lb", "read", "set-crn").GetDiag()

@@ -141,6 +141,11 @@ func DataSourceIBMISLBS() *schema.Resource {
 							Computed:    true,
 							Description: "Indicates whether this load balancer supports UDP.",
 						},
+						"asymmetric_routing_supported": {
+							Type:        schema.TypeBool,
+							Computed:    true,
+							Description: "Indicates whether this load balancer supports asymmetric routing.",
+						},
 						isLBRouteMode: {
 							Type:        schema.TypeBool,
 							Computed:    true,
@@ -415,6 +420,9 @@ func getLbs(context context.Context, d *schema.ResourceData, meta interface{}) d
 		}
 		if lb.UDPSupported != nil {
 			lbInfo[isLBUdpSupported] = *lb.UDPSupported
+		}
+		if lb.AsymmetricRoutingSupported != nil {
+			lbInfo["asymmetric_routing_supported"] = *lb.AsymmetricRoutingSupported
 		}
 		lbInfo[CRN] = *lb.CRN
 		lbInfo[ProvisioningStatus] = *lb.ProvisioningStatus

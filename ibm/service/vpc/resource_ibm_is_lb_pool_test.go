@@ -1690,3 +1690,205 @@ func testAccCheckIBMISLBPoolConfigWithProxy(vpcname, subnetname, zone, cidr, nam
 }`, vpcname, subnetname, zone, cidr, name, poolName, algorithm, protocol, proxyProtocol, delay, retries, timeout, healthType)
 
 }
+
+// Test for weighted_forwarding algorithm with route mode NLB
+func TestAccIBMISLBPool_WeightedForwarding_RouteMode(t *testing.T) {
+	var lb string
+	vpcname := fmt.Sprintf("tflbp-vpc-wf-%d", acctest.RandIntRange(10, 100))
+	subnetname := fmt.Sprintf("tflbpc-subnet-wf-%d", acctest.RandIntRange(10, 100))
+	name := fmt.Sprintf("tflb-wf-%d", acctest.RandIntRange(10, 100))
+	poolName := fmt.Sprintf("tflbpool-wf-%d", acctest.RandIntRange(10, 100))
+	alg := "weighted_forwarding"
+	protocol := "tcp"
+	delay := "45"
+	retries := "5"
+	timeout := "15"
+	healthType := "tcp"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMISLBPoolDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMISLBPoolWeightedForwardingConfig(vpcname, subnetname, acc.ISZoneName, acc.ISCIDR, name, poolName, alg, protocol, delay, retries, timeout, healthType),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISLBPoolExists("ibm_is_lb_pool.testacc_lb_pool", lb),
+					resource.TestCheckResourceAttr(
+						"ibm_is_lb.testacc_LB", "name", name),
+					resource.TestCheckResourceAttr(
+						"ibm_is_lb.testacc_LB", "route_mode", "true"),
+					resource.TestCheckResourceAttr(
+						"ibm_is_lb_pool.testacc_lb_pool", "name", poolName),
+					resource.TestCheckResourceAttr(
+						"ibm_is_lb_pool.testacc_lb_pool", "algorithm", alg),
+					resource.TestCheckResourceAttr(
+						"ibm_is_lb_pool.testacc_lb_pool", "protocol", protocol),
+					resource.TestCheckResourceAttr(
+						"ibm_is_lb_pool.testacc_lb_pool", "health_delay", delay),
+					resource.TestCheckResourceAttr(
+						"ibm_is_lb_pool.testacc_lb_pool", "health_retries", retries),
+					resource.TestCheckResourceAttr(
+						"ibm_is_lb_pool.testacc_lb_pool", "health_timeout", timeout),
+					resource.TestCheckResourceAttr(
+						"ibm_is_lb_pool.testacc_lb_pool", "health_type", healthType),
+				),
+			},
+		},
+	})
+}
+
+// Test for updating pool algorithm to weighted_forwarding
+func TestAccIBMISLBPool_WeightedForwarding_Update(t *testing.T) {
+	var lb string
+	vpcname := fmt.Sprintf("tflbp-vpc-wfu-%d", acctest.RandIntRange(10, 100))
+	subnetname := fmt.Sprintf("tflbpc-subnet-wfu-%d", acctest.RandIntRange(10, 100))
+	name := fmt.Sprintf("tflb-wfu-%d", acctest.RandIntRange(10, 100))
+	poolName := fmt.Sprintf("tflbpool-wfu-%d", acctest.RandIntRange(10, 100))
+	alg1 := "round_robin"
+	alg2 := "weighted_forwarding"
+	protocol := "tcp"
+	delay := "45"
+	retries := "5"
+	timeout := "15"
+	healthType := "tcp"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMISLBPoolDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMISLBPoolWeightedForwardingConfig(vpcname, subnetname, acc.ISZoneName, acc.ISCIDR, name, poolName, alg1, protocol, delay, retries, timeout, healthType),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISLBPoolExists("ibm_is_lb_pool.testacc_lb_pool", lb),
+					resource.TestCheckResourceAttr(
+						"ibm_is_lb_pool.testacc_lb_pool", "algorithm", alg1),
+				),
+			},
+			{
+				Config: testAccCheckIBMISLBPoolWeightedForwardingConfig(vpcname, subnetname, acc.ISZoneName, acc.ISCIDR, name, poolName, alg2, protocol, delay, retries, timeout, healthType),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISLBPoolExists("ibm_is_lb_pool.testacc_lb_pool", lb),
+					resource.TestCheckResourceAttr(
+						"ibm_is_lb_pool.testacc_lb_pool", "algorithm", alg2),
+				),
+			},
+		},
+	})
+}
+
+// Test for weighted_forwarding with members
+func TestAccIBMISLBPool_WeightedForwarding_WithMembers(t *testing.T) {
+	var lb string
+	vpcname := fmt.Sprintf("tflbp-vpc-wfm-%d", acctest.RandIntRange(10, 100))
+	subnetname := fmt.Sprintf("tflbpc-subnet-wfm-%d", acctest.RandIntRange(10, 100))
+	name := fmt.Sprintf("tflb-wfm-%d", acctest.RandIntRange(10, 100))
+	poolName := fmt.Sprintf("tflbpool-wfm-%d", acctest.RandIntRange(10, 100))
+	alg := "weighted_forwarding"
+	protocol := "tcp"
+	delay := "45"
+	retries := "5"
+	timeout := "15"
+	healthType := "tcp"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMISLBPoolDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMISLBPoolWeightedForwardingWithMembersConfig(vpcname, subnetname, acc.ISZoneName, acc.ISCIDR, name, poolName, alg, protocol, delay, retries, timeout, healthType),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISLBPoolExists("ibm_is_lb_pool.testacc_lb_pool", lb),
+					resource.TestCheckResourceAttr(
+						"ibm_is_lb_pool.testacc_lb_pool", "algorithm", alg),
+					resource.TestCheckResourceAttr(
+						"ibm_is_lb_pool.testacc_lb_pool", "protocol", protocol),
+				),
+			},
+		},
+	})
+}
+
+// Config function for weighted_forwarding with route mode NLB
+func testAccCheckIBMISLBPoolWeightedForwardingConfig(vpcname, subnetname, zone, cidr, name, poolName, algorithm, protocol, delay, retries, timeout, healthType string) string {
+	return fmt.Sprintf(`
+	resource "ibm_is_vpc" "testacc_vpc" {
+		name = "%s"
+	}
+
+	resource "ibm_is_subnet" "testacc_subnet" {
+		name = "%s"
+		vpc = ibm_is_vpc.testacc_vpc.id
+		zone = "%s"
+		ipv4_cidr_block = "%s"
+	}
+
+	resource "ibm_is_lb" "testacc_LB" {
+		name = "%s"
+		subnets = [ibm_is_subnet.testacc_subnet.id]
+		profile = "network-fixed"
+		route_mode = true
+	}
+
+	resource "ibm_is_lb_pool" "testacc_lb_pool" {
+		name = "%s"
+		lb = ibm_is_lb.testacc_LB.id
+		algorithm = "%s"
+		protocol = "%s"
+		health_delay = %s
+		health_retries = %s
+		health_timeout = %s
+		health_type = "%s"
+	}`, vpcname, subnetname, zone, cidr, name, poolName, algorithm, protocol, delay, retries, timeout, healthType)
+}
+
+// Config function for weighted_forwarding with members
+func testAccCheckIBMISLBPoolWeightedForwardingWithMembersConfig(vpcname, subnetname, zone, cidr, name, poolName, algorithm, protocol, delay, retries, timeout, healthType string) string {
+	return fmt.Sprintf(`
+	resource "ibm_is_vpc" "testacc_vpc" {
+		name = "%s"
+	}
+
+	resource "ibm_is_subnet" "testacc_subnet" {
+		name = "%s"
+		vpc = ibm_is_vpc.testacc_vpc.id
+		zone = "%s"
+		ipv4_cidr_block = "%s"
+	}
+
+	resource "ibm_is_lb" "testacc_LB" {
+		name = "%s"
+		subnets = [ibm_is_subnet.testacc_subnet.id]
+		profile = "network-fixed"
+		route_mode = true
+	}
+
+	resource "ibm_is_lb_pool" "testacc_lb_pool" {
+		name = "%s"
+		lb = ibm_is_lb.testacc_LB.id
+		algorithm = "%s"
+		protocol = "%s"
+		health_delay = %s
+		health_retries = %s
+		health_timeout = %s
+		health_type = "%s"
+	}
+
+	resource "ibm_is_lb_pool_member" "testacc_lb_pool_member1" {
+		lb = ibm_is_lb.testacc_LB.id
+		pool = ibm_is_lb_pool.testacc_lb_pool.id
+		port = 8080
+		target_address = "192.168.0.1"
+		weight = 50
+	}
+
+	resource "ibm_is_lb_pool_member" "testacc_lb_pool_member2" {
+		lb = ibm_is_lb.testacc_LB.id
+		pool = ibm_is_lb_pool.testacc_lb_pool.id
+		port = 8080
+		target_address = "192.168.0.2"
+		weight = 50
+	}`, vpcname, subnetname, zone, cidr, name, poolName, algorithm, protocol, delay, retries, timeout, healthType)
+}
