@@ -43,6 +43,8 @@ You can specify the following arguments for this data source.
   * Constraints: The maximum length is `100` characters. The minimum length is `1` character. The value must match regular expression `/[a-zA-Z0-9-:_]*/`.
 * `subject` - (Optional, String) Email subject.
   * Constraints: The maximum length is `256` characters. The minimum length is `0` characters. The value must match regular expression `/[a-zA-Z0-9]/`.
+* `subscription_id` - (Optional, String) Unique identifier for Subscription.  
+  * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]/`.
 
 ## Attribute Reference
 

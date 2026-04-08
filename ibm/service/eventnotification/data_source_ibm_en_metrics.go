@@ -47,6 +47,11 @@ func DataSourceIBMEnMetrics() *schema.Resource {
 				Optional:    true,
 				Description: "Unique identifier for Destination.",
 			},
+			"subscription_id": &schema.Schema{
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "Unique identifier for Subscription.",
+			},
 			"source_id": &schema.Schema{
 				Type:        schema.TypeString,
 				Optional:    true,
@@ -134,6 +139,9 @@ func dataSourceIBMEnMetricsRead(context context.Context, d *schema.ResourceData,
 	getMetricsOptions.SetLte(d.Get("lte").(string))
 	if _, ok := d.GetOk("destination_id"); ok {
 		getMetricsOptions.SetDestinationID(d.Get("destination_id").(string))
+	}
+	if _, ok := d.GetOk("subscription_id"); ok {
+		getMetricsOptions.SetSubscriptionID(d.Get("subscription_id").(string))
 	}
 	if _, ok := d.GetOk("source_id"); ok {
 		getMetricsOptions.SetSourceID(d.Get("source_id").(string))
