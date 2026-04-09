@@ -66,7 +66,7 @@ func TestAccIBMPIRouteUpdate(t *testing.T) {
 
 	initialNextHop := "192.112.111.1"
 	updatedNextHop := "192.112.111.2"
-	initalDestination := "192.116.111.1"
+	initialDestination := "192.116.111.1"
 	updatedDestination := "192.115.111.1"
 
 	resource.Test(t, resource.TestCase{
@@ -78,12 +78,12 @@ func TestAccIBMPIRouteUpdate(t *testing.T) {
 				Config: testAccCheckIBMPIRouteUpdateConfig(
 					name,
 					initialNextHop,
-					initalDestination,
+					initialDestination,
 				),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckIBMPIRouteExists(routeRes),
 					resource.TestCheckResourceAttr(routeRes, "pi_name", name),
-					resource.TestCheckResourceAttr(routeRes, "pi_destination", initalDestination),
+					resource.TestCheckResourceAttr(routeRes, "pi_destination", initialDestination),
 					resource.TestCheckResourceAttr(routeRes, "pi_next_hop", initialNextHop),
 				),
 			},
