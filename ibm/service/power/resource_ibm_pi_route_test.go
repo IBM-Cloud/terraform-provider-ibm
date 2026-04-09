@@ -63,9 +63,10 @@ func testAccCheckIBMPIRouteBasicConfig(name string, nextHop string, destination 
 func TestAccIBMPIRouteUpdate(t *testing.T) {
 	name := fmt.Sprintf("tf-pi-route-%d", acctest.RandIntRange(10, 100))
 	routeRes := "ibm_pi_route.route"
-	nextHop := "192.112.111.1"
-	initialDestination := "192.116.111.1"
-	updatedDestination := "192.115.111.1"
+
+	initialNextHop := "192.112.111.1"
+	updatedNextHop := "192.112.111.2"
+	destination := "192.116.111.1"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
@@ -73,19 +74,27 @@ func TestAccIBMPIRouteUpdate(t *testing.T) {
 		CheckDestroy: testAccCheckIBMPIRouteDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIBMPIRouteUpdateConfig(name, nextHop, initialDestination),
+				Config: testAccCheckIBMPIRouteUpdateConfig(
+					name,
+					initialNextHop,
+					destination,
+				),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckIBMPIRouteExists(routeRes),
 					resource.TestCheckResourceAttr(routeRes, "pi_name", name),
-					resource.TestCheckResourceAttr(routeRes, "pi_destination", initialDestination),
+					resource.TestCheckResourceAttr(routeRes, "pi_next_hop", initialNextHop),
 				),
 			},
 			{
-				Config: testAccCheckIBMPIRouteUpdateConfig(name, nextHop, updatedDestination),
+				Config: testAccCheckIBMPIRouteUpdateConfig(
+					name,
+					updatedNextHop,
+					destination,
+				),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckIBMPIRouteExists(routeRes),
 					resource.TestCheckResourceAttr(routeRes, "pi_name", name),
-					resource.TestCheckResourceAttr(routeRes, "pi_destination", updatedDestination),
+					resource.TestCheckResourceAttr(routeRes, "pi_next_hop", updatedNextHop),
 				),
 			},
 		},
