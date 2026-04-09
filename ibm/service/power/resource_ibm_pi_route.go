@@ -272,8 +272,8 @@ func resourceIBMPIRouteUpdate(ctx context.Context, d *schema.ResourceData, meta 
 	}
 
 	if d.HasChange(Arg_NextHopType) {
-		nextHop := d.Get(Arg_NextHopType)
-		body.NextHopType = nextHop.(string)
+		nextHopType := d.Get(Arg_NextHopType)
+		body.NextHopType = nextHopType.(string)
 	}
 
 	_, err = routeClient.Update(routeID, body)
