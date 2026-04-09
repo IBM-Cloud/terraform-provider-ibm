@@ -13,6 +13,11 @@ import (
 	"testing"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/provider"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/provider_framework"
+	"github.com/hashicorp/terraform-plugin-framework/providerserver"
+	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
+	"github.com/hashicorp/terraform-plugin-mux/tf5to6server"
+	"github.com/hashicorp/terraform-plugin-mux/tf6muxserver"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	terraformsdk "github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 )
@@ -410,17 +415,18 @@ var (
 
 // For Code Engine
 var (
-	CeResourceGroupID    string
-	CeProjectId          string
-	CeServiceInstanceID  string
-	CeResourceKeyID      string
-	CeDomainMappingName  string
-	CeTLSCertFilePath    string
-	CeTLSKeyFilePath     string
-	CeCosAccessKeyID     string
-	CeCosSecretAccessKey string
-	CeCosBucketName      string
-	CeCosBucketLocation  string
+	CeResourceGroupID              string
+	CeProjectId                    string
+	CeServiceInstanceID            string
+	CeResourceKeyID                string
+	CeDomainMappingName            string
+	CeTLSCertFilePath              string
+	CeTLSKeyFilePath               string
+	CeCosAccessKeyID               string
+	CeCosSecretAccessKey           string
+	CeCosBucketName                string
+	CeCosBucketLocation            string
+	CePrivatePathServiceGatewayCrn string
 )
 
 // Satellite tests
@@ -2110,6 +2116,10 @@ func init() {
 		fmt.Println("[WARN] Set the environment variable IBM_CODE_ENGINE_TLS_KEY_FILE_PATH to the path of the .key file containing the TLS private key")
 	}
 
+	if CePrivatePathServiceGatewayCrn = os.Getenv("IBM_CODE_ENGINE_PRIVATE_PATH_SERVICE_GATEWAY_CRN"); CePrivatePathServiceGatewayCrn == "" {
+		fmt.Println("[WARN] Set the environment variable IBM_CODE_ENGINE_PRIVATE_PATH_SERVICE_GATEWAY_CRN to the Private Path Service Gateway CRN to be used in tests")
+	}
+
 	SatelliteSSHPubKey = os.Getenv("IBM_SATELLITE_SSH_PUB_KEY")
 	if SatelliteSSHPubKey == "" {
 		fmt.Println("[WARN] Set the environment variable IBM_SATELLITE_SSH_PUB_KEY with a ssh public key or ibm_satellite_* tests may fail")
@@ -2308,10 +2318,52 @@ func init() {
 	}
 }
 
+// TestAccProviders is used for testing SDKv2 resources and data sources.
+// For testing Framework-only features like Actions, use TestAccProtoV6ProviderFactories.
 var (
 	TestAccProviders map[string]*schema.Provider
 	TestAccProvider  *schema.Provider
 )
+
+// TestAccProtoV6ProviderFactories returns provider factories for testing
+// that include both SDKv2 (upgraded to protocol v6) and Framework providers.
+// This is required for testing Framework-only features like Actions.
+// The mux setup mirrors the production configuration in main.go.
+func TestAccProtoV6ProviderFactories() map[string]func() (tfprotov6.ProviderServer, error) {
+	return map[string]func() (tfprotov6.ProviderServer, error){
+		"ibm": func() (tfprotov6.ProviderServer, error) {
+			ctx := context.Background()
+
+			// Upgrade SDKv2 provider to protocol v6
+			upgradedSdkProvider, err := tf5to6server.UpgradeServer(
+				ctx,
+				provider.Provider().GRPCProvider,
+			)
+			if err != nil {
+				return nil, err
+			}
+
+			// Create framework provider server
+			// New() returns a factory function, so we call it to get the provider
+			frameworkProviderServer := providerserver.NewProtocol6(
+				provider_framework.New("test")(),
+			)
+
+			// Create mux server combining both providers
+			providers := []func() tfprotov6.ProviderServer{
+				func() tfprotov6.ProviderServer { return upgradedSdkProvider },
+				frameworkProviderServer,
+			}
+
+			muxServer, err := tf6muxserver.NewMuxServer(ctx, providers...)
+			if err != nil {
+				return nil, err
+			}
+
+			return muxServer.ProviderServer(), nil
+		},
+	}
+}
 
 // testAccProviderConfigure ensures Provider is only configured once
 //
@@ -2522,6 +2574,9 @@ func TestAccPreCheckCodeEngine(t *testing.T) {
 	}
 	if CeCosBucketLocation == "" {
 		t.Fatal("IBM_CODE_ENGINE_COS_BUCKET_LOCATION must be set for acceptance tests")
+	}
+	if CePrivatePathServiceGatewayCrn == "" {
+		t.Fatal("CePrivatePathServiceGatewayCrn must be set for acceptance tests")
 	}
 }
 

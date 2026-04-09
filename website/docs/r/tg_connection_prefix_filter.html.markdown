@@ -9,16 +9,26 @@ description: |-
 # ibm_tg_connection_prefix_filter
 Create, update and delete for the transit gateways connection's prefix filter resource. For more information, about Transit Gateway connection prefix filters, see [adding and deleting prefix filters](https://cloud.ibm.com/docs/transit-gateway?topic=transit-gateway-adding-prefix-filters&interface=ui).
 
+## Prefix filter evaluation
+
+Prefix filters are evaluated in order to determine whether routes are permitted or denied.
+
+1. Individual prefix filters (configured via this resource) are evaluated first
+2. If no filter matches, the connection's `default_prefix_filter` is applied
+3. If no default is set, system default behavior applies
+
+**Note:** The default behavior is configured using the `default_prefix_filter` argument in the `ibm_tg_connection` resource, not in this resource.
+
 ## Example usage
 
 ```terraform
 resource "ibm_tg_connection_prefix_filter" "test_tg_prefix_filter" {
-    gateway = ibm_tg_gateway.new_tg_gw.id
-    connection_id = ibm_tg_connection.test_ibm_tg_connection.connection_id
-    action = "permit"
-    prefix = "192.168.100.0/24"
-    le = 0
-    ge = 32
+  gateway       = ibm_tg_gateway.new_tg_gw.id
+  connection_id = ibm_tg_connection.test_ibm_tg_connection.connection_id
+  action        = "permit"
+  prefix        = "192.168.100.0/24"
+  le            = 0
+  ge            = 32
 }
 ```
 

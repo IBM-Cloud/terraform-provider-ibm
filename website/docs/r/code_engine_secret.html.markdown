@@ -31,14 +31,14 @@ You can specify the following arguments for this resource.
 
 * `data` - (Optional, Map) Data container that allows to specify config parameters and their values as a key-value map. Each key field must consist of alphanumeric characters, `-`, `_` or `.` and must not exceed a max length of 253 characters. Each value field can consists of any character and must not exceed a max length of 1048576 characters.
 * `format` - (Required, Forces new resource, String) Specify the format of the secret.
-  * Constraints: Allowable values are: `generic`, `ssh_auth`, `basic_auth`, `tls`, `service_access`, `registry`, `service_operator`, `other`. The value must match regular expression `/^(generic|ssh_auth|basic_auth|tls|service_access|registry|service_operator|other)$/`.
+  * Constraints: Allowable values are: `generic`, `ssh_auth`, `basic_auth`, `hmac_auth`, `tls`, `service_access`, `registry`, `service_operator`, `other`. The value must match regular expression `/^(generic|ssh_auth|basic_auth|hmac_auth|tls|service_access|registry|service_operator|other)$/`.
 * `name` - (Required, Forces new resource, String) The name of the secret.
   * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[a-z0-9]([\\-a-z0-9]*[a-z0-9])?(\\.[a-z0-9]([\\-a-z0-9]*[a-z0-9])?)*$/`.
 * `project_id` - (Required, Forces new resource, String) The ID of the project.
   * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[0-9a-z]{8}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{12}$/`.
 * `service_access` - (Optional, Forces new resource, List) Properties for Service Access Secrets.
 Nested schema for **service_access**:
-	* `resource_key` - (Required, List) The service credential associated with the secret.
+	* `resource_key` - (Optional, List) The service credential associated with the secret.
 	Nested schema for **resource_key**:
 		* `id` - (Optional, String) ID of the service credential associated with the secret.
 		  * Constraints: The maximum length is `36` characters. The minimum length is `0` characters. The value must match regular expression `/^[a-z0-9][\\-a-z0-9]*[a-z0-9]$/`.
@@ -85,10 +85,14 @@ After your resource is created, you can read values from the listed arguments an
 * `created_at` - (String) The timestamp when the resource was created.
 * `entity_tag` - (String) The version of the secret instance, which is used to achieve optimistic locking.
   * Constraints: The maximum length is `63` characters. The minimum length is `1` character. The value must match regular expression `/^[\\*\\-a-z0-9]+$/`.
+* `generated_by` - (String) Specifies whether the secret is user generated.
+  * Constraints: Allowable values are: `user`, `system`.
 * `href` - (String) When you provision a new secret,  a URL is created identifying the location of the instance.
-  * Constraints: The maximum length is `2048` characters. The minimum length is `0` characters. The value must match regular expression `/(([^:\/?#]+):)?(\/\/([^\/?#]*))?([^?#]*)(\\?([^#]*))?(#(.*))?$/`.
+  * Constraints: The maximum length is `2048` characters. The minimum length is `0` characters. The value must match regular expression `/^(([^:\/?#]+):)?(\/\/([^\/?#]*))?([^?#]*)(\\?([^#]*))?(#(.*))?$/`.
 * `region` - (String) The region of the project the resource is located in. Possible values: 'au-syd', 'br-sao', 'ca-tor', 'eu-de', 'eu-gb', 'jp-osa', 'jp-tok', 'us-east', 'us-south'.
 * `resource_type` - (String) The type of the secret.
+  * Constraints: Allowable values are: `secret_v2`, `secret_auth_ssh_v2`, `secret_basic_auth_v2`, `secret_generic_v2`, `secret_operator_v2`, `secret_other_v2`, `secret_registry_v2`, `secret_service_access_v2`, `secret_tls_v2`, `secret_hmac_auth_v2`.
+
 * `etag` - ETag identifier for code_engine_secret.
 
 ## Import

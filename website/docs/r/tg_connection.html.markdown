@@ -20,28 +20,37 @@ resource "ibm_tg_connection" "test_ibm_tg_connection" {
   network_id   = ibm_is_vpc.test_tg_vpc.resource_crn
 }
 
+# Example: Connection with default prefix filter
+resource "ibm_tg_connection" "example_with_default_filter" {
+  gateway               = ibm_tg_gateway.test_tg_gateway.id
+  network_type          = "vpc"
+  name                  = "filtered-connection"
+  network_id            = ibm_is_vpc.test_tg_vpc.resource_crn
+  default_prefix_filter = "deny"
+}
+
 resource "ibm_tg_connection" "test_ibm_tg_rgre_connection" {
-  gateway      = ibm_tg_gateway.test_tg_gateway.id
-  name = redundant_ugre_vpc
-  network_type = redundant_gre
-  base_network_type = vpc
-  network_id = ibm_is_vpc.test_tg_vpc.resource_crn
+  gateway           = ibm_tg_gateway.test_tg_gateway.id
+  name              = "redundant_ugre_vpc"
+  network_type      = "redundant_gre"
+  base_network_type = "vpc"
+  network_id        = ibm_is_vpc.test_tg_vpc.resource_crn
   tunnels {
-           local_gateway_ip = "192.129.200.1"
-           local_tunnel_ip = "192.158.239.2"
-           name =  "tunne1_testtgw1461"
-           remote_gateway_ip = "10.186.203.4"
-           remote_tunnel_ip = "192.158.239.1"
-           zone =  "us-south-1"
-        }    
- tunnels {
-             local_gateway_ip = "192.129.220.1"
-             local_tunnel_ip = "192.158.249.2"
-             name =  "tunne2_testtgw1462"
-             remote_gateway_ip = "10.186.203.4"
-             remote_tunnel_ip = "192.158.249.1"
-             zone =  "us-south-1"
-         }  
+    local_gateway_ip  = "192.129.200.1"
+    local_tunnel_ip   = "192.158.239.2"
+    name              = "tunne1_testtgw1461"
+    remote_gateway_ip = "10.186.203.4"
+    remote_tunnel_ip  = "192.158.239.1"
+    zone              = "us-south-1"
+  }
+  tunnels {
+    local_gateway_ip  = "192.129.220.1"
+    local_tunnel_ip   = "192.158.249.2"
+    name              = "tunne2_testtgw1462"
+    remote_gateway_ip = "10.186.203.4"
+    remote_tunnel_ip  = "192.158.249.1"
+    zone              = "us-south-1"
+  }
 }
   
 ```
@@ -64,6 +73,7 @@ Review the argument references that you can specify for your resource.
 - `remote_tunnel_ip` - (Optional, Forces new resource, String) - The remote tunnel IP address. This field only applies to network type `gre_tunnel` and `unbound_gre_tunnel` connections.
 - `zone` - (Optional, Forces new resource, String) - The location of connections. This field only applies to network type `gre_tunnel` and `unbound_gre_tunnel` connections and optional for network type `vpn_gateway` connections.
 - `cidr` - (Optional, String) - network_type `vpn_gateway` connections use `cidr` to specify the CIDR to use for the VPN GRE tunnels. This field is required for network type `vpn_gateway` connections.
+- `default_prefix_filter` - (Optional, String) Specifies the default action for prefix filtering. Allowed values are `permit` or `deny`. This defines the fallback action applied to routes that do not match any configured prefix filter. When set to `permit`, unmatched routes are allowed. When set to `deny`, unmatched routes are blocked. This field cannot be used with network type `redundant_gre`.
 - `tunnels` - (Optional, List) List of GRE tunnels for a transit gateway redundant GRE tunnel connection. This field is required for 'redundant_gre' connections.
 Nested scheme for `tunnel`:
   - `name` - (Required, String) The user-defined name for this tunnel connection.
@@ -85,6 +95,7 @@ In addition to all argument reference list, you can access the following attribu
 - `mtu` - (Integer) GRE tunnel MTU. This field only applies to network type `gre_tunnel` connections.
 - `status` - (String) The configuration status of the connection, such as **attached**, **failed**, **pending**, **deleting**.
 - `updated_at` - (Timestamp) Last updated date and time of the connection.
+- `default_prefix_filter` - (String) The default prefix filter action for this connection (`permit` or `deny`).
 -  `tunnels` - (Optional, List) List of GRE tunnels for a transit gateway redundant GRE tunnel connection. This field is required for 'redundant_gre' connections.
    Nested scheme for `tunnel`:
    - `created_at` -  (Timestamp) The date and time the connection  tunnel was created. 
