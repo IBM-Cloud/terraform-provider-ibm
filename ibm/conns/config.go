@@ -2354,7 +2354,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 		containerRegistryClientURL = containerregistryv1.DefaultServiceURL
 	}
 	if c.Visibility == "private" || c.Visibility == "public-and-private" {
-		containerRegistryClientURL = fmt.Sprintf("private.%s", containerRegistryClientURL)
+		containerRegistryClientURL = strings.Replace(containerRegistryClientURL, "https://", "https://private.", 1)
 
 	}
 	if fileMap != nil && c.Visibility != "public-and-private" {
