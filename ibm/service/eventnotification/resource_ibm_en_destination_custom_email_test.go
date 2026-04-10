@@ -39,6 +39,7 @@ func TestAccIBMEnCustomEmailDestinationAllArgs(t *testing.T) {
 					resource.TestCheckResourceAttr("ibm_en_destination_custom_email.en_destination_resource_1", "type", "smtp_custom"),
 					resource.TestCheckResourceAttr("ibm_en_destination_custom_email.en_destination_resource_1", "collect_failed_events", "false"),
 					resource.TestCheckResourceAttr("ibm_en_destination_custom_email.en_destination_resource_1", "description", description),
+					resource.TestCheckResourceAttr("ibm_en_destination_custom_email.en_destination_resource_1", "is_sandbox", "false"),
 				),
 			},
 			{
@@ -48,12 +49,79 @@ func TestAccIBMEnCustomEmailDestinationAllArgs(t *testing.T) {
 					resource.TestCheckResourceAttr("ibm_en_destination_custom_email.en_destination_resource_1", "type", "smtp_custom"),
 					resource.TestCheckResourceAttr("ibm_en_destination_custom_email.en_destination_resource_1", "collect_failed_events", "false"),
 					resource.TestCheckResourceAttr("ibm_en_destination_custom_email.en_destination_resource_1", "description", newDescription),
+					resource.TestCheckResourceAttr("ibm_en_destination_custom_email.en_destination_resource_1", "is_sandbox", "false"),
 				),
 			},
 			{
 				ResourceName:      "ibm_en_destination_custom_email.en_destination_resource_1",
 				ImportState:       true,
 				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
+func TestAccIBMEnCustomEmailDestinationSandbox(t *testing.T) {
+	var config en.Destination
+	name := fmt.Sprintf("tf_sandbox_%d", acctest.RandIntRange(10, 100))
+	instanceName := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
+	description := fmt.Sprintf("tf_sandbox_description_%d", acctest.RandIntRange(10, 100))
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMEnCustomEmailDestinationDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMEnCustomEmailDestinationSandboxConfig(instanceName, name, description),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMEnCustomEmailDestinationExists("ibm_en_destination_custom_email.en_destination_sandbox", config),
+					resource.TestCheckResourceAttr("ibm_en_destination_custom_email.en_destination_sandbox", "name", name),
+					resource.TestCheckResourceAttr("ibm_en_destination_custom_email.en_destination_sandbox", "type", "smtp_custom_sandbox"),
+					resource.TestCheckResourceAttr("ibm_en_destination_custom_email.en_destination_sandbox", "description", description),
+					resource.TestCheckResourceAttr("ibm_en_destination_custom_email.en_destination_sandbox", "is_sandbox", "true"),
+				),
+			},
+			{
+				ResourceName:      "ibm_en_destination_custom_email.en_destination_sandbox",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
+func TestAccIBMEnCustomEmailDestinationSandboxUpgrade(t *testing.T) {
+	var config en.Destination
+	name := fmt.Sprintf("tf_sandbox_upgrade_%d", acctest.RandIntRange(10, 100))
+	instanceName := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
+	description := fmt.Sprintf("tf_sandbox_upgrade_description_%d", acctest.RandIntRange(10, 100))
+	domain := fmt.Sprintf("test%d.example.com", acctest.RandIntRange(10, 100))
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMEnCustomEmailDestinationDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMEnCustomEmailDestinationSandboxUpgradeConfig(instanceName, name, description, domain, true),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMEnCustomEmailDestinationExists("ibm_en_destination_custom_email.en_destination_upgrade", config),
+					resource.TestCheckResourceAttr("ibm_en_destination_custom_email.en_destination_upgrade", "name", name),
+					resource.TestCheckResourceAttr("ibm_en_destination_custom_email.en_destination_upgrade", "type", "smtp_custom_sandbox"),
+					resource.TestCheckResourceAttr("ibm_en_destination_custom_email.en_destination_upgrade", "description", description),
+					resource.TestCheckResourceAttr("ibm_en_destination_custom_email.en_destination_upgrade", "is_sandbox", "true"),
+				),
+			},
+			{
+				Config: testAccCheckIBMEnCustomEmailDestinationSandboxUpgradeConfig(instanceName, name, description, domain, false),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMEnCustomEmailDestinationExists("ibm_en_destination_custom_email.en_destination_upgrade", config),
+					resource.TestCheckResourceAttr("ibm_en_destination_custom_email.en_destination_upgrade", "name", name),
+					resource.TestCheckResourceAttr("ibm_en_destination_custom_email.en_destination_upgrade", "type", "smtp_custom"),
+					resource.TestCheckResourceAttr("ibm_en_destination_custom_email.en_destination_upgrade", "description", description),
+					resource.TestCheckResourceAttr("ibm_en_destination_custom_email.en_destination_upgrade", "is_sandbox", "false"),
+				),
 			},
 		},
 	})
@@ -73,6 +141,7 @@ func testAccCheckIBMEnCustomEmailDestinationConfig(instanceName, name, descripti
 		name        = "%s"
 		type        = "smtp_custom"
 		description = "%s"
+		is_sandbox  = false
 		config {
 			params {
 				domain  = "mailx.com"
@@ -80,6 +149,72 @@ func testAccCheckIBMEnCustomEmailDestinationConfig(instanceName, name, descripti
 		}
 	}
 	`, instanceName, name, description)
+}
+
+func testAccCheckIBMEnCustomEmailDestinationSandboxConfig(instanceName, name, description string) string {
+	return fmt.Sprintf(`
+	resource "ibm_resource_instance" "en_destination_resource" {
+		name     = "%s"
+		location = "us-south"
+		plan     = "standard"
+		service  = "event-notifications"
+	}
+	
+	resource "ibm_en_destination_custom_email" "en_destination_sandbox" {
+		instance_guid = ibm_resource_instance.en_destination_resource.guid
+		name        = "%s"
+		type        = "smtp_custom"
+		description = "%s"
+		is_sandbox  = true
+	`, instanceName, name, description)
+}
+
+func testAccCheckIBMEnCustomEmailDestinationProductionConfig(instanceName, name, description, domain string) string {
+	return fmt.Sprintf(`
+	resource "ibm_resource_instance" "en_destination_resource" {
+		name     = "%s"
+		location = "us-south"
+		plan     = "standard"
+		service  = "event-notifications"
+	}
+	
+	resource "ibm_en_destination_custom_email" "en_destination_production" {
+		instance_guid = ibm_resource_instance.en_destination_resource.guid
+		name        = "%s"
+		type        = "smtp_custom"
+		description = "%s"
+		is_sandbox  = false
+		config {
+			params {
+				domain  = "%s"
+			}
+		}
+	}
+	`, instanceName, name, description, domain)
+}
+
+func testAccCheckIBMEnCustomEmailDestinationSandboxUpgradeConfig(instanceName, name, description, domain string, isSandbox bool) string {
+	return fmt.Sprintf(`
+	resource "ibm_resource_instance" "en_destination_resource" {
+		name     = "%s"
+		location = "us-south"
+		plan     = "standard"
+		service  = "event-notifications"
+	}
+	
+	resource "ibm_en_destination_custom_email" "en_destination_upgrade" {
+		instance_guid = ibm_resource_instance.en_destination_resource.guid
+		name        = "%s"
+		type        = "smtp_custom"
+		description = "%s"
+		is_sandbox  = %t
+		config {
+			params {
+				domain  = "%s"
+			}
+		}
+	}
+	`, instanceName, name, description, isSandbox, domain)
 }
 
 func testAccCheckIBMEnCustomEmailDestinationExists(n string, obj en.Destination) resource.TestCheckFunc {

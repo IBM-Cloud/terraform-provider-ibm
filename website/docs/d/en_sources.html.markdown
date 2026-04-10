@@ -44,6 +44,8 @@ In addition to all argument references listed, you can access the following attr
 
   - `enabled` - (bool) Source is enabled or not.
 
+  - `store_notifications` - (Optional, bool) enable to view the payload of incoming events for troubleshooting.
+
   - `type` - (String) source type api/IBM Cloud Monitoring/resource lifecycle events/ App Configuration/ Secrets Manager/ SCC.
 
   - `updated_at` - (String) Lats updated time.

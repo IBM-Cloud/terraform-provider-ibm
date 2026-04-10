@@ -41,6 +41,11 @@ func ResourceIBMEnIBMSource() *schema.Resource {
 				Required:    true,
 				Description: "Destination ID",
 			},
+			"store_notifications": {
+				Type:        schema.TypeBool,
+				Required:    true,
+				Description: "enable to view the payload of incoming events for troubleshooting.",
+			},
 			"updated_at": {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -65,6 +70,7 @@ func resourceIBMEnIBMSourceCreate(context context.Context, d *schema.ResourceDat
 	options.SetID(d.Get("source_id").(string))
 
 	options.SetEnabled(d.Get("enabled").(bool))
+	options.SetStoreNotifications(d.Get("store_notifications").(bool))
 
 	result, _, err := enClient.UpdateSourceWithContext(context, options)
 	if err != nil {
@@ -124,16 +130,13 @@ func resourceIBMEnIBMSourceRead(context context.Context, d *schema.ResourceData,
 
 	}
 
-	// if err = d.Set("name", result.Name); err != nil {
-	// 	return diag.FromErr(fmt.Errorf("[ERROR] Error setting name: %s", err))
-	// }
-
-	// if err = d.Set("description", result.Description); err != nil {
-	// 	return diag.FromErr(fmt.Errorf("[ERROR] Error setting description: %s", err))
-	// }
-
 	if err = d.Set("enabled", result.Enabled); err != nil {
 		return diag.FromErr(fmt.Errorf("[ERROR] Error setting enabled: %s", err))
+	}
+
+	if err = d.Set("store_notifications", result.StoreNotifications); err != nil {
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting store_notifications: %s", err), "(Data) ibm_en_source", "read")
+		return tfErr.GetDiag()
 	}
 
 	if err = d.Set("updated_at", flex.DateTimeToString(result.UpdatedAt)); err != nil {
@@ -167,9 +170,10 @@ func resourceIBMEnIBMSourceUpdate(context context.Context, d *schema.ResourceDat
 	options.SetInstanceID(d.Get("instance_guid").(string))
 	options.SetID(d.Get("source_id").(string))
 
-	if ok := d.HasChanges("enabled"); ok {
+	if ok := d.HasChanges("enabled", "store_notifications"); ok {
 
 		options.SetEnabled(d.Get("enabled").(bool))
+		options.SetStoreNotifications(d.Get("store_notifications").(bool))
 
 		_, _, err := enClient.UpdateSourceWithContext(context, options)
 		if err != nil {

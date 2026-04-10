@@ -161,7 +161,6 @@ func resourceIBMEnCustomEmailSubscriptionCreate(context context.Context, d *sche
 	options := &en.CreateSubscriptionOptions{}
 
 	options.SetInstanceID(d.Get("instance_guid").(string))
-
 	options.SetName(d.Get("name").(string))
 	options.SetTopicID(d.Get("topic_id").(string))
 	options.SetDestinationID(d.Get("destination_id").(string))
@@ -170,11 +169,34 @@ func resourceIBMEnCustomEmailSubscriptionCreate(context context.Context, d *sche
 		options.SetDescription(d.Get("description").(string))
 	}
 
-	attributes := CustomEmailattributesMapToAttributes(d.Get("attributes.0").(map[string]interface{}))
-	options.SetAttributes(&attributes)
+	// Get destination to determine if it's sandbox or production
+	destOptions := &en.GetDestinationOptions{}
+	destOptions.SetInstanceID(d.Get("instance_guid").(string))
+	destOptions.SetID(d.Get("destination_id").(string))
+
+	destination, _, err := enClient.GetDestinationWithContext(context, destOptions)
+	if err != nil {
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetDestinationWithContext failed: %s", err.Error()), "ibm_en_subscription_custom_email", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
+	}
+
+	isSandbox := destination.Type != nil && *destination.Type == "smtp_custom_sandbox"
+
+	attributes, err := CustomEmailattributesMapToAttributes(d.Get("attributes.0").(map[string]interface{}), isSandbox)
+	if err != nil {
+		log.Printf("[DEBUG] CustomEmailattributesMapToAttributes failed: %s", err.Error())
+		return diag.FromErr(err)
+	}
+
+	options.SetAttributes(attributes)
+
+	log.Printf("[DEBUG] Calling CreateSubscriptionWithContext with options: InstanceID=%s, Name=%s, TopicID=%s, DestinationID=%s, DestinationType=%s",
+		*options.InstanceID, *options.Name, *options.TopicID, *options.DestinationID, *destination.Type)
 
 	result, _, err := enClient.CreateSubscriptionWithContext(context, options)
 	if err != nil {
+
 		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateSubscriptionWithContext failed: %s", err.Error()), "ibm_en_subscription_custom_email", "create")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
@@ -296,10 +318,34 @@ func resourceIBMEnCustomEmailSubscriptionUpdate(context context.Context, d *sche
 			options.SetDescription(d.Get("description").(string))
 		}
 
-		attributes := CustomEmailattributesupdateMapToAttributes(d.Get("attributes.0").(map[string]interface{}))
-		options.SetAttributes(&attributes)
+		// Get destination to determine if it's sandbox or production
+		destOptions := &en.GetDestinationOptions{}
+		destOptions.SetInstanceID(parts[0])
+		destOptions.SetID(d.Get("destination_id").(string))
 
-		_, _, err := enClient.UpdateSubscriptionWithContext(context, options)
+		destination, _, err := enClient.GetDestinationWithContext(context, destOptions)
+		if err != nil {
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetDestinationWithContext failed: %s", err.Error()), "ibm_en_subscription_custom_email", "update")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
+		}
+
+		isSandbox := destination.Type != nil && *destination.Type == "smtp_custom_sandbox"
+
+		log.Printf("[DEBUG] Calling CustomEmailattributesupdateMapToAttributes with isSandbox: %v", isSandbox)
+
+		attributes, err := CustomEmailattributesupdateMapToAttributes(d.Get("attributes.0").(map[string]interface{}), isSandbox)
+		if err != nil {
+			log.Printf("[DEBUG] CustomEmailattributesupdateMapToAttributes failed: %s", err.Error())
+			return diag.FromErr(err)
+		}
+
+		options.SetAttributes(attributes)
+
+		log.Printf("[DEBUG] Calling UpdateSubscriptionWithContext with options: InstanceID=%s, ID=%s, Name=%s",
+			*options.InstanceID, *options.ID, *options.Name)
+
+		_, _, err = enClient.UpdateSubscriptionWithContext(context, options)
 		if err != nil {
 			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("UpdateSubscriptionWithContext failed: %s", err.Error()), "ibm_en_subscription_custom_email", "update")
 			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
@@ -347,34 +393,70 @@ func resourceIBMEnCustomEmailSubscriptionDelete(context context.Context, d *sche
 	return nil
 }
 
-func CustomEmailattributesMapToAttributes(attributeMap map[string]interface{}) en.SubscriptionCreateAttributes {
-	attributesCreate := en.SubscriptionCreateAttributes{}
+func CustomEmailattributesMapToAttributes(attributeMap map[string]interface{}, isSandbox bool) (en.SubscriptionCreateAttributesIntf, error) {
+	// Common attributes
+	invited := []string{}
 	if attributeMap["invited"] != nil {
-		invited := []string{}
 		for _, invitedItem := range attributeMap["invited"].([]interface{}) {
 			invited = append(invited, invitedItem.(string))
 		}
-		attributesCreate.Invited = invited
 	}
 
+	addNotificationPayload := false
 	if attributeMap["add_notification_payload"] != nil {
-		attributesCreate.AddNotificationPayload = core.BoolPtr(attributeMap["add_notification_payload"].(bool))
+		addNotificationPayload = attributeMap["add_notification_payload"].(bool)
 	}
 
+	replyToMail := ""
 	if attributeMap["reply_to_mail"] != nil {
-		attributesCreate.ReplyToMail = core.StringPtr(attributeMap["reply_to_mail"].(string))
+		replyToMail = attributeMap["reply_to_mail"].(string)
 	}
 
+	replyToName := ""
 	if attributeMap["reply_to_name"] != nil {
-		attributesCreate.ReplyToName = core.StringPtr(attributeMap["reply_to_name"].(string))
+		replyToName = attributeMap["reply_to_name"].(string)
 	}
 
+	if isSandbox {
+		// Sandbox destination - use SubscriptionCreateAttributesCustomEmailSandboxAttributes
+		log.Printf("[DEBUG] Creating sandbox subscription attributes")
+		attributesCreate := &en.SubscriptionCreateAttributesCustomEmailSandboxAttributes{
+			Invited:                invited,
+			AddNotificationPayload: core.BoolPtr(addNotificationPayload),
+			ReplyToMail:            core.StringPtr(replyToMail),
+			ReplyToName:            core.StringPtr(replyToName),
+		}
+
+		if attributeMap["template_id_notification"] != nil {
+			attributesCreate.TemplateIDNotification = core.StringPtr(attributeMap["template_id_notification"].(string))
+		}
+
+		if attributeMap["template_id_invitation"] != nil {
+			attributesCreate.TemplateIDInvitation = core.StringPtr(attributeMap["template_id_invitation"].(string))
+		}
+
+		return attributesCreate, nil
+	}
+
+	// Production destination - use SubscriptionCreateAttributesCustomEmailAttributes
+	log.Printf("[DEBUG] Creating production subscription attributes")
+	fromName := ""
 	if attributeMap["from_name"] != nil {
-		attributesCreate.FromName = core.StringPtr(attributeMap["from_name"].(string))
+		fromName = attributeMap["from_name"].(string)
 	}
 
+	fromEmail := ""
 	if attributeMap["from_email"] != nil {
-		attributesCreate.FromEmail = core.StringPtr(attributeMap["from_email"].(string))
+		fromEmail = attributeMap["from_email"].(string)
+	}
+
+	attributesCreate := &en.SubscriptionCreateAttributesCustomEmailAttributes{
+		Invited:                invited,
+		AddNotificationPayload: core.BoolPtr(addNotificationPayload),
+		ReplyToMail:            core.StringPtr(replyToMail),
+		ReplyToName:            core.StringPtr(replyToName),
+		FromName:               core.StringPtr(fromName),
+		FromEmail:              core.StringPtr(fromEmail),
 	}
 
 	if attributeMap["template_id_notification"] != nil {
@@ -385,12 +467,11 @@ func CustomEmailattributesMapToAttributes(attributeMap map[string]interface{}) e
 		attributesCreate.TemplateIDInvitation = core.StringPtr(attributeMap["template_id_invitation"].(string))
 	}
 
-	return attributesCreate
+	return attributesCreate, nil
 }
 
-func CustomEmailattributesupdateMapToAttributes(attributeMap map[string]interface{}) en.SubscriptionUpdateAttributesCustomEmailUpdateAttributes {
-	updateattributes := en.SubscriptionUpdateAttributesCustomEmailUpdateAttributes{}
-
+func CustomEmailattributesupdateMapToAttributes(attributeMap map[string]interface{}, isSandbox bool) (en.SubscriptionUpdateAttributesIntf, error) {
+	// Common attributes
 	addemail := new(en.UpdateAttributesInvited)
 	if attributeMap["add"] != nil {
 		to := []string{}
@@ -399,28 +480,58 @@ func CustomEmailattributesupdateMapToAttributes(attributeMap map[string]interfac
 		}
 		addemail.Add = to
 	}
-	updateattributes.Invited = addemail
 
 	if attributeMap["remove"] != nil {
 		rmemail := []string{}
 		for _, removeitem := range attributeMap["remove"].([]interface{}) {
 			rmemail = append(rmemail, removeitem.(string))
 		}
-
 		addemail.Remove = rmemail
 	}
-	updateattributes.Invited = addemail
 
+	addNotificationPayload := false
 	if attributeMap["add_notification_payload"] != nil {
-		updateattributes.AddNotificationPayload = core.BoolPtr(attributeMap["add_notification_payload"].(bool))
+		addNotificationPayload = attributeMap["add_notification_payload"].(bool)
 	}
 
+	replyToMail := ""
 	if attributeMap["reply_to_mail"] != nil {
-		updateattributes.ReplyToMail = core.StringPtr(attributeMap["reply_to_mail"].(string))
+		replyToMail = attributeMap["reply_to_mail"].(string)
 	}
 
+	replyToName := ""
 	if attributeMap["reply_to_name"] != nil {
-		updateattributes.ReplyToName = core.StringPtr(attributeMap["reply_to_name"].(string))
+		replyToName = attributeMap["reply_to_name"].(string)
+	}
+
+	if isSandbox {
+		// Sandbox destination - use SubscriptionUpdateAttributesCustomEmailSandboxUpdateAttributes
+		log.Printf("[DEBUG] Creating sandbox subscription update attributes")
+		updateattributes := &en.SubscriptionUpdateAttributesCustomEmailSandboxUpdateAttributes{
+			Invited:                addemail,
+			AddNotificationPayload: core.BoolPtr(addNotificationPayload),
+			ReplyToMail:            core.StringPtr(replyToMail),
+			ReplyToName:            core.StringPtr(replyToName),
+		}
+
+		if attributeMap["template_id_notification"] != nil {
+			updateattributes.TemplateIDNotification = core.StringPtr(attributeMap["template_id_notification"].(string))
+		}
+
+		if attributeMap["template_id_invitation"] != nil {
+			updateattributes.TemplateIDInvitation = core.StringPtr(attributeMap["template_id_invitation"].(string))
+		}
+
+		return updateattributes, nil
+	}
+
+	// Production destination - use SubscriptionUpdateAttributesCustomEmailUpdateAttributes
+	log.Printf("[DEBUG] Creating production subscription update attributes")
+	updateattributes := &en.SubscriptionUpdateAttributesCustomEmailUpdateAttributes{
+		Invited:                addemail,
+		AddNotificationPayload: core.BoolPtr(addNotificationPayload),
+		ReplyToMail:            core.StringPtr(replyToMail),
+		ReplyToName:            core.StringPtr(replyToName),
 	}
 
 	if attributeMap["from_name"] != nil {
@@ -439,5 +550,5 @@ func CustomEmailattributesupdateMapToAttributes(attributeMap map[string]interfac
 		updateattributes.TemplateIDInvitation = core.StringPtr(attributeMap["template_id_invitation"].(string))
 	}
 
-	return updateattributes
+	return updateattributes, nil
 }
