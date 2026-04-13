@@ -498,11 +498,8 @@ func resourceIBMSatelliteClusterCreate(d *schema.ResourceData, meta interface{})
 		}
 
 		cluster, response, err := satClient.GetCluster(getSatClusterOptions)
-		if err != nil {
-			return fmt.Errorf("[ERROR] Error in retreiving ibm satellite cluster : %s", response)
-		}
-		if cluster == nil {
-			return fmt.Errorf("[ERROR] Error in retreiving ibm satellite cluster, cluster is nil: %s", err)
+		if err != nil || cluster == nil {
+			return fmt.Errorf("[ERROR] Error in retreiving ibm satellite cluster : %w - %s", err, GetDetailedResultString(response))
 		}
 
 		oldList, newList := d.GetChange("tags")
@@ -583,11 +580,8 @@ func resourceIBMSatelliteClusterRead(d *schema.ResourceData, meta interface{}) e
 	}
 
 	workerPool, response, err := satClient.GetWorkerPool(getWorkerPoolOptions)
-	if err != nil {
-		return fmt.Errorf("[ERROR] An error occured while retrieving default workerpool: %s", err)
-	}
-	if workerPool == nil {
-		return fmt.Errorf("[ERROR] An error occured while retrieving default workerpool, workerPool is nil: %s", response)
+	if err != nil || workerPool == nil {
+		return fmt.Errorf("[ERROR] An error occured while retrieving default workerpool : %w - %s", err, GetDetailedResultString(response))
 	}
 
 	tags, err := flex.GetTagsUsingCRN(meta, *cluster.Crn)
@@ -1009,4 +1003,14 @@ func satelliteClusterVersionRefreshFunc(client v1.Clusters, instanceID string, d
 		}
 		return clusterFields, clusterNormal, nil
 	}
+}
+
+func GetDetailedResultString(response *core.DetailedResponse) string {
+	if response != nil {
+		if response.GetResult() != nil {
+			return fmt.Sprintf("%v", response.GetResult())
+		}
+		return string(response.GetRawResult())
+	}
+	return ""
 }
