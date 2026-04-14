@@ -7,7 +7,6 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"net/url"
 	"os"
 	"strings"
 
@@ -682,124 +681,38 @@ func (g *resourceIBMDatabaseGen2Backend) populateResourceData(d *schema.Resource
 // setBasicAttributes sets basic instance attributes.
 // Includes tags, name, status, location, GUID, and resource controller URLs.
 func (g *resourceIBMDatabaseGen2Backend) setBasicAttributes(d *schema.ResourceData, instance *rc.ResourceInstance, meta interface{}) error {
-	tags, err := flex.GetTagsUsingCRN(meta, *instance.CRN)
-	if err != nil {
-		log.Printf("Error on get of ibm Database tags (%s) tags: %s", d.Id(), err)
-	}
-	d.Set("tags", tags)
-	d.Set("name", *instance.Name)
-	d.Set("status", *instance.State)
-	d.Set("resource_group_id", *instance.ResourceGroupID)
-
-	var instanceLocation string
-	if instance.CRN != nil {
-		var err error
-		instanceLocation, err = extractLocationFromCRN(instance.CRN)
-		if err == nil {
-			d.Set("location", instanceLocation)
-		}
-	}
-	d.Set("guid", *instance.GUID)
-
-	if instance.Parameters != nil {
-		if endpoint, ok := instance.Parameters[serviceEndpointsKey]; ok {
-			d.Set("service_endpoints", endpoint)
-		}
-	}
-
-	d.Set(flex.ResourceName, *instance.Name)
-	d.Set(flex.ResourceCRN, *instance.CRN)
-	d.Set(flex.ResourceStatus, *instance.State)
-	d.Set(flex.ResourceGroupName, *instance.ResourceGroupCRN)
-
-	rcontroller, err := flex.GetBaseController(meta)
-	if err != nil {
-		return fmt.Errorf("failed to get base controller: %w", err)
-	}
-	d.Set(flex.ResourceControllerURL, rcontroller+"/services/"+url.QueryEscape(*instance.CRN))
-
-	return nil
+	// Use shared Gen2 helper function
+	// Resources need service_endpoints and resource_controller_url
+	return setGen2BasicAttributes(d, instance, meta, true, true)
 }
 
 // setServiceInfo sets service and plan information.
 // Retrieves service and plan names from the catalog and clears admin user (not available in Gen2).
 func (g *resourceIBMDatabaseGen2Backend) setServiceInfo(d *schema.ResourceData, instance *rc.ResourceInstance, meta interface{}) error {
-	rsCatClient, err := meta.(conns.ClientSession).ResourceCatalogAPI()
-	if err != nil {
-		return fmt.Errorf("failed to initialize resource catalog client: %w", err)
-	}
-	rsCatRepo := rsCatClient.ResourceCatalog()
-
-	serviceOff, err := rsCatRepo.GetServiceName(*instance.ResourceID)
-	if err != nil {
-		return fmt.Errorf("error retrieving service offering: %w", err)
-	}
-	d.Set("service", serviceOff)
-
-	servicePlan, err := rsCatRepo.GetServicePlanName(*instance.ResourcePlanID)
-	if err != nil {
-		return fmt.Errorf("error retrieving plan: %w", err)
-	}
-	d.Set("plan", servicePlan)
-
-	// Admin user is not available in Gen2
-	d.Set(adminUserKey, nil)
-
-	return nil
+	// Use shared Gen2 helper function
+	return setGen2ServiceInfo(d, instance, meta)
 }
 
 // setVersionInfo extracts and sets version information.
 // Uses the helper function to extract version from instance extensions.
 func (g *resourceIBMDatabaseGen2Backend) setVersionInfo(d *schema.ResourceData, instance *rc.ResourceInstance) {
-	version := ""
-	if instance.Extensions != nil && instance.ResourceID != nil {
-		version = extractVersionFromExtensions(instance.Extensions, *instance.ResourceID)
-	}
-	d.Set(versionKey, version)
+	// Use shared Gen2 helper function
+	// Resources don't include platform_options
+	setGen2VersionInfo(d, instance, false)
 }
 
 // setGroupsInfo retrieves and sets groups information from catalog.
 // Combines instance extensions with catalog metadata to build group configurations.
 func (g *resourceIBMDatabaseGen2Backend) setGroupsInfo(d *schema.ResourceData, instance *rc.ResourceInstance, meta interface{}) error {
-	// Extract location from instance CRN
-	instanceLocation, err := extractLocationFromCRN(instance.CRN)
-	if err != nil {
-		return err
-	}
-
-	globalClient, err := meta.(conns.ClientSession).GlobalCatalogV1API()
-	if err != nil {
-		return fmt.Errorf("failed to initialize global catalog client: %w", err)
-	}
-
-	catalogDeployment, err := findDeploymentByLocation(globalClient, *instance.ResourcePlanID, instanceLocation)
-	if err != nil {
-		return err
-	}
-
-	// Extract resources from deployment metadata
-	var catalogResources []interface{}
-	if catalogDeployment.Metadata != nil && catalogDeployment.Metadata.Other != nil {
-		if resources, ok := catalogDeployment.Metadata.Other[resourcesKey].([]interface{}); ok {
-			catalogResources = resources
-		}
-	}
-
-	// Flatten groups using instance extensions and catalog metadata
-	if instance.Extensions != nil && len(catalogResources) > 0 && instance.ResourceID != nil {
-		d.Set("groups", flattenIcdGroupsFromInstanceAndCatalog(instance.Extensions, catalogResources, *instance.ResourceID))
-	}
-
-	return nil
+	// Use shared Gen2 helper function
+	return setGen2GroupsInfo(d, instance, meta)
 }
 
 // clearUnsupportedAttributes clears attributes not supported in Gen2.
 // Sets auto_scaling, allowlist, users, and configuration_schema to nil.
 func (g *resourceIBMDatabaseGen2Backend) clearUnsupportedAttributes(d *schema.ResourceData) {
-	d.Set(autoScalingKey, nil)
-	d.Set(allowlistKey, nil)
-	d.Set("users", nil)
-	d.Set("configuration_schema", nil)
+	// Use shared Gen2 helper function
+	clearGen2UnsupportedAttributes(d)
 }
 
 // Update updates an existing database instance.
