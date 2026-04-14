@@ -6,11 +6,13 @@ package database
 import (
 	"fmt"
 	"log"
+	"net/url"
 	"regexp"
 	"strings"
 	"time"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM/cloud-databases-go-sdk/clouddatabasesv5"
 	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/IBM/platform-services-go-sdk/globalcatalogv1"
@@ -485,4 +487,60 @@ func findDeploymentByLocation(globalClient *globalcatalogv1.GlobalCatalogV1, pla
 	}
 
 	return nil, fmt.Errorf("could not find deployment catalog entry for region %s", location)
+}
+
+// getGlobalCatalogClient initializes and returns the Global Catalog V1 client.
+// Centralizes client initialization to reduce duplication and improve testability.
+func getGlobalCatalogClient(meta interface{}) (*globalcatalogv1.GlobalCatalogV1, error) {
+	client, err := meta.(conns.ClientSession).GlobalCatalogV1API()
+	if err != nil {
+		return nil, fmt.Errorf("failed to get global catalog client: %w", err)
+	}
+	return client, nil
+}
+
+// getResourceManagerClient initializes and returns the Resource Manager V2 client.
+// Centralizes client initialization to reduce duplication and improve testability.
+func getResourceManagerClient(meta interface{}) (interface{}, error) {
+	client, err := meta.(conns.ClientSession).ResourceManagerV2API()
+	if err != nil {
+		return nil, fmt.Errorf("failed to get resource manager client: %w", err)
+	}
+	return client, nil
+}
+
+// setTagsWithLogging retrieves and sets tags for a resource, logging errors instead of failing.
+// Returns error only for critical failures, logs warnings for non-critical issues.
+func setTagsWithLogging(d *schema.ResourceData, crn string, meta interface{}) error {
+	tags, err := flex.GetTagsUsingCRN(meta, crn)
+	if err != nil {
+		log.Printf("[WARN] Failed to retrieve tags for resource %s: %v", crn, err)
+	}
+	return d.Set("tags", tags)
+}
+
+// buildResourceControllerURL constructs the resource controller URL for a given CRN.
+// Standardizes URL building across resources and data sources.
+func buildResourceControllerURL(meta interface{}, crn string) (string, error) {
+	rcontroller, err := flex.GetBaseController(meta)
+	if err != nil {
+		return "", fmt.Errorf("failed to get base controller: %w", err)
+	}
+	return rcontroller + "/services/" + url.QueryEscape(crn), nil
+}
+
+// setResourceControllerAttributes sets common flex resource controller attributes.
+// Reduces duplication of setting name, CRN, status, and controller URL.
+func setResourceControllerAttributes(d *schema.ResourceData, name, crn, state string, meta interface{}) error {
+	d.Set(flex.ResourceName, name)
+	d.Set(flex.ResourceCRN, crn)
+	d.Set(flex.ResourceStatus, state)
+
+	controllerURL, err := buildResourceControllerURL(meta, crn)
+	if err != nil {
+		return err
+	}
+	d.Set(flex.ResourceControllerURL, controllerURL)
+
+	return nil
 }
