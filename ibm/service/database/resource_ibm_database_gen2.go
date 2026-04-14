@@ -984,6 +984,9 @@ func (g *resourceIBMDatabaseGen2Backend) WarnUnsupported(ctx context.Context, d 
 func (g *resourceIBMDatabaseGen2Backend) ValidateUnsupportedAttrsDiff(ctx context.Context, d *schema.ResourceDiff, meta interface{}) error {
 	var bad []string
 	for _, k := range gen2UnsupportedAttrs {
+		if !d.HasChange(k) {
+			continue
+		}
 		if isAttrConfiguredInDiff(d, k) {
 			bad = append(bad, k)
 		}

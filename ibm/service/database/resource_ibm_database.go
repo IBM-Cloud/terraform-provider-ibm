@@ -2977,10 +2977,10 @@ func validateGroupsDiff(_ context.Context, diff *schema.ResourceDiff, meta inter
 	service := diff.Get("service").(string)
 	plan := diff.Get("plan").(string)
 
-	// For Gen2 plans, skip Classic API validation during plan phase
-	// Gen2 uses different APIs (GlobalCatalog) and validation happens at apply time
-	if instanceID == "" && isGen2Plan(plan) {
-		// Only validate basic group structure for Gen2 during plan
+	// For Gen2 plans, skip Classic API validation entirely.
+	// Gen2 uses different APIs (GlobalCatalog and RC/extensions), so only perform
+	// basic Terraform-side structural validation here.
+	if isGen2Plan(plan) {
 		if group, ok := diff.GetOk("group"); ok {
 			groups := expandGroups(group.(*schema.Set).List())
 			var groupIds []string

@@ -969,5 +969,3 @@ func TestGen2UnsupportedAttributesList(t *testing.T) {
 			"Unsupported attribute %d should be '%s'", i, attr)
 	}
 }
-
-// Made with Bob
