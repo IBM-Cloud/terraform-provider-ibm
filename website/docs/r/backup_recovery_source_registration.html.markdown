@@ -32,6 +32,7 @@ resource "ibm_backup_recovery_source_registration" "backup_recovery_source_regis
 		}
 		client_private_key = "client_private_key"
 		data_mover_image_location = "data_mover_image_location"
+		datamover_hostport_number = 1
 		datamover_service_type = "kNodePort"
 		default_vlan_params {
 			disable_vlan = true
@@ -112,7 +113,8 @@ Nested schema for **kubernetes_params**:
 		* `storage_domain_id` - (Optional, Integer) Specifies the storage domain id for the protection job.
 	* `client_private_key` - (Required, String) Specifies the bearer token or private key of Kubernetes source.
 	* `cohesity_dataprotect_plugin_image_location` - (Optional, String) Specifies the custom Cohesity Dataprotect plugin image location of the Kubernetes source.
-	* `data_mover_image_location` - (Required, String) Specifies the datamover image location of Kubernetes source.
+	* `data_mover_image_location` - (Optional, String) Specifies the datamover image location of Kubernetes source.
+	* `datamover_hostport_number` - (Optional, Integer) Specifies the port number to use when using the HostPort model for datamover communication. If user specifies a port number, that value is set here. If no port number was specified by the user, the gflag controlled value is set here.
 	* `datamover_service_type` - (Optional, String) Specifies the data mover service type of Kubernetes source.
 	  * Constraints: Allowable values are: `kNodePort`, `kLoadBalancer`, `kClusterIp`.
 	* `default_vlan_params` - (Optional, List) Specifies VLAN params associated with the backup/restore operation.
