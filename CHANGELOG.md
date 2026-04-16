@@ -1,3 +1,10 @@
+# 2.0.2 (April 16, 2026)
+
+## Bug Fixes
+
+### VPC Infrastructure
+* fix: set vpn_gateway during import for ibm_is_vpn_gateway_connection ([6732](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6732))
+
 # 2.0.1 (April 14, 2026)
 
 ## Bug Fixes
