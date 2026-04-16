@@ -26,9 +26,9 @@ func ResourceIbmBackupRecoveryVaultRecoveryScan() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceIbmBackupRecoveryVaultRecoveryScanCreate,
 		ReadContext:   resourceIbmBackupRecoveryVaultRecoveryScanRead,
+		UpdateContext: resourceIbmBackupRecoveryVaultRecoveryScanUpdate,
 		DeleteContext: resourceIbmBackupRecoveryVaultRecoveryScanDelete,
 		Importer:      &schema.ResourceImporter{},
-
 		Schema: map[string]*schema.Schema{
 			"x_ibm_tenant_id": &schema.Schema{
 				Type:        schema.TypeString,
@@ -37,11 +37,10 @@ func ResourceIbmBackupRecoveryVaultRecoveryScan() *schema.Resource {
 				Description: "Specifies the unique id of the tenant.",
 			},
 			"cloud_type": &schema.Schema{
-				Type:         schema.TypeString,
-				Required:     true,
-				ForceNew:     true,
-				ValidateFunc: validate.InvokeValidator("ibm_backup_recovery_vault_recovery_scan", "cloud_type"),
-				Description:  "Specifies the cloud type where the vault is registered for recovery scan. Currently, only 'ibm' is supported.",
+				Type:        schema.TypeString,
+				Required:    true,
+				ForceNew:    true,
+				Description: "Specifies the cloud type where the vault is registered for recovery scan. Currently, only 'ibm' is supported.",
 			},
 			"recovery_scan_request_params": &schema.Schema{
 				Type:        schema.TypeList,
@@ -137,55 +136,33 @@ func resourceIbmBackupRecoveryVaultRecoveryScanCreate(context context.Context, d
 }
 
 func resourceIbmBackupRecoveryVaultRecoveryScanRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	backupRecoveryClient, err := meta.(conns.ClientSession).BackupRecoveryV1()
-	if err != nil {
-		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_vault_recovery_scan", "read", "initialize-client")
-		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
-		return tfErr.GetDiag()
-	}
-
-	getBatchVaultRecoveryScanStatusOptions := &backuprecoveryv1.GetBatchVaultRecoveryScanStatusOptions{}
-
-	getBatchVaultRecoveryScanStatusOptions.SetXIBMTenantID(d.Get("x_ibm_tenant_id").(string))
-
-	getBatchVaultRecoveryScanStatus, response, err := backupRecoveryClient.GetBatchVaultRecoveryScanStatusWithContext(context, getBatchVaultRecoveryScanStatusOptions)
-	if err != nil {
-		if response != nil && response.StatusCode == 404 {
-			d.SetId("")
-			return nil
-		}
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetBatchVaultRecoveryScanStatusWithContext failed: %s", err.Error()), "ibm_backup_recovery_vault_recovery_scan", "read")
-		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
-		return tfErr.GetDiag()
-	}
-
-	if !core.IsNil(getBatchVaultRecoveryScanStatus.ErrorMessage) {
-		if err = d.Set("error_message", getBatchVaultRecoveryScanStatus.ErrorMessage); err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting error_message: %s", err), "(Data) ibm_backup_recovery_vault_recovery_scan_status", "read", "set-error_message").GetDiag()
-		}
-	}
-
-	if !core.IsNil(getBatchVaultRecoveryScanStatus.RecoveryScanStatuses) {
-		recoveryScanStatuses := []map[string]interface{}{}
-		for _, recoveryScanStatusesItem := range getBatchVaultRecoveryScanStatus.RecoveryScanStatuses {
-			recoveryScanStatusesItemMap, err := DataSourceIbmBackupRecoveryVaultRecoveryScanStatusBatchVaultRecoveryScanStatusToMap(&recoveryScanStatusesItem) // #nosec G601
-			if err != nil {
-				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_backup_recovery_vault_recovery_scan_status", "read", "recovery_scan_statuses-to-map").GetDiag()
-			}
-			recoveryScanStatuses = append(recoveryScanStatuses, recoveryScanStatusesItemMap)
-		}
-		if err = d.Set("recovery_scan_statuses", recoveryScanStatuses); err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting recovery_scan_statuses: %s", err), "(Data) ibm_backup_recovery_vault_recovery_scan_status", "read", "set-recovery_scan_statuses").GetDiag()
-		}
-	}
 
 	return nil
 }
 
 func resourceIbmBackupRecoveryVaultRecoveryScanDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	// This resource does not support a "delete" operation.
+	var diags diag.Diagnostics
+	warning := diag.Diagnostic{
+		Severity: diag.Warning,
+		Summary:  "Delete Not Supported",
+		Detail:   "The resource definition will be only be removed from the terraform statefile. This resource cannot be deleted from the backend. ",
+	}
+	diags = append(diags, warning)
 	d.SetId("")
-	return nil
+	return diags
+}
+
+func resourceIbmBackupRecoveryVaultRecoveryScanUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	// This resource does not support a "update" operation.
+	var diags diag.Diagnostics
+	warning := diag.Diagnostic{
+		Severity: diag.Warning,
+		Summary:  "Resource update will only affect terraform state and not the actual backend resource",
+		Detail:   "Update operation for this resource is not supported and will only affect the terraform statefile. No changes will be made to the backend resource.",
+	}
+	diags = append(diags, warning)
+	return diags
 }
 
 func ResourceIbmBackupRecoveryVaultRecoveryScanMapToRecoveryScanRequestParams(modelMap map[string]interface{}) (*backuprecoveryv1.RecoveryScanRequestParams, error) {

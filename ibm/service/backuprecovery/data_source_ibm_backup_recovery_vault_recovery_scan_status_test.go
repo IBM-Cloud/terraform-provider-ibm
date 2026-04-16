@@ -3,7 +3,7 @@
 
 /*
  * IBM OpenAPI Terraform Generator Version: 3.113.1-d76630af-20260320-135953
-*/
+ */
 
 package backuprecovery_test
 
@@ -13,11 +13,11 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 
+	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/backuprecovery"
 	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/IBM/ibm-backup-recovery-sdk-go/backuprecoveryv1"
 	"github.com/stretchr/testify/assert"
-	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 )
 
 func TestAccIbmBackupRecoveryVaultRecoveryScanStatusDataSourceBasic(t *testing.T) {
@@ -46,7 +46,6 @@ func testAccCheckIbmBackupRecoveryVaultRecoveryScanStatusDataSourceConfigBasic()
 		}
 	`)
 }
-
 
 func TestDataSourceIbmBackupRecoveryVaultRecoveryScanStatusBatchVaultRecoveryScanStatusToMap(t *testing.T) {
 	checkResult := func(result map[string]interface{}) {
