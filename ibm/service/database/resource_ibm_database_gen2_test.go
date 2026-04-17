@@ -71,7 +71,8 @@ func TestGen2BackendCreate(t *testing.T) {
 				"location":         "us-south",
 				"remote_leader_id": "crn:v1:bluemix:public:databases-for-postgresql:us-east:a/abc123:leader-id",
 			},
-			expectedError: false,
+			expectedError: true,
+			errorContains: "supported only for Classic database instances",
 		},
 		{
 			name: "create_with_pitr_deployment_id",
@@ -490,6 +491,14 @@ func TestGen2BackendValidateUnsupportedAttrsDiff(t *testing.T) {
 			expectedError: true,
 			errorContains: "auto_scaling",
 		},
+		{
+			name: "unsupported_remote_leader_id_attr",
+			changes: map[string]interface{}{
+				"remote_leader_id": "crn:v1:bluemix:public:databases-for-postgresql:us-east:a/abc123:leader-id",
+			},
+			expectedError: true,
+			errorContains: "supported only for Classic database instances",
+		},
 	}
 
 	for _, tt := range tests {
@@ -621,6 +630,14 @@ func TestGen2BackendUpdate(t *testing.T) {
 			},
 			expectedError: true,
 			errorContains: "unsupported",
+		},
+		{
+			name: "update_unsupported_remote_leader_id",
+			changes: map[string]interface{}{
+				"remote_leader_id": "crn:v1:bluemix:public:databases-for-postgresql:us-east:a/abc123:leader-id",
+			},
+			expectedError: true,
+			errorContains: "supported only for Classic database instances",
 		},
 	}
 

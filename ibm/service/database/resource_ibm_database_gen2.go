@@ -283,11 +283,6 @@ func (g *resourceIBMDatabaseGen2Backend) buildGen2Parameters(d *schema.ResourceD
 	// Handle point-in-time recovery
 	g.addPITRConfig(d, dataservices)
 
-	// Handle read replica
-	if remoteLeader, ok := d.GetOk("remote_leader_id"); ok {
-		dataservices[remoteLeaderIDKey] = remoteLeader.(string)
-	}
-
 	// Build final parameters structure
 	parameters := map[string]interface{}{
 		"dataservices": dataservices,
@@ -792,7 +787,7 @@ func (g *resourceIBMDatabaseGen2Backend) checkUnsupportedChanges(d *schema.Resou
 		"allowlist":                "Allowlist is not supported for Gen2 database instances",
 		"users":                    "User management is not supported for Gen2 database instances. Users should manage credentials using the ibm_resource_key resource (https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/resources/resource_key)",
 		"logical_replication_slot": "Logical replication slot management is not supported for Gen2 database instances. Please use the Classic backend for logical replication slot operations",
-		"remote_leader_id":         "Read replica promotion (remote_leader_id) is not supported for Gen2 database instances yet",
+		"remote_leader_id":         "Read replica creation and promotion is not supported for Gen2 database instances yet",
 		"version":                  "Version changes are not supported for Gen2 database instances",
 	}
 
