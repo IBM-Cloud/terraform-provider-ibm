@@ -722,7 +722,7 @@ func diagError(format string, args ...interface{}) diag.Diagnostics {
 	return diag.FromErr(fmt.Errorf("[ERROR] "+format, args...))
 }
 
-// updateBasicAttributes updates basic instance attributes (name and service_endpoints).
+// updateBasicAttributes updates basic instance attributes.
 // Returns true if any updates were made.
 func (g *resourceIBMDatabaseGen2Backend) updateBasicAttributes(d *schema.ResourceData, updateReq *rc.UpdateResourceInstanceOptions) bool {
 	update := false
@@ -734,9 +734,6 @@ func (g *resourceIBMDatabaseGen2Backend) updateBasicAttributes(d *schema.Resourc
 	}
 
 	if d.HasChange("service_endpoints") {
-		updateReq.Parameters = map[string]interface{}{
-			serviceEndpointsKey: d.Get("service_endpoints").(string),
-		}
 		update = true
 	}
 
@@ -838,7 +835,7 @@ func (g *resourceIBMDatabaseGen2Backend) applyGroupScalingWithDiagnostics(ctx co
 }
 
 // Update modifies an existing IBM Cloud Database Gen2 instance.
-// Supports updates to name, service_endpoints, tags, and group scaling.
+// Supports updates to name, tags, and group scaling.
 // Many features are not yet supported in Gen2 and will return errors if modified.
 func (g *resourceIBMDatabaseGen2Backend) Update(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	rsConClient, err := g.getResourceControllerClient(meta)
@@ -853,7 +850,7 @@ func (g *resourceIBMDatabaseGen2Backend) Update(ctx context.Context, d *schema.R
 		return diags
 	}
 
-	// Update basic attributes (name, service_endpoints)
+	// Update basic attributes
 	if diags := g.applyBasicAttributeUpdates(d, rsConClient, instanceID, meta); len(diags) > 0 {
 		return diags
 	}

@@ -301,7 +301,7 @@ func ResourceIBMDatabaseInstance() *schema.Resource {
 				Optional:    true,
 			},
 			"service_endpoints": {
-				Description:  "Types of the service endpoints. Possible values are 'public', 'private', 'public-and-private'. Required for Classic plans. For Gen2 plans, this field cannot be set and defaults to 'private'.",
+				Description:  "Types of the service endpoints. Possible values are 'public', 'private', 'public-and-private'. Required for Classic plans. For Gen2 plans, this field is optional and, if set, must be 'private'. Gen2 defaults to 'private'.",
 				Type:         schema.TypeString,
 				Optional:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_database", "service_endpoints"),
@@ -3317,9 +3317,9 @@ func validateServiceEndpointsDiff(_ context.Context, diff *schema.ResourceDiff, 
 	serviceEndpoint, serviceEndpointOk := diff.GetOk("service_endpoints")
 	plan := diff.Get("plan").(string)
 
-	// For Gen2 plans, service_endpoints should not be set
-	if isGen2Plan(plan) && serviceEndpointOk && serviceEndpoint.(string) != "" {
-		return fmt.Errorf("[ERROR] service_endpoints cannot be set for Gen2 plans (plans ending with -gen2). Gen2 defaults to 'private' endpoints")
+	// For Gen2 plans, service_endpoints is optional, but if set it must be "private"
+	if isGen2Plan(plan) && serviceEndpointOk && serviceEndpoint.(string) != "" && serviceEndpoint.(string) != "private" {
+		return fmt.Errorf("[ERROR] service_endpoints for Gen2 plans (plans ending with -gen2) is optional, but if set it must be 'private'")
 	}
 
 	// For Classic plans, service_endpoints is required
