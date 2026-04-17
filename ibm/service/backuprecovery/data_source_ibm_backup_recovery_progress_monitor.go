@@ -303,8 +303,8 @@ func dataSourceIbmBackupRecoveryProgressMonitorRead(context context.Context, d *
 	}
 
 	getProgressMonitorsOptions := &backuprecoveryv1.GetProgressMonitorsOptions{}
-
-	getProgressMonitorsOptions.XIBMTenantID = (d.Get("x_ibm_tenant_id").(*string))
+	tenantId := (d.Get("x_ibm_tenant_id").(string))
+	getProgressMonitorsOptions.XIBMTenantID = &tenantId
 	if _, ok := d.GetOk("attribute_vec"); ok {
 		var newAttributeVec []backuprecoveryv1.KeyValuePair
 		for _, v := range d.Get("attribute_vec").([]interface{}) {

@@ -1171,8 +1171,8 @@ func dataSourceIbmBackupRecoveryProtectionRunProgressRead(context context.Contex
 	}
 
 	getProtectionRunProgressOptions := &backuprecoveryv1.GetProtectionRunProgressOptions{}
-
-	getProtectionRunProgressOptions.XIBMTenantID = (d.Get("x_ibm_tenant_id").(*string))
+	tenantId := (d.Get("x_ibm_tenant_id").(string))
+	getProtectionRunProgressOptions.XIBMTenantID = &tenantId
 	getProtectionRunProgressOptions.SetRunID(d.Get("run_id").(string))
 	if _, ok := d.GetOk("objects"); ok {
 		var objects []int64
