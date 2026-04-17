@@ -1,3 +1,42 @@
+# 2.0.2 (April 16, 2026)
+
+## Bug Fixes
+
+### VPC Infrastructure
+* fix: set vpn_gateway during import for ibm_is_vpn_gateway_connection ([6732](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6732))
+
+# 2.0.1 (April 14, 2026)
+
+## Bug Fixes
+
+### Cloud Logs
+* fix syntax type plan change ([6725](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6725))
+
+### Configuration Aggregator
+* Have single source of truth for ICR urls ([6739](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6739))
+
+### Power Systems
+* Fix-pi route next hop update ([6741](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6741))
+
+### Transit Gateway
+* [TGW] Add documentation for default_prefix_filter ([6734](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6734))
+
+
+## Enhancements
+
+### Event Notifications
+* Support for bounce metrics Data source and metrics, subscription-id filter for metrics ([6594](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6594))
+
+### General
+* bump goreleaser/goreleaser-action from 6 to 7 ([6679](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6679))
+* bump google.golang.org/grpc from 1.79.2 to 1.79.3 ([6731](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6731))
+* bump crazy-max/ghaction-import-gpg from 6.1.0 to 7.0.0 ([6727](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6727))
+* bump github.com/go-jose/go-jose/v4 from 4.1.3 to 4.1.4 ([6730](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6730))
+
+### Container Registry
+* Pull in latest icr SDK version ([6729](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6729))
+
+
 # 2.0.0 (March 30, 2026)
 This release adds internal support for Terraform's Plugin Framework alongside our existing implementation. All your existing Terraform configurations work exactly as before with zero changes required.
 We're bumping to v2.0.0 to signal an important internal architectural enhancement: the provider now supports Terraform Plugin Framework in addition to the existing SDKv2 implementation. This is a major milestone that enables future capabilities while maintaining complete backward compatibility.

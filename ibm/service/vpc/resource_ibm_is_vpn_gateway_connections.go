@@ -53,7 +53,9 @@ func ResourceIBMISVPNGatewayConnection() *schema.Resource {
 		UpdateContext: resourceIBMISVPNGatewayConnectionUpdate,
 		DeleteContext: resourceIBMISVPNGatewayConnectionDelete,
 		Exists:        resourceIBMISVPNGatewayConnectionExists,
-		Importer:      &schema.ResourceImporter{},
+		Importer: &schema.ResourceImporter{
+			StateContext: resourceIBMISVPNGatewayConnectionImport,
+		},
 
 		Timeouts: &schema.ResourceTimeout{
 			Delete: schema.DefaultTimeout(10 * time.Minute),
@@ -894,6 +896,32 @@ func vpngwconGet(context context.Context, d *schema.ResourceData, meta interface
 	}
 
 	return nil
+}
+
+func resourceIBMISVPNGatewayConnectionImport(context context.Context, d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
+	parts, err := flex.IdParts(d.Id())
+	if err != nil {
+		return nil, err
+	}
+	if len(parts) != 2 {
+		return nil, fmt.Errorf("Incorrect ID %s: ID should be a combination of vpnGatewayID/vpnGatewayConnectionID", d.Id())
+	}
+
+	gID := parts[0]
+	gConnID := parts[1]
+
+	// Set the vpn_gateway field which is required and has ForceNew=true
+	if err := d.Set(isVPNGatewayConnectionVPNGateway, gID); err != nil {
+		return nil, fmt.Errorf("Error setting vpn_gateway during import: %s", err)
+	}
+
+	// Call the standard read function to populate all other fields
+	diagErr := vpngwconGet(context, d, meta, gID, gConnID)
+	if diagErr != nil {
+		return nil, fmt.Errorf("Error reading VPN Gateway Connection during import: %v", diagErr)
+	}
+
+	return []*schema.ResourceData{d}, nil
 }
 
 func resourceIBMISVPNGatewayConnectionUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {

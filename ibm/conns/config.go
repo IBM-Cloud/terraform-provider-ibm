@@ -2354,10 +2354,8 @@ func (c *Config) ClientSession() (interface{}, error) {
 		containerRegistryClientURL = containerregistryv1.DefaultServiceURL
 	}
 	if c.Visibility == "private" || c.Visibility == "public-and-private" {
-		containerRegistryClientURL, err = GetPrivateServiceURLForRegion(c.Region)
-		if err != nil {
-			containerRegistryClientURL, _ = GetPrivateServiceURLForRegion("global")
-		}
+		containerRegistryClientURL = strings.Replace(containerRegistryClientURL, "https://", "https://private.", 1)
+
 	}
 	if fileMap != nil && c.Visibility != "public-and-private" {
 		containerRegistryClientURL = fileFallBack(fileMap, c.Visibility, "IBMCLOUD_CR_API_ENDPOINT", c.Region, containerRegistryClientURL)
