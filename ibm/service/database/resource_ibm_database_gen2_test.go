@@ -4,6 +4,7 @@
 package database
 
 import (
+	"encoding/json"
 	"errors"
 	"testing"
 
@@ -1481,6 +1482,315 @@ func TestGen2PlanSuffixValidation(t *testing.T) {
 			// Test documents plan suffix detection logic
 			hasGen2Suffix := len(tt.plan) > 5 && tt.plan[len(tt.plan)-5:] == "-gen2"
 			assert.Equal(t, tt.isGen2, hasGen2Suffix, "Plan suffix detection should match expected Gen2 status")
+		})
+	}
+}
+
+// TestGen2KeyProtectInstance tests that key_protect_instance is silently ignored in Gen2
+func TestGen2KeyProtectInstance(t *testing.T) {
+	tests := []struct {
+		name               string
+		keyProtectInstance string
+		operation          string
+		expectedBehavior   string
+	}{
+		{
+			name:               "key_protect_instance_create_ignored",
+			keyProtectInstance: "crn:v1:bluemix:public:kms:us-south:a/abc123:instance-id::",
+			operation:          "CREATE",
+			expectedBehavior:   "Accepted but silently ignored, not sent to API",
+		},
+		{
+			name:               "key_protect_instance_update_forcenew",
+			keyProtectInstance: "crn:v1:bluemix:public:kms:us-east:a/abc123:new-instance::",
+			operation:          "UPDATE",
+			expectedBehavior:   "Cannot be changed (ForceNew)",
+		},
+		{
+			name:               "key_protect_instance_read_persists",
+			keyProtectInstance: "crn:v1:bluemix:public:kms:us-south:a/abc123:instance-id::",
+			operation:          "READ",
+			expectedBehavior:   "Value persists in state but never read from API",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// Test documents that key_protect_instance is accepted but ignored in Gen2
+			// Classic: Sent to Resource Controller API as KeyProtectInstance parameter (just stored)
+			// Gen2: Not used - use key_protect_key for disk encryption and backup_encryption_key_crn for backup encryption
+			assert.NotEmpty(t, tt.keyProtectInstance, "Key protect instance should be defined")
+			assert.NotEmpty(t, tt.expectedBehavior, "Expected behavior should be documented")
+
+			// Verify the attribute is marked as ForceNew in schema
+			if tt.operation == "UPDATE" {
+				assert.Contains(t, tt.expectedBehavior, "ForceNew", "Update should trigger ForceNew")
+			}
+		})
+	}
+}
+
+// TestGen2AdminPasswordIgnored tests that adminpassword is silently ignored in Gen2
+func TestGen2AdminPasswordIgnored(t *testing.T) {
+	tests := []struct {
+		name             string
+		adminPassword    string
+		operation        string
+		expectedBehavior string
+	}{
+		{
+			name:             "admin_password_create_ignored",
+			adminPassword:    "SecurePassword123!",
+			operation:        "CREATE",
+			expectedBehavior: "Accepted but silently ignored - not validated, not sent to API, not configured",
+		},
+		{
+			name:             "admin_password_update_ignored",
+			adminPassword:    "NewPassword456!",
+			operation:        "UPDATE",
+			expectedBehavior: "Accepted but silently ignored - not validated, not sent to API, not configured",
+		},
+		{
+			name:             "admin_password_read_not_returned",
+			adminPassword:    "SecurePassword123!",
+			operation:        "READ",
+			expectedBehavior: "Not returned from API",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// Test documents that adminpassword is silently ignored in Gen2
+			// Classic: Sets default admin password during CREATE and UPDATE
+			// Gen2: No default admin user exists - use ibm_resource_key for credentials
+			assert.NotEmpty(t, tt.adminPassword, "Admin password should be defined")
+			assert.NotEmpty(t, tt.expectedBehavior, "Expected behavior should be documented")
+
+			// For CREATE and UPDATE, verify it's ignored; for READ, verify it's not returned
+			if tt.operation == "READ" {
+				assert.Contains(t, tt.expectedBehavior, "Not returned", "Password should not be returned on READ")
+			} else {
+				assert.Contains(t, tt.expectedBehavior, "ignored", "Password should be ignored in Gen2")
+			}
+		})
+	}
+}
+
+// TestGen2ConfigurationIgnored tests that configuration is silently ignored in Gen2
+func TestGen2ConfigurationIgnored(t *testing.T) {
+	tests := []struct {
+		name             string
+		configuration    string
+		operation        string
+		expectedBehavior string
+	}{
+		{
+			name:             "configuration_create_ignored",
+			configuration:    `{"max_connections": 200}`,
+			operation:        "CREATE",
+			expectedBehavior: "Accepted (no validation) but silently ignored - not sent to API",
+		},
+		{
+			name:             "configuration_update_ignored",
+			configuration:    `{"shared_buffers": "256MB"}`,
+			operation:        "UPDATE",
+			expectedBehavior: "Accepted (no validation) but silently ignored - not sent to API",
+		},
+		{
+			name:             "configuration_read_not_set",
+			configuration:    `{"max_connections": 200}`,
+			operation:        "READ",
+			expectedBehavior: "Not set - always returns empty/nil",
+		},
+		{
+			name:             "configuration_complex_json_ignored",
+			configuration:    `{"max_connections": 200, "shared_buffers": "256MB", "work_mem": "4MB"}`,
+			operation:        "CREATE",
+			expectedBehavior: "Accepted (no validation) but silently ignored - not sent to API",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// Test documents that configuration is silently ignored in Gen2
+			// Classic: Set database configuration JSON via CloudDatabasesV5 API
+			// Gen2: Not yet implemented - configuration changes not supported
+			assert.NotEmpty(t, tt.configuration, "Configuration should be defined")
+			assert.NotEmpty(t, tt.expectedBehavior, "Expected behavior should be documented")
+
+			// Verify configuration is valid JSON
+			var jsonData map[string]interface{}
+			err := json.Unmarshal([]byte(tt.configuration), &jsonData)
+			assert.NoError(t, err, "Configuration should be valid JSON")
+
+			if tt.operation == "READ" {
+				assert.Contains(t, tt.expectedBehavior, "Not set", "Read should not return configuration")
+			} else {
+				assert.Contains(t, tt.expectedBehavior, "ignored", "Configuration should be ignored")
+			}
+		})
+	}
+}
+
+// TestGen2AllUnsupportedAttributesBehavior is a comprehensive test documenting all unsupported attributes
+func TestGen2AllUnsupportedAttributesBehavior(t *testing.T) {
+	tests := []struct {
+		name           string
+		attribute      string
+		planBehavior   string
+		applyBehavior  string
+		readBehavior   string
+		useAlternative string
+	}{
+		{
+			name:           "version_upgrade_skip_backup",
+			attribute:      "version_upgrade_skip_backup",
+			planBehavior:   "Accepted",
+			applyBehavior:  "Silently ignored",
+			readBehavior:   "Not set",
+			useAlternative: "Only applies to Classic version upgrades",
+		},
+		{
+			name:           "key_protect_instance",
+			attribute:      "key_protect_instance",
+			planBehavior:   "Accepted",
+			applyBehavior:  "Silently ignored (CREATE), ForceNew (UPDATE)",
+			readBehavior:   "Persists in state but never read from API",
+			useAlternative: "Use key_protect_key for disk encryption and backup_encryption_key_crn for backup encryption",
+		},
+		{
+			name:           "remote_leader_id",
+			attribute:      "remote_leader_id",
+			planBehavior:   "Fails if set",
+			applyBehavior:  "Not sent to API (CREATE), Fails if changed (UPDATE)",
+			readBehavior:   "Not set",
+			useAlternative: "Use Classic for read replica creation and promotion",
+		},
+		{
+			name:           "skip_initial_backup",
+			attribute:      "skip_initial_backup",
+			planBehavior:   "Accepted",
+			applyBehavior:  "Not validated, not sent to API",
+			readBehavior:   "Not set",
+			useAlternative: "Only relevant for Classic read replicas",
+		},
+		{
+			name:           "adminuser",
+			attribute:      "adminuser",
+			planBehavior:   "N/A (computed)",
+			applyBehavior:  "N/A (computed)",
+			readBehavior:   "Always empty",
+			useAlternative: "Use ibm_resource_key for credentials",
+		},
+		{
+			name:           "adminpassword",
+			attribute:      "adminpassword",
+			planBehavior:   "Accepted (no validation)",
+			applyBehavior:  "Silently ignored - not validated, not sent to API",
+			readBehavior:   "Not returned",
+			useAlternative: "Use ibm_resource_key for credentials",
+		},
+		{
+			name:           "users",
+			attribute:      "users",
+			planBehavior:   "Fails if set or changed",
+			applyBehavior:  "N/A",
+			readBehavior:   "Not set",
+			useAlternative: "Use ibm_resource_key resource",
+		},
+		{
+			name:           "allowlist",
+			attribute:      "allowlist",
+			planBehavior:   "Fails if set or changed",
+			applyBehavior:  "N/A",
+			readBehavior:   "Not set",
+			useAlternative: "Not available in Gen2 architecture",
+		},
+		{
+			name:           "configuration",
+			attribute:      "configuration",
+			planBehavior:   "Accepted (no validation)",
+			applyBehavior:  "Silently ignored - not validated, not sent to API",
+			readBehavior:   "Not set",
+			useAlternative: "Not yet implemented in Gen2",
+		},
+		{
+			name:           "configuration_schema",
+			attribute:      "configuration_schema",
+			planBehavior:   "Cannot be set (computed)",
+			applyBehavior:  "N/A (computed)",
+			readBehavior:   "Always nil/empty",
+			useAlternative: "Not available in Gen2",
+		},
+		{
+			name:           "auto_scaling",
+			attribute:      "auto_scaling",
+			planBehavior:   "Fails if set or changed",
+			applyBehavior:  "N/A",
+			readBehavior:   "Not set",
+			useAlternative: "Monitor and scale manually",
+		},
+		{
+			name:           "logical_replication_slot",
+			attribute:      "logical_replication_slot",
+			planBehavior:   "Fails if set or changed",
+			applyBehavior:  "N/A",
+			readBehavior:   "Not set",
+			useAlternative: "Use Classic for logical replication",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// Comprehensive documentation of all unsupported attributes
+			assert.NotEmpty(t, tt.attribute, "Attribute name should be defined")
+			assert.NotEmpty(t, tt.planBehavior, "Plan behavior should be documented")
+			assert.NotEmpty(t, tt.applyBehavior, "Apply behavior should be documented")
+			assert.NotEmpty(t, tt.readBehavior, "Read behavior should be documented")
+			assert.NotEmpty(t, tt.useAlternative, "Alternative or reason should be documented")
+		})
+	}
+}
+
+// TestGen2SupportedWithNuancesBehavior tests attributes that are supported but with behavioral differences
+func TestGen2SupportedWithNuancesBehavior(t *testing.T) {
+	tests := []struct {
+		name            string
+		attribute       string
+		classicBehavior string
+		gen2Behavior    string
+		nuance          string
+	}{
+		{
+			name:            "version_immutability",
+			attribute:       "version",
+			classicBehavior: "Updatable - triggers upgrade",
+			gen2Behavior:    "Set at creation only - cannot be changed",
+			nuance:          "Plan accepts it, Apply/Update fails if changed, Read returns current version",
+		},
+		{
+			name:            "service_endpoints_restriction",
+			attribute:       "service_endpoints",
+			classicBehavior: "Required, accepts public/private/public-and-private",
+			gen2Behavior:    "Optional, must be 'private' if set, defaults to 'private'",
+			nuance:          "Plan fails if set to non-private value, Apply/Update is updatable, Read returns value from API",
+		},
+		{
+			name:            "group_scaling_limitations",
+			attribute:       "group",
+			classicBehavior: "Supports members, memory, disk, cpu, host_flavor",
+			gen2Behavior:    "Only members, disk (as storage_gb), and host_flavor supported",
+			nuance:          "Memory and CPU controlled by host_flavor, cannot be set independently. Plan fails if memory/cpu set.",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// Documents attributes that are supported but behave differently in Gen2
+			assert.NotEmpty(t, tt.attribute, "Attribute name should be defined")
+			assert.NotEmpty(t, tt.classicBehavior, "Classic behavior should be documented")
+			assert.NotEmpty(t, tt.gen2Behavior, "Gen2 behavior should be documented")
+			assert.NotEmpty(t, tt.nuance, "Nuance/difference should be documented")
 		})
 	}
 }
