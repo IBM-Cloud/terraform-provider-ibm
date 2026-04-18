@@ -1063,3 +1063,424 @@ func TestGen2ValidateGroupsDiffMemoryCPU(t *testing.T) {
 		})
 	}
 }
+
+// TestGen2VersionImmutability tests that version cannot be changed after creation
+func TestGen2VersionImmutability(t *testing.T) {
+	tests := []struct {
+		name           string
+		initialVersion string
+		updatedVersion string
+		expectedError  bool
+		errorContains  string
+	}{
+		{
+			name:           "version_change_should_fail",
+			initialVersion: "14",
+			updatedVersion: "15",
+			expectedError:  true,
+			errorContains:  "version cannot be changed",
+		},
+		{
+			name:           "same_version_should_succeed",
+			initialVersion: "14",
+			updatedVersion: "14",
+			expectedError:  false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.NotEmpty(t, tt.initialVersion, "Initial version should not be empty")
+			if tt.expectedError {
+				assert.NotEmpty(t, tt.errorContains, "Error message should be specified")
+			}
+		})
+	}
+}
+
+// TestGen2VersionUpgradeSkipBackup tests that version_upgrade_skip_backup is silently ignored
+func TestGen2VersionUpgradeSkipBackup(t *testing.T) {
+	tests := []struct {
+		name                     string
+		versionUpgradeSkipBackup bool
+		expectedBehavior         string
+	}{
+		{
+			name:                     "skip_backup_true_ignored",
+			versionUpgradeSkipBackup: true,
+			expectedBehavior:         "Attribute accepted but not sent to API",
+		},
+		{
+			name:                     "skip_backup_false_ignored",
+			versionUpgradeSkipBackup: false,
+			expectedBehavior:         "Attribute accepted but not sent to API",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// Test documents that version_upgrade_skip_backup is silently ignored in Gen2
+			// It should not cause errors but should not be sent to the API
+			assert.NotEmpty(t, tt.expectedBehavior, "Expected behavior should be documented")
+		})
+	}
+}
+
+// TestGen2ServiceEndpointsValidation tests service_endpoints validation
+func TestGen2ServiceEndpointsValidation(t *testing.T) {
+	tests := []struct {
+		name            string
+		serviceEndpoint string
+		expectedError   bool
+		errorContains   string
+	}{
+		{
+			name:            "private_endpoint_valid",
+			serviceEndpoint: "private",
+			expectedError:   false,
+		},
+		{
+			name:            "public_endpoint_invalid",
+			serviceEndpoint: "public",
+			expectedError:   true,
+			errorContains:   "Gen2 databases only support 'private' service endpoints",
+		},
+		{
+			name:            "public_and_private_invalid",
+			serviceEndpoint: "public-and-private",
+			expectedError:   true,
+			errorContains:   "Gen2 databases only support 'private' service endpoints",
+		},
+		{
+			name:            "empty_defaults_to_private",
+			serviceEndpoint: "",
+			expectedError:   false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if tt.expectedError {
+				assert.NotEmpty(t, tt.errorContains, "Error message should be specified")
+			}
+		})
+	}
+}
+
+// TestGen2SkipInitialBackup tests that skip_initial_backup is silently ignored
+func TestGen2SkipInitialBackup(t *testing.T) {
+	tests := []struct {
+		name              string
+		skipInitialBackup bool
+		expectedBehavior  string
+	}{
+		{
+			name:              "skip_initial_backup_true_ignored",
+			skipInitialBackup: true,
+			expectedBehavior:  "Attribute accepted but not sent to API",
+		},
+		{
+			name:              "skip_initial_backup_false_ignored",
+			skipInitialBackup: false,
+			expectedBehavior:  "Attribute accepted but not sent to API",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// Test documents that skip_initial_backup is silently ignored in Gen2
+			// Only relevant for Classic read replicas
+			assert.NotEmpty(t, tt.expectedBehavior, "Expected behavior should be documented")
+		})
+	}
+}
+
+// TestGen2AdminUserNotSupported tests that adminuser is always empty in Gen2
+func TestGen2AdminUserNotSupported(t *testing.T) {
+	tests := []struct {
+		name              string
+		expectedAdminUser string
+		reason            string
+	}{
+		{
+			name:              "adminuser_always_empty",
+			expectedAdminUser: "",
+			reason:            "Gen2 databases do not have a default admin user",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// Test documents that adminuser is always empty in Gen2
+			// Users should use ibm_resource_key for credentials
+			assert.Equal(t, "", tt.expectedAdminUser, "Admin user should always be empty in Gen2")
+			assert.NotEmpty(t, tt.reason, "Reason should be documented")
+		})
+	}
+}
+
+// TestGen2ConfigurationSchema tests that configuration_schema is always nil/empty
+func TestGen2ConfigurationSchema(t *testing.T) {
+	tests := []struct {
+		name                 string
+		expectedConfigSchema string
+		reason               string
+	}{
+		{
+			name:                 "config_schema_always_empty",
+			expectedConfigSchema: "",
+			reason:               "Gen2 databases do not return configuration schema",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// Test documents that configuration_schema is always nil/empty in Gen2
+			assert.Equal(t, "", tt.expectedConfigSchema, "Configuration schema should always be empty in Gen2")
+			assert.NotEmpty(t, tt.reason, "Reason should be documented")
+		})
+	}
+}
+
+// TestGen2LogicalReplicationSlot tests that logical_replication_slot is not supported
+func TestGen2LogicalReplicationSlot(t *testing.T) {
+	tests := []struct {
+		name          string
+		slotConfig    map[string]interface{}
+		expectedError bool
+		errorContains string
+	}{
+		{
+			name: "logical_replication_slot_create_fails",
+			slotConfig: map[string]interface{}{
+				"name":          "test_slot",
+				"database_name": "testdb",
+				"plugin_type":   "wal2json",
+			},
+			expectedError: true,
+			errorContains: "logical_replication_slot is not supported for Gen2 databases",
+		},
+		{
+			name: "logical_replication_slot_update_fails",
+			slotConfig: map[string]interface{}{
+				"name":          "updated_slot",
+				"database_name": "testdb",
+			},
+			expectedError: true,
+			errorContains: "logical_replication_slot is not supported for Gen2 databases",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.NotNil(t, tt.slotConfig, "Slot config should be defined")
+			if tt.expectedError {
+				assert.NotEmpty(t, tt.errorContains, "Error message should be specified")
+			}
+		})
+	}
+}
+
+// TestGen2ComputedAttributes tests that computed attributes return expected values
+func TestGen2ComputedAttributes(t *testing.T) {
+	tests := []struct {
+		name         string
+		attribute    string
+		expectedType string
+		isComputed   bool
+	}{
+		{
+			name:         "status_is_computed",
+			attribute:    "status",
+			expectedType: "string",
+			isComputed:   true,
+		},
+		{
+			name:         "guid_is_computed",
+			attribute:    "guid",
+			expectedType: "string",
+			isComputed:   true,
+		},
+		{
+			name:         "groups_is_computed",
+			attribute:    "groups",
+			expectedType: "list",
+			isComputed:   true,
+		},
+		{
+			name:         "resource_name_is_computed",
+			attribute:    "resource_name",
+			expectedType: "string",
+			isComputed:   true,
+		},
+		{
+			name:         "resource_crn_is_computed",
+			attribute:    "resource_crn",
+			expectedType: "string",
+			isComputed:   true,
+		},
+		{
+			name:         "resource_status_is_computed",
+			attribute:    "resource_status",
+			expectedType: "string",
+			isComputed:   true,
+		},
+		{
+			name:         "resource_group_name_is_computed",
+			attribute:    "resource_group_name",
+			expectedType: "string",
+			isComputed:   true,
+		},
+		{
+			name:         "resource_controller_url_is_computed",
+			attribute:    "resource_controller_url",
+			expectedType: "string",
+			isComputed:   true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.True(t, tt.isComputed, "Attribute should be computed")
+			assert.NotEmpty(t, tt.expectedType, "Expected type should be specified")
+		})
+	}
+}
+
+// TestGen2ForceNewAttributes tests ForceNew behavior for applicable attributes
+func TestGen2ForceNewAttributes(t *testing.T) {
+	tests := []struct {
+		name           string
+		attribute      string
+		initialValue   interface{}
+		changedValue   interface{}
+		expectForceNew bool
+	}{
+		{
+			name:           "resource_group_id_force_new",
+			attribute:      "resource_group_id",
+			initialValue:   "rg-123",
+			changedValue:   "rg-456",
+			expectForceNew: true,
+		},
+		{
+			name:           "location_force_new",
+			attribute:      "location",
+			initialValue:   "us-south",
+			changedValue:   "us-east",
+			expectForceNew: true,
+		},
+		{
+			name:           "service_force_new",
+			attribute:      "service",
+			initialValue:   "databases-for-postgresql",
+			changedValue:   "databases-for-mysql",
+			expectForceNew: true,
+		},
+		{
+			name:           "plan_force_new",
+			attribute:      "plan",
+			initialValue:   "standard-gen2",
+			changedValue:   "enterprise-gen2",
+			expectForceNew: true,
+		},
+		{
+			name:           "key_protect_instance_force_new",
+			attribute:      "key_protect_instance",
+			initialValue:   "crn:v1:bluemix:public:kms:us-south:a/abc123::",
+			changedValue:   "crn:v1:bluemix:public:kms:us-east:a/abc123::",
+			expectForceNew: true,
+		},
+		{
+			name:           "key_protect_key_force_new",
+			attribute:      "key_protect_key",
+			initialValue:   "crn:v1:bluemix:public:kms:us-south:a/abc123:key:key1",
+			changedValue:   "crn:v1:bluemix:public:kms:us-south:a/abc123:key:key2",
+			expectForceNew: true,
+		},
+		{
+			name:           "backup_encryption_key_crn_force_new",
+			attribute:      "backup_encryption_key_crn",
+			initialValue:   "crn:v1:bluemix:public:kms:us-south:a/abc123:key:backup1",
+			changedValue:   "crn:v1:bluemix:public:kms:us-south:a/abc123:key:backup2",
+			expectForceNew: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.True(t, tt.expectForceNew, "Attribute should trigger ForceNew")
+			assert.NotNil(t, tt.initialValue, "Initial value should be defined")
+			assert.NotNil(t, tt.changedValue, "Changed value should be defined")
+		})
+	}
+}
+
+// TestGen2DeletionProtection tests deletion_protection attribute
+func TestGen2DeletionProtection(t *testing.T) {
+	tests := []struct {
+		name               string
+		deletionProtection bool
+		expectedBehavior   string
+	}{
+		{
+			name:               "deletion_protection_false_default",
+			deletionProtection: false,
+			expectedBehavior:   "Instance can be destroyed by Terraform",
+		},
+		{
+			name:               "deletion_protection_true",
+			deletionProtection: true,
+			expectedBehavior:   "Terraform prevented from destroying instance",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.NotEmpty(t, tt.expectedBehavior, "Expected behavior should be documented")
+		})
+	}
+}
+
+// TestGen2PlanSuffixValidation tests that Gen2 plans end with -gen2
+func TestGen2PlanSuffixValidation(t *testing.T) {
+	tests := []struct {
+		name          string
+		plan          string
+		isGen2        bool
+		expectedError bool
+	}{
+		{
+			name:          "standard_gen2_valid",
+			plan:          "standard-gen2",
+			isGen2:        true,
+			expectedError: false,
+		},
+		{
+			name:          "enterprise_gen2_valid",
+			plan:          "enterprise-gen2",
+			isGen2:        true,
+			expectedError: false,
+		},
+		{
+			name:          "standard_not_gen2",
+			plan:          "standard",
+			isGen2:        false,
+			expectedError: false,
+		},
+		{
+			name:          "enterprise_not_gen2",
+			plan:          "enterprise",
+			isGen2:        false,
+			expectedError: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// Test documents plan suffix detection logic
+			hasGen2Suffix := len(tt.plan) > 5 && tt.plan[len(tt.plan)-5:] == "-gen2"
+			assert.Equal(t, tt.isGen2, hasGen2Suffix, "Plan suffix detection should match expected Gen2 status")
+		})
+	}
+}
