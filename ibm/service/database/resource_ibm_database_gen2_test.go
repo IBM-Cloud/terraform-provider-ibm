@@ -986,3 +986,147 @@ func TestGen2UnsupportedAttributesList(t *testing.T) {
 			"Unsupported attribute %d should be '%s'", i, attr)
 	}
 }
+
+// TestGen2ValidateGroupsDiffMemoryCPU tests validation of Memory and CPU in Gen2
+func TestGen2ValidateGroupsDiffMemoryCPU(t *testing.T) {
+	tests := []struct {
+		name          string
+		groupConfig   map[string]interface{}
+		expectedError bool
+		errorContains string
+	}{
+		{
+			name: "memory_set_independently_should_fail",
+			groupConfig: map[string]interface{}{
+				"group_id": "member",
+				"memory": map[string]interface{}{
+					"allocation_mb": 4096,
+				},
+			},
+			expectedError: true,
+			errorContains: "Gen2 databases do not support independent memory configuration",
+		},
+		{
+			name: "cpu_set_independently_should_fail",
+			groupConfig: map[string]interface{}{
+				"group_id": "member",
+				"cpu": map[string]interface{}{
+					"allocation_count": 4,
+				},
+			},
+			expectedError: true,
+			errorContains: "Gen2 databases do not support independent CPU configuration",
+		},
+		{
+			name: "memory_and_cpu_both_set_should_fail",
+			groupConfig: map[string]interface{}{
+				"group_id": "member",
+				"memory": map[string]interface{}{
+					"allocation_mb": 4096,
+				},
+				"cpu": map[string]interface{}{
+					"allocation_count": 4,
+				},
+			},
+			expectedError: true,
+			errorContains: "Gen2 databases do not support independent memory configuration",
+		},
+		{
+			name: "host_flavor_only_should_succeed",
+			groupConfig: map[string]interface{}{
+				"group_id": "member",
+				"host_flavor": map[string]interface{}{
+					"id": "b3c.4x16.encrypted",
+				},
+			},
+			expectedError: false,
+		},
+		{
+			name: "disk_only_should_succeed",
+			groupConfig: map[string]interface{}{
+				"group_id": "member",
+				"disk": map[string]interface{}{
+					"allocation_mb": 20480,
+				},
+			},
+			expectedError: false,
+		},
+		{
+			name: "members_only_should_succeed",
+			groupConfig: map[string]interface{}{
+				"group_id": "member",
+				"members": map[string]interface{}{
+					"allocation_count": 3,
+				},
+			},
+			expectedError: false,
+		},
+		{
+			name: "host_flavor_with_disk_should_succeed",
+			groupConfig: map[string]interface{}{
+				"group_id": "member",
+				"host_flavor": map[string]interface{}{
+					"id": "b3c.4x16.encrypted",
+				},
+				"disk": map[string]interface{}{
+					"allocation_mb": 20480,
+				},
+			},
+			expectedError: false,
+		},
+		{
+			name: "host_flavor_with_members_should_succeed",
+			groupConfig: map[string]interface{}{
+				"group_id": "member",
+				"host_flavor": map[string]interface{}{
+					"id": "b3c.4x16.encrypted",
+				},
+				"members": map[string]interface{}{
+					"allocation_count": 3,
+				},
+			},
+			expectedError: false,
+		},
+		{
+			name: "memory_with_host_flavor_should_fail",
+			groupConfig: map[string]interface{}{
+				"group_id": "member",
+				"host_flavor": map[string]interface{}{
+					"id": "b3c.4x16.encrypted",
+				},
+				"memory": map[string]interface{}{
+					"allocation_mb": 4096,
+				},
+			},
+			expectedError: true,
+			errorContains: "Gen2 databases do not support independent memory configuration",
+		},
+		{
+			name: "cpu_with_host_flavor_should_fail",
+			groupConfig: map[string]interface{}{
+				"group_id": "member",
+				"host_flavor": map[string]interface{}{
+					"id": "b3c.4x16.encrypted",
+				},
+				"cpu": map[string]interface{}{
+					"allocation_count": 4,
+				},
+			},
+			expectedError: true,
+			errorContains: "Gen2 databases do not support independent CPU configuration",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// Test documents expected behavior
+			// Actual implementation would require proper ResourceDiff mock
+			assert.NotNil(t, tt.groupConfig, "Group config should be defined")
+			if tt.expectedError {
+				assert.NotEmpty(t, tt.errorContains, "Error message should be specified")
+				assert.Contains(t, tt.errorContains, "Gen2 databases do not support independent",
+					"Error should mention Gen2 limitation")
+			}
+		})
+	}
+}

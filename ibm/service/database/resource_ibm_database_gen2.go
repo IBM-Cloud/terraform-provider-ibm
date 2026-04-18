@@ -936,6 +936,17 @@ func (g *resourceIBMDatabaseGen2Backend) ValidateGroupsDiff(ctx context.Context,
 		if group == nil {
 			continue
 		}
+
+		// Gen2 validation: Memory and CPU cannot be set independently
+		// They are controlled by host_flavor only
+		if group.Memory != nil && group.Memory.Allocation > 0 {
+			return fmt.Errorf("Gen2 databases do not support independent memory configuration in group %q. Memory is controlled by host_flavor. Please use host_flavor instead of setting memory directly", group.ID)
+		}
+
+		if group.CPU != nil && group.CPU.Allocation > 0 {
+			return fmt.Errorf("Gen2 databases do not support independent CPU configuration in group %q. CPU is controlled by host_flavor. Please use host_flavor instead of setting cpu directly", group.ID)
+		}
+
 		if group.HostFlavor != nil && group.HostFlavor.ID != "" && group.HostFlavor.ID != "multitenant" {
 			if err := validateGroupHostFlavor(group.ID, "host_flavor", group); err != nil {
 				return err
