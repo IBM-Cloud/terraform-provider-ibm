@@ -783,9 +783,7 @@ func (g *resourceIBMDatabaseGen2Backend) updateTagsWithDiagnostics(d *schema.Res
 func (g *resourceIBMDatabaseGen2Backend) checkUnsupportedChanges(d *schema.ResourceData) diag.Diagnostics {
 	// Map of unsupported fields to their error messages
 	unsupportedChanges := map[string]string{
-		"configuration":            "Configuration management is not supported for Gen2 database instances yet",
 		"auto_scaling.0":           "Auto scaling is not supported for Gen2 database instances",
-		"adminpassword":            "Admin password management is not supported for Gen2 database instances. In Gen2, there is no default admin user. Users should manage credentials using the ibm_resource_key resource (https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/resources/resource_key)",
 		"allowlist":                "Allowlist is not supported for Gen2 database instances",
 		"users":                    "User management is not supported for Gen2 database instances. Users should manage credentials using the ibm_resource_key resource (https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/resources/resource_key)",
 		"logical_replication_slot": "Logical replication slot management is not supported for Gen2 database instances. Please use the Classic backend for logical replication slot operations",
