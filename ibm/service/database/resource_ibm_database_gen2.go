@@ -293,6 +293,8 @@ func (g *resourceIBMDatabaseGen2Backend) buildGen2Parameters(d *schema.ResourceD
 
 // buildDBConfig creates database configuration with member group and storage settings.
 // Extracts and consolidates member group logic, reducing nested if statements.
+// Gen2 supports: members, disk, and host_flavor from groups.
+// Note: memory and cpu are NOT supported independently in Gen2 - they are controlled by host_flavor.
 func (g *resourceIBMDatabaseGen2Backend) buildDBConfig(d *schema.ResourceData, catalogCRN string, meta interface{}) (map[string]interface{}, error) {
 	config := DBConfig{}
 
@@ -304,7 +306,7 @@ func (g *resourceIBMDatabaseGen2Backend) buildDBConfig(d *schema.ResourceData, c
 	// Get member group configuration
 	memberGroup := g.getMemberGroup(d)
 
-	// Members count
+	// Members count - use from group if specified, otherwise get default from catalog
 	members, err := g.getMembersCount(memberGroup, catalogCRN, meta)
 	if err != nil {
 		return nil, err
@@ -908,4 +910,46 @@ func (g *resourceIBMDatabaseGen2Backend) ValidateUnsupportedAttrsDiff(ctx contex
 		strings.TrimSpace(plan),
 		strings.Join(bad, ", "),
 	)
+}
+
+func (g *resourceIBMDatabaseGen2Backend) ValidateGroupsDiff(ctx context.Context, d *schema.ResourceDiff, meta interface{}) error {
+	group, ok := d.GetOk("group")
+	if !ok {
+		return nil
+	}
+
+	groups := expandGroups(group.(*schema.Set).List())
+	groupIDs := make([]string, 0, len(groups))
+	for _, group := range groups {
+		groupIDs = append(groupIDs, group.ID)
+	}
+
+	for i, id1 := range groupIDs {
+		for j, id2 := range groupIDs {
+			if id1 == id2 && i != j {
+				return fmt.Errorf("found 2 or more instances of group with group_id %v", id1)
+			}
+		}
+	}
+
+	for _, group := range groups {
+		if group == nil {
+			continue
+		}
+		if group.HostFlavor != nil && group.HostFlavor.ID != "" && group.HostFlavor.ID != "multitenant" {
+			if err := validateGroupHostFlavor(group.ID, "host_flavor", group); err != nil {
+				return err
+			}
+		}
+	}
+
+	return nil
+}
+
+func (g *resourceIBMDatabaseGen2Backend) ValidateServiceEndpointsDiff(ctx context.Context, d *schema.ResourceDiff, meta interface{}) error {
+	serviceEndpoint, serviceEndpointOk := d.GetOk("service_endpoints")
+	if serviceEndpointOk && serviceEndpoint.(string) != "" && serviceEndpoint.(string) != "private" {
+		return fmt.Errorf("[ERROR] service_endpoints for Gen2 plans (plans ending with -gen2) is optional, but if set it must be 'private'")
+	}
+	return nil
 }

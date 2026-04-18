@@ -40,3 +40,11 @@ func (c *resourceIBMDatabaseClassicBackend) WarnUnsupported(context context.Cont
 func (c *resourceIBMDatabaseClassicBackend) ValidateUnsupportedAttrsDiff(context context.Context, d *schema.ResourceDiff, meta interface{}) error {
 	return nil
 }
+
+func (c *resourceIBMDatabaseClassicBackend) ValidateGroupsDiff(context context.Context, d *schema.ResourceDiff, meta interface{}) error {
+	return validateGroupsDiffClassic(context, d, meta)
+}
+
+func (c *resourceIBMDatabaseClassicBackend) ValidateServiceEndpointsDiff(context context.Context, d *schema.ResourceDiff, meta interface{}) error {
+	return validateServiceEndpointsDiffClassic(context, d, meta)
+}

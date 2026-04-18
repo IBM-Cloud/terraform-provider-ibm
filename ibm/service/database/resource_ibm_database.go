@@ -145,6 +145,8 @@ type resourceIBMDatabaseBackend interface {
 
 	WarnUnsupported(context context.Context, d *schema.ResourceData) diag.Diagnostics
 	ValidateUnsupportedAttrsDiff(context context.Context, d *schema.ResourceDiff, meta interface{}) error
+	ValidateGroupsDiff(context context.Context, d *schema.ResourceDiff, meta interface{}) error
+	ValidateServiceEndpointsDiff(context context.Context, d *schema.ResourceDiff, meta interface{}) error
 }
 
 func pickResourceBackend(d *schema.ResourceData) resourceIBMDatabaseBackend {
@@ -184,12 +186,12 @@ func ResourceIBMDatabaseInstance() *schema.Resource {
 		CustomizeDiff: customdiff.All(
 			validateUnsupportedAttrsDiff,
 			resourceIBMDatabaseInstanceDiff,
-			validateGroupsDiff,
+			validateBackendSpecificGroupsDiff,
 			validateUsersDiff,
 			validateRemoteLeaderIDDiff,
 			validateVersionDiff,
 			validateAsyncRestoreDiff,
-			validateServiceEndpointsDiff,
+			validateBackendSpecificServiceEndpointsDiff,
 		),
 
 		Importer: &schema.ResourceImporter{},
@@ -2972,33 +2974,14 @@ func publicServiceEndpointsWarning() diag.Diagnostics {
 	return diags
 }
 
-func validateGroupsDiff(_ context.Context, diff *schema.ResourceDiff, meta interface{}) (err error) {
+func validateBackendSpecificGroupsDiff(context context.Context, diff *schema.ResourceDiff, meta interface{}) error {
+	return pickResourceBackendFromDiff(diff).ValidateGroupsDiff(context, diff, meta)
+}
+
+func validateGroupsDiffClassic(_ context.Context, diff *schema.ResourceDiff, meta interface{}) (err error) {
 	instanceID := diff.Id()
 	service := diff.Get("service").(string)
 	plan := diff.Get("plan").(string)
-
-	// For Gen2 plans, skip Classic API validation entirely.
-	// Gen2 uses different APIs (GlobalCatalog and RC/extensions), so only perform
-	// basic Terraform-side structural validation here.
-	if isGen2Plan(plan) {
-		if group, ok := diff.GetOk("group"); ok {
-			groups := expandGroups(group.(*schema.Set).List())
-			var groupIds []string
-			groupIds = make([]string, 0, len(groups))
-			for _, g := range groups {
-				groupIds = append(groupIds, g.ID)
-			}
-			// validate group_ids are unique
-			for n1, i1 := range groupIds {
-				for n2, i2 := range groupIds {
-					if i1 == i2 && n1 != n2 {
-						return fmt.Errorf("found 2 or more instances of group with group_id %v", i1)
-					}
-				}
-			}
-		}
-		return nil
-	}
 
 	if group, ok := diff.GetOk("group"); ok {
 		var currentGroups []Group
@@ -3313,17 +3296,14 @@ func validateAsyncRestoreDiff(_ context.Context, diff *schema.ResourceDiff, meta
 	return nil
 }
 
-func validateServiceEndpointsDiff(_ context.Context, diff *schema.ResourceDiff, meta interface{}) (err error) {
+func validateBackendSpecificServiceEndpointsDiff(context context.Context, diff *schema.ResourceDiff, meta interface{}) error {
+	return pickResourceBackendFromDiff(diff).ValidateServiceEndpointsDiff(context, diff, meta)
+}
+
+func validateServiceEndpointsDiffClassic(_ context.Context, diff *schema.ResourceDiff, meta interface{}) (err error) {
 	serviceEndpoint, serviceEndpointOk := diff.GetOk("service_endpoints")
-	plan := diff.Get("plan").(string)
 
-	// For Gen2 plans, service_endpoints is optional, but if set it must be "private"
-	if isGen2Plan(plan) && serviceEndpointOk && serviceEndpoint.(string) != "" && serviceEndpoint.(string) != "private" {
-		return fmt.Errorf("[ERROR] service_endpoints for Gen2 plans (plans ending with -gen2) is optional, but if set it must be 'private'")
-	}
-
-	// For Classic plans, service_endpoints is required
-	if !isGen2Plan(plan) && (!serviceEndpointOk || serviceEndpoint.(string) == "") {
+	if !serviceEndpointOk || serviceEndpoint.(string) == "" {
 		return fmt.Errorf("[ERROR] service_endpoints is required for Classic plans")
 	}
 	return nil
