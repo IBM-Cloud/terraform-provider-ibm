@@ -22,10 +22,7 @@ import (
 var gen2UnsupportedAttrs = []string{
 	"backup_policy",
 	"users",
-	"auto_scaling",
 	"allowlist",
-	"configuration_schema",
-	"logical_replication_slot",
 }
 
 const (
@@ -783,12 +780,10 @@ func (g *resourceIBMDatabaseGen2Backend) updateTagsWithDiagnostics(d *schema.Res
 func (g *resourceIBMDatabaseGen2Backend) checkUnsupportedChanges(d *schema.ResourceData) diag.Diagnostics {
 	// Map of unsupported fields to their error messages
 	unsupportedChanges := map[string]string{
-		"auto_scaling.0":           "Auto scaling is not supported for Gen2 database instances",
-		"allowlist":                "Allowlist is not supported for Gen2 database instances",
-		"users":                    "User management is not supported for Gen2 database instances. Users should manage credentials using the ibm_resource_key resource (https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/resources/resource_key)",
-		"logical_replication_slot": "Logical replication slot management is not supported for Gen2 database instances. Please use the Classic backend for logical replication slot operations",
-		"remote_leader_id":         "Read replica creation and promotion is not supported for Gen2 database instances yet",
-		"version":                  "Version changes are not supported for Gen2 database instances",
+		"allowlist":        "Allowlist is not supported for Gen2 database instances",
+		"users":            "User management is not supported for Gen2 database instances. Users should manage credentials using the ibm_resource_key resource (https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/resources/resource_key)",
+		"remote_leader_id": "Read replica creation and promotion is not supported for Gen2 database instances yet",
+		"version":          "Version changes are not supported for Gen2 database instances",
 	}
 
 	for field, errMsg := range unsupportedChanges {

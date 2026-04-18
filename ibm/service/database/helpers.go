@@ -723,12 +723,11 @@ func setGen2GroupsInfo(d *schema.ResourceData, instance *rc.ResourceInstance, me
 }
 
 // clearGen2UnsupportedAttributes clears attributes not supported in Gen2.
-// Sets auto_scaling, allowlist, users, and configuration_schema to nil to prevent stale Classic values.
+// Sets allowlist, users, and configuration_schema to nil to prevent stale Classic values.
+// Note: auto_scaling and logical_replication_slot are silently ignored but NOT cleared
+// to avoid drift detection when users have these in their configuration.
 // This function is shared between data source and resource implementations.
 func clearGen2UnsupportedAttributes(d *schema.ResourceData) {
-	// Auto scaling is currently not supported in Gen2
-	d.Set(autoScalingKey, nil)
-
 	// Allowlist is not supported in Gen2
 	d.Set(allowlistKey, nil)
 

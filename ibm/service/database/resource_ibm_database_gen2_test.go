@@ -336,17 +336,6 @@ func TestGen2BackendUnsupportedFeatures(t *testing.T) {
 			warnContains: "users",
 		},
 		{
-			name:      "auto_scaling_unsupported",
-			attribute: "auto_scaling",
-			value: map[string]interface{}{
-				"disk": map[string]interface{}{
-					"capacity_enabled": true,
-				},
-			},
-			expectedWarn: true,
-			warnContains: "auto_scaling",
-		},
-		{
 			name:      "allowlist_unsupported",
 			attribute: "allowlist",
 			value: []map[string]interface{}{
@@ -357,26 +346,6 @@ func TestGen2BackendUnsupportedFeatures(t *testing.T) {
 			},
 			expectedWarn: true,
 			warnContains: "allowlist",
-		},
-		{
-			name:         "configuration_schema_unsupported",
-			attribute:    "configuration_schema",
-			value:        map[string]interface{}{"some": "config"},
-			expectedWarn: true,
-			warnContains: "configuration_schema",
-		},
-		{
-			name:      "logical_replication_slot_unsupported",
-			attribute: "logical_replication_slot",
-			value: []map[string]interface{}{
-				{
-					"name":          "slot1",
-					"database_name": "testdb",
-					"plugin_type":   "wal2json",
-				},
-			},
-			expectedWarn: true,
-			warnContains: "logical_replication_slot",
 		},
 	}
 
@@ -875,32 +844,11 @@ func TestGen2VsClassicFeatureParity(t *testing.T) {
 			gen2Alternative:    "Manage users via Cloud Databases API directly",
 		},
 		{
-			name:               "auto_scaling",
-			feature:            "Auto-scaling",
-			supportedInClassic: true,
-			supportedInGen2:    false,
-			gen2Alternative:    "Configure via Cloud Databases API or UI",
-		},
-		{
 			name:               "allowlist",
 			feature:            "IP allowlist",
 			supportedInClassic: true,
 			supportedInGen2:    false,
 			gen2Alternative:    "Configure via Cloud Databases API or UI",
-		},
-		{
-			name:               "configuration_schema",
-			feature:            "Configuration schema",
-			supportedInClassic: true,
-			supportedInGen2:    false,
-			gen2Alternative:    "Not available in Gen2",
-		},
-		{
-			name:               "logical_replication_slot",
-			feature:            "Logical replication slots (PostgreSQL)",
-			supportedInClassic: true,
-			supportedInGen2:    false,
-			gen2Alternative:    "Configure via Cloud Databases API or psql",
 		},
 	}
 
@@ -934,22 +882,10 @@ func TestGen2ConfigureInstancePipeline(t *testing.T) {
 			configSteps: []string{
 				"group scaling",
 				"tags",
-				"admin password",
-				"allowlist",
-				"auto-scaling",
-				"users",
-				"database settings",
-				"logical replication",
 			},
 			expectedOrder: []string{
 				"group scaling",
 				"tags",
-				"admin password",
-				"allowlist",
-				"auto-scaling",
-				"users",
-				"database settings",
-				"logical replication",
 			},
 		},
 	}
@@ -972,10 +908,7 @@ func TestGen2UnsupportedAttributesList(t *testing.T) {
 	expectedUnsupported := []string{
 		"backup_policy",
 		"users",
-		"auto_scaling",
 		"allowlist",
-		"configuration_schema",
-		"logical_replication_slot",
 	}
 
 	assert.Equal(t, len(expectedUnsupported), len(gen2UnsupportedAttrs),
