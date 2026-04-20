@@ -20,6 +20,7 @@ import (
 )
 
 var gen2UnsupportedAttrs = []string{
+	"backup_id",
 	"backup_policy",
 	"users",
 	"allowlist",
@@ -31,9 +32,6 @@ const (
 	remoteLeaderIDKey   = "remote_leader_id"
 	pitrDeploymentIDKey = "point_in_time_recovery_deployment_id"
 	pitrTimeKey         = "point_in_time_recovery_time"
-	restoreBackupIDKey  = "restore_backup_id"
-	offlineRestoreKey   = "offline_restore"
-	asyncRestoreKey     = "async_restore"
 
 	// Encryption keys
 	diskEncryptionKey   = "disk"
@@ -252,7 +250,8 @@ func (g *resourceIBMDatabaseGen2Backend) setResourceGroup(d *schema.ResourceData
 }
 
 // buildGen2Parameters constructs the Gen2-specific parameters structure.
-// Includes database configuration, encryption, restore, and PITR settings.
+// Includes database configuration, encryption, and PITR settings.
+// Note: backup_id restore is not supported in Gen2.
 func (g *resourceIBMDatabaseGen2Backend) buildGen2Parameters(d *schema.ResourceData, serviceName string, meta interface{}, catalogCRN string) (map[string]interface{}, error) {
 	// Get the database type for the dataservices key
 	dbType := getDatabaseTypeFromResourceID(serviceName)
@@ -273,9 +272,6 @@ func (g *resourceIBMDatabaseGen2Backend) buildGen2Parameters(d *schema.ResourceD
 
 	// Handle encryption
 	g.addEncryptionConfig(d, dataservices)
-
-	// Handle restore from backup
-	g.addRestoreConfig(d, dataservices)
 
 	// Handle point-in-time recovery
 	g.addPITRConfig(d, dataservices)
@@ -390,22 +386,6 @@ func (g *resourceIBMDatabaseGen2Backend) addEncryptionConfig(d *schema.ResourceD
 	}
 	if len(encryption) > 0 {
 		dataservices[encryptionKey] = encryption
-	}
-}
-
-// addRestoreConfig adds restore configuration to dataservices.
-// Includes backup ID and restore mode settings if configured.
-func (g *resourceIBMDatabaseGen2Backend) addRestoreConfig(d *schema.ResourceData, dataservices map[string]interface{}) {
-	if backupID, ok := d.GetOk("backup_id"); ok {
-		dataservices[restoreBackupIDKey] = backupID.(string)
-	}
-
-	if offlineRestore, ok := d.GetOk("offline_restore"); ok {
-		dataservices[offlineRestoreKey] = offlineRestore.(bool)
-	}
-
-	if asyncRestore, ok := d.GetOk("async_restore"); ok {
-		dataservices[asyncRestoreKey] = asyncRestore.(bool)
 	}
 }
 
@@ -784,6 +764,7 @@ func (g *resourceIBMDatabaseGen2Backend) checkUnsupportedChanges(d *schema.Resou
 		"users":            "User management is not supported for Gen2 database instances. Users should manage credentials using the ibm_resource_key resource (https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/resources/resource_key)",
 		"remote_leader_id": "Read replica creation and promotion is not supported for Gen2 database instances yet",
 		"version":          "Version changes are not supported for Gen2 database instances",
+		"backup_id":        "Restore from backup is not supported for Gen2 database instances yet",
 	}
 
 	for field, errMsg := range unsupportedChanges {
