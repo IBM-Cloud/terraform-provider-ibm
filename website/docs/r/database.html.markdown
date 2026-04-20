@@ -659,7 +659,7 @@ Review the argument reference that you can specify for your resource.
 
 - `auto_scaling` (List, Optional) Configure rules to allow your database to automatically increase its resources. Single block of autoscaling is allowed at once.
 
-  **Gen2:** Plan fails if set. Auto-scaling policies are not available in Gen2. Monitor your database and manually adjust scaling as needed.
+  **Gen2:** Accepted but ignored. Auto-scaling policies are not available in Gen2. Monitor your database and manually adjust scaling as needed.
 
    - Nested scheme for `auto_scaling`:
      - `disk` (List , Optional) Single block of disk is allowed at once in disk auto scaling.
@@ -692,7 +692,7 @@ Review the argument reference that you can specify for your resource.
 
 - `logical_replication_slot` - (Optional, List of Objects) A list of logical replication slots that you want to create on the database. Multiple blocks are allowed. This is only available for `databases-for-postgresql`.
 
-  **Gen2:** Plan fails if set. Logical replication slots are not available for Gen2 instances.
+  **Gen2:** Accepted but ignored. Logical replication slots are not available for Gen2 instances.
 
   Nested scheme for `logical_replication_slot`:
   - `name` - (Required, String) The name of the `logical_replication_slot`.
