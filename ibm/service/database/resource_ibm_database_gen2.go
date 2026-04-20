@@ -21,6 +21,8 @@ import (
 
 var gen2UnsupportedAttrs = []string{
 	"backup_id",
+	"point_in_time_recovery_deployment_id",
+	"point_in_time_recovery_time",
 	"backup_policy",
 	"users",
 	"allowlist",
@@ -30,8 +32,6 @@ const (
 	// Parameter keys for Gen2 database configuration
 	serviceEndpointsKey = "service-endpoints"
 	remoteLeaderIDKey   = "remote_leader_id"
-	pitrDeploymentIDKey = "point_in_time_recovery_deployment_id"
-	pitrTimeKey         = "point_in_time_recovery_time"
 
 	// Encryption keys
 	diskEncryptionKey   = "disk"
@@ -250,8 +250,8 @@ func (g *resourceIBMDatabaseGen2Backend) setResourceGroup(d *schema.ResourceData
 }
 
 // buildGen2Parameters constructs the Gen2-specific parameters structure.
-// Includes database configuration, encryption, and PITR settings.
-// Note: backup_id restore is not supported in Gen2.
+// Includes database configuration and encryption settings.
+// Note: backup_id restore and PITR are not supported in Gen2.
 func (g *resourceIBMDatabaseGen2Backend) buildGen2Parameters(d *schema.ResourceData, serviceName string, meta interface{}, catalogCRN string) (map[string]interface{}, error) {
 	// Get the database type for the dataservices key
 	dbType := getDatabaseTypeFromResourceID(serviceName)
@@ -272,9 +272,6 @@ func (g *resourceIBMDatabaseGen2Backend) buildGen2Parameters(d *schema.ResourceD
 
 	// Handle encryption
 	g.addEncryptionConfig(d, dataservices)
-
-	// Handle point-in-time recovery
-	g.addPITRConfig(d, dataservices)
 
 	// Build final parameters structure
 	parameters := map[string]interface{}{
@@ -387,26 +384,6 @@ func (g *resourceIBMDatabaseGen2Backend) addEncryptionConfig(d *schema.ResourceD
 	if len(encryption) > 0 {
 		dataservices[encryptionKey] = encryption
 	}
-}
-
-// addPITRConfig adds point-in-time recovery configuration to dataservices.
-// Includes deployment ID and recovery time if configured.
-// Simplified logic: checks if PITR time is explicitly set (even if empty string).
-func (g *resourceIBMDatabaseGen2Backend) addPITRConfig(d *schema.ResourceData, dataservices map[string]interface{}) {
-	if pitrID, ok := d.GetOk("point_in_time_recovery_deployment_id"); ok {
-		dataservices[pitrDeploymentIDKey] = pitrID.(string)
-	}
-
-	// Check if PITR time is explicitly set (even if empty string)
-	if d.GetRawConfig().AsValueMap()["point_in_time_recovery_time"].IsNull() {
-		return
-	}
-
-	pitrTime := ""
-	if val, ok := d.GetOk("point_in_time_recovery_time"); ok {
-		pitrTime = val.(string)
-	}
-	dataservices[pitrTimeKey] = strings.TrimSpace(pitrTime)
 }
 
 // createInstanceWithRetry creates an instance.
@@ -760,11 +737,13 @@ func (g *resourceIBMDatabaseGen2Backend) updateTagsWithDiagnostics(d *schema.Res
 func (g *resourceIBMDatabaseGen2Backend) checkUnsupportedChanges(d *schema.ResourceData) diag.Diagnostics {
 	// Map of unsupported fields to their error messages
 	unsupportedChanges := map[string]string{
-		"allowlist":        "Allowlist is not supported for Gen2 database instances",
-		"users":            "User management is not supported for Gen2 database instances. Users should manage credentials using the ibm_resource_key resource (https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/resources/resource_key)",
-		"remote_leader_id": "Read replica creation and promotion is not supported for Gen2 database instances yet",
-		"version":          "Version changes are not supported for Gen2 database instances",
-		"backup_id":        "Restore from backup is not supported for Gen2 database instances yet",
+		"allowlist":                            "Allowlist is not supported for Gen2 database instances",
+		"users":                                "User management is not supported for Gen2 database instances. Users should manage credentials using the ibm_resource_key resource (https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/resources/resource_key)",
+		"remote_leader_id":                     "Read replica creation and promotion is not supported for Gen2 database instances yet",
+		"version":                              "Version changes are not supported for Gen2 database instances",
+		"backup_id":                            "Restore from backup is not supported for Gen2 database instances yet",
+		"point_in_time_recovery_deployment_id": "Point-in-time recovery is not supported for Gen2 database instances yet",
+		"point_in_time_recovery_time":          "Point-in-time recovery is not supported for Gen2 database instances yet",
 	}
 
 	for field, errMsg := range unsupportedChanges {

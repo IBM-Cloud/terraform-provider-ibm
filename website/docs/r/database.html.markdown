@@ -833,7 +833,7 @@ The following table summarizes feature availability for Classic and Gen2 plans:
 | Tags | ✅ Supported | ✅ Supported |
 | Encryption (key_protect_key, backup_encryption_key_crn) | ✅ Supported | ✅ Supported |
 | Restore from backup (backup_id) | ✅ Supported | ❌ Plan fails if set |
-| Point-in-time recovery (PITR) | ✅ Supported | ✅ Supported |
+| Point-in-time recovery (point_in_time_recovery_deployment_id, point_in_time_recovery_time) | ✅ Supported | ❌ Plan fails if set |
 | Offline restore (MongoDB) | ✅ Supported | ❌ Accepted but ignored |
 | Async restore (PostgreSQL) | ✅ Supported | ❌ Accepted but ignored |
 | Scaling (members, disk, host_flavor) | ✅ Supported | ✅ Supported |
@@ -854,7 +854,7 @@ The following table summarizes feature availability for Classic and Gen2 plans:
 Gen2 plans handle unsupported features in two ways:
 
 - **Plan fails if set**: Terraform plan will fail with a validation error if these attributes are configured. You must remove them from your configuration to use Gen2 plans.
-  - Examples: `backup_id`, `users`, `allowlist`, `remote_leader_id`, memory/cpu in `group`
+  - Examples: `backup_id`, `point_in_time_recovery_deployment_id`, `point_in_time_recovery_time`, `users`, `allowlist`, `remote_leader_id`, memory/cpu in `group`
 
 - **Accepted but ignored**: These attributes can remain in your configuration for easier migration, but they have no effect on Gen2 instances. They are silently ignored during apply and cleared during read operations.
   - Examples: `auto_scaling`, `configuration`, `logical_replication_slot`, `offline_restore`, `async_restore`, `adminpassword`
