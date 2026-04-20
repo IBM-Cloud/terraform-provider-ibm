@@ -1,8 +1,8 @@
-// Copyright IBM Corp. 2025 All Rights Reserved.
+// Copyright IBM Corp. 2026 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 /*
- * IBM OpenAPI Terraform Generator Version: 3.108.0-56772134-20251111-102802
+ * IBM OpenAPI Terraform Generator Version: 3.113.1-d76630af-20260320-135953
  */
 
 package atracker_test
@@ -120,7 +120,7 @@ func testAccCheckIBMAtrackerRoutesDataSourceConfig(routeName string, routeManage
 				target_ids = [ ibm_atracker_target.atracker_target_instance.id ]
 				locations = [ "us-south" ]
 			}
-			managed_by = "%s"			
+			managed_by = "%s"
 		}
 
 		data "ibm_atracker_routes" "atracker_routes_instance" {

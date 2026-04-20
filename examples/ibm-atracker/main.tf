@@ -53,6 +53,15 @@ resource "ibm_atracker_target" "atracker_target_cloudlogs_instance" {
   region = var.atracker_target_region
 }
 
+resource "ibm_atracker_target" "atracker_target_appconfig_instance" {
+  name        = var.atracker_target_name
+  target_type = "app_config"
+  appconfig_endpoint {
+    target_crn = "crn:v1:bluemix:public:apprapp:us-south:a/11111111111111111111111111111111:22222222-2222-2222-2222-222222222222::"
+  }
+  region = var.atracker_target_region
+}
+
 // Provision atracker_route resource instance
 resource "ibm_atracker_route" "atracker_route_instance_enterprise" {
   name = var.atracker_route_name
