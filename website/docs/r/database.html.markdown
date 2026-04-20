@@ -832,22 +832,32 @@ The following table summarizes feature availability for Classic and Gen2 plans:
 | Resource group assignment | ✅ Supported | ✅ Supported |
 | Tags | ✅ Supported | ✅ Supported |
 | Encryption (key_protect_key, backup_encryption_key_crn) | ✅ Supported | ✅ Supported |
-| Restore from backup (backup_id) | ✅ Supported | ✅ Supported |
+| Restore from backup (backup_id) | ✅ Supported | ❌ Plan fails if set |
 | Point-in-time recovery (PITR) | ✅ Supported | ✅ Supported |
-| Offline restore (MongoDB) | ✅ Supported | ✅ Supported |
-| Async restore (PostgreSQL) | ✅ Supported | ✅ Supported |
+| Offline restore (MongoDB) | ✅ Supported | ❌ Accepted but ignored |
+| Async restore (PostgreSQL) | ✅ Supported | ❌ Accepted but ignored |
 | Scaling (members, disk, host_flavor) | ✅ Supported | ✅ Supported |
 | Scaling (memory, cpu) | ✅ Supported | ❌ Plan fails if set (controlled by host_flavor) |
 | Service endpoints | ✅ public, private, public-and-private | ⚠️ private only (plan fails if public) |
 | Admin password | ✅ Supported | ❌ Accepted but ignored (use ibm_resource_key) |
 | User management | ✅ Supported | ❌ Plan fails if set (use ibm_resource_key) |
-| IP allowlist | ✅ Supported | ❌ Plan fails if set |
+| IP allowlist | ✅ Supported | ❌ Plan fails if set (use ibm_resource_key) |
 | Database configuration | ✅ Supported | ❌ Accepted but ignored |
-| Auto-scaling | ✅ Supported | ❌ Plan fails if set |
-| Logical replication slots | ✅ Supported | ❌ Plan fails if set |
+| Auto-scaling | ✅ Supported | ❌ Accepted but ignored |
+| Logical replication slots | ✅ Supported | ❌ Accepted but ignored |
 | Read-only replicas | ✅ Supported | ❌ Plan fails if set |
 | In-place version upgrades | ✅ Supported | ❌ Updates fail with error |
 | Deletion protection | ✅ Supported | ✅ Supported |
+
+### Gen2 Validation Behavior
+
+Gen2 plans handle unsupported features in two ways:
+
+- **Plan fails if set**: Terraform plan will fail with a validation error if these attributes are configured. You must remove them from your configuration to use Gen2 plans.
+  - Examples: `backup_id`, `users`, `allowlist`, `remote_leader_id`, memory/cpu in `group`
+
+- **Accepted but ignored**: These attributes can remain in your configuration for easier migration, but they have no effect on Gen2 instances. They are silently ignored during apply and cleared during read operations.
+  - Examples: `auto_scaling`, `configuration`, `logical_replication_slot`, `offline_restore`, `async_restore`, `adminpassword`
 
 **Note:** For Gen2 instances, use the `ibm_resource_key` resource to create service credentials and obtain connection information.
 
