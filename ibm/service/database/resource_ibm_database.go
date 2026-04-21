@@ -257,12 +257,12 @@ func ResourceIBMDatabaseInstance() *schema.Resource {
 			},
 
 			"adminuser": {
-				Description: "The admin user id for the instance. Note: In Gen2, there is no default admin user. Users should manage credentials using the ibm_resource_key resource (https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/resources/resource_key).",
+				Description: "The admin user id for the instance. Gen2: Always empty. Gen2 instances do not have a default admin user. Use ibm_resource_key for credentials.",
 				Type:        schema.TypeString,
 				Computed:    true,
 			},
 			"adminpassword": {
-				Description: "The admin user password for the instance. Note: In Gen2, there is no default admin user. Users should manage credentials using the ibm_resource_key resource (https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/resources/resource_key).",
+				Description: "The admin user password for the instance. Gen2: Accepted but ignored. Gen2 instances do not have a default admin user. Use the ibm_resource_key resource to create service credentials for database access.",
 				Type:        schema.TypeString,
 				Optional:    true,
 				ValidateFunc: validation.All(
@@ -284,48 +284,48 @@ func ResourceIBMDatabaseInstance() *schema.Resource {
 					}
 					return json
 				},
-				Description: "The configuration in JSON format. Note: This attribute is currently not supported for Gen2 database instances.",
+				Description: "The configuration in JSON format. Gen2: Accepted but ignored. Database configuration management is not yet implemented for Gen2 instances.",
 			},
 			"configuration_schema": {
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "The configuration schema in JSON format. Note: This attribute is currently not supported for Gen2 database instances.",
+				Description: "The configuration schema in JSON format. Gen2: Always empty (not available).",
 			},
 			"version": {
-				Description: "The database version to provision if specified or the database version to upgrade to",
+				Description: "The database version to provision if specified or the database version to upgrade to. Classic: This field can be updated to perform an in-place upgrade without forcing the creation of a new resource. Gen2: Can be set at creation only. Updates fail with error. In-place version upgrades are not supported for Gen2 plans.",
 				Type:        schema.TypeString,
 				Computed:    true,
 				Optional:    true,
 			},
 			"version_upgrade_skip_backup": {
-				Description: "Option to skip the backup when upgrading version. Only applicable to databases that do not support PITR. Skipping the backup means that your deployment becomes available more quickly, but there is no immediate backup available. This is not recommended as it could result in data loss",
+				Description: "Option to skip the backup when upgrading version. Only applicable to databases that do not support PITR. Skipping the backup means that your deployment becomes available more quickly, but there is no immediate backup available. This is not recommended as it could result in data loss. Gen2: Accepted but ignored (Classic-only feature for version upgrades).",
 				Type:        schema.TypeBool,
 				Optional:    true,
 			},
 			"service_endpoints": {
-				Description:  "Types of the service endpoints. Possible values are 'public', 'private', 'public-and-private'. Required for Classic plans. For Gen2 plans, this field is optional and, if set, must be 'private'. Gen2 defaults to 'private'.",
+				Description:  "Types of the service endpoints. Possible values are 'public', 'private', 'public-and-private'. Required for Classic plans. Gen2: Optional; must be 'private' if set. Gen2 instances only support private endpoints and default to 'private'. Plan fails if set to 'public' or 'public-and-private'.",
 				Type:         schema.TypeString,
 				Optional:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_database", "service_endpoints"),
 			},
 			"backup_id": {
-				Description:      "The CRN of backup source database",
+				Description:      "The CRN of backup source database. Gen2: Plan fails if set. Restore from backup is not yet implemented for Gen2 instances.",
 				Type:             schema.TypeString,
 				Optional:         true,
 				DiffSuppressFunc: flex.ApplyOnce,
 			},
 			"remote_leader_id": {
-				Description: "The CRN of leader database. Note: This attribute is currently not supported for Gen2 database instances.",
+				Description: "The CRN of leader database. Gen2: Plan fails if set. Read-only replica creation and promotion are not supported for Gen2 instances.",
 				Type:        schema.TypeString,
 				Optional:    true,
 			},
 			"skip_initial_backup": {
-				Description: "Option to skip the initial backup when promoting a read-only replica. Skipping the initial backup means that your replica becomes available more quickly, but there is no immediate backup available.",
+				Description: "Option to skip the initial backup when promoting a read-only replica. Skipping the initial backup means that your replica becomes available more quickly, but there is no immediate backup available. Gen2: Accepted but ignored (Classic-only feature for read replica promotion).",
 				Type:        schema.TypeBool,
 				Optional:    true,
 			},
 			"async_restore": {
-				Description:      "Option to support FAST PG Restore. Only applicable when restoring a PostgreSQL instance",
+				Description:      "Option to support FAST PG Restore. Only applicable when restoring a PostgreSQL instance. Gen2: Accepted but ignored. Async restore requires backup_id support which is not yet implemented for Gen2 instances.",
 				Type:             schema.TypeBool,
 				Optional:         true,
 				DiffSuppressFunc: flex.ApplyOnce,
@@ -356,19 +356,19 @@ func ResourceIBMDatabaseInstance() *schema.Resource {
 				Set:      flex.ResourceIBMVPCHash,
 			},
 			"point_in_time_recovery_deployment_id": {
-				Description:      "The CRN of source instance",
+				Description:      "The CRN of source instance. Gen2: Plan fails if set. Point-in-time recovery is not yet implemented for Gen2 instances.",
 				Type:             schema.TypeString,
 				Optional:         true,
 				DiffSuppressFunc: flex.ApplyOnce,
 			},
 			"point_in_time_recovery_time": {
-				Description:      "The point in time recovery time stamp of the deployed instance",
+				Description:      "The point in time recovery time stamp of the deployed instance. Gen2: Plan fails if set. Point-in-time recovery is not yet implemented for Gen2 instances.",
 				Type:             schema.TypeString,
 				Optional:         true,
 				DiffSuppressFunc: flex.ApplyOnce,
 			},
 			"offline_restore": {
-				Description:      "Set offline restore mode for MongoDB Enterprise Edition",
+				Description:      "Set offline restore mode for MongoDB Enterprise Edition. Gen2: Accepted but ignored. Offline restore requires backup_id support which is not yet implemented for Gen2 instances.",
 				Type:             schema.TypeBool,
 				Optional:         true,
 				DiffSuppressFunc: flex.ApplyOnce,
@@ -376,7 +376,7 @@ func ResourceIBMDatabaseInstance() *schema.Resource {
 			"users": {
 				Type:        schema.TypeSet,
 				Optional:    true,
-				Description: "Database users. Note: In Gen2, users should manage credentials using the ibm_resource_key resource (https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/resources/resource_key).",
+				Description: "Database users. Gen2: Plan fails if set. Use the ibm_resource_key resource to create service credentials for Gen2 instances.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"name": {
@@ -412,7 +412,7 @@ func ResourceIBMDatabaseInstance() *schema.Resource {
 			"allowlist": {
 				Type:        schema.TypeSet,
 				Optional:    true,
-				Description: "Allowlist for database access. Note: This attribute is not supported for Gen2 database instances.",
+				Description: "Allowlist for database access. Gen2: Plan fails if set. IP allowlist configuration is not available for Gen2 instances.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"address": {
@@ -433,7 +433,7 @@ func ResourceIBMDatabaseInstance() *schema.Resource {
 			"logical_replication_slot": {
 				Type:        schema.TypeSet,
 				Optional:    true,
-				Description: "Logical replication slots for PostgreSQL. Note: This attribute is not supported for Gen2 database instances.",
+				Description: "Logical replication slots for PostgreSQL. Gen2: Accepted but ignored. Logical replication slots are not available for Gen2 instances.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"name": {
@@ -455,8 +455,9 @@ func ResourceIBMDatabaseInstance() *schema.Resource {
 				},
 			},
 			"group": {
-				Type:     schema.TypeSet,
-				Optional: true,
+				Type:        schema.TypeSet,
+				Optional:    true,
+				Description: "A set of group scaling values for the database. Gen2: Fully supported for members, disk, and host_flavor. Plan fails if memory or cpu allocations are set, as memory and CPU are determined by the dedicated host_flavor and cannot be set independently.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"group_id": {
@@ -528,6 +529,7 @@ func ResourceIBMDatabaseInstance() *schema.Resource {
 										ValidateFunc: validation.StringInSlice([]string{
 											"multitenant",
 											"bx3d.4x20",
+											"bx3d.8x40",
 											"b3c.4x16.encrypted",
 											"b3c.8x32.encrypted",
 											"m3c.8x64.encrypted",
@@ -708,7 +710,7 @@ func ResourceIBMDatabaseInstance() *schema.Resource {
 			},
 			"auto_scaling": {
 				Type:        schema.TypeList,
-				Description: "ICD Auto Scaling. Note: This attribute is currently not supported for Gen2 database instances.",
+				Description: "ICD Auto Scaling. Gen2: Accepted but ignored. Auto-scaling policies are not available in Gen2. Monitor your database and manually adjust scaling as needed.",
 				Optional:    true,
 				Computed:    true,
 				MaxItems:    1,
