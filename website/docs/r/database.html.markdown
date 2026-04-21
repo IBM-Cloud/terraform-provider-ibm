@@ -84,34 +84,45 @@ data "ibm_resource_group" "group" {
   name = "<your_group>"
 }
 
-resource "ibm_database" "<your_database>" {
-  name              = "<your_database_name>"
+# Gen2 PostgreSQL instance
+resource "ibm_database" "postgres_gen2" {
+  name              = "my-postgres-gen2"
   plan              = "standard-gen2"
-  location          = "us-south"
+  location          = "ca-mon"
   service           = "databases-for-postgresql"
   resource_group_id = data.ibm_resource_group.group.id
-  tags              = ["tag1", "tag2"]
+
+  version = "18"
+
+  service_endpoints = "private"
 
   group {
     group_id = "member"
-
     members {
-      allocation_count = 3
+      allocation_count = 2
     }
-
     disk {
-      allocation_mb = 20480
+      allocation_mb = 10240  # 10 GB
     }
-
     host_flavor {
       id = "bx3d.4x20"
     }
   }
+
+  tags = ["env:production", "app:myapp"]
 }
 
-output "ICD Gen2 database connection" {
-  description = "Use ibm_resource_key to obtain connection credentials"
-  value       = "Connection details available via ibm_resource_key resource"
+# Credentials via resource key
+resource "ibm_resource_key" "db_credentials" {
+  name                 = "db-credentials"
+  resource_instance_id = ibm_database.postgres_gen2.id
+  role                 = "Writer"
+}
+
+# Access credentials
+output "db_connection" {
+  value = ibm_resource_key.db_credentials.credentials
+  sensitive = true
 }
 ```
 
