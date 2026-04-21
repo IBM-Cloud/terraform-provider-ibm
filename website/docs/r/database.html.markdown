@@ -708,7 +708,7 @@ Review the argument reference that you can specify for your resource.
 
 - `key_protect_instance` - (Optional, Forces new resource, String) The instance CRN of a Key Management Services like Key Protect or Hyper Protect Crypto Service (HPCS) that you want to use for disk encryption. An instance CRN is in the format `crn:v1:<…>::`.
 
-  **Gen2:** Accepted but not used. Use `key_protect_key` for disk encryption and `backup_encryption_key_crn` for backup encryption.
+  **Gen2:** Accepted but not used. For Gen2 instances, use `key_protect_key` for disk encryption and `backup_encryption_key_crn` for backup encryption instead of this attribute.
 - `location` - (Required, String) The location where you want to deploy your instance. The location must match the `region` parameter that you specify in the `provider` block of your  Terraform configuration file. The default value is `us-south`. Currently, supported regions are `us-south`, `us-east`, `eu-gb`, `eu-de`, `au-syd`, `jp-tok`, `oslo01`.
 - `group` - (Optional, Set) A set of group scaling values for the database. Multiple blocks are allowed. Can only be performed on is_adjustable=true groups. Values set are per-member. Values must be greater than or equal to the minimum size and must be a multiple of the step size.
 
@@ -750,13 +750,20 @@ Review the argument reference that you can specify for your resource.
 
 - `name` - (Required, String) A descriptive name that is used to identify the database instance. The name must not include spaces.
 - `offline_restore` - (Optional, Boolean) Enable or disable the Offline Restore option while performing a Point-in-time Recovery for MongoDB EE in a disaster recovery scenario when the source region is unavailable, see [Point-in-time Recovery](https://cloud.ibm.com/docs/databases-for-mongodb?topic=databases-for-mongodb-pitr&interface=api#pitr-offline-restore)
+
+  **Gen2:** Accepted but ignored. Offline restore requires `backup_id` support which is not yet implemented for Gen2 instances.
 - `plan` - (Required, Forces new resource, String) The name of the service plan that you choose for your instance. The plan determines whether your instance uses Classic or Gen2 infrastructure:
   - **Classic plans**: `standard`, `enterprise`, `platinum`
   - **Gen2 plans**: `standard-gen2`, `enterprise-gen2`, `platinum-gen2`
 
   Plans ending with `-gen2` use Gen2 infrastructure. `enterprise` is supported only for elasticsearch (`databases-for-elasticsearch`) and mongodb (`databases-for-mongodb`). `platinum` is supported for elasticsearch (`databases-for-elasticsearch`).
 - `point_in_time_recovery_deployment_id` - (Optional, String) The ID of the source deployment that you want to recover back to.
+
+  **Gen2:** Plan fails if set. Point-in-time recovery is not yet implemented for Gen2 instances.
+
 - `point_in_time_recovery_time` - (Optional, String) The timestamp in UTC format that you want to restore to. To retrieve the timestamp, run the `ibmcloud cdb postgresql earliest-pitr-timestamp <deployment name or CRN>` command. To restore to the latest available time, use a blank string `""` as the timestamp. For more information, see [Point-in-time Recovery](https://cloud.ibm.com/docs/databases-for-postgresql?topic=databases-for-postgresql-pitr).
+
+  **Gen2:** Plan fails if set. Point-in-time recovery is not yet implemented for Gen2 instances.
 - `remote_leader_id` - (Optional, String) A CRN of the leader database to make the replica(read-only) deployment. The leader database is created by a database deployment with the same service ID. A read-only replica is set up to replicate all of your data from the leader deployment to the replica deployment by using asynchronous replication. Removing the `remote_leader_id` attribute from an existing read-only replica will promote the deployment to a standalone deployment. The deployment will restart and break its connection with the leader. This will disable all database users associated with this deployment. For more information, see [Configuring Read-only Replicas](https://cloud.ibm.com/docs/databases-for-postgresql?topic=databases-for-postgresql-read-only-replicas).
 
   **Gen2:** Plan fails if set. Read-only replica creation and promotion are not supported for Gen2 instances.
@@ -765,6 +772,8 @@ Review the argument reference that you can specify for your resource.
 
   **Gen2:** Accepted but ignored (Classic-only feature for read replica promotion).
 - `async_restore` - (Optional, Boolean) Should only be set for asynchronous restore. By setting this value to `true`, the restore is initiated as an asynchronous operation, which helps to reduce end-to-end restore time. Only applicable when restoring a PostgreSQL instance.
+
+  **Gen2:** Accepted but ignored. Async restore requires `backup_id` support which is not yet implemented for Gen2 instances.
 - `resource_group_id` - (Optional, Forces new resource, String)  The ID of the resource group where you want to create the instance. To retrieve this value, run `ibmcloud resource groups` or use the `ibm_resource_group` data source. If no value is provided, the `default` resource group is used.
 - `service` - (Required, Forces new resource, String) The type of Cloud Databases that you want to create. Only the following services are currently accepted: `databases-for-etcd`, `databases-for-postgresql`, `databases-for-redis`, `databases-for-elasticsearch`, `messages-for-rabbitmq`,`databases-for-mongodb`,`databases-for-mysql`, and `databases-for-enterprisedb`.
 - `service_endpoints` - (Optional, String) Specify whether you want to enable the public, private, or both service endpoints. Supported values are `public`, `private`, or `public-and-private`.
