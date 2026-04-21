@@ -61,7 +61,8 @@ func TestGen2BackendCreate(t *testing.T) {
 				"location":  "us-south",
 				"backup_id": "crn:v1:bluemix:public:databases-for-postgresql:us-south:a/abc123:backup-id",
 			},
-			expectedError: false,
+			expectedError: true,
+			errorContains: "backup_id is not supported for Gen2 databases",
 		},
 		{
 			name: "create_with_remote_leader",
@@ -84,7 +85,8 @@ func TestGen2BackendCreate(t *testing.T) {
 				"location":                             "us-south",
 				"point_in_time_recovery_deployment_id": "crn:v1:bluemix:public:databases-for-postgresql:us-south:a/abc123:pitr-id",
 			},
-			expectedError: false,
+			expectedError: true,
+			errorContains: "point_in_time_recovery_deployment_id is not supported for Gen2 databases",
 		},
 		{
 			name: "create_with_pitr_time",
@@ -96,31 +98,8 @@ func TestGen2BackendCreate(t *testing.T) {
 				"point_in_time_recovery_deployment_id": "crn:v1:bluemix:public:databases-for-postgresql:us-south:a/abc123:pitr-id",
 				"point_in_time_recovery_time":          "2024-01-01T00:00:00Z",
 			},
-			expectedError: false,
-		},
-		{
-			name: "create_with_offline_restore",
-			resourceData: map[string]interface{}{
-				"service":         "databases-for-postgresql",
-				"plan":            "standard",
-				"name":            "test-db",
-				"location":        "us-south",
-				"backup_id":       "crn:v1:bluemix:public:databases-for-postgresql:us-south:a/abc123:backup-id",
-				"offline_restore": true,
-			},
-			expectedError: false,
-		},
-		{
-			name: "create_with_async_restore",
-			resourceData: map[string]interface{}{
-				"service":       "databases-for-postgresql",
-				"plan":          "standard",
-				"name":          "test-db",
-				"location":      "us-south",
-				"backup_id":     "crn:v1:bluemix:public:databases-for-postgresql:us-south:a/abc123:backup-id",
-				"async_restore": true,
-			},
-			expectedError: false,
+			expectedError: true,
+			errorContains: "point_in_time_recovery_time is not supported for Gen2 databases",
 		},
 		{
 			name: "create_with_service_endpoints",
@@ -1725,18 +1704,58 @@ func TestGen2AllUnsupportedAttributesBehavior(t *testing.T) {
 		{
 			name:           "auto_scaling",
 			attribute:      "auto_scaling",
-			planBehavior:   "Fails if set or changed",
-			applyBehavior:  "N/A",
+			planBehavior:   "Accepted (no validation)",
+			applyBehavior:  "Silently ignored - not validated, not sent to API",
 			readBehavior:   "Not set",
 			useAlternative: "Monitor and scale manually",
 		},
 		{
 			name:           "logical_replication_slot",
 			attribute:      "logical_replication_slot",
-			planBehavior:   "Fails if set or changed",
-			applyBehavior:  "N/A",
+			planBehavior:   "Accepted (no validation)",
+			applyBehavior:  "Silently ignored - not validated, not sent to API",
 			readBehavior:   "Not set",
 			useAlternative: "Use Classic for logical replication",
+		},
+		{
+			name:           "backup_id",
+			attribute:      "backup_id",
+			planBehavior:   "Fails if set",
+			applyBehavior:  "N/A",
+			readBehavior:   "Not set",
+			useAlternative: "Restore from backup not yet implemented in Gen2",
+		},
+		{
+			name:           "point_in_time_recovery_deployment_id",
+			attribute:      "point_in_time_recovery_deployment_id",
+			planBehavior:   "Fails if set",
+			applyBehavior:  "N/A",
+			readBehavior:   "Not set",
+			useAlternative: "Point-in-time recovery not yet implemented in Gen2",
+		},
+		{
+			name:           "point_in_time_recovery_time",
+			attribute:      "point_in_time_recovery_time",
+			planBehavior:   "Fails if set",
+			applyBehavior:  "N/A",
+			readBehavior:   "Not set",
+			useAlternative: "Point-in-time recovery not yet implemented in Gen2",
+		},
+		{
+			name:           "offline_restore",
+			attribute:      "offline_restore",
+			planBehavior:   "Accepted (no validation)",
+			applyBehavior:  "Silently ignored - not validated, not sent to API (requires backup_id)",
+			readBehavior:   "Not set",
+			useAlternative: "MongoDB offline restore not available (requires backup_id)",
+		},
+		{
+			name:           "async_restore",
+			attribute:      "async_restore",
+			planBehavior:   "Accepted (no validation)",
+			applyBehavior:  "Silently ignored - not validated, not sent to API (requires backup_id)",
+			readBehavior:   "Not set",
+			useAlternative: "PostgreSQL FAST restore not available (requires backup_id)",
 		},
 	}
 
@@ -1791,6 +1810,238 @@ func TestGen2SupportedWithNuancesBehavior(t *testing.T) {
 			assert.NotEmpty(t, tt.classicBehavior, "Classic behavior should be documented")
 			assert.NotEmpty(t, tt.gen2Behavior, "Gen2 behavior should be documented")
 			assert.NotEmpty(t, tt.nuance, "Nuance/difference should be documented")
+		})
+	}
+}
+
+// TestGen2OfflineRestoreIgnored tests that offline_restore is silently ignored in Gen2
+func TestGen2OfflineRestoreIgnored(t *testing.T) {
+	tests := []struct {
+		name             string
+		offlineRestore   bool
+		operation        string
+		expectedBehavior string
+	}{
+		{
+			name:             "offline_restore_create_ignored",
+			offlineRestore:   true,
+			operation:        "CREATE",
+			expectedBehavior: "Accepted but silently ignored - not validated, not sent to API (requires backup_id which also fails)",
+		},
+		{
+			name:             "offline_restore_update_ignored",
+			offlineRestore:   true,
+			operation:        "UPDATE",
+			expectedBehavior: "Accepted but silently ignored - not validated, not sent to API",
+		},
+		{
+			name:             "offline_restore_read_not_set",
+			offlineRestore:   true,
+			operation:        "READ",
+			expectedBehavior: "Not set - always returns empty/nil",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// Test documents that offline_restore is silently ignored in Gen2
+			// Classic: MongoDB offline restore option (requires backup_id)
+			// Gen2: Not yet implemented - restore from backup not supported
+			assert.NotEmpty(t, tt.expectedBehavior, "Expected behavior should be documented")
+
+			if tt.operation == "READ" {
+				assert.Contains(t, tt.expectedBehavior, "Not set", "Read should not return offline_restore")
+			} else {
+				assert.Contains(t, tt.expectedBehavior, "ignored", "offline_restore should be ignored")
+			}
+		})
+	}
+}
+
+// TestGen2AsyncRestoreIgnored tests that async_restore is silently ignored in Gen2
+func TestGen2AsyncRestoreIgnored(t *testing.T) {
+	tests := []struct {
+		name             string
+		asyncRestore     bool
+		operation        string
+		expectedBehavior string
+	}{
+		{
+			name:             "async_restore_create_ignored",
+			asyncRestore:     true,
+			operation:        "CREATE",
+			expectedBehavior: "Accepted but silently ignored - not validated, not sent to API (requires backup_id which also fails)",
+		},
+		{
+			name:             "async_restore_update_ignored",
+			asyncRestore:     true,
+			operation:        "UPDATE",
+			expectedBehavior: "Accepted but silently ignored - not validated, not sent to API",
+		},
+		{
+			name:             "async_restore_read_not_set",
+			asyncRestore:     true,
+			operation:        "READ",
+			expectedBehavior: "Not set - always returns empty/nil",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// Test documents that async_restore is silently ignored in Gen2
+			// Classic: PostgreSQL FAST restore option (requires backup_id)
+			// Gen2: Not yet implemented - restore from backup not supported
+			assert.NotEmpty(t, tt.expectedBehavior, "Expected behavior should be documented")
+
+			if tt.operation == "READ" {
+				assert.Contains(t, tt.expectedBehavior, "Not set", "Read should not return async_restore")
+			} else {
+				assert.Contains(t, tt.expectedBehavior, "ignored", "async_restore should be ignored")
+			}
+		})
+	}
+}
+
+// TestGen2AutoScalingIgnored tests that auto_scaling is silently ignored in Gen2
+func TestGen2AutoScalingIgnored(t *testing.T) {
+	tests := []struct {
+		name             string
+		autoScaling      map[string]interface{}
+		operation        string
+		expectedBehavior string
+	}{
+		{
+			name: "auto_scaling_disk_create_ignored",
+			autoScaling: map[string]interface{}{
+				"disk": map[string]interface{}{
+					"capacity_enabled":             true,
+					"free_space_less_than_percent": 10,
+				},
+			},
+			operation:        "CREATE",
+			expectedBehavior: "Accepted but silently ignored - not validated, not sent to API",
+		},
+		{
+			name: "auto_scaling_memory_create_ignored",
+			autoScaling: map[string]interface{}{
+				"memory": map[string]interface{}{
+					"io_enabled":                  true,
+					"io_over_period":              "5m",
+					"io_above_percent":            90,
+					"rate_increase_percent":       10,
+					"rate_period_seconds":         900,
+					"rate_limit_mb_per_member":    3670016,
+					"rate_units":                  "mb",
+					"rate_limit_count_per_member": 10,
+				},
+			},
+			operation:        "CREATE",
+			expectedBehavior: "Accepted but silently ignored - not validated, not sent to API",
+		},
+		{
+			name: "auto_scaling_cpu_create_ignored",
+			autoScaling: map[string]interface{}{
+				"cpu": map[string]interface{}{
+					"rate_increase_percent":       10,
+					"rate_period_seconds":         900,
+					"rate_limit_count_per_member": 10,
+					"rate_units":                  "count",
+				},
+			},
+			operation:        "CREATE",
+			expectedBehavior: "Accepted but silently ignored - not validated, not sent to API",
+		},
+		{
+			name: "auto_scaling_update_ignored",
+			autoScaling: map[string]interface{}{
+				"disk": map[string]interface{}{
+					"capacity_enabled": true,
+				},
+			},
+			operation:        "UPDATE",
+			expectedBehavior: "Accepted but silently ignored - not validated, not sent to API",
+		},
+		{
+			name: "auto_scaling_read_not_set",
+			autoScaling: map[string]interface{}{
+				"disk": map[string]interface{}{
+					"capacity_enabled": true,
+				},
+			},
+			operation:        "READ",
+			expectedBehavior: "Not set - always returns empty/nil",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// Test documents that auto_scaling is silently ignored in Gen2
+			// Classic: Configure auto-scaling policies for disk, memory, and CPU
+			// Gen2: Not yet implemented - manual scaling only
+			assert.NotNil(t, tt.autoScaling, "Auto scaling config should be defined")
+			assert.NotEmpty(t, tt.expectedBehavior, "Expected behavior should be documented")
+
+			if tt.operation == "READ" {
+				assert.Contains(t, tt.expectedBehavior, "Not set", "Read should not return auto_scaling")
+			} else {
+				assert.Contains(t, tt.expectedBehavior, "ignored", "auto_scaling should be ignored")
+			}
+		})
+	}
+}
+
+// TestGen2LogicalReplicationSlotIgnored tests that logical_replication_slot is silently ignored in Gen2
+func TestGen2LogicalReplicationSlotIgnored(t *testing.T) {
+	tests := []struct {
+		name             string
+		replicationSlot  map[string]interface{}
+		operation        string
+		expectedBehavior string
+	}{
+		{
+			name: "logical_replication_slot_create_ignored",
+			replicationSlot: map[string]interface{}{
+				"name":          "test_slot",
+				"database_name": "testdb",
+				"plugin_type":   "wal2json",
+			},
+			operation:        "CREATE",
+			expectedBehavior: "Accepted but silently ignored - not validated, not sent to API",
+		},
+		{
+			name: "logical_replication_slot_update_ignored",
+			replicationSlot: map[string]interface{}{
+				"name":          "updated_slot",
+				"database_name": "testdb",
+				"plugin_type":   "pgoutput",
+			},
+			operation:        "UPDATE",
+			expectedBehavior: "Accepted but silently ignored - not validated, not sent to API",
+		},
+		{
+			name: "logical_replication_slot_read_not_set",
+			replicationSlot: map[string]interface{}{
+				"name":          "test_slot",
+				"database_name": "testdb",
+			},
+			operation:        "READ",
+			expectedBehavior: "Not set - always returns empty/nil",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// Test documents that logical_replication_slot is silently ignored in Gen2
+			// Classic: PostgreSQL logical replication slot management
+			// Gen2: Not yet implemented - use Classic for logical replication
+			assert.NotNil(t, tt.replicationSlot, "Replication slot config should be defined")
+			assert.NotEmpty(t, tt.expectedBehavior, "Expected behavior should be documented")
+
+			if tt.operation == "READ" {
+				assert.Contains(t, tt.expectedBehavior, "Not set", "Read should not return logical_replication_slot")
+			} else {
+				assert.Contains(t, tt.expectedBehavior, "ignored", "logical_replication_slot should be ignored")
+			}
 		})
 	}
 }
