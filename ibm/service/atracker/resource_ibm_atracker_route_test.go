@@ -1,4 +1,4 @@
-// Copyright IBM Corp. 2026 All Rights Reserved.
+// Copyright IBM Corp. 2025 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 package atracker_test
@@ -186,7 +186,7 @@ func testAccCheckIBMAtrackerRouteDestroy(s *terraform.State) error {
 		_, response, err := atrackerClient.GetRoute(getRouteOptions)
 
 		if err == nil {
-			return fmt.Errorf("atracker_route still exists: %s", rs.Primary.ID)
+			return fmt.Errorf("Error checking for atracker_route_instance (%s) has been destroyed: %s", rs.Primary.ID, err)
 		} else if response.StatusCode != 404 {
 			return fmt.Errorf("Error checking for atracker_route (%s) has been destroyed: %s", rs.Primary.ID, err)
 		}

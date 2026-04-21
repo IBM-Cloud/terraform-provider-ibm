@@ -1,4 +1,4 @@
-// Copyright IBM Corp. 2026 All Rights Reserved.
+// Copyright IBM Corp. 2025 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 package atracker_test
@@ -94,6 +94,7 @@ func testAccCheckIBMAtrackerSettingsConfigBasic(metadataRegionPrimary string,
 
 func testAccCheckIBMAtrackerSettingsConfig(metadataRegionPrimary string, metadataRegionBackup string, privateAPIEndpointOnly string) string {
 	return fmt.Sprintf(`
+
 		resource "ibm_atracker_target" "atracker_target_instance" {
 			name = "my-cos-target"
 			target_type = "cloud_object_storage"
