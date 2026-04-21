@@ -186,9 +186,9 @@ func testAccCheckIBMAtrackerRouteDestroy(s *terraform.State) error {
 		_, response, err := atrackerClient.GetRoute(getRouteOptions)
 
 		if err == nil {
-			return fmt.Errorf("Error checking for atracker_route_instance (%s) has been destroyed: %s", rs.Primary.ID, err)
+			return fmt.Errorf("atracker_route_instance still exists: %s", rs.Primary.ID)
 		} else if response.StatusCode != 404 {
-			return fmt.Errorf("Error checking for atracker_route (%s) has been destroyed: %s", rs.Primary.ID, err)
+			return fmt.Errorf("Error checking for atracker_route_instance (%s) has been destroyed: %s", rs.Primary.ID, err)
 		}
 	}
 
