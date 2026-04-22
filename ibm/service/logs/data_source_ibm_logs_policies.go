@@ -149,19 +149,10 @@ func DataSourceIbmLogsPolicies() *schema.Resource {
 							Computed:    true,
 							Description: "Updated at date at utc+0.",
 						},
-						"archive_retention": &schema.Schema{
-							Type:        schema.TypeList,
+						"archive_retention_tag": &schema.Schema{
+							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "Archive retention definition.",
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									"id": &schema.Schema{
-										Type:        schema.TypeString,
-										Computed:    true,
-										Description: "References archive retention definition.",
-									},
-								},
-							},
+							Description: "Archive retention tag name.",
 						},
 						"log_rules": &schema.Schema{
 							Type:        schema.TypeList,
@@ -284,12 +275,8 @@ func DataSourceIbmLogsPoliciesPolicyToMap(model logsv0.PolicyIntf) (map[string]i
 		}
 		modelMap["created_at"] = *model.CreatedAt
 		modelMap["updated_at"] = *model.UpdatedAt
-		if model.ArchiveRetention != nil {
-			archiveRetentionMap, err := DataSourceIbmLogsPoliciesQuotaV1ArchiveRetentionToMap(model.ArchiveRetention)
-			if err != nil {
-				return modelMap, err
-			}
-			modelMap["archive_retention"] = []map[string]interface{}{archiveRetentionMap}
+		if model.ArchiveRetentionTag != nil {
+			modelMap["archive_retention_tag"] = *model.ArchiveRetentionTag
 		}
 		if model.LogRules != nil {
 			logRulesMap, err := DataSourceIbmLogsPoliciesQuotaV1LogRulesToMap(model.LogRules)
@@ -317,12 +304,6 @@ func DataSourceIbmLogsPoliciesQuotaV1RuleToMap(model *logsv0.QuotaV1Rule) (map[s
 	modelMap := make(map[string]interface{})
 	modelMap["rule_type_id"] = *model.RuleTypeID
 	modelMap["name"] = *model.Name
-	return modelMap, nil
-}
-
-func DataSourceIbmLogsPoliciesQuotaV1ArchiveRetentionToMap(model *logsv0.QuotaV1ArchiveRetention) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	modelMap["id"] = model.ID.String()
 	return modelMap, nil
 }
 
@@ -373,12 +354,8 @@ func DataSourceIbmLogsPoliciesPolicyQuotaV1PolicySourceTypeRulesLogRulesToMap(mo
 	}
 	modelMap["created_at"] = *model.CreatedAt
 	modelMap["updated_at"] = *model.UpdatedAt
-	if model.ArchiveRetention != nil {
-		archiveRetentionMap, err := DataSourceIbmLogsPoliciesQuotaV1ArchiveRetentionToMap(model.ArchiveRetention)
-		if err != nil {
-			return modelMap, err
-		}
-		modelMap["archive_retention"] = []map[string]interface{}{archiveRetentionMap}
+	if model.ArchiveRetentionTag != nil {
+		modelMap["archive_retention_tag"] = *model.ArchiveRetentionTag
 	}
 	if model.LogRules != nil {
 		logRulesMap, err := DataSourceIbmLogsPoliciesQuotaV1LogRulesToMap(model.LogRules)

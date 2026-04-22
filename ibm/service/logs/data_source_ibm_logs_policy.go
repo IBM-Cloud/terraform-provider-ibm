@@ -133,19 +133,10 @@ func DataSourceIbmLogsPolicy() *schema.Resource {
 				Computed:    true,
 				Description: "Updated at date at utc+0.",
 			},
-			"archive_retention": &schema.Schema{
-				Type:        schema.TypeList,
+			"archive_retention_tag": &schema.Schema{
+				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "Archive retention definition.",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"id": &schema.Schema{
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "References archive retention definition.",
-						},
-					},
-				},
+				Description: "Archive retention tag name.",
 			},
 			"log_rules": &schema.Schema{
 				Type:        schema.TypeList,
@@ -274,15 +265,9 @@ func dataSourceIbmLogsPolicyRead(context context.Context, d *schema.ResourceData
 		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting updated_at: %s", err), "(Data) ibm_logs_policy", "read", "set-updated_at").GetDiag()
 	}
 
-	if !core.IsNil(policy.ArchiveRetention) {
-		archiveRetention := []map[string]interface{}{}
-		archiveRetentionMap, err := DataSourceIbmLogsPolicyQuotaV1ArchiveRetentionToMap(policy.ArchiveRetention)
-		if err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_logs_policy", "read", "archive_retention-to-map").GetDiag()
-		}
-		archiveRetention = append(archiveRetention, archiveRetentionMap)
-		if err = d.Set("archive_retention", archiveRetention); err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting archive_retention: %s", err), "(Data) ibm_logs_policy", "read", "set-archive_retention").GetDiag()
+	if !core.IsNil(policy.ArchiveRetentionTag) {
+		if err = d.Set("archive_retention_tag", policy.ArchiveRetentionTag); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting archive_retention_tag: %s", err), "(Data) ibm_logs_policy", "read", "set-archive_retention_tag").GetDiag()
 		}
 	}
 
@@ -314,12 +299,6 @@ func DataSourceIbmLogsPolicyQuotaV1RuleToMap(model *logsv0.QuotaV1Rule) (map[str
 	modelMap := make(map[string]interface{})
 	modelMap["rule_type_id"] = *model.RuleTypeID
 	modelMap["name"] = *model.Name
-	return modelMap, nil
-}
-
-func DataSourceIbmLogsPolicyQuotaV1ArchiveRetentionToMap(model *logsv0.QuotaV1ArchiveRetention) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	modelMap["id"] = model.ID.String()
 	return modelMap, nil
 }
 
