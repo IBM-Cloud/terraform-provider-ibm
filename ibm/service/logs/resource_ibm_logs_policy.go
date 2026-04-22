@@ -252,6 +252,9 @@ func resourceIbmLogsPolicyCreate(context context.Context, d *schema.ResourceData
 	if _, ok := d.GetOk("archive_retention"); ok {
 		bodyModelMap["archive_retention"] = d.Get("archive_retention")
 	}
+	if _, ok := d.GetOk("archive_retention_tag"); ok {
+		bodyModelMap["archive_retention_tag"] = d.Get("archive_retention_tag")
+	}
 	bodyModelMap["enabled"] = d.Get("enabled")
 
 	if _, ok := d.GetOk("log_rules"); ok {
@@ -456,6 +459,9 @@ func resourceIbmLogsPolicyUpdate(context context.Context, d *schema.ResourceData
 		}
 		if _, ok := d.GetOk("archive_retention"); ok {
 			bodyModelMap["archive_retention"] = d.Get("archive_retention")
+		}
+		if _, ok := d.GetOk("archive_retention_tag"); ok {
+			bodyModelMap["archive_retention_tag"] = d.Get("archive_retention_tag")
 		}
 		if _, ok := d.GetOk("log_rules"); ok {
 			bodyModelMap["log_rules"] = d.Get("log_rules")
