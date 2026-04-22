@@ -117,20 +117,12 @@ func ResourceIbmLogsPolicy() *schema.Resource {
 					},
 				},
 			},
-			"archive_retention": &schema.Schema{
-				Type:        schema.TypeList,
-				MaxItems:    1,
-				Optional:    true,
-				Description: "Archive retention definition.",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"id": &schema.Schema{
-							Type:        schema.TypeString,
-							Required:    true,
-							Description: "References archive retention definition.",
-						},
-					},
-				},
+			"archive_retention_tag": &schema.Schema{
+				Type:         schema.TypeString,
+				Optional:     true,
+				Computed:     true,
+				ValidateFunc: validate.InvokeValidator("ibm_logs_policy", "archive_retention_tag"),
+				Description:  "Archive retention tag. Required when retention tags are active. Cannot be set when retention tags are not active.",
 			},
 			"log_rules": &schema.Schema{
 				Type:        schema.TypeList,
@@ -209,6 +201,15 @@ func ResourceIbmLogsPolicyValidator() *validate.ResourceValidator {
 			Type:                       validate.TypeString,
 			Required:                   true,
 			AllowedValues:              "type_block, type_high, type_low, type_medium, type_unspecified",
+		},
+		validate.ValidateSchema{
+			Identifier:                 "archive_retention_tag",
+			ValidateFunctionIdentifier: validate.ValidateRegexpLen,
+			Type:                       validate.TypeString,
+			Optional:                   true,
+			Regexp:                     `^[a-zA-Z0-9_-]+$`,
+			MinValueLength:             1,
+			MaxValueLength:             255,
 		},
 	)
 
@@ -368,14 +369,9 @@ func resourceIbmLogsPolicyRead(context context.Context, d *schema.ResourceData, 
 			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_logs_policy", "read", "set-subsystem_rule").GetDiag()
 		}
 	}
-	if !core.IsNil(policy.ArchiveRetention) {
-		archiveRetentionMap, err := ResourceIbmLogsPolicyQuotaV1ArchiveRetentionToMap(policy.ArchiveRetention)
-		if err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_logs_policy", "read", "archive_retention-to-map").GetDiag()
-		}
-		if err = d.Set("archive_retention", []map[string]interface{}{archiveRetentionMap}); err != nil {
-			err = fmt.Errorf("Error setting archive_retention: %s", err)
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_logs_policy", "read", "set-archive_retention").GetDiag()
+	if !core.IsNil(policy.ArchiveRetentionTag) {
+		if err = d.Set("archive_retention_tag", policy.ArchiveRetentionTag); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting archive_retention_tag: %s", err), "ibm_logs_policy", "read", "set-archive_retention_tag").GetDiag()
 		}
 	}
 	if !core.IsNil(policy.LogRules) {
@@ -439,7 +435,7 @@ func resourceIbmLogsPolicyUpdate(context context.Context, d *schema.ResourceData
 		d.HasChange("priority") ||
 		d.HasChange("application_rule") ||
 		d.HasChange("subsystem_rule") ||
-		d.HasChange("archive_retention") ||
+		d.HasChange("archive_retention_tag") ||
 		d.HasChange("before") ||
 		d.HasChange("enabled") ||
 		d.HasChange("log_rules") {
@@ -532,12 +528,6 @@ func ResourceIbmLogsPolicyMapToQuotaV1Rule(modelMap map[string]interface{}) (*lo
 	return model, nil
 }
 
-func ResourceIbmLogsPolicyMapToQuotaV1ArchiveRetention(modelMap map[string]interface{}) (*logsv0.QuotaV1ArchiveRetention, error) {
-	model := &logsv0.QuotaV1ArchiveRetention{}
-	model.ID = core.UUIDPtr(strfmt.UUID(modelMap["id"].(string)))
-	return model, nil
-}
-
 func ResourceIbmLogsPolicyMapToQuotaV1LogRules(modelMap map[string]interface{}) (*logsv0.QuotaV1LogRules, error) {
 	model := &logsv0.QuotaV1LogRules{}
 	if modelMap["severities"] != nil {
@@ -578,12 +568,8 @@ func ResourceIbmLogsPolicyMapToPolicyPrototype(modelMap map[string]interface{}) 
 		}
 		model.SubsystemRule = SubsystemRuleModel
 	}
-	if modelMap["archive_retention"] != nil && len(modelMap["archive_retention"].([]interface{})) > 0 {
-		ArchiveRetentionModel, err := ResourceIbmLogsPolicyMapToQuotaV1ArchiveRetention(modelMap["archive_retention"].([]interface{})[0].(map[string]interface{}))
-		if err != nil {
-			return model, err
-		}
-		model.ArchiveRetention = ArchiveRetentionModel
+	if modelMap["archive_retention_tag"] != nil && modelMap["archive_retention_tag"].(string) != "" {
+		model.ArchiveRetentionTag = core.StringPtr(modelMap["archive_retention_tag"].(string))
 	}
 	if modelMap["enabled"] != nil {
 		model.Enabled = core.BoolPtr(modelMap["enabled"].(bool))
@@ -626,12 +612,8 @@ func ResourceIbmLogsPolicyMapToPolicyPrototypeQuotaV1CreatePolicyRequestSourceTy
 		}
 		model.SubsystemRule = SubsystemRuleModel
 	}
-	if modelMap["archive_retention"] != nil && len(modelMap["archive_retention"].([]interface{})) > 0 {
-		ArchiveRetentionModel, err := ResourceIbmLogsPolicyMapToQuotaV1ArchiveRetention(modelMap["archive_retention"].([]interface{})[0].(map[string]interface{}))
-		if err != nil {
-			return model, err
-		}
-		model.ArchiveRetention = ArchiveRetentionModel
+	if modelMap["archive_retention_tag"] != nil && modelMap["archive_retention_tag"].(string) != "" {
+		model.ArchiveRetentionTag = core.StringPtr(modelMap["archive_retention_tag"].(string))
 	}
 	if modelMap["enabled"] != nil {
 		model.Enabled = core.BoolPtr(modelMap["enabled"].(bool))
@@ -662,12 +644,6 @@ func ResourceIbmLogsPolicyQuotaV1RuleToMap(model *logsv0.QuotaV1Rule) (map[strin
 	modelMap := make(map[string]interface{})
 	modelMap["rule_type_id"] = *model.RuleTypeID
 	modelMap["name"] = *model.Name
-	return modelMap, nil
-}
-
-func ResourceIbmLogsPolicyQuotaV1ArchiveRetentionToMap(model *logsv0.QuotaV1ArchiveRetention) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	modelMap["id"] = model.ID.String()
 	return modelMap, nil
 }
 
