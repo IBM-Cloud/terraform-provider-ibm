@@ -457,6 +457,7 @@ func ResourceIBMCOSBucket() *schema.Resource {
 			"object_lock": {
 				Type:         schema.TypeBool,
 				Optional:     true,
+				Computed:     true,
 				RequiredWith: []string{"object_versioning"},
 				Description:  "Enable objectlock for the bucket. When enabled, buckets within the container vault can have Object Lock Configuration applied to the bucket.",
 			},
@@ -1373,11 +1374,15 @@ func resourceIBMCOSBucketRead(d *schema.ResourceData, meta interface{}) error {
 		Bucket: aws.String(bucketName),
 	}
 	output, err := s3Client.GetObjectLockConfiguration(getObjectLockConfigurationInput)
-	if output.ObjectLockConfiguration != nil {
+	if err == nil && output != nil && output.ObjectLockConfiguration != nil {
 		objectLockEnabled := *output.ObjectLockConfiguration.ObjectLockEnabled
 		if objectLockEnabled == "Enabled" {
 			d.Set("object_lock", true)
+		} else {
+			d.Set("object_lock", false)
 		}
+	} else {
+		d.Set("object_lock", false)
 	}
 	return nil
 }
@@ -1621,7 +1626,7 @@ func resourceIBMCOSBucketDelete(d *schema.ResourceData, meta interface{}) error 
 
 				// Delete everything including locked objects.
 				// Don't ignore any object errors or we could recurse infinitely.
-				err = deleteAllCOSObjectVersions(s3Client, bucketName, "", false, false)
+				err = deleteAllCOSObjectVersions(s3Client, bucketName, "", false, false, false)
 
 				if err != nil {
 					return fmt.Errorf("[ERROR] Error COS Bucket force_delete: %s", err)
