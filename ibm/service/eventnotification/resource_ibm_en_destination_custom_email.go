@@ -52,6 +52,12 @@ func ResourceIBMEnCustomEmailDestination() *schema.Resource {
 				Optional:    true,
 				Description: "Whether to collect the failed event in Cloud Object Storage bucket",
 			},
+			"is_sandbox": {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Default:     false,
+				Description: "Set to true to create a sandbox custom email destination. Once upgraded to production (is_sandbox=false), it cannot be downgraded back to sandbox.",
+			},
 			"verification_type": &schema.Schema{
 				Type:         schema.TypeString,
 				Optional:     true,
@@ -184,14 +190,27 @@ func resourceIBMEnCustomEmailDestinationCreate(context context.Context, d *schem
 	options.SetInstanceID(d.Get("instance_guid").(string))
 	options.SetName(d.Get("name").(string))
 
-	options.SetType(d.Get("type").(string))
+	// Determine destination type based on is_sandbox parameter
+	isSandbox := d.Get("is_sandbox").(bool)
+	if isSandbox {
+		options.SetType("smtp_custom_sandbox")
+		log.Printf("[DEBUG] Creating sandbox custom email destination")
+	} else {
+		options.SetType(d.Get("type").(string))
+		log.Printf("[DEBUG] Creating production custom email destination")
+	}
+
 	options.SetCollectFailedEvents(d.Get("collect_failed_events").(bool))
-	destinationtype := d.Get("type").(string)
+
 	if _, ok := d.GetOk("description"); ok {
 		options.SetDescription(d.Get("description").(string))
 	}
 	if _, ok := d.GetOk("config"); ok {
-		config := CustomEmaildestinationConfigMapToDestinationConfig(d.Get("config.0.params.0").(map[string]interface{}), destinationtype)
+		destinationType := options.Type
+		config, err := CustomEmailDestinationMapToDestinationConfig(d.Get("config.0").(map[string]interface{}), *destinationType)
+		if err != nil {
+			return diag.FromErr(err)
+		}
 		options.SetConfig(&config)
 	}
 
@@ -204,7 +223,7 @@ func resourceIBMEnCustomEmailDestinationCreate(context context.Context, d *schem
 
 	d.SetId(fmt.Sprintf("%s/%s", *options.InstanceID, *result.ID))
 
-	return resourceIBMEnServiceNowDestinationRead(context, d, meta)
+	return resourceIBMEnCustomEmailDestinationRead(context, d, meta)
 }
 
 func resourceIBMEnCustomEmailDestinationRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -257,6 +276,15 @@ func resourceIBMEnCustomEmailDestinationRead(context context.Context, d *schema.
 		return diag.FromErr(fmt.Errorf("[ERROR] Error setting CollectFailedEvents: %s", err))
 	}
 
+	// Set is_sandbox based on destination type
+	isSandbox := false
+	if result.Type != nil && *result.Type == "smtp_custom_sandbox" {
+		isSandbox = true
+	}
+	if err = d.Set("is_sandbox", isSandbox); err != nil {
+		return diag.FromErr(fmt.Errorf("[ERROR] Error setting is_sandbox: %s", err))
+	}
+
 	if err = d.Set("description", result.Description); err != nil {
 		return diag.FromErr(fmt.Errorf("[ERROR] Error setting description: %s", err))
 	}
@@ -291,63 +319,172 @@ func resourceIBMEnCustomEmailDestinationUpdate(context context.Context, d *schem
 		return tfErr.GetDiag()
 	}
 
-	options := &en.UpdateDestinationOptions{}
-	verifyCustomEmailDestinationConfiguration := &en.UpdateVerifyDestinationOptions{}
-
 	parts, err := flex.SepIdParts(d.Id(), "/")
 	if err != nil {
 		tfErr := flex.TerraformErrorf(err, err.Error(), "ibm_en_destination_custom_email", "update")
 		return tfErr.GetDiag()
 	}
 
-	options.SetInstanceID(parts[0])
-	options.SetID(parts[1])
+	// Check if is_sandbox is being changed
+	if d.HasChange("is_sandbox") {
+		oldVal, newVal := d.GetChange("is_sandbox")
+		oldSandbox := oldVal.(bool)
+		newSandbox := newVal.(bool)
 
-	verifyCustomEmailDestinationConfiguration.SetInstanceID(parts[0])
-	verifyCustomEmailDestinationConfiguration.SetID(parts[1])
-	hasChangeverification := false
-
-	verifyCustomEmailDestinationConfiguration.SetType(d.Get("verification_type").(string))
-
-	if ok := d.HasChanges("name", "description", "collect_failed_events", "config"); ok {
-		options.SetName(d.Get("name").(string))
-
-		if _, ok := d.GetOk("description"); ok {
-			options.SetDescription(d.Get("description").(string))
+		// Prevent downgrade from production to sandbox
+		if !oldSandbox && newSandbox {
+			return diag.FromErr(fmt.Errorf("[ERROR] Cannot downgrade from production (is_sandbox=false) to sandbox (is_sandbox=true). Once upgraded to production, the destination cannot be converted back to sandbox"))
 		}
 
-		if _, ok := d.GetOk("collect_failed_events"); ok {
-			options.SetCollectFailedEvents(d.Get("collect_failed_events").(bool))
+		// Upgrade from sandbox to production
+		if oldSandbox && !newSandbox {
+			log.Printf("[DEBUG] Upgrading sandbox destination to production")
+
+			// Get the domain from config
+			if _, ok := d.GetOk("config"); !ok {
+				return diag.FromErr(fmt.Errorf("[ERROR] Config with domain is required to upgrade sandbox destination to production"))
+			}
+
+			configMap := d.Get("config.0").(map[string]interface{})
+			if configMap["params"] == nil || len(configMap["params"].([]interface{})) == 0 {
+				return diag.FromErr(fmt.Errorf("[ERROR] Config params with domain is required to upgrade sandbox destination"))
+			}
+
+			paramsMap := configMap["params"].([]interface{})[0].(map[string]interface{})
+			domain, ok := paramsMap["domain"].(string)
+			if !ok || domain == "" {
+				return diag.FromErr(fmt.Errorf("[ERROR] Domain is required to upgrade sandbox destination to production"))
+			}
+
+			upgradeOptions := &en.UpdateEmailSandboxDestinationOptions{}
+			upgradeOptions.SetInstanceID(parts[0])
+			upgradeOptions.SetID(parts[1])
+			upgradeOptions.SetDomain(domain)
+
+			log.Printf("[DEBUG] Calling UpdateSandboxDestination to upgrade with domain: %s", domain)
+			_, response, err := enClient.UpdateEmailSandboxDestinationWithContext(context, upgradeOptions)
+			if err != nil {
+				log.Printf("[DEBUG] UpdateSandboxDestination failed. Response: %v", response)
+				tfErr := flex.TerraformErrorf(err, fmt.Sprintf("UpdateSandboxDestination failed: %s", err.Error()), "ibm_en_destination_custom_email", "update")
+				log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+				return tfErr.GetDiag()
+			}
+			log.Printf("[DEBUG] Successfully upgraded sandbox destination to production")
+
+			// After upgrade, continue with normal update flow for other fields
+		}
+	}
+
+	// Normal update flow for non-sandbox destinations or after upgrade
+	updateDestinationOptions := &en.UpdateDestinationOptions{}
+	updateDestinationOptions.SetInstanceID(parts[0])
+	updateDestinationOptions.SetID(parts[1])
+
+	hasChange := false
+
+	if d.HasChange("name") {
+		newName := d.Get("name").(string)
+		log.Printf("[DEBUG] Updating name to: %s", newName)
+		updateDestinationOptions.SetName(newName)
+		hasChange = true
+	}
+	if d.HasChange("description") {
+		newDesc := d.Get("description").(string)
+		log.Printf("[DEBUG] Updating description to: %s", newDesc)
+		updateDestinationOptions.SetDescription(newDesc)
+		hasChange = true
+	}
+	if d.HasChange("collect_failed_events") {
+		newCollect := d.Get("collect_failed_events").(bool)
+		log.Printf("[DEBUG] Updating collect_failed_events to: %v", newCollect)
+		updateDestinationOptions.SetCollectFailedEvents(newCollect)
+		hasChange = true
+	}
+	// Always check and send config if it exists, not just on change
+	// This ensures domain updates are properly sent to the API
+	if _, ok := d.GetOk("config"); ok {
+		configChanged := d.HasChange("config")
+		log.Printf("[DEBUG] Config exists, changed: %v", configChanged)
+
+		// Determine current destination type
+		currentType := d.Get("type").(string)
+		isSandbox := d.Get("is_sandbox").(bool)
+		if isSandbox {
+			currentType = "smtp_custom_sandbox"
 		}
 
-		destinationtype := d.Get("type").(string)
+		log.Printf("[DEBUG] Current destination type: %s", currentType)
 
-		if d.HasChange("verification_type") {
-			verifyCustomEmailDestinationConfiguration.SetType(d.Get("verification_type").(string))
-			hasChangeverification = true
+		configData := d.Get("config.0")
+		log.Printf("[DEBUG] Config data from state: %+v", configData)
+
+		if configData != nil {
+			config, err := CustomEmailDestinationMapToDestinationConfig(configData.(map[string]interface{}), currentType)
+			if err != nil {
+				log.Printf("[DEBUG] Error mapping config: %s", err.Error())
+				return diag.FromErr(err)
+			}
+
+			// Log the config details
+			if config.Params != nil {
+				switch params := config.Params.(type) {
+				case *en.DestinationConfigOneOfCustomDomainEmailDestinationConfig:
+					if params.Domain != nil {
+						log.Printf("[DEBUG] Setting config with domain: %s", *params.Domain)
+						// Only set config if domain is actually present
+						updateDestinationOptions.SetConfig(&config)
+						hasChange = true
+					} else {
+						log.Printf("[DEBUG] No domain found in custom domain config")
+					}
+				case *en.DestinationConfigOneOfCustomEmailSandboxDestinationConfig:
+					if params.Domain != nil {
+						log.Printf("[DEBUG] Setting sandbox config with domain: %s", *params.Domain)
+						updateDestinationOptions.SetConfig(&config)
+						hasChange = true
+					} else {
+						log.Printf("[DEBUG] No domain found in sandbox config")
+					}
+				default:
+					log.Printf("[DEBUG] Unknown config params type: %T", params)
+				}
+			} else {
+				log.Printf("[DEBUG] Config.Params is nil")
+			}
 		}
-		if _, ok := d.GetOk("config"); ok {
-			config := CustomEmaildestinationConfigMapToDestinationConfig(d.Get("config.0.params.0").(map[string]interface{}), destinationtype)
-			options.SetConfig(&config)
-		}
-		_, _, err := enClient.UpdateDestinationWithContext(context, options)
+	}
+
+	if hasChange {
+		log.Printf("[DEBUG] Calling UpdateDestinationWithContext for instance: %s, destination: %s", parts[0], parts[1])
+		_, response, err := enClient.UpdateDestinationWithContext(context, updateDestinationOptions)
 		if err != nil {
+			log.Printf("[DEBUG] UpdateDestinationWithContext failed. Response: %v", response)
 			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("UpdateDestinationWithContext failed: %s", err.Error()), "ibm_en_destination_custom_email", "update")
 			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 			return tfErr.GetDiag()
 		}
-
-		if hasChangeverification {
-			_, _, err = enClient.UpdateVerifyDestinationWithContext(context, verifyCustomEmailDestinationConfiguration)
-			if err != nil {
-				return diag.FromErr(err)
-			}
-		}
-
-		return resourceIBMEnCustomEmailDestinationRead(context, d, meta)
+		log.Printf("[DEBUG] UpdateDestinationWithContext succeeded")
 	}
 
-	return nil
+	// Check if verification type needs to be updated
+	if d.HasChange("verification_type") {
+		log.Printf("[DEBUG] Verification type has changed")
+		verifyOptions := &en.UpdateVerifyDestinationOptions{}
+		verifyOptions.SetInstanceID(parts[0])
+		verifyOptions.SetID(parts[1])
+		verifyOptions.SetType(d.Get("verification_type").(string))
+
+		_, _, err = enClient.UpdateVerifyDestinationWithContext(context, verifyOptions)
+		if err != nil {
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("UpdateVerifyDestinationWithContext failed: %s", err.Error()), "ibm_en_destination_custom_email", "update")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
+		}
+		log.Printf("[DEBUG] UpdateVerifyDestinationWithContext succeeded")
+	}
+
+	log.Printf("[DEBUG] Calling Read to refresh state")
+	return resourceIBMEnCustomEmailDestinationRead(context, d, meta)
 }
 
 func resourceIBMEnCustomEmailDestinationDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -385,50 +522,34 @@ func resourceIBMEnCustomEmailDestinationDelete(context context.Context, d *schem
 	return nil
 }
 
-func CustomEmaildestinationConfigMapToDestinationConfig(configParams map[string]interface{}, destinationtype string) en.DestinationConfig {
-	params := new(en.DestinationConfigOneOfCustomDomainEmailDestinationConfig)
-	if configParams["domain"] != nil {
-		params.Domain = core.StringPtr(configParams["domain"].(string))
+func CustomEmailDestinationMapToDestinationConfig(configMap map[string]interface{}, destinationType string) (en.DestinationConfig, error) {
+	destinationConfig := en.DestinationConfig{}
+
+	if configMap["params"] != nil && len(configMap["params"].([]interface{})) > 0 {
+		paramsMap := configMap["params"].([]interface{})[0].(map[string]interface{})
+
+		// Check destination type to determine which config struct to use
+		if destinationType == "smtp_custom" {
+			params := &en.DestinationConfigOneOfCustomDomainEmailDestinationConfig{}
+
+			// Only send domain - DKIM and SPF are computed fields returned by the API
+			if paramsMap["domain"] != nil && paramsMap["domain"].(string) != "" {
+				params.Domain = core.StringPtr(paramsMap["domain"].(string))
+			}
+
+			destinationConfig.Params = params
+		} else if destinationType == "smtp_custom_sandbox" {
+			// Handle sandbox destination
+			params := &en.DestinationConfigOneOfCustomEmailSandboxDestinationConfig{}
+
+			// Only send domain - DKIM and SPF are computed fields returned by the API
+			if paramsMap["domain"] != nil && paramsMap["domain"].(string) != "" {
+				params.Domain = core.StringPtr(paramsMap["domain"].(string))
+			}
+
+			destinationConfig.Params = params
+		}
 	}
 
-	if configParams["dkim"] != nil && len(configParams["dkim"].([]interface{})) > 0 {
-		DkimModel, _ := resourceIBMEnDestinationMapToDkimAttributes(configParams["dkim"].([]interface{})[0].(map[string]interface{}))
-		params.Dkim = &DkimModel
-	}
-	if configParams["spf"] != nil && len(configParams["spf"].([]interface{})) > 0 {
-		SpfModel, _ := resourceIBMEnDestinationMapToSpfAttributes(configParams["spf"].([]interface{})[0].(map[string]interface{}))
-		params.Spf = &SpfModel
-	}
-
-	destinationConfig := new(en.DestinationConfig)
-	destinationConfig.Params = params
-	return *destinationConfig
-}
-
-func resourceIBMEnDestinationMapToDkimAttributes(modelMap map[string]interface{}) (en.DkimAttributes, error) {
-	model := new(en.DkimAttributes)
-	if modelMap["public_key"] != nil && modelMap["public_key"].(string) != "" {
-		model.PublicKey = core.StringPtr(modelMap["public_key"].(string))
-	}
-	if modelMap["selector"] != nil && modelMap["selector"].(string) != "" {
-		model.Selector = core.StringPtr(modelMap["selector"].(string))
-	}
-	if modelMap["verification"] != nil && modelMap["verification"].(string) != "" {
-		model.Verification = core.StringPtr(modelMap["verification"].(string))
-	}
-	return *model, nil
-}
-
-func resourceIBMEnDestinationMapToSpfAttributes(modelMap map[string]interface{}) (en.SpfAttributes, error) {
-	model := new(en.SpfAttributes)
-	if modelMap["txt_name"] != nil && modelMap["txt_name"].(string) != "" {
-		model.TxtName = core.StringPtr(modelMap["txt_name"].(string))
-	}
-	if modelMap["txt_value"] != nil && modelMap["txt_value"].(string) != "" {
-		model.TxtValue = core.StringPtr(modelMap["txt_value"].(string))
-	}
-	if modelMap["verification"] != nil && modelMap["verification"].(string) != "" {
-		model.Verification = core.StringPtr(modelMap["verification"].(string))
-	}
-	return *model, nil
+	return destinationConfig, nil
 }
