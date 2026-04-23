@@ -55,7 +55,7 @@ func ResourceIBMPhaAPIKey() *schema.Resource {
 				Optional:         true,
 				ForceNew:         true,
 				Sensitive:        true,
-				DiffSuppressFunc: flex.ApplyOnce,
+				// DiffSuppressFunc: flex.ApplyOnce,
 				ValidateFunc:     validate.InvokeValidator("ibm_pha_api_key", "api_key"),
 				Description:      "The API key associated with the request.",
 			},
@@ -63,6 +63,11 @@ func ResourceIBMPhaAPIKey() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "Unique identifier for the API key record.",
+			},
+			"status": &schema.Schema{
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Status of the API key retrieval request",
 			},
 			"etag": &schema.Schema{
 				Type:     schema.TypeString,
@@ -134,9 +139,6 @@ func resourceIBMPhaAPIKeyCreate(context context.Context, d *schema.ResourceData,
 	if _, ok := d.GetOk("accept_language"); ok {
 		createAPIKeyOptions.SetAcceptLanguage(d.Get("accept_language").(string))
 	}
-	if _, ok := d.GetOk("if_none_match"); ok {
-		createAPIKeyOptions.SetIfNoneMatch(d.Get("if_none_match").(string))
-	}
 
 	_, response, err := powerhaAutomationServiceClient.CreateAPIKeyWithContext(context, createAPIKeyOptions)
 	if err != nil {
@@ -198,10 +200,10 @@ func resourceIBMPhaAPIKeyRead(context context.Context, d *schema.ResourceData, m
 		return tfErr.GetDiag()
 	}
 
-	if !core.IsNil(apiKeyResponse.APIKey) {
-		if err = d.Set("api_key", apiKeyResponse.APIKey); err != nil {
+	if !core.IsNil(apiKeyResponse.Status) {
+		if err = d.Set("status", apiKeyResponse.Status); err != nil {
 			err = fmt.Errorf("Error setting api_key: %s", err)
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_pha_api_key", "read", "set-api_key").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_pha_api_key", "read", "set-status").GetDiag()
 		}
 	}
 	if !core.IsNil(apiKeyResponse.ID) {

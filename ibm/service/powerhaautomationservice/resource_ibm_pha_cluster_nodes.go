@@ -50,14 +50,12 @@ func ResourceIBMPhaClusterNodes() *schema.Resource {
 			"accept_language": &schema.Schema{
 				Type:         schema.TypeString,
 				Optional:     true,
-				ForceNew:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_pha_cluster_nodes", "accept_language"),
 				Description:  "The language requested for the return document.",
 			},
 			"if_none_match": &schema.Schema{
 				Type:         schema.TypeString,
 				Optional:     true,
-				ForceNew:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_pha_cluster_nodes", "if_none_match"),
 				Description:  "ETag for conditional requests (optional).",
 			},
@@ -533,7 +531,6 @@ func resourceIBMPhaClusterNodesUpdate(ctx context.Context, d *schema.ResourceDat
 	//  2. ADD new VMs
 	// -------------------------
 	added := newSet.Difference(oldSet)
-
 	if added.Len() > 0 {
 		var vmIDs []string
 

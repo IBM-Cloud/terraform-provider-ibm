@@ -16,29 +16,29 @@ import (
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 )
 
-func TestAccIBMPhaGetLastOperationDataSourceBasic(t *testing.T) {
+func TestAccIBMPhaLastOperationDataSourceBasic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheck(t) },
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIBMPhaGetLastOperationDataSourceConfigBasic(),
+				Config: testAccCheckIBMPhaLastOperationDataSourceConfigBasic(),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet("data.ibm_pha_get_last_operation.pha_get_last_operation_instance", "id"),
-					resource.TestCheckResourceAttrSet("data.ibm_pha_get_last_operation.pha_get_last_operation_instance", "pha_instance_id"),
-					resource.TestCheckResourceAttrSet("data.ibm_pha_get_last_operation.pha_get_last_operation_instance", "deployment_name"),
-					resource.TestCheckResourceAttrSet("data.ibm_pha_get_last_operation.pha_get_last_operation_instance", "provision_id"),
-					resource.TestCheckResourceAttrSet("data.ibm_pha_get_last_operation.pha_get_last_operation_instance", "resource_group"),
-					resource.TestCheckResourceAttrSet("data.ibm_pha_get_last_operation.pha_get_last_operation_instance", "status"),
+					resource.TestCheckResourceAttrSet("data.ibm_pha_last_operation.pha_last_operation_instance", "id"),
+					resource.TestCheckResourceAttrSet("data.ibm_pha_last_operation.pha_last_operation_instance", "pha_instance_id"),
+					resource.TestCheckResourceAttrSet("data.ibm_pha_last_operation.pha_last_operation_instance", "deployment_name"),
+					resource.TestCheckResourceAttrSet("data.ibm_pha_last_operation.pha_last_operation_instance", "provision_id"),
+					resource.TestCheckResourceAttrSet("data.ibm_pha_last_operation.pha_last_operation_instance", "resource_group"),
+					resource.TestCheckResourceAttrSet("data.ibm_pha_last_operation.pha_last_operation_instance", "status"),
 				),
 			},
 		},
 	})
 }
 
-func testAccCheckIBMPhaGetLastOperationDataSourceConfigBasic() string {
+func testAccCheckIBMPhaLastOperationDataSourceConfigBasic() string {
 	return fmt.Sprintf(`
-		data "ibm_pha_get_last_operation" "pha_get_last_operation_instance" {
+		data "ibm_pha_last_operation" "pha_last_operation_instance" {
 			pha_instance_id = "8ce2a099-a463-479a-9a1d-eedc19287a62"
 		}
 	`)

@@ -68,7 +68,7 @@ func DataSourceIBMPdrLastOperation() *schema.Resource {
 				Computed:    true,
 				Description: "Status of standby node addition to the orchestrator cluster.",
 			},
-			"orch_standby_node_addtion_status": &schema.Schema{
+			"orch_standby_node_addition_status": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The status of standby node in the Orchestrator cluster.",
@@ -148,6 +148,11 @@ func DataSourceIBMPdrLastOperation() *schema.Resource {
 				Computed:    true,
 				Description: "The current state of the primary orchestrator.",
 			},
+			"is_api_key_expired": {
+				Type:        schema.TypeBool,
+				Computed:    true,
+				Description: "Indicates whether the API key used for the deployment is expired.",
+			},
 		},
 	}
 }
@@ -210,8 +215,8 @@ func dataSourceIBMPdrLastOperationRead(context context.Context, d *schema.Resour
 		}
 	}
 
-	if err = d.Set("orch_standby_node_addtion_status", serviceInstanceStatus.OrchStandbyNodeAddtionStatus); err != nil {
-		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting orch_standby_node_addtion_status: %s", err), "(Data) ibm_pdr_last_operation", "read", "set-orch_standby_node_addtion_status").GetDiag()
+	if err = d.Set("orch_standby_node_addition_status", serviceInstanceStatus.OrchStandbyNodeAdditionStatus); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting orch_standby_node_addition_status: %s", err), "(Data) ibm_pdr_last_operation", "read", "set-orch_standby_node_addition_status").GetDiag()
 	}
 
 	if err = d.Set("orchestrator_cluster_message", serviceInstanceStatus.OrchestratorClusterMessage); err != nil {
@@ -276,6 +281,9 @@ func dataSourceIBMPdrLastOperationRead(context context.Context, d *schema.Resour
 
 	if err = d.Set("status", serviceInstanceStatus.Status); err != nil {
 		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting status: %s", err), "(Data) ibm_pdr_last_operation", "read", "set-status").GetDiag()
+	}
+	if err = d.Set("is_api_key_expired", serviceInstanceStatus.IsAPIKeyExpired); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting status: %s", err), "(Data) ibm_pdr_last_operation", "read", "set-is_api_key_expired").GetDiag()
 	}
 
 	return nil

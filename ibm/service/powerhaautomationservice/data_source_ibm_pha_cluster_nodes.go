@@ -178,10 +178,19 @@ func dataSourceIBMPhaClusterNodesRead(context context.Context, d *schema.Resourc
 		getClusterNodeOptions.SetIfNoneMatch(d.Get("if_none_match").(string))
 	}
 
-	clusterNodeResponse, _, err := powerhaAutomationServiceClient.GetClusterNodeWithContext(context, getClusterNodeOptions)
+    clusterNodeResponse, response, err := powerhaAutomationServiceClient.GetClusterNodeWithContext(context, getClusterNodeOptions)
 	if err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetClusterNodeWithContext failed: %s", err.Error()), "(Data) ibm_pha_cluster_nodes", "read")
-		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		detailedMsg := fmt.Sprintf("GetClusterNodeWithContext failed: %s", err.Error())
+
+		if response != nil {
+			detailedMsg = fmt.Sprintf(
+				"GetClusterNodeWithContext failed: %s (status: %d, response: %s)",
+				err.Error(), response.StatusCode, response.Result,
+			)
+		}
+
+		tfErr := flex.TerraformErrorf(err, detailedMsg, "ibm_pha_cluster_nodes", "read")
+		log.Printf("[ERROR] %s", detailedMsg)
 		return tfErr.GetDiag()
 	}
 

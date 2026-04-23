@@ -43,7 +43,6 @@ func ResourceIBMPhaDeployment() *schema.Resource {
 			"accept_language": &schema.Schema{
 				Type:             schema.TypeString,
 				Optional:         true,
-				ForceNew:         true,
 				DiffSuppressFunc: flex.ApplyOnce,
 				ValidateFunc:     validate.InvokeValidator("ibm_pha_deployment", "accept_language"),
 				Description:      "The language requested for the return document.",
@@ -51,7 +50,6 @@ func ResourceIBMPhaDeployment() *schema.Resource {
 			"if_none_match": &schema.Schema{
 				Type:             schema.TypeString,
 				Optional:         true,
-				ForceNew:         true,
 				DiffSuppressFunc: flex.ApplyOnce,
 				ValidateFunc:     validate.InvokeValidator("ibm_pha_deployment", "if_none_match"),
 				Description:      "ETag for conditional requests (optional).",
@@ -59,23 +57,20 @@ func ResourceIBMPhaDeployment() *schema.Resource {
 			"cluster_type": {
 				Type:         schema.TypeString,
 				Optional:     true,
-				ForceNew:     true,
 				Description:  "Type of PowerHA cluster being deployed.",
 				ValidateFunc: validation.StringMatch(regexp.MustCompile(`^[a-zA-Z0-9._:-]+$`), "invalid format"),
 			},
 			"api_key": {
-				Type:             schema.TypeString,
-				Optional:         true,
-				ForceNew:         true,
-				Sensitive:        true,
-				DiffSuppressFunc: flex.ApplyOnce,
-				Description:      "The API key associated with the request.",
-				ValidateFunc:     validation.StringMatch(regexp.MustCompile(`^[a-zA-Z0-9._:-]+$`), "invalid format"),
+				Type:      schema.TypeString,
+				Optional:  true,
+				Sensitive: true,
+				// DiffSuppressFunc: flex.ApplyOnce,
+				Description:  "The API key associated with the request.",
+				ValidateFunc: validation.StringMatch(regexp.MustCompile(`^[a-zA-Z0-9._:-]+$`), "invalid format"),
 			},
 			"configure_type": {
 				Type:         schema.TypeString,
 				Optional:     true,
-				ForceNew:     true,
 				Description:  "Configuration type for the deployment.",
 				ValidateFunc: validation.StringMatch(regexp.MustCompile(`^[a-zA-Z0-9._:-]+$`), "invalid format"),
 			},
@@ -164,7 +159,6 @@ func ResourceIBMPhaDeployment() *schema.Resource {
 			"standby_cluster_nodes": {
 				Type:        schema.TypeList,
 				Optional:    true,
-				ForceNew:    true,
 				Description: "List of standby cluster node VM IDs.",
 				MaxItems:    50,
 				Elem: &schema.Schema{
@@ -189,14 +183,12 @@ func ResourceIBMPhaDeployment() *schema.Resource {
 			"secondary_location": &schema.Schema{
 				Type:         schema.TypeString,
 				Optional:     true,
-				ForceNew:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_pha_deployment", "secondary_location"),
 				Description:  "Secondary cluster location.",
 			},
 			"secondary_workspace": &schema.Schema{
 				Type:         schema.TypeString,
 				Optional:     true,
-				ForceNew:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_pha_deployment", "secondary_workspace"),
 				Description:  "Secondary workspace identifier.",
 			},
@@ -711,12 +703,6 @@ func resourceIBMPhaDeploymentRead(context context.Context, d *schema.ResourceDat
 		if err = d.Set("secondary_workspace", phaDeploymentResponse.SecondaryWorkspace); err != nil {
 			err = fmt.Errorf("Error setting secondary_workspace: %s", err)
 			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_pha_deployment", "read", "set-secondary_workspace").GetDiag()
-		}
-	}
-	if !core.IsNil(phaDeploymentResponse.APIKey) {
-		if err = d.Set("apikey", phaDeploymentResponse.APIKey); err != nil {
-			err = fmt.Errorf("Error setting api_key: %s", err)
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_pha_deployment", "read", "set-api_key").GetDiag()
 		}
 	}
 	if !core.IsNil(phaDeploymentResponse.CloudAccountID) {

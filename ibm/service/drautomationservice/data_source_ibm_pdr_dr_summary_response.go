@@ -64,11 +64,6 @@ func dataSourceIBMPdrDrSummaryResponseCommon() *schema.Resource {
 							Computed:    true,
 							Description: "The deployment time of primary orchestrator VM.",
 						},
-						"api_key": &schema.Schema{
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "api key.",
-						},
 						"last_updated_standby_orchestrator_deployment_time": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
@@ -422,7 +417,6 @@ func DataSourceIBMPdrGetDrSummaryResponseOrchestratorDetailsToMap(model *drautom
 	if model.LatestOrchestratorTime != nil {
 		modelMap["latest_orchestrator_time"] = model.LatestOrchestratorTime.String()
 	}
-	modelMap["api_key"] = *model.APIKey
 	modelMap["location_id"] = *model.LocationID
 	modelMap["mfa_enabled"] = *model.MfaEnabled
 	modelMap["orch_ext_connectivity_status"] = *model.OrchExtConnectivityStatus

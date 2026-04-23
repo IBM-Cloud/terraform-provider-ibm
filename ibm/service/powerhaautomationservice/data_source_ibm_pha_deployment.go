@@ -331,13 +331,21 @@ func dataSourceIBMPhaDeploymentRead(context context.Context, d *schema.ResourceD
 		getPhaDeploymentOptions.SetIfNoneMatch(d.Get("if_none_match").(string))
 	}
 
-	phaDeploymentResponse, _, err := powerhaAutomationServiceClient.GetPhaDeploymentWithContext(context, getPhaDeploymentOptions)
+	phaDeploymentResponse, response, err := powerhaAutomationServiceClient.GetPhaDeploymentWithContext(context, getPhaDeploymentOptions)
 	if err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetPhaDeploymentWithContext failed: %s", err.Error()), "(Data) ibm_pha_deployment", "read")
-		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		detailedMsg := fmt.Sprintf("GetPhaDeploymentWithContext failed: %s", err.Error())
+
+		if response != nil {
+			detailedMsg = fmt.Sprintf(
+				"GetPhaDeploymentWithContext failed: %s (status: %d, response: %s)",
+				err.Error(), response.StatusCode, response.Result,
+			)
+		}
+
+		tfErr := flex.TerraformErrorf(err, detailedMsg, "ibm_pha_deployment", "read")
+		log.Printf("[ERROR] %s", detailedMsg)
 		return tfErr.GetDiag()
 	}
-
 	d.SetId(*getPhaDeploymentOptions.PhaInstanceID)
 
 	if !core.IsNil(phaDeploymentResponse.CloudAccountID) {

@@ -3,7 +3,7 @@
 
 /*
  * IBM OpenAPI Terraform Generator Version: 3.113.1-d76630af-20260320-135953
-*/
+ */
 
 package powerhaautomationservice_test
 
@@ -13,34 +13,35 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 
+	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/powerhaautomationservice"
 	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/stretchr/testify/assert"
 	"github.ibm.com/DRAutomation/dra-go-sdk/powerhaautomationservicev1"
-	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 )
 
-func TestAccIBMPhaGetSupportedLocationDataSourceBasic(t *testing.T) {
+func TestAccIBMPhaSupportedLocationDataSourceBasic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheck(t) },
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIBMPhaGetSupportedLocationDataSourceConfigBasic(),
+				Config: testAccCheckIBMPhaSupportedLocationDataSourceConfigBasic(),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet("data.ibm_pha_get_supported_location.pha_get_supported_location_instance", "id"),
-					resource.TestCheckResourceAttrSet("data.ibm_pha_get_supported_location.pha_get_supported_location_instance", "instance_id"),
-					resource.TestCheckResourceAttrSet("data.ibm_pha_get_supported_location.pha_get_supported_location_instance", "locations.#"),
+					resource.TestCheckResourceAttrSet("data.ibm_pha_supported_location.pha_supported_location_instance", "id"),
+					resource.TestCheckResourceAttrSet("data.ibm_pha_supported_location.pha_supported_location_instance", "instance_id"),
+					resource.TestCheckResourceAttrSet("data.ibm_pha_supported_location.pha_supported_location_instance", "locations.#"),
 				),
 			},
 		},
 	})
 }
 
-func testAccCheckIBMPhaGetSupportedLocationDataSourceConfigBasic() string {
+func testAccCheckIBMPhaSupportedLocationDataSourceConfigBasic() string {
 	return fmt.Sprintf(`
-		data "ibm_pha_get_supported_location" "pha_get_supported_location_instance" {
+		data "ibm_pha_supported_location" "pha_supported_location_instance" {
 			instance_id = "8eefautr-4c02-0009-0086-8bd4d8cf61b6"
+			If-None-Match = "abcdef"
 		}
 	`)
 }

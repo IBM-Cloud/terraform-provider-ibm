@@ -26,21 +26,21 @@ func TestAccIBMPhaGetPowervsWorkspaceDataSourceBasic(t *testing.T) {
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIBMPhaGetPowervsWorkspaceDataSourceConfigBasic(),
+				Config: testAccCheckIBMPhaPowervsWorkspaceDataSourceConfigBasic(),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet("data.ibm_pha_get_powervs_workspace.pha_get_powervs_workspace_instance", "id"),
-					resource.TestCheckResourceAttrSet("data.ibm_pha_get_powervs_workspace.pha_get_powervs_workspace_instance", "pha_instance_id"),
-					resource.TestCheckResourceAttrSet("data.ibm_pha_get_powervs_workspace.pha_get_powervs_workspace_instance", "location_id"),
-					resource.TestCheckResourceAttrSet("data.ibm_pha_get_powervs_workspace.pha_get_powervs_workspace_instance", "workspaces.#"),
+					resource.TestCheckResourceAttrSet("data.ibm_pha_powervs_workspace.pha_powervs_workspace_instance", "id"),
+					resource.TestCheckResourceAttrSet("data.ibm_pha_powervs_workspace.pha_powervs_workspace_instance", "pha_instance_id"),
+					resource.TestCheckResourceAttrSet("data.ibm_pha_powervs_workspace.pha_powervs_workspace_instance", "location_id"),
+					resource.TestCheckResourceAttrSet("data.ibm_pha_powervs_workspace.pha_powervs_workspace_instance", "workspaces.#"),
 				),
 			},
 		},
 	})
 }
 
-func testAccCheckIBMPhaGetPowervsWorkspaceDataSourceConfigBasic() string {
+func testAccCheckIBMPhaPowervsWorkspaceDataSourceConfigBasic() string {
 	return fmt.Sprintf(`
-		data "ibm_pha_get_powervs_workspace" "pha_get_powervs_workspace_instance" {
+		data "ibm_pha_powervs_workspace" "pha_powervs_workspace_instance" {
 			instance_id = "8eefautr-4c02-0009-0086-8bd4d8cf61b6"
 			location_id = "us-south"
 			Accept-Language = "en-US"

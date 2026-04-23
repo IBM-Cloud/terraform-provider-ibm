@@ -21,9 +21,9 @@ import (
 	"github.ibm.com/DRAutomation/dra-go-sdk/powerhaautomationservicev1"
 )
 
-func DataSourceIBMPhaGetLastOperation() *schema.Resource {
+func DataSourceIBMPhaLastOperation() *schema.Resource {
 	return &schema.Resource{
-		ReadContext: dataSourceIBMPhaGetLastOperationRead,
+		ReadContext: dataSourceIBMPhaLastOperationRead,
 
 		Schema: map[string]*schema.Schema{
 			"instance_id": &schema.Schema{
@@ -65,10 +65,10 @@ func DataSourceIBMPhaGetLastOperation() *schema.Resource {
 	}
 }
 
-func dataSourceIBMPhaGetLastOperationRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataSourceIBMPhaLastOperationRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	powerhaAutomationServiceClient, err := meta.(conns.ClientSession).PowerhaAutomationServiceV1()
 	if err != nil {
-		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_pha_get_last_operation", "read", "initialize-client")
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_pha_last_operation", "read", "initialize-client")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
@@ -93,7 +93,7 @@ func dataSourceIBMPhaGetLastOperationRead(context context.Context, d *schema.Res
 				err.Error(), response.StatusCode, response.Result,
 			)
 		}
-		tfErr := flex.TerraformErrorf(err, detailedMsg, "ibm_pha_get_last_operation", "create")
+		tfErr := flex.TerraformErrorf(err, detailedMsg, "ibm_pha_last_operation", "create")
 		log.Printf("[ERROR] %s", detailedMsg)
 		return tfErr.GetDiag()
 	}
@@ -101,19 +101,19 @@ func dataSourceIBMPhaGetLastOperationRead(context context.Context, d *schema.Res
 	d.SetId(dataSourceIBMPhaGetLastOperationID(d))
 
 	if err = d.Set("deployment_name", serviceInstancePhaStatus.DeploymentName); err != nil {
-		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting deployment_name: %s", err), "(Data) ibm_pha_get_last_operation", "read", "set-deployment_name").GetDiag()
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting deployment_name: %s", err), "(Data) ibm_pha_last_operation", "read", "set-deployment_name").GetDiag()
 	}
 
 	if err = d.Set("provision_id", serviceInstancePhaStatus.ProvisionID); err != nil {
-		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting provision_id: %s", err), "(Data) ibm_pha_get_last_operation", "read", "set-provision_id").GetDiag()
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting provision_id: %s", err), "(Data) ibm_pha_last_operation", "read", "set-provision_id").GetDiag()
 	}
 
 	if err = d.Set("resource_group", serviceInstancePhaStatus.ResourceGroup); err != nil {
-		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting resource_group: %s", err), "(Data) ibm_pha_get_last_operation", "read", "set-resource_group").GetDiag()
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting resource_group: %s", err), "(Data) ibm_pha_last_operation", "read", "set-resource_group").GetDiag()
 	}
 
 	if err = d.Set("status", serviceInstancePhaStatus.Status); err != nil {
-		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting status: %s", err), "(Data) ibm_pha_get_last_operation", "read", "set-status").GetDiag()
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting status: %s", err), "(Data) ibm_pha_last_operation", "read", "set-status").GetDiag()
 	}
 
 	return nil

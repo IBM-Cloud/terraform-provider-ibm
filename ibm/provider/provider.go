@@ -1168,13 +1168,11 @@ func Provider() *schema.Provider {
 			"ibm_pdr_get_grs_location_pairs":  drautomationservice.DataSourceIBMPdrGetGrsLocationPairs(),
 
 			// PHA service
-			"ibm_pha_last_operation":          powerhaautomationservice.DataSourceIBMPhaGetLastOperation(),
-			"ibm_pha_service_instance_event":  powerhaautomationservice.DataSourceIBMPhaGetServiceInstanceEvent(),
-			"ibm_pha_service_instance_events": powerhaautomationservice.DataSourceIBMPhaListServiceInstanceEvents(),
-			"ibm_pha_supported_location":      powerhaautomationservice.DataSourceIBMPhaGetSupportedLocation(),
-			"ibm_pha_powervs_workspace":       powerhaautomationservice.DataSourceIBMPhaGetPowervsWorkspace(),
-			"ibm_pha_cluster_nodes":           powerhaautomationservice.DataSourceIBMPhaClusterNodes(),
-			"ibm_pha_deployment":              powerhaautomationservice.DataSourceIBMPhaDeployment(),
+			"ibm_pha_last_operation":     powerhaautomationservice.DataSourceIBMPhaLastOperation(),
+			"ibm_pha_supported_location": powerhaautomationservice.DataSourceIBMPhaSupportedLocation(),
+			"ibm_pha_powervs_workspace":  powerhaautomationservice.DataSourceIBMPhaPowervsWorkspace(),
+			"ibm_pha_cluster_nodes":      powerhaautomationservice.DataSourceIBMPhaClusterNodes(),
+			"ibm_pha_deployment":         powerhaautomationservice.DataSourceIBMPhaDeployment(),
 		},
 
 		ResourcesMap: map[string]*schema.Resource{
@@ -1875,7 +1873,7 @@ func Provider() *schema.Provider {
 			"ibm_pdr_managedr":        drautomationservice.ResourceIbmPdrManagedr(),
 			"ibm_pdr_validate_apikey": drautomationservice.ResourceIBMPdrValidateApikey(),
 
-			// Added for Pha Dr automation service
+			// // Added for Pha Dr automation service
 			"ibm_pha_api_key":       powerhaautomationservice.ResourceIBMPhaAPIKey(),
 			"ibm_pha_cluster_nodes": powerhaautomationservice.ResourceIBMPhaClusterNodes(),
 			"ibm_pha_deployment":    powerhaautomationservice.ResourceIBMPhaDeployment(),

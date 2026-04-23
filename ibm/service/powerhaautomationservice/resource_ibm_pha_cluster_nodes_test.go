@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 
@@ -22,7 +21,7 @@ import (
 func TestAccIBMPhaClusterNodesBasic(t *testing.T) {
 	var conf powerhaautomationservicev1.ClusterNodeResponse
 	instanceID := "2cfb7a06-623b-4eb9-a9ac-daa03dc0b5a6"
-	primary_cluster_nodes :=["xxxxxxxx-xxxx-xxxx-9e9e-133d946xxxx"]
+	// primary_cluster_nodes :=["xxxxxxxx-xxxx-xxxx-9e9e-133d946xxxx"]
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheck(t) },
 		Providers: acc.TestAccProviders,
@@ -46,7 +45,7 @@ func TestAccIBMPhaClusterNodesBasic(t *testing.T) {
 
 func TestAccIBMPhaClusterNodesAllArgs(t *testing.T) {
 	var conf powerhaautomationservicev1.ClusterNodeResponse
-	instanceID := "8eefautr-4c02-0009-0086-8bd4d8cf61b6"
+	instanceID := "2cfb7a06-623b-4eb9-a9ac-daa03dc0b5a6"
 	acceptLanguage := "en"
 	ifNoneMatch := ""
 
