@@ -3,7 +3,7 @@
 
 /*
  * IBM OpenAPI Terraform Generator Version: 3.108.0-56772134-20251111-102802
- */
+*/
 
 package drautomationservice_test
 
@@ -16,29 +16,31 @@ import (
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 )
 
-func TestAccIBMPdrGetMachineTypesDataSourceBasic(t *testing.T) {
+func TestAccIBMPdrMachineTypesDataSourceBasic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheck(t) },
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIBMPdrGetMachineTypesDataSourceConfigBasic(),
+				Config: testAccCheckIBMPdrMachineTypesDataSourceConfigBasic(),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet("data.ibm_pdr_get_machine_types.pdr_get_machine_types_instance", "id"),
-					resource.TestCheckResourceAttrSet("data.ibm_pdr_get_machine_types.pdr_get_machine_types_instance", "instance_id"),
-					resource.TestCheckResourceAttrSet("data.ibm_pdr_get_machine_types.pdr_get_machine_types_instance", "primary_workspace_name"),
+					resource.TestCheckResourceAttrSet("data.ibm_pdr_machine_types.pdr_machine_types_instance", "id"),
+					resource.TestCheckResourceAttrSet("data.ibm_pdr_machine_types.pdr_machine_types_instance", "instance_id"),
+					resource.TestCheckResourceAttrSet("data.ibm_pdr_machine_types.pdr_machine_types_instance", "primary_workspace_name"),
 				),
 			},
 		},
 	})
 }
 
-func testAccCheckIBMPdrGetMachineTypesDataSourceConfigBasic() string {
+func testAccCheckIBMPdrMachineTypesDataSourceConfigBasic() string {
 	return fmt.Sprintf(`
-		data "ibm_pdr_get_machine_types" "pdr_get_machine_types_instance" {
+		data "ibm_pdr_machine_types" "pdr_machine_types_instance" {
 			instance_id = "xxxx2ec4-xxxx-4f84-xxxx-c2aa834dd4ed"
 			primary_workspace_name = "Test-workspace-wdc06"
+			Accept-Language = "Accept-Language"
 			standby_workspace_name = "Test-workspace-wdc07"
 		}
 	`)
 }
+

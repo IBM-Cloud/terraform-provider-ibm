@@ -21,34 +21,35 @@ import (
 	"github.com/IBM/dra-go-sdk/drautomationservicev1"
 )
 
-func TestAccIBMPdrGetEventDataSourceBasic(t *testing.T) {
+func TestAccIBMPdrEventDataSourceBasic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheck(t) },
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIBMPdrGetEventDataSourceConfigBasic(),
+				Config: testAccCheckIBMPdrEventDataSourceConfigBasic(),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet("data.ibm_pdr_get_event.pdr_get_event_instance", "id"),
-					resource.TestCheckResourceAttrSet("data.ibm_pdr_get_event.pdr_get_event_instance", "instance_id"),
-					resource.TestCheckResourceAttrSet("data.ibm_pdr_get_event.pdr_get_event_instance", "event_id"),
-					resource.TestCheckResourceAttrSet("data.ibm_pdr_get_event.pdr_get_event_instance", "action"),
-					resource.TestCheckResourceAttrSet("data.ibm_pdr_get_event.pdr_get_event_instance", "level"),
-					resource.TestCheckResourceAttrSet("data.ibm_pdr_get_event.pdr_get_event_instance", "message"),
-					resource.TestCheckResourceAttrSet("data.ibm_pdr_get_event.pdr_get_event_instance", "resource"),
-					resource.TestCheckResourceAttrSet("data.ibm_pdr_get_event.pdr_get_event_instance", "time"),
-					resource.TestCheckResourceAttrSet("data.ibm_pdr_get_event.pdr_get_event_instance", "timestamp"),
+					resource.TestCheckResourceAttrSet("data.ibm_pdr_event.pdr_event_instance", "id"),
+					resource.TestCheckResourceAttrSet("data.ibm_pdr_event.pdr_event_instance", "instance_id"),
+					resource.TestCheckResourceAttrSet("data.ibm_pdr_event.pdr_event_instance", "event_id"),
+					resource.TestCheckResourceAttrSet("data.ibm_pdr_event.pdr_event_instance", "action"),
+					resource.TestCheckResourceAttrSet("data.ibm_pdr_event.pdr_event_instance", "level"),
+					resource.TestCheckResourceAttrSet("data.ibm_pdr_event.pdr_event_instance", "message"),
+					resource.TestCheckResourceAttrSet("data.ibm_pdr_event.pdr_event_instance", "resource"),
+					resource.TestCheckResourceAttrSet("data.ibm_pdr_event.pdr_event_instance", "time"),
+					resource.TestCheckResourceAttrSet("data.ibm_pdr_event.pdr_event_instance", "timestamp"),
 				),
 			},
 		},
 	})
 }
 
-func testAccCheckIBMPdrGetEventDataSourceConfigBasic() string {
+func testAccCheckIBMPdrEventDataSourceConfigBasic() string {
 	return fmt.Sprintf(`
 		data "ibm_pdr_get_event" "pdr_get_event_instance" {
-			instance_id = "xxxx2ec4-xxxx-4f84-xxxx-c2aa834dd4ed"
-			event_id = "ac645fe5-fba1-4cb3-952e-e1b09fa0df26-1765348121005392848"
+			instance_id = "123456d3-1122-3344-b67d-4389b44b7bf9"
+			event_id = "00116b2a-9326-4024-839e-fb5364b76898"
+			Accept-Language = "Accept-Language"
 		}
 	`)
 }

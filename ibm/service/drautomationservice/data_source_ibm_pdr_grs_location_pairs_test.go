@@ -16,25 +16,25 @@ import (
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 )
 
-func TestAccIBMPdrGetGrsLocationPairsDataSourceBasic(t *testing.T) {
+func TestAccIBMPdrGrsLocationPairsDataSourceBasic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheck(t) },
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIBMPdrGetGrsLocationPairsDataSourceConfigBasic(),
+				Config: testAccCheckIBMPdrGrsLocationPairsDataSourceConfigBasic(),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet("data.ibm_pdr_get_grs_location_pairs.pdr_get_grs_location_pairs_instance", "id"),
-					resource.TestCheckResourceAttrSet("data.ibm_pdr_get_grs_location_pairs.pdr_get_grs_location_pairs_instance", "instance_id"),
+					resource.TestCheckResourceAttrSet("data.ibm_pdr_grs_location_pairs.pdr_grs_location_pairs_instance", "id"),
+					resource.TestCheckResourceAttrSet("data.ibm_pdr_grs_location_pairs.pdr_grs_location_pairs_instance", "instance_id"),
 				),
 			},
 		},
 	})
 }
 
-func testAccCheckIBMPdrGetGrsLocationPairsDataSourceConfigBasic() string {
+func testAccCheckIBMPdrGrsLocationPairsDataSourceConfigBasic() string {
 	return fmt.Sprintf(`
-		data "ibm_pdr_get_grs_location_pairs" "pdr_get_grs_location_pairs_instance" {
+		data "ibm_pdr_grs_location_pairs" "pdr_grs_location_pairs_instance" {
 			instance_id = "xxxx2ec4-xxxx-4f84-xxxx-c2aa834dd4ed"
 		}
 	`)

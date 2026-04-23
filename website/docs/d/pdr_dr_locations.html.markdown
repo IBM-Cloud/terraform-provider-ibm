@@ -1,21 +1,19 @@
 ---
 layout: "ibm"
-page_title: "IBM : ibm_pdr_get_dr_locations"
+page_title: "IBM : ibm_pdr_dr_locations"
 description: |-
-  Get information about pdr_get_dr_locations
+  Get information about pdr_dr_locations
 subcategory: "DrAutomation Service"
 ---
 
-# ibm_pdr_get_dr_locations
+# ibm_pdr_dr_locations
 
 Retrieves the list of disaster recovery (DR) locations available for the specified service instance.
-
-~> **This data source is deprecated and will be removed in the next major version. Use `ibm_pdr_dr_locations` instead.**
 
 ## Example Usage
 
 ```hcl
-data "ibm_pdr_get_dr_locations" "pdr_get_dr_locations" {
+data "ibm_pdr_dr_locations" "pdr_dr_locations" {
 	instance_id = "123456d3-1122-3344-b67d-4389b44b7bf9"
 }
 ```
@@ -31,7 +29,7 @@ You can specify the following arguments for this data source.
 
 After your data source is created, you can read values from the following attributes.
 
-* `id` - The unique identifier of the pdr_get_dr_locations.
+* `id` - The unique identifier of the pdr_dr_locations.
 * `dr_locations` - (List) List of disaster recovery locations available for the service.
 Nested schema for **dr_locations**:
 	* `id` - (String) Unique identifier of the DR location.

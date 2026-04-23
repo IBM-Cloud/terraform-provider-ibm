@@ -13,39 +13,40 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 
-	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/drautomationservice"
-	. "github.com/IBM-Cloud/terraform-provider-ibm/ibm/unittest"
-	"github.com/IBM/dra-go-sdk/drautomationservicev1"
 	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/stretchr/testify/assert"
+
+	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
+	. "github.com/IBM-Cloud/terraform-provider-ibm/ibm/unittest"
+	"github.com/IBM/dra-go-sdk/drautomationservicev1"
 )
 
-func TestAccIBMPdrGetEventsDataSourceBasic(t *testing.T) {
+func TestAccIBMPdrEventsDataSourceBasic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheck(t) },
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIBMPdrGetEventsDataSourceConfigBasic(),
+				Config: testAccCheckIBMPdrEventsDataSourceConfigBasic(),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet("data.ibm_pdr_get_events.pdr_get_events_instance", "id"),
-					resource.TestCheckResourceAttrSet("data.ibm_pdr_get_events.pdr_get_events_instance", "instance_id"),
-					resource.TestCheckResourceAttrSet("data.ibm_pdr_get_events.pdr_get_events_instance", "event.#"),
+					resource.TestCheckResourceAttrSet("data.ibm_pdr_events.pdr_events_instance", "id"),
+					resource.TestCheckResourceAttrSet("data.ibm_pdr_events.pdr_events_instance", "instance_id"),
+					resource.TestCheckResourceAttrSet("data.ibm_pdr_events.pdr_events_instance", "event.#"),
 				),
 			},
 		},
 	})
 }
 
-func testAccCheckIBMPdrGetEventsDataSourceConfigBasic() string {
+func testAccCheckIBMPdrEventsDataSourceConfigBasic() string {
 	return fmt.Sprintf(`
-		data "ibm_pdr_get_events" "pdr_get_events_instance" {
+		data "ibm_pdr_events" "pdr_events_instance" {
 			instance_id = "xxxx2ec4-xxxx-4f84-xxxx-c2aa834dd4ed"
 			time = "2025-06-19T23:59:59Z"
 			from_time = "2025-06-19T00:00:00Z"
 			to_time = "2025-06-19T23:59:59Z"
-			accept_language = "it"
+			Accept-Language = "Accept-Language"
 		}
 	`)
 }

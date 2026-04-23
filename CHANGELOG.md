@@ -43,6 +43,114 @@ We're bumping to v2.0.0 to signal an important internal architectural enhancemen
 
 ## Bug Fixes
 
+### General
+* removed redundant checks to fix build on 1.26 ([6682](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6682))
+
+### CIS
+* fix mtls empty hostmanes issue ([6669](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6669))
+
+### Global Tagging
+* Fix tagging is error ([6681](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6681))
+
+
+## Enhancements
+
+### CD Tekton Pipeline
+* Fix multiline properties ([6680](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6680))
+
+### Cloud Databases
+* added a nil check on response in ibm_database ([6660](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6660))
+
+### Cloud Object Storage
+* Updating the documentation for COS for cross account access. ([6685](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6685))
+
+### IAM
+* Terraform should not plan update-in-place when no resources exist for template assignment ([6216](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6216))
+
+### Power Systems
+* Refactor host group update logic ([6677](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6677))
+
+### Toolchain
+* Continuous Delivery (CD): Region discontinuation warnings ([6687](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6687))
+
+### DRAutomation
+
+## ENHANCEMENTS
+- Added `events` attribute to ibm_pdr_get_events data source
+
+## DEPRECATIONS
+- `event` attribute is deprecated, use `events` instead
+
+
+# 1.88.3 (February 23, 2026)
+
+## Bug Fixes
+
+### Backup/Recovery
+* update connection schema ([6645](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6645))
+
+
+## Enhancements
+
+### General
+* updated code owners ([6674](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6674))
+
+# 1.88.2 (February 13, 2026)
+
+## Bug Fixes
+
+### CIS
+* Fix instance ruleset rule handling to enable OWASP logging ([6644](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6644))
+
+### Power
+* Update unit wording to conform to new standard ([6652](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6652))
+
+### Activity tracker
+* remove managed by example ([6659](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6659))
+
+### IAM
+* Fix: prevent duplicate user invite API calls causing 409 error ([6665](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6665))
+
+# 1.88.1 (February 10, 2026)
+
+## Bug Fixes
+
+### Cloud Object Storage
+* Fix the docs related to COs backup vault policies ([6650](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6650))
+
+### VPC Infrastructure
+* fix(instance-group): fixed error on instance group wait ([6655](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6655))
+
+## Enhancements
+
+### IAM
+* Add expires_at to service_api_key ([6654](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6654))
+
+
+# 1.88.0 (February 6, 2026)
+
+## Bug Fixes
+
+### Catalog Management
+* fix import of ibm_cm_offering ([6636](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6636))
+
+### Cloud Logs
+* change inclusion_filters to optional ([6649](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6649))
+
+### IAM
+* Fix policy creation when resourceType is set to 'resource-group' ([6621](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6621))
+
+
+## Enhancements
+
+### Code Engine
+* add support for code engine pds, hmac secrets and trusted profiles ([6610](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6610))
+
+### Schematics
+* extend template type validation regex ([6593](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6593))
+
+### Cloud Databases
+* Add `async_restore` field for fast PG restore ([6630](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6630))
 ### Cloud Internet Services
 * handle null timestamps in CIS custom page resource ([6702](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6702))
 

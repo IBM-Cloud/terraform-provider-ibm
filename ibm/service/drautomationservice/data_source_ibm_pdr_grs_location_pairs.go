@@ -22,9 +22,8 @@ import (
 	"github.com/IBM/dra-go-sdk/drautomationservicev1"
 )
 
-func DataSourceIBMPdrGetGrsLocationPairs() *schema.Resource {
+func dataSourceIBMPdrGrsLocationPairsCommon() *schema.Resource {
 	return &schema.Resource{
-		ReadContext: dataSourceIBMPdrGetGrsLocationPairsRead,
 
 		Schema: map[string]*schema.Schema{
 			"instance_id": &schema.Schema{
@@ -49,10 +48,33 @@ func DataSourceIBMPdrGetGrsLocationPairs() *schema.Resource {
 	}
 }
 
-func dataSourceIBMPdrGetGrsLocationPairsRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+
+
+func DataSourceIBMPdrGrsLocationPairs() *schema.Resource {
+	res := dataSourceIBMPdrGrsLocationPairsCommon()
+	res.ReadContext = dataSourceIBMPdrGrsLocationPairsRead
+	return res
+}
+
+func DataSourceIBMPdrGetGrsLocationPairs() *schema.Resource {
+	res := dataSourceIBMPdrGrsLocationPairsCommon()
+	res.ReadContext = dataSourceIBMPdrGetGrsLocationPairsRead
+	res.DeprecationMessage = "This data source is deprecated. Use `ibm_pdr_grs_location_pairs` instead."
+	return res
+}
+
+func dataSourceIBMPdrGrsLocationPairsRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	return dataSourceIBMPdrGrsLocationPairsReadCommon(ctx, d, meta, "ibm_pdr_grs_location_pairs")
+}
+
+func dataSourceIBMPdrGetGrsLocationPairsRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	return dataSourceIBMPdrGrsLocationPairsReadCommon(ctx, d, meta, "ibm_pdr_get_grs_location_pairs")
+}
+
+func dataSourceIBMPdrGrsLocationPairsReadCommon(ctx context.Context, d *schema.ResourceData, meta interface{}, dsname string) diag.Diagnostics {
 	drAutomationServiceClient, err := meta.(conns.ClientSession).DrAutomationServiceV1()
 	if err != nil {
-		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_pdr_get_grs_location_pairs", "read", "initialize-client")
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) "+dsname, "read", "initialize-client")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
@@ -64,7 +86,7 @@ func dataSourceIBMPdrGetGrsLocationPairsRead(context context.Context, d *schema.
 		getDrGrsLocationPairOptions.SetAcceptLanguage(d.Get("accept_language").(string))
 	}
 
-	getGrsLocationPairResponse, response, err := drAutomationServiceClient.GetDrGrsLocationPairWithContext(context, getDrGrsLocationPairOptions)
+	getGrsLocationPairResponse, response, err := drAutomationServiceClient.GetDrGrsLocationPairWithContext(ctx, getDrGrsLocationPairOptions)
 	if err != nil {
 		detailedMsg := fmt.Sprintf("GetDrGrsLocationPairWithContext failed: %s", err.Error())
 		// Include HTTP status & raw body if available
@@ -74,7 +96,7 @@ func dataSourceIBMPdrGetGrsLocationPairsRead(context context.Context, d *schema.
 				err.Error(), response.StatusCode, response.Result,
 			)
 		}
-		tfErr := flex.TerraformErrorf(err, detailedMsg, "(Data) ibm_pdr_get_grs_location_pairs", "read")
+		tfErr := flex.TerraformErrorf(err, detailedMsg, "(Data) "+dsname, "read")
 		log.Printf("[ERROR] %s", detailedMsg)
 		return tfErr.GetDiag()
 	}
@@ -82,7 +104,7 @@ func dataSourceIBMPdrGetGrsLocationPairsRead(context context.Context, d *schema.
 	d.SetId(dataSourceIBMPdrGetGrsLocationPairsID(d))
 
 	if err = d.Set("location_pairs", getGrsLocationPairResponse.LocationPairs); err != nil {
-		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting location_pairs: %s", err), "(Data) ibm_pdr_get_grs_location_pairs", "read", "set-location_pairs").GetDiag()
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting location_pairs: %s", err), "(Data) "+dsname, "read", "set-location_pairs").GetDiag()
 	}
 
 	return nil

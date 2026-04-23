@@ -22,9 +22,8 @@ import (
 	"github.com/IBM/dra-go-sdk/drautomationservicev1"
 )
 
-func DataSourceIBMPdrGetEvents() *schema.Resource {
+func dataSourceIBMPdrEventsCommon() *schema.Resource {
 	return &schema.Resource{
-		ReadContext: dataSourceIBMPdrGetEventsRead,
 
 		Schema: map[string]*schema.Schema{
 			"instance_id": &schema.Schema{
@@ -53,6 +52,96 @@ func DataSourceIBMPdrGetEvents() *schema.Resource {
 				Description: "The language requested for the return document.",
 			},
 			"event": &schema.Schema{
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "Events.",
+				Deprecated:  "The `event` attribute is deprecated. Use `events` instead.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"action": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Type of action for this event.",
+						},
+						"api_source": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Source of API when it being executed.",
+						},
+						"event_id": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "ID of the Activity.",
+						},
+						"level": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Level of the event (notice, info, warning, error).",
+						},
+						"message": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The (translated) message of the event.",
+						},
+						"message_data": &schema.Schema{
+							Type:        schema.TypeMap,
+							Computed:    true,
+							Description: "A flexible schema placeholder to allow any JSON value (aligns with interface{} in Go).",
+							Elem: &schema.Schema{
+								Type: schema.TypeString,
+							},
+						},
+						"metadata": &schema.Schema{
+							Type:        schema.TypeMap,
+							Computed:    true,
+							Description: "A flexible schema placeholder to allow any JSON value (aligns with interface{} in Go).",
+							Elem: &schema.Schema{
+								Type: schema.TypeString,
+							},
+						},
+						"resource": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Type of resource for this event.",
+						},
+						"time": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Time of activity in ISO 8601 - RFC3339.",
+						},
+						"timestamp": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Time of activity in unix epoch.",
+						},
+						"user": &schema.Schema{
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "Information about a user associated with an event.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"email": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "Email of the User.",
+									},
+									"name": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "Name of the User.",
+									},
+									"user_id": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "ID of user who created/caused the event.",
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			"events": &schema.Schema{
 				Type:        schema.TypeList,
 				Computed:    true,
 				Description: "Events.",
@@ -145,10 +234,31 @@ func DataSourceIBMPdrGetEvents() *schema.Resource {
 	}
 }
 
-func dataSourceIBMPdrGetEventsRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func DataSourceIBMPdrEvents() *schema.Resource {
+	res := dataSourceIBMPdrEventsCommon()
+	res.ReadContext = dataSourceIBMPdrEventsRead
+	return res
+}
+
+func DataSourceIBMPdrGetEvents() *schema.Resource {
+	res := dataSourceIBMPdrEventsCommon()
+	res.ReadContext = dataSourceIBMPdrGetEventsRead
+	res.DeprecationMessage = "This data source is deprecated. Use `ibm_pdr_events` instead."
+	return res
+}
+
+func dataSourceIBMPdrEventsRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	return dataSourceIBMPdrEventsReadCommon(ctx, d, meta, "ibm_pdr_events")
+}
+
+func dataSourceIBMPdrGetEventsRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	return dataSourceIBMPdrEventsReadCommon(ctx, d, meta, "ibm_pdr_get_events")
+}
+
+func dataSourceIBMPdrEventsReadCommon(context context.Context, d *schema.ResourceData, meta interface{},dsname string) diag.Diagnostics {
 	drAutomationServiceClient, err := meta.(conns.ClientSession).DrAutomationServiceV1()
 	if err != nil {
-		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_pdr_get_events", "read", "initialize-client")
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) "+dsname, "read", "initialize-client")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
@@ -156,9 +266,6 @@ func dataSourceIBMPdrGetEventsRead(context context.Context, d *schema.ResourceDa
 	listEventsOptions := &drautomationservicev1.ListEventsOptions{}
 
 	listEventsOptions.SetInstanceID(d.Get("instance_id").(string))
-	if _, ok := d.GetOk("time"); ok {
-		listEventsOptions.SetTime(d.Get("time").(string))
-	}
 	if _, ok := d.GetOk("from_time"); ok {
 		listEventsOptions.SetFromTime(d.Get("from_time").(string))
 	}
@@ -178,7 +285,7 @@ func dataSourceIBMPdrGetEventsRead(context context.Context, d *schema.ResourceDa
 				err.Error(), response.StatusCode, response.Result,
 			)
 		}
-		tfErr := flex.TerraformErrorf(err, detailedMsg, "(Data) ibm_pdr_get_events", "read")
+		tfErr := flex.TerraformErrorf(err, detailedMsg, "(Data) "+dsname, "read")
 		log.Printf("[ERROR] %s", detailedMsg)
 		return tfErr.GetDiag()
 	}
@@ -189,12 +296,15 @@ func dataSourceIBMPdrGetEventsRead(context context.Context, d *schema.ResourceDa
 	for _, eventItem := range eventCollection.Events {
 		eventItemMap, err := DataSourceIBMPdrGetEventsEventToMap(&eventItem) // #nosec G601
 		if err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_pdr_get_events", "read", "event-to-map").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) "+dsname, "read", "event-to-map").GetDiag()
 		}
 		event = append(event, eventItemMap)
 	}
+	if err = d.Set("events", event); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting events: %s", err), "(Data) "+dsname, "read", "set-events").GetDiag()
+	}
 	if err = d.Set("event", event); err != nil {
-		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting event: %s", err), "(Data) ibm_pdr_get_events", "read", "set-event").GetDiag()
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting event: %s", err), "(Data) "+dsname, "read", "set-event").GetDiag()
 	}
 
 	return nil

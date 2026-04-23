@@ -1,21 +1,19 @@
 ---
 layout: "ibm"
-page_title: "IBM : ibm_pdr_get_grs_location_pairs"
+page_title: "IBM : ibm_pdr_grs_location_pairs"
 description: |-
-  Get information about pdr_get_grs_location_pairs
+  Get information about pdr_grs_location_pairs
 subcategory: "DrAutomation Service"
 ---
 
-# ibm_pdr_get_grs_location_pairs
+# ibm_pdr_grs_location_pairs
 
 Retrieves the (GRS) location pairs associated with the specified service instance based on managed VMs.
-
-~> **This data source is deprecated and will be removed in the next major version. Use `ibm_pdr_grs_location_pairs` instead.**
 
 ## Example Usage
 
 ```hcl
-data "ibm_pdr_get_grs_location_pairs" "pdr_get_grs_location_pairs" {
+data "ibm_pdr_grs_location_pairs" "pdr_grs_location_pairs" {
 	instance_id = "123456d3-1122-3344-b67d-4389b44b7bf9"
 }
 ```
@@ -31,5 +29,5 @@ You can specify the following arguments for this data source.
 
 After your data source is created, you can read values from the following attributes.
 
-* `id` - The unique identifier of the pdr_get_grs_location_pairs.
+* `id` - The unique identifier of the pdr_grs_location_pairs.
 * `location_pairs` - (Map) A map of GRS location pairs where each key is a primary location and the value is its paired location.
