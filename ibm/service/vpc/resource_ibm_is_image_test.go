@@ -528,6 +528,9 @@ ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVE
 					resource.TestCheckResourceAttr(
 						"ibm_is_image.is_custom_image", "status", "partially_available"),
 					resource.TestCheckResourceAttrSet("ibm_is_image.is_custom_image", "user_data_format"),
+					resource.TestCheckResourceAttrSet("ibm_is_image.is_custom_image", "zones.#"),
+					resource.TestCheckResourceAttrSet("ibm_is_image.is_custom_image", "zones.0.name"),
+					resource.TestCheckResourceAttrSet("ibm_is_image.is_custom_image", "zones.0.href"),
 					resource.TestCheckResourceAttrSet("ibm_is_vpc.is_vpc", "id"),
 					resource.TestCheckResourceAttrSet("ibm_is_subnet.is_subnet", "id"),
 					resource.TestCheckResourceAttrSet("ibm_is_ssh_key.is_ssh", "id"),
