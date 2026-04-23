@@ -211,9 +211,7 @@ func dataSourceIBMPIVolumeRead(ctx context.Context, d *schema.ResourceData, meta
 	}
 
 	d.SetId(*volumedata.VolumeID)
-	if volumedata.Auxiliary != nil {
-		d.Set(Attr_Auxiliary, volumedata.Auxiliary)
-	}
+	d.Set(Attr_Auxiliary, volumedata.Auxiliary)
 	d.Set(Attr_AuxiliaryVolumeName, volumedata.AuxVolumeName)
 	d.Set(Attr_Bootable, volumedata.Bootable)
 	d.Set(Attr_ConsistencyGroupName, volumedata.ConsistencyGroupName)
@@ -238,9 +236,7 @@ func dataSourceIBMPIVolumeRead(ctx context.Context, d *schema.ResourceData, meta
 	d.Set(Attr_Name, volumedata.Name)
 	d.Set(Attr_OutOfBandDeleted, volumedata.OutOfBandDeleted)
 	d.Set(Attr_PrimaryRole, volumedata.PrimaryRole)
-	if volumedata.ReplicationEnabled != nil {
-		d.Set(Attr_ReplicationEnabled, volumedata.ReplicationEnabled)
-	}
+	d.Set(Attr_ReplicationEnabled, volumedata.ReplicationEnabled)
 	if len(volumedata.ReplicationSites) > 0 {
 		d.Set(Attr_ReplicationSites, volumedata.ReplicationSites)
 	}
