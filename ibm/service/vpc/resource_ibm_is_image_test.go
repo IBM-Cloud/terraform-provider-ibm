@@ -508,3 +508,76 @@ func testAccCheckIBMISImageEncryptedConfig(name string) string {
 		}
 		`, acc.IsImageEncryptedDataKey, acc.IsImageEncryptionKey, acc.Image_cos_url_encrypted, name, acc.Image_operating_system)
 }
+
+func TestAccIBMISImage_Partial_Available(t *testing.T) {
+	var image string
+	publicKey := strings.TrimSpace(`
+ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVERRN7/9484SOBJ3HSKxxNG5JN8owAjy5f9yYwcUg+JaUVuytn5Pv3aeYROHGGg+5G346xaq3DAwX6Y5ykr2fvjObgncQBnuU5KHWCECO/4h8uWuwh/kfniXPVjFToc+gnkqA+3RKpAecZhFXwfalQ9mMuYGFxn+fwn8cYEApsJbsEmb0iJwPiZ5hjFC8wREuiTlhPHDgkBLOiycd20op2nXzDbHfCHInquEe/gYxEitALONxm0swBOwJZwlTDOB7C6y2dzlrtxr1L59m7pCkWI4EtTRLvleehBoj3u7jB4usR
+`)
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheckImage(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: checkImageDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMISImagePartialAvailableConfig(publicKey),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISImageExists("ibm_is_image.is_custom_image", image),
+					resource.TestCheckResourceAttr(
+						"ibm_is_image.is_custom_image", "name", acc.IsImageName),
+					resource.TestCheckResourceAttr(
+						"ibm_is_image.is_custom_image", "status", "partially_available"),
+					resource.TestCheckResourceAttrSet("ibm_is_image.is_custom_image", "user_data_format"),
+					resource.TestCheckResourceAttrSet("ibm_is_vpc.is_vpc", "id"),
+					resource.TestCheckResourceAttrSet("ibm_is_subnet.is_subnet", "id"),
+					resource.TestCheckResourceAttrSet("ibm_is_ssh_key.is_ssh", "id"),
+					resource.TestCheckResourceAttrSet("ibm_is_instance.is_instance", "id"),
+				),
+			},
+		},
+	})
+}
+
+func testAccCheckIBMISImagePartialAvailableConfig(ssh string) string {
+	return fmt.Sprintf(`
+		resource "ibm_is_image" "is_custom_image" {
+			name = "%s"
+			href = "%s"
+			operating_system = "%s"
+			minimum_acceptable_status = "partially_available"
+		}
+
+		resource "ibm_is_vpc" "is_vpc" {
+			name = "test-img-vpc"
+		}
+
+		resource "ibm_is_subnet" "is_subnet" {
+			name                     = "test-img-subnet"
+			vpc                      = ibm_is_vpc.is_vpc.id
+			zone                     = ibm_is_image.is_custom_image.zones[0].name
+			total_ipv4_address_count = 64
+		}
+
+		resource "ibm_is_ssh_key" "is_ssh" {
+			name       = "test-img-ssh"
+			public_key = "%s"
+		}
+
+		resource "ibm_is_instance" "is_instance" {
+			name  = "test-img-instance"
+			image = ibm_is_image.is_custom_image.id
+			profile = "bxf-2x8"
+			vpc  = ibm_is_vpc.is_vpc.id
+			zone = ibm_is_subnet.is_subnet.zone
+			keys = [ibm_is_ssh_key.is_ssh.id]
+			primary_network_attachment {
+				name = "test-img-ins-pna"
+					virtual_network_interface {
+						subnet = ibm_is_subnet.is_subnet.id
+				}
+			}
+		}
+
+
+	`, acc.IsImageName, acc.Image_cos_url, acc.Image_operating_system, ssh)
+}
