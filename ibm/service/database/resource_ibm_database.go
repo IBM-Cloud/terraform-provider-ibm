@@ -36,13 +36,7 @@ import (
 )
 
 const (
-	databaseInstanceSuccessStatus      = "active"
-	databaseInstanceProvisioningStatus = "provisioning"
-	databaseInstanceProgressStatus     = "in progress"
-	databaseInstanceInactiveStatus     = "inactive"
-	databaseInstanceFailStatus         = "failed"
-	databaseInstanceRemovedStatus      = "removed"
-	databaseInstanceReclamation        = "pending_reclamation"
+	databaseInstanceReclamation = "pending_reclamation"
 )
 
 const (
@@ -145,6 +139,8 @@ type resourceIBMDatabaseBackend interface {
 
 	WarnUnsupported(context context.Context, d *schema.ResourceData) diag.Diagnostics
 	ValidateUnsupportedAttrsDiff(context context.Context, d *schema.ResourceDiff, meta interface{}) error
+	ValidateGroupsDiff(context context.Context, d *schema.ResourceDiff, meta interface{}) error
+	ValidateServiceEndpointsDiff(context context.Context, d *schema.ResourceDiff, meta interface{}) error
 }
 
 func pickResourceBackend(d *schema.ResourceData) resourceIBMDatabaseBackend {
@@ -184,11 +180,12 @@ func ResourceIBMDatabaseInstance() *schema.Resource {
 		CustomizeDiff: customdiff.All(
 			validateUnsupportedAttrsDiff,
 			resourceIBMDatabaseInstanceDiff,
-			validateGroupsDiff,
+			validateBackendSpecificGroupsDiff,
 			validateUsersDiff,
 			validateRemoteLeaderIDDiff,
 			validateVersionDiff,
 			validateAsyncRestoreDiff,
+			validateBackendSpecificServiceEndpointsDiff,
 		),
 
 		Importer: &schema.ResourceImporter{},
@@ -254,12 +251,12 @@ func ResourceIBMDatabaseInstance() *schema.Resource {
 			},
 
 			"adminuser": {
-				Description: "The admin user id for the instance",
+				Description: "The admin user id for the instance. Gen2: Always empty. Gen2 instances do not have a default admin user. Use ibm_resource_key for credentials.",
 				Type:        schema.TypeString,
 				Computed:    true,
 			},
 			"adminpassword": {
-				Description: "The admin user password for the instance",
+				Description: "The admin user password for the instance. Gen2: Accepted but ignored. Gen2 instances do not have a default admin user. Use the ibm_resource_key resource to create service credentials for database access.",
 				Type:        schema.TypeString,
 				Optional:    true,
 				ValidateFunc: validation.All(
@@ -281,48 +278,48 @@ func ResourceIBMDatabaseInstance() *schema.Resource {
 					}
 					return json
 				},
-				Description: "The configuration in JSON format",
+				Description: "The configuration in JSON format. Gen2: Accepted but ignored. Database configuration management is not yet implemented for Gen2 instances.",
 			},
 			"configuration_schema": {
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "The configuration schema in JSON format",
+				Description: "The configuration schema in JSON format. Gen2: Always empty (not available).",
 			},
 			"version": {
-				Description: "The database version to provision if specified or the database version to upgrade to",
+				Description: "The database version to provision if specified or the database version to upgrade to. Classic: This field can be updated to perform an in-place upgrade without forcing the creation of a new resource. Gen2: Can be set at creation only. Updates fail with error. In-place version upgrades are not supported for Gen2 plans.",
 				Type:        schema.TypeString,
 				Computed:    true,
 				Optional:    true,
 			},
 			"version_upgrade_skip_backup": {
-				Description: "Option to skip the backup when upgrading version. Only applicable to databases that do not support PITR. Skipping the backup means that your deployment becomes available more quickly, but there is no immediate backup available. This is not recommended as it could result in data loss",
+				Description: "Option to skip the backup when upgrading version. Only applicable to databases that do not support PITR. Skipping the backup means that your deployment becomes available more quickly, but there is no immediate backup available. This is not recommended as it could result in data loss. Gen2: Accepted but ignored (Classic-only feature for version upgrades).",
 				Type:        schema.TypeBool,
 				Optional:    true,
 			},
 			"service_endpoints": {
-				Description:  "Types of the service endpoints. Possible values are 'public', 'private', 'public-and-private'.",
+				Description:  "Types of the service endpoints. Possible values are 'public', 'private', 'public-and-private'. Required for Classic plans. Gen2: Optional; must be 'private' if set. Gen2 instances only support private endpoints and default to 'private'. Plan fails if set to 'public' or 'public-and-private'.",
 				Type:         schema.TypeString,
-				Required:     true,
+				Optional:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_database", "service_endpoints"),
 			},
 			"backup_id": {
-				Description:      "The CRN of backup source database",
+				Description:      "The CRN of backup source database. Gen2: Plan fails if set. Restore from backup is not yet implemented for Gen2 instances.",
 				Type:             schema.TypeString,
 				Optional:         true,
 				DiffSuppressFunc: flex.ApplyOnce,
 			},
 			"remote_leader_id": {
-				Description: "The CRN of leader database",
+				Description: "The CRN of leader database. Gen2: Plan fails if set. Read-only replica creation and promotion are not supported for Gen2 instances.",
 				Type:        schema.TypeString,
 				Optional:    true,
 			},
 			"skip_initial_backup": {
-				Description: "Option to skip the initial backup when promoting a read-only replica. Skipping the initial backup means that your replica becomes available more quickly, but there is no immediate backup available.",
+				Description: "Option to skip the initial backup when promoting a read-only replica. Skipping the initial backup means that your replica becomes available more quickly, but there is no immediate backup available. Gen2: Accepted but ignored (Classic-only feature for read replica promotion).",
 				Type:        schema.TypeBool,
 				Optional:    true,
 			},
 			"async_restore": {
-				Description:      "Option to support FAST PG Restore. Only applicable when restoring a PostgreSQL instance",
+				Description:      "Option to support FAST PG Restore. Only applicable when restoring a PostgreSQL instance. Gen2: Accepted but ignored. Async restore requires backup_id support which is not yet implemented for Gen2 instances.",
 				Type:             schema.TypeBool,
 				Optional:         true,
 				DiffSuppressFunc: flex.ApplyOnce,
@@ -353,26 +350,27 @@ func ResourceIBMDatabaseInstance() *schema.Resource {
 				Set:      flex.ResourceIBMVPCHash,
 			},
 			"point_in_time_recovery_deployment_id": {
-				Description:      "The CRN of source instance",
+				Description:      "The CRN of source instance. Gen2: Plan fails if set. Point-in-time recovery is not yet implemented for Gen2 instances.",
 				Type:             schema.TypeString,
 				Optional:         true,
 				DiffSuppressFunc: flex.ApplyOnce,
 			},
 			"point_in_time_recovery_time": {
-				Description:      "The point in time recovery time stamp of the deployed instance",
+				Description:      "The point in time recovery time stamp of the deployed instance. Gen2: Plan fails if set. Point-in-time recovery is not yet implemented for Gen2 instances.",
 				Type:             schema.TypeString,
 				Optional:         true,
 				DiffSuppressFunc: flex.ApplyOnce,
 			},
 			"offline_restore": {
-				Description:      "Set offline restore mode for MongoDB Enterprise Edition",
+				Description:      "Set offline restore mode for MongoDB Enterprise Edition. Gen2: Accepted but ignored. Offline restore requires backup_id support which is not yet implemented for Gen2 instances.",
 				Type:             schema.TypeBool,
 				Optional:         true,
 				DiffSuppressFunc: flex.ApplyOnce,
 			},
 			"users": {
-				Type:     schema.TypeSet,
-				Optional: true,
+				Type:        schema.TypeSet,
+				Optional:    true,
+				Description: "Database users. Gen2: Plan fails if set. Use the ibm_resource_key resource to create service credentials for Gen2 instances.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"name": {
@@ -406,8 +404,9 @@ func ResourceIBMDatabaseInstance() *schema.Resource {
 				},
 			},
 			"allowlist": {
-				Type:     schema.TypeSet,
-				Optional: true,
+				Type:        schema.TypeSet,
+				Optional:    true,
+				Description: "Allowlist for database access. Gen2: Plan fails if set. IP allowlist configuration is not available for Gen2 instances.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"address": {
@@ -426,8 +425,9 @@ func ResourceIBMDatabaseInstance() *schema.Resource {
 				},
 			},
 			"logical_replication_slot": {
-				Type:     schema.TypeSet,
-				Optional: true,
+				Type:        schema.TypeSet,
+				Optional:    true,
+				Description: "Logical replication slots for PostgreSQL. Gen2: Accepted but ignored. Logical replication slots are not available for Gen2 instances.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"name": {
@@ -449,8 +449,9 @@ func ResourceIBMDatabaseInstance() *schema.Resource {
 				},
 			},
 			"group": {
-				Type:     schema.TypeSet,
-				Optional: true,
+				Type:        schema.TypeSet,
+				Optional:    true,
+				Description: "A set of group scaling values for the database. Gen2: Fully supported for members, disk, and host_flavor. Plan fails if memory or cpu allocations are set, as memory and CPU are determined by the dedicated host_flavor and cannot be set independently.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"group_id": {
@@ -521,6 +522,8 @@ func ResourceIBMDatabaseInstance() *schema.Resource {
 										Required: true,
 										ValidateFunc: validation.StringInSlice([]string{
 											"multitenant",
+											"bx3d.4x20",
+											"bx3d.8x40",
 											"b3c.4x16.encrypted",
 											"b3c.8x32.encrypted",
 											"m3c.8x64.encrypted",
@@ -701,7 +704,7 @@ func ResourceIBMDatabaseInstance() *schema.Resource {
 			},
 			"auto_scaling": {
 				Type:        schema.TypeList,
-				Description: "ICD Auto Scaling",
+				Description: "ICD Auto Scaling. Gen2: Accepted but ignored. Auto-scaling policies are not available in Gen2. Monitor your database and manually adjust scaling as needed.",
 				Optional:    true,
 				Computed:    true,
 				MaxItems:    1,
@@ -1043,8 +1046,8 @@ func getDefaultScalingGroups(_service string, _plan string, _hostFlavor string, 
 	}
 
 	getDefaultScalingGroupsResponse, response, err := cloudDatabasesClient.GetDefaultScalingGroups(getDefaultScalingGroupsOptions)
-	if err != nil && response != nil {
-		if response.StatusCode == 422 {
+	if err != nil {
+		if response != nil && response.StatusCode == 422 {
 			return groups, fmt.Errorf("%s is not available on multitenant", service)
 		}
 		return groups, err
@@ -1360,7 +1363,7 @@ func classicDatabaseInstanceCreate(context context.Context, d *schema.ResourceDa
 	}
 	d.SetId(*instance.ID)
 
-	_, err = waitForDatabaseInstanceCreate(d, meta, *instance.ID)
+	_, err = waitForDatabaseInstanceCreate(d, meta, *instance.ID, true)
 	if err != nil {
 		return diag.FromErr(
 			fmt.Errorf(
@@ -2330,7 +2333,7 @@ func resourceIBMDatabaseInstanceDelete(context context.Context, d *schema.Resour
 	return pickResourceBackend(d).Delete(context, d, meta)
 }
 
-func classicDatabaseInstanceDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func databaseInstanceDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	rsConClient, err := meta.(conns.ClientSession).ResourceControllerV2API()
 	if err != nil {
 		return diag.FromErr(err)
@@ -2369,7 +2372,7 @@ func resourceIBMDatabaseInstanceExists(d *schema.ResourceData, meta interface{})
 	return pickResourceBackend(d).Exists(d, meta)
 }
 
-func classicDatabaseInstanceExists(d *schema.ResourceData, meta interface{}) (bool, error) {
+func databaseInstanceExists(d *schema.ResourceData, meta interface{}) (bool, error) {
 	rsConClient, err := meta.(conns.ClientSession).ResourceControllerV2API()
 	if err != nil {
 		return false, err
@@ -2420,7 +2423,7 @@ func waitForICDReady(meta interface{}, instanceID string) error {
 	return nil
 }
 
-func waitForDatabaseInstanceCreate(d *schema.ResourceData, meta interface{}, instanceID string) (interface{}, error) {
+func waitForDatabaseInstanceCreate(d *schema.ResourceData, meta interface{}, instanceID string, waitForICD bool) (interface{}, error) {
 	rsConClient, err := meta.(conns.ClientSession).ResourceControllerV2API()
 	if err != nil {
 		return false, err
@@ -2450,9 +2453,11 @@ func waitForDatabaseInstanceCreate(d *schema.ResourceData, meta interface{}, ins
 		MinTimeout: 10 * time.Second,
 	}
 
-	waitErr := waitForICDReady(meta, instanceID)
-	if waitErr != nil {
-		return false, fmt.Errorf("[ERROR] Error ICD interface not ready after create: %s with error %s\n", instanceID, waitErr)
+	if waitForICD {
+		waitErr := waitForICDReady(meta, instanceID)
+		if waitErr != nil {
+			return false, fmt.Errorf("[ERROR] Error ICD interface not ready after create: %s with error %s\n", instanceID, waitErr)
+		}
 	}
 
 	return stateConf.WaitForState()
@@ -2687,7 +2692,7 @@ func flattenAutoScalingGroup(autoScalingGroup clouddatabasesv5.AutoscalingGroup)
 		memory["io_above_percent"] = memoryIO.AbovePercent
 	}
 
-	if &autoScalingGroup.Autoscaling.Memory.Rate != nil {
+	if autoScalingGroup.Autoscaling.Memory.Rate != nil {
 		ip := autoScalingGroup.Autoscaling.Memory.Rate.IncreasePercent
 		memory["rate_increase_percent"] = *ip
 		memory["rate_period_seconds"] = autoScalingGroup.Autoscaling.Memory.Rate.PeriodSeconds
@@ -2701,7 +2706,7 @@ func flattenAutoScalingGroup(autoScalingGroup clouddatabasesv5.AutoscalingGroup)
 	cpus := make([]map[string]interface{}, 0)
 	cpu := make(map[string]interface{})
 
-	if &autoScalingGroup.Autoscaling.CPU.Rate != nil {
+	if autoScalingGroup.Autoscaling.CPU.Rate != nil {
 		ip := autoScalingGroup.Autoscaling.CPU.Rate.IncreasePercent
 		cpu["rate_increase_percent"] = *ip
 		cpu["rate_period_seconds"] = autoScalingGroup.Autoscaling.CPU.Rate.PeriodSeconds
@@ -2726,7 +2731,7 @@ func flattenAutoScalingGroup(autoScalingGroup clouddatabasesv5.AutoscalingGroup)
 		disk["io_above_percent"] = diskIO.AbovePercent
 	}
 
-	if &autoScalingGroup.Autoscaling.Disk.Rate != nil {
+	if autoScalingGroup.Autoscaling.Disk.Rate != nil {
 		ip := autoScalingGroup.Autoscaling.Disk.Rate.IncreasePercent
 		disk["rate_increase_percent"] = ip
 		disk["rate_period_seconds"] = autoScalingGroup.Autoscaling.Disk.Rate.PeriodSeconds
@@ -2965,7 +2970,11 @@ func publicServiceEndpointsWarning() diag.Diagnostics {
 	return diags
 }
 
-func validateGroupsDiff(_ context.Context, diff *schema.ResourceDiff, meta interface{}) (err error) {
+func validateBackendSpecificGroupsDiff(context context.Context, diff *schema.ResourceDiff, meta interface{}) error {
+	return pickResourceBackendFromDiff(diff).ValidateGroupsDiff(context, diff, meta)
+}
+
+func validateGroupsDiffClassic(_ context.Context, diff *schema.ResourceDiff, meta interface{}) (err error) {
 	instanceID := diff.Id()
 	service := diff.Get("service").(string)
 	plan := diff.Get("plan").(string)
@@ -2986,7 +2995,7 @@ func validateGroupsDiff(_ context.Context, diff *schema.ResourceDiff, meta inter
 		if instanceID != "" {
 			groupList, err = getGroups(instanceID, meta)
 		} else {
-			if memberGroup.HostFlavor != nil {
+			if memberGroup != nil && memberGroup.HostFlavor != nil {
 				groupList, err = getDefaultScalingGroups(service, plan, memberGroup.HostFlavor.ID, meta)
 			} else {
 				groupList, err = getDefaultScalingGroups(service, plan, "", meta)
@@ -3280,6 +3289,19 @@ func validateAsyncRestoreDiff(_ context.Context, diff *schema.ResourceDiff, meta
 		return fmt.Errorf("[ERROR] `async_restore` is only supported for `databases-for-postgresql` for Fast PG Restore")
 	}
 
+	return nil
+}
+
+func validateBackendSpecificServiceEndpointsDiff(context context.Context, diff *schema.ResourceDiff, meta interface{}) error {
+	return pickResourceBackendFromDiff(diff).ValidateServiceEndpointsDiff(context, diff, meta)
+}
+
+func validateServiceEndpointsDiffClassic(_ context.Context, diff *schema.ResourceDiff, meta interface{}) (err error) {
+	serviceEndpoint, serviceEndpointOk := diff.GetOk("service_endpoints")
+
+	if !serviceEndpointOk || serviceEndpoint.(string) == "" {
+		return fmt.Errorf("[ERROR] service_endpoints is required for Classic plans")
+	}
 	return nil
 }
 
