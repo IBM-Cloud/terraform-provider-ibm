@@ -36,13 +36,7 @@ import (
 )
 
 const (
-	databaseInstanceSuccessStatus      = "active"
-	databaseInstanceProvisioningStatus = "provisioning"
-	databaseInstanceProgressStatus     = "in progress"
-	databaseInstanceInactiveStatus     = "inactive"
-	databaseInstanceFailStatus         = "failed"
-	databaseInstanceRemovedStatus      = "removed"
-	databaseInstanceReclamation        = "pending_reclamation"
+	databaseInstanceReclamation = "pending_reclamation"
 )
 
 const (

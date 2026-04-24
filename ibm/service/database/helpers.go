@@ -33,8 +33,14 @@ const (
 	defaultGroupID     = "member"
 	defaultMemberCount = 3
 
-	// Instance states
-	instanceStateRemoved = "removed"
+	// Instance states - shared across Classic and Gen2
+	instanceStateRemoved               = "removed"
+	databaseInstanceSuccessStatus      = "active"
+	databaseInstanceProvisioningStatus = "provisioning"
+	databaseInstanceProgressStatus     = "in progress"
+	databaseInstanceInactiveStatus     = "inactive"
+	databaseInstanceFailStatus         = "failed"
+	databaseInstanceRemovedStatus      = "removed"
 
 	// Gen2 database operation keys
 	deploymentKind     = "deployment"

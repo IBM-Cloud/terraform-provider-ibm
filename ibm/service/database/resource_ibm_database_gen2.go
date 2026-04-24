@@ -9,13 +9,16 @@ import (
 	"log"
 	"os"
 	"strings"
+	"time"
 
+	"github.com/IBM-Cloud/bluemix-go/bmxerror"
 	"github.com/IBM-Cloud/bluemix-go/models"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM/go-sdk-core/v5/core"
 	rc "github.com/IBM/platform-services-go-sdk/resourcecontrollerv2"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -528,12 +531,50 @@ func (g *resourceIBMDatabaseGen2Backend) applyGroupScaling(configCtx *instanceCo
 	}
 
 	// Wait for update to complete
-	_, err = waitForDatabaseInstanceUpdate(configCtx.d, configCtx.meta)
+	_, err = g.waitForGen2InstanceUpdate(configCtx.d, configCtx.meta)
 	if err != nil {
 		return fmt.Errorf("error waiting for instance update to complete: %w", err)
 	}
 
 	return nil
+}
+
+// waitForGen2InstanceUpdate waits for a Gen2 database instance update to complete.
+// Unlike Classic databases, Gen2 only uses Resource Controller API and doesn't require ICD API checks.
+func (g *resourceIBMDatabaseGen2Backend) waitForGen2InstanceUpdate(d *schema.ResourceData, meta interface{}) (interface{}, error) {
+	rsConClient, err := meta.(conns.ClientSession).ResourceControllerV2API()
+	if err != nil {
+		return false, err
+	}
+	instanceID := d.Id()
+
+	stateConf := &resource.StateChangeConf{
+		Pending: []string{databaseInstanceProgressStatus, databaseInstanceInactiveStatus},
+		Target:  []string{databaseInstanceSuccessStatus},
+		Refresh: func() (interface{}, string, error) {
+			rsInst := rc.GetResourceInstanceOptions{
+				ID: &instanceID,
+			}
+			instance, response, err := rsConClient.GetResourceInstance(&rsInst)
+			if err != nil {
+				if apiErr, ok := err.(bmxerror.RequestFailure); ok && apiErr.StatusCode() == 404 {
+					return nil, "", fmt.Errorf("[ERROR] The resource instance %s does not exist anymore: %s %s", d.Id(), err, response)
+				}
+				return nil, "", fmt.Errorf("[ERROR] GetResourceInstance on %s failed with error %s %s", d.Id(), err, response)
+			}
+			if *instance.State == databaseInstanceFailStatus {
+				return *instance, *instance.State, fmt.Errorf("[ERROR] The resource instance %s failed: %s %s", d.Id(), err, response)
+			}
+			return *instance, *instance.State, nil
+		},
+		Timeout:    d.Timeout(schema.TimeoutUpdate),
+		Delay:      10 * time.Second,
+		MinTimeout: 10 * time.Second,
+	}
+
+	// Gen2 databases don't use ICD API - only Resource Controller
+	// No need to call waitForICDReady() like Classic databases do
+	return stateConf.WaitForState()
 }
 
 // updateTags updates resource tags.

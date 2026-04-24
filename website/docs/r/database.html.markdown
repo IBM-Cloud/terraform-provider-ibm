@@ -116,7 +116,6 @@ resource "ibm_database" "postgres_gen2" {
 resource "ibm_resource_key" "db_credentials" {
   name                 = "db-credentials"
   resource_instance_id = ibm_database.postgres_gen2.id
-  role                 = "Writer"
 }
 
 # Access credentials
