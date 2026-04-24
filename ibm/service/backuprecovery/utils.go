@@ -12,11 +12,12 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-// get instanceId and region
-func getInstanceIdAndRegion(d *schema.ResourceData) (string, string) {
+// get instanceId and region  and serviceName
+func getInstanceIdAndRegion(d *schema.ResourceData) (string, string, string) {
 
 	var region string
 	var instanceId string
+	var serviceName string
 
 	if _, ok := d.GetOk("instance_id"); ok {
 		instanceId = d.Get("instance_id").(string)
@@ -26,12 +27,16 @@ func getInstanceIdAndRegion(d *schema.ResourceData) (string, string) {
 		region = d.Get("region").(string)
 	}
 
-	return instanceId, region
+	if _, ok := d.GetOk("service_name"); ok {
+		serviceName = d.Get("service_name").(string)
+	}
+
+	return instanceId, region, serviceName
 
 }
 
-// Clone the base backup recovery client and set the API endpoint per the instance
-func getClientWithInstanceEndpoint(originalClient *backuprecoveryv1.BackupRecoveryV1, bmxsession *session.Session, instanceId, region, endpointType string) *backuprecoveryv1.BackupRecoveryV1 {
+// Clone the base backup recovery client and set the API endpoint per the instance with optional service name
+func getClientWithInstanceEndpoint(originalClient *backuprecoveryv1.BackupRecoveryV1, bmxsession *session.Session, instanceId, region, endpointType, serviceName string) *backuprecoveryv1.BackupRecoveryV1 {
 	// build the api endpoint
 
 	// default endpoint_type is set to public
@@ -40,7 +45,10 @@ func getClientWithInstanceEndpoint(originalClient *backuprecoveryv1.BackupRecove
 	}
 
 	domain := "cloud.ibm.com"
-	serviceName := "backup-recovery"
+	// Use provided service name or default to "backup-recovery"
+	if serviceName == "" {
+		serviceName = "backup-recovery"
+	}
 
 	endpointsFile := bmxsession.Config.EndpointsFile
 
@@ -90,6 +98,13 @@ func AddInstanceFields(resource *schema.Resource) *schema.Resource {
 		Optional:    true,
 		Description: "public or private.",
 		Default:     "public",
+	}
+	resource.Schema["service_name"] = &schema.Schema{
+		Type:        schema.TypeString,
+		Optional:    true,
+		ForceNew:    true,
+		Description: "The service name for the Backup Recovery instance. Defaults to 'backup-recovery' if not provided.",
+		Default:     "backup-recovery",
 	}
 
 	return resource
@@ -147,8 +162,8 @@ func setManagerClientAuth(originalClient *backuprecoveryv1.BackupRecoveryManagem
 	return newClient, nil
 }
 
-// Clone the base backup recovery client and set the API endpoint per the instance
-func getManagerClientWithInstanceEndpoint(originalClient *backuprecoveryv1.BackupRecoveryManagementSreApiV1, bmxsession *session.Session, instanceId, region, endpointType string) *backuprecoveryv1.BackupRecoveryManagementSreApiV1 {
+// Clone the base backup recovery client and set the API endpoint per the instance and an optional service name
+func getManagerClientWithInstanceEndpoint(originalClient *backuprecoveryv1.BackupRecoveryManagementSreApiV1, bmxsession *session.Session, instanceId, region, endpointType, serviceName string) *backuprecoveryv1.BackupRecoveryManagementSreApiV1 {
 	// build the api endpoint
 
 	// default endpoint_type is set to public
@@ -157,7 +172,10 @@ func getManagerClientWithInstanceEndpoint(originalClient *backuprecoveryv1.Backu
 	}
 
 	domain := "cloud.ibm.com"
-	serviceName := "backup-recovery"
+	// Use provided service name or default to "backup-recovery"
+	if serviceName == "" {
+		serviceName = "backup-recovery"
+	}
 	endpointsFile := bmxsession.Config.EndpointsFile
 
 	iamUrl := os.Getenv("IBMCLOUD_IAM_API_ENDPOINT")

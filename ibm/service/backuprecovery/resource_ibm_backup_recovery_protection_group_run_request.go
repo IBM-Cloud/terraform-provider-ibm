@@ -428,7 +428,7 @@ func resourceIbmBackupRecoveryProtectionGroupRunRequestCreate(context context.Co
 		return tfErr.GetDiag()
 	}
 	endpointType := d.Get("endpoint_type").(string)
-	instanceId, region := getInstanceIdAndRegion(d)
+	instanceId, region, serviceName := getInstanceIdAndRegion(d)
 	if instanceId != "" && region != "" {
 		bmxsession, err := meta.(conns.ClientSession).BluemixSession()
 		if err != nil {
@@ -436,7 +436,7 @@ func resourceIbmBackupRecoveryProtectionGroupRunRequestCreate(context context.Co
 			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 			return tfErr.GetDiag()
 		}
-		backupRecoveryClient = getClientWithInstanceEndpoint(backupRecoveryClient, bmxsession, instanceId, region, endpointType)
+		backupRecoveryClient = getClientWithInstanceEndpoint(backupRecoveryClient, bmxsession, instanceId, region, endpointType, serviceName)
 	}
 
 	createProtectionGroupRunOptions := &backuprecoveryv1.CreateProtectionGroupRunOptions{}

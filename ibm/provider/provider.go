@@ -1175,6 +1175,7 @@ func Provider() *schema.Provider {
 			"ibm_backup_recovery_manager_create_cluster_upgrades":                backuprecovery.AddInstanceFields(backuprecovery.ResourceIbmBackupRecoveryManagerCreateClusterUpgrades()),
 			"ibm_backup_recovery_manager_update_cluster_upgrades":                backuprecovery.AddInstanceFields(backuprecovery.ResourceIbmBackupRecoveryManagerUpdateClusterUpgrades()),
 			"ibm_backup_recovery_manager_cancel_cluster_upgrades":                backuprecovery.AddInstanceFields(backuprecovery.ResourceIbmBackupRecoveryManagerCancelClusterUpgrades()),
+			"ibm_backup_recovery_protection_source_refresh":                      backuprecovery.AddInstanceFields(backuprecovery.ResourceIbmBackupRecoveryProtectionSourceRefresh()),
 
 			"ibm_app":                        cloudfoundry.ResourceIBMApp(),
 			"ibm_app_domain_private":         cloudfoundry.ResourceIBMAppDomainPrivate(),
