@@ -1,8 +1,8 @@
-// Copyright IBM Corp. 2025 All Rights Reserved.
+// Copyright IBM Corp. 2026 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 /*
- * IBM OpenAPI Terraform Generator Version: 3.108.0-56772134-20251111-102802
+ * IBM OpenAPI Terraform Generator Version: 3.113.1-d76630af-20260320-135953
  */
 
 package atracker
@@ -143,6 +143,20 @@ func DataSourceIBMAtrackerTargets() *schema.Resource {
 										Type:        schema.TypeString,
 										Computed:    true,
 										Description: "The CRN of the IBM Cloud Logs instance.",
+									},
+								},
+							},
+						},
+						"appconfig_endpoint": &schema.Schema{
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "Property values for the IBM Cloud App Configuration endpoint in responses.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"target_crn": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The CRN of the IBM Cloud App Configuration instance.",
 									},
 								},
 							},
@@ -301,6 +315,13 @@ func DataSourceIBMAtrackerTargetsTargetToMap(model *atrackerv2.Target) (map[stri
 		}
 		modelMap["cloudlogs_endpoint"] = []map[string]interface{}{cloudlogsEndpointMap}
 	}
+	if model.AppconfigEndpoint != nil {
+		appconfigEndpointMap, err := DataSourceIBMAtrackerTargetsAppconfigEndpointToMap(model.AppconfigEndpoint)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["appconfig_endpoint"] = []map[string]interface{}{appconfigEndpointMap}
+	}
 	writeStatusMap, err := DataSourceIBMAtrackerTargetsWriteStatusToMap(model.WriteStatus)
 	if err != nil {
 		return modelMap, err
@@ -340,6 +361,12 @@ func DataSourceIBMAtrackerTargetsEventstreamsEndpointToMap(model *atrackerv2.Eve
 }
 
 func DataSourceIBMAtrackerTargetsCloudLogsEndpointToMap(model *atrackerv2.CloudLogsEndpoint) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	modelMap["target_crn"] = *model.TargetCRN
+	return modelMap, nil
+}
+
+func DataSourceIBMAtrackerTargetsAppconfigEndpointToMap(model *atrackerv2.AppconfigEndpoint) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["target_crn"] = *model.TargetCRN
 	return modelMap, nil
