@@ -1,8 +1,8 @@
-// Copyright IBM Corp. 2024 All Rights Reserved.
+// Copyright IBM Corp. 2026 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 /*
- * IBM OpenAPI Terraform Generator Version: 3.94.1-71478489-20240820-161623
+ * IBM OpenAPI Terraform Generator Version: 3.102.0-615ec964-20250307-203034
  */
 
 package codeengine
@@ -12,13 +12,14 @@ import (
 	"fmt"
 	"log"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 	"github.com/IBM/code-engine-go-sdk/codeenginev2"
 	"github.com/IBM/go-sdk-core/v5/core"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 func ResourceIbmCodeEngineConfigMap() *schema.Resource {
@@ -30,57 +31,57 @@ func ResourceIbmCodeEngineConfigMap() *schema.Resource {
 		Importer:      &schema.ResourceImporter{},
 
 		Schema: map[string]*schema.Schema{
-			"project_id": {
+			"project_id": &schema.Schema{
 				Type:         schema.TypeString,
 				Required:     true,
 				ForceNew:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_code_engine_config_map", "project_id"),
 				Description:  "The ID of the project.",
 			},
-			"data": {
+			"data": &schema.Schema{
 				Type:        schema.TypeMap,
 				Optional:    true,
 				Description: "The key-value pair for the config map. Values must be specified in `KEY=VALUE` format.",
 				Elem:        &schema.Schema{Type: schema.TypeString},
 			},
-			"name": {
+			"name": &schema.Schema{
 				Type:         schema.TypeString,
 				Required:     true,
 				ForceNew:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_code_engine_config_map", "name"),
 				Description:  "The name of the config map.",
 			},
-			"created_at": {
+			"created_at": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The timestamp when the resource was created.",
 			},
-			"entity_tag": {
+			"entity_tag": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The version of the config map instance, which is used to achieve optimistic locking.",
 			},
-			"href": {
+			"href": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "When you provision a new config map,  a URL is created identifying the location of the instance.",
 			},
-			"config_map_id": {
+			"config_map_id": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The identifier of the resource.",
 			},
-			"region": {
+			"region": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The region of the project the resource is located in. Possible values: 'au-syd', 'br-sao', 'ca-tor', 'eu-de', 'eu-gb', 'jp-osa', 'jp-tok', 'us-east', 'us-south'.",
 			},
-			"resource_type": {
+			"resource_type": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The type of the config map.",
 			},
-			"etag": {
+			"etag": &schema.Schema{
 				Type:     schema.TypeString,
 				Computed: true,
 			},

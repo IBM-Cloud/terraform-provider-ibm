@@ -49,7 +49,8 @@ You can specify the following arguments for this data source.
 In addition to all argument reference list, you can access the following attribute references after your data source is created.
 
 - `crn` - (String) The network interface's crn.
-- `id` - (String) The unique identifier of the network interface resource.The id is composed of `<network_id>/<network_interface_id>`  
+- `external_ip` - (String) The external ip address for pub-vlan networks.
+- `id` - (String) The unique identifier of the network interface resource.The id is composed of `<network_id>/<network_interface_id>`
 - `instance` - (List) The attached instance to this Network Interface.
 
    Nested scheme for `instance`:

@@ -24,9 +24,9 @@ data "ibm_cd_tekton_pipeline_trigger" "cd_tekton_pipeline_trigger" {
 You can specify the following arguments for this data source.
 
 * `pipeline_id` - (Required, Forces new resource, String) The Tekton pipeline ID.
-  * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[-0-9a-z]+$/`.
+  * Constraints: Length must be `36` characters. The value must match regular expression `/^[-0-9a-z]+$/`.
 * `trigger_id` - (Required, Forces new resource, String) The trigger ID.
-  * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[-0-9a-z]+$/`.
+  * Constraints: Length must be `36` characters. The value must match regular expression `/^[-0-9a-z]+$/`.
 
 ## Attribute Reference
 
@@ -71,7 +71,7 @@ Nested schema for **properties**:
 	* `type` - (Forces new resource, String) Property type.
 	  * Constraints: Allowable values are: `secure`, `text`, `integration`, `single_select`, `appconfig`.
 	* `value` - (String) Property value. Any string value is valid.
-	  * Constraints: The maximum length is `4096` characters. The minimum length is `0` characters. The value must match regular expression `/^.*$/`.
+	  * Constraints: The maximum length is `4096` characters. The minimum length is `0` characters. The value must match regular expression `/^(\\s|.)*$/`.
 * `secret` - (List) Only needed for Generic Webhook trigger type. The secret is used to start the Generic Webhook trigger.
 Nested schema for **secret**:
 	* `algorithm` - (String) Algorithm used for `digest_matches` secret type. Only needed for `digest_matches` secret type.
@@ -98,7 +98,7 @@ Nested schema for **source**:
 		* `tool` - (List) Reference to the repository tool in the parent toolchain.
 		Nested schema for **tool**:
 			* `id` - (String) ID of the repository tool instance in the parent toolchain.
-			  * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[-0-9a-z]+$/`.
+			  * Constraints: Length must be `36` characters. The value must match regular expression `/^[-0-9a-z]+$/`.
 		* `url` - (Forces new resource, String) URL of the repository to which the trigger is listening.
 		  * Constraints: The maximum length is `2048` characters. The minimum length is `10` characters. The value must match regular expression `/^http(s)?:\/\/([^\/?#]*)([^?#]*)(\\?([^#]*))?(#(.*))?$/`.
 	* `type` - (String) The only supported source type is "git", indicating that the source is a git repository.

@@ -63,70 +63,6 @@ func ResourceIBMTrustedProfileTemplateAssignment() *schema.Resource {
 				Required:    true,
 				Description: "Assignment target.",
 			},
-			"context": {
-				Type:        schema.TypeList,
-				Computed:    true,
-				Description: "Context with key properties for problem determination.",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"transaction_id": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The transaction ID of the inbound REST request.",
-						},
-						"operation": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The operation of the inbound REST request.",
-						},
-						"user_agent": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The user agent of the inbound REST request.",
-						},
-						"url": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The URL of that cluster.",
-						},
-						"instance_id": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The instance ID of the server instance processing the request.",
-						},
-						"thread_id": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The thread ID of the server instance processing the request.",
-						},
-						"host": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The host of the server instance processing the request.",
-						},
-						"start_time": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The start time of the request.",
-						},
-						"end_time": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The finish time of the request.",
-						},
-						"elapsed_time": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The elapsed time in msec.",
-						},
-						"cluster_name": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The cluster name.",
-						},
-					},
-				},
-			},
 			"account_id": {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -145,7 +81,7 @@ func ResourceIBMTrustedProfileTemplateAssignment() *schema.Resource {
 					Schema: map[string]*schema.Schema{
 						"target": {
 							Type:        schema.TypeString,
-							Required:    true,
+							Computed:    true,
 							Description: "Target account where the IAM resource is created.",
 						},
 						"profile": {
@@ -284,46 +220,6 @@ func ResourceIBMTrustedProfileTemplateAssignment() *schema.Resource {
 					},
 				},
 			},
-			"history": {
-				Type:        schema.TypeList,
-				Computed:    true,
-				Description: "Assignment history.",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"timestamp": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "Timestamp when the action was triggered.",
-						},
-						"iam_id": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "IAM ID of the identity which triggered the action.",
-						},
-						"iam_id_account": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "Account of the identity which triggered the action.",
-						},
-						"action": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "Action of the history entry.",
-						},
-						"params": {
-							Type:        schema.TypeList,
-							Computed:    true,
-							Description: "Params of the history entry.",
-							Elem:        &schema.Schema{Type: schema.TypeString},
-						},
-						"message": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "Message which summarizes the executed action.",
-						},
-					},
-				},
-			},
 			"href": {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -435,25 +331,14 @@ func resourceIBMTrustedProfileTemplateAssignmentRead(context context.Context, d 
 	if err = d.Set("target", templateAssignmentResponse.Target); err != nil {
 		return diag.FromErr(fmt.Errorf("error setting target: %s", err))
 	}
-	ctx := []map[string]interface{}{}
-	if !core.IsNil(templateAssignmentResponse.Context) {
-		contextMap, err := resourceIBMTrustedProfileTemplateAssignmentResponseContextToMap(templateAssignmentResponse.Context)
-		if err != nil {
-			return diag.FromErr(err)
-		}
-		ctx = append(ctx, contextMap)
-	}
-	if err = d.Set("context", ctx); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting context: %s", err))
-	}
 	if err = d.Set("account_id", templateAssignmentResponse.AccountID); err != nil {
 		return diag.FromErr(fmt.Errorf("error setting account_id: %s", err))
 	}
 	if err = d.Set("status", templateAssignmentResponse.Status); err != nil {
 		return diag.FromErr(fmt.Errorf("error setting status: %s", err))
 	}
+	resources := []map[string]interface{}{}
 	if !core.IsNil(templateAssignmentResponse.Resources) {
-		resources := []map[string]interface{}{}
 		for _, resourcesItem := range templateAssignmentResponse.Resources {
 			resourcesItemMap, err := resourceIBMTrustedProfileTemplateAssignmentTemplateAssignmentResponseResourceToMap(&resourcesItem)
 			if err != nil {
@@ -461,22 +346,9 @@ func resourceIBMTrustedProfileTemplateAssignmentRead(context context.Context, d 
 			}
 			resources = append(resources, resourcesItemMap)
 		}
-		if err = d.Set("resources", resources); err != nil {
-			return diag.FromErr(fmt.Errorf("error setting resources: %s", err))
-		}
 	}
-	history := []map[string]interface{}{}
-	if !core.IsNil(templateAssignmentResponse.History) {
-		for _, historyItem := range templateAssignmentResponse.History {
-			historyItemMap, err := EnityHistoryRecordToMap(&historyItem)
-			if err != nil {
-				return diag.FromErr(err)
-			}
-			history = append(history, historyItemMap)
-		}
-	}
-	if err = d.Set("history", history); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting history: %s", err))
+	if err = d.Set("resources", resources); err != nil {
+		return diag.FromErr(fmt.Errorf("error setting resources: %s", err))
 	}
 	if !core.IsNil(templateAssignmentResponse.Href) {
 		if err = d.Set("href", templateAssignmentResponse.Href); err != nil {
@@ -622,44 +494,6 @@ func isTrustedProfileTemplateAssigned(id string, meta interface{}) retry.StateRe
 
 		return assignment, READY, fmt.Errorf("[ERROR] Unexpected status reached for assignment %s.: %s\n", id, response)
 	}
-}
-
-func resourceIBMTrustedProfileTemplateAssignmentResponseContextToMap(model *iamidentityv1.ResponseContext) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	if model.TransactionID != nil {
-		modelMap["transaction_id"] = model.TransactionID
-	}
-	if model.Operation != nil {
-		modelMap["operation"] = model.Operation
-	}
-	if model.UserAgent != nil {
-		modelMap["user_agent"] = model.UserAgent
-	}
-	if model.URL != nil {
-		modelMap["url"] = model.URL
-	}
-	if model.InstanceID != nil {
-		modelMap["instance_id"] = model.InstanceID
-	}
-	if model.ThreadID != nil {
-		modelMap["thread_id"] = model.ThreadID
-	}
-	if model.Host != nil {
-		modelMap["host"] = model.Host
-	}
-	if model.StartTime != nil {
-		modelMap["start_time"] = model.StartTime
-	}
-	if model.EndTime != nil {
-		modelMap["end_time"] = model.EndTime
-	}
-	if model.ElapsedTime != nil {
-		modelMap["elapsed_time"] = model.ElapsedTime
-	}
-	if model.ClusterName != nil {
-		modelMap["cluster_name"] = model.ClusterName
-	}
-	return modelMap, nil
 }
 
 func resourceIBMTrustedProfileTemplateAssignmentTemplateAssignmentResponseResourceToMap(model *iamidentityv1.TemplateAssignmentResponseResource) (map[string]interface{}, error) {

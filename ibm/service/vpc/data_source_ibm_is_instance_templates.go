@@ -101,6 +101,39 @@ func DataSourceIBMISInstanceTemplates() *schema.Resource {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
+						// spot changes
+						"availability": &schema.Schema{
+							Type:     schema.TypeList,
+							Computed: true,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"class": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The availability class for the virtual server instance.- `spot`: The virtual server instance may be preempted.- `standard`: The virtual server instance will not be preempted.If `spot` is specified, the virtual server instance:- `reservation_affinity.policy` must be `disabled`- `placement_target` must not specify a dedicated host or dedicated host group.",
+									},
+								},
+							},
+						},
+						"availability_policy": &schema.Schema{
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "The availability policy to use for this virtual server instance.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"host_failure": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The action to perform if the compute host experiences a failure:- `restart`: Restart the virtual server instance- `stop`: Leave the virtual server instance stopped. See [handling host failures](https://cloud.ibm.com/docs/vpc?topic=vpc-host-failure-recovery-policies) for details.",
+									},
+									"preemption": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The action to perform if the virtual server instance is preempted:- `delete`: Delete the virtual server instance- `stop`: Leave the virtual server instance stopped. See [virtual server instance preemption](https://cloud.ibm.com/docs/vpc?topic=vpc-spot-instances-virtual-servers#spot-instances-preemption) for details.",
+									},
+								},
+							},
+						},
 						// cluster changes
 						"cluster_network_attachments": &schema.Schema{
 							Type:        schema.TypeList,
@@ -1081,6 +1114,21 @@ func dataSourceIBMISInstanceTemplatesRead(context context.Context, d *schema.Res
 		case *vpcv1.InstanceTemplate:
 			{
 				instance := v
+				// spot changes
+				if instance.Availability != nil {
+					availabilityMap, err := DataSourceIBMIsInstanceTemplatesInstanceAvailabilityPrototypeToMap(instance.Availability)
+					if err != nil {
+						return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_instance_templates", "read", "availability-to-map").GetDiag()
+					}
+					template["availability"] = []map[string]interface{}{availabilityMap}
+				}
+				if instance.AvailabilityPolicy != nil {
+					availabilityPolicyMap, err := DataSourceIBMIsInstanceTemplatesInstanceAvailabilityPolicyPrototypeToMap(instance.AvailabilityPolicy)
+					if err != nil {
+						return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_instance_templates", "read", "availability_policy-to-map").GetDiag()
+					}
+					template["availability_policy"] = []map[string]interface{}{availabilityPolicyMap}
+				}
 				template["id"] = instance.ID
 				template[isInstanceTemplatesHref] = instance.Href
 				template[isInstanceTemplatesCrn] = instance.CRN
@@ -1467,6 +1515,21 @@ func dataSourceIBMISInstanceTemplatesRead(context context.Context, d *schema.Res
 		case *vpcv1.InstanceTemplateInstanceBySourceSnapshotInstanceTemplateContext:
 			{
 				instance := v
+				// spot changes
+				if instance.Availability != nil {
+					availabilityMap, err := DataSourceIBMIsInstanceTemplatesInstanceAvailabilityPrototypeToMap(instance.Availability)
+					if err != nil {
+						return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_instance_templates", "read", "availability-to-map").GetDiag()
+					}
+					template["availability"] = []map[string]interface{}{availabilityMap}
+				}
+				if instance.AvailabilityPolicy != nil {
+					availabilityPolicyMap, err := DataSourceIBMIsInstanceTemplatesInstanceAvailabilityPolicyPrototypeToMap(instance.AvailabilityPolicy)
+					if err != nil {
+						return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_instance_templates", "read", "availability_policy-to-map").GetDiag()
+					}
+					template["availability_policy"] = []map[string]interface{}{availabilityPolicyMap}
+				}
 				template["id"] = instance.ID
 				template[isInstanceTemplatesHref] = instance.Href
 				template[isInstanceTemplatesCrn] = instance.CRN
@@ -2074,7 +2137,24 @@ func DataSourceIBMIsInstanceTemplatesInstanceClusterNetworkAttachmentPrototypeCl
 	modelMap["href"] = *model.Href
 	return modelMap, nil
 }
+func DataSourceIBMIsInstanceTemplatesInstanceAvailabilityPrototypeToMap(model *vpcv1.InstanceAvailabilityPrototype) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.Class != nil {
+		modelMap["class"] = *model.Class
+	}
+	return modelMap, nil
+}
 
+func DataSourceIBMIsInstanceTemplatesInstanceAvailabilityPolicyPrototypeToMap(model *vpcv1.InstanceAvailabilityPolicyPrototype) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.HostFailure != nil {
+		modelMap["host_failure"] = *model.HostFailure
+	}
+	if model.Preemption != nil {
+		modelMap["preemption"] = *model.Preemption
+	}
+	return modelMap, nil
+}
 func DataSourceIBMIsInstanceTemplatesInstanceVcpuPrototypeToMap(model *vpcv1.InstanceVcpuPrototype) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.Percentage != nil {

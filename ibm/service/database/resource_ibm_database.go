@@ -136,6 +136,43 @@ func retry(f func() error) (err error) {
 	}
 }
 
+type resourceIBMDatabaseBackend interface {
+	Create(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics
+	Read(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics
+	Update(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics
+	Delete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics
+	Exists(d *schema.ResourceData, meta interface{}) (bool, error)
+
+	WarnUnsupported(context context.Context, d *schema.ResourceData) diag.Diagnostics
+	ValidateUnsupportedAttrsDiff(context context.Context, d *schema.ResourceDiff, meta interface{}) error
+}
+
+func pickResourceBackend(d *schema.ResourceData) resourceIBMDatabaseBackend {
+	plan := d.Get("plan").(string)
+	if isGen2Plan(plan) {
+		return newResourceIBMDatabaseGen2Backend()
+	}
+	return newResourceIBMDatabaseClassicBackend()
+}
+
+func pickResourceBackendFromDiff(d *schema.ResourceDiff) resourceIBMDatabaseBackend {
+	planRaw, ok := d.GetOk("plan")
+	if !ok {
+		// No plan yet; default to classic to avoid blocking planning unexpectedly.
+		return newResourceIBMDatabaseClassicBackend()
+	}
+
+	plan, ok := planRaw.(string)
+	if !ok {
+		return newResourceIBMDatabaseClassicBackend()
+	}
+
+	if isGen2Plan(plan) {
+		return newResourceIBMDatabaseGen2Backend()
+	}
+	return newResourceIBMDatabaseClassicBackend()
+}
+
 func ResourceIBMDatabaseInstance() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceIBMDatabaseInstanceCreate,
@@ -145,11 +182,13 @@ func ResourceIBMDatabaseInstance() *schema.Resource {
 		Exists:        resourceIBMDatabaseInstanceExists,
 
 		CustomizeDiff: customdiff.All(
+			validateUnsupportedAttrsDiff,
 			resourceIBMDatabaseInstanceDiff,
 			validateGroupsDiff,
 			validateUsersDiff,
 			validateRemoteLeaderIDDiff,
 			validateVersionDiff,
+			validateAsyncRestoreDiff,
 		),
 
 		Importer: &schema.ResourceImporter{},
@@ -281,6 +320,12 @@ func ResourceIBMDatabaseInstance() *schema.Resource {
 				Description: "Option to skip the initial backup when promoting a read-only replica. Skipping the initial backup means that your replica becomes available more quickly, but there is no immediate backup available.",
 				Type:        schema.TypeBool,
 				Optional:    true,
+			},
+			"async_restore": {
+				Description:      "Option to support FAST PG Restore. Only applicable when restoring a PostgreSQL instance",
+				Type:             schema.TypeBool,
+				Optional:         true,
+				DiffSuppressFunc: flex.ApplyOnce,
 			},
 			"key_protect_instance": {
 				Description: "The CRN of Key protect instance",
@@ -936,6 +981,7 @@ type Params struct {
 	PITRDeploymentID    string  `json:"point_in_time_recovery_deployment_id,omitempty"`
 	PITRTimeStamp       *string `json:"point_in_time_recovery_time,omitempty"`
 	OfflineRestore      bool    `json:"offline_restore,omitempty"`
+	AsyncRestore        bool    `json:"async_restore,omitempty"`
 }
 
 type Group struct {
@@ -997,7 +1043,7 @@ func getDefaultScalingGroups(_service string, _plan string, _hostFlavor string, 
 	}
 
 	getDefaultScalingGroupsResponse, response, err := cloudDatabasesClient.GetDefaultScalingGroups(getDefaultScalingGroupsOptions)
-	if err != nil {
+	if err != nil && response != nil {
 		if response.StatusCode == 422 {
 			return groups, fmt.Errorf("%s is not available on multitenant", service)
 		}
@@ -1126,6 +1172,13 @@ func resourceIBMDatabaseInstanceDiff(_ context.Context, diff *schema.ResourceDif
 
 // Replace with func wrapper for resourceIBMResourceInstanceCreate specifying serviceName := "database......."
 func resourceIBMDatabaseInstanceCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	b := pickResourceBackend(d)
+	diags := b.WarnUnsupported(context, d)
+	diags = append(diags, b.Create(context, d, meta)...)
+	return diags
+}
+
+func classicDatabaseInstanceCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	rsConClient, err := meta.(conns.ClientSession).ResourceControllerV2API()
 	if err != nil {
 		return diag.FromErr(err)
@@ -1228,6 +1281,10 @@ func resourceIBMDatabaseInstanceCreate(context context.Context, d *schema.Resour
 
 	if offlineRestore, ok := d.GetOk("offline_restore"); ok {
 		params.OfflineRestore = offlineRestore.(bool)
+	}
+
+	if asyncRestore, ok := d.GetOk("async_restore"); ok {
+		params.AsyncRestore = asyncRestore.(bool)
 	}
 
 	var initialNodeCount int
@@ -1399,7 +1456,7 @@ func resourceIBMDatabaseInstanceCreate(context context.Context, d *schema.Resour
 		getDeploymentInfoResponse, response, err := cloudDatabasesClient.GetDeploymentInfo(getDeploymentInfoOptions)
 
 		if err != nil {
-			if response.StatusCode == 404 {
+			if response != nil && response.StatusCode == 404 {
 				return diag.FromErr(fmt.Errorf("[ERROR] The database instance was not found in the region set for the Provider, or the default of us-south. Specify the correct region in the provider definition, or create a provider alias for the correct region. %v", err))
 			}
 			return diag.FromErr(fmt.Errorf("[ERROR] Error getting database config while updating adminpassword for: %s with error %s", instanceID, err))
@@ -1597,6 +1654,10 @@ func resourceIBMDatabaseInstanceCreate(context context.Context, d *schema.Resour
 }
 
 func resourceIBMDatabaseInstanceRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	return pickResourceBackend(d).Read(context, d, meta)
+}
+
+func classicDatabaseInstanceRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	rsConClient, err := meta.(conns.ClientSession).ResourceControllerV2API()
 	if err != nil {
 		return diag.FromErr(err)
@@ -1693,7 +1754,7 @@ func resourceIBMDatabaseInstanceRead(context context.Context, d *schema.Resource
 	getDeploymentInfoResponse, response, err := cloudDatabasesClient.GetDeploymentInfo(getDeploymentInfoOptions)
 
 	if err != nil {
-		if response.StatusCode == 404 {
+		if response != nil && response.StatusCode == 404 {
 			return diag.FromErr(fmt.Errorf("[ERROR] The database instance was not found in the region set for the Provider, or the default of us-south. Specify the correct region in the provider definition, or create a provider alias for the correct region. %v", err))
 		}
 		return diag.FromErr(fmt.Errorf("[ERROR] Error getting database config while updating adminpassword for: %s with error %s", instanceID, err))
@@ -1787,6 +1848,13 @@ func resourceIBMDatabaseInstanceRead(context context.Context, d *schema.Resource
 }
 
 func resourceIBMDatabaseInstanceUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	b := pickResourceBackend(d)
+	diags := b.WarnUnsupported(context, d)
+	diags = append(diags, b.Update(context, d, meta)...)
+	return diags
+}
+
+func classicDatabaseInstanceUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	rsConClient, err := meta.(conns.ClientSession).ResourceControllerV2API()
 	if err != nil {
 		return diag.FromErr(err)
@@ -2259,6 +2327,10 @@ func resourceIBMDatabaseInstanceUpdate(context context.Context, d *schema.Resour
 }
 
 func resourceIBMDatabaseInstanceDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	return pickResourceBackend(d).Delete(context, d, meta)
+}
+
+func classicDatabaseInstanceDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	rsConClient, err := meta.(conns.ClientSession).ResourceControllerV2API()
 	if err != nil {
 		return diag.FromErr(err)
@@ -2292,7 +2364,12 @@ func resourceIBMDatabaseInstanceDelete(context context.Context, d *schema.Resour
 
 	return nil
 }
+
 func resourceIBMDatabaseInstanceExists(d *schema.ResourceData, meta interface{}) (bool, error) {
+	return pickResourceBackend(d).Exists(d, meta)
+}
+
+func classicDatabaseInstanceExists(d *schema.ResourceData, meta interface{}) (bool, error) {
 	rsConClient, err := meta.(conns.ClientSession).ResourceControllerV2API()
 	if err != nil {
 		return false, err
@@ -3195,6 +3272,17 @@ func validateRemoteLeaderIDDiff(_ context.Context, diff *schema.ResourceDiff, me
 	return nil
 }
 
+func validateAsyncRestoreDiff(_ context.Context, diff *schema.ResourceDiff, meta interface{}) (err error) {
+	_, asyncRestoreOk := diff.GetOk("async_restore")
+	service := diff.Get("service").(string)
+
+	if asyncRestoreOk && (service != "databases-for-postgresql") {
+		return fmt.Errorf("[ERROR] `async_restore` is only supported for `databases-for-postgresql` for Fast PG Restore")
+	}
+
+	return nil
+}
+
 func validateVersionDiff(_ context.Context, diff *schema.ResourceDiff, meta interface{}) (err error) {
 	instanceID := diff.Id()
 	oldVersion, newVersion := diff.GetChange("version")
@@ -3294,7 +3382,7 @@ func (u *DatabaseUser) Update(instanceID string, d *schema.ResourceData, meta in
 	updateUserResponse, response, err := cloudDatabasesClient.UpdateUser(updateUserOptions)
 
 	// user was found but an error occurs while triggering task
-	if err != nil || (response.StatusCode < 200 || response.StatusCode >= 300) {
+	if err != nil || (response != nil && (response.StatusCode < 200 || response.StatusCode >= 300)) {
 		return fmt.Errorf("[ERROR] UpdateUser (%s) failed %w\n%s", *updateUserOptions.Username, err, response)
 	}
 

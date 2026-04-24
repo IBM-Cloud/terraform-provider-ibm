@@ -145,18 +145,32 @@ func dataSourceIBMDLGatewayMacsecCakRead(context context.Context, d *schema.Reso
 		d.Set(dlUpdatedAt, result.UpdatedAt.String())
 	}
 
-	hpcsKey := map[string]interface{}{}
 	if result.Key != nil {
-		hpcsKey[dlGatewayMacsecHPCSCrn] = *result.Key.Crn
-		d.Set(dlGatewayMacsecHPCSKey, []map[string]interface{}{hpcsKey})
+		// Type assert to access Crn field from polymorphic interface
+		if hpcsKey, ok := result.Key.(*directlinkv1.GatewayMacsecCakKeyReferenceHpcsCakKeyReference); ok {
+			keyMap := map[string]interface{}{}
+			keyMap[dlGatewayMacsecHPCSCrn] = *hpcsKey.Crn
+			d.Set(dlGatewayMacsecHPCSKey, []map[string]interface{}{keyMap})
+		} else if smKey, ok := result.Key.(*directlinkv1.GatewayMacsecCakKeyReferenceSecretsManagerCakKeyReference); ok {
+			keyMap := map[string]interface{}{}
+			keyMap[dlGatewayMacsecHPCSCrn] = *smKey.Crn
+			d.Set(dlGatewayMacsecHPCSKey, []map[string]interface{}{keyMap})
+		}
 	}
 
 	activeDelta := map[string]interface{}{}
 	if result.ActiveDelta != nil {
-		hpcsKey := map[string]interface{}{}
 		if result.ActiveDelta.Key != nil {
-			hpcsKey[dlGatewayMacsecHPCSCrn] = *result.ActiveDelta.Key.Crn
-			activeDelta[dlGatewayMacsecHPCSKey] = []map[string]interface{}{hpcsKey}
+			// Type assert to access Crn field from polymorphic interface
+			if hpcsKey, ok := result.ActiveDelta.Key.(*directlinkv1.GatewayMacsecCakKeyReferenceHpcsCakKeyReference); ok {
+				keyMap := map[string]interface{}{}
+				keyMap[dlGatewayMacsecHPCSCrn] = *hpcsKey.Crn
+				activeDelta[dlGatewayMacsecHPCSKey] = []map[string]interface{}{keyMap}
+			} else if smKey, ok := result.ActiveDelta.Key.(*directlinkv1.GatewayMacsecCakKeyReferenceSecretsManagerCakKeyReference); ok {
+				keyMap := map[string]interface{}{}
+				keyMap[dlGatewayMacsecHPCSCrn] = *smKey.Crn
+				activeDelta[dlGatewayMacsecHPCSKey] = []map[string]interface{}{keyMap}
+			}
 		}
 
 		activeDelta[dlGatewayMacsecCakName] = *result.ActiveDelta.Name

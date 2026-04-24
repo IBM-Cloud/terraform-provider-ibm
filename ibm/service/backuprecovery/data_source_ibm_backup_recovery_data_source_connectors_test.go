@@ -17,7 +17,7 @@ import (
 )
 
 func TestAccIbmBackupRecoveryDataSourceConnectorsDataSourceBasic(t *testing.T) {
-	dataSourceConnectorConnectionId := "5128356219792164864"
+	dataSourceConnectorConnectionId := "8712906519035125760"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheck(t) },

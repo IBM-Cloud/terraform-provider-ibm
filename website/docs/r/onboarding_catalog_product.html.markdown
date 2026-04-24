@@ -232,6 +232,7 @@ resource "ibm_onboarding_catalog_product" "onboarding_catalog_product_instance" 
 				children {
 					kind = "service"
 					name = "name"
+					id = "id"
 				}
 			}
 		}
@@ -275,6 +276,8 @@ Nested schema for **metadata**:
 			* `children` - (Optional, List)
 			  * Constraints: The maximum length is `1000` items. The minimum length is `0` items.
 			Nested schema for **children**:
+				* `id` - (Optional, String) The id of the composite child.
+				  * Constraints: The maximum length is `100` characters. The minimum length is `2` characters. The value must match regular expression `/^[ -~\\s]*$/`.
 				* `kind` - (Optional, String) The type of the composite child.
 				  * Constraints: Allowable values are: `service`, `platform_service`.
 				* `name` - (Optional, String) The name of the composite child.
@@ -590,7 +593,7 @@ Nested schema for **overview_ui**:
 		* `display_name` - (Optional, String) The display name of the product.
 		* `long_description` - (Optional, String) The detailed description of your product that is displayed at the beginning of your product page in the catalog. Markdown markup language is supported.
 * `product_id` - (Required, Forces new resource, String) The unique ID of the resource.
-  * Constraints: The maximum length is `71` characters. The minimum length is `71` characters. The value must match regular expression `/^[a-zA-Z0-9]{32}:o:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/`.
+  * Constraints: Length must be `71` characters. The value must match regular expression `/^[a-zA-Z0-9]{32}:o:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/`.
 * `tags` - (Required, List) A list of tags that carry information about your product. These tags can be used to find your product in the IBM Cloud catalog.
   * Constraints: The list items must match regular expression `/^[a-z0-9\\-._]+$/`. The maximum length is `100` items. The minimum length is `0` items.
 

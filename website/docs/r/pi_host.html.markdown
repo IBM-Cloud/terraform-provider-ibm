@@ -69,13 +69,13 @@ In addition to all argument reference list, you can access the following attribu
 
     Nested schema for `capacity`:
       - `available_core` - (Float) Number of cores currently available.
-      - `available_memory` - (Float) Amount of memory currently available (in GB).
+      - `available_memory` - (Float) Amount of memory currently available (in GiB).
       - `reserved_core` - (Float) Number of cores reserved for system use.
-      - `reserved_memory` - (Float) Amount of memory reserved for system use (in GB).
+      - `reserved_memory` - (Float) Amount of memory reserved for system use (in GiB).
       - `total_core` - (Float) Total number of cores of the host.
-      - `total_memory` - (Float) Total amount of memory of the host (in GB).
+      - `total_memory` - (Float) Total amount of memory of the host (in GiB).
       - `used_core` - (Float) Number of cores in use on the host.
-      - `used_memory` - (Float) Amount of memory used on the host (in GB).
+      - `used_memory` - (Float) Amount of memory used on the host (in GiB).
 
 - `crn` - (String) The CRN of this resource.
 - `host_group` - (Map)  Information about the owning host group.
