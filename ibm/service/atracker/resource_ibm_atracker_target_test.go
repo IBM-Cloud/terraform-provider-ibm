@@ -1,4 +1,4 @@
-// Copyright IBM Corp. 2025 All Rights Reserved.
+// Copyright IBM Corp. 2026 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 package atracker_test
@@ -243,6 +243,22 @@ func TestResourceIBMAtrackerTargetCloudLogsEndpointToMap(t *testing.T) {
 	checkResult(result)
 }
 
+func TestResourceIBMAtrackerTargetAppconfigEndpointToMap(t *testing.T) {
+	checkResult := func(result map[string]interface{}) {
+		model := make(map[string]interface{})
+		model["target_crn"] = "crn:v1:bluemix:public:apprapp:us-south:a/11111111111111111111111111111111:22222222-2222-2222-2222-222222222222::"
+
+		assert.Equal(t, result, model)
+	}
+
+	model := new(atrackerv2.AppconfigEndpoint)
+	model.TargetCRN = core.StringPtr("crn:v1:bluemix:public:apprapp:us-south:a/11111111111111111111111111111111:22222222-2222-2222-2222-222222222222::")
+
+	result, err := atracker.ResourceIBMAtrackerTargetAppconfigEndpointToMap(model)
+	assert.Nil(t, err)
+	checkResult(result)
+}
+
 func TestResourceIBMAtrackerTargetWriteStatusToMap(t *testing.T) {
 	checkResult := func(result map[string]interface{}) {
 		model := make(map[string]interface{})
@@ -323,6 +339,22 @@ func TestResourceIBMAtrackerTargetMapToCloudLogsEndpointPrototype(t *testing.T) 
 	model["target_crn"] = "crn:v1:bluemix:public:logs:eu-es:a/11111111111111111111111111111111:22222222-2222-2222-2222-222222222222::"
 
 	result, err := atracker.ResourceIBMAtrackerTargetMapToCloudLogsEndpointPrototype(model)
+	assert.Nil(t, err)
+	checkResult(result)
+}
+
+func TestResourceIBMAtrackerTargetMapToAppconfigEndpointPrototype(t *testing.T) {
+	checkResult := func(result *atrackerv2.AppconfigEndpointPrototype) {
+		model := new(atrackerv2.AppconfigEndpointPrototype)
+		model.TargetCRN = core.StringPtr("crn:v1:bluemix:public:apprapp:us-south:a/11111111111111111111111111111111:22222222-2222-2222-2222-222222222222::")
+
+		assert.Equal(t, result, model)
+	}
+
+	model := make(map[string]interface{})
+	model["target_crn"] = "crn:v1:bluemix:public:apprapp:us-south:a/11111111111111111111111111111111:22222222-2222-2222-2222-222222222222::"
+
+	result, err := atracker.ResourceIBMAtrackerTargetMapToAppconfigEndpointPrototype(model)
 	assert.Nil(t, err)
 	checkResult(result)
 }

@@ -14,6 +14,9 @@ Create, update, and delete atracker_targets with this resource.
 
 ```hcl
 resource "ibm_atracker_target" "atracker_target_instance" {
+  appconfig_endpoint {
+		target_crn = "crn:v1:bluemix:public:apprapp:us-south:a/11111111111111111111111111111111:22222222-2222-2222-2222-222222222222::"
+  }
   cloudlogs_endpoint {
 		target_crn = "crn:v1:bluemix:public:eu-es:a/11111111111111111111111111111111:22222222-2222-2222-2222-222222222222::"
   }
@@ -40,6 +43,10 @@ resource "ibm_atracker_target" "atracker_target_instance" {
 
 You can specify the following arguments for this resource.
 
+* `appconfig_endpoint` - (Optional, List) Property values for the IBM Cloud App Configuration endpoint in responses.
+Nested schema for **appconfig_endpoint**:
+	* `target_crn` - (Required, String) The CRN of the IBM Cloud App Configuration instance.
+	  * Constraints: The maximum length is `1000` characters. The minimum length is `3` characters. The value must match regular expression `/^[a-zA-Z0-9 -._:\/]+$/`.
 * `cloudlogs_endpoint` - (Optional, List) Property values for the IBM Cloud Logs endpoint in responses.
 Nested schema for **cloudlogs_endpoint**:
 	* `target_crn` - (Required, String) The CRN of the IBM Cloud Logs instance.
@@ -69,7 +76,7 @@ Nested schema for **eventstreams_endpoint**:
 * `name` - (Required, String) The name of the target resource.
 * `region` - (Optional, String) Included this optional field if you used it to create a target in a different region other than the one you are connected.
 * `target_type` - (Required, String) The type of the target.
-  * Constraints: Allowable values are: `cloud_object_storage`, `event_streams`, `cloud_logs`.
+  * Constraints: Allowable values are: `cloud_object_storage`, `event_streams`, `cloud_logs`, `app_config`.
 
 ## Attribute Reference
 
