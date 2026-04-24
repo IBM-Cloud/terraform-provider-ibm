@@ -18,7 +18,7 @@ require (
 	github.com/IBM/code-engine-go-sdk v0.0.0-20260304141634-773f5cd0b0ed
 	github.com/IBM/configuration-aggregator-go-sdk v0.0.2
 	github.com/IBM/container-registry-go-sdk v1.3.0
-	github.com/IBM/continuous-delivery-go-sdk/v2 v2.0.6
+	github.com/IBM/continuous-delivery-go-sdk/v2 v2.0.8
 	github.com/IBM/dra-go-sdk v0.0.0-20251210070042-5072d22c26d0
 	github.com/IBM/event-notifications-go-admin-sdk v0.22.0
 	github.com/IBM/eventstreams-go-sdk v1.4.0
@@ -49,7 +49,7 @@ require (
 	github.com/akamai/AkamaiOPEN-edgegrid-golang/v5 v5.0.0
 	github.com/apache/openwhisk-client-go v0.0.0-20200201143223-a804fb82d105
 	github.com/apparentlymart/go-cidr v1.1.0
-	github.com/go-openapi/strfmt v0.25.0
+	github.com/go-openapi/strfmt v0.26.1
 	github.com/golang-jwt/jwt/v5 v5.2.2
 	github.com/google/go-cmp v0.7.0
 	github.com/google/uuid v1.6.0
@@ -106,7 +106,7 @@ require (
 	github.com/go-logr/logr v1.4.3 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
 	github.com/go-openapi/analysis v0.23.0 // indirect
-	github.com/go-openapi/errors v0.22.6 // indirect
+	github.com/go-openapi/errors v0.22.7 // indirect
 	github.com/go-openapi/jsonpointer v0.21.1 // indirect
 	github.com/go-openapi/jsonreference v0.21.0 // indirect
 	github.com/go-openapi/loads v0.22.0 // indirect
@@ -119,7 +119,7 @@ require (
 	github.com/go-playground/universal-translator v0.18.1 // indirect
 	github.com/go-playground/validator/v10 v10.28.0 // indirect
 	github.com/go-test/deep v1.1.0 // indirect
-	github.com/go-viper/mapstructure/v2 v2.4.0 // indirect
+	github.com/go-viper/mapstructure/v2 v2.5.0 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/golang/protobuf v1.5.4 // indirect
 	github.com/golang/snappy v0.0.4 // indirect
@@ -181,7 +181,7 @@ require (
 	github.com/mxk/go-flowrate v0.0.0-20140419014527-cca7078d478f // indirect
 	github.com/nicksnyder/go-i18n v1.10.0 // indirect
 	github.com/oklog/run v1.1.0 // indirect
-	github.com/oklog/ulid v1.3.1 // indirect
+	github.com/oklog/ulid/v2 v2.1.1 // indirect
 	github.com/opentracing/opentracing-go v1.2.1-0.20220228012449-10b1cf09e00b // indirect
 	github.com/patrickmn/go-cache v2.1.0+incompatible // indirect
 	github.com/pelletier/go-toml v1.7.0 // indirect
@@ -198,7 +198,6 @@ require (
 	github.com/vmihailenco/tagparser/v2 v2.0.0 // indirect
 	github.com/x448/float16 v0.8.4 // indirect
 	github.com/zclconf/go-cty v1.17.0 // indirect
-	go.mongodb.org/mongo-driver v1.17.6 // indirect
 	go.opentelemetry.io/auto/sdk v1.2.1 // indirect
 	go.opentelemetry.io/otel v1.39.0 // indirect
 	go.opentelemetry.io/otel/metric v1.39.0 // indirect
