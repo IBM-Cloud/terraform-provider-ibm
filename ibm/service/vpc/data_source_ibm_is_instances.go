@@ -18,6 +18,7 @@ import (
 const (
 	isInstances         = "instances"
 	isInstanceGroupName = "instance_group_name"
+	isInstanceGroupCRN  = "instance_group_crn"
 )
 
 func DataSourceIBMISInstances() *schema.Resource {
@@ -28,14 +29,20 @@ func DataSourceIBMISInstances() *schema.Resource {
 			isInstanceGroup: {
 				Type:          schema.TypeString,
 				Optional:      true,
-				ConflictsWith: []string{"vpc", "vpc_crn", "vpc_name", isInstanceGroupName},
+				ConflictsWith: []string{"vpc", "vpc_crn", "vpc_name", isInstanceGroupName, isInstanceGroupCRN},
 				Description:   "Instance group ID to filter the instances attached to it",
 			},
 			isInstanceGroupName: {
 				Type:          schema.TypeString,
 				Optional:      true,
-				ConflictsWith: []string{"vpc", "vpc_crn", "vpc_name", isInstanceGroup},
+				ConflictsWith: []string{"vpc", "vpc_crn", "vpc_name", isInstanceGroup, isInstanceGroupCRN},
 				Description:   "Instance group name to filter the instances attached to it",
+			},
+			isInstanceGroupCRN: {
+				Type:          schema.TypeString,
+				Optional:      true,
+				ConflictsWith: []string{"vpc", "vpc_crn", "vpc_name", isInstanceGroup, isInstanceGroupName},
+				Description:   "Instance group crn to filter the instances attached to it",
 			},
 			"vpc_name": {
 				Type:          schema.TypeString,
@@ -1348,7 +1355,7 @@ func instancesList(context context.Context, d *schema.ResourceData, meta interfa
 		return tfErr.GetDiag()
 	}
 
-	var vpcName, vpcID, vpcCrn, resourceGroup, insGrp, dHostNameStr, dHostIdStr, placementGrpNameStr, placementGrpIdStr string
+	var vpcName, vpcID, vpcCrn, resourceGroup, insGrp, dHostNameStr, dHostIdStr, placementGrpNameStr, placementGrpIdStr, insGrpCRN string
 
 	if vpc, ok := d.GetOk("vpc_name"); ok {
 		vpcName = vpc.(string)
@@ -1380,6 +1387,10 @@ func instancesList(context context.Context, d *schema.ResourceData, meta interfa
 
 	if placementGrpIdIntf, ok := d.GetOk("placement_group"); ok {
 		placementGrpIdStr = placementGrpIdIntf.(string)
+	}
+
+	if instanceGroupCRN, ok := d.GetOk(isInstanceGroupCRN); ok {
+		insGrpCRN = instanceGroupCRN.(string)
 	}
 
 	if insGrpInf, ok := d.GetOk(isInstanceGroup); ok {
@@ -1458,6 +1469,14 @@ func instancesList(context context.Context, d *schema.ResourceData, meta interfa
 		listInstancesOptions.PlacementGroupID = &placementGrpIdStr
 	}
 
+	if insGrpCRN != "" {
+		listInstancesOptions.InstanceGroupMembershipInstanceGroupCRN = &insGrpCRN
+	}
+
+	if insGrp != "" {
+		listInstancesOptions.InstanceGroupMembershipInstanceGroupID = &insGrp
+	}
+
 	start := ""
 	allrecs := []vpcv1.Instance{}
 	for {
@@ -1477,45 +1496,6 @@ func instancesList(context context.Context, d *schema.ResourceData, meta interfa
 		if start == "" {
 			break
 		}
-	}
-
-	if insGrp != "" {
-		membershipMap := map[string]bool{}
-		start := ""
-		for {
-			listInstanceGroupMembershipsOptions := vpcv1.ListInstanceGroupMembershipsOptions{
-				InstanceGroupID: &insGrp,
-			}
-			if start != "" {
-				listInstanceGroupMembershipsOptions.Start = &start
-			}
-			instanceGroupMembershipCollection, _, err := sess.ListInstanceGroupMembershipsWithContext(context, &listInstanceGroupMembershipsOptions)
-			if err != nil {
-				tfErr := flex.TerraformErrorf(err, fmt.Sprintf("ListInstanceGroupMembershipsWithContext failed %s", err), "(Data) ibm_is_instances", "read")
-				log.Printf("[DEBUG] %s", tfErr.GetDebugMessage())
-				return tfErr.GetDiag()
-			}
-
-			start = flex.GetNext(instanceGroupMembershipCollection.Next)
-			for _, membershipItem := range instanceGroupMembershipCollection.Memberships {
-				membershipMap[*membershipItem.Instance.ID] = true
-			}
-
-			if start == "" {
-				break
-			}
-
-		}
-
-		//Filtering instance allrecs to contain instance group members only
-		i := 0
-		for _, ins := range allrecs {
-			if membershipMap[*ins.ID] {
-				allrecs[i] = ins
-				i++
-			}
-		}
-		allrecs = allrecs[:i]
 	}
 
 	instancesInfo := make([]map[string]interface{}, 0)
