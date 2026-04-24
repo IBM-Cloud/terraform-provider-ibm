@@ -8,6 +8,7 @@ import (
 	"errors"
 	"testing"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -141,6 +142,41 @@ func TestGen2BackendCreate(t *testing.T) {
 			assert.NotNil(t, tt.resourceData, "Resource data should not be nil")
 		})
 	}
+}
+
+// TestGen2BuildDBConfigUsesPerMemberDiskAllocation verifies Gen2 sends per-member
+// disk allocation as storage_gb and does not multiply by the members count.
+func TestGen2BuildDBConfigUsesPerMemberDiskAllocation(t *testing.T) {
+	resourceSchema := ResourceIBMDatabaseInstance().Schema
+
+	d := schema.TestResourceDataRaw(t, resourceSchema, map[string]interface{}{
+		"service":  "databases-for-postgresql",
+		"plan":     "standard-gen2",
+		"name":     "test-db",
+		"location": "us-south",
+		"group": []interface{}{
+			map[string]interface{}{
+				"group_id": "member",
+				"members": []interface{}{
+					map[string]interface{}{
+						"allocation_count": 2,
+					},
+				},
+				"disk": []interface{}{
+					map[string]interface{}{
+						"allocation_mb": 20480,
+					},
+				},
+			},
+		},
+	})
+
+	backend := newResourceIBMDatabaseGen2Backend().(*resourceIBMDatabaseGen2Backend)
+
+	config, err := backend.buildDBConfig(d, "", nil)
+	assert.NoError(t, err)
+	assert.Equal(t, 2, config["members"])
+	assert.Equal(t, 20, config["storage_gb"])
 }
 
 // TestGen2BackendCreateWithGroupScaling tests group scaling during creation

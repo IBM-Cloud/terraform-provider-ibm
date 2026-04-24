@@ -311,10 +311,9 @@ func (g *resourceIBMDatabaseGen2Backend) buildDBConfig(d *schema.ResourceData, c
 		return g.dbConfigToMap(config), nil
 	}
 
-	// Storage in GB (not MB!) - guard clause eliminates nested if
+	// Storage in GB (not MB!) - Gen2 expects per-member allocation
 	if memberGroup.Disk != nil {
-		// Disk allocation is per member in MB, convert to GB for total
-		storageGB := (memberGroup.Disk.Allocation * members) / mbPerGb
+		storageGB := memberGroup.Disk.Allocation / mbPerGb
 		config.StorageGB = storageGB
 	}
 
