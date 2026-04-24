@@ -280,6 +280,10 @@ func Provider() *schema.Provider {
 			"ibm_backup_recovery_manager_get_upgrades_info":             backuprecovery.AddInstanceFields(backuprecovery.DataSourceIbmBackupRecoveryManagerGetUpgradesInfo()),
 			"ibm_backup_recovery_manager_get_compatible_clusters":       backuprecovery.AddInstanceFields(backuprecovery.DataSourceIbmBackupRecoveryManagerGetCompatibleClusters()),
 			"ibm_backup_recovery_manager_get_cluster_info":              backuprecovery.AddInstanceFields(backuprecovery.DataSourceIbmBackupRecoveryManagerGetClusterInfo()),
+			"ibm_backup_recovery_progress_monitor":                      backuprecovery.AddInstanceFields(backuprecovery.DataSourceIbmBackupRecoveryProgressMonitor()),
+			"ibm_backup_recovery_protection_run_progress":               backuprecovery.AddInstanceFields(backuprecovery.DataSourceIbmBackupRecoveryProtectionRunProgress()),
+			"ibm_backup_recovery_vault_failover_status":                 backuprecovery.AddInstanceFields(backuprecovery.DataSourceIbmBackupRecoveryVaultFailoverStatus()),
+			"ibm_backup_recovery_vault_recovery_scan_status":            backuprecovery.AddInstanceFields(backuprecovery.DataSourceIbmBackupRecoveryVaultRecoveryScanStatus()),
 
 			// // AppID
 			"ibm_appid_action_url":               appid.DataSourceIBMAppIDActionURL(),
@@ -1175,6 +1179,8 @@ func Provider() *schema.Provider {
 			"ibm_backup_recovery_manager_create_cluster_upgrades":                backuprecovery.AddInstanceFields(backuprecovery.ResourceIbmBackupRecoveryManagerCreateClusterUpgrades()),
 			"ibm_backup_recovery_manager_update_cluster_upgrades":                backuprecovery.AddInstanceFields(backuprecovery.ResourceIbmBackupRecoveryManagerUpdateClusterUpgrades()),
 			"ibm_backup_recovery_manager_cancel_cluster_upgrades":                backuprecovery.AddInstanceFields(backuprecovery.ResourceIbmBackupRecoveryManagerCancelClusterUpgrades()),
+			"ibm_backup_recovery_vault_recovery_scan":                            backuprecovery.AddInstanceFields(backuprecovery.ResourceIbmBackupRecoveryVaultRecoveryScan()),
+			"ibm_backup_recovery_vault_failover":                                 backuprecovery.AddInstanceFields(backuprecovery.ResourceIbmBackupRecoveryVaultFailover()),
 
 			"ibm_app":                        cloudfoundry.ResourceIBMApp(),
 			"ibm_app_domain_private":         cloudfoundry.ResourceIBMAppDomainPrivate(),

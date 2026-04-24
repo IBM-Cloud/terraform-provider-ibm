@@ -2020,6 +2020,11 @@ func ResourceIbmBackupRecoveryProtectionGroup() *schema.Resource {
 								},
 							},
 						},
+						"snapshot_timeout_seconds": &schema.Schema{
+							Type:        schema.TypeInt,
+							Optional:    true,
+							Description: "Specifies the user specified timeout in seconds to wait for a volume snapshot to become ready. This is not supported if CSI snapshot is not enabled. Default: 900 secs for IBM baas, 300 secs for others.",
+						},
 						"source_id": &schema.Schema{
 							Type:        schema.TypeInt,
 							Computed:    true,
@@ -7181,6 +7186,9 @@ func ResourceIbmBackupRecoveryProtectionGroupMapToKubernetesProtectionGroupParam
 		}
 		model.Objects = objects
 	}
+	if modelMap["snapshot_timeout_seconds"] != nil {
+		model.SnapshotTimeoutSeconds = core.Int64Ptr(int64(modelMap["snapshot_timeout_seconds"].(int)))
+	}
 	if modelMap["source_id"] != nil {
 		model.SourceID = core.Int64Ptr(int64(modelMap["source_id"].(int)))
 	}
@@ -8198,6 +8206,9 @@ func ResourceIbmBackupRecoveryProtectionGroupKubernetesProtectionGroupParamsToMa
 			objects = append(objects, objectsItemMap)
 		}
 		modelMap["objects"] = objects
+	}
+	if model.SnapshotTimeoutSeconds != nil {
+		modelMap["snapshot_timeout_seconds"] = flex.IntValue(model.SnapshotTimeoutSeconds)
 	}
 	if model.SourceID != nil {
 		modelMap["source_id"] = flex.IntValue(model.SourceID)
