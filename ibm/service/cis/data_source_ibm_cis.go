@@ -4,6 +4,7 @@
 package cis
 
 import (
+	"log"
 	"net/url"
 	"reflect"
 
@@ -185,11 +186,19 @@ func dataSourceIBMCISInstanceRead(d *schema.ResourceData, meta interface{}) erro
 
 		ID: instance.ResourcePlanID,
 	}
-	plan, _, err := globalClient.GetCatalogEntry(&planOptions)
+	plan, planResp, err := globalClient.GetCatalogEntry(&planOptions)
 	if err != nil {
-		return flex.FmtErrorf("[ERROR] Error retrieving plan: %s", err)
+		if planResp != nil && planResp.StatusCode == 403 {
+			log.Printf("[WARN] Unable to retrieve plan name from catalog (likely EOM plan): %s. Falling back to plan ID.", err)
+			if instance.ResourcePlanID != nil {
+				d.Set("plan", *instance.ResourcePlanID)
+			}
+		} else {
+			return flex.FmtErrorf("[ERROR] Error retrieving plan: %s", err)
+		}
+	} else {
+		d.Set("plan", plan.Name)
 	}
-	d.Set("plan", plan.Name)
 
 	d.Set(flex.ResourceName, instance.Name)
 	d.Set(flex.ResourceCRN, instance.CRN)
