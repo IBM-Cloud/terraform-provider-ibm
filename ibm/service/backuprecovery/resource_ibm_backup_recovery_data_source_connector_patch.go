@@ -155,7 +155,7 @@ func resourceIbmBackupRecoveryDataSourceConnectorPatchCreate(context context.Con
 		return tfErr.GetDiag()
 	}
 	endpointType := d.Get("endpoint_type").(string)
-	instanceId, region := getInstanceIdAndRegion(d)
+	instanceId, region, serviceName := getInstanceIdAndRegion(d)
 	if instanceId != "" && region != "" {
 		bmxsession, err := meta.(conns.ClientSession).BluemixSession()
 		if err != nil {
@@ -163,7 +163,7 @@ func resourceIbmBackupRecoveryDataSourceConnectorPatchCreate(context context.Con
 			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 			return tfErr.GetDiag()
 		}
-		backupRecoveryClient = getClientWithInstanceEndpoint(backupRecoveryClient, bmxsession, instanceId, region, endpointType)
+		backupRecoveryClient = getClientWithInstanceEndpoint(backupRecoveryClient, bmxsession, instanceId, region, endpointType, serviceName)
 	}
 
 	patchDataSourceConnectorOptions := &backuprecoveryv1.PatchDataSourceConnectorOptions{}
@@ -194,7 +194,7 @@ func resourceIbmBackupRecoveryDataSourceConnectorPatchRead(context context.Conte
 		return tfErr.GetDiag()
 	}
 	endpointType := d.Get("endpoint_type").(string)
-	instanceId, region := getInstanceIdAndRegion(d)
+	instanceId, region, serviceName := getInstanceIdAndRegion(d)
 	if instanceId != "" && region != "" {
 		bmxsession, err := meta.(conns.ClientSession).BluemixSession()
 		if err != nil {
@@ -202,7 +202,7 @@ func resourceIbmBackupRecoveryDataSourceConnectorPatchRead(context context.Conte
 			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 			return tfErr.GetDiag()
 		}
-		backupRecoveryClient = getClientWithInstanceEndpoint(backupRecoveryClient, bmxsession, instanceId, region, endpointType)
+		backupRecoveryClient = getClientWithInstanceEndpoint(backupRecoveryClient, bmxsession, instanceId, region, endpointType, serviceName)
 	}
 
 	getDataSourceConnectorsOptions := &backuprecoveryv1.GetDataSourceConnectorsOptions{}
