@@ -42,7 +42,7 @@ In addition to all argument references listed, you can access the following attr
 		- `fail`: Fails requests with an HTTP 503 status code.
 		- `forward`: Forwards requests to the target pool.
 	- `healthy_member_threshold_count` - (Integer) The healthy member count at which the failsafe policy action will be triggered. At present, this is always `0`, but may be modifiable in the future.
-	- `target` - (List) If `action` is `forward`, the target pool to forward to.If `action` is `fail`, this property will be absent.The targets supported by this property may[expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) in the future.
+	- `target` - (List) If `action` is `forward`, the target pool to forward to.If `action` is `fail`, this property will be absent.The targets supported by this property may [expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) in the future.
 		Nested schema for **target**:
 		- `deleted` - (List) If present, this property indicates the referenced resource has been deleted, and providessome supplementary information.
 			Nested schema for **deleted**:

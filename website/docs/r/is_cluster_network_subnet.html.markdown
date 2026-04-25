@@ -27,7 +27,7 @@ resource "ibm_is_cluster_network_subnet" "is_cluster_network_subnet_instance" {
 You can specify the following arguments for this resource.
 
 - `cluster_network_id` - (Required, Forces new resource, String) The cluster network identifier.
-- `ip_version` - (Optional, String) The IP version for this cluster network subnet.The enumerated values for this property may[expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) in the future. Allowable values are: `ipv4`.
+- `ip_version` - (Optional, String) The IP version for this cluster network subnet.The enumerated values for this property may [expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) in the future. Allowable values are: `ipv4`.
 - `ipv4_cidr_block` - (Optional, String) The IPv4 range of this cluster network subnet, expressed in CIDR format.
 - `name` - (Optional, String) The name for this cluster network subnet. The name is unique across all cluster network subnets in the cluster network.
 - `total_ipv4_address_count` - (Optional, Integer) The total number of IPv4 addresses in this cluster network subnet.Note: This is calculated as 2<sup>(32 - prefix length)</sup>. For example, the prefix length `/24` gives:<br> 2<sup>(32 - 24)</sup> = 2<sup>8</sup> = 256 addresses.
@@ -44,7 +44,7 @@ After your resource is created, you can read values from the listed arguments an
 - `lifecycle_reasons` - (List) The reasons for the current `lifecycle_state` (if any).
     
     Nested schema for **lifecycle_reasons**:
-      - `code` - (String) A reason code for this lifecycle state:- `internal_error`: internal error (contact IBM support)- `resource_suspended_by_provider`: The resource has been suspended (contact IBM  support)The enumerated values for this property may[expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) in the future.
+      - `code` - (String) A reason code for this lifecycle state:- `internal_error`: internal error (contact IBM support)- `resource_suspended_by_provider`: The resource has been suspended (contact IBM  support)The enumerated values for this property may [expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) in the future.
         * Constraints: Allowable values are: `internal_error`, `resource_suspended_by_provider`.
     - `message` - (String) An explanation of the reason for this lifecycle state.
     - `more_info` - (String) Link to documentation about the reason for this lifecycle state.
