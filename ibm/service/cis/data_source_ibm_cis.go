@@ -4,9 +4,9 @@
 package cis
 
 import (
+	"log"
 	"net/url"
 	"reflect"
-	"strings"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
@@ -186,13 +186,13 @@ func dataSourceIBMCISInstanceRead(d *schema.ResourceData, meta interface{}) erro
 
 		ID: instance.ResourcePlanID,
 	}
-	plan, _, err := globalClient.GetCatalogEntry(&planOptions)
+	plan, planResp, err := globalClient.GetCatalogEntry(&planOptions)
 	if err != nil {
-		// Handle EOM (End-of-Market) plans that are no longer in the Global Catalog
-		// For existing instances with EOM plans, use the plan ID directly
-		// This allows data source to work with existing instances even if the plan is deprecated
-		if strings.Contains(err.Error(), "403") || strings.Contains(err.Error(), "Not authorized") {
-			d.Set("plan", *instance.ResourcePlanID)
+		if planResp != nil && planResp.StatusCode == 403 {
+			log.Printf("[WARN] Unable to retrieve plan name from catalog (likely EOM plan): %s. Falling back to plan ID.", err)
+			if instance.ResourcePlanID != nil {
+				d.Set("plan", *instance.ResourcePlanID)
+			}
 		} else {
 			return flex.FmtErrorf("[ERROR] Error retrieving plan: %s", err)
 		}

@@ -310,14 +310,20 @@ func ResourceIBMCISInstanceRead(d *schema.ResourceData, meta interface{}) error 
 
 	d.Set("service", "internet-svcs")
 
+	// Known EOM plan IDs that are no longer resolvable via the Global Catalog.
+	cisEOMPlans := map[string]string{
+		"d70686a9-bce1-4015-ae06-db8f027d09e0": "standard",
+	}
+
 	servicePlan, err := rsCatRepo.GetServicePlanName(*instance.ResourcePlanID)
 	if err != nil {
-		// Handle EOM (End-of-Market) plans that are no longer in the Global Catalog
-		// For existing instances with EOM plans, use the plan ID directly
-		// This allows import and management of existing instances even if the plan is deprecated
 		if apiErr, ok := err.(bmxerror.RequestFailure); ok && apiErr.StatusCode() == 403 {
-			log.Printf("[WARN] Unable to retrieve plan name from catalog (likely EOM plan): %s. Using plan ID instead.", err)
-			d.Set("plan", *instance.ResourcePlanID)
+			if planName, known := cisEOMPlans[*instance.ResourcePlanID]; known {
+				d.Set("plan", planName)
+			} else {
+				log.Printf("[WARN] Unable to retrieve plan name from catalog (likely EOM plan): %s. Using plan ID instead.", err)
+				d.Set("plan", *instance.ResourcePlanID)
+			}
 		} else {
 			return flex.FmtErrorf("[ERROR] Error retrieving plan: %s", err)
 		}
