@@ -146,7 +146,6 @@ func dataSourceIBMDLGatewayMacsecCaksRead(context context.Context, d *schema.Res
 			cakItem[dlGatewayMacsecCakID] = *cak.ID
 
 			if cak.Key != nil {
-				// Type assert to access Crn field from polymorphic interface
 				if hpcsKey, ok := cak.Key.(*directlinkv1.GatewayMacsecCakKeyReferenceHpcsCakKeyReference); ok {
 					keyMap := map[string]interface{}{}
 					keyMap[dlGatewayMacsecHPCSCrn] = *hpcsKey.Crn
@@ -161,7 +160,6 @@ func dataSourceIBMDLGatewayMacsecCaksRead(context context.Context, d *schema.Res
 			activeDelta := map[string]interface{}{}
 			if cak.ActiveDelta != nil {
 				if cak.ActiveDelta.Key != nil {
-					// Type assert to access Crn field from polymorphic interface
 					if hpcsKey, ok := cak.ActiveDelta.Key.(*directlinkv1.GatewayMacsecCakKeyReferenceHpcsCakKeyReference); ok {
 						keyMap := map[string]interface{}{}
 						keyMap[dlGatewayMacsecHPCSCrn] = *hpcsKey.Crn
@@ -172,7 +170,7 @@ func dataSourceIBMDLGatewayMacsecCaksRead(context context.Context, d *schema.Res
 						activeDelta[dlGatewayMacsecHPCSKey] = []map[string]interface{}{keyMap}
 					}
 				}
-				activeDelta[dlGatewayMacsecCakName] = cak.ActiveDelta.Name
+				activeDelta[dlGatewayMacsecCakName] = *cak.ActiveDelta.Name
 				// activeDelta[dlGatewayMacsecCakStatus] = *result.ActiveDelta.Status
 				cakItem[dlGatewayMacsecCakActiveDelta] = []map[string]interface{}{activeDelta}
 			}

@@ -203,8 +203,6 @@ func resourceIBMdlGatewayMacsecCakCreate(context context.Context, d *schema.Reso
 	session := d.Get(dlGatewayMacsecCakSession).(string)
 	keyMapIntf := d.Get(dlGatewayMacsecHPCSKey).(*schema.Set).List()[0].(map[string]interface{})
 	crn := keyMapIntf[dlCrn].(string)
-
-	// Use polymorphic key reference constructor
 	key, _ := directLink.NewGatewayMacsecCakKeyReferenceHpcsCakKeyReference(crn)
 
 	createGatewayMacsecCakOptions := directLink.NewCreateGatewayMacsecCakOptions(gatewayID, key, name, session)
@@ -263,7 +261,6 @@ func resourceIBMdlGatewayMacsecCakRead(context context.Context, d *schema.Resour
 	cakItem[dlGatewayMacsecCakID] = *instance.ID
 
 	if instance.Key != nil {
-		// Type assert to access Crn field from polymorphic interface
 		if hpcsKey, ok := instance.Key.(*directlinkv1.GatewayMacsecCakKeyReferenceHpcsCakKeyReference); ok {
 			keyMap := map[string]interface{}{}
 			keyMap[dlGatewayMacsecHPCSCrn] = *hpcsKey.Crn
@@ -278,7 +275,6 @@ func resourceIBMdlGatewayMacsecCakRead(context context.Context, d *schema.Resour
 	activeDelta := map[string]interface{}{}
 	if instance.ActiveDelta != nil {
 		if instance.ActiveDelta.Key != nil {
-			// Type assert to access Crn field from polymorphic interface
 			if hpcsKey, ok := instance.ActiveDelta.Key.(*directlinkv1.GatewayMacsecCakKeyReferenceHpcsCakKeyReference); ok {
 				keyMap := map[string]interface{}{}
 				keyMap[dlGatewayMacsecHPCSCrn] = *hpcsKey.Crn
@@ -318,8 +314,6 @@ func resourceIBMdlGatewayMacsecCakUpdate(context context.Context, d *schema.Reso
 
 	keyMapIntf := d.Get(dlGatewayMacsecHPCSKey).(*schema.Set).List()[0].(map[string]interface{})
 	crn := keyMapIntf[dlCrn].(string)
-
-	// Use polymorphic key reference constructor
 	key, _ := directLink.NewGatewayMacsecCakKeyReferenceHpcsCakKeyReference(crn)
 	gatewayMacsecCakPatch[dlGatewayMacsecHPCSKey] = &key
 
