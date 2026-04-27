@@ -318,9 +318,9 @@ func resourceIBMdlGatewayMacsecCakUpdate(context context.Context, d *schema.Reso
 
 	keyMapIntf := d.Get(dlGatewayMacsecHPCSKey).(*schema.Set).List()[0].(map[string]interface{})
 	crn := keyMapIntf[dlCrn].(string)
-	key, _ := directLink.NewGatewayMacsecCakKeyReferenceHpcsCakKeyReference(crn)
 
 	// Use polymorphic key reference constructor
+	key, _ := directLink.NewGatewayMacsecCakKeyReferenceHpcsCakKeyReference(crn)
 	gatewayMacsecCakPatch[dlGatewayMacsecHPCSKey] = &key
 
 	patchGatewayOptions := directLink.NewUpdateGatewayMacsecCakOptions(gatewayID, getMacsecCakID, gatewayMacsecCakPatch)
