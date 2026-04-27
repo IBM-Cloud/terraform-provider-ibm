@@ -146,6 +146,7 @@ func dataSourceIBMDLGatewayMacsecCakRead(context context.Context, d *schema.Reso
 	}
 
 	if result.Key != nil {
+		// Type assert to access Crn field from polymorphic interface
 		if hpcsKey, ok := result.Key.(*directlinkv1.GatewayMacsecCakKeyReferenceHpcsCakKeyReference); ok {
 			keyMap := map[string]interface{}{}
 			keyMap[dlGatewayMacsecHPCSCrn] = *hpcsKey.Crn
@@ -160,6 +161,7 @@ func dataSourceIBMDLGatewayMacsecCakRead(context context.Context, d *schema.Reso
 	activeDelta := map[string]interface{}{}
 	if result.ActiveDelta != nil {
 		if result.ActiveDelta.Key != nil {
+			// Type assert to access Crn field from polymorphic interface
 			if hpcsKey, ok := result.ActiveDelta.Key.(*directlinkv1.GatewayMacsecCakKeyReferenceHpcsCakKeyReference); ok {
 				keyMap := map[string]interface{}{}
 				keyMap[dlGatewayMacsecHPCSCrn] = *hpcsKey.Crn

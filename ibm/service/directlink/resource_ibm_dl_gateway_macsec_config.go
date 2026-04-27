@@ -180,6 +180,8 @@ func resourceIBMdlGatewayMacsecConfigCreate(context context.Context, d *schema.R
 
 		keyMap := cakMap[dlGatewayMacsecHPCSKey].(*schema.Set).List()[0].(map[string]interface{})
 		crn := keyMap[dlGatewayMacsecHPCSCrn].(string)
+
+		// Use polymorphic key reference constructor
 		keyItem, _ := directLink.NewGatewayMacsecCakKeyReferenceHpcsCakKeyReference(crn)
 
 		cakItem := &directlinkv1.GatewayMacsecCakPrototype{
