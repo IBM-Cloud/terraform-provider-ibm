@@ -1173,7 +1173,6 @@ func Provider() *schema.Provider {
 			"ibm_pha_powervs_workspaces":  powerhaautomationservice.DataSourceIBMPhaPowervsWorkspace(),
 			"ibm_pha_cluster_nodes":      powerhaautomationservice.DataSourceIBMPhaClusterNodes(),
 			"ibm_pha_deployment":         powerhaautomationservice.DataSourceIBMPhaDeployment(),
-			"ibm_pha_agent_job_status":   powerhaautomationservice.DataSourceIBMPhaAgentJobStatus(),
 		},
 
 		ResourcesMap: map[string]*schema.Resource{
