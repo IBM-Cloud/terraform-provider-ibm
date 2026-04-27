@@ -1,21 +1,21 @@
 ---
 layout: "ibm"
-page_title: "IBM : ibm_pdr_powervs_workspaces"
+page_title: "IBM : ibm_pdr_powervs_workspace"
 description: |-
   Get information about pdr_powervs_workspace
 subcategory: "DrAutomation Service"
 ---
 
-# ibm_pdr_powervs_workspaces
+# ibm_pdr_powervs_workspace
 
 Retrieves the power virtual server workspaces for primary and standby orchestrator based on location id.
 
-~> **This data source is deprecated and will be removed in the next major version. Use `ibm_pdr_powervs_workspaces` instead.**
+~> **This data source is deprecated and will be removed in the next major version. Use `ibm_pdr_powervs_workspace instead.**
 
 ## Example Usage
 
 ```hcl
-data "ibm_pdr_powervs_workspaces" "pdr_powervs_workspace" {
+data "ibm_pdr_powervs_workspace" "pdr_powervs_workspace" {
 	instance_id = "123456d3-1122-3344-b67d-4389b44b7bf9"
 	location_id = "syd04"
 }
