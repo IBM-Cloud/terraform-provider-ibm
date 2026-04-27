@@ -83,7 +83,7 @@ Review the argument references that you can specify for your resource.
 - `pi_ibmi_css` - (Optional, Boolean) IBM i Cloud Storage Solution.
 - `pi_ibmi_pha` - (Optional, Boolean) IBM i Power High Availability.
 - `pi_ibmi_rds_users` - (Optional, Integer) IBM i Rational Dev Studio Number of User Licenses.
-- `pi_image_id` - (Required, String) The ID of the image that you want to use for your Power Systems Virtual Server instance. The image determines the operating system that is installed in your instance. To list available images, run the `ibmcloud pi images` command.
+- `pi_image_id` - (Required, String) The ID of the image that you want to use for your Power Systems Virtual Server instance. The image determines the operating system that is installed in your instance. To list available images, run the `ibmcloud pi image list` command.
   - **Note**:
         - Only images belonging to your project can be used image for deploying a Power Systems Virtual Server instance. To import an images to your project, see [ibm_pi_image](https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/resources/pi_image).
         - If using `pi_deployment_type = VMNoStorage` then use the following images for the respective OS you intend to create the instance: `AIX-EMPTY`, `IBMI-EMPTY`, `SLES-EMPTY`, `RHEL-EMPTY`.
