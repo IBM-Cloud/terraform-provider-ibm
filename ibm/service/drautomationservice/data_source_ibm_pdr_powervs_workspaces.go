@@ -193,12 +193,12 @@ func DataSourceIBMPdrPowervsWorkspace() *schema.Resource {
 func DataSourceIBMPdrGetPowervsWorkspace() *schema.Resource {
 	res := dataSourceIBMPdrPowervsWorkspaceCommon()
 	res.ReadContext = dataSourceIBMPdrGetPowervsWorkspaceRead
-	res.DeprecationMessage = "This data source is deprecated. Use `ibm_pdr_powervs_workspace` instead."
+	res.DeprecationMessage = "This data source is deprecated. Use `ibm_pdr_powervs_workspaces` instead."
 	return res
 }
 
 func dataSourceIBMPdrPowervsWorkspaceRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	return dataSourceIBMPdrPowervsWorkspaceReadCommon(ctx, d, meta, "ibm_pdr_powervs_workspace")
+	return dataSourceIBMPdrPowervsWorkspaceReadCommon(ctx, d, meta, "ibm_pdr_powervs_workspaces")
 }
 
 func dataSourceIBMPdrGetPowervsWorkspaceRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {

@@ -1,19 +1,19 @@
 ---
 layout: "ibm"
-page_title: "IBM : ibm_pha_supported_location"
+page_title: "IBM : ibm_pha_supported_locations"
 description: |-
   Get information about pha_supported_location
 subcategory: "PowerhaAutomation Service"
 ---
 
-# ibm_pha_supported_location
+# ibm_pha_supported_locations
 
 Retrieves the supported locations for the specified PowerHA instance.
 
 ## Example Usage
 
 ```hcl
-data "ibm_pha_supported_location" "pha_supported_location" {
+data "ibm_pha_supported_locations" "pha_supported_location" {
 	instance_id = "8eefautr-4c02-0009-0086-8bd4d8cf61b6"
 }
 ```

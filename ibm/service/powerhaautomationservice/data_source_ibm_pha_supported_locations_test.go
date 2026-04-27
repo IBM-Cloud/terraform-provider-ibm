@@ -28,9 +28,9 @@ func TestAccIBMPhaSupportedLocationDataSourceBasic(t *testing.T) {
 			resource.TestStep{
 				Config: testAccCheckIBMPhaSupportedLocationDataSourceConfigBasic(),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet("data.ibm_pha_supported_location.pha_supported_location_instance", "id"),
-					resource.TestCheckResourceAttrSet("data.ibm_pha_supported_location.pha_supported_location_instance", "instance_id"),
-					resource.TestCheckResourceAttrSet("data.ibm_pha_supported_location.pha_supported_location_instance", "locations.#"),
+					resource.TestCheckResourceAttrSet("data.ibm_pha_supported_locations.pha_supported_location_instance", "id"),
+					resource.TestCheckResourceAttrSet("data.ibm_pha_supported_locations.pha_supported_location_instance", "instance_id"),
+					resource.TestCheckResourceAttrSet("data.ibm_pha_supported_locations.pha_supported_location_instance", "locations.#"),
 				),
 			},
 		},
@@ -39,7 +39,7 @@ func TestAccIBMPhaSupportedLocationDataSourceBasic(t *testing.T) {
 
 func testAccCheckIBMPhaSupportedLocationDataSourceConfigBasic() string {
 	return fmt.Sprintf(`
-		data "ibm_pha_supported_location" "pha_supported_location_instance" {
+		data "ibm_pha_supported_locations" "pha_supported_location_instance" {
 			instance_id = "8eefautr-4c02-0009-0086-8bd4d8cf61b6"
 			If-None-Match = "abcdef"
 		}

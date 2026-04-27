@@ -29,11 +29,11 @@ func TestAccIBMPdrPowervsWorkspaceDataSourceBasic(t *testing.T) {
 			resource.TestStep{
 				Config: testAccCheckIBMPdrPowervsWorkspaceDataSourceConfigBasic(),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet("data.ibm_pdr_powervs_workspace.pdr_powervs_workspace_instance", "id"),
-					resource.TestCheckResourceAttrSet("data.ibm_pdr_powervs_workspace.pdr_powervs_workspace_instance", "instance_id"),
-					resource.TestCheckResourceAttrSet("data.ibm_pdr_powervs_workspace.pdr_powervs_workspace_instance", "location_id"),
-					resource.TestCheckResourceAttrSet("data.ibm_pdr_powervs_workspace.pdr_powervs_workspace_instance", "dr_standby_workspaces.#"),
-					resource.TestCheckResourceAttrSet("data.ibm_pdr_powervs_workspace.pdr_powervs_workspace_instance", "dr_workspaces.#"),
+					resource.TestCheckResourceAttrSet("data.ibm_pdr_powervs_workspaces.pdr_powervs_workspace_instance", "id"),
+					resource.TestCheckResourceAttrSet("data.ibm_pdr_powervs_workspaces.pdr_powervs_workspace_instance", "instance_id"),
+					resource.TestCheckResourceAttrSet("data.ibm_pdr_powervs_workspaces.pdr_powervs_workspace_instance", "location_id"),
+					resource.TestCheckResourceAttrSet("data.ibm_pdr_powervs_workspaces.pdr_powervs_workspace_instance", "dr_standby_workspaces.#"),
+					resource.TestCheckResourceAttrSet("data.ibm_pdr_powervs_workspaces.pdr_powervs_workspace_instance", "dr_workspaces.#"),
 				),
 			},
 		},
@@ -42,7 +42,7 @@ func TestAccIBMPdrPowervsWorkspaceDataSourceBasic(t *testing.T) {
 
 func testAccCheckIBMPdrPowervsWorkspaceDataSourceConfigBasic() string {
 	return fmt.Sprintf(`
-		data "ibm_pdr_powervs_workspace" "pdr_powervs_workspace_instance" {
+		data "ibm_pdr_powervs_workspaces" "pdr_powervs_workspace_instance" {
 			instance_id = "xxxx2ec4-xxxx-4f84-xxxx-c2aa834dd4ed"
 			location_id = "syd04"
 		}

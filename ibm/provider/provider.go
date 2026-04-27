@@ -1149,7 +1149,7 @@ func Provider() *schema.Provider {
 
 			// NEW Data Sources
 			"ibm_pdr_dr_summary_response": drautomationservice.DataSourceIBMPdrDrSummaryResponse(),
-			"ibm_pdr_powervs_workspace":   drautomationservice.DataSourceIBMPdrPowervsWorkspace(),
+			"ibm_pdr_powervs_workspaces":   drautomationservice.DataSourceIBMPdrPowervsWorkspace(),
 			"ibm_pdr_event":               drautomationservice.DataSourceIBMPdrEvent(),
 			"ibm_pdr_events":              drautomationservice.DataSourceIBMPdrEvents(),
 			"ibm_pdr_dr_locations":        drautomationservice.DataSourceIBMPdrDrLocations(),
@@ -1169,10 +1169,11 @@ func Provider() *schema.Provider {
 
 			// PHA service
 			"ibm_pha_last_operation":     powerhaautomationservice.DataSourceIBMPhaLastOperation(),
-			"ibm_pha_supported_location": powerhaautomationservice.DataSourceIBMPhaSupportedLocation(),
-			"ibm_pha_powervs_workspace":  powerhaautomationservice.DataSourceIBMPhaPowervsWorkspace(),
+			"ibm_pha_supported_locations": powerhaautomationservice.DataSourceIBMPhaSupportedLocation(),
+			"ibm_pha_powervs_workspaces":  powerhaautomationservice.DataSourceIBMPhaPowervsWorkspace(),
 			"ibm_pha_cluster_nodes":      powerhaautomationservice.DataSourceIBMPhaClusterNodes(),
 			"ibm_pha_deployment":         powerhaautomationservice.DataSourceIBMPhaDeployment(),
+			"ibm_pha_agent_job_status":   powerhaautomationservice.DataSourceIBMPhaAgentJobStatus(),
 		},
 
 		ResourcesMap: map[string]*schema.Resource{
@@ -2068,6 +2069,9 @@ func Validator() validate.ValidatorDict {
 				"ibm_iam_account_settings_template_assignment":   iamidentity.ResourceIBMAccountSettingsTemplateAssignmentValidator(),
 				"ibm_iam_account_settings":                       iamidentity.ResourceIBMIAMAccountSettingsValidator(),
 				"ibm_iam_custom_role":                            iampolicy.ResourceIBMIAMCustomRoleValidator(),
+				"ibm_pha_api_key":                                powerhaautomationservice.ResourceIBMPhaAPIKeyValidator(),
+				"ibm_pha_deployment":                             powerhaautomationservice.ResourceIBMPhaClusterNodesValidator(),
+				"ibm_pha_cluster_nodes" :                         powerhaautomationservice.ResourceIBMPhaDeploymentValidator(),
 				"ibm_cis_healthcheck":                            cis.ResourceIBMCISHealthCheckValidator(),
 				"ibm_cis_rate_limit":                             cis.ResourceIBMCISRateLimitValidator(),
 				"ibm_cis":                                        cis.ResourceIBMCISValidator(),

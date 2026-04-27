@@ -62,7 +62,7 @@ func DataSourceIBMPhaSupportedLocation() *schema.Resource {
 func dataSourceIBMPhaSupportedLocationRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	powerhaAutomationServiceClient, err := meta.(conns.ClientSession).PowerhaAutomationServiceV1()
 	if err != nil {
-		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_pha_supported_location", "read", "initialize-client")
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_pha_supported_locations", "read", "initialize-client")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
@@ -84,7 +84,7 @@ func dataSourceIBMPhaSupportedLocationRead(context context.Context, d *schema.Re
 				err.Error(), response.StatusCode, response.Result,
 			)
 		}
-		tfErr := flex.TerraformErrorf(err, detailedMsg, "ibm_pha_supported_location", "create")
+		tfErr := flex.TerraformErrorf(err, detailedMsg, "ibm_pha_supported_locations", "create")
 		log.Printf("[ERROR] %s", detailedMsg)
 		return tfErr.GetDiag()
 	}
@@ -95,12 +95,12 @@ func dataSourceIBMPhaSupportedLocationRead(context context.Context, d *schema.Re
 	for _, locationsItem := range phaSupportedLocationsResponse.Locations {
 		locationsItemMap, err := DataSourceIBMPhaGetSupportedLocationPhaLocationToMap(&locationsItem) // #nosec G601
 		if err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_pha_supported_location", "read", "locations-to-map").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_pha_supported_locations", "read", "locations-to-map").GetDiag()
 		}
 		locations = append(locations, locationsItemMap)
 	}
 	if err = d.Set("locations", locations); err != nil {
-		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting locations: %s", err), "(Data) ibm_pha_supported_location", "read", "set-locations").GetDiag()
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting locations: %s", err), "(Data) ibm_pha_supported_locations", "read", "set-locations").GetDiag()
 	}
 
 	return nil

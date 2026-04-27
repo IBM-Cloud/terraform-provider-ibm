@@ -72,7 +72,7 @@ func DataSourceIBMPhaPowervsWorkspace() *schema.Resource {
 func dataSourceIBMPhaPowervsWorkspaceRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	powerhaAutomationServiceClient, err := meta.(conns.ClientSession).PowerhaAutomationServiceV1()
 	if err != nil {
-		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_pha_powervs_workspace", "read", "initialize-client")
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_pha_powervs_workspaces", "read", "initialize-client")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
@@ -98,7 +98,7 @@ func dataSourceIBMPhaPowervsWorkspaceRead(context context.Context, d *schema.Res
 				err.Error(), response.StatusCode, response.Result,
 			)
 		}
-		tfErr := flex.TerraformErrorf(err, detailedMsg, "ibm_pha_powervs_workspace", "create")
+		tfErr := flex.TerraformErrorf(err, detailedMsg, "ibm_pha_powervs_workspaces", "create")
 		log.Printf("[ERROR] %s", detailedMsg)
 		return tfErr.GetDiag()
 	}
@@ -109,12 +109,12 @@ func dataSourceIBMPhaPowervsWorkspaceRead(context context.Context, d *schema.Res
 	for _, workspacesItem := range phaWorkspacesRegionResponse.Workspaces {
 		workspacesItemMap, err := DataSourceIBMPhaGetPowervsWorkspacePhaWorkspaceSummaryToMap(&workspacesItem) // #nosec G601
 		if err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_pha_powervs_workspace", "read", "workspaces-to-map").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_pha_powervs_workspaces", "read", "workspaces-to-map").GetDiag()
 		}
 		workspaces = append(workspaces, workspacesItemMap)
 	}
 	if err = d.Set("workspaces", workspaces); err != nil {
-		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting workspaces: %s", err), "(Data) ibm_pha_powervs_workspace", "read", "set-workspaces").GetDiag()
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting workspaces: %s", err), "(Data) ibm_pha_powervs_workspaces", "read", "set-workspaces").GetDiag()
 	}
 
 	return nil

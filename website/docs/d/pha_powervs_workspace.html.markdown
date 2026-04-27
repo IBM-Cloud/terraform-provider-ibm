@@ -1,19 +1,19 @@
 ---
 layout: "ibm"
-page_title: "IBM : ibm_pha_powervs_workspace"
+page_title: "IBM : ibm_pha_powervs_workspaces"
 description: |-
-  Get information about pha_powervs_workspace
+  Get information about pha_powervs_workspaces
 subcategory: "PowerhaAutomation Service"
 ---
 
-# ibm_pha_powervs_workspace
+# ibm_pha_powervs_workspaces
 
 Retrieve the workspace details for the specified region of a given PowerHA instance.
 
 ## Example Usage
 
 ```hcl
-data "ibm_pha_powervs_workspace" "pha_powervs_workspace" {
+data "ibm_pha_powervs_workspaces" "pha_powervs_workspace" {
 	accept_language = "en-US"
 	location_id = "us-south"
 	instance_id = "8eefautr-4c02-0009-0086-8bd4d8cf61b6"
