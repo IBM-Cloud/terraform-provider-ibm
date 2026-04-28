@@ -152,6 +152,7 @@ resource "ibm_backup_recovery_protection_group" "backup_recovery_protection_grou
 		}
 		source_id = 1
 		source_name = "source_name"
+		snapshot_timeout_seconds = 1
 		vlan_params {
 			disable_vlan = true
 			interface_name = "interface_name"

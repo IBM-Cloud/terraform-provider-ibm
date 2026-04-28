@@ -223,8 +223,13 @@ func ResourceIbmBackupRecoverySourceRegistration() *schema.Resource {
 						},
 						"data_mover_image_location": &schema.Schema{
 							Type:        schema.TypeString,
-							Required:    true,
+							Optional:    true,
 							Description: "Specifies the datamover image location of Kubernetes source.",
+						},
+						"datamover_hostport_number": &schema.Schema{
+							Type:        schema.TypeInt,
+							Optional:    true,
+							Description: "Specifies the port number to use when using the HostPort model for datamover communication. If user specifies a port number, that value is set here. If no port number was specified by the user, the gflag controlled value is set here.",
 						},
 						"datamover_service_type": &schema.Schema{
 							Type:        schema.TypeString,
@@ -1924,7 +1929,12 @@ func ResourceIbmBackupRecoverySourceRegistrationMapToKubernetesSourceRegistratio
 	if modelMap["cohesity_dataprotect_plugin_image_location"] != nil && modelMap["cohesity_dataprotect_plugin_image_location"].(string) != "" {
 		model.CohesityDataprotectPluginImageLocation = core.StringPtr(modelMap["cohesity_dataprotect_plugin_image_location"].(string))
 	}
-	model.DataMoverImageLocation = core.StringPtr(modelMap["data_mover_image_location"].(string))
+	if modelMap["data_mover_image_location"] != nil && modelMap["data_mover_image_location"].(string) != "" {
+		model.DataMoverImageLocation = core.StringPtr(modelMap["data_mover_image_location"].(string))
+	}
+	if modelMap["datamover_hostport_number"] != nil {
+		model.DatamoverHostportNumber = core.Int64Ptr(int64(modelMap["datamover_hostport_number"].(int)))
+	}
 	if modelMap["datamover_service_type"] != nil && modelMap["datamover_service_type"].(string) != "" {
 		model.DatamoverServiceType = core.StringPtr(modelMap["datamover_service_type"].(string))
 	}
@@ -2164,6 +2174,9 @@ func ResourceIbmBackupRecoverySourceRegistrationKubernetesSourceRegistrationPara
 	}
 	if model.DataMoverImageLocation != nil {
 		modelMap["data_mover_image_location"] = *model.DataMoverImageLocation
+	}
+	if model.DatamoverHostportNumber != nil {
+		modelMap["datamover_hostport_number"] = flex.IntValue(model.DatamoverHostportNumber)
 	}
 	if model.DatamoverServiceType != nil {
 		modelMap["datamover_service_type"] = *model.DatamoverServiceType
