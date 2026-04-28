@@ -1,8 +1,8 @@
-// Copyright IBM Corp. 2025 All Rights Reserved.
+// Copyright IBM Corp. 2026 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 /*
- * IBM OpenAPI Terraform Generator Version: 3.98.0-8be2046a-20241205-162752
+ * IBM OpenAPI Terraform Generator Version: 3.113.1-d76630af-20260320-135953
  */
 
 package iamidentity
@@ -13,13 +13,14 @@ import (
 	"log"
 	"time"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/IBM/platform-services-go-sdk/iamidentityv1"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 func ResourceIBMIAMTrustedProfile() *schema.Resource {
@@ -40,6 +41,11 @@ func ResourceIBMIAMTrustedProfile() *schema.Resource {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Description: "The optional description of the trusted profile. The 'description' property is only available if a description was provided during a create of a trusted profile.",
+			},
+			"email": &schema.Schema{
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The optional email of the trusted profile. The 'email' property is only available if an email was provided during a create of a trusted profile.",
 			},
 			"account_id": &schema.Schema{
 				Type:        schema.TypeString,
@@ -132,6 +138,25 @@ func ResourceIBMIAMTrustedProfile() *schema.Resource {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "Message which summarizes the executed action.",
+						},
+					},
+				},
+			},
+			"activity": &schema.Schema{
+				Type:     schema.TypeList,
+				Computed: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"last_authn": &schema.Schema{
+							Type:        schema.TypeString,
+							Optional:    true,
+							Computed:    true,
+							Description: "Time when the entity was last authenticated.",
+						},
+						"authn_count": &schema.Schema{
+							Type:        schema.TypeInt,
+							Computed:    true,
+							Description: "Authentication count, number of times the entity was authenticated.",
 						},
 					},
 				},
@@ -241,11 +266,27 @@ func resourceIBMIamTrustedProfileRead(context context.Context, d *schema.Resourc
 			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_trusted_profile", "read", "set-description").GetDiag()
 		}
 	}
+	if !core.IsNil(trustedProfile.Email) {
+		if err = d.Set("email", trustedProfile.Email); err != nil {
+			err = fmt.Errorf("Error setting email: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_trusted_profile", "read", "set-email").GetDiag()
+		}
+	}
 	if err = d.Set("account_id", trustedProfile.AccountID); err != nil {
 		err = fmt.Errorf("Error setting account_id: %s", err)
 		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_trusted_profile", "read", "set-account_id").GetDiag()
 	}
-	if err = d.Set("profile_id", trustedProfile.ID); err != nil {
+	if !core.IsNil(trustedProfile.Context) {
+		contextMap, err := ResourceIBMIamTrustedProfileResponseContextToMap(trustedProfile.Context)
+		if err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_trusted_profile", "read", "context-to-map").GetDiag()
+		}
+		if err = d.Set("context", []map[string]interface{}{contextMap}); err != nil {
+			err = fmt.Errorf("Error setting context: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_trusted_profile", "read", "set-context").GetDiag()
+		}
+	}
+	if err = d.Set("id", trustedProfile.ID); err != nil {
 		err = fmt.Errorf("Error setting id: %s", err)
 		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_trusted_profile", "read", "set-id").GetDiag()
 	}
@@ -334,6 +375,9 @@ func resourceIBMIamTrustedProfileUpdate(context context.Context, d *schema.Resou
 	if _, ok := d.GetOk("description"); ok {
 		updateProfileOptions.SetDescription(d.Get("description").(string))
 	}
+	if _, ok := d.GetOk("email"); ok {
+		updateProfileOptions.SetEmail(d.Get("email").(string))
+	}
 
 	_, _, err = iamIdentityClient.UpdateProfileWithContext(context, updateProfileOptions)
 	if err != nil {
@@ -367,4 +411,62 @@ func resourceIBMIamTrustedProfileDelete(context context.Context, d *schema.Resou
 	d.SetId("")
 
 	return nil
+}
+
+func ResourceIBMIamTrustedProfileResponseContextToMap(model *iamidentityv1.ResponseContext) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.TransactionID != nil {
+		modelMap["transaction_id"] = *model.TransactionID
+	}
+	if model.Operation != nil {
+		modelMap["operation"] = *model.Operation
+	}
+	if model.UserAgent != nil {
+		modelMap["user_agent"] = *model.UserAgent
+	}
+	if model.URL != nil {
+		modelMap["url"] = *model.URL
+	}
+	if model.InstanceID != nil {
+		modelMap["instance_id"] = *model.InstanceID
+	}
+	if model.ThreadID != nil {
+		modelMap["thread_id"] = *model.ThreadID
+	}
+	if model.Host != nil {
+		modelMap["host"] = *model.Host
+	}
+	if model.StartTime != nil {
+		modelMap["start_time"] = *model.StartTime
+	}
+	if model.EndTime != nil {
+		modelMap["end_time"] = *model.EndTime
+	}
+	if model.ElapsedTime != nil {
+		modelMap["elapsed_time"] = *model.ElapsedTime
+	}
+	if model.ClusterName != nil {
+		modelMap["cluster_name"] = *model.ClusterName
+	}
+	return modelMap, nil
+}
+
+func ResourceIBMIamTrustedProfileEnityHistoryRecordToMap(model *iamidentityv1.EnityHistoryRecord) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	modelMap["timestamp"] = *model.Timestamp
+	modelMap["iam_id"] = *model.IamID
+	modelMap["iam_id_account"] = *model.IamIDAccount
+	modelMap["action"] = *model.Action
+	modelMap["params"] = model.Params
+	modelMap["message"] = *model.Message
+	return modelMap, nil
+}
+
+func ResourceIBMIamTrustedProfileActivityToMap(model *iamidentityv1.Activity) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.LastAuthn != nil {
+		modelMap["last_authn"] = *model.LastAuthn
+	}
+	modelMap["authn_count"] = flex.IntValue(model.AuthnCount)
+	return modelMap, nil
 }
