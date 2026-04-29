@@ -16,6 +16,7 @@ import (
 	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/IBM/vpc-go-sdk/vpcv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -48,6 +49,12 @@ func ResourceIBMISSecurityGroupRule() *schema.Resource {
 		Exists:        resourceIBMISSecurityGroupRuleExists,
 		Importer:      &schema.ResourceImporter{},
 
+		CustomizeDiff: customdiff.All(
+			customdiff.Sequence(
+				func(_ context.Context, diff *schema.ResourceDiff, v interface{}) error {
+					return ResourceSgRuleProtocolValidate(diff)
+				}),
+		),
 		Schema: map[string]*schema.Schema{
 
 			isSecurityGroupID: {
@@ -103,7 +110,7 @@ func ResourceIBMISSecurityGroupRule() *schema.Resource {
 				Type:          schema.TypeList,
 				MaxItems:      1,
 				Optional:      true,
-				ForceNew:      true,
+				Computed:      true,
 				MinItems:      1,
 				ConflictsWith: []string{isSecurityGroupRuleProtocolTCP, isSecurityGroupRuleProtocolUDP, isSecurityGroupRuleProtocol},
 				Deprecated:    "icmp is deprecated, use 'protocol', 'code', and 'type' instead.",
@@ -113,13 +120,13 @@ func ResourceIBMISSecurityGroupRule() *schema.Resource {
 						isSecurityGroupRuleType: {
 							Type:         schema.TypeInt,
 							Optional:     true,
-							ForceNew:     false,
+							Computed:     true,
 							ValidateFunc: validate.InvokeValidator("ibm_is_security_group_rule", isSecurityGroupRuleType),
 						},
 						isSecurityGroupRuleCode: {
 							Type:         schema.TypeInt,
 							Optional:     true,
-							ForceNew:     false,
+							Computed:     true,
 							ValidateFunc: validate.InvokeValidator("ibm_is_security_group_rule", isSecurityGroupRuleCode),
 						},
 					},
@@ -131,24 +138,24 @@ func ResourceIBMISSecurityGroupRule() *schema.Resource {
 				MaxItems:      1,
 				Optional:      true,
 				MinItems:      1,
-				ForceNew:      true,
+				Computed:      true,
 				Description:   "protocol=tcp",
 				Deprecated:    "tcp is deprecated, use 'protocol', 'code', and 'type' instead.",
 				ConflictsWith: []string{isSecurityGroupRuleProtocolUDP, isSecurityGroupRuleProtocolICMP, isSecurityGroupRuleProtocol, isSecurityGroupRuleType, isSecurityGroupRuleCode},
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						isSecurityGroupRulePortMin: {
-							Type:         schema.TypeInt,
-							Optional:     true,
-							ForceNew:     false,
-							Default:      1,
+							Type:     schema.TypeInt,
+							Optional: true,
+							Computed: true,
+							// Default:      1,
 							ValidateFunc: validate.InvokeValidator("ibm_is_security_group_rule", isSecurityGroupRulePortMin),
 						},
 						isSecurityGroupRulePortMax: {
-							Type:         schema.TypeInt,
-							Optional:     true,
-							ForceNew:     false,
-							Default:      65535,
+							Type:     schema.TypeInt,
+							Optional: true,
+							Computed: true,
+							// Default:      65535,
 							ValidateFunc: validate.InvokeValidator("ibm_is_security_group_rule", isSecurityGroupRulePortMax),
 						},
 					},
@@ -159,7 +166,7 @@ func ResourceIBMISSecurityGroupRule() *schema.Resource {
 				Type:          schema.TypeList,
 				MaxItems:      1,
 				Optional:      true,
-				ForceNew:      true,
+				Computed:      true,
 				MinItems:      1,
 				Description:   "protocol=udp",
 				Deprecated:    "udp is deprecated, use 'protocol', 'port_min', and 'port_max' instead.",
@@ -167,17 +174,17 @@ func ResourceIBMISSecurityGroupRule() *schema.Resource {
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						isSecurityGroupRulePortMin: {
-							Type:         schema.TypeInt,
-							Optional:     true,
-							ForceNew:     false,
-							Default:      1,
+							Type:     schema.TypeInt,
+							Optional: true,
+							Computed: true,
+							// Default:      1,
 							ValidateFunc: validate.InvokeValidator("ibm_is_security_group_rule", isSecurityGroupRulePortMin),
 						},
 						isSecurityGroupRulePortMax: {
-							Type:         schema.TypeInt,
-							Optional:     true,
-							ForceNew:     false,
-							Default:      65535,
+							Type:     schema.TypeInt,
+							Optional: true,
+							Computed: true,
+							// Default:      65535,
 							ValidateFunc: validate.InvokeValidator("ibm_is_security_group_rule", isSecurityGroupRulePortMax),
 						},
 					},
@@ -190,10 +197,10 @@ func ResourceIBMISSecurityGroupRule() *schema.Resource {
 				Description: "The crn of the Security Group",
 			},
 			isSecurityGroupRuleProtocol: {
-				Type:          schema.TypeString,
-				Optional:      true,
-				Computed:      true,
-				ForceNew:      true,
+				Type:     schema.TypeString,
+				Optional: true,
+				Computed: true,
+				// ForceNew:      true,
 				Description:   "The name of the network protocol",
 				ConflictsWith: []string{isSecurityGroupRuleProtocolTCP, isSecurityGroupRuleProtocolICMP, isSecurityGroupRuleProtocolUDP},
 				ValidateFunc:  validate.InvokeValidator("ibm_is_security_group_rule", isSecurityGroupRuleProtocol),
@@ -201,6 +208,7 @@ func ResourceIBMISSecurityGroupRule() *schema.Resource {
 			isSecurityGroupRuleType: {
 				Type:          schema.TypeInt,
 				Optional:      true,
+				Computed:      true,
 				RequiredWith:  []string{isSecurityGroupRuleProtocol},
 				ConflictsWith: []string{isSecurityGroupRuleProtocolICMP, isSecurityGroupRuleProtocolUDP, isSecurityGroupRuleProtocolTCP, isSecurityGroupRulePortMin, isSecurityGroupRulePortMax},
 				ValidateFunc:  validate.InvokeValidator("ibm_is_security_group_rule", isSecurityGroupRuleType),
@@ -208,13 +216,15 @@ func ResourceIBMISSecurityGroupRule() *schema.Resource {
 			isSecurityGroupRuleCode: {
 				Type:          schema.TypeInt,
 				Optional:      true,
-				RequiredWith:  []string{isSecurityGroupRuleProtocol},
+				Computed:      true,
+				RequiredWith:  []string{isSecurityGroupRuleProtocol, isNetworkACLRuleICMPType},
 				ConflictsWith: []string{isSecurityGroupRuleProtocolICMP, isSecurityGroupRuleProtocolUDP, isSecurityGroupRuleProtocolTCP, isSecurityGroupRulePortMin, isSecurityGroupRulePortMax},
 				ValidateFunc:  validate.InvokeValidator("ibm_is_security_group_rule", isSecurityGroupRuleCode),
 			},
 			isSecurityGroupRulePortMin: {
 				Type:          schema.TypeInt,
 				Optional:      true,
+				Computed:      true,
 				RequiredWith:  []string{isSecurityGroupRuleProtocol, isSecurityGroupRulePortMax},
 				ConflictsWith: []string{isSecurityGroupRuleProtocolICMP, isSecurityGroupRuleProtocolTCP, isSecurityGroupRuleProtocolUDP, isSecurityGroupRuleType, isSecurityGroupRuleCode},
 				ValidateFunc:  validate.InvokeValidator("ibm_is_security_group_rule", isSecurityGroupRulePortMin),
@@ -222,12 +232,63 @@ func ResourceIBMISSecurityGroupRule() *schema.Resource {
 			isSecurityGroupRulePortMax: {
 				Type:          schema.TypeInt,
 				Optional:      true,
+				Computed:      true,
 				RequiredWith:  []string{isSecurityGroupRuleProtocol, isSecurityGroupRulePortMin},
 				ConflictsWith: []string{isSecurityGroupRuleProtocolICMP, isSecurityGroupRuleProtocolTCP, isSecurityGroupRuleProtocolUDP, isSecurityGroupRuleType, isSecurityGroupRuleCode},
 				ValidateFunc:  validate.InvokeValidator("ibm_is_security_group_rule", isSecurityGroupRulePortMax),
 			},
 		},
 	}
+}
+
+func ResourceSgRuleProtocolValidate(d *schema.ResourceDiff) error {
+	var protocol string
+	if protocolVal, ok := d.GetOk(isNetworkACLRuleProtocol); ok {
+		protocol = protocolVal.(string)
+	}
+	if d.Id() != "" {
+		if d.HasChange(isSecurityGroupRuleProtocol) {
+			return fmt.Errorf("updating '%s' is not supported after creation. Please recreate the security group rule to change the protocol", isSecurityGroupRuleProtocol)
+		} else {
+			hasTCP := d.HasChange(isSecurityGroupRuleProtocolTCP)
+			hasUDP := d.HasChange(isSecurityGroupRuleProtocolUDP)
+			hasICMP := d.HasChange(isSecurityGroupRuleProtocolICMP)
+
+			switch protocol {
+			case "icmp":
+				if hasTCP || hasUDP {
+					return fmt.Errorf("updating '%s' is not supported after creation. Please recreate the security group rule to change the protocol", isSecurityGroupRuleProtocol)
+				}
+			case "tcp":
+				if hasUDP || hasICMP {
+					return fmt.Errorf("updating '%s' is not supported after creation. Please recreate the security group rule to change the protocol", isSecurityGroupRuleProtocol)
+				}
+			case "udp":
+				if hasTCP || hasICMP {
+					return fmt.Errorf("updating '%s' is not supported after creation. Please recreate the security group rule to change the protocol", isSecurityGroupRuleProtocol)
+				}
+			}
+		}
+	}
+
+	if protocol != "icmp" {
+		if _, ok := d.GetOk("type"); ok {
+			return fmt.Errorf("attribute 'type' conflicts with protocol %s; 'type' is only valid for icmp protocol", protocol)
+		}
+		if _, ok := d.GetOk("code"); ok {
+			return fmt.Errorf("attribute 'code' conflicts with protocol %q; 'code' is only valid for icmp protocol", protocol)
+		}
+	}
+
+	if protocol != "tcp" && protocol != "udp" {
+		if _, ok := d.GetOk("port_min"); ok {
+			return fmt.Errorf("attribute 'port_min' conflicts with protocol %s; ports apply only to tcp/udp protocol", protocol)
+		}
+		if _, ok := d.GetOk("port_max"); ok {
+			return fmt.Errorf("attribute 'port_max' conflicts with protocol %s; ports apply only to tcp/udp protocol", protocol)
+		}
+	}
+	return nil
 }
 
 func ResourceIBMISSecurityGroupRuleValidator() *validate.ResourceValidator {
@@ -445,6 +506,18 @@ func resourceIBMISSecurityGroupRuleRead(context context.Context, d *schema.Resou
 				if err = d.Set(isSecurityGroupRuleProtocolICMP, protocolList); err != nil {
 					err = fmt.Errorf("Error setting icmp: %s", err)
 					return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_security_group_rule", "read", "set-icmp").GetDiag()
+				}
+			}
+			if securityGroupRule.Type != nil {
+				if err = d.Set(isSecurityGroupRuleType, int(*securityGroupRule.Type)); err != nil {
+					err = fmt.Errorf("Error setting type: %s", err)
+					return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_security_group_rule", "read", "set-type").GetDiag()
+				}
+			}
+			if securityGroupRule.Code != nil {
+				if err = d.Set(isSecurityGroupRuleCode, int(*securityGroupRule.Code)); err != nil {
+					err = fmt.Errorf("Error setting code: %s", err)
+					return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_security_group_rule", "read", "set-code").GetDiag()
 				}
 			}
 			remote, ok := securityGroupRule.Remote.(*vpcv1.SecurityGroupRuleRemote)
@@ -770,8 +843,16 @@ func resourceIBMISSecurityGroupRuleRead(context context.Context, d *schema.Resou
 				if securityGroupRule.PortMin != nil {
 					tcpProtocol["port_min"] = *securityGroupRule.PortMin
 				}
+				if err = d.Set("port_min", securityGroupRule.PortMin); err != nil {
+					err = fmt.Errorf("Error setting port_min: %s", err)
+					return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_security_group_rule", "read", "set-port_min").GetDiag()
+				}
 				if securityGroupRule.PortMax != nil {
 					tcpProtocol["port_max"] = *securityGroupRule.PortMax
+				}
+				if err = d.Set("port_max", securityGroupRule.PortMax); err != nil {
+					err = fmt.Errorf("Error setting port_max: %s", err)
+					return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_security_group_rule", "read", "set-port_max").GetDiag()
 				}
 				protocolList := make([]map[string]interface{}, 0)
 				protocolList = append(protocolList, tcpProtocol)
@@ -829,6 +910,209 @@ func resourceIBMISSecurityGroupRuleRead(context context.Context, d *schema.Resou
 	return nil
 }
 
+func buildSecurityGroupRuleUpdatePatch(d *schema.ResourceData, sess *vpcv1.VpcV1) (*vpcv1.UpdateSecurityGroupRuleOptions, error) {
+	secgrpID, ruleID, err := parseISTerraformID(d.Id())
+	if err != nil {
+		return nil, err
+	}
+
+	securityGroupRulePatchModel := &vpcv1.SecurityGroupRulePatch{}
+
+	// Protocol
+	if d.HasChange(isSecurityGroupRuleProtocol) {
+		return nil, fmt.Errorf("updating '%s' is not supported after creation. Please recreate the security group rule to change the protocol", isSecurityGroupRuleProtocol)
+	}
+
+	// Direction
+	if d.HasChange(isSecurityGroupRuleDirection) {
+		direction := d.Get(isSecurityGroupRuleDirection).(string)
+		securityGroupRulePatchModel.Direction = &direction
+	}
+
+	// Name
+	if d.HasChange(isSecurityGroupRuleName) {
+		if v, ok := d.GetOk(isSecurityGroupRuleName); ok && v.(string) != "" {
+			name := v.(string)
+			securityGroupRulePatchModel.Name = &name
+		}
+	}
+
+	// IP Version
+	if d.HasChange(isSecurityGroupRuleIPVersion) {
+		if v, ok := d.GetOk(isSecurityGroupRuleIPVersion); ok {
+			ipversion := v.(string)
+			securityGroupRulePatchModel.IPVersion = &ipversion
+		}
+	}
+
+	// Remote
+	if d.HasChange(isSecurityGroupRuleRemote) {
+		if pr, ok := d.GetOk(isSecurityGroupRuleRemote); ok {
+			remote := pr.(string)
+			remoteAddress, remoteCIDR, remoteSecGrpID, err := inferRemoteSecurityGroup(remote)
+			if err != nil {
+				return nil, err
+			}
+			remoteTemplateUpdate := &vpcv1.SecurityGroupRuleRemotePatch{}
+			if remoteAddress != "" {
+				remoteTemplateUpdate.Address = &remoteAddress
+			} else if remoteCIDR != "" {
+				remoteTemplateUpdate.CIDRBlock = &remoteCIDR
+			} else if remoteSecGrpID != "" {
+				remoteTemplateUpdate.ID = &remoteSecGrpID
+				// Verify it's a valid security group
+				getSecurityGroupOptions := &vpcv1.GetSecurityGroupOptions{
+					ID: &remoteSecGrpID,
+				}
+				sg, res, err := sess.GetSecurityGroup(getSecurityGroupOptions)
+				if err != nil || sg == nil {
+					if res != nil && res.StatusCode == 404 {
+						return nil, fmt.Errorf("[ERROR] Invalid remote provided (%s): %s\n%s", remoteSecGrpID, err, res)
+					}
+					return nil, fmt.Errorf("[ERROR] Invalid remote provided (%s): %s", remoteSecGrpID, err)
+				}
+			}
+			securityGroupRulePatchModel.Remote = remoteTemplateUpdate
+		}
+	}
+
+	// Local
+	if d.HasChange(isSecurityGroupRuleLocal) {
+		if pl, ok := d.GetOk(isSecurityGroupRuleLocal); ok {
+			local := pl.(string)
+			localAddress, localCIDR, err := inferLocalSecurityGroup(local)
+			if err != nil {
+				return nil, err
+			}
+			localTemplateUpdate := &vpcv1.SecurityGroupRuleLocalPatch{}
+			if localAddress != "" {
+				localTemplateUpdate.Address = &localAddress
+			} else if localCIDR != "" {
+				localTemplateUpdate.CIDRBlock = &localCIDR
+			}
+			securityGroupRulePatchModel.Local = localTemplateUpdate
+		}
+	}
+
+	// Check if using new protocol attribute or deprecated blocks
+	// These are mutually exclusive due to ConflictsWith in schema
+	// Check if deprecated blocks exist in the configuration (not state)
+	hasTCP := d.HasChange(isSecurityGroupRuleProtocolTCP)
+	hasUDP := d.HasChange(isSecurityGroupRuleProtocolUDP)
+	hasICMP := d.HasChange(isSecurityGroupRuleProtocolICMP)
+	usingDeprecatedBlocks := hasTCP || hasUDP || hasICMP
+
+	protocol := d.Get(isSecurityGroupRuleProtocol).(string)
+
+	if usingDeprecatedBlocks {
+		// Handle deprecated TCP block
+		if d.HasChange(isSecurityGroupRuleProtocolTCP) {
+			// Use GetOk to get NEW values from configuration, not old state values
+			if tcpInterface, ok := d.GetOk(isSecurityGroupRuleProtocolTCP); ok {
+				tcp := tcpInterface.([]interface{})
+				if len(tcp) > 0 && tcp[0] != nil {
+					tcpval := tcp[0].(map[string]interface{})
+					if portMin, ok := tcpval[isSecurityGroupRulePortMin]; ok {
+						portMinInt := int64(portMin.(int))
+						securityGroupRulePatchModel.PortMin = &portMinInt
+					}
+					if portMax, ok := tcpval[isSecurityGroupRulePortMax]; ok {
+						portMaxInt := int64(portMax.(int))
+						securityGroupRulePatchModel.PortMax = &portMaxInt
+					}
+				}
+			}
+		}
+
+		// Handle deprecated UDP block
+		if d.HasChange(isSecurityGroupRuleProtocolUDP) {
+			// Use GetOk to get NEW values from configuration, not old state values
+			if udpInterface, ok := d.GetOk(isSecurityGroupRuleProtocolUDP); ok {
+				udp := udpInterface.([]interface{})
+				if len(udp) > 0 {
+					udpval := udp[0].(map[string]interface{})
+					if portMin, ok := udpval[isSecurityGroupRulePortMin]; ok {
+						portMinInt := int64(portMin.(int))
+						securityGroupRulePatchModel.PortMin = &portMinInt
+					}
+					if portMax, ok := udpval[isSecurityGroupRulePortMax]; ok {
+						portMaxInt := int64(portMax.(int))
+						securityGroupRulePatchModel.PortMax = &portMaxInt
+					}
+				}
+			}
+		}
+
+		// Handle deprecated ICMP block
+		if d.HasChange(isSecurityGroupRuleProtocolICMP) {
+			// Use GetOk to get NEW values from configuration, not old state values
+			if icmpInterface, ok := d.GetOk(isSecurityGroupRuleProtocolICMP); ok {
+				icmp := icmpInterface.([]interface{})
+				if len(icmp) > 0 {
+					icmpval := icmp[0].(map[string]interface{})
+					if icmpType, ok := icmpval[isSecurityGroupRuleType]; ok {
+						icmpTypeInt := int64(icmpType.(int))
+						securityGroupRulePatchModel.Type = &icmpTypeInt
+					}
+					if icmpCode, ok := icmpval[isSecurityGroupRuleCode]; ok {
+						icmpCodeInt := int64(icmpCode.(int))
+						securityGroupRulePatchModel.Code = &icmpCodeInt
+					}
+				}
+			}
+		}
+	} else {
+		// Handle new top-level attributes (when protocol is set)
+		// Handle port_min and port_max for TCP/UDP protocols
+		if protocol == "tcp" || protocol == "udp" {
+			// For Computed attributes, we need to check HasChange to get the new value
+			if d.HasChange(isSecurityGroupRulePortMin) {
+				if v, ok := d.GetOk(isSecurityGroupRulePortMin); ok {
+					portMin := int64(v.(int))
+					securityGroupRulePatchModel.PortMin = &portMin
+				}
+			}
+			if d.HasChange(isSecurityGroupRulePortMax) {
+				if v, ok := d.GetOk(isSecurityGroupRulePortMax); ok {
+					portMax := int64(v.(int))
+					securityGroupRulePatchModel.PortMax = &portMax
+				}
+			}
+		}
+
+		// Handle type and code for ICMP protocol
+		if protocol == "icmp" {
+			if d.HasChange(isSecurityGroupRuleType) {
+				if v, ok := d.GetOkExists(isSecurityGroupRuleType); ok {
+					icmpType := int64(v.(int))
+					securityGroupRulePatchModel.Type = &icmpType
+				}
+			}
+			if d.HasChange(isSecurityGroupRuleCode) {
+				if v, ok := d.GetOkExists(isSecurityGroupRuleCode); ok {
+					icmpCode := int64(v.(int))
+					securityGroupRulePatchModel.Code = &icmpCode
+				}
+			}
+		}
+	}
+
+	// Convert patch model to map
+	securityGroupRulePatch, err := securityGroupRulePatchModel.AsPatch()
+	if err != nil {
+		return nil, fmt.Errorf("[ERROR] Error calling asPatch for SecurityGroupRulePatch: %s", err)
+	}
+
+	// Build update options
+	updateOptions := &vpcv1.UpdateSecurityGroupRuleOptions{
+		SecurityGroupID:        &secgrpID,
+		ID:                     &ruleID,
+		SecurityGroupRulePatch: securityGroupRulePatch,
+	}
+
+	return updateOptions, nil
+}
+
 func resourceIBMISSecurityGroupRuleUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	sess, err := vpcClient(meta)
 	if err != nil {
@@ -837,15 +1121,21 @@ func resourceIBMISSecurityGroupRuleUpdate(context context.Context, d *schema.Res
 		return tfErr.GetDiag()
 	}
 
-	parsed, _, sgTemplate, err := parseIBMISSecurityGroupRuleDictionary(d, "update", sess)
+	// Build the update patch using the dedicated function
+	updateSecurityGroupRuleOptions, err := buildSecurityGroupRuleUpdatePatch(d, sess)
 	if err != nil {
-		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_security_group_rule", "update", "sep-id-parts").GetDiag()
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_security_group_rule", "update", "build-patch").GetDiag()
 	}
-	isSecurityGroupRuleKey := "security_group_rule_key_" + parsed.secgrpID
+
+	secgrpID, _, err := parseISTerraformID(d.Id())
+	if err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_security_group_rule", "update", "parse-id").GetDiag()
+	}
+
+	isSecurityGroupRuleKey := "security_group_rule_key_" + secgrpID
 	conns.IbmMutexKV.Lock(isSecurityGroupRuleKey)
 	defer conns.IbmMutexKV.Unlock(isSecurityGroupRuleKey)
 
-	updateSecurityGroupRuleOptions := sgTemplate
 	_, _, err = sess.UpdateSecurityGroupRuleWithContext(context, updateSecurityGroupRuleOptions)
 	if err != nil {
 		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("UpdateSecurityGroupRuleWithContext failed: %s", err.Error()), "ibm_is_security_group_rule", "update")
@@ -1076,24 +1366,6 @@ func parseIBMISSecurityGroupRuleDictionary(d *schema.ResourceData, tag string, s
 	}
 	sgTemplate.Protocol = &parsed.protocol
 
-	if parsed.protocol != "icmp" {
-		if _, ok := d.GetOk("type"); ok {
-			return nil, nil, nil, fmt.Errorf("attribute 'type' conflicts with protocol %s; 'type' is only valid for icmp protocol", parsed.protocol)
-		}
-		if _, ok := d.GetOk("code"); ok {
-			return nil, nil, nil, fmt.Errorf("attribute 'code' conflicts with protocol %q; 'code' is only valid for icmp protocol", parsed.protocol)
-		}
-	}
-
-	if parsed.protocol != "tcp" && parsed.protocol != "udp" {
-		if _, ok := d.GetOk("port_min"); ok {
-			return nil, nil, nil, fmt.Errorf("attribute 'port_min' conflicts with protocol %s; ports apply only to tcp/udp protocol", parsed.protocol)
-		}
-		if _, ok := d.GetOk("port_max"); ok {
-			return nil, nil, nil, fmt.Errorf("attribute 'port_max' conflicts with protocol %s; ports apply only to tcp/udp protocol", parsed.protocol)
-		}
-	}
-
 	//Local
 	parsed.local = ""
 	if pl, ok := d.GetOk(isSecurityGroupRuleLocal); ok {
@@ -1123,13 +1395,13 @@ func parseIBMISSecurityGroupRuleDictionary(d *schema.ResourceData, tag string, s
 	if icmpInterface, ok := d.GetOk("icmp"); ok {
 		if icmpInterface.([]interface{})[0] != nil {
 			haveType := false
-			if value, ok := d.GetOk("icmp.0.type"); ok {
+			if value, ok := d.GetOkExists("icmp.0.type"); ok {
 				parsed.icmpType = int64(value.(int))
 				haveType = true
 				sgTemplate.Type = &parsed.icmpType
 				securityGroupRulePatchModel.Type = &parsed.icmpType
 			}
-			if value, ok := d.GetOk("icmp.0.code"); ok {
+			if value, ok := d.GetOkExists("icmp.0.code"); ok {
 				if !haveType {
 					return nil, nil, nil, fmt.Errorf("icmp code requires icmp type")
 				}
@@ -1143,13 +1415,13 @@ func parseIBMISSecurityGroupRuleDictionary(d *schema.ResourceData, tag string, s
 	} else {
 		if parsed.protocol == "icmp" {
 			haveType := false
-			if value, ok := d.GetOk("type"); ok {
+			if value, ok := d.GetOkExists("type"); ok {
 				parsed.icmpType = int64(value.(int))
 				haveType = true
 				sgTemplate.Type = &parsed.icmpType
 				securityGroupRulePatchModel.Type = &parsed.icmpType
 			}
-			if value, ok := d.GetOk("code"); ok {
+			if value, ok := d.GetOkExists("code"); ok {
 				if !haveType {
 					return nil, nil, nil, fmt.Errorf("icmp code requires icmp type")
 				}
@@ -1188,18 +1460,46 @@ func parseIBMISSecurityGroupRuleDictionary(d *schema.ResourceData, tag string, s
 				parsed.portMax = 65535
 				parsed.portMin = 1
 			}
+			if parsed.portMax <= 0 {
+				parsed.portMax = 65535
+			}
+			if parsed.portMin <= 0 {
+				parsed.portMin = 1
+			}
 			sgTemplate.PortMax = &parsed.portMax
 			sgTemplate.PortMin = &parsed.portMin
 			securityGroupRulePatchModel.PortMax = &parsed.portMax
 			securityGroupRulePatchModel.PortMin = &parsed.portMin
 		} else {
 			if parsed.protocol == prot {
+				// First try to get from new attributes
 				if value, ok := d.GetOk("port_min"); ok {
 					parsed.portMin = int64(value.(int))
 				}
 				if value, ok := d.GetOk("port_max"); ok {
 					parsed.portMax = int64(value.(int))
 				}
+
+				// If not found in new attributes, try to get from deprecated block in state
+				// This handles the migration case where values are still in the old block
+				if parsed.portMin == -1 || parsed.portMax == -1 {
+					if tcpInterface, ok := d.GetOk(prot); ok {
+						if tcpInterface.([]interface{})[0] != nil {
+							ports := tcpInterface.([]interface{})[0].(map[string]interface{})
+							if parsed.portMin == -1 {
+								if value, ok := ports["port_min"]; ok {
+									parsed.portMin = int64(value.(int))
+								}
+							}
+							if parsed.portMax == -1 {
+								if value, ok := ports["port_max"]; ok {
+									parsed.portMax = int64(value.(int))
+								}
+							}
+						}
+					}
+				}
+
 				parsed.protocol = prot
 				sgTemplate.Protocol = &parsed.protocol
 				if parsed.portMin == -1 && parsed.portMax == -1 {

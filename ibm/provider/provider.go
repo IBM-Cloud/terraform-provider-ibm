@@ -631,6 +631,8 @@ func Provider() *schema.Provider {
 
 			"ibm_is_share_mount_target":          vpc.DataSourceIBMIsShareTarget(),
 			"ibm_is_share_mount_targets":         vpc.DataSourceIBMIsShareTargets(),
+			"ibm_is_volume_job":                  vpc.DataSourceIBMIsVolumeJob(),
+			"ibm_is_volume_jobs":                 vpc.DataSourceIBMIsVolumeJobs(),
 			"ibm_is_volume":                      vpc.DataSourceIBMISVolume(),
 			"ibm_is_volumes":                     vpc.DataSourceIBMIsVolumes(),
 			"ibm_is_volume_profile":              vpc.DataSourceIBMISVolumeProfile(),
@@ -1050,6 +1052,7 @@ func Provider() *schema.Provider {
 			"ibm_en_destination_app_configuration":  eventnotification.DataSourceIBMEnAppConfigurationDestination(),
 			"ibm_en_subscription_app_configuration": eventnotification.DataSourceIBMEnAppConfigurationSubscription(),
 			"ibm_en_app_configuration_template":     eventnotification.DataSourceIBMEnAppConfigurationTemplate(),
+			"ibm_en_bounce_metrics":                 eventnotification.DataSourceIBMEnBounceMetrics(),
 
 			// Added for Toolchain
 			"ibm_cd_toolchain":                         cdtoolchain.DataSourceIBMCdToolchain(),
@@ -1461,6 +1464,8 @@ func Provider() *schema.Provider {
 			"ibm_is_virtual_network_interface_floating_ip": vpc.ResourceIBMIsVirtualNetworkInterfaceFloatingIP(),
 			"ibm_is_virtual_network_interface_ip":          vpc.ResourceIBMIsVirtualNetworkInterfaceIP(),
 			"ibm_is_snapshot_consistency_group":            vpc.ResourceIBMIsSnapshotConsistencyGroup(),
+			"ibm_is_volume_job_cancel":                     vpc.ResourceIBMIsVolumeJobCancel(),
+			"ibm_is_volume_job":                            vpc.ResourceIBMIsVolumeJob(),
 			"ibm_is_volume":                                vpc.ResourceIBMISVolume(),
 			"ibm_is_vpn_gateway":                           vpc.ResourceIBMISVPNGateway(),
 			"ibm_is_vpn_gateway_connection":                vpc.ResourceIBMISVPNGatewayConnection(),
@@ -2218,6 +2223,8 @@ func Validator() validate.ValidatorDict {
 				"ibm_is_subnet":                                      vpc.ResourceIBMISSubnetValidator(),
 				"ibm_is_subnet_reserved_ip":                          vpc.ResourceIBMISSubnetReservedIPValidator(),
 				"ibm_is_subnet_reserved_ip_patch":                    vpc.ResourceIBMISSubnetReservedIPPatchValidator(),
+				"ibm_is_volume_job_cancel":                           vpc.ResourceIBMIsVolumeJobCancelValidator(),
+				"ibm_is_volume_job":                                  vpc.ResourceIBMIsVolumeJobValidator(),
 				"ibm_is_volume":                                      vpc.ResourceIBMISVolumeValidator(),
 				"ibm_is_virtual_network_interface":                   vpc.ResourceIBMIsVirtualNetworkInterfaceValidator(),
 				"ibm_is_address_prefix":                              vpc.ResourceIBMISAddressPrefixValidator(),

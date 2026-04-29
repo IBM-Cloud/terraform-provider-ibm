@@ -59,6 +59,25 @@ resource ibm_cos_bucket_object_lock_configuration "objectlock" {
 }
 
 ```
+
+## Example usage with GOVERNANCE mode
+
+```terraform
+resource ibm_cos_bucket_object_lock_configuration "objectlock" {
+ bucket_crn      = ibm_cos_bucket.cos_bucket.crn
+ bucket_location = ibm_cos_bucket.cos_bucket.bucket_region
+ object_lock_configuration{
+   object_lock_enabled = "Enabled"
+   object_lock_rule{
+     default_retention{
+        mode = "GOVERNANCE"
+        years = 1
+      }
+    }
+  }
+}
+
+```
 # Enabling Object Lock configuration on an existing bucket
 To enable  Object Lock configuration on an existing bucket, create a COS bucket with object versioning enabled and pass the crn of the COS bucket and location of the bucket to `ibm_cos_bucket_object_lock_configuration.bucket_crn` and `ibm_cos_bucket_object_lock_configuration.bucket_location` as shown in the example.
 
@@ -101,6 +120,22 @@ resource ibm_cos_bucket_object_lock_configuration "objectlock" {
   }
 }
 
+// To enable object lock configuration with GOVERNANCE mode and set default retention on a bucket
+
+resource ibm_cos_bucket_object_lock_configuration "objectlock" {
+bucket_crn      = ibm_cos_bucket.cos_bucket.crn
+bucket_location = ibm_cos_bucket.cos_bucket.bucket_region
+object_lock_configuration{
+ object_lock_enabled = "Enabled"
+ object_lock_rule{
+   default_retention{
+      mode = "GOVERNANCE"
+      years = 2
+    }
+  }
+}
+}
+
 
 ```
 
@@ -118,9 +153,13 @@ Review the argument references that you can specify for your resource.
   Nested scheme for `object_lock_rule`:
   - `default_retention`- (Required) Configuration block for specifying the default Object Lock retention settings for new objects placed in the specified bucket
   Nested scheme for `default_retention`:
-  - `mode`- (String)  Default Object Lock retention mode you want to apply to new objects placed in the specified bucket. Supported values: COMPLIANCE.
+  - `mode`- (String)  Default Object Lock retention mode you want to apply to new objects placed in the specified bucket. Supported values: COMPLIANCE, GOVERNANCE.
   - `days`- (Int) Specifies number of days after which the object can be deleted from the COS bucket.
   - `years`- (Int) Specifies number of years after which the object can be deleted from the COS bucket.
+
+**Note:**
+- **COMPLIANCE mode**: Objects cannot be overwritten or deleted by any user, including the root user. When an object is locked in compliance mode, its retention mode can't be changed, and its retention period can't be shortened. Compliance mode helps ensure that an object version can't be overwritten or deleted for the duration of the retention period.
+- **GOVERNANCE mode**: Users with special permissions can alter the retention settings or delete the object if necessary. Governance mode allows you to protect objects against deletion by most users, but you can still grant some users permission to alter the retention settings or delete the object if necessary.
 
 ## Attribute reference
 In addition to all argument reference list, you can access the following attribute reference after your resource is created.

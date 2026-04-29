@@ -151,3 +151,7 @@ You can access the following attribute references after your data source is crea
 
   - `user_data_format` - (String) The user data format for this image.
   - `visibility` - (String) The visibility of the image public or private.
+  - `zones` - (List) The zones in which this image is available for use. If the image has a status of `available` or `deprecated`, this will include all zones in the region.If the image has a status of `partially_available`, this will include one or more zones in the region. If the image has a status of `failed`, `obsolete`, `pending`, or `unusable`, this will be empty.
+      Nested schema for **zones**:
+      - `href` - (String) The URL for this zone.
+      - `name` - (String) The globally unique name for this zone.

@@ -667,7 +667,7 @@ func ResourceIbmIsShare() *schema.Resource {
 				Optional:      true,
 				Computed:      true,
 				ConflictsWith: []string{"zone", "source_share", "source_share_crn", "origin_share.0.id", "origin_share.0.crn"},
-				Description:   "The snapshot from which this share was cloned.This property will be present when the share was created from a snapshot.The resources supported by this property may[expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) in thefuture.",
+				Description:   "The snapshot from which this share was cloned.This property will be present when the share was created from a snapshot.The resources supported by this property may [expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) in thefuture.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"crn": &schema.Schema{
