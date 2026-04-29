@@ -18,7 +18,7 @@ import (
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
-	"github.ibm.com/DRAutomation/dra-go-sdk/powerhaautomationservicev1"
+	"github.com/IBM/dra-go-sdk/powerhaautomationservicev1"
 )
 
 func DataSourceIBMPhaPowervsWorkspace() *schema.Resource {

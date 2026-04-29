@@ -21,7 +21,7 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 	"github.com/IBM/go-sdk-core/v5/core"
-	"github.ibm.com/DRAutomation/dra-go-sdk/powerhaautomationservicev1"
+	"github.com/IBM/dra-go-sdk/powerhaautomationservicev1"
 )
 
 func ResourceIBMPhaClusterNodes() *schema.Resource {

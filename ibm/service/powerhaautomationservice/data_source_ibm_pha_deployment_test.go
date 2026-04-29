@@ -17,7 +17,7 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/powerhaautomationservice"
 	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/stretchr/testify/assert"
-	"github.ibm.com/DRAutomation/dra-go-sdk/powerhaautomationservicev1"
+	"github.com/IBM/dra-go-sdk/powerhaautomationservicev1"
 )
 
 func TestAccIBMPhaDeploymentDataSourceBasic(t *testing.T) {

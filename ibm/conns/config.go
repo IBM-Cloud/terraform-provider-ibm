@@ -139,7 +139,7 @@ import (
 	"github.com/IBM/platform-services-go-sdk/partnercentersellv1"
 	scc "github.com/IBM/scc-go-sdk/v5/securityandcompliancecenterapiv3"
 	"github.com/IBM/secrets-manager-go-sdk/v2/secretsmanagerv2"
-	"github.ibm.com/DRAutomation/dra-go-sdk/powerhaautomationservicev1"
+	"github.com/IBM/dra-go-sdk/powerhaautomationservicev1"
 )
 
 // RetryAPIDelay - retry api delay
