@@ -457,9 +457,6 @@ func resourceIbmLogsPolicyUpdate(context context.Context, d *schema.ResourceData
 		if _, ok := d.GetOk("subsystem_rule"); ok {
 			bodyModelMap["subsystem_rule"] = d.Get("subsystem_rule")
 		}
-		if _, ok := d.GetOk("archive_retention"); ok {
-			bodyModelMap["archive_retention"] = d.Get("archive_retention")
-		}
 		if _, ok := d.GetOk("archive_retention_tag"); ok {
 			bodyModelMap["archive_retention_tag"] = d.Get("archive_retention_tag")
 		}
