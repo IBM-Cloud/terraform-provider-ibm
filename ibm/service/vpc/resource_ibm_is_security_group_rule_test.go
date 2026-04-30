@@ -287,3 +287,309 @@ func testAccCheckIBMISsecurityGroupRuleConfig(vpcname, name string) string {
  `, vpcname, name)
 
 }
+
+// TestAccIBMISSecurityGroupRule_DeprecatedToFlatMigration tests migration from
+// deprecated blocks (icmp{}, tcp{}, udp{}) to new flat struct (protocol + top-level attributes)
+func TestAccIBMISSecurityGroupRule_DeprecatedICMPToFlatMigration(t *testing.T) {
+	var securityGroupRule string
+
+	vpcname := fmt.Sprintf("tfsgrule-vpc-migrate-%d", acctest.RandIntRange(10, 100))
+	sgname := fmt.Sprintf("tfsgrule-sg-migrate-%d", acctest.RandIntRange(10, 100))
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMISSecurityGroupRuleDestroy,
+		Steps: []resource.TestStep{
+			{
+				// Step 1: Create with deprecated icmp{} block
+				Config: testAccCheckIBMISSecurityGroupRuleDeprecatedICMP(vpcname, sgname),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISSecurityGroupRuleExists("ibm_is_security_group_rule.test_icmp", securityGroupRule),
+					resource.TestCheckResourceAttr(
+						"ibm_is_security_group_rule.test_icmp", "protocol", "icmp"),
+				),
+			},
+			{
+				// Step 2: Migrate to flat struct with protocol = "icmp" and top-level type/code
+				Config: testAccCheckIBMISSecurityGroupRuleFlatICMP(vpcname, sgname),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISSecurityGroupRuleExists("ibm_is_security_group_rule.test_icmp", securityGroupRule),
+					resource.TestCheckResourceAttr(
+						"ibm_is_security_group_rule.test_icmp", "protocol", "icmp"),
+					resource.TestCheckResourceAttr(
+						"ibm_is_security_group_rule.test_icmp", "type", "8"),
+					resource.TestCheckResourceAttr(
+						"ibm_is_security_group_rule.test_icmp", "code", "0"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccIBMISSecurityGroupRule_DeprecatedTCPToFlatMigration(t *testing.T) {
+	var securityGroupRule string
+
+	vpcname := fmt.Sprintf("tfsgrule-vpc-tcp-%d", acctest.RandIntRange(10, 100))
+	sgname := fmt.Sprintf("tfsgrule-sg-tcp-%d", acctest.RandIntRange(10, 100))
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMISSecurityGroupRuleDestroy,
+		Steps: []resource.TestStep{
+			{
+				// Step 1: Create with deprecated tcp{} block
+				Config: testAccCheckIBMISSecurityGroupRuleDeprecatedTCP(vpcname, sgname),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISSecurityGroupRuleExists("ibm_is_security_group_rule.test_tcp", securityGroupRule),
+					resource.TestCheckResourceAttr(
+						"ibm_is_security_group_rule.test_tcp", "protocol", "tcp"),
+				),
+			},
+			{
+				// Step 2: Migrate to flat struct with protocol = "tcp" and top-level ports
+				Config: testAccCheckIBMISSecurityGroupRuleFlatTCP(vpcname, sgname),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISSecurityGroupRuleExists("ibm_is_security_group_rule.test_tcp", securityGroupRule),
+					resource.TestCheckResourceAttr(
+						"ibm_is_security_group_rule.test_tcp", "protocol", "tcp"),
+					resource.TestCheckResourceAttr(
+						"ibm_is_security_group_rule.test_tcp", "port_min", "443"),
+					resource.TestCheckResourceAttr(
+						"ibm_is_security_group_rule.test_tcp", "port_max", "443"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccIBMISSecurityGroupRule_DeprecatedUDPToFlatMigration(t *testing.T) {
+	var securityGroupRule string
+
+	vpcname := fmt.Sprintf("tfsgrule-vpc-udp-%d", acctest.RandIntRange(10, 100))
+	sgname := fmt.Sprintf("tfsgrule-sg-udp-%d", acctest.RandIntRange(10, 100))
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMISSecurityGroupRuleDestroy,
+		Steps: []resource.TestStep{
+			{
+				// Step 1: Create with deprecated udp{} block
+				Config: testAccCheckIBMISSecurityGroupRuleDeprecatedUDP(vpcname, sgname),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISSecurityGroupRuleExists("ibm_is_security_group_rule.test_udp", securityGroupRule),
+					resource.TestCheckResourceAttr(
+						"ibm_is_security_group_rule.test_udp", "protocol", "udp"),
+				),
+			},
+			{
+				// Step 2: Migrate to flat struct with protocol = "udp" and top-level ports
+				Config: testAccCheckIBMISSecurityGroupRuleFlatUDP(vpcname, sgname),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISSecurityGroupRuleExists("ibm_is_security_group_rule.test_udp", securityGroupRule),
+					resource.TestCheckResourceAttr(
+						"ibm_is_security_group_rule.test_udp", "protocol", "udp"),
+					resource.TestCheckResourceAttr(
+						"ibm_is_security_group_rule.test_udp", "port_min", "53"),
+					resource.TestCheckResourceAttr(
+						"ibm_is_security_group_rule.test_udp", "port_max", "53"),
+				),
+			},
+		},
+	})
+}
+
+// Test ICMP with zero values (type=0, code=0 - Echo Reply)
+func TestAccIBMISSecurityGroupRule_ICMPZeroValues(t *testing.T) {
+	var securityGroupRule string
+
+	vpcname := fmt.Sprintf("tfsgrule-vpc-zero-%d", acctest.RandIntRange(10, 100))
+	sgname := fmt.Sprintf("tfsgrule-sg-zero-%d", acctest.RandIntRange(10, 100))
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMISSecurityGroupRuleDestroy,
+		Steps: []resource.TestStep{
+			{
+				// Create with ICMP type=0 (Echo Reply) and code=0
+				Config: testAccCheckIBMISSecurityGroupRuleICMPZeroValues(vpcname, sgname),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISSecurityGroupRuleExists("ibm_is_security_group_rule.test_icmp_zero", securityGroupRule),
+					resource.TestCheckResourceAttr(
+						"ibm_is_security_group_rule.test_icmp_zero", "protocol", "icmp"),
+					resource.TestCheckResourceAttr(
+						"ibm_is_security_group_rule.test_icmp_zero", "type", "0"),
+					resource.TestCheckResourceAttr(
+						"ibm_is_security_group_rule.test_icmp_zero", "code", "0"),
+				),
+			},
+		},
+	})
+}
+
+// Config: Deprecated icmp{} block
+func testAccCheckIBMISSecurityGroupRuleDeprecatedICMP(vpcname, sgname string) string {
+	return fmt.Sprintf(`
+    resource "ibm_is_vpc" "testacc_vpc" {
+        name = "%s"
+    }
+
+    resource "ibm_is_security_group" "testacc_security_group" {
+        name = "%s"
+        vpc  = ibm_is_vpc.testacc_vpc.id
+    }
+
+    resource "ibm_is_security_group_rule" "test_icmp" {
+        group     = ibm_is_security_group.testacc_security_group.id
+        direction = "inbound"
+        remote    = "0.0.0.0/0"
+        icmp {
+            type = 8
+            code = 0
+        }
+    }
+    `, vpcname, sgname)
+}
+
+// Config: Flat struct with protocol = "icmp" and top-level type/code
+func testAccCheckIBMISSecurityGroupRuleFlatICMP(vpcname, sgname string) string {
+	return fmt.Sprintf(`
+    resource "ibm_is_vpc" "testacc_vpc" {
+        name = "%s"
+    }
+
+    resource "ibm_is_security_group" "testacc_security_group" {
+        name = "%s"
+        vpc  = ibm_is_vpc.testacc_vpc.id
+    }
+
+    resource "ibm_is_security_group_rule" "test_icmp" {
+        group     = ibm_is_security_group.testacc_security_group.id
+        direction = "inbound"
+        remote    = "0.0.0.0/0"
+        protocol  = "icmp"
+        type      = 8
+        code      = 0
+    }
+    `, vpcname, sgname)
+}
+
+// Config: Deprecated tcp{} block
+func testAccCheckIBMISSecurityGroupRuleDeprecatedTCP(vpcname, sgname string) string {
+	return fmt.Sprintf(`
+    resource "ibm_is_vpc" "testacc_vpc" {
+        name = "%s"
+    }
+
+    resource "ibm_is_security_group" "testacc_security_group" {
+        name = "%s"
+        vpc  = ibm_is_vpc.testacc_vpc.id
+    }
+
+    resource "ibm_is_security_group_rule" "test_tcp" {
+        group     = ibm_is_security_group.testacc_security_group.id
+        direction = "inbound"
+        remote    = "0.0.0.0/0"
+        tcp {
+            port_min = 80
+            port_max = 80
+        }
+    }
+    `, vpcname, sgname)
+}
+
+// Config: Flat struct with protocol = "tcp" and top-level ports
+func testAccCheckIBMISSecurityGroupRuleFlatTCP(vpcname, sgname string) string {
+	return fmt.Sprintf(`
+    resource "ibm_is_vpc" "testacc_vpc" {
+        name = "%s"
+    }
+
+    resource "ibm_is_security_group" "testacc_security_group" {
+        name = "%s"
+        vpc  = ibm_is_vpc.testacc_vpc.id
+    }
+
+    resource "ibm_is_security_group_rule" "test_tcp" {
+        group     = ibm_is_security_group.testacc_security_group.id
+        direction = "inbound"
+        remote    = "0.0.0.0/0"
+        protocol  = "tcp"
+        port_min  = 443
+        port_max  = 443
+    }
+    `, vpcname, sgname)
+}
+
+// Config: Deprecated udp{} block
+func testAccCheckIBMISSecurityGroupRuleDeprecatedUDP(vpcname, sgname string) string {
+	return fmt.Sprintf(`
+    resource "ibm_is_vpc" "testacc_vpc" {
+        name = "%s"
+    }
+
+    resource "ibm_is_security_group" "testacc_security_group" {
+        name = "%s"
+        vpc  = ibm_is_vpc.testacc_vpc.id
+    }
+
+    resource "ibm_is_security_group_rule" "test_udp" {
+        group     = ibm_is_security_group.testacc_security_group.id
+        direction = "inbound"
+        remote    = "0.0.0.0/0"
+        udp {
+            port_min = 53
+            port_max = 53
+        }
+    }
+    `, vpcname, sgname)
+}
+
+// Config: Flat struct with protocol = "udp" and top-level ports
+func testAccCheckIBMISSecurityGroupRuleFlatUDP(vpcname, sgname string) string {
+	return fmt.Sprintf(`
+    resource "ibm_is_vpc" "testacc_vpc" {
+        name = "%s"
+    }
+
+    resource "ibm_is_security_group" "testacc_security_group" {
+        name = "%s"
+        vpc  = ibm_is_vpc.testacc_vpc.id
+    }
+
+    resource "ibm_is_security_group_rule" "test_udp" {
+        group     = ibm_is_security_group.testacc_security_group.id
+        direction = "inbound"
+        remote    = "0.0.0.0/0"
+        protocol  = "udp"
+        port_min  = 53
+        port_max  = 53
+    }
+    `, vpcname, sgname)
+}
+
+// Config: ICMP with zero values (type=0, code=0 - Echo Reply)
+func testAccCheckIBMISSecurityGroupRuleICMPZeroValues(vpcname, sgname string) string {
+	return fmt.Sprintf(`
+    resource "ibm_is_vpc" "testacc_vpc" {
+        name = "%s"
+    }
+
+    resource "ibm_is_security_group" "testacc_security_group" {
+        name = "%s"
+        vpc  = ibm_is_vpc.testacc_vpc.id
+    }
+
+    resource "ibm_is_security_group_rule" "test_icmp_zero" {
+        group     = ibm_is_security_group.testacc_security_group.id
+        direction = "inbound"
+        remote    = "0.0.0.0/0"
+        protocol  = "icmp"
+        type      = 0
+        code      = 0
+    }
+    `, vpcname, sgname)
+}

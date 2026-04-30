@@ -131,7 +131,7 @@ Nested `latest_sync` blocks have the following structure:
   - `resource_type` - The resource type.
 - `snapshot_count` - (Integer) The total number of snapshots for this share.
 - `snapshot_size` - (Integer) The total size (in gigabytes) of snapshots used for this file share.
-- `source_snapshot` - (List) The snapshot from which this share was cloned.This property will be present when the share was created from a snapshot.The resources supported by this property may[expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) in thefuture.
+- `source_snapshot` - (List) The snapshot from which this share was cloned.This property will be present when the share was created from a snapshot.The resources supported by this property may [expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) in thefuture.
   Nested schema for **source_snapshot**:
 	- `crn` - (String) The CRN for this share snapshot.
 	- `deleted` - (List) If present, this property indicates the referenced resource has been deleted, and providessome supplementary information.
