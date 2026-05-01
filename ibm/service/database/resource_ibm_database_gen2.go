@@ -30,6 +30,7 @@ var gen2UnsupportedAttrs = []string{
 	"users",
 	"allowlist",
 	"adminpassword",
+	"backup_encryption_key_crn",
 }
 
 const (
@@ -379,14 +380,12 @@ func (g *resourceIBMDatabaseGen2Backend) getMembersCount(memberGroup *Group, cat
 }
 
 // addEncryptionConfig adds encryption configuration to dataservices.
-// Includes disk and backup encryption key CRNs if configured.
+// Includes disk encryption key CRN if configured.
+// Note: backup_encryption_key_crn is not supported for Gen2 instances.
 func (g *resourceIBMDatabaseGen2Backend) addEncryptionConfig(d *schema.ResourceData, dataservices map[string]interface{}) {
-	encryption := make(map[string]interface{}, 2)
+	encryption := make(map[string]interface{}, 1)
 	if keyProtect, ok := d.GetOk("key_protect_key"); ok {
 		encryption[diskEncryptionKey] = keyProtect.(string)
-	}
-	if backUpEncryptionKey, ok := d.GetOk("backup_encryption_key_crn"); ok {
-		encryption[backupEncryptionKey] = backUpEncryptionKey.(string)
 	}
 	if len(encryption) > 0 {
 		dataservices[encryptionKey] = encryption
@@ -774,6 +773,7 @@ func (g *resourceIBMDatabaseGen2Backend) checkUnsupportedChanges(d *schema.Resou
 		"allowlist":                            "Allowlist is not supported for Gen2 database instances",
 		"users":                                "User management is not supported for Gen2 database instances. Users should manage credentials using the ibm_resource_key resource (https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/resources/resource_key)",
 		"adminpassword":                        "Setting admin password is not supported for Gen2 database instances. Gen2 instances do not have a default admin user. Please use the ibm_resource_key resource to create service credentials for database access (https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/resources/resource_key)",
+		"backup_encryption_key_crn":            "Backup encryption key is not supported for Gen2 database instances. Gen2 instances do not support separate backup encryption configuration",
 		"remote_leader_id":                     "Read replica creation and promotion is not supported for Gen2 database instances yet",
 		"version":                              "Version changes are not supported for Gen2 database instances",
 		"backup_id":                            "Restore from backup is not supported for Gen2 database instances yet",
