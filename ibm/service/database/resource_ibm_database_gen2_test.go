@@ -922,6 +922,9 @@ func TestGen2ConfigureInstancePipeline(t *testing.T) {
 // TestGen2UnsupportedAttributesList tests the gen2UnsupportedAttrs list
 func TestGen2UnsupportedAttributesList(t *testing.T) {
 	expectedUnsupported := []string{
+		"backup_id",
+		"point_in_time_recovery_deployment_id",
+		"point_in_time_recovery_time",
 		"backup_policy",
 		"users",
 		"allowlist",

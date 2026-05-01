@@ -105,7 +105,9 @@ func (g *resourceIBMDatabaseGen2Backend) getResourceControllerClient(meta interf
 // Returns:
 //   - diag.Diagnostics: Any errors or warnings encountered
 func (g *resourceIBMDatabaseGen2Backend) Create(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	// Create the resource instance
+	// Create the resource instance with ALL parameters in a single API call
+	// This includes: database configuration (members, storage, host_flavor), encryption settings, and tags
+	// Single-stage creation avoids unnecessary resource provisioning/deprovisioning
 	instance, err := g.createResourceInstance(d, meta)
 	if err != nil {
 		return diag.FromErr(err)
@@ -119,16 +121,12 @@ func (g *resourceIBMDatabaseGen2Backend) Create(ctx context.Context, d *schema.R
 		return diag.FromErr(fmt.Errorf("error waiting for create database instance (%s) to complete: %w", *instance.ID, err))
 	}
 
-	// Configure the instance with additional settings
-	if err := g.configureInstance(ctx, d, meta, instance); err != nil {
-		return diag.FromErr(err)
-	}
-
 	return resourceIBMDatabaseInstanceRead(ctx, d, meta)
 }
 
 // createResourceInstance handles the initial resource instance creation.
-// It retrieves service and plan information, builds Gen2 parameters, and creates the instance.
+// It retrieves service and plan information, builds Gen2 parameters, includes tags, and creates the instance.
+// Everything is done in a single API call to avoid unnecessary resource provisioning/deprovisioning.
 func (g *resourceIBMDatabaseGen2Backend) createResourceInstance(d *schema.ResourceData, meta interface{}) (*rc.ResourceInstance, error) {
 	clientSession := meta.(conns.ClientSession)
 	rsConClient, err := g.getResourceControllerClient(meta)
@@ -159,12 +157,18 @@ func (g *resourceIBMDatabaseGen2Backend) createResourceInstance(d *schema.Resour
 		return nil, err
 	}
 
-	// Build Gen2 parameters
+	// Build Gen2 parameters (database config + encryption)
 	parameters, err := g.buildGen2Parameters(d, serviceName, meta, catalogCRN)
 	if err != nil {
 		return nil, err
 	}
 	rsInst.Parameters = parameters
+
+	// Add tags if specified (tags is a TypeSet in the schema)
+	if tags, ok := d.GetOk("tags"); ok {
+		tagSet := tags.(*schema.Set)
+		rsInst.Tags = flex.ExpandStringList(tagSet.List())
+	}
 
 	// Create the instance with retry logic
 	instance, response, err := g.createInstanceWithRetry(rsConClient, &rsInst)
@@ -396,7 +400,9 @@ func (g *resourceIBMDatabaseGen2Backend) createInstanceWithRetry(client *rc.Reso
 }
 
 // configureInstance applies post-creation configuration to the instance.
-// Includes scaling, tags, passwords, allowlist, auto-scaling, users, and database settings.
+// Note: Group scaling is NOT included here - all group parameters (members, storage, host_flavor)
+// are passed during initial creation to avoid unnecessary resource provisioning/deprovisioning.
+// Only tags are configured post-creation as they don't affect resource provisioning.
 func (g *resourceIBMDatabaseGen2Backend) configureInstance(ctx context.Context, d *schema.ResourceData, meta interface{}, instance *rc.ResourceInstance) error {
 	// Initialize configuration context
 	configCtx, err := g.initConfigContext(ctx, d, meta, instance)
@@ -404,22 +410,9 @@ func (g *resourceIBMDatabaseGen2Backend) configureInstance(ctx context.Context, 
 		return err
 	}
 
-	// Define configuration steps in order of execution
-	type configStep struct {
-		name string
-		fn   func(*instanceConfigContext) error
-	}
-
-	configSteps := []configStep{
-		{name: "group scaling", fn: g.applyGroupScaling},
-		{name: "tags", fn: g.updateTags},
-	}
-
-	// Execute configuration steps sequentially
-	for _, step := range configSteps {
-		if err := step.fn(configCtx); err != nil {
-			return fmt.Errorf("failed to configure %s: %w", step.name, err)
-		}
+	// Update tags only - all other configuration is done during initial creation
+	if err := g.updateTags(configCtx); err != nil {
+		return fmt.Errorf("failed to configure tags: %w", err)
 	}
 
 	return nil
