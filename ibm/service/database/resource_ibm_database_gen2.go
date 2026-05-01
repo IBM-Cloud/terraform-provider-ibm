@@ -29,6 +29,7 @@ var gen2UnsupportedAttrs = []string{
 	"backup_policy",
 	"users",
 	"allowlist",
+	"adminpassword",
 }
 
 const (
@@ -772,6 +773,7 @@ func (g *resourceIBMDatabaseGen2Backend) checkUnsupportedChanges(d *schema.Resou
 	unsupportedChanges := map[string]string{
 		"allowlist":                            "Allowlist is not supported for Gen2 database instances",
 		"users":                                "User management is not supported for Gen2 database instances. Users should manage credentials using the ibm_resource_key resource (https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/resources/resource_key)",
+		"adminpassword":                        "Setting admin password is not supported for Gen2 database instances. Gen2 instances do not have a default admin user. Please use the ibm_resource_key resource to create service credentials for database access (https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/resources/resource_key)",
 		"remote_leader_id":                     "Read replica creation and promotion is not supported for Gen2 database instances yet",
 		"version":                              "Version changes are not supported for Gen2 database instances",
 		"backup_id":                            "Restore from backup is not supported for Gen2 database instances yet",
