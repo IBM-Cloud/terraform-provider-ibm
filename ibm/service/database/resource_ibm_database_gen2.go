@@ -1065,9 +1065,6 @@ func (g *resourceIBMDatabaseGen2Backend) ValidateUnsupportedAttrsDiff(ctx contex
 		errorMsg.WriteString("\n\n")
 	}
 
-	errorMsg.WriteString("Action Required: Remove the unsupported attributes listed above from your configuration.\n")
-	errorMsg.WriteString("General Documentation: https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/resources/database")
-
 	return errors.New(errorMsg.String())
 }
 
@@ -1101,19 +1098,18 @@ func (g *resourceIBMDatabaseGen2Backend) ValidateGroupsDiff(ctx context.Context,
 		if group.Memory != nil && group.Memory.Allocation > 0 {
 			return fmt.Errorf(
 				"Configuration error: Gen2 databases do not support independent memory configuration in group %q.\n\n"+
-					"Action required: Remove the 'memory' block from your group configuration. "+
-					"In Gen2 databases, memory allocation is determined by the 'host_flavor' attribute.\n\n"+
-					"Example:\n"+
-					"  group {\n"+
-					"    group_id = %q\n"+
-					"    host_flavor {\n"+
-					"      id = \"b3c.4x16.encryption\"  # This controls both CPU and memory\n"+
-					"    }\n"+
-					"    disk {\n"+
-					"      allocation_mb = 20480\n"+
-					"    }\n"+
-					"  }\n\n"+
-					"Documentation: https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/resources/database#host_flavor",
+					"   Action required: Remove the 'memory' block from your group configuration. In Gen2 databases, memory allocation is determined by the 'host_flavor' attribute.\n\n"+
+					"   Example:\n"+
+					"     group {\n"+
+					"       group_id = %q\n"+
+					"       host_flavor {\n"+
+					"         id = \"bx3d.4x20\"  # This controls both CPU and memory\n"+
+					"       }\n"+
+					"       disk {\n"+
+					"         allocation_mb = 20480\n"+
+					"       }\n"+
+					"     }\n\n"+
+					"   Documentation: https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/resources/database#host_flavor-2\n",
 				group.ID, group.ID,
 			)
 		}
@@ -1121,19 +1117,18 @@ func (g *resourceIBMDatabaseGen2Backend) ValidateGroupsDiff(ctx context.Context,
 		if group.CPU != nil && group.CPU.Allocation > 0 {
 			return fmt.Errorf(
 				"Configuration error: Gen2 databases do not support independent CPU configuration in group %q.\n\n"+
-					"Action required: Remove the 'cpu' block from your group configuration. "+
-					"In Gen2 databases, CPU allocation is determined by the 'host_flavor' attribute.\n\n"+
-					"Example:\n"+
-					"  group {\n"+
-					"    group_id = %q\n"+
-					"    host_flavor {\n"+
-					"      id = \"b3c.4x16.encryption\"  # This controls both CPU and memory\n"+
-					"    }\n"+
-					"    disk {\n"+
-					"      allocation_mb = 20480\n"+
-					"    }\n"+
-					"  }\n\n"+
-					"Documentation: https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/resources/database#host_flavor",
+					"   Action required: Remove the 'cpu' block from your group configuration. In Gen2 databases, CPU allocation is determined by the 'host_flavor' attribute.\n\n"+
+					"   Example:\n"+
+					"     group {\n"+
+					"       group_id = %q\n"+
+					"       host_flavor {\n"+
+					"         id = \"bx3d.4x20\"  # This controls both CPU and memory\n"+
+					"       }\n"+
+					"       disk {\n"+
+					"         allocation_mb = 20480\n"+
+					"       }\n"+
+					"     }\n\n"+
+					"   Documentation: https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/resources/database#host_flavor-2\n",
 				group.ID, group.ID,
 			)
 		}
