@@ -699,6 +699,8 @@ Review the argument reference that you can specify for your resource.
   **Gen2:** Plan fails if set. Restore from backup is not yet implemented for Gen2 instances.
 
 - `backup_encryption_key_crn`- (Optional, Forces new resource, String) The CRN of a key protect key, that you want to use for encrypting disk that holds deployment backups. A key protect CRN is in the format `crn:v1:<...>:key:`. Backup_encryption_key_crn can be added only at the time of creation and no update support  are available.
+
+  **Gen2:** Plan fails if set. Backup encryption key is not supported for Gen2 instances.
 - `configuration` - (Optional, Json String) Database Configuration in JSON format. Supported services: `databases-for-postgresql`, `databases-for-redis`, `databases-for-mysql`,`messages-for-rabbitmq` and `databases-for-enterprisedb`. For valid values please refer [API docs](https://cloud.ibm.com/apidocs/cloud-databases-api/cloud-databases-api-v5#updatedatabaseconfiguration).
 
   **Gen2:** Accepted but ignored. Database configuration management is not yet implemented for Gen2 instances.
@@ -721,7 +723,7 @@ Review the argument reference that you can specify for your resource.
 
 - `key_protect_instance` - (Optional, Forces new resource, String) The instance CRN of a Key Management Services like Key Protect or Hyper Protect Crypto Service (HPCS) that you want to use for disk encryption. An instance CRN is in the format `crn:v1:<…>::`.
 
-  **Gen2:** Accepted but not used. For Gen2 instances, use `key_protect_key` for disk encryption and `backup_encryption_key_crn` for backup encryption instead of this attribute.
+  **Gen2:** Accepted but not used. For Gen2 instances, use `key_protect_key` for disk encryption instead of this attribute.
 - `location` - (Required, String) The location where you want to deploy your instance. The location must match the `region` parameter that you specify in the `provider` block of your  Terraform configuration file. The default value is `us-south`. Currently, supported regions are `us-south`, `us-east`, `eu-gb`, `eu-de`, `au-syd`, `jp-tok`, `oslo01`.
 - `group` - (Optional, Set) A set of group scaling values for the database. Multiple blocks are allowed. Can only be performed on is_adjustable=true groups. Values set are per-member. Values must be greater than or equal to the minimum size and must be a multiple of the step size.
 
@@ -853,7 +855,8 @@ The following table summarizes feature availability for Classic and Gen2 plans:
 | Basic provisioning (name, location, service, plan) | ✅ Supported | ✅ Supported |
 | Resource group assignment | ✅ Supported | ✅ Supported |
 | Tags | ✅ Supported | ✅ Supported |
-| Encryption (key_protect_key, backup_encryption_key_crn) | ✅ Supported | ✅ Supported |
+| Encryption (key_protect_key) | ✅ Supported | ✅ Supported |
+| Backup encryption (backup_encryption_key_crn) | ✅ Supported | ❌ Plan fails if set |
 | Restore from backup (backup_id) | ✅ Supported | ❌ Plan fails if set |
 | Point-in-time recovery (point_in_time_recovery_deployment_id, point_in_time_recovery_time) | ✅ Supported | ❌ Plan fails if set |
 | Offline restore (MongoDB) | ✅ Supported | ❌ Accepted but ignored |
@@ -861,7 +864,7 @@ The following table summarizes feature availability for Classic and Gen2 plans:
 | Scaling (members, disk, host_flavor) | ✅ Supported | ✅ Supported |
 | Scaling (memory, cpu) | ✅ Supported | ❌ Plan fails if set (controlled by host_flavor) |
 | Service endpoints | ✅ public, private, public-and-private | ⚠️ private only (plan fails if public) |
-| Admin password | ✅ Supported | ❌ Accepted but ignored (use ibm_resource_key) |
+| Admin password | ✅ Supported | ❌ Plan fails if set (use ibm_resource_key) |
 | User management | ✅ Supported | ❌ Plan fails if set (use ibm_resource_key) |
 | IP allowlist | ✅ Supported | ❌ Plan fails if set (use ibm_resource_key) |
 | Database configuration | ✅ Supported | ❌ Accepted but ignored |
@@ -876,10 +879,10 @@ The following table summarizes feature availability for Classic and Gen2 plans:
 Gen2 plans handle unsupported features in two ways:
 
 - **Plan fails if set**: Terraform plan will fail with a validation error if these attributes are configured. You must remove them from your configuration to use Gen2 plans.
-  - Examples: `backup_id`, `point_in_time_recovery_deployment_id`, `point_in_time_recovery_time`, `users`, `allowlist`, `remote_leader_id`, memory/cpu in `group`
+  - Examples: `backup_id`, `point_in_time_recovery_deployment_id`, `point_in_time_recovery_time`, `users`, `allowlist`, `adminpassword`, `remote_leader_id`, memory/cpu in `group`
 
 - **Accepted but ignored**: These attributes can remain in your configuration for easier migration, but they have no effect on Gen2 instances. They are silently ignored during apply and cleared during read operations.
-  - Examples: `auto_scaling`, `configuration`, `logical_replication_slot`, `offline_restore`, `async_restore`, `adminpassword`
+  - Examples: `auto_scaling`, `configuration`, `logical_replication_slot`, `offline_restore`, `async_restore`
 
 **Note:** For Gen2 instances, use the `ibm_resource_key` resource to create service credentials and obtain connection information.
 
