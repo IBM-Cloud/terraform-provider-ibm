@@ -1081,8 +1081,8 @@ func (g *resourceIBMDatabaseGen2Backend) ValidateUnsupportedAttrsDiff(ctx contex
 
 	// Build detailed error message with specific guidance for each attribute
 	var errorMsg strings.Builder
-	errorMsg.WriteString(fmt.Sprintf("Configuration Error: The plan %q uses Gen2 architecture.\n\n", strings.TrimSpace(plan)))
-	errorMsg.WriteString("The following attributes are not supported for Gen2 databases:\n\n")
+	errorMsg.WriteString(fmt.Sprintf("The plan %q uses IBM Cloud Databases Gen2 architecture.\n\n", strings.TrimSpace(plan)))
+	errorMsg.WriteString("The following attributes are not supported for Gen2:\n\n")
 
 	for i, attr := range bad {
 		errorMsg.WriteString(fmt.Sprintf("%d. Attribute: '%s'\n", i+1, attr))
