@@ -1093,47 +1093,38 @@ func (g *resourceIBMDatabaseGen2Backend) ValidateGroupsDiff(ctx context.Context,
 			continue
 		}
 
-		// Gen2 validation: Memory and CPU cannot be set independently
-		// They are controlled by host_flavor only
+		// Gen2 validation: Memory, CPU, and multitenant are not supported
+		// Gen2 requires dedicated host flavors
 		hasMemory := group.Memory != nil && group.Memory.Allocation > 0
 		hasCPU := group.CPU != nil && group.CPU.Allocation > 0
+		hasMultitenant := group.HostFlavor != nil && group.HostFlavor.ID == "multitenant"
 
-		if hasMemory || hasCPU {
-			var invalidConfigs []string
-			var actionRequired string
+		if hasMultitenant || hasMemory || hasCPU {
+			errMsg := fmt.Sprintf("Configuration error: Gen2 databases do not support the following configuration(s) in group %q:\n\n", group.ID)
 
-			if hasMemory && hasCPU {
-				invalidConfigs = []string{"memory", "cpu"}
-				actionRequired = "Remove both the 'memory' and 'cpu' blocks from your group configuration. In Gen2 databases, both CPU and memory allocation are determined by the 'host_flavor' attribute."
-			} else if hasMemory {
-				invalidConfigs = []string{"memory"}
-				actionRequired = "Remove the 'memory' block from your group configuration. In Gen2 databases, memory allocation is determined by the 'host_flavor' attribute."
-			} else {
-				invalidConfigs = []string{"cpu"}
-				actionRequired = "Remove the 'cpu' block from your group configuration. In Gen2 databases, CPU allocation is determined by the 'host_flavor' attribute."
+			if hasMultitenant {
+				errMsg += "   - host_flavor.id: In Gen2 databases, host_flavor cannot be 'multitenant'. Choose a specific dedicated flavor (e.g., \"bx3d.4x20\").\n"
+			}
+			if hasMemory {
+				errMsg += "   - memory: In Gen2 databases, memory allocation is determined by the 'host_flavor' attribute.\n"
+			}
+			if hasCPU {
+				errMsg += "   - cpu: In Gen2 databases, CPU allocation is determined by the 'host_flavor' attribute.\n"
 			}
 
-			configList := invalidConfigs[0]
-			if len(invalidConfigs) > 1 {
-				configList = invalidConfigs[0] + " and " + invalidConfigs[1]
-			}
+			errMsg += "\n   Example:\n" +
+				"     group {\n" +
+				fmt.Sprintf("       group_id = %q\n", group.ID) +
+				"       host_flavor {\n" +
+				"         id = \"bx3d.4x20\"  # Use a dedicated flavor\n" +
+				"       }\n" +
+				"       disk {\n" +
+				"         allocation_mb = 20480\n" +
+				"       }\n" +
+				"     }\n\n" +
+				"   Documentation: https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/resources/database#host_flavor-2\n"
 
-			return fmt.Errorf(
-				"Configuration error: Gen2 databases do not support independent %s configuration in group %q.\n\n"+
-					"   Action required: %s\n\n"+
-					"   Example:\n"+
-					"     group {\n"+
-					"       group_id = %q\n"+
-					"       host_flavor {\n"+
-					"         id = \"bx3d.4x20\"  # This controls both CPU and memory\n"+
-					"       }\n"+
-					"       disk {\n"+
-					"         allocation_mb = 20480\n"+
-					"       }\n"+
-					"     }\n\n"+
-					"   Documentation: https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/resources/database#host_flavor-2\n",
-				configList, group.ID, actionRequired, group.ID,
-			)
+			return errors.New(errMsg)
 		}
 
 		if group.HostFlavor != nil && group.HostFlavor.ID != "" && group.HostFlavor.ID != "multitenant" {
