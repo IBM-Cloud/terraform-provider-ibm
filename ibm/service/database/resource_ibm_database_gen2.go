@@ -5,6 +5,7 @@ package database
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log"
 	"os"
@@ -29,8 +30,22 @@ var gen2UnsupportedAttrs = []string{
 	"backup_policy",
 	"users",
 	"allowlist",
+	"remote_leader_id",
 	"adminpassword",
 	"backup_encryption_key_crn",
+}
+
+// gen2IgnoredAttrs are attributes that are accepted but have no effect in Gen2
+// These generate warnings but don't cause plan failures
+var gen2IgnoredAttrs = []string{
+	"key_protect_instance",
+	"auto_scaling",
+	"configuration",
+	"logical_replication_slot",
+	"offline_restore",
+	"async_restore",
+	"version_upgrade_skip_backup",
+	"skip_initial_backup",
 }
 
 const (
@@ -868,10 +883,181 @@ func (g *resourceIBMDatabaseGen2Backend) Exists(d *schema.ResourceData, meta int
 	return databaseInstanceExists(d, meta)
 }
 
-// WarnUnsupported returns warnings for unsupported features.
-// Currently returns no warnings; reserved for future use.
+// WarnUnsupported returns warnings for unsupported features that are configured but being ignored.
+// This helps users clean up their configuration without breaking their deployments.
 func (g *resourceIBMDatabaseGen2Backend) WarnUnsupported(ctx context.Context, d *schema.ResourceData) diag.Diagnostics {
-	return nil
+	var warnings diag.Diagnostics
+
+	// Check each unsupported attribute (these cause plan failures in CustomizeDiff)
+	// This warning path is for attributes that somehow made it past validation
+	for _, attr := range gen2UnsupportedAttrs {
+		// Check if attribute is set (has a non-zero value)
+		if val, ok := d.GetOk(attr); ok && !isZeroValue(val) {
+			warning := diag.Diagnostic{
+				Severity: diag.Warning,
+				Summary:  fmt.Sprintf("Attribute '%s' is not supported for Gen2 databases and is being ignored", attr),
+				Detail: fmt.Sprintf(
+					"The attribute '%s' is configured in your Terraform configuration but is not supported for Gen2 databases (plan: %q).\n\n"+
+						"This attribute is being ignored and has no effect on your database instance.\n\n"+
+						"Recommended Action: Remove this attribute from your configuration to avoid this warning.\n\n"+
+						"%s",
+					attr,
+					d.Get("plan").(string),
+					getGen2AttrGuidance(attr),
+				),
+			}
+			warnings = append(warnings, warning)
+		}
+	}
+
+	// Check each ignored attribute (accepted but has no effect)
+	for _, attr := range gen2IgnoredAttrs {
+		// Check if attribute is set (has a non-zero value)
+		if val, ok := d.GetOk(attr); ok && !isZeroValue(val) {
+			warning := diag.Diagnostic{
+				Severity: diag.Warning,
+				Summary:  fmt.Sprintf("Attribute '%s' is accepted but ignored for Gen2 databases", attr),
+				Detail: fmt.Sprintf(
+					"The attribute '%s' is configured in your Terraform configuration but has no effect for Gen2 databases (plan: %q).\n\n"+
+						"This attribute is accepted for backward compatibility but is not used.\n\n"+
+						"Recommended Action: Remove this attribute from your configuration to avoid this warning.\n\n"+
+						"%s",
+					attr,
+					d.Get("plan").(string),
+					getGen2IgnoredAttrGuidance(attr),
+				),
+			}
+			warnings = append(warnings, warning)
+		}
+	}
+
+	return warnings
+}
+
+// isZeroValue checks if a value is the zero value for its type
+func isZeroValue(val interface{}) bool {
+	if val == nil {
+		return true
+	}
+
+	switch v := val.(type) {
+	case string:
+		return v == ""
+	case int, int8, int16, int32, int64:
+		return v == 0
+	case uint, uint8, uint16, uint32, uint64:
+		return v == 0
+	case float32, float64:
+		return v == 0
+	case bool:
+		return !v
+	case []interface{}:
+		return len(v) == 0
+	case map[string]interface{}:
+		return len(v) == 0
+	default:
+		return false
+	}
+}
+
+// getGen2AttrGuidance returns specific guidance for each unsupported Gen2 attribute
+func getGen2AttrGuidance(attr string) string {
+	guidance := map[string]string{
+		"users": "For user management in Gen2 databases, use the separate 'ibm_database_user' resource instead.\n" +
+			"Example:\n" +
+			"  resource \"ibm_database_user\" \"user\" {\n" +
+			"    instance_id = ibm_database.mydb.id\n" +
+			"    name        = \"user123\"\n" +
+			"    password    = \"Password12345678\"\n" +
+			"  }\n" +
+			"Documentation: https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/resources/database_user",
+
+		"allowlist": "For IP allowlisting in Gen2 databases, use the separate 'ibm_database_allowlist' resource instead.\n" +
+			"Example:\n" +
+			"  resource \"ibm_database_allowlist\" \"allowlist\" {\n" +
+			"    instance_id = ibm_database.mydb.id\n" +
+			"    ip_address  = \"172.168.1.1/32\"\n" +
+			"    description = \"desc\"\n" +
+			"  }\n" +
+			"Documentation: https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/resources/database_allowlist",
+
+		"adminpassword": "Gen2 databases do not support setting the admin password during provisioning.\n" +
+			"The admin password is automatically generated and can be retrieved from the IBM Cloud console or API.\n" +
+			"To manage additional users, use the 'ibm_database_user' resource.",
+
+		"backup_id": "Gen2 databases do not support restoring from backups using the 'backup_id' attribute.\n" +
+			"Backup restoration for Gen2 databases must be performed through the IBM Cloud console or API.\n" +
+			"Documentation: https://cloud.ibm.com/docs/cloud-databases",
+
+		"point_in_time_recovery_deployment_id": "Gen2 databases do not support point-in-time recovery using Terraform attributes.\n" +
+			"Point-in-time recovery for Gen2 databases must be performed through the IBM Cloud console or API.\n" +
+			"Documentation: https://cloud.ibm.com/docs/cloud-databases",
+
+		"point_in_time_recovery_time": "Gen2 databases do not support point-in-time recovery using Terraform attributes.\n" +
+			"Point-in-time recovery for Gen2 databases must be performed through the IBM Cloud console or API.\n" +
+			"Documentation: https://cloud.ibm.com/docs/cloud-databases",
+
+		"backup_policy": "Gen2 databases use automatic backup management and do not support custom backup policies via Terraform.\n" +
+			"Backups are automatically managed by IBM Cloud Databases.\n" +
+			"Documentation: https://cloud.ibm.com/docs/cloud-databases",
+
+		"backup_encryption_key_crn": "Gen2 databases do not support separate backup encryption keys.\n" +
+			"Backup encryption is automatically handled using the same encryption as the database instance.\n" +
+			"Use 'key_protect_key' for database encryption.",
+
+		"remote_leader_id": "Gen2 databases do not yet support read replica creation and promotion using the 'remote_leader_id' attribute.\n" +
+			"This feature is planned for a future release.\n" +
+			"For now, use Classic plans (without '-gen2' suffix) if you need read replica functionality.\n" +
+			"Documentation: https://cloud.ibm.com/docs/cloud-databases",
+	}
+
+	if msg, ok := guidance[attr]; ok {
+		return msg
+	}
+	return "This attribute is not supported for Gen2 databases. Please remove it from your configuration."
+}
+
+// getGen2IgnoredAttrGuidance returns specific guidance for attributes that are ignored in Gen2
+func getGen2IgnoredAttrGuidance(attr string) string {
+	guidance := map[string]string{
+		"key_protect_instance": "This attribute is accepted for backward compatibility but is not used in Gen2 databases.\n" +
+			"Use 'key_protect_key' (the CRN of the encryption key) instead for disk encryption.\n" +
+			"You can safely remove this attribute from your configuration.",
+
+		"auto_scaling": "Auto-scaling policies are not yet implemented for Gen2 databases.\n" +
+			"This attribute is accepted but has no effect. Manual scaling via the 'group' block is fully supported.\n" +
+			"This feature is planned for a future release.",
+
+		"configuration": "Database configuration management is not yet implemented for Gen2 databases.\n" +
+			"This attribute is accepted but has no effect.\n" +
+			"Configuration changes must be made through the IBM Cloud console or API.\n" +
+			"This feature is planned for a future release.",
+
+		"logical_replication_slot": "Logical replication slots are not yet implemented for Gen2 databases.\n" +
+			"This attribute is accepted but has no effect.\n" +
+			"This feature is planned for a future release.",
+
+		"offline_restore": "Offline restore (MongoDB) requires 'backup_id' support, which is not yet available in Gen2.\n" +
+			"This attribute is accepted but has no effect.\n" +
+			"Use Classic plans if you need backup restoration functionality.",
+
+		"async_restore": "Async restore (PostgreSQL FAST restore) requires 'backup_id' support, which is not yet available in Gen2.\n" +
+			"This attribute is accepted but has no effect.\n" +
+			"Use Classic plans if you need backup restoration functionality.",
+
+		"version_upgrade_skip_backup": "This is a Classic-only feature for version upgrades.\n" +
+			"This attribute is accepted but has no effect in Gen2 databases.\n" +
+			"You can safely remove this attribute from your configuration.",
+
+		"skip_initial_backup": "This is a Classic-only feature for replica promotion.\n" +
+			"This attribute is accepted but has no effect in Gen2 databases.\n" +
+			"You can safely remove this attribute from your configuration.",
+	}
+
+	if msg, ok := guidance[attr]; ok {
+		return msg
+	}
+	return "This attribute is accepted but has no effect in Gen2 databases. You can safely remove it from your configuration."
 }
 
 // ValidateUnsupportedAttrsDiff validates that unsupported attributes are not configured.
@@ -893,11 +1079,22 @@ func (g *resourceIBMDatabaseGen2Backend) ValidateUnsupportedAttrsDiff(ctx contex
 	planRaw, _ := d.GetOk("plan")
 	plan, _ := planRaw.(string)
 
-	return fmt.Errorf(
-		"plan %q indicates Gen2. The following attributes are not supported for Gen2 and must be removed: %s",
-		strings.TrimSpace(plan),
-		strings.Join(bad, ", "),
-	)
+	// Build detailed error message with specific guidance for each attribute
+	var errorMsg strings.Builder
+	errorMsg.WriteString(fmt.Sprintf("Configuration Error: The plan %q uses Gen2 architecture.\n\n", strings.TrimSpace(plan)))
+	errorMsg.WriteString("The following attributes are not supported for Gen2 databases:\n\n")
+
+	for i, attr := range bad {
+		errorMsg.WriteString(fmt.Sprintf("%d. Attribute: '%s'\n", i+1, attr))
+		errorMsg.WriteString("   ")
+		errorMsg.WriteString(strings.ReplaceAll(getGen2AttrGuidance(attr), "\n", "\n   "))
+		errorMsg.WriteString("\n\n")
+	}
+
+	errorMsg.WriteString("Action Required: Remove the unsupported attributes listed above from your configuration.\n")
+	errorMsg.WriteString("General Documentation: https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/resources/database")
+
+	return errors.New(errorMsg.String())
 }
 
 func (g *resourceIBMDatabaseGen2Backend) ValidateGroupsDiff(ctx context.Context, d *schema.ResourceDiff, meta interface{}) error {
@@ -928,11 +1125,43 @@ func (g *resourceIBMDatabaseGen2Backend) ValidateGroupsDiff(ctx context.Context,
 		// Gen2 validation: Memory and CPU cannot be set independently
 		// They are controlled by host_flavor only
 		if group.Memory != nil && group.Memory.Allocation > 0 {
-			return fmt.Errorf("Gen2 databases do not support independent memory configuration in group %q. Memory is controlled by host_flavor. Please use host_flavor instead of setting memory directly", group.ID)
+			return fmt.Errorf(
+				"Configuration error: Gen2 databases do not support independent memory configuration in group %q.\n\n"+
+					"Action required: Remove the 'memory' block from your group configuration. "+
+					"In Gen2 databases, memory allocation is determined by the 'host_flavor' attribute.\n\n"+
+					"Example:\n"+
+					"  group {\n"+
+					"    group_id = %q\n"+
+					"    host_flavor {\n"+
+					"      id = \"b3c.4x16.encryption\"  # This controls both CPU and memory\n"+
+					"    }\n"+
+					"    disk {\n"+
+					"      allocation_mb = 20480\n"+
+					"    }\n"+
+					"  }\n\n"+
+					"Documentation: https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/resources/database#host_flavor",
+				group.ID, group.ID,
+			)
 		}
 
 		if group.CPU != nil && group.CPU.Allocation > 0 {
-			return fmt.Errorf("Gen2 databases do not support independent CPU configuration in group %q. CPU is controlled by host_flavor. Please use host_flavor instead of setting cpu directly", group.ID)
+			return fmt.Errorf(
+				"Configuration error: Gen2 databases do not support independent CPU configuration in group %q.\n\n"+
+					"Action required: Remove the 'cpu' block from your group configuration. "+
+					"In Gen2 databases, CPU allocation is determined by the 'host_flavor' attribute.\n\n"+
+					"Example:\n"+
+					"  group {\n"+
+					"    group_id = %q\n"+
+					"    host_flavor {\n"+
+					"      id = \"b3c.4x16.encryption\"  # This controls both CPU and memory\n"+
+					"    }\n"+
+					"    disk {\n"+
+					"      allocation_mb = 20480\n"+
+					"    }\n"+
+					"  }\n\n"+
+					"Documentation: https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/resources/database#host_flavor",
+				group.ID, group.ID,
+			)
 		}
 
 		if group.HostFlavor != nil && group.HostFlavor.ID != "" && group.HostFlavor.ID != "multitenant" {
