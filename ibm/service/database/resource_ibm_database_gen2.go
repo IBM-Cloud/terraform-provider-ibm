@@ -782,24 +782,18 @@ func (g *resourceIBMDatabaseGen2Backend) updateTagsWithDiagnostics(d *schema.Res
 
 // checkUnsupportedChanges validates that no unsupported Gen2 features are being modified.
 // Returns a diagnostic error if any unsupported changes are detected.
+// Uses the same guidance messages as plan-time validation for consistency.
 func (g *resourceIBMDatabaseGen2Backend) checkUnsupportedChanges(d *schema.ResourceData) diag.Diagnostics {
-	// Map of unsupported fields to their error messages
-	unsupportedChanges := map[string]string{
-		"allowlist":                            "Allowlist is not supported for Gen2 database instances",
-		"users":                                "User management is not supported for Gen2 database instances. Users should manage credentials using the ibm_resource_key resource (https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/resources/resource_key)",
-		"adminpassword":                        "Setting admin password is not supported for Gen2 database instances. Gen2 instances do not have a default admin user. Please use the ibm_resource_key resource to create service credentials for database access (https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/resources/resource_key)",
-		"backup_encryption_key_crn":            "Backup encryption key is not supported for Gen2 database instances. Gen2 instances do not support separate backup encryption configuration",
-		"remote_leader_id":                     "Read replica creation and promotion is not supported for Gen2 database instances yet",
-		"version":                              "Version changes are not supported for Gen2 database instances",
-		"backup_id":                            "Restore from backup is not supported for Gen2 database instances yet",
-		"point_in_time_recovery_deployment_id": "Point-in-time recovery is not supported for Gen2 database instances yet",
-		"point_in_time_recovery_time":          "Point-in-time recovery is not supported for Gen2 database instances yet",
+	// Check all unsupported attributes
+	for _, attr := range gen2UnsupportedAttrs {
+		if d.HasChange(attr) {
+			return diagError(fmt.Sprintf("Attribute '%s' is not supported for Gen2 databases: %s", attr, getGen2AttrGuidance(attr)))
+		}
 	}
 
-	for field, errMsg := range unsupportedChanges {
-		if d.HasChange(field) {
-			return diagError(errMsg)
-		}
+	// Special case: version changes are not supported
+	if d.HasChange("version") {
+		return diagError("Version changes are not supported for Gen2 database instances")
 	}
 
 	return nil
@@ -963,7 +957,7 @@ func isZeroValue(val interface{}) bool {
 // getGen2AttrGuidance returns specific guidance for each unsupported Gen2 attribute
 func getGen2AttrGuidance(attr string) string {
 	guidance := map[string]string{
-		"users": "For user management in Gen2 databases, use the separate 'ibm_database_user' resource instead.\n" +
+		"users": "For user management in Gen2 databases, use the Terraform resource 'ibm_resource_key' instead.\n" +
 			"Example:\n" +
 			"  resource \"ibm_database_user\" \"user\" {\n" +
 			"    instance_id = ibm_database.mydb.id\n" +
