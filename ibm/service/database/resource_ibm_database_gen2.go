@@ -966,30 +966,23 @@ func getGen2AttrGuidance(attr string) string {
 		"adminpassword": "Gen2 databases do not create default admin user during provisioning. Please use the Terraform resource 'ibm_resource_key' to create and manage one.\n" +
 			"Documentation: https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/resources/resource_key",
 
-		"backup_id": "Gen2 databases do not support restoring from backups using the 'backup_id' attribute.\n" +
-			"Backup restoration for Gen2 databases must be performed through the IBM Cloud console or API.\n" +
-			"Documentation: https://cloud.ibm.com/docs/cloud-databases",
+		"backup_id": "Gen2 databases do not support restoring from backups using the 'backup_id' attribute at this point.\n" +
+			"Documentation: https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/resources/database",
 
-		"point_in_time_recovery_deployment_id": "Gen2 databases do not support point-in-time recovery using Terraform attributes.\n" +
-			"Point-in-time recovery for Gen2 databases must be performed through the IBM Cloud console or API.\n" +
-			"Documentation: https://cloud.ibm.com/docs/cloud-databases",
+		"point_in_time_recovery_deployment_id": "Gen2 databases do not support restoring from backups using the 'point_in_time_recovery_deployment_id' attribute at this point.\n" +
+			"Documentation: https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/resources/database",
 
-		"point_in_time_recovery_time": "Gen2 databases do not support point-in-time recovery using Terraform attributes.\n" +
-			"Point-in-time recovery for Gen2 databases must be performed through the IBM Cloud console or API.\n" +
-			"Documentation: https://cloud.ibm.com/docs/cloud-databases",
+		"point_in_time_recovery_time": "Gen2 databases do not support restoring from backups using point_in_time_recovery at this point.\n" +
+			"Documentation: https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/resources/database",
 
-		"backup_policy": "Gen2 databases use automatic backup management and do not support custom backup policies via Terraform.\n" +
-			"Backups are automatically managed by IBM Cloud Databases.\n" +
-			"Documentation: https://cloud.ibm.com/docs/cloud-databases",
+		"backup_policy": "Gen2 databases do not support restoring from backups with this attribute at this point.\n" +
+			"Documentation: https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/resources/database",
 
-		"backup_encryption_key_crn": "Gen2 databases do not support separate backup encryption keys.\n" +
-			"Backup encryption is automatically handled using the same encryption as the database instance.\n" +
-			"Use 'key_protect_key' for database encryption.",
+		"backup_encryption_key_crn": "Gen2 databases do not support this attribute at this point.\n" +
+			"Documentation: https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/resources/database",
 
-		"remote_leader_id": "Gen2 databases do not yet support read replica creation and promotion using the 'remote_leader_id' attribute.\n" +
-			"This feature is planned for a future release.\n" +
-			"For now, use Classic plans (without '-gen2' suffix) if you need read replica functionality.\n" +
-			"Documentation: https://cloud.ibm.com/docs/cloud-databases",
+		"remote_leader_id": "Gen2 databases do not yet support read replica creation and promotion using the 'remote_leader_id' attribute at this point.\n" +
+			"Documentation: https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/resources/database",
 	}
 
 	if msg, ok := guidance[attr]; ok {
