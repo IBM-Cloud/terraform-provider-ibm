@@ -958,26 +958,13 @@ func isZeroValue(val interface{}) bool {
 func getGen2AttrGuidance(attr string) string {
 	guidance := map[string]string{
 		"users": "For user management in Gen2 databases, use the Terraform resource 'ibm_resource_key' instead.\n" +
-			"Example:\n" +
-			"  resource \"ibm_database_user\" \"user\" {\n" +
-			"    instance_id = ibm_database.mydb.id\n" +
-			"    name        = \"user123\"\n" +
-			"    password    = \"Password12345678\"\n" +
-			"  }\n" +
-			"Documentation: https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/resources/database_user",
+			"Documentation: https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/resources/resource_key",
 
-		"allowlist": "For IP allowlisting in Gen2 databases, use the separate 'ibm_database_allowlist' resource instead.\n" +
-			"Example:\n" +
-			"  resource \"ibm_database_allowlist\" \"allowlist\" {\n" +
-			"    instance_id = ibm_database.mydb.id\n" +
-			"    ip_address  = \"172.168.1.1/32\"\n" +
-			"    description = \"desc\"\n" +
-			"  }\n" +
-			"Documentation: https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/resources/database_allowlist",
+		"allowlist": "For IP allowlisting in Gen2 databases, use the Terraform resource 'ibm_cbr_rule' instead.\n" +
+			"Documentation: https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/resources/cbr_rule",
 
-		"adminpassword": "Gen2 databases do not support setting the admin password during provisioning.\n" +
-			"The admin password is automatically generated and can be retrieved from the IBM Cloud console or API.\n" +
-			"To manage additional users, use the 'ibm_database_user' resource.",
+		"adminpassword": "Gen2 databases do not create default admin user during provisioning. Please use the Terraform resource 'ibm_resource_key' to create and manage one.\n" +
+			"Documentation: https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/resources/resource_key",
 
 		"backup_id": "Gen2 databases do not support restoring from backups using the 'backup_id' attribute.\n" +
 			"Backup restoration for Gen2 databases must be performed through the IBM Cloud console or API.\n" +
