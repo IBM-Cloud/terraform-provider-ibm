@@ -341,11 +341,12 @@ func TestClearGen2UnsupportedAttributes(t *testing.T) {
 
 	clearGen2UnsupportedAttributes(d)
 
-	// Verify all attributes are cleared (d.Set(key, nil) results in empty values, not nil)
+	// auto_scaling is NOT cleared by clearGen2UnsupportedAttributes to avoid drift detection
+	// It should retain its original value
 	autoScaling := d.Get("auto_scaling")
-	require.NotNil(t, autoScaling, "auto_scaling should be set to empty value")
-	require.Empty(t, autoScaling, "auto_scaling should be empty after clearing")
+	require.NotEmpty(t, autoScaling, "auto_scaling should NOT be cleared (kept to avoid drift)")
 
+	// Verify attributes that ARE cleared (d.Set(key, nil) results in empty values, not nil)
 	allowlist := d.Get("allowlist")
 	require.NotNil(t, allowlist, "allowlist should be set to empty value")
 	require.Empty(t, allowlist, "allowlist should be empty after clearing")
