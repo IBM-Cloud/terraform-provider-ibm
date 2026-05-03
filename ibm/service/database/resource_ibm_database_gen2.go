@@ -131,29 +131,14 @@ var gen2AttrGuidance = map[string]string{
 	"remote_leader_id": "Gen2 databases do not yet support read replica creation and promotion using the 'remote_leader_id' attribute at this point.\n" +
 		"Documentation: https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/resources/database",
 
-	"auto_scaling": "Auto-scaling is not yet implemented for Gen2 databases.\n" +
-		"This attribute is currently ignored.",
-
-	"configuration": "Database configuration management is not yet implemented for Gen2 databases.\n" +
-		"This attribute is currently ignored.",
-
-	"logical_replication_slot": "Logical replication slots are not yet implemented for Gen2 databases.\n" +
-		"This attribute is currently ignored.",
-
-	"offline_restore": "Offline restore requires 'backup_id' support, which is not yet available in Gen2.\n" +
-		"This attribute is currently ignored.",
-
-	"async_restore": "Async restore requires 'backup_id' support, which is not yet available in Gen2.\n" +
-		"This attribute is currently ignored.",
-
-	"version_upgrade_skip_backup": "This is a Classic-only feature for version upgrades.\n" +
-		"This attribute is currently ignored.",
-
-	"skip_initial_backup": "This is a Classic-only feature for replica promotion.\n" +
-		"This attribute is currently ignored.",
-
-	"key_protect_instance": "This is a Classic-only key protection field.\n" +
-		"This attribute is currently ignored for Gen2 databases.",
+	"configuration":               "database configuration changes are currently ignored",
+	"logical_replication_slot":    "logical replication slot creation is currently ignored",
+	"auto_scaling":                "auto-scaling settings are currently ignored",
+	"offline_restore":             "offline restore settings are currently ignored",
+	"async_restore":               "async restore settings are currently ignored",
+	"version_upgrade_skip_backup": "version upgrade backup skipping is currently ignored",
+	"skip_initial_backup":         "initial backup skipping is currently ignored",
+	"key_protect_instance":        "this Classic key protection setting is currently ignored",
 }
 
 func getGen2UnsupportedAttrGuidance(attr string) string {
@@ -1246,26 +1231,48 @@ func (g *resourceIBMDatabaseGen2Backend) ValidateUnsupportedAttrsData(d *schema.
 }
 
 func (g *resourceIBMDatabaseGen2Backend) WarnIgnoredAttrs(d *schema.ResourceData) diag.Diagnostics {
-	var warnings diag.Diagnostics
+	var ignoredAttrs []string
 
 	for _, attr := range gen2IgnoredAttrs {
 		if val, ok := d.GetOk(attr); ok && !isEmptyGen2AttrValue(val) {
-			warnings = append(warnings, diag.Diagnostic{
-				Severity: diag.Warning,
-				Summary:  fmt.Sprintf("Attribute %q is ignored for Gen2 databases", attr),
-				Detail: fmt.Sprintf(
-					"The attribute %q is configured in your Terraform configuration but has no effect for Gen2 databases.\n\n"+
-						"Terraform will continue, but this value will not be applied.\n\n"+
-						"Recommended Action: Remove this attribute from your configuration to avoid this warning.\n\n"+
-						"%s",
-					attr,
-					getGen2IgnoredAttrGuidance(attr),
-				),
-			})
+			ignoredAttrs = append(ignoredAttrs, attr)
 		}
 	}
 
-	return warnings
+	if len(ignoredAttrs) == 0 {
+		return nil
+	}
+
+	return diag.Diagnostics{
+		{
+			Severity: diag.Warning,
+			Summary:  "Some configured attributes are ignored for Gen2 databases",
+			Detail:   buildGen2IgnoredAttrsWarningDetail(ignoredAttrs),
+		},
+	}
+}
+
+func buildGen2IgnoredAttrsWarningDetail(attrs []string) string {
+	var b strings.Builder
+
+	b.WriteString("This database uses a Gen2 plan. Some attributes in this configuration are supported for Classic databases but are not implemented for Gen2 yet.\n\n")
+	b.WriteString("Terraform will continue, but the following configured attributes will not be applied:\n\n")
+
+	for _, attr := range attrs {
+		b.WriteString(fmt.Sprintf("- %s", attr))
+
+		if guidance := getGen2IgnoredAttrGuidance(attr); guidance != "" {
+			b.WriteString(fmt.Sprintf(": %s", guidance))
+		}
+
+		b.WriteString("\n")
+	}
+
+	b.WriteString("\nWhat you can do:\n")
+	b.WriteString("- Remove these attributes from the configuration to avoid this warning.\n")
+	b.WriteString("- If you need this behavior today, continue using a Classic database plan until Gen2 support is available.\n")
+
+	return b.String()
 }
 
 func appendGen2DiagnosticsErrorsThenWarnings(errors diag.Diagnostics, warnings diag.Diagnostics) diag.Diagnostics {
