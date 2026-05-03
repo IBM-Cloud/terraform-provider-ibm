@@ -928,6 +928,9 @@ func TestGen2UnsupportedAttributesList(t *testing.T) {
 		"backup_policy",
 		"users",
 		"allowlist",
+		"remote_leader_id",
+		"adminpassword",
+		"backup_encryption_key_crn",
 	}
 
 	assert.Equal(t, len(expectedUnsupported), len(gen2UnsupportedAttrs),

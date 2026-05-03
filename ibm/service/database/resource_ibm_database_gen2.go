@@ -204,23 +204,25 @@ func (g *resourceIBMDatabaseGen2Backend) getResourceControllerClient(meta interf
 // Returns:
 //   - diag.Diagnostics: Any errors or warnings encountered
 func (g *resourceIBMDatabaseGen2Backend) Create(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	// Create the resource instance with ALL parameters in a single API call
-	// This includes: database configuration (members, storage, host_flavor), encryption settings, and tags
-	// Single-stage creation avoids unnecessary resource provisioning/deprovisioning
+	warnings := g.WarnIgnoredAttrs(d)
+
 	instance, err := g.createResourceInstance(d, meta)
 	if err != nil {
-		return diag.FromErr(err)
+		return appendGen2DiagnosticsErrorsThenWarnings(diag.FromErr(err), warnings)
 	}
 
 	d.SetId(*instance.ID)
 
-	// Wait for instance creation to complete
 	_, err = waitForDatabaseInstanceCreate(d, meta, *instance.ID, false)
 	if err != nil {
-		return diag.FromErr(fmt.Errorf("error waiting for create database instance (%s) to complete: %w", *instance.ID, err))
+		return appendGen2DiagnosticsErrorsThenWarnings(
+			diag.FromErr(fmt.Errorf("error waiting for create database instance (%s) to complete: %w", *instance.ID, err)),
+			warnings,
+		)
 	}
 
-	return resourceIBMDatabaseInstanceRead(ctx, d, meta)
+	readDiags := resourceIBMDatabaseInstanceRead(ctx, d, meta)
+	return appendGen2DiagnosticsErrorsThenWarnings(readDiags, warnings)
 }
 
 // createResourceInstance handles the initial resource instance creation.
@@ -759,7 +761,7 @@ func (g *resourceIBMDatabaseGen2Backend) populateResourceData(d *schema.Resource
 	g.clearUnsupportedAttributes(d)
 
 	// Check for ignored attributes and add warnings
-	diags = append(diags, g.WarnUnsupported(context.Background(), d)...)
+	diags = append(diags, g.WarnIgnoredAttrs(d)...)
 
 	return diags
 }
@@ -874,7 +876,7 @@ func (g *resourceIBMDatabaseGen2Backend) checkUnsupportedChanges(d *schema.Resou
 	// Check all unsupported attributes
 	for _, attr := range gen2UnsupportedAttrs {
 		if d.HasChange(attr) {
-			return diagError(fmt.Sprintf("Attribute '%s' is not supported for Gen2 databases: %s", attr, getGen2AttrGuidance(attr)))
+			return diagError("Attribute %q is not supported for Gen2 databases: %s", attr, getGen2UnsupportedAttrGuidance(attr))
 		}
 	}
 
@@ -919,35 +921,33 @@ func (g *resourceIBMDatabaseGen2Backend) applyGroupScalingWithDiagnostics(ctx co
 // Supports updates to name, tags, and group scaling.
 // Many features are not yet supported in Gen2 and will return errors if modified.
 func (g *resourceIBMDatabaseGen2Backend) Update(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	warnings := g.WarnIgnoredAttrs(d)
+
 	rsConClient, err := g.getResourceControllerClient(meta)
 	if err != nil {
-		return diag.FromErr(err)
+		return appendGen2DiagnosticsErrorsThenWarnings(diag.FromErr(err), warnings)
 	}
 
 	instanceID := d.Id()
 
-	// Check for unsupported feature changes first
 	if diags := g.checkUnsupportedChanges(d); len(diags) > 0 {
-		return diags
+		return appendGen2DiagnosticsErrorsThenWarnings(diags, warnings)
 	}
 
-	// Update basic attributes
 	if diags := g.applyBasicAttributeUpdates(d, rsConClient, instanceID, meta); len(diags) > 0 {
-		return diags
+		return appendGen2DiagnosticsErrorsThenWarnings(diags, warnings)
 	}
 
-	// Update tags
 	if diags := g.updateTagsWithDiagnostics(d, instanceID, meta); len(diags) > 0 {
-		return diags
+		return appendGen2DiagnosticsErrorsThenWarnings(diags, warnings)
 	}
 
-	// Update group scaling
 	if diags := g.applyGroupScalingWithDiagnostics(ctx, d, rsConClient, instanceID, meta); len(diags) > 0 {
-		return diags
+		return appendGen2DiagnosticsErrorsThenWarnings(diags, warnings)
 	}
 
-	// Read the current state
-	return g.Read(ctx, d, meta)
+	readDiags := g.Read(ctx, d, meta)
+	return appendGen2DiagnosticsErrorsThenWarnings(readDiags, warnings)
 }
 
 // Delete removes a database instance.
@@ -984,7 +984,7 @@ func (g *resourceIBMDatabaseGen2Backend) WarnUnsupported(ctx context.Context, d 
 						"%s",
 					attr,
 					d.Get("plan").(string),
-					getGen2AttrGuidance(attr),
+					getGen2UnsupportedAttrGuidance(attr),
 				),
 			}
 			warnings = append(warnings, warning)
@@ -1137,7 +1137,7 @@ func (g *resourceIBMDatabaseGen2Backend) ValidateUnsupportedAttrsDiff(ctx contex
 		msg.WriteString("\n")
 	}
 
-	return fmt.Errorf(msg.String())
+	return errors.New(msg.String())
 }
 
 func (g *resourceIBMDatabaseGen2Backend) ValidateGroupsDiff(ctx context.Context, d *schema.ResourceDiff, meta interface{}) error {
@@ -1242,26 +1242,30 @@ func (g *resourceIBMDatabaseGen2Backend) ValidateUnsupportedAttrsData(d *schema.
 		msg.WriteString("\n")
 	}
 
-	return fmt.Errorf(msg.String())
+	return errors.New(msg.String())
 }
 
 func (g *resourceIBMDatabaseGen2Backend) WarnIgnoredAttrs(d *schema.ResourceData) diag.Diagnostics {
-	var diags diag.Diagnostics
+	var warnings diag.Diagnostics
 
 	for _, attr := range gen2IgnoredAttrs {
 		if val, ok := d.GetOk(attr); ok && !isEmptyGen2AttrValue(val) {
-			diags = append(diags, diag.Diagnostic{
+			warnings = append(warnings, diag.Diagnostic{
 				Severity: diag.Warning,
 				Summary:  fmt.Sprintf("Attribute %q is ignored for Gen2 databases", attr),
 				Detail: fmt.Sprintf(
-					"The attribute %q is configured, but it has no effect for Gen2 databases. Terraform will continue, but this value will not be applied.",
+					"The attribute %q is configured in your Terraform configuration but has no effect for Gen2 databases.\n\n"+
+						"Terraform will continue, but this value will not be applied.\n\n"+
+						"Recommended Action: Remove this attribute from your configuration to avoid this warning.\n\n"+
+						"%s",
 					attr,
+					getGen2IgnoredAttrGuidance(attr),
 				),
 			})
 		}
 	}
 
-	return diags
+	return warnings
 }
 
 func appendGen2DiagnosticsErrorsThenWarnings(errors diag.Diagnostics, warnings diag.Diagnostics) diag.Diagnostics {
