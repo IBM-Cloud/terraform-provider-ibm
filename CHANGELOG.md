@@ -1,3 +1,42 @@
+# 2.1.0-beta0 (April 28, 2026)
+
+## Bug Fixes
+
+### Cloud Internet Services
+* Allow import of CIS instances with EOM plans ([6728](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6728))
+
+### Power Systems
+* Fix image docs to use latest versions of the CLI commands ([6759](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6759))
+
+### Satellite
+* in satellite cluster resource, return if getcluster or getworkerpool fails ([6743](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6743))
+
+### VPC Infrastructure
+* fix sg, nacl rule protocol migration ([6695](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6695))
+* fixed the documents on hyperlink ([6757](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6757))
+
+
+## Enhancements
+
+### Activity Tracker
+* Add atracker app-config target support ([6750](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6750))
+
+### Cloud Object Storage
+* Adding the support for objectlock governance mode ([6715](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6715))
+
+### General
+* Pulling in the latest networking-go-sdk version ([6760](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6760))
+
+### Power Systems
+* Read crash on power volumes datasource ([6754](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6754))
+
+### VPC Infrastructure
+* update ibm_container_vpc_cluster patch_version doc ([6752](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6752))
+* added instance profile zones availability changes ([6544](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6544))
+* support for vpc Image partial availability ([6723](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6723))
+* added support for volume jobs, vpc volume migration ([6717](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6717))
+
+
 # 2.0.2 (April 16, 2026)
 
 ## Bug Fixes
