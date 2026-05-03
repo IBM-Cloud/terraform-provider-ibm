@@ -18,7 +18,6 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM/go-sdk-core/v5/core"
 	rc "github.com/IBM/platform-services-go-sdk/resourcecontrollerv2"
-	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -654,6 +653,8 @@ func (g *resourceIBMDatabaseGen2Backend) isResourceUnavailable(instance *rc.Reso
 // Implements recommendation #5: Extract attribute setting logic.
 // Calls individual setter methods in sequence and returns any errors encountered.
 func (g *resourceIBMDatabaseGen2Backend) populateResourceData(d *schema.ResourceData, instance *rc.ResourceInstance, meta interface{}) diag.Diagnostics {
+	var diags diag.Diagnostics
+
 	// Set basic attributes
 	if err := g.setBasicAttributes(d, instance, meta); err != nil {
 		return diag.FromErr(err)
@@ -675,7 +676,10 @@ func (g *resourceIBMDatabaseGen2Backend) populateResourceData(d *schema.Resource
 	// Clear Gen2 unsupported attributes
 	g.clearUnsupportedAttributes(d)
 
-	return nil
+	// Check for ignored attributes and add warnings
+	diags = append(diags, g.WarnUnsupported(context.Background(), d)...)
+
+	return diags
 }
 
 // setBasicAttributes sets basic instance attributes.
@@ -929,35 +933,6 @@ func (g *resourceIBMDatabaseGen2Backend) WarnUnsupported(ctx context.Context, d 
 	return warnings
 }
 
-// validateGen2IgnoredAttrsInDiff checks for Gen2 ignored attributes during plan/diff
-// Returns warnings for attributes that are accepted but ignored
-func validateGen2IgnoredAttrsInDiff(d *schema.ResourceDiff) []diag.Diagnostic {
-	var warnings diag.Diagnostics
-
-	// Check each ignored attribute (accepted but has no effect)
-	for _, attr := range gen2IgnoredAttrs {
-		// Check if attribute is set (has a non-zero value)
-		if val, ok := d.GetOk(attr); ok && !isZeroValue(val) {
-			warning := diag.Diagnostic{
-				Severity: diag.Warning,
-				Summary:  fmt.Sprintf("Attribute '%s' is accepted but ignored for Gen2 databases", attr),
-				Detail: fmt.Sprintf(
-					"The attribute '%s' is configured in your Terraform configuration but has no effect for Gen2 databases (plan: %q).\n\n"+
-						"This attribute is accepted for backward compatibility but is not used.\n\n"+
-						"Recommended Action: Remove this attribute from your configuration to avoid this warning.\n\n"+
-						"%s",
-					attr,
-					d.Get("plan").(string),
-					getGen2IgnoredAttrGuidance(attr),
-				),
-			}
-			warnings = append(warnings, warning)
-		}
-	}
-
-	return warnings
-}
-
 // isZeroValue checks if a value is the zero value for its type
 func isZeroValue(val interface{}) bool {
 	if val == nil {
@@ -1054,14 +1029,20 @@ func getGen2IgnoredAttrGuidance(attr string) string {
 
 // ValidateUnsupportedAttrsDiff validates that unsupported attributes are not configured.
 // Returns an error if any Gen2-unsupported attributes are set in the configuration.
+// Also includes warnings about ignored attributes in the error message.
 func (g *resourceIBMDatabaseGen2Backend) ValidateUnsupportedAttrsDiff(ctx context.Context, d *schema.ResourceDiff, meta interface{}) error {
-	// First, check for ignored attributes and log warnings
-	warnings := validateGen2IgnoredAttrsInDiff(d)
-	for _, warning := range warnings {
-		tflog.Warn(ctx, fmt.Sprintf("[Gen2 Warning] %s: %s", warning.Summary, warning.Detail))
+	planRaw, _ := d.GetOk("plan")
+	plan, _ := planRaw.(string)
+
+	// Check for ignored attributes (these generate warnings)
+	var ignored []string
+	for _, k := range gen2IgnoredAttrs {
+		if val, ok := d.GetOk(k); ok && !isZeroValue(val) {
+			ignored = append(ignored, k)
+		}
 	}
 
-	// Then check for unsupported attributes that cause errors
+	// Check for unsupported attributes (these generate errors)
 	var bad []string
 	for _, k := range gen2UnsupportedAttrs {
 		if !d.HasChange(k) {
@@ -1071,26 +1052,42 @@ func (g *resourceIBMDatabaseGen2Backend) ValidateUnsupportedAttrsDiff(ctx contex
 			bad = append(bad, k)
 		}
 	}
-	if len(bad) == 0 {
+
+	// If there are no errors and no warnings, return early
+	if len(bad) == 0 && len(ignored) == 0 {
 		return nil
 	}
 
-	planRaw, _ := d.GetOk("plan")
-	plan, _ := planRaw.(string)
-
-	// Build detailed error message with specific guidance for each attribute
+	// Build message with both errors and warnings
 	var errorMsg strings.Builder
 	errorMsg.WriteString(fmt.Sprintf("The plan %q uses IBM Cloud Databases Gen2 architecture.\n\n", strings.TrimSpace(plan)))
-	errorMsg.WriteString("The following attributes are not supported for Gen2:\n\n")
 
-	for i, attr := range bad {
-		errorMsg.WriteString(fmt.Sprintf("%d. Attribute: '%s'\n", i+1, attr))
-		errorMsg.WriteString("   ")
-		errorMsg.WriteString(strings.ReplaceAll(getGen2AttrGuidance(attr), "\n", "\n   "))
-		errorMsg.WriteString("\n\n")
+	// Add warnings for ignored attributes first
+	if len(ignored) > 0 {
+		errorMsg.WriteString("⚠️  WARNING: The following attributes are configured but will be IGNORED:\n\n")
+		for i, attr := range ignored {
+			errorMsg.WriteString(fmt.Sprintf("%d. Attribute: '%s'\n", i+1, attr))
+			errorMsg.WriteString("   ")
+			errorMsg.WriteString(strings.ReplaceAll(getGen2IgnoredAttrGuidance(attr), "\n", "\n   "))
+			errorMsg.WriteString("\n\n")
+		}
 	}
 
-	return errors.New(errorMsg.String())
+	// If there are errors, add them and return error
+	if len(bad) > 0 {
+		errorMsg.WriteString("The following attributes are not supported for Gen2:\n\n")
+		for i, attr := range bad {
+			errorMsg.WriteString(fmt.Sprintf("%d. Attribute: '%s'\n", i+1, attr))
+			errorMsg.WriteString("   ")
+			errorMsg.WriteString(strings.ReplaceAll(getGen2AttrGuidance(attr), "\n", "\n   "))
+			errorMsg.WriteString("\n\n")
+		}
+		return errors.New(errorMsg.String())
+	}
+
+	// If only warnings (no errors), don't fail the plan - just log
+	// This allows the plan to continue
+	return nil
 }
 
 func (g *resourceIBMDatabaseGen2Backend) ValidateGroupsDiff(ctx context.Context, d *schema.ResourceDiff, meta interface{}) error {
