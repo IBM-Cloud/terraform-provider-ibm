@@ -1176,7 +1176,7 @@ func (g *resourceIBMDatabaseGen2Backend) ValidateGroupsDiff(ctx context.Context,
 func (g *resourceIBMDatabaseGen2Backend) ValidateServiceEndpointsDiff(ctx context.Context, d *schema.ResourceDiff, meta interface{}) error {
 	serviceEndpoint, serviceEndpointOk := d.GetOk("service_endpoints")
 	if serviceEndpointOk && serviceEndpoint.(string) != "" && serviceEndpoint.(string) != "private" {
-		return fmt.Errorf("[ERROR] service_endpoints for Gen2 plans (plans ending with -gen2) is optional, but if set it must be 'private'")
+		return fmt.Errorf("service_endpoints for Gen2 instances is optional, but if set it must be 'private'")
 	}
 	return nil
 }
