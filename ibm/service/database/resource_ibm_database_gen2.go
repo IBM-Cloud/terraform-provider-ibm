@@ -18,6 +18,7 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM/go-sdk-core/v5/core"
 	rc "github.com/IBM/platform-services-go-sdk/resourcecontrollerv2"
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -928,6 +929,35 @@ func (g *resourceIBMDatabaseGen2Backend) WarnUnsupported(ctx context.Context, d 
 	return warnings
 }
 
+// validateGen2IgnoredAttrsInDiff checks for Gen2 ignored attributes during plan/diff
+// Returns warnings for attributes that are accepted but ignored
+func validateGen2IgnoredAttrsInDiff(d *schema.ResourceDiff) []diag.Diagnostic {
+	var warnings diag.Diagnostics
+
+	// Check each ignored attribute (accepted but has no effect)
+	for _, attr := range gen2IgnoredAttrs {
+		// Check if attribute is set (has a non-zero value)
+		if val, ok := d.GetOk(attr); ok && !isZeroValue(val) {
+			warning := diag.Diagnostic{
+				Severity: diag.Warning,
+				Summary:  fmt.Sprintf("Attribute '%s' is accepted but ignored for Gen2 databases", attr),
+				Detail: fmt.Sprintf(
+					"The attribute '%s' is configured in your Terraform configuration but has no effect for Gen2 databases (plan: %q).\n\n"+
+						"This attribute is accepted for backward compatibility but is not used.\n\n"+
+						"Recommended Action: Remove this attribute from your configuration to avoid this warning.\n\n"+
+						"%s",
+					attr,
+					d.Get("plan").(string),
+					getGen2IgnoredAttrGuidance(attr),
+				),
+			}
+			warnings = append(warnings, warning)
+		}
+	}
+
+	return warnings
+}
+
 // isZeroValue checks if a value is the zero value for its type
 func isZeroValue(val interface{}) bool {
 	if val == nil {
@@ -1025,6 +1055,13 @@ func getGen2IgnoredAttrGuidance(attr string) string {
 // ValidateUnsupportedAttrsDiff validates that unsupported attributes are not configured.
 // Returns an error if any Gen2-unsupported attributes are set in the configuration.
 func (g *resourceIBMDatabaseGen2Backend) ValidateUnsupportedAttrsDiff(ctx context.Context, d *schema.ResourceDiff, meta interface{}) error {
+	// First, check for ignored attributes and log warnings
+	warnings := validateGen2IgnoredAttrsInDiff(d)
+	for _, warning := range warnings {
+		tflog.Warn(ctx, fmt.Sprintf("[Gen2 Warning] %s: %s", warning.Summary, warning.Detail))
+	}
+
+	// Then check for unsupported attributes that cause errors
 	var bad []string
 	for _, k := range gen2UnsupportedAttrs {
 		if !d.HasChange(k) {
