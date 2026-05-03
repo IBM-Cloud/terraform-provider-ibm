@@ -994,44 +994,32 @@ func getGen2AttrGuidance(attr string) string {
 // getGen2IgnoredAttrGuidance returns specific guidance for attributes that are ignored in Gen2
 func getGen2IgnoredAttrGuidance(attr string) string {
 	guidance := map[string]string{
-		"key_protect_instance": "This attribute is accepted for backward compatibility but is not used in Gen2 databases.\n" +
-			"Use 'key_protect_key' (the CRN of the encryption key) instead for disk encryption.\n" +
-			"You can safely remove this attribute from your configuration.",
-
-		"auto_scaling": "Auto-scaling policies are not yet implemented for Gen2 databases.\n" +
-			"This attribute is accepted but has no effect. Manual scaling via the 'group' block is fully supported.\n" +
-			"This feature is planned for a future release.",
+		"auto_scaling": "Auto-scaling feature is not yet implemented for Gen2 databases.\n" +
+			"This attribute is currently being ignored.",
 
 		"configuration": "Database configuration management is not yet implemented for Gen2 databases.\n" +
-			"This attribute is accepted but has no effect.\n" +
-			"Configuration changes must be made through the IBM Cloud console or API.\n" +
-			"This feature is planned for a future release.",
+			"This attribute is currently being ignored.",
 
 		"logical_replication_slot": "Logical replication slots are not yet implemented for Gen2 databases.\n" +
-			"This attribute is accepted but has no effect.\n" +
-			"This feature is planned for a future release.",
+			"This attribute is currently being ignored.",
 
 		"offline_restore": "Offline restore (MongoDB) requires 'backup_id' support, which is not yet available in Gen2.\n" +
-			"This attribute is accepted but has no effect.\n" +
-			"Use Classic plans if you need backup restoration functionality.",
+			"This attribute is currently being ignored.",
 
 		"async_restore": "Async restore (PostgreSQL FAST restore) requires 'backup_id' support, which is not yet available in Gen2.\n" +
-			"This attribute is accepted but has no effect.\n" +
-			"Use Classic plans if you need backup restoration functionality.",
+			"This attribute is currently being ignored.",
 
 		"version_upgrade_skip_backup": "This is a Classic-only feature for version upgrades.\n" +
-			"This attribute is accepted but has no effect in Gen2 databases.\n" +
-			"You can safely remove this attribute from your configuration.",
+			"This attribute is currently being ignored.",
 
 		"skip_initial_backup": "This is a Classic-only feature for replica promotion.\n" +
-			"This attribute is accepted but has no effect in Gen2 databases.\n" +
-			"You can safely remove this attribute from your configuration.",
+			"This attribute is currently being ignored.",
 	}
 
 	if msg, ok := guidance[attr]; ok {
 		return msg
 	}
-	return "This attribute is accepted but has no effect in Gen2 databases. You can safely remove it from your configuration."
+	return "This attribute has no effect in Gen2 databases and is currently being ignored."
 }
 
 // ValidateUnsupportedAttrsDiff validates that unsupported attributes are not configured.
