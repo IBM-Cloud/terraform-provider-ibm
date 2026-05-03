@@ -949,55 +949,34 @@ func (g *resourceIBMDatabaseGen2Backend) Exists(d *schema.ResourceData, meta int
 	return databaseInstanceExists(d, meta)
 }
 
-// WarnUnsupported returns warnings for unsupported features that are configured but being ignored.
-// This helps users clean up their configuration without breaking their deployments.
+// WarnUnsupported returns a single grouped warning for Gen2 attributes that are accepted
+// for backward compatibility but ignored.
 func (g *resourceIBMDatabaseGen2Backend) WarnUnsupported(ctx context.Context, d *schema.ResourceData) diag.Diagnostics {
-	var warnings diag.Diagnostics
+	return g.WarnIgnoredAttrs(d)
+}
 
-	// Check each unsupported attribute (these cause plan failures in CustomizeDiff)
-	// This warning path is for attributes that somehow made it past validation
-	for _, attr := range gen2UnsupportedAttrs {
-		// Check if attribute is set (has a non-zero value)
-		if val, ok := d.GetOk(attr); ok && !isZeroValue(val) {
-			warning := diag.Diagnostic{
-				Severity: diag.Warning,
-				Summary:  fmt.Sprintf("Attribute '%s' is not supported for Gen2 databases and is being ignored", attr),
-				Detail: fmt.Sprintf(
-					"The attribute '%s' is configured in your Terraform configuration but is not supported for Gen2 databases (plan: %q).\n\n"+
-						"This attribute is being ignored and has no effect on your database instance.\n\n"+
-						"Recommended Action: Remove this attribute from your configuration to avoid this warning.\n\n"+
-						"%s",
-					attr,
-					d.Get("plan").(string),
-					getGen2UnsupportedAttrGuidance(attr),
-				),
-			}
-			warnings = append(warnings, warning)
-		}
-	}
+// WarnIgnoredAttrs returns a single grouped warning for Gen2 attributes that are accepted
+// for backward compatibility but ignored.
+func (g *resourceIBMDatabaseGen2Backend) WarnIgnoredAttrs(d *schema.ResourceData) diag.Diagnostics {
+	var ignoredAttrs []string
 
-	// Check each ignored attribute (accepted but has no effect)
 	for _, attr := range gen2IgnoredAttrs {
-		// Check if attribute is set (has a non-zero value)
-		if val, ok := d.GetOk(attr); ok && !isZeroValue(val) {
-			warning := diag.Diagnostic{
-				Severity: diag.Warning,
-				Summary:  fmt.Sprintf("Attribute '%s' is accepted but ignored for Gen2 databases", attr),
-				Detail: fmt.Sprintf(
-					"The attribute '%s' is configured in your Terraform configuration but has no effect for Gen2 databases (plan: %q).\n\n"+
-						"This attribute is accepted for backward compatibility but is not used.\n\n"+
-						"Recommended Action: Remove this attribute from your configuration to avoid this warning.\n\n"+
-						"%s",
-					attr,
-					d.Get("plan").(string),
-					getGen2IgnoredAttrGuidance(attr),
-				),
-			}
-			warnings = append(warnings, warning)
+		if val, ok := d.GetOk(attr); ok && !isEmptyGen2AttrValue(val) {
+			ignoredAttrs = append(ignoredAttrs, attr)
 		}
 	}
 
-	return warnings
+	if len(ignoredAttrs) == 0 {
+		return nil
+	}
+
+	return diag.Diagnostics{
+		{
+			Severity: diag.Warning,
+			Summary:  "Some configured attributes are ignored for Gen2 databases",
+			Detail:   buildGen2IgnoredAttrsWarningDetail(ignoredAttrs),
+		},
+	}
 }
 
 // isZeroValue checks if a value is the zero value for its type
@@ -1230,28 +1209,6 @@ func (g *resourceIBMDatabaseGen2Backend) ValidateUnsupportedAttrsData(d *schema.
 	return errors.New(msg.String())
 }
 
-func (g *resourceIBMDatabaseGen2Backend) WarnIgnoredAttrs(d *schema.ResourceData) diag.Diagnostics {
-	var ignoredAttrs []string
-
-	for _, attr := range gen2IgnoredAttrs {
-		if val, ok := d.GetOk(attr); ok && !isEmptyGen2AttrValue(val) {
-			ignoredAttrs = append(ignoredAttrs, attr)
-		}
-	}
-
-	if len(ignoredAttrs) == 0 {
-		return nil
-	}
-
-	return diag.Diagnostics{
-		{
-			Severity: diag.Warning,
-			Summary:  "Some configured attributes are ignored for Gen2 databases",
-			Detail:   buildGen2IgnoredAttrsWarningDetail(ignoredAttrs),
-		},
-	}
-}
-
 func buildGen2IgnoredAttrsWarningDetail(attrs []string) string {
 	var b strings.Builder
 
@@ -1270,7 +1227,7 @@ func buildGen2IgnoredAttrsWarningDetail(attrs []string) string {
 
 	b.WriteString("\nWhat you can do:\n")
 	b.WriteString("- Remove these attributes from the configuration to avoid this warning.\n")
-	b.WriteString("- If you need this behavior today, continue using a Classic database plan until Gen2 support is available.\n")
+	b.WriteString("- Check the Gen2 documentation for currently supported features.\n")
 
 	return b.String()
 }
