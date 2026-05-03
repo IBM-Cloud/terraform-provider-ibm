@@ -92,7 +92,7 @@ func DataSourceIBMDatabaseInstance() *schema.Resource {
 				Computed:    true,
 			},
 			"adminuser": {
-				Description: "The admin user id for the instance. Note: In Gen2, there is no default admin user. Users should manage credentials using the ibm_resource_key resource (https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/resources/resource_key).",
+				Description: "The admin user id for the instance",
 				Type:        schema.TypeString,
 				Computed:    true,
 			},
@@ -152,9 +152,8 @@ func DataSourceIBMDatabaseInstance() *schema.Resource {
 				},
 			},
 			"allowlist": {
-				Type:        schema.TypeSet,
-				Computed:    true,
-				Description: "Allowlist for database access. Note: This attribute is not supported for Gen2 database instances.",
+				Type:     schema.TypeSet,
+				Computed: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"address": {
@@ -327,7 +326,7 @@ func DataSourceIBMDatabaseInstance() *schema.Resource {
 			},
 			"auto_scaling": {
 				Type:        schema.TypeList,
-				Description: "ICD Auto Scaling. Note: This attribute is currently not supported for Gen2 database instances.",
+				Description: "ICD Auto Scaling",
 				Computed:    true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
