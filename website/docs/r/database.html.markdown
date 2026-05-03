@@ -125,7 +125,7 @@ output "db_connection" {
 }
 ```
 
-**Note:** Gen2 instances use `ibm_resource_key` for credential management instead of the `adminpassword` and `users` attributes used in Classic plans.
+**Note:** Gen2 instances use `ibm_resource_key` for credential management instead of the `adminpassword` and `users` attributes used in Classic plans. The `groups` computed attribute can be used to verify current scaling configuration from instance extensions and catalog metadata.
 
 ### Sample database instance by using `group` attributes
 An example to configure and deploy database by using `group` attributes.
@@ -700,7 +700,7 @@ Review the argument reference that you can specify for your resource.
 
 - `backup_encryption_key_crn`- (Optional, Forces new resource, String) The CRN of a key protect key, that you want to use for encrypting disk that holds deployment backups. A key protect CRN is in the format `crn:v1:<...>:key:`. Backup_encryption_key_crn can be added only at the time of creation and no update support  are available.
 
-  **Gen2:** Plan fails if set. Backup encryption key is not supported for Gen2 instances.
+  **Gen2:** Plan fails if set. Backup encryption is not supported in Gen2.
 - `configuration` - (Optional, Json String) Database Configuration in JSON format. Supported services: `databases-for-postgresql`, `databases-for-redis`, `databases-for-mysql`,`messages-for-rabbitmq` and `databases-for-enterprisedb`. For valid values please refer [API docs](https://cloud.ibm.com/apidocs/cloud-databases-api/cloud-databases-api-v5#updatedatabaseconfiguration).
 
   **Gen2:** Accepted but ignored. Database configuration management is not yet implemented for Gen2 instances.
