@@ -49,9 +49,7 @@ const (
 	resourcesKey       = "resources"
 	platformOptionsKey = "platform_options"
 	adminUserKey       = "adminuser"
-	autoScalingKey     = "auto_scaling"
 	allowlistKey       = "allowlist"
-	databaseUserType   = "database"
 )
 
 type TimeoutHelper struct {
@@ -515,42 +513,6 @@ func getResourceManagerClient(meta interface{}) (interface{}, error) {
 		return nil, fmt.Errorf("failed to get resource manager client: %w", err)
 	}
 	return client, nil
-}
-
-// setTagsWithLogging retrieves and sets tags for a resource, logging errors instead of failing.
-// Returns error only for critical failures, logs warnings for non-critical issues.
-func setTagsWithLogging(d *schema.ResourceData, crn string, meta interface{}) error {
-	tags, err := flex.GetTagsUsingCRN(meta, crn)
-	if err != nil {
-		log.Printf("[WARN] Failed to retrieve tags for resource %s: %v", crn, err)
-	}
-	return d.Set("tags", tags)
-}
-
-// buildResourceControllerURL constructs the resource controller URL for a given CRN.
-// Standardizes URL building across resources and data sources.
-func buildResourceControllerURL(meta interface{}, crn string) (string, error) {
-	rcontroller, err := flex.GetBaseController(meta)
-	if err != nil {
-		return "", fmt.Errorf("failed to get base controller: %w", err)
-	}
-	return rcontroller + "/services/" + url.QueryEscape(crn), nil
-}
-
-// setResourceControllerAttributes sets common flex resource controller attributes.
-// Reduces duplication of setting name, CRN, status, and controller URL.
-func setResourceControllerAttributes(d *schema.ResourceData, name, crn, state string, meta interface{}) error {
-	d.Set(flex.ResourceName, name)
-	d.Set(flex.ResourceCRN, crn)
-	d.Set(flex.ResourceStatus, state)
-
-	controllerURL, err := buildResourceControllerURL(meta, crn)
-	if err != nil {
-		return err
-	}
-	d.Set(flex.ResourceControllerURL, controllerURL)
-
-	return nil
 }
 
 // setGen2BasicAttributes sets basic instance attributes including tags, name, status, location, and resource controller attributes.
