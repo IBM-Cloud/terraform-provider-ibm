@@ -144,7 +144,7 @@ func TestGen2IgnoredAttrsWarnings(t *testing.T) {
 		requireWarningContains(t, diags, "configuration")
 	})
 
-	t.Run("multiple ignored attrs return multiple warnings", func(t *testing.T) {
+	t.Run("multiple ignored attrs return one grouped warning", func(t *testing.T) {
 		d := testGen2DatabaseResourceData(t, map[string]interface{}{
 			"configuration":               `{"max_connections": 100}`,
 			"version_upgrade_skip_backup": true,
@@ -155,8 +155,12 @@ func TestGen2IgnoredAttrsWarnings(t *testing.T) {
 
 		requireNoErrors(t, diags)
 
-		if len(diags) != 3 {
-			t.Fatalf("expected 3 warnings, got %d: %#v", len(diags), diags)
+		if len(diags) != 1 {
+			t.Fatalf("expected 1 grouped warning, got %d: %#v", len(diags), diags)
+		}
+
+		if diags[0].Severity != diag.Warning {
+			t.Fatalf("expected warning severity, got: %#v", diags[0])
 		}
 
 		requireWarningContains(t, diags, "configuration")
