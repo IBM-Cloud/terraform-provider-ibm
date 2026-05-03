@@ -238,3 +238,41 @@ func TestGen2DiagnosticsCanContainErrorsAndWarnings(t *testing.T) {
 		t.Fatalf("expected second diagnostic to be warning, got: %#v", combined[1])
 	}
 }
+
+func TestGen2WarningsReturnedWithErrors(t *testing.T) {
+	g := &resourceIBMDatabaseGen2Backend{}
+
+	d := testGen2DatabaseResourceData(t, map[string]interface{}{
+		"backup_id":     "bad",                      // unsupported -> error
+		"configuration": `{"max_connections": 100}`, // ignored -> warning
+	})
+
+	err := g.ValidateUnsupportedAttrsData(d)
+	if err == nil {
+		t.Fatalf("expected error for unsupported attr")
+	}
+
+	diags := g.WarnIgnoredAttrs(d)
+
+	if len(diags) == 0 {
+		t.Fatalf("expected warnings for ignored attrs")
+	}
+}
+
+func TestGen2DiagnosticsOrdering(t *testing.T) {
+	errors := diag.Diagnostics{
+		{Severity: diag.Error, Summary: "error"},
+	}
+	warnings := diag.Diagnostics{
+		{Severity: diag.Warning, Summary: "warning"},
+	}
+
+	out := appendGen2DiagnosticsErrorsThenWarnings(errors, warnings)
+
+	if out[0].Severity != diag.Error {
+		t.Fatalf("expected error first")
+	}
+	if out[1].Severity != diag.Warning {
+		t.Fatalf("expected warning second")
+	}
+}
