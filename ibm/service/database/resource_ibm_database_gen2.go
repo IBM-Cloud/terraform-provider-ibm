@@ -95,6 +95,88 @@ type updateContext struct {
 
 type resourceIBMDatabaseGen2Backend struct{}
 
+type gen2AttrBehavior string
+
+const (
+	gen2AttrBehaviorUnsupported gen2AttrBehavior = "unsupported"
+	gen2AttrBehaviorIgnored     gen2AttrBehavior = "ignored"
+)
+
+var gen2AttrGuidance = map[string]string{
+	"users": "For user management in Gen2 databases, use the Terraform resource 'ibm_resource_key' instead.\n" +
+		"Documentation: https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/resources/resource_key",
+
+	"allowlist": "For IP allowlisting in Gen2 databases, use the Terraform resource 'ibm_cbr_rule' instead.\n" +
+		"Documentation: https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/resources/cbr_rule",
+
+	"adminpassword": "Gen2 databases do not create default admin user during provisioning.\n" +
+		"Please use the Terraform resource 'ibm_resource_key' to create and manage one.\n" +
+		"Documentation: https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/resources/resource_key",
+
+	"backup_id": "Gen2 databases do not support restoring from backups using the 'backup_id' attribute at this point.\n" +
+		"Documentation: https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/resources/database",
+
+	"point_in_time_recovery_deployment_id": "Gen2 databases do not support restoring from backups using the 'point_in_time_recovery_deployment_id' attribute at this point.\n" +
+		"Documentation: https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/resources/database",
+
+	"point_in_time_recovery_time": "Gen2 databases do not support restoring from backups using point_in_time_recovery at this point.\n" +
+		"Documentation: https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/resources/database",
+
+	"backup_policy": "Gen2 databases do not support backup_policy at this point.\n" +
+		"Documentation: https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/resources/database",
+
+	"backup_encryption_key_crn": "Gen2 databases do not support backup_encryption_key_crn at this point.\n" +
+		"Documentation: https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/resources/database",
+
+	"remote_leader_id": "Gen2 databases do not yet support read replica creation and promotion using the 'remote_leader_id' attribute at this point.\n" +
+		"Documentation: https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/resources/database",
+
+	"auto_scaling": "Auto-scaling is not yet implemented for Gen2 databases.\n" +
+		"This attribute is currently ignored.",
+
+	"configuration": "Database configuration management is not yet implemented for Gen2 databases.\n" +
+		"This attribute is currently ignored.",
+
+	"logical_replication_slot": "Logical replication slots are not yet implemented for Gen2 databases.\n" +
+		"This attribute is currently ignored.",
+
+	"offline_restore": "Offline restore requires 'backup_id' support, which is not yet available in Gen2.\n" +
+		"This attribute is currently ignored.",
+
+	"async_restore": "Async restore requires 'backup_id' support, which is not yet available in Gen2.\n" +
+		"This attribute is currently ignored.",
+
+	"version_upgrade_skip_backup": "This is a Classic-only feature for version upgrades.\n" +
+		"This attribute is currently ignored.",
+
+	"skip_initial_backup": "This is a Classic-only feature for replica promotion.\n" +
+		"This attribute is currently ignored.",
+
+	"key_protect_instance": "This is a Classic-only key protection field.\n" +
+		"This attribute is currently ignored for Gen2 databases.",
+}
+
+func getGen2UnsupportedAttrGuidance(attr string) string {
+	return getGen2AttrGuidance(attr, gen2AttrBehaviorUnsupported)
+}
+
+func getGen2IgnoredAttrGuidance(attr string) string {
+	return getGen2AttrGuidance(attr, gen2AttrBehaviorIgnored)
+}
+
+func getGen2AttrGuidance(attr string, behavior gen2AttrBehavior) string {
+	if msg, ok := gen2AttrGuidance[attr]; ok {
+		return msg
+	}
+
+	switch behavior {
+	case gen2AttrBehaviorIgnored:
+		return "This attribute has no effect in Gen2 databases and is currently ignored."
+	default:
+		return "This attribute is not supported for Gen2 databases. Please remove it from your configuration."
+	}
+}
+
 // newResourceIBMDatabaseGen2Backend creates a new Gen2 backend instance
 func newResourceIBMDatabaseGen2Backend() resourceIBMDatabaseBackend {
 	return &resourceIBMDatabaseGen2Backend{}
@@ -960,134 +1042,102 @@ func isZeroValue(val interface{}) bool {
 }
 
 // getGen2AttrGuidance returns specific guidance for each unsupported Gen2 attribute
-func getGen2AttrGuidance(attr string) string {
-	guidance := map[string]string{
-		"users": "For user management in Gen2 databases, use the Terraform resource 'ibm_resource_key' instead.\n" +
-			"Documentation: https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/resources/resource_key",
+// func getGen2AttrGuidance(attr string) string {
+// 	guidance := map[string]string{
+// 		"users": "For user management in Gen2 databases, use the Terraform resource 'ibm_resource_key' instead.\n" +
+// 			"Documentation: https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/resources/resource_key",
 
-		"allowlist": "For IP allowlisting in Gen2 databases, use the Terraform resource 'ibm_cbr_rule' instead.\n" +
-			"Documentation: https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/resources/cbr_rule",
+// 		"allowlist": "For IP allowlisting in Gen2 databases, use the Terraform resource 'ibm_cbr_rule' instead.\n" +
+// 			"Documentation: https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/resources/cbr_rule",
 
-		"adminpassword": "Gen2 databases do not create default admin user during provisioning. Please use the Terraform resource 'ibm_resource_key' to create and manage one.\n" +
-			"Documentation: https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/resources/resource_key",
+// 		"adminpassword": "Gen2 databases do not create default admin user during provisioning. Please use the Terraform resource 'ibm_resource_key' to create and manage one.\n" +
+// 			"Documentation: https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/resources/resource_key",
 
-		"backup_id": "Gen2 databases do not support restoring from backups using the 'backup_id' attribute at this point.\n" +
-			"Documentation: https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/resources/database",
+// 		"backup_id": "Gen2 databases do not support restoring from backups using the 'backup_id' attribute at this point.\n" +
+// 			"Documentation: https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/resources/database",
 
-		"point_in_time_recovery_deployment_id": "Gen2 databases do not support restoring from backups using the 'point_in_time_recovery_deployment_id' attribute at this point.\n" +
-			"Documentation: https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/resources/database",
+// 		"point_in_time_recovery_deployment_id": "Gen2 databases do not support restoring from backups using the 'point_in_time_recovery_deployment_id' attribute at this point.\n" +
+// 			"Documentation: https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/resources/database",
 
-		"point_in_time_recovery_time": "Gen2 databases do not support restoring from backups using point_in_time_recovery at this point.\n" +
-			"Documentation: https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/resources/database",
+// 		"point_in_time_recovery_time": "Gen2 databases do not support restoring from backups using point_in_time_recovery at this point.\n" +
+// 			"Documentation: https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/resources/database",
 
-		"backup_policy": "Gen2 databases do not support restoring from backups with this attribute at this point.\n" +
-			"Documentation: https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/resources/database",
+// 		"backup_policy": "Gen2 databases do not support restoring from backups with this attribute at this point.\n" +
+// 			"Documentation: https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/resources/database",
 
-		"backup_encryption_key_crn": "Gen2 databases do not support this attribute at this point.\n" +
-			"Documentation: https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/resources/database",
+// 		"backup_encryption_key_crn": "Gen2 databases do not support this attribute at this point.\n" +
+// 			"Documentation: https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/resources/database",
 
-		"remote_leader_id": "Gen2 databases do not yet support read replica creation and promotion using the 'remote_leader_id' attribute at this point.\n" +
-			"Documentation: https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/resources/database",
-	}
+// 		"remote_leader_id": "Gen2 databases do not yet support read replica creation and promotion using the 'remote_leader_id' attribute at this point.\n" +
+// 			"Documentation: https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/resources/database",
+// 	}
 
-	if msg, ok := guidance[attr]; ok {
-		return msg
-	}
-	return "This attribute is not supported for Gen2 databases. Please remove it from your configuration."
-}
+// 	if msg, ok := guidance[attr]; ok {
+// 		return msg
+// 	}
+// 	return "This attribute is not supported for Gen2 databases. Please remove it from your configuration."
+// }
 
 // getGen2IgnoredAttrGuidance returns specific guidance for attributes that are ignored in Gen2
-func getGen2IgnoredAttrGuidance(attr string) string {
-	guidance := map[string]string{
-		"auto_scaling": "Auto-scaling feature is not yet implemented for Gen2 databases.\n" +
-			"This attribute is currently being ignored.",
+// func getGen2IgnoredAttrGuidance(attr string) string {
+// 	guidance := map[string]string{
+// 		"auto_scaling": "Auto-scaling feature is not yet implemented for Gen2 databases.\n" +
+// 			"This attribute is currently being ignored.",
 
-		"configuration": "Database configuration management is not yet implemented for Gen2 databases.\n" +
-			"This attribute is currently being ignored.",
+// 		"configuration": "Database configuration management is not yet implemented for Gen2 databases.\n" +
+// 			"This attribute is currently being ignored.",
 
-		"logical_replication_slot": "Logical replication slots are not yet implemented for Gen2 databases.\n" +
-			"This attribute is currently being ignored.",
+// 		"logical_replication_slot": "Logical replication slots are not yet implemented for Gen2 databases.\n" +
+// 			"This attribute is currently being ignored.",
 
-		"offline_restore": "Offline restore (MongoDB) requires 'backup_id' support, which is not yet available in Gen2.\n" +
-			"This attribute is currently being ignored.",
+// 		"offline_restore": "Offline restore (MongoDB) requires 'backup_id' support, which is not yet available in Gen2.\n" +
+// 			"This attribute is currently being ignored.",
 
-		"async_restore": "Async restore (PostgreSQL FAST restore) requires 'backup_id' support, which is not yet available in Gen2.\n" +
-			"This attribute is currently being ignored.",
+// 		"async_restore": "Async restore (PostgreSQL FAST restore) requires 'backup_id' support, which is not yet available in Gen2.\n" +
+// 			"This attribute is currently being ignored.",
 
-		"version_upgrade_skip_backup": "This is a Classic-only feature for version upgrades.\n" +
-			"This attribute is currently being ignored.",
+// 		"version_upgrade_skip_backup": "This is a Classic-only feature for version upgrades.\n" +
+// 			"This attribute is currently being ignored.",
 
-		"skip_initial_backup": "This is a Classic-only feature for replica promotion.\n" +
-			"This attribute is currently being ignored.",
-	}
+// 		"skip_initial_backup": "This is a Classic-only feature for replica promotion.\n" +
+// 			"This attribute is currently being ignored.",
+// 	}
 
-	if msg, ok := guidance[attr]; ok {
-		return msg
-	}
-	return "This attribute has no effect in Gen2 databases and is currently being ignored."
-}
+// 	if msg, ok := guidance[attr]; ok {
+// 		return msg
+// 	}
+// 	return "This attribute has no effect in Gen2 databases and is currently being ignored."
+// }
 
 // ValidateUnsupportedAttrsDiff validates that unsupported attributes are not configured.
 // Returns an error if any Gen2-unsupported attributes are set in the configuration.
 // Also includes warnings about ignored attributes in the error message.
 func (g *resourceIBMDatabaseGen2Backend) ValidateUnsupportedAttrsDiff(ctx context.Context, d *schema.ResourceDiff, meta interface{}) error {
-	planRaw, _ := d.GetOk("plan")
-	plan, _ := planRaw.(string)
+	var unsupportedAttrs []string
 
-	// Check for ignored attributes (these generate warnings)
-	var ignored []string
-	for _, k := range gen2IgnoredAttrs {
-		if val, ok := d.GetOk(k); ok && !isZeroValue(val) {
-			ignored = append(ignored, k)
+	for _, attr := range gen2UnsupportedAttrs {
+		if val, ok := d.GetOk(attr); ok && !isEmptyGen2AttrValue(val) {
+			unsupportedAttrs = append(unsupportedAttrs, attr)
 		}
 	}
 
-	// Check for unsupported attributes (these generate errors)
-	var bad []string
-	for _, k := range gen2UnsupportedAttrs {
-		if !d.HasChange(k) {
-			continue
-		}
-		if isAttrConfiguredInDiff(d, k) {
-			bad = append(bad, k)
-		}
-	}
-
-	// If there are no errors and no warnings, return early
-	if len(bad) == 0 && len(ignored) == 0 {
+	if len(unsupportedAttrs) == 0 {
 		return nil
 	}
 
-	// Build message with both errors and warnings
-	var errorMsg strings.Builder
-	errorMsg.WriteString(fmt.Sprintf("The plan %q uses IBM Cloud Databases Gen2 architecture.\n\n", strings.TrimSpace(plan)))
+	var msg strings.Builder
+	msg.WriteString("The following attributes are not supported for Gen2 databases:\n\n")
 
-	// Add warnings for ignored attributes first
-	if len(ignored) > 0 {
-		errorMsg.WriteString("⚠️  WARNING: The following attributes are configured but will be IGNORED:\n\n")
-		for i, attr := range ignored {
-			errorMsg.WriteString(fmt.Sprintf("%d. Attribute: '%s'\n", i+1, attr))
-			errorMsg.WriteString("   ")
-			errorMsg.WriteString(strings.ReplaceAll(getGen2IgnoredAttrGuidance(attr), "\n", "\n   "))
-			errorMsg.WriteString("\n\n")
+	for i, attr := range unsupportedAttrs {
+		msg.WriteString(fmt.Sprintf("%d. Attribute: %q\n", i+1, attr))
+		if guidance := getGen2UnsupportedAttrGuidance(attr); guidance != "" {
+			msg.WriteString(strings.ReplaceAll(guidance, "\n", "\n  "))
+			msg.WriteString("\n")
 		}
+		msg.WriteString("\n")
 	}
 
-	// If there are errors, add them and return error
-	if len(bad) > 0 {
-		errorMsg.WriteString("The following attributes are not supported for Gen2:\n\n")
-		for i, attr := range bad {
-			errorMsg.WriteString(fmt.Sprintf("%d. Attribute: '%s'\n", i+1, attr))
-			errorMsg.WriteString("   ")
-			errorMsg.WriteString(strings.ReplaceAll(getGen2AttrGuidance(attr), "\n", "\n   "))
-			errorMsg.WriteString("\n\n")
-		}
-		return errors.New(errorMsg.String())
-	}
-
-	// If only warnings (no errors), don't fail the plan - just log
-	// This allows the plan to continue
-	return nil
+	return fmt.Errorf(msg.String())
 }
 
 func (g *resourceIBMDatabaseGen2Backend) ValidateGroupsDiff(ctx context.Context, d *schema.ResourceDiff, meta interface{}) error {
@@ -1165,4 +1215,83 @@ func (g *resourceIBMDatabaseGen2Backend) ValidateServiceEndpointsDiff(ctx contex
 		return fmt.Errorf("[ERROR] service_endpoints for Gen2 plans (plans ending with -gen2) is optional, but if set it must be 'private'")
 	}
 	return nil
+}
+
+func (g *resourceIBMDatabaseGen2Backend) ValidateUnsupportedAttrsData(d *schema.ResourceData) error {
+	var unsupportedAttrs []string
+
+	for _, attr := range gen2UnsupportedAttrs {
+		if val, ok := d.GetOk(attr); ok && !isEmptyGen2AttrValue(val) {
+			unsupportedAttrs = append(unsupportedAttrs, attr)
+		}
+	}
+
+	if len(unsupportedAttrs) == 0 {
+		return nil
+	}
+
+	var msg strings.Builder
+	msg.WriteString("The following attributes are not supported for Gen2 databases:\n\n")
+
+	for i, attr := range unsupportedAttrs {
+		msg.WriteString(fmt.Sprintf("%d. Attribute: %q\n", i+1, attr))
+		if guidance := getGen2UnsupportedAttrGuidance(attr); guidance != "" {
+			msg.WriteString(strings.ReplaceAll(guidance, "\n", "\n  "))
+			msg.WriteString("\n")
+		}
+		msg.WriteString("\n")
+	}
+
+	return fmt.Errorf(msg.String())
+}
+
+func (g *resourceIBMDatabaseGen2Backend) WarnIgnoredAttrs(d *schema.ResourceData) diag.Diagnostics {
+	var diags diag.Diagnostics
+
+	for _, attr := range gen2IgnoredAttrs {
+		if val, ok := d.GetOk(attr); ok && !isEmptyGen2AttrValue(val) {
+			diags = append(diags, diag.Diagnostic{
+				Severity: diag.Warning,
+				Summary:  fmt.Sprintf("Attribute %q is ignored for Gen2 databases", attr),
+				Detail: fmt.Sprintf(
+					"The attribute %q is configured, but it has no effect for Gen2 databases. Terraform will continue, but this value will not be applied.",
+					attr,
+				),
+			})
+		}
+	}
+
+	return diags
+}
+
+func appendGen2DiagnosticsErrorsThenWarnings(errors diag.Diagnostics, warnings diag.Diagnostics) diag.Diagnostics {
+	var out diag.Diagnostics
+	out = append(out, errors...)
+	out = append(out, warnings...)
+	return out
+}
+
+func isEmptyGen2AttrValue(val interface{}) bool {
+	if val == nil {
+		return true
+	}
+
+	switch v := val.(type) {
+	case string:
+		return v == ""
+	case bool:
+		return !v
+	case int:
+		return v == 0
+	case int64:
+		return v == 0
+	case float64:
+		return v == 0
+	case []interface{}:
+		return len(v) == 0
+	case map[string]interface{}:
+		return len(v) == 0
+	default:
+		return false
+	}
 }
