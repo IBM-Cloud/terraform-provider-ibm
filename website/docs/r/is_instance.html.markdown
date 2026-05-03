@@ -291,10 +291,14 @@ resource "ibm_is_security_group_rule" "example2" {
   group     = ibm_is_security_group.example.id
   direction = "inbound"
   remote    = "127.0.0.1"
-  icmp {
-    code = 20
-    type = 30
-  }
+  # Deprecated block: replaced with 'protocol', 'code', and 'type' arguments
+  # icmp {
+  #   code = 20
+  #   type = 30
+  # }
+  protocol  = "icmp"
+  code      = 20
+  type      = 30
   depends_on = [ibm_is_security_group_rule.example1]
 
 }
@@ -303,10 +307,14 @@ resource "ibm_is_security_group_rule" "example3" {
   group     = ibm_is_security_group.example.id
   direction = "inbound"
   remote    = "127.0.0.1"
-  udp {
-    port_min = 805
-    port_max = 807
-  }
+  # Deprecated block: replaced with 'protocol', 'port_min', and 'port_max' arguments
+  # udp {
+  #   port_min = 805
+  #   port_max = 807
+  # }
+  protocol  = "udp"
+  port_min = 805
+  port_max = 807
   depends_on = [ibm_is_security_group_rule.example2]
 }
 
@@ -314,10 +322,14 @@ resource "ibm_is_security_group_rule" "example3" {
   group     = ibm_is_security_group.example.id
   direction = "outbound"
   remote    = "127.0.0.1"
-  tcp {
-    port_min = 8080
-    port_max = 8080
-  }
+  # Deprecated block: replaced with 'protocol', 'port_min', and 'port_max' arguments
+  # tcp {
+  #  port_min = 8080
+  #  port_max = 8080
+  # }
+  protocol  = "tcp"
+  port_min = 8080
+  port_max = 8080
   depends_on = [ibm_is_security_group_rule.example2]
 }
 
@@ -642,11 +654,11 @@ Review the argument references that you can specify for your resource.
 - `auto_delete_volume`- (Optional, Bool) If set to **true**, automatically deletes the volumes that are attached to an instance. **Note** Setting this argument can bring some inconsistency in the volume resource, as the volumes is destroyed along with instances.
 - `availability` - (Optional, List) The availability for this virtual server instance. **Note:** Spot instances are available only to accounts that have been granted special approval. Contact IBM Support if you are interested in using spot instances.
   Nested schema for **availability**:
-	- `class` - (Optional, String) The availability class for the virtual server instance.- `spot`: The virtual server instance may be preempted.- `standard`: The virtual server instance will not be preempted.See [virtual server instance availability class](https://cloud.ibm.com/docs/vpc?topic=vpc-spot-instances-virtual-servers) for details.The enumerated values for this property may[expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) in the future. Allowable values are: `spot`, `standard`. **Note:** To change the availability class, the instance status must be stopping or stopped.
+	- `class` - (Optional, String) The availability class for the virtual server instance.- `spot`: The virtual server instance may be preempted.- `standard`: The virtual server instance will not be preempted.See [virtual server instance availability class](https://cloud.ibm.com/docs/vpc?topic=vpc-spot-instances-virtual-servers) for details.The enumerated values for this property may [expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) in the future. Allowable values are: `spot`, `standard`. **Note:** To change the availability class, the instance status must be stopping or stopped.
 - `availability_policy` - (Optional, List) The availability policy for this virtual server instance.
   Nested schema for **availability_policy**:
-	- `host_failure` - (Optional, String) The action to perform if the compute host experiences a failure:- `restart`: Restart the virtual server instance- `stop`: Leave the virtual server instance stopped. See [handling host failures](https://cloud.ibm.com/docs/vpc?topic=vpc-host-failure-recovery-policies) for details.The enumerated values for this property may[expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) in the future. Allowable values are: `restart`, `stop`.
-	- `preemption` - (Optional, String) The action to perform if the virtual server instance is preempted:- `delete`: Delete the virtual server instance- `stop`: Leave the virtual server instance stopped. See [virtual server instance preemption](https://cloud.ibm.com/docs/vpc?topic=vpc-spot-instances-virtual-servers#spot-instances-preemption) for details.The enumerated values for this property may[expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) in the future. Allowable values are: `delete`, `stop`.
+	- `host_failure` - (Optional, String) The action to perform if the compute host experiences a failure:- `restart`: Restart the virtual server instance- `stop`: Leave the virtual server instance stopped. See [handling host failures](https://cloud.ibm.com/docs/vpc?topic=vpc-host-failure-recovery-policies) for details.The enumerated values for this property may [expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) in the future. Allowable values are: `restart`, `stop`.
+	- `preemption` - (Optional, String) The action to perform if the virtual server instance is preempted:- `delete`: Delete the virtual server instance- `stop`: Leave the virtual server instance stopped. See [virtual server instance preemption](https://cloud.ibm.com/docs/vpc?topic=vpc-spot-instances-virtual-servers#spot-instances-preemption) for details.The enumerated values for this property may [expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) in the future. Allowable values are: `delete`, `stop`.
 
 	-> **Note:** The `preemption` property is only applicable when availability class is set to `spot`. Setting preemption on a standard instance will result in an error.
 - `availability_policy_host_failure` - (Deprecated, Optional, String) The availability policy to use for this virtual server instance. The action to perform if the compute host experiences a failure. Supported values are `restart` and `stop`. Use availability_policy.0.host_failure instead. Existing configurations can continue using this attribute, switching attributes with the same value will not trigger replacement.
@@ -971,12 +983,12 @@ Review the argument references that you can specify for your resource.
 - `user_data` - (Optional, String) User data to transfer to the instance. For more information, about `user_data`, see [about user data](https://cloud.ibm.com/docs/vpc?topic=vpc-user-data).
 - `vcpu` - (Optional, List) The virtual server instance VCPU configuration.
   Nested schema for **vcpu**:
-	- `architecture` - (Computed, String) The VCPU architecture.The enumerated values for this property may[expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) in the future. Allowable values are: `amd64`, `s390x`.
+	- `architecture` - (Computed, String) The VCPU architecture.The enumerated values for this property may [expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) in the future. Allowable values are: `amd64`, `s390x`.
 	- `burst` - (Optional, List)
 	  Nested schema for **burst**:
-		- `limit` - (Computed, Integer) The maximum percentage the virtual server instance will exceed its allocated share of VCPU time.The maximum value for this property may[expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) in the future. Allowable values are: `200`. The maximum value is `800`. The minimum value is `100`.
+		- `limit` - (Computed, Integer) The maximum percentage the virtual server instance will exceed its allocated share of VCPU time.The maximum value for this property may [expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) in the future. Allowable values are: `200`. The maximum value is `800`. The minimum value is `100`.
 	- `count` - (Computed, Integer) The number of VCPUs assigned.
-	- `manufacturer` - (Computed, String) The VCPU manufacturer.The enumerated values for this property may[expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) in the future. Allowable values are: `amd`, `ibm`, `intel`.
+	- `manufacturer` - (Computed, String) The VCPU manufacturer.The enumerated values for this property may [expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) in the future. Allowable values are: `amd`, `ibm`, `intel`.
 	- `percentage` - (Required, Integer) The percentage of VCPU time allocated to the virtual server instance.The virtual server instance `vcpu.percentage` will be `100` when:- The virtual server instance `placement_target` is a dedicated host or dedicated  host group.- The virtual server instance `reservation_affinity.policy` is `disabled`.
 - `volumes`  (Optional, List) A comma separated list of volume IDs to attach to the instance. Mutually exclusive with `volume_prototypes`.
 - `volume_prototypes`- (List of Strings) A list of data volumes to attach to the instance. Mutually exclusive with `volumes`.

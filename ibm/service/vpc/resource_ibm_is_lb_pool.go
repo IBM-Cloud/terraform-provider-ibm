@@ -101,7 +101,7 @@ func ResourceIBMISLBPool() *schema.Resource {
 							Type:        schema.TypeString,
 							Optional:    true,
 							Computed:    true,
-							Description: "A load balancer failsafe policy action:- `forward`: Forwards requests to the `target` pool.- `fail`: Rejects requests with an HTTP `503` status code.The enumerated values for this property may[expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) in the future.",
+							Description: "A load balancer failsafe policy action:- `forward`: Forwards requests to the `target` pool.- `fail`: Rejects requests with an HTTP `503` status code.The enumerated values for this property may [expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) in the future.",
 						},
 						"healthy_member_threshold_count": &schema.Schema{
 							Type:        schema.TypeInt,
@@ -113,7 +113,7 @@ func ResourceIBMISLBPool() *schema.Resource {
 							MaxItems:         1,
 							Optional:         true,
 							DiffSuppressFunc: suppressNullTarget,
-							Description:      "If `action` is `forward`, the target pool to forward to.If `action` is `fail`, this property will be absent.The targets supported by this property may[expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) in the future.",
+							Description:      "If `action` is `forward`, the target pool to forward to.If `action` is `fail`, this property will be absent.The targets supported by this property may [expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) in the future.",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"deleted": &schema.Schema{

@@ -31,6 +31,27 @@ func TestAccIBMISImagesDataSource_basic(t *testing.T) {
 		},
 	})
 }
+func TestAccIBMISImagesDataSource_Zones(t *testing.T) {
+	resName := "data.ibm_is_images.test1"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { acc.TestAccPreCheck(t) },
+		Providers: acc.TestAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMISImagesDataSourceNameConfig(),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet(resName, "images.0.name"),
+					resource.TestCheckResourceAttrSet(resName, "images.0.status"),
+					resource.TestCheckResourceAttrSet(resName, "images.0.architecture"),
+					resource.TestCheckResourceAttrSet(resName, "images.0.zones.#"),
+					resource.TestCheckResourceAttrSet(resName, "images.0.zones.0.name"),
+					resource.TestCheckResourceAttrSet(resName, "images.0.zones.0.href"),
+				),
+			},
+		},
+	})
+}
 func TestAccIBMISImagesDataSource_All(t *testing.T) {
 	resName := "data.ibm_is_images.test1"
 	imageName := fmt.Sprintf("tfimage-name-%d", acctest.RandIntRange(10, 100))
@@ -141,6 +162,14 @@ func testAccCheckIBMISImagesDataSourceConfig() string {
 	// status filter defaults to empty
 	return fmt.Sprintf(`
       data "ibm_is_images" "test1" {
+      }`)
+}
+
+func testAccCheckIBMISImagesDataSourceNameConfig() string {
+	// status filter defaults to empty
+	return fmt.Sprintf(`
+      data "ibm_is_images" "test1" {
+	  	name = "ibm-ubuntu-22-04-5-minimal-amd64-13"
       }`)
 }
 func testAccCheckIBMISImagesDataSourceAllConfig(imageName string) string {
