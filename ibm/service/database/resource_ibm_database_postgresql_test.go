@@ -67,7 +67,7 @@ func TestAccIBMDatabaseInstancePostgresBasic(t *testing.T) {
 	})
 }
 
-func TestAccIBMDatabaseInstancePostgresGen2(t *testing.T) {
+func TestAccIBMDatabaseInstancePostgresGen2Invalid(t *testing.T) {
 	t.Parallel()
 	databaseResourceGroup := "default"
 	rnd := fmt.Sprintf("tf-Pgress-%d", acctest.RandIntRange(10, 100))
@@ -79,8 +79,8 @@ func TestAccIBMDatabaseInstancePostgresGen2(t *testing.T) {
 		CheckDestroy: testAccCheckIBMDatabaseInstanceDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config:      testAccCheckIBMDatabaseInstancePostgreGen2(databaseResourceGroup, testName),
-				ExpectError: regexp.MustCompile(`The plan "standard-gen2" corresponds to a Gen 2 database\. Gen 2 instances are not supported by the ibm_database resource\.`),
+				Config:      testAccCheckIBMDatabaseInstancePostgreGen2Invalid(databaseResourceGroup, testName),
+				ExpectError: regexp.MustCompile(`allowlist`),
 			},
 		},
 	})
@@ -414,7 +414,7 @@ func testAccCheckIBMDatabaseInstancePostgresBasic(databaseResourceGroup string, 
 	`, databaseResourceGroup, name, acc.Region())
 }
 
-func testAccCheckIBMDatabaseInstancePostgreGen2(databaseResourceGroup string, name string) string {
+func testAccCheckIBMDatabaseInstancePostgreGen2Invalid(databaseResourceGroup string, name string) string {
 	return fmt.Sprintf(`
 	data "ibm_resource_group" "test_acc" {
 		name = "%[1]s"
