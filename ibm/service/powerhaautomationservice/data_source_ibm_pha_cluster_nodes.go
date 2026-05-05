@@ -3,7 +3,7 @@
 
 /*
  * IBM OpenAPI Terraform Generator Version: 3.113.1-d76630af-20260320-135953
-*/
+ */
 
 package powerhaautomationservice
 
@@ -178,7 +178,7 @@ func dataSourceIBMPhaClusterNodesRead(context context.Context, d *schema.Resourc
 		getClusterNodeOptions.SetIfNoneMatch(d.Get("if_none_match").(string))
 	}
 
-    clusterNodeResponse, response, err := powerhaAutomationServiceClient.GetClusterNodeWithContext(context, getClusterNodeOptions)
+	clusterNodeResponse, response, err := powerhaAutomationServiceClient.GetClusterNodeWithContext(context, getClusterNodeOptions)
 	if err != nil {
 		detailedMsg := fmt.Sprintf("GetClusterNodeWithContext failed: %s", err.Error())
 
