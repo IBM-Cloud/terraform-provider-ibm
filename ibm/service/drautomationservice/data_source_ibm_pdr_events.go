@@ -255,7 +255,7 @@ func dataSourceIBMPdrGetEventsRead(ctx context.Context, d *schema.ResourceData, 
 	return dataSourceIBMPdrEventsReadCommon(ctx, d, meta, "ibm_pdr_get_events")
 }
 
-func dataSourceIBMPdrEventsReadCommon(context context.Context, d *schema.ResourceData, meta interface{},dsname string) diag.Diagnostics {
+func dataSourceIBMPdrEventsReadCommon(context context.Context, d *schema.ResourceData, meta interface{}, dsname string) diag.Diagnostics {
 	drAutomationServiceClient, err := meta.(conns.ClientSession).DrAutomationServiceV1()
 	if err != nil {
 		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) "+dsname, "read", "initialize-client")

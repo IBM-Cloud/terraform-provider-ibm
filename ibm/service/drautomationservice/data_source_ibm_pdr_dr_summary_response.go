@@ -24,7 +24,6 @@ import (
 func dataSourceIBMPdrDrSummaryResponseCommon() *schema.Resource {
 	return &schema.Resource{
 
-
 		Schema: map[string]*schema.Schema{
 			"instance_id": &schema.Schema{
 				Type:        schema.TypeString,
