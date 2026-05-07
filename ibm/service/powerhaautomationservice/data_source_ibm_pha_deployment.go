@@ -3,7 +3,7 @@
 
 /*
  * IBM OpenAPI Terraform Generator Version: 3.113.1-d76630af-20260320-135953
-*/
+ */
 
 package powerhaautomationservice
 
@@ -17,8 +17,8 @@ import (
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
-	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/IBM/dra-go-sdk/powerhaautomationservicev1"
+	"github.com/IBM/go-sdk-core/v5/core"
 )
 
 func DataSourceIBMPhaDeployment() *schema.Resource {

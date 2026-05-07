@@ -1,3 +1,32 @@
+# 2.1.0 (May 5, 2026)
+
+## Bug Fixes
+
+### Backup/Recovery
+* add support for service name and protection source refresh ([6755](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6755))
+
+### Cloud Internet Services
+* add missing domain settings ([6765](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6765))
+
+### VPC Infrastructure
+* added subnets info in is-vpe ([6767](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6767))
+
+
+## Enhancements
+
+### General
+* Update networking-go-sdk to v0.53.4 for logpush jobs fix ([6764](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6764))
+* address go vet issues and fmt formatting for Go 1.26.1 ([6768](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6768))
+* Add mumbai atracker region ([6766](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6766))
+* add go mod tidy, go fmt, and go vet checks to CI workflow ([#6770](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6770)))
+
+### Configuration Aggregator
+* Dra pha apis ([6696](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6696))
+
+### VPC Infrastructure
+* added support for additional ipv4 protocols ([6751](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6751))
+
+
 # 2.1.0-beta0 (April 28, 2026)
 
 ## Bug Fixes

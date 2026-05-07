@@ -14,9 +14,9 @@ import (
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/powerhaautomationservice"
+	"github.com/IBM/dra-go-sdk/powerhaautomationservicev1"
 	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/stretchr/testify/assert"
-	"github.com/IBM/dra-go-sdk/powerhaautomationservicev1"
 )
 
 func TestAccIBMPhaDeploymentBasic(t *testing.T) {
@@ -102,7 +102,7 @@ func testAccCheckIBMPhaDeploymentConfig(instanceID string, acceptLanguage string
 			secondary_location = "%s"
 			secondary_workspace = "%s"
 		}
-	`, instanceID, acceptLanguage, ifNoneMatch, apiKey, primaryLocation, primaryWorkspace, secondaryLocation, secondaryWorkspace)
+	`, instanceID, acceptLanguage, ifNoneMatch, primaryLocation, primaryWorkspace, secondaryLocation, secondaryWorkspace)
 }
 
 func testAccCheckIBMPhaDeploymentExists(n string, obj powerhaautomationservicev1.PhaDeploymentResponse) resource.TestCheckFunc {

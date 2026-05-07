@@ -18,8 +18,8 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
-	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/IBM/dra-go-sdk/powerhaautomationservicev1"
+	"github.com/IBM/go-sdk-core/v5/core"
 )
 
 func ResourceIBMPhaAPIKey() *schema.Resource {
@@ -51,13 +51,13 @@ func ResourceIBMPhaAPIKey() *schema.Resource {
 				Description:  "ETag for conditional requests (optional).",
 			},
 			"api_key": &schema.Schema{
-				Type:             schema.TypeString,
-				Optional:         true,
-				ForceNew:         true,
-				Sensitive:        true,
+				Type:      schema.TypeString,
+				Optional:  true,
+				ForceNew:  true,
+				Sensitive: true,
 				// DiffSuppressFunc: flex.ApplyOnce,
-				ValidateFunc:     validate.InvokeValidator("ibm_pha_api_key", "api_key"),
-				Description:      "The API key associated with the request.",
+				ValidateFunc: validate.InvokeValidator("ibm_pha_api_key", "api_key"),
+				Description:  "The API key associated with the request.",
 			},
 			"id": &schema.Schema{
 				Type:        schema.TypeString,

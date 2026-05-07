@@ -20,8 +20,8 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
-	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/IBM/dra-go-sdk/powerhaautomationservicev1"
+	"github.com/IBM/go-sdk-core/v5/core"
 )
 
 func ResourceIBMPhaClusterNodes() *schema.Resource {
@@ -505,8 +505,7 @@ func resourceIBMPhaClusterNodesUpdate(ctx context.Context, d *schema.ResourceDat
 	// -------------------------
 	removed := oldSet.Difference(newSet)
 	if len(removed.List()) > 1 {
-		msg := fmt.Sprintf("Only 1 VM can be deleted at a time")
-		return diag.FromErr(fmt.Errorf(msg))
+		return diag.FromErr(fmt.Errorf("Only 1 VM can be deleted at a time"))
 	}
 
 	for _, item := range removed.List() {
@@ -518,12 +517,17 @@ func resourceIBMPhaClusterNodesUpdate(ctx context.Context, d *schema.ResourceDat
 
 		_, response, err := client.DeleteClusterNodeWithContext(ctx, opts)
 		if err != nil {
-			msg := fmt.Sprintf("Failed to delete VM %s: %s", vmID, err.Error())
 			if response != nil {
-				msg = fmt.Sprintf("Failed to delete VM %s: %s (status: %d, response: %s)",
-					vmID, err.Error(), response.StatusCode, response.Result)
+				return diag.FromErr(fmt.Errorf(
+					"failed to delete VM %s: %w (status: %d, response: %v)",
+					vmID, err, response.StatusCode, response.Result,
+				))
 			}
-			return diag.FromErr(fmt.Errorf(msg))
+
+			return diag.FromErr(fmt.Errorf(
+				"failed to delete VM %s: %w",
+				vmID, err,
+			))
 		}
 	}
 
@@ -544,12 +548,17 @@ func resourceIBMPhaClusterNodesUpdate(ctx context.Context, d *schema.ResourceDat
 
 		_, response, err := client.CreateClusterNodeWithContext(ctx, opts)
 		if err != nil {
-			msg := fmt.Sprintf("Failed to add VMs: %s", err.Error())
 			if response != nil {
-				msg = fmt.Sprintf("Failed to add VMs: %s (status: %d, response: %s)",
-					err.Error(), response.StatusCode, response.Result)
+				return diag.FromErr(fmt.Errorf(
+					"failed to add VMs: %w (status: %d, response: %v)",
+					err, response.StatusCode, response.Result,
+				))
 			}
-			return diag.FromErr(fmt.Errorf(msg))
+
+			return diag.FromErr(fmt.Errorf(
+				"failed to add VMs: %w",
+				err,
+			))
 		}
 	}
 

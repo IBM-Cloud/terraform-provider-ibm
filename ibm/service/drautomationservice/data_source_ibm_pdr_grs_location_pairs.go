@@ -48,8 +48,6 @@ func dataSourceIBMPdrGrsLocationPairsCommon() *schema.Resource {
 	}
 }
 
-
-
 func DataSourceIBMPdrGrsLocationPairs() *schema.Resource {
 	res := dataSourceIBMPdrGrsLocationPairsCommon()
 	res.ReadContext = dataSourceIBMPdrGrsLocationPairsRead
