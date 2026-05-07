@@ -6,15 +6,13 @@ description: |-
 subcategory: "Cloud Logs"
 ---
 
-~> **Beta:** This resource is in Beta, and is subject to change.
-
 # ibm_logs_log_data_retention_tags
 
 Create, update, and delete log data retention tags with this resource.
 
-Log data retention tags configuration manages the three editable archive retention tags used for log retention policies. The 'Default' tag is system-managed and cannot be modified through this resource.
-
 ~> **Important:** An archive bucket must be configured and attached to your Cloud Logs instance before you can configure data retention tags. The API will return an error if you attempt to configure retention tags without an archive bucket.
+
+Log data retention tags configuration manages the three editable archive retention tags used for log retention policies. The 'Default' tag is system-managed and cannot be modified through this resource.
 
 ## Example Usage
 

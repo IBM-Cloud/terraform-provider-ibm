@@ -5,6 +5,7 @@ package logs_test
 
 import (
 	"fmt"
+	"regexp"
 	"testing"
 
 	"github.com/go-openapi/strfmt"
@@ -117,9 +118,23 @@ func TestAccIbmLogsPolicyWithArchiveRetentionTag(t *testing.T) {
 				),
 			},
 			resource.TestStep{
+				Config: testAccCheckIbmLogsPolicyConfigWithArchiveRetentionTag(name, description, priority, "short-term"),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIbmLogsPolicyExists("ibm_logs_policy.logs_policy_instance", conf),
+					resource.TestCheckResourceAttr("ibm_logs_policy.logs_policy_instance", "name", name),
+					resource.TestCheckResourceAttr("ibm_logs_policy.logs_policy_instance", "description", description),
+					resource.TestCheckResourceAttr("ibm_logs_policy.logs_policy_instance", "priority", priority),
+					resource.TestCheckResourceAttr("ibm_logs_policy.logs_policy_instance", "archive_retention_tag", "short-term"),
+				),
+			},
+			resource.TestStep{
 				ResourceName:      "ibm_logs_policy.logs_policy_instance",
 				ImportState:       true,
 				ImportStateVerify: true,
+			},
+			resource.TestStep{
+				Config:      testAccCheckIbmLogsPolicyConfigWithArchiveRetentionTag(name, description, priority, "invalid-tag"),
+				ExpectError: regexp.MustCompile("Invalid archive_retention_tag"),
 			},
 		},
 	})
@@ -167,17 +182,16 @@ func testAccCheckIbmLogsPolicyConfig(name string, description string, priority s
 
 func testAccCheckIbmLogsPolicyConfigWithArchiveRetentionTag(name string, description string, priority string, archiveRetentionTag string) string {
 	return fmt.Sprintf(`
-
 		resource "ibm_logs_policy" "logs_policy_instance" {
-		instance_id = "%s"
-		region      = "%s"
-		name        = "%s"
-			description = "%s"
-			priority = "%s"
+			instance_id           = "%s"
+			region                = "%s"
+			name                  = "%s"
+			description           = "%s"
+			priority              = "%s"
 			archive_retention_tag = "%s"
 			application_rule {
-		  name         = "otel-links-test"
-		  rule_type_id = "start_with"
+				name         = "otel-links-test"
+				rule_type_id = "start_with"
 			}
 			log_rules {
 				severities = ["critical"]

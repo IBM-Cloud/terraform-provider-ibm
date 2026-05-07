@@ -93,6 +93,30 @@ data "ibm_logs_policy" "example" {
 }
 
 # ============================================================================
+# 4. Data Source: Read Retention Tags Configuration
+# ============================================================================
+# Read the retention tags configuration using the new data source
+
+data "ibm_logs_log_data_retention_tags" "example" {
+  instance_id = var.logs_instance_id
+  region      = var.region
+
+  depends_on = [ibm_logs_log_data_retention_tags.example]
+}
+
+# ============================================================================
+# 5. Data Source: List All Policies (includes deprecated fields)
+# ============================================================================
+# Read all policies to verify backward compatibility with deprecated archive_retention field
+
+data "ibm_logs_policies" "example" {
+  instance_id = var.logs_instance_id
+  region      = var.region
+
+  depends_on = [ibm_logs_policy.example_with_retention_tag]
+}
+
+# ============================================================================
 # Outputs
 # ============================================================================
 
@@ -119,4 +143,18 @@ output "policy_details" {
     enabled               = data.ibm_logs_policy.example.enabled
     priority              = data.ibm_logs_policy.example.priority
   }
+}
+
+output "retention_tags_from_datasource" {
+  description = "Retention tags read from data source"
+  value = {
+    tag_1 = data.ibm_logs_log_data_retention_tags.example.tags[0]
+    tag_2 = data.ibm_logs_log_data_retention_tags.example.tags[1]
+    tag_3 = data.ibm_logs_log_data_retention_tags.example.tags[2]
+  }
+}
+
+output "all_policies_count" {
+  description = "Number of policies in the instance"
+  value       = length(data.ibm_logs_policies.example.policies)
 }

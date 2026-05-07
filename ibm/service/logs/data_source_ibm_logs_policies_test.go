@@ -151,6 +151,27 @@ func testAccCheckIbmLogsPoliciesDataSourcePolicyExists(name, description, priori
 					return fmt.Errorf("Policy priority mismatch: expected %s, got %s", priority, policyPriority)
 				}
 
+				// Check additional attributes
+				policyID := rs.Primary.Attributes[fmt.Sprintf("policies.%d.id", i)]
+				if policyID == "" {
+					return fmt.Errorf("Policy ID is empty")
+				}
+
+				policyEnabled := rs.Primary.Attributes[fmt.Sprintf("policies.%d.enabled", i)]
+				if policyEnabled == "" {
+					return fmt.Errorf("Policy enabled attribute is empty")
+				}
+
+				policyCreatedAt := rs.Primary.Attributes[fmt.Sprintf("policies.%d.created_at", i)]
+				if policyCreatedAt == "" {
+					return fmt.Errorf("Policy created_at is empty")
+				}
+
+				policyUpdatedAt := rs.Primary.Attributes[fmt.Sprintf("policies.%d.updated_at", i)]
+				if policyUpdatedAt == "" {
+					return fmt.Errorf("Policy updated_at is empty")
+				}
+
 				// All checks passed
 				return nil
 			}

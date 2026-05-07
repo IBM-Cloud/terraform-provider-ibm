@@ -117,6 +117,22 @@ func ResourceIbmLogsPolicy() *schema.Resource {
 					},
 				},
 			},
+			"archive_retention": &schema.Schema{
+				Type:        schema.TypeList,
+				MaxItems:    1,
+				Optional:    true,
+				Deprecated:  "This field is deprecated and will be removed in a future version. Use archive_retention_tag instead.",
+				Description: "Archive retention definition. Deprecated: Use archive_retention_tag instead.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"id": &schema.Schema{
+							Type:        schema.TypeString,
+							Required:    true,
+							Description: "References archive retention definition.",
+						},
+					},
+				},
+			},
 			"archive_retention_tag": &schema.Schema{
 				Type:         schema.TypeString,
 				Optional:     true,
@@ -253,7 +269,11 @@ func resourceIbmLogsPolicyCreate(context context.Context, d *schema.ResourceData
 		bodyModelMap["archive_retention"] = d.Get("archive_retention")
 	}
 	if _, ok := d.GetOk("archive_retention_tag"); ok {
-		bodyModelMap["archive_retention_tag"] = d.Get("archive_retention_tag")
+		tag := d.Get("archive_retention_tag").(string)
+		if tag == "" {
+			return diag.FromErr(fmt.Errorf("archive_retention_tag cannot be an empty string"))
+		}
+		bodyModelMap["archive_retention_tag"] = tag
 	}
 	bodyModelMap["enabled"] = d.Get("enabled")
 
@@ -458,7 +478,11 @@ func resourceIbmLogsPolicyUpdate(context context.Context, d *schema.ResourceData
 			bodyModelMap["subsystem_rule"] = d.Get("subsystem_rule")
 		}
 		if _, ok := d.GetOk("archive_retention_tag"); ok {
-			bodyModelMap["archive_retention_tag"] = d.Get("archive_retention_tag")
+			tag := d.Get("archive_retention_tag").(string)
+			if tag == "" {
+				return diag.FromErr(fmt.Errorf("archive_retention_tag cannot be an empty string"))
+			}
+			bodyModelMap["archive_retention_tag"] = tag
 		}
 		if _, ok := d.GetOk("log_rules"); ok {
 			bodyModelMap["log_rules"] = d.Get("log_rules")

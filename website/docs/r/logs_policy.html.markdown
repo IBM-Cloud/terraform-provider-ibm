@@ -47,8 +47,12 @@ Nested schema for **application_rule**:
 	  * Constraints: The maximum length is `4096` characters. The minimum length is `1` character. The value must match regular expression `/^[\\p{L}\\p{N}\\p{P}\\p{Z}\\p{S}\\p{M}]+$/`.
 	* `rule_type_id` - (Required, String) Identifier of the rule.
 	  * Constraints: Allowable values are: `unspecified`, `is`, `is_not`, `start_with`, `includes`.
-* `archive_retention_tag` - (Optional, String) Archive retention tag. Required when retention tags are active. Cannot be set when retention tags are not active.
-  * Constraints: The maximum length is `255` characters. The minimum length is `1` character. The value must match regular expression `/^[a-zA-Z0-9_-]+$/`.
+* `archive_retention` - (Optional, List) **Deprecated:** This field is deprecated and will be removed in a future version. Use `archive_retention_tag` instead. Archive retention definition.
+Nested schema for **archive_retention**:
+	* `id` - (Required, String) References archive retention definition.
+	  * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/`.
+* `archive_retention_tag` - (Optional, String) Archive retention tag. Required when retention tags are active. Cannot be set when retention tags are not active. The tag must be one of the three editable tags configured via the `ibm_logs_log_data_retention_tags` resource or the 'Default' system tag.
+	 * Constraints: The maximum length is `255` characters. The minimum length is `1` character. The value must match regular expression `/^[a-zA-Z0-9_-]+$/`.
 * `before` - (Optional, List) The policy will be inserted immediately before the existing policy with this ID. If unspecified, the policy will be inserted after all existing policies.
 Nested schema for **before**:
 	* `id` - (Required, String) The policy will be inserted immediately before the existing policy with this ID. If unspecified, the policy will be inserted after all existing policies.

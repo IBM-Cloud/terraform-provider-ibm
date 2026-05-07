@@ -1,236 +1,347 @@
-# IBM Cloud Logs Log Data Retention Tags - Terraform Example
+# Testing Log Data Retention Tags Example
 
-This guide explains how to test the new feature Log Data retention tags in the IBM Cloud Logs Terraform provider.
-
-## Overview of Changes
-
-1. **New Resource**: `ibm_logs_log_data_retention_tags` - Manages log data retention tags
-2. **Updated Field**: `archive_retention_tag` in `ibm_logs_policy` - Replaces the old `archive_retention` object
+This guide explains how to run and test the `log-data-retention-tags-example.tf` file.
 
 ## Prerequisites
 
-Before testing these changes, ensure you have:
+1. **IBM Cloud Account** with access to Cloud Logs service
+2. **Cloud Logs Instance** already created with an archive bucket configured
+3. **IBM Cloud API Key** with appropriate permissions
+4. **Terraform** installed (v1.0 or later)
+5. **Local Provider Build** (for testing unreleased features)
 
-1. **IBM Cloud Logs Instance**: A provisioned IBM Cloud Logs instance
-2. **Archive Bucket**: **CRITICAL** - Archive bucket must be configured and attached to your Logs instance BEFORE attempting to configure retention tags. Without an archive bucket, Terraform will fail with a 412 Precondition Failed error.
-3. **IBM Cloud API Key**: Valid API key with permissions to manage Logs resources
-4. **Terraform**: Version 1.0 or later
+## Setup Steps
 
-## Setup
+### 1. Build the Provider Locally
 
-### 1. Configure Variables
+```bash
+# From the terraform-provider-ibm root directory
+make build
 
-Create or update `terraform.tfvars` with your instance details:
-
-```hcl
-ibmcloud_api_key = "your-api-key-here"
-logs_instance_id = "your-logs-instance-guid"
-region           = "us-south"  # or your instance region
+# This installs the provider to ~/go/bin/terraform-provider-ibm
 ```
 
-### 2. Initialize Terraform
+### 2. Configure Local Provider
+
+Copy the built provider to the Terraform plugins directory:
+
+```bash
+# Create the directory structure
+mkdir -p ~/.terraform.d/plugins/registry.terraform.io/ibm-cloud/ibm/2.0.0/darwin_arm64
+
+# Copy the provider binary
+cp ~/go/bin/terraform-provider-ibm ~/.terraform.d/plugins/registry.terraform.io/ibm-cloud/ibm/2.0.0/darwin_arm64/terraform-provider-ibm_v2.0.0
+
+# Make it executable
+chmod +x ~/.terraform.d/plugins/registry.terraform.io/ibm-cloud/ibm/2.0.0/darwin_arm64/terraform-provider-ibm_v2.0.0
+```
+
+**Note:** Adjust the path for your OS:
+- macOS ARM: `darwin_arm64`
+- macOS Intel: `darwin_amd64`
+- Linux: `linux_amd64`
+- Windows: `windows_amd64`
+
+### 3. Configure Terraform to Use Local Provider
+
+Create or update `~/.terraformrc`:
+
+```hcl
+provider_installation {
+  filesystem_mirror {
+    path    = "/Users/YOUR_USERNAME/.terraform.d/plugins"
+    include = ["registry.terraform.io/ibm-cloud/ibm"]
+  }
+  direct {
+    exclude = ["registry.terraform.io/ibm-cloud/ibm"]
+  }
+}
+```
+
+### 4. Set Up Variables
+
+Copy the template and fill in your values:
 
 ```bash
 cd examples/ibm-logs
-terraform init
+cp terraform.tfvars.template terraform.tfvars
 ```
 
-## Testing Scenarios
+Edit `terraform.tfvars` with your values:
 
-### Scenario 1: Test New Retention Tags Resource
+```hcl
+ibmcloud_api_key    = "your-api-key-here"
+region              = "us-south"  # or your preferred region
+logs_instance_id    = "your-instance-id"
+logs_instance_region = "us-south"
+```
 
-This tests the new `ibm_logs_log_data_retention_tags` resource.
+**Finding Your Instance ID:**
+```bash
+# List your Cloud Logs instances
+ibmcloud resource service-instances --service-name logs
 
-**File**: `pr188-retention-tags-example.tf`
+# Get instance details
+ibmcloud resource service-instance "your-instance-name" --output json | jq -r '.guid'
+```
 
-**Steps**:
+## Running the Example
 
-1. Review the retention tags configuration:
-   ```bash
-   terraform plan -target=ibm_logs_log_data_retention_tags.example
-   ```
+### Option 1: Test Only Retention Tags (Recommended for Quick Testing)
 
-2. Apply the retention tags:
-   ```bash
-   terraform apply -target=ibm_logs_log_data_retention_tags.example
-   ```
-
-3. Verify the tags were created:
-   ```bash
-   terraform show
-   ```
-
-**Expected Result**: 
-- 3 retention tags created with IDs 1, 2, 3
-- Tag names: "short-term", "medium-term", "long-term"
-
-### Scenario 2: Test Policy with Archive Retention Tag
-
-This tests the updated `archive_retention_tag` field in policies.
-
-**File**: `pr188-retention-tags-example.tf`
-
-**Steps**:
-
-1. Plan the policy creation:
-   ```bash
-   terraform plan -target=ibm_logs_policy.example_with_retention_tag
-   ```
-
-2. Apply the policy:
-   ```bash
-   terraform apply -target=ibm_logs_policy.example_with_retention_tag
-   ```
-
-3. Verify the policy uses the retention tag:
-   ```bash
-   terraform output policy_archive_retention_tag
-   ```
-
-**Expected Result**:
-- Policy created successfully
-- `archive_retention_tag` field set to "medium-term"
-- Policy references the retention tag by name (not ID)
-
-### Scenario 3: Test Data Sources
-
-This tests reading retention tags and policies via data sources.
-
-**Steps**:
-
-1. Apply all resources:
-   ```bash
-   terraform apply
-   ```
-
-2. View the outputs:
-   ```bash
-   terraform output retention_tags_configuration
-   terraform output policy_details
-   ```
-
-**Expected Result**:
-- Data sources successfully read the resources
-- Outputs display retention tags and policy details
-- `archive_retention_tag` field visible in policy data source
-
-### Scenario 4: Test Update Operations
-
-This tests updating retention tag names and policy configurations.
-
-**Steps**:
-
-1. Modify retention tag names in `pr188-retention-tags-example.tf`:
-   ```hcl
-   retention_tags {
-     tag_id   = 1
-     tag_name = "weekly"  # changed from "short-term"
-   }
-   ```
-
-2. Apply the changes:
-   ```bash
-   terraform apply
-   ```
-
-3. Verify the policy still references the correct tag:
-   ```bash
-   terraform output policy_archive_retention_tag
-   ```
-
-**Expected Result**:
-- Retention tag name updated successfully
-- Policy automatically uses the new tag name
-
-### Scenario 5: Test Validation
-
-This tests the validation rules for retention tags and policies.
-
-**Test Cases**:
-
-1. **Invalid Tag ID** (should fail):
-   ```hcl
-   retention_tags {
-     tag_id   = 0  # Reserved, should fail
-     tag_name = "test"
-   }
-   ```
-
-2. **Invalid Tag Name Pattern** (should fail):
-   ```hcl
-   retention_tags {
-     tag_id   = 1
-     tag_name = "invalid tag!"  # Contains invalid characters
-   }
-   ```
-
-3. **Non-existent Retention Tag** (should fail):
-   ```hcl
-   archive_retention_tag = "non-existent-tag"
-   ```
-
-**Expected Result**:
-- Terraform validation errors for invalid configurations
-- Clear error messages explaining the validation rules
-
-## Cleanup
-
-To remove all test resources:
+Create a minimal test file:
 
 ```bash
-terraform destroy
+cat > test-retention-tags.tf << 'EOF'
+terraform {
+  required_providers {
+    ibm = {
+      source  = "ibm-cloud/ibm"
+      version = "~> 2.0.0"
+    }
+  }
+}
+
+provider "ibm" {
+  ibmcloud_api_key = var.ibmcloud_api_key
+  region           = var.region
+}
+
+# Configure retention tags
+resource "ibm_logs_log_data_retention_tags" "example" {
+  instance_id = var.logs_instance_id
+  region      = var.logs_instance_region
+  tags        = ["short-term", "medium-term", "long-term"]
+}
+
+# Read back the tags
+data "ibm_logs_log_data_retention_tags" "example" {
+  instance_id = var.logs_instance_id
+  region      = var.logs_instance_region
+  depends_on  = [ibm_logs_log_data_retention_tags.example]
+}
+
+output "retention_tags" {
+  value = ibm_logs_log_data_retention_tags.example
+}
+
+output "retention_tags_data" {
+  value = data.ibm_logs_log_data_retention_tags.example
+}
+EOF
+```
+
+### Option 2: Run the Full Example
+
+The full example includes policies and other resources:
+
+```bash
+# Initialize Terraform
+terraform init
+
+# Review the plan
+terraform plan
+
+# Apply the configuration
+terraform apply
+```
+
+### Option 3: Use the Test Script
+
+Run the automated test script:
+
+```bash
+chmod +x test-pr188-retention-tags.sh
+./test-pr188-retention-tags.sh
+```
+
+This script runs comprehensive tests including:
+- Creating retention tags
+- Updating tags
+- Reading tags via data source
+- Testing backward compatibility
+- Verifying tag values
+
+## Verification Steps
+
+### 1. Check Terraform State
+
+```bash
+# View the created resource
+terraform show
+
+# Check specific resource
+terraform state show ibm_logs_log_data_retention_tags.example
+```
+
+Expected output:
+```hcl
+resource "ibm_logs_log_data_retention_tags" "example" {
+    id          = "us-south/your-instance-id"
+    instance_id = "your-instance-id"
+    region      = "us-south"
+    tags        = [
+        "short-term",
+        "medium-term",
+        "long-term",
+    ]
+}
+```
+
+### 2. Verify via IBM Cloud UI
+
+1. Go to [IBM Cloud Console](https://cloud.ibm.com)
+2. Navigate to **Observability** → **Logging** → **Cloud Logs**
+3. Select your instance
+4. Go to **Data Pipeline** → **Data Usage**
+5. Check the **Retention Tags** section
+
+### 3. Verify via API
+
+```bash
+# Get IAM token
+TOKEN=$(ibmcloud iam oauth-tokens --output json | jq -r '.iam_token')
+
+# Get retention tags
+curl -X GET \
+  "https://api.${REGION}.logs.cloud.ibm.com/v1/log_data_retention_tags" \
+  -H "Authorization: ${TOKEN}" \
+  -H "Content-Type: application/json"
+```
+
+### 4. Verify via Data Source
+
+```bash
+# Check data source output
+terraform output retention_tags_data
+```
+
+## Testing Updates
+
+### Update Tag Names
+
+Edit your terraform file:
+
+```hcl
+resource "ibm_logs_log_data_retention_tags" "example" {
+  instance_id = var.logs_instance_id
+  region      = var.logs_instance_region
+  tags        = ["tier-1", "tier-2", "tier-3"]  # Changed names
+}
+```
+
+Apply the changes:
+
+```bash
+terraform apply
+```
+
+### Test with Policy
+
+Create a policy using one of the retention tags:
+
+```hcl
+resource "ibm_logs_policy" "example" {
+  instance_id = var.logs_instance_id
+  region      = var.logs_instance_region
+  name        = "test-policy"
+  description = "Policy using retention tag"
+  priority    = "type_high"
+  
+  application_rule {
+    name         = "test-app"
+    rule_type_id = "is"
+  }
+  
+  log_rules {
+    severities = ["info", "warning", "error"]
+  }
+  
+  archive_retention_tag = "short-term"  # Use one of your tags
+  
+  depends_on = [ibm_logs_log_data_retention_tags.example]
+}
 ```
 
 ## Troubleshooting
 
-### Error: Archive bucket not configured
+### Issue: Provider Not Found
 
-**Symptom**: Error when creating retention tags
+**Error:** `provider registry.terraform.io/ibm-cloud/ibm was not found`
+
+**Solution:**
+1. Verify the provider binary exists in the correct location
+2. Check `~/.terraformrc` configuration
+3. Run `terraform init` again
+
+### Issue: Resource Not Supported
+
+**Error:** `The provider does not support resource type "ibm_logs_log_data_retention_tags"`
+
+**Solution:**
+1. Ensure you built the provider from the correct branch
+2. Verify the provider version: `terraform version`
+3. Check that the local provider is being used (not downloaded from registry)
+
+### Issue: 412 Precondition Failed
+
+**Error:** `UpdateLogDataRetentionTagsWithContext failed: 412 Precondition Failed`
+
+**Solution:**
+This means the archive bucket is not configured. You must:
+1. Configure an archive bucket for your Cloud Logs instance first
+2. Wait a few minutes for the configuration to propagate
+3. Then run terraform apply again
+
+### Issue: Tags Not Showing in UI
+
+**Possible Causes:**
+1. **UI Cache:** Hard refresh the browser (Cmd+Shift+R or Ctrl+Shift+R)
+2. **Propagation Delay:** Wait 1-2 minutes and refresh
+3. **Wrong Instance:** Verify you're viewing the correct Cloud Logs instance
+
+**Verification:**
+```bash
+# Verify tags via API
+curl -X GET \
+  "https://api.${REGION}.logs.cloud.ibm.com/v1/log_data_retention_tags" \
+  -H "Authorization: ${TOKEN}"
 ```
-Error: Archive bucket must be configured before using retention tags
+
+If the API returns the tags correctly, it's a UI display issue.
+
+## Cleanup
+
+To remove the resources:
+
+```bash
+# Destroy all resources
+terraform destroy
+
+# Or remove specific resource
+terraform destroy -target=ibm_logs_log_data_retention_tags.example
 ```
 
-**Solution**: Configure an archive bucket in your IBM Cloud Logs instance before using retention tags.
+**Note:** The retention tags resource cannot be truly deleted - it only removes it from Terraform state. The tags remain configured in the Cloud Logs instance until you remove the archive bucket.
 
-### Error: Invalid retention tag name
+## Debug Mode
 
-**Symptom**: Validation error for tag name
+For detailed logging:
+
+```bash
+# Enable debug logging
+export TF_LOG=DEBUG
+export TF_LOG_PATH=./terraform-debug.log
+
+# Run terraform
+terraform apply
+
+# View logs
+cat terraform-debug.log | grep -i "retention"
 ```
-Error: archive_retention_tag must match pattern: ^[a-zA-Z0-9_-]+$
-```
-
-**Solution**: Use only alphanumeric characters, hyphens, and underscores in tag names.
-
-### Error: Policy references non-existent tag
-
-**Symptom**: Error when creating policy
-```
-Error: The specified retention tag does not exist
-```
-
-**Solution**: Ensure the retention tag is created before referencing it in a policy. Use `depends_on` if needed.
-
-## API Endpoints Tested
-
-These examples test the following API endpoints from PR #188:
-
-1. **GET /v1/log-data-retention-tags** - Read retention tags
-2. **PUT /v1/log-data-retention-tags** - Update retention tags
-3. **GET /v1/policies** - Read policies (with new `archive_retention_tag` field)
-4. **POST /v1/policies** - Create policy (with new `archive_retention_tag` field)
-5. **PUT /v1/policies/{id}** - Update policy (with new `archive_retention_tag` field)
 
 ## Additional Resources
 
-- [OpenAPI PR #188](https://github.com/observability-c/dragonlog-openapi/pull/188)
-- [Terraform Provider Documentation](../../website/docs/r/logs_log_data_retention_tags.html.markdown)
-- [Manual Changes Runbook](https://github.com/observability-c/dragonlog-runbooks/blob/main/runbooks/terraform/ManualChangesOnProvider.md)
-
-## Reporting Issues
-
-If you encounter any issues while testing:
-
-1. Check the Terraform logs: `TF_LOG=DEBUG terraform apply`
-2. Verify your IBM Cloud Logs instance configuration
-3. Ensure archive bucket is properly configured
-4. Report issues with full error messages and steps to reproduce
+- [Cloud Logs Documentation](https://cloud.ibm.com/docs/cloud-logs)
+- [Terraform IBM Provider Documentation](https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs)
+- [Example Files](./log-data-retention-tags-example.tf)

@@ -41,6 +41,11 @@ Nested schema for **application_rule**:
 	* `rule_type_id` - (String) Identifier of the rule.
 	  * Constraints: Allowable values are: `unspecified`, `is`, `is_not`, `start_with`, `includes`.
 
+* `archive_retention` - (List) **Deprecated:** This field is deprecated and will be removed in a future version. Use `archive_retention_tag` instead. Archive retention definition.
+Nested schema for **archive_retention**:
+	* `id` - (String) References archive retention definition.
+	  * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/`.
+
 * `archive_retention_tag` - (String) Archive retention tag. Required when retention tags are active. Cannot be set when retention tags are not active.
   * Constraints: The maximum length is `255` characters. The minimum length is `1` character. The value must match regular expression `/^[a-zA-Z0-9_-]+$/`.
 

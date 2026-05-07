@@ -20,7 +20,7 @@ func TestAccIbmLogsLogDataRetentionTagsBasic(t *testing.T) {
 	var conf logsv0.LogDataRetentionTags
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acc.TestAccPreCheckCloudLogs(t); testAccPreCheckArchiveBucket(t) },
+		PreCheck:     func() { acc.TestAccPreCheckCloudLogs(t) },
 		Providers:    acc.TestAccProviders,
 		CheckDestroy: testAccCheckIbmLogsLogDataRetentionTagsDestroy,
 		Steps: []resource.TestStep{

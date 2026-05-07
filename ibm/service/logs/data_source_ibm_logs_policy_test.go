@@ -69,7 +69,7 @@ func TestAccIbmLogsPolicyDataSourceAllArgs(t *testing.T) {
 					testAccCheckIbmLogsPolicyDataSourceSubsystemRuleExists("data.ibm_logs_policy.logs_policy_instance"),
 					resource.TestCheckResourceAttrSet("data.ibm_logs_policy.logs_policy_instance", "created_at"),
 					resource.TestCheckResourceAttrSet("data.ibm_logs_policy.logs_policy_instance", "updated_at"),
-					testAccCheckIbmLogsPolicyDataSourceArchiveRetentionTagExists("data.ibm_logs_policy.logs_policy_instance"),
+					resource.TestCheckResourceAttrSet("data.ibm_logs_policy.logs_policy_instance", "archive_retention_tag"),
 					resource.TestCheckResourceAttrSet("data.ibm_logs_policy.logs_policy_instance", "log_rules.#"),
 				),
 			},

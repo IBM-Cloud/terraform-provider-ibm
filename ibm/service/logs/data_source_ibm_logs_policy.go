@@ -133,6 +133,21 @@ func DataSourceIbmLogsPolicy() *schema.Resource {
 				Computed:    true,
 				Description: "Updated at date at utc+0.",
 			},
+			"archive_retention": &schema.Schema{
+				Type:        schema.TypeList,
+				Computed:    true,
+				Deprecated:  "This field is deprecated and will be removed in a future version. Use archive_retention_tag instead.",
+				Description: "Archive retention definition. Deprecated: Use archive_retention_tag instead.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"id": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "References archive retention definition.",
+						},
+					},
+				},
+			},
 			"archive_retention_tag": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
