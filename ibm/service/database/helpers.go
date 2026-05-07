@@ -373,12 +373,31 @@ func buildHostFlavorConfig(hostFlavorID string) []map[string]interface{} {
 	return []map[string]interface{}{hostflavor}
 }
 
+// extractDeploymentIDFromCRN extracts the deployment ID from a catalog CRN.
+func extractDeploymentIDFromCRN(catalogCRN string) (string, error) {
+	// Split by "deployment:" to get the deployment ID
+	parts := strings.Split(catalogCRN, "deployment:")
+	if len(parts) != 2 {
+		return "", fmt.Errorf("invalid catalog CRN format: %s", catalogCRN)
+	}
+	deploymentID := strings.TrimSpace(parts[1])
+	if deploymentID == "" {
+		return "", fmt.Errorf("empty deployment ID in catalog CRN: %s", catalogCRN)
+	}
+	return deploymentID, nil
+}
+
 // getInitialNodeCountGen2 retrieves the default member count for Gen2 plans from Global Catalog.
 // Returns the member count from the catalog metadata, or a default value of 3 if not found.
-func getInitialNodeCountGen2(deploymentID string, meta interface{}) (int, error) {
+func getInitialNodeCountGen2(catalogCRN string, meta interface{}) (int, error) {
 	globalClient, err := meta.(conns.ClientSession).GlobalCatalogV1API()
 	if err != nil {
 		return 0, fmt.Errorf("failed to get global catalog client: %w", err)
+	}
+
+	deploymentID, err := extractDeploymentIDFromCRN(catalogCRN)
+	if err != nil {
+		return 0, fmt.Errorf("failed to extract deployment ID from catalog CRN: %w", err)
 	}
 
 	options := &globalcatalogv1.GetCatalogEntryOptions{
