@@ -11,11 +11,13 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"regexp"
 	"strings"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
@@ -44,9 +46,10 @@ func ResourceIbmPdrManagedr() *schema.Resource {
 				Description: "instance id of instance to provision.",
 			},
 			"stand_by_redeploy": &schema.Schema{
-				Type:     schema.TypeString,
-				Optional: true,
-				ForceNew: true,
+				Type:             schema.TypeString,
+				Optional:         true,
+				ForceNew:         true,
+				DiffSuppressFunc: flex.ApplyOnce,
 				ValidateFunc: func(val interface{}, key string) (warns []string, errs []error) {
 					v := val.(string)
 					allowed := []string{"true", "false"}
@@ -67,11 +70,12 @@ func ResourceIbmPdrManagedr() *schema.Resource {
 				Description: "The language requested for the return document.",
 			},
 			"accepts_incomplete": &schema.Schema{
-				Type:        schema.TypeBool,
-				Optional:    true,
-				Default:     true,
-				ForceNew:    true,
-				Description: "A value of true indicates that both the IBM Cloud platform and the requesting client support asynchronous deprovisioning.",
+				Type:             schema.TypeBool,
+				Optional:         true,
+				Default:          true,
+				ForceNew:         true,
+				DiffSuppressFunc: flex.ApplyOnce,
+				Description:      "A value of true indicates that both the IBM Cloud platform and the requesting client support asynchronous deprovisioning.",
 			},
 			"dashboard_url": &schema.Schema{
 				Type:        schema.TypeString,
@@ -86,154 +90,257 @@ func ResourceIbmPdrManagedr() *schema.Resource {
 			"etag": &schema.Schema{
 				Type:     schema.TypeString,
 				Computed: true,
-				ForceNew: true,
 			},
 			"action": {
-				Type:        schema.TypeString,
-				ForceNew:    true,
-				Optional:    true,
-				Description: "Indicates whether to proceed with asynchronous operation after all configuration details are updated in the database.",
+				Type:             schema.TypeString,
+				ForceNew:         true,
+				Optional:         true,
+				DiffSuppressFunc: flex.ApplyOnce,
+				Description:      "Indicates whether to proceed with asynchronous operation after all configuration details are updated in the database.",
 			},
 			"api_key": {
-				Type:        schema.TypeString,
-				Sensitive:   true,
-				ForceNew:    true,
-				Optional:    true,
-				Description: "The API key associated with the IBM Cloud service instance.",
+				Type:             schema.TypeString,
+				Sensitive:        true,
+				ForceNew:         true,
+				DiffSuppressFunc: flex.ApplyOnce,
+				Optional:         true,
+				Description:      "The API key associated with the IBM Cloud service instance.",
 			},
 			"client_id": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				ForceNew:    true,
-				Description: "Client ID for MFA Authentication.",
+				Type:             schema.TypeString,
+				Optional:         true,
+				ForceNew:         true,
+				DiffSuppressFunc: flex.ApplyOnce,
+				Description:      "Client ID for MFA Authentication.",
 			},
 			"proxy_ip": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				ForceNew:    true,
+				Type:     schema.TypeString,
+				Optional: true,
+				ForceNew: true,
+				Computed: true,
+				// DiffSuppressFunc: flex.ApplyOnce,
 				Description: "Proxy IP for the Communication between Orchestrator and Service.",
 			},
 			"client_secret": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				ForceNew:    true,
-				Sensitive:   true,
-				Description: "Client Secret for MFA Authentication.",
+				Type:             schema.TypeString,
+				Optional:         true,
+				ForceNew:         true,
+				Sensitive:        true,
+				DiffSuppressFunc: flex.ApplyOnce,
+				Description:      "Client Secret for MFA Authentication.",
 			},
 			"tenant_name": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				ForceNew:    true,
+				Type:     schema.TypeString,
+				Optional: true,
+				ForceNew: true,
+				Computed: true,
+				// DiffSuppressFunc: flex.ApplyOnce,
 				Description: "Tenant Name for MFA Authentication.",
 			},
 			"orchestrator_ha": {
-				Type:        schema.TypeBool,
-				Optional:    true,
-				ForceNew:    true,
+				Type:     schema.TypeBool,
+				Optional: true,
+				ForceNew: true,
+				Computed: true,
+				// DiffSuppressFunc: flex.ApplyOnce,
 				Description: "Flag to enable or disable High Availability (HA) for the service instance.",
 			},
 			"guid": {
-				Type:        schema.TypeString,
-				ForceNew:    true,
-				Optional:    true,
+				Type:     schema.TypeString,
+				ForceNew: true,
+				Optional: true,
+				Computed: true,
+				// DiffSuppressFunc: flex.ApplyOnce,
 				Description: "The globally unique identifier of the service instance.",
 			},
 			"location_id": {
-				Type:        schema.TypeString,
-				ForceNew:    true,
-				Required:    true,
+				Type:     schema.TypeString,
+				ForceNew: true,
+				// Required: true,
+				Optional: true,
+				Computed: true,
+				// DiffSuppressFunc: flex.ApplyOnce,
 				Description: "The Location or data center identifier where the service instance is deployed.",
 			},
 			"machine_type": {
-				Type:        schema.TypeString,
-				Required:    true,
-				ForceNew:    true,
+				Type: schema.TypeString,
+				// Required: true,
+				Optional: true,
+				Computed: true,
+				ForceNew: true,
+				// DiffSuppressFunc: flex.ApplyOnce,
 				Description: "The Machine type or flavor used for virtual machines in the service instance.",
 			},
 			"orchestrator_location_type": {
-				Type:        schema.TypeString,
-				Required:    true,
-				ForceNew:    true,
+				Type: schema.TypeString,
+				// Required: true,
+				Optional: true,
+				Computed: true,
+				ForceNew: true,
+				// DiffSuppressFunc: flex.ApplyOnce,
 				Description: "The Type of orchestrator cluster used in the service instance.",
 			},
 			"orchestrator_name": {
-				Type:        schema.TypeString,
-				Required:    true,
-				ForceNew:    true,
+				Type: schema.TypeString,
+				// Required: true,
+				Optional: true,
+				Computed: true,
+				ForceNew: true,
+				// DiffSuppressFunc: flex.ApplyOnce,
 				Description: "Username for the orchestrator management interface.",
 			},
 			"orchestrator_password": {
-				Type:        schema.TypeString,
-				Sensitive:   true,
-				ForceNew:    true,
-				Required:    true,
-				Description: "Password for the orchestrator management interface.",
+				Type:      schema.TypeString,
+				Sensitive: true,
+				ForceNew:  true,
+				// Required:         true,
+				Optional:         true,
+				Computed:         true,
+				DiffSuppressFunc: flex.ApplyOnce,
+				Description:      "Password for the orchestrator management interface.",
 			},
 			"orchestrator_workspace_id": {
-				Type:        schema.TypeString,
-				ForceNew:    true,
-				Required:    true,
+				Type:     schema.TypeString,
+				ForceNew: true,
+				// Required: true,
+				Optional: true,
+				Computed: true,
+				// DiffSuppressFunc: flex.ApplyOnce,
 				Description: "ID of the orchestrator workspace.",
 			},
 			"region_id": {
-				Type:        schema.TypeString,
-				ForceNew:    true,
-				Optional:    true,
+				Type:     schema.TypeString,
+				ForceNew: true,
+				Optional: true,
+				Computed: true,
+				// DiffSuppressFunc: flex.ApplyOnce,
 				Description: "Cloud region where the service instance is deployed.",
 			},
 			"resource_instance": {
-				Type:        schema.TypeString,
-				ForceNew:    true,
-				Optional:    true,
+				Type:     schema.TypeString,
+				ForceNew: true,
+				Optional: true,
+				Computed: true,
+				// DiffSuppressFunc: flex.ApplyOnce,
 				Description: "ID of the associated IBM Cloud resource instance.",
 			},
 			"secret": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				ForceNew:    true,
+				Type:     schema.TypeString,
+				Optional: true,
+				ForceNew: true,
+				Computed: true,
+				// DiffSuppressFunc: flex.ApplyOnce,
 				Description: "The Secret name or identifier used for retrieving credentials from Secrets Manager.",
 			},
 			"secret_group": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				ForceNew:    true,
+				Type:     schema.TypeString,
+				Optional: true,
+				ForceNew: true,
+				Computed: true,
+				// DiffSuppressFunc: flex.ApplyOnce,
 				Description: "The Secret group name in IBM Cloud Secrets Manager containing sensitive data for * the service instance.",
 			},
 			"ssh_key_name": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				ForceNew:    true,
+				Type:     schema.TypeString,
+				Optional: true,
+				ForceNew: true,
+				Computed: true,
+				// DiffSuppressFunc: flex.ApplyOnce,
 				Description: "The Name of the SSH key stored in the cloud provider.",
 			},
 			"standby_machine_type": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				ForceNew:    true,
+				Type:     schema.TypeString,
+				Optional: true,
+				ForceNew: true,
+				Computed: true,
+				// DiffSuppressFunc: flex.ApplyOnce,
 				Description: "The Machine type or flavor used for standby virtual machines.",
 			},
 			"standby_orchestrator_name": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				ForceNew:    true,
+				Type:     schema.TypeString,
+				Optional: true,
+				ForceNew: true,
+				Computed: true,
+				// DiffSuppressFunc: flex.ApplyOnce,
 				Description: "The Username for the standby orchestrator management interface.",
 			},
 			"standby_orchestrator_workspace_id": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				ForceNew:    true,
+				Type:     schema.TypeString,
+				Optional: true,
+				ForceNew: true,
+				Computed: true,
+				// DiffSuppressFunc: flex.ApplyOnce,
 				Description: "ID of the standby orchestrator workspace.",
 			},
 			"standby_tier": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				ForceNew:    true,
+				Type:     schema.TypeString,
+				Optional: true,
+				ForceNew: true,
+				Computed: true,
+				// DiffSuppressFunc: flex.ApplyOnce,
 				Description: "Tier of the standby service instance.",
 			},
 			"tier": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				ForceNew:    true,
+				Type:     schema.TypeString,
+				Optional: true,
+				ForceNew: true,
+				Computed: true,
+				// DiffSuppressFunc: flex.ApplyOnce,
 				Description: "Tier of the service instance.",
+			},
+			"standby_ssh_key_name": {
+				Type:     schema.TypeString,
+				Optional: true,
+				ForceNew: true,
+				Computed: true,
+				// DiffSuppressFunc: flex.ApplyOnce,
+				Description: "standy ssh key name of the service instance.",
+			},
+			"orchestrator_network_ids": {
+				Type:             schema.TypeList,
+				Optional:         true,
+				ForceNew:         true,
+				Computed:         true,
+				MaxItems:         10,
+				DiffSuppressFunc: flex.ApplyOnce,
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+					ValidateFunc: validation.All(
+						validation.StringLenBetween(36, 64),
+						validation.StringMatch(
+							regexp.MustCompile(`^[a-zA-Z0-9\-_]+$`),
+							"must contain only alphanumeric characters, hyphen, or underscore",
+						),
+					),
+				},
+				Description: "List of network IDs for primary orchestrator VM.",
+			},
+			"standby_orchestrator_network_ids": {
+				Type:             schema.TypeList,
+				Optional:         true,
+				ForceNew:         true,
+				Computed:         true,
+				MaxItems:         10,
+				DiffSuppressFunc: flex.ApplyOnce,
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+					ValidateFunc: validation.All(
+						validation.StringLenBetween(36, 64),
+						validation.StringMatch(
+							regexp.MustCompile(`^[a-zA-Z0-9\-_]+$`),
+							"must contain only alphanumeric characters, hyphen, or underscore",
+						),
+					),
+				},
+				Description: "List of network IDs for standby orchestrator VM.",
+			},
+			"managed_apikey": {
+				Type:             schema.TypeString,
+				Sensitive:        true,
+				ForceNew:         true,
+				Optional:         true,
+				DiffSuppressFunc: flex.ApplyOnce,
+				Description:      "APIKey used to manage the workloads by adding the PowerVS instances to the orchestrator.",
 			},
 		},
 	}
@@ -280,22 +387,46 @@ func resourceIbmPdrManagedrCreate(ctx context.Context, d *schema.ResourceData, m
 	if _, ok := d.GetOk("guid"); ok {
 		createManageDrOptions.SetGUID(d.Get("guid").(string))
 	}
-	if _, ok := d.GetOk("location_id"); ok {
+	if location_id, ok := d.GetOk("location_id"); ok {
+		if location_id.(string) == "" {
+			err = fmt.Errorf("location_id is a required parameter, please refer the documentation for required fields")
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_pdr_managedr", "create", "set-location_id").GetDiag()
+		}
 		createManageDrOptions.SetLocationID(d.Get("location_id").(string))
 	}
-	if _, ok := d.GetOk("machine_type"); ok {
+	if machine_type, ok := d.GetOk("machine_type"); ok {
+		if machine_type.(string) == "" {
+			err = fmt.Errorf("machine_type is a required parameter, please refer the documentation for required fields")
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_pdr_managedr", "create", "set-machine_type").GetDiag()
+		}
 		createManageDrOptions.SetMachineType(d.Get("machine_type").(string))
 	}
-	if _, ok := d.GetOk("orchestrator_location_type"); ok {
+	if orchestrator_location_type, ok := d.GetOk("orchestrator_location_type"); ok {
+		if orchestrator_location_type.(string) == "" {
+			err = fmt.Errorf("orchestrator_location_type is a required parameter, please refer the documentation for required fields")
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_pdr_managedr", "create", "set-orchestrator_location_type").GetDiag()
+		}
 		createManageDrOptions.SetOrchestratorLocationType(d.Get("orchestrator_location_type").(string))
 	}
-	if _, ok := d.GetOk("orchestrator_name"); ok {
+	if orchestrator_name, ok := d.GetOk("orchestrator_name"); ok {
+		if orchestrator_name.(string) == "" {
+			err = fmt.Errorf("orchestrator_name is a required parameter, please refer the documentation for required fields")
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_pdr_managedr", "create", "set-orchestrator_name").GetDiag()
+		}
 		createManageDrOptions.SetOrchestratorName(d.Get("orchestrator_name").(string))
 	}
-	if _, ok := d.GetOk("orchestrator_password"); ok {
+	if orchestrator_password, ok := d.GetOk("orchestrator_password"); ok {
+		if orchestrator_password.(string) == "" {
+			err = fmt.Errorf("orchestrator_password is a required parameter, please refer the documentation for required fields")
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_pdr_managedr", "create", "set-orchestrator_password").GetDiag()
+		}
 		createManageDrOptions.SetOrchestratorPassword(d.Get("orchestrator_password").(string))
 	}
-	if _, ok := d.GetOk("orchestrator_workspace_id"); ok {
+	if orchestrator_workspace_id, ok := d.GetOk("orchestrator_workspace_id"); ok {
+		if orchestrator_workspace_id.(string) == "" {
+			err = fmt.Errorf("orchestrator_workspace_id is a required parameter, please refer the documentation for required fields")
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_pdr_managedr", "create", "set-orchestrator_workspace_id").GetDiag()
+		}
 		createManageDrOptions.SetOrchestratorWorkspaceID(d.Get("orchestrator_workspace_id").(string))
 	}
 	if _, ok := d.GetOk("region_id"); ok {
@@ -325,6 +456,9 @@ func resourceIbmPdrManagedrCreate(ctx context.Context, d *schema.ResourceData, m
 	if _, ok := d.GetOk("ssh_key_name"); ok {
 		createManageDrOptions.SetSSHKeyName(d.Get("ssh_key_name").(string))
 	}
+	if _, ok := d.GetOk("standby_ssh_key_name"); ok {
+		createManageDrOptions.SetStandbySSHKeyName(d.Get("standby_ssh_key_name").(string))
+	}
 	if _, ok := d.GetOk("standby_machine_type"); ok {
 		createManageDrOptions.SetStandbyMachineType(d.Get("standby_machine_type").(string))
 	}
@@ -345,6 +479,25 @@ func resourceIbmPdrManagedrCreate(ctx context.Context, d *schema.ResourceData, m
 	}
 	if _, ok := d.GetOk("accepts_incomplete"); ok {
 		createManageDrOptions.SetAcceptsIncomplete(d.Get("accepts_incomplete").(bool))
+	}
+	if _, ok := d.GetOk("orchestrator_network_ids"); ok {
+		var orchestratorNetworkIds []string
+		for _, v := range d.Get("orchestrator_network_ids").([]interface{}) {
+			orchestratorNetworkIdsItem := v.(string)
+			orchestratorNetworkIds = append(orchestratorNetworkIds, orchestratorNetworkIdsItem)
+		}
+		createManageDrOptions.SetOrchestratorNetworkIds(orchestratorNetworkIds)
+	}
+	if _, ok := d.GetOk("standby_orchestrator_network_ids"); ok {
+		var standbyOrchestratorNetworkIds []string
+		for _, v := range d.Get("standby_orchestrator_network_ids").([]interface{}) {
+			standbyOrchestratorNetworkIdsItem := v.(string)
+			standbyOrchestratorNetworkIds = append(standbyOrchestratorNetworkIds, standbyOrchestratorNetworkIdsItem)
+		}
+		createManageDrOptions.SetStandbyOrchestratorNetworkIds(standbyOrchestratorNetworkIds)
+	}
+	if _, ok := d.GetOk("managed_apikey"); ok {
+		createManageDrOptions.SetManagedApikey(d.Get("managed_apikey").(string))
 	}
 
 	_, response, err := drAutomationServiceClient.CreateManageDrWithContext(ctx, createManageDrOptions)
@@ -525,6 +678,159 @@ func resourceIbmPdrManagedrRead(context context.Context, d *schema.ResourceData,
 	if err = d.Set("etag", response.Headers.Get("Etag")); err != nil {
 		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting etag: %s", err), "ibm_pdr_managedr", "read", "set-etag").GetDiag()
 	}
+	if !core.IsNil(serviceInstanceManageDr.LocationID) {
+		if err = d.Set("location_id", serviceInstanceManageDr.LocationID); err != nil {
+			err = fmt.Errorf("Error setting instance_id: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_pdr_managedr", "read", "set-location_id").GetDiag()
+		}
+	}
+	if !core.IsNil(serviceInstanceManageDr.MachineType) {
+		if err = d.Set("machine_type", serviceInstanceManageDr.MachineType); err != nil {
+			err = fmt.Errorf("Error setting instance_id: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_pdr_managedr", "read", "set-machine_type").GetDiag()
+		}
+	}
+	if !core.IsNil(serviceInstanceManageDr.OrchestratorHa) {
+		if err = d.Set("orchestrator_ha", serviceInstanceManageDr.OrchestratorHa); err != nil {
+			err = fmt.Errorf("Error setting instance_id: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_pdr_managedr", "read", "set-orchestrator_ha").GetDiag()
+		}
+	}
+	if !core.IsNil(serviceInstanceManageDr.OrchestratorLocationType) {
+		if err = d.Set("orchestrator_location_type", serviceInstanceManageDr.OrchestratorLocationType); err != nil {
+			err = fmt.Errorf("Error setting instance_id: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_pdr_managedr", "read", "set-orchestrator_location_type").GetDiag()
+		}
+	}
+	if !core.IsNil(serviceInstanceManageDr.OrchestratorName) {
+		if err = d.Set("orchestrator_name", serviceInstanceManageDr.OrchestratorName); err != nil {
+			err = fmt.Errorf("Error setting instance_id: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_pdr_managedr", "read", "set-orchestrator_name").GetDiag()
+		}
+	}
+	if !core.IsNil(serviceInstanceManageDr.OrchestratorWorkspaceID) {
+		if err = d.Set("orchestrator_workspace_id", serviceInstanceManageDr.OrchestratorWorkspaceID); err != nil {
+			err = fmt.Errorf("Error setting instance_id: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_pdr_managedr", "read", "set-orchestrator_workspace_id").GetDiag()
+		}
+	}
+	if !core.IsNil(serviceInstanceManageDr.ProxyIP) {
+		if err = d.Set("proxy_ip", serviceInstanceManageDr.ProxyIP); err != nil {
+			err = fmt.Errorf("Error setting instance_id: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_pdr_managedr", "read", "set-proxy_ip").GetDiag()
+		}
+	}
+	if !core.IsNil(serviceInstanceManageDr.RegionID) {
+		if err = d.Set("region_id", serviceInstanceManageDr.RegionID); err != nil {
+			err = fmt.Errorf("Error setting instance_id: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_pdr_managedr", "read", "set-region_id").GetDiag()
+		}
+	}
+	if !core.IsNil(serviceInstanceManageDr.ResourceInstance) {
+		if err = d.Set("resource_instance", serviceInstanceManageDr.ResourceInstance); err != nil {
+			err = fmt.Errorf("Error setting instance_id: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_pdr_managedr", "read", "set-resource_instance").GetDiag()
+		}
+	}
+	if !core.IsNil(serviceInstanceManageDr.SSHKeyName) {
+		if err = d.Set("ssh_key_name", serviceInstanceManageDr.SSHKeyName); err != nil {
+			err = fmt.Errorf("Error setting instance_id: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_pdr_managedr", "read", "set-ssh_key_name").GetDiag()
+		}
+	}
+	if !core.IsNil(serviceInstanceManageDr.Secret) {
+		if err = d.Set("secret", serviceInstanceManageDr.Secret); err != nil {
+			err = fmt.Errorf("Error setting instance_id: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_pdr_managedr", "read", "set-secret").GetDiag()
+		}
+	}
+	if !core.IsNil(serviceInstanceManageDr.SecretGroup) {
+		if err = d.Set("secret_group", serviceInstanceManageDr.SecretGroup); err != nil {
+			err = fmt.Errorf("Error setting instance_id: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_pdr_managedr", "read", "set-secret_group").GetDiag()
+		}
+	}
+	if !core.IsNil(serviceInstanceManageDr.StandbyMachineType) {
+		if err = d.Set("standby_machine_type", serviceInstanceManageDr.StandbyMachineType); err != nil {
+			err = fmt.Errorf("Error setting instance_id: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_pdr_managedr", "read", "set-standby_machine_type").GetDiag()
+		}
+	}
+	if !core.IsNil(serviceInstanceManageDr.StandbyOrchestratorName) {
+		if err = d.Set("standby_orchestrator_name", serviceInstanceManageDr.StandbyOrchestratorName); err != nil {
+			err = fmt.Errorf("Error setting instance_id: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_pdr_managedr", "read", "set-standby_orchestrator_name").GetDiag()
+		}
+	}
+	if !core.IsNil(serviceInstanceManageDr.StandbyOrchestratorWorkspaceID) {
+		if err = d.Set("standby_orchestrator_workspace_id", serviceInstanceManageDr.StandbyOrchestratorWorkspaceID); err != nil {
+			err = fmt.Errorf("Error setting instance_id: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_pdr_managedr", "read", "set-standby_orchestrator_workspace_id").GetDiag()
+		}
+	}
+	if !core.IsNil(serviceInstanceManageDr.StandbySSHKeyName) {
+		if err = d.Set("standby_ssh_key_name", serviceInstanceManageDr.StandbySSHKeyName); err != nil {
+			err = fmt.Errorf("Error setting instance_id: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_pdr_managedr", "read", "set-standby_ssh_key_name").GetDiag()
+		}
+	}
+	if !core.IsNil(serviceInstanceManageDr.StandbyTier) {
+		if err = d.Set("standby_tier", serviceInstanceManageDr.StandbyTier); err != nil {
+			err = fmt.Errorf("Error setting instance_id: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_pdr_managedr", "read", "set-standby_tier").GetDiag()
+		}
+	}
+	if !core.IsNil(serviceInstanceManageDr.TenantName) {
+		if err = d.Set("tenant_name", serviceInstanceManageDr.TenantName); err != nil {
+			err = fmt.Errorf("Error setting instance_id: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_pdr_managedr", "read", "set-tenant_name").GetDiag()
+		}
+	}
+	if !core.IsNil(serviceInstanceManageDr.Tier) {
+		if err = d.Set("tier", serviceInstanceManageDr.Tier); err != nil {
+			err = fmt.Errorf("Error setting instance_id: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_pdr_managedr", "read", "set-tier").GetDiag()
+		}
+	}
+
+	// // ---- Call Last Operation API ----
+	// lastOpOpts := &drautomationservicev1.GetLastOperationOptions{
+	// 	InstanceID: core.StringPtr(instanceID),
+	// }
+
+	// lastOpResp, _, err := drAutomationServiceClient.GetLastOperation(lastOpOpts)
+	// if err != nil {
+	// 	return diag.FromErr(err)
+	// }
+
+	// // ---- Call DR Summary API ----
+	// drSummaryOpts := &drautomationservicev1.GetDrSummaryOptions{
+	// 	InstanceID: core.StringPtr(instanceID),
+	// }
+
+	// _, _, err = drAutomationServiceClient.GetDrSummary(drSummaryOpts)
+	// if err != nil {
+	// 	log.Printf("[DEBUG] skipping dr_summary during import/read: %v", err)
+	// }
+
+	// // ---- Set fields from lastOperation ----
+	// d.Set("crn", lastOpResp.CRN)
+	// d.Set("deployment_name", lastOpResp.DeploymentName)
+	// d.Set("primary_ip_address", lastOpResp.PrimaryIPAddress)
+	// d.Set("standby_ip_address", lastOpResp.StandbyIPAddress)
+	// d.Set("status", lastOpResp.Status)
+
+	// // ---- Set service_details from drSummary ----
+	// if drSummaryResp.ServiceDetails != nil {
+	// 	serviceDetails := map[string]interface{}{
+	// 		"crn":             drSummaryResp.ServiceDetails.CRN,
+	// 		"deployment_name": drSummaryResp.ServiceDetails.DeploymentName,
+	// 		"plan_name":       drSummaryResp.ServiceDetails.PlanName,
+	// 		"status":          drSummaryResp.ServiceDetails.Status,
+	// 	}
+
+	// 	d.Set("service_details", []interface{}{serviceDetails})
+	// }
 
 	return nil
 }

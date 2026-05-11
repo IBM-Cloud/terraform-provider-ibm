@@ -60,6 +60,7 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/partnercentersell"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/platformnotifications"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/power"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/powerhaautomationservice"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/project"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/pushnotification"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/registry"
@@ -630,6 +631,8 @@ func Provider() *schema.Provider {
 
 			"ibm_is_share_mount_target":          vpc.DataSourceIBMIsShareTarget(),
 			"ibm_is_share_mount_targets":         vpc.DataSourceIBMIsShareTargets(),
+			"ibm_is_volume_job":                  vpc.DataSourceIBMIsVolumeJob(),
+			"ibm_is_volume_jobs":                 vpc.DataSourceIBMIsVolumeJobs(),
 			"ibm_is_volume":                      vpc.DataSourceIBMISVolume(),
 			"ibm_is_volumes":                     vpc.DataSourceIBMIsVolumes(),
 			"ibm_is_volume_profile":              vpc.DataSourceIBMISVolumeProfile(),
@@ -1144,6 +1147,20 @@ func Provider() *schema.Provider {
 			"ibm_logs_router_routes":  logsrouter.DataSourceIBMLogsRouterRoutes(),
 
 			// DR Automation Service
+			// Stable (no change needed)
+			"ibm_pdr_last_operation": drautomationservice.DataSourceIBMPdrLastOperation(),
+
+			// NEW Data Sources
+			"ibm_pdr_dr_summary_response": drautomationservice.DataSourceIBMPdrDrSummaryResponse(),
+			"ibm_pdr_powervs_workspaces":  drautomationservice.DataSourceIBMPdrPowervsWorkspace(),
+			"ibm_pdr_event":               drautomationservice.DataSourceIBMPdrEvent(),
+			"ibm_pdr_events":              drautomationservice.DataSourceIBMPdrEvents(),
+			"ibm_pdr_dr_locations":        drautomationservice.DataSourceIBMPdrDrLocations(),
+			"ibm_pdr_machine_types":       drautomationservice.DataSourceIBMPdrMachineTypes(),
+			"ibm_pdr_managed_vm_list":     drautomationservice.DataSourceIBMPdrManagedVMList(),
+			"ibm_pdr_grs_location_pairs":  drautomationservice.DataSourceIBMPdrGrsLocationPairs(),
+
+			// DEPRECATED Data Sources
 			"ibm_pdr_get_dr_summary_response": drautomationservice.DataSourceIBMPdrGetDrSummaryResponse(),
 			"ibm_pdr_get_powervs_workspace":   drautomationservice.DataSourceIBMPdrGetPowervsWorkspace(),
 			"ibm_pdr_get_event":               drautomationservice.DataSourceIBMPdrGetEvent(),
@@ -1151,8 +1168,14 @@ func Provider() *schema.Provider {
 			"ibm_pdr_get_dr_locations":        drautomationservice.DataSourceIBMPdrGetDrLocations(),
 			"ibm_pdr_get_machine_types":       drautomationservice.DataSourceIBMPdrGetMachineTypes(),
 			"ibm_pdr_get_managed_vm_list":     drautomationservice.DataSourceIBMPdrGetManagedVMList(),
-			"ibm_pdr_last_operation":          drautomationservice.DataSourceIBMPdrLastOperation(),
 			"ibm_pdr_get_grs_location_pairs":  drautomationservice.DataSourceIBMPdrGetGrsLocationPairs(),
+
+			// PHA service
+			"ibm_pha_last_operation":      powerhaautomationservice.DataSourceIBMPhaLastOperation(),
+			"ibm_pha_supported_locations": powerhaautomationservice.DataSourceIBMPhaSupportedLocation(),
+			"ibm_pha_powervs_workspaces":  powerhaautomationservice.DataSourceIBMPhaPowervsWorkspace(),
+			"ibm_pha_cluster_nodes":       powerhaautomationservice.DataSourceIBMPhaClusterNodes(),
+			"ibm_pha_deployment":          powerhaautomationservice.DataSourceIBMPhaDeployment(),
 		},
 
 		ResourcesMap: map[string]*schema.Resource{
@@ -1175,6 +1198,7 @@ func Provider() *schema.Provider {
 			"ibm_backup_recovery_manager_create_cluster_upgrades":                backuprecovery.AddInstanceFields(backuprecovery.ResourceIbmBackupRecoveryManagerCreateClusterUpgrades()),
 			"ibm_backup_recovery_manager_update_cluster_upgrades":                backuprecovery.AddInstanceFields(backuprecovery.ResourceIbmBackupRecoveryManagerUpdateClusterUpgrades()),
 			"ibm_backup_recovery_manager_cancel_cluster_upgrades":                backuprecovery.AddInstanceFields(backuprecovery.ResourceIbmBackupRecoveryManagerCancelClusterUpgrades()),
+			"ibm_backup_recovery_protection_source_refresh":                      backuprecovery.AddInstanceFields(backuprecovery.ResourceIbmBackupRecoveryProtectionSourceRefresh()),
 
 			"ibm_app":                        cloudfoundry.ResourceIBMApp(),
 			"ibm_app_domain_private":         cloudfoundry.ResourceIBMAppDomainPrivate(),
@@ -1441,6 +1465,8 @@ func Provider() *schema.Provider {
 			"ibm_is_virtual_network_interface_floating_ip": vpc.ResourceIBMIsVirtualNetworkInterfaceFloatingIP(),
 			"ibm_is_virtual_network_interface_ip":          vpc.ResourceIBMIsVirtualNetworkInterfaceIP(),
 			"ibm_is_snapshot_consistency_group":            vpc.ResourceIBMIsSnapshotConsistencyGroup(),
+			"ibm_is_volume_job_cancel":                     vpc.ResourceIBMIsVolumeJobCancel(),
+			"ibm_is_volume_job":                            vpc.ResourceIBMIsVolumeJob(),
 			"ibm_is_volume":                                vpc.ResourceIBMISVolume(),
 			"ibm_is_vpn_gateway":                           vpc.ResourceIBMISVPNGateway(),
 			"ibm_is_vpn_gateway_connection":                vpc.ResourceIBMISVPNGatewayConnection(),
@@ -1853,6 +1879,11 @@ func Provider() *schema.Provider {
 			"ibm_pdr_managedr":        drautomationservice.ResourceIbmPdrManagedr(),
 			"ibm_pdr_validate_apikey": drautomationservice.ResourceIBMPdrValidateApikey(),
 
+			// // Added for Pha Dr automation service
+			"ibm_pha_api_key":       powerhaautomationservice.ResourceIBMPhaAPIKey(),
+			"ibm_pha_cluster_nodes": powerhaautomationservice.ResourceIBMPhaClusterNodes(),
+			"ibm_pha_deployment":    powerhaautomationservice.ResourceIBMPhaDeployment(),
+
 			// Platform Notifications
 			"ibm_notification_distribution_list_destination": platformnotifications.ResourceIbmNotificationDistributionListDestination(),
 		},
@@ -2043,6 +2074,9 @@ func Validator() validate.ValidatorDict {
 				"ibm_iam_account_settings_template_assignment":   iamidentity.ResourceIBMAccountSettingsTemplateAssignmentValidator(),
 				"ibm_iam_account_settings":                       iamidentity.ResourceIBMIAMAccountSettingsValidator(),
 				"ibm_iam_custom_role":                            iampolicy.ResourceIBMIAMCustomRoleValidator(),
+				"ibm_pha_api_key":                                powerhaautomationservice.ResourceIBMPhaAPIKeyValidator(),
+				"ibm_pha_deployment":                             powerhaautomationservice.ResourceIBMPhaClusterNodesValidator(),
+				"ibm_pha_cluster_nodes":                          powerhaautomationservice.ResourceIBMPhaDeploymentValidator(),
 				"ibm_cis_healthcheck":                            cis.ResourceIBMCISHealthCheckValidator(),
 				"ibm_cis_rate_limit":                             cis.ResourceIBMCISRateLimitValidator(),
 				"ibm_cis":                                        cis.ResourceIBMCISValidator(),
@@ -2190,6 +2224,8 @@ func Validator() validate.ValidatorDict {
 				"ibm_is_subnet":                                      vpc.ResourceIBMISSubnetValidator(),
 				"ibm_is_subnet_reserved_ip":                          vpc.ResourceIBMISSubnetReservedIPValidator(),
 				"ibm_is_subnet_reserved_ip_patch":                    vpc.ResourceIBMISSubnetReservedIPPatchValidator(),
+				"ibm_is_volume_job_cancel":                           vpc.ResourceIBMIsVolumeJobCancelValidator(),
+				"ibm_is_volume_job":                                  vpc.ResourceIBMIsVolumeJobValidator(),
 				"ibm_is_volume":                                      vpc.ResourceIBMISVolumeValidator(),
 				"ibm_is_virtual_network_interface":                   vpc.ResourceIBMIsVirtualNetworkInterfaceValidator(),
 				"ibm_is_address_prefix":                              vpc.ResourceIBMISAddressPrefixValidator(),

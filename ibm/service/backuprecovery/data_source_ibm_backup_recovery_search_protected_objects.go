@@ -1293,7 +1293,7 @@ func dataSourceIbmBackupRecoverySearchProtectedObjectsRead(context context.Conte
 	}
 
 	endpointType := d.Get("endpoint_type").(string)
-	instanceId, region := getInstanceIdAndRegion(d)
+	instanceId, region, serviceName := getInstanceIdAndRegion(d)
 	if instanceId != "" && region != "" {
 		bmxsession, err := meta.(conns.ClientSession).BluemixSession()
 		if err != nil {
@@ -1301,7 +1301,7 @@ func dataSourceIbmBackupRecoverySearchProtectedObjectsRead(context context.Conte
 			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 			return tfErr.GetDiag()
 		}
-		backupRecoveryClient = getClientWithInstanceEndpoint(backupRecoveryClient, bmxsession, instanceId, region, endpointType)
+		backupRecoveryClient = getClientWithInstanceEndpoint(backupRecoveryClient, bmxsession, instanceId, region, endpointType, serviceName)
 	}
 
 	searchProtectedObjectsOptions := &backuprecoveryv1.SearchProtectedObjectsOptions{}

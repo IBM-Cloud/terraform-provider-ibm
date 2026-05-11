@@ -183,6 +183,7 @@ func ResourceIBMISEndpointGateway() *schema.Resource {
 						isVirtualEndpointGatewayIPsSubnet: {
 							Type:        schema.TypeString,
 							Optional:    true,
+							Computed:    true,
 							Description: "The Subnet id",
 						},
 						isVirtualEndpointGatewayIPsResourceType: {
@@ -859,7 +860,10 @@ func flattenIPs(ipsList []vpcv1.ReservedIPReference) interface{} {
 		ips[isVirtualEndpointGatewayIPsName] = *item.Name
 		ips[isVirtualEndpointGatewayIPsResourceType] = *item.ResourceType
 		ips[isVirtualEndpointGatewayIPsAddress] = *item.Address
-
+		parts := strings.Split(*item.Href, "/")
+		if len(parts) > 5 {
+			ips[isVirtualEndpointGatewayIPsSubnet] = parts[5]
+		}
 		ipsListOutput = append(ipsListOutput, ips)
 	}
 	return ipsListOutput
