@@ -14,9 +14,9 @@ import (
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/powerhaautomationservice"
+	"github.com/IBM/dra-go-sdk/powerhaautomationservicev1"
 	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/stretchr/testify/assert"
-	"github.com/IBM/dra-go-sdk/powerhaautomationservicev1"
 )
 
 func TestAccIBMPhaDeploymentBasic(t *testing.T) {
@@ -59,7 +59,7 @@ func TestAccIBMPhaDeploymentAllArgs(t *testing.T) {
 		CheckDestroy: testAccCheckIBMPhaDeploymentDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIBMPhaDeploymentConfig(instanceID, acceptLanguage, ifNoneMatch, apiKey, primaryLocation, primaryWorkspace, secondaryLocation, secondaryWorkspace),
+				Config: testAccCheckIBMPhaDeploymentConfig(instanceID, acceptLanguage, ifNoneMatch, primaryLocation, primaryWorkspace, secondaryLocation, secondaryWorkspace),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMPhaDeploymentExists("ibm_pha_deployment.pha_deployment_instance", conf),
 					resource.TestCheckResourceAttr("ibm_pha_deployment.pha_deployment_instance", "instance_id", instanceID),
@@ -90,7 +90,7 @@ func testAccCheckIBMPhaDeploymentConfigBasic(instanceID string, primaryWorkspace
 	`, instanceID, primaryWorkspace)
 }
 
-func testAccCheckIBMPhaDeploymentConfig(instanceID string, acceptLanguage string, ifNoneMatch string, apiKey string, primaryLocation string, primaryWorkspace string, secondaryLocation string, secondaryWorkspace string) string {
+func testAccCheckIBMPhaDeploymentConfig(instanceID string, acceptLanguage string, ifNoneMatch string, primaryLocation string, primaryWorkspace string, secondaryLocation string, secondaryWorkspace string) string {
 	return fmt.Sprintf(`
 
 		resource "ibm_pha_deployment" "pha_deployment_instance" {
@@ -102,7 +102,7 @@ func testAccCheckIBMPhaDeploymentConfig(instanceID string, acceptLanguage string
 			secondary_location = "%s"
 			secondary_workspace = "%s"
 		}
-	`, instanceID, acceptLanguage, ifNoneMatch, apiKey, primaryLocation, primaryWorkspace, secondaryLocation, secondaryWorkspace)
+	`, instanceID, acceptLanguage, ifNoneMatch, primaryLocation, primaryWorkspace, secondaryLocation, secondaryWorkspace)
 }
 
 func testAccCheckIBMPhaDeploymentExists(n string, obj powerhaautomationservicev1.PhaDeploymentResponse) resource.TestCheckFunc {

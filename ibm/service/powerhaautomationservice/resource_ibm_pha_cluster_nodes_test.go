@@ -13,9 +13,9 @@ import (
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/powerhaautomationservice"
+	"github.com/IBM/dra-go-sdk/powerhaautomationservicev1"
 	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/stretchr/testify/assert"
-	"github.com/IBM/dra-go-sdk/powerhaautomationservicev1"
 )
 
 func TestAccIBMPhaClusterNodesBasic(t *testing.T) {

@@ -130,6 +130,7 @@ import (
 	"github.com/IBM/continuous-delivery-go-sdk/v2/cdtektonpipelinev2"
 	"github.com/IBM/continuous-delivery-go-sdk/v2/cdtoolchainv2"
 	"github.com/IBM/dra-go-sdk/drautomationservicev1"
+	"github.com/IBM/dra-go-sdk/powerhaautomationservicev1"
 	"github.com/IBM/event-notifications-go-admin-sdk/eventnotificationsv1"
 	"github.com/IBM/eventstreams-go-sdk/pkg/adminrestv1"
 	"github.com/IBM/eventstreams-go-sdk/pkg/schemaregistryv1"
@@ -139,7 +140,6 @@ import (
 	"github.com/IBM/platform-services-go-sdk/partnercentersellv1"
 	scc "github.com/IBM/scc-go-sdk/v5/securityandcompliancecenterapiv3"
 	"github.com/IBM/secrets-manager-go-sdk/v2/secretsmanagerv2"
-	"github.com/IBM/dra-go-sdk/powerhaautomationservicev1"
 )
 
 // RetryAPIDelay - retry api delay
