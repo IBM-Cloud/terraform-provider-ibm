@@ -100,6 +100,7 @@ import (
 	"github.com/apache/openwhisk-client-go/whisk"
 	jwt "github.com/golang-jwt/jwt/v5"
 	slsession "github.com/softlayer/softlayer-go/session"
+	kpCryptoUnit "github.ibm.com/Timothy-Yao/keyprotect-st-go-client-public/keyprotect_dedicated"
 
 	"github.com/IBM/configuration-aggregator-go-sdk/configurationaggregatorv1"
 
@@ -428,6 +429,9 @@ type clientSession struct {
 
 	kmsErr error
 	kmsAPI *kp.API
+
+	kmsCryptoErr error
+	kmsCryptoAPI *kpCryptoUnit.KeyProtectCryptoUnitAPI
 
 	hpcsEndpointErr error
 	hpcsEndpointAPI hpcs.HPCSV2
@@ -954,6 +958,10 @@ func (sess clientSession) KeyManagementAPI() (*kp.Client, error) {
 		return kpClient, nil
 	}
 	return sess.kmsAPI, sess.kmsErr
+}
+
+func (sess clientSession) KeyManagementCryptoUnitAPI() (*kpCryptoUnit.KeyProtectCryptoUnitAPI, error) {
+	return sess.kmsCryptoAPI, sess.kmsCryptoErr
 }
 
 func (sess clientSession) VpcV1API() (*vpc.VpcV1, error) {
@@ -2031,7 +2039,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 		})
 	}
 
-	//Usage Reports Service Client
+	// Usage Reports Service Client
 	usageReportsURL := usagereportsv4.DefaultServiceURL
 	if c.Visibility == "private" {
 		if c.Region == "us-south" || c.Region == "us-east" {
@@ -2366,7 +2374,6 @@ func (c *Config) ClientSession() (interface{}, error) {
 	}
 	if c.Visibility == "private" || c.Visibility == "public-and-private" {
 		containerRegistryClientURL = strings.Replace(containerRegistryClientURL, "https://", "https://private.", 1)
-
 	}
 	if fileMap != nil && c.Visibility != "public-and-private" {
 		containerRegistryClientURL = fileFallBack(fileMap, c.Visibility, "IBMCLOUD_CR_API_ENDPOINT", c.Region, containerRegistryClientURL)
@@ -2751,7 +2758,8 @@ func (c *Config) ClientSession() (interface{}, error) {
 	if session.cisZonesErr != nil {
 		session.cisZonesErr = fmt.Errorf(
 			"Error occured while configuring CIS Zones service: %s",
-			session.cisZonesErr)
+			session.cisZonesErr,
+		)
 	}
 	if session.cisZonesV1Client != nil && session.cisZonesV1Client.Service != nil {
 		session.cisZonesV1Client.Service.EnableRetries(c.RetryCount, c.RetryDelay)
@@ -2789,7 +2797,8 @@ func (c *Config) ClientSession() (interface{}, error) {
 	if session.cisDNSBulkErr != nil {
 		session.cisDNSBulkErr = fmt.Errorf(
 			"Error occured while configuration CIS DNS bulk service : %s",
-			session.cisDNSBulkErr)
+			session.cisDNSBulkErr,
+		)
 	}
 	if session.cisDNSRecordBulkClient != nil && session.cisDNSRecordBulkClient.Service != nil {
 		session.cisDNSRecordBulkClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
@@ -2881,7 +2890,8 @@ func (c *Config) ClientSession() (interface{}, error) {
 	if session.cisRLErr != nil {
 		session.cisRLErr = fmt.Errorf(
 			"Error occured while cofiguring CIS Zone Rate Limit service: %s",
-			session.cisRLErr)
+			session.cisRLErr,
+		)
 	}
 	if session.cisRLClient != nil && session.cisRLClient.Service != nil {
 		session.cisRLClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
@@ -2937,7 +2947,8 @@ func (c *Config) ClientSession() (interface{}, error) {
 	if session.cisPageRuleErr != nil {
 		session.cisPageRuleErr = fmt.Errorf(
 			"Error occured while cofiguring CIS Page Rule service: %s",
-			session.cisPageRuleErr)
+			session.cisPageRuleErr,
+		)
 	}
 	if session.cisPageRuleClient != nil && session.cisPageRuleClient.Service != nil {
 		session.cisPageRuleClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
@@ -3187,7 +3198,8 @@ func (c *Config) ClientSession() (interface{}, error) {
 	if session.cisWAFRuleErr != nil {
 		session.cisWAFRuleErr = fmt.Errorf(
 			"Error occured while configuring CIS WAF Rules service: %s",
-			session.cisWAFRuleErr)
+			session.cisWAFRuleErr,
+		)
 	}
 	if session.cisWAFRuleClient != nil && session.cisWAFRuleClient.Service != nil {
 		session.cisWAFRuleClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
@@ -3335,7 +3347,8 @@ func (c *Config) ClientSession() (interface{}, error) {
 	if session.cisOriginAuthPullErr != nil {
 		session.cisOriginAuthPullErr = fmt.Errorf(
 			"Error occured while configuring CIS Authenticated Origin Pullservice: %s",
-			session.cisOriginAuthPullErr)
+			session.cisOriginAuthPullErr,
+		)
 	}
 	if session.cisOriginAuthClient != nil && session.cisOriginAuthClient.Service != nil {
 		session.cisOriginAuthClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)

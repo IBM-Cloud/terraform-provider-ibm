@@ -236,6 +236,8 @@ replace github.com/hashicorp/vault => github.com/hashicorp/vault v1.18.2
 
 replace github.com/hashicorp/vault/api/auth/approle => github.com/hashicorp/vault/api/auth/approle v0.8.0
 
+replace github.ibm.com/Timothy-Yao/keyprotect-st-go-client-public => /Users/timothyyao/workspace/Timothy-Yao-IBM/keyprotect-st-go-client/public
+
 exclude (
 	github.com/kubernetes-incubator/external-storage v0.0.0-00010101000000-000000000000
 	github.com/kubernetes-incubator/external-storage v0.20.4-openstorage-rc2
