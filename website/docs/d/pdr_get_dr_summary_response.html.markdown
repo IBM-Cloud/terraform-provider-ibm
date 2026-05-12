@@ -10,6 +10,8 @@ subcategory: "DrAutomation Service"
 
 Retrieves the disaster recovery (DR) summary details for the specified service instance, including key configuration, status information and managed vm details.
 
+~> **This data source is deprecated and will be removed in the next major version. Use `ibm_pdr_dr_summary_response` instead.**
+
 ## Example Usage
 
 ```hcl
@@ -56,6 +58,8 @@ Nested schema for **orchestrator_details**:
 	* `standby_orchestrator_workspace_name` - (String) The name of the standby orchestrator workspace.
 	* `transit_gateway_name` - (String) The name of the transit gateway.
 	* `vpc_name` - (String) The name of the VPC.
+	* `api_key` - (String) api key.  
+	* `standby_ssh_key_name` - (String) SSH key name used for the standby orchestrator.
 * `service_details` - (List) Contains details about the DR automation service.
 Nested schema for **service_details**:
 	* `crn` - (String) The deployment crn.
@@ -72,3 +76,4 @@ Nested schema for **service_details**:
 	* `standby_orchestrator_dashboard_url` - (String) The Standby Orchestrator Dashboard URL.
 	* `standby_status` - (String) The standby orchestrator current status.
 	* `status` - (String) The Status of the service.
+	

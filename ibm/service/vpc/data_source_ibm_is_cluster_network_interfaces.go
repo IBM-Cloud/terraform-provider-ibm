@@ -83,7 +83,7 @@ func DataSourceIBMIsClusterNetworkInterfaces() *schema.Resource {
 									"code": &schema.Schema{
 										Type:        schema.TypeString,
 										Computed:    true,
-										Description: "A reason code for this lifecycle state:- `internal_error`: internal error (contact IBM support)- `resource_suspended_by_provider`: The resource has been suspended (contact IBM  support)The enumerated values for this property may[expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) in the future.",
+										Description: "A reason code for this lifecycle state:- `internal_error`: internal error (contact IBM support)- `resource_suspended_by_provider`: The resource has been suspended (contact IBM  support)The enumerated values for this property may [expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) in the future.",
 									},
 									"message": &schema.Schema{
 										Type:        schema.TypeString,
@@ -164,7 +164,7 @@ func DataSourceIBMIsClusterNetworkInterfaces() *schema.Resource {
 						// "protocol_state_filtering_mode": &schema.Schema{
 						// 	Type:        schema.TypeString,
 						// 	Computed:    true,
-						// 	Description: "The protocol state filtering mode used for this cluster network interface.Protocol state filtering monitors each network connection flowing over this cluster network interface, and drops any packets that are invalid based on the current connection state and protocol. See [Protocol state filtering mode](https://cloud.ibm.com/docs/vpc?topic=vpc-vni-about#protocol-state-filtering) for more information.The enumerated values for this property may[expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) in the future.",
+						// 	Description: "The protocol state filtering mode used for this cluster network interface.Protocol state filtering monitors each network connection flowing over this cluster network interface, and drops any packets that are invalid based on the current connection state and protocol. See [Protocol state filtering mode](https://cloud.ibm.com/docs/vpc?topic=vpc-vni-about#protocol-state-filtering) for more information.The enumerated values for this property may [expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) in the future.",
 						// },
 						"resource_type": &schema.Schema{
 							Type:        schema.TypeString,
@@ -216,7 +216,7 @@ func DataSourceIBMIsClusterNetworkInterfaces() *schema.Resource {
 						"target": &schema.Schema{
 							Type:        schema.TypeList,
 							Computed:    true,
-							Description: "The target of this cluster network interface.If absent, this cluster network interface is not attached to a target.The resources supported by this property may[expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) in the future.",
+							Description: "The target of this cluster network interface.If absent, this cluster network interface is not attached to a target.The resources supported by this property may [expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) in the future.",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"href": &schema.Schema{

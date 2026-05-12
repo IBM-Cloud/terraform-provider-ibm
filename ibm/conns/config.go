@@ -130,6 +130,7 @@ import (
 	"github.com/IBM/continuous-delivery-go-sdk/v2/cdtektonpipelinev2"
 	"github.com/IBM/continuous-delivery-go-sdk/v2/cdtoolchainv2"
 	"github.com/IBM/dra-go-sdk/drautomationservicev1"
+	"github.com/IBM/dra-go-sdk/powerhaautomationservicev1"
 	"github.com/IBM/event-notifications-go-admin-sdk/eventnotificationsv1"
 	"github.com/IBM/eventstreams-go-sdk/pkg/adminrestv1"
 	"github.com/IBM/eventstreams-go-sdk/pkg/schemaregistryv1"
@@ -344,6 +345,7 @@ type ClientSession interface {
 	SdsaasV1() (*sdsaasv1.SdsaasV1, error)
 	DrAutomationServiceV1() (*drautomationservicev1.DrAutomationServiceV1, error)
 	PlatformNotificationsV1() (*platformnotificationsv1.PlatformNotificationsV1, error)
+	PowerhaAutomationServiceV1() (*powerhaautomationservicev1.PowerhaAutomationServiceV1, error)
 }
 
 type clientSession struct {
@@ -737,6 +739,10 @@ type clientSession struct {
 	// Platform Notifications
 	platformNotificationsClient    *platformnotificationsv1.PlatformNotificationsV1
 	platformNotificationsClientErr error
+
+	// pha automation
+	powerhaAutomationServiceClient    *powerhaautomationservicev1.PowerhaAutomationServiceV1
+	powerhaAutomationServiceClientErr error
 }
 
 // Usage Reports
@@ -1083,6 +1089,11 @@ func (sess clientSession) CisSSLClientSession() (*cissslv1.SslCertificateApiV1, 
 // DrAutomation Service
 func (session clientSession) DrAutomationServiceV1() (*drautomationservicev1.DrAutomationServiceV1, error) {
 	return session.drAutomationServiceClient, session.drAutomationServiceClientErr
+}
+
+// PowerhaAutomation Service
+func (session clientSession) PowerhaAutomationServiceV1() (*powerhaautomationservicev1.PowerhaAutomationServiceV1, error) {
+	return session.powerhaAutomationServiceClient, session.powerhaAutomationServiceClientErr
 }
 
 // CIS WAF Packages
@@ -2354,10 +2365,8 @@ func (c *Config) ClientSession() (interface{}, error) {
 		containerRegistryClientURL = containerregistryv1.DefaultServiceURL
 	}
 	if c.Visibility == "private" || c.Visibility == "public-and-private" {
-		containerRegistryClientURL, err = GetPrivateServiceURLForRegion(c.Region)
-		if err != nil {
-			containerRegistryClientURL, _ = GetPrivateServiceURLForRegion("global")
-		}
+		containerRegistryClientURL = strings.Replace(containerRegistryClientURL, "https://", "https://private.", 1)
+
 	}
 	if fileMap != nil && c.Visibility != "public-and-private" {
 		containerRegistryClientURL = fileFallBack(fileMap, c.Visibility, "IBMCLOUD_CR_API_ENDPOINT", c.Region, containerRegistryClientURL)
@@ -3611,6 +3620,27 @@ func (c *Config) ClientSession() (interface{}, error) {
 			})
 		} else {
 			session.drAutomationServiceClientErr = fmt.Errorf("error occurred while constructing 'DrAutomation Service' service client: %q", err)
+		}
+	}
+
+	// Construct an instance of the 'PowerhaAutomation Service' service.
+	if session.powerhaAutomationServiceClientErr == nil {
+		// Construct the service options.
+		powerhaAutomationServiceClientOptions := &powerhaautomationservicev1.PowerhaAutomationServiceV1Options{
+			Authenticator: authenticator,
+		}
+
+		// Construct the service client.
+		session.powerhaAutomationServiceClient, err = powerhaautomationservicev1.NewPowerhaAutomationServiceV1(powerhaAutomationServiceClientOptions)
+		if err == nil {
+			// Enable retries for API calls
+			session.powerhaAutomationServiceClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+			// Add custom header for analytics
+			session.powerhaAutomationServiceClient.SetDefaultHeaders(gohttp.Header{
+				"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
+			})
+		} else {
+			session.powerhaAutomationServiceClientErr = fmt.Errorf("Error occurred while constructing 'PowerhaAutomation Service' service client: %q", err)
 		}
 	}
 

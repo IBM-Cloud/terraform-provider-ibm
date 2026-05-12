@@ -214,7 +214,6 @@ func flattenVolumes(list []*models.VolumeReference, meta any) []map[string]any {
 	result := make([]map[string]any, 0, len(list))
 	for _, i := range list {
 		volume := map[string]any{
-			Attr_Auxiliary:            *i.Auxiliary,
 			Attr_AuxiliaryVolumeName:  i.AuxVolumeName,
 			Attr_Bootable:             *i.Bootable,
 			Attr_ConsistencyGroupName: i.ConsistencyGroupName,
@@ -229,7 +228,6 @@ func flattenVolumes(list []*models.VolumeReference, meta any) []map[string]any {
 			Attr_Name:                 *i.Name,
 			Attr_OutOfBandDeleted:     i.OutOfBandDeleted,
 			Attr_PrimaryRole:          i.PrimaryRole,
-			Attr_ReplicationEnabled:   *i.ReplicationEnabled,
 			Attr_ReplicationStatus:    i.ReplicationStatus,
 			Attr_ReplicationType:      i.ReplicationType,
 			Attr_Shareable:            *i.Shareable,
@@ -239,8 +237,14 @@ func flattenVolumes(list []*models.VolumeReference, meta any) []map[string]any {
 			Attr_VolumeType:           i.VolumeType,
 			Attr_WWN:                  *i.Wwn,
 		}
+		if i.Auxiliary != nil {
+			volume[Attr_Auxiliary] = *i.Auxiliary
+		}
 		if i.FreezeTime != nil {
 			volume[Attr_FreezeTime] = i.FreezeTime.String()
+		}
+		if i.ReplicationEnabled != nil {
+			volume[Attr_ReplicationEnabled] = *i.ReplicationEnabled
 		}
 		if len(i.ReplicationSites) > 0 {
 			volume[Attr_ReplicationSites] = i.ReplicationSites

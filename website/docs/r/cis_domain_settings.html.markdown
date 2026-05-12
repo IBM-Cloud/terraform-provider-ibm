@@ -30,6 +30,7 @@ resource "ibm_cis_domain_settings" "test_domain_settings" {
   browser_check               = "off"
   hotlink_protection          = "off"
   http2                       = "on"
+  http3                       = "on"
   image_load_optimization     = "off"
   image_size_optimization     = "lossless"
   ip_geolocation              = "off"
@@ -104,6 +105,7 @@ resource "ibm_cis_domain_settings" "test_domain_settings" {
   browser_check               = "off"
   hotlink_protection          = "off"
   http2                       = "on"
+  http3                       = "on"
   image_load_optimization     = "off"
   image_size_optimization     = "lossless"
   ip_geolocation              = "off"
@@ -119,6 +121,9 @@ resource "ibm_cis_domain_settings" "test_domain_settings" {
   websockets                  = "off"
   opportunistic_onion         = "off"
   log_retention               = false
+  security_level              = "medium"
+  email_obfuscation           = "on"
+  replace_insecure_js         = "off"
   challenge_ttl               = 31536000
   max_upload                  = 300
   cipher                      = []
@@ -174,6 +179,7 @@ Review the argument references that you can specify for your resource.
 - `dnssec` - (Optional, String) Can set to `active` only once. Allowed values are `active`, `disabled`.
 - `hotlink_protection` - (Optional, String) Supported values are `off` and `on`.
 - `http2` - (Optional, String) Supported values are `off` and `on`.
+- `http3` - (Optional, String) Enable HTTP/3 protocol support. Supported values are `off` and `on`.
 - `image_load_optimization` - (Optional, String) Supported values are `off` and `on`.
 - `image_size_optimization` - (Optional, String) Supported values are `lossless`,  `off`, and `lossy`.
 - `ipv6` - (Optional, String) Supported values are `off` and `on`.
@@ -215,6 +221,9 @@ Review the argument references that you can specify for your resource.
 - `proxy_read_timeout` - (Optional, Integer) Maximum time between two read operations from origin. Valid values are `1-6000`.
 - `opportunistic_onion` - (Optional, String) Supported values are `off` and `on`.
 - `log_retention` - (Optional, String) Supported values are `false` and `true`.
+- `security_level` - (Optional, String) Choose the appropriate security profile for your website. Supported values are `essentially_off`, `low`, `medium`, `high`, and `under_attack`.
+- `email_obfuscation` - (Optional, String) Encrypt email addresses on your web page from bots, while keeping them visible to humans. Supported values are `off` and `on`.
+- `replace_insecure_js` - (Optional, String) Automatically replace insecure JavaScript libraries with safer alternatives from Cloudflare's CDN. Supported values are `off` and `on`.
 
 ### Note
 
