@@ -221,6 +221,7 @@ Review the argument references that you can specify for your resource.
 - `security_groups` - (Optional, List) Enables users to define specific security groups for their workers.
 - `disable_outbound_traffic_protection` - (Optional, Bool) Include this option to allow public outbound access from the cluster workers. By default, public outbound access is blocked in OpenShift versions 4.15 and later and Kubernetes versions 1.30 and later. This option is usable only from OpenShift versions 4.15 and later and Kubernetes versions 1.30 and later.
 - `enable_secure_by_default` - (Optional, Bool) Enables Secure-by-default security group configuration. Once the upgrade begins, it cannot be undone. During the upgrade, network traffic to your cluster may temporarily be blocked. This option is usable only from OpenShift versions 4.15 and later and Kubernetes versions 1.30 and later.
+- `network_plugin` - (Optional, Forces new resource, String) The Container Network Interface (CNI) plugin for the cluster. Requires OpenShift >= 4.20. Supported values are `Calico` (default) and `OVNKubernetes`.
 
 **Note**
 
@@ -251,6 +252,7 @@ In addition to all argument reference list, you can access the following attribu
 - `vpe_service_endpoint_url` - (String) The virtual private endpoint URL.
 - `public_service_endpoint_url` - (String) The public service endpoint URL.
 - `state` - (String) The state of the VPC cluster.
+- `network_plugin` - The Container Network Interface (CNI) plugin configured for the cluster.
 
 
 ## Import
