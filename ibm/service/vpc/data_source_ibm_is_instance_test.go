@@ -617,3 +617,60 @@ data "ibm_is_instance" "ds_instance" {
   name        = ibm_is_instance.testacc_instance.name
 }`, vpcname, subnetname, acc.ISZoneName, acc.ISCIDR, sshname, instanceName, acc.IsImage, acc.InstanceProfileName, acc.ISZoneName)
 }
+
+func TestAccIBMISInstanceDataSource_ThreadsPerCore(t *testing.T) {
+	vpcname := fmt.Sprintf("tfins-vpc-%d", acctest.RandIntRange(10, 100))
+	subnetname := fmt.Sprintf("tfins-subnet-%d", acctest.RandIntRange(10, 100))
+	sshname := fmt.Sprintf("tfins-ssh-%d", acctest.RandIntRange(10, 100))
+	instanceName := fmt.Sprintf("tfins-name-%d", acctest.RandIntRange(10, 100))
+	resName := "data.ibm_is_instance.ds_instance"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { acc.TestAccPreCheck(t) },
+		Providers: acc.TestAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMISInstanceDataSourceThreadsPerCoreConfig(vpcname, subnetname, sshname, instanceName, 1),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(resName, "name", instanceName),
+					resource.TestCheckResourceAttr(resName, "threads_per_core", "1"),
+				),
+			},
+		},
+	})
+}
+
+func testAccCheckIBMISInstanceDataSourceThreadsPerCoreConfig(vpcname, subnetname, sshname, instanceName string, threadsPerCore int) string {
+	return fmt.Sprintf(`
+resource "ibm_is_vpc" "testacc_vpc" {
+  name = "%s"
+}
+
+resource "ibm_is_subnet" "testacc_subnet" {
+  name            = "%s"
+  vpc             = ibm_is_vpc.testacc_vpc.id
+  zone            = "%s"
+  ipv4_cidr_block = "%s"
+}
+
+resource "ibm_is_ssh_key" "testacc_sshkey" {
+  name       = "%s"
+  public_key = file("./test-fixtures/.ssh/id_rsa.pub")
+}
+
+resource "ibm_is_instance" "testacc_instance" {
+  name    = "%s"
+  image   = "%s"
+  profile = "%s"
+  primary_network_interface {
+    subnet     = ibm_is_subnet.testacc_subnet.id
+  }
+  vpc  = ibm_is_vpc.testacc_vpc.id
+  zone = "%s"
+  keys = [ibm_is_ssh_key.testacc_sshkey.id]
+  threads_per_core = %d
+}
+data "ibm_is_instance" "ds_instance" {
+  name        = ibm_is_instance.testacc_instance.name
+}`, vpcname, subnetname, acc.ISZoneName, acc.ISCIDR, sshname, instanceName, acc.IsImage, acc.InstanceProfileName, acc.ISZoneName, threadsPerCore)
+}

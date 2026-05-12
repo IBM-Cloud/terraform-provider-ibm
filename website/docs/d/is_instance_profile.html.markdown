@@ -76,6 +76,13 @@ In addition to the argument reference list, you can access the following attribu
 	- `type` - (String) The type for this profile field.
 	- `values` - (List) The supported confidential compute modes.
 
+- `threads_per_core` - (List) Nested `threads_per_core` blocks have the following structure:
+
+  Nested scheme for `threads_per_core`:
+  - `type` - (String) The type for this profile field.
+  - `default` - (Integer) The default threads per core value for this profile.
+  - `values` - (List) The permitted threads per core values for this profile.
+
 - `total_volume_bandwidth`  Nested `total_volume_bandwidth` blocks have the following structure:
   - `type` - The type for this profile field.
   - `value` - The value for this profile field.

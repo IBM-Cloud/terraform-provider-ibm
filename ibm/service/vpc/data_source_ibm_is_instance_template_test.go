@@ -448,3 +448,64 @@ func testAccCheckIBMISInstanceTemplateDAvailabilityPolicyConfig(vpcName, subnetN
 		name = ibm_is_instance_template.instancetemplate1.name
 	}`, vpcName, subnetName, acc.ISZoneName, acc.ISCIDR, sshKeyName, publicKey, templateName, acc.IsImage, acc.InstanceProfileName, acc.ISZoneName)
 }
+
+func TestAccIBMISInstanceTemplate_dataThreadsPerCore(t *testing.T) {
+	randInt := acctest.RandIntRange(600, 700)
+	publicKey := strings.TrimSpace(`
+	ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQDQ+WiiUR1Jg3oGSmB/2//GJ3XnotriBiGN6t3iwGces6sUsvRkza1t0Mf05DKZxC/zp0WvDTvbit2gTkF9sD37OZSn5aCJk1F5URk/JNPmz25ZogkICFL4OUfhrE3mnyKio6Bk1JIEIypR5PRtGxY9vFDUfruADDLfRi+dGwHF6U9RpvrDRo3FNtI8T0GwvWwFE7bg63vLz65CjYY5XqH9z/YWz/asH6BKumkwiphLGhuGn03+DV6DkIZqr3Oh13UDjMnTdgv1y/Kou5UM3CK1dVsmLRXPEf2KUWUq1EwRfrJXkPOrBwn8to+Yydo57FgrRM9Qw8uzvKmnVxfKW6iG3oSGA0L6ROuCq1lq0MD8ySLd56+d1ftSDaUq+0/Yt9vK3olzVP0/iZobD7chbGqTLMCzL4/CaIUR/UmX08EA0Oh0DdyAdj3UUNETAj3W8gBrV6xLR7fZAJ8roX2BKb4K8Ed3YqzgiY0zgjqvpBYl9xZl0jgVX0qMFaEa6+CeGI8= root@ffd8363b1226
+	`)
+	vpcName := fmt.Sprintf("testvpc%d", randInt)
+	subnetName := fmt.Sprintf("testsubnet%d", randInt)
+	templateName := fmt.Sprintf("testtemplate%d", randInt)
+	sshKeyName := fmt.Sprintf("testsshkey%d", randInt)
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMISInstanceGroupDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMISInstanceTemplateDThreadsPerCoreConfig(vpcName, subnetName, sshKeyName, publicKey, templateName, 1),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(
+						"data.ibm_is_instance_template.instance_template_data", "name", templateName),
+					resource.TestCheckResourceAttr(
+						"data.ibm_is_instance_template.instance_template_data", "threads_per_core", "1"),
+				),
+			},
+		},
+	})
+}
+
+func testAccCheckIBMISInstanceTemplateDThreadsPerCoreConfig(vpcName, subnetName, sshKeyName, publicKey, templateName string, threadsPerCore int) string {
+	return fmt.Sprintf(`
+	resource "ibm_is_vpc" "testacc_vpc" {
+		name = "%s"
+	}
+	
+	resource "ibm_is_subnet" "testacc_subnet" {
+		name            = "%s"
+		vpc             = ibm_is_vpc.testacc_vpc.id
+		zone            = "%s"
+		ipv4_cidr_block = "%s"
+	}
+	
+	resource "ibm_is_ssh_key" "testacc_sshkey" {
+		name       = "%s"
+		public_key = "%s"
+	}
+	resource "ibm_is_instance_template" "instancetemplate1" {
+		name    = "%s"
+		image   = "%s"
+		profile = "%s"
+		primary_network_interface {
+			subnet = ibm_is_subnet.testacc_subnet.id
+		}
+		vpc       = ibm_is_vpc.testacc_vpc.id
+		zone      = "%s"
+		keys      = [ibm_is_ssh_key.testacc_sshkey.id]
+		threads_per_core = %d
+	}
+	data "ibm_is_instance_template" "instance_template_data" {
+		name = ibm_is_instance_template.instancetemplate1.name
+	}`, vpcName, subnetName, acc.ISZoneName, acc.ISCIDR, sshKeyName, publicKey, templateName, acc.IsImage, acc.InstanceProfileName, acc.ISZoneName, threadsPerCore)
+}

@@ -71,6 +71,7 @@ const (
 	isInstanceDedicatedHost           = "dedicated_host"
 	isInstanceStatus                  = "status"
 	isInstanceStatusReasons           = "status_reasons"
+	isInstanceThreadsPerCore          = "threads_per_core"
 	isInstanceStatusReasonsCode       = "code"
 	isInstanceStatusReasonsMessage    = "message"
 	isInstanceStatusReasonsMoreInfo   = "more_info"
@@ -528,6 +529,14 @@ func ResourceIBMISInstance() *schema.Resource {
 				Computed:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_is_instance", isInstanceVolumeBandwidthQoSMode),
 				Description:  "The volume bandwidth QoS mode for this virtual server instance.",
+			},
+
+			isInstanceThreadsPerCore: &schema.Schema{
+				Type:         schema.TypeInt,
+				Optional:     true,
+				Computed:     true,
+				ValidateFunc: validate.InvokeValidator("ibm_is_instance", isInstanceThreadsPerCore),
+				Description:  "The number of threads per core. Supported values are 1 or 2. Default is 2. Only applicable to AMD Turin profiles (hx4a-*, hx4da-*).",
 			},
 
 			isInstanceBandwidth: {
@@ -2336,6 +2345,14 @@ func ResourceIBMISInstanceValidator() *validate.ResourceValidator {
 		MaxValueLength:             128,
 	})
 
+	validateSchema = append(validateSchema, validate.ValidateSchema{
+		Identifier:                 isInstanceThreadsPerCore,
+		ValidateFunctionIdentifier: validate.ValidateAllowedIntValue,
+		Type:                       validate.TypeInt,
+		Optional:                   true,
+		AllowedValues:              "1, 2",
+	})
+
 	ibmISInstanceValidator := validate.ResourceValidator{ResourceName: "ibm_is_instance", Schema: validateSchema}
 	return &ibmISInstanceValidator
 }
@@ -2531,6 +2548,10 @@ func instanceCreateByImage(context context.Context, d *schema.ResourceData, meta
 	if volumeBandwidthQoSModeIntf, ok := d.GetOk(isInstanceVolumeBandwidthQoSMode); ok {
 		volumeBandwidthQoSModeStr := volumeBandwidthQoSModeIntf.(string)
 		instanceproto.VolumeBandwidthQosMode = &volumeBandwidthQoSModeStr
+	}
+	if threadsPerCoreIntf, ok := d.GetOk(isInstanceThreadsPerCore); ok {
+		threadsPerCore := int64(threadsPerCoreIntf.(int))
+		instanceproto.ThreadsPerCore = &threadsPerCore
 	}
 	if dHostIdInf, ok := d.GetOk(isPlacementTargetDedicatedHost); ok {
 		dHostIdStr := dHostIdInf.(string)
@@ -3166,6 +3187,10 @@ func instanceCreateByCatalogOffering(context context.Context, d *schema.Resource
 		volumeBandwidthQoSModeStr := volumeBandwidthQoSModeIntf.(string)
 		instanceproto.VolumeBandwidthQosMode = &volumeBandwidthQoSModeStr
 	}
+	if threadsPerCoreIntf, ok := d.GetOk(isInstanceThreadsPerCore); ok {
+		threadsPerCore := int64(threadsPerCoreIntf.(int))
+		instanceproto.ThreadsPerCore = &threadsPerCore
+	}
 	if dHostIdInf, ok := d.GetOk(isPlacementTargetDedicatedHost); ok {
 		dHostIdStr := dHostIdInf.(string)
 		dHostPlaementTarget := &vpcv1.InstancePlacementTargetPrototypeDedicatedHostIdentity{
@@ -3750,6 +3775,10 @@ func instanceCreateByTemplate(context context.Context, d *schema.ResourceData, m
 	if volumeBandwidthQoSModeIntf, ok := d.GetOk(isInstanceVolumeBandwidthQoSMode); ok {
 		volumeBandwidthQoSModeStr := volumeBandwidthQoSModeIntf.(string)
 		instanceproto.VolumeBandwidthQosMode = &volumeBandwidthQoSModeStr
+	}
+	if threadsPerCoreIntf, ok := d.GetOk(isInstanceThreadsPerCore); ok {
+		threadsPerCore := int64(threadsPerCoreIntf.(int))
+		instanceproto.ThreadsPerCore = &threadsPerCore
 	}
 	if vpcID != "" {
 		instanceproto.VPC = &vpcv1.VPCIdentity{
@@ -4494,6 +4523,10 @@ func instanceCreateBySnapshot(context context.Context, d *schema.ResourceData, m
 		volumeBandwidthQoSModeStr := volumeBandwidthQoSModeIntf.(string)
 		instanceproto.VolumeBandwidthQosMode = &volumeBandwidthQoSModeStr
 	}
+	if threadsPerCoreIntf, ok := d.GetOk(isInstanceThreadsPerCore); ok {
+		threadsPerCore := int64(threadsPerCoreIntf.(int))
+		instanceproto.ThreadsPerCore = &threadsPerCore
+	}
 
 	if networkattachmentsintf, ok := d.GetOk("network_attachments"); ok {
 		networkAttachments := []vpcv1.InstanceNetworkAttachmentPrototype{}
@@ -5045,6 +5078,10 @@ func instanceCreateByVolume(context context.Context, d *schema.ResourceData, met
 	if volumeBandwidthQoSModeIntf, ok := d.GetOk(isInstanceVolumeBandwidthQoSMode); ok {
 		volumeBandwidthQoSModeStr := volumeBandwidthQoSModeIntf.(string)
 		instanceproto.VolumeBandwidthQosMode = &volumeBandwidthQoSModeStr
+	}
+	if threadsPerCoreIntf, ok := d.GetOk(isInstanceThreadsPerCore); ok {
+		threadsPerCore := int64(threadsPerCoreIntf.(int))
+		instanceproto.ThreadsPerCore = &threadsPerCore
 	}
 	if networkattachmentsintf, ok := d.GetOk("network_attachments"); ok {
 		networkAttachments := []vpcv1.InstanceNetworkAttachmentPrototype{}
@@ -5701,6 +5738,12 @@ func instanceGet(context context.Context, d *schema.ResourceData, meta interface
 		if err = d.Set(isInstanceVolumeBandwidthQoSMode, string(*instance.VolumeBandwidthQosMode)); err != nil {
 			err = fmt.Errorf("Error setting volume_bandwidth_qos_mode: %s", err)
 			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance", "read", "set-volume_bandwidth_qos_mode").GetDiag()
+		}
+	}
+	if instance.ThreadsPerCore != nil {
+		if err = d.Set(isInstanceThreadsPerCore, flex.IntValue(instance.ThreadsPerCore)); err != nil {
+			err = fmt.Errorf("Error setting threads_per_core: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance", "read", "set-threads_per_core").GetDiag()
 		}
 	}
 
@@ -7598,7 +7641,7 @@ func instanceUpdate(context context.Context, d *schema.ResourceData, meta interf
 
 	}
 
-	if (d.HasChange(isInstanceName) || d.HasChange("vcpu") || d.HasChange("availability") || d.HasChange("confidential_compute_mode") || d.HasChange("enable_secure_boot") || d.HasChange(isInstanceVolumeBandwidthQoSMode)) && !d.IsNewResource() {
+	if (d.HasChange(isInstanceName) || d.HasChange("vcpu") || d.HasChange("availability") || d.HasChange("confidential_compute_mode") || d.HasChange("enable_secure_boot") || d.HasChange(isInstanceVolumeBandwidthQoSMode) || d.HasChange(isInstanceThreadsPerCore)) && !d.IsNewResource() {
 		restartNeeded := false
 		serverstopped := false
 		name := d.Get(isInstanceName).(string)
@@ -7633,6 +7676,10 @@ func instanceUpdate(context context.Context, d *schema.ResourceData, meta interf
 
 		if _, ok := d.GetOkExists(isInstanceVolumeBandwidthQoSMode); ok && d.HasChange(isInstanceVolumeBandwidthQoSMode) {
 			instanceCCMPatchModel.VolumeBandwidthQosMode = core.StringPtr(d.Get(isInstanceVolumeBandwidthQoSMode).(string))
+			restartNeeded = true
+		}
+		if _, ok := d.GetOkExists(isInstanceThreadsPerCore); ok && d.HasChange(isInstanceThreadsPerCore) {
+			instanceCCMPatchModel.ThreadsPerCore = core.Int64Ptr(int64(d.Get(isInstanceThreadsPerCore).(int)))
 			restartNeeded = true
 		}
 		if d.HasChange("name") {

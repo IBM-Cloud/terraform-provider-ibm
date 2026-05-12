@@ -5018,3 +5018,72 @@ func testAccCheckIBMISInstanceConfigWithAvailabilityPolicy_Updated(vpcname, subn
 		keys = [ibm_is_ssh_key.testacc_sshkey.id]
 	  }`, vpcname, subnetname, acc.ISZoneName, acc.ISCIDR, sshname, publicKey, name, acc.IsImage, acc.InstanceProfileName, acc.ISZoneName)
 }
+
+func TestAccIBMISInstance_ThreadsPerCore(t *testing.T) {
+	var instance string
+
+	vpcname := fmt.Sprintf("tf-vpc-%d", acctest.RandIntRange(10, 100))
+	subnetname := fmt.Sprintf("tf-subnet-%d", acctest.RandIntRange(10, 100))
+	sshname := fmt.Sprintf("tf-ssh-%d", acctest.RandIntRange(10, 100))
+	prefix := fmt.Sprintf("tf-%d", acctest.RandIntRange(10, 100))
+
+	publicKey := strings.TrimSpace(`
+ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVERRN7/9484SOBJ3HSKxxNG5JN8owAjy5f9yYwcUg+JaUVuytn5Pv3aeYROHGGg+5G346xaq3DAwX6Y5ykr2fvjObgncQBnuU5KHWCECO/4h8uWuwh/kfniXPVjFToc+gnkqA+3RKpAecZhFXwfalQ9mMuYGFxn+fwn8cYEApsJbsEmb0iJwPiZ5hjFC8wREuiTlhPHDgkBLOiycd20op2nXzDbHfCHInquEe/gYxEitALONxm0swBOwJZwlTDOB7C6y2dzlrtxr1L59m7pCkWI4EtTRLvleehBoj3u7jB4usR
+`)
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMISInstanceDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMISInstanceThreadsPerCoreConfig(vpcname, subnetname, sshname, publicKey, prefix, 1),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISInstanceExists("ibm_is_instance.is_instance", instance),
+					resource.TestCheckResourceAttr("ibm_is_instance.is_instance", "name", fmt.Sprintf("%s-ins", prefix)),
+					resource.TestCheckResourceAttr("ibm_is_instance.is_instance", "threads_per_core", "1"),
+					resource.TestCheckResourceAttr("ibm_is_instance.is_instance", "zone", acc.ISZoneName),
+				),
+			},
+			{
+				Config: testAccCheckIBMISInstanceThreadsPerCoreConfig(vpcname, subnetname, sshname, publicKey, prefix, 2),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISInstanceExists("ibm_is_instance.is_instance", instance),
+					resource.TestCheckResourceAttr("ibm_is_instance.is_instance", "name", fmt.Sprintf("%s-ins", prefix)),
+					resource.TestCheckResourceAttr("ibm_is_instance.is_instance", "threads_per_core", "2"),
+					resource.TestCheckResourceAttr("ibm_is_instance.is_instance", "zone", acc.ISZoneName),
+				),
+			},
+		},
+	})
+}
+
+func testAccCheckIBMISInstanceThreadsPerCoreConfig(vpcname, subnetname, sshname, publicKey, prefix string, threadsPerCore int) string {
+	return fmt.Sprintf(`
+		resource "ibm_is_vpc" "vpc1" {
+			name = "%s"
+		}
+		resource "ibm_is_subnet" "subnet1" {
+			name            = "%s"
+			vpc             = ibm_is_vpc.vpc1.id
+			zone            = "%s"
+			ipv4_cidr_block = "%s"
+		}
+		resource "ibm_is_ssh_key" "is_key" {
+			name       = "%s"
+			public_key = "%s"
+		}
+		resource "ibm_is_instance" "is_instance" {
+			name    = "%s-ins"
+			image   = "%s"
+			profile = "%s"
+			vpc     = ibm_is_vpc.vpc1.id
+			zone    = ibm_is_subnet.subnet1.zone
+			keys    = [ibm_is_ssh_key.is_key.id]
+			primary_network_interface {
+				subnet = ibm_is_subnet.subnet1.id
+			}
+			threads_per_core = %d
+		}
+`, vpcname, subnetname, acc.ISZoneName, acc.ISCIDR, sshname, publicKey, prefix, acc.IsImage, acc.InstanceProfileName, threadsPerCore)
+}
