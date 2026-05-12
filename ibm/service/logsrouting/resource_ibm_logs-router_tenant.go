@@ -148,6 +148,32 @@ func ResourceIBMLogsRouterTenant() *schema.Resource {
 				Computed:    true,
 				Description: "Resource version identifier.",
 			},
+			"write_status": &schema.Schema{
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "The status of the write attempt to the target with the provided endpoint parameters.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"status": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The status such as failed or success.",
+						},
+						"reason_for_last_failure": &schema.Schema{
+							Type:        schema.TypeString,
+							Optional:    true,
+							Computed:    true,
+							Description: "Detailed description of the cause of the failure.",
+						},
+						"last_failure": &schema.Schema{
+							Type:        schema.TypeString,
+							Optional:    true,
+							Computed:    true,
+							Description: "The timestamp of the failure.",
+						},
+					},
+				},
+			},
 		},
 	}
 }
@@ -293,6 +319,14 @@ func resourceIBMLogsRouterTenantRead(context context.Context, d *schema.Resource
 	if err = d.Set("etag", tenant.Etag); err != nil {
 		err = fmt.Errorf("Error setting etag: %s", err)
 		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_logs_router_tenant", "read", "set-etag").GetDiag()
+	}
+	writeStatusMap, err := ResourceIBMLogsRouterTenantWriteStatusToMap(tenant.WriteStatus)
+	if err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_logs_router_tenant", "read", "write_status-to-map").GetDiag()
+	}
+	if err = d.Set("write_status", []map[string]interface{}{writeStatusMap}); err != nil {
+		err = fmt.Errorf("Error setting write_status: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_logs_router_tenant", "read", "set-write_status").GetDiag()
 	}
 
 	rewriteAccessCredential := false
@@ -800,6 +834,18 @@ func ResourceIBMLogsRouterTenantTargetParametersTypeLogsToMap(model *ibmcloudlog
 	modelMap := make(map[string]interface{})
 	modelMap["host"] = *model.Host
 	modelMap["port"] = flex.IntValue(model.Port)
+	return modelMap, nil
+}
+
+func ResourceIBMLogsRouterTenantWriteStatusToMap(model *ibmcloudlogsroutingv0.WriteStatus) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	modelMap["status"] = *model.Status
+	if model.ReasonForLastFailure != nil {
+		modelMap["reason_for_last_failure"] = *model.ReasonForLastFailure
+	}
+	if model.LastFailure != nil {
+		modelMap["last_failure"] = model.LastFailure.String()
+	}
 	return modelMap, nil
 }
 

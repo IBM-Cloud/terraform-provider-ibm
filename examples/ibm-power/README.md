@@ -10,7 +10,7 @@ This directory contains sample Terraform code to create a Power Systems Virtual 
 The following steps are for setting up the example terraform configuration locally:
  - Make a local copy of the files in this directory.
  - Modify the variables in `variables.tf`.
- - To use using a stock image, specified by `image_name` in `variables.tf`, you must first copy the stock image to Cloud Instance. You can copy an image using the [IBM Cloud CLI](https://cloud.ibm.com/docs/cli): `ibmcloud pi image-create <stock-image-id>`.
+ - To use using a stock image, specified by `image_name` in `variables.tf`, you must first copy the stock image to Cloud Instance. You can copy an image using the [IBM Cloud CLI](https://cloud.ibm.com/docs/cli): `ibmcloud pi image create <stock-image-id>`.
  - If using a custom or imported image remove `pi_storage_type` from the `ibm_pi_instance` resource since the storage type will default to the custom image's storage type.
   - For developers using a staging environment, export the following environment variables.
 ```bash

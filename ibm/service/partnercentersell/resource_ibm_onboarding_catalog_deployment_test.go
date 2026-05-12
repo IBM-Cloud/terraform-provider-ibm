@@ -189,6 +189,7 @@ func testAccCheckIbmOnboardingCatalogDeploymentConfig(productID string, catalogP
 			metadata {
                 rc_compatible =	"%s"
 				service {
+					plan_updateable = false
 					rc_provisionable = true
   					iam_compatible = "%s"
 					service_key_supported = true
@@ -254,6 +255,7 @@ func testAccCheckIbmOnboardingCatalogDeploymentUpdateConfig(productID string, ca
 			metadata {
                 rc_compatible =	"%s"
 				service {
+					plan_updateable = true
 				  	rc_provisionable = true
   					iam_compatible = "%s"
 					service_key_supported = false
@@ -501,6 +503,7 @@ func TestResourceIbmOnboardingCatalogDeploymentGlobalCatalogDeploymentMetadataTo
 		globalCatalogDeploymentMetadataServiceModel := make(map[string]interface{})
 		globalCatalogDeploymentMetadataServiceModel["rc_provisionable"] = true
 		globalCatalogDeploymentMetadataServiceModel["iam_compatible"] = true
+		globalCatalogDeploymentMetadataServiceModel["plan_updateable"] = true
 		globalCatalogDeploymentMetadataServiceModel["service_key_supported"] = true
 		globalCatalogDeploymentMetadataServiceModel["parameters"] = []map[string]interface{}{globalCatalogMetadataServiceCustomParametersModel}
 
@@ -582,6 +585,7 @@ func TestResourceIbmOnboardingCatalogDeploymentGlobalCatalogDeploymentMetadataTo
 	globalCatalogDeploymentMetadataServiceModel := new(partnercentersellv1.GlobalCatalogDeploymentMetadataService)
 	globalCatalogDeploymentMetadataServiceModel.RcProvisionable = core.BoolPtr(true)
 	globalCatalogDeploymentMetadataServiceModel.IamCompatible = core.BoolPtr(true)
+	globalCatalogDeploymentMetadataServiceModel.PlanUpdateable = core.BoolPtr(true)
 	globalCatalogDeploymentMetadataServiceModel.ServiceKeySupported = core.BoolPtr(true)
 	globalCatalogDeploymentMetadataServiceModel.Parameters = []partnercentersellv1.GlobalCatalogMetadataServiceCustomParameters{*globalCatalogMetadataServiceCustomParametersModel}
 
@@ -1256,6 +1260,7 @@ func TestResourceIbmOnboardingCatalogDeploymentMapToGlobalCatalogDeploymentMetad
 		globalCatalogDeploymentMetadataServicePrototypePatchModel.RcProvisionable = core.BoolPtr(true)
 		globalCatalogDeploymentMetadataServicePrototypePatchModel.IamCompatible = core.BoolPtr(true)
 		globalCatalogDeploymentMetadataServicePrototypePatchModel.ServiceKeySupported = core.BoolPtr(true)
+		globalCatalogDeploymentMetadataServicePrototypePatchModel.PlanUpdateable = core.BoolPtr(true)
 		globalCatalogDeploymentMetadataServicePrototypePatchModel.Parameters = []partnercentersellv1.GlobalCatalogMetadataServiceCustomParameters{*globalCatalogMetadataServiceCustomParametersModel}
 
 		globalCatalogMetadataDeploymentBrokerModel := new(partnercentersellv1.GlobalCatalogMetadataDeploymentBroker)
@@ -1337,6 +1342,7 @@ func TestResourceIbmOnboardingCatalogDeploymentMapToGlobalCatalogDeploymentMetad
 	globalCatalogDeploymentMetadataServicePrototypePatchModel["rc_provisionable"] = true
 	globalCatalogDeploymentMetadataServicePrototypePatchModel["iam_compatible"] = true
 	globalCatalogDeploymentMetadataServicePrototypePatchModel["service_key_supported"] = true
+	globalCatalogDeploymentMetadataServicePrototypePatchModel["plan_updateable"] = true
 	globalCatalogDeploymentMetadataServicePrototypePatchModel["parameters"] = []interface{}{globalCatalogMetadataServiceCustomParametersModel}
 
 	globalCatalogMetadataDeploymentBrokerModel := make(map[string]interface{})
@@ -1422,6 +1428,7 @@ func TestResourceIbmOnboardingCatalogDeploymentMapToGlobalCatalogDeploymentMetad
 		model.RcProvisionable = core.BoolPtr(true)
 		model.IamCompatible = core.BoolPtr(true)
 		model.ServiceKeySupported = core.BoolPtr(true)
+		model.PlanUpdateable = core.BoolPtr(true)
 		model.Parameters = []partnercentersellv1.GlobalCatalogMetadataServiceCustomParameters{*globalCatalogMetadataServiceCustomParametersModel}
 
 		assert.Equal(t, result, model)
@@ -1488,6 +1495,7 @@ func TestResourceIbmOnboardingCatalogDeploymentMapToGlobalCatalogDeploymentMetad
 	model["rc_provisionable"] = true
 	model["iam_compatible"] = true
 	model["service_key_supported"] = true
+	model["plan_updateable"] = true
 	model["parameters"] = []interface{}{globalCatalogMetadataServiceCustomParametersModel}
 
 	result, err := partnercentersell.ResourceIbmOnboardingCatalogDeploymentMapToGlobalCatalogDeploymentMetadataServicePrototypePatch(model)

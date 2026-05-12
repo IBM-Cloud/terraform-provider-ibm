@@ -1800,7 +1800,7 @@ func vpcUpdate(context context.Context, d *schema.ResourceData, meta interface{}
 				updateVpcOptions.IfMatch = nil
 				_, _, nestederr := sess.UpdateVPCWithContext(context, updateVpcOptions)
 				if nestederr != nil {
-					tfErr := flex.TerraformErrorf(err, fmt.Sprintf("UpdateVPCWithContext(retry) failed: %s", err.Error()), "ibm_is_vpc", "update")
+					tfErr := flex.TerraformErrorf(nestederr, fmt.Sprintf("UpdateVPCWithContext(retry) failed: %s", nestederr.Error()), "ibm_is_vpc", "update")
 					log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 					return tfErr.GetDiag()
 				}

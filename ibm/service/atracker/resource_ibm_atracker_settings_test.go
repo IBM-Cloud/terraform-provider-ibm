@@ -155,7 +155,7 @@ func testAccCheckIBMAtrackerSettingsDestroy(s *terraform.State) error {
 
 		if err == nil {
 			// Settings can never really truely be deleted (at least for MetaRegionPrimary) but the other fields will be cleared
-			if *settings.MetadataRegionPrimary == rs.Primary.ID && len(*&settings.DefaultTargets) == 0 && len(*&settings.DefaultTargets) == 0 {
+			if *settings.MetadataRegionPrimary == rs.Primary.ID && len(*&settings.DefaultTargets) == 0 {
 				return nil
 			}
 			return fmt.Errorf("[ERROR] Activity Tracker Settings still exists but other fields not deleted: %s, Targets: %v, PermittedRegions: %v", rs.Primary.ID, *&settings.DefaultTargets, *&settings.PermittedTargetRegions)

@@ -34,6 +34,14 @@ You can access the following attribute references after your data source is crea
 
 - `templates` - (List of Objects) List of templates.
 	- `availability_policy_host_failure` - (String) The availability policy for this virtual server instance. The action to perform if the compute host experiences a failure. 
+	- `availability` - (List) The availability to use for this virtual server instance. **Note:** Spot instances are available only to accounts that have been granted special approval. Contact IBM Support if you are interested in using spot instances.
+		Nested schema for **availability**:
+		- `class` - (String) The availability class for the virtual server instance.- `spot`: The virtual server instance may be preempted.- `standard`: The virtual server instance will not be preempted.If `spot` is specified, the virtual server instance:- `reservation_affinity.policy` must be `disabled`- `placement_target` must not specify a dedicated host or dedicated host group. The default value is `standard`. Allowable values are: `spot`, `standard`.
+	- `availability_policy` - (List) The availability policy to use for this virtual server instance.
+		Nested schema for **availability_policy**:
+		- `host_failure` - (String) The action to perform if the compute host experiences a failure:- `restart`: Restart the virtual server instance- `stop`: Leave the virtual server instance stopped. See [handling host failures](https://cloud.ibm.com/docs/vpc?topic=vpc-host-failure-recovery-policies) for details. The default value is `restart`. Allowable values are: `restart`, `stop`.
+		- `preemption` - (String) The action to perform if the virtual server instance is preempted:- `delete`: Delete the virtual server instance- `stop`: Leave the virtual server instance stopped. See [virtual server instance preemption](https://cloud.ibm.com/docs/vpc?topic=vpc-spot-instances-virtual-servers#spot-instances-preemption) for details. The default value is `stop`. Allowable values are: `delete`, `stop`.
+	-> **Note:** This property is only applicable when availability class is set to `spot`.
 	- `boot_volume` - (List) A nested block describes the boot volume configuration for the template.
 
 	  Nested scheme for `boot_volume`:

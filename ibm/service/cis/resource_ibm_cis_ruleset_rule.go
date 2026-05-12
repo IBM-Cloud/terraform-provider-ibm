@@ -465,7 +465,7 @@ func ResourceIBMCISRulesetRuleCreate(d *schema.ResourceData, meta interface{}) e
 		opt.SetRef(rulesObject[CISRulesetsRuleRef].(string))
 
 		position := rulesetsv1.Position{}
-		if reflect.ValueOf(rulesObject[CISRulesetsRulePosition]).IsNil() {
+		if !reflect.ValueOf(rulesObject[CISRulesetsRulePosition]).IsNil() {
 			position, err = expandCISRulesetsRulesPositions(rulesObject[CISRulesetsRulePosition])
 			if err != nil {
 				return flex.FmtErrorf("[ERROR] Error while creating the instance Rule %s", err)
@@ -485,10 +485,42 @@ func ResourceIBMCISRulesetRuleCreate(d *schema.ResourceData, meta interface{}) e
 			return flex.FmtErrorf("[ERROR] Error while creating the instance Rule %s", resp)
 		}
 
-		len_rules := len(result.Result.Rules)
-		opt.SetID(*result.Result.Rules[len_rules-1].ID)
+		lenRules := len(result.Result.Rules)
+		ruleID := ""
 
-		d.SetId(dataSourceCISRulesetsRuleCheckID(d, *result.Result.Rules[len_rules-1].ID))
+		if pos := rulesObject[CISRulesetsRulePosition]; pos != nil &&
+			len(pos.(*schema.Set).List()) != 0 {
+
+			response := pos.(*schema.Set).List()[0].(map[string]interface{})
+			before := response[CISRulesetsRulePositionBefore].(string)
+			after := response[CISRulesetsRulePositionAfter].(string)
+			index := int64(response[CISRulesetsRulePositionIndex].(int))
+
+			if after != "" {
+				for i, rule := range result.Result.Rules {
+					if *rule.ID == after && i+1 < lenRules {
+						ruleID = *result.Result.Rules[i+1].ID
+						break
+					}
+				}
+			} else if before != "" {
+				for i, rule := range result.Result.Rules {
+					if *rule.ID == before && i > 0 {
+						ruleID = *result.Result.Rules[i-1].ID
+						break
+					}
+				}
+			} else if index > 0 && int(index-1) < lenRules {
+				ruleID = *result.Result.Rules[index-1].ID
+			}
+		}
+
+		if ruleID == "" {
+			ruleID = *result.Result.Rules[lenRules-1].ID
+		}
+
+		d.SetId(dataSourceCISRulesetsRuleCheckID(d, ruleID))
+
 	}
 	return nil
 }
@@ -559,16 +591,40 @@ func ResourceIBMCISRulesetRuleUpdate(d *schema.ResourceData, meta interface{}) e
 		rulesetsRuleObject := d.Get(CISRulesetsRule).([]interface{})[0].(map[string]interface{})
 		opt.SetDescription(rulesetsRuleObject[CISRulesetsDescription].(string))
 		opt.SetAction(rulesetsRuleObject[CISRulesetsRuleAction].(string))
-		actionParameters := expandCISRulesetsRulesActionParameters(rulesetsRuleObject[CISRulesetsRuleActionParameters])
-		opt.SetActionParameters(&actionParameters)
 		opt.SetEnabled(rulesetsRuleObject[CISRulesetsRuleActionEnabled].(bool))
 		opt.SetExpression(rulesetsRuleObject[CISRulesetsRuleExpression].(string))
-		opt.SetRef(rulesetsRuleObject[CISRulesetsRuleAction].(string))
-		position, err := expandCISRulesetsRulesPositions(rulesetsRuleObject[CISRulesetsRulePosition])
-		if err != nil {
-			return flex.FmtErrorf("[ERROR] Error while updating the instance Ruleset %s", err)
+		opt.SetRef(rulesetsRuleObject[CISRulesetsRuleRef].(string))
+
+		if v := rulesetsRuleObject[CISRulesetsRuleActionParameters]; v != nil &&
+			len(v.(*schema.Set).List()) != 0 {
+
+			actionParameters := expandCISRulesetsRulesActionParameters(v)
+			opt.SetActionParameters(&actionParameters)
 		}
-		opt.SetPosition(&position)
+
+		if d.HasChange(CISRulesetsRule + ".0." + CISRulesetsRulePosition) {
+			position, err := expandCISRulesetsRulesPositions(
+				rulesetsRuleObject[CISRulesetsRulePosition],
+			)
+			if err != nil {
+				return flex.FmtErrorf(
+					"[ERROR] Error while updating the instance Ruleset %s", err,
+				)
+			}
+			opt.SetPosition(&position)
+		}
+
+		if v, ok := rulesetsRuleObject[CISRulesetsRuleRateLimit]; ok && v != nil {
+			ratelimit, err := expandCISRulesetsRulesRateLimits(v)
+			if err != nil {
+				return flex.FmtErrorf(
+					"[ERROR] Error while updating the instance Ruleset: %s", err,
+				)
+			}
+			if !DataSourceCISRulesetsRuleIsEmptyRateLimit(ratelimit) {
+				opt.SetRatelimit(&ratelimit)
+			}
+		}
 
 		opt.SetRulesetID(rulesetId)
 		opt.SetRuleID(ruleId)

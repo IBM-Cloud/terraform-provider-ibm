@@ -10,6 +10,8 @@ subcategory: "Continuous Delivery"
 
 Provides a read-only data source to retrieve information about cd_toolchains. You can then reference the fields of the data source in other resources within the same configuration by using interpolation syntax.
 
+~> **Warning:** Continuous Delivery (CD) will be discontinued in these regions on 12 February 2027: `au-syd`, `ca-mon`, `ca-tor`, `eu-es`, `jp-osa`, `us-east`. Follow the [migration guide](https://cloud.ibm.com/docs/ContinuousDelivery?topic=ContinuousDelivery-cd-migrate-region) to avoid disruption. [Learn more](https://cloud.ibm.com/docs/ContinuousDelivery?topic=ContinuousDelivery-cd-migrate-region)
+
 ## Example Usage
 
 ```hcl
@@ -48,7 +50,7 @@ Nested schema for **toolchains**:
 	* `location` - (String) Toolchain region.
 	* `name` - (String) Toolchain name.
 	  * Constraints: The maximum length is `128` characters. The minimum length is `0` characters. The value must match regular expression `/^([^\\x00-\\x7F]|[a-zA-Z0-9-._ ])+$/`.
-	* `resource_group_id` - (Forces new resource, String) Resource group where the toolchain is located.
+	* `resource_group_id` - (String) Resource group where the toolchain is located.
 	  * Constraints: The maximum length is `32` characters. The minimum length is `32` characters. The value must match regular expression `/^[0-9a-f]{32}$/`.
 	* `ui_href` - (String) URL of a user-facing user interface for this toolchain.
 	* `updated_at` - (String) Latest toolchain update timestamp.

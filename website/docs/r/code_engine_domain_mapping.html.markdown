@@ -40,7 +40,7 @@ Nested schema for **component**:
 	* `name` - (Required, String) The name of the referenced component.
 	  * Constraints: The maximum length is `63` characters. The minimum length is `1` character. The value must match regular expression `/^[a-z0-9]([\\-a-z0-9]*[a-z0-9])?$/`.
 	* `resource_type` - (Required, String) The type of the referenced resource.
-	  * Constraints: The maximum length is `63` characters. The minimum length is `1` character. The value must match regular expression `/.+/`.
+	  * Constraints: The maximum length is `63` characters. The minimum length is `1` character. The value must match regular expression `/^.+$/`.
 * `name` - (Required, Forces new resource, String) The name of the domain mapping.
   * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[a-z0-9]([\\-a-z0-9]*[a-z0-9])?(\\.[a-z0-9]([\\-a-z0-9]*[a-z0-9])?)+$/`.
 * `project_id` - (Required, Forces new resource, String) The ID of the project.
@@ -56,12 +56,12 @@ After your resource is created, you can read values from the listed arguments an
 * `domain_mapping_id` - (String) The identifier of the resource.
     * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[0-9a-z]{8}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{12}$/`.
 * `cname_target` - (String) The value of the CNAME record that must be configured in the DNS settings of the domain, to route traffic properly to the target Code Engine region.
-  * Constraints: The maximum length is `2048` characters. The minimum length is `0` characters. The value must match regular expression `/(([^:\/?#]+):)?(\/\/([^\/?#]*))?([^?#]*)(\\?([^#]*))?(#(.*))?$/`.
+  * Constraints: The maximum length is `2048` characters. The minimum length is `0` characters. The value must match regular expression `/^(([^:\/?#]+):)?(\/\/([^\/?#]*))?([^?#]*)(\\?([^#]*))?(#(.*))?$/`.
 * `created_at` - (String) The timestamp when the resource was created.
 * `entity_tag` - (String) The version of the domain mapping instance, which is used to achieve optimistic locking.
   * Constraints: The maximum length is `63` characters. The minimum length is `1` character. The value must match regular expression `/^[\\*\\-a-z0-9]+$/`.
 * `href` - (String) When you provision a new domain mapping, a URL is created identifying the location of the instance.
-  * Constraints: The maximum length is `2048` characters. The minimum length is `0` characters. The value must match regular expression `/(([^:\/?#]+):)?(\/\/([^\/?#]*))?([^?#]*)(\\?([^#]*))?(#(.*))?$/`.
+  * Constraints: The maximum length is `2048` characters. The minimum length is `0` characters. The value must match regular expression `/^(([^:\/?#]+):)?(\/\/([^\/?#]*))?([^?#]*)(\\?([^#]*))?(#(.*))?$/`.
 * `region` - (String) The region of the project the resource is located in. Possible values: 'au-syd', 'br-sao', 'ca-tor', 'eu-de', 'eu-gb', 'jp-osa', 'jp-tok', 'us-east', 'us-south'.
 * `resource_type` - (String) The type of the Code Engine resource.
   * Constraints: Allowable values are: `domain_mapping_v2`.

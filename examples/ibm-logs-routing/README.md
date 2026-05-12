@@ -124,10 +124,47 @@ data "ibm_logs_router_targets" "logs_router_targets_instance" {
 
 ## Notes
 
+### Private Endpoint Support
+
+IBM Cloud Logs Routing supports both public and private endpoints. When using private endpoints, you can choose between two types:
+
+#### CSE (Cloud Service Endpoint)
+**Endpoint Format**: `https://management.private.<region>.logs-router.cloud.ibm.com:3443/v1`
+To use this setting, set `visibility = "private"`. This is the default private endpoint type.
+
+```hcl
+provider "ibm" {
+  ibmcloud_api_key = var.ibmcloud_api_key
+  visibility       = "private"
+}
+```
+
+#### VPE (Virtual Private Endpoint)
+**Endpoint Format**: `https://management.private.<region>.logs-router.cloud.ibm.com/v1`
+To use this setting, set `visibility = "private"` and `private_endpoint_type = "vpe"`. Note that a VPE gateway is required.
+
+```hcl
+provider "ibm" {
+  ibmcloud_api_key      = var.ibmcloud_api_key
+  visibility            = "private"
+  private_endpoint_type = "vpe"
+}
+```
+
+#### Public Endpoints
+**Endpoint Format**: `https://management.<region>.logs-router.cloud.ibm.com/v1`
+To enable this, set `visibility = "public"`.
+
+```hcl
+provider "ibm" {
+  ibmcloud_api_key = var.ibmcloud_api_key
+}
+```
+
 ### The Logs Routing URL can be set in endpoints.json
 
 You can declare the service endpoints in a JSON file and either reference this file in your provider block by using the `endpoints_file_path` argument, or export the path to your file with the `IBMCLOUD_ENDPOINTS_FILE_PATH` or `IC_ENDPOINTS_FILE_PATH` environment variable.
-To use the provided endpoints file, set the visibility to either `public` or `pivate` by using the `IC_VISIBILITY` or `IBMCLOUD_VISIBILITY` environment variable, or by setting the `visibility` field in your provider block.
+To use the provided endpoints file, set the endpoints file location and set the visibility to either `public` or `pivate` by using the `IC_VISIBILITY` or `IBMCLOUD_VISIBILITY` environment variable, or by setting the `visibility` field in your provider block.
 
 **Example**:
 

@@ -27,6 +27,13 @@ func TestAccIBMResourceGroupDataSource_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("data.ibm_resource_group.testacc_ds_resource_group_name", "name", "default"),
 				),
 			},
+			{
+				Config: testAccCheckIBMResourceGroupDataSourceConfigWithID(),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("data.ibm_resource_group.testacc_ds_id", "name", "default"),
+					resource.TestCheckResourceAttrSet("data.ibm_resource_group.testacc_ds_id", "id"),
+				),
+			},
 		},
 	})
 }
@@ -39,7 +46,7 @@ func TestAccIBMResourceGroupDataSource_Default_false(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config:      testAccCheckIBMResourceGroupDataSourceDefaultFalse(),
-				ExpectError: regexp.MustCompile(`Missing required properties. Need a resource group name, or the is_default true`),
+				ExpectError: regexp.MustCompile(`Missing required properties. Need a resource group name, resource group ID, or the is_default true`),
 			},
 		},
 	})
@@ -68,6 +75,19 @@ func testAccCheckIBMResourceGroupDataSourceDefaultFalse() string {
 	
 data "ibm_resource_group" "testacc_ds_resource_group" {
 	is_default = "false"
+}`
+
+}
+
+func testAccCheckIBMResourceGroupDataSourceConfigWithID() string {
+	return `
+
+data "ibm_resource_group" "testacc_ds_resource_group_default" {
+	is_default = "true"
+}
+
+data "ibm_resource_group" "testacc_ds_id" {
+	id = data.ibm_resource_group.testacc_ds_resource_group_default.id
 }`
 
 }

@@ -152,7 +152,7 @@ func resourceIBMISBareMetalServerActionCreate(context context.Context, d *schema
 		}
 		_, waitErr := isWaitForBareMetalServerActionStop(sess, d.Timeout(schema.TimeoutCreate), bareMetalServerId, d)
 		if waitErr != nil {
-			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("isWaitForBareMetalServerActionStop failed: %s", err.Error()), "ibm_is_bare_metal_server_action", "create")
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("isWaitForBareMetalServerActionStop failed: %s", waitErr.Error()), "ibm_is_bare_metal_server_action", "create")
 			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 			return tfErr.GetDiag()
 		}
@@ -170,7 +170,7 @@ func resourceIBMISBareMetalServerActionCreate(context context.Context, d *schema
 		}
 		_, waitErr := isWaitForBareMetalServerActionAvailable(sess, bareMetalServerId, d.Timeout(schema.TimeoutDelete), d)
 		if waitErr != nil {
-			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("isWaitForBareMetalServerActionAvailable failed: %s", err.Error()), "ibm_is_bare_metal_server_action", "create")
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("isWaitForBareMetalServerActionAvailable failed: %s", waitErr.Error()), "ibm_is_bare_metal_server_action", "create")
 			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 			return tfErr.GetDiag()
 		}
@@ -187,7 +187,7 @@ func resourceIBMISBareMetalServerActionCreate(context context.Context, d *schema
 		}
 		_, waitErr := isWaitForBareMetalServerActionAvailable(sess, bareMetalServerId, d.Timeout(schema.TimeoutDelete), d)
 		if waitErr != nil {
-			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("RestartBareMetalServerWithContext failed: %s", err.Error()), "ibm_is_bare_metal_server_action", "create")
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("RestartBareMetalServerWithContext failed: %s", waitErr.Error()), "ibm_is_bare_metal_server_action", "create")
 			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 			return tfErr.GetDiag()
 		}
@@ -292,7 +292,7 @@ func resourceIBMISBareMetalServerActionUpdate(context context.Context, d *schema
 			}
 			_, waitErr := isWaitForBareMetalServerActionStop(sess, d.Timeout(schema.TimeoutUpdate), bareMetalServerId, d)
 			if waitErr != nil {
-				tfErr := flex.TerraformErrorf(err, fmt.Sprintf("isWaitForBareMetalServerActionStop failed: %s", err.Error()), "ibm_is_bare_metal_server_action", "delete")
+				tfErr := flex.TerraformErrorf(err, fmt.Sprintf("isWaitForBareMetalServerActionStop failed: %s", waitErr.Error()), "ibm_is_bare_metal_server_action", "delete")
 				log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 				return tfErr.GetDiag()
 			}
@@ -309,7 +309,7 @@ func resourceIBMISBareMetalServerActionUpdate(context context.Context, d *schema
 			}
 			_, waitErr := isWaitForBareMetalServerActionAvailable(sess, bareMetalServerId, d.Timeout(schema.TimeoutDelete), d)
 			if waitErr != nil {
-				tfErr := flex.TerraformErrorf(err, fmt.Sprintf("isWaitForBareMetalServerActionAvailable failed: %s", err.Error()), "ibm_is_bare_metal_server_action", "delete")
+				tfErr := flex.TerraformErrorf(err, fmt.Sprintf("isWaitForBareMetalServerActionAvailable failed: %s", waitErr.Error()), "ibm_is_bare_metal_server_action", "delete")
 				log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 				return tfErr.GetDiag()
 			}
@@ -326,7 +326,7 @@ func resourceIBMISBareMetalServerActionUpdate(context context.Context, d *schema
 			}
 			_, waitErr := isWaitForBareMetalServerActionAvailable(sess, bareMetalServerId, d.Timeout(schema.TimeoutDelete), d)
 			if waitErr != nil {
-				tfErr := flex.TerraformErrorf(err, fmt.Sprintf("isWaitForBareMetalServerActionAvailable failed: %s", err.Error()), "ibm_is_bare_metal_server_action", "delete")
+				tfErr := flex.TerraformErrorf(err, fmt.Sprintf("isWaitForBareMetalServerActionAvailable failed: %s", waitErr.Error()), "ibm_is_bare_metal_server_action", "delete")
 				log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 				return tfErr.GetDiag()
 			}

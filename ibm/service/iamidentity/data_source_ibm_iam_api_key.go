@@ -75,6 +75,11 @@ func DataSourceIBMIamApiKey() *schema.Resource {
 				Computed:    true,
 				Description: "ID of the account that this API key authenticates for.",
 			},
+			"expires_at": &schema.Schema{
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Date and time when the API key becomes invalid, ISO 8601 datetime in the format 'yyyy-MM-ddTHH:mm+0000'.",
+			},
 		},
 	}
 }
@@ -126,6 +131,9 @@ func dataSourceIbmIamApiKeyRead(context context.Context, d *schema.ResourceData,
 	}
 	if err = d.Set("account_id", apiKey.AccountID); err != nil {
 		return diag.FromErr(fmt.Errorf("[ERROR] Error setting account_id: %s", err))
+	}
+	if err = d.Set("expires_at", apiKey.ExpiresAt); err != nil {
+		return diag.FromErr(fmt.Errorf("[ERROR] Error setting expires_at: %s", err))
 	}
 
 	return nil

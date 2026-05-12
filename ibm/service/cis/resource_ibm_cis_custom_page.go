@@ -185,8 +185,14 @@ func resourceCISCustomPageRead(d *schema.ResourceData, meta interface{}) error {
 	d.Set(cisCustomPageRequiredTokens, flex.FlattenStringList(result.Result.RequiredTokens))
 	d.Set(cisCustomPageDesc, result.Result.Description)
 	d.Set(cisCustomPagePreviewTarget, result.Result.PreviewTarget)
-	d.Set(cisCustomPageCreatedOn, (*result.Result.CreatedOn).String())
-	d.Set(cisCustomPageModifiedOn, (*result.Result.ModifiedOn).String())
+
+	// Handle nullable timestamp fields - API returns null for default custom pages
+	if result.Result.CreatedOn != nil {
+		d.Set(cisCustomPageCreatedOn, (*result.Result.CreatedOn).String())
+	}
+	if result.Result.ModifiedOn != nil {
+		d.Set(cisCustomPageModifiedOn, (*result.Result.ModifiedOn).String())
+	}
 	return nil
 }
 

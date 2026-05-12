@@ -543,3 +543,77 @@ func TestAccIBMISInstanceDataSource_concom(t *testing.T) {
 		},
 	})
 }
+
+func TestAccIBMISInstanceDataSource_AvailabilityPolicy(t *testing.T) {
+
+	vpcname := fmt.Sprintf("tfins-vpc-%d", acctest.RandIntRange(10, 100))
+	subnetname := fmt.Sprintf("tfins-subnet-%d", acctest.RandIntRange(10, 100))
+	sshname := fmt.Sprintf("tfins-ssh-%d", acctest.RandIntRange(10, 100))
+	instanceName := fmt.Sprintf("tfins-name-%d", acctest.RandIntRange(10, 100))
+	resName := "data.ibm_is_instance.ds_instance"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { acc.TestAccPreCheck(t) },
+		Providers: acc.TestAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMISInstanceDataSourceAvailabilityPolicyConfig(vpcname, subnetname, sshname, instanceName),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(
+						resName, "name", instanceName),
+					resource.TestCheckResourceAttrSet(
+						resName, "availability.#"),
+					resource.TestCheckResourceAttr(
+						resName, "availability.0.class", "spot"),
+					resource.TestCheckResourceAttrSet(
+						resName, "availability_policy.#"),
+					resource.TestCheckResourceAttr(
+						resName, "availability_policy.0.preemption", "stop"),
+					resource.TestCheckResourceAttr(
+						resName, "availability_policy_host_failure", "restart"),
+				),
+			},
+		},
+	})
+}
+
+func testAccCheckIBMISInstanceDataSourceAvailabilityPolicyConfig(vpcname, subnetname, sshname, instanceName string) string {
+	return fmt.Sprintf(`
+resource "ibm_is_vpc" "testacc_vpc" {
+  name = "%s"
+}
+
+resource "ibm_is_subnet" "testacc_subnet" {
+  name            = "%s"
+  vpc             = ibm_is_vpc.testacc_vpc.id
+  zone            = "%s"
+  ipv4_cidr_block = "%s"
+}
+
+resource "ibm_is_ssh_key" "testacc_sshkey" {
+  name       = "%s"
+  public_key = file("./test-fixtures/.ssh/id_rsa.pub")
+}
+
+resource "ibm_is_instance" "testacc_instance" {
+  name    = "%s"
+  image   = "%s"
+  profile = "%s"
+  availability {
+    class = "spot"
+  }
+  availability_policy_host_failure = "restart"
+  availability_policy {
+    preemption = "stop"
+  }
+  primary_network_interface {
+    subnet     = ibm_is_subnet.testacc_subnet.id
+  }
+  vpc  = ibm_is_vpc.testacc_vpc.id
+  zone = "%s"
+  keys = [ibm_is_ssh_key.testacc_sshkey.id]
+}
+data "ibm_is_instance" "ds_instance" {
+  name        = ibm_is_instance.testacc_instance.name
+}`, vpcname, subnetname, acc.ISZoneName, acc.ISCIDR, sshname, instanceName, acc.IsImage, acc.InstanceProfileName, acc.ISZoneName)
+}

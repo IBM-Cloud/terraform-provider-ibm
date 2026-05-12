@@ -45,7 +45,7 @@ func ResourceIBMEnterpriseAccountGroup() *schema.Resource {
 				Type:         schema.TypeString,
 				Required:     true,
 				Description:  "The IAM ID of the primary contact for this account group, such as `IBMid-0123ABC`. The IAM ID must already exist.",
-				ValidateFunc: validate.ValidateRegexps("^IBMid\\-[A-Z,0-9]{10}$"),
+				ValidateFunc: validate.ValidateRegexps("^IBMid\\-[A-Z,0-9]{10}$", "^RedHat\\-[A-Z,0-9,-]{1,10}$"),
 			},
 			"url": {
 				Type:        schema.TypeString,

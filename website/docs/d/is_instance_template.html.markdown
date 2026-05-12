@@ -46,7 +46,15 @@ Review the argument references that you can specify for your data source.
 ## Attribute reference
 You can access the following attribute references after your data source is created. 
 - `availability_policy_host_failure` - (String) The availability policy for this virtual server instance. The action to perform if the compute host experiences a failure. 
-
+- `availability` - (List) The availability to use for this virtual server instance. **Note:** Spot instances are available only to accounts that have been granted special approval. Contact IBM Support if you are interested in using spot instances.
+	Nested schema for **availability**:
+	- `class` - (String) The availability class for the virtual server instance.- `spot`: The virtual server instance may be preempted.- `standard`: The virtual server instance will not be preempted.If `spot` is specified, the virtual server instance:- `reservation_affinity.policy` must be `disabled`- `placement_target` must not specify a dedicated host or dedicated host group. The default value is `standard`. Allowable values are: `spot`, `standard`.
+- `availability_policy` - (List) The availability policy to use for this virtual server instance.
+	Nested schema for **availability_policy**:
+	- `host_failure` - (String) The action to perform if the compute host experiences a failure:- `restart`: Restart the virtual server instance- `stop`: Leave the virtual server instance stopped. See [handling host failures](https://cloud.ibm.com/docs/vpc?topic=vpc-host-failure-recovery-policies) for details. The default value is `restart`. Allowable values are: `restart`, `stop`.
+	- `preemption` - (String) The action to perform if the virtual server instance is preempted:- `delete`: Delete the virtual server instance- `stop`: Leave the virtual server instance stopped. See [virtual server instance preemption](https://cloud.ibm.com/docs/vpc?topic=vpc-spot-instances-virtual-servers#spot-instances-preemption) for details. The default value is `stop`. Allowable values are: `delete`, `stop`.
+ 	
+	-> **Note:** This property is only applicable when availability class is set to `spot`.
 - `boot_volume` - (List) A nested block describes the boot volume configuration for the template.
 
 	Nested scheme for `boot_volume`:
@@ -58,16 +66,16 @@ You can access the following attribute references after your data source is crea
 	 - `bare_metal_server` - (Optional, String) The expression that must be satisfied by the properties of a bare metal server provisioned using the image data in this volume. If unspecified, the expression will be set to true. The expression follows [Common Expression Language](https://github.com/google/cel-spec/blob/master/doc/langdef.md), but does not support built-in functions and macros. 
 	
 	 ~> **NOTE** </br> In addition, the following property is supported, corresponding to the `BareMetalServer` property: </br>
-	 **&#x2022;** `enable_secure_boot` - (boolean) Indicates whether secure boot is enabled.
+	 **&#x2022;*- `enable_secure_boot` - (boolean) Indicates whether secure boot is enabled.
 		
 	 - `instance` - (Optional, String) The expression that must be satisfied by the properties of a virtual server instance provisioned using this volume. If unspecified, the expression will be set to true. The expression follows [Common Expression Language](https://github.com/google/cel-spec/blob/master/doc/langdef.md), but does not support built-in functions and macros.
 	
 	 ~> **NOTE** </br> In addition, the following variables are supported, corresponding to `Instance` properties: </br>
-	 **&#x2022;** `gpu.count` - (integer) The number of GPUs. </br>
-	 **&#x2022;** `gpu.manufacturer` - (string) The GPU manufacturer. </br>
-	 **&#x2022;** `gpu.memory` - (integer) The overall amount of GPU memory in GiB (gibibytes). </br>
-	 **&#x2022;** `gpu.model` - (string) The GPU model. </br>
-	 **&#x2022;** `enable_secure_boot` - (boolean) Indicates whether secure boot is enabled. </br> 		
+	 **&#x2022;*- `gpu.count` - (integer) The number of GPUs. </br>
+	 **&#x2022;*- `gpu.manufacturer` - (string) The GPU manufacturer. </br>
+	 **&#x2022;*- `gpu.memory` - (integer) The overall amount of GPU memory in GiB (gibibytes). </br>
+	 **&#x2022;*- `gpu.model` - (string) The GPU model. </br>
+	 **&#x2022;*- `enable_secure_boot` - (boolean) Indicates whether secure boot is enabled. </br> 		
 	- `bandwidth` - (Optional, Integer) The maximum bandwidth (in megabits per second) for the volume. For this property to be specified, the volume storage_generation must be 2.
 	- `delete_volume_on_instance_delete` - (String) You can configure to delete the boot volume based on instance deletion.
 	- `encryption` - (String) The encryption key CRN such as HPCS, Key Protect, etc., is provided to encrypt the boot volume attached.
@@ -257,16 +265,16 @@ You can access the following attribute references after your data source is crea
 		- `bare_metal_server` - (Optional, String) The expression that must be satisfied by the properties of a bare metal server provisioned using the image data in this volume. If unspecified, the expression will be set to true. The expression follows [Common Expression Language](https://github.com/google/cel-spec/blob/master/doc/langdef.md), but does not support built-in functions and macros. 
 		
 		~> **NOTE** </br> In addition, the following property is supported, corresponding to the `BareMetalServer` property: </br>
-		    **&#x2022;** `enable_secure_boot` - (boolean) Indicates whether secure boot is enabled.
+		    **&#x2022;*- `enable_secure_boot` - (boolean) Indicates whether secure boot is enabled.
 		
 		- `instance` - (Optional, String) The expression that must be satisfied by the properties of a virtual server instance provisioned using this volume. If unspecified, the expression will be set to true. The expression follows [Common Expression Language](https://github.com/google/cel-spec/blob/master/doc/langdef.md), but does not support built-in functions and macros.
 		
 		~> **NOTE** </br> In addition, the following variables are supported, corresponding to `Instance` properties: </br>
-		    **&#x2022;** `gpu.count` - (integer) The number of GPUs. </br>
-		    **&#x2022;** `gpu.manufacturer` - (string) The GPU manufacturer. </br>
-		    **&#x2022;** `gpu.memory` - (integer) The overall amount of GPU memory in GiB (gibibytes). </br>
-		    **&#x2022;** `gpu.model` - (string) The GPU model. </br>
-		    **&#x2022;** `enable_secure_boot` - (boolean) Indicates whether secure boot is enabled. </br> 		
+		    **&#x2022;*- `gpu.count` - (integer) The number of GPUs. </br>
+		    **&#x2022;*- `gpu.manufacturer` - (string) The GPU manufacturer. </br>
+		    **&#x2022;*- `gpu.memory` - (integer) The overall amount of GPU memory in GiB (gibibytes). </br>
+		    **&#x2022;*- `gpu.model` - (string) The GPU model. </br>
+		    **&#x2022;*- `enable_secure_boot` - (boolean) Indicates whether secure boot is enabled. </br> 		
 		- `bandwidth` - (Optional, Integer) The maximum bandwidth (in megabits per second) for the volume. For this property to be specified, the volume storage_generation must be 2.
 		- `capacity` - (String) The capacity of the volume in gigabytes. The specified minimum and maximum capacity values for creating or updating volumes can expand in the future.
 		- `encryption_key` - (String) The CRN of the [Key Protect Root Key](https://cloud.ibm.com/docs/key-protect?topic=key-protect-getting-started-tutorial) or [Hyper Protect Crypto Service Root Key](https://cloud.ibm.com/docs/hs-crypto?topic=hs-crypto-get-started) for this resource.

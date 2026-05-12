@@ -54,7 +54,8 @@ func TestAccIBMPdrLastOperationDataSourceBasic(t *testing.T) {
 func testAccCheckIBMPdrLastOperationDataSourceConfigBasic() string {
 	return fmt.Sprintf(`
 		data "ibm_pdr_last_operation" "pdr_last_operation_instance" {
-			instance_id = "ac645fe5-fba1-4cb3-952e-e1b09fa0df26"
+			instance_id = "123456d3-1122-3344-b67d-4389b44b7bf9"
+			Accept-Language = "Accept-Language"
 		}
 	`)
 }

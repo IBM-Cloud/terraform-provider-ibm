@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -61,10 +62,17 @@ func ResourceIBMPublicAddressRange() *schema.Resource {
 				Description: "The number of IPv4 addresses in this public address range.",
 			},
 			"name": &schema.Schema{
-				Type:         schema.TypeString,
-				Optional:     true,
-				ValidateFunc: validate.InvokeValidator("ibm_is_public_address_range", "name"),
-				Description:  "The name for this public address range. The name is unique across all public address ranges in the region.",
+				Type:     schema.TypeString,
+				Optional: true,
+				ValidateFunc: func(v interface{}, k string) (ws []string, errors []error) {
+					value := v.(string)
+					if strings.HasPrefix(value, "ibm-") {
+						errors = append(errors, fmt.Errorf("%q cannot start with 'ibm-'", k))
+						return
+					}
+					return validate.InvokeValidator("ibm_is_public_address_range", "name")(v, k)
+				},
+				Description: "The name for this public address range. The name is unique across all public address ranges in the region.",
 			},
 			"resource_group": &schema.Schema{
 				Type:        schema.TypeList,
