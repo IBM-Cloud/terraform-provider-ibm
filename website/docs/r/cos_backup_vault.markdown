@@ -43,5 +43,5 @@ Review the argument references that you can specify for your resource.
 ## Attribute reference
 In addition to all argument reference list, you can access the following attribute reference after your resource is created.
 
-- `crn` - (String) The CRN of the backup vault.
+- `backup_vault_crn` - (String) The CRN of the backup vault.
 - `id` - (String) The ID of the backup vault.

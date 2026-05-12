@@ -66,6 +66,11 @@ func DataSourceIBMPINetworkInterface() *schema.Resource {
 				},
 				Type: schema.TypeList,
 			},
+			Attr_ExternalIP: {
+				Computed:    true,
+				Description: "The external ip address for pub-vlan networks.",
+				Type:        schema.TypeString,
+			},
 			Attr_IPAddress: {
 				Computed:    true,
 				Description: "The ip address of this Network Interface.",
@@ -134,6 +139,7 @@ func dataSourceIBMPINetworkInterfaceRead(ctx context.Context, d *schema.Resource
 	}
 
 	d.SetId(fmt.Sprintf("%s/%s", networkID, *networkInterface.ID))
+	d.Set(Attr_ExternalIP, networkInterface.ExternalIP)
 	d.Set(Attr_IPAddress, networkInterface.IPAddress)
 	d.Set(Attr_MacAddress, networkInterface.MacAddress)
 	d.Set(Attr_Name, networkInterface.Name)

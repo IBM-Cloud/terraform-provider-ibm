@@ -1,8 +1,8 @@
-// Copyright IBM Corp. 2024 All Rights Reserved.
+// Copyright IBM Corp. 2026 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 /*
- * IBM OpenAPI Terraform Generator Version: 3.94.1-71478489-20240820-161623
+ * IBM OpenAPI Terraform Generator Version: 3.102.0-615ec964-20250307-203034
  */
 
 package codeengine
@@ -12,12 +12,13 @@ import (
 	"fmt"
 	"log"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM/code-engine-go-sdk/codeenginev2"
 	"github.com/IBM/go-sdk-core/v5/core"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 func DataSourceIbmCodeEngineBuild() *schema.Resource {
@@ -25,93 +26,127 @@ func DataSourceIbmCodeEngineBuild() *schema.Resource {
 		ReadContext: dataSourceIbmCodeEngineBuildRead,
 
 		Schema: map[string]*schema.Schema{
-			"project_id": {
+			"project_id": &schema.Schema{
 				Type:        schema.TypeString,
 				Required:    true,
 				Description: "The ID of the project.",
 			},
-			"name": {
+			"name": &schema.Schema{
 				Type:        schema.TypeString,
 				Required:    true,
 				Description: "The name of your build.",
 			},
-			"created_at": {
+			"created_at": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The timestamp when the resource was created.",
 			},
-			"entity_tag": {
+			"entity_tag": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The version of the build instance, which is used to achieve optimistic locking.",
 			},
-			"href": {
+			"href": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "When you provision a new build,  a URL is created identifying the location of the instance.",
 			},
-			"build_id": {
+			"build_id": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The identifier of the resource.",
 			},
-			"output_image": {
+			"output_image": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The name of the image.",
 			},
-			"output_secret": {
+			"output_secret": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The secret that is required to access the image registry. Make sure that the secret is granted with push permissions towards the specified container registry namespace.",
 			},
-			"region": {
+			"region": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The region of the project the resource is located in. Possible values: 'au-syd', 'br-sao', 'ca-tor', 'eu-de', 'eu-gb', 'jp-osa', 'jp-tok', 'us-east', 'us-south'.",
 			},
-			"resource_type": {
+			"resource_type": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The type of the build.",
 			},
-			"source_context_dir": {
+			"run_build_params": &schema.Schema{
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "References to config maps and secret keys, or literal values, which are defined by the build owner and are exposed as build arguments in Docker files.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"key": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The key to reference as build param.",
+						},
+						"name": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The name of the build param.",
+						},
+						"reference": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The name of the secret or config map.",
+						},
+						"type": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Specify the type of the build param.",
+						},
+						"value": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The literal value of the build param.",
+						},
+					},
+				},
+			},
+			"source_context_dir": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "Optional directory in the repository that contains the buildpacks file or the Dockerfile.",
 			},
-			"source_revision": {
+			"source_revision": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "Commit, tag, or branch in the source repository to pull. This field is optional if the `source_type` is `git` and uses the HEAD of default branch if not specified. If the `source_type` value is `local`, this field must be omitted.",
 			},
-			"source_secret": {
+			"source_secret": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "Name of the secret that is used access the repository source. This field is optional if the `source_type` is `git`. Additionally, if the `source_url` points to a repository that requires authentication, the build will be created but cannot access any source code, until this property is provided, too. If the `source_type` value is `local`, this field must be omitted.",
 			},
-			"source_type": {
+			"source_type": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "Specifies the type of source to determine if your build source is in a repository or based on local source code.* local - For builds from local source code.* git - For builds from git version controlled source code.",
 			},
-			"source_url": {
+			"source_url": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The URL of the code repository. This field is required if the `source_type` is `git`. If the `source_type` value is `local`, this field must be omitted. If the repository is publicly available you can provide a 'https' URL like `https://github.com/IBM/CodeEngine`. If the repository requires authentication, you need to provide a 'ssh' URL like `git@github.com:IBM/CodeEngine.git` along with a `source_secret` that points to a secret of format `ssh_auth`.",
 			},
-			"status": {
+			"status": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The current status of the build.",
 			},
-			"status_details": {
+			"status_details": &schema.Schema{
 				Type:        schema.TypeList,
 				Computed:    true,
 				Description: "The detailed status of the build.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"reason": {
+						"reason": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "Optional information to provide more context in case of a 'failed' or 'warning' status.",
@@ -119,22 +154,22 @@ func DataSourceIbmCodeEngineBuild() *schema.Resource {
 					},
 				},
 			},
-			"strategy_size": {
+			"strategy_size": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "Optional size for the build, which determines the amount of resources used. Build sizes are `small`, `medium`, `large`, `xlarge`, `xxlarge`.",
 			},
-			"strategy_spec_file": {
+			"strategy_spec_file": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "Optional path to the specification file that is used for build strategies for building an image.",
 			},
-			"strategy_type": {
+			"strategy_type": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The strategy to use for building the image.",
 			},
-			"timeout": {
+			"timeout": &schema.Schema{
 				Type:        schema.TypeInt,
 				Computed:    true,
 				Description: "The maximum amount of time, in seconds, that can pass before the build must succeed or fail.",
@@ -207,6 +242,18 @@ func dataSourceIbmCodeEngineBuildRead(context context.Context, d *schema.Resourc
 		}
 	}
 
+	runBuildParams := []map[string]interface{}{}
+	for _, runBuildParamsItem := range build.RunBuildParams {
+		runBuildParamsItemMap, err := DataSourceIbmCodeEngineBuildBuildParamToMap(&runBuildParamsItem) // #nosec G601
+		if err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_code_engine_build", "read", "run_build_params-to-map").GetDiag()
+		}
+		runBuildParams = append(runBuildParams, runBuildParamsItemMap)
+	}
+	if err = d.Set("run_build_params", runBuildParams); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting run_build_params: %s", err), "(Data) ibm_code_engine_build", "read", "set-run_build_params").GetDiag()
+	}
+
 	if !core.IsNil(build.SourceContextDir) {
 		if err = d.Set("source_context_dir", build.SourceContextDir); err != nil {
 			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting source_context_dir: %s", err), "(Data) ibm_code_engine_build", "read", "set-source_context_dir").GetDiag()
@@ -274,6 +321,24 @@ func dataSourceIbmCodeEngineBuildRead(context context.Context, d *schema.Resourc
 	}
 
 	return nil
+}
+
+func DataSourceIbmCodeEngineBuildBuildParamToMap(model *codeenginev2.BuildParam) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.Key != nil {
+		modelMap["key"] = *model.Key
+	}
+	if model.Name != nil {
+		modelMap["name"] = *model.Name
+	}
+	if model.Reference != nil {
+		modelMap["reference"] = *model.Reference
+	}
+	modelMap["type"] = *model.Type
+	if model.Value != nil {
+		modelMap["value"] = *model.Value
+	}
+	return modelMap, nil
 }
 
 func DataSourceIbmCodeEngineBuildBuildStatusToMap(model *codeenginev2.BuildStatus) (map[string]interface{}, error) {

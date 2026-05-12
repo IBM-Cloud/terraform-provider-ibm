@@ -34,12 +34,12 @@ After your data source is created, you can read values from the following attrib
 - `available_ipv4_address_count` - (Integer) The number of IPv4 addresses in this cluster network subnet that are not in use, and have not been reserved by the user or the provider.
 - `created_at` - (String) The date and time that the cluster network subnet was created.
 - `href` - (String) The URL for this cluster network subnet.
-- `ip_version` - (String) The IP version for this cluster network subnet.The enumerated values for this property may[expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) in the future.
+- `ip_version` - (String) The IP version for this cluster network subnet.The enumerated values for this property may [expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) in the future.
 - `ipv4_cidr_block` - (String) The IPv4 range of this cluster network subnet, expressed in CIDR format.
 - `lifecycle_reasons` - (List) The reasons for the current `lifecycle_state` (if any).
   
   Nested schema for **lifecycle_reasons**:
-	- `code` - (String) A reason code for this lifecycle state:- `internal_error`: internal error (contact IBM support)- `resource_suspended_by_provider`: The resource has been suspended (contact IBM  support)The enumerated values for this property may[expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) in the future.
+	- `code` - (String) A reason code for this lifecycle state:- `internal_error`: internal error (contact IBM support)- `resource_suspended_by_provider`: The resource has been suspended (contact IBM  support)The enumerated values for this property may [expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) in the future.
 	- `message` - (String) An explanation of the reason for this lifecycle state.
 	- `more_info` - (String) Link to documentation about the reason for this lifecycle state.
 - `lifecycle_state` - (String) The lifecycle state of the cluster network subnet.

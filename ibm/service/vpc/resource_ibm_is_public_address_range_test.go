@@ -5,6 +5,7 @@ package vpc_test
 
 import (
 	"fmt"
+	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
@@ -32,6 +33,23 @@ func TestAccIBMPublicAddressRangeBasic(t *testing.T) {
 					testAccCheckIBMPublicAddressRangeExists("ibm_is_public_address_range.public_address_range_instance", conf),
 					resource.TestCheckResourceAttr("ibm_is_public_address_range.public_address_range_instance", "ipv4_address_count", ipv4AddressCount),
 				),
+			},
+		},
+	})
+}
+
+func TestAccIBMPublicAddressRangeNameValidation(t *testing.T) {
+	vpcName := fmt.Sprintf("tf-name-vpc%d", acctest.RandIntRange(10, 100))
+	invalidName := "ibm-test"
+	ipv4AddressCount := "16"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { acc.TestAccPreCheck(t) },
+		Providers: acc.TestAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config:      testAccCheckIBMPublicAddressRangeConfigBasic(vpcName, invalidName, ipv4AddressCount),
+				ExpectError: regexp.MustCompile(`"name" cannot start with 'ibm-'`),
 			},
 		},
 	})

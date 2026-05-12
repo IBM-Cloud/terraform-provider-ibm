@@ -15,7 +15,6 @@ Create, update, and delete metrics_router_targets with this resource.
 ```hcl
 resource "ibm_metrics_router_target" "metrics_router_target_instance" {
   destination_crn = "crn:v1:bluemix:public:sysdig-monitor:us-south:a/0be5ad401ae913d8ff665d92680664ed:22222222-2222-2222-2222-222222222222::"
-  managed_by = "enterprise"
   name = "my-mr-target"
   region = "us-south"
 }

@@ -60,6 +60,7 @@ Review the argument references that you can specify for your resource.
 In addition to all argument reference list, you can access the following attribute reference after your resource is created.
 
 - `crn` - (String) The network interface's crn.
+- `external_ip` - (String) The external ip address for pub-vlan networks.
 - `id` - (String) The unique identifier of the network interface resource. The ID is composed of `<cloud_instance_id>/<network_id>/<network_interface_id>`.
 - `instance` - (List) The attached instance to this network interface.
 

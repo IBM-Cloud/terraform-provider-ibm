@@ -39,5 +39,6 @@ In addition to the argument reference list, you can access the following attribu
 - `entity_tag` - (String) Version of the API Key details object. You need to specify this value when updating the API key to avoid stale updates.
 - `iam_id` - (String) The `iam_id` that this API key authenticates.
 - `locked` - (Bool) The API key cannot be changed if set to true.
+- `expires_at` - (String) Date and time when the API key becomes invalid, ISO 8601 datetime in the format 'yyyy-MM-ddTHH:mm+0000'. WARNING An API key will be permanently and irrevocably deleted when both the expires_at and modified_at timestamps are more than ninety (90) days in the past, regardless of the key's locked status or any other state.
 - `modified_at` - (Timestamp) If set contains a date time string of the last modification date in ISO format.
 - `name` - (String) Name of the API key. The name is not checked for uniqueness. Therefore, multiple names with the same value can exist. Access is done by using the UUID of the API key.

@@ -71,7 +71,7 @@ In addition to all argument reference list, you can access the following attribu
 - `replication_status` - (String) The replication status of the volume.
 - `replication_type` - (String) The replication type of the volume, `metro` or `global`.
 - `shareable` - (String) Indicates if the volume is shareable between VMs.
-- `size` - (Integer) The size of the volume in GB.
+- `size` - (Integer) The size of the volume in GiB.
 - `state` - (String) The state of the volume.
 - `user_tags` - (List) List of user tags attached to the resource.
 - `volume_pool` - (String) The name of storage pool where the volume is located.

@@ -69,10 +69,10 @@ After your resource is created, you can read values from the listed arguments an
 	- `id` - (String) The unique identifier for this resource group.
 	- `name` - (String) The name for this resource group.
 - `resource_type` - (String) The resource type.
-- `status` - (String) The status of the share snapshot:- `available`: The share snapshot is available for use.- `failed`: The share snapshot is irrecoverably unusable.- `pending`: The share snapshot is being provisioned and is not yet usable.- `unusable`: The share snapshot is not currently usable (see `status_reasons`)The enumerated values for this property may[expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) in the future.
+- `status` - (String) The status of the share snapshot:- `available`: The share snapshot is available for use.- `failed`: The share snapshot is irrecoverably unusable.- `pending`: The share snapshot is being provisioned and is not yet usable.- `unusable`: The share snapshot is not currently usable (see `status_reasons`)The enumerated values for this property may [expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) in the future.
 - `status_reasons` - (List) The reasons for the current status (if any).
 	Nested schema for **status_reasons**:
-	- `code` - (String) A reason code for the status:- `encryption_key_deleted`: File share snapshot is unusable  because its `encryption_key` was deleted- `internal_error`: Internal error (contact IBM support)The enumerated values for this property may[expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) in the future.
+	- `code` - (String) A reason code for the status:- `encryption_key_deleted`: File share snapshot is unusable  because its `encryption_key` was deleted- `internal_error`: Internal error (contact IBM support)The enumerated values for this property may [expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) in the future.
 	- `message` - (String) An explanation of the status reason.
 	- `more_info` - (String) Link to documentation about this status reason.
 - `zone` - (List) The zone this share snapshot resides in.

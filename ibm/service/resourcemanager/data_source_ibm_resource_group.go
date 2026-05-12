@@ -22,7 +22,7 @@ func DataSourceIBMResourceGroup() *schema.Resource {
 				Type:         schema.TypeString,
 				Optional:     true,
 				Computed:     true,
-				ExactlyOneOf: []string{"is_default", "name"},
+				ExactlyOneOf: []string{"is_default", "name", "id"},
 				ValidateFunc: validate.InvokeDataSourceValidator("ibm_resource_group",
 					"name"),
 			},
@@ -31,7 +31,16 @@ func DataSourceIBMResourceGroup() *schema.Resource {
 				Type:         schema.TypeBool,
 				Optional:     true,
 				Computed:     true,
-				ExactlyOneOf: []string{"is_default", "name"},
+				ExactlyOneOf: []string{"is_default", "name", "id"},
+			},
+			"id": {
+				Description:  "Resource group ID",
+				Type:         schema.TypeString,
+				Optional:     true,
+				Computed:     true,
+				ExactlyOneOf: []string{"is_default", "name", "id"},
+				ValidateFunc: validate.InvokeDataSourceValidator("ibm_resource_group",
+					"id"),
 			},
 			"state": {
 				Type:        schema.TypeString,
@@ -97,6 +106,14 @@ func DataSourceIBMResourceGroupValidator() *validate.ResourceValidator {
 			CloudDataType:              "resource_group",
 			CloudDataRange:             []string{"resolved_to:name"},
 			Optional:                   true})
+	validateSchema = append(validateSchema,
+		validate.ValidateSchema{
+			Identifier:                 "id",
+			ValidateFunctionIdentifier: validate.ValidateCloudData,
+			Type:                       validate.TypeString,
+			CloudDataType:              "resource_group",
+			CloudDataRange:             []string{"resolved_to:id"},
+			Optional:                   true})
 
 	ibmIBMResourceGroupValidator := validate.ResourceValidator{ResourceName: "ibm_resource_group", Schema: validateSchema}
 	return &ibmIBMResourceGroupValidator
@@ -116,33 +133,52 @@ func dataSourceIBMResourceGroupRead(d *schema.ResourceData, meta interface{}) er
 	if n, ok := d.GetOk("name"); ok {
 		name = n.(string)
 	}
+	var resourceGroupID string
+	if id, ok := d.GetOk("id"); ok {
+		resourceGroupID = id.(string)
+	}
 
-	if !defaultGrp && name == "" {
-		return fmt.Errorf("[ERROR] Missing required properties. Need a resource group name, or the is_default true")
+	if !defaultGrp && name == "" && resourceGroupID == "" {
+		return fmt.Errorf("[ERROR] Missing required properties. Need a resource group name, resource group ID, or the is_default true")
 	}
-	userDetails, err := meta.(conns.ClientSession).BluemixUserDetails()
-	if err != nil {
-		return err
-	}
-	accountID := userDetails.UserAccount
 
-	resourceGroupList := rg.ListResourceGroupsOptions{
-		AccountID: &accountID,
-	}
-	if defaultGrp {
-		resourceGroupList.Default = &defaultGrp
+	var resourceGroup rg.ResourceGroup
 
-	} else if name != "" {
-		resourceGroupList.Name = &name
+	// If id is provided, use GetResourceGroup API
+	if resourceGroupID != "" {
+		getResourceGroupOptions := &rg.GetResourceGroupOptions{
+			ID: &resourceGroupID,
+		}
+		rGroup, resp, err := rMgtClient.GetResourceGroup(getResourceGroupOptions)
+		if err != nil || rGroup == nil {
+			return fmt.Errorf("[ERROR] Error retrieving resource group by ID: %s %s", err, resp)
+		}
+		resourceGroup = *rGroup
+	} else {
+		// Use ListResourceGroups API for name or default lookup
+		userDetails, err := meta.(conns.ClientSession).BluemixUserDetails()
+		if err != nil {
+			return err
+		}
+		accountID := userDetails.UserAccount
+
+		resourceGroupList := rg.ListResourceGroupsOptions{
+			AccountID: &accountID,
+		}
+		if defaultGrp {
+			resourceGroupList.Default = &defaultGrp
+		} else if name != "" {
+			resourceGroupList.Name = &name
+		}
+		rgList, resp, err := rMgtClient.ListResourceGroups(&resourceGroupList)
+		if err != nil || rgList == nil || rgList.Resources == nil {
+			return fmt.Errorf("[ERROR] Error retrieving resource group: %s %s", err, resp)
+		}
+		if len(rgList.Resources) < 1 {
+			return fmt.Errorf("[ERROR] Given Resource Group is not found in the account : %s %s", err, resp)
+		}
+		resourceGroup = rgList.Resources[0]
 	}
-	rg, resp, err := rMgtClient.ListResourceGroups(&resourceGroupList)
-	if err != nil || rg == nil || rg.Resources == nil {
-		return fmt.Errorf("[ERROR] Error retrieving resource group: %s %s", err, resp)
-	}
-	if len(rg.Resources) < 1 {
-		return fmt.Errorf("[ERROR] Given Resource Group is not found in the account : %s %s", err, resp)
-	}
-	resourceGroup := rg.Resources[0]
 	d.SetId(*resourceGroup.ID)
 	if resourceGroup.Name != nil {
 		d.Set("name", *resourceGroup.Name)
@@ -176,7 +212,7 @@ func dataSourceIBMResourceGroupRead(d *schema.ResourceData, meta interface{}) er
 	if resourceGroup.QuotaID != nil {
 		d.Set("quota_id", *resourceGroup.QuotaID)
 	}
-	if resourceGroup.QuotaID != nil {
+	if resourceGroup.AccountID != nil {
 		d.Set("account_id", *resourceGroup.AccountID)
 	}
 	if resourceGroup.ResourceLinkages != nil {

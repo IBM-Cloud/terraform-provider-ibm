@@ -133,6 +133,12 @@ func DataSourceIBMISEndpointGateway() *schema.Resource {
 							Computed:    true,
 							Description: "Endpoint gateway IP Address",
 						},
+						isVirtualEndpointGatewayIPsSubnet: {
+							Type:        schema.TypeString,
+							Optional:    true,
+							Computed:    true,
+							Description: "The Subnet id",
+						},
 					},
 				},
 			},

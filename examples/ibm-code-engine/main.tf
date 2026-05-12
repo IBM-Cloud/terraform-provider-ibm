@@ -204,3 +204,28 @@ locals {
   }
   function_code_reference = format("data:text/plain;base64,%s", filebase64(var.code_engine_function_code_reference_file_path))
 }
+
+//////////////////
+// Actions
+
+// Action: Trigger build run and wait for completion
+// Invoke with: terraform apply -invoke action.ibm_code_engine_build_run.trigger
+action "ibm_code_engine_build_run" "trigger" {
+  config {
+    project_id   = ibm_code_engine_project.code_engine_project_instance.project_id
+    build_name   = ibm_code_engine_build.code_engine_build_instance.name
+    name         = "my-build-run"
+    timeout      = 600  # Build execution timeout in seconds (10 minutes)
+    wait_timeout = 660  # Wait timeout in seconds (11 minutes)
+  }
+}
+
+// Action: Trigger build run without waiting (fire-and-forget)
+// Invoke with: terraform apply -invoke action.ibm_code_engine_build_run.trigger_no_wait
+action "ibm_code_engine_build_run" "trigger_no_wait" {
+  config {
+    project_id = ibm_code_engine_project.code_engine_project_instance.project_id
+    build_name = ibm_code_engine_build.code_engine_build_instance.name
+    no_wait    = true
+  }
+}

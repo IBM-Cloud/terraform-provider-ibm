@@ -345,7 +345,7 @@ Nested schema for **display_name**:
 * `parent_ids` - (Optional, List) The list of parent IDs for product access management.
   * Constraints: The list items must match regular expression `/^\\S*$/`. The maximum length is `100` items. The minimum length is `0` items.
 * `product_id` - (Required, Forces new resource, String) The unique ID of the resource.
-  * Constraints: The maximum length is `71` characters. The minimum length is `71` characters. The value must match regular expression `/^[a-zA-Z0-9]{32}:o:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/`.
+  * Constraints: Length must be `71` characters. The value must match regular expression `/^[a-zA-Z0-9]{32}:o:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/`.
 * `resource_hierarchy_attribute` - (Optional, List) The resource hierarchy key-value pair for composite services.
 Nested schema for **resource_hierarchy_attribute**:
 	* `key` - (Optional, String) The resource hierarchy key.

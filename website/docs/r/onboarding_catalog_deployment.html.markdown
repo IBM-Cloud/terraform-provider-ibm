@@ -26,6 +26,7 @@ resource "ibm_onboarding_catalog_deployment" "onboarding_catalog_deployment_inst
 		service {
 			rc_provisionable = true
 			iam_compatible = true
+			plan_updateable = true
 			service_key_supported = true
 			parameters {
 				displayname = "displayname"
@@ -385,7 +386,7 @@ Nested schema for **metadata**:
 			  * Constraints: The maximum length is `2083` characters. The minimum length is `1` character. The value must match regular expression `/^(?!mailto:)(?:(?:http|https|ftp):\/\/)(?:\\S+(?::\\S*)?@)?(?:(?:(?:[1-9]\\d?|1\\d\\d|2[01]\\d|22[0-3])(?:\\.(?:1?\\d{1,2}|2[0-4]\\d|25[0-5])){2}(?:\\.(?:[0-9]\\d?|1\\d\\d|2[0-4]\\d|25[0-4]))|(?:(?:[a-z\\u00a1-\\uffff0-9]+-?)*[a-z\\u00a1-\\uffff0-9]+)(?:\\.(?:[a-z\\u00a1-\\uffff0-9]+-?)*[a-z\\u00a1-\\uffff0-9]+)*(?:\\.(?:[a-z\\u00a1-\\uffff]{2,})))|localhost)(?::\\d{2,5})?(?:(\/|\\?|#)[^\\s]*)?$/`.
 			* `value` - (Optional, List)
 			  * Constraints: The list items must match regular expression `/^[ -~\\s]*$/`. The maximum length is `1000` items. The minimum length is `0` items.
-		* `plan_updateable` - (Computed, Boolean) Indicates plan update support and controls the Plan tab on the Resource Details page.
+		* `plan_updateable` - (Optional, Boolean) Indicates plan update support and controls the Plan tab on the Resource Details page.
 		* `rc_provisionable` - (Optional, Boolean) Whether the service is provisionable by the resource controller service.
 		* `service_key_supported` - (Optional, Boolean) Indicates service credentials support and controls the Service Credential tab on Resource Details page.
 		* `unique_api_key` - (Computed, Boolean) Indicates whether the deployment uses a unique API key or not.
@@ -404,7 +405,7 @@ Nested schema for **overview_ui**:
 		* `display_name` - (Optional, String) The display name of the product.
 		* `long_description` - (Optional, String) The detailed description of your product that is displayed at the beginning of your product page in the catalog. Markdown markup language is supported.
 * `product_id` - (Required, Forces new resource, String) The unique ID of the resource.
-  * Constraints: The maximum length is `71` characters. The minimum length is `71` characters. The value must match regular expression `/^[a-zA-Z0-9]{32}:o:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/`.
+  * Constraints: Length must be `71` characters. The value must match regular expression `/^[a-zA-Z0-9]{32}:o:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/`.
 * `tags` - (Optional, List) A list of tags that carry information about your product. These tags can be used to find your product in the IBM Cloud catalog.
   * Constraints: The list items must match regular expression `/^[a-z0-9\\-._]+$/`. The maximum length is `100` items. The minimum length is `0` items.
 

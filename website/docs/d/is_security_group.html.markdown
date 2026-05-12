@@ -43,30 +43,42 @@ resource "ibm_is_security_group_rule" "example" {
   group     = ibm_is_security_group.example.id
   direction = "inbound"
   remote    = "127.0.0.1"
-  icmp {
-    code = 20
-    type = 30
-  }
+  # Deprecated block: replaced with 'protocol', 'code', and 'type' arguments
+  # icmp {
+  #   code = 20
+  #   type = 30
+  # }
+  protocol  = "icmp"
+  code      = 20
+  type      = 30
 }
 
 resource "ibm_is_security_group_rule" "example" {
   group     = ibm_is_security_group.example.id
   direction = "inbound"
   remote    = "127.0.0.1"
-  udp {
-    port_min = 805
-    port_max = 807
-  }
+  # Deprecated block: replaced with 'protocol', 'port_min', and 'port_max' arguments
+  # udp {
+  #   port_min = 805
+  #   port_max = 807
+  # }
+  protocol  = "udp"
+  port_min = 805
+  port_max = 807
 }
 
 resource "ibm_is_security_group_rule" "example" {
   group     = ibm_is_security_group.example.id
-  direction = "egress"
+  direction = "inbound"
   remote    = "127.0.0.1"
-  tcp {
-    port_min = 8080
-    port_max = 8080
-  }
+  # Deprecated block: replaced with 'protocol', 'port_min', and 'port_max' arguments
+  # tcp {
+  #  port_min = 8080
+  #  port_max = 8080
+  # }
+  protocol  = "tcp"
+  port_min = 8080
+  port_max = 8080
 }
 
 data "ibm_is_security_group" "example" {
@@ -100,7 +112,7 @@ In addition to all argument reference list, you can access the following attribu
   - `direction` - (String) Direction of traffic to enforce, either inbound or outbound.
   - `local` - (String) 	The local IP address or range of local IP addresses to which this rule will allow inbound traffic (or from which, for outbound traffic). A CIDR block of 0.0.0.0/0 allows traffic to all local IP addresses (or from all local IP addresses, for outbound rules). an IP address, a `CIDR` block.
   - `ip_version` - (String) IP version: IPv4
-  - `protocol` - (String) The type of the protocol `all`, `icmp`, `tcp`, `udp`.
+  - `protocol` - (String) The type of the protocol `icmp_tcp_udp`, `icmp`, `tcp`, `udp`.
   - `type` - (String) The traffic type to allow.
   - `name` - (String) The name for this security group rule. The name must not be used by another rule in the security group.
   - `code` - (String) The traffic code to allow.

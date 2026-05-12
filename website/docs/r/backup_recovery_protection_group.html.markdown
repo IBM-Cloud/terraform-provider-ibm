@@ -440,6 +440,7 @@ Nested schema for **alert_policy**:
 * `environment` - (Required, String) Specifies the environment of the Protection Group.
   * Constraints: Allowable values are: `kPhysical`, `kSQL`, `kKubernetes`.
 * `is_paused` - (Optional, Boolean) Specifies if the the Protection Group is paused. New runs are not scheduled for the paused Protection Groups. Active run if any is not impacted.
+* `delete_snapshots` - (Optional, Boolean) Specifies whether to delete snapshots when deleting the Protection Group. If true, all snapshots associated with this Protection Group will be deleted. Default is false.
 * `kubernetes_params` - (Optional, List) Specifies the parameters which are related to Kubernetes Protection Groups.
 Nested schema for **kubernetes_params**:
 	* `enable_indexing` - (Optional, Boolean) Specifies if indexing of files and folders is allowed or not while backing up namespace. If allowed files and folder can be recovered.

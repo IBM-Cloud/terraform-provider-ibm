@@ -216,6 +216,7 @@ Nested schema for **external_metadata**:
 * `last_refreshed_time_msecs` - (Integer) Specifies the time when the source was last refreshed in milliseconds.
 * `registration_time_msecs` - (Integer) Specifies the time when the source was registered in milliseconds.
 * `source_id` - (Integer) ID of top level source object discovered after the registration.
+* `auto_proetction_group_id` - (String) Id of the protection group created using auto protect config
 * `source_info` - (List) Specifies information about an object.
 Nested schema for **source_info**:
 	* `child_objects` - (List) Specifies child object details.

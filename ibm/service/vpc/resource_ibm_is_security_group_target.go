@@ -129,7 +129,7 @@ func resourceIBMISSecurityGroupTargetCreate(context context.Context, d *schema.R
 			_, waitErr := isWaitForSGTargetLBAvailable(sess, targetID, d.Timeout(schema.TimeoutCreate))
 			if waitErr != nil {
 				err = fmt.Errorf("isWaitForSGTargetLBAvailable failed: waiting for load balancer to become available while creating Security Group Target Binding: %s", waitErr)
-				tfErr := flex.TerraformErrorf(err, fmt.Sprintf("isWaitForLbSgTargetCreateAvailable failed: %s", err.Error()), "ibm_is_security_group_target", "create")
+				tfErr := flex.TerraformErrorf(waitErr, fmt.Sprintf("isWaitForLbSgTargetCreateAvailable failed: %s", waitErr.Error()), "ibm_is_security_group_target", "create")
 				log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 				return tfErr.GetDiag()
 			}
@@ -162,7 +162,7 @@ func resourceIBMISSecurityGroupTargetCreate(context context.Context, d *schema.R
 		vniId := sgtarget.ID
 		_, errsgt := isWaitForVNISgTargetCreateAvailable(sess, *vniId, d.Timeout(schema.TimeoutCreate))
 		if errsgt != nil {
-			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("isWaitForVNISgTargetCreateAvailable failed: %s", err.Error()), "ibm_is_security_group_target", "create")
+			tfErr := flex.TerraformErrorf(errsgt, fmt.Sprintf("isWaitForVNISgTargetCreateAvailable failed: %s", errsgt.Error()), "ibm_is_security_group_target", "create")
 			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 			return tfErr.GetDiag()
 		}
@@ -282,7 +282,7 @@ func resourceIBMISSecurityGroupTargetDelete(context context.Context, d *schema.R
 		lbid := securityGroupTargetReference.ID
 		_, errsgt := isWaitForLBRemoveAvailable(sess, sgt, *lbid, securityGroupID, securityGroupTargetID, d.Timeout(schema.TimeoutDelete))
 		if errsgt != nil {
-			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("isWaitForLBRemoveAvailable failed: %s", err.Error()), "ibm_is_security_group_target", "delete")
+			tfErr := flex.TerraformErrorf(errsgt, fmt.Sprintf("isWaitForLBRemoveAvailable failed: %s", errsgt.Error()), "ibm_is_security_group_target", "delete")
 			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 			return tfErr.GetDiag()
 		}

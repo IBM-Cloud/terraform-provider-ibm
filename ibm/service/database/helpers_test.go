@@ -268,3 +268,22 @@ func TestMatchingTaskInProgress(t *testing.T) {
 		})
 	}
 }
+
+func TestIsGen2Plan(t *testing.T) {
+	cases := []struct {
+		plan string
+		want bool
+	}{
+		{"databases-for-postgresql-standard", false},
+		{"databases-for-postgresql-gen2", true},
+		{"databases-for-postgresql-gen2-dev", true},
+		{"standard-gen2", true},
+		{"standard", false},
+		{"", false},
+	}
+	for _, c := range cases {
+		if got := isGen2Plan(c.plan); got != c.want {
+			t.Errorf("isGen2Plan(%q) = %v, want %v", c.plan, got, c.want)
+		}
+	}
+}

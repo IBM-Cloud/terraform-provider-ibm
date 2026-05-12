@@ -4,18 +4,23 @@
 package codeengine_test
 
 import (
+	"context"
 	"fmt"
 	"testing"
+	"time"
 
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM/code-engine-go-sdk/codeenginev2"
+	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 )
 
-func TestAccIbmCodeEngineAllowedOutboundDestinationBasic(t *testing.T) {
+func TestAccIbmCodeEngineAllowedOutboundDestinationCIDRBlock(t *testing.T) {
 	var conf codeenginev2.AllowedOutboundDestination
 
 	projectID := acc.CeProjectId
@@ -29,8 +34,8 @@ func TestAccIbmCodeEngineAllowedOutboundDestinationBasic(t *testing.T) {
 		Providers:    acc.TestAccProviders,
 		CheckDestroy: testAccCheckIbmCodeEngineAllowedOutboundDestinationDestroy,
 		Steps: []resource.TestStep{
-			{
-				Config: testAccCheckIbmCodeEngineAllowedOutboundDestinationConfigBasic(projectID, typeVar, cidrBlock, name),
+			resource.TestStep{
+				Config: testAccCheckIbmCodeEngineAllowedOutboundDestinationCIDRBlock(projectID, typeVar, cidrBlock, name),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIbmCodeEngineAllowedOutboundDestinationExists("ibm_code_engine_allowed_outbound_destination.code_engine_allowed_outbound_destination_instance", conf),
 					resource.TestCheckResourceAttr("ibm_code_engine_allowed_outbound_destination.code_engine_allowed_outbound_destination_instance", "project_id", projectID),
@@ -40,7 +45,7 @@ func TestAccIbmCodeEngineAllowedOutboundDestinationBasic(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccCheckIbmCodeEngineAllowedOutboundDestinationConfigBasic(projectID, typeVar, cidrBlockUpdate, name),
+				Config: testAccCheckIbmCodeEngineAllowedOutboundDestinationCIDRBlock(projectID, typeVar, cidrBlockUpdate, name),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("ibm_code_engine_allowed_outbound_destination.code_engine_allowed_outbound_destination_instance", "project_id", projectID),
 					resource.TestCheckResourceAttr("ibm_code_engine_allowed_outbound_destination.code_engine_allowed_outbound_destination_instance", "type", typeVar),
@@ -52,19 +57,83 @@ func TestAccIbmCodeEngineAllowedOutboundDestinationBasic(t *testing.T) {
 	})
 }
 
-func testAccCheckIbmCodeEngineAllowedOutboundDestinationConfigBasic(projectID string, typeVar string, cidrBlock string, name string) string {
+func TestAccIbmCodeEngineAllowedOutboundDestinationPrivatePathServiceGateway(t *testing.T) {
+	projectID := acc.CeProjectId
+	name := "aod-name"
+	aodType := "private_path_service_gateway"
+	privatePathServiceGatewayCrn := acctest.CePrivatePathServiceGatewayCrn
+
+	ppsgCreate := codeenginev2.AllowedOutboundDestinationPrototype{
+		Name:                         &name,
+		Type:                         &aodType,
+		PrivatePathServiceGatewayCrn: &privatePathServiceGatewayCrn,
+		IsolationPolicy:              core.StringPtr("dedicated"),
+	}
+
+	ppsgUpdate := codeenginev2.AllowedOutboundDestinationPrototype{
+		Name:                         &name,
+		Type:                         &aodType,
+		PrivatePathServiceGatewayCrn: &privatePathServiceGatewayCrn,
+		IsolationPolicy:              core.StringPtr("shared"),
+	}
+
+	var conf codeenginev2.AllowedOutboundDestination
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheckCodeEngine(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIbmCodeEngineAllowedOutboundDestinationDestroy,
+		Steps: []resource.TestStep{
+			resource.TestStep{
+				Config: testAccCheckIbmCodeEngineAllowedOutboundDestinationPrivatePathServiceGateway(projectID, ppsgCreate),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIbmCodeEngineAllowedOutboundDestinationExists("ibm_code_engine_allowed_outbound_destination.code_engine_allowed_outbound_destination_instance", conf),
+					resource.TestCheckResourceAttr("ibm_code_engine_allowed_outbound_destination.code_engine_allowed_outbound_destination_instance", "project_id", projectID),
+					resource.TestCheckResourceAttr("ibm_code_engine_allowed_outbound_destination.code_engine_allowed_outbound_destination_instance", "private_path_service_gateway_crn", privatePathServiceGatewayCrn),
+					resource.TestCheckResourceAttr("ibm_code_engine_allowed_outbound_destination.code_engine_allowed_outbound_destination_instance", "isolation_policy", "dedicated"),
+				),
+			},
+			{
+				Config: testAccCheckIbmCodeEngineAllowedOutboundDestinationPrivatePathServiceGateway(projectID, ppsgUpdate),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIbmCodeEngineAllowedOutboundDestinationExists("ibm_code_engine_allowed_outbound_destination.code_engine_allowed_outbound_destination_instance", conf),
+					resource.TestCheckResourceAttr("ibm_code_engine_allowed_outbound_destination.code_engine_allowed_outbound_destination_instance", "project_id", projectID),
+					resource.TestCheckResourceAttr("ibm_code_engine_allowed_outbound_destination.code_engine_allowed_outbound_destination_instance", "private_path_service_gateway_crn", privatePathServiceGatewayCrn),
+					resource.TestCheckResourceAttr("ibm_code_engine_allowed_outbound_destination.code_engine_allowed_outbound_destination_instance", "isolation_policy", "shared"),
+				),
+			},
+		},
+	})
+}
+
+func testAccCheckIbmCodeEngineAllowedOutboundDestinationCIDRBlock(projectID string, typeVar string, cidrBlock string, name string) string {
 	return fmt.Sprintf(`
 		data "ibm_code_engine_project" "code_engine_project_instance" {
 			project_id = "%s"
 		}
 
-        resource "ibm_code_engine_allowed_outbound_destination" "code_engine_allowed_outbound_destination_instance" {
+		resource "ibm_code_engine_allowed_outbound_destination" "code_engine_allowed_outbound_destination_instance" {
 			project_id = data.ibm_code_engine_project.code_engine_project_instance.project_id
 			type = "%s"
 			cidr_block = "%s"
 			name = "%s"
 		}
 	`, projectID, typeVar, cidrBlock, name)
+}
+
+func testAccCheckIbmCodeEngineAllowedOutboundDestinationPrivatePathServiceGateway(projectID string, allowedOutboundDestination codeenginev2.AllowedOutboundDestinationPrototype) string {
+	return fmt.Sprintf(`
+		data "ibm_code_engine_project" "code_engine_project_instance" {
+			project_id = "%s"
+		}
+
+		resource "ibm_code_engine_allowed_outbound_destination" "code_engine_allowed_outbound_destination_instance" {
+			name = "%s"
+			project_id = data.ibm_code_engine_project.code_engine_project_instance.project_id
+			type = "%s"
+			private_path_service_gateway_crn = "%s"
+			isolation_policy = "%s"
+		}
+	`, projectID, *allowedOutboundDestination.Name, *allowedOutboundDestination.Type, *allowedOutboundDestination.PrivatePathServiceGatewayCrn, *allowedOutboundDestination.IsolationPolicy)
 }
 
 func testAccCheckIbmCodeEngineAllowedOutboundDestinationExists(n string, obj codeenginev2.AllowedOutboundDestination) resource.TestCheckFunc {
@@ -106,6 +175,7 @@ func testAccCheckIbmCodeEngineAllowedOutboundDestinationDestroy(s *terraform.Sta
 	if err != nil {
 		return err
 	}
+
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "ibm_code_engine_allowed_outbound_destination" {
 			continue
@@ -121,13 +191,23 @@ func testAccCheckIbmCodeEngineAllowedOutboundDestinationDestroy(s *terraform.Sta
 		getAllowedOutboundDestinationOptions.SetProjectID(parts[0])
 		getAllowedOutboundDestinationOptions.SetName(parts[1])
 
-		// Try to find the key
-		_, response, err := codeEngineClient.GetAllowedOutboundDestination(getAllowedOutboundDestinationOptions)
+		lookUp := func() *retry.RetryError {
+			_, response, err := codeEngineClient.GetAllowedOutboundDestination(getAllowedOutboundDestinationOptions)
 
-		if err == nil {
-			return fmt.Errorf("code_engine_allowed_outbound_destination still exists: %s", rs.Primary.ID)
-		} else if response.StatusCode != 404 {
-			return fmt.Errorf("Error checking for code_engine_allowed_outbound_destination (%s) has been destroyed: %s", rs.Primary.ID, err)
+			if err != nil && response.StatusCode == 404 { // Resource successfully deleted
+				return nil
+			}
+
+			if err != nil && response.StatusCode != 404 { // Unexpected error
+				return retry.NonRetryableError(fmt.Errorf("Error checking for code_engine_allowed_outbound_destination (%s) has been destroyed: %s", rs.Primary.ID, err))
+			}
+
+			return retry.RetryableError(fmt.Errorf("code_engine_allowed_outbound_destination still exists: %s", rs.Primary.ID))
+		}
+
+		// Poll for up to 30 seconds to verify the resource is deleted (asynchronous deletion)
+		if err := retry.RetryContext(context.Background(), 30*time.Second, lookUp); err != nil {
+			return err
 		}
 	}
 

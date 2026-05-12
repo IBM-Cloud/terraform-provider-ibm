@@ -39,4 +39,17 @@ Nested schema for **connector_image_metadata**:
 		* `image_type` - (String) Specifies the platform on which the image can be deployed.
 		  * Constraints: Allowable values are: `VSI`, `VMware`.
 		* `url` - (String) Specifies the URL to access the file.
+* `k8s_connector_info_list` - (List) k8sConnectorInfoList specifies information about supported kubernetes environments where Data-Source Connectors can be deployed. Also, specifies the helm chart location (OCI URL) for each supported Kubernetes environment and instructions for installing it.
+Nested schema for **k8s_connector_info_list**:
+	* `helm_chart_oci_ref` - (List) Represents the structured components of an OCI (Open Container Initiative) artifact reference. A full reference string can be constructed from these parts. See Also: https://github.com/opencontainers/distribution-spec/blob/main/spec.md.
+	Nested schema for **helm_chart_oci_ref**:
+		* `digest` - (String) The immutable, content-addressable digest of the artifact's manifest. If only digest is set, the artifact is fetched by its immutable reference. If both tag and digest are set, the application should verify that the tag resolves to the given digest before proceeding. This should include the algorithm prefix.
+		* `namespace` - (String) The namespace or organization within the registry. For public registries like Docker Hub, this can be 'library' for official images or a user's account name. May be optional for certain registry configurations.
+		* `registry_host` - (String) The address of the OCI-compliant container registry. This can be a hostname or an IP address, and may optionally include a port number.
+		* `repository` - (String) The name of the repository that holds the artifact.
+		* `tag` - (String) The mutable tag for the artifact.
+	* `helm_install_cmd` - (String) Specifies the Helm install command for this type of k8s connector.
+	* `k8s_platform_type` - (String) Enum representing the different supported Kubernetes platform types.
+	  * Constraints: Allowable values are: `kRoksVpc`, `kRoksClassic`, `kIksVpc`, `kIksClassic`.
+	* `ugrade_doc_url` - (String) URL for upgrade documentation for this type of k8s connector.
 

@@ -27,14 +27,14 @@ Review the argument reference that you can specify for your resource.
 
 - `integration_id` - (Required, String) Unique identifier for Integration created with .
 
-- `type` - (Required, String) The integration type kms/hs-crypto.
+- `type` - (Required, String) The integration type kms/hs-crypto. The type hs-crypto will be deprecated. No new integration resources with hs-crypto type will be supported.
 
 - `metadata` - (Required, List)
 
   Nested scheme for **params**:
 
-  - `endpoint` - (Required, String) key protect/hyper protect service endpoint.
-  - `crn` - (Required, String) crn of key protect/ hyper protect instance.
+  - `endpoint` - (Required, String) key protect service endpoint.
+  - `crn` - (Required, String) crn of key protect instance.
   - `root_key_id` - (Required, String) Root key id.
 
 

@@ -362,14 +362,25 @@ func TestAccIbmIsShareRegionalShare(t *testing.T) {
 		CheckDestroy: testAccCheckIbmIsShareDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIbmIsShareConfigRegionalShareConfig(vpcname, subnetName, tEMode1, shareName, allowedAccessProtocol),
+				Config: testAccCheckIbmIsShareConfigRegionalShareConfig(vpcname, subnetName, tEMode1, shareName, allowedAccessProtocol, 1, 800),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIbmIsShareExists("ibm_is_share.is_share", conf),
 					resource.TestCheckResourceAttr("ibm_is_share.is_share", "name", shareName),
 					resource.TestCheckResourceAttrSet("ibm_is_share.is_share", "id"),
+					resource.TestCheckResourceAttr("ibm_is_share.is_share", "size", "1"),
 					resource.TestCheckResourceAttr("ibm_is_share.is_share", "allowed_transit_encryption_modes.0", tEMode1),
 					resource.TestCheckResourceAttr("ibm_is_share.is_share", "allowed_access_protocols.0", allowedAccessProtocol),
-					resource.TestCheckResourceAttr("ibm_is_share.is_share", "bandwidth", "100"),
+					resource.TestCheckResourceAttr("ibm_is_share.is_share", "bandwidth", "800"),
+				),
+			},
+			{
+				Config: testAccCheckIbmIsShareConfigRegionalShareConfig(vpcname, subnetName, tEMode1, shareName, allowedAccessProtocol, 220, 900),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIbmIsShareExists("ibm_is_share.is_share", conf),
+					resource.TestCheckResourceAttr("ibm_is_share.is_share", "name", shareName),
+					resource.TestCheckResourceAttrSet("ibm_is_share.is_share", "id"),
+					resource.TestCheckResourceAttr("ibm_is_share.is_share", "size", "220"),
+					resource.TestCheckResourceAttr("ibm_is_share.is_share", "bandwidth", "900"),
 				),
 			},
 		},
@@ -522,18 +533,18 @@ func testAccCheckIbmIsShareConfigOriginShareConfig(vpcName, sname, tEMode, share
 	`, vpcName, sname, acc.ISCIDR, tEMode, shareName, shareName1)
 }
 
-func testAccCheckIbmIsShareConfigRegionalShareConfig(vpcName, sname, tEMode, shareName, allowedAccessProtocol string) string {
+func testAccCheckIbmIsShareConfigRegionalShareConfig(vpcName, sname, tEMode, shareName, allowedAccessProtocol string, size, bandwidth int) string {
 	return fmt.Sprintf(`
 	
 	resource "ibm_is_share" "is_share" {
 		allowed_transit_encryption_modes = ["%s"]
 		allowed_access_protocols = ["%s"]
-		size    = 220
+		size    = %d
 		name    = "%s"
 		profile = "rfs"
-		bandwidth = 100
+		bandwidth = %d
 	  }
-	`, tEMode, allowedAccessProtocol, shareName)
+	`, tEMode, allowedAccessProtocol, size, shareName, bandwidth)
 }
 
 func testAccCheckIbmIsShareConfigShareSnapshotConfig(vpcName, sname, tEMode, shareName, shareSnapName, shareName1 string) string {

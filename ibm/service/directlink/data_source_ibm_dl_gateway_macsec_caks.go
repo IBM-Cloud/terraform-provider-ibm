@@ -145,18 +145,32 @@ func dataSourceIBMDLGatewayMacsecCaksRead(context context.Context, d *schema.Res
 			cakItem[dlUpdatedAt] = cak.UpdatedAt.String()
 			cakItem[dlGatewayMacsecCakID] = *cak.ID
 
-			hpcsKey := map[string]interface{}{}
 			if cak.Key != nil {
-				hpcsKey[dlGatewayMacsecHPCSCrn] = *cak.Key.Crn
-				cakItem[dlGatewayMacsecHPCSKey] = []map[string]interface{}{hpcsKey}
+				// Type assert to access Crn field from polymorphic interface
+				if hpcsKey, ok := cak.Key.(*directlinkv1.GatewayMacsecCakKeyReferenceHpcsCakKeyReference); ok {
+					keyMap := map[string]interface{}{}
+					keyMap[dlGatewayMacsecHPCSCrn] = *hpcsKey.Crn
+					cakItem[dlGatewayMacsecHPCSKey] = []map[string]interface{}{keyMap}
+				} else if smKey, ok := cak.Key.(*directlinkv1.GatewayMacsecCakKeyReferenceSecretsManagerCakKeyReference); ok {
+					keyMap := map[string]interface{}{}
+					keyMap[dlGatewayMacsecHPCSCrn] = *smKey.Crn
+					cakItem[dlGatewayMacsecHPCSKey] = []map[string]interface{}{keyMap}
+				}
 			}
 
 			activeDelta := map[string]interface{}{}
 			if cak.ActiveDelta != nil {
-				hpcsKey := map[string]interface{}{}
 				if cak.ActiveDelta.Key != nil {
-					hpcsKey[dlGatewayMacsecHPCSCrn] = cak.ActiveDelta.Key.Crn
-					activeDelta[dlGatewayMacsecHPCSKey] = []map[string]interface{}{hpcsKey}
+					// Type assert to access Crn field from polymorphic interface
+					if hpcsKey, ok := cak.ActiveDelta.Key.(*directlinkv1.GatewayMacsecCakKeyReferenceHpcsCakKeyReference); ok {
+						keyMap := map[string]interface{}{}
+						keyMap[dlGatewayMacsecHPCSCrn] = *hpcsKey.Crn
+						activeDelta[dlGatewayMacsecHPCSKey] = []map[string]interface{}{keyMap}
+					} else if smKey, ok := cak.ActiveDelta.Key.(*directlinkv1.GatewayMacsecCakKeyReferenceSecretsManagerCakKeyReference); ok {
+						keyMap := map[string]interface{}{}
+						keyMap[dlGatewayMacsecHPCSCrn] = *smKey.Crn
+						activeDelta[dlGatewayMacsecHPCSKey] = []map[string]interface{}{keyMap}
+					}
 				}
 				activeDelta[dlGatewayMacsecCakName] = cak.ActiveDelta.Name
 				// activeDelta[dlGatewayMacsecCakStatus] = *result.ActiveDelta.Status

@@ -32,6 +32,7 @@ func TestAccIbmBackupRecoveryDataSourceConnectionBasic(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIbmBackupRecoveryDataSourceConnectionExists("ibm_backup_recovery_data_source_connection.baas_data_source_connection_instance", conf, connectionName),
 					resource.TestCheckResourceAttr("ibm_backup_recovery_data_source_connection.baas_data_source_connection_instance", "connection_name", connectionName),
+					resource.TestCheckResourceAttr("ibm_backup_recovery_data_source_connection.baas_data_source_connection_instance", "connection_env_type", "kIksVpc"),
 					resource.TestCheckResourceAttrSet("ibm_backup_recovery_data_source_connection.baas_data_source_connection_instance", "registration_token"),
 					resource.TestCheckResourceAttrSet("ibm_backup_recovery_data_source_connection.baas_data_source_connection_instance", "connection_id"),
 					resource.TestCheckResourceAttr("ibm_backup_recovery_data_source_connection.baas_data_source_connection_instance", "x_ibm_tenant_id", tenantId),
@@ -54,7 +55,7 @@ func testAccCheckIbmBackupRecoveryDataSourceConnectionConfigBasic(connectionName
 	return fmt.Sprintf(`
 	resource "ibm_backup_recovery_data_source_connection" "baas_data_source_connection_instance" {
 		x_ibm_tenant_id = "%s"
-		
+		connection_env_type = "kIksVpc"
 		connection_name = "%s"
 	  }
 	`, tenantId, connectionName)
