@@ -621,7 +621,7 @@ resource "ibm_container_vpc_cluster" "cluster" {
 }`, name, disable_outbound_traffic_protection)
 }
 
-// preveously you have to create securitygroups and use them instead
+// previously you had to create securitygroups and use them instead
 func testAccCheckIBMContainerVpcClusterSecurityGroups(name string) string {
 	return fmt.Sprintf(`
 	data "ibm_resource_group" "resource_group" {
