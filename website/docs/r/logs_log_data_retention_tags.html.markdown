@@ -59,4 +59,4 @@ $ terraform import ibm_logs_log_data_retention_tags.logs_data_retention_tags_ins
 * This resource cannot be deleted. When you run `terraform destroy`, the resource is only removed from the Terraform state. The retention tags remain active in the Cloud Logs instance.
 * Retention tags can only be deactivated by removing the archive bucket configuration from the Cloud Logs instance.
 * The first successful creation (PUT request) of this resource will activate retention tags for the instance.
-* An archive bucket must be configured before retention tags can be activated. If no archive bucket is configured, the resource creation will fail with a 412 Precondition Failed error.
+* An archive bucket must be configured before retention tags can be activated. If no archive bucket is configured, the resource creation will fail with a 409 Conflict.

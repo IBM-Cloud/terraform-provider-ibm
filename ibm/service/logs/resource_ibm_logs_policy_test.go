@@ -118,13 +118,13 @@ func TestAccIbmLogsPolicyWithArchiveRetentionTag(t *testing.T) {
 				),
 			},
 			resource.TestStep{
-				Config: testAccCheckIbmLogsPolicyConfigWithArchiveRetentionTag(name, description, priority, "short-term"),
+				Config: testAccCheckIbmLogsPolicyConfigWithArchiveRetentionTag(name, description, priority, "Temporary"),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIbmLogsPolicyExists("ibm_logs_policy.logs_policy_instance", conf),
 					resource.TestCheckResourceAttr("ibm_logs_policy.logs_policy_instance", "name", name),
 					resource.TestCheckResourceAttr("ibm_logs_policy.logs_policy_instance", "description", description),
 					resource.TestCheckResourceAttr("ibm_logs_policy.logs_policy_instance", "priority", priority),
-					resource.TestCheckResourceAttr("ibm_logs_policy.logs_policy_instance", "archive_retention_tag", "short-term"),
+					resource.TestCheckResourceAttr("ibm_logs_policy.logs_policy_instance", "archive_retention_tag", "Temporary"),
 				),
 			},
 			resource.TestStep{
