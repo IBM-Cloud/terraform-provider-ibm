@@ -46,4 +46,3 @@ Transit Gateway
 Usage Reports
 VCF as a Service
 VPC infrastructure
-Platform Notifications

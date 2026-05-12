@@ -42,7 +42,7 @@ func DataSourceIBMPIAvailableHosts() *schema.Resource {
 						},
 						Attr_AvailableMemory: {
 							Computed:    true,
-							Description: "Memory capacity of the host (in GiB).",
+							Description: "Memory capacity of the host (in GB).",
 							Type:        schema.TypeFloat,
 						},
 						Attr_Count: {

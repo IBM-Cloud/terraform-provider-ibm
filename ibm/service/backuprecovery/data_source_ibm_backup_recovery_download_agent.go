@@ -71,7 +71,7 @@ func DataSourceIbmBackupRecoveryDownloadAgentRead(context context.Context, d *sc
 		return tfErr.GetDiag()
 	}
 	endpointType := d.Get("endpoint_type").(string)
-	instanceId, region, serviceName := getInstanceIdAndRegion(d)
+	instanceId, region := getInstanceIdAndRegion(d)
 	if instanceId != "" && region != "" {
 		bmxsession, err := meta.(conns.ClientSession).BluemixSession()
 		if err != nil {
@@ -79,7 +79,7 @@ func DataSourceIbmBackupRecoveryDownloadAgentRead(context context.Context, d *sc
 			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 			return tfErr.GetDiag()
 		}
-		backupRecoveryClient = getClientWithInstanceEndpoint(backupRecoveryClient, bmxsession, instanceId, region, endpointType, serviceName)
+		backupRecoveryClient = getClientWithInstanceEndpoint(backupRecoveryClient, bmxsession, instanceId, region, endpointType)
 	}
 
 	downloadAgentOptions := &backuprecoveryv1.DownloadAgentOptions{}

@@ -21,22 +21,6 @@ import (
 	rg "github.com/IBM/platform-services-go-sdk/resourcemanagerv2"
 )
 
-type dataSourceIBMDatabaseBackend interface {
-	Read(d *schema.ResourceData, meta interface{}) error
-}
-
-func pickDataSourceBackend(d *schema.ResourceData, meta interface{}) (dataSourceIBMDatabaseBackend, error) {
-	instance, err := findInstance(d, meta)
-	if err != nil {
-		return nil, err
-	}
-	plan := *instance.ResourcePlanID
-	if isGen2Plan(plan) {
-		return newDataSourceIBMDatabaseGen2Backend(), nil
-	}
-	return newDataSourceIBMDatabaseClassicBackend(), nil
-}
-
 func DataSourceIBMDatabaseInstance() *schema.Resource {
 	return &schema.Resource{
 		Read: dataSourceIBMDatabaseInstanceRead,
@@ -551,10 +535,11 @@ func DataSourceIBMDatabaseInstanceValidator() *validate.ResourceValidator {
 	return &iBMDatabaseInstanceValidator
 }
 
-func findInstance(d *schema.ResourceData, meta interface{}) (*rc.ResourceInstance, error) {
+func dataSourceIBMDatabaseInstanceRead(d *schema.ResourceData, meta interface{}) error {
+	var instance rc.ResourceInstance
 	rsConClient, err := meta.(conns.ClientSession).ResourceControllerV2API()
 	if err != nil {
-		return nil, err
+		return err
 	}
 	name := d.Get("name").(string)
 	resourceInstanceListOptions := rc.ListResourceInstancesOptions{
@@ -566,7 +551,7 @@ func findInstance(d *schema.ResourceData, meta interface{}) (*rc.ResourceInstanc
 	} else {
 		defaultRg, err := flex.DefaultResourceGroup(meta)
 		if err != nil {
-			return nil, err
+			return err
 		}
 		resourceInstanceListOptions.ResourceGroupID = &defaultRg
 	}
@@ -582,11 +567,11 @@ func findInstance(d *schema.ResourceData, meta interface{}) (*rc.ResourceInstanc
 		}
 		listInstanceResponse, resp, err := rsConClient.ListResourceInstances(&resourceInstanceListOptions)
 		if err != nil {
-			return nil, fmt.Errorf("[ERROR] Error retrieving resource instance: %s with resp code: %s", err, resp)
+			return fmt.Errorf("[ERROR] Error retrieving resource instance: %s with resp code: %s", err, resp)
 		}
 		next_url, err = getInstancesNext(listInstanceResponse.NextURL)
 		if err != nil {
-			return nil, fmt.Errorf("[DEBUG] ListResourceInstances failed. Error occurred while parsing NextURL: %s", err)
+			return fmt.Errorf("[DEBUG] ListResourceInstances failed. Error occurred while parsing NextURL: %s", err)
 
 		}
 		instances = append(instances, listInstanceResponse.Resources...)
@@ -609,33 +594,15 @@ func findInstance(d *schema.ResourceData, meta interface{}) (*rc.ResourceInstanc
 	}
 
 	if len(filteredInstances) == 0 {
-		return nil, fmt.Errorf("[ERROR] No resource instance found with name [%s]\nIf not specified please specify more filters like resource_group_id if instance doesn't exists in default group, location or database", name)
+		return fmt.Errorf("[ERROR] No resource instance found with name [%s]\nIf not specified please specify more filters like resource_group_id if instance doesn't exists in default group, location or database", name)
 	}
 
 	if len(filteredInstances) > 1 {
-		return nil, fmt.Errorf(
+		return fmt.Errorf(
 			"More than one resource instance found with name matching [%s]\nIf not specified please specify more filters like resource_group_id if instance doesn't exists in default group, location or database", name)
 	}
-	return &filteredInstances[0], nil
-}
+	instance = filteredInstances[0]
 
-func dataSourceIBMDatabaseInstanceRead(d *schema.ResourceData, meta interface{}) error {
-	b, err := pickDataSourceBackend(d, meta)
-	if err != nil {
-		return err
-	}
-
-	return b.Read(d, meta)
-}
-
-func classicDataSourceIBMDatabaseInstanceRead(d *schema.ResourceData, meta interface{}) error {
-	instance, err := findInstance(d, meta)
-	if err != nil {
-		return err
-	}
-	if instance == nil || instance.ID == nil {
-		return fmt.Errorf("database instance not found")
-	}
 	d.SetId(*instance.ID)
 
 	tags, err := flex.GetTagsUsingCRN(meta, d.Id())

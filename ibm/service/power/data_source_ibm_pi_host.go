@@ -47,7 +47,7 @@ func DataSourceIBMPIHost() *schema.Resource {
 						},
 						Attr_AvailableMemory: {
 							Computed:    true,
-							Description: "Amount of memory currently available (in GiB).",
+							Description: "Amount of memory currently available (in GB).",
 							Type:        schema.TypeFloat,
 						},
 						Attr_ReservedCore: {
@@ -57,7 +57,7 @@ func DataSourceIBMPIHost() *schema.Resource {
 						},
 						Attr_ReservedMemory: {
 							Computed:    true,
-							Description: "Amount of memory reserved for system use (in GiB).",
+							Description: "Amount of memory reserved for system use (in GB).",
 							Type:        schema.TypeFloat,
 						},
 						Attr_TotalCore: {
@@ -67,7 +67,7 @@ func DataSourceIBMPIHost() *schema.Resource {
 						},
 						Attr_TotalMemory: {
 							Computed:    true,
-							Description: "Total amount of memory of the host (in GiB).",
+							Description: "Total amount of memory of the host (in GB).",
 							Type:        schema.TypeFloat,
 						},
 						Attr_UsedCore: {
@@ -77,7 +77,7 @@ func DataSourceIBMPIHost() *schema.Resource {
 						},
 						Attr_UsedMemory: {
 							Computed:    true,
-							Description: "Amount of memory used on the host (in GiB).",
+							Description: "Amount of memory used on the host (in GB).",
 							Type:        schema.TypeFloat,
 						},
 					},

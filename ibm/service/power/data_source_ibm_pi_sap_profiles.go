@@ -47,11 +47,6 @@ func DataSourceIBMPISAPProfiles() *schema.Resource {
 				Description: "List of all the SAP Profiles.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						Attr_Asaps: {
-							Computed:    true,
-							Description: "Accelerated SAP Application Performance Standard.",
-							Type:        schema.TypeInt,
-						},
 						Attr_Certified: {
 							Computed:    true,
 							Description: "Has certification been performed on profile.",
@@ -74,7 +69,7 @@ func DataSourceIBMPISAPProfiles() *schema.Resource {
 						},
 						Attr_Memory: {
 							Computed:    true,
-							Description: "Amount of memory (in GiB).",
+							Description: "Amount of memory (in GB).",
 							Type:        schema.TypeInt,
 						},
 						Attr_ProfileID: {
@@ -163,7 +158,6 @@ func dataSourceIBMPISAPProfilesRead(ctx context.Context, d *schema.ResourceData,
 	result := make([]map[string]any, 0, len(sapProfiles.Profiles))
 	for _, sapProfile := range sapProfiles.Profiles {
 		profile := map[string]any{
-			Attr_Asaps:             sapProfile.Asaps,
 			Attr_Certified:         *sapProfile.Certified,
 			Attr_Cores:             *sapProfile.Cores,
 			Attr_DefaultSystem:     sapProfile.DefaultSystem,

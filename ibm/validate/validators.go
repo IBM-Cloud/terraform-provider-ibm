@@ -570,17 +570,19 @@ func validateJSONString() schema.SchemaValidateFunc {
 	}
 }
 
-func ValidateRegexps(regexes ...string) schema.SchemaValidateFunc {
+func ValidateRegexps(regex string) schema.SchemaValidateFunc {
 	return func(v interface{}, k string) (ws []string, errors []error) {
 		value := v.(string)
-		for _, regex := range regexes {
-			acceptedcharacters, _ := regexp.MatchString(regex, value)
-			if acceptedcharacters {
-				return
-			}
+
+		acceptedcharacters, _ := regexp.MatchString(regex, value)
+
+		if !acceptedcharacters {
+			errors = append(errors, fmt.Errorf(
+				"%q (%q) should match regexp %s ", k, v, regex))
 		}
-		errors = append(errors, fmt.Errorf("%q (%q) should match one of the regexps: %v", k, value, regexes))
+
 		return
+
 	}
 }
 

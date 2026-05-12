@@ -53,9 +53,7 @@ func ResourceIBMISVPNGatewayConnection() *schema.Resource {
 		UpdateContext: resourceIBMISVPNGatewayConnectionUpdate,
 		DeleteContext: resourceIBMISVPNGatewayConnectionDelete,
 		Exists:        resourceIBMISVPNGatewayConnectionExists,
-		Importer: &schema.ResourceImporter{
-			StateContext: resourceIBMISVPNGatewayConnectionImport,
-		},
+		Importer:      &schema.ResourceImporter{},
 
 		Timeouts: &schema.ResourceTimeout{
 			Delete: schema.DefaultTimeout(10 * time.Minute),
@@ -898,32 +896,6 @@ func vpngwconGet(context context.Context, d *schema.ResourceData, meta interface
 	return nil
 }
 
-func resourceIBMISVPNGatewayConnectionImport(context context.Context, d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
-	parts, err := flex.IdParts(d.Id())
-	if err != nil {
-		return nil, err
-	}
-	if len(parts) != 2 {
-		return nil, fmt.Errorf("Incorrect ID %s: ID should be a combination of vpnGatewayID/vpnGatewayConnectionID", d.Id())
-	}
-
-	gID := parts[0]
-	gConnID := parts[1]
-
-	// Set the vpn_gateway field which is required and has ForceNew=true
-	if err := d.Set(isVPNGatewayConnectionVPNGateway, gID); err != nil {
-		return nil, fmt.Errorf("Error setting vpn_gateway during import: %s", err)
-	}
-
-	// Call the standard read function to populate all other fields
-	diagErr := vpngwconGet(context, d, meta, gID, gConnID)
-	if diagErr != nil {
-		return nil, fmt.Errorf("Error reading VPN Gateway Connection during import: %v", diagErr)
-	}
-
-	return []*schema.ResourceData{d}, nil
-}
-
 func resourceIBMISVPNGatewayConnectionUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	hasChanged := false
 
@@ -1068,7 +1040,7 @@ func vpngwconUpdate(context context.Context, d *schema.ResourceData, meta interf
 	}
 
 	if d.HasChange("peer") {
-		peer, err := resourceIBMIsVPNGatewayConnectionMapToVPNGatewayConnectionPeerPatch(d, d.Get("peer.0").(map[string]interface{}))
+		peer, err := resourceIBMIsVPNGatewayConnectionMapToVPNGatewayConnectionPeerPatch(d.Get("peer.0").(map[string]interface{}))
 		if err != nil {
 			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_vpn_gateway_connection", "update", "parse-peer").GetDiag()
 		}
@@ -1521,17 +1493,17 @@ func resourceIBMIsVPNGatewayConnectionMapToVPNGatewayConnectionDynamicRouteModeP
 	return model, nil
 }
 
-func resourceIBMIsVPNGatewayConnectionMapToVPNGatewayConnectionPeerPatch(d *schema.ResourceData, modelMap map[string]interface{}) (vpcv1.VPNGatewayConnectionPeerPatchIntf, error) {
+func resourceIBMIsVPNGatewayConnectionMapToVPNGatewayConnectionPeerPatch(modelMap map[string]interface{}) (vpcv1.VPNGatewayConnectionPeerPatchIntf, error) {
 	model := &vpcv1.VPNGatewayConnectionPeerPatch{}
-	if d.HasChange("peer.0.address") && modelMap["address"] != nil && modelMap["address"].(string) != "" {
+	if modelMap["address"] != nil && modelMap["address"].(string) != "" {
 		model.Address = core.StringPtr(modelMap["address"].(string))
 	}
-	if d.HasChange("peer.0.fqdn") && modelMap["fqdn"] != nil && modelMap["fqdn"].(string) != "" {
+	if modelMap["fqdn"] != nil && modelMap["fqdn"].(string) != "" {
 		model.Fqdn = core.StringPtr(modelMap["fqdn"].(string))
 	}
-	if d.HasChange("peer.0.asn") && modelMap["asn"] != nil && modelMap["asn"].(int) > 0 {
-		asn := core.Int64Ptr(int64(modelMap["asn"].(int)))
-		model.Asn = asn
+	if modelMap["asn"] != nil {
+		localAsn := core.Int64Ptr(int64(modelMap["asn"].(int)))
+		model.Asn = localAsn
 	}
 	return model, nil
 }

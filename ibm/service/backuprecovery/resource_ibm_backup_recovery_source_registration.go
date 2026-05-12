@@ -418,11 +418,6 @@ func ResourceIbmBackupRecoverySourceRegistration() *schema.Resource {
 					},
 				},
 			},
-			"auto_proetction_group_id": &schema.Schema{
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The user specified name for this source.",
-			},
 			"source_id": &schema.Schema{
 				Type:        schema.TypeInt,
 				Computed:    true,
@@ -1360,7 +1355,7 @@ func resourceIbmBackupRecoverySourceRegistrationCreate(context context.Context, 
 		return tfErr.GetDiag()
 	}
 	endpointType := d.Get("endpoint_type").(string)
-	instanceId, region, serviceName := getInstanceIdAndRegion(d)
+	instanceId, region := getInstanceIdAndRegion(d)
 	if instanceId != "" && region != "" {
 		bmxsession, err := meta.(conns.ClientSession).BluemixSession()
 		if err != nil {
@@ -1368,7 +1363,7 @@ func resourceIbmBackupRecoverySourceRegistrationCreate(context context.Context, 
 			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 			return tfErr.GetDiag()
 		}
-		backupRecoveryClient = getClientWithInstanceEndpoint(backupRecoveryClient, bmxsession, instanceId, region, endpointType, serviceName)
+		backupRecoveryClient = getClientWithInstanceEndpoint(backupRecoveryClient, bmxsession, instanceId, region, endpointType)
 	}
 
 	registerProtectionSourceOptions := &backuprecoveryv1.RegisterProtectionSourceOptions{}
@@ -1446,16 +1441,6 @@ func resourceIbmBackupRecoverySourceRegistrationCreate(context context.Context, 
 
 	registrationId := fmt.Sprintf("%s::%s", tenantId, strconv.Itoa(int(*sourceRegistrationReponseParams.ID)))
 	d.SetId(registrationId)
-
-	if sourceRegistrationReponseParams.KubernetesParams != nil && sourceRegistrationReponseParams.KubernetesParams.AutoProtectConfig != nil && sourceRegistrationReponseParams.KubernetesParams.AutoProtectConfig.ProtectionGroupID != nil {
-
-		err := d.Set("auto_proetction_group_id", *sourceRegistrationReponseParams.KubernetesParams.AutoProtectConfig.ProtectionGroupID)
-		if err != nil {
-			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("RegisterProtectionSourceWithContext failed: %s", err.Error()), "ibm_backup_recovery_source_registration", "create")
-			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
-			return tfErr.GetDiag()
-		}
-	}
 	return resourceIbmBackupRecoverySourceRegistrationRead(context, d, meta)
 }
 
@@ -1474,7 +1459,7 @@ func resourceIbmBackupRecoverySourceRegistrationRead(context context.Context, d 
 	}
 
 	endpointType := d.Get("endpoint_type").(string)
-	instanceId, region, serviceName := getInstanceIdAndRegion(d)
+	instanceId, region := getInstanceIdAndRegion(d)
 	if instanceId != "" && region != "" {
 		bmxsession, err := meta.(conns.ClientSession).BluemixSession()
 		if err != nil {
@@ -1482,7 +1467,7 @@ func resourceIbmBackupRecoverySourceRegistrationRead(context context.Context, d 
 			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 			return tfErr.GetDiag()
 		}
-		backupRecoveryClient = getClientWithInstanceEndpoint(backupRecoveryClient, bmxsession, instanceId, region, endpointType, serviceName)
+		backupRecoveryClient = getClientWithInstanceEndpoint(backupRecoveryClient, bmxsession, instanceId, region, endpointType)
 	}
 	getProtectionSourceRegistrationOptions := &backuprecoveryv1.GetProtectionSourceRegistrationOptions{}
 
@@ -1599,11 +1584,6 @@ func resourceIbmBackupRecoverySourceRegistrationRead(context context.Context, d 
 		}
 	}
 	if !core.IsNil(sourceRegistrationReponseParams.KubernetesParams) {
-		group_id, ok := d.GetOk("auto_proetction_group_id")
-		if ok && group_id.(string) != "" {
-			autoProetctionGroupId := group_id.(string)
-			sourceRegistrationReponseParams.KubernetesParams.AutoProtectConfig.ProtectionGroupID = &autoProetctionGroupId
-		}
 		kubernetesParamsMap, err := ResourceIbmBackupRecoverySourceRegistrationKubernetesSourceRegistrationParamsToMap(sourceRegistrationReponseParams.KubernetesParams)
 		if err != nil {
 			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_source_registration", "read", "kubernetes_params-to-map").GetDiag()
@@ -1675,7 +1655,7 @@ func resourceIbmBackupRecoverySourceRegistrationUpdate(context context.Context, 
 	}
 
 	endpointType := d.Get("endpoint_type").(string)
-	instanceId, region, serviceName := getInstanceIdAndRegion(d)
+	instanceId, region := getInstanceIdAndRegion(d)
 	if instanceId != "" && region != "" {
 		bmxsession, err := meta.(conns.ClientSession).BluemixSession()
 		if err != nil {
@@ -1683,7 +1663,7 @@ func resourceIbmBackupRecoverySourceRegistrationUpdate(context context.Context, 
 			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 			return tfErr.GetDiag()
 		}
-		backupRecoveryClient = getClientWithInstanceEndpoint(backupRecoveryClient, bmxsession, instanceId, region, endpointType, serviceName)
+		backupRecoveryClient = getClientWithInstanceEndpoint(backupRecoveryClient, bmxsession, instanceId, region, endpointType)
 	}
 
 	tenantId := d.Get("x_ibm_tenant_id").(string)
@@ -1843,7 +1823,7 @@ func resourceIbmBackupRecoverySourceRegistrationDelete(context context.Context, 
 		return tfErr.GetDiag()
 	}
 	endpointType := d.Get("endpoint_type").(string)
-	instanceId, region, serviceName := getInstanceIdAndRegion(d)
+	instanceId, region := getInstanceIdAndRegion(d)
 	if instanceId != "" && region != "" {
 		bmxsession, err := meta.(conns.ClientSession).BluemixSession()
 		if err != nil {
@@ -1851,7 +1831,7 @@ func resourceIbmBackupRecoverySourceRegistrationDelete(context context.Context, 
 			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 			return tfErr.GetDiag()
 		}
-		backupRecoveryClient = getClientWithInstanceEndpoint(backupRecoveryClient, bmxsession, instanceId, region, endpointType, serviceName)
+		backupRecoveryClient = getClientWithInstanceEndpoint(backupRecoveryClient, bmxsession, instanceId, region, endpointType)
 	}
 
 	deleteProtectionSourceRegistrationOptions := &backuprecoveryv1.DeleteProtectionSourceRegistrationOptions{}

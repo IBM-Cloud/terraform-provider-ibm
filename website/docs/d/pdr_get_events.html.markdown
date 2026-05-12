@@ -8,16 +8,15 @@ subcategory: "DrAutomation Service"
 
 # ibm_pdr_get_events
 
-Retrieves the list of events from the specified service instance ID.
-
-~> **This data source is deprecated and will be removed in the next major version. Use `ibm_pdr_events` instead.**
+Provides a read-only data source to retrieve information about pdr_get_events. You can then reference the fields of the data source in other resources within the same configuration by using interpolation syntax.
 
 ## Example Usage
 
 ```hcl
 data "ibm_pdr_get_events" "pdr_get_events" {
 	from_time = "2025-06-19T00:00:00Z"
-	instance_id = "123456d3-1122-3344-b67d-4389b44b7bf9"
+	provision_id = "crn:v1:staging:public:power-dr-automation:global:a/a123456fb04ceebfb4a9fd38c22334455:123456d3-1122-3344-b67d-4389b44b7bf9::"
+	time = "2025-06-19T23:59:59Z"
 	to_time = "2025-06-19T23:59:59Z"
 }
 ```
@@ -26,9 +25,10 @@ data "ibm_pdr_get_events" "pdr_get_events" {
 
 You can specify the following arguments for this data source.
 
-* `accept_language` - (Optional, String) The language requested for the return document.(ex., en,it,fr,es,de,ja,ko,pt-BR,zh-HANS,zh-HANT)
+* `accept_language` - (Optional, String) The language requested for the return document.
 * `from_time` - (Optional, String) A from query time in either ISO 8601 or unix epoch format.
-* `instance_id` - (Required, Forces new resource, String) ID of the service instance.
+* `provision_id` - (Required, Forces new resource, String) provision id.
+* `time` - (Optional, String) (deprecated - use from_time) A time in either ISO 8601 or unix epoch format.
 * `to_time` - (Optional, String) A to query time in either ISO 8601 or unix epoch format.
 
 ## Attribute Reference
@@ -36,7 +36,7 @@ You can specify the following arguments for this data source.
 After your data source is created, you can read values from the following attributes.
 
 * `id` - The unique identifier of the pdr_get_events.
-* `event` - (List) **Deprecated**: Use `events` instead.
+* `event` - (List) Events.
 Nested schema for **event**:
 	* `action` - (String) Type of action for this event.
 	* `api_source` - (String) Source of API when it being executed.
@@ -54,21 +54,4 @@ Nested schema for **event**:
 		* `email` - (String) Email of the User.
 		* `name` - (String) Name of the User.
 		* `user_id` - (String) ID of user who created/caused the event.
-* `events` - (List) Events.
-Nested schema for **events**:
-	* `action` - (String) Type of action for this event.
-	* `api_source` - (String) Source of API when it being executed.
-	* `event_id` - (String) ID of the Activity.
-	* `level` - (String) Level of the event (notice, info, warning, error).
-	  * Constraints: Allowable values are: `notice`, `info`, `warning`, `error`.
-	* `message` - (String) The (translated) message of the event.
-	* `message_data` - (Map) A flexible schema placeholder to allow any JSON value (aligns with interface{} in Go).
-	* `metadata` - (Map) A flexible schema placeholder to allow any JSON value (aligns with interface{} in Go).
-	* `resource` - (String) Type of resource for this event.
-	* `time` - (String) Time of activity in ISO 8601 - RFC3339.
-	* `timestamp` - (String) Time of activity in unix epoch.
-	* `user` - (List) Information about a user associated with an event.
-	Nested schema for **user**:
-		* `email` - (String) Email of the User.
-		* `name` - (String) Name of the User.
-		* `user_id` - (String) ID of user who created/caused the event.	
+

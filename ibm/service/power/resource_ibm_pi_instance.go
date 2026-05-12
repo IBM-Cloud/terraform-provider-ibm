@@ -160,7 +160,7 @@ func ResourceIBMPIInstance() *schema.Resource {
 			},
 			Arg_LicenseRepositoryCapacity: {
 				Computed:    true,
-				Description: "The VTL license repository capacity TiB value",
+				Description: "The VTL license repository capacity TB value",
 				Optional:    true,
 				Type:        schema.TypeInt,
 			},

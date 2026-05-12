@@ -1,8 +1,8 @@
-// Copyright IBM Corp. 2026 All Rights Reserved.
+// Copyright IBM Corp. 2024 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 /*
- * IBM OpenAPI Terraform Generator Version: 3.102.0-615ec964-20250307-203034
+ * IBM OpenAPI Terraform Generator Version: 3.94.1-71478489-20240820-161623
  */
 
 package codeengine
@@ -12,13 +12,12 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM/code-engine-go-sdk/codeenginev2"
 	"github.com/IBM/go-sdk-core/v5/core"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 func DataSourceIbmCodeEngineJob() *schema.Resource {
@@ -26,58 +25,58 @@ func DataSourceIbmCodeEngineJob() *schema.Resource {
 		ReadContext: dataSourceIbmCodeEngineJobRead,
 
 		Schema: map[string]*schema.Schema{
-			"project_id": &schema.Schema{
+			"project_id": {
 				Type:        schema.TypeString,
 				Required:    true,
 				Description: "The ID of the project.",
 			},
-			"name": &schema.Schema{
+			"name": {
 				Type:        schema.TypeString,
 				Required:    true,
 				Description: "The name of your job.",
 			},
-			"build": &schema.Schema{
+			"build": {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "Reference to a build that is associated with the job.",
 			},
-			"build_run": &schema.Schema{
+			"build_run": {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "Reference to a build run that is associated with the job.",
 			},
-			"computed_env_variables": &schema.Schema{
+			"computed_env_variables": {
 				Type:        schema.TypeList,
 				Computed:    true,
 				Description: "References to config maps, secrets or literal values, which are defined and set by Code Engine and are exposed as environment variables in the job run.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"key": &schema.Schema{
+						"key": {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "The key to reference as environment variable.",
 						},
-						"name": &schema.Schema{
+						"name": {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "The name of the environment variable.",
 						},
-						"prefix": &schema.Schema{
+						"prefix": {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "A prefix that can be added to all keys of a full secret or config map reference.",
 						},
-						"reference": &schema.Schema{
+						"reference": {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "The name of the secret or config map.",
 						},
-						"type": &schema.Schema{
+						"type": {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "Specify the type of the environment variable.",
 						},
-						"value": &schema.Schema{
+						"value": {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "The literal value of the environment variable.",
@@ -85,47 +84,47 @@ func DataSourceIbmCodeEngineJob() *schema.Resource {
 					},
 				},
 			},
-			"created_at": &schema.Schema{
+			"created_at": {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The timestamp when the resource was created.",
 			},
-			"entity_tag": &schema.Schema{
+			"entity_tag": {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The version of the job instance, which is used to achieve optimistic locking.",
 			},
-			"href": &schema.Schema{
+			"href": {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "When you provision a new job,  a URL is created identifying the location of the instance.",
 			},
-			"job_id": &schema.Schema{
+			"job_id": {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The identifier of the resource.",
 			},
-			"image_reference": &schema.Schema{
+			"image_reference": {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The name of the image that is used for this job. The format is `REGISTRY/NAMESPACE/REPOSITORY:TAG` where `REGISTRY` and `TAG` are optional. If `REGISTRY` is not specified, the default is `docker.io`. If `TAG` is not specified, the default is `latest`. If the image reference points to a registry that requires authentication, make sure to also specify the property `image_secret`.",
 			},
-			"image_secret": &schema.Schema{
+			"image_secret": {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The name of the image registry access secret. The image registry access secret is used to authenticate with a private registry when you download the container image. If the image reference points to a registry that requires authentication, the job / job runs will be created but submitted job runs will fail, until this property is provided, too. This property must not be set on a job run, which references a job template.",
 			},
-			"region": &schema.Schema{
+			"region": {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The region of the project the resource is located in. Possible values: 'au-syd', 'br-sao', 'ca-tor', 'eu-de', 'eu-gb', 'jp-osa', 'jp-tok', 'us-east', 'us-south'.",
 			},
-			"resource_type": &schema.Schema{
+			"resource_type": {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The type of the job.",
 			},
-			"run_arguments": &schema.Schema{
+			"run_arguments": {
 				Type:        schema.TypeList,
 				Computed:    true,
 				Description: "Set arguments for the job that are passed to start job run containers. If not specified an empty string array will be applied and the arguments specified by the container image, will be used to start the container.",
@@ -133,12 +132,12 @@ func DataSourceIbmCodeEngineJob() *schema.Resource {
 					Type: schema.TypeString,
 				},
 			},
-			"run_as_user": &schema.Schema{
+			"run_as_user": {
 				Type:        schema.TypeInt,
 				Computed:    true,
 				Description: "The user ID (UID) to run the job.",
 			},
-			"run_commands": &schema.Schema{
+			"run_commands": {
 				Type:        schema.TypeList,
 				Computed:    true,
 				Description: "Set commands for the job that are passed to start job run containers. If not specified an empty string array will be applied and the command specified by the container image, will be used to start the container.",
@@ -146,43 +145,38 @@ func DataSourceIbmCodeEngineJob() *schema.Resource {
 					Type: schema.TypeString,
 				},
 			},
-			"run_compute_resource_token_enabled": &schema.Schema{
-				Type:        schema.TypeBool,
-				Computed:    true,
-				Description: "Optional flag to enable the use of a compute resource token mounted to the container file system.",
-			},
-			"run_env_variables": &schema.Schema{
+			"run_env_variables": {
 				Type:        schema.TypeList,
 				Computed:    true,
-				Description: "References to config maps, secrets or literal values, which are defined by the function owner and are exposed as environment variables in the job run.",
+				Description: "References to config maps, secrets or literal values, which are exposed as environment variables in the job run.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"key": &schema.Schema{
+						"key": {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "The key to reference as environment variable.",
 						},
-						"name": &schema.Schema{
+						"name": {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "The name of the environment variable.",
 						},
-						"prefix": &schema.Schema{
+						"prefix": {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "A prefix that can be added to all keys of a full secret or config map reference.",
 						},
-						"reference": &schema.Schema{
+						"reference": {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "The name of the secret or config map.",
 						},
-						"type": &schema.Schema{
+						"type": {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "Specify the type of the environment variable.",
 						},
-						"value": &schema.Schema{
+						"value": {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "The literal value of the environment variable.",
@@ -190,76 +184,71 @@ func DataSourceIbmCodeEngineJob() *schema.Resource {
 					},
 				},
 			},
-			"run_mode": &schema.Schema{
+			"run_mode": {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The mode for runs of the job. Valid values are `task` and `daemon`. In `task` mode, the `max_execution_time` and `retry_limit` properties apply. In `daemon` mode, since there is no timeout and failed instances are restarted indefinitely, the `max_execution_time` and `retry_limit` properties are not allowed.",
 			},
-			"run_service_account": &schema.Schema{
+			"run_service_account": {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The name of the service account. For built-in service accounts, you can use the shortened names `manager`, `none`, `reader`, and `writer`. This property must not be set on a job run, which references a job template.",
 			},
-			"run_volume_mounts": &schema.Schema{
+			"run_volume_mounts": {
 				Type:        schema.TypeList,
 				Computed:    true,
 				Description: "Optional mounts of config maps or secrets.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"mount_path": &schema.Schema{
+						"mount_path": {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "The path that should be mounted.",
 						},
-						"read_only": &schema.Schema{
-							Type:        schema.TypeBool,
-							Computed:    true,
-							Description: "Optional flag for a volume mount of type 'persistent_data_store' to specify whether it is read-only.",
-						},
-						"reference": &schema.Schema{
+						"name": {
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "The name of the referenced secret, config map, or persistent data store.",
+							Description: "The name of the mount.",
 						},
-						"sub_path": &schema.Schema{
+						"reference": {
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "The path mounted at the mount path.",
+							Description: "The name of the referenced secret or config map.",
 						},
-						"type": &schema.Schema{
+						"type": {
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "Specify the type of the volume mount. Allowed types are: 'config_map', 'persistent_data_store', 'secret'.",
+							Description: "Specify the type of the volume mount. Allowed types are: 'config_map', 'secret'.",
 						},
 					},
 				},
 			},
-			"scale_array_spec": &schema.Schema{
+			"scale_array_spec": {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "Define a custom set of array indices as a comma-separated list containing single values and hyphen-separated ranges, such as  5,12-14,23,27. Each instance gets its array index value from the environment variable JOB_INDEX. The number of unique array indices that you specify with this parameter determines the number of job instances to run.",
 			},
-			"scale_cpu_limit": &schema.Schema{
+			"scale_cpu_limit": {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "Optional amount of CPU set for the instance of the job. For valid values see [Supported memory and CPU combinations](https://cloud.ibm.com/docs/codeengine?topic=codeengine-mem-cpu-combo).",
 			},
-			"scale_ephemeral_storage_limit": &schema.Schema{
+			"scale_ephemeral_storage_limit": {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "Optional amount of ephemeral storage to set for the instance of the job. The amount specified as ephemeral storage, must not exceed the amount of `scale_memory_limit`. The units for specifying ephemeral storage are Megabyte (M) or Gigabyte (G), whereas G and M are the shorthand expressions for GB and MB. For more information see [Units of measurement](https://cloud.ibm.com/docs/codeengine?topic=codeengine-mem-cpu-combo#unit-measurements).",
 			},
-			"scale_max_execution_time": &schema.Schema{
+			"scale_max_execution_time": {
 				Type:        schema.TypeInt,
 				Computed:    true,
 				Description: "The maximum execution time in seconds for runs of the job. This property can only be specified if `run_mode` is `task`.",
 			},
-			"scale_memory_limit": &schema.Schema{
+			"scale_memory_limit": {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "Optional amount of memory set for the instance of the job. For valid values see [Supported memory and CPU combinations](https://cloud.ibm.com/docs/codeengine?topic=codeengine-mem-cpu-combo). The units for specifying memory are Megabyte (M) or Gigabyte (G), whereas G and M are the shorthand expressions for GB and MB. For more information see [Units of measurement](https://cloud.ibm.com/docs/codeengine?topic=codeengine-mem-cpu-combo#unit-measurements).",
 			},
-			"scale_retry_limit": &schema.Schema{
+			"scale_retry_limit": {
 				Type:        schema.TypeInt,
 				Computed:    true,
 				Description: "The number of times to rerun an instance of the job before the job is marked as failed. This property can only be specified if `run_mode` is `task`.",
@@ -302,16 +291,18 @@ func dataSourceIbmCodeEngineJobRead(context context.Context, d *schema.ResourceD
 		}
 	}
 
-	computedEnvVariables := []map[string]interface{}{}
-	for _, computedEnvVariablesItem := range job.ComputedEnvVariables {
-		computedEnvVariablesItemMap, err := DataSourceIbmCodeEngineJobEnvVarToMap(&computedEnvVariablesItem) // #nosec G601
-		if err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_code_engine_job", "read", "computed_env_variables-to-map").GetDiag()
+	if !core.IsNil(job.ComputedEnvVariables) {
+		computedEnvVariables := []map[string]interface{}{}
+		for _, computedEnvVariablesItem := range job.ComputedEnvVariables {
+			computedEnvVariablesItemMap, err := DataSourceIbmCodeEngineJobEnvVarToMap(&computedEnvVariablesItem) // #nosec G601
+			if err != nil {
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_code_engine_job", "read", "computed_env_variables-to-map").GetDiag()
+			}
+			computedEnvVariables = append(computedEnvVariables, computedEnvVariablesItemMap)
 		}
-		computedEnvVariables = append(computedEnvVariables, computedEnvVariablesItemMap)
-	}
-	if err = d.Set("computed_env_variables", computedEnvVariables); err != nil {
-		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting computed_env_variables: %s", err), "(Data) ibm_code_engine_job", "read", "set-computed_env_variables").GetDiag()
+		if err = d.Set("computed_env_variables", computedEnvVariables); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting computed_env_variables: %s", err), "(Data) ibm_code_engine_job", "read", "set-computed_env_variables").GetDiag()
+		}
 	}
 
 	if !core.IsNil(job.CreatedAt) {
@@ -380,12 +371,6 @@ func dataSourceIbmCodeEngineJobRead(context context.Context, d *schema.ResourceD
 		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting run_commands: %s", err), "(Data) ibm_code_engine_job", "read", "set-run_commands").GetDiag()
 	}
 
-	if !core.IsNil(job.RunComputeResourceTokenEnabled) {
-		if err = d.Set("run_compute_resource_token_enabled", job.RunComputeResourceTokenEnabled); err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting run_compute_resource_token_enabled: %s", err), "(Data) ibm_code_engine_job", "read", "set-run_compute_resource_token_enabled").GetDiag()
-		}
-	}
-
 	runEnvVariables := []map[string]interface{}{}
 	for _, runEnvVariablesItem := range job.RunEnvVariables {
 		runEnvVariablesItemMap, err := DataSourceIbmCodeEngineJobEnvVarToMap(&runEnvVariablesItem) // #nosec G601
@@ -402,8 +387,10 @@ func dataSourceIbmCodeEngineJobRead(context context.Context, d *schema.ResourceD
 		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting run_mode: %s", err), "(Data) ibm_code_engine_job", "read", "set-run_mode").GetDiag()
 	}
 
-	if err = d.Set("run_service_account", job.RunServiceAccount); err != nil {
-		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting run_service_account: %s", err), "(Data) ibm_code_engine_job", "read", "set-run_service_account").GetDiag()
+	if !core.IsNil(job.RunServiceAccount) {
+		if err = d.Set("run_service_account", job.RunServiceAccount); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting run_service_account: %s", err), "(Data) ibm_code_engine_job", "read", "set-run_service_account").GetDiag()
+		}
 	}
 
 	runVolumeMounts := []map[string]interface{}{}
@@ -473,13 +460,8 @@ func DataSourceIbmCodeEngineJobEnvVarToMap(model *codeenginev2.EnvVar) (map[stri
 func DataSourceIbmCodeEngineJobVolumeMountToMap(model *codeenginev2.VolumeMount) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["mount_path"] = *model.MountPath
-	if model.ReadOnly != nil {
-		modelMap["read_only"] = *model.ReadOnly
-	}
+	modelMap["name"] = *model.Name
 	modelMap["reference"] = *model.Reference
-	if model.SubPath != nil {
-		modelMap["sub_path"] = *model.SubPath
-	}
 	modelMap["type"] = *model.Type
 	return modelMap, nil
 }

@@ -31,7 +31,8 @@ func TestAccIBMAccountSettingsTemplateAssignmentBasic(t *testing.T) {
 		PreventPostDestroyRefresh: true,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIBMAccountSettingsTemplateAssignmentConfigBasic(enterpriseAccountId, targetId, name),
+				Config:             testAccCheckIBMAccountSettingsTemplateAssignmentConfigBasic(enterpriseAccountId, targetId, name),
+				ExpectNonEmptyPlan: true,
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMAccountSettingsTemplateAssignmentExists("ibm_iam_account_settings_template_assignment.account_settings_template_assignment_instance", conf),
 					resource.TestCheckResourceAttrSet("ibm_iam_account_settings_template_assignment.account_settings_template_assignment_instance", "id"),

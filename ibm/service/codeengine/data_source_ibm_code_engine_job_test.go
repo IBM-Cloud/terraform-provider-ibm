@@ -38,7 +38,6 @@ func TestAccIbmCodeEngineJobDataSourceBasic(t *testing.T) {
 					resource.TestCheckResourceAttr("data.ibm_code_engine_job.code_engine_job_instance", "scale_memory_limit", "4G"),
 					resource.TestCheckResourceAttr("data.ibm_code_engine_job.code_engine_job_instance", "scale_retry_limit", "3"),
 					resource.TestCheckResourceAttr("data.ibm_code_engine_job.code_engine_job_instance", "computed_env_variables.#", "3"),
-					resource.TestCheckResourceAttr("data.ibm_code_engine_job.code_engine_job_instance", "run_compute_resource_token_enabled", "false"),
 				),
 			},
 		},
@@ -50,7 +49,7 @@ func TestAccIbmCodeEngineJobDataSourceExtended(t *testing.T) {
 	jobImageReference := "icr.io/codeengine/helloworld"
 	jobRunMode := "task"
 	jobRunServiceAccount := "default"
-	jobScaleCPULimit := "0.5"
+	jobScaleCpuLimit := "0.5"
 	jobScaleEphemeralStorageLimit := "500M"
 	jobScaleMaxExecutionTime := "3600"
 	jobScaleMemoryLimit := "1G"
@@ -63,7 +62,7 @@ func TestAccIbmCodeEngineJobDataSourceExtended(t *testing.T) {
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIbmCodeEngineJobDataSourceConfig(projectID, jobImageReference, jobName, jobRunMode, jobRunServiceAccount, jobScaleCPULimit, jobScaleEphemeralStorageLimit, jobScaleMaxExecutionTime, jobScaleMemoryLimit, jobScaleRetryLimit),
+				Config: testAccCheckIbmCodeEngineJobDataSourceConfig(projectID, jobImageReference, jobName, jobRunMode, jobRunServiceAccount, jobScaleCpuLimit, jobScaleEphemeralStorageLimit, jobScaleMaxExecutionTime, jobScaleMemoryLimit, jobScaleRetryLimit),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_code_engine_job.code_engine_job_instance", "job_id"),
 					resource.TestCheckResourceAttr("data.ibm_code_engine_job.code_engine_job_instance", "project_id", projectID),
@@ -71,13 +70,12 @@ func TestAccIbmCodeEngineJobDataSourceExtended(t *testing.T) {
 					resource.TestCheckResourceAttr("data.ibm_code_engine_job.code_engine_job_instance", "image_reference", jobImageReference),
 					resource.TestCheckResourceAttr("data.ibm_code_engine_job.code_engine_job_instance", "run_mode", jobRunMode),
 					resource.TestCheckResourceAttr("data.ibm_code_engine_job.code_engine_job_instance", "run_service_account", jobRunServiceAccount),
-					resource.TestCheckResourceAttr("data.ibm_code_engine_job.code_engine_job_instance", "scale_cpu_limit", jobScaleCPULimit),
+					resource.TestCheckResourceAttr("data.ibm_code_engine_job.code_engine_job_instance", "scale_cpu_limit", jobScaleCpuLimit),
 					resource.TestCheckResourceAttr("data.ibm_code_engine_job.code_engine_job_instance", "scale_ephemeral_storage_limit", jobScaleEphemeralStorageLimit),
 					resource.TestCheckResourceAttr("data.ibm_code_engine_job.code_engine_job_instance", "scale_max_execution_time", jobScaleMaxExecutionTime),
 					resource.TestCheckResourceAttr("data.ibm_code_engine_job.code_engine_job_instance", "scale_memory_limit", jobScaleMemoryLimit),
 					resource.TestCheckResourceAttr("data.ibm_code_engine_job.code_engine_job_instance", "scale_retry_limit", jobScaleRetryLimit),
 					resource.TestCheckResourceAttr("data.ibm_code_engine_job.code_engine_job_instance", "computed_env_variables.#", "3"),
-					resource.TestCheckResourceAttr("data.ibm_code_engine_job.code_engine_job_instance", "run_compute_resource_token_enabled", "true"),
 				),
 			},
 		},
@@ -103,7 +101,7 @@ func testAccCheckIbmCodeEngineJobDataSourceConfigBasic(projectID string, jobImag
 	`, projectID, jobImageReference, jobName)
 }
 
-func testAccCheckIbmCodeEngineJobDataSourceConfig(projectID string, jobImageReference string, jobName string, jobRunMode string, jobRunServiceAccount string, jobScaleCPULimit string, jobScaleEphemeralStorageLimit string, jobScaleMaxExecutionTime string, jobScaleMemoryLimit string, jobScaleRetryLimit string) string {
+func testAccCheckIbmCodeEngineJobDataSourceConfig(projectID string, jobImageReference string, jobName string, jobRunMode string, jobRunServiceAccount string, jobScaleCpuLimit string, jobScaleEphemeralStorageLimit string, jobScaleMaxExecutionTime string, jobScaleMemoryLimit string, jobScaleRetryLimit string) string {
 	return fmt.Sprintf(`
 		data "ibm_code_engine_project" "code_engine_project_instance" {
 			project_id = "%s"
@@ -120,12 +118,11 @@ func testAccCheckIbmCodeEngineJobDataSourceConfig(projectID string, jobImageRefe
 			scale_max_execution_time = %s
 			scale_memory_limit = "%s"
 			scale_retry_limit = %s
-			run_compute_resource_token_enabled = true
 		}
 
 		data "ibm_code_engine_job" "code_engine_job_instance" {
 			project_id = ibm_code_engine_job.code_engine_job_instance.project_id
 			name = ibm_code_engine_job.code_engine_job_instance.name
 		}
-	`, projectID, jobImageReference, jobName, jobRunMode, jobRunServiceAccount, jobScaleCPULimit, jobScaleEphemeralStorageLimit, jobScaleMaxExecutionTime, jobScaleMemoryLimit, jobScaleRetryLimit)
+	`, projectID, jobImageReference, jobName, jobRunMode, jobRunServiceAccount, jobScaleCpuLimit, jobScaleEphemeralStorageLimit, jobScaleMaxExecutionTime, jobScaleMemoryLimit, jobScaleRetryLimit)
 }

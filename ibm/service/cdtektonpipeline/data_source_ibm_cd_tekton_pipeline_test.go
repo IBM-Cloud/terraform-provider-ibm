@@ -1,8 +1,8 @@
-// Copyright IBM Corp. 2026 All Rights Reserved.
+// Copyright IBM Corp. 2025 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 /*
- * IBM OpenAPI Terraform Generator Version: 3.112.0-f88e9264-20260220-115155
+ * IBM OpenAPI Terraform Generator Version: 3.103.0-e8b84313-20250402-201816
  */
 
 package cdtektonpipeline_test
@@ -433,7 +433,6 @@ func TestDataSourceIBMCdTektonPipelineTriggerToMap(t *testing.T) {
 		model["favorite"] = false
 		model["limit_waiting_runs"] = false
 		model["enable_events_from_forks"] = false
-		model["disable_draft_events"] = false
 		model["source"] = []map[string]interface{}{triggerSourceModel}
 		model["events"] = []string{"push", "pull_request"}
 		model["filter"] = "header['x-github-event'] == 'push' && body.ref == 'refs/heads/main'"
@@ -495,7 +494,6 @@ func TestDataSourceIBMCdTektonPipelineTriggerToMap(t *testing.T) {
 	model.Favorite = core.BoolPtr(false)
 	model.LimitWaitingRuns = core.BoolPtr(false)
 	model.EnableEventsFromForks = core.BoolPtr(false)
-	model.DisableDraftEvents = core.BoolPtr(false)
 	model.Source = triggerSourceModel
 	model.Events = []string{"push", "pull_request"}
 	model.Filter = core.StringPtr("header['x-github-event'] == 'push' && body.ref == 'refs/heads/main'")
@@ -764,7 +762,6 @@ func TestDataSourceIBMCdTektonPipelineTriggerScmTriggerToMap(t *testing.T) {
 		model["favorite"] = false
 		model["limit_waiting_runs"] = false
 		model["enable_events_from_forks"] = false
-		model["disable_draft_events"] = false
 		model["source"] = []map[string]interface{}{triggerSourceModel}
 		model["events"] = []string{"push", "pull_request"}
 		model["filter"] = "header['x-github-event'] == 'push' && body.ref == 'refs/heads/main'"
@@ -815,7 +812,6 @@ func TestDataSourceIBMCdTektonPipelineTriggerScmTriggerToMap(t *testing.T) {
 	model.Favorite = core.BoolPtr(false)
 	model.LimitWaitingRuns = core.BoolPtr(false)
 	model.EnableEventsFromForks = core.BoolPtr(false)
-	model.DisableDraftEvents = core.BoolPtr(false)
 	model.Source = triggerSourceModel
 	model.Events = []string{"push", "pull_request"}
 	model.Filter = core.StringPtr("header['x-github-event'] == 'push' && body.ref == 'refs/heads/main'")

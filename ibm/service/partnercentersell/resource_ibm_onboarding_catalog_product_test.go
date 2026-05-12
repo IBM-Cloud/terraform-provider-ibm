@@ -268,7 +268,6 @@ func testAccCheckIbmOnboardingCatalogProductConfig(productID string, env string,
                 		children {
                     		name = "%s"
                     		kind = "service"
-							id = "some-id-1"
                 		}
 						children {
                     		name = "secondChild"
@@ -442,7 +441,6 @@ func testAccCheckIbmOnboardingCatalogProductUpdateConfig(productID string, env s
                 		children {
                     		name = "%s"
                     		kind = "service"
-							id = "some-id-2"
                 		}
                 		composite_kind = "service"
                 		composite_tag = "composite_tag"
@@ -789,7 +787,6 @@ func TestResourceIbmOnboardingCatalogProductGlobalCatalogProductMetadataToMap(t 
 		globalCatalogProductMetadataOtherCompositeChildModel := make(map[string]interface{})
 		globalCatalogProductMetadataOtherCompositeChildModel["kind"] = "service"
 		globalCatalogProductMetadataOtherCompositeChildModel["name"] = "testString"
-		globalCatalogProductMetadataOtherCompositeChildModel["id"] = "testString"
 
 		globalCatalogProductMetadataOtherCompositeModel := make(map[string]interface{})
 		globalCatalogProductMetadataOtherCompositeModel["composite_kind"] = "service"
@@ -959,7 +956,6 @@ func TestResourceIbmOnboardingCatalogProductGlobalCatalogProductMetadataToMap(t 
 	globalCatalogProductMetadataOtherCompositeChildModel := new(partnercentersellv1.GlobalCatalogProductMetadataOtherCompositeChild)
 	globalCatalogProductMetadataOtherCompositeChildModel.Kind = core.StringPtr("service")
 	globalCatalogProductMetadataOtherCompositeChildModel.Name = core.StringPtr("testString")
-	globalCatalogProductMetadataOtherCompositeChildModel.ID = core.StringPtr("testString")
 
 	globalCatalogProductMetadataOtherCompositeModel := new(partnercentersellv1.GlobalCatalogProductMetadataOtherComposite)
 	globalCatalogProductMetadataOtherCompositeModel.CompositeKind = core.StringPtr("service")
@@ -1793,7 +1789,6 @@ func TestResourceIbmOnboardingCatalogProductGlobalCatalogProductMetadataOtherToM
 		globalCatalogProductMetadataOtherCompositeChildModel := make(map[string]interface{})
 		globalCatalogProductMetadataOtherCompositeChildModel["kind"] = "service"
 		globalCatalogProductMetadataOtherCompositeChildModel["name"] = "testString"
-		globalCatalogProductMetadataOtherCompositeChildModel["id"] = "testString"
 
 		globalCatalogProductMetadataOtherCompositeModel := make(map[string]interface{})
 		globalCatalogProductMetadataOtherCompositeModel["composite_kind"] = "service"
@@ -1849,7 +1844,6 @@ func TestResourceIbmOnboardingCatalogProductGlobalCatalogProductMetadataOtherToM
 	globalCatalogProductMetadataOtherCompositeChildModel := new(partnercentersellv1.GlobalCatalogProductMetadataOtherCompositeChild)
 	globalCatalogProductMetadataOtherCompositeChildModel.Kind = core.StringPtr("service")
 	globalCatalogProductMetadataOtherCompositeChildModel.Name = core.StringPtr("testString")
-	globalCatalogProductMetadataOtherCompositeChildModel.ID = core.StringPtr("testString")
 
 	globalCatalogProductMetadataOtherCompositeModel := new(partnercentersellv1.GlobalCatalogProductMetadataOtherComposite)
 	globalCatalogProductMetadataOtherCompositeModel.CompositeKind = core.StringPtr("service")
@@ -2186,7 +2180,6 @@ func TestResourceIbmOnboardingCatalogProductGlobalCatalogProductMetadataOtherCom
 		globalCatalogProductMetadataOtherCompositeChildModel := make(map[string]interface{})
 		globalCatalogProductMetadataOtherCompositeChildModel["kind"] = "service"
 		globalCatalogProductMetadataOtherCompositeChildModel["name"] = "testString"
-		globalCatalogProductMetadataOtherCompositeChildModel["id"] = "testString"
 
 		model := make(map[string]interface{})
 		model["composite_kind"] = "service"
@@ -2199,7 +2192,6 @@ func TestResourceIbmOnboardingCatalogProductGlobalCatalogProductMetadataOtherCom
 	globalCatalogProductMetadataOtherCompositeChildModel := new(partnercentersellv1.GlobalCatalogProductMetadataOtherCompositeChild)
 	globalCatalogProductMetadataOtherCompositeChildModel.Kind = core.StringPtr("service")
 	globalCatalogProductMetadataOtherCompositeChildModel.Name = core.StringPtr("testString")
-	globalCatalogProductMetadataOtherCompositeChildModel.ID = core.StringPtr("testString")
 
 	model := new(partnercentersellv1.GlobalCatalogProductMetadataOtherComposite)
 	model.CompositeKind = core.StringPtr("service")
@@ -2216,7 +2208,6 @@ func TestResourceIbmOnboardingCatalogProductGlobalCatalogProductMetadataOtherCom
 		model := make(map[string]interface{})
 		model["kind"] = "service"
 		model["name"] = "testString"
-		model["id"] = "testString"
 
 		assert.Equal(t, result, model)
 	}
@@ -2224,7 +2215,6 @@ func TestResourceIbmOnboardingCatalogProductGlobalCatalogProductMetadataOtherCom
 	model := new(partnercentersellv1.GlobalCatalogProductMetadataOtherCompositeChild)
 	model.Kind = core.StringPtr("service")
 	model.Name = core.StringPtr("testString")
-	model.ID = core.StringPtr("testString")
 
 	result, err := partnercentersell.ResourceIbmOnboardingCatalogProductGlobalCatalogProductMetadataOtherCompositeChildToMap(model)
 	assert.Nil(t, err)
@@ -2463,7 +2453,6 @@ func TestResourceIbmOnboardingCatalogProductMapToGlobalCatalogProductMetadataPro
 		globalCatalogProductMetadataOtherCompositeChildModel := new(partnercentersellv1.GlobalCatalogProductMetadataOtherCompositeChild)
 		globalCatalogProductMetadataOtherCompositeChildModel.Kind = core.StringPtr("service")
 		globalCatalogProductMetadataOtherCompositeChildModel.Name = core.StringPtr("testString")
-		globalCatalogProductMetadataOtherCompositeChildModel.ID = core.StringPtr("testString")
 
 		globalCatalogProductMetadataOtherCompositeModel := new(partnercentersellv1.GlobalCatalogProductMetadataOtherComposite)
 		globalCatalogProductMetadataOtherCompositeModel.CompositeKind = core.StringPtr("service")
@@ -2633,7 +2622,6 @@ func TestResourceIbmOnboardingCatalogProductMapToGlobalCatalogProductMetadataPro
 	globalCatalogProductMetadataOtherCompositeChildModel := make(map[string]interface{})
 	globalCatalogProductMetadataOtherCompositeChildModel["kind"] = "service"
 	globalCatalogProductMetadataOtherCompositeChildModel["name"] = "testString"
-	globalCatalogProductMetadataOtherCompositeChildModel["id"] = "testString"
 
 	globalCatalogProductMetadataOtherCompositeModel := make(map[string]interface{})
 	globalCatalogProductMetadataOtherCompositeModel["composite_kind"] = "service"
@@ -3463,7 +3451,6 @@ func TestResourceIbmOnboardingCatalogProductMapToGlobalCatalogProductMetadataOth
 		globalCatalogProductMetadataOtherCompositeChildModel := new(partnercentersellv1.GlobalCatalogProductMetadataOtherCompositeChild)
 		globalCatalogProductMetadataOtherCompositeChildModel.Kind = core.StringPtr("service")
 		globalCatalogProductMetadataOtherCompositeChildModel.Name = core.StringPtr("testString")
-		globalCatalogProductMetadataOtherCompositeChildModel.ID = core.StringPtr("testString")
 
 		globalCatalogProductMetadataOtherCompositeModel := new(partnercentersellv1.GlobalCatalogProductMetadataOtherComposite)
 		globalCatalogProductMetadataOtherCompositeModel.CompositeKind = core.StringPtr("service")
@@ -3519,7 +3506,6 @@ func TestResourceIbmOnboardingCatalogProductMapToGlobalCatalogProductMetadataOth
 	globalCatalogProductMetadataOtherCompositeChildModel := make(map[string]interface{})
 	globalCatalogProductMetadataOtherCompositeChildModel["kind"] = "service"
 	globalCatalogProductMetadataOtherCompositeChildModel["name"] = "testString"
-	globalCatalogProductMetadataOtherCompositeChildModel["id"] = "testString"
 
 	globalCatalogProductMetadataOtherCompositeModel := make(map[string]interface{})
 	globalCatalogProductMetadataOtherCompositeModel["composite_kind"] = "service"
@@ -3856,7 +3842,6 @@ func TestResourceIbmOnboardingCatalogProductMapToGlobalCatalogProductMetadataOth
 		globalCatalogProductMetadataOtherCompositeChildModel := new(partnercentersellv1.GlobalCatalogProductMetadataOtherCompositeChild)
 		globalCatalogProductMetadataOtherCompositeChildModel.Kind = core.StringPtr("service")
 		globalCatalogProductMetadataOtherCompositeChildModel.Name = core.StringPtr("testString")
-		globalCatalogProductMetadataOtherCompositeChildModel.ID = core.StringPtr("testString")
 
 		model := new(partnercentersellv1.GlobalCatalogProductMetadataOtherComposite)
 		model.CompositeKind = core.StringPtr("service")
@@ -3869,7 +3854,6 @@ func TestResourceIbmOnboardingCatalogProductMapToGlobalCatalogProductMetadataOth
 	globalCatalogProductMetadataOtherCompositeChildModel := make(map[string]interface{})
 	globalCatalogProductMetadataOtherCompositeChildModel["kind"] = "service"
 	globalCatalogProductMetadataOtherCompositeChildModel["name"] = "testString"
-	globalCatalogProductMetadataOtherCompositeChildModel["id"] = "testString"
 
 	model := make(map[string]interface{})
 	model["composite_kind"] = "service"
@@ -3886,7 +3870,6 @@ func TestResourceIbmOnboardingCatalogProductMapToGlobalCatalogProductMetadataOth
 		model := new(partnercentersellv1.GlobalCatalogProductMetadataOtherCompositeChild)
 		model.Kind = core.StringPtr("service")
 		model.Name = core.StringPtr("testString")
-		model.ID = core.StringPtr("testString")
 
 		assert.Equal(t, result, model)
 	}
@@ -3894,7 +3877,6 @@ func TestResourceIbmOnboardingCatalogProductMapToGlobalCatalogProductMetadataOth
 	model := make(map[string]interface{})
 	model["kind"] = "service"
 	model["name"] = "testString"
-	model["id"] = "testString"
 
 	result, err := partnercentersell.ResourceIbmOnboardingCatalogProductMapToGlobalCatalogProductMetadataOtherCompositeChild(model)
 	assert.Nil(t, err)

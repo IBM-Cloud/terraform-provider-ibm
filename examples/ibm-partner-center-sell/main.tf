@@ -46,7 +46,6 @@ resource "ibm_onboarding_catalog_deployment" "onboarding_catalog_deployment_inst
     service {
       rc_provisionable = true
       iam_compatible = true
-      plan_updateable = true
       service_key_supported = true
       parameters {
         displayname = "displayname"
@@ -495,7 +494,6 @@ resource "ibm_onboarding_catalog_product" "onboarding_catalog_product_instance" 
         children {
           kind = "service"
           name = "name"
-          id = "id"
         }
       }
     }

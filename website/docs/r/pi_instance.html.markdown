@@ -83,14 +83,14 @@ Review the argument references that you can specify for your resource.
 - `pi_ibmi_css` - (Optional, Boolean) IBM i Cloud Storage Solution.
 - `pi_ibmi_pha` - (Optional, Boolean) IBM i Power High Availability.
 - `pi_ibmi_rds_users` - (Optional, Integer) IBM i Rational Dev Studio Number of User Licenses.
-- `pi_image_id` - (Required, String) The ID of the image that you want to use for your Power Systems Virtual Server instance. The image determines the operating system that is installed in your instance. To list available images, run the `ibmcloud pi image list` command.
+- `pi_image_id` - (Required, String) The ID of the image that you want to use for your Power Systems Virtual Server instance. The image determines the operating system that is installed in your instance. To list available images, run the `ibmcloud pi images` command.
   - **Note**:
         - Only images belonging to your project can be used image for deploying a Power Systems Virtual Server instance. To import an images to your project, see [ibm_pi_image](https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/resources/pi_image).
         - If using `pi_deployment_type = VMNoStorage` then use the following images for the respective OS you intend to create the instance: `AIX-EMPTY`, `IBMI-EMPTY`, `SLES-EMPTY`, `RHEL-EMPTY`.
 - `pi_instance_name` - (Required, String) The name of the Power Systems Virtual Server instance.
 - `pi_key_pair_name` - (Optional, String) The name of the SSH key that you want to use to access your Power Systems Virtual Server instance. The SSH key must be uploaded to IBM Cloud.
-- `pi_license_repository_capacity` - (Optional, Integer) The VTL license repository capacity TiB value. Only use with VTL instances. `pi_memory >= 16 + (2 * pi_license_repository_capacity)`.
-- `pi_memory` - (Optional, Float) The amount of memory that you want to assign to your instance in GiB.
+- `pi_license_repository_capacity` - (Optional, Integer) The VTL license repository capacity TB value. Only use with VTL instances. `pi_memory >= 16 + (2 * pi_license_repository_capacity)`.
+- `pi_memory` - (Optional, Float) The amount of memory that you want to assign to your instance in GB.
   - Required when not creating SAP instances. Conflicts with `pi_sap_profile_id`.
 - `pi_network` - (Required, List of Map) List of one or more networks to attach to the instance.
 

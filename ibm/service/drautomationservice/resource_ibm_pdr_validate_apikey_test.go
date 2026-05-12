@@ -40,9 +40,9 @@ func TestAccIBMPdrValidateApikeyBasic(t *testing.T) {
 
 func TestAccIBMPdrValidateApikeyAllArgs(t *testing.T) {
 	var conf drautomationservicev1.ValidationKeyResponse
-	instanceID := fmt.Sprintf("tf_instance_id_%d", acctest.RandIntRange(10, 100))
-	acceptLanguage := fmt.Sprintf("tf_accept_language_%d", acctest.RandIntRange(10, 100))
-	acceptLanguageUpdate := fmt.Sprintf("tf_accept_language_%d", acctest.RandIntRange(10, 100))
+	instanceID := "ac645fe5-fba1-4cb3-952e-e1b09fa0df26"
+	acceptLanguage := "it"
+	acceptLanguageUpdate := "it"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
@@ -74,21 +74,23 @@ func TestAccIBMPdrValidateApikeyAllArgs(t *testing.T) {
 }
 
 func testAccCheckIBMPdrValidateApikeyConfigBasic(instanceID string) string {
+	apiKey := acc.DRApiKey
 	return fmt.Sprintf(`
 		resource "ibm_pdr_validate_apikey" "pdr_validate_apikey_instance" {
 			instance_id = "%s"
+			api_key = "%s"
 		}
-	`, instanceID)
+	`, instanceID, apiKey)
 }
 
 func testAccCheckIBMPdrValidateApikeyConfig(instanceID string, acceptLanguage string) string {
+	apiKey := acc.DRApiKey
 	return fmt.Sprintf(`
-
 		resource "ibm_pdr_validate_apikey" "pdr_validate_apikey_instance" {
 			instance_id = "%s"
-			accept_language = "%s"
+			api_key = "%s"
 		}
-	`, instanceID, acceptLanguage)
+	`, instanceID, apiKey)
 }
 
 func testAccCheckIBMPdrValidateApikeyExists(n string, obj drautomationservicev1.ValidationKeyResponse) resource.TestCheckFunc {

@@ -98,7 +98,7 @@ func DataSourceIBMPIImage() *schema.Resource {
 			},
 			Attr_Size: {
 				Computed:    true,
-				Description: "The size of the image in mebibytes.",
+				Description: "The size of the image in megabytes.",
 				Type:        schema.TypeInt,
 			},
 			Attr_SourceChecksum: {

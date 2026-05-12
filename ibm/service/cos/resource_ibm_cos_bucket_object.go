@@ -146,12 +146,6 @@ func ResourceIBMCOSBucketObject() *schema.Resource {
 				ValidateFunc: validation.IsRFC3339Time,
 				Description:  "An object cannot be deleted when the current time is earlier than the retainUntilDate. After this date, the object can be deleted.",
 			},
-			"bypass_governance_retention": {
-				Type:        schema.TypeBool,
-				Optional:    true,
-				Default:     false,
-				Description: "Allows deleting or modifying object versions locked with GOVERNANCE mode. Required to bypass governance-mode retention when updating or deleting objects.",
-			},
 			"website_redirect": {
 				Type:        schema.TypeString,
 				Optional:    true,
@@ -342,7 +336,7 @@ func resourceIBMCOSBucketObjectRead(ctx context.Context, d *schema.ResourceData,
 		d.Set("object_lock_mode", out.ObjectLockMode)
 	}
 	if out.ObjectLockRetainUntilDate != nil {
-		d.Set("object_lock_retain_until_date", out.ObjectLockRetainUntilDate.Format(time.RFC3339))
+		d.Set("object_lock_retain_until_date", out.ObjectLockRetainUntilDate.Format(time.RFC1123))
 	}
 	if out.ObjectLockLegalHoldStatus != nil {
 		d.Set("object_lock_legal_hold_status", out.ObjectLockLegalHoldStatus)
@@ -447,9 +441,6 @@ func resourceIBMCOSBucketObjectUpdate(ctx context.Context, d *schema.ResourceDat
 				RetainUntilDate: parseDate(d.Get("object_lock_retain_until_date").(string)),
 			},
 		}
-		if v, ok := d.GetOk("bypass_governance_retention"); ok && v.(bool) {
-			putObjectRetentionInput.BypassGovernanceRetention = aws.Bool(true)
-		}
 		_, err = s3Client.PutObjectRetention(putObjectRetentionInput)
 		if err != nil {
 			return diag.FromErr(fmt.Errorf("[ERROR] Error putting objectlock retention on (%s) in COS bucket (%s): %s", objectKey, bucketName, err))
@@ -485,15 +476,10 @@ func resourceIBMCOSBucketObjectDelete(ctx context.Context, d *schema.ResourceDat
 	}
 	objectKey := d.Get("key").(string)
 
-	bypassGovernance := false
-	if v, ok := d.GetOk("bypass_governance_retention"); ok {
-		bypassGovernance = v.(bool)
-	}
-
 	if _, ok := d.GetOk("version_id"); ok {
-		err = deleteAllCOSObjectVersions(s3Client, bucketName, objectKey, d.Get("force_delete").(bool), false, bypassGovernance)
+		err = deleteAllCOSObjectVersions(s3Client, bucketName, objectKey, d.Get("force_delete").(bool), false)
 	} else {
-		err = deleteCOSObjectVersion(s3Client, bucketName, objectKey, "", false, bypassGovernance)
+		err = deleteCOSObjectVersion(s3Client, bucketName, objectKey, "", false)
 	}
 
 	if err != nil {
@@ -629,7 +615,7 @@ func parseObjectId(id string, info string) string {
 
 // deleteAllCOSObjectVersions deletes all versions of a specified key from an COS bucket.
 // If key is empty then all versions of all objects are deleted.
-func deleteAllCOSObjectVersions(conn *s3.S3, bucketName, key string, force, ignoreObjectErrors, bypassGovernance bool) error {
+func deleteAllCOSObjectVersions(conn *s3.S3, bucketName, key string, force, ignoreObjectErrors bool) error {
 	input := &s3.ListObjectVersionsInput{
 		Bucket: aws.String(bucketName),
 	}
@@ -652,7 +638,7 @@ func deleteAllCOSObjectVersions(conn *s3.S3, bucketName, key string, force, igno
 				continue
 			}
 
-			err := deleteCOSObjectVersion(conn, bucketName, objectKey, objectVersionID, force, bypassGovernance)
+			err := deleteCOSObjectVersion(conn, bucketName, objectKey, objectVersionID, force)
 
 			if err != nil {
 				if strings.Contains(err.Error(), "AccessDenied") && force {
@@ -705,7 +691,7 @@ func deleteAllCOSObjectVersions(conn *s3.S3, bucketName, key string, force, igno
 			}
 
 			// Delete markers have no object lock protections.
-			err := deleteCOSObjectVersion(conn, bucketName, deleteMarkerKey, deleteMarkerVersionID, false, false)
+			err := deleteCOSObjectVersion(conn, bucketName, deleteMarkerKey, deleteMarkerVersionID, false)
 
 			if err != nil {
 				lastErr = err
@@ -731,7 +717,7 @@ func deleteAllCOSObjectVersions(conn *s3.S3, bucketName, key string, force, igno
 }
 
 // deleteCOSObjectVersion deletes a specific bucket object version.
-func deleteCOSObjectVersion(conn *s3.S3, b, k, v string, force, bypassGovernance bool) error {
+func deleteCOSObjectVersion(conn *s3.S3, b, k, v string, force bool) error {
 	input := &s3.DeleteObjectInput{
 		Bucket: aws.String(b),
 		Key:    aws.String(k),
@@ -739,10 +725,6 @@ func deleteCOSObjectVersion(conn *s3.S3, b, k, v string, force, bypassGovernance
 
 	if v != "" {
 		input.VersionId = aws.String(v)
-	}
-
-	if bypassGovernance {
-		input.BypassGovernanceRetention = aws.Bool(true)
 	}
 
 	log.Printf("[INFO] Deleting COS Bucket (%s) Object (%s) Version: %s", b, k, v)

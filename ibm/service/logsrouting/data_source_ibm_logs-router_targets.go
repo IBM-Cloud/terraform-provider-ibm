@@ -25,7 +25,7 @@ import (
 
 func DataSourceIBMLogsRouterTargets() *schema.Resource {
 	return &schema.Resource{
-		ReadContext: DataSourceIBMLogsRouterTargetsRead,
+		ReadContext: dataSourceIBMLogsRouterTargetsRead,
 
 		Schema: map[string]*schema.Schema{
 			"tenant_id": &schema.Schema{
@@ -111,8 +111,7 @@ func DataSourceIBMLogsRouterTargets() *schema.Resource {
 	}
 }
 
-// Make it a public function so that it can be called from the v1 and v3 combined datasource schema
-func DataSourceIBMLogsRouterTargetsRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataSourceIBMLogsRouterTargetsRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	ibmCloudLogsRoutingClient, err := meta.(conns.ClientSession).IBMCloudLogsRoutingV0()
 	if err != nil {
 		// Error is coming from SDK client, so it doesn't need to be discriminated.

@@ -1,8 +1,8 @@
-// Copyright IBM Corp. 2026 All Rights Reserved.
+// Copyright IBM Corp. 2024 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 /*
- * IBM OpenAPI Terraform Generator Version: 3.102.0-615ec964-20250307-203034
+ * IBM OpenAPI Terraform Generator Version: 3.94.1-71478489-20240820-161623
  */
 
 package codeengine
@@ -13,15 +13,14 @@ import (
 	"log"
 	"time"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 	"github.com/IBM/code-engine-go-sdk/codeenginev2"
 	"github.com/IBM/go-sdk-core/v5/core"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 func ResourceIbmCodeEngineFunction() *schema.Resource {
@@ -34,93 +33,87 @@ func ResourceIbmCodeEngineFunction() *schema.Resource {
 		Timeouts: &schema.ResourceTimeout{
 			Create: schema.DefaultTimeout(10 * time.Minute),
 			Update: schema.DefaultTimeout(10 * time.Minute),
-			Delete: schema.DefaultTimeout(10 * time.Minute),
 		},
 
 		Schema: map[string]*schema.Schema{
-			"project_id": &schema.Schema{
+			"project_id": {
 				Type:         schema.TypeString,
 				Required:     true,
 				ForceNew:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_code_engine_function", "project_id"),
 				Description:  "The ID of the project.",
 			},
-			"code_binary": &schema.Schema{
+			"code_binary": {
 				Type:        schema.TypeBool,
 				Optional:    true,
 				Description: "Specifies whether the code is binary or not. Defaults to false when `code_reference` is set to a data URL. When `code_reference` is set to a code bundle URL, this field is always true.",
 			},
-			"code_main": &schema.Schema{
+			"code_main": {
 				Type:         schema.TypeString,
 				Optional:     true,
 				Default:      "main",
 				ValidateFunc: validate.InvokeValidator("ibm_code_engine_function", "code_main"),
 				Description:  "Specifies the name of the function that should be invoked.",
 			},
-			"code_reference": &schema.Schema{
+			"code_reference": {
 				Type:         schema.TypeString,
 				Required:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_code_engine_function", "code_reference"),
 				Description:  "Specifies either a reference to a code bundle or the source code itself. To specify the source code, use the data URL scheme and include the source code as base64 encoded. The data URL scheme is defined in [RFC 2397](https://tools.ietf.org/html/rfc2397).",
 			},
-			"code_secret": &schema.Schema{
+			"code_secret": {
 				Type:         schema.TypeString,
 				Optional:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_code_engine_function", "code_secret"),
 				Description:  "The name of the secret that is used to access the specified `code_reference`. The secret is used to authenticate with a non-public endpoint that is specified as`code_reference`.",
 			},
-			"managed_domain_mappings": &schema.Schema{
+			"managed_domain_mappings": {
 				Type:         schema.TypeString,
 				Optional:     true,
 				Default:      "local_public",
 				ValidateFunc: validate.InvokeValidator("ibm_code_engine_function", "managed_domain_mappings"),
 				Description:  "Optional value controlling which of the system managed domain mappings will be setup for the function. Valid values are 'local_public', 'local_private' and 'local'. Visibility can only be 'local_private' if the project supports function private visibility.",
 			},
-			"name": &schema.Schema{
+			"name": {
 				Type:         schema.TypeString,
 				Required:     true,
 				ForceNew:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_code_engine_function", "name"),
 				Description:  "The name of the function.",
 			},
-			"run_compute_resource_token_enabled": &schema.Schema{
-				Type:        schema.TypeBool,
-				Optional:    true,
-				Default:     false,
-				Description: "Optional flag to enable the use of a compute resource token mounted to the container file system.",
-			},
-			"run_env_variables": &schema.Schema{
+			"run_env_variables": {
 				Type:        schema.TypeList,
 				Optional:    true,
 				Description: "References to config maps, secrets or literal values, which are defined by the function owner and are exposed as environment variables in the function.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"key": &schema.Schema{
+						"key": {
 							Type:        schema.TypeString,
 							Optional:    true,
 							Description: "The key to reference as environment variable.",
 						},
-						"name": &schema.Schema{
+						"name": {
 							Type:        schema.TypeString,
 							Optional:    true,
 							Description: "The name of the environment variable.",
 						},
-						"prefix": &schema.Schema{
+						"prefix": {
 							Type:        schema.TypeString,
 							Optional:    true,
 							Description: "A prefix that can be added to all keys of a full secret or config map reference.",
 						},
-						"reference": &schema.Schema{
+						"reference": {
 							Type:        schema.TypeString,
 							Optional:    true,
 							Description: "The name of the secret or config map.",
 						},
-						"type": &schema.Schema{
+						"type": {
 							Type:        schema.TypeString,
-							Required:    true,
+							Optional:    true,
+							Default:     "literal",
 							Description: "Specify the type of the environment variable.",
 						},
-						"value": &schema.Schema{
+						"value": {
 							Type:        schema.TypeString,
 							Optional:    true,
 							Description: "The literal value of the environment variable.",
@@ -128,83 +121,83 @@ func ResourceIbmCodeEngineFunction() *schema.Resource {
 					},
 				},
 			},
-			"runtime": &schema.Schema{
+			"runtime": {
 				Type:         schema.TypeString,
 				Required:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_code_engine_function", "runtime"),
 				Description:  "The managed runtime used to execute the injected code.",
 			},
-			"scale_concurrency": &schema.Schema{
+			"scale_concurrency": {
 				Type:         schema.TypeInt,
 				Optional:     true,
 				Default:      1,
 				ValidateFunc: validate.InvokeValidator("ibm_code_engine_function", "scale_concurrency"),
 				Description:  "Number of parallel requests handled by a single instance, supported only by Node.js, default is `1`.",
 			},
-			"scale_cpu_limit": &schema.Schema{
+			"scale_cpu_limit": {
 				Type:         schema.TypeString,
 				Optional:     true,
 				Default:      "1",
 				ValidateFunc: validate.InvokeValidator("ibm_code_engine_function", "scale_cpu_limit"),
 				Description:  "Optional amount of CPU set for the instance of the function. For valid values see [Supported memory and CPU combinations](https://cloud.ibm.com/docs/codeengine?topic=codeengine-mem-cpu-combo).",
 			},
-			"scale_down_delay": &schema.Schema{
+			"scale_down_delay": {
 				Type:         schema.TypeInt,
 				Optional:     true,
 				Default:      1,
 				ValidateFunc: validate.InvokeValidator("ibm_code_engine_function", "scale_down_delay"),
 				Description:  "Optional amount of time in seconds that delays the scale down behavior for a function.",
 			},
-			"scale_max_execution_time": &schema.Schema{
+			"scale_max_execution_time": {
 				Type:         schema.TypeInt,
 				Optional:     true,
 				Default:      60,
 				ValidateFunc: validate.InvokeValidator("ibm_code_engine_function", "scale_max_execution_time"),
 				Description:  "Timeout in secs after which the function is terminated.",
 			},
-			"scale_memory_limit": &schema.Schema{
+			"scale_memory_limit": {
 				Type:         schema.TypeString,
 				Optional:     true,
 				Default:      "4G",
 				ValidateFunc: validate.InvokeValidator("ibm_code_engine_function", "scale_memory_limit"),
 				Description:  "Optional amount of memory set for the instance of the function. For valid values see [Supported memory and CPU combinations](https://cloud.ibm.com/docs/codeengine?topic=codeengine-mem-cpu-combo). The units for specifying memory are Megabyte (M) or Gigabyte (G), whereas G and M are the shorthand expressions for GB and MB. For more information see [Units of measurement](https://cloud.ibm.com/docs/codeengine?topic=codeengine-mem-cpu-combo#unit-measurements).",
 			},
-			"computed_env_variables": &schema.Schema{
+			"computed_env_variables": {
 				Type:        schema.TypeList,
 				Computed:    true,
 				Description: "References to config maps, secrets or literal values, which are defined and set by Code Engine and are exposed as environment variables in the function.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"key": &schema.Schema{
+						"key": {
 							Type:        schema.TypeString,
 							Optional:    true,
 							Computed:    true,
 							Description: "The key to reference as environment variable.",
 						},
-						"name": &schema.Schema{
+						"name": {
 							Type:        schema.TypeString,
 							Optional:    true,
 							Computed:    true,
 							Description: "The name of the environment variable.",
 						},
-						"prefix": &schema.Schema{
+						"prefix": {
 							Type:        schema.TypeString,
 							Optional:    true,
 							Computed:    true,
 							Description: "A prefix that can be added to all keys of a full secret or config map reference.",
 						},
-						"reference": &schema.Schema{
+						"reference": {
 							Type:        schema.TypeString,
 							Optional:    true,
 							Computed:    true,
 							Description: "The name of the secret or config map.",
 						},
-						"type": &schema.Schema{
+						"type": {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "Specify the type of the environment variable.",
 						},
-						"value": &schema.Schema{
+						"value": {
 							Type:        schema.TypeString,
 							Optional:    true,
 							Computed:    true,
@@ -213,58 +206,58 @@ func ResourceIbmCodeEngineFunction() *schema.Resource {
 					},
 				},
 			},
-			"created_at": &schema.Schema{
+			"created_at": {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The timestamp when the resource was created.",
 			},
-			"endpoint": &schema.Schema{
+			"endpoint": {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "URL to invoke the function.",
 			},
-			"endpoint_internal": &schema.Schema{
+			"endpoint_internal": {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "URL to function that is only visible within the project.",
 			},
-			"entity_tag": &schema.Schema{
+			"entity_tag": {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The version of the function instance, which is used to achieve optimistic locking.",
 			},
-			"href": &schema.Schema{
+			"href": {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "When you provision a new function, a relative URL path is created identifying the location of the instance.",
 			},
-			"function_id": &schema.Schema{
+			"function_id": {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The identifier of the resource.",
 			},
-			"region": &schema.Schema{
+			"region": {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The region of the project the resource is located in. Possible values: 'au-syd', 'br-sao', 'ca-tor', 'eu-de', 'eu-gb', 'jp-osa', 'jp-tok', 'us-east', 'us-south'.",
 			},
-			"resource_type": &schema.Schema{
+			"resource_type": {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The type of the function.",
 			},
-			"status": &schema.Schema{
+			"status": {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The current status of the function.",
 			},
-			"status_details": &schema.Schema{
+			"status_details": {
 				Type:        schema.TypeList,
 				Computed:    true,
 				Description: "The detailed status of the function.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"reason": &schema.Schema{
+						"reason": {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "Provides additional information about the status of the function.",
@@ -272,7 +265,7 @@ func ResourceIbmCodeEngineFunction() *schema.Resource {
 					},
 				},
 			},
-			"etag": &schema.Schema{
+			"etag": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
@@ -418,9 +411,6 @@ func resourceIbmCodeEngineFunctionCreate(context context.Context, d *schema.Reso
 	if _, ok := d.GetOk("managed_domain_mappings"); ok {
 		createFunctionOptions.SetManagedDomainMappings(d.Get("managed_domain_mappings").(string))
 	}
-	if _, ok := d.GetOk("run_compute_resource_token_enabled"); ok {
-		createFunctionOptions.SetRunComputeResourceTokenEnabled(d.Get("run_compute_resource_token_enabled").(bool))
-	}
 	if _, ok := d.GetOk("run_env_variables"); ok {
 		var runEnvVariables []codeenginev2.EnvVarPrototype
 		for _, v := range d.Get("run_env_variables").([]interface{}) {
@@ -501,7 +491,7 @@ func waitForIbmCodeEngineFunctionCreate(d *schema.ResourceData, meta interface{}
 			return stateObj, *stateObj.Status, nil
 		},
 		Timeout:    d.Timeout(schema.TimeoutCreate),
-		Delay:      5 * time.Second,
+		Delay:      60 * time.Second,
 		MinTimeout: 60 * time.Second,
 	}
 
@@ -573,12 +563,6 @@ func resourceIbmCodeEngineFunctionRead(context context.Context, d *schema.Resour
 		err = fmt.Errorf("Error setting name: %s", err)
 		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_code_engine_function", "read", "set-name").GetDiag()
 	}
-	if !core.IsNil(function.RunComputeResourceTokenEnabled) {
-		if err = d.Set("run_compute_resource_token_enabled", function.RunComputeResourceTokenEnabled); err != nil {
-			err = fmt.Errorf("Error setting run_compute_resource_token_enabled: %s", err)
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_code_engine_function", "read", "set-run_compute_resource_token_enabled").GetDiag()
-		}
-	}
 	if !core.IsNil(function.RunEnvVariables) {
 		runEnvVariables := []map[string]interface{}{}
 		for _, runEnvVariablesItem := range function.RunEnvVariables {
@@ -627,17 +611,19 @@ func resourceIbmCodeEngineFunctionRead(context context.Context, d *schema.Resour
 			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_code_engine_function", "read", "set-scale_memory_limit").GetDiag()
 		}
 	}
-	computedEnvVariables := []map[string]interface{}{}
-	for _, computedEnvVariablesItem := range function.ComputedEnvVariables {
-		computedEnvVariablesItemMap, err := ResourceIbmCodeEngineFunctionEnvVarToMap(&computedEnvVariablesItem) // #nosec G601
-		if err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_code_engine_function", "read", "computed_env_variables-to-map").GetDiag()
+	if !core.IsNil(function.ComputedEnvVariables) {
+		computedEnvVariables := []map[string]interface{}{}
+		for _, computedEnvVariablesItem := range function.ComputedEnvVariables {
+			computedEnvVariablesItemMap, err := ResourceIbmCodeEngineFunctionEnvVarToMap(&computedEnvVariablesItem) // #nosec G601
+			if err != nil {
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_code_engine_function", "read", "computed_env_variables-to-map").GetDiag()
+			}
+			computedEnvVariables = append(computedEnvVariables, computedEnvVariablesItemMap)
 		}
-		computedEnvVariables = append(computedEnvVariables, computedEnvVariablesItemMap)
-	}
-	if err = d.Set("computed_env_variables", computedEnvVariables); err != nil {
-		err = fmt.Errorf("Error setting computed_env_variables: %s", err)
-		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_code_engine_function", "read", "set-computed_env_variables").GetDiag()
+		if err = d.Set("computed_env_variables", computedEnvVariables); err != nil {
+			err = fmt.Errorf("Error setting computed_env_variables: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_code_engine_function", "read", "set-computed_env_variables").GetDiag()
+		}
 	}
 	if !core.IsNil(function.CreatedAt) {
 		if err = d.Set("created_at", function.CreatedAt); err != nil {
@@ -755,11 +741,6 @@ func resourceIbmCodeEngineFunctionUpdate(context context.Context, d *schema.Reso
 	if d.HasChange("managed_domain_mappings") {
 		newManagedDomainMappings := d.Get("managed_domain_mappings").(string)
 		patchVals.ManagedDomainMappings = &newManagedDomainMappings
-		hasChange = true
-	}
-	if d.HasChange("run_compute_resource_token_enabled") {
-		newRunComputeResourceTokenEnabled := d.Get("run_compute_resource_token_enabled").(bool)
-		patchVals.RunComputeResourceTokenEnabled = &newRunComputeResourceTokenEnabled
 		hasChange = true
 	}
 	if d.HasChange("run_env_variables") {
@@ -913,127 +894,81 @@ func ResourceIbmCodeEngineFunctionFunctionPatchAsPatch(patchVals *codeenginev2.F
 	path = "code_binary"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["code_binary"] = nil
-	} else if !exists {
-		delete(patch, "code_binary")
 	}
 	path = "code_main"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["code_main"] = nil
-	} else if !exists {
-		delete(patch, "code_main")
 	}
 	path = "code_reference"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["code_reference"] = nil
-	} else if !exists {
-		delete(patch, "code_reference")
 	}
 	path = "code_secret"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["code_secret"] = nil
-	} else if !exists {
-		delete(patch, "code_secret")
 	}
 	path = "managed_domain_mappings"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["managed_domain_mappings"] = nil
-	} else if !exists {
-		delete(patch, "managed_domain_mappings")
-	}
-	path = "run_compute_resource_token_enabled"
-	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
-		patch["run_compute_resource_token_enabled"] = core.BoolPtr(false) // func necessary to be able to deteremine if user tries to set value to nil, which we evaluate to default false
-	} else if !exists {
-		delete(patch, "run_compute_resource_token_enabled")
 	}
 	path = "run_env_variables"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
-		patch["run_env_variables"] = make([]map[string]interface{}, 0)
-	} else if exists && patch["run_env_variables"] != nil {
-		run_env_variablesList := patch["run_env_variables"].([]map[string]interface{})
-		for i, run_env_variablesItem := range run_env_variablesList {
-			ResourceIbmCodeEngineFunctionEnvVarPrototypeAsPatch(run_env_variablesItem, d, fmt.Sprintf("%s.%d", path, i))
-		}
-	} else if !exists {
-		delete(patch, "run_env_variables")
+		runEnvVariables := []map[string]interface{}{}
+		patch["run_env_variables"] = runEnvVariables
 	}
 	path = "runtime"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["runtime"] = nil
-	} else if !exists {
-		delete(patch, "runtime")
 	}
 	path = "scale_concurrency"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["scale_concurrency"] = nil
-	} else if !exists {
-		delete(patch, "scale_concurrency")
 	}
 	path = "scale_cpu_limit"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["scale_cpu_limit"] = nil
-	} else if !exists {
-		delete(patch, "scale_cpu_limit")
 	}
 	path = "scale_down_delay"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["scale_down_delay"] = nil
-	} else if !exists {
-		delete(patch, "scale_down_delay")
 	}
 	path = "scale_max_execution_time"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["scale_max_execution_time"] = nil
-	} else if !exists {
-		delete(patch, "scale_max_execution_time")
 	}
 	path = "scale_memory_limit"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["scale_memory_limit"] = nil
-	} else if !exists {
-		delete(patch, "scale_memory_limit")
 	}
 
 	return patch
 }
 
-func ResourceIbmCodeEngineFunctionEnvVarPrototypeAsPatch(patch map[string]interface{}, d *schema.ResourceData, rootPath string) {
+func ResourceIbmCodeEngineFunctionEnvVarPrototypeAsPatch(patch map[string]interface{}, d *schema.ResourceData) {
 	var path string
 
-	path = rootPath + ".key"
+	path = "run_env_variables.0.key"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["key"] = nil
-	} else if !exists {
-		delete(patch, "key")
 	}
-	path = rootPath + ".name"
+	path = "run_env_variables.0.name"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["name"] = nil
-	} else if !exists {
-		delete(patch, "name")
 	}
-	path = rootPath + ".prefix"
+	path = "run_env_variables.0.prefix"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["prefix"] = nil
-	} else if !exists {
-		delete(patch, "prefix")
 	}
-	path = rootPath + ".reference"
+	path = "run_env_variables.0.reference"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["reference"] = nil
-	} else if !exists {
-		delete(patch, "reference")
 	}
-	path = rootPath + ".type"
+	path = "run_env_variables.0.type"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["type"] = nil
-	} else if !exists {
-		delete(patch, "type")
 	}
-	path = rootPath + ".value"
+	path = "run_env_variables.0.value"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["value"] = nil
-	} else if !exists {
-		delete(patch, "value")
 	}
 }

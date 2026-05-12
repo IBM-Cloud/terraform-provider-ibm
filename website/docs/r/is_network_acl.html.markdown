@@ -64,35 +64,6 @@ resource "ibm_is_network_acl" "example" {
 }
 ```
 
-## Example usage (any)
-
-```terraform
-resource "ibm_is_vpc" "example" {
-  name = "example-vpc"
-}
-
-resource "ibm_is_network_acl" "example" {
-  name = "example-acl"
-  vpc  = ibm_is_vpc.example.id
-  rules {
-    name        = "outbound"
-    action      = "allow"
-    source      = "0.0.0.0/0"
-    destination = "0.0.0.0/0"
-    direction   = "outbound"
-    protocol    = "any"
-  }
-  rules {
-    name        = "inbound"
-    action      = "allow"
-    source      = "0.0.0.0/0"
-    destination = "0.0.0.0/0"
-    direction   = "inbound"
-    protocol    = "any" 
-  }
-}
-```
-
 ## Argument reference
 Review the argument references that you can specify for your resource. 
  

@@ -36,11 +36,6 @@ func DataSourceIBMPISAPProfile() *schema.Resource {
 			},
 
 			// Attributes
-			Attr_Asaps: {
-				Computed:    true,
-				Description: "Accelerated SAP Application Performance Standard.",
-				Type:        schema.TypeInt,
-			},
 			Attr_Certified: {
 				Computed:    true,
 				Description: "Has certification been performed on profile.",
@@ -63,7 +58,7 @@ func DataSourceIBMPISAPProfile() *schema.Resource {
 			},
 			Attr_Memory: {
 				Computed:    true,
-				Description: "Amount of memory (in GiB).",
+				Description: "Amount of memory (in GB).",
 				Type:        schema.TypeInt,
 			},
 			Attr_SAPS: {
@@ -134,7 +129,6 @@ func dataSourceIBMPISAPProfileRead(ctx context.Context, d *schema.ResourceData, 
 	}
 
 	d.SetId(*sapProfile.ProfileID)
-	d.Set(Attr_Asaps, sapProfile.Asaps)
 	d.Set(Attr_Certified, *sapProfile.Certified)
 	d.Set(Attr_Cores, *sapProfile.Cores)
 	d.Set(Attr_DefaultSystem, sapProfile.DefaultSystem)

@@ -7,13 +7,11 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"strings"
 	"time"
 
 	"github.com/IBM-Cloud/power-go-client/clients/instance"
 	"github.com/IBM-Cloud/power-go-client/power/models"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
-	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -23,7 +21,7 @@ import (
 func ResourceIBMPIKey() *schema.Resource {
 	return &schema.Resource{
 		CustomizeDiff: customdiff.Sequence(
-			func(_ context.Context, diff *schema.ResourceDiff, v any) error {
+			func(_ context.Context, diff *schema.ResourceDiff, v interface{}) error {
 				return customizeNameAndSSHKeyPIKeyDiff(diff)
 			},
 		),
@@ -104,13 +102,11 @@ func ResourceIBMPIKey() *schema.Resource {
 	}
 }
 
-func resourceIBMPIKeyCreate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
+func resourceIBMPIKeyCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	// session
 	sess, err := meta.(conns.ClientSession).IBMPISession()
 	if err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("IBMPISession failed: %s", err.Error()), "ibm_pi_key", "create")
-		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
-		return tfErr.GetDiag()
+		return diag.FromErr(err)
 	}
 
 	// arguments
@@ -134,9 +130,8 @@ func resourceIBMPIKeyCreate(ctx context.Context, d *schema.ResourceData, meta an
 
 	sshResponse, err := client.Create(body)
 	if err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Create failed: %s", err.Error()), "ibm_pi_key", "create")
-		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
-		return tfErr.GetDiag()
+		log.Printf("[DEBUG]  err %s", err)
+		return diag.FromErr(err)
 	}
 
 	log.Printf("Printing the sshkey %+v", *sshResponse)
@@ -144,35 +139,24 @@ func resourceIBMPIKeyCreate(ctx context.Context, d *schema.ResourceData, meta an
 	return resourceIBMPIKeyRead(ctx, d, meta)
 }
 
-func resourceIBMPIKeyRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
+func resourceIBMPIKeyRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	// session
 	sess, err := meta.(conns.ClientSession).IBMPISession()
 	if err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("IBMPISession failed: %s", err.Error()), "ibm_pi_key", "read")
-		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
-		return tfErr.GetDiag()
+		return diag.FromErr(err)
 	}
 
 	// arguments
 	cloudInstanceID, key, err := splitID(d.Id())
 	if err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("splitID failed: %s", err.Error()), "ibm_pi_key", "read")
-		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
-		return tfErr.GetDiag()
+		return diag.FromErr(err)
 	}
 
 	// get key
 	sshkeyC := instance.NewIBMPISSHKeyClient(ctx, sess, cloudInstanceID)
 	sshkeydata, err := sshkeyC.Get(key)
 	if err != nil {
-		if strings.Contains(strings.ToLower(err.Error()), NotFound) {
-			log.Printf("[WARNING] ssh-key resource was not found or removed outside of terraform\n")
-			d.SetId("")
-			return nil
-		}
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Get failed: %s", err.Error()), "ibm_pi_key", "read")
-		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
-		return tfErr.GetDiag()
+		return diag.FromErr(err)
 	}
 
 	// Arguments
@@ -192,21 +176,17 @@ func resourceIBMPIKeyRead(ctx context.Context, d *schema.ResourceData, meta any)
 	return nil
 }
 
-func resourceIBMPIKeyUpdate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
+func resourceIBMPIKeyUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	// session
 	sess, err := meta.(conns.ClientSession).IBMPISession()
 	if err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("IBMPISession failed: %s", err.Error()), "ibm_pi_key", "update")
-		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
-		return tfErr.GetDiag()
+		return diag.FromErr(err)
 	}
 
 	// arguments
 	cloudInstanceID, key, err := splitID(d.Id())
 	if err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("splitID failed: %s", err.Error()), "ibm_pi_key", "update")
-		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
-		return tfErr.GetDiag()
+		return diag.FromErr(err)
 	}
 
 	client := instance.NewIBMPISSHKeyClient(ctx, sess, cloudInstanceID)
@@ -234,38 +214,30 @@ func resourceIBMPIKeyUpdate(ctx context.Context, d *schema.ResourceData, meta an
 
 	_, err = client.Update(key, updateBody)
 	if err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Update failed: %s", err.Error()), "ibm_pi_key", "update")
-		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
-		return tfErr.GetDiag()
+		return diag.FromErr(err)
 	}
 
 	return resourceIBMPIKeyRead(ctx, d, meta)
 }
 
-func resourceIBMPIKeyDelete(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
+func resourceIBMPIKeyDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	// session
 	sess, err := meta.(conns.ClientSession).IBMPISession()
 	if err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("IBMPISession failed: %s", err.Error()), "ibm_pi_key", "delete")
-		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
-		return tfErr.GetDiag()
+		return diag.FromErr(err)
 	}
 
 	// arguments
 	cloudInstanceID, key, err := splitID(d.Id())
 	if err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("splitID failed: %s", err.Error()), "ibm_pi_key", "delete")
-		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
-		return tfErr.GetDiag()
+		return diag.FromErr(err)
 	}
 
 	// delete key
 	sshkeyC := instance.NewIBMPISSHKeyClient(ctx, sess, cloudInstanceID)
 	err = sshkeyC.Delete(key)
 	if err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Delete failed: %s", err.Error()), "ibm_pi_key", "delete")
-		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
-		return tfErr.GetDiag()
+		return diag.FromErr(err)
 	}
 	d.SetId("")
 	return nil

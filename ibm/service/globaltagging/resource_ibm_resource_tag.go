@@ -201,22 +201,15 @@ func resourceIBMResourceTagCreate(context context.Context, d *schema.ResourceDat
 
 		// Check if there are errors on the attach internal response
 		if results != nil {
-			hasErrors := false
-
-			// Check for errors in results
+			errMap := make([]globaltaggingv1.TagResultsItem, 0)
 			for _, res := range results.Results {
 				if res.IsError != nil && *res.IsError {
-					hasErrors = true
-					break
+					errMap = append(errMap, res)
 				}
 			}
-
-			if hasErrors {
-				// Marshal the results array to show resource_id, is_error, message
-				resultsJSON, _ := json.MarshalIndent(results.Results, "", "    ")
-				// Marshal the full response for debugging
-				fullResponseJSON, _ := json.MarshalIndent(fullResponse, "", "    ")
-				return diag.FromErr(flex.FmtErrorf("Error while creating tag: %s - Full response: %s", string(resultsJSON), string(fullResponseJSON)))
+			if len(errMap) > 0 {
+				output, _ := json.MarshalIndent(errMap, "", "    ")
+				return diag.FromErr(flex.FmtErrorf("Error while creating tag: %s - Full response: %s", string(output), fullResponse))
 			}
 		}
 		response, errored := flex.WaitForTagsAvailable(meta, resourceID, resourceType, tagType, news, d.Timeout(schema.TimeoutCreate))

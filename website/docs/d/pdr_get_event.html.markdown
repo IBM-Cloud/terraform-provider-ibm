@@ -7,16 +7,15 @@ subcategory: "DrAutomation Service"
 ---
 
 # ibm_pdr_get_event
-Retrieves the details of a specific event for the given service instance provision ID.
 
-~> **This data source is deprecated and will be removed in the next major version. Use `ibm_pdr_event` instead.**
+Provides a read-only data source to retrieve information about a pdr_get_event. You can then reference the fields of the data source in other resources within the same configuration by using interpolation syntax.
 
 ## Example Usage
 
 ```hcl
 data "ibm_pdr_get_event" "pdr_get_event" {
 	event_id = "00116b2a-9326-4024-839e-fb5364b76898"
-	instance_id = "123456d3-1122-3344-b67d-4389b44b7bf9"
+	provision_id = "crn:v1:staging:public:power-dr-automation:global:a/a123456fb04ceebfb4a9fd38c22334455:123456d3-1122-3344-b67d-4389b44b7bf9::"
 }
 ```
 
@@ -24,9 +23,9 @@ data "ibm_pdr_get_event" "pdr_get_event" {
 
 You can specify the following arguments for this data source.
 
-* `accept_language` - (Optional, String) The language requested for the return document.(ex., en,it,fr,es,de,ja,ko,pt-BR,zh-HANS,zh-HANT)
+* `accept_language` - (Optional, String) The language requested for the return document.
 * `event_id` - (Required, Forces new resource, String) Event ID.
-* `instance_id` - (Required, Forces new resource, String) ID of the service instance.
+* `provision_id` - (Required, Forces new resource, String) provision id.
 
 ## Attribute Reference
 
@@ -48,3 +47,4 @@ Nested schema for **user**:
 	* `email` - (String) Email of the User.
 	* `name` - (String) Name of the User.
 	* `user_id` - (String) ID of user who created/caused the event.
+

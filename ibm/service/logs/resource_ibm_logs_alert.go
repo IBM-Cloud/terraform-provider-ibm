@@ -1398,7 +1398,6 @@ func ResourceIbmLogsAlert() *schema.Resource {
 						"filter_type": &schema.Schema{
 							Type:        schema.TypeString,
 							Optional:    true,
-							Computed:    true,
 							Description: "The type of the filter.",
 						},
 					},
@@ -1529,20 +1528,17 @@ func ResourceIbmLogsAlert() *schema.Resource {
 				Type:        schema.TypeList,
 				MaxItems:    1,
 				Optional:    true,
-				Computed:    true,
 				Description: "Incident settings, will create the incident based on this configuration.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"retriggering_period_seconds": &schema.Schema{
 							Type:        schema.TypeInt,
 							Optional:    true,
-							Computed:    true,
 							Description: "The retriggering period of the alert in seconds.",
 						},
 						"notify_on": &schema.Schema{
 							Type:        schema.TypeString,
 							Optional:    true,
-							Computed:    true,
 							Description: "Notify on setting.",
 						},
 						"use_as_notification_settings": &schema.Schema{

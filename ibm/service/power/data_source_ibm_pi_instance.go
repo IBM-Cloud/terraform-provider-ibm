@@ -96,7 +96,7 @@ func DataSourceIBMPIInstance() *schema.Resource {
 			},
 			Attr_LicenseRepositoryCapacity: {
 				Computed:    true,
-				Description: "The VTL license repository capacity TiB value.",
+				Description: "The VTL license repository capacity TB value.",
 				Type:        schema.TypeInt,
 			},
 			Attr_MaxMem: {

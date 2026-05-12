@@ -1,8 +1,8 @@
-// Copyright IBM Corp. 2026 All Rights Reserved.
+// Copyright IBM Corp. 2024 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 /*
- * IBM OpenAPI Terraform Generator Version: 3.102.0-615ec964-20250307-203034
+ * IBM OpenAPI Terraform Generator Version: 3.94.1-71478489-20240820-161623
  */
 
 package codeengine
@@ -12,13 +12,12 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM/code-engine-go-sdk/codeenginev2"
 	"github.com/IBM/go-sdk-core/v5/core"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 func DataSourceIbmCodeEngineFunction() *schema.Resource {
@@ -26,68 +25,68 @@ func DataSourceIbmCodeEngineFunction() *schema.Resource {
 		ReadContext: dataSourceIbmCodeEngineFunctionRead,
 
 		Schema: map[string]*schema.Schema{
-			"project_id": &schema.Schema{
+			"project_id": {
 				Type:        schema.TypeString,
 				Required:    true,
 				Description: "The ID of the project.",
 			},
-			"name": &schema.Schema{
+			"name": {
 				Type:        schema.TypeString,
 				Required:    true,
 				Description: "The name of your function.",
 			},
-			"code_binary": &schema.Schema{
+			"code_binary": {
 				Type:        schema.TypeBool,
 				Computed:    true,
 				Description: "Specifies whether the code is binary or not. Defaults to false when `code_reference` is set to a data URL. When `code_reference` is set to a code bundle URL, this field is always true.",
 			},
-			"code_main": &schema.Schema{
+			"code_main": {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "Specifies the name of the function that should be invoked.",
 			},
-			"code_reference": &schema.Schema{
+			"code_reference": {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "Specifies either a reference to a code bundle or the source code itself. To specify the source code, use the data URL scheme and include the source code as base64 encoded. The data URL scheme is defined in [RFC 2397](https://tools.ietf.org/html/rfc2397).",
 			},
-			"code_secret": &schema.Schema{
+			"code_secret": {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The name of the secret that is used to access the specified `code_reference`. The secret is used to authenticate with a non-public endpoint that is specified as`code_reference`.",
 			},
-			"computed_env_variables": &schema.Schema{
+			"computed_env_variables": {
 				Type:        schema.TypeList,
 				Computed:    true,
 				Description: "References to config maps, secrets or literal values, which are defined and set by Code Engine and are exposed as environment variables in the function.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"key": &schema.Schema{
+						"key": {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "The key to reference as environment variable.",
 						},
-						"name": &schema.Schema{
+						"name": {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "The name of the environment variable.",
 						},
-						"prefix": &schema.Schema{
+						"prefix": {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "A prefix that can be added to all keys of a full secret or config map reference.",
 						},
-						"reference": &schema.Schema{
+						"reference": {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "The name of the secret or config map.",
 						},
-						"type": &schema.Schema{
+						"type": {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "Specify the type of the environment variable.",
 						},
-						"value": &schema.Schema{
+						"value": {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "The literal value of the environment variable.",
@@ -95,88 +94,83 @@ func DataSourceIbmCodeEngineFunction() *schema.Resource {
 					},
 				},
 			},
-			"created_at": &schema.Schema{
+			"created_at": {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The timestamp when the resource was created.",
 			},
-			"endpoint": &schema.Schema{
+			"endpoint": {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "URL to invoke the function.",
 			},
-			"endpoint_internal": &schema.Schema{
+			"endpoint_internal": {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "URL to function that is only visible within the project.",
 			},
-			"entity_tag": &schema.Schema{
+			"entity_tag": {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The version of the function instance, which is used to achieve optimistic locking.",
 			},
-			"href": &schema.Schema{
+			"href": {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "When you provision a new function, a relative URL path is created identifying the location of the instance.",
 			},
-			"function_id": &schema.Schema{
+			"function_id": {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The identifier of the resource.",
 			},
-			"managed_domain_mappings": &schema.Schema{
+			"managed_domain_mappings": {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "Optional value controlling which of the system managed domain mappings will be setup for the function. Valid values are 'local_public', 'local_private' and 'local'. Visibility can only be 'local_private' if the project supports function private visibility.",
 			},
-			"region": &schema.Schema{
+			"region": {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The region of the project the resource is located in. Possible values: 'au-syd', 'br-sao', 'ca-tor', 'eu-de', 'eu-gb', 'jp-osa', 'jp-tok', 'us-east', 'us-south'.",
 			},
-			"resource_type": &schema.Schema{
+			"resource_type": {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The type of the function.",
 			},
-			"run_compute_resource_token_enabled": &schema.Schema{
-				Type:        schema.TypeBool,
-				Computed:    true,
-				Description: "Optional flag to enable the use of a compute resource token mounted to the container file system.",
-			},
-			"run_env_variables": &schema.Schema{
+			"run_env_variables": {
 				Type:        schema.TypeList,
 				Computed:    true,
 				Description: "References to config maps, secrets or literal values, which are defined by the function owner and are exposed as environment variables in the function.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"key": &schema.Schema{
+						"key": {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "The key to reference as environment variable.",
 						},
-						"name": &schema.Schema{
+						"name": {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "The name of the environment variable.",
 						},
-						"prefix": &schema.Schema{
+						"prefix": {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "A prefix that can be added to all keys of a full secret or config map reference.",
 						},
-						"reference": &schema.Schema{
+						"reference": {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "The name of the secret or config map.",
 						},
-						"type": &schema.Schema{
+						"type": {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "Specify the type of the environment variable.",
 						},
-						"value": &schema.Schema{
+						"value": {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "The literal value of the environment variable.",
@@ -184,48 +178,48 @@ func DataSourceIbmCodeEngineFunction() *schema.Resource {
 					},
 				},
 			},
-			"runtime": &schema.Schema{
+			"runtime": {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The managed runtime used to execute the injected code.",
 			},
-			"scale_concurrency": &schema.Schema{
+			"scale_concurrency": {
 				Type:        schema.TypeInt,
 				Computed:    true,
 				Description: "Number of parallel requests handled by a single instance, supported only by Node.js, default is `1`.",
 			},
-			"scale_cpu_limit": &schema.Schema{
+			"scale_cpu_limit": {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "Optional amount of CPU set for the instance of the function. For valid values see [Supported memory and CPU combinations](https://cloud.ibm.com/docs/codeengine?topic=codeengine-mem-cpu-combo).",
 			},
-			"scale_down_delay": &schema.Schema{
+			"scale_down_delay": {
 				Type:        schema.TypeInt,
 				Computed:    true,
 				Description: "Optional amount of time in seconds that delays the scale down behavior for a function.",
 			},
-			"scale_max_execution_time": &schema.Schema{
+			"scale_max_execution_time": {
 				Type:        schema.TypeInt,
 				Computed:    true,
 				Description: "Timeout in secs after which the function is terminated.",
 			},
-			"scale_memory_limit": &schema.Schema{
+			"scale_memory_limit": {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "Optional amount of memory set for the instance of the function. For valid values see [Supported memory and CPU combinations](https://cloud.ibm.com/docs/codeengine?topic=codeengine-mem-cpu-combo). The units for specifying memory are Megabyte (M) or Gigabyte (G), whereas G and M are the shorthand expressions for GB and MB. For more information see [Units of measurement](https://cloud.ibm.com/docs/codeengine?topic=codeengine-mem-cpu-combo#unit-measurements).",
 			},
-			"status": &schema.Schema{
+			"status": {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The current status of the function.",
 			},
-			"status_details": &schema.Schema{
+			"status_details": {
 				Type:        schema.TypeList,
 				Computed:    true,
 				Description: "The detailed status of the function.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"reason": &schema.Schema{
+						"reason": {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "Provides additional information about the status of the function.",
@@ -279,16 +273,18 @@ func dataSourceIbmCodeEngineFunctionRead(context context.Context, d *schema.Reso
 		}
 	}
 
-	computedEnvVariables := []map[string]interface{}{}
-	for _, computedEnvVariablesItem := range function.ComputedEnvVariables {
-		computedEnvVariablesItemMap, err := DataSourceIbmCodeEngineFunctionEnvVarToMap(&computedEnvVariablesItem) // #nosec G601
-		if err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_code_engine_function", "read", "computed_env_variables-to-map").GetDiag()
+	if !core.IsNil(function.ComputedEnvVariables) {
+		computedEnvVariables := []map[string]interface{}{}
+		for _, computedEnvVariablesItem := range function.ComputedEnvVariables {
+			computedEnvVariablesItemMap, err := DataSourceIbmCodeEngineFunctionEnvVarToMap(&computedEnvVariablesItem) // #nosec G601
+			if err != nil {
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_code_engine_function", "read", "computed_env_variables-to-map").GetDiag()
+			}
+			computedEnvVariables = append(computedEnvVariables, computedEnvVariablesItemMap)
 		}
-		computedEnvVariables = append(computedEnvVariables, computedEnvVariablesItemMap)
-	}
-	if err = d.Set("computed_env_variables", computedEnvVariables); err != nil {
-		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting computed_env_variables: %s", err), "(Data) ibm_code_engine_function", "read", "set-computed_env_variables").GetDiag()
+		if err = d.Set("computed_env_variables", computedEnvVariables); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting computed_env_variables: %s", err), "(Data) ibm_code_engine_function", "read", "set-computed_env_variables").GetDiag()
+		}
 	}
 
 	if !core.IsNil(function.CreatedAt) {
@@ -338,12 +334,6 @@ func dataSourceIbmCodeEngineFunctionRead(context context.Context, d *schema.Reso
 	if !core.IsNil(function.ResourceType) {
 		if err = d.Set("resource_type", function.ResourceType); err != nil {
 			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting resource_type: %s", err), "(Data) ibm_code_engine_function", "read", "set-resource_type").GetDiag()
-		}
-	}
-
-	if !core.IsNil(function.RunComputeResourceTokenEnabled) {
-		if err = d.Set("run_compute_resource_token_enabled", function.RunComputeResourceTokenEnabled); err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting run_compute_resource_token_enabled: %s", err), "(Data) ibm_code_engine_function", "read", "set-run_compute_resource_token_enabled").GetDiag()
 		}
 	}
 

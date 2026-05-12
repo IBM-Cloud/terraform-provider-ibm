@@ -1,8 +1,8 @@
-// Copyright IBM Corp. 2026 All Rights Reserved.
+// Copyright IBM Corp. 2024 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 /*
- * IBM OpenAPI Terraform Generator Version: 3.102.0-615ec964-20250307-203034
+ * IBM OpenAPI Terraform Generator Version: 3.94.1-71478489-20240820-161623
  */
 
 package codeengine
@@ -13,14 +13,13 @@ import (
 	"log"
 	"time"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 	"github.com/IBM/code-engine-go-sdk/codeenginev2"
 	"github.com/IBM/go-sdk-core/v5/core"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 func ResourceIbmCodeEngineBinding() *schema.Resource {
@@ -35,14 +34,14 @@ func ResourceIbmCodeEngineBinding() *schema.Resource {
 		},
 
 		Schema: map[string]*schema.Schema{
-			"project_id": &schema.Schema{
+			"project_id": {
 				Type:         schema.TypeString,
 				Required:     true,
 				ForceNew:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_code_engine_binding", "project_id"),
 				Description:  "The ID of the project.",
 			},
-			"component": &schema.Schema{
+			"component": {
 				Type:        schema.TypeList,
 				MinItems:    1,
 				MaxItems:    1,
@@ -51,12 +50,12 @@ func ResourceIbmCodeEngineBinding() *schema.Resource {
 				Description: "A reference to another component.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"name": &schema.Schema{
+						"name": {
 							Type:        schema.TypeString,
 							Required:    true,
 							Description: "The name of the referenced component.",
 						},
-						"resource_type": &schema.Schema{
+						"resource_type": {
 							Type:        schema.TypeString,
 							Required:    true,
 							Description: "The type of the referenced resource.",
@@ -64,36 +63,36 @@ func ResourceIbmCodeEngineBinding() *schema.Resource {
 					},
 				},
 			},
-			"prefix": &schema.Schema{
+			"prefix": {
 				Type:         schema.TypeString,
 				Required:     true,
 				ForceNew:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_code_engine_binding", "prefix"),
 				Description:  "The value that is set as a prefix in the component that is bound.",
 			},
-			"secret_name": &schema.Schema{
+			"secret_name": {
 				Type:         schema.TypeString,
 				Required:     true,
 				ForceNew:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_code_engine_binding", "secret_name"),
 				Description:  "The service access secret that is bound to a component.",
 			},
-			"href": &schema.Schema{
+			"href": {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "When you provision a new binding,  a URL is created identifying the location of the instance.",
 			},
-			"resource_type": &schema.Schema{
+			"resource_type": {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The type of the binding.",
 			},
-			"status": &schema.Schema{
+			"status": {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The current status of the binding.",
 			},
-			"binding_id": &schema.Schema{
+			"binding_id": {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The ID of the binding.",

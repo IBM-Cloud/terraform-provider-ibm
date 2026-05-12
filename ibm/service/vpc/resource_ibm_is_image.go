@@ -170,11 +170,6 @@ func ResourceIBMISImage() *schema.Resource {
 				Computed:    true,
 				Description: "The status of this image",
 			},
-			"minimum_acceptable_status": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "Specifies the minimum lifecycle status that an image must reach before Terraform considers the resource creation successful and proceeds. This allows users to control when the ibm_is_image resource should complete its provisioning cycle.",
-			},
 
 			isImageMinimumProvisionedSize: {
 				Type:        schema.TypeInt,
@@ -292,25 +287,6 @@ func ResourceIBMISImage() *schema.Resource {
 							Computed:     true,
 							ValidateFunc: validate.InvokeValidator("ibm_is_image", "allowed_use.instance"),
 							Description:  "The expression that must be satisfied by the properties of a virtual server instance provisioned using this image.",
-						},
-					},
-				},
-			},
-			"zones": &schema.Schema{
-				Type:        schema.TypeList,
-				Computed:    true,
-				Description: "The zones in which this image is available for use.If the image has a status of `available` or `deprecated`, this will include all zones in the region.If the image has a status of `partially_available`, this will include one or more zones in the region.If the image has a status of `failed`, `obsolete`, `pending`, or `unusable`, this will be empty.",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"href": &schema.Schema{
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The URL for this zone.",
-						},
-						"name": &schema.Schema{
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The globally unique name for this zone.",
 						},
 					},
 				},
@@ -462,8 +438,7 @@ func imgCreateByFile(context context.Context, d *schema.ResourceData, meta inter
 	}
 	d.SetId(*image.ID)
 	log.Printf("[INFO] Image ID : %s", *image.ID)
-	minimumAcceptableStatus := d.Get("minimum_acceptable_status").(string)
-	_, err = isWaitForImageAvailable(sess, d.Id(), minimumAcceptableStatus, d.Timeout(schema.TimeoutCreate))
+	_, err = isWaitForImageAvailable(sess, d.Id(), d.Timeout(schema.TimeoutCreate))
 	if err != nil {
 		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("isWaitForImageAvailable failed: %s", err.Error()), "ibm_is_image", "create")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
@@ -605,8 +580,7 @@ func imgCreateByVolume(context context.Context, d *schema.ResourceData, meta int
 	}
 	d.SetId(*image.ID)
 	log.Printf("[INFO] Image ID : %s", *image.ID)
-	minimumAcceptableStatus := d.Get("minimum_acceptable_status").(string)
-	_, err = isWaitForImageAvailable(sess, d.Id(), minimumAcceptableStatus, d.Timeout(schema.TimeoutCreate))
+	_, err = isWaitForImageAvailable(sess, d.Id(), d.Timeout(schema.TimeoutCreate))
 	if err != nil {
 		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("isWaitForImageAvailable failed: %s", err.Error()), "ibm_is_image", "create")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
@@ -632,18 +606,13 @@ func imgCreateByVolume(context context.Context, d *schema.ResourceData, meta int
 	return nil
 }
 
-func isWaitForImageAvailable(imageC *vpcv1.VpcV1, id, minimumAcceptableStatus string, timeout time.Duration) (interface{}, error) {
+func isWaitForImageAvailable(imageC *vpcv1.VpcV1, id string, timeout time.Duration) (interface{}, error) {
 	log.Printf("Waiting for image (%s) to be available.", id)
-
-	targetStates := []string{isImageProvisioningDone, ""}
-	if minimumAcceptableStatus != "" {
-		targetStates = append(targetStates, minimumAcceptableStatus)
-	}
 
 	stateConf := &resource.StateChangeConf{
 		Pending:    []string{"retry", isImageProvisioning},
-		Target:     targetStates,
-		Refresh:    isImageRefreshFunc(imageC, id, minimumAcceptableStatus),
+		Target:     []string{isImageProvisioningDone, ""},
+		Refresh:    isImageRefreshFunc(imageC, id),
 		Timeout:    timeout,
 		Delay:      10 * time.Second,
 		MinTimeout: 10 * time.Second,
@@ -651,7 +620,7 @@ func isWaitForImageAvailable(imageC *vpcv1.VpcV1, id, minimumAcceptableStatus st
 
 	return stateConf.WaitForState()
 }
-func isImageRefreshFunc(imageC *vpcv1.VpcV1, id, minimumAcceptableStatus string) resource.StateRefreshFunc {
+func isImageRefreshFunc(imageC *vpcv1.VpcV1, id string) resource.StateRefreshFunc {
 	return func() (interface{}, string, error) {
 		getimgoptions := &vpcv1.GetImageOptions{
 			ID: &id,
@@ -663,10 +632,6 @@ func isImageRefreshFunc(imageC *vpcv1.VpcV1, id, minimumAcceptableStatus string)
 
 		if *image.Status == "available" || *image.Status == "failed" {
 			return image, isImageProvisioningDone, nil
-		}
-
-		if minimumAcceptableStatus != "" && *image.Status == minimumAcceptableStatus {
-			return image, *image.Status, nil
 		}
 
 		return image, isImageProvisioning, nil
@@ -1034,18 +999,6 @@ func imgGet(context context.Context, d *schema.ResourceData, meta interface{}, i
 			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_image", "read", "set-resource_group").GetDiag()
 		}
 	}
-	zones := []map[string]interface{}{}
-	for _, zonesItem := range image.Zones {
-		zonesItemMap, err := ResourceIBMIsImageZoneReferenceToMap(&zonesItem) // #nosec G601
-		if err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_image", "read", "zones-to-map").GetDiag()
-		}
-		zones = append(zones, zonesItemMap)
-	}
-	if err = d.Set("zones", zones); err != nil {
-		err = fmt.Errorf("Error setting zones: %s", err)
-		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_image", "read", "set-zones").GetDiag()
-	}
 	return nil
 }
 
@@ -1180,11 +1133,5 @@ func ResourceIBMIsImageImageAllowUseToMap(model *vpcv1.ImageAllowedUse) (map[str
 	if model.Instance != nil {
 		modelMap["api_version"] = *model.ApiVersion
 	}
-	return modelMap, nil
-}
-func ResourceIBMIsImageZoneReferenceToMap(model *vpcv1.ZoneReference) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	modelMap["href"] = *model.Href
-	modelMap["name"] = *model.Name
 	return modelMap, nil
 }

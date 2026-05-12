@@ -1,8 +1,8 @@
-// Copyright IBM Corp. 2026 All Rights Reserved.
+// Copyright IBM Corp. 2024 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 /*
- * IBM OpenAPI Terraform Generator Version: 3.102.0-615ec964-20250307-203034
+ * IBM OpenAPI Terraform Generator Version: 3.94.1-71478489-20240820-161623
  */
 
 package codeengine
@@ -12,13 +12,12 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM/code-engine-go-sdk/codeenginev2"
 	"github.com/IBM/go-sdk-core/v5/core"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 func DataSourceIbmCodeEngineDomainMapping() *schema.Resource {
@@ -26,33 +25,33 @@ func DataSourceIbmCodeEngineDomainMapping() *schema.Resource {
 		ReadContext: dataSourceIbmCodeEngineDomainMappingRead,
 
 		Schema: map[string]*schema.Schema{
-			"project_id": &schema.Schema{
+			"project_id": {
 				Type:        schema.TypeString,
 				Required:    true,
 				Description: "The ID of the project.",
 			},
-			"name": &schema.Schema{
+			"name": {
 				Type:        schema.TypeString,
 				Required:    true,
 				Description: "The name of your domain mapping.",
 			},
-			"cname_target": &schema.Schema{
+			"cname_target": {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The value of the CNAME record that must be configured in the DNS settings of the domain, to route traffic properly to the target Code Engine region.",
 			},
-			"component": &schema.Schema{
+			"component": {
 				Type:        schema.TypeList,
 				Computed:    true,
 				Description: "A reference to another component.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"name": &schema.Schema{
+						"name": {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "The name of the referenced component.",
 						},
-						"resource_type": &schema.Schema{
+						"resource_type": {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "The type of the referenced resource.",
@@ -60,48 +59,48 @@ func DataSourceIbmCodeEngineDomainMapping() *schema.Resource {
 					},
 				},
 			},
-			"created_at": &schema.Schema{
+			"created_at": {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The timestamp when the resource was created.",
 			},
-			"domain_mapping_id": &schema.Schema{
+			"domain_mapping_id": {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The identifier of the resource.",
 			},
-			"entity_tag": &schema.Schema{
+			"entity_tag": {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The version of the domain mapping instance, which is used to achieve optimistic locking.",
 			},
-			"href": &schema.Schema{
+			"href": {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "When you provision a new domain mapping, a URL is created identifying the location of the instance.",
 			},
-			"region": &schema.Schema{
+			"region": {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The region of the project the resource is located in. Possible values: 'au-syd', 'br-sao', 'ca-tor', 'eu-de', 'eu-gb', 'jp-osa', 'jp-tok', 'us-east', 'us-south'.",
 			},
-			"resource_type": &schema.Schema{
+			"resource_type": {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The type of the Code Engine resource.",
 			},
-			"status": &schema.Schema{
+			"status": {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The current status of the domain mapping.",
 			},
-			"status_details": &schema.Schema{
+			"status_details": {
 				Type:        schema.TypeList,
 				Computed:    true,
 				Description: "The detailed status of the domain mapping.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"reason": &schema.Schema{
+						"reason": {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "Optional information to provide more context in case of a 'failed' or 'warning' status.",
@@ -109,17 +108,17 @@ func DataSourceIbmCodeEngineDomainMapping() *schema.Resource {
 					},
 				},
 			},
-			"tls_secret": &schema.Schema{
+			"tls_secret": {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The name of the TLS secret that includes the certificate and private key of this domain mapping.",
 			},
-			"user_managed": &schema.Schema{
+			"user_managed": {
 				Type:        schema.TypeBool,
 				Computed:    true,
 				Description: "Specifies whether the domain mapping is managed by the user or by Code Engine.",
 			},
-			"visibility": &schema.Schema{
+			"visibility": {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "Specifies whether the domain mapping is reachable through the public internet, or private IBM network, or only through other components within the same Code Engine project.",

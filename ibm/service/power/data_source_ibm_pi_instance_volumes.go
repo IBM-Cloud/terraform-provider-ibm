@@ -179,7 +179,7 @@ func DataSourceIBMPIInstanceVolumes() *schema.Resource {
 						},
 						Attr_Size: {
 							Computed:    true,
-							Description: "The size of this volume in GiB.",
+							Description: "The size of this volume in GB.",
 							Type:        schema.TypeFloat,
 						},
 						Attr_State: {
@@ -261,6 +261,7 @@ func flattenVolumesInstances(list []*models.VolumeReference, meta any) []map[str
 	result := make([]map[string]any, 0, len(list))
 	for _, i := range list {
 		l := map[string]any{
+			Attr_Auxiliary:            *i.Auxiliary,
 			Attr_AuxiliaryVolumeName:  i.AuxVolumeName,
 			Attr_Bootable:             *i.Bootable,
 			Attr_ConsistencyGroupName: i.ConsistencyGroupName,
@@ -287,9 +288,6 @@ func flattenVolumesInstances(list []*models.VolumeReference, meta any) []map[str
 			Attr_VolumeType:           i.VolumeType,
 			Attr_WWN:                  *i.Wwn,
 		}
-		if i.Auxiliary != nil {
-			l[Attr_Auxiliary] = *i.Auxiliary
-		}
 		if i.Crn != "" {
 			l[Attr_CRN] = i.Crn
 			tags, err := flex.GetGlobalTagsUsingCRN(meta, string(i.Crn), "", UserTagType)
@@ -303,9 +301,6 @@ func flattenVolumesInstances(list []*models.VolumeReference, meta any) []map[str
 		}
 		if i.FreezeTime != nil {
 			l[Attr_FreezeTime] = i.FreezeTime.String()
-		}
-		if i.ReplicationEnabled != nil {
-			l[Attr_ReplicationEnabled] = *i.ReplicationEnabled
 		}
 		if len(i.ReplicationSites) > 0 {
 			l[Attr_ReplicationSites] = i.ReplicationSites

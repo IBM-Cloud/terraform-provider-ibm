@@ -159,7 +159,7 @@ func dataSourceIbmBackupRecoveryDataSourceConnectorsRead(context context.Context
 	}
 
 	endpointType := d.Get("endpoint_type").(string)
-	instanceId, region, serviceName := getInstanceIdAndRegion(d)
+	instanceId, region := getInstanceIdAndRegion(d)
 	if instanceId != "" && region != "" {
 		bmxsession, err := meta.(conns.ClientSession).BluemixSession()
 		if err != nil {
@@ -167,7 +167,7 @@ func dataSourceIbmBackupRecoveryDataSourceConnectorsRead(context context.Context
 			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 			return tfErr.GetDiag()
 		}
-		backupRecoveryClient = getClientWithInstanceEndpoint(backupRecoveryClient, bmxsession, instanceId, region, endpointType, serviceName)
+		backupRecoveryClient = getClientWithInstanceEndpoint(backupRecoveryClient, bmxsession, instanceId, region, endpointType)
 	}
 
 	getDataSourceConnectorsOptions := &backuprecoveryv1.GetDataSourceConnectorsOptions{}
@@ -263,7 +263,7 @@ func DataSourceIbmBackupRecoveryDataSourceConnectorsDataSourceConnectorToMap(mod
 	return modelMap, nil
 }
 
-func DataSourceIbmBackupRecoveryDataSourceConnectorsConnectorConnectivityStatusToMap(model *backuprecoveryv1.ConnectorConnectivityStatus) (map[string]interface{}, error) {
+func DataSourceIbmBackupRecoveryDataSourceConnectorsConnectorConnectivityStatusToMap(model *backuprecoveryv1.DataSourceConnectorConnectivityStatus) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["is_connected"] = *model.IsConnected
 	if model.LastConnectedTimestampSecs != nil {

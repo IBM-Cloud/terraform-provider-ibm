@@ -80,7 +80,7 @@ func resourceIbmBackupRecoveryConnectionRegistrationTokenCreate(context context.
 	}
 
 	endpointType := d.Get("endpoint_type").(string)
-	instanceId, region, serviceName := getInstanceIdAndRegion(d)
+	instanceId, region := getInstanceIdAndRegion(d)
 	if instanceId != "" && region != "" {
 		bmxsession, err := meta.(conns.ClientSession).BluemixSession()
 		if err != nil {
@@ -88,7 +88,7 @@ func resourceIbmBackupRecoveryConnectionRegistrationTokenCreate(context context.
 			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 			return tfErr.GetDiag()
 		}
-		backupRecoveryClient = getClientWithInstanceEndpoint(backupRecoveryClient, bmxsession, instanceId, region, endpointType, serviceName)
+		backupRecoveryClient = getClientWithInstanceEndpoint(backupRecoveryClient, bmxsession, instanceId, region, endpointType)
 	}
 
 	generateDataSourceConnectionRegistrationTokenOptions := &backuprecoveryv1.GenerateDataSourceConnectionRegistrationTokenOptions{}
