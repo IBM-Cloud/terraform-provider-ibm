@@ -251,6 +251,8 @@ func Provider() *schema.Provider {
 			"ibm_backup_recovery_download_agent":                        backuprecovery.AddInstanceFields(backuprecovery.DataSourceIbmBackupRecoveryDownloadAgent()),
 			"ibm_backup_recovery_search_indexed_object":                 backuprecovery.AddInstanceFields(backuprecovery.DataSourceIbmBackupRecoverySearchIndexedObject()),
 			"ibm_backup_recovery_object_snapshots":                      backuprecovery.AddInstanceFields(backuprecovery.DataSourceIbmBackupRecoveryObjectSnapshots()),
+			"ibm_backup_recovery_connector_agent_config":                backuprecovery.AddInstanceFields(backuprecovery.DataSourceIbmBackupRecoveryConnectorAgentConfig()),
+			"ibm_backup_recovery_connector_agents":                      backuprecovery.AddInstanceFields(backuprecovery.DataSourceIbmBackupRecoveryConnectorAgents()),
 			"ibm_backup_recovery_connectors_metadata":                   backuprecovery.AddInstanceFields(backuprecovery.DataSourceIbmBackupRecoveryConnectorsMetadata()),
 			"ibm_backup_recovery_connector_logs":                        backuprecovery.AddInstanceFields(backuprecovery.DataSourceIbmBackupRecoveryConnectorLogs()),
 			"ibm_backup_recovery_connector_status":                      backuprecovery.AddInstanceFields(backuprecovery.DataSourceIbmBackupRecoveryConnectorStatus()),
@@ -1180,6 +1182,7 @@ func Provider() *schema.Provider {
 
 		ResourcesMap: map[string]*schema.Resource{
 			"ibm_backup_recovery_agent_upgrade_task":                             backuprecovery.AddInstanceFields(backuprecovery.ResourceIbmBackupRecoveryAgentUpgradeTask()),
+			"ibm_backup_recovery_connector_agent_registration":                   backuprecovery.AddInstanceFields(backuprecovery.ResourceIbmBackupRecoveryConnectorAgentRegistration()),
 			"ibm_backup_recovery_protection_group_run_request":                   backuprecovery.AddInstanceFields(backuprecovery.ResourceIbmBackupRecoveryProtectionGroupRunRequest()),
 			"ibm_backup_recovery_data_source_connection":                         backuprecovery.AddInstanceFields(backuprecovery.ResourceIbmBackupRecoveryDataSourceConnection()),
 			"ibm_backup_recovery_data_source_connector_patch":                    backuprecovery.AddInstanceFields(backuprecovery.ResourceIbmBackupRecoveryDataSourceConnectorPatch()),

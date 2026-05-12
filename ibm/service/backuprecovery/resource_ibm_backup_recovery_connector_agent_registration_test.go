@@ -1,0 +1,38 @@
+// Copyright IBM Corp. 2026 All Rights Reserved.
+// Licensed under the Mozilla Public License v2.0
+
+package backuprecovery_test
+
+import (
+	"fmt"
+	"testing"
+
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+
+	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
+)
+
+func TestAccIbmBackupRecoveryConnectorAgentRegistrationBasic(t *testing.T) {
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { acc.TestAccPreCheck(t) },
+		Providers: acc.TestAccProviders,
+		Steps: []resource.TestStep{
+			resource.TestStep{
+				Config: testAccCheckIbmBackupRecoveryConnectorAgentRegistrationConfigBasic(),
+			},
+			resource.TestStep{
+				ResourceName:      "ibm_backup_recovery_connector_agent_registration.backup_recovery_connector_agent_registration_instance",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
+func testAccCheckIbmBackupRecoveryConnectorAgentRegistrationConfigBasic() string {
+	return fmt.Sprintf(`
+		resource "ibm_backup_recovery_connector_agent_registration" "backup_recovery_connector_agent_registration_instance" {
+		}
+	`)
+}
