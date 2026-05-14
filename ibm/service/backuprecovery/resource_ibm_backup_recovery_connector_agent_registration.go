@@ -34,6 +34,7 @@ func ResourceIbmBackupRecoveryConnectorAgentRegistration() *schema.Resource {
 			"registration_token": &schema.Schema{
 				Type:        schema.TypeString,
 				Required:    true,
+				Sensitive:   true,
 				ForceNew:    true,
 				Description: "The JWT registration token. A single token can be used to register multiple connector agents in that tenant. By default, the token is valid for 24 hours.",
 			},

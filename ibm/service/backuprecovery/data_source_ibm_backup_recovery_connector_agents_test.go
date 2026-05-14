@@ -23,8 +23,9 @@ func TestAccIbmBackupRecoveryConnectorAgentsDataSourceBasic(t *testing.T) {
 			resource.TestStep{
 				Config: testAccCheckIbmBackupRecoveryConnectorAgentsDataSourceConfigBasic(),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet("data.ibm_backup_recovery_connector_agents.backup_recovery_connector_agents_instance", "id"),
-					resource.TestCheckResourceAttrSet("data.ibm_backup_recovery_connector_agents.backup_recovery_connector_agents_instance", "tenant_id"),
+					resource.TestCheckResourceAttrSet("data.ibm_backup_recovery_connector_agents.backup_recovery_connector_agents_instance", "connector_agents.#"),
+					resource.TestCheckResourceAttrSet("data.ibm_backup_recovery_connector_agents.backup_recovery_connector_agents_instance", "connector_agents.0.connection_id"),
+					resource.TestCheckResourceAttrSet("data.ibm_backup_recovery_connector_agents.backup_recovery_connector_agents_instance", "connector_agents.0.connection_name"),
 				),
 			},
 		},
@@ -34,9 +35,8 @@ func TestAccIbmBackupRecoveryConnectorAgentsDataSourceBasic(t *testing.T) {
 func testAccCheckIbmBackupRecoveryConnectorAgentsDataSourceConfigBasic() string {
 	return fmt.Sprintf(`
 		data "ibm_backup_recovery_connector_agents" "backup_recovery_connector_agents_instance" {
-			tenantId = "tenantId"
-			connectionNames = [ "connectionNames" ]
-			connectionIds = [ 1 ]
+			x_ibm_tenant_id = "4ugtn5idq2/"
+			tenant_id = "4ugtn5idq2/"
 		}
 	`)
 }

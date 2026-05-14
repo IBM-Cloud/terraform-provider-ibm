@@ -11,8 +11,9 @@ import (
 	"fmt"
 	"testing"
 
-	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+
+	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 )
 
 func TestAccIbmBackupRecoveryConnectorAgentConfigDataSourceBasic(t *testing.T) {
@@ -23,7 +24,7 @@ func TestAccIbmBackupRecoveryConnectorAgentConfigDataSourceBasic(t *testing.T) {
 			resource.TestStep{
 				Config: testAccCheckIbmBackupRecoveryConnectorAgentConfigDataSourceConfigBasic(),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet("data.ibm_backup_recovery_connector_agent_config.backup_recovery_connector_agent_config_instance", "id"),
+					resource.TestCheckResourceAttrSet("data.ibm_backup_recovery_connector_agent_config.backup_recovery_connector_agent_config_instance", "registration_token"),
 				),
 			},
 		},
@@ -33,6 +34,7 @@ func TestAccIbmBackupRecoveryConnectorAgentConfigDataSourceBasic(t *testing.T) {
 func testAccCheckIbmBackupRecoveryConnectorAgentConfigDataSourceConfigBasic() string {
 	return fmt.Sprintf(`
 		data "ibm_backup_recovery_connector_agent_config" "backup_recovery_connector_agent_config_instance" {
+			x_ibm_tenant_id = "4ugtn5idq2/"
 		}
 	`)
 }

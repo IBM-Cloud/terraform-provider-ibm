@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 )
@@ -20,11 +20,10 @@ func TestAccIbmBackupRecoveryConnectorAgentRegistrationBasic(t *testing.T) {
 		Steps: []resource.TestStep{
 			resource.TestStep{
 				Config: testAccCheckIbmBackupRecoveryConnectorAgentRegistrationConfigBasic(),
-			},
-			resource.TestStep{
-				ResourceName:      "ibm_backup_recovery_connector_agent_registration.backup_recovery_connector_agent_registration_instance",
-				ImportState:       true,
-				ImportStateVerify: true,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttrSet("ibm_backup_recovery_connector_agent_registration.ibm_backup_recovery_connector_agent_registration", "registration_status"),
+				),
+				Destroy: false,
 			},
 		},
 	})
@@ -32,7 +31,10 @@ func TestAccIbmBackupRecoveryConnectorAgentRegistrationBasic(t *testing.T) {
 
 func testAccCheckIbmBackupRecoveryConnectorAgentRegistrationConfigBasic() string {
 	return fmt.Sprintf(`
-		resource "ibm_backup_recovery_connector_agent_registration" "backup_recovery_connector_agent_registration_instance" {
-		}
+	resource "ibm_backup_recovery_connector_agent_registration" "ibm_backup_recovery_connector_agent_registration"{
+		registration_token = ""
+		connection_name = "terra-conn-register-Connector-2"
+		join_existing_connection = false
+	}
 	`)
 }
