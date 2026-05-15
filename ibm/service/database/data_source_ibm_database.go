@@ -97,7 +97,7 @@ func DataSourceIBMDatabaseInstance() *schema.Resource {
 				Computed:    true,
 			},
 			"adminpassword": {
-				Description: "The admin user id for the instance",
+				Description: "The admin user id for the instance. Note: This attribute is not supported for Gen2 database instances",
 				Type:        schema.TypeString,
 				Computed:    true,
 				Sensitive:   true,
@@ -119,7 +119,7 @@ func DataSourceIBMDatabaseInstance() *schema.Resource {
 							Computed:    true,
 						},
 						"backup_encryption_key_crn": {
-							Description: "Backup encryption key crn",
+							Description: "Backup encryption key crn. Note: This attribute is not supported for Gen2 database instances",
 							Type:        schema.TypeString,
 							Computed:    true,
 						},
@@ -133,8 +133,9 @@ func DataSourceIBMDatabaseInstance() *schema.Resource {
 				Set:      schema.HashString,
 			},
 			"users": {
-				Type:     schema.TypeSet,
-				Computed: true,
+				Type:        schema.TypeSet,
+				Computed:    true,
+				Description: "Database users. Note: This attribute is not supported for Gen2 database instances.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"name": {
@@ -487,7 +488,7 @@ func DataSourceIBMDatabaseInstance() *schema.Resource {
 			"configuration_schema": {
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "The configuration schema in JSON format",
+				Description: "The configuration schema in JSON format, Note: This attribute is currently not supported for Gen2 database instances.",
 			},
 			flex.ResourceName: {
 				Type:        schema.TypeString,

@@ -763,12 +763,25 @@ func setGen2GroupsInfo(d *schema.ResourceData, instance *rc.ResourceInstance, me
 // to avoid drift detection when users have these in their configuration.
 // This function is shared between data source and resource implementations.
 func clearGen2UnsupportedAttributes(d *schema.ResourceData) {
+	// Admin user is not supported in Gen2 (no default admin user)
+	d.Set("adminuser", nil)
+
+	// Admin password is not supported in Gen2
+	d.Set("adminpassword", nil)
+
 	// Allowlist is not supported in Gen2
 	d.Set(allowlistKey, nil)
 
 	// Users management is not supported in Gen2 (use ibm_resource_key instead)
 	d.Set("users", nil)
 
+	// Auto scaling is not supported in Gen2
+	d.Set("auto_scaling", nil)
+
 	// Configuration schema is not supported in Gen2
 	d.Set("configuration_schema", nil)
+
+	// Note: backup_encryption_key_crn within platform_options is also not supported in Gen2,
+	// but platform_options is handled by the data source implementation which only sets
+	// disk_encryption_key_crn for Gen2 instances
 }
