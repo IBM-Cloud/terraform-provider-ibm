@@ -36,6 +36,14 @@ const (
 	// Instance states - shared across Classic and Gen2
 	instanceStateRemoved = "removed"
 
+	// Database instance status constants
+	databaseInstanceSuccessStatus      = "active"
+	databaseInstanceProvisioningStatus = "provisioning"
+	databaseInstanceProgressStatus     = "in progress"
+	databaseInstanceInactiveStatus     = "inactive"
+	databaseInstanceFailStatus         = "failed"
+	databaseInstanceRemovedStatus      = "removed"
+
 	// Gen2 database operation keys
 	deploymentKind     = "deployment"
 	dataservicesKey    = "dataservices"
@@ -149,6 +157,33 @@ func extractLocationFromCRN(crn *string) (string, error) {
 		return "", fmt.Errorf("invalid CRN format: expected at least 6 parts, got %d", len(parts))
 	}
 	return parts[5], nil
+}
+
+// extractDeploymentIDFromCRN extracts the deployment ID from a catalog CRN.
+// Catalog CRN format: crn:v1:bluemix:public:globalcatalog::::deployment:deployment-id
+// Returns the deployment ID or an error if the CRN format is invalid.
+func extractDeploymentIDFromCRN(catalogCRN string) (string, error) {
+	if catalogCRN == "" {
+		return "", fmt.Errorf("invalid catalog CRN format: empty CRN")
+	}
+
+	// Split by "deployment:" to extract the deployment ID
+	parts := strings.Split(catalogCRN, "deployment:")
+	if len(parts) != 2 {
+		return "", fmt.Errorf("invalid catalog CRN format: expected exactly one 'deployment:' prefix")
+	}
+
+	deploymentID := parts[1]
+	if deploymentID == "" {
+		return "", fmt.Errorf("empty deployment ID in catalog CRN")
+	}
+
+	// Check for multiple deployment prefixes (invalid format)
+	if strings.Contains(deploymentID, "deployment:") {
+		return "", fmt.Errorf("invalid catalog CRN format: multiple 'deployment:' prefixes found")
+	}
+
+	return deploymentID, nil
 }
 
 // wrapAPIError wraps an API error with operation context and response details.

@@ -5,7 +5,6 @@ package database
 
 import (
 	"fmt"
-	"strings"
 	"testing"
 	"time"
 
@@ -358,33 +357,6 @@ func TestClearGen2UnsupportedAttributes(t *testing.T) {
 
 	configSchema := d.Get("configuration_schema")
 	require.Equal(t, "", configSchema, "configuration_schema should be empty string after clearing")
-}
-
-// extractDeploymentIDFromCRN extracts the deployment ID from a catalog CRN.
-// Catalog CRN format: crn:v1:bluemix:public:globalcatalog::::deployment:deployment-id
-// Returns the deployment ID or an error if the CRN format is invalid.
-func extractDeploymentIDFromCRN(catalogCRN string) (string, error) {
-	if catalogCRN == "" {
-		return "", fmt.Errorf("invalid catalog CRN format: empty CRN")
-	}
-
-	// Split by "deployment:" to extract the deployment ID
-	parts := strings.Split(catalogCRN, "deployment:")
-	if len(parts) != 2 {
-		return "", fmt.Errorf("invalid catalog CRN format: expected exactly one 'deployment:' prefix")
-	}
-
-	deploymentID := parts[1]
-	if deploymentID == "" {
-		return "", fmt.Errorf("empty deployment ID in catalog CRN")
-	}
-
-	// Check for multiple deployment prefixes (invalid format)
-	if strings.Contains(deploymentID, "deployment:") {
-		return "", fmt.Errorf("invalid catalog CRN format: multiple 'deployment:' prefixes found")
-	}
-
-	return deploymentID, nil
 }
 
 func TestExtractDeploymentIDFromCRN(t *testing.T) {
