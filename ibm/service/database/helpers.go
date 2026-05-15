@@ -34,13 +34,7 @@ const (
 	defaultMemberCount = 3
 
 	// Instance states - shared across Classic and Gen2
-	instanceStateRemoved               = "removed"
-	databaseInstanceSuccessStatus      = "active"
-	databaseInstanceProvisioningStatus = "provisioning"
-	databaseInstanceProgressStatus     = "in progress"
-	databaseInstanceInactiveStatus     = "inactive"
-	databaseInstanceFailStatus         = "failed"
-	databaseInstanceRemovedStatus      = "removed"
+	instanceStateRemoved = "removed"
 
 	// Gen2 database operation keys
 	deploymentKind     = "deployment"
@@ -49,7 +43,9 @@ const (
 	resourcesKey       = "resources"
 	platformOptionsKey = "platform_options"
 	adminUserKey       = "adminuser"
+	autoScalingKey     = "auto_scaling"
 	allowlistKey       = "allowlist"
+	databaseUserType   = "database"
 )
 
 type TimeoutHelper struct {
@@ -373,31 +369,12 @@ func buildHostFlavorConfig(hostFlavorID string) []map[string]interface{} {
 	return []map[string]interface{}{hostflavor}
 }
 
-// extractDeploymentIDFromCRN extracts the deployment ID from a catalog CRN.
-func extractDeploymentIDFromCRN(catalogCRN string) (string, error) {
-	// Split by "deployment:" to get the deployment ID
-	parts := strings.Split(catalogCRN, "deployment:")
-	if len(parts) != 2 {
-		return "", fmt.Errorf("invalid catalog CRN format: %s", catalogCRN)
-	}
-	deploymentID := strings.TrimSpace(parts[1])
-	if deploymentID == "" {
-		return "", fmt.Errorf("empty deployment ID in catalog CRN: %s", catalogCRN)
-	}
-	return deploymentID, nil
-}
-
 // getInitialNodeCountGen2 retrieves the default member count for Gen2 plans from Global Catalog.
 // Returns the member count from the catalog metadata, or a default value of 3 if not found.
-func getInitialNodeCountGen2(catalogCRN string, meta interface{}) (int, error) {
+func getInitialNodeCountGen2(deploymentID string, meta interface{}) (int, error) {
 	globalClient, err := meta.(conns.ClientSession).GlobalCatalogV1API()
 	if err != nil {
 		return 0, fmt.Errorf("failed to get global catalog client: %w", err)
-	}
-
-	deploymentID, err := extractDeploymentIDFromCRN(catalogCRN)
-	if err != nil {
-		return 0, fmt.Errorf("failed to extract deployment ID from catalog CRN: %w", err)
 	}
 
 	options := &globalcatalogv1.GetCatalogEntryOptions{
@@ -532,6 +509,42 @@ func getResourceManagerClient(meta interface{}) (interface{}, error) {
 		return nil, fmt.Errorf("failed to get resource manager client: %w", err)
 	}
 	return client, nil
+}
+
+// setTagsWithLogging retrieves and sets tags for a resource, logging errors instead of failing.
+// Returns error only for critical failures, logs warnings for non-critical issues.
+func setTagsWithLogging(d *schema.ResourceData, crn string, meta interface{}) error {
+	tags, err := flex.GetTagsUsingCRN(meta, crn)
+	if err != nil {
+		log.Printf("[WARN] Failed to retrieve tags for resource %s: %v", crn, err)
+	}
+	return d.Set("tags", tags)
+}
+
+// buildResourceControllerURL constructs the resource controller URL for a given CRN.
+// Standardizes URL building across resources and data sources.
+func buildResourceControllerURL(meta interface{}, crn string) (string, error) {
+	rcontroller, err := flex.GetBaseController(meta)
+	if err != nil {
+		return "", fmt.Errorf("failed to get base controller: %w", err)
+	}
+	return rcontroller + "/services/" + url.QueryEscape(crn), nil
+}
+
+// setResourceControllerAttributes sets common flex resource controller attributes.
+// Reduces duplication of setting name, CRN, status, and controller URL.
+func setResourceControllerAttributes(d *schema.ResourceData, name, crn, state string, meta interface{}) error {
+	d.Set(flex.ResourceName, name)
+	d.Set(flex.ResourceCRN, crn)
+	d.Set(flex.ResourceStatus, state)
+
+	controllerURL, err := buildResourceControllerURL(meta, crn)
+	if err != nil {
+		return err
+	}
+	d.Set(flex.ResourceControllerURL, controllerURL)
+
+	return nil
 }
 
 // setGen2BasicAttributes sets basic instance attributes including tags, name, status, location, and resource controller attributes.
