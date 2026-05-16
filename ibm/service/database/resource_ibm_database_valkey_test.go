@@ -212,5 +212,3 @@ func testAccCheckIBMDatabaseInstanceValkeyKPEncrypt(databaseResourceGroup string
 	}
 	`, kpInstanceName, kpKeyName, name, acc.Region())
 }
-
-// Made with Bob
