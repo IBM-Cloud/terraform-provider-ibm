@@ -16,33 +16,34 @@ import (
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/drautomationservice"
 	. "github.com/IBM-Cloud/terraform-provider-ibm/ibm/unittest"
-	"github.com/IBM/dra-go-sdk/drautomationservicev1"
 	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/stretchr/testify/assert"
+
+	"github.com/IBM/dra-go-sdk/drautomationservicev1"
 )
 
-func TestAccIBMPdrGetDrSummaryResponseDataSourceBasic(t *testing.T) {
+func TestAccIBMPdrDrSummaryResponseDataSourceBasic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheck(t) },
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIBMPdrGetDrSummaryResponseDataSourceConfigBasic(),
+				Config: testAccCheckIBMPdrDrSummaryResponseDataSourceConfigBasic(),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet("data.ibm_pdr_get_dr_summary_response.pdr_get_dr_summary_response_instance", "id"),
-					resource.TestCheckResourceAttrSet("data.ibm_pdr_get_dr_summary_response.pdr_get_dr_summary_response_instance", "instance_id"),
-					resource.TestCheckResourceAttrSet("data.ibm_pdr_get_dr_summary_response.pdr_get_dr_summary_response_instance", "managed_vm_list.#"),
-					resource.TestCheckResourceAttrSet("data.ibm_pdr_get_dr_summary_response.pdr_get_dr_summary_response_instance", "orchestrator_details.#"),
-					resource.TestCheckResourceAttrSet("data.ibm_pdr_get_dr_summary_response.pdr_get_dr_summary_response_instance", "service_details.#"),
+					resource.TestCheckResourceAttrSet("data.ibm_pdr_dr_summary_response.pdr_dr_summary_response_instance", "id"),
+					resource.TestCheckResourceAttrSet("data.ibm_pdr_dr_summary_response.pdr_dr_summary_response_instance", "instance_id"),
+					resource.TestCheckResourceAttrSet("data.ibm_pdr_dr_summary_response.pdr_dr_summary_response_instance", "managed_vm_list.#"),
+					resource.TestCheckResourceAttrSet("data.ibm_pdr_dr_summary_response.pdr_dr_summary_response_instance", "orchestrator_details.#"),
+					resource.TestCheckResourceAttrSet("data.ibm_pdr_dr_summary_response.pdr_dr_summary_response_instance", "service_details.#"),
 				),
 			},
 		},
 	})
 }
 
-func testAccCheckIBMPdrGetDrSummaryResponseDataSourceConfigBasic() string {
+func testAccCheckIBMPdrDrSummaryResponseDataSourceConfigBasic() string {
 	return fmt.Sprintf(`
-		data "ibm_pdr_get_dr_summary_response" "pdr_get_dr_summary_response_instance" {
+		data "ibm_pdr_dr_summary_response" "pdr_dr_summary_response_instance" {
 			instance_id = "xxxx2ec4-xxxx-4f84-xxxx-c2aa834dd4ed"
 		}
 	`)

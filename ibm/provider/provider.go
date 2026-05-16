@@ -60,6 +60,7 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/partnercentersell"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/platformnotifications"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/power"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/powerhaautomationservice"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/project"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/pushnotification"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/registry"
@@ -1110,32 +1111,33 @@ func Provider() *schema.Provider {
 			"ibm_vmaas_transit_gateway_connection": vmware.DataSourceIbmVmaasTransitGatewayConnection(),
 
 			// Logs Service
-			"ibm_logs_alert":                logs.AddLogsInstanceFields(logs.DataSourceIbmLogsAlert()),
-			"ibm_logs_alerts":               logs.AddLogsInstanceFields(logs.DataSourceIbmLogsAlerts()),
-			"ibm_logs_rule_group":           logs.AddLogsInstanceFields(logs.DataSourceIbmLogsRuleGroup()),
-			"ibm_logs_rule_groups":          logs.AddLogsInstanceFields(logs.DataSourceIbmLogsRuleGroups()),
-			"ibm_logs_policy":               logs.AddLogsInstanceFields(logs.DataSourceIbmLogsPolicy()),
-			"ibm_logs_policies":             logs.AddLogsInstanceFields(logs.DataSourceIbmLogsPolicies()),
-			"ibm_logs_dashboard":            logs.AddLogsInstanceFields(logs.DataSourceIbmLogsDashboard()),
-			"ibm_logs_e2m":                  logs.AddLogsInstanceFields(logs.DataSourceIbmLogsE2m()),
-			"ibm_logs_e2ms":                 logs.AddLogsInstanceFields(logs.DataSourceIbmLogsE2ms()),
-			"ibm_logs_outgoing_webhook":     logs.AddLogsInstanceFields(logs.DataSourceIbmLogsOutgoingWebhook()),
-			"ibm_logs_outgoing_webhooks":    logs.AddLogsInstanceFields(logs.DataSourceIbmLogsOutgoingWebhooks()),
-			"ibm_logs_view_folder":          logs.AddLogsInstanceFields(logs.DataSourceIbmLogsViewFolder()),
-			"ibm_logs_view_folders":         logs.AddLogsInstanceFields(logs.DataSourceIbmLogsViewFolders()),
-			"ibm_logs_view":                 logs.AddLogsInstanceFields(logs.DataSourceIbmLogsView()),
-			"ibm_logs_views":                logs.AddLogsInstanceFields(logs.DataSourceIbmLogsViews()),
-			"ibm_logs_dashboard_folders":    logs.AddLogsInstanceFields(logs.DataSourceIbmLogsDashboardFolders()),
-			"ibm_logs_data_usage_metrics":   logs.AddLogsInstanceFields(logs.DataSourceIbmLogsDataUsageMetrics()),
-			"ibm_logs_enrichments":          logs.AddLogsInstanceFields(logs.DataSourceIbmLogsEnrichments()),
-			"ibm_logs_data_access_rules":    logs.AddLogsInstanceFields(logs.DataSourceIbmLogsDataAccessRules()),
-			"ibm_logs_stream":               logs.AddLogsInstanceFields(logs.DataSourceIbmLogsStream()),
-			"ibm_logs_streams":              logs.AddLogsInstanceFields(logs.DataSourceIbmLogsStreams()),
-			"ibm_logs_alert_definition":     logs.AddLogsInstanceFields(logs.DataSourceIbmLogsAlertDefinition()),
-			"ibm_logs_alert_definitions":    logs.AddLogsInstanceFields(logs.DataSourceIbmLogsAlertDefinitions()),
-			"ibm_logs_extension":            logs.AddLogsInstanceFields(logs.DataSourceIbmLogsExtension()),
-			"ibm_logs_extensions":           logs.AddLogsInstanceFields(logs.DataSourceIbmLogsExtensions()),
-			"ibm_logs_extension_deployment": logs.AddLogsInstanceFields(logs.DataSourceIbmLogsExtensionDeployment()),
+			"ibm_logs_alert":                   logs.AddLogsInstanceFields(logs.DataSourceIbmLogsAlert()),
+			"ibm_logs_alerts":                  logs.AddLogsInstanceFields(logs.DataSourceIbmLogsAlerts()),
+			"ibm_logs_rule_group":              logs.AddLogsInstanceFields(logs.DataSourceIbmLogsRuleGroup()),
+			"ibm_logs_rule_groups":             logs.AddLogsInstanceFields(logs.DataSourceIbmLogsRuleGroups()),
+			"ibm_logs_policy":                  logs.AddLogsInstanceFields(logs.DataSourceIbmLogsPolicy()),
+			"ibm_logs_policies":                logs.AddLogsInstanceFields(logs.DataSourceIbmLogsPolicies()),
+			"ibm_logs_log_data_retention_tags": logs.AddLogsInstanceFields(logs.DataSourceIbmLogsLogDataRetentionTags()),
+			"ibm_logs_dashboard":               logs.AddLogsInstanceFields(logs.DataSourceIbmLogsDashboard()),
+			"ibm_logs_e2m":                     logs.AddLogsInstanceFields(logs.DataSourceIbmLogsE2m()),
+			"ibm_logs_e2ms":                    logs.AddLogsInstanceFields(logs.DataSourceIbmLogsE2ms()),
+			"ibm_logs_outgoing_webhook":        logs.AddLogsInstanceFields(logs.DataSourceIbmLogsOutgoingWebhook()),
+			"ibm_logs_outgoing_webhooks":       logs.AddLogsInstanceFields(logs.DataSourceIbmLogsOutgoingWebhooks()),
+			"ibm_logs_view_folder":             logs.AddLogsInstanceFields(logs.DataSourceIbmLogsViewFolder()),
+			"ibm_logs_view_folders":            logs.AddLogsInstanceFields(logs.DataSourceIbmLogsViewFolders()),
+			"ibm_logs_view":                    logs.AddLogsInstanceFields(logs.DataSourceIbmLogsView()),
+			"ibm_logs_views":                   logs.AddLogsInstanceFields(logs.DataSourceIbmLogsViews()),
+			"ibm_logs_dashboard_folders":       logs.AddLogsInstanceFields(logs.DataSourceIbmLogsDashboardFolders()),
+			"ibm_logs_data_usage_metrics":      logs.AddLogsInstanceFields(logs.DataSourceIbmLogsDataUsageMetrics()),
+			"ibm_logs_enrichments":             logs.AddLogsInstanceFields(logs.DataSourceIbmLogsEnrichments()),
+			"ibm_logs_data_access_rules":       logs.AddLogsInstanceFields(logs.DataSourceIbmLogsDataAccessRules()),
+			"ibm_logs_stream":                  logs.AddLogsInstanceFields(logs.DataSourceIbmLogsStream()),
+			"ibm_logs_streams":                 logs.AddLogsInstanceFields(logs.DataSourceIbmLogsStreams()),
+			"ibm_logs_alert_definition":        logs.AddLogsInstanceFields(logs.DataSourceIbmLogsAlertDefinition()),
+			"ibm_logs_alert_definitions":       logs.AddLogsInstanceFields(logs.DataSourceIbmLogsAlertDefinitions()),
+			"ibm_logs_extension":               logs.AddLogsInstanceFields(logs.DataSourceIbmLogsExtension()),
+			"ibm_logs_extensions":              logs.AddLogsInstanceFields(logs.DataSourceIbmLogsExtensions()),
+			"ibm_logs_extension_deployment":    logs.AddLogsInstanceFields(logs.DataSourceIbmLogsExtensionDeployment()),
 
 			// Logs Router Service v1
 			"ibm_logs_router_tenants": logsrouting.DataSourceIBMLogsRouterTenants(),
@@ -1146,6 +1148,20 @@ func Provider() *schema.Provider {
 			"ibm_logs_router_routes":  logsrouter.DataSourceIBMLogsRouterRoutes(),
 
 			// DR Automation Service
+			// Stable (no change needed)
+			"ibm_pdr_last_operation": drautomationservice.DataSourceIBMPdrLastOperation(),
+
+			// NEW Data Sources
+			"ibm_pdr_dr_summary_response": drautomationservice.DataSourceIBMPdrDrSummaryResponse(),
+			"ibm_pdr_powervs_workspaces":  drautomationservice.DataSourceIBMPdrPowervsWorkspace(),
+			"ibm_pdr_event":               drautomationservice.DataSourceIBMPdrEvent(),
+			"ibm_pdr_events":              drautomationservice.DataSourceIBMPdrEvents(),
+			"ibm_pdr_dr_locations":        drautomationservice.DataSourceIBMPdrDrLocations(),
+			"ibm_pdr_machine_types":       drautomationservice.DataSourceIBMPdrMachineTypes(),
+			"ibm_pdr_managed_vm_list":     drautomationservice.DataSourceIBMPdrManagedVMList(),
+			"ibm_pdr_grs_location_pairs":  drautomationservice.DataSourceIBMPdrGrsLocationPairs(),
+
+			// DEPRECATED Data Sources
 			"ibm_pdr_get_dr_summary_response": drautomationservice.DataSourceIBMPdrGetDrSummaryResponse(),
 			"ibm_pdr_get_powervs_workspace":   drautomationservice.DataSourceIBMPdrGetPowervsWorkspace(),
 			"ibm_pdr_get_event":               drautomationservice.DataSourceIBMPdrGetEvent(),
@@ -1153,8 +1169,14 @@ func Provider() *schema.Provider {
 			"ibm_pdr_get_dr_locations":        drautomationservice.DataSourceIBMPdrGetDrLocations(),
 			"ibm_pdr_get_machine_types":       drautomationservice.DataSourceIBMPdrGetMachineTypes(),
 			"ibm_pdr_get_managed_vm_list":     drautomationservice.DataSourceIBMPdrGetManagedVMList(),
-			"ibm_pdr_last_operation":          drautomationservice.DataSourceIBMPdrLastOperation(),
 			"ibm_pdr_get_grs_location_pairs":  drautomationservice.DataSourceIBMPdrGetGrsLocationPairs(),
+
+			// PHA service
+			"ibm_pha_last_operation":      powerhaautomationservice.DataSourceIBMPhaLastOperation(),
+			"ibm_pha_supported_locations": powerhaautomationservice.DataSourceIBMPhaSupportedLocation(),
+			"ibm_pha_powervs_workspaces":  powerhaautomationservice.DataSourceIBMPhaPowervsWorkspace(),
+			"ibm_pha_cluster_nodes":       powerhaautomationservice.DataSourceIBMPhaClusterNodes(),
+			"ibm_pha_deployment":          powerhaautomationservice.DataSourceIBMPhaDeployment(),
 		},
 
 		ResourcesMap: map[string]*schema.Resource{
@@ -1830,21 +1852,22 @@ func Provider() *schema.Provider {
 			"ibm_vmaas_transit_gateway_connection": vmware.ResourceIbmVmaasTransitGatewayConnection(),
 
 			// Logs Service
-			"ibm_logs_alert":                logs.AddLogsInstanceFields(logs.ResourceIbmLogsAlert()),
-			"ibm_logs_rule_group":           logs.AddLogsInstanceFields(logs.ResourceIbmLogsRuleGroup()),
-			"ibm_logs_policy":               logs.AddLogsInstanceFields(logs.ResourceIbmLogsPolicy()),
-			"ibm_logs_dashboard":            logs.AddLogsInstanceFields(logs.ResourceIbmLogsDashboard()),
-			"ibm_logs_e2m":                  logs.AddLogsInstanceFields(logs.ResourceIbmLogsE2m()),
-			"ibm_logs_outgoing_webhook":     logs.AddLogsInstanceFields(logs.ResourceIbmLogsOutgoingWebhook()),
-			"ibm_logs_view_folder":          logs.AddLogsInstanceFields(logs.ResourceIbmLogsViewFolder()),
-			"ibm_logs_view":                 logs.AddLogsInstanceFields(logs.ResourceIbmLogsView()),
-			"ibm_logs_dashboard_folder":     logs.AddLogsInstanceFields(logs.ResourceIbmLogsDashboardFolder()),
-			"ibm_logs_data_usage_metrics":   logs.AddLogsInstanceFields(logs.ResourceIbmLogsDataUsageMetrics()),
-			"ibm_logs_enrichment":           logs.AddLogsInstanceFields(logs.ResourceIbmLogsEnrichment()),
-			"ibm_logs_data_access_rule":     logs.AddLogsInstanceFields(logs.ResourceIbmLogsDataAccessRule()),
-			"ibm_logs_stream":               logs.AddLogsInstanceFields(logs.ResourceIbmLogsStream()),
-			"ibm_logs_alert_definition":     logs.AddLogsInstanceFields(logs.ResourceIbmLogsAlertDefinition()),
-			"ibm_logs_extension_deployment": logs.AddLogsInstanceFields(logs.ResourceIbmLogsExtensionDeployment()),
+			"ibm_logs_alert":                   logs.AddLogsInstanceFields(logs.ResourceIbmLogsAlert()),
+			"ibm_logs_rule_group":              logs.AddLogsInstanceFields(logs.ResourceIbmLogsRuleGroup()),
+			"ibm_logs_policy":                  logs.AddLogsInstanceFields(logs.ResourceIbmLogsPolicy()),
+			"ibm_logs_dashboard":               logs.AddLogsInstanceFields(logs.ResourceIbmLogsDashboard()),
+			"ibm_logs_e2m":                     logs.AddLogsInstanceFields(logs.ResourceIbmLogsE2m()),
+			"ibm_logs_outgoing_webhook":        logs.AddLogsInstanceFields(logs.ResourceIbmLogsOutgoingWebhook()),
+			"ibm_logs_view_folder":             logs.AddLogsInstanceFields(logs.ResourceIbmLogsViewFolder()),
+			"ibm_logs_view":                    logs.AddLogsInstanceFields(logs.ResourceIbmLogsView()),
+			"ibm_logs_dashboard_folder":        logs.AddLogsInstanceFields(logs.ResourceIbmLogsDashboardFolder()),
+			"ibm_logs_data_usage_metrics":      logs.AddLogsInstanceFields(logs.ResourceIbmLogsDataUsageMetrics()),
+			"ibm_logs_enrichment":              logs.AddLogsInstanceFields(logs.ResourceIbmLogsEnrichment()),
+			"ibm_logs_data_access_rule":        logs.AddLogsInstanceFields(logs.ResourceIbmLogsDataAccessRule()),
+			"ibm_logs_stream":                  logs.AddLogsInstanceFields(logs.ResourceIbmLogsStream()),
+			"ibm_logs_alert_definition":        logs.AddLogsInstanceFields(logs.ResourceIbmLogsAlertDefinition()),
+			"ibm_logs_extension_deployment":    logs.AddLogsInstanceFields(logs.ResourceIbmLogsExtensionDeployment()),
+			"ibm_logs_log_data_retention_tags": logs.AddLogsInstanceFields(logs.ResourceIbmLogsLogDataRetentionTags()),
 
 			// Logs Router Service v1
 			"ibm_logs_router_tenant": logsrouting.ResourceIBMLogsRouterTenant(),
@@ -1857,6 +1880,11 @@ func Provider() *schema.Provider {
 			// DR Automation Service
 			"ibm_pdr_managedr":        drautomationservice.ResourceIbmPdrManagedr(),
 			"ibm_pdr_validate_apikey": drautomationservice.ResourceIBMPdrValidateApikey(),
+
+			// // Added for Pha Dr automation service
+			"ibm_pha_api_key":       powerhaautomationservice.ResourceIBMPhaAPIKey(),
+			"ibm_pha_cluster_nodes": powerhaautomationservice.ResourceIBMPhaClusterNodes(),
+			"ibm_pha_deployment":    powerhaautomationservice.ResourceIBMPhaDeployment(),
 
 			// Platform Notifications
 			"ibm_notification_distribution_list_destination": platformnotifications.ResourceIbmNotificationDistributionListDestination(),
@@ -2048,6 +2076,9 @@ func Validator() validate.ValidatorDict {
 				"ibm_iam_account_settings_template_assignment":   iamidentity.ResourceIBMAccountSettingsTemplateAssignmentValidator(),
 				"ibm_iam_account_settings":                       iamidentity.ResourceIBMIAMAccountSettingsValidator(),
 				"ibm_iam_custom_role":                            iampolicy.ResourceIBMIAMCustomRoleValidator(),
+				"ibm_pha_api_key":                                powerhaautomationservice.ResourceIBMPhaAPIKeyValidator(),
+				"ibm_pha_deployment":                             powerhaautomationservice.ResourceIBMPhaClusterNodesValidator(),
+				"ibm_pha_cluster_nodes":                          powerhaautomationservice.ResourceIBMPhaDeploymentValidator(),
 				"ibm_cis_healthcheck":                            cis.ResourceIBMCISHealthCheckValidator(),
 				"ibm_cis_rate_limit":                             cis.ResourceIBMCISRateLimitValidator(),
 				"ibm_cis":                                        cis.ResourceIBMCISValidator(),
@@ -2358,20 +2389,21 @@ func Validator() validate.ValidatorDict {
 				"ibm_vmaas_vdc":                        vmware.ResourceIbmVmaasVdcValidator(),
 				"ibm_vmaas_transit_gateway_connection": vmware.ResourceIbmVmaasTransitGatewayConnectionValidator(),
 
-				"ibm_logs_alert":                logs.ResourceIbmLogsAlertValidator(),
-				"ibm_logs_rule_group":           logs.ResourceIbmLogsRuleGroupValidator(),
-				"ibm_logs_outgoing_webhook":     logs.ResourceIbmLogsOutgoingWebhookValidator(),
-				"ibm_logs_policy":               logs.ResourceIbmLogsPolicyValidator(),
-				"ibm_logs_dashboard":            logs.ResourceIbmLogsDashboardValidator(),
-				"ibm_logs_e2m":                  logs.ResourceIbmLogsE2mValidator(),
-				"ibm_logs_view":                 logs.ResourceIbmLogsViewValidator(),
-				"ibm_logs_view_folder":          logs.ResourceIbmLogsViewFolderValidator(),
-				"ibm_logs_dashboard_folder":     logs.ResourceIbmLogsDashboardFolderValidator(),
-				"ibm_logs_enrichment":           logs.ResourceIbmLogsEnrichmentValidator(),
-				"ibm_logs_data_access_rule":     logs.ResourceIbmLogsDataAccessRuleValidator(),
-				"ibm_logs_stream":               logs.ResourceIbmLogsStreamValidator(),
-				"ibm_logs_alert_definition":     logs.ResourceIbmLogsAlertDefinitionValidator(),
-				"ibm_logs_extension_deployment": logs.ResourceIbmLogsExtensionDeploymentValidator(),
+				"ibm_logs_alert":                   logs.ResourceIbmLogsAlertValidator(),
+				"ibm_logs_rule_group":              logs.ResourceIbmLogsRuleGroupValidator(),
+				"ibm_logs_outgoing_webhook":        logs.ResourceIbmLogsOutgoingWebhookValidator(),
+				"ibm_logs_policy":                  logs.ResourceIbmLogsPolicyValidator(),
+				"ibm_logs_dashboard":               logs.ResourceIbmLogsDashboardValidator(),
+				"ibm_logs_e2m":                     logs.ResourceIbmLogsE2mValidator(),
+				"ibm_logs_view":                    logs.ResourceIbmLogsViewValidator(),
+				"ibm_logs_view_folder":             logs.ResourceIbmLogsViewFolderValidator(),
+				"ibm_logs_dashboard_folder":        logs.ResourceIbmLogsDashboardFolderValidator(),
+				"ibm_logs_enrichment":              logs.ResourceIbmLogsEnrichmentValidator(),
+				"ibm_logs_data_access_rule":        logs.ResourceIbmLogsDataAccessRuleValidator(),
+				"ibm_logs_stream":                  logs.ResourceIbmLogsStreamValidator(),
+				"ibm_logs_alert_definition":        logs.ResourceIbmLogsAlertDefinitionValidator(),
+				"ibm_logs_extension_deployment":    logs.ResourceIbmLogsExtensionDeploymentValidator(),
+				"ibm_logs_log_data_retention_tags": logs.ResourceIbmLogsLogDataRetentionTagsValidator(),
 
 				// Added for Logs Router Service v1
 				"ibm_logs_router_tenant": logsrouting.ResourceIBMLogsRouterTenantValidator(),

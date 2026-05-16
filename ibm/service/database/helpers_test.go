@@ -358,3 +358,65 @@ func TestClearGen2UnsupportedAttributes(t *testing.T) {
 	configSchema := d.Get("configuration_schema")
 	require.Equal(t, "", configSchema, "configuration_schema should be empty string after clearing")
 }
+
+func TestExtractDeploymentIDFromCRN(t *testing.T) {
+	testcases := []struct {
+		description   string
+		catalogCRN    string
+		expectedID    string
+		expectError   bool
+		errorContains string
+	}{
+		{
+			description: "Valid CRN with deployment ID",
+			catalogCRN:  "crn:v1:bluemix:public:globalcatalog::::deployment:standard-gen2-deployment-ca-mon-11b01c58",
+			expectedID:  "standard-gen2-deployment-ca-mon-11b01c58",
+			expectError: false,
+		},
+		{
+			description: "Valid CRN with different deployment ID",
+			catalogCRN:  "crn:v1:bluemix:public:globalcatalog::::deployment:databases-for-postgresql-standard-us-south",
+			expectedID:  "databases-for-postgresql-standard-us-south",
+			expectError: false,
+		},
+		{
+			description:   "Invalid CRN - missing deployment prefix",
+			catalogCRN:    "crn:v1:bluemix:public:globalcatalog::::standard-gen2-deployment-ca-mon-11b01c58",
+			expectError:   true,
+			errorContains: "invalid catalog CRN format",
+		},
+		{
+			description:   "Invalid CRN - empty deployment ID",
+			catalogCRN:    "crn:v1:bluemix:public:globalcatalog::::deployment:",
+			expectError:   true,
+			errorContains: "empty deployment ID",
+		},
+		{
+			description:   "Invalid CRN - multiple deployment prefixes",
+			catalogCRN:    "crn:v1:bluemix:public:globalcatalog::::deployment:test:deployment:another",
+			expectError:   true,
+			errorContains: "invalid catalog CRN format",
+		},
+		{
+			description:   "Empty CRN",
+			catalogCRN:    "",
+			expectError:   true,
+			errorContains: "invalid catalog CRN format",
+		},
+	}
+
+	for _, tc := range testcases {
+		t.Run(tc.description, func(t *testing.T) {
+			deploymentID, err := extractDeploymentIDFromCRN(tc.catalogCRN)
+
+			if tc.expectError {
+				require.Error(t, err)
+				require.Contains(t, err.Error(), tc.errorContains)
+				require.Empty(t, deploymentID)
+			} else {
+				require.NoError(t, err)
+				require.Equal(t, tc.expectedID, deploymentID)
+			}
+		})
+	}
+}

@@ -21,25 +21,25 @@ import (
 	"github.com/IBM/dra-go-sdk/drautomationservicev1"
 )
 
-func TestAccIBMPdrGetManagedVMListDataSourceBasic(t *testing.T) {
+func TestAccIBMPdrManagedVMListDataSourceBasic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheck(t) },
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIBMPdrGetManagedVMListDataSourceConfigBasic(),
+				Config: testAccCheckIBMPdrManagedVMListDataSourceConfigBasic(),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet("data.ibm_pdr_get_managed_vm_list.pdr_get_managed_vm_list_instance", "id"),
-					resource.TestCheckResourceAttrSet("data.ibm_pdr_get_managed_vm_list.pdr_get_managed_vm_list_instance", "instance_id"),
+					resource.TestCheckResourceAttrSet("data.ibm_pdr_managed_vm_list.pdr_managed_vm_list_instance", "id"),
+					resource.TestCheckResourceAttrSet("data.ibm_pdr_managed_vm_list.pdr_managed_vm_list_instance", "instance_id"),
 				),
 			},
 		},
 	})
 }
 
-func testAccCheckIBMPdrGetManagedVMListDataSourceConfigBasic() string {
+func testAccCheckIBMPdrManagedVMListDataSourceConfigBasic() string {
 	return fmt.Sprintf(`
-		data "ibm_pdr_get_managed_vm_list" "pdr_get_managed_vm_list_instance" {
+		data "ibm_pdr_managed_vm_list" "pdr_managed_vm_list_instance" {
 			instance_id = "xxxx2ec4-xxxx-4f84-xxxx-c2aa834dd4ed"
 		}
 	`)
