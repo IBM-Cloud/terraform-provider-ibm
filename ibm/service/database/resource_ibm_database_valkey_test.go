@@ -187,10 +187,10 @@ func testAccCheckIBMDatabaseInstanceValkeyKPEncrypt(databaseResourceGroup string
 
 	resource "ibm_database" "database" {
 		resource_group_id    = data.ibm_resource_group.test_acc.id
-		name                 = "%s"
+		name                 = "%[5]s"
 		service              = "databases-for-valkey"
 		plan                 = "standard-gen2"
-		location             = "%[3]s"
+		location             = "%[6]s"
 		key_protect_key      = ibm_kp_key.test.id
 		service_endpoints    = "private"
 
