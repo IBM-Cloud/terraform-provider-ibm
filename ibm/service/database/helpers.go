@@ -166,6 +166,7 @@ var databaseServicePrefixes = map[string]string{
 	"databases-for-etcd":           "etcd",
 	"databases-for-postgresql":     "postgresql",
 	"databases-for-redis":          "redis",
+	"databases-for-valkey":         "valkey",
 	"databases-for-valkey-cdp-dev": "valkey",
 	"databases-for-elasticsearch":  "elasticsearch",
 	"databases-for-mongodb":        "mongodb",
