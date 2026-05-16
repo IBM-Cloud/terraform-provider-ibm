@@ -100,7 +100,7 @@ func TestAccIBMDatabaseInstanceValkeyKP_Encrypt(t *testing.T) {
 		CheckDestroy: testAccCheckIBMDatabaseInstanceDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIBMDatabaseInstanceValkeyKPEncrypt(databaseResourceGroup, kpInstanceName, kpKeyName, testName),
+				Config: testAccCheckIBMDatabaseInstanceValkeyKPEncrypt(databaseResourceGroup, kpInstanceName, kpKeyName, testName, acc.Region()),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMDatabaseInstanceExists("ibm_database.database", &databaseInstanceOne),
 					resource.TestCheckResourceAttr("ibm_database.database", "name", testName),
@@ -166,7 +166,7 @@ func testAccCheckIBMDatabaseInstanceValkeyScaled(databaseResourceGroup string, n
 	`, databaseResourceGroup, name, acc.Region())
 }
 
-func testAccCheckIBMDatabaseInstanceValkeyKPEncrypt(databaseResourceGroup string, kpInstanceName, kpKeyName, name string) string {
+func testAccCheckIBMDatabaseInstanceValkeyKPEncrypt(databaseResourceGroup string, kpInstanceName, kpKeyName, name, region string) string {
 	return fmt.Sprintf(`
 	data "ibm_resource_group" "test_acc" {
 		is_default = true
@@ -176,7 +176,7 @@ func testAccCheckIBMDatabaseInstanceValkeyKPEncrypt(databaseResourceGroup string
 		name     = "%s"
 		service  = "kms"
 		plan     = "tiered-pricing"
-		location = "%[3]s"
+		location = "%s"
 	}
 
 	resource "ibm_kp_key" "test" {
@@ -187,10 +187,10 @@ func testAccCheckIBMDatabaseInstanceValkeyKPEncrypt(databaseResourceGroup string
 
 	resource "ibm_database" "database" {
 		resource_group_id    = data.ibm_resource_group.test_acc.id
-		name                 = "%[5]s"
+		name                 = "%s"
 		service              = "databases-for-valkey"
 		plan                 = "standard-gen2"
-		location             = "%[6]s"
+		location             = "%s"
 		key_protect_key      = ibm_kp_key.test.id
 		service_endpoints    = "private"
 
@@ -210,5 +210,5 @@ func testAccCheckIBMDatabaseInstanceValkeyKPEncrypt(databaseResourceGroup string
 			delete = "15m"
 		}
 	}
-	`, kpInstanceName, kpKeyName, name, acc.Region())
+	`, kpInstanceName, region, kpKeyName, name, region)
 }
