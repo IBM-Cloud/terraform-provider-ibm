@@ -1,3 +1,35 @@
+# 2.2.0-beta0 (May 18, 2026)
+
+## Bug Fixes
+
+### Cloud Internet Services
+* add query params for GET Custom List Items ([6761](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6761))
+
+
+## Enhancements
+
+### Cloud Databases
+* Add Gen2 support for IBM Cloud Databases ([6714](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6714))
+* 2857 Implement Gen2 Support for ibm_database datasource ([6783](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6783))
+
+### Cloud Logs
+* Add support for log data retention tags API ([6753](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6753))
+
+### IAM
+* enable cross region ([6782](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6782))
+* add missing arguments docs and examples ([6785](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6785))
+
+
+## Documentation
+
+### General
+* Update the readme ([6774](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6774))
+
+### DRAutomation
+* updated dra and pha docs ([6780](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6780))
+
+
+
 # 2.1.0 (May 5, 2026)
 
 ## Bug Fixes
