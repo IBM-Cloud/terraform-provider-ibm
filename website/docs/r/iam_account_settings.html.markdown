@@ -23,7 +23,6 @@ resource "ibm_iam_account_settings" "iam_account_settings_instance" {
 
 ```terraform
 resource "ibm_iam_account_settings" "iam_account_settings_instance" {
-  account_id                      = "1234567890abcdef"
   mfa                             = "LEVEL3"
   session_expiration_in_seconds   = "40000"
   session_invalidation_in_seconds = "1800"
@@ -35,10 +34,9 @@ resource "ibm_iam_account_settings" "iam_account_settings_instance" {
 
 ```terraform
 resource "ibm_iam_account_settings" "iam_account_settings_instance" {
-  account_id = "1234567890abcdef"
 
   restrict_user_domains {
-    realm_id = "default"
+    realm_id = "IBMid"
 
     invitation_email_allow_patterns = [
       "*@example.com",
@@ -54,7 +52,6 @@ resource "ibm_iam_account_settings" "iam_account_settings_instance" {
 
 ```terraform
 resource "ibm_iam_account_settings" "iam_account_settings_instance" {
-  account_id = "1234567890abcdef"
   mfa        = "LEVEL2"
 
   user_mfa {
@@ -67,8 +64,6 @@ resource "ibm_iam_account_settings" "iam_account_settings_instance" {
 ## Argument Reference
 
 You can specify the following arguments for this resource.
-
-* `account_id` - (Required, Forces new resource, String) Unique ID of the account.
 
 * `include_history` - (Optional, Boolean) Defines if the entity history is included in the response.
   * Constraints: The default value is `false`.
