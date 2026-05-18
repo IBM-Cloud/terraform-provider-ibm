@@ -1,3 +1,11 @@
+# 2.2.0-beta1 (May 18, 2026)
+
+## Bug Fixes
+
+### Cloud Databases
+* Revert "Feat: 2857 Implement Gen2 Support for ibm_database datasource ([6788](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6788))
+
+
 # 2.2.0-beta0 (May 18, 2026)
 
 ## Bug Fixes
