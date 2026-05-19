@@ -40,9 +40,15 @@ resource "ibm_is_ike_policy" "example" {
 ## Argument reference
 Review the argument references that you can specify for your resource. 
 
-- `authentication_algorithm` - (Required, String) Enter the algorithm that you want to use to authenticate `IKE` peers. Available options are `sha256`, `sha512`, `sha384`.
-- `dh_group`  - (Required, Integer) Enter the Diffie-Hellman group that you want to use for the encryption key. Available enumeration type are `14`, `19`, `15`, `16` ,`17` ,`18` ,`20` ,`21` ,`22` ,`23` ,`24` ,`31`
-- `encryption_algorithm` - (Required, String) Enter the algorithm that you want to use to encrypt data. Available options are: `aes128`, `aes192`, `aes256`.
+- `authentication_algorithm` - (Required, String) Enter the algorithm that you want to use to authenticate `IKE` peers. Available options are `sha256`, `sha512`, `sha384`. If `multiple`, the policy supports more than one authentication algorithm. Use the `authentication_algorithms` property to retrieve all supported algorithms.
+- `authentication_algorithms` - (Optional, List) The authentication algorithms to use for IKE Negotiation.The order of the algorithms in this array indicates their priority for negotiation, with each algorithm having priority over the one after it.
+  * Constraints: Allowable list items are: `sha256`, `sha384`, `sha512`. The maximum length is `3` items. The minimum length is `1` item.
+- `dh_group`  - (Required, Integer) Enter the Diffie-Hellman group that you want to use for the encryption key. Available enumeration type are `14`, `19`, `15`, `16` ,`17` ,`18` ,`20` ,`21` ,`22` ,`23` ,`24` ,`31`. If `65535`, the policy supports more than one Diffie-Hellman group. Use the `dh_groups` property to retrieve all supported Diffie-Hellman groups.
+- `dh_groups` - (Optional, List) The Diffie-Hellman groups to use for IKE negotiation. The order of the Diffie-Hellman groups in this array indicates their priority for negotiation, with each Diffie-Hellman group having priority over the one after it.
+  * Constraints: Allowable list items are: `14`, `15`, `16`, `17`, `18`, `19`, `20`, `21`, `22`, `23`, `24`, `31`. The maximum length is `12` items. The minimum length is `1` item.
+- `encryption_algorithm` - (Required, String) Enter the algorithm that you want to use to encrypt data. Available options are: `aes128`, `aes192`, `aes256`. If `multiple`, the policy supports more than one encryption algorithm. Use the `encryption_algorithms` property to retrieve all supported algorithms.
+- `encryption_algorithms` - (Optional, List) The encryption algorithms to use for IKE Negotiation.The order of the algorithms in this array indicates their priority for negotiation, with each algorithm having priority over the one after it.
+  * Constraints: Allowable list items are: `aes128`, `aes192`, `aes256`. The maximum length is `3` items. The minimum length is `1` item.
 - `ike_version`  - (Optional, Integer) Enter the IKE protocol version that you want to use. Available options are `1`, or `2`.
 - `key_lifetime`  - (Optional, Integer)The key lifetime in seconds. `Maximum: 86400`, `Minimum: 1800`. Default is `28800`. 
 - `name` - (Required, String) Enter a name for your IKE policy.
