@@ -14,7 +14,7 @@ data "ibm_iam_trusted_profile" "iam_trusted_profile_instance_data" {
 }
 
 // Create iam_trusted_profiles data source
-data "ibm_iam_trusted_profiles" "iam_trusted_profiles_instance_data" {
+data "ibm_iam_trusted_profiles" "iam_trusted_profiles_list_data" {
   account_id = var.iam_trusted_profiles_account_id
   name = "name"
 }

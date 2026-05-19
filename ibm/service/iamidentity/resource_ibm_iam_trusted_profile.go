@@ -149,7 +149,6 @@ func ResourceIBMIAMTrustedProfile() *schema.Resource {
 					Schema: map[string]*schema.Schema{
 						"last_authn": &schema.Schema{
 							Type:        schema.TypeString,
-							Optional:    true,
 							Computed:    true,
 							Description: "Time when the entity was last authenticated.",
 						},
@@ -353,7 +352,18 @@ func resourceIBMIamTrustedProfileRead(context context.Context, d *schema.Resourc
 		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_trusted_profile", "read", "set-history").GetDiag()
 
 	}
-
+	activity := []map[string]interface{}{}
+	if !core.IsNil(trustedProfile.Activity) {
+		activityMap, err := ResourceIBMIamTrustedProfileActivityToMap(trustedProfile.Activity)
+		if err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_trusted_profile", "read", "activity-to-map").GetDiag()
+		}
+		activity = append(activity, activityMap)
+	}
+	if err = d.Set("activity", activity); err != nil {
+		err = fmt.Errorf("Error setting activity: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_trusted_profile", "read", "set-activity").GetDiag()
+	}
 	return nil
 }
 
@@ -448,17 +458,6 @@ func ResourceIBMIamTrustedProfileResponseContextToMap(model *iamidentityv1.Respo
 	if model.ClusterName != nil {
 		modelMap["cluster_name"] = *model.ClusterName
 	}
-	return modelMap, nil
-}
-
-func ResourceIBMIamTrustedProfileEnityHistoryRecordToMap(model *iamidentityv1.EnityHistoryRecord) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	modelMap["timestamp"] = *model.Timestamp
-	modelMap["iam_id"] = *model.IamID
-	modelMap["iam_id_account"] = *model.IamIDAccount
-	modelMap["action"] = *model.Action
-	modelMap["params"] = model.Params
-	modelMap["message"] = *model.Message
 	return modelMap, nil
 }
 

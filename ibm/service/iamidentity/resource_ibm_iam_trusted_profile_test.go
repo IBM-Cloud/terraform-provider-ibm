@@ -7,24 +7,22 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
-	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
-	"github.com/hashicorp/terraform-plugin-testing/terraform"
-
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/iamidentity"
 	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/IBM/platform-services-go-sdk/iamidentityv1"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestAccIBMIamTrustedProfileBasic(t *testing.T) {
 	var conf iamidentityv1.TrustedProfile
 	name := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
-	accountID := fmt.Sprintf("tf_account_id_%d", acctest.RandIntRange(10, 100))
+	accountID := acc.IAMAccountId
 	nameUpdate := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
-	accountIDUpdate := fmt.Sprintf("tf_account_id_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
@@ -32,7 +30,7 @@ func TestAccIBMIamTrustedProfileBasic(t *testing.T) {
 		CheckDestroy: testAccCheckIBMIamTrustedProfileDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIBMIamTrustedProfileConfigBasic(name, accountID),
+				Config: testAccCheckIBMIamTrustedProfileConfigBasic(name),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMIamTrustedProfileExists("ibm_iam_trusted_profile.iam_trusted_profile_instance", conf),
 					resource.TestCheckResourceAttr("ibm_iam_trusted_profile.iam_trusted_profile_instance", "name", name),
@@ -40,10 +38,10 @@ func TestAccIBMIamTrustedProfileBasic(t *testing.T) {
 				),
 			},
 			resource.TestStep{
-				Config: testAccCheckIBMIamTrustedProfileConfigBasic(nameUpdate, accountIDUpdate),
+				Config: testAccCheckIBMIamTrustedProfileConfigBasic(nameUpdate),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("ibm_iam_trusted_profile.iam_trusted_profile_instance", "name", nameUpdate),
-					resource.TestCheckResourceAttr("ibm_iam_trusted_profile.iam_trusted_profile_instance", "account_id", accountIDUpdate),
+					resource.TestCheckResourceAttr("ibm_iam_trusted_profile.iam_trusted_profile_instance", "account_id", accountID),
 				),
 			},
 		},
@@ -55,11 +53,10 @@ func TestAccIBMIamTrustedProfileAllArgs(t *testing.T) {
 	name := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 	description := fmt.Sprintf("tf_description_%d", acctest.RandIntRange(10, 100))
 	email := fmt.Sprintf("tf_email_%d", acctest.RandIntRange(10, 100))
-	accountID := fmt.Sprintf("tf_account_id_%d", acctest.RandIntRange(10, 100))
+	accountID := acc.IAMAccountId
 	nameUpdate := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 	descriptionUpdate := fmt.Sprintf("tf_description_%d", acctest.RandIntRange(10, 100))
 	emailUpdate := fmt.Sprintf("tf_email_%d", acctest.RandIntRange(10, 100))
-	accountIDUpdate := fmt.Sprintf("tf_account_id_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
@@ -67,7 +64,7 @@ func TestAccIBMIamTrustedProfileAllArgs(t *testing.T) {
 		CheckDestroy: testAccCheckIBMIamTrustedProfileDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIBMIamTrustedProfileConfig(name, description, email, accountID),
+				Config: testAccCheckIBMIamTrustedProfileConfig(name, description, email),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMIamTrustedProfileExists("ibm_iam_trusted_profile.iam_trusted_profile_instance", conf),
 					resource.TestCheckResourceAttr("ibm_iam_trusted_profile.iam_trusted_profile_instance", "name", name),
@@ -77,12 +74,12 @@ func TestAccIBMIamTrustedProfileAllArgs(t *testing.T) {
 				),
 			},
 			resource.TestStep{
-				Config: testAccCheckIBMIamTrustedProfileConfig(nameUpdate, descriptionUpdate, emailUpdate, accountIDUpdate),
+				Config: testAccCheckIBMIamTrustedProfileConfig(nameUpdate, descriptionUpdate, emailUpdate),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("ibm_iam_trusted_profile.iam_trusted_profile_instance", "name", nameUpdate),
 					resource.TestCheckResourceAttr("ibm_iam_trusted_profile.iam_trusted_profile_instance", "description", descriptionUpdate),
 					resource.TestCheckResourceAttr("ibm_iam_trusted_profile.iam_trusted_profile_instance", "email", emailUpdate),
-					resource.TestCheckResourceAttr("ibm_iam_trusted_profile.iam_trusted_profile_instance", "account_id", accountIDUpdate),
+					resource.TestCheckResourceAttr("ibm_iam_trusted_profile.iam_trusted_profile_instance", "account_id", accountID),
 				),
 			},
 			resource.TestStep{
@@ -94,25 +91,23 @@ func TestAccIBMIamTrustedProfileAllArgs(t *testing.T) {
 	})
 }
 
-func testAccCheckIBMIamTrustedProfileConfigBasic(name string, accountID string) string {
+func testAccCheckIBMIamTrustedProfileConfigBasic(name string) string {
 	return fmt.Sprintf(`
 		resource "ibm_iam_trusted_profile" "iam_trusted_profile_instance" {
 			name = "%s"
-			account_id = "%s"
 		}
-	`, name, accountID)
+	`, name)
 }
 
-func testAccCheckIBMIamTrustedProfileConfig(name string, description string, email string, accountID string) string {
+func testAccCheckIBMIamTrustedProfileConfig(name string, description string, email string) string {
 	return fmt.Sprintf(`
 
 		resource "ibm_iam_trusted_profile" "iam_trusted_profile_instance" {
 			name = "%s"
 			description = "%s"
 			email = "%s"
-			account_id = "%s"
 		}
-	`, name, description, email, accountID)
+	`, name, description, email)
 }
 
 func testAccCheckIBMIamTrustedProfileExists(n string, obj iamidentityv1.TrustedProfile) resource.TestCheckFunc {
@@ -167,31 +162,6 @@ func testAccCheckIBMIamTrustedProfileDestroy(s *terraform.State) error {
 	}
 
 	return nil
-}
-func TestResourceIBMIamTrustedProfileEnityHistoryRecordToMap(t *testing.T) {
-	checkResult := func(result map[string]interface{}) {
-		model := make(map[string]interface{})
-		model["timestamp"] = "testString"
-		model["iam_id"] = "testString"
-		model["iam_id_account"] = "testString"
-		model["action"] = "testString"
-		model["params"] = []string{"testString"}
-		model["message"] = "testString"
-
-		assert.Equal(t, result, model)
-	}
-
-	model := new(iamidentityv1.EnityHistoryRecord)
-	model.Timestamp = core.StringPtr("testString")
-	model.IamID = core.StringPtr("testString")
-	model.IamIDAccount = core.StringPtr("testString")
-	model.Action = core.StringPtr("testString")
-	model.Params = []string{"testString"}
-	model.Message = core.StringPtr("testString")
-
-	result, err := iamidentity.ResourceIBMIamTrustedProfileEnityHistoryRecordToMap(model)
-	assert.Nil(t, err)
-	checkResult(result)
 }
 
 func TestResourceIBMIamTrustedProfileActivityToMap(t *testing.T) {
