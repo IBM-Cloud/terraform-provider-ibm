@@ -51,12 +51,11 @@ require (
 	github.com/google/uuid v1.6.0
 	github.com/hashicorp/go-cty v1.5.0
 	github.com/hashicorp/go-uuid v1.0.3
-	github.com/hashicorp/go-version v1.9.0
+	github.com/hashicorp/go-version v1.8.0
 	github.com/hashicorp/terraform-plugin-framework v1.19.0
 	github.com/hashicorp/terraform-plugin-go v0.31.0
 	github.com/hashicorp/terraform-plugin-mux v0.23.0
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.40.0
-	github.com/hashicorp/terraform-plugin-testing v1.16.0
 	github.com/jinzhu/copier v0.3.2
 	github.com/minsikl/netscaler-nitro-go v0.0.0-20170827154432-5b14ce3643e3
 	github.com/mitchellh/go-homedir v1.1.0
@@ -66,7 +65,7 @@ require (
 	github.com/rook/rook/pkg/apis v0.0.0-20250619203122-80563e28b685
 	github.com/softlayer/softlayer-go v1.0.3
 	github.com/stretchr/testify v1.11.1
-	golang.org/x/crypto v0.50.0
+	golang.org/x/crypto v0.49.0
 	gopkg.in/yaml.v3 v3.0.1
 	gotest.tools v2.2.0+incompatible
 	k8s.io/api v0.33.4
@@ -79,14 +78,14 @@ require (
 require (
 	github.com/Logicalis/asn1 v0.0.0-20190312173541-d60463189a56 // indirect
 	github.com/PromonLogicalis/asn1 v0.0.0-20190312173541-d60463189a56 // indirect
-	github.com/ProtonMail/go-crypto v1.4.1 // indirect
-	github.com/agext/levenshtein v1.2.3 // indirect
+	github.com/ProtonMail/go-crypto v1.3.0 // indirect
+	github.com/agext/levenshtein v1.2.2 // indirect
 	github.com/andres-erbsen/clock v0.0.0-20160526145045-9e14626cd129 // indirect
 	github.com/apex/log v1.9.0 // indirect
 	github.com/apparentlymart/go-textseg/v15 v15.0.0 // indirect
 	github.com/cenkalti/backoff/v4 v4.3.0 // indirect
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
-	github.com/cloudflare/circl v1.6.3 // indirect
+	github.com/cloudflare/circl v1.6.1 // indirect
 	github.com/cloudfoundry/jibber_jabber v0.0.0-20151120183258-bcc4c8345a21 // indirect
 	github.com/containernetworking/cni v1.2.3 // indirect
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
@@ -135,15 +134,15 @@ require (
 	github.com/hashicorp/go-secure-stdlib/parseutil v0.1.8 // indirect
 	github.com/hashicorp/go-secure-stdlib/strutil v0.1.2 // indirect
 	github.com/hashicorp/go-sockaddr v1.0.7 // indirect
-	github.com/hashicorp/hc-install v0.9.4 // indirect
+	github.com/hashicorp/hc-install v0.9.3 // indirect
 	github.com/hashicorp/hcl v1.0.1-vault-7 // indirect
 	github.com/hashicorp/hcl/v2 v2.24.0 // indirect
 	github.com/hashicorp/logutils v1.0.0 // indirect
-	github.com/hashicorp/terraform-exec v0.25.1 // indirect
+	github.com/hashicorp/terraform-exec v0.25.0 // indirect
 	github.com/hashicorp/terraform-json v0.27.2 // indirect
 	github.com/hashicorp/terraform-plugin-log v0.10.0 // indirect
 	github.com/hashicorp/terraform-registry-address v0.4.0 // indirect
-	github.com/hashicorp/terraform-svchost v0.2.1 // indirect
+	github.com/hashicorp/terraform-svchost v0.1.1 // indirect
 	github.com/hashicorp/vault/api v1.16.0 // indirect
 	github.com/hashicorp/vault/api/auth/approle v0.8.0 // indirect
 	github.com/hashicorp/vault/api/auth/kubernetes v0.8.0 // indirect
@@ -176,7 +175,7 @@ require (
 	github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822 // indirect
 	github.com/mxk/go-flowrate v0.0.0-20140419014527-cca7078d478f // indirect
 	github.com/nicksnyder/go-i18n v1.10.0 // indirect
-	github.com/oklog/run v1.2.0 // indirect
+	github.com/oklog/run v1.1.0 // indirect
 	github.com/oklog/ulid v1.3.1 // indirect
 	github.com/opentracing/opentracing-go v1.2.1-0.20220228012449-10b1cf09e00b // indirect
 	github.com/patrickmn/go-cache v2.1.0+incompatible // indirect
@@ -193,7 +192,7 @@ require (
 	github.com/vmihailenco/msgpack/v5 v5.4.1 // indirect
 	github.com/vmihailenco/tagparser/v2 v2.0.0 // indirect
 	github.com/x448/float16 v0.8.4 // indirect
-	github.com/zclconf/go-cty v1.18.1 // indirect
+	github.com/zclconf/go-cty v1.17.0 // indirect
 	go.mongodb.org/mongo-driver v1.17.6 // indirect
 	go.opentelemetry.io/auto/sdk v1.2.1 // indirect
 	go.opentelemetry.io/otel v1.39.0 // indirect
@@ -202,13 +201,13 @@ require (
 	go.uber.org/ratelimit v0.2.0 // indirect
 	go.uber.org/zap v1.27.0 // indirect
 	go.yaml.in/yaml/v2 v2.4.3 // indirect
-	golang.org/x/mod v0.35.0 // indirect
+	golang.org/x/mod v0.34.0 // indirect
 	golang.org/x/net v0.52.0 // indirect
 	golang.org/x/oauth2 v0.36.0 // indirect
 	golang.org/x/sync v0.20.0 // indirect
-	golang.org/x/sys v0.43.0 // indirect
-	golang.org/x/term v0.42.0 // indirect
-	golang.org/x/text v0.36.0 // indirect
+	golang.org/x/sys v0.42.0 // indirect
+	golang.org/x/term v0.41.0 // indirect
+	golang.org/x/text v0.35.0 // indirect
 	golang.org/x/time v0.15.0 // indirect
 	golang.org/x/tools v0.43.0 // indirect
 	google.golang.org/appengine v1.6.8 // indirect
