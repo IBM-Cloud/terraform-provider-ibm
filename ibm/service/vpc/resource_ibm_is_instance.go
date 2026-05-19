@@ -7822,24 +7822,95 @@ func instanceUpdate(context context.Context, d *schema.ResourceData, meta interf
 		}
 	}
 
-	if d.HasChange(isInstanceProfile) && !d.IsNewResource() {
+	// Check if profile or total_volume_bandwidth are changing
+	profileChanged := d.HasChange(isInstanceProfile)
+	bandwidthChanged := d.HasChange(isInstanceTotalVolumeBandwidth)
 
-		getinsOptions := &vpcv1.GetInstanceOptions{
+	if (profileChanged || bandwidthChanged) && !d.IsNewResource() {
+		var needsRestart bool = false
+
+		// If profile is changing, we need to stop and restart the instance
+		if profileChanged {
+			needsRestart = true
+			getinsOptions := &vpcv1.GetInstanceOptions{
+				ID: &id,
+			}
+			instance, response, err := instanceC.GetInstanceWithContext(context, getinsOptions)
+			if err != nil {
+				if response != nil && response.StatusCode == 404 {
+					d.SetId("")
+					return nil
+				}
+				tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetInstanceWithContext failed: %s", err.Error()), "ibm_is_instance", "update")
+				log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+				return tfErr.GetDiag()
+			}
+
+			if instance != nil && *instance.Status == "running" {
+				actiontype := "stop"
+				createinsactoptions := &vpcv1.CreateInstanceActionOptions{
+					InstanceID: &id,
+					Type:       &actiontype,
+				}
+				_, response, err = instanceC.CreateInstanceActionWithContext(context, createinsactoptions)
+				if err != nil {
+					if response != nil && response.StatusCode == 404 {
+						return nil
+					}
+					tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateInstanceActionWithContext failed: %s", err.Error()), "ibm_is_instance", "update")
+					log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+					return tfErr.GetDiag()
+				}
+				_, err = isWaitForInstanceActionStop(instanceC, d.Timeout(schema.TimeoutUpdate), id, d)
+				if err != nil {
+					tfErr := flex.TerraformErrorf(err, fmt.Sprintf("isWaitForInstanceActionStop failed: %s", err.Error()), "ibm_is_instance", "update")
+					log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+					return tfErr.GetDiag()
+				}
+			}
+		}
+
+		// Create a combined patch with both profile and bandwidth changes
+		updnetoptions := &vpcv1.UpdateInstanceOptions{
 			ID: &id,
 		}
-		instance, response, err := instanceC.GetInstanceWithContext(context, getinsOptions)
-		if err != nil {
-			if response != nil && response.StatusCode == 404 {
-				d.SetId("")
-				return nil
+
+		instancePatchModel := &vpcv1.InstancePatch{}
+
+		// Add profile to patch if it's changing
+		if profileChanged {
+			instanceProfile := d.Get(isInstanceProfile).(string)
+			profile := &vpcv1.InstancePatchProfile{
+				Name: &instanceProfile,
 			}
-			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetInstanceWithContext failed: %s", err.Error()), "ibm_is_instance", "update")
+			instancePatchModel.Profile = profile
+		}
+
+		// Add total_volume_bandwidth to patch if it's changing
+		if bandwidthChanged {
+			totalVolBandwidth := int64(d.Get(isInstanceTotalVolumeBandwidth).(int))
+			instancePatchModel.TotalVolumeBandwidth = &totalVolBandwidth
+		}
+
+		// Convert to patch and apply
+		instancePatch, err := instancePatchModel.AsPatch()
+		if err != nil {
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("instancePatchModel.AsPatch() failed: %s", err.Error()), "ibm_is_instance", "update")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
+		}
+		updnetoptions.InstancePatch = instancePatch
+
+		_, response, err := instanceC.UpdateInstanceWithContext(context, updnetoptions)
+		if err != nil {
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("UpdateInstanceWithContext failed: %s", err.Error()), "ibm_is_instance", "update")
 			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 			return tfErr.GetDiag()
 		}
 
-		if instance != nil && *instance.Status == "running" {
-			actiontype := "stop"
+		// If profile was changed, restart the instance
+		if needsRestart {
+			actiontype := "start"
 			createinsactoptions := &vpcv1.CreateInstanceActionOptions{
 				InstanceID: &id,
 				Type:       &actiontype,
@@ -7853,84 +7924,12 @@ func instanceUpdate(context context.Context, d *schema.ResourceData, meta interf
 				log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 				return tfErr.GetDiag()
 			}
-			_, err = isWaitForInstanceActionStop(instanceC, d.Timeout(schema.TimeoutUpdate), id, d)
+			_, err = isWaitForInstanceAvailable(instanceC, d.Id(), d.Timeout(schema.TimeoutUpdate), d)
 			if err != nil {
-				tfErr := flex.TerraformErrorf(err, fmt.Sprintf("isWaitForInstanceActionStop failed: %s", err.Error()), "ibm_is_instance", "update")
+				tfErr := flex.TerraformErrorf(err, fmt.Sprintf("isWaitForInstanceAvailable failed: %s", err.Error()), "ibm_is_instance", "update")
 				log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 				return tfErr.GetDiag()
 			}
-		}
-
-		updnetoptions := &vpcv1.UpdateInstanceOptions{
-			ID: &id,
-		}
-
-		instanceProfile := d.Get(isInstanceProfile).(string)
-		profile := &vpcv1.InstancePatchProfile{
-			Name: &instanceProfile,
-		}
-		instanceProfilePatchModel := &vpcv1.InstancePatch{
-			Profile: profile,
-		}
-		instancePatch, err := instanceProfilePatchModel.AsPatch()
-		if err != nil {
-			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("instanceProfilePatchModel.AsPatch() failed: %s", err.Error()), "ibm_is_instance", "update")
-			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
-			return tfErr.GetDiag()
-		}
-		updnetoptions.InstancePatch = instancePatch
-
-		_, response, err = instanceC.UpdateInstanceWithContext(context, updnetoptions)
-		if err != nil {
-			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("UpdateInstanceWithContext failed: %s", err.Error()), "ibm_is_instance", "update")
-			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
-			return tfErr.GetDiag()
-		}
-
-		actiontype := "start"
-		createinsactoptions := &vpcv1.CreateInstanceActionOptions{
-			InstanceID: &id,
-			Type:       &actiontype,
-		}
-		_, response, err = instanceC.CreateInstanceActionWithContext(context, createinsactoptions)
-		if err != nil {
-			if response != nil && response.StatusCode == 404 {
-				return nil
-			}
-			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateInstanceActionWithContext failed: %s", err.Error()), "ibm_is_instance", "update")
-			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
-			return tfErr.GetDiag()
-		}
-		_, err = isWaitForInstanceAvailable(instanceC, d.Id(), d.Timeout(schema.TimeoutUpdate), d)
-		if err != nil {
-			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("isWaitForInstanceAvailable failed: %s", err.Error()), "ibm_is_instance", "update")
-			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
-			return tfErr.GetDiag()
-		}
-
-	}
-	if d.HasChange(isInstanceTotalVolumeBandwidth) && !d.IsNewResource() {
-		totalVolBandwidth := int64(d.Get(isInstanceTotalVolumeBandwidth).(int))
-		updnetoptions := &vpcv1.UpdateInstanceOptions{
-			ID: &id,
-		}
-
-		instanceTotalVolumeBandwidthPatchModel := &vpcv1.InstancePatch{
-			TotalVolumeBandwidth: &totalVolBandwidth,
-		}
-		instancePatch, err := instanceTotalVolumeBandwidthPatchModel.AsPatch()
-		if err != nil {
-			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("instanceTotalVolumeBandwidthPatchModel.AsPatch() failed: %s", err.Error()), "ibm_is_instance", "update")
-			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
-			return tfErr.GetDiag()
-		}
-		updnetoptions.InstancePatch = instancePatch
-
-		_, _, err = instanceC.UpdateInstanceWithContext(context, updnetoptions)
-		if err != nil {
-			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("UpdateInstanceWithContext failed: %s", err.Error()), "ibm_is_instance", "update")
-			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
-			return tfErr.GetDiag()
 		}
 	}
 
