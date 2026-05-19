@@ -286,7 +286,7 @@ func resourceIBMIamTrustedProfileRead(context context.Context, d *schema.Resourc
 			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_trusted_profile", "read", "set-context").GetDiag()
 		}
 	}
-	if err = d.Set("id", trustedProfile.ID); err != nil {
+	if err = d.Set("profile_id", trustedProfile.ID); err != nil {
 		err = fmt.Errorf("Error setting id: %s", err)
 		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_trusted_profile", "read", "set-id").GetDiag()
 	}

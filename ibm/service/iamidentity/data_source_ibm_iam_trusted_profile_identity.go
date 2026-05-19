@@ -1,4 +1,4 @@
-// Copyright IBM Corp. 2023 All Rights Reserved.
+// Copyright IBM Corp. 2026 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 package iamidentity
@@ -101,6 +101,10 @@ func dataSourceIBMIamTrustedProfileIdentityRead(context context.Context, d *sche
 	}
 
 	if err = d.Set("description", profileIdentityResponse.Description); err != nil {
+		return diag.FromErr(fmt.Errorf("Error setting description: %s", err))
+	}
+
+	if err = d.Set("accounts", profileIdentityResponse.Accounts); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting description: %s", err))
 	}
 

@@ -17,6 +17,7 @@ import (
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/IBM/platform-services-go-sdk/iamidentityv1"
 )
@@ -30,6 +31,8 @@ func DataSourceIBMIamTrustedProfile() *schema.Resource {
 				Type:        schema.TypeString,
 				Required:    true,
 				Description: "ID of the trusted profile to get.",
+				ValidateFunc: validate.InvokeDataSourceValidator("ibm_iam_trusted_profile",
+					"profile_id"),
 			},
 			"include_activity": &schema.Schema{
 				Type:        schema.TypeBool,
@@ -164,6 +167,21 @@ func DataSourceIBMIamTrustedProfile() *schema.Resource {
 			},
 		},
 	}
+}
+
+func DataSourceIBMIamTrustedProfileValidator() *validate.ResourceValidator {
+	validateSchema := make([]validate.ValidateSchema, 0)
+	validateSchema = append(validateSchema,
+		validate.ValidateSchema{
+			Identifier:                 "profile_id",
+			ValidateFunctionIdentifier: validate.ValidateCloudData,
+			Type:                       validate.TypeString,
+			CloudDataType:              "iam",
+			CloudDataRange:             []string{"service:trusted_profile", "resolved_to:id"},
+			Required:                   true})
+
+	iBMIamTrustedProfileValidator := validate.ResourceValidator{ResourceName: "ibm_iam_trusted_profile", Schema: validateSchema}
+	return &iBMIamTrustedProfileValidator
 }
 
 func dataSourceIBMIamTrustedProfileRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
