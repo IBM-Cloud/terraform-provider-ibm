@@ -59,6 +59,23 @@ func TestAccIBMISLBProfileDatasource_failsafepolicyactions(t *testing.T) {
 		},
 	})
 }
+
+func TestAccIBMISLBProfileDatasource_mTLS(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { acc.TestAccPreCheck(t) },
+		Providers: acc.TestAccProviders,
+		Steps: []resource.TestStep{
+			{
+
+				Config: testDSCheckIBMISLBProfileBasicConfig(),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("data.ibm_is_lb_profile.test_profile", "name", "network-fixed"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_lb_profile.test_profile", "mtls_supported"),
+				),
+			},
+		},
+	})
+}
 func testDSCheckIBMISLBProfileBasicConfig() string {
 	return fmt.Sprintf(`
 	data "ibm_is_lb_profile" "test_profile" {

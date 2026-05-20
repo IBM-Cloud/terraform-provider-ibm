@@ -83,6 +83,23 @@ func TestAccIBMISLBProfilesDatasource_filter(t *testing.T) {
 		},
 	})
 }
+
+func TestAccIBMISLBProfilesDatasource_mTLS(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { acc.TestAccPreCheck(t) },
+		Providers: acc.TestAccProviders,
+		Steps: []resource.TestStep{
+			{
+
+				Config: testDSCheckIBMISLBProfilesConfig(),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet("data.ibm_is_lb_profiles.test_profiles", "lb_profiles.#"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_lb_profiles.test_profiles", "lb_profiles.0.mtls_supported"),
+				),
+			},
+		},
+	})
+}
 func testDSCheckIBMISLBProfilesConfig() string {
 	return fmt.Sprintf(`
 	data "ibm_is_lb_profiles" "test_profiles" {

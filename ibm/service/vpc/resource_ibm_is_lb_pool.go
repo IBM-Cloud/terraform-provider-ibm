@@ -221,6 +221,7 @@ func ResourceIBMISLBPool() *schema.Resource {
 				Type:        schema.TypeList,
 				MaxItems:    1,
 				Optional:    true,
+				Computed:    true,
 				Description: "The server authentication to use for this pool. Supported by load balancers with mtls_supported set to true. The pool must have a protocol of https.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -232,6 +233,7 @@ func ResourceIBMISLBPool() *schema.Resource {
 						"verify_certificate": &schema.Schema{
 							Type:        schema.TypeBool,
 							Optional:    true,
+							Computed:    true,
 							Description: "Indicates whether server certificate verification is enabled. If set to true, the backend server certificate is verified by: certificate_authority if specified, the system default certificate authorities, if certificate_authority is not specified.",
 						},
 					},

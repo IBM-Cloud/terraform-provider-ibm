@@ -50,17 +50,36 @@ func TestAccIBMIsLbListenerDataSource_ClientAuth(t *testing.T) {
 	protocol := "https"
 	port := "443"
 
-	// Example CRNs must be replaced
-	certCRN := "crn:v1:bluemix:public:secrets-manager:us-south:a/aa2432b1fa4d4ace891e9b80fc104e34:36fa422d-080d-4d83-8d2d-86851b4001df:secret:2e786aab-42fa-63ed-14f8-d66d552f4dd5"
-	caCRN := "crn:v1:bluemix:public:secrets-manager:us-south:a/aa2432b1fa4d4ace891e9b80fc104e34:36fa422d-080d-4d83-8d2d-86851b4001df:secret:3f897bbc-53gb-74fe-25g9-e77e663g5ee6"
-	crlContent := "-----BEGIN X509 CRL-----\nMIIBpjCBjwIBATANBgkqhkiG9w0BAQsFADASMRAwDgYDVQQDDAdUZXN0IENBGA8y\nMDI0MDEwMTAwMDAwMFoYDzIwMjUwMTAxMDAwMDAwWjAkMCICEQDExample1RevokedCert\nGA8yMDI0MDEwMTAwMDAwMFqgDjAMMAoGA1UdFAQDAgEBMA0GCSqGSIb3DQEBCwUA\nA4IBAQCExample+CRLSignature==\n-----END X509 CRL-----"
+	// Example CRNs - replace with actual values from your test environment
+	certCRN := "crn:v1:staging:public:secrets-manager:eu-gb:a/2d1bace7b46e4815a81e52c6ffeba5cf:2ca77a00-d2c6-41a2-93e4-6bfa23400b17:secret:3e4c3e45-27e9-ecec-22b2-fb17b92b6c77"
+	caCRN := "crn:v1:staging:public:secrets-manager:eu-gb:a/2d1bace7b46e4815a81e52c6ffeba5cf:2ca77a00-d2c6-41a2-93e4-6bfa23400b17:secret:385baca2-2d9b-6c82-f49b-1907be7feefd"
+
+	// CRL content - must match what's in testAccCheckIBMISLBListenerClientAuthConfigUpdate
+	crlContent := `-----BEGIN X509 CRL-----
+MIICvTCBpgIBATANBgkqhkiG9w0BAQsFADBMMQswCQYDVQQGEwJVUzEOMAwGA1UE
+CAwFZGVsYXMxDDAKBgNVBAoMA0lCTTENMAsGA1UECwwEcm9vdDEQMA4GA1UEAwwH
+cm9vdC1jYRcNMjUwOTA4MDUwMjQwWhcNMjUxMDA4MDUwMjQwWjAVMBMCAhAAFw0y
+NTA5MDgwNTAxNTlaoA8wDTALBgNVHRQEBAICEAAwDQYJKoZIhvcNAQELBQADggIB
+ACeEcj7ompUepc5qTvTrNA5PoK5bN71gNI7Rbhq/Bxf1YPMp2iU3qMSj7YpVP7aw
+GNrxFoIZcQ4X7PYyHMfDk6Z83PSTVMnSOVk09fZW49tyVTWmzBVLz3R1bPasnWTZ
+0hRIv9j9n7Lemin+0ubIR/2zmsfBs1JFAFEbbRcgwg+qotsfZNLkX6bjHDpsRQzE
+mXUEu4/AqAsWPbFzG2uMKZ9pKOK+Nn3bt/NEK+AFlnSmgjEqzQ+0zhsrCExIReJV
+c2oiLBkLG6rBwxlGDog+PqwjP+1wGNIL1J3c2lMW1IGMNcts/aDBO5LtPVIY1LsQ
+FoeaTfm3U3GKC/pTczoDk/pKN756f8O05nTWUHgktcNsPvgqDKnpvEkI3VPf9Y4a
+fMOzKgVTgY1dSgjzHO8+4ZfcVGpBePsjOe0/RCUwkgtgOyGtcmBPTMJa0elJzjaM
+jD9myqIXkB359sqbuEmcrjgo5uUUvubFYpmT/W0YxOi/py/bDK+7uUs38nUElNkZ
++YFRpNWjLF9JtAghX5MhA5BwhTTuATvWYuDdK769ifi9qcYvE4u+VNxYfOpPY6sv
+x4FnkZ9+A7s2hk11d+DEq29Efa0xak8rO1LzT5hCSFT0P3KfZEZMpbuXpzVGiZoM
+g5cWHgYcNnzhUatKodvzZizAOVGRR7UFg42O4ylhxDVe
+-----END X509 CRL-----
+`
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheck(t) },
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIBMIsLbListenerDataSourceConfigClientAuth(vpcname, subnetname, acc.ISZoneName, acc.ISCIDR, lbname, port, protocol, certCRN, caCRN, crlContent),
+				Config: testAccCheckIBMIsLbListenerDataSourceConfigClientAuth(vpcname, subnetname, acc.ISZoneName, acc.ISCIDR, lbname, port, protocol, certCRN, caCRN),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_is_lb_listener.is_lb_listener_mtls", "listener_id"),
 					resource.TestCheckResourceAttrSet("data.ibm_is_lb_listener.is_lb_listener_mtls", "lb"),
@@ -87,23 +106,12 @@ func testAccCheckIBMIsLbListenerDataSourceConfigBasic(vpcname, subnetname, zone,
 	`)
 }
 
-func testAccCheckIBMIsLbListenerDataSourceConfigClientAuth(vpcname, subnetname, zone, cidr, lbname, port, protocol, certCRN, caCRN, crlContent string) string {
-	return testAccCheckIBMISLBListenerConfig(vpcname, subnetname, zone, cidr, lbname, "8080", "http") + fmt.Sprintf(`
-	
-	resource "ibm_is_lb_listener" "testacc_lb_listener_mtls" {
-		lb       = ibm_is_lb.testacc_LB.id
-		port     = %s
-		protocol = "%s"
-		certificate_instance = "%s"
-		client_authentication {
-			certificate_authority = "%s"
-			certificate_revocation_list = "%s"
-		}
-	}
+func testAccCheckIBMIsLbListenerDataSourceConfigClientAuth(vpcname, subnetname, zone, cidr, lbname, port, protocol, certCRN, caCRN string) string {
+	return testAccCheckIBMISLBListenerClientAuthConfigUpdate(vpcname, subnetname, zone, cidr, lbname, port, protocol, certCRN, caCRN) + fmt.Sprintf(`
 
 	data "ibm_is_lb_listener" "is_lb_listener_mtls" {
 		lb = ibm_is_lb.testacc_LB.id
 		listener_id = ibm_is_lb_listener.testacc_lb_listener_mtls.listener_id
 	}
-	`, port, protocol, certCRN, caCRN, crlContent)
+	`)
 }

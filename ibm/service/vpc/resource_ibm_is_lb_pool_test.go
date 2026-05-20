@@ -1033,8 +1033,8 @@ func TestAccIBMISLBPool_mTLS(t *testing.T) {
 	healthType := "https"
 
 	// Example CRNs - replace with actual values from your test environment
-	clientCertCRN := "crn:v1:bluemix:public:secrets-manager:us-south:a/aa2432b1fa4d4ace891e9b80fc104e34:36fa422d-080d-4d83-8d2d-86851b4001df:secret:2e786aab-42fa-63ed-14f8-d66d552f4dd5"
-	serverCACRN := "crn:v1:bluemix:public:secrets-manager:us-south:a/aa2432b1fa4d4ace891e9b80fc104e34:36fa422d-080d-4d83-8d2d-86851b4001df:secret:3f897bbc-53gb-74fe-25g9-e77e663g5ee6"
+	clientCertCRN := "crn:v1:staging:public:secrets-manager:eu-gb:a/2d1bace7b46e4815a81e52c6ffeba5cf:2ca77a00-d2c6-41a2-93e4-6bfa23400b17:secret:7b8bea2d-124d-1264-98c9-678404ac947e"
+	serverCACRN := "crn:v1:staging:public:secrets-manager:eu-gb:a/2d1bace7b46e4815a81e52c6ffeba5cf:2ca77a00-d2c6-41a2-93e4-6bfa23400b17:secret:6133d2b7-44b0-f6d1-87ff-67ae4f8f8a05"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
@@ -1072,7 +1072,8 @@ func TestAccIBMISLBPool_mTLS(t *testing.T) {
 					testAccCheckIBMISLBPoolExists("ibm_is_lb_pool.testacc_lb_pool_mtls", lbPool),
 					resource.TestCheckResourceAttr("ibm_is_lb_pool.testacc_lb_pool_mtls", "protocol", protocol),
 					resource.TestCheckNoResourceAttr("ibm_is_lb_pool.testacc_lb_pool_mtls", "client_authentication.#"),
-					resource.TestCheckNoResourceAttr("ibm_is_lb_pool.testacc_lb_pool_mtls", "server_authentication.#"),
+					resource.TestCheckResourceAttr("ibm_is_lb_pool.testacc_lb_pool_mtls", "server_authentication.#", "1"),
+					resource.TestCheckResourceAttr("ibm_is_lb_pool.testacc_lb_pool_mtls", "server_authentication.0.verify_certificate", "false"),
 				),
 			},
 		},
