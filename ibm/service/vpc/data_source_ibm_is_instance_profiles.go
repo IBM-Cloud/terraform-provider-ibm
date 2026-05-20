@@ -758,6 +758,55 @@ func DataSourceIBMISInstanceProfiles() *schema.Resource {
 							Computed:    true,
 							Description: "The status of the instance profile.",
 						},
+						"supported_vcpu_count": {
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "The supported values for vcpu count for an instance with this profile.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"type": {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The type for this profile field.",
+									},
+									"values": {
+										Type:        schema.TypeList,
+										Computed:    true,
+										Description: "The permitted values for this profile field.",
+										Elem: &schema.Schema{
+											Type: schema.TypeInt,
+										},
+									},
+								},
+							},
+						},
+						"threads_per_core": {
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "The threads per core configuration for this profile.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"type": {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The type for this profile field.",
+									},
+									"default": {
+										Type:        schema.TypeInt,
+										Computed:    true,
+										Description: "The default threads per core for this profile.",
+									},
+									"values": {
+										Type:        schema.TypeList,
+										Computed:    true,
+										Description: "The permitted threads per core values for this profile.",
+										Elem: &schema.Schema{
+											Type: schema.TypeInt,
+										},
+									},
+								},
+							},
+						},
 						"vcpu_architecture": {
 							Type:     schema.TypeList,
 							Computed: true,
@@ -1112,6 +1161,12 @@ func instanceProfilesList(context context.Context, d *schema.ResourceData, meta 
 			portSpeedMap := dataSourceInstanceProfilePortSpeedToMap(*profile.PortSpeed.(*vpcv1.InstanceProfilePortSpeed))
 			portSpeedList = append(portSpeedList, portSpeedMap)
 			l["port_speed"] = portSpeedList
+		}
+		if profile.SupportedVcpuCount != nil {
+			l["supported_vcpu_count"] = dataSourceInstanceProfileFlattenSupportedVcpuCount(*profile.SupportedVcpuCount)
+		}
+		if profile.ThreadsPerCore != nil {
+			l["threads_per_core"] = dataSourceInstanceProfileFlattenThreadsPerCore(*profile.ThreadsPerCore)
 		}
 		if profile.VcpuArchitecture != nil {
 			vcpuArchitectureList := []map[string]interface{}{}

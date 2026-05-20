@@ -76,6 +76,12 @@ In addition to the argument reference list, you can access the following attribu
 	- `type` - (String) The type for this profile field.
 	- `values` - (List) The supported confidential compute modes.
 
+- `supported_vcpu_count` - (List) Nested `supported_vcpu_count` blocks have the following structure:
+
+  Nested scheme for `supported_vcpu_count`:
+  - `type` - (String) The type for this profile field.
+  - `values` - (List) The supported values for vcpu count for an instance with this profile.
+
 - `threads_per_core` - (List) Nested `threads_per_core` blocks have the following structure:
 
   Nested scheme for `threads_per_core`:

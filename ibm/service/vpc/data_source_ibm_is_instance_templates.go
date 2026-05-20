@@ -955,6 +955,11 @@ func DataSourceIBMISInstanceTemplates() *schema.Resource {
 								},
 							},
 						},
+						isInstanceThreadsPerCore: {
+							Type:        schema.TypeInt,
+							Computed:    true,
+							Description: "The number of threads per core",
+						},
 						// shared core changes
 						"vcpu": &schema.Schema{
 							Type:     schema.TypeList,
@@ -1389,6 +1394,9 @@ func dataSourceIBMISInstanceTemplatesRead(context context.Context, d *schema.Res
 					zone := zoneInf.(*vpcv1.ZoneIdentity)
 					template[isInstanceTemplateZone] = zone.Name
 				}
+				if instance.ThreadsPerCore != nil {
+					template[isInstanceThreadsPerCore] = *instance.ThreadsPerCore
+				}
 				// shared core changes
 				if instance.Vcpu != nil {
 					vcpuMap, err := DataSourceIBMIsInstanceTemplatesInstanceVcpuPrototypeToMap(instance.Vcpu)
@@ -1761,6 +1769,9 @@ func dataSourceIBMISInstanceTemplatesRead(context context.Context, d *schema.Res
 					template[isInstanceTemplateZone] = zone.Name
 				}
 
+				if instance.ThreadsPerCore != nil {
+					template[isInstanceThreadsPerCore] = *instance.ThreadsPerCore
+				}
 				// shared core changes
 				if instance.Vcpu != nil {
 					vcpuMap, err := DataSourceIBMIsInstanceTemplatesInstanceVcpuPrototypeToMap(instance.Vcpu)

@@ -557,3 +557,65 @@ data "ibm_is_instances" "ds_instances" {
   depends_on = [ ibm_is_instance.testacc_instance ]
 }`, vpcname, subnetname, acc.ISZoneName, acc.ISCIDR, sshname, publicKey, instanceName, acc.IsImage, acc.InstanceProfileName, acc.ISZoneName)
 }
+
+func TestAccIBMISInstancesDataSource_ThreadsPerCore(t *testing.T) {
+	vpcname := fmt.Sprintf("tfins-vpc-%d", acctest.RandIntRange(10, 100))
+	subnetname := fmt.Sprintf("tfins-subnet-%d", acctest.RandIntRange(10, 100))
+	sshname := fmt.Sprintf("tfins-ssh-%d", acctest.RandIntRange(10, 100))
+	instanceName := fmt.Sprintf("tfins-name-%d", acctest.RandIntRange(10, 100))
+	resName := "data.ibm_is_instances.ds_instances"
+	publicKey := strings.TrimSpace(`
+ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVERRN7/9484SOBJ3HSKxxNG5JN8owAjy5f9yYwcUg+JaUVuytn5Pv3aeYROHGGg+5G346xaq3DAwX6Y5ykr2fvjObgncQBnuU5KHWCECO/4h8uWuwh/kfniXPVjFToc+gnkqA+3RKpAecZhFXwfalQ9mMuYGFxn+fwn8cYEApsJbsEmb0iJwPiZ5hjFC8wREuiTlhPHDgkBLOiycd20op2nXzDbHfCHInquEe/gYxEitALONxm0swBOwJZwlTDOB7C6y2dzlrtxr1L59m7pCkWI4EtTRLvleehBoj3u7jB4usR
+`)
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { acc.TestAccPreCheck(t) },
+		Providers: acc.TestAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMISInstancesDataSourceThreadsPerCoreConfig(vpcname, subnetname, sshname, publicKey, instanceName, 1),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet(resName, "instances.0.name"),
+					resource.TestCheckResourceAttrSet(resName, "instances.0.threads_per_core"),
+				),
+			},
+		},
+	})
+}
+
+func testAccCheckIBMISInstancesDataSourceThreadsPerCoreConfig(vpcname, subnetname, sshname, publicKey, instanceName string, threadsPerCore int) string {
+	return fmt.Sprintf(`
+resource "ibm_is_vpc" "testacc_vpc" {
+  name = "%s"
+}
+
+resource "ibm_is_subnet" "testacc_subnet" {
+  name            = "%s"
+  vpc             = ibm_is_vpc.testacc_vpc.id
+  zone            = "%s"
+  ipv4_cidr_block = "%s"
+}
+
+resource "ibm_is_ssh_key" "testacc_sshkey" {
+  name       = "%s"
+  public_key = "%s"
+}
+
+resource "ibm_is_instance" "testacc_instance" {
+  name    = "%s"
+  image   = "%s"
+  profile = "%s"
+  threads_per_core = %d
+  primary_network_interface {
+    subnet     = ibm_is_subnet.testacc_subnet.id
+  }
+  vpc  = ibm_is_vpc.testacc_vpc.id
+  zone = "%s"
+  keys = [ibm_is_ssh_key.testacc_sshkey.id]
+}
+
+data "ibm_is_instances" "ds_instances" {
+  vpc_name = ibm_is_vpc.testacc_vpc.name
+  depends_on = [ ibm_is_instance.testacc_instance ]
+}`, vpcname, subnetname, acc.ISZoneName, acc.ISCIDR, sshname, publicKey, instanceName, acc.IsImage, acc.InstanceProfileName, threadsPerCore, acc.ISZoneName)
+}
