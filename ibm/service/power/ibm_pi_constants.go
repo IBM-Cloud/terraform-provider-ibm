@@ -155,6 +155,7 @@ const (
 	Arg_SnapShotName                         = "pi_snap_shot_name"
 	Arg_SnapshotName                         = "pi_snapshot_name"
 	Arg_SoftwareTier                         = "pi_software_tier"
+	Arg_SourceChecksum                       = "pi_source_checksum"
 	Arg_SourceCRN                            = "pi_source_crn"
 	Arg_SourcePort                           = "pi_source_port"
 	Arg_SourcePorts                          = "pi_source_ports"
