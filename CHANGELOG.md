@@ -1,3 +1,12 @@
+# 2.2.0 (May 20, 2026)
+
+## Bug Fixes
+
+### VPC Infrastructure
+* Support VSI downsize across families along with volume bandwidth ([6794](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6794))
+
+
+
 # 2.2.0-beta1 (May 18, 2026)
 
 ## Bug Fixes
