@@ -205,6 +205,30 @@ variable "resourceProfile" {
 
 }
 
+variable "setDefaultStorageClassForVirtualization" {
+
+    type = bool
+    default = false
+    description = "If enabled, RBD virtualization StorageClass will be marked as the default for KubeVirt VM disks (persistent volumes) upon installation."
+
+}
+
+variable "enableAutomaticCapacityScaling" {
+
+    type = bool
+    default = false
+    description = "To automatically add additional raw capacity equivalent to the configured deployment size whenever used capacity reaches 70%."
+
+}
+
+variable "clusterExpansionLimit" {
+
+    type = string
+    default = "12Ti"
+    description = "The maximum limit to which the cluster can expand in the cloud. Automatic capacity scaling is suspended if exceeded."
+
+}
+
 variable "enableAutomaticBackup" {
 
     type = bool
