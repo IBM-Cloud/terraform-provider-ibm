@@ -960,8 +960,12 @@ Review the argument references that you can specify for your resource.
 
   **NOTE:**
   When the `profile` is changed, the VSI is restarted. The new profile must:
-    1. Have matching instance disk support. Any disks associated with the current profile will be deleted, and any disks associated with the requested profile will be created.        
+    1. Have matching instance disk support. Any disks associated with the current profile will be deleted, and any disks associated with the requested profile will be created.
     2. Be compatible with any placement_target(`dedicated_host`, `dedicated_host_group`, `placement_group`) constraints. For example, if the instance is placed on a dedicated host, the requested profile family must be the same as the dedicated host family.
+    3. Have the same `vcpu.architecture` (e.g., amd64 or s390x).
+    4. Support the current number of network attachments or network interfaces.
+    5. Have the `volume_bandwidth_qos_mode` listed in its `volume_bandwidth_qos_modes`.
+    6. **When downsizing to a profile with lower bandwidth capacity, you must also adjust `total_volume_bandwidth` to fit within the new profile's limits.** The instance's storage bandwidth must be at least 500 Mbps less than the target profile's total bandwidth. Both `profile` and `total_volume_bandwidth` can be updated in the same Terraform apply operation.
 
 - `reservation_affinity` - (Optional, List) The reservation affinity for the instance
   Nested scheme for `reservation_affinity`:
