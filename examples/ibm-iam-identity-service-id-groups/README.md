@@ -40,6 +40,7 @@ resource "ibm_iam_serviceid_group" "iam_serviceid_group_instance" {
 | account_id | ID of the account the service ID group belongs to. | `string` | true |
 | name | Name of the service ID group. Unique in the account. | `string` | true |
 | description | Description of the service ID group. | `string` | false |
+| entity_tag | Version of the service ID group details object. You need to specify this value when updating the service ID group to avoid stale updates. | `string` | false |
 
 #### Outputs
 

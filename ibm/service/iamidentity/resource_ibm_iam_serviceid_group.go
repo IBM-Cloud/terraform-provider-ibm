@@ -48,6 +48,7 @@ func ResourceIBMIamServiceidGroup() *schema.Resource {
 			"entity_tag": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
+				Optional:    true,
 				Description: "Version of the service ID group details object. You need to specify this value when updating the service ID group to avoid stale updates.",
 			},
 			"crn": &schema.Schema{
@@ -180,6 +181,7 @@ func resourceIBMIamServiceidGroupUpdate(context context.Context, d *schema.Resou
 	updateServiceIDGroupOptions := &iamidentityv1.UpdateServiceIDGroupOptions{}
 
 	updateServiceIDGroupOptions.SetID(d.Id())
+	updateServiceIDGroupOptions.SetIfMatch(d.Get("entity_tag").(string))
 	updateServiceIDGroupOptions.SetName(d.Get("name").(string))
 	if _, ok := d.GetOk("description"); ok {
 		updateServiceIDGroupOptions.SetDescription(d.Get("description").(string))

@@ -26,6 +26,7 @@ You can specify the following arguments for this resource.
 * `account_id` - (Required, String) ID of the account the service ID group belongs to.
 * `description` - (Optional, String) Description of the service ID group.
 * `name` - (Required, String) Name of the service ID group. Unique in the account.
+* `entity_tag` - (Optional, String) Version of the service ID group details object. You need to specify this value when updating the service ID group to avoid stale updates.
 
 ## Attribute Reference
 

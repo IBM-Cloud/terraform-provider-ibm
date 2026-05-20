@@ -11,14 +11,14 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
-	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 )
 
 func TestAccIBMIamServiceidGroupDataSourceBasic(t *testing.T) {
-	serviceIDGroupAccountID := fmt.Sprintf("tf_account_id_%d", acctest.RandIntRange(10, 100))
+	serviceIDGroupAccountID := acc.IAMAccountId
 	serviceIDGroupName := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
@@ -41,7 +41,7 @@ func TestAccIBMIamServiceidGroupDataSourceBasic(t *testing.T) {
 }
 
 func TestAccIBMIamServiceidGroupDataSourceAllArgs(t *testing.T) {
-	serviceIDGroupAccountID := fmt.Sprintf("tf_account_id_%d", acctest.RandIntRange(10, 100))
+	serviceIDGroupAccountID := acc.IAMAccountId
 	serviceIDGroupName := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 	serviceIDGroupDescription := fmt.Sprintf("tf_description_%d", acctest.RandIntRange(10, 100))
 
@@ -76,7 +76,7 @@ func testAccCheckIBMIamServiceidGroupDataSourceConfigBasic(serviceIDGroupAccount
 		}
 
 		data "ibm_iam_serviceid_group" "iam_serviceid_group_instance" {
-			iam_serviceid_group_id = "iam_serviceid_group_id"
+			iam_serviceid_group_id = ibm_iam_serviceid_group.iam_serviceid_group_instance.id
 		}
 	`, serviceIDGroupAccountID, serviceIDGroupName)
 }
@@ -90,7 +90,7 @@ func testAccCheckIBMIamServiceidGroupDataSourceConfig(serviceIDGroupAccountID st
 		}
 
 		data "ibm_iam_serviceid_group" "iam_serviceid_group_instance" {
-			iam_serviceid_group_id = "iam_serviceid_group_id"
+			iam_serviceid_group_id = ibm_iam_serviceid_group.iam_serviceid_group_instance.id
 		}
 	`, serviceIDGroupAccountID, serviceIDGroupName, serviceIDGroupDescription)
 }

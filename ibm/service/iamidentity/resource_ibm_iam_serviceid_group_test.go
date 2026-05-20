@@ -7,20 +7,19 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
-	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
-	"github.com/hashicorp/terraform-plugin-testing/terraform"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 
+	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM/platform-services-go-sdk/iamidentityv1"
-	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 )
 
 func TestAccIBMIamServiceidGroupBasic(t *testing.T) {
 	var conf iamidentityv1.ServiceIDGroup
-	accountID := fmt.Sprintf("tf_account_id_%d", acctest.RandIntRange(10, 100))
+	accountID := acc.IAMAccountId
 	name := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
-	accountIDUpdate := fmt.Sprintf("tf_account_id_%d", acctest.RandIntRange(10, 100))
 	nameUpdate := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
@@ -37,9 +36,9 @@ func TestAccIBMIamServiceidGroupBasic(t *testing.T) {
 				),
 			},
 			resource.TestStep{
-				Config: testAccCheckIBMIamServiceidGroupConfigBasic(accountIDUpdate, nameUpdate),
+				Config: testAccCheckIBMIamServiceidGroupConfigBasic(accountID, nameUpdate),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("ibm_iam_serviceid_group.iam_serviceid_group_instance", "account_id", accountIDUpdate),
+					resource.TestCheckResourceAttr("ibm_iam_serviceid_group.iam_serviceid_group_instance", "account_id", accountID),
 					resource.TestCheckResourceAttr("ibm_iam_serviceid_group.iam_serviceid_group_instance", "name", nameUpdate),
 				),
 			},
@@ -49,10 +48,9 @@ func TestAccIBMIamServiceidGroupBasic(t *testing.T) {
 
 func TestAccIBMIamServiceidGroupAllArgs(t *testing.T) {
 	var conf iamidentityv1.ServiceIDGroup
-	accountID := fmt.Sprintf("tf_account_id_%d", acctest.RandIntRange(10, 100))
+	accountID := acc.IAMAccountId
 	name := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 	description := fmt.Sprintf("tf_description_%d", acctest.RandIntRange(10, 100))
-	accountIDUpdate := fmt.Sprintf("tf_account_id_%d", acctest.RandIntRange(10, 100))
 	nameUpdate := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 	descriptionUpdate := fmt.Sprintf("tf_description_%d", acctest.RandIntRange(10, 100))
 
@@ -71,9 +69,9 @@ func TestAccIBMIamServiceidGroupAllArgs(t *testing.T) {
 				),
 			},
 			resource.TestStep{
-				Config: testAccCheckIBMIamServiceidGroupConfig(accountIDUpdate, nameUpdate, descriptionUpdate),
+				Config: testAccCheckIBMIamServiceidGroupConfig(accountID, nameUpdate, descriptionUpdate),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("ibm_iam_serviceid_group.iam_serviceid_group_instance", "account_id", accountIDUpdate),
+					resource.TestCheckResourceAttr("ibm_iam_serviceid_group.iam_serviceid_group_instance", "account_id", accountID),
 					resource.TestCheckResourceAttr("ibm_iam_serviceid_group.iam_serviceid_group_instance", "name", nameUpdate),
 					resource.TestCheckResourceAttr("ibm_iam_serviceid_group.iam_serviceid_group_instance", "description", descriptionUpdate),
 				),
@@ -115,7 +113,7 @@ func testAccCheckIBMIamServiceidGroupExists(n string, obj iamidentityv1.ServiceI
 			return fmt.Errorf("Not found: %s", n)
 		}
 
-		iamIdentityClient, err := acc.TestAccProvider.Meta().(conns.ClientSession).IamIdentityV1()
+		iamIdentityClient, err := acc.TestAccProvider.Meta().(conns.ClientSession).IAMIdentityV1API()
 		if err != nil {
 			return err
 		}
@@ -135,7 +133,7 @@ func testAccCheckIBMIamServiceidGroupExists(n string, obj iamidentityv1.ServiceI
 }
 
 func testAccCheckIBMIamServiceidGroupDestroy(s *terraform.State) error {
-	iamIdentityClient, err := acc.TestAccProvider.Meta().(conns.ClientSession).IamIdentityV1()
+	iamIdentityClient, err := acc.TestAccProvider.Meta().(conns.ClientSession).IAMIdentityV1API()
 	if err != nil {
 		return err
 	}
