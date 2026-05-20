@@ -11,10 +11,11 @@ resource "ibm_iam_trusted_profile" "iam_trusted_profile_instance" {
 // Create iam_trusted_profile data source
 data "ibm_iam_trusted_profile" "iam_trusted_profile_instance_data" {
   profile_id = ibm_iam_trusted_profile.iam_trusted_profile_instance.id
+  include_activity = false
 }
 
 // Create iam_trusted_profiles data source
 data "ibm_iam_trusted_profiles" "iam_trusted_profiles_list_data" {
   account_id = var.iam_trusted_profiles_account_id
-  name = "name"
+  include_history = false
 }

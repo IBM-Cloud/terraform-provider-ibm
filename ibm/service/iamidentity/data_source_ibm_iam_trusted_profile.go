@@ -196,6 +196,10 @@ func dataSourceIBMIamTrustedProfileRead(context context.Context, d *schema.Resou
 
 	getProfileOptions.SetProfileID(d.Get("profile_id").(string))
 
+	if _, ok := d.GetOk("include_activity"); ok {
+		getProfileOptions.SetIncludeActivity(d.Get("include_activity").(bool))
+	}
+
 	trustedProfile, _, err := iamIdentityClient.GetProfileWithContext(context, getProfileOptions)
 	if err != nil {
 		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetProfileWithContext failed: %s", err.Error()), "(Data) ibm_iam_trusted_profile", "read")
