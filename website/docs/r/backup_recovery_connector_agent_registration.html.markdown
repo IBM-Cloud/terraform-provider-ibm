@@ -8,12 +8,17 @@ subcategory: "IBM Backup Recovery API"
 
 # ibm_backup_recovery_connector_agent_registration
 
-Create, update, and delete Connector agent registration requests with this resource.
+Create Connector agent registration requests with this resource.
+
+~> **NOTE:** This resource must be executed on the source VSI (Virtual Server Instance) where the connector agent is installed, as it calls localhost APIs. The user needs to copy the Terraform provider binary to the VSI and run Terraform from there.
 
 ## Example Usage
 
 ```hcl
 resource "ibm_backup_recovery_connector_agent_registration" "backup_recovery_connector_agent_registration_instance" {
+  registration_token = "eyJ"
+	connection_name = "terra-conn-register-Connector-1"
+	join_existing_connection = false
 }
 ```
 
@@ -36,9 +41,4 @@ After your resource is created, you can read values from the listed arguments an
 
 ## Import
 
-You can import the `ibm_backup_recovery_connector_agent_registration` resource by using `id`. id.
-
-# Syntax
-<pre>
-$ terraform import ibm_backup_recovery_connector_agent_registration.backup_recovery_connector_agent_registration &lt;id&gt;
-</pre>
+Not supported
