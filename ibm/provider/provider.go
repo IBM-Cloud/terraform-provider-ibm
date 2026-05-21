@@ -464,6 +464,8 @@ func Provider() *schema.Provider {
 			"ibm_iam_role_template_version":                 iampolicy.DataSourceIBMIAMRoleTemplateVersion(),
 			"ibm_iam_role_assignments":                      iampolicy.DataSourceIBMIAMRoleAssignments(),
 			"ibm_iam_role_assignment":                       iampolicy.DataSourceIBMIAMRoleAssignment(),
+			"ibm_iam_identity_preference":                   iamidentity.DataSourceIBMIamIdentityPreference(),
+			"ibm_iam_identity_preferences":                  iamidentity.DataSourceIBMIamIdentityPreferences(),
 
 			// backup as Service
 			"ibm_is_backup_policy":       vpc.DataSourceIBMIsBackupPolicy(),
@@ -1388,6 +1390,7 @@ func Provider() *schema.Provider {
 			"ibm_iam_role_template":                         iampolicy.ResourceIBMIAMRoleTemplate(),
 			"ibm_iam_role_template_version":                 iampolicy.ResourceIBMIAMRoleTemplateVersion(),
 			"ibm_iam_role_assignment":                       iampolicy.ResourceIBMIAMRoleAssignment(),
+			"ibm_iam_identity_preference":                   iamidentity.ResourceIBMIamIdentityPreference(),
 
 			"ibm_is_backup_policy":      vpc.ResourceIBMIsBackupPolicy(),
 			"ibm_is_backup_policy_plan": vpc.ResourceIBMIsBackupPolicyPlan(),
