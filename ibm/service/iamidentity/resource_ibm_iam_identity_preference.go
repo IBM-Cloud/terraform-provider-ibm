@@ -1,4 +1,4 @@
-// Copyright IBM Corp. 2025 All Rights Reserved.
+// Copyright IBM Corp. 2026 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 /*
@@ -23,6 +23,7 @@ import (
 
 func ResourceIBMIamIdentityPreference() *schema.Resource {
 	return &schema.Resource{
+		CreateContext: resourceIBMIamIdentityPreferenceCreate,
 		ReadContext:   resourceIBMIamIdentityPreferenceRead,
 		UpdateContext: resourceIBMIamIdentityPreferenceUpdate,
 		DeleteContext: resourceIBMIamIdentityPreferenceDelete,
@@ -37,8 +38,7 @@ func ResourceIBMIamIdentityPreference() *schema.Resource {
 			},
 			"iam_id": &schema.Schema{
 				Type:        schema.TypeString,
-				Required:    true,
-				ForceNew:    true,
+				Computed:    true,
 				Description: "IAM id to update the preference for.",
 			},
 			"service": &schema.Schema{
@@ -73,6 +73,12 @@ func ResourceIBMIamIdentityPreference() *schema.Resource {
 	}
 }
 
+func resourceIBMIamIdentityPreferenceCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	return diag.Errorf(
+		"creation is not supported for ibm_iam_identity_preference; import an existing resource with an ID in the format <account_id>/<iam_id>/<service>/<preference_id>",
+	)
+}
+
 func resourceIBMIamIdentityPreferenceRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	iamIdentityClient, err := meta.(conns.ClientSession).IAMIdentityV1API()
 	if err != nil {
@@ -92,7 +98,6 @@ func resourceIBMIamIdentityPreferenceRead(context context.Context, d *schema.Res
 	getPreferenceOnScopeAccountOptions.SetIamID(parts[1])
 	getPreferenceOnScopeAccountOptions.SetService(parts[2])
 	getPreferenceOnScopeAccountOptions.SetPreferenceID(parts[3])
-	getPreferenceOnScopeAccountOptions.SetPreferenceID(parts[4])
 
 	identityPreferenceResponse, response, err := iamIdentityClient.GetPreferencesOnScopeAccountWithContext(context, getPreferenceOnScopeAccountOptions)
 	if err != nil {
@@ -108,6 +113,11 @@ func resourceIBMIamIdentityPreferenceRead(context context.Context, d *schema.Res
 	if err = d.Set("account_id", identityPreferenceResponse.AccountID); err != nil {
 		err = fmt.Errorf("Error setting account_id: %s", err)
 		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_identity_preference", "read", "set-account_id").GetDiag()
+	}
+	// iam_id is not part of the response, so extract the value from the ID parts
+	if err = d.Set("iam_id", parts[1]); err != nil {
+		err = fmt.Errorf("Error setting iam_id: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_identity_preference", "read", "set-iam_id").GetDiag()
 	}
 	if err = d.Set("service", identityPreferenceResponse.Service); err != nil {
 		err = fmt.Errorf("Error setting service: %s", err)
@@ -158,11 +168,6 @@ func resourceIBMIamIdentityPreferenceUpdate(context context.Context, d *schema.R
 	updatePreferenceOnScopeAccountOptions.SetIamID(parts[1])
 	updatePreferenceOnScopeAccountOptions.SetService(parts[2])
 	updatePreferenceOnScopeAccountOptions.SetPreferenceID(parts[3])
-	updatePreferenceOnScopeAccountOptions.SetPreferenceID(parts[4])
-	updatePreferenceOnScopeAccountOptions.SetAccountID(d.Get("account_id").(string))
-	updatePreferenceOnScopeAccountOptions.SetIamID(d.Get("iam_id").(string))
-	updatePreferenceOnScopeAccountOptions.SetService(d.Get("service").(string))
-	updatePreferenceOnScopeAccountOptions.SetPreferenceID(d.Get("preference_id").(string))
 	updatePreferenceOnScopeAccountOptions.SetValueString(d.Get("value_string").(string))
 	if _, ok := d.GetOk("value_list_of_strings"); ok {
 		var valueListOfStrings []string
@@ -202,7 +207,6 @@ func resourceIBMIamIdentityPreferenceDelete(context context.Context, d *schema.R
 	deletePreferenceOnScopeAccountOptions.SetIamID(parts[1])
 	deletePreferenceOnScopeAccountOptions.SetService(parts[2])
 	deletePreferenceOnScopeAccountOptions.SetPreferenceID(parts[3])
-	deletePreferenceOnScopeAccountOptions.SetPreferenceID(parts[4])
 
 	_, err = iamIdentityClient.DeletePreferencesOnScopeAccount(deletePreferenceOnScopeAccountOptions)
 	if err != nil {
