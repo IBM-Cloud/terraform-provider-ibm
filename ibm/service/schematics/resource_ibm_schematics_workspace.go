@@ -1777,8 +1777,23 @@ func resourceIBMSchematicsWorkspaceUpdate(context context.Context, d *schema.Res
 	hasTemplateData := false
 
 	if d.HasChange("template_env_settings") {
-		templateSourceDataRequestMap["env_values"] = d.Get("template_env_settings").([]interface{})
-		hasTemplateData = true
+		// templateSourceDataRequestMap["env_values"] = d.Get("template_env_settings").([]interface{})
+
+		var templateDataEnv []schematicsv1.TemplateSourceDataRequest
+		// Convert []interface{} to []map[string]interface{} for EnvValues
+		envValues := []map[string]interface{}{}
+		for _, envValuesItem := range d.Get("template_env_settings").([]interface{}) {
+			envValues = append(envValues, envValuesItem.(map[string]interface{}))
+		}
+		templateType := d.Get("template_type").(string)
+		templateDataEnv1 := schematicsv1.TemplateSourceDataRequest{
+			EnvValues: envValues,
+			Type:      &templateType,
+		}
+		templateDataEnv = append(templateDataEnv, templateDataEnv1)
+		updateWorkspaceOptions.SetTemplateData(templateDataEnv)
+		metadataChange = true
+		hasChange = true
 	}
 	if d.HasChange("template_git_folder") {
 		templateSourceDataRequestMap["folder"] = d.Get("template_git_folder").(string)
@@ -1899,6 +1914,7 @@ func resourceIBMSchematicsWorkspaceUpdate(context context.Context, d *schema.Res
 		changed := false
 
 		if !changed && repoChange {
+
 			changed = true
 			_, response, err := schematicsClient.ReplaceWorkspaceWithContext(context, replaceWorkspaceOptions)
 			if err != nil {
