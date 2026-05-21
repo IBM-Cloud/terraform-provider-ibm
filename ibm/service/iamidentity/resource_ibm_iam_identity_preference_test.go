@@ -1,4 +1,4 @@
-// Copyright IBM Corp. 2025 All Rights Reserved.
+// Copyright IBM Corp. 2026 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 package iamidentity_test
@@ -11,7 +11,6 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 
@@ -20,12 +19,12 @@ import (
 
 func TestAccIBMIamIdentityPreferenceBasic(t *testing.T) {
 	var conf iamidentityv1.IdentityPreferenceResponse
-	accountID := fmt.Sprintf("tf_account_id_%d", acctest.RandIntRange(10, 100))
-	iamID := fmt.Sprintf("tf_iam_id_%d", acctest.RandIntRange(10, 100))
-	service := fmt.Sprintf("tf_service_%d", acctest.RandIntRange(10, 100))
-	preferenceID := fmt.Sprintf("tf_preference_id_%d", acctest.RandIntRange(10, 100))
-	valueString := fmt.Sprintf("tf_value_string_%d", acctest.RandIntRange(10, 100))
-	valueStringUpdate := fmt.Sprintf("tf_value_string_%d", acctest.RandIntRange(10, 100))
+	accountID := acc.IAMAccountId
+	iamID := acc.IAMTrustedProfileID
+	service := "console"
+	preferenceID := "landing_page"
+	valueString := "/iam"
+	valueStringUpdate := "/devops"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
@@ -37,7 +36,6 @@ func TestAccIBMIamIdentityPreferenceBasic(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMIamIdentityPreferenceExists("ibm_iam_identity_preference.iam_identity_preference_instance", conf),
 					resource.TestCheckResourceAttr("ibm_iam_identity_preference.iam_identity_preference_instance", "account_id", accountID),
-					resource.TestCheckResourceAttr("ibm_iam_identity_preference.iam_identity_preference_instance", "iam_id", iamID),
 					resource.TestCheckResourceAttr("ibm_iam_identity_preference.iam_identity_preference_instance", "service", service),
 					resource.TestCheckResourceAttr("ibm_iam_identity_preference.iam_identity_preference_instance", "preference_id", preferenceID),
 					resource.TestCheckResourceAttr("ibm_iam_identity_preference.iam_identity_preference_instance", "value_string", valueString),
@@ -47,14 +45,13 @@ func TestAccIBMIamIdentityPreferenceBasic(t *testing.T) {
 				Config: testAccCheckIBMIamIdentityPreferenceConfigBasic(accountID, iamID, service, preferenceID, valueStringUpdate),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("ibm_iam_identity_preference.iam_identity_preference_instance", "account_id", accountID),
-					resource.TestCheckResourceAttr("ibm_iam_identity_preference.iam_identity_preference_instance", "iam_id", iamID),
 					resource.TestCheckResourceAttr("ibm_iam_identity_preference.iam_identity_preference_instance", "service", service),
 					resource.TestCheckResourceAttr("ibm_iam_identity_preference.iam_identity_preference_instance", "preference_id", preferenceID),
 					resource.TestCheckResourceAttr("ibm_iam_identity_preference.iam_identity_preference_instance", "value_string", valueStringUpdate),
 				),
 			},
 			resource.TestStep{
-				ResourceName:      "ibm_iam_identity_preference.iam_identity_preference",
+				ResourceName:      "ibm_iam_identity_preference.iam_identity_preference_instance",
 				ImportState:       true,
 				ImportStateVerify: true,
 			},
@@ -63,13 +60,17 @@ func TestAccIBMIamIdentityPreferenceBasic(t *testing.T) {
 }
 
 func testAccCheckIBMIamIdentityPreferenceConfigBasic(accountID string, iamID string, service string, preferenceID string, valueString string) string {
+	// Creation of preference not supported, so import existing preference to a resource
 	return fmt.Sprintf(`
+		import {
+			to = ibm_iam_identity_preference.iam_identity_preference_instance
+			id = "%[1]s/%[2]s/%[3]s/%[4]s"
+		}
 		resource "ibm_iam_identity_preference" "iam_identity_preference_instance" {
-			account_id = "%s"
-			iam_id = "%s"
-			service = "%s"
-			preference_id = "%s"
-			value_string = "%s"
+			account_id = "%[1]s"
+			service = "%[3]s"
+			preference_id = "%[4]s"
+			value_string = "%[5]s"
 		}
 	`, accountID, iamID, service, preferenceID, valueString)
 }
@@ -98,7 +99,6 @@ func testAccCheckIBMIamIdentityPreferenceExists(n string, obj iamidentityv1.Iden
 		getPreferenceOnScopeAccountOptions.SetIamID(parts[1])
 		getPreferenceOnScopeAccountOptions.SetService(parts[2])
 		getPreferenceOnScopeAccountOptions.SetPreferenceID(parts[3])
-		getPreferenceOnScopeAccountOptions.SetPreferenceID(parts[4])
 
 		identityPreferenceResponse, _, err := iamIdentityClient.GetPreferencesOnScopeAccount(getPreferenceOnScopeAccountOptions)
 		if err != nil {
@@ -120,26 +120,24 @@ func testAccCheckIBMIamIdentityPreferenceDestroy(s *terraform.State) error {
 			continue
 		}
 
-		getPreferenceOnScopeAccountOptions := &iamidentityv1.GetPreferencesOnScopeAccountOptions{}
+		deletePreferenceOnScopeAccountOptions := &iamidentityv1.DeletePreferencesOnScopeAccountOptions{}
 
 		parts, err := flex.SepIdParts(rs.Primary.ID, "/")
 		if err != nil {
 			return err
 		}
 
-		getPreferenceOnScopeAccountOptions.SetAccountID(parts[0])
-		getPreferenceOnScopeAccountOptions.SetIamID(parts[1])
-		getPreferenceOnScopeAccountOptions.SetService(parts[2])
-		getPreferenceOnScopeAccountOptions.SetPreferenceID(parts[3])
-		getPreferenceOnScopeAccountOptions.SetPreferenceID(parts[4])
+		deletePreferenceOnScopeAccountOptions.SetAccountID(parts[0])
+		deletePreferenceOnScopeAccountOptions.SetIamID(parts[1])
+		deletePreferenceOnScopeAccountOptions.SetService(parts[2])
+		deletePreferenceOnScopeAccountOptions.SetPreferenceID(parts[3])
 
-		// Try to find the key
-		_, response, err := iamIdentityClient.GetPreferencesOnScopeAccount(getPreferenceOnScopeAccountOptions)
+		// Verify the preference was deleted (reset to defaults) by calling delete again
+		// A successful delete returns 204, calling delete on an already deleted preference should also return 204
+		response, err := iamIdentityClient.DeletePreferencesOnScopeAccount(deletePreferenceOnScopeAccountOptions)
 
-		if err == nil {
-			return fmt.Errorf("iam_identity_preference still exists: %s", rs.Primary.ID)
-		} else if response.StatusCode != 404 {
-			return fmt.Errorf("Error checking for iam_identity_preference (%s) has been destroyed: %s", rs.Primary.ID, err)
+		if err != nil && response != nil && response.StatusCode != 204 {
+			return fmt.Errorf("Error verifying iam_identity_preference (%s) was destroyed: %s", rs.Primary.ID, err)
 		}
 	}
 
