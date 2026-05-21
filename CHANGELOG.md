@@ -1,3 +1,12 @@
+# 2.2.1 (May 21, 2026)
+
+## Enhancements
+
+### Schematics
+* secure values shouldnt be set in read ([6792](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6792))
+* Addressed issue with sch workspace resource update ([6804](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6804))
+
+
 # 2.2.0 (May 20, 2026)
 
 ## Bug Fixes
