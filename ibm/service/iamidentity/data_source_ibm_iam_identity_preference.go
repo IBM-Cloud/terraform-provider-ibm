@@ -2,7 +2,7 @@
 // Licensed under the Mozilla Public License v2.0
 
 /*
- * IBM OpenAPI Terraform Generator Version: 3.106.0-09823488-20250707-071701
+ * IBM OpenAPI Terraform Generator Version: 3.113.1-d76630af-20260320-135953
  */
 
 package iamidentity
@@ -11,6 +11,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"os"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
@@ -58,7 +59,7 @@ func DataSourceIBMIamIdentityPreference() *schema.Resource {
 			"value_list_of_strings": &schema.Schema{
 				Type:        schema.TypeList,
 				Computed:    true,
-				Description: "List of value of the preference, only one value property is set, either 'value_string' or 'value_list_of_strings' is present.",
+				Description: "List of values of the preference, only one value property is set, either 'value_string' or 'value_list_of_strings' is present.",
 				Elem: &schema.Schema{
 					Type: schema.TypeString,
 				},
@@ -75,34 +76,36 @@ func dataSourceIBMIamIdentityPreferenceRead(context context.Context, d *schema.R
 		return tfErr.GetDiag()
 	}
 
-	getPreferenceOnScopeAccountOptions := &iamidentityv1.GetPreferencesOnScopeAccountOptions{}
+	getPreferencesOnScopeAccountOptions := &iamidentityv1.GetPreferencesOnScopeAccountOptions{}
 
-	getPreferenceOnScopeAccountOptions.SetAccountID(d.Get("account_id").(string))
-	getPreferenceOnScopeAccountOptions.SetIamID(d.Get("iam_id").(string))
-	getPreferenceOnScopeAccountOptions.SetService(d.Get("service").(string))
-	getPreferenceOnScopeAccountOptions.SetPreferenceID(d.Get("preference_id").(string))
+	getPreferencesOnScopeAccountOptions.SetAccountID(d.Get("account_id").(string))
+	getPreferencesOnScopeAccountOptions.SetIamID(d.Get("iam_id").(string))
+	getPreferencesOnScopeAccountOptions.SetService(d.Get("service").(string))
+	getPreferencesOnScopeAccountOptions.SetPreferenceID(d.Get("preference_id").(string))
 
-	identityPreferenceResponse, _, err := iamIdentityClient.GetPreferencesOnScopeAccountWithContext(context, getPreferenceOnScopeAccountOptions)
+	identityPreferenceResponse, _, err := iamIdentityClient.GetPreferencesOnScopeAccountWithContext(context, getPreferencesOnScopeAccountOptions)
 	if err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetPreferenceOnScopeAccountWithContext failed: %s", err.Error()), "(Data) ibm_iam_identity_preference", "read")
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetPreferencesOnScopeAccountWithContext failed: %s", err.Error()), "(Data) ibm_iam_identity_preference", "read")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
 
-	d.SetId(fmt.Sprintf("%s/%s/%s/%s", *getPreferenceOnScopeAccountOptions.AccountID, *getPreferenceOnScopeAccountOptions.IamID, *getPreferenceOnScopeAccountOptions.Service, *getPreferenceOnScopeAccountOptions.PreferenceID))
+	d.SetId(fmt.Sprintf("%s/%s/%s/%s", *getPreferencesOnScopeAccountOptions.AccountID, *getPreferencesOnScopeAccountOptions.IamID, *getPreferencesOnScopeAccountOptions.Service, *getPreferencesOnScopeAccountOptions.PreferenceID))
 
 	if !core.IsNil(identityPreferenceResponse.Scope) {
 		if err = d.Set("scope", identityPreferenceResponse.Scope); err != nil {
 			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting scope: %s", err), "(Data) ibm_iam_identity_preference", "read", "set-scope").GetDiag()
 		}
 	}
-
+	log.Printf("[INFO]!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!identityPreferenceResponse.ValueListOfStrings: %v", identityPreferenceResponse.ValueListOfStrings)
+	valueStringDebug := ""
 	if !core.IsNil(identityPreferenceResponse.ValueString) {
+		valueStringDebug = *identityPreferenceResponse.ValueString
 		if err = d.Set("value_string", identityPreferenceResponse.ValueString); err != nil {
 			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting value_string: %s", err), "(Data) ibm_iam_identity_preference", "read", "set-value_string").GetDiag()
 		}
 	}
-
+	fmt.Fprintf(os.Stderr, "[INFO]!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! Full response - ValueString: '%s', ValueListOfStrings: %v (nil: %v, len: %d)\n", valueStringDebug, identityPreferenceResponse.ValueListOfStrings, core.IsNil(identityPreferenceResponse.ValueListOfStrings), len(identityPreferenceResponse.ValueListOfStrings))
 	if !core.IsNil(identityPreferenceResponse.ValueListOfStrings) {
 		valueListOfStrings := []interface{}{}
 		for _, valueListOfStringsItem := range identityPreferenceResponse.ValueListOfStrings {
@@ -113,5 +116,32 @@ func dataSourceIBMIamIdentityPreferenceRead(context context.Context, d *schema.R
 		}
 	}
 
+	// fmt.Fprintf(os.Stderr, "[INFO]!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! Full response - ValueString: '%s', ValueListOfStrings: %v (nil: %v, len: %d)\n", valueStringDebug, identityPreferenceResponse.ValueListOfStrings, core.IsNil(identityPreferenceResponse.ValueListOfStrings), len(identityPreferenceResponse.ValueListOfStrings))
+	// if !core.IsNil(identityPreferenceResponse.ValueListOfStrings) {
+	// 	valueListOfStrings1 := []interface{}{}
+	// 	for _, valueListOfStringsItem := range identityPreferenceResponse.ValueListOfStrings {
+	// 		valueListOfStrings1 = append(valueListOfStrings1, valueListOfStringsItem)
+	// 	}
+	// 	log.Printf("[INFO]!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!valueListOfStrings1: %v", valueListOfStrings1)
+	// 	valueListOfStrings := []string{}
+	// 	for _, valueListOfStringsItem := range identityPreferenceResponse.ValueListOfStrings {
+	// 		valueListOfStrings = append(valueListOfStrings, valueListOfStringsItem)
+	// 	}
+	// 	log.Printf("[INFO]!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!valueListOfStrings: %v", valueListOfStrings)
+	// 	valueListOfStrings2 := []interface{}{}
+	// 	for _, valueListOfStringsItem := range identityPreferenceResponse.ValueListOfStrings {
+	// 		valueListOfStrings2 = append(valueListOfStrings2, valueListOfStringsItem)
+	// 	}
+	// 	log.Printf("[INFO]!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!valueListOfStrings2: %v", valueListOfStrings2)
+	// 	// var valueListOfStrings3 []string
+	// 	// for _, v := range identityPreferenceResponse.ValueListOfStrings.([]string) {
+	// 	// 	valueListOfStringsItem := v.(string)
+	// 	// 	valueListOfStrings3 = append(valueListOfStrings3, valueListOfStringsItem)
+	// 	// }
+	// 	// log.Printf("[INFO]!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!valueListOfStrings3: %v", valueListOfStrings3)
+	// 	if err = d.Set("value_list_of_strings", valueListOfStrings); err != nil {
+	// 		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting value_list_of_strings: %s", err), "(Data) ibm_iam_identity_preference", "read", "set-value_list_of_strings").GetDiag()
+	// 	}
+	// }
 	return nil
 }
