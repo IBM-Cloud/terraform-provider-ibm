@@ -36,6 +36,6 @@ After your data source is created, you can read values from the following attrib
 
 * `id` - The unique identifier of the iam_identity_preference.
 * `scope` - (String) Scope of the preference, 'global' or 'account'.
-* `value_list_of_strings` - (List) List of value of the preference, only one value property is set, either 'value_string' or 'value_list_of_strings' is present.
+* `value_list_of_strings` - (List) List of values of the preference, only one value property is set, either 'value_string' or 'value_list_of_strings' is present.
 * `value_string` - (String) String value of the preference, only one value property is set, either 'value_string' or 'value_list_of_strings' is present.
 
