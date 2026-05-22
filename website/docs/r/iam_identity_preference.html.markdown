@@ -8,7 +8,7 @@ subcategory: "IAM Identity Services"
 
 # ibm_iam_identity_preference
 
-Create, update, and delete iam_identity_preferences with this resource.
+Update and delete iam_identity_preferences with this resource.
 
 ## Example Usage
 
@@ -31,7 +31,7 @@ You can specify the following arguments for this resource.
 * `preference_id` - (Required, Forces new resource, String) Identifier of preference to be updated.
 * `service` - (Required, Forces new resource, String) Service of the preference to be updated.
 * `value_list_of_strings` - (Optional, List) List of values of the preference, only one value property is set, either 'value_string' or 'value_list_of_strings' is present.
-* `value_string` - (Required, String) String value of the preference, only one value property is set, either 'value_string' or 'value_list_of_strings' is present.
+* `value_string` - (Optional, String) String value of the preference, only one value property is set, either 'value_string' or 'value_list_of_strings' is present.
 
 ## Attribute Reference
 
@@ -45,7 +45,7 @@ After your resource is created, you can read values from the listed arguments an
 ## Import
 
 You can import the `ibm_iam_identity_preference` resource by using `id`.
-The `id` property can be formed from `account_id`, `iam_id`, `service`, `preference_id`, and `preference_id` in the following format:
+The `id` property can be formed from `account_id`, `iam_id`, `service`, and `preference_id` in the following format:
 
 <pre>
 &lt;account_id&gt;/&lt;iam_id&gt;/&lt;service&gt;/&lt;preference_id&gt;/&lt;preference_id&gt;
@@ -54,9 +54,8 @@ The `id` property can be formed from `account_id`, `iam_id`, `service`, `prefere
 * `iam_id`: A string. IAM id to update the preference for.
 * `service`: A string. Service of the preference to be updated.
 * `preference_id`: A string. Identifier of preference to be updated.
-* `preference_id`: A string. Unique ID of the preference.
 
 # Syntax
 <pre>
-$ terraform import ibm_iam_identity_preference.iam_identity_preference &lt;account_id&gt;/&lt;iam_id&gt;/&lt;service&gt;/&lt;preference_id&gt;/&lt;preference_id&gt;
+$ terraform import ibm_iam_identity_preference.iam_identity_preference &lt;account_id&gt;/&lt;iam_id&gt;/&lt;service&gt;/&lt;preference_id&gt;
 </pre>

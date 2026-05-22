@@ -44,8 +44,8 @@ resource "ibm_iam_identity_preference" "iam_identity_preference_instance" {
 | iam_id | IAM id to update the preference for. | `string` | true |
 | service | Service of the preference to be updated. | `string` | true |
 | preference_id | Identifier of preference to be updated. | `string` | true |
-| value_string | String value of the preference, only one value property is set, either 'value_string' or 'value_list_of_strings' is present. | `string` | true |
-| value_list_of_strings | List of value of the preference, only one value property is set, either 'value_string' or 'value_list_of_strings' is present. | `list(string)` | false |
+| value_string | String value of the preference, only one value property is set, either 'value_string' or 'value_list_of_strings' is present. | `string` | false |
+| value_list_of_strings | List of values of the preference, only one value property is set, either 'value_string' or 'value_list_of_strings' is present. | `list(string)` | false |
 
 #### Outputs
 
@@ -82,7 +82,7 @@ data "ibm_iam_identity_preference" "iam_identity_preference_instance" {
 |------|-------------|
 | scope | Scope of the preference, 'global' or 'account'. |
 | value_string | String value of the preference, only one value property is set, either 'value_string' or 'value_list_of_strings' is present. |
-| value_list_of_strings | List of value of the preference, only one value property is set, either 'value_string' or 'value_list_of_strings' is present. |
+| value_list_of_strings | List of values of the preference, only one value property is set, either 'value_string' or 'value_list_of_strings' is present. |
 
 ## Assumptions
 
