@@ -4,14 +4,25 @@ provider "ibm" {
 
 // Import an existing Identity preference, creation is not supported
 import {
-  to = ibm_iam_identity_preference.iam_identity_preference_instance
-  id = "${var.iam_identity_preference_account_id}/${var.iam_identity_preference_iam_id}/${var.iam_identity_preference_service}/${var.iam_identity_preference_preference_id}"
+  to = ibm_iam_identity_preference.iam_identity_preference_instance_left_nav
+  id = "${var.iam_identity_preference_account_id}/${var.iam_identity_preference_iam_id}/${var.iam_identity_preference_service}/global_left_navigation"
 }
-resource "ibm_iam_identity_preference" "iam_identity_preference_instance" {
+resource "ibm_iam_identity_preference" "iam_identity_preference_instance_left_nav" {
   account_id = var.iam_identity_preference_account_id
   service = var.iam_identity_preference_service
-  preference_id = var.iam_identity_preference_preference_id
+  preference_id = "global_left_navigation"
+  value_list_of_strings = ["apis","automation","vmWare","watsonx"]
+}
+
+import {
+  to = ibm_iam_identity_preference.iam_identity_preference_instance_landing
+  id = "${var.iam_identity_preference_account_id}/${var.iam_identity_preference_iam_id}/${var.iam_identity_preference_service}/landing_page"
+}
+resource "ibm_iam_identity_preference" "iam_identity_preference_instance_landing" {
+  account_id = var.iam_identity_preference_account_id
+  service = var.iam_identity_preference_service
   value_string = "/iam"
+  preference_id = "landing_page"
 }
 
 // Create iam_identity_preference data source
@@ -19,15 +30,15 @@ data "ibm_iam_identity_preference" "iam_identity_preference_instance_data" {
   account_id = var.iam_identity_preference_account_id
   iam_id = var.iam_identity_preference_iam_id
   service = var.iam_identity_preference_service
-  preference_id = var.iam_identity_preference_preference_id
-  
-  depends_on = [ibm_iam_identity_preference.iam_identity_preference_instance]
+  preference_id = "global_left_navigation"
+
+  depends_on = [ibm_iam_identity_preference.iam_identity_preference_instance_left_nav]
 }
 
 // Create iam_identity_preferences data source
 data "ibm_iam_identity_preferences" "iam_identity_preferences_instance_list" {
   account_id = var.iam_identity_preference_account_id
   iam_id = var.iam_identity_preference_iam_id
-  
-  depends_on = [ibm_iam_identity_preference.iam_identity_preference_instance]
+
+  depends_on = [ibm_iam_identity_preference.iam_identity_preference_instance_left_nav]
 }

@@ -2,7 +2,7 @@
 // Licensed under the Mozilla Public License v2.0
 
 /*
- * IBM OpenAPI Terraform Generator Version: 3.107.1-41b0fbd0-20250825-080732
+ * IBM OpenAPI Terraform Generator Version: 3.113.1-d76630af-20260320-135953
  */
 
 package iamidentity
@@ -70,7 +70,7 @@ func DataSourceIBMIamIdentityPreferences() *schema.Resource {
 						"value_list_of_strings": &schema.Schema{
 							Type:        schema.TypeList,
 							Computed:    true,
-							Description: "List of value of the preference, only one value property is set, either 'value_string' or 'value_list_of_strings' is present.",
+							Description: "List of values of the preference, only one value property is set, either 'value_string' or 'value_list_of_strings' is present.",
 							Elem: &schema.Schema{
 								Type: schema.TypeString,
 							},

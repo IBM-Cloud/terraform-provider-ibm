@@ -88,19 +88,19 @@ func testAccCheckIBMIamIdentityPreferenceExists(n string, obj iamidentityv1.Iden
 			return err
 		}
 
-		getPreferenceOnScopeAccountOptions := &iamidentityv1.GetPreferencesOnScopeAccountOptions{}
+		getPreferencesOnScopeAccountOptions := &iamidentityv1.GetPreferencesOnScopeAccountOptions{}
 
 		parts, err := flex.SepIdParts(rs.Primary.ID, "/")
 		if err != nil {
 			return err
 		}
 
-		getPreferenceOnScopeAccountOptions.SetAccountID(parts[0])
-		getPreferenceOnScopeAccountOptions.SetIamID(parts[1])
-		getPreferenceOnScopeAccountOptions.SetService(parts[2])
-		getPreferenceOnScopeAccountOptions.SetPreferenceID(parts[3])
+		getPreferencesOnScopeAccountOptions.SetAccountID(parts[0])
+		getPreferencesOnScopeAccountOptions.SetIamID(parts[1])
+		getPreferencesOnScopeAccountOptions.SetService(parts[2])
+		getPreferencesOnScopeAccountOptions.SetPreferenceID(parts[3])
 
-		identityPreferenceResponse, _, err := iamIdentityClient.GetPreferencesOnScopeAccount(getPreferenceOnScopeAccountOptions)
+		identityPreferenceResponse, _, err := iamIdentityClient.GetPreferencesOnScopeAccount(getPreferencesOnScopeAccountOptions)
 		if err != nil {
 			return err
 		}

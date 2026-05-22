@@ -55,13 +55,13 @@ func ResourceIBMIamIdentityPreference() *schema.Resource {
 			},
 			"value_string": &schema.Schema{
 				Type:        schema.TypeString,
-				Required:    true,
+				Optional:    true,
 				Description: "String value of the preference, only one value property is set, either 'value_string' or 'value_list_of_strings' is present.",
 			},
 			"value_list_of_strings": &schema.Schema{
 				Type:        schema.TypeList,
 				Optional:    true,
-				Description: "List of value of the preference, only one value property is set, either 'value_string' or 'value_list_of_strings' is present.",
+				Description: "List of values of the preference, only one value property is set, either 'value_string' or 'value_list_of_strings' is present.",
 				Elem:        &schema.Schema{Type: schema.TypeString},
 			},
 			"scope": &schema.Schema{
@@ -87,19 +87,19 @@ func resourceIBMIamIdentityPreferenceRead(context context.Context, d *schema.Res
 		return tfErr.GetDiag()
 	}
 
-	getPreferenceOnScopeAccountOptions := &iamidentityv1.GetPreferencesOnScopeAccountOptions{}
+	getPreferencesOnScopeAccountOptions := &iamidentityv1.GetPreferencesOnScopeAccountOptions{}
 
 	parts, err := flex.SepIdParts(d.Id(), "/")
 	if err != nil {
 		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_identity_preference", "read", "sep-id-parts").GetDiag()
 	}
 
-	getPreferenceOnScopeAccountOptions.SetAccountID(parts[0])
-	getPreferenceOnScopeAccountOptions.SetIamID(parts[1])
-	getPreferenceOnScopeAccountOptions.SetService(parts[2])
-	getPreferenceOnScopeAccountOptions.SetPreferenceID(parts[3])
+	getPreferencesOnScopeAccountOptions.SetAccountID(parts[0])
+	getPreferencesOnScopeAccountOptions.SetIamID(parts[1])
+	getPreferencesOnScopeAccountOptions.SetService(parts[2])
+	getPreferencesOnScopeAccountOptions.SetPreferenceID(parts[3])
 
-	identityPreferenceResponse, response, err := iamIdentityClient.GetPreferencesOnScopeAccountWithContext(context, getPreferenceOnScopeAccountOptions)
+	identityPreferenceResponse, response, err := iamIdentityClient.GetPreferencesOnScopeAccountWithContext(context, getPreferencesOnScopeAccountOptions)
 	if err != nil {
 		if response != nil && response.StatusCode == 404 {
 			d.SetId("")
@@ -168,7 +168,9 @@ func resourceIBMIamIdentityPreferenceUpdate(context context.Context, d *schema.R
 	updatePreferenceOnScopeAccountOptions.SetIamID(parts[1])
 	updatePreferenceOnScopeAccountOptions.SetService(parts[2])
 	updatePreferenceOnScopeAccountOptions.SetPreferenceID(parts[3])
-	updatePreferenceOnScopeAccountOptions.SetValueString(d.Get("value_string").(string))
+	if _, ok := d.GetOk("value_string"); ok {
+		updatePreferenceOnScopeAccountOptions.SetValueString(d.Get("value_string").(string))
+	}
 	if _, ok := d.GetOk("value_list_of_strings"); ok {
 		var valueListOfStrings []string
 		for _, v := range d.Get("value_list_of_strings").([]interface{}) {
