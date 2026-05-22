@@ -37,6 +37,6 @@ Nested schema for **preferences**:
 	* `id` - (String) Unique ID of the preference.
 	* `scope` - (String) Scope of the preference, 'global' or 'account'.
 	* `service` - (String) Service of the preference.
-	* `value_list_of_strings` - (List) List of value of the preference, only one value property is set, either 'value_string' or 'value_list_of_strings' is present.
+	* `value_list_of_strings` - (List) List of values of the preference, only one value property is set, either 'value_string' or 'value_list_of_strings' is present.
 	* `value_string` - (String) String value of the preference, only one value property is set, either 'value_string' or 'value_list_of_strings' is present.
 
