@@ -130,7 +130,7 @@ resource "ibm_database" "valkey_gen2" {
   name              = "valkey-gen2-example"
   service           = "databases-for-valkey"
   plan              = "standard-gen2"
-  location          = "us-south"
+  location          = "ca-mon"
   service_endpoints = "private"
 
   version = "9.0"
@@ -145,7 +145,7 @@ resource "ibm_database" "valkey_gen2" {
     }
   }
 
-  tags = ["env:production", "database:valkey"]
+  tags = ["env:test", "database:valkey"]
 }
 
 // Credentials for Gen2 Valkey instance via resource key
