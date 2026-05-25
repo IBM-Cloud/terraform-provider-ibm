@@ -4,7 +4,7 @@ This example illustrates how to use the IAM Account Settings to configure settin
 
 These types of resources are supported:
 
-* iam_account_settings
+* ibm_iam_account_settings
 
 ## Usage
 
@@ -24,7 +24,7 @@ Run `terraform destroy` when you don't need these resources.
 Account Setting Resource:
 
 ```hcl
-resource "iam_account_settings" "iam_account_settings_instance" {
+resource "ibm_iam_account_settings" "iam_account_settings_instance" {
   include_history = var.iam_account_settings_include_history
 }
 ```
@@ -33,7 +33,8 @@ resource "iam_account_settings" "iam_account_settings_instance" {
 Lists all Policies of a particular IBM ID user.
 
 ```hcl
-data "ibm_iam_account_settings" "iam_account_settings_source" {
+data "ibm_iam_account_settings" "ibm_iam_account_settings_source" {
+  account_id = ibm_iam_account_settings.iam_account_settings_instance.id
 }
 ```
 
@@ -65,10 +66,8 @@ data "ibm_iam_account_settings" "iam_account_settings_source" {
 | max_sessions_per_identity | Defines the max allowed sessions per identity required by the account. | `string` | false |
 
 
-
-
 ## Outputs
 
 | Name | Description |
 |------|-------------|
-| iam_account_settings | iam_account_settings object |
+| ibm_iam_account_settings | ibm_iam_account_settings object |
