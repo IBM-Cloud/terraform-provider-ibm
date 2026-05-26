@@ -333,7 +333,7 @@ func DataSourceIBMISInstance() *schema.Resource {
 			isInstanceThreadsPerCore: {
 				Type:        schema.TypeInt,
 				Computed:    true,
-				Description: "The number of threads per core.",
+				Description: "The threads per core for this virtual server instance.",
 			},
 
 			isInstanceTotalNetworkBandwidth: {

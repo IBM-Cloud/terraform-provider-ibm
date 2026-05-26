@@ -536,7 +536,7 @@ func ResourceIBMISInstance() *schema.Resource {
 				Optional:     true,
 				Computed:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_is_instance", isInstanceThreadsPerCore),
-				Description:  "The number of threads per core. Supported values are 1 or 2. Default is 2. Only applicable to AMD Turin profiles (hx4a-*, hx4da-*).",
+				Description:  "The threads per core to use for this virtual server instance. Must be one of the values in the profile's threads_per_core.values. If unspecified, the default threads per core from the profile will be used.",
 			},
 
 			isInstanceBandwidth: {

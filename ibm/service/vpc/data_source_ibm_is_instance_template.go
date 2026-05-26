@@ -256,7 +256,7 @@ func DataSourceIBMISInstanceTemplate() *schema.Resource {
 			isInstanceTemplateThreadsPerCore: {
 				Type:        schema.TypeInt,
 				Computed:    true,
-				Description: "The number of threads per core for this virtual server instance.",
+				Description: "The threads per core for this virtual server instance.",
 			},
 			isInstanceDefaultTrustedProfileAutoLink: {
 				Type:        schema.TypeBool,

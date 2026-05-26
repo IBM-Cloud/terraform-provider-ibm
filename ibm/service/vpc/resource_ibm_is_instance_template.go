@@ -371,7 +371,7 @@ func ResourceIBMISInstanceTemplate() *schema.Resource {
 				ForceNew:     true,
 				Computed:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_is_instance_template", isInstanceTemplateThreadsPerCore),
-				Description:  "The number of threads per core for this virtual server instance.",
+				Description:  "The threads per core to use for this virtual server instance. Must be one of the values in the profile's threads_per_core.values. If unspecified, the default threads per core from the profile will be used.",
 			},
 			isInstanceTemplateKeys: {
 				Type:             schema.TypeSet,

@@ -794,12 +794,12 @@ func DataSourceIBMISInstanceProfiles() *schema.Resource {
 									"default": {
 										Type:        schema.TypeInt,
 										Computed:    true,
-										Description: "The default threads per core for this profile.",
+										Description: "The default threads per core values for an instance with this profile.",
 									},
 									"values": {
 										Type:        schema.TypeList,
 										Computed:    true,
-										Description: "The permitted threads per core values for this profile.",
+										Description: "The permitted threads per core values for an instance with this profile.",
 										Elem: &schema.Schema{
 											Type: schema.TypeInt,
 										},
