@@ -127,6 +127,53 @@ output "db_connection" {
 
 **Note:** Gen2 instances use `ibm_resource_key` for credential management instead of the `adminpassword` and `users` attributes used in Classic plans. The `groups` computed attribute can be used to verify current scaling configuration from instance extensions and catalog metadata.
 
+### Gen2 Valkey database instance example
+
+An example to configure and deploy a Gen2 Valkey instance. Valkey is only available as a Gen2 service.
+
+```terraform
+data "ibm_resource_group" "group" {
+  name = "<your_group>"
+}
+
+# Gen2 Valkey instance
+resource "ibm_database" "valkey_gen2" {
+  name              = "my-valkey-gen2"
+  plan              = "standard-gen2"
+  location          = "ca-mon"
+  service           = "databases-for-valkey"
+  resource_group_id = data.ibm_resource_group.group.id
+
+  version = "9.0"
+
+  service_endpoints = "private"
+
+  group {
+    group_id = "member"
+    disk {
+      allocation_mb = 20480  # 20 GB
+    }
+    host_flavor {
+      id = "bx3d.4x20"
+    }
+  }
+
+  tags = ["env:test", "app:myapp"]
+}
+
+# Credentials via resource key
+resource "ibm_resource_key" "valkey_credentials" {
+  name                 = "valkey-credentials"
+  resource_instance_id = ibm_database.valkey_gen2.id
+}
+
+# Access credentials
+output "valkey_connection" {
+  value     = ibm_resource_key.valkey_credentials.credentials
+  sensitive = true
+}
+```
+
 ### Sample database instance by using `group` attributes
 An example to configure and deploy database by using `group` attributes.
 
@@ -790,7 +837,8 @@ Review the argument reference that you can specify for your resource.
 
   **Gen2:** Accepted but ignored. Async restore requires `backup_id` support which is not yet implemented for Gen2 instances.
 - `resource_group_id` - (Optional, Forces new resource, String)  The ID of the resource group where you want to create the instance. To retrieve this value, run `ibmcloud resource groups` or use the `ibm_resource_group` data source. If no value is provided, the `default` resource group is used.
-- `service` - (Required, Forces new resource, String) The type of Cloud Databases that you want to create. Only the following services are currently accepted: `databases-for-etcd`, `databases-for-postgresql`, `databases-for-redis`, `databases-for-elasticsearch`, `messages-for-rabbitmq`,`databases-for-mongodb`,`databases-for-mysql`, and `databases-for-enterprisedb`.
+- `service` - (Required, Forces new resource, String) The type of Cloud Databases that you want to create. Only the following services are currently accepted: `databases-for-etcd`, `databases-for-postgresql`, `databases-for-redis`, `databases-for-valkey`, `databases-for-elasticsearch`, `messages-for-rabbitmq`,`databases-for-mongodb`,`databases-for-mysql`, and `databases-for-enterprisedb`.
+
 - `service_endpoints` - (Optional, String) Specify whether you want to enable the public, private, or both service endpoints. Supported values are `public`, `private`, or `public-and-private`.
 
   **Gen2:** Optional; must be `private` if set. Gen2 instances only support private endpoints and default to `private`. Plan fails if set to `public` or `public-and-private`.
