@@ -153,88 +153,279 @@ func (g *dataSourceIBMDatabaseConnectionGen2Backend) Read(context context.Contex
 
 	// Gen2 databases provide connection information in the credentials
 	// Extract and set connection details based on what's available in the credentials
-	// The structure is similar to Classic but comes from resource key credentials
+	// The structure is nested under credentials.connection for Gen2 databases
 
-	// Set postgres connection if available
-	if postgresConn, ok := credentials["postgres"].(map[string]interface{}); ok {
-		postgres := []map[string]interface{}{postgresConn}
+	// Check if connection information is nested under "connection" key
+	var connectionData map[string]interface{}
+	if connObj, ok := credentials["connection"].(map[string]interface{}); ok {
+		connectionData = connObj
+		log.Printf("[DEBUG] Found connection data nested under 'connection' key")
+		// Log all available connection types for debugging
+		log.Printf("[DEBUG] Available connection types in credentials.connection:")
+		for key := range connectionData {
+			log.Printf("[DEBUG]   - %s", key)
+		}
+	} else {
+		// Fallback to direct credentials structure (for backward compatibility)
+		connectionData = credentials
+		log.Printf("[DEBUG] Using direct credentials structure")
+		log.Printf("[DEBUG] Available keys in credentials:")
+		for key := range connectionData {
+			log.Printf("[DEBUG]   - %s", key)
+		}
+	}
+
+	// Transform and set postgres connection if available
+	if postgresConn, ok := connectionData["postgres"].(map[string]interface{}); ok {
+		transformedPostgres, err := transformGen2ConnectionToSchema(postgresConn)
+		if err != nil {
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error transforming postgres connection: %s", err), "(Data) ibm_database_connection", "read")
+			return tfErr.GetDiag()
+		}
+		postgres := []map[string]interface{}{transformedPostgres}
 		if err = d.Set("postgres", postgres); err != nil {
 			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting postgres: %s", err), "(Data) ibm_database_connection", "read")
 			return tfErr.GetDiag()
 		}
+		log.Printf("[DEBUG] Successfully set postgres connection data")
+	} else {
+		log.Printf("[DEBUG] No postgres connection data found in credentials")
 	}
 
-	// Set CLI connection if available
-	if cliConn, ok := credentials["cli"].(map[string]interface{}); ok {
-		cli := []map[string]interface{}{cliConn}
+	// Transform and set CLI connection if available
+	if cliConn, ok := connectionData["cli"].(map[string]interface{}); ok {
+		transformedCli, err := transformGen2CliToSchema(cliConn)
+		if err != nil {
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error transforming cli connection: %s", err), "(Data) ibm_database_connection", "read")
+			return tfErr.GetDiag()
+		}
+		cli := []map[string]interface{}{transformedCli}
 		if err = d.Set("cli", cli); err != nil {
 			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting cli: %s", err), "(Data) ibm_database_connection", "read")
 			return tfErr.GetDiag()
 		}
+		log.Printf("[DEBUG] Successfully set cli connection data")
+	} else {
+		log.Printf("[DEBUG] No cli connection data found in credentials")
 	}
 
-	// Set rediss connection if available
-	if redissConn, ok := credentials["rediss"].(map[string]interface{}); ok {
-		rediss := []map[string]interface{}{redissConn}
-		if err = d.Set("rediss", rediss); err != nil {
-			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting rediss: %s", err), "(Data) ibm_database_connection", "read")
-			return tfErr.GetDiag()
+	// Transform and set MongoDB connection if available
+	// Try both "mongodb" and "mongo" keys as different services may use different names
+	var mongodbConn map[string]interface{}
+	var mongodbFound bool
+	if conn, ok := connectionData["mongodb"].(map[string]interface{}); ok {
+		mongodbConn = conn
+		mongodbFound = true
+		log.Printf("[DEBUG] Found mongodb connection data under 'mongodb' key")
+	} else if conn, ok := connectionData["mongo"].(map[string]interface{}); ok {
+		mongodbConn = conn
+		mongodbFound = true
+		log.Printf("[DEBUG] Found mongodb connection data under 'mongo' key")
+	}
+
+	if mongodbFound {
+		transformedMongodb, err := transformGen2ConnectionToSchema(mongodbConn)
+		if err != nil {
+			log.Printf("[DEBUG] Error transforming mongodb connection: %s", err)
+		} else {
+			mongodb := []map[string]interface{}{transformedMongodb}
+			if err = d.Set("mongodb", mongodb); err != nil {
+				log.Printf("[DEBUG] Error setting mongodb: %s", err)
+			} else {
+				log.Printf("[DEBUG] Successfully set mongodb connection data")
+			}
 		}
+	} else {
+		log.Printf("[DEBUG] No mongodb connection data found in credentials (tried 'mongodb' and 'mongo' keys)")
 	}
 
-	// Set https connection if available
-	if httpsConn, ok := credentials["https"].(map[string]interface{}); ok {
-		https := []map[string]interface{}{httpsConn}
-		if err = d.Set("https", https); err != nil {
-			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting https: %s", err), "(Data) ibm_database_connection", "read")
-			return tfErr.GetDiag()
+	// Transform and set other connection types with flexible key matching
+	connectionTypes := map[string][]string{
+		"rediss":       {"rediss", "redis"},
+		"https":        {"https", "http"},
+		"amqps":        {"amqps", "amqp"},
+		"mqtts":        {"mqtts", "mqtt"},
+		"stomp_ssl":    {"stomp_ssl", "stomp"},
+		"mysql":        {"mysql"},
+		"grpc":         {"grpc"},
+		"bi_connector": {"bi_connector"},
+		"analytics":    {"analytics"},
+		"ops_manager":  {"ops_manager"},
+		"emp":          {"emp"},
+	}
+
+	for tfKey, possibleKeys := range connectionTypes {
+		var conn map[string]interface{}
+		var found bool
+		var foundKey string
+
+		for _, key := range possibleKeys {
+			if c, ok := connectionData[key].(map[string]interface{}); ok {
+				conn = c
+				found = true
+				foundKey = key
+				break
+			}
 		}
-	}
 
-	// Set amqps connection if available
-	if amqpsConn, ok := credentials["amqps"].(map[string]interface{}); ok {
-		amqps := []map[string]interface{}{amqpsConn}
-		if err = d.Set("amqps", amqps); err != nil {
-			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting amqps: %s", err), "(Data) ibm_database_connection", "read")
-			return tfErr.GetDiag()
-		}
-	}
-
-	// Set mqtts connection if available
-	if mqttsConn, ok := credentials["mqtts"].(map[string]interface{}); ok {
-		mqtts := []map[string]interface{}{mqttsConn}
-		if err = d.Set("mqtts", mqtts); err != nil {
-			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting mqtts: %s", err), "(Data) ibm_database_connection", "read")
-			return tfErr.GetDiag()
-		}
-	}
-
-	// Set stomp_ssl connection if available
-	if stompSslConn, ok := credentials["stomp_ssl"].(map[string]interface{}); ok {
-		stompSsl := []map[string]interface{}{stompSslConn}
-		if err = d.Set("stomp_ssl", stompSsl); err != nil {
-			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting stomp_ssl: %s", err), "(Data) ibm_database_connection", "read")
-			return tfErr.GetDiag()
-		}
-	}
-
-	// Set mongodb connection if available
-	if mongodbConn, ok := credentials["mongodb"].(map[string]interface{}); ok {
-		mongodb := []map[string]interface{}{mongodbConn}
-		if err = d.Set("mongodb", mongodb); err != nil {
-			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting mongodb: %s", err), "(Data) ibm_database_connection", "read")
-			return tfErr.GetDiag()
-		}
-	}
-
-	// Set mysql connection if available
-	if mysqlConn, ok := credentials["mysql"].(map[string]interface{}); ok {
-		mysql := []map[string]interface{}{mysqlConn}
-		if err = d.Set("mysql", mysql); err != nil {
-			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting mysql: %s", err), "(Data) ibm_database_connection", "read")
-			return tfErr.GetDiag()
+		if found {
+			log.Printf("[DEBUG] Found %s connection data under '%s' key", tfKey, foundKey)
+			transformed, err := transformGen2ConnectionToSchema(conn)
+			if err != nil {
+				log.Printf("[DEBUG] Error transforming %s connection: %s", tfKey, err)
+				continue
+			}
+			connList := []map[string]interface{}{transformed}
+			if err = d.Set(tfKey, connList); err != nil {
+				log.Printf("[DEBUG] Error setting %s: %s", tfKey, err)
+				continue
+			}
+			log.Printf("[DEBUG] Successfully set %s connection data", tfKey)
 		}
 	}
 
 	return nil
+}
+
+// transformGen2ConnectionToSchema transforms Gen2 API connection structure to Terraform schema format
+func transformGen2ConnectionToSchema(conn map[string]interface{}) (map[string]interface{}, error) {
+	result := make(map[string]interface{})
+
+	// Copy simple fields
+	if v, ok := conn["type"]; ok {
+		result["type"] = v
+	}
+	if v, ok := conn["composed"]; ok {
+		result["composed"] = v
+	}
+	if v, ok := conn["scheme"]; ok {
+		result["scheme"] = v
+	}
+	if v, ok := conn["path"]; ok {
+		result["path"] = v
+	}
+	if v, ok := conn["database"]; ok {
+		result["database"] = v
+	}
+	if v, ok := conn["ssl"]; ok {
+		result["ssl"] = v
+	}
+	if v, ok := conn["browser_accessible"]; ok {
+		result["browser_accessible"] = v
+	}
+
+	// Transform hosts array
+	if hostsRaw, ok := conn["hosts"].([]interface{}); ok {
+		hosts := make([]map[string]interface{}, 0, len(hostsRaw))
+		for _, hostRaw := range hostsRaw {
+			if hostMap, ok := hostRaw.(map[string]interface{}); ok {
+				host := make(map[string]interface{})
+				if hostname, ok := hostMap["hostname"]; ok {
+					host["hostname"] = hostname
+				}
+				if port, ok := hostMap["port"]; ok {
+					// Convert port to int64 if it's a float64
+					switch p := port.(type) {
+					case float64:
+						host["port"] = int64(p)
+					case int:
+						host["port"] = int64(p)
+					case int64:
+						host["port"] = p
+					default:
+						host["port"] = port
+					}
+				}
+				hosts = append(hosts, host)
+			}
+		}
+		result["hosts"] = hosts
+	}
+
+	// Transform authentication
+	if authRaw, ok := conn["authentication"].(map[string]interface{}); ok {
+		auth := make(map[string]interface{})
+		if method, ok := authRaw["method"]; ok {
+			auth["method"] = method
+		}
+		if username, ok := authRaw["username"]; ok {
+			auth["username"] = username
+		}
+		if password, ok := authRaw["password"]; ok {
+			auth["password"] = password
+		}
+		result["authentication"] = []map[string]interface{}{auth}
+	}
+
+	// Transform certificate
+	if certRaw, ok := conn["certificate"].(map[string]interface{}); ok {
+		cert := make(map[string]interface{})
+		if name, ok := certRaw["name"]; ok {
+			cert["name"] = name
+		}
+		if certBase64, ok := certRaw["certificate_base64"]; ok {
+			cert["certificate_base64"] = certBase64
+		}
+		result["certificate"] = []map[string]interface{}{cert}
+	}
+
+	// Transform query_options - convert all values to strings as Terraform schema expects
+	if queryOpts, ok := conn["query_options"].(map[string]interface{}); ok {
+		convertedOpts := make(map[string]interface{})
+		for key, value := range queryOpts {
+			// Convert boolean values to strings
+			switch v := value.(type) {
+			case bool:
+				convertedOpts[key] = fmt.Sprintf("%t", v)
+			case float64:
+				// Convert numbers to strings
+				convertedOpts[key] = fmt.Sprintf("%v", v)
+			case int, int64:
+				convertedOpts[key] = fmt.Sprintf("%v", v)
+			default:
+				convertedOpts[key] = value
+			}
+		}
+		result["query_options"] = convertedOpts
+	}
+
+	return result, nil
+}
+
+// transformGen2CliToSchema transforms Gen2 API CLI structure to Terraform schema format
+func transformGen2CliToSchema(cli map[string]interface{}) (map[string]interface{}, error) {
+	result := make(map[string]interface{})
+
+	// Copy simple fields
+	if v, ok := cli["type"]; ok {
+		result["type"] = v
+	}
+	if v, ok := cli["composed"]; ok {
+		result["composed"] = v
+	}
+	if v, ok := cli["bin"]; ok {
+		result["bin"] = v
+	}
+	if v, ok := cli["arguments"]; ok {
+		result["arguments"] = v
+	}
+
+	// Transform environment variables
+	if envRaw, ok := cli["environment"].(map[string]interface{}); ok {
+		result["environment"] = envRaw
+	}
+
+	// Transform certificate
+	if certRaw, ok := cli["certificate"].(map[string]interface{}); ok {
+		cert := make(map[string]interface{})
+		if name, ok := certRaw["name"]; ok {
+			cert["name"] = name
+		}
+		if certBase64, ok := certRaw["certificate_base64"]; ok {
+			cert["certificate_base64"] = certBase64
+		}
+		result["certificate"] = []map[string]interface{}{cert}
+	}
+
+	return result, nil
 }
