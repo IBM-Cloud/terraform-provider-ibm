@@ -11,7 +11,6 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"os"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
@@ -97,15 +96,11 @@ func dataSourceIBMIamIdentityPreferenceRead(context context.Context, d *schema.R
 			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting scope: %s", err), "(Data) ibm_iam_identity_preference", "read", "set-scope").GetDiag()
 		}
 	}
-	log.Printf("[INFO]!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!identityPreferenceResponse.ValueListOfStrings: %v", identityPreferenceResponse.ValueListOfStrings)
-	valueStringDebug := ""
 	if !core.IsNil(identityPreferenceResponse.ValueString) {
-		valueStringDebug = *identityPreferenceResponse.ValueString
 		if err = d.Set("value_string", identityPreferenceResponse.ValueString); err != nil {
 			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting value_string: %s", err), "(Data) ibm_iam_identity_preference", "read", "set-value_string").GetDiag()
 		}
 	}
-	fmt.Fprintf(os.Stderr, "[INFO]!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! Full response - ValueString: '%s', ValueListOfStrings: %v (nil: %v, len: %d)\n", valueStringDebug, identityPreferenceResponse.ValueListOfStrings, core.IsNil(identityPreferenceResponse.ValueListOfStrings), len(identityPreferenceResponse.ValueListOfStrings))
 	if !core.IsNil(identityPreferenceResponse.ValueListOfStrings) {
 		valueListOfStrings := []interface{}{}
 		for _, valueListOfStringsItem := range identityPreferenceResponse.ValueListOfStrings {
@@ -115,33 +110,5 @@ func dataSourceIBMIamIdentityPreferenceRead(context context.Context, d *schema.R
 			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting value_list_of_strings: %s", err), "(Data) ibm_iam_identity_preference", "read", "set-value_list_of_strings").GetDiag()
 		}
 	}
-
-	// fmt.Fprintf(os.Stderr, "[INFO]!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! Full response - ValueString: '%s', ValueListOfStrings: %v (nil: %v, len: %d)\n", valueStringDebug, identityPreferenceResponse.ValueListOfStrings, core.IsNil(identityPreferenceResponse.ValueListOfStrings), len(identityPreferenceResponse.ValueListOfStrings))
-	// if !core.IsNil(identityPreferenceResponse.ValueListOfStrings) {
-	// 	valueListOfStrings1 := []interface{}{}
-	// 	for _, valueListOfStringsItem := range identityPreferenceResponse.ValueListOfStrings {
-	// 		valueListOfStrings1 = append(valueListOfStrings1, valueListOfStringsItem)
-	// 	}
-	// 	log.Printf("[INFO]!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!valueListOfStrings1: %v", valueListOfStrings1)
-	// 	valueListOfStrings := []string{}
-	// 	for _, valueListOfStringsItem := range identityPreferenceResponse.ValueListOfStrings {
-	// 		valueListOfStrings = append(valueListOfStrings, valueListOfStringsItem)
-	// 	}
-	// 	log.Printf("[INFO]!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!valueListOfStrings: %v", valueListOfStrings)
-	// 	valueListOfStrings2 := []interface{}{}
-	// 	for _, valueListOfStringsItem := range identityPreferenceResponse.ValueListOfStrings {
-	// 		valueListOfStrings2 = append(valueListOfStrings2, valueListOfStringsItem)
-	// 	}
-	// 	log.Printf("[INFO]!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!valueListOfStrings2: %v", valueListOfStrings2)
-	// 	// var valueListOfStrings3 []string
-	// 	// for _, v := range identityPreferenceResponse.ValueListOfStrings.([]string) {
-	// 	// 	valueListOfStringsItem := v.(string)
-	// 	// 	valueListOfStrings3 = append(valueListOfStrings3, valueListOfStringsItem)
-	// 	// }
-	// 	// log.Printf("[INFO]!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!valueListOfStrings3: %v", valueListOfStrings3)
-	// 	if err = d.Set("value_list_of_strings", valueListOfStrings); err != nil {
-	// 		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting value_list_of_strings: %s", err), "(Data) ibm_iam_identity_preference", "read", "set-value_list_of_strings").GetDiag()
-	// 	}
-	// }
 	return nil
 }
