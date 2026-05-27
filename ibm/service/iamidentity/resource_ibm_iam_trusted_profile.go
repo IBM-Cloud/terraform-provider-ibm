@@ -186,6 +186,9 @@ func resourceIBMIamTrustedProfileCreate(context context.Context, d *schema.Resou
 	if _, ok := d.GetOk("description"); ok {
 		createProfileOptions.SetDescription(d.Get("description").(string))
 	}
+	if _, ok := d.GetOk("email"); ok {
+		createProfileOptions.SetEmail(d.Get("email").(string))
+	}
 
 	trustedProfile, _, err := iamIdentityClient.CreateProfileWithContext(context, createProfileOptions)
 	if err != nil {
@@ -274,16 +277,6 @@ func resourceIBMIamTrustedProfileRead(context context.Context, d *schema.Resourc
 	if err = d.Set("account_id", trustedProfile.AccountID); err != nil {
 		err = fmt.Errorf("Error setting account_id: %s", err)
 		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_trusted_profile", "read", "set-account_id").GetDiag()
-	}
-	if !core.IsNil(trustedProfile.Context) {
-		contextMap, err := ResourceIBMIamTrustedProfileResponseContextToMap(trustedProfile.Context)
-		if err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_trusted_profile", "read", "context-to-map").GetDiag()
-		}
-		if err = d.Set("context", []map[string]interface{}{contextMap}); err != nil {
-			err = fmt.Errorf("Error setting context: %s", err)
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_trusted_profile", "read", "set-context").GetDiag()
-		}
 	}
 	if err = d.Set("profile_id", trustedProfile.ID); err != nil {
 		err = fmt.Errorf("Error setting id: %s", err)

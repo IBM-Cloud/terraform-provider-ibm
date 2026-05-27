@@ -37,19 +37,6 @@ Nested schema for **activity**:
 	* `authn_count` - (Integer) Authentication count, number of times the entity was authenticated.
 	* `last_authn` - (String) Time when the entity was last authenticated.
 * `assignment_id` - (String) ID of the assignment that was used to create an enterprise-managed trusted profile in your account. When returned, this indicates that the trusted profile is created from and managed by a template in the root enterprise account.
-* `context` - (List) Context with key properties for problem determination.
-Nested schema for **context**:
-	* `cluster_name` - (String) The cluster name.
-	* `elapsed_time` - (String) The elapsed time in msec.
-	* `end_time` - (String) The finish time of the request.
-	* `host` - (String) The host of the server instance processing the request.
-	* `instance_id` - (String) The instance ID of the server instance processing the request.
-	* `operation` - (String) The operation of the inbound REST request.
-	* `start_time` - (String) The start time of the request.
-	* `thread_id` - (String) The thread ID of the server instance processing the request.
-	* `transaction_id` - (String) The transaction ID of the inbound REST request.
-	* `url` - (String) The URL of that cluster.
-	* `user_agent` - (String) The user agent of the inbound REST request.
 * `created_at` - (String) If set contains a date time string of the creation date in ISO format.
 * `crn` - (String) Cloud Resource Name of the item. Example Cloud Resource Name: 'crn:v1:bluemix:public:iam-identity:us-south:a/myaccount::profile:Profile-94497d0d-2ac3-41bf-a993-a49d1b14627c'.
 * `description` - (String) The optional description of the trusted profile. The 'description' property is only available if a description was provided during a create of a trusted profile.

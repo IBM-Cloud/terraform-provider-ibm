@@ -195,7 +195,6 @@ func dataSourceIBMIamTrustedProfileRead(context context.Context, d *schema.Resou
 	getProfileOptions := &iamidentityv1.GetProfileOptions{}
 
 	getProfileOptions.SetProfileID(d.Get("profile_id").(string))
-
 	if _, ok := d.GetOk("include_activity"); ok {
 		getProfileOptions.SetIncludeActivity(d.Get("include_activity").(bool))
 	}
