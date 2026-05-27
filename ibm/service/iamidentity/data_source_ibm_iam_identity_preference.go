@@ -11,7 +11,6 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"os"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
@@ -98,7 +97,6 @@ func dataSourceIBMIamIdentityPreferenceRead(context context.Context, d *schema.R
 		}
 	}
 	if !core.IsNil(identityPreferenceResponse.ValueString) {
-		valueStringDebug = *identityPreferenceResponse.ValueString
 		if err = d.Set("value_string", identityPreferenceResponse.ValueString); err != nil {
 			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting value_string: %s", err), "(Data) ibm_iam_identity_preference", "read", "set-value_string").GetDiag()
 		}
