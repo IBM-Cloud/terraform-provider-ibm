@@ -199,6 +199,45 @@ func TestAccIBMISSecurityGroupTarget_UpdatePendingRetry(t *testing.T) {
 	})
 }
 
+func TestAccIBMISSecurityGroupTarget_DeletionWithUpdatePending(t *testing.T) {
+	var securityGroup1, securityGroup2 string
+
+	vpcname := fmt.Sprintf("tfsg-vpc-%d", acctest.RandIntRange(10, 100))
+	subnetname := fmt.Sprintf("tfsg-subnet-%d", acctest.RandIntRange(10, 100))
+	lbname := fmt.Sprintf("tfsg-lb-%d", acctest.RandIntRange(10, 100))
+	sg1name := fmt.Sprintf("tfsg-one-%d", acctest.RandIntRange(10, 100))
+	sg2name := fmt.Sprintf("tfsg-two-%d", acctest.RandIntRange(10, 100))
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMISSecurityGroupTargetDestroy,
+		Steps: []resource.TestStep{
+			// Create two security group targets for the same load balancer
+			{
+				Config: testAccCheckIBMISsecurityGroupTargetDualConfig(vpcname, subnetname, acc.ISZoneName, acc.ISCIDR, lbname, sg1name, sg2name),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISSecurityGroupTargetExists("ibm_is_security_group_target.testacc_security_group_target", &securityGroup1),
+					testAccCheckIBMISSecurityGroupTargetExists("ibm_is_security_group_target.testacc_security_group_target2", &securityGroup2),
+					resource.TestCheckResourceAttr(
+						"ibm_is_security_group_target.testacc_security_group_target", "name", lbname),
+					resource.TestCheckResourceAttr(
+						"ibm_is_security_group_target.testacc_security_group_target2", "name", lbname),
+				),
+			},
+			// Remove one security group target - this should trigger UPDATE_PENDING handling during deletion
+			{
+				Config: testAccCheckIBMISsecurityGroupTargetConfig(vpcname, subnetname, acc.ISZoneName, acc.ISCIDR, lbname, sg1name),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISSecurityGroupTargetExists("ibm_is_security_group_target.testacc_security_group_target", &securityGroup1),
+					resource.TestCheckResourceAttr(
+						"ibm_is_security_group_target.testacc_security_group_target", "name", lbname),
+				),
+			},
+		},
+	})
+}
+
 // Config for dual security groups attached to the same load balancer
 func testAccCheckIBMISsecurityGroupTargetDualConfig(vpcname, subnetname, zoneName, cidr, lbname, sg1name, sg2name string) string {
 	return fmt.Sprintf(`
