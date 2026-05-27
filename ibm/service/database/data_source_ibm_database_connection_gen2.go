@@ -120,6 +120,15 @@ func (g *dataSourceIBMDatabaseConnectionGen2Backend) Read(context context.Contex
 
 	d.SetId(DataSourceIBMDatabaseConnectionID(d))
 
+	// Persist the effective selection so acceptance tests and state reflect
+	// the actual key used when fallback-to-first-key behavior is exercised.
+	if selectedKey.Name != nil {
+		if err = d.Set("user_id", *selectedKey.Name); err != nil {
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting user_id: %s", err), "(Data) ibm_database_connection", "read")
+			return tfErr.GetDiag()
+		}
+	}
+
 	// Extract connection information from the resource key credentials
 	if selectedKey.Credentials == nil {
 		return diag.Diagnostics{

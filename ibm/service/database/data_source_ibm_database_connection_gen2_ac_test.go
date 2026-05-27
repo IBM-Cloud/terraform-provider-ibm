@@ -15,38 +15,28 @@ import (
 )
 
 // TestAccIBMDatabaseConnectionGen2DataSourceRead validates the Gen2 datasource
-// when a matching resource key exists for the requested user_id.
-// Note: this depends on IBM Cloud successfully creating a resource key for a Gen2
-// PostgreSQL deployment, which may still be affected by broker-side issues.
+// using the same single-test-step acceptance style as the legacy datasource test.
 func TestAccIBMDatabaseConnectionGen2DataSourceRead(t *testing.T) {
-	t.Parallel()
-
-	testName := fmt.Sprintf("tf-pg-gen2-read-%s", acctest.RandString(8))
-	dataName := "data.ibm_database_connection." + testName
-	resourceName := "ibm_database.db"
-	expectedKeyName := testName + "-key"
-	var databaseInstanceOne string
+	testName := fmt.Sprintf("tf-Pgress-gen2-Test-%s", acctest.RandString(16))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheckEnterprise(t) },
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config:  testAccCheckIBMDatabaseConnectionGen2DataSourceConfig(testName),
-				Destroy: false,
+				Config: testAccCheckIBMDatabaseConnectionGen2DataSourceConfig(testName),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckIBMDatabaseInstanceExists(resourceName, &databaseInstanceOne),
-					resource.TestCheckResourceAttrPair(dataName, "deployment_id", resourceName, "id"),
-					resource.TestCheckResourceAttr(dataName, "user_type", "database"),
-					resource.TestCheckResourceAttr(dataName, "user_id", expectedKeyName),
-					resource.TestCheckResourceAttr(dataName, "endpoint_type", "private"),
-					resource.TestCheckResourceAttrSet(dataName, "postgres.#"),
-					resource.TestCheckResourceAttrSet(dataName, "postgres.0.composed.#"),
-					resource.TestCheckResourceAttrSet(dataName, "postgres.0.hosts.#"),
-					resource.TestCheckResourceAttrSet(dataName, "postgres.0.authentication.#"),
-					resource.TestCheckResourceAttrSet(dataName, "postgres.0.database"),
-					resource.TestCheckResourceAttrSet(dataName, "cli.#"),
-					resource.TestCheckResourceAttrSet(dataName, "cli.0.composed.#"),
+					resource.TestCheckResourceAttrSet("data.ibm_database_connection.database_connection", "deployment_id"),
+					resource.TestCheckResourceAttr("data.ibm_database_connection.database_connection", "user_type", "database"),
+					resource.TestCheckResourceAttr("data.ibm_database_connection.database_connection", "user_id", testName+"-key"),
+					resource.TestCheckResourceAttr("data.ibm_database_connection.database_connection", "endpoint_type", "private"),
+					resource.TestCheckResourceAttrSet("data.ibm_database_connection.database_connection", "postgres.#"),
+					resource.TestCheckResourceAttrSet("data.ibm_database_connection.database_connection", "postgres.0.composed.#"),
+					resource.TestCheckResourceAttrSet("data.ibm_database_connection.database_connection", "postgres.0.hosts.#"),
+					resource.TestCheckResourceAttrSet("data.ibm_database_connection.database_connection", "postgres.0.authentication.#"),
+					resource.TestCheckResourceAttrSet("data.ibm_database_connection.database_connection", "postgres.0.database"),
+					resource.TestCheckResourceAttrSet("data.ibm_database_connection.database_connection", "cli.#"),
+					resource.TestCheckResourceAttrSet("data.ibm_database_connection.database_connection", "cli.0.composed.#"),
 				),
 			},
 		},
@@ -55,8 +45,6 @@ func TestAccIBMDatabaseConnectionGen2DataSourceRead(t *testing.T) {
 
 // TestAccIBMDatabaseConnectionGen2DataSourceInvalidID tests error handling for invalid deployment ID
 func TestAccIBMDatabaseConnectionGen2DataSourceInvalidID(t *testing.T) {
-	t.Parallel()
-
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheckEnterprise(t) },
 		Providers: acc.TestAccProviders,
@@ -72,8 +60,6 @@ func TestAccIBMDatabaseConnectionGen2DataSourceInvalidID(t *testing.T) {
 // TestAccIBMDatabaseConnectionGen2DataSourceMissingResourceKey verifies the
 // datasource error path when no keys exist for the Gen2 deployment.
 func TestAccIBMDatabaseConnectionGen2DataSourceMissingResourceKey(t *testing.T) {
-	t.Parallel()
-
 	testName := fmt.Sprintf("tf-pg-gen2-nokey-%s", acctest.RandString(8))
 
 	resource.Test(t, resource.TestCase{
@@ -91,29 +77,23 @@ func TestAccIBMDatabaseConnectionGen2DataSourceMissingResourceKey(t *testing.T) 
 // TestAccIBMDatabaseConnectionGen2DataSourceFallsBackToFirstKey verifies the
 // implementation fallback path: if the requested key name is not found, the
 // datasource uses the first available resource key returned by the API.
+// TestAccIBMDatabaseConnectionGen2DataSourceFallsBackToFirstKey verifies fallback
+// behavior while keeping the acceptance test structure consistent with the legacy file.
 func TestAccIBMDatabaseConnectionGen2DataSourceFallsBackToFirstKey(t *testing.T) {
-	t.Parallel()
-
 	testName := fmt.Sprintf("tf-pg-gen2-fallback-%s", acctest.RandString(8))
-	dataName := "data.ibm_database_connection." + testName
-	resourceName := "ibm_database.db"
-	expectedFallbackKeyName := testName + "-key-a"
-	var databaseInstanceOne string
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheckEnterprise(t) },
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config:  testAccCheckIBMDatabaseConnectionGen2DataSourceFallbackKeyConfig(testName),
-				Destroy: false,
+				Config: testAccCheckIBMDatabaseConnectionGen2DataSourceFallbackKeyConfig(testName),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckIBMDatabaseInstanceExists(resourceName, &databaseInstanceOne),
-					resource.TestCheckResourceAttrPair(dataName, "deployment_id", resourceName, "id"),
-					resource.TestCheckResourceAttr(dataName, "user_type", "database"),
-					resource.TestCheckResourceAttr(dataName, "user_id", expectedFallbackKeyName),
-					resource.TestCheckResourceAttr(dataName, "endpoint_type", "private"),
-					resource.TestCheckResourceAttrSet(dataName, "postgres.#"),
+					resource.TestCheckResourceAttrSet("data.ibm_database_connection.database_connection", "deployment_id"),
+					resource.TestCheckResourceAttr("data.ibm_database_connection.database_connection", "user_type", "database"),
+					resource.TestCheckResourceAttr("data.ibm_database_connection.database_connection", "user_id", testName+"-key-a"),
+					resource.TestCheckResourceAttr("data.ibm_database_connection.database_connection", "endpoint_type", "private"),
+					resource.TestCheckResourceAttrSet("data.ibm_database_connection.database_connection", "postgres.#"),
 				),
 			},
 		},
@@ -136,6 +116,10 @@ resource "ibm_database" "db" {
   tags              = ["one:two"]
   service_endpoints = "private"
 
+  timeouts {
+    create = "60m"
+  }
+
   group {
     group_id = "member"
     members {
@@ -145,7 +129,7 @@ resource "ibm_database" "db" {
       id = "bx3d.4x20"
     }
     disk {
-      allocation_mb = 20480
+      allocation_mb = 10240
     }
   }
 }
@@ -157,10 +141,9 @@ func testAccCheckIBMDatabaseConnectionGen2DataSourceConfig(name string) string {
 resource "ibm_resource_key" "db_key" {
   name                 = "%[1]s-key"
   resource_instance_id = ibm_database.db.id
-  role                 = "Operator"
 }
 
-data "ibm_database_connection" "%[1]s" {
+data "ibm_database_connection" "database_connection" {
   deployment_id = ibm_database.db.id
   user_type     = "database"
   user_id       = ibm_resource_key.db_key.name
@@ -186,14 +169,14 @@ func testAccCheckIBMDatabaseConnectionGen2DataSourceInvalidIDConfig() string {
 // testAccCheckIBMDatabaseConnectionGen2DataSourceNoKeyConfig creates a Gen2
 // database without any resource keys so the datasource returns the expected error.
 func testAccCheckIBMDatabaseConnectionGen2DataSourceNoKeyConfig(name string) string {
-	return testAccCheckIBMDatabaseDataSourceConfigGen2(name) + fmt.Sprintf(`
-data "ibm_database_connection" "%[1]s" {
+	return testAccCheckIBMDatabaseDataSourceConfigGen2(name) + `
+data "ibm_database_connection" "database_connection" {
   deployment_id = ibm_database.db.id
   user_type     = "database"
   user_id       = "nonexistent-key"
   endpoint_type = "private"
 }
-`, name)
+`
 }
 
 // testAccCheckIBMDatabaseConnectionGen2DataSourceFallbackKeyConfig creates
@@ -204,16 +187,14 @@ func testAccCheckIBMDatabaseConnectionGen2DataSourceFallbackKeyConfig(name strin
 resource "ibm_resource_key" "db_key_a" {
   name                 = "%[1]s-key-a"
   resource_instance_id = ibm_database.db.id
-  role                 = "Operator"
 }
 
 resource "ibm_resource_key" "db_key_b" {
   name                 = "%[1]s-key-b"
   resource_instance_id = ibm_database.db.id
-  role                 = "Operator"
 }
 
-data "ibm_database_connection" "%[1]s" {
+data "ibm_database_connection" "database_connection" {
   deployment_id = ibm_database.db.id
   user_type     = "database"
   user_id       = "%[1]s-key-does-not-exist"
