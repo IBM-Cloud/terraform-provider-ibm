@@ -1,3 +1,28 @@
+# 2.2.2 (May 27, 2026)
+
+## Enhancements
+
+### Cloud Databases
+* Add support for Valkey in ibm_database ([6786](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6786))
+
+### VPC Infrastructure
+* handle UPDATE_PENDING state in security group target deletion ([6809](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6809))
+
+### Cloud Internet Services
+* Add batch DNS records ([6749](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6749))
+
+### PlatformNotifications
+* remove beta notice ([6801](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6801))
+
+### CDTektonPipeline
+* bump CD Go SDK version ([6745](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6745))
+
+### General
+* bump github.com/moby/spdystream from 0.5.0 to 0.5.1 ([6748](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6748))
+* bump go.opentelemetry.io/otel from 1.39.0 to 1.41.0 ([6758](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6758))
+* Add mumbai region support for metrics-router ([6811](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6811))
+
+
 # 2.2.1 (May 21, 2026)
 
 ## Enhancements
