@@ -4,6 +4,7 @@
 package database
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"net/url"
@@ -11,6 +12,7 @@ import (
 
 	"github.com/IBM/cloud-databases-go-sdk/clouddatabasesv5"
 	"github.com/IBM/go-sdk-core/v5/core"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
@@ -39,7 +41,7 @@ func pickDataSourceBackend(d *schema.ResourceData, meta interface{}) (dataSource
 
 func DataSourceIBMDatabaseInstance() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceIBMDatabaseInstanceRead,
+		ReadContext: dataSourceIBMDatabaseInstanceRead,
 
 		Schema: map[string]*schema.Schema{
 			"name": {
@@ -621,13 +623,17 @@ func findInstance(d *schema.ResourceData, meta interface{}) (*rc.ResourceInstanc
 	return &filteredInstances[0], nil
 }
 
-func dataSourceIBMDatabaseInstanceRead(d *schema.ResourceData, meta interface{}) error {
+func dataSourceIBMDatabaseInstanceRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	b, err := pickDataSourceBackend(d, meta)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
-	return b.Read(d, meta)
+	err = b.Read(d, meta)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+	return nil
 }
 
 func classicDataSourceIBMDatabaseInstanceRead(d *schema.ResourceData, meta interface{}) error {
