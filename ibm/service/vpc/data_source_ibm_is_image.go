@@ -559,7 +559,7 @@ func imageGetById(context context.Context, d *schema.ResourceData, meta interfac
 		imageRemoteList := []map[string]interface{}{}
 		imageRemoteMap, err := dataSourceImageRemote(*image)
 		if err != nil {
-			tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_legacy_vendor_images", "read", "initialize-client")
+			tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_image", "read", "initialize-client")
 			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 			return tfErr.GetDiag()
 		}

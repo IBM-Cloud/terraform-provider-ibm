@@ -154,7 +154,7 @@ func resourceIBMISSecurityGroupTargetCreate(context context.Context, d *schema.R
 		lbid := sgtarget.ID
 		_, errsgt := isWaitForLbSgTargetCreateAvailable(sess, *lbid, d.Timeout(schema.TimeoutCreate))
 		if errsgt != nil {
-			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("isWaitForLbSgTargetCreateAvailable failed: %s", errsgt.Error()), "ibm_is_security_group_target", "create")
+			tfErr := flex.TerraformErrorf(errsgt, fmt.Sprintf("isWaitForLbSgTargetCreateAvailable failed: %s", errsgt.Error()), "ibm_is_security_group_target", "create")
 			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 			return tfErr.GetDiag()
 		}
