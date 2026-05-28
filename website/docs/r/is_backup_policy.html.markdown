@@ -63,6 +63,7 @@ Review the argument reference that you can specify for your resource.
   Nested scheme for `resource_group`: 
   - `id` - (Optional, String) The unique identifier for this resource group.
 - `scope` - (Optional, List) If present, the scope for this backup policy.
+
   Nested `scope` blocks have the following structure:
   - `crn` - (Required, String) The CRN for this enterprise.
   
@@ -85,6 +86,7 @@ In addition to all argument references listed, you can access the following attr
 - `lifecycle_state` - (String) The lifecycle state of the backup policy.
 - `resource_type` - (String) The resource type.
 - `scope` - Scope of this backup policy
+
   Nested `scope`:
   - `crn` - (String) The CRN for this enterprise.
   - `id` - (String) The unique identifier for this enterprise.
