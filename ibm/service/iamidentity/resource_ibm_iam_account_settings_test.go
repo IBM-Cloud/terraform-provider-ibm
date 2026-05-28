@@ -1,4 +1,4 @@
-// Copyright IBM Corp. 2022 All Rights Reserved.
+// Copyright IBM Corp. 2026 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 package iamidentity_test
@@ -107,6 +107,58 @@ func TestAccIBMIAMAccountSettingsUpdate(t *testing.T) {
 	})
 }
 
+func TestAccIBMIAMAccountSettingsUpdateWithMultipleUserMfa(t *testing.T) {
+	var conf iamidentityv1.AccountSettingsResponse
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { acc.TestAccPreCheck(t) },
+		Providers: acc.TestAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIbmIamAccountSettingsUpdateConfigWithMultipleUserMfa(),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIbmIamAccountSettingsExists("ibm_iam_account_settings.iam_account_settings", conf),
+					resource.TestCheckResourceAttr("ibm_iam_account_settings.iam_account_settings", "restrict_create_service_id", restrict_create_service_id),
+					resource.TestCheckResourceAttr("ibm_iam_account_settings.iam_account_settings", "restrict_create_platform_apikey", restrict_create_platform_apikey),
+					resource.TestCheckResourceAttr("ibm_iam_account_settings.iam_account_settings", "mfa", mfa_trait),
+					resource.TestCheckResourceAttr("ibm_iam_account_settings.iam_account_settings", "user_mfa.#", "2"),
+					resource.TestCheckResourceAttr("ibm_iam_account_settings.iam_account_settings", "session_expiration_in_seconds", session_expiration_in_seconds),
+					resource.TestCheckResourceAttr("ibm_iam_account_settings.iam_account_settings", "session_invalidation_in_seconds", session_invalidation_in_seconds),
+					resource.TestCheckResourceAttr("ibm_iam_account_settings.iam_account_settings", "max_sessions_per_identity", max_sessions_per_identity),
+					resource.TestCheckResourceAttr("ibm_iam_account_settings.iam_account_settings", "system_access_token_expiration_in_seconds", system_access_token_expiration_in_seconds),
+					resource.TestCheckResourceAttr("ibm_iam_account_settings.iam_account_settings", "system_refresh_token_expiration_in_seconds", system_refresh_token_expiration_in_seconds),
+				),
+			},
+		},
+	})
+}
+
+func TestAccIBMIAMAccountSettingsClearUserMfa(t *testing.T) {
+	var conf iamidentityv1.AccountSettingsResponse
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { acc.TestAccPreCheck(t) },
+		Providers: acc.TestAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIbmIamAccountSettingsUpdateConfig(),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIbmIamAccountSettingsExists("ibm_iam_account_settings.iam_account_settings", conf),
+					resource.TestCheckResourceAttr("ibm_iam_account_settings.iam_account_settings", "user_mfa.#", "1"),
+				),
+			},
+			{
+				Config:             testAccCheckIbmIamAccountSettingsUpdateConfigWithNoUserMfa(),
+				ExpectNonEmptyPlan: true,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIbmIamAccountSettingsExists("ibm_iam_account_settings.iam_account_settings", conf),
+					resource.TestCheckResourceAttr("ibm_iam_account_settings.iam_account_settings", "user_mfa.#", "0"),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckIbmIamAccountSettingsConfigBasic() string {
 	return `
 
@@ -136,7 +188,6 @@ func testAccCheckIbmIamAccountSettingsUpdateConfig() string {
 			restrict_create_service_id = "%s"
 			restrict_create_platform_apikey = "%s"
 			restrict_user_list_visibility = "%s"
-			if_match = "%s"
 			mfa = "%s"
 			user_mfa {
 				iam_id = "%s"
@@ -147,7 +198,7 @@ func testAccCheckIbmIamAccountSettingsUpdateConfig() string {
 				invitation_email_allow_patterns = [
 					"*@ibm.com",
 					"**@corp.org"
-					]
+				]
 				restrict_invitation = false
 			}
 			session_expiration_in_seconds = "%s"
@@ -160,7 +211,6 @@ func testAccCheckIbmIamAccountSettingsUpdateConfig() string {
 		restrict_create_service_id,
 		restrict_create_platform_apikey,
 		restrict_user_list_visibility,
-		entity_tag,
 		mfa_trait,
 		acc.Ibmid1,
 		session_expiration_in_seconds,
@@ -177,10 +227,8 @@ func testAccCheckIbmIamAccountSettingsUpdateConfigWithNoUserMfa() string {
 		resource "ibm_iam_account_settings" "iam_account_settings" {
 			restrict_create_service_id = "%s"
 			restrict_create_platform_apikey = "%s"
-			if_match = "%s"
 			mfa = "%s"
-			user_mfa {
-			}
+			user_mfa {}
 			session_expiration_in_seconds = "%s"
 			session_invalidation_in_seconds = "%s"
 			max_sessions_per_identity = "%s"
@@ -190,7 +238,6 @@ func testAccCheckIbmIamAccountSettingsUpdateConfigWithNoUserMfa() string {
 	`,
 		restrict_create_service_id,
 		restrict_create_platform_apikey,
-		entity_tag,
 		mfa_trait,
 		session_expiration_in_seconds,
 		session_invalidation_in_seconds,
@@ -206,14 +253,13 @@ func testAccCheckIbmIamAccountSettingsUpdateConfigWithMultipleUserMfa() string {
 		resource "ibm_iam_account_settings" "iam_account_settings" {
 			restrict_create_service_id = "%s"
 			restrict_create_platform_apikey = "%s"
-			if_match = "%s"
 			mfa = "%s"
 			user_mfa {
-				iam_id = "iam_id"
+				iam_id = "%s"
 				mfa = "NONE"
 			}
 			user_mfa {
-				iam_id = "iam_id"
+				iam_id = "%s"
 				mfa = "NONE"
 			}
 			session_expiration_in_seconds = "%s"
@@ -225,8 +271,9 @@ func testAccCheckIbmIamAccountSettingsUpdateConfigWithMultipleUserMfa() string {
 	`,
 		restrict_create_service_id,
 		restrict_create_platform_apikey,
-		entity_tag,
 		mfa_trait,
+		acc.Ibmid1,
+		acc.Ibmid2,
 		session_expiration_in_seconds,
 		session_invalidation_in_seconds,
 		max_sessions_per_identity,
