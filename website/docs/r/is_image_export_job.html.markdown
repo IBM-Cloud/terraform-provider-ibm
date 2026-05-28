@@ -88,7 +88,7 @@ The `id` property can be formed from `image_id`, and `id`. For example:
 
 ```terraform
 import {
-  to = ibm_is_image_export_job.is_image_export
+  to = ibm_is_image_export_job.example
   id = "<image_id>/<id>"
 }
 ```
@@ -96,5 +96,5 @@ import {
 Using `terraform import`. For example:
 
 ```console
-% terraform import ibm_is_image_export_job.is_image_export <image_id>/<id>
+% terraform import ibm_is_image_export_job.example <image_id>/<id>
 ```

@@ -186,7 +186,7 @@ The `id` property can be formed from `instance`, and `id`. For example:
 
 ```terraform
 import {
-  to = ibm_is_instance_network_attachment.is_instance_network_attachment
+  to = ibm_is_instance_network_attachment.example
   id = "<instance>/<id>"
 }
 ```
@@ -194,5 +194,5 @@ import {
 Using `terraform import`. For example:
 
 ```console
-% terraform import ibm_is_instance_network_attachment.is_instance_network_attachment <instance>/<id>
+% terraform import ibm_is_instance_network_attachment.example <instance>/<id>
 ```

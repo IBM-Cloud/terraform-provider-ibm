@@ -111,7 +111,7 @@ The `id` property can be formed using the snapshot_consistency_group identifier.
 
 ```terraform
 import {
-  to = ibm_is_snapshot_consistency_group.is_snapshot_consistency_group
+  to = ibm_is_snapshot_consistency_group.example
   id = "<id>"
 }
 ```
@@ -119,5 +119,5 @@ import {
 Using `terraform import`. For example:
 
 ```console
-% terraform import ibm_is_snapshot_consistency_group.is_snapshot_consistency_group <id>
+% terraform import ibm_is_snapshot_consistency_group.example <id>
 ```

@@ -67,7 +67,7 @@ The `id` property can be formed using the cluster_network id. For example:
 
 ```terraform
 import {
-  to = ibm_is_cluster_network.is_cluster_network
+  to = ibm_is_cluster_network.example
   id = "<id>"
 }
 ```
@@ -75,5 +75,5 @@ import {
 Using `terraform import`. For example:
 
 ```console
-% terraform import ibm_is_cluster_network.is_cluster_network <id>
+% terraform import ibm_is_cluster_network.example <id>
 ```

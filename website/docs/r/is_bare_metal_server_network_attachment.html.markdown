@@ -126,7 +126,7 @@ The `id` property can be formed from `bare_metal_server`, and `network_attachmen
 
 ```terraform
 import {
-  to = ibm_is_bare_metal_server_network_attachment.is_bare_metal_server_network_attachment
+  to = ibm_is_bare_metal_server_network_attachment.example
   id = "<bare_metal_server>/<network_attachment_id>"
 }
 ```
@@ -134,5 +134,5 @@ import {
 Using `terraform import`. For example:
 
 ```console
-% terraform import ibm_is_bare_metal_server_network_attachment.is_bare_metal_server_network_attachment <bare_metal_server>/<network_attachment_id>
+% terraform import ibm_is_bare_metal_server_network_attachment.example <bare_metal_server>/<network_attachment_id>
 ```

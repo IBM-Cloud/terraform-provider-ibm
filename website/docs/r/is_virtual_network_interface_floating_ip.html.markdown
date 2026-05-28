@@ -45,13 +45,13 @@ The `id` property can be formed using the virtual_network_interface and floating
 
 ```terraform
 import {
-  to = ibm_is_virtual_network_interface_floating_ip.vni_fip
-  id = "< vni_id >/< floating_ip_id >"
+  to = ibm_is_virtual_network_interface_floating_ip.example
+  id = "<vni_id>/<floating_ip_id>"
 }
 ```
 
 Using `terraform import`. For example:
 
 ```console
-% terraform import ibm_is_virtual_network_interface_floating_ip.vni_fip < vni_id >/< floating_ip_id >
+% terraform import ibm_is_virtual_network_interface_floating_ip.example <vni_id>/<floating_ip_id>
 ```

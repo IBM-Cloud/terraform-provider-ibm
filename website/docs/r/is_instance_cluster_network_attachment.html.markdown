@@ -230,7 +230,7 @@ The `id` property can be formed from `instance_id`, and `instance_cluster_networ
 
 ```terraform
 import {
-  to = ibm_is_instance_cluster_network_attachment.is_instance_cluster_network_attachment
+  to = ibm_is_instance_cluster_network_attachment.example
   id = "<instance_id>/<instance_cluster_network_attachment_id>"
 }
 ```
@@ -238,5 +238,5 @@ import {
 Using `terraform import`. For example:
 
 ```console
-% terraform import ibm_is_instance_cluster_network_attachment.is_instance_cluster_network_attachment <instance_id>/<instance_cluster_network_attachment_id>
+% terraform import ibm_is_instance_cluster_network_attachment.example <instance_id>/<instance_cluster_network_attachment_id>
 ```

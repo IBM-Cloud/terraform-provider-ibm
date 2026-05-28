@@ -70,10 +70,9 @@ Review the argument references that you can specify for your resource.
 - `vpn_gateway` - (Required, Force new resource, String) The unique identifier of the VPN gateway.
 
 ## Import
+
 In Terraform v1.5.0 and later, use an [`import` block](https://developer.hashicorp.com/terraform/language/import) to import the `ibm_is_vpn_gateway_advertised_cidr` resource by using `id`.
 The `id` property can be formed from `vpn_gateway_ID`, and `cidr`. For example:
-
-**Syntax**
 
 ```terraform
 import {

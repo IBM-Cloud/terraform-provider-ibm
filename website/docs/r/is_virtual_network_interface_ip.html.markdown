@@ -47,7 +47,7 @@ The `id` property can be formed from `virtual_network_interface`, and `reserved_
 
 ```terraform
 import {
-  to = ibm_is_virtual_network_interface_ip.is_reserved_ip
+  to = ibm_is_virtual_network_interface_ip.example
   id = "<virtual_network_interface>/<reserved_ip>"
 }
 ```
@@ -55,5 +55,5 @@ import {
 Using `terraform import`. For example:
 
 ```console
-% terraform import ibm_is_virtual_network_interface_ip.is_reserved_ip <virtual_network_interface>/<reserved_ip>
+% terraform import ibm_is_virtual_network_interface_ip.example <virtual_network_interface>/<reserved_ip>
 ```
