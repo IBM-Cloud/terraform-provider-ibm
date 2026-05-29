@@ -164,6 +164,11 @@ func resourceIBMIamIdentityPreferenceUpdate(context context.Context, d *schema.R
 		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_identity_preference", "update", "sep-id-parts").GetDiag()
 	}
 
+	// Lock to prevent concurrent updates to the same account/iam_id/service combination
+	mutexKey := fmt.Sprintf("iam_identity_preference_%s_%s_%s", parts[0], parts[1], parts[2])
+	conns.IbmMutexKV.Lock(mutexKey)
+	defer conns.IbmMutexKV.Unlock(mutexKey)
+
 	updatePreferenceOnScopeAccountOptions.SetAccountID(parts[0])
 	updatePreferenceOnScopeAccountOptions.SetIamID(parts[1])
 	updatePreferenceOnScopeAccountOptions.SetService(parts[2])
@@ -204,6 +209,11 @@ func resourceIBMIamIdentityPreferenceDelete(context context.Context, d *schema.R
 	if err != nil {
 		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_identity_preference", "delete", "sep-id-parts").GetDiag()
 	}
+
+	// Lock to prevent concurrent deletes to the same account/iam_id/service combination
+	mutexKey := fmt.Sprintf("iam_identity_preference_%s_%s_%s", parts[0], parts[1], parts[2])
+	conns.IbmMutexKV.Lock(mutexKey)
+	defer conns.IbmMutexKV.Unlock(mutexKey)
 
 	deletePreferenceOnScopeAccountOptions.SetAccountID(parts[0])
 	deletePreferenceOnScopeAccountOptions.SetIamID(parts[1])
