@@ -285,7 +285,7 @@ func resourceIBMISInstanceGroupCreate(context context.Context, d *schema.Resourc
 
 	_, healthError := waitForHealthyInstanceGroup(d.Id(), meta, d.Timeout(schema.TimeoutCreate))
 	if healthError != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("waitForHealthyInstanceGroup failed: %s", healthError.Error()), "ibm_is_instance_group", "create")
+		tfErr := flex.TerraformErrorf(healthError, fmt.Sprintf("waitForHealthyInstanceGroup failed: %s", healthError.Error()), "ibm_is_instance_group", "create")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
@@ -404,7 +404,7 @@ func resourceIBMISInstanceGroupUpdate(context context.Context, d *schema.Resourc
 		// wait for instance group health update with update timeout configured.
 		_, healthError := waitForHealthyInstanceGroup(instanceGroupID, meta, d.Timeout(schema.TimeoutUpdate))
 		if healthError != nil {
-			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("waitForHealthyInstanceGroup failed: %s", healthError.Error()), "ibm_is_instance_group", "update")
+			tfErr := flex.TerraformErrorf(healthError, fmt.Sprintf("waitForHealthyInstanceGroup failed: %s", healthError.Error()), "ibm_is_instance_group", "update")
 			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 			return tfErr.GetDiag()
 		}
@@ -573,7 +573,7 @@ func resourceIBMISInstanceGroupDelete(context context.Context, d *schema.Resourc
 	}
 	_, healthError := waitForHealthyInstanceGroup(instanceGroupID, meta, d.Timeout(schema.TimeoutUpdate))
 	if healthError != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("waitForHealthyInstanceGroup failed: %s", healthError.Error()), "ibm_is_instance_group", "delete")
+		tfErr := flex.TerraformErrorf(healthError, fmt.Sprintf("waitForHealthyInstanceGroup failed: %s", healthError.Error()), "ibm_is_instance_group", "delete")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
@@ -620,14 +620,14 @@ func resourceIBMISInstanceGroupDelete(context context.Context, d *schema.Resourc
 			d.SetId("")
 			return nil
 		}
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("DeleteInstanceGroupWithContext failed: %s", err.Error()), "ibm_is_instance_group", "delete")
+		tfErr := flex.TerraformErrorf(Err, fmt.Sprintf("DeleteInstanceGroupWithContext failed: %s", Err.Error()), "ibm_is_instance_group", "delete")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
 
 	_, deleteError := waitForInstanceGroupDelete(d, meta)
 	if deleteError != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("waitForInstanceGroupDelete failed: %s", deleteError.Error()), "ibm_is_instance_group", "delete")
+		tfErr := flex.TerraformErrorf(deleteError, fmt.Sprintf("waitForInstanceGroupDelete failed: %s", deleteError.Error()), "ibm_is_instance_group", "delete")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
