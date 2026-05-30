@@ -120,12 +120,14 @@ In addition to all argument reference list, you can access the following attribu
 
 - `access_mode` - (String) The access mode for this load balancer. One of **private**, **public**, **private_path**.
 - `attached_load_balancer_pool_members` - (List) The load balancer pool members attached to this load balancer.
-	Nested scheme for `members`:
-	- `deleted` - (List) If present, this property indicates the referenced resource has been deleted and providessome supplementary information.
-		Nested scheme for `deleted`:
-    	- `more_info` - (String) Link to documentation about deleted resources.
-    - `href` - (String) The URL for this load balancer pool member.
-    - `id` - (String) The unique identifier for this load balancer pool member.
+
+  Nested scheme for `members`:
+  - `deleted` - (List) If present, this property indicates the referenced resource has been deleted and providessome supplementary information.
+
+    Nested scheme for `deleted`:
+    - `more_info` - (String) Link to documentation about deleted resources.
+  - `href` - (String) The URL for this load balancer pool member.
+  - `id` - (String) The unique identifier for this load balancer pool member.
 - `availability` - (String) The availability of this load balancer
 - `crn` - (String) The CRN for this load balancer.
 - `hostname` - (String) The fully qualified domain name assigned to this load balancer.
@@ -136,10 +138,10 @@ In addition to all argument reference list, you can access the following attribu
 - `private_ip` - (List) The Reserved IP address reference assigned to this load balancer.
 
   Nested scheme for `private_ip`:
-    - `address` - (String) IPv4 The IP address. This property may add support for IPv6 addresses in the future. When processing a value in this property, verify that the address is in an expected format. If it is not, log an error. Optionally halt processing and surface the error, or bypass the resource on which the unexpected IP address format was encountered.
-    - `href` - (String) The URL for this reserved ip
-    - `reserved_ip`- (String) The unique identifier for this reserved IP.
-    - `name`- (String) The user-defined or system-provided name for this reserved IP
+  - `address` - (String) IPv4 The IP address. This property may add support for IPv6 addresses in the future. When processing a value in this property, verify that the address is in an expected format. If it is not, log an error. Optionally halt processing and surface the error, or bypass the resource on which the unexpected IP address format was encountered.
+  - `href` - (String) The URL for this reserved ip
+  - `reserved_ip`- (String) The unique identifier for this reserved IP.
+  - `name`- (String) The user-defined or system-provided name for this reserved IP
 
 - `private_ips` - (String) The private IP addresses (Reserved IP address reference) assigned to this load balancer.
 - `status` - (String) The status of the load balancer.
