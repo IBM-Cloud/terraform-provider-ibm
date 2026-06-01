@@ -120,7 +120,7 @@ func ResourceIBMISLBListener() *schema.Resource {
 						"certificate_authority": {
 							Type:        schema.TypeString,
 							Required:    true,
-							Description: "The certificate instance to use for the listener client certificate authority.",
+							Description: "The certificate instance to use for the listener client certificate authority. Required if certificate_revocation_list is specified.",
 						},
 						"certificate_revocation_list": {
 							Type:        schema.TypeString,
@@ -764,7 +764,7 @@ func lbListenerUpdate(context context.Context, d *schema.ResourceData, meta inte
 	if d.HasChange(isLBListenerClientAuthentication) {
 		if clientAuth, ok := d.GetOk(isLBListenerClientAuthentication); ok {
 			clientAuthList := clientAuth.([]interface{})
-			if len(clientAuthList) > 0 {
+			if len(clientAuthList) > 0 && clientAuthList[0] != nil {
 				clientAuthMap := clientAuthList[0].(map[string]interface{})
 				clientAuthPatch := &vpcv1.LoadBalancerListenerClientAuthenticationPatch{}
 
@@ -793,7 +793,6 @@ func lbListenerUpdate(context context.Context, d *schema.ResourceData, meta inte
 			}
 		} else {
 			clientAuthRemoved = true
-			loadBalancerListenerPatchModel.ClientAuthentication = &vpcv1.LoadBalancerListenerClientAuthenticationPatch{}
 		}
 		hasChanged = true
 	}

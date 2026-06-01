@@ -221,7 +221,6 @@ func ResourceIBMISLBPool() *schema.Resource {
 				Type:        schema.TypeList,
 				MaxItems:    1,
 				Optional:    true,
-				Computed:    true,
 				Description: "The server authentication to use for this pool. Supported by load balancers with mtls_supported set to true. The pool must have a protocol of https.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -391,7 +390,7 @@ func resourceIBMISLBPoolCreate(context context.Context, d *schema.ResourceData, 
 
 	if clientAuth, ok := d.GetOk(isLBPoolClientAuthentication); ok {
 		clientAuthList := clientAuth.([]interface{})
-		if len(clientAuthList) > 0 {
+		if len(clientAuthList) > 0 && clientAuthList[0] != nil {
 			clientAuthMap := clientAuthList[0].(map[string]interface{})
 			clientAuthCertCRN = clientAuthMap["certificate_instance"].(string)
 		}
@@ -399,7 +398,7 @@ func resourceIBMISLBPoolCreate(context context.Context, d *schema.ResourceData, 
 
 	if serverAuth, ok := d.GetOk(isLBPoolServerAuthentication); ok {
 		serverAuthList := serverAuth.([]interface{})
-		if len(serverAuthList) > 0 {
+		if len(serverAuthList) > 0 && serverAuthList[0] != nil {
 			serverAuthMap := serverAuthList[0].(map[string]interface{})
 			if ca, ok := serverAuthMap["certificate_authority"].(string); ok && ca != "" {
 				serverAuthCA = ca
@@ -845,7 +844,7 @@ func lbPoolUpdate(context context.Context, d *schema.ResourceData, meta interfac
 	if d.HasChange(isLBPoolClientAuthentication) {
 		if clientAuth, ok := d.GetOk(isLBPoolClientAuthentication); ok {
 			clientAuthList := clientAuth.([]interface{})
-			if len(clientAuthList) > 0 {
+			if len(clientAuthList) > 0 && clientAuthList[0] != nil {
 				clientAuthMap := clientAuthList[0].(map[string]interface{})
 				clientAuthCertCRN := clientAuthMap["certificate_instance"].(string)
 				loadBalancerPoolPatchModel.ClientAuthentication = &vpcv1.LoadBalancerPoolClientAuthenticationPatch{
@@ -856,7 +855,6 @@ func lbPoolUpdate(context context.Context, d *schema.ResourceData, meta interfac
 			}
 		} else {
 			clientAuthRemoved = true
-			loadBalancerPoolPatchModel.ClientAuthentication = &vpcv1.LoadBalancerPoolClientAuthenticationPatch{}
 		}
 		hasChanged = true
 	}
@@ -865,7 +863,7 @@ func lbPoolUpdate(context context.Context, d *schema.ResourceData, meta interfac
 	if d.HasChange(isLBPoolServerAuthentication) {
 		if serverAuth, ok := d.GetOk(isLBPoolServerAuthentication); ok {
 			serverAuthList := serverAuth.([]interface{})
-			if len(serverAuthList) > 0 {
+			if len(serverAuthList) > 0 && serverAuthList[0] != nil {
 				serverAuthMap := serverAuthList[0].(map[string]interface{})
 				serverAuthPatch := &vpcv1.LoadBalancerPoolServerAuthenticationPatch{}
 
@@ -881,7 +879,6 @@ func lbPoolUpdate(context context.Context, d *schema.ResourceData, meta interfac
 			}
 		} else {
 			serverAuthRemoved = true
-			loadBalancerPoolPatchModel.ServerAuthentication = &vpcv1.LoadBalancerPoolServerAuthenticationPatch{}
 		}
 		hasChanged = true
 	}
