@@ -226,7 +226,6 @@ var (
 	IksClusterSubnetID        string
 	IksClusterResourceGroupID string
 	IcdDbDeploymentId         string
-	IcdDbGen2DeploymentId     string
 	IcdDbBackupId             string
 	IcdDbTaskId               string
 	KmsInstanceID             string
@@ -1195,12 +1194,6 @@ func init() {
 	if IcdDbDeploymentId == "" {
 		IcdDbDeploymentId = "crn:v1:bluemix:public:databases-for-redis:au-syd:a/40ddc34a953a8c02f10987b59085b60e:5042afe1-72c2-4231-89cc-c949e5d56251::"
 		fmt.Println("[INFO] Set the environment variable ICD_DB_DEPLOYMENT_ID for testing ibm_cloud_databases else it is set to default value 'crn:v1:bluemix:public:databases-for-redis:au-syd:a/40ddc34a953a8c02f10987b59085b60e:5042afe1-72c2-4231-89cc-c949e5d56251::'")
-	}
-
-	IcdDbGen2DeploymentId = os.Getenv("ICD_DB_GEN2_DEPLOYMENT_ID")
-	if IcdDbGen2DeploymentId == "" {
-		IcdDbGen2DeploymentId = "my-postgres-gen2"
-		fmt.Println("[INFO] Set the environment variable ICD_DB_GEN2_DEPLOYMENT_ID for testing Gen2 databases else it is set to default value 'my-postgres-gen2'")
 	}
 
 	IcdDbBackupId = os.Getenv("ICD_DB_BACKUP_ID")

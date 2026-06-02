@@ -161,10 +161,15 @@ func extractLocationFromCRN(crn *string) (string, error) {
 
 // extractDeploymentIDFromCRN extracts the deployment ID from a catalog CRN.
 // Catalog CRN format: crn:v1:bluemix:public:globalcatalog::::deployment:deployment-id
-// Returns the deployment ID or an error if the CRN format is invalid.
+// Some callers may already provide the deployment ID directly.
+// Returns the deployment ID or an error if the input is invalid.
 func extractDeploymentIDFromCRN(catalogCRN string) (string, error) {
 	if catalogCRN == "" {
 		return "", fmt.Errorf("invalid catalog CRN format: empty CRN")
+	}
+
+	if !strings.HasPrefix(catalogCRN, "crn:") {
+		return catalogCRN, nil
 	}
 
 	// Split by "deployment:" to extract the deployment ID
@@ -404,12 +409,20 @@ func buildHostFlavorConfig(hostFlavorID string) []map[string]interface{} {
 	return []map[string]interface{}{hostflavor}
 }
 
-// getInitialNodeCountGen2 retrieves the default member count for Gen2 plans from Global Catalog.
-// Returns the member count from the catalog metadata, or a default value of 3 if not found.
-func getInitialNodeCountGen2(deploymentID string, meta interface{}) (int, error) {
+// getInitialNodeCountGen2 retrieves the default member count for a Gen2 deployment from Global Catalog.
+// The input may be either a deployment catalog CRN or a deployment ID.
+// Returns the member count from the catalog metadata, or a default value if not found.
+// If the deployment reference is not a valid Global Catalog entry ID in the current environment,
+// fall back to the provider default instead of failing create.
+func getInitialNodeCountGen2(deploymentRef string, meta interface{}) (int, error) {
 	globalClient, err := meta.(conns.ClientSession).GlobalCatalogV1API()
 	if err != nil {
 		return 0, fmt.Errorf("failed to get global catalog client: %w", err)
+	}
+
+	deploymentID, err := extractDeploymentIDFromCRN(deploymentRef)
+	if err != nil {
+		return 0, fmt.Errorf("failed to normalize deployment reference: %w", err)
 	}
 
 	options := &globalcatalogv1.GetCatalogEntryOptions{
@@ -418,7 +431,8 @@ func getInitialNodeCountGen2(deploymentID string, meta interface{}) (int, error)
 
 	deployment, _, err := globalClient.GetCatalogEntry(options)
 	if err != nil {
-		return 0, fmt.Errorf("error retrieving deployment catalog entry: %w", err)
+		log.Printf("[WARN] Unable to retrieve Gen2 deployment catalog entry %q, using default member count %d: %v", deploymentID, defaultMemberCount, err)
+		return defaultMemberCount, nil
 	}
 
 	// Extract member count from deployment metadata
