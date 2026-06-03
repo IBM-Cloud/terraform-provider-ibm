@@ -72,7 +72,7 @@ func (g *dataSourceIBMDatabaseTaskGen2Backend) Read(ctx context.Context, d *sche
 
 	d.SetId(*instance.ID)
 
-	if err = d.Set("task_id", instance.ID); err != nil {
+	if err = d.Set("task_id", ""); err != nil {
 		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting task_id: %s", err), "(Data) ibm_database_task", "read")
 		return tfErr.GetDiag()
 	}

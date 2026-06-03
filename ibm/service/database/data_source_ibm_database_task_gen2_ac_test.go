@@ -26,7 +26,8 @@ func TestAccIBMDatabaseTaskGen2DataSourceRead(t *testing.T) {
 			{
 				Config: testAccCheckIBMDatabaseTaskGen2DataSourceConfig(testName),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet("data.ibm_database_task.database_task", "task_id"),
+					// Gen2 does not have task_id from last_operation, so it should be empty
+					resource.TestCheckResourceAttr("data.ibm_database_task.database_task", "task_id", ""),
 					resource.TestCheckResourceAttrSet("data.ibm_database_task.database_task", "deployment_id"),
 					resource.TestCheckResourceAttrSet("data.ibm_database_task.database_task", "description"),
 					resource.TestCheckResourceAttrSet("data.ibm_database_task.database_task", "status"),
@@ -64,7 +65,8 @@ func TestAccIBMDatabaseTaskGen2DataSourceStatusMapping(t *testing.T) {
 			{
 				Config: testAccCheckIBMDatabaseTaskGen2DataSourceConfig(testName),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet("data.ibm_database_task.database_task", "task_id"),
+					// Gen2 does not have task_id from last_operation, so it should be empty
+					resource.TestCheckResourceAttr("data.ibm_database_task.database_task", "task_id", ""),
 					resource.TestCheckResourceAttrSet("data.ibm_database_task.database_task", "status"),
 					// Status should be "completed" for an active Gen2 instance
 					resource.TestMatchResourceAttr("data.ibm_database_task.database_task", "status", regexp.MustCompile("^(completed|running|queued|failed)$")),
