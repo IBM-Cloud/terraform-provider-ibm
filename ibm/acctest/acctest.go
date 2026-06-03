@@ -1219,11 +1219,11 @@ func init() {
 	}
 
 	// ICD_DB_GEN2_TASK_ID is used for testing Gen2 database data sources (ibm_database_task with Gen2 backend)
-	// Requires a Gen2 database instance CRN (plan: standard-gen2). If not set, defaults to ICD_DB_GEN2_DEPLOYMENT_ID
+	// Requires a Gen2 database instance CRN (plan: standard-gen2)
 	IcdDbGen2TaskId = os.Getenv("ICD_DB_GEN2_TASK_ID")
 	if IcdDbGen2TaskId == "" {
 		IcdDbGen2TaskId = "crn:v1:bluemix:public:databases-for-postgresql:ca-mon:a/40ddc34a953a8c02f10987b59085b60e:7b231067-9ddd-4de9-964a-d7bf84cfdc3f::"
-		fmt.Println("[INFO] Set the environment variable ICD_DB_GEN2_TASK_ID for testing Gen2 databases else it is set to default value (uses deployment ID)")
+		fmt.Println("[INFO] Set the environment variable ICD_DB_GEN2_TASK_ID for testing Gen2 databases else it is set to default value 'crn:v1:bluemix:public:databases-for-postgresql:ca-mon:a/40ddc34a953a8c02f10987b59085b60e:7b231067-9ddd-4de9-964a-d7bf84cfdc3f::'")
 	}
 
 	NotificationDistributionListAccountId = os.Getenv("NOTIFICATION_DIST_ACCOUNT_ID")
