@@ -1,3 +1,86 @@
+# 2.2.2 (May 27, 2026)
+
+## Enhancements
+
+### Cloud Databases
+* Add support for Valkey in ibm_database ([6786](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6786))
+
+### VPC Infrastructure
+* handle UPDATE_PENDING state in security group target deletion ([6809](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6809))
+
+### Cloud Internet Services
+* Add batch DNS records ([6749](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6749))
+
+### PlatformNotifications
+* remove beta notice ([6801](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6801))
+
+### CDTektonPipeline
+* bump CD Go SDK version ([6745](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6745))
+
+### General
+* bump github.com/moby/spdystream from 0.5.0 to 0.5.1 ([6748](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6748))
+* bump go.opentelemetry.io/otel from 1.39.0 to 1.41.0 ([6758](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6758))
+* Add mumbai region support for metrics-router ([6811](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6811))
+
+
+# 2.2.1 (May 21, 2026)
+
+## Enhancements
+
+### Schematics
+* secure values shouldnt be set in read ([6792](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6792))
+* Addressed issue with sch workspace resource update ([6804](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6804))
+
+
+# 2.2.0 (May 20, 2026)
+
+## Bug Fixes
+
+### VPC Infrastructure
+* Support VSI downsize across families along with volume bandwidth ([6794](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6794))
+
+
+
+# 2.2.0-beta1 (May 18, 2026)
+
+## Bug Fixes
+
+### Cloud Databases
+* Revert "Feat: 2857 Implement Gen2 Support for ibm_database datasource ([6788](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6788))
+
+
+# 2.2.0-beta0 (May 18, 2026)
+
+## Bug Fixes
+
+### Cloud Internet Services
+* add query params for GET Custom List Items ([6761](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6761))
+
+
+## Enhancements
+
+### Cloud Databases
+* Add Gen2 support for IBM Cloud Databases ([6714](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6714))
+* 2857 Implement Gen2 Support for ibm_database datasource ([6783](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6783))
+
+### Cloud Logs
+* Add support for log data retention tags API ([6753](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6753))
+
+### IAM
+* enable cross region ([6782](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6782))
+* add missing arguments docs and examples ([6785](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6785))
+
+
+## Documentation
+
+### General
+* Update the readme ([6774](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6774))
+
+### DRAutomation
+* updated dra and pha docs ([6780](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6780))
+
+
+
 # 2.1.0 (May 5, 2026)
 
 ## Bug Fixes

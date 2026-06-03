@@ -97,8 +97,8 @@ Review the argument references that you can specify for your resource.
   ~> **NOTE:** raise  error if name is given with a prefix `ibm- `.
 - `subnet` - (Required, Forces new resource, String) The subnet ID for the reserved IP.
 - `target` - (Optional, string) The target to bind this reserved IP to. The target must be in the same VPC. If unspecified, the reserved IP will be created unbound. The following targets are supported:
-    - An endpoint gateway not already bound to a reserved IP in the subnet's zone.
-    - A virtual network interface.
+  - An endpoint gateway not already bound to a reserved IP in the subnet's zone.
+  - A virtual network interface.
     
 ## Attribute reference
 In addition to all argument reference list, you can access the following attribute reference after your resource is created.

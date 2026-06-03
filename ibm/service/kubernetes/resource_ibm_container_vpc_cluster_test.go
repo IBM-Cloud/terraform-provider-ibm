@@ -621,7 +621,7 @@ resource "ibm_container_vpc_cluster" "cluster" {
 }`, name, disable_outbound_traffic_protection)
 }
 
-// preveously you have to create securitygroups and use them instead
+// previously you had to create securitygroups and use them instead
 func testAccCheckIBMContainerVpcClusterSecurityGroups(name string) string {
 	return fmt.Sprintf(`
 	data "ibm_resource_group" "resource_group" {
@@ -848,6 +848,54 @@ func TestAccIBMContainerVpcClusterKMSEnvvar(t *testing.T) {
 	})
 }
 
+func TestAccIBMContainerVpcClusterNetworkPluginNotConfigured(t *testing.T) {
+	name := fmt.Sprintf("tf-vpc-cluster-%d", acctest.RandIntRange(10, 100))
+	defaultNetworkPlugin := "Calico"
+	var conf *v2.ClusterInfo
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMContainerVpcClusterDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMContainerVpcClusterNetworkPlugin(name, ""),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMContainerVpcExists("ibm_container_vpc_cluster.cluster", conf),
+					resource.TestCheckResourceAttr(
+						"ibm_container_vpc_cluster.cluster", "name", name),
+					resource.TestCheckResourceAttr(
+						"ibm_container_vpc_cluster.cluster", "network_plugin", defaultNetworkPlugin),
+				),
+			},
+		},
+	})
+}
+
+func TestAccIBMContainerVpcClusterNetworkPluginConfigured(t *testing.T) {
+	name := fmt.Sprintf("tf-vpc-cluster-%d", acctest.RandIntRange(10, 100))
+	networkPlugin := "OVNKubernetes"
+	var conf *v2.ClusterInfo
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMContainerVpcClusterDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMContainerVpcClusterNetworkPlugin(name, networkPlugin),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMContainerVpcExists("ibm_container_vpc_cluster.cluster", conf),
+					resource.TestCheckResourceAttr(
+						"ibm_container_vpc_cluster.cluster", "name", name),
+					resource.TestCheckResourceAttr(
+						"ibm_container_vpc_cluster.cluster", "network_plugin", networkPlugin),
+				),
+			},
+		},
+	})
+}
+
 // You need to set up env vars:
 // export IBM_CLUSTER_VPC_ID
 // export IBM_CLUSTER_VPC_SUBNET_ID
@@ -955,4 +1003,42 @@ func testAccCheckIBMContainerVpcClusterKMSEnvvar(name string) string {
 	`, name, acc.IksClusterVpcID, acc.IksClusterResourceGroupID, acc.IksClusterSubnetID, acc.KmsInstanceID, acc.CrkID)
 	fmt.Println(config)
 	return config
+}
+
+func testAccCheckIBMContainerVpcClusterNetworkPlugin(name, networkPlugin string) string {
+	region := acc.Region()
+
+	// networkPlugin is omitted from the config if the param is an empty string
+	networkPluginConfig := ""
+	if networkPlugin != "" {
+		networkPluginConfig = fmt.Sprintf(`network_plugin = "%s"`, networkPlugin)
+	}
+
+	return fmt.Sprintf(`
+data "ibm_resource_group" "resource_group" {
+	is_default = "true"
+}
+resource "ibm_is_vpc" "vpc" {
+	name = "%[1]s"
+}
+resource "ibm_is_subnet" "subnet" {
+	name                     = "%[1]s"
+	vpc                      = ibm_is_vpc.vpc.id
+	zone                     = "%[2]s-1"
+	total_ipv4_address_count = 256
+}
+resource "ibm_container_vpc_cluster" "cluster" {
+	name              = "%[1]s"
+	vpc_id            = ibm_is_vpc.vpc.id
+	flavor            = "cx2.2x4"
+	worker_count      = 1
+	kube_version      = "4.20_openshift"
+	wait_till         = "OneWorkerNodeReady"
+	resource_group_id = data.ibm_resource_group.resource_group.id
+	zones {
+		subnet_id = ibm_is_subnet.subnet.id
+		name      = "%[2]s-1"
+	}
+	%[3]s
+}`, name, region, networkPluginConfig)
 }

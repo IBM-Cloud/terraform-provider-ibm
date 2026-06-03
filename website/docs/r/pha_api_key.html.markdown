@@ -25,14 +25,11 @@ resource "ibm_pha_api_key" "pha_api_key_instance" {
 
 You can specify the following arguments for this resource.
 
-* `accept_language` - (Optional, String) The language requested for the return document.
-  * Constraints: The maximum length is `50` characters. The minimum length is `1` character. The value must match regular expression `/^[a-zA-Z0-9\\-_,;=.*]+$/`.
+* `accept_language` - (Optional, String) The language requested for the return document. (ex., en,it,fr,es,de,ja,ko,pt-BR,zh-HANS,zh-HANT)
 * `api_key` - (Optional, String) The API key associated with the request.
-  * Constraints: The maximum length is `2048` characters. The minimum length is `1` character. The value must match regular expression `/^[A-Za-z0-9._: -]+$/`.
-* `if_none_match` - (Optional, String) ETag for conditional requests (optional).
-  * Constraints: The maximum length is `50` characters. The minimum length is `1` character. The value must match regular expression `/^[a-zA-Z0-9\\-_,;=.*]+$/`.
+  * Constraints: The maximum length is `255` characters. The minimum length is `1` character. The value must match regular expression `/^[A-Za-z0-9._: -]+$/`.
 * `instance_id` - (Required, String) Unique identifier of the provisioned instance.
-  * Constraints: The maximum length is `50` characters. The minimum length is `1` character. The value must match regular expression `/^[a-zA-Z0-9-]+$/`.
+  * Constraints: The maximum length is `255` characters. The minimum length is `1` character. The value must match regular expression `/^[a-zA-Z0-9-]+$/`.
 
 ## Attribute Reference
 
@@ -40,8 +37,7 @@ After your resource is created, you can read values from the listed arguments an
 
 * `id` - The unique identifier of the pha_api_key.
 * `instance_id` - (String) Unique identifier for the API key record.
-  * Constraints: The maximum length is `2048` characters. The minimum length is `1` character. The value must match regular expression `/^[A-Za-z0-9._: -]+$/`.
-
+  * Constraints: The maximum length is `255` characters. The minimum length is `1` character. The value must match regular expression `/^[A-Za-z0-9._: -]+$/`.
 * `etag` - ETag identifier for pha_api_key.
 
 ## Import

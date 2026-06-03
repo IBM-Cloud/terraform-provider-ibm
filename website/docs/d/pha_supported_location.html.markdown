@@ -22,21 +22,18 @@ data "ibm_pha_supported_locations" "pha_supported_location" {
 
 You can specify the following arguments for this data source.
 
-* `if_none_match` - (Optional, String) ETag for conditional requests (optional).
-  * Constraints: The maximum length is `50` characters. The minimum length is `1` character. The value must match regular expression `/^[a-zA-Z0-9\\-_,;=.*]+$/`.
+* `accept_language` - (Optional, String) The language requested for the return document. (ex., en,it,fr,es,de,ja,ko,pt-BR,zh-HANS,zh-HANT)
 * `instance_id` - (Required, Forces new resource, String) instance id of instance to provision.
-  * Constraints: The maximum length is `50` characters. The minimum length is `1` character. The value must match regular expression `/^[a-zA-Z0-9-]+$/`.
+  * Constraints: The maximum length is `255` characters. The minimum length is `1` character. The value must match regular expression `/^[a-zA-Z0-9-]+$/`.
 
 ## Attribute Reference
 
 After your data source is created, you can read values from the following attributes.
 
 * `id` - The unique identifier of the pha_supported_location.
-* `dr_locations` - (List) Array of supported DR locations.
-  * Constraints: The maximum length is `16` items. The minimum length is `0` items.
-Nested schema for **dr_locations**:
+* `locations` - (List) Array of supported locations.
+Nested schema for **locations**:
 	* `id` - (String) Unique identifier for the location.
-	  * Constraints: The maximum length is `128` characters. The minimum length is `1` character. The value must match regular expression `/^[A-Za-z0-9._:-]+$/`.
+	  * Constraints: The maximum length is `255` characters. The minimum length is `1` character. The value must match regular expression `/^[A-Za-z0-9._:-]+$/`.
 	* `name` - (String) Human-readable name of the location.
 	  * Constraints: The maximum length is `128` characters. The minimum length is `1` character. The value must match regular expression `/^[A-Za-z0-9._:()\\- ]+$/`.
-

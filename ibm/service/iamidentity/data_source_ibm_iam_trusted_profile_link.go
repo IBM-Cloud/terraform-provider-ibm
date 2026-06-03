@@ -64,6 +64,11 @@ func DataSourceIBMIamTrustedProfileLink() *schema.Resource {
 				Computed:    true,
 				Description: "The compute resource type. Valid values are VSI, BMS, IKS_SA, ROKS_SA, CE.",
 			},
+			"is_cross_account": &schema.Schema{
+				Type:        schema.TypeBool,
+				Computed:    true,
+				Description: "Flag to indicate that the link provides cross account access. If not provided then the account scope of the CRN must match the Profile's account.",
+			},
 			"link": &schema.Schema{
 				Type:     schema.TypeList,
 				Computed: true,
@@ -158,6 +163,12 @@ func dataSourceIBMIamTrustedProfileLinkRead(context context.Context, d *schema.R
 
 	if err = d.Set("cr_type", profileLink.CrType); err != nil {
 		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting cr_type: %s", err), "(Data) ibm_iam_trusted_profile_link", "read", "set-cr_type").GetDiag()
+	}
+
+	if !core.IsNil(profileLink.IsCrossAccount) {
+		if err = d.Set("is_cross_account", profileLink.IsCrossAccount); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting is_cross_account: %s", err), "(Data) ibm_iam_trusted_profile_link", "read", "set-is_cross_account").GetDiag()
+		}
 	}
 
 	link := []map[string]interface{}{}
