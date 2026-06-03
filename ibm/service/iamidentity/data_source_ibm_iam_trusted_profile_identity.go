@@ -1,13 +1,16 @@
 // Copyright IBM Corp. 2026 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
+/*
+ * IBM OpenAPI Terraform Generator Version: 3.113.1-d76630af-20260320-135953
+ */
+
 package iamidentity
 
 import (
 	"context"
 	"fmt"
 	"log"
-	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -86,7 +89,7 @@ func dataSourceIBMIamTrustedProfileIdentityRead(context context.Context, d *sche
 		return diag.FromErr(fmt.Errorf("GetProfileIdentityWithContext failed %s\n%s", err, response))
 	}
 
-	d.SetId(dataSourceIBMIamTrustedProfileIdentityID(d))
+	d.SetId(fmt.Sprintf("%s|%s|%s", *getProfileIdentityOptions.ProfileID, *getProfileIdentityOptions.IdentityType, *getProfileIdentityOptions.IdentifierID))
 
 	if err = d.Set("iam_id", profileIdentityResponse.IamID); err != nil {
 		return diag.FromErr(fmt.Errorf("Error setting iam_id: %s", err))
@@ -109,9 +112,4 @@ func dataSourceIBMIamTrustedProfileIdentityRead(context context.Context, d *sche
 	}
 
 	return nil
-}
-
-// dataSourceIBMIamTrustedProfileIdentityID returns a reasonable ID for the list.
-func dataSourceIBMIamTrustedProfileIdentityID(d *schema.ResourceData) string {
-	return time.Now().UTC().String()
 }
