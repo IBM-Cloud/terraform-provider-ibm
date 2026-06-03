@@ -70,7 +70,7 @@ In addition to all argument reference list, you can access the following attribu
 Incoming traffic will be routed according to the routing table with one exception: routes with an action of deliver are treated as drop unless the next_hop is an IP address within the VPC's address prefix ranges. Therefore, if an incoming packet matches a route with a next_hop of an internet-bound IP address or a VPN gateway connection, the packet will be dropped.
 - `route_vpc_zone_ingress` - (Boolean) Indicates whether this routing table is used to route traffic that originates from subnets in other zones in this VPC. Incoming traffic will be routed according to the routing table with one exception: routes with an action of deliver are treated as drop unless the next_hop is an IP address within the VPC's address prefix ranges. Therefore, if an incoming packet matches a route with a next_hop of an internet-bound IP address or a VPN gateway connection, the packet will be dropped..
 - `routes` - (List) The routes for this routing table.
-	
+
   Nested scheme for `routes`:
   - `href` - (List) The URL for this route.
   - `id` - (List) The unique identifier for this route.
@@ -79,8 +79,8 @@ Incoming traffic will be routed according to the routing table with one exceptio
 - `subnets` - (List) The subnets to which this routing table is attached.
 
   Nested scheme for `subnets`:
-	- `id` - (String) The unique identifier for this subnet.
-	- `name` - (String) The user-defined name for this subnet.
+  - `id` - (String) The unique identifier for this subnet.
+  - `name` - (String) The user-defined name for this subnet.
 
 
 ## Import

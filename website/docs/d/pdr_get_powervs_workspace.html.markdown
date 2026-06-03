@@ -1,19 +1,21 @@
 ---
 layout: "ibm"
-page_title: "IBM : ibm_pdr_get_powervs_workspace"
+page_title: "IBM : ibm_pdr_powervs_workspace"
 description: |-
-  Get information about pdr_get_powervs_workspace
+  Get information about pdr_powervs_workspace
 subcategory: "DrAutomation Service"
 ---
 
-# ibm_pdr_get_powervs_workspace
+# ibm_pdr_powervs_workspace
 
 Retrieves the power virtual server workspaces for primary and standby orchestrator based on location id.
+
+~> **This data source is deprecated and will be removed in the next major version. Use `ibm_pdr_powervs_workspace instead.**
 
 ## Example Usage
 
 ```hcl
-data "ibm_pdr_get_powervs_workspace" "pdr_get_powervs_workspace" {
+data "ibm_pdr_powervs_workspace" "pdr_powervs_workspace" {
 	instance_id = "123456d3-1122-3344-b67d-4389b44b7bf9"
 	location_id = "syd04"
 }
@@ -30,7 +32,7 @@ You can specify the following arguments for this data source.
 
 After your data source is created, you can read values from the following attributes.
 
-* `id` - The unique identifier of the pdr_get_powervs_workspace.
+* `id` - The unique identifier of the pdr_powervs_workspace.
 * `dr_standby_workspace_description` - (String) Description of Standby Workspace.
 * `dr_standby_workspaces` - (List) The list of standby disaster recovery workspaces.
 Nested schema for **dr_standby_workspaces**:

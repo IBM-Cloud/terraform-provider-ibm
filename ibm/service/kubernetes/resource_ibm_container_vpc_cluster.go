@@ -205,6 +205,14 @@ func ResourceIBMContainerVpcCluster() *schema.Resource {
 				Computed:    true,
 			},
 
+			"network_plugin": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				ForceNew:    true,
+				Description: "The Container Network Interface (CNI) plugin for the cluster. Requires OpenShift >= 4.20. Supported values: 'Calico' (default), 'OVNKubernetes'",
+				Computed:    true,
+			},
+
 			"worker_count": {
 				Type:             schema.TypeInt,
 				Optional:         true,
@@ -640,6 +648,11 @@ func resourceIBMContainerVpcClusterCreate(d *schema.ResourceData, meta interface
 		DisableOutboundTrafficProtection: disableOutboundTrafficProtection,
 	}
 
+	// Update params with CNI plugin option if provided
+	if v, ok := d.GetOk("network_plugin"); ok {
+		params.NetworkPlugin = v.(string)
+	}
+
 	// Update params with Entitlement option if provided
 	if v, ok := d.GetOk("entitlement"); ok {
 		params.DefaultWorkerPoolEntitlement = v.(string)
@@ -986,6 +999,7 @@ func resourceIBMContainerVpcClusterRead(d *schema.ResourceData, meta interface{}
 		d.Set("disable_public_service_endpoint", true)
 	}
 	d.Set("image_security_enforcement", cls.ImageSecurityEnabled)
+	d.Set("network_plugin", cls.NetworkPlugin)
 
 	tags, err := flex.GetTagsUsingCRN(meta, cls.CRN)
 	if err != nil {

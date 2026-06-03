@@ -10,6 +10,8 @@ subcategory: "DrAutomation Service"
 
 Retrieves the list of disaster recovery (DR) managed virtual machines for the specified service instance.
 
+~> **This data source is deprecated and will be removed in the next major version. Use `ibm_pdr_managed_vm_list` instead.**
+
 ## Example Usage
 
 ```hcl
