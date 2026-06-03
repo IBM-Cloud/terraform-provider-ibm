@@ -238,6 +238,14 @@ func ResourceIBMContainerVpcCluster() *schema.Resource {
 				Description:      "The operating system of the workers in the default worker pool.",
 			},
 
+			"offering": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Computed:    true,
+				ForceNew:    true,
+				Description: "The cluster offering type.",
+			},
+
 			"secondary_storage": {
 				Type:             schema.TypeString,
 				Optional:         true,
@@ -651,6 +659,11 @@ func resourceIBMContainerVpcClusterCreate(d *schema.ResourceData, meta interface
 	// Update params with CNI plugin option if provided
 	if v, ok := d.GetOk("network_plugin"); ok {
 		params.NetworkPlugin = v.(string)
+	}
+
+	// Update params with Offering option if provided
+	if v, ok := d.GetOk("offering"); ok {
+		params.Offering = v.(string)
 	}
 
 	// Update params with Entitlement option if provided
