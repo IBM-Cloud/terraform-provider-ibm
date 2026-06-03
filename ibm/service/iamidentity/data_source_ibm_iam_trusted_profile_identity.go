@@ -3,7 +3,7 @@
 
 /*
  * IBM OpenAPI Terraform Generator Version: 3.113.1-d76630af-20260320-135953
-*/
+ */
 
 package iamidentity
 
@@ -106,6 +106,12 @@ func dataSourceIBMIamTrustedProfileIdentityRead(context context.Context, d *sche
 
 	if err = d.Set("type", profileIdentityResponse.Type); err != nil {
 		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting type: %s", err), "(Data) ibm_iam_trusted_profile_identity", "read", "set-type").GetDiag()
+	}
+
+	if !core.IsNil(profileIdentityResponse.Accounts) {
+		if err = d.Set("accounts", profileIdentityResponse.Accounts); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting accounts: %s", err), "(Data) ibm_iam_trusted_profile_identity", "read", "set-accounts").GetDiag()
+		}
 	}
 
 	if !core.IsNil(profileIdentityResponse.Description) {

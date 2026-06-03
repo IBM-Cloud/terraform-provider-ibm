@@ -223,7 +223,7 @@ func resourceIBMIamTrustedProfileIdentityDelete(context context.Context, d *sche
 	deleteProfileIdentityOptions.SetIdentityType(parts_to_use[1])
 	deleteProfileIdentityOptions.SetIdentifierID(parts_to_use[2])
 
-	response, err := iamIdentityClient.DeleteProfileIdentityWithContext(context, deleteProfileIdentityOptions)
+	_, err = iamIdentityClient.DeleteProfileIdentityWithContext(context, deleteProfileIdentityOptions)
 	if err != nil {
 		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("DeleteProfileIdentityWithContext failed: %s", err.Error()), "ibm_iam_trusted_profile_identity", "delete")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
