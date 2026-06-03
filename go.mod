@@ -18,7 +18,7 @@ require (
 	github.com/IBM/dra-go-sdk v0.1.0
 	github.com/IBM/event-notifications-go-admin-sdk v0.22.0
 	github.com/IBM/eventstreams-go-sdk v1.4.0
-	github.com/IBM/go-sdk-core/v5 v5.21.2
+	github.com/IBM/go-sdk-core/v5 v5.21.3
 	github.com/IBM/ibm-backup-recovery-sdk-go v1.2.1
 	github.com/IBM/ibm-cos-sdk-go v1.12.2
 	github.com/IBM/ibm-cos-sdk-go-config/v2 v2.3.0
@@ -39,7 +39,7 @@ require (
 	github.com/IBM/secrets-manager-go-sdk/v2 v2.0.15
 	github.com/IBM/vmware-go-sdk v0.1.5
 	github.com/IBM/vpc-beta-go-sdk v0.8.0
-	github.com/IBM/vpc-go-sdk v0.83.2
+	github.com/IBM/vpc-go-sdk v0.83.3-0.20260603073953-97d55decc3a5
 	github.com/ScaleFT/sshkeys v0.0.0-20200327173127-6142f742bca5
 	github.com/akamai/AkamaiOPEN-edgegrid-golang v1.2.2
 	github.com/akamai/AkamaiOPEN-edgegrid-golang/v5 v5.0.0
@@ -205,7 +205,7 @@ require (
 	golang.org/x/net v0.52.0 // indirect
 	golang.org/x/oauth2 v0.36.0 // indirect
 	golang.org/x/sync v0.20.0 // indirect
-	golang.org/x/sys v0.43.0 // indirect
+	golang.org/x/sys v0.44.0 // indirect
 	golang.org/x/term v0.41.0 // indirect
 	golang.org/x/text v0.35.0 // indirect
 	golang.org/x/time v0.15.0 // indirect
