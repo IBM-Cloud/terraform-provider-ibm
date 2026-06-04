@@ -37,23 +37,6 @@ resource "ibm_pi_image" "testacc_image  "{
 }
 ```
 
-<<<<<<< HEAD
-=======
-- COS image import (S3-compatible with endpoint)
-
-```terraform
-resource "ibm_pi_image" "testacc_image  "{
-  pi_image_name             = "test_image"
-  pi_cloud_instance_id      = "<value of the cloud_instance_id>"
-  pi_image_bucket_name      = "images-public-bucket"
-  pi_image_bucket_access    = "public"
-  pi_endpoint               = "https://s3.example.com"
-  pi_image_bucket_file_name = "rhcos-48-07222021.ova.gz"
-  pi_image_storage_type     = "tier1"
-}
-```
-
->>>>>>> e6235bb76 (Add missing Arg_SourceChecksum to image import)
 ### Notes
 
 - Please find [supported Regions](https://cloud.ibm.com/apidocs/power-cloud#endpoint) for endpoints.

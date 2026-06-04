@@ -288,7 +288,7 @@ func resourceIBMPIImageCreate(ctx context.Context, d *schema.ResourceData, meta 
 			BucketName:    &bucketName,
 			BucketAccess:  &bucketAccess,
 			ImageFilename: &bucketImageFileName,
-			Region:        &bucketRegion,
+			Region:        bucketRegion,
 		}
 
 		if v, ok := d.GetOk(Arg_ImageAccessKey); ok {
