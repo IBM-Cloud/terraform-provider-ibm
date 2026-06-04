@@ -2069,9 +2069,11 @@ func (c *Config) ClientSession() (interface{}, error) {
 	session.usageReportsClient = usageReportsClient
 
 	// CATALOG MANAGEMENT Service
+	// Uses the VPC infrastructure private endpoint (region-less) for private
+	// visibility: https://cm.private.globalcatalog.cloud.ibm.com/api/v1-beta
 	catalogManagementURL := "https://cm.globalcatalog.cloud.ibm.com/api/v1-beta"
-	if c.Visibility == "private" {
-		session.catalogManagementClientErr = fmt.Errorf("Catalog Management resource doesnot support private endpoints")
+	if c.Visibility == "private" || c.Visibility == "public-and-private" {
+		catalogManagementURL = ContructEndpoint("cm.private.globalcatalog", fmt.Sprintf("%s/api/v1-beta", cloudEndpoint))
 	}
 	if fileMap != nil && c.Visibility != "public-and-private" {
 		catalogManagementURL = fileFallBack(fileMap, c.Visibility, "IBMCLOUD_CATALOG_MANAGEMENT_API_ENDPOINT", c.Region, catalogManagementURL)
