@@ -359,10 +359,10 @@ func resourceIBMTrustedProfileTemplateAssignmentRead(context context.Context, d 
 			}
 			resources = append(resources, resourcesItemMap)
 		}
-		if err = d.Set("resources", resources); err != nil {
-			err = fmt.Errorf("Error setting resources: %s", err)
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_trusted_profile_template_assignment", "read", "set-resources").GetDiag()
-		}
+	}
+	if err = d.Set("resources", resources); err != nil {
+		err = fmt.Errorf("Error setting resources: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_trusted_profile_template_assignment", "read", "set-resources").GetDiag()
 	}
 	if !core.IsNil(templateAssignmentResponse.Href) {
 		if err = d.Set("href", templateAssignmentResponse.Href); err != nil {
