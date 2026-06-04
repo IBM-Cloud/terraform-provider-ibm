@@ -120,7 +120,7 @@ The `id` property can be formed from `backup_policy_id`, and `backup_policy_plan
 
 ```terraform
 import {
-  to = ibm_is_backup_policy_plan.is_backup_policy_plan
+  to = ibm_is_backup_policy_plan.example
   id = "<backup_policy_id>/<backup_policy_plan_id>"
 }
 ```
@@ -128,5 +128,5 @@ import {
 Using `terraform import`. For example:
 
 ```console
-% terraform import ibm_is_backup_policy_plan.is_backup_policy_plan <backup_policy_id>/<backup_policy_plan_id>
+% terraform import ibm_is_backup_policy_plan.example <backup_policy_id>/<backup_policy_plan_id>
 ```

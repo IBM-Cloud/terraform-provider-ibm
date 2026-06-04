@@ -238,12 +238,12 @@ The `id` property can be formed using the snapshot identifier. For example:
 ```terraform
 import {
   to = ibm_is_snapshot.example
-  id = "< id >"
+  id = "<id>"
 }
 ```
 
 Using `terraform import`. For example:
 
 ```console
-% terraform import ibm_is_snapshot.example < id >
+% terraform import ibm_is_snapshot.example <id>
 ```

@@ -68,7 +68,7 @@ The `id` property can be formed from `cluster_network_id`, `cluster_network_subn
 
 ```terraform
 import {
-  to = ibm_is_cluster_network_subnet_reserved_ip.is_cluster_network_subnet_reserved_ip
+  to = ibm_is_cluster_network_subnet_reserved_ip.example
   id = "<cluster_network_id>/<cluster_network_subnet_id>/<cluster_network_subnet_reserved_ip_id>"
 }
 ```
@@ -76,5 +76,5 @@ import {
 Using `terraform import`. For example:
 
 ```console
-% terraform import ibm_is_cluster_network_subnet_reserved_ip.is_cluster_network_subnet_reserved_ip <cluster_network_id>/<cluster_network_subnet_id>/<cluster_network_subnet_reserved_ip_id>
+% terraform import ibm_is_cluster_network_subnet_reserved_ip.example <cluster_network_id>/<cluster_network_subnet_id>/<cluster_network_subnet_reserved_ip_id>
 ```
