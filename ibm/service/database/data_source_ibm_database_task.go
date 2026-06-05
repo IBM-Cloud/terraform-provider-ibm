@@ -24,7 +24,28 @@ type dataSourceIBMDatabaseTaskBackend interface {
 func pickDataSourceTaskBackend(d *schema.ResourceData, meta interface{}) (dataSourceIBMDatabaseTaskBackend, error) {
 	taskID := d.Get("task_id").(string)
 
-	// Get the resource controller client to fetch instance details
+	// First, try to get the task to extract the deployment ID
+	cloudDatabasesClient, err := meta.(conns.ClientSession).CloudDatabasesV5()
+	if err != nil {
+		return nil, fmt.Errorf("error getting database client: %s", err)
+	}
+
+	getTaskOptions := &clouddatabasesv5.GetTaskOptions{
+		ID: &taskID,
+	}
+
+	task, _, err := cloudDatabasesClient.GetTask(getTaskOptions)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get task: %s", err)
+	}
+
+	if task.Task == nil || task.Task.DeploymentID == nil {
+		return nil, fmt.Errorf("task or deployment_id is nil")
+	}
+
+	deploymentID := *task.Task.DeploymentID
+
+	// Get the resource controller client to fetch instance details using deployment ID
 	rsConClient, err := meta.(conns.ClientSession).ResourceControllerV2API()
 	if err != nil {
 		return nil, err
@@ -32,7 +53,7 @@ func pickDataSourceTaskBackend(d *schema.ResourceData, meta interface{}) (dataSo
 
 	// Get the instance to check its plan
 	instance, _, err := rsConClient.GetResourceInstance(&rc.GetResourceInstanceOptions{
-		ID: &taskID,
+		ID: &deploymentID,
 	})
 	if err != nil {
 		return nil, fmt.Errorf("failed to get resource instance: %s", err)
