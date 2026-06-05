@@ -270,15 +270,14 @@ func dataSourceIBMAccountSettingsTemplateRead(context context.Context, d *schema
 
 	getAccountSettingsTemplateVersionOptions := &iamidentityv1.GetAccountSettingsTemplateVersionOptions{}
 
-	id, version, err := parseResourceId(d.Get("template_id").(string))
+	templateId, version, err := parseResourceId(d.Get("template_id").(string))
 	if err != nil {
-		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) resourceIBMAccountSettingsTemplateRead", "read", "sep-id-parts").GetDiag()
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_iam_account_settings_template", "read", "parse-resource-id").GetDiag()
 	}
 	if version == "" {
 		version = d.Get("version").(string)
 	}
-
-	getAccountSettingsTemplateVersionOptions.SetTemplateID(id)
+	getAccountSettingsTemplateVersionOptions.SetTemplateID(templateId)
 	getAccountSettingsTemplateVersionOptions.SetVersion(version)
 
 	if _, ok := d.GetOk("include_history"); ok {

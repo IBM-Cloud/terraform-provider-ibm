@@ -279,15 +279,14 @@ func dataSourceIBMTrustedProfileTemplateRead(context context.Context, d *schema.
 
 	getProfileTemplateVersionOptions := &iamidentityv1.GetProfileTemplateVersionOptions{}
 
-	id, version, err := parseResourceId(d.Get("template_id").(string))
+	templateId, version, err := parseResourceId(d.Get("template_id").(string))
 	if err != nil {
-		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_iam_trusted_profile_template", "read", "sep-id-parts").GetDiag()
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_iam_trusted_profile_template", "read", "parse-resource-id").GetDiag()
 	}
 	if version == "" {
 		version = d.Get("version").(string)
 	}
-
-	getProfileTemplateVersionOptions.SetTemplateID(id)
+	getProfileTemplateVersionOptions.SetTemplateID(templateId)
 	getProfileTemplateVersionOptions.SetVersion(version)
 
 	if _, ok := d.GetOk("include_history"); ok {

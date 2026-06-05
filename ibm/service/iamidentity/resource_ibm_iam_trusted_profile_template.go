@@ -303,6 +303,7 @@ func resourceIBMTrustedProfileTemplateCreateVersion(context context.Context, d *
 	}
 
 	createProfileTemplateVersionOptions := &iamidentityv1.CreateProfileTemplateVersionOptions{}
+
 	if _, ok := d.GetOk("account_id"); ok {
 		createProfileTemplateVersionOptions.SetAccountID(d.Get("account_id").(string))
 	} else {
@@ -310,14 +311,12 @@ func resourceIBMTrustedProfileTemplateCreateVersion(context context.Context, d *
 		accountID := userDetails.UserAccount
 		createProfileTemplateVersionOptions.SetAccountID(accountID)
 	}
-	id, _, err := parseResourceId(d.Get("template_id").(string))
+	templateId, _, err := parseResourceId(d.Get("template_id").(string))
 	if err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("resourceIBMAccountSettingsTemplateRead failed: %s", err.Error()), "ibm_iam_trusted_profile_template", "create")
-		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
-		return tfErr.GetDiag()
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_trusted_profile_template", "create", "parse-resource-id").GetDiag()
 	}
 
-	createProfileTemplateVersionOptions.SetTemplateID(id)
+	createProfileTemplateVersionOptions.SetTemplateID(templateId)
 
 	if _, ok := d.GetOk("name"); ok {
 		createProfileTemplateVersionOptions.SetName(d.Get("name").(string))
@@ -376,12 +375,12 @@ func resourceIBMTrustedProfileTemplateRead(context context.Context, d *schema.Re
 
 	getProfileTemplateVersionOptions := &iamidentityv1.GetProfileTemplateVersionOptions{}
 
-	id, version, err := parseResourceId(d.Id())
+	templateId, version, err := parseResourceId(d.Id())
 	if err != nil {
-		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_trusted_profile_template", "read", "sep-id-parts").GetDiag()
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_trusted_profile_template", "read", "parse-resource-id").GetDiag()
 	}
 
-	getProfileTemplateVersionOptions.SetTemplateID(id)
+	getProfileTemplateVersionOptions.SetTemplateID(templateId)
 	getProfileTemplateVersionOptions.SetVersion(version)
 
 	trustedProfileTemplateResponse, response, err := iamIdentityClient.GetProfileTemplateVersionWithContext(context, getProfileTemplateVersionOptions)
@@ -503,12 +502,12 @@ func resourceIBMTrustedProfileTemplateUpdate(context context.Context, d *schema.
 
 	updateProfileTemplateVersionOptions := &iamidentityv1.UpdateProfileTemplateVersionOptions{}
 
-	id, version, err := parseResourceId(d.Id())
+	templateId, version, err := parseResourceId(d.Id())
 	if err != nil {
-		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_trusted_profile_template", "update", "sep-id-parts").GetDiag()
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_trusted_profile_template", "update", "parse-resource-id").GetDiag()
 	}
 
-	updateProfileTemplateVersionOptions.SetTemplateID(id)
+	updateProfileTemplateVersionOptions.SetTemplateID(templateId)
 	updateProfileTemplateVersionOptions.SetVersion(version)
 	updateProfileTemplateVersionOptions.SetIfMatch(d.Get("entity_tag").(string))
 
@@ -580,12 +579,12 @@ func resourceIBMTrustedProfileTemplateDelete(context context.Context, d *schema.
 
 	deleteProfileTemplateVersionOptions := &iamidentityv1.DeleteProfileTemplateVersionOptions{}
 
-	id, version, err := parseResourceId(d.Id())
+	templateId, version, err := parseResourceId(d.Id())
 	if err != nil {
-		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_trusted_profile_template", "delete", "sep-id-parts").GetDiag()
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_trusted_profile_template", "delete", "parse-resource-id").GetDiag()
 	}
 
-	deleteProfileTemplateVersionOptions.SetTemplateID(id)
+	deleteProfileTemplateVersionOptions.SetTemplateID(templateId)
 	deleteProfileTemplateVersionOptions.SetVersion(version)
 
 	_, err = iamIdentityClient.DeleteProfileTemplateVersionWithContext(context, deleteProfileTemplateVersionOptions)
@@ -606,12 +605,12 @@ func resourceIBMTrustedProfileTemplateCommit(context context.Context, d *schema.
 		return err
 	}
 
-	id, version, err := parseResourceId(d.Id())
+	templateId, version, err := parseResourceId(d.Id())
 	if err != nil {
 		return err
 	}
 
-	commitTrustedProfileTemplateVersionOptions := iamIdentityClient.NewCommitProfileTemplateOptions(id, version)
+	commitTrustedProfileTemplateVersionOptions := iamIdentityClient.NewCommitProfileTemplateOptions(templateId, version)
 	_, err = iamIdentityClient.CommitProfileTemplateWithContext(context, commitTrustedProfileTemplateVersionOptions)
 	if err != nil {
 		return err

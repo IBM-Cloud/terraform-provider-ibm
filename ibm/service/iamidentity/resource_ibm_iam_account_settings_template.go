@@ -288,14 +288,12 @@ func resourceIBMAccountSettingsTemplateCreateVersion(context context.Context, d 
 
 	createAccountSettingsTemplateVersionOptions := &iamidentityv1.CreateAccountSettingsTemplateVersionOptions{}
 
-	id, _, err := parseResourceId(d.Get("template_id").(string))
+	templateId, _, err := parseResourceId(d.Get("template_id").(string))
 	if err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("resourceIBMAccountSettingsTemplateCreateVersion failed: %s", err.Error()), "ibm_iam_account_settings_template", "create")
-		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
-		return tfErr.GetDiag()
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_account_settings_template", "create", "parse-resource-id").GetDiag()
 	}
 
-	createAccountSettingsTemplateVersionOptions.SetTemplateID(id)
+	createAccountSettingsTemplateVersionOptions.SetTemplateID(templateId)
 
 	if _, ok := d.GetOk("account_id"); ok {
 		createAccountSettingsTemplateVersionOptions.SetAccountID(d.Get("account_id").(string))
@@ -349,12 +347,12 @@ func resourceIBMAccountSettingsTemplateRead(context context.Context, d *schema.R
 
 	getAccountSettingsTemplateVersionOptions := &iamidentityv1.GetAccountSettingsTemplateVersionOptions{}
 
-	id, version, err := parseResourceId(d.Id())
+	templateId, version, err := parseResourceId(d.Id())
 	if err != nil {
-		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_account_settings_template", "read", "sep-id-parts").GetDiag()
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_account_settings_template", "read", "parse-resource-id").GetDiag()
 	}
 
-	getAccountSettingsTemplateVersionOptions.SetTemplateID(id)
+	getAccountSettingsTemplateVersionOptions.SetTemplateID(templateId)
 	getAccountSettingsTemplateVersionOptions.SetVersion(version)
 
 	accountSettingsTemplateResponse, response, err := iamIdentityClient.GetAccountSettingsTemplateVersionWithContext(context, getAccountSettingsTemplateVersionOptions)
@@ -456,12 +454,12 @@ func resourceIBMAccountSettingsTemplateUpdate(context context.Context, d *schema
 
 	updateAccountSettingsTemplateVersionOptions := &iamidentityv1.UpdateAccountSettingsTemplateVersionOptions{}
 
-	id, version, err := parseResourceId(d.Id())
+	templateId, version, err := parseResourceId(d.Id())
 	if err != nil {
-		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_account_settings_template", "update", "sep-id-parts").GetDiag()
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_account_settings_template", "update", "parse-resource-id").GetDiag()
 	}
 
-	updateAccountSettingsTemplateVersionOptions.SetTemplateID(id)
+	updateAccountSettingsTemplateVersionOptions.SetTemplateID(templateId)
 	updateAccountSettingsTemplateVersionOptions.SetVersion(version)
 	updateAccountSettingsTemplateVersionOptions.SetIfMatch(d.Get("entity_tag").(string))
 
@@ -521,12 +519,12 @@ func resourceIBMAccountSettingsTemplateDelete(context context.Context, d *schema
 
 	deleteAccountSettingsTemplateVersionOptions := &iamidentityv1.DeleteAccountSettingsTemplateVersionOptions{}
 
-	id, version, err := parseResourceId(d.Id())
+	templateId, version, err := parseResourceId(d.Id())
 	if err != nil {
-		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_account_settings_template", "delete", "sep-id-parts").GetDiag()
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_account_settings_template", "delete", "parse-resource-id").GetDiag()
 	}
 
-	deleteAccountSettingsTemplateVersionOptions.SetTemplateID(id)
+	deleteAccountSettingsTemplateVersionOptions.SetTemplateID(templateId)
 	deleteAccountSettingsTemplateVersionOptions.SetVersion(version)
 
 	_, err = iamIdentityClient.DeleteAccountSettingsTemplateVersionWithContext(context, deleteAccountSettingsTemplateVersionOptions)
@@ -547,12 +545,12 @@ func resourceIBMAccountSettingsTemplateCommit(context context.Context, d *schema
 		return err
 	}
 
-	id, version, err := parseResourceId(d.Id())
+	templateId, version, err := parseResourceId(d.Id())
 	if err != nil {
 		return err
 	}
 
-	commitAccountSettingsTemplateVersionOptions := iamIdentityClient.NewCommitAccountSettingsTemplateOptions(id, version)
+	commitAccountSettingsTemplateVersionOptions := iamIdentityClient.NewCommitAccountSettingsTemplateOptions(templateId, version)
 	_, err = iamIdentityClient.CommitAccountSettingsTemplateWithContext(context, commitAccountSettingsTemplateVersionOptions)
 	if err != nil {
 		return err

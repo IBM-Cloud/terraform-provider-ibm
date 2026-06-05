@@ -203,9 +203,7 @@ func resourceIBMAccountSettingsTemplateAssignmentCreate(context context.Context,
 
 	templateId, _, err := parseResourceId(d.Get("template_id").(string))
 	if err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("[DEBUG] resourceIBMAccountSettingsTemplateRead failed: %s", err.Error()), "ibm_iam_account_settings_template_assignment", "create")
-		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
-		return tfErr.GetDiag()
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_account_settings_template_assignment", "create", "parse-resource-id").GetDiag()
 	}
 
 	createAccountSettingsAssignmentOptions.SetTemplateID(templateId)

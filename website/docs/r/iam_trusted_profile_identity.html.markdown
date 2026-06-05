@@ -8,7 +8,7 @@ subcategory: "IAM Identity Services"
 
 # ibm_iam_trusted_profile_identity
 
-Create, update, and delete iam_trusted_profile_identitys with this resource.
+Create, update, and delete iam_trusted_profile_identity with this resource.
 
 ## Example Usage
 
@@ -43,8 +43,8 @@ After your resource is created, you can read values from the listed arguments an
 
 ## Import
 
-You can import the `ibm_iam_trusted_profile_identity` resource by using `identifier`.
-The `identifier` property can be formed from `profile_id`, and `identifier` in the following format:
+You can import the `ibm_iam_trusted_profile_identity` resource by using `id`.
+The `id` property can be formed from `profile_id`, `identity-type`, and `identifier` in the following format:
 
 <pre>
 &lt;profile_id&gt;|&lt;identity-type&gt;|&lt;identifier&gt;

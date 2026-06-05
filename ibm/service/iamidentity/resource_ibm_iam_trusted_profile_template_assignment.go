@@ -280,7 +280,11 @@ func resourceIBMTrustedProfileTemplateAssignmentCreate(context context.Context, 
 
 	createTrustedProfileAssignmentOptions := &iamidentityv1.CreateTrustedProfileAssignmentOptions{}
 
-	createTrustedProfileAssignmentOptions.SetTemplateID(d.Get("template_id").(string))
+	templateId, _, err := parseResourceId(d.Get("template_id").(string))
+	if err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_trusted_profile_template_assignment", "create", "parse-resource-id").GetDiag()
+	}
+	createTrustedProfileAssignmentOptions.SetTemplateID(templateId)
 	createTrustedProfileAssignmentOptions.SetTemplateVersion(int64(d.Get("template_version").(int)))
 	createTrustedProfileAssignmentOptions.SetTargetType(d.Get("target_type").(string))
 	createTrustedProfileAssignmentOptions.SetTarget(d.Get("target").(string))

@@ -433,7 +433,7 @@ func dataSourceIBMTrustedProfileTemplateAssignmentRead(context context.Context, 
 		}
 	}
 	if err = d.Set("resources", resources); err != nil {
-		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting status: %s", err), "(Data) ibm_iam_trusted_profile_template_assignment", "read", "set-status").GetDiag()
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting resources: %s", err), "(Data) ibm_iam_trusted_profile_template_assignment", "read", "set-resources").GetDiag()
 	}
 
 	var history []map[string]interface{}
