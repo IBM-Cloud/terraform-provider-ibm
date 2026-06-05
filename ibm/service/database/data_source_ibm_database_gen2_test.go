@@ -37,10 +37,10 @@ func TestAccIBMDatabaseDataSourceGen2Basic(t *testing.T) {
 					resource.TestCheckResourceAttr(dataName, "name", testName),
 					resource.TestCheckResourceAttr(dataName, "service", "databases-for-postgresql"),
 					resource.TestCheckResourceAttr(dataName, "plan", "standard-gen2"),
-					// Verify Gen2-specific behavior: no adminuser, auto_scaling, or allowlist
-					resource.TestCheckNoResourceAttr(dataName, "adminuser"),
-					resource.TestCheckNoResourceAttr(dataName, "auto_scaling"),
-					resource.TestCheckNoResourceAttr(dataName, "allowlist"),
+					// Verify Gen2-specific behavior: adminuser, auto_scaling, and allowlist are empty/nil
+					resource.TestCheckResourceAttr(dataName, "adminuser", ""),
+					resource.TestCheckResourceAttr(dataName, "auto_scaling.#", "0"),
+					resource.TestCheckResourceAttr(dataName, "allowlist.#", "0"),
 					// Verify groups are set
 					resource.TestCheckResourceAttrSet(dataName, "groups.#"),
 				),
