@@ -132,13 +132,12 @@ resource "ibm_is_share" "example-4" {
   profile = "rfs"
 }
 ```
-
 ## Argument Reference
 
 The following arguments are supported:
 
 - `allowed_access_protocols` - (Optional, List) List of allowed access protocols for the share. Supported values are **nfs4** 
-- `access_control_mode` - (Optional, Boolean) The access control mode for the share. Supported values are **security_group** and **vpc**. Default value is **security_group**
+- `access_control_mode` - (Optional, Boolean) The access control mode for the share. Supported value is **security_group**. Default value is **security_group**
 - `allowed_transit_encryption_modes` - (Optional, List of string) The transit encryption modes allowed for this share.
 - `access_tags`  - (Optional, List of Strings) The list of access management tags to attach to the share. **Note** For more information, about creating access tags, see [working with tags](https://cloud.ibm.com/docs/account?topic=account-tag).
 - `bandwidth` - (Optional, Integer) The bandwidth for the file share
@@ -200,7 +199,6 @@ The following arguments are supported:
   While updating `profile` from 'custom' to a tiered profile make sure to remove `iops` from the configuration.
   
 - `replica_share` - (Optional, List) Configuration for a replica file share to create and associate with this file share.
-  - `access_control_mode` - (Optional, Boolean) The access control mode for the share. Supported values are **security_group** and **vpc**. Default value is **vpc**
   - `access_tags`  - (Optional, List of Strings) The list of access management tags to attach to the share. **Note** For more information, about creating access tags, see [working with tags](https://cloud.ibm.com/docs/account?topic=account-tag).
   - `iops` - (Optional, Int)
   - `mount_targets` - (List) List of mount targets
