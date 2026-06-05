@@ -296,8 +296,7 @@ func resourceIBMTrustedProfileTemplateAssignmentCreate(context context.Context, 
 
 	_, err = waitForAssignment(d.Timeout(schema.TimeoutCreate), meta, d, isTrustedProfileTemplateAssigned)
 	if err != nil {
-		err = fmt.Errorf("error assigning %s", err)
-		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_trusted_profile_template_assignment", "create", "wait-assignment").GetDiag()
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_trusted_profile_template_assignment", "create", "wait-for-assignment").GetDiag()
 	}
 
 	return resourceIBMTrustedProfileTemplateAssignmentRead(context, d, meta)
@@ -423,8 +422,7 @@ func resourceIBMTrustedProfileTemplateAssignmentUpdate(context context.Context, 
 
 		_, err = waitForAssignment(d.Timeout(schema.TimeoutUpdate), meta, d, isTrustedProfileTemplateAssigned)
 		if err != nil {
-			err = fmt.Errorf("error assigning %s", err)
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_trusted_profile_template_assignment", "update", "wait-assignment").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_trusted_profile_template_assignment", "update", "wait-for-assignment").GetDiag()
 		}
 	}
 
@@ -452,8 +450,7 @@ func resourceIBMTrustedProfileTemplateAssignmentDelete(context context.Context, 
 
 	_, err = waitForAssignment(d.Timeout(schema.TimeoutDelete), meta, d, isTrustedProfileAssignmentRemoved)
 	if err != nil {
-		err = fmt.Errorf("error removing assignment %s", err)
-		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_trusted_profile_template_assignment", "delete", "remove-assignment").GetDiag()
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_trusted_profile_template_assignment", "delete", "wait-for-assignment").GetDiag()
 	}
 
 	d.SetId("")

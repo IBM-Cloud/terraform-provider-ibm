@@ -1,4 +1,4 @@
-// Copyright IBM Corp. 2025 All Rights Reserved.
+// Copyright IBM Corp. 2026 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 /*
@@ -288,14 +288,18 @@ func ResourceIBMIAMAccountSettingsValidator() *validate.ResourceValidator {
 func resourceIBMIamAccountSettingsCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	iamIdentityClient, err := meta.(conns.ClientSession).IAMIdentityV1API()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_account_settings", "create", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	getAccountSettingsOptions := &iamidentityv1.GetAccountSettingsOptions{}
 
 	userDetails, err := meta.(conns.ClientSession).BluemixUserDetails()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("resourceIBMIamAccountSettingsCreate failed: %s", err.Error()), "ibm_iam_account_settings", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	getAccountSettingsOptions.SetAccountID(userDetails.UserAccount)
 	if _, ok := d.GetOk("include_history"); ok {
@@ -304,8 +308,9 @@ func resourceIBMIamAccountSettingsCreate(context context.Context, d *schema.Reso
 
 	accountSettingsResponse, response, err := iamIdentityClient.GetAccountSettings(getAccountSettingsOptions)
 	if err != nil {
-		log.Printf("[DEBUG] GetAccountSettings failed %s\n%s", err, response)
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("resourceIBMIamAccountSettingsCreate failed: %s", err.Error()), "ibm_iam_account_settings", "create")
+		log.Printf("[DEBUG]\nGetAccountSettings failed: %s\n%s", tfErr.GetDebugMessage(), response)
+		return tfErr.GetDiag()
 	}
 
 	d.SetId(*accountSettingsResponse.AccountID)

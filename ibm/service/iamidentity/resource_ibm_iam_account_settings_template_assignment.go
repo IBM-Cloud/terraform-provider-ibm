@@ -224,7 +224,7 @@ func resourceIBMAccountSettingsTemplateAssignmentCreate(context context.Context,
 
 	_, err = waitForAssignment(d.Timeout(schema.TimeoutCreate), meta, d, isAccountSettingsTemplateAssigned)
 	if err != nil {
-		flex.DiscriminatedTerraformErrorf(err, err.Error(), "error assigning", "create", "wait-for-assignment").GetDiag()
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_account_settings_template_assignment", "create", "wait-for-assignment").GetDiag()
 	}
 
 	return resourceIBMAccountSettingsTemplateAssignmentRead(context, d, meta)
@@ -343,13 +343,14 @@ func resourceIBMAccountSettingsTemplateAssignmentUpdate(context context.Context,
 	if hasChange || d.Get("status") == "failed" { // allow the same version to retry failed assignments
 		_, response, err := iamIdentityClient.UpdateAccountSettingsAssignmentWithContext(context, updateAccountSettingsAssignmentOptions)
 		if err != nil {
-			log.Printf("[DEBUG] UpdateAccountSettingsAssignmentWithContext failed %s\n%s", err, response)
-			return diag.FromErr(fmt.Errorf("UpdateAccountSettingsAssignmentWithContext failed %s\n%s", err, response))
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("UpdateAccountSettingsAssignmentWithContext failed: %s", err.Error()), "ibm_iam_account_settings_template_assignment", "update")
+			log.Printf("[DEBUG]\n%s\n%s", tfErr.GetDebugMessage(), response)
+			return tfErr.GetDiag()
 		}
 
 		_, err = waitForAssignment(d.Timeout(schema.TimeoutUpdate), meta, d, isAccountSettingsTemplateAssigned)
 		if err != nil {
-			flex.DiscriminatedTerraformErrorf(err, err.Error(), "error assigning", "update", "wait-for-assignment").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_account_settings_template_assignment", "update", "wait-for-assignment").GetDiag()
 		}
 	}
 
@@ -377,7 +378,7 @@ func resourceIBMAccountSettingsTemplateAssignmentDelete(context context.Context,
 
 	_, err = waitForAssignment(d.Timeout(schema.TimeoutDelete), meta, d, isAccountSettingsAssignmentRemoved)
 	if err != nil {
-		flex.DiscriminatedTerraformErrorf(err, err.Error(), "error assigning", "update", "wait-for-assignment").GetDiag()
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_account_settings_template_assignment", "delete", "wait-for-assignment").GetDiag()
 	}
 
 	d.SetId("")

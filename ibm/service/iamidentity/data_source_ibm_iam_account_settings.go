@@ -1,4 +1,4 @@
-// Copyright IBM Corp. 2025 All Rights Reserved.
+// Copyright IBM Corp. 2026 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 /*
@@ -222,7 +222,9 @@ func dataSourceIBMIamAccountSettingsRead(context context.Context, d *schema.Reso
 
 	userDetails, err := meta.(conns.ClientSession).BluemixUserDetails()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("dataSourceIBMIamAccountSettingsRead failed: %s", err.Error()), "ibm_iam_account_settings", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	getAccountSettingsOptions.SetAccountID(userDetails.UserAccount)

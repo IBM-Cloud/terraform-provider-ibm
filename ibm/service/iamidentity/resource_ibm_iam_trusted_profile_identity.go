@@ -171,10 +171,12 @@ func resourceIBMIamTrustedProfileIdentityRead(context context.Context, d *schema
 	d.SetId(fmt.Sprintf("%s|%s|%s", *getProfileIdentityOptions.ProfileID, *getProfileIdentityOptions.IdentityType, *getProfileIdentityOptions.IdentifierID))
 
 	if err = d.Set("profile_id", getProfileIdentityOptions.ProfileID); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting profile_id: %s", err))
+		err = fmt.Errorf("Error setting profile_id: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_trusted_profile_identity", "read", "set-profile_id").GetDiag()
 	}
 	if err = d.Set("identity_type", getProfileIdentityOptions.IdentityType); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting identity_type: %s", err))
+		err = fmt.Errorf("Error setting identity_type: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_trusted_profile_identity", "read", "set-identity_type").GetDiag()
 	}
 	if err = d.Set("identifier", profileIdentityResponse.Identifier); err != nil {
 		err = fmt.Errorf("Error setting identifier: %s", err)

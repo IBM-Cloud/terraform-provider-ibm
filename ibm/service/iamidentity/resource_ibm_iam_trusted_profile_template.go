@@ -562,7 +562,8 @@ func resourceIBMTrustedProfileTemplateUpdate(context context.Context, d *schema.
 				return tfErr.GetDiag()
 			}
 		} else {
-			return diag.FromErr(fmt.Errorf("A committed template cannot be uncommitted"))
+			err := fmt.Errorf("A committed template cannot be uncommitted")
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("resourceIBMTrustedProfileTemplateUpdate failed: %s", err.Error()), "ibm_iam_trusted_profile_template", "update", "set-committed").GetDiag()
 		}
 	}
 
