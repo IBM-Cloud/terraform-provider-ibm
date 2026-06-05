@@ -1084,7 +1084,7 @@ func TestAccIBMPIInstanceVPMEMUpdate(t *testing.T) {
 					testAccCheckIBMPIInstanceExists(instanceRes),
 					resource.TestCheckResourceAttr(instanceRes, "pi_instance_name", name),
 					resource.TestCheckResourceAttr(instanceRes, "vpmem_volumes.#", "1"),
-					resource.TestCheckResourceAttr(instanceRes, "pi_vpmem_volumes.0.name", name+"-vol1"),
+					resource.TestCheckResourceAttr(instanceRes, "pi_vpmem_volumes.0.name", name+"-v1"),
 					resource.TestCheckResourceAttr(instanceRes, "pi_vpmem_volumes.0.size", "2"),
 				),
 			},
@@ -1093,7 +1093,7 @@ func TestAccIBMPIInstanceVPMEMUpdate(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckIBMPIInstanceExists(instanceRes),
 					resource.TestCheckResourceAttr(instanceRes, "vpmem_volumes.#", "1"),
-					resource.TestCheckResourceAttr(instanceRes, "pi_vpmem_volumes.0.name", name+"-vol1-renamed"),
+					resource.TestCheckResourceAttr(instanceRes, "pi_vpmem_volumes.0.name", name+"-v1r"),
 					resource.TestCheckResourceAttr(instanceRes, "pi_vpmem_volumes.0.size", "2"),
 				),
 			},
@@ -1102,9 +1102,9 @@ func TestAccIBMPIInstanceVPMEMUpdate(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckIBMPIInstanceExists(instanceRes),
 					resource.TestCheckResourceAttr(instanceRes, "vpmem_volumes.#", "3"),
-					resource.TestCheckResourceAttr(instanceRes, "pi_vpmem_volumes.0.name", name+"-vol1-renamed"),
-					resource.TestCheckResourceAttr(instanceRes, "pi_vpmem_volumes.1.name", name+"-vol2"),
-					resource.TestCheckResourceAttr(instanceRes, "pi_vpmem_volumes.2.name", name+"-vol3"),
+					resource.TestCheckResourceAttr(instanceRes, "pi_vpmem_volumes.0.name", name+"-v1r"),
+					resource.TestCheckResourceAttr(instanceRes, "pi_vpmem_volumes.1.name", name+"-v2"),
+					resource.TestCheckResourceAttr(instanceRes, "pi_vpmem_volumes.2.name", name+"-v3"),
 				),
 			},
 			{
@@ -1112,9 +1112,9 @@ func TestAccIBMPIInstanceVPMEMUpdate(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckIBMPIInstanceExists(instanceRes),
 					resource.TestCheckResourceAttr(instanceRes, "vpmem_volumes.#", "3"),
-					resource.TestCheckResourceAttr(instanceRes, "pi_vpmem_volumes.0.name", name+"-vol1-final"),
-					resource.TestCheckResourceAttr(instanceRes, "pi_vpmem_volumes.1.name", name+"-vol3"),
-					resource.TestCheckResourceAttr(instanceRes, "pi_vpmem_volumes.2.name", name+"-vol4"),
+					resource.TestCheckResourceAttr(instanceRes, "pi_vpmem_volumes.0.name", name+"-v1f"),
+					resource.TestCheckResourceAttr(instanceRes, "pi_vpmem_volumes.1.name", name+"-v3"),
+					resource.TestCheckResourceAttr(instanceRes, "pi_vpmem_volumes.2.name", name+"-v4"),
 				),
 			},
 		},
@@ -1200,7 +1200,7 @@ func testAccCheckIBMPIInstanceVPMEMUpdateConfigCreate(name, instanceHealthStatus
 	  network_id = data.ibm_pi_network.power_networks.id
 	 }
 	 pi_vpmem_volumes {
-	  name = "%[2]s-vol1"
+	  name = "%[2]s-v1"
 	  size = 2
 	 }
 	  }
@@ -1241,7 +1241,7 @@ func testAccCheckIBMPIInstanceVPMEMUpdateConfigRename(name, instanceHealthStatus
 	  network_id = data.ibm_pi_network.power_networks.id
 	 }
 	 pi_vpmem_volumes {
-	  name = "%[2]s-vol1-renamed"
+	  name = "%[2]s-v1r"
 	  size = 2
 	 }
 	  }
@@ -1282,15 +1282,15 @@ func testAccCheckIBMPIInstanceVPMEMUpdateConfigAdd(name, instanceHealthStatus st
 	  network_id = data.ibm_pi_network.power_networks.id
 	 }
 	 pi_vpmem_volumes {
-	  name = "%[2]s-vol1-renamed"
+	  name = "%[2]s-v1r"
 	  size = 2
 	 }
 	 pi_vpmem_volumes {
-	  name = "%[2]s-vol2"
+	  name = "%[2]s-v2"
 	  size = 1
 	 }
 	 pi_vpmem_volumes {
-	  name = "%[2]s-vol3"
+	  name = "%[2]s-v3"
 	  size = 3
 	 }
 	  }
@@ -1331,15 +1331,15 @@ func testAccCheckIBMPIInstanceVPMEMUpdateConfigMixed(name, instanceHealthStatus 
 	  network_id = data.ibm_pi_network.power_networks.id
 	 }
 	 pi_vpmem_volumes {
-	  name = "%[2]s-vol1-final"
+	  name = "%[2]s-v1f"
 	  size = 2
 	 }
 	 pi_vpmem_volumes {
-	  name = "%[2]s-vol3"
+	  name = "%[2]s-v3"
 	  size = 3
 	 }
 	 pi_vpmem_volumes {
-	  name = "%[2]s-vol4"
+	  name = "%[2]s-v4"
 	  size = 1
 	 }
 	  }

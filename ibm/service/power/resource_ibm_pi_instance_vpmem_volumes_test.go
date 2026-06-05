@@ -114,7 +114,7 @@ func TestAccIBMPIInstancevpmemVolumesUpdate(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccCheckIBMPIInstancevpmemVolumesConfigAddUpdate(name+"-1", power.OK, power.Action_Stop),
+				Config: testAccCheckIBMPIInstancevpmemVolumesConfigAddUpdate(name, power.OK, power.Action_Stop),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMPIInstancevpmemVolumesExists("ibm_pi_instance_vpmem_volumes.vpmem_volumes"),
 					resource.TestCheckResourceAttr("ibm_pi_instance_vpmem_volumes.vpmem_volumes", "volumes.#", "3"),
@@ -124,7 +124,7 @@ func TestAccIBMPIInstancevpmemVolumesUpdate(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccCheckIBMPIInstancevpmemVolumesConfigRemoveUpdate(name+"-1", power.OK, power.Action_Stop),
+				Config: testAccCheckIBMPIInstancevpmemVolumesConfigRemoveUpdate(name, power.OK, power.Action_Stop),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMPIInstancevpmemVolumesExists("ibm_pi_instance_vpmem_volumes.vpmem_volumes"),
 					resource.TestCheckResourceAttr("ibm_pi_instance_vpmem_volumes.vpmem_volumes", "volumes.#", "2"),
@@ -133,11 +133,11 @@ func TestAccIBMPIInstancevpmemVolumesUpdate(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccCheckIBMPIInstancevpmemVolumesConfigMixedUpdate(name+"-1", power.OK, power.Action_Stop),
+				Config: testAccCheckIBMPIInstancevpmemVolumesConfigMixedUpdate(name, power.OK, power.Action_Stop),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMPIInstancevpmemVolumesExists("ibm_pi_instance_vpmem_volumes.vpmem_volumes"),
 					resource.TestCheckResourceAttr("ibm_pi_instance_vpmem_volumes.vpmem_volumes", "volumes.#", "3"),
-					resource.TestCheckResourceAttr("ibm_pi_instance_vpmem_volumes.vpmem_volumes", "pi_vpmem_volumes.0.name", name+"-1-renamed"),
+					resource.TestCheckResourceAttr("ibm_pi_instance_vpmem_volumes.vpmem_volumes", "pi_vpmem_volumes.0.name", name+"-1r"),
 					resource.TestCheckResourceAttr("ibm_pi_instance_vpmem_volumes.vpmem_volumes", "pi_vpmem_volumes.1.name", name+"-3"),
 					resource.TestCheckResourceAttr("ibm_pi_instance_vpmem_volumes.vpmem_volumes", "pi_vpmem_volumes.2.name", name+"-4"),
 				),
@@ -159,11 +159,11 @@ func TestAccIBMPIInstancevpmemVolumesDuplicateSize(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMPIInstancevpmemVolumesExists("ibm_pi_instance_vpmem_volumes.vpmem_volumes"),
 					resource.TestCheckResourceAttr("ibm_pi_instance_vpmem_volumes.vpmem_volumes", "volumes.#", "3"),
-					resource.TestCheckResourceAttr("ibm_pi_instance_vpmem_volumes.vpmem_volumes", "pi_vpmem_volumes.0.name", name+"-vol1"),
+					resource.TestCheckResourceAttr("ibm_pi_instance_vpmem_volumes.vpmem_volumes", "pi_vpmem_volumes.0.name", name+"-v1"),
 					resource.TestCheckResourceAttr("ibm_pi_instance_vpmem_volumes.vpmem_volumes", "pi_vpmem_volumes.0.size", "2"),
-					resource.TestCheckResourceAttr("ibm_pi_instance_vpmem_volumes.vpmem_volumes", "pi_vpmem_volumes.1.name", name+"-vol2"),
+					resource.TestCheckResourceAttr("ibm_pi_instance_vpmem_volumes.vpmem_volumes", "pi_vpmem_volumes.1.name", name+"-v2"),
 					resource.TestCheckResourceAttr("ibm_pi_instance_vpmem_volumes.vpmem_volumes", "pi_vpmem_volumes.1.size", "2"),
-					resource.TestCheckResourceAttr("ibm_pi_instance_vpmem_volumes.vpmem_volumes", "pi_vpmem_volumes.2.name", name+"-vol3"),
+					resource.TestCheckResourceAttr("ibm_pi_instance_vpmem_volumes.vpmem_volumes", "pi_vpmem_volumes.2.name", name+"-v3"),
 					resource.TestCheckResourceAttr("ibm_pi_instance_vpmem_volumes.vpmem_volumes", "pi_vpmem_volumes.2.size", "3"),
 				),
 			},
@@ -172,11 +172,11 @@ func TestAccIBMPIInstancevpmemVolumesDuplicateSize(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMPIInstancevpmemVolumesExists("ibm_pi_instance_vpmem_volumes.vpmem_volumes"),
 					resource.TestCheckResourceAttr("ibm_pi_instance_vpmem_volumes.vpmem_volumes", "volumes.#", "3"),
-					resource.TestCheckResourceAttr("ibm_pi_instance_vpmem_volumes.vpmem_volumes", "pi_vpmem_volumes.0.name", name+"-vol1-renamed"),
+					resource.TestCheckResourceAttr("ibm_pi_instance_vpmem_volumes.vpmem_volumes", "pi_vpmem_volumes.0.name", name+"-v1r"),
 					resource.TestCheckResourceAttr("ibm_pi_instance_vpmem_volumes.vpmem_volumes", "pi_vpmem_volumes.0.size", "2"),
-					resource.TestCheckResourceAttr("ibm_pi_instance_vpmem_volumes.vpmem_volumes", "pi_vpmem_volumes.1.name", name+"-vol2"),
+					resource.TestCheckResourceAttr("ibm_pi_instance_vpmem_volumes.vpmem_volumes", "pi_vpmem_volumes.1.name", name+"-v2"),
 					resource.TestCheckResourceAttr("ibm_pi_instance_vpmem_volumes.vpmem_volumes", "pi_vpmem_volumes.1.size", "2"),
-					resource.TestCheckResourceAttr("ibm_pi_instance_vpmem_volumes.vpmem_volumes", "pi_vpmem_volumes.2.name", name+"-vol3"),
+					resource.TestCheckResourceAttr("ibm_pi_instance_vpmem_volumes.vpmem_volumes", "pi_vpmem_volumes.2.name", name+"-v3"),
 					resource.TestCheckResourceAttr("ibm_pi_instance_vpmem_volumes.vpmem_volumes", "pi_vpmem_volumes.2.size", "3"),
 				),
 			},
@@ -393,7 +393,7 @@ func testAccCheckIBMPIInstancevpmemVolumesConfigMixedUpdate(name, instanceHealth
 		pi_cloud_instance_id = "%[1]s"
 		pi_pvm_instance_id = ibm_pi_instance_action.vm.pi_instance_id
 		pi_vpmem_volumes {
-			name = "%[2]s-1-renamed"
+			name = "%[2]s-1r"
 			size = 1
 		}
 		pi_vpmem_volumes {
@@ -452,15 +452,15 @@ func testAccCheckIBMPIInstancevpmemVolumesConfigDuplicateSizeCreate(name, instan
 		pi_cloud_instance_id = "%[1]s"
 		pi_pvm_instance_id = ibm_pi_instance_action.vm.pi_instance_id
 		pi_vpmem_volumes {
-			name = "%[2]s-vol1"
+			name = "%[2]s-v1"
 			size = 2
 		}
 		pi_vpmem_volumes {
-			name = "%[2]s-vol2"
+			name = "%[2]s-v2"
 			size = 2
 		}
 		pi_vpmem_volumes {
-			name = "%[2]s-vol3"
+			name = "%[2]s-v3"
 			size = 3
 		}
 	}
@@ -511,15 +511,15 @@ func testAccCheckIBMPIInstancevpmemVolumesConfigDuplicateSizeRename(name, instan
 		pi_cloud_instance_id = "%[1]s"
 		pi_pvm_instance_id = ibm_pi_instance_action.vm.pi_instance_id
 		pi_vpmem_volumes {
-			name = "%[2]s-vol1-renamed"
+			name = "%[2]s-v1r"
 			size = 2
 		}
 		pi_vpmem_volumes {
-			name = "%[2]s-vol2"
+			name = "%[2]s-v2"
 			size = 2
 		}
 		pi_vpmem_volumes {
-			name = "%[2]s-vol3"
+			name = "%[2]s-v3"
 			size = 3
 		}
 	}

@@ -44,8 +44,8 @@ func ResourceIBMPIInstance() *schema.Resource {
 				return flex.ResourcePowerUserTagsCustomizeDiff(diff)
 			},
 
-			// When volumes are renamed, propagate only the name change into the
-			// computed Attr_Volumes so Terraform shows a precise diff (old→new)
+			// When vpmem_volumes are renamed, propagate only the name change into the
+			// computed Attr_VPMEMVolumes so Terraform shows a precise diff (old→new)
 			// rather than marking every volume as (known after apply).
 			func(_ context.Context, diff *schema.ResourceDiff, v any) error {
 				if !diff.HasChange(Arg_VPMEMVolumes) {
@@ -55,9 +55,9 @@ func ResourceIBMPIInstance() *schema.Resource {
 				oldList := old.([]any)
 				newList := new.([]any)
 
-				// if adding then set volumes.
+				// if adding then set vpmem_volumes.
 				if len(newList) > len(oldList) {
-					return diff.SetNewComputed(Attr_Volumes)
+					return diff.SetNewComputed(Attr_VPMEMVolumes)
 				}
 				// This when removing. I try to figure out how to only have that volume remove.
 				// All I have is a place change on apply.
@@ -66,7 +66,7 @@ func ResourceIBMPIInstance() *schema.Resource {
 					for _, v := range newList {
 						newNameSet[v.(map[string]any)[Attr_Name].(string)] = true
 					}
-					oldVolumes, _ := diff.GetChange(Attr_Volumes)
+					oldVolumes, _ := diff.GetChange(Attr_VPMEMVolumes)
 					oldSet := oldVolumes.(*schema.Set)
 					filtered := make([]map[string]any, 0, len(newList))
 					for _, elem := range oldSet.List() {
@@ -75,7 +75,7 @@ func ResourceIBMPIInstance() *schema.Resource {
 							filtered = append(filtered, vol)
 						}
 					}
-					return diff.SetNew(Attr_Volumes, filtered)
+					return diff.SetNew(Attr_VPMEMVolumes, filtered)
 				}
 				// TypeList preserves index order, so old[i] always corresponds to new[i].
 				renameMap := make(map[string]string) // old name -> new name
@@ -90,8 +90,8 @@ func ResourceIBMPIInstance() *schema.Resource {
 					return nil
 				}
 
-				// Apply renames to the current Attr_Volumes state.
-				currentSet := diff.Get(Attr_Volumes).(*schema.Set)
+				// Apply renames to the current Attr_VPMEMVolumes state.
+				currentSet := diff.Get(Attr_VPMEMVolumes).(*schema.Set)
 				updated := make([]map[string]any, 0, currentSet.Len())
 				for _, elem := range currentSet.List() {
 					vol := elem.(map[string]any)
@@ -104,7 +104,7 @@ func ResourceIBMPIInstance() *schema.Resource {
 					}
 					updated = append(updated, vpmem)
 				}
-				return diff.SetNew(Attr_Volumes, updated)
+				return diff.SetNew(Attr_VPMEMVolumes, updated)
 			},
 		),
 
@@ -1411,24 +1411,37 @@ func resourceIBMPIInstanceUpdate(ctx context.Context, d *schema.ResourceData, me
 		}
 
 		// Create brand-new volumes.
-		for _, newVol := range toCreate {
-			created, err := vpmemVolumeClient.CreatePvmVpmemVolumes(instanceID, &models.VPMemVolumeAttach{
-				VpmemVolumes: []*models.VPMemVolumeCreate{
-					resourceIBMPIInstanceVpmemVolumesMapToVpMemVolumeCreate(newVol),
-				},
-			})
-			if err != nil {
-				tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreatePvmVpmemVolumes failed: %s", err.Error()), "ibm_pi_instance", "update")
-				log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
-				return tfErr.GetDiag()
+		if len(toCreate) > 0 {
+			// Stop the instance if it's running, as vPMEM attach requires SHUTOFF state
+			status := d.Get(Attr_Status).(string)
+			if strings.ToLower(status) == State_Shutoff {
+				log.Printf("the lpar is in the shutoff state. Nothing to do. Moving on")
+			} else {
+				log.Printf("stopping the lpar before attaching vPMEM volumes")
+				err := stopLparForResourceChange(ctx, client, instanceID, d)
+				if err != nil {
+					return diag.FromErr(err)
+				}
 			}
-			for _, vol := range created.Volumes {
-				if _, err = isWaitForVpmemAvailable(ctx, vpmemVolumeClient, instanceID, *vol.UUID, d.Timeout(schema.TimeoutUpdate)); err != nil {
-					tfErr := flex.TerraformErrorf(err, fmt.Sprintf("isWaitForVpmemAvailable failed: %s", err.Error()), "ibm_pi_instance", "update")
+
+			for _, newVol := range toCreate {
+				created, err := vpmemVolumeClient.CreatePvmVpmemVolumes(instanceID, &models.VPMemVolumeAttach{
+					VpmemVolumes: []*models.VPMemVolumeCreate{
+						resourceIBMPIInstanceVpmemVolumesMapToVpMemVolumeCreate(newVol),
+					},
+				})
+				if err != nil {
+					tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreatePvmVpmemVolumes failed: %s", err.Error()), "ibm_pi_instance", "update")
 					log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 					return tfErr.GetDiag()
 				}
-				d.SetId(d.Id() + "/" + *vol.UUID)
+				for _, vol := range created.Volumes {
+					if _, err = isWaitForVpmemAvailable(ctx, vpmemVolumeClient, instanceID, *vol.UUID, d.Timeout(schema.TimeoutUpdate)); err != nil {
+						tfErr := flex.TerraformErrorf(err, fmt.Sprintf("isWaitForVpmemAvailable failed: %s", err.Error()), "ibm_pi_instance", "update")
+						log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+						return tfErr.GetDiag()
+					}
+				}
 			}
 		}
 	}
