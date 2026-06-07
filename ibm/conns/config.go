@@ -32,6 +32,7 @@ import (
 	"github.com/IBM/go-sdk-core/v5/core"
 	cosconfig "github.com/IBM/ibm-cos-sdk-go-config/v2/resourceconfigurationv1"
 	kp "github.com/IBM/keyprotect-go-client"
+	kpCryptoUnit "github.com/IBM/keyprotect-go-client/dedicated"
 	"github.com/IBM/logs-router-go-sdk/ibmcloudlogsroutingv0"
 	"github.com/IBM/mqcloud-go-sdk/mqcloudv1"
 	cisalertsv1 "github.com/IBM/networking-go-sdk/alertsv1"
@@ -100,7 +101,6 @@ import (
 	"github.com/apache/openwhisk-client-go/whisk"
 	jwt "github.com/golang-jwt/jwt/v5"
 	slsession "github.com/softlayer/softlayer-go/session"
-	kpCryptoUnit "github.ibm.com/Timothy-Yao/keyprotect-st-go-client-public/keyprotect_dedicated"
 
 	"github.com/IBM/configuration-aggregator-go-sdk/configurationaggregatorv1"
 

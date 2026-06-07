@@ -18,7 +18,7 @@ require (
 	github.com/IBM/dra-go-sdk v0.1.0
 	github.com/IBM/event-notifications-go-admin-sdk v0.22.0
 	github.com/IBM/eventstreams-go-sdk v1.4.0
-	github.com/IBM/go-sdk-core/v5 v5.21.2
+	github.com/IBM/go-sdk-core/v5 v5.21.3
 	github.com/IBM/ibm-backup-recovery-sdk-go v1.2.1
 	github.com/IBM/ibm-cos-sdk-go v1.12.2
 	github.com/IBM/ibm-cos-sdk-go-config/v2 v2.3.0
@@ -54,6 +54,7 @@ require (
 	github.com/hashicorp/go-version v1.8.0
 	github.com/hashicorp/terraform-plugin-framework v1.19.0
 	github.com/hashicorp/terraform-plugin-go v0.31.0
+	github.com/hashicorp/terraform-plugin-log v0.10.0
 	github.com/hashicorp/terraform-plugin-mux v0.23.0
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.40.0
 	github.com/jinzhu/copier v0.3.2
@@ -93,6 +94,7 @@ require (
 	github.com/eapache/go-resiliency v1.7.0 // indirect
 	github.com/eapache/go-xerial-snappy v0.0.0-20230731223053-c322873962e3 // indirect
 	github.com/eapache/queue v1.1.0 // indirect
+	github.com/ebitengine/purego v0.10.1 // indirect
 	github.com/emicklei/go-restful/v3 v3.12.1 // indirect
 	github.com/evanphx/json-patch/v5 v5.9.0 // indirect
 	github.com/fatih/color v1.18.0 // indirect
@@ -140,7 +142,6 @@ require (
 	github.com/hashicorp/logutils v1.0.0 // indirect
 	github.com/hashicorp/terraform-exec v0.25.0 // indirect
 	github.com/hashicorp/terraform-json v0.27.2 // indirect
-	github.com/hashicorp/terraform-plugin-log v0.10.0 // indirect
 	github.com/hashicorp/terraform-registry-address v0.4.0 // indirect
 	github.com/hashicorp/terraform-svchost v0.1.1 // indirect
 	github.com/hashicorp/vault/api v1.16.0 // indirect
@@ -204,7 +205,7 @@ require (
 	golang.org/x/net v0.52.0 // indirect
 	golang.org/x/oauth2 v0.36.0 // indirect
 	golang.org/x/sync v0.20.0 // indirect
-	golang.org/x/sys v0.42.0 // indirect
+	golang.org/x/sys v0.44.0 // indirect
 	golang.org/x/term v0.41.0 // indirect
 	golang.org/x/text v0.35.0 // indirect
 	golang.org/x/time v0.15.0 // indirect
@@ -236,7 +237,7 @@ replace github.com/hashicorp/vault => github.com/hashicorp/vault v1.18.2
 
 replace github.com/hashicorp/vault/api/auth/approle => github.com/hashicorp/vault/api/auth/approle v0.8.0
 
-replace github.ibm.com/Timothy-Yao/keyprotect-st-go-client-public => /Users/timothyyao/workspace/Timothy-Yao-IBM/keyprotect-st-go-client/public
+replace github.com/IBM/keyprotect-go-client => github.com/tyao117/keyprotect-go-client v0.0.0-20260606233828-404f4ffc8000
 
 exclude (
 	github.com/kubernetes-incubator/external-storage v0.0.0-00010101000000-000000000000
