@@ -521,10 +521,10 @@ func createKPCryptoOptsFromV2(ctx context.Context, d *schema.ResourceData) (*key
 	if ok {
 		isPrivate = isPrivateChk.(bool)
 	}
-	return createKPCryptoOpts(url, region, instanceID, isPrivate)
+	return createKPCryptoOpts(ctx, url, region, instanceID, isPrivate)
 }
 
-func createKPCryptoOpts(url, region, instanceID string, isPrivate bool) (*keyprotect_dedicated.KeyProtectCryptoUnitAPIOptions, error) {
+func createKPCryptoOpts(ctx context.Context, url, region, instanceID string, isPrivate bool) (*keyprotect_dedicated.KeyProtectCryptoUnitAPIOptions, error) {
 	var isGood bool
 
 	regionChk := len(region) > 0

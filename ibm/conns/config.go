@@ -4,6 +4,7 @@
 package conns
 
 import (
+	"context"
 	"crypto/tls"
 	"encoding/json"
 	"errors"
@@ -148,6 +149,13 @@ const RetryAPIDelay = 5 * time.Second
 
 const IAMURL = iamidentity.DefaultServiceURL
 
+const (
+	bearerPrefix    = "Bearer "
+	bearerPrefixLen = len(bearerPrefix)
+	bxClientID      = "bx"
+	bxClientSecret  = "bx"
+)
+
 // BluemixRegion ...
 var BluemixRegion string
 
@@ -273,6 +281,7 @@ type ClientSession interface {
 	AppConfigurationV1() (*appconfigurationv1.AppConfigurationV1, error)
 	KeyProtectAPI() (*kp.Client, error)
 	KeyManagementAPI() (*kp.Client, error)
+	KeyProtectCryptoUnitAPI(context.Context, *kpCryptoUnit.KeyProtectCryptoUnitAPIOptions) (*kpCryptoUnit.KeyProtectCryptoUnitAPI, error)
 	VpcV1API() (*vpc.VpcV1, error)
 	VpcV1BetaAPI() (*vpcbeta.VpcbetaV1, error)
 	PrivateDNSClientSession() (*dns.DnsSvcsV1, error)
@@ -352,6 +361,10 @@ type ClientSession interface {
 type clientSession struct {
 	session *Session
 
+	// Shared authenticator for all IBM Cloud SDK clients
+	authenticator    core.Authenticator
+	authenticatorErr error
+
 	appidErr error
 	appidAPI *appid.AppIDManagementV4
 
@@ -429,9 +442,6 @@ type clientSession struct {
 
 	kmsErr error
 	kmsAPI *kp.API
-
-	kmsCryptoErr error
-	kmsCryptoAPI *kpCryptoUnit.KeyProtectCryptoUnitAPI
 
 	hpcsEndpointErr error
 	hpcsEndpointAPI hpcs.HPCSV2
@@ -960,8 +970,49 @@ func (sess clientSession) KeyManagementAPI() (*kp.Client, error) {
 	return sess.kmsAPI, sess.kmsErr
 }
 
-func (sess clientSession) KeyManagementCryptoUnitAPI() (*kpCryptoUnit.KeyProtectCryptoUnitAPI, error) {
-	return sess.kmsCryptoAPI, sess.kmsCryptoErr
+func (sess *clientSession) KeyProtectCryptoUnitAPI(ctx context.Context, kpOpts *kpCryptoUnit.KeyProtectCryptoUnitAPIOptions) (*kpCryptoUnit.KeyProtectCryptoUnitAPI, error) {
+	auth, err := sess.Authenticator()
+	if err != nil {
+		return nil, err
+	}
+	envVars := []string{
+		"IBMCLOUD_KP_CRYPTOUNIT_ENDPOINT",
+		"KP_TARGET_ADDR",
+	}
+
+	var config *kpCryptoUnit.KeyProtectCryptoUnitAPIOptions
+	var envVarFound bool
+	for _, v := range envVars {
+		if _, ok := os.LookupEnv(v); ok {
+			envVarFound = true
+			break
+		}
+	}
+	if envVarFound {
+		defaultURL := fmt.Sprintf("https://%s.api.%s.kms.appdomain.cloud", kpOpts.InstanceID, kpOpts.Region)
+		config = &kpCryptoUnit.KeyProtectCryptoUnitAPIOptions{
+			URL: EnvFallBack([]string{
+				"IBMCLOUD_KP_CRYPTOUNIT_ENDPOINT",
+				"KP_TARGET_ADDR",
+			}, defaultURL),
+			Authenticator: auth,
+		}
+	} else {
+		config = kpOpts
+		config.Authenticator = auth
+	}
+	client, disconnect, err := kpCryptoUnit.NewKeyProtectCryptoUnitAPI(config)
+	if err != nil {
+		return nil, err
+	}
+
+	// context-aware cleanup function
+	go func() {
+		<-ctx.Done()
+		disconnect()
+	}()
+
+	return client, nil
 }
 
 func (sess clientSession) VpcV1API() (*vpc.VpcV1, error) {
@@ -1426,14 +1477,105 @@ func (session clientSession) PlatformNotificationsV1() (*platformnotificationsv1
 	return session.platformNotificationsClient, session.platformNotificationsClientErr
 }
 
+// Authenticator returns the shared authenticator instance
+func (s *clientSession) Authenticator() (core.Authenticator, error) {
+	if s.authenticatorErr != nil {
+		return nil, s.authenticatorErr
+	}
+	return s.authenticator, nil
+}
+
+// buildAuthenticator creates the appropriate authenticator based on configuration
+func (c *Config) buildAuthenticator(sess *Session, iamURL string) (core.Authenticator, error) {
+	// Priority 1: Trusted Profile Authentication (API Key + Profile)
+	if c.BluemixAPIKey != "" && (c.IAMTrustedProfileID != "" || c.IAMTrustedProfileName != "") {
+		return c.buildTrustedProfileAuthenticator(iamURL)
+	}
+
+	// Priority 2: API Key or Refresh Token Authentication
+	if c.BluemixAPIKey != "" || sess.BluemixSession.Config.IAMRefreshToken != "" {
+		return c.buildIAMAuthenticator(sess, iamURL)
+	}
+
+	// Priority 3: Bearer Token Authentication
+	return c.buildBearerTokenAuthenticator(sess)
+}
+
+// buildTrustedProfileAuthenticator creates an IAM Assume authenticator for trusted profiles
+func (c *Config) buildTrustedProfileAuthenticator(iamURL string) (core.Authenticator, error) {
+	builder := core.NewIamAssumeAuthenticatorBuilder().
+		SetApiKey(c.BluemixAPIKey).
+		SetURL(EnvFallBack([]string{"IBMCLOUD_IAM_API_ENDPOINT"}, iamURL))
+
+	if c.IAMTrustedProfileID != "" {
+		builder.SetIAMProfileID(c.IAMTrustedProfileID)
+	} else {
+		// Validate required fields for profile name authentication
+		if c.Account == "" {
+			return nil, fmt.Errorf("IAM account ID is required when using trusted profile name")
+		}
+		builder.SetIAMProfileName(c.IAMTrustedProfileName).
+			SetIAMAccountID(c.Account)
+	}
+
+	authenticator, err := builder.Build()
+	if err != nil {
+		return nil, fmt.Errorf("failed to build IAM assume authenticator: %w", err)
+	}
+
+	return authenticator, nil
+}
+
+// buildIAMAuthenticator creates an IAM authenticator using API key or refresh token
+func (c *Config) buildIAMAuthenticator(sess *Session, iamURL string) (core.Authenticator, error) {
+	url := EnvFallBack([]string{"IBMCLOUD_IAM_API_ENDPOINT"}, iamURL)
+
+	if c.BluemixAPIKey != "" {
+		return &core.IamAuthenticator{
+			ApiKey: c.BluemixAPIKey,
+			URL:    url,
+		}, nil
+	}
+
+	// Use refresh token authentication
+	if sess.BluemixSession.Config.IAMRefreshToken == "" {
+		return nil, fmt.Errorf("IAM refresh token is empty")
+	}
+
+	return &core.IamAuthenticator{
+		RefreshToken: sess.BluemixSession.Config.IAMRefreshToken,
+		ClientId:     bxClientID,
+		ClientSecret: bxClientSecret,
+		URL:          url,
+	}, nil
+}
+
+// buildBearerTokenAuthenticator creates a bearer token authenticator
+func (c *Config) buildBearerTokenAuthenticator(sess *Session) (core.Authenticator, error) {
+	token := sess.BluemixSession.Config.IAMAccessToken
+
+	if token == "" {
+		return nil, fmt.Errorf("IAM access token is empty")
+	}
+
+	// Strip "Bearer " prefix if present
+	if strings.HasPrefix(token, bearerPrefix) {
+		token = token[bearerPrefixLen:]
+	}
+
+	return &core.BearerTokenAuthenticator{
+		BearerToken: token,
+	}, nil
+}
+
 // ClientSession configures and returns a fully initialized ClientSession
-func (c *Config) ClientSession() (interface{}, error) {
+func (c *Config) ClientSession() (*clientSession, error) {
 	sess, fileMap, err := newSession(c)
 	if err != nil {
 		return nil, err
 	}
 	log.Printf("[INFO] Configured Region: %s\n", c.Region)
-	session := clientSession{
+	session := &clientSession{
 		session: sess,
 	}
 
@@ -1599,6 +1741,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 	}
 	session.hpcsEndpointAPI = hpcsAPI
 
+	// Key Management (KP Endpoint)
 	kpurl := ContructEndpoint(fmt.Sprintf("%s.kms", c.Region), cloudEndpoint)
 	if c.Visibility == "private" || c.Visibility == "public-and-private" {
 		kpurl = ContructEndpoint(fmt.Sprintf("private.%s.kms", c.Region), cloudEndpoint)
@@ -1641,7 +1784,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 		iamURL = fileFallBack(fileMap, c.Visibility, "IBMCLOUD_IAM_API_ENDPOINT", c.Region, iamURL)
 	}
 
-	// KEY MANAGEMENT Service
+	// KEY MANAGEMENT Service (KMS)
 	kmsurl := ContructEndpoint(fmt.Sprintf("%s.kms", c.Region), cloudEndpoint)
 	if c.Visibility == "private" || c.Visibility == "public-and-private" {
 		kmsurl = ContructEndpoint(fmt.Sprintf("private.%s.kms", c.Region), cloudEndpoint)
@@ -1675,52 +1818,12 @@ func (c *Config) ClientSession() (interface{}, error) {
 
 	var authenticator core.Authenticator
 
-	if (c.BluemixAPIKey != "") && (c.IAMTrustedProfileID != "" || c.IAMTrustedProfileName != "") {
-		if c.IAMTrustedProfileID != "" {
-			authenticator, err = core.NewIamAssumeAuthenticatorBuilder().
-				SetApiKey(c.BluemixAPIKey).
-				SetIAMProfileID(c.IAMTrustedProfileID).
-				SetURL(EnvFallBack([]string{"IBMCLOUD_IAM_API_ENDPOINT"}, iamURL)).
-				Build()
-			if err != nil {
-				log.Fatalf("Error in authenticating using NewIamAssumeAuthenticatorBuilder. Error: %s", err)
-			}
-		} else {
-			authenticator, err = core.NewIamAssumeAuthenticatorBuilder().
-				SetApiKey(c.BluemixAPIKey).
-				SetIAMProfileName(c.IAMTrustedProfileName).
-				SetIAMAccountID(c.Account).
-				SetURL(EnvFallBack([]string{"IBMCLOUD_IAM_API_ENDPOINT"}, iamURL)).
-				Build()
-			if err != nil {
-				log.Fatalf("Error in authenticating using NewIamAssumeAuthenticatorBuilder with trusted profile name. Error: %s", err)
-			}
-
-		}
-	} else if c.BluemixAPIKey != "" || sess.BluemixSession.Config.IAMRefreshToken != "" {
-		if c.BluemixAPIKey != "" {
-			authenticator = &core.IamAuthenticator{
-				ApiKey: c.BluemixAPIKey,
-				URL:    EnvFallBack([]string{"IBMCLOUD_IAM_API_ENDPOINT"}, iamURL),
-			}
-		} else {
-			// Construct the IamAuthenticator with the IAM refresh token.
-			authenticator = &core.IamAuthenticator{
-				RefreshToken: sess.BluemixSession.Config.IAMRefreshToken,
-				ClientId:     "bx",
-				ClientSecret: "bx",
-				URL:          EnvFallBack([]string{"IBMCLOUD_IAM_API_ENDPOINT"}, iamURL),
-			}
-		}
-	} else if strings.HasPrefix(sess.BluemixSession.Config.IAMAccessToken, "Bearer") {
-		authenticator = &core.BearerTokenAuthenticator{
-			BearerToken: sess.BluemixSession.Config.IAMAccessToken[7:],
-		}
-	} else {
-		authenticator = &core.BearerTokenAuthenticator{
-			BearerToken: sess.BluemixSession.Config.IAMAccessToken,
-		}
+	// Build authenticator once and store in session for reuse
+	session.authenticator, err = c.buildAuthenticator(sess, iamURL)
+	if err != nil {
+		session.authenticatorErr = fmt.Errorf("failed to create authenticator: %w", err)
 	}
+	authenticator = session.authenticator
 
 	// Construct the service options.
 	var backupRecoveryURL string = "https://default.backup-recovery.cloud.ibm.com/v2"

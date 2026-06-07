@@ -266,7 +266,7 @@ func (r *kmsCryptoUnitsResource) Create(ctx context.Context, req resource.Create
 	instanceID := plan.InstanceID.ValueString()
 	usePrivate := plan.UsePrivate.ValueBool()
 
-	kpOpts, err := createKPCryptoOpts(url, region, instanceID, usePrivate)
+	kpOpts, err := createKPCryptoOpts(ctx, url, region, instanceID, usePrivate)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Failed to Initialize KMS Crypto Unit Client",
@@ -342,7 +342,7 @@ func (r *kmsCryptoUnitsResource) Read(ctx context.Context, req resource.ReadRequ
 	instanceID := state.ID.ValueString()
 	usePrivate := state.UsePrivate.ValueBool()
 
-	kpOpts, err := createKPCryptoOpts(url, region, instanceID, usePrivate)
+	kpOpts, err := createKPCryptoOpts(ctx, url, region, instanceID, usePrivate)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Failed to Initialize KMS Crypto Unit Client",
@@ -391,7 +391,7 @@ func (r *kmsCryptoUnitsResource) Update(ctx context.Context, req resource.Update
 	instanceID := state.ID.ValueString()
 	usePrivate := state.UsePrivate.ValueBool()
 
-	kpOpts, err := createKPCryptoOpts(url, region, instanceID, usePrivate)
+	kpOpts, err := createKPCryptoOpts(ctx, url, region, instanceID, usePrivate)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Failed to Initialize KMS Crypto Unit Client",
@@ -436,7 +436,7 @@ func (r *kmsCryptoUnitsResource) Update(ctx context.Context, req resource.Update
 	instanceID = plan.InstanceID.ValueString()
 	usePrivate = plan.UsePrivate.ValueBool()
 
-	kpOpts, err = createKPCryptoOpts(url, region, instanceID, usePrivate)
+	kpOpts, err = createKPCryptoOpts(ctx, url, region, instanceID, usePrivate)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Failed to Initialize KMS Crypto Unit Client",
@@ -517,7 +517,7 @@ func (r *kmsCryptoUnitsResource) Delete(ctx context.Context, req resource.Delete
 	instanceID := state.ID.ValueString()
 	usePrivate := state.UsePrivate.ValueBool()
 
-	kpOpts, err := createKPCryptoOpts(url, region, instanceID, usePrivate)
+	kpOpts, err := createKPCryptoOpts(ctx, url, region, instanceID, usePrivate)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Failed to Initialize KMS Crypto Unit Client",
