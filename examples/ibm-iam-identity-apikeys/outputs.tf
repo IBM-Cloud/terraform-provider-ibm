@@ -7,7 +7,13 @@ output "ibm_iam_api_key" {
 }
 
 output "ibm_iam_api_key_data" {
-  value       = data.ibm_iam_api_key.iam_api_key_data
-  description = "iam_api_key data source"
-  sensitive = true
+  value = {
+    apikey_id   = data.ibm_iam_api_key.iam_api_key_data.apikey_id
+    name        = data.ibm_iam_api_key.iam_api_key_data.name
+    description = data.ibm_iam_api_key.iam_api_key_data.description
+    account_id  = data.ibm_iam_api_key.iam_api_key_data.account_id
+    crn         = data.ibm_iam_api_key.iam_api_key_data.crn
+    iam_id      = data.ibm_iam_api_key.iam_api_key_data.iam_id
+  }
+  description = "iam_api_key data"
 }
