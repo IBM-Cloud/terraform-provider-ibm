@@ -55,6 +55,12 @@ func ResourceIBMKmsCryptoUnits() *schema.Resource {
 				Description: "set to true if the private endpoint should be used, otherwise false",
 				Default:     false,
 			},
+			"should_zeroize": {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Description: "set to true if the resource should be zeroized. Zeroizing if harmful if not understood. Set to false as a safe default",
+				Default:     false,
+			},
 			"cryptounits": {
 				Type:     schema.TypeMap,
 				Computed: true,

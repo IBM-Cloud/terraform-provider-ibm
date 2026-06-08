@@ -24,7 +24,7 @@ require (
 	github.com/IBM/ibm-cos-sdk-go-config/v2 v2.3.0
 	github.com/IBM/ibm-hpcs-tke-sdk v0.0.0-20250305134146-e023c2e84762
 	github.com/IBM/ibm-hpcs-uko-sdk v0.0.20-beta
-	github.com/IBM/keyprotect-go-client v0.15.1
+	github.com/IBM/keyprotect-go-client v0.17.0
 	github.com/IBM/logs-go-sdk v0.7.0
 	github.com/IBM/logs-router-go-sdk v1.0.8
 	github.com/IBM/mqcloud-go-sdk v0.4.0
@@ -236,8 +236,6 @@ replace github.com/hashicorp/consul/api v1.1.0 => github.com/hashicorp/consul/ap
 replace github.com/hashicorp/vault => github.com/hashicorp/vault v1.18.2
 
 replace github.com/hashicorp/vault/api/auth/approle => github.com/hashicorp/vault/api/auth/approle v0.8.0
-
-replace github.com/IBM/keyprotect-go-client => github.com/tyao117/keyprotect-go-client v0.0.0-20260606233828-404f4ffc8000
 
 exclude (
 	github.com/kubernetes-incubator/external-storage v0.0.0-00010101000000-000000000000
