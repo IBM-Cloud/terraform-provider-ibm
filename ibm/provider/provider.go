@@ -433,7 +433,7 @@ func Provider() *schema.Provider {
 			"ibm_iam_user_policy":                           iampolicy.DataSourceIBMIAMUserPolicy(),
 			"ibm_iam_authorization_policies":                iampolicy.DataSourceIBMIAMAuthorizationPolicies(),
 			"ibm_iam_user_profile":                          iamidentity.DataSourceIBMIAMUserProfile(),
-			"ibm_iam_service_id":                            iamidentity.DataSourceIBMIAMServiceID(),
+			"ibm_iam_service_id":                            iamidentity.DataSourceIBMIamServiceID(),
 			"ibm_iam_serviceid_group":                       iamidentity.DataSourceIBMIamServiceidGroup(),
 			"ibm_iam_service_policy":                        iampolicy.DataSourceIBMIAMServicePolicy(),
 			"ibm_iam_api_key":                               iamidentity.DataSourceIBMIamApiKey(),
@@ -1361,7 +1361,7 @@ func Provider() *schema.Provider {
 			"ibm_iam_authorization_policy_detach":           iampolicy.ResourceIBMIAMAuthorizationPolicyDetach(),
 			"ibm_iam_user_policy":                           iampolicy.ResourceIBMIAMUserPolicy(),
 			"ibm_iam_user_settings":                         iamidentity.ResourceIBMIAMUserSettings(),
-			"ibm_iam_service_id":                            iamidentity.ResourceIBMIAMServiceID(),
+			"ibm_iam_service_id":                            iamidentity.ResourceIBMIamServiceID(),
 			"ibm_iam_serviceid_group":                       iamidentity.ResourceIBMIamServiceidGroup(),
 			"ibm_iam_service_api_key":                       iamidentity.ResourceIBMIAMServiceAPIKey(),
 			"ibm_iam_service_policy":                        iampolicy.ResourceIBMIAMServicePolicy(),
@@ -2505,7 +2505,7 @@ func Validator() validate.ValidatorDict {
 
 				"ibm_iam_access_group": iamaccessgroup.DataSourceIBMIAMAccessGroupValidator(),
 
-				"ibm_iam_service_id":                  iamidentity.DataSourceIBMIAMServiceIDValidator(),
+				"ibm_iam_service_id":                  iamidentity.DataSourceIBMIamServiceIDValidator(),
 				"ibm_iam_trusted_profile_claim_rule":  iamidentity.DataSourceIBMIamTrustedProfileClaimRuleValidator(),
 				"ibm_iam_trusted_profile_link":        iamidentity.DataSourceIBMIamTrustedProfileLinkValidator(),
 				"ibm_iam_trusted_profile_links":       iamidentity.DataSourceIBMIamTrustedProfileLinksValidator(),
