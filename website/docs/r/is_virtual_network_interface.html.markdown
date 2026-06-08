@@ -123,7 +123,7 @@ The `id` property can be formed using the VNI identifier. For example:
 
 ```terraform
 import {
-  to = ibm_is_virtual_network_interface.is_virtual_network_interface
+  to = ibm_is_virtual_network_interface.example
   id = "<id>"
 }
 ```
@@ -131,5 +131,5 @@ import {
 Using `terraform import`. For example:
 
 ```console
-% terraform import ibm_is_virtual_network_interface.is_virtual_network_interface <id>
+% terraform import ibm_is_virtual_network_interface.example <id>
 ```

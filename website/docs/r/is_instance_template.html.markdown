@@ -574,7 +574,7 @@ The `id` property can be formed from `instance template ID`. For example:
 
 ```terraform
 import {
-  to = ibm_is_instance_template.template
+  to = ibm_is_instance_template.example
   id = "<instance_template_id>"
 }
 ```
@@ -582,5 +582,5 @@ import {
 Using `terraform import`. For example:
 
 ```console
-% terraform import ibm_is_instance_template.template <instance_template_id>
+% terraform import ibm_is_instance_template.example <instance_template_id>
 ```

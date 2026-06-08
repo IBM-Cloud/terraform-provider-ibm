@@ -126,7 +126,7 @@ The `id` property can be formed from `instance_ID`, and `network_interface_ID`. 
 
 ```terraform
 import {
-  to = ibm_is_instance_network_interface.is_instance_network_interface
+  to = ibm_is_instance_network_interface.example
   id = "<instance>/<network_interface_ID>"
 }
 ```
@@ -134,5 +134,5 @@ import {
 Using `terraform import`. For example:
 
 ```console
-% terraform import ibm_is_instance_network_interface.is_instance_network_interface <instance>/<network_interface_ID>
+% terraform import ibm_is_instance_network_interface.example <instance>/<network_interface_ID>
 ```

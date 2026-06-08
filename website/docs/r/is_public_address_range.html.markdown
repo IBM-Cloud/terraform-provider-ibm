@@ -124,7 +124,7 @@ The `id` property can be formed using the public_address_range id. For example:
 
 ```terraform
 import {
-  to = ibm_is_public_address_range.is_public_address_range
+  to = ibm_is_public_address_range.example
   id = "<id>"
 }
 ```
@@ -132,5 +132,5 @@ import {
 Using `terraform import`. For example:
 
 ```console
-% terraform import ibm_is_public_address_range.is_public_address_range <id>
+% terraform import ibm_is_public_address_range.example <id>
 ```

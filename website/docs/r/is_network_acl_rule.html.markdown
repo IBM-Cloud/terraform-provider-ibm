@@ -218,17 +218,17 @@ In addition to all argument reference list, you can access the following attribu
 ## Import
 
 In Terraform v1.5.0 and later, use an [`import` block](https://developer.hashicorp.com/terraform/language/import) to import the `ibm_is_network_acl_rule` resource by using `id`.
-The `id` property can be formed from `<network_acl_id>\<rule_id>`. For example:
+The `id` property can be formed from `network_acl_id`, and `rule_id`. For example:
 
 ```terraform
 import {
-  to = ibm_is_network_acl.example
-  id = "<network_acl_id>\<rule_id>"
+  to = ibm_is_network_acl_rule.example
+  id = "<network_acl_id>/<rule_id>"
 }
 ```
 
 Using `terraform import`. For example:
 
 ```console
-% terraform import ibm_is_network_acl_rule.example <network_acl_id>\<rule_id>
+% terraform import ibm_is_network_acl_rule.example <network_acl_id>/<rule_id>
 ```

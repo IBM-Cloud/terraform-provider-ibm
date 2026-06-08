@@ -92,16 +92,18 @@ After your resource is created, you can read values from the listed arguments an
 
 ## Import
 
-You can import the `ibm_is_volume_job` resource by using `id`.
-The `id` property can be formed from `volume_id`, and `volume_job_id` in the following format:
+In Terraform v1.5.0 and later, use an [`import` block](https://developer.hashicorp.com/terraform/language/import) to import the `ibm_is_volume_job` resource by using `id`.
+The `id` property can be formed from `volume_id`, and `volume_job_id`. For example:
 
-<pre>
-&lt;volume_id&gt;/&lt;volume_job_id&gt;
-</pre>
-- `volume_id`: A string. The volume identifier.
-- `volume_job_id`: A string in the format `r006-095e9baf-01d4-4e29-986e-20d26606b82a`. The unique identifier for this volume job.
+```terraform
+import {
+  to = ibm_is_volume_job.example
+  id = "<volume_id>/<volume_job_id>"
+}
+```
 
-# Syntax
-<pre>
-$ terraform import ibm_is_volume_job.is_volume_job &lt;volume_id&gt;/&lt;volume_job_id&gt;
-</pre>
+Using `terraform import`. For example:
+
+```console
+% terraform import ibm_is_volume_job.example <volume_id>/<volume_job_id>
+```
