@@ -813,38 +813,43 @@ func resourceIBMPIInstanceRead(ctx context.Context, d *schema.ResourceData, meta
 	d.Set(Arg_PreferredProcessorCompatibilityMode, powervmdata.PreferredProcessorCompatibilityMode)
 	d.Set(Attr_EffectiveProcessorCompatibilityMode, powervmdata.EffectiveProcessorCompatibilityMode)
 
-	vpmemVolumeClient := instance.NewIBMPIVPMEMClient(ctx, sess, cloudInstanceID)
-	vpmemVolumes, err := vpmemVolumeClient.GetAllPvmVpmemVolumes(instanceID)
-	if err != nil {
-		if strings.Contains(strings.ToLower(err.Error()), NotFound) {
-			d.SetId("")
-			return nil
-		}
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetAllPvmVpmemVolumes failed: %s", err.Error()), "ibm_pi_instance", "read")
-		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
-		return tfErr.GetDiag()
-	}
-	volIDMap := make(map[string]string)
-	if vpmemVolumes.Volumes != nil {
-		for _, vol := range vpmemVolumes.Volumes {
-			if vol.Name != nil && vol.UUID != nil {
-				volIDMap[*vol.Name] = *vol.UUID
+	// Build a map of volume name -> volume details from API
+	// Use powervmdata.VpmemVolumes (already fetched at line 712) instead of making a separate API call
+	apiVolMap := make(map[string]map[string]any)
+	if len(powervmdata.VpmemVolumes) > 0 {
+		for _, vol := range powervmdata.VpmemVolumes {
+			if vol.Name != nil && vol.Size != nil && vol.UUID != nil {
+				apiVolMap[*vol.Name] = map[string]any{
+					Attr_Name:     *vol.Name,
+					Attr_Size:     int(*vol.Size),
+					Attr_VolumeID: *vol.UUID,
+				}
 			}
 		}
 	}
+
+	// Get the current config to preserve order
 	vpmemList := d.Get(Arg_VPMEMVolumes).([]any)
 	updatedVpmem := make([]map[string]any, 0, len(vpmemList))
 	for _, v := range vpmemList {
 		vol := v.(map[string]any)
-		vpmem := map[string]any{
-			Attr_Name: vol[Attr_Name],
-			Attr_Size: vol[Attr_Size],
+		name := vol[Attr_Name].(string)
+
+		// If this volume exists in API, use API data (includes volume_id)
+		if apiVol, exists := apiVolMap[name]; exists {
+			updatedVpmem = append(updatedVpmem, apiVol)
+			delete(apiVolMap, name) // Mark as processed
+		} else {
+			// Volume in config but not in API - keep config data without volume_id
+			// This can happen during creation before the volume is fully created
+			vpmem := map[string]any{
+				Attr_Name: name,
+				Attr_Size: vol[Attr_Size],
+			}
+			updatedVpmem = append(updatedVpmem, vpmem)
 		}
-		if id, ok := volIDMap[vol[Attr_Name].(string)]; ok {
-			vpmem[Attr_VolumeID] = id
-		}
-		updatedVpmem = append(updatedVpmem, vpmem)
 	}
+	d.Set(Arg_VPMEMVolumes, updatedVpmem)
 
 	vpmemVolumesAttributes := []map[string]any{}
 	if len(powervmdata.VpmemVolumes) > 0 {
