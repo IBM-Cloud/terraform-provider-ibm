@@ -38,7 +38,7 @@ After your resource is created, you can read values from the listed arguments an
 * `iam_id` - (String) Cloud wide identifier for identities of this service ID.
 * `locked` - (Boolean) The service ID cannot be changed if set to true.
 * `modified_at` - (String) If set contains a date time string of the last modification date in ISO format.
-* `entity_tag` - (String) The version of the ServiceID object.
+* `version` - (String) The version of the ServiceID object.
 
 
 ## Import
