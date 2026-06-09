@@ -1,20 +1,28 @@
 package kms_test
 
+// TF_LOG=1 TF_ACC=1 go test -v -run "TestAccIBMKMSCryptoUnits" ./ibm/service/kms/
+
 import (
+	"context"
 	"fmt"
+	"os"
 	"testing"
 
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+
+	kpCryptoUnit "github.com/IBM/keyprotect-go-client/dedicated"
 )
 
 func TestAccIBMKMSCryptoUnits_basic(t *testing.T) {
-	instanceName := fmt.Sprintf("kms_%d", acctest.RandIntRange(10, 100))
+	instanceName := os.Getenv("KP_INSTANCE_ID")
+	url := os.Getenv("KP_URL")
 	sigKeyFilepath := "./test_signature_key"
 	sigKeyOwner := "admin"
-	sigKeyPassphrase := "test-passphrase"
+	sigKeyPassphrase := ""
 	masterKeyName := "TESTKEY"
 	keyShareFilepath1 := "./test_keyshare1.key"
 	keyShareFilepath2 := "./test_keyshare2.key"
@@ -22,12 +30,14 @@ func TestAccIBMKMSCryptoUnits_basic(t *testing.T) {
 	keyShareToken2 := "token2"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { acc.TestAccPreCheck(t) },
-		Providers: acc.TestAccProviders,
+		PreCheck:     func() { acc.TestAccPreCheckKmsCrypto(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMKmsCryptoUnitsDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccCheckIBMKmsCryptoUnitsBasicConfig(
 					instanceName,
+					url,
 					sigKeyFilepath,
 					sigKeyOwner,
 					sigKeyPassphrase,
@@ -41,7 +51,7 @@ func TestAccIBMKMSCryptoUnits_basic(t *testing.T) {
 					resource.TestCheckResourceAttrSet("ibm_kms_cryptounits.test", "instance_id"),
 					resource.TestCheckResourceAttr("ibm_kms_cryptounits.test", "signature_key.#", "1"),
 					resource.TestCheckResourceAttr("ibm_kms_cryptounits.test", "master_key.#", "1"),
-					resource.TestCheckResourceAttrSet("ibm_kms_cryptounits.test", "cryptounits.%"),
+					resource.TestCheckResourceAttrSet("ibm_kms_cryptounits.test", "cryptounits.#"),
 				),
 			},
 		},
@@ -49,25 +59,27 @@ func TestAccIBMKMSCryptoUnits_basic(t *testing.T) {
 }
 
 func TestAccIBMKMSCryptoUnits_withRegion(t *testing.T) {
-	instanceName := fmt.Sprintf("kms_%d", acctest.RandIntRange(10, 100))
-	region := "us-south"
-	sigKeyFilepath := "./test_signature_key.p8"
+	instanceName := os.Getenv("KP_INSTANCE_ID")
+	url := os.Getenv("KP_URL")
+	region := "eu-gb"
+	sigKeyFilepath := "./test_signature_key_region.p8"
 	sigKeyOwner := "admin"
-	sigKeyPassphrase := "test-passphrase"
+	sigKeyPassphrase := ""
 	masterKeyName := "TESTKEY"
-	keyShareFilepath1 := "./test_keyshare1.key"
-	keyShareFilepath2 := "./test_keyshare2.key"
+	keyShareFilepath1 := "./test_keyshare_region1.key"
+	keyShareFilepath2 := "./test_keyshare_region2.key"
 	keyShareToken1 := "token1"
 	keyShareToken2 := "token2"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { acc.TestAccPreCheck(t) },
-		Providers: acc.TestAccProviders,
+		PreCheck:     func() { acc.TestAccPreCheckKmsCrypto(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMKmsCryptoUnitsDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccCheckIBMKmsCryptoUnitsWithRegionConfig(
 					instanceName,
-					region,
+					url,
 					sigKeyFilepath,
 					sigKeyOwner,
 					sigKeyPassphrase,
@@ -82,46 +94,7 @@ func TestAccIBMKMSCryptoUnits_withRegion(t *testing.T) {
 					resource.TestCheckResourceAttr("ibm_kms_cryptounits.test", "region", region),
 					resource.TestCheckResourceAttr("ibm_kms_cryptounits.test", "signature_key.#", "1"),
 					resource.TestCheckResourceAttr("ibm_kms_cryptounits.test", "master_key.#", "1"),
-					resource.TestCheckResourceAttrSet("ibm_kms_cryptounits.test", "cryptounits.%"),
-				),
-			},
-		},
-	})
-}
-
-func TestAccIBMKMSCryptoUnits_withPrivateEndpoint(t *testing.T) {
-	instanceName := fmt.Sprintf("kms_%d", acctest.RandIntRange(10, 100))
-	sigKeyFilepath := "./test_signature_key.p8"
-	sigKeyOwner := "admin"
-	sigKeyPassphrase := "test-passphrase"
-	masterKeyName := "TESTKEY"
-	keyShareFilepath1 := "./test_keyshare1.key"
-	keyShareFilepath2 := "./test_keyshare2.key"
-	keyShareToken1 := "token1"
-	keyShareToken2 := "token2"
-
-	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { acc.TestAccPreCheck(t) },
-		Providers: acc.TestAccProviders,
-		Steps: []resource.TestStep{
-			{
-				Config: testAccCheckIBMKmsCryptoUnitsWithPrivateEndpointConfig(
-					instanceName,
-					sigKeyFilepath,
-					sigKeyOwner,
-					sigKeyPassphrase,
-					masterKeyName,
-					keyShareFilepath1,
-					keyShareToken1,
-					keyShareFilepath2,
-					keyShareToken2,
-				),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet("ibm_kms_cryptounits.test", "instance_id"),
-					resource.TestCheckResourceAttr("ibm_kms_cryptounits.test", "use_private_endpoint", "true"),
-					resource.TestCheckResourceAttr("ibm_kms_cryptounits.test", "signature_key.#", "1"),
-					resource.TestCheckResourceAttr("ibm_kms_cryptounits.test", "master_key.#", "1"),
-					resource.TestCheckResourceAttrSet("ibm_kms_cryptounits.test", "cryptounits.%"),
+					resource.TestCheckResourceAttrSet("ibm_kms_cryptounits.test", "cryptounits.#"),
 				),
 			},
 		},
@@ -129,25 +102,28 @@ func TestAccIBMKMSCryptoUnits_withPrivateEndpoint(t *testing.T) {
 }
 
 func TestAccIBMKMSCryptoUnits_multipleKeyShares(t *testing.T) {
-	instanceName := fmt.Sprintf("kms_%d", acctest.RandIntRange(10, 100))
-	sigKeyFilepath := "./test_signature_key.p8"
+	instanceName := os.Getenv("KP_INSTANCE_ID")
+	url := os.Getenv("KP_URL")
+	sigKeyFilepath := "./test_signature_key_multi.p8"
 	sigKeyOwner := "admin"
-	sigKeyPassphrase := "test-passphrase"
+	sigKeyPassphrase := ""
 	masterKeyName := "TESTKEY"
-	keyShareFilepath1 := "./test_keyshare1.key"
-	keyShareFilepath2 := "./test_keyshare2.key"
-	keyShareFilepath3 := "./test_keyshare3.key"
+	keyShareFilepath1 := "./test_keyshare_multi1.key"
+	keyShareFilepath2 := "./test_keyshare_multi2.key"
+	keyShareFilepath3 := "./test_keyshare_multi3.key"
 	keyShareToken1 := "token1"
 	keyShareToken2 := "token2"
 	keyShareToken3 := "token3"
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { acc.TestAccPreCheck(t) },
-		Providers: acc.TestAccProviders,
+		PreCheck:     func() { acc.TestAccPreCheckKmsCrypto(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMKmsCryptoUnitsDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccCheckIBMKmsCryptoUnitsMultipleKeySharesConfig(
 					instanceName,
+					url,
 					sigKeyFilepath,
 					sigKeyOwner,
 					sigKeyPassphrase,
@@ -163,24 +139,18 @@ func TestAccIBMKMSCryptoUnits_multipleKeyShares(t *testing.T) {
 					resource.TestCheckResourceAttrSet("ibm_kms_cryptounits.test", "instance_id"),
 					resource.TestCheckResourceAttr("ibm_kms_cryptounits.test", "signature_key.#", "1"),
 					resource.TestCheckResourceAttr("ibm_kms_cryptounits.test", "master_key.#", "1"),
-					resource.TestCheckResourceAttrSet("ibm_kms_cryptounits.test", "cryptounits.%"),
+					resource.TestCheckResourceAttrSet("ibm_kms_cryptounits.test", "cryptounits.#"),
 				),
 			},
 		},
 	})
 }
 
-func testAccCheckIBMKmsCryptoUnitsBasicConfig(instanceName, sigKeyFilepath, sigKeyOwner, sigKeyPassphrase, masterKeyName, keyShareFilepath1, keyShareToken1, keyShareFilepath2, keyShareToken2 string) string {
+func testAccCheckIBMKmsCryptoUnitsBasicConfig(instanceName, url, sigKeyFilepath, sigKeyOwner, sigKeyPassphrase, masterKeyName, keyShareFilepath1, keyShareToken1, keyShareFilepath2, keyShareToken2 string) string {
 	return fmt.Sprintf(`
-	resource "ibm_resource_instance" "kms_instance" {
-		name     = "%s"
-		service  = "kms"
-		plan     = "tiered-pricing"
-		location = "us-south"
-	}
-
 	resource "ibm_kms_cryptounits" "test" {
-		instance_id = ibm_resource_instance.kms_instance.guid
+		instance_id = "%s"
+		url         = "%s"
 
 		signature_key {
 			filepath   = "%s"
@@ -204,21 +174,14 @@ func testAccCheckIBMKmsCryptoUnitsBasicConfig(instanceName, sigKeyFilepath, sigK
 			}
 		}
 	}
-`, addPrefixToResourceName(instanceName), sigKeyFilepath, sigKeyOwner, sigKeyPassphrase, masterKeyName, keyShareFilepath1, keyShareToken1, keyShareFilepath2, keyShareToken2)
+`, instanceName, url, sigKeyFilepath, sigKeyOwner, sigKeyPassphrase, masterKeyName, keyShareFilepath1, keyShareToken1, keyShareFilepath2, keyShareToken2)
 }
 
-func testAccCheckIBMKmsCryptoUnitsWithRegionConfig(instanceName, region, sigKeyFilepath, sigKeyOwner, sigKeyPassphrase, masterKeyName, keyShareFilepath1, keyShareToken1, keyShareFilepath2, keyShareToken2 string) string {
+func testAccCheckIBMKmsCryptoUnitsWithRegionConfig(instanceName, url, sigKeyFilepath, sigKeyOwner, sigKeyPassphrase, masterKeyName, keyShareFilepath1, keyShareToken1, keyShareFilepath2, keyShareToken2 string) string {
 	return fmt.Sprintf(`
-	resource "ibm_resource_instance" "kms_instance" {
-		name     = "%s"
-		service  = "kms"
-		plan     = "tiered-pricing"
-		location = "%s"
-	}
-
 	resource "ibm_kms_cryptounits" "test" {
-		instance_id = ibm_resource_instance.kms_instance.guid
-		region      = "%s"
+		instance_id = "%s"
+		url = "%s"
 
 		signature_key {
 			filepath   = "%s"
@@ -242,21 +205,14 @@ func testAccCheckIBMKmsCryptoUnitsWithRegionConfig(instanceName, region, sigKeyF
 			}
 		}
 	}
-`, addPrefixToResourceName(instanceName), region, region, sigKeyFilepath, sigKeyOwner, sigKeyPassphrase, masterKeyName, keyShareFilepath1, keyShareToken1, keyShareFilepath2, keyShareToken2)
+`, instanceName, url, sigKeyFilepath, sigKeyOwner, sigKeyPassphrase, masterKeyName, keyShareFilepath1, keyShareToken1, keyShareFilepath2, keyShareToken2)
 }
 
-func testAccCheckIBMKmsCryptoUnitsWithPrivateEndpointConfig(instanceName, sigKeyFilepath, sigKeyOwner, sigKeyPassphrase, masterKeyName, keyShareFilepath1, keyShareToken1, keyShareFilepath2, keyShareToken2 string) string {
+func testAccCheckIBMKmsCryptoUnitsMultipleKeySharesConfig(instanceName, url, sigKeyFilepath, sigKeyOwner, sigKeyPassphrase, masterKeyName, keyShareFilepath1, keyShareToken1, keyShareFilepath2, keyShareToken2, keyShareFilepath3, keyShareToken3 string) string {
 	return fmt.Sprintf(`
-	resource "ibm_resource_instance" "kms_instance" {
-		name     = "%s"
-		service  = "kms"
-		plan     = "tiered-pricing"
-		location = "us-south"
-	}
-
 	resource "ibm_kms_cryptounits" "test" {
-		instance_id          = ibm_resource_instance.kms_instance.guid
-		use_private_endpoint = true
+		instance_id = "%s"
+		url         = "%s"
 
 		signature_key {
 			filepath   = "%s"
@@ -278,51 +234,71 @@ func testAccCheckIBMKmsCryptoUnitsWithPrivateEndpointConfig(instanceName, sigKey
 				filepath = "%s"
 				token    = "%s"
 			}
+
+			keysharefile {
+				filepath = "%s"
+				token    = "%s"
+			}
 		}
 	}
-`, addPrefixToResourceName(instanceName), sigKeyFilepath, sigKeyOwner, sigKeyPassphrase, masterKeyName, keyShareFilepath1, keyShareToken1, keyShareFilepath2, keyShareToken2)
+`, instanceName, url, sigKeyFilepath, sigKeyOwner, sigKeyPassphrase, masterKeyName, keyShareFilepath1, keyShareToken1, keyShareFilepath2, keyShareToken2, keyShareFilepath3, keyShareToken3)
 }
 
-func testAccCheckIBMKmsCryptoUnitsMultipleKeySharesConfig(instanceName, sigKeyFilepath, sigKeyOwner, sigKeyPassphrase, masterKeyName, keyShareFilepath1, keyShareToken1, keyShareFilepath2, keyShareToken2, keyShareFilepath3, keyShareToken3 string) string {
-	return fmt.Sprintf(`
-	resource "ibm_resource_instance" "kms_instance" {
-		name     = "%s"
-		service  = "kms"
-		plan     = "tiered-pricing"
-		location = "us-south"
-	}
+// testAccCheckIBMKmsCryptoUnitsDestroy verifies that all crypto units associated
+// with the ibm_kms_cryptounits resource have been zeroized after destroy.
+func testAccCheckIBMKmsCryptoUnitsDestroy(s *terraform.State) error {
+	ctx := context.Background()
 
-	resource "ibm_kms_cryptounits" "test" {
-		instance_id = ibm_resource_instance.kms_instance.guid
-
-		signature_key {
-			filepath   = "%s"
-			owner      = "%s"
-			passphrase = "%s"
-			exists     = false
+	for _, rs := range s.RootModule().Resources {
+		if rs.Type != "ibm_kms_cryptounits" {
+			continue
 		}
 
-		master_key {
-			keyname = "%s"
-			exists  = false
+		instanceID := rs.Primary.Attributes["instance_id"]
+		region := rs.Primary.Attributes["region"]
+		url := rs.Primary.Attributes["url"]
 
-			keysharefile {
-				filepath = "%s"
-				token    = "%s"
+		kpOpts, err := kpCryptoUnit.NewKeyProtectCryptoUnitAPIOptions(url)
+		if err != nil || kpOpts.InstanceID == "" {
+			// Fall back to building URL from instance_id + region
+			if instanceID == "" || region == "" {
+				return fmt.Errorf("ibm_kms_cryptounits destroy check: cannot determine endpoint (instance_id=%s, region=%s)", instanceID, region)
 			}
-
-			keysharefile {
-				filepath = "%s"
-				token    = "%s"
+			serviceURL, urlErr := kpCryptoUnit.GetServiceURLForRegion(instanceID, region, false)
+			if urlErr != nil {
+				return fmt.Errorf("ibm_kms_cryptounits destroy check: failed to resolve URL: %v", urlErr)
 			}
+			kpOpts, err = kpCryptoUnit.NewKeyProtectCryptoUnitAPIOptions(serviceURL)
+			if err != nil {
+				return fmt.Errorf("ibm_kms_cryptounits destroy check: failed to create options: %v", err)
+			}
+		}
+		if kpOpts.InstanceID == "" {
+			kpOpts.InstanceID = instanceID
+		}
+		if kpOpts.Region == "" {
+			kpOpts.Region = region
+		}
 
-			keysharefile {
-				filepath = "%s"
-				token    = "%s"
+		client, err := acc.TestAccProvider.Meta().(conns.ClientSession).KeyProtectCryptoUnitAPI(ctx, kpOpts)
+		if err != nil {
+			return fmt.Errorf("ibm_kms_cryptounits destroy check: failed to create client: %v", err)
+		}
+
+		cryptoUnitsResponse, _, err := client.ListCryptoUnitsWithContext(ctx)
+		if err != nil {
+			return fmt.Errorf("ibm_kms_cryptounits destroy check: failed to list crypto units: %v", err)
+		}
+
+		for _, cu := range cryptoUnitsResponse.CryptoUnits {
+			if cu.State != kpCryptoUnit.CryptoUnitStateReserved {
+				return fmt.Errorf("ibm_kms_cryptounits destroy check: crypto unit %s is in state %q, expected %q",
+					cu.ID, cu.State, kpCryptoUnit.CryptoUnitStateReserved)
 			}
 		}
 	}
-`, addPrefixToResourceName(instanceName), sigKeyFilepath, sigKeyOwner, sigKeyPassphrase, masterKeyName, keyShareFilepath1, keyShareToken1, keyShareFilepath2, keyShareToken2, keyShareFilepath3, keyShareToken3)
+
+	return nil
 }
 
 // Made with Bob

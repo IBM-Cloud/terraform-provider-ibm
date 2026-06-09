@@ -33,6 +33,7 @@ func ResourceIBMKmsCryptoUnits() *schema.Resource {
 			"url": {
 				Type:        schema.TypeString,
 				Optional:    true,
+				Computed:    true,
 				Description: "The URL to use when targeting the resource",
 			},
 			"instance_id": {
@@ -44,6 +45,7 @@ func ResourceIBMKmsCryptoUnits() *schema.Resource {
 			},
 			"region": {
 				Type:             schema.TypeString,
+				Computed:         true,
 				Optional:         true,
 				ForceNew:         true,
 				Description:      "area where the key protect dedicated instance resides",
@@ -62,10 +64,25 @@ func ResourceIBMKmsCryptoUnits() *schema.Resource {
 				Default:     false,
 			},
 			"cryptounits": {
-				Type:     schema.TypeMap,
+				Type:     schema.TypeSet,
 				Computed: true,
-				Elem: &schema.Schema{
-					Type: schema.TypeString,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"id": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The unique identifier of the crypto unit",
+						},
+						"state": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The current state of the crypto unit",
+						},
+					},
+				},
+				Set: func(v interface{}) int {
+					m := v.(map[string]interface{})
+					return schema.HashString(m["id"].(string))
 				},
 			},
 			"signature_key": {
@@ -412,12 +429,16 @@ func resolveRelativePath(inputPath string) (string, error) {
 	return filepath.Clean(resolvedPath), nil
 }
 
-// suppressTokenDiff always suppresses token differences to prevent storing tokens in state.
-// Since tokens are only needed during resource creation and the API doesn't return them,
-// we suppress all diffs to avoid storing the token value in the state file.
+// suppressTokenDiff suppresses token/passphrase diffs after the initial creation.
+// On first create, old is "" and new has the real value — we must NOT suppress this
+// or the SDK will strip the value from the diff and d.Get("token") returns "" in Create.
+// After creation, the API never returns these values, so old will always be "" in state
+// and we suppress to avoid a permanent diff.
 func suppressTokenDiff(k, old, new string, d *schema.ResourceData) bool {
-	// Always suppress token diffs - tokens are write-only and should not be stored in state
-	return true
+	// Only suppress when the resource already exists (has an ID) and the stored
+	// value is empty (because the API doesn't return it). This prevents a
+	// perpetual diff without breaking the initial create.
+	return d.Id() != "" && old == ""
 }
 
 func resourceIBMKmsCryptoUnitsRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -438,24 +459,39 @@ func resourceIBMKmsCryptoUnitsRead(ctx context.Context, d *schema.ResourceData, 
 		return diag.Errorf("failed to list crypto units for instance %s: %v", kpOpts.InstanceID, err)
 	}
 
-	// Transform response into map format for schema (ID -> State mapping)
-	cryptoUnitsMap := make(map[string]interface{})
+	// Transform response into a slice of {id, state} objects for TypeSet schema
+	cryptoUnitsList := make([]interface{}, 0)
 	if cryptoUnitsResponse.CryptoUnits != nil {
 		for _, cu := range cryptoUnitsResponse.CryptoUnits {
-			if cu.ID != "" && cu.State != "" {
-				cryptoUnitsMap[cu.ID] = string(cu.State)
+			if cu.ID != "" {
+				cryptoUnitsList = append(cryptoUnitsList, map[string]interface{}{
+					"id":    cu.ID,
+					"state": string(cu.State),
+				})
 			}
 		}
 	}
 
 	// Set the cryptounits field in resource data
-	if err := d.Set("cryptounits", cryptoUnitsMap); err != nil {
+	if err := d.Set("cryptounits", cryptoUnitsList); err != nil {
 		return diag.Errorf("failed to set cryptounits: %v", err)
 	}
 
 	// Set other fields to maintain state consistency
 	d.Set("instance_id", kpOpts.InstanceID)
 	d.Set("region", kpOpts.Region)
+
+	// Preserve write-only fields that the API does not return.
+	// master_key and signature_key contain sensitive tokens/passphrases that
+	// are never returned by the API. If we do not explicitly re-set them here,
+	// the TypeSet hash machinery will see empty strings for Sensitive fields
+	// and corrupt state, causing "token cannot be empty" on subsequent plans.
+	if v, ok := d.GetOk("master_key"); ok {
+		d.Set("master_key", v)
+	}
+	if v, ok := d.GetOk("signature_key"); ok {
+		d.Set("signature_key", v)
+	}
 
 	return nil
 }
@@ -552,6 +588,17 @@ func createKPCryptoOpts(ctx context.Context, url, region, instanceID string, isP
 	kpOpts, err := keyprotect_dedicated.NewKeyProtectCryptoUnitAPIOptions(url)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create KeyProtectCryptoUnitAPIOptions using url: %w", err)
+	}
+
+	// Ensure Region and InstanceID are always populated on the options struct.
+	// NewKeyProtectCryptoUnitAPIOptions parses them from a standard URL format,
+	// but if the URL has a non-standard format (e.g. from extensions["endpoints.public"]),
+	// the parse may yield empty strings. Use the explicitly-provided values as a fallback.
+	if kpOpts.Region == "" && region != "" {
+		kpOpts.Region = region
+	}
+	if kpOpts.InstanceID == "" && instanceID != "" {
+		kpOpts.InstanceID = instanceID
 	}
 
 	return kpOpts, nil
