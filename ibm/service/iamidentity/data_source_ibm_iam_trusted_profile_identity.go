@@ -108,7 +108,7 @@ func dataSourceIBMIamTrustedProfileIdentityRead(context context.Context, d *sche
 	}
 
 	if err = d.Set("accounts", profileIdentityResponse.Accounts); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting description: %s", err))
+		return diag.FromErr(fmt.Errorf("Error setting accounts: %s", err))
 	}
 
 	return nil

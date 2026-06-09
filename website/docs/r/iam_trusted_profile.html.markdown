@@ -56,9 +56,9 @@ Nested schema for **history**:
 
 ## Import
 
-You can import the `ibm_iam_trusted_profile` resource by using `account_id`. ID of the account that this trusted profile belong to.
+You can import the `ibm_iam_trusted_profile` resource by using `profile_id`. The unique identifier of the trusted profile.
 
 # Syntax
 <pre>
-$ terraform import ibm_iam_trusted_profile.iam_trusted_profile &lt;account_id&gt;
+$ terraform import ibm_iam_trusted_profile.iam_trusted_profile &lt;profile_id&gt;
 </pre>

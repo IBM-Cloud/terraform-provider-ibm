@@ -219,7 +219,6 @@ func resourceIBMIamTrustedProfileRead(context context.Context, d *schema.Resourc
 	var (
 		initialDelaySec = 2  // seconds
 		maxDelaySec     = 60 // max delay in seconds
-
 	)
 
 	err = retry.RetryContext(context, 5*time.Minute, func() *retry.RetryError {
@@ -280,7 +279,7 @@ func resourceIBMIamTrustedProfileRead(context context.Context, d *schema.Resourc
 	}
 	if err = d.Set("profile_id", trustedProfile.ID); err != nil {
 		err = fmt.Errorf("Error setting id: %s", err)
-		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_trusted_profile", "read", "set-id").GetDiag()
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_trusted_profile", "read", "set-profile_id").GetDiag()
 	}
 	if err = d.Set("entity_tag", trustedProfile.EntityTag); err != nil {
 		err = fmt.Errorf("Error setting entity_tag: %s", err)
@@ -414,44 +413,6 @@ func resourceIBMIamTrustedProfileDelete(context context.Context, d *schema.Resou
 	d.SetId("")
 
 	return nil
-}
-
-func ResourceIBMIamTrustedProfileResponseContextToMap(model *iamidentityv1.ResponseContext) (map[string]interface{}, error) {
-	modelMap := make(map[string]interface{})
-	if model.TransactionID != nil {
-		modelMap["transaction_id"] = *model.TransactionID
-	}
-	if model.Operation != nil {
-		modelMap["operation"] = *model.Operation
-	}
-	if model.UserAgent != nil {
-		modelMap["user_agent"] = *model.UserAgent
-	}
-	if model.URL != nil {
-		modelMap["url"] = *model.URL
-	}
-	if model.InstanceID != nil {
-		modelMap["instance_id"] = *model.InstanceID
-	}
-	if model.ThreadID != nil {
-		modelMap["thread_id"] = *model.ThreadID
-	}
-	if model.Host != nil {
-		modelMap["host"] = *model.Host
-	}
-	if model.StartTime != nil {
-		modelMap["start_time"] = *model.StartTime
-	}
-	if model.EndTime != nil {
-		modelMap["end_time"] = *model.EndTime
-	}
-	if model.ElapsedTime != nil {
-		modelMap["elapsed_time"] = *model.ElapsedTime
-	}
-	if model.ClusterName != nil {
-		modelMap["cluster_name"] = *model.ClusterName
-	}
-	return modelMap, nil
 }
 
 func ResourceIBMIamTrustedProfileActivityToMap(model *iamidentityv1.Activity) (map[string]interface{}, error) {
