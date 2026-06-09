@@ -242,7 +242,6 @@ func ResourceIBMContainerVpcCluster() *schema.Resource {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Computed:    true,
-				ForceNew:    true,
 				Description: "The cluster offering type.",
 			},
 
@@ -718,6 +717,11 @@ func resourceIBMContainerVpcClusterCreate(d *schema.ResourceData, meta interface
 
 func resourceIBMContainerVpcClusterUpdate(d *schema.ResourceData, meta interface{}) error {
 
+	if d.HasChange("offering") {
+		// prevent offering field to be modified and reserve for future extension
+		return fmt.Errorf("[ERROR] Modifying the 'offering' field after cluster creation is currently unsupported.")
+	}
+
 	csClient, err := meta.(conns.ClientSession).VpcContainerAPI()
 	if err != nil {
 		return err
@@ -1013,6 +1017,7 @@ func resourceIBMContainerVpcClusterRead(d *schema.ResourceData, meta interface{}
 	}
 	d.Set("image_security_enforcement", cls.ImageSecurityEnabled)
 	d.Set("network_plugin", cls.NetworkPlugin)
+	d.Set("offering", cls.Offering)
 
 	tags, err := flex.GetTagsUsingCRN(meta, cls.CRN)
 	if err != nil {
