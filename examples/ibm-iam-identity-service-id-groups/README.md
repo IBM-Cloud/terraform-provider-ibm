@@ -28,7 +28,7 @@ Run `terraform destroy` when you don't need these resources.
 resource "ibm_iam_serviceid_group" "iam_serviceid_group_instance" {
   account_id = var.iam_serviceid_group_account_id
   name = var.iam_serviceid_group_name
-  description = var.iam_serviceid_group_description
+  description = "description"
 }
 ```
 
@@ -58,7 +58,7 @@ resource "ibm_iam_serviceid_group" "iam_serviceid_group_instance" {
 
 ```hcl
 data "ibm_iam_serviceid_group" "iam_serviceid_group_instance" {
-  iam_serviceid_group_id = var.data_iam_serviceid_group_iam_serviceid_group_id
+  iam_serviceid_group_id = ibm_iam_serviceid_group.iam_serviceid_group_instance.id
 }
 ```
 

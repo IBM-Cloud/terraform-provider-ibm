@@ -14,15 +14,4 @@ variable "iam_serviceid_group_name" {
   type        = string
   default     = "name"
 }
-variable "iam_serviceid_group_description" {
-  description = "Description of the service ID group."
-  type        = string
-  default     = "description"
-}
 
-// Data source arguments for iam_serviceid_group
-variable "data_iam_serviceid_group_iam_serviceid_group_id" {
-  description = "Unique ID of the service ID group."
-  type        = string
-  default     = "iam_serviceid_group_id"
-}
