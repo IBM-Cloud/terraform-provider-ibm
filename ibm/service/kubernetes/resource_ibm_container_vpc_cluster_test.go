@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"log"
 	"regexp"
+	"strings"
 	"testing"
 
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
@@ -406,6 +407,7 @@ func testAccCheckIBMContainerVpcClusterDestroy(s *terraform.State) error {
 			}
 			return fmt.Errorf("[ERROR] Error waiting for cluster (%s) to be destroyed: %s", rs.Primary.ID, err)
 		}
+		return fmt.Errorf("Cluster still exists: %s", rs.Primary.ID)
 	}
 
 	return nil
@@ -429,7 +431,7 @@ func testAccCheckIBMContainerVpcClusterExists(n string, conf *v2.ClusterInfo) re
 
 			cls, err := csClient.Clusters().GetCluster(rs.Primary.ID, targetEnv)
 
-			if err != nil {
+			if err != nil && !strings.Contains(err.Error(), "404") {
 				return err
 			}
 
