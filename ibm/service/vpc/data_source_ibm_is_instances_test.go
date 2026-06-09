@@ -564,16 +564,13 @@ func TestAccIBMISInstancesDataSource_ThreadsPerCore(t *testing.T) {
 	sshname := fmt.Sprintf("tfins-ssh-%d", acctest.RandIntRange(10, 100))
 	instanceName := fmt.Sprintf("tfins-name-%d", acctest.RandIntRange(10, 100))
 	resName := "data.ibm_is_instances.ds_instances"
-	publicKey := strings.TrimSpace(`
-ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVERRN7/9484SOBJ3HSKxxNG5JN8owAjy5f9yYwcUg+JaUVuytn5Pv3aeYROHGGg+5G346xaq3DAwX6Y5ykr2fvjObgncQBnuU5KHWCECO/4h8uWuwh/kfniXPVjFToc+gnkqA+3RKpAecZhFXwfalQ9mMuYGFxn+fwn8cYEApsJbsEmb0iJwPiZ5hjFC8wREuiTlhPHDgkBLOiycd20op2nXzDbHfCHInquEe/gYxEitALONxm0swBOwJZwlTDOB7C6y2dzlrtxr1L59m7pCkWI4EtTRLvleehBoj3u7jB4usR
-`)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheck(t) },
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIBMISInstancesDataSourceThreadsPerCoreConfig(vpcname, subnetname, sshname, publicKey, instanceName, 1),
+				Config: testAccCheckIBMISInstancesDataSourceThreadsPerCoreConfig(vpcname, subnetname, sshname, instanceName, 1),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(resName, "instances.0.name"),
 					resource.TestCheckResourceAttrSet(resName, "instances.0.threads_per_core"),
@@ -583,7 +580,7 @@ ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVE
 	})
 }
 
-func testAccCheckIBMISInstancesDataSourceThreadsPerCoreConfig(vpcname, subnetname, sshname, publicKey, instanceName string, threadsPerCore int) string {
+func testAccCheckIBMISInstancesDataSourceThreadsPerCoreConfig(vpcname, subnetname, sshname, instanceName string, threadsPerCore int) string {
 	return fmt.Sprintf(`
 resource "ibm_is_vpc" "testacc_vpc" {
   name = "%s"
@@ -598,16 +595,20 @@ resource "ibm_is_subnet" "testacc_subnet" {
 
 resource "ibm_is_ssh_key" "testacc_sshkey" {
   name       = "%s"
-  public_key = "%s"
+  public_key = file("./test-fixtures/.ssh/id_rsa.pub")
+}
+
+data "ibm_is_image" "testacc_image" {
+  name = "ibm-centos-stream-9-amd64-17"
 }
 
 resource "ibm_is_instance" "testacc_instance" {
-  name    = "%s"
-  image   = "%s"
-  profile = "%s"
+  name             = "%s"
+  image            = data.ibm_is_image.testacc_image.id
+  profile          = "hx4a-8x16"
   threads_per_core = %d
   primary_network_interface {
-    subnet     = ibm_is_subnet.testacc_subnet.id
+    subnet = ibm_is_subnet.testacc_subnet.id
   }
   vpc  = ibm_is_vpc.testacc_vpc.id
   zone = "%s"
@@ -615,7 +616,7 @@ resource "ibm_is_instance" "testacc_instance" {
 }
 
 data "ibm_is_instances" "ds_instances" {
-  vpc_name = ibm_is_vpc.testacc_vpc.name
-  depends_on = [ ibm_is_instance.testacc_instance ]
-}`, vpcname, subnetname, acc.ISZoneName, acc.ISCIDR, sshname, publicKey, instanceName, acc.IsImage, acc.InstanceProfileName, threadsPerCore, acc.ISZoneName)
+  vpc_name   = ibm_is_vpc.testacc_vpc.name
+  depends_on = [ibm_is_instance.testacc_instance]
+}`, vpcname, subnetname, acc.ISZoneName, acc.ISCIDR, sshname, instanceName, threadsPerCore, acc.ISZoneName)
 }

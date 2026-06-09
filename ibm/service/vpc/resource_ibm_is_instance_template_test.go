@@ -1765,9 +1765,6 @@ func testAccCheckIBMISInstanceTemplateConfigAvailabilityPolicy_Default(vpcName, 
 func TestAccIBMISInstanceTemplate_ThreadsPerCore(t *testing.T) {
 	randInt := acctest.RandIntRange(10, 100)
 
-	publicKey := strings.TrimSpace(`
-ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVERRN7/9484SOBJ3HSKxxNG5JN8owAjy5f9yYwcUg+JaUVuytn5Pv3aeYROHGGg+5G346xaq3DAwX6Y5ykr2fvjObgncQBnuU5KHWCECO/4h8uWuwh/kfniXPVjFToc+gnkqA+3RKpAecZhFXwfalQ9mMuYGFxn+fwn8cYEApsJbsEmb0iJwPiZ5hjFC8wREuiTlhPHDgkBLOiycd20op2nXzDbHfCHInquEe/gYxEitALONxm0swBOwJZwlTDOB7C6y2dzlrtxr1L59m7pCkWI4EtTRLvleehBoj3u7jB4usR
-`)
 	vpcName := fmt.Sprintf("tf-testvpc%d", randInt)
 	subnetName := fmt.Sprintf("tf-testsubnet%d", randInt)
 	templateName := fmt.Sprintf("tf-testtemplate%d", randInt)
@@ -1779,14 +1776,14 @@ ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVE
 		CheckDestroy: testAccCheckIBMISInstanceTemplateDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIBMISInstanceTemplateThreadsPerCoreConfig(vpcName, subnetName, sshKeyName, publicKey, templateName, 1),
+				Config: testAccCheckIBMISInstanceTemplateThreadsPerCoreConfig(vpcName, subnetName, sshKeyName, templateName, 1),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("ibm_is_instance_template.instancetemplate1", "name", templateName),
 					resource.TestCheckResourceAttr("ibm_is_instance_template.instancetemplate1", "threads_per_core", "1"),
 				),
 			},
 			{
-				Config: testAccCheckIBMISInstanceTemplateThreadsPerCoreConfig(vpcName, subnetName, sshKeyName, publicKey, templateName, 2),
+				Config: testAccCheckIBMISInstanceTemplateThreadsPerCoreConfig(vpcName, subnetName, sshKeyName, templateName, 2),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("ibm_is_instance_template.instancetemplate1", "name", templateName),
 					resource.TestCheckResourceAttr("ibm_is_instance_template.instancetemplate1", "threads_per_core", "2"),
@@ -1796,7 +1793,7 @@ ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVE
 	})
 }
 
-func testAccCheckIBMISInstanceTemplateThreadsPerCoreConfig(vpcName, subnetName, sshKeyName, publicKey, templateName string, threadsPerCore int) string {
+func testAccCheckIBMISInstanceTemplateThreadsPerCoreConfig(vpcName, subnetName, sshKeyName, templateName string, threadsPerCore int) string {
 	return fmt.Sprintf(`
 	resource "ibm_is_vpc" "testacc_vpc" {
 		name = "%s"
@@ -1811,19 +1808,23 @@ func testAccCheckIBMISInstanceTemplateThreadsPerCoreConfig(vpcName, subnetName, 
 	
 	resource "ibm_is_ssh_key" "testacc_sshkey" {
 		name       = "%s"
-		public_key = "%s"
+		public_key = file("./test-fixtures/.ssh/id_rsa.pub")
+	}
+
+	data "ibm_is_image" "testacc_image" {
+		name = "ibm-centos-stream-9-amd64-17"
 	}
 
 	resource "ibm_is_instance_template" "instancetemplate1" {
 		name    = "%s"
-		image   = "%s"
-		profile = "%s"
+		image   = data.ibm_is_image.testacc_image.id
+		profile = "hx4a-8x16"
 		primary_network_interface {
 			subnet = ibm_is_subnet.testacc_subnet.id
 		}
-		vpc       = ibm_is_vpc.testacc_vpc.id
-		zone      = "%s"
-		keys      = [ibm_is_ssh_key.testacc_sshkey.id]
+		vpc              = ibm_is_vpc.testacc_vpc.id
+		zone             = "%s"
+		keys             = [ibm_is_ssh_key.testacc_sshkey.id]
 		threads_per_core = %d
-	}`, vpcName, subnetName, acc.ISZoneName, acc.ISCIDR, sshKeyName, publicKey, templateName, acc.IsImage, acc.InstanceProfileName, acc.ISZoneName, threadsPerCore)
+	}`, vpcName, subnetName, acc.ISZoneName, acc.ISCIDR, sshKeyName, templateName, acc.ISZoneName, threadsPerCore)
 }

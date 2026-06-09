@@ -658,19 +658,23 @@ resource "ibm_is_ssh_key" "testacc_sshkey" {
   public_key = file("./test-fixtures/.ssh/id_rsa.pub")
 }
 
+data "ibm_is_image" "testacc_image" {
+  name = "ibm-centos-stream-9-amd64-17"
+}
+
 resource "ibm_is_instance" "testacc_instance" {
-  name    = "%s"
-  image   = "%s"
-  profile = "%s"
+  name             = "%s"
+  image            = data.ibm_is_image.testacc_image.id
+  profile          = "hx4a-8x16"
   primary_network_interface {
-    subnet     = ibm_is_subnet.testacc_subnet.id
+    subnet = ibm_is_subnet.testacc_subnet.id
   }
-  vpc  = ibm_is_vpc.testacc_vpc.id
-  zone = "%s"
-  keys = [ibm_is_ssh_key.testacc_sshkey.id]
+  vpc              = ibm_is_vpc.testacc_vpc.id
+  zone             = "%s"
+  keys             = [ibm_is_ssh_key.testacc_sshkey.id]
   threads_per_core = %d
 }
 data "ibm_is_instance" "ds_instance" {
-  name        = ibm_is_instance.testacc_instance.name
-}`, vpcname, subnetname, acc.ISZoneName, acc.ISCIDR, sshname, instanceName, acc.IsImage, acc.InstanceProfileName, acc.ISZoneName, threadsPerCore)
+  name = ibm_is_instance.testacc_instance.name
+}`, vpcname, subnetname, acc.ISZoneName, acc.ISCIDR, sshname, instanceName, acc.ISZoneName, threadsPerCore)
 }
