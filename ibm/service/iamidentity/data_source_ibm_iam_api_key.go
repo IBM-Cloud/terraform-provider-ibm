@@ -81,6 +81,11 @@ func DataSourceIBMIamAPIKey() *schema.Resource {
 				Computed:    true,
 				Description: "ID of the account that this API key authenticates for.",
 			},
+			"expires_at": &schema.Schema{
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Date and time when the API key becomes invalid, ISO 8601 datetime in the format 'yyyy-MM-ddTHH:mm+0000'.",
+			},
 		},
 	}
 }
