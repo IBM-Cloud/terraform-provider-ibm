@@ -151,6 +151,7 @@ func testAccCheckIBMKmsCryptoUnitsBasicConfig(instanceName, url, sigKeyFilepath,
 	resource "ibm_kms_cryptounits" "test" {
 		instance_id = "%s"
 		url         = "%s"
+		should_zeroize = true
 
 		signature_key {
 			filepath   = "%s"
@@ -165,12 +166,12 @@ func testAccCheckIBMKmsCryptoUnitsBasicConfig(instanceName, url, sigKeyFilepath,
 
 			keysharefile {
 				filepath = "%s"
-				token    = "%s"
+				passphrase    = "%s"
 			}
 
 			keysharefile {
 				filepath = "%s"
-				token    = "%s"
+				passphrase    = "%s"
 			}
 		}
 	}
@@ -182,6 +183,7 @@ func testAccCheckIBMKmsCryptoUnitsWithRegionConfig(instanceName, url, sigKeyFile
 	resource "ibm_kms_cryptounits" "test" {
 		instance_id = "%s"
 		url = "%s"
+		should_zeroize = true
 
 		signature_key {
 			filepath   = "%s"
@@ -196,12 +198,12 @@ func testAccCheckIBMKmsCryptoUnitsWithRegionConfig(instanceName, url, sigKeyFile
 
 			keysharefile {
 				filepath = "%s"
-				token    = "%s"
+				passphrase    = "%s"
 			}
 
 			keysharefile {
 				filepath = "%s"
-				token    = "%s"
+				passphrase    = "%s"
 			}
 		}
 	}
@@ -213,6 +215,7 @@ func testAccCheckIBMKmsCryptoUnitsMultipleKeySharesConfig(instanceName, url, sig
 	resource "ibm_kms_cryptounits" "test" {
 		instance_id = "%s"
 		url         = "%s"
+		should_zeroize = true
 
 		signature_key {
 			filepath   = "%s"
@@ -227,17 +230,17 @@ func testAccCheckIBMKmsCryptoUnitsMultipleKeySharesConfig(instanceName, url, sig
 
 			keysharefile {
 				filepath = "%s"
-				token    = "%s"
+				passphrase    = "%s"
 			}
 
 			keysharefile {
 				filepath = "%s"
-				token    = "%s"
+				passphrase    = "%s"
 			}
 
 			keysharefile {
 				filepath = "%s"
-				token    = "%s"
+				passphrase    = "%s"
 			}
 		}
 	}

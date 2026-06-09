@@ -102,7 +102,7 @@ func ResourceIBMKmsCryptoUnits() *schema.Resource {
 							Required:         true,
 							Sensitive:        true,
 							Description:      "The passphrase of the signature_key",
-							DiffSuppressFunc: suppressTokenDiff,
+							DiffSuppressFunc: suppresspassphraseDiff,
 						},
 						"owner": {
 							Type:        schema.TypeString,
@@ -127,7 +127,7 @@ func ResourceIBMKmsCryptoUnits() *schema.Resource {
 						"keysharefile": {
 							Type:        schema.TypeSet,
 							Required:    true,
-							Description: "Key share file configuration with filepath and token",
+							Description: "Key share file configuration with filepath and passphrase",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"filepath": {
@@ -135,12 +135,12 @@ func ResourceIBMKmsCryptoUnits() *schema.Resource {
 										Required:    true,
 										Description: "The filepath to store the key share file",
 									},
-									"token": {
+									"passphrase": {
 										Type:             schema.TypeString,
 										Required:         true,
 										Sensitive:        true,
-										Description:      "The token associated with the key share file",
-										DiffSuppressFunc: suppressTokenDiff,
+										Description:      "The passphrase associated with the key share file",
+										DiffSuppressFunc: suppresspassphraseDiff,
 									},
 								},
 							},
@@ -274,22 +274,22 @@ func parseMasterKey(d *schema.ResourceData) (*keyprotect_dedicated.MasterKeyPart
 		}
 		filepathMap[resolvedPath] = true
 
-		// Extract token
-		tokenRaw, ok := keyShareFileData["token"]
+		// Extract passphrase
+		passphraseRaw, ok := keyShareFileData["passphrase"]
 		if !ok {
-			return nil, fmt.Errorf("token is required in keysharefile[%d]", i)
+			return nil, fmt.Errorf("passphrase is required in keysharefile[%d]", i)
 		}
 
-		token, ok := tokenRaw.(string)
+		passphrase, ok := passphraseRaw.(string)
 		if !ok {
-			return nil, fmt.Errorf("token in keysharefile[%d] must be a string", i)
+			return nil, fmt.Errorf("passphrase in keysharefile[%d] must be a string", i)
 		}
-		if token == "" {
-			return nil, fmt.Errorf("token in keysharefile[%d] cannot be empty", i)
+		if passphrase == "" {
+			return nil, fmt.Errorf("passphrase in keysharefile[%d] cannot be empty", i)
 		}
 
-		// Combine filepath and token in the format expected by the API
-		keyShareFileEntry := fmt.Sprintf("%s#%s", resolvedPath, token)
+		// Combine filepath and passphrase in the format expected by the API
+		keyShareFileEntry := fmt.Sprintf("%s#%s", resolvedPath, passphrase)
 		keyShareFiles = append(keyShareFiles, keyShareFileEntry)
 	}
 
@@ -429,12 +429,12 @@ func resolveRelativePath(inputPath string) (string, error) {
 	return filepath.Clean(resolvedPath), nil
 }
 
-// suppressTokenDiff suppresses token/passphrase diffs after the initial creation.
+// suppresspassphraseDiff suppresses passphrase/passphrase diffs after the initial creation.
 // On first create, old is "" and new has the real value — we must NOT suppress this
-// or the SDK will strip the value from the diff and d.Get("token") returns "" in Create.
+// or the SDK will strip the value from the diff and d.Get("passphrase") returns "" in Create.
 // After creation, the API never returns these values, so old will always be "" in state
 // and we suppress to avoid a permanent diff.
-func suppressTokenDiff(k, old, new string, d *schema.ResourceData) bool {
+func suppresspassphraseDiff(k, old, new string, d *schema.ResourceData) bool {
 	// Only suppress when the resource already exists (has an ID) and the stored
 	// value is empty (because the API doesn't return it). This prevents a
 	// perpetual diff without breaking the initial create.
@@ -482,10 +482,10 @@ func resourceIBMKmsCryptoUnitsRead(ctx context.Context, d *schema.ResourceData, 
 	d.Set("region", kpOpts.Region)
 
 	// Preserve write-only fields that the API does not return.
-	// master_key and signature_key contain sensitive tokens/passphrases that
+	// master_key and signature_key contain sensitive passphrases/passphrases that
 	// are never returned by the API. If we do not explicitly re-set them here,
 	// the TypeSet hash machinery will see empty strings for Sensitive fields
-	// and corrupt state, causing "token cannot be empty" on subsequent plans.
+	// and corrupt state, causing "passphrase cannot be empty" on subsequent plans.
 	if v, ok := d.GetOk("master_key"); ok {
 		d.Set("master_key", v)
 	}
@@ -526,11 +526,16 @@ func resourceIBMKmsCryptoUnitsDelete(ctx context.Context, d *schema.ResourceData
 		return diag.Errorf("failed to list crypto units for instance %s: %v", kpOpts.InstanceID, err)
 	}
 	// Zeroize each crypto unit
-	for _, cryptoUnit := range cryptoUnitsResponse.CryptoUnits {
-		err := kmsCryptoUnitClient.ZeroizeCryptoUnitWithContext(ctx, cryptoUnit.ID)
-		if err != nil {
-			return diag.Errorf("failed to zeroize crypto unit %s: %v", cryptoUnit.ID, err)
+	if v, ok := d.GetOk("should_zeroize"); ok {
+		if sz, ok := v.(bool); ok && sz {
+			for _, cryptoUnit := range cryptoUnitsResponse.CryptoUnits {
+				err := kmsCryptoUnitClient.ZeroizeCryptoUnitWithContext(ctx, cryptoUnit.ID)
+				if err != nil {
+					return diag.Errorf("failed to zeroize crypto unit %s: %v", cryptoUnit.ID, err)
+				}
+			}
 		}
+
 	}
 	// No-op for delete - resource is read-only
 	d.SetId("")

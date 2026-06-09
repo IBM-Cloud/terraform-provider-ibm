@@ -45,11 +45,11 @@ resource "ibm_kms_cryptounits" "st-dedicated" {
   master_key  {
     keysharefile {
       filepath = "tf-mbk-1.key"
-      token    = "abcd12"
+      passphrase    = "abcd12"
     }
     keysharefile {
       filepath = "tf-mbk-2.key"
-      token    = "abcd12"
+      passphrase    = "abcd12"
     }
     keyname = "mbkkey"
     exists  = true
@@ -83,11 +83,11 @@ resource "ibm_kms_cryptounits" "st-dedicated" {
   master_key  {
     keysharefile {
       filepath = "tf-mbk-1.key"
-      token    = "abcd12"
+      passphrase    = "abcd12"
     }
     keysharefile {
       filepath = "tf-mbk-2.key"
-      token    = "abcd12"
+      passphrase    = "abcd12"
     }
     keyname = "mbkkey"
     exists  = true
@@ -117,7 +117,7 @@ Review the argument references that you can specify for your resource.
     
     Nested scheme for `keysharefile`:
     - `filepath` - (Required, String) The filepath to store the key share file. Can be relative (resolved from Terraform execution directory) or absolute. Each filepath must be unique.
-    - `token` - (Required, String, Sensitive) The token associated with the key share file. This value is sensitive and will not be stored in state.
+    - `passphrase` - (Required, String, Sensitive) The passphrase associated with the key share file. This value is sensitive and will not be stored in state.
   
   - `keyname` - (Required, String) The name of the master backup key as shown on the cryptounit. Must be 8 characters or less.
   - `exists` - (Required, Bool) Set to **true** if all key share files already exist at their specified filepaths, **false** if they should be generated.
@@ -142,6 +142,6 @@ In addition to all argument reference list, you can access the following attribu
 - **Update Behavior**: Updating this resource will zeroize (reset) all cryptounits and then re-initialize them with the new configuration. This is a destructive operation.
 - **Delete Behavior**: Deleting this resource will zeroize all cryptounits, removing all keys and data from them.
 - **File Path Resolution**: Relative file paths are resolved from the directory where Terraform is executed. Absolute paths are used as-is.
-- **Sensitive Data**: Tokens and passphrases are marked as sensitive and will not be stored in Terraform state. Changes to these values will always be suppressed in diffs.
+- **Sensitive Data**: Passphrases are marked as sensitive and will not be stored in Terraform state. Changes to these values will always be suppressed in diffs.
 - **Key Name Length**: The `keyname` in `master_key` must be 8 characters or less.
 - **Unique Filepaths**: Each `keysharefile` must have a unique filepath. Duplicate filepaths will result in an error.
