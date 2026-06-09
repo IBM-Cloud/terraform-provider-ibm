@@ -14,6 +14,7 @@ output "ibm_iam_api_key_data" {
     account_id  = data.ibm_iam_api_key.iam_api_key_data.account_id
     crn         = data.ibm_iam_api_key.iam_api_key_data.crn
     iam_id      = data.ibm_iam_api_key.iam_api_key_data.iam_id
+    expires_at  = data.ibm_iam_api_key.iam_api_key_data.expires_at
   }
   description = "iam_api_key data"
 }

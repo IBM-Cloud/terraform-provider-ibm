@@ -66,7 +66,7 @@ func ResourceIBMIamAPIKey() *schema.Resource {
 				Optional:    true,
 				Computed:    true,
 				Sensitive:   true,
-				Description: "The API key value. This property only contains the API key value for the following cases: create an API key, update a service ID API key that stores the API key value as retrievable, or get a service ID API key that stores the API key value as retrievable. All other operations don't return the API key value, for example all user API key related operations, except for create, don't contain the API key value.",
+				Description: "You can optionally passthrough the API key value for this API key. If passed, NO validation of that apiKey value is done, i.e. the value can be non-URL safe. If omitted, the API key management will create an URL safe opaque API key value. The value of the API key is checked for uniqueness. Please ensure enough variations when passing in this value.",
 			},
 			"store_value": {
 				Type:        schema.TypeBool,
