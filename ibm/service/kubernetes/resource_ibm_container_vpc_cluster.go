@@ -717,9 +717,15 @@ func resourceIBMContainerVpcClusterCreate(d *schema.ResourceData, meta interface
 
 func resourceIBMContainerVpcClusterUpdate(d *schema.ResourceData, meta interface{}) error {
 
-	if d.HasChange("offering") {
-		// prevent offering field to be modified and reserve for future extension
-		return fmt.Errorf("[ERROR] Modifying the 'offering' field after cluster creation is currently unsupported.")
+	if d.HasChange("offering") && !d.IsNewResource() {
+		offeringBeforeChange, _ := d.GetChange("offering")
+		configValue := d.GetRawConfig().GetAttr("offering")
+
+		// Only throw an error if the user explicitly modified 'offering'
+		if configValue.AsString() != fmt.Sprintf("%v", offeringBeforeChange) {
+			return fmt.Errorf("[ERROR] Modifying the 'offering' field after cluster creation is currently unsupported.")
+		}
+
 	}
 
 	csClient, err := meta.(conns.ClientSession).VpcContainerAPI()

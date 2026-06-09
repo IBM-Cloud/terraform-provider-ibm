@@ -176,7 +176,7 @@ func TestAccIBMContainerVpcClusterOfferingConfiguredROKS(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"ibm_container_vpc_cluster.cluster", "name", name),
 					resource.TestCheckResourceAttr(
-						"ibm_container_vpc_cluster.cluster", "offering", "openshift"),
+						"ibm_container_vpc_cluster.cluster", "offering", offering),
 				),
 			},
 		},
