@@ -130,7 +130,7 @@ func TestAccIBMContainerVpcClusterOfferingNotConfiguredIKS(t *testing.T) {
 	})
 }
 
-func TestAccIBMContainerVpcClusterNoOfferingNotConfiguredROKS(t *testing.T) {
+func TestAccIBMContainerVpcClusterOfferingNotConfiguredROKS(t *testing.T) {
 	name := fmt.Sprintf("tf-vpc-cluster-%d", acctest.RandIntRange(10, 100))
 	kubeVersion := "4.21_openshift"
 	flavor := "bx3d.metal.64x256"
