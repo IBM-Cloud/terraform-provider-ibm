@@ -55,7 +55,7 @@ func ResourceIBMIamServiceID() *schema.Resource {
 				Computed:    true,
 				Description: "Cloud Resource Name of the item. Example Cloud Resource Name: 'crn:v1:bluemix:public:iam-identity:us-south:a/myaccount::serviceid:1234-5678-9012'.",
 			},
-			"entity_tag": &schema.Schema{
+			"version": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "Version of the ServiceID object.",
@@ -109,9 +109,15 @@ func resourceIBMIamServiceIDCreate(context context.Context, d *schema.ResourceDa
 	}
 
 	serviceID, _, err := iamIdentityClient.CreateServiceIDWithContext(context, createServiceIDOptions)
-	if err != nil || serviceID == nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateServiceID failed: %s", err.Error()), "ibm_iam_service_id", "create")
-		log.Printf("[DEBUG]\n%s\n%s", tfErr.GetDebugMessage(), resp)
+	if err != nil {
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateServiceIDWithContext failed: %s", err.Error()), "ibm_iam_service_id", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
+	}
+	if serviceID == nil {
+		err = fmt.Errorf("Create ServiceID failed: %s", d.Get("name").(string))
+		tfErr := flex.TerraformErrorf(err, err.Error(), "ibm_iam_service_id", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
 	d.SetId(*serviceID.ID)
@@ -164,9 +170,9 @@ func resourceIBMIamServiceIDRead(context context.Context, d *schema.ResourceData
 		err = fmt.Errorf("Error setting crn: %s", err)
 		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_service_id", "read", "set-crn").GetDiag()
 	}
-	if err = d.Set("entity_tag", serviceID.EntityTag); err != nil {
-		err = fmt.Errorf("Error setting entity_tag: %s", err)
-		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_service_id", "read", "set-entity_tag").GetDiag()
+	if err = d.Set("version", serviceID.EntityTag); err != nil {
+		err = fmt.Errorf("Error setting version: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_service_id", "read", "set-version").GetDiag()
 	}
 	if err = d.Set("locked", serviceID.Locked); err != nil {
 		err = fmt.Errorf("Error setting locked: %s", err)
