@@ -108,7 +108,6 @@ Review the argument references that you can specify for your resource.
   Nested scheme for `signature_key`:
   - `filepath` - (Required, String) The filepath to the signature key file. Can be relative (resolved from Terraform execution directory) or absolute.
   - `passphrase` - (Required, String, Sensitive) The passphrase for the signature key. This value is sensitive and will not be stored in state.
-  - `owner` - (Required, String) The owner identifier for the signature key (e.g., "ADMIN").
   - `exists` - (Required, Bool) Set to **true** if the signature key file already exists at the specified filepath, **false** if it should be generated.
 
 - `master_key` - (Required, Set, MaxItems: 1) Configuration for the master backup key.

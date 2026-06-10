@@ -106,7 +106,8 @@ func ResourceIBMKmsCryptoUnits() *schema.Resource {
 						},
 						"owner": {
 							Type:        schema.TypeString,
-							Required:    true,
+							Optional:    true,
+							Default:     "",
 							Description: "The owner of the signature_key",
 						},
 						"exists": {
