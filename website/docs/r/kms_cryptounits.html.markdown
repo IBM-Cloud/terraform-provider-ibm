@@ -59,7 +59,7 @@ resource "ibm_kms_cryptounits" "st-dedicated" {
 
 ```terraform
 resource "ibm_resource_instance" "key_protect_instance" {
-  name              = "tim-test-tf-st"
+  name              = "dedicated-byok-instance"
   resource_group_id = data.ibm_resource_group.resource_group.id
   service           = "kms"
   plan              = "dedicated"
@@ -72,9 +72,10 @@ resource "ibm_resource_instance" "key_protect_instance" {
 
 resource "ibm_kms_cryptounits" "st-dedicated" {
   url = ibm_resource_instance.key_protect_instance.extensions["endpoints.public"]
+  instance_id = ibm_resource_instance.key_protect_instance.guid
 
   signature_key {
-    filepath   = "terraform-tim-test-kp-st.key"
+    filepath   = "terraform-kp-dedicated.key"
     passphrase = ""
     owner      = "ADMIN"
     exists     = true
@@ -113,7 +114,8 @@ Review the argument references that you can specify for your resource.
 - `master_key` - (Required, Set, MaxItems: 1) Configuration for the master backup key.
 
   Nested scheme for `master_key`:
-  - `keysharefile` - (Required, Set) One or more key share file configurations. Each key share file represents a part of the master key.
+  - `keysharefile` - (Required, Set, MinItems: 2) two or more key share file configurations. Each key share file represents a part of the master key.
+  ~> **WARNING:** This field currently enforces K = N for master key generation, requiring all generated key shares to reconstruct or use the master key.
     
     Nested scheme for `keysharefile`:
     - `filepath` - (Required, String) The filepath to store the key share file. Can be relative (resolved from Terraform execution directory) or absolute. Each filepath must be unique.
@@ -127,7 +129,11 @@ Review the argument references that you can specify for your resource.
 In addition to all argument reference list, you can access the following attribute reference after your resource is created.
 
 - `id` - (String) The instance ID of the Key Protect Dedicated instance.
-- `cryptounits` - (Map of String) A map of cryptounit IDs to their current states. Each key is a cryptounit ID and each value is the state of that cryptounit.
+- `cryptounits` - (Set) A set of cryptounit objects representing the cryptounits associated with the Key Protect Dedicated instance.
+
+  Nested scheme for `cryptounits`:
+  - `id` - (String) The unique identifier of the crypto unit.
+  - `state` - (String) The current state of the crypto unit (e.g., `CryptoUnitStateInitialized`, `CryptoUnitStateKMSInitialized`, `CryptoUnitStateZeroized`).
 
 
 ## Timeouts
