@@ -33,6 +33,5 @@ Review the argument reference that you can specify for your data source.
 In addition to all argument references listed, you can access the following attribute references after your data source is created.
 
 * `id` - The unique identifier of the data source.
-* `event_notifications_instance_crn` - (String) A CRN that uniquely identifies an IBM Cloud resource.
-  * Constraints: The maximum length is `512` characters. The minimum length is `9` characters. The value must match regular expression `/^crn:v[0-9](:([A-Za-z0-9-._~!$&'()*+,;=@\/]|%[0-9A-Z]{2})*){8}$/`.
+* `event_notifications_instance_crn` - (String) A CRN that uniquely identifies an IBM Cloud resource. If event notification registration does not exist for the Secret Mnager instance the value is an empty string.
 

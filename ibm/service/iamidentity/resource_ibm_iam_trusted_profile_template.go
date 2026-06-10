@@ -192,46 +192,6 @@ func ResourceIBMTrustedProfileTemplate() *schema.Resource {
 				Optional:    true,
 				Description: "Committed flag determines if the template is ready for assignment.",
 			},
-			"history": {
-				Type:        schema.TypeList,
-				Computed:    true,
-				Description: "History of the trusted profile template.",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"timestamp": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "Timestamp when the action was triggered.",
-						},
-						"iam_id": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "IAM ID of the identity which triggered the action.",
-						},
-						"iam_id_account": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "Account of the identity which triggered the action.",
-						},
-						"action": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "Action of the history entry.",
-						},
-						"params": {
-							Type:        schema.TypeList,
-							Computed:    true,
-							Description: "Params of the history entry.",
-							Elem:        &schema.Schema{Type: schema.TypeString},
-						},
-						"message": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "Message which summarizes the executed action.",
-						},
-					},
-				},
-			},
 			"entity_tag": {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -474,20 +434,6 @@ func resourceIBMTrustedProfileTemplateRead(context context.Context, d *schema.Re
 			return diag.FromErr(fmt.Errorf("error setting committed: %s", err))
 		}
 	}
-	var history []map[string]interface{}
-	if !core.IsNil(trustedProfileTemplateResponse.History) {
-		for _, historyItem := range trustedProfileTemplateResponse.History {
-			historyItemMap, err := EnityHistoryRecordToMap(&historyItem)
-			if err != nil {
-				return diag.FromErr(err)
-			}
-			history = append(history, historyItemMap)
-		}
-	}
-	if err = d.Set("history", history); err != nil {
-		return diag.FromErr(fmt.Errorf("error setting history: %s", err))
-	}
-
 	if !core.IsNil(trustedProfileTemplateResponse.EntityTag) {
 		if err = d.Set("entity_tag", trustedProfileTemplateResponse.EntityTag); err != nil {
 			return diag.FromErr(fmt.Errorf("error setting entity_tag: %s", err))

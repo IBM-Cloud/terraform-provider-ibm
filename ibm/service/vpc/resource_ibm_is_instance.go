@@ -211,7 +211,7 @@ func ResourceIBMISInstance() *schema.Resource {
 							Type:        schema.TypeString,
 							Optional:    true,
 							Computed:    true,
-							Description: "The availability class for the virtual server instance.- `spot`: The virtual server instance may be preempted.- `standard`: The virtual server instance will not be preempted.See [virtual server instance availability class](https://cloud.ibm.com/docs/vpc?topic=vpc-spot-instances-virtual-servers) for details.The enumerated values for this property may[expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) in the future. To change the availability class, the instance status must be stopping or stopped.",
+							Description: "The availability class for the virtual server instance.- `spot`: The virtual server instance may be preempted.- `standard`: The virtual server instance will not be preempted.See [virtual server instance availability class](https://cloud.ibm.com/docs/vpc?topic=vpc-spot-instances-virtual-servers) for details.The enumerated values for this property may [expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) in the future. To change the availability class, the instance status must be stopping or stopped.",
 						},
 					},
 				},
@@ -228,13 +228,13 @@ func ResourceIBMISInstance() *schema.Resource {
 							Type:        schema.TypeString,
 							Optional:    true,
 							Computed:    true,
-							Description: "The action to perform if the virtual server instance is preempted:- `delete`: Delete the virtual server instance- `stop`: Leave the virtual server instance stopped. See [virtual server instance preemption](https://cloud.ibm.com/docs/vpc?topic=vpc-spot-instances-virtual-servers#spot-instances-preemption) for details.The enumerated values for this property may[expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) in the future.",
+							Description: "The action to perform if the virtual server instance is preempted:- `delete`: Delete the virtual server instance- `stop`: Leave the virtual server instance stopped. See [virtual server instance preemption](https://cloud.ibm.com/docs/vpc?topic=vpc-spot-instances-virtual-servers#spot-instances-preemption) for details.The enumerated values for this property may [expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) in the future.",
 						},
 						"host_failure": &schema.Schema{
 							Type:        schema.TypeString,
 							Optional:    true,
 							Computed:    true,
-							Description: "The action to perform if the compute host experiences a failure:- `restart`: Restart the virtual server instance- `stop`: Leave the virtual server instance stopped. See [handling host failures](https://cloud.ibm.com/docs/vpc?topic=vpc-host-failure-recovery-policies) for details.The enumerated values for this property may[expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) in the future.",
+							Description: "The action to perform if the compute host experiences a failure:- `restart`: Restart the virtual server instance- `stop`: Leave the virtual server instance stopped. See [handling host failures](https://cloud.ibm.com/docs/vpc?topic=vpc-host-failure-recovery-policies) for details.The enumerated values for this property may [expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) in the future.",
 						},
 					},
 				},
@@ -787,7 +787,7 @@ func ResourceIBMISInstance() *schema.Resource {
 						"architecture": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "The VCPU architecture.The enumerated values for this property may[expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) in the future.",
+							Description: "The VCPU architecture.The enumerated values for this property may [expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) in the future.",
 						},
 						"burst": &schema.Schema{
 							Type:     schema.TypeList,
@@ -797,7 +797,7 @@ func ResourceIBMISInstance() *schema.Resource {
 									"limit": &schema.Schema{
 										Type:        schema.TypeInt,
 										Computed:    true,
-										Description: "The maximum percentage the virtual server instance will exceed its allocated share of VCPU time.The maximum value for this property may[expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) in the future.",
+										Description: "The maximum percentage the virtual server instance will exceed its allocated share of VCPU time.The maximum value for this property may [expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) in the future.",
 									},
 								},
 							},
@@ -810,7 +810,7 @@ func ResourceIBMISInstance() *schema.Resource {
 						"manufacturer": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "The VCPU manufacturer.The enumerated values for this property may[expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) in the future.",
+							Description: "The VCPU manufacturer.The enumerated values for this property may [expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) in the future.",
 						},
 						"percentage": &schema.Schema{
 							Type:        schema.TypeInt,
@@ -7881,24 +7881,95 @@ func instanceUpdate(context context.Context, d *schema.ResourceData, meta interf
 		}
 	}
 
-	if d.HasChange(isInstanceProfile) && !d.IsNewResource() {
+	// Check if profile or total_volume_bandwidth are changing
+	profileChanged := d.HasChange(isInstanceProfile)
+	bandwidthChanged := d.HasChange(isInstanceTotalVolumeBandwidth)
 
-		getinsOptions := &vpcv1.GetInstanceOptions{
+	if (profileChanged || bandwidthChanged) && !d.IsNewResource() {
+		var needsRestart bool = false
+
+		// If profile is changing, we need to stop and restart the instance
+		if profileChanged {
+			needsRestart = true
+			getinsOptions := &vpcv1.GetInstanceOptions{
+				ID: &id,
+			}
+			instance, response, err := instanceC.GetInstanceWithContext(context, getinsOptions)
+			if err != nil {
+				if response != nil && response.StatusCode == 404 {
+					d.SetId("")
+					return nil
+				}
+				tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetInstanceWithContext failed: %s", err.Error()), "ibm_is_instance", "update")
+				log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+				return tfErr.GetDiag()
+			}
+
+			if instance != nil && *instance.Status == "running" {
+				actiontype := "stop"
+				createinsactoptions := &vpcv1.CreateInstanceActionOptions{
+					InstanceID: &id,
+					Type:       &actiontype,
+				}
+				_, response, err = instanceC.CreateInstanceActionWithContext(context, createinsactoptions)
+				if err != nil {
+					if response != nil && response.StatusCode == 404 {
+						return nil
+					}
+					tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateInstanceActionWithContext failed: %s", err.Error()), "ibm_is_instance", "update")
+					log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+					return tfErr.GetDiag()
+				}
+				_, err = isWaitForInstanceActionStop(instanceC, d.Timeout(schema.TimeoutUpdate), id, d)
+				if err != nil {
+					tfErr := flex.TerraformErrorf(err, fmt.Sprintf("isWaitForInstanceActionStop failed: %s", err.Error()), "ibm_is_instance", "update")
+					log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+					return tfErr.GetDiag()
+				}
+			}
+		}
+
+		// Create a combined patch with both profile and bandwidth changes
+		updnetoptions := &vpcv1.UpdateInstanceOptions{
 			ID: &id,
 		}
-		instance, response, err := instanceC.GetInstanceWithContext(context, getinsOptions)
-		if err != nil {
-			if response != nil && response.StatusCode == 404 {
-				d.SetId("")
-				return nil
+
+		instancePatchModel := &vpcv1.InstancePatch{}
+
+		// Add profile to patch if it's changing
+		if profileChanged {
+			instanceProfile := d.Get(isInstanceProfile).(string)
+			profile := &vpcv1.InstancePatchProfile{
+				Name: &instanceProfile,
 			}
-			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetInstanceWithContext failed: %s", err.Error()), "ibm_is_instance", "update")
+			instancePatchModel.Profile = profile
+		}
+
+		// Add total_volume_bandwidth to patch if it's changing
+		if bandwidthChanged {
+			totalVolBandwidth := int64(d.Get(isInstanceTotalVolumeBandwidth).(int))
+			instancePatchModel.TotalVolumeBandwidth = &totalVolBandwidth
+		}
+
+		// Convert to patch and apply
+		instancePatch, err := instancePatchModel.AsPatch()
+		if err != nil {
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("instancePatchModel.AsPatch() failed: %s", err.Error()), "ibm_is_instance", "update")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
+		}
+		updnetoptions.InstancePatch = instancePatch
+
+		_, response, err := instanceC.UpdateInstanceWithContext(context, updnetoptions)
+		if err != nil {
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("UpdateInstanceWithContext failed: %s", err.Error()), "ibm_is_instance", "update")
 			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 			return tfErr.GetDiag()
 		}
 
-		if instance != nil && *instance.Status == "running" {
-			actiontype := "stop"
+		// If profile was changed, restart the instance
+		if needsRestart {
+			actiontype := "start"
 			createinsactoptions := &vpcv1.CreateInstanceActionOptions{
 				InstanceID: &id,
 				Type:       &actiontype,
@@ -7912,84 +7983,12 @@ func instanceUpdate(context context.Context, d *schema.ResourceData, meta interf
 				log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 				return tfErr.GetDiag()
 			}
-			_, err = isWaitForInstanceActionStop(instanceC, d.Timeout(schema.TimeoutUpdate), id, d)
+			_, err = isWaitForInstanceAvailable(instanceC, d.Id(), d.Timeout(schema.TimeoutUpdate), d)
 			if err != nil {
-				tfErr := flex.TerraformErrorf(err, fmt.Sprintf("isWaitForInstanceActionStop failed: %s", err.Error()), "ibm_is_instance", "update")
+				tfErr := flex.TerraformErrorf(err, fmt.Sprintf("isWaitForInstanceAvailable failed: %s", err.Error()), "ibm_is_instance", "update")
 				log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 				return tfErr.GetDiag()
 			}
-		}
-
-		updnetoptions := &vpcv1.UpdateInstanceOptions{
-			ID: &id,
-		}
-
-		instanceProfile := d.Get(isInstanceProfile).(string)
-		profile := &vpcv1.InstancePatchProfile{
-			Name: &instanceProfile,
-		}
-		instanceProfilePatchModel := &vpcv1.InstancePatch{
-			Profile: profile,
-		}
-		instancePatch, err := instanceProfilePatchModel.AsPatch()
-		if err != nil {
-			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("instanceProfilePatchModel.AsPatch() failed: %s", err.Error()), "ibm_is_instance", "update")
-			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
-			return tfErr.GetDiag()
-		}
-		updnetoptions.InstancePatch = instancePatch
-
-		_, response, err = instanceC.UpdateInstanceWithContext(context, updnetoptions)
-		if err != nil {
-			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("UpdateInstanceWithContext failed: %s", err.Error()), "ibm_is_instance", "update")
-			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
-			return tfErr.GetDiag()
-		}
-
-		actiontype := "start"
-		createinsactoptions := &vpcv1.CreateInstanceActionOptions{
-			InstanceID: &id,
-			Type:       &actiontype,
-		}
-		_, response, err = instanceC.CreateInstanceActionWithContext(context, createinsactoptions)
-		if err != nil {
-			if response != nil && response.StatusCode == 404 {
-				return nil
-			}
-			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateInstanceActionWithContext failed: %s", err.Error()), "ibm_is_instance", "update")
-			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
-			return tfErr.GetDiag()
-		}
-		_, err = isWaitForInstanceAvailable(instanceC, d.Id(), d.Timeout(schema.TimeoutUpdate), d)
-		if err != nil {
-			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("isWaitForInstanceAvailable failed: %s", err.Error()), "ibm_is_instance", "update")
-			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
-			return tfErr.GetDiag()
-		}
-
-	}
-	if d.HasChange(isInstanceTotalVolumeBandwidth) && !d.IsNewResource() {
-		totalVolBandwidth := int64(d.Get(isInstanceTotalVolumeBandwidth).(int))
-		updnetoptions := &vpcv1.UpdateInstanceOptions{
-			ID: &id,
-		}
-
-		instanceTotalVolumeBandwidthPatchModel := &vpcv1.InstancePatch{
-			TotalVolumeBandwidth: &totalVolBandwidth,
-		}
-		instancePatch, err := instanceTotalVolumeBandwidthPatchModel.AsPatch()
-		if err != nil {
-			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("instanceTotalVolumeBandwidthPatchModel.AsPatch() failed: %s", err.Error()), "ibm_is_instance", "update")
-			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
-			return tfErr.GetDiag()
-		}
-		updnetoptions.InstancePatch = instancePatch
-
-		_, _, err = instanceC.UpdateInstanceWithContext(context, updnetoptions)
-		if err != nil {
-			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("UpdateInstanceWithContext failed: %s", err.Error()), "ibm_is_instance", "update")
-			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
-			return tfErr.GetDiag()
 		}
 	}
 

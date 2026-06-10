@@ -9,8 +9,9 @@ description: |-
 
 # ibm_is_network_acl_rule
 
-Provides a network ACL rule resource with `icmp`, `tcp`, `udp`, `icmp_tcp_udp`. Protocol `all` in older versions is replaced with `icmp_tcp_udp` from `1.87.0-beta1`.
-This allows Network ACL rule to create, update, and delete an existing network ACL. For more information, about managing IBM Cloud Network ACL , see [about network acl](https://cloud.ibm.com/docs/vpc?topic=vpc-using-acls).
+Provides a network ACL rule resource with `icmp`, `tcp`, `udp`, `any`, `icmp_tcp_udp`, `ah`, `gre`, `ip_in_ip`, `l2tp`, `rsvp`, `sctp`, `vrrp`. For other protocols, value of number_<N>, where <N> is the protocol number in decimal from 0 to 255 (e.g., number_99).
+(Note: A selection of well-known protocols uses their standard names (e.g., tcp for protocol 6). For these, the corresponding number_<N> value must not be used (e.g., number_6 is invalid — use tcp instead). Each protocol has exactly one valid identifier, either a named protocol or a number_<N> ). 
+This allows Network ACL rule to create, update, and delete an existing network ACL. For more information, about managing IBM Cloud Network ACL , see [about network acl](https://cloud.ibm.com/docs/vpc?topic=vpc-using-acls). Protocol `all` in older versions is replaced with `icmp_tcp_udp` from `1.87.0-beta1`.
 
 **Note:** 
 VPC infrastructure services are a regional specific based endpoint, by default targets to `us-south`. Please make sure to target right region in the provider block as shown in the `provider.tf` file, if VPC service is created in region other than `us-south`.
@@ -52,6 +53,30 @@ resource "ibm_is_network_acl_rule" "example1" {
   direction   = "inbound"
   protocol    = "icmp_tcp_udp"
 }
+```
+
+## Example usage (any)
+
+```terraform
+resource "ibm_is_network_acl_rule" "example" {
+  network_acl = ibm_is_network_acl.example.id
+  name        = "outbound"
+  action      = "allow"
+  source      = "0.0.0.0/0"
+  destination = "0.0.0.0/0"
+  direction   = "outbound"
+  protocol    = "any"
+}
+resource "ibm_is_network_acl_rule" "example1" {
+  network_acl = ibm_is_network_acl.example.id
+  name        = "inbound"
+  action      = "allow"
+  source      = "0.0.0.0/0"
+  destination = "0.0.0.0/0"
+  direction   = "inbound"
+  protocol   = "any"
+}
+
 ```
 
 ## Example usage (icmp)
@@ -153,9 +178,9 @@ Review the argument references that you can specify for your resource.
 - `direction` - (Required, String) Whether the traffic to be matched is **inbound** or **outbound**.
 - `icmp` - (Optional, DEPRECATED, List) The protocol ICMP. `icmp` is deprecated and use `protocol`, `code`, and `type` argument instead.
 
-   Nested scheme for `icmp`:
-   - `code` - (Optional, Integer) The ICMP traffic code to allow. Valid values from 0 to 255. If unspecified, all codes are allowed. This can only be specified if type is also specified.
-   - `type` - (Optional, Integer) The ICMP traffic type to allow. Valid values from 0 to 254. If unspecified, all types are allowed by this rule.
+  Nested scheme for `icmp`:
+  - `code` - (Optional, Integer) The ICMP traffic code to allow. Valid values from 0 to 255. If unspecified, all codes are allowed. This can only be specified if type is also specified.
+  - `type` - (Optional, Integer) The ICMP traffic type to allow. Valid values from 0 to 254. If unspecified, all types are allowed by this rule.
 - `network_acl` - (Required, String) The ID of the network ACL.
 - `name` - (Optional, String) The user-defined name for this rule.
 - `port_max` - (Optional, Integer) The highest port in the range of ports to be matched; if unspecified, **65535** is used.
@@ -166,19 +191,19 @@ Review the argument references that you can specify for your resource.
 - `source_port_min` - (Optional, Integer) The lowest port in the range of ports to be matched; if unspecified, **1** is used.
 - `tcp` - (Optional, DEPRECATED, List) TCP protocol. `tcp` is deprecated and use `protocol`, `port_min`, `port_max`, `source_port_max` and `source_port_min` argument instead.
 
-   Nested scheme for `tcp`:
-   - `port_max` - (Optional, Integer) The highest port in the range of ports to be matched; if unspecified, **65535** is used.
-   - `port_min` - (Optional, Integer) The lowest port in the range of ports to be matched; if unspecified, **1** is used.
-   - `source_port_max` - (Optional, Integer) The highest port in the range of ports to be matched; if unspecified, **65535** is used.
-   - `source_port_min` - (Optional, Integer) The lowest port in the range of ports to be matched; if unspecified, **1** is used.
+  Nested scheme for `tcp`:
+  - `port_max` - (Optional, Integer) The highest port in the range of ports to be matched; if unspecified, **65535** is used.
+  - `port_min` - (Optional, Integer) The lowest port in the range of ports to be matched; if unspecified, **1** is used.
+  - `source_port_max` - (Optional, Integer) The highest port in the range of ports to be matched; if unspecified, **65535** is used.
+  - `source_port_min` - (Optional, Integer) The lowest port in the range of ports to be matched; if unspecified, **1** is used.
 - `type` - (Optional, Integer) The ICMP traffic type to allow. Valid values from 0 to 254. If unspecified, all types are allowed by this rule.
 - `udp` - (Optional, DEPRECATED, List) UDP protocol. `udp` is deprecated and use `protocol`, `port_min`, `port_max`,  `source_port_max` and `source_port_min` argument instead.
 
-   Nested scheme for `udp`:
-   - `port_max` - (Optional, Integer) The highest port in the range of ports to be matched; if unspecified, **65535** is used.
-   - `port_min` - (Optional, Integer) The lowest port in the range of ports to be matched; if unspecified, **1** is used.
-   - `source_port_max` - (Optional, Integer) The highest port in the range of ports to be matched; if unspecified, **65535** is used.
-   - `source_port_min` - (Optional, Integer) The lowest port in the range of ports to be matched; if unspecified, **1** is used.
+  Nested scheme for `udp`:
+  - `port_max` - (Optional, Integer) The highest port in the range of ports to be matched; if unspecified, **65535** is used.
+  - `port_min` - (Optional, Integer) The lowest port in the range of ports to be matched; if unspecified, **1** is used.
+  - `source_port_max` - (Optional, Integer) The highest port in the range of ports to be matched; if unspecified, **65535** is used.
+  - `source_port_min` - (Optional, Integer) The lowest port in the range of ports to be matched; if unspecified, **1** is used.
 
 ~> **NOTE:** Only one type of protocol out of **icmp**, **tcp**, or **udp** can be used to create a new rule. If none is provided, **all** is selected.
 
@@ -193,17 +218,17 @@ In addition to all argument reference list, you can access the following attribu
 ## Import
 
 In Terraform v1.5.0 and later, use an [`import` block](https://developer.hashicorp.com/terraform/language/import) to import the `ibm_is_network_acl_rule` resource by using `id`.
-The `id` property can be formed from `<network_acl_id>\<rule_id>`. For example:
+The `id` property can be formed from `network_acl_id`, and `rule_id`. For example:
 
 ```terraform
 import {
-  to = ibm_is_network_acl.example
-  id = "<network_acl_id>\<rule_id>"
+  to = ibm_is_network_acl_rule.example
+  id = "<network_acl_id>/<rule_id>"
 }
 ```
 
 Using `terraform import`. For example:
 
 ```console
-% terraform import ibm_is_network_acl_rule.example <network_acl_id>\<rule_id>
+% terraform import ibm_is_network_acl_rule.example <network_acl_id>/<rule_id>
 ```

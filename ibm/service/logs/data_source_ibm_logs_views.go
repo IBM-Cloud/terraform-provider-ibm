@@ -1,10 +1,11 @@
-// Copyright IBM Corp. 2024 All Rights Reserved.
+// Copyright IBM Corp. 2026 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 package logs
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"log"
 	"time"
@@ -49,6 +50,11 @@ func DataSourceIbmLogsViews() *schema.Resource {
 										Computed:    true,
 										Description: "View search query.",
 									},
+									"syntax_type": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "Syntax type for the query used in views.",
+									},
 								},
 							},
 						},
@@ -72,7 +78,7 @@ func DataSourceIbmLogsViews() *schema.Resource {
 												"seconds": &schema.Schema{
 													Type:        schema.TypeInt,
 													Computed:    true,
-													Description: "Quick time selection amount of seconds.",
+													Description: "Quick time selection amount in seconds.",
 												},
 											},
 										},
@@ -86,12 +92,12 @@ func DataSourceIbmLogsViews() *schema.Resource {
 												"from_time": &schema.Schema{
 													Type:        schema.TypeString,
 													Computed:    true,
-													Description: "Custom time selection start timestamp.",
+													Description: "Custom time selection starting timestamp.",
 												},
 												"to_time": &schema.Schema{
 													Type:        schema.TypeString,
 													Computed:    true,
-													Description: "Custom time selection end timestamp.",
+													Description: "Custom time selection ending timestamp.",
 												},
 											},
 										},
@@ -135,6 +141,11 @@ func DataSourceIbmLogsViews() *schema.Resource {
 							Computed:    true,
 							Description: "View folder ID.",
 						},
+						"tier": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Type of view.",
+						},
 					},
 				},
 			},
@@ -158,11 +169,10 @@ func dataSourceIbmLogsViewsRead(context context.Context, d *schema.ResourceData,
 
 	listViewsOptions := &logsv0.ListViewsOptions{}
 
-	viewCollection, _, err := logsClient.ListViewsWithContext(context, listViewsOptions)
+	viewCollection, response, err := logsClient.ListViewsWithContext(context, listViewsOptions)
 	if err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("ListViewsWithContext failed: %s", err.Error()), "(Data) ibm_logs_views", "read")
-		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
-		return tfErr.GetDiag()
+		log.Printf("[DEBUG] ListViewsWithContext failed %s\n%s", err, response)
+		return diag.FromErr(fmt.Errorf("ListViewsWithContext failed %s\n%s", err, response))
 	}
 
 	d.SetId(dataSourceIbmLogsViewsID(d))
@@ -172,15 +182,13 @@ func dataSourceIbmLogsViewsRead(context context.Context, d *schema.ResourceData,
 		for _, modelItem := range viewCollection.Views {
 			modelMap, err := DataSourceIbmLogsViewsViewToMap(&modelItem)
 			if err != nil {
-				tfErr := flex.TerraformErrorf(err, err.Error(), "(Data) ibm_logs_views", "read")
-				return tfErr.GetDiag()
+				return diag.FromErr(err)
 			}
 			views = append(views, modelMap)
 		}
 	}
 	if err = d.Set("views", views); err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting views: %s", err), "(Data) ibm_logs_views", "read")
-		return tfErr.GetDiag()
+		return diag.FromErr(fmt.Errorf("Error setting views %s", err))
 	}
 
 	return nil
@@ -194,7 +202,7 @@ func dataSourceIbmLogsViewsID(d *schema.ResourceData) string {
 func DataSourceIbmLogsViewsViewToMap(model *logsv0.View) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["id"] = flex.IntValue(model.ID)
-	modelMap["name"] = *model.Name
+	modelMap["name"] = model.Name
 	if model.SearchQuery != nil {
 		searchQueryMap, err := DataSourceIbmLogsViewsApisViewsV1SearchQueryToMap(model.SearchQuery)
 		if err != nil {
@@ -217,12 +225,18 @@ func DataSourceIbmLogsViewsViewToMap(model *logsv0.View) (map[string]interface{}
 	if model.FolderID != nil {
 		modelMap["folder_id"] = model.FolderID.String()
 	}
+	if model.Tier != nil {
+		modelMap["tier"] = model.Tier
+	}
 	return modelMap, nil
 }
 
 func DataSourceIbmLogsViewsApisViewsV1SearchQueryToMap(model *logsv0.ApisViewsV1SearchQuery) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["query"] = *model.Query
+	if model.SyntaxType != nil {
+		modelMap["syntax_type"] = model.SyntaxType
+	}
 	return modelMap, nil
 }
 
@@ -256,7 +270,7 @@ func DataSourceIbmLogsViewsApisViewsV1TimeSelectionToMap(model logsv0.ApisViewsV
 
 func DataSourceIbmLogsViewsApisViewsV1QuickTimeSelectionToMap(model *logsv0.ApisViewsV1QuickTimeSelection) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	modelMap["caption"] = *model.Caption
+	modelMap["caption"] = model.Caption
 	modelMap["seconds"] = flex.IntValue(model.Seconds)
 	return modelMap, nil
 }
@@ -310,11 +324,17 @@ func DataSourceIbmLogsViewsApisViewsV1SelectedFiltersToMap(model *logsv0.ApisVie
 
 func DataSourceIbmLogsViewsApisViewsV1FilterToMap(model *logsv0.ApisViewsV1Filter) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	modelMap["name"] = *model.Name
-	selectedValues := make(map[string]interface{})
-	for k, v := range model.SelectedValues {
-		selectedValues[k] = flex.Stringify(v)
+	modelMap["name"] = model.Name
+	if model.SelectedValues != nil {
+		selectedValues := make(map[string]interface{})
+		for k, v := range model.SelectedValues {
+			bytes, err := json.Marshal(v)
+			if err != nil {
+				return modelMap, err
+			}
+			selectedValues[k] = string(bytes)
+		}
+		modelMap["selected_values"] = selectedValues
 	}
-	modelMap["selected_values"] = selectedValues
 	return modelMap, nil
 }

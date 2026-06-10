@@ -1,8 +1,8 @@
-// Copyright IBM Corp. 2024 All Rights Reserved.
+// Copyright IBM Corp. 2026 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 /*
- * IBM OpenAPI Terraform Generator Version: 3.94.1-71478489-20240820-161623
+ * IBM OpenAPI Terraform Generator Version: 3.102.0-615ec964-20250307-203034
  */
 
 package codeengine
@@ -12,12 +12,13 @@ import (
 	"fmt"
 	"log"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM/code-engine-go-sdk/codeenginev2"
 	"github.com/IBM/go-sdk-core/v5/core"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 func DataSourceIbmCodeEngineBuild() *schema.Resource {
@@ -74,6 +75,40 @@ func DataSourceIbmCodeEngineBuild() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The type of the build.",
+			},
+			"run_build_params": &schema.Schema{
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "References to config maps and secret keys, or literal values, which are defined by the build owner and are exposed as build arguments in Docker files.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"key": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The key to reference as build param.",
+						},
+						"name": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The name of the build param.",
+						},
+						"reference": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The name of the secret or config map.",
+						},
+						"type": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Specify the type of the build param.",
+						},
+						"value": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The literal value of the build param.",
+						},
+					},
+				},
 			},
 			"source_context_dir": &schema.Schema{
 				Type:        schema.TypeString,
@@ -207,6 +242,18 @@ func dataSourceIbmCodeEngineBuildRead(context context.Context, d *schema.Resourc
 		}
 	}
 
+	runBuildParams := []map[string]interface{}{}
+	for _, runBuildParamsItem := range build.RunBuildParams {
+		runBuildParamsItemMap, err := DataSourceIbmCodeEngineBuildBuildParamToMap(&runBuildParamsItem) // #nosec G601
+		if err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_code_engine_build", "read", "run_build_params-to-map").GetDiag()
+		}
+		runBuildParams = append(runBuildParams, runBuildParamsItemMap)
+	}
+	if err = d.Set("run_build_params", runBuildParams); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting run_build_params: %s", err), "(Data) ibm_code_engine_build", "read", "set-run_build_params").GetDiag()
+	}
+
 	if !core.IsNil(build.SourceContextDir) {
 		if err = d.Set("source_context_dir", build.SourceContextDir); err != nil {
 			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting source_context_dir: %s", err), "(Data) ibm_code_engine_build", "read", "set-source_context_dir").GetDiag()
@@ -274,6 +321,24 @@ func dataSourceIbmCodeEngineBuildRead(context context.Context, d *schema.Resourc
 	}
 
 	return nil
+}
+
+func DataSourceIbmCodeEngineBuildBuildParamToMap(model *codeenginev2.BuildParam) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.Key != nil {
+		modelMap["key"] = *model.Key
+	}
+	if model.Name != nil {
+		modelMap["name"] = *model.Name
+	}
+	if model.Reference != nil {
+		modelMap["reference"] = *model.Reference
+	}
+	modelMap["type"] = *model.Type
+	if model.Value != nil {
+		modelMap["value"] = *model.Value
+	}
+	return modelMap, nil
 }
 
 func DataSourceIbmCodeEngineBuildBuildStatusToMap(model *codeenginev2.BuildStatus) (map[string]interface{}, error) {

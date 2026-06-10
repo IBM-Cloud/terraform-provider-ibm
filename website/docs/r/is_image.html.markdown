@@ -107,23 +107,23 @@ Review the argument references that you can specify for your resource.
   **&#x2022;** You must have the access listed in the [Granting users access to tag resources](https://cloud.ibm.com/docs/account?topic=account-access) for `access_tags`</br>
   **&#x2022;** `access_tags` must be in the format `key:value`.
 - `allowed_use` - (Optional, List) The usage constraints to match against the requested instance or bare metal server properties to  determine compatibility.
-    
-    Nested schema for `allowed_use`:
-    - `api_version` - (Optional, String) The API version with which to evaluate the expressions.
-	  
-    - `bare_metal_server` - (Optional, String) The expression that must be satisfied by the properties of a bare metal server provisioned using this image. If unspecified, the expression will be set to true. The expression follows [Common Expression Language](https://github.com/google/cel-spec/blob/master/doc/langdef.md), but does not support built-in functions and macros. 
-    
-    ~> **NOTE** </br> In addition, the following property is supported, corresponding to `BareMetalServer` properties: </br>
-      **&#x2022;** `enable_secure_boot` - (boolean) Indicates whether secure boot is enabled.
-	  
-    - `instance` - (Optional, String) The expression that must be satisfied by the properties of a virtual server instance provisioned using this image. If unspecified, the expression will be set to true. The expression follows [Common Expression Language](https://github.com/google/cel-spec/blob/master/doc/langdef.md), but does not support built-in functions and macros. 
-    
-    ~> **NOTE** </br> In addition, the following variables are supported, corresponding to `Instance` properties: </br>
-      **&#x2022;** `gpu.count` - (integer) The number of GPUs. </br>
-      **&#x2022;** `gpu.manufacturer` - (string) The GPU manufacturer. </br>
-      **&#x2022;** `gpu.memory` - (integer) The overall amount of GPU memory in GiB (gibibytes). </br>
-      **&#x2022;** `gpu.model` - (string) The GPU model. </br>
-      **&#x2022;** `enable_secure_boot` - (boolean) Indicates whether secure boot is enabled. </br>
+
+  Nested schema for `allowed_use`:
+  - `api_version` - (Optional, String) The API version with which to evaluate the expressions.
+
+  - `bare_metal_server` - (Optional, String) The expression that must be satisfied by the properties of a bare metal server provisioned using this image. If unspecified, the expression will be set to true. The expression follows [Common Expression Language](https://github.com/google/cel-spec/blob/master/doc/langdef.md), but does not support built-in functions and macros.
+
+  ~> **NOTE** </br> In addition, the following property is supported, corresponding to `BareMetalServer` properties: </br>
+    **&#x2022;** `enable_secure_boot` - (boolean) Indicates whether secure boot is enabled.
+
+  - `instance` - (Optional, String) The expression that must be satisfied by the properties of a virtual server instance provisioned using this image. If unspecified, the expression will be set to true. The expression follows [Common Expression Language](https://github.com/google/cel-spec/blob/master/doc/langdef.md), but does not support built-in functions and macros.
+
+  ~> **NOTE** </br> In addition, the following variables are supported, corresponding to `Instance` properties: </br>
+    **&#x2022;** `gpu.count` - (integer) The number of GPUs. </br>
+    **&#x2022;** `gpu.manufacturer` - (string) The GPU manufacturer. </br>
+    **&#x2022;** `gpu.memory` - (integer) The overall amount of GPU memory in GiB (gibibytes). </br>
+    **&#x2022;** `gpu.model` - (string) The GPU model. </br>
+    **&#x2022;** `enable_secure_boot` - (boolean) Indicates whether secure boot is enabled. </br>
 - `deprecate` - (Bool) This flag deprecates an image, resulting in its status becoming deprecated and deprecation_at being set to the current date and time. The image must:
 
     - be an existing image and have a status of available
@@ -147,6 +147,7 @@ A system-provided image is not allowed to be deprecated.
 
   ~> **NOTE**
       either `href` or `source_volume` is required
+- `minimum_acceptable_status` - (Optional, String) Specifies the minimum lifecycle status that an image must reach before Terraform considers the resource creation successful and proceeds. This allows users to control when the `ibm_is_image` resource should complete its provisioning cycle. For example, if set to "partially_available", Terraform will wait until the image reaches the "available" status before marking the resource as successfully created.
 - `name` - (Required, String) The descriptive name used to identify an image.
 - `obsolete` - (Optional, Bool) This flag obsoletes an image, resulting in its status becoming obsolete and obsolescence_at being set to the current date and time. The image must:
 
@@ -203,7 +204,11 @@ In addition to all argument reference list, you can access the following attribu
   **&#x2022;**  `ipxe`: user_data will be interpreted as a single URL to an iPXE script or as the text of an iPXE script.</br>
   
 - `visibility` - (String) The access scope of an image such as `private` or `public`.
+- `zones` - (List) The zones in which this image is available for use.If the image has a status of `available` or `deprecated`, this will include all zones in the region.If the image has a status of `partially_available`, this will include one or more zones in the region. If the image has a status of `failed`, `obsolete`, `pending`, or `unusable`, this will be empty.
 
+  Nested schema for **zones**:
+  - `href` - (String) The URL for this zone.
+  - `name` - (String) The globally unique name for this zone.
 
 ## Import
 

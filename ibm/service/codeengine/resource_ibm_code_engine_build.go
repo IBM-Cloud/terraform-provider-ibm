@@ -1,8 +1,8 @@
-// Copyright IBM Corp. 2024 All Rights Reserved.
+// Copyright IBM Corp. 2026 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 /*
- * IBM OpenAPI Terraform Generator Version: 3.94.1-71478489-20240820-161623
+ * IBM OpenAPI Terraform Generator Version: 3.102.0-615ec964-20250307-203034
  */
 
 package codeengine
@@ -12,13 +12,14 @@ import (
 	"fmt"
 	"log"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 	"github.com/IBM/code-engine-go-sdk/codeenginev2"
 	"github.com/IBM/go-sdk-core/v5/core"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 func ResourceIbmCodeEngineBuild() *schema.Resource {
@@ -55,6 +56,40 @@ func ResourceIbmCodeEngineBuild() *schema.Resource {
 				Required:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_code_engine_build", "output_secret"),
 				Description:  "The secret that is required to access the image registry. Make sure that the secret is granted with push permissions towards the specified container registry namespace.",
+			},
+			"run_build_params": &schema.Schema{
+				Type:        schema.TypeList,
+				Optional:    true,
+				Description: "References to config maps and secret keys, or literal values, which are defined by the build owner and are exposed as build arguments in Docker files.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"key": &schema.Schema{
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "The key to reference as build param.",
+						},
+						"name": &schema.Schema{
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "The name of the build param.",
+						},
+						"reference": &schema.Schema{
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "The name of the secret or config map.",
+						},
+						"type": &schema.Schema{
+							Type:        schema.TypeString,
+							Required:    true,
+							Description: "Specify the type of the build param.",
+						},
+						"value": &schema.Schema{
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "The literal value of the build param.",
+						},
+					},
+				},
 			},
 			"source_context_dir": &schema.Schema{
 				Type:         schema.TypeString,
@@ -255,9 +290,10 @@ func ResourceIbmCodeEngineBuildValidator() *validate.ResourceValidator {
 		},
 		validate.ValidateSchema{
 			Identifier:                 "strategy_size",
-			ValidateFunctionIdentifier: validate.ValidateRegexpLen,
+			ValidateFunctionIdentifier: validate.ValidateAllowedStringValue,
 			Type:                       validate.TypeString,
 			Optional:                   true,
+			AllowedValues:              "large, medium, small, xlarge, xxlarge",
 			Regexp:                     `[\S]*`,
 			MinValueLength:             1,
 			MaxValueLength:             253,
@@ -273,9 +309,10 @@ func ResourceIbmCodeEngineBuildValidator() *validate.ResourceValidator {
 		},
 		validate.ValidateSchema{
 			Identifier:                 "strategy_type",
-			ValidateFunctionIdentifier: validate.ValidateRegexpLen,
+			ValidateFunctionIdentifier: validate.ValidateAllowedStringValue,
 			Type:                       validate.TypeString,
 			Required:                   true,
+			AllowedValues:              "buildpacks, dockerfile",
 			Regexp:                     `[\S]*`,
 			MinValueLength:             1,
 			MaxValueLength:             253,
@@ -309,6 +346,18 @@ func resourceIbmCodeEngineBuildCreate(context context.Context, d *schema.Resourc
 	createBuildOptions.SetOutputImage(d.Get("output_image").(string))
 	createBuildOptions.SetOutputSecret(d.Get("output_secret").(string))
 	createBuildOptions.SetStrategyType(d.Get("strategy_type").(string))
+	if _, ok := d.GetOk("run_build_params"); ok {
+		var runBuildParams []codeenginev2.BuildParamPrototype
+		for _, v := range d.Get("run_build_params").([]interface{}) {
+			value := v.(map[string]interface{})
+			runBuildParamsItem, err := ResourceIbmCodeEngineBuildMapToBuildParamPrototype(value)
+			if err != nil {
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_code_engine_build", "create", "parse-run_build_params").GetDiag()
+			}
+			runBuildParams = append(runBuildParams, *runBuildParamsItem)
+		}
+		createBuildOptions.SetRunBuildParams(runBuildParams)
+	}
 	if _, ok := d.GetOk("source_context_dir"); ok {
 		createBuildOptions.SetSourceContextDir(d.Get("source_context_dir").(string))
 	}
@@ -390,6 +439,20 @@ func resourceIbmCodeEngineBuildRead(context context.Context, d *schema.ResourceD
 	if err = d.Set("output_secret", build.OutputSecret); err != nil {
 		err = fmt.Errorf("Error setting output_secret: %s", err)
 		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_code_engine_build", "read", "set-output_secret").GetDiag()
+	}
+	if !core.IsNil(build.RunBuildParams) {
+		runBuildParams := []map[string]interface{}{}
+		for _, runBuildParamsItem := range build.RunBuildParams {
+			runBuildParamsItemMap, err := ResourceIbmCodeEngineBuildBuildParamToMap(&runBuildParamsItem) // #nosec G601
+			if err != nil {
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_code_engine_build", "read", "run_build_params-to-map").GetDiag()
+			}
+			runBuildParams = append(runBuildParams, runBuildParamsItemMap)
+		}
+		if err = d.Set("run_build_params", runBuildParams); err != nil {
+			err = fmt.Errorf("Error setting run_build_params: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_code_engine_build", "read", "set-run_build_params").GetDiag()
+		}
 	}
 	if !core.IsNil(build.SourceContextDir) {
 		if err = d.Set("source_context_dir", build.SourceContextDir); err != nil {
@@ -536,6 +599,19 @@ func resourceIbmCodeEngineBuildUpdate(context context.Context, d *schema.Resourc
 		patchVals.OutputSecret = &newOutputSecret
 		hasChange = true
 	}
+	if d.HasChange("run_build_params") {
+		var runBuildParams []codeenginev2.BuildParamPrototype
+		for _, v := range d.Get("run_build_params").([]interface{}) {
+			value := v.(map[string]interface{})
+			runBuildParamsItem, err := ResourceIbmCodeEngineBuildMapToBuildParamPrototype(value)
+			if err != nil {
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_code_engine_build", "update", "parse-run_build_params").GetDiag()
+			}
+			runBuildParams = append(runBuildParams, *runBuildParamsItem)
+		}
+		patchVals.RunBuildParams = runBuildParams
+		hasChange = true
+	}
 	if d.HasChange("source_context_dir") {
 		newSourceContextDir := d.Get("source_context_dir").(string)
 		patchVals.SourceContextDir = &newSourceContextDir
@@ -630,6 +706,42 @@ func resourceIbmCodeEngineBuildDelete(context context.Context, d *schema.Resourc
 	return nil
 }
 
+func ResourceIbmCodeEngineBuildMapToBuildParamPrototype(modelMap map[string]interface{}) (*codeenginev2.BuildParamPrototype, error) {
+	model := &codeenginev2.BuildParamPrototype{}
+	if modelMap["key"] != nil && modelMap["key"].(string) != "" {
+		model.Key = core.StringPtr(modelMap["key"].(string))
+	}
+	if modelMap["name"] != nil && modelMap["name"].(string) != "" {
+		model.Name = core.StringPtr(modelMap["name"].(string))
+	}
+	if modelMap["reference"] != nil && modelMap["reference"].(string) != "" {
+		model.Reference = core.StringPtr(modelMap["reference"].(string))
+	}
+	model.Type = core.StringPtr(modelMap["type"].(string))
+	if modelMap["value"] != nil && modelMap["value"].(string) != "" {
+		model.Value = core.StringPtr(modelMap["value"].(string))
+	}
+	return model, nil
+}
+
+func ResourceIbmCodeEngineBuildBuildParamToMap(model *codeenginev2.BuildParam) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.Key != nil {
+		modelMap["key"] = *model.Key
+	}
+	if model.Name != nil {
+		modelMap["name"] = *model.Name
+	}
+	if model.Reference != nil {
+		modelMap["reference"] = *model.Reference
+	}
+	modelMap["type"] = *model.Type
+	if model.Value != nil {
+		modelMap["value"] = *model.Value
+	}
+	return modelMap, nil
+}
+
 func ResourceIbmCodeEngineBuildBuildStatusToMap(model *codeenginev2.BuildStatus) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.Reason != nil {
@@ -645,47 +757,109 @@ func ResourceIbmCodeEngineBuildBuildPatchAsPatch(patchVals *codeenginev2.BuildPa
 	path = "output_image"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["output_image"] = nil
+	} else if !exists {
+		delete(patch, "output_image")
 	}
 	path = "output_secret"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["output_secret"] = nil
+	} else if !exists {
+		delete(patch, "output_secret")
+	}
+	path = "run_build_params"
+	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
+		patch["run_build_params"] = nil
+	} else if exists && patch["run_build_params"] != nil {
+		run_build_paramsList := patch["run_build_params"].([]map[string]interface{})
+		for i, run_build_paramsItem := range run_build_paramsList {
+			ResourceIbmCodeEngineBuildBuildParamPrototypeAsPatch(run_build_paramsItem, d, fmt.Sprintf("%s.%d", path, i))
+		}
+	} else if !exists {
+		delete(patch, "run_build_params")
 	}
 	path = "source_context_dir"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["source_context_dir"] = nil
+	} else if !exists {
+		delete(patch, "source_context_dir")
 	}
 	path = "source_revision"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["source_revision"] = nil
+	} else if !exists {
+		delete(patch, "source_revision")
 	}
 	path = "source_secret"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["source_secret"] = nil
+	} else if !exists {
+		delete(patch, "source_secret")
 	}
 	path = "source_type"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["source_type"] = nil
+	} else if !exists {
+		delete(patch, "source_type")
 	}
 	path = "source_url"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["source_url"] = nil
+	} else if !exists {
+		delete(patch, "source_url")
 	}
 	path = "strategy_size"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["strategy_size"] = nil
+	} else if !exists {
+		delete(patch, "strategy_size")
 	}
 	path = "strategy_spec_file"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["strategy_spec_file"] = nil
+	} else if !exists {
+		delete(patch, "strategy_spec_file")
 	}
 	path = "strategy_type"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["strategy_type"] = nil
+	} else if !exists {
+		delete(patch, "strategy_type")
 	}
 	path = "timeout"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["timeout"] = nil
+	} else if !exists {
+		delete(patch, "timeout")
 	}
 
 	return patch
+}
+
+func ResourceIbmCodeEngineBuildBuildParamPrototypeAsPatch(patch map[string]interface{}, d *schema.ResourceData, rootPath string) {
+	var path string
+
+	path = rootPath + ".key"
+	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
+		patch["key"] = nil
+	} else if !exists {
+		delete(patch, "key")
+	}
+	path = rootPath + ".name"
+	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
+		patch["name"] = nil
+	} else if !exists {
+		delete(patch, "name")
+	}
+	path = rootPath + ".reference"
+	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
+		patch["reference"] = nil
+	} else if !exists {
+		delete(patch, "reference")
+	}
+	path = rootPath + ".value"
+	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
+		patch["value"] = nil
+	} else if !exists {
+		delete(patch, "value")
+	}
 }

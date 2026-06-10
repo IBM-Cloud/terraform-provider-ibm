@@ -292,10 +292,10 @@ resource "ibm_is_instance_template" "instancetemplate1" {
 Review the argument references that you can specify for your resource.
 - `availability` - (Optional, List) The availability for this virtual server instance. **Note:** Spot instances are available only to accounts that have been granted special approval. Contact IBM Support if you are interested in using spot instances.
   Nested schema for **availability**:
-	- `class` - (Required, String) The availability class for the virtual server instance.- `spot`: The virtual server instance may be preempted.- `standard`: The virtual server instance will not be preempted.See [virtual server instance availability class](https://cloud.ibm.com/docs/vpc?topic=vpc-spot-instances-virtual-servers) for details.The enumerated values for this property may[expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) in the future. Allowable values are: `spot`, `standard`.
+  - `class` - (Required, String) The availability class for the virtual server instance.- `spot`: The virtual server instance may be preempted.- `standard`: The virtual server instance will not be preempted.See [virtual server instance availability class](https://cloud.ibm.com/docs/vpc?topic=vpc-spot-instances-virtual-servers) for details.The enumerated values for this property may [expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) in the future. Allowable values are: `spot`, `standard`.
 - `availability_policy` - (Optional, List) The availability policy for this virtual server instance.
   Nested schema for **availability_policy**:
-	- `preemption` - (Required, String) The action to perform if the virtual server instance is preempted:- `delete`: Delete the virtual server instance- `stop`: Leave the virtual server instance stopped. See [virtual server instance preemption](https://cloud.ibm.com/docs/vpc?topic=vpc-spot-instances-virtual-servers#spot-instances-preemption) for details.The enumerated values for this property may [expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) in the future. Allowable values are: [ `delete`, `stop`. ]
+  - `preemption` - (Required, String) The action to perform if the virtual server instance is preempted:- `delete`: Delete the virtual server instance- `stop`: Leave the virtual server instance stopped. See [virtual server instance preemption](https://cloud.ibm.com/docs/vpc?topic=vpc-spot-instances-virtual-servers#spot-instances-preemption) for details.The enumerated values for this property may [expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) in the future. Allowable values are: [ `delete`, `stop`. ]
   
  -> **Note:** This property is only applicable when availability class is set to `spot`.
 - `availability_policy_host_failure` - (Optional, String) The availability policy to use for this virtual server instance. The action to perform if the compute host experiences a failure. Supported values are `restart` and `stop`. Use availability_policy.0.host_failure instead. Existing configurations can continue using this attribute, switching attributes with the same value will not trigger replacement.
@@ -304,29 +304,29 @@ Review the argument references that you can specify for your resource.
 
   Nested scheme for `boot_volume`:
   - `allowed_use` - (Optional, List) The usage constraints to be matched against requested instance or bare metal server properties to determine compatibility. Can only be specified if `source_snapshot`  present and bootable. If not specified, the value of this property will be inherited from the `source_image`
-    
+
     Nested schema for `allowed_use`:
     - `api_version` - (Optional, String) The API version with which to evaluate the expressions.
-	  
-    - `bare_metal_server` - (Optional, String) The expression that must be satisfied by the properties of a bare metal server provisioned using the image data in this volume. If unspecified, the expression will be set to true. The expression follows [Common Expression Language](https://github.com/google/cel-spec/blob/master/doc/langdef.md), but does not support built-in functions and macros. 
-   
+
+    - `bare_metal_server` - (Optional, String) The expression that must be satisfied by the properties of a bare metal server provisioned using the image data in this volume. If unspecified, the expression will be set to true. The expression follows [Common Expression Language](https://github.com/google/cel-spec/blob/master/doc/langdef.md), but does not support built-in functions and macros.
+
     ~> **NOTE** </br> In addition, the following property is supported, corresponding to the `BareMetalServer` property: </br>
       **&#x2022;** `enable_secure_boot` - (boolean) Indicates whether secure boot is enabled.
-	 
+
     - `instance` - (Optional, String) The expression that must be satisfied by the properties of a virtual server instance provisioned using this volume. If unspecified, the expression will be set to true. The expression follows [Common Expression Language](https://github.com/google/cel-spec/blob/master/doc/langdef.md), but does not support built-in functions and macros.
-   
+
     ~> **NOTE** </br> In addition, the following variables are supported, corresponding to `Instance` properties: </br>
       **&#x2022;** `gpu.count` - (integer) The number of GPUs. </br>
       **&#x2022;** `gpu.manufacturer` - (string) The GPU manufacturer. </br>
       **&#x2022;** `gpu.memory` - (integer) The overall amount of GPU memory in GiB (gibibytes). </br>
       **&#x2022;** `gpu.model` - (string) The GPU model. </br>
-      **&#x2022;** `enable_secure_boot` - (boolean) Indicates whether secure boot is enabled. </br>  
+      **&#x2022;** `enable_secure_boot` - (boolean) Indicates whether secure boot is enabled. </br>
   - `bandwidth` - (Optional, Integer) The maximum bandwidth (in megabits per second) for the volume. For this property to be specified, the volume storage_generation must be 2.
-	- `delete_volume_on_instance_delete` - (Optional, Bool) You can configure to delete the boot volume based on instance deletion.
-	- `encryption` - (Optional, String) The encryption key CRN to encrypt the boot volume attached.
-	- `name` - (Optional, String) The name of the boot volume.
-	- `profile` - (Optional, String) The profile name for this boot volume.
-	- `size` - (Optional, Integer) The size for this boot volume.(in gigabytes)
+  - `delete_volume_on_instance_delete` - (Optional, Bool) You can configure to delete the boot volume based on instance deletion.
+  - `encryption` - (Optional, String) The encryption key CRN to encrypt the boot volume attached.
+  - `name` - (Optional, String) The name of the boot volume.
+  - `profile` - (Optional, String) The profile name for this boot volume.
+  - `size` - (Optional, Integer) The size for this boot volume.(in gigabytes)
   - `tags`- (Optional, Array of Strings) A list of user tags that you want to add to your volume. (https://cloud.ibm.com/apidocs/tagging#types-of-tags)
 
 - `catalog_offering` - (Optional, Forces new resource, List) The [catalog](https://cloud.ibm.com/docs/account?topic=account-restrict-by-user&interface=ui) offering or offering version to use when provisioning this virtual server instance. If an offering is specified, the latest version of that offering will be used. The specified offering or offering version may be in a different account in the same [enterprise](https://cloud.ibm.com/docs/account?topic=account-what-is-enterprise), subject to IAM policies.
@@ -402,14 +402,14 @@ Review the argument references that you can specify for your resource.
 - `profile` - (Required, String) The number of instances created in the instance group.
 - `primary_network_attachment` - (Optional, List) The primary network attachment for this virtual server instance.
   Nested schema for **primary_network_attachment**:
-	- `deleted` - (Optional, List) If present, this property indicates the referenced resource has been deleted, and providessome supplementary information.
-	Nested schema for **deleted**:
-		- `more_info` - (Required, String) Link to documentation about deleted resources.
-	- `href` - (String) The URL for this network attachment.
-	- `id` - (String) The unique identifier for this network attachment.
-	- `name` - (Required, String) The name of this network attachment
+  - `deleted` - (Optional, List) If present, this property indicates the referenced resource has been deleted, and providessome supplementary information.
+    Nested schema for **deleted**:
+    - `more_info` - (Required, String) Link to documentation about deleted resources.
+  - `href` - (String) The URL for this network attachment.
+  - `id` - (String) The unique identifier for this network attachment.
+  - `name` - (Required, String) The name of this network attachment
   - `resource_type` - (String) The resource type.
-	- `virtual_network_interface` - (Required, List(1)) The details of the virtual network interface for this network attachment. It can either accept an `id` or properties of `virtual_network_interface`
+  - `virtual_network_interface` - (Required, List(1)) The details of the virtual network interface for this network attachment. It can either accept an `id` or properties of `virtual_network_interface`
       Nested schema for **virtual_network_interface**: 
       - `id` - (Optional, List) The `id` of the virtual network interface, id conflicts with other properties of virtual network interface
       - `allow_ip_spoofing` - (Optional, Boolean) Indicates whether source IP spoofing is allowed on this interface. If false, source IP spoofing is prevented on this interface. If true, source IP spoofing is allowed on this interface.
@@ -441,21 +441,21 @@ Review the argument references that you can specify for your resource.
 - `primary_network_interfaces` (Required, List) A nested block describes the primary network interface for the template.
 
   Nested scheme for `primary_network_interfaces`:
-	- `allow_ip_spoofing`- (Optional, Bool) Indicates whether IP spoofing is allowed on this interface. If set to **false** IP spoofing is prevented on the interface. If set to **true**, IP spoofing is allowed on the interface.
-	- `name` - (Optional, String) The name of the interface.
-	- `primary_ipv4_address` - (Optional, String) The IPv4 address assigned to the primary network interface.
+  - `allow_ip_spoofing`- (Optional, Bool) Indicates whether IP spoofing is allowed on this interface. If set to **false** IP spoofing is prevented on the interface. If set to **true**, IP spoofing is allowed on the interface.
+  - `name` - (Optional, String) The name of the interface.
+  - `primary_ipv4_address` - (Optional, String) The IPv4 address assigned to the primary network interface.
   - `security_groups`- (Optional, List) List of security groups of the subnet.
   - `subnet` - (Required, Force new resource, String) The VPC subnet to assign to the interface.
 
 - `network_attachments` - (Optional, List) The network attachments for this virtual server instance, including the primary network attachment. Adding and removing of network attachments must be done from the rear end to avoid unwanted differences and changes in terraform.
   Nested schema for **network_attachments**:
-	- `deleted` - (Optional, List) If present, this property indicates the referenced resource has been deleted, and providessome supplementary information.
-	Nested schema for **deleted**:
-		- `more_info` - (Required, String) Link to documentation about deleted resources.
-	- `href` - (String) The URL for this network attachment.
-	- `id` - (String) The unique identifier for this network attachment.
-	- `name` - (Optional, String) Name of the attachment.
-	- `virtual_network_interface` - (Required, List(1)) The details of the virtual network interface for this network attachment. It can either accept an `id` or properties of `virtual_network_interface`
+  - `deleted` - (Optional, List) If present, this property indicates the referenced resource has been deleted, and providessome supplementary information.
+    Nested schema for **deleted**:
+    - `more_info` - (Required, String) Link to documentation about deleted resources.
+  - `href` - (String) The URL for this network attachment.
+  - `id` - (String) The unique identifier for this network attachment.
+  - `name` - (Optional, String) Name of the attachment.
+  - `virtual_network_interface` - (Required, List(1)) The details of the virtual network interface for this network attachment. It can either accept an `id` or properties of `virtual_network_interface`
       Nested schema for **virtual_network_interface**:
       - `id` - (Optional, String) The `id` of the virtual network interface, id conflicts with other properties of virtual network interface
       - `allow_ip_spoofing` - (Optional, Boolean) Indicates whether source IP spoofing is allowed on this interface. If false, source IP spoofing is prevented on this interface. If true, source IP spoofing is allowed on this interface.
@@ -488,18 +488,18 @@ Review the argument references that you can specify for your resource.
 - `network_interfaces` - (Optional, List) A nested block describes the network interfaces for the template.
 
   Nested scheme for `network_interfaces`:
-	- `allow_ip_spoofing`- (Optional, Bool) Indicates whether IP spoofing is allowed on this interface. If set to **false** IP spoofing is prevented on the interface. If set to **true**, IP spoofing is allowed on the interface.
-	- `name` - (Optional, String) The name of the interface.
-	- `primary_ipv4_address` - (Optional, String) The IPv4 address assigned to the network interface.
+  - `allow_ip_spoofing`- (Optional, Bool) Indicates whether IP spoofing is allowed on this interface. If set to **false** IP spoofing is prevented on the interface. If set to **true**, IP spoofing is allowed on the interface.
+  - `name` - (Optional, String) The name of the interface.
+  - `primary_ipv4_address` - (Optional, String) The IPv4 address assigned to the network interface.
   - `security_groups` - (Optional, List) List of security groups of the subnet.
   - `subnet` - (Required, Forces new resource, String) The VPC subnet to assign to the interface.
 - `reservation_affinity` - (Optional, List) The reservation affinity for the instance
   Nested scheme for `reservation_affinity`:
   - `policy` - (Optional, String) The reservation affinity policy to use for this virtual server instance.
 
-     ->**policy** 
-			&#x2022; disabled: Reservations will not be used
-      </br>&#x2022; manual: Reservations in pool will be available for use
+    ->**policy**
+    &#x2022; disabled: Reservations will not be used
+    </br>&#x2022; manual: Reservations in pool will be available for use
   - `pool` - (Optional, String) The pool of reservations available for use by this virtual server instance. Specified reservations must have a status of active, and have the same profile and zone as this virtual server instance. The pool must be empty if policy is disabled, and must not be empty if policy is manual.
     Nested scheme for `pool`:
     - `id` - The unique identifier for this reservation
@@ -507,34 +507,34 @@ Review the argument references that you can specify for your resource.
 - `total_volume_bandwidth` - (Optional, int) The amount of bandwidth (in megabits per second) allocated exclusively to instance storage volumes
 - `vcpu` - (Optional, List)  The virtual server instance VCPU configuration.
   Nested schema for **vcpu**:
-	- `percentage` - (Optional, Integer) The percentage of VCPU clock cycles allocated to the instance.The virtual server instance `vcpu.percentage` must be `100` when:- The virtual server instance `placement_target` is a dedicated host or dedicated  host group.- The virtual server instance `reservation_affinity.policy` is not `disabled`.If unspecified, the default for `vcpu_percentage` from the profile will be used.
+  - `percentage` - (Optional, Integer) The percentage of VCPU clock cycles allocated to the instance.The virtual server instance `vcpu.percentage` must be `100` when:- The virtual server instance `placement_target` is a dedicated host or dedicated  host group.- The virtual server instance `reservation_affinity.policy` is not `disabled`.If unspecified, the default for `vcpu_percentage` from the profile will be used.
 - `volume_attachments` - (Optional, Force new resource, List) A nested block describes the storage volume configuration for the template. 
 
   Nested scheme for `volume_attachments`:
-	- `delete_volume_on_instance_delete`- (Required, Bool) You can configure to delete the storage volume to delete based on instance deletion.
+  - `delete_volume_on_instance_delete`- (Required, Bool) You can configure to delete the storage volume to delete based on instance deletion.
   - `name` - (Required, String) The name of the boot volume.
-	- `volume` - (Optional, Forces new resource, String) The storage volume ID created in VPC.
+  - `volume` - (Optional, Forces new resource, String) The storage volume ID created in VPC.
   - `volume_prototype` - (Optional, Forces new resource, List)
 
       Nested scheme for `volume_prototype`:
       - `allowed_use` - (Optional, List) The usage constraints to be matched against requested instance or bare metal server properties to determine compatibility. Can only be specified if `source_snapshot` is present and bootable. If not specified, the value of this property will be inherited from the `source_snapshot`.
-      
-      Nested schema for `allowed_use`:
-      - `api_version` - (Optional, String) The API version with which to evaluate the expressions.
-      
-      - `bare_metal_server` - (Optional, String) The expression that must be satisfied by the properties of a bare metal server provisioned using the image data in this volume. If unspecified, the expression will be set to true. The expression follows [Common Expression Language](https://github.com/google/cel-spec/blob/master/doc/langdef.md), but does not support built-in functions and macros. 
-    
-      ~> **NOTE** </br> In addition, the following property is supported, corresponding to the `BareMetalServer` property: </br>
-        **&#x2022;** `enable_secure_boot` - (boolean) Indicates whether secure boot is enabled.
-    
-      - `instance` - (Optional, String) The expression that must be satisfied by the properties of a virtual server instance provisioned using this volume. If unspecified, the expression will be set to true. The expression follows [Common Expression Language](https://github.com/google/cel-spec/blob/master/doc/langdef.md), but does not support built-in functions and macros.
-    
-      ~> **NOTE** </br> In addition, the following variables are supported, corresponding to `Instance` properties: </br>
-        **&#x2022;** `gpu.count` - (integer) The number of GPUs. </br>
-        **&#x2022;** `gpu.manufacturer` - (string) The GPU manufacturer. </br>
-        **&#x2022;** `gpu.memory` - (integer) The overall amount of GPU memory in GiB (gibibytes). </br>
-        **&#x2022;** `gpu.model` - (string) The GPU model. </br>
-        **&#x2022;** `enable_secure_boot` - (boolean) Indicates whether secure boot is enabled. </br>       
+
+        Nested schema for `allowed_use`:
+        - `api_version` - (Optional, String) The API version with which to evaluate the expressions.
+
+        - `bare_metal_server` - (Optional, String) The expression that must be satisfied by the properties of a bare metal server provisioned using the image data in this volume. If unspecified, the expression will be set to true. The expression follows [Common Expression Language](https://github.com/google/cel-spec/blob/master/doc/langdef.md), but does not support built-in functions and macros.
+
+        ~> **NOTE** </br> In addition, the following property is supported, corresponding to the `BareMetalServer` property: </br>
+          **&#x2022;** `enable_secure_boot` - (boolean) Indicates whether secure boot is enabled.
+
+        - `instance` - (Optional, String) The expression that must be satisfied by the properties of a virtual server instance provisioned using this volume. If unspecified, the expression will be set to true. The expression follows [Common Expression Language](https://github.com/google/cel-spec/blob/master/doc/langdef.md), but does not support built-in functions and macros.
+
+        ~> **NOTE** </br> In addition, the following variables are supported, corresponding to `Instance` properties: </br>
+          **&#x2022;** `gpu.count` - (integer) The number of GPUs. </br>
+          **&#x2022;** `gpu.manufacturer` - (string) The GPU manufacturer. </br>
+          **&#x2022;** `gpu.memory` - (integer) The overall amount of GPU memory in GiB (gibibytes). </br>
+          **&#x2022;** `gpu.model` - (string) The GPU model. </br>
+          **&#x2022;** `enable_secure_boot` - (boolean) Indicates whether secure boot is enabled. </br>
       - `bandwidth` - (Optional, Integer) The maximum bandwidth (in megabits per second) for the volume. For this property to be specified, the volume storage_generation must be 2.
       - `capacity` - (Required, Forces new resource, Integer) The capacity of the volume in gigabytes. The specified minimum and maximum capacity values for creating or updating volumes may expand in the future.
       - `encryption_key` - (Optional, Forces new resource, String) The CRN of the [Key Protect Root Key](https://cloud.ibm.com/docs/key-protect?topic=key-protect-getting-started-tutorial) or [Hyper Protect Crypto Service Root Key](https://cloud.ibm.com/docs/hs-crypto?topic=hs-crypto-get-started) for the resource.
@@ -560,7 +560,7 @@ In addition to all arguments listed, you can access the following attribute refe
   Nested scheme for `catalog_offering`:
     - `offering_crn` - (String) The CRN for this catalog offering. Identifies a catalog offering by this unique property
     - `version_crn` - (String) The CRN for this version of a catalog offering. Identifies a version of a catalog offering by this unique property
-	- `plan_crn` - (String) The CRN for this catalog offering version's billing plan
+    - `plan_crn` - (String) The CRN for this catalog offering version's billing plan
 - `placement_target` - (List) The placement restrictions to use for the virtual server instance.
   Nested scheme for `placement_target`:
     - `crn` - (String) The unique identifier for this placement target.
@@ -574,7 +574,7 @@ The `id` property can be formed from `instance template ID`. For example:
 
 ```terraform
 import {
-  to = ibm_is_instance_template.template
+  to = ibm_is_instance_template.example
   id = "<instance_template_id>"
 }
 ```
@@ -582,5 +582,5 @@ import {
 Using `terraform import`. For example:
 
 ```console
-% terraform import ibm_is_instance_template.template <instance_template_id>
+% terraform import ibm_is_instance_template.example <instance_template_id>
 ```

@@ -47,6 +47,11 @@ func DataSourceIBMPINetworkInterfaces() *schema.Resource {
 							Description: "The network interface's crn.",
 							Type:        schema.TypeString,
 						},
+						Attr_ExternalIP: {
+							Computed:    true,
+							Description: "The external ip address for pub-vlan networks.",
+							Type:        schema.TypeString,
+						},
 						Attr_ID: {
 							Computed:    true,
 							Description: "The unique network interface ID.",
@@ -153,6 +158,7 @@ func dataSourceIBMPINetworkInterfacesRead(ctx context.Context, d *schema.Resourc
 
 func networkInterfaceToMap(netInterface *models.NetworkInterface, meta any) map[string]any {
 	interfaceMap := make(map[string]any)
+	interfaceMap[Attr_ExternalIP] = netInterface.ExternalIP
 	interfaceMap[Attr_ID] = netInterface.ID
 	interfaceMap[Attr_IPAddress] = netInterface.IPAddress
 	interfaceMap[Attr_MacAddress] = netInterface.MacAddress

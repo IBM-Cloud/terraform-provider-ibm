@@ -95,6 +95,16 @@ resource "ibm_cos_bucket_object" "cos_object_objectlock" {
   object_lock_retain_until_date = "2023-02-15T18:00:00Z"
   object_lock_legal_hold_status = "ON"
 }
+
+# Example with GOVERNANCE mode and bypass parameter
+resource "ibm_cos_bucket_object" "cos_object_governance" {
+  bucket_crn      = data.ibm_cos_bucket.cos_bucket.crn
+  bucket_location = data.ibm_cos_bucket.cos_bucket.bucket_region
+  key             = "object_governance.json"
+  object_lock_mode              = "GOVERNANCE"
+  object_lock_retain_until_date = "2024-12-31T23:59:59Z"
+  bypass_governance_retention   = true  # Required to update or delete objects with GOVERNANCE mode
+}
 ```
 
 # Website redirect 
@@ -128,6 +138,10 @@ Review the argument references that you can specify for your resource.
 - `endpoint_type` - (Optional, String) The type of endpoint used to access COS. Supported values are `public`, `private`, or `direct`. Default value is `public`.
 - `etag` - (Optional, String) MD5 hexdigest used to trigger updates. The only meaningful value is `filemd5("path/to/file")`.
 - `key` - (Required, Forces new resource, String) The name of an object in the COS bucket.
+- `object_lock_legal_hold_status` - (Optional, String) An object lock configuration on the object. Valid values are `ON` or `OFF`. When `ON`, prevents deletion of the object version.
+- `object_lock_mode` - (Optional, String) Retention mode to apply to the object. Valid values are `COMPLIANCE` or `GOVERNANCE`. Must be used with `object_lock_retain_until_date`.
+- `object_lock_retain_until_date` - (Optional, String) The date and time when the object lock retention expires. Must be in RFC3339 format (e.g., `2024-12-31T23:59:59Z`). Must be used with `object_lock_mode`.
+- `bypass_governance_retention` - (Optional, Bool) Allows deleting or modifying object versions locked with `GOVERNANCE` mode. Set to `true` to bypass governance-mode retention when updating or deleting objects. Default is `false`. **Note:** This parameter is required to delete or update objects with GOVERNANCE mode retention.
 - `website_redirect` - (Optional, String) Target URL for website redirect.
 
 ## Attribute reference

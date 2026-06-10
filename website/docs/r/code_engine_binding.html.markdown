@@ -8,7 +8,7 @@ subcategory: "Code Engine"
 
 # ibm_code_engine_binding
 
-Create, update, and delete code_engine_bindings with this resource. A `secret` with format `service_access` is required to create a binding.
+Create, update, and delete code_engine_bindings with this resource.
 
 ## Example Usage
 
@@ -40,7 +40,7 @@ Nested schema for **component**:
 	* `name` - (Required, String) The name of the referenced component.
 	  * Constraints: The maximum length is `63` characters. The minimum length is `1` character. The value must match regular expression `/^[a-z0-9]([\\-a-z0-9]*[a-z0-9])?$/`.
 	* `resource_type` - (Required, String) The type of the referenced resource.
-	  * Constraints: The maximum length is `63` characters. The minimum length is `1` character. The value must match regular expression `/.+/`.
+	  * Constraints: The maximum length is `63` characters. The minimum length is `1` character. The value must match regular expression `/^.+$/`.
 * `prefix` - (Required, Forces new resource, String) The value that is set as a prefix in the component that is bound.
   * Constraints: The maximum length is `31` characters. The minimum length is `0` characters. The value must match regular expression `/^[A-Z]([_A-Z0-9]*[A-Z0-9])*$/`.
 * `project_id` - (Required, Forces new resource, String) The ID of the project.
@@ -54,9 +54,9 @@ After your resource is created, you can read values from the listed arguments an
 
 * `id` - The unique identifier of the code_engine_binding.
 * `binding_id` - (String) The ID of the binding.
-  * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/.+/`.
+  * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^.+$/`.
 * `href` - (String) When you provision a new binding,  a URL is created identifying the location of the instance.
-  * Constraints: The maximum length is `2048` characters. The minimum length is `0` characters. The value must match regular expression `/(([^:\/?#]+):)?(\/\/([^\/?#]*))?([^?#]*)(\\?([^#]*))?(#(.*))?$/`.
+  * Constraints: The maximum length is `2048` characters. The minimum length is `0` characters. The value must match regular expression `/^(([^:\/?#]+):)?(\/\/([^\/?#]*))?([^?#]*)(\\?([^#]*))?(#(.*))?$/`.
 * `resource_type` - (String) The type of the binding.
   * Constraints: Allowable values are: `binding_v2`.
 * `status` - (String) The current status of the binding.

@@ -1,0 +1,16 @@
+# Copy this file to terraform.tfvars and fill in your values
+
+# IBM Cloud API Key
+ibmcloud_api_key = "YOUR_IBM_CLOUD_API_KEY"
+
+# Region where your Logs instance is located
+region = "us-south"
+
+# GUID of your IBM Cloud Logs instance
+logs_instance_id = "YOUR_LOGS_INSTANCE_GUID"
+
+# Optional: Filter deployment by applications
+# applications = ["app1", "app2"]
+
+# Optional: Filter deployment by subsystems
+# subsystems = ["subsystem1", "subsystem2"]

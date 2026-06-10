@@ -44,14 +44,14 @@ resource "ibm_is_ssh_key" "example" {
 }
 
 resource "ibm_is_virtual_network_interface" "example"{
-	name 						            = "example-vni"
-	allow_ip_spoofing 			    = false
-	enable_infrastructure_nat 	= true
-	primary_ip {
-		auto_delete 	  = false
+  name 						            = "example-vni"
+  allow_ip_spoofing 			    = false
+  enable_infrastructure_nat 	= true
+  primary_ip {
+    auto_delete 	  = false
     address 		    = "10.240.0.8"
-	}
-	subnet   = ibm_is_subnet.example.id
+  }
+  subnet   = ibm_is_subnet.example.id
 }
 
 resource "ibm_is_instance" "example" {
@@ -75,13 +75,13 @@ resource "ibm_is_instance" "example" {
     name = "example-network-att"
     virtual_network_interface {
       name = "example-net-vni"
-			auto_delete = true
-			enable_infrastructure_nat = true
-			primary_ip {
-				auto_delete 	= true
-				address 		= "10.240.0.6"
-			}
-			subnet = ibm_is_subnet.example.id
+      auto_delete = true
+      enable_infrastructure_nat = true
+      primary_ip {
+        auto_delete 	= true
+        address 		= "10.240.0.6"
+      }
+      subnet = ibm_is_subnet.example.id
     }
   }
   vpc  = ibm_is_vpc.example.id
@@ -291,10 +291,14 @@ resource "ibm_is_security_group_rule" "example2" {
   group     = ibm_is_security_group.example.id
   direction = "inbound"
   remote    = "127.0.0.1"
-  icmp {
-    code = 20
-    type = 30
-  }
+  # Deprecated block: replaced with 'protocol', 'code', and 'type' arguments
+  # icmp {
+  #   code = 20
+  #   type = 30
+  # }
+  protocol  = "icmp"
+  code      = 20
+  type      = 30
   depends_on = [ibm_is_security_group_rule.example1]
 
 }
@@ -303,10 +307,14 @@ resource "ibm_is_security_group_rule" "example3" {
   group     = ibm_is_security_group.example.id
   direction = "inbound"
   remote    = "127.0.0.1"
-  udp {
-    port_min = 805
-    port_max = 807
-  }
+  # Deprecated block: replaced with 'protocol', 'port_min', and 'port_max' arguments
+  # udp {
+  #   port_min = 805
+  #   port_max = 807
+  # }
+  protocol  = "udp"
+  port_min = 805
+  port_max = 807
   depends_on = [ibm_is_security_group_rule.example2]
 }
 
@@ -314,10 +322,14 @@ resource "ibm_is_security_group_rule" "example3" {
   group     = ibm_is_security_group.example.id
   direction = "outbound"
   remote    = "127.0.0.1"
-  tcp {
-    port_min = 8080
-    port_max = 8080
-  }
+  # Deprecated block: replaced with 'protocol', 'port_min', and 'port_max' arguments
+  # tcp {
+  #  port_min = 8080
+  #  port_max = 8080
+  # }
+  protocol  = "tcp"
+  port_min = 8080
+  port_max = 8080
   depends_on = [ibm_is_security_group_rule.example2]
 }
 
@@ -642,13 +654,13 @@ Review the argument references that you can specify for your resource.
 - `auto_delete_volume`- (Optional, Bool) If set to **true**, automatically deletes the volumes that are attached to an instance. **Note** Setting this argument can bring some inconsistency in the volume resource, as the volumes is destroyed along with instances.
 - `availability` - (Optional, List) The availability for this virtual server instance. **Note:** Spot instances are available only to accounts that have been granted special approval. Contact IBM Support if you are interested in using spot instances.
   Nested schema for **availability**:
-	- `class` - (Optional, String) The availability class for the virtual server instance.- `spot`: The virtual server instance may be preempted.- `standard`: The virtual server instance will not be preempted.See [virtual server instance availability class](https://cloud.ibm.com/docs/vpc?topic=vpc-spot-instances-virtual-servers) for details.The enumerated values for this property may[expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) in the future. Allowable values are: `spot`, `standard`. **Note:** To change the availability class, the instance status must be stopping or stopped.
+  - `class` - (Optional, String) The availability class for the virtual server instance.- `spot`: The virtual server instance may be preempted.- `standard`: The virtual server instance will not be preempted.See [virtual server instance availability class](https://cloud.ibm.com/docs/vpc?topic=vpc-spot-instances-virtual-servers) for details.The enumerated values for this property may [expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) in the future. Allowable values are: `spot`, `standard`. **Note:** To change the availability class, the instance status must be stopping or stopped.
 - `availability_policy` - (Optional, List) The availability policy for this virtual server instance.
   Nested schema for **availability_policy**:
-	- `host_failure` - (Optional, String) The action to perform if the compute host experiences a failure:- `restart`: Restart the virtual server instance- `stop`: Leave the virtual server instance stopped. See [handling host failures](https://cloud.ibm.com/docs/vpc?topic=vpc-host-failure-recovery-policies) for details.The enumerated values for this property may[expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) in the future. Allowable values are: `restart`, `stop`.
-	- `preemption` - (Optional, String) The action to perform if the virtual server instance is preempted:- `delete`: Delete the virtual server instance- `stop`: Leave the virtual server instance stopped. See [virtual server instance preemption](https://cloud.ibm.com/docs/vpc?topic=vpc-spot-instances-virtual-servers#spot-instances-preemption) for details.The enumerated values for this property may[expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) in the future. Allowable values are: `delete`, `stop`.
+  - `host_failure` - (Optional, String) The action to perform if the compute host experiences a failure:- `restart`: Restart the virtual server instance- `stop`: Leave the virtual server instance stopped. See [handling host failures](https://cloud.ibm.com/docs/vpc?topic=vpc-host-failure-recovery-policies) for details.The enumerated values for this property may [expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) in the future. Allowable values are: `restart`, `stop`.
+  - `preemption` - (Optional, String) The action to perform if the virtual server instance is preempted:- `delete`: Delete the virtual server instance- `stop`: Leave the virtual server instance stopped. See [virtual server instance preemption](https://cloud.ibm.com/docs/vpc?topic=vpc-spot-instances-virtual-servers#spot-instances-preemption) for details.The enumerated values for this property may [expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) in the future. Allowable values are: `delete`, `stop`.
 
-	-> **Note:** The `preemption` property is only applicable when availability class is set to `spot`. Setting preemption on a standard instance will result in an error.
+  -> **Note:** The `preemption` property is only applicable when availability class is set to `spot`. Setting preemption on a standard instance will result in an error.
 - `availability_policy_host_failure` - (Deprecated, Optional, String) The availability policy to use for this virtual server instance. The action to perform if the compute host experiences a failure. Supported values are `restart` and `stop`. Use availability_policy.0.host_failure instead. Existing configurations can continue using this attribute, switching attributes with the same value will not trigger replacement.
 - `boot_volume`  (Optional, List) A list of boot volumes for an instance.
 
@@ -657,12 +669,12 @@ Review the argument references that you can specify for your resource.
     
     Nested schema for `allowed_use`:
     - `api_version` - (Optional, String) The API version with which to evaluate the expressions.
-	  
+    
     - `bare_metal_server` - (Optional, String)The expression that must be satisfied by the properties of a bare metal server provisioned using the image data in this volume. If unspecified, the expression will be set to true. The expression follows [Common Expression Language](https://github.com/google/cel-spec/blob/master/doc/langdef.md), but does not support built-in functions and macros. 
    
     ~> **NOTE** </br> In addition, the following property is supported, corresponding to the `BareMetalServer` property: </br>
       **&#x2022;** `enable_secure_boot` - (boolean) Indicates whether secure boot is enabled.
-	 
+   
     - `instance` - (Optional, String) The expression that must be satisfied by the properties of a virtual server instance provisioned using this volume. If unspecified, the expression will be set to true. The expression follows [Common Expression Language](https://github.com/google/cel-spec/blob/master/doc/langdef.md), but does not support built-in functions and macros.
    
     ~> **NOTE** </br> In addition, the following variables are supported, corresponding to `Instance` properties: </br>
@@ -706,26 +718,25 @@ Review the argument references that you can specify for your resource.
 - `cluster_network_attachments` - (Optional, List) The cluster network attachments for this virtual server instance.The cluster network attachments are ordered for consistent instance configuration. [About cluster networks](https://cloud.ibm.com/docs/vpc?topic=vpc-about-cluster-network)
 
   Nested schema for **cluster_network_attachments**:
-	- `name` - (Required, String) The name for this instance cluster network attachment. The name is unique across all network attachments for the instance. (`name` is a apply once attribute, changing it will not be detected by terraform)
+  - `name` - (Required, String) The name for this instance cluster network attachment. The name is unique across all network attachments for the instance. (`name` is a apply once attribute, changing it will not be detected by terraform)
   - `cluster_network_interface` - (Required, List) The cluster network interface for this instance cluster network attachment.
-    
-      Nested schema for **cluster_network_interface**:
-      - `id` - (Required, String) The unique identifier for this cluster network interface.
-      - `name` - (Required, String) The name for this cluster network interface. The name is unique across all interfaces in the cluster network.
-      - `primary_ip` - (Required, List) The primary IP for this cluster network interface.
-        
-          Nested schema for **primary_ip**:
-          - `address` - (Required, String) The IP address.If the address is pending allocation, the value will be `0.0.0.0`.This property may [expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) to support IPv6 addresses in the future.
-          - `deleted` - (Optional, List) If present, this property indicates the referenced resource has been deleted, and providessome supplementary information.
-            
-          - `href` - (Required, String) The URL for this cluster network subnet reserved IP.
-          - `id` - (Required, String) The unique identifier for this cluster network subnet reserved IP.
-          - `name` - (Required, String) The name for this cluster network subnet reserved IP. The name is unique across all reserved IPs in a cluster network subnet.
-          - `resource_type` - (Computed, String) The resource type.
-      - `subnet` - (Required, List)
-        
-          Nested schema for **subnet**:
-          - `id` - (Required, String) The unique identifier for this cluster network subnet.
+
+    Nested schema for **cluster_network_interface**:
+    - `id` - (Required, String) The unique identifier for this cluster network interface.
+    - `name` - (Required, String) The name for this cluster network interface. The name is unique across all interfaces in the cluster network.
+    - `primary_ip` - (Required, List) The primary IP for this cluster network interface.
+
+      Nested schema for **primary_ip**:
+      - `address` - (Required, String) The IP address.If the address is pending allocation, the value will be `0.0.0.0`.This property may [expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) to support IPv6 addresses in the future.
+      - `deleted` - (Optional, List) If present, this property indicates the referenced resource has been deleted, and providessome supplementary information.
+      - `href` - (Required, String) The URL for this cluster network subnet reserved IP.
+      - `id` - (Required, String) The unique identifier for this cluster network subnet reserved IP.
+      - `name` - (Required, String) The name for this cluster network subnet reserved IP. The name is unique across all reserved IPs in a cluster network subnet.
+      - `resource_type` - (Computed, String) The resource type.
+    - `subnet` - (Required, List)
+
+      Nested schema for **subnet**:
+      - `id` - (Required, String) The unique identifier for this cluster network subnet.
 
   ~> **Note:** 
   **&#x2022;** `cluster_network_attachments` updation requires the instance to be in stopped state. Use `action` attribute or `ibm_is_instance_action` resource accordingly to stop/start the instance.</br>
@@ -782,64 +793,64 @@ Review the argument references that you can specify for your resource.
 - `name` - (Optional, String) The instance name.
 - `network_attachments` - (Optional, List) The network attachments for this virtual server instance, including the primary network attachment. Adding and removing of network attachments must be done from the rear end to avoid unwanted differences and changes in terraform.
 
-	Nested schema for **network_attachments**:
-	- `deleted` - (Computed, List) If present, this property indicates the referenced resource has been deleted, and provides some supplementary information.
-		Nested schema for **deleted**:
-		- `more_info` - (String) Link to documentation about deleted resources.
-	- `href` - (Computed, String) The URL for this network attachment.
-	- `id` - (Computed, String) The unique identifier for this network attachment.
-	- `name` - (Optional, String) Name of the attachment. The name is unique across all network attachments for the instance.
-	- `primary_ip` - (Computed, List) The primary IP address of the virtual network interface for the network attachment.
-		Nested schema for **primary_ip**:
-		- `address` - (String) The IP address. If the address has not yet been selected, the value will be `0.0.0.0`. This property may add support for IPv6 addresses in the future. When processing a value in this property, verify that the address is in an expected format. If it is not, log an error. Optionally halt processing and surface the error, or bypass the resource on which the unexpected IP address format was encountered.
-		- `deleted` - (List) If present, this property indicates the referenced resource has been deleted, and provides some supplementary information.
-			Nested schema for **deleted**:
-			- `more_info` - (String) Link to documentation about deleted resources.
-		- `href` - (String) The URL for this reserved IP.
-		- `id` - (String) The unique identifier for this reserved IP.
-		- `name` - (String) The name for this reserved IP. The name is unique across all reserved IPs in a subnet.
-		- `resource_type` - (String) The resource type.
-	- `resource_type` - (Computed, String) The resource type.
-	- `virtual_network_interface` - (Required, List) The details of the virtual network interface for this network attachment. It can either accept an `id` or properties of `virtual_network_interface`.
-		Nested schema for **virtual_network_interface**:
-		- `id` - (Optional, String) The `id` of the virtual network interface. When specified, conflicts with other properties of virtual network interface.
-		- `allow_ip_spoofing` - (Optional, Boolean) Indicates whether source IP spoofing is allowed on this interface. If `false`, source IP spoofing is prevented on this interface. If `true`, source IP spoofing is allowed on this interface.
-		- `auto_delete` - (Optional, Boolean) Indicates whether this virtual network interface will be automatically deleted when target is deleted.
-		- `enable_infrastructure_nat` - (Optional, Boolean) If `true`: The VPC infrastructure performs any needed NAT operations and floating_ips must not have more than one floating IP. If `false`: Packets are passed unchanged to/from the virtual network interface, allowing the workload to perform any needed NAT operations, allow_ip_spoofing must be false, can only be attached to a target with a resource_type of bare_metal_server_network_attachment.
-		- `ips` - (Optional, Set) Additional IP addresses to bind to the virtual network interface. Each item may be either a reserved IP identity, or a reserved IP prototype object which will be used to create a new reserved IP. All IP addresses must be in the primary IP's subnet.
-			~> **NOTE** to add `ips` only existing `reserved_ip` is supported, new reserved_ip creation is not supported as it leads to unmanaged(dangling) reserved ips. Use `ibm_is_subnet_reserved_ip` to create a reserved_ip
+  Nested schema for **network_attachments**:
+  - `deleted` - (Computed, List) If present, this property indicates the referenced resource has been deleted, and provides some supplementary information.
+    Nested schema for **deleted**:
+    - `more_info` - (String) Link to documentation about deleted resources.
+  - `href` - (Computed, String) The URL for this network attachment.
+  - `id` - (Computed, String) The unique identifier for this network attachment.
+  - `name` - (Optional, String) Name of the attachment. The name is unique across all network attachments for the instance.
+  - `primary_ip` - (Computed, List) The primary IP address of the virtual network interface for the network attachment.
+    Nested schema for **primary_ip**:
+    - `address` - (String) The IP address. If the address has not yet been selected, the value will be `0.0.0.0`. This property may add support for IPv6 addresses in the future. When processing a value in this property, verify that the address is in an expected format. If it is not, log an error. Optionally halt processing and surface the error, or bypass the resource on which the unexpected IP address format was encountered.
+    - `deleted` - (List) If present, this property indicates the referenced resource has been deleted, and provides some supplementary information.
+      Nested schema for **deleted**:
+      - `more_info` - (String) Link to documentation about deleted resources.
+    - `href` - (String) The URL for this reserved IP.
+    - `id` - (String) The unique identifier for this reserved IP.
+    - `name` - (String) The name for this reserved IP. The name is unique across all reserved IPs in a subnet.
+    - `resource_type` - (String) The resource type.
+  - `resource_type` - (Computed, String) The resource type.
+  - `virtual_network_interface` - (Required, List) The details of the virtual network interface for this network attachment. It can either accept an `id` or properties of `virtual_network_interface`.
+    Nested schema for **virtual_network_interface**:
+    - `id` - (Optional, String) The `id` of the virtual network interface. When specified, conflicts with other properties of virtual network interface.
+    - `allow_ip_spoofing` - (Optional, Boolean) Indicates whether source IP spoofing is allowed on this interface. If `false`, source IP spoofing is prevented on this interface. If `true`, source IP spoofing is allowed on this interface.
+    - `auto_delete` - (Optional, Boolean) Indicates whether this virtual network interface will be automatically deleted when target is deleted.
+    - `enable_infrastructure_nat` - (Optional, Boolean) If `true`: The VPC infrastructure performs any needed NAT operations and floating_ips must not have more than one floating IP. If `false`: Packets are passed unchanged to/from the virtual network interface, allowing the workload to perform any needed NAT operations, allow_ip_spoofing must be false, can only be attached to a target with a resource_type of bare_metal_server_network_attachment.
+    - `ips` - (Optional, Set) Additional IP addresses to bind to the virtual network interface. Each item may be either a reserved IP identity, or a reserved IP prototype object which will be used to create a new reserved IP. All IP addresses must be in the primary IP's subnet.
+      ~> **NOTE** to add `ips` only existing `reserved_ip` is supported, new reserved_ip creation is not supported as it leads to unmanaged(dangling) reserved ips. Use `ibm_is_subnet_reserved_ip` to create a reserved_ip
 
-			Nested schema for **ips**:
-			- `reserved_ip` - (Required, String) The unique identifier for this reserved IP.
-			- `address` - (Computed, String) The IP address. If the address has not yet been selected, the value will be `0.0.0.0`. This property may add support for IPv6 addresses in the future. When processing a value in this property, verify that the address is in an expected format. If it is not, log an error. Optionally halt processing and surface the error, or bypass the resource on which the unexpected IP address format was encountered.
-			- `auto_delete` - (Computed, Boolean) Indicates whether this reserved IP member will be automatically deleted when either target is deleted, or the reserved IP is unbound.
-			- `deleted` - (Computed, List) If present, this property indicates the referenced resource has been deleted, and provides some supplementary information.
-				Nested schema for **deleted**:
-				- `more_info` - (String) Link to documentation about deleted resources.
-			- `href` - (Computed, String) The URL for this reserved IP.
-			- `name` - (Computed, String) The name for this reserved IP. The name is unique across all reserved IPs in a subnet.
-			- `resource_type` - (Computed, String) The resource type.
-		- `name` - (Optional, String) The virtual network interface name. The name must not be used by another virtual network interface in the VPC.
-		- `primary_ip` - (Optional, List) The primary IP address of the virtual network interface for the network attachment.
-			Nested schema for **primary_ip**:
-			- `address` - (Optional, String) The IP address. If the address has not yet been selected, the value will be `0.0.0.0`. This property may add support for IPv6 addresses in the future. When processing a value in this property, verify that the address is in an expected format. If it is not, log an error. Optionally halt processing and surface the error, or bypass the resource on which the unexpected IP address format was encountered.
-			- `auto_delete` - (Optional, Boolean) Indicates whether this reserved IP member will be automatically deleted when either target is deleted, or the reserved IP is unbound. Default value: `true`.
-			- `deleted` - (Computed, List) If present, this property indicates the referenced resource has been deleted, and provides some supplementary information.
-				Nested schema for **deleted**:
-				- `more_info` - (String) Link to documentation about deleted resources.
-			- `href` - (Computed, String) The URL for this reserved IP.
-			- `name` - (Optional, String) The name for this reserved IP. The name is unique across all reserved IPs in a subnet.
-			- `reserved_ip` - (Optional, String) The unique identifier for this reserved IP.
-			- `resource_type` - (Computed, String) The resource type.
-		- `protocol_state_filtering_mode` - (Optional, String) The protocol state filtering mode to use for this virtual network interface.
-			~> **If auto, protocol state packet filtering is enabled or disabled based on the virtual network interface's target resource type:** 
-			**&#x2022;** bare_metal_server_network_attachment: disabled </br>
-			**&#x2022;** instance_network_attachment: enabled </br>
-			**&#x2022;** share_mount_target: enabled </br>
-		- `resource_group` - (Optional, String) The resource group id for this virtual network interface.
-		- `resource_type` - (Computed, String) The resource type.
-		- `security_groups` - (Optional, Set of Strings) The security groups for this virtual network interface.
-		- `subnet` - (Optional, String) The subnet id of the virtual network interface for the network attachment.
+      Nested schema for **ips**:
+      - `reserved_ip` - (Required, String) The unique identifier for this reserved IP.
+      - `address` - (Computed, String) The IP address. If the address has not yet been selected, the value will be `0.0.0.0`. This property may add support for IPv6 addresses in the future. When processing a value in this property, verify that the address is in an expected format. If it is not, log an error. Optionally halt processing and surface the error, or bypass the resource on which the unexpected IP address format was encountered.
+      - `auto_delete` - (Computed, Boolean) Indicates whether this reserved IP member will be automatically deleted when either target is deleted, or the reserved IP is unbound.
+      - `deleted` - (Computed, List) If present, this property indicates the referenced resource has been deleted, and provides some supplementary information.
+        Nested schema for **deleted**:
+        - `more_info` - (String) Link to documentation about deleted resources.
+      - `href` - (Computed, String) The URL for this reserved IP.
+      - `name` - (Computed, String) The name for this reserved IP. The name is unique across all reserved IPs in a subnet.
+      - `resource_type` - (Computed, String) The resource type.
+    - `name` - (Optional, String) The virtual network interface name. The name must not be used by another virtual network interface in the VPC.
+    - `primary_ip` - (Optional, List) The primary IP address of the virtual network interface for the network attachment.
+      Nested schema for **primary_ip**:
+      - `address` - (Optional, String) The IP address. If the address has not yet been selected, the value will be `0.0.0.0`. This property may add support for IPv6 addresses in the future. When processing a value in this property, verify that the address is in an expected format. If it is not, log an error. Optionally halt processing and surface the error, or bypass the resource on which the unexpected IP address format was encountered.
+      - `auto_delete` - (Optional, Boolean) Indicates whether this reserved IP member will be automatically deleted when either target is deleted, or the reserved IP is unbound. Default value: `true`.
+      - `deleted` - (Computed, List) If present, this property indicates the referenced resource has been deleted, and provides some supplementary information.
+        Nested schema for **deleted**:
+        - `more_info` - (String) Link to documentation about deleted resources.
+      - `href` - (Computed, String) The URL for this reserved IP.
+      - `name` - (Optional, String) The name for this reserved IP. The name is unique across all reserved IPs in a subnet.
+      - `reserved_ip` - (Optional, String) The unique identifier for this reserved IP.
+      - `resource_type` - (Computed, String) The resource type.
+    - `protocol_state_filtering_mode` - (Optional, String) The protocol state filtering mode to use for this virtual network interface.
+      ~> **If auto, protocol state packet filtering is enabled or disabled based on the virtual network interface's target resource type:** 
+      **&#x2022;** bare_metal_server_network_attachment: disabled </br>
+      **&#x2022;** instance_network_attachment: enabled </br>
+      **&#x2022;** share_mount_target: enabled </br>
+    - `resource_group` - (Optional, String) The resource group id for this virtual network interface.
+    - `resource_type` - (Computed, String) The resource type.
+    - `security_groups` - (Optional, Set of Strings) The security groups for this virtual network interface.
+    - `subnet` - (Optional, String) The subnet id of the virtual network interface for the network attachment.
     
 - `network_interfaces`  (Optional,  Forces new resource, List) A list of more network interfaces that are set up for the instance.
 
@@ -865,64 +876,64 @@ Review the argument references that you can specify for your resource.
 - `placement_group` - (Optional, string) Unique Identifier of the Placement Group for restricting the placement of the instance
 - `primary_network_attachment` - (Optional, List) The primary network attachment for this virtual server instance.
 
-	Nested schema for **primary_network_attachment**:
-	- `deleted` - (Computed, List) If present, this property indicates the referenced resource has been deleted, and provides some supplementary information.
-		Nested schema for **deleted**:
-		- `more_info` - (String) Link to documentation about deleted resources.
-	- `href` - (Computed, String) The URL for this network attachment.
-	- `id` - (Computed, String) The unique identifier for this network attachment.
-	- `name` - (Optional, String) The name of this network attachment. The name is unique across all network attachments for the instance.
-	- `primary_ip` - (Computed, List) The primary IP address of the virtual network interface for the network attachment.
-		Nested schema for **primary_ip**:
-		- `address` - (String) The IP address. If the address has not yet been selected, the value will be `0.0.0.0`. This property may add support for IPv6 addresses in the future. When processing a value in this property, verify that the address is in an expected format. If it is not, log an error. Optionally halt processing and surface the error, or bypass the resource on which the unexpected IP address format was encountered.
-		- `deleted` - (List) If present, this property indicates the referenced resource has been deleted, and provides some supplementary information.
-			Nested schema for **deleted**:
-			- `more_info` - (String) Link to documentation about deleted resources.
-		- `href` - (String) The URL for this reserved IP.
-		- `id` - (String) The unique identifier for this reserved IP.
-		- `name` - (String) The name for this reserved IP. The name is unique across all reserved IPs in a subnet.
-		- `resource_type` - (String) The resource type.
-	- `resource_type` - (Computed, String) The resource type.
-	- `virtual_network_interface` - (Required, List) The details of the virtual network interface for this network attachment. It can either accept an `id` or properties of `virtual_network_interface`.
-		Nested schema for **virtual_network_interface**:
-		- `id` - (Optional, String) The `id` of the virtual network interface. When specified, conflicts with other properties of virtual network interface.
-		- `allow_ip_spoofing` - (Optional, Boolean) Indicates whether source IP spoofing is allowed on this interface. If `false`, source IP spoofing is prevented on this interface. If `true`, source IP spoofing is allowed on this interface. Conflicts with `id`.
-		- `auto_delete` - (Optional, Boolean) Indicates whether this virtual network interface will be automatically deleted when target is deleted. Conflicts with `id`.
-		- `enable_infrastructure_nat` - (Optional, Boolean) If `true`: The VPC infrastructure performs any needed NAT operations and floating_ips must not have more than one floating IP. If `false`: Packets are passed unchanged to/from the virtual network interface, allowing the workload to perform any needed NAT operations, allow_ip_spoofing must be false, can only be attached to a target with a resource_type of bare_metal_server_network_attachment. Conflicts with `id`.
-		- `ips` - (Optional, Set) Additional IP addresses to bind to the virtual network interface. Each item may be either a reserved IP identity, or a reserved IP prototype object which will be used to create a new reserved IP. All IP addresses must be in the primary IP's subnet. Conflicts with `id`.
-			~> **NOTE** to add `ips` only existing `reserved_ip` is supported, new reserved_ip creation is not supported as it leads to unmanaged(dangling) reserved ips. Use `ibm_is_subnet_reserved_ip` to create a reserved_ip
+  Nested schema for **primary_network_attachment**:
+  - `deleted` - (Computed, List) If present, this property indicates the referenced resource has been deleted, and provides some supplementary information.
+    Nested schema for **deleted**:
+    - `more_info` - (String) Link to documentation about deleted resources.
+  - `href` - (Computed, String) The URL for this network attachment.
+  - `id` - (Computed, String) The unique identifier for this network attachment.
+  - `name` - (Optional, String) The name of this network attachment. The name is unique across all network attachments for the instance.
+  - `primary_ip` - (Computed, List) The primary IP address of the virtual network interface for the network attachment.
+    Nested schema for **primary_ip**:
+    - `address` - (String) The IP address. If the address has not yet been selected, the value will be `0.0.0.0`. This property may add support for IPv6 addresses in the future. When processing a value in this property, verify that the address is in an expected format. If it is not, log an error. Optionally halt processing and surface the error, or bypass the resource on which the unexpected IP address format was encountered.
+    - `deleted` - (List) If present, this property indicates the referenced resource has been deleted, and provides some supplementary information.
+      Nested schema for **deleted**:
+      - `more_info` - (String) Link to documentation about deleted resources.
+    - `href` - (String) The URL for this reserved IP.
+    - `id` - (String) The unique identifier for this reserved IP.
+    - `name` - (String) The name for this reserved IP. The name is unique across all reserved IPs in a subnet.
+    - `resource_type` - (String) The resource type.
+  - `resource_type` - (Computed, String) The resource type.
+  - `virtual_network_interface` - (Required, List) The details of the virtual network interface for this network attachment. It can either accept an `id` or properties of `virtual_network_interface`.
+    Nested schema for **virtual_network_interface**:
+    - `id` - (Optional, String) The `id` of the virtual network interface. When specified, conflicts with other properties of virtual network interface.
+    - `allow_ip_spoofing` - (Optional, Boolean) Indicates whether source IP spoofing is allowed on this interface. If `false`, source IP spoofing is prevented on this interface. If `true`, source IP spoofing is allowed on this interface. Conflicts with `id`.
+    - `auto_delete` - (Optional, Boolean) Indicates whether this virtual network interface will be automatically deleted when target is deleted. Conflicts with `id`.
+    - `enable_infrastructure_nat` - (Optional, Boolean) If `true`: The VPC infrastructure performs any needed NAT operations and floating_ips must not have more than one floating IP. If `false`: Packets are passed unchanged to/from the virtual network interface, allowing the workload to perform any needed NAT operations, allow_ip_spoofing must be false, can only be attached to a target with a resource_type of bare_metal_server_network_attachment. Conflicts with `id`.
+    - `ips` - (Optional, Set) Additional IP addresses to bind to the virtual network interface. Each item may be either a reserved IP identity, or a reserved IP prototype object which will be used to create a new reserved IP. All IP addresses must be in the primary IP's subnet. Conflicts with `id`.
+      ~> **NOTE** to add `ips` only existing `reserved_ip` is supported, new reserved_ip creation is not supported as it leads to unmanaged(dangling) reserved ips. Use `ibm_is_subnet_reserved_ip` to create a reserved_ip
 
-			Nested schema for **ips**:
-			- `reserved_ip` - (Required, String) The unique identifier for this reserved IP.
-			- `address` - (Computed, String) The IP address. If the address has not yet been selected, the value will be `0.0.0.0`. This property may add support for IPv6 addresses in the future. When processing a value in this property, verify that the address is in an expected format. If it is not, log an error. Optionally halt processing and surface the error, or bypass the resource on which the unexpected IP address format was encountered.
-			- `auto_delete` - (Computed, Boolean) Indicates whether this reserved IP member will be automatically deleted when either target is deleted, or the reserved IP is unbound.
-			- `deleted` - (Computed, List) If present, this property indicates the referenced resource has been deleted, and provides some supplementary information.
-				Nested schema for **deleted**:
-				- `more_info` - (String) Link to documentation about deleted resources.
-			- `href` - (Computed, String) The URL for this reserved IP.
-			- `name` - (Computed, String) The name for this reserved IP. The name is unique across all reserved IPs in a subnet.
-			- `resource_type` - (Computed, String) The resource type.
-		- `name` - (Optional, String) The virtual network interface name. The name must not be used by another virtual network interface in the VPC. Conflicts with `id`.
-		- `primary_ip` - (Optional, List) The primary IP address of the virtual network interface for the network attachment. Conflicts with `id`.
-			Nested schema for **primary_ip**:
-			- `address` - (Optional, String) The IP address. If the address has not yet been selected, the value will be `0.0.0.0`. This property may add support for IPv6 addresses in the future. When processing a value in this property, verify that the address is in an expected format. If it is not, log an error. Optionally halt processing and surface the error, or bypass the resource on which the unexpected IP address format was encountered. Conflicts with `reserved_ip`.
-			- `auto_delete` - (Optional, Boolean) Indicates whether this reserved ip will be automatically deleted when `target` is deleted. Conflicts with `reserved_ip`.
-			- `deleted` - (Computed, List) If present, this property indicates the referenced resource has been deleted, and provides some supplementary information.
-				Nested schema for **deleted**:
-				- `more_info` - (String) Link to documentation about deleted resources.
-			- `href` - (Computed, String) The URL for this reserved IP.
-			- `name` - (Optional, String) The name for this reserved IP. The name is unique across all reserved IPs in a subnet. Conflicts with `reserved_ip`.
-			- `reserved_ip` - (Optional, String) The unique identifier for this reserved IP. Conflicts with `address`, `auto_delete`, and `name`.
-			- `resource_type` - (Computed, String) The resource type.
-		- `protocol_state_filtering_mode` - (Optional, String) The protocol state filtering mode to use for this virtual network interface.
-			~> **If auto, protocol state packet filtering is enabled or disabled based on the virtual network interface's target resource type:** 
-			**&#x2022;** bare_metal_server_network_attachment: disabled </br>
-			**&#x2022;** instance_network_attachment: enabled </br>
-			**&#x2022;** share_mount_target: enabled </br>
-		- `resource_group` - (Optional, String) The resource group id for this virtual network interface. Conflicts with `id`.
-		- `resource_type` - (Computed, String) The resource type.
-		- `security_groups` - (Optional, Forces new resource, Set of Strings) The security groups for this virtual network interface. Conflicts with `id`.
-		- `subnet` - (Optional, Forces new resource, String) The subnet id of the virtual network interface for the network attachment. Conflicts with `id`.
+      Nested schema for **ips**:
+      - `reserved_ip` - (Required, String) The unique identifier for this reserved IP.
+      - `address` - (Computed, String) The IP address. If the address has not yet been selected, the value will be `0.0.0.0`. This property may add support for IPv6 addresses in the future. When processing a value in this property, verify that the address is in an expected format. If it is not, log an error. Optionally halt processing and surface the error, or bypass the resource on which the unexpected IP address format was encountered.
+      - `auto_delete` - (Computed, Boolean) Indicates whether this reserved IP member will be automatically deleted when either target is deleted, or the reserved IP is unbound.
+      - `deleted` - (Computed, List) If present, this property indicates the referenced resource has been deleted, and provides some supplementary information.
+        Nested schema for **deleted**:
+        - `more_info` - (String) Link to documentation about deleted resources.
+      - `href` - (Computed, String) The URL for this reserved IP.
+      - `name` - (Computed, String) The name for this reserved IP. The name is unique across all reserved IPs in a subnet.
+      - `resource_type` - (Computed, String) The resource type.
+    - `name` - (Optional, String) The virtual network interface name. The name must not be used by another virtual network interface in the VPC. Conflicts with `id`.
+    - `primary_ip` - (Optional, List) The primary IP address of the virtual network interface for the network attachment. Conflicts with `id`.
+      Nested schema for **primary_ip**:
+      - `address` - (Optional, String) The IP address. If the address has not yet been selected, the value will be `0.0.0.0`. This property may add support for IPv6 addresses in the future. When processing a value in this property, verify that the address is in an expected format. If it is not, log an error. Optionally halt processing and surface the error, or bypass the resource on which the unexpected IP address format was encountered. Conflicts with `reserved_ip`.
+      - `auto_delete` - (Optional, Boolean) Indicates whether this reserved ip will be automatically deleted when `target` is deleted. Conflicts with `reserved_ip`.
+      - `deleted` - (Computed, List) If present, this property indicates the referenced resource has been deleted, and provides some supplementary information.
+        Nested schema for **deleted**:
+        - `more_info` - (String) Link to documentation about deleted resources.
+      - `href` - (Computed, String) The URL for this reserved IP.
+      - `name` - (Optional, String) The name for this reserved IP. The name is unique across all reserved IPs in a subnet. Conflicts with `reserved_ip`.
+      - `reserved_ip` - (Optional, String) The unique identifier for this reserved IP. Conflicts with `address`, `auto_delete`, and `name`.
+      - `resource_type` - (Computed, String) The resource type.
+    - `protocol_state_filtering_mode` - (Optional, String) The protocol state filtering mode to use for this virtual network interface.
+      ~> **If auto, protocol state packet filtering is enabled or disabled based on the virtual network interface's target resource type:** 
+      **&#x2022;** bare_metal_server_network_attachment: disabled </br>
+      **&#x2022;** instance_network_attachment: enabled </br>
+      **&#x2022;** share_mount_target: enabled </br>
+    - `resource_group` - (Optional, String) The resource group id for this virtual network interface. Conflicts with `id`.
+    - `resource_type` - (Computed, String) The resource type.
+    - `security_groups` - (Optional, Forces new resource, Set of Strings) The security groups for this virtual network interface. Conflicts with `id`.
+    - `subnet` - (Optional, Forces new resource, String) The subnet id of the virtual network interface for the network attachment. Conflicts with `id`.
 
 - `primary_network_interface` - (Required, List) A nested block describes the primary network interface of this instance. Only one primary network interface can be specified for an instance. When using `instance_template`, `primary_network_interface` is not required.
 
@@ -948,15 +959,19 @@ Review the argument references that you can specify for your resource.
 
   **NOTE:**
   When the `profile` is changed, the VSI is restarted. The new profile must:
-    1. Have matching instance disk support. Any disks associated with the current profile will be deleted, and any disks associated with the requested profile will be created.        
+    1. Have matching instance disk support. Any disks associated with the current profile will be deleted, and any disks associated with the requested profile will be created.
     2. Be compatible with any placement_target(`dedicated_host`, `dedicated_host_group`, `placement_group`) constraints. For example, if the instance is placed on a dedicated host, the requested profile family must be the same as the dedicated host family.
+    3. Have the same `vcpu.architecture` (e.g., amd64 or s390x).
+    4. Support the current number of network attachments or network interfaces.
+    5. Have the `volume_bandwidth_qos_mode` listed in its `volume_bandwidth_qos_modes`.
+    6. **When downsizing to a profile with lower bandwidth capacity, you must also adjust `total_volume_bandwidth` to fit within the new profile's limits.** The instance's storage bandwidth must be at least 500 Mbps less than the target profile's total bandwidth. Both `profile` and `total_volume_bandwidth` can be updated in the same Terraform apply operation.
 
 - `reservation_affinity` - (Optional, List) The reservation affinity for the instance
   Nested scheme for `reservation_affinity`:
   - `policy` - (Optional, String) The reservation affinity policy to use for this virtual server instance.
 
     ->**policy** 
-			&#x2022; disabled: Reservations will not be used
+      &#x2022; disabled: Reservations will not be used
       </br>&#x2022; manual: Reservations in pool will be available for use
   - `pool` - (Optional, String) The pool of reservations available for use by this virtual server instance. Specified reservations must have a status of active, and have the same profile and zone as this virtual server instance. The pool must be empty if policy is disabled, and must not be empty if policy is manual.
     Nested scheme for `pool`:
@@ -971,13 +986,13 @@ Review the argument references that you can specify for your resource.
 - `user_data` - (Optional, String) User data to transfer to the instance. For more information, about `user_data`, see [about user data](https://cloud.ibm.com/docs/vpc?topic=vpc-user-data).
 - `vcpu` - (Optional, List) The virtual server instance VCPU configuration.
   Nested schema for **vcpu**:
-	- `architecture` - (Computed, String) The VCPU architecture.The enumerated values for this property may[expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) in the future. Allowable values are: `amd64`, `s390x`.
-	- `burst` - (Optional, List)
-	  Nested schema for **burst**:
-		- `limit` - (Computed, Integer) The maximum percentage the virtual server instance will exceed its allocated share of VCPU time.The maximum value for this property may[expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) in the future. Allowable values are: `200`. The maximum value is `800`. The minimum value is `100`.
-	- `count` - (Computed, Integer) The number of VCPUs assigned.
-	- `manufacturer` - (Computed, String) The VCPU manufacturer.The enumerated values for this property may[expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) in the future. Allowable values are: `amd`, `ibm`, `intel`.
-	- `percentage` - (Required, Integer) The percentage of VCPU time allocated to the virtual server instance.The virtual server instance `vcpu.percentage` will be `100` when:- The virtual server instance `placement_target` is a dedicated host or dedicated  host group.- The virtual server instance `reservation_affinity.policy` is `disabled`.
+  - `architecture` - (Computed, String) The VCPU architecture.The enumerated values for this property may [expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) in the future. Allowable values are: `amd64`, `s390x`.
+  - `burst` - (Optional, List)
+    Nested schema for **burst**:
+    - `limit` - (Computed, Integer) The maximum percentage the virtual server instance will exceed its allocated share of VCPU time.The maximum value for this property may [expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) in the future. Allowable values are: `200`. The maximum value is `800`. The minimum value is `100`.
+  - `count` - (Computed, Integer) The number of VCPUs assigned.
+  - `manufacturer` - (Computed, String) The VCPU manufacturer.The enumerated values for this property may [expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) in the future. Allowable values are: `amd`, `ibm`, `intel`.
+  - `percentage` - (Required, Integer) The percentage of VCPU time allocated to the virtual server instance.The virtual server instance `vcpu.percentage` will be `100` when:- The virtual server instance `placement_target` is a dedicated host or dedicated  host group.- The virtual server instance `reservation_affinity.policy` is `disabled`.
 - `volumes`  (Optional, List) A comma separated list of volume IDs to attach to the instance. Mutually exclusive with `volume_prototypes`.
 - `volume_prototypes`- (List of Strings) A list of data volumes to attach to the instance. Mutually exclusive with `volumes`.
 
@@ -993,12 +1008,12 @@ Review the argument references that you can specify for your resource.
     
     Nested schema for `allowed_use`:
     - `api_version` - (Optional, String) The API version with which to evaluate the expressions.
-	  
+    
     - `bare_metal_server` - (Optional, String) The expression that must be satisfied by the properties of a bare metal server provisioned using the image data in this volume. If unspecified, the expression will be set to true. The expression follows [Common Expression Language](https://github.com/google/cel-spec/blob/master/doc/langdef.md), but does not support built-in functions and macros. 
    
     ~> **NOTE** </br> In addition, the following property is supported, corresponding to the `BareMetalServer` property: </br>
       **&#x2022;** `enable_secure_boot` - (boolean) Indicates whether secure boot is enabled.
-	 
+   
     - `instance` - (Optional, String) The expression that must be satisfied by the properties of a virtual server instance provisioned using this volume. If unspecified, the expression will be set to true. The expression follows [Common Expression Language](https://github.com/google/cel-spec/blob/master/doc/langdef.md), but does not support built-in functions and macros.
    
     ~> **NOTE** </br> In addition, the following variables are supported, corresponding to `Instance` property: </br>
@@ -1026,31 +1041,33 @@ In addition to all argument reference list, you can access the following attribu
 - `catalog_offering` - (List) The [catalog](https://cloud.ibm.com/docs/account?topic=account-restrict-by-user&interface=ui) offering or offering version to use when provisioning this virtual server instance. If an offering is specified, the latest version of that offering will be used. The specified offering or offering version may be in a different account in the same [enterprise](https://cloud.ibm.com/docs/account?topic=account-what-is-enterprise), subject to IAM policies.
 
   Nested scheme for `catalog_offering`:
-    - `offering_crn` - (String) The CRN for this catalog offering. Identifies a catalog offering by this unique property
-    - `version_crn` - (String) The CRN for this version of a catalog offering. Identifies a version of a catalog offering by this unique property
-    - `plan_crn` - (String) The CRN for this catalog offering version's billing plan
-    - `deleted` - (List) If present, this property indicates the referenced resource has been deleted, and provides some supplementary information.
-		  Nested schema for `deleted`:
-      - `more_info`  - (String) Link to documentation about deleted resources.
+  - `offering_crn` - (String) The CRN for this catalog offering. Identifies a catalog offering by this unique property
+  - `version_crn` - (String) The CRN for this version of a catalog offering. Identifies a version of a catalog offering by this unique property
+  - `plan_crn` - (String) The CRN for this catalog offering version's billing plan
+  - `deleted` - (List) If present, this property indicates the referenced resource has been deleted, and provides some supplementary information.
+
+    Nested schema for `deleted`:
+    - `more_info`  - (String) Link to documentation about deleted resources.
 
 - `cluster_network_attachments` - (List) The cluster network attachments for this virtual server instance.The cluster network attachments are ordered for consistent instance configuration.
-    Nested schema for **cluster_network_attachments**:
-    - `href` - (String) The URL for this instance cluster network attachment.
-    - `id` - (String) The unique identifier for this instance cluster network attachment.
-    - `name` - (String) The name for this instance cluster network attachment. The name is unique across all network attachments for the instance.
-    - `resource_type` - (String) The resource type.
+
+  Nested schema for **cluster_network_attachments**:
+  - `href` - (String) The URL for this instance cluster network attachment.
+  - `id` - (String) The unique identifier for this instance cluster network attachment.
+  - `name` - (String) The name for this instance cluster network attachment. The name is unique across all network attachments for the instance.
+  - `resource_type` - (String) The resource type.
 
 
 - `cluster_network` - (List) If present, the cluster network that this virtual server instance resides in.
   Nested schema for **cluster_network**:
-	- `crn` - (String) The CRN for this cluster network.
-	- `deleted` - (List) If present, this property indicates the referenced resource has been deleted, and providessome supplementary information.
-	  Nested schema for **deleted**:
-		- `more_info` - (String) Link to documentation about deleted resources.
-	- `href` - (String) The URL for this cluster network.
-	- `id` - (String) The unique identifier for this cluster network.
-	- `name` - (String) The name for this cluster network. The name must not be used by another cluster network in the region.
-	- `resource_type` - (String) The resource type.
+  - `crn` - (String) The CRN for this cluster network.
+  - `deleted` - (List) If present, this property indicates the referenced resource has been deleted, and providessome supplementary information.
+    Nested schema for **deleted**:
+    - `more_info` - (String) Link to documentation about deleted resources.
+  - `href` - (String) The URL for this cluster network.
+  - `id` - (String) The unique identifier for this cluster network.
+  - `name` - (String) The name for this cluster network. The name must not be used by another cluster network in the region.
+  - `resource_type` - (String) The resource type.
 
 - `crn` - (String) The CRN of the instance.
 - `disks` - (List of Strings) The collection of the instance's disks. Nested `disks` blocks have the following structure:
@@ -1072,10 +1089,10 @@ In addition to all argument reference list, you can access the following attribu
   - `model` - (String) The model of the GPU.
 - `health_reasons` - (List) The reasons for the current health_state (if any).
 
-    Nested scheme for `health_reasons`:
-    - `code` - (String) A snake case string succinctly identifying the reason for this health state.
-    - `message` - (String) An explanation of the reason for this health state.
-    - `more_info` - (String) Link to documentation about the reason for this health state.
+  Nested scheme for `health_reasons`:
+  - `code` - (String) A snake case string succinctly identifying the reason for this health state.
+  - `message` - (String) An explanation of the reason for this health state.
+  - `more_info` - (String) Link to documentation about the reason for this health state.
 - `health_state` - (String) The health of this resource.
 - `placement_target` - The placement restrictions for the virtual server instance.
   - `crn` - The CRN of the placement target
@@ -1089,15 +1106,15 @@ In addition to all argument reference list, you can access the following attribu
 - `memory`- (Integer) The amount of memory that is allocated to the instance in gigabytes.
 - `numa_count` - (Integer) The number of NUMA nodes this instance is provisioned on. This property may be absent if the instance's status is not running.
 - `network_attachments` - (List) The network attachments list for this virtual server instance.
-    Nested schema for **network_attachments**:
 
-    - `primary_ip` - (List) The primary IP address to bind to the network interface. This can be specified using an existing reserved IP, or a prototype object for a new reserved IP.
+  Nested schema for **network_attachments**:
+  - `primary_ip` - (List) The primary IP address to bind to the network interface. This can be specified using an existing reserved IP, or a prototype object for a new reserved IP.
 
-        Nested scheme for `primary_ip`:
-        - `auto_delete` - (Bool) Indicates whether this reserved IP member will be automatically deleted when either target is deleted, or the reserved IP is unbound.
-        - `address` - (String) The IP address of the reserved IP. 
-        - `name`- (String) The user-defined or system-provided name for this reserved IP
-        - `id`- (String) The unique identifier for this reserved IP.
+    Nested scheme for `primary_ip`:
+    - `auto_delete` - (Bool) Indicates whether this reserved IP member will be automatically deleted when either target is deleted, or the reserved IP is unbound.
+    - `address` - (String) The IP address of the reserved IP.
+    - `name`- (String) The user-defined or system-provided name for this reserved IP
+    - `id`- (String) The unique identifier for this reserved IP.
 - `network_interfaces`- (List of Strings) A list of more network interfaces that are attached to the instance.
 
   Nested scheme for `network_interfaces`:
@@ -1115,15 +1132,15 @@ In addition to all argument reference list, you can access the following attribu
       - `reserved_ip`- (String) The unique identifier for this reserved IP
   - `primary_ipv4_address` - (String, Deprecated) The primary IPv4 address. Same as `primary_ip.[0].address`
 - `primary_network_attachment` - (List) The primary network attachment for this virtual server instance.
-    Nested schema for **primary_network_attachment**:
 
-    - `primary_ip` - (List) The primary IP address to bind to the network interface. This can be specified using an existing reserved IP, or a prototype object for a new reserved IP.
+  Nested schema for **primary_network_attachment**:
+  - `primary_ip` - (List) The primary IP address to bind to the network interface. This can be specified using an existing reserved IP, or a prototype object for a new reserved IP.
 
-        Nested scheme for `primary_ip`:
-        - `auto_delete` - (Bool) Indicates whether this reserved IP member will be automatically deleted when either target is deleted, or the reserved IP is unbound.
-        - `address` - (String) The IP address of the reserved IP. 
-        - `name`- (String) The user-defined or system-provided name for this reserved IP
-        - `id`- (String) The unique identifier for this reserved IP.
+    Nested scheme for `primary_ip`:
+    - `auto_delete` - (Bool) Indicates whether this reserved IP member will be automatically deleted when either target is deleted, or the reserved IP is unbound.
+    - `address` - (String) The IP address of the reserved IP.
+    - `name`- (String) The user-defined or system-provided name for this reserved IP
+    - `id`- (String) The unique identifier for this reserved IP.
 - `primary_network_interface`- (List of Strings) A list of primary network interfaces that are attached to the instance.
 
   Nested scheme for `primary_network_interface`:
@@ -1140,40 +1157,42 @@ In addition to all argument reference list, you can access the following attribu
       - `name`- (String) The user-defined or system-provided name for this reserved IP
       - `reserved_ip`- (String) The unique identifier for this reserved IP.
   - `primary_ipv4_address` - (String, Deprecated) The primary IPv4 address. Same as `primary_ip.[0].address`
-      ```terraform
-      // primary_ipv4_address deprecation 
-      output "primary_ipv4_address" {
-        # value = ibm_is_instance.example.primary_network_interface.0.primary_ipv4_address // will be deprecated in future
-        value = ibm_is_instance.example.primary_network_interface.0.primary_ip.0.address // use this instead 
-      }
-- `reservation`- (List) The reservation used by this virtual server instance. 
+
+    ```terraform
+    // primary_ipv4_address deprecation
+    output "primary_ipv4_address" {
+      # value = ibm_is_instance.example.primary_network_interface.0.primary_ipv4_address // will be deprecated in future
+      value = ibm_is_instance.example.primary_network_interface.0.primary_ip.0.address // use this instead
+    }
+    ```
+- `reservation`- (List) The reservation used by this virtual server instance.
 
   Nested scheme for `reservation`:
   - `crn` - (String) The CRN for this reservation.
   - `deleted` - (List) If present, this property indicates the referenced resource has been deleted, and provides some supplementary information.
-        
-      Nested `deleted` blocks have the following structure: 
-      - `more_info` - (String) Link to documentation about deleted resources.
+
+    Nested `deleted` blocks have the following structure:
+    - `more_info` - (String) Link to documentation about deleted resources.
   - `href` - (String) The URL for this reservation.
   - `id` - (String) The unique identifier for this reservation.
   - `name` - (string) The name for this reservation. The name is unique across all reservations in the region.
   - `resource_type` - (string) The resource type.
-- `reservation_affinity`- (List) The instance reservation affinity. 
+- `reservation_affinity`- (List) The instance reservation affinity.
 
   Nested scheme for `reservation_affinity`:
   - `policy` - (String) The reservation affinity policy to use for this virtual server instance.
   - `pool` - (List) The pool of reservations available for use by this virtual server instance.
-      
-      Nested `pool` blocks have the following structure: 
-      - `crn` - (String) The CRN for this reservation.
-      - `deleted` - (List) If present, this property indicates the referenced resource has been deleted, and provides some supplementary information.
 
-          Nested `deleted` blocks have the following structure:
-          - `more_info` - (String) Link to documentation about deleted resources. 
-      - `href` - (String) The URL for this reservation.
-      - `id` - (String) The unique identifier for this reservation.
-      - `name` - (string) The name for this reservation. The name is unique across all reservations in the region.
-      - `resource_type` - (string) The resource type.      ```
+    Nested `pool` blocks have the following structure:
+    - `crn` - (String) The CRN for this reservation.
+    - `deleted` - (List) If present, this property indicates the referenced resource has been deleted, and provides some supplementary information.
+
+      Nested `deleted` blocks have the following structure:
+      - `more_info` - (String) Link to documentation about deleted resources.
+    - `href` - (String) The URL for this reservation.
+    - `id` - (String) The unique identifier for this reservation.
+    - `name` - (string) The name for this reservation. The name is unique across all reservations in the region.
+    - `resource_type` - (string) The resource type.
 - `status` - (String) The status of the instance.
 - `status_reasons` - (List) Array of reasons for the current status.
 

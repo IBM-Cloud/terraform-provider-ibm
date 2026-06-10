@@ -8,7 +8,7 @@ description: |-
 
 # ibm_en_source
 
-Create, update, or delete a source by using IBM Cloud™ Event Notifications.
+Create, update, or delete a API source by using IBM Cloud™ Event Notifications.
 
 ## Example usage
 
@@ -20,6 +20,14 @@ resource "ibm_en_source" "en_source" {
   enabled       = true
 }
 ```
+
+Note: The IBM Cloud sources, IBM Cloud Platform sources, and the Periodic Timer source documented in the IBM Cloud Event Notifications/Event Streams documentation cannot be created or managed as Terraform resources.
+Instead, they are read‑only in Terraform and can be accessed only via data sources, not via resource blocks.
+
+This means:
+  - You cannot use Terraform to create, update, or delete these sources.
+  - You can only import and reference the existing sources using Terraform data blocks.
+
 
 ## Argument reference
 

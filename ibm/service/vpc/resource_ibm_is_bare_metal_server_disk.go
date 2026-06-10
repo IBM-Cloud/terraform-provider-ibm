@@ -64,7 +64,7 @@ func ResourceIBMIsBareMetalServerDisk() *schema.Resource {
 			"interface_type": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "The disk attachment interface used:- `fcp`: Fiber Channel Protocol- `sata`: Serial Advanced Technology Attachment- `nvme`: Non-Volatile Memory ExpressThe enumerated values for this property may[expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) in the future.",
+				Description: "The disk attachment interface used:- `fcp`: Fiber Channel Protocol- `sata`: Serial Advanced Technology Attachment- `nvme`: Non-Volatile Memory ExpressThe enumerated values for this property may [expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) in the future.",
 			},
 			"resource_type": &schema.Schema{
 				Type:        schema.TypeString,

@@ -40,22 +40,25 @@ After your resource is created, you can read values from the listed arguments an
 - `href` - (String) The URL for this cluster network subnet reserved IP.
 - `cluster_network_subnet_reserved_ip_id` - (String) The unique identifier for this cluster network subnet reserved IP.
 - `lifecycle_reasons` - (List) The reasons for the current `lifecycle_state` (if any).
-	Nested schema for **lifecycle_reasons**:
-	- `code` - (String) A reason code for this lifecycle state:- `internal_error`: internal error (contact IBM support)- `resource_suspended_by_provider`: The resource has been suspended (contact IBM  support)The enumerated values for this property may[expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) in the future. Allowable values are: `internal_error`, `resource_suspended_by_provider`.
-	- `message` - (String) An explanation of the reason for this lifecycle state.
-	- `more_info` - (String) Link to documentation about the reason for this lifecycle state.
+
+  Nested schema for **lifecycle_reasons**:
+  - `code` - (String) A reason code for this lifecycle state:- `internal_error`: internal error (contact IBM support)- `resource_suspended_by_provider`: The resource has been suspended (contact IBM  support)The enumerated values for this property may [expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) in the future. Allowable values are: `internal_error`, `resource_suspended_by_provider`.
+  - `message` - (String) An explanation of the reason for this lifecycle state.
+  - `more_info` - (String) Link to documentation about the reason for this lifecycle state.
 - `lifecycle_state` - (String) The lifecycle state of the cluster network subnet reserved IP. Allowable values are: `deleting`, `failed`, `pending`, `stable`, `suspended`, `updating`, `waiting`.
-- `owner` - (String) The owner of the cluster network subnet reserved IPThe enumerated values for this property may[expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) in the future. Allowable values are: `provider`, `user`. 
+- `owner` - (String) The owner of the cluster network subnet reserved IPThe enumerated values for this property may [expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) in the future. Allowable values are: `provider`, `user`. 
 - `resource_type` - (String) The resource type. Allowable values are: `cluster_network_subnet_reserved_ip`.
 - `target` - (List) The target this cluster network subnet reserved IP is bound to.If absent, this cluster network subnet reserved IP is provider-owned or unbound.
-	Nested schema for **target**:
-	- `deleted` - (List) If present, this property indicates the referenced resource has been deleted, and providessome supplementary information.
-	Nested schema for **deleted**:
-		- `more_info` - (String) Link to documentation about deleted resources.
-	- `href` - (String) The URL for this cluster network interface.
-	- `id` - (String) The unique identifier for this cluster network interface.
-	- `name` - (String) The name for this cluster network interface. The name is unique across all interfaces in the cluster network.
-	- `resource_type` - (String) The resource type. Allowable values are: `cluster_network_interface`. 
+
+  Nested schema for **target**:
+  - `deleted` - (List) If present, this property indicates the referenced resource has been deleted, and providessome supplementary information.
+
+    Nested schema for **deleted**:
+    - `more_info` - (String) Link to documentation about deleted resources.
+  - `href` - (String) The URL for this cluster network interface.
+  - `id` - (String) The unique identifier for this cluster network interface.
+  - `name` - (String) The name for this cluster network interface. The name is unique across all interfaces in the cluster network.
+  - `resource_type` - (String) The resource type. Allowable values are: `cluster_network_interface`.
 - `etag` - ETag identifier for ClusterNetworkSubnetReservedIP.
 
 ## Import
@@ -65,7 +68,7 @@ The `id` property can be formed from `cluster_network_id`, `cluster_network_subn
 
 ```terraform
 import {
-  to = ibm_is_cluster_network_subnet_reserved_ip.is_cluster_network_subnet_reserved_ip
+  to = ibm_is_cluster_network_subnet_reserved_ip.example
   id = "<cluster_network_id>/<cluster_network_subnet_id>/<cluster_network_subnet_reserved_ip_id>"
 }
 ```
@@ -73,5 +76,5 @@ import {
 Using `terraform import`. For example:
 
 ```console
-% terraform import ibm_is_cluster_network_subnet_reserved_ip.is_cluster_network_subnet_reserved_ip <cluster_network_id>/<cluster_network_subnet_id>/<cluster_network_subnet_reserved_ip_id>
+% terraform import ibm_is_cluster_network_subnet_reserved_ip.example <cluster_network_id>/<cluster_network_subnet_id>/<cluster_network_subnet_reserved_ip_id>
 ```

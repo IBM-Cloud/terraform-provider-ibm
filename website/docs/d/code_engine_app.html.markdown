@@ -26,7 +26,7 @@ You can specify the following arguments for this data source.
 * `name` - (Required, Forces new resource, String) The name of your application.
   * Constraints: The maximum length is `63` characters. The minimum length is `1` character. The value must match regular expression `/^[a-z]([-a-z0-9]*[a-z0-9])?$/`.
 * `project_id` - (Required, Forces new resource, String) The ID of the project.
-  * Constraints: Length must be `36` characters. The value must match regular expression `/^[0-9a-z]{8}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{12}$/`.
+  * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[0-9a-z]{8}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{12}$/`.
 
 ## Attribute Reference
 
@@ -110,7 +110,7 @@ Nested schema for **probe_readiness**:
   * Constraints: The list items must match regular expression `/^.*$/`. The maximum length is `100` items. The minimum length is `0` items.
 * `run_compute_resource_token_enabled` - (Boolean) Optional flag to enable the use of a compute resource token mounted to the container file system.
   * Constraints: The default value is `false`.
-* `run_env_variables` - (List) References to config maps, secrets or literal values, which are exposed as environment variables in the application.
+* `run_env_variables` - (List) References to config maps, secrets or literal values, which are defined by the app owner and are exposed as environment variables in the application.
   * Constraints: The maximum length is `100` items. The minimum length is `0` items.
 Nested schema for **run_env_variables**:
 	* `key` - (String) The key to reference as environment variable.
@@ -126,14 +126,12 @@ Nested schema for **run_env_variables**:
 	* `value` - (String) The literal value of the environment variable.
 	  * Constraints: The maximum length is `1048576` characters. The minimum length is `0` characters. The value must match regular expression `/^.*$/`.
 * `run_service_account` - (String) Optional name of the service account. For built-in service accounts, you can use the shortened names `manager` , `none`, `reader`, and `writer`.
-  * Constraints: The default value is `default`. Allowable values are: `default`, `manager`, `reader`, `writer`, `none`. The value must match regular expression `/^(manager|reader|writer|none|default)$/`.
+  * Constraints: The default value is `default`. Allowable values are: `default`, `manager`, `reader`, `writer`, `none`. The minimum length is `0` characters. The value must match regular expression `/^(manager|reader|writer|none|default)$/`.
 * `run_volume_mounts` - (List) Mounts of config maps or secrets.
   * Constraints: The maximum length is `100` items. The minimum length is `0` items.
 Nested schema for **run_volume_mounts**:
 	* `mount_path` - (String) The path that should be mounted.
 	  * Constraints: The maximum length is `256` characters. The minimum length is `1` character. The value must match regular expression `/^\/([^\/\\0]+\/?)+$/`.
-	* `name` - (String) The name of the mount.
-	  * Constraints: The maximum length is `63` characters. The minimum length is `0` characters. The value must match regular expression `/^[a-z]([-a-z0-9]*[a-z0-9])?$/`.
 	* `read_only` - (Boolean) Optional flag for a volume mount of type 'persistent_data_store' to specify whether it is read-only.
 	* `reference` - (String) The name of the referenced secret, config map, or persistent data store.
 	  * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[a-z0-9]([\\-a-z0-9]*[a-z0-9])?(\\.[a-z0-9]([\\-a-z0-9]*[a-z0-9])?)*$/`.

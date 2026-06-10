@@ -46,6 +46,7 @@ Review the argument references that you can specify for your data source.
 
 In addition to all argument reference list, you can access the following attribute references after your data source is created.
 
+- `asaps` - (Integer) Accelerated SAP Application Performance Standard.
 - `certified` - (Boolean) Has certification been performed on profile.
 - `cores` - (Integer) Amount of cores.
 - `default_system` - (String) System to use if not provided.

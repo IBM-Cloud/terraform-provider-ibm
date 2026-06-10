@@ -35,6 +35,19 @@ You can specify the following arguments for this resource.
   * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[a-z0-9]([\\-a-z0-9]*[a-z0-9])?(\\.[a-z0-9]([\\-a-z0-9]*[a-z0-9])?)*$/`.
 * `project_id` - (Required, Forces new resource, String) The ID of the project.
   * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[0-9a-z]{8}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{12}$/`.
+* `run_build_params` - (Optional, List) References to config maps and secret keys, or literal values, which are defined by the build owner and are exposed as build arguments in Docker files.
+  * Constraints: The maximum length is `100` items. The minimum length is `0` items.
+Nested schema for **run_build_params**:
+	* `key` - (Optional, String) The key to reference as build param.
+	  * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[\\-._a-zA-Z][\\-._a-zA-Z0-9]*$/`.
+	* `name` - (Optional, String) The name of the build param.
+	  * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[\\-._a-zA-Z][\\-._a-zA-Z0-9]*$/`.
+	* `reference` - (Optional, String) The name of the secret or config map.
+	  * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[a-z0-9]([\\-a-z0-9]*[a-z0-9])?(\\.[a-z0-9]([\\-a-z0-9]*[a-z0-9])?)*$/`.
+	* `type` - (Required, String) Specify the type of the build param.
+	  * Constraints: The default value is `literal`. Allowable values are: `literal`, `config_map_key_reference`, `secret_key_reference`. The value must match regular expression `/^(literal|config_map_key_reference|secret_key_reference)$/`.
+	* `value` - (Optional, String) The literal value of the build param.
+	  * Constraints: The maximum length is `1048576` characters. The minimum length is `0` characters. The value must match regular expression `/^.*$/`.
 * `source_context_dir` - (Optional, String) Optional directory in the repository that contains the buildpacks file or the Dockerfile.
   * Constraints: The maximum length is `253` characters. The minimum length is `0` characters. The value must match regular expression `/^(.*)+$/`.
 * `source_revision` - (Optional, String) Commit, tag, or branch in the source repository to pull. This field is optional if the `source_type` is `git` and uses the HEAD of default branch if not specified. If the `source_type` value is `local`, this field must be omitted.
@@ -46,11 +59,11 @@ You can specify the following arguments for this resource.
 * `source_url` - (Optional, String) The URL of the code repository. This field is required if the `source_type` is `git`. If the `source_type` value is `local`, this field must be omitted. If the repository is publicly available you can provide a 'https' URL like `https://github.com/IBM/CodeEngine`. If the repository requires authentication, you need to provide a 'ssh' URL like `git@github.com:IBM/CodeEngine.git` along with a `source_secret` that points to a secret of format `ssh_auth`.
   * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^((https:\/\/[a-z0-9]([\\-.]?[a-z0-9])+(:\\d{1,5})?)|((ssh:\/\/)?git@[a-z0-9]([\\-.]{0,1}[a-z0-9])+(:[a-zA-Z0-9\/][\\w\\-.]*)?))(\/([\\w\\-.]|%20)+)*$/`.
 * `strategy_size` - (Optional, String) Optional size for the build, which determines the amount of resources used. Build sizes are `small`, `medium`, `large`, `xlarge`, `xxlarge`.
-  * Constraints: The default value is `medium`. The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/[\\S]*/`.
+  * Constraints: The default value is `medium`. Allowable values are: `small`, `medium`, `large`, `xlarge`, `xxlarge`. The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/[\\S]*/`.
 * `strategy_spec_file` - (Optional, String) Optional path to the specification file that is used for build strategies for building an image.
-  * Constraints: The default value is `Dockerfile`. The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[\\S]*$/`.
+  * Constraints: The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/^[\\S]*$/`.
 * `strategy_type` - (Required, String) The strategy to use for building the image.
-  * Constraints: The default value is `dockerfile`. The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/[\\S]*/`.
+  * Constraints: The default value is `dockerfile`. Allowable values are: `dockerfile`, `buildpacks`. The maximum length is `253` characters. The minimum length is `1` character. The value must match regular expression `/[\\S]*/`.
 * `timeout` - (Optional, Integer) The maximum amount of time, in seconds, that can pass before the build must succeed or fail.
   * Constraints: The default value is `600`. The maximum value is `3600`. The minimum value is `1`.
 
@@ -65,7 +78,7 @@ After your resource is created, you can read values from the listed arguments an
 * `entity_tag` - (String) The version of the build instance, which is used to achieve optimistic locking.
   * Constraints: The maximum length is `63` characters. The minimum length is `1` character. The value must match regular expression `/^[\\*\\-a-z0-9]+$/`.
 * `href` - (String) When you provision a new build,  a URL is created identifying the location of the instance.
-  * Constraints: The maximum length is `2048` characters. The minimum length is `0` characters. The value must match regular expression `/(([^:\/?#]+):)?(\/\/([^\/?#]*))?([^?#]*)(\\?([^#]*))?(#(.*))?$/`.
+  * Constraints: The maximum length is `2048` characters. The minimum length is `0` characters. The value must match regular expression `/^(([^:\/?#]+):)?(\/\/([^\/?#]*))?([^?#]*)(\\?([^#]*))?(#(.*))?$/`.
 * `region` - (String) The region of the project the resource is located in. Possible values: 'au-syd', 'br-sao', 'ca-tor', 'eu-de', 'eu-gb', 'jp-osa', 'jp-tok', 'us-east', 'us-south'.
 * `resource_type` - (String) The type of the build.
   * Constraints: Allowable values are: `build_v2`.

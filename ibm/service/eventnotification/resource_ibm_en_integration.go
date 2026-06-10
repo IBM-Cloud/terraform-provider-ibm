@@ -42,6 +42,7 @@ func ResourceIBMEnIntegration() *schema.Resource {
 				Type:        schema.TypeString,
 				Required:    true,
 				Description: "The type of key integration kms/hs-crypto.",
+				Deprecated:  "The type hs-crypto is deprecated now. No new integration resources with hs-crypto type will be supported",
 			},
 			"metadata": {
 				Type:     schema.TypeList,

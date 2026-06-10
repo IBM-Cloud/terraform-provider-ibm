@@ -135,8 +135,7 @@ EOT
 			tls_secret = ibm_code_engine_secret.code_engine_secret_instance.name
 
 			depends_on = [
-    			ibm_code_engine_app.code_engine_%s,
-    			ibm_code_engine_secret.code_engine_secret_instance
+    			ibm_code_engine_app.code_engine_%s
   			]
 		}
 	`, projectID, app1Name, app2Name, tlsKey, tlsCert, secretName, componentRefName, domainMappingName, dependsOn)

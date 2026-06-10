@@ -73,7 +73,6 @@ func testUpdateRunExists(n string) resource.TestCheckFunc {
 			if GetProtectionGroupRunsResponse != nil &&
 				len(GetProtectionGroupRunsResponse.Runs) > 0 &&
 				*(GetProtectionGroupRunsResponse.Runs[0].ProtectionGroupID) == rs.Primary.ID &&
-				len(GetProtectionGroupRunsResponse.Runs) > 0 &&
 				GetProtectionGroupRunsResponse.Runs[0].ArchivalInfo != nil &&
 				len(GetProtectionGroupRunsResponse.Runs[0].ArchivalInfo.ArchivalTargetResults) > 0 &&
 				*(GetProtectionGroupRunsResponse.Runs[0].ArchivalInfo.ArchivalTargetResults[0].ArchivalTaskID) != "" {

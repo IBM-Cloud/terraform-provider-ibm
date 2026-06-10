@@ -221,16 +221,16 @@ variable "logs_stream_compression_type" {
 // Data source arguments for logs_alert
 variable "data_logs_alert_logs_alert_id" {
   description = "Alert ID."
-  type        = 
-  default     = 3dc02998-0b50-4ea8-b68a-4779d716fa1f
+  type        = string
+  default     = "3dc02998-0b50-4ea8-b68a-4779d716fa1f"
 }
 
 
 // Data source arguments for logs_rule_group
 variable "data_logs_rule_group_group_id" {
   description = "The group ID."
-  type        = 
-  default     = 3dc02998-0b50-4ea8-b68a-4779d716fa1f
+  type        = string
+  default     = "3dc02998-0b50-4ea8-b68a-4779d716fa1f"
 }
 
 
@@ -244,15 +244,15 @@ variable "logs_outgoing_webhooks_type" {
 // Data source arguments for logs_outgoing_webhook
 variable "data_logs_outgoing_webhook_logs_outgoing_webhook_id" {
   description = "The ID of the Outbound Integration to delete."
-  type        = 
-  default     = 585bea36-bdd1-4bfb-9a26-51f1f8a12660
+  type        = string
+  default     = "585bea36-bdd1-4bfb-9a26-51f1f8a12660"
 }
 
 // Data source arguments for logs_policy
 variable "data_logs_policy_logs_policy_id" {
   description = "ID of policy."
-  type        = 
-  default     = 3dc02998-0b50-4ea8-b68a-4779d716fa1f
+  type        = string
+  default     = "3dc02998-0b50-4ea8-b68a-4779d716fa1f"
 }
 
 // Data source arguments for logs_policies
@@ -296,22 +296,22 @@ variable "data_logs_view_logs_view_id" {
 // Data source arguments for logs_view_folder
 variable "data_logs_view_folder_logs_view_folder_id" {
   description = "Folder ID."
-  type        = 
-  default     = 3dc02998-0b50-4ea8-b68a-4779d716fa1f
+  type        = string
+  default     = "3dc02998-0b50-4ea8-b68a-4779d716fa1f"
 }
 
 
 // Data source arguments for logs_data_access_rule
 variable "data_logs_data_access_rule_logs_data_access_rule_id" {
   description = "Array of data access rule IDs."
-  type        = list()
+  type        = list(string)
   default     = ["4f966911-4bda-407e-b069-477394effa59"]
 }
 
 // Data source arguments for logs_data_access_rules
 variable "logs_data_access_rules_logs_data_access_rules_id" {
   description = "Array of data access rule IDs."
-  type        = list()
+  type        = list(string)
   default     = ["4f966911-4bda-407e-b069-477394effa59"]
 }
 
@@ -330,3 +330,27 @@ variable "data_logs_data_usage_metrics_query" {
 }
 
 
+
+// Extension deployment variables
+variable "region" {
+  description = "IBM Cloud region where the Logs instance is located"
+  type        = string
+  default     = "us-south"
+}
+
+variable "logs_instance_id" {
+  description = "GUID of the IBM Cloud Logs instance"
+  type        = string
+}
+
+variable "applications" {
+  description = "List of application names to filter the extension deployment (optional)"
+  type        = list(string)
+  default     = []
+}
+
+variable "subsystems" {
+  description = "List of subsystem names to filter the extension deployment (optional)"
+  type        = list(string)
+  default     = []
+}

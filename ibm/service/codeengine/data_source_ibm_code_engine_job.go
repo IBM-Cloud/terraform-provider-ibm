@@ -1,8 +1,8 @@
-// Copyright IBM Corp. 2025 All Rights Reserved.
+// Copyright IBM Corp. 2026 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 /*
- * IBM OpenAPI Terraform Generator Version: 3.108.0-56772134-20251111-102802
+ * IBM OpenAPI Terraform Generator Version: 3.102.0-615ec964-20250307-203034
  */
 
 package codeengine
@@ -154,7 +154,7 @@ func DataSourceIbmCodeEngineJob() *schema.Resource {
 			"run_env_variables": &schema.Schema{
 				Type:        schema.TypeList,
 				Computed:    true,
-				Description: "References to config maps, secrets or literal values, which are exposed as environment variables in the job run.",
+				Description: "References to config maps, secrets or literal values, which are defined by the function owner and are exposed as environment variables in the job run.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"key": &schema.Schema{
@@ -210,11 +210,6 @@ func DataSourceIbmCodeEngineJob() *schema.Resource {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "The path that should be mounted.",
-						},
-						"name": &schema.Schema{
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The name of the mount.",
 						},
 						"read_only": &schema.Schema{
 							Type:        schema.TypeBool,
@@ -407,10 +402,8 @@ func dataSourceIbmCodeEngineJobRead(context context.Context, d *schema.ResourceD
 		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting run_mode: %s", err), "(Data) ibm_code_engine_job", "read", "set-run_mode").GetDiag()
 	}
 
-	if !core.IsNil(job.RunServiceAccount) {
-		if err = d.Set("run_service_account", job.RunServiceAccount); err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting run_service_account: %s", err), "(Data) ibm_code_engine_job", "read", "set-run_service_account").GetDiag()
-		}
+	if err = d.Set("run_service_account", job.RunServiceAccount); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting run_service_account: %s", err), "(Data) ibm_code_engine_job", "read", "set-run_service_account").GetDiag()
 	}
 
 	runVolumeMounts := []map[string]interface{}{}
@@ -480,9 +473,6 @@ func DataSourceIbmCodeEngineJobEnvVarToMap(model *codeenginev2.EnvVar) (map[stri
 func DataSourceIbmCodeEngineJobVolumeMountToMap(model *codeenginev2.VolumeMount) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["mount_path"] = *model.MountPath
-	if model.Name != nil {
-		modelMap["name"] = *model.Name
-	}
 	if model.ReadOnly != nil {
 		modelMap["read_only"] = *model.ReadOnly
 	}

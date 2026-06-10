@@ -1,8 +1,8 @@
-// Copyright IBM Corp. 2025 All Rights Reserved.
+// Copyright IBM Corp. 2026 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 /*
- * IBM OpenAPI Terraform Generator Version: 3.108.0-56772134-20251111-102802
+ * IBM OpenAPI Terraform Generator Version: 3.102.0-615ec964-20250307-203034
  */
 
 package codeengine
@@ -48,16 +48,19 @@ func ResourceIbmCodeEnginePersistentDataStore() *schema.Resource {
 						"bucket_location": &schema.Schema{
 							Type:        schema.TypeString,
 							Optional:    true,
+							ForceNew:    true,
 							Description: "Specify the location of the bucket.",
 						},
 						"bucket_name": &schema.Schema{
 							Type:        schema.TypeString,
 							Optional:    true,
+							ForceNew:    true,
 							Description: "Specify the name of the bucket.",
 						},
 						"secret_name": &schema.Schema{
 							Type:        schema.TypeString,
 							Optional:    true,
+							ForceNew:    true,
 							Description: "Specify the name of the HMAC secret.",
 						},
 					},
@@ -237,7 +240,7 @@ func resourceIbmCodeEnginePersistentDataStoreRead(context context.Context, d *sc
 	if !core.IsNil(persistentDataStore.ID) {
 		if err = d.Set("persistent_data_store_id", persistentDataStore.ID); err != nil {
 			err = fmt.Errorf("Error setting persistent_data_store_id: %s", err)
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_code_engine_persistent_data_store", "read", "set-id").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_code_engine_persistent_data_store", "read", "set-persistent_data_store_id").GetDiag()
 		}
 	}
 	if !core.IsNil(persistentDataStore.Region) {

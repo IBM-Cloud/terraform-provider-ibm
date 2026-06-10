@@ -1,8 +1,8 @@
-// Copyright IBM Corp. 2025 All Rights Reserved.
+// Copyright IBM Corp. 2026 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 /*
- * IBM OpenAPI Terraform Generator Version: 3.108.0-56772134-20251111-102802
+ * IBM OpenAPI Terraform Generator Version: 3.102.0-615ec964-20250307-203034
  */
 
 package codeengine
@@ -314,11 +314,6 @@ func DataSourceIbmCodeEngineApp() *schema.Resource {
 							Computed:    true,
 							Description: "The path that should be mounted.",
 						},
-						"name": &schema.Schema{
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The name of the mount.",
-						},
 						"read_only": &schema.Schema{
 							Type:        schema.TypeBool,
 							Computed:    true,
@@ -525,7 +520,10 @@ func dataSourceIbmCodeEngineAppRead(context context.Context, d *schema.ResourceD
 		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting managed_domain_mappings: %s", err), "(Data) ibm_code_engine_app", "read", "set-managed_domain_mappings").GetDiag()
 	}
 
-	if !core.IsNil(app.ProbeLiveness) {
+	// Additional check for Type is required because DataSourceIbmCodeEngineAppProbeToMap
+	// unconditionally dereferences the Type without nil checking. If Type is nil,
+	// this would cause a panic. The API can return a Probe object with Type=nil.
+	if !core.IsNil(app.ProbeLiveness) && !core.IsNil(app.ProbeLiveness.Type) {
 		probeLiveness := []map[string]interface{}{}
 		probeLivenessMap, err := DataSourceIbmCodeEngineAppProbeToMap(app.ProbeLiveness)
 		if err != nil {
@@ -601,10 +599,8 @@ func dataSourceIbmCodeEngineAppRead(context context.Context, d *schema.ResourceD
 		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting run_env_variables: %s", err), "(Data) ibm_code_engine_app", "read", "set-run_env_variables").GetDiag()
 	}
 
-	if !core.IsNil(app.RunServiceAccount) {
-		if err = d.Set("run_service_account", app.RunServiceAccount); err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting run_service_account: %s", err), "(Data) ibm_code_engine_app", "read", "set-run_service_account").GetDiag()
-		}
+	if err = d.Set("run_service_account", app.RunServiceAccount); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting run_service_account: %s", err), "(Data) ibm_code_engine_app", "read", "set-run_service_account").GetDiag()
 	}
 
 	runVolumeMounts := []map[string]interface{}{}
@@ -729,18 +725,13 @@ func DataSourceIbmCodeEngineAppProbeToMap(model *codeenginev2.Probe) (map[string
 	if model.Timeout != nil {
 		modelMap["timeout"] = flex.IntValue(model.Timeout)
 	}
-	if model.Type != nil {
-		modelMap["type"] = *model.Type
-	}
+	modelMap["type"] = *model.Type
 	return modelMap, nil
 }
 
 func DataSourceIbmCodeEngineAppVolumeMountToMap(model *codeenginev2.VolumeMount) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["mount_path"] = *model.MountPath
-	if model.Name != nil {
-		modelMap["name"] = *model.Name
-	}
 	if model.ReadOnly != nil {
 		modelMap["read_only"] = *model.ReadOnly
 	}

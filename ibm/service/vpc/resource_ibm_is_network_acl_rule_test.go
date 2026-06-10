@@ -653,3 +653,308 @@ func testAccCheckIBMISNetworkACLRuleBeforeUpdateConfig(vpcName, name, name1 stri
 	}
 	`, vpcName, name, name1)
 }
+
+// TestNetworkACLRule_DeprecatedICMPToFlatMigration tests migration from
+// deprecated icmp{} block to new flat struct (protocol + top-level type/code)
+func TestNetworkACLRule_DeprecatedICMPToFlatMigration(t *testing.T) {
+	var nwACLRule string
+	vpcName := fmt.Sprintf("tf-nacl-vpc-migrate-%d", acctest.RandIntRange(10, 100))
+	ruleName := fmt.Sprintf("tf-migrate-icmp-%d", acctest.RandIntRange(10, 100))
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: checkNetworkACLRuleDestroy,
+		Steps: []resource.TestStep{
+			{
+				// Step 1: Create with deprecated icmp{} block
+				Config: testAccCheckIBMISNetworkACLRuleDeprecatedICMP(vpcName, ruleName),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISNetworkACLRuleExists("ibm_is_network_acl_rule.testacc_nacl", nwACLRule),
+					resource.TestCheckResourceAttr(
+						"ibm_is_network_acl_rule.testacc_nacl", "name", ruleName),
+					resource.TestCheckResourceAttr(
+						"ibm_is_network_acl_rule.testacc_nacl", "protocol", "icmp"),
+				),
+			},
+			{
+				// Step 2: Migrate to flat struct with protocol = "icmp" and top-level type/code
+				Config: testAccCheckIBMISNetworkACLRuleFlatICMP(vpcName, ruleName),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISNetworkACLRuleExists("ibm_is_network_acl_rule.testacc_nacl", nwACLRule),
+					resource.TestCheckResourceAttr(
+						"ibm_is_network_acl_rule.testacc_nacl", "name", ruleName),
+					resource.TestCheckResourceAttr(
+						"ibm_is_network_acl_rule.testacc_nacl", "protocol", "icmp"),
+					resource.TestCheckResourceAttr(
+						"ibm_is_network_acl_rule.testacc_nacl", "type", "8"),
+					resource.TestCheckResourceAttr(
+						"ibm_is_network_acl_rule.testacc_nacl", "code", "0"),
+				),
+			},
+		},
+	})
+}
+
+// TestNetworkACLRule_DeprecatedTCPToFlatMigration tests migration from
+// deprecated tcp{} block to new flat struct (protocol + top-level ports)
+func TestNetworkACLRule_DeprecatedTCPToFlatMigration(t *testing.T) {
+	var nwACLRule string
+	vpcName := fmt.Sprintf("tf-nacl-vpc-tcp-%d", acctest.RandIntRange(10, 100))
+	ruleName := fmt.Sprintf("tf-migrate-tcp-%d", acctest.RandIntRange(10, 100))
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: checkNetworkACLRuleDestroy,
+		Steps: []resource.TestStep{
+			{
+				// Step 1: Create with deprecated tcp{} block
+				Config: testAccCheckIBMISNetworkACLRuleDeprecatedTCP(vpcName, ruleName),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISNetworkACLRuleExists("ibm_is_network_acl_rule.testacc_nacl", nwACLRule),
+					resource.TestCheckResourceAttr(
+						"ibm_is_network_acl_rule.testacc_nacl", "name", ruleName),
+					resource.TestCheckResourceAttr(
+						"ibm_is_network_acl_rule.testacc_nacl", "protocol", "tcp"),
+				),
+			},
+			{
+				// Step 2: Migrate to flat struct with protocol = "tcp" and top-level ports
+				Config: testAccCheckIBMISNetworkACLRuleFlatTCP(vpcName, ruleName),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISNetworkACLRuleExists("ibm_is_network_acl_rule.testacc_nacl", nwACLRule),
+					resource.TestCheckResourceAttr(
+						"ibm_is_network_acl_rule.testacc_nacl", "name", ruleName),
+					resource.TestCheckResourceAttr(
+						"ibm_is_network_acl_rule.testacc_nacl", "protocol", "tcp"),
+					resource.TestCheckResourceAttr(
+						"ibm_is_network_acl_rule.testacc_nacl", "port_min", "443"),
+					resource.TestCheckResourceAttr(
+						"ibm_is_network_acl_rule.testacc_nacl", "port_max", "443"),
+				),
+			},
+		},
+	})
+}
+
+// TestNetworkACLRule_DeprecatedUDPToFlatMigration tests migration from
+// deprecated udp{} block to new flat struct (protocol + top-level ports)
+func TestNetworkACLRule_DeprecatedUDPToFlatMigration(t *testing.T) {
+	var nwACLRule string
+	vpcName := fmt.Sprintf("tf-nacl-vpc-udp-%d", acctest.RandIntRange(10, 100))
+	ruleName := fmt.Sprintf("tf-migrate-udp-%d", acctest.RandIntRange(10, 100))
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: checkNetworkACLRuleDestroy,
+		Steps: []resource.TestStep{
+			{
+				// Step 1: Create with deprecated udp{} block
+				Config: testAccCheckIBMISNetworkACLRuleDeprecatedUDP(vpcName, ruleName),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISNetworkACLRuleExists("ibm_is_network_acl_rule.testacc_nacl", nwACLRule),
+					resource.TestCheckResourceAttr(
+						"ibm_is_network_acl_rule.testacc_nacl", "name", ruleName),
+					resource.TestCheckResourceAttr(
+						"ibm_is_network_acl_rule.testacc_nacl", "protocol", "udp"),
+				),
+			},
+			{
+				// Step 2: Migrate to flat struct with protocol = "udp" and top-level ports
+				Config: testAccCheckIBMISNetworkACLRuleFlatUDP(vpcName, ruleName),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISNetworkACLRuleExists("ibm_is_network_acl_rule.testacc_nacl", nwACLRule),
+					resource.TestCheckResourceAttr(
+						"ibm_is_network_acl_rule.testacc_nacl", "name", ruleName),
+					resource.TestCheckResourceAttr(
+						"ibm_is_network_acl_rule.testacc_nacl", "protocol", "udp"),
+					resource.TestCheckResourceAttr(
+						"ibm_is_network_acl_rule.testacc_nacl", "port_min", "53"),
+					resource.TestCheckResourceAttr(
+						"ibm_is_network_acl_rule.testacc_nacl", "port_max", "53"),
+				),
+			},
+		},
+	})
+}
+
+// TestNetworkACLRule_ICMPZeroValues tests ICMP with type=0, code=0 (Echo Reply)
+func TestNetworkACLRule_ICMPZeroValues(t *testing.T) {
+	var nwACLRule string
+	vpcName := fmt.Sprintf("tf-nacl-vpc-zero-%d", acctest.RandIntRange(10, 100))
+	ruleName := fmt.Sprintf("tf-icmp-zero-%d", acctest.RandIntRange(10, 100))
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: checkNetworkACLRuleDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMISNetworkACLRuleICMPZeroValues(vpcName, ruleName),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISNetworkACLRuleExists("ibm_is_network_acl_rule.testacc_nacl", nwACLRule),
+					resource.TestCheckResourceAttr(
+						"ibm_is_network_acl_rule.testacc_nacl", "name", ruleName),
+					resource.TestCheckResourceAttr(
+						"ibm_is_network_acl_rule.testacc_nacl", "protocol", "icmp"),
+					resource.TestCheckResourceAttr(
+						"ibm_is_network_acl_rule.testacc_nacl", "type", "0"),
+					resource.TestCheckResourceAttr(
+						"ibm_is_network_acl_rule.testacc_nacl", "code", "0"),
+				),
+			},
+		},
+	})
+}
+
+// Config: Deprecated icmp{} block
+func testAccCheckIBMISNetworkACLRuleDeprecatedICMP(vpcName, ruleName string) string {
+	return fmt.Sprintf(`
+    resource "ibm_is_vpc" "testacc_vpc" {
+        name = "%s"
+    }
+
+    resource "ibm_is_network_acl_rule" "testacc_nacl" {
+        network_acl = ibm_is_vpc.testacc_vpc.default_network_acl
+        name        = "%s"
+        action      = "allow"
+        source      = "0.0.0.0/0"
+        destination = "0.0.0.0/0"
+        direction   = "inbound"
+        icmp {
+            type = 8
+            code = 0
+        }
+    }
+    `, vpcName, ruleName)
+}
+
+// Config: Flat struct with protocol = "icmp" and top-level type/code
+func testAccCheckIBMISNetworkACLRuleFlatICMP(vpcName, ruleName string) string {
+	return fmt.Sprintf(`
+    resource "ibm_is_vpc" "testacc_vpc" {
+        name = "%s"
+    }
+
+    resource "ibm_is_network_acl_rule" "testacc_nacl" {
+        network_acl = ibm_is_vpc.testacc_vpc.default_network_acl
+        name        = "%s"
+        action      = "allow"
+        source      = "0.0.0.0/0"
+        destination = "0.0.0.0/0"
+        direction   = "inbound"
+        protocol    = "icmp"
+        type        = 8
+        code        = 0
+    }
+    `, vpcName, ruleName)
+}
+
+// Config: Deprecated tcp{} block
+func testAccCheckIBMISNetworkACLRuleDeprecatedTCP(vpcName, ruleName string) string {
+	return fmt.Sprintf(`
+    resource "ibm_is_vpc" "testacc_vpc" {
+        name = "%s"
+    }
+
+    resource "ibm_is_network_acl_rule" "testacc_nacl" {
+        network_acl = ibm_is_vpc.testacc_vpc.default_network_acl
+        name        = "%s"
+        action      = "allow"
+        source      = "0.0.0.0/0"
+        destination = "0.0.0.0/0"
+        direction   = "inbound"
+        tcp {
+            port_min = 80
+            port_max = 80
+        }
+    }
+    `, vpcName, ruleName)
+}
+
+// Config: Flat struct with protocol = "tcp" and top-level ports
+func testAccCheckIBMISNetworkACLRuleFlatTCP(vpcName, ruleName string) string {
+	return fmt.Sprintf(`
+    resource "ibm_is_vpc" "testacc_vpc" {
+        name = "%s"
+    }
+
+    resource "ibm_is_network_acl_rule" "testacc_nacl" {
+        network_acl = ibm_is_vpc.testacc_vpc.default_network_acl
+        name        = "%s"
+        action      = "allow"
+        source      = "0.0.0.0/0"
+        destination = "0.0.0.0/0"
+        direction   = "inbound"
+        protocol    = "tcp"
+        port_min    = 443
+        port_max    = 443
+    }
+    `, vpcName, ruleName)
+}
+
+// Config: Deprecated udp{} block
+func testAccCheckIBMISNetworkACLRuleDeprecatedUDP(vpcName, ruleName string) string {
+	return fmt.Sprintf(`
+    resource "ibm_is_vpc" "testacc_vpc" {
+        name = "%s"
+    }
+
+    resource "ibm_is_network_acl_rule" "testacc_nacl" {
+        network_acl = ibm_is_vpc.testacc_vpc.default_network_acl
+        name        = "%s"
+        action      = "allow"
+        source      = "0.0.0.0/0"
+        destination = "0.0.0.0/0"
+        direction   = "inbound"
+        udp {
+            port_min = 53
+            port_max = 53
+        }
+    }
+    `, vpcName, ruleName)
+}
+
+// Config: Flat struct with protocol = "udp" and top-level ports
+func testAccCheckIBMISNetworkACLRuleFlatUDP(vpcName, ruleName string) string {
+	return fmt.Sprintf(`
+    resource "ibm_is_vpc" "testacc_vpc" {
+        name = "%s"
+    }
+
+    resource "ibm_is_network_acl_rule" "testacc_nacl" {
+        network_acl = ibm_is_vpc.testacc_vpc.default_network_acl
+        name        = "%s"
+        action      = "allow"
+        source      = "0.0.0.0/0"
+        destination = "0.0.0.0/0"
+        direction   = "inbound"
+        protocol    = "udp"
+        port_min    = 53
+        port_max    = 53
+    }
+    `, vpcName, ruleName)
+}
+
+// Config: ICMP with zero values (type=0, code=0 - Echo Reply)
+func testAccCheckIBMISNetworkACLRuleICMPZeroValues(vpcName, ruleName string) string {
+	return fmt.Sprintf(`
+    resource "ibm_is_vpc" "testacc_vpc" {
+        name = "%s"
+    }
+
+    resource "ibm_is_network_acl_rule" "testacc_nacl" {
+        network_acl = ibm_is_vpc.testacc_vpc.default_network_acl
+        name        = "%s"
+        action      = "allow"
+        source      = "0.0.0.0/0"
+        destination = "0.0.0.0/0"
+        direction   = "inbound"
+        protocol    = "icmp"
+        type        = 0
+        code        = 0
+    }
+    `, vpcName, ruleName)
+}

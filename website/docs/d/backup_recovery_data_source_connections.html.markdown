@@ -14,6 +14,8 @@ Provides a read-only data source to retrieve information about Data-Source Conne
 
 ```hcl
 data "ibm_backup_recovery_data_source_connections" "backup_recovery_data_source_connections" {
+	connection_ids = ["connectionId1","connectionId2"]
+	connection_names = ["connectionName1","connectionName2"]
 	x_ibm_tenant_id = ibm_backup_recovery_data_source_connection.backup_recovery_data_source_connection_instance.x_ibm_tenant_id
 }
 ```
@@ -36,6 +38,8 @@ After your data source is created, you can read values from the following attrib
 * `id` - The unique identifier of the Data-Source Connections.
 * `connections` - (List) 
 Nested schema for **connections**:
+	* `connection_env_type` - (String) Specifies the environment type of the connection.
+	  * Constraints: Allowable values are: `kRoksVpc`, `kRoksClassic`, `kIksVpc`, `kIksClassic`.
 	* `connection_id` - (String) Specifies the unique ID of the connection.
 	* `connection_name` - (String) Specifies the name of the connection. For a given tenant, different connections can't have the same name. However, two (or more) different tenants can each have a connection with the same name.
 	* `connector_ids` - (List) Specifies the IDs of the connectors in this connection.

@@ -40,7 +40,7 @@ Example usage:
 Review the argument references that you can specify for your data source.
 
 - `pi_cloud_instance_id` - (Required, String) The GUID of the service instance associated with an account.
-- `pi_image_id` - (Optional, String) The ID of the image. To find supported images, run the `ibmcloud pi images` command.
+- `pi_image_id` - (Optional, String) The ID of the image. To find supported images, run the `ibmcloud pi image list` command.
 - `pi_image_name` - (Deprecated, Optional, String) The id of the image. Passing the name of the image could fail or fetch stale data. Please pass an id and use `pi_image_id` instead.
 
 ## Attribute Reference

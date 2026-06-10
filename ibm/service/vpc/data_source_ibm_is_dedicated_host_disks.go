@@ -144,7 +144,7 @@ func DataSourceIbmIsDedicatedHostDisks() *schema.Resource {
 func dataSourceIbmIsDedicatedHostDisksRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	vpcClient, err := meta.(conns.ClientSession).VpcV1API()
 	if err != nil {
-		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_dedicated_host_disks", "read", "initialize-client")
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_dedicated_host_disks", "read", "initialize-client")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
@@ -155,7 +155,7 @@ func dataSourceIbmIsDedicatedHostDisksRead(context context.Context, d *schema.Re
 
 	dedicatedHostDiskCollection, response, err := vpcClient.ListDedicatedHostDisksWithContext(context, listDedicatedHostDisksOptions)
 	if err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("ListDedicatedHostDisksWithContext failed: %s\n%s", err, response), "ibm_is_dedicated_host_disks", "read")
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("ListDedicatedHostDisksWithContext failed: %s\n%s", err, response), "(Data) ibm_is_dedicated_host_disks", "read")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
@@ -165,7 +165,7 @@ func dataSourceIbmIsDedicatedHostDisksRead(context context.Context, d *schema.Re
 	if dedicatedHostDiskCollection.Disks != nil {
 		err = d.Set("disks", dataSourceDedicatedHostDiskCollectionFlattenDisks(dedicatedHostDiskCollection.Disks))
 		if err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("[ERROR] Error setting disks: %s", err.Error()), "ibm_is_dedicated_host_disks", "read", "set-disks").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("[ERROR] Error setting disks: %s", err.Error()), "(Data) ibm_is_dedicated_host_disks", "read", "set-disks").GetDiag()
 		}
 	}
 
