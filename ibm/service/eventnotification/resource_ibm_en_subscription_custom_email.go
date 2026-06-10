@@ -191,9 +191,6 @@ func resourceIBMEnCustomEmailSubscriptionCreate(context context.Context, d *sche
 
 	options.SetAttributes(attributes)
 
-	log.Printf("[DEBUG] Calling CreateSubscriptionWithContext with options: InstanceID=%s, Name=%s, TopicID=%s, DestinationID=%s, DestinationType=%s",
-		*options.InstanceID, *options.Name, *options.TopicID, *options.DestinationID, *destination.Type)
-
 	result, _, err := enClient.CreateSubscriptionWithContext(context, options)
 	if err != nil {
 
@@ -342,9 +339,6 @@ func resourceIBMEnCustomEmailSubscriptionUpdate(context context.Context, d *sche
 
 		options.SetAttributes(attributes)
 
-		log.Printf("[DEBUG] Calling UpdateSubscriptionWithContext with options: InstanceID=%s, ID=%s, Name=%s",
-			*options.InstanceID, *options.ID, *options.Name)
-
 		_, _, err = enClient.UpdateSubscriptionWithContext(context, options)
 		if err != nil {
 			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("UpdateSubscriptionWithContext failed: %s", err.Error()), "ibm_en_subscription_custom_email", "update")
@@ -419,7 +413,6 @@ func CustomEmailattributesMapToAttributes(attributeMap map[string]interface{}, i
 
 	if isSandbox {
 		// Sandbox destination - use SubscriptionCreateAttributesCustomEmailSandboxAttributes
-		log.Printf("[DEBUG] Creating sandbox subscription attributes")
 		attributesCreate := &en.SubscriptionCreateAttributesCustomEmailSandboxAttributes{
 			Invited:                invited,
 			AddNotificationPayload: core.BoolPtr(addNotificationPayload),
@@ -439,7 +432,6 @@ func CustomEmailattributesMapToAttributes(attributeMap map[string]interface{}, i
 	}
 
 	// Production destination - use SubscriptionCreateAttributesCustomEmailAttributes
-	log.Printf("[DEBUG] Creating production subscription attributes")
 	fromName := ""
 	if attributeMap["from_name"] != nil {
 		fromName = attributeMap["from_name"].(string)
@@ -506,7 +498,6 @@ func CustomEmailattributesupdateMapToAttributes(attributeMap map[string]interfac
 
 	if isSandbox {
 		// Sandbox destination - use SubscriptionUpdateAttributesCustomEmailSandboxUpdateAttributes
-		log.Printf("[DEBUG] Creating sandbox subscription update attributes")
 		updateattributes := &en.SubscriptionUpdateAttributesCustomEmailSandboxUpdateAttributes{
 			Invited:                addemail,
 			AddNotificationPayload: core.BoolPtr(addNotificationPayload),
@@ -526,7 +517,6 @@ func CustomEmailattributesupdateMapToAttributes(attributeMap map[string]interfac
 	}
 
 	// Production destination - use SubscriptionUpdateAttributesCustomEmailUpdateAttributes
-	log.Printf("[DEBUG] Creating production subscription update attributes")
 	updateattributes := &en.SubscriptionUpdateAttributesCustomEmailUpdateAttributes{
 		Invited:                addemail,
 		AddNotificationPayload: core.BoolPtr(addNotificationPayload),

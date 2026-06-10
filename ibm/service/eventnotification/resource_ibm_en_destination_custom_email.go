@@ -338,8 +338,6 @@ func resourceIBMEnCustomEmailDestinationUpdate(context context.Context, d *schem
 
 		// Upgrade from sandbox to production
 		if oldSandbox && !newSandbox {
-			log.Printf("[DEBUG] Upgrading sandbox destination to production")
-
 			// Get the domain from config
 			if _, ok := d.GetOk("config"); !ok {
 				return diag.FromErr(fmt.Errorf("[ERROR] Config with domain is required to upgrade sandbox destination to production"))
@@ -361,7 +359,6 @@ func resourceIBMEnCustomEmailDestinationUpdate(context context.Context, d *schem
 			upgradeOptions.SetID(parts[1])
 			upgradeOptions.SetDomain(domain)
 
-			log.Printf("[DEBUG] Calling UpdateSandboxDestination to upgrade with domain: %s", domain)
 			_, response, err := enClient.UpdateEmailSandboxDestinationWithContext(context, upgradeOptions)
 			if err != nil {
 				log.Printf("[DEBUG] UpdateSandboxDestination failed. Response: %v", response)
@@ -369,7 +366,6 @@ func resourceIBMEnCustomEmailDestinationUpdate(context context.Context, d *schem
 				log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 				return tfErr.GetDiag()
 			}
-			log.Printf("[DEBUG] Successfully upgraded sandbox destination to production")
 
 			// After upgrade, continue with normal update flow for other fields
 		}
@@ -384,19 +380,16 @@ func resourceIBMEnCustomEmailDestinationUpdate(context context.Context, d *schem
 
 	if d.HasChange("name") {
 		newName := d.Get("name").(string)
-		log.Printf("[DEBUG] Updating name to: %s", newName)
 		updateDestinationOptions.SetName(newName)
 		hasChange = true
 	}
 	if d.HasChange("description") {
 		newDesc := d.Get("description").(string)
-		log.Printf("[DEBUG] Updating description to: %s", newDesc)
 		updateDestinationOptions.SetDescription(newDesc)
 		hasChange = true
 	}
 	if d.HasChange("collect_failed_events") {
 		newCollect := d.Get("collect_failed_events").(bool)
-		log.Printf("[DEBUG] Updating collect_failed_events to: %v", newCollect)
 		updateDestinationOptions.SetCollectFailedEvents(newCollect)
 		hasChange = true
 	}
@@ -430,7 +423,6 @@ func resourceIBMEnCustomEmailDestinationUpdate(context context.Context, d *schem
 				switch params := config.Params.(type) {
 				case *en.DestinationConfigOneOfCustomDomainEmailDestinationConfig:
 					if params.Domain != nil {
-						log.Printf("[DEBUG] Setting config with domain: %s", *params.Domain)
 						// Only set config if domain is actually present
 						updateDestinationOptions.SetConfig(&config)
 						hasChange = true
@@ -439,7 +431,6 @@ func resourceIBMEnCustomEmailDestinationUpdate(context context.Context, d *schem
 					}
 				case *en.DestinationConfigOneOfCustomEmailSandboxDestinationConfig:
 					if params.Domain != nil {
-						log.Printf("[DEBUG] Setting sandbox config with domain: %s", *params.Domain)
 						updateDestinationOptions.SetConfig(&config)
 						hasChange = true
 					} else {
@@ -455,7 +446,6 @@ func resourceIBMEnCustomEmailDestinationUpdate(context context.Context, d *schem
 	}
 
 	if hasChange {
-		log.Printf("[DEBUG] Calling UpdateDestinationWithContext for instance: %s, destination: %s", parts[0], parts[1])
 		_, response, err := enClient.UpdateDestinationWithContext(context, updateDestinationOptions)
 		if err != nil {
 			log.Printf("[DEBUG] UpdateDestinationWithContext failed. Response: %v", response)
@@ -463,12 +453,10 @@ func resourceIBMEnCustomEmailDestinationUpdate(context context.Context, d *schem
 			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 			return tfErr.GetDiag()
 		}
-		log.Printf("[DEBUG] UpdateDestinationWithContext succeeded")
 	}
 
 	// Check if verification type needs to be updated
 	if d.HasChange("verification_type") {
-		log.Printf("[DEBUG] Verification type has changed")
 		verifyOptions := &en.UpdateVerifyDestinationOptions{}
 		verifyOptions.SetInstanceID(parts[0])
 		verifyOptions.SetID(parts[1])
@@ -480,10 +468,7 @@ func resourceIBMEnCustomEmailDestinationUpdate(context context.Context, d *schem
 			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 			return tfErr.GetDiag()
 		}
-		log.Printf("[DEBUG] UpdateVerifyDestinationWithContext succeeded")
 	}
-
-	log.Printf("[DEBUG] Calling Read to refresh state")
 	return resourceIBMEnCustomEmailDestinationRead(context, d, meta)
 }
 
