@@ -239,10 +239,11 @@ func ResourceIBMContainerVpcCluster() *schema.Resource {
 			},
 
 			"offering": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Computed:    true,
-				Description: "The cluster offering type.",
+				Type:         schema.TypeString,
+				Optional:     true,
+				Computed:     true,
+				ValidateFunc: validation.StringInSlice([]string{"kubernetes", "openshift", "openshift-vs"}, false),
+				Description:  "The cluster offering type.",
 			},
 
 			"secondary_storage": {
