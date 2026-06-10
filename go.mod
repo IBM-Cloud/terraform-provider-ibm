@@ -1,6 +1,6 @@
 module github.com/IBM-Cloud/terraform-provider-ibm
 
-go 1.25.2
+go 1.25.8
 
 require (
 	github.com/IBM-Cloud/bluemix-go v0.0.0-20260526083905-8316c06b6742
@@ -29,7 +29,7 @@ require (
 	github.com/IBM/logs-router-go-sdk v1.0.8
 	github.com/IBM/mqcloud-go-sdk v0.4.0
 	github.com/IBM/networking-go-sdk v0.53.4
-	github.com/IBM/platform-services-go-sdk v0.97.5
+	github.com/IBM/platform-services-go-sdk v0.99.0
 	github.com/IBM/project-go-sdk v0.4.0
 	github.com/IBM/push-notifications-go-sdk v0.0.0-20210310100607-5790b96c47f5
 	github.com/IBM/sarama v1.45.0
