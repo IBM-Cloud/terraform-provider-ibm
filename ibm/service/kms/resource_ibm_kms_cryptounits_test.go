@@ -29,6 +29,12 @@ func TestAccIBMKMSCryptoUnits_basic(t *testing.T) {
 	keyShareToken1 := "token1"
 	keyShareToken2 := "token2"
 
+	t.Cleanup(func() {
+		os.Remove(sigKeyFilepath)
+		os.Remove(keyShareFilepath1)
+		os.Remove(keyShareFilepath2)
+	})
+
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheckKmsCrypto(t) },
 		Providers:    acc.TestAccProviders,
@@ -70,6 +76,12 @@ func TestAccIBMKMSCryptoUnits_withRegion(t *testing.T) {
 	keyShareFilepath2 := "./test_keyshare_region2.key"
 	keyShareToken1 := "token1"
 	keyShareToken2 := "token2"
+
+	t.Cleanup(func() {
+		os.Remove(sigKeyFilepath)
+		os.Remove(keyShareFilepath1)
+		os.Remove(keyShareFilepath2)
+	})
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheckKmsCrypto(t) },
@@ -114,6 +126,13 @@ func TestAccIBMKMSCryptoUnits_multipleKeyShares(t *testing.T) {
 	keyShareToken1 := "token1"
 	keyShareToken2 := "token2"
 	keyShareToken3 := "token3"
+
+	t.Cleanup(func() {
+		os.Remove(sigKeyFilepath)
+		os.Remove(keyShareFilepath1)
+		os.Remove(keyShareFilepath2)
+		os.Remove(keyShareFilepath3)
+	})
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheckKmsCrypto(t) },

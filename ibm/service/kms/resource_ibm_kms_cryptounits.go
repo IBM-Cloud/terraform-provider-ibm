@@ -186,10 +186,53 @@ func resourceIBMKmsCryptoUnitsCreate(ctx context.Context, d *schema.ResourceData
 		return diag.Errorf("failed to parse signature_key: %v", err)
 	}
 
-	// Initialize crypto units with proper error context
-	err = kmsCryptoUnitClient.InitializeCryptoUnits(ctx, sigKeySpec, masterKeySpec, kpOpts.InstanceID)
+	// Inspect current unit states before deciding whether to initialize.
+	cryptoUnitsResponse, _, err := kmsCryptoUnitClient.ListCryptoUnitsWithContext(ctx)
 	if err != nil {
-		return diag.Errorf("failed to initialize crypto units for instance %s: %s", kpOpts.InstanceID, err.Error())
+		return diag.Errorf("failed to list crypto units for instance %s: %v", kpOpts.InstanceID, err)
+	}
+
+	allReserved := len(cryptoUnitsResponse.CryptoUnits) > 0
+	allKMSInitialized := len(cryptoUnitsResponse.CryptoUnits) > 0
+	for _, cu := range cryptoUnitsResponse.CryptoUnits {
+		if cu.State != keyprotect_dedicated.CryptoUnitStateReserved {
+			allReserved = false
+		}
+		if cu.State != keyprotect_dedicated.CryptoUnitStateKMSInitialized {
+			allKMSInitialized = false
+		}
+	}
+
+	switch {
+	case allKMSInitialized:
+		// All units already fully initialized — idempotent re-run, skip to Read.
+
+	case allReserved:
+		// Clean slate — proceed with initialization.
+		err = kmsCryptoUnitClient.InitializeCryptoUnits(ctx, sigKeySpec, masterKeySpec, kpOpts.InstanceID)
+		if err != nil {
+			return diag.Errorf("failed to initialize crypto units for instance %s: %s", kpOpts.InstanceID, err.Error())
+		}
+
+	default:
+		// Units are in a mixed or unexpected state (e.g. partial failure).
+		// Collect the offending states to surface a helpful error.
+		stateSet := make(map[string]struct{})
+		for _, cu := range cryptoUnitsResponse.CryptoUnits {
+			stateSet[string(cu.State)] = struct{}{}
+		}
+		states := make([]string, 0, len(stateSet))
+		for s := range stateSet {
+			states = append(states, s)
+		}
+		return diag.Errorf(
+			"crypto units for instance %s are in an unexpected state %v — "+
+				"expected all %q (clean) or all %q (already initialized). "+
+				"Zeroize the instance and retry.",
+			kpOpts.InstanceID, states,
+			keyprotect_dedicated.CryptoUnitStateReserved,
+			keyprotect_dedicated.CryptoUnitStateKMSInitialized,
+		)
 	}
 
 	// Set resource ID for state management
