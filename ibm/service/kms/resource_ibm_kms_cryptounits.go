@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
@@ -541,15 +542,48 @@ func resourceIBMKmsCryptoUnitsRead(ctx context.Context, d *schema.ResourceData, 
 }
 
 func resourceIBMKmsCryptoUnitsUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	if deleteErr := resourceIBMKmsCryptoUnitsDelete(ctx, d, meta); deleteErr != nil {
-		return diag.Errorf("failed to update cryptounits upon zerolization: %v", deleteErr)
+	kpOpts, err := createKPCryptoOptsFromV2(ctx, d)
+	if err != nil {
+		return diag.FromErr(err)
 	}
 
-	if createErr := resourceIBMKmsCryptoUnitsCreate(ctx, d, meta); createErr != nil {
-		return diag.Errorf("failed to update cryptounits upon reinitialization: %v", createErr)
+	kmsCryptoUnitClient, err := meta.(conns.ClientSession).KeyProtectCryptoUnitAPI(ctx, kpOpts)
+	if err != nil {
+		return diag.Errorf("failed to initialize KMS crypto unit client: %v", err)
 	}
 
-	return nil
+	// Inspect current unit states to decide whether zeroization is needed.
+	cryptoUnitsResponse, _, err := kmsCryptoUnitClient.ListCryptoUnitsWithContext(ctx)
+	if err != nil {
+		return diag.Errorf("failed to list crypto units for instance %s: %v", kpOpts.InstanceID, err)
+	}
+
+	allKMSInitialized := len(cryptoUnitsResponse.CryptoUnits) > 0
+	for _, cu := range cryptoUnitsResponse.CryptoUnits {
+		if cu.State != keyprotect_dedicated.CryptoUnitStateKMSInitialized {
+			allKMSInitialized = false
+			break
+		}
+	}
+
+	if allKMSInitialized {
+		// All units already fully initialized — nothing to do, skip to Read.
+		return resourceIBMKmsCryptoUnitsRead(ctx, d, meta)
+	}
+
+	// Not all units are KMSInitialized (reserved, mixed, or partial failure).
+	// Zeroize any unit that is not already reserved to get back to a clean slate.
+	for _, cu := range cryptoUnitsResponse.CryptoUnits {
+		if cu.State != keyprotect_dedicated.CryptoUnitStateReserved {
+			if zErr := kmsCryptoUnitClient.ZeroizeCryptoUnitWithContext(ctx, cu.ID); zErr != nil {
+				tflog.Warn(ctx, "zeroize failed — keys may linger; delete keys and wait for purge",
+					map[string]interface{}{"instance_id": kpOpts.InstanceID})
+				return diag.Errorf("failed to zeroize crypto unit %s: %v", cu.ID, zErr)
+			}
+		}
+	}
+
+	return resourceIBMKmsCryptoUnitsCreate(ctx, d, meta)
 }
 
 func resourceIBMKmsCryptoUnitsDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -575,6 +609,8 @@ func resourceIBMKmsCryptoUnitsDelete(ctx context.Context, d *schema.ResourceData
 			for _, cryptoUnit := range cryptoUnitsResponse.CryptoUnits {
 				err := kmsCryptoUnitClient.ZeroizeCryptoUnitWithContext(ctx, cryptoUnit.ID)
 				if err != nil {
+					tflog.Warn(ctx, "zeroize failed — keys may linger; delete keys and wait for purge",
+						map[string]interface{}{"instance_id": kpOpts.InstanceID})
 					return diag.Errorf("failed to zeroize crypto unit %s: %v", cryptoUnit.ID, err)
 				}
 			}
