@@ -176,12 +176,10 @@ func testAccCheckIBMKmsCryptoUnitsBasicConfig(instanceName, url, sigKeyFilepath,
 			filepath   = "%s"
 			owner      = "%s"
 			passphrase = "%s"
-			exists     = false
 		}
 
 		master_key {
 			keyname = "%s"
-			exists  = false
 
 			keysharefile {
 				filepath = "%s"
@@ -208,12 +206,10 @@ func testAccCheckIBMKmsCryptoUnitsWithRegionConfig(instanceName, url, sigKeyFile
 			filepath   = "%s"
 			owner      = "%s"
 			passphrase = "%s"
-			exists     = false
 		}
 
 		master_key {
 			keyname = "%s"
-			exists  = false
 
 			keysharefile {
 				filepath = "%s"
@@ -240,12 +236,10 @@ func testAccCheckIBMKmsCryptoUnitsMultipleKeySharesConfig(instanceName, url, sig
 			filepath   = "%s"
 			owner      = "%s"
 			passphrase = "%s"
-			exists     = false
 		}
 
 		master_key {
 			keyname = "%s"
-			exists  = false
 
 			keysharefile {
 				filepath = "%s"

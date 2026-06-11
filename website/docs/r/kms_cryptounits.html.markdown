@@ -104,16 +104,17 @@ Review the argument references that you can specify for your resource.
 - `url` - (Optional, String) The URL to use when targeting the resource. If not provided, the URL will be constructed from `instance_id` and `region`.
 - `use_private_endpoint` - (Optional, Bool) Set to **true** to use the private endpoint, otherwise **false**. Default is **false**.
 - `signature_key` - (Required, Set, MaxItems: 1) Credentials for the administrator who will create sessions with the cryptounits.
+  ~> **IMPORTANT:** This field will create a signature key or use an existing one found in the filepath. 
 
   Nested scheme for `signature_key`:
   - `filepath` - (Required, String) The filepath to the signature key file. Can be relative (resolved from Terraform execution directory) or absolute.
   - `passphrase` - (Required, String, Sensitive) The passphrase for the signature key. This value is sensitive and will not be stored in state.
-  - `exists` - (Required, Bool) Set to **true** if the signature key file already exists at the specified filepath, **false** if it should be generated.
 
 - `master_key` - (Required, Set, MaxItems: 1) Configuration for the master backup key.
 
   Nested scheme for `master_key`:
   - `keysharefile` - (Required, Set, MinItems: 2) two or more key share file configurations. Each key share file represents a part of the master key.
+  ~> **IMPORTANT:** This field will create a signature key or use an existing one found in the filepaths of the keysharefile. 
   ~> **WARNING:** This field currently enforces K = N for master key generation, requiring all generated key shares to reconstruct or use the master key.
     
     Nested scheme for `keysharefile`:
@@ -121,7 +122,6 @@ Review the argument references that you can specify for your resource.
     - `passphrase` - (Required, String, Sensitive) The passphrase associated with the key share file. This value is sensitive and will not be stored in state.
   
   - `keyname` - (Required, String) The name of the master backup key as shown on the cryptounit. Must be 8 characters or less.
-  - `exists` - (Required, Bool) Set to **true** if all key share files already exist at their specified filepaths, **false** if they should be generated.
 
 
 ## Attribute reference

@@ -111,9 +111,10 @@ func ResourceIBMKmsCryptoUnits() *schema.Resource {
 							Default:     "",
 							Description: "The owner of the signature_key",
 						},
-						"exists": {
+						"overwrite": {
 							Type:        schema.TypeBool,
-							Required:    true,
+							Optional:    true,
+							Default:     true,
 							Description: "Set to true if the signature_key file exists from the filepath, false if it should be generated",
 						},
 					},
@@ -152,10 +153,11 @@ func ResourceIBMKmsCryptoUnits() *schema.Resource {
 							Required:    true,
 							Description: "The name of the master backup key shown on the cryptounit",
 						},
-						"exists": {
+						"overwrite": {
 							Type:        schema.TypeBool,
-							Required:    true,
-							Description: "Set to true if keysharefiles are all existing files, false if it should be generated",
+							Optional:    true,
+							Default:     false,
+							Description: "Set to true if keysharefiles should be overwritten files, false if it should be generated",
 						},
 					},
 				},
@@ -338,6 +340,15 @@ func parseMasterKey(d *schema.ResourceData) (*keyprotect_dedicated.MasterKeyPart
 		keyShareFiles = append(keyShareFiles, keyShareFileEntry)
 	}
 
+	// keyExists is true only when every keysharefile path exists on disk
+	keyExists := true
+	for path := range filepathMap {
+		if _, err := os.Stat(path); os.IsNotExist(err) {
+			keyExists = false
+			break
+		}
+	}
+
 	// Extract and validate keyname
 	keyNameRaw, ok := mbkData["keyname"]
 	if !ok {
@@ -353,17 +364,6 @@ func parseMasterKey(d *schema.ResourceData) (*keyprotect_dedicated.MasterKeyPart
 	}
 	if len(keyName) > 8 {
 		return nil, fmt.Errorf("keyname must be 8 characters or less")
-	}
-
-	// Extract and validate exists
-	keysExistsRaw, ok := mbkData["exists"]
-	if !ok {
-		return nil, fmt.Errorf("exists is required in master_key")
-	}
-
-	keyExists, ok := keysExistsRaw.(bool)
-	if !ok {
-		return nil, fmt.Errorf("keyname must be a bool")
 	}
 
 	return keyprotect_dedicated.NewMasterKeyPartsSpec(
@@ -440,17 +440,9 @@ func parseSignatureKey(d *schema.ResourceData) (*keyprotect_dedicated.SignatureK
 	if owner == "" {
 		return nil, fmt.Errorf("owner cannot be empty")
 	}
-
-	// Extract and validate filepath
-	existsRaw, ok := sigKeyData["exists"]
-	if !ok {
-		return nil, fmt.Errorf("exists is required in signature_key")
-	}
-
-	fileExists, ok := existsRaw.(bool)
-	if !ok {
-		return nil, fmt.Errorf("filepath must be a bool")
-	}
+	// Check whether the resolved filepath actually exists on disk
+	_, statErr := os.Stat(resolvedFilePath)
+	fileExists := !os.IsNotExist(statErr)
 
 	return keyprotect_dedicated.NewSignatureKeyRequest(resolvedFilePath, passphrase, owner, fileExists)
 }
