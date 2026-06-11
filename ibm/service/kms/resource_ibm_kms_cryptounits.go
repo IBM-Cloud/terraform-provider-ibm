@@ -615,7 +615,6 @@ func resourceIBMKmsCryptoUnitsDelete(ctx context.Context, d *schema.ResourceData
 				}
 			}
 		}
-
 	}
 	// No-op for delete - resource is read-only
 	d.SetId("")
