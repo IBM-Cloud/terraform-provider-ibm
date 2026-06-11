@@ -88,7 +88,7 @@ The `id` property can be formed from `share_id`, and `share_snapshot`. For examp
 
 ```terraform
 import {
-  to = ibm_is_share_snapshot.is_share_snapshot
+  to = ibm_is_share_snapshot.example
   id = "<share_id>/<share_snapshot_id>"
 }
 ```
@@ -96,5 +96,5 @@ import {
 Using `terraform import`. For example:
 
 ```console
-% terraform import ibm_is_share_snapshot.is_share_snapshot <share_id>/<share_snapshot_id>
+% terraform import ibm_is_share_snapshot.example <share_id>/<share_snapshot_id>
 ```

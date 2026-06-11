@@ -100,7 +100,7 @@ The `id` property can be formed from `cluster_network_id` and `cluster_network_i
 
 ```terraform
 import {
-  to = ibm_is_cluster_network_interface.is_cluster_network_interface
+  to = ibm_is_cluster_network_interface.example
   id = "<cluster_network_id>/<cluster_network_interface_id>"
 }
 ```
@@ -108,5 +108,5 @@ import {
 Using `terraform import`. For example:
 
 ```console
-% terraform import ibm_is_cluster_network_interface.is_cluster_network_interface <cluster_network_id>/<cluster_network_interface_id>
+% terraform import ibm_is_cluster_network_interface.example <cluster_network_id>/<cluster_network_interface_id>
 ```

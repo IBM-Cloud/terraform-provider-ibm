@@ -135,7 +135,7 @@ The `id` property can be formed using the appropriate identifier(s). For example
 
 ```terraform
 import {
-  to = ibm_is_vpn_server.is_vpn_server
+  to = ibm_is_vpn_server.example
   id = "<id>"
 }
 ```
@@ -143,5 +143,5 @@ import {
 Using `terraform import`. For example:
 
 ```console
-% terraform import ibm_is_vpn_server.is_vpn_server <id>
+% terraform import ibm_is_vpn_server.example <id>
 ```

@@ -67,16 +67,18 @@ After your resource is created, you can read values from the listed arguments an
 
 ## Import
 
-You can import the `ibm_is_virtual_endpoint_gateway_resource_binding` resource by using `id`.
-The `id` property can be formed from `endpoint_gateway_id`, and `endpoint_gateway_resource_binding_id` in the following format:
+In Terraform v1.5.0 and later, use an [`import` block](https://developer.hashicorp.com/terraform/language/import) to import the `ibm_is_virtual_endpoint_gateway_resource_binding` resource by using `id`.
+The `id` property can be formed from `endpoint_gateway_id`, and `endpoint_gateway_resource_binding_id`. For example:
 
-<pre>
-&lt;endpoint_gateway_id&gt;/&lt;endpoint_gateway_resource_binding_id&gt;
-</pre>
-* `endpoint_gateway_id`: A string. The endpoint gateway identifier.
-* `endpoint_gateway_resource_binding_id`: A string in the format `r006-a7ba95b6-a254-47e4-b129-10593df8a373`. The unique identifier for this endpoint gateway resource binding.
+```terraform
+import {
+  to = ibm_is_virtual_endpoint_gateway_resource_binding.example
+  id = "<endpoint_gateway_id>/<endpoint_gateway_resource_binding_id>"
+}
+```
 
-# Syntax
-<pre>
-$ terraform import ibm_is_virtual_endpoint_gateway_resource_binding.is_virtual_endpoint_gateway_resource_binding &lt;endpoint_gateway_id&gt;/&lt;endpoint_gateway_resource_binding_id&gt;
-</pre>
+Using `terraform import`. For example:
+
+```console
+% terraform import ibm_is_virtual_endpoint_gateway_resource_binding.example <endpoint_gateway_id>/<endpoint_gateway_resource_binding_id>
+```
