@@ -34,7 +34,7 @@ func DataSourceIBMIamAccountSettings() *schema.Resource {
 			},
 			"account_id": &schema.Schema{
 				Type:        schema.TypeString,
-				Required:    true,
+				Computed:    true,
 				Description: "Unique ID of the account.",
 			},
 			"restrict_create_service_id": &schema.Schema{

@@ -48,7 +48,7 @@ You can import the `ibm_iam_identity_preference` resource by using `id`.
 The `id` property can be formed from `account_id`, `iam_id`, `service`, and `preference_id` in the following format:
 
 <pre>
-&lt;account_id&gt;/&lt;iam_id&gt;/&lt;service&gt;/&lt;preference_id&gt;/&lt;preference_id&gt;
+&lt;account_id&gt;/&lt;iam_id&gt;/&lt;service&gt;/&lt;preference_id&gt;
 </pre>
 * `account_id`: A string. Account id to update preference for.
 * `iam_id`: A string. IAM id to update the preference for.

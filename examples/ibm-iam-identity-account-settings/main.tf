@@ -4,10 +4,10 @@ provider "ibm" {
 
 // Create iam_account_settings instance
 resource "ibm_iam_account_settings" "iam_account_settings_instance" {
-  include_history = true
+  include_history = false
   restrict_user_domains {
     realm_id                        = "IBMid"
-    restrict_invitation             = false
+    restrict_invitation             = true
     invitation_email_allow_patterns = ["*@ibm.com"]
   }
 }

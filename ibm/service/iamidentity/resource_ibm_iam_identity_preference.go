@@ -38,7 +38,8 @@ func ResourceIBMIamIdentityPreference() *schema.Resource {
 			},
 			"iam_id": &schema.Schema{
 				Type:        schema.TypeString,
-				Computed:    true,
+				Required:    true,
+				ForceNew:    true,
 				Description: "IAM id to update the preference for.",
 			},
 			"service": &schema.Schema{
