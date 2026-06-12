@@ -1,4 +1,4 @@
-// Copyright IBM Corp. 2025 All Rights Reserved.
+// Copyright IBM Corp. 2026 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 /*
@@ -128,20 +128,17 @@ func ResourceIBMIamAccountSettings() *schema.Resource {
 			"user_mfa": {
 				Type:        schema.TypeList,
 				Optional:    true,
-				Computed:    true,
 				Description: "List of users that are exempted from the MFA requirement of the account.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"iam_id": {
 							Type:        schema.TypeString,
 							Optional:    true,
-							Computed:    true,
 							Description: "The iam_id of the user.",
 						},
 						"mfa": {
 							Type:        schema.TypeString,
 							Optional:    true,
-							Computed:    true,
 							Description: "Defines the MFA requirement for the user. Valid values:  * NONE - No MFA trait set  * TOTP - For all non-federated IBMId users  * TOTP4ALL - For all users  * LEVEL1 - Email-based MFA for all users  * LEVEL2 - TOTP-based MFA for all users  * LEVEL3 - U2F MFA for all users.",
 						},
 						"name": {
@@ -472,19 +469,23 @@ func resourceIBMIamAccountSettingsUpdate(context context.Context, d *schema.Reso
 	}
 
 	if d.HasChange("user_mfa") {
-		if _, ok := d.GetOk("user_mfa"); ok {
-			var userMfa []iamidentityv1.UserMfa
-			for _, v := range d.Get("user_mfa").([]interface{}) {
-				value := v.(map[string]interface{})
-				userMfaItem, err := ResourceIBMIamAccountSettingsMapToUserMfa(value)
-				if err != nil {
-					return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_account_settings", "update", "parse-user_mfa").GetDiag()
-				}
-				userMfa = append(userMfa, *userMfaItem)
+		// Create userMfa as a non-nil empty array
+		userMfa := make([]iamidentityv1.UserMfa, 0)
+		for _, v := range d.Get("user_mfa").([]interface{}) {
+			value := v.(map[string]interface{})
+			if value["iam_id"] == nil || value["iam_id"].(string) == "" {
+				// Ignore empty entries, to allow for use case of clearing the userMfa
+				continue
 			}
-			updateAccountSettingsOptions.SetUserMfa(userMfa)
+			userMfaItem, err := ResourceIBMIamAccountSettingsMapToUserMfa(value)
+			if err != nil {
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_account_settings", "update", "parse-user_mfa").GetDiag()
+			}
+			// Add the userMfa entry to the array
+			userMfa = append(userMfa, *userMfaItem)
 		}
-
+		// When no entries have been added to userMfa arrary we still want to set it here even though the array is empty, to handle use case of clearing userMfa
+		updateAccountSettingsOptions.SetUserMfa(userMfa)
 		hasChange = true
 	}
 
