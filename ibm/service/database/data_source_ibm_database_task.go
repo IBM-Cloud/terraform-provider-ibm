@@ -24,7 +24,22 @@ type dataSourceIBMDatabaseTaskBackend interface {
 func pickDataSourceTaskBackend(d *schema.ResourceData, meta interface{}) (dataSourceIBMDatabaseTaskBackend, error) {
 	taskID := d.Get("task_id").(string)
 
-	// First, try to get the task to extract the deployment ID
+	rsConClient, err := meta.(conns.ClientSession).ResourceControllerV2API()
+	if err != nil {
+		return nil, err
+	}
+
+	instance, _, err := rsConClient.GetResourceInstance(&rc.GetResourceInstanceOptions{
+		ID: &taskID,
+	})
+	if err == nil && instance != nil && instance.ResourcePlanID != nil {
+		plan := *instance.ResourcePlanID
+		if isGen2Plan(plan) {
+			return newDataSourceIBMDatabaseTaskGen2Backend(), nil
+		}
+		return newDataSourceIBMDatabaseTaskClassicBackend(), nil
+	}
+
 	cloudDatabasesClient, err := meta.(conns.ClientSession).CloudDatabasesV5()
 	if err != nil {
 		return nil, fmt.Errorf("error getting database client: %s", err)
@@ -36,7 +51,7 @@ func pickDataSourceTaskBackend(d *schema.ResourceData, meta interface{}) (dataSo
 
 	task, _, err := cloudDatabasesClient.GetTask(getTaskOptions)
 	if err != nil {
-		return nil, fmt.Errorf("failed to get task: %s", err)
+		return nil, fmt.Errorf("failed to determine backend from plan ID or task lookup: resource instance lookup failed for %q and task lookup failed: %s", taskID, err)
 	}
 
 	if task.Task == nil || task.Task.DeploymentID == nil {
@@ -45,18 +60,15 @@ func pickDataSourceTaskBackend(d *schema.ResourceData, meta interface{}) (dataSo
 
 	deploymentID := *task.Task.DeploymentID
 
-	// Get the resource controller client to fetch instance details using deployment ID
-	rsConClient, err := meta.(conns.ClientSession).ResourceControllerV2API()
-	if err != nil {
-		return nil, err
-	}
-
-	// Get the instance to check its plan
-	instance, _, err := rsConClient.GetResourceInstance(&rc.GetResourceInstanceOptions{
+	instance, _, err = rsConClient.GetResourceInstance(&rc.GetResourceInstanceOptions{
 		ID: &deploymentID,
 	})
 	if err != nil {
 		return nil, fmt.Errorf("failed to get resource instance: %s", err)
+	}
+
+	if instance.ResourcePlanID == nil {
+		return nil, fmt.Errorf("resource instance plan ID is nil")
 	}
 
 	plan := *instance.ResourcePlanID
