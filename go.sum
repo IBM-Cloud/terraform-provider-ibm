@@ -140,8 +140,8 @@ github.com/IBM/ibm-hpcs-tke-sdk v0.0.0-20250305134146-e023c2e84762/go.mod h1:M2J
 github.com/IBM/ibm-hpcs-uko-sdk v0.0.20-beta h1:P1fdIfKsD9xvJQ5MHIEztPS9yfNf9x+VDTamaYcmqcs=
 github.com/IBM/ibm-hpcs-uko-sdk v0.0.20-beta/go.mod h1:MLVNHMYoKsvovJZ4v1gQCpIYtRDHTtoIHK6XztDZGsU=
 github.com/IBM/keyprotect-go-client v0.5.1/go.mod h1:5TwDM/4FRJq1ZOlwQL1xFahLWQ3TveR88VmL1u3njyI=
-github.com/IBM/keyprotect-go-client v0.17.1 h1:w2j4In3Cc5t4f7c7rdnDRxTxmTV8sBJf2KMlBf3CF9o=
-github.com/IBM/keyprotect-go-client v0.17.1/go.mod h1:gMJdUzT2EKeQd2jJKRU6mBRrx0Na4yUCQvA+lQbnEt8=
+github.com/IBM/keyprotect-go-client v0.17.2 h1:hSweHS9QJT1hU7apTpK54r4eUv5gvuv45utiTO+DZwk=
+github.com/IBM/keyprotect-go-client v0.17.2/go.mod h1:gMJdUzT2EKeQd2jJKRU6mBRrx0Na4yUCQvA+lQbnEt8=
 github.com/IBM/logs-go-sdk v0.7.0 h1:q8MrfmMwbEtg/B48cFPiSVmtI1xIx2kSln2asoBoPZY=
 github.com/IBM/logs-go-sdk v0.7.0/go.mod h1:yv/GCXC4/p+MZEeXl4xjZAOMvDAVRwu61WyHZFKFXQM=
 github.com/IBM/logs-router-go-sdk v1.0.8 h1:MU1TdYNdVbvVTUXeqeYPItu6BoiSV/NMN49ySqE7WIY=

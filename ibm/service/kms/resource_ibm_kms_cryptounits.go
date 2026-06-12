@@ -566,12 +566,10 @@ func resourceIBMKmsCryptoUnitsUpdate(ctx context.Context, d *schema.ResourceData
 	// Not all units are KMSInitialized (reserved, mixed, or partial failure).
 	// Zeroize any unit that is not already reserved to get back to a clean slate.
 	for _, cu := range cryptoUnitsResponse.CryptoUnits {
-		if cu.State != keyprotect_dedicated.CryptoUnitStateReserved {
-			if zErr := kmsCryptoUnitClient.ZeroizeCryptoUnitWithContext(ctx, cu.ID); zErr != nil {
-				tflog.Warn(ctx, "zeroize failed — keys may linger; delete keys and wait for purge",
-					map[string]interface{}{"instance_id": kpOpts.InstanceID})
-				return diag.Errorf("failed to zeroize crypto unit %s: %v", cu.ID, zErr)
-			}
+		if cu.State != keyprotect_dedicated.CryptoUnitStateKMSInitialized {
+			tflog.Warn(ctx, "cryptounit is in a state",
+				map[string]interface{}{"instance_id": kpOpts.InstanceID, "cryptounit": cu.ID})
+			return diag.Errorf("failed to update cryptounits resource due to cryptounit %s", cu.ID)
 		}
 	}
 
