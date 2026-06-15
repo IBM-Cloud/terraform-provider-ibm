@@ -2070,8 +2070,12 @@ func (c *Config) ClientSession() (interface{}, error) {
 
 	// CATALOG MANAGEMENT Service
 	catalogManagementURL := "https://cm.globalcatalog.cloud.ibm.com/api/v1-beta"
-	if c.Visibility == "private" {
-		session.catalogManagementClientErr = fmt.Errorf("Catalog Management resource doesnot support private endpoints")
+	if c.Visibility == "private" || c.Visibility == "public-and-private" {
+		if c.Region == "us-south" || c.Region == "us-east" {
+			catalogManagementURL = ContructEndpoint(fmt.Sprintf("cm.private.%s.globalcatalog", c.Region), fmt.Sprintf("%s/api/v1-beta", cloudEndpoint))
+		} else {
+			catalogManagementURL = ContructEndpoint("cm.private.globalcatalog", fmt.Sprintf("%s/api/v1-beta", cloudEndpoint))
+		}
 	}
 	if fileMap != nil && c.Visibility != "public-and-private" {
 		catalogManagementURL = fileFallBack(fileMap, c.Visibility, "IBMCLOUD_CATALOG_MANAGEMENT_API_ENDPOINT", c.Region, catalogManagementURL)
