@@ -21,56 +21,60 @@ type dataSourceIBMDatabaseTaskBackend interface {
 	Read(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics
 }
 
+// getDeploymentIDFromTask fetches a task and returns its deployment_id
+func getDeploymentIDFromTask(taskID string, meta interface{}) (string, error) {
+	cloudDatabasesClient, err := meta.(conns.ClientSession).CloudDatabasesV5()
+	if err != nil {
+		return "", fmt.Errorf("error getting database client: %s", err)
+	}
+
+	task, _, err := cloudDatabasesClient.GetTask(&clouddatabasesv5.GetTaskOptions{
+		ID: &taskID,
+	})
+	if err != nil {
+		return "", fmt.Errorf("failed to get task: %s", err)
+	}
+
+	if task.Task == nil || task.Task.DeploymentID == nil {
+		return "", fmt.Errorf("task or deployment_id is nil")
+	}
+
+	return *task.Task.DeploymentID, nil
+}
+
 func pickDataSourceTaskBackend(d *schema.ResourceData, meta interface{}) (dataSourceIBMDatabaseTaskBackend, error) {
 	taskID := d.Get("task_id").(string)
 
+	// Get the resource controller client to fetch instance details
 	rsConClient, err := meta.(conns.ClientSession).ResourceControllerV2API()
 	if err != nil {
 		return nil, err
 	}
 
+	// Gen2
+	// First, try to treat task_id as a deployment/instance ID and get the instance directly
 	instance, _, err := rsConClient.GetResourceInstance(&rc.GetResourceInstanceOptions{
 		ID: &taskID,
 	})
-	if err == nil && instance != nil && instance.ResourcePlanID != nil {
-		plan := *instance.ResourcePlanID
-		if isGen2Plan(plan) {
-			return newDataSourceIBMDatabaseTaskGen2Backend(), nil
+
+	// Classic
+	// If task_id is not a valid instance ID, fetch the task to get the deployment_id
+	if err != nil || instance == nil || instance.ResourcePlanID == nil {
+		deploymentID, err := getDeploymentIDFromTask(taskID, meta)
+		if err != nil {
+			return nil, err
 		}
-		return newDataSourceIBMDatabaseTaskClassicBackend(), nil
+
+		// Get the instance using the deployment_id from the task
+		instance, _, err = rsConClient.GetResourceInstance(&rc.GetResourceInstanceOptions{
+			ID: &deploymentID,
+		})
+		if err != nil {
+			return nil, fmt.Errorf("failed to get resource instance: %s", err)
+		}
 	}
 
-	cloudDatabasesClient, err := meta.(conns.ClientSession).CloudDatabasesV5()
-	if err != nil {
-		return nil, fmt.Errorf("error getting database client: %s", err)
-	}
-
-	getTaskOptions := &clouddatabasesv5.GetTaskOptions{
-		ID: &taskID,
-	}
-
-	task, _, err := cloudDatabasesClient.GetTask(getTaskOptions)
-	if err != nil {
-		return nil, fmt.Errorf("failed to determine backend from plan ID or task lookup: resource instance lookup failed for %q and task lookup failed: %s", taskID, err)
-	}
-
-	if task.Task == nil || task.Task.DeploymentID == nil {
-		return nil, fmt.Errorf("task or deployment_id is nil")
-	}
-
-	deploymentID := *task.Task.DeploymentID
-
-	instance, _, err = rsConClient.GetResourceInstance(&rc.GetResourceInstanceOptions{
-		ID: &deploymentID,
-	})
-	if err != nil {
-		return nil, fmt.Errorf("failed to get resource instance: %s", err)
-	}
-
-	if instance.ResourcePlanID == nil {
-		return nil, fmt.Errorf("resource instance plan ID is nil")
-	}
-
+	// Check the instance plan to determine which backend to use
 	plan := *instance.ResourcePlanID
 	if isGen2Plan(plan) {
 		return newDataSourceIBMDatabaseTaskGen2Backend(), nil
