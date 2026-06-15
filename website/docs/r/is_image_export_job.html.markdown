@@ -71,13 +71,15 @@ In addition to all argument references listed, you can access the following attr
 - `started_at` - (String) The date and time that the image export job started running.If absent, the export job has not yet started.
 - `status` - (String) The status of this image export job:- `deleting`: Export job is being deleted- `failed`: Export job could not be completed successfully- `queued`: Export job is queued- `running`: Export job is in progress- `succeeded`: Export job was completed successfullyThe exported image object is automatically deleted for `failed` jobs. Allowable values are: `deleting`, `failed`, `queued`, `running`, `succeeded`.
 - `status_reasons` - (List) The reasons for the current status (if any).The enumerated reason code values for this property will expand in the future. When processing this property, check for and log unknown values. Optionally halt processing and surface the error, or bypass the resource on which the unexpected reason code was encountered.
-Nested scheme for **status_reasons**:
+
+  Nested scheme for **status_reasons**:
   - `code` - (String) A snake case string succinctly identifying the status reason.
   - `message` - (String) An explanation of the status reason.
   - `more_info` - (Optional, String) Link to documentation about this status reason.
 - `storage_href` - (String) The Cloud Object Storage location of the exported image object. The object at this location may not exist until the job is started, and will be incomplete while the job is running.After the job completes, the exported image object is not managed by the IBM VPC service, and may be removed or replaced with a different object by any user or service with IAM authorization to the bucket.
 - `storage_object` - (List) The Cloud Object Storage object for the exported image. This object may not exist untilthe job is started, and will not be complete until the job completes.
-Nested scheme for **storage_object**:
+
+  Nested scheme for **storage_object**:
   - `name` - (String) The name of this Cloud Object Storage object. Names are unique within a Cloud Object Storage bucket.
 
 
@@ -88,7 +90,7 @@ The `id` property can be formed from `image_id`, and `id`. For example:
 
 ```terraform
 import {
-  to = ibm_is_image_export_job.is_image_export
+  to = ibm_is_image_export_job.example
   id = "<image_id>/<id>"
 }
 ```
@@ -96,5 +98,5 @@ import {
 Using `terraform import`. For example:
 
 ```console
-% terraform import ibm_is_image_export_job.is_image_export <image_id>/<id>
+% terraform import ibm_is_image_export_job.example <image_id>/<id>
 ```

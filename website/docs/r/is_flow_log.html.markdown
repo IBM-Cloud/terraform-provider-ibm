@@ -100,6 +100,7 @@ Review the argument references that you can specify for your resource.
 ## Attribute reference
 In addition to all argument reference list, you can access the following attribute reference after your resource is created.
 
+- `auto_delete` - (Boolean) Indicates whether this flow log collector will be automatically deleted when target is deleted. At present, this is always true, but may be modifiable in the future.
 - `created_at`-  (String) The date and time that the flow log collector created.
 - `crn` - (String) The CRN of the flow log collector.
 - `href` - (String) The URL of the flow log collector.

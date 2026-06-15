@@ -3788,7 +3788,7 @@ func instanceTemplateGet(context context.Context, d *schema.ResourceData, meta i
 				if volumeInst.AllowedUse != nil {
 					modelMap, err := ResourceIBMIsVolumeAllowedUseToMap(volumeInst.AllowedUse)
 					if err != nil {
-						tfErr := flex.TerraformErrorf(err, err.Error(), "(Resource) ibm_is_instance_template", "read")
+						tfErr := flex.TerraformErrorf(err, err.Error(), "ibm_is_instance_template", "read")
 						log.Println(tfErr.GetDiag())
 					}
 					allowedUses = append(allowedUses, modelMap)
@@ -4250,7 +4250,7 @@ func instanceTemplateGet(context context.Context, d *schema.ResourceData, meta i
 				if volumeInst.AllowedUse != nil {
 					modelMap, err := ResourceIBMIsVolumeAllowedUseToMap(volumeInst.AllowedUse)
 					if err != nil {
-						tfErr := flex.TerraformErrorf(err, err.Error(), "(Resource) ibm_is_instance_template", "read")
+						tfErr := flex.TerraformErrorf(err, err.Error(), "ibm_is_instance_template", "read")
 						log.Println(tfErr.GetDiag())
 					}
 					allowedUses = append(allowedUses, modelMap)
