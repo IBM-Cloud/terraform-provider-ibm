@@ -8,6 +8,8 @@ description: |-
 
 # ibm_cis_filters
 
+!> **Deprecated:** Firewall rules are deprecated. CIS moved existing firewall rules to WAF custom rules. For more information on this change, see [Migrating to custom rules](https://cloud.ibm.com/docs/cis?topic=cis-migrating-to-custom-rules).
+
 Retrieve information about an IBM Cloud Internet Services filters data sources. For more information, see [IBM Cloud Internet Services](https://cloud.ibm.com/docs/cis?topic=cis-about-ibm-cloud-internet-services-cis).
 
 ## Example usage
