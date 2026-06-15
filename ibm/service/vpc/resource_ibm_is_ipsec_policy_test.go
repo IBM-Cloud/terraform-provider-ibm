@@ -335,6 +335,72 @@ func TestAccIBMISIPSecPolicy_MigrateSingularToMultipleAlgorithms(t *testing.T) {
 	})
 }
 
+func TestAccIBMISIPSecPolicy_UpdateMultipleAlgorithms(t *testing.T) {
+	name := fmt.Sprintf("tfipsecc-updmulti-%d", acctest.RandIntRange(10, 100))
+	resourceKey := "ibm_is_ipsec_policy.update_multi_test"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: checkPolicyDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMISIPSecPolicyUpdateMultiInitialConfig(name),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceKey, "name", name),
+					resource.TestCheckResourceAttr(resourceKey, "authentication_algorithms.#", "2"),
+					resource.TestCheckResourceAttr(resourceKey, "authentication_algorithms.0", "sha512"),
+					resource.TestCheckResourceAttr(resourceKey, "authentication_algorithms.1", "sha384"),
+					resource.TestCheckResourceAttr(resourceKey, "encryption_algorithms.#", "2"),
+					resource.TestCheckResourceAttr(resourceKey, "encryption_algorithms.0", "aes128"),
+					resource.TestCheckResourceAttr(resourceKey, "encryption_algorithms.1", "aes192"),
+					resource.TestCheckResourceAttr(resourceKey, "pfs_groups.#", "2"),
+					resource.TestCheckResourceAttr(resourceKey, "pfs_groups.0", "group_14"),
+					resource.TestCheckResourceAttr(resourceKey, "pfs_groups.1", "group_15"),
+				),
+			},
+			{
+				Config: testAccCheckIBMISIPSecPolicyUpdateMultiUpdatedConfig(name),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceKey, "name", name),
+					resource.TestCheckResourceAttr(resourceKey, "authentication_algorithms.#", "1"),
+					resource.TestCheckResourceAttr(resourceKey, "authentication_algorithms.0", "sha256"),
+					resource.TestCheckResourceAttr(resourceKey, "encryption_algorithms.#", "3"),
+					resource.TestCheckResourceAttr(resourceKey, "encryption_algorithms.0", "aes256"),
+					resource.TestCheckResourceAttr(resourceKey, "encryption_algorithms.1", "aes192"),
+					resource.TestCheckResourceAttr(resourceKey, "encryption_algorithms.2", "aes128"),
+					resource.TestCheckResourceAttr(resourceKey, "pfs_groups.#", "3"),
+					resource.TestCheckResourceAttr(resourceKey, "pfs_groups.0", "group_15"),
+					resource.TestCheckResourceAttr(resourceKey, "pfs_groups.1", "group_16"),
+					resource.TestCheckResourceAttr(resourceKey, "pfs_groups.2", "group_17"),
+				),
+			},
+		},
+	})
+}
+
+func testAccCheckIBMISIPSecPolicyUpdateMultiInitialConfig(name string) string {
+	return fmt.Sprintf(`
+		resource "ibm_is_ipsec_policy" "update_multi_test" {
+			name = "%s"
+			authentication_algorithms = ["sha512", "sha384"]
+			encryption_algorithms = ["aes128", "aes192"]
+			pfs_groups = ["group_14", "group_15"]
+		}
+	`, name)
+}
+
+func testAccCheckIBMISIPSecPolicyUpdateMultiUpdatedConfig(name string) string {
+	return fmt.Sprintf(`
+		resource "ibm_is_ipsec_policy" "update_multi_test" {
+			name = "%s"
+			authentication_algorithms = ["sha256"]
+			encryption_algorithms = ["aes256", "aes192", "aes128"]
+			pfs_groups = ["group_15", "group_16", "group_17"]
+		}
+	`, name)
+}
+
 func TestAccIBMISIPSecPolicy_ComputedFields(t *testing.T) {
 	name := fmt.Sprintf("tfipsecc-computed-%d", acctest.RandIntRange(10, 100))
 	resourceKey := "ibm_is_ipsec_policy.computed_test"

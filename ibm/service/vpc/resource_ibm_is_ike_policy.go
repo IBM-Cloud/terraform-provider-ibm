@@ -258,14 +258,8 @@ func ikepCreate(context context.Context, d *schema.ResourceData, meta interface{
 		return tfErr.GetDiag()
 	}
 	options := &vpcv1.CreateIkePolicyOptions{
-		// AuthenticationAlgorithm: &authenticationAlg,
-		// EncryptionAlgorithm:     &encryptionAlg,
-		// DhGroup:                 &dhGroup,
 		Name: &name,
 	}
-	// 	authenticationAlg := d.Get(isIKEAuthenticationAlg).(string)
-	// encryptionAlg := d.Get(isIKEEncryptionAlg).(string)
-	// dhGroup := int64(d.Get(isIKEDhGroup).(int))
 	if _, ok := d.GetOk("authentication_algorithm"); ok {
 		options.SetAuthenticationAlgorithm(d.Get("authentication_algorithm").(string))
 	}
