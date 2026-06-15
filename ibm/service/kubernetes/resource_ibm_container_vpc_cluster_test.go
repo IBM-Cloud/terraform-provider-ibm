@@ -6,6 +6,7 @@ package kubernetes_test
 import (
 	"fmt"
 	"log"
+	"regexp"
 	"strings"
 	"testing"
 
@@ -18,6 +19,7 @@ import (
 
 	bluemix "github.com/IBM-Cloud/bluemix-go"
 	v2 "github.com/IBM-Cloud/bluemix-go/api/container/containerv2"
+	"github.com/IBM-Cloud/bluemix-go/bmxerror"
 	"github.com/IBM-Cloud/bluemix-go/session"
 )
 
@@ -33,7 +35,7 @@ func TestAccIBMContainerVpcClusterBasic(t *testing.T) {
 			{
 				Config: testAccCheckIBMContainerVpcClusterBasic(name, "OneWorkerNodeReady"),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckIBMContainerVpcExists("ibm_container_vpc_cluster.cluster", conf),
+					testAccCheckIBMContainerVpcClusterExists("ibm_container_vpc_cluster.cluster", conf),
 					resource.TestCheckResourceAttr(
 						"ibm_container_vpc_cluster.cluster", "name", name),
 					resource.TestCheckResourceAttr(
@@ -51,7 +53,7 @@ func TestAccIBMContainerVpcClusterBasic(t *testing.T) {
 			{
 				Config: testAccCheckIBMContainerVpcClusterUpdate(name),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckIBMContainerVpcExists("ibm_container_vpc_cluster.cluster", conf),
+					testAccCheckIBMContainerVpcClusterExists("ibm_container_vpc_cluster.cluster", conf),
 					resource.TestCheckResourceAttr(
 						"ibm_container_vpc_cluster.cluster", "name", name),
 					resource.TestCheckResourceAttr(
@@ -90,7 +92,7 @@ func TestAccIBMContainerOpenshiftClusterBasic(t *testing.T) {
 			{
 				Config: testAccCheckIBMContainerOcpClusterBasic(name, openshiftFlavour, openShiftworkerCount, operatingSystem),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckIBMContainerVpcExists("ibm_container_vpc_cluster.cluster", conf),
+					testAccCheckIBMContainerVpcClusterExists("ibm_container_vpc_cluster.cluster", conf),
 					resource.TestCheckResourceAttr(
 						"ibm_container_vpc_cluster.cluster", "name", name),
 					resource.TestCheckResourceAttr(
@@ -98,6 +100,116 @@ func TestAccIBMContainerOpenshiftClusterBasic(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"ibm_container_vpc_cluster.cluster", "flavor", openshiftFlavour),
 				),
+			},
+		},
+	})
+}
+
+func TestAccIBMContainerVpcClusterOfferingNotConfiguredIKS(t *testing.T) {
+	name := fmt.Sprintf("tf-vpc-cluster-%d", acctest.RandIntRange(10, 100))
+	kubeVersion := "1.34.8"
+	flavor := "bx2.2x8"
+	workerCount := "1"
+	var conf *v2.ClusterInfo
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMContainerVpcClusterDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMContainerVpcClusterOffering(name, "", kubeVersion, flavor, workerCount),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMContainerVpcClusterExists("ibm_container_vpc_cluster.cluster", conf),
+					resource.TestCheckResourceAttr(
+						"ibm_container_vpc_cluster.cluster", "name", name),
+					resource.TestCheckResourceAttr(
+						"ibm_container_vpc_cluster.cluster", "offering", "kubernetes"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccIBMContainerVpcClusterOfferingNotConfiguredROKS(t *testing.T) {
+	name := fmt.Sprintf("tf-vpc-cluster-%d", acctest.RandIntRange(10, 100))
+	kubeVersion := "4.21_openshift"
+	flavor := "bx3d.metal.64x256"
+	workerCount := "2"
+	var conf *v2.ClusterInfo
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMContainerVpcClusterDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMContainerVpcClusterOffering(name, "", kubeVersion, flavor, workerCount),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMContainerVpcClusterExists("ibm_container_vpc_cluster.cluster", conf),
+					resource.TestCheckResourceAttr(
+						"ibm_container_vpc_cluster.cluster", "name", name),
+					resource.TestCheckResourceAttr(
+						"ibm_container_vpc_cluster.cluster", "offering", "openshift"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccIBMContainerVpcClusterOfferingConfiguredROKS(t *testing.T) {
+	name := fmt.Sprintf("tf-vpc-cluster-%d", acctest.RandIntRange(10, 100))
+	offering := "openshift"
+	kubeVersion := "4.21_openshift"
+	flavor := "bx3d.metal.64x256"
+	workerCount := "2"
+	var conf *v2.ClusterInfo
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMContainerVpcClusterDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMContainerVpcClusterOffering(name, offering, kubeVersion, flavor, workerCount),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMContainerVpcClusterExists("ibm_container_vpc_cluster.cluster", conf),
+					resource.TestCheckResourceAttr(
+						"ibm_container_vpc_cluster.cluster", "name", name),
+					resource.TestCheckResourceAttr(
+						"ibm_container_vpc_cluster.cluster", "offering", offering),
+				),
+			},
+		},
+	})
+}
+
+func TestAccIBMContainerVpcClusterOfferingConfiguredROVS(t *testing.T) {
+	name := fmt.Sprintf("tf-vpc-cluster-%d", acctest.RandIntRange(10, 100))
+	offering := "openshift-vs"
+	kubeVersion := "4.21_openshift"
+	flavor := "bx3d.metal.64x256"
+	workerCount := "2"
+	var conf *v2.ClusterInfo
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMContainerVpcClusterDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMContainerVpcClusterOffering(name, offering, kubeVersion, flavor, workerCount),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMContainerVpcClusterExists("ibm_container_vpc_cluster.cluster", conf),
+					resource.TestCheckResourceAttr(
+						"ibm_container_vpc_cluster.cluster", "name", name),
+					resource.TestCheckResourceAttr(
+						"ibm_container_vpc_cluster.cluster", "offering", offering),
+				),
+			},
+			{
+				Config:      testAccCheckIBMContainerVpcClusterOffering(name, "openshift", kubeVersion, flavor, workerCount),
+				ExpectError: regexp.MustCompile(`\[ERROR\] Modifying the 'offering' field after cluster creation is currently unsupported\.`),
 			},
 		},
 	})
@@ -161,7 +273,7 @@ func TestAccIBMContainerVpcClusterSecurityGroups(t *testing.T) {
 			{
 				Config: testAccCheckIBMContainerVpcClusterSecurityGroups(name),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckIBMContainerVpcExists("ibm_container_vpc_cluster.cluster", conf),
+					testAccCheckIBMContainerVpcClusterExists("ibm_container_vpc_cluster.cluster", conf),
 					resource.TestCheckResourceAttr(
 						"ibm_container_vpc_cluster.cluster", "name", name),
 				),
@@ -189,7 +301,7 @@ func TestAccIBMContainerVPCClusterDisableOutboundTrafficProtection(t *testing.T)
 			{
 				Config: testAccCheckIBMContainerVpcClusterDisableOutboundTrafficProtection(name, "1.29", "false"),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckIBMContainerVpcExists("ibm_container_vpc_cluster.cluster", conf),
+					testAccCheckIBMContainerVpcClusterExists("ibm_container_vpc_cluster.cluster", conf),
 					resource.TestCheckResourceAttr(
 						"ibm_container_vpc_cluster.cluster", "name", name),
 					resource.TestCheckResourceAttr(
@@ -212,7 +324,7 @@ func TestAccIBMContainerVPCClusterUpdateDisableOutboundTrafficProtection(t *test
 			{
 				Config: testAccCheckIBMContainerVpcClusterDisableOutboundTrafficProtection(name, "1.30", "true"),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckIBMContainerVpcExists("ibm_container_vpc_cluster.cluster", conf),
+					testAccCheckIBMContainerVpcClusterExists("ibm_container_vpc_cluster.cluster", conf),
 					resource.TestCheckResourceAttr(
 						"ibm_container_vpc_cluster.cluster", "name", name),
 					resource.TestCheckResourceAttr(
@@ -222,7 +334,7 @@ func TestAccIBMContainerVPCClusterUpdateDisableOutboundTrafficProtection(t *test
 			{
 				Config: testAccCheckIBMContainerVpcClusterDisableOutboundTrafficProtectionUpdate(name, "false"),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckIBMContainerVpcExists("ibm_container_vpc_cluster.cluster", conf),
+					testAccCheckIBMContainerVpcClusterExists("ibm_container_vpc_cluster.cluster", conf),
 					resource.TestCheckResourceAttr(
 						"ibm_container_vpc_cluster.cluster", "name", name),
 					resource.TestCheckResourceAttr(
@@ -246,7 +358,7 @@ func TestAccIBMContainerVPCClusterEnableSecureByDefault(t *testing.T) {
 				// First create a cluster with a version where Secure by Default is not available
 				Config: testAccCheckIBMContainerVpcClusterEnableSecureByDefault(name, "1.29", "null"),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckIBMContainerVpcExists("ibm_container_vpc_cluster.cluster", conf),
+					testAccCheckIBMContainerVpcClusterExists("ibm_container_vpc_cluster.cluster", conf),
 					resource.TestCheckResourceAttr(
 						"ibm_container_vpc_cluster.cluster", "name", name),
 				),
@@ -255,7 +367,7 @@ func TestAccIBMContainerVPCClusterEnableSecureByDefault(t *testing.T) {
 				// Then update it to a version where Secure by Default is available, but not applied by default
 				Config: testAccCheckIBMContainerVpcClusterEnableSecureByDefault(name, "1.30", "null"),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckIBMContainerVpcExists("ibm_container_vpc_cluster.cluster", conf),
+					testAccCheckIBMContainerVpcClusterExists("ibm_container_vpc_cluster.cluster", conf),
 					resource.TestCheckResourceAttr(
 						"ibm_container_vpc_cluster.cluster", "name", name),
 				),
@@ -264,7 +376,7 @@ func TestAccIBMContainerVPCClusterEnableSecureByDefault(t *testing.T) {
 				// Then enable it
 				Config: testAccCheckIBMContainerVpcClusterEnableSecureByDefault(name, "1.30", "true"),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckIBMContainerVpcExists("ibm_container_vpc_cluster.cluster", conf),
+					testAccCheckIBMContainerVpcClusterExists("ibm_container_vpc_cluster.cluster", conf),
 					resource.TestCheckResourceAttr(
 						"ibm_container_vpc_cluster.cluster", "name", name),
 					resource.TestCheckResourceAttr(
@@ -289,18 +401,19 @@ func testAccCheckIBMContainerVpcClusterDestroy(s *terraform.State) error {
 		targetEnv := getVpcClusterTargetHeaderTestACC()
 		// Try to find the key
 		_, err := csClient.Clusters().GetCluster(rs.Primary.ID, targetEnv)
-
-		if err == nil {
-			return fmt.Errorf("Cluster still exists: %s", rs.Primary.ID)
-		} else if !strings.Contains(err.Error(), "404") {
+		if err != nil {
+			if apiErr, ok := err.(bmxerror.RequestFailure); ok && apiErr.StatusCode() == 404 {
+				return nil
+			}
 			return fmt.Errorf("[ERROR] Error waiting for cluster (%s) to be destroyed: %s", rs.Primary.ID, err)
 		}
+		return fmt.Errorf("Cluster still exists: %s", rs.Primary.ID)
 	}
 
 	return nil
 }
 
-func testAccCheckIBMContainerVpcExists(n string, conf *v2.ClusterInfo) resource.TestCheckFunc {
+func testAccCheckIBMContainerVpcClusterExists(n string, conf *v2.ClusterInfo) resource.TestCheckFunc {
 
 	return func(s *terraform.State) error {
 
@@ -728,6 +841,30 @@ func testAccCheckIBMContainerVpcClusterImageSecuritySetting(name, setting string
 	  }`, name, acc.IksClusterVpcID, acc.IksClusterResourceGroupID, acc.SubnetID, setting)
 }
 
+func testAccCheckIBMContainerVpcClusterOffering(name, offering, kubeVersion, flavor, workerCount string) string {
+	// offering is omitted from the config if the param is an empty string
+	offeringConfig := ""
+	if offering != "" {
+		offeringConfig = fmt.Sprintf(`offering = "%s"`, offering)
+	}
+
+	return fmt.Sprintf(`
+	resource "ibm_container_vpc_cluster" "cluster" {
+		name              = "%s"
+		vpc_id            = "%s"
+		flavor            = "%s"
+		worker_count      = "%s"
+		kube_version      = "%s"
+		resource_group_id = "%s"
+		wait_till         = "MasterNodeReady"
+		zones {
+			subnet_id = "%s"
+			name      = "us-south-1"
+		}
+		%s
+	}`, name, acc.IksClusterVpcID, flavor, workerCount, kubeVersion, acc.IksClusterResourceGroupID, acc.IksClusterSubnetID, offeringConfig)
+}
+
 func testAccCheckIBMContainerVpcClusterDedicatedHostSetting(name, vpcID, flavor, subnetID, rgroupID, hostpoolID string) string {
 	return fmt.Sprintf(`
 	resource "ibm_container_vpc_cluster" "testacc_dhost_vpc_cluster" {
@@ -749,7 +886,7 @@ func TestAccIBMContainerVpcClusterEnvvar(t *testing.T) {
 	var conf *v2.ClusterInfo
 
 	testChecks := []resource.TestCheckFunc{
-		testAccCheckIBMContainerVpcExists("ibm_container_vpc_cluster.cluster", conf),
+		testAccCheckIBMContainerVpcClusterExists("ibm_container_vpc_cluster.cluster", conf),
 		resource.TestCheckResourceAttr(
 			"ibm_container_vpc_cluster.cluster", "name", name),
 		resource.TestCheckResourceAttr(
@@ -796,7 +933,7 @@ func TestAccIBMContainerVpcClusterBaseEnvvar(t *testing.T) {
 			{
 				Config: testAccCheckIBMContainerVpcClusterBaseEnvvar(name),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckIBMContainerVpcExists("ibm_container_vpc_cluster.cluster", conf),
+					testAccCheckIBMContainerVpcClusterExists("ibm_container_vpc_cluster.cluster", conf),
 					resource.TestCheckResourceAttr(
 						"ibm_container_vpc_cluster.cluster", "name", name),
 					resource.TestCheckResourceAttr(
@@ -828,7 +965,7 @@ func TestAccIBMContainerVpcClusterKMSEnvvar(t *testing.T) {
 			{
 				Config: testAccCheckIBMContainerVpcClusterKMSEnvvar(name),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckIBMContainerVpcExists("ibm_container_vpc_cluster.cluster", conf),
+					testAccCheckIBMContainerVpcClusterExists("ibm_container_vpc_cluster.cluster", conf),
 					resource.TestCheckResourceAttr(
 						"ibm_container_vpc_cluster.cluster", "name", name),
 					resource.TestCheckResourceAttr(
@@ -861,7 +998,7 @@ func TestAccIBMContainerVpcClusterNetworkPluginNotConfigured(t *testing.T) {
 			{
 				Config: testAccCheckIBMContainerVpcClusterNetworkPlugin(name, ""),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckIBMContainerVpcExists("ibm_container_vpc_cluster.cluster", conf),
+					testAccCheckIBMContainerVpcClusterExists("ibm_container_vpc_cluster.cluster", conf),
 					resource.TestCheckResourceAttr(
 						"ibm_container_vpc_cluster.cluster", "name", name),
 					resource.TestCheckResourceAttr(
@@ -885,7 +1022,7 @@ func TestAccIBMContainerVpcClusterNetworkPluginConfigured(t *testing.T) {
 			{
 				Config: testAccCheckIBMContainerVpcClusterNetworkPlugin(name, networkPlugin),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckIBMContainerVpcExists("ibm_container_vpc_cluster.cluster", conf),
+					testAccCheckIBMContainerVpcClusterExists("ibm_container_vpc_cluster.cluster", conf),
 					resource.TestCheckResourceAttr(
 						"ibm_container_vpc_cluster.cluster", "name", name),
 					resource.TestCheckResourceAttr(

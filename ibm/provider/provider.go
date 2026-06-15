@@ -729,6 +729,7 @@ func Provider() *schema.Provider {
 			"ibm_schematics_action":         schematics.DataSourceIBMSchematicsAction(),
 			"ibm_schematics_job":            schematics.DataSourceIBMSchematicsJob(),
 			"ibm_schematics_inventory":      schematics.DataSourceIBMSchematicsInventory(),
+			"ibm_schematics_kms":            schematics.DataSourceIBMSchematicsKMS(),
 			"ibm_schematics_resource_query": schematics.DataSourceIBMSchematicsResourceQuery(),
 			"ibm_schematics_policies":       schematics.DataSourceIbmSchematicsPolicies(),
 			"ibm_schematics_policy":         schematics.DataSourceIbmSchematicsPolicy(),

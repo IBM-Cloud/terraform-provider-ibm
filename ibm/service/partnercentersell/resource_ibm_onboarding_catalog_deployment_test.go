@@ -187,6 +187,9 @@ func testAccCheckIbmOnboardingCatalogDeploymentConfig(productID string, catalogP
 				name = "name"
 			}
 			metadata {
+				other {
+					location_proxied_by = "dal"
+				}
                 rc_compatible =	"%s"
 				service {
 					plan_updateable = false
@@ -253,6 +256,9 @@ func testAccCheckIbmOnboardingCatalogDeploymentUpdateConfig(productID string, ca
 				name = "name"
 			}
 			metadata {
+				other {
+					location_proxied_by = "eu-de"
+				}
                 rc_compatible =	"%s"
 				service {
 					plan_updateable = true
@@ -517,10 +523,14 @@ func TestResourceIbmOnboardingCatalogDeploymentGlobalCatalogDeploymentMetadataTo
 		globalCatalogMetadataDeploymentModel["location_url"] = "testString"
 		globalCatalogMetadataDeploymentModel["target_crn"] = "testString"
 
+		globalCatalogMetadataDeploymentOtherModel := make(map[string]interface{})
+		globalCatalogMetadataDeploymentOtherModel["location_proxied_by"] = "testString"
+
 		model := make(map[string]interface{})
 		model["rc_compatible"] = true
 		model["service"] = []map[string]interface{}{globalCatalogDeploymentMetadataServiceModel}
 		model["deployment"] = []map[string]interface{}{globalCatalogMetadataDeploymentModel}
+		model["other"] = []map[string]interface{}{globalCatalogMetadataDeploymentOtherModel}
 
 		assert.Equal(t, result, model)
 	}
@@ -599,10 +609,14 @@ func TestResourceIbmOnboardingCatalogDeploymentGlobalCatalogDeploymentMetadataTo
 	globalCatalogMetadataDeploymentModel.LocationURL = core.StringPtr("testString")
 	globalCatalogMetadataDeploymentModel.TargetCrn = core.StringPtr("testString")
 
+	globalCatalogMetadataDeploymentOtherModel := new(partnercentersellv1.GlobalCatalogMetadataDeploymentOther)
+	globalCatalogMetadataDeploymentOtherModel.LocationProxiedBy = core.StringPtr("testString")
+
 	model := new(partnercentersellv1.GlobalCatalogDeploymentMetadata)
 	model.RcCompatible = core.BoolPtr(true)
 	model.Service = globalCatalogDeploymentMetadataServiceModel
 	model.Deployment = globalCatalogMetadataDeploymentModel
+	model.Other = globalCatalogMetadataDeploymentOtherModel
 
 	result, err := partnercentersell.ResourceIbmOnboardingCatalogDeploymentGlobalCatalogDeploymentMetadataToMap(model)
 	assert.Nil(t, err)
@@ -1133,6 +1147,22 @@ func TestResourceIbmOnboardingCatalogDeploymentGlobalCatalogMetadataDeploymentBr
 	checkResult(result)
 }
 
+func TestResourceIbmOnboardingCatalogDeploymentGlobalCatalogMetadataDeploymentOtherToMap(t *testing.T) {
+	checkResult := func(result map[string]interface{}) {
+		model := make(map[string]interface{})
+		model["location_proxied_by"] = "testString"
+
+		assert.Equal(t, result, model)
+	}
+
+	model := new(partnercentersellv1.GlobalCatalogMetadataDeploymentOther)
+	model.LocationProxiedBy = core.StringPtr("testString")
+
+	result, err := partnercentersell.ResourceIbmOnboardingCatalogDeploymentGlobalCatalogMetadataDeploymentOtherToMap(model)
+	assert.Nil(t, err)
+	checkResult(result)
+}
+
 func TestResourceIbmOnboardingCatalogDeploymentMapToCatalogProductProvider(t *testing.T) {
 	checkResult := func(result *partnercentersellv1.CatalogProductProvider) {
 		model := new(partnercentersellv1.CatalogProductProvider)
@@ -1273,10 +1303,14 @@ func TestResourceIbmOnboardingCatalogDeploymentMapToGlobalCatalogDeploymentMetad
 		globalCatalogMetadataDeploymentModel.LocationURL = core.StringPtr("testString")
 		globalCatalogMetadataDeploymentModel.TargetCrn = core.StringPtr("testString")
 
+		globalCatalogMetadataDeploymentOtherModel := new(partnercentersellv1.GlobalCatalogMetadataDeploymentOther)
+		globalCatalogMetadataDeploymentOtherModel.LocationProxiedBy = core.StringPtr("testString")
+
 		model := new(partnercentersellv1.GlobalCatalogDeploymentMetadataPrototypePatch)
 		model.RcCompatible = core.BoolPtr(true)
 		model.Service = globalCatalogDeploymentMetadataServicePrototypePatchModel
 		model.Deployment = globalCatalogMetadataDeploymentModel
+		model.Other = globalCatalogMetadataDeploymentOtherModel
 
 		assert.Equal(t, result, model)
 	}
@@ -1355,10 +1389,14 @@ func TestResourceIbmOnboardingCatalogDeploymentMapToGlobalCatalogDeploymentMetad
 	globalCatalogMetadataDeploymentModel["location_url"] = "testString"
 	globalCatalogMetadataDeploymentModel["target_crn"] = "testString"
 
+	globalCatalogMetadataDeploymentOtherModel := make(map[string]interface{})
+	globalCatalogMetadataDeploymentOtherModel["location_proxied_by"] = "testString"
+
 	model := make(map[string]interface{})
 	model["rc_compatible"] = true
 	model["service"] = []interface{}{globalCatalogDeploymentMetadataServicePrototypePatchModel}
 	model["deployment"] = []interface{}{globalCatalogMetadataDeploymentModel}
+	model["other"] = []interface{}{globalCatalogMetadataDeploymentOtherModel}
 
 	result, err := partnercentersell.ResourceIbmOnboardingCatalogDeploymentMapToGlobalCatalogDeploymentMetadataPrototypePatch(model)
 	assert.Nil(t, err)
@@ -1881,6 +1919,22 @@ func TestResourceIbmOnboardingCatalogDeploymentMapToGlobalCatalogMetadataDeploym
 	model["guid"] = "testString"
 
 	result, err := partnercentersell.ResourceIbmOnboardingCatalogDeploymentMapToGlobalCatalogMetadataDeploymentBroker(model)
+	assert.Nil(t, err)
+	checkResult(result)
+}
+
+func TestResourceIbmOnboardingCatalogDeploymentMapToGlobalCatalogMetadataDeploymentOther(t *testing.T) {
+	checkResult := func(result *partnercentersellv1.GlobalCatalogMetadataDeploymentOther) {
+		model := new(partnercentersellv1.GlobalCatalogMetadataDeploymentOther)
+		model.LocationProxiedBy = core.StringPtr("testString")
+
+		assert.Equal(t, result, model)
+	}
+
+	model := make(map[string]interface{})
+	model["location_proxied_by"] = "testString"
+
+	result, err := partnercentersell.ResourceIbmOnboardingCatalogDeploymentMapToGlobalCatalogMetadataDeploymentOther(model)
 	assert.Nil(t, err)
 	checkResult(result)
 }
