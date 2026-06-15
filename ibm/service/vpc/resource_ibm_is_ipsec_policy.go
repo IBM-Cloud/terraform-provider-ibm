@@ -93,7 +93,7 @@ func ResourceIBMISIPSecPolicy() *schema.Resource {
 				MaxItems:     3,
 				Computed:     true,
 				ExactlyOneOf: []string{"encryption_algorithm", "encryption_algorithms"},
-				Description:  "The encryption algorithms to use for IKE Negotiation.The order of the algorithms in this array indicates their priority for negotiation, with each algorithm having priority over the one after it.",
+				Description:  "The encryption algorithms to use for IPsec Negotiation.The order of the algorithms in this array indicates their priority for negotiation, with each algorithm having priority over the one after it.",
 				Elem: &schema.Schema{
 					Type:         schema.TypeString,
 					ValidateFunc: validate.InvokeValidator("ibm_is_ipsec_policy", isIpSecEncryptionAlg),
@@ -258,13 +258,8 @@ func ipsecpCreate(context context.Context, d *schema.ResourceData, meta interfac
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
-	// 	authenticationAlg := d.Get(isIpSecAuthenticationAlg).(string)
-	// encryptionAlg := d.Get(isIpSecEncryptionAlg).(string)
-	// pfs := d.Get(isIpSecPFS).(string)
+
 	options := &vpcv1.CreateIpsecPolicyOptions{
-		// AuthenticationAlgorithm: &authenticationAlg,
-		// EncryptionAlgorithm:     &encryptionAlg,
-		// Pfs:                     &pfs,
 		Name: &name,
 	}
 
