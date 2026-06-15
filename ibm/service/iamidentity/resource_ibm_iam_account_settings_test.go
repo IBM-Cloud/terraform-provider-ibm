@@ -1,4 +1,4 @@
-// Copyright IBM Corp. 2022 All Rights Reserved.
+// Copyright IBM Corp. 2026 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 package iamidentity_test
@@ -69,6 +69,7 @@ func TestAccIBMIAMAccountSettingsAllArgs(t *testing.T) {
 			{
 				Config: testAccCheckIbmIamAccountSettingsConfig(includeHistoryUpdate, "*@companyab.com"),
 				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIbmIamAccountSettingsExists("ibm_iam_account_settings.iam_account_settings", conf),
 					resource.TestCheckResourceAttr("ibm_iam_account_settings.iam_account_settings", "include_history", includeHistoryUpdate),
 				),
 			},
@@ -107,22 +108,51 @@ func TestAccIBMIAMAccountSettingsUpdate(t *testing.T) {
 	})
 }
 
+func TestAccIBMIAMAccountSettingsUpdateFieldRemoval(t *testing.T) {
+	var conf iamidentityv1.AccountSettingsResponse
+	includeHistory := "false"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { acc.TestAccPreCheck(t) },
+		Providers: acc.TestAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIbmIamAccountSettingsConfig(includeHistory, "*@companya.com"),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIbmIamAccountSettingsExists("ibm_iam_account_settings.iam_account_settings", conf),
+					resource.TestCheckResourceAttr("ibm_iam_account_settings.iam_account_settings", "include_history", includeHistory),
+					resource.TestCheckResourceAttr("ibm_iam_account_settings.iam_account_settings", "restrict_user_domains.0.restrict_invitation", "true"),
+					resource.TestCheckResourceAttr("ibm_iam_account_settings.iam_account_settings", "restrict_user_domains.0.invitation_email_allow_patterns.#", "1"),
+					resource.TestCheckResourceAttr("ibm_iam_account_settings.iam_account_settings", "restrict_user_domains.0.realm_id", "IBMid"),
+				),
+			},
+			{
+				Config:             testAccCheckIbmIamAccountSettingsUpdateConfigRemoveValues(),
+				ExpectNonEmptyPlan: true,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIbmIamAccountSettingsExists("ibm_iam_account_settings.iam_account_settings_removal", conf),
+					resource.TestCheckNoResourceAttr("ibm_iam_account_settings.iam_account_settings_removal", "restrict_user_domains.0.restrict_invitation"),
+					resource.TestCheckResourceAttr("ibm_iam_account_settings.iam_account_settings_removal", "restrict_user_domains.0.invitation_email_allow_patterns.#", "0"),
+					resource.TestCheckResourceAttr("ibm_iam_account_settings.iam_account_settings_removal", "restrict_user_domains.0.#", "0"),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckIbmIamAccountSettingsConfigBasic() string {
 	return `
-
-		resource "ibm_iam_account_settings" "iam_account_settings" {
-		}
+		resource "ibm_iam_account_settings" "iam_account_settings" { }
 	`
 }
 
 func testAccCheckIbmIamAccountSettingsConfig(includeHistory string, emailPatterns string) string {
 	return fmt.Sprintf(`
-
 		resource "ibm_iam_account_settings" "iam_account_settings" {
 			include_history = %s
 			restrict_user_domains {
 				realm_id                        = "IBMid"
-				restrict_invitation             = false
+				restrict_invitation             = true
 				invitation_email_allow_patterns = ["%s"]
 			}
 		}
@@ -131,7 +161,6 @@ func testAccCheckIbmIamAccountSettingsConfig(includeHistory string, emailPattern
 
 func testAccCheckIbmIamAccountSettingsUpdateConfig() string {
 	return fmt.Sprintf(`
-
 		resource "ibm_iam_account_settings" "iam_account_settings" {
 			restrict_create_service_id = "%s"
 			restrict_create_platform_apikey = "%s"
@@ -146,8 +175,8 @@ func testAccCheckIbmIamAccountSettingsUpdateConfig() string {
 				realm_id = "IBMid"
 				invitation_email_allow_patterns = [
 					"*@ibm.com",
-					"**@corp.org"
-					]
+					"*@corp.org"
+				]
 				restrict_invitation = false
 			}
 			session_expiration_in_seconds = "%s"
@@ -173,14 +202,12 @@ func testAccCheckIbmIamAccountSettingsUpdateConfig() string {
 
 func testAccCheckIbmIamAccountSettingsUpdateConfigWithNoUserMfa() string {
 	return fmt.Sprintf(`
-
 		resource "ibm_iam_account_settings" "iam_account_settings" {
 			restrict_create_service_id = "%s"
 			restrict_create_platform_apikey = "%s"
 			if_match = "%s"
 			mfa = "%s"
-			user_mfa {
-			}
+			user_mfa { }
 			session_expiration_in_seconds = "%s"
 			session_invalidation_in_seconds = "%s"
 			max_sessions_per_identity = "%s"
@@ -202,18 +229,17 @@ func testAccCheckIbmIamAccountSettingsUpdateConfigWithNoUserMfa() string {
 
 func testAccCheckIbmIamAccountSettingsUpdateConfigWithMultipleUserMfa() string {
 	return fmt.Sprintf(`
-
 		resource "ibm_iam_account_settings" "iam_account_settings" {
 			restrict_create_service_id = "%s"
 			restrict_create_platform_apikey = "%s"
 			if_match = "%s"
 			mfa = "%s"
 			user_mfa {
-				iam_id = "iam_id"
+				iam_id = "iam_id_1"
 				mfa = "NONE"
 			}
 			user_mfa {
-				iam_id = "iam_id"
+				iam_id = "iam_id_2"
 				mfa = "NONE"
 			}
 			session_expiration_in_seconds = "%s"
@@ -235,8 +261,18 @@ func testAccCheckIbmIamAccountSettingsUpdateConfigWithMultipleUserMfa() string {
 	)
 }
 
-func testAccCheckIbmIamAccountSettingsExists(n string, obj iamidentityv1.AccountSettingsResponse) resource.TestCheckFunc {
+func testAccCheckIbmIamAccountSettingsUpdateConfigRemoveValues() string {
+	return fmt.Sprintf(`
+		resource "ibm_iam_account_settings" "iam_account_settings_removal" {
+			if_match = "*"
+			restrict_user_domains {
+				realm_id = "IBMid"
+			}
+		}
+	`)
+}
 
+func testAccCheckIbmIamAccountSettingsExists(n string, obj iamidentityv1.AccountSettingsResponse) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
@@ -257,7 +293,6 @@ func testAccCheckIbmIamAccountSettingsExists(n string, obj iamidentityv1.Account
 		}
 
 		entity_tag = *accountSettingsResponse.EntityTag
-
 		obj = *accountSettingsResponse
 
 		return nil
