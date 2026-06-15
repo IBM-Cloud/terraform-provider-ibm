@@ -85,7 +85,7 @@ data "ibm_resource_group" "group" {
 }
 
 # Gen2 PostgreSQL instance
-resource "ibm_resource_instance" "postgres_gen2" {
+resource "ibm_database" "postgres_gen2" {
   name              = "my-postgres-gen2"
   plan              = "standard-gen2"
   location          = "ca-mon"
