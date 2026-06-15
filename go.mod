@@ -16,7 +16,7 @@ require (
 	github.com/IBM/container-registry-go-sdk v1.4.0
 	github.com/IBM/continuous-delivery-go-sdk/v2 v2.0.8
 	github.com/IBM/dra-go-sdk v0.1.0
-	github.com/IBM/event-notifications-go-admin-sdk v0.22.0
+	github.com/IBM/event-notifications-go-admin-sdk v0.24.0
 	github.com/IBM/eventstreams-go-sdk v1.4.0
 	github.com/IBM/go-sdk-core/v5 v5.21.4
 	github.com/IBM/ibm-backup-recovery-sdk-go v1.2.1
