@@ -2071,7 +2071,7 @@ func (c *Config) ClientSession() (interface{}, error) {
 	// CATALOG MANAGEMENT Service
 	catalogManagementURL := "https://cm.globalcatalog.cloud.ibm.com/api/v1-beta"
 	if c.Visibility == "private" || c.Visibility == "public-and-private" {
-		if c.Region != "in-che" && c.Region != "in-mum" && c.Region != "jp-osa" && c.Region != "jp-tok" && c.Region != "eu-es" && c.Region != "eu-gb" && c.Region != "ca-mon" && c.Region != "ca-tor" && c.Region != "br-sao" {
+		if c.Region == "us-south" || c.Region == "us-east" {
 			catalogManagementURL = ContructEndpoint(fmt.Sprintf("cm.private.%s.globalcatalog", c.Region), fmt.Sprintf("%s/api/v1-beta", cloudEndpoint))
 		} else {
 			catalogManagementURL = ContructEndpoint("cm.private.globalcatalog", fmt.Sprintf("%s/api/v1-beta", cloudEndpoint))
