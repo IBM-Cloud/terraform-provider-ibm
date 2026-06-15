@@ -65,7 +65,7 @@ In addition to all argument reference list, you can access the following attribu
   Nested scheme for `vpn_connections`:
   - `name`-String - The name given to the VPN connection.
   - `id`-  (String) The unique identifier of a VPN connection.
-	- `href` - (String) The VPN connection's canonical URL.
+  - `href` - (String) The VPN connection's canonical URL.
 
 ## Import
 

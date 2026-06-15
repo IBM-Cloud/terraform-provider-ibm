@@ -163,14 +163,16 @@ func wrapAPIError(operation string, err error, response interface{}) error {
 
 // Database service name prefixes mapped to their type keys
 var databaseServicePrefixes = map[string]string{
-	"databases-for-etcd":          "etcd",
-	"databases-for-postgresql":    "postgresql",
-	"databases-for-redis":         "redis",
-	"databases-for-elasticsearch": "elasticsearch",
-	"databases-for-mongodb":       "mongodb",
-	"messages-for-rabbitmq":       "rabbitmq",
-	"databases-for-mysql":         "mysql",
-	"databases-for-enterprisedb":  "enterprisedb",
+	"databases-for-etcd":           "etcd",
+	"databases-for-postgresql":     "postgresql",
+	"databases-for-redis":          "redis",
+	"databases-for-valkey":         "valkey",
+	"databases-for-valkey-cdp-dev": "valkey",
+	"databases-for-elasticsearch":  "elasticsearch",
+	"databases-for-mongodb":        "mongodb",
+	"messages-for-rabbitmq":        "rabbitmq",
+	"databases-for-mysql":          "mysql",
+	"databases-for-enterprisedb":   "enterprisedb",
 }
 
 // getDatabaseTypeFromResourceID maps the resource ID or service name to the database type key.

@@ -57,12 +57,12 @@ resource "ibm_is_vpn_gateway_connection" "example" {
   # peer_address  = ibm_is_vpn_gateway.example.public_ip_address # deprecated, replaced with peer block
   # peer_cidrs    = [ibm_is_subnet.example2.ipv4_cidr_block] # deprecated, replaced with peer block
   peer {
-      address  = ibm_is_vpn_gateway.example.public_ip_address
-      cidrs    = [ibm_is_subnet.example2.ipv4_cidr_block]   
+    address  = ibm_is_vpn_gateway.example.public_ip_address
+    cidrs    = [ibm_is_subnet.example2.ipv4_cidr_block]
   }
   # local_cidrs   = [ibm_is_subnet.example.ipv4_cidr_block] # deprecated, replaced with local block
   local {
-      cidrs   = [ibm_is_subnet.example.ipv4_cidr_block]
+    cidrs   = [ibm_is_subnet.example.ipv4_cidr_block]
   }
 }
 
@@ -160,23 +160,25 @@ Review the argument references that you can specify for your resource.
 - `ike_policy` - (Optional, String) The ID of the IKE policy. Updating value from ID to `""` or making it `null` or removing it  will remove the existing policy.
 - `interval` - (Optional, Integer) Dead peer detection interval in seconds. Default value is 2.
 - `ipsec_policy` - (Optional, String) The ID of the IPSec policy. Updating value from ID to `""` or making it `null` or removing it  will remove the existing policy.
-- `local` - (Optional, List) 
+- `local` - (Optional, List)
   Nested schema for **local**:
-	- `ike_identities` - (Required, List) The local IKE identities.A VPN gateway in static route mode consists of two members in active-active mode. The first identity applies to the first member, and the second identity applies to the second member.
-	  Nested schema for **ike_identities**:
-		- `type` - (Required, String) The IKE identity type. [ **fqdn**, **hostname**, **ipv4_address**, **key_id** ] The enumerated values for this property will expand in the future. When processing this property, check for and log unknown values. Optionally halt processing and surface the error, or bypass the backup policy on which the unexpected property value was encountered.
-		- `value` - (Optional, String) The IKE identity FQDN value.
+  - `ike_identities` - (Required, List) The local IKE identities.A VPN gateway in static route mode consists of two members in active-active mode. The first identity applies to the first member, and the second identity applies to the second member.
+
+    Nested schema for **ike_identities**:
+    - `type` - (Required, String) The IKE identity type. [ **fqdn**, **hostname**, **ipv4_address**, **key_id** ] The enumerated values for this property will expand in the future. When processing this property, check for and log unknown values. Optionally halt processing and surface the error, or bypass the backup policy on which the unexpected property value was encountered.
+    - `value` - (Optional, String) The IKE identity FQDN value.
 - `local_cidrs` - (Optional, DEPRECATED, Forces new resource, List) List of local CIDRs for this resource. `local_cidrs` is deprecated and use `local` block instead. 
 - `name` - (Required, String) The name of the VPN gateway connection.
-- `peer` - (Optional, List) 
+- `peer` - (Optional, List)
   Nested schema for **peer**:
-	- `address` - (Optional, String) The IP address of the peer VPN gateway for this connection.
-	- `fqdn` - (Optional, String) The FQDN of the peer VPN gateway for this connection.
-	- `ike_identity` - (Required, List) The peer IKE identity.
-	  Nested schema for **ike_identity**:
-		- `type` - (Required, String) The IKE identity type. [ **fqdn**, **hostname**, **ipv4_address**, **key_id** ] The enumerated values for this property will expand in the future. When processing this property, check for and log unknown values. Optionally halt processing and surface the error, or bypass the backup policy on which the unexpected property value was encountered.
-		- `value` - (Optional, String) The IKE identity FQDN value.
-	- `type` - (Computed, String) Indicates whether `peer.address` or `peer.fqdn` is used.
+  - `address` - (Optional, String) The IP address of the peer VPN gateway for this connection.
+  - `fqdn` - (Optional, String) The FQDN of the peer VPN gateway for this connection.
+  - `ike_identity` - (Required, List) The peer IKE identity.
+
+    Nested schema for **ike_identity**:
+    - `type` - (Required, String) The IKE identity type. [ **fqdn**, **hostname**, **ipv4_address**, **key_id** ] The enumerated values for this property will expand in the future. When processing this property, check for and log unknown values. Optionally halt processing and surface the error, or bypass the backup policy on which the unexpected property value was encountered.
+    - `value` - (Optional, String) The IKE identity FQDN value.
+  - `type` - (Computed, String) Indicates whether `peer.address` or `peer.fqdn` is used.
 
 - `peer_cidrs` - (Optional, DEPRECATED, Forces new resource, List) List of peer CIDRs for this resource. `peer_cidrs` is deprecated and use `peer` block instead.
 - `peer_address` - (Optional, DEPRECATED, String) The IP address of the peer VPN gateway. `peer_address` is deprecated and use `peer` block instead.
@@ -203,9 +205,9 @@ In addition to all argument reference list, you can access the following attribu
 - `status_reasons` - (List) Array of reasons for the current status (if any).
 
   Nested `status_reasons`:
-    - `code` - (String) The status reason code.
-    - `message` - (String) An explanation of the status reason.
-    - `more_info` - (String) Link to documentation about this status reason
+  - `code` - (String) The status reason code.
+  - `message` - (String) An explanation of the status reason.
+  - `more_info` - (String) Link to documentation about this status reason
 - `tunnels` -  (List) The VPN tunnel configuration for the VPN gateway connection (in static route mode).
 
   Nested scheme for `tunnels`
