@@ -548,25 +548,41 @@ func resourceIBMIAMInviteUsers(d *schema.ResourceData, meta interface{}) error {
 
 	// poll until all invited users
 	// appear in the account or the timeout is reached.
+	// Users with ERROR_WHILE_PROCESSING are a hard failure; stop immediately.
 	targetEmails := make(map[string]bool, len(users))
 	for _, u := range users {
 		targetEmails[strings.ToLower(u.Email)] = true
 	}
 	var missing []string
+	var errored []string
+	scanUsers := func(allUsers []v2.UserInfo) {
+		stateByEmail := make(map[string]string, len(allUsers))
+		for _, u := range allUsers {
+			stateByEmail[strings.ToLower(u.Email)] = u.State
+		}
+		missing = missing[:0]
+		errored = errored[:0]
+		for email := range targetEmails {
+			state, found := stateByEmail[email]
+			if !found || state == "PROCESSING" {
+				// Not yet visible, or invite workflow still in progress.
+				missing = append(missing, email)
+				continue
+			}
+			if state == "ERROR_WHILE_PROCESSING" {
+				errored = append(errored, email)
+			}
+			// PENDING or ACTIVE -> terminal success for this user.
+		}
+	}
 	retryErr := resource.Retry(5*time.Minute, func() *resource.RetryError {
 		allUsers, listErr := client.ListUsers(accountID)
 		if listErr != nil {
 			return resource.RetryableError(listErr)
 		}
-		found := make(map[string]bool, len(allUsers))
-		for _, u := range allUsers {
-			found[strings.ToLower(u.Email)] = true
-		}
-		missing = missing[:0]
-		for email := range targetEmails {
-			if !found[email] {
-				missing = append(missing, email)
-			}
+		scanUsers(allUsers)
+		if len(errored) > 0 {
+			return resource.NonRetryableError(fmt.Errorf("[ERROR] User(s) %v encountered an error during invite processing", errored))
 		}
 		if len(missing) > 0 {
 			return resource.RetryableError(fmt.Errorf("user(s) %v not yet visible in account", missing))
@@ -574,20 +590,15 @@ func resourceIBMIAMInviteUsers(d *schema.ResourceData, meta interface{}) error {
 		return nil
 	})
 	if conns.IsResourceTimeoutError(retryErr) {
-		allUsers, _ := client.ListUsers(accountID)
-		found := make(map[string]bool, len(allUsers))
-		for _, u := range allUsers {
-			found[strings.ToLower(u.Email)] = true
-		}
-		missing = missing[:0]
-		for email := range targetEmails {
-			if !found[email] {
-				missing = append(missing, email)
+		if allUsers, listErr := client.ListUsers(accountID); listErr == nil {
+			scanUsers(allUsers)
+			if len(errored) == 0 && len(missing) == 0 {
+				retryErr = nil
 			}
 		}
-		if len(missing) == 0 {
-			retryErr = nil
-		}
+	}
+	if len(errored) > 0 {
+		return fmt.Errorf("[ERROR] User(s) %v encountered an error during invite processing", errored)
 	}
 	if retryErr != nil || len(missing) > 0 {
 		return fmt.Errorf("[ERROR] User(s) %v were not successfully invited or did not appear in the account after 5 minutes", missing)
