@@ -17,6 +17,7 @@ import (
 	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/IBM/platform-services-go-sdk/iamaccessgroupsv2"
 	"github.com/IBM/platform-services-go-sdk/iampolicymanagementv1"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -543,6 +544,53 @@ func resourceIBMIAMInviteUsers(d *schema.ResourceData, meta interface{}) error {
 	_, InviteUserError := client.InviteUsers(accountID, inviteUserPayload)
 	if InviteUserError != nil {
 		return InviteUserError
+	}
+
+	// poll until all invited users
+	// appear in the account or the timeout is reached.
+	targetEmails := make(map[string]bool, len(users))
+	for _, u := range users {
+		targetEmails[strings.ToLower(u.Email)] = true
+	}
+	var missing []string
+	retryErr := resource.Retry(5*time.Minute, func() *resource.RetryError {
+		allUsers, listErr := client.ListUsers(accountID)
+		if listErr != nil {
+			return resource.RetryableError(listErr)
+		}
+		found := make(map[string]bool, len(allUsers))
+		for _, u := range allUsers {
+			found[strings.ToLower(u.Email)] = true
+		}
+		missing = missing[:0]
+		for email := range targetEmails {
+			if !found[email] {
+				missing = append(missing, email)
+			}
+		}
+		if len(missing) > 0 {
+			return resource.RetryableError(fmt.Errorf("user(s) %v not yet visible in account", missing))
+		}
+		return nil
+	})
+	if conns.IsResourceTimeoutError(retryErr) {
+		allUsers, _ := client.ListUsers(accountID)
+		found := make(map[string]bool, len(allUsers))
+		for _, u := range allUsers {
+			found[strings.ToLower(u.Email)] = true
+		}
+		missing = missing[:0]
+		for email := range targetEmails {
+			if !found[email] {
+				missing = append(missing, email)
+			}
+		}
+		if len(missing) == 0 {
+			retryErr = nil
+		}
+	}
+	if retryErr != nil || len(missing) > 0 {
+		return fmt.Errorf("[ERROR] User(s) %v were not successfully invited or did not appear in the account after 5 minutes", missing)
 	}
 	d.SetId(time.Now().UTC().String())
 	return resourceIBMIAMUpdateUserProfile(d, meta)
