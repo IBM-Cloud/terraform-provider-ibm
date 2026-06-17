@@ -547,14 +547,16 @@ func resourceIBMIAMInviteUsers(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	// poll until all invited users
-	// appear in the account or the timeout is reached.
-	// Users with ERROR_WHILE_PROCESSING are a hard failure; stop immediately.
+	// transitions through states: (not visible) -> PROCESSING -> PENDING or
+	// ACTIVE. ERROR_WHILE_PROCESSING means the invite workflow failed for that
+	// user; we retry in case it is transient, but fail if it persists.
+	// Valid accepted states: ACTIVE, PENDING, PROCESSING.
 	targetEmails := make(map[string]bool, len(users))
 	for _, u := range users {
 		targetEmails[strings.ToLower(u.Email)] = true
 	}
-	var missing []string
-	var errored []string
+	var missing []string // not yet visible in account
+	var errored []string // currently in ERROR_WHILE_PROCESSING
 	scanUsers := func(allUsers []v2.UserInfo) {
 		stateByEmail := make(map[string]string, len(allUsers))
 		for _, u := range allUsers {
@@ -564,15 +566,19 @@ func resourceIBMIAMInviteUsers(d *schema.ResourceData, meta interface{}) error {
 		errored = errored[:0]
 		for email := range targetEmails {
 			state, found := stateByEmail[email]
-			if !found || state == "PROCESSING" {
-				// Not yet visible, or invite workflow still in progress.
+			if !found {
 				missing = append(missing, email)
 				continue
 			}
-			if state == "ERROR_WHILE_PROCESSING" {
+			switch state {
+			case "ACTIVE", "PENDING", "PROCESSING":
+				// Accepted terminal (or in-progress) states — no action needed.
+			case "ERROR_WHILE_PROCESSING":
 				errored = append(errored, email)
+			default:
+				// Unknown state; treat as not-yet-ready and keep retrying.
+				missing = append(missing, email)
 			}
-			// PENDING or ACTIVE -> terminal success for this user.
 		}
 	}
 	retryErr := resource.Retry(5*time.Minute, func() *resource.RetryError {
@@ -582,7 +588,8 @@ func resourceIBMIAMInviteUsers(d *schema.ResourceData, meta interface{}) error {
 		}
 		scanUsers(allUsers)
 		if len(errored) > 0 {
-			return resource.NonRetryableError(fmt.Errorf("[ERROR] User(s) %v encountered an error during invite processing", errored))
+			// ERROR_WHILE_PROCESSING may be transient — keep retrying.
+			return resource.RetryableError(fmt.Errorf("user(s) %v are in ERROR_WHILE_PROCESSING state", errored))
 		}
 		if len(missing) > 0 {
 			return resource.RetryableError(fmt.Errorf("user(s) %v not yet visible in account", missing))
@@ -598,7 +605,11 @@ func resourceIBMIAMInviteUsers(d *schema.ResourceData, meta interface{}) error {
 		}
 	}
 	if len(errored) > 0 {
-		return fmt.Errorf("[ERROR] User(s) %v encountered an error during invite processing", errored)
+		return fmt.Errorf("[ERROR] User invite failed: user(s) %v remained in ERROR_WHILE_PROCESSING state "+
+			"after the retry period. This typically indicates a problem. "+
+			"Please verify the account ID (%s) and email addresses are correct, then retry. "+
+			"If the problem persists, open a support case including the account ID and the affected email address(es).",
+			errored, accountID)
 	}
 	if retryErr != nil || len(missing) > 0 {
 		return fmt.Errorf("[ERROR] User(s) %v were not successfully invited or did not appear in the account after 5 minutes", missing)
