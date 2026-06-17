@@ -156,7 +156,7 @@ func vpmemVolumeSchema() *schema.Schema {
 				},
 				Attr_Size: {
 					Computed:    true,
-					Description: "Volume Size (GB).",
+					Description: "Volume Size (GiB).",
 					Type:        schema.TypeFloat,
 				},
 				Attr_Status: {
