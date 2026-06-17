@@ -308,7 +308,7 @@ In addition to all argument reference list, you can access the following attribu
 		- `more_info` - (String) Link to documentation about this status reason
 	- `total_volume_bandwidth` - (Integer) The amount of bandwidth (in megabits per second) allocated exclusively to instance storage volumes
     - `total_network_bandwidth` - (Integer) The amount of bandwidth (in megabits per second) allocated exclusively to instance network interfaces.
-	- `threads_per_core` - (Integer) The number of threads per core. Supported values are `1` or `2`. Default is `2`. This property is only applicable to AMD Turin profiles (hx4a-*, hx4da-*).
+	- `threads_per_core` - (Integer) The number of threads per core for this virtual server instance.
 	- `vcpu` - (List) The virtual server instance VCPU configuration.
 		Nested schema for **vcpu**:
 		- `architecture` - (String) The VCPU architecture.The enumerated values for this property may [expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) in the future. Allowable values are: `amd64`, `s390x`.

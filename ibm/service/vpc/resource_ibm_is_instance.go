@@ -7641,7 +7641,7 @@ func instanceUpdate(context context.Context, d *schema.ResourceData, meta interf
 
 	}
 
-	if (d.HasChange(isInstanceName) || d.HasChange("vcpu") || d.HasChange("availability") || d.HasChange("confidential_compute_mode") || d.HasChange("enable_secure_boot") || d.HasChange(isInstanceVolumeBandwidthQoSMode) || d.HasChange(isInstanceThreadsPerCore)) && !d.IsNewResource() {
+	if (d.HasChange(isInstanceName) || d.HasChange("vcpu") || d.HasChange("availability") || d.HasChange("confidential_compute_mode") || d.HasChange("enable_secure_boot") || d.HasChange(isInstanceVolumeBandwidthQoSMode)) && !d.IsNewResource() {
 		restartNeeded := false
 		serverstopped := false
 		name := d.Get(isInstanceName).(string)
@@ -7674,12 +7674,8 @@ func instanceUpdate(context context.Context, d *schema.ResourceData, meta interf
 			restartNeeded = true
 		}
 
-		if _, ok := d.GetOkExists(isInstanceVolumeBandwidthQoSMode); ok && d.HasChange(isInstanceVolumeBandwidthQoSMode) {
+		if d.HasChange(isInstanceVolumeBandwidthQoSMode) {
 			instanceCCMPatchModel.VolumeBandwidthQosMode = core.StringPtr(d.Get(isInstanceVolumeBandwidthQoSMode).(string))
-			restartNeeded = true
-		}
-		if _, ok := d.GetOkExists(isInstanceThreadsPerCore); ok && d.HasChange(isInstanceThreadsPerCore) {
-			instanceCCMPatchModel.ThreadsPerCore = core.Int64Ptr(int64(d.Get(isInstanceThreadsPerCore).(int)))
 			restartNeeded = true
 		}
 		if d.HasChange("name") {
@@ -7869,15 +7865,20 @@ func instanceUpdate(context context.Context, d *schema.ResourceData, meta interf
 		}
 	}
 
-	// Check if profile or total_volume_bandwidth are changing
+	// Check if profile, total_volume_bandwidth, or threads_per_core are changing.
+	// threads_per_core is handled in the same block as profile so that when both
+	// change simultaneously the new value is validated against the new profile,
+	// not the old one. A single stop/start cycle covers all three.
 	profileChanged := d.HasChange(isInstanceProfile)
 	bandwidthChanged := d.HasChange(isInstanceTotalVolumeBandwidth)
+	threadsPerCoreChanged := d.HasChange(isInstanceThreadsPerCore)
 
-	if (profileChanged || bandwidthChanged) && !d.IsNewResource() {
+	if (profileChanged || bandwidthChanged || threadsPerCoreChanged) && !d.IsNewResource() {
 		var needsRestart bool = false
 
-		// If profile is changing, we need to stop and restart the instance
-		if profileChanged {
+		// Profile and threads_per_core both require a stop/start cycle;
+		// bandwidth alone does not.
+		if profileChanged || threadsPerCoreChanged {
 			needsRestart = true
 			getinsOptions := &vpcv1.GetInstanceOptions{
 				ID: &id,
@@ -7937,6 +7938,14 @@ func instanceUpdate(context context.Context, d *schema.ResourceData, meta interf
 		if bandwidthChanged {
 			totalVolBandwidth := int64(d.Get(isInstanceTotalVolumeBandwidth).(int))
 			instancePatchModel.TotalVolumeBandwidth = &totalVolBandwidth
+		}
+
+		// Add threads_per_core to patch if it's changing.
+		// Included here so it is sent in the same PATCH as the profile when both
+		// change, ensuring the API validates the value against the new profile.
+		if threadsPerCoreChanged {
+			threadsPerCore := int64(d.Get(isInstanceThreadsPerCore).(int))
+			instancePatchModel.ThreadsPerCore = &threadsPerCore
 		}
 
 		// Convert to patch and apply

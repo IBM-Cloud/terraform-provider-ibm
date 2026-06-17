@@ -1326,6 +1326,11 @@ func dataSourceIBMISInstanceTemplateRead(context context.Context, d *schema.Reso
 					return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting volume_bandwidth_qos_mode: %s", err), "(Data) ibm_is_instance_template", "read", "set-volume_bandwidth_qos_mode").GetDiag()
 				}
 			}
+			if instanceTemplate.ThreadsPerCore != nil {
+				if err = d.Set(isInstanceTemplateThreadsPerCore, int(*instanceTemplate.ThreadsPerCore)); err != nil {
+					return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting threads_per_core: %s", err), "(Data) ibm_is_instance_template", "read", "set-threads_per_core").GetDiag()
+				}
+			}
 
 			if instanceTemplate.PrimaryNetworkInterface != nil {
 				interfaceList := make([]map[string]interface{}, 0)
