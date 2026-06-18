@@ -2423,9 +2423,6 @@ func TestAccPreCheckKmsCrypto(t *testing.T) {
 	if v := os.Getenv("IBMCLOUD_API_KEY"); v == "" {
 		t.Fatal("IBMCLOUD_API_KEY must be set for acceptance tests")
 	}
-	if v := os.Getenv("IBMCLOUD_IAM_API_ENDPOINT"); v == "" {
-		t.Fatal("IBMCLOUD_IAM_API_ENDPOINT must be set for acceptance tests")
-	}
 	endpointURL := os.Getenv("KP_URL")
 	if endpointURL == "" {
 		t.Fatal("KP_URL must be set for acceptance tests")

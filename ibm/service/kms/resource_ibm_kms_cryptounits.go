@@ -96,7 +96,7 @@ func ResourceIBMKmsCryptoUnits() *schema.Resource {
 						"filepath": {
 							Type:        schema.TypeString,
 							Required:    true,
-							Description: "The filepath to store the signature key",
+							Description: "The filepath to store the signature key or find an exisiting signature key",
 						},
 						"passphrase": {
 							Type:             schema.TypeString,
@@ -110,12 +110,6 @@ func ResourceIBMKmsCryptoUnits() *schema.Resource {
 							Optional:    true,
 							Default:     "",
 							Description: "The owner of the signature_key",
-						},
-						"overwrite": {
-							Type:        schema.TypeBool,
-							Optional:    true,
-							Default:     true,
-							Description: "Set to true if the signature_key file exists from the filepath, false if it should be generated",
 						},
 					},
 				},
@@ -136,7 +130,7 @@ func ResourceIBMKmsCryptoUnits() *schema.Resource {
 									"filepath": {
 										Type:        schema.TypeString,
 										Required:    true,
-										Description: "The filepath to store the key share file",
+										Description: "The filepath to store the key share file or find an existing one",
 									},
 									"passphrase": {
 										Type:             schema.TypeString,
@@ -152,12 +146,6 @@ func ResourceIBMKmsCryptoUnits() *schema.Resource {
 							Type:        schema.TypeString,
 							Required:    true,
 							Description: "The name of the master backup key shown on the cryptounit",
-						},
-						"overwrite": {
-							Type:        schema.TypeBool,
-							Optional:    true,
-							Default:     false,
-							Description: "Set to true if keysharefiles should be overwritten files, false if it should be generated",
 						},
 					},
 				},
@@ -437,9 +425,6 @@ func parseSignatureKey(d *schema.ResourceData) (*keyprotect_dedicated.SignatureK
 	if !ok {
 		return nil, fmt.Errorf("owner must be a string")
 	}
-	if owner == "" {
-		return nil, fmt.Errorf("owner cannot be empty")
-	}
 	// Check whether the resolved filepath actually exists on disk
 	_, statErr := os.Stat(resolvedFilePath)
 	fileExists := !os.IsNotExist(statErr)
@@ -562,14 +547,22 @@ func resourceIBMKmsCryptoUnitsUpdate(ctx context.Context, d *schema.ResourceData
 		// All units already fully initialized — nothing to do, skip to Read.
 		return resourceIBMKmsCryptoUnitsRead(ctx, d, meta)
 	}
-
-	// Not all units are KMSInitialized (reserved, mixed, or partial failure).
-	// Zeroize any unit that is not already reserved to get back to a clean slate.
-	for _, cu := range cryptoUnitsResponse.CryptoUnits {
-		if cu.State != keyprotect_dedicated.CryptoUnitStateKMSInitialized {
-			tflog.Warn(ctx, "cryptounit is in a state",
-				map[string]interface{}{"instance_id": kpOpts.InstanceID, "cryptounit": cu.ID})
-			return diag.Errorf("failed to update cryptounits resource due to cryptounit %s", cu.ID)
+	if v, ok := d.GetOk("should_zeroize"); ok {
+		if sz, ok := v.(bool); ok && sz {
+			tflog.Warn(ctx, "should_zeroize is true — zeroizing all crypto units before re-initialization",
+				map[string]interface{}{"instance_id": kpOpts.InstanceID})
+			for _, cu := range cryptoUnitsResponse.CryptoUnits {
+				if zerr := kmsCryptoUnitClient.ZeroizeCryptoUnitWithContext(ctx, cu.ID); zerr != nil {
+					tflog.Warn(ctx, "zeroize failed — keys may linger; delete keys and wait for the key purge",
+						map[string]interface{}{"instance_id": kpOpts.InstanceID, "cryptounit": cu.ID})
+					return diag.Errorf("failed to zeroize crypto unit %s: %v", cu.ID, zerr)
+				}
+				tflog.Info(ctx, "successfully zeroized crypto unit",
+					map[string]interface{}{"instance_id": kpOpts.InstanceID, "cryptounit": cu.ID})
+			}
+		} else {
+			tflog.Warn(ctx, "should_zeroize is false — all crypto units will keep their state",
+				map[string]interface{}{"instance_id": kpOpts.InstanceID})
 		}
 	}
 
