@@ -29,8 +29,3 @@ variable "iam_trusted_profile_identity_accounts" {
   type        = list(string)
   default     = [ "accounts" ]
 }
-variable "iam_trusted_profile_identity_description" {
-  description = "Description of the identity that can assume the trusted profile. This is optional field for all the types of identities. When this field is not set for the identity type 'serviceid' then the description of the service id is used. Description is recommended for the identity type 'crn' E.g. 'Instance 1234 of IBM Cloud Service project'."
-  type        = string
-  default     = "description"
-}

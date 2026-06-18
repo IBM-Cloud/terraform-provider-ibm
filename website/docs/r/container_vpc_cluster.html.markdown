@@ -188,6 +188,7 @@ Review the argument references that you can specify for your resource.
   - `wait_for_apply` - (Optional, Bool) Set **true** to make terraform wait until KMS is applied to master and it is ready and deployed. Default value is **false**.
 - `host_pool_id` - (Optional, String) If provided, the cluster will be associated with a dedicated host pool identified by this ID.
 - `kube_version` - (Optional, String)  Specify the Kubernetes version, including the major.minor version. If you do not include this flag, the default version is used. To see available versions, run `ibmcloud ks versions`.
+- `offering` - (Optional, String) The cluster offering type. Supported values are `kubernetes` (IBM Cloud Kubernetes Service cluster, default), `openshift` (Red Hat OpenShift Kubernetes Service cluster), and `openshift-vs` (Red Hat OpenShift Virtualization Service cluster).
 - `operating_system` - (Optional, String) The operating system of the workers in the default worker pool. For supported options, see [Red Hat OpenShift on IBM Cloud version information](https://cloud.ibm.com/docs/openshift?topic=openshift-openshift_versions) or [IBM Cloud Kubernetes Service version information](https://cloud.ibm.com/docs/containers?topic=containers-cs_versions). This field only affects cluster creation, to manage the default worker pool, create a dedicated worker pool resource.
 - `secondary_storage` - (Optional, String) The secondary storage option for the workers in the default worker pool. This field only affects cluster creation, to manage the default worker pool, create a dedicated worker pool resource.
 - `patch_version` - (Optional, String) Updates the worker nodes with the required patch version. For more information, about Kubernetes version information and update, see [Kubernetes version update](https://cloud.ibm.com/docs/containers?topic=containers-cs_versions). **Note** To update the patch or fix pack versions of the worker nodes, run the command `ibmcloud ks workers -c <cluster_name_or_id> output json`. Fetch the required patch & fix pack versions from `kubeVersion.target` and set the `patch_version` parameter in the format:  `patch_version_fixpack_version`. To force terraform to check for the availability of a worker update on every `terraform apply` and to apply it if one is availble, set `patch_version` to `timestamp()`.
@@ -248,6 +249,7 @@ In addition to all argument reference list, you can access the following attribu
 - `ingress_secret` - (String) The name of the Ingress secret that was created for you and that the Ingress subdomain uses.
 - `master_status` - (String) The status of the Kubernetes master.
 - `master_url` - (String) The URL of the Kubernetes master.
+- `offering` - (String) The cluster offering type.
 - `private_service_endpoint_url` - (String) The private service endpoint URL.
 - `vpe_service_endpoint_url` - (String) The virtual private endpoint URL.
 - `public_service_endpoint_url` - (String) The public service endpoint URL.
