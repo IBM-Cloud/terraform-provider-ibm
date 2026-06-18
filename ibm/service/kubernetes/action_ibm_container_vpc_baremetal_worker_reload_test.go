@@ -181,7 +181,7 @@ func testAccCheckIBMContainerVpcBareMetalWorkerReloadBasic(vpcname, subnetname, 
 	# Reload the first bare metal worker using the worker ID (which is the bare metal server ID for bare metal workers)
 	action "ibm_container_vpc_bare_metal_worker_reload" "test_reload" {
 		config {
-			cluster_id           = ibm_container_vpc_cluster.cluster.id
+			cluster_name_id           = ibm_container_vpc_cluster.cluster.id
 			bare_metal_server_id = data.ibm_container_vpc_cluster.cluster_data.workers[0]
 			%s
 			%s

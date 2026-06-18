@@ -46,7 +46,7 @@ type containerVpcBareMetalWorkerReloadAction struct {
 }
 
 type workerReloadModel struct {
-	ClusterID         types.String `tfsdk:"cluster_id"`
+	ClusterNameID     types.String `tfsdk:"cluster_name_id"`
 	BareMetalServerID types.String `tfsdk:"bare_metal_server_id"`
 	Timeout           types.String `tfsdk:"timeout"`
 	NoWait            types.Bool   `tfsdk:"no_wait"`
@@ -60,7 +60,7 @@ func (a *containerVpcBareMetalWorkerReloadAction) Schema(ctx context.Context, re
 	resp.Schema = schema.Schema{
 		Description: "Reloads a bare metal worker node in a VPC cluster. This action triggers a reload operation for the specified worker node. Actions do not return output values.",
 		Attributes: map[string]schema.Attribute{
-			"cluster_id": schema.StringAttribute{
+			"cluster_name_id": schema.StringAttribute{
 				Required:    true,
 				Description: "The ID or name of the VPC cluster containing the bare metal worker node.",
 			},
@@ -131,7 +131,7 @@ func (a *containerVpcBareMetalWorkerReloadAction) Invoke(ctx context.Context, re
 		return
 	}
 
-	clusterID := config.ClusterID.ValueString()
+	clusterNameID := config.ClusterNameID.ValueString()
 	bareMetalServerId := config.BareMetalServerID.ValueString()
 
 	// Parse timeout duration, default to 45 minutes
@@ -146,7 +146,7 @@ func (a *containerVpcBareMetalWorkerReloadAction) Invoke(ctx context.Context, re
 	}
 
 	resp.SendProgress(action.InvokeProgressEvent{
-		Message: fmt.Sprintf("Reloading bare metal server '%s' in cluster '%s'...", bareMetalServerId, clusterID),
+		Message: fmt.Sprintf("Reloading bare metal server '%s' in cluster '%s'...", bareMetalServerId, clusterNameID),
 	})
 
 	// Send reload request
@@ -157,7 +157,7 @@ func (a *containerVpcBareMetalWorkerReloadAction) Invoke(ctx context.Context, re
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Failed to Initiate Bare Metal Worker Reload",
-			fmt.Sprintf("Failed to reload bare metal server '%s' in cluster '%s': %s", bareMetalServerId, clusterID, err.Error()),
+			fmt.Sprintf("Failed to reload bare metal server '%s' in cluster '%s': %s", bareMetalServerId, clusterNameID, err.Error()),
 		)
 		return
 	}
@@ -175,28 +175,28 @@ func (a *containerVpcBareMetalWorkerReloadAction) Invoke(ctx context.Context, re
 		Message: fmt.Sprintf("Waiting for bare metal server '%s' reload to complete (timeout: %v)...", bareMetalServerId, timeout),
 	})
 
-	_, waitErr := waitForBareMetalWorkerReloadAvailable(ctx, a.vpcWorkerClient, bareMetalServerId, clusterID, timeout)
+	_, waitErr := waitForBareMetalWorkerReloadAvailable(ctx, a.vpcWorkerClient, bareMetalServerId, clusterNameID, timeout)
 	if waitErr != nil {
 		resp.Diagnostics.AddError(
 			"Bare Metal Worker Reload Failed",
-			fmt.Sprintf("Failed waiting for bare metal server '%s' reload in cluster '%s': %s", bareMetalServerId, clusterID, waitErr.Error()),
+			fmt.Sprintf("Failed waiting for bare metal server '%s' reload in cluster '%s': %s", bareMetalServerId, clusterNameID, waitErr.Error()),
 		)
 		return
 	}
 
 	resp.SendProgress(action.InvokeProgressEvent{
-		Message: fmt.Sprintf("Bare metal server '%s' reload completed successfully in cluster '%s'", bareMetalServerId, clusterID),
+		Message: fmt.Sprintf("Bare metal server '%s' reload completed successfully in cluster '%s'", bareMetalServerId, clusterNameID),
 	})
 }
 
-func waitForBareMetalWorkerReloadAvailable(ctx context.Context, vpcWorkerClient containerv2.Workers, bareMetalServerId string, clusterId string, timeout time.Duration) (interface{}, error) {
+func waitForBareMetalWorkerReloadAvailable(ctx context.Context, vpcWorkerClient containerv2.Workers, bareMetalServerId string, clusterNameId string, timeout time.Duration) (interface{}, error) {
 	log.Printf("Waiting for bare metal worker node to be deployed.")
 	stateConf := &retry.StateChangeConf{
 
 		Pending: []string{bareMetalWorkerStatusUndeploying, bareMetalWorkerStatusUndeployed,
 			bareMetalWorkerStatusReloadPending, bareMetalWorkerStatusReloading, bareMetalWorkerStatusReloaded, bareMetalWorkerStatusDeploying},
 		Target:     []string{bareMetalWorkerStatusDeployed, bareMetalWorkerStatusDeployFailed, bareMetalWorkerStatusReloadingFailed},
-		Refresh:    bareMetalWorkerReloadRefreshFunc(vpcWorkerClient, bareMetalServerId, clusterId),
+		Refresh:    bareMetalWorkerReloadRefreshFunc(vpcWorkerClient, bareMetalServerId, clusterNameId),
 		Timeout:    timeout,
 		Delay:      20 * time.Second, // 20 seconds delay before the check start
 		MinTimeout: 10 * time.Second,
@@ -204,9 +204,9 @@ func waitForBareMetalWorkerReloadAvailable(ctx context.Context, vpcWorkerClient 
 	return stateConf.WaitForStateContext(ctx)
 }
 
-func bareMetalWorkerReloadRefreshFunc(vpcWorkerClient containerv2.Workers, bareMetalServerId string, clusterId string) retry.StateRefreshFunc {
+func bareMetalWorkerReloadRefreshFunc(vpcWorkerClient containerv2.Workers, bareMetalServerId string, clusterNameId string) retry.StateRefreshFunc {
 	return func() (interface{}, string, error) {
-		worker, err := vpcWorkerClient.Get(clusterId, bareMetalServerId, containerv2.ClusterTargetHeader{})
+		worker, err := vpcWorkerClient.Get(clusterNameId, bareMetalServerId, containerv2.ClusterTargetHeader{})
 		if err != nil {
 			return nil, "", fmt.Errorf("error getting bare metal server worker node: %s", err)
 		}

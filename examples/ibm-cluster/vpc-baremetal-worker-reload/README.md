@@ -69,7 +69,7 @@ data "ibm_container_cluster_config" "cluster_config" {
 # Example 1: Reload bare metal worker and wait for completion
 action "ibm_container_vpc_bare_metal_worker_reload" "reload" {
   config {
-    cluster_id           = ibm_container_vpc_cluster.cluster.id
+    cluster_name_id      = ibm_container_vpc_cluster.cluster.id
     bare_metal_server_id = data.ibm_container_vpc_cluster.cluster_data.workers[0]
     timeout              = "1h"
   }
@@ -78,7 +78,7 @@ action "ibm_container_vpc_bare_metal_worker_reload" "reload" {
 # Example 2: Reload bare metal worker without waiting (fire-and-forget)
 action "ibm_container_vpc_bare_metal_worker_reload" "reload_no_wait" {
   config {
-    cluster_id           = ibm_container_vpc_cluster.cluster.id
+    cluster_name_id      = ibm_container_vpc_cluster.cluster.id
     bare_metal_server_id = data.ibm_container_vpc_cluster.cluster_data.workers[0]
     no_wait              = true
   }
@@ -139,7 +139,7 @@ When invoked, this action:
 
 | Name | Description | Type | Required | Default |
 |------|-------------|------|---------|---------|
-| cluster_id | The ID of the VPC cluster containing the worker. | `string` | yes | - |
+| cluster_name_id | The name or ID of the VPC cluster containing the worker. | `string` | yes | - |
 | bare_metal_server_id | The ID of the bare metal server to reload (same as worker ID for bare metal workers). | `string` | yes | - |
 | timeout | Maximum time to wait for the reload operation (e.g., "1h", "30m"). | `string` | no | "45m" |
 | no_wait | If true, returns immediately after triggering the reload without waiting for completion. | `bool` | no | false |

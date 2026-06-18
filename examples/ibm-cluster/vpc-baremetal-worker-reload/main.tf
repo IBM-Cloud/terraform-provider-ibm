@@ -49,7 +49,7 @@ data "ibm_container_cluster_config" "cluster_config" {
 // Invoke with: terraform apply -invoke action.ibm_container_vpc_bare_metal_worker_reload.reload
 action "ibm_container_vpc_bare_metal_worker_reload" "reload" {
   config {
-    cluster_id           = ibm_container_vpc_cluster.cluster.id
+    cluster_name_id      = ibm_container_vpc_cluster.cluster.id
     bare_metal_server_id = data.ibm_container_vpc_cluster.cluster_data.workers[0]
   }
 }
@@ -58,7 +58,7 @@ action "ibm_container_vpc_bare_metal_worker_reload" "reload" {
 // Invoke with: terraform apply -invoke action.ibm_container_vpc_bare_metal_worker_reload.reload_no_wait
 action "ibm_container_vpc_bare_metal_worker_reload" "reload_no_wait" {
   config {
-    cluster_id           = ibm_container_vpc_cluster.cluster.id
+    cluster_name_id      = ibm_container_vpc_cluster.cluster.id
     bare_metal_server_id = data.ibm_container_vpc_cluster.cluster_data.workers[0]
     no_wait              = true
   }
