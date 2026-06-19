@@ -369,14 +369,15 @@ func (g *resourceIBMDatabaseGen2Backend) buildGen2Parameters(d *schema.ResourceD
 	// Handle encryption
 	g.addEncryptionConfig(d, dataservices)
 
+	// Add restore_backup_id if provided (for restore from backup)
+	// Note: Gen2 uses "restore_backup_id" inside dataservices, not "backup_id" at top level
+	if backupID, ok := d.GetOk("backup_id"); ok {
+		dataservices["restore_backup_id"] = backupID.(string)
+	}
+
 	// Build final parameters structure
 	parameters := map[string]interface{}{
 		"dataservices": dataservices,
-	}
-
-	// Add backup_id if provided (for restore from backup)
-	if backupID, ok := d.GetOk("backup_id"); ok {
-		parameters["backup_id"] = backupID.(string)
 	}
 
 	return parameters, nil
