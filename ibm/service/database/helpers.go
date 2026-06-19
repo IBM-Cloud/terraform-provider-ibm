@@ -146,38 +146,28 @@ func isGen2Plan(plan string) bool {
 // Returns an error if the backup is not allowed (Classic backup).
 //
 // Three backup types:
-//
-//  1. Classic backup - NOT ALLOWED
-//     CRN: crn:v1:bluemix:public:databases-for-*:region:a/account:instance-id:backup:backup-id
-//     Has instance ID in CRN (8th section), instance PlanId does NOT contain "-gen2"
-//
+//  1. Classic backup - NOT ALLOWED at this point
 //  2. Gen2 "coupled" backup - ALLOWED
-//     CRN: crn:v1:bluemix:public:databases-for-*:region:a/account:instance-id:backup:backup-id
-//     Has instance ID in CRN (8th section), instance PlanId DOES contain "-gen2"
-//
 //  3. Gen2 "decoupled" backup - ALLOWED
-//     CRN: crn:v1:bluemix:public:databases-independent-backups:region:a/account:backup-id::
-//     Contains "databases-independent-backups" in 5th section, no instance ID
 func validateGen2BackupCRN(backupCRN string, meta interface{}) error {
 	if backupCRN == "" {
 		return nil
 	}
 
-	// Parse CRN
 	parts := strings.Split(backupCRN, ":")
 	if len(parts) < 10 {
 		return fmt.Errorf("invalid backup CRN format: expected 10 parts, got %d", len(parts))
 	}
 
 	// Check if it's a decoupled backup (databases-independent-backups)
-	serviceName := parts[4] // 5th section (0-indexed)
+	serviceName := parts[4]
 	if serviceName == "databases-independent-backups" {
 		// Decoupled backup - ALLOWED
 		return nil
 	}
 
 	// It's a coupled backup - need to check if the source instance is Gen2
-	instanceID := parts[7] // 8th section (0-indexed)
+	instanceID := parts[7]
 	if instanceID == "" {
 		return fmt.Errorf("backup CRN does not contain instance ID and is not a decoupled backup")
 	}
