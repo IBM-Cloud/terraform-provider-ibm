@@ -141,6 +141,88 @@ func isGen2Plan(plan string) bool {
 	return gen2Pattern.MatchString(strings.ToLower(plan))
 }
 
+// validateGen2BackupCRN validates if a backup CRN is allowed for Gen2 database restore.
+// Returns nil if the backup is allowed (Gen2 coupled or decoupled backup).
+// Returns an error if the backup is not allowed (Classic backup).
+//
+// Three backup types:
+//
+//  1. Classic backup - NOT ALLOWED
+//     CRN: crn:v1:bluemix:public:databases-for-*:region:a/account:instance-id:backup:backup-id
+//     Has instance ID in CRN (8th section), instance PlanId does NOT contain "-gen2"
+//
+//  2. Gen2 "coupled" backup - ALLOWED
+//     CRN: crn:v1:bluemix:public:databases-for-*:region:a/account:instance-id:backup:backup-id
+//     Has instance ID in CRN (8th section), instance PlanId DOES contain "-gen2"
+//
+//  3. Gen2 "decoupled" backup - ALLOWED
+//     CRN: crn:v1:bluemix:public:databases-independent-backups:region:a/account:backup-id::
+//     Contains "databases-independent-backups" in 5th section, no instance ID
+func validateGen2BackupCRN(backupCRN string, meta interface{}) error {
+	if backupCRN == "" {
+		return nil
+	}
+
+	// Parse CRN
+	parts := strings.Split(backupCRN, ":")
+	if len(parts) < 10 {
+		return fmt.Errorf("invalid backup CRN format: expected 10 parts, got %d", len(parts))
+	}
+
+	// Check if it's a decoupled backup (databases-independent-backups)
+	serviceName := parts[4] // 5th section (0-indexed)
+	if serviceName == "databases-independent-backups" {
+		// Decoupled backup - ALLOWED
+		return nil
+	}
+
+	// It's a coupled backup - need to check if the source instance is Gen2
+	instanceID := parts[7] // 8th section (0-indexed)
+	if instanceID == "" {
+		return fmt.Errorf("backup CRN does not contain instance ID and is not a decoupled backup")
+	}
+
+	// Construct instance CRN by clearing last 2 sections (resource-type and resource)
+	instanceCRN := strings.Join(parts[:8], ":") + "::"
+
+	// Get the instance to check its plan
+	rsConClient, err := meta.(conns.ClientSession).ResourceControllerV2API()
+	if err != nil {
+		return fmt.Errorf("failed to initialize resource controller client: %w", err)
+	}
+
+	instance, response, err := rsConClient.GetResourceInstance(&rc.GetResourceInstanceOptions{
+		ID: &instanceCRN,
+	})
+	if err != nil {
+		return fmt.Errorf("failed to get backup source instance %s: %w (response: %v)", instanceCRN, err, response)
+	}
+
+	if instance.ResourcePlanID == nil {
+		return fmt.Errorf("backup source instance %s has no resource plan ID", instanceCRN)
+	}
+
+	// Get the plan name to check if it's Gen2
+	rsCatClient, err := meta.(conns.ClientSession).ResourceCatalogAPI()
+	if err != nil {
+		return fmt.Errorf("failed to initialize catalog client: %w", err)
+	}
+
+	rsCatRepo := rsCatClient.ResourceCatalog()
+	servicePlan, err := rsCatRepo.GetServicePlanName(*instance.ResourcePlanID)
+	if err != nil {
+		return fmt.Errorf("failed to get service plan for backup source instance: %w", err)
+	}
+
+	// Check if the plan is Gen2
+	if !isGen2Plan(servicePlan) {
+		return fmt.Errorf("backup_id references a Classic backup (plan: %s). Gen2 databases can only restore from Gen2 coupled backups or Gen2 decoupled backups. Please use a Gen2 backup CRN", servicePlan)
+	}
+
+	// Gen2 coupled backup - ALLOWED
+	return nil
+}
+
 // extractLocationFromCRN extracts the location (region) from an IBM Cloud CRN.
 // CRN format: crn:version:cname:ctype:service-name:location:scope:service-instance:resource-type:resource
 // Returns the location field (index 5) or an error if the CRN is invalid.

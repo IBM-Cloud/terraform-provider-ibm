@@ -24,7 +24,6 @@ import (
 )
 
 var gen2UnsupportedAttrs = []string{
-	"backup_id",
 	"point_in_time_recovery_deployment_id",
 	"point_in_time_recovery_time",
 	"backup_policy",
@@ -112,9 +111,6 @@ var gen2AttrGuidance = map[string]string{
 	"adminpassword": "Gen2 databases do not create default admin user during provisioning.\n" +
 		"Please use the Terraform resource 'ibm_resource_key' to create and manage one.\n" +
 		"Documentation: https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/resources/resource_key",
-
-	"backup_id": "Gen2 databases do not support restoring from backups using the 'backup_id' attribute at this point.\n" +
-		"Documentation: https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/resources/database",
 
 	"point_in_time_recovery_deployment_id": "Gen2 databases do not support restoring from backups using the 'point_in_time_recovery_deployment_id' attribute at this point.\n" +
 		"Documentation: https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/resources/database",
@@ -343,9 +339,16 @@ func (g *resourceIBMDatabaseGen2Backend) setResourceGroup(d *schema.ResourceData
 }
 
 // buildGen2Parameters constructs the Gen2-specific parameters structure.
-// Includes database configuration and encryption settings.
-// Note: backup_id restore and PITR are not supported in Gen2.
+// Includes database configuration, encryption settings, and backup_id for restore.
+// Note: PITR is not supported in Gen2. backup_id is validated to ensure only Gen2 backups are used.
 func (g *resourceIBMDatabaseGen2Backend) buildGen2Parameters(d *schema.ResourceData, serviceName string, meta interface{}, catalogCRN string) (map[string]interface{}, error) {
+	// Validate backup_id if provided (only Gen2 coupled and decoupled backups are allowed at this point)
+	if backupID, ok := d.GetOk("backup_id"); ok {
+		if err := validateGen2BackupCRN(backupID.(string), meta); err != nil {
+			return nil, err
+		}
+	}
+
 	// Get the database type for the dataservices key
 	dbType := getDatabaseTypeFromResourceID(serviceName)
 	if dbType == "" {
@@ -369,6 +372,11 @@ func (g *resourceIBMDatabaseGen2Backend) buildGen2Parameters(d *schema.ResourceD
 	// Build final parameters structure
 	parameters := map[string]interface{}{
 		"dataservices": dataservices,
+	}
+
+	// Add backup_id if provided (for restore from backup)
+	if backupID, ok := d.GetOk("backup_id"); ok {
+		parameters["backup_id"] = backupID.(string)
 	}
 
 	return parameters, nil
