@@ -1,3 +1,17 @@
+# 2.3.0 (June 19, 2026)
+
+## Enhancements
+
+### Catalog Management
+* Expose validation.target info in ibm_cm_validation resource and ibm_cm_version datasource ([6830](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6830))
+
+
+## Documentation
+
+### Transit Gateway
+* fix Transit Gateway docs missing opening front matter delimiter ([6863](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6863))
+
+
 # 2.3.0-beta0 (June 15, 2026)
 
 ## Bug Fixes
