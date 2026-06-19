@@ -92,7 +92,7 @@ func (a *containerVpcBareMetalWorkerReloadAction) Configure(ctx context.Context,
 	if !ok {
 		resp.Diagnostics.AddError(
 			"Unexpected Provider Data Type",
-			fmt.Sprintf("Expected conns.ClientSession, got: %T. Please report this issue to the provider developers.", req.ProviderData),
+			fmt.Sprintf("Expected conns.ClientSession, got: %T. The provider client session could not be established.", req.ProviderData),
 		)
 		return
 	}
@@ -101,8 +101,7 @@ func (a *containerVpcBareMetalWorkerReloadAction) Configure(ctx context.Context,
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable to Create Container Client",
-			"An unexpected error occurred when creating the Container client. "+
-				"If the error is not clear, please contact the provider developers.\n\n"+
+			"An unexpected error occurred when creating Container client.\n\n"+
 				"Container Client Error: "+err.Error(),
 		)
 		return
@@ -114,8 +113,7 @@ func (a *containerVpcBareMetalWorkerReloadAction) Configure(ctx context.Context,
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable to Create VPC Container Client",
-			"An unexpected error occurred when creating the VPC Container client. "+
-				"If the error is not clear, please contact the provider developers.\n\n"+
+			"An unexpected error occurred when creating the VPC Container client.\n\n"+
 				"VPC Container Client Error: "+err.Error(),
 		)
 		return
