@@ -1,8 +1,8 @@
-// Copyright IBM Corp. 2025 All Rights Reserved.
+// Copyright IBM Corp. 2026 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 /*
- * IBM OpenAPI Terraform Generator Version: 3.107.1-41b0fbd0-20250825-080732
+ * IBM OpenAPI Terraform Generator Version: 3.114.2-b2884bfd-20260601-185447
  */
 
 package partnercentersell
@@ -1038,6 +1038,21 @@ func ResourceIbmOnboardingIamRegistration() *schema.Resource {
 													Description: "The enforcement method used for the API type.",
 													Elem:        &schema.Schema{Type: schema.TypeString},
 												},
+												"event_publishing": &schema.Schema{
+													Type:        schema.TypeList,
+													MaxItems:    1,
+													Optional:    true,
+													Description: "Specifies the event publishing state.",
+													Elem: &schema.Resource{
+														Schema: map[string]*schema.Schema{
+															"state": &schema.Schema{
+																Type:        schema.TypeString,
+																Optional:    true,
+																Description: "The event publishing state.",
+															},
+														},
+													},
+												},
 												"display_name": &schema.Schema{
 													Type:        schema.TypeList,
 													MaxItems:    1,
@@ -1164,6 +1179,37 @@ func ResourceIbmOnboardingIamRegistration() *schema.Resource {
 																Type:        schema.TypeString,
 																Optional:    true,
 																Description: "Simplified Chinese.",
+															},
+														},
+													},
+												},
+											},
+										},
+									},
+									"defaults": &schema.Schema{
+										Type:        schema.TypeList,
+										MaxItems:    1,
+										Optional:    true,
+										Description: "Specifies default supported network operation behavior that applies when an API type does not explicitly set a value.",
+										Elem: &schema.Resource{
+											Schema: map[string]*schema.Schema{
+												"enforcement_method": &schema.Schema{
+													Type:        schema.TypeList,
+													Optional:    true,
+													Description: "The default enforcement method used for API types.",
+													Elem:        &schema.Schema{Type: schema.TypeString},
+												},
+												"event_publishing": &schema.Schema{
+													Type:        schema.TypeList,
+													MaxItems:    1,
+													Optional:    true,
+													Description: "Specifies the event publishing state.",
+													Elem: &schema.Resource{
+														Schema: map[string]*schema.Schema{
+															"state": &schema.Schema{
+																Type:        schema.TypeString,
+																Optional:    true,
+																Description: "The event publishing state.",
 															},
 														},
 													},
@@ -2021,7 +2067,7 @@ func ResourceIbmOnboardingIamRegistrationMapToSupportedAttributesOptions(modelMa
 	if modelMap["key"] != nil && modelMap["key"].(string) != "" {
 		model.Key = core.StringPtr(modelMap["key"].(string))
 	}
-	if modelMap["resource_hierarchy"] != nil && len(modelMap["resource_hierarchy"].([]interface{})) > 0 && modelMap["resource_hierarchy"].([]interface{})[0] != nil {
+	if modelMap["resource_hierarchy"] != nil && len(modelMap["resource_hierarchy"].([]interface{})) > 0 {
 		ResourceHierarchyModel, err := ResourceIbmOnboardingIamRegistrationMapToSupportedAttributesOptionsResourceHierarchy(modelMap["resource_hierarchy"].([]interface{})[0].(map[string]interface{}))
 		if err != nil {
 			return model, err
@@ -2308,6 +2354,13 @@ func ResourceIbmOnboardingIamRegistrationMapToIamServiceRegistrationSupportedNet
 		}
 		model.ApiTypes = apiTypes
 	}
+	if modelMap["defaults"] != nil && len(modelMap["defaults"].([]interface{})) > 0 && modelMap["defaults"].([]interface{})[0] != nil {
+		DefaultsModel, err := ResourceIbmOnboardingIamRegistrationMapToIamServiceRegistrationSupportedNetworkOperationsDefaults(modelMap["defaults"].([]interface{})[0].(map[string]interface{}))
+		if err != nil {
+			return model, err
+		}
+		model.Defaults = DefaultsModel
+	}
 	return model, nil
 }
 
@@ -2323,6 +2376,13 @@ func ResourceIbmOnboardingIamRegistrationMapToIamServiceRegistrationSupportedNet
 		}
 		model.EnforcementMethod = enforcementMethod
 	}
+	if modelMap["event_publishing"] != nil && len(modelMap["event_publishing"].([]interface{})) > 0 {
+		EventPublishingModel, err := ResourceIbmOnboardingIamRegistrationMapToIamServiceRegistrationSupportedNetworkOperationsEventPublishing(modelMap["event_publishing"].([]interface{})[0].(map[string]interface{}))
+		if err != nil {
+			return model, err
+		}
+		model.EventPublishing = EventPublishingModel
+	}
 	if modelMap["display_name"] != nil && len(modelMap["display_name"].([]interface{})) > 0 {
 		DisplayNameModel, err := ResourceIbmOnboardingIamRegistrationMapToIamServiceRegistrationDisplayNameObject(modelMap["display_name"].([]interface{})[0].(map[string]interface{}))
 		if err != nil {
@@ -2336,6 +2396,33 @@ func ResourceIbmOnboardingIamRegistrationMapToIamServiceRegistrationSupportedNet
 			return model, err
 		}
 		model.Description = DescriptionModel
+	}
+	return model, nil
+}
+
+func ResourceIbmOnboardingIamRegistrationMapToIamServiceRegistrationSupportedNetworkOperationsEventPublishing(modelMap map[string]interface{}) (*partnercentersellv1.IamServiceRegistrationSupportedNetworkOperationsEventPublishing, error) {
+	model := &partnercentersellv1.IamServiceRegistrationSupportedNetworkOperationsEventPublishing{}
+	if modelMap["state"] != nil && modelMap["state"].(string) != "" {
+		model.State = core.StringPtr(modelMap["state"].(string))
+	}
+	return model, nil
+}
+
+func ResourceIbmOnboardingIamRegistrationMapToIamServiceRegistrationSupportedNetworkOperationsDefaults(modelMap map[string]interface{}) (*partnercentersellv1.IamServiceRegistrationSupportedNetworkOperationsDefaults, error) {
+	model := &partnercentersellv1.IamServiceRegistrationSupportedNetworkOperationsDefaults{}
+	if modelMap["enforcement_method"] != nil {
+		enforcementMethod := []string{}
+		for _, enforcementMethodItem := range modelMap["enforcement_method"].([]interface{}) {
+			enforcementMethod = append(enforcementMethod, enforcementMethodItem.(string))
+		}
+		model.EnforcementMethod = enforcementMethod
+	}
+	if modelMap["event_publishing"] != nil && len(modelMap["event_publishing"].([]interface{})) > 0 {
+		EventPublishingModel, err := ResourceIbmOnboardingIamRegistrationMapToIamServiceRegistrationSupportedNetworkOperationsEventPublishing(modelMap["event_publishing"].([]interface{})[0].(map[string]interface{}))
+		if err != nil {
+			return model, err
+		}
+		model.EventPublishing = EventPublishingModel
 	}
 	return model, nil
 }
@@ -2855,6 +2942,13 @@ func ResourceIbmOnboardingIamRegistrationIamServiceRegistrationSupportedNetworkO
 		}
 		modelMap["api_types"] = apiTypes
 	}
+	if model.Defaults != nil {
+		defaultsMap, err := ResourceIbmOnboardingIamRegistrationIamServiceRegistrationSupportedNetworkOperationsDefaultsToMap(model.Defaults)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["defaults"] = []map[string]interface{}{defaultsMap}
+	}
 	return modelMap, nil
 }
 
@@ -2865,6 +2959,13 @@ func ResourceIbmOnboardingIamRegistrationIamServiceRegistrationSupportedNetworkO
 	}
 	if model.EnforcementMethod != nil {
 		modelMap["enforcement_method"] = model.EnforcementMethod
+	}
+	if model.EventPublishing != nil {
+		eventPublishingMap, err := ResourceIbmOnboardingIamRegistrationIamServiceRegistrationSupportedNetworkOperationsEventPublishingToMap(model.EventPublishing)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["event_publishing"] = []map[string]interface{}{eventPublishingMap}
 	}
 	if model.DisplayName != nil {
 		displayNameMap, err := ResourceIbmOnboardingIamRegistrationIamServiceRegistrationDisplayNameObjectToMap(model.DisplayName)
@@ -2879,6 +2980,29 @@ func ResourceIbmOnboardingIamRegistrationIamServiceRegistrationSupportedNetworkO
 			return modelMap, err
 		}
 		modelMap["description"] = []map[string]interface{}{descriptionMap}
+	}
+	return modelMap, nil
+}
+
+func ResourceIbmOnboardingIamRegistrationIamServiceRegistrationSupportedNetworkOperationsEventPublishingToMap(model *partnercentersellv1.IamServiceRegistrationSupportedNetworkOperationsEventPublishing) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.State != nil {
+		modelMap["state"] = *model.State
+	}
+	return modelMap, nil
+}
+
+func ResourceIbmOnboardingIamRegistrationIamServiceRegistrationSupportedNetworkOperationsDefaultsToMap(model *partnercentersellv1.IamServiceRegistrationSupportedNetworkOperationsDefaults) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.EnforcementMethod != nil {
+		modelMap["enforcement_method"] = model.EnforcementMethod
+	}
+	if model.EventPublishing != nil {
+		eventPublishingMap, err := ResourceIbmOnboardingIamRegistrationIamServiceRegistrationSupportedNetworkOperationsEventPublishingToMap(model.EventPublishing)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["event_publishing"] = []map[string]interface{}{eventPublishingMap}
 	}
 	return modelMap, nil
 }
@@ -3088,6 +3212,33 @@ func ResourceIbmOnboardingIamRegistrationIamServiceRegistrationSupportedNetworkO
 	} else if !exists {
 		delete(patch, "api_types")
 	}
+	path = rootPath + ".defaults"
+	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
+		patch["defaults"] = nil
+	} else if exists && patch["defaults"] != nil {
+		ResourceIbmOnboardingIamRegistrationIamServiceRegistrationSupportedNetworkOperationsDefaultsAsPatch(patch["defaults"].(map[string]interface{}), d, fmt.Sprintf("%s.0", path))
+	} else if !exists {
+		delete(patch, "defaults")
+	}
+}
+
+func ResourceIbmOnboardingIamRegistrationIamServiceRegistrationSupportedNetworkOperationsDefaultsAsPatch(patch map[string]interface{}, d *schema.ResourceData, rootPath string) {
+	var path string
+
+	path = rootPath + ".enforcement_method"
+	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
+		patch["enforcement_method"] = nil
+	} else if !exists {
+		delete(patch, "enforcement_method")
+	}
+	path = rootPath + ".event_publishing"
+	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
+		patch["event_publishing"] = nil
+	} else if exists && patch["event_publishing"] != nil {
+		ResourceIbmOnboardingIamRegistrationIamServiceRegistrationSupportedNetworkOperationsEventPublishingAsPatch(patch["event_publishing"].(map[string]interface{}), d, fmt.Sprintf("%s.0", path))
+	} else if !exists {
+		delete(patch, "event_publishing")
+	}
 }
 
 func ResourceIbmOnboardingIamRegistrationIamServiceRegistrationSupportedNetworkOperationsApiTypeItemsAsPatch(patch map[string]interface{}, d *schema.ResourceData, rootPath string) {
@@ -3105,6 +3256,14 @@ func ResourceIbmOnboardingIamRegistrationIamServiceRegistrationSupportedNetworkO
 	} else if !exists {
 		delete(patch, "enforcement_method")
 	}
+	path = rootPath + ".event_publishing"
+	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
+		patch["event_publishing"] = nil
+	} else if exists && patch["event_publishing"] != nil {
+		ResourceIbmOnboardingIamRegistrationIamServiceRegistrationSupportedNetworkOperationsEventPublishingAsPatch(patch["event_publishing"].(map[string]interface{}), d, fmt.Sprintf("%s.0", path))
+	} else if !exists {
+		delete(patch, "event_publishing")
+	}
 	path = rootPath + ".display_name"
 	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
 		patch["display_name"] = nil
@@ -3120,6 +3279,17 @@ func ResourceIbmOnboardingIamRegistrationIamServiceRegistrationSupportedNetworkO
 		ResourceIbmOnboardingIamRegistrationIamServiceRegistrationDescriptionObjectAsPatch(patch["description"].(map[string]interface{}), d, fmt.Sprintf("%s.0", path))
 	} else if !exists {
 		delete(patch, "description")
+	}
+}
+
+func ResourceIbmOnboardingIamRegistrationIamServiceRegistrationSupportedNetworkOperationsEventPublishingAsPatch(patch map[string]interface{}, d *schema.ResourceData, rootPath string) {
+	var path string
+
+	path = rootPath + ".state"
+	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
+		patch["state"] = nil
+	} else if !exists {
+		delete(patch, "state")
 	}
 }
 

@@ -1,4 +1,4 @@
-// Copyright IBM Corp. 2025 All Rights Reserved.
+// Copyright IBM Corp. 2026 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 /*
@@ -68,7 +68,7 @@ func ResourceIBMIAMTrustedProfileClaimRule() *schema.Resource {
 			"cr_type": &schema.Schema{
 				Type:        schema.TypeString,
 				Optional:    true,
-				Description: "The compute resource type. Not required if type is Profile-SAML. Valid values are VSI, IKS_SA, ROKS_SA.",
+				Description: "The compute resource type. Not required if type is Profile-SAML. Valid values are VSI, PVS, BMS, IKS_SA, ROKS_SA, CE.",
 			},
 			"conditions": &schema.Schema{
 				Type:        schema.TypeList,

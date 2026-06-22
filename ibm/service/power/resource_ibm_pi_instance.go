@@ -128,6 +128,11 @@ func ResourceIBMPIInstance() *schema.Resource {
 				Optional:      true,
 				Type:          schema.TypeString,
 			},
+			Arg_AllowRemoteRestart: {
+				Description: "Indicates if the server allows server to be restarted from remote",
+				Optional:    true,
+				Type:        schema.TypeBool,
+			},
 			Arg_AntiAffinityInstances: {
 				ConflictsWith: []string{Arg_AntiAffinityVolumes},
 				Description:   "List of pvmInstances to base storage anti-affinity policy against; required if requesting anti-affinity and pi_anti_affinity_volumes is not provided",
@@ -396,14 +401,13 @@ func ResourceIBMPIInstance() *schema.Resource {
 				Type:        schema.TypeString,
 			},
 			Arg_StorageConnection: {
-				Description:  "Storage Connectivity Group for server deployment",
-				Optional:     true,
-				Type:         schema.TypeString,
-				ValidateFunc: validate.ValidateAllowedStringValues([]string{vSCSI, MaxVolumeSupport}),
+				Description: "Storage Connectivity Group for server deployment",
+				Optional:    true,
+				Type:        schema.TypeString,
 			},
 			Arg_SysType: {
 				Computed:    true,
-				Description: "The type of system on which to create the VM (e980/e1080/e1150/e1180/s922/s1022/s1122).",
+				Description: "The type of system on which to create the VM.",
 				ForceNew:    true,
 				Optional:    true,
 				Type:        schema.TypeString,
@@ -859,6 +863,7 @@ func resourceIBMPIInstanceRead(ctx context.Context, d *schema.ResourceData, meta
 		}
 	}
 	d.Set(Attr_VPMEMVolumes, vpmemVolumesAttributes)
+	d.Set(Arg_AllowRemoteRestart, powervmdata.AllowRemoteRestart)
 
 	return nil
 }
@@ -1334,6 +1339,21 @@ func resourceIBMPIInstanceUpdate(ctx context.Context, d *schema.ResourceData, me
 					return tfErr.GetDiag()
 				}
 			}
+		}
+	}
+
+	if d.HasChange(Arg_AllowRemoteRestart) {
+		allowRemoteRestart := d.Get(Arg_AllowRemoteRestart).(bool)
+		body := &models.PVMInstanceUpdate{
+			AllowRemoteRestart: &allowRemoteRestart,
+		}
+		_, err = client.Update(instanceID, body)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		_, err = isWaitForPIInstanceAllowRemoteRestart(ctx, client, instanceID, allowRemoteRestart, d.Timeout(schema.TimeoutUpdate))
+		if err != nil {
+			return diag.FromErr(err)
 		}
 	}
 
@@ -1950,6 +1970,11 @@ func createSAPInstance(d *schema.ResourceData, sapClient *instance.IBMPISAPInsta
 	if vpmemVolumes, ok := d.GetOk(Arg_VPMEMVolumes); ok {
 		body.VpmemVolumes = expandPVMVPMEMVolumes(vpmemVolumes.([]any))
 	}
+	if !d.GetRawConfig().GetAttr(Arg_AllowRemoteRestart).IsNull() {
+		arr := d.Get(Arg_AllowRemoteRestart).(bool)
+		body.AllowRemoteRestart = &arr
+	}
+
 	pvmList, err := sapClient.Create(body)
 	if err != nil {
 		return nil, fmt.Errorf("failed to provision: %v", err)
@@ -2174,6 +2199,10 @@ func createPVMInstance(d *schema.ResourceData, client *instance.IBMPIInstanceCli
 	if vpmemVolumes, ok := d.GetOk(Arg_VPMEMVolumes); ok {
 		body.VpmemVolumes = expandPVMVPMEMVolumes(vpmemVolumes.([]any))
 	}
+	if !d.GetRawConfig().GetAttr(Arg_AllowRemoteRestart).IsNull() {
+		arr := d.Get(Arg_AllowRemoteRestart).(bool)
+		body.AllowRemoteRestart = &arr
+	}
 	pvmList, err := client.Create(body)
 
 	if err != nil {
@@ -2312,5 +2341,28 @@ func isPIInstanceVSNRemovedRefreshFunc(client *instance.IBMPIInstanceClient, id 
 		}
 
 		return pvm, State_Removing, nil
+	}
+}
+func isWaitForPIInstanceAllowRemoteRestart(ctx context.Context, client *instance.IBMPIInstanceClient, id string, arr bool, timeout time.Duration) (any, error) {
+	stateConf := &retry.StateChangeConf{
+		Delay:      Timeout_Delay,
+		MinTimeout: Timeout_Active,
+		Pending:    []string{State_InProgress},
+		Refresh:    isPIInstanceAllowRemoteRestart(client, id, arr),
+		Target:     []string{State_Available},
+		Timeout:    timeout,
+	}
+	return stateConf.WaitForStateContext(ctx)
+}
+func isPIInstanceAllowRemoteRestart(client *instance.IBMPIInstanceClient, id string, arr bool) retry.StateRefreshFunc {
+	return func() (any, string, error) {
+		pvm, err := client.Get(id)
+		if err != nil {
+			return nil, "", err
+		}
+		if arr != *pvm.AllowRemoteRestart {
+			return pvm, State_InProgress, nil
+		}
+		return pvm, State_Available, nil
 	}
 }

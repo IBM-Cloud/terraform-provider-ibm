@@ -1346,6 +1346,59 @@ func testAccCheckIBMPIInstanceVPMEMUpdateConfigMixed(name, instanceHealthStatus 
 	`, acc.Pi_cloud_instance_id, name, acc.Pi_image, acc.Pi_network_name, instanceHealthStatus, acc.PiStorageType)
 }
 
+func TestAccIBMPIInstanceAllowRemoteRestart(t *testing.T) {
+	instanceRes := "ibm_pi_instance.instance"
+	name := fmt.Sprintf("tf-pi-allow-remote-restart-%d", acctest.RandIntRange(10, 100))
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMPIInstanceDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccIBMPIInstanceAllowRemoteRestart(name, false),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMPIInstanceExists(instanceRes),
+					resource.TestCheckResourceAttr(instanceRes, "pi_instance_name", name),
+					resource.TestCheckResourceAttr(instanceRes, "pi_allow_remote_restart", "false"),
+				),
+			},
+			{
+				Config: testAccIBMPIInstanceAllowRemoteRestart(name, true),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMPIInstanceExists(instanceRes),
+					resource.TestCheckResourceAttr(instanceRes, "pi_allow_remote_restart", "true"),
+				),
+			},
+		},
+	})
+}
+
+func testAccIBMPIInstanceAllowRemoteRestart(name string, allowRemoteRestart bool) string {
+	return fmt.Sprintf(`
+	data "ibm_pi_image" "power_image" {
+		pi_cloud_instance_id = "%[1]s"
+		pi_image_id        = "%[3]s"
+	}
+	data "ibm_pi_network" "power_networks" {
+		pi_cloud_instance_id = "%[1]s"
+		pi_network_id        = "%[5]s"
+	}
+	resource "ibm_pi_instance" "instance" {
+		pi_allow_remote_restart  = "%[4]t"
+		pi_cloud_instance_id     = "%[1]s"
+		pi_image_id              = data.ibm_pi_image.power_image.id
+		pi_instance_name         = "%[2]s"
+		pi_memory                = "2"
+		pi_proc_type             = "shared"
+		pi_processors            = "0.25"
+		pi_sys_type              = "s922"
+		pi_network {
+			network_id = data.ibm_pi_network.power_networks.pi_network_id
+		}
+	}
+	`, acc.Pi_cloud_instance_id, name, acc.Pi_image_id, allowRemoteRestart, acc.Pi_network_id)
+}
+
 func testAccCheckIBMPIInstanceDestroy(s *terraform.State) error {
 	sess, err := acc.TestAccProvider.Meta().(conns.ClientSession).IBMPISession()
 	if err != nil {

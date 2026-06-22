@@ -5,3 +5,9 @@ output "ibm_iam_api_key" {
   description = "iam_api_key resource instance"
   sensitive = true
 }
+
+output "ibm_iam_api_key_data" {
+  value       = data.ibm_iam_api_key.iam_api_key_data
+  description = "iam_api_key data source"
+  sensitive = true
+}

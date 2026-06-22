@@ -2252,8 +2252,9 @@ func dataSourceIBMCmVersionValidationToMap(model *catalogmanagementv1.Validation
 	}
 	if model.Target != nil {
 		targetMap := make(map[string]interface{}, len(model.Target))
-		// for k, v := range model.Target {
-		// }
+		for k, v := range model.Target {
+			targetMap[k] = v
+		}
 		modelMap["target"] = flex.Flatten(targetMap)
 	}
 	if model.Message != nil {

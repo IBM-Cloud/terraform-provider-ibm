@@ -62,6 +62,16 @@ You can specify the following arguments for this resource.
 After your resource is created, you can read values from the listed arguments and the following attributes.
 
 - `id` - The unique identifier of the SnapshotConsistencyGroup.
+- `backup_policy_job` - (List) If present, the backup policy job that created this snapshot consistency group. Snapshot consistency groups with the same backup policy job identifier represent snapshots of the same instance across different storage generations.
+
+	Nested schema for `backup_policy_job`:
+	- `deleted` - (List) If present, this property indicates the referenced resource has been deleted, and provides some supplementary information.
+
+		Nested schema for `deleted`:
+		- `more_info` - (String) Link to documentation about deleted resources.
+	- `href` - (String) The URL for this backup policy job.
+	- `id` - (String) The unique identifier for this backup policy job.
+	- `resource_type` - (String) The resource type.	
 - `backup_policy_plan` - (List) If present, the backup policy plan which created this snapshot consistency group.
 
   Nested scheme for `backup_policy_plan`:

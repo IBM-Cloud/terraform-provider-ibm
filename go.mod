@@ -1,6 +1,6 @@
 module github.com/IBM-Cloud/terraform-provider-ibm
 
-go 1.25.2
+go 1.25.8
 
 require (
 	github.com/IBM-Cloud/bluemix-go v0.0.0-20260605140443-e006e534aa6d
@@ -16,7 +16,7 @@ require (
 	github.com/IBM/container-registry-go-sdk v1.4.0
 	github.com/IBM/continuous-delivery-go-sdk/v2 v2.0.8
 	github.com/IBM/dra-go-sdk v0.1.0
-	github.com/IBM/event-notifications-go-admin-sdk v0.22.0
+	github.com/IBM/event-notifications-go-admin-sdk v0.24.0
 	github.com/IBM/eventstreams-go-sdk v1.4.0
 	github.com/IBM/go-sdk-core/v5 v5.21.4
 	github.com/IBM/ibm-backup-recovery-sdk-go v1.2.1
@@ -29,7 +29,7 @@ require (
 	github.com/IBM/logs-router-go-sdk v1.0.8
 	github.com/IBM/mqcloud-go-sdk v0.4.0
 	github.com/IBM/networking-go-sdk v0.53.4
-	github.com/IBM/platform-services-go-sdk v0.97.5
+	github.com/IBM/platform-services-go-sdk v0.99.0
 	github.com/IBM/project-go-sdk v0.4.0
 	github.com/IBM/push-notifications-go-sdk v0.0.0-20210310100607-5790b96c47f5
 	github.com/IBM/sarama v1.45.0
@@ -39,7 +39,7 @@ require (
 	github.com/IBM/secrets-manager-go-sdk/v2 v2.0.15
 	github.com/IBM/vmware-go-sdk v0.1.5
 	github.com/IBM/vpc-beta-go-sdk v0.8.0
-	github.com/IBM/vpc-go-sdk v0.83.2
+	github.com/IBM/vpc-go-sdk v0.85.0
 	github.com/ScaleFT/sshkeys v0.0.0-20200327173127-6142f742bca5
 	github.com/akamai/AkamaiOPEN-edgegrid-golang v1.2.2
 	github.com/akamai/AkamaiOPEN-edgegrid-golang/v5 v5.0.0

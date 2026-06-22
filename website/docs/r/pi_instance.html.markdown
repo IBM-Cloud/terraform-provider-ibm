@@ -65,6 +65,7 @@ Review the argument references that you can specify for your resource.
 - `pi_affinity_instance` - (Optional, String) PVM Instance (ID or Name) to base storage affinity policy against; required if requesting `affinity` and `pi_affinity_volume` is not provided.
 - `pi_affinity_policy` - (Optional, String) Affinity policy for pvm instance being created; ignored if `pi_storage_pool` provided; for policy affinity requires one of `pi_affinity_instance` or `pi_affinity_volume` to be specified; for policy anti-affinity requires one of `pi_anti_affinity_instances` or `pi_anti_affinity_volumes` to be specified; Allowable values: `affinity`, `anti-affinity`
 - `pi_affinity_volume`- (Optional, String) Volume (ID or Name) to base storage affinity policy against; required if requesting `affinity` and `pi_affinity_instance` is not provided.
+- `pi_allow_remote_restart` - (Optional, Boolean) Indicates if the server allows server to be restarted from remote.
 - `pi_anti_affinity_instances` - (Optional, String) List of pvmInstances to base storage anti-affinity policy against; required if requesting `anti-affinity` and `pi_anti_affinity_volumes` is not provided.
 - `pi_anti_affinity_volumes`- (Optional, String) List of volumes to base storage anti-affinity policy against; required if requesting `anti-affinity` and `pi_anti_affinity_instances` is not provided.
 - `pi_boot_volume_replication_enabled` - (Optional, Boolean) Indicates if the boot volume should be replication enabled or not.
@@ -117,9 +118,8 @@ Review the argument references that you can specify for your resource.
 - `pi_storage_pool` - (Optional, String) Storage Pool for server deployment; if provided then `pi_affinity_policy` will be ignored; Only valid when you deploy one of the IBM supplied stock images. Storage pool for a custom image (an imported image or an image that is created from a VM capture) defaults to the storage pool the image was created in.
 - `pi_storage_pool_affinity` - (Optional, Boolean) Indicates if all volumes attached to the server must reside in the same storage pool. The default value is `true`. To attach data volumes from a different storage pool (mixed storage) set to `false` and use `pi_volume_attach` resource. Once set to `false`, cannot be set back to `true` unless all volumes attached reside in the same storage type and pool.
 - `pi_storage_type` - (Optional, String) - Storage type for server deployment; If storage type is not provided the storage type will default to `tier3`. To get a list of available storage types, please use the [ibm_pi_storage_types_capacity](https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/data-sources/pi_storage_types_capacity) data source.
-- `pi_storage_connection` - (Optional, String) - Storage Connectivity Group (SCG) for server deployment. Supported values are `vSCSI`, `maxVolumeSupport`.
-- `pi_sys_type` - (Optional, String) The type of system on which to create the VM (s922/e980/s1022/e1080/s1122/e1150/e1180).
-  - Supported SAP system types are (e980/s1022/e1050/e1080).
+- `pi_storage_connection` - (Optional, String) - Storage Connectivity Group (SCG) for server deployment.
+- `pi_sys_type` - (Optional, String) The type of system on which to create the VM. Please see: [Hardware Specifications on Cloud](https://cloud.ibm.com/docs/power-iaas?topic=power-iaas-on-cloud-architecture#hardware-specifications-on-cloud) for available machine types.
 - `pi_user_data` - (Optional, String) The user data `cloud-init` to pass to the instance during creation. It can be a base64 encoded or an unencoded string. If it is an unencoded string, the provider will encode it before it passing it down.
 - `pi_user_tags` - (Optional, List) The user tags attached to this resource.
 - `pi_virtual_cores_assigned`  - (Optional, Integer) Specify the number of virtual cores to be assigned.

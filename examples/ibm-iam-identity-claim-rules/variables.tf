@@ -30,7 +30,7 @@ variable "iam_trusted_profile_claim_rule_realm_name" {
   default     = "placeholder"
 }
 variable "iam_trusted_profile_claim_rule_cr_type" {
-  description = "The compute resource type the rule applies to, required only if type is specified as 'Profile-CR'. Valid values are VSI, IKS_SA, ROKS_SA."
+  description = "The compute resource type the rule applies to, required only if type is specified as 'Profile-CR'. Valid values are VSI, PVS, BMS, IKS_SA, ROKS_SA, CE."
   type        = string
   default     = "placeholder"
 }

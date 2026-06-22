@@ -1,3 +1,75 @@
+# 2.3.0 (June 19, 2026)
+
+## Enhancements
+
+### Catalog Management
+* Expose validation.target info in ibm_cm_validation resource and ibm_cm_version datasource ([6830](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6830))
+
+
+## Documentation
+
+### Transit Gateway
+* fix Transit Gateway docs missing opening front matter delimiter ([6863](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6863))
+
+
+# 2.3.0-beta0 (June 15, 2026)
+
+## Bug Fixes
+
+### Cloud Internet Services
+* handle deleted domain gracefully ([6843](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6843))
+
+### IAM
+* IAM identity: trusted profiles update ([6793](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6793))
+* IAM Identity ServiceId Group support ([6795](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6795))
+* IAM Identity: Fix consistency of CR type values ([6829](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6829))
+
+### Kubernetes
+* Support network plugin selection at VPC cluster creation ([6784](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6784))
+* Support cluster offering selection at VPC cluster creation ([6842](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6842))
+
+### VPC Infrastructure
+* Added resource group name and documentation of auto-delete ([6810](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6810))
+* use correct error variable in TerraformErrorf calls in vpc service ([6820](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6820))
+* fixed the import section for is_* documents ([6814](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6814))
+* fixed indentation in is_* resource docs ([6819](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6819))
+* remove vpc option for access_control_mode in is_share resource ([6832](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6832))
+* updated the vpc ike ipsec tests and documenation ([6856](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6856))
+
+
+## Enhancements
+
+### Catalog Management
+* added private endpoint support for Catalog Management service ([6831](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6831))
+
+### Event Notifications
+* resource and data source update to support Email Sandbox and enable view notification payload setting ([6742](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6742))
+
+### General
+* Pull in latest ICR SDK version ([6834](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6834))
+
+### ODF
+* ODF 4.20 and 4.21 initial support ([6790](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6790))
+
+### Partner Center Sell
+* adding metadata.other.location_proxied_by to deployments, default values for cbr, also new parameter for them called event_publishing on the IAM service object ([6844](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6844))
+
+### Power Systems
+* Remove specific machine references ([6840](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6840))
+* Update Power Go Client to V1.16.0 ([6848](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6848))
+
+### Schematics
+* Add suport for Schematics KMS Setting read ([6855](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6855))
+
+### CD Toolchain
+* Remove eu-es and jp-osa from deprecation warnings ([6822](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6822))
+
+### VPC Infrastructure
+* added multi algo support for vpc ike ipsec policies ([6769](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6769))
+* Multivolume vpc snapshot ([6852](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6852))
+
+
+
 # 2.2.2 (May 27, 2026)
 
 ## Enhancements
