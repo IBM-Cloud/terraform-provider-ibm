@@ -44,6 +44,7 @@ const (
 	Arg_DatacenterZone                       = "pi_datacenter_zone"
 	Arg_DefaultExportRouteFilter             = "pi_default_export_route_filter"
 	Arg_DefaultImportRouteFilter             = "pi_default_import_route_filter"
+	Arg_DefaultTrustedProfile                = "pi_default_trusted_profile"
 	Arg_DeploymentTarget                     = "pi_deployment_target"
 	Arg_DeploymentType                       = "pi_deployment_type"
 	Arg_Description                          = "pi_description"
@@ -96,6 +97,7 @@ const (
 	Arg_LE                                   = "pi_le"
 	Arg_LicenseRepositoryCapacity            = "pi_license_repository_capacity"
 	Arg_Memory                               = "pi_memory"
+	Arg_MetadataService                      = "pi_metadata_service"
 	Arg_Name                                 = "pi_name"
 	Arg_Network                              = "pi_network"
 	Arg_NetworkAddressGroupID                = "pi_network_address_group_id"
@@ -202,6 +204,7 @@ const (
 
 	// Attributes
 	Attr_Access                              = "access"
+	Attr_Account                             = "account"
 	Attr_Action                              = "action"
 	Attr_Addresses                           = "addresses"
 	Attr_Advertise                           = "advertise"
@@ -211,6 +214,7 @@ const (
 	Attr_ARPBroadcast                        = "arp_broadcast"
 	Attr_Asaps                               = "asaps"
 	Attr_AsynchronousReplication             = "asynchronous_replication"
+	Attr_Autolink                            = "autolink"
 	Attr_Auxiliary                           = "auxiliary"
 	Attr_AuxiliaryChangedVolumeName          = "auxiliary_changed_volume_name"
 	Attr_AuxiliaryVolumeName                 = "auxiliary_volume_name"
@@ -264,6 +268,7 @@ const (
 	Attr_DefaultExportRouteFilter            = "default_export_route_filter"
 	Attr_DefaultImportRouteFilter            = "default_import_route_filter"
 	Attr_DefaultSystem                       = "default_system"
+	Attr_DefaultTrustedProfile               = "default_trusted_profile"
 	Attr_DeleteOnTermination                 = "delete_on_termination"
 	Attr_DeploymentType                      = "deployment_type"
 	Attr_Deprecated                          = "deprecated"
@@ -303,6 +308,7 @@ const (
 	Attr_Flag                                = "flag"
 	Attr_FlashCopyMappings                   = "flash_copy_mappings"
 	Attr_FlashCopyName                       = "flash_copy_name"
+	Attr_ForceDisable                        = "force_disable"
 	Attr_FreezeTime                          = "freeze_time"
 	Attr_FullSystemProfile                   = "full_system_profile"
 	Attr_Gateway                             = "gateway"
@@ -385,6 +391,7 @@ const (
 	Attr_Members                             = "members"
 	Attr_Memory                              = "memory"
 	Attr_Message                             = "message"
+	Attr_MetadataService                     = "metadata_service"
 	Attr_Metered                             = "metered"
 	Attr_MigrationStatus                     = "migration_status"
 	Attr_Min                                 = "min"
@@ -591,6 +598,7 @@ const (
 	Attr_WWN                                 = "wwn"
 
 	// OS Type
+	OS_AIX   = "aix"
 	OS_IBMI  = "ibmi"
 	StockVTL = "stock-vtl"
 
