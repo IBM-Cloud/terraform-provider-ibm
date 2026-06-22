@@ -1775,8 +1775,13 @@ func classicDatabaseInstanceRead(context context.Context, d *schema.ResourceData
 	if err != nil {
 		return diag.FromErr(fmt.Errorf("[ERROR] Error getting database groups: %s", err))
 	}
+
+	// Disabled instances can have 0 members - they can still be read/deleted
+	// Print a warning and return early
+	// The state will retain previous values, which is acceptable for disabled instances
 	if len(groupList.Groups) == 0 || groupList.Groups[0].Members == nil || groupList.Groups[0].Members.AllocationCount == nil || *groupList.Groups[0].Members.AllocationCount == 0 {
-		return diag.FromErr(fmt.Errorf("[ERROR] This database appears to have have 0 members. Unable to proceed"))
+		log.Printf("[WARN] Database instance %s has 0 members (disabled state), skipping detailed read to allow deletion", instanceID)
+		return nil
 	}
 
 	d.Set("groups", flex.FlattenIcdGroups(groupList))
