@@ -681,8 +681,7 @@ func generateIPData(cdir string) (gway, firstip, lastip string, err error) {
 	ad := cidr.AddressCount(ipv4Net)
 
 	convertedad := strconv.FormatUint(ad, 10)
-	// Powervc in wdc04 has to reserve 3 ip address hence we start from the 4th. This will be the default behaviour
-	firstusable, err := cidr.Host(ipv4Net, 4)
+	firstusable, err := cidr.Host(ipv4Net, 2)
 	if err != nil {
 		log.Print(err)
 		return "", "", "", err

@@ -50,6 +50,16 @@ In addition to all argument reference list, you can access the following attribu
 - `allow_remote_restart` - (Boolean) Indicates if the server allows server to be restarted from remote.
 - `crn` - (String) The CRN of this resource.
 - `dedicated_host_id` - (String) The dedicated host ID where the shared processor pool resides.
+- `default_trusted_profile` - (List) default IAM trusted profile to use for this virtual server instance.
+
+  Nested scheme for `default_trusted_profile`:
+  - `autolink` - (Boolean) If set to true, the system will create a link to the specified trusted profile during server creation. Regardless of whether a link is created by the system or manually using the IAM Identity service, it will be automatically deleted when the server is deleted.
+  - `target` - (List) Either the ID or the CRN of the target.
+
+    Nested scheme for `target`:
+    - `crn` - (String) The CRN for the trusted profile.
+    - `id` - (String) Unique identifier for the trusted profile.
+    - `name` - (String) Name of the trusted profile.
 - `deployment_type` - (String) The custom deployment type.
 - `effective_processor_compatibility_mode` - (String) Effective processor compatibility mode.
 - `fault` - (Map) Fault information, if any.
@@ -74,6 +84,10 @@ In addition to all argument reference list, you can access the following attribu
 - `maxproc`- (Float) The maximum number of processors that can be allocated to the instance without shutting down or rebooting the `LPAR`.
 - `max_virtual_cores` - (Integer) The maximum number of virtual cores that can be assigned without rebooting the instance.
 - `memory` - (Float) The amount of memory that is allocated to the instance.
+- `metadata_service` - (List) The metadata service configuration for the instance.
+
+  Nested scheme for `metadata_service`:
+  - `enabled` - (Boolean) Indicates whether the metadata service endpoint is available to the virtual server.  
 - `minmem`- (Float) The minimum amount of memory that must be allocated to the instance.
 - `minproc`- (Float) The minimum number of processors that must be allocated to the instance.
 - `min_virtual_cores` - (Integer) The minimum number of virtual cores that can be assigned without rebooting the instance.

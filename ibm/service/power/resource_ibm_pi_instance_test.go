@@ -1399,6 +1399,145 @@ func testAccIBMPIInstanceAllowRemoteRestart(name string, allowRemoteRestart bool
 	`, acc.Pi_cloud_instance_id, name, acc.Pi_image_id, allowRemoteRestart, acc.Pi_network_id)
 }
 
+func TestAccIBMPIInstanceMetadataService(t *testing.T) {
+	instanceRes := "ibm_pi_instance.power_instance"
+	name := fmt.Sprintf("tf-pi-instance-%d", acctest.RandIntRange(10, 100))
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMPIInstanceDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMPIInstanceMetadataServiceConfig(name, power.OK, true, false),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMPIInstanceExists(instanceRes),
+					resource.TestCheckResourceAttr(instanceRes, "pi_instance_name", name),
+					resource.TestCheckResourceAttr(instanceRes, "pi_metadata_service.0.enabled", "true"),
+				),
+			},
+			{
+				Config: testAccCheckIBMPIInstanceMetadataServiceConfig(name, power.OK, false, true),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMPIInstanceExists(instanceRes),
+					resource.TestCheckResourceAttr(instanceRes, "pi_instance_name", name),
+					resource.TestCheckResourceAttr(instanceRes, "pi_metadata_service.0.enabled", "false"),
+				),
+			},
+		},
+	})
+}
+
+func testAccCheckIBMPIInstanceMetadataServiceConfig(name, instanceHealthStatus string, enabled, force bool) string {
+	return fmt.Sprintf(`
+	data "ibm_pi_image" "power_image" {
+		pi_cloud_instance_id = "%[1]s"
+		pi_image_id        = "%[3]s"
+	}
+	data "ibm_pi_network" "power_networks" {
+		pi_cloud_instance_id = "%[1]s"
+		pi_network_id      = "%[4]s"
+	}
+	resource "ibm_pi_instance" "power_instance" {
+		pi_cloud_instance_id = "%[1]s"
+		pi_health_status     = "%[5]s"
+		pi_image_id          = data.ibm_pi_image.power_image.id
+		pi_instance_name     = "%[2]s"
+		pi_memory            = "2"
+		pi_proc_type         = "shared"
+		pi_processors        = "0.25"
+		pi_storage_type      = "%[6]s"
+		pi_sys_type          = "s922"
+		pi_network {
+			network_id = data.ibm_pi_network.power_networks.id
+		}
+		pi_metadata_service {
+			enabled = %[7]t
+			force   = %[8]t
+		}
+	}
+	`, acc.Pi_cloud_instance_id, name, acc.Pi_image, acc.Pi_network_id, instanceHealthStatus, acc.PiStorageType, enabled, force)
+}
+
+func TestAccIBMPIInstanceDefaultTrustedProfile(t *testing.T) {
+	instanceRes := "ibm_pi_instance.power_instance"
+	name := fmt.Sprintf("tf-pi-instance-%d", acctest.RandIntRange(10, 100))
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMPIInstanceDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMPIInstanceDefaultTrustedProfileConfig(name, power.OK, acc.IAMTrustedProfileID, true),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMPIInstanceExists(instanceRes),
+					resource.TestCheckResourceAttr(instanceRes, "pi_instance_name", name),
+					resource.TestCheckResourceAttr(instanceRes, "pi_default_trusted_profile.0.target.0.id", acc.IAMTrustedProfileID),
+					resource.TestCheckResourceAttr(instanceRes, "pi_default_trusted_profile.0.autolink", "true"),
+				),
+			},
+			{
+				Config: testAccCheckIBMPIInstanceDefaultTrustedProfileConfig(name, power.OK, "", false),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMPIInstanceExists(instanceRes),
+					resource.TestCheckResourceAttr(instanceRes, "pi_instance_name", name),
+					resource.TestCheckResourceAttr(instanceRes, "pi_default_trusted_profile.0.target.0.id", ""),
+				),
+			},
+			{
+				Config: testAccCheckIBMPIInstanceDefaultTrustedProfileConfig(name, power.OK, acc.IAMTrustedProfileID, false),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMPIInstanceExists(instanceRes),
+					resource.TestCheckResourceAttr(instanceRes, "pi_instance_name", name),
+					resource.TestCheckResourceAttr(instanceRes, "pi_default_trusted_profile.0.target.0.id", acc.IAMTrustedProfileID),
+					resource.TestCheckResourceAttr(instanceRes, "pi_default_trusted_profile.0.autolink", "false"),
+				),
+			},
+		},
+	})
+}
+
+func testAccCheckIBMPIInstanceDefaultTrustedProfileConfig(name, instanceHealthStatus, trustedProfileID string, autolink bool) string {
+	autolinkLine := fmt.Sprintf("autolink = %t", autolink)
+	if trustedProfileID == "" {
+		// autolink must not be sent when clearing the target — omit it so the
+		// API-returned value is used (Optional+Computed).
+		autolinkLine = ""
+	}
+	return fmt.Sprintf(`
+	data "ibm_pi_image" "power_image" {
+		pi_cloud_instance_id = "%[1]s"
+		pi_image_id        = "%[3]s"
+	}
+	data "ibm_pi_network" "power_networks" {
+		pi_cloud_instance_id = "%[1]s"
+		pi_network_id      = "%[4]s"
+	}
+	resource "ibm_pi_instance" "power_instance" {
+		pi_cloud_instance_id = "%[1]s"
+		pi_health_status     = "%[5]s"
+		pi_image_id          = data.ibm_pi_image.power_image.id
+		pi_instance_name     = "%[2]s"
+		pi_memory            = "2"
+		pi_proc_type         = "shared"
+		pi_processors        = "0.25"
+		pi_storage_type      = "%[6]s"
+		pi_sys_type          = "s922"
+		pi_network {
+			network_id = data.ibm_pi_network.power_networks.id
+		}
+		pi_metadata_service {
+			enabled = true
+		}
+		pi_default_trusted_profile {
+			%[8]s
+			target {
+				id = "%[7]s"
+			}
+		}
+	}
+	`, acc.Pi_cloud_instance_id, name, acc.Pi_image, acc.Pi_network_id, instanceHealthStatus, acc.PiStorageType, trustedProfileID, autolinkLine)
+}
+
 func testAccCheckIBMPIInstanceDestroy(s *terraform.State) error {
 	sess, err := acc.TestAccProvider.Meta().(conns.ClientSession).IBMPISession()
 	if err != nil {

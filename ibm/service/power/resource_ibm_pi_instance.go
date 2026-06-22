@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"log"
 	"maps"
+	"regexp"
 	"strings"
 	"time"
 
@@ -106,6 +107,22 @@ func ResourceIBMPIInstance() *schema.Resource {
 				}
 				return diff.SetNew(Attr_VPMEMVolumes, updated)
 			},
+
+			func(_ context.Context, diff *schema.ResourceDiff, v any) error {
+				rawDTP := diff.GetRawConfig().GetAttr(Arg_DefaultTrustedProfile)
+				if rawDTP.IsNull() || !rawDTP.IsKnown() || rawDTP.LengthInt() == 0 {
+					return nil
+				}
+				ms := diff.Get(Arg_MetadataService).([]any)
+				if len(ms) == 0 {
+					return fmt.Errorf("%s requires %s to be set with enabled = true", Arg_DefaultTrustedProfile, Arg_MetadataService)
+				}
+				msData := ms[0].(map[string]any)
+				if enabled, ok := msData[Attr_Enabled]; !ok || !enabled.(bool) {
+					return fmt.Errorf("%s requires %s to be set with enabled = true", Arg_DefaultTrustedProfile, Arg_MetadataService)
+				}
+				return nil
+			},
 		),
 
 		Schema: map[string]*schema.Schema{
@@ -188,6 +205,53 @@ func ResourceIBMPIInstance() *schema.Resource {
 				Type:         schema.TypeString,
 				ValidateFunc: validate.ValidateAllowedStringValues([]string{DeploymentTypeEpic, DeploymentTypeVMNoStorage}),
 			},
+			Arg_DefaultTrustedProfile: {
+				Computed:    true,
+				Description: "default IAM trusted profile to use for this virtual server instance.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						Attr_Autolink: {
+							Computed:    true,
+							Description: "If set to true, the system will create a link to the specified trusted profile during server creation. Regardless of whether a link is created by the system or manually using the IAM Identity service, it will be automatically deleted when the server is deleted.",
+							Optional:    true,
+							Type:        schema.TypeBool,
+						},
+						Attr_Target: {
+							Description: "Either the ID or the CRN of the target.",
+							Required:    true,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									Attr_CRN: {
+										Description:   "The CRN for the trusted profile.",
+										Optional:      true,
+										Type:          schema.TypeString,
+										ConflictsWith: []string{Arg_DefaultTrustedProfile + ".0." + Attr_Target + ".0." + Attr_ID, Arg_DefaultTrustedProfile + ".0." + Attr_Target + ".0." + Attr_Name},
+										ValidateFunc:  validation.StringMatch(regexp.MustCompile(`^(crn:v[0-9]+:[a-z0-9-]+:[a-z0-9-]+:[a-z0-9-]+:[a-z0-9-]*:([a-z]\/[a-z0-9-]+)?:[a-z0-9-]*:[a-z0-9-]*:[a-zA-Z0-9-_\.\/]*)?$`), "must be a valid CRN or empty"),
+									},
+									Attr_ID: {
+										Description:   "Unique identifier for the trusted profile.",
+										Optional:      true,
+										Type:          schema.TypeString,
+										ConflictsWith: []string{Arg_DefaultTrustedProfile + ".0." + Attr_Target + ".0." + Attr_CRN, Arg_DefaultTrustedProfile + ".0." + Attr_Target + ".0." + Attr_Name},
+										ValidateFunc:  validation.StringMatch(regexp.MustCompile(`^(Profile-[-0-9a-z_]+)?$`), "must match '^(Profile-[-0-9a-z_]+)?$'"),
+									},
+									Attr_Name: {
+										Description:   "name of the trusted profile.",
+										Optional:      true,
+										Type:          schema.TypeString,
+										ConflictsWith: []string{Arg_DefaultTrustedProfile + ".0." + Attr_Target + ".0." + Attr_CRN, Arg_DefaultTrustedProfile + ".0." + Attr_Target + ".0." + Attr_ID},
+									},
+								},
+							},
+							MaxItems: 1,
+							Type:     schema.TypeList,
+						},
+					},
+				},
+				MaxItems: 1,
+				Optional: true,
+				Type:     schema.TypeList,
+			},
 			Arg_HealthStatus: {
 				Default:      OK,
 				Description:  "Allow the user to set the status of the lpar so that they can connect to it faster",
@@ -239,6 +303,28 @@ func ResourceIBMPIInstance() *schema.Resource {
 				Description:   "Memory size",
 				Optional:      true,
 				Type:          schema.TypeFloat,
+			},
+			Arg_MetadataService: {
+				Computed:    true,
+				Description: "The metadata service configuration for the instance.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						Attr_Enabled: {
+							Description: "Indicates whether the metadata service endpoint will be available to the virtual server.",
+							Required:    true,
+							Type:        schema.TypeBool,
+						},
+						Attr_ForceDisable: {
+							Default:     false,
+							Description: "when true, allow the metadata service to be disabled while the VM is active.",
+							Optional:    true,
+							Type:        schema.TypeBool,
+						},
+					},
+				},
+				MaxItems: 1,
+				Optional: true,
+				Type:     schema.TypeList,
 			},
 			Arg_Network: {
 				Description:      "List of one or more networks to attach to the instance",
@@ -694,7 +780,26 @@ func resourceIBMPIInstanceCreate(ctx context.Context, d *schema.ResourceData, me
 			}
 		}
 	}
-
+	// Enabling is handled via the create; force is only valid for disabling.
+	if ms, ok := d.GetOk(Arg_MetadataService); ok {
+		msData := ms.([]any)
+		if len(msData) > 0 && msData[0] != nil {
+			data := msData[0].(map[string]any)
+			enabled, _ := data[Attr_Enabled].(bool)
+			force, _ := data[Attr_ForceDisable].(bool)
+			if !enabled && force {
+				for _, s := range *pvmList {
+					body := &models.PVMInstanceUpdate{
+						MetadataService: expandUpdateMetadataService(ms),
+					}
+					_, err = client.Update(*s.PvmInstanceID, body)
+					if err != nil {
+						return diag.FromErr(err)
+					}
+				}
+			}
+		}
+	}
 	return resourceIBMPIInstanceRead(ctx, d, meta)
 }
 
@@ -865,6 +970,18 @@ func resourceIBMPIInstanceRead(ctx context.Context, d *schema.ResourceData, meta
 	d.Set(Attr_VPMEMVolumes, vpmemVolumesAttributes)
 	d.Set(Arg_AllowRemoteRestart, powervmdata.AllowRemoteRestart)
 
+	if powervmdata.DefaultTrustedProfile != nil {
+		d.Set(Arg_DefaultTrustedProfile, flattenDefaultTrustedProfile(powervmdata.DefaultTrustedProfile))
+	}
+	if powervmdata.MetadataService != nil {
+		ms := flattenMetadataService(powervmdata.MetadataService)
+		// force is a write-only operation flag not returned by the API;
+		// preserve the current state value to prevent false drift.
+		if len(ms) > 0 {
+			ms[0][Attr_ForceDisable] = d.Get(Arg_MetadataService + ".0." + Attr_ForceDisable).(bool)
+		}
+		d.Set(Arg_MetadataService, ms)
+	}
 	return nil
 }
 
@@ -1354,6 +1471,47 @@ func resourceIBMPIInstanceUpdate(ctx context.Context, d *schema.ResourceData, me
 		_, err = isWaitForPIInstanceAllowRemoteRestart(ctx, client, instanceID, allowRemoteRestart, d.Timeout(schema.TimeoutUpdate))
 		if err != nil {
 			return diag.FromErr(err)
+		}
+	}
+
+	if d.HasChange(Arg_MetadataService) {
+		body := &models.PVMInstanceUpdate{}
+		body.MetadataService = expandUpdateMetadataService(d.Get(Arg_MetadataService))
+
+		// Block AIX from updating MDS with force flag when VM is active
+		if osType, ok := d.GetOk(Attr_OSType); ok {
+			if status, ok := d.GetOk(Attr_Status); ok {
+				if osType == OS_AIX && body.MetadataService.ForceDisable && !*body.MetadataService.Enabled && strings.EqualFold(status.(string), State_Active) {
+					return diag.Errorf("force-disabling the metadata service is not supported on AIX instances.")
+				}
+			}
+
+		}
+		if body.MetadataService != nil {
+			_, err = client.Update(instanceID, body)
+			if err != nil {
+				return diag.Errorf("failed to update the lpar with the change for metadata service: %v", err)
+			}
+			_, err = isWaitForPIInstanceMetadataService(ctx, client, instanceID, body.MetadataService, d.Timeout(schema.TimeoutUpdate))
+			if err != nil {
+				return diag.FromErr(err)
+			}
+		}
+	}
+
+	if d.HasChange(Arg_DefaultTrustedProfile) {
+		body := &models.PVMInstanceUpdate{}
+		old, new := d.GetChange(Arg_DefaultTrustedProfile)
+		body.DefaultTrustedProfile = expandUpdateTrustedProfile(new, old)
+		if body.DefaultTrustedProfile != nil {
+			_, err = client.Update(instanceID, body)
+			if err != nil {
+				return diag.Errorf("failed to update the lpar with the change for default trusted profile: %v", err)
+			}
+			_, err = isWaitForPIInstanceDefaultTrustedProfile(ctx, client, instanceID, body.DefaultTrustedProfile, d.Timeout(schema.TimeoutUpdate))
+			if err != nil {
+				return diag.FromErr(err)
+			}
 		}
 	}
 
@@ -1975,6 +2133,12 @@ func createSAPInstance(d *schema.ResourceData, sapClient *instance.IBMPISAPInsta
 		body.AllowRemoteRestart = &arr
 	}
 
+	if dtp, ok := d.GetOk(Arg_DefaultTrustedProfile); ok {
+		body.DefaultTrustedProfile = expandTrustedProfile(dtp)
+	}
+	if ms, ok := d.GetOk(Arg_MetadataService); ok {
+		body.MetadataService = expandMetadataService(ms)
+	}
 	pvmList, err := sapClient.Create(body)
 	if err != nil {
 		return nil, fmt.Errorf("failed to provision: %v", err)
@@ -2203,6 +2367,12 @@ func createPVMInstance(d *schema.ResourceData, client *instance.IBMPIInstanceCli
 		arr := d.Get(Arg_AllowRemoteRestart).(bool)
 		body.AllowRemoteRestart = &arr
 	}
+	if dtp, ok := d.GetOk(Arg_DefaultTrustedProfile); ok {
+		body.DefaultTrustedProfile = expandTrustedProfile(dtp)
+	}
+	if ms, ok := d.GetOk(Arg_MetadataService); ok {
+		body.MetadataService = expandMetadataService(ms)
+	}
 	pvmList, err := client.Create(body)
 
 	if err != nil {
@@ -2362,6 +2532,225 @@ func isPIInstanceAllowRemoteRestart(client *instance.IBMPIInstanceClient, id str
 		}
 		if arr != *pvm.AllowRemoteRestart {
 			return pvm, State_InProgress, nil
+		}
+		return pvm, State_Available, nil
+	}
+}
+func expandTargetTrustedProfile(input any) *models.TargetTrustedProfile {
+	list := input.([]any)
+	if len(list) == 0 || list[0] == nil {
+		return nil
+	}
+	data := list[0].(map[string]any)
+	target := &models.TargetTrustedProfile{}
+	if v, ok := data[Attr_ID]; ok && v.(string) != "" {
+		id := v.(string)
+		target.ID = &id
+	}
+	if v, ok := data[Attr_CRN]; ok && v.(string) != "" {
+		crn := v.(string)
+		target.Crn = &crn
+	}
+	if v, ok := data[Attr_Name]; ok && v.(string) != "" {
+		name := v.(string)
+		target.Name = &name
+	}
+	return target
+}
+
+func expandTrustedProfile(input any) *models.TrustedProfile {
+	list := input.([]any)
+	if len(list) == 0 || list[0] == nil {
+		return nil
+	}
+	data := list[0].(map[string]any)
+	tp := &models.TrustedProfile{}
+	if v, ok := data[Attr_Autolink]; ok {
+		autolink := v.(bool)
+		tp.Autolink = &autolink
+	}
+	if v, ok := data[Attr_Target]; ok {
+		tp.Target = expandTargetTrustedProfile(v)
+	}
+	return tp
+}
+
+func expandUpdateTrustedProfile(input any, oldInput any) *models.UpdateTrustedProfile {
+	list := input.([]any)
+	if len(list) == 0 || list[0] == nil {
+		return nil
+	}
+	data := list[0].(map[string]any)
+	tp := &models.UpdateTrustedProfile{}
+
+	var oldTarget any
+	if oldList, ok2 := oldInput.([]any); ok2 && len(oldList) > 0 && oldList[0] != nil {
+		oldData := oldList[0].(map[string]any)
+		oldTarget = oldData[Attr_Target]
+	}
+
+	if v, ok := data[Attr_Target]; ok {
+		tp.Target = expandUpdateTargetTrustedProfile(v, oldTarget)
+	}
+
+	// Autolink must not be sent when clearing the target — the API rejects it.
+	// Detect clearing by checking whether the resolved target has a non-empty id,crn or name.
+	isClearing := tp.Target != nil && tp.Target.ID != nil && *tp.Target.ID == "" ||
+		tp.Target != nil && tp.Target.Crn != nil && *tp.Target.Crn == "" ||
+		tp.Target != nil && tp.Target.Name != nil && *tp.Target.Name == ""
+	if !isClearing {
+		if v, ok := data[Attr_Autolink]; ok {
+			autolink := v.(bool)
+			tp.Autolink = &autolink
+		}
+	}
+	return tp
+}
+
+// expandUpdateTargetTrustedProfile sends only the field the user set (id,crn or name).
+// When both new values are empty (clearing), it uses oldInput to determine which
+// field was previously set and sends that field as "" to clear it.
+// Autolink must not be sent when clearing (API rejects it).
+func expandUpdateTargetTrustedProfile(input any, oldInput any) *models.TargetTrustedProfile {
+	list := input.([]any)
+	if len(list) == 0 || list[0] == nil {
+		return nil
+	}
+	data := list[0].(map[string]any)
+	target := &models.TargetTrustedProfile{}
+	idVal := data[Attr_ID].(string)
+	crnVal := data[Attr_CRN].(string)
+	nameVal := data[Attr_Name].(string)
+
+	if idVal != "" {
+		target.ID = &idVal
+		return target
+	}
+	if crnVal != "" {
+		target.Crn = &crnVal
+		return target
+	}
+	if nameVal != "" {
+		target.Name = &nameVal
+		return target
+	}
+
+	// Both new values are empty — this is a clear. Use old state to determine which field to send as "".
+	empty := ""
+	if oldInput != nil {
+		if oldList, ok := oldInput.([]any); ok && len(oldList) > 0 && oldList[0] != nil {
+			oldData := oldList[0].(map[string]any)
+			if oldData[Attr_ID].(string) != "" {
+				target.ID = &empty
+				return target
+			}
+			if oldData[Attr_CRN].(string) != "" {
+				target.Crn = &empty
+				return target
+			}
+			if oldData[Attr_Name].(string) != "" {
+				target.Name = &empty
+				return target
+			}
+		}
+	}
+	return target
+}
+
+func expandMetadataService(input any) *models.MetadataService {
+	list := input.([]any)
+	if len(list) == 0 || list[0] == nil {
+		return nil
+	}
+	data := list[0].(map[string]any)
+	ms := &models.MetadataService{}
+	if v, ok := data[Attr_Enabled]; ok {
+		enabled := v.(bool)
+		ms.Enabled = &enabled
+	}
+	return ms
+}
+
+func expandUpdateMetadataService(input any) *models.UpdateMetadataService {
+	list := input.([]any)
+	if len(list) == 0 || list[0] == nil {
+		return nil
+	}
+	data := list[0].(map[string]any)
+	ms := &models.UpdateMetadataService{}
+	if v, ok := data[Attr_Enabled]; ok {
+		enabled := v.(bool)
+		ms.Enabled = &enabled
+	}
+	if v, ok := data[Attr_ForceDisable]; ok {
+		ms.ForceDisable = v.(bool)
+	}
+	return ms
+}
+func isWaitForPIInstanceMetadataService(ctx context.Context, client *instance.IBMPIInstanceClient, id string, ms *models.UpdateMetadataService, timeout time.Duration) (interface{}, error) {
+	log.Printf("Waiting for PIInstance (%s) metadata service to be updated", id)
+
+	stateConf := &retry.StateChangeConf{
+		Pending:    []string{State_InProgress},
+		Target:     []string{State_Available},
+		Refresh:    isPIInstanceMetadataServiceRefreshFunc(client, id, ms),
+		Delay:      Timeout_Delay,
+		MinTimeout: Timeout_Active,
+		Timeout:    timeout,
+	}
+
+	return stateConf.WaitForStateContext(ctx)
+}
+
+func isPIInstanceMetadataServiceRefreshFunc(client *instance.IBMPIInstanceClient, id string, ms *models.UpdateMetadataService) retry.StateRefreshFunc {
+	return func() (any, string, error) {
+		pvm, err := client.Get(id)
+		if err != nil {
+			return nil, "", err
+		}
+		if pvm.MetadataService == nil || pvm.MetadataService.Enabled == nil {
+			return pvm, State_InProgress, nil
+		}
+		if *pvm.MetadataService.Enabled != *ms.Enabled {
+			return pvm, State_InProgress, nil
+		}
+		return pvm, State_Available, nil
+	}
+}
+func isWaitForPIInstanceDefaultTrustedProfile(ctx context.Context, client *instance.IBMPIInstanceClient, id string, tp *models.UpdateTrustedProfile, timeout time.Duration) (interface{}, error) {
+	log.Printf("Waiting for PIInstance (%s) default trusted profile to be updated", id)
+
+	stateConf := &retry.StateChangeConf{
+		Pending:    []string{State_InProgress},
+		Target:     []string{State_Available},
+		Refresh:    isPIInstanceDefaultTrustedProfileRefreshFunc(client, id, tp),
+		Delay:      Timeout_Delay,
+		MinTimeout: Timeout_Active,
+		Timeout:    timeout,
+	}
+
+	return stateConf.WaitForStateContext(ctx)
+}
+
+func isPIInstanceDefaultTrustedProfileRefreshFunc(client *instance.IBMPIInstanceClient, id string, tp *models.UpdateTrustedProfile) retry.StateRefreshFunc {
+	return func() (any, string, error) {
+		pvm, err := client.Get(id)
+		if err != nil {
+			return nil, "", err
+		}
+		if pvm.DefaultTrustedProfile == nil || pvm.DefaultTrustedProfile.Target == nil {
+			return pvm, State_InProgress, nil
+		}
+		if tp.Target != nil {
+			if tp.Target.ID != nil && (pvm.DefaultTrustedProfile.Target.ID == nil || *pvm.DefaultTrustedProfile.Target.ID != *tp.Target.ID) {
+				return pvm, State_InProgress, nil
+			}
+			if tp.Target.Crn != nil && (pvm.DefaultTrustedProfile.Target.Crn == nil || *pvm.DefaultTrustedProfile.Target.Crn != *tp.Target.Crn) {
+				return pvm, State_InProgress, nil
+			}
+			if tp.Target.Name != nil && (pvm.DefaultTrustedProfile.Target.Name == nil || *pvm.DefaultTrustedProfile.Target.Name != *tp.Target.Name) {
+				return pvm, State_InProgress, nil
+			}
 		}
 		return pvm, State_Available, nil
 	}
