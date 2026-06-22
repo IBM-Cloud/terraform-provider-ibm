@@ -263,6 +263,7 @@ const (
 	Attr_DefaultSystem                       = "default_system"
 	Attr_DeleteOnTermination                 = "delete_on_termination"
 	Attr_DeploymentType                      = "deployment_type"
+	Attr_Deprecated                          = "deprecated"
 	Attr_Description                         = "description"
 	Attr_Destination                         = "destination"
 	Attr_DestinationPort                     = "destination_port"
