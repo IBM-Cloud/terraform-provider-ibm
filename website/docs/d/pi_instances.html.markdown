@@ -47,6 +47,7 @@ In addition to all argument reference list, you can access the following attribu
 - `pvm_instances` - (List) List of power virtual server instances for the respective cloud instance.
 
   Nested scheme for `pvm_instances`:
+  - `allow_remote_restart` - (Boolean) Indicates if the server allows server to be restarted from remote.
   - `crn` - (String) The CRN of this resource.
   - `dedicated_host_id` - (String) The dedicated host ID where the shared processor pool resides.
   - `effective_processor_compatibility_mode` - (String) Effective processor compatibility mode.
