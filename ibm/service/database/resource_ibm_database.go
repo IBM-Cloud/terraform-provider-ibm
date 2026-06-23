@@ -303,7 +303,7 @@ func ResourceIBMDatabaseInstance() *schema.Resource {
 				ValidateFunc: validate.InvokeValidator("ibm_database", "service_endpoints"),
 			},
 			"backup_id": {
-				Description:      "The CRN of backup source database. Gen2: Plan fails if set. Restore from backup is not yet implemented for Gen2 instances.",
+				Description:      "The CRN of backup source database. Gen2: Supports restoring from Gen2 coupled backups (from Gen2 instances) and Gen2 decoupled backups (databases-independent-backups). Classic backups are not supported for Gen2 instances.",
 				Type:             schema.TypeString,
 				Optional:         true,
 				DiffSuppressFunc: flex.ApplyOnce,
@@ -319,7 +319,7 @@ func ResourceIBMDatabaseInstance() *schema.Resource {
 				Optional:    true,
 			},
 			"async_restore": {
-				Description:      "Option to support FAST PG Restore. Only applicable when restoring a PostgreSQL instance. Gen2: Accepted but ignored. Async restore requires backup_id support which is not yet implemented for Gen2 instances.",
+				Description:      "Option to support FAST PG Restore. Only applicable when restoring a PostgreSQL instance from backup_id. Gen2: Accepted but ignored (Classic-only feature).",
 				Type:             schema.TypeBool,
 				Optional:         true,
 				DiffSuppressFunc: flex.ApplyOnce,
