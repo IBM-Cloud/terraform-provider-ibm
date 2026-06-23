@@ -140,8 +140,8 @@ github.com/IBM/ibm-hpcs-tke-sdk v0.0.0-20250305134146-e023c2e84762/go.mod h1:M2J
 github.com/IBM/ibm-hpcs-uko-sdk v0.0.20-beta h1:P1fdIfKsD9xvJQ5MHIEztPS9yfNf9x+VDTamaYcmqcs=
 github.com/IBM/ibm-hpcs-uko-sdk v0.0.20-beta/go.mod h1:MLVNHMYoKsvovJZ4v1gQCpIYtRDHTtoIHK6XztDZGsU=
 github.com/IBM/keyprotect-go-client v0.5.1/go.mod h1:5TwDM/4FRJq1ZOlwQL1xFahLWQ3TveR88VmL1u3njyI=
-github.com/IBM/keyprotect-go-client v0.15.1 h1:m4qzqF5zOumRxKZ8s7vtK7A/UV/D278L8xpRG+WgT0s=
-github.com/IBM/keyprotect-go-client v0.15.1/go.mod h1:asXtHwL/4uCHA221Vd/7SkXEi2pcRHDzPyyksc1DthE=
+github.com/IBM/keyprotect-go-client v0.17.2 h1:hSweHS9QJT1hU7apTpK54r4eUv5gvuv45utiTO+DZwk=
+github.com/IBM/keyprotect-go-client v0.17.2/go.mod h1:gMJdUzT2EKeQd2jJKRU6mBRrx0Na4yUCQvA+lQbnEt8=
 github.com/IBM/logs-go-sdk v0.7.0 h1:q8MrfmMwbEtg/B48cFPiSVmtI1xIx2kSln2asoBoPZY=
 github.com/IBM/logs-go-sdk v0.7.0/go.mod h1:yv/GCXC4/p+MZEeXl4xjZAOMvDAVRwu61WyHZFKFXQM=
 github.com/IBM/logs-router-go-sdk v1.0.8 h1:MU1TdYNdVbvVTUXeqeYPItu6BoiSV/NMN49ySqE7WIY=
@@ -321,6 +321,8 @@ github.com/eapache/go-xerial-snappy v0.0.0-20230731223053-c322873962e3 h1:Oy0F4A
 github.com/eapache/go-xerial-snappy v0.0.0-20230731223053-c322873962e3/go.mod h1:YvSRo5mw33fLEx1+DlK6L2VV43tJt5Eyel9n9XBcR+0=
 github.com/eapache/queue v1.1.0 h1:YOEu7KNc61ntiQlcEeUIoDTJ2o8mQznoNvUhiigpIqc=
 github.com/eapache/queue v1.1.0/go.mod h1:6eCeP0CKFpHLu8blIFXhExK/dRa7WDZfr6jVFPTqq+I=
+github.com/ebitengine/purego v0.10.1 h1:dewVBCBT2GaMu1SrNTYxQhgQBethzfhiwvZiLGP/qyY=
+github.com/ebitengine/purego v0.10.1/go.mod h1:iIjxzd6CiRiOG0UyXP+V1+jWqUXVjPKLAI0mRfJZTmQ=
 github.com/elazarl/goproxy v0.0.0-20180725130230-947c36da3153/go.mod h1:/Zj4wYkgs4iZTTu3o/KG3Itv/qCCa8VVMlb3i9OVuzc=
 github.com/elazarl/goproxy v0.0.0-20191011121108-aa519ddbe484/go.mod h1:Ro8st/ElPeALwNFlcTpWmkr6IoMFfkjXAvTHpevnDsM=
 github.com/elazarl/goproxy/ext v0.0.0-20190711103511-473e67f1d7d2/go.mod h1:gNh8nYJoAm43RfaxurUnxr+N1PwuFV3ZMl/efxlIlY8=
@@ -1180,7 +1182,6 @@ github.com/stretchr/testify v1.8.0/go.mod h1:yNjHg4UonilssWZ8iaSj1OCr/vHnekPRkoO
 github.com/stretchr/testify v1.8.1/go.mod h1:w2LPCIKwWwSfY2zedu0+kehJoqGctiVI29o6fzry7u4=
 github.com/stretchr/testify v1.8.2/go.mod h1:w2LPCIKwWwSfY2zedu0+kehJoqGctiVI29o6fzry7u4=
 github.com/stretchr/testify v1.8.4/go.mod h1:sz/lmYIOXD/1dqDmKjjqLyZ2RngseejIcXlSw2iwfAo=
-github.com/stretchr/testify v1.9.0/go.mod h1:r2ic/lqez/lEtzL7wO/rwa5dbSLXVDPFyf8C91i36aY=
 github.com/stretchr/testify v1.11.1 h1:7s2iGBzp5EwR7/aIZr8ao5+dra3wiQyKjjFuvgVKu7U=
 github.com/stretchr/testify v1.11.1/go.mod h1:wZwfW3scLgRK+23gO65QZefKpKQRnfz6sD981Nm4B6U=
 github.com/subosito/gotenv v1.2.0/go.mod h1:N0PQaV/YGNqwC0u51sEeR/aUtSLEXKX9iv69rRypqCw=

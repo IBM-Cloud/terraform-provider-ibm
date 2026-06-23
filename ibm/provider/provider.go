@@ -1525,6 +1525,7 @@ func Provider() *schema.Provider {
 			"ibm_kms_instance_policies":                    kms.ResourceIBMKmsInstancePolicy(),
 			"ibm_kms_kmip_adapter":                         kms.ResourceIBMKmsKMIPAdapter(),
 			"ibm_kms_kmip_client_cert":                     kms.ResourceIBMKmsKMIPClientCertificate(),
+			"ibm_kms_cryptounits":                          kms.ResourceIBMKmsCryptoUnits(),
 			"ibm_resource_group":                           resourcemanager.ResourceIBMResourceGroup(),
 
 			// resource_reclamation
