@@ -151,7 +151,7 @@ Review the argument references that you can specify for your resource.
 - `pi_vpmem_volumes` - (Optional, List of Map) List of one or more vPMEM volumes to attach to the instance.
   The `pi_vpmem_volumes` block supports:
   - `name` - (Required, String) Volume base name.
-  - `size` - (Required, Integer) Volume size (GB).
+  - `size` - (Required, Integer) Volume size (GiB).
 
 ## Attribute Reference
 
@@ -202,7 +202,7 @@ In addition to all argument reference list, you can access the following attribu
   - `name` - (String) Volume Name.
   - `pvm_instance_id` - (String) PVM Instance ID which the volume is attached to.
   - `reason` - (String) Reason for error.
-  - `size` - (Float) Volume Size (GB).
+  - `size` - (Float) Volume size (GiB).
   - `status` - (String) Status of the volume.
   - `updated_date` - (String) The date and time when the volume was updated.
   - `user_tags` - (List) List of user tags.
