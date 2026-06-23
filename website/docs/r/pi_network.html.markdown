@@ -63,7 +63,7 @@ Review the argument references that you can specify for your resource.
 - `pi_cidr` - (Optional, String) The network CIDR. Required for `vlan` network type.
 - `pi_cloud_instance_id` - (Required, String) The GUID of the service instance associated with an account.
 - `pi_dns` - (Optional, Set of String) The DNS Servers for the network. If not specified, default is 127.0.0.1 for 'vlan' (private network) and 9.9.9.9 for 'pub-vlan' (public network). A maximum of one DNS server can be specified for private networks in Power Edge Router workspaces.
-- `pi_enable_dhcp` - (Optional, Boolean) Network will support DHCP (for on-prem locations only).
+- `pi_enable_dhcp` - (Optional, Boolean) Network will support DHCP.
 - `pi_gateway` - (Optional, String) The gateway ip address.
 - `pi_ipaddress_range` - (Optional, List of Map) List of one or more ip address range(s). The `pi_ipaddress_range` object structure is documented below. The `pi_ipaddress_range` block supports:
   - `pi_ending_ip_address` - (Required, String) The ending ip address.
