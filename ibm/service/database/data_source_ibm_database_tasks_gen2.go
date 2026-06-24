@@ -165,5 +165,3 @@ func (g *dataSourceIBMDatabaseTasksGen2Backend) getOperationTime(instance *rc.Re
 
 	return time.Now().UTC().Format(time.RFC3339)
 }
-
-// Made with Bob
