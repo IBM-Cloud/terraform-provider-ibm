@@ -17,6 +17,7 @@ import (
 	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/IBM/platform-services-go-sdk/iamaccessgroupsv2"
 	"github.com/IBM/platform-services-go-sdk/iampolicymanagementv1"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -543,6 +544,75 @@ func resourceIBMIAMInviteUsers(d *schema.ResourceData, meta interface{}) error {
 	_, InviteUserError := client.InviteUsers(accountID, inviteUserPayload)
 	if InviteUserError != nil {
 		return InviteUserError
+	}
+
+	// poll until all invited users
+	// transitions through states: (not visible) -> PROCESSING -> PENDING or
+	// ACTIVE. ERROR_WHILE_PROCESSING means the invite workflow failed for that
+	// user; we retry in case it is transient, but fail if it persists.
+	// Valid accepted states: ACTIVE, PENDING, PROCESSING.
+	targetEmails := make(map[string]bool, len(users))
+	for _, u := range users {
+		targetEmails[strings.ToLower(u.Email)] = true
+	}
+	var missing []string // not yet visible in account
+	var errored []string // currently in ERROR_WHILE_PROCESSING
+	scanUsers := func(allUsers []v2.UserInfo) {
+		stateByEmail := make(map[string]string, len(allUsers))
+		for _, u := range allUsers {
+			stateByEmail[strings.ToLower(u.Email)] = u.State
+		}
+		missing = missing[:0]
+		errored = errored[:0]
+		for email := range targetEmails {
+			state, found := stateByEmail[email]
+			if !found {
+				missing = append(missing, email)
+				continue
+			}
+			switch state {
+			case "ACTIVE", "PENDING", "PROCESSING":
+				// Accepted terminal (or in-progress) states — no action needed.
+			case "ERROR_WHILE_PROCESSING":
+				errored = append(errored, email)
+			default:
+				// Unknown state; treat as not-yet-ready and keep retrying.
+				missing = append(missing, email)
+			}
+		}
+	}
+	retryErr := resource.Retry(5*time.Minute, func() *resource.RetryError {
+		allUsers, listErr := client.ListUsers(accountID)
+		if listErr != nil {
+			return resource.RetryableError(listErr)
+		}
+		scanUsers(allUsers)
+		if len(errored) > 0 {
+			// ERROR_WHILE_PROCESSING may be transient — keep retrying.
+			return resource.RetryableError(fmt.Errorf("user(s) %v are in ERROR_WHILE_PROCESSING state", errored))
+		}
+		if len(missing) > 0 {
+			return resource.RetryableError(fmt.Errorf("user(s) %v not yet visible in account", missing))
+		}
+		return nil
+	})
+	if conns.IsResourceTimeoutError(retryErr) {
+		if allUsers, listErr := client.ListUsers(accountID); listErr == nil {
+			scanUsers(allUsers)
+			if len(errored) == 0 && len(missing) == 0 {
+				retryErr = nil
+			}
+		}
+	}
+	if len(errored) > 0 {
+		return fmt.Errorf("[ERROR] User invite failed: user(s) %v remained in ERROR_WHILE_PROCESSING state "+
+			"after the retry period. This typically indicates a problem. "+
+			"Please verify the account ID (%s) and email addresses are correct, then retry. "+
+			"If the problem persists, open a support case including the account ID and the affected email address(es).",
+			errored, accountID)
+	}
+	if retryErr != nil || len(missing) > 0 {
+		return fmt.Errorf("[ERROR] User(s) %v were not successfully invited or did not appear in the account after 5 minutes", missing)
 	}
 	d.SetId(time.Now().UTC().String())
 	return resourceIBMIAMUpdateUserProfile(d, meta)
