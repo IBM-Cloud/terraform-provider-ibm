@@ -299,7 +299,7 @@ func ResourceIBMDatabaseInstance() *schema.Resource {
 			"service_endpoints": {
 				Description:  "Types of the service endpoints. Possible values are 'public', 'private', 'public-and-private'. Required for Classic plans. Gen2: Optional; must be 'private' if set. Gen2 instances only support private endpoints and default to 'private'. Plan fails if set to 'public' or 'public-and-private'.",
 				Type:         schema.TypeString,
-				Optional:     true,
+				Optional:     false,
 				ValidateFunc: validate.InvokeValidator("ibm_database", "service_endpoints"),
 			},
 			"backup_id": {
