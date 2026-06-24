@@ -1,5 +1,9 @@
-// Copyright IBM Corp. 2017, 2021 All Rights Reserved.
+// Copyright IBM Corp. 2026 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
+
+/*
+ * IBM OpenAPI Terraform Generator Version: 3.113.1-d76630af-20260320-135953
+ */
 
 package iamidentity
 
@@ -8,44 +12,56 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
-	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
+	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/IBM/platform-services-go-sdk/iamidentityv1"
 )
 
-func ResourceIBMIAMApiKey() *schema.Resource {
+func ResourceIBMIamAPIKey() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: resourceIbmIamApiKeyCreate,
-		ReadContext:   resourceIbmIamApiKeyRead,
-		UpdateContext: resourceIbmIamApiKeyUpdate,
-		DeleteContext: resourceIbmIamApiKeyDelete,
+		CreateContext: resourceIBMIamAPIKeyCreate,
+		ReadContext:   resourceIBMIamAPIKeyRead,
+		UpdateContext: resourceIBMIamAPIKeyUpdate,
+		DeleteContext: resourceIBMIamAPIKeyDelete,
 		Importer:      &schema.ResourceImporter{},
 
 		Schema: map[string]*schema.Schema{
-			"name": {
+			"entity_lock": &schema.Schema{
+				Type:        schema.TypeString,
+				Optional:    true,
+				Default:     "false",
+				Description: "Indicates if the API key is locked for further write operations. False by default.",
+			},
+			"name": &schema.Schema{
 				Type:        schema.TypeString,
 				Required:    true,
 				Description: "Name of the API key. The name is not checked for uniqueness. Therefore multiple names with the same value can exist. Access is done via the UUID of the API key.",
 			},
-			"iam_id": {
+			"expires_at": &schema.Schema{
 				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The iam_id that this API key authenticates.",
+				Optional:    true,
+				Description: "Date and time when the API key becomes invalid, ISO 8601 datetime in the format 'yyyy-MM-ddTHH:mm+0000'. **WARNING** An API key will be permanently and irrevocably deleted when both the expires_at and modified_at timestamps are more than ninety (90) days in the past, regardless of the key’s locked status or any other state.",
 			},
-			"description": {
+			"description": &schema.Schema{
 				Type:        schema.TypeString,
 				Optional:    true,
 				Description: "The optional description of the API key. The 'description' property is only available if a description was provided during a create of an API key.",
 			},
-			"account_id": {
+			"iam_id": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "The account ID of the API key.",
+				Description: "The iam_id that this API key authenticates.",
 			},
-			"apikey": {
+			"account_id": &schema.Schema{
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "ID of the account that this API key authenticates for.",
+			},
+			"apikey": &schema.Schema{
 				Type:        schema.TypeString,
 				Optional:    true,
 				Computed:    true,
@@ -63,48 +79,37 @@ func ResourceIBMIAMApiKey() *schema.Resource {
 				DiffSuppressFunc: flex.ApplyOnce,
 				Description:      "File where api key is to be stored",
 			},
-			"entity_lock": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Default:     "false",
-				Description: "Indicates if the API key is locked for further write operations. False by default.",
-			},
 			"apikey_id": {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "Unique identifier of this API Key.",
 			},
-			"entity_tag": {
+			"entity_tag": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "Version of the API Key details object. You need to specify this value when updating the API key to avoid stale updates.",
 			},
-			"crn": {
+			"crn": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "Cloud Resource Name of the item. Example Cloud Resource Name: 'crn:v1:bluemix:public:iam-identity:us-south:a/myaccount::apikey:1234-9012-5678'.",
 			},
-			"locked": {
+			"locked": &schema.Schema{
 				Type:        schema.TypeBool,
 				Computed:    true,
 				Description: "The API key cannot be changed if set to true.",
 			},
-			"expires_at": &schema.Schema{
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "Date and time when the API key becomes invalid, ISO 8601 datetime in the format 'yyyy-MM-ddTHH:mm+0000'. WARNING An API key will be permanently and irrevocably deleted when both the expires_at and modified_at timestamps are more than ninety (90) days in the past, regardless of the key's locked status or any other state.",
-			},
-			"created_at": {
+			"created_at": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "If set contains a date time string of the creation date in ISO format.",
 			},
-			"created_by": {
+			"created_by": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "IAM ID of the user or service which created the API key.",
 			},
-			"modified_at": {
+			"modified_at": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "If set contains a date time string of the last modification date in ISO format.",
@@ -113,45 +118,51 @@ func ResourceIBMIAMApiKey() *schema.Resource {
 	}
 }
 
-func resourceIbmIamApiKeyCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceIBMIamAPIKeyCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	iamIdentityClient, err := meta.(conns.ClientSession).IAMIdentityV1API()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_api_key", "create", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
-	createApiKeyOptions := &iamidentityv1.CreateAPIKeyOptions{}
+	createAPIKeyOptions := &iamidentityv1.CreateAPIKeyOptions{}
 
 	userDetails, err := meta.(conns.ClientSession).BluemixUserDetails()
 	if err != nil {
-		return diag.FromErr(err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_api_key", "create", "get-user-details").GetDiag()
 	}
 	iamID := userDetails.UserID
 	accountID := userDetails.UserAccount
 
-	createApiKeyOptions.SetName(d.Get("name").(string))
-	createApiKeyOptions.SetIamID(iamID)
-	createApiKeyOptions.SetAccountID(accountID)
+	createAPIKeyOptions.SetName(d.Get("name").(string))
+	createAPIKeyOptions.SetIamID(iamID)
+	createAPIKeyOptions.SetAccountID(accountID)
 
 	if _, ok := d.GetOk("description"); ok {
-		createApiKeyOptions.SetDescription(d.Get("description").(string))
+		createAPIKeyOptions.SetDescription(d.Get("description").(string))
 	}
 	if _, ok := d.GetOk("apikey"); ok {
-		createApiKeyOptions.SetApikey(d.Get("apikey").(string))
+		createAPIKeyOptions.SetApikey(d.Get("apikey").(string))
 	}
 	if _, ok := d.GetOk("store_value"); ok {
-		createApiKeyOptions.SetStoreValue(d.Get("store_value").(bool))
+		createAPIKeyOptions.SetStoreValue(d.Get("store_value").(bool))
 	}
 	if _, ok := d.GetOk("locked"); ok {
-		createApiKeyOptions.SetEntityLock(d.Get("locked").(string))
+		createAPIKeyOptions.SetEntityLock(d.Get("locked").(string))
 	}
 	if _, ok := d.GetOk("expires_at"); ok {
-		createApiKeyOptions.SetExpiresAt(d.Get("expires_at").(string))
+		createAPIKeyOptions.SetExpiresAt(d.Get("expires_at").(string))
+	}
+	if _, ok := d.GetOk("entity_lock"); ok {
+		createAPIKeyOptions.SetEntityLock(d.Get("entity_lock").(string))
 	}
 
-	apiKey, response, err := iamIdentityClient.CreateAPIKey(createApiKeyOptions)
+	apiKey, _, err := iamIdentityClient.CreateAPIKeyWithContext(context, createAPIKeyOptions)
 	if err != nil {
-		log.Printf("[DEBUG] CreateApiKey failed %s\n%s", err, response)
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateAPIKeyWithContext failed: %s", err.Error()), "ibm_iam_api_key", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	d.SetId(*apiKey.ID)
@@ -163,109 +174,146 @@ func resourceIbmIamApiKeyCreate(context context.Context, d *schema.ResourceData,
 		}
 	}
 
-	return resourceIbmIamApiKeyRead(context, d, meta)
+	return resourceIBMIamAPIKeyRead(context, d, meta)
 }
 
-func resourceIbmIamApiKeyRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceIBMIamAPIKeyRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	iamIdentityClient, err := meta.(conns.ClientSession).IAMIdentityV1API()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_api_key", "read", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
-	getApiKeyOptions := &iamidentityv1.GetAPIKeyOptions{}
+	getAPIKeyOptions := &iamidentityv1.GetAPIKeyOptions{}
 
-	getApiKeyOptions.SetID(d.Id())
+	getAPIKeyOptions.SetID(d.Id())
 
-	apiKey, response, err := iamIdentityClient.GetAPIKey(getApiKeyOptions)
+	apiKey, response, err := iamIdentityClient.GetAPIKeyWithContext(context, getAPIKeyOptions)
 	if err != nil || apiKey == nil {
 		if response != nil && response.StatusCode == 404 {
 			d.SetId("")
 			return nil
 		}
-		log.Printf("[DEBUG] GetApiKey failed %s\n%s", err, response)
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetAPIKeyWithContext failed: %s", err.Error()), "ibm_iam_api_key", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	if err = d.Set("name", apiKey.Name); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting name: %s", err))
+		err = fmt.Errorf("Error setting name: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_api_key", "read", "set-name").GetDiag()
+	}
+	if !core.IsNil(apiKey.ExpiresAt) {
+		if err = d.Set("expires_at", apiKey.ExpiresAt); err != nil {
+			err = fmt.Errorf("Error setting expires_at: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_api_key", "read", "set-expires_at").GetDiag()
+		}
+	}
+	if !core.IsNil(apiKey.Description) {
+		if err = d.Set("description", apiKey.Description); err != nil {
+			err = fmt.Errorf("Error setting description: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_api_key", "read", "set-description").GetDiag()
+		}
 	}
 	if err = d.Set("iam_id", apiKey.IamID); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting iam_id: %s", err))
+		err = fmt.Errorf("Error setting iam_id: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_api_key", "read", "set-iam_id").GetDiag()
 	}
-	if err = d.Set("description", apiKey.Description); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting description: %s", err))
-	}
-	if err = d.Set("account_id", apiKey.AccountID); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting account_id: %s", err))
+	if !core.IsNil(apiKey.AccountID) {
+		if err = d.Set("account_id", apiKey.AccountID); err != nil {
+			err = fmt.Errorf("Error setting account_id: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_api_key", "read", "set-account_id").GetDiag()
+		}
 	}
 	if err = d.Set("locked", apiKey.Locked); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting entity_lock: %s", err))
+		err = fmt.Errorf("Error setting locked: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_api_key", "read", "set-locked").GetDiag()
 	}
-	if err = d.Set("expires_at", apiKey.ExpiresAt); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting expires_at: %s", err))
+	if !core.IsNil(apiKey.ID) {
+		if err = d.Set("apikey_id", apiKey.ID); err != nil {
+			return diag.FromErr(fmt.Errorf("[ERROR] Error setting apikey_id: %s", err))
+		}
 	}
-	if err = d.Set("apikey_id", apiKey.ID); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting id: %s", err))
-	}
-	if err = d.Set("entity_tag", apiKey.EntityTag); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting entity_tag: %s", err))
+	if !core.IsNil(apiKey.EntityTag) {
+		if err = d.Set("entity_tag", apiKey.EntityTag); err != nil {
+			err = fmt.Errorf("Error setting entity_tag: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_api_key", "read", "set-entity_tag").GetDiag()
+		}
 	}
 	if err = d.Set("crn", apiKey.CRN); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting crn: %s", err))
+		err = fmt.Errorf("Error setting crn: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_api_key", "read", "set-crn").GetDiag()
 	}
-	if err = d.Set("created_at", apiKey.CreatedAt.String()); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting created_at: %s", err))
+	if !core.IsNil(apiKey.CreatedAt) {
+		if err = d.Set("created_at", flex.DateTimeToString(apiKey.CreatedAt)); err != nil {
+			err = fmt.Errorf("Error setting created_at: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_api_key", "read", "set-created_at").GetDiag()
+		}
 	}
 	if err = d.Set("created_by", apiKey.CreatedBy); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting created_by: %s", err))
+		err = fmt.Errorf("Error setting created_by: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_api_key", "read", "set-created_by").GetDiag()
 	}
-	if err = d.Set("modified_at", apiKey.ModifiedAt.String()); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting modified_at: %s", err))
+	if !core.IsNil(apiKey.ModifiedAt) {
+		if err = d.Set("modified_at", flex.DateTimeToString(apiKey.ModifiedAt)); err != nil {
+			err = fmt.Errorf("Error setting modified_at: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_api_key", "read", "set-modified_at").GetDiag()
+		}
 	}
 
 	return nil
 }
 
-func resourceIbmIamApiKeyUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceIBMIamAPIKeyUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	iamIdentityClient, err := meta.(conns.ClientSession).IAMIdentityV1API()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_api_key", "update", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
-	updateApiKeyOptions := &iamidentityv1.UpdateAPIKeyOptions{}
+	updateAPIKeyOptions := &iamidentityv1.UpdateAPIKeyOptions{}
 
-	updateApiKeyOptions.SetIfMatch("*")
-	updateApiKeyOptions.SetID(d.Id())
-	updateApiKeyOptions.SetName(d.Get("name").(string))
+	updateAPIKeyOptions.SetIfMatch("*")
+	updateAPIKeyOptions.SetID(d.Id())
+	if _, ok := d.GetOk("name"); ok {
+		updateAPIKeyOptions.SetName(d.Get("name").(string))
+	}
 	if _, ok := d.GetOk("description"); ok {
-		updateApiKeyOptions.SetDescription(d.Get("description").(string))
+		updateAPIKeyOptions.SetDescription(d.Get("description").(string))
 	}
 	if _, ok := d.GetOk("expires_at"); ok {
-		updateApiKeyOptions.SetExpiresAt(d.Get("expires_at").(string))
-	}
-	_, response, err := iamIdentityClient.UpdateAPIKey(updateApiKeyOptions)
-	if err != nil {
-		log.Printf("[DEBUG] UpdateApiKey failed %s\n%s", err, response)
-		return diag.FromErr(err)
+		updateAPIKeyOptions.SetExpiresAt(d.Get("expires_at").(string))
 	}
 
-	return resourceIbmIamApiKeyRead(context, d, meta)
+	_, _, err = iamIdentityClient.UpdateAPIKeyWithContext(context, updateAPIKeyOptions)
+	if err != nil {
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("UpdateAPIKeyWithContext failed: %s", err.Error()), "ibm_iam_api_key", "update")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
+	}
+
+	return resourceIBMIamAPIKeyRead(context, d, meta)
 }
 
-func resourceIbmIamApiKeyDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceIBMIamAPIKeyDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	iamIdentityClient, err := meta.(conns.ClientSession).IAMIdentityV1API()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_api_key", "delete", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
-	deleteApiKeyOptions := &iamidentityv1.DeleteAPIKeyOptions{}
+	deleteAPIKeyOptions := &iamidentityv1.DeleteAPIKeyOptions{}
 
-	deleteApiKeyOptions.SetID(d.Id())
+	deleteAPIKeyOptions.SetID(d.Id())
 
-	response, err := iamIdentityClient.DeleteAPIKey(deleteApiKeyOptions)
+	_, err = iamIdentityClient.DeleteAPIKeyWithContext(context, deleteAPIKeyOptions)
 	if err != nil {
-		log.Printf("[DEBUG] DeleteApiKey failed %s\n%s", err, response)
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("DeleteAPIKeyWithContext failed: %s", err.Error()), "ibm_iam_api_key", "delete")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	d.SetId("")

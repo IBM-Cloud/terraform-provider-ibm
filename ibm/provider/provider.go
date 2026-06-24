@@ -1,4 +1,4 @@
-// Copyright IBM Corp. 2024 All Rights Reserved.
+// Copyright IBM Corp. 2026 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 package provider
@@ -436,7 +436,7 @@ func Provider() *schema.Provider {
 			"ibm_iam_service_id":                            iamidentity.DataSourceIBMIAMServiceID(),
 			"ibm_iam_serviceid_group":                       iamidentity.DataSourceIBMIamServiceidGroup(),
 			"ibm_iam_service_policy":                        iampolicy.DataSourceIBMIAMServicePolicy(),
-			"ibm_iam_api_key":                               iamidentity.DataSourceIBMIamApiKey(),
+			"ibm_iam_api_key":                               iamidentity.DataSourceIBMIamAPIKey(),
 			"ibm_iam_trusted_profile":                       iamidentity.DataSourceIBMIamTrustedProfile(),
 			"ibm_iam_trusted_profile_identity":              iamidentity.DataSourceIBMIamTrustedProfileIdentity(),
 			"ibm_iam_trusted_profile_identities":            iamidentity.DataSourceIBMIamTrustedProfileIdentities(),
@@ -1366,7 +1366,7 @@ func Provider() *schema.Provider {
 			"ibm_iam_service_api_key":                       iamidentity.ResourceIBMIAMServiceAPIKey(),
 			"ibm_iam_service_policy":                        iampolicy.ResourceIBMIAMServicePolicy(),
 			"ibm_iam_user_invite":                           iampolicy.ResourceIBMIAMUserInvite(),
-			"ibm_iam_api_key":                               iamidentity.ResourceIBMIAMApiKey(),
+			"ibm_iam_api_key":                               iamidentity.ResourceIBMIamAPIKey(),
 			"ibm_iam_trusted_profile":                       iamidentity.ResourceIBMIAMTrustedProfile(),
 			"ibm_iam_trusted_profile_identity":              iamidentity.ResourceIBMIamTrustedProfileIdentity(),
 			"ibm_iam_trusted_profile_identities":            iamidentity.ResourceIBMIamTrustedProfileIdentities(),

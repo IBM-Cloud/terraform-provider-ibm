@@ -33,13 +33,9 @@ resource "ibm_iam_trusted_profile_template" "trusted_profile_template_version" {
   }
 }
 
-// Data source is not linked to a resource instance
-// Uncomment if an existing data source instance exists
-/*
 // Create trusted_profile_template data source
-data "ibm_iam_trusted_profile_template" "trusted_profile_template_instance" {
-  template_id = var.trusted_profile_template_template_id
-  version = var.trusted_profile_template_version
-  include_history = var.trusted_profile_template_include_history
+data "ibm_iam_trusted_profile_template" "trusted_profile_template_data" {
+  template_id = split("/", ibm_iam_trusted_profile_template.trusted_profile_template_instance.id)[0]
+  version = ibm_iam_trusted_profile_template.trusted_profile_template_instance.version
+  include_history = false
 }
-*/
