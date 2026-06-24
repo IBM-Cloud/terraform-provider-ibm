@@ -13,6 +13,7 @@ import (
 
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM/platform-services-go-sdk/iamaccessgroupsv2"
 )
 
@@ -167,9 +168,9 @@ func testAccCheckIBMIAMAccessGroupTemplateDestroy(s *terraform.State) error {
 		_, response, err := iamAccessGroupsClient.GetLatestTemplateVersion(getLatestTemplateVersionOptions)
 
 		if err == nil {
-			return fmt.Errorf("iam_access_group_template still exists: %s", rs.Primary.ID)
+			return flex.FmtErrorf("iam_access_group_template still exists: %s", rs.Primary.ID)
 		} else if response.StatusCode != 404 {
-			return fmt.Errorf("Error checking for iam_access_group_template (%s) has been destroyed: %s", rs.Primary.ID, err)
+			return flex.FmtErrorf("Error checking for iam_access_group_template (%s) has been destroyed: %s", rs.Primary.ID, err)
 		}
 	}
 

@@ -131,7 +131,7 @@ func testAccCheckIBMIAMAccessGroupMemberDestroy(s *terraform.State) error {
 		_, detailResponse, err := accClient.ListAccessGroupMembers(listAccessGroupMembersOptions)
 
 		if err != nil && detailResponse.StatusCode != 404 {
-			return fmt.Errorf("[ERROR] Error waiting for access group members (%s) to be destroyed: %s", rs.Primary.ID, err)
+			return flex.FmtErrorf("[ERROR] Error waiting for access group members (%s) to be destroyed: %s", rs.Primary.ID, err)
 		}
 	}
 

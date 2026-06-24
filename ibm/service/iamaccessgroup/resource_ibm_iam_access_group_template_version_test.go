@@ -166,7 +166,7 @@ func testAccCheckIBMIAMAccessGroupTemplateVersionExists(n string, obj iamaccessg
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
-			return fmt.Errorf("Not found: %s", n)
+			return flex.FmtErrorf("Not found: %s", n)
 		}
 
 		iamAccessGroupsClient, err := acc.TestAccProvider.Meta().(conns.ClientSession).IAMAccessGroupsV2()
@@ -218,9 +218,9 @@ func testAccCheckIBMIAMAccessGroupTemplateVersionDestroy(s *terraform.State) err
 		_, response, err := iamAccessGroupsClient.GetTemplateVersion(getTemplateVersionOptions)
 
 		if err == nil {
-			return fmt.Errorf("iam_access_group_template_version still exists: %s", rs.Primary.ID)
+			return flex.FmtErrorf("iam_access_group_template_version still exists: %s", rs.Primary.ID)
 		} else if response.StatusCode != 404 {
-			return fmt.Errorf("Error checking for iam_access_group_template_version (%s) has been destroyed: %s", rs.Primary.ID, err)
+			return flex.FmtErrorf("Error checking for iam_access_group_template_version (%s) has been destroyed: %s", rs.Primary.ID, err)
 		}
 	}
 
