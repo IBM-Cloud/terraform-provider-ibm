@@ -556,6 +556,11 @@ func init() {
 		fmt.Println("[WARN] Set the environment variable IBM_IAM_ACCESS_GROUP_ID for testing ibm_iam_user_invite resource, or some tests for that resource will fail if this is not set correctly")
 	}
 
+	IAMAccessGroupId = os.Getenv("IBM_IAM_ACCESS_GROUP_ID")
+	if IAMAccessGroupId == "" {
+		fmt.Println("[WARN] Set the environment variable IBM_IAM_ACCESS_GROUP_ID for testing ibm_iam_user_invite resource Some tests for that resource will fail if this is not set correctly")
+	}
+
 	IAMAccountId = os.Getenv("IBM_IAMACCOUNTID")
 	if IAMAccountId == "" {
 		fmt.Println("[WARN] Set the environment variable IBM_IAMACCOUNTID for testing ibm_iam_trusted_profile resource, or some tests for that resource will fail if this is not set correctly")
