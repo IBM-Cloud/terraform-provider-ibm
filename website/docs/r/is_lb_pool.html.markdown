@@ -217,7 +217,7 @@ Review the argument references that you can specify for your resource.
     Nested schema for **target**:
     - `href` - (Optional, String) The URL for the target load balancer pool. Mutually exclusive with `id`. Specify "null" during update to remove an existing failsafe target pool.
     - `id` - (Optional, String) The unique identifier for the target load balancer pool. Mutually exclusive with `href`. Specify "null" during update to remove an 
-- `health_monitor` - (Required, List) The health monitor of this pool. If this pool has a member targeting a load balancer then:- If the targeted load balancer has multiple subnets, this health monitor is used to  direct traffic to the available subnets.- The health checks spawned by this health monitor is handled as any other traffic  (that is, subject to the configuration of listeners and pools on the target load  balancer).- This health monitor does not affect how pool member health is determined within the  target load balancer.For more information, see [Private Path network load balancer frequently askedquestions](https://cloud.ibm.com/docs/vpc?topic=vpc-nlb-faqs#ppnlb-faqs).
+- `health_monitor` - (Optional, Computed, List) The enhanced HTTP/HTTPS health monitor configuration for this pool. Omit this block for TCP or UDP pools, or when using only the legacy `health_delay`/`health_retries`/`health_timeout`/`health_type` attributes. When omitted on existing resources the API-side value is preserved in state.
   Nested schema for **health_monitor**:
 	- `request` - (Optional, List)
 	  Nested schema for **request**:

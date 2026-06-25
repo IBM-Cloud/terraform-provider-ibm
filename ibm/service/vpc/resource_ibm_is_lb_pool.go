@@ -235,9 +235,9 @@ func ResourceIBMISLBPool() *schema.Resource {
 
 			"health_monitor": &schema.Schema{
 				Type:        schema.TypeList,
-				MinItems:    1,
 				MaxItems:    1,
-				Required:    true,
+				Optional:    true,
+				Computed:    true,
 				Description: "The health monitor of this pool.If this pool has a member targeting a load balancer then:- If the targeted load balancer has multiple subnets, this health monitor is used to  direct traffic to the available subnets.- The health checks spawned by this health monitor is handled as any other traffic  (that is, subject to the configuration of listeners and pools on the target load  balancer).- This health monitor does not affect how pool member health is determined within the  target load balancer.For more information, see [Private Path network load balancer frequently askedquestions](https://cloud.ibm.com/docs/vpc?topic=vpc-nlb-faqs#ppnlb-faqs).",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -733,6 +733,9 @@ func lbPoolUpdate(context context.Context, d *schema.ResourceData, meta interfac
 	lBPoolHealthMonitorPortRemoved := false
 	requestWasRemoved := false
 	headersWereCleared := false
+	bodyWasRemoved := false
+	responseWasCleared := false
+	codesWereCleared := false
 	isFailSafePolicyTargetNull := false
 	hasFailSafeChanged := false
 	if d.HasChange("failsafe_policy") {
@@ -809,6 +812,13 @@ func lbPoolUpdate(context context.Context, d *schema.ResourceData, meta interfac
 						headersWereCleared = true
 					}
 				}
+				// Detect body removal so we can null it in the patch.
+				if d.HasChange("health_monitor.0.request.0.body") {
+					newBody, _ := reqMap["body"].(string)
+					if newBody == "" {
+						bodyWasRemoved = true
+					}
+				}
 				requestModel, err :=
 					ResourceIBMIsLbPoolMapToLoadBalancerPoolHealthMonitorTypeHttphttpsRequestPatch(reqMap)
 				if err != nil {
@@ -828,8 +838,9 @@ func lbPoolUpdate(context context.Context, d *schema.ResourceData, meta interfac
 		}
 
 		if d.HasChange("health_monitor.0.response") {
-			if hm["response"] != nil && len(hm["response"].([]interface{})) > 0 {
-				responseMap := hm["response"].([]interface{})[0].(map[string]interface{})
+			responseList, _ := hm["response"].([]interface{})
+			if len(responseList) > 0 && responseList[0] != nil {
+				responseMap := responseList[0].(map[string]interface{})
 				hasBodyRegex := responseMap["body_regex"] != nil && responseMap["body_regex"].(string) != ""
 				hasCodes := responseMap["codes"] != nil && len(responseMap["codes"].([]interface{})) > 0
 				if hasBodyRegex || hasCodes {
@@ -844,9 +855,18 @@ func lbPoolUpdate(context context.Context, d *schema.ResourceData, meta interfac
 							"parse-health_monitor-response",
 						).GetDiag()
 					}
-
 					healthMonitorTemplate.Response = responseModel
+				} else {
+					// response block present but empty: clear it via null.
+					responseWasCleared = true
 				}
+				// Detect when codes were specifically cleared but body_regex still exists.
+				if !hasCodes && d.HasChange("health_monitor.0.response.0.codes") {
+					codesWereCleared = true
+				}
+			} else {
+				// response block was entirely removed; signal a null to the API.
+				responseWasCleared = true
 			}
 		}
 
@@ -926,6 +946,24 @@ func lbPoolUpdate(context context.Context, d *schema.ResourceData, meta interfac
 			if headersWereCleared {
 				if reqPatch, ok := hmPatch["request"].(map[string]interface{}); ok {
 					reqPatch["headers"] = []interface{}{}
+				}
+			}
+			// Null out body in the patch when it was removed from config.
+			if bodyWasRemoved {
+				if reqPatch, ok := hmPatch["request"].(map[string]interface{}); ok {
+					reqPatch["body"] = nil
+				}
+			}
+			if responseWasCleared {
+				hmPatch["response"] = nil
+			} else if codesWereCleared {
+				// codes removed but body_regex still present: send codes as [] to clear.
+				if respPatch, ok := hmPatch["response"].(map[string]interface{}); ok {
+					respPatch["codes"] = []interface{}{}
+				} else {
+					hmPatch["response"] = map[string]interface{}{
+						"codes": []interface{}{},
+					}
 				}
 			}
 		}

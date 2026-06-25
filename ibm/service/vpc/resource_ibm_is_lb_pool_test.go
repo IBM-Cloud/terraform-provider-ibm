@@ -2061,3 +2061,209 @@ func testAccCheckIBMISLBPoolWithEmptyHealthMonitor(vpcname, subnetname, zone, ci
 	}
 	`, vpcname, subnetname, zone, cidr, name, poolName)
 }
+
+// TestAccIBMISLBPool_health_monitor_codes_removal verifies that removing
+// response.codes from config clears them on the API (not just in state).
+func TestAccIBMISLBPool_health_monitor_codes_removal(t *testing.T) {
+	var lb string
+	vpcname := fmt.Sprintf("tflbp-vpc-%d", acctest.RandIntRange(10, 100))
+	subnetname := fmt.Sprintf("tflbpc-name-%d", acctest.RandIntRange(10, 100))
+	name := fmt.Sprintf("tfcreate%d", acctest.RandIntRange(10, 100))
+	poolName := fmt.Sprintf("tflbpoolc%d", acctest.RandIntRange(10, 100))
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMISLBPoolDestroy,
+		Steps: []resource.TestStep{
+			// Step 1: create pool with GET method and response codes
+			{
+				Config: testAccCheckIBMISLBPoolHealthMonitorCodesConfig(vpcname, subnetname, acc.ISZoneName, acc.ISCIDR, name, poolName),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISLBPoolExists("ibm_is_lb_pool.testacc_lb_pool", lb),
+					resource.TestCheckResourceAttr("ibm_is_lb_pool.testacc_lb_pool", "health_monitor.0.response.0.codes.#", "1"),
+					resource.TestCheckResourceAttr("ibm_is_lb_pool.testacc_lb_pool", "health_monitor.0.response.0.codes.0", "202"),
+				),
+			},
+			// Step 2: remove codes — API must reflect the removal
+			{
+				Config: testAccCheckIBMISLBPoolHealthMonitorCodesRemovedConfig(vpcname, subnetname, acc.ISZoneName, acc.ISCIDR, name, poolName),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISLBPoolExists("ibm_is_lb_pool.testacc_lb_pool", lb),
+					resource.TestCheckResourceAttr("ibm_is_lb_pool.testacc_lb_pool", "health_monitor.0.response.#", "0"),
+				),
+			},
+		},
+	})
+}
+
+func testAccCheckIBMISLBPoolHealthMonitorCodesConfig(vpcname, subnetname, zone, cidr, name, poolName string) string {
+	return fmt.Sprintf(`
+	resource "ibm_is_vpc" "testacc_vpc" {
+		name = "%s"
+	}
+	resource "ibm_is_subnet" "testacc_subnet" {
+		name            = "%s"
+		vpc             = ibm_is_vpc.testacc_vpc.id
+		zone            = "%s"
+		ipv4_cidr_block = "%s"
+	}
+	resource "ibm_is_lb" "testacc_LB" {
+		name    = "%s"
+		subnets = [ibm_is_subnet.testacc_subnet.id]
+	}
+	resource "ibm_is_lb_pool" "testacc_lb_pool" {
+		name           = "%s"
+		lb             = ibm_is_lb.testacc_LB.id
+		algorithm      = "round_robin"
+		protocol       = "http"
+		health_delay   = 45
+		health_retries = 5
+		health_timeout = 15
+		health_type    = "http"
+		health_monitor {
+			request {
+				method = "GET"
+			}
+			response {
+				codes = ["202"]
+			}
+		}
+	}
+	`, vpcname, subnetname, zone, cidr, name, poolName)
+}
+
+func testAccCheckIBMISLBPoolHealthMonitorCodesRemovedConfig(vpcname, subnetname, zone, cidr, name, poolName string) string {
+	return fmt.Sprintf(`
+	resource "ibm_is_vpc" "testacc_vpc" {
+		name = "%s"
+	}
+	resource "ibm_is_subnet" "testacc_subnet" {
+		name            = "%s"
+		vpc             = ibm_is_vpc.testacc_vpc.id
+		zone            = "%s"
+		ipv4_cidr_block = "%s"
+	}
+	resource "ibm_is_lb" "testacc_LB" {
+		name    = "%s"
+		subnets = [ibm_is_subnet.testacc_subnet.id]
+	}
+	resource "ibm_is_lb_pool" "testacc_lb_pool" {
+		name           = "%s"
+		lb             = ibm_is_lb.testacc_LB.id
+		algorithm      = "round_robin"
+		protocol       = "http"
+		health_delay   = 45
+		health_retries = 5
+		health_timeout = 15
+		health_type    = "http"
+		health_monitor {
+			request {
+				method = "GET"
+			}
+		}
+	}
+	`, vpcname, subnetname, zone, cidr, name, poolName)
+}
+
+// TestAccIBMISLBPool_health_monitor_body_removal verifies that removing
+// request.body from config sends null to the API (not just clearing in state).
+func TestAccIBMISLBPool_health_monitor_body_removal(t *testing.T) {
+	var lb string
+	vpcname := fmt.Sprintf("tflbp-vpc-%d", acctest.RandIntRange(10, 100))
+	subnetname := fmt.Sprintf("tflbpc-name-%d", acctest.RandIntRange(10, 100))
+	name := fmt.Sprintf("tfcreate%d", acctest.RandIntRange(10, 100))
+	poolName := fmt.Sprintf("tflbpoolc%d", acctest.RandIntRange(10, 100))
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMISLBPoolDestroy,
+		Steps: []resource.TestStep{
+			// Step 1: create pool with POST + body
+			{
+				Config: testAccCheckIBMISLBPoolHealthMonitorBodyConfig(vpcname, subnetname, acc.ISZoneName, acc.ISCIDR, name, poolName),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISLBPoolExists("ibm_is_lb_pool.testacc_lb_pool", lb),
+					resource.TestCheckResourceAttr("ibm_is_lb_pool.testacc_lb_pool", "health_monitor.0.request.0.method", "POST"),
+					resource.TestCheckResourceAttr("ibm_is_lb_pool.testacc_lb_pool", "health_monitor.0.request.0.body", "app.example.com"),
+				),
+			},
+			// Step 2: remove body — must not persist on the API
+			{
+				Config: testAccCheckIBMISLBPoolHealthMonitorBodyRemovedConfig(vpcname, subnetname, acc.ISZoneName, acc.ISCIDR, name, poolName),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISLBPoolExists("ibm_is_lb_pool.testacc_lb_pool", lb),
+					resource.TestCheckResourceAttr("ibm_is_lb_pool.testacc_lb_pool", "health_monitor.0.request.0.body", ""),
+				),
+			},
+		},
+	})
+}
+
+func testAccCheckIBMISLBPoolHealthMonitorBodyConfig(vpcname, subnetname, zone, cidr, name, poolName string) string {
+	return fmt.Sprintf(`
+	resource "ibm_is_vpc" "testacc_vpc" {
+		name = "%s"
+	}
+	resource "ibm_is_subnet" "testacc_subnet" {
+		name            = "%s"
+		vpc             = ibm_is_vpc.testacc_vpc.id
+		zone            = "%s"
+		ipv4_cidr_block = "%s"
+	}
+	resource "ibm_is_lb" "testacc_LB" {
+		name    = "%s"
+		subnets = [ibm_is_subnet.testacc_subnet.id]
+	}
+	resource "ibm_is_lb_pool" "testacc_lb_pool" {
+		name           = "%s"
+		lb             = ibm_is_lb.testacc_LB.id
+		algorithm      = "round_robin"
+		protocol       = "http"
+		health_delay   = 45
+		health_retries = 5
+		health_timeout = 15
+		health_type    = "http"
+		health_monitor {
+			request {
+				method = "POST"
+				body   = "app.example.com"
+			}
+		}
+	}
+	`, vpcname, subnetname, zone, cidr, name, poolName)
+}
+
+func testAccCheckIBMISLBPoolHealthMonitorBodyRemovedConfig(vpcname, subnetname, zone, cidr, name, poolName string) string {
+	return fmt.Sprintf(`
+	resource "ibm_is_vpc" "testacc_vpc" {
+		name = "%s"
+	}
+	resource "ibm_is_subnet" "testacc_subnet" {
+		name            = "%s"
+		vpc             = ibm_is_vpc.testacc_vpc.id
+		zone            = "%s"
+		ipv4_cidr_block = "%s"
+	}
+	resource "ibm_is_lb" "testacc_LB" {
+		name    = "%s"
+		subnets = [ibm_is_subnet.testacc_subnet.id]
+	}
+	resource "ibm_is_lb_pool" "testacc_lb_pool" {
+		name           = "%s"
+		lb             = ibm_is_lb.testacc_LB.id
+		algorithm      = "round_robin"
+		protocol       = "http"
+		health_delay   = 45
+		health_retries = 5
+		health_timeout = 15
+		health_type    = "http"
+		health_monitor {
+			request {
+				method = "POST"
+			}
+		}
+	}
+	`, vpcname, subnetname, zone, cidr, name, poolName)
+}
