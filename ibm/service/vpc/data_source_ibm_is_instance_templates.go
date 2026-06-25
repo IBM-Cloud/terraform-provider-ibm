@@ -1395,7 +1395,7 @@ func dataSourceIBMISInstanceTemplatesRead(context context.Context, d *schema.Res
 					template[isInstanceTemplateZone] = zone.Name
 				}
 				if instance.ThreadsPerCore != nil {
-					template[isInstanceThreadsPerCore] = *instance.ThreadsPerCore
+					template[isInstanceThreadsPerCore] = int(*instance.ThreadsPerCore)
 				}
 				// shared core changes
 				if instance.Vcpu != nil {
@@ -1770,7 +1770,7 @@ func dataSourceIBMISInstanceTemplatesRead(context context.Context, d *schema.Res
 				}
 
 				if instance.ThreadsPerCore != nil {
-					template[isInstanceThreadsPerCore] = *instance.ThreadsPerCore
+					template[isInstanceThreadsPerCore] = int(*instance.ThreadsPerCore)
 				}
 				// shared core changes
 				if instance.Vcpu != nil {

@@ -1604,8 +1604,11 @@ func dataSourceInstanceProfileVcpuCountToMap(vcpuCountItem vpcv1.InstanceProfile
 	if vcpuCountItem.Type != nil {
 		vcpuCountMap["type"] = vcpuCountItem.Type
 	}
+	// Backfill: when the API returns type="enum", Value is absent but Default holds the count.
 	if vcpuCountItem.Value != nil {
 		vcpuCountMap["value"] = vcpuCountItem.Value
+	} else if vcpuCountItem.Default != nil {
+		vcpuCountMap["value"] = vcpuCountItem.Default
 	}
 	if vcpuCountItem.Default != nil {
 		vcpuCountMap["default"] = vcpuCountItem.Default

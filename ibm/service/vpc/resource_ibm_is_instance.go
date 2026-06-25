@@ -7674,7 +7674,7 @@ func instanceUpdate(context context.Context, d *schema.ResourceData, meta interf
 			restartNeeded = true
 		}
 
-		if d.HasChange(isInstanceVolumeBandwidthQoSMode) {
+		if _, ok := d.GetOkExists(isInstanceVolumeBandwidthQoSMode); ok && d.HasChange(isInstanceVolumeBandwidthQoSMode) {
 			instanceCCMPatchModel.VolumeBandwidthQosMode = core.StringPtr(d.Get(isInstanceVolumeBandwidthQoSMode).(string))
 			restartNeeded = true
 		}
