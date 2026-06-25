@@ -113,22 +113,29 @@ func (g *dataSourceIBMDatabaseTasksGen2Backend) getOperationDescription(instance
 
 func (g *dataSourceIBMDatabaseTasksGen2Backend) mapStateToStatus(instance *rc.ResourceInstance) string {
 	if instance.State == nil {
+		// Instance state is not available
 		return "unknown"
 	}
 
 	state := *instance.State
 	switch state {
 	case "active":
+		// Instance is fully provisioned and operational
 		return "completed"
 	case "provisioning", "in progress":
+		// Instance is being created or an operation is in progress
 		return "running"
 	case "failed":
+		// Instance provisioning or operation has failed
 		return "failed"
 	case "inactive":
-		return "queued"
+		// Instance is stopped or suspended, keep original state
+		return "inactive"
 	case "removed":
+		// Instance has been deleted, operation is complete
 		return "completed"
 	default:
+		// Return the original state for any unmapped states
 		return state
 	}
 }
