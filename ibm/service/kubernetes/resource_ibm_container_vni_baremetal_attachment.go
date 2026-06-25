@@ -6,11 +6,10 @@ package kubernetes
 import (
 	"fmt"
 	"log"
+	gohttp "net/http"
 	"time"
 
-	gohttp "net/http"
-
-	bluemix "github.com/IBM-Cloud/bluemix-go"
+	"github.com/IBM-Cloud/bluemix-go"
 	"github.com/IBM-Cloud/bluemix-go/api/container/containerv1"
 	"github.com/IBM-Cloud/bluemix-go/api/container/graphql"
 	"github.com/IBM-Cloud/bluemix-go/authentication"
@@ -18,7 +17,6 @@ import (
 	"github.com/IBM-Cloud/bluemix-go/http"
 	"github.com/IBM-Cloud/bluemix-go/rest"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
-	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -42,11 +40,17 @@ func ResourceIBMContainerVNIBaremetalAttachment() *schema.Resource {
 				Description: "The ID of the VNI to attach",
 			},
 			"vlan_id": {
-				Type:         schema.TypeInt,
-				Required:     true,
-				ForceNew:     true,
-				ValidateFunc: validate.InvokeValidator("ibm_container_vni_baremetal_attachment", "vlan_id"),
-				Description:  "The VLAN ID for the bare metal worker (1-500)",
+				Type:     schema.TypeInt,
+				Required: true,
+				ForceNew: true,
+				ValidateFunc: func(v interface{}, k string) (ws []string, errors []error) {
+					value := v.(int)
+					if value < 1 || value > 500 {
+						errors = append(errors, fmt.Errorf("%q must be between 1 and 500, got: %d", k, value))
+					}
+					return
+				},
+				Description: "The VLAN ID for the bare metal worker (1-500)",
 			},
 			"cluster": {
 				Type:          schema.TypeString,
@@ -80,11 +84,6 @@ func ResourceIBMContainerVNIBaremetalAttachment() *schema.Resource {
 				Computed:    true,
 				Description: "The ID of the worker where VNI is attached",
 			},
-			"cluster_id": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The ID of the cluster where VNI is attached",
-			},
 			"status": {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -97,23 +96,6 @@ func ResourceIBMContainerVNIBaremetalAttachment() *schema.Resource {
 			},
 		},
 	}
-}
-
-func ResourceIBMContainerVNIBaremetalAttachmentValidator() *validate.ResourceValidator {
-	validateSchema := make([]validate.ValidateSchema, 0)
-	validateSchema = append(validateSchema,
-		validate.ValidateSchema{
-			Identifier:                 "vlan_id",
-			ValidateFunctionIdentifier: validate.IntBetween,
-			Type:                       validate.TypeInt,
-			Required:                   true,
-			MinValue:                   "1",
-			MaxValue:                   "500"})
-
-	ibmContainerVNIBaremetalAttachmentValidator := validate.ResourceValidator{
-		ResourceName: "ibm_container_vni_baremetal_attachment",
-		Schema:       validateSchema}
-	return &ibmContainerVNIBaremetalAttachmentValidator
 }
 
 func resourceIBMContainerVNIBaremetalAttachmentCreate(d *schema.ResourceData, meta interface{}) error {
@@ -167,41 +149,23 @@ func resourceIBMContainerVNIBaremetalAttachmentCreate(d *schema.ResourceData, me
 		return fmt.Errorf("error attaching VNI: %s", err)
 	}
 
-	// Extract worker ID and cluster ID from response
+	// Extract worker ID from response
 	workerID := resp.NetworkAttachment.AttachedTo.ID
 
-	// Get cluster ID - if cluster was specified, use it; otherwise query for it
-	var clusterID string
-	if hasCluster {
-		clusterID = cluster.(string)
-	} else {
-		// Need to get cluster ID from worker - this requires querying the worker details
-		// For now, we'll use a placeholder approach
-		clusterID = "" // Will be populated in Read
-	}
-
-	// Set resource ID
-	id := buildVNIAttachmentID(clusterID, workerID, vniID)
-	d.SetId(id)
+	// Set resource ID (vni_id is unique and avoids issues with worker ID format)
+	d.SetId(vniID)
 
 	// Set computed attributes
 	d.Set("worker_id", workerID)
-	if clusterID != "" {
-		d.Set("cluster_id", clusterID)
-	}
 
-	log.Printf("[INFO] VNI attachment created: %s", id)
+	log.Printf("[INFO] VNI attachment created: %s", vniID)
 
 	// Read to populate all attributes
 	return resourceIBMContainerVNIBaremetalAttachmentRead(d, meta)
 }
 
 func resourceIBMContainerVNIBaremetalAttachmentRead(d *schema.ResourceData, meta interface{}) error {
-	// Parse ID
-	clusterID, workerID, vniID, err := parseVNIAttachmentID(d.Id())
-	if err != nil {
-		return err
-	}
+	vniID := d.Id()
 
 	// Get VNI client
 	vniClient, err := getVNIClient(meta)
@@ -215,9 +179,12 @@ func resourceIBMContainerVNIBaremetalAttachmentRead(d *schema.ResourceData, meta
 		return fmt.Errorf("error creating target header: %s", err)
 	}
 
+	// workerID is stored in state from the create/previous read
+	workerID, _ := d.GetOk("worker_id")
+
 	// List attachments for the worker to find this specific VNI
 	input := graphql.ListVNIAttachmentsInput{
-		NodeID: workerID,
+		NodeID: workerID.(string),
 	}
 
 	resp, err := vniClient.ListAttachments(input, targetEnv)
@@ -243,7 +210,6 @@ func resourceIBMContainerVNIBaremetalAttachmentRead(d *schema.ResourceData, meta
 	// Set attributes
 	d.Set("vni_id", found.VirtualNetworkInterface.ExternalID)
 	d.Set("worker_id", found.AttachedTo.ID)
-	d.Set("cluster_id", clusterID)
 
 	if found.VlanID != nil {
 		d.Set("vlan_id", *found.VlanID)
@@ -262,11 +228,8 @@ func resourceIBMContainerVNIBaremetalAttachmentRead(d *schema.ResourceData, meta
 }
 
 func resourceIBMContainerVNIBaremetalAttachmentDelete(d *schema.ResourceData, meta interface{}) error {
-	// Parse ID
-	_, workerID, vniID, err := parseVNIAttachmentID(d.Id())
-	if err != nil {
-		return err
-	}
+	vniID := d.Id()
+	workerID, _ := d.GetOk("worker_id")
 
 	// Get VNI client
 	vniClient, err := getVNIClient(meta)
@@ -282,13 +245,14 @@ func resourceIBMContainerVNIBaremetalAttachmentDelete(d *schema.ResourceData, me
 
 	// Prepare input
 	autoDelete := d.Get("auto_delete").(bool)
+	workerIDStr := workerID.(string)
 	input := graphql.RemoveVNIFromNodeInput{
 		VirtualNetworkInterfaceID: vniID,
-		Node:                      &workerID,
+		Node:                      &workerIDStr,
 		AutoDelete:                autoDelete,
 	}
 
-	log.Printf("[INFO] Detaching VNI %s from worker %s", vniID, workerID)
+	log.Printf("[INFO] Detaching VNI %s from worker %s", vniID, workerIDStr)
 
 	// Detach VNI
 	_, err = vniClient.DetachFromNode(input, targetEnv)
@@ -303,11 +267,8 @@ func resourceIBMContainerVNIBaremetalAttachmentDelete(d *schema.ResourceData, me
 }
 
 func resourceIBMContainerVNIBaremetalAttachmentExists(d *schema.ResourceData, meta interface{}) (bool, error) {
-	// Parse ID
-	_, workerID, vniID, err := parseVNIAttachmentID(d.Id())
-	if err != nil {
-		return false, err
-	}
+	vniID := d.Id()
+	workerID, _ := d.GetOk("worker_id")
 
 	// Get VNI client
 	vniClient, err := getVNIClient(meta)
@@ -323,7 +284,7 @@ func resourceIBMContainerVNIBaremetalAttachmentExists(d *schema.ResourceData, me
 
 	// List attachments for the worker
 	input := graphql.ListVNIAttachmentsInput{
-		NodeID: workerID,
+		NodeID: workerID.(string),
 	}
 
 	resp, err := vniClient.ListAttachments(input, targetEnv)
@@ -331,7 +292,7 @@ func resourceIBMContainerVNIBaremetalAttachmentExists(d *schema.ResourceData, me
 		return false, fmt.Errorf("error listing VNI attachments: %s", err)
 	}
 
-	// Check if the specific VNI exists
+	// Check if the specific VNI attachment exists
 	for _, edge := range resp.Connection.Edges {
 		if edge.Node.VirtualNetworkInterface.ExternalID == vniID {
 			return true, nil
@@ -341,9 +302,7 @@ func resourceIBMContainerVNIBaremetalAttachmentExists(d *schema.ResourceData, me
 	return false, nil
 }
 
-// Helper functions
-
-// getVNIClient creates a VNI GraphQL API client
+// getVNIClient creates a VNI GraphQL client
 func getVNIClient(meta interface{}) (graphql.VNIs, error) {
 	sess, err := meta.(conns.ClientSession).BluemixSession()
 	if err != nil {
@@ -351,33 +310,20 @@ func getVNIClient(meta interface{}) (graphql.VNIs, error) {
 	}
 
 	config := sess.Config.Copy()
-	err = config.ValidateConfigForService(bluemix.ContainerService)
-	if err != nil {
-		return nil, err
-	}
+	config.HTTPClient = http.NewHTTPClient(config)
 
-	if config.HTTPClient == nil {
-		config.HTTPClient = http.NewHTTPClient(config)
-	}
-
+	// Set up authentication
 	tokenRefresher, err := authentication.NewIAMAuthRepository(config, &rest.Client{
 		DefaultHeader: gohttp.Header{
-			"X-Original-User-Agent": []string{config.UserAgent},
 			"User-Agent":            []string{http.UserAgent()},
+			"X-Original-User-Agent": []string{config.UserAgent},
 		},
-		HTTPClient: config.HTTPClient,
 	})
 	if err != nil {
 		return nil, err
 	}
 
-	if config.IAMAccessToken == "" {
-		err := authentication.PopulateTokens(tokenRefresher, config)
-		if err != nil {
-			return nil, err
-		}
-	}
-
+	// Set GraphQL endpoint
 	if config.Endpoint == nil {
 		ep, err := config.EndpointLocator.ContainerEndpoint()
 		if err != nil {
@@ -415,32 +361,4 @@ func getVNITargetHeader(d *schema.ResourceData, meta interface{}) (containerv1.C
 	}
 
 	return targetEnv, nil
-}
-
-// parseVNIAttachmentID parses the VNI attachment ID format: {cluster_id}/{worker_id}/{vni_id}
-func parseVNIAttachmentID(id string) (clusterID, workerID, vniID string, err error) {
-	parts := make([]string, 0, 3)
-	start := 0
-
-	for i := 0; i < len(id); i++ {
-		if id[i] == '/' {
-			if i == 0 || i == len(id)-1 {
-				return "", "", "", fmt.Errorf("invalid VNI attachment ID format: %s", id)
-			}
-			parts = append(parts, id[start:i])
-			start = i + 1
-		}
-	}
-	parts = append(parts, id[start:])
-
-	if len(parts) != 3 {
-		return "", "", "", fmt.Errorf("invalid VNI attachment ID format, expected {cluster_id}/{worker_id}/{vni_id}, got: %s", id)
-	}
-
-	return parts[0], parts[1], parts[2], nil
-}
-
-// buildVNIAttachmentID builds the VNI attachment ID from components
-func buildVNIAttachmentID(clusterID, workerID, vniID string) string {
-	return fmt.Sprintf("%s/%s/%s", clusterID, workerID, vniID)
 }
