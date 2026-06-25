@@ -227,6 +227,44 @@ func DataSourceIBMISLbProfiles() *schema.Resource {
 								},
 							},
 						},
+
+						// http bundle
+						"fqdn_pool_members_supported": &schema.Schema{
+							Type:     schema.TypeList,
+							Computed: true,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"type": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The type for this profile field.",
+									},
+									"value": &schema.Schema{
+										Type:        schema.TypeBool,
+										Computed:    true,
+										Description: "The value for this profile field.",
+									},
+								},
+							},
+						},
+						"advanced_health_checks_supported": &schema.Schema{
+							Type:     schema.TypeList,
+							Computed: true,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"type": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The type for this profile field.",
+									},
+									"value": &schema.Schema{
+										Type:        schema.TypeBool,
+										Computed:    true,
+										Description: "The value for this profile field.",
+									},
+								},
+							},
+						},
 					},
 				},
 			},
@@ -359,6 +397,19 @@ func dataSourceIBMISLbProfilesRead(context context.Context, d *schema.ResourceDa
 			l[isLBAccessModes] = AccessModesList
 		}
 
+		// http bundle
+		advancedHealthChecksSupportedMap, err := DataSourceIBMIsLbProfilesLoadBalancerProfileAdvancedHealthCheckSupportedToMap(profileCollector.AdvancedHealthChecksSupported)
+		if err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting advanced_health_checks_supported %s", err), "(Data) ibm_is_lb_profiles", "read", "advanced_health_checks_supported-set").GetDiag()
+		}
+		l["advanced_health_checks_supported"] = []map[string]interface{}{advancedHealthChecksSupportedMap}
+
+		fqdnPoolMembersSupportedMap, err := DataSourceIBMIsLbProfilesLoadBalancerProfileFqdnSupportedToMap(profileCollector.FqdnPoolMembersSupported)
+		if err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting advanced_health_checks_supported %s", err), "(Data) ibm_is_lb_profiles", "read", "fqdn_pool_members_supported-set").GetDiag()
+		}
+		l["fqdn_pool_members_supported"] = []map[string]interface{}{fqdnPoolMembersSupportedMap}
+
 		if profileCollector.TargetableLoadBalancerProfiles != nil {
 			l["targetable_load_balancer_profiles"] = dataSourceLbProfileFlattenTargetableLoadBalancerProfiles(profileCollector.TargetableLoadBalancerProfiles)
 		}
@@ -452,6 +503,72 @@ func dataSourceIBMIsLbProfilesLoadBalancerProfileFailsafePolicyActionsEnumToMap(
 }
 
 func dataSourceIBMIsLbProfilesLoadBalancerProfileFailsafePolicyActionsDependentToMap(model *vpcv1.LoadBalancerProfileFailsafePolicyActionsDependent) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	modelMap["type"] = *model.Type
+	return modelMap, nil
+}
+
+func DataSourceIBMIsLbProfilesLoadBalancerProfileFqdnSupportedToMap(model vpcv1.LoadBalancerProfileFqdnSupportedIntf) (map[string]interface{}, error) {
+	if _, ok := model.(*vpcv1.LoadBalancerProfileFqdnSupportedFixed); ok {
+		return DataSourceIBMIsLbProfilesLoadBalancerProfileFqdnSupportedFixedToMap(model.(*vpcv1.LoadBalancerProfileFqdnSupportedFixed))
+	} else if _, ok := model.(*vpcv1.LoadBalancerProfileFqdnSupportedDependent); ok {
+		return DataSourceIBMIsLbProfilesLoadBalancerProfileFqdnSupportedDependentToMap(model.(*vpcv1.LoadBalancerProfileFqdnSupportedDependent))
+	} else if _, ok := model.(*vpcv1.LoadBalancerProfileFqdnSupported); ok {
+		modelMap := make(map[string]interface{})
+		model := model.(*vpcv1.LoadBalancerProfileFqdnSupported)
+		if model.Type != nil {
+			modelMap["type"] = *model.Type
+		}
+		if model.Value != nil {
+			modelMap["value"] = *model.Value
+		}
+		return modelMap, nil
+	} else {
+		return nil, fmt.Errorf("Unrecognized vpcv1.LoadBalancerProfileFqdnSupportedIntf subtype encountered")
+	}
+}
+
+func DataSourceIBMIsLbProfilesLoadBalancerProfileFqdnSupportedFixedToMap(model *vpcv1.LoadBalancerProfileFqdnSupportedFixed) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	modelMap["type"] = *model.Type
+	modelMap["value"] = *model.Value
+	return modelMap, nil
+}
+
+func DataSourceIBMIsLbProfilesLoadBalancerProfileFqdnSupportedDependentToMap(model *vpcv1.LoadBalancerProfileFqdnSupportedDependent) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	modelMap["type"] = *model.Type
+	return modelMap, nil
+}
+
+func DataSourceIBMIsLbProfilesLoadBalancerProfileAdvancedHealthCheckSupportedToMap(model vpcv1.LoadBalancerProfileAdvancedHealthCheckSupportedIntf) (map[string]interface{}, error) {
+	if _, ok := model.(*vpcv1.LoadBalancerProfileAdvancedHealthCheckSupportedFixed); ok {
+		return DataSourceIBMIsLbProfilesLoadBalancerProfileAdvancedHealthCheckSupportedFixedToMap(model.(*vpcv1.LoadBalancerProfileAdvancedHealthCheckSupportedFixed))
+	} else if _, ok := model.(*vpcv1.LoadBalancerProfileAdvancedHealthCheckSupportedDependent); ok {
+		return DataSourceIBMIsLbProfilesLoadBalancerProfileAdvancedHealthCheckSupportedDependentToMap(model.(*vpcv1.LoadBalancerProfileAdvancedHealthCheckSupportedDependent))
+	} else if _, ok := model.(*vpcv1.LoadBalancerProfileAdvancedHealthCheckSupported); ok {
+		modelMap := make(map[string]interface{})
+		model := model.(*vpcv1.LoadBalancerProfileAdvancedHealthCheckSupported)
+		if model.Type != nil {
+			modelMap["type"] = *model.Type
+		}
+		if model.Value != nil {
+			modelMap["value"] = *model.Value
+		}
+		return modelMap, nil
+	} else {
+		return nil, fmt.Errorf("Unrecognized vpcv1.LoadBalancerProfileAdvancedHealthCheckSupportedIntf subtype encountered")
+	}
+}
+
+func DataSourceIBMIsLbProfilesLoadBalancerProfileAdvancedHealthCheckSupportedFixedToMap(model *vpcv1.LoadBalancerProfileAdvancedHealthCheckSupportedFixed) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	modelMap["type"] = *model.Type
+	modelMap["value"] = *model.Value
+	return modelMap, nil
+}
+
+func DataSourceIBMIsLbProfilesLoadBalancerProfileAdvancedHealthCheckSupportedDependentToMap(model *vpcv1.LoadBalancerProfileAdvancedHealthCheckSupportedDependent) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["type"] = *model.Type
 	return modelMap, nil

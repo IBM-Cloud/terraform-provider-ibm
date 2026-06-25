@@ -103,6 +103,17 @@ func ResourceIBMISLB() *schema.Resource {
 				ValidateFunc: validate.InvokeValidator("ibm_is_lb", isLBType),
 				Description:  "Load Balancer type",
 			},
+			// http bundle
+			"advanced_health_checks_supported": &schema.Schema{
+				Type:        schema.TypeBool,
+				Computed:    true,
+				Description: "Indicates whether this load balancer supports advanced health checks.",
+			},
+			"fqdn_pool_members_supported": &schema.Schema{
+				Type:        schema.TypeBool,
+				Computed:    true,
+				Description: "Indicates whether this load balancer supports pool members specified by their fully qualified domain names.",
+			},
 			isAttachedLoadBalancerPoolMembers: {
 				Type:        schema.TypeList,
 				Computed:    true,
@@ -603,6 +614,15 @@ func lbGet(context context.Context, d *schema.ResourceData, meta interface{}, id
 	if err = d.Set("availability", loadBalancer.Availability); err != nil {
 		err = fmt.Errorf("Error setting availability: %s", err)
 		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_lb", "read", "set-availability").GetDiag()
+	}
+	// http bundle
+	if err = d.Set("advanced_health_checks_supported", loadBalancer.AdvancedHealthChecksSupported); err != nil {
+		err = fmt.Errorf("Error setting advanced_health_checks_supported: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_lb", "read", "set-advanced_health_checks_supported").GetDiag()
+	}
+	if err = d.Set("fqdn_pool_members_supported", loadBalancer.FqdnPoolMembersSupported); err != nil {
+		err = fmt.Errorf("Error setting fqdn_pool_members_supported: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_lb", "read", "set-fqdn_pool_members_supported").GetDiag()
 	}
 	if loadBalancer.AttachedLoadBalancerPoolMembers != nil {
 		d.Set(isAttachedLoadBalancerPoolMembers, dataSourceAttachedLoadBalancerPoolFlattenMembers(loadBalancer.AttachedLoadBalancerPoolMembers))

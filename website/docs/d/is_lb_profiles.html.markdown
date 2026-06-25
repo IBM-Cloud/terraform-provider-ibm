@@ -41,7 +41,10 @@ You can access the following attribute references after your data source is crea
 
   Nested scheme for `lb_profiles`:
 
-
+	- `advanced_health_checks_supported` - (List)
+		Nested schema for **advanced_health_checks_supported**:
+		- `type` - (String) The type for this profile. Constraints: Allowable values are: `fixed`.
+		- `value` - (Boolean) The value for this profile field.
 	- `failsafe_policy_actions` - (List) The failsafe policy configuration for a load balancer with this profile.
 
 		Nested schema for `failsafe_policy_actions`:
@@ -64,6 +67,10 @@ You can access the following attribute references after your data source is crea
 		&#x2022; `region` ideremains available if at least one zone in the region is available. </br>
 
 	- `family` - (String) The product family this load balancer profile belongs to.
+	- `fqdn_pool_members_supported` - (List)
+		Nested schema for **fqdn_pool_members_supported**:
+		- `type` - (String) The type for this profile field. Constraints: Allowable values are: `fixed`.
+		- `value` - (Boolean) The value for this profile field.
 	- `href` - (String) The URL for this load balancer profile.
 	- `instance_groups_supported` - (List) The instance groups support for a load balancer with this profile
 

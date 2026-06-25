@@ -38,6 +38,11 @@ Review the argument references that you can specify for your data source.
 ## Attribute reference
 You can access the following attribute references after your data source is created. 
 
+- `advanced_health_checks_supported` - (List) 
+
+  Nested schema for **advanced_health_checks_supported**:
+    - `type` - (String) The type for this profile field. Constraints: Allowable values are: `fixed`.
+    - `value` - (Boolean) The value for this profile field.
 - `failsafe_policy_actions` - (List) The failsafe policy configuration for a load balancer with this profile.
 
   Nested schema for `failsafe_policy_actions`:
@@ -50,6 +55,11 @@ You can access the following attribute references after your data source is crea
   - `type` - (String) The type of access mode.
   - `values` - (List of strings) Access modes for this profile. 
 - `family` - (String) The product family this load balancer profile belongs to.
+- `fqdn_pool_members_supported` - (List) 
+  
+  Nested schema for **fqdn_pool_members_supported**:
+	- `type` - (String) The type for this profile field. Constraints: Allowable values are: `fixed`. 
+	- `value` - (Boolean) The value for this profile field.
 - `href` - (String) The URL for this load balancer profile.
 - `id` - (String) The id(`name`) for this load balancer profile.
 - `name` - (String) The name for this load balancer profile.

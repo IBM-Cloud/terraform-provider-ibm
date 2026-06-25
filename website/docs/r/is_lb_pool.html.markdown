@@ -37,6 +37,37 @@ resource "ibm_is_lb_pool" "example" {
   health_timeout = 30
   health_type    = "http"
   proxy_protocol = "v1"
+  health_monitor {}
+}
+```
+
+### Load balancer pool with advanced health monitor (request/response checks)
+
+Requires a load balancer with `advanced_health_checks_supported = true`.
+
+```terraform
+resource "ibm_is_lb_pool" "example_advanced" {
+  name           = "example-pool-advanced"
+  lb             = ibm_is_lb.example.id
+  algorithm      = "round_robin"
+  protocol       = "http"
+  health_delay   = 60
+  health_retries = 5
+  health_timeout = 30
+  health_type    = "http"
+  health_monitor {
+    request {
+      method = "GET"
+      headers {
+        field = "Host"
+        value = "example.com"
+      }
+    }
+    response {
+      codes      = ["200", "204"]
+      body_regex = ".*healthy.*"
+    }
+  }
 }
 ```
 
@@ -185,7 +216,21 @@ Review the argument references that you can specify for your resource.
 
     Nested schema for **target**:
     - `href` - (Optional, String) The URL for the target load balancer pool. Mutually exclusive with `id`. Specify "null" during update to remove an existing failsafe target pool.
-    - `id` - (Optional, String) The unique identifier for the target load balancer pool. Mutually exclusive with `href`. Specify "null" during update to remove an existing failsafe target pool.
+    - `id` - (Optional, String) The unique identifier for the target load balancer pool. Mutually exclusive with `href`. Specify "null" during update to remove an 
+- `health_monitor` - (Required, List) The health monitor of this pool. If this pool has a member targeting a load balancer then:- If the targeted load balancer has multiple subnets, this health monitor is used to  direct traffic to the available subnets.- The health checks spawned by this health monitor is handled as any other traffic  (that is, subject to the configuration of listeners and pools on the target load  balancer).- This health monitor does not affect how pool member health is determined within the  target load balancer.For more information, see [Private Path network load balancer frequently askedquestions](https://cloud.ibm.com/docs/vpc?topic=vpc-nlb-faqs#ppnlb-faqs).
+  Nested schema for **health_monitor**:
+	- `request` - (Optional, List)
+	  Nested schema for **request**:
+		- `body` - (Optional, String) The HTTP request body used for health checks.If absent, the health checks will ignore the request body.
+		- `headers` - (Optional, List) The HTTP request headers used for health checks.If absent, the health checks will ignore the request headers.
+		  Nested schema for **headers**:
+			- `field` - (Optional, String) The field of an HTTP request header used for health checks.
+			- `value` - (Optional, String) The value of an HTTP request header used for health checks.
+		- `method` - (Required, String) The HTTP request method used for health checks. Constraints: Allowable values are: `get`, `post`.
+	- `response` - (Optional, List)
+	  Nested schema for **response**:
+		- `body_regex` - (Optional, String) The PCRE-flavor regular expression that HTTP response bodies must match for successful health checks.If absent, health checks will ignore any response body.
+		- `codes` - (Optional, List) The HTTP response codes expected for successful health checks.
 - `health_delay`- (Required, Integer) Health check interval in seconds. Must be greater than the `health_timeout` value. Recommended range: 30-300 seconds.
 - `health_retries`- (Required, Integer) Maximum number of health check retries before marking a member unhealthy. Recommended range: 2-10.
 - `health_timeout`- (Required, Integer) Health check timeout in seconds. Must be less than `health_delay`. Recommended range: 5-60 seconds.

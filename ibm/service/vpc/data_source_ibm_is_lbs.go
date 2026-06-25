@@ -39,6 +39,17 @@ func DataSourceIBMISLBS() *schema.Resource {
 							Computed:    true,
 							Description: "The access mode of this load balancer",
 						},
+						// http bundle
+						"advanced_health_checks_supported": &schema.Schema{
+							Type:        schema.TypeBool,
+							Computed:    true,
+							Description: "Indicates whether this load balancer supports advanced health checks.",
+						},
+						"fqdn_pool_members_supported": &schema.Schema{
+							Type:        schema.TypeBool,
+							Computed:    true,
+							Description: "Indicates whether this load balancer supports pool members specified by their fully qualified domain names.",
+						},
 						isAttachedLoadBalancerPoolMembers: {
 							Type:        schema.TypeList,
 							Computed:    true,
@@ -389,6 +400,14 @@ func getLbs(context context.Context, d *schema.ResourceData, meta interface{}) d
 		if lb.Availability != nil {
 			lbInfo[isLBAvailability] = *lb.Availability
 		}
+		// http bundle
+		if lb.AdvancedHealthChecksSupported != nil {
+			lbInfo["advanced_health_checks_supported"] = *lb.AdvancedHealthChecksSupported
+		}
+		if lb.FqdnPoolMembersSupported != nil {
+			lbInfo["fqdn_pool_members_supported"] = *lb.FqdnPoolMembersSupported
+		}
+
 		if lb.AccessMode != nil {
 			lbInfo[isLBAccessMode] = *lb.AccessMode
 		}

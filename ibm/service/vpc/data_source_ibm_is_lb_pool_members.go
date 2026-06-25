@@ -112,6 +112,16 @@ func DataSourceIBMISLBPoolMembers() *schema.Resource {
 										Computed:    true,
 										Description: "The IP address.This property may add support for IPv6 addresses in the future. When processing a value in this property, verify that the address is in an expected format. If it is not, log an error. Optionally halt processing and surface the error, or bypass the resource on which the unexpected IP address format was encountered.",
 									},
+									"resource_type": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The resource type.",
+									},
+									"fqdn": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "A fully qualified domain name for this resource.",
+									},
 								},
 							},
 						},
@@ -230,6 +240,12 @@ func dataSourceLoadBalancerPoolMemberCollectionMembersTargetToMap(targetItem vpc
 	}
 	if targetItem.Address != nil {
 		targetMap["address"] = targetItem.Address
+	}
+	if targetItem.ResourceType != nil {
+		targetMap["resource_type"] = *targetItem.ResourceType
+	}
+	if targetItem.Fqdn != nil {
+		targetMap["fqdn"] = *targetItem.Fqdn
 	}
 
 	return targetMap
