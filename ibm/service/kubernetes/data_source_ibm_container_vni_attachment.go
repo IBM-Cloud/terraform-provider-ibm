@@ -114,9 +114,8 @@ func dataSourceIBMContainerVNIAttachmentRead(d *schema.ResourceData, meta interf
 		return fmt.Errorf("VNI attachment not found for worker %s and VNI %s", workerID, vniID)
 	}
 
-	// Set ID
-	id := buildVNIAttachmentID(clusterID, workerID, vniID)
-	d.SetId(id)
+	// Set ID (vni_id is unique and avoids issues with worker ID format)
+	d.SetId(vniID)
 
 	// Set attributes
 	d.Set("vni_id", found.VirtualNetworkInterface.ExternalID)
