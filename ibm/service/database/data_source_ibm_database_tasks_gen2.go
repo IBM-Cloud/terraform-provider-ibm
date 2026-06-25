@@ -142,22 +142,31 @@ func (g *dataSourceIBMDatabaseTasksGen2Backend) mapStateToStatus(instance *rc.Re
 
 func (g *dataSourceIBMDatabaseTasksGen2Backend) calculateProgress(instance *rc.ResourceInstance) int {
 	if instance.State == nil {
+		// No state information available
 		return 0
 	}
 
 	state := *instance.State
 	switch state {
 	case "active":
+		// Instance is fully provisioned and operational - 100% complete
 		return 100
 	case "provisioning":
+		// Instance is being created - estimated at 50% (midpoint of provisioning process)
+		// Note: Actual progress may vary; RC API doesn't provide granular progress data
 		return 50
 	case "in progress":
+		// Operation is in progress - estimated at 75% (nearing completion)
+		// Note: This is an approximation as RC API doesn't provide actual progress percentage
 		return 75
 	case "failed", "removed":
+		// Operation has completed (either failed or instance removed) - 100% done
 		return 100
 	case "inactive":
+		// Instance is stopped/suspended - no progress (0%)
 		return 0
 	default:
+		// Unknown state - assume no progress
 		return 0
 	}
 }
