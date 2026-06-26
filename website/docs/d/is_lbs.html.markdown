@@ -36,6 +36,7 @@ Review the attribute references that you can access after you retrieve your data
 	Nested scheme for `load_balancers`:
 	- `access_mode` - (String) The access mode for this load balancer. One of **private**, **public**, **private_path**.
 	- `access_tags`  - (String) Access management tags associated for the load balancer.
+	- `advanced_health_checks_supported` - (Boolean) Indicates whether this load balancer supports advanced health checks.
 	- `attached_load_balancer_pool_members` - (List) The load balancer pool members attached to this load balancer.
 		Nested scheme for `members`:
 		- `deleted` - (List) If present, this property indicates the referenced resource has been deleted and providessome supplementary information.
@@ -60,6 +61,7 @@ Review the attribute references that you can access after you retrieve your data
 		- `fail`: Fails requests with an HTTP 503 status code.
 		- `forward`: Forwards requests to the target pool.
 
+	- `fqdn_pool_members_supported` - (Boolean) Indicates whether this load balancer supports pool members specified by their fully qualified domain names.
 	- `name` - (String) Name of the load balancer.
 	- `subnets` - (List) The subnets this load balancer is part of.
 
