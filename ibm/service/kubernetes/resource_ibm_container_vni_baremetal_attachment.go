@@ -53,18 +53,18 @@ func ResourceIBMContainerVNIBaremetalAttachment() *schema.Resource {
 				Description: "The VLAN ID for the bare metal worker (1-500)",
 			},
 			"cluster": {
-				Type:          schema.TypeString,
-				Optional:      true,
-				ForceNew:      true,
-				ConflictsWith: []string{"worker"},
-				Description:   "The cluster ID or name to attach VNI to any available worker",
+				Type:         schema.TypeString,
+				Optional:     true,
+				ForceNew:     true,
+				ExactlyOneOf: []string{"cluster", "worker"},
+				Description:  "The cluster ID or name to attach VNI to any available worker",
 			},
 			"worker": {
-				Type:          schema.TypeString,
-				Optional:      true,
-				ForceNew:      true,
-				ConflictsWith: []string{"cluster"},
-				Description:   "The worker ID to attach VNI to specific worker",
+				Type:         schema.TypeString,
+				Optional:     true,
+				ForceNew:     true,
+				ExactlyOneOf: []string{"cluster", "worker"},
+				Description:  "The worker ID to attach VNI to specific worker",
 			},
 			"auto_delete": {
 				Type:        schema.TypeBool,
@@ -99,16 +99,8 @@ func ResourceIBMContainerVNIBaremetalAttachment() *schema.Resource {
 }
 
 func resourceIBMContainerVNIBaremetalAttachmentCreate(d *schema.ResourceData, meta interface{}) error {
-	// Validate selector
 	cluster, hasCluster := d.GetOk("cluster")
-	worker, hasWorker := d.GetOk("worker")
-
-	if !hasCluster && !hasWorker {
-		return fmt.Errorf("either 'cluster' or 'worker' must be specified")
-	}
-	if hasCluster && hasWorker {
-		return fmt.Errorf("only one of 'cluster' or 'worker' can be specified")
-	}
+	worker, _ := d.GetOk("worker")
 
 	// Get VNI client
 	vniClient, err := getVNIClient(meta)
@@ -147,6 +139,10 @@ func resourceIBMContainerVNIBaremetalAttachmentCreate(d *schema.ResourceData, me
 	resp, err := vniClient.AttachToBareMetalNode(input, targetEnv)
 	if err != nil {
 		return fmt.Errorf("error attaching VNI: %s", err)
+	}
+
+	if resp == nil {
+		return fmt.Errorf("error: received nil response from VNI attach operation")
 	}
 
 	// Extract worker ID from response
@@ -193,35 +189,35 @@ func resourceIBMContainerVNIBaremetalAttachmentRead(d *schema.ResourceData, meta
 	}
 
 	// Find the specific VNI attachment
-	var found *graphql.VNIAttachment
+	var attachment *graphql.VNIAttachment
 	for _, edge := range resp.Connection.Edges {
 		if edge.Node.VirtualNetworkInterface.ExternalID == vniID {
-			found = &edge.Node
+			attachment = &edge.Node
 			break
 		}
 	}
 
-	if found == nil {
+	if attachment == nil {
 		log.Printf("[WARN] VNI attachment not found, removing from state: %s", d.Id())
 		d.SetId("")
 		return nil
 	}
 
 	// Set attributes
-	d.Set("vni_id", found.VirtualNetworkInterface.ExternalID)
-	d.Set("worker_id", found.AttachedTo.ID)
+	d.Set("vni_id", attachment.VirtualNetworkInterface.ExternalID)
+	d.Set("worker_id", attachment.AttachedTo.ID)
 
-	if found.VlanID != nil {
-		d.Set("vlan_id", *found.VlanID)
+	if attachment.VlanID != nil && *attachment.VlanID > 0 {
+		d.Set("vlan_id", *attachment.VlanID)
 	}
-	if found.Status != "" {
-		d.Set("status", found.Status)
+	if attachment.Status != "" {
+		d.Set("status", attachment.Status)
 	}
-	if found.CreatedAt != "" {
-		d.Set("created_at", found.CreatedAt)
+	if attachment.CreatedAt != "" {
+		d.Set("created_at", attachment.CreatedAt)
 	}
-	if found.VirtualNetworkInterface.AutoDelete != nil {
-		d.Set("auto_delete", *found.VirtualNetworkInterface.AutoDelete)
+	if attachment.VirtualNetworkInterface.AutoDelete != nil {
+		d.Set("auto_delete", *attachment.VirtualNetworkInterface.AutoDelete)
 	}
 
 	return nil
