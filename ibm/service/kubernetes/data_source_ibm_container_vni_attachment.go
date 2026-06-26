@@ -102,15 +102,15 @@ func dataSourceIBMContainerVNIAttachmentRead(d *schema.ResourceData, meta interf
 	}
 
 	// Find the specific VNI attachment
-	var found *graphql.VNIAttachment
+	var attachment *graphql.VNIAttachment
 	for _, edge := range resp.Connection.Edges {
 		if edge.Node.VirtualNetworkInterface.ExternalID == vniID {
-			found = &edge.Node
+			attachment = &edge.Node
 			break
 		}
 	}
 
-	if found == nil {
+	if attachment == nil {
 		return fmt.Errorf("VNI attachment not found for worker %s and VNI %s", workerID, vniID)
 	}
 
@@ -118,30 +118,30 @@ func dataSourceIBMContainerVNIAttachmentRead(d *schema.ResourceData, meta interf
 	d.SetId(vniID)
 
 	// Set attributes
-	d.Set("vni_id", found.VirtualNetworkInterface.ExternalID)
-	d.Set("worker", found.AttachedTo.ID)
+	d.Set("vni_id", attachment.VirtualNetworkInterface.ExternalID)
+	d.Set("worker", attachment.AttachedTo.ID)
 	d.Set("cluster", clusterID)
 
-	if found.VlanID != nil {
-		d.Set("vlan_id", *found.VlanID)
+	if attachment.VlanID != nil && *attachment.VlanID > 0 {
+		d.Set("vlan_id", *attachment.VlanID)
 	}
-	if found.Status != "" {
-		d.Set("status", found.Status)
+	if attachment.Status != "" {
+		d.Set("status", attachment.Status)
 	}
-	if found.CreatedAt != "" {
-		d.Set("created_at", found.CreatedAt)
+	if attachment.CreatedAt != "" {
+		d.Set("created_at", attachment.CreatedAt)
 	}
-	if found.VirtualNetworkInterface.AutoDelete != nil {
-		d.Set("auto_delete", *found.VirtualNetworkInterface.AutoDelete)
+	if attachment.VirtualNetworkInterface.AutoDelete != nil {
+		d.Set("auto_delete", *attachment.VirtualNetworkInterface.AutoDelete)
 	}
-	if found.VirtualNetworkInterface.PrimaryIPAddress != nil {
-		d.Set("primary_ip_address", *found.VirtualNetworkInterface.PrimaryIPAddress)
+	if attachment.VirtualNetworkInterface.PrimaryIPAddress != nil {
+		d.Set("primary_ip_address", *attachment.VirtualNetworkInterface.PrimaryIPAddress)
 	}
-	if found.VirtualNetworkInterface.MACAddress != nil {
-		d.Set("mac_address", *found.VirtualNetworkInterface.MACAddress)
+	if attachment.VirtualNetworkInterface.MACAddress != nil {
+		d.Set("mac_address", *attachment.VirtualNetworkInterface.MACAddress)
 	}
-	if found.VirtualNetworkInterface.Name != nil {
-		d.Set("vni_name", *found.VirtualNetworkInterface.Name)
+	if attachment.VirtualNetworkInterface.Name != nil {
+		d.Set("vni_name", *attachment.VirtualNetworkInterface.Name)
 	}
 
 	return nil

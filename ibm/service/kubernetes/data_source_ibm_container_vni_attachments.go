@@ -17,16 +17,16 @@ func DataSourceIBMContainerVNIAttachments() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"cluster": {
-				Type:          schema.TypeString,
-				Optional:      true,
-				ConflictsWith: []string{"worker"},
-				Description:   "The cluster ID or name to list all attachments",
+				Type:         schema.TypeString,
+				Optional:     true,
+				ExactlyOneOf: []string{"cluster", "worker"},
+				Description:  "The cluster ID or name to list all attachments",
 			},
 			"worker": {
-				Type:          schema.TypeString,
-				Optional:      true,
-				ConflictsWith: []string{"cluster"},
-				Description:   "The worker ID to list attachments for specific worker",
+				Type:         schema.TypeString,
+				Optional:     true,
+				ExactlyOneOf: []string{"cluster", "worker"},
+				Description:  "The worker ID to list attachments for specific worker",
 			},
 			"resource_group_id": {
 				Type:        schema.TypeString,
@@ -97,13 +97,8 @@ func DataSourceIBMContainerVNIAttachments() *schema.Resource {
 }
 
 func dataSourceIBMContainerVNIAttachmentsRead(d *schema.ResourceData, meta interface{}) error {
-	// Validate selector
 	cluster, hasCluster := d.GetOk("cluster")
-	worker, hasWorker := d.GetOk("worker")
-
-	if !hasCluster && !hasWorker {
-		return fmt.Errorf("either 'cluster' or 'worker' must be specified")
-	}
+	worker, _ := d.GetOk("worker")
 
 	// Get VNI client
 	vniClient, err := getVNIClient(meta)
@@ -147,7 +142,7 @@ func dataSourceIBMContainerVNIAttachmentsRead(d *schema.ResourceData, meta inter
 			attachmentMap["cluster_id"] = cluster.(string)
 		}
 
-		if attachment.VlanID != nil {
+		if attachment.VlanID != nil && *attachment.VlanID > 0 {
 			attachmentMap["vlan_id"] = *attachment.VlanID
 		}
 		if attachment.Status != "" {
