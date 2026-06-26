@@ -5,7 +5,7 @@ go 1.25.8
 require (
 	github.com/IBM-Cloud/bluemix-go v0.0.0-20260605140443-e006e534aa6d
 	github.com/IBM-Cloud/container-services-go-sdk v0.0.0-20240725064144-454a2ae23113
-	github.com/IBM-Cloud/power-go-client v1.16.0
+	github.com/IBM-Cloud/power-go-client v1.16.2
 	github.com/IBM/appconfiguration-go-admin-sdk v0.5.1
 	github.com/IBM/appid-management-go-sdk v0.0.0-20210908164609-dd0e0eaf732f
 	github.com/IBM/cloud-databases-go-sdk v0.8.1
