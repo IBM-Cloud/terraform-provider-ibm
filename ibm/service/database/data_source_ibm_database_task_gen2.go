@@ -43,34 +43,8 @@ func (g *dataSourceIBMDatabaseTaskGen2Backend) Read(ctx context.Context, d *sche
 		return tfErr.GetDiag()
 	}
 
-	// Validate Gen2 instance
-	if instance.ResourcePlanID == nil {
-		tfErr := flex.TerraformErrorf(fmt.Errorf("instance resource plan ID is nil"), "cannot determine database generation", "(Data) ibm_database_task", "read")
-		return tfErr.GetDiag()
-	}
-
-	if !isGen2Plan(*instance.ResourcePlanID) {
-		tfErr := flex.TerraformErrorf(
-			fmt.Errorf("instance is not a Gen2 database"),
-			"this data source is for Gen2 databases only",
-			"(Data) ibm_database_task",
-			"read")
-		return tfErr.GetDiag()
-	}
-
-	// Log instance details for debugging
-	log.Printf("[DEBUG] RC Instance Details for Gen2 Task:")
-	if instance.ID != nil {
-		log.Printf("[DEBUG]   ID: %s", *instance.ID)
-	}
-	if instance.State != nil {
-		log.Printf("[DEBUG]   State: %s", *instance.State)
-	}
-	if instance.LastOperation != nil {
-		log.Printf("[DEBUG]   LastOperation: %+v", instance.LastOperation)
-	}
-
 	d.SetId(*instance.ID)
+	log.Printf("[DEBUG] Setting Gen2 task ID: %s", *instance.ID)
 
 	if err = d.Set("task_id", ""); err != nil {
 		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting task_id: %s", err), "(Data) ibm_database_task", "read")
@@ -111,6 +85,7 @@ func (g *dataSourceIBMDatabaseTaskGen2Backend) Read(ctx context.Context, d *sche
 
 func (g *dataSourceIBMDatabaseTaskGen2Backend) getOperationDescription(instance *rc.ResourceInstance) string {
 	if instance.LastOperation != nil {
+		log.Printf("[DEBUG] Gen2 task LastOperation: %+v", instance.LastOperation)
 		if instance.LastOperation.Description != nil && *instance.LastOperation.Description != "" {
 			return *instance.LastOperation.Description
 		}
@@ -133,6 +108,7 @@ func (g *dataSourceIBMDatabaseTaskGen2Backend) mapStateToStatus(instance *rc.Res
 	}
 
 	state := *instance.State
+	log.Printf("[DEBUG] Gen2 task mapping state '%s' to status", state)
 	switch state {
 	case "active":
 		// Instance is fully provisioned and operational
@@ -140,12 +116,6 @@ func (g *dataSourceIBMDatabaseTaskGen2Backend) mapStateToStatus(instance *rc.Res
 	case "provisioning", "in progress":
 		// Instance is being created or an operation is in progress
 		return "running"
-	case "failed":
-		// Instance provisioning or operation has failed
-		return "failed"
-	case "inactive":
-		// Instance is stopped or suspended, keep original state
-		return "inactive"
 	case "removed":
 		// Instance has been deleted, operation is complete
 		return "completed"
@@ -162,6 +132,7 @@ func (g *dataSourceIBMDatabaseTaskGen2Backend) calculateProgress(instance *rc.Re
 	}
 
 	state := *instance.State
+	log.Printf("[DEBUG] Gen2 task calculating progress for state '%s'", state)
 	switch state {
 	case "active":
 		// Instance is fully provisioned and operational - 100% complete

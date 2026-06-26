@@ -125,12 +125,6 @@ func (g *dataSourceIBMDatabaseTasksGen2Backend) mapStateToStatus(instance *rc.Re
 	case "provisioning", "in progress":
 		// Instance is being created or an operation is in progress
 		return "running"
-	case "failed":
-		// Instance provisioning or operation has failed
-		return "failed"
-	case "inactive":
-		// Instance is stopped or suspended, keep original state
-		return "inactive"
 	case "removed":
 		// Instance has been deleted, operation is complete
 		return "completed"

@@ -7,6 +7,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"strings"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
@@ -51,27 +52,25 @@ func pickDataSourceTaskBackend(d *schema.ResourceData, meta interface{}) (dataSo
 		return nil, err
 	}
 
-	// Gen2
-	// First, try to treat task_id as a deployment/instance ID and get the instance directly
-	instance, _, err := rsConClient.GetResourceInstance(&rc.GetResourceInstanceOptions{
-		ID: &taskID,
-	})
-
-	// Classic
-	// If task_id is not a valid instance ID, fetch the task to get the deployment_id
-	if err != nil || instance == nil || instance.ResourcePlanID == nil {
-		deploymentID, err := getDeploymentIDFromTask(taskID, meta)
+	// Determine the deployment ID based on task_id format
+	// Classic: CRN contains :task: segment (e.g., crn:...:instance-id:task:task-uuid)
+	// Gen2: CRN is the instance ID directly (e.g., crn:...:instance-id::)
+	deploymentID := taskID
+	if strings.Contains(taskID, ":task:") {
+		// Classic: Extract deployment_id from task
+		var err error
+		deploymentID, err = getDeploymentIDFromTask(taskID, meta)
 		if err != nil {
 			return nil, err
 		}
+	}
 
-		// Get the instance using the deployment_id from the task
-		instance, _, err = rsConClient.GetResourceInstance(&rc.GetResourceInstanceOptions{
-			ID: &deploymentID,
-		})
-		if err != nil {
-			return nil, fmt.Errorf("failed to get resource instance: %s", err)
-		}
+	// Get the instance using the deployment ID
+	instance, _, err := rsConClient.GetResourceInstance(&rc.GetResourceInstanceOptions{
+		ID: &deploymentID,
+	})
+	if err != nil {
+		return nil, fmt.Errorf("failed to get resource instance: %s", err)
 	}
 
 	// Check the instance plan to determine which backend to use
