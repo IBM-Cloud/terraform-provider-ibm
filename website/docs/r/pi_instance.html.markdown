@@ -152,6 +152,7 @@ Review the argument references that you can specify for your resource.
   The `pi_vpmem_volumes` block supports:
   - `name` - (Required, String) Volume base name.
   - `size` - (Required, Integer) Volume size (GiB).
+  - `volume_id` - (Computed, String) Volume ID.
 
 ## Attribute Reference
 

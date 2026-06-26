@@ -57,6 +57,7 @@ You can specify the following arguments for this data source.
    Nested schema for `pi_vpmem_volumes`:
   - `name` - (Required, String) Volume base name.
   - `size` - (Required, Integer) Volume size (GiB).
+  - `volume_id` - (Computed, String) Volume ID.
 
 ## Attribute Reference
 
