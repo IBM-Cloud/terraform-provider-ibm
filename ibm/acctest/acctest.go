@@ -442,6 +442,13 @@ var (
 	IamIdentityEnterpriseAccountId       string
 )
 
+// for IDP Sharing
+var (
+	IAMIdpID                string
+	IAMIdpAccountId         string
+	IAMIdpConsumerAccountId string
+)
+
 // Projects
 var ProjectsConfigApiKey string
 
@@ -512,6 +519,19 @@ func init() {
 
 	IamIdentityAssignmentTargetAccountId = os.Getenv("IAM_IDENTITY_ASSIGNMENT_TARGET_ACCOUNT")
 	IamIdentityEnterpriseAccountId = os.Getenv("IAM_IDENTITY_ENTERPRISE_ACCOUNT")
+
+	IAMIdpID = os.Getenv("IBM_IAM_IDP_ID")
+	if IAMIdpID == "" {
+		fmt.Println("[WARN] Set the environment variable IBM_IAM_IDP_ID for testing ibm_iam_idp data source, or some tests for that resource will fail if this is not set correctly")
+	}
+	IAMIdpAccountId = os.Getenv("IBM_IAM_IDP_ACCOUNT_ID")
+	if IAMIdpAccountId == "" {
+		fmt.Println("[WARN] Set the environment variable IBM_IAM_IDP_ACCOUNT_ID for testing ibm_iam_idp resources, or some tests for that resource will fail if this is not set correctly")
+	}
+	IAMIdpConsumerAccountId = os.Getenv("IBM_IAM_IDP_CONSUMER_ACCOUNT_ID")
+	if IAMIdpConsumerAccountId == "" {
+		fmt.Println("[WARN] Set the environment variable IBM_IAM_IDP_CONSUMER_ACCOUNT_ID for testing ibm_iam_idp_account_setting resource, or some tests for that resource will fail if this is not set correctly")
+	}
 
 	ProjectsConfigApiKey = os.Getenv("IBM_PROJECTS_CONFIG_APIKEY")
 	if ProjectsConfigApiKey == "" {
@@ -2571,6 +2591,20 @@ func TestAccPreCheckIAMTrustedProfile(t *testing.T) {
 	}
 	if IksSa == "" {
 		t.Fatal("IBM_IAM_IKS_SA must be set for acceptance tests")
+	}
+}
+
+func TestAccPreCheckIAMIdp(t *testing.T) {
+	TestAccPreCheck(t)
+	if IAMIdpAccountId == "" {
+		t.Fatal("IBM_IAM_IDP_ACCOUNT_ID must be set for IDP acceptance tests")
+	}
+}
+
+func TestAccPreCheckIAMIdpAccountSetting(t *testing.T) {
+	TestAccPreCheckIAMIdp(t)
+	if IAMIdpConsumerAccountId == "" {
+		t.Fatal("IBM_IAM_IDP_CONSUMER_ACCOUNT_ID must be set for IDP account-setting acceptance tests")
 	}
 }
 
