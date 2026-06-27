@@ -2,6 +2,8 @@ module github.com/IBM-Cloud/terraform-provider-ibm
 
 go 1.25.8
 
+replace github.com/IBM/platform-services-go-sdk => /Users/harikarla/go/src/github.ibm.com/IAM-Identity-IDP-Sharing-Latest/platform-services-go-sdk
+
 require (
 	github.com/IBM-Cloud/bluemix-go v0.0.0-20260605140443-e006e534aa6d
 	github.com/IBM-Cloud/container-services-go-sdk v0.0.0-20240725064144-454a2ae23113
