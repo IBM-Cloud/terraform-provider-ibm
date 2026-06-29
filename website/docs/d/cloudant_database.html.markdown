@@ -23,17 +23,17 @@ data "ibm_cloudant_database" "cloudant_database" {
 
 The following arguments are supported:
 
-* `db` - (Required, string) Path parameter to specify the database name.
-* `instance_crn` - (Required, string) Path parameter to specify the cloudant instance CRN.
+* `db` - (Required, string) The database name.
+* `instance_crn` - (Required, string) The CRN of the Cloudant instance.
 
 ## Attribute Reference
 
 In addition to all arguments above, the following attributes are exported:
 
-* `cluster` - Schema for database cluster information. Nested `cluster` blocks have the following structure:
+* `cluster` - Database cluster information. Nested `cluster` blocks have the following structure:
 	* `read_quorum` - Read quorum. The number of consistent copies of a document that need to be read before a successful reply.
-	* `replicas` - Schema for the number of replicas of a database in a cluster.
-	* `shards` - Schema for the number of shards in a database. Each shard is a partition of the hash value range.
+	* `replicas` - The number of replicas of a database in a cluster.
+	* `shards` - The number of shards in a database. Each shard is a partition of the hash value range.
 	* `write_quorum` - Write quorum. The number of copies of a document that need to be written before a successful reply.
 
 * `committed_update_seq` - An opaque string that describes the committed state of the database.
@@ -41,8 +41,6 @@ In addition to all arguments above, the following attributes are exported:
 * `compact_running` - True if the database compaction routine is operating on this database.
 
 * `compacted_seq` - An opaque string that describes the compaction state of the database.
-
-* `db_name` - The name of the database.
 
 * `disk_format_version` - The version of the physical format used for the data when it is stored on disk.
 
@@ -54,15 +52,14 @@ In addition to all arguments above, the following attributes are exported:
 
 * `id` - The unique identifier of the cloudant_database.
 
-* `props` - Schema for database properties. Nested `props` blocks have the following structure:
+* `props` - Database properties. Nested `props` blocks have the following structure:
 	* `partitioned` - The value is `true` for a partitioned database.
 
-* `sizes` - Schema for size information of content. Nested `sizes` blocks have the following structure:
-	* `active` - The active size of the content, in bytes.
-	* `external` - The total uncompressed size of the content, in bytes.
-	* `file` - The total size of the content as stored on disk, in bytes.
+* `sizes` - Database size information. Nested `sizes` blocks have the following structure:
+	* `active` - The active size of the data in the database, in bytes.
+	* `external` - The total uncompressed size of the data in the database, in bytes.
+	* `file` - The total size of the database as stored on disk, in bytes.
 
 * `update_seq` - An opaque string that describes the state of the database. Do not rely on this string for counting the number of updates.
 
 * `uuid` - The UUID of the database.
-
