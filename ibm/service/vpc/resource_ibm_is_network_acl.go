@@ -902,7 +902,6 @@ func nwaclUpdate(context context.Context, d *schema.ResourceData, meta interface
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
-	rules := d.Get(isNetworkACLRules).([]interface{})
 	if hasChanged {
 		updateNetworkACLOptions := &vpcv1.UpdateNetworkACLOptions{
 			ID: &id,
@@ -940,29 +939,478 @@ func nwaclUpdate(context context.Context, d *schema.ResourceData, meta interface
 				"Error on update of resource network acl (%s) access tags: %s", d.Id(), err)
 		}
 	}
-	if d.HasChange(isNetworkACLRules) {
-		err := validateInlineRules(d, rules)
+	if d.HasChange(isNetworkACLRules) && !d.IsNewResource() {
+		ots, _ := d.GetChange(isNetworkACLRules)
+		otsIntf := ots.([]interface{})
+
+		err := validateInlineRulesForUpdate(d, func() []interface{} {
+			rawCfg := d.GetRawConfig()
+			rawRules := rawCfg.GetAttr("rules")
+			if rawRules.IsNull() || !rawRules.IsKnown() {
+				return nil
+			}
+			// Build a minimal []interface{} with only action populated for validation.
+			// The validator reads everything else from GetRawConfig directly.
+			out := make([]interface{}, rawRules.LengthInt())
+			for i := range out {
+				rv := rawRules.Index(cty.NumberIntVal(int64(i)))
+				m := map[string]interface{}{
+					isNetworkACLRuleAction:    "",
+					isNetworkACLRuleDirection: "",
+				}
+				if !rv.IsNull() {
+					if a := rv.GetAttr("action"); !a.IsNull() && a.IsKnown() {
+						m[isNetworkACLRuleAction] = a.AsString()
+					}
+					if dir := rv.GetAttr("direction"); !dir.IsNull() && dir.IsKnown() {
+						m[isNetworkACLRuleDirection] = dir.AsString()
+					}
+				}
+				out[i] = m
+			}
+			return out
+		}())
 		if err != nil {
-			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("validateInlineRules failed: %s", err.Error()), "ibm_is_network_acl", "update")
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("validateInlineRulesForUpdate failed: %s", err.Error()), "ibm_is_network_acl", "update")
 			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 			return tfErr.GetDiag()
 		}
-		//Delete all existing rules
-		err = clearRules(sess, id)
-		if err != nil {
-			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("clearRules failed: %s", err.Error()), "ibm_is_network_acl", "update")
-			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
-			return tfErr.GetDiag()
+
+		// ── Build old-state map: name → {id, protocol, index} ──────────────────
+		type oldRuleInfo struct {
+			id       string
+			protocol string
+			index    int
+			data     map[string]interface{}
 		}
-		//Create the rules as per the def
-		err = createInlineRules(d, sess, id, rules)
-		if err != nil {
-			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("createInlineRules failed: %s", err.Error()), "ibm_is_network_acl", "update")
-			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
-			return tfErr.GetDiag()
+		oldStateMap := make(map[string]oldRuleInfo, len(otsIntf))
+		oldStateOrder := make([]string, len(otsIntf)) // names in old state order
+		for i, r := range otsIntf {
+			rm := r.(map[string]interface{})
+			n, _ := rm[isNetworkACLRuleName].(string)
+			ruleId, _ := rm[isNetworkACLRuleID].(string)
+			proto, _ := rm[isNetworkACLRuleProtocol].(string)
+			oldStateMap[n] = oldRuleInfo{id: ruleId, protocol: proto, index: i, data: rm}
+			oldStateOrder[i] = n
+		}
+
+		// ── Build raw-config map: name → {rawVal, index} ───────────────────────
+		type rawRuleInfo struct {
+			val      cty.Value
+			index    int
+			protocol string // protocol implied by raw config
+		}
+		rawCfg := d.GetRawConfig()
+		rawCfgRules := rawCfg.GetAttr("rules")
+
+		rawConfigMap := make(map[string]rawRuleInfo)
+		rawConfigOrder := []string{} // names in desired (raw config) order
+
+		if !rawCfgRules.IsNull() && rawCfgRules.IsKnown() {
+			for i := 0; i < rawCfgRules.LengthInt(); i++ {
+				rv := rawCfgRules.Index(cty.NumberIntVal(int64(i)))
+				if rv.IsNull() {
+					continue
+				}
+				n := ""
+				if nameAttr := rv.GetAttr("name"); !nameAttr.IsNull() && nameAttr.IsKnown() {
+					n = nameAttr.AsString()
+				}
+				if n == "" {
+					continue
+				}
+				rawConfigMap[n] = rawRuleInfo{
+					val:      rv,
+					index:    i,
+					protocol: nwaclProtocolFromRawVal(rv),
+				}
+				rawConfigOrder = append(rawConfigOrder, n)
+			}
+		}
+
+		// ── Step 1: Delete rules removed from config ───────────────────────────
+		for _, oldName := range oldStateOrder {
+			if _, existsInConfig := rawConfigMap[oldName]; !existsInConfig {
+				oldInfo := oldStateMap[oldName]
+				log.Printf("[DEBUG] nwaclUpdate: deleting removed rule %q (id=%s)", oldName, oldInfo.id)
+				deleteOpts := &vpcv1.DeleteNetworkACLRuleOptions{
+					NetworkACLID: &id,
+					ID:           &oldInfo.id,
+				}
+				if resp, err := sess.DeleteNetworkACLRuleWithContext(context, deleteOpts); err != nil {
+					tfErr := flex.TerraformErrorf(err, fmt.Sprintf("DeleteNetworkACLRuleWithContext (remove rule %q) failed: %s\n%s", oldName, err.Error(), resp), "ibm_is_network_acl", "update")
+					log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+					return tfErr.GetDiag()
+				}
+			}
+		}
+
+		// ── Step 2: Process desired rules in raw-config order ──────────────────
+		// We maintain a live slice that tracks the current rule ordering by name so
+		// we can compute the correct `before` ID for inserts and repositions.
+		// Start from the post-deletion old state order.
+		liveOrder := make([]string, 0, len(rawConfigOrder))
+		for _, n := range oldStateOrder {
+			if _, existsInConfig := rawConfigMap[n]; existsInConfig {
+				liveOrder = append(liveOrder, n)
+			}
+		}
+
+		// liveIDs maps name → current rule ID (updated when rules are created).
+		liveIDs := make(map[string]string, len(oldStateMap))
+		for n, info := range oldStateMap {
+			liveIDs[n] = info.id
+		}
+
+		// beforeIDForIndex returns the rule ID that the rule at desiredIndex should
+		// be placed before in the API linked-list, based on the current liveOrder.
+		// It looks at what rule should immediately follow desiredIndex in rawConfigOrder.
+		beforeIDForIndex := func(desiredIndex int) string {
+			if desiredIndex+1 >= len(rawConfigOrder) {
+				return "" // last rule — no `before`
+			}
+			// Find the first rule after desiredIndex that already exists in liveIDs.
+			for j := desiredIndex + 1; j < len(rawConfigOrder); j++ {
+				nextName := rawConfigOrder[j]
+				if rid, ok := liveIDs[nextName]; ok && rid != "" {
+					return rid
+				}
+			}
+			return ""
+		}
+
+		// insertIntoLiveOrder inserts name at position idx, shifting others right.
+		// If idx >= len(liveOrder) the name is appended at the end.
+		insertIntoLiveOrder := func(name string, idx int) {
+			if idx >= len(liveOrder) {
+				liveOrder = append(liveOrder, name)
+				return
+			}
+			liveOrder = append(liveOrder, "")
+			copy(liveOrder[idx+1:], liveOrder[idx:])
+			liveOrder[idx] = name
+		}
+
+		// removeFromLiveOrder removes name from liveOrder.
+		removeFromLiveOrder := func(name string) {
+			for i, n := range liveOrder {
+				if n == name {
+					liveOrder = append(liveOrder[:i], liveOrder[i+1:]...)
+					return
+				}
+			}
+		}
+
+		// currentLiveIndex returns the current position of name in liveOrder, -1 if not found.
+		currentLiveIndex := func(name string) int {
+			for i, n := range liveOrder {
+				if n == name {
+					return i
+				}
+			}
+			return -1
+		}
+
+		for desiredIdx, ruleName := range rawConfigOrder {
+			rawInfo := rawConfigMap[ruleName]
+			oldInfo, existsInOld := oldStateMap[ruleName]
+
+			// ── Scenario: New rule (addition) ──────────────────────────────────
+			if !existsInOld {
+				beforeID := beforeIDForIndex(desiredIdx)
+				log.Printf("[DEBUG] nwaclUpdate: adding new rule %q at index %d (before=%s)", ruleName, desiredIdx, beforeID)
+
+				// Build a minimal state map for createSingleNwaclRuleForUpdate.
+				stateMap := nwaclRawValToStateMap(rawInfo.val)
+				newID, err := createSingleNwaclRuleForUpdate(d, sess, id, stateMap, rawInfo.index, beforeID)
+				if err != nil {
+					tfErr := flex.TerraformErrorf(err, fmt.Sprintf("createSingleNwaclRuleForUpdate (add %q) failed: %s", ruleName, err.Error()), "ibm_is_network_acl", "update")
+					log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+					return tfErr.GetDiag()
+				}
+				liveIDs[ruleName] = newID
+				insertIntoLiveOrder(ruleName, desiredIdx)
+				continue
+			}
+
+			// ── Scenario: Immutable field changed (name or protocol) ───────────
+			// Name change: the rule name in rawConfig differs from oldState key.
+			// Protocol change: rawConfig protocol differs from old state protocol.
+			oldProtocol := oldInfo.protocol
+			newProtocol := rawInfo.protocol
+			protocolChanged := oldProtocol != "" && newProtocol != "" && oldProtocol != newProtocol
+
+			if protocolChanged {
+				log.Printf("[DEBUG] nwaclUpdate: protocol changed for rule %q (%s→%s), delete+recreate", ruleName, oldProtocol, newProtocol)
+				beforeID := beforeIDForIndex(desiredIdx)
+
+				deleteOpts := &vpcv1.DeleteNetworkACLRuleOptions{
+					NetworkACLID: &id,
+					ID:           &oldInfo.id,
+				}
+				if resp, err := sess.DeleteNetworkACLRuleWithContext(context, deleteOpts); err != nil {
+					tfErr := flex.TerraformErrorf(err, fmt.Sprintf("DeleteNetworkACLRuleWithContext (protocol change %q) failed: %s\n%s", ruleName, err.Error(), resp), "ibm_is_network_acl", "update")
+					log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+					return tfErr.GetDiag()
+				}
+				removeFromLiveOrder(ruleName)
+				delete(liveIDs, ruleName)
+
+				stateMap := nwaclRawValToStateMap(rawInfo.val)
+				newID, err := createSingleNwaclRuleForUpdate(d, sess, id, stateMap, rawInfo.index, beforeID)
+				if err != nil {
+					tfErr := flex.TerraformErrorf(err, fmt.Sprintf("createSingleNwaclRuleForUpdate (protocol change %q) failed: %s", ruleName, err.Error()), "ibm_is_network_acl", "update")
+					log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+					return tfErr.GetDiag()
+				}
+				liveIDs[ruleName] = newID
+				insertIntoLiveOrder(ruleName, desiredIdx)
+				continue
+			}
+
+			// ── Scenario: Reorder only ─────────────────────────────────────────
+			curLiveIdx := currentLiveIndex(ruleName)
+			needsReorder := curLiveIdx != desiredIdx
+
+			// ── Scenario: Mutable attribute update ────────────────────────────
+			// Gather patch fields by comparing raw config values against old state.
+			rulePatch := &vpcv1.NetworkACLRulePatch{}
+			hasRulePatch := false
+
+			// action
+			if newAction := nwaclStringAttr(rawInfo.val, "action"); newAction != oldInfo.data[isNetworkACLRuleAction] {
+				if newAction != "" {
+					rulePatch.Action = &newAction
+					hasRulePatch = true
+				}
+			}
+			// source
+			if newSrc := nwaclStringAttr(rawInfo.val, "source"); newSrc != oldInfo.data[isNetworkACLRuleSource] {
+				if newSrc != "" {
+					rulePatch.Source = &newSrc
+					hasRulePatch = true
+				}
+			}
+			// destination
+			if newDest := nwaclStringAttr(rawInfo.val, "destination"); newDest != oldInfo.data[isNetworkACLRuleDestination] {
+				if newDest != "" {
+					rulePatch.Destination = &newDest
+					hasRulePatch = true
+				}
+			}
+			// direction
+			if newDir := nwaclStringAttr(rawInfo.val, "direction"); newDir != oldInfo.data[isNetworkACLRuleDirection] {
+				if newDir != "" {
+					rulePatch.Direction = &newDir
+					hasRulePatch = true
+				}
+			}
+			// icmp type/code (new-style top-level fields)
+			if rawInfo.protocol == "icmp" {
+				if newType := nwaclInt64AttrFromRaw(rawInfo.val, "type"); newType != nil {
+					oldTypeVal, _ := oldInfo.data[isNetworkACLRuleICMPType].(int)
+					if int64(oldTypeVal) != *newType {
+						rulePatch.Type = newType
+						hasRulePatch = true
+					}
+				}
+				if newCode := nwaclInt64AttrFromRaw(rawInfo.val, "code"); newCode != nil {
+					oldCodeVal, _ := oldInfo.data[isNetworkACLRuleICMPCode].(int)
+					if int64(oldCodeVal) != *newCode {
+						rulePatch.Code = newCode
+						hasRulePatch = true
+					}
+				}
+				// deprecated icmp{} block
+				icmpAttr := rawInfo.val.GetAttr("icmp")
+				if !icmpAttr.IsNull() && icmpAttr.LengthInt() > 0 {
+					elem := icmpAttr.Index(cty.NumberIntVal(0))
+					if !elem.IsNull() {
+						if t := nwaclInt64AttrFromRaw(elem, "type"); t != nil {
+							oldTypeVal, _ := oldInfo.data[isNetworkACLRuleICMPType].(int)
+							if int64(oldTypeVal) != *t {
+								rulePatch.Type = t
+								hasRulePatch = true
+							}
+						}
+						if c := nwaclInt64AttrFromRaw(elem, "code"); c != nil {
+							oldCodeVal, _ := oldInfo.data[isNetworkACLRuleICMPCode].(int)
+							if int64(oldCodeVal) != *c {
+								rulePatch.Code = c
+								hasRulePatch = true
+							}
+						}
+					}
+				}
+			}
+			// tcp/udp port fields (new-style top-level + deprecated blocks)
+			if rawInfo.protocol == "tcp" || rawInfo.protocol == "udp" {
+				// Check top-level port fields first
+				portSrc := rawInfo.val
+				hasTcpBlock := false
+				hasUdpBlock := false
+				tcpAttr := rawInfo.val.GetAttr("tcp")
+				udpAttr := rawInfo.val.GetAttr("udp")
+				if !tcpAttr.IsNull() && tcpAttr.LengthInt() > 0 {
+					hasTcpBlock = true
+					portSrc = tcpAttr.Index(cty.NumberIntVal(0))
+				} else if !udpAttr.IsNull() && udpAttr.LengthInt() > 0 {
+					hasUdpBlock = true
+					portSrc = udpAttr.Index(cty.NumberIntVal(0))
+				}
+				_ = hasTcpBlock
+				_ = hasUdpBlock
+
+				if pm := nwaclInt64AttrFromRaw(portSrc, "port_min"); pm != nil {
+					oldVal, _ := oldInfo.data[isNetworkACLRulePortMin].(int)
+					if int64(oldVal) != *pm {
+						rulePatch.DestinationPortMin = pm
+						hasRulePatch = true
+					}
+				}
+				if pm := nwaclInt64AttrFromRaw(portSrc, "port_max"); pm != nil {
+					oldVal, _ := oldInfo.data[isNetworkACLRulePortMax].(int)
+					if int64(oldVal) != *pm {
+						rulePatch.DestinationPortMax = pm
+						hasRulePatch = true
+					}
+				}
+				if pm := nwaclInt64AttrFromRaw(portSrc, "source_port_min"); pm != nil {
+					oldVal, _ := oldInfo.data[isNetworkACLRuleSourcePortMin].(int)
+					if int64(oldVal) != *pm {
+						rulePatch.SourcePortMin = pm
+						hasRulePatch = true
+					}
+				}
+				if pm := nwaclInt64AttrFromRaw(portSrc, "source_port_max"); pm != nil {
+					oldVal, _ := oldInfo.data[isNetworkACLRuleSourcePortMax].(int)
+					if int64(oldVal) != *pm {
+						rulePatch.SourcePortMax = pm
+						hasRulePatch = true
+					}
+				}
+			}
+
+			// Apply attribute patch if needed.
+			if hasRulePatch {
+				log.Printf("[DEBUG] nwaclUpdate: patching mutable attrs on rule %q (id=%s)", ruleName, oldInfo.id)
+				patchMap, err := rulePatch.AsPatch()
+				if err != nil {
+					tfErr := flex.TerraformErrorf(err, fmt.Sprintf("NetworkACLRulePatch.AsPatch() failed for %q: %s", ruleName, err.Error()), "ibm_is_network_acl", "update")
+					log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+					return tfErr.GetDiag()
+				}
+				updateOpts := &vpcv1.UpdateNetworkACLRuleOptions{
+					NetworkACLID:        &id,
+					ID:                  &oldInfo.id,
+					NetworkACLRulePatch: patchMap,
+				}
+				if _, _, err := sess.UpdateNetworkACLRuleWithContext(context, updateOpts); err != nil {
+					tfErr := flex.TerraformErrorf(err, fmt.Sprintf("UpdateNetworkACLRuleWithContext (mutable update %q) failed: %s", ruleName, err.Error()), "ibm_is_network_acl", "update")
+					log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+					return tfErr.GetDiag()
+				}
+			}
+
+			// Apply reorder patch if needed.
+			if needsReorder {
+				beforeID := beforeIDForIndex(desiredIdx)
+				log.Printf("[DEBUG] nwaclUpdate: reordering rule %q from live pos %d to %d (before=%s)", ruleName, curLiveIdx, desiredIdx, beforeID)
+				reorderPatch := &vpcv1.NetworkACLRulePatch{}
+				if beforeID != "" {
+					reorderPatch.Before = &vpcv1.NetworkACLRuleBeforePatchNetworkACLRuleIdentityByID{
+						ID: &beforeID,
+					}
+				}
+				reorderPatchMap, err := reorderPatch.AsPatch()
+				if err != nil {
+					tfErr := flex.TerraformErrorf(err, fmt.Sprintf("NetworkACLRulePatch.AsPatch() (reorder %q) failed: %s", ruleName, err.Error()), "ibm_is_network_acl", "update")
+					log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+					return tfErr.GetDiag()
+				}
+				reorderOpts := &vpcv1.UpdateNetworkACLRuleOptions{
+					NetworkACLID:        &id,
+					ID:                  &oldInfo.id,
+					NetworkACLRulePatch: reorderPatchMap,
+				}
+				if _, _, err := sess.UpdateNetworkACLRuleWithContext(context, reorderOpts); err != nil {
+					tfErr := flex.TerraformErrorf(err, fmt.Sprintf("UpdateNetworkACLRuleWithContext (reorder %q) failed: %s", ruleName, err.Error()), "ibm_is_network_acl", "update")
+					log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+					return tfErr.GetDiag()
+				}
+				// Update liveOrder to reflect the new position.
+				removeFromLiveOrder(ruleName)
+				insertIntoLiveOrder(ruleName, desiredIdx)
+			}
 		}
 	}
 	return nil
+}
+
+// nwaclProtocolFromRawVal determines the effective protocol from a raw cty rule value.
+// It prefers explicit deprecated blocks (icmp/tcp/udp) over the flat protocol attribute.
+func nwaclProtocolFromRawVal(rv cty.Value) string {
+	if rv.IsNull() || !rv.IsKnown() {
+		return ""
+	}
+	if icmpAttr := rv.GetAttr("icmp"); !icmpAttr.IsNull() && icmpAttr.LengthInt() > 0 {
+		return "icmp"
+	}
+	if tcpAttr := rv.GetAttr("tcp"); !tcpAttr.IsNull() && tcpAttr.LengthInt() > 0 {
+		return "tcp"
+	}
+	if udpAttr := rv.GetAttr("udp"); !udpAttr.IsNull() && udpAttr.LengthInt() > 0 {
+		return "udp"
+	}
+	if p := rv.GetAttr("protocol"); !p.IsNull() && p.IsKnown() {
+		return p.AsString()
+	}
+	return ""
+}
+
+// nwaclStringAttr safely extracts a string attribute from a cty.Value.
+func nwaclStringAttr(rv cty.Value, attr string) string {
+	if rv.IsNull() || !rv.IsKnown() {
+		return ""
+	}
+	v := rv.GetAttr(attr)
+	if v.IsNull() || !v.IsKnown() {
+		return ""
+	}
+	return v.AsString()
+}
+
+// nwaclInt64AttrFromRaw extracts an int64 pointer from a cty.Value attribute.
+// Returns nil if the attribute is null or unknown.
+func nwaclInt64AttrFromRaw(rv cty.Value, attr string) *int64 {
+	if rv.IsNull() || !rv.IsKnown() {
+		return nil
+	}
+	v := rv.GetAttr(attr)
+	if v.IsNull() || !v.IsKnown() {
+		return nil
+	}
+	n, _ := v.AsBigFloat().Int64()
+	return &n
+}
+
+// nwaclRawValToStateMap converts a raw cty rule value to the map[string]interface{}
+// format expected by createSingleNwaclRuleForUpdate. Only the fields needed for the
+// create call are populated; the function reads protocol/port detail directly from
+// GetRawConfig via the index parameter passed alongside.
+func nwaclRawValToStateMap(rv cty.Value) map[string]interface{} {
+	m := map[string]interface{}{
+		isNetworkACLRuleName:        nwaclStringAttr(rv, "name"),
+		isNetworkACLRuleAction:      nwaclStringAttr(rv, "action"),
+		isNetworkACLRuleSource:      nwaclStringAttr(rv, "source"),
+		isNetworkACLRuleDestination: nwaclStringAttr(rv, "destination"),
+		isNetworkACLRuleDirection:   nwaclStringAttr(rv, "direction"),
+		isNetworkACLRuleProtocol:    nwaclStringAttr(rv, "protocol"),
+		isNetworkACLRuleICMP:        []interface{}{},
+		isNetworkACLRuleTCP:         []interface{}{},
+		isNetworkACLRuleUDP:         []interface{}{},
+	}
+	return m
 }
 
 func resourceIBMISNetworkACLDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -1172,6 +1620,97 @@ func validateInlineRules(d *schema.ResourceData, rules []interface{}) error {
 			}
 		}
 
+	}
+	return nil
+}
+
+func validateInlineRulesForUpdate(d *schema.ResourceData, rules []interface{}) error {
+	// Read everything from GetRawConfig so state-merged values don't cause
+	// false positives on update. On create GetRawConfig is fully populated;
+	// on update it is also fully populated (only destroy returns null).
+	rawConfig := d.GetRawConfig()
+	var rawRulesAttr cty.Value
+	if rawConfig.IsKnown() && !rawConfig.IsNull() {
+		rawRulesAttr = rawConfig.GetAttr("rules")
+	} else {
+		rawRulesAttr = cty.NullVal(cty.DynamicPseudoType)
+	}
+
+	for i, rule := range rules {
+		rulex := rule.(map[string]interface{})
+		action := rulex[isNetworkACLRuleAction].(string)
+		if (action != "allow") && (action != "deny") {
+			return fmt.Errorf("[ERROR] Invalid action. valid values are allow|deny")
+		}
+
+		hasIcmpBlock, hasTcpBlock, hasUdpBlock := false, false, false
+		protocol := ""
+		hasIcmpType, hasIcmpCode := false, false
+		hasPortMin, hasPortMax, hasSrcPortMin, hasSrcPortMax := false, false, false, false
+
+		if !rawRulesAttr.IsNull() && rawRulesAttr.IsKnown() && rawRulesAttr.LengthInt() > i {
+			ruleVal := rawRulesAttr.Index(cty.NumberIntVal(int64(i)))
+			if !ruleVal.IsNull() {
+				icmpAttr := ruleVal.GetAttr("icmp")
+				tcpAttr := ruleVal.GetAttr("tcp")
+				udpAttr := ruleVal.GetAttr("udp")
+				hasIcmpBlock = !icmpAttr.IsNull() && icmpAttr.LengthInt() > 0
+				hasTcpBlock = !tcpAttr.IsNull() && tcpAttr.LengthInt() > 0
+				hasUdpBlock = !udpAttr.IsNull() && udpAttr.LengthInt() > 0
+
+				if p := ruleVal.GetAttr("protocol"); !p.IsNull() && p.IsKnown() {
+					protocol = p.AsString()
+				}
+				if v := ruleVal.GetAttr("type"); !v.IsNull() && v.IsKnown() {
+					hasIcmpType = true
+				}
+				if v := ruleVal.GetAttr("code"); !v.IsNull() && v.IsKnown() {
+					hasIcmpCode = true
+				}
+				if v := ruleVal.GetAttr("port_min"); !v.IsNull() && v.IsKnown() {
+					hasPortMin = true
+				}
+				if v := ruleVal.GetAttr("port_max"); !v.IsNull() && v.IsKnown() {
+					hasPortMax = true
+				}
+				if v := ruleVal.GetAttr("source_port_min"); !v.IsNull() && v.IsKnown() {
+					hasSrcPortMin = true
+				}
+				if v := ruleVal.GetAttr("source_port_max"); !v.IsNull() && v.IsKnown() {
+					hasSrcPortMax = true
+				}
+			}
+		}
+
+		log.Printf("[DEBUG] validateInlineRules rule[%d] from RawConfig: icmp=%t, tcp=%t, udp=%t, protocol=%q", i, hasIcmpBlock, hasTcpBlock, hasUdpBlock, protocol)
+
+		if (hasIcmpBlock && hasTcpBlock) || (hasIcmpBlock && hasUdpBlock) || (hasTcpBlock && hasUdpBlock) {
+			return fmt.Errorf("Only one of icmp|tcp|udp can be defined per rule")
+		}
+
+		if protocol != "icmp" && protocol != "" {
+			if hasIcmpType {
+				return fmt.Errorf("attribute 'type' conflicts with protocol %q; 'type' is only valid for icmp protocol", protocol)
+			}
+			if hasIcmpCode {
+				return fmt.Errorf("attribute 'code' conflicts with protocol %q; 'code' is only valid for icmp protocol", protocol)
+			}
+		}
+
+		if protocol != "tcp" && protocol != "udp" && protocol != "" {
+			if hasPortMin {
+				return fmt.Errorf("attribute 'port_min' conflicts with protocol %s; ports apply only to tcp/udp protocol", protocol)
+			}
+			if hasPortMax {
+				return fmt.Errorf("attribute 'port_max' conflicts with protocol %s; ports apply only to tcp/udp protocol", protocol)
+			}
+			if hasSrcPortMin {
+				return fmt.Errorf("attribute 'source_port_min' conflicts with protocol %s; ports apply only to tcp/udp protocol", protocol)
+			}
+			if hasSrcPortMax {
+				return fmt.Errorf("attribute 'source_port_max' conflicts with protocol %s; ports apply only to tcp/udp protocol", protocol)
+			}
+		}
 	}
 	return nil
 }
@@ -1401,4 +1940,217 @@ func createInlineRules(d *schema.ResourceData, nwaclC *vpcv1.VpcV1, nwaclid stri
 
 func isNil(i interface{}) bool {
 	return i == nil || reflect.ValueOf(i).IsNil()
+}
+
+func createSingleNwaclRuleForUpdate(d *schema.ResourceData, nwaclC *vpcv1.VpcV1, nwaclid string, rulex map[string]interface{}, i int, before string) (string, error) {
+	name := rulex[isNetworkACLRuleName].(string)
+	source := rulex[isNetworkACLRuleSource].(string)
+	destination := rulex[isNetworkACLRuleDestination].(string)
+	action := rulex[isNetworkACLRuleAction].(string)
+	direction := rulex[isNetworkACLRuleDirection].(string)
+
+	// Use GetRawConfig exclusively for all field values — never read from the
+	// merged state map (rulex/d.Get) for protocol or port/icmp fields, as
+	// Computed fields bleed old state values through on update.
+	hasIcmpBlock, hasTcpBlock, hasUdpBlock := false, false, false
+	protocol := "icmp_tcp_udp"
+	if action == "deny" {
+		protocol = "any"
+	}
+
+	// rawIcmpType/rawIcmpCode: nil means not set in config.
+	var rawIcmpType, rawIcmpCode *int64
+	var rawPortMin, rawPortMax, rawSrcPortMin, rawSrcPortMax *int64
+
+	rawConfig := d.GetRawConfig()
+	rulesAttr := rawConfig.GetAttr("rules")
+	if !rulesAttr.IsNull() && rulesAttr.LengthInt() > i {
+		ruleVal := rulesAttr.Index(cty.NumberIntVal(int64(i)))
+		if !ruleVal.IsNull() {
+			// Protocol
+			protocolAttr := ruleVal.GetAttr("protocol")
+			if !protocolAttr.IsNull() && protocolAttr.IsKnown() {
+				if p := protocolAttr.AsString(); p != "" {
+					protocol = p
+				}
+			}
+
+			// Deprecated blocks
+			icmpAttr := ruleVal.GetAttr("icmp")
+			tcpAttr := ruleVal.GetAttr("tcp")
+			udpAttr := ruleVal.GetAttr("udp")
+			hasIcmpBlock = !icmpAttr.IsNull() && icmpAttr.LengthInt() > 0
+			hasTcpBlock = !tcpAttr.IsNull() && tcpAttr.LengthInt() > 0
+			hasUdpBlock = !udpAttr.IsNull() && udpAttr.LengthInt() > 0
+
+			// icmp block fields
+			if hasIcmpBlock {
+				elem := icmpAttr.Index(cty.NumberIntVal(0))
+				if !elem.IsNull() {
+					if t := elem.GetAttr("type"); !t.IsNull() && t.IsKnown() {
+						v, _ := t.AsBigFloat().Int64()
+						rawIcmpType = &v
+					}
+					if c := elem.GetAttr("code"); !c.IsNull() && c.IsKnown() {
+						v, _ := c.AsBigFloat().Int64()
+						rawIcmpCode = &v
+					}
+				}
+			}
+
+			// top-level icmp fields (new style: protocol="icmp" + type/code flat)
+			if !hasIcmpBlock {
+				if t := ruleVal.GetAttr("type"); !t.IsNull() && t.IsKnown() {
+					v, _ := t.AsBigFloat().Int64()
+					rawIcmpType = &v
+				}
+				if c := ruleVal.GetAttr("code"); !c.IsNull() && c.IsKnown() {
+					v, _ := c.AsBigFloat().Int64()
+					rawIcmpCode = &v
+				}
+			}
+
+			// tcp block fields
+			if hasTcpBlock {
+				elem := tcpAttr.Index(cty.NumberIntVal(0))
+				if !elem.IsNull() {
+					if v := elem.GetAttr("port_min"); !v.IsNull() && v.IsKnown() {
+						n, _ := v.AsBigFloat().Int64()
+						rawPortMin = &n
+					}
+					if v := elem.GetAttr("port_max"); !v.IsNull() && v.IsKnown() {
+						n, _ := v.AsBigFloat().Int64()
+						rawPortMax = &n
+					}
+					if v := elem.GetAttr("source_port_min"); !v.IsNull() && v.IsKnown() {
+						n, _ := v.AsBigFloat().Int64()
+						rawSrcPortMin = &n
+					}
+					if v := elem.GetAttr("source_port_max"); !v.IsNull() && v.IsKnown() {
+						n, _ := v.AsBigFloat().Int64()
+						rawSrcPortMax = &n
+					}
+				}
+			}
+
+			// udp block fields
+			if hasUdpBlock {
+				elem := udpAttr.Index(cty.NumberIntVal(0))
+				if !elem.IsNull() {
+					if v := elem.GetAttr("port_min"); !v.IsNull() && v.IsKnown() {
+						n, _ := v.AsBigFloat().Int64()
+						rawPortMin = &n
+					}
+					if v := elem.GetAttr("port_max"); !v.IsNull() && v.IsKnown() {
+						n, _ := v.AsBigFloat().Int64()
+						rawPortMax = &n
+					}
+					if v := elem.GetAttr("source_port_min"); !v.IsNull() && v.IsKnown() {
+						n, _ := v.AsBigFloat().Int64()
+						rawSrcPortMin = &n
+					}
+					if v := elem.GetAttr("source_port_max"); !v.IsNull() && v.IsKnown() {
+						n, _ := v.AsBigFloat().Int64()
+						rawSrcPortMax = &n
+					}
+				}
+			}
+
+			// top-level port fields (new style: protocol="tcp"/"udp" + flat ports)
+			if !hasTcpBlock && !hasUdpBlock {
+				if v := ruleVal.GetAttr("port_min"); !v.IsNull() && v.IsKnown() {
+					n, _ := v.AsBigFloat().Int64()
+					rawPortMin = &n
+				}
+				if v := ruleVal.GetAttr("port_max"); !v.IsNull() && v.IsKnown() {
+					n, _ := v.AsBigFloat().Int64()
+					rawPortMax = &n
+				}
+				if v := ruleVal.GetAttr("source_port_min"); !v.IsNull() && v.IsKnown() {
+					n, _ := v.AsBigFloat().Int64()
+					rawSrcPortMin = &n
+				}
+				if v := ruleVal.GetAttr("source_port_max"); !v.IsNull() && v.IsKnown() {
+					n, _ := v.AsBigFloat().Int64()
+					rawSrcPortMax = &n
+				}
+			}
+		}
+	}
+
+	// Deprecated blocks override whatever the flat protocol attribute says.
+	if hasIcmpBlock {
+		protocol = "icmp"
+	} else if hasTcpBlock {
+		protocol = "tcp"
+	} else if hasUdpBlock {
+		protocol = "udp"
+	}
+	// action=deny with no explicit protocol means "any"
+	if action == "deny" && protocol == "icmp_tcp_udp" {
+		protocol = "any"
+	}
+
+	ruleTemplate := &vpcv1.NetworkACLRulePrototype{
+		Action:      &action,
+		Destination: &destination,
+		Direction:   &direction,
+		Source:      &source,
+		Name:        &name,
+	}
+
+	if before != "" {
+		ruleTemplate.Before = &vpcv1.NetworkACLRuleBeforePrototype{
+			ID: &before,
+		}
+	}
+
+	ruleTemplate.Protocol = &protocol
+
+	switch protocol {
+	case "icmp":
+		ruleTemplate.Type = rawIcmpType
+		ruleTemplate.Code = rawIcmpCode
+		// if one is set, the other must default to 0
+		if ruleTemplate.Type != nil && ruleTemplate.Code == nil {
+			v := int64(0)
+			ruleTemplate.Code = &v
+		}
+		if ruleTemplate.Code != nil && ruleTemplate.Type == nil {
+			v := int64(0)
+			ruleTemplate.Type = &v
+		}
+	case "tcp", "udp":
+		ruleTemplate.DestinationPortMin = rawPortMin
+		ruleTemplate.DestinationPortMax = rawPortMax
+		ruleTemplate.SourcePortMin = rawSrcPortMin
+		ruleTemplate.SourcePortMax = rawSrcPortMax
+	}
+
+	createNetworkAclRuleOptions := &vpcv1.CreateNetworkACLRuleOptions{
+		NetworkACLID:            &nwaclid,
+		NetworkACLRulePrototype: ruleTemplate,
+	}
+	rule, response, err := nwaclC.CreateNetworkACLRule(createNetworkAclRuleOptions)
+	if err != nil {
+		return "", fmt.Errorf("[ERROR] Error Creating network ACL rule : %s\n%s", err, response)
+	}
+	newID := ""
+	if rule != nil {
+		switch r := rule.(type) {
+		case *vpcv1.NetworkACLRuleNetworkACLRuleProtocolIcmp:
+			newID = *r.ID
+		case *vpcv1.NetworkACLRuleNetworkACLRuleProtocolTcpudp:
+			newID = *r.ID
+		case *vpcv1.NetworkACLRuleNetworkACLRuleProtocolAny:
+			newID = *r.ID
+		case *vpcv1.NetworkACLRuleNetworkACLRuleProtocolIndividual:
+			newID = *r.ID
+		case *vpcv1.NetworkACLRuleNetworkACLRuleProtocolIcmptcpudp:
+			newID = *r.ID
+		case *vpcv1.NetworkACLRule:
+			newID = *r.ID
+		}
+	}
+	return newID, nil
 }
