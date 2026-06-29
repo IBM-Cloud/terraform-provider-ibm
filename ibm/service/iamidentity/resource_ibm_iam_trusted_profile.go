@@ -176,7 +176,9 @@ func resourceIBMIamTrustedProfileCreate(context context.Context, d *schema.Resou
 
 	userDetails, err := meta.(conns.ClientSession).BluemixUserDetails()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("resourceIBMIamTrustedProfileCreate failed: %s", err.Error()), "ibm_iam_trusted_profile", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	accountID := userDetails.UserAccount

@@ -1,4 +1,4 @@
-// Copyright IBM Corp. 2023 All Rights Reserved.
+// Copyright IBM Corp. 2026 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 package iamidentity
@@ -273,27 +273,34 @@ func ResourceIBMTrustedProfileTemplateAssignmentValidator() *validate.ResourceVa
 func resourceIBMTrustedProfileTemplateAssignmentCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	iamIdentityClient, err := meta.(conns.ClientSession).IAMIdentityV1API()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_trusted_profile_template_assignment", "create", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	createTrustedProfileAssignmentOptions := &iamidentityv1.CreateTrustedProfileAssignmentOptions{}
 
-	createTrustedProfileAssignmentOptions.SetTemplateID(d.Get("template_id").(string))
+	templateId, _, err := parseResourceId(d.Get("template_id").(string))
+	if err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_trusted_profile_template_assignment", "create", "parse-resource-id").GetDiag()
+	}
+	createTrustedProfileAssignmentOptions.SetTemplateID(templateId)
 	createTrustedProfileAssignmentOptions.SetTemplateVersion(int64(d.Get("template_version").(int)))
 	createTrustedProfileAssignmentOptions.SetTargetType(d.Get("target_type").(string))
 	createTrustedProfileAssignmentOptions.SetTarget(d.Get("target").(string))
 
-	templateAssignmentResponse, response, err := iamIdentityClient.CreateTrustedProfileAssignmentWithContext(context, createTrustedProfileAssignmentOptions)
+	templateAssignmentResponse, _, err := iamIdentityClient.CreateTrustedProfileAssignmentWithContext(context, createTrustedProfileAssignmentOptions)
 	if err != nil {
-		log.Printf("[DEBUG] CreateTrustedProfileAssignmentWithContext failed %s\n%s", err, response)
-		return diag.FromErr(fmt.Errorf("CreateTrustedProfileAssignmentWithContext failed %s\n%s", err, response))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateTrustedProfileAssignmentWithContext failed: %s", err.Error()), "ibm_iam_trusted_profile_template_assignment", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	d.SetId(*templateAssignmentResponse.ID)
 
 	_, err = waitForAssignment(d.Timeout(schema.TimeoutCreate), meta, d, isTrustedProfileTemplateAssigned)
 	if err != nil {
-		return diag.FromErr(fmt.Errorf("error assigning %s", err))
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_trusted_profile_template_assignment", "create", "wait-for-assignment").GetDiag()
 	}
 
 	return resourceIBMTrustedProfileTemplateAssignmentRead(context, d, meta)
@@ -302,7 +309,9 @@ func resourceIBMTrustedProfileTemplateAssignmentCreate(context context.Context, 
 func resourceIBMTrustedProfileTemplateAssignmentRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	iamIdentityClient, err := meta.(conns.ClientSession).IAMIdentityV1API()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_trusted_profile_template_assignment", "read", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	getTrustedProfileAssignmentOptions := &iamidentityv1.GetTrustedProfileAssignmentOptions{}
@@ -315,60 +324,74 @@ func resourceIBMTrustedProfileTemplateAssignmentRead(context context.Context, d 
 			d.SetId("")
 			return nil
 		}
-		log.Printf("[DEBUG] GetTrustedProfileAssignmentWithContext failed %s\n%s", err, response)
-		return diag.FromErr(fmt.Errorf("GetTrustedProfileAssignmentWithContext failed %s\n%s", err, response))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetTrustedProfileAssignmentWithContext failed: %s", err.Error()), "ibm_iam_trusted_profile_template_assignment", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	if err = d.Set("template_id", templateAssignmentResponse.TemplateID); err != nil {
-		return diag.FromErr(fmt.Errorf("error setting template_id: %s", err))
+		err = fmt.Errorf("Error setting template_id: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_trusted_profile_template_assignment", "read", "set-template_id").GetDiag()
 	}
 	if err = d.Set("template_version", flex.IntValue(templateAssignmentResponse.TemplateVersion)); err != nil {
-		return diag.FromErr(fmt.Errorf("error setting template_version: %s", err))
+		err = fmt.Errorf("Error setting template_version: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_trusted_profile_template_assignment", "read", "set-template_version").GetDiag()
 	}
 	if err = d.Set("target_type", templateAssignmentResponse.TargetType); err != nil {
-		return diag.FromErr(fmt.Errorf("error setting target_type: %s", err))
+		err = fmt.Errorf("Error setting target_type: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_trusted_profile_template_assignment", "read", "set-target_type").GetDiag()
 	}
 	if err = d.Set("target", templateAssignmentResponse.Target); err != nil {
-		return diag.FromErr(fmt.Errorf("error setting target: %s", err))
+		err = fmt.Errorf("Error setting target: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_trusted_profile_template_assignment", "read", "set-target").GetDiag()
 	}
 	if err = d.Set("account_id", templateAssignmentResponse.AccountID); err != nil {
-		return diag.FromErr(fmt.Errorf("error setting account_id: %s", err))
+		err = fmt.Errorf("Error setting account_id: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_trusted_profile_template_assignment", "read", "set-account_id").GetDiag()
 	}
 	if err = d.Set("status", templateAssignmentResponse.Status); err != nil {
-		return diag.FromErr(fmt.Errorf("error setting status: %s", err))
+		err = fmt.Errorf("Error setting status: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_trusted_profile_template_assignment", "read", "set-status").GetDiag()
 	}
 	resources := []map[string]interface{}{}
 	if !core.IsNil(templateAssignmentResponse.Resources) {
 		for _, resourcesItem := range templateAssignmentResponse.Resources {
 			resourcesItemMap, err := resourceIBMTrustedProfileTemplateAssignmentTemplateAssignmentResponseResourceToMap(&resourcesItem)
 			if err != nil {
-				return diag.FromErr(err)
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_trusted_profile_template_assignment", "read", "resources-to-map").GetDiag()
 			}
 			resources = append(resources, resourcesItemMap)
 		}
 	}
 	if err = d.Set("resources", resources); err != nil {
-		return diag.FromErr(fmt.Errorf("error setting resources: %s", err))
+		err = fmt.Errorf("Error setting resources: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_trusted_profile_template_assignment", "read", "set-resources").GetDiag()
 	}
 	if !core.IsNil(templateAssignmentResponse.Href) {
 		if err = d.Set("href", templateAssignmentResponse.Href); err != nil {
-			return diag.FromErr(fmt.Errorf("error setting href: %s", err))
+			err = fmt.Errorf("Error setting href: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_trusted_profile_template_assignment", "read", "set-href").GetDiag()
 		}
 	}
 	if err = d.Set("created_at", templateAssignmentResponse.CreatedAt); err != nil {
-		return diag.FromErr(fmt.Errorf("error setting created_at: %s", err))
+		err = fmt.Errorf("Error setting created_at: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_trusted_profile_template_assignment", "read", "set-created_at").GetDiag()
 	}
 	if err = d.Set("created_by_id", templateAssignmentResponse.CreatedByID); err != nil {
-		return diag.FromErr(fmt.Errorf("error setting created_by_id: %s", err))
+		err = fmt.Errorf("Error setting created_by_id: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_trusted_profile_template_assignment", "read", "set-created_by_id").GetDiag()
 	}
 	if err = d.Set("last_modified_at", templateAssignmentResponse.LastModifiedAt); err != nil {
-		return diag.FromErr(fmt.Errorf("error setting last_modified_at: %s", err))
+		err = fmt.Errorf("Error setting last_modified_at: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_trusted_profile_template_assignment", "read", "set-last_modified_at").GetDiag()
 	}
 	if err = d.Set("last_modified_by_id", templateAssignmentResponse.LastModifiedByID); err != nil {
-		return diag.FromErr(fmt.Errorf("error setting last_modified_by_id: %s", err))
+		err = fmt.Errorf("Error setting last_modified_by_id: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_trusted_profile_template_assignment", "read", "set-last_modified_by_id").GetDiag()
 	}
 	if err = d.Set("entity_tag", templateAssignmentResponse.EntityTag); err != nil {
-		return diag.FromErr(fmt.Errorf("error setting entity_tag: %s", err))
+		err = fmt.Errorf("Error setting entity_tag: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_trusted_profile_template_assignment", "read", "set-entity_tag").GetDiag()
 	}
 
 	return nil
@@ -377,7 +400,9 @@ func resourceIBMTrustedProfileTemplateAssignmentRead(context context.Context, d 
 func resourceIBMTrustedProfileTemplateAssignmentUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	iamIdentityClient, err := meta.(conns.ClientSession).IAMIdentityV1API()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_trusted_profile_template_assignment", "update", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	updateTrustedProfileAssignmentOptions := &iamidentityv1.UpdateTrustedProfileAssignmentOptions{}
@@ -392,15 +417,16 @@ func resourceIBMTrustedProfileTemplateAssignmentUpdate(context context.Context, 
 	}
 
 	if hasChange || d.Get("status") == "failed" { // allow the same version to retry failed assignments
-		_, response, err := iamIdentityClient.UpdateTrustedProfileAssignmentWithContext(context, updateTrustedProfileAssignmentOptions)
+		_, _, err := iamIdentityClient.UpdateTrustedProfileAssignmentWithContext(context, updateTrustedProfileAssignmentOptions)
 		if err != nil {
-			log.Printf("[DEBUG] UpdateTrustedProfileAssignmentWithContext failed %s\n%s", err, response)
-			return diag.FromErr(fmt.Errorf("UpdateTrustedProfileAssignmentWithContext failed %s\n%s", err, response))
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("UpdateTrustedProfileAssignmentWithContext failed: %s", err.Error()), "ibm_iam_trusted_profile_template_assignment", "update")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 
 		_, err = waitForAssignment(d.Timeout(schema.TimeoutUpdate), meta, d, isTrustedProfileTemplateAssigned)
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("error assigning %s", err))
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_trusted_profile_template_assignment", "update", "wait-for-assignment").GetDiag()
 		}
 	}
 
@@ -410,21 +436,25 @@ func resourceIBMTrustedProfileTemplateAssignmentUpdate(context context.Context, 
 func resourceIBMTrustedProfileTemplateAssignmentDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	iamIdentityClient, err := meta.(conns.ClientSession).IAMIdentityV1API()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_trusted_profile_template_assignment", "delete", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	deleteTrustedProfileAssignmentOptions := &iamidentityv1.DeleteTrustedProfileAssignmentOptions{}
 
 	deleteTrustedProfileAssignmentOptions.SetAssignmentID(d.Id())
 
-	_, response, err := iamIdentityClient.DeleteTrustedProfileAssignmentWithContext(context, deleteTrustedProfileAssignmentOptions)
+	_, _, err = iamIdentityClient.DeleteTrustedProfileAssignmentWithContext(context, deleteTrustedProfileAssignmentOptions)
 	if err != nil {
-		return diag.FromErr(fmt.Errorf("[DEBUG] DeleteTrustedProfileAssignmentWithContext failed %s\n%s", err, response))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("DeleteTrustedProfileAssignmentWithContext failed: %s", err.Error()), "ibm_iam_trusted_profile_template_assignment", "delete")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	_, err = waitForAssignment(d.Timeout(schema.TimeoutDelete), meta, d, isTrustedProfileAssignmentRemoved)
 	if err != nil {
-		return diag.FromErr(fmt.Errorf("error removing assignment %s", err))
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_trusted_profile_template_assignment", "delete", "wait-for-assignment").GetDiag()
 	}
 
 	d.SetId("")
