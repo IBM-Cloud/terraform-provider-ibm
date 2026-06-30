@@ -1510,8 +1510,14 @@ func createSingleNwaclRuleForUpdate(d *schema.ResourceData, nwaclC *vpcv1.VpcV1,
 	var rawPortMin, rawPortMax, rawSrcPortMin, rawSrcPortMax *int64
 
 	rawConfig := d.GetRawConfig()
-	rulesAttr := rawConfig.GetAttr("rules")
-	if !rulesAttr.IsNull() && rulesAttr.LengthInt() > i {
+	var rulesAttr cty.Value
+	if rawConfig.IsKnown() && !rawConfig.IsNull() {
+		rulesAttr = rawConfig.GetAttr("rules")
+	} else {
+		rulesAttr = cty.NullVal(cty.DynamicPseudoType)
+	}
+
+	if rulesAttr.IsKnown() && !rulesAttr.IsNull() && rulesAttr.LengthInt() > i {
 		ruleVal := rulesAttr.Index(cty.NumberIntVal(int64(i)))
 		if !ruleVal.IsNull() {
 			// Protocol
@@ -1526,9 +1532,9 @@ func createSingleNwaclRuleForUpdate(d *schema.ResourceData, nwaclC *vpcv1.VpcV1,
 			icmpAttr := ruleVal.GetAttr("icmp")
 			tcpAttr := ruleVal.GetAttr("tcp")
 			udpAttr := ruleVal.GetAttr("udp")
-			hasIcmpBlock = !icmpAttr.IsNull() && icmpAttr.LengthInt() > 0
-			hasTcpBlock = !tcpAttr.IsNull() && tcpAttr.LengthInt() > 0
-			hasUdpBlock = !udpAttr.IsNull() && udpAttr.LengthInt() > 0
+			hasIcmpBlock = !icmpAttr.IsNull() && icmpAttr.IsKnown() && icmpAttr.LengthInt() > 0
+			hasTcpBlock = !tcpAttr.IsNull() && tcpAttr.IsKnown() && tcpAttr.LengthInt() > 0
+			hasUdpBlock = !udpAttr.IsNull() && udpAttr.IsKnown() && udpAttr.LengthInt() > 0
 
 			// icmp block fields
 			if hasIcmpBlock {
