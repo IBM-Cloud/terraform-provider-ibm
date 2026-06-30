@@ -26,7 +26,7 @@ func DataSourceIbmConfigAggregatorBatchConfigurations() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 
-			// ✅ Path params
+			// Path params
 			"instance_id": {
 				Type:     schema.TypeString,
 				Required: true,
@@ -36,7 +36,7 @@ func DataSourceIbmConfigAggregatorBatchConfigurations() *schema.Resource {
 				Required: true,
 			},
 
-			// ✅ INPUT
+			// INPUT
 			// renamed to avoid duplicate key issue
 			"config": {
 				Type:        schema.TypeList,
@@ -65,7 +65,7 @@ func DataSourceIbmConfigAggregatorBatchConfigurations() *schema.Resource {
 				},
 			},
 
-			// ✅ OUTPUT
+			// OUTPUT
 			"configs": {
 				Type:        schema.TypeList,
 				Computed:    true,
@@ -88,7 +88,7 @@ func DataSourceIbmConfigAggregatorBatchConfigurations() *schema.Resource {
 				},
 			},
 
-			// ✅ Errors
+			// Errors
 			"errors": {
 				Type:     schema.TypeList,
 				Computed: true,
@@ -277,14 +277,14 @@ func ResourceMapToRequestconfigs(value map[string]interface{}) (configurationagg
 
 	config := configurationaggregatorv1.Requestconfigs{}
 
-	// ✅ required
+	// required
 	if v, ok := value["resource_crn"]; ok && v.(string) != "" {
 		config.ResourceCrn = core.StringPtr(v.(string))
 	} else {
 		return config, fmt.Errorf("resource_crn is required")
 	}
 
-	// ✅ optional
+	// optional
 	if v, ok := value["service_name"]; ok && v.(string) != "" {
 		config.ServiceName = core.StringPtr(v.(string))
 	}
