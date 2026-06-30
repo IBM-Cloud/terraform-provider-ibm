@@ -543,3 +543,364 @@ func testAccCheckIBMISNetworkACLFlatUDP() string {
     }
     `
 }
+
+// ---------------------------------------------------------------------------
+// TestNetworkACL_InlineRuleUpdate* — cover the clear-all + recreate-all path
+// that fires on any inline rule change (field edit, add, remove, reorder,
+// protocol change).
+// ---------------------------------------------------------------------------
+
+// TestNetworkACL_InlineRuleFieldEdit verifies that editing a single field
+// (action, source, destination) on an existing rule triggers clear+recreate
+// and the new values are reflected in state.
+func TestNetworkACL_InlineRuleFieldEdit(t *testing.T) {
+	var nwACL string
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: checkNetworkACLDestroy,
+		Steps: []resource.TestStep{
+			{
+				// Step 1: create with action=allow, source=0.0.0.0/0
+				Config: testAccCheckIBMISNetworkACLInlineUpdateBase(),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISNetworkACLExists("ibm_is_network_acl.test_update_acl", nwACL),
+					resource.TestCheckResourceAttr(
+						"ibm_is_network_acl.test_update_acl", "rules.#", "1"),
+					resource.TestCheckResourceAttr(
+						"ibm_is_network_acl.test_update_acl", "rules.0.action", "allow"),
+					resource.TestCheckResourceAttr(
+						"ibm_is_network_acl.test_update_acl", "rules.0.source", "0.0.0.0/0"),
+				),
+			},
+			{
+				// Step 2: change action to deny and narrow source — triggers clear+recreate
+				Config: testAccCheckIBMISNetworkACLInlineUpdateFieldEdit(),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISNetworkACLExists("ibm_is_network_acl.test_update_acl", nwACL),
+					resource.TestCheckResourceAttr(
+						"ibm_is_network_acl.test_update_acl", "rules.#", "1"),
+					resource.TestCheckResourceAttr(
+						"ibm_is_network_acl.test_update_acl", "rules.0.action", "deny"),
+					resource.TestCheckResourceAttr(
+						"ibm_is_network_acl.test_update_acl", "rules.0.source", "10.0.0.0/8"),
+				),
+			},
+		},
+	})
+}
+
+// TestNetworkACL_InlineRuleAdd verifies that adding a new rule triggers
+// clear-all + recreate-all and both rules appear in state.
+func TestNetworkACL_InlineRuleAdd(t *testing.T) {
+	var nwACL string
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: checkNetworkACLDestroy,
+		Steps: []resource.TestStep{
+			{
+				// Step 1: one rule
+				Config: testAccCheckIBMISNetworkACLInlineUpdateBase(),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISNetworkACLExists("ibm_is_network_acl.test_update_acl", nwACL),
+					resource.TestCheckResourceAttr(
+						"ibm_is_network_acl.test_update_acl", "rules.#", "1"),
+				),
+			},
+			{
+				// Step 2: add a second rule — triggers clear+recreate
+				Config: testAccCheckIBMISNetworkACLInlineUpdateAddRule(),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISNetworkACLExists("ibm_is_network_acl.test_update_acl", nwACL),
+					resource.TestCheckResourceAttr(
+						"ibm_is_network_acl.test_update_acl", "rules.#", "2"),
+					resource.TestCheckResourceAttr(
+						"ibm_is_network_acl.test_update_acl", "rules.0.name", "rule-one"),
+					resource.TestCheckResourceAttr(
+						"ibm_is_network_acl.test_update_acl", "rules.1.name", "rule-two"),
+				),
+			},
+		},
+	})
+}
+
+// TestNetworkACL_InlineRuleRemove verifies that removing a rule triggers
+// clear-all + recreate-all and only the remaining rule is in state.
+func TestNetworkACL_InlineRuleRemove(t *testing.T) {
+	var nwACL string
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: checkNetworkACLDestroy,
+		Steps: []resource.TestStep{
+			{
+				// Step 1: two rules
+				Config: testAccCheckIBMISNetworkACLInlineUpdateAddRule(),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISNetworkACLExists("ibm_is_network_acl.test_update_acl", nwACL),
+					resource.TestCheckResourceAttr(
+						"ibm_is_network_acl.test_update_acl", "rules.#", "2"),
+				),
+			},
+			{
+				// Step 2: remove rule-two — triggers clear+recreate, only rule-one remains
+				Config: testAccCheckIBMISNetworkACLInlineUpdateBase(),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISNetworkACLExists("ibm_is_network_acl.test_update_acl", nwACL),
+					resource.TestCheckResourceAttr(
+						"ibm_is_network_acl.test_update_acl", "rules.#", "1"),
+					resource.TestCheckResourceAttr(
+						"ibm_is_network_acl.test_update_acl", "rules.0.name", "rule-one"),
+				),
+			},
+		},
+	})
+}
+
+// TestNetworkACL_InlineRuleReorder verifies that reordering rules triggers
+// clear-all + recreate-all and the new order is reflected in state.
+func TestNetworkACL_InlineRuleReorder(t *testing.T) {
+	var nwACL string
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: checkNetworkACLDestroy,
+		Steps: []resource.TestStep{
+			{
+				// Step 1: rule-one first, rule-two second
+				Config: testAccCheckIBMISNetworkACLInlineUpdateAddRule(),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISNetworkACLExists("ibm_is_network_acl.test_update_acl", nwACL),
+					resource.TestCheckResourceAttr(
+						"ibm_is_network_acl.test_update_acl", "rules.0.name", "rule-one"),
+					resource.TestCheckResourceAttr(
+						"ibm_is_network_acl.test_update_acl", "rules.1.name", "rule-two"),
+				),
+			},
+			{
+				// Step 2: swap order — triggers clear+recreate
+				Config: testAccCheckIBMISNetworkACLInlineUpdateReorder(),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISNetworkACLExists("ibm_is_network_acl.test_update_acl", nwACL),
+					resource.TestCheckResourceAttr(
+						"ibm_is_network_acl.test_update_acl", "rules.0.name", "rule-two"),
+					resource.TestCheckResourceAttr(
+						"ibm_is_network_acl.test_update_acl", "rules.1.name", "rule-one"),
+				),
+			},
+		},
+	})
+}
+
+// TestNetworkACL_InlineRuleProtocolChange verifies that changing the protocol
+// of a rule (tcp → udp) triggers clear-all + recreate-all.
+func TestNetworkACL_InlineRuleProtocolChange(t *testing.T) {
+	var nwACL string
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: checkNetworkACLDestroy,
+		Steps: []resource.TestStep{
+			{
+				// Step 1: tcp rule
+				Config: testAccCheckIBMISNetworkACLInlineUpdateTCP(),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISNetworkACLExists("ibm_is_network_acl.test_update_acl", nwACL),
+					resource.TestCheckResourceAttr(
+						"ibm_is_network_acl.test_update_acl", "rules.#", "1"),
+					resource.TestCheckResourceAttr(
+						"ibm_is_network_acl.test_update_acl", "rules.0.protocol", "tcp"),
+				),
+			},
+			{
+				// Step 2: change protocol to udp — triggers clear+recreate
+				Config: testAccCheckIBMISNetworkACLInlineUpdateUDP(),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISNetworkACLExists("ibm_is_network_acl.test_update_acl", nwACL),
+					resource.TestCheckResourceAttr(
+						"ibm_is_network_acl.test_update_acl", "rules.#", "1"),
+					resource.TestCheckResourceAttr(
+						"ibm_is_network_acl.test_update_acl", "rules.0.protocol", "udp"),
+				),
+			},
+			{
+				// Step 3: change protocol to icmp — triggers clear+recreate
+				Config: testAccCheckIBMISNetworkACLInlineUpdateICMP(),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISNetworkACLExists("ibm_is_network_acl.test_update_acl", nwACL),
+					resource.TestCheckResourceAttr(
+						"ibm_is_network_acl.test_update_acl", "rules.#", "1"),
+					resource.TestCheckResourceAttr(
+						"ibm_is_network_acl.test_update_acl", "rules.0.protocol", "icmp"),
+				),
+			},
+		},
+	})
+}
+
+// ---------------------------------------------------------------------------
+// Config helpers for inline-rule update tests
+// ---------------------------------------------------------------------------
+
+func testAccCheckIBMISNetworkACLInlineUpdateBase() string {
+	return `
+    resource "ibm_is_vpc" "testacc_vpc" {
+        name = "tf-nwacl-update-vpc"
+    }
+    resource "ibm_is_network_acl" "test_update_acl" {
+        name = "tf-nwacl-update"
+        vpc  = ibm_is_vpc.testacc_vpc.id
+        rules {
+            name        = "rule-one"
+            action      = "allow"
+            source      = "0.0.0.0/0"
+            destination = "0.0.0.0/0"
+            direction   = "inbound"
+            protocol    = "any"
+        }
+    }
+    `
+}
+
+func testAccCheckIBMISNetworkACLInlineUpdateFieldEdit() string {
+	return `
+    resource "ibm_is_vpc" "testacc_vpc" {
+        name = "tf-nwacl-update-vpc"
+    }
+    resource "ibm_is_network_acl" "test_update_acl" {
+        name = "tf-nwacl-update"
+        vpc  = ibm_is_vpc.testacc_vpc.id
+        rules {
+            name        = "rule-one"
+            action      = "deny"
+            source      = "10.0.0.0/8"
+            destination = "0.0.0.0/0"
+            direction   = "inbound"
+            protocol    = "any"
+        }
+    }
+    `
+}
+
+func testAccCheckIBMISNetworkACLInlineUpdateAddRule() string {
+	return `
+    resource "ibm_is_vpc" "testacc_vpc" {
+        name = "tf-nwacl-update-vpc"
+    }
+    resource "ibm_is_network_acl" "test_update_acl" {
+        name = "tf-nwacl-update"
+        vpc  = ibm_is_vpc.testacc_vpc.id
+        rules {
+            name        = "rule-one"
+            action      = "allow"
+            source      = "0.0.0.0/0"
+            destination = "0.0.0.0/0"
+            direction   = "inbound"
+            protocol    = "any"
+        }
+        rules {
+            name        = "rule-two"
+            action      = "allow"
+            source      = "0.0.0.0/0"
+            destination = "0.0.0.0/0"
+            direction   = "outbound"
+            protocol    = "any"
+        }
+    }
+    `
+}
+
+func testAccCheckIBMISNetworkACLInlineUpdateReorder() string {
+	return `
+    resource "ibm_is_vpc" "testacc_vpc" {
+        name = "tf-nwacl-update-vpc"
+    }
+    resource "ibm_is_network_acl" "test_update_acl" {
+        name = "tf-nwacl-update"
+        vpc  = ibm_is_vpc.testacc_vpc.id
+        rules {
+            name        = "rule-two"
+            action      = "allow"
+            source      = "0.0.0.0/0"
+            destination = "0.0.0.0/0"
+            direction   = "outbound"
+            protocol    = "any"
+        }
+        rules {
+            name        = "rule-one"
+            action      = "allow"
+            source      = "0.0.0.0/0"
+            destination = "0.0.0.0/0"
+            direction   = "inbound"
+            protocol    = "any"
+        }
+    }
+    `
+}
+
+func testAccCheckIBMISNetworkACLInlineUpdateTCP() string {
+	return `
+    resource "ibm_is_vpc" "testacc_vpc" {
+        name = "tf-nwacl-update-vpc"
+    }
+    resource "ibm_is_network_acl" "test_update_acl" {
+        name = "tf-nwacl-update"
+        vpc  = ibm_is_vpc.testacc_vpc.id
+        rules {
+            name        = "rule-one"
+            action      = "allow"
+            source      = "0.0.0.0/0"
+            destination = "0.0.0.0/0"
+            direction   = "inbound"
+            protocol    = "tcp"
+            port_min    = 80
+            port_max    = 80
+        }
+    }
+    `
+}
+
+func testAccCheckIBMISNetworkACLInlineUpdateUDP() string {
+	return `
+    resource "ibm_is_vpc" "testacc_vpc" {
+        name = "tf-nwacl-update-vpc"
+    }
+    resource "ibm_is_network_acl" "test_update_acl" {
+        name = "tf-nwacl-update"
+        vpc  = ibm_is_vpc.testacc_vpc.id
+        rules {
+            name        = "rule-one"
+            action      = "allow"
+            source      = "0.0.0.0/0"
+            destination = "0.0.0.0/0"
+            direction   = "inbound"
+            protocol    = "udp"
+            port_min    = 53
+            port_max    = 53
+        }
+    }
+    `
+}
+
+func testAccCheckIBMISNetworkACLInlineUpdateICMP() string {
+	return `
+    resource "ibm_is_vpc" "testacc_vpc" {
+        name = "tf-nwacl-update-vpc"
+    }
+    resource "ibm_is_network_acl" "test_update_acl" {
+        name = "tf-nwacl-update"
+        vpc  = ibm_is_vpc.testacc_vpc.id
+        rules {
+            name        = "rule-one"
+            action      = "allow"
+            source      = "0.0.0.0/0"
+            destination = "0.0.0.0/0"
+            direction   = "inbound"
+            protocol    = "icmp"
+            type        = 8
+            code        = 0
+        }
+    }
+    `
+}
