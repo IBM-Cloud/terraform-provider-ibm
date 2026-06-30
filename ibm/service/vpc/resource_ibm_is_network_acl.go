@@ -943,7 +943,7 @@ func nwaclUpdate(context context.Context, d *schema.ResourceData, meta interface
 		ots, _ := d.GetChange(isNetworkACLRules)
 		otsIntf := ots.([]interface{})
 
-		// ── Build old-state map: name → {id, protocol, index} ──────────────────
+		// Build old-state map: name → {id, protocol, index}
 		type oldRuleInfo struct {
 			id       string
 			protocol string
@@ -961,7 +961,7 @@ func nwaclUpdate(context context.Context, d *schema.ResourceData, meta interface
 			oldStateOrder[i] = name
 		}
 
-		// ── Build raw-config map: name → {rawVal, index} ───────────────────────
+		// Build raw-config map: name → {rawVal, index}
 		type rawRuleInfo struct {
 			val      cty.Value
 			index    int
@@ -1004,7 +1004,7 @@ func nwaclUpdate(context context.Context, d *schema.ResourceData, meta interface
 			return tfErr.GetDiag()
 		}
 
-		// ── Step 1: Delete rules removed from config ───────────────────────────
+		// Step 1: Delete rules removed from config 
 		for _, oldName := range oldStateOrder {
 			if _, existsInConfig := rawConfigMap[oldName]; !existsInConfig {
 				oldInfo := oldStateMap[oldName]
@@ -1021,7 +1021,7 @@ func nwaclUpdate(context context.Context, d *schema.ResourceData, meta interface
 			}
 		}
 
-		// ── Step 2: Process desired rules in raw-config order ──────────────────
+		// Step 2: Process desired rules in raw-config order
 		// We maintain a live slice that tracks the current rule ordering by name so
 		// we can compute the correct `before` ID for inserts and repositions.
 		// Start from the post-deletion old state order.
@@ -1091,7 +1091,7 @@ func nwaclUpdate(context context.Context, d *schema.ResourceData, meta interface
 			rawInfo := rawConfigMap[ruleName]
 			oldInfo, existsInOld := oldStateMap[ruleName]
 
-			// ── Scenario: New rule (addition) ──────────────────────────────────
+			// Scenario: New rule (addition)
 			if !existsInOld {
 				beforeID := beforeIDForIndex(desiredIdx)
 				log.Printf("[DEBUG] nwaclUpdate: adding new rule %q at index %d (before=%s)", ruleName, desiredIdx, beforeID)
@@ -1109,7 +1109,7 @@ func nwaclUpdate(context context.Context, d *schema.ResourceData, meta interface
 				continue
 			}
 
-			// ── Scenario: Immutable field changed (name or protocol) ───────────
+			// Scenario: Immutable field changed (name or protocol)
 			// Name change: the rule name in rawConfig differs from oldState key.
 			// Protocol change: rawConfig protocol differs from old state protocol.
 			oldProtocol := oldInfo.protocol
@@ -1144,11 +1144,11 @@ func nwaclUpdate(context context.Context, d *schema.ResourceData, meta interface
 				continue
 			}
 
-			// ── Scenario: Reorder only ─────────────────────────────────────────
+			// Scenario: Reorder only
 			curLiveIdx := currentLiveIndex(ruleName)
 			needsReorder := curLiveIdx != desiredIdx
 
-			// ── Scenario: Mutable attribute update ────────────────────────────
+			// Scenario: Mutable attribute update
 			// Gather patch fields by comparing raw config values against old state.
 			rulePatch := &vpcv1.NetworkACLRulePatch{}
 			hasRulePatch := false
