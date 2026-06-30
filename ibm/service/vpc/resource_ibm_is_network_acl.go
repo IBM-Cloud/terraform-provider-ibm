@@ -956,7 +956,7 @@ func nwaclUpdate(context context.Context, d *schema.ResourceData, meta interface
 		}
 
 		for i, r := range rules {
-			if err := createSingleNwaclRuleForUpdate(d, sess, id, r.(map[string]interface{}), i, ""); err != nil {
+			if err := createSingleNwaclRuleForUpdate(d, sess, id, r.(map[string]interface{}), i); err != nil {
 				tfErr := flex.TerraformErrorf(err, fmt.Sprintf("createSingleNwaclRuleForUpdate failed: %s", err.Error()), "ibm_is_network_acl", "update")
 				log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 				return tfErr.GetDiag()
@@ -1489,7 +1489,7 @@ func isNil(i interface{}) bool {
 	return i == nil || reflect.ValueOf(i).IsNil()
 }
 
-func createSingleNwaclRuleForUpdate(d *schema.ResourceData, nwaclC *vpcv1.VpcV1, nwaclid string, rulex map[string]interface{}, i int, before string) error {
+func createSingleNwaclRuleForUpdate(d *schema.ResourceData, nwaclC *vpcv1.VpcV1, nwaclid string, rulex map[string]interface{}, i int) error {
 	name := rulex[isNetworkACLRuleName].(string)
 	source := rulex[isNetworkACLRuleSource].(string)
 	destination := rulex[isNetworkACLRuleDestination].(string)
@@ -1646,12 +1646,6 @@ func createSingleNwaclRuleForUpdate(d *schema.ResourceData, nwaclC *vpcv1.VpcV1,
 		Direction:   &direction,
 		Source:      &source,
 		Name:        &name,
-	}
-
-	if before != "" {
-		ruleTemplate.Before = &vpcv1.NetworkACLRuleBeforePrototype{
-			ID: &before,
-		}
 	}
 
 	ruleTemplate.Protocol = &protocol
