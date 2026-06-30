@@ -1489,7 +1489,7 @@ func isNil(i interface{}) bool {
 	return i == nil || reflect.ValueOf(i).IsNil()
 }
 
-func createSingleNwaclRuleForUpdate(d *schema.ResourceData, nwaclC *vpcv1.VpcV1, nwaclid string, rulex map[string]interface{}, i int, before string) (error) {
+func createSingleNwaclRuleForUpdate(d *schema.ResourceData, nwaclC *vpcv1.VpcV1, nwaclid string, rulex map[string]interface{}, i int, before string) error {
 	name := rulex[isNetworkACLRuleName].(string)
 	source := rulex[isNetworkACLRuleSource].(string)
 	destination := rulex[isNetworkACLRuleDestination].(string)
