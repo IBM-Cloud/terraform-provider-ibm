@@ -943,39 +943,6 @@ func nwaclUpdate(context context.Context, d *schema.ResourceData, meta interface
 		ots, _ := d.GetChange(isNetworkACLRules)
 		otsIntf := ots.([]interface{})
 
-		err := validateInlineRulesForUpdate(d, func() []interface{} {
-			rawCfg := d.GetRawConfig()
-			rawRules := rawCfg.GetAttr("rules")
-			if rawRules.IsNull() || !rawRules.IsKnown() {
-				return nil
-			}
-			// Build a minimal []interface{} with only action populated for validation.
-			// The validator reads everything else from GetRawConfig directly.
-			out := make([]interface{}, rawRules.LengthInt())
-			for i := range out {
-				rv := rawRules.Index(cty.NumberIntVal(int64(i)))
-				m := map[string]interface{}{
-					isNetworkACLRuleAction:    "",
-					isNetworkACLRuleDirection: "",
-				}
-				if !rv.IsNull() {
-					if a := rv.GetAttr("action"); !a.IsNull() && a.IsKnown() {
-						m[isNetworkACLRuleAction] = a.AsString()
-					}
-					if dir := rv.GetAttr("direction"); !dir.IsNull() && dir.IsKnown() {
-						m[isNetworkACLRuleDirection] = dir.AsString()
-					}
-				}
-				out[i] = m
-			}
-			return out
-		}())
-		if err != nil {
-			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("validateInlineRulesForUpdate failed: %s", err.Error()), "ibm_is_network_acl", "update")
-			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
-			return tfErr.GetDiag()
-		}
-
 		// ── Build old-state map: name → {id, protocol, index} ──────────────────
 		type oldRuleInfo struct {
 			id       string
@@ -987,11 +954,11 @@ func nwaclUpdate(context context.Context, d *schema.ResourceData, meta interface
 		oldStateOrder := make([]string, len(otsIntf)) // names in old state order
 		for i, r := range otsIntf {
 			rm := r.(map[string]interface{})
-			n, _ := rm[isNetworkACLRuleName].(string)
+			name, _ := rm[isNetworkACLRuleName].(string)
 			ruleId, _ := rm[isNetworkACLRuleID].(string)
 			proto, _ := rm[isNetworkACLRuleProtocol].(string)
-			oldStateMap[n] = oldRuleInfo{id: ruleId, protocol: proto, index: i, data: rm}
-			oldStateOrder[i] = n
+			oldStateMap[name] = oldRuleInfo{id: ruleId, protocol: proto, index: i, data: rm}
+			oldStateOrder[i] = name
 		}
 
 		// ── Build raw-config map: name → {rawVal, index} ───────────────────────
@@ -1012,20 +979,29 @@ func nwaclUpdate(context context.Context, d *schema.ResourceData, meta interface
 				if rv.IsNull() {
 					continue
 				}
-				n := ""
+				name := ""
 				if nameAttr := rv.GetAttr("name"); !nameAttr.IsNull() && nameAttr.IsKnown() {
-					n = nameAttr.AsString()
+					name = nameAttr.AsString()
 				}
-				if n == "" {
+				if name == "" {
 					continue
 				}
-				rawConfigMap[n] = rawRuleInfo{
+				rawConfigMap[name] = rawRuleInfo{
 					val:      rv,
 					index:    i,
 					protocol: nwaclProtocolFromRawVal(rv),
 				}
-				rawConfigOrder = append(rawConfigOrder, n)
+				rawConfigOrder = append(rawConfigOrder, name)
 			}
+		}
+
+		// Validate cross-field consistency (only one protocol block, port/icmp vs protocol).
+		// action/direction are already enforced by the schema-level validator at plan time.
+		// The slice just needs the correct length so the validator can index into GetRawConfig.
+		if err := validateInlineRulesForUpdate(d, make([]interface{}, len(rawConfigOrder))); err != nil {
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("validateInlineRulesForUpdate failed: %s", err.Error()), "ibm_is_network_acl", "update")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 
 		// ── Step 1: Delete rules removed from config ───────────────────────────
@@ -1050,16 +1026,16 @@ func nwaclUpdate(context context.Context, d *schema.ResourceData, meta interface
 		// we can compute the correct `before` ID for inserts and repositions.
 		// Start from the post-deletion old state order.
 		liveOrder := make([]string, 0, len(rawConfigOrder))
-		for _, n := range oldStateOrder {
-			if _, existsInConfig := rawConfigMap[n]; existsInConfig {
-				liveOrder = append(liveOrder, n)
+		for _, name := range oldStateOrder {
+			if _, existsInConfig := rawConfigMap[name]; existsInConfig {
+				liveOrder = append(liveOrder, name)
 			}
 		}
 
 		// liveIDs maps name → current rule ID (updated when rules are created).
 		liveIDs := make(map[string]string, len(oldStateMap))
-		for n, info := range oldStateMap {
-			liveIDs[n] = info.id
+		for name, info := range oldStateMap {
+			liveIDs[name] = info.id
 		}
 
 		// beforeIDForIndex returns the rule ID that the rule at desiredIndex should
@@ -1636,13 +1612,7 @@ func validateInlineRulesForUpdate(d *schema.ResourceData, rules []interface{}) e
 		rawRulesAttr = cty.NullVal(cty.DynamicPseudoType)
 	}
 
-	for i, rule := range rules {
-		rulex := rule.(map[string]interface{})
-		action := rulex[isNetworkACLRuleAction].(string)
-		if (action != "allow") && (action != "deny") {
-			return fmt.Errorf("[ERROR] Invalid action. valid values are allow|deny")
-		}
-
+	for i := range rules {
 		hasIcmpBlock, hasTcpBlock, hasUdpBlock := false, false, false
 		protocol := ""
 		hasIcmpType, hasIcmpCode := false, false
