@@ -1181,61 +1181,49 @@ func nwaclUpdate(context context.Context, d *schema.ResourceData, meta interface
 					hasRulePatch = true
 				}
 			}
-			// icmp type/code (new-style top-level fields)
+			// icmp type/code — resolve from deprecated icmp{} block if present,
+			// otherwise from top-level flat fields. Old state always stores both
+			// at the top level (nwaclGet populates rule["type"] and rule["code"]
+			// unconditionally), so the comparison target is always oldInfo.data.
 			if rawInfo.protocol == "icmp" {
-				if newType := nwaclInt64AttrFromRaw(rawInfo.val, "type"); newType != nil {
+				icmpSrc := rawInfo.val // default: top-level flat fields
+				icmpAttr := rawInfo.val.GetAttr("icmp")
+				if !icmpAttr.IsNull() && icmpAttr.LengthInt() > 0 {
+					if elem := icmpAttr.Index(cty.NumberIntVal(0)); !elem.IsNull() {
+						icmpSrc = elem // deprecated block: read type/code from inside icmp{}
+					}
+				}
+				if newType := nwaclInt64AttrFromRaw(icmpSrc, "type"); newType != nil {
 					oldTypeVal, _ := oldInfo.data[isNetworkACLRuleICMPType].(int)
 					if int64(oldTypeVal) != *newType {
 						rulePatch.Type = newType
 						hasRulePatch = true
 					}
 				}
-				if newCode := nwaclInt64AttrFromRaw(rawInfo.val, "code"); newCode != nil {
+				if newCode := nwaclInt64AttrFromRaw(icmpSrc, "code"); newCode != nil {
 					oldCodeVal, _ := oldInfo.data[isNetworkACLRuleICMPCode].(int)
 					if int64(oldCodeVal) != *newCode {
 						rulePatch.Code = newCode
 						hasRulePatch = true
 					}
 				}
-				// deprecated icmp{} block
-				icmpAttr := rawInfo.val.GetAttr("icmp")
-				if !icmpAttr.IsNull() && icmpAttr.LengthInt() > 0 {
-					elem := icmpAttr.Index(cty.NumberIntVal(0))
-					if !elem.IsNull() {
-						if t := nwaclInt64AttrFromRaw(elem, "type"); t != nil {
-							oldTypeVal, _ := oldInfo.data[isNetworkACLRuleICMPType].(int)
-							if int64(oldTypeVal) != *t {
-								rulePatch.Type = t
-								hasRulePatch = true
-							}
-						}
-						if c := nwaclInt64AttrFromRaw(elem, "code"); c != nil {
-							oldCodeVal, _ := oldInfo.data[isNetworkACLRuleICMPCode].(int)
-							if int64(oldCodeVal) != *c {
-								rulePatch.Code = c
-								hasRulePatch = true
-							}
-						}
-					}
-				}
 			}
-			// tcp/udp port fields (new-style top-level + deprecated blocks)
+			// tcp/udp port fields — resolve from deprecated tcp{}/udp{} block if present,
+			// otherwise from top-level flat fields. Old state always stores port values
+			// at the top level (nwaclGet populates them unconditionally).
 			if rawInfo.protocol == "tcp" || rawInfo.protocol == "udp" {
-				// Check top-level port fields first
-				portSrc := rawInfo.val
-				hasTcpBlock := false
-				hasUdpBlock := false
+				portSrc := rawInfo.val // default: top-level flat fields
 				tcpAttr := rawInfo.val.GetAttr("tcp")
 				udpAttr := rawInfo.val.GetAttr("udp")
 				if !tcpAttr.IsNull() && tcpAttr.LengthInt() > 0 {
-					hasTcpBlock = true
-					portSrc = tcpAttr.Index(cty.NumberIntVal(0))
+					if elem := tcpAttr.Index(cty.NumberIntVal(0)); !elem.IsNull() {
+						portSrc = elem // deprecated tcp{} block
+					}
 				} else if !udpAttr.IsNull() && udpAttr.LengthInt() > 0 {
-					hasUdpBlock = true
-					portSrc = udpAttr.Index(cty.NumberIntVal(0))
+					if elem := udpAttr.Index(cty.NumberIntVal(0)); !elem.IsNull() {
+						portSrc = elem // deprecated udp{} block
+					}
 				}
-				_ = hasTcpBlock
-				_ = hasUdpBlock
 
 				if pm := nwaclInt64AttrFromRaw(portSrc, "port_min"); pm != nil {
 					oldVal, _ := oldInfo.data[isNetworkACLRulePortMin].(int)
