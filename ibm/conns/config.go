@@ -9,6 +9,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/IBM/secrets-manager-management-go-sdk/v2/secretsmanagerinstancemanagementv2"
 	"io"
 	"io/ioutil"
 	"log"
@@ -356,6 +357,7 @@ type ClientSession interface {
 	DrAutomationServiceV1() (*drautomationservicev1.DrAutomationServiceV1, error)
 	PlatformNotificationsV1() (*platformnotificationsv1.PlatformNotificationsV1, error)
 	PowerhaAutomationServiceV1() (*powerhaautomationservicev1.PowerhaAutomationServiceV1, error)
+	SecretsManagerInstanceManagementV2() (*secretsmanagerinstancemanagementv2.SecretsManagerInstanceManagementV2, error)
 }
 
 type clientSession struct {
@@ -628,6 +630,9 @@ type clientSession struct {
 
 	secretsManagerClient    *secretsmanagerv2.SecretsManagerV2
 	secretsManagerClientErr error
+
+	secretsManagerInstanceManagementClient    *secretsmanagerinstancemanagementv2.SecretsManagerInstanceManagementV2
+	secretsManagerInstanceManagementClientErr error
 
 	// Schematics service options
 	schematicsClient    *schematicsv1.SchematicsV1
@@ -1314,6 +1319,11 @@ func (session clientSession) BackupRecoveryManagerV1() (*backuprecoveryv1.Backup
 // IBM Cloud Secrets Manager V2 Basic API
 func (session clientSession) SecretsManagerV2() (*secretsmanagerv2.SecretsManagerV2, error) {
 	return session.secretsManagerClient, session.secretsManagerClientErr
+}
+
+// IBM Cloud Secrets Manager Instance Management API
+func (session clientSession) SecretsManagerInstanceManagementV2() (*secretsmanagerinstancemanagementv2.SecretsManagerInstanceManagementV2, error) {
+	return session.secretsManagerInstanceManagementClient, session.secretsManagerInstanceManagementClientErr
 }
 
 // Satellite Link
@@ -3789,6 +3799,35 @@ func (c *Config) ClientSession() (*clientSession, error) {
 		})
 	} else {
 		session.secretsManagerClientErr = fmt.Errorf("Error occurred while configuring IBM Cloud Secrets Manager Basic API service: %q", err)
+	}
+
+	// Construct an instance of the 'IBM Cloud Secrets Manager Instance Management API' service.
+	if session.secretsManagerInstanceManagementClientErr == nil {
+		var smBrokerEndpoint string
+		if strings.Contains(os.Getenv("IBMCLOUD_IAM_API_ENDPOINT"), "test") {
+			smBrokerEndpoint = fmt.Sprintf("https://%s.secrets-manager.test.cloud.ibm.com", c.Region)
+		} else {
+			smBrokerEndpoint = fmt.Sprintf("https://%s.secrets-manager.cloud.ibm.com", c.Region)
+		}
+
+		// Construct the service options.
+		secretsManagerInstanceManagementClientOptions := &secretsmanagerinstancemanagementv2.SecretsManagerInstanceManagementV2Options{
+			Authenticator: authenticator,
+			URL:           smBrokerEndpoint,
+		}
+
+		// Construct the service client.
+		session.secretsManagerInstanceManagementClient, err = secretsmanagerinstancemanagementv2.NewSecretsManagerInstanceManagementV2(secretsManagerInstanceManagementClientOptions)
+		if err == nil {
+			// Enable retries for API calls
+			session.secretsManagerInstanceManagementClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+			// Add custom header for analytics
+			session.secretsManagerInstanceManagementClient.SetDefaultHeaders(gohttp.Header{
+				"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
+			})
+		} else {
+			session.secretsManagerInstanceManagementClientErr = fmt.Errorf("Error occurred while constructing 'IBM Cloud Secrets Manager Instance Management API' service client: %q", err)
+		}
 	}
 
 	// SATELLITE Service
