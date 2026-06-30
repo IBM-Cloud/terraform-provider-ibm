@@ -1004,7 +1004,7 @@ func nwaclUpdate(context context.Context, d *schema.ResourceData, meta interface
 			return tfErr.GetDiag()
 		}
 
-		// Step 1: Delete rules removed from config 
+		// Step 1: Delete rules removed from config
 		for _, oldName := range oldStateOrder {
 			if _, existsInConfig := rawConfigMap[oldName]; !existsInConfig {
 				oldInfo := oldStateMap[oldName]
