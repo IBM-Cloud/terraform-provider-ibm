@@ -7,6 +7,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/secretsmanagerinstancemanagement"
 	"log"
 	"os"
 	"strconv"
@@ -919,6 +920,8 @@ func Provider() *schema.Provider {
 			"ibm_sm_service_credentials_secret":                                  secretsmanager.AddInstanceFields(secretsmanager.DataSourceIbmSmServiceCredentialsSecret()),
 			"ibm_sm_custom_credentials_secret":                                   secretsmanager.AddInstanceFields(secretsmanager.DataSourceIbmSmCustomCredentialsSecret()),
 			"ibm_sm_en_registration":                                             secretsmanager.AddInstanceFields(secretsmanager.DataSourceIbmSmEnRegistration()),
+
+			"ibm_sm_instance": secretsmanagerinstancemanagement.DataSourceIbmSmInstance(),
 
 			// Added for Satellite
 			"ibm_satellite_location":                            satellite.DataSourceIBMSatelliteLocation(),
