@@ -14,26 +14,27 @@ Provides a read-only data source to retrieve information about config_aggregator
 
 ```hcl
 data "ibm_config_aggregator_batch_configurations" "config_aggregator_batch_configurations" {
-  instance_id = "b76b5724-dfe9-45ca-955d-1355b03e9b11"
+  instance_id=var.instance_id
+	region=var.region
 
   config {
-    resource_crn = "crn:v1:bluemix:public:iam-am::a/a5dcbaf5d8324661ad99ecafb3e1cb4a::policy:047cf702-998c-461a-8976-bf3361cc8115"
+    resource_crn = "<crn>"
   }
 
   config {
-    resource_crn = "crn:v1:bluemix:public:iam-am::a/a5dcbaf5d8324661ad99ecafb3e1cb4a::policy:047cf702-998c-461a-8976-bf3361cc8116"
-    service_name = "iam-access-management"
+    resource_crn = "<crn>"
+    service_name = "<service_name>"
   }
 
   config {
-    resource_crn = "crn:v1:bluemix:public:iam-am::a/a5dcbaf5d8324661ad99ecafb3e1cb4a::policy:047cf702-998c-461a-8976-bf3361cc8116"
-    service_name = "iam-access-management"
-    config_type  = ["policy"]
+    resource_crn = "<crn>"
+    service_name = "<service_name>"
+    config_type  = ["config_type_1", "config_type_2"]
   }
 
   config {
-    resource_crn = "crn:v1:bluemix:public:iam-am::a/a5dcbaf5d8324661ad99ecafb3e1cb4a::policy:047cf702-998c-461a-8976-bf3361cc8116"
-    type_id      = "047cf702-998c-461a-8976-bf3361cc8116"
+    resource_crn = "<crn>"
+    type_id      = "<type_id>"
   }
 }
 
@@ -42,12 +43,13 @@ data "ibm_config_aggregator_batch_configurations" "config_aggregator_batch_confi
 ## Argument Reference
 
 You can specify the following arguments for this data source.
-
-* `configs` - (Required, List) The List of resources requested as part of List Configs Query API.
-  * Constraints: The maximum length is `20` items. The minimum length is `0` items.
-Nested schema for **configs**:
+* `instance_id` - (Required, Forces new resource, String) The GUID of the Configuration Aggregator instance.
+* `region` - (Optional, Forces new resource, String) The region of the Configuration Aggregator instance. If not provided defaults to the region defined in the IBM provider configuration.
+* `config` - (Required, List) The List of resources requested as part of List Configs Query API.
+  * Constraints: The maximum length is `20` items. The minimum length is `1` items.
+Nested schema for **config**:
 	* `config_type` - (Optional, List) The list of type for resource configuration that are to be retrieved.
-	  * Constraints: The list items must match regular expression `/^[a-zA-Z0-9 ,\\-_]+$/`. The maximum length is `20` items. The minimum length is `0` items.
+	  * Constraints: The list items must match regular expression `/^[a-zA-Z0-9 ,\\-_]+$/`.
 	* `resource_crn` - (Required, String) The unique CRN of the IBM Cloud resource.
 	  * Constraints: The maximum length is `1000` characters. The minimum length is `1` character. The value must match regular expression `/^[a-zA-Z0-9.\\:\/-]+$/`.
 	* `service_name` - (Optional, String) The name of the service to which the resource belongs.
@@ -60,50 +62,48 @@ Nested schema for **configs**:
 After your data source is created, you can read values from the following attributes.
 
 ---
+After your data source is created, you can read values from the following attributes.
 
-### `id`
-(String) The unique identifier of the config_aggregator_batch_configurations.
-
----
-
-### `configs`
-(List) Array of resource configurations returned by the API.
-
-#### Nested schema for `configs`:
-
-* `about` - (String)  
-  JSON string containing metadata about the resource.
-
-* `config` - (String)  
-  JSON string containing the configuration details of the resource.
-
-* `config_v2` - (String)  
-  JSON string representing version 2 of the configuration (if available). May be empty.
-
----
-
-### `errors`
-(List) List of resources that failed to fetch.
-
-#### Nested schema for `errors`:
-
-* `resource_crn` - (String) The CRN of the resource that failed.
-* `message` - (String) The error message returned by the API.
-* `error_code` - (String) The error code associated with the failure.
-
----
-
-### `prev`
-(List) The reference to the previous page of entries. If absent, this is the first page.
-
-#### Nested schema for `prev`:
-
-* `href` - (String) The reference to the previous page of entries.
-* `start` - (String) The starting token for pagination.
+* `id` - The unique identifier of the config_aggregator_configurations.
+* `configs` - (List) Array of resource configurations.
+  * Constraints: The maximum length is `100` items. The minimum length is `0` items.
+Nested schema for **configs**:
+	* `about` - (Map) The basic metadata fetched from the query API.
+	Nested schema for **about**:
+		* `account_id` - (String) The account ID in which the resource exists.
+		  * Constraints: The maximum length is `32` characters. The minimum length is `0` characters. The value must match regular expression `/^[a-zA-Z0-9-]*$/`.
+		* `config_type` - (String) The type of configuration of the retrieved resource.
+		  * Constraints: The maximum length is `1000` characters. The minimum length is `1` character. The value must match regular expression `/^[a-zA-Z0-9.\\:\/-]+$/`.
+		* `last_config_refresh_time` - (String) Date/time stamp identifying when the information was last collected. Must be in the RFC 3339 format.
+		* `location` - (String) Location of the resource specified.
+		  * Constraints: The maximum length is `1000` characters. The minimum length is `0` characters. The value must match regular expression `/^$|[a-z]-[a-z]/`.
+		* `resource_crn` - (String) The unique CRN of the IBM Cloud resource.
+		  * Constraints: The maximum length is `1000` characters. The minimum length is `1` character. The value must match regular expression `/^[a-zA-Z0-9.\\:\/-]+$/`.
+		* `resource_group_id` - (String) The account ID.
+		  * Constraints: The maximum length is `32` characters. The minimum length is `0` characters. The value must match regular expression `/^[a-zA-Z0-9-]*$/`.
+		* `resource_name` - (String) User defined name of the resource.
+		  * Constraints: The maximum length is `1000` characters. The minimum length is `1` character. The value must match regular expression `/^[a-zA-Z0-9.\\:\/-]+$/`.
+		* `service_name` - (String) The name of the service to which the resources belongs.
+		  * Constraints: The maximum length is `1000` characters. The minimum length is `1` character. The value must match regular expression `/^[a-zA-Z0-9.\\:\/-]+$/`.
+		* `tags` - (List) Tags associated with the resource.
+		Nested schema for **tags**:
+			* `tag` - (String) The name of the tag.
+			  * Constraints: The maximum length is `32` characters. The minimum length is `0` characters. The value must match regular expression `/^[a-zA-Z0-9-]*$/`.
+	* `config` - (String) The configuration of the resource.
+	Nested schema for **config**:
+* `prev` - (List) The reference to the previous page of entries.
+Nested schema for **prev**:
+	* `href` - (String) The reference to the previous page of entries.
+	* `start` - (String) the start string for the query to view the page.
+  * `errors` - (List) List of resources that failed to fetch.
+Nested schema for **errors**:
+  * `resource_crn` - (String) The CRN of the resource that failed.
+  * `message` - (String) The error message returned by the API.
+  * `error_code` - (String) The error code associated with the failure.
 
 ---
 
-## xNotes
+## Notes
 
 - The `configs` attribute contains **JSON-encoded strings**, not structured maps.
 - The `errors` attribute is populated when one or more requested resources fail.
