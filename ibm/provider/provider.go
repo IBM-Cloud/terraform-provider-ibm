@@ -434,6 +434,7 @@ func Provider() *schema.Provider {
 			"ibm_iam_authorization_policies":                iampolicy.DataSourceIBMIAMAuthorizationPolicies(),
 			"ibm_iam_user_profile":                          iamidentity.DataSourceIBMIAMUserProfile(),
 			"ibm_iam_service_id":                            iamidentity.DataSourceIBMIAMServiceID(),
+			"ibm_iam_serviceid_group":                       iamidentity.DataSourceIBMIamServiceidGroup(),
 			"ibm_iam_service_policy":                        iampolicy.DataSourceIBMIAMServicePolicy(),
 			"ibm_iam_api_key":                               iamidentity.DataSourceIBMIamApiKey(),
 			"ibm_iam_trusted_profile":                       iamidentity.DataSourceIBMIamTrustedProfile(),
@@ -729,6 +730,7 @@ func Provider() *schema.Provider {
 			"ibm_schematics_action":         schematics.DataSourceIBMSchematicsAction(),
 			"ibm_schematics_job":            schematics.DataSourceIBMSchematicsJob(),
 			"ibm_schematics_inventory":      schematics.DataSourceIBMSchematicsInventory(),
+			"ibm_schematics_kms":            schematics.DataSourceIBMSchematicsKMS(),
 			"ibm_schematics_resource_query": schematics.DataSourceIBMSchematicsResourceQuery(),
 			"ibm_schematics_policies":       schematics.DataSourceIbmSchematicsPolicies(),
 			"ibm_schematics_policy":         schematics.DataSourceIbmSchematicsPolicy(),
@@ -1360,6 +1362,7 @@ func Provider() *schema.Provider {
 			"ibm_iam_user_policy":                           iampolicy.ResourceIBMIAMUserPolicy(),
 			"ibm_iam_user_settings":                         iamidentity.ResourceIBMIAMUserSettings(),
 			"ibm_iam_service_id":                            iamidentity.ResourceIBMIAMServiceID(),
+			"ibm_iam_serviceid_group":                       iamidentity.ResourceIBMIamServiceidGroup(),
 			"ibm_iam_service_api_key":                       iamidentity.ResourceIBMIAMServiceAPIKey(),
 			"ibm_iam_service_policy":                        iampolicy.ResourceIBMIAMServicePolicy(),
 			"ibm_iam_user_invite":                           iampolicy.ResourceIBMIAMUserInvite(),
@@ -1522,6 +1525,7 @@ func Provider() *schema.Provider {
 			"ibm_kms_instance_policies":                    kms.ResourceIBMKmsInstancePolicy(),
 			"ibm_kms_kmip_adapter":                         kms.ResourceIBMKmsKMIPAdapter(),
 			"ibm_kms_kmip_client_cert":                     kms.ResourceIBMKmsKMIPClientCertificate(),
+			"ibm_kms_cryptounits":                          kms.ResourceIBMKmsCryptoUnits(),
 			"ibm_resource_group":                           resourcemanager.ResourceIBMResourceGroup(),
 
 			// resource_reclamation

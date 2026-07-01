@@ -62,6 +62,31 @@ func TestAccIBMIsIkePoliciesDataSourceBasic(t *testing.T) {
 	})
 }
 
+func TestAccIBMIsIkePoliciesDataSourceMultipleAlgorithms(t *testing.T) {
+	name1 := fmt.Sprintf("tfike-multi-name-%d", acctest.RandIntRange(10, 100))
+	name2 := fmt.Sprintf("tfike-multi-name-%d", acctest.RandIntRange(10, 100))
+	dataSourceName := "data.ibm_is_ike_policies.is_ike_policies"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { acc.TestAccPreCheck(t) },
+		Providers: acc.TestAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMIsIkePoliciesDataSourceMultipleAlgorithmsConfig(name1, name2),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet(dataSourceName, "ike_policies.#"),
+					resource.TestCheckResourceAttrSet(dataSourceName, "ike_policies.0.authentication_algorithms.#"),
+					resource.TestCheckResourceAttrSet(dataSourceName, "ike_policies.0.authentication_algorithms.0"),
+					resource.TestCheckResourceAttrSet(dataSourceName, "ike_policies.0.encryption_algorithms.#"),
+					resource.TestCheckResourceAttrSet(dataSourceName, "ike_policies.0.encryption_algorithms.0"),
+					resource.TestCheckResourceAttrSet(dataSourceName, "ike_policies.0.dh_groups.#"),
+					resource.TestCheckResourceAttrSet(dataSourceName, "ike_policies.0.dh_groups.0"),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckIBMIsIkePoliciesDataSourceConfigBasic(name1, name2 string) string {
 	return fmt.Sprintf(`
 		// Create two policies with different configurations to ensure we test various values
@@ -79,6 +104,35 @@ func testAccCheckIBMIsIkePoliciesDataSourceConfigBasic(name1, name2 string) stri
 			authentication_algorithm = "sha512"
 			encryption_algorithm = "aes256"
 			dh_group = 19
+			ike_version = 1
+			key_lifetime = 3600
+		}
+		
+		data "ibm_is_ike_policies" "is_ike_policies" {
+			depends_on = [
+				ibm_is_ike_policy.example1,
+				ibm_is_ike_policy.example2
+			]
+		}
+	`, name1, name2)
+}
+
+func testAccCheckIBMIsIkePoliciesDataSourceMultipleAlgorithmsConfig(name1, name2 string) string {
+	return fmt.Sprintf(`
+		resource "ibm_is_ike_policy" "example1" {
+			name = "%s"
+			authentication_algorithms = ["sha256", "sha384"]
+			encryption_algorithms = ["aes128", "aes192"]
+			dh_groups = [14, 15]
+			ike_version = 2
+			key_lifetime = 1800
+		}
+		
+		resource "ibm_is_ike_policy" "example2" {
+			name = "%s"
+			authentication_algorithms = ["sha512", "sha384"]
+			encryption_algorithms = ["aes256", "aes192"]
+			dh_groups = [19, 14]
 			ike_version = 1
 			key_lifetime = 3600
 		}

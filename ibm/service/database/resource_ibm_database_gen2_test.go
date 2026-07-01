@@ -54,16 +54,16 @@ func TestGen2BackendCreate(t *testing.T) {
 			expectedError: false,
 		},
 		{
-			name: "create_with_backup_id",
+			name: "create_with_classic_backup_id",
 			resourceData: map[string]interface{}{
 				"service":   "databases-for-postgresql",
-				"plan":      "standard",
+				"plan":      "standard-gen2",
 				"name":      "test-db",
 				"location":  "us-south",
-				"backup_id": "crn:v1:bluemix:public:databases-for-postgresql:us-south:a/abc123:backup-id",
+				"backup_id": "crn:v1:bluemix:public:databases-for-postgresql:us-south:a/abc123:instance-id:backup:backup-id",
 			},
 			expectedError: true,
-			errorContains: "backup_id is not supported for Gen2 databases",
+			errorContains: "Classic backup",
 		},
 		{
 			name: "create_with_remote_leader",
@@ -922,7 +922,6 @@ func TestGen2ConfigureInstancePipeline(t *testing.T) {
 // TestGen2UnsupportedAttributesList tests the gen2UnsupportedAttrs list
 func TestGen2UnsupportedAttributesList(t *testing.T) {
 	expectedUnsupported := []string{
-		"backup_id",
 		"point_in_time_recovery_deployment_id",
 		"point_in_time_recovery_time",
 		"backup_policy",

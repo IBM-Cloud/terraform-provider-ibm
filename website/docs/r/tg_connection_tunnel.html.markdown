@@ -1,3 +1,4 @@
+---
 
 subcategory: "Transit Gateway"
 layout: "ibm"
