@@ -1654,14 +1654,15 @@ func createSingleNwaclRuleForUpdate(d *schema.ResourceData, nwaclC *vpcv1.VpcV1,
 	case "icmp":
 		ruleTemplate.Type = rawIcmpType
 		ruleTemplate.Code = rawIcmpCode
-		// if one is set, the other must default to 0
-		if ruleTemplate.Type != nil && ruleTemplate.Code == nil {
-			v := int64(0)
-			ruleTemplate.Code = &v
-		}
-		if ruleTemplate.Code != nil && ruleTemplate.Type == nil {
-			v := int64(0)
-			ruleTemplate.Type = &v
+		if hasIcmpBlock {
+			if ruleTemplate.Type != nil && ruleTemplate.Code == nil {
+				v := int64(0)
+				ruleTemplate.Code = &v
+			}
+			if ruleTemplate.Code != nil && ruleTemplate.Type == nil {
+				v := int64(0)
+				ruleTemplate.Type = &v
+			}
 		}
 	case "tcp", "udp":
 		ruleTemplate.DestinationPortMin = rawPortMin
