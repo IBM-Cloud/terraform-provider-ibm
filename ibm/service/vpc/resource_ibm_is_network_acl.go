@@ -943,7 +943,7 @@ func nwaclUpdate(context context.Context, d *schema.ResourceData, meta interface
 		rules := d.Get(isNetworkACLRules).([]interface{})
 		err := validateInlineRulesForUpdate(d, rules)
 		if err != nil {
-			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("validateInlineRules failed: %s", err.Error()), "ibm_is_network_acl", "update")
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("validateInlineRulesForUpdate failed: %s", err.Error()), "ibm_is_network_acl", "update")
 			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 			return tfErr.GetDiag()
 		}
