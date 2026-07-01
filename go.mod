@@ -18,7 +18,7 @@ require (
 	github.com/IBM/dra-go-sdk v0.1.0
 	github.com/IBM/event-notifications-go-admin-sdk v0.22.0
 	github.com/IBM/eventstreams-go-sdk v1.4.0
-	github.com/IBM/go-sdk-core/v5 v5.21.2
+	github.com/IBM/go-sdk-core/v5 v5.21.4
 	github.com/IBM/ibm-backup-recovery-sdk-go v1.2.1
 	github.com/IBM/ibm-cos-sdk-go v1.12.2
 	github.com/IBM/ibm-cos-sdk-go-config/v2 v2.3.0
@@ -39,7 +39,7 @@ require (
 	github.com/IBM/secrets-manager-go-sdk/v2 v2.0.15
 	github.com/IBM/vmware-go-sdk v0.1.5
 	github.com/IBM/vpc-beta-go-sdk v0.8.0
-	github.com/IBM/vpc-go-sdk v0.83.2
+	github.com/IBM/vpc-go-sdk v0.87.0
 	github.com/ScaleFT/sshkeys v0.0.0-20200327173127-6142f742bca5
 	github.com/akamai/AkamaiOPEN-edgegrid-golang v1.2.2
 	github.com/akamai/AkamaiOPEN-edgegrid-golang/v5 v5.0.0
@@ -204,7 +204,7 @@ require (
 	golang.org/x/net v0.52.0 // indirect
 	golang.org/x/oauth2 v0.36.0 // indirect
 	golang.org/x/sync v0.20.0 // indirect
-	golang.org/x/sys v0.42.0 // indirect
+	golang.org/x/sys v0.44.0 // indirect
 	golang.org/x/term v0.41.0 // indirect
 	golang.org/x/text v0.35.0 // indirect
 	golang.org/x/time v0.15.0 // indirect
@@ -235,8 +235,6 @@ replace github.com/hashicorp/consul/api v1.1.0 => github.com/hashicorp/consul/ap
 replace github.com/hashicorp/vault => github.com/hashicorp/vault v1.18.2
 
 replace github.com/hashicorp/vault/api/auth/approle => github.com/hashicorp/vault/api/auth/approle v0.8.0
-
-replace github.com/IBM/vpc-go-sdk v0.83.2 => ./common/github.com/IBM/vpc-go-sdk
 
 exclude (
 	github.com/kubernetes-incubator/external-storage v0.0.0-00010101000000-000000000000
