@@ -95,7 +95,7 @@ Nested schema for **configs**:
 Nested schema for **prev**:
 	* `href` - (String) The reference to the previous page of entries.
 	* `start` - (String) the start string for the query to view the page.
-  * `errors` - (List) List of resources that failed to fetch.
+* `errors` - (List) List of resources that failed to fetch.
 Nested schema for **errors**:
   * `resource_crn` - (String) The CRN of the resource that failed.
   * `message` - (String) The error message returned by the API.
