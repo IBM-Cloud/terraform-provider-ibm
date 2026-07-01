@@ -365,6 +365,14 @@ func ResourceIBMISInstanceTemplate() *schema.Resource {
 				ValidateFunc: validate.InvokeValidator("ibm_is_instance_template", isInstanceVolumeBandwidthQoSMode),
 				Description:  "The volume bandwidth QoS mode for this virtual server instance.",
 			},
+			isInstanceTemplateThreadsPerCore: {
+				Type:         schema.TypeInt,
+				Optional:     true,
+				ForceNew:     true,
+				Computed:     true,
+				ValidateFunc: validate.InvokeValidator("ibm_is_instance_template", isInstanceTemplateThreadsPerCore),
+				Description:  "The threads per core to use for this virtual server instance. Must be one of the values in the profile's threads_per_core.values. If unspecified, the default threads per core from the profile will be used.",
+			},
 			isInstanceTemplateKeys: {
 				Type:             schema.TypeSet,
 				Required:         true,
@@ -1475,6 +1483,13 @@ func ResourceIBMISInstanceTemplateValidator() *validate.ResourceValidator {
 		MinValueLength:             1,
 		MaxValueLength:             128,
 	})
+	validateSchema = append(validateSchema, validate.ValidateSchema{
+		Identifier:                 isInstanceTemplateThreadsPerCore,
+		ValidateFunctionIdentifier: validate.ValidateAllowedIntValue,
+		Type:                       validate.TypeInt,
+		Optional:                   true,
+		AllowedValues:              "1, 2",
+	})
 	ibmISInstanceTemplateValidator := validate.ResourceValidator{ResourceName: "ibm_is_instance_template", Schema: validateSchema}
 	return &ibmISInstanceTemplateValidator
 }
@@ -2341,6 +2356,11 @@ func instanceTemplateCreateByCatalogOffering(context context.Context, d *schema.
 		instanceproto.VolumeBandwidthQosMode = &volumeBandwidthQoSModeStr
 	}
 
+	if threadsPerCoreIntf, ok := d.GetOk(isInstanceTemplateThreadsPerCore); ok {
+		threadsPerCore := int64(threadsPerCoreIntf.(int))
+		instanceproto.ThreadsPerCore = &threadsPerCore
+	}
+
 	// BOOT VOLUME ATTACHMENT for instance template
 	if boot, ok := d.GetOk(isInstanceTemplateBootVolume); ok {
 		bootvol := boot.([]interface{})[0].(map[string]interface{})
@@ -2927,6 +2947,11 @@ func instanceTemplateCreate(context context.Context, d *schema.ResourceData, met
 		instanceproto.VolumeBandwidthQosMode = &volumeBandwidthQoSModeStr
 	}
 
+	if threadsPerCoreIntf, ok := d.GetOk(isInstanceTemplateThreadsPerCore); ok {
+		threadsPerCore := int64(threadsPerCoreIntf.(int))
+		instanceproto.ThreadsPerCore = &threadsPerCore
+	}
+
 	// BOOT VOLUME ATTACHMENT for instance template
 	if boot, ok := d.GetOk(isInstanceTemplateBootVolume); ok {
 		bootvol := boot.([]interface{})[0].(map[string]interface{})
@@ -3510,6 +3535,12 @@ func instanceTemplateGet(context context.Context, d *schema.ResourceData, meta i
 				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance_template", "read", "set-volume_bandwidth_qos_mode").GetDiag()
 			}
 		}
+		if instanceTemplate.ThreadsPerCore != nil {
+			if err = d.Set(isInstanceTemplateThreadsPerCore, int(*instanceTemplate.ThreadsPerCore)); err != nil {
+				err = fmt.Errorf("Error setting threads_per_core: %s", err)
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance_template", "read", "set-threads_per_core").GetDiag()
+			}
+		}
 		if instanceTemplate.MetadataService != nil {
 			if err = d.Set(isInstanceTemplateMetadataServiceEnabled, instanceTemplate.MetadataService.Enabled); err != nil {
 				err = fmt.Errorf("Error setting metadata_service_enabled: %s", err)
@@ -4001,6 +4032,12 @@ func instanceTemplateGet(context context.Context, d *schema.ResourceData, meta i
 			if err = d.Set(isInstanceVolumeBandwidthQoSMode, string(*instanceTemplate.VolumeBandwidthQosMode)); err != nil {
 				err = fmt.Errorf("Error setting volume_bandwidth_qos_mode: %s", err)
 				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance_template", "read", "set-volume_bandwidth_qos_mode").GetDiag()
+			}
+		}
+		if instanceTemplate.ThreadsPerCore != nil {
+			if err = d.Set(isInstanceTemplateThreadsPerCore, int(*instanceTemplate.ThreadsPerCore)); err != nil {
+				err = fmt.Errorf("Error setting threads_per_core: %s", err)
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance_template", "read", "set-threads_per_core").GetDiag()
 			}
 		}
 		if instanceTemplate.MetadataService != nil {
