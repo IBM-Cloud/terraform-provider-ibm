@@ -10,3 +10,7 @@ output "ibm_iam_trusted_profile_template_version" {
   description = "trusted_profile_template resource instance"
 }
 
+output "ibm_iam_trusted_profile_template_data" {
+  value       = data.ibm_iam_trusted_profile_template.trusted_profile_template_data
+  description = "trusted_profile_template data"
+}
