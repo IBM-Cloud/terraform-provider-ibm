@@ -148,9 +148,6 @@ func resourceIBMIamAPIKeyCreate(context context.Context, d *schema.ResourceData,
 	if _, ok := d.GetOk("store_value"); ok {
 		createAPIKeyOptions.SetStoreValue(d.Get("store_value").(bool))
 	}
-	if _, ok := d.GetOk("locked"); ok {
-		createAPIKeyOptions.SetEntityLock(d.Get("locked").(string))
-	}
 	if _, ok := d.GetOk("expires_at"); ok {
 		createAPIKeyOptions.SetExpiresAt(d.Get("expires_at").(string))
 	}
