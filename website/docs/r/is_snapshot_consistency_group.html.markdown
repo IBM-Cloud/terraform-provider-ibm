@@ -62,22 +62,32 @@ You can specify the following arguments for this resource.
 After your resource is created, you can read values from the listed arguments and the following attributes.
 
 - `id` - The unique identifier of the SnapshotConsistencyGroup.
+- `backup_policy_job` - (List) If present, the backup policy job that created this snapshot consistency group. Snapshot consistency groups with the same backup policy job identifier represent snapshots of the same instance across different storage generations.
+
+	Nested schema for `backup_policy_job`:
+	- `deleted` - (List) If present, this property indicates the referenced resource has been deleted, and provides some supplementary information.
+
+		Nested schema for `deleted`:
+		- `more_info` - (String) Link to documentation about deleted resources.
+	- `href` - (String) The URL for this backup policy job.
+	- `id` - (String) The unique identifier for this backup policy job.
+	- `resource_type` - (String) The resource type.	
 - `backup_policy_plan` - (List) If present, the backup policy plan which created this snapshot consistency group.
-  
-   Nested scheme for `backup_policy_plan`:
-    - `deleted` - (List) If present, this property indicates the referenced resource has been deleted and provides some supplementary information.
-   
-      Nested scheme for `deleted`:
-      - `more_info` - (String) Link to documentation about deleted resources.
-    - `href` - (String) The URL for this backup policy plan.
-    - `id` - (String) The unique identifier for this backup policy plan.
-    - `name` - (String) The unique user defined name for this backup policy plan. If unspecified, the name will be a hyphenated list of randomly selected words.
-    - `resource_type` - (String) The type of resource referenced.
-    - `remote` - (List) If present, this property indicates that the resource associated with this referenceis remote and therefore may not be directly retrievable.
-      
-      Nested schema for `remote`:
-      - `href` - (String) The URL for this region.
-      - `name` - (String) The globally unique name for this region.
+
+  Nested scheme for `backup_policy_plan`:
+  - `deleted` - (List) If present, this property indicates the referenced resource has been deleted and provides some supplementary information.
+
+    Nested scheme for `deleted`:
+    - `more_info` - (String) Link to documentation about deleted resources.
+  - `href` - (String) The URL for this backup policy plan.
+  - `id` - (String) The unique identifier for this backup policy plan.
+  - `name` - (String) The unique user defined name for this backup policy plan. If unspecified, the name will be a hyphenated list of randomly selected words.
+  - `resource_type` - (String) The type of resource referenced.
+  - `remote` - (List) If present, this property indicates that the resource associated with this referenceis remote and therefore may not be directly retrievable.
+
+    Nested schema for `remote`:
+    - `href` - (String) The URL for this region.
+    - `name` - (String) The globally unique name for this region.
 
 - `created_at` - (String) The date and time that this snapshot consistency group was created.
 - `crn` - (String) The CRN of this snapshot consistency group.
@@ -89,17 +99,17 @@ After your resource is created, you can read values from the listed arguments an
   Nested scheme for `snapshots_reference`:
   - `crn` - (String) The CRN of the source snapshot.
   - `deleted` - (List) If present, this property indicates the referenced resource has been deleted and provides some supplementary information.
-   
-      Nested scheme for `deleted`:
-      - `more_info` - (String) Link to documentation about deleted resources.
+
+    Nested scheme for `deleted`:
+    - `more_info` - (String) Link to documentation about deleted resources.
   - `href` - (String) The URL for the source snapshot.
   - `id` - (String) The unique identifier for the source snapshot.
   - `name` - (String) The name for the source snapshot. The name is unique across all snapshots in the source snapshot's native region.
   - `remote` - (List) If present, this property indicates the referenced resource is remote to this region,and identifies the native region
-    
-      Nested scheme for `remote`:
-      - `href` - (String) The URL for this region.
-      - `name` - (String) The globally unique name for this region.
+
+    Nested scheme for `remote`:
+    - `href` - (String) The URL for this region.
+    - `name` - (String) The globally unique name for this region.
   - `resource_type` - (String) The resource type.
 - `service_tags` - (List) The [service tags](https://cloud.ibm.com/apidocs/tagging#types-of-tags)[`is.instance:` prefix](https://cloud.ibm.com/docs/vpc?topic=vpc-snapshots-vpc-faqs) associated with this snapshot consistency group.
 
@@ -111,7 +121,7 @@ The `id` property can be formed using the snapshot_consistency_group identifier.
 
 ```terraform
 import {
-  to = ibm_is_snapshot_consistency_group.is_snapshot_consistency_group
+  to = ibm_is_snapshot_consistency_group.example
   id = "<id>"
 }
 ```
@@ -119,5 +129,5 @@ import {
 Using `terraform import`. For example:
 
 ```console
-% terraform import ibm_is_snapshot_consistency_group.is_snapshot_consistency_group <id>
+% terraform import ibm_is_snapshot_consistency_group.example <id>
 ```

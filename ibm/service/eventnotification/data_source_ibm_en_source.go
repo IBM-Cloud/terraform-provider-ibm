@@ -51,6 +51,11 @@ func DataSourceIBMEnSource() *schema.Resource {
 				Computed:    true,
 				Description: "The Source enable flag.",
 			},
+			"store_notifications": {
+				Type:        schema.TypeBool,
+				Computed:    true,
+				Description: "enable to view the payload of incoming events for troubleshooting.",
+			},
 		},
 	}
 }
@@ -91,6 +96,11 @@ func dataSourceIBMEnSourceRead(context context.Context, d *schema.ResourceData, 
 
 	if err = d.Set("enabled", result.Enabled); err != nil {
 		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting enabled flag: %s", err), "(Data) ibm_en_source", "read")
+		return tfErr.GetDiag()
+	}
+
+	if err = d.Set("store_notifications", result.StoreNotifications); err != nil {
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting store_notifications flag: %s", err), "(Data) ibm_en_source", "read")
 		return tfErr.GetDiag()
 	}
 

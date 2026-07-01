@@ -31,7 +31,7 @@ In addition to all argument references listed, you can access the following attr
 * `id` - The unique identifier of the iam_trusted_profiles_claim_rules.
 * `rules` - (List) List of claim rules.
     Nested scheme for **rules**:
-	* `cr_type` - (String) The compute resource type. Not required if type is Profile-SAML. Valid values are VSI, IKS_SA, ROKS_SA.
+	* `cr_type` - (String) The compute resource type. Not required if type is Profile-SAML. Valid values are VSI, PVS, BMS, IKS_SA, ROKS_SA, CE.
 	* `conditions` - (List) Conditions of this claim rule.
 	    Nested scheme for **conditions**:
 		* `claim` - (String) The claim to evaluate against.

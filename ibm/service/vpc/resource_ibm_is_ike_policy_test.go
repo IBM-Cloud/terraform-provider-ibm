@@ -202,7 +202,147 @@ func TestAccIBMISIKEPolicy_Algorithms(t *testing.T) {
 	}
 }
 
-// Test key_lifetime values and validation
+func TestAccIBMISIKEPolicy_MigrateSingularToMultipleAlgorithms(t *testing.T) {
+	name := fmt.Sprintf("tfike-migrate-%d", acctest.RandIntRange(10, 100))
+	resourceKey := "ibm_is_ike_policy.migration_test"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: checkIKEPolicyDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMISIKEPolicySingularConfig(name),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceKey, "name", name),
+					resource.TestCheckResourceAttr(resourceKey, "authentication_algorithm", "sha384"),
+					resource.TestCheckResourceAttr(resourceKey, "encryption_algorithm", "aes256"),
+					resource.TestCheckResourceAttr(resourceKey, "dh_group", "15"),
+					resource.TestCheckResourceAttr(resourceKey, "ike_version", "2"),
+					resource.TestCheckResourceAttr(resourceKey, "key_lifetime", "1800"),
+				),
+			},
+			{
+				Config: testAccCheckIBMISIKEPolicyMigrationConfig(name),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceKey, "name", name),
+					resource.TestCheckResourceAttr(resourceKey, "authentication_algorithms.#", "2"),
+					resource.TestCheckResourceAttr(resourceKey, "authentication_algorithms.0", "sha384"),
+					resource.TestCheckResourceAttr(resourceKey, "authentication_algorithms.1", "sha512"),
+					resource.TestCheckResourceAttr(resourceKey, "encryption_algorithms.#", "2"),
+					resource.TestCheckResourceAttr(resourceKey, "encryption_algorithms.0", "aes256"),
+					resource.TestCheckResourceAttr(resourceKey, "encryption_algorithms.1", "aes192"),
+					resource.TestCheckResourceAttr(resourceKey, "dh_groups.#", "2"),
+					resource.TestCheckResourceAttr(resourceKey, "dh_groups.0", "15"),
+					resource.TestCheckResourceAttr(resourceKey, "dh_groups.1", "14"),
+					resource.TestCheckResourceAttr(resourceKey, "ike_version", "2"),
+					resource.TestCheckResourceAttr(resourceKey, "key_lifetime", "1800"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccIBMISIKEPolicy_MultipleAlgorithms(t *testing.T) {
+	name := fmt.Sprintf("tfike-multi-%d", acctest.RandIntRange(10, 100))
+	resourceKey := "ibm_is_ike_policy.multi_algorithm_test"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: checkIKEPolicyDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMISIKEPolicyMultipleAlgorithmsConfig(name),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceKey, "name", name),
+					resource.TestCheckResourceAttr(resourceKey, "authentication_algorithms.#", "2"),
+					resource.TestCheckResourceAttr(resourceKey, "authentication_algorithms.0", "sha384"),
+					resource.TestCheckResourceAttr(resourceKey, "authentication_algorithms.1", "sha512"),
+					resource.TestCheckResourceAttr(resourceKey, "encryption_algorithms.#", "2"),
+					resource.TestCheckResourceAttr(resourceKey, "encryption_algorithms.0", "aes256"),
+					resource.TestCheckResourceAttr(resourceKey, "encryption_algorithms.1", "aes192"),
+					resource.TestCheckResourceAttr(resourceKey, "dh_groups.#", "2"),
+					resource.TestCheckResourceAttr(resourceKey, "dh_groups.0", "15"),
+					resource.TestCheckResourceAttr(resourceKey, "dh_groups.1", "14"),
+					resource.TestCheckResourceAttr(resourceKey, "ike_version", "2"),
+					resource.TestCheckResourceAttr(resourceKey, "key_lifetime", "1800"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccIBMISIKEPolicy_UpdateMultipleAlgorithms(t *testing.T) {
+	name := fmt.Sprintf("tfike-updmulti-%d", acctest.RandIntRange(10, 100))
+	resourceKey := "ibm_is_ike_policy.update_multi_test"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: checkIKEPolicyDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMISIKEPolicyUpdateMultiInitialConfig(name),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceKey, "name", name),
+					resource.TestCheckResourceAttr(resourceKey, "authentication_algorithms.#", "2"),
+					resource.TestCheckResourceAttr(resourceKey, "authentication_algorithms.0", "sha384"),
+					resource.TestCheckResourceAttr(resourceKey, "authentication_algorithms.1", "sha512"),
+					resource.TestCheckResourceAttr(resourceKey, "encryption_algorithms.#", "2"),
+					resource.TestCheckResourceAttr(resourceKey, "encryption_algorithms.0", "aes256"),
+					resource.TestCheckResourceAttr(resourceKey, "encryption_algorithms.1", "aes192"),
+					resource.TestCheckResourceAttr(resourceKey, "dh_groups.#", "2"),
+					resource.TestCheckResourceAttr(resourceKey, "dh_groups.0", "15"),
+					resource.TestCheckResourceAttr(resourceKey, "dh_groups.1", "14"),
+				),
+			},
+			{
+				Config: testAccCheckIBMISIKEPolicyUpdateMultiUpdatedConfig(name),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceKey, "name", name),
+					resource.TestCheckResourceAttr(resourceKey, "authentication_algorithms.#", "3"),
+					resource.TestCheckResourceAttr(resourceKey, "authentication_algorithms.0", "sha256"),
+					resource.TestCheckResourceAttr(resourceKey, "authentication_algorithms.1", "sha384"),
+					resource.TestCheckResourceAttr(resourceKey, "authentication_algorithms.2", "sha512"),
+					resource.TestCheckResourceAttr(resourceKey, "encryption_algorithms.#", "1"),
+					resource.TestCheckResourceAttr(resourceKey, "encryption_algorithms.0", "aes128"),
+					resource.TestCheckResourceAttr(resourceKey, "dh_groups.#", "3"),
+					resource.TestCheckResourceAttr(resourceKey, "dh_groups.0", "14"),
+					resource.TestCheckResourceAttr(resourceKey, "dh_groups.1", "15"),
+					resource.TestCheckResourceAttr(resourceKey, "dh_groups.2", "16"),
+				),
+			},
+		},
+	})
+}
+
+func testAccCheckIBMISIKEPolicyUpdateMultiInitialConfig(name string) string {
+	return fmt.Sprintf(`
+		resource "ibm_is_ike_policy" "update_multi_test" {
+			name = "%s"
+			authentication_algorithms = ["sha384", "sha512"]
+			encryption_algorithms = ["aes256", "aes192"]
+			dh_groups = [15, 14]
+			ike_version = 2
+			key_lifetime = 1800
+		}
+	`, name)
+}
+
+func testAccCheckIBMISIKEPolicyUpdateMultiUpdatedConfig(name string) string {
+	return fmt.Sprintf(`
+		resource "ibm_is_ike_policy" "update_multi_test" {
+			name = "%s"
+			authentication_algorithms = ["sha256", "sha384", "sha512"]
+			encryption_algorithms = ["aes128"]
+			dh_groups = [14, 15, 16]
+			ike_version = 2
+			key_lifetime = 3600
+		}
+	`, name)
+}
+
 func TestAccIBMISIKEPolicy_KeyLifetime(t *testing.T) {
 	name := fmt.Sprintf("tfike-lifetime-%d", acctest.RandIntRange(10, 100))
 	resourceKey := "ibm_is_ike_policy.lifetime_test"
@@ -363,6 +503,45 @@ func testAccCheckIBMISIKEPolicyAlgorithmConfig(name, authAlg, encAlg string, dhG
 	`, name, authAlg, encAlg, dhGroup, ikeVersion)
 }
 
+func testAccCheckIBMISIKEPolicyMultipleAlgorithmsConfig(name string) string {
+	return fmt.Sprintf(`
+		resource "ibm_is_ike_policy" "multi_algorithm_test" {
+			name = "%s"
+			authentication_algorithms = ["sha384", "sha512"]
+			encryption_algorithms = ["aes256", "aes192"]
+			dh_groups = [15, 14]
+			ike_version = 2
+			key_lifetime = 1800
+		}
+	`, name)
+}
+
+func testAccCheckIBMISIKEPolicySingularConfig(name string) string {
+	return fmt.Sprintf(`
+		resource "ibm_is_ike_policy" "migration_test" {
+			name = "%s"
+			authentication_algorithm = "sha384"
+			encryption_algorithm = "aes256"
+			dh_group = 15
+			ike_version = 2
+			key_lifetime = 1800
+		}
+	`, name)
+}
+
+func testAccCheckIBMISIKEPolicyMigrationConfig(name string) string {
+	return fmt.Sprintf(`
+		resource "ibm_is_ike_policy" "migration_test" {
+			name = "%s"
+			authentication_algorithms = ["sha384", "sha512"]
+			encryption_algorithms = ["aes256", "aes192"]
+			dh_groups = [15, 14]
+			ike_version = 2
+			key_lifetime = 1800
+		}
+	`, name)
+}
+
 func testAccCheckIBMISIKEPolicyLifetimeConfig(name string) string {
 	return fmt.Sprintf(`
 		resource "ibm_is_ike_policy" "lifetime_test" {
@@ -385,4 +564,256 @@ func testAccCheckIBMISIKEPolicyLifetimeConfigUpdate(name string, lifetime int) s
 			key_lifetime = %d
 		}
 	`, name, lifetime)
+}
+
+func TestAccIBMISIKEPolicy_Scenario1_LegacyNoRegression(t *testing.T) {
+	name := fmt.Sprintf("tfike-s1-%d", acctest.RandIntRange(10, 100))
+	updatedName := fmt.Sprintf("tfike-s1-upd-%d", acctest.RandIntRange(10, 100))
+	resourceKey := "ibm_is_ike_policy.s1_legacy"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: checkIKEPolicyDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMISIKEPolicyS1LegacyConfig(name),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceKey, "name", name),
+					resource.TestCheckResourceAttr(resourceKey, "authentication_algorithm", "sha256"),
+					resource.TestCheckResourceAttr(resourceKey, "encryption_algorithm", "aes128"),
+					resource.TestCheckResourceAttr(resourceKey, "dh_group", "14"),
+					resource.TestCheckResourceAttr(resourceKey, "ike_version", "1"),
+					resource.TestCheckResourceAttr(resourceKey, "key_lifetime", "28800"),
+					resource.TestCheckResourceAttrSet(resourceKey, "negotiation_mode"),
+					resource.TestCheckResourceAttrSet(resourceKey, "href"),
+				),
+			},
+			{
+				Config: testAccCheckIBMISIKEPolicyS1LegacyUpdateLifetimeConfig(name, 7200),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceKey, "name", name),
+					resource.TestCheckResourceAttr(resourceKey, "authentication_algorithm", "sha256"),
+					resource.TestCheckResourceAttr(resourceKey, "encryption_algorithm", "aes128"),
+					resource.TestCheckResourceAttr(resourceKey, "dh_group", "14"),
+					resource.TestCheckResourceAttr(resourceKey, "key_lifetime", "7200"),
+				),
+			},
+			{
+				Config: testAccCheckIBMISIKEPolicyS1LegacyUpdateAlgoConfig(updatedName),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceKey, "name", updatedName),
+					resource.TestCheckResourceAttr(resourceKey, "authentication_algorithm", "sha512"),
+					resource.TestCheckResourceAttr(resourceKey, "encryption_algorithm", "aes256"),
+					resource.TestCheckResourceAttr(resourceKey, "dh_group", "15"),
+					resource.TestCheckResourceAttr(resourceKey, "ike_version", "2"),
+					resource.TestCheckResourceAttr(resourceKey, "key_lifetime", "3600"),
+				),
+			},
+			{
+				ResourceName:      resourceKey,
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
+func TestAccIBMISIKEPolicy_Scenario2_MigrationWithIdempotency(t *testing.T) {
+	name := fmt.Sprintf("tfike-s2-%d", acctest.RandIntRange(10, 100))
+	resourceKey := "ibm_is_ike_policy.s2_migration"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: checkIKEPolicyDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMISIKEPolicyS2SingularConfig(name),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceKey, "name", name),
+					resource.TestCheckResourceAttr(resourceKey, "authentication_algorithm", "sha256"),
+					resource.TestCheckResourceAttr(resourceKey, "encryption_algorithm", "aes192"),
+					resource.TestCheckResourceAttr(resourceKey, "dh_group", "14"),
+					resource.TestCheckResourceAttr(resourceKey, "ike_version", "2"),
+					resource.TestCheckResourceAttr(resourceKey, "key_lifetime", "3600"),
+				),
+			},
+			{
+				Config: testAccCheckIBMISIKEPolicyS2MigratedConfig(name),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceKey, "name", name),
+					resource.TestCheckResourceAttr(resourceKey, "authentication_algorithms.#", "2"),
+					resource.TestCheckResourceAttr(resourceKey, "authentication_algorithms.0", "sha256"),
+					resource.TestCheckResourceAttr(resourceKey, "authentication_algorithms.1", "sha384"),
+					resource.TestCheckResourceAttr(resourceKey, "encryption_algorithms.#", "2"),
+					resource.TestCheckResourceAttr(resourceKey, "encryption_algorithms.0", "aes192"),
+					resource.TestCheckResourceAttr(resourceKey, "encryption_algorithms.1", "aes256"),
+					resource.TestCheckResourceAttr(resourceKey, "dh_groups.#", "2"),
+					resource.TestCheckResourceAttr(resourceKey, "dh_groups.0", "14"),
+					resource.TestCheckResourceAttr(resourceKey, "dh_groups.1", "15"),
+					resource.TestCheckResourceAttr(resourceKey, "ike_version", "2"),
+					resource.TestCheckResourceAttr(resourceKey, "key_lifetime", "3600"),
+				),
+			},
+			{
+				Config:   testAccCheckIBMISIKEPolicyS2MigratedConfig(name),
+				PlanOnly: true,
+			},
+			{
+				ResourceName:      resourceKey,
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
+func TestAccIBMISIKEPolicy_Scenario3_NewUserFullLifecycle(t *testing.T) {
+	name := fmt.Sprintf("tfike-s3-%d", acctest.RandIntRange(10, 100))
+	resourceKey := "ibm_is_ike_policy.s3_newuser"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: checkIKEPolicyDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMISIKEPolicyS3NewUserConfig(name),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceKey, "name", name),
+					resource.TestCheckResourceAttr(resourceKey, "authentication_algorithms.#", "2"),
+					resource.TestCheckResourceAttr(resourceKey, "authentication_algorithms.0", "sha384"),
+					resource.TestCheckResourceAttr(resourceKey, "authentication_algorithms.1", "sha512"),
+					resource.TestCheckResourceAttr(resourceKey, "encryption_algorithms.#", "2"),
+					resource.TestCheckResourceAttr(resourceKey, "encryption_algorithms.0", "aes256"),
+					resource.TestCheckResourceAttr(resourceKey, "encryption_algorithms.1", "aes128"),
+					resource.TestCheckResourceAttr(resourceKey, "dh_groups.#", "3"),
+					resource.TestCheckResourceAttr(resourceKey, "dh_groups.0", "14"),
+					resource.TestCheckResourceAttr(resourceKey, "dh_groups.1", "15"),
+					resource.TestCheckResourceAttr(resourceKey, "dh_groups.2", "16"),
+					resource.TestCheckResourceAttr(resourceKey, "ike_version", "2"),
+					resource.TestCheckResourceAttr(resourceKey, "key_lifetime", "7200"),
+					resource.TestCheckResourceAttrSet(resourceKey, "negotiation_mode"),
+					resource.TestCheckResourceAttrSet(resourceKey, "href"),
+				),
+			},
+			{
+				Config: testAccCheckIBMISIKEPolicyS3NewUserUpdatedConfig(name),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceKey, "name", name),
+					resource.TestCheckResourceAttr(resourceKey, "authentication_algorithms.#", "3"),
+					resource.TestCheckResourceAttr(resourceKey, "authentication_algorithms.0", "sha256"),
+					resource.TestCheckResourceAttr(resourceKey, "authentication_algorithms.1", "sha384"),
+					resource.TestCheckResourceAttr(resourceKey, "authentication_algorithms.2", "sha512"),
+					resource.TestCheckResourceAttr(resourceKey, "encryption_algorithms.#", "1"),
+					resource.TestCheckResourceAttr(resourceKey, "encryption_algorithms.0", "aes192"),
+					resource.TestCheckResourceAttr(resourceKey, "dh_groups.#", "2"),
+					resource.TestCheckResourceAttr(resourceKey, "dh_groups.0", "19"),
+					resource.TestCheckResourceAttr(resourceKey, "dh_groups.1", "20"),
+					resource.TestCheckResourceAttr(resourceKey, "ike_version", "2"),
+					resource.TestCheckResourceAttr(resourceKey, "key_lifetime", "14400"),
+				),
+			},
+			{
+				Config:   testAccCheckIBMISIKEPolicyS3NewUserUpdatedConfig(name),
+				PlanOnly: true,
+			},
+			{
+				ResourceName:      resourceKey,
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
+func testAccCheckIBMISIKEPolicyS1LegacyConfig(name string) string {
+	return fmt.Sprintf(`
+		resource "ibm_is_ike_policy" "s1_legacy" {
+			name                     = "%s"
+			authentication_algorithm = "sha256"
+			encryption_algorithm     = "aes128"
+			dh_group                 = 14
+			ike_version              = 1
+		}
+	`, name)
+}
+
+func testAccCheckIBMISIKEPolicyS1LegacyUpdateLifetimeConfig(name string, lifetime int) string {
+	return fmt.Sprintf(`
+		resource "ibm_is_ike_policy" "s1_legacy" {
+			name                     = "%s"
+			authentication_algorithm = "sha256"
+			encryption_algorithm     = "aes128"
+			dh_group                 = 14
+			ike_version              = 1
+			key_lifetime             = %d
+		}
+	`, name, lifetime)
+}
+
+func testAccCheckIBMISIKEPolicyS1LegacyUpdateAlgoConfig(name string) string {
+	return fmt.Sprintf(`
+		resource "ibm_is_ike_policy" "s1_legacy" {
+			name                     = "%s"
+			authentication_algorithm = "sha512"
+			encryption_algorithm     = "aes256"
+			dh_group                 = 15
+			ike_version              = 2
+			key_lifetime             = 3600
+		}
+	`, name)
+}
+
+func testAccCheckIBMISIKEPolicyS2SingularConfig(name string) string {
+	return fmt.Sprintf(`
+		resource "ibm_is_ike_policy" "s2_migration" {
+			name                     = "%s"
+			authentication_algorithm = "sha256"
+			encryption_algorithm     = "aes192"
+			dh_group                 = 14
+			ike_version              = 2
+			key_lifetime             = 3600
+		}
+	`, name)
+}
+
+func testAccCheckIBMISIKEPolicyS2MigratedConfig(name string) string {
+	return fmt.Sprintf(`
+		resource "ibm_is_ike_policy" "s2_migration" {
+			name                      = "%s"
+			authentication_algorithms = ["sha256", "sha384"]
+			encryption_algorithms     = ["aes192", "aes256"]
+			dh_groups                 = [14, 15]
+			ike_version               = 2
+			key_lifetime              = 3600
+		}
+	`, name)
+}
+
+func testAccCheckIBMISIKEPolicyS3NewUserConfig(name string) string {
+	return fmt.Sprintf(`
+		resource "ibm_is_ike_policy" "s3_newuser" {
+			name                      = "%s"
+			authentication_algorithms = ["sha384", "sha512"]
+			encryption_algorithms     = ["aes256", "aes128"]
+			dh_groups                 = [14, 15, 16]
+			ike_version               = 2
+			key_lifetime              = 7200
+		}
+	`, name)
+}
+
+func testAccCheckIBMISIKEPolicyS3NewUserUpdatedConfig(name string) string {
+	return fmt.Sprintf(`
+		resource "ibm_is_ike_policy" "s3_newuser" {
+			name                      = "%s"
+			authentication_algorithms = ["sha256", "sha384", "sha512"]
+			encryption_algorithms     = ["aes192"]
+			dh_groups                 = [19, 20]
+			ike_version               = 2
+			key_lifetime              = 14400
+		}
+	`, name)
 }

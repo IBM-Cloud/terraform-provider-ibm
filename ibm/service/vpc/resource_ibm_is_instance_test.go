@@ -4443,6 +4443,61 @@ func testAccCheckIBMISInstanceConfigWithProfileAndBandwidth(vpcname, subnetname,
 	}`, vpcname, subnetname, acc.ISZoneName, acc.ISCIDR, sshname, publicKey, name, acc.IsImage, profile, bandwidth, prefix, acc.ISZoneName)
 }
 
+// Test for downsizing profile with bandwidth adjustment
+func TestAccIBMISInstance_ProfileDownsizeWithBandwidth(t *testing.T) {
+	var instance string
+	vpcname := fmt.Sprintf("tf-vpc-%d", acctest.RandIntRange(10, 100))
+	name := fmt.Sprintf("tf-instance-%d", acctest.RandIntRange(10, 100))
+	subnetname := fmt.Sprintf("tf-subnet-%d", acctest.RandIntRange(10, 100))
+	publicKey := strings.TrimSpace(`
+ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVERRN7/9484SOBJ3HSKxxNG5JN8owAjy5f9yYwcUg+JaUVuytn5Pv3aeYROHGGg+5G346xaq3DAwX6Y5ykr2fvjObgncQBnuU5KHWCECO/4h8uWuwh/kfniXPVjFToc+gnkqA+3RKpAecZhFXwfalQ9mMuYGFxn+fwn8cYEApsJbsEmb0iJwPiZ5hjFC8wREuiTlhPHDgkBLOiycd20op2nXzDbHfCHInquEe/gYxEitALONxm0swBOwJZwlTDOB7C6y2dzlrtxr1L59m7pCkWI4EtTRLvleehBoj3u7jB4usR
+`)
+	sshname := fmt.Sprintf("tf-ssh-%d", acctest.RandIntRange(10, 100))
+	initialProfile := "cx2-48x96" // Larger profile with high bandwidth capacity
+	downsizedProfile := "cx2-4x8" // Smaller profile with lower bandwidth capacity
+	initialBandwidth := 20000     // High bandwidth valid for larger profile
+	downsizedBandwidth := 2000    // Reduced bandwidth to fit smaller profile
+	prefix := fmt.Sprintf("tf-prefix-%d", acctest.RandIntRange(10, 100))
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMISInstanceDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMISInstanceConfigWithProfileAndBandwidth(
+					vpcname, subnetname, sshname, publicKey, name, prefix, initialProfile, initialBandwidth),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISInstanceExists("ibm_is_instance.testacc_instance", instance),
+					resource.TestCheckResourceAttr(
+						"ibm_is_instance.testacc_instance", "name", name),
+					resource.TestCheckResourceAttr(
+						"ibm_is_instance.testacc_instance", "profile", initialProfile),
+					resource.TestCheckResourceAttr(
+						"ibm_is_instance.testacc_instance", "total_volume_bandwidth", fmt.Sprintf("%d", initialBandwidth)),
+					resource.TestCheckResourceAttr(
+						"ibm_is_instance.testacc_instance", "zone", acc.ISZoneName),
+				),
+			},
+			{
+				Config: testAccCheckIBMISInstanceConfigWithProfileAndBandwidth(
+					vpcname, subnetname, sshname, publicKey, name, prefix, downsizedProfile, downsizedBandwidth),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISInstanceExists("ibm_is_instance.testacc_instance", instance),
+					resource.TestCheckResourceAttr(
+						"ibm_is_instance.testacc_instance", "name", name),
+					resource.TestCheckResourceAttr(
+						"ibm_is_instance.testacc_instance", "profile", downsizedProfile),
+					resource.TestCheckResourceAttr(
+						"ibm_is_instance.testacc_instance", "total_volume_bandwidth", fmt.Sprintf("%d", downsizedBandwidth)),
+					resource.TestCheckResourceAttr(
+						"ibm_is_instance.testacc_instance", "zone", acc.ISZoneName),
+				),
+			},
+		},
+	})
+}
+
 // volume tags
 
 func TestAccIBMISInstance_volumeTags(t *testing.T) {

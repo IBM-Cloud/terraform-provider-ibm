@@ -82,13 +82,13 @@ In addition to all argument reference list, you can access the following attribu
       - `id` - (String) The unique identifier for this instance disk.
       - `name` - (String) The user defined name for this disk.
       - `resource_type` - (String) The resource type.
- - `interface_type` - (String) The disk interface used for attaching the disk. The enumerated values for this property are expected to expand in the future. When processing this property, check for and log unknown values. Optionally halt processing and surface the error, or bypass the resource on which the unexpected property value was encountered.
- - `lifecycle_state` - (String) The lifecycle state of this dedicated host disk.
- - `name` - (String) The user defined or system provided name for this disk.
- - `provisionable` - (String) Indicates whether this dedicated host disk is available for instance disk creation.
- - `resource_type` - (String) The type of resource reference.
- - `size` - (String) The size of the disk in GB (gigabytes).
- - `supported_instance_interface_types` - (String) The instance disk interfaces supported for this dedicated host disk.
+  - `interface_type` - (String) The disk interface used for attaching the disk. The enumerated values for this property are expected to expand in the future. When processing this property, check for and log unknown values. Optionally halt processing and surface the error, or bypass the resource on which the unexpected property value was encountered.
+  - `lifecycle_state` - (String) The lifecycle state of this dedicated host disk.
+  - `name` - (String) The user defined or system provided name for this disk.
+  - `provisionable` - (String) Indicates whether this dedicated host disk is available for instance disk creation.
+  - `resource_type` - (String) The type of resource reference.
+  - `size` - (String) The size of the disk in GB (gigabytes).
+  - `supported_instance_interface_types` - (String) The instance disk interfaces supported for this dedicated host disk.
 - `host_group`-  (String) The unique ID of the dedicated host group this dedicated host is in.
 - `href`-  (String) The URL for this dedicated host.
 - `instance_placement_enabled`-  (String) If set to **true**, instances can be placed on this dedicated host.
@@ -111,12 +111,12 @@ In addition to all argument reference list, you can access the following attribu
 - `numa` - The NUMA configuration for this dedicated host.
   
   Nested scheme for `numa`:
-    - `count` - (Integer) The total number of NUMA nodes for this dedicated host.
-    - `nodes` - (List) The NUMA nodes for this dedicated host.
-      
-      Nested scheme for `nodes`:
-        - `available_vcpu` - (Integer) The available VCPU for this NUMA node.
-        - `vcpu` - (Integer) The total VCPU capacity for this NUMA node.
+  - `count` - (Integer) The total number of NUMA nodes for this dedicated host.
+  - `nodes` - (List) The NUMA nodes for this dedicated host.
+
+    Nested scheme for `nodes`:
+    - `available_vcpu` - (Integer) The available VCPU for this NUMA node.
+    - `vcpu` - (Integer) The total VCPU capacity for this NUMA node.
 - `profile`-  (String) The profile this dedicated host uses.
 - `provisionable`-  (String) Indicates whether this dedicated host is available for instance creation.
 - `resource_group`-  (String) The unique identifier of the resource group for this dedicated host.

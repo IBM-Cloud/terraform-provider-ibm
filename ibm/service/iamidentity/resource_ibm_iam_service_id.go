@@ -1,4 +1,4 @@
-// Copyright IBM Corp. 2017, 2021 All Rights Reserved.
+// Copyright IBM Corp. 2026 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 package iamidentity
@@ -9,6 +9,7 @@ import (
 	"log"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM/platform-services-go-sdk/iamidentityv1"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -70,14 +71,18 @@ func ResourceIBMIAMServiceID() *schema.Resource {
 func resourceIBMIAMServiceIDCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	iamIdentityClient, err := meta.(conns.ClientSession).IAMIdentityV1API()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_service_id", "create", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	name := d.Get("name").(string)
 
 	userDetails, err := meta.(conns.ClientSession).BluemixUserDetails()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("resourceIBMIAMServiceIDCreate failed: %s", err.Error()), "ibm_iam_service_id", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	createServiceIDOptions := iamidentityv1.CreateServiceIDOptions{
@@ -92,8 +97,9 @@ func resourceIBMIAMServiceIDCreate(context context.Context, d *schema.ResourceDa
 
 	serviceID, resp, err := iamIdentityClient.CreateServiceID(&createServiceIDOptions)
 	if err != nil || serviceID == nil {
-		log.Printf("Error creating serviceID: %s, %s", err, resp)
-		return diag.FromErr(fmt.Errorf("[ERROR] Error creating serviceID: %s %s", err, resp))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateServiceID failed: %s", err.Error()), "ibm_iam_service_id", "create")
+		log.Printf("[DEBUG]\n%s\n%s", tfErr.GetDebugMessage(), resp)
+		return tfErr.GetDiag()
 	}
 	d.SetId(*serviceID.ID)
 
@@ -103,7 +109,9 @@ func resourceIBMIAMServiceIDCreate(context context.Context, d *schema.ResourceDa
 func resourceIBMIAMServiceIDRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	iamIdentityClient, err := meta.(conns.ClientSession).IAMIdentityV1API()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_service_id", "read", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	serviceIDUUID := d.Id()
 	getServiceIDOptions := iamidentityv1.GetServiceIDOptions{
@@ -115,8 +123,9 @@ func resourceIBMIAMServiceIDRead(context context.Context, d *schema.ResourceData
 			d.SetId("")
 			return nil
 		}
-		log.Printf("Error retrieving serviceID: %s %s", err, resp)
-		return diag.FromErr(fmt.Errorf("[ERROR] Error retrieving serviceID: %s %s", err, resp))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetServiceID failed: %s", err.Error()), "ibm_iam_service_id", "read")
+		log.Printf("[DEBUG]\n%s\n%s", tfErr.GetDebugMessage(), resp)
+		return tfErr.GetDiag()
 	}
 	if serviceID.Name != nil {
 		d.Set("name", *serviceID.Name)
@@ -140,10 +149,11 @@ func resourceIBMIAMServiceIDRead(context context.Context, d *schema.ResourceData
 }
 
 func resourceIBMIAMServiceIDUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-
 	iamIdentityClient, err := meta.(conns.ClientSession).IAMIdentityV1API()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_service_id", "update", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	serviceIDUUID := d.Id()
 
@@ -169,8 +179,9 @@ func resourceIBMIAMServiceIDUpdate(context context.Context, d *schema.ResourceDa
 	if hasChange {
 		_, resp, err := iamIdentityClient.UpdateServiceID(&updateServiceIDOptions)
 		if err != nil {
-			log.Printf("Error updating serviceID: %s, %s", err, resp)
-			return diag.FromErr(fmt.Errorf("[ERROR] Error updating serviceID: %s %s", err, resp))
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("UpdateServiceID failed: %s", err.Error()), "ibm_iam_service_id", "update")
+			log.Printf("[DEBUG]\n%s\n%s", tfErr.GetDebugMessage(), resp)
+			return tfErr.GetDiag()
 		}
 	}
 
@@ -181,7 +192,9 @@ func resourceIBMIAMServiceIDUpdate(context context.Context, d *schema.ResourceDa
 func resourceIBMIAMServiceIDDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	iamIdentityClient, err := meta.(conns.ClientSession).IAMIdentityV1API()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_service_id", "delete", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	serviceIDUUID := d.Id()
@@ -190,8 +203,9 @@ func resourceIBMIAMServiceIDDelete(context context.Context, d *schema.ResourceDa
 	}
 	resp, err := iamIdentityClient.DeleteServiceID(&deleteServiceIDOptions)
 	if err != nil {
-		log.Printf("Error deleting serviceID: %s %s", err, resp)
-		return diag.FromErr(fmt.Errorf("[ERROR] Error deleting serviceID: %s %s", err, resp))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("DeleteServiceID failed: %s", err.Error()), "ibm_iam_service_id", "delete")
+		log.Printf("[DEBUG]\n%s\n%s", tfErr.GetDebugMessage(), resp)
+		return tfErr.GetDiag()
 	}
 
 	d.SetId("")

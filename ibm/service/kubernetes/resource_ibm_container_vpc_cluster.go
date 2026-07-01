@@ -205,6 +205,14 @@ func ResourceIBMContainerVpcCluster() *schema.Resource {
 				Computed:    true,
 			},
 
+			"network_plugin": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				ForceNew:    true,
+				Description: "The Container Network Interface (CNI) plugin for the cluster. Requires OpenShift >= 4.20. Supported values: 'Calico' (default), 'OVNKubernetes'",
+				Computed:    true,
+			},
+
 			"worker_count": {
 				Type:             schema.TypeInt,
 				Optional:         true,
@@ -228,6 +236,14 @@ func ResourceIBMContainerVpcCluster() *schema.Resource {
 				Computed:         true,
 				DiffSuppressFunc: flex.ApplyOnce,
 				Description:      "The operating system of the workers in the default worker pool.",
+			},
+
+			"offering": {
+				Type:         schema.TypeString,
+				Optional:     true,
+				Computed:     true,
+				ValidateFunc: validation.StringInSlice([]string{"kubernetes", "openshift", "openshift-vs"}, false),
+				Description:  "The cluster offering type.",
 			},
 
 			"secondary_storage": {
@@ -640,6 +656,16 @@ func resourceIBMContainerVpcClusterCreate(d *schema.ResourceData, meta interface
 		DisableOutboundTrafficProtection: disableOutboundTrafficProtection,
 	}
 
+	// Update params with CNI plugin option if provided
+	if v, ok := d.GetOk("network_plugin"); ok {
+		params.NetworkPlugin = v.(string)
+	}
+
+	// Update params with Offering option if provided
+	if v, ok := d.GetOk("offering"); ok {
+		params.Offering = v.(string)
+	}
+
 	// Update params with Entitlement option if provided
 	if v, ok := d.GetOk("entitlement"); ok {
 		params.DefaultWorkerPoolEntitlement = v.(string)
@@ -691,6 +717,17 @@ func resourceIBMContainerVpcClusterCreate(d *schema.ResourceData, meta interface
 }
 
 func resourceIBMContainerVpcClusterUpdate(d *schema.ResourceData, meta interface{}) error {
+
+	if d.HasChange("offering") && !d.IsNewResource() {
+		offeringBeforeChange, _ := d.GetChange("offering")
+		configValue := d.GetRawConfig().GetAttr("offering")
+
+		// Only throw an error if the user explicitly modified 'offering'
+		if configValue.AsString() != fmt.Sprintf("%v", offeringBeforeChange) {
+			return fmt.Errorf("[ERROR] Modifying the 'offering' field after cluster creation is currently unsupported.")
+		}
+
+	}
 
 	csClient, err := meta.(conns.ClientSession).VpcContainerAPI()
 	if err != nil {
@@ -986,6 +1023,8 @@ func resourceIBMContainerVpcClusterRead(d *schema.ResourceData, meta interface{}
 		d.Set("disable_public_service_endpoint", true)
 	}
 	d.Set("image_security_enforcement", cls.ImageSecurityEnabled)
+	d.Set("network_plugin", cls.NetworkPlugin)
+	d.Set("offering", cls.Offering)
 
 	tags, err := flex.GetTagsUsingCRN(meta, cls.CRN)
 	if err != nil {

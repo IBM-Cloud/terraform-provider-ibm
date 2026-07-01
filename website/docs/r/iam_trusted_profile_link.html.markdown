@@ -30,7 +30,8 @@ resource "ibm_iam_trusted_profile_link" "iam_trusted_profile_link_instance" {
 
 You can specify the following arguments for this resource.
 
-* `cr_type` - (Required, Forces new resource, String) The compute resource type. Valid values are VSI, BMS, IKS_SA, ROKS_SA, CE.
+* `cr_type` - (Required, Forces new resource, String) The compute resource type. Valid values are VSI, PVS, BMS, IKS_SA, ROKS_SA, CE.
+* `is_cross_account` - (Optional, Forces new resource, Boolean) Flag to indicate that the link provides cross account access. If not provided then the account scope of the CRN must match the Profile's account.
 * `link` - (Required, Forces new resource, List) Link details.
 Nested schema for **link**:
 	* `component_name` - (Optional, String) Component name of the compute resource, only required if cr_type is CE.

@@ -52,3 +52,4 @@ After your data source is created, you can read values from the following attrib
 * `status` - (String) The current state of the primary orchestrator.
 * `primary_error_description` - (String) Capture the error while creating primary orchestrator.
 * `standby_error_description` - (String) Capture the error while creating standby orchestrator.
+* `is_api_key_expired` - (Boolean) Indicates whether the API key used for the deployment is expired.

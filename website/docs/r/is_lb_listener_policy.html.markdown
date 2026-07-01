@@ -223,22 +223,26 @@ Review the argument references that you can specify for your resource.
 ~> **Note:** `target_id`, `target_http_status_code`, `target_url`, `target_https_redirect_listener`, `target_https_redirect_status_code`, `target_https_redirect_uri` are deprecated and will be removed soon. Please use `target` instead.
 
 - `target` - (Optional, List) - If `action` is `forward_to_pool`, the response is a `LoadBalancerPoolReference`-If `action` is `forward_to_listener`, specify a `LoadBalancerListenerIdentity` in this load balancer to forward to.- If `action` is `redirect`, the response is a `LoadBalancerListenerPolicyRedirectURL`- If `action` is `https_redirect`, the response is a `LoadBalancerListenerHTTPSRedirect`.
-    Nested schema for **target**:
-	- `deleted` - (Computed, List) If present, this property indicates the referenced resource has been deleted, and providessome supplementary information.
-	  Nested schema for **deleted**:
-		- `more_info` - (Computed, String) Link to documentation about deleted resources.
-	- `href` - (Optional, String) The pool's canonical URL.
-	- `http_status_code` - (Optional, Integer) The HTTP status code for this redirect. Allowable values are: `301`, `302`, `303`, `307`, `308`.
-	- `id` - (Optional, String) The unique identifier for this load balancer pool.
-	- `listener` - (Optional, List)
-	  Nested schema for **listener**:
-		- `deleted` - (Computed, List) If present, this property indicates the referenced resource has been deleted, and providessome supplementary information.
-		  Nested schema for **deleted**:
-			- `more_info` - (Computed, String) Link to documentation about deleted resources.
-		- `href` - (Optional, String) The listener's canonical URL.
-		- `id` - (Optional, String) The unique identifier for this load balancer listener.
-	- `name` - (Computed, String) The name for this load balancer pool. The name is unique across all pools for the load balancer.
-	- `url` - (Optional, String) The redirect target URL. The URL supports [RFC 6570 level 1 expressions](https://datatracker.ietf.org/doc/html/rfc6570#section-1.2) for the following variables which expand to values from the originally requested URL (or the indicated defaults if the request did not include them):
+
+  Nested schema for **target**:
+  - `deleted` - (Computed, List) If present, this property indicates the referenced resource has been deleted, and providessome supplementary information.
+
+    Nested schema for **deleted**:
+    - `more_info` - (Computed, String) Link to documentation about deleted resources.
+  - `href` - (Optional, String) The pool's canonical URL.
+  - `http_status_code` - (Optional, Integer) The HTTP status code for this redirect. Allowable values are: `301`, `302`, `303`, `307`, `308`.
+  - `id` - (Optional, String) The unique identifier for this load balancer pool.
+  - `listener` - (Optional, List)
+
+    Nested schema for **listener**:
+    - `deleted` - (Computed, List) If present, this property indicates the referenced resource has been deleted, and providessome supplementary information.
+
+      Nested schema for **deleted**:
+      - `more_info` - (Computed, String) Link to documentation about deleted resources.
+    - `href` - (Optional, String) The listener's canonical URL.
+    - `id` - (Optional, String) The unique identifier for this load balancer listener.
+  - `name` - (Computed, String) The name for this load balancer pool. The name is unique across all pools for the load balancer.
+  - `url` - (Optional, String) The redirect target URL. The URL supports [RFC 6570 level 1 expressions](https://datatracker.ietf.org/doc/html/rfc6570#section-1.2) for the following variables which expand to values from the originally requested URL (or the indicated defaults if the request did not include them):
 
       **&#x2022;** protocol </br>
       **&#x2022;** host </br>
@@ -246,7 +250,7 @@ Review the argument references that you can specify for your resource.
       **&#x2022;** path (default: '/') </br>
       **&#x2022;** query (default: '') </br>
 
-	  
+
 ~> **Note:** When `action` is set to **forward_to_pool**, specify the ID of the load balancer pool that the load balancer forwards network traffic to. or When `action` is set to **forward_to_listener**, specify the ID of the load balancer listener that the load balancer forwards network traffic to.
 When action is `redirect`, `target.url` should specify the `url` and `target.http_status_code` to specify the code used in the redirect response.
 When action is `https_redirect`, `target.listener.id` should specify the ID of the listener, `target.http_status_code` to specify the code used in the redirect response and `target.uri` to specify the target URI where traffic will be redirected.
