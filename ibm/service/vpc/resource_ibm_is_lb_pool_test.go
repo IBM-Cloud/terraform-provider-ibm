@@ -1019,6 +1019,67 @@ func TestAccIBMISLBPool_SessionPersistence(t *testing.T) {
 	})
 }
 
+func TestAccIBMISLBPool_mTLS(t *testing.T) {
+	var lbPool string
+	vpcname := fmt.Sprintf("tflbp-vpc-%d", acctest.RandIntRange(10, 100))
+	subnetname := fmt.Sprintf("tflbpc-name-%d", acctest.RandIntRange(10, 100))
+	name := fmt.Sprintf("tfcreate%d", acctest.RandIntRange(10, 100))
+	poolName := fmt.Sprintf("tflbpoolc%d", acctest.RandIntRange(10, 100))
+	alg := "round_robin"
+	protocol := "https"
+	delay := "45"
+	retries := "5"
+	timeout := "15"
+	healthType := "https"
+
+	// Example CRNs - replace with actual values from your test environment
+	clientCertCRN := "crn:v1:staging:public:secrets-manager:eu-gb:a/2d1bace7b46e4815a81e52c6ffeba5cf:2ca77a00-d2c6-41a2-93e4-6bfa23400b17:secret:7b8bea2d-124d-1264-98c9-678404ac947e"
+	serverCACRN := "crn:v1:staging:public:secrets-manager:eu-gb:a/2d1bace7b46e4815a81e52c6ffeba5cf:2ca77a00-d2c6-41a2-93e4-6bfa23400b17:secret:6133d2b7-44b0-f6d1-87ff-67ae4f8f8a05"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMISLBPoolDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMISLBPoolmTLSConfig(vpcname, subnetname, acc.ISZoneName, acc.ISCIDR, name, poolName, alg, protocol, delay, retries, timeout, healthType, clientCertCRN, serverCACRN),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISLBPoolExists("ibm_is_lb_pool.testacc_lb_pool_mtls", lbPool),
+					resource.TestCheckResourceAttr("ibm_is_lb.testacc_LB", "name", name),
+					resource.TestCheckResourceAttr("ibm_is_lb_pool.testacc_lb_pool_mtls", "name", poolName),
+					resource.TestCheckResourceAttr("ibm_is_lb_pool.testacc_lb_pool_mtls", "protocol", protocol),
+					resource.TestCheckResourceAttrSet("ibm_is_lb_pool.testacc_lb_pool_mtls", "client_authentication.#"),
+					resource.TestCheckResourceAttr("ibm_is_lb_pool.testacc_lb_pool_mtls", "client_authentication.0.certificate_instance", clientCertCRN),
+					resource.TestCheckResourceAttrSet("ibm_is_lb_pool.testacc_lb_pool_mtls", "server_authentication.#"),
+					resource.TestCheckResourceAttr("ibm_is_lb_pool.testacc_lb_pool_mtls", "server_authentication.0.verify_certificate", "true"),
+					resource.TestCheckResourceAttr("ibm_is_lb_pool.testacc_lb_pool_mtls", "server_authentication.0.certificate_authority", serverCACRN),
+				),
+			},
+			{
+				Config: testAccCheckIBMISLBPoolmTLSConfigUpdate(vpcname, subnetname, acc.ISZoneName, acc.ISCIDR, name, poolName, alg, protocol, delay, retries, timeout, healthType, clientCertCRN),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISLBPoolExists("ibm_is_lb_pool.testacc_lb_pool_mtls", lbPool),
+					resource.TestCheckResourceAttr("ibm_is_lb_pool.testacc_lb_pool_mtls", "protocol", protocol),
+					resource.TestCheckResourceAttrSet("ibm_is_lb_pool.testacc_lb_pool_mtls", "client_authentication.#"),
+					resource.TestCheckResourceAttr("ibm_is_lb_pool.testacc_lb_pool_mtls", "client_authentication.0.certificate_instance", clientCertCRN),
+					resource.TestCheckResourceAttrSet("ibm_is_lb_pool.testacc_lb_pool_mtls", "server_authentication.#"),
+					resource.TestCheckResourceAttr("ibm_is_lb_pool.testacc_lb_pool_mtls", "server_authentication.0.verify_certificate", "false"),
+				),
+			},
+			{
+				Config: testAccCheckIBMISLBPoolmTLSConfigRemove(vpcname, subnetname, acc.ISZoneName, acc.ISCIDR, name, poolName, alg, protocol, delay, retries, timeout, healthType),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISLBPoolExists("ibm_is_lb_pool.testacc_lb_pool_mtls", lbPool),
+					resource.TestCheckResourceAttr("ibm_is_lb_pool.testacc_lb_pool_mtls", "protocol", protocol),
+					resource.TestCheckNoResourceAttr("ibm_is_lb_pool.testacc_lb_pool_mtls", "client_authentication.#"),
+					resource.TestCheckResourceAttr("ibm_is_lb_pool.testacc_lb_pool_mtls", "server_authentication.#", "1"),
+					resource.TestCheckResourceAttr("ibm_is_lb_pool.testacc_lb_pool_mtls", "server_authentication.0.verify_certificate", "false"),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckIBMISLBPoolDestroy(s *terraform.State) error {
 
 	sess, _ := acc.TestAccProvider.Meta().(conns.ClientSession).VpcV1API()
@@ -1689,4 +1750,110 @@ func testAccCheckIBMISLBPoolConfigWithProxy(vpcname, subnetname, zone, cidr, nam
 		health_type = "%s"
 }`, vpcname, subnetname, zone, cidr, name, poolName, algorithm, protocol, proxyProtocol, delay, retries, timeout, healthType)
 
+}
+
+func testAccCheckIBMISLBPoolmTLSConfig(vpcname, subnetname, zone, cidr, name, poolName, algorithm, protocol, delay, retries, timeout, healthType, clientCertCRN, serverCACRN string) string {
+	return fmt.Sprintf(`
+	resource "ibm_is_vpc" "testacc_vpc" {
+		name = "%s"
+	}
+
+	resource "ibm_is_subnet" "testacc_subnet" {
+		name = "%s"
+		vpc = ibm_is_vpc.testacc_vpc.id
+		zone = "%s"
+		ipv4_cidr_block = "%s"
+	}
+
+	resource "ibm_is_lb" "testacc_LB" {
+		name = "%s"
+		subnets = [ibm_is_subnet.testacc_subnet.id]
+	}
+
+	resource "ibm_is_lb_pool" "testacc_lb_pool_mtls" {
+		name = "%s"
+		lb = ibm_is_lb.testacc_LB.id
+		algorithm = "%s"
+		protocol = "%s"
+		health_delay = %s
+		health_retries = %s
+		health_timeout = %s
+		health_type = "%s"
+		client_authentication {
+			certificate_instance = "%s"
+		}
+		server_authentication {
+			verify_certificate = true
+			certificate_authority = "%s"
+		}
+	}
+	`, vpcname, subnetname, zone, cidr, name, poolName, algorithm, protocol, delay, retries, timeout, healthType, clientCertCRN, serverCACRN)
+}
+
+func testAccCheckIBMISLBPoolmTLSConfigUpdate(vpcname, subnetname, zone, cidr, name, poolName, algorithm, protocol, delay, retries, timeout, healthType, clientCertCRN string) string {
+	return fmt.Sprintf(`
+	resource "ibm_is_vpc" "testacc_vpc" {
+		name = "%s"
+	}
+
+	resource "ibm_is_subnet" "testacc_subnet" {
+		name = "%s"
+		vpc = ibm_is_vpc.testacc_vpc.id
+		zone = "%s"
+		ipv4_cidr_block = "%s"
+	}
+
+	resource "ibm_is_lb" "testacc_LB" {
+		name = "%s"
+		subnets = [ibm_is_subnet.testacc_subnet.id]
+	}
+
+	resource "ibm_is_lb_pool" "testacc_lb_pool_mtls" {
+		name = "%s"
+		lb = ibm_is_lb.testacc_LB.id
+		algorithm = "%s"
+		protocol = "%s"
+		health_delay = %s
+		health_retries = %s
+		health_timeout = %s
+		health_type = "%s"
+		client_authentication {
+			certificate_instance = "%s"
+		}
+		server_authentication {
+			verify_certificate = false
+		}
+	}
+	`, vpcname, subnetname, zone, cidr, name, poolName, algorithm, protocol, delay, retries, timeout, healthType, clientCertCRN)
+}
+
+func testAccCheckIBMISLBPoolmTLSConfigRemove(vpcname, subnetname, zone, cidr, name, poolName, algorithm, protocol, delay, retries, timeout, healthType string) string {
+	return fmt.Sprintf(`
+	resource "ibm_is_vpc" "testacc_vpc" {
+		name = "%s"
+	}
+
+	resource "ibm_is_subnet" "testacc_subnet" {
+		name = "%s"
+		vpc = ibm_is_vpc.testacc_vpc.id
+		zone = "%s"
+		ipv4_cidr_block = "%s"
+	}
+
+	resource "ibm_is_lb" "testacc_LB" {
+		name = "%s"
+		subnets = [ibm_is_subnet.testacc_subnet.id]
+	}
+
+	resource "ibm_is_lb_pool" "testacc_lb_pool_mtls" {
+		name = "%s"
+		lb = ibm_is_lb.testacc_LB.id
+		algorithm = "%s"
+		protocol = "%s"
+		health_delay = %s
+		health_retries = %s
+		health_timeout = %s
+		health_type = "%s"
+	}
+	`, vpcname, subnetname, zone, cidr, name, poolName, algorithm, protocol, delay, retries, timeout, healthType)
 }

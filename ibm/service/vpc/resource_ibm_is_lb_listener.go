@@ -27,6 +27,7 @@ const (
 	isLBListenerPortMax                 = "port_max"
 	isLBListenerProtocol                = "protocol"
 	isLBListenerCertificateInstance     = "certificate_instance"
+	isLBListenerClientAuthentication    = "client_authentication"
 	isLBListenerConnectionLimit         = "connection_limit"
 	isLBListenerDefaultPool             = "default_pool"
 	isLBListenerStatus                  = "status"
@@ -108,6 +109,26 @@ func ResourceIBMISLBListener() *schema.Resource {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Description: "certificate instance for the Loadbalancer",
+			},
+			isLBListenerClientAuthentication: {
+				Type:        schema.TypeList,
+				MaxItems:    1,
+				Optional:    true,
+				Description: "The client authentication to use for this listener. Supported by load balancers with mtls_supported set to true. The listener must have a protocol of https.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"certificate_authority": {
+							Type:        schema.TypeString,
+							Required:    true,
+							Description: "The certificate instance to use for the listener client certificate authority. Required if certificate_revocation_list is specified.",
+						},
+						"certificate_revocation_list": {
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "A PEM-encoded (with the label X509 CRL) certificate revocation list (CRL) to use for the listener. The CRL must be formatted using the X.509 standard as described in RFC 5280. If specified, certificate_authority must also be specified.",
+						},
+					},
+				},
 			},
 
 			isLBListenerAcceptProxyProtocol: {
@@ -293,6 +314,18 @@ func resourceIBMISLBListenerCreate(context context.Context, d *schema.ResourceDa
 		certificateCRN = crn.(string)
 	}
 
+	var clientAuthCA, clientAuthCRL string
+	if clientAuth, ok := d.GetOk(isLBListenerClientAuthentication); ok {
+		clientAuthList := clientAuth.([]interface{})
+		if len(clientAuthList) > 0 {
+			clientAuthMap := clientAuthList[0].(map[string]interface{})
+			clientAuthCA = clientAuthMap["certificate_authority"].(string)
+			if crl, ok := clientAuthMap["certificate_revocation_list"].(string); ok {
+				clientAuthCRL = crl
+			}
+		}
+	}
+
 	var connLimit int64
 
 	if limit, ok := d.GetOk(isLBListenerConnectionLimit); ok {
@@ -321,7 +354,7 @@ func resourceIBMISLBListenerCreate(context context.Context, d *schema.ResourceDa
 	conns.IbmMutexKV.Lock(isLBKey)
 	defer conns.IbmMutexKV.Unlock(isLBKey)
 
-	err := lbListenerCreate(context, d, meta, lbID, protocol, defPool, certificateCRN, listener, uri, port, portMin, portMax, connLimit, httpStatusCode)
+	err := lbListenerCreate(context, d, meta, lbID, protocol, defPool, certificateCRN, clientAuthCA, clientAuthCRL, listener, uri, port, portMin, portMax, connLimit, httpStatusCode)
 	if err != nil {
 		return err
 	}
@@ -329,7 +362,7 @@ func resourceIBMISLBListenerCreate(context context.Context, d *schema.ResourceDa
 	return resourceIBMISLBListenerRead(context, d, meta)
 }
 
-func lbListenerCreate(context context.Context, d *schema.ResourceData, meta interface{}, lbID, protocol, defPool, certificateCRN, listener, uri string, port, portMin, portMax, connLimit, httpStatusCode int64) diag.Diagnostics {
+func lbListenerCreate(context context.Context, d *schema.ResourceData, meta interface{}, lbID, protocol, defPool, certificateCRN, clientAuthCA, clientAuthCRL, listener, uri string, port, portMin, portMax, connLimit, httpStatusCode int64) diag.Diagnostics {
 	sess, err := vpcClient(meta)
 	if err != nil {
 		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_lb_listener", "create", "initialize-client")
@@ -435,6 +468,19 @@ func lbListenerCreate(context context.Context, d *schema.ResourceData, meta inte
 			CRN: &certificateCRN,
 		}
 	}
+
+	if clientAuthCA != "" {
+		clientAuthModel := &vpcv1.LoadBalancerListenerClientAuthenticationPrototype{
+			CertificateAuthority: &vpcv1.CertificateInstanceIdentity{
+				CRN: &clientAuthCA,
+			},
+		}
+		if clientAuthCRL != "" {
+			clientAuthModel.CertificateRevocationList = &clientAuthCRL
+		}
+		options.ClientAuthentication = clientAuthModel
+	}
+
 	if connLimit > int64(0) {
 		options.ConnectionLimit = &connLimit
 	}
@@ -619,6 +665,23 @@ func lbListenerGet(context context.Context, d *schema.ResourceData, meta interfa
 			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_lb_listener", "read", "set-certificate_instance").GetDiag()
 		}
 	}
+	if loadBalancerListener.ClientAuthentication != nil {
+		clientAuthList := make([]map[string]interface{}, 0)
+		clientAuthMap := make(map[string]interface{})
+
+		if loadBalancerListener.ClientAuthentication.CertificateAuthority != nil {
+			clientAuthMap["certificate_authority"] = *loadBalancerListener.ClientAuthentication.CertificateAuthority.CRN
+		}
+		if loadBalancerListener.ClientAuthentication.CertificateRevocationList != nil {
+			clientAuthMap["certificate_revocation_list"] = *loadBalancerListener.ClientAuthentication.CertificateRevocationList
+		}
+
+		clientAuthList = append(clientAuthList, clientAuthMap)
+		if err = d.Set(isLBListenerClientAuthentication, clientAuthList); err != nil {
+			err = fmt.Errorf("Error setting client_authentication: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_lb_listener", "read", "set-client_authentication").GetDiag()
+		}
+	}
 	if loadBalancerListener.ConnectionLimit != nil {
 		if err = d.Set(isLBListenerConnectionLimit, *loadBalancerListener.ConnectionLimit); err != nil {
 			err = fmt.Errorf("Error setting connection_limit: %s", err)
@@ -691,6 +754,45 @@ func lbListenerUpdate(context context.Context, d *schema.ResourceData, meta inte
 		certificateInstance = d.Get(isLBListenerCertificateInstance).(string)
 		loadBalancerListenerPatchModel.CertificateInstance = &vpcv1.CertificateInstanceIdentity{
 			CRN: &certificateInstance,
+		}
+		hasChanged = true
+	}
+
+	clientAuthRemoved := false
+	clientAuthCARemoved := false
+	clientAuthCRLRemoved := false
+	if d.HasChange(isLBListenerClientAuthentication) {
+		if clientAuth, ok := d.GetOk(isLBListenerClientAuthentication); ok {
+			clientAuthList := clientAuth.([]interface{})
+			if len(clientAuthList) > 0 && clientAuthList[0] != nil {
+				clientAuthMap := clientAuthList[0].(map[string]interface{})
+				clientAuthPatch := &vpcv1.LoadBalancerListenerClientAuthenticationPatch{}
+
+				if ca, ok := clientAuthMap["certificate_authority"].(string); ok {
+					if ca == "" {
+						clientAuthCARemoved = true
+					} else {
+						clientAuthPatch.CertificateAuthority = &vpcv1.LoadBalancerListenerClientAuthenticationCertificateAuthorityPatch{
+							CRN: &ca,
+						}
+					}
+				} else {
+					clientAuthCARemoved = true
+				}
+
+				if crl, ok := clientAuthMap["certificate_revocation_list"].(string); ok {
+					if crl == "" {
+						clientAuthCRLRemoved = true
+					} else {
+						clientAuthPatch.CertificateRevocationList = &crl
+					}
+				} else {
+					clientAuthCRLRemoved = true
+				}
+				loadBalancerListenerPatchModel.ClientAuthentication = clientAuthPatch
+			}
+		} else {
+			clientAuthRemoved = true
 		}
 		hasChanged = true
 	}
@@ -808,6 +910,15 @@ func lbListenerUpdate(context context.Context, d *schema.ResourceData, meta inte
 		}
 		if httpsURIRemoved {
 			loadBalancerListenerPatch["https_redirect"].(map[string]interface{})["uri"] = nil
+		}
+		if clientAuthRemoved {
+			loadBalancerListenerPatch["client_authentication"] = nil
+		}
+		if clientAuthCARemoved {
+			loadBalancerListenerPatch["client_authentication"].(map[string]interface{})["certificate_authority"] = nil
+		}
+		if clientAuthCRLRemoved {
+			loadBalancerListenerPatch["client_authentication"].(map[string]interface{})["certificate_revocation_list"] = nil
 		}
 		updateLoadBalancerListenerOptions.LoadBalancerListenerPatch = loadBalancerListenerPatch
 

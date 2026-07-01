@@ -35,11 +35,72 @@ func TestAccIBMIsLbListenersDataSourceBasic(t *testing.T) {
 	})
 }
 
+func TestAccIBMIsLbListenersDataSource_ClientAuth(t *testing.T) {
+	vpcname := fmt.Sprintf("tflblis-vpc-%d", acctest.RandIntRange(10, 100))
+	subnetname := fmt.Sprintf("tflblis-subnet-%d", acctest.RandIntRange(10, 100))
+	lbname := fmt.Sprintf("tflblis%d", acctest.RandIntRange(10, 100))
+	protocol := "https"
+	port := "443"
+
+	// Example CRNs - replace with actual values from your test environment
+	certCRN := "crn:v1:staging:public:secrets-manager:eu-gb:a/2d1bace7b46e4815a81e52c6ffeba5cf:2ca77a00-d2c6-41a2-93e4-6bfa23400b17:secret:3e4c3e45-27e9-ecec-22b2-fb17b92b6c77"
+	caCRN := "crn:v1:staging:public:secrets-manager:eu-gb:a/2d1bace7b46e4815a81e52c6ffeba5cf:2ca77a00-d2c6-41a2-93e4-6bfa23400b17:secret:385baca2-2d9b-6c82-f49b-1907be7feefd"
+
+	// CRL content - must match what's in testAccCheckIBMISLBListenerClientAuthConfigUpdate
+	crlContent := `-----BEGIN X509 CRL-----
+MIICvTCBpgIBATANBgkqhkiG9w0BAQsFADBMMQswCQYDVQQGEwJVUzEOMAwGA1UE
+CAwFZGVsYXMxDDAKBgNVBAoMA0lCTTENMAsGA1UECwwEcm9vdDEQMA4GA1UEAwwH
+cm9vdC1jYRcNMjUwOTA4MDUwMjQwWhcNMjUxMDA4MDUwMjQwWjAVMBMCAhAAFw0y
+NTA5MDgwNTAxNTlaoA8wDTALBgNVHRQEBAICEAAwDQYJKoZIhvcNAQELBQADggIB
+ACeEcj7ompUepc5qTvTrNA5PoK5bN71gNI7Rbhq/Bxf1YPMp2iU3qMSj7YpVP7aw
+GNrxFoIZcQ4X7PYyHMfDk6Z83PSTVMnSOVk09fZW49tyVTWmzBVLz3R1bPasnWTZ
+0hRIv9j9n7Lemin+0ubIR/2zmsfBs1JFAFEbbRcgwg+qotsfZNLkX6bjHDpsRQzE
+mXUEu4/AqAsWPbFzG2uMKZ9pKOK+Nn3bt/NEK+AFlnSmgjEqzQ+0zhsrCExIReJV
+c2oiLBkLG6rBwxlGDog+PqwjP+1wGNIL1J3c2lMW1IGMNcts/aDBO5LtPVIY1LsQ
+FoeaTfm3U3GKC/pTczoDk/pKN756f8O05nTWUHgktcNsPvgqDKnpvEkI3VPf9Y4a
+fMOzKgVTgY1dSgjzHO8+4ZfcVGpBePsjOe0/RCUwkgtgOyGtcmBPTMJa0elJzjaM
+jD9myqIXkB359sqbuEmcrjgo5uUUvubFYpmT/W0YxOi/py/bDK+7uUs38nUElNkZ
++YFRpNWjLF9JtAghX5MhA5BwhTTuATvWYuDdK769ifi9qcYvE4u+VNxYfOpPY6sv
+x4FnkZ9+A7s2hk11d+DEq29Efa0xak8rO1LzT5hCSFT0P3KfZEZMpbuXpzVGiZoM
+g5cWHgYcNnzhUatKodvzZizAOVGRR7UFg42O4ylhxDVe
+-----END X509 CRL-----
+`
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { acc.TestAccPreCheck(t) },
+		Providers: acc.TestAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMIsLbListenersDataSourceConfigClientAuth(vpcname, subnetname, acc.ISZoneName, acc.ISCIDR, lbname, port, protocol, certCRN, caCRN),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet("data.ibm_is_lb_listeners.is_lb_listeners", "id"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_lb_listeners.is_lb_listeners", "lb"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_lb_listeners.is_lb_listeners", "listeners.#"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_lb_listeners.is_lb_listeners", "listeners.0.client_authentication.#"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_lb_listeners.is_lb_listeners", "listeners.0.client_authentication.0.certificate_authority.#"),
+					resource.TestCheckResourceAttr("data.ibm_is_lb_listeners.is_lb_listeners", "listeners.0.client_authentication.0.certificate_authority.0.crn", caCRN),
+					resource.TestCheckResourceAttr("data.ibm_is_lb_listeners.is_lb_listeners", "listeners.0.client_authentication.0.certificate_revocation_list", crlContent),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckIBMIsLbListenersDataSourceConfigBasic(vpcname, subnetname, zone, cidr, lbname, port, protocol string) string {
 	return testAccCheckIBMISLBListenerConfig(vpcname, subnetname, acc.ISZoneName, acc.ISCIDR, lbname, port, protocol) + fmt.Sprintf(`
 
 	data "ibm_is_lb_listeners" "is_lb_listeners" {
 		lb = "${ibm_is_lb.testacc_LB.id}"
+	}
+	`)
+}
+
+func testAccCheckIBMIsLbListenersDataSourceConfigClientAuth(vpcname, subnetname, zone, cidr, lbname, port, protocol, certCRN, caCRN string) string {
+	return testAccCheckIBMISLBListenerClientAuthConfigUpdate(vpcname, subnetname, zone, cidr, lbname, port, protocol, certCRN, caCRN) + fmt.Sprintf(`
+
+	data "ibm_is_lb_listeners" "is_lb_listeners" {
+		lb = ibm_is_lb.testacc_LB.id
+		depends_on = [ibm_is_lb_listener.testacc_lb_listener_mtls]
 	}
 	`)
 }

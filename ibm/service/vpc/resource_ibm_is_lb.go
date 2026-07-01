@@ -52,6 +52,7 @@ const (
 
 	isAttachedLoadBalancerPoolMembers = "attached_load_balancer_pool_members"
 	isLBAccessTags                    = "access_tags"
+	isLBMtlsSupported                 = "mtls_supported"
 )
 
 func ResourceIBMISLB() *schema.Resource {
@@ -315,6 +316,12 @@ func ResourceIBMISLB() *schema.Resource {
 				Type:        schema.TypeBool,
 				Computed:    true,
 				Description: "Indicates whether this load balancer supports UDP.",
+			},
+
+			isLBMtlsSupported: {
+				Type:        schema.TypeBool,
+				Computed:    true,
+				Description: "Indicates whether this load balancer supports mTLS.",
 			},
 
 			isLBHostName: {
@@ -790,6 +797,12 @@ func lbGet(context context.Context, d *schema.ResourceData, meta interface{}, id
 	if err = d.Set(isLBHostName, *loadBalancer.Hostname); err != nil {
 		err = fmt.Errorf("Error setting hostname: %s", err)
 		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_lb", "read", "set-hostname").GetDiag()
+	}
+	if loadBalancer.MtlsSupported != nil {
+		if err = d.Set(isLBMtlsSupported, *loadBalancer.MtlsSupported); err != nil {
+			err = fmt.Errorf("Error setting mtls_supported: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_lb", "read", "set-mtls_supported").GetDiag()
+		}
 	}
 	if loadBalancer.UDPSupported != nil {
 		if err = d.Set(isLBUdpSupported, *loadBalancer.UDPSupported); err != nil {
