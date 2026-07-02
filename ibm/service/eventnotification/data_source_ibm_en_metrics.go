@@ -29,8 +29,13 @@ func DataSourceIBMEnMetrics() *schema.Resource {
 			},
 			"destination_type": &schema.Schema{
 				Type:        schema.TypeString,
-				Required:    true,
+				Optional:    true,
 				Description: "Destination type. Allowed values are [smtp_custom].",
+			},
+			"smtp_config_id": &schema.Schema{
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "SMTP config id. Allowed values are [smtp_config_id].",
 			},
 			"gte": &schema.Schema{
 				Type:        schema.TypeString,
@@ -134,9 +139,16 @@ func dataSourceIBMEnMetricsRead(context context.Context, d *schema.ResourceData,
 	getMetricsOptions := &eventnotificationsv1.GetMetricsOptions{}
 
 	getMetricsOptions.SetInstanceID(d.Get("instance_id").(string))
-	getMetricsOptions.SetDestinationType(d.Get("destination_type").(string))
+	// getMetricsOptions.SetDestinationType(d.Get("destination_type").(string))
+	// getMetricsOptions.SetSMTPConfigID(d.Get("smtp_config_id").(string))
 	getMetricsOptions.SetGte(d.Get("gte").(string))
 	getMetricsOptions.SetLte(d.Get("lte").(string))
+	if _, ok := d.GetOk("destination_type"); ok {
+		getMetricsOptions.SetDestinationType(d.Get("destination_type").(string))
+	}
+	if _, ok := d.GetOk("smtp_config_id"); ok {
+		getMetricsOptions.SetSMTPConfigID(d.Get("smtp_config_id").(string))
+	}
 	if _, ok := d.GetOk("destination_id"); ok {
 		getMetricsOptions.SetDestinationID(d.Get("destination_id").(string))
 	}
