@@ -136,8 +136,6 @@ func dataSourceIBMEnBounceMetricsRead(context context.Context, d *schema.Resourc
 	getBounceMetricsOptions := &eventnotificationsv1.GetBounceMetricsOptions{}
 
 	getBounceMetricsOptions.SetInstanceID(d.Get("instance_id").(string))
-	// getBounceMetricsOptions.SetDestinationType(d.Get("destination_type").(string))
-	// getBounceMetricsOptions.SetSMTPConfigID(d.Get("smtp_config_id").(string))
 	getBounceMetricsOptions.SetGte(d.Get("gte").(string))
 	getBounceMetricsOptions.SetLte(d.Get("lte").(string))
 	if _, ok := d.GetOk("destination_type"); ok {

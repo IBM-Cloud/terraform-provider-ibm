@@ -139,8 +139,6 @@ func dataSourceIBMEnMetricsRead(context context.Context, d *schema.ResourceData,
 	getMetricsOptions := &eventnotificationsv1.GetMetricsOptions{}
 
 	getMetricsOptions.SetInstanceID(d.Get("instance_id").(string))
-	// getMetricsOptions.SetDestinationType(d.Get("destination_type").(string))
-	// getMetricsOptions.SetSMTPConfigID(d.Get("smtp_config_id").(string))
 	getMetricsOptions.SetGte(d.Get("gte").(string))
 	getMetricsOptions.SetLte(d.Get("lte").(string))
 	if _, ok := d.GetOk("destination_type"); ok {
