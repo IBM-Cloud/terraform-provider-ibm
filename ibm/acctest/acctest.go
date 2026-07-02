@@ -12,8 +12,10 @@ import (
 	"sync"
 	"testing"
 
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/provider"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/provider_framework"
+	kpCryptoUnit "github.com/IBM/keyprotect-go-client/dedicated"
 	"github.com/hashicorp/terraform-plugin-framework/providerserver"
 	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
 	"github.com/hashicorp/terraform-plugin-mux/tf5to6server"
@@ -336,14 +338,16 @@ var (
 var Account_to_be_imported string
 
 // Billing Snapshot Configuration
-var Cos_bucket string
-var Cos_location string
-var Cos_bucket_update string
-var Cos_location_update string
-var Cos_reports_folder string
-var Snapshot_date_from string
-var Snapshot_date_to string
-var Snapshot_month string
+var (
+	Cos_bucket          string
+	Cos_location        string
+	Cos_bucket_update   string
+	Cos_location_update string
+	Cos_reports_folder  string
+	Snapshot_date_from  string
+	Snapshot_date_to    string
+	Snapshot_month      string
+)
 
 // Security and Complinace Center
 var (
@@ -409,9 +413,7 @@ var (
 	COSApiKey    string
 )
 
-var (
-	DRApiKey string
-)
+var DRApiKey string
 
 // For Code Engine
 var (
@@ -435,8 +437,10 @@ var (
 )
 
 // for IAM Identity
-var IamIdentityAssignmentTargetAccountId string
-var IamIdentityEnterpriseAccountId string
+var (
+	IamIdentityAssignmentTargetAccountId string
+	IamIdentityEnterpriseAccountId       string
+)
 
 // Projects
 var ProjectsConfigApiKey string
@@ -2150,23 +2154,23 @@ func init() {
 	if MqcloudTSCertFilePath == "" {
 		fmt.Println("[INFO] Set the environment variable IBM_MQCLOUD_TS_CERT_PATH for ibm_mqcloud_truststore_certificate resource or datasource else tests will fail if this is not set correctly")
 	}
-	MqCloudQueueManagerLocation = os.Getenv(("IBM_MQCLOUD_QUEUEMANAGER_LOCATION"))
+	MqCloudQueueManagerLocation = os.Getenv("IBM_MQCLOUD_QUEUEMANAGER_LOCATION")
 	if MqCloudQueueManagerLocation == "" {
 		fmt.Println("[INFO] Set the environment variable IBM_MQCLOUD_QUEUEMANAGER_LOCATION for ibm_mqcloud_queue_manager resource or datasource else tests will fail if this is not set correctly")
 	}
-	MqCloudQueueManagerVersion = os.Getenv(("IBM_MQCLOUD_QUEUEMANAGER_VERSION"))
+	MqCloudQueueManagerVersion = os.Getenv("IBM_MQCLOUD_QUEUEMANAGER_VERSION")
 	if MqCloudQueueManagerVersion == "" {
 		fmt.Println("[INFO] Set the environment variable IBM_MQCLOUD_QUEUEMANAGER_VERSION for ibm_mqcloud_queue_manager resource or datasource else tests will fail if this is not set correctly")
 	}
-	MqCloudQueueManagerVersionUpdate = os.Getenv(("IBM_MQCLOUD_QUEUEMANAGER_VERSIONUPDATE"))
+	MqCloudQueueManagerVersionUpdate = os.Getenv("IBM_MQCLOUD_QUEUEMANAGER_VERSIONUPDATE")
 	if MqCloudQueueManagerVersionUpdate == "" {
 		fmt.Println("[INFO] Set the environment variable IBM_MQCLOUD_QUEUEMANAGER_VERSIONUPDATE for ibm_mqcloud_queue_manager resource or datasource else tests will fail if this is not set correctly")
 	}
-	MqCloudVirtualPrivateEndPointTargetCrn = os.Getenv(("IBM_MQCLOUD_TARGET_CRN"))
+	MqCloudVirtualPrivateEndPointTargetCrn = os.Getenv("IBM_MQCLOUD_TARGET_CRN")
 	if MqCloudVirtualPrivateEndPointTargetCrn == "" {
 		fmt.Println("[INFO] Set the environment variable IBM_MQCLOUD_TARGET_CRN for ibm_mqcloud_virtual_private_endpoint resource or datasource else tests will fail if this is not set correctly")
 	}
-	MqCloudVirtualPrivateEndPointTrustedProfile = os.Getenv(("IBM_MQCLOUD_TRUSTED_PROFILE"))
+	MqCloudVirtualPrivateEndPointTrustedProfile = os.Getenv("IBM_MQCLOUD_TRUSTED_PROFILE")
 	if MqCloudVirtualPrivateEndPointTrustedProfile == "" {
 		fmt.Println("[INFO] Set the environment variable IBM_MQCLOUD_TRUSTED_PROFILE for ibm_mqcloud_virtual_private_endpoint resource or datasource else tests will fail if this is not set correctly")
 	}
@@ -2415,6 +2419,68 @@ func TestAccPreCheckEnterprise(t *testing.T) {
 	}
 }
 
+func TestAccPreCheckKmsCrypto(t *testing.T) {
+	if v := os.Getenv("IBMCLOUD_API_KEY"); v == "" {
+		t.Fatal("IBMCLOUD_API_KEY must be set for acceptance tests")
+	}
+	endpointURL := os.Getenv("KP_URL")
+	if endpointURL == "" {
+		t.Fatal("KP_URL must be set for acceptance tests")
+	}
+	instanceID := os.Getenv("KP_INSTANCE_ID")
+	if instanceID == "" {
+		t.Fatal("KP_INSTANCE_ID must be set for acceptance tests")
+	}
+
+	// Configure the provider once so Meta() is available.
+	testAccProviderConfigure.Do(func() {
+		diags := TestAccProvider.Configure(context.Background(), terraformsdk.NewResourceConfigRaw(nil))
+		if diags.HasError() {
+			t.Fatalf("configuring provider: %s", diags[0].Summary)
+		}
+	})
+
+	// Build KP crypto unit options from the endpoint URL.
+	kpOpts, err := kpCryptoUnit.NewKeyProtectCryptoUnitAPIOptions(endpointURL)
+	if err != nil {
+		t.Fatalf("TestAccPreCheckKmsCrypto: failed to build KP options from %s: %v", endpointURL, err)
+	}
+	if kpOpts.InstanceID == "" {
+		kpOpts.InstanceID = instanceID
+	}
+
+	// Create the crypto unit client via the provider's client session.
+	ctx := context.Background()
+	client, err := TestAccProvider.Meta().(conns.ClientSession).KeyProtectCryptoUnitAPI(ctx, kpOpts)
+	if err != nil {
+		t.Fatalf("TestAccPreCheckKmsCrypto: failed to create KP crypto unit client: %v", err)
+	}
+
+	// List all crypto units and log their current state.
+	resp, _, err := client.ListCryptoUnitsWithContext(ctx)
+	if err != nil {
+		t.Fatalf("TestAccPreCheckKmsCrypto: failed to list crypto units: %v", err)
+	}
+
+	t.Logf("TestAccPreCheckKmsCrypto: found %d crypto unit(s)", len(resp.CryptoUnits))
+	for _, cu := range resp.CryptoUnits {
+		t.Logf("  crypto unit id=%s  state=%s", cu.ID, cu.State)
+	}
+
+	// Zeroize any crypto unit that is already initialized so the test starts
+	// from a clean (zeroized) state.
+	for _, cu := range resp.CryptoUnits {
+		if cu.State == kpCryptoUnit.CryptoUnitStateInitialized ||
+			cu.State == kpCryptoUnit.CryptoUnitStateKMSInitialized {
+			t.Logf("TestAccPreCheckKmsCrypto: zeroizing crypto unit id=%s (state=%s)", cu.ID, cu.State)
+			if zErr := client.ZeroizeCryptoUnitWithContext(ctx, cu.ID); zErr != nil {
+				t.Fatalf("TestAccPreCheckKmsCrypto: failed to zeroize crypto unit %s: %v", cu.ID, zErr)
+			}
+			t.Logf("TestAccPreCheckKmsCrypto: crypto unit %s zeroized successfully", cu.ID)
+		}
+	}
+}
+
 func TestAccPreCheckIamIdentityEnterpriseTemplates(t *testing.T) {
 	TestAccPreCheck(t)
 	if v := os.Getenv("IAM_IDENTITY_ASSIGNMENT_TARGET_ACCOUNT"); v == "" {
@@ -2449,6 +2515,7 @@ func TestAccPreCheckCis(t *testing.T) {
 		t.Fatal("IBM_CIS_DOMAIN_TEST must be set for acceptance tests")
 	}
 }
+
 func TestAccPreCheckCloudLogs(t *testing.T) {
 	if v := os.Getenv("IC_API_KEY"); v == "" {
 		t.Fatal("IC_API_KEY must be set for acceptance tests")
@@ -2704,6 +2771,7 @@ func TestAccPreCheckVMwareService(t *testing.T) {
 		t.Fatal("IBM_VMAAS_DS_PVDC_ID must be set for acceptance tests")
 	}
 }
+
 func TestAccPreCheckVMwareTGWService(t *testing.T) {
 	if v := os.Getenv("IC_API_KEY"); v == "" {
 		t.Fatal("IC_API_KEY must be set for acceptance tests")

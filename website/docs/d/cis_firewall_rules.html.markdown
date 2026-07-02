@@ -7,6 +7,9 @@ description: |-
 ---
 
 # ibm_cis_firewall_rules
+
+!> **Deprecated:** Firewall rules are deprecated. CIS moved existing firewall rules to WAF custom rules. For more information on this change, see [Migrating to custom rules](https://cloud.ibm.com/docs/cis?topic=cis-migrating-to-custom-rules).
+
 Retrieve information about an existing IBM Cloud Internet Services instance. For more information, see [firewall rule actions](https://cloud.ibm.com/docs/cis?topic=cis-actions).
 
 ## Example usage

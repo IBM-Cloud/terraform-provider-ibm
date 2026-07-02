@@ -401,6 +401,8 @@ func Provider() *schema.Provider {
 			"ibm_container_dedicated_host_flavor":           kubernetes.DataSourceIBMContainerDedicatedHostFlavor(),
 			"ibm_container_dedicated_host_flavors":          kubernetes.DataSourceIBMContainerDedicatedHostFlavors(),
 			"ibm_container_dedicated_host":                  kubernetes.DataSourceIBMContainerDedicatedHost(),
+			"ibm_container_vni_attachment":                  kubernetes.DataSourceIBMContainerVNIAttachment(),
+			"ibm_container_vni_attachments":                 kubernetes.DataSourceIBMContainerVNIAttachments(),
 			"ibm_cr_namespaces":                             registry.DataIBMContainerRegistryNamespaces(),
 			"ibm_cloud_shell_account_settings":              cloudshell.DataSourceIBMCloudShellAccountSettings(),
 			"ibm_cos_bucket":                                cos.DataSourceIBMCosBucket(),
@@ -433,7 +435,7 @@ func Provider() *schema.Provider {
 			"ibm_iam_user_policy":                           iampolicy.DataSourceIBMIAMUserPolicy(),
 			"ibm_iam_authorization_policies":                iampolicy.DataSourceIBMIAMAuthorizationPolicies(),
 			"ibm_iam_user_profile":                          iamidentity.DataSourceIBMIAMUserProfile(),
-			"ibm_iam_service_id":                            iamidentity.DataSourceIBMIAMServiceID(),
+			"ibm_iam_service_id":                            iamidentity.DataSourceIBMIamServiceID(),
 			"ibm_iam_serviceid_group":                       iamidentity.DataSourceIBMIamServiceidGroup(),
 			"ibm_iam_service_policy":                        iampolicy.DataSourceIBMIAMServicePolicy(),
 			"ibm_iam_api_key":                               iamidentity.DataSourceIBMIamApiKey(),
@@ -1321,6 +1323,7 @@ func Provider() *schema.Provider {
 			"ibm_container_nlb_dns":                         kubernetes.ResourceIBMContainerNlbDns(),
 			"ibm_container_dedicated_host_pool":             kubernetes.ResourceIBMContainerDedicatedHostPool(),
 			"ibm_container_dedicated_host":                  kubernetes.ResourceIBMContainerDedicatedHost(),
+			"ibm_container_vni_baremetal_attachment":        kubernetes.ResourceIBMContainerVNIBaremetalAttachment(),
 			"ibm_cr_namespace":                              registry.ResourceIBMCrNamespace(),
 			"ibm_cr_retention_policy":                       registry.ResourceIBMCrRetentionPolicy(),
 			"ibm_cos_bucket":                                cos.ResourceIBMCOSBucket(),
@@ -1361,7 +1364,7 @@ func Provider() *schema.Provider {
 			"ibm_iam_authorization_policy_detach":           iampolicy.ResourceIBMIAMAuthorizationPolicyDetach(),
 			"ibm_iam_user_policy":                           iampolicy.ResourceIBMIAMUserPolicy(),
 			"ibm_iam_user_settings":                         iamidentity.ResourceIBMIAMUserSettings(),
-			"ibm_iam_service_id":                            iamidentity.ResourceIBMIAMServiceID(),
+			"ibm_iam_service_id":                            iamidentity.ResourceIBMIamServiceID(),
 			"ibm_iam_serviceid_group":                       iamidentity.ResourceIBMIamServiceidGroup(),
 			"ibm_iam_service_api_key":                       iamidentity.ResourceIBMIAMServiceAPIKey(),
 			"ibm_iam_service_policy":                        iampolicy.ResourceIBMIAMServicePolicy(),
@@ -1525,6 +1528,7 @@ func Provider() *schema.Provider {
 			"ibm_kms_instance_policies":                    kms.ResourceIBMKmsInstancePolicy(),
 			"ibm_kms_kmip_adapter":                         kms.ResourceIBMKmsKMIPAdapter(),
 			"ibm_kms_kmip_client_cert":                     kms.ResourceIBMKmsKMIPClientCertificate(),
+			"ibm_kms_cryptounits":                          kms.ResourceIBMKmsCryptoUnits(),
 			"ibm_resource_group":                           resourcemanager.ResourceIBMResourceGroup(),
 
 			// resource_reclamation
@@ -2504,7 +2508,7 @@ func Validator() validate.ValidatorDict {
 
 				"ibm_iam_access_group": iamaccessgroup.DataSourceIBMIAMAccessGroupValidator(),
 
-				"ibm_iam_service_id":                  iamidentity.DataSourceIBMIAMServiceIDValidator(),
+				"ibm_iam_service_id":                  iamidentity.DataSourceIBMIamServiceIDValidator(),
 				"ibm_iam_trusted_profile_claim_rule":  iamidentity.DataSourceIBMIamTrustedProfileClaimRuleValidator(),
 				"ibm_iam_trusted_profile_link":        iamidentity.DataSourceIBMIamTrustedProfileLinkValidator(),
 				"ibm_iam_trusted_profile_links":       iamidentity.DataSourceIBMIamTrustedProfileLinksValidator(),

@@ -73,27 +73,27 @@ func TestGen2UnsupportedAttrsValidation(t *testing.T) {
 
 	t.Run("unsupported attr present returns error", func(t *testing.T) {
 		d := testGen2DatabaseResourceData(t, map[string]interface{}{
-			"backup_id": "backup-123",
+			"adminpassword": "very-secure-password-123",
 		})
 
 		err := g.ValidateUnsupportedAttrsData(d)
 
-		requireErrContains(t, err, "backup_id")
+		requireErrContains(t, err, "adminpassword")
 		requireErrContains(t, err, "not supported")
 	})
 
 	t.Run("multiple unsupported attrs present are all listed", func(t *testing.T) {
 		d := testGen2DatabaseResourceData(t, map[string]interface{}{
-			"backup_id":                 "backup-123",
 			"adminpassword":             "very-secure-password-123",
 			"backup_encryption_key_crn": "crn:v1:bluemix:public:kms:us-south:a/account-id:instance-id:key:key-id",
+			"remote_leader_id":          "crn:v1:bluemix:public:databases-for-postgresql:us-south:a/account-id:instance-id::",
 		})
 
 		err := g.ValidateUnsupportedAttrsData(d)
 
-		requireErrContains(t, err, "backup_id")
 		requireErrContains(t, err, "adminpassword")
 		requireErrContains(t, err, "backup_encryption_key_crn")
+		requireErrContains(t, err, "remote_leader_id")
 	})
 
 	t.Run("ignored attr only does not return error", func(t *testing.T) {
@@ -110,13 +110,13 @@ func TestGen2UnsupportedAttrsValidation(t *testing.T) {
 
 	t.Run("ignored and unsupported attrs returns error for unsupported attrs only", func(t *testing.T) {
 		d := testGen2DatabaseResourceData(t, map[string]interface{}{
-			"backup_id":     "backup-123",
+			"adminpassword": "very-secure-password-123",
 			"configuration": `{"max_connections": 100}`,
 		})
 
 		err := g.ValidateUnsupportedAttrsData(d)
 
-		requireErrContains(t, err, "backup_id")
+		requireErrContains(t, err, "adminpassword")
 		requireErrNotContains(t, err, "configuration")
 	})
 }
@@ -195,13 +195,13 @@ func TestGen2IgnoredAttrsWarningsAreIndependentFromUnsupportedAttrs(t *testing.T
 	g := &resourceIBMDatabaseGen2Backend{}
 
 	d := testGen2DatabaseResourceData(t, map[string]interface{}{
-		"backup_id":                   "backup-123",
+		"adminpassword":               "very-secure-password-123",
 		"configuration":               `{"max_connections": 100}`,
 		"version_upgrade_skip_backup": true,
 	})
 
 	err := g.ValidateUnsupportedAttrsData(d)
-	requireErrContains(t, err, "backup_id")
+	requireErrContains(t, err, "adminpassword")
 	requireErrNotContains(t, err, "configuration")
 	requireErrNotContains(t, err, "version_upgrade_skip_backup")
 
@@ -224,7 +224,7 @@ func TestGen2DiagnosticsCanContainErrorsAndWarnings(t *testing.T) {
 		{
 			Severity: diag.Error,
 			Summary:  "unsupported attr error",
-			Detail:   "backup_id is not supported",
+			Detail:   "adminpassword is not supported",
 		},
 	}
 
