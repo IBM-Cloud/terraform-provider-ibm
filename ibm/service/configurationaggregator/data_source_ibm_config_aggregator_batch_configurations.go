@@ -20,13 +20,11 @@ import (
 )
 
 func DataSourceIbmConfigAggregatorBatchConfigurations() *schema.Resource {
-	log.Printf("test print")
 	return &schema.Resource{
 		ReadContext: dataSourceIbmConfigAggregatorBatchConfigurationsRead,
 
 		Schema: map[string]*schema.Schema{
 
-			// Path params
 			"instance_id": {
 				Type:     schema.TypeString,
 				Required: true,
@@ -36,8 +34,6 @@ func DataSourceIbmConfigAggregatorBatchConfigurations() *schema.Resource {
 				Required: true,
 			},
 
-			// INPUT
-			// renamed to avoid duplicate key issue
 			"config": {
 				Type:        schema.TypeList,
 				Required:    true,
@@ -65,7 +61,6 @@ func DataSourceIbmConfigAggregatorBatchConfigurations() *schema.Resource {
 				},
 			},
 
-			// OUTPUT
 			"configs": {
 				Type:        schema.TypeList,
 				Computed:    true,
@@ -88,7 +83,6 @@ func DataSourceIbmConfigAggregatorBatchConfigurations() *schema.Resource {
 				},
 			},
 
-			// Errors
 			"errors": {
 				Type:     schema.TypeList,
 				Computed: true,
@@ -97,6 +91,26 @@ func DataSourceIbmConfigAggregatorBatchConfigurations() *schema.Resource {
 						"resource_crn": {Type: schema.TypeString, Computed: true},
 						"message":      {Type: schema.TypeString, Computed: true},
 						"error_code":   {Type: schema.TypeString, Computed: true},
+					},
+				},
+			},
+
+			"prev": {
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "The reference to the previous page of entries.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"href": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The reference to the previous page of entries.",
+						},
+						"start": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "the start string for the query to view the page.",
+						},
 					},
 				},
 			},
@@ -183,6 +197,14 @@ func dataSourceIbmConfigAggregatorBatchConfigurationsRead(context context.Contex
 			configMap["config"] = string(configBytes)
 		} else {
 			configMap["config"] = "{}"
+		}
+
+		//config_v2
+		if item.ConfigV2 != nil {
+			configBytes, _ := json.Marshal(item.ConfigV2)
+			configMap["config_v2"] = string(configBytes)
+		} else {
+			configMap["config_v2"] = "{}"
 		}
 
 		configsList = append(configsList, configMap)
