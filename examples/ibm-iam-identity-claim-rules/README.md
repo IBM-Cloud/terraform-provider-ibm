@@ -78,7 +78,7 @@ data "iam_trusted_profiles_claim_rule" "iam_trusted_profiles_claim_rule_instance
 | context | Context with key properties for problem determination. | `` | false |
 | name | Name of the claim rule to be created or updated. | `string` | false |
 | realm_name | The realm name of the Idp this claim rule applies to. This field is required only if the type is specified as 'Profile-SAML'. | `string` | false |
-| cr_type | The compute resource type the rule applies to, required only if type is specified as 'Profile-CR'. Valid values are VSI, IKS_SA, ROKS_SA. | `string` | false |
+| cr_type | The compute resource type the rule applies to, required only if type is specified as 'Profile-CR'. Valid values are VSI, PVS, BMS, IKS_SA, ROKS_SA, CE. | `string` | false |
 | expiration | Session expiration in seconds, only required if type is 'Profile-SAML'. | `number` | false |
 | profile_id | ID of the trusted profile. | `string` | true |
 | rule_id | ID of the claim rule to get. | `string` | true |

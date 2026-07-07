@@ -67,6 +67,7 @@ After your resource is created, you can read values from the listed arguments an
   * Constraints: The value must match regular expression `/^\\S*$/`.
 * `iam_registration_id` - (String) IAM registration identifier.
   * Constraints: The maximum length is `512` characters. The minimum length is `2` characters. The value must match regular expression `/^\\S*$/`.
+* `oss_id` - (String) The ID of the OSS record connected to the product.
 * `private_catalog_id` - (String) The ID of the private catalog that contains the product. Only applicable for software type products.
   * Constraints: The value must match regular expression `/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/`.
 * `private_catalog_offering_id` - (String) The ID of the linked private catalog product. Only applicable for software type products.

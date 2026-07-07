@@ -5,7 +5,6 @@ package database_test
 
 import (
 	"fmt"
-	"regexp"
 	"testing"
 
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
@@ -67,11 +66,13 @@ func TestAccIBMDatabaseInstancePostgresBasic(t *testing.T) {
 	})
 }
 
-func TestAccIBMDatabaseInstancePostgresGen2(t *testing.T) {
+func TestAccIBMDatabaseInstancePostgresGen2Basic(t *testing.T) {
 	t.Parallel()
 	databaseResourceGroup := "default"
+	var databaseInstanceOne string
 	rnd := fmt.Sprintf("tf-Pgress-%d", acctest.RandIntRange(10, 100))
 	testName := rnd
+	name := "ibm_database." + testName
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
@@ -79,8 +80,17 @@ func TestAccIBMDatabaseInstancePostgresGen2(t *testing.T) {
 		CheckDestroy: testAccCheckIBMDatabaseInstanceDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config:      testAccCheckIBMDatabaseInstancePostgreGen2(databaseResourceGroup, testName),
-				ExpectError: regexp.MustCompile(`The plan "standard-gen2" corresponds to a Gen 2 database\. Gen 2 instances are not supported by the ibm_database resource\.`),
+				Config: testAccCheckIBMDatabaseInstancePostgreGen2Basic(databaseResourceGroup, testName),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMDatabaseInstanceExists(name, &databaseInstanceOne),
+					resource.TestCheckResourceAttr(name, "name", testName),
+					resource.TestCheckResourceAttr(name, "service", "databases-for-postgresql"),
+					resource.TestCheckResourceAttr(name, "plan", "standard-gen2"),
+					resource.TestCheckResourceAttr(name, "location", "ca-mon"),
+					resource.TestCheckResourceAttr(name, "groups.0.disk.0.allocation_mb", "10240"),
+					resource.TestCheckResourceAttr(name, "service_endpoints", "private"),
+					resource.TestCheckResourceAttr(name, "tags.#", "1"),
+				),
 			},
 		},
 	})
@@ -414,7 +424,7 @@ func testAccCheckIBMDatabaseInstancePostgresBasic(databaseResourceGroup string, 
 	`, databaseResourceGroup, name, acc.Region())
 }
 
-func testAccCheckIBMDatabaseInstancePostgreGen2(databaseResourceGroup string, name string) string {
+func testAccCheckIBMDatabaseInstancePostgreGen2Basic(databaseResourceGroup string, name string) string {
 	return fmt.Sprintf(`
 	data "ibm_resource_group" "test_acc" {
 		name = "%[1]s"
@@ -426,30 +436,20 @@ func testAccCheckIBMDatabaseInstancePostgreGen2(databaseResourceGroup string, na
 		service                      = "databases-for-postgresql"
 		plan                         = "standard-gen2"
 		location                     = "%[3]s"
-		adminpassword                = "secure-Password12345"
-		service_endpoints            = "public"
+		service_endpoints            = "private"
 		group {
 			group_id = "member"
-
-			memory {
-			  allocation_mb = 4096
+			members {
+				allocation_count = 2
 			}
 			host_flavor {
-				id = "multitenant"
+				id = "bx3d.4x20"
 			}
 			disk {
 			  allocation_mb = 10240
 			}
 		}
 		tags                         = ["one:two"]
-		users {
-			name     = "user123"
-			password = "secure-Password12345"
-		}
-		allowlist {
-			address     = "172.168.1.2/32"
-			description = "desc1"
-		}
 		configuration                = <<CONFIGURATION
 		{
 		  "wal_level": "logical",
@@ -463,7 +463,7 @@ func testAccCheckIBMDatabaseInstancePostgreGen2(databaseResourceGroup string, na
 			plugin_type = "wal2json"
 		}
 	}
-	`, databaseResourceGroup, name, acc.Region())
+	`, databaseResourceGroup, name, "ca-mon")
 }
 
 func testAccCheckIBMDatabaseInstancePostgresFullyspecified(databaseResourceGroup string, name string) string {

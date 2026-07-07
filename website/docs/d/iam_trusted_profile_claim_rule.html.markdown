@@ -36,7 +36,7 @@ In addition to all argument references listed, you can access the following attr
 	* `operator` - (String) The operation to perform on the claim. Supported values are **EQUALS, NOT_EQUALS, EQUALS_IGNORE_CASE, NOT_EQUALS_IGNORE_CASE, CONTAINS, IN**.
 	* `value` - (String) The stringified JSON value that the claim is compared to using the operator.
 
-* `cr_type` - (String) The compute resource type. The compute resource type not required if type is set as Profile-SAML. Valid values are **VSI, IKS_SA, ROKS_SA**
+* `cr_type` - (String) The compute resource type. The compute resource type not required if type is set as Profile-SAML. Valid values are **VSI, PVS, BMS, IKS_SA, ROKS_SA, CE**
 
 * `created_at` - (String) If set contains a date time string of the creation date in ISO format.
 

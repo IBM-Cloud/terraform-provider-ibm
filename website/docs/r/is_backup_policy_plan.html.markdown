@@ -96,9 +96,9 @@ backup_policy_plan_id
 - `remote_region_policy` - (Optional, List) Backup policy plan cross region rule.
 
   Nested scheme for `remote_region_policy`:
-	- `delete_over_count` - (Optional, Integer) The maximum number of recent remote copies to keep in this region. If no value is passed, then by default `delete_over_count` is 5. Range for `delete_over_count` is [1-100].
-	- `encryption_key` - (Optional, String) The root key to use to rewrap the data encryption key for the snapshot.If unspecified, the source's `encryption_key` will be used.The specified key may be in a different account, subject to IAM policies. The CRN of the [Key Protect Root Key](https://cloud.ibm.com/docs/key-protect?topic=key-protect-getting-started-tutorial) or [Hyper Protect Crypto Services Root Key](https://cloud.ibm.com/docs/hs-crypto?topic=hs-crypto-get-started) for this resource.
-	- `region` - (Required, String) Identifies a region by a unique property. The globally unique name for this region.
+  - `delete_over_count` - (Optional, Integer) The maximum number of recent remote copies to keep in this region. If no value is passed, then by default `delete_over_count` is 5. Range for `delete_over_count` is [1-100].
+  - `encryption_key` - (Optional, String) The root key to use to rewrap the data encryption key for the snapshot.If unspecified, the source's `encryption_key` will be used.The specified key may be in a different account, subject to IAM policies. The CRN of the [Key Protect Root Key](https://cloud.ibm.com/docs/key-protect?topic=key-protect-getting-started-tutorial) or [Hyper Protect Crypto Services Root Key](https://cloud.ibm.com/docs/hs-crypto?topic=hs-crypto-get-started) for this resource.
+  - `region` - (Required, String) Identifies a region by a unique property. The globally unique name for this region.
 
 
 ## Attribute Reference
@@ -120,7 +120,7 @@ The `id` property can be formed from `backup_policy_id`, and `backup_policy_plan
 
 ```terraform
 import {
-  to = ibm_is_backup_policy_plan.is_backup_policy_plan
+  to = ibm_is_backup_policy_plan.example
   id = "<backup_policy_id>/<backup_policy_plan_id>"
 }
 ```
@@ -128,5 +128,5 @@ import {
 Using `terraform import`. For example:
 
 ```console
-% terraform import ibm_is_backup_policy_plan.is_backup_policy_plan <backup_policy_id>/<backup_policy_plan_id>
+% terraform import ibm_is_backup_policy_plan.example <backup_policy_id>/<backup_policy_plan_id>
 ```

@@ -34,8 +34,9 @@ After your resource is created, you can read values from the listed arguments an
 - `crn` - (String) The CRN for this floating IP.
 - `href` - (String) The URL for this floating IP.
 - `deleted` - (List) 	If present, this property indicates the referenced resource has been deleted and provides some supplementary information.
-	Nested scheme for **deleted**:
-	- `more_info` - (String) Link to documentation about deleted resources.
+
+  Nested scheme for **deleted**:
+  - `more_info` - (String) Link to documentation about deleted resources.
 - `name` - (String) The name for this floating IP. The name is unique across all floating IPs in the region.
 
 ## Import
@@ -45,13 +46,13 @@ The `id` property can be formed using the virtual_network_interface and floating
 
 ```terraform
 import {
-  to = ibm_is_virtual_network_interface_floating_ip.vni_fip
-  id = "< vni_id >/< floating_ip_id >"
+  to = ibm_is_virtual_network_interface_floating_ip.example
+  id = "<vni_id>/<floating_ip_id>"
 }
 ```
 
 Using `terraform import`. For example:
 
 ```console
-% terraform import ibm_is_virtual_network_interface_floating_ip.vni_fip < vni_id >/< floating_ip_id >
+% terraform import ibm_is_virtual_network_interface_floating_ip.example <vni_id>/<floating_ip_id>
 ```

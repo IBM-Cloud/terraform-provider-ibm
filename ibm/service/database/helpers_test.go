@@ -11,6 +11,7 @@ import (
 	"github.com/IBM/cloud-databases-go-sdk/clouddatabasesv5"
 	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/go-openapi/strfmt"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/stretchr/testify/require"
 )
 
@@ -285,5 +286,157 @@ func TestIsGen2Plan(t *testing.T) {
 		if got := isGen2Plan(c.plan); got != c.want {
 			t.Errorf("isGen2Plan(%q) = %v, want %v", c.plan, got, c.want)
 		}
+	}
+}
+
+// TestClearGen2UnsupportedAttributes tests the clearGen2UnsupportedAttributes function
+func TestClearGen2UnsupportedAttributes(t *testing.T) {
+	d := schema.TestResourceDataRaw(t, map[string]*schema.Schema{
+		"adminuser": {
+			Type:     schema.TypeString,
+			Optional: true,
+		},
+		"adminpassword": {
+			Type:      schema.TypeString,
+			Optional:  true,
+			Sensitive: true,
+		},
+		"auto_scaling": {
+			Type:     schema.TypeList,
+			Optional: true,
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"enabled": {
+						Type:     schema.TypeBool,
+						Optional: true,
+					},
+				},
+			},
+		},
+		"allowlist": {
+			Type:     schema.TypeList,
+			Optional: true,
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"address": {
+						Type:     schema.TypeString,
+						Optional: true,
+					},
+				},
+			},
+		},
+		"users": {
+			Type:     schema.TypeList,
+			Optional: true,
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"name": {
+						Type:     schema.TypeString,
+						Optional: true,
+					},
+				},
+			},
+		},
+		"configuration_schema": {
+			Type:     schema.TypeString,
+			Optional: true,
+		},
+	}, map[string]interface{}{
+		"adminuser":            "admin",
+		"adminpassword":        "password123",
+		"auto_scaling":         []interface{}{map[string]interface{}{"enabled": true}},
+		"allowlist":            []interface{}{map[string]interface{}{"address": "1.2.3.4"}},
+		"users":                []interface{}{map[string]interface{}{"name": "user1"}},
+		"configuration_schema": "some_schema",
+	})
+
+	clearGen2UnsupportedAttributes(d)
+
+	// Verify all Gen2 unsupported attributes are cleared (d.Set(key, nil) results in empty values, not nil)
+
+	adminuser := d.Get("adminuser")
+	require.Equal(t, "", adminuser, "adminuser should be empty string after clearing")
+
+	adminpassword := d.Get("adminpassword")
+	require.Equal(t, "", adminpassword, "adminpassword should be empty string after clearing")
+
+	autoScaling := d.Get("auto_scaling")
+	require.NotNil(t, autoScaling, "auto_scaling should be set to empty value")
+	require.Empty(t, autoScaling, "auto_scaling should be empty after clearing")
+
+	allowlist := d.Get("allowlist")
+	require.NotNil(t, allowlist, "allowlist should be set to empty value")
+	require.Empty(t, allowlist, "allowlist should be empty after clearing")
+
+	users := d.Get("users")
+	require.NotNil(t, users, "users should be set to empty value")
+	require.Empty(t, users, "users should be empty after clearing")
+
+	configSchema := d.Get("configuration_schema")
+	require.Equal(t, "", configSchema, "configuration_schema should be empty string after clearing")
+
+	// Note: platform_options.backup_encryption_key_crn is also not supported in Gen2,
+	// but it's handled by the data source implementation which only sets disk_encryption_key_crn
+}
+
+func TestExtractDeploymentIDFromCRN(t *testing.T) {
+	testcases := []struct {
+		description   string
+		catalogCRN    string
+		expectedID    string
+		expectError   bool
+		errorContains string
+	}{
+		{
+			description: "Valid CRN with deployment ID",
+			catalogCRN:  "crn:v1:bluemix:public:globalcatalog::::deployment:standard-gen2-deployment-ca-mon-11b01c58",
+			expectedID:  "standard-gen2-deployment-ca-mon-11b01c58",
+			expectError: false,
+		},
+		{
+			description: "Valid CRN with different deployment ID",
+			catalogCRN:  "crn:v1:bluemix:public:globalcatalog::::deployment:databases-for-postgresql-standard-us-south",
+			expectedID:  "databases-for-postgresql-standard-us-south",
+			expectError: false,
+		},
+		{
+			description:   "Invalid CRN - missing deployment prefix",
+			catalogCRN:    "crn:v1:bluemix:public:globalcatalog::::standard-gen2-deployment-ca-mon-11b01c58",
+			expectError:   true,
+			errorContains: "invalid catalog CRN format",
+		},
+		{
+			description:   "Invalid CRN - empty deployment ID",
+			catalogCRN:    "crn:v1:bluemix:public:globalcatalog::::deployment:",
+			expectError:   true,
+			errorContains: "empty deployment ID",
+		},
+		{
+			description:   "Invalid CRN - multiple deployment prefixes",
+			catalogCRN:    "crn:v1:bluemix:public:globalcatalog::::deployment:test:deployment:another",
+			expectError:   true,
+			errorContains: "invalid catalog CRN format",
+		},
+		{
+			description:   "Empty CRN",
+			catalogCRN:    "",
+			expectError:   true,
+			errorContains: "invalid catalog CRN format",
+		},
+	}
+
+	for _, tc := range testcases {
+		t.Run(tc.description, func(t *testing.T) {
+			deploymentID, err := extractDeploymentIDFromCRN(tc.catalogCRN)
+
+			if tc.expectError {
+				require.Error(t, err)
+				require.Contains(t, err.Error(), tc.errorContains)
+				require.Empty(t, deploymentID)
+			} else {
+				require.NoError(t, err)
+				require.Equal(t, tc.expectedID, deploymentID)
+			}
+		})
 	}
 }

@@ -99,7 +99,7 @@ The `id` property can be formed from `instance ID`. For example:
 
 ```terraform
 import {
-  to = ibm_is_instance_action.example
+  to = ibm_is_instance_disk_management.example
   id = "<instance_id>"
 }
 ```

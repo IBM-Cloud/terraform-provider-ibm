@@ -31,10 +31,11 @@ You can specify the following arguments for this data source.
 After your data source is created, you can read values from the following attributes.
 
 * `id` - The unique identifier of the iam_trusted_profile_link.
-* `cr_type` - (String) The compute resource type. Valid values are VSI, BMS, IKS_SA, ROKS_SA, CE.
+* `cr_type` - (String) The compute resource type. Valid values are VSI, PVS, BMS, IKS_SA, ROKS_SA, CE.
 * `created_at` - (String) If set contains a date time string of the creation date in ISO format.
 * `entity_tag` - (String) version of the link.
-* `link` - (List) 
+* `is_cross_account` - (Boolean) Flag to indicate that the link provides cross account access. If not provided then the account scope of the CRN must match the Profile's account.
+* `link` - (List)
 Nested schema for **link**:
 	* `component_name` - (String) Component name of the compute resource, only required if cr_type is CE.
 	* `component_type` - (String) Component type of the compute resource, only required if cr_type is CE.

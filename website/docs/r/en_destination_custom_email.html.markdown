@@ -12,39 +12,137 @@ Create, update, or delete a Custom Email destination by using IBM Cloud™ Event
 
 ## Example usage
 
+### Production Custom Email Destination
+
 ```terraform
 resource "ibm_en_destination_custom_email" "custom_domain_en_destination" {
   instance_guid         = ibm_resource_instance.en_terraform_test_resource.guid
   name                  = "Custom Email EN Destination"
   type                  = "smtp_custom"
   collect_failed_events = true
-  description           = "Destination Custom Email for event notification"
-    config {
-      params {
-        domain  = "mailx.com"
+  is_sandbox            = false
+  description           = "Production custom email destination for event notification"
+  config {
+    params {
+      domain = "mailx.com"
+    }
+  }
+}
+```
+
+### Sandbox Custom Email Destination
+
+```terraform
+resource "ibm_en_destination_custom_email" "sandbox_custom_domain_en_destination" {
+  instance_guid         = ibm_resource_instance.en_terraform_test_resource.guid
+  name                  = "Sandbox Custom Email EN Destination"
+  type                  = "smtp_custom"
+  collect_failed_events = false
+  is_sandbox            = true
+  description           = "Sandbox custom email destination for testing"
+  config {
+    params {
+      domain = "sandbox.example.com"
+    }
+  }
+}
+```
+
+### Upgrading Sandbox to Production
+
+```terraform
+# Step 1: Create as sandbox
+resource "ibm_en_destination_custom_email" "upgradeable_destination" {
+  instance_guid = ibm_resource_instance.en_terraform_test_resource.guid
+  name          = "Upgradeable Custom Email Destination"
+  type          = "smtp_custom"
+  is_sandbox    = true
+  description   = "Initially created as sandbox"
+  config {
+    params {
+      domain = "upgrade.example.com"
     }
   }
 }
 
+# Step 2: Upgrade to production by changing is_sandbox to false
+# After applying this change, the destination will be upgraded to production
+# and DKIM/SPF records will be generated for domain verification
+resource "ibm_en_destination_custom_email" "upgradeable_destination" {
+  instance_guid = ibm_resource_instance.en_terraform_test_resource.guid
+  name          = "Upgradeable Custom Email Destination"
+  type          = "smtp_custom"
+  is_sandbox    = false  # Changed from true to false
+  description   = "Upgraded to production"
+  config {
+    params {
+      domain = "upgrade.example.com"
+    }
+  }
+}
+```
+
+## Sandbox vs Production Destinations
+
+### Sandbox Mode (`is_sandbox = true`)
+- **Purpose**: Testing and development without domain verification
+- **Type**: `smtp_custom_sandbox`
+- **Domain Verification**: Not required
+- **DKIM/SPF**: Not generated
+- **Subscriptions**: Do not require `from_name` and `from_email` attributes
+- **Use Case**: Quick testing, development, proof of concept
+- **Limitations**: May have sending limits, not suitable for production use
+
+### Production Mode (`is_sandbox = false`, default)
+- **Purpose**: Production email sending with verified domain
+- **Type**: `smtp_custom`
+- **Domain Verification**: Required (SPF and DKIM)
+- **DKIM/SPF**: Automatically generated upon creation
+- **Subscriptions**: Require `from_name` and `from_email` attributes
+- **Use Case**: Production workloads, verified email sending
+- **Upgrade Path**: Can be upgraded from sandbox mode
+
+### Important Notes
+
+**Sandbox Destinations:**
+- Domain can be updated/changed at any time
+- No DNS verification required
+- Ideal for testing before production deployment
+- Can be upgraded to production (one-way operation)
+
+**Production Destinations:**
+- Domain is **immutable** after creation (cannot be changed)
+- Requires DNS verification (SPF and DKIM records)
+- Cannot be downgraded to sandbox mode
+- Must complete domain verification before sending emails
+
+**Upgrade Process:**
+- Change `is_sandbox` from `true` to `false`
+- Domain verification records (DKIM/SPF) will be automatically generated
+- Complete DNS verification process (see below)
+- Downgrade from production to sandbox is **not supported**
+
 **NOTE:**
-- To perform the verification for spf and dkim please follow the instructions here: https://cloud.ibm.com/docs/event-notifications?topic=event-notifications-en-destinations-custom-email
-- `verification_type` is Custom Email Destination update parameter which can be used to verify the status of verfication depending on the type of verification.
+- To perform the verification for SPF and DKIM please follow the instructions here: https://cloud.ibm.com/docs/event-notifications?topic=event-notifications-en-destinations-custom-email
+- `verification_type` is Custom Email Destination update parameter which can be used to verify the status of verification depending on the type of verification.
 
-Process To do the Custom Domain Configuration and Verification.
+## Domain Configuration and Verification Process (Production Only)
 
-- Select the configure overflow menu for the destination you want to verify.
+This process is only required for production destinations (`is_sandbox = false`).
 
-- Create Sender Policy Framework (SPF), which is used to authenticate the sender of an email. SPF specifies the mail servers that are allowed to send email for your domain.
+1. Select the configure overflow menu for the destination you want to verify.
+
+2. Create Sender Policy Framework (SPF), which is used to authenticate the sender of an email. SPF specifies the mail servers that are allowed to send email for your domain.
     - Open your DNS hosting provider for the domain name configured
-    - Create a new TXT record with your domain name registerer with the name and value provided in the configure screen for SPF
+    - Create a new TXT record with your domain name registrar with the name and value provided in the configure screen for SPF
 
-- Create DomainKeys Identified Mail (DKIM), which allows an organization to take responsibility for transmitting a message by signing it. DKIM allows the receiver to check the email that claimed to have come from a specific domain, is authorized by the owner of that domain.
+3. Create DomainKeys Identified Mail (DKIM), which allows an organization to take responsibility for transmitting a message by signing it. DKIM allows the receiver to check the email that claimed to have come from a specific domain, is authorized by the owner of that domain.
     - Open your DNS hosting provider for the domain name configured
-    - Create a new TXT record with your domain name registerer with the name and value provided in the configure screen for DKIM
+    - Create a new TXT record with your domain name registrar with the name and value provided in the configure screen for DKIM
 
-- Save the TXT records
+4. Save the TXT records
 
-- In the destination verify screen, click on Verify buttons for both SPF and DKIM.         
+5. In the destination verify screen, click on Verify buttons for both SPF and DKIM.
 
 ## Argument reference
 
@@ -58,7 +156,16 @@ Review the argument reference that you can specify for your resource.
 
 - `type` - (Required, String) smtp_custom.
 
-- `collect_failed_events` - (boolean) Toggle switch to enable collect failed event in Cloud Object Storage bucket.
+- `collect_failed_events` - (Boolean) Toggle switch to enable collect failed event in Cloud Object Storage bucket.
+
+- `is_sandbox` - (Optional, Boolean) Toggle switch to enable sandbox mode. Default value is `false`.
+  - When `true`: Creates a sandbox destination (`smtp_custom_sandbox` type) for testing without domain verification
+  - When `false`: Creates a production destination (`smtp_custom` type) requiring domain verification
+  - **Upgrade**: Can be changed from `true` to `false` to upgrade sandbox to production
+  - **Downgrade**: Cannot be changed from `false` to `true` (production to sandbox downgrade is not supported)
+  - **Domain Updates**:
+    - Sandbox destinations: Domain can be updated at any time
+    - Production destinations: Domain is immutable after creation
 
 - `config` - (Optional, List) Payload describing a destination configuration.
 

@@ -7,8 +7,13 @@ output "ibm_iam_trusted_profile_link" {
   description = "iam_trusted_profile_link resource instance"
 }
 
+output "ibm_iam_trusted_profile_link_data" {
+  value       = data.ibm_iam_trusted_profile_link.iam_trusted_profile_link_instance_data
+  description = "iam_trusted_profile_link data"
+}
+
 // for link list operation
-output "ibm_iam_trusted_profile_links" {
-  value       = data.ibm_iam_trusted_profile_links.iam_trusted_profile_links_instance
-  description = "iam_trusted_profile_links resource instance"
+output "ibm_iam_trusted_profile_links_data" {
+  value       = data.ibm_iam_trusted_profile_links.iam_trusted_profile_links_data
+  description = "iam_trusted_profile_links data"
 }

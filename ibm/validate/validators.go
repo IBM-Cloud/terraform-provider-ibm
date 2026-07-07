@@ -51,16 +51,16 @@ func validateServiceTags(v interface{}, k string) (ws []string, errors []error) 
 func validateAllowedICDPlanValues(validValues []string) schema.SchemaValidateFunc {
 	return func(v interface{}, k string) (ws []string, errors []error) {
 		input := v.(string)
-		gen2Pattern := regexp.MustCompile(`-gen2($|-.+)`)
-		if gen2Pattern.MatchString(input) {
-			errors = append(errors, fmt.Errorf(
-				"The plan %q corresponds to a Gen 2 database. Gen 2 instances are not supported by the ibm_database resource. "+
-					"Use the ibm_resource_instance resource instead for provisioning and management. "+
-					"More info: ibm.biz/Gen2-overview",
-				input,
-			))
-			return
-		}
+		// gen2Pattern := regexp.MustCompile(`-gen2($|-.+)`)
+		// if gen2Pattern.MatchString(input) {
+		// 	errors = append(errors, fmt.Errorf(
+		// 		"The plan %q corresponds to a Gen 2 database. Gen 2 instances are not supported by the ibm_database resource. "+
+		// 			"Use the ibm_resource_instance resource instead for provisioning and management. "+
+		// 			"More info: ibm.biz/Gen2-overview",
+		// 		input,
+		// 	))
+		// 	return
+		// }
 
 		existed := false
 		for _, s := range validValues {
@@ -160,7 +160,7 @@ func ValidateAllowedIntValues(is []int) schema.SchemaValidateFunc {
 		}
 		if !existed {
 			errors = append(errors, fmt.Errorf(
-				"%q must contain a valid int value should in array %#v, got %q",
+				"%q must contain a valid int value should in array %#v, got %d",
 				k, is, value))
 		}
 		return
@@ -258,7 +258,7 @@ func validateAppInstance(v interface{}, k string) (ws []string, errors []error) 
 	instances := v.(int)
 	if instances < 0 {
 		errors = append(errors, fmt.Errorf(
-			"%q (%q) must be greater than 0", k, instances))
+			"%q (%d) must be greater than 0", k, instances))
 	}
 	return
 
@@ -303,7 +303,7 @@ func ValidatePublicBandwidth(v interface{}, k string) (ws []string, errors []err
 	bandwidth := v.(int)
 	if bandwidth < 0 {
 		errors = append(errors, fmt.Errorf(
-			"%q (%q) must be greater than 0", k, bandwidth))
+			"%q (%d) must be greater than 0", k, bandwidth))
 		return
 	}
 	validBandwidths := []int{250, 1000, 5000, 10000, 20000}
