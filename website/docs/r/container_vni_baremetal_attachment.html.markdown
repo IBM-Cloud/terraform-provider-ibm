@@ -46,7 +46,7 @@ Review the argument references that you can specify for your resource.
 
 - `vni_id` - (Required, Forces new resource, String) The ID of the VNI to attach to the bare metal worker.
 - `vlan_id` - (Required, Forces new resource, Integer) The VLAN ID for the bare metal worker. Valid range is 1-500.
-- `cluster` - (Optional, Forces new resource, String) The cluster ID or name to attach the VNI to any available worker. Exactly one of `cluster` or `worker` must be specified.
+- `cluster` - (Optional, Forces new resource, String) The cluster ID to attach the VNI to any available worker. Exactly one of `cluster` or `worker` must be specified.
 - `worker` - (Optional, Forces new resource, String) The worker ID to attach the VNI to a specific worker. Exactly one of `cluster` or `worker` must be specified.
 - `auto_delete` - (Optional, Forces new resource, Bool) Whether to delete the VNI when the attachment is destroyed. Default is `false`.
 - `resource_group_id` - (Optional, Forces new resource, String) The ID of the resource group where the cluster is provisioned. To find the resource group, run `ibmcloud resource groups` or use the `ibm_resource_group` data source.
