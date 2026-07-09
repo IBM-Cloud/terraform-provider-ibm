@@ -38,7 +38,8 @@ func ResourceIBMIamIdentityPreference() *schema.Resource {
 			},
 			"iam_id": &schema.Schema{
 				Type:        schema.TypeString,
-				Computed:    true,
+				Required:    true,
+				ForceNew:    true,
 				Description: "IAM id to update the preference for.",
 			},
 			"service": &schema.Schema{
@@ -74,9 +75,16 @@ func ResourceIBMIamIdentityPreference() *schema.Resource {
 }
 
 func resourceIBMIamIdentityPreferenceCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	return diag.Errorf(
-		"creation is not supported for ibm_iam_identity_preference; import an existing resource with an ID in the format <account_id>/<iam_id>/<service>/<preference_id>",
-	)
+	// Identity preferences always exist with a default state and cannot be created.
+	// We mask this from Terraform users by constructing the ID and calling the update function.
+	d.SetId(fmt.Sprintf("%s/%s/%s/%s",
+		d.Get("account_id").(string),
+		d.Get("iam_id").(string),
+		d.Get("service").(string),
+		d.Get("preference_id").(string),
+	))
+
+	return resourceIBMIamIdentityPreferenceUpdate(context, d, meta)
 }
 
 func resourceIBMIamIdentityPreferenceRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {

@@ -39,7 +39,6 @@ resource "ibm_iam_account_settings" "iam_account_settings_additional" {
 
 // Create iam_account_settings data source
 data "ibm_iam_account_settings" "iam_account_settings_data" {
-  account_id = ibm_iam_account_settings.iam_account_settings_additional.id
   include_history = false
   resolve_user_mfa = false
 }

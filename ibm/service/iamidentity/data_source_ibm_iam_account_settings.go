@@ -34,7 +34,7 @@ func DataSourceIBMIamAccountSettings() *schema.Resource {
 			},
 			"account_id": &schema.Schema{
 				Type:        schema.TypeString,
-				Required:    true,
+				Computed:    true,
 				Description: "Unique ID of the account.",
 			},
 			"restrict_create_service_id": &schema.Schema{
@@ -220,7 +220,13 @@ func dataSourceIBMIamAccountSettingsRead(context context.Context, d *schema.Reso
 
 	getAccountSettingsOptions := &iamidentityv1.GetAccountSettingsOptions{}
 
-	getAccountSettingsOptions.SetAccountID(d.Get("account_id").(string))
+	userDetails, err := meta.(conns.ClientSession).BluemixUserDetails()
+	if err != nil {
+		tfErr := flex.TerraformErrorf(err, err.Error(), "ibm_iam_account_settings", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
+	}
+	getAccountSettingsOptions.SetAccountID(userDetails.UserAccount)
 
 	if _, ok := d.GetOk("include_history"); ok {
 		getAccountSettingsOptions.SetIncludeHistory(d.Get("include_history").(bool))

@@ -2,24 +2,17 @@ provider "ibm" {
   ibmcloud_api_key = var.ibmcloud_api_key
 }
 
-// Import an existing Identity preference, creation is not supported
-import {
-  to = ibm_iam_identity_preference.iam_identity_preference_instance_left_nav
-  id = "${var.iam_identity_preference_account_id}/${var.iam_identity_preference_iam_id}/${var.iam_identity_preference_service}/global_left_navigation"
-}
 resource "ibm_iam_identity_preference" "iam_identity_preference_instance_left_nav" {
   account_id = var.iam_identity_preference_account_id
+  iam_id = var.iam_identity_preference_iam_id
   service = var.iam_identity_preference_service
   preference_id = "global_left_navigation"
   value_list_of_strings = var.iam_identity_preference_value_list_of_strings
 }
 
-import {
-  to = ibm_iam_identity_preference.iam_identity_preference_instance_landing
-  id = "${var.iam_identity_preference_account_id}/${var.iam_identity_preference_iam_id}/${var.iam_identity_preference_service}/landing_page"
-}
 resource "ibm_iam_identity_preference" "iam_identity_preference_instance_landing" {
   account_id = var.iam_identity_preference_account_id
+  iam_id = var.iam_identity_preference_iam_id
   service = var.iam_identity_preference_service
   preference_id = "landing_page"
   value_string = var.iam_identity_preference_value_string
