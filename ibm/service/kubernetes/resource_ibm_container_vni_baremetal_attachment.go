@@ -354,11 +354,6 @@ func getVNIClient(meta interface{}) (graphql.VNIs, error) {
 
 // getVNITargetHeader creates a target header for VNI operations
 func getVNITargetHeader(d *schema.ResourceData, meta interface{}) (containerv1.ClusterTargetHeader, error) {
-	_, err := meta.(conns.ClientSession).BluemixSession()
-	if err != nil {
-		return containerv1.ClusterTargetHeader{}, err
-	}
-
 	userDetails, err := meta.(conns.ClientSession).BluemixUserDetails()
 	if err != nil {
 		return containerv1.ClusterTargetHeader{}, err
