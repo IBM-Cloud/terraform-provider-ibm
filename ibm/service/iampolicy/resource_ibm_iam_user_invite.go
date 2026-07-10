@@ -546,23 +546,28 @@ func resourceIBMIAMInviteUsers(d *schema.ResourceData, meta interface{}) error {
 		return InviteUserError
 	}
 
-	// poll until all invited users
-	// transitions through states: (not visible) -> PROCESSING -> PENDING or
-	// ACTIVE. ERROR_WHILE_PROCESSING means the invite workflow failed for that
-	// user; we retry in case it is transient, but fail if it persists.
-	// Valid accepted states: ACTIVE, PENDING, PROCESSING.
+	// IAM invites are async and eventually consistent. PROCESSING is transient
+	// and re-polled; PENDING means the invite was sent (success); ACTIVE means
+	// the user was already onboarded before this invite (redundant, error);
+	// ERROR_WHILE_PROCESSING means the invite failed.
 	targetEmails := make(map[string]bool, len(users))
 	for _, u := range users {
 		targetEmails[strings.ToLower(u.Email)] = true
 	}
-	var missing []string // not yet visible in account
-	var errored []string // currently in ERROR_WHILE_PROCESSING
+	var missing []string    // not yet visible in account
+	var processing []string // still PROCESSING (transient)
+	var pending []string    // PENDING — invite sent
+	var active []string     // ACTIVE — already onboarded
+	var errored []string    // ERROR_WHILE_PROCESSING — invite failed
 	scanUsers := func(allUsers []v2.UserInfo) {
 		stateByEmail := make(map[string]string, len(allUsers))
 		for _, u := range allUsers {
 			stateByEmail[strings.ToLower(u.Email)] = u.State
 		}
 		missing = missing[:0]
+		processing = processing[:0]
+		pending = pending[:0]
+		active = active[:0]
 		errored = errored[:0]
 		for email := range targetEmails {
 			state, found := stateByEmail[email]
@@ -571,13 +576,17 @@ func resourceIBMIAMInviteUsers(d *schema.ResourceData, meta interface{}) error {
 				continue
 			}
 			switch state {
-			case "ACTIVE", "PENDING", "PROCESSING":
-				// Accepted terminal (or in-progress) states — no action needed.
+			case "PENDING":
+				pending = append(pending, email)
+			case "ACTIVE":
+				active = append(active, email)
 			case "ERROR_WHILE_PROCESSING":
 				errored = append(errored, email)
+			case "PROCESSING":
+				processing = append(processing, email)
 			default:
-				// Unknown state; treat as not-yet-ready and keep retrying.
-				missing = append(missing, email)
+				// Unknown/intermediate state; treat as transient.
+				processing = append(processing, email)
 			}
 		}
 	}
@@ -591,29 +600,43 @@ func resourceIBMIAMInviteUsers(d *schema.ResourceData, meta interface{}) error {
 			// ERROR_WHILE_PROCESSING may be transient — keep retrying.
 			return resource.RetryableError(fmt.Errorf("user(s) %v are in ERROR_WHILE_PROCESSING state", errored))
 		}
-		if len(missing) > 0 {
-			return resource.RetryableError(fmt.Errorf("user(s) %v not yet visible in account", missing))
+		if len(missing) > 0 || len(processing) > 0 {
+			return resource.RetryableError(fmt.Errorf("user(s) %v are not yet in a stable state (missing: %v, processing: %v)",
+				append(append([]string{}, missing...), processing...), missing, processing))
 		}
 		return nil
 	})
 	if conns.IsResourceTimeoutError(retryErr) {
 		if allUsers, listErr := client.ListUsers(accountID); listErr == nil {
 			scanUsers(allUsers)
-			if len(errored) == 0 && len(missing) == 0 {
-				retryErr = nil
-			}
 		}
 	}
 	if len(errored) > 0 {
 		return fmt.Errorf("[ERROR] User invite failed: user(s) %v remained in ERROR_WHILE_PROCESSING state "+
-			"after the retry period. This typically indicates a problem. "+
-			"Please verify the account ID (%s) and email addresses are correct, then retry. "+
-			"If the problem persists, open a support case including the account ID and the affected email address(es).",
+			"after the retry period. This is an error state that indicates the invitation was unsuccessful, "+
+			"typically due to a problem on the IBM Cloud IAM side. To recover, cancel/delete the failed invite "+
+			"and re-invite the user. Please also verify the account ID (%s) and the email address(es) are correct. "+
+			"If the problem persists, open a support case with IBM Cloud including the account ID and the affected "+
+			"email address(es).",
 			errored, accountID)
 	}
-	if retryErr != nil || len(missing) > 0 {
-		return fmt.Errorf("[ERROR] User(s) %v were not successfully invited or did not appear in the account after 5 minutes", missing)
+	if len(active) > 0 {
+		return fmt.Errorf("[ERROR] User invite unsuccessful: user(s) %v are already ACTIVE in account %s, "+
+			"which means they were already invited and onboarded to the account earlier. Remove them from the "+
+			"users list, or remove the existing user from the account before re-inviting.",
+			active, accountID)
 	}
+	if len(missing) > 0 || len(processing) > 0 {
+		return fmt.Errorf("[ERROR] User(s) %v did not reach a stable state within 5 minutes (missing: %v, still processing: %v). "+
+			"Please retry; if the problem persists, open a support case with IBM Cloud.",
+			append(append([]string{}, missing...), processing...), missing, processing)
+	}
+	if retryErr != nil {
+		// Timed out without a successful ListUsers response — state unverified.
+		return fmt.Errorf("[ERROR] Unable to verify invite status for user(s) %v within 5 minutes: %s",
+			usersList, retryErr)
+	}
+	log.Printf("[INFO] User invite successful: user(s) %v are in PENDING state in account %s", pending, accountID)
 	d.SetId(time.Now().UTC().String())
 	return resourceIBMIAMUpdateUserProfile(d, meta)
 }
