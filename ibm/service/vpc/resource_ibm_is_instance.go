@@ -2165,7 +2165,6 @@ func ResourceIBMISInstance() *schema.Resource {
 					Schema: map[string]*schema.Schema{
 						"deleted": &schema.Schema{
 							Type:        schema.TypeList,
-							Optional:    true,
 							Computed:    true,
 							Description: "If present, this property indicates the referenced resource has been deleted, and providessome supplementary information.",
 							Elem: &schema.Resource{
