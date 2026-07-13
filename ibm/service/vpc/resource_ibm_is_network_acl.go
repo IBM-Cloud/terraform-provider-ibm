@@ -49,7 +49,7 @@ const (
 	isNetworkACLTags              = "tags"
 	isNetworkACLAccessTags        = "access_tags"
 	isNetworkACLCRN               = "crn"
-	isNetworkACLRuleUpdateMode    = "surgical_rule_update"
+	isNetworkACLRuleUpdateMode    = "incremental_rule_update"
 )
 
 func ResourceIBMISNetworkACL() *schema.Resource {
