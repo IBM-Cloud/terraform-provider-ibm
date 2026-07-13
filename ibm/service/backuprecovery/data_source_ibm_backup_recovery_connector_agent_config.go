@@ -35,6 +35,7 @@ func DataSourceIbmBackupRecoveryConnectorAgentConfig() *schema.Resource {
 			"registration_token": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
+				Sensitive:   true,
 				Description: "Token that is used for authenticating the connector agent with the DataProtect cluster.",
 			},
 		},

@@ -103,6 +103,7 @@ func AddInstanceFields(resource *schema.Resource) *schema.Resource {
 		Optional:    true,
 		ForceNew:    true,
 		Description: "The service name for the Backup Recovery instance. Defaults to 'backup-recovery' if not provided.",
+		Default:     "backup-recovery",
 	}
 
 	return resource
