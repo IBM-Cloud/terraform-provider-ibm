@@ -104,6 +104,29 @@ func DataSourceIBMISLBPool() *schema.Resource {
 				Computed:    true,
 				Description: "The date and time that this pool was created.",
 			},
+			"client_authentication": &schema.Schema{
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "The client authentication used for this pool.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"certificate_instance": &schema.Schema{
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "The certificate instance used for this pool.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"crn": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The CRN for this certificate instance.",
+									},
+								},
+							},
+						},
+					},
+				},
+			},
 			"health_monitor": &schema.Schema{
 				Type:        schema.TypeList,
 				Computed:    true,
@@ -239,6 +262,34 @@ func DataSourceIBMISLBPool() *schema.Resource {
 				Computed:    true,
 				Description: "The PROXY protocol setting for this pool:- `v1`: Enabled with version 1 (human-readable header format)- `v2`: Enabled with version 2 (binary header format)- `disabled`: DisabledSupported by load balancers in the `application` family (otherwise always `disabled`).",
 			},
+			"server_authentication": &schema.Schema{
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "The server authentication used for this pool. This property will be absent if the pool.protocol is not https.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"certificate_authority": &schema.Schema{
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "The certificate authority used for this pool.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"crn": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The CRN for this certificate instance.",
+									},
+								},
+							},
+						},
+						"verify_certificate": &schema.Schema{
+							Type:        schema.TypeBool,
+							Computed:    true,
+							Description: "If set to true, the backend server certificate is verified.",
+						},
+					},
+				},
+			},
 			"session_persistence": &schema.Schema{
 				Type:        schema.TypeList,
 				Computed:    true,
@@ -318,6 +369,14 @@ func dataSourceIBMIsLbPoolRead(context context.Context, d *schema.ResourceData, 
 	if err = d.Set("algorithm", loadBalancerPool.Algorithm); err != nil {
 		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting algorithm: %s", err), "(Data) ibm_is_lb_pool", "read", "set-algorithm").GetDiag()
 	}
+
+	if loadBalancerPool.ClientAuthentication != nil {
+		err = d.Set("client_authentication", dataSourceLoadBalancerPoolFlattenClientAuthentication(*loadBalancerPool.ClientAuthentication))
+		if err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting client_authentication: %s", err), "(Data) ibm_is_lb_pool", "read", "set-client_authentication").GetDiag()
+		}
+	}
+
 	failsafePolicy := []map[string]interface{}{}
 	if loadBalancerPool.FailsafePolicy != nil {
 		modelMap, err := dataSourceIBMIsLbPoolLoadBalancerPoolFailsafePolicyToMap(loadBalancerPool.FailsafePolicy)
@@ -374,6 +433,13 @@ func dataSourceIBMIsLbPoolRead(context context.Context, d *schema.ResourceData, 
 
 	if err = d.Set("proxy_protocol", loadBalancerPool.ProxyProtocol); err != nil {
 		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting proxy_protocol: %s", err), "(Data) ibm_is_lb_pool", "read", "set-proxy_protocol").GetDiag()
+	}
+
+	if loadBalancerPool.ServerAuthentication != nil {
+		err = d.Set("server_authentication", dataSourceLoadBalancerPoolFlattenServerAuthentication(*loadBalancerPool.ServerAuthentication))
+		if err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting session_persistence: %s", err), "(Data) ibm_is_lb_pool", "read", "set-server_authentication").GetDiag()
+		}
 	}
 
 	if loadBalancerPool.SessionPersistence != nil {
@@ -553,4 +619,57 @@ func dataSourceIBMIsLbPoolDeletedToMap(model *vpcv1.Deleted) (map[string]interfa
 	modelMap := make(map[string]interface{})
 	modelMap["more_info"] = *model.MoreInfo
 	return modelMap, nil
+}
+
+func dataSourceLoadBalancerPoolFlattenClientAuthentication(result vpcv1.LoadBalancerPoolClientAuthentication) (finalList []map[string]interface{}) {
+	finalList = []map[string]interface{}{}
+	finalMap := dataSourceLoadBalancerPoolClientAuthenticationToMap(result)
+	finalList = append(finalList, finalMap)
+
+	return finalList
+}
+
+func dataSourceLoadBalancerPoolClientAuthenticationToMap(clientAuthItem vpcv1.LoadBalancerPoolClientAuthentication) (clientAuthMap map[string]interface{}) {
+	clientAuthMap = map[string]interface{}{}
+
+	if clientAuthItem.CertificateInstance != nil {
+		certificateInstanceList := []map[string]interface{}{}
+		certificateInstanceMap := dataSourceLoadBalancerPoolCertificateInstanceToMap(*clientAuthItem.CertificateInstance)
+		certificateInstanceList = append(certificateInstanceList, certificateInstanceMap)
+		clientAuthMap["certificate_instance"] = certificateInstanceList
+	}
+
+	return clientAuthMap
+}
+
+func dataSourceLoadBalancerPoolCertificateInstanceToMap(certificateInstanceItem vpcv1.CertificateInstanceReference) (certificateInstanceMap map[string]interface{}) {
+	certificateInstanceMap = map[string]interface{}{}
+
+	if certificateInstanceItem.CRN != nil {
+		certificateInstanceMap["crn"] = certificateInstanceItem.CRN
+	}
+
+	return certificateInstanceMap
+}
+
+func dataSourceLoadBalancerPoolFlattenServerAuthentication(result vpcv1.LoadBalancerPoolServerAuthentication) (finalList []map[string]interface{}) {
+	finalList = []map[string]interface{}{}
+	finalMap := dataSourceLoadBalancerPoolServerAuthenticationToMap(result)
+	finalList = append(finalList, finalMap)
+	return finalList
+}
+
+func dataSourceLoadBalancerPoolServerAuthenticationToMap(serverAuthItem vpcv1.LoadBalancerPoolServerAuthentication) (serverAuthMap map[string]interface{}) {
+	serverAuthMap = map[string]interface{}{}
+
+	if serverAuthItem.CertificateAuthority != nil {
+		certificateAuthorityList := []map[string]interface{}{}
+		certificateAuthorityMap := dataSourceLoadBalancerPoolCertificateInstanceToMap(*serverAuthItem.CertificateAuthority)
+		certificateAuthorityList = append(certificateAuthorityList, certificateAuthorityMap)
+		serverAuthMap["certificate_authority"] = certificateAuthorityList
+	}
+	if serverAuthItem.VerifyCertificate != nil {
+		serverAuthMap["verify_certificate"] = serverAuthItem.VerifyCertificate
+	}
+	return serverAuthMap
 }

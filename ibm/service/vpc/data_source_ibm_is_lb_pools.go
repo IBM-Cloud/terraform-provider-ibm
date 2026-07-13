@@ -37,6 +37,29 @@ func DataSourceIBMISLBPools() *schema.Resource {
 							Computed:    true,
 							Description: "The load balancing algorithm.",
 						},
+						"client_authentication": &schema.Schema{
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "The client authentication used for this pool.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"certificate_instance": &schema.Schema{
+										Type:        schema.TypeList,
+										Computed:    true,
+										Description: "The certificate instance used for this pool.",
+										Elem: &schema.Resource{
+											Schema: map[string]*schema.Schema{
+												"crn": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "The CRN for this certificate instance.",
+												},
+											},
+										},
+									},
+								},
+							},
+						},
 						"created_at": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
@@ -243,6 +266,34 @@ func DataSourceIBMISLBPools() *schema.Resource {
 							Computed:    true,
 							Description: "The PROXY protocol setting for this pool:- `v1`: Enabled with version 1 (human-readable header format)- `v2`: Enabled with version 2 (binary header format)- `disabled`: DisabledSupported by load balancers in the `application` family (otherwise always `disabled`).",
 						},
+						"server_authentication": &schema.Schema{
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "The server authentication used for this pool. This property will be absent if the pool.protocol is not https.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"certificate_authority": &schema.Schema{
+										Type:        schema.TypeList,
+										Computed:    true,
+										Description: "The certificate authority used for this pool.",
+										Elem: &schema.Resource{
+											Schema: map[string]*schema.Schema{
+												"crn": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "The CRN for this certificate instance.",
+												},
+											},
+										},
+									},
+									"verify_certificate": &schema.Schema{
+										Type:        schema.TypeBool,
+										Computed:    true,
+										Description: "If set to true, the backend server certificate is verified.",
+									},
+								},
+							},
+						},
 						"session_persistence": &schema.Schema{
 							Type:        schema.TypeList,
 							Computed:    true,
@@ -321,6 +372,12 @@ func dataSourceLoadBalancerPoolCollectionPoolsToMap(poolsItem vpcv1.LoadBalancer
 	if poolsItem.Algorithm != nil {
 		poolsMap["algorithm"] = poolsItem.Algorithm
 	}
+	if poolsItem.ClientAuthentication != nil {
+		clientAuthenticationList := []map[string]interface{}{}
+		clientAuthenticationMap := dataSourceLoadBalancerPoolCollectionPoolsClientAuthenticationToMap(*poolsItem.ClientAuthentication)
+		clientAuthenticationList = append(clientAuthenticationList, clientAuthenticationMap)
+		poolsMap["client_authentication"] = clientAuthenticationList
+	}
 	if poolsItem.CreatedAt != nil {
 		poolsMap["created_at"] = poolsItem.CreatedAt.String()
 	}
@@ -368,6 +425,12 @@ func dataSourceLoadBalancerPoolCollectionPoolsToMap(poolsItem vpcv1.LoadBalancer
 			return poolsMap
 		}
 		poolsMap["failsafe_policy"] = []map[string]interface{}{failsafePolicyMap}
+	}
+	if poolsItem.ServerAuthentication != nil {
+		serverAuthenticationList := []map[string]interface{}{}
+		serverAuthenticationMap := dataSourceLoadBalancerPoolCollectionPoolsServerAuthenticationToMap(*poolsItem.ServerAuthentication)
+		serverAuthenticationList = append(serverAuthenticationList, serverAuthenticationMap)
+		poolsMap["server_authentication"] = serverAuthenticationList
 	}
 	if poolsItem.SessionPersistence != nil {
 		sessionPersistenceList := []map[string]interface{}{}
@@ -514,4 +577,43 @@ func dataSourceIBMIsLbPoolsDeletedToMap(model *vpcv1.Deleted) (map[string]interf
 	modelMap := make(map[string]interface{})
 	modelMap["more_info"] = *model.MoreInfo
 	return modelMap, nil
+}
+
+func dataSourceLoadBalancerPoolCollectionPoolsClientAuthenticationToMap(clientAuthItem vpcv1.LoadBalancerPoolClientAuthentication) (clientAuthMap map[string]interface{}) {
+	clientAuthMap = map[string]interface{}{}
+
+	if clientAuthItem.CertificateInstance != nil {
+		certificateInstanceList := []map[string]interface{}{}
+		certificateInstanceMap := dataSourceLoadBalancerPoolCollectionPoolsCertificateInstanceToMap(*clientAuthItem.CertificateInstance)
+		certificateInstanceList = append(certificateInstanceList, certificateInstanceMap)
+		clientAuthMap["certificate_instance"] = certificateInstanceList
+	}
+
+	return clientAuthMap
+}
+
+func dataSourceLoadBalancerPoolCollectionPoolsServerAuthenticationToMap(serverAuthItem vpcv1.LoadBalancerPoolServerAuthentication) (serverAuthMap map[string]interface{}) {
+	serverAuthMap = map[string]interface{}{}
+
+	if serverAuthItem.CertificateAuthority != nil {
+		certificateAuthorityList := []map[string]interface{}{}
+		certificateAuthorityMap := dataSourceLoadBalancerPoolCollectionPoolsCertificateInstanceToMap(*serverAuthItem.CertificateAuthority)
+		certificateAuthorityList = append(certificateAuthorityList, certificateAuthorityMap)
+		serverAuthMap["certificate_authority"] = certificateAuthorityList
+	}
+	if serverAuthItem.VerifyCertificate != nil {
+		serverAuthMap["verify_certificate"] = serverAuthItem.VerifyCertificate
+	}
+
+	return serverAuthMap
+}
+
+func dataSourceLoadBalancerPoolCollectionPoolsCertificateInstanceToMap(certificateInstanceItem vpcv1.CertificateInstanceReference) (certificateInstanceMap map[string]interface{}) {
+	certificateInstanceMap = map[string]interface{}{}
+
+	if certificateInstanceItem.CRN != nil {
+		certificateInstanceMap["crn"] = certificateInstanceItem.CRN
+	}
+
+	return certificateInstanceMap
 }

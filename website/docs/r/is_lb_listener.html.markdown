@@ -152,6 +152,20 @@ resource "ibm_is_lb_listener" "example2" {
   port_max  = 400
 }
 ```
+### Sample to create a load balancer listener with `client_authentication` (mTLS).
+
+```terraform
+resource "ibm_is_lb_listener" "example" {
+  lb                   = ibm_is_lb.example.id
+  port                 = "8443"
+  protocol             = "https"
+  certificate_instance = "crn:v1:staging:public:secrets-manager:eu-gb:a/6266f0faa7df487d8438b9b31d24ca57:00b4c600-0d8b-4c9b-a930-4769debb7051:secret:f4cb4cd6-41fe-949f-6db8-7b68c2988f3f"
+  client_authentication {
+    certificate_authority       = "crn:v1:staging:public:secrets-manager:eu-gb:a/6266f0faa7df487d8438b9b31d24ca57:00b4c600-0d8b-4c9b-a930-4769debb7051:secret:f4cb4cd6-41fe-949f-6db8-7b68c2988f3g"
+    certificate_revocation_list = "-----BEGIN X509 CRL-----\nMIICvTCBpgIBATANBgkqhkiG9w0BAQsFADBMMQswCQYDVQQGEwJVUzEOMAwGA1UE\n...\n-----END X509 CRL-----\n"
+  }
+}
+```
 ### Example to create a listener with 
 ## Timeouts
 The `ibm_is_lb_listener` resource provides the following [Timeouts](https://www.terraform.io/docs/language/resources/syntax.html) configuration options:
@@ -195,6 +209,12 @@ Review the argument references that you can specify for your resource.
 - `certificate_instance` - (Optional, String) The CRN of the certificate instance, it is applicable(mandatory) only to https protocol.
 
   !> **Removal Notification** Certificate Manager support is removed, please use Secrets Manager.
+
+- `client_authentication` - (Optional, List) The client authentication to use for this listener. Supported by load balancers with `mtls_supported` set to `true`. The listener must have a protocol of `https`.
+
+  Nested schema for **client_authentication**:
+	- `certificate_authority` - (Required, String) The CRN of the certificate instance from Secrets Manager to use for the listener client certificate authority.
+	- `certificate_revocation_list` - (Optional, String) A PEM-encoded (with the label X509 CRL) certificate revocation list (CRL) to use for the listener. The CRL must be formatted using the X.509 standard as described in RFC 5280. If specified, `certificate_authority` must also be specified.
 
 - `connection_limit` - (Optional, Integer) The connection limit of the listener. Valid range is **1 to 15000**. Network load balancer do not support `connection_limit` argument.
 - `https_redirect_listener` - (Optional, String) ID of the listener that will be set as http redirect target.

@@ -161,6 +161,35 @@ resource "ibm_is_lb_pool" "with_failsafe" {
 }
 ```
 
+### Load balancer pool with mTLS
+
+Configure server certificate verification and client certificate authentication for backend servers:
+
+```terraform
+resource "ibm_is_lb_pool" "example" {
+  lb                 = ibm_is_lb.example.id
+  name               = "example-lb-pool"
+  protocol           = "https"
+  algorithm          = "round_robin"
+  health_delay       = 5
+  health_retries     = 2
+  health_timeout     = 2
+  health_type        = "http"
+  health_monitor_url = "/"
+
+  server_authentication {
+    verify_certificate    = true
+    certificate_authority = "crn:v1:staging:public:secrets-manager:eu-gb:a/6266f0faa7df487d8438b9b31d24ca57:00b4c600-0d8b-4c9b-a930-4769debb7051:secret:f4cb4cd6-41fe-949f-6db8-7b68c2988f31"
+  }
+  
+  client_authentication {
+    certificate_instance = "crn:v1:staging:public:secrets-manager:eu-gb:a/6266f0faa7df487d8438b9b31d24ca57:00b4c600-0d8b-4c9b-a930-4769debb7051:secret:f4cb4cd6-41fe-949f-6db8-7b68c2988f32"
+  }
+
+  depends_on = [ibm_is_lb_listener.example]
+}
+```
+
 ## Timeouts
 The `ibm_is_lb_pool` resource provides the following [Timeouts](https://www.terraform.io/docs/language/resources/syntax.html) configuration options:
 
@@ -173,6 +202,10 @@ The `ibm_is_lb_pool` resource provides the following [Timeouts](https://www.terr
 Review the argument references that you can specify for your resource. 
 
 - `algorithm` - (Required, String) The load-balancing algorithm. Supported values are `round_robin`, `weighted_round_robin`, or `least_connections`. Choose `least_connections` for workloads with varying response times.
+- `client_authentication` - (Optional, List) The client authentication configuration for this pool. Supported by load balancers with `mtls_supported` set to `true`. The pool must have a protocol of `https`.
+
+  Nested schema for **client_authentication**:
+	- `certificate_instance` - (Required, String) The CRN of the certificate instance from Secrets Manager that the load balancer will present to backend servers for mTLS authentication.
 - `failsafe_policy` - (Optional, List) The failsafe policy defines behavior when all pool members are unhealthy. If unspecified, the default failsafe policy from the load balancer profile applies.
 
   Nested schema for **failsafe_policy**:
@@ -196,6 +229,11 @@ Review the argument references that you can specify for your resource.
 - `name` - (Required, String) The name of the pool. Must be unique within the load balancer and follow standard naming conventions.
 - `protocol` - (Required, String) The pool protocol for traffic forwarding. Supported values: `http`, `https`, `tcp`, `udp`. Choose based on your application requirements.
 - `proxy_protocol` - (Optional, String) Proxy protocol setting for preserving client connection information. Supported values: `disabled` (default), `v1`, `v2`. Only supported by application load balancers, not network load balancers.
+- `server_authentication` - (Optional, List) The server authentication configuration for this pool. Supported by load balancers with `mtls_supported` set to `true`. The pool must have a protocol of `https`.
+
+  Nested schema for **server_authentication**:
+	- `verify_certificate` - (Required, Boolean) Indicates whether backend server certificate verification is enabled. If set to `true`, the backend server certificate is verified by `certificate_authority` (if specified) or the system default certificate authorities (if `certificate_authority` is not specified). Default value is `false`.
+	- `certificate_authority` - (Optional, String) The CRN of the certificate instance from Secrets Manager to use for backend server certificate verification. Required when the backend server uses a self-signed certificate or when the system trust store cannot validate the certificate. If specified, `verify_certificate` must be `true`.
 - `session_persistence_type` - (Optional, String) Session persistence method to ensure client requests are routed to the same backend server. Supported values: `source_ip`, `app_cookie`, `http_cookie`. **Important notes:**
   - Omit this parameter entirely when no session persistence is needed
   - Must be omitted for route mode load balancers
@@ -225,6 +263,16 @@ In addition to all argument reference list, you can access the following attribu
 - `pool_id` - (String) The unique identifier of the load balancer pool (without the load balancer prefix).
 - `related_crn` - (String) The Cloud Resource Name (CRN) of the associated load balancer resource.
 - `session_persistence_http_cookie_name` - (String) The HTTP cookie name used for session persistence. Only present when `session_persistence_type = "http_cookie"`. This is system-generated and read-only.
+- `server_authentication` - (List) The server authentication configuration for this pool. This property will be absent if the pool protocol is not `https`.
+
+  Nested schema for **server_authentication**:
+	- `verify_certificate` - (Boolean) If set to `true`, the backend server certificate is verified.
+	- `certificate_authority` - (String) The CRN of the certificate instance used for backend server certificate verification.
+
+- `client_authentication` - (List) The client authentication configuration for this pool.
+
+  Nested schema for **client_authentication**:
+	- `certificate_instance` - (String) The CRN of the certificate instance that the load balancer presents to backend servers.
 
 ## Import
 

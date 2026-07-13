@@ -86,3 +86,14 @@ In addition to all argument references listed, you can access the following attr
 	Nested scheme for `session_persistence`:
     	- `cookie_name` - (String) The session persistence cookie name. Applicable only for type `app_cookie`. Names starting with `IBM` are not allowed.
     	- `type` - (String) The session persistence type. The `http_cookie` and `app_cookie` types are applicable only to the `http` and `https` protocols.
+- `server_authentication` - (List) The server authentication used for this pool. This property will be absent if the pool.protocol is not https.
+	Nested scheme for `server_authentication`:
+		- `certificate_authority` - (List) The certificate authority used for this pool.
+			Nested scheme for `certificate_authority`:
+			- `crn` - (String) The CRN for this certificate instance.
+		- `verify_certificate` - (Boolean) If set to true, the backend server certificate is verified.
+- `client_authentication` - (List) The client authentication used for this pool.
+	Nested scheme for `client_authentication`:
+		- `certificate_instance` - (List) The certificate instance used for this pool.
+			Nested scheme for `certificate_instance`:
+			- `crn` - (String) The CRN for this certificate instance.
