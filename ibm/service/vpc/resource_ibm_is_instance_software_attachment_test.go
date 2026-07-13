@@ -5,6 +5,7 @@ package vpc_test
 
 import (
 	"fmt"
+	"strings"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
@@ -22,7 +23,10 @@ import (
 
 func TestAccIBMIsInstanceSoftwareAttachmentBasic(t *testing.T) {
 	var conf vpcv1.InstanceSoftwareAttachment
-	instanceID := fmt.Sprintf("tf_instance_id_%d", acctest.RandIntRange(10, 100))
+	vpcname := fmt.Sprintf("tf-vpc-%d", acctest.RandIntRange(10, 100))
+	subnetname := fmt.Sprintf("tf-subnet-%d", acctest.RandIntRange(10, 100))
+	sshname := fmt.Sprintf("tf-ssh-%d", acctest.RandIntRange(10, 100))
+	instanceName := fmt.Sprintf("tf-instance-%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
@@ -30,10 +34,14 @@ func TestAccIBMIsInstanceSoftwareAttachmentBasic(t *testing.T) {
 		CheckDestroy: testAccCheckIBMIsInstanceSoftwareAttachmentDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIBMIsInstanceSoftwareAttachmentConfigBasic(instanceID),
+				Config: testAccCheckIBMIsInstanceSoftwareAttachmentConfigBasic(vpcname, subnetname, sshname, instanceName),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMIsInstanceSoftwareAttachmentExists("ibm_is_instance_software_attachment.is_instance_software_attachment_instance", conf),
-					resource.TestCheckResourceAttr("ibm_is_instance_software_attachment.is_instance_software_attachment_instance", "instance_id", instanceID),
+					resource.TestCheckResourceAttrPair("ibm_is_instance_software_attachment.is_instance_software_attachment_instance", "instance_id", "ibm_is_instance.testacc_instance", "id"),
+					resource.TestCheckResourceAttrPair("ibm_is_instance_software_attachment.is_instance_software_attachment_instance", "instance_software_attachment_id", "ibm_is_instance.testacc_instance", "software_attachments.0.id"),
+					resource.TestCheckResourceAttrSet("ibm_is_instance_software_attachment.is_instance_software_attachment_instance", "href"),
+					resource.TestCheckResourceAttrSet("ibm_is_instance_software_attachment.is_instance_software_attachment_instance", "lifecycle_state"),
+					resource.TestCheckResourceAttrSet("ibm_is_instance_software_attachment.is_instance_software_attachment_instance", "resource_type"),
 				),
 			},
 		},
@@ -42,9 +50,12 @@ func TestAccIBMIsInstanceSoftwareAttachmentBasic(t *testing.T) {
 
 func TestAccIBMIsInstanceSoftwareAttachmentAllArgs(t *testing.T) {
 	var conf vpcv1.InstanceSoftwareAttachment
-	instanceID := fmt.Sprintf("tf_instance_id_%d", acctest.RandIntRange(10, 100))
-	name := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
-	nameUpdate := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
+	vpcname := fmt.Sprintf("tf-vpc-%d", acctest.RandIntRange(10, 100))
+	subnetname := fmt.Sprintf("tf-subnet-%d", acctest.RandIntRange(10, 100))
+	sshname := fmt.Sprintf("tf-ssh-%d", acctest.RandIntRange(10, 100))
+	instanceName := fmt.Sprintf("tf-instance-%d", acctest.RandIntRange(10, 100))
+	name := fmt.Sprintf("tf-name-%d", acctest.RandIntRange(10, 100))
+	nameUpdate := fmt.Sprintf("tf-name-%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
@@ -52,17 +63,16 @@ func TestAccIBMIsInstanceSoftwareAttachmentAllArgs(t *testing.T) {
 		CheckDestroy: testAccCheckIBMIsInstanceSoftwareAttachmentDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIBMIsInstanceSoftwareAttachmentConfig(instanceID, name),
+				Config: testAccCheckIBMIsInstanceSoftwareAttachmentConfig(vpcname, subnetname, sshname, instanceName, name),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMIsInstanceSoftwareAttachmentExists("ibm_is_instance_software_attachment.is_instance_software_attachment_instance", conf),
-					resource.TestCheckResourceAttr("ibm_is_instance_software_attachment.is_instance_software_attachment_instance", "instance_id", instanceID),
+					resource.TestCheckResourceAttrPair("ibm_is_instance_software_attachment.is_instance_software_attachment_instance", "instance_id", "ibm_is_instance.testacc_instance", "id"),
 					resource.TestCheckResourceAttr("ibm_is_instance_software_attachment.is_instance_software_attachment_instance", "name", name),
 				),
 			},
 			resource.TestStep{
-				Config: testAccCheckIBMIsInstanceSoftwareAttachmentConfig(instanceID, nameUpdate),
+				Config: testAccCheckIBMIsInstanceSoftwareAttachmentConfig(vpcname, subnetname, sshname, instanceName, nameUpdate),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("ibm_is_instance_software_attachment.is_instance_software_attachment_instance", "instance_id", instanceID),
 					resource.TestCheckResourceAttr("ibm_is_instance_software_attachment.is_instance_software_attachment_instance", "name", nameUpdate),
 				),
 			},
@@ -75,22 +85,62 @@ func TestAccIBMIsInstanceSoftwareAttachmentAllArgs(t *testing.T) {
 	})
 }
 
-func testAccCheckIBMIsInstanceSoftwareAttachmentConfigBasic(instanceID string) string {
+// testAccCheckIBMIsInstanceSoftwareAttachmentBaseConfig provisions an instance from a
+// software-licensed catalog offering. Provisioning such an instance is what causes the
+// software attachment to be created, which the ibm_is_instance_software_attachment
+// resource then adopts and manages.
+func testAccCheckIBMIsInstanceSoftwareAttachmentBaseConfig(vpcname, subnetname, sshname, instanceName string) string {
+	publicKey := strings.TrimSpace(`
+ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVERRN7/9484SOBJ3HSKxxNG5JN8owAjy5f9yYwcUg+JaUVuytn5Pv3aeYROHGGg+5G346xaq3DAwX6Y5ykr2fvjObgncQBnuU5KHWCECO/4h8uWuwh/kfniXPVjFToc+gnkqA+3RKpAecZhFXwfalQ9mMuYGFxn+fwn8cYEApsJbsEmb0iJwPiZ5hjFC8wREuiTlhPHDgkBLOiycd20op2nXzDbHfCHInquEe/gYxEitALONxm0swBOwJZwlTDOB7C6y2dzlrtxr1L59m7pCkWI4EtTRLvleehBoj3u7jB4usR
+`)
 	return fmt.Sprintf(`
-		resource "ibm_is_instance_software_attachment" "is_instance_software_attachment_instance" {
-			instance_id = "%s"
-		}
-	`, instanceID)
-}
-
-func testAccCheckIBMIsInstanceSoftwareAttachmentConfig(instanceID string, name string) string {
-	return fmt.Sprintf(`
-
-		resource "ibm_is_instance_software_attachment" "is_instance_software_attachment_instance" {
-			instance_id = "%s"
+		resource "ibm_is_vpc" "testacc_vpc" {
 			name = "%s"
 		}
-	`, instanceID, name)
+		resource "ibm_is_subnet" "testacc_subnet" {
+			name            = "%s"
+			vpc             = ibm_is_vpc.testacc_vpc.id
+			zone            = "%s"
+			ipv4_cidr_block = "%s"
+		}
+		resource "ibm_is_ssh_key" "testacc_sshkey" {
+			name       = "%s"
+			public_key = "%s"
+		}
+		resource "ibm_is_instance" "testacc_instance" {
+			name    = "%s"
+			catalog_offering {
+				version_crn = "crn:v1:staging:public:globalcatalog-collection:global::1082e7d2-5e2f-0a11-a3bc-f88a8e1931fc:version:4f8466eb-2218-42e3-a755-bf352b559c69-global/6a73aa69-5dd9-4243-a908-3b62f467cbf8-global"
+				plan_crn    = "crn:v1:staging:public:globalcatalog-collection:global::1082e7d2-5e2f-0a11-a3bc-f88a8e1931fc:plan:sw.1082e7d2-5e2f-0a11-a3bc-f88a8e1931fc.279a3cee-ba7d-42d5-ae88-6a0ebc56fa4a-global"
+			}
+			profile = "%s"
+			primary_network_interface {
+				subnet = ibm_is_subnet.testacc_subnet.id
+			}
+			vpc  = ibm_is_vpc.testacc_vpc.id
+			zone = "%s"
+			keys = [ibm_is_ssh_key.testacc_sshkey.id]
+		}
+	`, vpcname, subnetname, acc.ISZoneName, acc.ISCIDR, sshname, publicKey, instanceName, acc.InstanceProfileName, acc.ISZoneName)
+}
+
+func testAccCheckIBMIsInstanceSoftwareAttachmentConfigBasic(vpcname, subnetname, sshname, instanceName string) string {
+	return testAccCheckIBMIsInstanceSoftwareAttachmentBaseConfig(vpcname, subnetname, sshname, instanceName) + `
+		resource "ibm_is_instance_software_attachment" "is_instance_software_attachment_instance" {
+			instance_id                        = ibm_is_instance.testacc_instance.id
+			instance_software_attachment_id = ibm_is_instance.testacc_instance.software_attachments.0.id
+		}
+	`
+}
+
+func testAccCheckIBMIsInstanceSoftwareAttachmentConfig(vpcname, subnetname, sshname, instanceName, name string) string {
+	return testAccCheckIBMIsInstanceSoftwareAttachmentBaseConfig(vpcname, subnetname, sshname, instanceName) + fmt.Sprintf(`
+		resource "ibm_is_instance_software_attachment" "is_instance_software_attachment_instance" {
+			instance_id                        = ibm_is_instance.testacc_instance.id
+			instance_software_attachment_id = ibm_is_instance.testacc_instance.software_attachments.0.id
+			name                               = "%s"
+		}
+	`, name)
 }
 
 func testAccCheckIBMIsInstanceSoftwareAttachmentExists(n string, obj vpcv1.InstanceSoftwareAttachment) resource.TestCheckFunc {

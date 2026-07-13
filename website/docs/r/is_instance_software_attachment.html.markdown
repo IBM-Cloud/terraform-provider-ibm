@@ -8,14 +8,19 @@ subcategory: "Virtual Private Cloud API"
 
 # ibm_is_instance_software_attachment
 
-Create, update, and delete InstanceSoftwareAttachments with this resource.
+Manage an instance software attachment with this resource.
+
+A software attachment cannot be created or deleted through the API. It is created automatically when a virtual server instance is provisioned from a software-licensed [catalog offering](https://cloud.ibm.com/docs/vpc?topic=vpc-about-images). This resource adopts an existing attachment, identified by `instance_id` and `instance_software_attachment_id`, and manages its mutable properties (currently only the `name`).
+
+~> **Note:** Running `terraform destroy` on this resource only removes it from Terraform state. It does not delete the software attachment from the instance, and any `name` you set remains in place. The attachment is removed only when its instance is deleted.
 
 ## Example Usage
 
 ```hcl
 resource "ibm_is_instance_software_attachment" "is_instance_software_attachment_instance" {
-  instance_id = "instance_id"
-  name = "my-software-attachment"
+  instance_id                        = ibm_is_instance.example.id
+  instance_software_attachment_id = ibm_is_instance.example.software_attachments.0.id
+  name                               = "my-software-attachment"
 }
 ```
 
@@ -24,6 +29,8 @@ resource "ibm_is_instance_software_attachment" "is_instance_software_attachment_
 You can specify the following arguments for this resource.
 
 * `instance_id` - (Required, Forces new resource, String) The virtual server instance identifier.
+  * Constraints: The maximum length is `64` characters. The minimum length is `1` character. The value must match regular expression `/^[-0-9a-z_]+$/`.
+* `instance_software_attachment_id` - (Required, Forces new resource, String) The unique identifier of the existing instance software attachment to manage. The attachment is created automatically when the instance is provisioned from a software-licensed catalog offering.
   * Constraints: The maximum length is `64` characters. The minimum length is `1` character. The value must match regular expression `/^[-0-9a-z_]+$/`.
 * `name` - (Optional, String) The name for this instance software attachment. The name is unique across all instance software attachments for the instance.
   * Constraints: The maximum length is `63` characters. The minimum length is `1` character. The value must match regular expression `/^-?([a-z]|[a-z][-a-z0-9]*[a-z0-9]|[0-9][-a-z0-9]*([a-z]|[-a-z][-a-z0-9]*[a-z0-9]))$/`.
@@ -56,8 +63,6 @@ Nested schema for **entitlement**:
 		  * Constraints: The maximum length is `1024` characters. The minimum length is `1` character. The value must match regular expression `/^[ -~]+$/`.
 * `href` - (String) The URL for this instance software attachment.
   * Constraints: The maximum length is `8000` characters. The minimum length is `10` characters. The value must match regular expression `/^http(s)?:\/\/([^\/?#]*)([^?#]*)(\\?([^#]*))?(#(.*))?$/`.
-* `instance_software_attachment_id` - (String) The unique identifier for this instance software attachment.
-  * Constraints: The maximum length is `64` characters. The minimum length is `1` character. The value must match regular expression `/^[-0-9a-z_]+$/`.
 * `lifecycle_reasons` - (List) The lifecycle reasons for this instance software attachment (if any).
   * Constraints: The minimum length is `0` items.
 Nested schema for **lifecycle_reasons**:

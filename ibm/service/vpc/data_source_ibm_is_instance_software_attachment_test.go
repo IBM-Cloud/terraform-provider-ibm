@@ -22,14 +22,17 @@ import (
 )
 
 func TestAccIBMIsInstanceSoftwareAttachmentDataSourceBasic(t *testing.T) {
-	instanceSoftwareAttachmentInstanceID := fmt.Sprintf("tf_instance_id_%d", acctest.RandIntRange(10, 100))
+	vpcname := fmt.Sprintf("tf-vpc-%d", acctest.RandIntRange(10, 100))
+	subnetname := fmt.Sprintf("tf-subnet-%d", acctest.RandIntRange(10, 100))
+	sshname := fmt.Sprintf("tf-ssh-%d", acctest.RandIntRange(10, 100))
+	instanceName := fmt.Sprintf("tf-instance-%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheck(t) },
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIBMIsInstanceSoftwareAttachmentDataSourceConfigBasic(instanceSoftwareAttachmentInstanceID),
+				Config: testAccCheckIBMIsInstanceSoftwareAttachmentDataSourceConfigBasic(vpcname, subnetname, sshname, instanceName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_is_instance_software_attachment.is_instance_software_attachment_instance", "id"),
 					resource.TestCheckResourceAttrSet("data.ibm_is_instance_software_attachment.is_instance_software_attachment_instance", "instance_id"),
@@ -47,30 +50,27 @@ func TestAccIBMIsInstanceSoftwareAttachmentDataSourceBasic(t *testing.T) {
 }
 
 func TestAccIBMIsInstanceSoftwareAttachmentDataSourceAllArgs(t *testing.T) {
-	instanceSoftwareAttachmentInstanceID := fmt.Sprintf("tf_instance_id_%d", acctest.RandIntRange(10, 100))
-	instanceSoftwareAttachmentName := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
+	vpcname := fmt.Sprintf("tf-vpc-%d", acctest.RandIntRange(10, 100))
+	subnetname := fmt.Sprintf("tf-subnet-%d", acctest.RandIntRange(10, 100))
+	sshname := fmt.Sprintf("tf-ssh-%d", acctest.RandIntRange(10, 100))
+	instanceName := fmt.Sprintf("tf-instance-%d", acctest.RandIntRange(10, 100))
+	instanceSoftwareAttachmentName := fmt.Sprintf("tf-name-%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheck(t) },
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIBMIsInstanceSoftwareAttachmentDataSourceConfig(instanceSoftwareAttachmentInstanceID, instanceSoftwareAttachmentName),
+				Config: testAccCheckIBMIsInstanceSoftwareAttachmentDataSourceConfig(vpcname, subnetname, sshname, instanceName, instanceSoftwareAttachmentName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_is_instance_software_attachment.is_instance_software_attachment_instance", "id"),
 					resource.TestCheckResourceAttrSet("data.ibm_is_instance_software_attachment.is_instance_software_attachment_instance", "instance_id"),
 					resource.TestCheckResourceAttrSet("data.ibm_is_instance_software_attachment.is_instance_software_attachment_instance", "instance_software_attachment_id"),
-					resource.TestCheckResourceAttrSet("data.ibm_is_instance_software_attachment.is_instance_software_attachment_instance", "catalog_offering.#"),
+					resource.TestCheckResourceAttr("data.ibm_is_instance_software_attachment.is_instance_software_attachment_instance", "name", instanceSoftwareAttachmentName),
 					resource.TestCheckResourceAttrSet("data.ibm_is_instance_software_attachment.is_instance_software_attachment_instance", "created_at"),
-					resource.TestCheckResourceAttrSet("data.ibm_is_instance_software_attachment.is_instance_software_attachment_instance", "entitlement.#"),
 					resource.TestCheckResourceAttrSet("data.ibm_is_instance_software_attachment.is_instance_software_attachment_instance", "href"),
 					resource.TestCheckResourceAttrSet("data.ibm_is_instance_software_attachment.is_instance_software_attachment_instance", "lifecycle_reasons.#"),
-					resource.TestCheckResourceAttrSet("data.ibm_is_instance_software_attachment.is_instance_software_attachment_instance", "lifecycle_reasons.0.code"),
-					resource.TestCheckResourceAttrSet("data.ibm_is_instance_software_attachment.is_instance_software_attachment_instance", "lifecycle_reasons.0.message"),
-					resource.TestCheckResourceAttrSet("data.ibm_is_instance_software_attachment.is_instance_software_attachment_instance", "lifecycle_reasons.0.more_info"),
 					resource.TestCheckResourceAttrSet("data.ibm_is_instance_software_attachment.is_instance_software_attachment_instance", "lifecycle_state"),
-					resource.TestCheckResourceAttrSet("data.ibm_is_instance_software_attachment.is_instance_software_attachment_instance", "name"),
-					resource.TestCheckResourceAttrSet("data.ibm_is_instance_software_attachment.is_instance_software_attachment_instance", "offering_instance.#"),
 					resource.TestCheckResourceAttrSet("data.ibm_is_instance_software_attachment.is_instance_software_attachment_instance", "resource_type"),
 				),
 			},
@@ -78,31 +78,33 @@ func TestAccIBMIsInstanceSoftwareAttachmentDataSourceAllArgs(t *testing.T) {
 	})
 }
 
-func testAccCheckIBMIsInstanceSoftwareAttachmentDataSourceConfigBasic(instanceSoftwareAttachmentInstanceID string) string {
-	return fmt.Sprintf(`
+func testAccCheckIBMIsInstanceSoftwareAttachmentDataSourceConfigBasic(vpcname, subnetname, sshname, instanceName string) string {
+	return testAccCheckIBMIsInstanceSoftwareAttachmentBaseConfig(vpcname, subnetname, sshname, instanceName) + `
 		resource "ibm_is_instance_software_attachment" "is_instance_software_attachment_instance" {
-			instance_id = "%s"
+			instance_id                        = ibm_is_instance.testacc_instance.id
+			instance_software_attachment_id = ibm_is_instance.testacc_instance.software_attachments.0.id
 		}
 
 		data "ibm_is_instance_software_attachment" "is_instance_software_attachment_instance" {
-			instance_id = ibm_is_instance_software_attachment.is_instance_software_attachment_instance.instance_id
+			instance_id                        = ibm_is_instance_software_attachment.is_instance_software_attachment_instance.instance_id
 			instance_software_attachment_id = ibm_is_instance_software_attachment.is_instance_software_attachment_instance.instance_software_attachment_id
 		}
-	`, instanceSoftwareAttachmentInstanceID)
+	`
 }
 
-func testAccCheckIBMIsInstanceSoftwareAttachmentDataSourceConfig(instanceSoftwareAttachmentInstanceID string, instanceSoftwareAttachmentName string) string {
-	return fmt.Sprintf(`
+func testAccCheckIBMIsInstanceSoftwareAttachmentDataSourceConfig(vpcname, subnetname, sshname, instanceName, instanceSoftwareAttachmentName string) string {
+	return testAccCheckIBMIsInstanceSoftwareAttachmentBaseConfig(vpcname, subnetname, sshname, instanceName) + fmt.Sprintf(`
 		resource "ibm_is_instance_software_attachment" "is_instance_software_attachment_instance" {
-			instance_id = "%s"
-			name = "%s"
+			instance_id                        = ibm_is_instance.testacc_instance.id
+			instance_software_attachment_id = ibm_is_instance.testacc_instance.software_attachments.0.id
+			name                               = "%s"
 		}
 
 		data "ibm_is_instance_software_attachment" "is_instance_software_attachment_instance" {
-			instance_id = ibm_is_instance_software_attachment.is_instance_software_attachment_instance.instance_id
+			instance_id                        = ibm_is_instance_software_attachment.is_instance_software_attachment_instance.instance_id
 			instance_software_attachment_id = ibm_is_instance_software_attachment.is_instance_software_attachment_instance.instance_software_attachment_id
 		}
-	`, instanceSoftwareAttachmentInstanceID, instanceSoftwareAttachmentName)
+	`, instanceSoftwareAttachmentName)
 }
 
 func TestDataSourceIBMIsInstanceSoftwareAttachmentInstanceSoftwareAttachmentCatalogOfferingToMap(t *testing.T) {

@@ -37,9 +37,17 @@ func ResourceIBMIsInstanceSoftwareAttachment() *schema.Resource {
 				ValidateFunc: validate.InvokeValidator("ibm_is_instance_software_attachment", "instance_id"),
 				Description:  "The virtual server instance identifier.",
 			},
+			"instance_software_attachment_id": &schema.Schema{
+				Type:         schema.TypeString,
+				Required:     true,
+				ForceNew:     true,
+				ValidateFunc: validate.InvokeValidator("ibm_is_instance_software_attachment", "instance_software_attachment_id"),
+				Description:  "The unique identifier for the instance software attachment to manage. The attachment is created automatically when the instance is provisioned from a software-licensed catalog offering; this resource manages the mutable properties (such as the name) of that existing attachment.",
+			},
 			"name": &schema.Schema{
 				Type:         schema.TypeString,
 				Optional:     true,
+				Computed:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_is_instance_software_attachment", "name"),
 				Description:  "The name for this instance software attachment. The name is unique across all instance software attachments for the instance.",
 			},
@@ -176,11 +184,6 @@ func ResourceIBMIsInstanceSoftwareAttachment() *schema.Resource {
 				Computed:    true,
 				Description: "The resource type.",
 			},
-			"instance_software_attachment_id": &schema.Schema{
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The unique identifier for this instance software attachment.",
-			},
 		},
 	}
 }
@@ -190,6 +193,15 @@ func ResourceIBMIsInstanceSoftwareAttachmentValidator() *validate.ResourceValida
 	validateSchema = append(validateSchema,
 		validate.ValidateSchema{
 			Identifier:                 "instance_id",
+			ValidateFunctionIdentifier: validate.ValidateRegexpLen,
+			Type:                       validate.TypeString,
+			Required:                   true,
+			Regexp:                     `^[-0-9a-z_]+$`,
+			MinValueLength:             1,
+			MaxValueLength:             64,
+		},
+		validate.ValidateSchema{
+			Identifier:                 "instance_software_attachment_id",
 			ValidateFunctionIdentifier: validate.ValidateRegexpLen,
 			Type:                       validate.TypeString,
 			Required:                   true,
@@ -220,22 +232,30 @@ func resourceIBMIsInstanceSoftwareAttachmentCreate(context context.Context, d *s
 		return tfErr.GetDiag()
 	}
 
-	updateInstanceSoftwareAttachmentOptions := &vpcv1.UpdateInstanceSoftwareAttachmentOptions{}
-	instanceSoftwareAttachmentPatch := &vpcv1.InstanceSoftwareAttachmentPatch{}
-	updateInstanceSoftwareAttachmentOptions.SetInstanceID(d.Get("instance_id").(string))
+	// A software attachment cannot be created through the API. It is created
+	// automatically when the instance is provisioned from a software-licensed
+	// catalog offering. This resource adopts an existing attachment identified
+	// by (instance_id, instance_software_attachment_id) and manages its
+	// mutable properties (currently only the name).
+	instanceID := d.Get("instance_id").(string)
+	attachmentID := d.Get("instance_software_attachment_id").(string)
+
 	if _, ok := d.GetOk("name"); ok {
+		updateInstanceSoftwareAttachmentOptions := &vpcv1.UpdateInstanceSoftwareAttachmentOptions{}
+		updateInstanceSoftwareAttachmentOptions.SetInstanceID(instanceID)
+		updateInstanceSoftwareAttachmentOptions.SetID(attachmentID)
+		instanceSoftwareAttachmentPatch := &vpcv1.InstanceSoftwareAttachmentPatch{}
 		instanceSoftwareAttachmentPatch.Name = core.StringPtr(d.Get("name").(string))
-	}
-	instanceSoftwareAttachmentPatchAsPatch := ResourceIBMIsInstanceSoftwareAttachmentInstanceSoftwareAttachmentPatchAsPatch(instanceSoftwareAttachmentPatch, d)
-	updateInstanceSoftwareAttachmentOptions.InstanceSoftwareAttachmentPatch = instanceSoftwareAttachmentPatchAsPatch
-	instanceSoftwareAttachment, _, err := vpcClient.UpdateInstanceSoftwareAttachmentWithContext(context, updateInstanceSoftwareAttachmentOptions)
-	if err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateInstanceSoftwareAttachmentWithContext failed: %s", err.Error()), "ibm_is_instance_software_attachment", "create")
-		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
-		return tfErr.GetDiag()
+		updateInstanceSoftwareAttachmentOptions.InstanceSoftwareAttachmentPatch = ResourceIBMIsInstanceSoftwareAttachmentInstanceSoftwareAttachmentPatchAsPatch(instanceSoftwareAttachmentPatch, d)
+		_, _, err = vpcClient.UpdateInstanceSoftwareAttachmentWithContext(context, updateInstanceSoftwareAttachmentOptions)
+		if err != nil {
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("UpdateInstanceSoftwareAttachmentWithContext failed: %s", err.Error()), "ibm_is_instance_software_attachment", "create")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
+		}
 	}
 
-	d.SetId(fmt.Sprintf("%s/%s", *updateInstanceSoftwareAttachmentOptions.InstanceID, *instanceSoftwareAttachment.ID))
+	d.SetId(fmt.Sprintf("%s/%s", instanceID, attachmentID))
 
 	return resourceIBMIsInstanceSoftwareAttachmentRead(context, d, meta)
 }
@@ -267,6 +287,11 @@ func resourceIBMIsInstanceSoftwareAttachmentRead(context context.Context, d *sch
 		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetInstanceSoftwareAttachmentWithContext failed: %s", err.Error()), "ibm_is_instance_software_attachment", "read")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
+	}
+
+	if err = d.Set("instance_id", parts[0]); err != nil {
+		err = fmt.Errorf("Error setting instance_id: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance_software_attachment", "read", "set-instance_id").GetDiag()
 	}
 
 	if !core.IsNil(instanceSoftwareAttachment.Name) {
@@ -391,7 +416,11 @@ func resourceIBMIsInstanceSoftwareAttachmentUpdate(context context.Context, d *s
 }
 
 func resourceIBMIsInstanceSoftwareAttachmentDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	// This resource does not support a "delete" operation.
+	// A software attachment cannot be deleted through the API; its lifecycle is
+	// bound to the instance it belongs to. Destroying this resource only removes
+	// it from Terraform state and leaves the attachment (and any name set on it)
+	// in place on the instance.
+	log.Printf("[INFO] The instance software attachment %q is not deleted from the instance; it is only removed from Terraform state.", d.Id())
 	d.SetId("")
 	return nil
 }
