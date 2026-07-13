@@ -56,7 +56,7 @@ Nested schema for **entitlement**:
 		  * Constraints: The maximum length is `1024` characters. The minimum length is `1` character. The value must match regular expression `/^[ -~]+$/`.
 * `href` - (String) The URL for this instance software attachment.
   * Constraints: The maximum length is `8000` characters. The minimum length is `10` characters. The value must match regular expression `/^http(s)?:\/\/([^\/?#]*)([^?#]*)(\\?([^#]*))?(#(.*))?$/`.
-* `is_instance_software_attachment_id` - (String) The unique identifier for this instance software attachment.
+* `instance_software_attachment_id` - (String) The unique identifier for this instance software attachment.
   * Constraints: The maximum length is `64` characters. The minimum length is `1` character. The value must match regular expression `/^[-0-9a-z_]+$/`.
 * `lifecycle_reasons` - (List) The lifecycle reasons for this instance software attachment (if any).
   * Constraints: The minimum length is `0` items.
@@ -79,15 +79,15 @@ Nested schema for **offering_instance**:
 ## Import
 
 You can import the `ibm_is_instance_software_attachment` resource by using `id`.
-The `id` property can be formed from `instance_id`, and `is_instance_software_attachment_id` in the following format:
+The `id` property can be formed from `instance_id`, and `instance_software_attachment_id` in the following format:
 
 <pre>
-&lt;instance_id&gt;/&lt;is_instance_software_attachment_id&gt;
+&lt;instance_id&gt;/&lt;instance_software_attachment_id&gt;
 </pre>
 * `instance_id`: A string. The virtual server instance identifier.
-* `is_instance_software_attachment_id`: A string in the format `0717-7ec86020-1c6e-4889-b3f0-a15f2e50f87e`. The unique identifier for this instance software attachment.
+* `instance_software_attachment_id`: A string in the format `0717-7ec86020-1c6e-4889-b3f0-a15f2e50f87e`. The unique identifier for this instance software attachment.
 
 # Syntax
 <pre>
-$ terraform import ibm_is_instance_software_attachment.is_instance_software_attachment &lt;instance_id&gt;/&lt;is_instance_software_attachment_id&gt;
+$ terraform import ibm_is_instance_software_attachment.is_instance_software_attachment &lt;instance_id&gt;/&lt;instance_software_attachment_id&gt;
 </pre>

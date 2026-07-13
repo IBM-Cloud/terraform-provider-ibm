@@ -15,7 +15,7 @@ Provides a read-only data source to retrieve information about an InstanceSoftwa
 ```hcl
 data "ibm_is_instance_software_attachment" "is_instance_software_attachment" {
 	instance_id = ibm_is_instance_software_attachment.is_instance_software_attachment_instance.instance_id
-	is_instance_software_attachment_id = ibm_is_instance_software_attachment.is_instance_software_attachment_instance.is_instance_software_attachment_id
+	instance_software_attachment_id = ibm_is_instance_software_attachment.is_instance_software_attachment_instance.instance_software_attachment_id
 }
 ```
 
@@ -25,7 +25,7 @@ You can specify the following arguments for this data source.
 
 * `instance_id` - (Required, Forces new resource, String) The virtual server instance identifier.
   * Constraints: The maximum length is `64` characters. The minimum length is `1` character. The value must match regular expression `/^[-0-9a-z_]+$/`.
-* `is_instance_software_attachment_id` - (Required, Forces new resource, String) The instance software attachment identifier.
+* `instance_software_attachment_id` - (Required, Forces new resource, String) The instance software attachment identifier.
   * Constraints: The maximum length is `64` characters. The minimum length is `1` character. The value must match regular expression `/^[-0-9a-z_]+$/`.
 
 ## Attribute Reference

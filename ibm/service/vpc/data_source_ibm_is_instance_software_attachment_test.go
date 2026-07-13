@@ -33,7 +33,7 @@ func TestAccIBMIsInstanceSoftwareAttachmentDataSourceBasic(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_is_instance_software_attachment.is_instance_software_attachment_instance", "id"),
 					resource.TestCheckResourceAttrSet("data.ibm_is_instance_software_attachment.is_instance_software_attachment_instance", "instance_id"),
-					resource.TestCheckResourceAttrSet("data.ibm_is_instance_software_attachment.is_instance_software_attachment_instance", "is_instance_software_attachment_id"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_instance_software_attachment.is_instance_software_attachment_instance", "instance_software_attachment_id"),
 					resource.TestCheckResourceAttrSet("data.ibm_is_instance_software_attachment.is_instance_software_attachment_instance", "created_at"),
 					resource.TestCheckResourceAttrSet("data.ibm_is_instance_software_attachment.is_instance_software_attachment_instance", "href"),
 					resource.TestCheckResourceAttrSet("data.ibm_is_instance_software_attachment.is_instance_software_attachment_instance", "lifecycle_reasons.#"),
@@ -59,7 +59,7 @@ func TestAccIBMIsInstanceSoftwareAttachmentDataSourceAllArgs(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_is_instance_software_attachment.is_instance_software_attachment_instance", "id"),
 					resource.TestCheckResourceAttrSet("data.ibm_is_instance_software_attachment.is_instance_software_attachment_instance", "instance_id"),
-					resource.TestCheckResourceAttrSet("data.ibm_is_instance_software_attachment.is_instance_software_attachment_instance", "is_instance_software_attachment_id"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_instance_software_attachment.is_instance_software_attachment_instance", "instance_software_attachment_id"),
 					resource.TestCheckResourceAttrSet("data.ibm_is_instance_software_attachment.is_instance_software_attachment_instance", "catalog_offering.#"),
 					resource.TestCheckResourceAttrSet("data.ibm_is_instance_software_attachment.is_instance_software_attachment_instance", "created_at"),
 					resource.TestCheckResourceAttrSet("data.ibm_is_instance_software_attachment.is_instance_software_attachment_instance", "entitlement.#"),
@@ -86,7 +86,7 @@ func testAccCheckIBMIsInstanceSoftwareAttachmentDataSourceConfigBasic(instanceSo
 
 		data "ibm_is_instance_software_attachment" "is_instance_software_attachment_instance" {
 			instance_id = ibm_is_instance_software_attachment.is_instance_software_attachment_instance.instance_id
-			is_instance_software_attachment_id = ibm_is_instance_software_attachment.is_instance_software_attachment_instance.is_instance_software_attachment_id
+			instance_software_attachment_id = ibm_is_instance_software_attachment.is_instance_software_attachment_instance.instance_software_attachment_id
 		}
 	`, instanceSoftwareAttachmentInstanceID)
 }
@@ -100,7 +100,7 @@ func testAccCheckIBMIsInstanceSoftwareAttachmentDataSourceConfig(instanceSoftwar
 
 		data "ibm_is_instance_software_attachment" "is_instance_software_attachment_instance" {
 			instance_id = ibm_is_instance_software_attachment.is_instance_software_attachment_instance.instance_id
-			is_instance_software_attachment_id = ibm_is_instance_software_attachment.is_instance_software_attachment_instance.is_instance_software_attachment_id
+			instance_software_attachment_id = ibm_is_instance_software_attachment.is_instance_software_attachment_instance.instance_software_attachment_id
 		}
 	`, instanceSoftwareAttachmentInstanceID, instanceSoftwareAttachmentName)
 }

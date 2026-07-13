@@ -30,7 +30,7 @@ func DataSourceIBMIsInstanceSoftwareAttachment() *schema.Resource {
 				Required:    true,
 				Description: "The virtual server instance identifier.",
 			},
-			"is_instance_software_attachment_id": &schema.Schema{
+			"instance_software_attachment_id": &schema.Schema{
 				Type:        schema.TypeString,
 				Required:    true,
 				Description: "The instance software attachment identifier.",
@@ -186,7 +186,7 @@ func dataSourceIBMIsInstanceSoftwareAttachmentRead(context context.Context, d *s
 	getInstanceSoftwareAttachmentOptions := &vpcv1.GetInstanceSoftwareAttachmentOptions{}
 
 	getInstanceSoftwareAttachmentOptions.SetInstanceID(d.Get("instance_id").(string))
-	getInstanceSoftwareAttachmentOptions.SetID(d.Get("is_instance_software_attachment_id").(string))
+	getInstanceSoftwareAttachmentOptions.SetID(d.Get("instance_software_attachment_id").(string))
 
 	instanceSoftwareAttachment, _, err := vpcClient.GetInstanceSoftwareAttachmentWithContext(context, getInstanceSoftwareAttachmentOptions)
 	if err != nil {
