@@ -6,7 +6,6 @@ package database
 import (
 	"context"
 	"fmt"
-	"time"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
@@ -16,7 +15,9 @@ import (
 )
 
 // dataSourceIBMDatabaseTasksGen2Backend implements tasks retrieval for Gen2 databases using RC API.
-type dataSourceIBMDatabaseTasksGen2Backend struct{}
+type dataSourceIBMDatabaseTasksGen2Backend struct {
+	utils gen2TaskUtils
+}
 
 func newDataSourceIBMDatabaseTasksGen2Backend() dataSourceIBMDatabaseTasksBackend {
 	return &dataSourceIBMDatabaseTasksGen2Backend{}
@@ -41,21 +42,6 @@ func (g *dataSourceIBMDatabaseTasksGen2Backend) Read(ctx context.Context, d *sch
 	instance, response, err := rsConClient.GetResourceInstanceWithContext(ctx, getInstanceOptions)
 	if err != nil {
 		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("failed to get instance details: %s\n%s", err.Error(), response), "(Data) ibm_database_tasks", "read")
-		return tfErr.GetDiag()
-	}
-
-	// Validate Gen2 instance
-	if instance.ResourcePlanID == nil {
-		tfErr := flex.TerraformErrorf(fmt.Errorf("instance resource plan ID is nil"), "cannot determine database generation", "(Data) ibm_database_tasks", "read")
-		return tfErr.GetDiag()
-	}
-
-	if !isGen2Plan(*instance.ResourcePlanID) {
-		tfErr := flex.TerraformErrorf(
-			fmt.Errorf("instance is not a Gen2 database"),
-			"this data source is for Gen2 databases only",
-			"(Data) ibm_database_tasks",
-			"read")
 		return tfErr.GetDiag()
 	}
 
@@ -86,92 +72,10 @@ func (g *dataSourceIBMDatabaseTasksGen2Backend) instanceToTaskMap(instance *rc.R
 		taskMap["deployment_id"] = *instance.ID
 	}
 
-	taskMap["description"] = g.getOperationDescription(instance)
-	taskMap["status"] = g.mapStateToStatus(instance)
-	taskMap["progress_percent"] = g.calculateProgress(instance)
-	taskMap["created_at"] = g.getOperationTime(instance)
+	taskMap["description"] = g.utils.getOperationDescription(instance)
+	taskMap["status"] = g.utils.mapStateToStatus(instance)
+	taskMap["progress_percent"] = g.utils.calculateProgress(instance)
+	taskMap["created_at"] = g.utils.getOperationTime(instance)
 
 	return taskMap
-}
-
-func (g *dataSourceIBMDatabaseTasksGen2Backend) getOperationDescription(instance *rc.ResourceInstance) string {
-	if instance.LastOperation != nil {
-		if instance.LastOperation.Description != nil && *instance.LastOperation.Description != "" {
-			return *instance.LastOperation.Description
-		}
-		if instance.LastOperation.Type != nil && *instance.LastOperation.Type != "" {
-			return fmt.Sprintf("Operation: %s", *instance.LastOperation.Type)
-		}
-	}
-
-	if instance.State != nil {
-		return fmt.Sprintf("Instance state: %s", *instance.State)
-	}
-
-	return "Gen2 database instance operation"
-}
-
-func (g *dataSourceIBMDatabaseTasksGen2Backend) mapStateToStatus(instance *rc.ResourceInstance) string {
-	if instance.State == nil {
-		// Instance state is not available
-		return "unknown"
-	}
-
-	state := *instance.State
-	switch state {
-	case "active":
-		// Instance is fully provisioned and operational
-		return "completed"
-	case "provisioning", "in progress":
-		// Instance is being created or an operation is in progress
-		return "running"
-	case "removed":
-		// Instance has been deleted, operation is complete
-		return "completed"
-	default:
-		// Return the original state for any unmapped states
-		return state
-	}
-}
-
-func (g *dataSourceIBMDatabaseTasksGen2Backend) calculateProgress(instance *rc.ResourceInstance) int {
-	if instance.State == nil {
-		// No state information available
-		return 0
-	}
-
-	state := *instance.State
-	switch state {
-	case "active":
-		// Instance is fully provisioned and operational - 100% complete
-		return 100
-	case "provisioning":
-		// Instance is being created - estimated at 50% (midpoint of provisioning process)
-		// Note: Actual progress may vary; RC API doesn't provide granular progress data
-		return 50
-	case "in progress":
-		// Operation is in progress - estimated at 75% (nearing completion)
-		// Note: This is an approximation as RC API doesn't provide actual progress percentage
-		return 75
-	case "failed", "removed":
-		// Operation has completed (either failed or instance removed) - 100% done
-		return 100
-	case "inactive":
-		// Instance is stopped/suspended - no progress (0%)
-		return 0
-	default:
-		// Unknown state - assume no progress
-		return 0
-	}
-}
-
-func (g *dataSourceIBMDatabaseTasksGen2Backend) getOperationTime(instance *rc.ResourceInstance) string {
-	if instance.UpdatedAt != nil {
-		return flex.DateTimeToString(instance.UpdatedAt)
-	}
-	if instance.CreatedAt != nil {
-		return flex.DateTimeToString(instance.CreatedAt)
-	}
-
-	return time.Now().UTC().Format(time.RFC3339)
 }
