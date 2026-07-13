@@ -96,6 +96,7 @@ func AddInstanceFields(resource *schema.Resource) *schema.Resource {
 	resource.Schema["endpoint_type"] = &schema.Schema{
 		Type:        schema.TypeString,
 		Optional:    true,
+		Default:     "public",
 		Description: "public or private. Defaults to 'public' if not provided.",
 	}
 	resource.Schema["service_name"] = &schema.Schema{
