@@ -8,7 +8,7 @@ description: |-
 
 # ibm_iam_account_settings
 
-Create or update iam_account_settingss with this resource.
+Create or update iam_account_settings with this resource.
 
 ## Example Usage
 
