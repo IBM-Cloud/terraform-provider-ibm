@@ -16,14 +16,12 @@ import (
 )
 
 func TestAccIBMIAMAccountSettingsDataSourceBasic(t *testing.T) {
-	accountId := acc.IAMAccountId
-
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheck(t) },
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIBMIamAccountSettingsDataSourceConfigBasic(accountId),
+				Config: testAccCheckIBMIamAccountSettingsDataSourceConfigBasic(),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_iam_account_settings.iam_account_settings_instance", "id"),
 					resource.TestCheckResourceAttrSet("data.ibm_iam_account_settings.iam_account_settings_instance", "account_id"),
@@ -46,10 +44,9 @@ func TestAccIBMIAMAccountSettingsDataSourceBasic(t *testing.T) {
 	})
 }
 
-func testAccCheckIBMIamAccountSettingsDataSourceConfigBasic(accountId string) string {
+func testAccCheckIBMIamAccountSettingsDataSourceConfigBasic() string {
 	return fmt.Sprintf(`
 		data "ibm_iam_account_settings" "iam_account_settings_instance" {
-			account_id = "%s"
 		}
-	`, accountId)
+	`)
 }

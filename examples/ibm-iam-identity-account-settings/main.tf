@@ -5,14 +5,6 @@ provider "ibm" {
 // Create iam_account_settings instance
 resource "ibm_iam_account_settings" "iam_account_settings_instance" {
   include_history = false
-  restrict_user_domains {
-    realm_id                        = "IBMid"
-    restrict_invitation             = true
-    invitation_email_allow_patterns = ["*@ibm.com"]
-  }
-}
-
-resource "ibm_iam_account_settings" "iam_account_settings_additional" {
   restrict_create_service_id = "NOT_SET"
   restrict_create_platform_apikey = "NOT_SET"
   restrict_user_list_visibility = "NOT_RESTRICTED"
@@ -23,12 +15,9 @@ resource "ibm_iam_account_settings" "iam_account_settings_additional" {
     mfa = "NONE"
   }
   restrict_user_domains {
-    realm_id = "IBMid"
-    invitation_email_allow_patterns = [
-      "*@ibm.com",
-      "*@corp.org"
-    ]
-    restrict_invitation = false
+    realm_id                        = "IBMid"
+    restrict_invitation             = true
+    invitation_email_allow_patterns = ["*@ibm.com"]
   }
   session_expiration_in_seconds = "NOT_SET"
   session_invalidation_in_seconds = "NOT_SET"
