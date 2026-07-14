@@ -353,7 +353,7 @@ func TestAccIBMISInstancesDataSource_InsGroupfilter(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccCheckIBMISInstancesDataSourceConfigInstanceGroup(instanceGroupName),
+				Config: testAccCheckIBMISInstancesDataSourceConfigInstanceGroup(vpcName, subnetName, sshKeyName, publicKey, templateName, instanceGroupName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(resName, "instances.0.name"),
 				),
@@ -388,11 +388,15 @@ func testAccCheckIBMISInstancesDataSourceConfig1(vpcname string) string {
 		vpc_name = "%s"
 	}`, vpcname)
 }
-func testAccCheckIBMISInstancesDataSourceConfigInstanceGroup(insGrpName string) string {
-	return fmt.Sprintf(`
+func testAccCheckIBMISInstancesDataSourceConfigInstanceGroup(vpcName, subnetName, sshKeyName, publicKey, templateName, instanceGroupName string) string {
+	return testAccCheckIBMISInstanceGroupConfig(vpcName, subnetName, sshKeyName, publicKey, templateName, instanceGroupName) + fmt.Sprintf(`
 	data "ibm_is_instances" "ds_instances1" {
 		instance_group_name = "%s"
-	}`, insGrpName)
+	}
+
+	data "ibm_is_instances" "ds_instances2" {
+		instance_group_crn = ibm_is_instance_group.instance_group.crn
+	}`, instanceGroupName)
 }
 
 func testAccCheckIBMISInstancesDataSourceConfigWithCatalogOffering(vpcname, subnetname, sshname, instanceName, planCrn, versionCrn string) string {
