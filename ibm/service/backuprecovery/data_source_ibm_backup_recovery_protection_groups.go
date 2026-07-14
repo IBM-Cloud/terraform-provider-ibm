@@ -5106,6 +5106,11 @@ func DataSourceIbmBackupRecoveryProtectionGroups() *schema.Resource {
 																Computed:    true,
 																Description: "Specifies the id of the pvc.",
 															},
+															"metadata_only": &schema.Schema{
+																Type:        schema.TypeBool,
+																Computed:    true,
+																Description: "This field will be used only for PVCs to indicate whether only metadata is present inside PVCs. Default: false (Both data and metadata present).",
+															},
 															"name": &schema.Schema{
 																Type:        schema.TypeString,
 																Computed:    true,
@@ -5241,6 +5246,11 @@ func DataSourceIbmBackupRecoveryProtectionGroups() *schema.Resource {
 																Type:        schema.TypeInt,
 																Computed:    true,
 																Description: "Specifies the id of the pvc.",
+															},
+															"metadata_only": &schema.Schema{
+																Type:        schema.TypeBool,
+																Computed:    true,
+																Description: "This field will be used only for PVCs to indicate whether only metadata is present inside PVCs. Default: false (Both data and metadata present).",
 															},
 															"name": &schema.Schema{
 																Type:        schema.TypeString,
@@ -8048,6 +8058,9 @@ func DataSourceIbmBackupRecoveryProtectionGroupsKubernetesPvcInfoToMap(model *ba
 	modelMap := make(map[string]interface{})
 	if model.ID != nil {
 		modelMap["id"] = flex.IntValue(model.ID)
+	}
+	if model.MetadataOnly != nil {
+		modelMap["metadata_only"] = *model.MetadataOnly
 	}
 	if model.Name != nil {
 		modelMap["name"] = *model.Name

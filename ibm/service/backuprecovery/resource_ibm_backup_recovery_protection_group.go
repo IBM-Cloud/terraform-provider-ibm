@@ -1783,6 +1783,11 @@ func ResourceIbmBackupRecoveryProtectionGroup() *schema.Resource {
 													Computed:    true,
 													Description: "Specifies the id of the pvc.",
 												},
+												"metadata_only": &schema.Schema{
+													Type:        schema.TypeBool,
+													Optional:    true,
+													Description: "This field will be used only for PVCs to indicate whether only metadata is present inside PVCs. Default: false (Both data and metadata present).",
+												},
 												"name": &schema.Schema{
 													Type:        schema.TypeString,
 													Computed:    true,
@@ -1918,6 +1923,11 @@ func ResourceIbmBackupRecoveryProtectionGroup() *schema.Resource {
 													Computed:    true,
 													Optional:    true,
 													Description: "Specifies the id of the pvc.",
+												},
+												"metadata_only": &schema.Schema{
+													Type:        schema.TypeBool,
+													Optional:    true,
+													Description: "This field will be used only for PVCs to indicate whether only metadata is present inside PVCs. Default: false (Both data and metadata present).",
 												},
 												"name": &schema.Schema{
 													Type:        schema.TypeString,
@@ -7413,6 +7423,9 @@ func ResourceIbmBackupRecoveryProtectionGroupMapToKubernetesPvcInfo(modelMap map
 	if modelMap["id"] != nil {
 		model.ID = core.Int64Ptr(int64(modelMap["id"].(int)))
 	}
+	if modelMap["metadata_only"] != nil {
+		model.MetadataOnly = core.BoolPtr(modelMap["metadata_only"].(bool))
+	}
 	if modelMap["name"] != nil && modelMap["name"].(string) != "" {
 		model.Name = core.StringPtr(modelMap["name"].(string))
 	}
@@ -8424,6 +8437,9 @@ func ResourceIbmBackupRecoveryProtectionGroupKubernetesPvcInfoToMap(model *backu
 	modelMap := make(map[string]interface{})
 	if model.ID != nil {
 		modelMap["id"] = flex.IntValue(model.ID)
+	}
+	if model.MetadataOnly != nil {
+		modelMap["metadata_only"] = *model.MetadataOnly
 	}
 	if model.Name != nil {
 		modelMap["name"] = *model.Name
