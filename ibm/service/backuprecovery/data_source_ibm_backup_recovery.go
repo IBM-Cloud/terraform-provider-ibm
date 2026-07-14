@@ -3130,6 +3130,11 @@ func DataSourceIbmBackupRecovery() *schema.Resource {
 																Computed:    true,
 																Description: "Specifies whether the volume bindings will be removed from all restored PVCs. This will effectively unbind the PVCs from their original PVs. Default: false.",
 															},
+															"use_instant_recovery": &schema.Schema{
+																Type:        schema.TypeBool,
+																Computed:    true,
+																Description: "Specifies whether to use instant recovery for the VMs. The VMs will be restored using copy recovery by default when this field is unset or set to false. Default: false.",
+															},
 														},
 													},
 												},
@@ -5914,6 +5919,9 @@ func DataSourceIbmBackupRecoveryKubernetesRecoveryObjectParamsToMap(model *backu
 	}
 	if model.UnbindPvcs != nil {
 		modelMap["unbind_pvcs"] = *model.UnbindPvcs
+	}
+	if model.UseInstantRecovery != nil {
+		modelMap["use_instant_recovery"] = *model.UseInstantRecovery
 	}
 	return modelMap, nil
 }
