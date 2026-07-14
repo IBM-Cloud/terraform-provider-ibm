@@ -2026,6 +2026,11 @@ func ResourceIbmBackupRecoveryProtectionGroup() *schema.Resource {
 								},
 							},
 						},
+						"perform_source_side_deduplication": &schema.Schema{
+							Type:        schema.TypeBool,
+							Optional:    true,
+							Description: "Specifies whether or not to perform source side deduplication on this Protection Group.",
+						},
 						"source_id": &schema.Schema{
 							Type:        schema.TypeInt,
 							Computed:    true,
@@ -7192,6 +7197,9 @@ func ResourceIbmBackupRecoveryProtectionGroupMapToKubernetesProtectionGroupParam
 		}
 		model.Objects = objects
 	}
+	if modelMap["perform_source_side_deduplication"] != nil {
+		model.PerformSourceSideDeduplication = core.BoolPtr(modelMap["perform_source_side_deduplication"].(bool))
+	}
 	if modelMap["source_id"] != nil {
 		model.SourceID = core.Int64Ptr(int64(modelMap["source_id"].(int)))
 	}
@@ -8209,6 +8217,9 @@ func ResourceIbmBackupRecoveryProtectionGroupKubernetesProtectionGroupParamsToMa
 			objects = append(objects, objectsItemMap)
 		}
 		modelMap["objects"] = objects
+	}
+	if model.PerformSourceSideDeduplication != nil {
+		modelMap["perform_source_side_deduplication"] = *model.PerformSourceSideDeduplication
 	}
 	if model.SourceID != nil {
 		modelMap["source_id"] = flex.IntValue(model.SourceID)
