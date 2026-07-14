@@ -545,12 +545,12 @@ func testAccCheckIBMISNetworkACLFlatUDP() string {
 }
 
 // ---------------------------------------------------------------------------
-// Tests for surgical_rule_update flag
+// Tests for incremental_rule_update flag
 // ---------------------------------------------------------------------------
 
-// TestNetworkACL_SurgicalUpdate tests the surgical update path (surgical_rule_update=true).
+// TestNetworkACL_IncrementalUpdate tests the incremental update path (incremental_rule_update=true).
 // Covers: add rule, remove rule, reorder rules, mutable field patch, protocol change.
-func TestNetworkACL_SurgicalUpdate(t *testing.T) {
+func TestNetworkACL_IncrementalUpdate(t *testing.T) {
 	var nwACL string
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
@@ -558,72 +558,72 @@ func TestNetworkACL_SurgicalUpdate(t *testing.T) {
 		CheckDestroy: checkNetworkACLDestroy,
 		Steps: []resource.TestStep{
 			{
-				// Step 1: Create with two rules, surgical mode enabled.
-				Config: testAccNACLSurgical_Base(),
+				// Step 1: Create with two rules, incremental mode enabled.
+				Config: testAccNACLIncremental_Base(),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckIBMISNetworkACLExists("ibm_is_network_acl.surgical_acl", nwACL),
-					resource.TestCheckResourceAttr("ibm_is_network_acl.surgical_acl", "surgical_rule_update", "true"),
-					resource.TestCheckResourceAttr("ibm_is_network_acl.surgical_acl", "rules.#", "2"),
-					resource.TestCheckResourceAttr("ibm_is_network_acl.surgical_acl", "rules.0.name", "rule-a"),
-					resource.TestCheckResourceAttr("ibm_is_network_acl.surgical_acl", "rules.1.name", "rule-b"),
+					testAccCheckIBMISNetworkACLExists("ibm_is_network_acl.incremental_acl", nwACL),
+					resource.TestCheckResourceAttr("ibm_is_network_acl.incremental_acl", "incremental_rule_update", "true"),
+					resource.TestCheckResourceAttr("ibm_is_network_acl.incremental_acl", "rules.#", "2"),
+					resource.TestCheckResourceAttr("ibm_is_network_acl.incremental_acl", "rules.0.name", "rule-a"),
+					resource.TestCheckResourceAttr("ibm_is_network_acl.incremental_acl", "rules.1.name", "rule-b"),
 				),
 			},
 			{
 				// Step 2: Add a new rule at the end.
-				Config: testAccNACLSurgical_AddRule(),
+				Config: testAccNACLIncremental_AddRule(),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckIBMISNetworkACLExists("ibm_is_network_acl.surgical_acl", nwACL),
-					resource.TestCheckResourceAttr("ibm_is_network_acl.surgical_acl", "rules.#", "3"),
-					resource.TestCheckResourceAttr("ibm_is_network_acl.surgical_acl", "rules.0.name", "rule-a"),
-					resource.TestCheckResourceAttr("ibm_is_network_acl.surgical_acl", "rules.1.name", "rule-b"),
-					resource.TestCheckResourceAttr("ibm_is_network_acl.surgical_acl", "rules.2.name", "rule-c"),
+					testAccCheckIBMISNetworkACLExists("ibm_is_network_acl.incremental_acl", nwACL),
+					resource.TestCheckResourceAttr("ibm_is_network_acl.incremental_acl", "rules.#", "3"),
+					resource.TestCheckResourceAttr("ibm_is_network_acl.incremental_acl", "rules.0.name", "rule-a"),
+					resource.TestCheckResourceAttr("ibm_is_network_acl.incremental_acl", "rules.1.name", "rule-b"),
+					resource.TestCheckResourceAttr("ibm_is_network_acl.incremental_acl", "rules.2.name", "rule-c"),
 				),
 			},
 			{
 				// Step 3: Remove rule-b (middle rule).
-				Config: testAccNACLSurgical_RemoveRule(),
+				Config: testAccNACLIncremental_RemoveRule(),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckIBMISNetworkACLExists("ibm_is_network_acl.surgical_acl", nwACL),
-					resource.TestCheckResourceAttr("ibm_is_network_acl.surgical_acl", "rules.#", "2"),
-					resource.TestCheckResourceAttr("ibm_is_network_acl.surgical_acl", "rules.0.name", "rule-a"),
-					resource.TestCheckResourceAttr("ibm_is_network_acl.surgical_acl", "rules.1.name", "rule-c"),
+					testAccCheckIBMISNetworkACLExists("ibm_is_network_acl.incremental_acl", nwACL),
+					resource.TestCheckResourceAttr("ibm_is_network_acl.incremental_acl", "rules.#", "2"),
+					resource.TestCheckResourceAttr("ibm_is_network_acl.incremental_acl", "rules.0.name", "rule-a"),
+					resource.TestCheckResourceAttr("ibm_is_network_acl.incremental_acl", "rules.1.name", "rule-c"),
 				),
 			},
 			{
 				// Step 4: Reorder — swap rule-a and rule-c.
-				Config: testAccNACLSurgical_Reorder(),
+				Config: testAccNACLIncremental_Reorder(),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckIBMISNetworkACLExists("ibm_is_network_acl.surgical_acl", nwACL),
-					resource.TestCheckResourceAttr("ibm_is_network_acl.surgical_acl", "rules.#", "2"),
-					resource.TestCheckResourceAttr("ibm_is_network_acl.surgical_acl", "rules.0.name", "rule-c"),
-					resource.TestCheckResourceAttr("ibm_is_network_acl.surgical_acl", "rules.1.name", "rule-a"),
+					testAccCheckIBMISNetworkACLExists("ibm_is_network_acl.incremental_acl", nwACL),
+					resource.TestCheckResourceAttr("ibm_is_network_acl.incremental_acl", "rules.#", "2"),
+					resource.TestCheckResourceAttr("ibm_is_network_acl.incremental_acl", "rules.0.name", "rule-c"),
+					resource.TestCheckResourceAttr("ibm_is_network_acl.incremental_acl", "rules.1.name", "rule-a"),
 				),
 			},
 			{
 				// Step 5: Patch mutable field (source CIDR) on rule-a only.
-				Config: testAccNACLSurgical_PatchMutable(),
+				Config: testAccNACLIncremental_PatchMutable(),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckIBMISNetworkACLExists("ibm_is_network_acl.surgical_acl", nwACL),
-					resource.TestCheckResourceAttr("ibm_is_network_acl.surgical_acl", "rules.#", "2"),
-					resource.TestCheckResourceAttr("ibm_is_network_acl.surgical_acl", "rules.1.name", "rule-a"),
-					resource.TestCheckResourceAttr("ibm_is_network_acl.surgical_acl", "rules.1.source", "10.0.0.0/8"),
+					testAccCheckIBMISNetworkACLExists("ibm_is_network_acl.incremental_acl", nwACL),
+					resource.TestCheckResourceAttr("ibm_is_network_acl.incremental_acl", "rules.#", "2"),
+					resource.TestCheckResourceAttr("ibm_is_network_acl.incremental_acl", "rules.1.name", "rule-a"),
+					resource.TestCheckResourceAttr("ibm_is_network_acl.incremental_acl", "rules.1.source", "10.0.0.0/8"),
 				),
 			},
 			{
 				// Step 6: Protocol change on rule-c (any → tcp) — delete+recreate at same position.
-				Config: testAccNACLSurgical_ProtocolChange(),
+				Config: testAccNACLIncremental_ProtocolChange(),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckIBMISNetworkACLExists("ibm_is_network_acl.surgical_acl", nwACL),
-					resource.TestCheckResourceAttr("ibm_is_network_acl.surgical_acl", "rules.#", "2"),
-					resource.TestCheckResourceAttr("ibm_is_network_acl.surgical_acl", "rules.0.name", "rule-c"),
-					resource.TestCheckResourceAttr("ibm_is_network_acl.surgical_acl", "rules.0.protocol", "tcp"),
+					testAccCheckIBMISNetworkACLExists("ibm_is_network_acl.incremental_acl", nwACL),
+					resource.TestCheckResourceAttr("ibm_is_network_acl.incremental_acl", "rules.#", "2"),
+					resource.TestCheckResourceAttr("ibm_is_network_acl.incremental_acl", "rules.0.name", "rule-c"),
+					resource.TestCheckResourceAttr("ibm_is_network_acl.incremental_acl", "rules.0.protocol", "tcp"),
 				),
 			},
 		},
 	})
 }
 
-// TestNetworkACL_LegacyUpdate tests the legacy clear+recreate path (surgical_rule_update=false/absent).
+// TestNetworkACL_LegacyUpdate tests the legacy clear+recreate path (incremental_rule_update=false/absent).
 // Covers: add rule, remove rule, mutable field change — all via full wipe+recreate.
 func TestNetworkACL_LegacyUpdate(t *testing.T) {
 	var nwACL string
@@ -637,7 +637,7 @@ func TestNetworkACL_LegacyUpdate(t *testing.T) {
 				Config: testAccNACLLegacy_Base(),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckIBMISNetworkACLExists("ibm_is_network_acl.legacy_acl", nwACL),
-					resource.TestCheckResourceAttr("ibm_is_network_acl.legacy_acl", "surgical_rule_update", "false"),
+					resource.TestCheckResourceAttr("ibm_is_network_acl.legacy_acl", "incremental_rule_update", "false"),
 					resource.TestCheckResourceAttr("ibm_is_network_acl.legacy_acl", "rules.#", "2"),
 					resource.TestCheckResourceAttr("ibm_is_network_acl.legacy_acl", "rules.0.name", "rule-x"),
 					resource.TestCheckResourceAttr("ibm_is_network_acl.legacy_acl", "rules.1.name", "rule-y"),
@@ -679,18 +679,18 @@ func TestNetworkACL_LegacyUpdate(t *testing.T) {
 }
 
 // ---------------------------------------------------------------------------
-// Surgical update configs
+// Incremental update configs
 // ---------------------------------------------------------------------------
 
-func testAccNACLSurgical_Base() string {
+func testAccNACLIncremental_Base() string {
 	return `
-resource "ibm_is_vpc" "surgical_vpc" {
-  name = "tf-surgical-nacl-vpc"
+resource "ibm_is_vpc" "incremental_vpc" {
+  name = "tf-incremental-nacl-vpc"
 }
-resource "ibm_is_network_acl" "surgical_acl" {
-  name                 = "tf-surgical-nacl"
-  vpc                  = ibm_is_vpc.surgical_vpc.id
-  surgical_rule_update = true
+resource "ibm_is_network_acl" "incremental_acl" {
+  name                 = "tf-incremental-nacl"
+  vpc                  = ibm_is_vpc.incremental_vpc.id
+  incremental_rule_update = true
   rules {
     name        = "rule-a"
     action      = "allow"
@@ -711,15 +711,15 @@ resource "ibm_is_network_acl" "surgical_acl" {
 `
 }
 
-func testAccNACLSurgical_AddRule() string {
+func testAccNACLIncremental_AddRule() string {
 	return `
-resource "ibm_is_vpc" "surgical_vpc" {
-  name = "tf-surgical-nacl-vpc"
+resource "ibm_is_vpc" "incremental_vpc" {
+  name = "tf-incremental-nacl-vpc"
 }
-resource "ibm_is_network_acl" "surgical_acl" {
-  name                 = "tf-surgical-nacl"
-  vpc                  = ibm_is_vpc.surgical_vpc.id
-  surgical_rule_update = true
+resource "ibm_is_network_acl" "incremental_acl" {
+  name                 = "tf-incremental-nacl"
+  vpc                  = ibm_is_vpc.incremental_vpc.id
+  incremental_rule_update = true
   rules {
     name        = "rule-a"
     action      = "allow"
@@ -748,15 +748,15 @@ resource "ibm_is_network_acl" "surgical_acl" {
 `
 }
 
-func testAccNACLSurgical_RemoveRule() string {
+func testAccNACLIncremental_RemoveRule() string {
 	return `
-resource "ibm_is_vpc" "surgical_vpc" {
-  name = "tf-surgical-nacl-vpc"
+resource "ibm_is_vpc" "incremental_vpc" {
+  name = "tf-incremental-nacl-vpc"
 }
-resource "ibm_is_network_acl" "surgical_acl" {
-  name                 = "tf-surgical-nacl"
-  vpc                  = ibm_is_vpc.surgical_vpc.id
-  surgical_rule_update = true
+resource "ibm_is_network_acl" "incremental_acl" {
+  name                 = "tf-incremental-nacl"
+  vpc                  = ibm_is_vpc.incremental_vpc.id
+  incremental_rule_update = true
   rules {
     name        = "rule-a"
     action      = "allow"
@@ -777,15 +777,15 @@ resource "ibm_is_network_acl" "surgical_acl" {
 `
 }
 
-func testAccNACLSurgical_Reorder() string {
+func testAccNACLIncremental_Reorder() string {
 	return `
-resource "ibm_is_vpc" "surgical_vpc" {
-  name = "tf-surgical-nacl-vpc"
+resource "ibm_is_vpc" "incremental_vpc" {
+  name = "tf-incremental-nacl-vpc"
 }
-resource "ibm_is_network_acl" "surgical_acl" {
-  name                 = "tf-surgical-nacl"
-  vpc                  = ibm_is_vpc.surgical_vpc.id
-  surgical_rule_update = true
+resource "ibm_is_network_acl" "incremental_acl" {
+  name                 = "tf-incremental-nacl"
+  vpc                  = ibm_is_vpc.incremental_vpc.id
+  incremental_rule_update = true
   rules {
     name        = "rule-c"
     action      = "deny"
@@ -806,15 +806,15 @@ resource "ibm_is_network_acl" "surgical_acl" {
 `
 }
 
-func testAccNACLSurgical_PatchMutable() string {
+func testAccNACLIncremental_PatchMutable() string {
 	return `
-resource "ibm_is_vpc" "surgical_vpc" {
-  name = "tf-surgical-nacl-vpc"
+resource "ibm_is_vpc" "incremental_vpc" {
+  name = "tf-incremental-nacl-vpc"
 }
-resource "ibm_is_network_acl" "surgical_acl" {
-  name                 = "tf-surgical-nacl"
-  vpc                  = ibm_is_vpc.surgical_vpc.id
-  surgical_rule_update = true
+resource "ibm_is_network_acl" "incremental_acl" {
+  name                 = "tf-incremental-nacl"
+  vpc                  = ibm_is_vpc.incremental_vpc.id
+  incremental_rule_update = true
   rules {
     name        = "rule-c"
     action      = "deny"
@@ -835,15 +835,15 @@ resource "ibm_is_network_acl" "surgical_acl" {
 `
 }
 
-func testAccNACLSurgical_ProtocolChange() string {
+func testAccNACLIncremental_ProtocolChange() string {
 	return `
-resource "ibm_is_vpc" "surgical_vpc" {
-  name = "tf-surgical-nacl-vpc"
+resource "ibm_is_vpc" "incremental_vpc" {
+  name = "tf-incremental-nacl-vpc"
 }
-resource "ibm_is_network_acl" "surgical_acl" {
-  name                 = "tf-surgical-nacl"
-  vpc                  = ibm_is_vpc.surgical_vpc.id
-  surgical_rule_update = true
+resource "ibm_is_network_acl" "incremental_acl" {
+  name                 = "tf-incremental-nacl"
+  vpc                  = ibm_is_vpc.incremental_vpc.id
+  incremental_rule_update = true
   rules {
     name        = "rule-c"
     action      = "allow"
@@ -878,7 +878,7 @@ resource "ibm_is_vpc" "legacy_vpc" {
 resource "ibm_is_network_acl" "legacy_acl" {
   name                 = "tf-legacy-nacl"
   vpc                  = ibm_is_vpc.legacy_vpc.id
-  surgical_rule_update = false
+  incremental_rule_update = false
   rules {
     name        = "rule-x"
     action      = "allow"
@@ -907,7 +907,7 @@ resource "ibm_is_vpc" "legacy_vpc" {
 resource "ibm_is_network_acl" "legacy_acl" {
   name                 = "tf-legacy-nacl"
   vpc                  = ibm_is_vpc.legacy_vpc.id
-  surgical_rule_update = false
+  incremental_rule_update = false
   rules {
     name        = "rule-x"
     action      = "allow"
@@ -944,7 +944,7 @@ resource "ibm_is_vpc" "legacy_vpc" {
 resource "ibm_is_network_acl" "legacy_acl" {
   name                 = "tf-legacy-nacl"
   vpc                  = ibm_is_vpc.legacy_vpc.id
-  surgical_rule_update = false
+  incremental_rule_update = false
   rules {
     name        = "rule-x"
     action      = "allow"
@@ -973,7 +973,7 @@ resource "ibm_is_vpc" "legacy_vpc" {
 resource "ibm_is_network_acl" "legacy_acl" {
   name                 = "tf-legacy-nacl"
   vpc                  = ibm_is_vpc.legacy_vpc.id
-  surgical_rule_update = false
+  incremental_rule_update = false
   rules {
     name        = "rule-x"
     action      = "allow"
