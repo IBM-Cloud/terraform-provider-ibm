@@ -6473,11 +6473,7 @@ func DataSourceIbmBackupRecoveryRegistrationInfoCbtInfoToMap(model *backuprecove
 		modelMap["reboot_status"] = *model.RebootStatus
 	}
 	if model.ServiceState != nil {
-		serviceStateMap, err := DataSourceIbmBackupRecoveryRegistrationInfoCbtServiceStateToMap(model.ServiceState)
-		if err != nil {
-			return modelMap, err
-		}
-		modelMap["service_state"] = []map[string]interface{}{serviceStateMap}
+		modelMap["service_state"] = *model.ServiceState
 	}
 	return modelMap, nil
 }

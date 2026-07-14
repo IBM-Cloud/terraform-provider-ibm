@@ -1457,6 +1457,11 @@ func ResourceIbmBackupRecoveryProtectionGroup() *schema.Resource {
 										Optional:    true,
 										Description: "Whether to include all the labels or any of them while performing inclusion/exclusion of objects.",
 									},
+									"label_filter_entity_type": &schema.Schema{
+										Type:        schema.TypeString,
+										Optional:    true,
+										Description: "The type of the entity for which the label filters are specified. Example: kPersistentVolumeClaim or kVirtualMachine.",
+									},
 									"label_vector": &schema.Schema{
 										Type:        schema.TypeList,
 										Optional:    true,
@@ -1551,6 +1556,11 @@ func ResourceIbmBackupRecoveryProtectionGroup() *schema.Resource {
 										Type:        schema.TypeString,
 										Optional:    true,
 										Description: "Whether to include all the labels or any of them while performing inclusion/exclusion of objects.",
+									},
+									"label_filter_entity_type": &schema.Schema{
+										Type:        schema.TypeString,
+										Optional:    true,
+										Description: "The type of the entity for which the label filters are specified. Example: kPersistentVolumeClaim or kVirtualMachine.",
 									},
 									"label_vector": &schema.Schema{
 										Type:        schema.TypeList,
@@ -1673,6 +1683,11 @@ func ResourceIbmBackupRecoveryProtectionGroup() *schema.Resource {
 													Type:        schema.TypeString,
 													Optional:    true,
 													Description: "Whether to include all the labels or any of them while performing inclusion/exclusion of objects.",
+												},
+												"label_filter_entity_type": &schema.Schema{
+													Type:        schema.TypeString,
+													Optional:    true,
+													Description: "The type of the entity for which the label filters are specified. Example: kPersistentVolumeClaim or kVirtualMachine.",
 												},
 												"label_vector": &schema.Schema{
 													Type:        schema.TypeList,
@@ -1803,6 +1818,11 @@ func ResourceIbmBackupRecoveryProtectionGroup() *schema.Resource {
 													Type:        schema.TypeString,
 													Optional:    true,
 													Description: "Whether to include all the labels or any of them while performing inclusion/exclusion of objects.",
+												},
+												"label_filter_entity_type": &schema.Schema{
+													Type:        schema.TypeString,
+													Optional:    true,
+													Description: "The type of the entity for which the label filters are specified. Example: kPersistentVolumeClaim or kVirtualMachine.",
 												},
 												"label_vector": &schema.Schema{
 													Type:        schema.TypeList,
@@ -7224,6 +7244,9 @@ func ResourceIbmBackupRecoveryProtectionGroupMapToKubernetesFilterParams(modelMa
 	if modelMap["label_combination_method"] != nil && modelMap["label_combination_method"].(string) != "" {
 		model.LabelCombinationMethod = core.StringPtr(modelMap["label_combination_method"].(string))
 	}
+	if modelMap["label_filter_entity_type"] != nil && modelMap["label_filter_entity_type"].(string) != "" {
+		model.LabelFilterEntityType = core.StringPtr(modelMap["label_filter_entity_type"].(string))
+	}
 	if modelMap["label_vector"] != nil {
 		labelVector := []backuprecoveryv1.KubernetesLabel{}
 		for _, labelVectorItem := range modelMap["label_vector"].([]interface{}) {
@@ -8244,6 +8267,9 @@ func ResourceIbmBackupRecoveryProtectionGroupKubernetesFilterParamsToMap(model *
 	modelMap := make(map[string]interface{})
 	if model.LabelCombinationMethod != nil {
 		modelMap["label_combination_method"] = *model.LabelCombinationMethod
+	}
+	if model.LabelFilterEntityType != nil {
+		modelMap["label_filter_entity_type"] = *model.LabelFilterEntityType
 	}
 	if model.LabelVector != nil {
 		labelVector := []map[string]interface{}{}
