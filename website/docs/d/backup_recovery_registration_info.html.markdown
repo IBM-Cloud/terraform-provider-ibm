@@ -131,10 +131,7 @@ Nested schema for **root_nodes**:
 						* `is_installed` - (Boolean) Indicates whether the cbt driver is installed.
 						* `reboot_status` - (String) Indicates whether host is rebooted post VolCBT installation.
 						  * Constraints: Allowable values are: `kRebooted`, `kNeedsReboot`, `kInternalError`.
-						* `service_state` - (List) Structure to Hold Service Status.
-						Nested schema for **service_state**:
-							* `name` - (String)
-							* `state` - (String)
+						* `service_state` - (string) Specifies the status of the cbt driver. Specifies the service state of the cbt driver. kRunning indicates the cbt driver is running. kStopped indicates the service is stopped. kPaused indicates the service is paused (it is a Windows-specific state). kUnknown indicates the service with the specified name is not known on the system.
 					* `host_type` - (String) Specifies the host type where the agent is running. This is only set for persistent agents.
 					  * Constraints: Allowable values are: `kLinux`, `kWindows`, `kAix`, `kSolaris`, `kSapHana`, `kSapOracle`, `kCockroachDB`, `kMySQL`, `kOther`, `kSapSybase`, `kSapMaxDB`, `kSapSybaseIQ`, `kDB2`, `kSapASE`, `kMariaDB`, `kPostgreSQL`, `kVOS`, `kHPUX`.
 					* `id` - (Integer) Specifies the agent's id.
@@ -366,10 +363,7 @@ Nested schema for **root_nodes**:
 						* `is_installed` - (Boolean) Indicates whether the cbt driver is installed.
 						* `reboot_status` - (String) Indicates whether host is rebooted post VolCBT installation.
 						  * Constraints: Allowable values are: `kRebooted`, `kNeedsReboot`, `kInternalError`.
-						* `service_state` - (List) Structure to Hold Service Status.
-						Nested schema for **service_state**:
-							* `name` - (String)
-							* `state` - (String)
+						* `service_state` - (string) Specifies the status of the cbt driver. Specifies the service state of the cbt driver. kRunning indicates the cbt driver is running. kStopped indicates the service is stopped. kPaused indicates the service is paused (it is a Windows-specific state). kUnknown indicates the service with the specified name is not known on the system.
 				* `cluster_source_type` - (String) Specifies the type of cluster resource this source represents.
 				* `host_name` - (String) Specifies the hostname.
 				* `host_type` - (String) Specifies the environment type for the host.
@@ -989,10 +983,7 @@ Nested schema for **root_nodes**:
 					* `is_installed` - (Boolean) Indicates whether the cbt driver is installed.
 					* `reboot_status` - (String) Indicates whether host is rebooted post VolCBT installation.
 					  * Constraints: Allowable values are: `kRebooted`, `kNeedsReboot`, `kInternalError`.
-					* `service_state` - (List) Structure to Hold Service Status.
-					Nested schema for **service_state**:
-						* `name` - (String)
-						* `state` - (String)
+					* `service_state` - (string) Specifies the status of the cbt driver. Specifies the service state of the cbt driver. kRunning indicates the cbt driver is running. kStopped indicates the service is stopped. kPaused indicates the service is paused (it is a Windows-specific state). kUnknown indicates the service with the specified name is not known on the system.
 				* `host_type` - (String) Specifies the host type where the agent is running. This is only set for persistent agents.
 				  * Constraints: Allowable values are: `kLinux`, `kWindows`, `kAix`, `kSolaris`, `kSapHana`, `kSapOracle`, `kCockroachDB`, `kMySQL`, `kOther`, `kSapSybase`, `kSapMaxDB`, `kSapSybaseIQ`, `kDB2`, `kSapASE`, `kMariaDB`, `kPostgreSQL`, `kVOS`, `kHPUX`.
 				* `id` - (Integer) Specifies the agent's id.
@@ -1224,10 +1215,7 @@ Nested schema for **root_nodes**:
 					* `is_installed` - (Boolean) Indicates whether the cbt driver is installed.
 					* `reboot_status` - (String) Indicates whether host is rebooted post VolCBT installation.
 					  * Constraints: Allowable values are: `kRebooted`, `kNeedsReboot`, `kInternalError`.
-					* `service_state` - (List) Structure to Hold Service Status.
-					Nested schema for **service_state**:
-						* `name` - (String)
-						* `state` - (String)
+					* `service_state` - (string) Specifies the status of the cbt driver. Specifies the service state of the cbt driver. kRunning indicates the cbt driver is running. kStopped indicates the service is stopped. kPaused indicates the service is paused (it is a Windows-specific state). kUnknown indicates the service with the specified name is not known on the system.
 			* `cluster_source_type` - (String) Specifies the type of cluster resource this source represents.
 			* `host_name` - (String) Specifies the hostname.
 			* `host_type` - (String) Specifies the environment type for the host.
