@@ -58,6 +58,7 @@ resource "ibm_backup_recovery_source_registration" "backup_recovery_source_regis
 		}
 		velero_aws_plugin_image_location = "velero_aws_plugin_image_location"
 		velero_image_location = "velero_image_location"
+		velero_kubevirt_plugin_image_location = "velero_kubevirt_plugin_image_location"
 		velero_openshift_plugin_image_location = "velero_openshift_plugin_image_location"
 		vlan_info_vec {
 			service_annotations {
@@ -142,6 +143,7 @@ Nested schema for **kubernetes_params**:
 		* `value` - (Optional, String) Specifies the service annotation value.
 	* `velero_aws_plugin_image_location` - (Optional, String) Specifies the velero AWS plugin image location of the Kubernetes source.
 	* `velero_image_location` - (Optional, String) Specifies the velero image location of the Kubernetes source.
+	* `velero_kubevirt_plugin_image_location` - (Optional, String) Specifies the velero kubevirt plugin image location of the Kubernetes source.
 	* `velero_openshift_plugin_image_location` - (Optional, String) Specifies the velero open shift plugin image for the Kubernetes source.
 	* `vlan_info_vec` - (Optional, List) Specifies VLAN information provided during registration.
 	Nested schema for **vlan_info_vec**:
