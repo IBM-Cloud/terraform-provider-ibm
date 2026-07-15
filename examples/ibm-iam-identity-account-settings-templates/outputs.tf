@@ -5,8 +5,16 @@ output "ibm_iam_account_settings_template" {
   description = "account_settings_template resource instance"
 }
 
+output "ibm_iam_account_settings_template_data" {
+  value       = data.ibm_iam_account_settings_template.account_settings_template_instance_data
+  description = "account_settings_template data"
+}
 output "account_settings_template_new_version" {
   value       = ibm_iam_account_settings_template.account_settings_template_new_version
-  description = "account_settings_template resource instance"
+  description = "account_settings_template_new_version resource instance"
 }
 
+output "account_settings_template_new_version_data" {
+  value       = data.ibm_iam_account_settings_template.account_settings_template_new_version_data
+  description = "account_settings_template_new_version data"
+}
