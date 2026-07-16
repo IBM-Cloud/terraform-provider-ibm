@@ -951,7 +951,7 @@ func nwaclUpdate(context context.Context, d *schema.ResourceData, meta interface
 		if !d.Get(isNetworkACLRuleUpdateMode).(bool) {
 			// Legacy path: delete all rules, recreate from current config.
 			rules := d.Get(isNetworkACLRules).([]interface{})
-			if err := validateInlineRulesForUpdate(d, make([]interface{}, len(rules))); err != nil {
+			if err := validateInlineRulesForUpdate(d); err != nil {
 				tfErr := flex.TerraformErrorf(err, fmt.Sprintf("validateInlineRulesForUpdate failed: %s", err.Error()), "ibm_is_network_acl", "update")
 				log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 				return tfErr.GetDiag()
@@ -1029,8 +1029,7 @@ func nwaclUpdate(context context.Context, d *schema.ResourceData, meta interface
 
 		// Validate cross-field consistency (only one protocol block, port/icmp vs protocol).
 		// action/direction are already enforced by the schema-level validator at plan time.
-		// The slice just needs the correct length so the validator can index into GetRawConfig.
-		if err := validateInlineRulesForUpdate(d, make([]interface{}, len(rawConfigOrder))); err != nil {
+		if err := validateInlineRulesForUpdate(d); err != nil {
 			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("validateInlineRulesForUpdate failed: %s", err.Error()), "ibm_is_network_acl", "update")
 			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 			return tfErr.GetDiag()
@@ -1620,55 +1619,57 @@ func validateInlineRules(d *schema.ResourceData, rules []interface{}) error {
 	return nil
 }
 
-func validateInlineRulesForUpdate(d *schema.ResourceData, rules []interface{}) error {
+func validateInlineRulesForUpdate(d *schema.ResourceData) error {
 	// Read everything from GetRawConfig so state-merged values don't cause
 	// false positives on update. On create GetRawConfig is fully populated;
 	// on update it is also fully populated (only destroy returns null).
 	rawConfig := d.GetRawConfig()
 	var rawRulesAttr cty.Value
+	ruleLen := 0
 	if rawConfig.IsKnown() && !rawConfig.IsNull() {
 		rawRulesAttr = rawConfig.GetAttr("rules")
+		if !rawRulesAttr.IsNull() && rawRulesAttr.IsKnown() {
+			ruleLen = rawRulesAttr.LengthInt()
+		}
 	} else {
 		rawRulesAttr = cty.NullVal(cty.DynamicPseudoType)
 	}
 
-	for i := range rules {
+	for i := range ruleLen {
 		hasIcmpBlock, hasTcpBlock, hasUdpBlock := false, false, false
 		protocol := ""
 		hasIcmpType, hasIcmpCode := false, false
 		hasPortMin, hasPortMax, hasSrcPortMin, hasSrcPortMax := false, false, false, false
 
-		if !rawRulesAttr.IsNull() && rawRulesAttr.IsKnown() && rawRulesAttr.LengthInt() > i {
-			ruleVal := rawRulesAttr.Index(cty.NumberIntVal(int64(i)))
-			if !ruleVal.IsNull() {
-				icmpAttr := ruleVal.GetAttr("icmp")
-				tcpAttr := ruleVal.GetAttr("tcp")
-				udpAttr := ruleVal.GetAttr("udp")
-				hasIcmpBlock = !icmpAttr.IsNull() && icmpAttr.LengthInt() > 0
-				hasTcpBlock = !tcpAttr.IsNull() && tcpAttr.LengthInt() > 0
-				hasUdpBlock = !udpAttr.IsNull() && udpAttr.LengthInt() > 0
+		ruleVal := rawRulesAttr.Index(cty.NumberIntVal(int64(i)))
+		if !ruleVal.IsNull() {
+			icmpAttr := ruleVal.GetAttr("icmp")
+			tcpAttr := ruleVal.GetAttr("tcp")
+			udpAttr := ruleVal.GetAttr("udp")
+			hasIcmpBlock = !icmpAttr.IsNull() && icmpAttr.LengthInt() > 0
+			hasTcpBlock = !tcpAttr.IsNull() && tcpAttr.LengthInt() > 0
+			hasUdpBlock = !udpAttr.IsNull() && udpAttr.LengthInt() > 0
 
-				if p := ruleVal.GetAttr("protocol"); !p.IsNull() && p.IsKnown() {
-					protocol = p.AsString()
-				}
-				if v := ruleVal.GetAttr("type"); !v.IsNull() && v.IsKnown() {
-					hasIcmpType = true
-				}
-				if v := ruleVal.GetAttr("code"); !v.IsNull() && v.IsKnown() {
-					hasIcmpCode = true
-				}
-				if v := ruleVal.GetAttr("port_min"); !v.IsNull() && v.IsKnown() {
-					hasPortMin = true
-				}
-				if v := ruleVal.GetAttr("port_max"); !v.IsNull() && v.IsKnown() {
-					hasPortMax = true
-				}
-				if v := ruleVal.GetAttr("source_port_min"); !v.IsNull() && v.IsKnown() {
-					hasSrcPortMin = true
-				}
-				if v := ruleVal.GetAttr("source_port_max"); !v.IsNull() && v.IsKnown() {
-					hasSrcPortMax = true
-				}
+			if p := ruleVal.GetAttr("protocol"); !p.IsNull() && p.IsKnown() {
+				protocol = p.AsString()
+			}
+			if v := ruleVal.GetAttr("type"); !v.IsNull() && v.IsKnown() {
+				hasIcmpType = true
+			}
+			if v := ruleVal.GetAttr("code"); !v.IsNull() && v.IsKnown() {
+				hasIcmpCode = true
+			}
+			if v := ruleVal.GetAttr("port_min"); !v.IsNull() && v.IsKnown() {
+				hasPortMin = true
+			}
+			if v := ruleVal.GetAttr("port_max"); !v.IsNull() && v.IsKnown() {
+				hasPortMax = true
+			}
+			if v := ruleVal.GetAttr("source_port_min"); !v.IsNull() && v.IsKnown() {
+				hasSrcPortMin = true
+			}
+			if v := ruleVal.GetAttr("source_port_max"); !v.IsNull() && v.IsKnown() {
+				hasSrcPortMax = true
 			}
 		}
 
