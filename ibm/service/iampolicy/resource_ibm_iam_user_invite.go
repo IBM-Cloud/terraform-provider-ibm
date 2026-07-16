@@ -561,35 +561,7 @@ func resourceIBMIAMInviteUsers(d *schema.ResourceData, meta interface{}) error {
 	var active []string     // ACTIVE - already onboarded
 	var errored []string    // ERROR_WHILE_PROCESSING - invite failed
 	scanUsers := func(allUsers []v2.UserInfo) {
-		stateByEmail := make(map[string]string, len(allUsers))
-		for _, u := range allUsers {
-			stateByEmail[strings.ToLower(u.Email)] = u.State
-		}
-		missing = missing[:0]
-		processing = processing[:0]
-		pending = pending[:0]
-		active = active[:0]
-		errored = errored[:0]
-		for email := range targetEmails {
-			state, found := stateByEmail[email]
-			if !found {
-				missing = append(missing, email)
-				continue
-			}
-			switch state {
-			case "PENDING":
-				pending = append(pending, email)
-			case "ACTIVE":
-				active = append(active, email)
-			case "ERROR_WHILE_PROCESSING":
-				errored = append(errored, email)
-			case "PROCESSING":
-				processing = append(processing, email)
-			default:
-				// Unknown/intermediate state; treat as transient.
-				processing = append(processing, email)
-			}
-		}
+		missing, processing, pending, active, errored = scanInviteUserStates(targetEmails, allUsers)
 	}
 	retryErr := resource.Retry(5*time.Minute, func() *resource.RetryError {
 		allUsers, listErr := client.ListUsers(accountID)
@@ -639,6 +611,42 @@ func resourceIBMIAMInviteUsers(d *schema.ResourceData, meta interface{}) error {
 	log.Printf("[INFO] User invite successful: user(s) %v are in PENDING state in account %s", pending, accountID)
 	d.SetId(time.Now().UTC().String())
 	return resourceIBMIAMUpdateUserProfile(d, meta)
+}
+
+// scanInviteUserStates classifies account users against a set of target emails
+// (lowercased) and returns five slices: missing (not found), processing
+// (PROCESSING or unknown transient state), pending (PENDING – invite sent),
+// active (ACTIVE – already onboarded), and errored (ERROR_WHILE_PROCESSING).
+// It is extracted from resourceIBMIAMInviteUsers so that the classification
+// logic can be tested in isolation.
+func scanInviteUserStates(targetEmails map[string]bool, allUsers []v2.UserInfo) (
+	missing, processing, pending, active, errored []string,
+) {
+	stateByEmail := make(map[string]string, len(allUsers))
+	for _, u := range allUsers {
+		stateByEmail[strings.ToLower(u.Email)] = u.State
+	}
+	for email := range targetEmails {
+		state, found := stateByEmail[email]
+		if !found {
+			missing = append(missing, email)
+			continue
+		}
+		switch state {
+		case "PENDING":
+			pending = append(pending, email)
+		case "ACTIVE":
+			active = append(active, email)
+		case "ERROR_WHILE_PROCESSING":
+			errored = append(errored, email)
+		case "PROCESSING":
+			processing = append(processing, email)
+		default:
+			// Unknown/intermediate state; treat as transient.
+			processing = append(processing, email)
+		}
+	}
+	return
 }
 
 func resourceIBMIAMGetUsers(d *schema.ResourceData, meta interface{}) error {

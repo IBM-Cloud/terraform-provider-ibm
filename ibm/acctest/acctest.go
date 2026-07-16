@@ -76,6 +76,7 @@ var (
 	IAMAccountId                    string
 	IAMServiceId                    string
 	IAMTrustedProfileID             string
+	IAMInviteUsersList              string
 	IAMUser                         string
 	ISAddressPrefixCIDR             string
 	ISBootSnapshotID                string
@@ -550,6 +551,11 @@ func init() {
 	IAMAccessGroupId = os.Getenv("IBM_IAM_ACCESS_GROUP_ID")
 	if IAMAccessGroupId == "" {
 		fmt.Println("[WARN] Set the environment variable IBM_IAM_ACCESS_GROUP_ID for testing ibm_iam_user_invite resource, or some tests for that resource will fail if this is not set correctly")
+	}
+
+	IAMInviteUsersList = os.Getenv("IBM_IAM_INVITE_USERS_LIST")
+	if IAMInviteUsersList == "" {
+		fmt.Println("[WARN] Set the environment variable IBM_IAM_INVITE_USERS_LIST (comma-separated emails) for load-testing ibm_iam_user_invite resource, or the bulk invite tests will be skipped")
 	}
 
 	IAMAccountId = os.Getenv("IBM_IAMACCOUNTID")
@@ -2776,6 +2782,22 @@ func ConfigCompose(config ...string) string {
 	}
 
 	return str.String()
+}
+
+// TestAccPreCheckIAMUserInviteBulk skips the test when IBM_IAM_INVITE_USERS_LIST
+// is not set, so regular CI runs are unaffected. Set the variable to a
+// comma-separated list of real IBM Cloud email addresses that are not yet
+// members of the account under test, e.g.:
+//
+//	IBM_IAM_INVITE_USERS_LIST="user1@example.com,user2@example.com,...,user10@example.com"
+func TestAccPreCheckIAMUserInviteBulk(t *testing.T) {
+	TestAccPreCheck(t)
+	if IAMInviteUsersList == "" {
+		t.Skip("IBM_IAM_INVITE_USERS_LIST must be set as a comma-separated list of emails to run bulk invite load tests")
+	}
+	if IAMAccessGroupId == "" {
+		t.Fatal("IBM_IAM_ACCESS_GROUP_ID must be set for bulk invite tests")
+	}
 }
 
 func configNamedRegionalProvider(providerName string, region string) string {
