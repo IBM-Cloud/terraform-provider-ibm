@@ -2309,6 +2309,40 @@ func TestAccIBMCOSKP(t *testing.T) {
 	})
 }
 
+func TestAccIBMCOSKP_Import(t *testing.T) {
+	instanceName := fmt.Sprintf("kms_%d", acctest.RandIntRange(10, 100))
+	serviceName := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
+	bucketName := fmt.Sprintf("terraform%d", acctest.RandIntRange(10, 100))
+	keyName := fmt.Sprintf("key_%d", acctest.RandIntRange(10, 100))
+	bucketRegion := "us"
+	bucketClass := "standard"
+	bucketRegionType := "cross_region_location"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { acc.TestAccPreCheck(t) },
+		Providers: acc.TestAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMKeyProtectRootkeyWithCOSBucket(instanceName, keyName, serviceName, bucketName, bucketRegion, bucketClass),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMCosBucketExists("ibm_resource_instance.instance", "ibm_cos_bucket.bucket", bucketRegionType, bucketRegion, bucketName),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket", "bucket_name", bucketName),
+					resource.TestCheckResourceAttrSet("ibm_cos_bucket.bucket", "key_protect"),
+					resource.TestCheckResourceAttrSet("ibm_cos_bucket.bucket", "kms_key_crn"),
+					resource.TestCheckResourceAttrPair("ibm_cos_bucket.bucket", "key_protect", "ibm_cos_bucket.bucket", "kms_key_crn"),
+				),
+			},
+			{
+				ResourceName:      "ibm_cos_bucket.bucket",
+				ImportState:       true,
+				ImportStateVerify: true,
+				ImportStateVerifyIgnore: []string{
+					"wait_time_minutes", "parameters", "force_delete"},
+			},
+		},
+	})
+}
+
 func TestAccIBMCOSHPCS(t *testing.T) {
 	serviceName := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
 	bucketName := fmt.Sprintf("terraform%d", acctest.RandIntRange(10, 100))
