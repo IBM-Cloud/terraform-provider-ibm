@@ -170,13 +170,17 @@ func resourceIbmBackupRecoveryDataSourceConnectionRead(context context.Context, 
 
 	dataSourceConnectionList, response, err := backupRecoveryClient.GetDataSourceConnectionsWithContext(context, getDataSourceConnectionsOptions)
 	if err != nil {
-		if response != nil && response.StatusCode == 404 {
+		if (response != nil && response.StatusCode == 404) || strings.Contains(err.Error(), "does not exist") {
 			d.SetId("")
 			return nil
 		}
 		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetDataSourceConnectionsWithContext failed: %s", err.Error()), "ibm_backup_recovery_data_source_connection", "read")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
+	}
+	if len(dataSourceConnectionList.Connections) == 0 {
+		d.SetId("")
+		return nil
 	}
 	if !core.IsNil(dataSourceConnectionList.Connections[0].ConnectionEnvType) {
 		if err = d.Set("connection_env_type", dataSourceConnectionList.Connections[0].ConnectionEnvType); err != nil {
