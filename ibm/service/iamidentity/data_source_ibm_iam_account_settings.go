@@ -1,8 +1,8 @@
-// Copyright IBM Corp. 2025 All Rights Reserved.
+// Copyright IBM Corp. 2026 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 /*
- * IBM OpenAPI Terraform Generator Version: 3.107.1-41b0fbd0-20250825-080732
+ * IBM OpenAPI Terraform Generator Version: 3.113.1-d76630af-20260320-135953
  */
 
 package iamidentity
@@ -26,80 +26,80 @@ func DataSourceIBMIamAccountSettings() *schema.Resource {
 		ReadContext: dataSourceIBMIamAccountSettingsRead,
 
 		Schema: map[string]*schema.Schema{
-			"include_history": {
+			"include_history": &schema.Schema{
 				Type:        schema.TypeBool,
 				Optional:    true,
 				Default:     false,
 				Description: "Defines if the entity history is included in the response.",
 			},
-			"account_id": {
+			"account_id": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "Unique ID of the account.",
 			},
-			"restrict_create_service_id": {
+			"restrict_create_service_id": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "Defines whether or not creating a Service Id is access controlled. Valid values:  * RESTRICTED - to apply access control  * NOT_RESTRICTED - to remove access control  * NOT_SET - to 'unset' a previous set value.",
+				Description: "Defines whether or not creating a Service Id is access controlled. Valid values:  * RESTRICTED - only users assigned the 'Service ID creator' role on the IAM Identity Service can create service IDs, including the account owner  * NOT_RESTRICTED - all members of an account can create service IDs  * NOT_SET - to 'unset' a previous set value.",
 			},
-			"restrict_create_platform_apikey": {
+			"restrict_create_platform_apikey": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "Defines whether or not creating platform API keys is access controlled. Valid values:  * RESTRICTED - to apply access control  * NOT_RESTRICTED - to remove access control  * NOT_SET - to 'unset' a previous set value.",
+				Description: "Defines whether or not creating platform API keys is access controlled. Valid values:  * RESTRICTED - only users assigned the 'Service ID creator' role on the IAM Identity Service can create service IDs, including the account owner  * NOT_RESTRICTED - all members of an account can create service IDs  * NOT_SET - to 'unset' a previous set value.",
 			},
-			"allowed_ip_addresses": {
+			"allowed_ip_addresses": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "Defines the IP addresses and subnets from which IAM tokens can be created for the account.",
 			},
-			"resolve_user_mfa": {
+			"resolve_user_mfa": &schema.Schema{
 				Type:        schema.TypeBool,
 				Optional:    true,
 				Default:     false,
 				Description: "Enrich MFA exemptions with user PI.",
 			},
-			"entity_tag": {
+			"entity_tag": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "Version of the account settings.",
 			},
-			"mfa": {
+			"mfa": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "Defines the MFA trait for the account. Valid values:  * NONE - No MFA trait set  * TOTP - For all non-federated IBMId users  * TOTP4ALL - For all users  * LEVEL1 - Email-based MFA for all users  * LEVEL2 - TOTP-based MFA for all users  * LEVEL3 - U2F MFA for all users.",
+				Description: "Defines the MFA trait for the account. Valid values:  * NONE - No MFA trait set  * NONE_NO_ROPC- No MFA, disable CLI logins with only a password  * TOTP - For all non-federated IBMId users  * TOTP4ALL - For all users  * LEVEL1 - Email-based MFA for all users  * LEVEL2 - TOTP-based MFA for all users  * LEVEL3 - Security Key MFA for all users.",
 			},
-			"user_mfa": {
+			"user_mfa": &schema.Schema{
 				Type:        schema.TypeList,
 				Computed:    true,
 				Description: "List of users that are exempted from the MFA requirement of the account.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"iam_id": {
+						"iam_id": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "The iam_id of the user.",
 						},
-						"mfa": {
+						"mfa": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "MFA trait definitions as follows:  * NONE - No MFA trait set  * NONE_NO_ROPC- No MFA, disable CLI logins with only a password  * TOTP - For all non-federated IBMId users  * TOTP4ALL - For all users  * LEVEL1 - Email-based MFA for all users  * LEVEL2 - TOTP-based MFA for all users  * LEVEL3 - U2F MFA for all users.",
+							Description: "MFA trait definitions as follows:  * NONE - No MFA trait set  * NONE_NO_ROPC- No MFA, disable CLI logins with only a password  * TOTP - For all non-federated IBMId users  * TOTP4ALL - For all users  * LEVEL1 - Email-based MFA for all users  * LEVEL2 - TOTP-based MFA for all users  * LEVEL3 - Security Key MFA for all users.",
 						},
-						"name": {
+						"name": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "name of the user account.",
 						},
-						"user_name": {
+						"user_name": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "userName of the user.",
 						},
-						"email": {
+						"email": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "email of the user.",
 						},
-						"description": {
+						"description": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "optional description.",
@@ -107,33 +107,33 @@ func DataSourceIBMIamAccountSettings() *schema.Resource {
 					},
 				},
 			},
-			"history": {
+			"history": &schema.Schema{
 				Type:        schema.TypeList,
 				Computed:    true,
 				Description: "History of the Account Settings.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"timestamp": {
+						"timestamp": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "Timestamp when the action was triggered.",
 						},
-						"iam_id": {
+						"iam_id": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "IAM ID of the identity which triggered the action.",
 						},
-						"iam_id_account": {
+						"iam_id_account": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "Account of the identity which triggered the action.",
 						},
-						"action": {
+						"action": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "Action of the history entry.",
 						},
-						"params": {
+						"params": &schema.Schema{
 							Type:        schema.TypeList,
 							Computed:    true,
 							Description: "Params of the history entry.",
@@ -141,7 +141,7 @@ func DataSourceIBMIamAccountSettings() *schema.Resource {
 								Type: schema.TypeString,
 							},
 						},
-						"message": {
+						"message": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "Message which summarizes the executed action.",
@@ -149,23 +149,23 @@ func DataSourceIBMIamAccountSettings() *schema.Resource {
 					},
 				},
 			},
-			"restrict_user_list_visibility": {
+			"restrict_user_list_visibility": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "Defines whether or not user visibility is access controlled. Valid values:  * RESTRICTED - users can view only specific types of users in the account, such as those the user has invited to the account, or descendants of those users based on the classic infrastructure hierarchy  * NOT_RESTRICTED - any user in the account can view other users from the Users page in IBM Cloud console.",
 			},
-			"restrict_user_domains": {
+			"restrict_user_domains": &schema.Schema{
 				Type:        schema.TypeList,
 				Computed:    true,
 				Description: "Defines if account invitations are restricted to specified domains. To remove an entry for a realm_id, perform an update (PUT) request with only the realm_id set.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"realm_id": {
+						"realm_id": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "The realm that the restrictions apply to.",
 						},
-						"invitation_email_allow_patterns": {
+						"invitation_email_allow_patterns": &schema.Schema{
 							Type:        schema.TypeList,
 							Computed:    true,
 							Description: "The list of allowed email patterns. Wildcard syntax is supported, '*' represents any sequence of zero or more characters in the string, except for '.' and '@'. The sequence ends if a '.' or '@' was found. '**' represents any sequence of zero or more characters in the string - without limit.",
@@ -173,7 +173,7 @@ func DataSourceIBMIamAccountSettings() *schema.Resource {
 								Type: schema.TypeString,
 							},
 						},
-						"restrict_invitation": {
+						"restrict_invitation": &schema.Schema{
 							Type:        schema.TypeBool,
 							Computed:    true,
 							Description: "When true invites will only be possible to the domain patterns provided, otherwise invites are unrestricted.",
@@ -181,30 +181,30 @@ func DataSourceIBMIamAccountSettings() *schema.Resource {
 					},
 				},
 			},
-			"session_expiration_in_seconds": {
+			"session_expiration_in_seconds": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "Defines the session expiration in seconds for the account. Valid values:  * Any whole number between between '900' and '86400'  * NOT_SET - To unset account setting and use service default.",
 			},
-			"session_invalidation_in_seconds": {
+			"session_invalidation_in_seconds": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "Defines the period of time in seconds in which a session will be invalidated due to inactivity. Valid values:  * Any whole number between '900' and '7200'  * NOT_SET - To unset account setting and use service default.",
 			},
-			"max_sessions_per_identity": {
+			"max_sessions_per_identity": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "Defines the max allowed sessions per identity required by the account. Valid values:  * Any whole number greater than 0  * NOT_SET - To unset account setting and use service default.",
 			},
-			"system_access_token_expiration_in_seconds": {
+			"system_access_token_expiration_in_seconds": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "Defines the access token expiration in seconds. Valid values:  * Any whole number between '900' and '3600'  * NOT_SET - To unset account setting and use service default.",
 			},
-			"system_refresh_token_expiration_in_seconds": {
+			"system_refresh_token_expiration_in_seconds": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "Defines the refresh token expiration in seconds. Valid values:  * Any whole number between '900' and '2592000'  * NOT_SET - To unset account setting and use service default.",
+				Description: "Defines the refresh token expiration in seconds. Valid values:  * Any whole number between '900' and '259200'  * NOT_SET - To unset account setting and use service default.",
 			},
 		},
 	}
@@ -222,9 +222,10 @@ func dataSourceIBMIamAccountSettingsRead(context context.Context, d *schema.Reso
 
 	userDetails, err := meta.(conns.ClientSession).BluemixUserDetails()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, err.Error(), "ibm_iam_account_settings", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
-
 	getAccountSettingsOptions.SetAccountID(userDetails.UserAccount)
 
 	if _, ok := d.GetOk("include_history"); ok {

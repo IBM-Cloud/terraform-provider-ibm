@@ -19,8 +19,8 @@ import (
 var serviceCredentialsSecretName = "terraform-test-sc-secret"
 var modifiedServiceCredentialsSecretName = "modified-terraform-test-sc-secret"
 var serviceCredentialsParametersWithServiceId = `{"serviceid_crn": ibm_iam_service_id.ibm_iam_service_id_instance.crn}`
-var serviceCredentialsTtl = "172800"
-var modifiedServiceCredentialsTtl = "6048000"
+var serviceCredentialsTtl = "7776000"        // 3 months in seconds
+var modifiedServiceCredentialsTtl = "345600" // 4 days in seconds
 var serviceCredentialsRoleCrn = "crn:v1:bluemix:public:iam::::serviceRole:Writer"
 
 func TestAccIbmSmServiceCredentialsSecretBasic(t *testing.T) {
@@ -182,10 +182,10 @@ func testAccCheckIbmSmServiceCredentialsSecretCreated(n string) resource.TestChe
 		if err := verifyAttr(getAutoRotate(secret.Rotation), "true", "auto_rotate"); err != nil {
 			return err
 		}
-		if err := verifyAttr(getRotationUnit(secret.Rotation), "day", "rotation unit"); err != nil {
+		if err := verifyAttr(getRotationUnit(secret.Rotation), "month", "rotation unit"); err != nil {
 			return err
 		}
-		if err := verifyAttr(getRotationInterval(secret.Rotation), "1", "rotation interval"); err != nil {
+		if err := verifyAttr(getRotationInterval(secret.Rotation), "2", "rotation interval"); err != nil {
 			return err
 		}
 		if err := verifyAttr(*secret.TTL, serviceCredentialsTtl, "ttl"); err != nil {
@@ -233,10 +233,10 @@ func testAccCheckIbmSmServiceCredentialsSecretUpdated(n string) resource.TestChe
 		if err := verifyAttr(getAutoRotate(secret.Rotation), "true", "auto_rotate after update"); err != nil {
 			return err
 		}
-		if err := verifyAttr(getRotationUnit(secret.Rotation), "month", "rotation unit after update"); err != nil {
+		if err := verifyAttr(getRotationUnit(secret.Rotation), "day", "rotation unit after update"); err != nil {
 			return err
 		}
-		if err := verifyAttr(getRotationInterval(secret.Rotation), "2", "rotation interval after update"); err != nil {
+		if err := verifyAttr(getRotationInterval(secret.Rotation), "3", "rotation interval after update"); err != nil {
 			return err
 		}
 		return nil

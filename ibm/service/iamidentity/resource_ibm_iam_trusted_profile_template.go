@@ -1,4 +1,4 @@
-// Copyright IBM Corp. 2023 All Rights Reserved.
+// Copyright IBM Corp. 2026 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 package iamidentity
@@ -229,7 +229,9 @@ func ResourceIBMTrustedProfileTemplate() *schema.Resource {
 func resourceIBMTrustedProfileTemplateCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	iamIdentityClient, err := meta.(conns.ClientSession).IAMIdentityV1API()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_trusted_profile_template", "create", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	if _, ok := d.GetOk("template_id"); ok { // if template_id is present then we need to create a new version of this template instead
@@ -254,7 +256,7 @@ func resourceIBMTrustedProfileTemplateCreate(context context.Context, d *schema.
 	if _, ok := d.GetOk("profile"); ok {
 		profileModel, err := resourceIBMTrustedProfileTemplateMapToTemplateProfileComponentRequest(d.Get("profile.0").(map[string]interface{}))
 		if err != nil {
-			return diag.FromErr(err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_trusted_profile_template", "create", "parse-profile").GetDiag()
 		}
 		createProfileTemplateOptions.SetProfile(profileModel)
 	}
@@ -264,17 +266,18 @@ func resourceIBMTrustedProfileTemplateCreate(context context.Context, d *schema.
 			value := v.(map[string]interface{})
 			policyTemplateReferencesItem, err := resourceIBMTrustedProfileTemplateMapToPolicyTemplateReference(value)
 			if err != nil {
-				return diag.FromErr(err)
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_trusted_profile_template", "create", "parse-policy_template_references").GetDiag()
 			}
 			policyTemplateReferences = append(policyTemplateReferences, *policyTemplateReferencesItem)
 		}
 		createProfileTemplateOptions.SetPolicyTemplateReferences(policyTemplateReferences)
 	}
 
-	trustedProfileTemplateResponse, response, err := iamIdentityClient.CreateProfileTemplateWithContext(context, createProfileTemplateOptions)
+	trustedProfileTemplateResponse, _, err := iamIdentityClient.CreateProfileTemplateWithContext(context, createProfileTemplateOptions)
 	if err != nil {
-		log.Printf("[DEBUG] CreateProfileTemplateWithContext failed %s\n%s", err, response)
-		return diag.FromErr(fmt.Errorf("CreateProfileTemplateWithContext failed %s\n%s", err, response))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateProfileTemplateWithContext failed: %s", err.Error()), "ibm_iam_trusted_profile_template", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	d.SetId(buildResourceIdFromTemplateVersion(*trustedProfileTemplateResponse.ID, *trustedProfileTemplateResponse.Version))
@@ -282,8 +285,9 @@ func resourceIBMTrustedProfileTemplateCreate(context context.Context, d *schema.
 	if d.Get("committed").(bool) {
 		err := resourceIBMTrustedProfileTemplateCommit(context, d, meta)
 		if err != nil {
-			log.Printf("[DEBUG] resourceIBMAccountSettingsTemplateCommit failed %s", err)
-			return diag.FromErr(fmt.Errorf("resourceIBMAccountSettingsTemplateCommit failed %s", err))
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("resourceIBMAccountSettingsTemplateCommit failed: %s", err.Error()), "ibm_iam_trusted_profile_template", "create")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 	}
 
@@ -293,10 +297,13 @@ func resourceIBMTrustedProfileTemplateCreate(context context.Context, d *schema.
 func resourceIBMTrustedProfileTemplateCreateVersion(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	iamIdentityClient, err := meta.(conns.ClientSession).IAMIdentityV1API()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_trusted_profile_template", "create", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	createProfileTemplateVersionOptions := &iamidentityv1.CreateProfileTemplateVersionOptions{}
+
 	if _, ok := d.GetOk("account_id"); ok {
 		createProfileTemplateVersionOptions.SetAccountID(d.Get("account_id").(string))
 	} else {
@@ -304,13 +311,12 @@ func resourceIBMTrustedProfileTemplateCreateVersion(context context.Context, d *
 		accountID := userDetails.UserAccount
 		createProfileTemplateVersionOptions.SetAccountID(accountID)
 	}
-	id, _, err := parseResourceId(d.Get("template_id").(string))
+	templateId, _, err := parseResourceId(d.Get("template_id").(string))
 	if err != nil {
-		log.Printf("[DEBUG] resourceIBMAccountSettingsTemplateRead failed %s", err)
-		return diag.FromErr(fmt.Errorf("resourceIBMAccountSettingsTemplateRead failed %s", err))
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_trusted_profile_template", "create", "parse-resource-id").GetDiag()
 	}
 
-	createProfileTemplateVersionOptions.SetTemplateID(id)
+	createProfileTemplateVersionOptions.SetTemplateID(templateId)
 
 	if _, ok := d.GetOk("name"); ok {
 		createProfileTemplateVersionOptions.SetName(d.Get("name").(string))
@@ -321,7 +327,7 @@ func resourceIBMTrustedProfileTemplateCreateVersion(context context.Context, d *
 	if _, ok := d.GetOk("profile"); ok {
 		profileModel, err := resourceIBMTrustedProfileTemplateMapToTemplateProfileComponentRequest(d.Get("profile.0").(map[string]interface{}))
 		if err != nil {
-			return diag.FromErr(err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_trusted_profile_template", "create", "parse-profile").GetDiag()
 		}
 		createProfileTemplateVersionOptions.SetProfile(profileModel)
 	}
@@ -331,17 +337,18 @@ func resourceIBMTrustedProfileTemplateCreateVersion(context context.Context, d *
 			value := v.(map[string]interface{})
 			policyTemplateReferencesItem, err := resourceIBMTrustedProfileTemplateMapToPolicyTemplateReference(value)
 			if err != nil {
-				return diag.FromErr(err)
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_trusted_profile_template", "create", "parse-policy_template_references").GetDiag()
 			}
 			policyTemplateReferences = append(policyTemplateReferences, *policyTemplateReferencesItem)
 		}
 		createProfileTemplateVersionOptions.SetPolicyTemplateReferences(policyTemplateReferences)
 	}
 
-	trustedProfileTemplateVersionResponse, response, err := iamIdentityClient.CreateProfileTemplateVersionWithContext(context, createProfileTemplateVersionOptions)
+	trustedProfileTemplateVersionResponse, _, err := iamIdentityClient.CreateProfileTemplateVersionWithContext(context, createProfileTemplateVersionOptions)
 	if err != nil {
-		log.Printf("[DEBUG] CreateProfileTemplateWithContext failed %s\n%s", err, response)
-		return diag.FromErr(fmt.Errorf("CreateProfileTemplateWithContext failed %s\n%s", err, response))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateProfileTemplateVersionWithContext failed: %s", err.Error()), "ibm_iam_trusted_profile_template", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	d.SetId(buildResourceIdFromTemplateVersion(*trustedProfileTemplateVersionResponse.ID, *trustedProfileTemplateVersionResponse.Version))
@@ -349,8 +356,9 @@ func resourceIBMTrustedProfileTemplateCreateVersion(context context.Context, d *
 	if d.Get("committed").(bool) {
 		err := resourceIBMTrustedProfileTemplateCommit(context, d, meta)
 		if err != nil {
-			log.Printf("[DEBUG] resourceIBMAccountSettingsTemplateCommit failed %s", err)
-			return diag.FromErr(fmt.Errorf("resourceIBMAccountSettingsTemplateCommit failed %s", err))
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("resourceIBMAccountSettingsTemplateCommit failed: %s", err.Error()), "ibm_iam_trusted_profile_template", "create")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 	}
 
@@ -360,18 +368,19 @@ func resourceIBMTrustedProfileTemplateCreateVersion(context context.Context, d *
 func resourceIBMTrustedProfileTemplateRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	iamIdentityClient, err := meta.(conns.ClientSession).IAMIdentityV1API()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_trusted_profile_template", "read", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	getProfileTemplateVersionOptions := &iamidentityv1.GetProfileTemplateVersionOptions{}
 
-	id, version, err := parseResourceId(d.Id())
+	templateId, version, err := parseResourceId(d.Id())
 	if err != nil {
-		log.Printf("[DEBUG] resourceIBMAccountSettingsTemplateRead failed %s", err)
-		return diag.FromErr(fmt.Errorf("resourceIBMAccountSettingsTemplateRead failed %s", err))
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_trusted_profile_template", "read", "parse-resource-id").GetDiag()
 	}
 
-	getProfileTemplateVersionOptions.SetTemplateID(id)
+	getProfileTemplateVersionOptions.SetTemplateID(templateId)
 	getProfileTemplateVersionOptions.SetVersion(version)
 
 	trustedProfileTemplateResponse, response, err := iamIdentityClient.GetProfileTemplateVersionWithContext(context, getProfileTemplateVersionOptions)
@@ -380,37 +389,43 @@ func resourceIBMTrustedProfileTemplateRead(context context.Context, d *schema.Re
 			d.SetId("")
 			return nil
 		}
-		log.Printf("[DEBUG] GetProfileTemplateVersionWithContext failed %s\n%s", err, response)
-		return diag.FromErr(fmt.Errorf("GetProfileTemplateVersionWithContext failed %s\n%s", err, response))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetProfileTemplateVersionWithContext failed: %s", err.Error()), "ibm_iam_trusted_profile_template", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	if !core.IsNil(trustedProfileTemplateResponse.Version) {
 		if err = d.Set("version", trustedProfileTemplateResponse.Version); err != nil {
-			return diag.FromErr(fmt.Errorf("error setting version: %s", err))
+			err = fmt.Errorf("Error setting version: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_trusted_profile_template", "read", "set-version").GetDiag()
 		}
 	}
 	if !core.IsNil(trustedProfileTemplateResponse.AccountID) {
 		if err = d.Set("account_id", trustedProfileTemplateResponse.AccountID); err != nil {
-			return diag.FromErr(fmt.Errorf("error setting account_id: %s", err))
+			err = fmt.Errorf("Error setting account_id: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_trusted_profile_template", "read", "set-account_id").GetDiag()
 		}
 	}
 	if !core.IsNil(trustedProfileTemplateResponse.Name) {
 		if err = d.Set("name", trustedProfileTemplateResponse.Name); err != nil {
-			return diag.FromErr(fmt.Errorf("error setting name: %s", err))
+			err = fmt.Errorf("Error setting name: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_trusted_profile_template", "read", "set-name").GetDiag()
 		}
 	}
 	if !core.IsNil(trustedProfileTemplateResponse.Description) {
 		if err = d.Set("description", trustedProfileTemplateResponse.Description); err != nil {
-			return diag.FromErr(fmt.Errorf("error setting description: %s", err))
+			err = fmt.Errorf("Error setting description: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_trusted_profile_template", "read", "set-description").GetDiag()
 		}
 	}
 	if !core.IsNil(trustedProfileTemplateResponse.Profile) {
 		profileMap, err := resourceIBMTrustedProfileTemplateTemplateProfileComponentResponseToMap(trustedProfileTemplateResponse.Profile)
 		if err != nil {
-			return diag.FromErr(err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_trusted_profile_template", "read", "profile-to-map").GetDiag()
 		}
 		if err = d.Set("profile", []map[string]interface{}{profileMap}); err != nil {
-			return diag.FromErr(fmt.Errorf("error setting profile: %s", err))
+			err = fmt.Errorf("Error setting profile: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_trusted_profile_template", "read", "set-profile").GetDiag()
 		}
 	}
 	if !core.IsNil(trustedProfileTemplateResponse.PolicyTemplateReferences) {
@@ -418,50 +433,59 @@ func resourceIBMTrustedProfileTemplateRead(context context.Context, d *schema.Re
 		for _, policyTemplateReferencesItem := range trustedProfileTemplateResponse.PolicyTemplateReferences {
 			policyTemplateReferencesItemMap, err := resourceIBMTrustedProfileTemplatePolicyTemplateReferenceToMap(&policyTemplateReferencesItem)
 			if err != nil {
-				return diag.FromErr(err)
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_trusted_profile_template", "read", "policy_template_references-to-map").GetDiag()
 			}
 			policyTemplateReferences = append(policyTemplateReferences, policyTemplateReferencesItemMap)
 		}
 		if err = d.Set("policy_template_references", policyTemplateReferences); err != nil {
-			return diag.FromErr(fmt.Errorf("error setting policy_template_references: %s", err))
+			err = fmt.Errorf("Error setting policy_template_references: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_trusted_profile_template", "read", "set-policy_template_references").GetDiag()
 		}
 	}
 	if err = d.Set("id", trustedProfileTemplateResponse.ID); err != nil {
-		return diag.FromErr(fmt.Errorf("error setting id: %s", err))
+		err = fmt.Errorf("Error setting id: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_trusted_profile_template", "read", "set-id").GetDiag()
 	}
 	if !core.IsNil(trustedProfileTemplateResponse.Committed) {
 		if err = d.Set("committed", trustedProfileTemplateResponse.Committed); err != nil {
-			return diag.FromErr(fmt.Errorf("error setting committed: %s", err))
+			err = fmt.Errorf("Error setting committed: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_trusted_profile_template", "read", "set-committed").GetDiag()
 		}
 	}
 	if !core.IsNil(trustedProfileTemplateResponse.EntityTag) {
 		if err = d.Set("entity_tag", trustedProfileTemplateResponse.EntityTag); err != nil {
-			return diag.FromErr(fmt.Errorf("error setting entity_tag: %s", err))
+			err = fmt.Errorf("Error setting entity_tag: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_trusted_profile_template", "read", "set-entity_tag").GetDiag()
 		}
 	}
 	if !core.IsNil(trustedProfileTemplateResponse.CRN) {
 		if err = d.Set("crn", trustedProfileTemplateResponse.CRN); err != nil {
-			return diag.FromErr(fmt.Errorf("error setting crn: %s", err))
+			err = fmt.Errorf("Error setting crn: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_trusted_profile_template", "read", "set-crn").GetDiag()
 		}
 	}
 	if !core.IsNil(trustedProfileTemplateResponse.CreatedAt) {
 		if err = d.Set("created_at", trustedProfileTemplateResponse.CreatedAt); err != nil {
-			return diag.FromErr(fmt.Errorf("error setting created_at: %s", err))
+			err = fmt.Errorf("Error setting created_at: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_trusted_profile_template", "read", "set-created_at").GetDiag()
 		}
 	}
 	if !core.IsNil(trustedProfileTemplateResponse.CreatedByID) {
 		if err = d.Set("created_by_id", trustedProfileTemplateResponse.CreatedByID); err != nil {
-			return diag.FromErr(fmt.Errorf("error setting created_by_id: %s", err))
+			err = fmt.Errorf("Error setting created_by_id: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_trusted_profile_template", "read", "set-created_by_id").GetDiag()
 		}
 	}
 	if !core.IsNil(trustedProfileTemplateResponse.LastModifiedAt) {
 		if err = d.Set("last_modified_at", trustedProfileTemplateResponse.LastModifiedAt); err != nil {
-			return diag.FromErr(fmt.Errorf("error setting last_modified_at: %s", err))
+			err = fmt.Errorf("Error setting last_modified_at: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_trusted_profile_template", "read", "set-last_modified_at").GetDiag()
 		}
 	}
 	if !core.IsNil(trustedProfileTemplateResponse.LastModifiedByID) {
 		if err = d.Set("last_modified_by_id", trustedProfileTemplateResponse.LastModifiedByID); err != nil {
-			return diag.FromErr(fmt.Errorf("error setting last_modified_by_id: %s", err))
+			err = fmt.Errorf("Error setting last_modified_by_id: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_trusted_profile_template", "read", "set-last_modified_by_id").GetDiag()
 		}
 	}
 
@@ -471,18 +495,19 @@ func resourceIBMTrustedProfileTemplateRead(context context.Context, d *schema.Re
 func resourceIBMTrustedProfileTemplateUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	iamIdentityClient, err := meta.(conns.ClientSession).IAMIdentityV1API()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_trusted_profile_template", "update", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	updateProfileTemplateVersionOptions := &iamidentityv1.UpdateProfileTemplateVersionOptions{}
 
-	id, version, err := parseResourceId(d.Id())
+	templateId, version, err := parseResourceId(d.Id())
 	if err != nil {
-		log.Printf("[DEBUG] resourceIBMAccountSettingsTemplateUpdate failed %s", err)
-		return diag.FromErr(fmt.Errorf("resourceIBMAccountSettingsTemplateUpdate failed %s", err))
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_trusted_profile_template", "update", "parse-resource-id").GetDiag()
 	}
 
-	updateProfileTemplateVersionOptions.SetTemplateID(id)
+	updateProfileTemplateVersionOptions.SetTemplateID(templateId)
 	updateProfileTemplateVersionOptions.SetVersion(version)
 	updateProfileTemplateVersionOptions.SetIfMatch(d.Get("entity_tag").(string))
 
@@ -499,7 +524,7 @@ func resourceIBMTrustedProfileTemplateUpdate(context context.Context, d *schema.
 	if d.HasChange("profile") {
 		profile, err := resourceIBMTrustedProfileTemplateMapToTemplateProfileComponentRequest(d.Get("profile.0").(map[string]interface{}))
 		if err != nil {
-			return diag.FromErr(err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_trusted_profile_template", "update", "parse-profile").GetDiag()
 		}
 		updateProfileTemplateVersionOptions.SetProfile(profile)
 		hasChange = true
@@ -510,7 +535,7 @@ func resourceIBMTrustedProfileTemplateUpdate(context context.Context, d *schema.
 			value := v.(map[string]interface{})
 			policyTemplateReferencesItem, err := resourceIBMTrustedProfileTemplateMapToPolicyTemplateReference(value)
 			if err != nil {
-				return diag.FromErr(err)
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_trusted_profile_template", "update", "parse-policy_template_references").GetDiag()
 			}
 			policyTemplateReferences = append(policyTemplateReferences, *policyTemplateReferencesItem)
 		}
@@ -519,10 +544,11 @@ func resourceIBMTrustedProfileTemplateUpdate(context context.Context, d *schema.
 	}
 
 	if hasChange {
-		_, response, err := iamIdentityClient.UpdateProfileTemplateVersionWithContext(context, updateProfileTemplateVersionOptions)
+		_, _, err := iamIdentityClient.UpdateProfileTemplateVersionWithContext(context, updateProfileTemplateVersionOptions)
 		if err != nil {
-			log.Printf("[DEBUG] UpdateProfileTemplateVersionWithContext failed %s\n%s", err, response)
-			return diag.FromErr(fmt.Errorf("UpdateProfileTemplateVersionWithContext failed %s\n%s", err, response))
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("UpdateProfileTemplateVersionWithContext failed: %s", err.Error()), "ibm_iam_trusted_profile_template", "update")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 	}
 
@@ -530,11 +556,13 @@ func resourceIBMTrustedProfileTemplateUpdate(context context.Context, d *schema.
 		if d.Get("committed").(bool) {
 			err := resourceIBMTrustedProfileTemplateCommit(context, d, meta)
 			if err != nil {
-				log.Printf("[DEBUG] resourceIBMTrustedProfileTemplateCommit failed %s", err)
-				return diag.FromErr(fmt.Errorf("resourceIBMTrustedProfileTemplateCommit failed %s", err))
+				tfErr := flex.TerraformErrorf(err, fmt.Sprintf("resourceIBMTrustedProfileTemplateCommit failed: %s", err.Error()), "ibm_iam_trusted_profile_template", "update")
+				log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+				return tfErr.GetDiag()
 			}
 		} else {
-			return diag.FromErr(fmt.Errorf("A committed template cannot be uncommitted"))
+			err := fmt.Errorf("A committed template cannot be uncommitted")
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("resourceIBMTrustedProfileTemplateUpdate failed: %s", err.Error()), "ibm_iam_trusted_profile_template", "update", "set-committed").GetDiag()
 		}
 	}
 
@@ -544,24 +572,26 @@ func resourceIBMTrustedProfileTemplateUpdate(context context.Context, d *schema.
 func resourceIBMTrustedProfileTemplateDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	iamIdentityClient, err := meta.(conns.ClientSession).IAMIdentityV1API()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_trusted_profile_template", "delete", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	deleteProfileTemplateVersionOptions := &iamidentityv1.DeleteProfileTemplateVersionOptions{}
 
-	id, version, err := parseResourceId(d.Id())
+	templateId, version, err := parseResourceId(d.Id())
 	if err != nil {
-		log.Printf("[DEBUG] resourceIBMAccountSettingsTemplateDelete failed %s", err)
-		return diag.FromErr(fmt.Errorf("resourceIBMAccountSettingsTemplateDelete failed %s", err))
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_trusted_profile_template", "delete", "parse-resource-id").GetDiag()
 	}
 
-	deleteProfileTemplateVersionOptions.SetTemplateID(id)
+	deleteProfileTemplateVersionOptions.SetTemplateID(templateId)
 	deleteProfileTemplateVersionOptions.SetVersion(version)
 
-	response, err := iamIdentityClient.DeleteProfileTemplateVersionWithContext(context, deleteProfileTemplateVersionOptions)
+	_, err = iamIdentityClient.DeleteProfileTemplateVersionWithContext(context, deleteProfileTemplateVersionOptions)
 	if err != nil {
-		log.Printf("[DEBUG] DeleteProfileTemplateVersionWithContext failed %s\n%s", err, response)
-		return diag.FromErr(fmt.Errorf("DeleteProfileTemplateVersionWithContext failed %s\n%s", err, response))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("DeleteProfileTemplateVersionWithContext failed: %s", err.Error()), "ibm_iam_trusted_profile_template", "delete")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	d.SetId("")
@@ -575,12 +605,12 @@ func resourceIBMTrustedProfileTemplateCommit(context context.Context, d *schema.
 		return err
 	}
 
-	id, version, err := parseResourceId(d.Id())
+	templateId, version, err := parseResourceId(d.Id())
 	if err != nil {
 		return err
 	}
 
-	commitTrustedProfileTemplateVersionOptions := iamIdentityClient.NewCommitProfileTemplateOptions(id, version)
+	commitTrustedProfileTemplateVersionOptions := iamIdentityClient.NewCommitProfileTemplateOptions(templateId, version)
 	_, err = iamIdentityClient.CommitProfileTemplateWithContext(context, commitTrustedProfileTemplateVersionOptions)
 	if err != nil {
 		return err
