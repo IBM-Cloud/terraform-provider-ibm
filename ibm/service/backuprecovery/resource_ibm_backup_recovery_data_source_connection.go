@@ -331,8 +331,15 @@ func resourceIbmBackupRecoveryDataSourceConnectionDelete(context context.Context
 	deleteDataSourceConnectionOptions.SetConnectionID(connectionId)
 	deleteDataSourceConnectionOptions.SetXIBMTenantID(tenantId)
 
-	_, err = backupRecoveryClient.DeleteDataSourceConnectionWithContext(context, deleteDataSourceConnectionOptions)
+	deleteResponse, err := backupRecoveryClient.DeleteDataSourceConnectionWithContext(context, deleteDataSourceConnectionOptions)
 	if err != nil {
+		// BRS returns HTTP 400 with "does not exist" when the connection is already
+		// gone — treat this the same as 404: the goal (resource absent) is achieved.
+		if (deleteResponse != nil && deleteResponse.StatusCode == 404) ||
+			strings.Contains(err.Error(), "does not exist") {
+			d.SetId("")
+			return nil
+		}
 		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("DeleteDataSourceConnectionWithContext failed: %s", err.Error()), "ibm_backup_recovery_data_source_connection", "delete")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
