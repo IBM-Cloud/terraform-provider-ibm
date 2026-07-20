@@ -5,6 +5,7 @@ package database_test
 
 import (
 	"fmt"
+	"regexp"
 	"testing"
 
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
@@ -366,6 +367,52 @@ func TestAccIBMDatabaseInstancePostgresReadReplicaPromotion(t *testing.T) {
 					resource.TestCheckResourceAttr(replicaReplicaResource, "location", acc.Region()),
 					resource.TestCheckResourceAttr(replicaReplicaResource, "remote_leader_id", ""),
 					resource.TestCheckResourceAttr(replicaReplicaResource, "skip_initial_backup", "true"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccIBMDatabaseInstancePostgresFlexFlavorValidation(t *testing.T) {
+	t.Parallel()
+	databaseResourceGroup := "default"
+	rnd := fmt.Sprintf("tf-Pgress-%d", acctest.RandIntRange(10, 100))
+	testName := rnd
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMDatabaseInstanceDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config:      testAccCheckIBMDatabaseInstancePostgresClassicWithFlexFlavor(databaseResourceGroup, testName),
+				ExpectError: regexp.MustCompile("Flex flavors \\(bxf\\.\\*\\) are not supported for Classic/Gen1 databases"),
+			},
+		},
+	})
+}
+
+func TestAccIBMDatabaseInstancePostgresGen2FlexFlavor(t *testing.T) {
+	t.Parallel()
+	databaseResourceGroup := "default"
+	var databaseInstanceOne string
+	rnd := fmt.Sprintf("tf-Pgress-%d", acctest.RandIntRange(10, 100))
+	testName := rnd
+	name := "ibm_database." + testName
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMDatabaseInstanceDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMDatabaseInstancePostgresGen2WithFlexFlavor(databaseResourceGroup, testName),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMDatabaseInstanceExists(name, &databaseInstanceOne),
+					resource.TestCheckResourceAttr(name, "name", testName),
+					resource.TestCheckResourceAttr(name, "service", "databases-for-postgresql"),
+					resource.TestCheckResourceAttr(name, "plan", "standard-gen2"),
+					resource.TestCheckResourceAttr(name, "groups.0.host_flavor.0.id", "bxf.16x64"),
 				),
 			},
 		},
@@ -803,4 +850,62 @@ func testAccCheckIBMDatabaseInstancePostgresAsyncRestoreBackup(databaseResourceG
 	    point_in_time_recovery_deployment_id = "crn:v1:bluemix:public:databases-for-postgresql:us-south:a/40ddc34a953a8c02f10987b59085b60e:a00bee8b-1134-4f0f-8428-4f32428f5e4a::"
 	}
 	`, databaseResourceGroup, readReplicaName, acc.Region())
+}
+
+func testAccCheckIBMDatabaseInstancePostgresClassicWithFlexFlavor(databaseResourceGroup string, name string) string {
+	return fmt.Sprintf(`
+	data "ibm_resource_group" "test_acc" {
+		name = "%[1]s"
+	}
+
+	resource "ibm_database" "%[2]s" {
+		resource_group_id = data.ibm_resource_group.test_acc.id
+		name              = "%[2]s"
+		service           = "databases-for-postgresql"
+		plan              = "standard"
+		location          = "%[3]s"
+		service_endpoints = "public"
+
+		group {
+			group_id = "member"
+			host_flavor {
+				id = "bxf.16x64"
+			}
+			disk {
+				allocation_mb = 20480
+			}
+		}
+
+		tags = ["one:two"]
+	}
+	`, databaseResourceGroup, name, acc.Region())
+}
+
+func testAccCheckIBMDatabaseInstancePostgresGen2WithFlexFlavor(databaseResourceGroup string, name string) string {
+	return fmt.Sprintf(`
+	data "ibm_resource_group" "test_acc" {
+		name = "%[1]s"
+	}
+
+	resource "ibm_database" "%[2]s" {
+		resource_group_id = data.ibm_resource_group.test_acc.id
+		name              = "%[2]s"
+		service           = "databases-for-postgresql"
+		plan              = "standard-gen2"
+		location          = "ca-mon"
+		service_endpoints = "private"
+
+		group {
+			group_id = "member"
+			host_flavor {
+				id = "bxf.16x64"
+			}
+			disk {
+				allocation_mb = 10240
+			}
+		}
+
+		tags = ["one:two"]
+	}
+	`, databaseResourceGroup, name)
 }
