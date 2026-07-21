@@ -1,4 +1,4 @@
-// Copyright IBM Corp. 2024 All Rights Reserved.
+// Copyright IBM Corp. 2026 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 package provider
@@ -251,6 +251,8 @@ func Provider() *schema.Provider {
 			"ibm_backup_recovery_download_agent":                        backuprecovery.AddInstanceFields(backuprecovery.DataSourceIbmBackupRecoveryDownloadAgent()),
 			"ibm_backup_recovery_search_indexed_object":                 backuprecovery.AddInstanceFields(backuprecovery.DataSourceIbmBackupRecoverySearchIndexedObject()),
 			"ibm_backup_recovery_object_snapshots":                      backuprecovery.AddInstanceFields(backuprecovery.DataSourceIbmBackupRecoveryObjectSnapshots()),
+			"ibm_backup_recovery_connector_agent_config":                backuprecovery.AddInstanceFields(backuprecovery.DataSourceIbmBackupRecoveryConnectorAgentConfig()),
+			"ibm_backup_recovery_connector_agents":                      backuprecovery.AddInstanceFields(backuprecovery.DataSourceIbmBackupRecoveryConnectorAgents()),
 			"ibm_backup_recovery_connectors_metadata":                   backuprecovery.AddInstanceFields(backuprecovery.DataSourceIbmBackupRecoveryConnectorsMetadata()),
 			"ibm_backup_recovery_connector_logs":                        backuprecovery.AddInstanceFields(backuprecovery.DataSourceIbmBackupRecoveryConnectorLogs()),
 			"ibm_backup_recovery_connector_status":                      backuprecovery.AddInstanceFields(backuprecovery.DataSourceIbmBackupRecoveryConnectorStatus()),
@@ -401,6 +403,8 @@ func Provider() *schema.Provider {
 			"ibm_container_dedicated_host_flavor":           kubernetes.DataSourceIBMContainerDedicatedHostFlavor(),
 			"ibm_container_dedicated_host_flavors":          kubernetes.DataSourceIBMContainerDedicatedHostFlavors(),
 			"ibm_container_dedicated_host":                  kubernetes.DataSourceIBMContainerDedicatedHost(),
+			"ibm_container_vni_attachment":                  kubernetes.DataSourceIBMContainerVNIAttachment(),
+			"ibm_container_vni_attachments":                 kubernetes.DataSourceIBMContainerVNIAttachments(),
 			"ibm_cr_namespaces":                             registry.DataIBMContainerRegistryNamespaces(),
 			"ibm_cloud_shell_account_settings":              cloudshell.DataSourceIBMCloudShellAccountSettings(),
 			"ibm_cos_bucket":                                cos.DataSourceIBMCosBucket(),
@@ -433,7 +437,7 @@ func Provider() *schema.Provider {
 			"ibm_iam_user_policy":                           iampolicy.DataSourceIBMIAMUserPolicy(),
 			"ibm_iam_authorization_policies":                iampolicy.DataSourceIBMIAMAuthorizationPolicies(),
 			"ibm_iam_user_profile":                          iamidentity.DataSourceIBMIAMUserProfile(),
-			"ibm_iam_service_id":                            iamidentity.DataSourceIBMIAMServiceID(),
+			"ibm_iam_service_id":                            iamidentity.DataSourceIBMIamServiceID(),
 			"ibm_iam_serviceid_group":                       iamidentity.DataSourceIBMIamServiceidGroup(),
 			"ibm_iam_service_policy":                        iampolicy.DataSourceIBMIAMServicePolicy(),
 			"ibm_iam_api_key":                               iamidentity.DataSourceIBMIamApiKey(),
@@ -451,6 +455,9 @@ func Provider() *schema.Provider {
 			"ibm_iam_trusted_profile_template":              iamidentity.DataSourceIBMTrustedProfileTemplate(),
 			"ibm_iam_account_settings_template_assignment":  iamidentity.DataSourceIBMAccountSettingsTemplateAssignment(),
 			"ibm_iam_trusted_profile_template_assignment":   iamidentity.DataSourceIBMTrustedProfileTemplateAssignment(),
+			"ibm_iam_idp":                                   iamidentity.DataSourceIBMIamIdp(),
+			"ibm_iam_idps":                                  iamidentity.DataSourceIBMIamIdps(),
+			"ibm_iam_idp_account_settings":                  iamidentity.DataSourceIBMIamIdpAccountSettings(),
 			"ibm_iam_policy_template":                       iampolicy.DataSourceIBMIAMPolicyTemplate(),
 			"ibm_iam_policy_template_version":               iampolicy.DataSourceIBMIAMPolicyTemplateVersion(),
 			"ibm_iam_policy_assignments":                    iampolicy.DataSourceIBMIAMPolicyAssignments(),
@@ -464,6 +471,8 @@ func Provider() *schema.Provider {
 			"ibm_iam_role_template_version":                 iampolicy.DataSourceIBMIAMRoleTemplateVersion(),
 			"ibm_iam_role_assignments":                      iampolicy.DataSourceIBMIAMRoleAssignments(),
 			"ibm_iam_role_assignment":                       iampolicy.DataSourceIBMIAMRoleAssignment(),
+			"ibm_iam_identity_preference":                   iamidentity.DataSourceIBMIamIdentityPreference(),
+			"ibm_iam_identity_preferences":                  iamidentity.DataSourceIBMIamIdentityPreferences(),
 
 			// backup as Service
 			"ibm_is_backup_policy":       vpc.DataSourceIBMIsBackupPolicy(),
@@ -1183,6 +1192,7 @@ func Provider() *schema.Provider {
 
 		ResourcesMap: map[string]*schema.Resource{
 			"ibm_backup_recovery_agent_upgrade_task":                             backuprecovery.AddInstanceFields(backuprecovery.ResourceIbmBackupRecoveryAgentUpgradeTask()),
+			"ibm_backup_recovery_connector_agent_registration":                   backuprecovery.AddInstanceFields(backuprecovery.ResourceIbmBackupRecoveryConnectorAgentRegistration()),
 			"ibm_backup_recovery_protection_group_run_request":                   backuprecovery.AddInstanceFields(backuprecovery.ResourceIbmBackupRecoveryProtectionGroupRunRequest()),
 			"ibm_backup_recovery_data_source_connection":                         backuprecovery.AddInstanceFields(backuprecovery.ResourceIbmBackupRecoveryDataSourceConnection()),
 			"ibm_backup_recovery_data_source_connector_patch":                    backuprecovery.AddInstanceFields(backuprecovery.ResourceIbmBackupRecoveryDataSourceConnectorPatch()),
@@ -1321,6 +1331,7 @@ func Provider() *schema.Provider {
 			"ibm_container_nlb_dns":                         kubernetes.ResourceIBMContainerNlbDns(),
 			"ibm_container_dedicated_host_pool":             kubernetes.ResourceIBMContainerDedicatedHostPool(),
 			"ibm_container_dedicated_host":                  kubernetes.ResourceIBMContainerDedicatedHost(),
+			"ibm_container_vni_baremetal_attachment":        kubernetes.ResourceIBMContainerVNIBaremetalAttachment(),
 			"ibm_cr_namespace":                              registry.ResourceIBMCrNamespace(),
 			"ibm_cr_retention_policy":                       registry.ResourceIBMCrRetentionPolicy(),
 			"ibm_cos_bucket":                                cos.ResourceIBMCOSBucket(),
@@ -1361,7 +1372,7 @@ func Provider() *schema.Provider {
 			"ibm_iam_authorization_policy_detach":           iampolicy.ResourceIBMIAMAuthorizationPolicyDetach(),
 			"ibm_iam_user_policy":                           iampolicy.ResourceIBMIAMUserPolicy(),
 			"ibm_iam_user_settings":                         iamidentity.ResourceIBMIAMUserSettings(),
-			"ibm_iam_service_id":                            iamidentity.ResourceIBMIAMServiceID(),
+			"ibm_iam_service_id":                            iamidentity.ResourceIBMIamServiceID(),
 			"ibm_iam_serviceid_group":                       iamidentity.ResourceIBMIamServiceidGroup(),
 			"ibm_iam_service_api_key":                       iamidentity.ResourceIBMIAMServiceAPIKey(),
 			"ibm_iam_service_policy":                        iampolicy.ResourceIBMIAMServicePolicy(),
@@ -1377,6 +1388,8 @@ func Provider() *schema.Provider {
 			"ibm_iam_trusted_profile_template":              iamidentity.ResourceIBMTrustedProfileTemplate(),
 			"ibm_iam_account_settings_template_assignment":  iamidentity.ResourceIBMAccountSettingsTemplateAssignment(),
 			"ibm_iam_trusted_profile_template_assignment":   iamidentity.ResourceIBMTrustedProfileTemplateAssignment(),
+			"ibm_iam_idp":                                   iamidentity.ResourceIBMIamIdp(),
+			"ibm_iam_idp_account_setting":                   iamidentity.ResourceIBMIamIdpAccountSetting(),
 			"ibm_ipsec_vpn":                                 classicinfrastructure.ResourceIBMIPSecVPN(),
 			"ibm_iam_policy_template":                       iampolicy.ResourceIBMIAMPolicyTemplate(),
 			"ibm_iam_policy_template_version":               iampolicy.ResourceIBMIAMPolicyTemplateVersion(),
@@ -1388,6 +1401,7 @@ func Provider() *schema.Provider {
 			"ibm_iam_role_template":                         iampolicy.ResourceIBMIAMRoleTemplate(),
 			"ibm_iam_role_template_version":                 iampolicy.ResourceIBMIAMRoleTemplateVersion(),
 			"ibm_iam_role_assignment":                       iampolicy.ResourceIBMIAMRoleAssignment(),
+			"ibm_iam_identity_preference":                   iamidentity.ResourceIBMIamIdentityPreference(),
 
 			"ibm_is_backup_policy":      vpc.ResourceIBMIsBackupPolicy(),
 			"ibm_is_backup_policy_plan": vpc.ResourceIBMIsBackupPolicyPlan(),
@@ -1525,6 +1539,7 @@ func Provider() *schema.Provider {
 			"ibm_kms_instance_policies":                    kms.ResourceIBMKmsInstancePolicy(),
 			"ibm_kms_kmip_adapter":                         kms.ResourceIBMKmsKMIPAdapter(),
 			"ibm_kms_kmip_client_cert":                     kms.ResourceIBMKmsKMIPClientCertificate(),
+			"ibm_kms_cryptounits":                          kms.ResourceIBMKmsCryptoUnits(),
 			"ibm_resource_group":                           resourcemanager.ResourceIBMResourceGroup(),
 
 			// resource_reclamation
@@ -2504,7 +2519,7 @@ func Validator() validate.ValidatorDict {
 
 				"ibm_iam_access_group": iamaccessgroup.DataSourceIBMIAMAccessGroupValidator(),
 
-				"ibm_iam_service_id":                  iamidentity.DataSourceIBMIAMServiceIDValidator(),
+				"ibm_iam_service_id":                  iamidentity.DataSourceIBMIamServiceIDValidator(),
 				"ibm_iam_trusted_profile_claim_rule":  iamidentity.DataSourceIBMIamTrustedProfileClaimRuleValidator(),
 				"ibm_iam_trusted_profile_link":        iamidentity.DataSourceIBMIamTrustedProfileLinkValidator(),
 				"ibm_iam_trusted_profile_links":       iamidentity.DataSourceIBMIamTrustedProfileLinksValidator(),

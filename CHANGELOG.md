@@ -1,3 +1,60 @@
+# 2.4.0 (July 1, 2026)
+
+## Bug Fixes
+
+### Cloud Databases
+* Feat 2857:  Implement Gen2 Support for `ibm_database` datasource ([6802](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6802))
+* Allow deletion of disabled database instances with 0 members ([6872](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6872))
+
+### IAM
+* update error format for a number of cases ([6833](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6833))
+* Update error handling for ServiceId ([6839](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6839))
+
+### Kubernetes
+* ROKS VNI support related resource and datasources are added ([6875](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6875))
+
+### Power Systems
+* Add Deprecated Attribute For SAP Profiles ([6847](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6847))
+* Add missing Arg_SourceChecksum to image import ([6849](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6849))
+* Allow Remote Restart ([6850](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6850))
+* Trusted Profile & MDS ([6851](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6851))
+* Fix unit wording ([6876](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6876))
+* Enable DHCP Private ([6861](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6861))
+* Add vpmem volume update functionality to ibm_pi_instance_vpmem_volume resource ([6870](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6870))
+
+
+## Enhancements
+
+### Cloud Databases
+* Add backup_id support for Gen2 instances ([6869](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6869))
+* Feat 2857: Implement Gen2 Support for `ibm_database_connection` datasource ([6808](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6808))
+
+### KMS
+* KeyProtect Dedicated Release ([6838](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6838))
+
+### Kubernetes
+* Add ibm_container_vpc_bare_metal_worker_reload action ([6865](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6865))
+
+### Power Systems
+* Stop skipping first two ip addresses when creating a network in terraform ([6776](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6776))
+* Update wording in source-crn option to remove mention of service broker ([6874](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6874))
+* Refactor DHCP Resource ([6845](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6845))
+
+
+## Documentation
+
+### Cloud Logs
+* Fix endpoint_type allowed values for Event Notifications integration ([6871](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6871))
+
+### Global Catalog
+* issue https://github.ibm.com/ibmcloud/content-catalog/issues/6190 - document cm_validation override values and update acceptance test ([6862](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6862))
+
+### Power Systems
+* Remove VSCSI From Doc ([6846](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6846))
+
+
+
+
 # 2.3.0 (June 19, 2026)
 
 ## Enhancements

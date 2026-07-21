@@ -292,6 +292,15 @@ func TestIsGen2Plan(t *testing.T) {
 // TestClearGen2UnsupportedAttributes tests the clearGen2UnsupportedAttributes function
 func TestClearGen2UnsupportedAttributes(t *testing.T) {
 	d := schema.TestResourceDataRaw(t, map[string]*schema.Schema{
+		"adminuser": {
+			Type:     schema.TypeString,
+			Optional: true,
+		},
+		"adminpassword": {
+			Type:      schema.TypeString,
+			Optional:  true,
+			Sensitive: true,
+		},
 		"auto_scaling": {
 			Type:     schema.TypeList,
 			Optional: true,
@@ -333,6 +342,8 @@ func TestClearGen2UnsupportedAttributes(t *testing.T) {
 			Optional: true,
 		},
 	}, map[string]interface{}{
+		"adminuser":            "admin",
+		"adminpassword":        "password123",
 		"auto_scaling":         []interface{}{map[string]interface{}{"enabled": true}},
 		"allowlist":            []interface{}{map[string]interface{}{"address": "1.2.3.4"}},
 		"users":                []interface{}{map[string]interface{}{"name": "user1"}},
@@ -341,12 +352,18 @@ func TestClearGen2UnsupportedAttributes(t *testing.T) {
 
 	clearGen2UnsupportedAttributes(d)
 
-	// auto_scaling is NOT cleared by clearGen2UnsupportedAttributes to avoid drift detection
-	// It should retain its original value
-	autoScaling := d.Get("auto_scaling")
-	require.NotEmpty(t, autoScaling, "auto_scaling should NOT be cleared (kept to avoid drift)")
+	// Verify all Gen2 unsupported attributes are cleared (d.Set(key, nil) results in empty values, not nil)
 
-	// Verify attributes that ARE cleared (d.Set(key, nil) results in empty values, not nil)
+	adminuser := d.Get("adminuser")
+	require.Equal(t, "", adminuser, "adminuser should be empty string after clearing")
+
+	adminpassword := d.Get("adminpassword")
+	require.Equal(t, "", adminpassword, "adminpassword should be empty string after clearing")
+
+	autoScaling := d.Get("auto_scaling")
+	require.NotNil(t, autoScaling, "auto_scaling should be set to empty value")
+	require.Empty(t, autoScaling, "auto_scaling should be empty after clearing")
+
 	allowlist := d.Get("allowlist")
 	require.NotNil(t, allowlist, "allowlist should be set to empty value")
 	require.Empty(t, allowlist, "allowlist should be empty after clearing")
@@ -357,6 +374,9 @@ func TestClearGen2UnsupportedAttributes(t *testing.T) {
 
 	configSchema := d.Get("configuration_schema")
 	require.Equal(t, "", configSchema, "configuration_schema should be empty string after clearing")
+
+	// Note: platform_options.backup_encryption_key_crn is also not supported in Gen2,
+	// but it's handled by the data source implementation which only sets disk_encryption_key_crn
 }
 
 func TestExtractDeploymentIDFromCRN(t *testing.T) {

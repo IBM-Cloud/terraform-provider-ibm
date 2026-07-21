@@ -2260,8 +2260,12 @@ func DataSourceIBMIsInstanceInstanceAvailabilityToMap(model *vpcv1.InstanceAvail
 
 func DataSourceIBMIsInstanceInstanceAvailabilityPolicyToMap(model *vpcv1.InstanceAvailabilityPolicy) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	modelMap["host_failure"] = *model.HostFailure
-	modelMap["preemption"] = *model.Preemption
+	if model.HostFailure != nil {
+		modelMap["host_failure"] = *model.HostFailure
+	}
+	if model.Preemption != nil {
+		modelMap["preemption"] = *model.Preemption
+	}
 	return modelMap, nil
 }
 
