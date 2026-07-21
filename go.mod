@@ -2,6 +2,8 @@ module github.com/IBM-Cloud/terraform-provider-ibm
 
 go 1.26.0
 
+toolchain go1.26.5
+
 require (
 	github.com/IBM-Cloud/bluemix-go v0.0.0-20260624064701-576d2f801297
 	github.com/IBM-Cloud/container-services-go-sdk v0.0.0-20240725064144-454a2ae23113
@@ -86,7 +88,7 @@ require (
 	github.com/apparentlymart/go-textseg/v15 v15.0.0 // indirect
 	github.com/cenkalti/backoff/v4 v4.3.0 // indirect
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
-	github.com/cloudflare/circl v1.6.1 // indirect
+	github.com/cloudflare/circl v1.6.3 // indirect
 	github.com/cloudfoundry/jibber_jabber v0.0.0-20151120183258-bcc4c8345a21 // indirect
 	github.com/containernetworking/cni v1.2.3 // indirect
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
