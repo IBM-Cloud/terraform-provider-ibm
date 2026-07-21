@@ -8,8 +8,10 @@ import (
 	"fmt"
 	"log"
 
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM/cloud-databases-go-sdk/clouddatabasesv5"
 	"github.com/IBM/go-sdk-core/v5/core"
+	rc "github.com/IBM/platform-services-go-sdk/resourcecontrollerv2"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -110,8 +112,25 @@ func (v *Version) getAllowedVersionsList() []string {
 var fetchDeploymentVersionFn = fetchDeploymentVersion
 
 func fetchDeploymentVersion(instanceId string, location string, meta interface{}) *Version {
+	// Detect platform from instance plan
+	platform := classicPlatform
+
+	// Get the instance to determine if it's Gen2/CDP
+	rsConClient, err := meta.(conns.ClientSession).ResourceControllerV2API()
+	if err == nil {
+		instance, _, err := rsConClient.GetResourceInstance(&rc.GetResourceInstanceOptions{
+			ID: &instanceId,
+		})
+		if err == nil && instance != nil && instance.ResourcePlanID != nil {
+			// Check if this is a Gen2 plan (includes CDP)
+			if isGen2Plan(*instance.ResourcePlanID) {
+				platform = "gen2"
+			}
+		}
+	}
+
 	options := DeploymentCapabilityOptions{
-		Platform:      classicPlatform,
+		Platform:      platform,
 		Location:      location,
 		IncludeHidden: core.BoolPtr(true),
 		IncludeBeta:   core.BoolPtr(true),
