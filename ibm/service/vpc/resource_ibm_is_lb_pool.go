@@ -1305,7 +1305,7 @@ func ResourceIBMIsLbPoolMapToLoadBalancerPoolHealthMonitorPrototype(
 		}
 	}
 
-	if modelMap["response"] != nil && len(modelMap["response"].([]interface{})) > 0 {
+	if modelMap["response"] != nil && len(modelMap["response"].([]interface{})) > 0 && modelMap["response"].([]interface{})[0] != nil {
 		responseModel, err =
 			ResourceIBMIsLbPoolMapToLoadBalancerPoolHealthMonitorTypeHttphttpsResponsePrototype(
 				modelMap["response"].([]interface{})[0].(map[string]interface{}),
