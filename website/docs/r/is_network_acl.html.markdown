@@ -88,21 +88,64 @@ resource "ibm_is_network_acl" "example" {
     source      = "0.0.0.0/0"
     destination = "0.0.0.0/0"
     direction   = "inbound"
-    protocol    = "any" 
+    protocol    = "any"
+  }
+}
+```
+
+## Example usage (incremental rule updates)
+
+Use `incremental_rule_update = true` to enable surgical per-rule operations on update instead of the default clear-and-recreate behaviour.
+
+```terraform
+resource "ibm_is_vpc" "example" {
+  name = "example-vpc"
+}
+
+resource "ibm_is_network_acl" "example" {
+  name                   = "example-acl"
+  vpc                    = ibm_is_vpc.example.id
+  incremental_rule_update = true
+
+  rules {
+    name        = "inbound"
+    action      = "allow"
+    source      = "0.0.0.0/0"
+    destination = "10.0.0.0/8"
+    direction   = "inbound"
+    protocol    = "tcp"
+    port_min    = 22
+    port_max    = 22
+  }
+  rules {
+    name        = "outbound"
+    action      = "allow"
+    source      = "0.0.0.0/0"
+    destination = "0.0.0.0/0"
+    direction   = "outbound"
+    protocol    = "any"
   }
 }
 ```
 
 ## Argument reference
-Review the argument references that you can specify for your resource. 
- 
+Review the argument references that you can specify for your resource.
+
 - `access_tags`  - (Optional, List of Strings) A list of access management tags to attach to the network acl.
 
-  ~> **Note:** 
+  ~> **Note:**
   **&#x2022;** You can attach only those access tags that already exists.</br>
   **&#x2022;** For more information, about creating access tags, see [working with tags](https://cloud.ibm.com/docs/account?topic=account-tag&interface=ui#create-access-console).</br>
   **&#x2022;** You must have the access listed in the [Granting users access to tag resources](https://cloud.ibm.com/docs/account?topic=account-access) for `access_tags`</br>
   **&#x2022;** `access_tags` must be in the format `key:value`.
+- `incremental_rule_update` - (Optional, Boolean) Controls the update strategy for inline `rules`. Default value: `false`.
+  - When `false` (default): any change to `rules` deletes all existing rules and recreates the full list.
+  - When `true`: only the rules that have actually changed are updated, minimising disruption to the ACL:
+    - **Rule removed** — only that rule is deleted; all other rules are untouched.
+    - **Rule added** — only the new rule is created and inserted at the correct position.
+    - **Rule reordered** — the affected rule(s) are repositioned without being deleted or recreated.
+    - **Rule updated** — if only editable attributes change (such as `action`, `source`, `destination`, `direction`, TCP/UDP port range (`port_min`/`port_max`), or ICMP `type`/`code`), only that rule is updated in place. Its position is preserved and no other rules are affected.
+    - **Name or protocol changed** — only that specific rule is deleted and recreated at the same position; all other rules remain untouched.
 - `name` - (Optional, String) The name of the network ACL. If unspecified, the name will be a hyphenated list of randomly-selected words.
 - `resource_group` - (Optional, Forces new resource, String) The ID of the resource group where you want to create the network ACL.
 - `rules`- (Optional, Array of Strings) A list of rules for a network ACL. The order in which the rules are added to the list determines the priority of the rules. For example, the first rule that you want to enforce must be specified as the first rule in this list.

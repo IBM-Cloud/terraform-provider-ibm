@@ -1,4 +1,4 @@
-// Copyright IBM Corp. 2024 All Rights Reserved.
+// Copyright IBM Corp. 2026 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 package provider
@@ -251,6 +251,8 @@ func Provider() *schema.Provider {
 			"ibm_backup_recovery_download_agent":                        backuprecovery.AddInstanceFields(backuprecovery.DataSourceIbmBackupRecoveryDownloadAgent()),
 			"ibm_backup_recovery_search_indexed_object":                 backuprecovery.AddInstanceFields(backuprecovery.DataSourceIbmBackupRecoverySearchIndexedObject()),
 			"ibm_backup_recovery_object_snapshots":                      backuprecovery.AddInstanceFields(backuprecovery.DataSourceIbmBackupRecoveryObjectSnapshots()),
+			"ibm_backup_recovery_connector_agent_config":                backuprecovery.AddInstanceFields(backuprecovery.DataSourceIbmBackupRecoveryConnectorAgentConfig()),
+			"ibm_backup_recovery_connector_agents":                      backuprecovery.AddInstanceFields(backuprecovery.DataSourceIbmBackupRecoveryConnectorAgents()),
 			"ibm_backup_recovery_connectors_metadata":                   backuprecovery.AddInstanceFields(backuprecovery.DataSourceIbmBackupRecoveryConnectorsMetadata()),
 			"ibm_backup_recovery_connector_logs":                        backuprecovery.AddInstanceFields(backuprecovery.DataSourceIbmBackupRecoveryConnectorLogs()),
 			"ibm_backup_recovery_connector_status":                      backuprecovery.AddInstanceFields(backuprecovery.DataSourceIbmBackupRecoveryConnectorStatus()),
@@ -453,6 +455,9 @@ func Provider() *schema.Provider {
 			"ibm_iam_trusted_profile_template":              iamidentity.DataSourceIBMTrustedProfileTemplate(),
 			"ibm_iam_account_settings_template_assignment":  iamidentity.DataSourceIBMAccountSettingsTemplateAssignment(),
 			"ibm_iam_trusted_profile_template_assignment":   iamidentity.DataSourceIBMTrustedProfileTemplateAssignment(),
+			"ibm_iam_idp":                                   iamidentity.DataSourceIBMIamIdp(),
+			"ibm_iam_idps":                                  iamidentity.DataSourceIBMIamIdps(),
+			"ibm_iam_idp_account_settings":                  iamidentity.DataSourceIBMIamIdpAccountSettings(),
 			"ibm_iam_policy_template":                       iampolicy.DataSourceIBMIAMPolicyTemplate(),
 			"ibm_iam_policy_template_version":               iampolicy.DataSourceIBMIAMPolicyTemplateVersion(),
 			"ibm_iam_policy_assignments":                    iampolicy.DataSourceIBMIAMPolicyAssignments(),
@@ -466,6 +471,8 @@ func Provider() *schema.Provider {
 			"ibm_iam_role_template_version":                 iampolicy.DataSourceIBMIAMRoleTemplateVersion(),
 			"ibm_iam_role_assignments":                      iampolicy.DataSourceIBMIAMRoleAssignments(),
 			"ibm_iam_role_assignment":                       iampolicy.DataSourceIBMIAMRoleAssignment(),
+			"ibm_iam_identity_preference":                   iamidentity.DataSourceIBMIamIdentityPreference(),
+			"ibm_iam_identity_preferences":                  iamidentity.DataSourceIBMIamIdentityPreferences(),
 
 			// backup as Service
 			"ibm_is_backup_policy":       vpc.DataSourceIBMIsBackupPolicy(),
@@ -541,21 +548,23 @@ func Provider() *schema.Provider {
 			"ibm_is_virtual_endpoint_gateway_resource_binding":  vpc.DataSourceIBMIsVirtualEndpointGatewayResourceBinding(),
 			"ibm_is_virtual_endpoint_gateway_resource_bindings": vpc.DataSourceIBMIsVirtualEndpointGatewayResourceBindings(),
 
-			"ibm_is_virtual_endpoint_gateways":    vpc.DataSourceIBMISEndpointGateways(),
-			"ibm_is_virtual_endpoint_gateway_ips": vpc.DataSourceIBMISEndpointGatewayIPs(),
-			"ibm_is_virtual_endpoint_gateway":     vpc.DataSourceIBMISEndpointGateway(),
-			"ibm_is_instance_template":            vpc.DataSourceIBMISInstanceTemplate(),
-			"ibm_is_instance_templates":           vpc.DataSourceIBMISInstanceTemplates(),
-			"ibm_is_instance_profile":             vpc.DataSourceIBMISInstanceProfile(),
-			"ibm_is_instance_profiles":            vpc.DataSourceIBMISInstanceProfiles(),
-			"ibm_is_instance":                     vpc.DataSourceIBMISInstance(),
-			"ibm_is_instances":                    vpc.DataSourceIBMISInstances(),
-			"ibm_is_instance_network_attachment":  vpc.DataSourceIBMIsInstanceNetworkAttachment(),
-			"ibm_is_instance_network_attachments": vpc.DataSourceIBMIsInstanceNetworkAttachments(),
-			"ibm_is_instance_network_interface":   vpc.DataSourceIBMIsInstanceNetworkInterface(),
-			"ibm_is_instance_network_interfaces":  vpc.DataSourceIBMIsInstanceNetworkInterfaces(),
-			"ibm_is_instance_disk":                vpc.DataSourceIbmIsInstanceDisk(),
-			"ibm_is_instance_disks":               vpc.DataSourceIbmIsInstanceDisks(),
+			"ibm_is_virtual_endpoint_gateways":     vpc.DataSourceIBMISEndpointGateways(),
+			"ibm_is_virtual_endpoint_gateway_ips":  vpc.DataSourceIBMISEndpointGatewayIPs(),
+			"ibm_is_virtual_endpoint_gateway":      vpc.DataSourceIBMISEndpointGateway(),
+			"ibm_is_instance_template":             vpc.DataSourceIBMISInstanceTemplate(),
+			"ibm_is_instance_templates":            vpc.DataSourceIBMISInstanceTemplates(),
+			"ibm_is_instance_profile":              vpc.DataSourceIBMISInstanceProfile(),
+			"ibm_is_instance_profiles":             vpc.DataSourceIBMISInstanceProfiles(),
+			"ibm_is_instance":                      vpc.DataSourceIBMISInstance(),
+			"ibm_is_instances":                     vpc.DataSourceIBMISInstances(),
+			"ibm_is_instance_software_attachment":  vpc.DataSourceIBMIsInstanceSoftwareAttachment(),
+			"ibm_is_instance_software_attachments": vpc.DataSourceIBMIsInstanceSoftwareAttachments(),
+			"ibm_is_instance_network_attachment":   vpc.DataSourceIBMIsInstanceNetworkAttachment(),
+			"ibm_is_instance_network_attachments":  vpc.DataSourceIBMIsInstanceNetworkAttachments(),
+			"ibm_is_instance_network_interface":    vpc.DataSourceIBMIsInstanceNetworkInterface(),
+			"ibm_is_instance_network_interfaces":   vpc.DataSourceIBMIsInstanceNetworkInterfaces(),
+			"ibm_is_instance_disk":                 vpc.DataSourceIbmIsInstanceDisk(),
+			"ibm_is_instance_disks":                vpc.DataSourceIbmIsInstanceDisks(),
 
 			// reserved ips
 			"ibm_is_instance_network_interface_reserved_ip":  vpc.DataSourceIBMISInstanceNICReservedIP(),
@@ -1185,6 +1194,7 @@ func Provider() *schema.Provider {
 
 		ResourcesMap: map[string]*schema.Resource{
 			"ibm_backup_recovery_agent_upgrade_task":                             backuprecovery.AddInstanceFields(backuprecovery.ResourceIbmBackupRecoveryAgentUpgradeTask()),
+			"ibm_backup_recovery_connector_agent_registration":                   backuprecovery.AddInstanceFields(backuprecovery.ResourceIbmBackupRecoveryConnectorAgentRegistration()),
 			"ibm_backup_recovery_protection_group_run_request":                   backuprecovery.AddInstanceFields(backuprecovery.ResourceIbmBackupRecoveryProtectionGroupRunRequest()),
 			"ibm_backup_recovery_data_source_connection":                         backuprecovery.AddInstanceFields(backuprecovery.ResourceIbmBackupRecoveryDataSourceConnection()),
 			"ibm_backup_recovery_data_source_connector_patch":                    backuprecovery.AddInstanceFields(backuprecovery.ResourceIbmBackupRecoveryDataSourceConnectorPatch()),
@@ -1380,6 +1390,8 @@ func Provider() *schema.Provider {
 			"ibm_iam_trusted_profile_template":              iamidentity.ResourceIBMTrustedProfileTemplate(),
 			"ibm_iam_account_settings_template_assignment":  iamidentity.ResourceIBMAccountSettingsTemplateAssignment(),
 			"ibm_iam_trusted_profile_template_assignment":   iamidentity.ResourceIBMTrustedProfileTemplateAssignment(),
+			"ibm_iam_idp":                                   iamidentity.ResourceIBMIamIdp(),
+			"ibm_iam_idp_account_setting":                   iamidentity.ResourceIBMIamIdpAccountSetting(),
 			"ibm_ipsec_vpn":                                 classicinfrastructure.ResourceIBMIPSecVPN(),
 			"ibm_iam_policy_template":                       iampolicy.ResourceIBMIAMPolicyTemplate(),
 			"ibm_iam_policy_template_version":               iampolicy.ResourceIBMIAMPolicyTemplateVersion(),
@@ -1391,6 +1403,7 @@ func Provider() *schema.Provider {
 			"ibm_iam_role_template":                         iampolicy.ResourceIBMIAMRoleTemplate(),
 			"ibm_iam_role_template_version":                 iampolicy.ResourceIBMIAMRoleTemplateVersion(),
 			"ibm_iam_role_assignment":                       iampolicy.ResourceIBMIAMRoleAssignment(),
+			"ibm_iam_identity_preference":                   iamidentity.ResourceIBMIamIdentityPreference(),
 
 			"ibm_is_backup_policy":      vpc.ResourceIBMIsBackupPolicy(),
 			"ibm_is_backup_policy_plan": vpc.ResourceIBMIsBackupPolicyPlan(),
@@ -1419,6 +1432,7 @@ func Provider() *schema.Provider {
 			"ibm_is_floating_ip":                                 vpc.ResourceIBMISFloatingIP(),
 			"ibm_is_flow_log":                                    vpc.ResourceIBMISFlowLog(),
 			"ibm_is_instance":                                    vpc.ResourceIBMISInstance(),
+			"ibm_is_instance_software_attachment":                vpc.ResourceIBMIsInstanceSoftwareAttachment(),
 			"ibm_is_instance_action":                             vpc.ResourceIBMISInstanceAction(),
 			"ibm_is_instance_network_attachment":                 vpc.ResourceIBMIsInstanceNetworkAttachment(),
 			"ibm_is_instance_network_interface":                  vpc.ResourceIBMIsInstanceNetworkInterface(),
@@ -2203,6 +2217,7 @@ func Validator() validate.ValidatorDict {
 				"ibm_is_image_export_job":                            vpc.ResourceIBMIsImageExportValidator(),
 				"ibm_is_instance_template":                           vpc.ResourceIBMISInstanceTemplateValidator(),
 				"ibm_is_instance":                                    vpc.ResourceIBMISInstanceValidator(),
+				"ibm_is_instance_software_attachment":                vpc.ResourceIBMIsInstanceSoftwareAttachmentValidator(),
 				"ibm_is_instance_action":                             vpc.ResourceIBMISInstanceActionValidator(),
 				"ibm_is_instance_network_attachment":                 vpc.ResourceIBMIsInstanceNetworkAttachmentValidator(),
 				"ibm_is_instance_network_interface":                  vpc.ResourceIBMIsInstanceNetworkInterfaceValidator(),

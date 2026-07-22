@@ -191,10 +191,10 @@ func testAccCheckIbmSmUsernamePasswordSecretCreated(n string) resource.TestCheck
 		if err := verifyAttr(string(pwdPolicyJson), passwordGenerationPolicyJSON, "password_generation_policy"); err != nil {
 			return err
 		}
-		if err := verifyAttr(getRotationUnit(secret.Rotation), "day", "rotation unit"); err != nil {
+		if err := verifyAttr(getRotationUnit(secret.Rotation), "month", "rotation unit"); err != nil {
 			return err
 		}
-		if err := verifyAttr(getRotationInterval(secret.Rotation), "1", "rotation interval"); err != nil {
+		if err := verifyAttr(getRotationInterval(secret.Rotation), "2", "rotation interval"); err != nil {
 			return err
 		}
 		return nil
@@ -236,10 +236,10 @@ func testAccCheckIbmSmUsernamePasswordSecretUpdated(n string) resource.TestCheck
 		if err := verifyAttr(getAutoRotate(secret.Rotation), "true", "auto_rotate after update"); err != nil {
 			return err
 		}
-		if err := verifyAttr(getRotationUnit(secret.Rotation), "month", "rotation unit after update"); err != nil {
+		if err := verifyAttr(getRotationUnit(secret.Rotation), "day", "rotation unit after update"); err != nil {
 			return err
 		}
-		if err := verifyAttr(getRotationInterval(secret.Rotation), "2", "rotation interval after update"); err != nil {
+		if err := verifyAttr(getRotationInterval(secret.Rotation), "3", "rotation interval after update"); err != nil {
 			return err
 		}
 		pwdPolicyJson, _ := json.Marshal(secret.PasswordGenerationPolicy)
