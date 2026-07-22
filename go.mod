@@ -37,6 +37,7 @@ require (
 	github.com/IBM/schematics-go-sdk v0.3.0
 	github.com/IBM/sds-go-sdk v1.0.1
 	github.com/IBM/secrets-manager-go-sdk/v2 v2.0.15
+	github.com/IBM/secrets-manager-management-go-sdk/v2 v2.0.1
 	github.com/IBM/vmware-go-sdk v0.1.5
 	github.com/IBM/vpc-beta-go-sdk v0.8.0
 	github.com/IBM/vpc-go-sdk v0.87.1
