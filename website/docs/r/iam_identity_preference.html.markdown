@@ -32,7 +32,7 @@ You can specify the following arguments for this resource.
 * `account_id` - (Required, Forces new resource, String) Account id to update preference for.
 * `preference_id` - (Required, Forces new resource, String) Identifier of preference to be updated.
 * `service` - (Required, Forces new resource, String) Service of the preference to be updated.
-* `value_list_of_strings` - (Optional, List) List of value of the preference, only one value property is set, either 'value_string' or 'value_list_of_strings' is present.
+* `value_list_of_strings` - (Optional, List) List of values of the preference, only one value property is set, either 'value_string' or 'value_list_of_strings' is present.
 * `value_string` - (Optional, String) String value of the preference, only one value property is set, either 'value_string' or 'value_list_of_strings' is present.
 
 ## Attribute Reference
