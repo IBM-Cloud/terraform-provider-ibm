@@ -504,7 +504,7 @@ Review the argument references that you can specify for your resource.
     Nested scheme for `pool`:
     - `id` - The unique identifier for this reservation
 - `resource_group` - (Optional, Forces new resource, String) The resource group ID.
-- `threads_per_core` - (Optional, Integer) The number of threads per core for this virtual server instance. Allowed values are `1` or `2`. If unspecified, the default threads per core from the profile will be used.
+- `threads_per_core` - (Optional, Forces new resource, Integer) The number of threads per core for this virtual server instance. Allowed values are `1` or `2`. If unspecified, the default threads per core from the profile will be used.
 - `total_volume_bandwidth` - (Optional, int) The amount of bandwidth (in megabits per second) allocated exclusively to instance storage volumes
 - `vcpu` - (Optional, List)  The virtual server instance VCPU configuration.
   Nested schema for **vcpu**:
