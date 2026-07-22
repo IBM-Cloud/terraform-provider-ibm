@@ -146,6 +146,7 @@ func ResourceIBMPIInstance() *schema.Resource {
 				Type:          schema.TypeString,
 			},
 			Arg_AllowRemoteRestart: {
+				Computed:    true,
 				Description: "Indicates if the server allows server to be restarted from remote",
 				Optional:    true,
 				Type:        schema.TypeBool,
