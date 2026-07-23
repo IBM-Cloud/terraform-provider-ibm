@@ -153,6 +153,16 @@ func DataSourceIBMISLbProfile() *schema.Resource {
 					},
 				},
 			},
+			"mtls_supported": {
+				Type:        schema.TypeBool,
+				Computed:    true,
+				Description: "The mTLS support for a load balancer with this profile",
+			},
+			"mtls_supported_type": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The mTLS support for a load balancer with this profile depends on its configuration",
+			},
 		},
 	}
 }
@@ -291,6 +301,45 @@ func dataSourceIBMISLbProfileRead(context context.Context, d *schema.ResourceDat
 				if rms.Value != nil {
 					if err = d.Set("route_mode_supported", *rms.Value); err != nil {
 						return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting route_mode_supported: %s", err), "(Data) ibm_is_lb_profile", "read", "set-route_mode_supported").GetDiag()
+					}
+				}
+			}
+		}
+	}
+	if loadBalancerProfile.MtlsSupported != nil {
+		mtlsSupport := loadBalancerProfile.MtlsSupported
+		switch reflect.TypeOf(mtlsSupport).String() {
+		case "*vpcv1.LoadBalancerProfileMtlsSupportedFixed":
+			{
+				mtls := mtlsSupport.(*vpcv1.LoadBalancerProfileMtlsSupportedFixed)
+				if err = d.Set("mtls_supported", mtls.Value); err != nil {
+					return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting mtls_supported: %s", err), "(Data) ibm_is_lb_profile", "read", "set-mtls_supported").GetDiag()
+				}
+				if err = d.Set("mtls_supported_type", mtls.Type); err != nil {
+					return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting mtls_supported_type: %s", err), "(Data) ibm_is_lb_profile", "read", "set-mtls_supported_type").GetDiag()
+				}
+			}
+		case "*vpcv1.LoadBalancerProfileMtlsSupportedDependent":
+			{
+				mtls := mtlsSupport.(*vpcv1.LoadBalancerProfileMtlsSupportedDependent)
+				if mtls.Type != nil {
+					if err = d.Set("mtls_supported_type", *mtls.Type); err != nil {
+						return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting mtls_supported_type: %s", err), "(Data) ibm_is_lb_profile", "read", "set-mtls_supported_type").GetDiag()
+					}
+				}
+
+			}
+		case "*vpcv1.LoadBalancerProfileMtlsSupported":
+			{
+				mtls := mtlsSupport.(*vpcv1.LoadBalancerProfileMtlsSupported)
+				if mtls.Type != nil {
+					if err = d.Set("mtls_supported_type", *mtls.Type); err != nil {
+						return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting mtls_supported_type: %s", err), "(Data) ibm_is_lb_profile", "read", "set-mtls_supported_type").GetDiag()
+					}
+				}
+				if mtls.Value != nil {
+					if err = d.Set("mtls_supported", *mtls.Value); err != nil {
+						return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting mtls_supported: %s", err), "(Data) ibm_is_lb_profile", "read", "set-mtls_supported").GetDiag()
 					}
 				}
 			}

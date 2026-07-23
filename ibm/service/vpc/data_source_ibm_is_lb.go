@@ -379,6 +379,11 @@ func DataSourceIBMISLB() *schema.Resource {
 				Computed:    true,
 				Description: "The resource group name in which resource is provisioned",
 			},
+			isLBMtlsSupported: {
+				Type:        schema.TypeBool,
+				Computed:    true,
+				Description: "Indicates whether this load balancer supports mTLS.",
+			},
 		},
 	}
 }
@@ -657,6 +662,9 @@ func lbGetByName(context context.Context, d *schema.ResourceData, meta interface
 			}
 			if err = d.Set("hostname", loadBalancer.Hostname); err != nil {
 				return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting hostname: %s", err), "(Data) ibm_is_lb", "read", "set-hostname").GetDiag()
+			}
+			if err = d.Set("mtls_supported", loadBalancer.MtlsSupported); err != nil {
+				return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting mtls_supported: %s", err), "(Data) ibm_is_lb", "read", "set-mtls_supported").GetDiag()
 			}
 			tags, err := flex.GetGlobalTagsUsingCRN(meta, *loadBalancer.CRN, "", isUserTagType)
 			if err != nil {

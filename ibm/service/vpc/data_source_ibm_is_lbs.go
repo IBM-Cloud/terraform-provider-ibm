@@ -337,6 +337,11 @@ func DataSourceIBMISLBS() *schema.Resource {
 							Computed:    true,
 							Description: "The resource group name in which resource is provisioned",
 						},
+						isLBMtlsSupported: {
+							Type:        schema.TypeBool,
+							Computed:    true,
+							Description: "Indicates whether this load balancer supports mTLS.",
+						},
 					},
 				},
 			},
@@ -525,6 +530,9 @@ func getLbs(context context.Context, d *schema.ResourceData, meta interface{}) d
 		}
 		lbInfo[isLBResourceGroup] = *lb.ResourceGroup.ID
 		lbInfo[isLBHostName] = *lb.Hostname
+		if lb.MtlsSupported != nil {
+			lbInfo[isLBMtlsSupported] = *lb.MtlsSupported
+		}
 		tags, err := flex.GetGlobalTagsUsingCRN(meta, *lb.CRN, "", isUserTagType)
 		if err != nil {
 			log.Printf(

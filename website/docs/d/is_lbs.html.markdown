@@ -60,6 +60,7 @@ Review the attribute references that you can access after you retrieve your data
 		- `fail`: Fails requests with an HTTP 503 status code.
 		- `forward`: Forwards requests to the target pool.
 
+	- `mtls_supported`- (Bool) Indicates whether this load balancer supports mTLS.
 	- `name` - (String) Name of the load balancer.
 	- `subnets` - (List) The subnets this load balancer is part of.
 
@@ -105,3 +106,4 @@ Review the attribute references that you can access after you retrieve your data
 	- `type` - (String) The type of the load balancer.
 	- `tags` - (String) Tags associated with the load balancer.
 	- `udp_supported`- (Bool) Indicates whether this load balancer supports UDP.
+

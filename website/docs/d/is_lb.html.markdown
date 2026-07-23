@@ -79,6 +79,7 @@ In addition to all argument reference list, you can access the following attribu
 - `instance_groups_supported` - (Boolean) Indicates whether this load balancer supports instance groups.
 - `listeners` - (String) The ID of the listeners attached to this load balancer.
 - `logging`-  (Bool) Enable (**true**) or disable (**false**) datapath logging for this load balancer. If unspecified, datapath logging is disabled. This option is supported only for application load balancers.
+- `mtls_supported`- (Bool) Indicates whether this load balancer supports mTLS.
 - `operating_status` - (String) The operating status of this load balancer.
 - `pools` - (List) List all the Pools attached to this load balancer.
 

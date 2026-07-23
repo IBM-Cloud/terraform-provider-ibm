@@ -76,6 +76,8 @@ You can access the following attribute references after your data source is crea
 		- `type` - (String) The source ip session persistence support type.  One of **fixed**, **dependent**
 		- `value` - (String) Indicated whether source ip session persistence is supported. Applicable only if `type` is **fixed**
 
+	- `mtls_supported` - (Bool) The mTLS support for a load balancer with this profile.
+	- `mtls_supported_type` - (String) The mTLS support type for a load balancer with this profile, one of [fixed, dependent]
 	- `name` - (String) The name for this load balancer profile.
 	- `route_mode_supported` - (Bool) The route mode support for a load balancer with this profile.
 	- `route_mode_type` - (String) The route mode type for this load balancer profile, one of [fixed, dependent]

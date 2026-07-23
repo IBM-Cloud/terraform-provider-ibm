@@ -227,6 +227,16 @@ func DataSourceIBMISLbProfiles() *schema.Resource {
 								},
 							},
 						},
+						"mtls_supported": {
+							Type:        schema.TypeBool,
+							Computed:    true,
+							Description: "The mTLS support for a load balancer with this profile",
+						},
+						"mtls_supported_type": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The mTLS support for a load balancer with this profile depends on its configuration",
+						},
 					},
 				},
 			},
@@ -405,6 +415,34 @@ func dataSourceIBMISLbProfilesRead(context context.Context, d *schema.ResourceDa
 			}
 			sourceIpPersistenceSupportList = append(sourceIpPersistenceSupportList, sourceIpPersistenceSupportMap)
 			l["instance_groups_supported"] = sourceIpPersistenceSupportList
+		}
+		if profileCollector.MtlsSupported != nil {
+			mtlsSupport := profileCollector.MtlsSupported
+			switch reflect.TypeOf(mtlsSupport).String() {
+			case "*vpcv1.LoadBalancerProfileMtlsSupportedFixed":
+				{
+					mtls := mtlsSupport.(*vpcv1.LoadBalancerProfileMtlsSupportedFixed)
+					l["mtls_supported"] = mtls.Value
+					l["mtls_supported_type"] = mtls.Type
+				}
+			case "*vpcv1.LoadBalancerProfileMtlsSupportedDependent":
+				{
+					mtls := mtlsSupport.(*vpcv1.LoadBalancerProfileMtlsSupportedDependent)
+					if mtls.Type != nil {
+						l["mtls_supported_type"] = *mtls.Type
+					}
+				}
+			case "*vpcv1.LoadBalancerProfileMtlsSupported":
+				{
+					mtls := mtlsSupport.(*vpcv1.LoadBalancerProfileMtlsSupported)
+					if mtls.Type != nil {
+						l["mtls_supported_type"] = *mtls.Type
+					}
+					if mtls.Value != nil {
+						l["mtls_supported"] = *mtls.Value
+					}
+				}
+			}
 		}
 		lbprofilesInfo = append(lbprofilesInfo, l)
 	}
