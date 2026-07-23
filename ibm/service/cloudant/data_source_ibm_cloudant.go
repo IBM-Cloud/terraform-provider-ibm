@@ -1,10 +1,11 @@
-// Copyright IBM Corp. 2021 All Rights Reserved.
+// Copyright IBM Corp. 2021, 2026 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 package cloudant
 
 import (
 	"log"
+	"maps"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/resourcecontroller"
@@ -13,67 +14,58 @@ import (
 	"github.com/IBM/cloudant-go-sdk/cloudantv1"
 )
 
-func DataSourceIBMCloudant() *schema.Resource {
-	riSchema := resourcecontroller.DataSourceIBMResourceInstance().Schema
-
-	riSchema["service"] = &schema.Schema{
+// Cloudant specific resource instance additional schema
+var cloudantSchema = map[string]*schema.Schema{
+	"service": {
 		Type:        schema.TypeString,
 		Computed:    true,
 		Description: "The service type of the instance",
-	}
-
-	riSchema["version"] = &schema.Schema{
+	},
+	"version": {
 		Type:        schema.TypeString,
 		Computed:    true,
 		Description: "Vendor version.",
-	}
-
-	riSchema["features"] = &schema.Schema{
+	},
+	"features": {
 		Type:        schema.TypeList,
 		Computed:    true,
 		Description: "List of enabled optional features.",
 		Elem: &schema.Schema{
 			Type: schema.TypeString,
 		},
-	}
-
-	riSchema["features_flags"] = &schema.Schema{
+	},
+	"features_flags": {
 		Type:        schema.TypeList,
 		Computed:    true,
 		Description: "List of feature flags.",
 		Elem: &schema.Schema{
 			Type: schema.TypeString,
 		},
-	}
-
-	riSchema["include_data_events"] = &schema.Schema{
+	},
+	"include_data_events": {
 		Type:        schema.TypeBool,
 		Computed:    true,
-		Description: "Include data event types in events sent to IBM Cloud Activity Tracker with LogDNA for the IBM Cloudant instance. By default only emitted events are of \"management\" type.",
-	}
-
-	riSchema["capacity"] = &schema.Schema{
+		Description: "Include data event types in events sent to IBM Cloud Activity Tracker Event Routing for the IBM Cloudant instance. By default only emitted events are of \"management\" type.",
+	},
+	"capacity": {
 		Type:        schema.TypeInt,
 		Computed:    true,
 		Description: "A number of blocks of throughput units. A block consists of 100 reads/sec, 50 writes/sec, and 5 global queries/sec of provisioned throughput capacity.",
-	}
-
-	riSchema["throughput"] = &schema.Schema{
+	},
+	"throughput": {
 		Type:        schema.TypeMap,
 		Computed:    true,
-		Description: "Schema for detailed information about throughput capacity with breakdown by specific throughput requests classes.",
+		Description: "Schema for detailed information about throughput capacity with breakdown by specific throughput requests classes. This is only available for IBM Cloudant Gen 1.",
 		Elem: &schema.Schema{
 			Type: schema.TypeInt,
 		},
-	}
-
-	riSchema["enable_cors"] = &schema.Schema{
+	},
+	"enable_cors": {
 		Type:        schema.TypeBool,
 		Computed:    true,
 		Description: "Boolean value to turn CORS on and off.",
-	}
-
-	riSchema["cors_config"] = &schema.Schema{
+	},
+	"cors_config": {
 		Type:        schema.TypeList,
 		Computed:    true,
 		Description: "Configuration for CORS.",
@@ -94,11 +86,24 @@ func DataSourceIBMCloudant() *schema.Resource {
 				},
 			},
 		},
+	},
+}
+
+func DataSourceIBMCloudant() *schema.Resource {
+
+	// Make a Cloudant resource instance schema from the resource instance schema and Cloudant's additional entries
+	resourceInstanceSchema := resourcecontroller.DataSourceIBMResourceInstance().Schema
+
+	// Clone the resource instance schema
+	cloudantResourceInstanceSchema := maps.Clone(resourceInstanceSchema)
+	// Add Cloudant additional entries
+	for key, value := range cloudantSchema {
+		cloudantResourceInstanceSchema[key] = value
 	}
 
 	return &schema.Resource{
 		Read:   dataSourceIBMCloudantRead,
-		Schema: riSchema,
+		Schema: cloudantResourceInstanceSchema,
 	}
 }
 
@@ -113,9 +118,9 @@ func dataSourceIBMCloudantRead(d *schema.ResourceData, meta interface{}) error {
 		return err
 	}
 
-	client, err := getCloudantClient(d, meta)
-	if err != nil {
-		return err
+	client, tfErr := GetCloudantClientFromResource(d, meta, "ibm_cloudant", "read")
+	if tfErr != nil {
+		return tfErr
 	}
 
 	err = setCloudantServerInformation(client, d)
@@ -123,19 +128,23 @@ func dataSourceIBMCloudantRead(d *schema.ResourceData, meta interface{}) error {
 		return err
 	}
 
-	err = setCloudantActivityTrackerEvents(client, d)
-	if err != nil {
-		return err
-	}
+	resourceInstanceToCloudant(d)
 
-	err = setCloudantInstanceCapacity(client, d)
-	if err != nil {
-		return err
-	}
+	if !isCloudantGen2PlanFrom(d) {
+		err = setCloudantActivityTrackerEvents(client, d)
+		if err != nil {
+			return err
+		}
 
-	err = setCloudantInstanceCors(client, d)
-	if err != nil {
-		return err
+		err = setCloudantInstanceCapacity(client, d)
+		if err != nil {
+			return err
+		}
+
+		err = setCloudantInstanceCors(client, d)
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil
