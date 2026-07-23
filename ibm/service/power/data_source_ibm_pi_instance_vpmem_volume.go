@@ -78,7 +78,7 @@ func DataSourceIBMPIInstanceVpmemVolume() *schema.Resource {
 			},
 			Attr_Size: {
 				Computed:    true,
-				Description: "Volume size (GB).",
+				Description: "Volume size (GiB).",
 				Type:        schema.TypeFloat,
 			},
 			Attr_Status: {

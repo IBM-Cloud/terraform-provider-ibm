@@ -65,10 +65,21 @@ Review the argument references that you can specify for your resource.
 - `pi_affinity_instance` - (Optional, String) PVM Instance (ID or Name) to base storage affinity policy against; required if requesting `affinity` and `pi_affinity_volume` is not provided.
 - `pi_affinity_policy` - (Optional, String) Affinity policy for pvm instance being created; ignored if `pi_storage_pool` provided; for policy affinity requires one of `pi_affinity_instance` or `pi_affinity_volume` to be specified; for policy anti-affinity requires one of `pi_anti_affinity_instances` or `pi_anti_affinity_volumes` to be specified; Allowable values: `affinity`, `anti-affinity`
 - `pi_affinity_volume`- (Optional, String) Volume (ID or Name) to base storage affinity policy against; required if requesting `affinity` and `pi_affinity_instance` is not provided.
+- `pi_allow_remote_restart` - (Optional, Boolean) Indicates if the server allows server to be restarted from remote.
 - `pi_anti_affinity_instances` - (Optional, String) List of pvmInstances to base storage anti-affinity policy against; required if requesting `anti-affinity` and `pi_anti_affinity_volumes` is not provided.
 - `pi_anti_affinity_volumes`- (Optional, String) List of volumes to base storage anti-affinity policy against; required if requesting `anti-affinity` and `pi_anti_affinity_instances` is not provided.
 - `pi_boot_volume_replication_enabled` - (Optional, Boolean) Indicates if the boot volume should be replication enabled or not.
 - `pi_cloud_instance_id` - (Required, String) The GUID of the service instance associated with an account.
+- `pi_default_trusted_profile` - (Optional, List) default IAM trusted profile to use for this virtual server instance. Max items: 1.
+
+  Nested scheme for `pi_default_trusted_profile`:
+  - `autolink` - (Optional, Boolean) If set to true, the system will create a link to the specified trusted profile during server creation. Regardless of whether a link is created by the system or manually using the IAM Identity service, it will be automatically deleted when the server is deleted.
+  - `target` - (Required, List) Either the ID or the CRN of the target. Max items: 1.
+
+    Nested scheme for `target`:
+    - `crn` - (Optional, String) The CRN for the trusted profile. Conflicts with `id` and `name`.
+    - `id` - (Optional, String) Unique identifier for the trusted profile. Conflicts with `crn` and `name`.
+    - `name` - (Optional, String) Name of the trusted profile. Conflicts with `id` and `crn`
 - `pi_deployment_target` - (Optional, List) The deployment of a dedicated host. Max items: 1.
   
   Nested scheme for `pi_deployment_target` :
@@ -92,6 +103,11 @@ Review the argument references that you can specify for your resource.
 - `pi_license_repository_capacity` - (Optional, Integer) The VTL license repository capacity TiB value. Only use with VTL instances. `pi_memory >= 16 + (2 * pi_license_repository_capacity)`.
 - `pi_memory` - (Optional, Float) The amount of memory that you want to assign to your instance in GiB.
   - Required when not creating SAP instances. Conflicts with `pi_sap_profile_id`.
+- `pi_metadata_service` - (Optional, List) The metadata service configuration for the instance. Max items: 1.
+
+  Nested scheme for `pi_metadata_service`:
+  - `enabled` - (Required, Boolean) Indicates whether the metadata service endpoint will be available to the virtual server.
+  - `force_disable` - (Optional, Boolean) When true, allow the metadata service to be disabled while the VM is active. Default value is `false`.
 - `pi_network` - (Required, List of Map) List of one or more networks to attach to the instance.
 
   The `pi_network` block supports:
@@ -117,7 +133,7 @@ Review the argument references that you can specify for your resource.
 - `pi_storage_pool` - (Optional, String) Storage Pool for server deployment; if provided then `pi_affinity_policy` will be ignored; Only valid when you deploy one of the IBM supplied stock images. Storage pool for a custom image (an imported image or an image that is created from a VM capture) defaults to the storage pool the image was created in.
 - `pi_storage_pool_affinity` - (Optional, Boolean) Indicates if all volumes attached to the server must reside in the same storage pool. The default value is `true`. To attach data volumes from a different storage pool (mixed storage) set to `false` and use `pi_volume_attach` resource. Once set to `false`, cannot be set back to `true` unless all volumes attached reside in the same storage type and pool.
 - `pi_storage_type` - (Optional, String) - Storage type for server deployment; If storage type is not provided the storage type will default to `tier3`. To get a list of available storage types, please use the [ibm_pi_storage_types_capacity](https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/data-sources/pi_storage_types_capacity) data source.
-- `pi_storage_connection` - (Optional, String) - Storage Connectivity Group (SCG) for server deployment. Supported values are `vSCSI`, `maxVolumeSupport`.
+- `pi_storage_connection` - (Optional, String) - Storage Connectivity Group (SCG) for server deployment.
 - `pi_sys_type` - (Optional, String) The type of system on which to create the VM. Please see: [Hardware Specifications on Cloud](https://cloud.ibm.com/docs/power-iaas?topic=power-iaas-on-cloud-architecture#hardware-specifications-on-cloud) for available machine types.
 - `pi_user_data` - (Optional, String) The user data `cloud-init` to pass to the instance during creation. It can be a base64 encoded or an unencoded string. If it is an unencoded string, the provider will encode it before it passing it down.
 - `pi_user_tags` - (Optional, List) The user tags attached to this resource.
@@ -135,7 +151,8 @@ Review the argument references that you can specify for your resource.
 - `pi_vpmem_volumes` - (Optional, List of Map) List of one or more vPMEM volumes to attach to the instance.
   The `pi_vpmem_volumes` block supports:
   - `name` - (Required, String) Volume base name.
-  - `size` - (Required, Integer) Volume size (GB).
+  - `size` - (Required, Integer) Volume size (GiB).
+  - `volume_id` - (Computed, String) Volume ID.
 
 ## Attribute Reference
 
@@ -186,7 +203,7 @@ In addition to all argument reference list, you can access the following attribu
   - `name` - (String) Volume Name.
   - `pvm_instance_id` - (String) PVM Instance ID which the volume is attached to.
   - `reason` - (String) Reason for error.
-  - `size` - (Float) Volume Size (GB).
+  - `size` - (Float) Volume size (GiB).
   - `status` - (String) Status of the volume.
   - `updated_date` - (String) The date and time when the volume was updated.
   - `user_tags` - (List) List of user tags.

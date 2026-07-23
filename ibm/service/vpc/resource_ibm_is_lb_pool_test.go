@@ -1019,6 +1019,67 @@ func TestAccIBMISLBPool_SessionPersistence(t *testing.T) {
 	})
 }
 
+func TestAccIBMISLBPool_mTLS(t *testing.T) {
+	var lbPool string
+	vpcname := fmt.Sprintf("tflbp-vpc-%d", acctest.RandIntRange(10, 100))
+	subnetname := fmt.Sprintf("tflbpc-name-%d", acctest.RandIntRange(10, 100))
+	name := fmt.Sprintf("tfcreate%d", acctest.RandIntRange(10, 100))
+	poolName := fmt.Sprintf("tflbpoolc%d", acctest.RandIntRange(10, 100))
+	alg := "round_robin"
+	protocol := "https"
+	delay := "45"
+	retries := "5"
+	timeout := "15"
+	healthType := "https"
+
+	// Example CRNs - replace with actual values from your test environment
+	clientCertCRN := "crn:v1:bluemix:public:secrets-manager:us-south:a/7f75c7b025e54bc5635f754b2f888665:152af435-37ac-4b3e-83c3-828805bfc8e0:secret:1e5b9794-f576-de33-5e41-4a8c29d00132"
+	serverCACRN := "crn:v1:bluemix:public:secrets-manager:us-south:a/7f75c7b025e54bc5635f754b2f888665:152af435-37ac-4b3e-83c3-828805bfc8e0:secret:4a1bc2d6-ccd3-ad25-e6b7-8a0c522038f6"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMISLBPoolDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMISLBPoolmTLSConfig(vpcname, subnetname, acc.ISZoneName, acc.ISCIDR, name, poolName, alg, protocol, delay, retries, timeout, healthType, clientCertCRN, serverCACRN),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISLBPoolExists("ibm_is_lb_pool.testacc_lb_pool_mtls", lbPool),
+					resource.TestCheckResourceAttr("ibm_is_lb.testacc_LB", "name", name),
+					resource.TestCheckResourceAttr("ibm_is_lb_pool.testacc_lb_pool_mtls", "name", poolName),
+					resource.TestCheckResourceAttr("ibm_is_lb_pool.testacc_lb_pool_mtls", "protocol", protocol),
+					resource.TestCheckResourceAttrSet("ibm_is_lb_pool.testacc_lb_pool_mtls", "client_authentication.#"),
+					resource.TestCheckResourceAttr("ibm_is_lb_pool.testacc_lb_pool_mtls", "client_authentication.0.certificate_instance", clientCertCRN),
+					resource.TestCheckResourceAttrSet("ibm_is_lb_pool.testacc_lb_pool_mtls", "server_authentication.#"),
+					resource.TestCheckResourceAttr("ibm_is_lb_pool.testacc_lb_pool_mtls", "server_authentication.0.verify_certificate", "true"),
+					resource.TestCheckResourceAttr("ibm_is_lb_pool.testacc_lb_pool_mtls", "server_authentication.0.certificate_authority", serverCACRN),
+				),
+			},
+			{
+				Config: testAccCheckIBMISLBPoolmTLSConfigUpdate(vpcname, subnetname, acc.ISZoneName, acc.ISCIDR, name, poolName, alg, protocol, delay, retries, timeout, healthType, clientCertCRN),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISLBPoolExists("ibm_is_lb_pool.testacc_lb_pool_mtls", lbPool),
+					resource.TestCheckResourceAttr("ibm_is_lb_pool.testacc_lb_pool_mtls", "protocol", protocol),
+					resource.TestCheckResourceAttrSet("ibm_is_lb_pool.testacc_lb_pool_mtls", "client_authentication.#"),
+					resource.TestCheckResourceAttr("ibm_is_lb_pool.testacc_lb_pool_mtls", "client_authentication.0.certificate_instance", clientCertCRN),
+					resource.TestCheckResourceAttrSet("ibm_is_lb_pool.testacc_lb_pool_mtls", "server_authentication.#"),
+					resource.TestCheckResourceAttr("ibm_is_lb_pool.testacc_lb_pool_mtls", "server_authentication.0.verify_certificate", "false"),
+				),
+			},
+			{
+				Config: testAccCheckIBMISLBPoolmTLSConfigRemove(vpcname, subnetname, acc.ISZoneName, acc.ISCIDR, name, poolName, alg, protocol, delay, retries, timeout, healthType),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISLBPoolExists("ibm_is_lb_pool.testacc_lb_pool_mtls", lbPool),
+					resource.TestCheckResourceAttr("ibm_is_lb_pool.testacc_lb_pool_mtls", "protocol", protocol),
+					resource.TestCheckNoResourceAttr("ibm_is_lb_pool.testacc_lb_pool_mtls", "client_authentication.#"),
+					resource.TestCheckResourceAttr("ibm_is_lb_pool.testacc_lb_pool_mtls", "server_authentication.#", "1"),
+					resource.TestCheckResourceAttr("ibm_is_lb_pool.testacc_lb_pool_mtls", "server_authentication.0.verify_certificate", "false"),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckIBMISLBPoolDestroy(s *terraform.State) error {
 
 	sess, _ := acc.TestAccProvider.Meta().(conns.ClientSession).VpcV1API()
@@ -1109,7 +1170,6 @@ func testAccCheckIBMISLBPoolApplicationFailsafeConfig(vpcname, subnetname, zone,
 		health_type 	= "%s"
 		health_monitor_port = %d
 		session_persistence_type = "%s"
-		health_monitor {}
 	}
 	resource "ibm_is_lb_pool" "testacc_lb_pool2" {
 		name 			= "%s"
@@ -1128,9 +1188,8 @@ func testAccCheckIBMISLBPoolApplicationFailsafeConfig(vpcname, subnetname, zone,
 				id = ibm_is_lb_pool.testacc_lb_pool.pool_id
 			}
 		}
-		health_monitor {}
 	}
-
+		
 `, vpcname, subnetname, zone, name, poolName, algorithm, protocol, delay, retries, timeout, healthType, healthMonitorPort, sessionPersistenceType, poolName1, algorithm, protocol, delay, retries, timeout, healthType, healthMonitorPort, sessionPersistenceType, failSafePolicyAction)
 
 }
@@ -1161,7 +1220,6 @@ func testAccCheckIBMISLBPoolApplicationFailsafeUpdateConfig1(vpcname, subnetname
 		health_type 	= "%s"
 		health_monitor_port = %d
 		session_persistence_type = "%s"
-		health_monitor {}
 	}
 	resource "ibm_is_lb_pool" "testacc_lb_pool2" {
 		name 			= "%s"
@@ -1180,7 +1238,6 @@ func testAccCheckIBMISLBPoolApplicationFailsafeUpdateConfig1(vpcname, subnetname
 				id = "null"
 			}
 		}
-		health_monitor {}
 	}
 	resource "ibm_is_lb_pool" "testacc_lb_pool3" {
 		name 			= "%s"
@@ -1193,9 +1250,8 @@ func testAccCheckIBMISLBPoolApplicationFailsafeUpdateConfig1(vpcname, subnetname
 		health_type 	= "%s"
 		health_monitor_port = %d
 		session_persistence_type = "%s"
-		health_monitor {}
 	}
-
+		
 `, vpcname, subnetname, zone, name, poolName, algorithm, protocol, delay, retries, timeout, healthType, healthMonitorPort, sessionPersistenceType, poolName1, algorithm, protocol, delay, retries, timeout, healthType, healthMonitorPort, sessionPersistenceType, failSafePolicyAction, poolName2, algorithm, protocol, delay, retries, timeout, healthType, healthMonitorPort, sessionPersistenceType)
 
 }
@@ -1226,7 +1282,6 @@ func testAccCheckIBMISLBPoolApplicationFailsafeUpdateConfig2(vpcname, subnetname
 		health_type 	= "%s"
 		health_monitor_port = %d
 		session_persistence_type = "%s"
-		health_monitor {}
 	}
 	resource "ibm_is_lb_pool" "testacc_lb_pool2" {
 		name 			= "%s"
@@ -1245,7 +1300,6 @@ func testAccCheckIBMISLBPoolApplicationFailsafeUpdateConfig2(vpcname, subnetname
 				id = ibm_is_lb_pool.testacc_lb_pool3.pool_id
 			}
 		}
-		health_monitor {}
 	}
 	resource "ibm_is_lb_pool" "testacc_lb_pool3" {
 		name 			= "%s"
@@ -1258,9 +1312,8 @@ func testAccCheckIBMISLBPoolApplicationFailsafeUpdateConfig2(vpcname, subnetname
 		health_type 	= "%s"
 		health_monitor_port = %d
 		session_persistence_type = "%s"
-		health_monitor {}
 	}
-
+		
 `, vpcname, subnetname, zone, name, poolName, algorithm, protocol, delay, retries, timeout, healthType, healthMonitorPort, sessionPersistenceType, poolName1, algorithm, protocol, delay, retries, timeout, healthType, healthMonitorPort, sessionPersistenceType, failSafePolicyAction, poolName2, algorithm, protocol, delay, retries, timeout, healthType, healthMonitorPort, sessionPersistenceType)
 
 }
@@ -1292,7 +1345,6 @@ func testAccCheckIBMISLBPoolNetworkFixedFailsafeConfig(vpcname, subnetname, zone
 		health_type 	= "%s"
 		health_monitor_port = %d
 		session_persistence_type = "%s"
-		health_monitor {}
 	}
 	resource "ibm_is_lb_pool" "testacc_lb_pool2" {
 		name 			= "%s"
@@ -1311,9 +1363,8 @@ func testAccCheckIBMISLBPoolNetworkFixedFailsafeConfig(vpcname, subnetname, zone
 				id = ibm_is_lb_pool.testacc_lb_pool.pool_id
 			}
 		}
-		health_monitor {}
 	}
-
+		
 `, vpcname, subnetname, zone, name, poolName, algorithm, protocol, delay, retries, timeout, healthType, healthMonitorPort, sessionPersistenceType, poolName1, algorithm, protocol, delay, retries, timeout, healthType, healthMonitorPort, sessionPersistenceType, failSafePolicyAction)
 
 }
@@ -1345,7 +1396,6 @@ func testAccCheckIBMISLBPoolNetworkFixedFailsafeConfig1(vpcname, subnetname, zon
 		health_type 	= "%s"
 		health_monitor_port = %d
 		session_persistence_type = "%s"
-		health_monitor {}
 	}
 	resource "ibm_is_lb_pool" "testacc_lb_pool2" {
 		name 			= "%s"
@@ -1364,7 +1414,6 @@ func testAccCheckIBMISLBPoolNetworkFixedFailsafeConfig1(vpcname, subnetname, zon
 				id = "null"
 			}
 		}
-		health_monitor {}
 	}
 	resource "ibm_is_lb_pool" "testacc_lb_pool3" {
 		name 			= "%s"
@@ -1377,9 +1426,8 @@ func testAccCheckIBMISLBPoolNetworkFixedFailsafeConfig1(vpcname, subnetname, zon
 		health_type 	= "%s"
 		health_monitor_port = %d
 		session_persistence_type = "%s"
-		health_monitor {}
 	}
-
+		
 `, vpcname, subnetname, zone, name, poolName, algorithm, protocol, delay, retries, timeout, healthType, healthMonitorPort, sessionPersistenceType, poolName1, algorithm, protocol, delay, retries, timeout, healthType, healthMonitorPort, sessionPersistenceType, failSafePolicyAction, poolName2, algorithm, protocol, delay, retries, timeout, healthType, healthMonitorPort, sessionPersistenceType)
 
 }
@@ -1411,7 +1459,6 @@ func testAccCheckIBMISLBPoolNetworkFixedFailsafeConfig2(vpcname, subnetname, zon
 		health_type 	= "%s"
 		health_monitor_port = %d
 		session_persistence_type = "%s"
-		health_monitor {}
 	}
 	resource "ibm_is_lb_pool" "testacc_lb_pool2" {
 		name 			= "%s"
@@ -1430,7 +1477,6 @@ func testAccCheckIBMISLBPoolNetworkFixedFailsafeConfig2(vpcname, subnetname, zon
 				id = ibm_is_lb_pool.testacc_lb_pool3.pool_id
 			}
 		}
-		health_monitor {}
 	}
 	resource "ibm_is_lb_pool" "testacc_lb_pool3" {
 		name 			= "%s"
@@ -1443,9 +1489,8 @@ func testAccCheckIBMISLBPoolNetworkFixedFailsafeConfig2(vpcname, subnetname, zon
 		health_type 	= "%s"
 		health_monitor_port = %d
 		session_persistence_type = "%s"
-		health_monitor {}
 	}
-
+		
 `, vpcname, subnetname, zone, name, poolName, algorithm, protocol, delay, retries, timeout, healthType, healthMonitorPort, sessionPersistenceType, poolName1, algorithm, protocol, delay, retries, timeout, healthType, healthMonitorPort, sessionPersistenceType, failSafePolicyAction, poolName2, algorithm, protocol, delay, retries, timeout, healthType, healthMonitorPort, sessionPersistenceType)
 
 }
@@ -1475,7 +1520,6 @@ func testAccCheckIBMISLBPoolConfig(vpcname, subnetname, zone, cidr, name, poolNa
 		health_retries = %s
 		health_timeout = %s
 		health_type = "%s"
-		health_monitor {}
 }`, vpcname, subnetname, zone, cidr, name, poolName, algorithm, protocol, delay, retries, timeout, healthType)
 
 }
@@ -1510,7 +1554,6 @@ func testAccCheckIBMISLBPoolFailsafePolicyConfig(vpcname, subnetname, zone, cidr
 				id = ibm_is_lb_pool.testacc_lb_pool2.pool_id
 			}
     		}
-		health_monitor {}
 	}
 	resource "ibm_is_lb_pool" "testacc_lb_pool2" {
 		name = "%s"
@@ -1521,7 +1564,6 @@ func testAccCheckIBMISLBPoolFailsafePolicyConfig(vpcname, subnetname, zone, cidr
 		health_retries = %s
 		health_timeout = %s
 		health_type = "%s"
-		health_monitor {}
 }`, vpcname, subnetname, zone, cidr, name, poolName, algorithm, protocol, delay, retries, timeout, healthType, poolName2, algorithm2, protocol2, delay2, retries2, timeout2, healthType2)
 
 }
@@ -1553,7 +1595,6 @@ func testAccCheckIBMISLBPoolUdpConfig(vpcname, subnetname, zone, cidr, name, poo
 		health_timeout     	= %s
 		health_type        	= "%s"
 		health_monitor_url 	= "/"
-		health_monitor {}
 }`, vpcname, subnetname, zone, cidr, name, poolName, algorithm, protocol, delay, retries, timeout, healthType)
 
 }
@@ -1584,7 +1625,6 @@ func testAccCheckIBMISLBPoolPortConfig(vpcname, subnetname, zone, cidr, name, po
 		health_timeout = %s
 		health_type = "%s"
 		health_monitor_port = %s
-		health_monitor {}
 }`, vpcname, subnetname, zone, cidr, name, poolName, algorithm, protocol, delay, retries, timeout, healthType, port)
 
 }
@@ -1617,7 +1657,6 @@ func testAccCheckIBMISLBPoolSessionPersistenceConfig(vpcname, subnetname, zone, 
 		health_monitor_port = %s
 		session_persistence_type = "%s"
 		session_persistence_app_cookie_name = "%s"
-		health_monitor {}
 }`, vpcname, subnetname, zone, cidr, name, poolName, algorithm, protocol, delay, retries, timeout, healthType, port, session_persistence_type, app_cookie_name)
 
 }
@@ -1649,7 +1688,6 @@ func testAccCheckIBMISLBPoolSessionPersistenceConfigUpdate(vpcname, subnetname, 
 		health_type = "%s"
 		health_monitor_port = %s
 		session_persistence_type = "%s"
-		health_monitor {}
 }`, vpcname, subnetname, zone, cidr, name, poolName, algorithm, protocol, delay, retries, timeout, healthType, port, session_persistence_type)
 
 }
@@ -1680,7 +1718,6 @@ func testAccCheckIBMISLBPoolSessionPersistenceConfigRemove(vpcname, subnetname, 
 		health_timeout = %s
 		health_type = "%s"
 		health_monitor_port = %s
-		health_monitor {}
 }`, vpcname, subnetname, zone, cidr, name, poolName, algorithm, protocol, delay, retries, timeout, healthType, port)
 
 }
@@ -1711,559 +1748,112 @@ func testAccCheckIBMISLBPoolConfigWithProxy(vpcname, subnetname, zone, cidr, nam
 		health_retries = %s
 		health_timeout = %s
 		health_type = "%s"
-		health_monitor {}
 }`, vpcname, subnetname, zone, cidr, name, poolName, algorithm, protocol, proxyProtocol, delay, retries, timeout, healthType)
 
 }
 
-func TestAccIBMISLBPool_health_monitor_http(t *testing.T) {
-	var lb string
-	vpcname := fmt.Sprintf("tflbp-vpc-%d", acctest.RandIntRange(10, 100))
-	subnetname := fmt.Sprintf("tflbpc-name-%d", acctest.RandIntRange(10, 100))
-	name := fmt.Sprintf("tfcreate%d", acctest.RandIntRange(10, 100))
-	poolName := fmt.Sprintf("tflbpoolc%d", acctest.RandIntRange(10, 100))
-	poolNameUpdated := fmt.Sprintf("tflbpoolu%d", acctest.RandIntRange(10, 100))
-
-	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acc.TestAccPreCheck(t) },
-		Providers:    acc.TestAccProviders,
-		CheckDestroy: testAccCheckIBMISLBPoolDestroy,
-		Steps: []resource.TestStep{
-			{
-				Config: testAccCheckIBMISLBPoolHealthMonitorConfig(vpcname, subnetname, acc.ISZoneName, acc.ISCIDR, name, poolName),
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckIBMISLBPoolExists("ibm_is_lb_pool.testacc_lb_pool", lb),
-					resource.TestCheckResourceAttr("ibm_is_lb_pool.testacc_lb_pool", "name", poolName),
-					resource.TestCheckResourceAttr("ibm_is_lb_pool.testacc_lb_pool", "health_monitor.#", "1"),
-					resource.TestCheckResourceAttr("ibm_is_lb_pool.testacc_lb_pool", "health_monitor.0.request.#", "1"),
-					resource.TestCheckResourceAttr("ibm_is_lb_pool.testacc_lb_pool", "health_monitor.0.request.0.method", "GET"),
-					resource.TestCheckResourceAttr("ibm_is_lb_pool.testacc_lb_pool", "health_monitor.0.response.#", "1"),
-					resource.TestCheckResourceAttr("ibm_is_lb_pool.testacc_lb_pool", "health_monitor.0.response.0.codes.#", "2"),
-				),
-			},
-			{
-				Config: testAccCheckIBMISLBPoolHealthMonitorUpdateConfig(vpcname, subnetname, acc.ISZoneName, acc.ISCIDR, name, poolNameUpdated),
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckIBMISLBPoolExists("ibm_is_lb_pool.testacc_lb_pool", lb),
-					resource.TestCheckResourceAttr("ibm_is_lb_pool.testacc_lb_pool", "name", poolNameUpdated),
-					resource.TestCheckResourceAttr("ibm_is_lb_pool.testacc_lb_pool", "health_monitor.#", "1"),
-					resource.TestCheckResourceAttr("ibm_is_lb_pool.testacc_lb_pool", "health_monitor.0.request.#", "1"),
-					resource.TestCheckResourceAttr("ibm_is_lb_pool.testacc_lb_pool", "health_monitor.0.request.0.method", "POST"),
-					resource.TestCheckResourceAttr("ibm_is_lb_pool.testacc_lb_pool", "health_monitor.0.request.0.headers.#", "1"),
-					resource.TestCheckResourceAttr("ibm_is_lb_pool.testacc_lb_pool", "health_monitor.0.request.0.headers.0.field", "Content-Type"),
-					resource.TestCheckResourceAttr("ibm_is_lb_pool.testacc_lb_pool", "health_monitor.0.request.0.headers.0.value", "application/json"),
-					resource.TestCheckResourceAttr("ibm_is_lb_pool.testacc_lb_pool", "health_monitor.0.response.#", "1"),
-					resource.TestCheckResourceAttr("ibm_is_lb_pool.testacc_lb_pool", "health_monitor.0.response.0.body_regex", ".*ok.*"),
-				),
-			},
-		},
-	})
-}
-
-func testAccCheckIBMISLBPoolHealthMonitorConfig(vpcname, subnetname, zone, cidr, name, poolName string) string {
+func testAccCheckIBMISLBPoolmTLSConfig(vpcname, subnetname, zone, cidr, name, poolName, algorithm, protocol, delay, retries, timeout, healthType, clientCertCRN, serverCACRN string) string {
 	return fmt.Sprintf(`
 	resource "ibm_is_vpc" "testacc_vpc" {
 		name = "%s"
 	}
+
 	resource "ibm_is_subnet" "testacc_subnet" {
-		name            = "%s"
-		vpc             = ibm_is_vpc.testacc_vpc.id
-		zone            = "%s"
+		name = "%s"
+		vpc = ibm_is_vpc.testacc_vpc.id
+		zone = "%s"
 		ipv4_cidr_block = "%s"
 	}
+
 	resource "ibm_is_lb" "testacc_LB" {
-		name    = "%s"
+		name = "%s"
 		subnets = [ibm_is_subnet.testacc_subnet.id]
 	}
-	resource "ibm_is_lb_pool" "testacc_lb_pool" {
-		name           = "%s"
-		lb             = ibm_is_lb.testacc_LB.id
-		algorithm      = "round_robin"
-		protocol       = "http"
-		health_delay   = 45
-		health_retries = 5
-		health_timeout = 15
-		health_type    = "http"
-		health_monitor {
-			request {
-				method = "GET"
-			}
-			response {
-				codes = ["200", "201"]
-			}
+
+	resource "ibm_is_lb_pool" "testacc_lb_pool_mtls" {
+		name = "%s"
+		lb = ibm_is_lb.testacc_LB.id
+		algorithm = "%s"
+		protocol = "%s"
+		health_delay = %s
+		health_retries = %s
+		health_timeout = %s
+		health_type = "%s"
+		client_authentication {
+			certificate_instance = "%s"
+		}
+		server_authentication {
+			verify_certificate = true
+			certificate_authority = "%s"
 		}
 	}
-	`, vpcname, subnetname, zone, cidr, name, poolName)
+	`, vpcname, subnetname, zone, cidr, name, poolName, algorithm, protocol, delay, retries, timeout, healthType, clientCertCRN, serverCACRN)
 }
 
-func testAccCheckIBMISLBPoolHealthMonitorUpdateConfig(vpcname, subnetname, zone, cidr, name, poolName string) string {
+func testAccCheckIBMISLBPoolmTLSConfigUpdate(vpcname, subnetname, zone, cidr, name, poolName, algorithm, protocol, delay, retries, timeout, healthType, clientCertCRN string) string {
 	return fmt.Sprintf(`
 	resource "ibm_is_vpc" "testacc_vpc" {
 		name = "%s"
 	}
+
 	resource "ibm_is_subnet" "testacc_subnet" {
-		name            = "%s"
-		vpc             = ibm_is_vpc.testacc_vpc.id
-		zone            = "%s"
+		name = "%s"
+		vpc = ibm_is_vpc.testacc_vpc.id
+		zone = "%s"
 		ipv4_cidr_block = "%s"
 	}
+
 	resource "ibm_is_lb" "testacc_LB" {
-		name    = "%s"
+		name = "%s"
 		subnets = [ibm_is_subnet.testacc_subnet.id]
 	}
-	resource "ibm_is_lb_pool" "testacc_lb_pool" {
-		name           = "%s"
-		lb             = ibm_is_lb.testacc_LB.id
-		algorithm      = "round_robin"
-		protocol       = "http"
-		health_delay   = 45
-		health_retries = 5
-		health_timeout = 15
-		health_type    = "http"
-		health_monitor {
-			request {
-				method = "POST"
-				headers {
-					field = "Content-Type"
-					value = "application/json"
-				}
-			}
-			response {
-				codes      = ["200"]
-				body_regex = ".*ok.*"
-			}
+
+	resource "ibm_is_lb_pool" "testacc_lb_pool_mtls" {
+		name = "%s"
+		lb = ibm_is_lb.testacc_LB.id
+		algorithm = "%s"
+		protocol = "%s"
+		health_delay = %s
+		health_retries = %s
+		health_timeout = %s
+		health_type = "%s"
+		client_authentication {
+			certificate_instance = "%s"
+		}
+		server_authentication {
+			verify_certificate = false
 		}
 	}
-	`, vpcname, subnetname, zone, cidr, name, poolName)
+	`, vpcname, subnetname, zone, cidr, name, poolName, algorithm, protocol, delay, retries, timeout, healthType, clientCertCRN)
 }
 
-// TestAccIBMISLBPool_health_monitor_https tests health_monitor with https type,
-// multiple headers, and body in request.
-func TestAccIBMISLBPool_health_monitor_https(t *testing.T) {
-	var lb string
-	vpcname := fmt.Sprintf("tflbp-vpc-%d", acctest.RandIntRange(10, 100))
-	subnetname := fmt.Sprintf("tflbpc-name-%d", acctest.RandIntRange(10, 100))
-	name := fmt.Sprintf("tfcreate%d", acctest.RandIntRange(10, 100))
-	poolName := fmt.Sprintf("tflbpoolc%d", acctest.RandIntRange(10, 100))
-
-	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acc.TestAccPreCheck(t) },
-		Providers:    acc.TestAccProviders,
-		CheckDestroy: testAccCheckIBMISLBPoolDestroy,
-		Steps: []resource.TestStep{
-			{
-				Config: testAccCheckIBMISLBPoolHealthMonitorHttpsConfig(vpcname, subnetname, acc.ISZoneName, acc.ISCIDR, name, poolName),
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckIBMISLBPoolExists("ibm_is_lb_pool.testacc_lb_pool", lb),
-					resource.TestCheckResourceAttr("ibm_is_lb_pool.testacc_lb_pool", "name", poolName),
-					resource.TestCheckResourceAttr("ibm_is_lb_pool.testacc_lb_pool", "health_type", "https"),
-					resource.TestCheckResourceAttr("ibm_is_lb_pool.testacc_lb_pool", "health_monitor.#", "1"),
-					resource.TestCheckResourceAttr("ibm_is_lb_pool.testacc_lb_pool", "health_monitor.0.request.#", "1"),
-					resource.TestCheckResourceAttr("ibm_is_lb_pool.testacc_lb_pool", "health_monitor.0.request.0.method", "POST"),
-					resource.TestCheckResourceAttr("ibm_is_lb_pool.testacc_lb_pool", "health_monitor.0.request.0.body", `{"check":"health"}`),
-					resource.TestCheckResourceAttr("ibm_is_lb_pool.testacc_lb_pool", "health_monitor.0.request.0.headers.#", "2"),
-					resource.TestCheckResourceAttr("ibm_is_lb_pool.testacc_lb_pool", "health_monitor.0.response.#", "1"),
-					resource.TestCheckResourceAttr("ibm_is_lb_pool.testacc_lb_pool", "health_monitor.0.response.0.codes.#", "2"),
-					resource.TestCheckResourceAttr("ibm_is_lb_pool.testacc_lb_pool", "health_monitor.0.response.0.body_regex", `.*"status":"ok".*`),
-				),
-			},
-		},
-	})
-}
-
-// TestAccIBMISLBPool_health_monitor_empty_to_full tests upgrading from an empty
-// health_monitor block to a fully populated one (and back).
-func TestAccIBMISLBPool_health_monitor_empty_to_full(t *testing.T) {
-	var lb string
-	vpcname := fmt.Sprintf("tflbp-vpc-%d", acctest.RandIntRange(10, 100))
-	subnetname := fmt.Sprintf("tflbpc-name-%d", acctest.RandIntRange(10, 100))
-	name := fmt.Sprintf("tfcreate%d", acctest.RandIntRange(10, 100))
-	poolName := fmt.Sprintf("tflbpoolc%d", acctest.RandIntRange(10, 100))
-
-	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acc.TestAccPreCheck(t) },
-		Providers:    acc.TestAccProviders,
-		CheckDestroy: testAccCheckIBMISLBPoolDestroy,
-		Steps: []resource.TestStep{
-			// Step 1: empty health_monitor block (no request/response)
-			{
-				Config: testAccCheckIBMISLBPoolWithEmptyHealthMonitor(vpcname, subnetname, acc.ISZoneName, acc.ISCIDR, name, poolName),
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckIBMISLBPoolExists("ibm_is_lb_pool.testacc_lb_pool", lb),
-					resource.TestCheckResourceAttr("ibm_is_lb_pool.testacc_lb_pool", "health_monitor.#", "1"),
-					resource.TestCheckResourceAttr("ibm_is_lb_pool.testacc_lb_pool", "health_monitor.0.request.#", "0"),
-					resource.TestCheckResourceAttr("ibm_is_lb_pool.testacc_lb_pool", "health_monitor.0.response.#", "0"),
-				),
-			},
-			// Step 2: add request and response to health_monitor
-			{
-				Config: testAccCheckIBMISLBPoolHealthMonitorConfig(vpcname, subnetname, acc.ISZoneName, acc.ISCIDR, name, poolName),
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckIBMISLBPoolExists("ibm_is_lb_pool.testacc_lb_pool", lb),
-					resource.TestCheckResourceAttr("ibm_is_lb_pool.testacc_lb_pool", "health_monitor.#", "1"),
-					resource.TestCheckResourceAttr("ibm_is_lb_pool.testacc_lb_pool", "health_monitor.0.request.#", "1"),
-					resource.TestCheckResourceAttr("ibm_is_lb_pool.testacc_lb_pool", "health_monitor.0.request.0.method", "GET"),
-					resource.TestCheckResourceAttr("ibm_is_lb_pool.testacc_lb_pool", "health_monitor.0.response.#", "1"),
-					resource.TestCheckResourceAttr("ibm_is_lb_pool.testacc_lb_pool", "health_monitor.0.response.0.codes.#", "2"),
-				),
-			},
-			// Step 3: remove request/response — back to empty block
-			{
-				Config: testAccCheckIBMISLBPoolWithEmptyHealthMonitor(vpcname, subnetname, acc.ISZoneName, acc.ISCIDR, name, poolName),
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckIBMISLBPoolExists("ibm_is_lb_pool.testacc_lb_pool", lb),
-					resource.TestCheckResourceAttr("ibm_is_lb_pool.testacc_lb_pool", "health_monitor.#", "1"),
-					resource.TestCheckResourceAttr("ibm_is_lb_pool.testacc_lb_pool", "health_monitor.0.request.#", "0"),
-					resource.TestCheckResourceAttr("ibm_is_lb_pool.testacc_lb_pool", "health_monitor.0.response.#", "0"),
-				),
-			},
-		},
-	})
-}
-
-// TestAccIBMISLBPool_health_monitor_multiple_headers tests request headers
-// being added, updated, and removed.
-func TestAccIBMISLBPool_health_monitor_multiple_headers(t *testing.T) {
-	var lb string
-	vpcname := fmt.Sprintf("tflbp-vpc-%d", acctest.RandIntRange(10, 100))
-	subnetname := fmt.Sprintf("tflbpc-name-%d", acctest.RandIntRange(10, 100))
-	name := fmt.Sprintf("tfcreate%d", acctest.RandIntRange(10, 100))
-	poolName := fmt.Sprintf("tflbpoolc%d", acctest.RandIntRange(10, 100))
-
-	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acc.TestAccPreCheck(t) },
-		Providers:    acc.TestAccProviders,
-		CheckDestroy: testAccCheckIBMISLBPoolDestroy,
-		Steps: []resource.TestStep{
-			// Step 1: single header
-			{
-				Config: testAccCheckIBMISLBPoolHealthMonitorUpdateConfig(vpcname, subnetname, acc.ISZoneName, acc.ISCIDR, name, poolName),
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckIBMISLBPoolExists("ibm_is_lb_pool.testacc_lb_pool", lb),
-					resource.TestCheckResourceAttr("ibm_is_lb_pool.testacc_lb_pool", "health_monitor.0.request.0.headers.#", "1"),
-					resource.TestCheckResourceAttr("ibm_is_lb_pool.testacc_lb_pool", "health_monitor.0.request.0.headers.0.field", "Content-Type"),
-					resource.TestCheckResourceAttr("ibm_is_lb_pool.testacc_lb_pool", "health_monitor.0.request.0.headers.0.value", "application/json"),
-				),
-			},
-			// Step 2: two headers (adds Authorization)
-			{
-				Config: testAccCheckIBMISLBPoolHealthMonitorHttpsConfig(vpcname, subnetname, acc.ISZoneName, acc.ISCIDR, name, poolName),
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckIBMISLBPoolExists("ibm_is_lb_pool.testacc_lb_pool", lb),
-					resource.TestCheckResourceAttr("ibm_is_lb_pool.testacc_lb_pool", "health_monitor.0.request.0.headers.#", "2"),
-				),
-			},
-		},
-	})
-}
-
-// TestAccIBMISLBPool_health_monitor_importstate verifies that a pool with
-// health_monitor can be imported without plan diff.
-func TestAccIBMISLBPool_health_monitor_importstate(t *testing.T) {
-	vpcname := fmt.Sprintf("tflbp-vpc-%d", acctest.RandIntRange(10, 100))
-	subnetname := fmt.Sprintf("tflbpc-name-%d", acctest.RandIntRange(10, 100))
-	name := fmt.Sprintf("tfcreate%d", acctest.RandIntRange(10, 100))
-	poolName := fmt.Sprintf("tflbpoolc%d", acctest.RandIntRange(10, 100))
-
-	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acc.TestAccPreCheck(t) },
-		Providers:    acc.TestAccProviders,
-		CheckDestroy: testAccCheckIBMISLBPoolDestroy,
-		Steps: []resource.TestStep{
-			{
-				Config: testAccCheckIBMISLBPoolHealthMonitorConfig(vpcname, subnetname, acc.ISZoneName, acc.ISCIDR, name, poolName),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("ibm_is_lb_pool.testacc_lb_pool", "health_monitor.0.request.0.method", "GET"),
-					resource.TestCheckResourceAttr("ibm_is_lb_pool.testacc_lb_pool", "health_monitor.0.response.0.codes.#", "2"),
-				),
-			},
-			{
-				ResourceName:      "ibm_is_lb_pool.testacc_lb_pool",
-				ImportState:       true,
-				ImportStateVerify: true,
-			},
-		},
-	})
-}
-
-func testAccCheckIBMISLBPoolHealthMonitorHttpsConfig(vpcname, subnetname, zone, cidr, name, poolName string) string {
+func testAccCheckIBMISLBPoolmTLSConfigRemove(vpcname, subnetname, zone, cidr, name, poolName, algorithm, protocol, delay, retries, timeout, healthType string) string {
 	return fmt.Sprintf(`
 	resource "ibm_is_vpc" "testacc_vpc" {
 		name = "%s"
 	}
-	resource "ibm_is_subnet" "testacc_subnet" {
-		name            = "%s"
-		vpc             = ibm_is_vpc.testacc_vpc.id
-		zone            = "%s"
-		ipv4_cidr_block = "%s"
-	}
-	resource "ibm_is_lb" "testacc_LB" {
-		name    = "%s"
-		subnets = [ibm_is_subnet.testacc_subnet.id]
-	}
-	resource "ibm_is_lb_pool" "testacc_lb_pool" {
-		name           = "%s"
-		lb             = ibm_is_lb.testacc_LB.id
-		algorithm      = "round_robin"
-		protocol       = "https"
-		health_delay   = 45
-		health_retries = 5
-		health_timeout = 15
-		health_type    = "https"
-		health_monitor_url = "/health"
-		health_monitor {
-			request {
-				method = "POST"
-				body   = "{\"check\":\"health\"}"
-				headers {
-					field = "Content-Type"
-					value = "application/json"
-				}
-				headers {
-					field = "Authorization"
-					value = "Bearer test-token"
-				}
-			}
-			response {
-				codes      = ["200", "204"]
-				body_regex = ".*\"status\":\"ok\".*"
-			}
-		}
-	}
-	`, vpcname, subnetname, zone, cidr, name, poolName)
-}
 
-func testAccCheckIBMISLBPoolWithEmptyHealthMonitor(vpcname, subnetname, zone, cidr, name, poolName string) string {
-	return fmt.Sprintf(`
-	resource "ibm_is_vpc" "testacc_vpc" {
+	resource "ibm_is_subnet" "testacc_subnet" {
 		name = "%s"
-	}
-	resource "ibm_is_subnet" "testacc_subnet" {
-		name            = "%s"
-		vpc             = ibm_is_vpc.testacc_vpc.id
-		zone            = "%s"
+		vpc = ibm_is_vpc.testacc_vpc.id
+		zone = "%s"
 		ipv4_cidr_block = "%s"
 	}
+
 	resource "ibm_is_lb" "testacc_LB" {
-		name    = "%s"
-		subnets = [ibm_is_subnet.testacc_subnet.id]
-	}
-	resource "ibm_is_lb_pool" "testacc_lb_pool" {
-		name           = "%s"
-		lb             = ibm_is_lb.testacc_LB.id
-		algorithm      = "round_robin"
-		protocol       = "http"
-		health_delay   = 45
-		health_retries = 5
-		health_timeout = 15
-		health_type    = "http"
-		health_monitor {}
-	}
-	`, vpcname, subnetname, zone, cidr, name, poolName)
-}
-
-// TestAccIBMISLBPool_health_monitor_codes_removal verifies that removing
-// response.codes from config clears them on the API (not just in state).
-func TestAccIBMISLBPool_health_monitor_codes_removal(t *testing.T) {
-	var lb string
-	vpcname := fmt.Sprintf("tflbp-vpc-%d", acctest.RandIntRange(10, 100))
-	subnetname := fmt.Sprintf("tflbpc-name-%d", acctest.RandIntRange(10, 100))
-	name := fmt.Sprintf("tfcreate%d", acctest.RandIntRange(10, 100))
-	poolName := fmt.Sprintf("tflbpoolc%d", acctest.RandIntRange(10, 100))
-
-	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acc.TestAccPreCheck(t) },
-		Providers:    acc.TestAccProviders,
-		CheckDestroy: testAccCheckIBMISLBPoolDestroy,
-		Steps: []resource.TestStep{
-			// Step 1: create pool with GET method and response codes
-			{
-				Config: testAccCheckIBMISLBPoolHealthMonitorCodesConfig(vpcname, subnetname, acc.ISZoneName, acc.ISCIDR, name, poolName),
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckIBMISLBPoolExists("ibm_is_lb_pool.testacc_lb_pool", lb),
-					resource.TestCheckResourceAttr("ibm_is_lb_pool.testacc_lb_pool", "health_monitor.0.response.0.codes.#", "1"),
-					resource.TestCheckResourceAttr("ibm_is_lb_pool.testacc_lb_pool", "health_monitor.0.response.0.codes.0", "202"),
-				),
-			},
-			// Step 2: remove codes — API must reflect the removal
-			{
-				Config: testAccCheckIBMISLBPoolHealthMonitorCodesRemovedConfig(vpcname, subnetname, acc.ISZoneName, acc.ISCIDR, name, poolName),
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckIBMISLBPoolExists("ibm_is_lb_pool.testacc_lb_pool", lb),
-					resource.TestCheckResourceAttr("ibm_is_lb_pool.testacc_lb_pool", "health_monitor.0.response.#", "0"),
-				),
-			},
-		},
-	})
-}
-
-func testAccCheckIBMISLBPoolHealthMonitorCodesConfig(vpcname, subnetname, zone, cidr, name, poolName string) string {
-	return fmt.Sprintf(`
-	resource "ibm_is_vpc" "testacc_vpc" {
 		name = "%s"
-	}
-	resource "ibm_is_subnet" "testacc_subnet" {
-		name            = "%s"
-		vpc             = ibm_is_vpc.testacc_vpc.id
-		zone            = "%s"
-		ipv4_cidr_block = "%s"
-	}
-	resource "ibm_is_lb" "testacc_LB" {
-		name    = "%s"
 		subnets = [ibm_is_subnet.testacc_subnet.id]
 	}
-	resource "ibm_is_lb_pool" "testacc_lb_pool" {
-		name           = "%s"
-		lb             = ibm_is_lb.testacc_LB.id
-		algorithm      = "round_robin"
-		protocol       = "http"
-		health_delay   = 45
-		health_retries = 5
-		health_timeout = 15
-		health_type    = "http"
-		health_monitor {
-			request {
-				method = "GET"
-			}
-			response {
-				codes = ["202"]
-			}
-		}
-	}
-	`, vpcname, subnetname, zone, cidr, name, poolName)
-}
 
-func testAccCheckIBMISLBPoolHealthMonitorCodesRemovedConfig(vpcname, subnetname, zone, cidr, name, poolName string) string {
-	return fmt.Sprintf(`
-	resource "ibm_is_vpc" "testacc_vpc" {
+	resource "ibm_is_lb_pool" "testacc_lb_pool_mtls" {
 		name = "%s"
+		lb = ibm_is_lb.testacc_LB.id
+		algorithm = "%s"
+		protocol = "%s"
+		health_delay = %s
+		health_retries = %s
+		health_timeout = %s
+		health_type = "%s"
 	}
-	resource "ibm_is_subnet" "testacc_subnet" {
-		name            = "%s"
-		vpc             = ibm_is_vpc.testacc_vpc.id
-		zone            = "%s"
-		ipv4_cidr_block = "%s"
-	}
-	resource "ibm_is_lb" "testacc_LB" {
-		name    = "%s"
-		subnets = [ibm_is_subnet.testacc_subnet.id]
-	}
-	resource "ibm_is_lb_pool" "testacc_lb_pool" {
-		name           = "%s"
-		lb             = ibm_is_lb.testacc_LB.id
-		algorithm      = "round_robin"
-		protocol       = "http"
-		health_delay   = 45
-		health_retries = 5
-		health_timeout = 15
-		health_type    = "http"
-		health_monitor {
-			request {
-				method = "GET"
-			}
-		}
-	}
-	`, vpcname, subnetname, zone, cidr, name, poolName)
-}
-
-// TestAccIBMISLBPool_health_monitor_body_removal verifies that removing
-// request.body from config sends null to the API (not just clearing in state).
-func TestAccIBMISLBPool_health_monitor_body_removal(t *testing.T) {
-	var lb string
-	vpcname := fmt.Sprintf("tflbp-vpc-%d", acctest.RandIntRange(10, 100))
-	subnetname := fmt.Sprintf("tflbpc-name-%d", acctest.RandIntRange(10, 100))
-	name := fmt.Sprintf("tfcreate%d", acctest.RandIntRange(10, 100))
-	poolName := fmt.Sprintf("tflbpoolc%d", acctest.RandIntRange(10, 100))
-
-	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acc.TestAccPreCheck(t) },
-		Providers:    acc.TestAccProviders,
-		CheckDestroy: testAccCheckIBMISLBPoolDestroy,
-		Steps: []resource.TestStep{
-			// Step 1: create pool with POST + body
-			{
-				Config: testAccCheckIBMISLBPoolHealthMonitorBodyConfig(vpcname, subnetname, acc.ISZoneName, acc.ISCIDR, name, poolName),
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckIBMISLBPoolExists("ibm_is_lb_pool.testacc_lb_pool", lb),
-					resource.TestCheckResourceAttr("ibm_is_lb_pool.testacc_lb_pool", "health_monitor.0.request.0.method", "POST"),
-					resource.TestCheckResourceAttr("ibm_is_lb_pool.testacc_lb_pool", "health_monitor.0.request.0.body", "app.example.com"),
-				),
-			},
-			// Step 2: remove body — must not persist on the API
-			{
-				Config: testAccCheckIBMISLBPoolHealthMonitorBodyRemovedConfig(vpcname, subnetname, acc.ISZoneName, acc.ISCIDR, name, poolName),
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckIBMISLBPoolExists("ibm_is_lb_pool.testacc_lb_pool", lb),
-					resource.TestCheckResourceAttr("ibm_is_lb_pool.testacc_lb_pool", "health_monitor.0.request.0.body", ""),
-				),
-			},
-		},
-	})
-}
-
-func testAccCheckIBMISLBPoolHealthMonitorBodyConfig(vpcname, subnetname, zone, cidr, name, poolName string) string {
-	return fmt.Sprintf(`
-	resource "ibm_is_vpc" "testacc_vpc" {
-		name = "%s"
-	}
-	resource "ibm_is_subnet" "testacc_subnet" {
-		name            = "%s"
-		vpc             = ibm_is_vpc.testacc_vpc.id
-		zone            = "%s"
-		ipv4_cidr_block = "%s"
-	}
-	resource "ibm_is_lb" "testacc_LB" {
-		name    = "%s"
-		subnets = [ibm_is_subnet.testacc_subnet.id]
-	}
-	resource "ibm_is_lb_pool" "testacc_lb_pool" {
-		name           = "%s"
-		lb             = ibm_is_lb.testacc_LB.id
-		algorithm      = "round_robin"
-		protocol       = "http"
-		health_delay   = 45
-		health_retries = 5
-		health_timeout = 15
-		health_type    = "http"
-		health_monitor {
-			request {
-				method = "POST"
-				body   = "app.example.com"
-			}
-		}
-	}
-	`, vpcname, subnetname, zone, cidr, name, poolName)
-}
-
-func testAccCheckIBMISLBPoolHealthMonitorBodyRemovedConfig(vpcname, subnetname, zone, cidr, name, poolName string) string {
-	return fmt.Sprintf(`
-	resource "ibm_is_vpc" "testacc_vpc" {
-		name = "%s"
-	}
-	resource "ibm_is_subnet" "testacc_subnet" {
-		name            = "%s"
-		vpc             = ibm_is_vpc.testacc_vpc.id
-		zone            = "%s"
-		ipv4_cidr_block = "%s"
-	}
-	resource "ibm_is_lb" "testacc_LB" {
-		name    = "%s"
-		subnets = [ibm_is_subnet.testacc_subnet.id]
-	}
-	resource "ibm_is_lb_pool" "testacc_lb_pool" {
-		name           = "%s"
-		lb             = ibm_is_lb.testacc_LB.id
-		algorithm      = "round_robin"
-		protocol       = "http"
-		health_delay   = 45
-		health_retries = 5
-		health_timeout = 15
-		health_type    = "http"
-		health_monitor {
-			request {
-				method = "POST"
-			}
-		}
-	}
-	`, vpcname, subnetname, zone, cidr, name, poolName)
+	`, vpcname, subnetname, zone, cidr, name, poolName, algorithm, protocol, delay, retries, timeout, healthType)
 }

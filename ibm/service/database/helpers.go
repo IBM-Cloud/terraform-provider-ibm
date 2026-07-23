@@ -34,7 +34,9 @@ const (
 	defaultMemberCount = 3
 
 	// Instance states - shared across Classic and Gen2
-	instanceStateRemoved               = "removed"
+	instanceStateRemoved = "removed"
+
+	// Database instance status constants
 	databaseInstanceSuccessStatus      = "active"
 	databaseInstanceProvisioningStatus = "provisioning"
 	databaseInstanceProgressStatus     = "in progress"
@@ -49,7 +51,9 @@ const (
 	resourcesKey       = "resources"
 	platformOptionsKey = "platform_options"
 	adminUserKey       = "adminuser"
+	autoScalingKey     = "auto_scaling"
 	allowlistKey       = "allowlist"
+	databaseUserType   = "database"
 )
 
 type TimeoutHelper struct {
@@ -141,6 +145,78 @@ func isGen2Plan(plan string) bool {
 	return gen2Pattern.MatchString(strings.ToLower(plan))
 }
 
+// validateGen2BackupCRN validates if a backup CRN is allowed for Gen2 database restore.
+// Returns nil if the backup is allowed (Gen2 coupled or decoupled backup).
+// Returns an error if the backup is not allowed (Classic backup).
+//
+// Three backup types:
+//  1. Classic backup - NOT ALLOWED at this point
+//  2. Gen2 "coupled" backup - ALLOWED
+//  3. Gen2 "decoupled" backup - ALLOWED
+func validateGen2BackupCRN(backupCRN string, meta interface{}) error {
+	if backupCRN == "" {
+		return nil
+	}
+
+	parts := strings.Split(backupCRN, ":")
+	if len(parts) < 10 {
+		return fmt.Errorf("invalid backup CRN format: expected 10 parts, got %d", len(parts))
+	}
+
+	// Check if it's a decoupled backup (databases-independent-backups)
+	serviceName := parts[4]
+	if serviceName == "databases-independent-backups" {
+		// Decoupled backup - ALLOWED
+		return nil
+	}
+
+	// It's a coupled backup - need to check if the source instance is Gen2
+	instanceID := parts[7]
+	if instanceID == "" {
+		return fmt.Errorf("backup CRN does not contain instance ID and is not a decoupled backup")
+	}
+
+	// Construct instance CRN by clearing last 2 sections (resource-type and resource)
+	instanceCRN := strings.Join(parts[:8], ":") + "::"
+
+	// Get the instance to check its plan
+	rsConClient, err := meta.(conns.ClientSession).ResourceControllerV2API()
+	if err != nil {
+		return fmt.Errorf("failed to initialize resource controller client: %w", err)
+	}
+
+	instance, response, err := rsConClient.GetResourceInstance(&rc.GetResourceInstanceOptions{
+		ID: &instanceCRN,
+	})
+	if err != nil {
+		return fmt.Errorf("failed to get backup source instance %s: %w (response: %v)", instanceCRN, err, response)
+	}
+
+	if instance.ResourcePlanID == nil {
+		return fmt.Errorf("backup source instance %s has no resource plan ID", instanceCRN)
+	}
+
+	// Get the plan name to check if it's Gen2
+	rsCatClient, err := meta.(conns.ClientSession).ResourceCatalogAPI()
+	if err != nil {
+		return fmt.Errorf("failed to initialize catalog client: %w", err)
+	}
+
+	rsCatRepo := rsCatClient.ResourceCatalog()
+	servicePlan, err := rsCatRepo.GetServicePlanName(*instance.ResourcePlanID)
+	if err != nil {
+		return fmt.Errorf("failed to get service plan for backup source instance: %w", err)
+	}
+
+	// Check if the plan is Gen2
+	if !isGen2Plan(servicePlan) {
+		return fmt.Errorf("backup_id references a Classic backup (plan: %s). Gen2 databases can only restore from Gen2 coupled backups or Gen2 decoupled backups. Please use a Gen2 backup CRN", servicePlan)
+	}
+
+	// Gen2 coupled backup - ALLOWED
+	return nil
+}
+
 // extractLocationFromCRN extracts the location (region) from an IBM Cloud CRN.
 // CRN format: crn:version:cname:ctype:service-name:location:scope:service-instance:resource-type:resource
 // Returns the location field (index 5) or an error if the CRN is invalid.
@@ -153,6 +229,38 @@ func extractLocationFromCRN(crn *string) (string, error) {
 		return "", fmt.Errorf("invalid CRN format: expected at least 6 parts, got %d", len(parts))
 	}
 	return parts[5], nil
+}
+
+// extractDeploymentIDFromCRN extracts the deployment ID from a catalog CRN.
+// Catalog CRN format: crn:v1:bluemix:public:globalcatalog::::deployment:deployment-id
+// Some callers may already provide the deployment ID directly.
+// Returns the deployment ID or an error if the input is invalid.
+func extractDeploymentIDFromCRN(catalogCRN string) (string, error) {
+	if catalogCRN == "" {
+		return "", fmt.Errorf("invalid catalog CRN format: empty CRN")
+	}
+
+	if !strings.HasPrefix(catalogCRN, "crn:") {
+		return catalogCRN, nil
+	}
+
+	// Split by "deployment:" to extract the deployment ID
+	parts := strings.Split(catalogCRN, "deployment:")
+	if len(parts) != 2 {
+		return "", fmt.Errorf("invalid catalog CRN format: expected exactly one 'deployment:' prefix")
+	}
+
+	deploymentID := parts[1]
+	if deploymentID == "" {
+		return "", fmt.Errorf("empty deployment ID in catalog CRN")
+	}
+
+	// Check for multiple deployment prefixes (invalid format)
+	if strings.Contains(deploymentID, "deployment:") {
+		return "", fmt.Errorf("invalid catalog CRN format: multiple 'deployment:' prefixes found")
+	}
+
+	return deploymentID, nil
 }
 
 // wrapAPIError wraps an API error with operation context and response details.
@@ -375,31 +483,20 @@ func buildHostFlavorConfig(hostFlavorID string) []map[string]interface{} {
 	return []map[string]interface{}{hostflavor}
 }
 
-// extractDeploymentIDFromCRN extracts the deployment ID from a catalog CRN.
-func extractDeploymentIDFromCRN(catalogCRN string) (string, error) {
-	// Split by "deployment:" to get the deployment ID
-	parts := strings.Split(catalogCRN, "deployment:")
-	if len(parts) != 2 {
-		return "", fmt.Errorf("invalid catalog CRN format: %s", catalogCRN)
-	}
-	deploymentID := strings.TrimSpace(parts[1])
-	if deploymentID == "" {
-		return "", fmt.Errorf("empty deployment ID in catalog CRN: %s", catalogCRN)
-	}
-	return deploymentID, nil
-}
-
-// getInitialNodeCountGen2 retrieves the default member count for Gen2 plans from Global Catalog.
-// Returns the member count from the catalog metadata, or a default value of 3 if not found.
-func getInitialNodeCountGen2(catalogCRN string, meta interface{}) (int, error) {
+// getInitialNodeCountGen2 retrieves the default member count for a Gen2 deployment from Global Catalog.
+// The input may be either a deployment catalog CRN or a deployment ID.
+// Returns the member count from the catalog metadata, or a default value if not found.
+// If the deployment reference is not a valid Global Catalog entry ID in the current environment,
+// fall back to the provider default instead of failing create.
+func getInitialNodeCountGen2(deploymentRef string, meta interface{}) (int, error) {
 	globalClient, err := meta.(conns.ClientSession).GlobalCatalogV1API()
 	if err != nil {
 		return 0, fmt.Errorf("failed to get global catalog client: %w", err)
 	}
 
-	deploymentID, err := extractDeploymentIDFromCRN(catalogCRN)
+	deploymentID, err := extractDeploymentIDFromCRN(deploymentRef)
 	if err != nil {
-		return 0, fmt.Errorf("failed to extract deployment ID from catalog CRN: %w", err)
+		return 0, fmt.Errorf("failed to normalize deployment reference: %w", err)
 	}
 
 	options := &globalcatalogv1.GetCatalogEntryOptions{
@@ -408,7 +505,8 @@ func getInitialNodeCountGen2(catalogCRN string, meta interface{}) (int, error) {
 
 	deployment, _, err := globalClient.GetCatalogEntry(options)
 	if err != nil {
-		return 0, fmt.Errorf("error retrieving deployment catalog entry: %w", err)
+		log.Printf("[WARN] Unable to retrieve Gen2 deployment catalog entry %q, using default member count %d: %v", deploymentID, defaultMemberCount, err)
+		return defaultMemberCount, nil
 	}
 
 	// Extract member count from deployment metadata
@@ -534,6 +632,42 @@ func getResourceManagerClient(meta interface{}) (interface{}, error) {
 		return nil, fmt.Errorf("failed to get resource manager client: %w", err)
 	}
 	return client, nil
+}
+
+// setTagsWithLogging retrieves and sets tags for a resource, logging errors instead of failing.
+// Returns error only for critical failures, logs warnings for non-critical issues.
+func setTagsWithLogging(d *schema.ResourceData, crn string, meta interface{}) error {
+	tags, err := flex.GetTagsUsingCRN(meta, crn)
+	if err != nil {
+		log.Printf("[WARN] Failed to retrieve tags for resource %s: %v", crn, err)
+	}
+	return d.Set("tags", tags)
+}
+
+// buildResourceControllerURL constructs the resource controller URL for a given CRN.
+// Standardizes URL building across resources and data sources.
+func buildResourceControllerURL(meta interface{}, crn string) (string, error) {
+	rcontroller, err := flex.GetBaseController(meta)
+	if err != nil {
+		return "", fmt.Errorf("failed to get base controller: %w", err)
+	}
+	return rcontroller + "/services/" + url.QueryEscape(crn), nil
+}
+
+// setResourceControllerAttributes sets common flex resource controller attributes.
+// Reduces duplication of setting name, CRN, status, and controller URL.
+func setResourceControllerAttributes(d *schema.ResourceData, name, crn, state string, meta interface{}) error {
+	d.Set(flex.ResourceName, name)
+	d.Set(flex.ResourceCRN, crn)
+	d.Set(flex.ResourceStatus, state)
+
+	controllerURL, err := buildResourceControllerURL(meta, crn)
+	if err != nil {
+		return err
+	}
+	d.Set(flex.ResourceControllerURL, controllerURL)
+
+	return nil
 }
 
 // setGen2BasicAttributes sets basic instance attributes including tags, name, status, location, and resource controller attributes.
@@ -717,12 +851,25 @@ func setGen2GroupsInfo(d *schema.ResourceData, instance *rc.ResourceInstance, me
 // to avoid drift detection when users have these in their configuration.
 // This function is shared between data source and resource implementations.
 func clearGen2UnsupportedAttributes(d *schema.ResourceData) {
+	// Admin user is not supported in Gen2 (no default admin user)
+	d.Set("adminuser", nil)
+
+	// Admin password is not supported in Gen2
+	d.Set("adminpassword", nil)
+
 	// Allowlist is not supported in Gen2
 	d.Set(allowlistKey, nil)
 
 	// Users management is not supported in Gen2 (use ibm_resource_key instead)
 	d.Set("users", nil)
 
+	// Auto scaling is not supported in Gen2
+	d.Set("auto_scaling", nil)
+
 	// Configuration schema is not supported in Gen2
 	d.Set("configuration_schema", nil)
+
+	// Note: backup_encryption_key_crn within platform_options is also not supported in Gen2,
+	// but platform_options is handled by the data source implementation which only sets
+	// disk_encryption_key_crn for Gen2 instances
 }

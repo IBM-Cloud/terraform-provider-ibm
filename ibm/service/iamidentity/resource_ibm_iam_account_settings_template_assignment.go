@@ -1,5 +1,9 @@
-// Copyright IBM Corp. 2023 All Rights Reserved.
+// Copyright IBM Corp. 2026 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
+
+/*
+ * IBM OpenAPI Terraform Generator Version: 3.113.1-d76630af-20260320-135953
+ */
 
 package iamidentity
 
@@ -190,15 +194,16 @@ func ResourceIBMAccountSettingsTemplateAssignmentValidator() *validate.ResourceV
 func resourceIBMAccountSettingsTemplateAssignmentCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	iamIdentityClient, err := meta.(conns.ClientSession).IAMIdentityV1API()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_account_settings_template_assignment", "create", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	createAccountSettingsAssignmentOptions := &iamidentityv1.CreateAccountSettingsAssignmentOptions{}
 
 	templateId, _, err := parseResourceId(d.Get("template_id").(string))
 	if err != nil {
-		log.Printf("[DEBUG] resourceIBMAccountSettingsTemplateRead failed %s", err)
-		return diag.FromErr(fmt.Errorf("resourceIBMAccountSettingsTemplateRead failed %s", err))
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_account_settings_template_assignment", "create", "parse-resource-id").GetDiag()
 	}
 
 	createAccountSettingsAssignmentOptions.SetTemplateID(templateId)
@@ -206,17 +211,18 @@ func resourceIBMAccountSettingsTemplateAssignmentCreate(context context.Context,
 	createAccountSettingsAssignmentOptions.SetTargetType(d.Get("target_type").(string))
 	createAccountSettingsAssignmentOptions.SetTarget(d.Get("target").(string))
 
-	templateAssignmentResponse, response, err := iamIdentityClient.CreateAccountSettingsAssignmentWithContext(context, createAccountSettingsAssignmentOptions)
+	templateAssignmentResponse, _, err := iamIdentityClient.CreateAccountSettingsAssignmentWithContext(context, createAccountSettingsAssignmentOptions)
 	if err != nil {
-		log.Printf("[DEBUG] CreateAccountSettingsAssignmentWithContext failed %s\n%s", err, response)
-		return diag.FromErr(fmt.Errorf("CreateAccountSettingsAssignmentWithContext failed %s\n%s", err, response))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateAccountSettingsAssignmentWithContext failed: %s", err.Error()), "ibm_iam_account_settings_template_assignment", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	d.SetId(*templateAssignmentResponse.ID)
 
 	_, err = waitForAssignment(d.Timeout(schema.TimeoutCreate), meta, d, isAccountSettingsTemplateAssigned)
 	if err != nil {
-		return diag.FromErr(fmt.Errorf("error assigning %s", err))
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_account_settings_template_assignment", "create", "wait-for-assignment").GetDiag()
 	}
 
 	return resourceIBMAccountSettingsTemplateAssignmentRead(context, d, meta)
@@ -225,7 +231,9 @@ func resourceIBMAccountSettingsTemplateAssignmentCreate(context context.Context,
 func resourceIBMAccountSettingsTemplateAssignmentRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	iamIdentityClient, err := meta.(conns.ClientSession).IAMIdentityV1API()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_account_settings_template_assignment", "read", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	getAccountSettingsAssignmentOptions := &iamidentityv1.GetAccountSettingsAssignmentOptions{}
@@ -238,60 +246,74 @@ func resourceIBMAccountSettingsTemplateAssignmentRead(context context.Context, d
 			d.SetId("")
 			return nil
 		}
-		log.Printf("[DEBUG] GetAccountSettingsAssignmentWithContext failed %s\n%s", err, response)
-		return diag.FromErr(fmt.Errorf("GetAccountSettingsAssignmentWithContext failed %s\n%s", err, response))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetAccountSettingsAssignmentWithContext failed: %s", err.Error()), "ibm_iam_account_settings_template_assignment", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	if err = d.Set("template_id", templateAssignmentResponse.TemplateID); err != nil {
-		return diag.FromErr(fmt.Errorf("error setting template_id: %s", err))
+		err = fmt.Errorf("Error setting template_id: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_account_settings_template_assignment", "read", "set-template_id").GetDiag()
 	}
 	if err = d.Set("template_version", flex.IntValue(templateAssignmentResponse.TemplateVersion)); err != nil {
-		return diag.FromErr(fmt.Errorf("error setting template_version: %s", err))
+		err = fmt.Errorf("Error setting template_version: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_account_settings_template_assignment", "read", "set-template_version").GetDiag()
 	}
 	if err = d.Set("target_type", templateAssignmentResponse.TargetType); err != nil {
-		return diag.FromErr(fmt.Errorf("error setting target_type: %s", err))
+		err = fmt.Errorf("Error setting target_type: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_account_settings_template_assignment", "read", "set-target_type").GetDiag()
 	}
 	if err = d.Set("target", templateAssignmentResponse.Target); err != nil {
-		return diag.FromErr(fmt.Errorf("error setting target: %s", err))
+		err = fmt.Errorf("Error setting target: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_account_settings_template_assignment", "read", "set-target").GetDiag()
 	}
 	if err = d.Set("account_id", templateAssignmentResponse.AccountID); err != nil {
-		return diag.FromErr(fmt.Errorf("error setting account_id: %s", err))
+		err = fmt.Errorf("Error setting account_id: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_account_settings_template_assignment", "read", "set-account_id").GetDiag()
 	}
 	if err = d.Set("status", templateAssignmentResponse.Status); err != nil {
-		return diag.FromErr(fmt.Errorf("error setting status: %s", err))
+		err = fmt.Errorf("Error setting status: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_account_settings_template_assignment", "read", "set-status").GetDiag()
 	}
 	var resources []map[string]interface{}
 	if !core.IsNil(templateAssignmentResponse.Resources) {
 		for _, resourcesItem := range templateAssignmentResponse.Resources {
 			resourcesItemMap, err := resourceIBMAccountSettingsTemplateAssignmentTemplateAssignmentResponseResourceToMap(&resourcesItem)
 			if err != nil {
-				return diag.FromErr(err)
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_account_settings_template_assignment", "read", "resources-to-map").GetDiag()
 			}
 			resources = append(resources, resourcesItemMap)
 		}
 	}
 	if err = d.Set("resources", resources); err != nil {
-		return diag.FromErr(fmt.Errorf("error setting resources: %s", err))
+		err = fmt.Errorf("Error setting resources: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_account_settings_template_assignment", "read", "set-resources").GetDiag()
 	}
 	if !core.IsNil(templateAssignmentResponse.Href) {
 		if err = d.Set("href", templateAssignmentResponse.Href); err != nil {
-			return diag.FromErr(fmt.Errorf("error setting href: %s", err))
+			err = fmt.Errorf("Error setting href: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_account_settings_template_assignment", "read", "set-href").GetDiag()
 		}
 	}
 	if err = d.Set("created_at", templateAssignmentResponse.CreatedAt); err != nil {
-		return diag.FromErr(fmt.Errorf("error setting created_at: %s", err))
+		err = fmt.Errorf("Error setting created_at: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_account_settings_template_assignment", "read", "set-created_at").GetDiag()
 	}
 	if err = d.Set("created_by_id", templateAssignmentResponse.CreatedByID); err != nil {
-		return diag.FromErr(fmt.Errorf("error setting created_by_id: %s", err))
+		err = fmt.Errorf("Error setting created_by_id: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_account_settings_template_assignment", "read", "set-created_by_id").GetDiag()
 	}
 	if err = d.Set("last_modified_at", templateAssignmentResponse.LastModifiedAt); err != nil {
-		return diag.FromErr(fmt.Errorf("error setting last_modified_at: %s", err))
+		err = fmt.Errorf("Error setting last_modified_at: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_account_settings_template_assignment", "read", "set-last_modified_at").GetDiag()
 	}
 	if err = d.Set("last_modified_by_id", templateAssignmentResponse.LastModifiedByID); err != nil {
-		return diag.FromErr(fmt.Errorf("error setting last_modified_by_id: %s", err))
+		err = fmt.Errorf("Error setting last_modified_by_id: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_account_settings_template_assignment", "read", "set-last_modified_by_id").GetDiag()
 	}
 	if err = d.Set("entity_tag", templateAssignmentResponse.EntityTag); err != nil {
-		return diag.FromErr(fmt.Errorf("error setting entity_tag: %s", err))
+		err = fmt.Errorf("Error setting entity_tag: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_account_settings_template_assignment", "read", "set-entity_tag").GetDiag()
 	}
 
 	return nil
@@ -300,7 +322,9 @@ func resourceIBMAccountSettingsTemplateAssignmentRead(context context.Context, d
 func resourceIBMAccountSettingsTemplateAssignmentUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	iamIdentityClient, err := meta.(conns.ClientSession).IAMIdentityV1API()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_account_settings_template_assignment", "update", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	updateAccountSettingsAssignmentOptions := &iamidentityv1.UpdateAccountSettingsAssignmentOptions{}
@@ -317,13 +341,14 @@ func resourceIBMAccountSettingsTemplateAssignmentUpdate(context context.Context,
 	if hasChange || d.Get("status") == "failed" { // allow the same version to retry failed assignments
 		_, response, err := iamIdentityClient.UpdateAccountSettingsAssignmentWithContext(context, updateAccountSettingsAssignmentOptions)
 		if err != nil {
-			log.Printf("[DEBUG] UpdateAccountSettingsAssignmentWithContext failed %s\n%s", err, response)
-			return diag.FromErr(fmt.Errorf("UpdateAccountSettingsAssignmentWithContext failed %s\n%s", err, response))
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("UpdateAccountSettingsAssignmentWithContext failed: %s", err.Error()), "ibm_iam_account_settings_template_assignment", "update")
+			log.Printf("[DEBUG]\n%s\n%s", tfErr.GetDebugMessage(), response)
+			return tfErr.GetDiag()
 		}
 
 		_, err = waitForAssignment(d.Timeout(schema.TimeoutUpdate), meta, d, isAccountSettingsTemplateAssigned)
 		if err != nil {
-			return diag.FromErr(fmt.Errorf("error assigning %s", err))
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_account_settings_template_assignment", "update", "wait-for-assignment").GetDiag()
 		}
 	}
 
@@ -333,22 +358,25 @@ func resourceIBMAccountSettingsTemplateAssignmentUpdate(context context.Context,
 func resourceIBMAccountSettingsTemplateAssignmentDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	iamIdentityClient, err := meta.(conns.ClientSession).IAMIdentityV1API()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_account_settings_template_assignment", "delete", "initialize-client")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	deleteAccountSettingsAssignmentOptions := &iamidentityv1.DeleteAccountSettingsAssignmentOptions{}
 
 	deleteAccountSettingsAssignmentOptions.SetAssignmentID(d.Id())
 
-	_, response, err := iamIdentityClient.DeleteAccountSettingsAssignmentWithContext(context, deleteAccountSettingsAssignmentOptions)
+	_, _, err = iamIdentityClient.DeleteAccountSettingsAssignmentWithContext(context, deleteAccountSettingsAssignmentOptions)
 	if err != nil {
-		log.Printf("[DEBUG] DeleteAccountSettingsAssignmentWithContext failed %s\n%s", err, response)
-		return diag.FromErr(fmt.Errorf("DeleteAccountSettingsAssignmentWithContext failed %s\n%s", err, response))
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("DeleteAccountSettingsAssignmentWithContext failed: %s", err.Error()), "ibm_iam_account_settings_template_assignment", "delete")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	_, err = waitForAssignment(d.Timeout(schema.TimeoutDelete), meta, d, isAccountSettingsAssignmentRemoved)
 	if err != nil {
-		return diag.FromErr(fmt.Errorf("error removing assignment %s", err))
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_account_settings_template_assignment", "delete", "wait-for-assignment").GetDiag()
 	}
 
 	d.SetId("")

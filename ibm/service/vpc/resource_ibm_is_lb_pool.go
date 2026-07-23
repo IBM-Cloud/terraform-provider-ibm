@@ -24,6 +24,7 @@ const (
 	isLBPoolName                          = "name"
 	isLBID                                = "lb"
 	isLBPoolAlgorithm                     = "algorithm"
+	isLBPoolClientAuthentication          = "client_authentication"
 	isLBPoolProtocol                      = "protocol"
 	isLBPoolHealthDelay                   = "health_delay"
 	isLBPoolHealthRetries                 = "health_retries"
@@ -31,6 +32,7 @@ const (
 	isLBPoolHealthType                    = "health_type"
 	isLBPoolHealthMonitorURL              = "health_monitor_url"
 	isLBPoolHealthMonitorPort             = "health_monitor_port"
+	isLBPoolServerAuthentication          = "server_authentication"
 	isLBPoolSessPersistenceType           = "session_persistence_type"
 	isLBPoolSessPersistenceAppCookieName  = "session_persistence_app_cookie_name"
 	isLBPoolSessPersistenceHttpCookieName = "session_persistence_http_cookie_name"
@@ -87,6 +89,22 @@ func ResourceIBMISLBPool() *schema.Resource {
 				Required:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_is_lb_pool", isLBPoolAlgorithm),
 				Description:  "Load Balancer Pool algorithm",
+			},
+
+			isLBPoolClientAuthentication: {
+				Type:        schema.TypeList,
+				MaxItems:    1,
+				Optional:    true,
+				Description: "The client authentication to use for this pool. Supported by load balancers with mtls_supported set to true. The pool must have a protocol of https.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"certificate_instance": {
+							Type:        schema.TypeString,
+							Required:    true,
+							Description: "The CRN of the certificate instance to use for client authentication.",
+						},
+					},
+				},
 			},
 
 			"failsafe_policy": &schema.Schema{
@@ -199,6 +217,28 @@ func ResourceIBMISLBPool() *schema.Resource {
 				Description: "Health monitor Port the LB Pool",
 			},
 
+			isLBPoolServerAuthentication: {
+				Type:        schema.TypeList,
+				MaxItems:    1,
+				Optional:    true,
+				Computed:    true,
+				Description: "The server authentication to use for this pool. Supported by load balancers with mtls_supported set to true. The pool must have a protocol of https.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"certificate_authority": &schema.Schema{
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "The backend server certificate authority instance to use for server certificate verification. Supported by load balancers with mtls_supported set to true. The pool must have a protocol of https. If specified, verify_certificate must be true.",
+						},
+						"verify_certificate": &schema.Schema{
+							Type:        schema.TypeBool,
+							Optional:    true,
+							Computed:    true,
+							Description: "Indicates whether server certificate verification is enabled. If set to true, the backend server certificate is verified by: certificate_authority if specified, the system default certificate authorities, if certificate_authority is not specified.",
+						},
+					},
+				},
+			},
 			isLBPoolSessPersistenceType: {
 				Type:         schema.TypeString,
 				Optional:     true,
@@ -416,7 +456,31 @@ func resourceIBMISLBPoolCreate(context context.Context, d *schema.ResourceData, 
 		healthMonitorPort = int64(hmp.(int))
 	}
 
-	err := lbPoolCreate(context, d, meta, name, lbID, algorithm, protocol, healthType, spType, cName, healthMonitorURL, pProtocol, healthDelay, maxRetries, healthTimeOut, healthMonitorPort)
+	var clientAuthCertCRN, serverAuthCA string
+	var serverAuthVerifyCert bool
+
+	if clientAuth, ok := d.GetOk(isLBPoolClientAuthentication); ok {
+		clientAuthList := clientAuth.([]interface{})
+		if len(clientAuthList) > 0 && clientAuthList[0] != nil {
+			clientAuthMap := clientAuthList[0].(map[string]interface{})
+			clientAuthCertCRN = clientAuthMap["certificate_instance"].(string)
+		}
+	}
+
+	if serverAuth, ok := d.GetOk(isLBPoolServerAuthentication); ok {
+		serverAuthList := serverAuth.([]interface{})
+		if len(serverAuthList) > 0 && serverAuthList[0] != nil {
+			serverAuthMap := serverAuthList[0].(map[string]interface{})
+			if ca, ok := serverAuthMap["certificate_authority"].(string); ok && ca != "" {
+				serverAuthCA = ca
+			}
+			if verify, ok := serverAuthMap["verify_certificate"].(bool); ok {
+				serverAuthVerifyCert = verify
+			}
+		}
+	}
+
+	err := lbPoolCreate(context, d, meta, name, lbID, algorithm, protocol, healthType, spType, cName, healthMonitorURL, pProtocol, clientAuthCertCRN, serverAuthCA, healthDelay, maxRetries, healthTimeOut, healthMonitorPort, serverAuthVerifyCert)
 	if err != nil {
 		return err
 	}
@@ -424,7 +488,7 @@ func resourceIBMISLBPoolCreate(context context.Context, d *schema.ResourceData, 
 	return resourceIBMISLBPoolRead(context, d, meta)
 }
 
-func lbPoolCreate(context context.Context, d *schema.ResourceData, meta interface{}, name, lbID, algorithm, protocol, healthType, spType, cName, healthMonitorURL, pProtocol string, healthDelay, maxRetries, healthTimeOut, healthMonitorPort int64) diag.Diagnostics {
+func lbPoolCreate(context context.Context, d *schema.ResourceData, meta interface{}, name, lbID, algorithm, protocol, healthType, spType, cName, healthMonitorURL, pProtocol, clientAuthCertCRN, serverAuthCA string, healthDelay, maxRetries, healthTimeOut, healthMonitorPort int64, serverAuthVerifyCert bool) diag.Diagnostics {
 	sess, err := vpcClient(meta)
 	if err != nil {
 		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_lb_pool", "create", "initialize-client")
@@ -485,6 +549,27 @@ func lbPoolCreate(context context.Context, d *schema.ResourceData, meta interfac
 		}
 		options.SetFailsafePolicy(failsafePolicyModel)
 	}
+
+	if clientAuthCertCRN != "" {
+		options.ClientAuthentication = &vpcv1.LoadBalancerPoolClientAuthenticationPrototype{
+			CertificateInstance: &vpcv1.CertificateInstanceIdentity{
+				CRN: &clientAuthCertCRN,
+			},
+		}
+	}
+
+	if serverAuthVerifyCert || serverAuthCA != "" {
+		serverAuthModel := &vpcv1.LoadBalancerPoolServerAuthenticationPrototype{
+			VerifyCertificate: &serverAuthVerifyCert,
+		}
+		if serverAuthCA != "" {
+			serverAuthModel.CertificateAuthority = &vpcv1.CertificateInstanceIdentity{
+				CRN: &serverAuthCA,
+			}
+		}
+		options.ServerAuthentication = serverAuthModel
+	}
+
 	options.HealthMonitor = healthMonitor
 	lbPool, _, err := sess.CreateLoadBalancerPoolWithContext(context, options)
 	if err != nil {
@@ -677,6 +762,37 @@ func lbPoolGet(context context.Context, d *schema.ResourceData, meta interface{}
 	if err = d.Set(isLBPoolProxyProtocol, *loadBalancerPool.ProxyProtocol); err != nil {
 		err = fmt.Errorf("Error setting proxy_protocol: %s", err)
 		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_lb_pool", "read", "set-proxy_protocol").GetDiag()
+	}
+
+	// Read client_authentication
+	if loadBalancerPool.ClientAuthentication != nil {
+		clientAuthList := make([]map[string]interface{}, 0)
+		clientAuthMap := make(map[string]interface{})
+		if loadBalancerPool.ClientAuthentication.CertificateInstance != nil {
+			clientAuthMap["certificate_instance"] = *loadBalancerPool.ClientAuthentication.CertificateInstance.CRN
+		}
+		clientAuthList = append(clientAuthList, clientAuthMap)
+		if err = d.Set(isLBPoolClientAuthentication, clientAuthList); err != nil {
+			err = fmt.Errorf("Error setting client_authentication: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_lb_pool", "read", "set-client_authentication").GetDiag()
+		}
+	}
+
+	// Read server_authentication
+	if loadBalancerPool.ServerAuthentication != nil {
+		serverAuthList := make([]map[string]interface{}, 0)
+		serverAuthMap := make(map[string]interface{})
+		if loadBalancerPool.ServerAuthentication.CertificateAuthority != nil {
+			serverAuthMap["certificate_authority"] = *loadBalancerPool.ServerAuthentication.CertificateAuthority.CRN
+		}
+		if loadBalancerPool.ServerAuthentication.VerifyCertificate != nil {
+			serverAuthMap["verify_certificate"] = *loadBalancerPool.ServerAuthentication.VerifyCertificate
+		}
+		serverAuthList = append(serverAuthList, serverAuthMap)
+		if err = d.Set(isLBPoolServerAuthentication, serverAuthList); err != nil {
+			err = fmt.Errorf("Error setting server_authentication: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_lb_pool", "read", "set-server_authentication").GetDiag()
+		}
 	}
 
 	getLoadBalancerOptions := &vpcv1.GetLoadBalancerOptions{
@@ -899,6 +1015,49 @@ func lbPoolUpdate(context context.Context, d *schema.ResourceData, meta interfac
 		hasChanged = true
 	}
 
+	clientAuthRemoved := false
+	if d.HasChange(isLBPoolClientAuthentication) {
+		if clientAuth, ok := d.GetOk(isLBPoolClientAuthentication); ok {
+			clientAuthList := clientAuth.([]interface{})
+			if len(clientAuthList) > 0 && clientAuthList[0] != nil {
+				clientAuthMap := clientAuthList[0].(map[string]interface{})
+				clientAuthCertCRN := clientAuthMap["certificate_instance"].(string)
+				loadBalancerPoolPatchModel.ClientAuthentication = &vpcv1.LoadBalancerPoolClientAuthenticationPatch{
+					CertificateInstance: &vpcv1.CertificateInstanceIdentity{
+						CRN: &clientAuthCertCRN,
+					},
+				}
+			}
+		} else {
+			clientAuthRemoved = true
+		}
+		hasChanged = true
+	}
+
+	serverAuthRemoved := false
+	if d.HasChange(isLBPoolServerAuthentication) {
+		if serverAuth, ok := d.GetOk(isLBPoolServerAuthentication); ok {
+			serverAuthList := serverAuth.([]interface{})
+			if len(serverAuthList) > 0 && serverAuthList[0] != nil {
+				serverAuthMap := serverAuthList[0].(map[string]interface{})
+				serverAuthPatch := &vpcv1.LoadBalancerPoolServerAuthenticationPatch{}
+
+				if ca, ok := serverAuthMap["certificate_authority"].(string); ok && ca != "" {
+					serverAuthPatch.CertificateAuthority = &vpcv1.CertificateInstanceIdentity{
+						CRN: &ca,
+					}
+				}
+				if verify, ok := serverAuthMap["verify_certificate"].(bool); ok {
+					serverAuthPatch.VerifyCertificate = &verify
+				}
+				loadBalancerPoolPatchModel.ServerAuthentication = serverAuthPatch
+			}
+		} else {
+			serverAuthRemoved = true
+		}
+		hasChanged = true
+	}
+
 	if d.HasChange(isLBPoolName) || d.HasChange(isLBPoolAlgorithm) || d.HasChange(isLBPoolProtocol) || hasChanged || hasFailSafeChanged {
 		name := d.Get(isLBPoolName).(string)
 		algorithm := d.Get(isLBPoolAlgorithm).(string)
@@ -971,6 +1130,12 @@ func lbPoolUpdate(context context.Context, d *schema.ResourceData, meta interfac
 			if fpPatch, ok := LoadBalancerPoolPatch["failsafe_policy"].(map[string]interface{}); ok {
 				fpPatch["target"] = nil
 			}
+		}
+		if clientAuthRemoved {
+			LoadBalancerPoolPatch["client_authentication"] = nil
+		}
+		if serverAuthRemoved {
+			LoadBalancerPoolPatch["server_authentication"] = nil
 		}
 
 		updateLoadBalancerPoolOptions.LoadBalancerPoolPatch = LoadBalancerPoolPatch

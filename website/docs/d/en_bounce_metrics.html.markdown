@@ -26,7 +26,8 @@ data "ibm_en_bounce_metrics" "en_bounce_metrics" {
 You can specify the following arguments for this data source.
 
 * `destination_id` - (Optional, String) Unique identifier for Destination.
-* `destination_type` - (Required, String) Destination type. Allowed values are [smtp_custom].
+* `destination_type` - (Optional, String) Destination type. Allowed values are [smtp_custom].
+* `smtp_config_id` - (Optional, String) Unique identifier for SMTP config id.
 * `email_to` - (Optional, String) Receiver email id.
 * `gte` - (Required, String) GTE (greater than equal), start timestamp in UTC.
 * `instance_id` - (Required, Forces new resource, String) Unique identifier for IBM Cloud Event Notifications instance.

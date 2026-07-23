@@ -135,6 +135,7 @@ In addition to all argument reference list, you can access the following attribu
 - `hostname` - (String) The fully qualified domain name assigned to this load balancer.
 - `id` - (String) The unique identifier of the load balancer.
 - `instance_groups_supported` - (Boolean) Indicates whether this load balancer supports instance groups.
+- `mtls_supported`- (Bool) Indicates whether this load balancer supports mTLS.
 - `operating_status` - (String) The operating status of this load balancer.
 - `public_ips` - (String) The public IP addresses assigned to this load balancer.
 - `private_ip` - (List) The Reserved IP address reference assigned to this load balancer.

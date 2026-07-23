@@ -56,6 +56,11 @@ func DataSourceIBMPISAPProfile() *schema.Resource {
 				Description: "System to use if not provided",
 				Type:        schema.TypeString,
 			},
+			Attr_Deprecated: {
+				Computed:    true,
+				Description: "Profile is deprecated.",
+				Type:        schema.TypeBool,
+			},
 			Attr_FullSystemProfile: {
 				Computed:    true,
 				Description: "Requires full system for deployment.",
@@ -138,6 +143,7 @@ func dataSourceIBMPISAPProfileRead(ctx context.Context, d *schema.ResourceData, 
 	d.Set(Attr_Certified, *sapProfile.Certified)
 	d.Set(Attr_Cores, *sapProfile.Cores)
 	d.Set(Attr_DefaultSystem, sapProfile.DefaultSystem)
+	d.Set(Attr_Deprecated, sapProfile.Deprecated)
 	d.Set(Attr_FullSystemProfile, sapProfile.FullSystemProfile)
 	d.Set(Attr_Memory, *sapProfile.Memory)
 	d.Set(Attr_SAPS, sapProfile.Saps)
