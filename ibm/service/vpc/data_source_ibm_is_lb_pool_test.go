@@ -106,6 +106,8 @@ func testAccCheckIBMIsLbPoolDataSourceConfigmTLS(vpcname, subnetname, zone, cidr
 	`)
 }
 
+// http bundle tests
+
 func TestAccIBMIsLbPoolDataSourceHealthMonitor(t *testing.T) {
 	vpcname := fmt.Sprintf("tflbp-vpc-%d", acctest.RandIntRange(10, 100))
 	subnetname := fmt.Sprintf("tflbpc-name-%d", acctest.RandIntRange(10, 100))

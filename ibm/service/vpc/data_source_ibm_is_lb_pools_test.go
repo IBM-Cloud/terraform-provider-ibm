@@ -95,6 +95,8 @@ func testAccCheckIBMIsLbPoolsDataSourceConfigmTLS(vpcname, subnetname, zone, cid
 	`)
 }
 
+// http bundle tests
+
 // TestAccIBMIsLbPoolsDataSourceHealthMonitor validates that the pools list data
 // source surfaces health_monitor.request and health_monitor.response when set.
 func TestAccIBMIsLbPoolsDataSourceHealthMonitor(t *testing.T) {
