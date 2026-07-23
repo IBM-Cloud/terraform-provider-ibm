@@ -82,3 +82,29 @@ func testDSCheckIBMISLBProfileBasicConfig() string {
 		name = "network-fixed"
 	} `)
 }
+
+func TestAccIBMISLBProfileDatasource_http_bundle(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { acc.TestAccPreCheck(t) },
+		Providers: acc.TestAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config: testDSCheckIBMISLBProfileApplicationConfig(),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet("data.ibm_is_lb_profile.test_alb_profile", "name"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_lb_profile.test_alb_profile", "advanced_health_checks_supported.#"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_lb_profile.test_alb_profile", "advanced_health_checks_supported.0.type"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_lb_profile.test_alb_profile", "fqdn_pool_members_supported.#"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_lb_profile.test_alb_profile", "fqdn_pool_members_supported.0.type"),
+				),
+			},
+		},
+	})
+}
+
+func testDSCheckIBMISLBProfileApplicationConfig() string {
+	return `
+	data "ibm_is_lb_profile" "test_alb_profile" {
+		name = "application"
+	} `
+}

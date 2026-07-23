@@ -54,6 +54,7 @@ In addition to all argument reference list, you can access the following attribu
 
 - `access_mode` - (String) The access mode for this load balancer. One of **private**, **public**, **private_path**.
 - `access_tags`  - (String) Access management tags associated for the load balancer.
+- `advanced_health_checks_supported` - (Boolean) Indicates whether this load balancer supports advanced health checks.
 - `attached_load_balancer_pool_members` - (List) The load balancer pool members attached to this load balancer.
 	Nested scheme for `members`:
 	- `deleted` - (List) If present, this property indicates the referenced resource has been deleted and providessome supplementary information.
@@ -74,6 +75,7 @@ In addition to all argument reference list, you can access the following attribu
     - `drop`: Drops requests.
     - `fail`: Fails requests with an HTTP 503 status code.
     - `forward`: Forwards requests to the target pool.
+- `fqdn_pool_members_supported` - (Boolean) Indicates whether this load balancer supports pool members specified by their fully qualified domain names.
 - `hostname` - (String) Fully qualified domain name assigned to this load balancer.
 - `id` - (String) The ID of the load balancer.
 - `instance_groups_supported` - (Boolean) Indicates whether this load balancer supports instance groups.

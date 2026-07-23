@@ -209,7 +209,7 @@ Review the argument references that you can specify for your resource.
 - `rules`- (Required, List) A list of rules that you want to apply to your load balancer policy. Note that rules can be created only. You cannot update the rules for a load balancer policy.
 
   Nested scheme for `rules`:
-  - `condition` - (Required, String) The condition that you want to apply to your rule. Supported values are `contains`, `equals`, and `matches_regex`.
+  - `condition` - (Required, String) The condition that you want to apply to your rule. Supported values are `contains`, `equals`, and `matches_regex` and `starts_with`.
   - `type` - (Required, String) The data type where you want to apply the rule condition. Supported values are `header`, `hostname`,  and `path`.
   - `value`- (Required, Integer) The value that must be found in the HTTP header, hostname or path to apply the load balancer listener rule. The value that you define can be between 1 and 128 characters long.
   - `field`- (Required, Integer) If you selected `header` as the data type where you want to apply the rule condition, enter the name of the HTTP header that you want to check. The name of the header can be between 1 and 128 characters long.

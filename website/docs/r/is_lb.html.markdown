@@ -119,6 +119,7 @@ Review the argument references that you can specify for your resource.
 In addition to all argument reference list, you can access the following attribute reference after your resource is created.
 
 - `access_mode` - (String) The access mode for this load balancer. One of **private**, **public**, **private_path**.
+- `advanced_health_checks_supported` - (Boolean) Indicates whether this load balancer supports advanced health checks.
 - `attached_load_balancer_pool_members` - (List) The load balancer pool members attached to this load balancer.
 
   Nested scheme for `members`:
@@ -130,6 +131,7 @@ In addition to all argument reference list, you can access the following attribu
   - `id` - (String) The unique identifier for this load balancer pool member.
 - `availability` - (String) The availability of this load balancer
 - `crn` - (String) The CRN for this load balancer.
+- `fqdn_pool_members_supported` - (Boolean) Indicates whether this load balancer supports pool members specified by their fully qualified domain names.
 - `hostname` - (String) The fully qualified domain name assigned to this load balancer.
 - `id` - (String) The unique identifier of the load balancer.
 - `instance_groups_supported` - (Boolean) Indicates whether this load balancer supports instance groups.

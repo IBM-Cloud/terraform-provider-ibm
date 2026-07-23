@@ -171,3 +171,23 @@ func testAccCheckIBMISDSLBDNS(vpcname, subnetname, name string) string {
 		name = ibm_is_lb.testacc_LB.name
 	  }`)
 }
+
+func TestAccIBMISLBDatasource_http_bundle(t *testing.T) {
+	name := fmt.Sprintf("tflb-name-%d", acctest.RandIntRange(10, 100))
+	vpcname := fmt.Sprintf("tflb-vpc-%d", acctest.RandIntRange(10, 100))
+	subnetname := fmt.Sprintf("tflb-subnet-name-%d", acctest.RandIntRange(10, 100))
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { acc.TestAccPreCheck(t) },
+		Providers: acc.TestAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config: testDSCheckIBMISLBConfig(vpcname, subnetname, acc.ISZoneName, acc.ISCIDR, name),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("data.ibm_is_lb.ds_lb", "name", name),
+					resource.TestCheckResourceAttrSet("data.ibm_is_lb.ds_lb", "advanced_health_checks_supported"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_lb.ds_lb", "fqdn_pool_members_supported"),
+				),
+			},
+		},
+	})
+}

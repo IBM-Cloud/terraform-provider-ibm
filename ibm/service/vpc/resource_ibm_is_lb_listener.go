@@ -860,26 +860,44 @@ func lbListenerUpdate(context context.Context, d *schema.ResourceData, meta inte
 			}
 		}
 	}
+	portExplicit := false
 	if _, ok := d.GetOk(isLBListenerPort); ok && d.HasChange(isLBListenerPort) {
 		port = int64(d.Get(isLBListenerPort).(int))
 		loadBalancerListenerPatchModel.Port = &port
+		portExplicit = true
 		hasChanged = true
 	}
-	if d.HasChange(isLBListenerPortMin) {
-		portMin := int64(d.Get(isLBListenerPortMin).(int))
-		loadBalancerListenerPatchModel.PortMin = &portMin
-		hasChanged = true
-	}
-	if d.HasChange(isLBListenerPortMax) {
-		portMax := int64(d.Get(isLBListenerPortMax).(int))
-		loadBalancerListenerPatchModel.PortMax = &portMax
-		hasChanged = true
+	// Only send port_min/port_max when port is not explicitly configured.
+	// The API rejects requests that set both port and port_min simultaneously.
+	if !portExplicit {
+		if d.HasChange(isLBListenerPortMin) {
+			portMin := int64(d.Get(isLBListenerPortMin).(int))
+			loadBalancerListenerPatchModel.PortMin = &portMin
+			hasChanged = true
+		}
+		if d.HasChange(isLBListenerPortMax) {
+			portMax := int64(d.Get(isLBListenerPortMax).(int))
+			loadBalancerListenerPatchModel.PortMax = &portMax
+			hasChanged = true
+		}
 	}
 
 	if d.HasChange(isLBListenerProtocol) {
 		protocol = d.Get(isLBListenerProtocol).(string)
 		loadBalancerListenerPatchModel.Protocol = &protocol
 		hasChanged = true
+		// When switching to HTTPS, the API requires certificate_instance in the
+		// same request even if it has not changed in configuration.
+		if protocol == "https" && loadBalancerListenerPatchModel.CertificateInstance == nil {
+			if ci, ok := d.GetOk(isLBListenerCertificateInstance); ok {
+				ciStr := ci.(string)
+				if ciStr != "" {
+					loadBalancerListenerPatchModel.CertificateInstance = &vpcv1.CertificateInstanceIdentity{
+						CRN: &ciStr,
+					}
+				}
+			}
+		}
 	}
 
 	if d.HasChange(isLBListenerAcceptProxyProtocol) {

@@ -56,6 +56,18 @@ In addition to all argument references listed, you can access the following attr
 	- `delay` - (Integer) The health check interval in seconds. Interval must be greater than timeout value.
 	- `max_retries` - (Integer) The health check max retries.
 	- `port` - (Integer) The health check port number. If specified, this overrides the ports specified in the server member resources.
+	- `request` - (List)
+		Nested schema for **request**:
+		- `body` - (String) The HTTP request body used for health checks.If absent, the health checks will ignore the request body.
+		- `headers` - (List) The HTTP request headers used for health checks.If absent, the health checks will ignore the request headers.
+			Nested schema for **headers**:
+			- `field` - (String) The field of an HTTP request header used for health checks.
+			- `value` - (String) The value of an HTTP request header used for health checks.
+		- `method` - (String) The HTTP request method used for health checks. Constraints: Allowable values are: `get`, `post`.
+	- `response` - (List)
+		Nested schema for **response**:
+		- `body_regex` - (String) The PCRE-flavor regular expression that HTTP response bodies must match for successful health checks.If absent, health checks will ignore any response body.
+		- `codes` - (List) The HTTP response codes expected for successful health checks.
 	- `timeout` - (Integer) The health check timeout in seconds.
 	- `type` - (String) The protocol type of this load balancer pool health monitor.The enumerated values for this property are expected to expand in the future. When processing this property, check for and log unknown values. Optionally halt processing and surface the error, or bypass the health monitor on which the unexpected property value was encountered.
 	- `url_path` - (String) The health check URL path. Applicable only if the health monitor `type` is `http` or`https`. This value must be in the format of an [origin-form request target](https://tools.ietf.org/html/rfc7230#section-5.3.1).

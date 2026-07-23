@@ -94,3 +94,72 @@ func testAccCheckIBMIsLbPoolsDataSourceConfigmTLS(vpcname, subnetname, zone, cid
 	}
 	`)
 }
+
+// http bundle tests
+
+// TestAccIBMIsLbPoolsDataSourceHealthMonitor validates that the pools list data
+// source surfaces health_monitor.request and health_monitor.response when set.
+func TestAccIBMIsLbPoolsDataSourceHealthMonitor(t *testing.T) {
+	vpcname := fmt.Sprintf("tflbp-vpc-%d", acctest.RandIntRange(10, 100))
+	subnetname := fmt.Sprintf("tflbpc-name-%d", acctest.RandIntRange(10, 100))
+	name := fmt.Sprintf("tfcreate%d", acctest.RandIntRange(10, 100))
+	poolName := fmt.Sprintf("tflbpoolc%d", acctest.RandIntRange(10, 100))
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { acc.TestAccPreCheck(t) },
+		Providers: acc.TestAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMIsLbPoolsDataSourceHealthMonitorConfig(vpcname, subnetname, acc.ISZoneName, acc.ISCIDR, name, poolName),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet("data.ibm_is_lb_pools.is_lb_pools", "lb"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_lb_pools.is_lb_pools", "pools.#"),
+					resource.TestCheckResourceAttr("data.ibm_is_lb_pools.is_lb_pools", "pools.0.health_monitor.0.request.#", "1"),
+					resource.TestCheckResourceAttr("data.ibm_is_lb_pools.is_lb_pools", "pools.0.health_monitor.0.request.0.method", "GET"),
+					resource.TestCheckResourceAttr("data.ibm_is_lb_pools.is_lb_pools", "pools.0.health_monitor.0.response.#", "1"),
+					resource.TestCheckResourceAttr("data.ibm_is_lb_pools.is_lb_pools", "pools.0.health_monitor.0.response.0.codes.#", "1"),
+				),
+			},
+		},
+	})
+}
+
+func testAccCheckIBMIsLbPoolsDataSourceHealthMonitorConfig(vpcname, subnetname, zone, cidr, name, poolName string) string {
+	return fmt.Sprintf(`
+	resource "ibm_is_vpc" "testacc_vpc" {
+		name = "%s"
+	}
+	resource "ibm_is_subnet" "testacc_subnet" {
+		name            = "%s"
+		vpc             = ibm_is_vpc.testacc_vpc.id
+		zone            = "%s"
+		ipv4_cidr_block = "%s"
+	}
+	resource "ibm_is_lb" "testacc_LB" {
+		name    = "%s"
+		subnets = [ibm_is_subnet.testacc_subnet.id]
+	}
+	resource "ibm_is_lb_pool" "testacc_lb_pool" {
+		name           = "%s"
+		lb             = ibm_is_lb.testacc_LB.id
+		algorithm      = "round_robin"
+		protocol       = "http"
+		health_delay   = 45
+		health_retries = 5
+		health_timeout = 15
+		health_type    = "http"
+		health_monitor {
+			request {
+				method = "GET"
+			}
+			response {
+				codes = ["200"]
+			}
+		}
+	}
+	data "ibm_is_lb_pools" "is_lb_pools" {
+		lb = ibm_is_lb.testacc_LB.id
+		depends_on = [ibm_is_lb_pool.testacc_lb_pool]
+	}
+	`, vpcname, subnetname, zone, cidr, name, poolName)
+}
