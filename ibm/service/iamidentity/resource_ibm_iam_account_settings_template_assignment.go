@@ -225,7 +225,27 @@ func resourceIBMAccountSettingsTemplateAssignmentCreate(context context.Context,
 		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_account_settings_template_assignment", "create", "wait-for-assignment").GetDiag()
 	}
 
-	return resourceIBMAccountSettingsTemplateAssignmentRead(context, d, meta)
+	// Read persists the final state. When status is "failed"/"superseded", Read
+	// writes template_version=0 so the next plan shows a visible update diff.
+	diags := resourceIBMAccountSettingsTemplateAssignmentRead(context, d, meta)
+	if status, ok := d.GetOk("status"); ok && (status.(string) == "failed" || status.(string) == "superseded") {
+		diags = append(diags, diag.Diagnostic{
+			Severity: diag.Error,
+			Summary:  fmt.Sprintf("Assignment completed with status '%s'.", status.(string)),
+			Detail: fmt.Sprintf(
+				"The assignment %s is in a '%s' state. Terraform has marked this resource as tainted.\n"+
+					"To retry without destroying and recreating the assignment, run:\n\n"+
+					"  terraform untaint ibm_iam_account_settings_template_assignment.<RESOURCE_NAME>\n"+
+					"  terraform apply\n\n"+
+					"Replace <RESOURCE_NAME> with the name of your resource block (e.g. if your config\n"+
+					"is 'resource \"ibm_iam_account_settings_template_assignment\" \"assignment\"', use:\n\n"+
+					"  terraform untaint ibm_iam_account_settings_template_assignment.assignment\n"+
+					"  terraform apply\n\n"+
+					"This will perform an in-place update (PUT) to retry only the failed resources.",
+				d.Id(), status.(string)),
+		})
+	}
+	return diags
 }
 
 func resourceIBMAccountSettingsTemplateAssignmentRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -255,7 +275,15 @@ func resourceIBMAccountSettingsTemplateAssignmentRead(context context.Context, d
 		err = fmt.Errorf("Error setting template_id: %s", err)
 		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_account_settings_template_assignment", "read", "set-template_id").GetDiag()
 	}
-	if err = d.Set("template_version", flex.IntValue(templateAssignmentResponse.TemplateVersion)); err != nil {
+	// When the assignment is in a failed/superseded state, write 0 for
+	// template_version so Terraform sees a diff against the config value on the
+	// next plan and calls Update, which retries the assignment via PUT.
+	templateVersion := flex.IntValue(templateAssignmentResponse.TemplateVersion)
+	if templateAssignmentResponse.Status != nil &&
+		(*templateAssignmentResponse.Status == "failed" || *templateAssignmentResponse.Status == "superseded") {
+		templateVersion = 0
+	}
+	if err = d.Set("template_version", templateVersion); err != nil {
 		err = fmt.Errorf("Error setting template_version: %s", err)
 		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_account_settings_template_assignment", "read", "set-template_version").GetDiag()
 	}
@@ -315,7 +343,6 @@ func resourceIBMAccountSettingsTemplateAssignmentRead(context context.Context, d
 		err = fmt.Errorf("Error setting entity_tag: %s", err)
 		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_account_settings_template_assignment", "read", "set-entity_tag").GetDiag()
 	}
-
 	return nil
 }
 
@@ -331,14 +358,12 @@ func resourceIBMAccountSettingsTemplateAssignmentUpdate(context context.Context,
 	updateAccountSettingsAssignmentOptions.SetAssignmentID(d.Id())
 	updateAccountSettingsAssignmentOptions.SetIfMatch(d.Get("entity_tag").(string))
 
-	hasChange := false
+	// Always set template_version on the options. When retrying a failed/superseded
+	// assignment, Read wrote 0 to state so HasChange is true and d.Get returns the
+	// config value (the real version the user specified).
+	updateAccountSettingsAssignmentOptions.SetTemplateVersion(int64(d.Get("template_version").(int)))
 
 	if d.HasChange("template_version") {
-		updateAccountSettingsAssignmentOptions.SetTemplateVersion(int64(d.Get("template_version").(int)))
-		hasChange = true
-	}
-
-	if hasChange || d.Get("status") == "failed" { // allow the same version to retry failed assignments
 		_, response, err := iamIdentityClient.UpdateAccountSettingsAssignmentWithContext(context, updateAccountSettingsAssignmentOptions)
 		if err != nil {
 			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("UpdateAccountSettingsAssignmentWithContext failed: %s", err.Error()), "ibm_iam_account_settings_template_assignment", "update")
@@ -352,7 +377,14 @@ func resourceIBMAccountSettingsTemplateAssignmentUpdate(context context.Context,
 		}
 	}
 
-	return resourceIBMAccountSettingsTemplateAssignmentRead(context, d, meta)
+	diags := resourceIBMAccountSettingsTemplateAssignmentRead(context, d, meta)
+	if status, ok := d.GetOk("status"); ok && (status.(string) == "failed" || status.(string) == "superseded") {
+		diags = append(diags, diag.Diagnostic{
+			Severity: diag.Error,
+			Summary:  fmt.Sprintf("Assignment completed with status '%s'. Run terraform apply again to retry.", status.(string)),
+		})
+	}
+	return diags
 }
 
 func resourceIBMAccountSettingsTemplateAssignmentDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -473,9 +505,13 @@ func isAccountSettingsAssignmentRemoved(id string, meta interface{}) retry.State
 			}
 
 			return nil, READY, fmt.Errorf("[ERROR] The assignment %s failed to delete or deletion was not completed within specific timeout period: %s\n%s", id, err, response)
-		} else {
-			log.Printf("Assignment removal still in progress\n")
 		}
+
+		if assignment != nil && assignment.Status != nil && *assignment.Status == "failed" {
+			return assignment, READY, fmt.Errorf("[ERROR] The deletion of assignment %s completed with a 'failed' status. Please check the assignment resource for detailed errors", id)
+		}
+
+		log.Printf("Assignment removal still in progress\n")
 
 		return assignment, WAITING, nil
 	}
@@ -500,8 +536,9 @@ func isAccountSettingsTemplateAssigned(id string, meta interface{}) retry.StateR
 				return assignment, WAITING, nil
 			}
 
-			if *assignment.Status == "failed" {
-				return assignment, READY, fmt.Errorf("[ERROR] The assignment %s did complete but with a 'failed' status. Please check assignment resource for detailed errors: %s", id, response)
+			if *assignment.Status == "failed" || *assignment.Status == "superseded" {
+				log.Printf("[WARN] Assignment %s completed with status '%s'\n", id, *assignment.Status)
+				return assignment, READY, nil
 			}
 
 			return assignment, READY, nil
