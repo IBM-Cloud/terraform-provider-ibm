@@ -85,6 +85,33 @@ func TestAccIBMDatabaseInstance_Elasticsearch_Basic(t *testing.T) {
 	})
 }
 
+func TestAccIBMDatabaseInstance_ElasticsearchEnterpriseGen2_Basic(t *testing.T) {
+	t.Parallel()
+	databaseResourceGroup := "default"
+	var databaseInstanceOne string
+	rnd := fmt.Sprintf("tf-Es-Enterprise-%d", acctest.RandIntRange(10, 100))
+	testName := rnd
+	name := "ibm_database." + testName
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheckEnterprise(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMDatabaseInstanceDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMDatabaseInstanceElasticsearchEnterpriseGen2Basic(databaseResourceGroup, testName),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMDatabaseInstanceExists(name, &databaseInstanceOne),
+					resource.TestCheckResourceAttr(name, "name", testName),
+					resource.TestCheckResourceAttr(name, "service", "databases-for-elasticsearch"),
+					resource.TestCheckResourceAttr(name, "plan", "enterprise-gen2"),
+					resource.TestCheckResourceAttr(name, "location", acc.Region()),
+				),
+			},
+		},
+	})
+}
+
 func TestAccIBMDatabaseInstance_Elasticsearch_Node(t *testing.T) {
 	t.Parallel()
 	databaseResourceGroup := "default"
@@ -869,4 +896,29 @@ func testAccCheckIBMDatabaseInstanceElasticsearchImport(databaseResourceGroup st
 	}
 
 				`, databaseResourceGroup, name, acc.Region())
+}
+
+func testAccCheckIBMDatabaseInstanceElasticsearchEnterpriseGen2Basic(databaseResourceGroup string, name string) string {
+	return fmt.Sprintf(`
+	data "ibm_resource_group" "test_acc" {
+		is_default = true
+		# name = "%[1]s"
+	}
+
+	resource "ibm_database" "%[2]s" {
+		resource_group_id = data.ibm_resource_group.test_acc.id
+		name              = "%[2]s"
+		service           = "databases-for-elasticsearch"
+		plan              = "enterprise-gen2"
+		location          = "%[3]s"
+		version = "8.0"
+		service_endpoints = "private"
+
+		timeouts {
+			create = "120m"
+			update = "120m"
+			delete = "15m"
+		}
+	}
+	`, databaseResourceGroup, name, acc.Region())
 }
