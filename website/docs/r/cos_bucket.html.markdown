@@ -563,6 +563,8 @@ Review the argument references that you can specify for your resource.
 
  `key_protect` attribute has been renamed as `kms_key_crn` , hence it is recommended to all the new users to use `kms_key_crn`.Although the support for older attribute name `key_protect` will be continued for existing customers.
 
+ `key_protect` and `kms_key_crn` are aliases for the same bucket property. On every read (including `terraform import`) the provider populates both attributes with the CRN of the root key that currently encrypts the bucket, so a configuration that uses either attribute name reconciles cleanly against the refreshed or imported state. If the root key of a bucket is migrated outside of Terraform (for example, from Hyper Protect Crypto Services to Key Protect), update the configured key CRN to the new value and run `terraform plan`; the refreshed state matches the configuration and no bucket replacement is planned.
+
 - `metrics_monitoring`- (Object) Enables sending metrics to IBM Cloud Monitoring.  All metrics are opt-in.
   
   (Recommended) When the `metrics_monitoring_crn` is not populated, then enabled metrics are sent to the Monitoring instance at the container's location unless otherwise specified in the Metrics Router service configuration.
@@ -635,7 +637,7 @@ In addition to all argument reference list, you can access the following attribu
 - `kms_key_crn` - (string) The CRN of the IBM Key Protect instance that you use to encrypt your data in IBM Cloud Object Storage.
     **Note:**
 
- `key_protect` attribute has been renamed as `kms_key_crn` , hence it is recommended to all the new users to use `kms_key_crn`.Although the support for older attribute name `key_protect` will be continued for existing customers.
+ `key_protect` attribute has been renamed as `kms_key_crn` , hence it is recommended to all the new users to use `kms_key_crn`.Although the support for older attribute name `key_protect` will be continued for existing customers. Both attributes are kept in sync by the provider and always expose the CRN of the root key that currently encrypts the bucket.
 - `region_location` - (string) The location if you created a regional bucket.
 - `resource_instance_id` - (string) The ID of IBM Cloud Object Storage instance. 
 - `single_site_location` - (string) The location if you created a single site bucket.
