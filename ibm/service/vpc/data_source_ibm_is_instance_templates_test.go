@@ -430,3 +430,67 @@ func testAccCheckIBMISInstanceTemplatesDAvailabilityPolicyConfig(vpcName, subnet
 		depends_on = [ibm_is_instance_template.instancetemplate1]
 	}`, vpcName, subnetName, acc.ISZoneName, acc.ISCIDR, sshKeyName, publicKey, templateName, acc.IsImage, acc.InstanceProfileName, acc.ISZoneName)
 }
+
+func TestAccIBMISInstanceTemplatesDataSource_ThreadsPerCore(t *testing.T) {
+	randInt := acctest.RandIntRange(600, 700)
+	vpcName := fmt.Sprintf("testvpc%d", randInt)
+	subnetName := fmt.Sprintf("testsubnet%d", randInt)
+	templateName := fmt.Sprintf("testtemplate%d", randInt)
+	sshKeyName := fmt.Sprintf("testsshkey%d", randInt)
+	resName := "data.ibm_is_instance_templates.ds_instance_templates"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMISInstanceGroupDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMISInstanceTemplatesDataSourceThreadsPerCoreConfig(vpcName, subnetName, sshKeyName, templateName, 1),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet(resName, "templates.0.name"),
+					resource.TestCheckResourceAttrSet(resName, "templates.0.threads_per_core"),
+				),
+			},
+		},
+	})
+}
+
+func testAccCheckIBMISInstanceTemplatesDataSourceThreadsPerCoreConfig(vpcName, subnetName, sshKeyName, templateName string, threadsPerCore int) string {
+	return fmt.Sprintf(`
+	resource "ibm_is_vpc" "testacc_vpc" {
+		name = "%s"
+	}
+	
+	resource "ibm_is_subnet" "testacc_subnet" {
+		name            = "%s"
+		vpc             = ibm_is_vpc.testacc_vpc.id
+		zone            = "%s"
+		ipv4_cidr_block = "%s"
+	}
+	
+	resource "ibm_is_ssh_key" "testacc_sshkey" {
+		name       = "%s"
+		public_key = file("./test-fixtures/.ssh/id_rsa.pub")
+	}
+
+	data "ibm_is_image" "testacc_image" {
+		name = "ibm-centos-stream-9-amd64-17"
+	}
+	
+	resource "ibm_is_instance_template" "instancetemplate1" {
+		name    = "%s"
+		image   = data.ibm_is_image.testacc_image.id
+		profile = "hx4a-8x16"
+		primary_network_interface {
+			subnet = ibm_is_subnet.testacc_subnet.id
+		}
+		vpc              = ibm_is_vpc.testacc_vpc.id
+		zone             = "%s"
+		keys             = [ibm_is_ssh_key.testacc_sshkey.id]
+		threads_per_core = %d
+	}
+	
+	data "ibm_is_instance_templates" "ds_instance_templates" {
+		depends_on = [ibm_is_instance_template.instancetemplate1]
+	}`, vpcName, subnetName, acc.ISZoneName, acc.ISCIDR, sshKeyName, templateName, acc.ISZoneName, threadsPerCore)
+}

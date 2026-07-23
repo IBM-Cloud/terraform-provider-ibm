@@ -44,6 +44,7 @@ const (
 	isInstanceTemplateSocketMin            = "min"
 	isInstanceTemplateSocketMax            = "max"
 	isInstanceTemplateSocketStep           = "step"
+	isInstanceTemplateThreadsPerCore       = "threads_per_core"
 	isInstanceTemplateVcpuArch             = "vcpu_architecture"
 	isInstanceTemplateVcpuArchType         = "type"
 	isInstanceTemplateVcpuArchValue        = "value"
@@ -251,6 +252,11 @@ func DataSourceIBMISInstanceTemplate() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The volume bandwidth QoS mode for this virtual server instance.",
+			},
+			isInstanceTemplateThreadsPerCore: {
+				Type:        schema.TypeInt,
+				Computed:    true,
+				Description: "The threads per core for this virtual server instance.",
 			},
 			isInstanceDefaultTrustedProfileAutoLink: {
 				Type:        schema.TypeBool,
@@ -1320,6 +1326,11 @@ func dataSourceIBMISInstanceTemplateRead(context context.Context, d *schema.Reso
 					return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting volume_bandwidth_qos_mode: %s", err), "(Data) ibm_is_instance_template", "read", "set-volume_bandwidth_qos_mode").GetDiag()
 				}
 			}
+			if instanceTemplate.ThreadsPerCore != nil {
+				if err = d.Set(isInstanceTemplateThreadsPerCore, int(*instanceTemplate.ThreadsPerCore)); err != nil {
+					return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting threads_per_core: %s", err), "(Data) ibm_is_instance_template", "read", "set-threads_per_core").GetDiag()
+				}
+			}
 
 			if instanceTemplate.PrimaryNetworkInterface != nil {
 				interfaceList := make([]map[string]interface{}, 0)
@@ -1773,6 +1784,11 @@ func dataSourceIBMISInstanceTemplateRead(context context.Context, d *schema.Reso
 				d.Set(isInstanceVolumeBandwidthQoSMode, string(*instanceTemplate.VolumeBandwidthQosMode))
 				if err = d.Set(isInstanceVolumeBandwidthQoSMode, string(*instanceTemplate.VolumeBandwidthQosMode)); err != nil {
 					return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting volume_bandwidth_qos_mode: %s", err), "(Data) ibm_is_instance_template", "read", "set-volume_bandwidth_qos_mode").GetDiag()
+				}
+			}
+			if instanceTemplate.ThreadsPerCore != nil {
+				if err = d.Set(isInstanceTemplateThreadsPerCore, int(*instanceTemplate.ThreadsPerCore)); err != nil {
+					return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting threads_per_core: %s", err), "(Data) ibm_is_instance_template", "read", "set-threads_per_core").GetDiag()
 				}
 			}
 
@@ -2346,6 +2362,11 @@ func dataSourceIBMISInstanceTemplateRead(context context.Context, d *schema.Reso
 							return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting volume_bandwidth_qos_mode: %s", err), "(Data) ibm_is_instance_template", "read", "set-volume_bandwidth_qos_mode").GetDiag()
 						}
 					}
+					if instanceTemplate.ThreadsPerCore != nil {
+						if err = d.Set(isInstanceTemplateThreadsPerCore, int(*instanceTemplate.ThreadsPerCore)); err != nil {
+							return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting threads_per_core: %s", err), "(Data) ibm_is_instance_template", "read", "set-threads_per_core").GetDiag()
+						}
+					}
 
 					if instanceTemplate.Image != nil {
 						imageInf := instanceTemplate.Image
@@ -2765,6 +2786,11 @@ func dataSourceIBMISInstanceTemplateRead(context context.Context, d *schema.Reso
 						d.Set(isInstanceVolumeBandwidthQoSMode, string(*instanceTemplate.VolumeBandwidthQosMode))
 						if err = d.Set(isInstanceVolumeBandwidthQoSMode, string(*instanceTemplate.VolumeBandwidthQosMode)); err != nil {
 							return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting volume_bandwidth_qos_mode: %s", err), "(Data) ibm_is_instance_template", "read", "set-volume_bandwidth_qos_mode").GetDiag()
+						}
+					}
+					if instanceTemplate.ThreadsPerCore != nil {
+						if err = d.Set(isInstanceTemplateThreadsPerCore, int(*instanceTemplate.ThreadsPerCore)); err != nil {
+							return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting threads_per_core: %s", err), "(Data) ibm_is_instance_template", "read", "set-threads_per_core").GetDiag()
 						}
 					}
 

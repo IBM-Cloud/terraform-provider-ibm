@@ -1058,6 +1058,11 @@ func DataSourceIBMISInstances() *schema.Resource {
 							Computed:    true,
 							Description: "The amount of bandwidth (in megabits per second) allocated exclusively to instance network interfaces.",
 						},
+						isInstanceThreadsPerCore: {
+							Type:        schema.TypeInt,
+							Computed:    true,
+							Description: "The threads per core for this virtual server instance.",
+						},
 						"vcpu": &schema.Schema{
 							Type:        schema.TypeList,
 							Computed:    true,
@@ -1856,6 +1861,10 @@ func instancesList(context context.Context, d *schema.ResourceData, meta interfa
 		l["network_attachments"] = networkAttachments
 
 		l["profile"] = *instance.Profile.Name
+
+		if instance.ThreadsPerCore != nil {
+			l[isInstanceThreadsPerCore] = flex.IntValue(instance.ThreadsPerCore)
+		}
 
 		vcpuMap, err := DataSourceIBMIsInstancesInstanceVcpuToMap(instance.Vcpu)
 		if err != nil {

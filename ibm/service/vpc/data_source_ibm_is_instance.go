@@ -375,6 +375,11 @@ func DataSourceIBMISInstance() *schema.Resource {
 				Computed:    true,
 				Description: "The volume bandwidth QoS mode for this virtual server instance.",
 			},
+			isInstanceThreadsPerCore: {
+				Type:        schema.TypeInt,
+				Computed:    true,
+				Description: "The threads per core for this virtual server instance.",
+			},
 
 			isInstanceTotalNetworkBandwidth: {
 				Type:        schema.TypeInt,
@@ -1607,6 +1612,11 @@ func instanceGetByName(context context.Context, d *schema.ResourceData, meta int
 	if instance.VolumeBandwidthQosMode != nil {
 		if err = d.Set(isInstanceVolumeBandwidthQoSMode, string(*instance.VolumeBandwidthQosMode)); err != nil {
 			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting volume_bandwidth_qos_mode: %s", err), "(Data) ibm_is_instance", "read", "set-volume_bandwidth_qos_mode").GetDiag()
+		}
+	}
+	if instance.ThreadsPerCore != nil {
+		if err = d.Set(isInstanceThreadsPerCore, flex.IntValue(instance.ThreadsPerCore)); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting threads_per_core: %s", err), "(Data) ibm_is_instance", "read", "set-threads_per_core").GetDiag()
 		}
 	}
 
