@@ -948,7 +948,7 @@ func ResourceIBMICDValidator() *validate.ResourceValidator {
 			Identifier:                 "plan",
 			ValidateFunctionIdentifier: validate.ValidateAllowedICDPlanValue,
 			Type:                       validate.TypeString,
-			AllowedValues:              "standard, standard-gen2, enterprise, enterprise-sharding, platinum",
+			AllowedValues:              "standard, standard-gen2, enterprise, enterprise-sharding, platinum, enterprise-gen2",
 			Required:                   true})
 	validateSchema = append(validateSchema,
 		validate.ValidateSchema{
