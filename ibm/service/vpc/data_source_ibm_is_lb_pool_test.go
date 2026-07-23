@@ -48,6 +48,45 @@ func TestAccIBMIsLbPoolDataSourceBasic(t *testing.T) {
 	})
 }
 
+func TestAccIBMIsLbPoolDataSource_mTLS(t *testing.T) {
+	vpcname := fmt.Sprintf("tflbp-vpc-%d", acctest.RandIntRange(10, 100))
+	subnetname := fmt.Sprintf("tflbpc-name-%d", acctest.RandIntRange(10, 100))
+	name := fmt.Sprintf("tfcreate%d", acctest.RandIntRange(10, 100))
+	poolName := fmt.Sprintf("tflbpoolc%d", acctest.RandIntRange(10, 100))
+	alg := "round_robin"
+	protocol := "https"
+	delay := "45"
+	retries := "5"
+	timeout := "15"
+	healthType := "https"
+
+	// Example CRNs - replace with actual values from your test environment
+	clientCertCRN := "crn:v1:bluemix:public:secrets-manager:us-south:a/7f75c7b025e54bc5635f754b2f888665:152af435-37ac-4b3e-83c3-828805bfc8e0:secret:1e5b9794-f576-de33-5e41-4a8c29d00132"
+	serverCACRN := "crn:v1:bluemix:public:secrets-manager:us-south:a/7f75c7b025e54bc5635f754b2f888665:152af435-37ac-4b3e-83c3-828805bfc8e0:secret:4a1bc2d6-ccd3-ad25-e6b7-8a0c522038f6"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { acc.TestAccPreCheck(t) },
+		Providers: acc.TestAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMIsLbPoolDataSourceConfigmTLS(vpcname, subnetname, acc.ISZoneName, acc.ISCIDR, name, poolName, alg, protocol, delay, retries, timeout, healthType, clientCertCRN, serverCACRN),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet("data.ibm_is_lb_pool.is_lb_pool_mtls", "lb"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_lb_pool.is_lb_pool_mtls", "identifier"),
+					resource.TestCheckResourceAttr("data.ibm_is_lb_pool.is_lb_pool_mtls", "protocol", protocol),
+					resource.TestCheckResourceAttrSet("data.ibm_is_lb_pool.is_lb_pool_mtls", "client_authentication.#"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_lb_pool.is_lb_pool_mtls", "client_authentication.0.certificate_instance.#"),
+					resource.TestCheckResourceAttr("data.ibm_is_lb_pool.is_lb_pool_mtls", "client_authentication.0.certificate_instance.0.crn", clientCertCRN),
+					resource.TestCheckResourceAttrSet("data.ibm_is_lb_pool.is_lb_pool_mtls", "server_authentication.#"),
+					resource.TestCheckResourceAttr("data.ibm_is_lb_pool.is_lb_pool_mtls", "server_authentication.0.verify_certificate", "true"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_lb_pool.is_lb_pool_mtls", "server_authentication.0.certificate_authority.#"),
+					resource.TestCheckResourceAttr("data.ibm_is_lb_pool.is_lb_pool_mtls", "server_authentication.0.certificate_authority.0.crn", serverCACRN),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckIBMIsLbPoolDataSourceConfigBasic(vpcname, subnetname, zone, cidr, name, poolName, algorithm, protocol, delay, retries, timeout, healthType string) string {
 	return testAccCheckIBMISLBPoolConfig(vpcname, subnetname, zone, cidr, name, poolName, algorithm, protocol, delay, retries, timeout, healthType) + fmt.Sprintf(`
         data "ibm_is_lb_pool" "is_lb_pool" {
@@ -55,6 +94,16 @@ func testAccCheckIBMIsLbPoolDataSourceConfigBasic(vpcname, subnetname, zone, cid
             identifier = "${element(split("/",ibm_is_lb_pool.testacc_lb_pool.id),1)}"
         }
     `)
+}
+
+func testAccCheckIBMIsLbPoolDataSourceConfigmTLS(vpcname, subnetname, zone, cidr, name, poolName, algorithm, protocol, delay, retries, timeout, healthType, clientCertCRN, serverCACRN string) string {
+	return testAccCheckIBMISLBPoolmTLSConfig(vpcname, subnetname, zone, cidr, name, poolName, algorithm, protocol, delay, retries, timeout, healthType, clientCertCRN, serverCACRN) + fmt.Sprintf(`
+
+	data "ibm_is_lb_pool" "is_lb_pool_mtls" {
+		lb = ibm_is_lb.testacc_LB.id
+		identifier = element(split("/", ibm_is_lb_pool.testacc_lb_pool_mtls.id), 1)
+	}
+	`)
 }
 
 func TestAccIBMIsLbPoolDataSourceHealthMonitor(t *testing.T) {
