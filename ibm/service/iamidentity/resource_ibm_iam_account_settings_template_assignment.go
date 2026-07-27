@@ -11,6 +11,8 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"os"
+	"strconv"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
@@ -225,6 +227,19 @@ func resourceIBMAccountSettingsTemplateAssignmentCreate(context context.Context,
 		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_account_settings_template_assignment", "create", "wait-for-assignment").GetDiag()
 	}
 
+	// Capture the real template version now, before Read potentially writes 0 to
+	// state when the assignment is in a failed state.
+	realTemplateVersion := int64(d.Get("template_version").(int))
+
+	// Read before retry so status and entity_tag are populated in d.
+	if diags := resourceIBMAccountSettingsTemplateAssignmentRead(context, d, meta); diags.HasError() {
+		return diags
+	}
+
+	if err = retryAccountSettingsFailedAssignment(context, d, meta, iamIdentityClient, realTemplateVersion); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_account_settings_template_assignment", "create", "retry-failed-assignment").GetDiag()
+	}
+
 	// Read persists the final state. When status is "failed"/"superseded", Read
 	// writes template_version=0 so the next plan shows a visible update diff.
 	diags := resourceIBMAccountSettingsTemplateAssignmentRead(context, d, meta)
@@ -275,12 +290,11 @@ func resourceIBMAccountSettingsTemplateAssignmentRead(context context.Context, d
 		err = fmt.Errorf("Error setting template_id: %s", err)
 		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_account_settings_template_assignment", "read", "set-template_id").GetDiag()
 	}
-	// When the assignment is in a failed/superseded state, write 0 for
-	// template_version so Terraform sees a diff against the config value on the
-	// next plan and calls Update, which retries the assignment via PUT.
+	// When the assignment is in a terminal-failure state, persist template_version=0
+	// so that the next terraform plan detects a diff (0 vs the config value) and
+	// triggers an in-place Update (PUT) retry instead of reporting "No changes."
 	templateVersion := flex.IntValue(templateAssignmentResponse.TemplateVersion)
-	if templateAssignmentResponse.Status != nil &&
-		(*templateAssignmentResponse.Status == "failed" || *templateAssignmentResponse.Status == "superseded") {
+	if !core.IsNil(templateAssignmentResponse.Status) && (*templateAssignmentResponse.Status == "failed" || *templateAssignmentResponse.Status == "superseded") {
 		templateVersion = 0
 	}
 	if err = d.Set("template_version", templateVersion); err != nil {
@@ -358,10 +372,10 @@ func resourceIBMAccountSettingsTemplateAssignmentUpdate(context context.Context,
 	updateAccountSettingsAssignmentOptions.SetAssignmentID(d.Id())
 	updateAccountSettingsAssignmentOptions.SetIfMatch(d.Get("entity_tag").(string))
 
-	// Always set template_version on the options. When retrying a failed/superseded
-	// assignment, Read wrote 0 to state so HasChange is true and d.Get returns the
-	// config value (the real version the user specified).
-	updateAccountSettingsAssignmentOptions.SetTemplateVersion(int64(d.Get("template_version").(int)))
+	// Capture the real template version from the planned config value before any
+	// Read call, which may write 0 to state when the assignment is in a failed state.
+	realTemplateVersion := int64(d.Get("template_version").(int))
+	updateAccountSettingsAssignmentOptions.SetTemplateVersion(realTemplateVersion)
 
 	if d.HasChange("template_version") {
 		_, response, err := iamIdentityClient.UpdateAccountSettingsAssignmentWithContext(context, updateAccountSettingsAssignmentOptions)
@@ -377,6 +391,16 @@ func resourceIBMAccountSettingsTemplateAssignmentUpdate(context context.Context,
 		}
 	}
 
+	// Read before retry so status and entity_tag are populated in d.
+	if diags := resourceIBMAccountSettingsTemplateAssignmentRead(context, d, meta); diags.HasError() {
+		return diags
+	}
+
+	if err := retryAccountSettingsFailedAssignment(context, d, meta, iamIdentityClient, realTemplateVersion); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_account_settings_template_assignment", "update", "retry-failed-assignment").GetDiag()
+	}
+
+	// Final read — persists state and surfaces error if still failed/superseded.
 	diags := resourceIBMAccountSettingsTemplateAssignmentRead(context, d, meta)
 	if status, ok := d.GetOk("status"); ok && (status.(string) == "failed" || status.(string) == "superseded") {
 		diags = append(diags, diag.Diagnostic{
@@ -395,24 +419,107 @@ func resourceIBMAccountSettingsTemplateAssignmentDelete(context context.Context,
 		return tfErr.GetDiag()
 	}
 
-	deleteAccountSettingsAssignmentOptions := &iamidentityv1.DeleteAccountSettingsAssignmentOptions{}
+	// maxRetries is the number of retries after the initial attempt.
+	// Total attempts = maxRetries + 1. Default: 1 retry (2 total attempts).
+	maxRetries := 1
+	if v := os.Getenv("IBMCLOUD_IAM_ACCOUNT_SETTINGS_ASSIGNMENT_RETRIES"); v != "" {
+		if n, err := strconv.Atoi(v); err == nil && n >= 0 {
+			maxRetries = n
+		}
+	}
+	maxAttempts := maxRetries + 1
 
-	deleteAccountSettingsAssignmentOptions.SetAssignmentID(d.Id())
+	var lastErr error
+	for attempt := 1; attempt <= maxAttempts; attempt++ {
+		deleteAccountSettingsAssignmentOptions := &iamidentityv1.DeleteAccountSettingsAssignmentOptions{}
+		deleteAccountSettingsAssignmentOptions.SetAssignmentID(d.Id())
 
-	_, _, err = iamIdentityClient.DeleteAccountSettingsAssignmentWithContext(context, deleteAccountSettingsAssignmentOptions)
-	if err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("DeleteAccountSettingsAssignmentWithContext failed: %s", err.Error()), "ibm_iam_account_settings_template_assignment", "delete")
-		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
-		return tfErr.GetDiag()
+		_, _, err = iamIdentityClient.DeleteAccountSettingsAssignmentWithContext(context, deleteAccountSettingsAssignmentOptions)
+		if err != nil {
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("DeleteAccountSettingsAssignmentWithContext failed: %s", err.Error()), "ibm_iam_account_settings_template_assignment", "delete")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
+		}
+
+		remaining := d.Timeout(schema.TimeoutDelete)
+		if deadline, ok := context.Deadline(); ok {
+			remaining = time.Until(deadline)
+		}
+		if remaining <= 0 {
+			return flex.DiscriminatedTerraformErrorf(fmt.Errorf("timed out"), "timed out waiting for assignment deletion", "ibm_iam_account_settings_template_assignment", "delete", "timeout").GetDiag()
+		}
+
+		_, lastErr = waitForAssignment(remaining, meta, d, isAccountSettingsAssignmentRemoved)
+		if lastErr == nil {
+			// Deletion confirmed.
+			d.SetId("")
+			return nil
+		}
+
+		if attempt < maxAttempts {
+			log.Printf("[INFO] Deletion of assignment %s failed, retrying (%d/%d): %s", d.Id(), attempt, maxRetries, lastErr)
+		}
 	}
 
-	_, err = waitForAssignment(d.Timeout(schema.TimeoutDelete), meta, d, isAccountSettingsAssignmentRemoved)
-	if err != nil {
-		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_account_settings_template_assignment", "delete", "wait-for-assignment").GetDiag()
+	return flex.DiscriminatedTerraformErrorf(lastErr, lastErr.Error(), "ibm_iam_account_settings_template_assignment", "delete", "wait-for-assignment").GetDiag()
+}
+
+// retryAccountSettingsFailedAssignment issues a PUT retry for each attempt while
+// the assignment status remains "failed", up to the count in
+// IBMCLOUD_IAM_ACCOUNT_SETTINGS_ASSIGNMENT_RETRIES (default 1, set to 0 to disable).
+// Each retry waits only for the time remaining on the parent context deadline so
+// the total duration of all retries never exceeds the configured resource timeout.
+// "superseded" is not retried automatically as it requires external action.
+func retryAccountSettingsFailedAssignment(ctx context.Context, d *schema.ResourceData, meta interface{}, iamIdentityClient *iamidentityv1.IamIdentityV1, templateVersion int64) error {
+	maxRetries := 1
+	if v := os.Getenv("IBMCLOUD_IAM_ACCOUNT_SETTINGS_ASSIGNMENT_RETRIES"); v != "" {
+		if n, err := strconv.Atoi(v); err == nil && n >= 0 {
+			maxRetries = n
+		}
 	}
+	for attempt := 1; attempt <= maxRetries; attempt++ {
+		// Only retry when status is "failed"; anything else (success, superseded) exits early.
+		status := d.Get("status").(string)
+		if status != "failed" {
+			return nil
+		}
 
-	d.SetId("")
+		// Use remaining time on the context deadline so all retries together stay
+		// within the configured resource timeout (create or update).
+		remaining := d.Timeout(schema.TimeoutCreate)
+		if deadline, ok := ctx.Deadline(); ok {
+			remaining = time.Until(deadline)
+		}
+		if remaining <= 0 {
+			return fmt.Errorf("timed out waiting for assignment %s to succeed after %d/%d retries", d.Id(), attempt-1, maxRetries)
+		}
 
+		log.Printf("[INFO] Assignment %s is in 'failed' state, issuing PUT retry %d/%d (%s remaining)", d.Id(), attempt, maxRetries, remaining.Round(time.Second))
+
+		updateOptions := &iamidentityv1.UpdateAccountSettingsAssignmentOptions{}
+		updateOptions.SetAssignmentID(d.Id())
+		updateOptions.SetIfMatch(d.Get("entity_tag").(string))
+		updateOptions.SetTemplateVersion(templateVersion)
+
+		if _, _, err := iamIdentityClient.UpdateAccountSettingsAssignmentWithContext(ctx, updateOptions); err != nil {
+			return fmt.Errorf("PUT retry %d/%d failed: %s", attempt, maxRetries, err)
+		}
+
+		if _, err := waitForAssignment(remaining, meta, d, isAccountSettingsTemplateAssigned); err != nil {
+			return fmt.Errorf("PUT retry %d/%d wait failed: %s", attempt, maxRetries, err)
+		}
+
+		// Re-read to refresh entity_tag and status for the next iteration.
+		// Skip on the last attempt — the caller always reads after this function returns.
+		// Note: Read may write template_version=0 to state if still failed, but
+		// templateVersion (the real version) is passed as a parameter so the next
+		// PUT iteration is unaffected.
+		if attempt < maxRetries {
+			if diags := resourceIBMAccountSettingsTemplateAssignmentRead(ctx, d, meta); diags.HasError() {
+				return fmt.Errorf("failed to read assignment after retry %d/%d", attempt, maxRetries)
+			}
+		}
+	}
 	return nil
 }
 
