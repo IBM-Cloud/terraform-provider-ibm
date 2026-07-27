@@ -127,13 +127,13 @@ func TestAccIBMIAMAccountSettingsUpdateFieldRemoval(t *testing.T) {
 				),
 			},
 			{
-				Config:             testAccCheckIbmIamAccountSettingsUpdateConfigRemoveValues(),
-				ExpectNonEmptyPlan: true,
+				Config: testAccCheckIbmIamAccountSettingsUpdateConfigRemoveValues(),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckIbmIamAccountSettingsExists("ibm_iam_account_settings.iam_account_settings_removal", conf),
-					resource.TestCheckNoResourceAttr("ibm_iam_account_settings.iam_account_settings_removal", "restrict_user_domains.0.restrict_invitation"),
-					resource.TestCheckResourceAttr("ibm_iam_account_settings.iam_account_settings_removal", "restrict_user_domains.0.invitation_email_allow_patterns.#", "0"),
-					resource.TestCheckResourceAttr("ibm_iam_account_settings.iam_account_settings_removal", "restrict_user_domains.0.#", "0"),
+					testAccCheckIbmIamAccountSettingsExists("ibm_iam_account_settings.iam_account_settings", conf),
+					resource.TestCheckResourceAttr("ibm_iam_account_settings.iam_account_settings", "restrict_user_domains.#", "1"),
+					resource.TestCheckResourceAttr("ibm_iam_account_settings.iam_account_settings", "restrict_user_domains.0.realm_id", "IBMid"),
+					resource.TestCheckResourceAttr("ibm_iam_account_settings.iam_account_settings", "restrict_user_domains.0.restrict_invitation", "false"),
+					resource.TestCheckResourceAttr("ibm_iam_account_settings.iam_account_settings", "restrict_user_domains.0.invitation_email_allow_patterns.#", "0"),
 				),
 			},
 		},
@@ -263,7 +263,7 @@ func testAccCheckIbmIamAccountSettingsUpdateConfigWithMultipleUserMfa() string {
 
 func testAccCheckIbmIamAccountSettingsUpdateConfigRemoveValues() string {
 	return fmt.Sprintf(`
-		resource "ibm_iam_account_settings" "iam_account_settings_removal" {
+		resource "ibm_iam_account_settings" "iam_account_settings" {
 			if_match = "*"
 			restrict_user_domains {
 				realm_id = "IBMid"
