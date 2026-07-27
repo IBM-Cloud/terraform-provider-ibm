@@ -29,8 +29,13 @@ func DataSourceIBMEnBounceMetrics() *schema.Resource {
 			},
 			"destination_type": &schema.Schema{
 				Type:        schema.TypeString,
-				Required:    true,
+				Optional:    true,
 				Description: "Destination type. Allowed values are [smtp_custom].",
+			},
+			"smtp_config_id": &schema.Schema{
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "SMTP config id. Allowed values are [smtp_config_id].",
 			},
 			"gte": &schema.Schema{
 				Type:        schema.TypeString,
@@ -131,9 +136,14 @@ func dataSourceIBMEnBounceMetricsRead(context context.Context, d *schema.Resourc
 	getBounceMetricsOptions := &eventnotificationsv1.GetBounceMetricsOptions{}
 
 	getBounceMetricsOptions.SetInstanceID(d.Get("instance_id").(string))
-	getBounceMetricsOptions.SetDestinationType(d.Get("destination_type").(string))
 	getBounceMetricsOptions.SetGte(d.Get("gte").(string))
 	getBounceMetricsOptions.SetLte(d.Get("lte").(string))
+	if _, ok := d.GetOk("destination_type"); ok {
+		getBounceMetricsOptions.SetDestinationType(d.Get("destination_type").(string))
+	}
+	if _, ok := d.GetOk("smtp_config_id"); ok {
+		getBounceMetricsOptions.SetSMTPConfigID(d.Get("smtp_config_id").(string))
+	}
 	if _, ok := d.GetOk("destination_id"); ok {
 		getBounceMetricsOptions.SetDestinationID(d.Get("destination_id").(string))
 	}

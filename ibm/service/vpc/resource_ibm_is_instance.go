@@ -71,6 +71,7 @@ const (
 	isInstanceDedicatedHost           = "dedicated_host"
 	isInstanceStatus                  = "status"
 	isInstanceStatusReasons           = "status_reasons"
+	isInstanceThreadsPerCore          = "threads_per_core"
 	isInstanceStatusReasonsCode       = "code"
 	isInstanceStatusReasonsMessage    = "message"
 	isInstanceStatusReasonsMoreInfo   = "more_info"
@@ -528,6 +529,14 @@ func ResourceIBMISInstance() *schema.Resource {
 				Computed:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_is_instance", isInstanceVolumeBandwidthQoSMode),
 				Description:  "The volume bandwidth QoS mode for this virtual server instance.",
+			},
+
+			isInstanceThreadsPerCore: &schema.Schema{
+				Type:         schema.TypeInt,
+				Optional:     true,
+				Computed:     true,
+				ValidateFunc: validate.InvokeValidator("ibm_is_instance", isInstanceThreadsPerCore),
+				Description:  "The threads per core to use for this virtual server instance. Must be one of the values in the profile's threads_per_core.values. If unspecified, the default threads per core from the profile will be used.",
 			},
 
 			isInstanceBandwidth: {
@@ -2156,6 +2165,50 @@ func ResourceIBMISInstance() *schema.Resource {
 					},
 				},
 			},
+			// software attachments
+			"software_attachments": &schema.Schema{
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "The software attachments for this instance.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"deleted": &schema.Schema{
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "If present, this property indicates the referenced resource has been deleted, and providessome supplementary information.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"more_info": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "A link to documentation about deleted resources.",
+									},
+								},
+							},
+						},
+						"href": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The URL for this instance software attachment.",
+						},
+						"id": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The unique identifier for this instance software attachment.",
+						},
+						"name": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The name for this instance software attachment. The name is unique across all instance software attachments for the instance.",
+						},
+						"resource_type": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The resource type.",
+						},
+					},
+				},
+			},
 			isReservationAffinity: {
 				Type:     schema.TypeList,
 				Optional: true,
@@ -2334,6 +2387,14 @@ func ResourceIBMISInstanceValidator() *validate.ResourceValidator {
 		Regexp:                     `^[a-z][a-z0-9]*(_[a-z0-9]+)*$`,
 		MinValueLength:             1,
 		MaxValueLength:             128,
+	})
+
+	validateSchema = append(validateSchema, validate.ValidateSchema{
+		Identifier:                 isInstanceThreadsPerCore,
+		ValidateFunctionIdentifier: validate.ValidateAllowedIntValue,
+		Type:                       validate.TypeInt,
+		Optional:                   true,
+		AllowedValues:              "1, 2",
 	})
 
 	ibmISInstanceValidator := validate.ResourceValidator{ResourceName: "ibm_is_instance", Schema: validateSchema}
@@ -2531,6 +2592,10 @@ func instanceCreateByImage(context context.Context, d *schema.ResourceData, meta
 	if volumeBandwidthQoSModeIntf, ok := d.GetOk(isInstanceVolumeBandwidthQoSMode); ok {
 		volumeBandwidthQoSModeStr := volumeBandwidthQoSModeIntf.(string)
 		instanceproto.VolumeBandwidthQosMode = &volumeBandwidthQoSModeStr
+	}
+	if threadsPerCoreIntf, ok := d.GetOk(isInstanceThreadsPerCore); ok {
+		threadsPerCore := int64(threadsPerCoreIntf.(int))
+		instanceproto.ThreadsPerCore = &threadsPerCore
 	}
 	if dHostIdInf, ok := d.GetOk(isPlacementTargetDedicatedHost); ok {
 		dHostIdStr := dHostIdInf.(string)
@@ -3166,6 +3231,10 @@ func instanceCreateByCatalogOffering(context context.Context, d *schema.Resource
 		volumeBandwidthQoSModeStr := volumeBandwidthQoSModeIntf.(string)
 		instanceproto.VolumeBandwidthQosMode = &volumeBandwidthQoSModeStr
 	}
+	if threadsPerCoreIntf, ok := d.GetOk(isInstanceThreadsPerCore); ok {
+		threadsPerCore := int64(threadsPerCoreIntf.(int))
+		instanceproto.ThreadsPerCore = &threadsPerCore
+	}
 	if dHostIdInf, ok := d.GetOk(isPlacementTargetDedicatedHost); ok {
 		dHostIdStr := dHostIdInf.(string)
 		dHostPlaementTarget := &vpcv1.InstancePlacementTargetPrototypeDedicatedHostIdentity{
@@ -3750,6 +3819,10 @@ func instanceCreateByTemplate(context context.Context, d *schema.ResourceData, m
 	if volumeBandwidthQoSModeIntf, ok := d.GetOk(isInstanceVolumeBandwidthQoSMode); ok {
 		volumeBandwidthQoSModeStr := volumeBandwidthQoSModeIntf.(string)
 		instanceproto.VolumeBandwidthQosMode = &volumeBandwidthQoSModeStr
+	}
+	if threadsPerCoreIntf, ok := d.GetOk(isInstanceThreadsPerCore); ok {
+		threadsPerCore := int64(threadsPerCoreIntf.(int))
+		instanceproto.ThreadsPerCore = &threadsPerCore
 	}
 	if vpcID != "" {
 		instanceproto.VPC = &vpcv1.VPCIdentity{
@@ -4494,6 +4567,10 @@ func instanceCreateBySnapshot(context context.Context, d *schema.ResourceData, m
 		volumeBandwidthQoSModeStr := volumeBandwidthQoSModeIntf.(string)
 		instanceproto.VolumeBandwidthQosMode = &volumeBandwidthQoSModeStr
 	}
+	if threadsPerCoreIntf, ok := d.GetOk(isInstanceThreadsPerCore); ok {
+		threadsPerCore := int64(threadsPerCoreIntf.(int))
+		instanceproto.ThreadsPerCore = &threadsPerCore
+	}
 
 	if networkattachmentsintf, ok := d.GetOk("network_attachments"); ok {
 		networkAttachments := []vpcv1.InstanceNetworkAttachmentPrototype{}
@@ -5045,6 +5122,10 @@ func instanceCreateByVolume(context context.Context, d *schema.ResourceData, met
 	if volumeBandwidthQoSModeIntf, ok := d.GetOk(isInstanceVolumeBandwidthQoSMode); ok {
 		volumeBandwidthQoSModeStr := volumeBandwidthQoSModeIntf.(string)
 		instanceproto.VolumeBandwidthQosMode = &volumeBandwidthQoSModeStr
+	}
+	if threadsPerCoreIntf, ok := d.GetOk(isInstanceThreadsPerCore); ok {
+		threadsPerCore := int64(threadsPerCoreIntf.(int))
+		instanceproto.ThreadsPerCore = &threadsPerCore
 	}
 	if networkattachmentsintf, ok := d.GetOk("network_attachments"); ok {
 		networkAttachments := []vpcv1.InstanceNetworkAttachmentPrototype{}
@@ -5703,6 +5784,12 @@ func instanceGet(context context.Context, d *schema.ResourceData, meta interface
 			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance", "read", "set-volume_bandwidth_qos_mode").GetDiag()
 		}
 	}
+	if instance.ThreadsPerCore != nil {
+		if err = d.Set(isInstanceThreadsPerCore, flex.IntValue(instance.ThreadsPerCore)); err != nil {
+			err = fmt.Errorf("Error setting threads_per_core: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance", "read", "set-threads_per_core").GetDiag()
+		}
+	}
 
 	if err = d.Set("memory", flex.IntValue(instance.Memory)); err != nil {
 		err = fmt.Errorf("Error setting memory: %s", err)
@@ -6229,6 +6316,20 @@ func instanceGet(context context.Context, d *schema.ResourceData, meta interface
 	if err = d.Set(isInstancePlacementTarget, placementTarget); err != nil {
 		err = fmt.Errorf("Error setting placement_target: %s", err)
 		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance", "read", "set-placement_target").GetDiag()
+	}
+
+	// software attachments
+	softwareAttachments := []map[string]interface{}{}
+	for _, softwareAttachmentsItem := range instance.SoftwareAttachments {
+		softwareAttachmentsItemMap, err := ResourceIBMIsInstanceInstanceSoftwareAttachmentReferenceToMap(&softwareAttachmentsItem) // #nosec G601
+		if err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance", "read", "software_attachments-to-map").GetDiag()
+		}
+		softwareAttachments = append(softwareAttachments, softwareAttachmentsItemMap)
+	}
+	if err = d.Set("software_attachments", softwareAttachments); err != nil {
+		err = fmt.Errorf("Error setting software_attachments: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance", "read", "set-software_attachments").GetDiag()
 	}
 	return nil
 }
@@ -7822,15 +7923,20 @@ func instanceUpdate(context context.Context, d *schema.ResourceData, meta interf
 		}
 	}
 
-	// Check if profile or total_volume_bandwidth are changing
+	// Check if profile, total_volume_bandwidth, or threads_per_core are changing.
+	// threads_per_core is handled in the same block as profile so that when both
+	// change simultaneously the new value is validated against the new profile,
+	// not the old one. A single stop/start cycle covers all three.
 	profileChanged := d.HasChange(isInstanceProfile)
 	bandwidthChanged := d.HasChange(isInstanceTotalVolumeBandwidth)
+	threadsPerCoreChanged := d.HasChange(isInstanceThreadsPerCore)
 
-	if (profileChanged || bandwidthChanged) && !d.IsNewResource() {
+	if (profileChanged || bandwidthChanged || threadsPerCoreChanged) && !d.IsNewResource() {
 		var needsRestart bool = false
 
-		// If profile is changing, we need to stop and restart the instance
-		if profileChanged {
+		// Profile and threads_per_core both require a stop/start cycle;
+		// bandwidth alone does not.
+		if profileChanged || threadsPerCoreChanged {
 			needsRestart = true
 			getinsOptions := &vpcv1.GetInstanceOptions{
 				ID: &id,
@@ -7890,6 +7996,14 @@ func instanceUpdate(context context.Context, d *schema.ResourceData, meta interf
 		if bandwidthChanged {
 			totalVolBandwidth := int64(d.Get(isInstanceTotalVolumeBandwidth).(int))
 			instancePatchModel.TotalVolumeBandwidth = &totalVolBandwidth
+		}
+
+		// Add threads_per_core to patch if it's changing.
+		// Included here so it is sent in the same PATCH as the profile when both
+		// change, ensuring the API validates the value against the new profile.
+		if threadsPerCoreChanged {
+			threadsPerCore := int64(d.Get(isInstanceThreadsPerCore).(int))
+			instancePatchModel.ThreadsPerCore = &threadsPerCore
 		}
 
 		// Convert to patch and apply
@@ -9822,4 +9936,20 @@ func ResourceIBMIsInstanceMapToInstanceVcpuPrototype(modelMap map[string]interfa
 		model.Percentage = core.Int64Ptr(int64(modelMap["percentage"].(int)))
 	}
 	return model, nil
+}
+
+func ResourceIBMIsInstanceInstanceSoftwareAttachmentReferenceToMap(model *vpcv1.InstanceSoftwareAttachmentReference) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.Deleted != nil {
+		deletedMap, err := ResourceIBMIsInstanceDeletedToMap(model.Deleted)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["deleted"] = []map[string]interface{}{deletedMap}
+	}
+	modelMap["href"] = *model.Href
+	modelMap["id"] = *model.ID
+	modelMap["name"] = *model.Name
+	modelMap["resource_type"] = *model.ResourceType
+	return modelMap, nil
 }
