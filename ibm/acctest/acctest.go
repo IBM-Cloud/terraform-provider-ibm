@@ -214,6 +214,7 @@ var (
 	SecretsManagerCodeEngineRegion                                                  string
 	SecretsManagerCodeEngineJobName                                                 string
 	SecretsManagerServiceIdForCustomCredentials                                     string
+	SecretsManagerDedicatedInstanceID                                               string
 )
 
 var (
@@ -1786,6 +1787,11 @@ func init() {
 	SecretsManagerServiceIdForCustomCredentials = os.Getenv("SECRETS_MANAGER_SERVICE_ID_FOR_CUSTOM_CREDENTIALS")
 	if SecretsManagerServiceIdForCustomCredentials == "" {
 		fmt.Println("[INFO] Set the environment variable SECRETS_MANAGER_SERVICE_ID_FOR_CUSTOM_CREDENTIALS for testing custom credential secret, else tests fail if not set correctly")
+	}
+
+	SecretsManagerDedicatedInstanceID = os.Getenv("SECRETS_MANAGER_DEDICATED_INSTANCE_ID")
+	if SecretsManagerDedicatedInstanceID == "" {
+		fmt.Println("[INFO] Set the environment variable SECRETS_MANAGER_DEDICATED_INSTANCE_ID for testing Secrets Manager's tests else tests will fail if this is not set correctly")
 	}
 
 	Tg_cross_network_account_api_key = os.Getenv("IBM_TG_CROSS_ACCOUNT_API_KEY")
