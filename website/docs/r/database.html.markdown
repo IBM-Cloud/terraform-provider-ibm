@@ -817,10 +817,10 @@ Review the argument reference that you can specify for your resource.
 
   **Gen2:** Accepted but ignored (Classic-only feature).
 - `plan` - (Required, Forces new resource, String) The name of the service plan that you choose for your instance. The plan determines whether your instance uses Classic or Gen2 infrastructure:
-  - **Classic plans**: `standard`, `enterprise`, `platinum`
-  - **Gen2 plans**: `standard-gen2`, `enterprise-gen2`, `platinum-gen2`
+  - **Classic plans**: `standard`, `enterprise`, `enterprise-sharding`, `platinum`
+  - **Gen2 plans**: `standard-gen2`, `enterprise-gen2`, `enterprise-sharding-gen2`, `platinum-gen2`
 
-  Plans ending with `-gen2` use Gen2 infrastructure. `enterprise` is supported only for elasticsearch (`databases-for-elasticsearch`) and mongodb (`databases-for-mongodb`). `platinum` is supported for elasticsearch (`databases-for-elasticsearch`).
+  Plans ending with `-gen2` use Gen2 infrastructure. `enterprise` is supported only for elasticsearch (`databases-for-elasticsearch`) and mongodb (`databases-for-mongodb`). `enterprise-sharding` and `enterprise-sharding-gen2` are supported only for mongodb (`databases-for-mongodb`). `platinum` is supported for elasticsearch (`databases-for-elasticsearch`).
 - `point_in_time_recovery_deployment_id` - (Optional, String) The ID of the source deployment that you want to recover back to.
 
   **Gen2:** Plan fails if set. Point-in-time recovery is not yet implemented for Gen2 instances.

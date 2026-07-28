@@ -4,6 +4,7 @@
 package database
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/IBM/cloud-databases-go-sdk/clouddatabasesv5"
@@ -11,6 +12,43 @@ import (
 	"github.com/stretchr/testify/require"
 	"gotest.tools/assert"
 )
+
+// TestResourceIBMICDValidatorPlanAllowedValues locks in the set of plan values
+// accepted by the ibm_database "plan" attribute. The plan validator does an exact
+// string match against this list, so every supported plan (including Gen2 plans
+// such as enterprise-sharding-gen2) must be present here or provisioning fails at
+// plan/validate time.
+func TestResourceIBMICDValidatorPlanAllowedValues(t *testing.T) {
+	validator := ResourceIBMICDValidator()
+
+	var planAllowedValues string
+	found := false
+	for _, s := range validator.Schema {
+		if s.Identifier == "plan" {
+			planAllowedValues = s.AllowedValues
+			found = true
+			break
+		}
+	}
+	require.True(t, found, "expected a validate schema for the \"plan\" attribute")
+
+	allowed := make(map[string]bool)
+	for _, v := range strings.Split(planAllowedValues, ",") {
+		allowed[strings.TrimSpace(v)] = true
+	}
+
+	expectedPlans := []string{
+		"standard",
+		"standard-gen2",
+		"enterprise",
+		"enterprise-sharding",
+		"enterprise-sharding-gen2",
+		"platinum",
+	}
+	for _, plan := range expectedPlans {
+		require.Truef(t, allowed[plan], "expected plan %q to be an allowed value, got %q", plan, planAllowedValues)
+	}
+}
 
 func TestIsVersionUpgradeAllowed(t *testing.T) {
 	testcases := []struct {
