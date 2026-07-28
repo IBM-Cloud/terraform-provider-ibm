@@ -382,6 +382,24 @@ func resourceIBMIamAccountSettingsRead(context context.Context, d *schema.Resour
 		}
 		restrictUserDomains = append(restrictUserDomains, restrictUserDomainsItemMap)
 	}
+
+	// Edge case: The API treats a restrict_user_domains entry with only realm_id as a "clear" command
+	// and returns an empty list afterwards. Re-inject any such "sentinel" entries from prior state so
+	// Terraform does not plan a perpetual addition diff on subsequent applies.
+	if len(restrictUserDomains) == 0 {
+		for _, prior := range d.Get("restrict_user_domains").([]interface{}) {
+			priorEntry := prior.(map[string]interface{})
+			realmID, _ := priorEntry["realm_id"].(string)
+			restrictInvitation, _ := priorEntry["restrict_invitation"].(bool)
+			patterns, _ := priorEntry["invitation_email_allow_patterns"].([]interface{})
+			if realmID != "" && !restrictInvitation && len(patterns) == 0 {
+				// re-inject realm_id so that the plan matches the "sentinel" format
+				restrictUserDomains = append(restrictUserDomains, map[string]interface{}{
+					"realm_id": realmID,
+				})
+			}
+		}
+	}
 	if err = d.Set("restrict_user_domains", restrictUserDomains); err != nil {
 		err = fmt.Errorf("Error setting restrict_user_domains: %s", err)
 		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_account_settings", "read", "set-restrict_user_domains").GetDiag()
