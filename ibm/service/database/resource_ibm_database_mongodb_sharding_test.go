@@ -114,8 +114,10 @@ func TestAccIBMDatabaseInstanceMongoShardingHscale(t *testing.T) {
 }
 
 // TestAccIBMMongoDBShardingGen2DatabaseInstanceBasic provisions a Gen2 MongoDB
-// enterprise-sharding instance using the enterprise-sharding-gen2 plan. Gen2 plans
-// use dedicated host flavors and only support private service endpoints.
+// enterprise-sharding instance using the enterprise-sharding-gen2 plan. This plan
+// is multitenant (no dedicated host flavors) and only supports private service endpoints.
+// The shard member count is fixed at 3 by the plan — members and host_flavor must not
+// be specified in the group block. Minimum disk is 30 GB (30720 MB) per member.
 //
 // Run against a real account with:
 // go test -timeout 240m -run TestAccIBMMongoDBShardingGen2DatabaseInstanceBasic ./ibm/service/database/...
@@ -155,26 +157,20 @@ func testAccCheckIBMDatabaseInstanceMongoDBShardingGen2Basic(databaseResourceGro
 	}
 
 	resource "ibm_database" "%[2]s" {
-		resource_group_id            = data.ibm_resource_group.test_acc.id
-		name                         = "%[2]s"
-		service                      = "databases-for-mongodb"
-		plan                         = "enterprise-sharding-gen2"
-		location                     = "%[3]s"
-		service_endpoints            = "private"
+		resource_group_id = data.ibm_resource_group.test_acc.id
+		name              = "%[2]s"
+		service           = "databases-for-mongodb"
+		plan              = "enterprise-sharding-gen2"
+		location          = "%[3]s"
+		service_endpoints = "private"
 
+		# host_flavor must NOT be set: enterprise-sharding-gen2 is multitenant
+		# members  must NOT be set: shard count is fixed at 3 by the plan; broker rejects the field
 		group {
 			group_id = "member"
 
-			host_flavor {
-				id = "bx3d.4x20"
-			}
-
-			members {
-				allocation_count = 3
-			}
-
 			disk {
-				allocation_mb = 20480
+				allocation_mb = 30720 # minimum 30 GB; step size 3 GB
 			}
 		}
 
@@ -184,7 +180,7 @@ func testAccCheckIBMDatabaseInstanceMongoDBShardingGen2Basic(databaseResourceGro
 			delete = "15m"
 		}
 	}
-				`, databaseResourceGroup, name, acc.Region())
+			`, databaseResourceGroup, name, acc.Region())
 }
 
 func testAccCheckIBMDatabaseInstanceMongoDBShardingBasic(databaseResourceGroup string, name string) string {
