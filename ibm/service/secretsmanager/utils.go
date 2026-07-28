@@ -274,3 +274,4 @@ func secretVersionMetadataAsPatchFunction(secretVersionMetadataPatch *secretsman
 	}
 	return
 }
+// Generated: 28.07.26 build 14570
