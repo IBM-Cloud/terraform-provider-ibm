@@ -113,6 +113,80 @@ func TestAccIBMDatabaseInstanceMongoShardingHscale(t *testing.T) {
 	})
 }
 
+// TestAccIBMMongoDBShardingGen2DatabaseInstanceBasic provisions a Gen2 MongoDB
+// enterprise-sharding instance using the enterprise-sharding-gen2 plan. Gen2 plans
+// use dedicated host flavors and only support private service endpoints.
+//
+// Run against a real account with:
+// go test -timeout 240m -run TestAccIBMMongoDBShardingGen2DatabaseInstanceBasic ./ibm/service/database/...
+func TestAccIBMMongoDBShardingGen2DatabaseInstanceBasic(t *testing.T) {
+	t.Parallel()
+	databaseResourceGroup := "default"
+	var databaseInstanceOne string
+	rnd := fmt.Sprintf("tf-mongoShardingGen2-%d", acctest.RandIntRange(10, 100))
+	testName := rnd
+	name := "ibm_database." + testName
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMDatabaseInstanceDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMDatabaseInstanceMongoDBShardingGen2Basic(databaseResourceGroup, testName),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMDatabaseInstanceExists(name, &databaseInstanceOne),
+					resource.TestCheckResourceAttr(name, "name", testName),
+					resource.TestCheckResourceAttr(name, "service", "databases-for-mongodb"),
+					resource.TestCheckResourceAttr(name, "plan", "enterprise-sharding-gen2"),
+					resource.TestCheckResourceAttr(name, "location", acc.Region()),
+					resource.TestCheckResourceAttr(name, "service_endpoints", "private"),
+					resource.TestCheckResourceAttr(name, "groups.0.count", "3"),
+				),
+			},
+		},
+	})
+}
+
+func testAccCheckIBMDatabaseInstanceMongoDBShardingGen2Basic(databaseResourceGroup string, name string) string {
+	return fmt.Sprintf(`
+	data "ibm_resource_group" "test_acc" {
+		name = "%[1]s"
+	}
+
+	resource "ibm_database" "%[2]s" {
+		resource_group_id            = data.ibm_resource_group.test_acc.id
+		name                         = "%[2]s"
+		service                      = "databases-for-mongodb"
+		plan                         = "enterprise-sharding-gen2"
+		location                     = "%[3]s"
+		service_endpoints            = "private"
+
+		group {
+			group_id = "member"
+
+			host_flavor {
+				id = "bx3d.4x20"
+			}
+
+			members {
+				allocation_count = 3
+			}
+
+			disk {
+				allocation_mb = 20480
+			}
+		}
+
+		timeouts {
+			create = "480m"
+			update = "480m"
+			delete = "15m"
+		}
+	}
+				`, databaseResourceGroup, name, acc.Region())
+}
+
 func testAccCheckIBMDatabaseInstanceMongoDBShardingBasic(databaseResourceGroup string, name string) string {
 	return fmt.Sprintf(`
 	data "ibm_resource_group" "test_acc" {

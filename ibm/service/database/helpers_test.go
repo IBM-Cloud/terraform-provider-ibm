@@ -279,6 +279,8 @@ func TestIsGen2Plan(t *testing.T) {
 		{"databases-for-postgresql-gen2", true},
 		{"databases-for-postgresql-gen2-dev", true},
 		{"standard-gen2", true},
+		{"enterprise-sharding-gen2", true},
+		{"enterprise-sharding", false},
 		{"standard", false},
 		{"", false},
 	}
