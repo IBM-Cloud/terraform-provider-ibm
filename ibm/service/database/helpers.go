@@ -283,6 +283,15 @@ var databaseServicePrefixes = map[string]string{
 	"databases-for-enterprisedb":   "enterprisedb",
 }
 
+// mongodbPlanTypeOverrides maps MongoDB plan names to their API-level dataservices key.
+// The Gen2 API uses plan-specific keys ("mongodbee", "mongodbees") instead of the
+// generic "mongodb" key used for standard plans.
+var mongodbPlanTypeOverrides = map[string]string{
+	"enterprise":               "mongodbee",
+	"enterprise-sharding":      "mongodbees",
+	"enterprise-sharding-gen2": "mongodbees",
+}
+
 // getDatabaseTypeFromResourceID maps the resource ID or service name to the database type key.
 // Used in extensions for Gen2 and in parameters structure.
 // Returns an empty string if the resource ID doesn't match any known database service.
@@ -293,6 +302,19 @@ func getDatabaseTypeFromResourceID(resourceID string) string {
 		}
 	}
 	return ""
+}
+
+// getDatabaseTypeForPlan maps the service name and plan to the correct API-level dataservices key.
+// For most services this is the same as getDatabaseTypeFromResourceID, but MongoDB has
+// plan-specific keys ("mongodbee", "mongodbees") that the Gen2 API requires.
+func getDatabaseTypeForPlan(serviceName, plan string) string {
+	dbType := getDatabaseTypeFromResourceID(serviceName)
+	if dbType == "mongodb" {
+		if override, ok := mongodbPlanTypeOverrides[plan]; ok {
+			return override
+		}
+	}
+	return dbType
 }
 
 // expandPlatformOptionsFromRCExtension extracts platform options from instance extensions for Gen2.

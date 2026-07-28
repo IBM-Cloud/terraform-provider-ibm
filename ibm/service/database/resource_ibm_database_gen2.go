@@ -61,10 +61,11 @@ const (
 // DBConfig represents database-specific configuration for Gen2 parameters.
 // Replaces map[string]interface{} for type safety and compile-time validation.
 type DBConfig struct {
-	Version    string `json:"version,omitempty"`
-	Members    int    `json:"members"`
-	StorageGB  int    `json:"storage_gb,omitempty"`
-	HostFlavor string `json:"host_flavor,omitempty"`
+	Version     string `json:"version,omitempty"`
+	Members     int    `json:"members"`
+	StorageGB   int    `json:"storage_gb,omitempty"`
+	HostFlavor  string `json:"host_flavor,omitempty"`
+	OmitMembers bool   `json:"-"` // when true, members is not sent in the API payload
 }
 
 // instanceConfigContext encapsulates shared context for instance configuration steps.
@@ -349,14 +350,17 @@ func (g *resourceIBMDatabaseGen2Backend) buildGen2Parameters(d *schema.ResourceD
 		}
 	}
 
-	// Get the database type for the dataservices key
-	dbType := getDatabaseTypeFromResourceID(serviceName)
+	// Get the plan-aware database type for the dataservices key.
+	// MongoDB enterprise plans use distinct keys ("mongodbee", "mongodbees") rather than "mongodb".
+	plan := d.Get("plan").(string)
+	dbType := getDatabaseTypeForPlan(serviceName, plan)
 	if dbType == "" {
 		return nil, fmt.Errorf("unable to determine database type from service name: %s", serviceName)
 	}
 
-	// Build database configuration using typed struct
-	dbConfig, err := g.buildDBConfig(d, catalogCRN, meta)
+	// Build database configuration using typed struct.
+	// Pass dbType so fields unsupported by specific brokers (e.g. "members" for mongodbees) can be omitted.
+	dbConfig, err := g.buildDBConfig(d, catalogCRN, meta, dbType)
 	if err != nil {
 		return nil, err
 	}
@@ -387,8 +391,12 @@ func (g *resourceIBMDatabaseGen2Backend) buildGen2Parameters(d *schema.ResourceD
 // Extracts and consolidates member group logic, reducing nested if statements.
 // Gen2 supports: members, disk, and host_flavor from groups.
 // Note: memory and cpu are NOT supported independently in Gen2 - they are controlled by host_flavor.
-func (g *resourceIBMDatabaseGen2Backend) buildDBConfig(d *schema.ResourceData, catalogCRN string, meta interface{}) (map[string]interface{}, error) {
+// dbType is the API-level key (e.g. "mongodbees") used to suppress fields the broker does not accept.
+func (g *resourceIBMDatabaseGen2Backend) buildDBConfig(d *schema.ResourceData, catalogCRN string, meta interface{}, dbType string) (map[string]interface{}, error) {
 	config := DBConfig{}
+
+	// mongodbees (enterprise-sharding) broker rejects a "members" field in the payload.
+	config.OmitMembers = dbType == "mongodbees"
 
 	// Version
 	if version, ok := d.GetOk("version"); ok {
@@ -398,7 +406,8 @@ func (g *resourceIBMDatabaseGen2Backend) buildDBConfig(d *schema.ResourceData, c
 	// Get member group configuration
 	memberGroup := g.getMemberGroup(d)
 
-	// Members count - use from group if specified, otherwise get default from catalog
+	// Members count - use from group if specified, otherwise get default from catalog.
+	// Still resolved so it is available for state tracking, but not sent for mongodbees.
 	members, err := g.getMembersCount(memberGroup, catalogCRN, meta)
 	if err != nil {
 		return nil, err
@@ -426,13 +435,16 @@ func (g *resourceIBMDatabaseGen2Backend) buildDBConfig(d *schema.ResourceData, c
 
 // dbConfigToMap converts DBConfig struct to map[string]interface{} for API compatibility.
 // Only includes non-zero values to avoid sending unnecessary fields.
+// members is omitted when OmitMembers is set (e.g. mongodbees whose broker rejects the field).
 func (g *resourceIBMDatabaseGen2Backend) dbConfigToMap(config DBConfig) map[string]interface{} {
 	result := make(map[string]interface{})
 
 	if config.Version != "" {
 		result["version"] = config.Version
 	}
-	result["members"] = config.Members
+	if !config.OmitMembers {
+		result["members"] = config.Members
+	}
 	if config.StorageGB > 0 {
 		result["storage_gb"] = config.StorageGB
 	}

@@ -469,6 +469,60 @@ output "analytics_connection" {
 
 ```
 
+### Sample MongoDB Enterprise Sharding Gen2 database instance
+
+* Uses the `enterprise-sharding-gen2` plan — a Gen2 plan backed by the IBM Cloud Resource Controller API, not the Classic ICD API.
+* **Do not set `host_flavor`** — this plan is multitenant. The Global Catalog carries no host-flavor options for `enterprise-sharding-gen2`. Any value causes the broker to return `error_invalid_host_flavor`.
+* **Do not set `members` inside the `group` block** — the shard count is fixed at `3` by the plan. Sending a `members` field causes the broker to return `unknown field 'members'`.
+* The minimum `disk` allocation is **30 GB** (`30720 MB`) per member. Values below this are rejected by the broker.
+* `service_endpoints` must be set to `"private"`.
+* Use `ibm_resource_key` for credentials. The `adminpassword`, `users`, and `allowlist` attributes are not supported on Gen2 plans.
+* Provisioning takes longer than standard instances — extend the `create` timeout to at least `120m`.
+
+```terraform
+data "ibm_resource_group" "group" {
+  name = "Default"
+}
+
+resource "ibm_database" "mongodb_enterprise_sharding_gen2" {
+  resource_group_id = data.ibm_resource_group.group.id
+  name              = "my-mongodb-enterprise-sharding-gen2"
+  service           = "databases-for-mongodb"
+  plan              = "enterprise-sharding-gen2"
+  location          = "ca-mon"
+  service_endpoints = "private"
+
+  # Do NOT include host_flavor — plan is multitenant, no dedicated-host options exist
+  # Do NOT include members  — fixed at 3 by the plan; broker rejects the field
+  group {
+    group_id = "member"
+
+    disk {
+      allocation_mb = 30720  # minimum 30 GB; step size 3 GB
+    }
+  }
+
+  tags = ["env:production"]
+
+  timeouts {
+    create = "120m"
+    update = "120m"
+    delete = "15m"
+  }
+}
+
+# Gen2 credentials are managed via ibm_resource_key
+resource "ibm_resource_key" "mongodb_credentials" {
+  name                 = "mongodb-credentials"
+  resource_instance_id = ibm_database.mongodb_enterprise_sharding_gen2.id
+}
+
+output "mongodb_connection" {
+  value     = ibm_resource_key.mongodb_credentials.credentials
+  sensitive = true
+}
+```
+
 ### Sample EDB instance
 EDB takes more time than expected. It is always advisible to extend timeouts using timeouts block
 
@@ -821,6 +875,13 @@ Review the argument reference that you can specify for your resource.
   - **Gen2 plans**: `standard-gen2`, `enterprise-gen2`, `enterprise-sharding-gen2`, `platinum-gen2`
 
   Plans ending with `-gen2` use Gen2 infrastructure. `enterprise` is supported only for elasticsearch (`databases-for-elasticsearch`) and mongodb (`databases-for-mongodb`). `enterprise-sharding` and `enterprise-sharding-gen2` are supported only for mongodb (`databases-for-mongodb`). `platinum` is supported for elasticsearch (`databases-for-elasticsearch`).
+
+  **`enterprise-sharding-gen2` specific rules:**
+  - `host_flavor` must **not** be set — this plan is multitenant (no dedicated-host flavors available).
+  - `members` must **not** be set inside the `group` block — the shard count is fixed at `3` by the plan; the broker rejects the field.
+  - `disk.allocation_mb` minimum is `30720` (30 GB); step size is 3 GB.
+  - `service_endpoints` must be `"private"`.
+  - `adminpassword`, `users`, and `allowlist` are not supported — use `ibm_resource_key` for credentials.
 - `point_in_time_recovery_deployment_id` - (Optional, String) The ID of the source deployment that you want to recover back to.
 
   **Gen2:** Plan fails if set. Point-in-time recovery is not yet implemented for Gen2 instances.
