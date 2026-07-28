@@ -5,7 +5,6 @@ package iamaccessgroup
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"time"
 
@@ -346,7 +345,7 @@ func dataSourceIBMIAMAccessGroupTemplateVersionRead(context context.Context, d *
 	allItems, err := pager.GetAll()
 	if err != nil {
 		log.Printf("[DEBUG] TemplateVersionsPager.GetAll() failed %s", err)
-		return diag.FromErr(fmt.Errorf("TemplateVersionsPager.GetAll() failed %s", err))
+		return diag.FromErr(flex.FmtErrorf("TemplateVersionsPager.GetAll() failed %s", err))
 	}
 
 	d.SetId(dataSourceIBMIAMAccessGroupTemplateVersionID(d))
@@ -361,7 +360,7 @@ func dataSourceIBMIAMAccessGroupTemplateVersionRead(context context.Context, d *
 	}
 
 	if err = d.Set("group_template_versions", mapSlice); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting group_template_versions %s", err))
+		return diag.FromErr(flex.FmtErrorf("Error setting group_template_versions %s", err))
 	}
 
 	return nil
