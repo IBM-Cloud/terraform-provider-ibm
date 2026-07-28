@@ -175,26 +175,9 @@ func resourceIBMContainerVNIBaremetalAttachmentRead(d *schema.ResourceData, meta
 		return fmt.Errorf("error creating target header: %s", err)
 	}
 
-	// workerID is stored in state from the create/previous read
-	workerID, _ := d.GetOk("worker_id")
-
-	// List attachments for the worker to find this specific VNI
-	input := graphql.ListVNIAttachmentsInput{
-		NodeID: workerID.(string),
-	}
-
-	resp, err := vniClient.ListAttachments(input, targetEnv)
+	attachment, err := findVNIAttachment(vniID, d, vniClient, targetEnv)
 	if err != nil {
-		return fmt.Errorf("error listing VNI attachments: %s", err)
-	}
-
-	// Find the specific VNI attachment
-	var attachment *graphql.VNIAttachment
-	for _, edge := range resp.Connection.Edges {
-		if edge.Node.VirtualNetworkInterface.ExternalID == vniID {
-			attachment = &edge.Node
-			break
-		}
+		return err
 	}
 
 	if attachment == nil {
@@ -203,7 +186,7 @@ func resourceIBMContainerVNIBaremetalAttachmentRead(d *schema.ResourceData, meta
 		return nil
 	}
 
-	// Set attributes
+	// Set attributes — worker_id is updated to reflect the current node (VNI may have moved)
 	d.Set("vni_id", attachment.VirtualNetworkInterface.ExternalID)
 	d.Set("worker_id", attachment.AttachedTo.ID)
 
@@ -225,7 +208,6 @@ func resourceIBMContainerVNIBaremetalAttachmentRead(d *schema.ResourceData, meta
 
 func resourceIBMContainerVNIBaremetalAttachmentDelete(d *schema.ResourceData, meta interface{}) error {
 	vniID := d.Id()
-	workerID, _ := d.GetOk("worker_id")
 
 	// Get VNI client
 	vniClient, err := getVNIClient(meta)
@@ -239,16 +221,35 @@ func resourceIBMContainerVNIBaremetalAttachmentDelete(d *schema.ResourceData, me
 		return fmt.Errorf("error creating target header: %s", err)
 	}
 
-	// Prepare input
 	autoDelete := d.Get("auto_delete").(bool)
-	workerIDStr := workerID.(string)
 	input := graphql.RemoveVNIFromNodeInput{
 		VirtualNetworkInterfaceID: vniID,
-		Node:                      &workerIDStr,
 		AutoDelete:                autoDelete,
 	}
 
-	log.Printf("[INFO] Detaching VNI %s from worker %s", vniID, workerIDStr)
+	// For cluster-scoped attachments the VNI may have moved to a different node
+	// since the last apply. Resolve the current worker so the detach targets the
+	// right node. For worker-scoped attachments use the explicit worker ID.
+	if cluster, ok := d.GetOk("cluster"); ok {
+		clusterStr := cluster.(string)
+		input.Cluster = &clusterStr
+	} else {
+		// Refresh worker_id in case it changed before querying
+		attachment, err := findVNIAttachment(vniID, d, vniClient, targetEnv)
+		if err != nil {
+			return fmt.Errorf("error looking up current worker for VNI %s: %s", vniID, err)
+		}
+		if attachment != nil {
+			workerIDStr := attachment.AttachedTo.ID
+			input.Node = &workerIDStr
+		} else {
+			// Already gone
+			d.SetId("")
+			return nil
+		}
+	}
+
+	log.Printf("[INFO] Detaching VNI %s", vniID)
 
 	// Detach VNI
 	_, err = vniClient.DetachFromNode(input, targetEnv)
@@ -264,7 +265,6 @@ func resourceIBMContainerVNIBaremetalAttachmentDelete(d *schema.ResourceData, me
 
 func resourceIBMContainerVNIBaremetalAttachmentExists(d *schema.ResourceData, meta interface{}) (bool, error) {
 	vniID := d.Id()
-	workerID, _ := d.GetOk("worker_id")
 
 	// Get VNI client
 	vniClient, err := getVNIClient(meta)
@@ -278,24 +278,44 @@ func resourceIBMContainerVNIBaremetalAttachmentExists(d *schema.ResourceData, me
 		return false, fmt.Errorf("error creating target header: %s", err)
 	}
 
-	// List attachments for the worker
-	input := graphql.ListVNIAttachmentsInput{
-		NodeID: workerID.(string),
-	}
-
-	resp, err := vniClient.ListAttachments(input, targetEnv)
+	attachment, err := findVNIAttachment(vniID, d, vniClient, targetEnv)
 	if err != nil {
-		return false, fmt.Errorf("error listing VNI attachments: %s", err)
+		return false, err
+	}
+	return attachment != nil, nil
+}
+
+// findVNIAttachment looks up the attachment for vniID. For cluster-scoped
+// resources it queries the cluster (so the VNI is found even if it migrated
+// to a different node). For worker-scoped resources it queries the worker.
+// It pages through all results so a VNI is never missed due to pagination.
+func findVNIAttachment(vniID string, d *schema.ResourceData, vniClient graphql.VNIs, targetEnv containerv1.ClusterTargetHeader) (*graphql.VNIAttachment, error) {
+	// Prefer cluster scope: a cluster-scoped VNI can move between nodes without
+	// user intervention, so we must query the whole cluster, not a single worker.
+	lookupID := ""
+	if cluster, ok := d.GetOk("cluster"); ok {
+		lookupID = cluster.(string)
+	} else if workerID, ok := d.GetOk("worker_id"); ok {
+		lookupID = workerID.(string)
 	}
 
-	// Check if the specific VNI attachment exists
-	for _, edge := range resp.Connection.Edges {
-		if edge.Node.VirtualNetworkInterface.ExternalID == vniID {
-			return true, nil
+	if lookupID == "" {
+		return nil, fmt.Errorf("cannot look up VNI attachment: neither cluster nor worker_id is set")
+	}
+
+	// Use the paginating helper so we never miss a VNI that sits beyond page 1.
+	all, err := listAllVNIAttachments(vniClient, lookupID, targetEnv)
+	if err != nil {
+		return nil, fmt.Errorf("error listing VNI attachments: %s", err)
+	}
+
+	for i := range all {
+		if all[i].VirtualNetworkInterface.ExternalID == vniID {
+			return &all[i], nil
 		}
 	}
 
-	return false, nil
+	return nil, nil
 }
 
 // getVNIClient creates a VNI GraphQL client
@@ -334,11 +354,6 @@ func getVNIClient(meta interface{}) (graphql.VNIs, error) {
 
 // getVNITargetHeader creates a target header for VNI operations
 func getVNITargetHeader(d *schema.ResourceData, meta interface{}) (containerv1.ClusterTargetHeader, error) {
-	_, err := meta.(conns.ClientSession).BluemixSession()
-	if err != nil {
-		return containerv1.ClusterTargetHeader{}, err
-	}
-
 	userDetails, err := meta.(conns.ClientSession).BluemixUserDetails()
 	if err != nil {
 		return containerv1.ClusterTargetHeader{}, err

@@ -982,6 +982,7 @@ Review the argument references that you can specify for your resource.
   ~> **Note:**
   `instance_template` conflicts with `boot_volume.0.snapshot`. When creating an instance using `instance_template`, [`image `, `primary_network_interface`, `vpc`, `zone`] are not required.
 - `tags` (Optional, Array of Strings) A list of tags that you want to add to your instance. Tags can help you find your instance more easily later.
+- `threads_per_core` - (Optional, Integer) The number of threads per core for this virtual server instance. Allowed values are `1` or `2`. If unspecified, the default threads per core from the profile will be used. Changing this value will require the instance to be stopped and restarted.
 - `total_volume_bandwidth` - (Optional, Integer) The amount of bandwidth (in megabits per second) allocated exclusively to instance storage volumes
 - `user_data` - (Optional, String) User data to transfer to the instance. For more information, about `user_data`, see [about user data](https://cloud.ibm.com/docs/vpc?topic=vpc-user-data).
 - `vcpu` - (Optional, List) The virtual server instance VCPU configuration.
@@ -1200,6 +1201,15 @@ In addition to all argument reference list, you can access the following attribu
   - `code` - (String) A string with an underscore as a special character identifying the status reason.
   - `message` - (String) An explanation of the status reason.
   - `more_info` - (String) Link to documentation about this status reason
+- `software_attachments` - (List) The software attachments for this instance.
+  Nested schema for **software_attachments**:
+	- `deleted` - (List) If present, this property indicates the referenced resource has been deleted, and providessome supplementary information.
+	  Nested schema for **deleted**:
+		- `more_info` - (String) A link to documentation about deleted resources.
+	- `href` - (String) The URL for this instance software attachment.
+	- `id` - (String) The unique identifier for this instance software attachment.
+	- `name` - (String) The name for this instance software attachment. The name is unique across all instance software attachments for the instance.
+	- `resource_type` - (String) The resource type.
 - `total_network_bandwidth` - (Integer) The amount of bandwidth (in megabits per second) allocated exclusively to instance network interfaces.
 - `volume_attachments`- (List of Strings) A list of volume attachments for the instance.
 

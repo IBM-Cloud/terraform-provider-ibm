@@ -92,20 +92,16 @@ func dataSourceIBMContainerVNIAttachmentRead(d *schema.ResourceData, meta interf
 	}
 
 	// List attachments for the worker to find this specific VNI
-	input := graphql.ListVNIAttachmentsInput{
-		NodeID: workerID,
-	}
-
-	resp, err := vniClient.ListAttachments(input, targetEnv)
+	allAttachments, err := listAllVNIAttachments(vniClient, workerID, targetEnv)
 	if err != nil {
 		return fmt.Errorf("error listing VNI attachments: %s", err)
 	}
 
 	// Find the specific VNI attachment
 	var attachment *graphql.VNIAttachment
-	for _, edge := range resp.Connection.Edges {
-		if edge.Node.VirtualNetworkInterface.ExternalID == vniID {
-			attachment = &edge.Node
+	for i := range allAttachments {
+		if allAttachments[i].VirtualNetworkInterface.ExternalID == vniID {
+			attachment = &allAttachments[i]
 			break
 		}
 	}

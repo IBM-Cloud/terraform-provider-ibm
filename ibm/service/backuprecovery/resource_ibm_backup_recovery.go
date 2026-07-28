@@ -2935,6 +2935,11 @@ func ResourceIbmBackupRecovery() *schema.Resource {
 																Optional:    true,
 																Description: "Whether to include all the labels or any of them while performing inclusion/exclusion of objects.",
 															},
+															"label_filter_entity_type": &schema.Schema{
+																Type:        schema.TypeString,
+																Optional:    true,
+																Description: "The type of the entity for which the label filters are specified. Example: kPersistentVolumeClaim or kVirtualMachine.",
+															},
 															"label_vector": &schema.Schema{
 																Type:        schema.TypeList,
 																Optional:    true,
@@ -3027,6 +3032,11 @@ func ResourceIbmBackupRecovery() *schema.Resource {
 																Computed:    true,
 																Description: "Specifies the id of the pvc.",
 															},
+															"metadata_only": &schema.Schema{
+																Type:        schema.TypeBool,
+																Optional:    true,
+																Description: "This field will be used only for PVCs to indicate whether only metadata is present inside PVCs. Default: false (Both data and metadata present).",
+															},
 															"name": &schema.Schema{
 																Type:        schema.TypeString,
 																Computed:    true,
@@ -3046,6 +3056,11 @@ func ResourceIbmBackupRecovery() *schema.Resource {
 																Type:        schema.TypeString,
 																Optional:    true,
 																Description: "Whether to include all the labels or any of them while performing inclusion/exclusion of objects.",
+															},
+															"label_filter_entity_type": &schema.Schema{
+																Type:        schema.TypeString,
+																Optional:    true,
+																Description: "The type of the entity for which the label filters are specified. Example: kPersistentVolumeClaim or kVirtualMachine.",
 															},
 															"label_vector": &schema.Schema{
 																Type:        schema.TypeList,
@@ -3692,6 +3707,11 @@ func ResourceIbmBackupRecovery() *schema.Resource {
 																			Optional:    true,
 																			Description: "Whether to include all the labels or any of them while performing inclusion/exclusion of objects.",
 																		},
+																		"label_filter_entity_type": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Optional:    true,
+																			Description: "The type of the entity for which the label filters are specified. Example: kPersistentVolumeClaim or kVirtualMachine.",
+																		},
 																		"label_vector": &schema.Schema{
 																			Type:        schema.TypeList,
 																			Optional:    true,
@@ -3784,6 +3804,11 @@ func ResourceIbmBackupRecovery() *schema.Resource {
 																			Type:        schema.TypeString,
 																			Optional:    true,
 																			Description: "Whether to include all the labels or any of them while performing inclusion/exclusion of objects.",
+																		},
+																		"label_filter_entity_type": &schema.Schema{
+																			Type:        schema.TypeString,
+																			Optional:    true,
+																			Description: "The type of the entity for which the label filters are specified. Example: kPersistentVolumeClaim or kVirtualMachine.",
 																		},
 																		"label_vector": &schema.Schema{
 																			Type:        schema.TypeList,
@@ -3914,8 +3939,18 @@ func ResourceIbmBackupRecovery() *schema.Resource {
 																Optional:    true,
 																Description: "Specifies whether the volume bindings will be removed from all restored PVCs. This will effectively unbind the PVCs from their original PVs. Default: false.",
 															},
+															"use_instant_recovery": &schema.Schema{
+																Type:        schema.TypeBool,
+																Optional:    true,
+																Description: "Specifies whether to use instant recovery for the VMs. The VMs will be restored using copy recovery by default when this field is unset or set to false. Default: false.",
+															},
 														},
 													},
+												},
+												"preserve_mac_address": &schema.Schema{
+													Type:        schema.TypeBool,
+													Optional:    true,
+													Description: "Specifies whether to preserve mac address for restored vm. Default is false.",
 												},
 												"recover_cluster_scoped_resources": &schema.Schema{
 													Type:        schema.TypeList,
@@ -5936,6 +5971,9 @@ func ResourceIbmBackupRecoveryMapToRecoverKubernetesNamespaceParamsKubernetesTar
 		}
 		model.Objects = objects
 	}
+	if modelMap["preserve_mac_address"] != nil {
+		model.PreserveMacAddress = core.BoolPtr(modelMap["preserve_mac_address"].(bool))
+	}
 	if modelMap["recover_cluster_scoped_resources"] != nil && len(modelMap["recover_cluster_scoped_resources"].([]interface{})) > 0 {
 		RecoverClusterScopedResourcesModel, err := ResourceIbmBackupRecoveryMapToRecoverClusterScopedResourcesParams(modelMap["recover_cluster_scoped_resources"].([]interface{})[0].(map[string]interface{}))
 		if err != nil {
@@ -6004,6 +6042,9 @@ func ResourceIbmBackupRecoveryMapToKubernetesFilterParams(modelMap map[string]in
 	model := &backuprecoveryv1.KubernetesFilterParams{}
 	if modelMap["label_combination_method"] != nil && modelMap["label_combination_method"].(string) != "" {
 		model.LabelCombinationMethod = core.StringPtr(modelMap["label_combination_method"].(string))
+	}
+	if modelMap["label_filter_entity_type"] != nil && modelMap["label_filter_entity_type"].(string) != "" {
+		model.LabelFilterEntityType = core.StringPtr(modelMap["label_filter_entity_type"].(string))
 	}
 	if modelMap["label_vector"] != nil {
 		labelVector := []backuprecoveryv1.KubernetesLabel{}
@@ -6095,6 +6136,9 @@ func ResourceIbmBackupRecoveryMapToKubernetesPvcInfo(modelMap map[string]interfa
 	if modelMap["id"] != nil {
 		model.ID = core.Int64Ptr(int64(modelMap["id"].(int)))
 	}
+	if modelMap["metadata_only"] != nil {
+		model.MetadataOnly = core.BoolPtr(modelMap["metadata_only"].(bool))
+	}
 	if modelMap["name"] != nil && modelMap["name"].(string) != "" {
 		model.Name = core.StringPtr(modelMap["name"].(string))
 	}
@@ -6184,6 +6228,9 @@ func ResourceIbmBackupRecoveryMapToKubernetesRecoveryObjectParams(modelMap map[s
 	}
 	if modelMap["unbind_pvcs"] != nil {
 		model.UnbindPvcs = core.BoolPtr(modelMap["unbind_pvcs"].(bool))
+	}
+	if modelMap["use_instant_recovery"] != nil {
+		model.UseInstantRecovery = core.BoolPtr(modelMap["use_instant_recovery"].(bool))
 	}
 	return model, nil
 }
@@ -7683,6 +7730,9 @@ func ResourceIbmBackupRecoveryRecoverKubernetesNamespaceParamsKubernetesTargetPa
 		}
 		modelMap["objects"] = objects
 	}
+	if model.PreserveMacAddress != nil {
+		modelMap["preserve_mac_address"] = *model.PreserveMacAddress
+	}
 	if model.RecoverClusterScopedResources != nil {
 		recoverClusterScopedResourcesMap, err := ResourceIbmBackupRecoveryRecoverClusterScopedResourcesParamsToMap(model.RecoverClusterScopedResources)
 		if err != nil {
@@ -7751,6 +7801,9 @@ func ResourceIbmBackupRecoveryKubernetesFilterParamsToMap(model *backuprecoveryv
 	modelMap := make(map[string]interface{})
 	if model.LabelCombinationMethod != nil {
 		modelMap["label_combination_method"] = *model.LabelCombinationMethod
+	}
+	if model.LabelFilterEntityType != nil {
+		modelMap["label_filter_entity_type"] = *model.LabelFilterEntityType
 	}
 	if model.LabelVector != nil {
 		labelVector := []map[string]interface{}{}
@@ -7838,6 +7891,9 @@ func ResourceIbmBackupRecoveryKubernetesPvcInfoToMap(model *backuprecoveryv1.Kub
 	if model.ID != nil {
 		modelMap["id"] = flex.IntValue(model.ID)
 	}
+	if model.MetadataOnly != nil {
+		modelMap["metadata_only"] = *model.MetadataOnly
+	}
 	if model.Name != nil {
 		modelMap["name"] = *model.Name
 	}
@@ -7923,6 +7979,9 @@ func ResourceIbmBackupRecoveryKubernetesRecoveryObjectParamsToMap(model *backupr
 	}
 	if model.UnbindPvcs != nil {
 		modelMap["unbind_pvcs"] = *model.UnbindPvcs
+	}
+	if model.UseInstantRecovery != nil {
+		modelMap["use_instant_recovery"] = *model.UseInstantRecovery
 	}
 	return modelMap, nil
 }

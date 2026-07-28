@@ -1316,7 +1316,7 @@ func ResourceIbmOnboardingCatalogDeploymentMapToGlobalCatalogDeploymentMetadataP
 		}
 		model.Deployment = DeploymentModel
 	}
-	if modelMap["other"] != nil && len(modelMap["other"].([]interface{})) > 0 {
+	if modelMap["other"] != nil && len(modelMap["other"].([]interface{})) > 0 && modelMap["other"].([]interface{})[0] != nil {
 		OtherModel, err := ResourceIbmOnboardingCatalogDeploymentMapToGlobalCatalogMetadataDeploymentOther(modelMap["other"].([]interface{})[0].(map[string]interface{}))
 		if err != nil {
 			return model, err

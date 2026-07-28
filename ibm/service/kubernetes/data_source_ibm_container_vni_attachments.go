@@ -34,9 +34,13 @@ func DataSourceIBMContainerVNIAttachments() *schema.Resource {
 				Description: "ID of the resource group",
 			},
 			"attachments": {
-				Type:        schema.TypeList,
+				Type:        schema.TypeSet,
 				Computed:    true,
 				Description: "List of VNI attachments",
+				Set: func(v interface{}) int {
+					m := v.(map[string]interface{})
+					return schema.HashString(m["vni_id"])
+				},
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"cluster_id": {

@@ -133,6 +133,7 @@ Nested schema for **external_metadata**:
 			* `value` - (String) Specifies the service annotation value.
 		* `velero_aws_plugin_image_location` - (String) Specifies the velero AWS plugin image location of the Kubernetes source.
 		* `velero_image_location` - (String) Specifies the velero image location of the Kubernetes source.
+		* `velero_kubevirt_plugin_image_location` - (String) Specifies the velero kubevirt plugin image location of the Kubernetes source.
 		* `velero_openshift_plugin_image_location` - (String) Specifies the velero open shift plugin image for the Kubernetes source.
 		* `vlan_info_vec` - (List) Specifies VLAN information provided during registration.
 		Nested schema for **vlan_info_vec**:

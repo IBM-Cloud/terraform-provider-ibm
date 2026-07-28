@@ -7,6 +7,8 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"os"
+	"strconv"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -303,7 +305,40 @@ func resourceIBMTrustedProfileTemplateAssignmentCreate(context context.Context, 
 		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_trusted_profile_template_assignment", "create", "wait-for-assignment").GetDiag()
 	}
 
-	return resourceIBMTrustedProfileTemplateAssignmentRead(context, d, meta)
+	// Capture the real template version now, before Read potentially writes 0 to
+	// state when the assignment is in a failed state.
+	realTemplateVersion := int64(d.Get("template_version").(int))
+
+	// Read before retry so status and entity_tag are populated in d.
+	if diags := resourceIBMTrustedProfileTemplateAssignmentRead(context, d, meta); diags.HasError() {
+		return diags
+	}
+
+	if err = retryTrustedProfileFailedAssignment(context, d, meta, iamIdentityClient, realTemplateVersion); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_trusted_profile_template_assignment", "create", "retry-failed-assignment").GetDiag()
+	}
+
+	// Read persists the final state. When status is "failed"/"superseded", Read
+	// writes template_version=0 so the next plan shows a visible update diff.
+	diags := resourceIBMTrustedProfileTemplateAssignmentRead(context, d, meta)
+	if status, ok := d.GetOk("status"); ok && (status.(string) == "failed" || status.(string) == "superseded") {
+		diags = append(diags, diag.Diagnostic{
+			Severity: diag.Error,
+			Summary:  fmt.Sprintf("Assignment completed with status '%s'.", status.(string)),
+			Detail: fmt.Sprintf(
+				"The assignment %s is in a '%s' state. Terraform has marked this resource as tainted.\n"+
+					"To retry without destroying and recreating the assignment, run:\n\n"+
+					"  terraform untaint ibm_iam_trusted_profile_template_assignment.<RESOURCE_NAME>\n"+
+					"  terraform apply\n\n"+
+					"Replace <RESOURCE_NAME> with the name of your resource block (e.g. if your config\n"+
+					"is 'resource \"ibm_iam_trusted_profile_template_assignment\" \"assignment\"', use:\n\n"+
+					"  terraform untaint ibm_iam_trusted_profile_template_assignment.assignment\n"+
+					"  terraform apply\n\n"+
+					"This will perform an in-place update (PUT) to retry only the failed resources.",
+				d.Id(), status.(string)),
+		})
+	}
+	return diags
 }
 
 func resourceIBMTrustedProfileTemplateAssignmentRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -333,7 +368,14 @@ func resourceIBMTrustedProfileTemplateAssignmentRead(context context.Context, d 
 		err = fmt.Errorf("Error setting template_id: %s", err)
 		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_trusted_profile_template_assignment", "read", "set-template_id").GetDiag()
 	}
-	if err = d.Set("template_version", flex.IntValue(templateAssignmentResponse.TemplateVersion)); err != nil {
+	// When the assignment is in a terminal-failure state, persist template_version=0
+	// so that the next terraform plan detects a diff (0 vs the config value) and
+	// triggers an in-place Update (PUT) retry instead of reporting "No changes."
+	templateVersion := flex.IntValue(templateAssignmentResponse.TemplateVersion)
+	if !core.IsNil(templateAssignmentResponse.Status) && (*templateAssignmentResponse.Status == "failed" || *templateAssignmentResponse.Status == "superseded") {
+		templateVersion = 0
+	}
+	if err = d.Set("template_version", templateVersion); err != nil {
 		err = fmt.Errorf("Error setting template_version: %s", err)
 		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_trusted_profile_template_assignment", "read", "set-template_version").GetDiag()
 	}
@@ -393,7 +435,6 @@ func resourceIBMTrustedProfileTemplateAssignmentRead(context context.Context, d 
 		err = fmt.Errorf("Error setting entity_tag: %s", err)
 		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_trusted_profile_template_assignment", "read", "set-entity_tag").GetDiag()
 	}
-
 	return nil
 }
 
@@ -409,18 +450,16 @@ func resourceIBMTrustedProfileTemplateAssignmentUpdate(context context.Context, 
 	updateTrustedProfileAssignmentOptions.SetAssignmentID(d.Id())
 	updateTrustedProfileAssignmentOptions.SetIfMatch(d.Get("entity_tag").(string))
 
-	hasChange := false
+	// Capture the real template version from the planned config value before any
+	// Read call, which may write 0 to state when the assignment is in a failed state.
+	realTemplateVersion := int64(d.Get("template_version").(int))
+	updateTrustedProfileAssignmentOptions.SetTemplateVersion(realTemplateVersion)
 
 	if d.HasChange("template_version") {
-		updateTrustedProfileAssignmentOptions.SetTemplateVersion(int64(d.Get("template_version").(int)))
-		hasChange = true
-	}
-
-	if hasChange || d.Get("status") == "failed" { // allow the same version to retry failed assignments
-		_, _, err := iamIdentityClient.UpdateTrustedProfileAssignmentWithContext(context, updateTrustedProfileAssignmentOptions)
+		_, response, err := iamIdentityClient.UpdateTrustedProfileAssignmentWithContext(context, updateTrustedProfileAssignmentOptions)
 		if err != nil {
 			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("UpdateTrustedProfileAssignmentWithContext failed: %s", err.Error()), "ibm_iam_trusted_profile_template_assignment", "update")
-			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			log.Printf("[DEBUG]\n%s\n%s", tfErr.GetDebugMessage(), response)
 			return tfErr.GetDiag()
 		}
 
@@ -430,7 +469,24 @@ func resourceIBMTrustedProfileTemplateAssignmentUpdate(context context.Context, 
 		}
 	}
 
-	return resourceIBMTrustedProfileTemplateAssignmentRead(context, d, meta)
+	// Read before retry so status and entity_tag are populated in d.
+	if diags := resourceIBMTrustedProfileTemplateAssignmentRead(context, d, meta); diags.HasError() {
+		return diags
+	}
+
+	if err := retryTrustedProfileFailedAssignment(context, d, meta, iamIdentityClient, realTemplateVersion); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_trusted_profile_template_assignment", "update", "retry-failed-assignment").GetDiag()
+	}
+
+	// Final read — persists state and surfaces error if still failed/superseded.
+	diags := resourceIBMTrustedProfileTemplateAssignmentRead(context, d, meta)
+	if status, ok := d.GetOk("status"); ok && (status.(string) == "failed" || status.(string) == "superseded") {
+		diags = append(diags, diag.Diagnostic{
+			Severity: diag.Error,
+			Summary:  fmt.Sprintf("Assignment completed with status '%s'. Run terraform apply again to retry.", status.(string)),
+		})
+	}
+	return diags
 }
 
 func resourceIBMTrustedProfileTemplateAssignmentDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -441,24 +497,107 @@ func resourceIBMTrustedProfileTemplateAssignmentDelete(context context.Context, 
 		return tfErr.GetDiag()
 	}
 
-	deleteTrustedProfileAssignmentOptions := &iamidentityv1.DeleteTrustedProfileAssignmentOptions{}
+	// maxRetries is the number of retries after the initial attempt.
+	// Total attempts = maxRetries + 1. Default: 1 retry (2 total attempts).
+	maxRetries := 1
+	if v := os.Getenv("IBMCLOUD_IAM_TRUSTED_PROFILE_ASSIGNMENT_RETRIES"); v != "" {
+		if n, err := strconv.Atoi(v); err == nil && n >= 0 {
+			maxRetries = n
+		}
+	}
+	maxAttempts := maxRetries + 1
 
-	deleteTrustedProfileAssignmentOptions.SetAssignmentID(d.Id())
+	var lastErr error
+	for attempt := 1; attempt <= maxAttempts; attempt++ {
+		deleteTrustedProfileAssignmentOptions := &iamidentityv1.DeleteTrustedProfileAssignmentOptions{}
+		deleteTrustedProfileAssignmentOptions.SetAssignmentID(d.Id())
 
-	_, _, err = iamIdentityClient.DeleteTrustedProfileAssignmentWithContext(context, deleteTrustedProfileAssignmentOptions)
-	if err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("DeleteTrustedProfileAssignmentWithContext failed: %s", err.Error()), "ibm_iam_trusted_profile_template_assignment", "delete")
-		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
-		return tfErr.GetDiag()
+		_, _, err = iamIdentityClient.DeleteTrustedProfileAssignmentWithContext(context, deleteTrustedProfileAssignmentOptions)
+		if err != nil {
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("DeleteTrustedProfileAssignmentWithContext failed: %s", err.Error()), "ibm_iam_trusted_profile_template_assignment", "delete")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
+		}
+
+		remaining := d.Timeout(schema.TimeoutDelete)
+		if deadline, ok := context.Deadline(); ok {
+			remaining = time.Until(deadline)
+		}
+		if remaining <= 0 {
+			return flex.DiscriminatedTerraformErrorf(fmt.Errorf("timed out"), "timed out waiting for assignment deletion", "ibm_iam_trusted_profile_template_assignment", "delete", "timeout").GetDiag()
+		}
+
+		_, lastErr = waitForAssignment(remaining, meta, d, isTrustedProfileAssignmentRemoved)
+		if lastErr == nil {
+			// Deletion confirmed.
+			d.SetId("")
+			return nil
+		}
+
+		if attempt < maxAttempts {
+			log.Printf("[INFO] Deletion of assignment %s failed, retrying (%d/%d): %s", d.Id(), attempt, maxRetries, lastErr)
+		}
 	}
 
-	_, err = waitForAssignment(d.Timeout(schema.TimeoutDelete), meta, d, isTrustedProfileAssignmentRemoved)
-	if err != nil {
-		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_trusted_profile_template_assignment", "delete", "wait-for-assignment").GetDiag()
+	return flex.DiscriminatedTerraformErrorf(lastErr, lastErr.Error(), "ibm_iam_trusted_profile_template_assignment", "delete", "wait-for-assignment").GetDiag()
+}
+
+// retryTrustedProfileFailedAssignment issues a PUT retry for each attempt while
+// the assignment status remains "failed", up to the count in
+// IBMCLOUD_IAM_TRUSTED_PROFILE_ASSIGNMENT_RETRIES (default 1, set to 0 to disable).
+// Each retry waits only for the time remaining on the parent context deadline so
+// the total duration of all retries never exceeds the configured resource timeout.
+// "superseded" is not retried automatically as it requires external action.
+func retryTrustedProfileFailedAssignment(ctx context.Context, d *schema.ResourceData, meta interface{}, iamIdentityClient *iamidentityv1.IamIdentityV1, templateVersion int64) error {
+	maxRetries := 1
+	if v := os.Getenv("IBMCLOUD_IAM_TRUSTED_PROFILE_ASSIGNMENT_RETRIES"); v != "" {
+		if n, err := strconv.Atoi(v); err == nil && n >= 0 {
+			maxRetries = n
+		}
 	}
+	for attempt := 1; attempt <= maxRetries; attempt++ {
+		// Only retry when status is "failed"; anything else (success, superseded) exits early.
+		status := d.Get("status").(string)
+		if status != "failed" {
+			return nil
+		}
 
-	d.SetId("")
+		// Use remaining time on the context deadline so all retries together stay
+		// within the configured resource timeout (create or update).
+		remaining := d.Timeout(schema.TimeoutCreate)
+		if deadline, ok := ctx.Deadline(); ok {
+			remaining = time.Until(deadline)
+		}
+		if remaining <= 0 {
+			return fmt.Errorf("timed out waiting for assignment %s to succeed after %d/%d retries", d.Id(), attempt-1, maxRetries)
+		}
 
+		log.Printf("[INFO] Assignment %s is in 'failed' state, issuing PUT retry %d/%d (%s remaining)", d.Id(), attempt, maxRetries, remaining.Round(time.Second))
+
+		updateOptions := &iamidentityv1.UpdateTrustedProfileAssignmentOptions{}
+		updateOptions.SetAssignmentID(d.Id())
+		updateOptions.SetIfMatch(d.Get("entity_tag").(string))
+		updateOptions.SetTemplateVersion(templateVersion)
+
+		if _, _, err := iamIdentityClient.UpdateTrustedProfileAssignmentWithContext(ctx, updateOptions); err != nil {
+			return fmt.Errorf("PUT retry %d/%d failed: %s", attempt, maxRetries, err)
+		}
+
+		if _, err := waitForAssignment(remaining, meta, d, isTrustedProfileTemplateAssigned); err != nil {
+			return fmt.Errorf("PUT retry %d/%d wait failed: %s", attempt, maxRetries, err)
+		}
+
+		// Re-read to refresh entity_tag and status for the next iteration.
+		// Skip on the last attempt — the caller always reads after this function returns.
+		// Note: Read may write template_version=0 to state if still failed, but
+		// templateVersion (the real version) is passed as a parameter so the next
+		// PUT iteration is unaffected.
+		if attempt < maxRetries {
+			if diags := resourceIBMTrustedProfileTemplateAssignmentRead(ctx, d, meta); diags.HasError() {
+				return fmt.Errorf("failed to read assignment after retry %d/%d", attempt, maxRetries)
+			}
+		}
+	}
 	return nil
 }
 
@@ -489,9 +628,14 @@ func isTrustedProfileAssignmentRemoved(id string, meta interface{}) resource.Sta
 			}
 
 			return nil, READY, fmt.Errorf("[ERROR] The assignment %s failed to delete or deletion was not completed within specific timeout period: %s\n%s", id, err, response)
-		} else {
-			log.Printf("Assignment removal still in progress\n")
 		}
+
+		if assignment != nil && assignment.Status != nil && *assignment.Status == "failed" {
+			return assignment, READY, fmt.Errorf("[ERROR] The deletion of assignment %s completed with a 'failed' status. Please check the assignment resource for detailed errors", id)
+		}
+
+		log.Printf("Assignment removal still in progress\n")
+
 		return assignment, WAITING, nil
 	}
 }
@@ -515,8 +659,9 @@ func isTrustedProfileTemplateAssigned(id string, meta interface{}) retry.StateRe
 				return assignment, WAITING, nil
 			}
 
-			if *assignment.Status == "failed" {
-				return assignment, READY, fmt.Errorf("[ERROR] The assignment %s did complete but with a 'failed' status. Please check assignment resource for detailed errors: %s\n", id, response)
+			if *assignment.Status == "failed" || *assignment.Status == "superseded" {
+				log.Printf("[WARN] Assignment %s completed with status '%s'\n", id, *assignment.Status)
+				return assignment, READY, nil
 			}
 
 			return assignment, READY, nil
