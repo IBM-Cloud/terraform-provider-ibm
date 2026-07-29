@@ -8,16 +8,10 @@ import (
 	"testing"
 	"time"
 
+	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/go-openapi/strfmt"
 	rc "github.com/IBM/platform-services-go-sdk/resourcecontrollerv2"
 )
-
-// helpers to build *string and *strfmt.DateTime pointers inline
-func strPtr(s string) *string { return &s }
-func dateTimePtr(t time.Time) *strfmt.DateTime {
-	dt := strfmt.DateTime(t)
-	return &dt
-}
 
 // ---------------------------------------------------------------------------
 // gen2GetOperationDescription
@@ -27,8 +21,8 @@ func TestGen2GetOperationDescription_LastOperationDescription(t *testing.T) {
 	desc := "Provisioning complete"
 	instance := &rc.ResourceInstance{
 		LastOperation: &rc.ResourceInstanceLastOperation{
-			Description: strPtr(desc),
-			Type:        strPtr("provision"),
+			Description: core.StringPtr(desc),
+			Type:        core.StringPtr("provision"),
 		},
 	}
 	got := gen2GetOperationDescription(instance)
@@ -40,8 +34,8 @@ func TestGen2GetOperationDescription_LastOperationDescription(t *testing.T) {
 func TestGen2GetOperationDescription_LastOperationTypeFallback(t *testing.T) {
 	instance := &rc.ResourceInstance{
 		LastOperation: &rc.ResourceInstanceLastOperation{
-			Description: strPtr(""),
-			Type:        strPtr("update"),
+			Description: core.StringPtr(""),
+			Type:        core.StringPtr("update"),
 		},
 	}
 	got := gen2GetOperationDescription(instance)
@@ -53,7 +47,7 @@ func TestGen2GetOperationDescription_LastOperationTypeFallback(t *testing.T) {
 
 func TestGen2GetOperationDescription_StateFallback(t *testing.T) {
 	instance := &rc.ResourceInstance{
-		State: strPtr("active"),
+		State: core.StringPtr("active"),
 	}
 	got := gen2GetOperationDescription(instance)
 	want := "Instance state: active"
@@ -81,13 +75,13 @@ func TestGen2MapStateToStatus(t *testing.T) {
 		want  string
 	}{
 		{nil, "unknown"},
-		{strPtr("active"), "completed"},
-		{strPtr("provisioning"), "running"},
-		{strPtr("in progress"), "running"},
-		{strPtr("removed"), "completed"},
-		{strPtr("failed"), "failed"},
-		{strPtr("inactive"), "inactive"},
-		{strPtr("unknown-state"), "unknown-state"},
+		{core.StringPtr("active"), "completed"},
+		{core.StringPtr("provisioning"), "running"},
+		{core.StringPtr("in progress"), "running"},
+		{core.StringPtr("removed"), "completed"},
+		{core.StringPtr("failed"), "failed"},
+		{core.StringPtr("inactive"), "inactive"},
+		{core.StringPtr("unknown-state"), "unknown-state"},
 	}
 
 	for _, tc := range tests {
@@ -115,13 +109,13 @@ func TestGen2CalculateProgress(t *testing.T) {
 		want  int
 	}{
 		{nil, 0},
-		{strPtr("active"), 100},
-		{strPtr("provisioning"), 50},
-		{strPtr("in progress"), 75},
-		{strPtr("failed"), 100},
-		{strPtr("removed"), 100},
-		{strPtr("inactive"), 0},
-		{strPtr("unknown-state"), 0},
+		{core.StringPtr("active"), 100},
+		{core.StringPtr("provisioning"), 50},
+		{core.StringPtr("in progress"), 75},
+		{core.StringPtr("failed"), 100},
+		{core.StringPtr("removed"), 100},
+		{core.StringPtr("inactive"), 0},
+		{core.StringPtr("unknown-state"), 0},
 	}
 
 	for _, tc := range tests {
@@ -144,10 +138,11 @@ func TestGen2CalculateProgress(t *testing.T) {
 // ---------------------------------------------------------------------------
 
 func TestGen2GetOperationTime_UpdatedAt(t *testing.T) {
-	ts := time.Date(2024, 6, 1, 12, 0, 0, 0, time.UTC)
+	updatedAt := strfmt.DateTime(time.Date(2024, 6, 1, 12, 0, 0, 0, time.UTC))
+	createdAt := strfmt.DateTime(time.Date(2024, 6, 1, 11, 0, 0, 0, time.UTC))
 	instance := &rc.ResourceInstance{
-		UpdatedAt: dateTimePtr(ts),
-		CreatedAt: dateTimePtr(ts.Add(-1 * time.Hour)),
+		UpdatedAt: &updatedAt,
+		CreatedAt: &createdAt,
 	}
 	got := gen2GetOperationTime(instance)
 	// UpdatedAt should be preferred over CreatedAt
@@ -157,9 +152,9 @@ func TestGen2GetOperationTime_UpdatedAt(t *testing.T) {
 }
 
 func TestGen2GetOperationTime_CreatedAtFallback(t *testing.T) {
-	ts := time.Date(2024, 6, 1, 10, 0, 0, 0, time.UTC)
+	createdAt := strfmt.DateTime(time.Date(2024, 6, 1, 10, 0, 0, 0, time.UTC))
 	instance := &rc.ResourceInstance{
-		CreatedAt: dateTimePtr(ts),
+		CreatedAt: &createdAt,
 	}
 	got := gen2GetOperationTime(instance)
 	if !strings.Contains(got, "2024") {
