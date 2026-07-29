@@ -9,8 +9,8 @@ import (
 	"time"
 
 	"github.com/IBM/go-sdk-core/v5/core"
-	"github.com/go-openapi/strfmt"
 	rc "github.com/IBM/platform-services-go-sdk/resourcecontrollerv2"
+	"github.com/go-openapi/strfmt"
 )
 
 // ---------------------------------------------------------------------------
