@@ -84,6 +84,7 @@ func ResourceIBMPINetwork() *schema.Resource {
 				Type:        schema.TypeSet,
 			},
 			Arg_EnableDHCP: {
+				Default:     true,
 				Description: "Network will support DHCP.",
 				Optional:    true,
 				Type:        schema.TypeBool,
@@ -621,6 +622,11 @@ func isIBMPINetworkRefreshUpdateFunc(client *instance.IBMPINetworkClient, update
 				if dnsServer != network.DNSServers[index] {
 					return network, State_Retry, nil
 				}
+			}
+		}
+		if updateBody.EnableDHCP != nil {
+			if *updateBody.EnableDHCP != network.EnableDHCP {
+				return network, State_Retry, nil
 			}
 		}
 
