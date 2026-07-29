@@ -100,6 +100,7 @@ var (
 	InstanceCRN                     string
 	InstanceDiskProfileName         string
 	InstanceName                    string
+	ISInstanceProfileName           string
 	InstanceProfileName             string
 	InstanceProfileNameUpdate       string
 	IpsecDatacenter                 string
@@ -1051,6 +1052,12 @@ func init() {
 		// InstanceProfileName = "bc1-2x8" // for classic infrastructure
 		InstanceProfileName = "cx2-2x4" // for next gen infrastructure
 		fmt.Println("[INFO] Set the environment variable SL_INSTANCE_PROFILE for testing ibm_is_instance resource else it is set to default value 'cx2-2x4'")
+	}
+
+	ISInstanceProfileName = os.Getenv("IS_INSTANCE_PROFILE_NAME")
+	if ISInstanceProfileName == "" {
+		ISInstanceProfileName = "gx2-8x64x1v100" // GPU profile — vcpu_count.type == "enum"
+		fmt.Println("[INFO] Set the environment variable IS_INSTANCE_PROFILE_NAME for testing supported_vcpu_count backfill, else it is set to default value 'gx2-8x64x1v100'")
 	}
 
 	IsKMSInstanceId = os.Getenv("SL_KMS_INSTANCE_ID")
