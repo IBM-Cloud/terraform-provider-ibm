@@ -15,9 +15,7 @@ import (
 )
 
 // dataSourceIBMDatabaseTasksGen2Backend implements tasks retrieval for Gen2 databases using RC API.
-type dataSourceIBMDatabaseTasksGen2Backend struct {
-	utils gen2TaskUtils
-}
+type dataSourceIBMDatabaseTasksGen2Backend struct{}
 
 func newDataSourceIBMDatabaseTasksGen2Backend() dataSourceIBMDatabaseTasksBackend {
 	return &dataSourceIBMDatabaseTasksGen2Backend{}
@@ -72,10 +70,10 @@ func (g *dataSourceIBMDatabaseTasksGen2Backend) instanceToTaskMap(instance *rc.R
 		taskMap["deployment_id"] = *instance.ID
 	}
 
-	taskMap["description"] = g.utils.getOperationDescription(instance)
-	taskMap["status"] = g.utils.mapStateToStatus(instance)
-	taskMap["progress_percent"] = g.utils.calculateProgress(instance)
-	taskMap["created_at"] = g.utils.getOperationTime(instance)
+	taskMap["description"] = gen2GetOperationDescription(instance)
+	taskMap["status"] = gen2MapStateToStatus(instance)
+	taskMap["progress_percent"] = gen2CalculateProgress(instance)
+	taskMap["created_at"] = gen2GetOperationTime(instance)
 
 	return taskMap
 }

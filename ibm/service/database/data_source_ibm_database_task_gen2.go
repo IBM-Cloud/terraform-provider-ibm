@@ -16,9 +16,7 @@ import (
 )
 
 // dataSourceIBMDatabaseTaskGen2Backend implements task retrieval for Gen2 databases using RC API.
-type dataSourceIBMDatabaseTaskGen2Backend struct {
-	utils gen2TaskUtils
-}
+type dataSourceIBMDatabaseTaskGen2Backend struct{}
 
 func newDataSourceIBMDatabaseTaskGen2Backend() dataSourceIBMDatabaseTaskBackend {
 	return &dataSourceIBMDatabaseTaskGen2Backend{}
@@ -57,27 +55,27 @@ func (g *dataSourceIBMDatabaseTaskGen2Backend) Read(ctx context.Context, d *sche
 		return tfErr.GetDiag()
 	}
 
-	description := g.utils.getOperationDescription(instance)
+	description := gen2GetOperationDescription(instance)
 	if err = d.Set("description", description); err != nil {
 		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting description: %s", err), "(Data) ibm_database_task", "read")
 		return tfErr.GetDiag()
 	}
 
-	status := g.utils.mapStateToStatus(instance)
+	status := gen2MapStateToStatus(instance)
 	log.Printf("[DEBUG] Gen2 task status: %s", status)
 	if err = d.Set("status", status); err != nil {
 		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting status: %s", err), "(Data) ibm_database_task", "read")
 		return tfErr.GetDiag()
 	}
 
-	progressPercent := g.utils.calculateProgress(instance)
+	progressPercent := gen2CalculateProgress(instance)
 	log.Printf("[DEBUG] Gen2 task progress: %d%%", progressPercent)
 	if err = d.Set("progress_percent", progressPercent); err != nil {
 		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting progress_percent: %s", err), "(Data) ibm_database_task", "read")
 		return tfErr.GetDiag()
 	}
 
-	createdAt := g.utils.getOperationTime(instance)
+	createdAt := gen2GetOperationTime(instance)
 	if err = d.Set("created_at", createdAt); err != nil {
 		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting created_at: %s", err), "(Data) ibm_database_task", "read")
 		return tfErr.GetDiag()

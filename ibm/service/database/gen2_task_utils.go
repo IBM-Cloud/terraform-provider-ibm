@@ -11,12 +11,8 @@ import (
 	rc "github.com/IBM/platform-services-go-sdk/resourcecontrollerv2"
 )
 
-// gen2TaskUtils provides shared utility functions for Gen2 database task operations.
-// These functions are used by both ibm_database_task and ibm_database_tasks data sources.
-type gen2TaskUtils struct{}
-
-// getOperationDescription extracts a human-readable description from the instance's last operation or state.
-func (g *gen2TaskUtils) getOperationDescription(instance *rc.ResourceInstance) string {
+// gen2GetOperationDescription extracts a human-readable description from the instance's last operation or state.
+func gen2GetOperationDescription(instance *rc.ResourceInstance) string {
 	if instance.LastOperation != nil {
 		if instance.LastOperation.Description != nil && *instance.LastOperation.Description != "" {
 			return *instance.LastOperation.Description
@@ -33,9 +29,9 @@ func (g *gen2TaskUtils) getOperationDescription(instance *rc.ResourceInstance) s
 	return "Gen2 database instance operation"
 }
 
-// mapStateToStatus converts Resource Controller instance state to task status.
+// gen2MapStateToStatus converts Resource Controller instance state to task status.
 // Maps Gen2 instance states to standardized task statuses for consistency with classic databases.
-func (g *gen2TaskUtils) mapStateToStatus(instance *rc.ResourceInstance) string {
+func gen2MapStateToStatus(instance *rc.ResourceInstance) string {
 	if instance.State == nil {
 		// Instance state is not available
 		return "unknown"
@@ -58,9 +54,9 @@ func (g *gen2TaskUtils) mapStateToStatus(instance *rc.ResourceInstance) string {
 	}
 }
 
-// calculateProgress estimates task completion percentage based on instance state.
+// gen2CalculateProgress estimates task completion percentage based on instance state.
 // Note: RC API doesn't provide granular progress data, so these are approximations.
-func (g *gen2TaskUtils) calculateProgress(instance *rc.ResourceInstance) int {
+func gen2CalculateProgress(instance *rc.ResourceInstance) int {
 	if instance.State == nil {
 		// No state information available
 		return 0
@@ -91,9 +87,9 @@ func (g *gen2TaskUtils) calculateProgress(instance *rc.ResourceInstance) int {
 	}
 }
 
-// getOperationTime returns the most recent timestamp for the instance operation.
+// gen2GetOperationTime returns the most recent timestamp for the instance operation.
 // Prefers UpdatedAt over CreatedAt, falls back to current time if neither is available.
-func (g *gen2TaskUtils) getOperationTime(instance *rc.ResourceInstance) string {
+func gen2GetOperationTime(instance *rc.ResourceInstance) string {
 	if instance.UpdatedAt != nil {
 		return flex.DateTimeToString(instance.UpdatedAt)
 	}
