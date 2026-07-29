@@ -2937,7 +2937,7 @@ func validateFlexFlavorForClassic(groupId string, flavorID string) error {
 	// Check if the flavor starts with "bxf."
 	if len(flavorID) >= 4 && flavorID[:4] == "bxf." {
 		return fmt.Errorf(
-			"Configuration error: Flex flavors (bxf.*) are not supported for Classic/Gen1 databases in group %q.\n\n"+
+			"Configuration error: Flex flavors (bxf.*) are not supported for Classic/Gen1 databases in group %q.\n"+
 				"   The host_flavor %q is a flex flavor which is only available for Gen2 databases.\n",
 			groupId, flavorID)
 	}
