@@ -2938,16 +2938,7 @@ func validateFlexFlavorForClassic(groupId string, flavorID string) error {
 	if len(flavorID) >= 4 && flavorID[:4] == "bxf." {
 		return fmt.Errorf(
 			"Configuration error: Flex flavors (bxf.*) are not supported for Classic/Gen1 databases in group %q.\n\n"+
-				"   The host_flavor %q is a flex flavor which is only available for Gen2 databases.\n"+
-				"   For Classic/Gen1 databases, please use standard dedicated flavors like:\n"+
-				"     - bx2.4x16\n"+
-				"     - bx2.8x32\n"+
-				"     - bx2.16x64\n"+
-				"     - bx2.32x128\n"+
-				"     - bx2.48x192\n\n"+
-				"   To use flex flavors (bxf.4x16, bxf.8x32, bxf.16x64, bxf.32x128, bxf.48x192),\n"+
-				"   please use a Gen2 plan (e.g., 'standard-gen2' instead of 'standard').\n\n"+
-				"   Documentation: https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/resources/database#host_flavor-2\n",
+				"   The host_flavor %q is a flex flavor which is only available for Gen2 databases.\n",
 			groupId, flavorID)
 	}
 	return nil
