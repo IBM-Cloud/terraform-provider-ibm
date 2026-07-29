@@ -123,25 +123,24 @@ func TestAccIBMDatabaseInstanceMongoShardingHscale(t *testing.T) {
 // go test -timeout 240m -run TestAccIBMMongoDBShardingGen2DatabaseInstanceBasic ./ibm/service/database/...
 func TestAccIBMMongoDBShardingGen2DatabaseInstanceBasic(t *testing.T) {
 	t.Parallel()
-	databaseResourceGroup := "default"
 	var databaseInstanceOne string
 	rnd := fmt.Sprintf("tf-mongoShardingGen2-%d", acctest.RandIntRange(10, 100))
 	testName := rnd
 	name := "ibm_database." + testName
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		PreCheck:     func() { acc.TestAccPreCheckEnterprise(t) },
 		Providers:    acc.TestAccProviders,
 		CheckDestroy: testAccCheckIBMDatabaseInstanceDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIBMDatabaseInstanceMongoDBShardingGen2Basic(databaseResourceGroup, testName),
+				Config: testAccCheckIBMDatabaseInstanceMongoDBShardingGen2Basic(testName),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMDatabaseInstanceExists(name, &databaseInstanceOne),
 					resource.TestCheckResourceAttr(name, "name", testName),
 					resource.TestCheckResourceAttr(name, "service", "databases-for-mongodb"),
 					resource.TestCheckResourceAttr(name, "plan", "enterprise-sharding-gen2"),
-					resource.TestCheckResourceAttr(name, "location", acc.Region()),
+					resource.TestCheckResourceAttr(name, "location", "ca-mon"),
 					resource.TestCheckResourceAttr(name, "service_endpoints", "private"),
 					resource.TestCheckResourceAttr(name, "groups.0.count", "3"),
 				),
@@ -150,18 +149,18 @@ func TestAccIBMMongoDBShardingGen2DatabaseInstanceBasic(t *testing.T) {
 	})
 }
 
-func testAccCheckIBMDatabaseInstanceMongoDBShardingGen2Basic(databaseResourceGroup string, name string) string {
+func testAccCheckIBMDatabaseInstanceMongoDBShardingGen2Basic(name string) string {
 	return fmt.Sprintf(`
 	data "ibm_resource_group" "test_acc" {
-		name = "%[1]s"
+		is_default = true
 	}
 
-	resource "ibm_database" "%[2]s" {
+	resource "ibm_database" "%[1]s" {
 		resource_group_id = data.ibm_resource_group.test_acc.id
-		name              = "%[2]s"
+		name              = "%[1]s"
 		service           = "databases-for-mongodb"
 		plan              = "enterprise-sharding-gen2"
-		location          = "%[3]s"
+		location          = "ca-mon"
 		service_endpoints = "private"
 
 		# host_flavor must NOT be set: enterprise-sharding-gen2 is multitenant
@@ -180,7 +179,7 @@ func testAccCheckIBMDatabaseInstanceMongoDBShardingGen2Basic(databaseResourceGro
 			delete = "15m"
 		}
 	}
-			`, databaseResourceGroup, name, acc.Region())
+			`, name, acc.Region())
 }
 
 func testAccCheckIBMDatabaseInstanceMongoDBShardingBasic(databaseResourceGroup string, name string) string {
