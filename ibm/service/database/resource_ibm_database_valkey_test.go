@@ -112,7 +112,7 @@ func TestAccIBMDatabaseInstanceValkeyKP_Encrypt(t *testing.T) {
 	})
 }
 
-// TestAccIBMDatabaseInstanceValkeyGen2Basic validates that a Valkey Gen2
+// TestAccIBMDatabaseInstanceValkeyGen2HostFlavors validates that a Valkey Gen2
 // instance can be provisioned in the ca-mon (Gen2) region using the
 // bx3d.4x20 dedicated host flavor.
 //
