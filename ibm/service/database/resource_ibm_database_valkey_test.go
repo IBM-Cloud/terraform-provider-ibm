@@ -132,7 +132,7 @@ func TestAccIBMDatabaseInstanceValkeyGen2HostFlavors(t *testing.T) {
 		CheckDestroy: testAccCheckIBMDatabaseInstanceDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIBMDatabaseInstanceValkeyGen2Basic(testName),
+				Config: testAccCheckIBMDatabaseInstanceValkeyGen2HostFlavors(testName),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMDatabaseInstanceExists(name, &databaseInstanceOne),
 					resource.TestCheckResourceAttr(name, "name", testName),
@@ -249,7 +249,7 @@ func testAccCheckIBMDatabaseInstanceValkeyKPEncrypt(databaseResourceGroup string
 	`, kpInstanceName, region, kpKeyName, name, region)
 }
 
-func testAccCheckIBMDatabaseInstanceValkeyGen2Basic(name string) string {
+func testAccCheckIBMDatabaseInstanceValkeyGen2HostFlavors(name string) string {
 	return fmt.Sprintf(`
 	data "ibm_resource_group" "test_acc" {
 		is_default = true
