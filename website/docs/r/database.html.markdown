@@ -803,6 +803,7 @@ Review the argument reference that you can specify for your resource.
         - `id` - (Optional, String) The hosting infrastructure identifier. **Gen2: Supported.**
 
           **Classic:** Selecting `multitenant` places your database on a logically separated, multi-tenant machine. With this identifier, minimum resource configurations apply. Alternatively, setting the identifier to any of the following host sizes places your database on the specified host size with no other tenants:
+          - `multitenant`
           - `b3c.4x16.encrypted`
           - `b3c.8x32.encrypted`
           - `m3c.8x64.encrypted`
@@ -810,7 +811,17 @@ Review the argument reference that you can specify for your resource.
           - `b3c.32x128.encrypted`
           - `m3c.30x240.encrypted`
 
-          **Gen2:** Use dedicated host flavors like `bx3d.4x20`, `bx3d.8x40`, `mx3d.8x64`, etc. The `multitenant` option is not supported for Gen2 plans.
+          **Gen2:** Use one of the following dedicated host flavors. The `multitenant` option is not supported for Gen2 plans.
+          - `bx3d.4x20`
+          - `bx3d.8x40`
+          - `bx3d.16x80`
+          - `bx3d.32x160`
+          - `bx3d.48x240`
+          - `bxf.16x64`
+          - `bxf.32x128`
+          - `bxf.48x192`
+          - `bxf.4x16`
+          - `bxf.8x32`
 
 - `name` - (Required, String) A descriptive name that is used to identify the database instance. The name must not include spaces.
 - `offline_restore` - (Optional, Boolean) Enable or disable the Offline Restore option while performing a Point-in-time Recovery for MongoDB EE in a disaster recovery scenario when the source region is unavailable, see [Point-in-time Recovery](https://cloud.ibm.com/docs/databases-for-mongodb?topic=databases-for-mongodb-pitr&interface=api#pitr-offline-restore)
