@@ -355,8 +355,14 @@ func (g *resourceIBMDatabaseGen2Backend) buildGen2Parameters(d *schema.ResourceD
 		return nil, fmt.Errorf("unable to determine database type from service name: %s", serviceName)
 	}
 
+	// enterprise-sharding-gen2 broker uses "mongodbees" as the dataservices key
+	plan := d.Get("plan").(string)
+	if plan == "enterprise-sharding-gen2" && dbType == "mongodb" {
+		dbType = "mongodbees"
+	}
+
 	// Build database configuration using typed struct
-	dbConfig, err := g.buildDBConfig(d, catalogCRN, meta)
+	dbConfig, err := g.buildDBConfig(d, catalogCRN, meta, dbType)
 	if err != nil {
 		return nil, err
 	}
@@ -387,7 +393,7 @@ func (g *resourceIBMDatabaseGen2Backend) buildGen2Parameters(d *schema.ResourceD
 // Extracts and consolidates member group logic, reducing nested if statements.
 // Gen2 supports: members, disk, and host_flavor from groups.
 // Note: memory and cpu are NOT supported independently in Gen2 - they are controlled by host_flavor.
-func (g *resourceIBMDatabaseGen2Backend) buildDBConfig(d *schema.ResourceData, catalogCRN string, meta interface{}) (map[string]interface{}, error) {
+func (g *resourceIBMDatabaseGen2Backend) buildDBConfig(d *schema.ResourceData, catalogCRN string, meta interface{}, dbType string) (map[string]interface{}, error) {
 	config := DBConfig{}
 
 	// Version
@@ -407,7 +413,7 @@ func (g *resourceIBMDatabaseGen2Backend) buildDBConfig(d *schema.ResourceData, c
 
 	// Early return if no member group - simplifies logic below
 	if memberGroup == nil {
-		return g.dbConfigToMap(config), nil
+		return g.dbConfigToMap(config, dbType), nil
 	}
 
 	// Storage in GB (not MB!) - Gen2 expects per-member allocation
@@ -421,18 +427,21 @@ func (g *resourceIBMDatabaseGen2Backend) buildDBConfig(d *schema.ResourceData, c
 		config.HostFlavor = memberGroup.HostFlavor.ID
 	}
 
-	return g.dbConfigToMap(config), nil
+	return g.dbConfigToMap(config, dbType), nil
 }
 
 // dbConfigToMap converts DBConfig struct to map[string]interface{} for API compatibility.
 // Only includes non-zero values to avoid sending unnecessary fields.
-func (g *resourceIBMDatabaseGen2Backend) dbConfigToMap(config DBConfig) map[string]interface{} {
+// The dbType parameter controls which fields are included: "mongodbees" does not accept "members".
+func (g *resourceIBMDatabaseGen2Backend) dbConfigToMap(config DBConfig, dbType string) map[string]interface{} {
 	result := make(map[string]interface{})
 
 	if config.Version != "" {
 		result["version"] = config.Version
 	}
-	result["members"] = config.Members
+	if dbType != "mongodbees" {
+		result["members"] = config.Members
+	}
 	if config.StorageGB > 0 {
 		result["storage_gb"] = config.StorageGB
 	}

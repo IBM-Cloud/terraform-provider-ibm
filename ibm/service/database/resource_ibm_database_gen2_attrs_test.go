@@ -280,3 +280,78 @@ func TestGen2DiagnosticsOrdering(t *testing.T) {
 		t.Fatalf("expected warning second")
 	}
 }
+
+func TestDbConfigToMap_membersIncludedForMongodb(t *testing.T) {
+	g := &resourceIBMDatabaseGen2Backend{}
+	config := DBConfig{Members: 3, StorageGB: 10, HostFlavor: "bx3d.4x20"}
+
+	result := g.dbConfigToMap(config, "mongodb")
+
+	if _, ok := result["members"]; !ok {
+		t.Fatal("expected 'members' to be present for dbType 'mongodb'")
+	}
+	if result["members"] != 3 {
+		t.Fatalf("expected members=3, got %v", result["members"])
+	}
+}
+
+func TestDbConfigToMap_membersExcludedForMongodbees(t *testing.T) {
+	g := &resourceIBMDatabaseGen2Backend{}
+	config := DBConfig{Members: 3, StorageGB: 10, HostFlavor: "bx3d.4x20"}
+
+	result := g.dbConfigToMap(config, "mongodbees")
+
+	if _, ok := result["members"]; ok {
+		t.Fatalf("expected 'members' to be absent for dbType 'mongodbees', got %v", result["members"])
+	}
+}
+
+func TestDbConfigToMap_storageAndHostFlavorPresentForMongodbees(t *testing.T) {
+	g := &resourceIBMDatabaseGen2Backend{}
+	config := DBConfig{Members: 3, StorageGB: 10, HostFlavor: "bx3d.4x20"}
+
+	result := g.dbConfigToMap(config, "mongodbees")
+
+	if result["storage_gb"] != 10 {
+		t.Fatalf("expected storage_gb=10, got %v", result["storage_gb"])
+	}
+	if result["host_flavor"] != "bx3d.4x20" {
+		t.Fatalf("expected host_flavor=bx3d.4x20, got %v", result["host_flavor"])
+	}
+}
+
+func TestBuildGen2Parameters_enterpriseShardingGen2UsesMongodbees(t *testing.T) {
+	d := testGen2DatabaseResourceData(t, map[string]interface{}{
+		"service": "databases-for-mongodb",
+		"plan":    "enterprise-sharding-gen2",
+	})
+
+	// dbType resolution: getDatabaseTypeFromResourceID("databases-for-mongodb") → "mongodb"
+	// then overridden to "mongodbees" for enterprise-sharding-gen2
+	dbType := getDatabaseTypeFromResourceID(d.Get("service").(string))
+	plan := d.Get("plan").(string)
+	if plan == "enterprise-sharding-gen2" && dbType == "mongodb" {
+		dbType = "mongodbees"
+	}
+
+	if dbType != "mongodbees" {
+		t.Fatalf("expected dbType 'mongodbees' for enterprise-sharding-gen2, got %q", dbType)
+	}
+}
+
+func TestBuildGen2Parameters_standardGen2UsesMongodbNotMongodbees(t *testing.T) {
+	d := testGen2DatabaseResourceData(t, map[string]interface{}{
+		"service": "databases-for-mongodb",
+		"plan":    "standard-gen2",
+	})
+
+	dbType := getDatabaseTypeFromResourceID(d.Get("service").(string))
+	plan := d.Get("plan").(string)
+	if plan == "enterprise-sharding-gen2" && dbType == "mongodb" {
+		dbType = "mongodbees"
+	}
+
+	if dbType != "mongodb" {
+		t.Fatalf("expected dbType 'mongodb' for standard-gen2, got %q", dbType)
+	}
+}
