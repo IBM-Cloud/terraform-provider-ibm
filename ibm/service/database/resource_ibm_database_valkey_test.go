@@ -112,6 +112,42 @@ func TestAccIBMDatabaseInstanceValkeyKP_Encrypt(t *testing.T) {
 	})
 }
 
+// TestAccIBMDatabaseInstanceValkeyGen2Basic validates that a Valkey Gen2
+// instance can be provisioned in the ca-mon (Gen2) region using the
+// bx3d.4x20 dedicated host flavor.
+//
+// Run with:
+//
+//	go test -timeout 480m -run TestAccIBMDatabaseInstanceValkeyGen2HostFlavors ./ibm/service/database/...
+func TestAccIBMDatabaseInstanceValkeyGen2HostFlavors(t *testing.T) {
+	t.Parallel()
+	var databaseInstanceOne string
+	rnd := fmt.Sprintf("tf-valkey-gen2-%d", acctest.RandIntRange(10, 100))
+	testName := rnd
+	name := "ibm_database." + testName
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheckEnterprise(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMDatabaseInstanceDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMDatabaseInstanceValkeyGen2Basic(testName),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMDatabaseInstanceExists(name, &databaseInstanceOne),
+					resource.TestCheckResourceAttr(name, "name", testName),
+					resource.TestCheckResourceAttr(name, "service", "databases-for-valkey"),
+					resource.TestCheckResourceAttr(name, "plan", "standard-gen2"),
+					resource.TestCheckResourceAttr(name, "location", "ca-mon"),
+					resource.TestCheckResourceAttr(name, "service_endpoints", "private"),
+					resource.TestCheckResourceAttr(name, "groups.0.host_flavor.0.id", "bx3d.4x20"),
+					resource.TestCheckResourceAttr(name, "groups.0.disk.0.allocation_mb", "20480"),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckIBMDatabaseInstanceValkeyBasic(databaseResourceGroup string, name string) string {
 	return fmt.Sprintf(`
 	data "ibm_resource_group" "test_acc" {
@@ -211,42 +247,6 @@ func testAccCheckIBMDatabaseInstanceValkeyKPEncrypt(databaseResourceGroup string
 		}
 	}
 	`, kpInstanceName, region, kpKeyName, name, region)
-}
-
-// TestAccIBMDatabaseInstanceValkeyGen2Basic validates that a Valkey Gen2
-// instance can be provisioned in the ca-mon (Gen2) region using the
-// bx3d.4x20 dedicated host flavor.
-//
-// Run with:
-//
-//	go test -timeout 480m -run TestAccIBMDatabaseInstanceValkeyGen2Basic ./ibm/service/database/...
-func TestAccIBMDatabaseInstanceValkeyGen2Basic(t *testing.T) {
-	t.Parallel()
-	var databaseInstanceOne string
-	rnd := fmt.Sprintf("tf-valkey-gen2-%d", acctest.RandIntRange(10, 100))
-	testName := rnd
-	name := "ibm_database." + testName
-
-	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acc.TestAccPreCheckEnterprise(t) },
-		Providers:    acc.TestAccProviders,
-		CheckDestroy: testAccCheckIBMDatabaseInstanceDestroy,
-		Steps: []resource.TestStep{
-			{
-				Config: testAccCheckIBMDatabaseInstanceValkeyGen2Basic(testName),
-				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckIBMDatabaseInstanceExists(name, &databaseInstanceOne),
-					resource.TestCheckResourceAttr(name, "name", testName),
-					resource.TestCheckResourceAttr(name, "service", "databases-for-valkey"),
-					resource.TestCheckResourceAttr(name, "plan", "standard-gen2"),
-					resource.TestCheckResourceAttr(name, "location", "ca-mon"),
-					resource.TestCheckResourceAttr(name, "service_endpoints", "private"),
-					resource.TestCheckResourceAttr(name, "groups.0.host_flavor.0.id", "bx3d.4x20"),
-					resource.TestCheckResourceAttr(name, "groups.0.disk.0.allocation_mb", "20480"),
-				),
-			},
-		},
-	})
 }
 
 func testAccCheckIBMDatabaseInstanceValkeyGen2Basic(name string) string {
