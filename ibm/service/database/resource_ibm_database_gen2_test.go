@@ -173,7 +173,7 @@ func TestGen2BuildDBConfigUsesPerMemberDiskAllocation(t *testing.T) {
 
 	backend := newResourceIBMDatabaseGen2Backend().(*resourceIBMDatabaseGen2Backend)
 
-	config, err := backend.buildDBConfig(d, "", nil)
+	config, err := backend.buildDBConfig(d, "", nil, "postgresql")
 	assert.NoError(t, err)
 	assert.Equal(t, 2, config["members"])
 	assert.Equal(t, 20, config["storage_gb"])
