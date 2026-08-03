@@ -84,7 +84,7 @@ func ResourceIBMPINetwork() *schema.Resource {
 				Type:        schema.TypeSet,
 			},
 			Arg_EnableDHCP: {
-				Default:     true,
+				Computed:    true,
 				Description: "Network will support DHCP.",
 				Optional:    true,
 				Type:        schema.TypeBool,
@@ -401,6 +401,7 @@ func resourceIBMPINetworkRead(ctx context.Context, d *schema.ResourceData, meta 
 	d.Set(Arg_NetworkMTU, networkdata.Mtu)
 	d.Set(Arg_NetworkName, networkdata.Name)
 	d.Set(Arg_NetworkType, networkdata.Type)
+	d.Set(Arg_EnableDHCP, networkdata.EnableDHCP)
 	d.Set(Attr_EnableDHCP, networkdata.EnableDHCP)
 	d.Set(Attr_NetworkID, networkdata.NetworkID)
 	networkAddressTranslation := []map[string]interface{}{}
@@ -629,7 +630,6 @@ func isIBMPINetworkRefreshUpdateFunc(client *instance.IBMPINetworkClient, update
 				return network, State_Retry, nil
 			}
 		}
-
 		if updateBody.Gateway != nil {
 			if *updateBody.Gateway != network.Gateway {
 				return network, State_Retry, nil
