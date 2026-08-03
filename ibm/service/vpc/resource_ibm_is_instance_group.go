@@ -26,6 +26,8 @@ const (
 	SCALING = "scaling"
 	// HEALTHY ...
 	HEALTHY = "healthy"
+	// UNHEALTHY ...
+	UNHEALTHY = "unhealthy"
 	// DELETING ...
 	DELETING                     = "deleting"
 	isInstanceGroupAccessTags    = "access_tags"
@@ -660,7 +662,12 @@ func waitForHealthyInstanceGroup(instanceGroupID string, meta interface{}, timeo
 	getInstanceGroupOptions := vpcv1.GetInstanceGroupOptions{ID: &instanceGroupID}
 
 	healthStateConf := &resource.StateChangeConf{
-		Pending: []string{SCALING},
+		// An instance group reports "unhealthy" while a member is being added, replaced, or is
+		// still booting, so it is a state on the way to "healthy" rather than a terminal one.
+		// Leaving it out of Pending makes StateChangeConf return the moment it observes one,
+		// failing an apply the API has already accepted. "deleting" stays out deliberately: a
+		// group being deleted while we wait for it to become healthy will never get there.
+		Pending: []string{SCALING, UNHEALTHY},
 		Target:  []string{HEALTHY},
 		Refresh: func() (interface{}, string, error) {
 			instanceGroup, response, err := sess.GetInstanceGroup(&getInstanceGroupOptions)
