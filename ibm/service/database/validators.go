@@ -8,10 +8,42 @@ import (
 	"fmt"
 	"log"
 
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM/cloud-databases-go-sdk/clouddatabasesv5"
 	"github.com/IBM/go-sdk-core/v5/core"
+	rc "github.com/IBM/platform-services-go-sdk/resourcecontrollerv2"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
+
+// detectPlatform returns "gen2" when the instance is a Gen2/CDP plan, or
+// "classic" otherwise. It resolves the ResourcePlanID GUID to a human-readable
+// plan name before checking, because isGen2Plan matches the "-gen2" suffix.
+func detectPlatform(instanceId string, meta interface{}) string {
+	if planName, err := resolvePlanName(instanceId, meta); err == nil && isGen2Plan(planName) {
+		return "gen2"
+	}
+	return classicPlatform
+}
+
+// resolvePlanName fetches the human-readable plan name for the given instance.
+func resolvePlanName(instanceId string, meta interface{}) (string, error) {
+	cs := meta.(conns.ClientSession)
+
+	rsConClient, err := cs.ResourceControllerV2API()
+	if err != nil {
+		return "", err
+	}
+	instance, _, err := rsConClient.GetResourceInstance(&rc.GetResourceInstanceOptions{ID: &instanceId})
+	if err != nil || instance == nil || instance.ResourcePlanID == nil {
+		return "", fmt.Errorf("could not retrieve instance plan")
+	}
+
+	rsCatClient, err := cs.ResourceCatalogAPI()
+	if err != nil {
+		return "", err
+	}
+	return rsCatClient.ResourceCatalog().GetServicePlanName(*instance.ResourcePlanID)
+}
 
 /* TODO move other validators in here */
 
@@ -110,8 +142,10 @@ func (v *Version) getAllowedVersionsList() []string {
 var fetchDeploymentVersionFn = fetchDeploymentVersion
 
 func fetchDeploymentVersion(instanceId string, location string, meta interface{}) *Version {
+	platform := detectPlatform(instanceId, meta)
+
 	options := DeploymentCapabilityOptions{
-		Platform:      classicPlatform,
+		Platform:      platform,
 		Location:      location,
 		IncludeHidden: core.BoolPtr(true),
 		IncludeBeta:   core.BoolPtr(true),
@@ -119,7 +153,8 @@ func fetchDeploymentVersion(instanceId string, location string, meta interface{}
 
 	capability, err := getDeploymentCapability(versions, instanceId, options, meta)
 	if err != nil {
-		log.Fatalf("Error fetching deployment versions: %v", err)
+		log.Printf("[WARN] Error fetching deployment versions for instance %s: %v", instanceId, err)
+		return nil
 	}
 
 	if capability == nil || capability.Versions == nil || len(capability.Versions) == 0 {

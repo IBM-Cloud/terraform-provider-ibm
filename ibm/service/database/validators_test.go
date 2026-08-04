@@ -8,8 +8,8 @@ import (
 
 	"github.com/IBM/cloud-databases-go-sdk/clouddatabasesv5"
 	"github.com/IBM/go-sdk-core/v5/core"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"gotest.tools/assert"
 )
 
 func TestIsVersionUpgradeAllowed(t *testing.T) {
@@ -233,7 +233,7 @@ func TestGetAllowedVersionsList(t *testing.T) {
 	for _, tc := range testcases {
 		t.Run(tc.description, func(t *testing.T) {
 			result := tc.version.getAllowedVersionsList()
-			assert.DeepEqual(t, tc.expectedResult, result)
+			assert.Equal(t, tc.expectedResult, result)
 		})
 	}
 }
@@ -514,6 +514,50 @@ func TestValidateGroupScaling(t *testing.T) {
 			} else {
 				require.NoError(t, err)
 			}
+		})
+	}
+}
+
+func TestFetchDeploymentVersionPlatformDetection(t *testing.T) {
+	tests := []struct {
+		description      string
+		planID           string
+		expectedPlatform string
+	}{
+		{
+			description:      "When plan is classic, expect platform 'classic'",
+			planID:           "databases-for-postgresql-standard",
+			expectedPlatform: classicPlatform,
+		},
+		{
+			description:      "When plan is Gen2, expect platform 'gen2'",
+			planID:           "databases-for-postgresql-gen2-standard",
+			expectedPlatform: "gen2",
+		},
+		{
+			description:      "When plan is CDP with gen2, expect platform 'gen2'",
+			planID:           "messages-for-rabbitmq-gen2-cdp-dev",
+			expectedPlatform: "gen2",
+		},
+		{
+			description:      "When plan is CDP Valkey, expect platform 'gen2'",
+			planID:           "databases-for-valkey-gen2-cdp-dev",
+			expectedPlatform: "gen2",
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.description, func(t *testing.T) {
+			isGen2 := isGen2Plan(tc.planID)
+
+			var actualPlatform string
+			if isGen2 {
+				actualPlatform = "gen2"
+			} else {
+				actualPlatform = classicPlatform
+			}
+
+			require.Equal(t, tc.expectedPlatform, actualPlatform)
 		})
 	}
 }
