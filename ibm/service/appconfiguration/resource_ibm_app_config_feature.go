@@ -76,6 +76,62 @@ func ResourceIBMIbmAppConfigFeature() *schema.Resource {
 				Optional:    true,
 				Description: "Rollout percentage of the feature.",
 			},
+			"rollout_type": {
+				Type:         schema.TypeString,
+				Optional:     true,
+				ValidateFunc: validate.InvokeValidator("ibm_app_config_feature", "rollout_type"),
+				Description:  "The rollout strategy type for the feature flag. MANUAL is the default. PROGRESSIVE enables automatic phase-based rollout.",
+			},
+			"rollout_configuration": {
+				Type:        schema.TypeList,
+				Optional:    true,
+				MaxItems:    1,
+				Description: "Configuration that controls the rollout behaviour for a Progressive rollout type.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"duration_preset": {
+							Type:        schema.TypeString,
+							Required:    true,
+							Description: "A predefined duration preset that sets the overall pace of the rollout. Use CUSTOM to define phases manually.",
+						},
+						"start_at": {
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "The UTC date and time at which the rollout should start, in ISO 8601 format.",
+						},
+						"status": {
+							Type:        schema.TypeString,
+							Optional:    true,
+							Computed:    true,
+							Description: "The current execution status of a rollout (QUEUED, RUNNING, STOPPED).",
+						},
+						"phases": {
+							Type:        schema.TypeList,
+							Required:    true,
+							Description: "The ordered list of rollout phases.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"percentage": {
+										Type:        schema.TypeInt,
+										Required:    true,
+										Description: "The rollout percentage target for this phase.",
+									},
+									"duration": {
+										Type:        schema.TypeInt,
+										Optional:    true,
+										Description: "The length of time to wait before advancing to the next phase.",
+									},
+									"duration_type": {
+										Type:        schema.TypeString,
+										Optional:    true,
+										Description: "The unit of time for the duration field (minutes, hours, days).",
+									},
+								},
+							},
+						},
+					},
+				},
+			},
 			"format": {
 				Type:        schema.TypeString,
 				Optional:    true,
@@ -116,6 +172,62 @@ func ResourceIBMIbmAppConfigFeature() *schema.Resource {
 							Type:        schema.TypeInt,
 							Optional:    true,
 							Description: "Rollout percentage for the segment rule.",
+						},
+						"rollout_type": {
+							Type:         schema.TypeString,
+							Optional:     true,
+							ValidateFunc: validate.InvokeValidator("ibm_app_config_feature", "rollout_type"),
+							Description:  "The rollout strategy type for this segment rule. MANUAL is the default. PROGRESSIVE enables automatic phase-based rollout.",
+						},
+						"rollout_configuration": {
+							Type:        schema.TypeList,
+							Optional:    true,
+							MaxItems:    1,
+							Description: "Configuration that controls the rollout behaviour for a Progressive rollout type on this segment rule.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"duration_preset": {
+										Type:        schema.TypeString,
+										Required:    true,
+										Description: "A predefined duration preset that sets the overall pace of the rollout.",
+									},
+									"start_at": {
+										Type:        schema.TypeString,
+										Optional:    true,
+										Description: "The UTC date and time at which the rollout should start, in ISO 8601 format.",
+									},
+									"status": {
+										Type:        schema.TypeString,
+										Optional:    true,
+										Computed:    true,
+										Description: "The current execution status of a rollout (QUEUED, RUNNING, STOPPED).",
+									},
+									"phases": {
+										Type:        schema.TypeList,
+										Required:    true,
+										Description: "The ordered list of rollout phases.",
+										Elem: &schema.Resource{
+											Schema: map[string]*schema.Schema{
+												"percentage": {
+													Type:        schema.TypeInt,
+													Required:    true,
+													Description: "The rollout percentage target for this phase.",
+												},
+												"duration": {
+													Type:        schema.TypeInt,
+													Optional:    true,
+													Description: "The length of time to wait before advancing to the next phase.",
+												},
+												"duration_type": {
+													Type:        schema.TypeString,
+													Optional:    true,
+													Description: "The unit of time for the duration field (minutes, hours, days).",
+												},
+											},
+										},
+									},
+								},
+							},
 						},
 					},
 				},
@@ -203,6 +315,18 @@ func resourceIbmIbmAppConfigFeatureCreate(d *schema.ResourceData, meta interface
 	if _, ok := GetFieldExists(d, "rollout_percentage"); ok {
 		options.SetRolloutPercentage(int64(d.Get("rollout_percentage").(int)))
 	}
+	if _, ok := GetFieldExists(d, "rollout_type"); ok {
+		options.SetRolloutType(d.Get("rollout_type").(string))
+	}
+	if _, ok := GetFieldExists(d, "rollout_configuration"); ok {
+		rc, err := resourceIbmAppConfigFeatureMapToRolloutConfiguration(d.Get("rollout_configuration").([]interface{}))
+		if err != nil {
+			return err
+		}
+		if rc != nil {
+			options.SetRolloutConfiguration(rc)
+		}
+	}
 	if _, ok := GetFieldExists(d, "description"); ok {
 		options.SetDescription(d.Get("description").(string))
 	}
@@ -268,7 +392,7 @@ func resourceIbmIbmAppConfigFeatureUpdate(d *schema.ResourceData, meta interface
 	if value, ok := GetFieldExists(d, "format"); ok {
 		format = value
 	}
-	if ok := d.HasChanges("name", "enabled_value", "disabled_value", "description", "rollout_percentage", "tags", "segment_rules", "collections", "enabled", "environment_id"); ok {
+	if ok := d.HasChanges("name", "enabled_value", "disabled_value", "description", "rollout_percentage", "rollout_type", "rollout_configuration", "tags", "segment_rules", "collections", "enabled", "environment_id"); ok {
 		options.SetName(d.Get("name").(string))
 		// formating and setting enabled value
 		value, err := formatValue(typ, format, d.Get("enabled_value").(string))
@@ -290,6 +414,18 @@ func resourceIbmIbmAppConfigFeatureUpdate(d *schema.ResourceData, meta interface
 		}
 		if _, ok := GetFieldExists(d, "rollout_percentage"); ok {
 			options.SetRolloutPercentage(int64(d.Get("rollout_percentage").(int)))
+		}
+		if _, ok := GetFieldExists(d, "rollout_type"); ok {
+			options.SetRolloutType(d.Get("rollout_type").(string))
+		}
+		if _, ok := GetFieldExists(d, "rollout_configuration"); ok {
+			rc, err := resourceIbmAppConfigFeatureMapToRolloutConfiguration(d.Get("rollout_configuration").([]interface{}))
+			if err != nil {
+				return err
+			}
+			if rc != nil {
+				options.SetRolloutConfiguration(rc)
+			}
 		}
 		if _, ok := GetFieldExists(d, "tags"); ok {
 			options.SetTags(d.Get("tags").(string))
@@ -369,6 +505,16 @@ func resourceIbmIbmAppConfigFeatureRead(d *schema.ResourceData, meta interface{}
 	if result.RolloutPercentage != nil {
 		if err = d.Set("rollout_percentage", result.RolloutPercentage); err != nil {
 			return flex.FmtErrorf("[ERROR] Error setting rollout_percentage: %s", err)
+		}
+	}
+	if result.RolloutType != nil {
+		if err = d.Set("rollout_type", result.RolloutType); err != nil {
+			return flex.FmtErrorf("[ERROR] Error setting rollout_type: %s", err)
+		}
+	}
+	if result.RolloutConfiguration != nil {
+		if err = d.Set("rollout_configuration", resourceIbmAppConfigFeatureFlattenRolloutConfiguration(result.RolloutConfiguration)); err != nil {
+			return flex.FmtErrorf("[ERROR] Error setting rollout_configuration: %s", err)
 		}
 	}
 	if result.Format != nil {
@@ -470,7 +616,7 @@ func resourceIbmIbmAppConfigFeatureDelete(d *schema.ResourceData, meta interface
 	options.SetEnvironmentID(d.Get("environment_id").(string))
 	options.SetFeatureID(parts[1])
 
-	response, err := appconfigClient.DeleteFeature(options)
+	_, response, err := appconfigClient.DeleteFeature(options)
 	if err != nil {
 		if response != nil && response.StatusCode == 404 {
 			d.SetId("")
@@ -494,6 +640,13 @@ func ResourceIBMAppConfigFeatureValidator() *validate.ResourceValidator {
 			Required:                   true,
 			AllowedValues:              "BOOLEAN, NUMERIC, STRING",
 		},
+		validate.ValidateSchema{
+			Identifier:                 "rollout_type",
+			ValidateFunctionIdentifier: validate.ValidateAllowedStringValue,
+			Type:                       validate.TypeString,
+			Optional:                   true,
+			AllowedValues:              "MANUAL, PROGRESSIVE",
+		},
 	)
 
 	resourceValidator := validate.ResourceValidator{
@@ -516,6 +669,12 @@ func resourceIbmAppConfigFeatureSegmentRuleToMap(segmentRule appconfigurationv1.
 	segmentRuleMap["rules"] = rules
 	segmentRuleMap["order"] = flex.IntValue(segmentRule.Order)
 	segmentRuleMap["rollout_percentage"] = flex.IntValue(segmentRule.RolloutPercentage)
+	if segmentRule.RolloutType != nil {
+		segmentRuleMap["rollout_type"] = segmentRule.RolloutType
+	}
+	if segmentRule.RolloutConfiguration != nil {
+		segmentRuleMap["rollout_configuration"] = resourceIbmAppConfigFeatureFlattenRolloutConfiguration(segmentRule.RolloutConfiguration)
+	}
 	segmentValue := segmentRule.Value
 	switch segmentValue.(interface{}).(type) {
 	case string:
@@ -554,6 +713,16 @@ func resourceIbmAppConfigFeatureMapToSegmentRule(d *schema.ResourceData, segment
 
 	segmentRule.Order = core.Int64Ptr(int64(segmentRuleMap["order"].(int)))
 	segmentRule.RolloutPercentage = core.Int64Ptr(int64(segmentRuleMap["rollout_percentage"].(int)))
+	if v, ok := segmentRuleMap["rollout_type"].(string); ok && v != "" {
+		segmentRule.RolloutType = core.StringPtr(v)
+	}
+	if rcList, ok := segmentRuleMap["rollout_configuration"].([]interface{}); ok && len(rcList) > 0 {
+		rc, err := resourceIbmAppConfigFeatureMapToRolloutConfiguration(rcList)
+		if err != nil {
+			return segmentRule, err
+		}
+		segmentRule.RolloutConfiguration = rc
+	}
 	value, err := formatValue(typ, format, segmentRuleMap["value"])
 	if err != nil {
 		return segmentRule, err
@@ -581,6 +750,75 @@ func resourceIbmAppConfigFeatureMapToCollectionRef(collectionRefMap map[string]i
 		return collectionRef, flex.FmtErrorf("'deleted' attributed is not allowed in creation of feature")
 	}
 	return collectionRef, nil
+}
+
+func resourceIbmAppConfigFeatureMapToRolloutConfiguration(rcList []interface{}) (*appconfigurationv1.RolloutConfiguration, error) {
+	if len(rcList) == 0 {
+		return nil, nil
+	}
+	rcMap := rcList[0].(map[string]interface{})
+	rc := &appconfigurationv1.RolloutConfiguration{}
+	if v, ok := rcMap["duration_preset"].(string); ok && v != "" {
+		rc.DurationPreset = core.StringPtr(v)
+	}
+	if v, ok := rcMap["start_at"].(string); ok && v != "" {
+		t, err := core.ParseDateTime(v)
+		if err != nil {
+			return nil, flex.FmtErrorf("[ERROR] Invalid start_at format: %s", err)
+		}
+		rc.StartAt = &t
+	}
+	if v, ok := rcMap["status"].(string); ok && v != "" {
+		rc.Status = core.StringPtr(v)
+	}
+	if phaseList, ok := rcMap["phases"].([]interface{}); ok {
+		for _, p := range phaseList {
+			phaseMap := p.(map[string]interface{})
+			phase := appconfigurationv1.RolloutPhase{}
+			if pct, ok := phaseMap["percentage"].(int); ok {
+				phase.Percentage = core.Int64Ptr(int64(pct))
+			}
+			if dur, ok := phaseMap["duration"].(int); ok && dur != 0 {
+				phase.Duration = core.Int64Ptr(int64(dur))
+			}
+			if dt, ok := phaseMap["duration_type"].(string); ok && dt != "" {
+				phase.DurationType = core.StringPtr(dt)
+			}
+			rc.Phases = append(rc.Phases, phase)
+		}
+	}
+	return rc, nil
+}
+
+func resourceIbmAppConfigFeatureFlattenRolloutConfiguration(rc *appconfigurationv1.RolloutConfiguration) []map[string]interface{} {
+	rcMap := map[string]interface{}{}
+	if rc.DurationPreset != nil {
+		rcMap["duration_preset"] = rc.DurationPreset
+	}
+	if rc.StartAt != nil {
+		rcMap["start_at"] = rc.StartAt.String()
+	}
+	if rc.Status != nil {
+		rcMap["status"] = rc.Status
+	}
+	if rc.Phases != nil {
+		phases := []map[string]interface{}{}
+		for _, phase := range rc.Phases {
+			phaseMap := map[string]interface{}{}
+			if phase.Percentage != nil {
+				phaseMap["percentage"] = flex.IntValue(phase.Percentage)
+			}
+			if phase.Duration != nil {
+				phaseMap["duration"] = flex.IntValue(phase.Duration)
+			}
+			if phase.DurationType != nil {
+				phaseMap["duration_type"] = phase.DurationType
+			}
+			phases = append(phases, phaseMap)
+		}
+		rcMap["phases"] = phases
+	}
+	return []map[string]interface{}{rcMap}
 }
 
 func resourceIbmAppConfigFeatureMapToCollectionUpdateRef(collectionUpdateRefMap map[string]interface{}) appconfigurationv1.CollectionUpdateRef {

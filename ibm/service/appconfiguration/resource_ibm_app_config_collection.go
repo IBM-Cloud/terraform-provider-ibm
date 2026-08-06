@@ -278,7 +278,7 @@ func resourceIbmIbmAppConfigCollectionDelete(d *schema.ResourceData, meta interf
 	options := &appconfigurationv1.DeleteCollectionOptions{}
 	options.SetCollectionID(parts[1])
 
-	response, err := appconfigClient.DeleteCollection(options)
+	_, response, err := appconfigClient.DeleteCollection(options)
 	if err != nil {
 		if response != nil && response.StatusCode == 404 {
 			d.SetId("")
