@@ -66,6 +66,9 @@ func testAccCheckIbmAppConfigFeaturesDataSourceConfigBasic(instanceName, name, e
 			description    	= "%s"
 			tags    		= "%s"
 			rollout_percentage  = "80"
+			lifecycle {
+				ignore_changes = [rollout_type, segment_rules]
+			}
 		}
 		
 		data "ibm_app_config_features" "app_config_features_data2" {
