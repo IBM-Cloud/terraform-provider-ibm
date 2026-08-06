@@ -425,7 +425,7 @@ func isWaitForVPNServerRouteDeleted(context context.Context, sess *vpcv1.VpcV1, 
 
 			parts, err := flex.SepIdParts(d.Id(), "/")
 			if err != nil {
-				return nil, "", flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_vpn_server_route", "delete-wait", "sep-id-parts")
+				return nil, "", flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_vpn_server_route", "delete", "sep-id-parts")
 			}
 
 			getVPNServerRouteOptions.SetVPNServerID(parts[0])

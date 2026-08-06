@@ -4,7 +4,7 @@ provider "ibm" {
 
 resource "ibm_iam_trusted_profile_template" "trusted_profile_template_instance" {
   name = var.trusted_profile_template_name
-  description = var.trusted_profile_template_description
+  description = "description"
   profile {
     name = "name"
     description = "description"
@@ -31,15 +31,25 @@ resource "ibm_iam_trusted_profile_template" "trusted_profile_template_version" {
     name = "name"
     description = "description"
   }
+  policy_template_references {
+    id      = "policyTemplate-1c748620-8a08-4fd2-a1f8-86992ce12c1c"
+    version = "1"
+  }
 }
 
-// Data source is not linked to a resource instance
-// Uncomment if an existing data source instance exists
-/*
 // Create trusted_profile_template data source
-data "ibm_iam_trusted_profile_template" "trusted_profile_template_instance" {
-  template_id = var.trusted_profile_template_template_id
-  version = var.trusted_profile_template_version
-  include_history = var.trusted_profile_template_include_history
+data "ibm_iam_trusted_profile_template" "trusted_profile_template_instance_data" {
+  template_id = ibm_iam_trusted_profile_template.trusted_profile_template_instance.id
+  version = ibm_iam_trusted_profile_template.trusted_profile_template_instance.version
+  include_history = true
+
+  depends_on = [ibm_iam_trusted_profile_template.trusted_profile_template_instance]
 }
-*/
+
+data "ibm_iam_trusted_profile_template" "trusted_profile_template_version_data" {
+  template_id = ibm_iam_trusted_profile_template.trusted_profile_template_version.id
+  version = ibm_iam_trusted_profile_template.trusted_profile_template_version.version
+  include_history = true
+
+  depends_on = [ibm_iam_trusted_profile_template.trusted_profile_template_version]
+}

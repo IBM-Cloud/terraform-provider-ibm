@@ -46,11 +46,15 @@ In addition to all argument references listed, you can access the following attr
 
 - `rules` - (List) The rules for this policy.
 Nested scheme for `rules`:
+	- `condition` - (String) The condition of the rule. Possible values: `contains`, `equals`, `matches_regex`, `starts_with`.
 	- `deleted` - (List) If present, this property indicates the referenced resource has been deleted and provides some supplementary information.
 	Nested scheme for `deleted`:
 		- `more_info` - (String) Link to documentation about deleted resources.
+	- `field` - (String) The HTTP header field. Only applicable when `type` is `header`.
 	- `href` - (String) The rule's canonical URL.
 	- `id` - (String) The rule's unique identifier.
+	- `type` - (String) The type of the rule. Possible values: `body`, `header`, `hostname`, `path`, `query`, `sni_hostname`.
+	- `value` - (String) The value to be matched for the rule condition.
 
 - `target` - (List) -If `action` is `forward_to_pool`, the response is a `LoadBalancerPoolReference`-If `action` is `forward_to_listener`, specify a `LoadBalancerListenerIdentity` in this load balancer to forward to.`- If `action` is `redirect`, the response is a `LoadBalancerListenerPolicyRedirectURL`- If `action` is `https_redirect`, the response is a `LoadBalancerListenerHTTPSRedirect`.
 Nested scheme for `target`:

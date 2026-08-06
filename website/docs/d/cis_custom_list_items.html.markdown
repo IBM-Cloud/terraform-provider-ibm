@@ -8,7 +8,7 @@ description: |-
 
 # ibm_cis_custom_list_items
 
-Retrieve information about IBM Cloud Internet Services custom list item data sources. For more information, see [Using custom lists](https:/cloud.ibm.com/docs/cis?group=custom-lists).
+Retrieve information about IBM Cloud Internet Services custom list item data sources. The data source automatically handles pagination when retrieving all items from a list. For more information, see [Using custom lists](https:/cloud.ibm.com/docs/cis?group=custom-lists).
 
 ## Example usage
 
@@ -27,6 +27,7 @@ Review the argument references that you can specify for your data source.
 - `cis_id` - (Required, String) The ID of the CIS service instance.
 - `list_id` - (Required, String) The ID of the custom list.
 - `item_id` - (Optional, String) The ID of the item. If `item_id` is provided, you get information for the partiular item; otherwise, information for all items is provided.
+- `search` - (Optional, String) Filter items by value. IP addresses must start with the string, hostnames and redirects must contain it, ASNs must match exactly.
 
 ## Attributes reference
 

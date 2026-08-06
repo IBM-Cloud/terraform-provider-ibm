@@ -27,7 +27,7 @@ func TestAccIBMIamTrustedProfileIdentityBasic(t *testing.T) {
 		Providers:    acc.TestAccProviders,
 		CheckDestroy: testAccCheckIBMIamTrustedProfileIdentityDestroy,
 		Steps: []resource.TestStep{
-			{
+			resource.TestStep{
 				Config: testAccCheckIBMIamTrustedProfileIdentityConfigBasic(profileID, name),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMIamTrustedProfileIdentityExists("ibm_iam_trusted_profile_identity.iam_trusted_profile_identity", conf),
@@ -54,7 +54,7 @@ func TestAccIBMIamTrustedProfileIdentityAllArgs(t *testing.T) {
 		Providers:    acc.TestAccProviders,
 		CheckDestroy: testAccCheckIBMIamTrustedProfileIdentityDestroy,
 		Steps: []resource.TestStep{
-			{
+			resource.TestStep{
 				Config: testAccCheckIBMIamTrustedProfileIdentityConfig(profileID, identityType, identifier, typeVar, description),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMIamTrustedProfileIdentityExists("ibm_iam_trusted_profile_identity.iam_trusted_profile_identity", conf),

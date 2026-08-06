@@ -23,12 +23,9 @@ data "ibm_pha_last_operation" "pha_last_operation" {
 
 You can specify the following arguments for this data source.
 
-* `accept_language` - (Optional, String) The language requested for the return document.
-  * Constraints: The maximum length is `50` characters. The minimum length is `1` character. The value must match regular expression `/^[a-zA-Z0-9\\-_,;=.*]+$/`.
-* `if_none_match` - (Optional, String) ETag for conditional requests (optional).
-  * Constraints: The maximum length is `50` characters. The minimum length is `1` character. The value must match regular expression `/^[a-zA-Z0-9\\-_,;=.*]+$/`.
+* `accept_language` - (Optional, String) The language requested for the return document. (ex., en,it,fr,es,de,ja,ko,pt-BR,zh-HANS,zh-HANT)
 * `instance_id` - (Required, Forces new resource, String) instance id of instance to provision.
-  * Constraints: The maximum length is `50` characters. The minimum length is `1` character. The value must match regular expression `/^[a-zA-Z0-9-]+$/`.
+  * Constraints: The maximum length is `255` characters. The minimum length is `1` character. The value must match regular expression `/^[a-zA-Z0-9-]+$/`.
 
 ## Attribute Reference
 
@@ -36,11 +33,11 @@ After your data source is created, you can read values from the following attrib
 
 * `id` - The unique identifier of the pha_last_operation.
 * `deployment_name` - (String) Name of the deployment associated with the service instance.
-  * Constraints: The maximum length is `2048` characters. The minimum length is `1` character. The value must match regular expression `/^[A-Za-z0-9._:-]+$/`.
+  * Constraints: The maximum length is `48` characters. The minimum length is `1` character. The value must match regular expression `/^[A-Za-z0-9._:-]+$/`.
 * `provision_id` - (String) Unique identifier for the provisioning operation.
-  * Constraints: The maximum length is `2048` characters. The minimum length is `1` character. The value must match regular expression `/^[A-Za-z0-9._:-]+$/`.
+  * Constraints: The maximum length is `255` characters. The minimum length is `1` character. The value must match regular expression `/^[A-Za-z0-9._:-]+$/`.
 * `resource_group` - (String) Resource Group.
-  * Constraints: The maximum length is `2048` characters. The minimum length is `1` character. The value must match regular expression `/^[A-Za-z0-9._:-]+$/`.
+  * Constraints: The maximum length is `255` characters. The minimum length is `1` character. The value must match regular expression `/^[A-Za-z0-9._:-]+$/`.
 * `status` - (String) Current operational status of the service instance.
   * Constraints: The maximum length is `16` characters. The minimum length is `1` character. The value must match regular expression `/^[A-Za-z0-9._:-]+$/`.
 

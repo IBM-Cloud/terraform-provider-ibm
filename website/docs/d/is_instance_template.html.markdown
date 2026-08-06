@@ -245,7 +245,8 @@ You can access the following attribute references after your data source is crea
 	&#x2022; disabled: Reservations will not be used
     </br>&#x2022; manual: Reservations in pool will be available for use
   - `pool` - (string) The unique identifier for this reservation
-- `resource_group` - (String) The resource group ID.	
+- `resource_group` - (String) The resource group ID.    
+- `threads_per_core` - (Integer) The number of threads per core for this virtual server instance.
 - `total_volume_bandwidth` - (Integer) The amount of bandwidth (in megabits per second) allocated exclusively to instance storage volumes
 - `user_data` -  (String) The user data provided for the instance.
 - `volume_attachments` - (List) A nested block describes the storage volume configuration for the template.

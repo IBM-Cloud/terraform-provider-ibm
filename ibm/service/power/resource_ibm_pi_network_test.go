@@ -189,6 +189,41 @@ func TestAccIBMPINetworkAdvertiseArpBroadcast(t *testing.T) {
 	})
 }
 
+func TestAccIBMPINetworkEnableDHCPSatellite(t *testing.T) {
+	name := fmt.Sprintf("tf-pi-network-%d", acctest.RandIntRange(10, 100))
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMPINetworkDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMPINetworkEnableDHCPConfigSatellite(name, true),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMPINetworkExists("ibm_pi_network.power_networks"),
+					resource.TestCheckResourceAttr(
+						"ibm_pi_network.power_networks", "pi_network_name", name),
+					resource.TestCheckResourceAttrSet("ibm_pi_network.power_networks", "id"),
+					resource.TestCheckResourceAttrSet("ibm_pi_network.power_networks", "pi_ipaddress_range.#"),
+					resource.TestCheckResourceAttr("ibm_pi_network.power_networks", "pi_enable_dhcp", "true"),
+					resource.TestCheckResourceAttr("ibm_pi_network.power_networks", "dhcp_managed", "true"),
+				),
+			},
+			{
+				Config: testAccCheckIBMPINetworkEnableDHCPUpdateConfigSatellite(name, false),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMPINetworkExists("ibm_pi_network.power_networks"),
+					resource.TestCheckResourceAttr(
+						"ibm_pi_network.power_networks", "pi_network_name", name),
+					resource.TestCheckResourceAttrSet("ibm_pi_network.power_networks", "id"),
+					resource.TestCheckResourceAttrSet("ibm_pi_network.power_networks", "pi_ipaddress_range.#"),
+					resource.TestCheckResourceAttr("ibm_pi_network.power_networks", "pi_enable_dhcp", "false"),
+					resource.TestCheckResourceAttr("ibm_pi_network.power_networks", "dhcp_managed", "false"),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckIBMPINetworkDestroy(s *terraform.State) error {
 	sess, err := acc.TestAccProvider.Meta().(conns.ClientSession).IBMPISession()
 	if err != nil {
@@ -340,4 +375,29 @@ func testAccCheckIBMPINetworkAdvertiseArpBroadcastUpdate(name string) string {
 			pi_network_type      		= "vlan"
 		}
 	`, acc.Pi_cloud_instance_id, name)
+}
+
+func testAccCheckIBMPINetworkEnableDHCPConfigSatellite(name string, enable bool) string {
+	return fmt.Sprintf(`
+		resource "ibm_pi_network" "power_networks" {
+			pi_cloud_instance_id 		= "%[1]s"
+			pi_enable_dhcp              = "%[3]t"
+			pi_network_name      		= "%[2]s"
+			pi_network_type      		= "vlan"
+			pi_cidr              		= "192.168.17.0/24"
+			pi_network_mtu		 		= 6500
+		}
+	`, acc.Pi_cloud_instance_id, name, enable)
+}
+func testAccCheckIBMPINetworkEnableDHCPUpdateConfigSatellite(name string, enable bool) string {
+	return fmt.Sprintf(`
+		resource "ibm_pi_network" "power_networks" {
+			pi_cloud_instance_id 		= "%[1]s"
+			pi_enable_dhcp              = "%[3]t"
+			pi_network_name      		= "%[2]s"
+			pi_network_type      		= "vlan"
+			pi_cidr              		= "192.168.17.0/24"
+			pi_network_mtu		 		= 6500
+		}
+	`, acc.Pi_cloud_instance_id, name, enable)
 }

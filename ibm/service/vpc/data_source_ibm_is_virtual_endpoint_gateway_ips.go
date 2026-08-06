@@ -93,7 +93,7 @@ func DataSourceIBMISEndpointGatewayIPs() *schema.Resource {
 func dataSourceIBMISEndpointGatewayIPsRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	sess, err := vpcClient(meta)
 	if err != nil {
-		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_virtual_endpoint_gateways_ips", "read", "initialize-client")
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_virtual_endpoint_gateway_ips", "read", "initialize-client")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
@@ -108,7 +108,7 @@ func dataSourceIBMISEndpointGatewayIPsRead(context context.Context, d *schema.Re
 		}
 		result, response, err := sess.ListEndpointGatewayIps(options)
 		if err != nil {
-			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("[ERROR] Error fetching endpoint gateway ips %s\n%s", err, response), "(Data) ibm_is_virtual_endpoint_gateways_ips", "read")
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("[ERROR] Error fetching endpoint gateway ips %s\n%s", err, response), "(Data) ibm_is_virtual_endpoint_gateway_ips", "read")
 			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 			return tfErr.GetDiag()
 		}

@@ -24,14 +24,11 @@ data "ibm_pha_powervs_workspaces" "pha_powervs_workspace" {
 
 You can specify the following arguments for this data source.
 
-* `accept_language` - (Optional, String) The language requested for the return document.
-  * Constraints: The maximum length is `50` characters. The minimum length is `1` character. The value must match regular expression `/^[a-zA-Z0-9\\-_,;=.*]+$/`.
-* `if_none_match` - (Optional, String) ETag for conditional requests (optional).
-  * Constraints: The maximum length is `50` characters. The minimum length is `1` character. The value must match regular expression `/^[a-zA-Z0-9\\-_,;=.*]+$/`.
+* `accept_language` - (Optional, String) The language requested for the return document. (ex., en,it,fr,es,de,ja,ko,pt-BR,zh-HANS,zh-HANT)
 * `location_id` - (Required, String) Location ID value.
-  * Constraints: The maximum length is `20` characters. The minimum length is `5` characters. The value must match regular expression `/^[a-z]{2}-[a-z]+(-[0-9]+)?$/`.
+  * Constraints: The maximum length is `16` characters. The minimum length is `5` characters. The value must match regular expression `/^[a-z]{2}-[a-z]+(-[0-9]+)?$/`.
 * `instance_id` - (Required, Forces new resource, String) instance id of instance to provision.
-  * Constraints: The maximum length is `50` characters. The minimum length is `1` character. The value must match regular expression `/^[a-zA-Z0-9-]+$/`.
+  * Constraints: The maximum length is `255` characters. The minimum length is `1` character. The value must match regular expression `/^[a-zA-Z0-9-]+$/`.
 
 ## Attribute Reference
 
@@ -39,10 +36,9 @@ After your data source is created, you can read values from the following attrib
 
 * `id` - The unique identifier of the pha_powervs_workspace.
 * `workspaces` - (List) Array of workspace summaries within the region.
-  * Constraints: The maximum length is `16` items. The minimum length is `0` items.
 Nested schema for **workspaces**:
 	* `id` - (String) Unique identifier of the workspace.
-	  * Constraints: The maximum length is `128` characters. The minimum length is `1` character. The value must match regular expression `/^[A-Za-z0-9._:-]+$/`.
+	  * Constraints: The maximum length is `255` characters. The minimum length is `1` character. The value must match regular expression `/^[A-Za-z0-9._:-]+$/`.
 	* `name` - (String) Name of the workspace.
-	  * Constraints: The maximum length is `128` characters. The minimum length is `1` character. The value must match regular expression `/^[A-Za-z0-9._:-]+$/`.
+	  * Constraints: The maximum length is `255` characters. The minimum length is `1` character. The value must match regular expression `/^[A-Za-z0-9._:-]+$/`.
 

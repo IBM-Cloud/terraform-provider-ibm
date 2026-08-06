@@ -464,6 +464,55 @@ func DataSourceIBMISInstanceProfile() *schema.Resource {
 					},
 				},
 			},
+			"supported_vcpu_count": {
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "The supported values for vcpu count for an instance with this profile.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"type": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The type for this profile field.",
+						},
+						"values": {
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "The permitted values for this profile field.",
+							Elem: &schema.Schema{
+								Type: schema.TypeInt,
+							},
+						},
+					},
+				},
+			},
+			"threads_per_core": {
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "The threads per core configuration for this profile.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"type": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The type for this profile field.",
+						},
+						"default": {
+							Type:        schema.TypeInt,
+							Computed:    true,
+							Description: "The default threads per core values for an instance with this profile.",
+						},
+						"values": {
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "The permitted threads per core values for an instance with this profile.",
+							Elem: &schema.Schema{
+								Type: schema.TypeInt,
+							},
+						},
+					},
+				},
+			},
 			"network_bandwidth_mode": {
 				Type:     schema.TypeList,
 				Computed: true,
@@ -1094,6 +1143,18 @@ func instanceProfileGet(context context.Context, d *schema.ResourceData, meta in
 			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting total_volume_bandwidth: %s", err), "(Data) ibm_is_instance_profile", "read", "set-total_volume_bandwidth").GetDiag()
 		}
 	}
+	if profile.SupportedVcpuCount != nil {
+		err = d.Set("supported_vcpu_count", dataSourceInstanceProfileFlattenSupportedVcpuCount(*profile.SupportedVcpuCount))
+		if err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting supported_vcpu_count: %s", err), "(Data) ibm_is_instance_profile", "read", "set-supported_vcpu_count").GetDiag()
+		}
+	}
+	if profile.ThreadsPerCore != nil {
+		err = d.Set("threads_per_core", dataSourceInstanceProfileFlattenThreadsPerCore(*profile.ThreadsPerCore))
+		if err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting threads_per_core: %s", err), "(Data) ibm_is_instance_profile", "read", "set-threads_per_core").GetDiag()
+		}
+	}
 	if profile.NetworkBandwidthMode != nil {
 		bandwidthList, err := dataSourceInstanceProfileFlattenNetworkBandwidthMode(*profile.NetworkBandwidthMode.(*vpcv1.InstanceProfileNetworkBandwidthMode))
 		if err != nil {
@@ -1543,8 +1604,11 @@ func dataSourceInstanceProfileVcpuCountToMap(vcpuCountItem vpcv1.InstanceProfile
 	if vcpuCountItem.Type != nil {
 		vcpuCountMap["type"] = vcpuCountItem.Type
 	}
+	// Backfill: when the API returns type="enum", Value is absent but Default holds the count.
 	if vcpuCountItem.Value != nil {
 		vcpuCountMap["value"] = vcpuCountItem.Value
+	} else if vcpuCountItem.Default != nil {
+		vcpuCountMap["value"] = vcpuCountItem.Default
 	}
 	if vcpuCountItem.Default != nil {
 		vcpuCountMap["default"] = vcpuCountItem.Default
@@ -1719,6 +1783,51 @@ func dataSourceInstanceProfileTotalVolumeBandwidthToMap(bandwidthItem vpcv1.Inst
 	}
 
 	return bandwidthMap
+}
+
+func dataSourceInstanceProfileFlattenSupportedVcpuCount(result vpcv1.InstanceProfileSupportedVcpuCountEnum) (finalList []map[string]interface{}) {
+	finalList = []map[string]interface{}{}
+	finalMap := dataSourceInstanceProfileSupportedVcpuCountToMap(result)
+	finalList = append(finalList, finalMap)
+
+	return finalList
+}
+
+func dataSourceInstanceProfileSupportedVcpuCountToMap(supportedVcpuCountItem vpcv1.InstanceProfileSupportedVcpuCountEnum) (supportedVcpuCountMap map[string]interface{}) {
+	supportedVcpuCountMap = map[string]interface{}{}
+
+	if supportedVcpuCountItem.Type != nil {
+		supportedVcpuCountMap["type"] = supportedVcpuCountItem.Type
+	}
+	if supportedVcpuCountItem.Values != nil {
+		supportedVcpuCountMap["values"] = supportedVcpuCountItem.Values
+	}
+
+	return supportedVcpuCountMap
+}
+
+func dataSourceInstanceProfileFlattenThreadsPerCore(result vpcv1.InstanceProfileThreadsPerCoreEnum) (finalList []map[string]interface{}) {
+	finalList = []map[string]interface{}{}
+	finalMap := dataSourceInstanceProfileThreadsPerCoreToMap(result)
+	finalList = append(finalList, finalMap)
+
+	return finalList
+}
+
+func dataSourceInstanceProfileThreadsPerCoreToMap(threadsPerCoreItem vpcv1.InstanceProfileThreadsPerCoreEnum) (threadsPerCoreMap map[string]interface{}) {
+	threadsPerCoreMap = map[string]interface{}{}
+
+	if threadsPerCoreItem.Type != nil {
+		threadsPerCoreMap["type"] = threadsPerCoreItem.Type
+	}
+	if threadsPerCoreItem.Default != nil {
+		threadsPerCoreMap["default"] = threadsPerCoreItem.Default
+	}
+	if threadsPerCoreItem.Values != nil {
+		threadsPerCoreMap["values"] = threadsPerCoreItem.Values
+	}
+
+	return threadsPerCoreMap
 }
 
 func dataSourceInstanceProfileFlattenNetworkBandwidthMode(result vpcv1.InstanceProfileNetworkBandwidthMode) (bandwidthList []map[string]interface{}, err error) {

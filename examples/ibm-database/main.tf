@@ -83,8 +83,8 @@ resource "ibm_database" "test_acc" {
 #     location                     = "us-south"
 #     service_endpoints            = "private"
 #     backup_encryption_key_crn    = ibm_kp_key.test.id
-    
-# }  
+
+# }
 
 // Setting Auto-Scaling Groups for database
 resource "ibm_database" "autoscale" {
@@ -122,4 +122,41 @@ resource "ibm_database" "autoscale" {
       rate_units               = "mb"
     }
   }
+
+// Gen2 Valkey database instance example
+// Note: Valkey is only available as a Gen2 service
+resource "ibm_database" "valkey_gen2" {
+  resource_group_id = data.ibm_resource_group.group.id
+  name              = "valkey-gen2-example"
+  service           = "databases-for-valkey"
+  plan              = "standard-gen2"
+  location          = "ca-mon"
+  service_endpoints = "private"
+
+  version = "9.0"
+
+  group {
+    group_id = "member"
+    disk {
+      allocation_mb = 20480  # 20 GB
+    }
+    host_flavor {
+      id = "bx3d.4x20"
+    }
+  }
+
+  tags = ["env:test", "database:valkey"]
+}
+
+// Credentials for Gen2 Valkey instance via resource key
+resource "ibm_resource_key" "valkey_credentials" {
+  name                 = "valkey-credentials"
+  resource_instance_id = ibm_database.valkey_gen2.id
+}
+
+// Output Valkey connection details
+output "valkey_connection" {
+  value     = ibm_resource_key.valkey_credentials.credentials
+  sensitive = true
+}
 }

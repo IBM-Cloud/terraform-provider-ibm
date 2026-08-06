@@ -77,6 +77,17 @@ func DataSourceIBMISLB() *schema.Resource {
 					},
 				},
 			},
+			// http bundle
+			"advanced_health_checks_supported": &schema.Schema{
+				Type:        schema.TypeBool,
+				Computed:    true,
+				Description: "Indicates whether this load balancer supports advanced health checks.",
+			},
+			"fqdn_pool_members_supported": &schema.Schema{
+				Type:        schema.TypeBool,
+				Computed:    true,
+				Description: "Indicates whether this load balancer supports pool members specified by their fully qualified domain names.",
+			},
 			isLBType: {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -379,6 +390,11 @@ func DataSourceIBMISLB() *schema.Resource {
 				Computed:    true,
 				Description: "The resource group name in which resource is provisioned",
 			},
+			isLBMtlsSupported: {
+				Type:        schema.TypeBool,
+				Computed:    true,
+				Description: "Indicates whether this load balancer supports mTLS.",
+			},
 		},
 	}
 }
@@ -426,6 +442,13 @@ func lbGetByName(context context.Context, d *schema.ResourceData, meta interface
 			d.SetId(*loadBalancer.ID)
 			if err = d.Set("availability", loadBalancer.Availability); err != nil {
 				return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting availability: %s", err), "(Data) ibm_is_lb", "read", "set-availability").GetDiag()
+			}
+			// http bundle
+			if err = d.Set("advanced_health_checks_supported", loadBalancer.AdvancedHealthChecksSupported); err != nil {
+				return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting advanced_health_checks_supported: %s", err), "(Data) ibm_is_lb", "read", "set-advanced_health_checks_supported").GetDiag()
+			}
+			if err = d.Set("fqdn_pool_members_supported", loadBalancer.FqdnPoolMembersSupported); err != nil {
+				return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting fqdn_pool_members_supported: %s", err), "(Data) ibm_is_lb", "read", "set-fqdn_pool_members_supported").GetDiag()
 			}
 			if err = d.Set("access_mode", loadBalancer.AccessMode); err != nil {
 				return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting access_mode: %s", err), "(Data) ibm_is_lb", "read", "set-access_mode").GetDiag()
@@ -657,6 +680,9 @@ func lbGetByName(context context.Context, d *schema.ResourceData, meta interface
 			}
 			if err = d.Set("hostname", loadBalancer.Hostname); err != nil {
 				return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting hostname: %s", err), "(Data) ibm_is_lb", "read", "set-hostname").GetDiag()
+			}
+			if err = d.Set("mtls_supported", loadBalancer.MtlsSupported); err != nil {
+				return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting mtls_supported: %s", err), "(Data) ibm_is_lb", "read", "set-mtls_supported").GetDiag()
 			}
 			tags, err := flex.GetGlobalTagsUsingCRN(meta, *loadBalancer.CRN, "", isUserTagType)
 			if err != nil {
