@@ -356,6 +356,101 @@ func TestAccIBMCosBucket_Objectlock_Configuration_Invalid_Days(t *testing.T) {
 	})
 }
 
+func TestAccIBMCosBucket_Objectlock_Configuration_Governance_Mode_Days(t *testing.T) {
+	serviceName := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
+	bucketName := fmt.Sprintf("terraform%d", acctest.RandIntRange(10, 100))
+	bucketRegion := "us"
+	bucketClass := "standard"
+	bucketRegionType := "cross_region_location"
+	objectLockEnabled := true
+	mode := "GOVERNANCE"
+	days := int64(5)
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMCosBucketDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMCosBucket_Objectlock_Valid_Mode_and_Days(serviceName, bucketName, bucketRegionType, bucketRegion, bucketClass, objectLockEnabled, mode, days),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket", "bucket_name", bucketName),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket", "storage_class", bucketClass),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket", "cross_region_location", bucketRegion),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket", "object_versioning.#", "1"),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket", "object_lock", "true"),
+					resource.TestCheckResourceAttr("ibm_cos_bucket_object_lock_configuration.objectlock", "object_lock_configuration.#", "1"),
+					resource.TestCheckResourceAttr("ibm_cos_bucket_object_lock_configuration.objectlock", "object_lock_configuration.0.object_lock_rule.0.default_retention.0.mode", "GOVERNANCE"),
+					resource.TestCheckResourceAttr("ibm_cos_bucket_object_lock_configuration.objectlock", "object_lock_configuration.0.object_lock_rule.0.default_retention.0.days", "5"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccIBMCosBucket_Objectlock_Configuration_Governance_Mode_Years(t *testing.T) {
+	serviceName := fmt.Sprintf("terraform_%d", acctest.RandIntRange(10, 100))
+	bucketName := fmt.Sprintf("terraform%d", acctest.RandIntRange(10, 100))
+	bucketRegion := "us"
+	bucketClass := "standard"
+	bucketRegionType := "cross_region_location"
+	objectLockEnabled := true
+	mode := "GOVERNANCE"
+	years := int64(2)
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMCosBucketDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMCosBucket_Objectlock_Valid_Mode_and_Years(serviceName, bucketName, bucketRegionType, bucketRegion, bucketClass, objectLockEnabled, mode, years),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket", "bucket_name", bucketName),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket", "storage_class", bucketClass),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket", "cross_region_location", bucketRegion),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket", "object_versioning.#", "1"),
+					resource.TestCheckResourceAttr("ibm_cos_bucket.bucket", "object_lock", "true"),
+					resource.TestCheckResourceAttr("ibm_cos_bucket_object_lock_configuration.objectlock", "object_lock_configuration.#", "1"),
+					resource.TestCheckResourceAttr("ibm_cos_bucket_object_lock_configuration.objectlock", "object_lock_configuration.0.object_lock_rule.0.default_retention.0.mode", "GOVERNANCE"),
+					resource.TestCheckResourceAttr("ibm_cos_bucket_object_lock_configuration.objectlock", "object_lock_configuration.0.object_lock_rule.0.default_retention.0.years", "2"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccIBMCosBucket_Objectlock_Configuration_Governance_Shorten_Retention_With_Bypass(t *testing.T) {
+	bucketRegion := "us-south"
+	bucketCRN := acc.BucketCRN
+	mode := "GOVERNANCE"
+	initialDays := int64(10)
+	shortenedDays := int64(5)
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMCosBucketDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMCosBucket_Objectlock_Existing_bucket_Days(bucketCRN, bucketRegion, mode, initialDays),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("ibm_cos_bucket_object_lock_configuration.objectlock", "object_lock_configuration.0.object_lock_enabled", "Enabled"),
+					resource.TestCheckResourceAttr("ibm_cos_bucket_object_lock_configuration.objectlock", "object_lock_configuration.#", "1"),
+					resource.TestCheckResourceAttr("ibm_cos_bucket_object_lock_configuration.objectlock", "object_lock_configuration.0.object_lock_rule.0.default_retention.0.mode", "GOVERNANCE"),
+					resource.TestCheckResourceAttr("ibm_cos_bucket_object_lock_configuration.objectlock", "object_lock_configuration.0.object_lock_rule.0.default_retention.0.days", "10"),
+				),
+			},
+			{
+				Config: testAccCheckIBMCosBucket_Objectlock_Existing_bucket_Days(bucketCRN, bucketRegion, mode, shortenedDays),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("ibm_cos_bucket_object_lock_configuration.objectlock", "object_lock_configuration.0.object_lock_enabled", "Enabled"),
+					resource.TestCheckResourceAttr("ibm_cos_bucket_object_lock_configuration.objectlock", "object_lock_configuration.#", "1"),
+					resource.TestCheckResourceAttr("ibm_cos_bucket_object_lock_configuration.objectlock", "object_lock_configuration.0.object_lock_rule.0.default_retention.0.mode", "GOVERNANCE"),
+					resource.TestCheckResourceAttr("ibm_cos_bucket_object_lock_configuration.objectlock", "object_lock_configuration.0.object_lock_rule.0.default_retention.0.days", "5"),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckIBMCosBucket_Objectlock_Bucket_Enabled(cosServiceName string, bucketName string, regiontype string, region string, storageClass string, objectLockEnabled bool) string {
 
 	return fmt.Sprintf(`

@@ -1,8 +1,8 @@
-// Copyright IBM Corp. 2025 All Rights Reserved.
+// Copyright IBM Corp. 2026 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 /*
- * IBM OpenAPI Terraform Generator Version: 3.108.0-56772134-20251111-102802
+ * IBM OpenAPI Terraform Generator Version: 3.113.1-d76630af-20260320-135953
  */
 
 package atracker_test
@@ -57,6 +57,7 @@ func TestAccIBMAtrackerTargetsDataSourceAllArgs(t *testing.T) {
 				Config: testAccCheckIBMAtrackerTargetsDataSourceConfig(targetName, targetTargetType, targetRegion, targetManagedBy),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_atracker_targets.atracker_targets_instance", "id"),
+					resource.TestCheckResourceAttrSet("data.ibm_atracker_targets.atracker_targets_instance", "region"),
 					resource.TestCheckResourceAttrSet("data.ibm_atracker_targets.atracker_targets_instance", "name"),
 					resource.TestCheckResourceAttrSet("data.ibm_atracker_targets.atracker_targets_instance", "targets.#"),
 					resource.TestCheckResourceAttrSet("data.ibm_atracker_targets.atracker_targets_instance", "targets.0.id"),
@@ -91,6 +92,7 @@ func testAccCheckIBMAtrackerTargetsDataSourceConfigBasic(targetName string, targ
 		}
 
 		data "ibm_atracker_targets" "atracker_targets_instance" {
+			region = ibm_atracker_target.atracker_target_instance.region
 			name = ibm_atracker_target.atracker_target_instance.name
 		}
 	`, targetName, targetTargetType, acc.COSApiKey)
@@ -119,10 +121,14 @@ func testAccCheckIBMAtrackerTargetsDataSourceConfig(targetName string, targetTar
 			cloudlogs_endpoint {
 				target_crn = "crn:v1:bluemix:public:logs:eu-es:a/11111111111111111111111111111111:22222222-2222-2222-2222-222222222222::"
 			}
+			appconfig_endpoint {
+				target_crn = "crn:v1:bluemix:public:apprapp:us-south:a/11111111111111111111111111111111:22222222-2222-2222-2222-222222222222::"
+			}
 			managed_by = "%s"
 		}
 
 		data "ibm_atracker_targets" "atracker_targets_instance" {
+			region = ibm_atracker_target.atracker_target_instance.region
 			name = ibm_atracker_target.atracker_target_instance.name
 		}
 	`, targetName, targetTargetType, targetRegion, acc.COSApiKey, acc.IesApiKey, targetManagedBy)
@@ -146,6 +152,9 @@ func TestDataSourceIBMAtrackerTargetsTargetToMap(t *testing.T) {
 		cloudLogsEndpointModel := make(map[string]interface{})
 		cloudLogsEndpointModel["target_crn"] = "crn:v1:bluemix:public:eu-es:a/11111111111111111111111111111111:22222222-2222-2222-2222-222222222222::"
 
+		appconfigEndpointModel := make(map[string]interface{})
+		appconfigEndpointModel["target_crn"] = "crn:v1:bluemix:public:apprapp:us-south:a/11111111111111111111111111111111:22222222-2222-2222-2222-222222222222::"
+
 		writeStatusModel := make(map[string]interface{})
 		writeStatusModel["status"] = "success"
 		writeStatusModel["last_failure"] = "2021-05-18T20:15:12.353Z"
@@ -160,6 +169,7 @@ func TestDataSourceIBMAtrackerTargetsTargetToMap(t *testing.T) {
 		model["cos_endpoint"] = []map[string]interface{}{cosEndpointModel}
 		model["eventstreams_endpoint"] = []map[string]interface{}{eventstreamsEndpointModel}
 		model["cloudlogs_endpoint"] = []map[string]interface{}{cloudLogsEndpointModel}
+		model["appconfig_endpoint"] = []map[string]interface{}{appconfigEndpointModel}
 		model["write_status"] = []map[string]interface{}{writeStatusModel}
 		model["created_at"] = "2021-05-18T20:15:12.353Z"
 		model["updated_at"] = "2021-05-18T20:15:12.353Z"
@@ -186,6 +196,9 @@ func TestDataSourceIBMAtrackerTargetsTargetToMap(t *testing.T) {
 	cloudLogsEndpointModel := new(atrackerv2.CloudLogsEndpoint)
 	cloudLogsEndpointModel.TargetCRN = core.StringPtr("crn:v1:bluemix:public:eu-es:a/11111111111111111111111111111111:22222222-2222-2222-2222-222222222222::")
 
+	appconfigEndpointModel := new(atrackerv2.AppconfigEndpoint)
+	appconfigEndpointModel.TargetCRN = core.StringPtr("crn:v1:bluemix:public:apprapp:us-south:a/11111111111111111111111111111111:22222222-2222-2222-2222-222222222222::")
+
 	writeStatusModel := new(atrackerv2.WriteStatus)
 	writeStatusModel.Status = core.StringPtr("success")
 	writeStatusModel.LastFailure = CreateMockDateTime("2021-05-18T20:15:12.353Z")
@@ -200,6 +213,7 @@ func TestDataSourceIBMAtrackerTargetsTargetToMap(t *testing.T) {
 	model.CosEndpoint = cosEndpointModel
 	model.EventstreamsEndpoint = eventstreamsEndpointModel
 	model.CloudlogsEndpoint = cloudLogsEndpointModel
+	model.AppconfigEndpoint = appconfigEndpointModel
 	model.WriteStatus = writeStatusModel
 	model.CreatedAt = CreateMockDateTime("2021-05-18T20:15:12.353Z")
 	model.UpdatedAt = CreateMockDateTime("2021-05-18T20:15:12.353Z")
@@ -270,6 +284,22 @@ func TestDataSourceIBMAtrackerTargetsCloudLogsEndpointToMap(t *testing.T) {
 	model.TargetCRN = core.StringPtr("crn:v1:bluemix:public:eu-es:a/11111111111111111111111111111111:22222222-2222-2222-2222-222222222222::")
 
 	result, err := atracker.DataSourceIBMAtrackerTargetsCloudLogsEndpointToMap(model)
+	assert.Nil(t, err)
+	checkResult(result)
+}
+
+func TestDataSourceIBMAtrackerTargetsAppconfigEndpointToMap(t *testing.T) {
+	checkResult := func(result map[string]interface{}) {
+		model := make(map[string]interface{})
+		model["target_crn"] = "crn:v1:bluemix:public:apprapp:us-south:a/11111111111111111111111111111111:22222222-2222-2222-2222-222222222222::"
+
+		assert.Equal(t, result, model)
+	}
+
+	model := new(atrackerv2.AppconfigEndpoint)
+	model.TargetCRN = core.StringPtr("crn:v1:bluemix:public:apprapp:us-south:a/11111111111111111111111111111111:22222222-2222-2222-2222-222222222222::")
+
+	result, err := atracker.DataSourceIBMAtrackerTargetsAppconfigEndpointToMap(model)
 	assert.Nil(t, err)
 	checkResult(result)
 }

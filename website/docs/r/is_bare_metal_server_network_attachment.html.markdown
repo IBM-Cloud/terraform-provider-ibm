@@ -29,11 +29,11 @@ resource "ibm_is_bare_metal_server" "testacc_bms" {
     vpc 				  = "r134-6d509c8a-470e-4cdd-a82c-103f2353f5fc"
 }
 resource "ibm_is_bare_metal_server_network_attachment" "na" {
-	bare_metal_server   = "0726-e17dbe53-25d2-42da-8532-bcb3b5a19f37"
-		allowed_vlans     = [200, 202, 203]
-        virtual_network_interface { 
-            id = "0726-b1755e04-1430-48d7-971d-661ba2836b54"
-        }
+  bare_metal_server   = "0726-e17dbe53-25d2-42da-8532-bcb3b5a19f37"
+  allowed_vlans     = [200, 202, 203]
+  virtual_network_interface {
+    id = "0726-b1755e04-1430-48d7-971d-661ba2836b54"
+  }
 }
 
 ```
@@ -48,7 +48,8 @@ You can specify the following arguments for this resource.
 - `interface_type` - (Required, String) The network attachment's interface type:- `hipersocket`: a virtual network device that provides high-speed TCP/IP connectivity  within a `s390x` based system- `pci`: a physical PCI device which can only be created or deleted when the bare metal  server is stopped  - Has an `allowed_vlans` property which controls the VLANs that will be permitted    to use the PCI attachment  - Cannot directly use an IEEE 802.1q VLAN tag.- `vlan`: a virtual device, used through a `pci` device that has the `vlan` in its  array of `allowed_vlans`.  - Must use an IEEE 802.1q tag.The enumerated values for this property are expected to expand in the future. When processing this property, check for and log unknown values. Optionally halt processing and surface the error, or bypass the resource on which the unexpected property value was encountered.
 - `name` - (Optional, String) The name for this bare metal server network attachment. The name is unique across all network attachments for the bare metal server.
 - `virtual_network_interface` - (Optional, List) The virtual network interface for this bare metal server network attachment.
-	Nested schema for **virtual_network_interface**:
+
+  Nested schema for **virtual_network_interface**:
     - `allow_ip_spoofing` - (Optional, Boolean) Indicates whether source IP spoofing is allowed on this interface. If `false`, source IP spoofing is prevented on this interface. If `true`, source IP spoofing is allowed on this interface.
     - `auto_delete` - (Optional, Boolean) Indicates whether this virtual network interface will be automatically deleted when`target` is deleted.
     - `crn` - (String) The CRN for this virtual network interface.
@@ -57,7 +58,8 @@ You can specify the following arguments for this resource.
       Nested schema for **ips**:
       - `address` - (Required, String) The IP address.If the address has not yet been selected, the value will be `0.0.0.0`.This property may add support for IPv6 addresses in the future. When processing a value in this property, verify that the address is in an expected format. If it is not, log an error. Optionally halt processing and surface the error, or bypass the resource on which the unexpected IP address format was encountered.
       - `deleted` - (Optional, List) If present, this property indicates the referenced resource has been deleted, and providessome supplementary information.
-      Nested schema for **deleted**:
+
+        Nested schema for **deleted**:
         - `more_info` - (String) Link to documentation about deleted resources.
       - `href` - (String) The URL for this reserved IP.
       - `reserved_ip` - (Required, String) The unique identifier for this reserved IP.
@@ -65,10 +67,12 @@ You can specify the following arguments for this resource.
       - `resource_type` - (Computed, String) The resource type.
     - `name` - (Optional, String) The name for this virtual network interface. The name is unique across all virtual network interfaces in the VPC.
     - `primary_ip` - (Optional, List) The reserved IP for this virtual network interface.
+
       Nested schema for **primary_ip**:
       - `address` - (Required, String) The IP address.If the address has not yet been selected, the value will be `0.0.0.0`.This property may add support for IPv6 addresses in the future. When processing a value in this property, verify that the address is in an expected format. If it is not, log an error. Optionally halt processing and surface the error, or bypass the resource on which the unexpected IP address format was encountered.
       - `deleted` - (Optional, List) If present, this property indicates the referenced resource has been deleted, and providessome supplementary information.
-      Nested schema for **deleted**:
+
+        Nested schema for **deleted**:
         - `more_info` - (Required, String) Link to documentation about deleted resources.
       - `href` - (Required, String) The URL for this reserved IP.
       - `reserved_ip` - (Required, String) The unique identifier for this reserved IP.
@@ -96,26 +100,30 @@ After your resource is created, you can read values from the listed arguments an
 - `lifecycle_state` - (String) The lifecycle state of the bare metal server network attachment.
 - `port_speed` - (Integer) The port speed for this bare metal server network attachment in Mbps.
 - `primary_ip` - (List) The primary IP address of the virtual network interface for the bare metal servernetwork attachment.
-Nested schema for **primary_ip**:
-	- `address` - (String) The IP address.If the address has not yet been selected, the value will be `0.0.0.0`.This property may add support for IPv6 addresses in the future. When processing a value in this property, verify that the address is in an expected format. If it is not, log an error. Optionally halt processing and surface the error, or bypass the resource on which the unexpected IP address format was encountered.
-	- `deleted` - (List) If present, this property indicates the referenced resource has been deleted, and providessome supplementary information.
-	Nested schema for **deleted**:
-		- `more_info` - (String) Link to documentation about deleted resources.
-	- `href` - (String) The URL for this reserved IP.
-	- `id` - (String) The unique identifier for this reserved IP.
-	- `name` - (String) The name for this reserved IP. The name is unique across all reserved IPs in a subnet.
-	- `resource_type` - (String) The resource type.
+
+  Nested schema for **primary_ip**:
+  - `address` - (String) The IP address.If the address has not yet been selected, the value will be `0.0.0.0`.This property may add support for IPv6 addresses in the future. When processing a value in this property, verify that the address is in an expected format. If it is not, log an error. Optionally halt processing and surface the error, or bypass the resource on which the unexpected IP address format was encountered.
+  - `deleted` - (List) If present, this property indicates the referenced resource has been deleted, and providessome supplementary information.
+
+    Nested schema for **deleted**:
+    - `more_info` - (String) Link to documentation about deleted resources.
+  - `href` - (String) The URL for this reserved IP.
+  - `id` - (String) The unique identifier for this reserved IP.
+  - `name` - (String) The name for this reserved IP. The name is unique across all reserved IPs in a subnet.
+  - `resource_type` - (String) The resource type.
 - `resource_type` - (String) The resource type.
 - `subnet` - (List) The subnet of the virtual network interface for the bare metal server networkattachment.
-Nested schema for **subnet**:
-	- `crn` - (String) The CRN for this subnet.
-	- `deleted` - (List) If present, this property indicates the referenced resource has been deleted, and providessome supplementary information.
-	Nested schema for **deleted**:
-		- `more_info` - (String) Link to documentation about deleted resources.
-	- `href` - (String) The URL for this subnet.
-	- `id` - (String) The unique identifier for this subnet.
-	- `name` - (String) The name for this subnet. The name is unique across all subnets in the VPC.
-	- `resource_type` - (String) The resource type.
+
+  Nested schema for **subnet**:
+  - `crn` - (String) The CRN for this subnet.
+  - `deleted` - (List) If present, this property indicates the referenced resource has been deleted, and providessome supplementary information.
+
+    Nested schema for **deleted**:
+    - `more_info` - (String) Link to documentation about deleted resources.
+  - `href` - (String) The URL for this subnet.
+  - `id` - (String) The unique identifier for this subnet.
+  - `name` - (String) The name for this subnet. The name is unique across all subnets in the VPC.
+  - `resource_type` - (String) The resource type.
 - `type` - (String) The bare metal server network attachment type.
 
 
@@ -126,7 +134,7 @@ The `id` property can be formed from `bare_metal_server`, and `network_attachmen
 
 ```terraform
 import {
-  to = ibm_is_bare_metal_server_network_attachment.is_bare_metal_server_network_attachment
+  to = ibm_is_bare_metal_server_network_attachment.example
   id = "<bare_metal_server>/<network_attachment_id>"
 }
 ```
@@ -134,5 +142,5 @@ import {
 Using `terraform import`. For example:
 
 ```console
-% terraform import ibm_is_bare_metal_server_network_attachment.is_bare_metal_server_network_attachment <bare_metal_server>/<network_attachment_id>
+% terraform import ibm_is_bare_metal_server_network_attachment.example <bare_metal_server>/<network_attachment_id>
 ```

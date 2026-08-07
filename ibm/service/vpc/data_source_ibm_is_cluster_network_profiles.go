@@ -31,7 +31,7 @@ func DataSourceIBMIsClusterNetworkProfiles() *schema.Resource {
 						"family": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "The product family this cluster network profile belongs to.The enumerated values for this property may[expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) in the future.",
+							Description: "The product family this cluster network profile belongs to.The enumerated values for this property may [expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) in the future.",
 						},
 						"href": &schema.Schema{
 							Type:        schema.TypeString,

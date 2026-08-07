@@ -532,7 +532,7 @@ func DataSourceIbmIsShares() *schema.Resource {
 						"source_snapshot": &schema.Schema{
 							Type:        schema.TypeList,
 							Computed:    true,
-							Description: "The snapshot from which this share was cloned.This property will be present when the share was created from a snapshot.The resources supported by this property may[expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) in thefuture.",
+							Description: "The snapshot from which this share was cloned.This property will be present when the share was created from a snapshot.The resources supported by this property may [expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) in thefuture.",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"crn": &schema.Schema{
@@ -798,7 +798,7 @@ func dataSourceShareCollectionSharesToMap(meta interface{}, sharesItem vpcv1.Sha
 	if sharesItem.SourceSnapshot != nil {
 		modelMap, err := DataSourceIBMIsShareShareSourceSnapshotToMap(sharesItem.SourceSnapshot)
 		if err != nil {
-			return nil, flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_share", "read", "source_snapshot-to-map").GetDiag()
+			return nil, flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_shares", "read", "source_snapshot-to-map").GetDiag()
 		}
 		sourceSnapshot = append(sourceSnapshot, modelMap)
 	}

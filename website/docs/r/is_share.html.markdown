@@ -131,13 +131,13 @@ resource "ibm_is_share" "example-4" {
   size    = 200
   profile = "rfs"
 }
-
+```
 ## Argument Reference
 
 The following arguments are supported:
 
 - `allowed_access_protocols` - (Optional, List) List of allowed access protocols for the share. Supported values are **nfs4** 
-- `access_control_mode` - (Optional, Boolean) The access control mode for the share. Supported values are **security_group** and **vpc**. Default value is **security_group**
+- `access_control_mode` - (Optional, Boolean) The access control mode for the share. Supported value is **security_group**. Default value is **security_group**
 - `allowed_transit_encryption_modes` - (Optional, List of string) The transit encryption modes allowed for this share.
 - `access_tags`  - (Optional, List of Strings) The list of access management tags to attach to the share. **Note** For more information, about creating access tags, see [working with tags](https://cloud.ibm.com/docs/account?topic=account-tag).
 - `bandwidth` - (Optional, Integer) The bandwidth for the file share
@@ -191,15 +191,14 @@ The following arguments are supported:
 - `name` - (Required, string) The unique user-defined name for this file share. If unspecified, the name will be a hyphenated list of randomly-selected words.
 - `origin_share` - (Optional, List) The origin share this accessor share is referring to.
   Nested schema for **origin_share**:
-	- `crn` - (Optional, String) The CRN for this file share.
-	- `id` - (Optional, String) The unique identifier for this file share.
+  - `crn` - (Optional, String) The CRN for this file share.
+  - `id` - (Optional, String) The unique identifier for this file share.
 - `profile` - (Required, string) The globally unique name for this share profile.
 
   ~> **NOTE** 
   While updating `profile` from 'custom' to a tiered profile make sure to remove `iops` from the configuration.
   
 - `replica_share` - (Optional, List) Configuration for a replica file share to create and associate with this file share.
-  - `access_control_mode` - (Optional, Boolean) The access control mode for the share. Supported values are **security_group** and **vpc**. Default value is **vpc**
   - `access_tags`  - (Optional, List of Strings) The list of access management tags to attach to the share. **Note** For more information, about creating access tags, see [working with tags](https://cloud.ibm.com/docs/account?topic=account-tag).
   - `iops` - (Optional, Int)
   - `mount_targets` - (List) List of mount targets
@@ -245,10 +244,10 @@ The following arguments are supported:
 - `size` - (Required, Integer) The size of the file share rounded up to the next gigabyte.
 - `source_share` - (Optional, String) The ID of the source file share for this replica file share. The specified file share must not already have a replica, and must not be a replica.
 - `source_share_crn` - (Optional, String) The CRN of the source file share. 
-- `source_snapshot` - (List) The snapshot from which this share was cloned.This property will be present when the share was created from a snapshot.The resources supported by this property may[expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) in thefuture.
+- `source_snapshot` - (List) The snapshot from which this share was cloned.This property will be present when the share was created from a snapshot.The resources supported by this property may [expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) in thefuture.
   Nested schema for **source_snapshot**:
-	- `crn` - (Optional, String) The CRN for this share snapshot.
-	- `id` - (Optional, String) The unique identifier for this share snapshot.
+  - `crn` - (Optional, String) The CRN for this share snapshot.
+  - `id` - (Optional, String) The unique identifier for this share snapshot.
 
   ~> **NOTE** 
   `crn` and `id` are mutually exclusive for source_snapshot
@@ -268,9 +267,9 @@ The following attributes are exported:
 - `accessor_binding_role` - (String) The accessor binding role of this file share:- `none`: This file share is not participating in access with another file share- `origin`: This file share is the origin for one or more file shares  (which may be in other accounts)- `accessor`: This file share is providing access to another file share  (which may be in another account).
 - `accessor_bindings` - (List) The accessor bindings for this file share. Each accessor binding identifies a resource (possibly in another account) with access to this file share's data.
   Nested schema for **accessor_bindings**:
-	- `href` - (String) The URL for this share accessor binding.
-	- `id` - (String) The unique identifier for this share accessor binding.
-	- `resource_type` - (String) The resource type.
+  - `href` - (String) The URL for this share accessor binding.
+  - `id` - (String) The unique identifier for this share accessor binding.
+  - `resource_type` - (String) The resource type.
 - `allowed_transit_encryption_modes` - (List of string) The transit encryption modes allowed for this share.
 - `created_at` - (String) The date and time that the file share is created.
 - `crn` - (String) The CRN for this share.
@@ -280,7 +279,7 @@ The following attributes are exported:
 - `id` - (String) The unique identifier of the Share.
 - `iops` - (Integer) The maximum input/output operation performance bandwidth per second for the file share.
 - `latest_sync` - (List) Information about the latest synchronization for this file share.
-Nested `latest_sync` blocks have the following structure:
+  Nested `latest_sync` blocks have the following structure:
   - `completed_at` - (String) The completed date and time of last synchronization between the replica share and its source.
   - `data_transferred` - (Integer) The data transferred (in bytes) in the last synchronization between the replica and its source.
   - `started_at` - (String) The start date and time of last synchronization between the replica share and its source.
@@ -296,7 +295,7 @@ Nested `latest_sync` blocks have the following structure:
   - `name` - (String) The name for this share. The name is unique across all shares in the region.
   - `href` - (String) Href of this mount target.
   - `id` - (String) Unique ID of this mount target.
-	- `virtual_network_interface` (List) The virtual network interface for this share mount target. Required if the share's `access_control_mode` is security_group.
+  - `virtual_network_interface` (List) The virtual network interface for this share mount target. Required if the share's `access_control_mode` is security_group.
     Nested scheme for `virtual_network_interface`:
     - `crn` - (String) CRN of virtual network interface
     - `name` - (String) The name for this virtual network interface.
@@ -317,24 +316,24 @@ Nested `latest_sync` blocks have the following structure:
     - `subnet` - (string) The associated subnet.
 - `origin_share` - (Optional, List) The origin share this accessor share is referring to.This property will be present when the `accessor_binding_role` is `accessor`.
   Nested schema for **origin_share**:
-	- `crn` - (Computed, String) The CRN for this file share.
-	- `deleted` - (Optional, List) If present, this property indicates the referenced resource has been deleted, and providessome supplementary information.
-	  Nested schema for **deleted**:
-		- `more_info` - (Computed, String) Link to documentation about deleted resources.
-	- `href` - (Computed, String) The URL for this file share.
-	- `id` - (Computed, String) The unique identifier for this file share.
-	- `name` - (Computed, String) The name for this share. The name is unique across all shares in the region.
-	- `remote` - (Optional, List) If present, this property indicates that the resource associated with this referenceis remote and therefore may not be directly retrievable.
-	  Nested schema for **remote**:
-		- `account` - (Optional, List) If present, this property indicates that the referenced resource is remote to thisaccount, and identifies the owning account.
-		  Nested schema for **account**:
-			- `id` - (Computed, String) The unique identifier for this account.
-			- `resource_type` - (Computed, String) The resource type.
-		- `region` - (Optional, List) If present, this property indicates that the referenced resource is remote to thisregion, and identifies the native region.
-		  Nested schema for **region**:
-			- `href` - (Computed, String) The URL for this region.
-			- `name` - (Computed, String) The globally unique name for this region.
-	- `resource_type` - (Computed, String) The resource type.
+  - `crn` - (Computed, String) The CRN for this file share.
+  - `deleted` - (Optional, List) If present, this property indicates the referenced resource has been deleted, and providessome supplementary information.
+    Nested schema for **deleted**:
+    - `more_info` - (Computed, String) Link to documentation about deleted resources.
+  - `href` - (Computed, String) The URL for this file share.
+  - `id` - (Computed, String) The unique identifier for this file share.
+  - `name` - (Computed, String) The name for this share. The name is unique across all shares in the region.
+  - `remote` - (Optional, List) If present, this property indicates that the resource associated with this referenceis remote and therefore may not be directly retrievable.
+    Nested schema for **remote**:
+    - `account` - (Optional, List) If present, this property indicates that the referenced resource is remote to thisaccount, and identifies the owning account.
+      Nested schema for **account**:
+      - `id` - (Computed, String) The unique identifier for this account.
+      - `resource_type` - (Computed, String) The resource type.
+    - `region` - (Optional, List) If present, this property indicates that the referenced resource is remote to thisregion, and identifies the native region.
+      Nested schema for **region**:
+      - `href` - (Computed, String) The URL for this region.
+      - `name` - (Computed, String) The globally unique name for this region.
+  - `resource_type` - (Computed, String) The resource type.
 - `resource_type` - (String) The type of resource referenced.
 - `replica_share` - (List) Configuration for a replica file share to create and associate with this file share.
   - `crn` - (String) CRN of replica share
@@ -374,16 +373,16 @@ Nested `latest_sync` blocks have the following structure:
   - `code` - A snake case string succinctly identifying the status reason.
   - `message` - An explanation of the status reason.
   - `more_info` - Link to documentation about this status reason.
-- `source_snapshot` - (List) The snapshot from which this share was cloned.This property will be present when the share was created from a snapshot.The resources supported by this property may[expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) in thefuture.
+- `source_snapshot` - (List) The snapshot from which this share was cloned.This property will be present when the share was created from a snapshot.The resources supported by this property may [expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) in thefuture.
   Nested schema for **source_snapshot**:
-	- `crn` - (String) The CRN for this share snapshot.
-	- `deleted` - ( List) If present, this property indicates the referenced resource has been deleted, and providessome supplementary information.
-	  Nested schema for **deleted**:
-		- `more_info` - (Computed, String) Link to documentation about deleted resources.
-	- `href` - (String) The URL for this share snapshot.
-	- `id` - (String) The unique identifier for this share snapshot.
-	- `name` - (String) The name for this share snapshot. The name is unique across all snapshots for the file share.
-	- `resource_type` - (String) The resource type.
+  - `crn` - (String) The CRN for this share snapshot.
+  - `deleted` - ( List) If present, this property indicates the referenced resource has been deleted, and providessome supplementary information.
+    Nested schema for **deleted**:
+    - `more_info` - (Computed, String) Link to documentation about deleted resources.
+  - `href` - (String) The URL for this share snapshot.
+  - `id` - (String) The unique identifier for this share snapshot.
+  - `name` - (String) The name for this share snapshot. The name is unique across all snapshots for the file share.
+  - `resource_type` - (String) The resource type.
 - `snapshot_count` - (Integer) The total number of snapshots for this share.
 - `snapshot_size` - (Integer) The total size (in gigabytes) of snapshots used for this file share.
 - `tags`  - (String) User tags associated for to the share.

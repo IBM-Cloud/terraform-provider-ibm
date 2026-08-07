@@ -118,9 +118,15 @@ Working on an existing resources is a great way to start as a Terraform contribu
 
  - [ ] __Acceptance test coverage of new behavior__: Existing resources each have a set of [acceptance tests][acctests] covering their functionality. These tests  exercises all the behavior of the resource. Whether you are adding something or fixing a bug, the idea is to have an acceptance test that fails if your code are removed. Sometimes it is sufficient to **enhance** an existing test by adding an assertion or tweaking the configuration that are used, but often a new test is better to add. You can copy or paste an existing test and follow the conventions you see there, modifying the test to exercise the behavior of your code.
 
- - [ ] __Documentation updates__: If your code makes any changes that need to be documented, you should include those documentation updates in the same PR. 
+ - [ ] __Documentation updates__: If your code makes any changes that need to be documented, you should include those documentation updates in the same PR.
    
  - [ ] __Well-formed Code__: Do your best to follow an existing conventions you see in the codebase, and ensure your code is formatted with **go fmt**. (The Travis CI build fails if **go fmt** has not been run on incoming code.) The PR reviewers can help out on this front, and may provide comments with suggestions on how to improve the code.
+
+ - [ ] __Run go mod tidy__: If you update dependencies in `go.mod`, you **must** run `go mod tidy` to ensure `go.sum` is properly updated with correct checksums. The CI build will fail if `go.mod` or `go.sum` are not tidy.
+
+ - [ ] __Run go vet__: Before submitting your PR, run `go vet ./...` to catch common Go programming errors. The CI build will fail if `go vet` reports any issues.
+
+ - [ ] __Run go fmt__: Before submitting your PR, run `go fmt ./...` to ensure all code is properly formatted. The CI build will fail if any files are not formatted correctly.
 
 #### New resource
 
@@ -130,6 +136,9 @@ Implementing a new resource is a good way to learn more about how Terraform inte
  - [ ] __Acceptance tests__: New resources should include acceptance tests covering their behavior. See [Writing Acceptance Tests](#writing-acceptance-tests) below for a detailed guide on how to approach these.
  - [ ] __Documentation__: Each resource gets a page in the Terraform documentation. The [Terraform website](https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs) source is in this repository and includes instructions for getting a local copy of the site up and running if you would like to preview your changes. For a resource, you will want to add a new file in the appropriate place and add a link to the sidebar for that page.
  - [ ] __Well-formed Code__: Do your best to follow an existing conventions you see in the codebase, and ensure your code is formatted with **go fmt**. (The Travis CI build fail if **go fmt** has not been run on incoming code.) The PR reviewers help out on this front, and may provide comments with suggestions on how to improve the code.
+ - [ ] __Run go mod tidy__: If you add new dependencies in `go.mod`, you **must** run `go mod tidy` to ensure `go.sum` is properly updated with correct checksums. The CI build will fail if `go.mod` or `go.sum` are not tidy.
+ - [ ] __Run go vet__: Before submitting your PR, run `go vet ./...` to catch common Go programming errors. The CI build will fail if `go vet` reports any issues.
+ - [ ] __Run go fmt__: Before submitting your PR, run `go fmt ./...` to ensure all code is properly formatted. The CI build will fail if any files are not formatted correctly.
 
 ### Writing acceptance tests
 

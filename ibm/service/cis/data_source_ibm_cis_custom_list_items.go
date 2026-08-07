@@ -21,6 +21,7 @@ const (
 	CISCustomListItemComment    = "comment"
 	CISCustomListItemCreatedOn  = "created_on"
 	CISCustomListItemModifiedOn = "modified_on"
+	CISCustomListItemSearch     = "search"
 )
 
 func DataSourceIBMCISCustomListItems() *schema.Resource {
@@ -44,6 +45,11 @@ func DataSourceIBMCISCustomListItems() *schema.Resource {
 				Type:        schema.TypeString,
 				Description: "Custom List Item ID",
 				Optional:    true,
+			},
+			CISCustomListItemSearch: {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "Filter items by value. IP addresses must start with the string, hostnames and redirects must contain it, ASNs must match exactly.",
 			},
 			CISCustomListItemsOutput: {
 				Type:        schema.TypeSet,
@@ -148,26 +154,39 @@ func DataSourceIBMCISCustomListItemsRead(d *schema.ResourceData, meta interface{
 		listItemList = append(listItemList, itemOutput)
 
 	} else {
-		opt := sess.NewGetListItemsOptions()
-		result, resp, err := sess.GetListItems(opt)
+		var cursor *string
+		for {
+			opt := sess.NewGetListItemsOptions()
+			if cursor != nil {
+				opt.SetCursor(*cursor)
+			}
+			if search, ok := d.GetOk(CISCustomListItemSearch); ok {
+				opt.SetSearch(search.(string))
+			}
+			result, resp, err := sess.GetListItems(opt)
 
-		if err != nil {
-			flex.FmtErrorf("[WARN] List Custom Lists failed: %v\n", resp)
-			return err
+			if err != nil {
+				flex.FmtErrorf("[WARN] List Custom Lists failed: %v\n", resp)
+				return err
+			}
+
+			for _, itemObj := range result.Result {
+				itemOutput := map[string]interface{}{}
+				itemOutput[CISCustomListItemID] = itemObj.ID
+				itemOutput[CISCustomListItemIp] = itemObj.Ip
+				itemOutput[CISCustomListItemHostname] = itemObj.Hostname
+				itemOutput[CISCustomListItemASN] = itemObj.Asn
+				itemOutput[CISCustomListItemComment] = itemObj.Comment
+				itemOutput[CISCustomListItemCreatedOn] = itemObj.CreatedOn
+				itemOutput[CISCustomListItemModifiedOn] = itemObj.ModifiedOn
+				listItemList = append(listItemList, itemOutput)
+			}
+
+			if result.ResultInfo == nil || result.ResultInfo.Cursors == nil || result.ResultInfo.Cursors.After == nil {
+				break
+			}
+			cursor = result.ResultInfo.Cursors.After
 		}
-
-		for _, itemObj := range result.Result {
-			itemOutput := map[string]interface{}{}
-			itemOutput[CISCustomListItemID] = itemObj.ID
-			itemOutput[CISCustomListItemIp] = itemObj.Ip
-			itemOutput[CISCustomListItemHostname] = itemObj.Hostname
-			itemOutput[CISCustomListItemASN] = itemObj.Asn
-			itemOutput[CISCustomListItemComment] = itemObj.Comment
-			itemOutput[CISCustomListItemCreatedOn] = itemObj.CreatedOn
-			itemOutput[CISCustomListItemModifiedOn] = itemObj.ModifiedOn
-			listItemList = append(listItemList, itemOutput)
-		}
-
 	}
 
 	d.Set(CISCustomListID, listId)

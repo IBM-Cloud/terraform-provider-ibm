@@ -59,8 +59,8 @@ Review the argument references that you can specify for your resource.
   **&#x2022;** You must have the access listed in the [Granting users access to tag resources](https://cloud.ibm.com/docs/account?topic=account-access) for `access_tags`</br>
   **&#x2022;** `access_tags` must be in the format `key:value`.
 - `floating_ip` - (Optional, Map) A map of floating IP addresses that you want to assign to the public gateway.
-	- `id` - (Optional, String) The unique identifier of the floating IP address. If you specify this parameter, do not specify `address` at the same time. 
-	- `address` - (Optional, String) The floating IP address. If you specify this parameter, do not specify `id` at the same time.
+  - `id` - (Optional, String) The unique identifier of the floating IP address. If you specify this parameter, do not specify `address` at the same time.
+  - `address` - (Optional, String) The floating IP address. If you specify this parameter, do not specify `id` at the same time.
 - `name` -  (Required, String) Enter a name for your public gateway.
 - `resource_group` - (Optional, Forces new resource, String) Enter the ID of the resource group where you want to create the public gateway. To list available resource groups, run `ibmcloud resource groups`. If you do not specify a resource group, the public gateway is created in the `default` resource group.
 - `tags` (Optional, Array of Strings) Enter any tags that you want to associate with your VPC. Tags might help you find your VPC more easily after it is created. Separate multiple tags with a comma (`,`).

@@ -128,7 +128,7 @@ The `id` property can be formed from `instance group ID`, `instance group manage
 
 ```terraform
 import {
-  to = ibm_is_instance_group_manager_action.action
+  to = ibm_is_instance_group_manager_action.example
   id = "<instance_group_id>/<instance_group_manager_id>/<instance_group_manager_action_id>"
 }
 ```
@@ -136,5 +136,5 @@ import {
 Using `terraform import`. For example:
 
 ```console
-% terraform import ibm_is_instance_group_manager_action.action <instance_group_id>/<instance_group_manager_id>/<instance_group_manager_action_id>
+% terraform import ibm_is_instance_group_manager_action.example <instance_group_id>/<instance_group_manager_id>/<instance_group_manager_action_id>
 ```

@@ -55,7 +55,7 @@ func TestAccIBMISImageDataSource_id404(t *testing.T) {
 }
 func TestAccIBMISImageDataSource_All(t *testing.T) {
 	resName := "data.ibm_is_image.test1"
-	imageName := fmt.Sprintf("tfimage-name-%d", acctest.RandIntRange(10, 100))
+	imageName := "test-vsi"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheck(t) },
@@ -75,6 +75,38 @@ func TestAccIBMISImageDataSource_All(t *testing.T) {
 					resource.TestCheckResourceAttrSet(resName, "status"),
 					resource.TestCheckResourceAttrSet(resName, "resource_group.0.id"),
 					resource.TestCheckResourceAttrSet(resName, "resource_group.0.name"),
+					resource.TestCheckResourceAttrSet(resName, "zones.#"),
+					resource.TestCheckResourceAttrSet(resName, "zones.0.name"),
+					resource.TestCheckResourceAttrSet(resName, "zones.0.href"),
+				),
+			},
+		},
+	})
+}
+func TestAccIBMISImageDataSource_Zones(t *testing.T) {
+	resName := "data.ibm_is_image.test1"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { acc.TestAccPreCheck(t) },
+		Providers: acc.TestAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMISImageDataSourceZonesConfig(),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet(resName, "operating_system.0.name"),
+					resource.TestCheckResourceAttrSet(resName, "operating_system.0.dedicated_host_only"),
+					resource.TestCheckResourceAttrSet(resName, "operating_system.0.display_name"),
+					resource.TestCheckResourceAttrSet(resName, "operating_system.0.family"),
+					resource.TestCheckResourceAttrSet(resName, "operating_system.0.href"),
+					resource.TestCheckResourceAttrSet(resName, "operating_system.0.vendor"),
+					resource.TestCheckResourceAttrSet(resName, "operating_system.0.version"),
+					resource.TestCheckResourceAttrSet(resName, "operating_system.0.architecture"),
+					resource.TestCheckResourceAttrSet(resName, "status"),
+					resource.TestCheckResourceAttrSet(resName, "resource_group.0.id"),
+					resource.TestCheckResourceAttrSet(resName, "resource_group.0.name"),
+					resource.TestCheckResourceAttrSet(resName, "zones.#"),
+					resource.TestCheckResourceAttrSet(resName, "zones.0.name"),
+					resource.TestCheckResourceAttrSet(resName, "zones.0.href"),
 				),
 			},
 		},
@@ -217,14 +249,21 @@ func testAccCheckIBMISImageDataSource404Config(imageId string) string {
 	}`, imageId)
 }
 
+func testAccCheckIBMISImageDataSourceZonesConfig() string {
+	return fmt.Sprintf(`
+	data "ibm_is_image" "test1" {
+		name = "%s"
+	}`, acc.IsImage)
+}
 func testAccCheckIBMISImageDataSourceAllConfig(imageName string) string {
 	return fmt.Sprintf(`
 	data "ibm_is_images" "test1" {
+		name = "%s"
 		status = "available"
 	}
 	data "ibm_is_image" "test1" {
 		name = data.ibm_is_images.test1.images.0.name
-	}`)
+	}`, imageName)
 }
 
 func testAccCheckIBMISImageDataSourceConfigIlc(imageName string) string {

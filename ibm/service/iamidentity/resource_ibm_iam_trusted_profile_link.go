@@ -1,4 +1,4 @@
-// Copyright IBM Corp. 2025 All Rights Reserved.
+// Copyright IBM Corp. 2026 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 /*
@@ -48,7 +48,7 @@ func ResourceIBMIAMTrustedProfileLink() *schema.Resource {
 				Type:        schema.TypeString,
 				Required:    true,
 				ForceNew:    true,
-				Description: "The compute resource type. Valid values are VSI, BMS, IKS_SA, ROKS_SA, CE.",
+				Description: "The compute resource type. Valid values are VSI, PVS, BMS, IKS_SA, ROKS_SA, CE.",
 			},
 			"link": &schema.Schema{
 				Type:        schema.TypeList,
@@ -86,6 +86,12 @@ func ResourceIBMIAMTrustedProfileLink() *schema.Resource {
 						},
 					},
 				},
+			},
+			"is_cross_account": &schema.Schema{
+				Type:        schema.TypeBool,
+				Optional:    true,
+				ForceNew:    true,
+				Description: "Flag to indicate that the link provides cross account access. If not provided then the account scope of the CRN must match the Profile's account.",
 			},
 			"entity_tag": &schema.Schema{
 				Type:        schema.TypeString,
@@ -145,6 +151,9 @@ func resourceIBMIamTrustedProfileLinkCreate(context context.Context, d *schema.R
 	createLinkOptions.SetLink(linkModel)
 	if _, ok := d.GetOk("name"); ok {
 		createLinkOptions.SetName(d.Get("name").(string))
+	}
+	if _, ok := d.GetOk("is_cross_account"); ok {
+		createLinkOptions.SetIsCrossAccount(d.Get("is_cross_account").(bool))
 	}
 
 	profileLink, _, err := iamIdentityClient.CreateLinkWithContext(context, createLinkOptions)
@@ -209,6 +218,12 @@ func resourceIBMIamTrustedProfileLinkRead(context context.Context, d *schema.Res
 	if err = d.Set("link", []map[string]interface{}{linkMap}); err != nil {
 		err = fmt.Errorf("Error setting link: %s", err)
 		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_trusted_profile_link", "read", "set-link").GetDiag()
+	}
+	if !core.IsNil(profileLink.IsCrossAccount) {
+		if err = d.Set("is_cross_account", profileLink.IsCrossAccount); err != nil {
+			err = fmt.Errorf("Error setting is_cross_account: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_trusted_profile_link", "read", "set-is_cross_account").GetDiag()
+		}
 	}
 	if err = d.Set("entity_tag", profileLink.EntityTag); err != nil {
 		err = fmt.Errorf("Error setting entity_tag: %s", err)

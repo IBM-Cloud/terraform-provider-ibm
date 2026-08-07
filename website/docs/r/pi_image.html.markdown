@@ -18,8 +18,8 @@ The following example enables you to create a image in your project:
 
 ```terraform
 resource "ibm_pi_image" "testacc_image  "{
-  pi_image_id         = <"image id obtained from the datasource">
-  pi_cloud_instance_id = "<value of the cloud_instance_id>"
+  pi_image_id           = <"image id obtained from the datasource">
+  pi_cloud_instance_id  = "<value of the cloud_instance_id>"
 }
 ```
 
@@ -27,13 +27,13 @@ resource "ibm_pi_image" "testacc_image  "{
 
 ```terraform
 resource "ibm_pi_image" "testacc_image  "{
-  pi_image_name       = "test_image"
-  pi_cloud_instance_id = "<value of the cloud_instance_id>"
-  pi_image_bucket_name = "images-public-bucket"
-  pi_image_bucket_access = "public"
-  pi_image_bucket_region = "us-south"
-  pi_image_bucket_file_name = "rhcos-48-07222021.ova.gz"
-  pi_image_storage_type = "tier1"
+  pi_image_name               = "test_image"
+  pi_cloud_instance_id        = "<value of the cloud_instance_id>"
+  pi_image_bucket_name        = "images-public-bucket"
+  pi_image_bucket_access      = "public"
+  pi_image_bucket_region      = "us-south"
+  pi_image_bucket_file_name   = "rhcos-48-07222021.ova.gz"
+  pi_image_storage_type       = "tier1"
 }
 ```
 
@@ -94,6 +94,7 @@ Review the argument references that you can specify for your resource.
   - `license_type` - (Required, String) Origin of the license of the product. Allowable value is: `byol`.
   - `product` - (Required, String) Product within the image.Allowable values are: `Hana`, `Netweaver`.
   - `vendor` - (Required, String) Vendor supporting the product. Allowable value is: `SAP`.
+- `pi_source_checksum` - (Optional, Bool) Checks the checksum file from the COS bucket against the one computed on the downloaded image. This argument is only available for on-prem locations.
 - `pi_user_tags` - (Optional, List) The user tags attached to this resource.
 
 ## Attribute Reference

@@ -151,7 +151,7 @@ func ResourceIBMIsClusterNetwork() *schema.Resource {
 						"code": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "A reason code for this lifecycle state:- `internal_error`: internal error (contact IBM support)- `resource_suspended_by_provider`: The resource has been suspended (contact IBM  support)The enumerated values for this property may[expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) in the future.",
+							Description: "A reason code for this lifecycle state:- `internal_error`: internal error (contact IBM support)- `resource_suspended_by_provider`: The resource has been suspended (contact IBM  support)The enumerated values for this property may [expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) in the future.",
 						},
 						"message": &schema.Schema{
 							Type:        schema.TypeString,

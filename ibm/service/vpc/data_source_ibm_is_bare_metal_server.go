@@ -1073,7 +1073,7 @@ func dataSourceIBMISBareMetalServerRead(context context.Context, d *schema.Resou
 				usageConstraintList := []map[string]interface{}{}
 				modelMap, err := ResourceceIBMIsBareMetalServerDiskAllowedUseToMap(disk.AllowedUse)
 				if err != nil {
-					tfErr := flex.TerraformErrorf(err, err.Error(), "(Resource) ibm_is_bare_metal_server", "read")
+					tfErr := flex.TerraformErrorf(err, err.Error(), "(Data) ibm_is_bare_metal_server", "read")
 					log.Println(tfErr.GetDiag())
 				}
 				usageConstraintList = append(usageConstraintList, modelMap)

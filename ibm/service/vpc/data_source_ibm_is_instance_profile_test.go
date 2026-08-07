@@ -74,6 +74,7 @@ func TestAccIBMISInstanceProfileDataSource_QoSMode(t *testing.T) {
 					resource.TestCheckResourceAttrSet("data.ibm_is_instance_profile.test1", "network_attachment_count.0.type"),
 					resource.TestCheckResourceAttrSet("data.ibm_is_instance_profile.test1", "network_attachment_count.#"),
 					resource.TestCheckResourceAttrSet("data.ibm_is_instance_profile.test1", "volume_bandwidth_qos_modes.#"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_instance_profile.test1", "zones.#"),
 				),
 			},
 		},
@@ -264,6 +265,31 @@ func TestAccIBMISInstanceProfileDataSource_AvailabilityClass(t *testing.T) {
 					resource.TestCheckResourceAttrSet(resName, "family"),
 					resource.TestCheckResourceAttrSet(resName, "availability_class.#"),
 					resource.TestCheckResourceAttrSet(resName, "availability_class.0.type"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccIBMISInstanceProfileDataSource_ThreadsPerCore(t *testing.T) {
+	resName := "data.ibm_is_instance_profile.test1"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { acc.TestAccPreCheck(t) },
+		Providers: acc.TestAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMISInstanceProfileDataSourceConfig(),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(resName, "name", acc.InstanceProfileName),
+					resource.TestCheckResourceAttrSet(resName, "family"),
+					resource.TestCheckResourceAttrSet(resName, "threads_per_core.#"),
+					resource.TestCheckResourceAttrSet(resName, "threads_per_core.0.type"),
+					resource.TestCheckResourceAttrSet(resName, "threads_per_core.0.default"),
+					resource.TestCheckResourceAttrSet(resName, "threads_per_core.0.values.#"),
+					resource.TestCheckResourceAttrSet(resName, "supported_vcpu_count.#"),
+					resource.TestCheckResourceAttrSet(resName, "supported_vcpu_count.0.type"),
+					resource.TestCheckResourceAttrSet(resName, "supported_vcpu_count.0.values.#"),
 				),
 			},
 		},

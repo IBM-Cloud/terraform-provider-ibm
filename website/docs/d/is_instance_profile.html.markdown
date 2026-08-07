@@ -76,6 +76,19 @@ In addition to the argument reference list, you can access the following attribu
 	- `type` - (String) The type for this profile field.
 	- `values` - (List) The supported confidential compute modes.
 
+- `supported_vcpu_count` - (List) Nested `supported_vcpu_count` blocks have the following structure:
+
+  Nested scheme for `supported_vcpu_count`:
+  - `type` - (String) The type for this profile field.
+  - `values` - (List) The supported values for vcpu count for an instance with this profile.
+
+- `threads_per_core` - (List) Nested `threads_per_core` blocks have the following structure:
+
+  Nested scheme for `threads_per_core`:
+  - `type` - (String) The type for this profile field.
+  - `default` - (Integer) The default threads per core value for this profile.
+  - `values` - (List) The permitted threads per core values for this profile.
+
 - `total_volume_bandwidth`  Nested `total_volume_bandwidth` blocks have the following structure:
   - `type` - The type for this profile field.
   - `value` - The value for this profile field.
@@ -237,3 +250,9 @@ In addition to the argument reference list, you can access the following attribu
   - `default` - (String) The default volume bandwidth QoS mode for this profile.
   - `type` - (String) The type for this profile field.
   - `values` - (String) The permitted volume bandwidth QoS modes for an instance using this profile.
+
+- `zones` - (List) The zones in this region that support this instance profile.
+
+    Nested schema for **zones**:
+    - `href` - (String) The URL for this zone.
+    - `name` - (String) The globally unique name for this zone.

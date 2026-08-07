@@ -102,6 +102,7 @@ func ResourceIBMCOSBucket() *schema.Resource {
 				Type:          schema.TypeString,
 				ForceNew:      true,
 				Optional:      true,
+				Computed:      true,
 				ConflictsWith: []string{"kms_key_crn"},
 				Description:   "CRN of the key you want to use data at rest encryption",
 			},
@@ -109,6 +110,7 @@ func ResourceIBMCOSBucket() *schema.Resource {
 				Type:          schema.TypeString,
 				ForceNew:      true,
 				Optional:      true,
+				Computed:      true,
 				ConflictsWith: []string{"key_protect"},
 				Description:   "CRN of the key you want to use data at rest encryption",
 			},
@@ -457,6 +459,7 @@ func ResourceIBMCOSBucket() *schema.Resource {
 			"object_lock": {
 				Type:         schema.TypeBool,
 				Optional:     true,
+				Computed:     true,
 				RequiredWith: []string{"object_versioning"},
 				Description:  "Enable objectlock for the bucket. When enabled, buckets within the container vault can have Object Lock Configuration applied to the bucket.",
 			},
@@ -1088,7 +1091,6 @@ func resourceIBMCOSBucketUpdate(d *schema.ResourceData, meta interface{}) error 
 
 func resourceIBMCOSBucketRead(d *schema.ResourceData, meta interface{}) error {
 	var s3Conf *aws.Config
-	var keyProtectFlag bool
 	var archiveFlag, expireFlag, abortFlag, ncFlag bool
 	rsConClient, err := meta.(conns.ClientSession).BluemixSession()
 	if err != nil {
@@ -1103,9 +1105,6 @@ func resourceIBMCOSBucketRead(d *schema.ResourceData, meta interface{}) error {
 	apiType := parseBucketId(d.Id(), "apiType")
 	bLocation := parseBucketId(d.Id(), "bLocation")
 
-	if _, ok := d.GetOk("key_protect"); ok {
-		keyProtectFlag = true
-	}
 	if _, ok := d.GetOk("expire_rule"); ok {
 		expireFlag = true
 	}
@@ -1263,11 +1262,8 @@ func resourceIBMCOSBucketRead(d *schema.ResourceData, meta interface{}) error {
 	}
 	if head.IBMSSEKPEnabled != nil {
 		if *head.IBMSSEKPEnabled == true {
-			if keyProtectFlag == true {
-				d.Set("key_protect", head.IBMSSEKPCrkId)
-			} else {
-				d.Set("kms_key_crn", head.IBMSSEKPCrkId)
-			}
+			d.Set("key_protect", head.IBMSSEKPCrkId)
+			d.Set("kms_key_crn", head.IBMSSEKPCrkId)
 		}
 	}
 
@@ -1373,11 +1369,15 @@ func resourceIBMCOSBucketRead(d *schema.ResourceData, meta interface{}) error {
 		Bucket: aws.String(bucketName),
 	}
 	output, err := s3Client.GetObjectLockConfiguration(getObjectLockConfigurationInput)
-	if output.ObjectLockConfiguration != nil {
+	if err == nil && output != nil && output.ObjectLockConfiguration != nil {
 		objectLockEnabled := *output.ObjectLockConfiguration.ObjectLockEnabled
 		if objectLockEnabled == "Enabled" {
 			d.Set("object_lock", true)
+		} else {
+			d.Set("object_lock", false)
 		}
+	} else {
+		d.Set("object_lock", false)
 	}
 	return nil
 }
@@ -1621,7 +1621,7 @@ func resourceIBMCOSBucketDelete(d *schema.ResourceData, meta interface{}) error 
 
 				// Delete everything including locked objects.
 				// Don't ignore any object errors or we could recurse infinitely.
-				err = deleteAllCOSObjectVersions(s3Client, bucketName, "", false, false)
+				err = deleteAllCOSObjectVersions(s3Client, bucketName, "", false, false, false)
 
 				if err != nil {
 					return fmt.Errorf("[ERROR] Error COS Bucket force_delete: %s", err)

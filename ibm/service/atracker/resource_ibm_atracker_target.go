@@ -1,8 +1,8 @@
-// Copyright IBM Corp. 2025 All Rights Reserved.
+// Copyright IBM Corp. 2026 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 /*
- * IBM OpenAPI Terraform Generator Version: 3.108.0-56772134-20251111-102802
+ * IBM OpenAPI Terraform Generator Version: 3.113.1-d76630af-20260320-135953
  */
 
 package atracker
@@ -46,7 +46,7 @@ func ResourceIBMAtrackerTarget() *schema.Resource {
 				Required:         true,
 				ForceNew:         true,
 				ValidateFunc:     validate.InvokeValidator("ibm_atracker_target", "target_type"),
-				Description:      "The type of the target. It can be cloud_object_storage, event_streams, or cloud_logs. Based on this type you must include cos_endpoint, eventstreams_endpoint or cloudlogs_endpoint.",
+				Description:      "The type of the target. It can be cloud_object_storage, event_streams, cloud_logs, or app_config. Based on this type you must include cos_endpoint, eventstreams_endpoint, cloudlogs_endpoint, or appconfig_endpoint.",
 			},
 			"cos_endpoint": &schema.Schema{
 				Type:        schema.TypeList,
@@ -134,6 +134,21 @@ func ResourceIBMAtrackerTarget() *schema.Resource {
 							Type:        schema.TypeString,
 							Required:    true,
 							Description: "The CRN of the IBM Cloud Logs instance.",
+						},
+					},
+				},
+			},
+			"appconfig_endpoint": &schema.Schema{
+				Type:        schema.TypeList,
+				MaxItems:    1,
+				Optional:    true,
+				Description: "Property values for the IBM Cloud App Configuration endpoint.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"target_crn": &schema.Schema{
+							Type:        schema.TypeString,
+							Required:    true,
+							Description: "The CRN of the IBM Cloud App Configuration instance.",
 						},
 					},
 				},
@@ -236,7 +251,7 @@ func ResourceIBMAtrackerTargetValidator() *validate.ResourceValidator {
 			ValidateFunctionIdentifier: validate.ValidateAllowedStringValue,
 			Type:                       validate.TypeString,
 			Required:                   true,
-			AllowedValues:              "cloud_logs, cloud_object_storage, event_streams",
+			AllowedValues:              "app_config, cloud_logs, cloud_object_storage, event_streams",
 		},
 		validate.ValidateSchema{
 			Identifier:                 "region",
@@ -292,6 +307,13 @@ func resourceIBMAtrackerTargetCreate(context context.Context, d *schema.Resource
 			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_atracker_target", "create", "parse-cloudlogs_endpoint").GetDiag()
 		}
 		createTargetOptions.SetCloudlogsEndpoint(cloudlogsEndpointModel)
+	}
+	if _, ok := d.GetOk("appconfig_endpoint"); ok {
+		appconfigEndpointModel, err := ResourceIBMAtrackerTargetMapToAppconfigEndpointPrototype(d.Get("appconfig_endpoint.0").(map[string]interface{}))
+		if err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_atracker_target", "create", "parse-appconfig_endpoint").GetDiag()
+		}
+		createTargetOptions.SetAppconfigEndpoint(appconfigEndpointModel)
 	}
 	if _, ok := d.GetOk("region"); ok {
 		createTargetOptions.SetRegion(d.Get("region").(string))
@@ -391,7 +413,16 @@ func resourceIBMAtrackerTargetRead(context context.Context, d *schema.ResourceDa
 			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_atracker_target", "read", "set-cloudlogs_endpoint").GetDiag()
 		}
 	}
-
+	if !core.IsNil(target.AppconfigEndpoint) {
+		appconfigEndpointMap, err := ResourceIBMAtrackerTargetAppconfigEndpointToMap(target.AppconfigEndpoint)
+		if err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_atracker_target", "read", "appconfig_endpoint-to-map").GetDiag()
+		}
+		if err = d.Set("appconfig_endpoint", []map[string]interface{}{appconfigEndpointMap}); err != nil {
+			err = fmt.Errorf("Error setting appconfig_endpoint: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_atracker_target", "read", "set-appconfig_endpoint").GetDiag()
+		}
+	}
 	if !core.IsNil(target.ManagedBy) {
 		if err = d.Set("managed_by", target.ManagedBy); err != nil {
 			err = fmt.Errorf("Error setting managed_by: %s", err)
@@ -459,7 +490,7 @@ func resourceIBMAtrackerTargetUpdate(context context.Context, d *schema.Resource
 
 	hasChange := false
 
-	if d.HasChange("name") || d.HasChange("cos_endpoint") || d.HasChange("eventstreams_endpoint") || d.HasChange("cloudlogs_endpoint") {
+	if d.HasChange("name") || d.HasChange("cos_endpoint") || d.HasChange("eventstreams_endpoint") || d.HasChange("cloudlogs_endpoint") || d.HasChange("appconfig_endpoint") {
 		if _, ok := d.GetOk("name"); ok {
 			replaceTargetOptions.SetName(d.Get("name").(string))
 		}
@@ -484,6 +515,13 @@ func resourceIBMAtrackerTargetUpdate(context context.Context, d *schema.Resource
 				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_atracker_target", "update", "parse-cloudlogs_endpoint").GetDiag()
 			}
 			replaceTargetOptions.SetCloudlogsEndpoint(cloudlogsEndpoint)
+		}
+		if _, ok := d.GetOk("appconfig_endpoint.0"); ok {
+			appconfigEndpoint, err := ResourceIBMAtrackerTargetMapToAppconfigEndpointPrototype(d.Get("appconfig_endpoint.0").(map[string]interface{}))
+			if err != nil {
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_atracker_target", "update", "parse-appconfig_endpoint").GetDiag()
+			}
+			replaceTargetOptions.SetAppconfigEndpoint(appconfigEndpoint)
 		}
 
 		hasChange = true
@@ -563,6 +601,12 @@ func ResourceIBMAtrackerTargetMapToCloudLogsEndpointPrototype(modelMap map[strin
 	return model, nil
 }
 
+func ResourceIBMAtrackerTargetMapToAppconfigEndpointPrototype(modelMap map[string]interface{}) (*atrackerv2.AppconfigEndpointPrototype, error) {
+	model := &atrackerv2.AppconfigEndpointPrototype{}
+	model.TargetCRN = core.StringPtr(modelMap["target_crn"].(string))
+	return model, nil
+}
+
 func ResourceIBMAtrackerTargetCosEndpointToMap(model *atrackerv2.CosEndpoint) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["endpoint"] = *model.Endpoint
@@ -588,6 +632,12 @@ func ResourceIBMAtrackerTargetEventstreamsEndpointToMap(model *atrackerv2.Events
 }
 
 func ResourceIBMAtrackerTargetCloudLogsEndpointToMap(model *atrackerv2.CloudLogsEndpoint) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	modelMap["target_crn"] = *model.TargetCRN
+	return modelMap, nil
+}
+
+func ResourceIBMAtrackerTargetAppconfigEndpointToMap(model *atrackerv2.AppconfigEndpoint) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["target_crn"] = *model.TargetCRN
 	return modelMap, nil

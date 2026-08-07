@@ -18,12 +18,13 @@ func TestAccIBMEnSourcesDataSourceBasic(t *testing.T) {
 	instanceName := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 	description := fmt.Sprintf("tf_description_%d", acctest.RandIntRange(10, 100))
 	enabled := true
+	storeNotifications := true
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheck(t) },
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIBMEnSourceDatasourceConfig(instanceName, name, description, enabled),
+				Config: testAccCheckIBMEnSourceDatasourceConfig(instanceName, name, description, enabled, storeNotifications),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_en_sources.data_source_2", "id"),
 					resource.TestCheckResourceAttrSet("data.ibm_en_sources.data_source_2", "instance_guid"),
@@ -35,13 +36,14 @@ func TestAccIBMEnSourcesDataSourceBasic(t *testing.T) {
 					resource.TestCheckResourceAttrSet("data.ibm_en_sources.data_source_2", "sources.0.id"),
 					resource.TestCheckResourceAttrSet("data.ibm_en_sourcess.data_source_2", "sources.0.description"),
 					resource.TestCheckResourceAttrSet("data.ibm_en_sourcess.data_source_2", "sources.0.enabled"),
+					resource.TestCheckResourceAttrSet("data.ibm_en_sourcess.data_source_2", "sources.0.store_notifications"),
 				),
 			},
 		},
 	})
 }
 
-func testAccCheckIBMEnSourceDatasourceConfig(instanceName, name, description string, enabled bool) string {
+func testAccCheckIBMEnSourceDatasourceConfig(instanceName, name, description string, enabled bool, storeNotifications bool) string {
 	return fmt.Sprintf(`
 	resource "ibm_resource_instance" "en_source_datasource" {
 		name     = "%s"
@@ -55,10 +57,11 @@ func testAccCheckIBMEnSourceDatasourceConfig(instanceName, name, description str
 		name        = "%s"
 		description = "%s"
 		enabled = %t
+		store_notifications = %t
 	}
 
 	data "ibm_en_sources" "data_source_2" {
 		instance_guid = ibm_resource_instance.en_source_datasource.guid
 	}
-	`, instanceName, name, description, enabled)
+	`, instanceName, name, description, enabled, storeNotifications)
 }

@@ -7,6 +7,15 @@ output "ibm_iam_trusted_profile_template" {
 
 output "ibm_iam_trusted_profile_template_version" {
   value       = ibm_iam_trusted_profile_template.trusted_profile_template_version
-  description = "trusted_profile_template resource instance"
+  description = "trusted_profile_template_version instance"
 }
 
+output "ibm_iam_trusted_profile_template_data" {
+  value       = data.ibm_iam_trusted_profile_template.trusted_profile_template_instance_data
+  description = "trusted_profile_template data"
+}
+
+output "ibm_iam_trusted_profile_template_version_data" {
+  value       = data.ibm_iam_trusted_profile_template.trusted_profile_template_version_data
+  description = "trusted_profile_template_version data"
+}

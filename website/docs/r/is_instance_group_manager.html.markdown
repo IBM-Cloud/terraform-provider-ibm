@@ -170,20 +170,28 @@ resource "ibm_is_security_group_rule" "webserver_http" {
   group     = ibm_is_security_group.webserver.id
   direction = "inbound"
   remote    = "0.0.0.0/0"
-  tcp {
-    port_min = 80
-    port_max = 80
-  }
+  # Deprecated block: replaced with 'protocol', 'port_min', and 'port_max' arguments
+  # tcp {
+  #  port_min = 22
+  #  port_max = 22
+  # }
+  protocol  = "tcp"
+  port_min = 22
+  port_max = 22
 }
 
 resource "ibm_is_security_group_rule" "webserver_ssh" {
   group     = ibm_is_security_group.webserver.id
   direction = "inbound"
   remote    = "0.0.0.0/0"
-  tcp {
-    port_min = 22
-    port_max = 22
-  }
+  # Deprecated block: replaced with 'protocol', 'port_min', and 'port_max' arguments
+  # tcp {
+  #  port_min = 22
+  #  port_max = 22
+  # }
+  protocol  = "tcp"
+  port_min = 22
+  port_max = 22
 }
 
 # Instance Group with Load Balancer integration
@@ -330,7 +338,7 @@ The `id` property can be formed from `instance group ID`, and `instance group ma
 
 ```terraform
 import {
-  to = ibm_is_instance_group_manager.manager
+  to = ibm_is_instance_group_manager.example
   id = "<instance_group_id>/<instance_group_manager_id>"
 }
 ```
@@ -338,7 +346,7 @@ import {
 Using `terraform import`. For example:
 
 ```console
-% terraform import ibm_is_instance_group_manager.manager <instance_group_id>/<instance_group_manager_id>
+% terraform import ibm_is_instance_group_manager.example <instance_group_id>/<instance_group_manager_id>
 ```
 ## Related Resources
 

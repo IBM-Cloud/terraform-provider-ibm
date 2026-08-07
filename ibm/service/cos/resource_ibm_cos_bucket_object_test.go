@@ -272,7 +272,75 @@ func TestAccIBMCOSBucketObjectlock_Retention_Without_Retainuntildate(t *testing.
 		},
 	})
 }
+func TestAccIBMCOSBucketObject_Governance_Shorten_Retention_Without_Bypass_Negative(t *testing.T) {
+	name := fmt.Sprintf("tf-testacc-cos-%d", acctest.RandIntRange(10, 100))
+	instanceCRN := acc.CosCRN
+	objectBody := "Governance Mode Test"
 
+	// Set initial retention to 2 minutes from now
+	initialRetainUntilDate := time.Now().UTC().Add(time.Minute * 2)
+	initialRetainUntilDateString := initialRetainUntilDate.Format(time.RFC3339)
+	// Try to shorten to 1 minute from now
+	shortenedRetainUntilDate := time.Now().UTC().Add(time.Minute * 1)
+	shortenedRetainUntilDateString := shortenedRetainUntilDate.Format(time.RFC3339)
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { acc.TestAccPreCheckCOS(t) },
+		Providers: acc.TestAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccIBMCOSBucketObject_Governance_Retention(name, instanceCRN, objectBody, "GOVERNANCE", initialRetainUntilDateString, false),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("ibm_cos_bucket_object.testacc", "object_lock_mode", "GOVERNANCE"),
+				),
+			},
+			{
+				Config:      testAccIBMCOSBucketObject_Governance_Retention(name, instanceCRN, objectBody, "GOVERNANCE", shortenedRetainUntilDateString, false),
+				ExpectError: regexp.MustCompile("AccessDenied|Access Denied"),
+			},
+			{
+				PreConfig: func() {
+					// Wait for retention to expire before cleanup
+					time.Sleep(time.Until(initialRetainUntilDate) + time.Second*5)
+				},
+				Config: testAccIBMCOSBucketObject_Governance_Retention(name, instanceCRN, objectBody, "GOVERNANCE", initialRetainUntilDateString, false),
+			},
+		},
+	})
+}
+
+func TestAccIBMCOSBucketObject_Governance_Shorten_Retention_With_Bypass_Positive(t *testing.T) {
+	name := fmt.Sprintf("tf-testacc-cos-%d", acctest.RandIntRange(10, 100))
+	instanceCRN := acc.CosCRN
+	objectBody := "Governance Mode Test"
+
+	// Set initial retention to 2 minutes from now
+	initialRetainUntilDate := time.Now().UTC().Add(time.Minute * 2)
+	initialRetainUntilDateString := initialRetainUntilDate.Format(time.RFC3339)
+	// Shorten to 1 minute from now with bypass
+	shortenedRetainUntilDate := time.Now().UTC().Add(time.Minute * 1)
+	shortenedRetainUntilDateString := shortenedRetainUntilDate.Format(time.RFC3339)
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { acc.TestAccPreCheckCOS(t) },
+		Providers: acc.TestAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccIBMCOSBucketObject_Governance_Retention(name, instanceCRN, objectBody, "GOVERNANCE", initialRetainUntilDateString, false),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("ibm_cos_bucket_object.testacc", "object_lock_mode", "GOVERNANCE"),
+				),
+			},
+			{
+				Config: testAccIBMCOSBucketObject_Governance_Retention(name, instanceCRN, objectBody, "GOVERNANCE", shortenedRetainUntilDateString, true),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("ibm_cos_bucket_object.testacc", "object_lock_mode", "GOVERNANCE"),
+					resource.TestCheckResourceAttr("ibm_cos_bucket_object.testacc", "bypass_governance_retention", "true"),
+				),
+			},
+		},
+	})
+}
 func testAccIBMCOSBucketObjectConfig_plaintext(name string, instanceCRN string, objectBody string) string {
 	return fmt.Sprintf(`
 		resource "ibm_cos_bucket" "testacc" {
@@ -506,5 +574,34 @@ func testAccIBMCOSBucketObjectlock_legalhold_off(name string, instanceCRN string
 			content			    = "%[3]s"
 			object_lock_legal_hold_status = "OFF"
    			force_delete = true
-		}`, name, instanceCRN, objectBody)
+  }`, name, instanceCRN, objectBody)
+}
+
+func testAccIBMCOSBucketObject_Governance_Retention(name string, instanceCRN string, objectBody string, mode string, retainUntilDate string, bypassGovernance bool) string {
+	bypassParam := ""
+	if bypassGovernance {
+		bypassParam = "bypass_governance_retention = true"
+	}
+
+	return fmt.Sprintf(`
+		resource "ibm_cos_bucket" "testacc" {
+			bucket_name          = "%[1]s"
+			resource_instance_id = "%[2]s"
+			cross_region_location      = "us"
+			storage_class        = "standard"
+			object_versioning {
+				enable  = true
+			}
+			object_lock = true
+		}
+		resource "ibm_cos_bucket_object" "testacc" {
+			bucket_crn	    = ibm_cos_bucket.testacc.crn
+			bucket_location = ibm_cos_bucket.testacc.cross_region_location
+			key 					  = "%[1]s.txt"
+			content			    = "%[3]s"
+			object_lock_mode              = "%[4]s"
+			object_lock_retain_until_date = "%[5]s"
+			%[6]s
+			force_delete = true
+		}`, name, instanceCRN, objectBody, mode, retainUntilDate, bypassParam)
 }

@@ -561,7 +561,7 @@ func DataSourceIbmIsShare() *schema.Resource {
 			"source_snapshot": &schema.Schema{
 				Type:        schema.TypeList,
 				Computed:    true,
-				Description: "The snapshot from which this share was cloned.This property will be present when the share was created from a snapshot.The resources supported by this property may[expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) in thefuture.",
+				Description: "The snapshot from which this share was cloned.This property will be present when the share was created from a snapshot.The resources supported by this property may [expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) in thefuture.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"crn": &schema.Schema{
@@ -722,28 +722,28 @@ func dataSourceIbmIsShareRead(context context.Context, d *schema.ResourceData, m
 	}
 	if share.AvailabilityMode != nil {
 		if err = d.Set("availability_mode", *share.AvailabilityMode); err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_share", "read", "set-availability_mode").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_share", "read", "set-availability_mode").GetDiag()
 		}
 	}
 	if !core.IsNil(share.AllowedTransitEncryptionModes) {
 		if err = d.Set("allowed_transit_encryption_modes", share.AllowedTransitEncryptionModes); err != nil {
 			err = fmt.Errorf("Error setting allowed_transit_encryption_modes: %s", err)
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_share", "read", "set-allowed_transit_encryption_modes").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_share", "read", "set-allowed_transit_encryption_modes").GetDiag()
 		}
 	}
 	if !core.IsNil(share.AllowedAccessProtocols) {
 		if err = d.Set("allowed_access_protocols", share.AllowedAccessProtocols); err != nil {
 			err = fmt.Errorf("Error setting allowed_access_protocols: %s", err)
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_share", "read", "set-allowed_access_protocols").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_share", "read", "set-allowed_access_protocols").GetDiag()
 		}
 	}
 	if err = d.Set("bandwidth", share.Bandwidth); err != nil {
 		err = fmt.Errorf("Error setting bandwidth: %s", err)
-		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_share", "read", "set-bandwidth").GetDiag()
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_share", "read", "set-bandwidth").GetDiag()
 	}
 	if err = d.Set("accessor_binding_role", share.AccessorBindingRole); err != nil {
 		err = fmt.Errorf("Error setting accessor_binding_role: %s", err)
-		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_share", "read", "set-accessor_binding_role").GetDiag()
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_share", "read", "set-accessor_binding_role").GetDiag()
 	}
 	accessorBindings := []map[string]interface{}{}
 	for _, accessorBindingsItem := range share.AccessorBindings {
@@ -752,13 +752,13 @@ func dataSourceIbmIsShareRead(context context.Context, d *schema.ResourceData, m
 	}
 	if err = d.Set("accessor_bindings", accessorBindings); err != nil {
 		err = fmt.Errorf("Error setting accessor_bindings: %s", err)
-		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_share", "read", "set-accessor_bindings").GetDiag()
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_share", "read", "set-accessor_bindings").GetDiag()
 	}
 	if !core.IsNil(share.OriginShare) {
 		originShareMap := ResourceIBMIsShareShareReferenceToMap(share.OriginShare)
 		if err = d.Set("origin_share", []map[string]interface{}{originShareMap}); err != nil {
 			err = fmt.Errorf("Error setting origin_share: %s", err)
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_share", "read", "set-origin_share").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_share", "read", "set-origin_share").GetDiag()
 		}
 	}
 	if share.Profile != nil {

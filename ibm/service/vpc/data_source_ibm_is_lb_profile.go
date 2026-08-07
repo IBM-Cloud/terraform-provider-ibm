@@ -153,6 +153,53 @@ func DataSourceIBMISLbProfile() *schema.Resource {
 					},
 				},
 			},
+			// http bundle
+			"advanced_health_checks_supported": &schema.Schema{
+				Type:     schema.TypeList,
+				Computed: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"type": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The type for this profile field.",
+						},
+						"value": &schema.Schema{
+							Type:        schema.TypeBool,
+							Computed:    true,
+							Description: "The value for this profile field.",
+						},
+					},
+				},
+			},
+			"fqdn_pool_members_supported": &schema.Schema{
+				Type:     schema.TypeList,
+				Computed: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"type": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The type for this profile field.",
+						},
+						"value": &schema.Schema{
+							Type:        schema.TypeBool,
+							Computed:    true,
+							Description: "The value for this profile field.",
+						},
+					},
+				},
+			},
+			"mtls_supported": {
+				Type:        schema.TypeBool,
+				Computed:    true,
+				Description: "The mTLS support for a load balancer with this profile",
+			},
+			"mtls_supported_type": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The mTLS support for a load balancer with this profile depends on its configuration",
+			},
 		},
 	}
 }
@@ -247,6 +294,27 @@ func dataSourceIBMISLbProfileRead(context context.Context, d *schema.ResourceDat
 		}
 	}
 
+	// http bundle
+	advancedHealthChecksSupported := []map[string]interface{}{}
+	advancedHealthChecksSupportedMap, err := DataSourceIBMIsLbProfileLoadBalancerProfileAdvancedHealthCheckSupportedToMap(loadBalancerProfile.AdvancedHealthChecksSupported)
+	if err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_lb_profile", "read", "advanced_health_checks_supported-to-map").GetDiag()
+	}
+	advancedHealthChecksSupported = append(advancedHealthChecksSupported, advancedHealthChecksSupportedMap)
+	if err = d.Set("advanced_health_checks_supported", advancedHealthChecksSupported); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting advanced_health_checks_supported: %s", err), "(Data) ibm_is_lb_profile", "read", "set-advanced_health_checks_supported").GetDiag()
+	}
+
+	fqdnPoolMembersSupported := []map[string]interface{}{}
+	fqdnPoolMembersSupportedMap, err := DataSourceIBMIsLbProfileLoadBalancerProfileFqdnSupportedToMap(loadBalancerProfile.FqdnPoolMembersSupported)
+	if err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_lb_profile", "read", "fqdn_pool_members_supported-to-map").GetDiag()
+	}
+	fqdnPoolMembersSupported = append(fqdnPoolMembersSupported, fqdnPoolMembersSupportedMap)
+	if err = d.Set("fqdn_pool_members_supported", fqdnPoolMembersSupported); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting fqdn_pool_members_supported: %s", err), "(Data) ibm_is_lb_profile", "read", "set-fqdn_pool_members_supported").GetDiag()
+	}
+
 	failsafePolicyActions := []map[string]interface{}{}
 	if loadBalancerProfile.FailsafePolicyActions != nil {
 		modelMap, err := dataSourceIBMIsLbProfileLoadBalancerProfileFailsafePolicyActionsToMap(loadBalancerProfile.FailsafePolicyActions)
@@ -291,6 +359,45 @@ func dataSourceIBMISLbProfileRead(context context.Context, d *schema.ResourceDat
 				if rms.Value != nil {
 					if err = d.Set("route_mode_supported", *rms.Value); err != nil {
 						return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting route_mode_supported: %s", err), "(Data) ibm_is_lb_profile", "read", "set-route_mode_supported").GetDiag()
+					}
+				}
+			}
+		}
+	}
+	if loadBalancerProfile.MtlsSupported != nil {
+		mtlsSupport := loadBalancerProfile.MtlsSupported
+		switch reflect.TypeOf(mtlsSupport).String() {
+		case "*vpcv1.LoadBalancerProfileMtlsSupportedFixed":
+			{
+				mtls := mtlsSupport.(*vpcv1.LoadBalancerProfileMtlsSupportedFixed)
+				if err = d.Set("mtls_supported", mtls.Value); err != nil {
+					return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting mtls_supported: %s", err), "(Data) ibm_is_lb_profile", "read", "set-mtls_supported").GetDiag()
+				}
+				if err = d.Set("mtls_supported_type", mtls.Type); err != nil {
+					return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting mtls_supported_type: %s", err), "(Data) ibm_is_lb_profile", "read", "set-mtls_supported_type").GetDiag()
+				}
+			}
+		case "*vpcv1.LoadBalancerProfileMtlsSupportedDependent":
+			{
+				mtls := mtlsSupport.(*vpcv1.LoadBalancerProfileMtlsSupportedDependent)
+				if mtls.Type != nil {
+					if err = d.Set("mtls_supported_type", *mtls.Type); err != nil {
+						return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting mtls_supported_type: %s", err), "(Data) ibm_is_lb_profile", "read", "set-mtls_supported_type").GetDiag()
+					}
+				}
+
+			}
+		case "*vpcv1.LoadBalancerProfileMtlsSupported":
+			{
+				mtls := mtlsSupport.(*vpcv1.LoadBalancerProfileMtlsSupported)
+				if mtls.Type != nil {
+					if err = d.Set("mtls_supported_type", *mtls.Type); err != nil {
+						return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting mtls_supported_type: %s", err), "(Data) ibm_is_lb_profile", "read", "set-mtls_supported_type").GetDiag()
+					}
+				}
+				if mtls.Value != nil {
+					if err = d.Set("mtls_supported", *mtls.Value); err != nil {
+						return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting mtls_supported: %s", err), "(Data) ibm_is_lb_profile", "read", "set-mtls_supported").GetDiag()
 					}
 				}
 			}
@@ -389,4 +496,70 @@ func dataSourceLbProfileTargetableLoadBalancerProfilesToMap(targetableLoadBalanc
 	}
 
 	return targetableLoadBalancerProfileMap
+}
+
+func DataSourceIBMIsLbProfileLoadBalancerProfileAdvancedHealthCheckSupportedToMap(model vpcv1.LoadBalancerProfileAdvancedHealthCheckSupportedIntf) (map[string]interface{}, error) {
+	if _, ok := model.(*vpcv1.LoadBalancerProfileAdvancedHealthCheckSupportedFixed); ok {
+		return DataSourceIBMIsLbProfileLoadBalancerProfileAdvancedHealthCheckSupportedFixedToMap(model.(*vpcv1.LoadBalancerProfileAdvancedHealthCheckSupportedFixed))
+	} else if _, ok := model.(*vpcv1.LoadBalancerProfileAdvancedHealthCheckSupportedDependent); ok {
+		return DataSourceIBMIsLbProfileLoadBalancerProfileAdvancedHealthCheckSupportedDependentToMap(model.(*vpcv1.LoadBalancerProfileAdvancedHealthCheckSupportedDependent))
+	} else if _, ok := model.(*vpcv1.LoadBalancerProfileAdvancedHealthCheckSupported); ok {
+		modelMap := make(map[string]interface{})
+		model := model.(*vpcv1.LoadBalancerProfileAdvancedHealthCheckSupported)
+		if model.Type != nil {
+			modelMap["type"] = *model.Type
+		}
+		if model.Value != nil {
+			modelMap["value"] = *model.Value
+		}
+		return modelMap, nil
+	} else {
+		return nil, fmt.Errorf("Unrecognized vpcv1.LoadBalancerProfileAdvancedHealthCheckSupportedIntf subtype encountered")
+	}
+}
+
+func DataSourceIBMIsLbProfileLoadBalancerProfileAdvancedHealthCheckSupportedFixedToMap(model *vpcv1.LoadBalancerProfileAdvancedHealthCheckSupportedFixed) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	modelMap["type"] = *model.Type
+	modelMap["value"] = *model.Value
+	return modelMap, nil
+}
+
+func DataSourceIBMIsLbProfileLoadBalancerProfileAdvancedHealthCheckSupportedDependentToMap(model *vpcv1.LoadBalancerProfileAdvancedHealthCheckSupportedDependent) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	modelMap["type"] = *model.Type
+	return modelMap, nil
+}
+
+func DataSourceIBMIsLbProfileLoadBalancerProfileFqdnSupportedToMap(model vpcv1.LoadBalancerProfileFqdnSupportedIntf) (map[string]interface{}, error) {
+	if _, ok := model.(*vpcv1.LoadBalancerProfileFqdnSupportedFixed); ok {
+		return DataSourceIBMIsLbProfileLoadBalancerProfileFqdnSupportedFixedToMap(model.(*vpcv1.LoadBalancerProfileFqdnSupportedFixed))
+	} else if _, ok := model.(*vpcv1.LoadBalancerProfileFqdnSupportedDependent); ok {
+		return DataSourceIBMIsLbProfileLoadBalancerProfileFqdnSupportedDependentToMap(model.(*vpcv1.LoadBalancerProfileFqdnSupportedDependent))
+	} else if _, ok := model.(*vpcv1.LoadBalancerProfileFqdnSupported); ok {
+		modelMap := make(map[string]interface{})
+		model := model.(*vpcv1.LoadBalancerProfileFqdnSupported)
+		if model.Type != nil {
+			modelMap["type"] = *model.Type
+		}
+		if model.Value != nil {
+			modelMap["value"] = *model.Value
+		}
+		return modelMap, nil
+	} else {
+		return nil, fmt.Errorf("Unrecognized vpcv1.LoadBalancerProfileFqdnSupportedIntf subtype encountered")
+	}
+}
+
+func DataSourceIBMIsLbProfileLoadBalancerProfileFqdnSupportedFixedToMap(model *vpcv1.LoadBalancerProfileFqdnSupportedFixed) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	modelMap["type"] = *model.Type
+	modelMap["value"] = *model.Value
+	return modelMap, nil
+}
+
+func DataSourceIBMIsLbProfileLoadBalancerProfileFqdnSupportedDependentToMap(model *vpcv1.LoadBalancerProfileFqdnSupportedDependent) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	modelMap["type"] = *model.Type
+	return modelMap, nil
 }

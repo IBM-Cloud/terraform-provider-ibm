@@ -31,7 +31,7 @@ In addition to all argument references listed, you can access the following attr
 * `id` - The unique identifier of the iam_trusted_profile_links.
 * `links` - (List) List of links to a trusted profile.
   Nested scheme for **links**:
-	* `cr_type` - (String) The compute resource type. Valid values are VSI, IKS_SA, ROKS_SA.
+	* `cr_type` - (String) The compute resource type. Valid values are VSI, PVS, BMS, IKS_SA, ROKS_SA, CE.
 	* `created_at` - (String) If set contains a date time string of the creation date in ISO format.
 	* `entity_tag` - (String) version of the claim rule.
 	* `id` - (String) the unique identifier of the claim rule.

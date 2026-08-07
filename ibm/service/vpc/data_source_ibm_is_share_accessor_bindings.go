@@ -40,7 +40,7 @@ func DataSourceIBMIsShareAccessorBindings() *schema.Resource {
 						"accessor": &schema.Schema{
 							Type:        schema.TypeList,
 							Computed:    true,
-							Description: "The accessor for this share accessor binding.The resources supported by this property may[expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) in the future.",
+							Description: "The accessor for this share accessor binding.The resources supported by this property may [expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) in the future.",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"crn": &schema.Schema{

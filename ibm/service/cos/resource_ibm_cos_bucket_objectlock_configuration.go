@@ -73,9 +73,10 @@ func ResourceIBMCOSBucketObjectlock() *schema.Resource {
 										Elem: &schema.Resource{
 											Schema: map[string]*schema.Schema{
 												"mode": {
-													Type:        schema.TypeString,
-													Required:    true,
-													Description: "Retention modes apply different levels of protection to the objects.",
+													Type:         schema.TypeString,
+													Required:     true,
+													ValidateFunc: validate.ValidateAllowedStringValues([]string{"COMPLIANCE", "GOVERNANCE"}),
+													Description:  "Retention modes apply different levels of protection to the objects. Valid values: COMPLIANCE, GOVERNANCE.",
 												},
 												"years": {
 													Type:          schema.TypeInt,

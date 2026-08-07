@@ -25,11 +25,12 @@ const (
 
 func ResourceIBMCISWAFPackage() *schema.Resource {
 	return &schema.Resource{
-		Create:   ResourceIBMCISWAFPackageUpdate,
-		Read:     ResourceIBMCISWAFPackageRead,
-		Update:   ResourceIBMCISWAFPackageUpdate,
-		Delete:   ResourceIBMCISWAFPackageDelete,
-		Importer: &schema.ResourceImporter{},
+		Create:             ResourceIBMCISWAFPackageUpdate,
+		Read:               ResourceIBMCISWAFPackageRead,
+		Update:             ResourceIBMCISWAFPackageUpdate,
+		Delete:             ResourceIBMCISWAFPackageDelete,
+		Importer:           &schema.ResourceImporter{},
+		DeprecationMessage: "The legacy WAF APIs are deprecated and are replaced by WAF managed rules. For more information on this change, see https://cloud.ibm.com/docs/cis?topic=cis-migrating-to-managed-rules.",
 		Schema: map[string]*schema.Schema{
 			cisID: {
 				Type:        schema.TypeString,

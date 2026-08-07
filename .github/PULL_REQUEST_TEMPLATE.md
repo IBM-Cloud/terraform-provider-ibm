@@ -12,6 +12,15 @@
 <!--- If your PR fully resolves and should automatically close the linked issue, use Closes. Otherwise, use Relates --->
 Relates OR Closes #0000
 
+### Pre-submission Checklist
+
+Before submitting this PR, please ensure you have completed the following:
+
+- [ ] Run `go mod tidy` (if you modified `go.mod`)
+- [ ] Run `go fmt ./...` to format all code
+- [ ] Run `go vet ./...` to check for common errors
+- [ ] All acceptance tests pass locally
+
 Output from acceptance testing:
 
 <!--

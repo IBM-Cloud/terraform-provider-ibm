@@ -116,6 +116,7 @@ func TestAccIBMISInstanceProfilesDataSource_cluster(t *testing.T) {
 					resource.TestCheckResourceAttrSet("data.ibm_is_instance_profiles.test1", "profiles.0.cluster_network_attachment_count.#"),
 					resource.TestCheckResourceAttrSet("data.ibm_is_instance_profiles.test1", "profiles.0.cluster_network_attachment_count.0.values.#"),
 					resource.TestCheckResourceAttrSet("data.ibm_is_instance_profiles.test1", "profiles.0.supported_cluster_network_profiles.#"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_instance_profiles.test1", "profiles.0.zones.#"),
 				),
 			},
 		},
@@ -219,6 +220,31 @@ func TestAccIBMISInstanceProfilesDataSource_AvailabilityClass(t *testing.T) {
 					resource.TestCheckResourceAttrSet(resName, "profiles.0.availability_class.#"),
 					resource.TestCheckResourceAttrSet(resName, "profiles.0.availability_class.0.type"),
 					resource.TestCheckResourceAttrSet(resName, "profiles.0.availability_class.0.values.#"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccIBMISInstanceProfilesDataSource_ThreadsPerCore(t *testing.T) {
+	resName := "data.ibm_is_instance_profiles.test1"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { acc.TestAccPreCheck(t) },
+		Providers: acc.TestAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMISInstanceProfilesDataSourceConfig(),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet(resName, "profiles.0.name"),
+					resource.TestCheckResourceAttrSet(resName, "profiles.0.family"),
+					resource.TestCheckResourceAttrSet(resName, "profiles.0.threads_per_core.#"),
+					resource.TestCheckResourceAttrSet(resName, "profiles.0.threads_per_core.0.type"),
+					resource.TestCheckResourceAttrSet(resName, "profiles.0.threads_per_core.0.default"),
+					resource.TestCheckResourceAttrSet(resName, "profiles.0.threads_per_core.0.values.#"),
+					resource.TestCheckResourceAttrSet(resName, "profiles.0.supported_vcpu_count.#"),
+					resource.TestCheckResourceAttrSet(resName, "profiles.0.supported_vcpu_count.0.type"),
+					resource.TestCheckResourceAttrSet(resName, "profiles.0.supported_vcpu_count.0.values.#"),
 				),
 			},
 		},

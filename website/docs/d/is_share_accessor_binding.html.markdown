@@ -34,7 +34,7 @@ You can specify the following arguments for this data source.
 After your data source is created, you can read values from the following attributes.
 
 - `id` - The unique identifier of the ShareAccessorBinding.
-- `accessor` - (List) The accessor for this share accessor binding.The resources supported by this property may[expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) in the future.
+- `accessor` - (List) The accessor for this share accessor binding.The resources supported by this property may [expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) in the future.
 	Nested schema for **accessor**:
 	- `crn` - (String) The CRN for this file share.
 	- `deleted` - (List) If present, this property indicates the referenced resource has been deleted, and providessome supplementary information.

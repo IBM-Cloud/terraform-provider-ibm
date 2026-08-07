@@ -758,6 +758,55 @@ func DataSourceIBMISInstanceProfiles() *schema.Resource {
 							Computed:    true,
 							Description: "The status of the instance profile.",
 						},
+						"supported_vcpu_count": {
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "The supported values for vcpu count for an instance with this profile.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"type": {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The type for this profile field.",
+									},
+									"values": {
+										Type:        schema.TypeList,
+										Computed:    true,
+										Description: "The permitted values for this profile field.",
+										Elem: &schema.Schema{
+											Type: schema.TypeInt,
+										},
+									},
+								},
+							},
+						},
+						"threads_per_core": {
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "The threads per core configuration for this profile.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"type": {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The type for this profile field.",
+									},
+									"default": {
+										Type:        schema.TypeInt,
+										Computed:    true,
+										Description: "The default threads per core values for an instance with this profile.",
+									},
+									"values": {
+										Type:        schema.TypeList,
+										Computed:    true,
+										Description: "The permitted threads per core values for an instance with this profile.",
+										Elem: &schema.Schema{
+											Type: schema.TypeInt,
+										},
+									},
+								},
+							},
+						},
 						"vcpu_architecture": {
 							Type:     schema.TypeList,
 							Computed: true,
@@ -866,6 +915,25 @@ func DataSourceIBMISInstanceProfiles() *schema.Resource {
 								},
 							},
 						},
+						"zones": &schema.Schema{
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "The zones in this region that support this instance profile.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"href": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The URL for this zone.",
+									},
+									"name": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The globally unique name for this zone.",
+									},
+								},
+							},
+						},
 						// shared core changes
 						"vcpu_burst_limit": &schema.Schema{
 							Type:        schema.TypeList,
@@ -936,14 +1004,23 @@ func instanceProfilesList(context context.Context, d *schema.ResourceData, meta 
 		return tfErr.GetDiag()
 	}
 	listInstanceProfilesOptions := &vpcv1.ListInstanceProfilesOptions{}
-	availableProfiles, _, err := sess.ListInstanceProfilesWithContext(context, listInstanceProfilesOptions)
+
+	var pager *vpcv1.InstanceProfilesPager
+	pager, err = sess.NewInstanceProfilesPager(listInstanceProfilesOptions)
 	if err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("ListInstanceProfilesWithContext failed: %s", err.Error()), "(Data) ibm_is_instance_profiles", "read")
+		tfErr := flex.TerraformErrorf(err, err.Error(), "(Data) ibm_is_instance_profiles", "read")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
+
+	allItems, err := pager.GetAll()
+	if err != nil {
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("InstanceProfilesPager.GetAll() failed %s", err), "(Data) ibm_is_instance_profiles", "read")
+		log.Printf("[DEBUG] %s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
+	}
 	profilesInfo := make([]map[string]interface{}, 0)
-	for _, profile := range availableProfiles.Profiles {
+	for _, profile := range allItems {
 
 		l := map[string]interface{}{
 			"name":   *profile.Name,
@@ -1085,6 +1162,12 @@ func instanceProfilesList(context context.Context, d *schema.ResourceData, meta 
 			portSpeedList = append(portSpeedList, portSpeedMap)
 			l["port_speed"] = portSpeedList
 		}
+		if profile.SupportedVcpuCount != nil {
+			l["supported_vcpu_count"] = dataSourceInstanceProfileFlattenSupportedVcpuCount(*profile.SupportedVcpuCount)
+		}
+		if profile.ThreadsPerCore != nil {
+			l["threads_per_core"] = dataSourceInstanceProfileFlattenThreadsPerCore(*profile.ThreadsPerCore)
+		}
 		if profile.VcpuArchitecture != nil {
 			vcpuArchitectureList := []map[string]interface{}{}
 			vcpuArchitectureMap := dataSourceInstanceProfileVcpuArchitectureToMap(*profile.VcpuArchitecture)
@@ -1103,6 +1186,13 @@ func instanceProfilesList(context context.Context, d *schema.ResourceData, meta 
 			volumeBandwidthQosModesList = append(volumeBandwidthQosModesList, volumeBandwidthQosModesMap)
 			l["volume_bandwidth_qos_modes"] = volumeBandwidthQosModesList
 		}
+		// changes for image availability
+		zones := []map[string]interface{}{}
+		for _, zonesItem := range profile.Zones {
+			zonesItemMap := DataSourceIBMIsInstanceProfilesZoneReferenceToMap(&zonesItem)
+			zones = append(zones, zonesItemMap)
+		}
+		l["zones"] = zones
 		// Changes for manufacturer for AMD Support.
 		if profile.VcpuManufacturer != nil {
 			vcpuManufacturerList := []map[string]interface{}{}
@@ -1211,7 +1301,12 @@ func DataSourceIBMIsInstanceProfilesInstanceProfileClusterNetworkAttachmentCount
 	modelMap["type"] = *model.Type
 	return modelMap, nil
 }
-
+func DataSourceIBMIsInstanceProfilesZoneReferenceToMap(model *vpcv1.ZoneReference) map[string]interface{} {
+	modelMap := make(map[string]interface{})
+	modelMap["href"] = *model.Href
+	modelMap["name"] = *model.Name
+	return modelMap
+}
 func DataSourceIBMIsInstanceProfilesInstanceProfileAvailabilityClassToMap(model vpcv1.InstanceProfileAvailabilityClassIntf) (map[string]interface{}, error) {
 	if _, ok := model.(*vpcv1.InstanceProfileAvailabilityClassEnum); ok {
 		return DataSourceIBMIsInstanceProfilesInstanceProfileAvailabilityClassEnumToMap(model.(*vpcv1.InstanceProfileAvailabilityClassEnum))

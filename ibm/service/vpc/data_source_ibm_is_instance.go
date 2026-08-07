@@ -59,7 +59,7 @@ func DataSourceIBMISInstance() *schema.Resource {
 						"class": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "The availability class for the virtual server instance.- `spot`: The virtual server instance may be preempted.- `standard`: The virtual server instance will not be preempted.See [virtual server instance availability class](https://cloud.ibm.com/docs/vpc?topic=vpc-spot-instances-virtual-servers) for details.The enumerated values for this property may[expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) in the future.",
+							Description: "The availability class for the virtual server instance.- `spot`: The virtual server instance may be preempted.- `standard`: The virtual server instance will not be preempted.See [virtual server instance availability class](https://cloud.ibm.com/docs/vpc?topic=vpc-spot-instances-virtual-servers) for details.The enumerated values for this property may [expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) in the future.",
 						},
 					},
 				},
@@ -73,12 +73,12 @@ func DataSourceIBMISInstance() *schema.Resource {
 						"host_failure": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "The action to perform if the compute host experiences a failure:- `restart`: Restart the virtual server instance- `stop`: Leave the virtual server instance stopped. See [handling host failures](https://cloud.ibm.com/docs/vpc?topic=vpc-host-failure-recovery-policies) for details.The enumerated values for this property may[expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) in the future.",
+							Description: "The action to perform if the compute host experiences a failure:- `restart`: Restart the virtual server instance- `stop`: Leave the virtual server instance stopped. See [handling host failures](https://cloud.ibm.com/docs/vpc?topic=vpc-host-failure-recovery-policies) for details.The enumerated values for this property may [expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) in the future.",
 						},
 						"preemption": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "The action to perform if the virtual server instance is preempted:- `delete`: Delete the virtual server instance- `stop`: Leave the virtual server instance stopped. See [virtual server instance preemption](https://cloud.ibm.com/docs/vpc?topic=vpc-spot-instances-virtual-servers#spot-instances-preemption) for details.The enumerated values for this property may[expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) in the future.",
+							Description: "The action to perform if the virtual server instance is preempted:- `delete`: Delete the virtual server instance- `stop`: Leave the virtual server instance stopped. See [virtual server instance preemption](https://cloud.ibm.com/docs/vpc?topic=vpc-spot-instances-virtual-servers#spot-instances-preemption) for details.The enumerated values for this property may [expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) in the future.",
 						},
 					},
 				},
@@ -87,6 +87,51 @@ func DataSourceIBMISInstance() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The availability policy to use for this virtual server instance. The action to perform if the compute host experiences a failure.",
+			},
+
+			// software attachments
+			"software_attachments": &schema.Schema{
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "The software attachments for this instance.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"deleted": &schema.Schema{
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "If present, this property indicates the referenced resource has been deleted, and providessome supplementary information.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"more_info": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "A link to documentation about deleted resources.",
+									},
+								},
+							},
+						},
+						"href": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The URL for this instance software attachment.",
+						},
+						"id": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The unique identifier for this instance software attachment.",
+						},
+						"name": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The name for this instance software attachment. The name is unique across all instance software attachments for the instance.",
+						},
+						"resource_type": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The resource type.",
+						},
+					},
+				},
 			},
 
 			isInstanceName: {
@@ -104,7 +149,7 @@ func DataSourceIBMISInstance() *schema.Resource {
 						"architecture": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "The VCPU architecture.The enumerated values for this property may[expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) in the future.",
+							Description: "The VCPU architecture.The enumerated values for this property may [expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) in the future.",
 						},
 						"burst": &schema.Schema{
 							Type:     schema.TypeList,
@@ -114,7 +159,7 @@ func DataSourceIBMISInstance() *schema.Resource {
 									"limit": &schema.Schema{
 										Type:        schema.TypeInt,
 										Computed:    true,
-										Description: "The maximum percentage the virtual server instance will exceed its allocated share of VCPU time.The maximum value for this property may[expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) in the future.",
+										Description: "The maximum percentage the virtual server instance will exceed its allocated share of VCPU time.The maximum value for this property may [expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) in the future.",
 									},
 								},
 							},
@@ -127,7 +172,7 @@ func DataSourceIBMISInstance() *schema.Resource {
 						"manufacturer": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "The VCPU manufacturer.The enumerated values for this property may[expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) in the future.",
+							Description: "The VCPU manufacturer.The enumerated values for this property may [expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) in the future.",
 						},
 						"percentage": &schema.Schema{
 							Type:        schema.TypeInt,
@@ -329,6 +374,11 @@ func DataSourceIBMISInstance() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The volume bandwidth QoS mode for this virtual server instance.",
+			},
+			isInstanceThreadsPerCore: {
+				Type:        schema.TypeInt,
+				Computed:    true,
+				Description: "The threads per core for this virtual server instance.",
 			},
 
 			isInstanceTotalNetworkBandwidth: {
@@ -1422,6 +1472,19 @@ func instanceGetByName(context context.Context, d *schema.ResourceData, meta int
 		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting availability_policy: %s", err), "(Data) ibm_is_instance", "read", "set-availability_policy").GetDiag()
 	}
 
+	// software attachments
+	softwareAttachments := []map[string]interface{}{}
+	for _, softwareAttachmentsItem := range instance.SoftwareAttachments {
+		softwareAttachmentsItemMap, err := DataSourceIBMIsInstanceInstanceSoftwareAttachmentReferenceToMap(&softwareAttachmentsItem) // #nosec G601
+		if err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_instance", "read", "software_attachments-to-map").GetDiag()
+		}
+		softwareAttachments = append(softwareAttachments, softwareAttachmentsItemMap)
+	}
+	if err = d.Set("software_attachments", softwareAttachments); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting software_attachments: %s", err), "(Data) ibm_is_instance", "read", "set-software_attachments").GetDiag()
+	}
+
 	// cluster changes
 
 	clusterNetwork := []map[string]interface{}{}
@@ -1549,6 +1612,11 @@ func instanceGetByName(context context.Context, d *schema.ResourceData, meta int
 	if instance.VolumeBandwidthQosMode != nil {
 		if err = d.Set(isInstanceVolumeBandwidthQoSMode, string(*instance.VolumeBandwidthQosMode)); err != nil {
 			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting volume_bandwidth_qos_mode: %s", err), "(Data) ibm_is_instance", "read", "set-volume_bandwidth_qos_mode").GetDiag()
+		}
+	}
+	if instance.ThreadsPerCore != nil {
+		if err = d.Set(isInstanceThreadsPerCore, flex.IntValue(instance.ThreadsPerCore)); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting threads_per_core: %s", err), "(Data) ibm_is_instance", "read", "set-threads_per_core").GetDiag()
 		}
 	}
 
@@ -2260,8 +2328,12 @@ func DataSourceIBMIsInstanceInstanceAvailabilityToMap(model *vpcv1.InstanceAvail
 
 func DataSourceIBMIsInstanceInstanceAvailabilityPolicyToMap(model *vpcv1.InstanceAvailabilityPolicy) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	modelMap["host_failure"] = *model.HostFailure
-	modelMap["preemption"] = *model.Preemption
+	if model.HostFailure != nil {
+		modelMap["host_failure"] = *model.HostFailure
+	}
+	if model.Preemption != nil {
+		modelMap["preemption"] = *model.Preemption
+	}
 	return modelMap, nil
 }
 
@@ -2284,5 +2356,21 @@ func DataSourceIBMIsInstanceInstanceVcpuToMap(model *vpcv1.InstanceVcpu) (map[st
 func DataSourceIBMIsInstanceInstanceVcpuBurstToMap(model *vpcv1.InstanceVcpuBurst) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["limit"] = flex.IntValue(model.Limit)
+	return modelMap, nil
+}
+
+func DataSourceIBMIsInstanceInstanceSoftwareAttachmentReferenceToMap(model *vpcv1.InstanceSoftwareAttachmentReference) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.Deleted != nil {
+		deletedMap, err := DataSourceIBMIsInstanceDeletedToMap(model.Deleted)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["deleted"] = []map[string]interface{}{deletedMap}
+	}
+	modelMap["href"] = *model.Href
+	modelMap["id"] = *model.ID
+	modelMap["name"] = *model.Name
+	modelMap["resource_type"] = *model.ResourceType
 	return modelMap, nil
 }
