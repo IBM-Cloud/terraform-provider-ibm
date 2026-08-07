@@ -235,6 +235,8 @@ resource "ibm_onboarding_catalog_product" "onboarding_catalog_product_instance" 
 					id = "id"
 				}
 			}
+			product_code = "product_code"
+			product_code_type = "product_code_type"
 		}
   }
   name = "1p-service-08-06"
@@ -332,6 +334,8 @@ Nested schema for **metadata**:
 				* `support_type` - (Optional, String) The type of support provided.
 				  * Constraints: Allowable values are: `community`, `third_party`, `ibm`, `ibm_cloud`.
 				* `url` - (Optional, String) The support site URL where the support for your service is available.
+		* `product_code` - (Optional, String) Product code from FedCat.
+		* `product_code_type` - (Optional, String) Product code type.
 	* `rc_compatible` - (Optional, Boolean) Whether the object is compatible with the resource controller service.
 	* `service` - (Optional, List) The global catalog metadata of the service.
 	Nested schema for **service**:
@@ -595,7 +599,7 @@ Nested schema for **overview_ui**:
 * `product_id` - (Required, Forces new resource, String) The unique ID of the resource.
   * Constraints: Length must be `71` characters. The value must match regular expression `/^[a-zA-Z0-9]{32}:o:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/`.
 * `tags` - (Required, List) A list of tags that carry information about your product. These tags can be used to find your product in the IBM Cloud catalog.
-  * Constraints: The list items must match regular expression `/^[a-z0-9\\-._]+$/`. The maximum length is `100` items. The minimum length is `0` items.
+  * Constraints: The list items must match regular expression `/^[a-z0-9\\-._ ]+$/`. The maximum length is `100` items. The minimum length is `0` items.
 
 ## Attribute Reference
 
@@ -608,7 +612,7 @@ After your resource is created, you can read values from the listed arguments an
   * Constraints: The list items must match regular expression `/./`. The maximum length is `1000` items. The minimum length is `0` items.
 * `group` - (Boolean) Flag for group tile legacy service.
 * `pricing_tags` - (List) A list of tags that carry information about the pricing information of your product.
-  * Constraints: The list items must match regular expression `/^[a-z0-9\\-._]+$/`. The maximum length is `100` items. The minimum length is `0` items.
+  * Constraints: The list items must match regular expression `/^[a-z0-9\\-._ ]+$/`. The maximum length is `100` items. The minimum length is `0` items.
 * `url` - (String) The global catalog URL of your product.
 
 

@@ -6,8 +6,8 @@ package partnercentersell_test
 import (
 	"fmt"
 	"testing"
+	"time"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 
@@ -24,13 +24,14 @@ func TestAccIbmOnboardingResourceBrokerBasic(t *testing.T) {
 	authUsername := "apikey"
 	authPassword := "K00lH00iautoT0K0TAxXzExxOXXxXxXxXXZz-lOL0sd5"
 	authScheme := "bearer"
-	brokerURL := fmt.Sprintf("https://broker-url-for-my-service.com/%d", acctest.RandIntRange(10, 100))
+
+	brokerURL := fmt.Sprintf("https://broker-url-for-my-service.com/%d", time.Now().UnixMilli())
 	typeVar := "provision_through"
 	name := "broker-petra-1"
 	authUsernameUpdate := "apikey"
 	authPasswordUpdate := "K00lH00iautoT0K0TAxXzExxOXXxXxXxXXZz-lOL0sd5"
 	authSchemeUpdate := "bearer"
-	brokerURLUpdate := fmt.Sprintf("https://broker-url-for-my-service.com/%d", acctest.RandIntRange(10, 100))
+	brokerURLUpdate := fmt.Sprintf("https://broker-url-for-my-service.com/%d-updated", time.Now().UnixMilli())
 	typeVarUpdate := "provision_behind"
 	nameUpdate := "broker-petra-1"
 
@@ -40,7 +41,7 @@ func TestAccIbmOnboardingResourceBrokerBasic(t *testing.T) {
 		CheckDestroy: testAccCheckIbmOnboardingResourceBrokerDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIbmOnboardingResourceBrokerConfigBasic(authUsername, authPassword, authScheme, brokerURL, typeVar, name),
+				Config: testAccCheckIbmOnboardingResourceBrokerConfigBasic(authUsername, authPassword, authScheme, brokerURL, acc.ResourceGroupCRN, typeVar, name),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIbmOnboardingResourceBrokerExists("ibm_onboarding_resource_broker.onboarding_resource_broker_instance", conf),
 					resource.TestCheckResourceAttr("ibm_onboarding_resource_broker.onboarding_resource_broker_instance", "auth_username", authUsername),
@@ -52,7 +53,7 @@ func TestAccIbmOnboardingResourceBrokerBasic(t *testing.T) {
 				ExpectNonEmptyPlan: true,
 			},
 			resource.TestStep{
-				Config: testAccCheckIbmOnboardingResourceBrokerConfigBasic(authUsernameUpdate, authPasswordUpdate, authSchemeUpdate, brokerURLUpdate, typeVarUpdate, nameUpdate),
+				Config: testAccCheckIbmOnboardingResourceBrokerConfigBasic(authUsernameUpdate, authPasswordUpdate, authSchemeUpdate, brokerURLUpdate, acc.ResourceGroupCRN, typeVarUpdate, nameUpdate),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("ibm_onboarding_resource_broker.onboarding_resource_broker_instance", "auth_username", authUsernameUpdate),
 					resource.TestCheckResourceAttr("ibm_onboarding_resource_broker.onboarding_resource_broker_instance", "auth_scheme", authSchemeUpdate),
@@ -73,7 +74,7 @@ func TestAccIbmOnboardingResourceBrokerAllArgs(t *testing.T) {
 	authPassword := "K00lH00iautoT0K0TAxXzExxOXXxXxXxXXZz-lOL0sd5"
 	authScheme := "bearer"
 	state := "active"
-	brokerURL := fmt.Sprintf("https://broker-url-for-my-service.com/%d", acctest.RandIntRange(10, 100))
+	brokerURL := fmt.Sprintf("https://broker-url-for-my-service.com/%d", time.Now().UnixMilli())
 	allowContextUpdates := "false"
 	catalogType := "service"
 	typeVar := "provision_through"
@@ -84,7 +85,7 @@ func TestAccIbmOnboardingResourceBrokerAllArgs(t *testing.T) {
 	authPasswordUpdate := "K00lH00iautoT0K0TAxXzExxOXXxXxXxXXZz-lOL0sd5"
 	authSchemeUpdate := "bearer"
 	stateUpdate := "active"
-	brokerURLUpdate := fmt.Sprintf("https://broker-url-for-my-service.com/%d", acctest.RandIntRange(10, 100))
+	brokerURLUpdate := fmt.Sprintf("https://broker-url-for-my-service.com/%d-updated", time.Now().UnixMilli())
 	allowContextUpdatesUpdate := "true"
 	catalogTypeUpdate := "service"
 	typeVarUpdate := "provision_through"
@@ -97,7 +98,7 @@ func TestAccIbmOnboardingResourceBrokerAllArgs(t *testing.T) {
 		CheckDestroy: testAccCheckIbmOnboardingResourceBrokerDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIbmOnboardingResourceBrokerConfig(env, authUsername, authPassword, authScheme, state, brokerURL, allowContextUpdates, catalogType, typeVar, name, region),
+				Config: testAccCheckIbmOnboardingResourceBrokerConfig(env, authUsername, authPassword, authScheme, state, brokerURL, acc.ResourceGroupCRN, allowContextUpdates, catalogType, typeVar, name, region),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIbmOnboardingResourceBrokerExists("ibm_onboarding_resource_broker.onboarding_resource_broker_instance", conf),
 					resource.TestCheckResourceAttr("ibm_onboarding_resource_broker.onboarding_resource_broker_instance", "env", env),
@@ -114,7 +115,7 @@ func TestAccIbmOnboardingResourceBrokerAllArgs(t *testing.T) {
 				ExpectNonEmptyPlan: true,
 			},
 			resource.TestStep{
-				Config: testAccCheckIbmOnboardingResourceBrokerConfig(envUpdate, authUsernameUpdate, authPasswordUpdate, authSchemeUpdate, stateUpdate, brokerURLUpdate, allowContextUpdatesUpdate, catalogTypeUpdate, typeVarUpdate, nameUpdate, regionUpdate),
+				Config: testAccCheckIbmOnboardingResourceBrokerConfig(envUpdate, authUsernameUpdate, authPasswordUpdate, authSchemeUpdate, stateUpdate, brokerURLUpdate, acc.ResourceGroupCRN, allowContextUpdatesUpdate, catalogTypeUpdate, typeVarUpdate, nameUpdate, regionUpdate),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("ibm_onboarding_resource_broker.onboarding_resource_broker_instance", "env", envUpdate),
 					resource.TestCheckResourceAttr("ibm_onboarding_resource_broker.onboarding_resource_broker_instance", "auth_username", authUsernameUpdate),
@@ -141,7 +142,7 @@ func TestAccIbmOnboardingResourceBrokerAllArgs(t *testing.T) {
 	})
 }
 
-func testAccCheckIbmOnboardingResourceBrokerConfigBasic(authUsername string, authPassword string, authScheme string, brokerURL string, typeVar string, name string) string {
+func testAccCheckIbmOnboardingResourceBrokerConfigBasic(authUsername string, authPassword string, authScheme string, brokerURL string, resourceGroupCRN string, typeVar string, name string) string {
 	return fmt.Sprintf(`
 		resource "ibm_onboarding_resource_broker" "onboarding_resource_broker_instance" {
 			auth_username = "%s"
@@ -152,12 +153,12 @@ func testAccCheckIbmOnboardingResourceBrokerConfigBasic(authUsername string, aut
 			name = "%s"
 			region = "global"
 			state = "active"
-			resource_group_crn = "crn:v1:staging:public:resource-controller::a/b763b2a2e1564b23a5374e6f61ac3602::resource-group:a9327fb119d34b2690b59ebc0e8df5e2"
+			resource_group_crn = "%s"
 		}
-	`, authUsername, authPassword, authScheme, brokerURL, typeVar, name)
+	`, authUsername, authPassword, authScheme, brokerURL, typeVar, name, resourceGroupCRN)
 }
 
-func testAccCheckIbmOnboardingResourceBrokerConfig(env string, authUsername string, authPassword string, authScheme string, state string, brokerURL string, allowContextUpdates string, catalogType string, typeVar string, name string, region string) string {
+func testAccCheckIbmOnboardingResourceBrokerConfig(env string, authUsername string, authPassword string, authScheme string, state string, brokerURL string, resourceGroupCRN string, allowContextUpdates string, catalogType string, typeVar string, name string, region string) string {
 	return fmt.Sprintf(`
 
 		resource "ibm_onboarding_resource_broker" "onboarding_resource_broker_instance" {
@@ -172,9 +173,9 @@ func testAccCheckIbmOnboardingResourceBrokerConfig(env string, authUsername stri
 			type = "%s"
 			name = "%s"
 			region = "%s"
-			resource_group_crn = "crn:v1:staging:public:resource-controller::a/b763b2a2e1564b23a5374e6f61ac3602::resource-group:a9327fb119d34b2690b59ebc0e8df5e2"
+			resource_group_crn = "%s"
 		}
-	`, env, authUsername, authPassword, authScheme, state, brokerURL, allowContextUpdates, catalogType, typeVar, name, region)
+	`, env, authUsername, authPassword, authScheme, state, brokerURL, allowContextUpdates, catalogType, typeVar, name, region, resourceGroupCRN)
 }
 
 func testAccCheckIbmOnboardingResourceBrokerExists(n string, obj partnercentersellv1.Broker) resource.TestCheckFunc {
