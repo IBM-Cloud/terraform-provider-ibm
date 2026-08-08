@@ -16,42 +16,20 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
+// CISResourceResponseObject is the write-only input schema for the rulesets
+// block. It contains ONLY fields the user can set in config — no Computed-only
+// fields. Mixing Computed-only fields here causes the Terraform Plugin SDK v2
+// to propagate prior-API values into the plan comparison, producing a
+// perpetual diff on every plan. Read-only API output (kind, name, phase,
+// version, ruleset_id, rule.id, rule.version, rule.ref, last_updated, etc.)
+// is exposed via the separate rulesets_response Computed-only block which
+// uses CISResponseObject.
 var CISResourceResponseObject = &schema.Resource{
 	Schema: map[string]*schema.Schema{
 		CISRulesetsDescription: {
 			Type:        schema.TypeString,
 			Optional:    true,
 			Description: "Description of the rulesets",
-		},
-		CISRulesetsId: {
-			Type:        schema.TypeString,
-			Description: "Associated ruleset ID",
-			Optional:    true,
-		},
-		CISRulesetsKind: {
-			Type:        schema.TypeString,
-			Optional:    true,
-			Description: "Kind of the rulesets",
-		},
-		CISRulesetsLastUpdatedAt: {
-			Type:        schema.TypeString,
-			Optional:    true,
-			Description: "Rulesets last updated at",
-		},
-		CISRulesetsName: {
-			Type:        schema.TypeString,
-			Optional:    true,
-			Description: "Name of the rulesets",
-		},
-		CISRulesetsPhase: {
-			Type:        schema.TypeString,
-			Optional:    true,
-			Description: "Phase of the rulesets",
-		},
-		CISRulesetsVersion: {
-			Type:        schema.TypeString,
-			Optional:    true,
-			Description: "Version of the rulesets",
 		},
 		CISRulesetsRules: {
 			Type:        schema.TypeList,
@@ -62,12 +40,7 @@ var CISResourceResponseObject = &schema.Resource{
 					CISRulesetsRuleId: {
 						Type:        schema.TypeString,
 						Optional:    true,
-						Description: "ID of the rulesets rule",
-					},
-					CISRulesetsRuleVersion: {
-						Type:        schema.TypeString,
-						Optional:    true,
-						Description: "Version of the rulesets rule",
+						Description: "ID of the rulesets rule (used when updating a specific rule)",
 					},
 					CISRulesetsRuleAction: {
 						Type:        schema.TypeString,
@@ -75,15 +48,16 @@ var CISResourceResponseObject = &schema.Resource{
 						Description: "Action of the rulesets rule",
 					},
 					CISRulesetsRuleActionParameters: {
-						Type:        schema.TypeSet,
+						Type:        schema.TypeList,
 						Optional:    true,
+						MaxItems:    1,
 						Description: "Action parameters of the rulesets rule",
 						Elem: &schema.Resource{
 							Schema: map[string]*schema.Schema{
 								CISRulesetsRuleId: {
 									Type:        schema.TypeString,
 									Optional:    true,
-									Description: "ID of the rulesets rule",
+									Description: "ID of the managed ruleset to execute",
 								},
 								CISRulesetOverrides: {
 									Type:        schema.TypeSet,
@@ -167,11 +141,6 @@ var CISResourceResponseObject = &schema.Resource{
 										},
 									},
 								},
-								CISRulesetsVersion: {
-									Type:        schema.TypeString,
-									Optional:    true,
-									Description: "Version of the ruleset",
-								},
 								CISRuleset: {
 									Type:        schema.TypeString,
 									Optional:    true,
@@ -222,12 +191,6 @@ var CISResourceResponseObject = &schema.Resource{
 							},
 						},
 					},
-					CISRulesetsRuleActionCategories: {
-						Type:        schema.TypeList,
-						Optional:    true,
-						Description: "Categories of the rulesets rule",
-						Elem:        &schema.Schema{Type: schema.TypeString},
-					},
 					CISRulesetsRuleActionEnabled: {
 						Type:        schema.TypeBool,
 						Optional:    true,
@@ -247,12 +210,6 @@ var CISResourceResponseObject = &schema.Resource{
 						Type:        schema.TypeString,
 						Optional:    true,
 						Description: "Reference of the rulesets rule",
-					},
-					CISRulesetsRuleLogging: {
-						Type:        schema.TypeMap,
-						Optional:    true,
-						Description: "Logging of the rulesets rule",
-						Elem:        &schema.Schema{Type: schema.TypeBool},
 					},
 					CISRulesetsRulePosition: {
 						Type:        schema.TypeSet,
@@ -277,11 +234,6 @@ var CISResourceResponseObject = &schema.Resource{
 								},
 							},
 						},
-					},
-					CISRulesetsRuleLastUpdatedAt: {
-						Type:        schema.TypeString,
-						Optional:    true,
-						Description: "Rulesets rule last updated at",
 					},
 				},
 			},
@@ -366,7 +318,6 @@ func ResourceIBMCISRulesetUpdate(d *schema.ResourceData, meta interface{}) error
 
 		rulesetsObject := d.Get(CISRulesetsObjectOutput).([]interface{})[0].(map[string]interface{})
 		opt.SetDescription(rulesetsObject[CISRulesetsDescription].(string))
-		opt.SetName(rulesetsObject[CISRulesetsName].(string))
 		opt.SetRulesetID(rulesetId)
 
 		rulesObj := expandCISRules(rulesetsObject[CISRulesetsRules])
@@ -385,7 +336,6 @@ func ResourceIBMCISRulesetUpdate(d *schema.ResourceData, meta interface{}) error
 
 		rulesetsObject := d.Get(CISRulesetsObjectOutput).([]interface{})[0].(map[string]interface{})
 		opt.SetDescription(rulesetsObject[CISRulesetsDescription].(string))
-		opt.SetName(rulesetsObject[CISRulesetsName].(string))
 		opt.SetRulesetID(rulesetId)
 
 		rulesObj := expandCISRules(rulesetsObject[CISRulesetsRules])
@@ -419,28 +369,24 @@ func ResourceIBMCISRulesetRead(d *schema.ResourceData, meta interface{}) error {
 	if zoneId != "" {
 		sess.ZoneIdentifier = core.StringPtr(zoneId)
 		opt := sess.NewGetZoneRulesetOptions(rulesetId)
-		result, resp, err := sess.GetZoneRuleset(opt)
+		_, resp, err := sess.GetZoneRuleset(opt)
 		if err != nil {
-			return flex.FmtErrorf("[WARN] Resource: Get zone ruleset failed:  %v \n", resp)
+			return flex.FmtErrorf("[ERROR] Resource: Get zone ruleset failed: %s %v", err, resp)
 		}
-
-		rulesetObj := flattenCISRulesets(*result.Result)
-
-		d.Set(CISRulesetsObjectOutput, rulesetObj)
+		// rulesets (input) is intentionally not overwritten — it holds the
+		// user-configured values and must not be overwritten with API values
+		// or the SDK will generate a perpetual diff on every plan.
 		d.Set(cisDomainID, zoneId)
 		d.Set(cisID, crn)
 		d.SetId(dataSourceCISRulesetsCheckID(d))
 
 	} else {
 		opt := sess.NewGetInstanceRulesetOptions(rulesetId)
-		result, resp, err := sess.GetInstanceRuleset(opt)
+		_, resp, err := sess.GetInstanceRuleset(opt)
 		if err != nil {
-			return flex.FmtErrorf("[WARN] Resource: Get Instance ruleset failed: %v \n", resp)
+			return flex.FmtErrorf("[ERROR] Resource: Get instance ruleset failed: %s %v", err, resp)
 		}
-
-		rulesetObj := flattenCISRulesets(*result.Result)
-
-		d.Set(CISRulesetsListOutput, rulesetObj)
+		// Same rationale as zone branch above.
 		d.Set(CISRulesetsId, rulesetId)
 		d.Set(cisID, crn)
 		d.SetId(dataSourceCISRulesetsCheckID(d))
@@ -496,7 +442,7 @@ func expandCISRules(obj interface{}) []rulesetsv1.RuleCreate {
 
 		actionParameterObj := rulesetsv1.ActionParameters{}
 
-		if len(ruleObj[CISRulesetsRuleActionParameters].(*schema.Set).List()) != 0 {
+		if len(ruleObj[CISRulesetsRuleActionParameters].([]interface{})) != 0 {
 			actionParameterObj = expandCISRulesetsRulesActionParameters(ruleObj[CISRulesetsRuleActionParameters])
 		}
 
@@ -562,23 +508,25 @@ func expandCISRulesetsRulesActionParameters(obj interface{}) rulesetsv1.ActionPa
 
 	actionParameterRespObj := rulesetsv1.ActionParameters{}
 	// return empty object if action parameter is not provided.
-	if len(obj.(*schema.Set).List()) == 0 {
+	if len(obj.([]interface{})) == 0 {
 		return actionParameterRespObj
 	}
 
-	actionParameterObj := obj.(*schema.Set).List()[0].(map[string]interface{})
+	actionParameterObj := obj.([]interface{})[0].(map[string]interface{})
 
 	id := actionParameterObj[CISRulesetsRuleId].(string)
 	if id != "" {
 		actionParameterRespObj.ID = &id
 	}
-	version := actionParameterObj[CISRulesetsVersion].(string)
-	if version != "" {
-		actionParameterRespObj.Version = &version
+	// CISRulesetsVersion ("version") was removed from the input schema since it
+	// is API-managed (always "latest"). Read it safely; it will be empty string
+	// when not present in the map.
+	if v, ok := actionParameterObj[CISRulesetsVersion].(string); ok && v != "" {
+		actionParameterRespObj.Version = &v
 	}
 	ruleListInterface := actionParameterObj[CISRulesetList].([]interface{})
 
-	ruleList := make([]string, 0)
+	ruleList := make([]string, len(ruleListInterface))
 	for i, v := range ruleListInterface {
 		ruleList[i] = fmt.Sprint(v)
 	}
