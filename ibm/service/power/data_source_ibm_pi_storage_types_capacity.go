@@ -52,7 +52,7 @@ func DataSourceIBMPIStorageTypesCapacity() *schema.Resource {
 								Schema: map[string]*schema.Schema{
 									Attr_MaxAllocationSize: {
 										Computed:    true,
-										Description: "Maximum allocation storage size (GB).",
+										Description: "Maximum allocation storage size (GiB).",
 										Type:        schema.TypeInt,
 									},
 									Attr_PoolName: {
@@ -67,7 +67,7 @@ func DataSourceIBMPIStorageTypesCapacity() *schema.Resource {
 									},
 									Attr_TotalCapacity: {
 										Computed:    true,
-										Description: "Total pool capacity (GB).",
+										Description: "Total pool capacity (GiB).",
 										Type:        schema.TypeInt,
 									},
 								},

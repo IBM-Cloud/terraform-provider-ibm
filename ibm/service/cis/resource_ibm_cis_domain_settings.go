@@ -5,6 +5,7 @@ package cis
 
 import (
 	"log"
+	"strings"
 
 	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -74,6 +75,10 @@ const (
 	cisDomainSettingsProxyReadTimeout           = "proxy_read_timeout"
 	cisDomainSettingsOpportunisticOnion         = "opportunistic_onion"
 	cisDomainSettingsLogRetention               = "log_retention"
+	cisDomainSettingsSecurityLevel              = "security_level"
+	cisDomainSettingsEmailObfuscation           = "email_obfuscation"
+	cisDomainSettingsReplaceInsecureJs          = "replace_insecure_js"
+	cisDomainSettingsHTTP3                      = "http3"
 )
 
 func ResourceIBMCISSettings() *schema.Resource {
@@ -501,6 +506,42 @@ func ResourceIBMCISSettings() *schema.Resource {
 				Optional:    true,
 				Computed:    true,
 			},
+			cisDomainSettingsSecurityLevel: {
+				Type:        schema.TypeString,
+				Description: "security_level setting",
+				Optional:    true,
+				Computed:    true,
+				ValidateFunc: validate.InvokeValidator(
+					ibmCISDomainSettings,
+					cisDomainSettingsSecurityLevel),
+			},
+			cisDomainSettingsEmailObfuscation: {
+				Type:        schema.TypeString,
+				Description: "email_obfuscation setting",
+				Optional:    true,
+				Computed:    true,
+				ValidateFunc: validate.InvokeValidator(
+					ibmCISDomainSettings,
+					cisDomainSettingsEmailObfuscation),
+			},
+			cisDomainSettingsReplaceInsecureJs: {
+				Type:        schema.TypeString,
+				Description: "replace_insecure_js setting",
+				Optional:    true,
+				Computed:    true,
+				ValidateFunc: validate.InvokeValidator(
+					ibmCISDomainSettings,
+					cisDomainSettingsReplaceInsecureJs),
+			},
+			cisDomainSettingsHTTP3: {
+				Type:        schema.TypeString,
+				Description: "http3 setting",
+				Optional:    true,
+				Computed:    true,
+				ValidateFunc: validate.InvokeValidator(
+					ibmCISDomainSettings,
+					cisDomainSettingsHTTP3),
+			},
 		},
 
 		Create:   resourceCISSettingsUpdate,
@@ -804,6 +845,34 @@ func ResourceIBMCISDomainSettingValidator() *validate.ResourceValidator {
 			Type:                       validate.TypeString,
 			Optional:                   true,
 			AllowedValues:              "on, off"})
+	validateSchema = append(validateSchema,
+		validate.ValidateSchema{
+			Identifier:                 cisDomainSettingsSecurityLevel,
+			ValidateFunctionIdentifier: validate.ValidateAllowedStringValue,
+			Type:                       validate.TypeString,
+			Optional:                   true,
+			AllowedValues:              "essentially_off, low, medium, high, under_attack"})
+	validateSchema = append(validateSchema,
+		validate.ValidateSchema{
+			Identifier:                 cisDomainSettingsEmailObfuscation,
+			ValidateFunctionIdentifier: validate.ValidateAllowedStringValue,
+			Type:                       validate.TypeString,
+			Optional:                   true,
+			AllowedValues:              "on, off"})
+	validateSchema = append(validateSchema,
+		validate.ValidateSchema{
+			Identifier:                 cisDomainSettingsReplaceInsecureJs,
+			ValidateFunctionIdentifier: validate.ValidateAllowedStringValue,
+			Type:                       validate.TypeString,
+			Optional:                   true,
+			AllowedValues:              "on, off"})
+	validateSchema = append(validateSchema,
+		validate.ValidateSchema{
+			Identifier:                 cisDomainSettingsHTTP3,
+			ValidateFunctionIdentifier: validate.ValidateAllowedStringValue,
+			Type:                       validate.TypeString,
+			Optional:                   true,
+			AllowedValues:              "on, off"})
 	ibmCISDomainSettingResourceValidator := validate.ResourceValidator{
 		ResourceName: ibmCISDomainSettings,
 		Schema:       validateSchema}
@@ -847,6 +916,10 @@ var settingsList = []string{
 	cisDomainSettingsProxyReadTimeout,
 	cisDomainSettingsOpportunisticOnion,
 	cisDomainSettingsLogRetention,
+	cisDomainSettingsSecurityLevel,
+	cisDomainSettingsEmailObfuscation,
+	cisDomainSettingsReplaceInsecureJs,
+	cisDomainSettingsHTTP3,
 }
 
 func resourceCISSettingsUpdate(d *schema.ResourceData, meta interface{}) error {
@@ -1195,6 +1268,38 @@ func resourceCISSettingsUpdate(d *schema.ResourceData, meta interface{}) error {
 					opt := cisClient.NewUpdateLogRetentionOptions(*cisClient.Crn, *cisClient.ZoneIdentifier)
 					opt.SetFlag(v.(bool))
 					_, resp, err = cisClient.UpdateLogRetention(opt)
+				}
+			}
+		case cisDomainSettingsSecurityLevel:
+			if d.HasChange(item) {
+				if v, ok := d.GetOk(item); ok {
+					opt := cisClient.NewUpdateSecurityLevelOptions()
+					opt.SetValue(v.(string))
+					_, resp, err = cisClient.UpdateSecurityLevel(opt)
+				}
+			}
+		case cisDomainSettingsEmailObfuscation:
+			if d.HasChange(item) {
+				if v, ok := d.GetOk(item); ok {
+					opt := cisClient.NewUpdateEmailObfuscationOptions()
+					opt.SetValue(v.(string))
+					_, resp, err = cisClient.UpdateEmailObfuscation(opt)
+				}
+			}
+		case cisDomainSettingsReplaceInsecureJs:
+			if d.HasChange(item) {
+				if v, ok := d.GetOk(item); ok {
+					opt := cisClient.NewUpdateReplaceInsecureJsOptions()
+					opt.SetValue(v.(string))
+					_, resp, err = cisClient.UpdateReplaceInsecureJs(opt)
+				}
+			}
+		case cisDomainSettingsHTTP3:
+			if d.HasChange(item) {
+				if v, ok := d.GetOk(item); ok {
+					opt := cisClient.NewUpdateHttp3Options()
+					opt.SetValue(v.(string))
+					_, resp, err = cisClient.UpdateHttp3(opt)
 				}
 			}
 		}
@@ -1593,11 +1698,47 @@ func resourceCISSettingsRead(d *schema.ResourceData, meta interface{}) error {
 			}
 			settingResponse = resp
 			settingErr = err
+		case cisDomainSettingsSecurityLevel:
+			opt := cisClient.NewGetSecurityLevelOptions()
+			result, resp, err := cisClient.GetSecurityLevel(opt)
+			if err == nil {
+				d.Set(cisDomainSettingsSecurityLevel, result.Result.Value)
+			}
+			settingResponse = resp
+			settingErr = err
+		case cisDomainSettingsEmailObfuscation:
+			opt := cisClient.NewGetEmailObfuscationOptions()
+			result, resp, err := cisClient.GetEmailObfuscation(opt)
+			if err == nil {
+				d.Set(cisDomainSettingsEmailObfuscation, result.Result.Value)
+			}
+			settingResponse = resp
+			settingErr = err
+		case cisDomainSettingsReplaceInsecureJs:
+			opt := cisClient.NewGetReplaceInsecureJsOptions()
+			result, resp, err := cisClient.GetReplaceInsecureJs(opt)
+			if err == nil {
+				d.Set(cisDomainSettingsReplaceInsecureJs, result.Result.Value)
+			}
+			settingResponse = resp
+			settingErr = err
+		case cisDomainSettingsHTTP3:
+			opt := cisClient.NewGetHttp3Options()
+			result, resp, err := cisClient.GetHttp3(opt)
+			if err == nil {
+				d.Set(cisDomainSettingsHTTP3, result.Result.Value)
+			}
+			settingResponse = resp
+			settingErr = err
 		}
 
 		if settingErr != nil {
 			if settingResponse != nil && settingResponse.StatusCode == 405 {
 				log.Printf("[WARN] Get %s. : %s", item, settingErr)
+				continue
+			}
+			if strings.Contains(settingErr.Error(), "error unmarshalling") {
+				log.Printf("[WARN] Get %s skipped due to unmarshal error: %s", item, settingErr)
 				continue
 			}
 			log.Printf("Get settings failed on %s, %v\n", item, settingErr)

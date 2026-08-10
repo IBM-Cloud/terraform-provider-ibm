@@ -76,13 +76,13 @@ resource "ibm_is_lb_pool_member" "example" {
 ### Sample to create a reserved ip as a member target for network load balancer.
 
 ```terraform
-  resource "ibm_is_lb_pool_member" "example" {
-    lb        = ibm_is_lb.example.id
-    pool      = element(split("/", ibm_is_lb_pool.example.id), 1)
-    port      = 8080
-    weight    = 20
-    target_id = ibm_is_subnet_reserved_ip.example.id
-	}
+resource "ibm_is_lb_pool_member" "example" {
+  lb        = ibm_is_lb.example.id
+  pool      = element(split("/", ibm_is_lb_pool.example.id), 1)
+  port      = 8080
+  weight    = 20
+  target_id = ibm_is_subnet_reserved_ip.example.id
+}
 ```
 
 ## Timeouts
@@ -99,8 +99,9 @@ Review the argument references that you can specify for your resource.
 - `lb` - (Required, Forces new resource, String) The load balancer unique identifier.
 - `pool` - (Required, Forces new resource, String) The load balancer pool unique identifier.
 - `port`- (Required, Integer) The port number of the application running in the server member.
-- `target_address` - (Required, String) The IP address of the pool member.(Mutually exclusive with `target_id`)
-- `target_id` - (Required, String) The unique identifier for the virtual server instance or application load balancer pool member or subnet reserved ip. Required for network load balancer. (Mutually exclusive with `target_address`)
+- `target_address` - (Optional, String) The IP address of the pool member. Exactly one of `target_address`, `target_id`, or `target_fqdn` must be set.
+- `target_id` - (Optional, String) The unique identifier for the virtual server instance or application load balancer pool member or subnet reserved ip. Required for network load balancer. Exactly one of `target_address`, `target_id`, or `target_fqdn` must be set.
+- `target_fqdn` - (Optional, String) A fully qualified domain name (FQDN) for this pool member. The load balancer must have `fqdn_pool_members_supported` set to `true`. Exactly one of `target_address`, `target_id`, or `target_fqdn` must be set.
 
 - `weight` - (Optional, Integer) Weight of the server member. This option takes effect only when the load-balancing algorithm of its belonging pool is `weighted_round_robin`, Minimum allowed weight is `0` and Maximum allowed weight is `100`. Default: 50, Weight of the server member. Applicable only if the pool algorithm is weighted_round_robin.
 

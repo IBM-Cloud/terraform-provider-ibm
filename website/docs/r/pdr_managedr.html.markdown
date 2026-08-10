@@ -24,9 +24,13 @@ resource "ibm_pdr_managedr" "pdr_managedr_instance" {
   orchestrator_password               = "EverytimeNewPassword@1"
   machine_type                        = "s922"
   tier                                = "tier1"
-  ssh_key_name                        = "vijaykey"
+  ssh_key_name                        = "samplekey"
   action                              = "done"
   api_key                             = "apikey is required"
+  standby_orchestrator_network_ids   =["0f635vae-xxxx-xxxx-xxxx-43f2e55127b9","0f6354ae-xxxx-xxxx-xxxx-43f2e551v7b0"]
+  orchestrator_network_ids            = ["0f635vae-xxxx-xxxx-xxxx-43f2e55127b9","0f6354ae-xxxx-xxxx-xxxx-43f2e551v7b0"]
+  standby_ssh_key_name                = "samplekey"
+  managed_apikey              = "xxxxxx-xxxx-xxxx-xxxxx"
 
   # Standby configuration (applicable only for HA setup)
   standby_orchestrator_name           = "drautomationstandbymh1"
@@ -61,6 +65,10 @@ resource "ibm_pdr_managedr" "pdr_managedr_instance" {
   region_id                         = "us-south"
   action                            = "done"
   api_key                           = "apikey is required"
+  standby_orchestrator_network_ids  =["0f635vae-xxxx-xxxx-xxxx-43f2e55127b9","0f6354ae-xxxx-xxxx-xxxx-43f2e551v7b0"]
+  orchestrator_network_ids          = ["0f635vae-xxxx-xxxx-xxxx-43f2e55127b9","0f6354ae-xxxx-xxxx-xxxx-43f2e551v7b0"]
+  standby_ssh_key_name              = "samplekey"
+  managed_apikey                    = "xxxxxx-xxxx-xxxx-xxxxx"
 
   # Standby configuration (for HA setup)
   standby_orchestrator_name         = "drautomationstandbymh3"
@@ -88,9 +96,11 @@ resource "ibm_pdr_managedr" "pdr_managedr_instance" {
   orchestrator_password       = "EverytimeNewPassword@1"
   machine_type                = "s922"
   tier                        = "tier1"
-  ssh_key_name                = "vijaykey"
+  ssh_key_name                = "samplekey"
   action                      = "done"
   api_key                     = "apikey is required"
+  orchestrator_network_ids    = ["0f635vae-xxxx-xxxx-xxxx-43f2e55127b9","0f6354ae-xxxx-xxxx-xxxx-43f2e551v7b0"]
+  managed_apikey              = "xxxxxx-xxxx-xxxx-xxxxx"
 
   # MFA (Multi-Factor Authentication)
   client_id                   = "123abcd-97d2-4b14-bf62-8eaecc67a122"
@@ -117,6 +127,8 @@ resource "ibm_pdr_managedr" "pdr_managedr_instance" {
   region_id                   = "us-south"
   action                      = "done"
   api_key                     = "apikey is required"
+  orchestrator_network_ids    = ["0f635vae-xxxx-xxxx-xxxx-43f2e55127b9","0f6354ae-xxxx-xxxx-xxxx-43f2e551v7b0"]
+  managed_apikey              = "xxxxxx-xxxx-xxxx-xxxxx"
 
   # MFA (Multi-Factor Authentication)
   client_id                   = "123abcd-97d2-4b14-bf62-8eaecc67a122"
@@ -139,8 +151,8 @@ You can specify the following arguments for this resource:
 * `proxy_ip` - (Optional, String) The Proxy IP for the Communication between Orchestrator and Service.
 * `guid` - (Optional, String) The global unique identifier of the service instance.
 * `region_id` - (Optional, String) The power virtual server region where the service instance is deployed.
-* `location_id` - (Required, String) The Location or data center identifier where the service instance is deployed. you can fetch locations using data_source "ibm_pdr_get_dr_locations". 
-* `machine_type` - (Required, String) The machine type used for deploying orchestrator. you can fetch machine types use  data_source "ibm_pdr_get_machine_types".
+* `location_id` - (Required, String) The Location or data center identifier where the service instance is deployed. you can fetch locations using data_source "ibm_pdr_dr_locations". 
+* `machine_type` - (Required, String) The machine type used for deploying orchestrator. you can fetch machine types use data_source "ibm_pdr_machine_types".
 * `tier` - (Required, String) The storage tier used for deploying primary orchestrator (e.g., tier1, tier3, etc).
 * `ssh_key_name` - (Optional, String) The name of the SSH key used for deploying the orchestator.
 * `orchestrator_ha` - (Required, Boolean) Indicates whether the orchestrator High Availability (HA) is enabled for the service instance.
@@ -156,6 +168,10 @@ You can specify the following arguments for this resource:
 * `standby_machine_type` - (Optional, String) The machine type used for deploying standby virtual machines.
 * `standby_tier` - (Optional, String) The storage tier used for deploying standby orchestrator.
 * `stand_by_redeploy` - (Optional, String)  Flag to indicate if standby should be redeployed only for HA case (must be "true" or "false").
+* `standby_orchestrator_network_ids` - (Optional, String) List of network IDs for standby orchestrator VM.
+* `orchestrator_network_ids` - (Optional, String) List of network IDs for primary orchestrator VM.
+* `standby_ssh_key_name` - (Optional, String) standy ssh key name of the service instance.
+* `managed_apikey` - (Optional, String, Sensitive) APIKey used to manage the workloads by adding the PowerVS instances to the orchestrator.
 
 ## Attribute Reference
 
@@ -166,3 +182,20 @@ After your resource is created, you can read values from the listed arguments an
 * `instance_id` - (String) The CRN (Cloud Resource Name) of the DR service instance.
 
 
+
+
+
+## Import
+
+You can import the `ibm_pdr_managedr` resource by using `id`.
+The `id` property can be formed from `instance_id`, and `instance_id` in the following format:
+
+<pre>
+&lt;instance_id&gt;
+</pre>
+* `instance_id`: A string in the format `050ebe3b-13f4-4db8-8ece-501a3c13be80mh1`. Unique identifier of the provisioned instance.
+
+# Syntax
+<pre>
+$ terraform import ibm_pdr_managedr.pdr_managedr &lt;instance_id&gt;
+</pre>

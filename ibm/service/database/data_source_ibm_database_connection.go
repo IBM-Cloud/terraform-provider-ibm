@@ -16,7 +16,36 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 	"github.com/IBM/cloud-databases-go-sdk/clouddatabasesv5"
+	rc "github.com/IBM/platform-services-go-sdk/resourcecontrollerv2"
 )
+
+type dataSourceIBMDatabaseConnectionBackend interface {
+	Read(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics
+}
+
+func pickDataSourceConnectionBackend(d *schema.ResourceData, meta interface{}) (dataSourceIBMDatabaseConnectionBackend, error) {
+	deploymentID := d.Get("deployment_id").(string)
+
+	// Get the resource controller client to fetch instance details
+	rsConClient, err := meta.(conns.ClientSession).ResourceControllerV2API()
+	if err != nil {
+		return nil, err
+	}
+
+	// Get the instance to check its plan
+	instance, _, err := rsConClient.GetResourceInstance(&rc.GetResourceInstanceOptions{
+		ID: &deploymentID,
+	})
+	if err != nil {
+		return nil, fmt.Errorf("failed to get resource instance: %s", err)
+	}
+
+	plan := *instance.ResourcePlanID
+	if isGen2Plan(plan) {
+		return newDataSourceIBMDatabaseConnectionGen2Backend(), nil
+	}
+	return newDataSourceIBMDatabaseConnectionClassicBackend(), nil
+}
 
 func DataSourceIBMDatabaseConnection() *schema.Resource {
 	return &schema.Resource{
@@ -1639,6 +1668,23 @@ func DataSourceIBMDatabaseConnectionValidator() *validate.ResourceValidator {
 }
 
 func DataSourceIBMDatabaseConnectionRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	b, err := pickDataSourceConnectionBackend(d, meta)
+	if err != nil {
+		tfErr := flex.TerraformErrorf(err, err.Error(), "(Data) ibm_database_connection", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
+	}
+
+	return b.Read(context, d, meta)
+}
+
+type dataSourceIBMDatabaseConnectionClassicBackend struct{}
+
+func newDataSourceIBMDatabaseConnectionClassicBackend() dataSourceIBMDatabaseConnectionBackend {
+	return &dataSourceIBMDatabaseConnectionClassicBackend{}
+}
+
+func (c *dataSourceIBMDatabaseConnectionClassicBackend) Read(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	cloudDatabasesClient, err := meta.(conns.ClientSession).CloudDatabasesV5()
 	if err != nil {
 		tfErr := flex.TerraformErrorf(err, err.Error(), "(Data) ibm_database_connection", "read")

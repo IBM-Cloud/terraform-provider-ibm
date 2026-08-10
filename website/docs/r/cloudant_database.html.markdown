@@ -23,11 +23,11 @@ resource "ibm_cloudant_database" "cloudant_database" {
 
 The following arguments are supported:
 
-* `db` - (Required, Forces new resource, string) Path parameter to specify the database name.
-* `instance_crn` - (Required, string) Path parameter to specify the cloudant instance CRN.
-* `partitioned` - (Optional, Forces new resource, bool) Query parameter to specify whether to enable database partitions when creating a database.
+* `db` - (Required, Forces new resource, string) The database name.
+* `instance_crn` - (Required, Forces new resource, string) The CRN of the Cloudant instance.
+* `partitioned` - (Optional, Forces new resource, bool) Whether to enable database partitions when creating a database.
   * Constraints: The default value is `false`.
-* `shards` - (Optional, Forces new resource, int) The number of shards in the database. Each shard is a partition of the hash value range. Default set by server.
+* `shards` - (Optional, Forces new resource, int) The number of shards in the database. Each shard is a partition of the hash value range. You are encouraged to talk to support about appropriate values before changing this.
   * Constraints: The minimum value is `1`.
 
 ## Attribute Reference
@@ -44,8 +44,8 @@ The `ID` property can be formed from `instance_crn`, and `db` in the following f
 ```
 <instance_crn>/<db>
 ```
-* `db`: A string. Path parameter to specify the database name.
-* `instance_crn`: A string. Path parameter to specify the cloudant instance CRN.
+* `db`: A string. The database name.
+* `instance_crn`: A string. The CRN of the Cloudant instance.
 
 ```
 $ terraform import ibm_cloudant_database.cloudant_database <instance_crn>/<db>

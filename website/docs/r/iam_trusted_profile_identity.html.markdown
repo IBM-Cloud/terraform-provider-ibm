@@ -8,7 +8,7 @@ subcategory: "IAM Identity Services"
 
 # ibm_iam_trusted_profile_identity
 
-Provides a resource for iam_trusted_profile_identity. This allows iam_trusted_profile_identity to be created, updated and deleted.
+Create, update, and delete iam_trusted_profile_identity with this resource.
 
 ## Example Usage
 
@@ -23,7 +23,7 @@ resource "ibm_iam_trusted_profile_identity" "iam_trusted_profile_identity_instan
 
 ## Argument Reference
 
-Review the argument reference that you can specify for your resource.
+You can specify the following arguments for this resource.
 
 * `accounts` - (Optional, Forces new resource, List) Only valid for the type user. Accounts from which a user can assume the trusted profile.
 * `description` - (Optional, Forces new resource, String) Description of the identity that can assume the trusted profile. This is optional field for all the types of identities. When this field is not set for the identity type 'serviceid' then the description of the service id is used. Description is recommended for the identity type 'crn' E.g. 'Instance 1234 of IBM Cloud Service project'.
@@ -36,24 +36,24 @@ Review the argument reference that you can specify for your resource.
 
 ## Attribute Reference
 
-In addition to all argument references listed, you can access the following attribute references after your resource is created.
+After your resource is created, you can read values from the listed arguments and the following attributes.
 
-* `id` - The unique identifier of the iam_trusted_profile_identity. Id is combination of `profile_id`| `identity-type`| `identifier-id`.
+* `id` - The unique identifier of the iam_trusted_profile_identity. Id is a combination of `profile_id`|`identity-type`|`identifier-id`.
 
 
 ## Import
 
-You can import the `ibm_iam_trusted_profile_identity` resource by using `iam_id`.
-The `iam_id` property can be formed from `profile-id`, `identity-type`, and `identifier-id` in the following format:
+You can import the `ibm_iam_trusted_profile_identity` resource by using `id`.
+The `id` property can be formed from `profile_id`, `identity-type`, and `identifier` in the following format:
 
-```
-<profile-id>|<identity-type>|<identifier-id>
-```
+<pre>
+&lt;profile_id&gt;|&lt;identity-type&gt;|&lt;identifier&gt;
+</pre>
 * `profile-id`: A string. ID of the trusted profile.
 * `identity-type`: A string. Type of the identity.
 * `identifier-id`: A string. Identifier of the identity that can assume the trusted profiles.
 
 # Syntax
-```
-$ terraform import ibm_iam_trusted_profile_identity.iam_trusted_profile_identity <profile-id>|<identity-type>|<identifier-id>
-```
+<pre>
+$ terraform import ibm_iam_trusted_profile_identity.iam_trusted_profile_identity &lt;profile_id&gt;|&lt;identity-type&gt;|&lt;identifier&gt;
+</pre>

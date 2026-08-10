@@ -93,15 +93,22 @@ func ResourceIBMISLBPoolMember() *schema.Resource {
 				Type:         schema.TypeString,
 				Optional:     true,
 				Computed:     true,
-				ExactlyOneOf: []string{isLBPoolMemberTargetAddress, isLBPoolMemberTargetID},
+				ExactlyOneOf: []string{isLBPoolMemberTargetAddress, isLBPoolMemberTargetID, "target_fqdn"},
 				Description:  "Load balancer pool member target address",
+			},
+			"target_fqdn": {
+				Type:         schema.TypeString,
+				Optional:     true,
+				Computed:     true,
+				ExactlyOneOf: []string{isLBPoolMemberTargetAddress, isLBPoolMemberTargetID, "target_fqdn"},
+				Description:  "The fully qualified domain name (FQDN) to target. The load balancer must have fqdn_pool_members_supported set to true. Member health checks will fail if the FQDN cannot be resolved.",
 			},
 
 			isLBPoolMemberTargetID: {
 				Type:         schema.TypeString,
 				Optional:     true,
 				Computed:     true,
-				ExactlyOneOf: []string{isLBPoolMemberTargetAddress, isLBPoolMemberTargetID},
+				ExactlyOneOf: []string{isLBPoolMemberTargetAddress, isLBPoolMemberTargetID, "target_fqdn"},
 				Description:  "Load balancer pool member target id",
 			},
 
@@ -213,6 +220,12 @@ func lbpMemberCreate(context context.Context, d *schema.ResourceData, meta inter
 		targetAddress := d.Get(isLBPoolMemberTargetAddress).(string)
 		target := &vpcv1.LoadBalancerPoolMemberTargetPrototype{
 			Address: &targetAddress,
+		}
+		options.Target = target
+	} else if _, ok := d.GetOk("target_fqdn"); ok {
+		targetFqdn := d.Get("target_fqdn").(string)
+		target := &vpcv1.LoadBalancerPoolMemberTargetPrototype{
+			Fqdn: &targetFqdn,
 		}
 		options.Target = target
 	} else {
@@ -358,18 +371,37 @@ func lbpmemberGet(context context.Context, d *schema.ResourceData, meta interfac
 		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_lb_pool_member", "read", "set-port").GetDiag()
 	}
 
-	target := loadBalancerPoolMember.Target.(*vpcv1.LoadBalancerPoolMemberTarget)
-	if target.Address != nil {
-		if err = d.Set(isLBPoolMemberTargetAddress, *target.Address); err != nil {
-			err = fmt.Errorf("Error setting target_address: %s", err)
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_lb_pool_member", "read", "set-target_address").GetDiag()
-		}
+	target, ok := loadBalancerPoolMember.Target.(*vpcv1.LoadBalancerPoolMemberTarget)
+	if !ok || target == nil {
+		err = fmt.Errorf("unexpected target type returned by API")
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_lb_pool_member", "read", "target-type-assertion").GetDiag()
 	}
+	// Always zero all three target fields first; then populate only the one the
+	// API returned. This prevents stale values from persisting in state after a
+	// target type switch (e.g. fqdn → address).
+	targetAddress := ""
+	if target.Address != nil {
+		targetAddress = *target.Address
+	}
+	if err = d.Set(isLBPoolMemberTargetAddress, targetAddress); err != nil {
+		err = fmt.Errorf("Error setting target_address: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_lb_pool_member", "read", "set-target_address").GetDiag()
+	}
+	targetFqdn := ""
+	if target.Fqdn != nil {
+		targetFqdn = *target.Fqdn
+	}
+	if err = d.Set("target_fqdn", targetFqdn); err != nil {
+		err = fmt.Errorf("Error setting target_fqdn: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_lb_pool_member", "read", "set-target_fqdn").GetDiag()
+	}
+	targetID := ""
 	if target.ID != nil {
-		if err = d.Set(isLBPoolMemberTargetID, *target.ID); err != nil {
-			err = fmt.Errorf("Error setting target_id: %s", err)
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_lb_pool_member", "read", "set-target_id").GetDiag()
-		}
+		targetID = *target.ID
+	}
+	if err = d.Set(isLBPoolMemberTargetID, targetID); err != nil {
+		err = fmt.Errorf("Error setting target_id: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_lb_pool_member", "read", "set-target_id").GetDiag()
 	}
 	if !core.IsNil(loadBalancerPoolMember.Weight) {
 		if err = d.Set("weight", flex.IntValue(loadBalancerPoolMember.Weight)); err != nil {
@@ -432,7 +464,7 @@ func lbpmemberUpdate(context context.Context, d *schema.ResourceData, meta inter
 		return tfErr.GetDiag()
 	}
 
-	if d.HasChange(isLBPoolMemberTargetID) || d.HasChange(isLBPoolMemberTargetAddress) || d.HasChange(isLBPoolMemberPort) || d.HasChange(isLBPoolMemberWeight) {
+	if d.HasChange(isLBPoolMemberTargetID) || d.HasChange(isLBPoolMemberTargetAddress) || d.HasChange("target_fqdn") || d.HasChange(isLBPoolMemberPort) || d.HasChange(isLBPoolMemberWeight) {
 
 		port := int64(d.Get(isLBPoolMemberPort).(int))
 		weight := int64(d.Get(isLBPoolMemberWeight).(int))
@@ -477,6 +509,12 @@ func lbpmemberUpdate(context context.Context, d *schema.ResourceData, meta inter
 			targetAddress := d.Get(isLBPoolMemberTargetAddress).(string)
 			target := &vpcv1.LoadBalancerPoolMemberTargetPrototypeIP{
 				Address: &targetAddress,
+			}
+			loadBalancerPoolMemberPatchModel.Target = target
+		} else if d.HasChange("target_fqdn") {
+			targetFqdn := d.Get("target_fqdn").(string)
+			target := &vpcv1.LoadBalancerPoolMemberTargetPrototype{
+				Fqdn: &targetFqdn,
 			}
 			loadBalancerPoolMemberPatchModel.Target = target
 		} else if d.HasChange(isLBPoolMemberTargetID) {

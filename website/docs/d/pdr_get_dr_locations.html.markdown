@@ -9,6 +9,9 @@ subcategory: "DrAutomation Service"
 # ibm_pdr_get_dr_locations
 
 Retrieves the list of disaster recovery (DR) locations available for the specified service instance.
+
+~> **This data source is deprecated and will be removed in the next major version. Use `ibm_pdr_dr_locations` instead.**
+
 ## Example Usage
 
 ```hcl

@@ -192,7 +192,7 @@ func DataSourceIBMIsPublicAddressRange() *schema.Resource {
 func dataSourceIBMIsPublicAddressRangeRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	vpcClient, err := vpcClient(meta)
 	if err != nil {
-		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_public_address_range", "read", "initialize-client")
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_public_address_range", "read", "initialize-client")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
@@ -206,7 +206,7 @@ func dataSourceIBMIsPublicAddressRangeRead(context context.Context, d *schema.Re
 
 		publicAddressRangeinfo, _, err := vpcClient.GetPublicAddressRangeWithContext(context, getPublicAddressRangeOptions)
 		if err != nil {
-			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetPublicAddressRangeWithContext failed: %s", err.Error()), "(Data) ibm_public_address_range", "read")
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetPublicAddressRangeWithContext failed: %s", err.Error()), "(Data) ibm_is_public_address_range", "read")
 			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 			return tfErr.GetDiag()
 		}
@@ -223,7 +223,7 @@ func dataSourceIBMIsPublicAddressRangeRead(context context.Context, d *schema.Re
 			}
 			publicAddressRangeCollection, _, err := vpcClient.ListPublicAddressRangesWithContext(context, listPublicAddressRanges)
 			if err != nil {
-				tfErr := flex.TerraformErrorf(err, fmt.Sprintf("ListPublicAddressRangesWithContext failed: %s", err.Error()), "(Data) ibm_public_address_range", "read")
+				tfErr := flex.TerraformErrorf(err, fmt.Sprintf("ListPublicAddressRangesWithContext failed: %s", err.Error()), "(Data) ibm_is_public_address_range", "read")
 				log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 				return tfErr.GetDiag()
 			}
@@ -253,59 +253,59 @@ func dataSourceIBMIsPublicAddressRangeRead(context context.Context, d *schema.Re
 	d.SetId(*publicAddressRange.ID)
 
 	if err = d.Set("cidr", publicAddressRange.CIDR); err != nil {
-		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting cidr: %s", err), "(Data) ibm_public_address_range", "read", "set-cidr").GetDiag()
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting cidr: %s", err), "(Data) ibm_is_public_address_range", "read", "set-cidr").GetDiag()
 	}
 
 	if err = d.Set("created_at", flex.DateTimeToString(publicAddressRange.CreatedAt)); err != nil {
-		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting created_at: %s", err), "(Data) ibm_public_address_range", "read", "set-created_at").GetDiag()
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting created_at: %s", err), "(Data) ibm_is_public_address_range", "read", "set-created_at").GetDiag()
 	}
 
 	if err = d.Set("crn", publicAddressRange.CRN); err != nil {
-		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting crn: %s", err), "(Data) ibm_public_address_range", "read", "set-crn").GetDiag()
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting crn: %s", err), "(Data) ibm_is_public_address_range", "read", "set-crn").GetDiag()
 	}
 
 	if err = d.Set("href", publicAddressRange.Href); err != nil {
-		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting href: %s", err), "(Data) ibm_public_address_range", "read", "set-href").GetDiag()
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting href: %s", err), "(Data) ibm_is_public_address_range", "read", "set-href").GetDiag()
 	}
 
 	if err = d.Set("ipv4_address_count", flex.IntValue(publicAddressRange.Ipv4AddressCount)); err != nil {
-		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting ipv4_address_count: %s", err), "(Data) ibm_public_address_range", "read", "set-ipv4_address_count").GetDiag()
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting ipv4_address_count: %s", err), "(Data) ibm_is_public_address_range", "read", "set-ipv4_address_count").GetDiag()
 	}
 
 	if err = d.Set("lifecycle_state", publicAddressRange.LifecycleState); err != nil {
-		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting lifecycle_state: %s", err), "(Data) ibm_public_address_range", "read", "set-lifecycle_state").GetDiag()
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting lifecycle_state: %s", err), "(Data) ibm_is_public_address_range", "read", "set-lifecycle_state").GetDiag()
 	}
 
 	if err = d.Set("name", publicAddressRange.Name); err != nil {
-		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting name: %s", err), "(Data) ibm_public_address_range", "read", "set-name").GetDiag()
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting name: %s", err), "(Data) ibm_is_public_address_range", "read", "set-name").GetDiag()
 	}
 
 	resourceGroup := []map[string]interface{}{}
 	if publicAddressRange.ResourceGroup != nil {
 		modelMap, err := DataSourceIBMIsPublicAddressRangeResourceGroupReferenceToMap(publicAddressRange.ResourceGroup)
 		if err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_public_address_range", "read", "resource_group-to-map").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_public_address_range", "read", "resource_group-to-map").GetDiag()
 		}
 		resourceGroup = append(resourceGroup, modelMap)
 	}
 	if err = d.Set("resource_group", resourceGroup); err != nil {
-		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting resource_group: %s", err), "(Data) ibm_public_address_range", "read", "set-resource_group").GetDiag()
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting resource_group: %s", err), "(Data) ibm_is_public_address_range", "read", "set-resource_group").GetDiag()
 	}
 
 	if err = d.Set("resource_type", publicAddressRange.ResourceType); err != nil {
-		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting resource_type: %s", err), "(Data) ibm_public_address_range", "read", "set-resource_type").GetDiag()
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting resource_type: %s", err), "(Data) ibm_is_public_address_range", "read", "set-resource_type").GetDiag()
 	}
 
 	target := []map[string]interface{}{}
 	if publicAddressRange.Target != nil {
 		modelMap, err := DataSourceIBMIsPublicAddressRangePublicAddressRangeTargetToMap(publicAddressRange.Target)
 		if err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_public_address_range", "read", "target-to-map").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_public_address_range", "read", "target-to-map").GetDiag()
 		}
 		target = append(target, modelMap)
 	}
 	if err = d.Set("target", target); err != nil {
-		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting target: %s", err), "(Data) ibm_public_address_range", "read", "set-target").GetDiag()
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting target: %s", err), "(Data) ibm_is_public_address_range", "read", "set-target").GetDiag()
 	}
 
 	tags, err := flex.GetGlobalTagsUsingCRN(meta, *publicAddressRange.CRN, "", isUserTagType)

@@ -553,7 +553,7 @@ func imageList(context context.Context, d *schema.ResourceData, meta interface{}
 			imageRemoteMap, err := dataSourceImageRemote(image)
 			if err != nil {
 				if err != nil {
-					tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_image", "read", "initialize-client")
+					tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_images", "read", "initialize-client")
 					log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 					return tfErr.GetDiag()
 				}
@@ -567,7 +567,7 @@ func imageList(context context.Context, d *schema.ResourceData, meta interface{}
 			usageConstraintList := []map[string]interface{}{}
 			modelMap, err := DataSourceIBMIsImageAllowedUseToMap(image.AllowedUse)
 			if err != nil {
-				tfErr := flex.TerraformErrorf(err, err.Error(), "(Data) ibm_is_image", "read")
+				tfErr := flex.TerraformErrorf(err, err.Error(), "(Data) ibm_is_images", "read")
 				log.Println(tfErr.GetDiag())
 			}
 			usageConstraintList = append(usageConstraintList, modelMap)
@@ -585,7 +585,7 @@ func imageList(context context.Context, d *schema.ResourceData, meta interface{}
 		for _, zonesItem := range image.Zones {
 			zonesItemMap, err := DataSourceIBMIsImagesZoneReferenceToMap(&zonesItem) // #nosec G601
 			if err != nil {
-				tfErr := flex.TerraformErrorf(err, err.Error(), "(Data) ibm_is_image", "read")
+				tfErr := flex.TerraformErrorf(err, err.Error(), "(Data) ibm_is_images", "read")
 				log.Println(tfErr.GetDiag())
 			}
 			zones = append(zones, zonesItemMap)

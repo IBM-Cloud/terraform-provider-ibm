@@ -67,7 +67,7 @@ func dataSourceIBMKMSKeyRingsRead(d *schema.ResourceData, meta interface{}) erro
 	if err != nil || keys == nil {
 		return flex.FmtErrorf("[ERROR] Get Key Rings failed with error: %s", err)
 	}
-	if keys.KeyRings == nil || len(keys.KeyRings) == 0 {
+	if len(keys.KeyRings) == 0 {
 		return flex.FmtErrorf("[ERROR] No key Rings in instance  %s", instanceID)
 	}
 

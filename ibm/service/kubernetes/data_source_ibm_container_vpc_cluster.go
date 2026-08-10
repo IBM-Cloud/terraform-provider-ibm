@@ -230,6 +230,17 @@ func DataSourceIBMContainerVPCCluster() *schema.Resource {
 				Description: "Custom subnet CIDR to provide private IP addresses for pods",
 				Computed:    true,
 			},
+			"network_plugin": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The Container Network Interface (CNI) plugin for the cluster. Requires OpenShift >= 4.20. Supported values: 'Calico' (default), 'OVNKubernetes'",
+				Computed:    true,
+			},
+			"offering": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The cluster offering type.",
+			},
 			"ingress_hostname": {
 				Type:     schema.TypeString,
 				Computed: true,
@@ -430,7 +441,9 @@ func dataSourceIBMContainerClusterVPCRead(d *schema.ResourceData, meta interface
 	d.Set("worker_count", cls.WorkerCount)
 	d.Set("service_subnet", cls.ServiceSubnet)
 	d.Set("pod_subnet", cls.PodSubnet)
+	d.Set("network_plugin", cls.NetworkPlugin)
 	d.Set("state", cls.State)
+	d.Set("offering", cls.Offering)
 	d.Set("resource_group_id", cls.ResourceGroupID)
 	d.Set("public_service_endpoint_url", cls.ServiceEndpoints.PublicServiceEndpointURL)
 	d.Set("private_service_endpoint_url", cls.ServiceEndpoints.PrivateServiceEndpointURL)

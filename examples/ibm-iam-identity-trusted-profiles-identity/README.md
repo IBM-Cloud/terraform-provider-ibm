@@ -30,7 +30,7 @@ resource "iam_trusted_profile_identity" "iam_trusted_profile_identity_instance" 
   identifier = var.iam_trusted_profile_identity_identifier
   type = var.iam_trusted_profile_identity_type
   accounts = var.iam_trusted_profile_identity_accounts
-  description = var.iam_trusted_profile_identity_description
+  description = "description"
 }
 ```
 

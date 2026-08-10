@@ -57,6 +57,34 @@ func DataSourceIBMISLBListeners() *schema.Resource {
 							Computed:    true,
 							Description: "The connection limit of the listener.",
 						},
+						"client_authentication": &schema.Schema{
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "The client authentication to use for this listener.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"certificate_authority": &schema.Schema{
+										Type:        schema.TypeList,
+										Computed:    true,
+										Description: "The certificate instance used for the listener client certificate authority.",
+										Elem: &schema.Resource{
+											Schema: map[string]*schema.Schema{
+												"crn": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "The CRN for this certificate instance.",
+												},
+											},
+										},
+									},
+									"certificate_revocation_list": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "A PEM-encoded certificate revocation list (CRL) used for the listener.",
+									},
+								},
+							},
+						},
 						"created_at": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
@@ -287,6 +315,12 @@ func dataSourceLoadBalancerListenerCollectionListenersToMap(listenersItem vpcv1.
 		certificateInstanceList = append(certificateInstanceList, certificateInstanceMap)
 		listenersMap["certificate_instance"] = certificateInstanceList
 	}
+	if listenersItem.ClientAuthentication != nil {
+		clientAuthenticationList := []map[string]interface{}{}
+		clientAuthenticationMap := dataSourceLoadBalancerListenerCollectionListenersClientAuthenticationToMap(*listenersItem.ClientAuthentication)
+		clientAuthenticationList = append(clientAuthenticationList, clientAuthenticationMap)
+		listenersMap["client_authentication"] = clientAuthenticationList
+	}
 	if listenersItem.ConnectionLimit != nil {
 		listenersMap["connection_limit"] = listenersItem.ConnectionLimit
 	}
@@ -338,6 +372,21 @@ func dataSourceLoadBalancerListenerCollectionListenersToMap(listenersItem vpcv1.
 	}
 
 	return listenersMap
+}
+
+func dataSourceLoadBalancerListenerCollectionListenersClientAuthenticationToMap(clientAuthItem vpcv1.LoadBalancerListenerClientAuthentication) (clientAuthMap map[string]interface{}) {
+	clientAuthMap = map[string]interface{}{}
+
+	if clientAuthItem.CertificateAuthority != nil {
+		certificateAuthorityList := []map[string]interface{}{}
+		certificateAuthorityMap := dataSourceLoadBalancerListenerCollectionListenersCertificateInstanceToMap(*clientAuthItem.CertificateAuthority)
+		certificateAuthorityList = append(certificateAuthorityList, certificateAuthorityMap)
+		clientAuthMap["certificate_authority"] = certificateAuthorityList
+	}
+	if clientAuthItem.CertificateRevocationList != nil {
+		clientAuthMap["certificate_revocation_list"] = *clientAuthItem.CertificateRevocationList
+	}
+	return clientAuthMap
 }
 
 func dataSourceLoadBalancerListenerCollectionListenersCertificateInstanceToMap(certificateInstanceItem vpcv1.CertificateInstanceReference) (certificateInstanceMap map[string]interface{}) {

@@ -68,6 +68,7 @@ In addition to the argument reference list, you can access the following attribu
     - `ips.id` - (String) The unique identifier for the reserved IP.
     - `ips.name` - (String) The user defined or system provided name of the resource IP.
     - `ips.resource_type` - (String) The endpoint gateway IP resource type or the subnet reserved IP.
+    - `ips.subnet` - (String) The subnet id for this reserved IP.
   - `name` - (String) The endpoint gateway name.
   - `resource_group` - (String) The unique identifier for the resource group.
   - `target` - (List) The endpoint gateway target services.

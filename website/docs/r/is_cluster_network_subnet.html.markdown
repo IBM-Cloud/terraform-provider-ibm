@@ -42,13 +42,13 @@ After your resource is created, you can read values from the listed arguments an
 - `href` - (String) The URL for this cluster network subnet.
 - `cluster_network_subnet_id` - (String) The unique identifier for this cluster network subnet.
 - `lifecycle_reasons` - (List) The reasons for the current `lifecycle_state` (if any).
-    
-    Nested schema for **lifecycle_reasons**:
-      - `code` - (String) A reason code for this lifecycle state:- `internal_error`: internal error (contact IBM support)- `resource_suspended_by_provider`: The resource has been suspended (contact IBM  support)The enumerated values for this property may [expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) in the future.
-        * Constraints: Allowable values are: `internal_error`, `resource_suspended_by_provider`.
-    - `message` - (String) An explanation of the reason for this lifecycle state.
-    - `more_info` - (String) Link to documentation about the reason for this lifecycle state.
-      * Constraints: The maximum length is `8000` characters. The minimum length is `10` characters. The value must match regular expression `/^http(s)?:\/\/([^\/?#]*)([^?#]*)(\\?([^#]*))?(#(.*))?$/`.
+
+  Nested schema for **lifecycle_reasons**:
+  - `code` - (String) A reason code for this lifecycle state:- `internal_error`: internal error (contact IBM support)- `resource_suspended_by_provider`: The resource has been suspended (contact IBM  support)The enumerated values for this property may [expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) in the future.
+    * Constraints: Allowable values are: `internal_error`, `resource_suspended_by_provider`.
+  - `message` - (String) An explanation of the reason for this lifecycle state.
+  - `more_info` - (String) Link to documentation about the reason for this lifecycle state.
+    * Constraints: The maximum length is `8000` characters. The minimum length is `10` characters. The value must match regular expression `/^http(s)?:\/\/([^\/?#]*)([^?#]*)(\\?([^#]*))?(#(.*))?$/`.
 - `lifecycle_state` - (String) The lifecycle state of the cluster network subnet.
   * Constraints: Allowable values are: `deleting`, `failed`, `pending`, `stable`, `suspended`, `updating`, `waiting`. 
 - `resource_type` - (String) The resource type.
@@ -63,7 +63,7 @@ The `id` property can be formed from `cluster_network_id`, and `cluster_network_
 
 ```terraform
 import {
-  to = ibm_is_cluster_network_subnet.is_cluster_network_subnet
+  to = ibm_is_cluster_network_subnet.example
   id = "<cluster_network_id>/<cluster_network_subnet_id>"
 }
 ```
@@ -71,5 +71,5 @@ import {
 Using `terraform import`. For example:
 
 ```console
-% terraform import ibm_is_cluster_network_subnet.is_cluster_network_subnet <cluster_network_id>/<cluster_network_subnet_id>
+% terraform import ibm_is_cluster_network_subnet.example <cluster_network_id>/<cluster_network_subnet_id>
 ```

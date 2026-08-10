@@ -81,11 +81,12 @@ The following arguments are supported:
 - `instance` - (Required, Forces new resource, String) The instance identifier.
 - `name` - (Required, String) The user-defined name for this network interface.
 - `primary_ip` - (Optional, List) The primary IP address to bind to the network interface. This can be specified using an existing reserved IP, or a prototype object for a new reserved IP.
-    Nested scheme for `primary_ip`:
-    - `auto_delete` - (Optional, Bool) Indicates whether this reserved IP member will be automatically deleted when either target is deleted, or the reserved IP is unbound.
-    - `address` - (Optional, String) The IP address. Same as `primary_ipv4_address`
-    - `name`- (Optional, String) The user-defined or system-provided name for this reserved IP
-    - `reserved_ip`- (Optional, String) The unique identifier for this reserved IP
+
+  Nested scheme for `primary_ip`:
+  - `auto_delete` - (Optional, Bool) Indicates whether this reserved IP member will be automatically deleted when either target is deleted, or the reserved IP is unbound.
+  - `address` - (Optional, String) The IP address. Same as `primary_ipv4_address`
+  - `name`- (Optional, String) The user-defined or system-provided name for this reserved IP
+  - `reserved_ip`- (Optional, String) The unique identifier for this reserved IP
 - `primary_ipv4_address` - (Optional, Forces new resource, String) The primary IPv4 address. If specified, it must be an available address on the network interface's subnet. If unspecified, an available address on the subnet will be automatically selected.
 - `security_groups` - (Optional, List of strings) A comma separated list of security groups to add to the primary network interface.
 - `subnet` - (Required, Forces new resource, String) The unique identifier of the associated subnet.
@@ -103,13 +104,13 @@ In addition to all arguments above, the following attributes are exported:
 
 - `created_at` - (String) The date and time that the network interface was created.
 - `floating_ips` - (List) The floating IPs associated with this network interface. Nested `floating_ips` blocks have the following structure:
-	- `address` - (String) The globally unique IP address.
-	- `crn` - (String) The CRN for this floating IP.
-	- `deleted` - (List) If present, this property indicates the referenced resource has been deleted and providessome supplementary information. Nested `deleted` blocks have the following structure:
-		- `more_info` - (String) Link to documentation about deleted resources.
-	- `href` - (String) The URL for this floating IP.
-	- `id` - (String) The unique identifier for this floating IP.
-	- `name` - (String) The unique user-defined name for this floating IP.
+  - `address` - (String) The globally unique IP address.
+  - `crn` - (String) The CRN for this floating IP.
+  - `deleted` - (List) If present, this property indicates the referenced resource has been deleted and providessome supplementary information. Nested `deleted` blocks have the following structure:
+    - `more_info` - (String) Link to documentation about deleted resources.
+  - `href` - (String) The URL for this floating IP.
+  - `id` - (String) The unique identifier for this floating IP.
+  - `name` - (String) The unique user-defined name for this floating IP.
 - `href` - (String) The URL for this network interface.
 - `id` - (String) The unique identifier of the resource. Follows the format <instance_id>/<network_interface_id>.
 - `network_interface` - (String) The unique identifier of the NetworkInterface.
@@ -125,7 +126,7 @@ The `id` property can be formed from `instance_ID`, and `network_interface_ID`. 
 
 ```terraform
 import {
-  to = ibm_is_instance_network_interface.is_instance_network_interface
+  to = ibm_is_instance_network_interface.example
   id = "<instance>/<network_interface_ID>"
 }
 ```
@@ -133,5 +134,5 @@ import {
 Using `terraform import`. For example:
 
 ```console
-% terraform import ibm_is_instance_network_interface.is_instance_network_interface <instance>/<network_interface_ID>
+% terraform import ibm_is_instance_network_interface.example <instance>/<network_interface_ID>
 ```

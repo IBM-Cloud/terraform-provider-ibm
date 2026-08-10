@@ -196,6 +196,12 @@ func ResourceIbmBackupRecoveryProtectionGroup() *schema.Resource {
 				Optional:    true,
 				Description: "Specifies if the the Protection Group is paused. New runs are not scheduled for the paused Protection Groups. Active run if any is not impacted.",
 			},
+			"delete_snapshots": &schema.Schema{
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Default:     false,
+				Description: "Specifies whether to delete snapshots when deleting the Protection Group. If true, all snapshots associated with this Protection Group will be deleted. Default is false.",
+			},
 			"environment": &schema.Schema{
 				Type:     schema.TypeString,
 				Required: true,
@@ -1451,6 +1457,11 @@ func ResourceIbmBackupRecoveryProtectionGroup() *schema.Resource {
 										Optional:    true,
 										Description: "Whether to include all the labels or any of them while performing inclusion/exclusion of objects.",
 									},
+									"label_filter_entity_type": &schema.Schema{
+										Type:        schema.TypeString,
+										Optional:    true,
+										Description: "The type of the entity for which the label filters are specified. Example: kPersistentVolumeClaim or kVirtualMachine.",
+									},
 									"label_vector": &schema.Schema{
 										Type:        schema.TypeList,
 										Optional:    true,
@@ -1545,6 +1556,11 @@ func ResourceIbmBackupRecoveryProtectionGroup() *schema.Resource {
 										Type:        schema.TypeString,
 										Optional:    true,
 										Description: "Whether to include all the labels or any of them while performing inclusion/exclusion of objects.",
+									},
+									"label_filter_entity_type": &schema.Schema{
+										Type:        schema.TypeString,
+										Optional:    true,
+										Description: "The type of the entity for which the label filters are specified. Example: kPersistentVolumeClaim or kVirtualMachine.",
 									},
 									"label_vector": &schema.Schema{
 										Type:        schema.TypeList,
@@ -1668,6 +1684,11 @@ func ResourceIbmBackupRecoveryProtectionGroup() *schema.Resource {
 													Optional:    true,
 													Description: "Whether to include all the labels or any of them while performing inclusion/exclusion of objects.",
 												},
+												"label_filter_entity_type": &schema.Schema{
+													Type:        schema.TypeString,
+													Optional:    true,
+													Description: "The type of the entity for which the label filters are specified. Example: kPersistentVolumeClaim or kVirtualMachine.",
+												},
 												"label_vector": &schema.Schema{
 													Type:        schema.TypeList,
 													Optional:    true,
@@ -1762,6 +1783,11 @@ func ResourceIbmBackupRecoveryProtectionGroup() *schema.Resource {
 													Computed:    true,
 													Description: "Specifies the id of the pvc.",
 												},
+												"metadata_only": &schema.Schema{
+													Type:        schema.TypeBool,
+													Optional:    true,
+													Description: "This field will be used only for PVCs to indicate whether only metadata is present inside PVCs. Default: false (Both data and metadata present).",
+												},
 												"name": &schema.Schema{
 													Type:        schema.TypeString,
 													Computed:    true,
@@ -1797,6 +1823,11 @@ func ResourceIbmBackupRecoveryProtectionGroup() *schema.Resource {
 													Type:        schema.TypeString,
 													Optional:    true,
 													Description: "Whether to include all the labels or any of them while performing inclusion/exclusion of objects.",
+												},
+												"label_filter_entity_type": &schema.Schema{
+													Type:        schema.TypeString,
+													Optional:    true,
+													Description: "The type of the entity for which the label filters are specified. Example: kPersistentVolumeClaim or kVirtualMachine.",
 												},
 												"label_vector": &schema.Schema{
 													Type:        schema.TypeList,
@@ -1892,6 +1923,11 @@ func ResourceIbmBackupRecoveryProtectionGroup() *schema.Resource {
 													Computed:    true,
 													Optional:    true,
 													Description: "Specifies the id of the pvc.",
+												},
+												"metadata_only": &schema.Schema{
+													Type:        schema.TypeBool,
+													Optional:    true,
+													Description: "This field will be used only for PVCs to indicate whether only metadata is present inside PVCs. Default: false (Both data and metadata present).",
 												},
 												"name": &schema.Schema{
 													Type:        schema.TypeString,
@@ -2019,6 +2055,11 @@ func ResourceIbmBackupRecoveryProtectionGroup() *schema.Resource {
 									},
 								},
 							},
+						},
+						"perform_source_side_deduplication": &schema.Schema{
+							Type:        schema.TypeBool,
+							Optional:    true,
+							Description: "Specifies whether or not to perform source side deduplication on this Protection Group.",
 						},
 						"source_id": &schema.Schema{
 							Type:        schema.TypeInt,
@@ -5760,7 +5801,7 @@ func resourceIbmBackupRecoveryProtectionGroupCreate(context context.Context, d *
 	}
 
 	endpointType := d.Get("endpoint_type").(string)
-	instanceId, region := getInstanceIdAndRegion(d)
+	instanceId, region, serviceName := getInstanceIdAndRegion(d)
 	if instanceId != "" && region != "" {
 		bmxsession, err := meta.(conns.ClientSession).BluemixSession()
 		if err != nil {
@@ -5768,7 +5809,7 @@ func resourceIbmBackupRecoveryProtectionGroupCreate(context context.Context, d *
 			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 			return tfErr.GetDiag()
 		}
-		backupRecoveryClient = getClientWithInstanceEndpoint(backupRecoveryClient, bmxsession, instanceId, region, endpointType)
+		backupRecoveryClient = getClientWithInstanceEndpoint(backupRecoveryClient, bmxsession, instanceId, region, endpointType, serviceName)
 	}
 
 	createProtectionGroupOptions := &backuprecoveryv1.CreateProtectionGroupOptions{}
@@ -5883,7 +5924,7 @@ func resourceIbmBackupRecoveryProtectionGroupRead(context context.Context, d *sc
 	}
 
 	endpointType := d.Get("endpoint_type").(string)
-	instanceId, region := getInstanceIdAndRegion(d)
+	instanceId, region, serviceName := getInstanceIdAndRegion(d)
 	if instanceId != "" && region != "" {
 		bmxsession, err := meta.(conns.ClientSession).BluemixSession()
 		if err != nil {
@@ -5891,7 +5932,7 @@ func resourceIbmBackupRecoveryProtectionGroupRead(context context.Context, d *sc
 			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 			return tfErr.GetDiag()
 		}
-		backupRecoveryClient = getClientWithInstanceEndpoint(backupRecoveryClient, bmxsession, instanceId, region, endpointType)
+		backupRecoveryClient = getClientWithInstanceEndpoint(backupRecoveryClient, bmxsession, instanceId, region, endpointType, serviceName)
 	}
 
 	getProtectionGroupByIdOptions := &backuprecoveryv1.GetProtectionGroupByIdOptions{}
@@ -6193,7 +6234,7 @@ func resourceIbmBackupRecoveryProtectionGroupUpdate(context context.Context, d *
 		return tfErr.GetDiag()
 	}
 	endpointType := d.Get("endpoint_type").(string)
-	instanceId, region := getInstanceIdAndRegion(d)
+	instanceId, region, serviceName := getInstanceIdAndRegion(d)
 	if instanceId != "" && region != "" {
 		bmxsession, err := meta.(conns.ClientSession).BluemixSession()
 		if err != nil {
@@ -6201,7 +6242,7 @@ func resourceIbmBackupRecoveryProtectionGroupUpdate(context context.Context, d *
 			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 			return tfErr.GetDiag()
 		}
-		backupRecoveryClient = getClientWithInstanceEndpoint(backupRecoveryClient, bmxsession, instanceId, region, endpointType)
+		backupRecoveryClient = getClientWithInstanceEndpoint(backupRecoveryClient, bmxsession, instanceId, region, endpointType, serviceName)
 	}
 
 	updateProtectionGroupOptions := &backuprecoveryv1.UpdateProtectionGroupOptions{}
@@ -6321,7 +6362,7 @@ func resourceIbmBackupRecoveryProtectionGroupDelete(context context.Context, d *
 		return tfErr.GetDiag()
 	}
 	endpointType := d.Get("endpoint_type").(string)
-	instanceId, region := getInstanceIdAndRegion(d)
+	instanceId, region, serviceName := getInstanceIdAndRegion(d)
 	if instanceId != "" && region != "" {
 		bmxsession, err := meta.(conns.ClientSession).BluemixSession()
 		if err != nil {
@@ -6329,7 +6370,7 @@ func resourceIbmBackupRecoveryProtectionGroupDelete(context context.Context, d *
 			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 			return tfErr.GetDiag()
 		}
-		backupRecoveryClient = getClientWithInstanceEndpoint(backupRecoveryClient, bmxsession, instanceId, region, endpointType)
+		backupRecoveryClient = getClientWithInstanceEndpoint(backupRecoveryClient, bmxsession, instanceId, region, endpointType, serviceName)
 	}
 
 	deleteProtectionGroupOptions := &backuprecoveryv1.DeleteProtectionGroupOptions{}
@@ -6343,6 +6384,11 @@ func resourceIbmBackupRecoveryProtectionGroupDelete(context context.Context, d *
 
 	deleteProtectionGroupOptions.SetID(groupId)
 	deleteProtectionGroupOptions.SetXIBMTenantID(tenantId)
+
+	// Set DeleteSnapshots parameter if provided
+	if deleteSnapshots, ok := d.GetOk("delete_snapshots"); ok {
+		deleteProtectionGroupOptions.DeleteSnapshots = core.BoolPtr(deleteSnapshots.(bool))
+	}
 
 	_, err = backupRecoveryClient.DeleteProtectionGroupWithContext(context, deleteProtectionGroupOptions)
 	if err != nil {
@@ -7181,6 +7227,9 @@ func ResourceIbmBackupRecoveryProtectionGroupMapToKubernetesProtectionGroupParam
 		}
 		model.Objects = objects
 	}
+	if modelMap["perform_source_side_deduplication"] != nil {
+		model.PerformSourceSideDeduplication = core.BoolPtr(modelMap["perform_source_side_deduplication"].(bool))
+	}
 	if modelMap["source_id"] != nil {
 		model.SourceID = core.Int64Ptr(int64(modelMap["source_id"].(int)))
 	}
@@ -7204,6 +7253,9 @@ func ResourceIbmBackupRecoveryProtectionGroupMapToKubernetesFilterParams(modelMa
 	model := &backuprecoveryv1.KubernetesFilterParams{}
 	if modelMap["label_combination_method"] != nil && modelMap["label_combination_method"].(string) != "" {
 		model.LabelCombinationMethod = core.StringPtr(modelMap["label_combination_method"].(string))
+	}
+	if modelMap["label_filter_entity_type"] != nil && modelMap["label_filter_entity_type"].(string) != "" {
+		model.LabelFilterEntityType = core.StringPtr(modelMap["label_filter_entity_type"].(string))
 	}
 	if modelMap["label_vector"] != nil {
 		labelVector := []backuprecoveryv1.KubernetesLabel{}
@@ -7370,6 +7422,9 @@ func ResourceIbmBackupRecoveryProtectionGroupMapToKubernetesPvcInfo(modelMap map
 	model := &backuprecoveryv1.KubernetesPvcInfo{}
 	if modelMap["id"] != nil {
 		model.ID = core.Int64Ptr(int64(modelMap["id"].(int)))
+	}
+	if modelMap["metadata_only"] != nil {
+		model.MetadataOnly = core.BoolPtr(modelMap["metadata_only"].(bool))
 	}
 	if modelMap["name"] != nil && modelMap["name"].(string) != "" {
 		model.Name = core.StringPtr(modelMap["name"].(string))
@@ -8199,6 +8254,9 @@ func ResourceIbmBackupRecoveryProtectionGroupKubernetesProtectionGroupParamsToMa
 		}
 		modelMap["objects"] = objects
 	}
+	if model.PerformSourceSideDeduplication != nil {
+		modelMap["perform_source_side_deduplication"] = *model.PerformSourceSideDeduplication
+	}
 	if model.SourceID != nil {
 		modelMap["source_id"] = flex.IntValue(model.SourceID)
 	}
@@ -8222,6 +8280,9 @@ func ResourceIbmBackupRecoveryProtectionGroupKubernetesFilterParamsToMap(model *
 	modelMap := make(map[string]interface{})
 	if model.LabelCombinationMethod != nil {
 		modelMap["label_combination_method"] = *model.LabelCombinationMethod
+	}
+	if model.LabelFilterEntityType != nil {
+		modelMap["label_filter_entity_type"] = *model.LabelFilterEntityType
 	}
 	if model.LabelVector != nil {
 		labelVector := []map[string]interface{}{}
@@ -8376,6 +8437,9 @@ func ResourceIbmBackupRecoveryProtectionGroupKubernetesPvcInfoToMap(model *backu
 	modelMap := make(map[string]interface{})
 	if model.ID != nil {
 		modelMap["id"] = flex.IntValue(model.ID)
+	}
+	if model.MetadataOnly != nil {
+		modelMap["metadata_only"] = *model.MetadataOnly
 	}
 	if model.Name != nil {
 		modelMap["name"] = *model.Name

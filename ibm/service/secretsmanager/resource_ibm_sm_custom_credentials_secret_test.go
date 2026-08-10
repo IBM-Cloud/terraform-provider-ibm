@@ -19,8 +19,8 @@ import (
 
 var customCredentialsSecretName = "terraform-test-custom-secret"
 var modifiedCustomCredentialsSecretName = "modified-terraform-test-custom-secret"
-var customCredentialsTtl = "259200"          // 3 days in seconds
-var modifiedCustomCredentialsTtl = "7776000" // 3 months in seconds
+var customCredentialsTtl = "7776000"        // 3 months in seconds
+var modifiedCustomCredentialsTtl = "345600" // 4 days in seconds
 var customCredentialsIntParam = 8
 var modifiedCustomCredentialsIntParam = 67
 var customCredentialsStrParam = "first"
@@ -218,10 +218,10 @@ func testAccCheckIbmSmCustomCredentialsSecretCreated(n string) resource.TestChec
 		if err := verifyAttr(getAutoRotate(secret.Rotation), "true", "auto_rotate"); err != nil {
 			return err
 		}
-		if err := verifyAttr(getRotationUnit(secret.Rotation), "day", "rotation unit"); err != nil {
+		if err := verifyAttr(getRotationUnit(secret.Rotation), "month", "rotation unit"); err != nil {
 			return err
 		}
-		if err := verifyAttr(getRotationInterval(secret.Rotation), "1", "rotation interval"); err != nil {
+		if err := verifyAttr(getRotationInterval(secret.Rotation), "2", "rotation interval"); err != nil {
 			return err
 		}
 		if err := verifyAttr(*secret.TTL, customCredentialsTtl, "TTL"); err != nil {
@@ -257,10 +257,10 @@ func testAccCheckIbmSmCustomCredentialsSecretUpdated(n string) resource.TestChec
 		if err := verifyAttr(getAutoRotate(secret.Rotation), "true", "auto_rotate after update"); err != nil {
 			return err
 		}
-		if err := verifyAttr(getRotationUnit(secret.Rotation), "month", "rotation unit after update"); err != nil {
+		if err := verifyAttr(getRotationUnit(secret.Rotation), "day", "rotation unit after update"); err != nil {
 			return err
 		}
-		if err := verifyAttr(getRotationInterval(secret.Rotation), "2", "rotation interval after update"); err != nil {
+		if err := verifyAttr(getRotationInterval(secret.Rotation), "3", "rotation interval after update"); err != nil {
 			return err
 		}
 		if err := verifyAttr(*secret.TTL, modifiedCustomCredentialsTtl, "TTL after update"); err != nil {

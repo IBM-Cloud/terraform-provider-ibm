@@ -1,4 +1,4 @@
-// Copyright IBM Corp. 2021, 2022 All Rights Reserved.
+// Copyright IBM Corp. 2021, 2026 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 package cloudant_test
@@ -140,14 +140,9 @@ func testAccCheckIBMCloudantDatabaseExists(n string, obj cloudantv1.DatabaseInfo
 		}
 
 		instanceCRN := rs.Primary.Attributes["instance_crn"]
-		cUrl, err := cloudant.GetCloudantInstanceUrl(instanceCRN, acc.TestAccProvider.Meta())
-		if err != nil {
-			return err
-		}
-
-		cloudantClient, err := cloudant.GetCloudantClientForUrl(cUrl, acc.TestAccProvider.Meta())
-		if err != nil {
-			return err
+		cloudantClient, tfErr := cloudant.GetCloudantClientFromCrn(instanceCRN, acc.TestAccProvider.Meta(), "ibm_cloudant_database", "test")
+		if tfErr != nil {
+			return fmt.Errorf("Error getting Cloudant client: %s", tfErr)
 		}
 
 		dbName := rs.Primary.Attributes["db"]
@@ -170,21 +165,16 @@ func testAccCheckIBMCloudantDatabaseDestroy(s *terraform.State) error {
 		}
 
 		instanceCRN := rs.Primary.Attributes["instance_crn"]
-		cUrl, err := cloudant.GetCloudantInstanceUrl(instanceCRN, acc.TestAccProvider.Meta())
-		if err != nil {
-			return err
-		}
-
-		cloudantClient, err := cloudant.GetCloudantClientForUrl(cUrl, acc.TestAccProvider.Meta())
-		if err != nil {
-			return err
+		cloudantClient, tfErr := cloudant.GetCloudantClientFromCrn(instanceCRN, acc.TestAccProvider.Meta(), "ibm_cloudant_database", "test")
+		if tfErr != nil {
+			return fmt.Errorf("Error getting Cloudant client: %s", tfErr)
 		}
 
 		dbName := rs.Primary.Attributes["db"]
 		getDatabaseInformationOptions := cloudantClient.NewGetDatabaseInformationOptions(dbName)
 
 		// Try to find the key
-		_, _, err = cloudantClient.GetDatabaseInformation(getDatabaseInformationOptions)
+		_, _, err := cloudantClient.GetDatabaseInformation(getDatabaseInformationOptions)
 		if err == nil {
 			return fmt.Errorf("cloudant_database still exists: %s", rs.Primary.ID)
 		}

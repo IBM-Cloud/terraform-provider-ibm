@@ -19,7 +19,7 @@ resource "ibm_is_private_path_service_gateway" "example" {
   zonal_affinity = true
   service_endpoints = ["myexamplefqdn"]
 }
- resource "ibm_is_private_path_service_gateway_revoke_account" "example" {
+resource "ibm_is_private_path_service_gateway_revoke_account" "example" {
   account = "7f75c7b025e54bc5635f754b2f888665"
   private_path_service_gateway = ibm_is_private_path_service_gateway.example.id
 }
