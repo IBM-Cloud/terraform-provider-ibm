@@ -45,11 +45,11 @@ resource "ibm_kms_cryptounits" "st-dedicated" {
   master_key  {
     keysharefile {
       filepath = "tf-mbk-1.key"
-      passphrase    = "abcd12"
+      passphrase    = "<your-passphrase>"
     }
     keysharefile {
       filepath = "tf-mbk-2.key"
-      passphrase    = "abcd12"
+      passphrase    = "<your-passphrase>"
     }
     keyname = "mbkkey"
     exists  = true
@@ -84,11 +84,11 @@ resource "ibm_kms_cryptounits" "st-dedicated" {
   master_key  {
     keysharefile {
       filepath = "tf-mbk-1.key"
-      passphrase    = "abcd12"
+      passphrase    = "<your-passphrase>"
     }
     keysharefile {
       filepath = "tf-mbk-2.key"
-      passphrase    = "abcd12"
+      passphrase    = "<your-passphrase>"
     }
     keyname = "mbkkey"
     exists  = true
