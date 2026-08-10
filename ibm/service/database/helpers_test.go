@@ -343,7 +343,7 @@ func TestClearGen2UnsupportedAttributes(t *testing.T) {
 		},
 	}, map[string]interface{}{
 		"adminuser":            "admin",
-		"adminpassword":        "password123",
+		"adminpassword":        "test-fixture",
 		"auto_scaling":         []interface{}{map[string]interface{}{"enabled": true}},
 		"allowlist":            []interface{}{map[string]interface{}{"address": "1.2.3.4"}},
 		"users":                []interface{}{map[string]interface{}{"name": "user1"}},

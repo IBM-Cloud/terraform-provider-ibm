@@ -28,7 +28,7 @@ func TestTransformGen2ConnectionToSchema_PostgreSQL(t *testing.T) {
 		"authentication": map[string]interface{}{
 			"method":   "direct",
 			"username": "user",
-			"password": "pass",
+			"password": "test-fixture",
 		},
 		"certificate": map[string]interface{}{
 			"name":               "ca-certificate",
@@ -63,7 +63,7 @@ func TestTransformGen2ConnectionToSchema_PostgreSQL(t *testing.T) {
 	assert.Len(t, auth, 1)
 	assert.Equal(t, "direct", auth[0]["method"])
 	assert.Equal(t, "user", auth[0]["username"])
-	assert.Equal(t, "pass", auth[0]["password"])
+	assert.Equal(t, "test-fixture", auth[0]["password"])
 
 	// Verify certificate transformation
 	cert := result["certificate"].([]map[string]interface{})
@@ -99,7 +99,7 @@ func TestTransformGen2ConnectionToSchema_MongoDB(t *testing.T) {
 		"authentication": map[string]interface{}{
 			"method":   "direct",
 			"username": "user",
-			"password": "pass",
+			"password": "test-fixture",
 		},
 		"query_options": map[string]interface{}{
 			"authSource": "admin",
@@ -146,7 +146,7 @@ func TestTransformGen2ConnectionToSchema_Redis(t *testing.T) {
 		},
 		"authentication": map[string]interface{}{
 			"method":   "direct",
-			"password": "password",
+			"password": "test-fixture",
 		},
 		"query_options": map[string]interface{}{
 			"ssl": true,
@@ -181,7 +181,7 @@ func TestTransformGen2ConnectionToSchema_RabbitMQ_AMQPS(t *testing.T) {
 		"authentication": map[string]interface{}{
 			"method":   "direct",
 			"username": "user",
-			"password": "pass",
+			"password": "test-fixture",
 		},
 	}
 
@@ -209,7 +209,7 @@ func TestTransformGen2ConnectionToSchema_RabbitMQ_MQTTS(t *testing.T) {
 		"authentication": map[string]interface{}{
 			"method":   "direct",
 			"username": "user",
-			"password": "pass",
+			"password": "test-fixture",
 		},
 	}
 
@@ -237,7 +237,7 @@ func TestTransformGen2ConnectionToSchema_RabbitMQ_StompSSL(t *testing.T) {
 		"authentication": map[string]interface{}{
 			"method":   "direct",
 			"username": "user",
-			"password": "pass",
+			"password": "test-fixture",
 		},
 	}
 
@@ -266,7 +266,7 @@ func TestTransformGen2ConnectionToSchema_MySQL(t *testing.T) {
 		"authentication": map[string]interface{}{
 			"method":   "direct",
 			"username": "user",
-			"password": "pass",
+			"password": "test-fixture",
 		},
 		"query_options": map[string]interface{}{
 			"ssl-mode": "REQUIRED",
@@ -298,7 +298,7 @@ func TestTransformGen2ConnectionToSchema_Elasticsearch_HTTPS(t *testing.T) {
 		"authentication": map[string]interface{}{
 			"method":   "direct",
 			"username": "user",
-			"password": "pass",
+			"password": "test-fixture",
 		},
 	}
 
@@ -458,7 +458,7 @@ func TestTransformGen2CliToSchema(t *testing.T) {
 		},
 		"environment": map[string]interface{}{
 			"PGUSER":        "user",
-			"PGPASSWORD":    "pass",
+			"PGPASSWORD":    "test-fixture",
 			"PGSSLMODE":     "verify-full",
 			"PGSSLROOTCERT": "system",
 		},
@@ -481,7 +481,7 @@ func TestTransformGen2CliToSchema(t *testing.T) {
 	// Verify environment variables
 	env := result["environment"].(map[string]interface{})
 	assert.Equal(t, "user", env["PGUSER"])
-	assert.Equal(t, "pass", env["PGPASSWORD"])
+	assert.Equal(t, "test-fixture", env["PGPASSWORD"])
 	assert.Equal(t, "verify-full", env["PGSSLMODE"])
 	assert.Equal(t, "system", env["PGSSLROOTCERT"])
 

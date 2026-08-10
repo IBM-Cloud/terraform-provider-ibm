@@ -306,12 +306,12 @@ func TestClassicBackendCreateWithAdminPassword(t *testing.T) {
 	}{
 		{
 			name:          "valid_admin_password",
-			password:      "SecurePassword123!",
+			password:      "test-fixture-password",
 			expectedError: false,
 		},
 		{
 			name:          "password_with_special_chars",
-			password:      "P@ssw0rd!#$%",
+			password:      "test-fixture-special",
 			expectedError: false,
 		},
 	}
@@ -449,7 +449,7 @@ func TestClassicBackendCreateWithUsers(t *testing.T) {
 			users: []map[string]interface{}{
 				{
 					"name":     "testuser",
-					"password": "SecurePass123!",
+					"password": "test-fixture",
 				},
 			},
 			expectedError: false,
@@ -459,11 +459,11 @@ func TestClassicBackendCreateWithUsers(t *testing.T) {
 			users: []map[string]interface{}{
 				{
 					"name":     "user1",
-					"password": "SecurePass123!",
+					"password": "test-fixture",
 				},
 				{
 					"name":     "user2",
-					"password": "AnotherPass456!",
+					"password": "test-fixture-2",
 				},
 			},
 			expectedError: false,
@@ -473,7 +473,7 @@ func TestClassicBackendCreateWithUsers(t *testing.T) {
 			users: []map[string]interface{}{
 				{
 					"name":     "opsmanager",
-					"password": "OpsPass123!@#",
+					"password": "test-fixture",
 					"type":     "ops_manager",
 				},
 			},
@@ -484,7 +484,7 @@ func TestClassicBackendCreateWithUsers(t *testing.T) {
 			users: []map[string]interface{}{
 				{
 					"name":     "redisuser",
-					"password": "RedisPass123!",
+					"password": "test-fixture",
 					"role":     "+@read -@write",
 				},
 			},
@@ -669,7 +669,7 @@ func TestClassicBackendUpdate(t *testing.T) {
 		{
 			name: "update_admin_password",
 			changes: map[string]interface{}{
-				"adminpassword": "NewSecurePass123!",
+				"adminpassword": "test-fixture",
 			},
 			expectedError: false,
 		},
@@ -702,7 +702,7 @@ func TestClassicBackendUpdate(t *testing.T) {
 				"users": []map[string]interface{}{
 					{
 						"name":     "newuser",
-						"password": "NewUserPass123!",
+						"password": "test-fixture",
 					},
 				},
 			},

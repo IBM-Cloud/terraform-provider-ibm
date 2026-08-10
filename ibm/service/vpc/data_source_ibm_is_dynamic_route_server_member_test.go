@@ -1,0 +1,283 @@
+// Copyright IBM Corp. 2026 All Rights Reserved.
+// Licensed under the Mozilla Public License v2.0
+
+/*
+ * IBM OpenAPI Terraform Generator Version: 3.114.0-a902401e-20260427-192904
+ */
+
+package vpc_test
+
+import (
+	"fmt"
+	"testing"
+
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+
+	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/vpc"
+	"github.com/IBM/go-sdk-core/v5/core"
+	"github.com/IBM/vpc-go-sdk/vpcv1"
+	"github.com/stretchr/testify/assert"
+)
+
+func TestAccIBMIsDynamicRouteServerMemberDataSourceBasic(t *testing.T) {
+	dynamicRouteServerMemberDynamicRouteServerID := fmt.Sprintf("tf_dynamic_route_server_id_%d", acctest.RandIntRange(10, 100))
+	dynamicRouteServerMemberName := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { acc.TestAccPreCheck(t) },
+		Providers: acc.TestAccProviders,
+		Steps: []resource.TestStep{
+			resource.TestStep{
+				Config: testAccCheckIBMIsDynamicRouteServerMemberDataSourceConfigBasic(dynamicRouteServerMemberDynamicRouteServerID, dynamicRouteServerMemberName),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet("data.ibm_is_dynamic_route_server_member.is_dynamic_route_server_member_instance", "id"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_dynamic_route_server_member.is_dynamic_route_server_member_instance", "dynamic_route_server_id"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_dynamic_route_server_member.is_dynamic_route_server_member_instance", "is_dynamic_route_server_member_id"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_dynamic_route_server_member.is_dynamic_route_server_member_instance", "health_reasons.#"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_dynamic_route_server_member.is_dynamic_route_server_member_instance", "health_state"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_dynamic_route_server_member.is_dynamic_route_server_member_instance", "href"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_dynamic_route_server_member.is_dynamic_route_server_member_instance", "lifecycle_reasons.#"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_dynamic_route_server_member.is_dynamic_route_server_member_instance", "lifecycle_state"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_dynamic_route_server_member.is_dynamic_route_server_member_instance", "name"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_dynamic_route_server_member.is_dynamic_route_server_member_instance", "resource_type"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_dynamic_route_server_member.is_dynamic_route_server_member_instance", "virtual_network_interfaces.#"),
+					resource.TestCheckResourceAttr("data.ibm_is_dynamic_route_server_member.is_dynamic_route_server_member_instance", "virtual_network_interfaces.0.name", dynamicRouteServerMemberName),
+				),
+			},
+		},
+	})
+}
+
+func testAccCheckIBMIsDynamicRouteServerMemberDataSourceConfigBasic(dynamicRouteServerMemberDynamicRouteServerID string, dynamicRouteServerMemberName string) string {
+	return fmt.Sprintf(`
+		resource "ibm_is_dynamic_route_server_member" "is_dynamic_route_server_member_instance" {
+			dynamic_route_server_id = "%s"
+			name = "%s"
+			virtual_network_interfaces {
+				crn = "crn:v1:bluemix:public:is:us-south-1:a/aa2432b1fa4d4ace891e9b80fc104e34::virtual-network-interface:0717-54eb57ee-86f2-4796-90bb-d7874e0831ef"
+				deleted {
+					more_info = "https://cloud.ibm.com/apidocs/vpc#deleted-resources"
+				}
+				href = "https://us-south.iaas.cloud.ibm.com/v1/virtual_network_interfaces/0717-54eb57ee-86f2-4796-90bb-d7874e0831ef"
+				id = "0717-54eb57ee-86f2-4796-90bb-d7874e0831ef"
+				name = "my-virtual-network-interface"
+				primary_ip {
+					address = "192.168.3.4"
+					deleted {
+						more_info = "https://cloud.ibm.com/apidocs/vpc#deleted-resources"
+					}
+					href = "https://us-south.iaas.cloud.ibm.com/v1/subnets/0717-bea6a632-5e13-42a4-b4b8-31dc877abfe4/reserved_ips/0717-6d353a0f-aeb1-4ae1-832e-1110d10981bb"
+					id = "0717-6d353a0f-aeb1-4ae1-832e-1110d10981bb"
+					name = "my-reserved-ip"
+					resource_type = "subnet_reserved_ip"
+				}
+				resource_type = "virtual_network_interface"
+				subnet {
+					crn = "crn:v1:bluemix:public:is:us-south-1:a/aa2432b1fa4d4ace891e9b80fc104e34::subnet:0717-7ec86020-1c6e-4889-b3f0-a15f2e50f87e"
+					deleted {
+						more_info = "https://cloud.ibm.com/apidocs/vpc#deleted-resources"
+					}
+					href = "https://us-south.iaas.cloud.ibm.com/v1/subnets/0717-7ec86020-1c6e-4889-b3f0-a15f2e50f87e"
+					id = "0717-7ec86020-1c6e-4889-b3f0-a15f2e50f87e"
+					name = "my-subnet"
+					resource_type = "subnet"
+				}
+			}
+		}
+
+		data "ibm_is_dynamic_route_server_member" "is_dynamic_route_server_member_instance" {
+			dynamic_route_server_id = ibm_is_dynamic_route_server_member.is_dynamic_route_server_member_instance.dynamic_route_server_id
+			is_dynamic_route_server_member_id = ibm_is_dynamic_route_server_member.is_dynamic_route_server_member_instance.is_dynamic_route_server_member_id
+		}
+	`, dynamicRouteServerMemberDynamicRouteServerID, dynamicRouteServerMemberName)
+}
+
+func TestDataSourceIBMIsDynamicRouteServerMemberDynamicRouteServerHealthReasonToMap(t *testing.T) {
+	checkResult := func(result map[string]interface{}) {
+		model := make(map[string]interface{})
+		model["code"] = "cannot_start_capacity"
+		model["message"] = "Cannot start one or more members because resource capacity is unavailable."
+		model["more_info"] = "https://cloud.ibm.com/docs/__TBD__"
+
+		assert.Equal(t, result, model)
+	}
+
+	model := new(vpcv1.DynamicRouteServerHealthReason)
+	model.Code = core.StringPtr("cannot_start_capacity")
+	model.Message = core.StringPtr("Cannot start one or more members because resource capacity is unavailable.")
+	model.MoreInfo = core.StringPtr("https://cloud.ibm.com/docs/__TBD__")
+
+	result, err := vpc.DataSourceIBMIsDynamicRouteServerMemberDynamicRouteServerHealthReasonToMap(model)
+	assert.Nil(t, err)
+	checkResult(result)
+}
+
+func TestDataSourceIBMIsDynamicRouteServerMemberDynamicRouteServerLifecycleReasonToMap(t *testing.T) {
+	checkResult := func(result map[string]interface{}) {
+		model := make(map[string]interface{})
+		model["code"] = "resource_suspended_by_provider"
+		model["message"] = "The resource has been suspended. Contact IBM support with the CRN for next steps."
+		model["more_info"] = "https://cloud.ibm.com/apidocs/vpc#resource-suspension"
+
+		assert.Equal(t, result, model)
+	}
+
+	model := new(vpcv1.DynamicRouteServerLifecycleReason)
+	model.Code = core.StringPtr("resource_suspended_by_provider")
+	model.Message = core.StringPtr("The resource has been suspended. Contact IBM support with the CRN for next steps.")
+	model.MoreInfo = core.StringPtr("https://cloud.ibm.com/apidocs/vpc#resource-suspension")
+
+	result, err := vpc.DataSourceIBMIsDynamicRouteServerMemberDynamicRouteServerLifecycleReasonToMap(model)
+	assert.Nil(t, err)
+	checkResult(result)
+}
+
+func TestDataSourceIBMIsDynamicRouteServerMemberVirtualNetworkInterfaceReferenceToMap(t *testing.T) {
+	checkResult := func(result map[string]interface{}) {
+		deletedModel := make(map[string]interface{})
+		deletedModel["more_info"] = "https://cloud.ibm.com/apidocs/vpc#deleted-resources"
+
+		reservedIPReferenceModel := make(map[string]interface{})
+		reservedIPReferenceModel["address"] = "192.168.3.4"
+		reservedIPReferenceModel["deleted"] = []map[string]interface{}{deletedModel}
+		reservedIPReferenceModel["href"] = "https://us-south.iaas.cloud.ibm.com/v1/subnets/0717-bea6a632-5e13-42a4-b4b8-31dc877abfe4/reserved_ips/0717-6d353a0f-aeb1-4ae1-832e-1110d10981bb"
+		reservedIPReferenceModel["id"] = "0717-6d353a0f-aeb1-4ae1-832e-1110d10981bb"
+		reservedIPReferenceModel["name"] = "my-reserved-ip"
+		reservedIPReferenceModel["resource_type"] = "subnet_reserved_ip"
+
+		subnetReferenceModel := make(map[string]interface{})
+		subnetReferenceModel["crn"] = "crn:v1:bluemix:public:is:us-south-1:a/aa2432b1fa4d4ace891e9b80fc104e34::subnet:0717-7ec86020-1c6e-4889-b3f0-a15f2e50f87e"
+		subnetReferenceModel["deleted"] = []map[string]interface{}{deletedModel}
+		subnetReferenceModel["href"] = "https://us-south.iaas.cloud.ibm.com/v1/subnets/0717-7ec86020-1c6e-4889-b3f0-a15f2e50f87e"
+		subnetReferenceModel["id"] = "0717-7ec86020-1c6e-4889-b3f0-a15f2e50f87e"
+		subnetReferenceModel["name"] = "my-subnet"
+		subnetReferenceModel["resource_type"] = "subnet"
+
+		model := make(map[string]interface{})
+		model["crn"] = "crn:v1:bluemix:public:is:us-south-1:a/aa2432b1fa4d4ace891e9b80fc104e34::virtual-network-interface:0717-54eb57ee-86f2-4796-90bb-d7874e0831ef"
+		model["deleted"] = []map[string]interface{}{deletedModel}
+		model["href"] = "https://us-south.iaas.cloud.ibm.com/v1/virtual_network_interfaces/0717-54eb57ee-86f2-4796-90bb-d7874e0831ef"
+		model["id"] = "0717-54eb57ee-86f2-4796-90bb-d7874e0831ef"
+		model["name"] = "my-virtual-network-interface"
+		model["primary_ip"] = []map[string]interface{}{reservedIPReferenceModel}
+		model["resource_type"] = "virtual_network_interface"
+		model["subnet"] = []map[string]interface{}{subnetReferenceModel}
+
+		assert.Equal(t, result, model)
+	}
+
+	deletedModel := new(vpcv1.Deleted)
+	deletedModel.MoreInfo = core.StringPtr("https://cloud.ibm.com/apidocs/vpc#deleted-resources")
+
+	reservedIPReferenceModel := new(vpcv1.ReservedIPReference)
+	reservedIPReferenceModel.Address = core.StringPtr("192.168.3.4")
+	reservedIPReferenceModel.Deleted = deletedModel
+	reservedIPReferenceModel.Href = core.StringPtr("https://us-south.iaas.cloud.ibm.com/v1/subnets/0717-bea6a632-5e13-42a4-b4b8-31dc877abfe4/reserved_ips/0717-6d353a0f-aeb1-4ae1-832e-1110d10981bb")
+	reservedIPReferenceModel.ID = core.StringPtr("0717-6d353a0f-aeb1-4ae1-832e-1110d10981bb")
+	reservedIPReferenceModel.Name = core.StringPtr("my-reserved-ip")
+	reservedIPReferenceModel.ResourceType = core.StringPtr("subnet_reserved_ip")
+
+	subnetReferenceModel := new(vpcv1.SubnetReference)
+	subnetReferenceModel.CRN = core.StringPtr("crn:v1:bluemix:public:is:us-south-1:a/aa2432b1fa4d4ace891e9b80fc104e34::subnet:0717-7ec86020-1c6e-4889-b3f0-a15f2e50f87e")
+	subnetReferenceModel.Deleted = deletedModel
+	subnetReferenceModel.Href = core.StringPtr("https://us-south.iaas.cloud.ibm.com/v1/subnets/0717-7ec86020-1c6e-4889-b3f0-a15f2e50f87e")
+	subnetReferenceModel.ID = core.StringPtr("0717-7ec86020-1c6e-4889-b3f0-a15f2e50f87e")
+	subnetReferenceModel.Name = core.StringPtr("my-subnet")
+	subnetReferenceModel.ResourceType = core.StringPtr("subnet")
+
+	model := new(vpcv1.VirtualNetworkInterfaceReference)
+	model.CRN = core.StringPtr("crn:v1:bluemix:public:is:us-south-1:a/aa2432b1fa4d4ace891e9b80fc104e34::virtual-network-interface:0717-54eb57ee-86f2-4796-90bb-d7874e0831ef")
+	model.Deleted = deletedModel
+	model.Href = core.StringPtr("https://us-south.iaas.cloud.ibm.com/v1/virtual_network_interfaces/0717-54eb57ee-86f2-4796-90bb-d7874e0831ef")
+	model.ID = core.StringPtr("0717-54eb57ee-86f2-4796-90bb-d7874e0831ef")
+	model.Name = core.StringPtr("my-virtual-network-interface")
+	model.PrimaryIP = reservedIPReferenceModel
+	model.ResourceType = core.StringPtr("virtual_network_interface")
+	model.Subnet = subnetReferenceModel
+
+	result, err := vpc.DataSourceIBMIsDynamicRouteServerMemberVirtualNetworkInterfaceReferenceToMap(model)
+	assert.Nil(t, err)
+	checkResult(result)
+}
+
+func TestDataSourceIBMIsDynamicRouteServerMemberDeletedToMap(t *testing.T) {
+	checkResult := func(result map[string]interface{}) {
+		model := make(map[string]interface{})
+		model["more_info"] = "https://cloud.ibm.com/apidocs/vpc#deleted-resources"
+
+		assert.Equal(t, result, model)
+	}
+
+	model := new(vpcv1.Deleted)
+	model.MoreInfo = core.StringPtr("https://cloud.ibm.com/apidocs/vpc#deleted-resources")
+
+	result, err := vpc.DataSourceIBMIsDynamicRouteServerMemberDeletedToMap(model)
+	assert.Nil(t, err)
+	checkResult(result)
+}
+
+func TestDataSourceIBMIsDynamicRouteServerMemberReservedIPReferenceToMap(t *testing.T) {
+	checkResult := func(result map[string]interface{}) {
+		deletedModel := make(map[string]interface{})
+		deletedModel["more_info"] = "https://cloud.ibm.com/apidocs/vpc#deleted-resources"
+
+		model := make(map[string]interface{})
+		model["address"] = "192.168.3.4"
+		model["deleted"] = []map[string]interface{}{deletedModel}
+		model["href"] = "https://us-south.iaas.cloud.ibm.com/v1/subnets/0717-bea6a632-5e13-42a4-b4b8-31dc877abfe4/reserved_ips/0717-6d353a0f-aeb1-4ae1-832e-1110d10981bb"
+		model["id"] = "0717-6d353a0f-aeb1-4ae1-832e-1110d10981bb"
+		model["name"] = "my-reserved-ip"
+		model["resource_type"] = "subnet_reserved_ip"
+
+		assert.Equal(t, result, model)
+	}
+
+	deletedModel := new(vpcv1.Deleted)
+	deletedModel.MoreInfo = core.StringPtr("https://cloud.ibm.com/apidocs/vpc#deleted-resources")
+
+	model := new(vpcv1.ReservedIPReference)
+	model.Address = core.StringPtr("192.168.3.4")
+	model.Deleted = deletedModel
+	model.Href = core.StringPtr("https://us-south.iaas.cloud.ibm.com/v1/subnets/0717-bea6a632-5e13-42a4-b4b8-31dc877abfe4/reserved_ips/0717-6d353a0f-aeb1-4ae1-832e-1110d10981bb")
+	model.ID = core.StringPtr("0717-6d353a0f-aeb1-4ae1-832e-1110d10981bb")
+	model.Name = core.StringPtr("my-reserved-ip")
+	model.ResourceType = core.StringPtr("subnet_reserved_ip")
+
+	result, err := vpc.DataSourceIBMIsDynamicRouteServerMemberReservedIPReferenceToMap(model)
+	assert.Nil(t, err)
+	checkResult(result)
+}
+
+func TestDataSourceIBMIsDynamicRouteServerMemberSubnetReferenceToMap(t *testing.T) {
+	checkResult := func(result map[string]interface{}) {
+		deletedModel := make(map[string]interface{})
+		deletedModel["more_info"] = "https://cloud.ibm.com/apidocs/vpc#deleted-resources"
+
+		model := make(map[string]interface{})
+		model["crn"] = "crn:v1:bluemix:public:is:us-south-1:a/aa2432b1fa4d4ace891e9b80fc104e34::subnet:0717-7ec86020-1c6e-4889-b3f0-a15f2e50f87e"
+		model["deleted"] = []map[string]interface{}{deletedModel}
+		model["href"] = "https://us-south.iaas.cloud.ibm.com/v1/subnets/0717-7ec86020-1c6e-4889-b3f0-a15f2e50f87e"
+		model["id"] = "0717-7ec86020-1c6e-4889-b3f0-a15f2e50f87e"
+		model["name"] = "my-subnet"
+		model["resource_type"] = "subnet"
+
+		assert.Equal(t, result, model)
+	}
+
+	deletedModel := new(vpcv1.Deleted)
+	deletedModel.MoreInfo = core.StringPtr("https://cloud.ibm.com/apidocs/vpc#deleted-resources")
+
+	model := new(vpcv1.SubnetReference)
+	model.CRN = core.StringPtr("crn:v1:bluemix:public:is:us-south-1:a/aa2432b1fa4d4ace891e9b80fc104e34::subnet:0717-7ec86020-1c6e-4889-b3f0-a15f2e50f87e")
+	model.Deleted = deletedModel
+	model.Href = core.StringPtr("https://us-south.iaas.cloud.ibm.com/v1/subnets/0717-7ec86020-1c6e-4889-b3f0-a15f2e50f87e")
+	model.ID = core.StringPtr("0717-7ec86020-1c6e-4889-b3f0-a15f2e50f87e")
+	model.Name = core.StringPtr("my-subnet")
+	model.ResourceType = core.StringPtr("subnet")
+
+	result, err := vpc.DataSourceIBMIsDynamicRouteServerMemberSubnetReferenceToMap(model)
+	assert.Nil(t, err)
+	checkResult(result)
+}

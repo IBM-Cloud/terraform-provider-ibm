@@ -1,0 +1,88 @@
+---
+layout: "ibm"
+page_title: "IBM : ibm_is_dynamic_route_server_route_report_jobs"
+description: |-
+  Get information about DynamicRouteServerRouteReportJobCollection
+subcategory: "Virtual Private Cloud API"
+---
+
+# ibm_is_dynamic_route_server_route_report_jobs
+
+Provides a read-only data source to retrieve information about a DynamicRouteServerRouteReportJobCollection. You can then reference the fields of the data source in other resources within the same configuration by using interpolation syntax.
+
+## Example Usage
+
+```hcl
+data "ibm_is_dynamic_route_server_route_report_jobs" "is_dynamic_route_server_route_report_jobs" {
+	dynamic_route_server_id = ibm_is_dynamic_route_server_route_report_job.is_dynamic_route_server_route_report_job_instance.dynamic_route_server_id
+	sort = "name"
+}
+```
+
+## Argument Reference
+
+You can specify the following arguments for this data source.
+
+* `dynamic_route_server_id` - (Required, Forces new resource, String) The dynamic route server identifier.
+  * Constraints: The maximum length is `64` characters. The minimum length is `1` character. The value must match regular expression `/^[-0-9a-z_]+$/`.
+* `sort` - (Optional, String) Sorts the returned collection by the specified property name in ascending order. A `-` may be prepended to the name to sort in descending order. For example, the value `-created_at` sorts the collection by the `created_at` property in descending order, and the value `name` sorts it by the `name` property in ascending order.
+  * Constraints: The default value is `-created_at`. Allowable values are: `created_at`, `name`.
+
+## Attribute Reference
+
+After your data source is created, you can read values from the following attributes.
+
+* `id` - The unique identifier of the DynamicRouteServerRouteReportJobCollection.
+* `route_report_jobs` - (List) 
+  * Constraints: The default value is `[]`. The maximum length is `6` items. The minimum length is `0` items.
+Nested schema for **route_report_jobs**:
+	* `completed_at` - (String) The date and time that the dynamic route server route report export job was completed.If absent, the dynamic route server route report export job has not yet completed.
+	* `created_at` - (String) The date and time that the dynamic route server route report export job was created.
+	* `format` - (String) The format used for the route report:`json` - The route report is generated based on the json schema.
+	  * Constraints: Allowable values are: `json`. The value must match regular expression `/^[a-z][a-z0-9]*(_[a-z0-9]+)*$/`.
+	* `href` - (String) The URL for this dynamic route server route report export job.
+	  * Constraints: The maximum length is `8000` characters. The minimum length is `10` characters. The value must match regular expression `/^http(s)?:\/\/([^\/?#]*)([^?#]*)(\\?([^#]*))?(#(.*))?$/`.
+	* `id` - (String) The unique identifier for this dynamic route server route report export job.
+	  * Constraints: The maximum length is `64` characters. The minimum length is `1` character. The value must match regular expression `/^[-0-9a-z_]+$/`.
+	* `json_schema` - (List) JSON schema that defines the structure of the route report content.
+	Nested schema for **json_schema**:
+		* `href` - (String) The canonical URI of the JSON Schema that defines the dynamic route server route report.
+		  * Constraints: The maximum length is `8000` characters. The minimum length is `10` characters. The value must match regular expression `/^http(s)?:\/\/([^\/?#]*)([^?#]*)(\\?([^#]*))?(#(.*))?$/`.
+		* `type` - (String) The type of schema document.
+		  * Constraints: Allowable values are: `json`. The value must match regular expression `/^[a-z][a-z0-9]*(_[a-z0-9]+)*$/`.
+		* `version` - (String) The version of the route report schema.
+	* `name` - (String) The name for this dynamic route server route report export job. The name must not be used by another export job for the image. Changing the name will not affect the exported image name, `storage_object.name`, or `storage_href` values.
+	  * Constraints: The maximum length is `63` characters. The minimum length is `1` character. The value must match regular expression `/^([a-z]|[a-z][-a-z0-9]*[a-z0-9]|[0-9][-a-z0-9]*([a-z]|[-a-z][-a-z0-9]*[a-z0-9]))$/`.
+	* `resource_type` - (String) The resource type.
+	  * Constraints: Allowable values are: `dynamic_route_server_route_report_job`. The value must match regular expression `/^[a-z][a-z0-9]*(_[a-z0-9]+)*$/`.
+	* `started_at` - (String) The date and time that the dynamic route server route report export job started running.If absent, the export job has not yet started.
+	* `status` - (String) The status of this dynamic route server route report export job:- `deleting`:Dynamic route server route report export job is being deleted- `failed`:Dynamic route server route report export job could not be completed  successfully- `queued`:Dynamic route server route report export job is queued- `running`:Dynamic route server route report export job is in progress- `succeeded`:Dynamic route server route report export job was completed successfullyThe exported route report object is automatically deleted for `failed` jobs.The enumerated values for this property may[expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) in the future.
+	  * Constraints: Allowable values are: `deleting`, `failed`, `queued`, `running`, `succeeded`. The value must match regular expression `/^[a-z][a-z0-9]*(_[a-z0-9]+)*$/`.
+	* `status_reasons` - (List) The reasons for the current status (if any).
+	  * Constraints: The minimum length is `0` items.
+	Nested schema for **status_reasons**:
+		* `code` - (String) A snake case string succinctly identifying the status reason.The enumerated values for this property may[expand](https://cloud.ibm.com/apidocs/vpc#property-value-expansion) in the future.
+		  * Constraints: Allowable values are: `cannot_access_storage_bucket`, `internal_error`. The value must match regular expression `/^[a-z][a-z0-9]*(_[a-z0-9]+)*$/`.
+		* `message` - (String) An explanation of the status reason.
+		  * Constraints: The maximum length is `512` characters. The minimum length is `1` character. The value must match regular expression `/^[ -~\\n\\r\\t]*$/`.
+		* `more_info` - (String) A link to documentation about this status reason.
+		  * Constraints: The maximum length is `8000` characters. The minimum length is `10` characters. The value must match regular expression `/^http(s)?:\/\/([^\/?#]*)([^?#]*)(\\?([^#]*))?(#(.*))?$/`.
+	* `storage_bucket` - (List) The Cloud Object Storage bucket of the exported dynamic route server route report object.
+	Nested schema for **storage_bucket**:
+		* `crn` - (String) The CRN of this Cloud Object Storage bucket.
+		  * Constraints: The maximum length is `512` characters. The minimum length is `17` characters. The value must match regular expression `/^crn:v[0-9]+:[a-z0-9-]+:[a-z0-9-]+:[a-z0-9-]+:[a-z0-9-]*:([a-z]\/[a-z0-9-]+)?:[a-z0-9-]*:[a-z0-9-]*:[a-zA-Z0-9-_\\.\/]*$/`.
+		* `deleted` - (List) If present, this property indicates the referenced resource has been deleted, and providessome supplementary information.
+		Nested schema for **deleted**:
+			* `more_info` - (String) A link to documentation about deleted resources.
+			  * Constraints: The maximum length is `8000` characters. The minimum length is `10` characters. The value must match regular expression `/^http(s)?:\/\/([^\/?#]*)([^?#]*)(\\?([^#]*))?(#(.*))?$/`.
+		* `name` - (String) The globally unique name of this Cloud Object Storage bucket.
+		  * Constraints: The maximum length is `63` characters. The minimum length is `3` characters. The value must match regular expression `/^-?([a-z]|[a-z][-a-z0-9]*[a-z0-9]|[0-9][-a-z0-9]*([a-z]|[-a-z][-a-z0-9]*[a-z0-9]))$/`.
+		* `resource_type` - (String) The resource type.
+		  * Constraints: Allowable values are: `cos_bucket`. The value must match regular expression `/^[a-z][a-z0-9]*(_[a-z0-9]+)*$/`.
+	* `storage_href` - (String) The Cloud Object Storage location of the exported dynamic route server route report object. The object at this location will not exist until the job completes successfully. The exported image object is not managed by the IBM VPC service, and may be removed or replaced with a different object by any user or service with IAM authorization to the storage bucket.
+	  * Constraints: The maximum length is `8000` characters. The minimum length is `10` characters. The value must match regular expression `/^cos:\/\/([^\/?#]*)([^?#]*)$/`.
+	* `storage_object` - (List) The Cloud Object Storage object for the exported image. This object will not exist untilthe job completes successfully. The exported dynamic route server route report object isnot managed by the IBM VPC service, and may be removed or replaced with a differentobject by any user or service with IAM authorization to the storage bucket.
+	Nested schema for **storage_object**:
+		* `name` - (String) The name of this Cloud Object Storage object. Names are unique within a Cloud Object Storage bucket.
+		  * Constraints: The maximum length is `1024` characters. The minimum length is `1` character. The value must match regular expression `/^[a-zA-Z0-9\/!\\-_.*'\\(\\)]*$/`.
+
