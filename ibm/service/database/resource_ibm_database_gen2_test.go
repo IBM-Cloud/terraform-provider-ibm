@@ -306,12 +306,12 @@ func TestGen2BackendCreateWithAdminPassword(t *testing.T) {
 	}{
 		{
 			name:          "valid_admin_password",
-			password:      "SecurePassword123!",
+			password:      "test-admin-password",
 			expectedError: false,
 		},
 		{
 			name:          "password_with_special_chars",
-			password:      "P@ssw0rd!#$%",
+			password:      "test-password-special-1",
 			expectedError: false,
 		},
 	}
@@ -345,7 +345,7 @@ func TestGen2BackendUnsupportedFeatures(t *testing.T) {
 			value: []map[string]interface{}{
 				{
 					"name":     "testuser",
-					"password": "SecurePass123!",
+					"password": "test-user-password-1",
 				},
 			},
 			expectedWarn: true,
@@ -401,7 +401,7 @@ func TestGen2BackendWarnUnsupported(t *testing.T) {
 				"name":     "test-db",
 				"location": "us-south",
 				"users": []map[string]interface{}{
-					{"name": "test", "password": "pass"},
+					{"name": "test", "password": "test-password"},
 				},
 			},
 			expectedDiagCount: 1,
@@ -415,7 +415,7 @@ func TestGen2BackendWarnUnsupported(t *testing.T) {
 				"name":     "test-db",
 				"location": "us-south",
 				"users": []map[string]interface{}{
-					{"name": "test", "password": "pass"},
+					{"name": "test", "password": "test-password"},
 				},
 				"auto_scaling": map[string]interface{}{
 					"disk": map[string]interface{}{"capacity_enabled": true},
@@ -460,7 +460,7 @@ func TestGen2BackendValidateUnsupportedAttrsDiff(t *testing.T) {
 			name: "unsupported_users_attr",
 			changes: map[string]interface{}{
 				"users": []map[string]interface{}{
-					{"name": "test", "password": "pass"},
+					{"name": "test", "password": "test-password"},
 				},
 			},
 			expectedError: true,
@@ -567,7 +567,7 @@ func TestGen2BackendUpdate(t *testing.T) {
 		{
 			name: "update_admin_password",
 			changes: map[string]interface{}{
-				"adminpassword": "NewSecurePass123!",
+				"adminpassword": "test-updated-admin-password",
 			},
 			expectedError: false,
 		},
@@ -609,7 +609,7 @@ func TestGen2BackendUpdate(t *testing.T) {
 				"users": []map[string]interface{}{
 					{
 						"name":     "newuser",
-						"password": "NewUserPass123!",
+						"password": "test-updated-user-password",
 					},
 				},
 			},
@@ -1560,19 +1560,19 @@ func TestGen2AdminPasswordIgnored(t *testing.T) {
 	}{
 		{
 			name:             "admin_password_create_ignored",
-			adminPassword:    "SecurePassword123!",
+			adminPassword:    "test-admin-password",
 			operation:        "CREATE",
 			expectedBehavior: "Accepted but silently ignored - not validated, not sent to API, not configured",
 		},
 		{
 			name:             "admin_password_update_ignored",
-			adminPassword:    "NewPassword456!",
+			adminPassword:    "test-updated-admin-password",
 			operation:        "UPDATE",
 			expectedBehavior: "Accepted but silently ignored - not validated, not sent to API, not configured",
 		},
 		{
 			name:             "admin_password_read_not_returned",
-			adminPassword:    "SecurePassword123!",
+			adminPassword:    "test-admin-password",
 			operation:        "READ",
 			expectedBehavior: "Not returned from API",
 		},
