@@ -291,6 +291,8 @@ func TestIsGen2Plan(t *testing.T) {
 
 // TestClearGen2UnsupportedAttributes tests the clearGen2UnsupportedAttributes function
 func TestClearGen2UnsupportedAttributes(t *testing.T) {
+	adminPasswordValue := "example-admin-value"
+
 	d := schema.TestResourceDataRaw(t, map[string]*schema.Schema{
 		"adminuser": {
 			Type:     schema.TypeString,
@@ -343,7 +345,7 @@ func TestClearGen2UnsupportedAttributes(t *testing.T) {
 		},
 	}, map[string]interface{}{
 		"adminuser":            "admin",
-		"adminpassword":        "test-admin-password",
+		"adminpassword":        adminPasswordValue,
 		"auto_scaling":         []interface{}{map[string]interface{}{"enabled": true}},
 		"allowlist":            []interface{}{map[string]interface{}{"address": "1.2.3.4"}},
 		"users":                []interface{}{map[string]interface{}{"name": "user1"}},

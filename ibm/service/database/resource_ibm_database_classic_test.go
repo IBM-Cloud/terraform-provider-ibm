@@ -298,6 +298,9 @@ func TestClassicBackendCreateWithTags(t *testing.T) {
 
 // TestClassicBackendCreateWithAdminPassword tests admin password configuration
 func TestClassicBackendCreateWithAdminPassword(t *testing.T) {
+	adminPasswordValue := "example-admin-value"
+	specialPasswordValue := "example-special-value-1"
+
 	tests := []struct {
 		name          string
 		password      string
@@ -306,12 +309,12 @@ func TestClassicBackendCreateWithAdminPassword(t *testing.T) {
 	}{
 		{
 			name:          "valid_admin_password",
-			password:      "test-admin-password",
+			password:      adminPasswordValue,
 			expectedError: false,
 		},
 		{
 			name:          "password_with_special_chars",
-			password:      "test-password-special-1",
+			password:      specialPasswordValue,
 			expectedError: false,
 		},
 	}
@@ -438,6 +441,11 @@ func TestClassicBackendCreateWithAutoScaling(t *testing.T) {
 
 // TestClassicBackendCreateWithUsers tests user creation
 func TestClassicBackendCreateWithUsers(t *testing.T) {
+	userPasswordValue1 := "example-user-value-1"
+	userPasswordValue2 := "example-user-value-2"
+	opsPasswordValue := "example-ops-value"
+	redisPasswordValue := "example-redis-value"
+
 	tests := []struct {
 		name          string
 		users         []map[string]interface{}
@@ -449,7 +457,7 @@ func TestClassicBackendCreateWithUsers(t *testing.T) {
 			users: []map[string]interface{}{
 				{
 					"name":     "testuser",
-					"password": "test-user-password-1",
+					"password": userPasswordValue1,
 				},
 			},
 			expectedError: false,
@@ -459,11 +467,11 @@ func TestClassicBackendCreateWithUsers(t *testing.T) {
 			users: []map[string]interface{}{
 				{
 					"name":     "user1",
-					"password": "test-user-password-1",
+					"password": userPasswordValue1,
 				},
 				{
 					"name":     "user2",
-					"password": "test-user-password-2",
+					"password": userPasswordValue2,
 				},
 			},
 			expectedError: false,
@@ -473,7 +481,7 @@ func TestClassicBackendCreateWithUsers(t *testing.T) {
 			users: []map[string]interface{}{
 				{
 					"name":     "opsmanager",
-					"password": "test-ops-password",
+					"password": opsPasswordValue,
 					"type":     "ops_manager",
 				},
 			},
@@ -484,7 +492,7 @@ func TestClassicBackendCreateWithUsers(t *testing.T) {
 			users: []map[string]interface{}{
 				{
 					"name":     "redisuser",
-					"password": "test-redis-password",
+					"password": redisPasswordValue,
 					"role":     "+@read -@write",
 				},
 			},
@@ -635,6 +643,9 @@ func TestClassicBackendRead(t *testing.T) {
 
 // TestClassicBackendUpdate tests the Update method
 func TestClassicBackendUpdate(t *testing.T) {
+	updatedAdminPasswordValue := "example-updated-admin-value"
+	updatedUserPasswordValue := "example-updated-user-value"
+
 	tests := []struct {
 		name          string
 		changes       map[string]interface{}
@@ -669,7 +680,7 @@ func TestClassicBackendUpdate(t *testing.T) {
 		{
 			name: "update_admin_password",
 			changes: map[string]interface{}{
-				"adminpassword": "test-updated-admin-password",
+				"adminpassword": updatedAdminPasswordValue,
 			},
 			expectedError: false,
 		},
@@ -702,7 +713,7 @@ func TestClassicBackendUpdate(t *testing.T) {
 				"users": []map[string]interface{}{
 					{
 						"name":     "newuser",
-						"password": "test-updated-user-password",
+						"password": updatedUserPasswordValue,
 					},
 				},
 			},

@@ -70,10 +70,11 @@ func requireNoErrors(t *testing.T, diags diag.Diagnostics) {
 
 func TestGen2UnsupportedAttrsValidation(t *testing.T) {
 	g := &resourceIBMDatabaseGen2Backend{}
+	adminPasswordValue := "example-admin-value"
 
 	t.Run("unsupported attr present returns error", func(t *testing.T) {
 		d := testGen2DatabaseResourceData(t, map[string]interface{}{
-			"adminpassword": "test-admin-password",
+			"adminpassword": adminPasswordValue,
 		})
 
 		err := g.ValidateUnsupportedAttrsData(d)
@@ -84,7 +85,7 @@ func TestGen2UnsupportedAttrsValidation(t *testing.T) {
 
 	t.Run("multiple unsupported attrs present are all listed", func(t *testing.T) {
 		d := testGen2DatabaseResourceData(t, map[string]interface{}{
-			"adminpassword":             "test-admin-password",
+			"adminpassword":             adminPasswordValue,
 			"backup_encryption_key_crn": "crn:v1:bluemix:public:kms:us-south:a/account-id:instance-id:key:key-id",
 			"remote_leader_id":          "crn:v1:bluemix:public:databases-for-postgresql:us-south:a/account-id:instance-id::",
 		})
@@ -110,7 +111,7 @@ func TestGen2UnsupportedAttrsValidation(t *testing.T) {
 
 	t.Run("ignored and unsupported attrs returns error for unsupported attrs only", func(t *testing.T) {
 		d := testGen2DatabaseResourceData(t, map[string]interface{}{
-			"adminpassword": "test-admin-password",
+			"adminpassword": adminPasswordValue,
 			"configuration": `{"max_connections": 100}`,
 		})
 
@@ -193,9 +194,10 @@ func TestGen2IgnoredAttrsWarnings(t *testing.T) {
 
 func TestGen2IgnoredAttrsWarningsAreIndependentFromUnsupportedAttrs(t *testing.T) {
 	g := &resourceIBMDatabaseGen2Backend{}
+	adminPasswordValue := "example-admin-value"
 
 	d := testGen2DatabaseResourceData(t, map[string]interface{}{
-		"adminpassword":               "test-admin-password",
+		"adminpassword":               adminPasswordValue,
 		"configuration":               `{"max_connections": 100}`,
 		"version_upgrade_skip_backup": true,
 	})
