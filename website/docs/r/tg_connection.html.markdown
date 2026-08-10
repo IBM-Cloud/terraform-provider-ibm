@@ -20,6 +20,16 @@ resource "ibm_tg_connection" "test_ibm_tg_connection" {
   network_id   = ibm_is_vpc.test_tg_vpc.resource_crn
 }
 
+# Connect a Dynamic Route Server to a Transit Gateway. The DRS CRN is supplied
+# by the Dynamic Route Server resource or data source used in your configuration.
+resource "ibm_tg_connection" "drs_connection" {
+  gateway      = ibm_tg_gateway.test_tg_gateway.id
+  network_type = "dynamic_route_server"
+  name         = "drs-connection"
+  network_id   = var.dynamic_route_server_crn
+  cidr         = "198.19.174.0/23"
+}
+
 # Example: Connection with default prefix filter
 resource "ibm_tg_connection" "example_with_default_filter" {
   gateway               = ibm_tg_gateway.test_tg_gateway.id
@@ -66,13 +76,13 @@ Review the argument references that you can specify for your resource.
 - `local_tunnel_ip` - (Optional, Forces new resource, String) - The local tunnel IP address. This field is required for and only applicable to type gre_tunnel connections.
 - `name` -  (Optional, String) Enter a name. If the name is not given, the default name is provided based on the network type, such as `vpc` for network type VPC and `classic` for network type classic.
 - `network_account_id` - (Optional, Forces new resource, String) The ID of the network connected account. This is used if the network is in a different account than the gateway.
-- `network_type` - (Required, Forces new resource, String) Enter the network type. Allowed values are `classic`, `directlink`, `gre_tunnel`, `unbound_gre_tunnel`,  `vpc`, `vpn_gateway`, and `power_virtual_server`.
-- `network_id` -  (Optional, Forces new resource, String) Enter the ID of the network being connected through this connection. This parameter is required for network type `vpc` and `directlink`, the CRN of the VPC or direct link gateway to be connected. This field is required to be unspecified for network type `classic`. For example, `crn:v1:bluemix:public:is:us-south:a/123456::vpc:4727d842-f94f-4a2d-824a-9bc9b02c523b`.
+- `network_type` - (Required, Forces new resource, String) Enter the network type. Allowed values are `classic`, `directlink`, `gre_tunnel`, `unbound_gre_tunnel`, `vpc`, `vpn_gateway`, `dynamic_route_server`, and `power_virtual_server`.
+- `network_id` -  (Optional, Forces new resource, String) Enter the ID of the network being connected through this connection. This parameter is required for network types `vpc`, `directlink`, `power_virtual_server`, `vpn_gateway`, and `dynamic_route_server`; use the CRN of the network or gateway to connect. This field is required to be unspecified for network type `classic`. For example, `crn:v1:bluemix:public:is:us-south:a/123456::vpc:4727d842-f94f-4a2d-824a-9bc9b02c523b`.
 - `remote_bgp_asn` - (Optional, Forces new resource, Integer) - The remote network BGP ASN (will be generated for the connection if not specified). This field only applies to network type `gre_tunnel` and `unbound_gre_tunnel` connections.
 - `remote_gateway_ip` - (Optional, Forces new resource, String) - The remote gateway IP address. This field only applies to network type `gre_tunnel` and `unbound_gre_tunnel` connections.
 - `remote_tunnel_ip` - (Optional, Forces new resource, String) - The remote tunnel IP address. This field only applies to network type `gre_tunnel` and `unbound_gre_tunnel` connections.
-- `zone` - (Optional, Forces new resource, String) - The location of connections. This field only applies to network type `gre_tunnel` and `unbound_gre_tunnel` connections and optional for network type `vpn_gateway` connections.
-- `cidr` - (Optional, String) - network_type `vpn_gateway` connections use `cidr` to specify the CIDR to use for the VPN GRE tunnels. This field is required for network type `vpn_gateway` connections.
+- `zone` - (Optional, Forces new resource, String) - The location of connections. This field only applies to network type `gre_tunnel` and `unbound_gre_tunnel` connections and is optional for network type `vpn_gateway` connections. It must be omitted for `dynamic_route_server` connections.
+- `cidr` - (Optional, Forces new resource, String) - Network types `vpn_gateway` and `dynamic_route_server` use `cidr` to specify the CIDR for their GRE tunnels. If omitted, the service uses `198.19.174.0/23`.
 - `default_prefix_filter` - (Optional, String) Specifies the default action for prefix filtering. Allowed values are `permit` or `deny`. This defines the fallback action applied to routes that do not match any configured prefix filter. When set to `permit`, unmatched routes are allowed. When set to `deny`, unmatched routes are blocked. This field cannot be used with network type `redundant_gre`.
 - `tunnels` - (Optional, List) List of GRE tunnels for a transit gateway redundant GRE tunnel connection. This field is required for 'redundant_gre' connections.
 Nested scheme for `tunnel`:
