@@ -66,6 +66,7 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/registry"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/resourcecontroller"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/resourcemanager"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/restapi"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/satellite"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/scc"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/schematics"
@@ -941,6 +942,9 @@ func Provider() *schema.Provider {
 			"ibm_cm_object":            catalogmanagement.DataSourceIBMCmObject(),
 			"ibm_cm_account":           catalogmanagement.DataSourceIBMCmAccount(),
 
+			// Generic REST API access
+			"ibm_restapi_data": restapi.DataSourceIBMRestApiData(),
+
 			// Added for Resource Tag
 			"ibm_resource_tag":   globaltagging.DataSourceIBMResourceTag(),
 			"ibm_iam_access_tag": globaltagging.DataSourceIBMIamAccessTag(),
@@ -1716,6 +1720,9 @@ func Provider() *schema.Provider {
 			"ibm_satellite_endpoint":                            satellite.ResourceIBMSatelliteEndpoint(),
 			"ibm_satellite_location_nlb_dns":                    satellite.ResourceIBMSatelliteLocationNlbDns(),
 			"ibm_satellite_cluster_worker_pool_zone_attachment": satellite.ResourceIbmSatelliteClusterWorkerPoolZoneAttachment(),
+
+			// Generic REST API access
+			"ibm_restapi_request": restapi.ResourceIBMRestApiRequest(),
 
 			// Added for Resource Tag
 			"ibm_resource_tag": globaltagging.ResourceIBMResourceTag(),

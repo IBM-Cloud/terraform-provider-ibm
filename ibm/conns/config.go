@@ -245,6 +245,10 @@ type Session struct {
 // ClientSession ...
 type ClientSession interface {
 	AppIDAPI() (*appid.AppIDManagementV4, error)
+	// Authenticator returns the shared authenticator built from the provider
+	// credentials. It is used by resources that talk to an IBM Cloud API
+	// directly instead of through a generated SDK client.
+	Authenticator() (core.Authenticator, error)
 	BluemixSession() (*bxsession.Session, error)
 	BluemixAcccountAPI() (accountv2.AccountServiceAPI, error)
 	BluemixAcccountv1API() (accountv1.AccountServiceAPI, error)
