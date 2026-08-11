@@ -89,6 +89,7 @@ var CISRulesetsRulesObject = &schema.Resource{
 											CISRulesetOverridesAction: {
 												Type:        schema.TypeString,
 												Optional:    true,
+												Computed:    true,
 												Description: "Action to perform",
 											},
 											CISRulesetOverridesSensitivityLevel: {
@@ -143,17 +144,20 @@ var CISRulesetsRulesObject = &schema.Resource{
 					CISRuleset: {
 						Type:        schema.TypeString,
 						Optional:    true,
+						Computed:    true,
 						Description: "Ruleset of the rule",
 					},
 					CISRulesetsRulePhases: {
 						Type:        schema.TypeList,
 						Optional:    true,
+						Computed:    true,
 						Description: "Phases of the rule",
 						Elem:        &schema.Schema{Type: schema.TypeString},
 					},
 					CISRulesetsRuleProducts: {
 						Type:        schema.TypeList,
 						Optional:    true,
+						Computed:    true,
 						Description: "Products of the rule",
 						Elem:        &schema.Schema{Type: schema.TypeString},
 					},
