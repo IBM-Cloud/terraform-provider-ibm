@@ -187,7 +187,7 @@ func (g *resourceIBMDatabaseGen2Backend) getResourceControllerClient(meta interf
 func (g *resourceIBMDatabaseGen2Backend) Create(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	warnings := g.WarnIgnoredAttrs(d)
 
-	instance, err := g.createResourceInstance(d, meta)
+	instance, err := g.createResourceInstance(ctx, d, meta)
 	if err != nil {
 		return appendGen2DiagnosticsErrorsThenWarnings(diag.FromErr(err), warnings)
 	}
@@ -209,7 +209,7 @@ func (g *resourceIBMDatabaseGen2Backend) Create(ctx context.Context, d *schema.R
 // createResourceInstance handles the initial resource instance creation.
 // It retrieves service and plan information, builds Gen2 parameters, includes tags, and creates the instance.
 // Everything is done in a single API call to avoid unnecessary resource provisioning/deprovisioning.
-func (g *resourceIBMDatabaseGen2Backend) createResourceInstance(d *schema.ResourceData, meta interface{}) (*rc.ResourceInstance, error) {
+func (g *resourceIBMDatabaseGen2Backend) createResourceInstance(ctx context.Context, d *schema.ResourceData, meta interface{}) (*rc.ResourceInstance, error) {
 	clientSession := meta.(conns.ClientSession)
 	rsConClient, err := g.getResourceControllerClient(meta)
 	if err != nil {
@@ -253,7 +253,7 @@ func (g *resourceIBMDatabaseGen2Backend) createResourceInstance(d *schema.Resour
 	}
 
 	// Create the instance with retry logic
-	instance, response, err := g.createInstanceWithRetry(rsConClient, &rsInst)
+	instance, response, err := g.createInstanceWithRetry(ctx, rsConClient, &rsInst)
 	if err != nil {
 		return nil, fmt.Errorf("error creating database instance: %w (response: %v)", err, response)
 	}
@@ -494,11 +494,110 @@ func (g *resourceIBMDatabaseGen2Backend) addEncryptionConfig(d *schema.ResourceD
 	}
 }
 
-// createInstanceWithRetry creates an instance.
-// Note: Retry logic can be added in the future if needed.
-func (g *resourceIBMDatabaseGen2Backend) createInstanceWithRetry(client *rc.ResourceControllerV2, opts *rc.CreateResourceInstanceOptions) (*rc.ResourceInstance, *core.DetailedResponse, error) {
-	instance, response, err := client.CreateResourceInstance(opts)
-	return instance, response, err
+// createResourceInstanceFunc is the provisioning call used by createInstanceWithS2SRetry.
+// Declared as a function type so the retry loop can be unit tested without a live client.
+type createResourceInstanceFunc func(*rc.CreateResourceInstanceOptions) (*rc.ResourceInstance, *core.DetailedResponse, error)
+
+// s2sAuthorizationErrorPatterns are the (lowercased) markers the provisioning API uses when it
+// cannot reach the customer-managed encryption key because the service-to-service authorization
+// between the database service and the key management service is not visible to it yet.
+var s2sAuthorizationErrorPatterns = []string{
+	"missing or mis-configured s2s authorization policy",
+	"could not configure access to the encryption key",
+}
+
+const (
+	// s2sAuthRetryInitialDelay is the wait before the first re-attempt.
+	s2sAuthRetryInitialDelay = 15 * time.Second
+	// s2sAuthRetryMaxDelay caps the exponential backoff between re-attempts.
+	s2sAuthRetryMaxDelay = 2 * time.Minute
+	// s2sAuthRetryBudget bounds the total time spent re-attempting when the create timeout
+	// does not supply a deadline of its own.
+	s2sAuthRetryBudget = 10 * time.Minute
+)
+
+// s2sAuthRetrySleep is overridden in tests so the retry loop does not sleep for real.
+var s2sAuthRetrySleep = time.Sleep
+
+// isS2SAuthorizationError reports whether a failed provisioning attempt was rejected because the
+// service-to-service authorization for the encryption key was not found. The message can arrive
+// either on the error or only in the raw response body, so both are inspected.
+func isS2SAuthorizationError(err error, response *core.DetailedResponse) bool {
+	if err == nil {
+		return false
+	}
+
+	haystack := strings.ToLower(err.Error())
+	if response != nil {
+		haystack += " " + strings.ToLower(fmt.Sprint(response.Result))
+		haystack += " " + strings.ToLower(response.String())
+	}
+
+	for _, pattern := range s2sAuthorizationErrorPatterns {
+		if strings.Contains(haystack, pattern) {
+			return true
+		}
+	}
+	return false
+}
+
+// createInstanceWithS2SRetry provisions the instance, re-attempting while the provisioning API
+// rejects the request for a missing service-to-service authorization policy.
+//
+// An authorization policy is usable by the database service only once IAM has propagated it. A
+// policy scoped with source_resource_group_id carries an extra propagation step, so a database
+// created in the same apply can race ahead of it and be rejected even though the policy exists
+// and is correct. Re-attempting absorbs that window; a genuinely absent or mis-scoped policy
+// still fails, just after the budget is exhausted.
+func createInstanceWithS2SRetry(ctx context.Context, create createResourceInstanceFunc, opts *rc.CreateResourceInstanceOptions) (*rc.ResourceInstance, *core.DetailedResponse, error) {
+	deadline, ok := ctx.Deadline()
+	if !ok {
+		deadline = time.Now().Add(s2sAuthRetryBudget)
+	}
+
+	delay := s2sAuthRetryInitialDelay
+	attempts := 0
+
+	for {
+		attempts++
+		instance, response, err := create(opts)
+		if err == nil || !isS2SAuthorizationError(err, response) {
+			return instance, response, err
+		}
+
+		if ctxErr := ctx.Err(); ctxErr != nil {
+			return instance, response, s2sAuthorizationRetryError(err, attempts)
+		}
+
+		if time.Now().Add(delay).After(deadline) {
+			return instance, response, s2sAuthorizationRetryError(err, attempts)
+		}
+
+		log.Printf("[INFO] Service-to-service authorization for the encryption key is not visible yet "+
+			"(attempt %d); retrying database creation in %s", attempts, delay)
+		s2sAuthRetrySleep(delay)
+
+		delay *= 2
+		if delay > s2sAuthRetryMaxDelay {
+			delay = s2sAuthRetryMaxDelay
+		}
+	}
+}
+
+// s2sAuthorizationRetryError wraps the final rejection with guidance, so a user who really is
+// missing the policy is told what to create rather than only that provisioning failed.
+func s2sAuthorizationRetryError(err error, attempts int) error {
+	return fmt.Errorf("the database service was not authorized to use the encryption key after %d attempt(s): %w\n"+
+		"Grant the database service the \"Reader\" and \"Authorization Delegator\" roles on the key management "+
+		"service through an ibm_iam_authorization_policy resource. If the policy is defined in the same "+
+		"configuration, scope it so it covers this instance's resource group and add an explicit depends_on "+
+		"from this database to the policy so it is created first", attempts, err)
+}
+
+// createInstanceWithRetry creates an instance, retrying while the encryption key authorization
+// has not propagated yet.
+func (g *resourceIBMDatabaseGen2Backend) createInstanceWithRetry(ctx context.Context, client *rc.ResourceControllerV2, opts *rc.CreateResourceInstanceOptions) (*rc.ResourceInstance, *core.DetailedResponse, error) {
+	return createInstanceWithS2SRetry(ctx, client.CreateResourceInstance, opts)
 }
 
 // configureInstance applies post-creation configuration to the instance.

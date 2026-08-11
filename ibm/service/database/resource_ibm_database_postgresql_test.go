@@ -909,3 +909,116 @@ func testAccCheckIBMDatabaseInstancePostgresGen2WithFlexFlavor(databaseResourceG
 	}
 	`, databaseResourceGroup, name)
 }
+
+// TestAccIBMDatabaseInstancePostgresGen2KeyProtectResourceGroupScopedS2S provisions a Gen2
+// instance encrypted with a customer-managed key whose service-to-service authorization is
+// scoped to the instance's resource group. The authorization policy is created in the same
+// apply, so this exercises the propagation window in which the provisioning API reports a
+// missing S2S authorization policy and the provider must re-attempt instead of failing.
+func TestAccIBMDatabaseInstancePostgresGen2KeyProtectResourceGroupScopedS2S(t *testing.T) {
+	t.Parallel()
+	databaseResourceGroup := "default"
+	var databaseInstanceOne string
+	rnd := fmt.Sprintf("tf-Pgress-%d", acctest.RandIntRange(10, 100))
+	testName := rnd
+	name := "ibm_database." + testName
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMDatabaseInstanceDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMDatabaseInstancePostgresGen2KeyProtectResourceGroupScopedS2S(databaseResourceGroup, testName),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMDatabaseInstanceExists(name, &databaseInstanceOne),
+					resource.TestCheckResourceAttr(name, "name", testName),
+					resource.TestCheckResourceAttr(name, "service", "databases-for-postgresql"),
+					resource.TestCheckResourceAttr(name, "plan", "standard-gen2"),
+					resource.TestCheckResourceAttrSet(name, "key_protect_key"),
+					resource.TestCheckResourceAttrPair(
+						name, "resource_group_id",
+						"ibm_iam_authorization_policy.kms_policy", "source_resource_group_id"),
+				),
+			},
+		},
+	})
+}
+
+func testAccCheckIBMDatabaseInstancePostgresGen2KeyProtectResourceGroupScopedS2S(databaseResourceGroup string, name string) string {
+	return fmt.Sprintf(`
+	data "ibm_resource_group" "test_acc" {
+		name = "%[1]s"
+	}
+
+	resource "ibm_resource_instance" "kms_%[2]s" {
+		name              = "kms-%[2]s"
+		service           = "kms"
+		plan              = "tiered-pricing"
+		location          = "%[3]s"
+		resource_group_id = data.ibm_resource_group.test_acc.id
+	}
+
+	resource "ibm_kms_key" "key_%[2]s" {
+		instance_id  = ibm_resource_instance.kms_%[2]s.guid
+		key_name     = "key-%[2]s"
+		standard_key = false
+		force_delete = true
+	}
+
+	resource "ibm_iam_authorization_policy" "kms_policy" {
+		source_service_name      = "databases-for-postgresql"
+		source_resource_group_id = data.ibm_resource_group.test_acc.id
+		roles                    = ["Reader", "Authorization Delegator"]
+		description              = "Allow the database service to read the disk encryption key"
+
+		resource_attributes {
+			name     = "serviceName"
+			operator = "stringEquals"
+			value    = "kms"
+		}
+		resource_attributes {
+			name     = "serviceInstance"
+			operator = "stringEquals"
+			value    = ibm_resource_instance.kms_%[2]s.guid
+		}
+		resource_attributes {
+			name     = "resourceType"
+			operator = "stringEquals"
+			value    = "key"
+		}
+		resource_attributes {
+			name     = "resource"
+			operator = "stringEquals"
+			value    = ibm_kms_key.key_%[2]s.key_id
+		}
+
+		lifecycle {
+			create_before_destroy = true
+		}
+	}
+
+	resource "ibm_database" "%[2]s" {
+		depends_on        = [ibm_iam_authorization_policy.kms_policy]
+		resource_group_id = data.ibm_resource_group.test_acc.id
+		name              = "%[2]s"
+		service           = "databases-for-postgresql"
+		plan              = "standard-gen2"
+		location          = "%[3]s"
+		key_protect_key   = ibm_kms_key.key_%[2]s.crn
+		group {
+			group_id = "member"
+			members {
+				allocation_count = 2
+			}
+			host_flavor {
+				id = "bx3d.4x20"
+			}
+			disk {
+				allocation_mb = 10240
+			}
+		}
+		tags = ["one:two"]
+	}
+	`, databaseResourceGroup, name, acc.Region())
+}
