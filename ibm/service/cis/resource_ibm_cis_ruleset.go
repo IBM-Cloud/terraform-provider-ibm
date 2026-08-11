@@ -60,7 +60,8 @@ var CISResourceResponseObject = &schema.Resource{
 									Description: "ID of the managed ruleset to execute",
 								},
 								CISRulesetOverrides: {
-									Type:        schema.TypeSet,
+									Type:        schema.TypeList,
+									MaxItems:    1,
 									Optional:    true,
 									Description: "Override options",
 									Elem: &schema.Resource{
@@ -68,11 +69,13 @@ var CISResourceResponseObject = &schema.Resource{
 											CISRulesetOverridesAction: {
 												Type:        schema.TypeString,
 												Optional:    true,
+												Computed:    true,
 												Description: "Action to perform",
 											},
 											CISRulesetOverridesEnabled: {
 												Type:        schema.TypeBool,
 												Optional:    true,
+												Computed:    true,
 												Description: "Enable/Disable rule",
 											},
 											// CISRulesetOverridesSensitivityLevel: {
@@ -104,11 +107,13 @@ var CISResourceResponseObject = &schema.Resource{
 														CISRulesetOverridesSensitivityLevel: {
 															Type:        schema.TypeString,
 															Optional:    true,
+															Computed:    true,
 															Description: "Sensitivity level",
 														},
 														CISRulesetOverridesScoreThreshold: {
 															Type:        schema.TypeInt,
 															Optional:    true,
+															Computed:    true,
 															Description: "Score Threshold",
 														},
 													},
@@ -133,6 +138,7 @@ var CISResourceResponseObject = &schema.Resource{
 														CISRulesetOverridesAction: {
 															Type:        schema.TypeString,
 															Optional:    true,
+															Computed:    true,
 															Description: "Action to perform",
 														},
 													},
@@ -165,7 +171,8 @@ var CISResourceResponseObject = &schema.Resource{
 									Elem:        &schema.Schema{Type: schema.TypeString},
 								},
 								CISRulesetsRuleActionParametersResponse: {
-									Type:        schema.TypeSet,
+									Type:        schema.TypeList,
+									MaxItems:    1,
 									Optional:    true,
 									Description: "Action parameters response of the rulesets rule",
 									Elem: &schema.Resource{
@@ -209,6 +216,7 @@ var CISResourceResponseObject = &schema.Resource{
 					CISRulesetsRuleRef: {
 						Type:        schema.TypeString,
 						Optional:    true,
+						Computed:    true,
 						Description: "Reference of the rulesets rule",
 					},
 					CISRulesetsRulePosition: {
@@ -574,13 +582,13 @@ func expandCISRulesetsRulesActionParameters(obj interface{}) rulesetsv1.ActionPa
 	finalResponse := make([]rulesetsv1.ActionParameters, 0)
 
 	overrideObj := rulesetsv1.Overrides{}
-	if len(actionParameterObj[CISRulesetOverrides].(*schema.Set).List()) != 0 {
+	if len(actionParameterObj[CISRulesetOverrides].([]interface{})) != 0 {
 		overrideObj = expandCISRulesetsRulesActionParametersOverrides(actionParameterObj[CISRulesetOverrides])
 		actionParameterRespObj.Overrides = &overrideObj
 	}
 
 	resObj := rulesetsv1.ActionParametersResponse{}
-	if len(actionParameterObj[CISRulesetsRuleActionParametersResponse].(*schema.Set).List()) != 0 {
+	if len(actionParameterObj[CISRulesetsRuleActionParametersResponse].([]interface{})) != 0 {
 		resObj = expandCISRulesetsRulesActionParametersResponse(actionParameterObj[CISRulesetsRuleActionParametersResponse])
 		actionParameterRespObj.Response = &resObj
 	}
@@ -591,7 +599,7 @@ func expandCISRulesetsRulesActionParameters(obj interface{}) rulesetsv1.ActionPa
 }
 
 func expandCISRulesetsRulesActionParametersResponse(obj interface{}) rulesetsv1.ActionParametersResponse {
-	response := obj.(*schema.Set).List()[0].(map[string]interface{})
+	response := obj.([]interface{})[0].(map[string]interface{})
 	content := response[CISRulesetsRuleActionParametersResponseContent].(string)
 	contentType := response[CISRulesetsRuleActionParametersResponseContentType].(string)
 	statusCode := int64(response[cisPageRuleActionsValueStatusCode].(int))
@@ -607,7 +615,7 @@ func expandCISRulesetsRulesActionParametersResponse(obj interface{}) rulesetsv1.
 
 func expandCISRulesetsRulesActionParametersOverrides(obj interface{}) rulesetsv1.Overrides {
 
-	overrideObj := obj.(*schema.Set).List()[0].(map[string]interface{})
+	overrideObj := obj.([]interface{})[0].(map[string]interface{})
 	actionOverride := overrideObj[CISRulesetOverridesAction].(string)
 	enabledOverride := overrideObj[CISRulesetOverridesEnabled].(bool)
 

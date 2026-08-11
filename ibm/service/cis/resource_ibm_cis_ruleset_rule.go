@@ -25,6 +25,7 @@ var CISRulesetsRulesObject = &schema.Resource{
 		CISRulesetsRuleVersion: {
 			Type:        schema.TypeString,
 			Optional:    true,
+			Computed:    true,
 			Description: "Version of the rulesets rule",
 		},
 		CISRulesetsRuleAction: {
@@ -33,7 +34,8 @@ var CISRulesetsRulesObject = &schema.Resource{
 			Description: "Action of the rulesets rule",
 		},
 		CISRulesetsRuleActionParameters: {
-			Type:        schema.TypeSet,
+			Type:        schema.TypeList,
+			MaxItems:    1,
 			Optional:    true,
 			Description: "Action parameters of the rulesets rule",
 			Elem: &schema.Resource{
@@ -45,7 +47,8 @@ var CISRulesetsRulesObject = &schema.Resource{
 						Computed:    true,
 					},
 					CISRulesetOverrides: {
-						Type:        schema.TypeSet,
+						Type:        schema.TypeList,
+						MaxItems:    1,
 						Optional:    true,
 						Description: "Override options",
 						Elem: &schema.Resource{
@@ -53,11 +56,13 @@ var CISRulesetsRulesObject = &schema.Resource{
 								CISRulesetOverridesAction: {
 									Type:        schema.TypeString,
 									Optional:    true,
+									Computed:    true,
 									Description: "Action to perform",
 								},
 								CISRulesetOverridesEnabled: {
 									Type:        schema.TypeBool,
 									Optional:    true,
+									Computed:    true,
 									Description: "Enable/Disable rule",
 								},
 								// CISRulesetOverridesSensitivityLevel: {
@@ -89,11 +94,13 @@ var CISRulesetsRulesObject = &schema.Resource{
 											CISRulesetOverridesSensitivityLevel: {
 												Type:        schema.TypeString,
 												Optional:    true,
+												Computed:    true,
 												Description: "Sensitivity level",
 											},
 											CISRulesetOverridesScoreThreshold: {
 												Type:        schema.TypeInt,
 												Optional:    true,
+												Computed:    true,
 												Description: "Score threshold for the override rule",
 											},
 										},
@@ -118,6 +125,7 @@ var CISRulesetsRulesObject = &schema.Resource{
 											CISRulesetOverridesAction: {
 												Type:        schema.TypeString,
 												Optional:    true,
+												Computed:    true,
 												Description: "Action to perform",
 											},
 										},
@@ -129,6 +137,7 @@ var CISRulesetsRulesObject = &schema.Resource{
 					CISRulesetsVersion: {
 						Type:        schema.TypeString,
 						Optional:    true,
+						Computed:    true,
 						Description: "Version of the ruleset",
 					},
 					CISRuleset: {
@@ -151,11 +160,13 @@ var CISRulesetsRulesObject = &schema.Resource{
 					CISRulesetList: {
 						Type:        schema.TypeList,
 						Optional:    true,
+						Computed:    true,
 						Description: "List of ruleset IDs of the ruleset to apply action to",
 						Elem:        &schema.Schema{Type: schema.TypeString},
 					},
 					CISRulesetsRuleActionParametersResponse: {
-						Type:        schema.TypeSet,
+						Type:        schema.TypeList,
+						MaxItems:    1,
 						Optional:    true,
 						Description: "Action parameters response of the rulesets rule",
 						Elem: &schema.Resource{
@@ -206,6 +217,7 @@ var CISRulesetsRulesObject = &schema.Resource{
 		CISRulesetsRuleActionCategories: {
 			Type:        schema.TypeList,
 			Optional:    true,
+			Computed:    true,
 			Description: "Categories of the rulesets rule",
 			Elem:        &schema.Schema{Type: schema.TypeString},
 		},
@@ -227,11 +239,13 @@ var CISRulesetsRulesObject = &schema.Resource{
 		CISRulesetsRuleRef: {
 			Type:        schema.TypeString,
 			Optional:    true,
+			Computed:    true,
 			Description: "Reference of the rulesets rule",
 		},
 		CISRulesetsRuleLogging: {
 			Type:        schema.TypeMap,
 			Optional:    true,
+			Computed:    true,
 			Description: "Logging of the rulesets rule",
 			Elem:        &schema.Schema{Type: schema.TypeBool},
 		},
@@ -275,6 +289,7 @@ var CISRulesetsRulesObject = &schema.Resource{
 					CISRulesetsRuleRateLimitCountingExpression: {
 						Type:        schema.TypeString,
 						Optional:    true,
+						Computed:    true,
 						Description: "Counting expression of the ratelimit on rulesets rule.",
 					},
 					CISRulesetsRuleRateLimitMitigationTimeout: {
@@ -298,6 +313,7 @@ var CISRulesetsRulesObject = &schema.Resource{
 		CISRulesetsRuleLastUpdatedAt: {
 			Type:        schema.TypeString,
 			Optional:    true,
+			Computed:    true,
 			Description: "Rulesets rule last updated at",
 		},
 	},
@@ -401,7 +417,7 @@ func ResourceIBMCISRulesetRuleCreate(d *schema.ResourceData, meta interface{}) e
 		}
 
 		actionParameterObj := rulesetsv1.ActionParameters{}
-		if len(rulesObject[CISRulesetsRuleActionParameters].(*schema.Set).List()) != 0 {
+		if len(rulesObject[CISRulesetsRuleActionParameters].([]interface{})) != 0 {
 			actionParameterObj = expandCISRulesetsRulesActionParameters(rulesObject[CISRulesetsRuleActionParameters])
 		}
 		opt.SetActionParameters(&actionParameterObj)
@@ -474,7 +490,7 @@ func ResourceIBMCISRulesetRuleCreate(d *schema.ResourceData, meta interface{}) e
 		opt.SetPosition(&position)
 
 		actionParameterObj := rulesetsv1.ActionParameters{}
-		if len(rulesObject[CISRulesetsRuleActionParameters].(*schema.Set).List()) != 0 {
+		if len(rulesObject[CISRulesetsRuleActionParameters].([]interface{})) != 0 {
 			actionParameterObj = expandCISRulesetsRulesActionParameters(rulesObject[CISRulesetsRuleActionParameters])
 		}
 		opt.SetActionParameters(&actionParameterObj)
@@ -547,7 +563,7 @@ func ResourceIBMCISRulesetRuleUpdate(d *schema.ResourceData, meta interface{}) e
 		rulesetsRuleObject := d.Get(CISRulesetsRule).([]interface{})[0].(map[string]interface{})
 		opt.SetDescription(rulesetsRuleObject[CISRulesetsDescription].(string))
 		opt.SetAction(rulesetsRuleObject[CISRulesetsRuleAction].(string))
-		if rulesetsRuleObject[CISRulesetsRuleActionParameters] != nil {
+		if len(rulesetsRuleObject[CISRulesetsRuleActionParameters].([]interface{})) != 0 {
 			actionParameters := expandCISRulesetsRulesActionParameters(rulesetsRuleObject[CISRulesetsRuleActionParameters])
 			opt.SetActionParameters(&actionParameters)
 		}
@@ -595,9 +611,7 @@ func ResourceIBMCISRulesetRuleUpdate(d *schema.ResourceData, meta interface{}) e
 		opt.SetExpression(rulesetsRuleObject[CISRulesetsRuleExpression].(string))
 		opt.SetRef(rulesetsRuleObject[CISRulesetsRuleRef].(string))
 
-		if v := rulesetsRuleObject[CISRulesetsRuleActionParameters]; v != nil &&
-			len(v.(*schema.Set).List()) != 0 {
-
+		if v := rulesetsRuleObject[CISRulesetsRuleActionParameters].([]interface{}); len(v) != 0 {
 			actionParameters := expandCISRulesetsRulesActionParameters(v)
 			opt.SetActionParameters(&actionParameters)
 		}
