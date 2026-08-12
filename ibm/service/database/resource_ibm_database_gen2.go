@@ -404,24 +404,18 @@ func (g *resourceIBMDatabaseGen2Backend) buildDBConfig(d *schema.ResourceData, c
 	}
 	config.Members = members
 
-	// Early return if no member group - simplifies logic below
-	if memberGroup == nil {
-		result := g.dbConfigToMap(config)
-		g.addConfigurationOverrides(d, result)
-		return result, nil
-	}
-
 	// Storage in GB (not MB!) - Gen2 expects per-member allocation
-	if memberGroup.Disk != nil {
-		storageGB := memberGroup.Disk.Allocation / mbPerGb
-		config.StorageGB = storageGB
+	if memberGroup != nil && memberGroup.Disk != nil {
+		config.StorageGB = memberGroup.Disk.Allocation / mbPerGb
 	}
 
-	// Host flavor - guard clause eliminates nested if
-	if memberGroup.HostFlavor != nil {
+	// Host flavor
+	if memberGroup != nil && memberGroup.HostFlavor != nil {
 		config.HostFlavor = memberGroup.HostFlavor.ID
 	}
 
+	// Build the result map and inject configuration overrides.
+	// addConfigurationOverrides is independent of memberGroup — called once here.
 	result := g.dbConfigToMap(config)
 	g.addConfigurationOverrides(d, result)
 	return result, nil
