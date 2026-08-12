@@ -23,6 +23,8 @@ func newDataSourceIBMDatabaseBackupGen2Backend() dataSourceIBMDatabaseBackupBack
 }
 
 func (g *dataSourceIBMDatabaseBackupGen2Backend) Read(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	// Gen2 databases use Resource Controller API, not CloudDatabasesV5
+	// Get the resource controller client to fetch instance details
 	rsConClient, err := meta.(conns.ClientSession).ResourceControllerV2API()
 	if err != nil {
 		tfErr := flex.TerraformErrorf(err, err.Error(), "(Data) ibm_database_backup", "read")
@@ -31,58 +33,71 @@ func (g *dataSourceIBMDatabaseBackupGen2Backend) Read(context context.Context, d
 	}
 
 	backupID := d.Get("backup_id").(string)
-	resourceID := "databases-independent-backups"
-	listOptions := &rc.ListResourceInstancesOptions{ResourceID: &resourceID}
 
-	var instances []rc.ResourceInstance
-	nextURL := ""
-	for {
-		if nextURL != "" {
-			listOptions.Start = &nextURL
-		}
+	// Get the instance to verify it exists and is accessible
+	instance, response, err := rsConClient.GetResourceInstance(&rc.GetResourceInstanceOptions{
+		ID: &backupID,
+	})
+	if err != nil {
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetResourceInstance failed: %s\n%s", err.Error(), response), "(Data) ibm_database_backup", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
+	}
 
-		listResponse, response, err := rsConClient.ListResourceInstances(listOptions)
-		if err != nil {
-			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("ListResourceInstances failed: %s\n%s", err.Error(), response), "(Data) ibm_database_backup", "read")
-			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
-			return tfErr.GetDiag()
-		}
+	d.SetId(backupID)
 
-		nextURL, err = getInstancesNext(listResponse.NextURL)
-		if err != nil {
-			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("ListResourceInstances failed while parsing NextURL: %s", err.Error()), "(Data) ibm_database_backup", "read")
-			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
-			return tfErr.GetDiag()
-		}
-
-		instances = append(instances, listResponse.Resources...)
-		if nextURL == "" {
-			break
+	var sourceDataServiceCRN string
+	var backupType string
+	if instance.Extensions != nil {
+		if dataservices, ok := instance.Extensions["dataservices"].(map[string]interface{}); ok {
+			if backupData, ok := dataservices["backup"].(map[string]interface{}); ok {
+				if crnVal, ok := backupData["source_data_service_crn"].(string); ok {
+					sourceDataServiceCRN = crnVal
+				}
+				if typeVal, ok := backupData["type"].(string); ok {
+					backupType = typeVal
+				}
+			}
 		}
 	}
 
-	for _, instance := range instances {
-		if instance.CRN == nil || *instance.CRN != backupID {
-			continue
-		}
-
-		d.SetId(backupID)
-		if err := d.Set("backup_id", backupID); err != nil {
-			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting backup_id: %s", err), "(Data) ibm_database_backup", "read")
-			return tfErr.GetDiag()
-		}
-		if err := d.Set("deployment_id", nil); err != nil {
-			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting deployment_id: %s", err), "(Data) ibm_database_backup", "read")
-			return tfErr.GetDiag()
-		}
-		if err := d.Set("created_at", flex.DateTimeToString(instance.CreatedAt)); err != nil {
-			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting created_at: %s", err), "(Data) ibm_database_backup", "read")
-			return tfErr.GetDiag()
-		}
-		return nil
+	backupState := ""
+	if instance.State != nil {
+		backupState = *instance.State
 	}
 
-	tfErr := flex.TerraformErrorf(fmt.Errorf("independent backup not found: %s", backupID), fmt.Sprintf("independent backup not found: %s", backupID), "(Data) ibm_database_backup", "read")
-	log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
-	return tfErr.GetDiag()
+	if err = d.Set("backup_id", backupID); err != nil {
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting backup_id: %s", err), "(Data) ibm_database_backup", "read")
+		return tfErr.GetDiag()
+	}
+	if err = d.Set("deployment_id", sourceDataServiceCRN); err != nil {
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting deployment_id: %s", err), "(Data) ibm_database_backup", "read")
+		return tfErr.GetDiag()
+	}
+	if err = d.Set("type", backupType); err != nil {
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting type: %s", err), "(Data) ibm_database_backup", "read")
+		return tfErr.GetDiag()
+	}
+	if err = d.Set("status", backupState); err != nil {
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting status: %s", err), "(Data) ibm_database_backup", "read")
+		return tfErr.GetDiag()
+	}
+	if err = d.Set("is_downloadable", false); err != nil {
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting is_downloadable: %s", err), "(Data) ibm_database_backup", "read")
+		return tfErr.GetDiag()
+	}
+	if err = d.Set("is_restorable", backupState == "active"); err != nil {
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting is_restorable: %s", err), "(Data) ibm_database_backup", "read")
+		return tfErr.GetDiag()
+	}
+	if err = d.Set("download_link", ""); err != nil {
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting download_link: %s", err), "(Data) ibm_database_backup", "read")
+		return tfErr.GetDiag()
+	}
+	if err = d.Set("created_at", flex.DateTimeToString(instance.CreatedAt)); err != nil {
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting created_at: %s", err), "(Data) ibm_database_backup", "read")
+		return tfErr.GetDiag()
+	}
+
+	return nil
 }

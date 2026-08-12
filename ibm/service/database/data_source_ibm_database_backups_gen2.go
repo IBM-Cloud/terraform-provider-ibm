@@ -23,6 +23,8 @@ func newDataSourceIBMDatabaseBackupsGen2Backend() dataSourceIBMDatabaseBackupsBa
 }
 
 func (g *dataSourceIBMDatabaseBackupsGen2Backend) Read(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	// Gen2 databases use Resource Controller API, not CloudDatabasesV5
+	// Get the resource controller client to fetch instance details
 	rsConClient, err := meta.(conns.ClientSession).ResourceControllerV2API()
 	if err != nil {
 		tfErr := flex.TerraformErrorf(err, err.Error(), "(Data) ibm_database_backups", "read")
@@ -60,7 +62,16 @@ func (g *dataSourceIBMDatabaseBackupsGen2Backend) Read(context context.Context, 
 		}
 	}
 
-	d.SetId(DataSourceIBMDatabaseBackupsID(d))
+	deploymentID := ""
+	if v, ok := d.GetOk("deployment_id"); ok {
+		deploymentID = v.(string)
+	}
+
+	if deploymentID != "" {
+		d.SetId(deploymentID)
+	} else {
+		d.SetId(DataSourceIBMDatabaseBackupsID(d))
+	}
 
 	backups := make([]map[string]interface{}, 0, len(instances))
 	for _, instance := range instances {
@@ -68,8 +79,38 @@ func (g *dataSourceIBMDatabaseBackupsGen2Backend) Read(context context.Context, 
 			continue
 		}
 
+		var sourceDataServiceCRN string
+		var backupType string
+		if instance.Extensions != nil {
+			if dataservices, ok := instance.Extensions["dataservices"].(map[string]interface{}); ok {
+				if backupData, ok := dataservices["backup"].(map[string]interface{}); ok {
+					if crnVal, ok := backupData["source_data_service_crn"].(string); ok {
+						sourceDataServiceCRN = crnVal
+					}
+					if typeVal, ok := backupData["type"].(string); ok {
+						backupType = typeVal
+					}
+				}
+			}
+		}
+
+		if deploymentID != "" && sourceDataServiceCRN != deploymentID {
+			continue
+		}
+
+		backupState := ""
+		if instance.State != nil {
+			backupState = *instance.State
+		}
+
 		backup := map[string]interface{}{
-			"backup_id": *instance.CRN,
+			"backup_id":       *instance.CRN,
+			"deployment_id":   sourceDataServiceCRN,
+			"type":            backupType,
+			"status":          backupState,
+			"is_downloadable": false,
+			"is_restorable":   backupState == "active",
+			"download_link":   "",
 		}
 		if instance.CreatedAt != nil {
 			backup["created_at"] = flex.DateTimeToString(instance.CreatedAt)
@@ -77,7 +118,7 @@ func (g *dataSourceIBMDatabaseBackupsGen2Backend) Read(context context.Context, 
 		backups = append(backups, backup)
 	}
 
-	if err := d.Set("backups", backups); err != nil {
+	if err = d.Set("backups", backups); err != nil {
 		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting backups: %s", err), "(Data) ibm_database_backups", "read")
 		return tfErr.GetDiag()
 	}
