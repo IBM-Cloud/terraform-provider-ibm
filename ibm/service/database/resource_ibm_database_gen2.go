@@ -422,7 +422,7 @@ func (g *resourceIBMDatabaseGen2Backend) buildDBConfig(d *schema.ResourceData, c
 
 	// Build the result map and inject configuration overrides.
 	// addConfigurationOverrides is independent of memberGroup — called once here.
-	result := g.dbConfigToMap(config)
+	result := g.dbConfigToMap(config, dbType)
 	g.addConfigurationOverrides(d, result)
 	return result, nil
 }
