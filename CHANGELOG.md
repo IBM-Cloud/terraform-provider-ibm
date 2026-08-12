@@ -1,3 +1,42 @@
+# 2.5.0 (August 5, 2026)
+
+## Bug Fixes
+
+### Cloud Databases
+* Adding the flex host_flavors ([6900](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6900))
+* support enterprise-sharding-gen2 plan for mongodb ([6933](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6933))
+
+### Cloud Object Storage
+* fix COS bucket replacement on import with key_protect ([6901](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6901))
+
+### Cloudant
+* Add IBM Cloudant Gen 2 plan support ([6916](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6916))
+
+### IAM
+* IAM Identity: Fix restrict user domains ([6853](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6853))
+* validate invited users ([6902](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6902))
+
+### Power Systems
+* Fix Allow Remote Restart ([6896](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6896))
+
+
+## Enhancements
+
+### Cloud Databases
+* Allow enterprise-gen2 plan for provisioning databases in gen2 using Terraform ([6913](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6913))
+* expand the host_flavor validation and docs for Gen2 flavors ([6932](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6932))
+
+### IAM
+* Ensure an assignment is retryable when ends in a failed state. A destroy/create is unnecessary ([6911](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6911))
+
+
+## Code Refactoring
+
+### Power Systems
+* Refactor Network interface ([6929](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6929))
+
+
+
 # 2.5.0-beta0 (July 23, 2026)
 
 ## Bug Fixes

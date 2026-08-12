@@ -522,14 +522,17 @@ func ResourceIBMDatabaseInstance() *schema.Resource {
 										Required: true,
 										ValidateFunc: validation.StringInSlice([]string{
 											"multitenant",
-											"bx3d.4x20",
-											"bx3d.8x40",
 											"b3c.4x16.encrypted",
 											"b3c.8x32.encrypted",
 											"m3c.8x64.encrypted",
 											"b3c.16x64.encrypted",
 											"b3c.32x128.encrypted",
 											"m3c.30x240.encrypted",
+											"bx3d.4x20",
+											"bx3d.8x40",
+											"bx3d.16x80",
+											"bx3d.32x160",
+											"bx3d.48x240",
 											"bxf.16x64",
 											"bxf.32x128",
 											"bxf.48x192",
@@ -953,7 +956,7 @@ func ResourceIBMICDValidator() *validate.ResourceValidator {
 			Identifier:                 "plan",
 			ValidateFunctionIdentifier: validate.ValidateAllowedICDPlanValue,
 			Type:                       validate.TypeString,
-			AllowedValues:              "standard, standard-gen2, enterprise, enterprise-gen2, enterprise-sharding, platinum",
+			AllowedValues:              "standard, standard-gen2, enterprise, enterprise-gen2, enterprise-sharding, enterprise-sharding-gen2, platinum",
 			Required:                   true})
 	validateSchema = append(validateSchema,
 		validate.ValidateSchema{
