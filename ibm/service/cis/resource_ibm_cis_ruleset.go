@@ -637,7 +637,11 @@ func expandCISRulesetsRulesActionParametersOverrides(obj interface{}) rulesetsv1
 	if actionOverride != "" {
 		overrideRespObj.Action = &actionOverride
 	}
-	overrideRespObj.Enabled = &enabledOverride
+	// Only send when true — API default is false (omitting is equivalent).
+	// Some ruleset types (e.g. OWASP) reject overrides.enabled entirely.
+	if enabledOverride {
+		overrideRespObj.Enabled = &enabledOverride
+	}
 	finalResponse = append(finalResponse, overrideRespObj)
 
 	return finalResponse[0]
