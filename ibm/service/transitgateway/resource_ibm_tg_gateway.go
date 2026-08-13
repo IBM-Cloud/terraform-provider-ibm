@@ -92,7 +92,7 @@ func ResourceIBMTransitGateway() *schema.Resource {
 				Computed:    true,
 				Description: "Allow route propagation across all GREs connected to the same transit gateway. This affects connections on the gateway of type redundant_gre, unbound_gre_tunnel and gre_tunnel",
 			},
-	
+
 			tgGatewayTags: {
 				Type:        schema.TypeSet,
 				Optional:    true,
