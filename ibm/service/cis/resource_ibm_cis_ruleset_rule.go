@@ -56,13 +56,11 @@ var CISRulesetsRulesObject = &schema.Resource{
 								CISRulesetOverridesAction: {
 									Type:        schema.TypeString,
 									Optional:    true,
-									Computed:    true,
 									Description: "Action to perform",
 								},
 								CISRulesetOverridesEnabled: {
 									Type:        schema.TypeBool,
 									Optional:    true,
-									Computed:    true,
 									Description: "Enable/Disable rule",
 								},
 								// CISRulesetOverridesSensitivityLevel: {
@@ -78,7 +76,7 @@ var CISRulesetsRulesObject = &schema.Resource{
 										Schema: map[string]*schema.Schema{
 											CISRulesetRuleId: {
 												Type:        schema.TypeString,
-												Optional:    true,
+												Required:    true,
 												Description: "ID of the ruleset",
 											},
 											CISRulesetOverridesEnabled: {
@@ -89,7 +87,6 @@ var CISRulesetsRulesObject = &schema.Resource{
 											CISRulesetOverridesAction: {
 												Type:        schema.TypeString,
 												Optional:    true,
-												Computed:    true,
 												Description: "Action to perform",
 											},
 											CISRulesetOverridesSensitivityLevel: {
@@ -101,7 +98,6 @@ var CISRulesetsRulesObject = &schema.Resource{
 											CISRulesetOverridesScoreThreshold: {
 												Type:        schema.TypeInt,
 												Optional:    true,
-												Computed:    true,
 												Description: "Score threshold for the override rule",
 											},
 										},
@@ -115,7 +111,7 @@ var CISRulesetsRulesObject = &schema.Resource{
 										Schema: map[string]*schema.Schema{
 											CISRulesetOverridesCategoriesCategory: {
 												Type:        schema.TypeString,
-												Optional:    true,
+												Required:    true,
 												Description: "Category",
 											},
 											CISRulesetOverridesEnabled: {
@@ -126,7 +122,6 @@ var CISRulesetsRulesObject = &schema.Resource{
 											CISRulesetOverridesAction: {
 												Type:        schema.TypeString,
 												Optional:    true,
-												Computed:    true,
 												Description: "Action to perform",
 											},
 										},
