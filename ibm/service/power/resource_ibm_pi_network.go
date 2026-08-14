@@ -297,8 +297,9 @@ func resourceIBMPINetworkCreate(ctx context.Context, d *schema.ResourceData, met
 	if _, ok := d.GetOk(Arg_Cidr); ok && networktype == PubVlan {
 		return diag.Errorf("%s cannot be set when %s is pub-vlan", Arg_Cidr, Arg_NetworkType)
 	}
-	if v, ok := d.GetOk(Arg_EnableDHCP); ok {
-		body.EnableDHCP = flex.PtrToBool(v.(bool))
+
+	if !d.GetRawConfig().GetAttr(Arg_EnableDHCP).IsNull() {
+		body.EnableDHCP = flex.PtrToBool(d.Get(Arg_EnableDHCP).(bool))
 	}
 
 	if !sess.IsOnPrem() {
@@ -477,7 +478,12 @@ func resourceIBMPINetworkUpdate(ctx context.Context, d *schema.ResourceData, met
 		if d.HasChange(Arg_NetworkName) {
 			body.Name = flex.PtrToString(d.Get(Arg_NetworkName).(string))
 		}
-
+		if body.DNSServers == nil {
+			body.DNSServers = flex.ExpandStringList((d.Get(Arg_DNS).(*schema.Set)).List())
+		}
+		if networkType == Vlan && body.IPAddressRanges == nil {
+			body.IPAddressRanges = getIPAddressRanges(d.Get(Arg_IPAddressRange).([]interface{}))
+		}
 		_, err = client.Update(networkID, body)
 		if err != nil {
 			return diag.FromErr(err)
