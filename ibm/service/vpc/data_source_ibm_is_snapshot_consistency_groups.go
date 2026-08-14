@@ -38,12 +38,55 @@ func DataSourceIBMIsSnapshotConsistencyGroups() *schema.Resource {
 				Optional:    true,
 				Description: "Filters the collection to backup policy jobs with a `backup_policy_plan.id` property matching the specified identifier.",
 			},
+			"backup_policy_job": &schema.Schema{
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "Filters the collection to snapshot consistency groups with a `backup_policy_job.id` property matching the specified identifier.",
+			},
 			"snapshot_consistency_groups": &schema.Schema{
 				Type:        schema.TypeList,
 				Computed:    true,
 				Description: "Collection of snapshot consistency groups.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
+						"backup_policy_job": &schema.Schema{
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "If present, the backup policy job that created this snapshot consistency group. Snapshot consistency groups with the same backup policy job identifier represent snapshots of the same instance across different storage generations.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"deleted": &schema.Schema{
+										Type:        schema.TypeList,
+										Computed:    true,
+										Description: "If present, this property indicates the referenced resource has been deleted, and provides some supplementary information.",
+										Elem: &schema.Resource{
+											Schema: map[string]*schema.Schema{
+												"more_info": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "Link to documentation about deleted resources.",
+												},
+											},
+										},
+									},
+									"href": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The URL for this backup policy job.",
+									},
+									"id": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The unique identifier for this backup policy job.",
+									},
+									"resource_type": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The resource type.",
+									},
+								},
+							},
+						},
 						"backup_policy_plan": &schema.Schema{
 							Type:        schema.TypeList,
 							Computed:    true,
@@ -276,6 +319,10 @@ func dataSourceIBMIsSnapshotConsistencyGroupsRead(context context.Context, d *sc
 			backupPolicyPlanIdFilter := backupPolicyPlanIdFilterOk.(string)
 			listSnapshotConsistencyGroupsOptions.BackupPolicyPlanID = &backupPolicyPlanIdFilter
 		}
+		if backupPolicyJobIdFilterOk, ok := d.GetOk("backup_policy_job"); ok {
+			backupPolicyJobIdFilter := backupPolicyJobIdFilterOk.(string)
+			listSnapshotConsistencyGroupsOptions.BackupPolicyJobID = &backupPolicyJobIdFilter
+		}
 
 		snapshotConsistencyGroup, _, err := vpcClient.ListSnapshotConsistencyGroupsWithContext(context, listSnapshotConsistencyGroupsOptions)
 		if err != nil {
@@ -302,6 +349,22 @@ func dataSourceIBMIsSnapshotConsistencyGroupsRead(context context.Context, d *sc
 			"resource_type":              *snapshotConsistencyGroup.ResourceType,
 			"created_at":                 (*snapshotConsistencyGroup.CreatedAt).String(),
 		}
+
+		//backup policy job
+		backupPolicyJobList := []map[string]interface{}{}
+		if snapshotConsistencyGroup.BackupPolicyJob != nil {
+			backupPolicyJob := map[string]interface{}{}
+			if snapshotConsistencyGroup.BackupPolicyJob.Deleted != nil {
+				snapshotConsistencyGroupBackupPolicyJobDeletedMap := map[string]interface{}{}
+				snapshotConsistencyGroupBackupPolicyJobDeletedMap["more_info"] = snapshotConsistencyGroup.BackupPolicyJob.Deleted.MoreInfo
+				backupPolicyJob["deleted"] = []map[string]interface{}{snapshotConsistencyGroupBackupPolicyJobDeletedMap}
+			}
+			backupPolicyJob["href"] = snapshotConsistencyGroup.BackupPolicyJob.Href
+			backupPolicyJob["id"] = snapshotConsistencyGroup.BackupPolicyJob.ID
+			backupPolicyJob["resource_type"] = snapshotConsistencyGroup.BackupPolicyJob.ResourceType
+			backupPolicyJobList = append(backupPolicyJobList, backupPolicyJob)
+		}
+		l["backup_policy_job"] = backupPolicyJobList
 
 		//backup policy plan
 		backupPolicyPlanList := []map[string]interface{}{}

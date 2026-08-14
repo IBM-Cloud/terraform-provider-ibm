@@ -199,6 +199,18 @@ You can access the following attribute references after your data source is crea
       - `name` - (String) The globally unique name for this cluster network profile.
       - `resource_type` - (String) The resource type.
 
+  - `supported_vcpu_count` - (List) Nested `supported_vcpu_count` blocks have the following structure:
+
+      Nested scheme for `supported_vcpu_count`:
+      - `type` - (String) The type for this profile field.
+      - `values` - (List) The supported values for vcpu count for an instance with this profile.
+
+  - `threads_per_core` - (List) Nested `threads_per_core` blocks have the following structure:
+
+      Nested scheme for `threads_per_core`:
+      - `type` - (String) The type for this profile field.
+      - `default` - (Integer) The default threads per core value for this profile.
+      - `values` - (List) The permitted threads per core values for this profile.
 
   - `vcpu_architecture` - (List) Nested `vcpu_architecture` blocks have the following structure:
 

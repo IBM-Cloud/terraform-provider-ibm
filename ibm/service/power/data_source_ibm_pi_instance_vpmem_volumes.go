@@ -43,7 +43,7 @@ func DataSourceIBMPIInstanceVpmemVolumes() *schema.Resource {
 	}
 }
 
-func dataSourceIBMPIInstanceVpmemVolumesRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataSourceIBMPIInstanceVpmemVolumesRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	sess, err := meta.(conns.ClientSession).IBMPISession()
 	if err != nil {
 		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("IBMPISession failed: %s", err.Error()), "(Data) ibm_pi_instance_vpmem_volumes", "read")
@@ -88,16 +88,28 @@ func dataSourceIBMPIVPMEMVolumeToMap(volume *models.VPMemVolumeReference, meta a
 		vpmemVol[Attr_UserTags] = tags
 	}
 	vpmemVol[Attr_ErrorCode] = volume.ErrorCode
-	vpmemVol[Attr_Href] = volume.Href
-	vpmemVol[Attr_Name] = volume.Name
-	vpmemVol[Attr_PVMInstanceID] = volume.PvmInstanceID
+	if volume.Href != nil {
+		vpmemVol[Attr_Href] = *volume.Href
+	}
+	if volume.Name != nil {
+		vpmemVol[Attr_Name] = *volume.Name
+	}
+	if volume.PvmInstanceID != nil {
+		vpmemVol[Attr_PVMInstanceID] = *volume.PvmInstanceID
+	}
 	vpmemVol[Attr_Reason] = volume.Reason
-	vpmemVol[Attr_Size] = volume.Size
-	vpmemVol[Attr_Status] = volume.Status
+	if volume.Size != nil {
+		vpmemVol[Attr_Size] = *volume.Size
+	}
+	if volume.Status != nil {
+		vpmemVol[Attr_Status] = *volume.Status
+	}
 	if volume.UpdatedDate != nil {
 		vpmemVol[Attr_UpdatedDate] = volume.UpdatedDate.String()
 	}
-	vpmemVol[Attr_VolumeID] = volume.UUID
+	if volume.UUID != nil {
+		vpmemVol[Attr_VolumeID] = *volume.UUID
+	}
 	return vpmemVol
 }
 
@@ -105,7 +117,6 @@ func vpmemVolumeSchema() *schema.Schema {
 	return &schema.Schema{
 		Computed:    true,
 		Description: "List of vPMEM volumes.",
-		Type:        schema.TypeList,
 		Elem: &schema.Resource{
 			Schema: map[string]*schema.Schema{
 				Attr_CreationDate: {
@@ -145,7 +156,7 @@ func vpmemVolumeSchema() *schema.Schema {
 				},
 				Attr_Size: {
 					Computed:    true,
-					Description: "Volume Size (GB).",
+					Description: "Volume size (GiB).",
 					Type:        schema.TypeFloat,
 				},
 				Attr_Status: {
@@ -174,5 +185,6 @@ func vpmemVolumeSchema() *schema.Schema {
 				},
 			},
 		},
+		Type: schema.TypeSet,
 	}
 }

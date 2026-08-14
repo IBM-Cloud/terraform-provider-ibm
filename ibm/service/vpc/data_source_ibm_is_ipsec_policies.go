@@ -33,6 +33,14 @@ func DataSourceIBMIsIpsecPolicies() *schema.Resource {
 							Computed:    true,
 							Description: "The authentication algorithm.",
 						},
+						"authentication_algorithms": &schema.Schema{
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "The authentication algorithms to use for IPsec Negotiation.The order of the algorithms in this array indicates their priority for negotiation, with each algorithm having priority over the one after it.",
+							Elem: &schema.Schema{
+								Type: schema.TypeString,
+							},
+						},
 						"connections": {
 							Type:        schema.TypeList,
 							Computed:    true,
@@ -91,6 +99,14 @@ func DataSourceIBMIsIpsecPolicies() *schema.Resource {
 							Computed:    true,
 							Description: "The encryption algorithm.",
 						},
+						"encryption_algorithms": &schema.Schema{
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "The encryption algorithms to use for IKE Negotiation.The order of the algorithms in this array indicates their priority for negotiation, with each algorithm having priority over the one after it.",
+							Elem: &schema.Schema{
+								Type: schema.TypeString,
+							},
+						},
 						"href": {
 							Type:        schema.TypeString,
 							Computed:    true,
@@ -115,6 +131,14 @@ func DataSourceIBMIsIpsecPolicies() *schema.Resource {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "Perfect Forward Secrecy.",
+						},
+						"pfs_groups": &schema.Schema{
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "The Perfect Forward Secrecy groups to use for IPsec negotiation.The order of the Perfect Forward Secrecy groups in this array indicates their priority for negotiation, with each Perfect Forward Secrecy group having priority over the one after it.",
+							Elem: &schema.Schema{
+								Type: schema.TypeString,
+							},
 						},
 						"resource_group": {
 							Type:        schema.TypeList,
@@ -214,6 +238,9 @@ func dataSourceIPsecPolicyCollectionIpsecPoliciesToMap(ipsecPoliciesItem vpcv1.I
 	if ipsecPoliciesItem.AuthenticationAlgorithm != nil {
 		ipsecPoliciesMap["authentication_algorithm"] = ipsecPoliciesItem.AuthenticationAlgorithm
 	}
+	if ipsecPoliciesItem.AuthenticationAlgorithms != nil {
+		ipsecPoliciesMap["authentication_algorithms"] = ipsecPoliciesItem.AuthenticationAlgorithms
+	}
 	if ipsecPoliciesItem.Connections != nil {
 		connectionsList := []map[string]interface{}{}
 		for _, connectionsItem := range ipsecPoliciesItem.Connections {
@@ -230,6 +257,9 @@ func dataSourceIPsecPolicyCollectionIpsecPoliciesToMap(ipsecPoliciesItem vpcv1.I
 	if ipsecPoliciesItem.EncryptionAlgorithm != nil {
 		ipsecPoliciesMap["encryption_algorithm"] = ipsecPoliciesItem.EncryptionAlgorithm
 	}
+	if ipsecPoliciesItem.EncryptionAlgorithms != nil {
+		ipsecPoliciesMap["encryption_algorithms"] = ipsecPoliciesItem.EncryptionAlgorithms
+	}
 	if ipsecPoliciesItem.Href != nil {
 		ipsecPoliciesMap["href"] = ipsecPoliciesItem.Href
 	}
@@ -244,6 +274,9 @@ func dataSourceIPsecPolicyCollectionIpsecPoliciesToMap(ipsecPoliciesItem vpcv1.I
 	}
 	if ipsecPoliciesItem.Pfs != nil {
 		ipsecPoliciesMap["pfs"] = ipsecPoliciesItem.Pfs
+	}
+	if ipsecPoliciesItem.PfsGroups != nil {
+		ipsecPoliciesMap["pfs_groups"] = ipsecPoliciesItem.PfsGroups
 	}
 	if ipsecPoliciesItem.ResourceGroup != nil {
 		resourceGroupList := []map[string]interface{}{}

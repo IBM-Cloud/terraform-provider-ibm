@@ -58,23 +58,69 @@ func ResourceIBMISIPSecPolicy() *schema.Resource {
 
 			isIpSecAuthenticationAlg: {
 				Type:         schema.TypeString,
-				Required:     true,
+				Optional:     true,
+				Computed:     true,
+				ExactlyOneOf: []string{"authentication_algorithm", "authentication_algorithms"},
 				ValidateFunc: validate.InvokeValidator("ibm_is_ipsec_policy", isIpSecAuthenticationAlg),
 				Description:  "Authentication alorothm",
+				Deprecated:   "`authentication_algorithm` is deprecated in favor of `authentication_algorithms`. The existing `authentication_algorithm` field will continue to function without any behavior changes to maintain backward compatibility. No migration is required for existing configurations, for newer use `authentication_algorithms`. Use `authentication_algorithms` to configure multiple authentication algorithms. This enhancement adds support for multi-algorithm authentication while preserving compatibility with earlier single-algorithm configurations.",
+			},
+			"authentication_algorithms": &schema.Schema{
+				Type:         schema.TypeList,
+				Optional:     true,
+				MaxItems:     3,
+				ExactlyOneOf: []string{"authentication_algorithm", "authentication_algorithms"},
+				Computed:     true,
+				Description:  "The authentication algorithms to use for IPsec Negotiation.The order of the algorithms in this array indicates their priority for negotiation, with each algorithm having priority over the one after it.",
+				Elem: &schema.Schema{Type: schema.TypeString,
+					ValidateFunc: validate.InvokeValidator("ibm_is_ipsec_policy", isIpSecAuthenticationAlg),
+				},
 			},
 
 			isIpSecEncryptionAlg: {
 				Type:         schema.TypeString,
-				Required:     true,
+				Optional:     true,
+				Computed:     true,
+				ExactlyOneOf: []string{"encryption_algorithm", "encryption_algorithms"},
+				Deprecated:   "`encryption_algorithm` is deprecated in favor of `encryption_algorithms`. The existing `encryption_algorithm` field will continue to function without any behavior changes to maintain backward compatibility. No migration is required for existing configurations, for newer use `encryption_algorithms`. Use `encryption_algorithms` to configure multiple encryption algorithms. This enhancement adds support for multi-algorithm encryption while preserving compatibility with earlier single-algorithm configurations.",
 				ValidateFunc: validate.InvokeValidator("ibm_is_ipsec_policy", isIpSecEncryptionAlg),
 				Description:  "Encryption algorithm",
 			},
 
+			"encryption_algorithms": &schema.Schema{
+				Type:         schema.TypeList,
+				Optional:     true,
+				MaxItems:     3,
+				Computed:     true,
+				ExactlyOneOf: []string{"encryption_algorithm", "encryption_algorithms"},
+				Description:  "The encryption algorithms to use for IPsec Negotiation.The order of the algorithms in this array indicates their priority for negotiation, with each algorithm having priority over the one after it.",
+				Elem: &schema.Schema{
+					Type:         schema.TypeString,
+					ValidateFunc: validate.InvokeValidator("ibm_is_ipsec_policy", isIpSecEncryptionAlg),
+				},
+			},
+
 			isIpSecPFS: {
 				Type:         schema.TypeString,
-				Required:     true,
+				Optional:     true,
+				Computed:     true,
+				ExactlyOneOf: []string{"pfs", "pfs_groups"},
+				Deprecated:   "`pfs` is deprecated in favor of `pfs_groups`. The existing `pfs` field will continue to function without any behavior changes to maintain backward compatibility. No migration is required for existing configurations, for newer use `pfs_groups`. Use `pfs_groups` to configure multiple Perfect Forward Secrecy (PFS) groups. This enhancement adds support for multi-group PFS configurations while preserving compatibility with earlier single-group configurations.",
 				ValidateFunc: validate.InvokeValidator("ibm_is_ipsec_policy", isIpSecPFS),
 				Description:  "PFS info",
+			},
+
+			"pfs_groups": &schema.Schema{
+				Type:         schema.TypeList,
+				Optional:     true,
+				MaxItems:     12,
+				Computed:     true,
+				ExactlyOneOf: []string{"pfs", "pfs_groups"},
+				Description:  "The Perfect Forward Secrecy groups to use for IPsec negotiation.The order of the Perfect Forward Secrecy groups in this array indicates their priority for negotiation, with each Perfect Forward Secrecy group having priority over the one after it.",
+				Elem: &schema.Schema{
+					Type:         schema.TypeString,
+					ValidateFunc: validate.InvokeValidator("ibm_is_ipsec_policy", isIpSecPFS),
+				},
 			},
 
 			isIPSecResourceGroup: {
@@ -197,29 +243,58 @@ func resourceIBMISIPSecPolicyCreate(context context.Context, d *schema.ResourceD
 
 	log.Printf("[DEBUG] Ip Sec create")
 	name := d.Get(isIpSecName).(string)
-	authenticationAlg := d.Get(isIpSecAuthenticationAlg).(string)
-	encryptionAlg := d.Get(isIpSecEncryptionAlg).(string)
-	pfs := d.Get(isIpSecPFS).(string)
 
-	diag := ipsecpCreate(context, d, meta, authenticationAlg, encryptionAlg, name, pfs)
+	diag := ipsecpCreate(context, d, meta, name)
 	if diag != nil {
 		return diag
 	}
 	return resourceIBMISIPSecPolicyRead(context, d, meta)
 }
 
-func ipsecpCreate(context context.Context, d *schema.ResourceData, meta interface{}, authenticationAlg, encryptionAlg, name, pfs string) diag.Diagnostics {
+func ipsecpCreate(context context.Context, d *schema.ResourceData, meta interface{}, name string) diag.Diagnostics {
 	sess, err := vpcClient(meta)
 	if err != nil {
 		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_ipsec_policy", "create", "initialize-client")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
+
 	options := &vpcv1.CreateIpsecPolicyOptions{
-		AuthenticationAlgorithm: &authenticationAlg,
-		EncryptionAlgorithm:     &encryptionAlg,
-		Pfs:                     &pfs,
-		Name:                    &name,
+		Name: &name,
+	}
+
+	if _, ok := d.GetOk("authentication_algorithm"); ok {
+		options.SetAuthenticationAlgorithm(d.Get("authentication_algorithm").(string))
+	}
+	if _, ok := d.GetOk("authentication_algorithms"); ok {
+		var authenticationAlgorithms []string
+		for _, v := range d.Get("authentication_algorithms").([]interface{}) {
+			authenticationAlgorithmsItem := v.(string)
+			authenticationAlgorithms = append(authenticationAlgorithms, authenticationAlgorithmsItem)
+		}
+		options.SetAuthenticationAlgorithms(authenticationAlgorithms)
+	}
+	if _, ok := d.GetOk("encryption_algorithm"); ok {
+		options.SetEncryptionAlgorithm(d.Get("encryption_algorithm").(string))
+	}
+	if _, ok := d.GetOk("encryption_algorithms"); ok {
+		var encryptionAlgorithms []string
+		for _, v := range d.Get("encryption_algorithms").([]interface{}) {
+			encryptionAlgorithmsItem := v.(string)
+			encryptionAlgorithms = append(encryptionAlgorithms, encryptionAlgorithmsItem)
+		}
+		options.SetEncryptionAlgorithms(encryptionAlgorithms)
+	}
+	if _, ok := d.GetOk("pfs"); ok {
+		options.SetPfs(d.Get("pfs").(string))
+	}
+	if _, ok := d.GetOk("pfs_groups"); ok {
+		var pfsGroups []string
+		for _, v := range d.Get("pfs_groups").([]interface{}) {
+			pfsGroupsItem := v.(string)
+			pfsGroups = append(pfsGroups, pfsGroupsItem)
+		}
+		options.SetPfsGroups(pfsGroups)
 	}
 
 	if keylt, ok := d.GetOk(isIpSecKeyLifeTime); ok {
@@ -287,9 +362,21 @@ func ipsecpGet(context context.Context, d *schema.ResourceData, meta interface{}
 		err = fmt.Errorf("Error setting authentication_algorithm: %s", err)
 		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_ipsec_policy", "read", "set-authentication_algorithm").GetDiag()
 	}
+	if !core.IsNil(iPsecPolicy.AuthenticationAlgorithms) {
+		if err = d.Set("authentication_algorithms", iPsecPolicy.AuthenticationAlgorithms); err != nil {
+			err = fmt.Errorf("Error setting authentication_algorithms: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_ipsec_policy", "read", "set-authentication_algorithms").GetDiag()
+		}
+	}
 	if err = d.Set("encryption_algorithm", iPsecPolicy.EncryptionAlgorithm); err != nil {
 		err = fmt.Errorf("Error setting encryption_algorithm: %s", err)
 		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_ipsec_policy", "read", "set-encryption_algorithm").GetDiag()
+	}
+	if !core.IsNil(iPsecPolicy.EncryptionAlgorithms) {
+		if err = d.Set("encryption_algorithms", iPsecPolicy.EncryptionAlgorithms); err != nil {
+			err = fmt.Errorf("Error setting encryption_algorithms: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_ipsec_policy", "read", "set-encryption_algorithms").GetDiag()
+		}
 	}
 	if iPsecPolicy.ResourceGroup != nil {
 		if err = d.Set(isIPSecResourceGroup, *iPsecPolicy.ResourceGroup.ID); err != nil {
@@ -307,6 +394,12 @@ func ipsecpGet(context context.Context, d *schema.ResourceData, meta interface{}
 	if err = d.Set("pfs", iPsecPolicy.Pfs); err != nil {
 		err = fmt.Errorf("Error setting pfs: %s", err)
 		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_ipsec_policy", "read", "set-pfs").GetDiag()
+	}
+	if !core.IsNil(iPsecPolicy.PfsGroups) {
+		if err = d.Set("pfs_groups", iPsecPolicy.PfsGroups); err != nil {
+			err = fmt.Errorf("Error setting pfs_groups: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_ipsec_policy", "read", "set-pfs_groups").GetDiag()
+		}
 	}
 	if !core.IsNil(iPsecPolicy.KeyLifetime) {
 		if err = d.Set("key_lifetime", flex.IntValue(iPsecPolicy.KeyLifetime)); err != nil {
@@ -366,20 +459,67 @@ func ipsecpUpdate(context context.Context, d *schema.ResourceData, meta interfac
 	options := &vpcv1.UpdateIpsecPolicyOptions{
 		ID: &id,
 	}
-	if d.HasChange(isIpSecName) || d.HasChange(isIpSecAuthenticationAlg) || d.HasChange(isIpSecEncryptionAlg) || d.HasChange(isIpSecPFS) || d.HasChange(isIpSecKeyLifeTime) {
-		name := d.Get(isIpSecName).(string)
-		authenticationAlg := d.Get(isIpSecAuthenticationAlg).(string)
-		encryptionAlg := d.Get(isIpSecEncryptionAlg).(string)
-		pfs := d.Get(isIpSecPFS).(string)
-		keyLifetime := int64(d.Get(isIpSecKeyLifeTime).(int))
 
-		ipsecPolicyPatchModel := &vpcv1.IPsecPolicyPatch{
-			Name:                    &name,
-			AuthenticationAlgorithm: &authenticationAlg,
-			EncryptionAlgorithm:     &encryptionAlg,
-			Pfs:                     &pfs,
-			KeyLifetime:             &keyLifetime,
+	isIpsecNameChangeFlag := d.HasChange(isIpSecName)
+	isIpSecAuthenticationAlgChangeFlag := d.HasChange(isIpSecAuthenticationAlg)
+	isIpSecAuthenticationAlgsChangeFlag := d.HasChange("authentication_algorithms")
+	isIpSecEncryptionAlgChangeFlag := d.HasChange(isIpSecEncryptionAlg)
+	isIpSecEncryptionAlgsChangeFlag := d.HasChange("encryption_algorithms")
+	isIpSecPFSChangeFlag := d.HasChange(isIpSecPFS)
+	isIpSecPFSGroupsChangeFlag := d.HasChange("pfs_groups")
+	isIpSecKeyLifeTimeChangeFlag := d.HasChange(isIpSecKeyLifeTime)
+
+	if isIpsecNameChangeFlag || isIpSecAuthenticationAlgChangeFlag || isIpSecAuthenticationAlgsChangeFlag || isIpSecEncryptionAlgChangeFlag || isIpSecEncryptionAlgsChangeFlag || isIpSecPFSChangeFlag || isIpSecPFSGroupsChangeFlag || isIpSecKeyLifeTimeChangeFlag {
+		ipsecPolicyPatchModel := &vpcv1.IPsecPolicyPatch{}
+		if isIpSecAuthenticationAlgChangeFlag {
+			authenticationAlg := d.Get(isIpSecAuthenticationAlg).(string)
+			ipsecPolicyPatchModel.AuthenticationAlgorithm = &authenticationAlg
+
 		}
+		if isIpSecEncryptionAlgChangeFlag {
+			encryptionAlg := d.Get(isIpSecEncryptionAlg).(string)
+			ipsecPolicyPatchModel.EncryptionAlgorithm = &encryptionAlg
+		}
+		if isIpSecPFSChangeFlag {
+			pfs := d.Get(isIpSecPFS).(string)
+			ipsecPolicyPatchModel.Pfs = &pfs
+		}
+		if isIpSecKeyLifeTimeChangeFlag {
+			keyLifetime := int64(d.Get(isIpSecKeyLifeTime).(int))
+			ipsecPolicyPatchModel.KeyLifetime = &keyLifetime
+		}
+		if isIpSecAuthenticationAlgsChangeFlag {
+			ipsecPolicyPatchModel.AuthenticationAlgorithms = interfaceSliceToStringSlice(d.Get("authentication_algorithms").([]interface{}))
+		}
+		if isIpSecEncryptionAlgsChangeFlag {
+			ipsecPolicyPatchModel.EncryptionAlgorithms = interfaceSliceToStringSlice(d.Get("encryption_algorithms").([]interface{}))
+		}
+		if isIpSecPFSGroupsChangeFlag {
+			ipsecPolicyPatchModel.PfsGroups = interfaceSliceToStringSlice(d.Get("pfs_groups").([]interface{}))
+		}
+		if isIpsecNameChangeFlag {
+			name := d.Get(isIpSecName).(string)
+			ipsecPolicyPatchModel.Name = &name
+		}
+
+		// if isIpSecAuthenticationAlgsChangeFlag || isIpSecEncryptionAlgsChangeFlag || isIpSecPFSGroupsChangeFlag {
+		// 	getIpsecPolicyOptions := &vpcv1.GetIpsecPolicyOptions{
+		// 		ID: core.StringPtr(d.Id()),
+		// 	}
+		// 	_, etagResponse, etagErr := sess.GetIpsecPolicyWithContext(context, getIpsecPolicyOptions)
+		// 	if etagErr != nil {
+		// 		if etagResponse != nil && etagResponse.StatusCode == 404 {
+		// 			d.SetId("")
+		// 			return nil
+		// 		}
+		// 		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetIpsecPolicyWithContext failed: %s", etagErr.Error()), "ibm_is_ipsec_policy", "update")
+		// 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		// 		return tfErr.GetDiag()
+		// 	}
+		// 	eTag := etagResponse.Headers.Get("ETag")
+		// 	options.IfMatch = &eTag
+		// }
+
 		ipsecPolicyPatch, err := ipsecPolicyPatchModel.AsPatch()
 		if err != nil {
 			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error calling asPatch for IPsecPolicyPatch: %s", err.Error()), "ibm_is_ipsec_policy", "update")

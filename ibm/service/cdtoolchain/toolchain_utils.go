@@ -71,9 +71,7 @@ func IsRegionDeprecated(region string) bool {
 		"au-syd",
 		"ca-mon",
 		"ca-tor",
-		"eu-es",
 		"eu-fr2",
-		"jp-osa",
 		"us-east",
 	}
 	return slices.Contains(deprecatedRegions, region)
@@ -83,6 +81,6 @@ func GetRegionDeprecationWarning() diag.Diagnostic {
 	return diag.Diagnostic{
 		Severity: diag.Warning,
 		Summary:  "Region availability update",
-		Detail:   "This toolchain is located in a region where Continuous Delivery (CD) will be discontinued on 12 February 2027. The following regions are being discontinued: `au-syd`, `ca-mon`, `ca-tor`, `eu-es`, `jp-osa`, `us-east`. Learn more: https://cloud.ibm.com/docs/ContinuousDelivery?topic=ContinuousDelivery-faq_region_feature_consolidation",
+		Detail:   "This toolchain is located in a region where Continuous Delivery (CD) will be discontinued on 12 February 2027. The following regions are being discontinued: `au-syd`, `ca-mon`, `ca-tor`, `us-east`. Learn more: https://cloud.ibm.com/docs/ContinuousDelivery?topic=ContinuousDelivery-faq_region_feature_consolidation",
 	}
 }

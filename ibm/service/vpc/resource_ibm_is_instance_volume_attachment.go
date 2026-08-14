@@ -664,13 +664,13 @@ func instanceVolumeAttachmentGet(context context.Context, d *schema.ResourceData
 	if volumeDetail.AllowedUse != nil {
 		modelMap, err := ResourceceIBMIsVolumeAllowedUseToMap(volumeDetail.AllowedUse)
 		if err != nil {
-			tfErr := flex.TerraformErrorf(err, err.Error(), "(Resource) ibm_is_instance_volume_attachment", "read")
+			tfErr := flex.TerraformErrorf(err, err.Error(), "ibm_is_instance_volume_attachment", "read")
 			log.Println(tfErr.GetDiag())
 		}
 		allowedUses = append(allowedUses, modelMap)
 	}
 	if err = d.Set("allowed_use", allowedUses); err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting allowed_use: %s", err), "(Resource) ibm_is_instance_volume_attachment", "read")
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting allowed_use: %s", err), "ibm_is_instance_volume_attachment", "read")
 		log.Println(tfErr.GetDiag())
 	}
 	tags, err := flex.GetGlobalTagsUsingCRN(meta, *volumeDetail.CRN, "", isInstanceUserTagType)

@@ -1,8 +1,8 @@
-// Copyright IBM Corp. 2025 All Rights Reserved.
+// Copyright IBM Corp. 2026 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 /*
- * IBM OpenAPI Terraform Generator Version: 3.98.0-8be2046a-20241205-162752
+ * IBM OpenAPI Terraform Generator Version: 3.113.1-d76630af-20260320-135953
  */
 
 package iamidentity_test

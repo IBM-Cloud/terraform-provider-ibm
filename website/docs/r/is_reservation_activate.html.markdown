@@ -143,7 +143,7 @@ The `id` property can be formed from `reservation ID`. For example:
 
 ```terraform
 import {
-  to = ibm_is_reservation_activate.example_activation
+  to = ibm_is_reservation_activate.example
   id = "<reservation_ID>"
 }
 ```
@@ -151,7 +151,7 @@ import {
 Using `terraform import`. For example:
 
 ```console
-% terraform import ibm_is_reservation_activate.example_activation <reservation_ID>
+% terraform import ibm_is_reservation_activate.example <reservation_ID>
 ```
 ## References 
 

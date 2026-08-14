@@ -147,6 +147,8 @@ func testAccCheckIbmOnboardingIamRegistrationConfigBasic(productID string, name 
 			display_name {
 				default = "%s"
 			}
+			service_type = "service"
+
 		}
 	`, productID, name, name)
 }
@@ -605,6 +607,12 @@ func testAccCheckIbmOnboardingIamRegistrationUpdateConfig(
 					}
 				}
 				operations {
+					defaults {
+						enforcement_method = [ "authz-full" ]
+						event_publishing {
+							state = "enabled"
+						}
+					}
 					api_types {
 						name = "crn:v1:bluemix:public:context-based-restrictions::::api-type:control-plane"
 						enforcement_method = ["authz-network"]
@@ -1665,6 +1673,9 @@ func TestResourceIbmOnboardingIamRegistrationIamServiceRegistrationSupportedNetw
 		environmentAttributeModel["values"] = []string{"testString"}
 		environmentAttributeModel["options"] = []map[string]interface{}{environmentAttributeOptionsModel}
 
+		iamServiceRegistrationSupportedNetworkOperationsEventPublishingModel := make(map[string]interface{})
+		iamServiceRegistrationSupportedNetworkOperationsEventPublishingModel["state"] = "enabled"
+
 		iamServiceRegistrationDisplayNameObjectModel := make(map[string]interface{})
 		iamServiceRegistrationDisplayNameObjectModel["default"] = "testString"
 		iamServiceRegistrationDisplayNameObjectModel["en"] = "testString"
@@ -1694,11 +1705,17 @@ func TestResourceIbmOnboardingIamRegistrationIamServiceRegistrationSupportedNetw
 		iamServiceRegistrationSupportedNetworkOperationsApiTypeItemsModel := make(map[string]interface{})
 		iamServiceRegistrationSupportedNetworkOperationsApiTypeItemsModel["name"] = "testString"
 		iamServiceRegistrationSupportedNetworkOperationsApiTypeItemsModel["enforcement_method"] = []string{"testString"}
+		iamServiceRegistrationSupportedNetworkOperationsApiTypeItemsModel["event_publishing"] = []map[string]interface{}{iamServiceRegistrationSupportedNetworkOperationsEventPublishingModel}
 		iamServiceRegistrationSupportedNetworkOperationsApiTypeItemsModel["display_name"] = []map[string]interface{}{iamServiceRegistrationDisplayNameObjectModel}
 		iamServiceRegistrationSupportedNetworkOperationsApiTypeItemsModel["description"] = []map[string]interface{}{iamServiceRegistrationDescriptionObjectModel}
 
+		iamServiceRegistrationSupportedNetworkOperationsDefaultsModel := make(map[string]interface{})
+		iamServiceRegistrationSupportedNetworkOperationsDefaultsModel["enforcement_method"] = []string{"testString"}
+		iamServiceRegistrationSupportedNetworkOperationsDefaultsModel["event_publishing"] = []map[string]interface{}{iamServiceRegistrationSupportedNetworkOperationsEventPublishingModel}
+
 		iamServiceRegistrationSupportedNetworkOperationsModel := make(map[string]interface{})
 		iamServiceRegistrationSupportedNetworkOperationsModel["api_types"] = []map[string]interface{}{iamServiceRegistrationSupportedNetworkOperationsApiTypeItemsModel}
+		iamServiceRegistrationSupportedNetworkOperationsModel["defaults"] = []map[string]interface{}{iamServiceRegistrationSupportedNetworkOperationsDefaultsModel}
 
 		iamServiceRegistrationSupportedNetworkSelfManagedAllowlistEnforcementEventPublishingModel := make(map[string]interface{})
 		iamServiceRegistrationSupportedNetworkSelfManagedAllowlistEnforcementEventPublishingModel["api_types"] = []string{"testString"}
@@ -1721,6 +1738,9 @@ func TestResourceIbmOnboardingIamRegistrationIamServiceRegistrationSupportedNetw
 	environmentAttributeModel.Key = core.StringPtr("testString")
 	environmentAttributeModel.Values = []string{"testString"}
 	environmentAttributeModel.Options = environmentAttributeOptionsModel
+
+	iamServiceRegistrationSupportedNetworkOperationsEventPublishingModel := new(partnercentersellv1.IamServiceRegistrationSupportedNetworkOperationsEventPublishing)
+	iamServiceRegistrationSupportedNetworkOperationsEventPublishingModel.State = core.StringPtr("enabled")
 
 	iamServiceRegistrationDisplayNameObjectModel := new(partnercentersellv1.IamServiceRegistrationDisplayNameObject)
 	iamServiceRegistrationDisplayNameObjectModel.Default = core.StringPtr("testString")
@@ -1751,11 +1771,17 @@ func TestResourceIbmOnboardingIamRegistrationIamServiceRegistrationSupportedNetw
 	iamServiceRegistrationSupportedNetworkOperationsApiTypeItemsModel := new(partnercentersellv1.IamServiceRegistrationSupportedNetworkOperationsApiTypeItems)
 	iamServiceRegistrationSupportedNetworkOperationsApiTypeItemsModel.Name = core.StringPtr("testString")
 	iamServiceRegistrationSupportedNetworkOperationsApiTypeItemsModel.EnforcementMethod = []string{"testString"}
+	iamServiceRegistrationSupportedNetworkOperationsApiTypeItemsModel.EventPublishing = iamServiceRegistrationSupportedNetworkOperationsEventPublishingModel
 	iamServiceRegistrationSupportedNetworkOperationsApiTypeItemsModel.DisplayName = iamServiceRegistrationDisplayNameObjectModel
 	iamServiceRegistrationSupportedNetworkOperationsApiTypeItemsModel.Description = iamServiceRegistrationDescriptionObjectModel
 
+	iamServiceRegistrationSupportedNetworkOperationsDefaultsModel := new(partnercentersellv1.IamServiceRegistrationSupportedNetworkOperationsDefaults)
+	iamServiceRegistrationSupportedNetworkOperationsDefaultsModel.EnforcementMethod = []string{"testString"}
+	iamServiceRegistrationSupportedNetworkOperationsDefaultsModel.EventPublishing = iamServiceRegistrationSupportedNetworkOperationsEventPublishingModel
+
 	iamServiceRegistrationSupportedNetworkOperationsModel := new(partnercentersellv1.IamServiceRegistrationSupportedNetworkOperations)
 	iamServiceRegistrationSupportedNetworkOperationsModel.ApiTypes = []partnercentersellv1.IamServiceRegistrationSupportedNetworkOperationsApiTypeItems{*iamServiceRegistrationSupportedNetworkOperationsApiTypeItemsModel}
+	iamServiceRegistrationSupportedNetworkOperationsModel.Defaults = iamServiceRegistrationSupportedNetworkOperationsDefaultsModel
 
 	iamServiceRegistrationSupportedNetworkSelfManagedAllowlistEnforcementEventPublishingModel := new(partnercentersellv1.IamServiceRegistrationSupportedNetworkSelfManagedAllowlistEnforcementEventPublishing)
 	iamServiceRegistrationSupportedNetworkSelfManagedAllowlistEnforcementEventPublishingModel.ApiTypes = []string{"testString"}
@@ -1817,6 +1843,9 @@ func TestResourceIbmOnboardingIamRegistrationEnvironmentAttributeOptionsToMap(t 
 
 func TestResourceIbmOnboardingIamRegistrationIamServiceRegistrationSupportedNetworkOperationsToMap(t *testing.T) {
 	checkResult := func(result map[string]interface{}) {
+		iamServiceRegistrationSupportedNetworkOperationsEventPublishingModel := make(map[string]interface{})
+		iamServiceRegistrationSupportedNetworkOperationsEventPublishingModel["state"] = "enabled"
+
 		iamServiceRegistrationDisplayNameObjectModel := make(map[string]interface{})
 		iamServiceRegistrationDisplayNameObjectModel["default"] = "testString"
 		iamServiceRegistrationDisplayNameObjectModel["en"] = "testString"
@@ -1846,14 +1875,23 @@ func TestResourceIbmOnboardingIamRegistrationIamServiceRegistrationSupportedNetw
 		iamServiceRegistrationSupportedNetworkOperationsApiTypeItemsModel := make(map[string]interface{})
 		iamServiceRegistrationSupportedNetworkOperationsApiTypeItemsModel["name"] = "testString"
 		iamServiceRegistrationSupportedNetworkOperationsApiTypeItemsModel["enforcement_method"] = []string{"testString"}
+		iamServiceRegistrationSupportedNetworkOperationsApiTypeItemsModel["event_publishing"] = []map[string]interface{}{iamServiceRegistrationSupportedNetworkOperationsEventPublishingModel}
 		iamServiceRegistrationSupportedNetworkOperationsApiTypeItemsModel["display_name"] = []map[string]interface{}{iamServiceRegistrationDisplayNameObjectModel}
 		iamServiceRegistrationSupportedNetworkOperationsApiTypeItemsModel["description"] = []map[string]interface{}{iamServiceRegistrationDescriptionObjectModel}
 
+		iamServiceRegistrationSupportedNetworkOperationsDefaultsModel := make(map[string]interface{})
+		iamServiceRegistrationSupportedNetworkOperationsDefaultsModel["enforcement_method"] = []string{"testString"}
+		iamServiceRegistrationSupportedNetworkOperationsDefaultsModel["event_publishing"] = []map[string]interface{}{iamServiceRegistrationSupportedNetworkOperationsEventPublishingModel}
+
 		model := make(map[string]interface{})
 		model["api_types"] = []map[string]interface{}{iamServiceRegistrationSupportedNetworkOperationsApiTypeItemsModel}
+		model["defaults"] = []map[string]interface{}{iamServiceRegistrationSupportedNetworkOperationsDefaultsModel}
 
 		assert.Equal(t, result, model)
 	}
+
+	iamServiceRegistrationSupportedNetworkOperationsEventPublishingModel := new(partnercentersellv1.IamServiceRegistrationSupportedNetworkOperationsEventPublishing)
+	iamServiceRegistrationSupportedNetworkOperationsEventPublishingModel.State = core.StringPtr("enabled")
 
 	iamServiceRegistrationDisplayNameObjectModel := new(partnercentersellv1.IamServiceRegistrationDisplayNameObject)
 	iamServiceRegistrationDisplayNameObjectModel.Default = core.StringPtr("testString")
@@ -1884,11 +1922,17 @@ func TestResourceIbmOnboardingIamRegistrationIamServiceRegistrationSupportedNetw
 	iamServiceRegistrationSupportedNetworkOperationsApiTypeItemsModel := new(partnercentersellv1.IamServiceRegistrationSupportedNetworkOperationsApiTypeItems)
 	iamServiceRegistrationSupportedNetworkOperationsApiTypeItemsModel.Name = core.StringPtr("testString")
 	iamServiceRegistrationSupportedNetworkOperationsApiTypeItemsModel.EnforcementMethod = []string{"testString"}
+	iamServiceRegistrationSupportedNetworkOperationsApiTypeItemsModel.EventPublishing = iamServiceRegistrationSupportedNetworkOperationsEventPublishingModel
 	iamServiceRegistrationSupportedNetworkOperationsApiTypeItemsModel.DisplayName = iamServiceRegistrationDisplayNameObjectModel
 	iamServiceRegistrationSupportedNetworkOperationsApiTypeItemsModel.Description = iamServiceRegistrationDescriptionObjectModel
 
+	iamServiceRegistrationSupportedNetworkOperationsDefaultsModel := new(partnercentersellv1.IamServiceRegistrationSupportedNetworkOperationsDefaults)
+	iamServiceRegistrationSupportedNetworkOperationsDefaultsModel.EnforcementMethod = []string{"testString"}
+	iamServiceRegistrationSupportedNetworkOperationsDefaultsModel.EventPublishing = iamServiceRegistrationSupportedNetworkOperationsEventPublishingModel
+
 	model := new(partnercentersellv1.IamServiceRegistrationSupportedNetworkOperations)
 	model.ApiTypes = []partnercentersellv1.IamServiceRegistrationSupportedNetworkOperationsApiTypeItems{*iamServiceRegistrationSupportedNetworkOperationsApiTypeItemsModel}
+	model.Defaults = iamServiceRegistrationSupportedNetworkOperationsDefaultsModel
 
 	result, err := partnercentersell.ResourceIbmOnboardingIamRegistrationIamServiceRegistrationSupportedNetworkOperationsToMap(model)
 	assert.Nil(t, err)
@@ -1897,6 +1941,9 @@ func TestResourceIbmOnboardingIamRegistrationIamServiceRegistrationSupportedNetw
 
 func TestResourceIbmOnboardingIamRegistrationIamServiceRegistrationSupportedNetworkOperationsApiTypeItemsToMap(t *testing.T) {
 	checkResult := func(result map[string]interface{}) {
+		iamServiceRegistrationSupportedNetworkOperationsEventPublishingModel := make(map[string]interface{})
+		iamServiceRegistrationSupportedNetworkOperationsEventPublishingModel["state"] = "enabled"
+
 		iamServiceRegistrationDisplayNameObjectModel := make(map[string]interface{})
 		iamServiceRegistrationDisplayNameObjectModel["default"] = "testString"
 		iamServiceRegistrationDisplayNameObjectModel["en"] = "testString"
@@ -1926,11 +1973,15 @@ func TestResourceIbmOnboardingIamRegistrationIamServiceRegistrationSupportedNetw
 		model := make(map[string]interface{})
 		model["name"] = "testString"
 		model["enforcement_method"] = []string{"testString"}
+		model["event_publishing"] = []map[string]interface{}{iamServiceRegistrationSupportedNetworkOperationsEventPublishingModel}
 		model["display_name"] = []map[string]interface{}{iamServiceRegistrationDisplayNameObjectModel}
 		model["description"] = []map[string]interface{}{iamServiceRegistrationDescriptionObjectModel}
 
 		assert.Equal(t, result, model)
 	}
+
+	iamServiceRegistrationSupportedNetworkOperationsEventPublishingModel := new(partnercentersellv1.IamServiceRegistrationSupportedNetworkOperationsEventPublishing)
+	iamServiceRegistrationSupportedNetworkOperationsEventPublishingModel.State = core.StringPtr("enabled")
 
 	iamServiceRegistrationDisplayNameObjectModel := new(partnercentersellv1.IamServiceRegistrationDisplayNameObject)
 	iamServiceRegistrationDisplayNameObjectModel.Default = core.StringPtr("testString")
@@ -1961,10 +2012,51 @@ func TestResourceIbmOnboardingIamRegistrationIamServiceRegistrationSupportedNetw
 	model := new(partnercentersellv1.IamServiceRegistrationSupportedNetworkOperationsApiTypeItems)
 	model.Name = core.StringPtr("testString")
 	model.EnforcementMethod = []string{"testString"}
+	model.EventPublishing = iamServiceRegistrationSupportedNetworkOperationsEventPublishingModel
 	model.DisplayName = iamServiceRegistrationDisplayNameObjectModel
 	model.Description = iamServiceRegistrationDescriptionObjectModel
 
 	result, err := partnercentersell.ResourceIbmOnboardingIamRegistrationIamServiceRegistrationSupportedNetworkOperationsApiTypeItemsToMap(model)
+	assert.Nil(t, err)
+	checkResult(result)
+}
+
+func TestResourceIbmOnboardingIamRegistrationIamServiceRegistrationSupportedNetworkOperationsEventPublishingToMap(t *testing.T) {
+	checkResult := func(result map[string]interface{}) {
+		model := make(map[string]interface{})
+		model["state"] = "enabled"
+
+		assert.Equal(t, result, model)
+	}
+
+	model := new(partnercentersellv1.IamServiceRegistrationSupportedNetworkOperationsEventPublishing)
+	model.State = core.StringPtr("enabled")
+
+	result, err := partnercentersell.ResourceIbmOnboardingIamRegistrationIamServiceRegistrationSupportedNetworkOperationsEventPublishingToMap(model)
+	assert.Nil(t, err)
+	checkResult(result)
+}
+
+func TestResourceIbmOnboardingIamRegistrationIamServiceRegistrationSupportedNetworkOperationsDefaultsToMap(t *testing.T) {
+	checkResult := func(result map[string]interface{}) {
+		iamServiceRegistrationSupportedNetworkOperationsEventPublishingModel := make(map[string]interface{})
+		iamServiceRegistrationSupportedNetworkOperationsEventPublishingModel["state"] = "enabled"
+
+		model := make(map[string]interface{})
+		model["enforcement_method"] = []string{"testString"}
+		model["event_publishing"] = []map[string]interface{}{iamServiceRegistrationSupportedNetworkOperationsEventPublishingModel}
+
+		assert.Equal(t, result, model)
+	}
+
+	iamServiceRegistrationSupportedNetworkOperationsEventPublishingModel := new(partnercentersellv1.IamServiceRegistrationSupportedNetworkOperationsEventPublishing)
+	iamServiceRegistrationSupportedNetworkOperationsEventPublishingModel.State = core.StringPtr("enabled")
+
+	model := new(partnercentersellv1.IamServiceRegistrationSupportedNetworkOperationsDefaults)
+	model.EnforcementMethod = []string{"testString"}
+	model.EventPublishing = iamServiceRegistrationSupportedNetworkOperationsEventPublishingModel
+
+	result, err := partnercentersell.ResourceIbmOnboardingIamRegistrationIamServiceRegistrationSupportedNetworkOperationsDefaultsToMap(model)
 	assert.Nil(t, err)
 	checkResult(result)
 }
@@ -2931,6 +3023,9 @@ func TestResourceIbmOnboardingIamRegistrationMapToIamServiceRegistrationSupporte
 		environmentAttributeModel.Values = []string{"testString"}
 		environmentAttributeModel.Options = environmentAttributeOptionsModel
 
+		iamServiceRegistrationSupportedNetworkOperationsEventPublishingModel := new(partnercentersellv1.IamServiceRegistrationSupportedNetworkOperationsEventPublishing)
+		iamServiceRegistrationSupportedNetworkOperationsEventPublishingModel.State = core.StringPtr("enabled")
+
 		iamServiceRegistrationDisplayNameObjectModel := new(partnercentersellv1.IamServiceRegistrationDisplayNameObject)
 		iamServiceRegistrationDisplayNameObjectModel.Default = core.StringPtr("testString")
 		iamServiceRegistrationDisplayNameObjectModel.En = core.StringPtr("testString")
@@ -2960,11 +3055,17 @@ func TestResourceIbmOnboardingIamRegistrationMapToIamServiceRegistrationSupporte
 		iamServiceRegistrationSupportedNetworkOperationsApiTypeItemsModel := new(partnercentersellv1.IamServiceRegistrationSupportedNetworkOperationsApiTypeItems)
 		iamServiceRegistrationSupportedNetworkOperationsApiTypeItemsModel.Name = core.StringPtr("testString")
 		iamServiceRegistrationSupportedNetworkOperationsApiTypeItemsModel.EnforcementMethod = []string{"testString"}
+		iamServiceRegistrationSupportedNetworkOperationsApiTypeItemsModel.EventPublishing = iamServiceRegistrationSupportedNetworkOperationsEventPublishingModel
 		iamServiceRegistrationSupportedNetworkOperationsApiTypeItemsModel.DisplayName = iamServiceRegistrationDisplayNameObjectModel
 		iamServiceRegistrationSupportedNetworkOperationsApiTypeItemsModel.Description = iamServiceRegistrationDescriptionObjectModel
 
+		iamServiceRegistrationSupportedNetworkOperationsDefaultsModel := new(partnercentersellv1.IamServiceRegistrationSupportedNetworkOperationsDefaults)
+		iamServiceRegistrationSupportedNetworkOperationsDefaultsModel.EnforcementMethod = []string{"testString"}
+		iamServiceRegistrationSupportedNetworkOperationsDefaultsModel.EventPublishing = iamServiceRegistrationSupportedNetworkOperationsEventPublishingModel
+
 		iamServiceRegistrationSupportedNetworkOperationsModel := new(partnercentersellv1.IamServiceRegistrationSupportedNetworkOperations)
 		iamServiceRegistrationSupportedNetworkOperationsModel.ApiTypes = []partnercentersellv1.IamServiceRegistrationSupportedNetworkOperationsApiTypeItems{*iamServiceRegistrationSupportedNetworkOperationsApiTypeItemsModel}
+		iamServiceRegistrationSupportedNetworkOperationsModel.Defaults = iamServiceRegistrationSupportedNetworkOperationsDefaultsModel
 
 		iamServiceRegistrationSupportedNetworkSelfManagedAllowlistEnforcementEventPublishingModel := new(partnercentersellv1.IamServiceRegistrationSupportedNetworkSelfManagedAllowlistEnforcementEventPublishing)
 		iamServiceRegistrationSupportedNetworkSelfManagedAllowlistEnforcementEventPublishingModel.ApiTypes = []string{"testString"}
@@ -2987,6 +3088,9 @@ func TestResourceIbmOnboardingIamRegistrationMapToIamServiceRegistrationSupporte
 	environmentAttributeModel["key"] = "testString"
 	environmentAttributeModel["values"] = []interface{}{"testString"}
 	environmentAttributeModel["options"] = []interface{}{environmentAttributeOptionsModel}
+
+	iamServiceRegistrationSupportedNetworkOperationsEventPublishingModel := make(map[string]interface{})
+	iamServiceRegistrationSupportedNetworkOperationsEventPublishingModel["state"] = "enabled"
 
 	iamServiceRegistrationDisplayNameObjectModel := make(map[string]interface{})
 	iamServiceRegistrationDisplayNameObjectModel["default"] = "testString"
@@ -3017,11 +3121,17 @@ func TestResourceIbmOnboardingIamRegistrationMapToIamServiceRegistrationSupporte
 	iamServiceRegistrationSupportedNetworkOperationsApiTypeItemsModel := make(map[string]interface{})
 	iamServiceRegistrationSupportedNetworkOperationsApiTypeItemsModel["name"] = "testString"
 	iamServiceRegistrationSupportedNetworkOperationsApiTypeItemsModel["enforcement_method"] = []interface{}{"testString"}
+	iamServiceRegistrationSupportedNetworkOperationsApiTypeItemsModel["event_publishing"] = []interface{}{iamServiceRegistrationSupportedNetworkOperationsEventPublishingModel}
 	iamServiceRegistrationSupportedNetworkOperationsApiTypeItemsModel["display_name"] = []interface{}{iamServiceRegistrationDisplayNameObjectModel}
 	iamServiceRegistrationSupportedNetworkOperationsApiTypeItemsModel["description"] = []interface{}{iamServiceRegistrationDescriptionObjectModel}
 
+	iamServiceRegistrationSupportedNetworkOperationsDefaultsModel := make(map[string]interface{})
+	iamServiceRegistrationSupportedNetworkOperationsDefaultsModel["enforcement_method"] = []interface{}{"testString"}
+	iamServiceRegistrationSupportedNetworkOperationsDefaultsModel["event_publishing"] = []interface{}{iamServiceRegistrationSupportedNetworkOperationsEventPublishingModel}
+
 	iamServiceRegistrationSupportedNetworkOperationsModel := make(map[string]interface{})
 	iamServiceRegistrationSupportedNetworkOperationsModel["api_types"] = []interface{}{iamServiceRegistrationSupportedNetworkOperationsApiTypeItemsModel}
+	iamServiceRegistrationSupportedNetworkOperationsModel["defaults"] = []interface{}{iamServiceRegistrationSupportedNetworkOperationsDefaultsModel}
 
 	iamServiceRegistrationSupportedNetworkSelfManagedAllowlistEnforcementEventPublishingModel := make(map[string]interface{})
 	iamServiceRegistrationSupportedNetworkSelfManagedAllowlistEnforcementEventPublishingModel["api_types"] = []interface{}{"testString"}
@@ -3083,6 +3193,9 @@ func TestResourceIbmOnboardingIamRegistrationMapToEnvironmentAttributeOptions(t 
 
 func TestResourceIbmOnboardingIamRegistrationMapToIamServiceRegistrationSupportedNetworkOperations(t *testing.T) {
 	checkResult := func(result *partnercentersellv1.IamServiceRegistrationSupportedNetworkOperations) {
+		iamServiceRegistrationSupportedNetworkOperationsEventPublishingModel := new(partnercentersellv1.IamServiceRegistrationSupportedNetworkOperationsEventPublishing)
+		iamServiceRegistrationSupportedNetworkOperationsEventPublishingModel.State = core.StringPtr("enabled")
+
 		iamServiceRegistrationDisplayNameObjectModel := new(partnercentersellv1.IamServiceRegistrationDisplayNameObject)
 		iamServiceRegistrationDisplayNameObjectModel.Default = core.StringPtr("testString")
 		iamServiceRegistrationDisplayNameObjectModel.En = core.StringPtr("testString")
@@ -3112,14 +3225,23 @@ func TestResourceIbmOnboardingIamRegistrationMapToIamServiceRegistrationSupporte
 		iamServiceRegistrationSupportedNetworkOperationsApiTypeItemsModel := new(partnercentersellv1.IamServiceRegistrationSupportedNetworkOperationsApiTypeItems)
 		iamServiceRegistrationSupportedNetworkOperationsApiTypeItemsModel.Name = core.StringPtr("testString")
 		iamServiceRegistrationSupportedNetworkOperationsApiTypeItemsModel.EnforcementMethod = []string{"testString"}
+		iamServiceRegistrationSupportedNetworkOperationsApiTypeItemsModel.EventPublishing = iamServiceRegistrationSupportedNetworkOperationsEventPublishingModel
 		iamServiceRegistrationSupportedNetworkOperationsApiTypeItemsModel.DisplayName = iamServiceRegistrationDisplayNameObjectModel
 		iamServiceRegistrationSupportedNetworkOperationsApiTypeItemsModel.Description = iamServiceRegistrationDescriptionObjectModel
 
+		iamServiceRegistrationSupportedNetworkOperationsDefaultsModel := new(partnercentersellv1.IamServiceRegistrationSupportedNetworkOperationsDefaults)
+		iamServiceRegistrationSupportedNetworkOperationsDefaultsModel.EnforcementMethod = []string{"testString"}
+		iamServiceRegistrationSupportedNetworkOperationsDefaultsModel.EventPublishing = iamServiceRegistrationSupportedNetworkOperationsEventPublishingModel
+
 		model := new(partnercentersellv1.IamServiceRegistrationSupportedNetworkOperations)
 		model.ApiTypes = []partnercentersellv1.IamServiceRegistrationSupportedNetworkOperationsApiTypeItems{*iamServiceRegistrationSupportedNetworkOperationsApiTypeItemsModel}
+		model.Defaults = iamServiceRegistrationSupportedNetworkOperationsDefaultsModel
 
 		assert.Equal(t, result, model)
 	}
+
+	iamServiceRegistrationSupportedNetworkOperationsEventPublishingModel := make(map[string]interface{})
+	iamServiceRegistrationSupportedNetworkOperationsEventPublishingModel["state"] = "enabled"
 
 	iamServiceRegistrationDisplayNameObjectModel := make(map[string]interface{})
 	iamServiceRegistrationDisplayNameObjectModel["default"] = "testString"
@@ -3150,11 +3272,17 @@ func TestResourceIbmOnboardingIamRegistrationMapToIamServiceRegistrationSupporte
 	iamServiceRegistrationSupportedNetworkOperationsApiTypeItemsModel := make(map[string]interface{})
 	iamServiceRegistrationSupportedNetworkOperationsApiTypeItemsModel["name"] = "testString"
 	iamServiceRegistrationSupportedNetworkOperationsApiTypeItemsModel["enforcement_method"] = []interface{}{"testString"}
+	iamServiceRegistrationSupportedNetworkOperationsApiTypeItemsModel["event_publishing"] = []interface{}{iamServiceRegistrationSupportedNetworkOperationsEventPublishingModel}
 	iamServiceRegistrationSupportedNetworkOperationsApiTypeItemsModel["display_name"] = []interface{}{iamServiceRegistrationDisplayNameObjectModel}
 	iamServiceRegistrationSupportedNetworkOperationsApiTypeItemsModel["description"] = []interface{}{iamServiceRegistrationDescriptionObjectModel}
 
+	iamServiceRegistrationSupportedNetworkOperationsDefaultsModel := make(map[string]interface{})
+	iamServiceRegistrationSupportedNetworkOperationsDefaultsModel["enforcement_method"] = []interface{}{"testString"}
+	iamServiceRegistrationSupportedNetworkOperationsDefaultsModel["event_publishing"] = []interface{}{iamServiceRegistrationSupportedNetworkOperationsEventPublishingModel}
+
 	model := make(map[string]interface{})
 	model["api_types"] = []interface{}{iamServiceRegistrationSupportedNetworkOperationsApiTypeItemsModel}
+	model["defaults"] = []interface{}{iamServiceRegistrationSupportedNetworkOperationsDefaultsModel}
 
 	result, err := partnercentersell.ResourceIbmOnboardingIamRegistrationMapToIamServiceRegistrationSupportedNetworkOperations(model)
 	assert.Nil(t, err)
@@ -3163,6 +3291,9 @@ func TestResourceIbmOnboardingIamRegistrationMapToIamServiceRegistrationSupporte
 
 func TestResourceIbmOnboardingIamRegistrationMapToIamServiceRegistrationSupportedNetworkOperationsApiTypeItems(t *testing.T) {
 	checkResult := func(result *partnercentersellv1.IamServiceRegistrationSupportedNetworkOperationsApiTypeItems) {
+		iamServiceRegistrationSupportedNetworkOperationsEventPublishingModel := new(partnercentersellv1.IamServiceRegistrationSupportedNetworkOperationsEventPublishing)
+		iamServiceRegistrationSupportedNetworkOperationsEventPublishingModel.State = core.StringPtr("enabled")
+
 		iamServiceRegistrationDisplayNameObjectModel := new(partnercentersellv1.IamServiceRegistrationDisplayNameObject)
 		iamServiceRegistrationDisplayNameObjectModel.Default = core.StringPtr("testString")
 		iamServiceRegistrationDisplayNameObjectModel.En = core.StringPtr("testString")
@@ -3192,11 +3323,15 @@ func TestResourceIbmOnboardingIamRegistrationMapToIamServiceRegistrationSupporte
 		model := new(partnercentersellv1.IamServiceRegistrationSupportedNetworkOperationsApiTypeItems)
 		model.Name = core.StringPtr("testString")
 		model.EnforcementMethod = []string{"testString"}
+		model.EventPublishing = iamServiceRegistrationSupportedNetworkOperationsEventPublishingModel
 		model.DisplayName = iamServiceRegistrationDisplayNameObjectModel
 		model.Description = iamServiceRegistrationDescriptionObjectModel
 
 		assert.Equal(t, result, model)
 	}
+
+	iamServiceRegistrationSupportedNetworkOperationsEventPublishingModel := make(map[string]interface{})
+	iamServiceRegistrationSupportedNetworkOperationsEventPublishingModel["state"] = "enabled"
 
 	iamServiceRegistrationDisplayNameObjectModel := make(map[string]interface{})
 	iamServiceRegistrationDisplayNameObjectModel["default"] = "testString"
@@ -3227,10 +3362,51 @@ func TestResourceIbmOnboardingIamRegistrationMapToIamServiceRegistrationSupporte
 	model := make(map[string]interface{})
 	model["name"] = "testString"
 	model["enforcement_method"] = []interface{}{"testString"}
+	model["event_publishing"] = []interface{}{iamServiceRegistrationSupportedNetworkOperationsEventPublishingModel}
 	model["display_name"] = []interface{}{iamServiceRegistrationDisplayNameObjectModel}
 	model["description"] = []interface{}{iamServiceRegistrationDescriptionObjectModel}
 
 	result, err := partnercentersell.ResourceIbmOnboardingIamRegistrationMapToIamServiceRegistrationSupportedNetworkOperationsApiTypeItems(model)
+	assert.Nil(t, err)
+	checkResult(result)
+}
+
+func TestResourceIbmOnboardingIamRegistrationMapToIamServiceRegistrationSupportedNetworkOperationsEventPublishing(t *testing.T) {
+	checkResult := func(result *partnercentersellv1.IamServiceRegistrationSupportedNetworkOperationsEventPublishing) {
+		model := new(partnercentersellv1.IamServiceRegistrationSupportedNetworkOperationsEventPublishing)
+		model.State = core.StringPtr("enabled")
+
+		assert.Equal(t, result, model)
+	}
+
+	model := make(map[string]interface{})
+	model["state"] = "enabled"
+
+	result, err := partnercentersell.ResourceIbmOnboardingIamRegistrationMapToIamServiceRegistrationSupportedNetworkOperationsEventPublishing(model)
+	assert.Nil(t, err)
+	checkResult(result)
+}
+
+func TestResourceIbmOnboardingIamRegistrationMapToIamServiceRegistrationSupportedNetworkOperationsDefaults(t *testing.T) {
+	checkResult := func(result *partnercentersellv1.IamServiceRegistrationSupportedNetworkOperationsDefaults) {
+		iamServiceRegistrationSupportedNetworkOperationsEventPublishingModel := new(partnercentersellv1.IamServiceRegistrationSupportedNetworkOperationsEventPublishing)
+		iamServiceRegistrationSupportedNetworkOperationsEventPublishingModel.State = core.StringPtr("enabled")
+
+		model := new(partnercentersellv1.IamServiceRegistrationSupportedNetworkOperationsDefaults)
+		model.EnforcementMethod = []string{"testString"}
+		model.EventPublishing = iamServiceRegistrationSupportedNetworkOperationsEventPublishingModel
+
+		assert.Equal(t, result, model)
+	}
+
+	iamServiceRegistrationSupportedNetworkOperationsEventPublishingModel := make(map[string]interface{})
+	iamServiceRegistrationSupportedNetworkOperationsEventPublishingModel["state"] = "enabled"
+
+	model := make(map[string]interface{})
+	model["enforcement_method"] = []interface{}{"testString"}
+	model["event_publishing"] = []interface{}{iamServiceRegistrationSupportedNetworkOperationsEventPublishingModel}
+
+	result, err := partnercentersell.ResourceIbmOnboardingIamRegistrationMapToIamServiceRegistrationSupportedNetworkOperationsDefaults(model)
 	assert.Nil(t, err)
 	checkResult(result)
 }

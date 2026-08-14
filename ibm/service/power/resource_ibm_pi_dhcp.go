@@ -15,6 +15,7 @@ import (
 	"github.com/IBM-Cloud/power-go-client/power/client/p_cloud_service_d_h_c_p"
 	"github.com/IBM-Cloud/power-go-client/power/models"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -117,12 +118,14 @@ func ResourceIBMPIDhcp() *schema.Resource {
 	}
 }
 
-func resourceIBMPIDhcpCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceIBMPIDhcpCreate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 
 	// session
 	sess, err := meta.(conns.ClientSession).IBMPISession()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("IBMPISession failed: %s", err.Error()), "ibm_pi_dhcp", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	// dhcp create object
@@ -153,8 +156,10 @@ func resourceIBMPIDhcpCreate(ctx context.Context, d *schema.ResourceData, meta i
 	client := instance.NewIBMPIDhcpClient(ctx, sess, cloudInstanceID)
 	dhcpServer, err := client.Create(body)
 	if err != nil {
-		log.Printf("[DEBUG] create DHCP failed %v", err)
-		return diag.FromErr(err)
+
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Create failed: %s", err.Error()), "ibm_pi_dhcp", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	d.SetId(fmt.Sprintf("%s/%s", cloudInstanceID, *dhcpServer.ID))
@@ -162,23 +167,29 @@ func resourceIBMPIDhcpCreate(ctx context.Context, d *schema.ResourceData, meta i
 	// wait for creation
 	_, err = waitForIBMPIDhcpStatus(ctx, client, *dhcpServer.ID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
-		diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("waitForIBMPIDhcpStatus failed: %s", err.Error()), "ibm_pi_dhcp", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	return resourceIBMPIDhcpRead(ctx, d, meta)
 }
 
-func resourceIBMPIDhcpRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceIBMPIDhcpRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	// session
 	sess, err := meta.(conns.ClientSession).IBMPISession()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("IBMPISession failed: %s", err.Error()), "ibm_pi_dhcp", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	// arguments
 	cloudInstanceID, dhcpID, err := splitID(d.Id())
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("splitID failed: %s", err.Error()), "ibm_pi_dhcp", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	// get dhcp
@@ -192,7 +203,8 @@ func resourceIBMPIDhcpRead(ctx context.Context, d *schema.ResourceData, meta int
 			d.SetId("")
 			return nil
 		}
-		log.Printf("[DEBUG] get DHCP failed %v", err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Get failed: %s", err.Error()), "ibm_pi_dhcp", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return diag.FromErr(err)
 	}
 
@@ -225,17 +237,21 @@ func resourceIBMPIDhcpRead(ctx context.Context, d *schema.ResourceData, meta int
 	return nil
 }
 
-func resourceIBMPIDhcpDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceIBMPIDhcpDelete(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	// session
 	sess, err := meta.(conns.ClientSession).IBMPISession()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("IBMPISession failed: %s", err.Error()), "ibm_pi_dhcp", "delete")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	// arguments
 	cloudInstanceID, dhcpID, err := splitID(d.Id())
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("splitID failed: %s", err.Error()), "ibm_pi_dhcp", "delete")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	// delete dhcp
@@ -249,13 +265,16 @@ func resourceIBMPIDhcpDelete(ctx context.Context, d *schema.ResourceData, meta i
 			d.SetId("")
 			return nil
 		}
-		log.Printf("[DEBUG] delete DHCP failed %v", err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Delete failed: %s", err.Error()), "ibm_pi_dhcp", "delete")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return diag.FromErr(err)
 	}
 
 	// wait for deletion
 	_, err = waitForIBMPIDhcpDeleted(ctx, client, dhcpID, d.Timeout(schema.TimeoutDelete))
 	if err != nil {
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("waitForIBMPIDhcpDeleted failed: %s", err.Error()), "ibm_pi_dhcp", "delete")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return diag.FromErr(err)
 	}
 
@@ -288,11 +307,11 @@ func waitForIBMPIDhcpStatus(ctx context.Context, client *instance.IBMPIDhcpClien
 	return stateConf.WaitForStateContext(ctx)
 }
 
-func waitForIBMPIDhcpDeleted(ctx context.Context, client *instance.IBMPIDhcpClient, dhcpID string, timeout time.Duration) (interface{}, error) {
+func waitForIBMPIDhcpDeleted(ctx context.Context, client *instance.IBMPIDhcpClient, dhcpID string, timeout time.Duration) (any, error) {
 	stateConf := &retry.StateChangeConf{
 		Pending: []string{State_Deleting},
 		Target:  []string{State_Deleted},
-		Refresh: func() (interface{}, string, error) {
+		Refresh: func() (any, string, error) {
 			dhcpServer, err := client.Get(dhcpID)
 			if err != nil {
 				log.Printf("[DEBUG] dhcp does not exist %v", err)

@@ -29,10 +29,19 @@ data "ibm_is_snapshot_consistency_groups" "is_snapshot_consistency_groups" {
 }
 ```
 
+**Example: Filter by backup policy job**
+
+```terraform
+data "ibm_is_snapshot_consistency_groups" "is_snapshot_consistency_groups" {
+	backup_policy_job = "r006-fc4b7fbc-38af-45d9-9fb6-bf0533acbfc4"
+}
+```
+
 ## Argument Reference
 
 You can specify the following arguments for this data source.
 
+- `backup_policy_job` - (Optional, String) Filters the collection to snapshot consistency groups with a `backup_policy_job.id` property matching the specified identifier.
 - `backup_policy_plan` - (Optional, String) Filters the collection to backup policy jobs with a `backup_policy_plan.id` property matching the specified identifier.
 - `name` - (Optional, String) Filters the collection to resources with a `name` property matching the exact specified name.
 - `resource_group` - (Optional, String) Filters the collection to resources with a `resource_group.id` property matching the specified identifier.
@@ -45,6 +54,15 @@ After your data source is created, you can read values from the following attrib
 - `snapshot_consistency_groups` - (List) Collection of snapshot consistency groups.
 	
 	Nested schema for `snapshot_consistency_groups`:
+	- `backup_policy_job` - (List) If present, the backup policy job that created this snapshot consistency group. Snapshot consistency groups with the same backup policy job identifier represent snapshots of the same instance across different storage generations.
+		Nested schema for `backup_policy_job`:
+		- `deleted` - (List) If present, this property indicates the referenced resource has been deleted, and provides some supplementary information.
+
+			Nested schema for `deleted`:
+			- `more_info` - (String) Link to documentation about deleted resources.
+		- `href` - (String) The URL for this backup policy job.
+		- `id` - (String) The unique identifier for this backup policy job.
+		- `resource_type` - (String) The resource type.	
 	- `backup_policy_plan` - (List) If present, the backup policy plan which created this snapshot consistency group.
 		Nested schema for `backup_policy_plan`:
 		- `deleted` - (List) If present, this property indicates the referenced resource has been deleted, and providessome supplementary information.

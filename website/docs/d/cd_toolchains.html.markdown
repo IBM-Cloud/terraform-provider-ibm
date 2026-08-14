@@ -10,7 +10,7 @@ subcategory: "Continuous Delivery"
 
 Provides a read-only data source to retrieve information about cd_toolchains. You can then reference the fields of the data source in other resources within the same configuration by using interpolation syntax.
 
-~> **Warning:** Continuous Delivery (CD) will be discontinued in these regions on 12 February 2027: `au-syd`, `ca-mon`, `ca-tor`, `eu-es`, `jp-osa`, `us-east`. Follow the [migration guide](https://cloud.ibm.com/docs/ContinuousDelivery?topic=ContinuousDelivery-cd-migrate-region) to avoid disruption. [Learn more](https://cloud.ibm.com/docs/ContinuousDelivery?topic=ContinuousDelivery-cd-migrate-region)
+~> **Warning:** Continuous Delivery (CD) will be discontinued in these regions on 12 February 2027: `au-syd`, `ca-mon`, `ca-tor`, `us-east`. Follow the [migration guide](https://cloud.ibm.com/docs/ContinuousDelivery?topic=ContinuousDelivery-cd-migrate-region) to avoid disruption. [Learn more](https://cloud.ibm.com/docs/ContinuousDelivery?topic=ContinuousDelivery-cd-migrate-region)
 
 ## Example Usage
 

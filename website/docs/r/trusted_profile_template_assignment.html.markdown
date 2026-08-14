@@ -75,6 +75,50 @@ Nested schema for **resources**:
 	* `target` - (String) Target account where the IAM resource is created.
 * `status` - (String) Assignment status.
 
+## Failed or Superseded Assignment Retry
+
+Creating or updating an assignment is an asynchronous operation. If the assignment reaches a `failed` or `superseded` terminal state after all automatic retries are exhausted, the provider will surface an error and Terraform will mark the resource as **tainted**.
+
+* **`failed`** — The assignment encountered an error during processing. A PUT retry will attempt to apply only the sub-resources that failed.
+* **`superseded`** — Another existing assignment has taken precedence over this one. A retry should only be attempted once the superseding assignment has been removed, otherwise the retry will result in the same `superseded` state.
+
+A tainted resource would normally be destroyed and recreated on the next `terraform apply`. Because an assignment retry must issue a PUT (to retry only the failed sub-resources) rather than a DELETE + POST, you must **untaint** the resource before retrying:
+
+```bash
+terraform untaint ibm_iam_trusted_profile_template_assignment.<NAME>
+terraform apply
+```
+
+Replace `<NAME>` with the label of your resource block. For example, if your configuration is:
+
+```hcl
+resource "ibm_iam_trusted_profile_template_assignment" "assignment" { ... }
+```
+
+Run:
+
+```bash
+terraform untaint ibm_iam_trusted_profile_template_assignment.assignment
+terraform apply
+```
+
+After untainting, the provider records `template_version = 0` in state so that the next `terraform apply` detects a difference and issues an in-place PUT retry. Subsequent failures from the update path (no taint involved) require no untaint — just run `terraform apply` again.
+
+### Automatic retries
+
+Before surfacing the error, the provider automatically retries failed assignments up to a configurable number of times within the same `terraform apply`. The retry count is controlled by the environment variable:
+
+```
+IBMCLOUD_IAM_TRUSTED_PROFILE_ASSIGNMENT_RETRIES
+```
+
+The default is `1`. Set to `0` to disable automatic retries. For example, to retry up to 3 times:
+
+```bash
+export IBMCLOUD_IAM_TRUSTED_PROFILE_ASSIGNMENT_RETRIES=3
+terraform apply
+```
+
 ## Import
 
 You can import the `ibm_iam_trusted_profile_template_assignment` resource by using `id`. Assignment record Id.
