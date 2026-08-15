@@ -245,6 +245,7 @@ func Provider() *schema.Provider {
 			"ibm_config_aggregator_configurations": configurationaggregator.AddConfigurationAggregatorInstanceFields(configurationaggregator.DataSourceIbmConfigAggregatorConfigurations()),
 			"ibm_config_aggregator_settings":       configurationaggregator.AddConfigurationAggregatorInstanceFields(configurationaggregator.DataSourceIbmConfigAggregatorSettings()),
 			"ibm_config_aggregator_resource_collection_status": configurationaggregator.AddConfigurationAggregatorInstanceFields(configurationaggregator.DataSourceIbmConfigAggregatorResourceCollectionStatus()),
+			"ibm_config_aggregator_batch_configurations":       configurationaggregator.AddConfigurationAggregatorInstanceFields(configurationaggregator.DataSourceIbmConfigAggregatorBatchConfigurations()),
 
 			// // BackupAndRecovery
 			"ibm_backup_recovery_agent_upgrade_tasks":                   backuprecovery.AddInstanceFields(backuprecovery.DataSourceIbmBackupRecoveryAgentUpgradeTasks()),
