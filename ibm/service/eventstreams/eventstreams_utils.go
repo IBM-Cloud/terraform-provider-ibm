@@ -4,8 +4,10 @@
 package eventstreams
 
 import (
+	"errors"
 	"fmt"
 	"log"
+	"maps"
 	"slices"
 	"strings"
 
@@ -14,6 +16,7 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/version"
 	"github.com/IBM/go-sdk-core/v5/core"
+	"github.com/IBM/platform-services-go-sdk/resourcecontrollerv2"
 	"github.com/IBM/sarama"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
@@ -22,45 +25,103 @@ import (
 // key is instance's CRN
 var clientPool = map[string]sarama.ClusterAdmin{}
 
-func createSaramaAdminClient(d *schema.ResourceData, meta interface{}) (sarama.ClusterAdmin, string, error) {
+type extensions struct {
+	platformGeneration int
+	adminURL           string
+	bootstrapServers   []string
+}
+
+// formatObject flattens the map representation of a JSON object into a string.
+// Property names are preserved, but values are replaced by their Go type.
+// Intent is to provide debug information for service extensions without logging
+// values.
+func formatObject(m map[string]interface{}) string {
+	sb := &strings.Builder{}
+	for idx, propertyName := range slices.Sorted(maps.Keys(m)) {
+		if idx != 0 {
+			sb.WriteString(",")
+		}
+		value := m[propertyName]
+		if mapValue, ok := value.(map[string]interface{}); ok {
+			sb.WriteString(fmt.Sprintf("%q:{%s}", propertyName, formatObject(mapValue)))
+		} else {
+			sb.WriteString(fmt.Sprintf("%q:%T", propertyName, value))
+		}
+	}
+	return sb.String()
+}
+
+func parseInstanceExtensions(instance *resourcecontrollerv2.ResourceInstance, meta interface{}) (*extensions, error) {
+	if kafkaHTTP, ok := instance.Extensions["kafka_http_url"].(string); ok {
+		if brokersSASL, ok := instance.Extensions["kafka_brokers_sasl"].([]interface{}); ok {
+			bootstrapServers := flex.ExpandStringList(brokersSASL)
+			slices.Sort(bootstrapServers)
+			return &extensions{
+				adminURL:           kafkaHTTP,
+				bootstrapServers:   bootstrapServers,
+				platformGeneration: 1,
+			}, nil
+		}
+	}
+	if dataservices, ok := instance.Extensions["dataservices"].(map[string]any); ok {
+		if connection, ok := dataservices["connection"].(map[string]any); ok {
+			if bootstrapServers, ok := connection["bootstrap_servers"].(string); ok {
+				if restURL, ok := connection["rest_url"].(string); ok {
+					return &extensions{
+						adminURL:           restURL,
+						bootstrapServers:   strings.Split(bootstrapServers, ","),
+						platformGeneration: 2,
+					}, nil
+				}
+			}
+		}
+	}
+	log.Printf("[DEBUG] unexpected format of instance extensions: %s", formatObject(instance.Extensions))
+	return nil, errors.New("unexpected format of instance extensions")
+}
+
+func createSaramaAdminClient(d *schema.ResourceData, meta interface{}) (sarama.ClusterAdmin, *extensions, string, error) {
 	bxSession, err := meta.(conns.ClientSession).BluemixSession()
 	if err != nil {
 		log.Printf("[DEBUG] createSaramaAdminClient BluemixSession err %s", err)
-		return nil, "", err
+		return nil, nil, "", err
 	}
 	instanceCRN := d.Get("resource_instance_id").(string)
 	if len(instanceCRN) == 0 {
-		topicID := d.Id()
-		if len(topicID) == 0 || !strings.Contains(topicID, ":") {
+		id := d.Id()
+		if len(id) == 0 || !strings.Contains(id, ":") {
 			log.Printf("[DEBUG] createSaramaAdminClient resource_instance_id is missing")
-			return nil, "", fmt.Errorf("resource_instance_id is required")
+			return nil, nil, "", fmt.Errorf("resource_instance_id is required")
 		}
-		instanceCRN = getInstanceCRN(topicID)
+		instanceCRN = getInstanceCRN(id)
 	}
 	instance, err := getInstanceDetails(instanceCRN, meta)
 	if err != nil {
-		return nil, "", err
+		log.Printf("[DEBUG] createSaramaAdminClient err %s", err)
+		return nil, nil, "", err
 	}
-	adminURL := instance.Extensions["kafka_http_url"].(string)
-	d.Set("kafka_http_url", adminURL)
-	log.Printf("[INFO] createSaramaAdminClient kafka_http_url is set to %s", adminURL)
-	brokerAddress := flex.ExpandStringList(instance.Extensions["kafka_brokers_sasl"].([]interface{}))
-	slices.Sort(brokerAddress)
-	d.Set("kafka_brokers_sasl", brokerAddress)
-	log.Printf("[INFO] createSaramaAdminClient kafka_brokers_sasl is set to %s", brokerAddress)
+	ext, err := parseInstanceExtensions(instance, meta)
+	if err != nil {
+		return nil, nil, "", err
+	}
+	log.Printf("[INFO] createSaramaAdminClient kafka_http_url is set to %s", ext.adminURL)
+	log.Printf("[INFO] createSaramaAdminClient kafka_brokers_sasl is set to %s", strings.Join(ext.bootstrapServers, ","))
 	var adminClient sarama.ClusterAdmin
 	var ok bool
 	if adminClient, ok = clientPool[instanceCRN]; ok {
 		log.Printf("[DEBUG] createSaramaAdminClient got client from pool for instance %s", instanceCRN)
-		return adminClient, instanceCRN, nil
+		return adminClient, ext, instanceCRN, nil
 	}
 	config := sarama.NewConfig()
 	config.ClientID = fmt.Sprintf("terraform-provider-ibm/%s", version.Version)
 	config.Net.SASL.Enable = true
 	config.Net.TLS.Enable = true
-	config.Version = sarama.MaxVersion
-	tenantID := strings.TrimPrefix(strings.Split(adminURL, ".")[0], "https://")
-	if tenantID != "" && tenantID != "admin" {
+	config.Version = sarama.V3_8_1_0
+	if ext.platformGeneration >= 2 {
+		config.Version = sarama.V4_1_0_0
+	}
+	tenantID := strings.TrimPrefix(strings.Split(ext.adminURL, ".")[0], "https://")
+	if ext.platformGeneration == 1 && tenantID != "" && tenantID != "admin" {
 		config.Net.SASL.AuthIdentity = tenantID
 	} else {
 		config.Net.SASL.AuthIdentity = instanceCRN
@@ -69,16 +130,16 @@ func createSaramaAdminClient(d *schema.ResourceData, meta interface{}) (sarama.C
 	config.Net.SASL.Mechanism = sarama.SASLTypeOAuth
 	config.Net.SASL.TokenProvider, err = newAccessTokenProvider(bxSession)
 	if err != nil {
-		return nil, "", err
+		return nil, nil, "", err
 	}
-	adminClient, err = sarama.NewClusterAdmin(brokerAddress, config)
+	adminClient, err = sarama.NewClusterAdmin(ext.bootstrapServers, config)
 	if err != nil {
 		log.Printf("[DEBUG] createSaramaAdminClient NewClusterAdmin err %s", err)
-		return nil, "", err
+		return nil, nil, "", err
 	}
 	clientPool[instanceCRN] = adminClient
 	log.Printf("[INFO] createSaramaAdminClient instance %s 's client is initialized", instanceCRN)
-	return adminClient, instanceCRN, nil
+	return adminClient, ext, instanceCRN, nil
 }
 
 func topicDetail2Config(topicConfigEntries map[string]*string) map[string]*string {
