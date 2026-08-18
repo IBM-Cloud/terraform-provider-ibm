@@ -1,4 +1,4 @@
-// Copyright IBM Corp. 2017, 2021 All Rights Reserved.
+// Copyright IBM Corp. 2017, 2026 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 package eventstreams
@@ -82,7 +82,7 @@ func ResourceIBMEventStreamsTopic() *schema.Resource {
 
 func resourceIBMEventStreamsTopicExists(context context.Context, d *schema.ResourceData, meta interface{}) (bool, error) {
 	log.Printf("[DEBUG] resourceIBMEventStreamsTopicExists")
-	adminClient, _, err := createSaramaAdminClient(d, meta)
+	adminClient, _, _, err := createSaramaAdminClient(d, meta)
 	if err != nil {
 		log.Printf("[DEBUG] resourceIBMEventStreamsTopicExists createSaramaAdminClient err %s", err)
 		return false, err
@@ -110,7 +110,7 @@ func resourceIBMEventStreamsTopicExists(context context.Context, d *schema.Resou
 
 func resourceIBMEventStreamsTopicCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	log.Printf("[DEBUG] resourceIBMEventStreamsTopicCreate")
-	adminClient, instanceCRN, err := createSaramaAdminClient(d, meta)
+	adminClient, _, instanceCRN, err := createSaramaAdminClient(d, meta)
 	if err != nil {
 		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("resourceIBMEventStreamsTopicCreate createSaramaAdminClient: %s", err), "ibm_event_streams_topic", "create")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
@@ -151,7 +151,7 @@ func resourceIBMEventStreamsTopicCreate(context context.Context, d *schema.Resou
 
 func resourceIBMEventStreamsTopicRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	log.Printf("[DEBUG] resourceIBMEventStreamsTopicRead")
-	adminClient, instanceCRN, err := createSaramaAdminClient(d, meta)
+	adminClient, ext, instanceCRN, err := createSaramaAdminClient(d, meta)
 	if err != nil {
 		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("resourceIBMEventStreamsTopicRead createSaramaAdminClient: %s", err), "ibm_event_streams_topic", "read")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
@@ -168,6 +168,10 @@ func resourceIBMEventStreamsTopicRead(context context.Context, d *schema.Resourc
 	for name, detail := range topics {
 		if name == topicName {
 			d.Set("resource_instance_id", instanceCRN)
+			if ext.platformGeneration == 1 {
+				d.Set("kafka_http_url", ext.adminURL)
+			}
+			d.Set("kafka_brokers_sasl", ext.bootstrapServers)
 			d.Set("name", name)
 			d.Set("partitions", detail.NumPartitions)
 			if config := d.Get("config"); config != nil {
@@ -189,7 +193,7 @@ func resourceIBMEventStreamsTopicRead(context context.Context, d *schema.Resourc
 
 func resourceIBMEventStreamsTopicUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	log.Printf("[DEBUG] resourceIBMEventStreamsTopicUpdate")
-	adminClient, _, err := createSaramaAdminClient(d, meta)
+	adminClient, _, _, err := createSaramaAdminClient(d, meta)
 	if err != nil {
 		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("resourceIBMEventStreamsTopicUpdate createSaramaAdminClient: %s", err), "ibm_event_streams_topic", "update")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
@@ -227,7 +231,7 @@ func resourceIBMEventStreamsTopicUpdate(context context.Context, d *schema.Resou
 
 func resourceIBMEventStreamsTopicDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	log.Printf("[DEBUG] resourceIBMEventStreamsTopicDelete")
-	adminClient, _, err := createSaramaAdminClient(d, meta)
+	adminClient, _, _, err := createSaramaAdminClient(d, meta)
 	if err != nil {
 		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("resourceIBMEventStreamsTopicDelete createSaramaAdminClient: %s", err), "ibm_event_streams_topic", "delete")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
