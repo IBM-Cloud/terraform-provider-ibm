@@ -8,9 +8,9 @@ import (
 
 	"github.com/stretchr/testify/assert"
 )
+
 // testPasswordValue is a non-secret placeholder used in unit test fixtures.
 const testPasswordValue = "test-fixture-password"
-
 
 // TestTransformGen2ConnectionToSchema_PostgreSQL tests PostgreSQL connection transformation
 func TestTransformGen2ConnectionToSchema_PostgreSQL(t *testing.T) {
