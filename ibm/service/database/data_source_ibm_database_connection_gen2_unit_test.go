@@ -8,6 +8,9 @@ import (
 
 	"github.com/stretchr/testify/assert"
 )
+// testPasswordValue is a non-secret placeholder used in unit test fixtures.
+const testPasswordValue = "test-fixture-password"
+
 
 // TestTransformGen2ConnectionToSchema_PostgreSQL tests PostgreSQL connection transformation
 func TestTransformGen2ConnectionToSchema_PostgreSQL(t *testing.T) {
@@ -17,7 +20,7 @@ func TestTransformGen2ConnectionToSchema_PostgreSQL(t *testing.T) {
 		"database": "postgres",
 		"path":     "/postgres",
 		"composed": []interface{}{
-			"postgres://user:pass@host.example.com:5432/postgres?sslmode=verify-full",
+			"postgres://user:example-value@host.example.com:5432/postgres?sslmode=verify-full",
 		},
 		"hosts": []interface{}{
 			map[string]interface{}{
@@ -28,7 +31,7 @@ func TestTransformGen2ConnectionToSchema_PostgreSQL(t *testing.T) {
 		"authentication": map[string]interface{}{
 			"method":   "direct",
 			"username": "user",
-			"password": "pass",
+			"password": testPasswordValue,
 		},
 		"certificate": map[string]interface{}{
 			"name":               "ca-certificate",
@@ -63,7 +66,7 @@ func TestTransformGen2ConnectionToSchema_PostgreSQL(t *testing.T) {
 	assert.Len(t, auth, 1)
 	assert.Equal(t, "direct", auth[0]["method"])
 	assert.Equal(t, "user", auth[0]["username"])
-	assert.Equal(t, "pass", auth[0]["password"])
+	assert.Equal(t, testPasswordValue, auth[0]["password"])
 
 	// Verify certificate transformation
 	cert := result["certificate"].([]map[string]interface{})
@@ -84,7 +87,7 @@ func TestTransformGen2ConnectionToSchema_MongoDB(t *testing.T) {
 		"database": "admin",
 		"path":     "/admin",
 		"composed": []interface{}{
-			"mongodb://user:pass@host1.example.com:27017,host2.example.com:27017/admin?authSource=admin&replicaSet=replset",
+			"mongodb://user:example-value@host1.example.com:27017,host2.example.com:27017/admin?authSource=admin&replicaSet=replset",
 		},
 		"hosts": []interface{}{
 			map[string]interface{}{
@@ -99,7 +102,7 @@ func TestTransformGen2ConnectionToSchema_MongoDB(t *testing.T) {
 		"authentication": map[string]interface{}{
 			"method":   "direct",
 			"username": "user",
-			"password": "pass",
+			"password": testPasswordValue,
 		},
 		"query_options": map[string]interface{}{
 			"authSource": "admin",
@@ -136,7 +139,7 @@ func TestTransformGen2ConnectionToSchema_Redis(t *testing.T) {
 		"type":   "uri",
 		"scheme": "rediss",
 		"composed": []interface{}{
-			"rediss://:password@host.example.com:6379/0",
+			"rediss://:example-value@host.example.com:6379/0",
 		},
 		"hosts": []interface{}{
 			map[string]interface{}{
@@ -146,7 +149,7 @@ func TestTransformGen2ConnectionToSchema_Redis(t *testing.T) {
 		},
 		"authentication": map[string]interface{}{
 			"method":   "direct",
-			"password": "password",
+			"password": testPasswordValue,
 		},
 		"query_options": map[string]interface{}{
 			"ssl": true,
@@ -170,7 +173,7 @@ func TestTransformGen2ConnectionToSchema_RabbitMQ_AMQPS(t *testing.T) {
 		"type":   "uri",
 		"scheme": "amqps",
 		"composed": []interface{}{
-			"amqps://user:pass@host.example.com:5671",
+			"amqps://user:example-value@host.example.com:5671",
 		},
 		"hosts": []interface{}{
 			map[string]interface{}{
@@ -181,7 +184,7 @@ func TestTransformGen2ConnectionToSchema_RabbitMQ_AMQPS(t *testing.T) {
 		"authentication": map[string]interface{}{
 			"method":   "direct",
 			"username": "user",
-			"password": "pass",
+			"password": testPasswordValue,
 		},
 	}
 
@@ -198,7 +201,7 @@ func TestTransformGen2ConnectionToSchema_RabbitMQ_MQTTS(t *testing.T) {
 		"type":   "uri",
 		"scheme": "mqtts",
 		"composed": []interface{}{
-			"mqtts://user:pass@host.example.com:8883",
+			"mqtts://user:example-value@host.example.com:8883",
 		},
 		"hosts": []interface{}{
 			map[string]interface{}{
@@ -209,7 +212,7 @@ func TestTransformGen2ConnectionToSchema_RabbitMQ_MQTTS(t *testing.T) {
 		"authentication": map[string]interface{}{
 			"method":   "direct",
 			"username": "user",
-			"password": "pass",
+			"password": testPasswordValue,
 		},
 	}
 
@@ -226,7 +229,7 @@ func TestTransformGen2ConnectionToSchema_RabbitMQ_StompSSL(t *testing.T) {
 		"type":   "uri",
 		"scheme": "stomp+ssl",
 		"composed": []interface{}{
-			"stomp+ssl://user:pass@host.example.com:61614",
+			"stomp+ssl://user:example-value@host.example.com:61614",
 		},
 		"hosts": []interface{}{
 			map[string]interface{}{
@@ -237,7 +240,7 @@ func TestTransformGen2ConnectionToSchema_RabbitMQ_StompSSL(t *testing.T) {
 		"authentication": map[string]interface{}{
 			"method":   "direct",
 			"username": "user",
-			"password": "pass",
+			"password": testPasswordValue,
 		},
 	}
 
@@ -255,7 +258,7 @@ func TestTransformGen2ConnectionToSchema_MySQL(t *testing.T) {
 		"scheme":   "mysql",
 		"database": "ibmclouddb",
 		"composed": []interface{}{
-			"mysql://user:pass@host.example.com:3306/ibmclouddb?ssl-mode=REQUIRED",
+			"mysql://user:example-value@host.example.com:3306/ibmclouddb?ssl-mode=REQUIRED",
 		},
 		"hosts": []interface{}{
 			map[string]interface{}{
@@ -266,7 +269,7 @@ func TestTransformGen2ConnectionToSchema_MySQL(t *testing.T) {
 		"authentication": map[string]interface{}{
 			"method":   "direct",
 			"username": "user",
-			"password": "pass",
+			"password": testPasswordValue,
 		},
 		"query_options": map[string]interface{}{
 			"ssl-mode": "REQUIRED",
@@ -287,7 +290,7 @@ func TestTransformGen2ConnectionToSchema_Elasticsearch_HTTPS(t *testing.T) {
 		"type":   "uri",
 		"scheme": "https",
 		"composed": []interface{}{
-			"https://user:pass@host.example.com:9200",
+			"https://user:example-value@host.example.com:9200",
 		},
 		"hosts": []interface{}{
 			map[string]interface{}{
@@ -298,7 +301,7 @@ func TestTransformGen2ConnectionToSchema_Elasticsearch_HTTPS(t *testing.T) {
 		"authentication": map[string]interface{}{
 			"method":   "direct",
 			"username": "user",
-			"password": "pass",
+			"password": testPasswordValue,
 		},
 	}
 
@@ -450,15 +453,15 @@ func TestTransformGen2CliToSchema(t *testing.T) {
 			"port=5432",
 			"dbname=postgres",
 			"user=user",
-			"password=pass",
+			"password=example-value",
 			"sslmode=verify-full",
 		},
 		"composed": []interface{}{
-			"PGUSER=user PGPASSWORD=pass PGSSLMODE=verify-full psql 'host=host.example.com port=5432 dbname=postgres'",
+			"PGUSER=user PGPASSWORD=example-value PGSSLMODE=verify-full psql 'host=host.example.com port=5432 dbname=postgres'",
 		},
 		"environment": map[string]interface{}{
 			"PGUSER":        "user",
-			"PGPASSWORD":    "pass",
+			"PGPASSWORD":    testPasswordValue,
 			"PGSSLMODE":     "verify-full",
 			"PGSSLROOTCERT": "system",
 		},
@@ -481,7 +484,7 @@ func TestTransformGen2CliToSchema(t *testing.T) {
 	// Verify environment variables
 	env := result["environment"].(map[string]interface{})
 	assert.Equal(t, "user", env["PGUSER"])
-	assert.Equal(t, "pass", env["PGPASSWORD"])
+	assert.Equal(t, testPasswordValue, env["PGPASSWORD"])
 	assert.Equal(t, "verify-full", env["PGSSLMODE"])
 	assert.Equal(t, "system", env["PGSSLROOTCERT"])
 
@@ -498,10 +501,10 @@ func TestTransformGen2CliToSchema_MongoDB(t *testing.T) {
 		"type": "cli",
 		"bin":  "mongosh",
 		"arguments": []interface{}{
-			"mongodb://user:pass@host.example.com:27017/admin?authSource=admin&replicaSet=replset",
+			"mongodb://user:example-value@host.example.com:27017/admin?authSource=admin&replicaSet=replset",
 		},
 		"composed": []interface{}{
-			"mongosh 'mongodb://user:pass@host.example.com:27017/admin?authSource=admin&replicaSet=replset'",
+			"mongosh 'mongodb://user:example-value@host.example.com:27017/admin?authSource=admin&replicaSet=replset'",
 		},
 		"environment": map[string]interface{}{},
 	}
@@ -523,14 +526,14 @@ func TestTransformGen2CliToSchema_Redis(t *testing.T) {
 		"arguments": []interface{}{
 			"-h", "host.example.com",
 			"-p", "6379",
-			"-a", "password",
+			"-a", "example-value",
 			"--tls",
 		},
 		"composed": []interface{}{
-			"redis-cli -h host.example.com -p 6379 -a password --tls",
+			"redis-cli -h host.example.com -p 6379 -a example-value --tls",
 		},
 		"environment": map[string]interface{}{
-			"REDISCLI_AUTH": "password",
+			"REDISCLI_AUTH": testPasswordValue,
 		},
 	}
 
@@ -542,7 +545,7 @@ func TestTransformGen2CliToSchema_Redis(t *testing.T) {
 
 	// Verify environment
 	env := result["environment"].(map[string]interface{})
-	assert.Equal(t, "password", env["REDISCLI_AUTH"])
+	assert.Equal(t, testPasswordValue, env["REDISCLI_AUTH"])
 }
 
 // TestTransformGen2ConnectionToSchema_EmptyInput tests handling of empty input
