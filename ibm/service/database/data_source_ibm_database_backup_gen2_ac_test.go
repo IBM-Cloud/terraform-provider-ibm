@@ -16,14 +16,20 @@ import (
 // using the same single-test-step acceptance style as the legacy datasource test.
 func TestAccIBMDatabaseBackupGen2DataSourceBasic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { acc.TestAccPreCheck(t) },
+		PreCheck:  func() { acc.TestAccPreCheckEnterprise(t) },
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccCheckIBMDatabaseBackupGen2DataSourceConfigBasic(),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_database_backup.database_backup", "backup_id"),
+					resource.TestCheckResourceAttrSet("data.ibm_database_backup.database_backup", "deployment_id"),
+					resource.TestCheckResourceAttrSet("data.ibm_database_backup.database_backup", "type"),
+					resource.TestCheckResourceAttrSet("data.ibm_database_backup.database_backup", "status"),
 					resource.TestCheckResourceAttrSet("data.ibm_database_backup.database_backup", "created_at"),
+					resource.TestCheckResourceAttrSet("data.ibm_database_backup.database_backup", "is_downloadable"),
+					resource.TestCheckResourceAttrSet("data.ibm_database_backup.database_backup", "is_restorable"),
+					resource.TestCheckResourceAttr("data.ibm_database_backup.database_backup", "download_link", ""),
 				),
 			},
 		},
