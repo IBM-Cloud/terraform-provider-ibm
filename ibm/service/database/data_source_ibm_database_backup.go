@@ -15,7 +15,6 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM/cloud-databases-go-sdk/clouddatabasesv5"
-	rc "github.com/IBM/platform-services-go-sdk/resourcecontrollerv2"
 )
 
 type dataSourceIBMDatabaseBackupBackend interface {
@@ -25,38 +24,13 @@ type dataSourceIBMDatabaseBackupBackend interface {
 func pickDataSourceBackupBackend(d *schema.ResourceData, meta interface{}) (dataSourceIBMDatabaseBackupBackend, error) {
 	backupID := d.Get("backup_id").(string)
 	parts := strings.Split(backupID, ":")
+
+	// Gen2 only uses decoupled independent backups, identifiable from the CRN alone.
 	if len(parts) >= 5 && parts[4] == "databases-independent-backups" {
 		return newDataSourceIBMDatabaseBackupGen2Backend(), nil
 	}
 
-	cloudDatabasesClient, err := meta.(conns.ClientSession).CloudDatabasesV5()
-	if err != nil {
-		return nil, err
-	}
-
-	getBackupInfoOptions := &clouddatabasesv5.GetBackupInfoOptions{}
-	getBackupInfoOptions.SetBackupID(backupID)
-
-	backup, _, err := cloudDatabasesClient.GetBackupInfoWithContext(context.Background(), getBackupInfoOptions)
-	if err != nil {
-		return nil, err
-	}
-
-	deploymentID := *backup.Backup.DeploymentID
-	rsConClient, err := meta.(conns.ClientSession).ResourceControllerV2API()
-	if err != nil {
-		return nil, err
-	}
-
-	instance, _, err := rsConClient.GetResourceInstance(&rc.GetResourceInstanceOptions{ID: &deploymentID})
-	if err != nil {
-		return nil, fmt.Errorf("failed to get resource instance: %s", err)
-	}
-
-	plan := *instance.ResourcePlanID
-	if isGen2Plan(plan) {
-		return newDataSourceIBMDatabaseBackupGen2Backend(), nil
-	}
+	// All other backup IDs are Classic — route directly to the classic backend.
 	return newDataSourceIBMDatabaseBackupClassicBackend(), nil
 }
 
