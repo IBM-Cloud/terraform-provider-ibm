@@ -873,3 +873,27 @@ func clearGen2UnsupportedAttributes(d *schema.ResourceData) {
 	// but platform_options is handled by the data source implementation which only sets
 	// disk_encryption_key_crn for Gen2 instances
 }
+
+// extractGen2BackupExtensions parses the dataservices.backup extension block from
+// a Resource Controller instance and returns the source data service CRN and backup type.
+// Both values are empty strings when the extension is absent or malformed.
+func extractGen2BackupExtensions(extensions map[string]interface{}) (sourceDataServiceCRN string, backupType string) {
+	if extensions == nil {
+		return
+	}
+	dataservices, ok := extensions["dataservices"].(map[string]interface{})
+	if !ok {
+		return
+	}
+	backupData, ok := dataservices["backup"].(map[string]interface{})
+	if !ok {
+		return
+	}
+	if v, ok := backupData["source_data_service_crn"].(string); ok {
+		sourceDataServiceCRN = v
+	}
+	if v, ok := backupData["type"].(string); ok {
+		backupType = v
+	}
+	return
+}

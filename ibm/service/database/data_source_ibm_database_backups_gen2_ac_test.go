@@ -17,7 +17,7 @@ func TestAccIBMDatabaseBackupsGen2DataSourceBasic(t *testing.T) {
 		PreCheck:  func() { acc.TestAccPreCheckEnterprise(t) },
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccCheckIBMDatabaseBackupsGen2DataSourceConfigBasic(),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_database_backups.database_backups", "deployment_id"),

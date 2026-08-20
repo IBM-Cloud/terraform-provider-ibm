@@ -46,20 +46,7 @@ func (g *dataSourceIBMDatabaseBackupGen2Backend) Read(context context.Context, d
 
 	d.SetId(backupID)
 
-	var sourceDataServiceCRN string
-	var backupType string
-	if instance.Extensions != nil {
-		if dataservices, ok := instance.Extensions["dataservices"].(map[string]interface{}); ok {
-			if backupData, ok := dataservices["backup"].(map[string]interface{}); ok {
-				if crnVal, ok := backupData["source_data_service_crn"].(string); ok {
-					sourceDataServiceCRN = crnVal
-				}
-				if typeVal, ok := backupData["type"].(string); ok {
-					backupType = typeVal
-				}
-			}
-		}
-	}
+	sourceDataServiceCRN, backupType := extractGen2BackupExtensions(instance.Extensions)
 
 	backupState := ""
 	if instance.State != nil {

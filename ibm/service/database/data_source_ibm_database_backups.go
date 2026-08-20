@@ -26,6 +26,10 @@ type dataSourceIBMDatabaseBackupsBackend interface {
 func pickDataSourceBackupsBackend(d *schema.ResourceData, meta interface{}) (dataSourceIBMDatabaseBackupsBackend, error) {
 	deploymentIDRaw, ok := d.GetOk("deployment_id")
 	if !ok || deploymentIDRaw.(string) == "" {
+		// Without a deployment_id we cannot inspect the instance plan, so we
+		// default to the Gen2 backend which lists all independent backup
+		// resources. Classic users who need to list all backups must supply a
+		// deployment_id so the correct backend can be selected.
 		return newDataSourceIBMDatabaseBackupsGen2Backend(), nil
 	}
 
@@ -40,8 +44,7 @@ func pickDataSourceBackupsBackend(d *schema.ResourceData, meta interface{}) (dat
 		return nil, fmt.Errorf("failed to get resource instance: %s", err)
 	}
 
-	plan := *instance.ResourcePlanID
-	if isGen2Plan(plan) {
+	if isGen2Plan(*instance.ResourcePlanID) {
 		return newDataSourceIBMDatabaseBackupsGen2Backend(), nil
 	}
 	return newDataSourceIBMDatabaseBackupsClassicBackend(), nil
