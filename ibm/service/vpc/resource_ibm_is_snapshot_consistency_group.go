@@ -144,6 +144,44 @@ func ResourceIBMIsSnapshotConsistencyGroup() *schema.Resource {
 					},
 				},
 			},
+			"backup_policy_job": &schema.Schema{
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "If present, the backup policy job that created this snapshot consistency group. Snapshot consistency groups with the same backup policy job identifier represent snapshots of the same instance across different storage generations.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"deleted": &schema.Schema{
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "If present, this property indicates the referenced resource has been deleted, and provides some supplementary information.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"more_info": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "Link to documentation about deleted resources.",
+									},
+								},
+							},
+						},
+						"href": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The URL for this backup policy job.",
+						},
+						"id": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The unique identifier for this backup policy job.",
+						},
+						"resource_type": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The resource type.",
+						},
+					},
+				},
+			},
 			"backup_policy_plan": &schema.Schema{
 				Type:        schema.TypeList,
 				Computed:    true,
@@ -553,12 +591,33 @@ func resourceIBMIsSnapshotConsistencyGroupRead(context context.Context, d *schem
 		}
 	}
 
+	if !core.IsNil(snapshotConsistencyGroup.BackupPolicyJob) {
+		backupPolicyJobMap, err := resourceIBMIsSnapshotConsistencyGroupBackupPolicyJobReferenceToMap(snapshotConsistencyGroup.BackupPolicyJob)
+		if err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_snapshot_consistency_group", "read", "backup_policy_job-to-map").GetDiag()
+		}
+		if err = d.Set("backup_policy_job", []map[string]interface{}{backupPolicyJobMap}); err != nil {
+			err = fmt.Errorf("Error setting backup_policy_job: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_snapshot_consistency_group", "read", "set-backup_policy_job").GetDiag()
+		}
+	} else {
+		if err = d.Set("backup_policy_job", []map[string]interface{}{}); err != nil {
+			err = fmt.Errorf("Error setting backup_policy_job: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_snapshot_consistency_group", "read", "set-backup_policy_job").GetDiag()
+		}
+	}
+
 	if !core.IsNil(snapshotConsistencyGroup.BackupPolicyPlan) {
 		backupPolicyPlanMap, err := resourceIBMIsSnapshotConsistencyGroupBackupPolicyPlanReferenceToMap(snapshotConsistencyGroup.BackupPolicyPlan)
 		if err != nil {
 			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_snapshot_consistency_group", "read", "backup_policy_plan-to-map").GetDiag()
 		}
 		if err = d.Set("backup_policy_plan", []map[string]interface{}{backupPolicyPlanMap}); err != nil {
+			err = fmt.Errorf("Error setting backup_policy_plan: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_snapshot_consistency_group", "read", "set-backup_policy_plan").GetDiag()
+		}
+	} else {
+		if err = d.Set("backup_policy_plan", []map[string]interface{}{}); err != nil {
 			err = fmt.Errorf("Error setting backup_policy_plan: %s", err)
 			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_snapshot_consistency_group", "read", "set-backup_policy_plan").GetDiag()
 		}
@@ -806,6 +865,27 @@ func resourceIBMIsSnapshotConsistencyGroupRegionReferenceToMap(model *vpcv1.Regi
 	modelMap := make(map[string]interface{})
 	modelMap["href"] = model.Href
 	modelMap["name"] = model.Name
+	return modelMap, nil
+}
+
+func resourceIBMIsSnapshotConsistencyGroupBackupPolicyJobReferenceToMap(model *vpcv1.BackupPolicyJobReference) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.Deleted != nil {
+		deletedMap, err := resourceIBMIsSnapshotConsistencyGroupBackupPolicyJobReferenceDeletedToMap(model.Deleted)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["deleted"] = []map[string]interface{}{deletedMap}
+	}
+	modelMap["href"] = model.Href
+	modelMap["id"] = model.ID
+	modelMap["resource_type"] = model.ResourceType
+	return modelMap, nil
+}
+
+func resourceIBMIsSnapshotConsistencyGroupBackupPolicyJobReferenceDeletedToMap(model *vpcv1.Deleted) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	modelMap["more_info"] = model.MoreInfo
 	return modelMap, nil
 }
 

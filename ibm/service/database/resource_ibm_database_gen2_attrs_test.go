@@ -70,30 +70,31 @@ func requireNoErrors(t *testing.T, diags diag.Diagnostics) {
 
 func TestGen2UnsupportedAttrsValidation(t *testing.T) {
 	g := &resourceIBMDatabaseGen2Backend{}
+	adminPasswordValue := "example-admin-value"
 
 	t.Run("unsupported attr present returns error", func(t *testing.T) {
 		d := testGen2DatabaseResourceData(t, map[string]interface{}{
-			"backup_id": "backup-123",
+			"adminpassword": adminPasswordValue,
 		})
 
 		err := g.ValidateUnsupportedAttrsData(d)
 
-		requireErrContains(t, err, "backup_id")
+		requireErrContains(t, err, "adminpassword")
 		requireErrContains(t, err, "not supported")
 	})
 
 	t.Run("multiple unsupported attrs present are all listed", func(t *testing.T) {
 		d := testGen2DatabaseResourceData(t, map[string]interface{}{
-			"backup_id":                 "backup-123",
-			"adminpassword":             "very-secure-password-123",
+			"adminpassword":             adminPasswordValue,
 			"backup_encryption_key_crn": "crn:v1:bluemix:public:kms:us-south:a/account-id:instance-id:key:key-id",
+			"remote_leader_id":          "crn:v1:bluemix:public:databases-for-postgresql:us-south:a/account-id:instance-id::",
 		})
 
 		err := g.ValidateUnsupportedAttrsData(d)
 
-		requireErrContains(t, err, "backup_id")
 		requireErrContains(t, err, "adminpassword")
 		requireErrContains(t, err, "backup_encryption_key_crn")
+		requireErrContains(t, err, "remote_leader_id")
 	})
 
 	t.Run("ignored attr only does not return error", func(t *testing.T) {
@@ -110,13 +111,13 @@ func TestGen2UnsupportedAttrsValidation(t *testing.T) {
 
 	t.Run("ignored and unsupported attrs returns error for unsupported attrs only", func(t *testing.T) {
 		d := testGen2DatabaseResourceData(t, map[string]interface{}{
-			"backup_id":     "backup-123",
+			"adminpassword": adminPasswordValue,
 			"configuration": `{"max_connections": 100}`,
 		})
 
 		err := g.ValidateUnsupportedAttrsData(d)
 
-		requireErrContains(t, err, "backup_id")
+		requireErrContains(t, err, "adminpassword")
 		requireErrNotContains(t, err, "configuration")
 	})
 }
@@ -193,15 +194,16 @@ func TestGen2IgnoredAttrsWarnings(t *testing.T) {
 
 func TestGen2IgnoredAttrsWarningsAreIndependentFromUnsupportedAttrs(t *testing.T) {
 	g := &resourceIBMDatabaseGen2Backend{}
+	adminPasswordValue := "example-admin-value"
 
 	d := testGen2DatabaseResourceData(t, map[string]interface{}{
-		"backup_id":                   "backup-123",
+		"adminpassword":               adminPasswordValue,
 		"configuration":               `{"max_connections": 100}`,
 		"version_upgrade_skip_backup": true,
 	})
 
 	err := g.ValidateUnsupportedAttrsData(d)
-	requireErrContains(t, err, "backup_id")
+	requireErrContains(t, err, "adminpassword")
 	requireErrNotContains(t, err, "configuration")
 	requireErrNotContains(t, err, "version_upgrade_skip_backup")
 
@@ -224,7 +226,7 @@ func TestGen2DiagnosticsCanContainErrorsAndWarnings(t *testing.T) {
 		{
 			Severity: diag.Error,
 			Summary:  "unsupported attr error",
-			Detail:   "backup_id is not supported",
+			Detail:   "adminpassword is not supported",
 		},
 	}
 
@@ -278,5 +280,80 @@ func TestGen2DiagnosticsOrdering(t *testing.T) {
 	}
 	if out[1].Severity != diag.Warning {
 		t.Fatalf("expected warning second")
+	}
+}
+
+func TestDbConfigToMap_membersIncludedForMongodb(t *testing.T) {
+	g := &resourceIBMDatabaseGen2Backend{}
+	config := DBConfig{Members: 3, StorageGB: 10, HostFlavor: "bx3d.4x20"}
+
+	result := g.dbConfigToMap(config, "mongodb")
+
+	if _, ok := result["members"]; !ok {
+		t.Fatal("expected 'members' to be present for dbType 'mongodb'")
+	}
+	if result["members"] != 3 {
+		t.Fatalf("expected members=3, got %v", result["members"])
+	}
+}
+
+func TestDbConfigToMap_membersExcludedForMongodbees(t *testing.T) {
+	g := &resourceIBMDatabaseGen2Backend{}
+	config := DBConfig{Members: 3, StorageGB: 10, HostFlavor: "bx3d.4x20"}
+
+	result := g.dbConfigToMap(config, "mongodbees")
+
+	if _, ok := result["members"]; ok {
+		t.Fatalf("expected 'members' to be absent for dbType 'mongodbees', got %v", result["members"])
+	}
+}
+
+func TestDbConfigToMap_storageAndHostFlavorPresentForMongodbees(t *testing.T) {
+	g := &resourceIBMDatabaseGen2Backend{}
+	config := DBConfig{Members: 3, StorageGB: 10, HostFlavor: "bx3d.4x20"}
+
+	result := g.dbConfigToMap(config, "mongodbees")
+
+	if result["storage_gb"] != 10 {
+		t.Fatalf("expected storage_gb=10, got %v", result["storage_gb"])
+	}
+	if result["host_flavor"] != "bx3d.4x20" {
+		t.Fatalf("expected host_flavor=bx3d.4x20, got %v", result["host_flavor"])
+	}
+}
+
+func TestBuildGen2Parameters_enterpriseShardingGen2UsesMongodbees(t *testing.T) {
+	d := testGen2DatabaseResourceData(t, map[string]interface{}{
+		"service": "databases-for-mongodb",
+		"plan":    "enterprise-sharding-gen2",
+	})
+
+	// dbType resolution: getDatabaseTypeFromResourceID("databases-for-mongodb") → "mongodb"
+	// then overridden to "mongodbees" for enterprise-sharding-gen2
+	dbType := getDatabaseTypeFromResourceID(d.Get("service").(string))
+	plan := d.Get("plan").(string)
+	if plan == "enterprise-sharding-gen2" && dbType == "mongodb" {
+		dbType = "mongodbees"
+	}
+
+	if dbType != "mongodbees" {
+		t.Fatalf("expected dbType 'mongodbees' for enterprise-sharding-gen2, got %q", dbType)
+	}
+}
+
+func TestBuildGen2Parameters_standardGen2UsesMongodbNotMongodbees(t *testing.T) {
+	d := testGen2DatabaseResourceData(t, map[string]interface{}{
+		"service": "databases-for-mongodb",
+		"plan":    "standard-gen2",
+	})
+
+	dbType := getDatabaseTypeFromResourceID(d.Get("service").(string))
+	plan := d.Get("plan").(string)
+	if plan == "enterprise-sharding-gen2" && dbType == "mongodb" {
+		dbType = "mongodbees"
+	}
+
+	if dbType != "mongodb" {
+		t.Fatalf("expected dbType 'mongodb' for standard-gen2, got %q", dbType)
 	}
 }

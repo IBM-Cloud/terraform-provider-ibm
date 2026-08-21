@@ -1,4 +1,4 @@
-// Copyright IBM Corp. 2025 All Rights Reserved.
+// Copyright IBM Corp. 2026 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 /*
@@ -62,7 +62,7 @@ func DataSourceIBMIamTrustedProfileLink() *schema.Resource {
 			"cr_type": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "The compute resource type. Valid values are VSI, BMS, IKS_SA, ROKS_SA, CE.",
+				Description: "The compute resource type. Valid values are VSI, PVS, BMS, IKS_SA, ROKS_SA, CE.",
 			},
 			"is_cross_account": &schema.Schema{
 				Type:        schema.TypeBool,

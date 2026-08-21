@@ -1,4 +1,4 @@
-// Copyright IBM Corp. 2025 All Rights Reserved.
+// Copyright IBM Corp. 2026 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 /*
@@ -48,7 +48,7 @@ func ResourceIBMIAMTrustedProfileLink() *schema.Resource {
 				Type:        schema.TypeString,
 				Required:    true,
 				ForceNew:    true,
-				Description: "The compute resource type. Valid values are VSI, BMS, IKS_SA, ROKS_SA, CE.",
+				Description: "The compute resource type. Valid values are VSI, PVS, BMS, IKS_SA, ROKS_SA, CE.",
 			},
 			"link": &schema.Schema{
 				Type:        schema.TypeList,

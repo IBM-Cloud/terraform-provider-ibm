@@ -303,7 +303,7 @@ func ResourceIBMDatabaseInstance() *schema.Resource {
 				ValidateFunc: validate.InvokeValidator("ibm_database", "service_endpoints"),
 			},
 			"backup_id": {
-				Description:      "The CRN of backup source database. Gen2: Plan fails if set. Restore from backup is not yet implemented for Gen2 instances.",
+				Description:      "The CRN of backup source database. Gen2: Supports restoring from Gen2 coupled backups (from Gen2 instances) and Gen2 decoupled backups (databases-independent-backups). Classic backups are not supported for Gen2 instances.",
 				Type:             schema.TypeString,
 				Optional:         true,
 				DiffSuppressFunc: flex.ApplyOnce,
@@ -319,7 +319,7 @@ func ResourceIBMDatabaseInstance() *schema.Resource {
 				Optional:    true,
 			},
 			"async_restore": {
-				Description:      "Option to support FAST PG Restore. Only applicable when restoring a PostgreSQL instance. Gen2: Accepted but ignored. Async restore requires backup_id support which is not yet implemented for Gen2 instances.",
+				Description:      "Option to support FAST PG Restore. Only applicable when restoring a PostgreSQL instance from backup_id. Gen2: Accepted but ignored (Classic-only feature).",
 				Type:             schema.TypeBool,
 				Optional:         true,
 				DiffSuppressFunc: flex.ApplyOnce,
@@ -522,14 +522,22 @@ func ResourceIBMDatabaseInstance() *schema.Resource {
 										Required: true,
 										ValidateFunc: validation.StringInSlice([]string{
 											"multitenant",
-											"bx3d.4x20",
-											"bx3d.8x40",
 											"b3c.4x16.encrypted",
 											"b3c.8x32.encrypted",
 											"m3c.8x64.encrypted",
 											"b3c.16x64.encrypted",
 											"b3c.32x128.encrypted",
-											"m3c.30x240.encrypted"}, false),
+											"m3c.30x240.encrypted",
+											"bx3d.4x20",
+											"bx3d.8x40",
+											"bx3d.16x80",
+											"bx3d.32x160",
+											"bx3d.48x240",
+											"bxf.16x64",
+											"bxf.32x128",
+											"bxf.48x192",
+											"bxf.4x16",
+											"bxf.8x32"}, false),
 									},
 								},
 							},
@@ -941,14 +949,14 @@ func ResourceIBMICDValidator() *validate.ResourceValidator {
 			Identifier:                 "service",
 			ValidateFunctionIdentifier: validate.ValidateAllowedStringValue,
 			Type:                       validate.TypeString,
-			AllowedValues:              "databases-for-etcd, databases-for-postgresql, databases-for-redis, databases-for-elasticsearch, databases-for-mongodb, messages-for-rabbitmq, databases-for-mysql, databases-for-enterprisedb",
+			AllowedValues:              "databases-for-etcd, databases-for-postgresql, databases-for-redis, databases-for-valkey, databases-for-valkey-cdp-dev, databases-for-elasticsearch, databases-for-mongodb, messages-for-rabbitmq, databases-for-mysql, databases-for-enterprisedb",
 			Required:                   true})
 	validateSchema = append(validateSchema,
 		validate.ValidateSchema{
 			Identifier:                 "plan",
 			ValidateFunctionIdentifier: validate.ValidateAllowedICDPlanValue,
 			Type:                       validate.TypeString,
-			AllowedValues:              "standard, standard-gen2, enterprise, enterprise-sharding, platinum",
+			AllowedValues:              "standard, standard-gen2, enterprise, enterprise-gen2, enterprise-sharding, enterprise-sharding-gen2, platinum",
 			Required:                   true})
 	validateSchema = append(validateSchema,
 		validate.ValidateSchema{
@@ -1775,8 +1783,13 @@ func classicDatabaseInstanceRead(context context.Context, d *schema.ResourceData
 	if err != nil {
 		return diag.FromErr(fmt.Errorf("[ERROR] Error getting database groups: %s", err))
 	}
+
+	// Disabled instances can have 0 members - they can still be read/deleted
+	// Print a warning and return early
+	// The state will retain previous values, which is acceptable for disabled instances
 	if len(groupList.Groups) == 0 || groupList.Groups[0].Members == nil || groupList.Groups[0].Members.AllocationCount == nil || *groupList.Groups[0].Members.AllocationCount == 0 {
-		return diag.FromErr(fmt.Errorf("[ERROR] This database appears to have have 0 members. Unable to proceed"))
+		log.Printf("[WARN] Database instance %s has 0 members (disabled state), skipping detailed read to allow deletion", instanceID)
+		return nil
 	}
 
 	d.Set("groups", flex.FlattenIcdGroups(groupList))
@@ -2922,6 +2935,18 @@ func validateGroupHostFlavor(groupId string, resourceName string, group *Group) 
 	return nil
 }
 
+// validateFlexFlavorForClassic validates that flex flavors (bxf.*) are not used with Classic/Gen1 instances
+func validateFlexFlavorForClassic(groupId string, flavorID string) error {
+	// Check if the flavor starts with "bxf."
+	if len(flavorID) >= 4 && flavorID[:4] == "bxf." {
+		return fmt.Errorf(
+			"Configuration error: Flex flavors (bxf.*) are not supported for Classic/Gen1 databases in group %q.\n"+
+				"   The host_flavor %q is a flex flavor which is only available for Gen2 databases.\n",
+			groupId, flavorID)
+	}
+	return nil
+}
+
 func validateMultitenantMemoryCpu(resourceDefaults *Group, group *Group, cpuEnforcementRatioCeiling int, cpuEnforcementRatioMb int) error {
 	// TODO: Replace this with  cpuEnforcementRatioCeiling when it is fixed
 	cpuEnforcementRatioCeilingTemp := 16384
@@ -3053,6 +3078,11 @@ func validateGroupsDiffClassic(_ context.Context, diff *schema.ResourceDiff, met
 
 			if group.HostFlavor != nil && group.HostFlavor.ID != "" && group.HostFlavor.ID != "multitenant" {
 				err = validateGroupHostFlavor(groupId, "host_flavor", group)
+				if err != nil {
+					return err
+				}
+				// Validate that flex flavors (bxf.*) are not used with Classic/Gen1 instances
+				err = validateFlexFlavorForClassic(groupId, group.HostFlavor.ID)
 				if err != nil {
 					return err
 				}

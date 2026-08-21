@@ -42,6 +42,8 @@ func TestAccIBMCmVersionDataSourceSimpleArgs(t *testing.T) {
 					resource.TestCheckResourceAttrSet("data.ibm_cm_version.cm_version", "version_locator"),
 					resource.TestCheckResourceAttrSet("data.ibm_cm_version.cm_version", "long_description"),
 					resource.TestCheckResourceAttrSet("data.ibm_cm_version.cm_version", "is_consumable"),
+					resource.TestCheckResourceAttr("data.ibm_cm_version.cm_version", "validation.#", "1"), // check that it is set and there is exactly 1 item.
+					resource.TestCheckResourceAttr("data.ibm_cm_version.cm_version", "validation.0.target.#", "0"),
 				),
 			},
 		},
@@ -50,7 +52,8 @@ func TestAccIBMCmVersionDataSourceSimpleArgs(t *testing.T) {
 
 func testAccCheckIBMCmVersionDataSourceConfig(versionZipurl string, versionTargetVersion string, versionIncludeConfig string) string {
 	return fmt.Sprintf(`
-		resource "ibm_cm_catalog" "cm_catalog" {
+
+	    resource "ibm_cm_catalog" "cm_catalog" {
 			label = "data_source_version_test_catalog_label"
 			kind = "offering"
 		}

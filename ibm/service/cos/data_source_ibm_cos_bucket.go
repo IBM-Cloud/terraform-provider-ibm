@@ -746,7 +746,6 @@ func DataSourceIBMCosBucketValidator() *validate.ResourceValidator {
 }
 func dataSourceIBMCosBucketRead(d *schema.ResourceData, meta interface{}) error {
 	var s3Conf *aws.Config
-	var keyProtectFlag bool
 	rsConClient, err := meta.(conns.ClientSession).BluemixSession()
 	if err != nil {
 		return err
@@ -756,9 +755,6 @@ func dataSourceIBMCosBucketRead(d *schema.ResourceData, meta interface{}) error 
 	bucketType := d.Get("bucket_type").(string)
 	bucketRegion := d.Get("bucket_region").(string)
 	endpointType := d.Get("endpoint_type").(string)
-	if _, ok := d.GetOk("key_protect"); ok {
-		keyProtectFlag = true
-	}
 
 	var satlc_id, apiEndpoint, apiEndpointPublic, apiEndpointPrivate, directApiEndpoint, visibility string
 
@@ -860,11 +856,8 @@ func dataSourceIBMCosBucketRead(d *schema.ResourceData, meta interface{}) error 
 	d.SetId(bucketID)
 	if head.IBMSSEKPEnabled != nil {
 		if *head.IBMSSEKPEnabled == true {
-			if keyProtectFlag == true {
-				d.Set("key_protect", head.IBMSSEKPCrkId)
-			} else {
-				d.Set("kms_key_crn", head.IBMSSEKPCrkId)
-			}
+			d.Set("key_protect", head.IBMSSEKPCrkId)
+			d.Set("kms_key_crn", head.IBMSSEKPCrkId)
 		}
 	}
 

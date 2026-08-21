@@ -24,7 +24,6 @@ import (
 )
 
 var gen2UnsupportedAttrs = []string{
-	"backup_id",
 	"point_in_time_recovery_deployment_id",
 	"point_in_time_recovery_time",
 	"backup_policy",
@@ -112,9 +111,6 @@ var gen2AttrGuidance = map[string]string{
 	"adminpassword": "Gen2 databases do not create default admin user during provisioning.\n" +
 		"Please use the Terraform resource 'ibm_resource_key' to create and manage one.\n" +
 		"Documentation: https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/resources/resource_key",
-
-	"backup_id": "Gen2 databases do not support restoring from backups using the 'backup_id' attribute at this point.\n" +
-		"Documentation: https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/resources/database",
 
 	"point_in_time_recovery_deployment_id": "Gen2 databases do not support restoring from backups using the 'point_in_time_recovery_deployment_id' attribute at this point.\n" +
 		"Documentation: https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/resources/database",
@@ -343,17 +339,30 @@ func (g *resourceIBMDatabaseGen2Backend) setResourceGroup(d *schema.ResourceData
 }
 
 // buildGen2Parameters constructs the Gen2-specific parameters structure.
-// Includes database configuration and encryption settings.
-// Note: backup_id restore and PITR are not supported in Gen2.
+// Includes database configuration, encryption settings, and backup_id for restore.
+// Note: PITR is not supported in Gen2. backup_id is validated to ensure only Gen2 backups are used.
 func (g *resourceIBMDatabaseGen2Backend) buildGen2Parameters(d *schema.ResourceData, serviceName string, meta interface{}, catalogCRN string) (map[string]interface{}, error) {
+	// Validate backup_id if provided (only Gen2 coupled and decoupled backups are allowed at this point)
+	if backupID, ok := d.GetOk("backup_id"); ok {
+		if err := validateGen2BackupCRN(backupID.(string), meta); err != nil {
+			return nil, err
+		}
+	}
+
 	// Get the database type for the dataservices key
 	dbType := getDatabaseTypeFromResourceID(serviceName)
 	if dbType == "" {
 		return nil, fmt.Errorf("unable to determine database type from service name: %s", serviceName)
 	}
 
+	// enterprise-sharding-gen2 broker uses "mongodbees" as the dataservices key
+	plan := d.Get("plan").(string)
+	if plan == "enterprise-sharding-gen2" && dbType == "mongodb" {
+		dbType = "mongodbees"
+	}
+
 	// Build database configuration using typed struct
-	dbConfig, err := g.buildDBConfig(d, catalogCRN, meta)
+	dbConfig, err := g.buildDBConfig(d, catalogCRN, meta, dbType)
 	if err != nil {
 		return nil, err
 	}
@@ -365,6 +374,12 @@ func (g *resourceIBMDatabaseGen2Backend) buildGen2Parameters(d *schema.ResourceD
 
 	// Handle encryption
 	g.addEncryptionConfig(d, dataservices)
+
+	// Add restore_backup_id if provided (for restore from backup)
+	// Note: Gen2 uses "restore_backup_id" inside dataservices, not "backup_id" at top level
+	if backupID, ok := d.GetOk("backup_id"); ok {
+		dataservices["restore_backup_id"] = backupID.(string)
+	}
 
 	// Build final parameters structure
 	parameters := map[string]interface{}{
@@ -378,7 +393,7 @@ func (g *resourceIBMDatabaseGen2Backend) buildGen2Parameters(d *schema.ResourceD
 // Extracts and consolidates member group logic, reducing nested if statements.
 // Gen2 supports: members, disk, and host_flavor from groups.
 // Note: memory and cpu are NOT supported independently in Gen2 - they are controlled by host_flavor.
-func (g *resourceIBMDatabaseGen2Backend) buildDBConfig(d *schema.ResourceData, catalogCRN string, meta interface{}) (map[string]interface{}, error) {
+func (g *resourceIBMDatabaseGen2Backend) buildDBConfig(d *schema.ResourceData, catalogCRN string, meta interface{}, dbType string) (map[string]interface{}, error) {
 	config := DBConfig{}
 
 	// Version
@@ -398,7 +413,7 @@ func (g *resourceIBMDatabaseGen2Backend) buildDBConfig(d *schema.ResourceData, c
 
 	// Early return if no member group - simplifies logic below
 	if memberGroup == nil {
-		return g.dbConfigToMap(config), nil
+		return g.dbConfigToMap(config, dbType), nil
 	}
 
 	// Storage in GB (not MB!) - Gen2 expects per-member allocation
@@ -412,18 +427,21 @@ func (g *resourceIBMDatabaseGen2Backend) buildDBConfig(d *schema.ResourceData, c
 		config.HostFlavor = memberGroup.HostFlavor.ID
 	}
 
-	return g.dbConfigToMap(config), nil
+	return g.dbConfigToMap(config, dbType), nil
 }
 
 // dbConfigToMap converts DBConfig struct to map[string]interface{} for API compatibility.
 // Only includes non-zero values to avoid sending unnecessary fields.
-func (g *resourceIBMDatabaseGen2Backend) dbConfigToMap(config DBConfig) map[string]interface{} {
+// The dbType parameter controls which fields are included: "mongodbees" does not accept "members".
+func (g *resourceIBMDatabaseGen2Backend) dbConfigToMap(config DBConfig, dbType string) map[string]interface{} {
 	result := make(map[string]interface{})
 
 	if config.Version != "" {
 		result["version"] = config.Version
 	}
-	result["members"] = config.Members
+	if dbType != "mongodbees" {
+		result["members"] = config.Members
+	}
 	if config.StorageGB > 0 {
 		result["storage_gb"] = config.StorageGB
 	}

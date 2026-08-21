@@ -52,8 +52,9 @@ You can specify the following arguments for this resource.
 
 ~> **NOTE** to add `ips` only existing `reserved_ip` is supported, new reserved_ip creation is not supported as it leads to unmanaged(dangling) reserved ips. Use `ibm_is_subnet_reserved_ip` to create a reserved_ip
 - `ips` - (Optional, List) The reserved IPs bound to this virtual network interface.May be empty when `lifecycle_state` is `pending`.
-	Nested schema for **ips**:
-	- `reserved_ip` - (Required, String) The unique identifier for this reserved IP.
+
+  Nested schema for **ips**:
+  - `reserved_ip` - (Required, String) The unique identifier for this reserved IP.
 - `name` - (Optional, String) The name for this virtual network interface. The name is unique across all virtual network interfaces in the VPC.
 - `protocol_state_filtering_mode` - (Optional, String) The protocol state filtering mode to use for this virtual network interface. 
 
@@ -62,15 +63,17 @@ You can specify the following arguments for this resource.
   **&#x2022;** instance_network_attachment: enabled </br>
   **&#x2022;** share_mount_target: enabled </br>
 - `primary_ip` - (Optional, List) The reserved IP for this virtual network interface.
-	Nested schema for **primary_ip**:
-	- `address` - (Required, String) The IP address.If the address has not yet been selected, the value will be `0.0.0.0`.This property may add support for IPv6 addresses in the future. When processing a value in this property, verify that the address is in an expected format. If it is not, log an error. Optionally halt processing and surface the error, or bypass the resource on which the unexpected IP address format was encountered.
-	- `deleted` - (Optional, List) If present, this property indicates the referenced resource has been deleted, and providessome supplementary information.
-	Nested schema for **deleted**:
-		- `more_info` - (Required, String) Link to documentation about deleted resources.
-	- `href` - (Required, String) The URL for this reserved IP.
-	- `reserved_ip` - (Required, String) The unique identifier for this reserved IP.
-	- `name` - (Required, String) The name for this reserved IP. The name is unique across all reserved IPs in a subnet.
-	- `resource_type` - (Computed, String) The resource type.
+
+  Nested schema for **primary_ip**:
+  - `address` - (Required, String) The IP address.If the address has not yet been selected, the value will be `0.0.0.0`.This property may add support for IPv6 addresses in the future. When processing a value in this property, verify that the address is in an expected format. If it is not, log an error. Optionally halt processing and surface the error, or bypass the resource on which the unexpected IP address format was encountered.
+  - `deleted` - (Optional, List) If present, this property indicates the referenced resource has been deleted, and providessome supplementary information.
+
+    Nested schema for **deleted**:
+    - `more_info` - (Required, String) Link to documentation about deleted resources.
+  - `href` - (Required, String) The URL for this reserved IP.
+  - `reserved_ip` - (Required, String) The unique identifier for this reserved IP.
+  - `name` - (Required, String) The name for this reserved IP. The name is unique across all reserved IPs in a subnet.
+  - `resource_type` - (Computed, String) The resource type.
 - `resource_group` - (Optional, String) The resource group id for this virtual network interface.
 - `security_groups` - (Optional, Array of string) The security group ids list for this virtual network interface.
 - `subnet` - (Optional, List) The associated subnet id.
@@ -88,24 +91,28 @@ After your resource is created, you can read values from the listed arguments an
 - `mac_address` - (String) The MAC address of the interface. Absent when the interface is not attached to a target.
 - `resource_type` - (String) The resource type.
 - `target` - (List) The target of this virtual network interface.If absent, this virtual network interface is not attached to a target.
-	Nested schema for **target**:
-	- `deleted` - (List) If present, this property indicates the referenced resource has been deleted, and providessome supplementary information.
-	Nested schema for **deleted**:
-		- `more_info` - (String) Link to documentation about deleted resources.
-	- `href` - (String) The URL for this share mount target.
-	- `id` - (String) The unique identifier for this share mount target.
-	- `name` - (String) The name for this share mount target. The name is unique across all mount targets for the file share.
-	- `resource_type` - (String) The resource type.
+
+  Nested schema for **target**:
+  - `deleted` - (List) If present, this property indicates the referenced resource has been deleted, and providessome supplementary information.
+
+    Nested schema for **deleted**:
+    - `more_info` - (String) Link to documentation about deleted resources.
+  - `href` - (String) The URL for this share mount target.
+  - `id` - (String) The unique identifier for this share mount target.
+  - `name` - (String) The name for this share mount target. The name is unique across all mount targets for the file share.
+  - `resource_type` - (String) The resource type.
 - `vpc` - (List) The VPC this virtual network interface resides in.
-	Nested schema for **vpc**:
-	- `crn` - (String) The CRN for this VPC.
-	- `deleted` - (List) If present, this property indicates the referenced resource has been deleted, and providessome supplementary information.
-	Nested schema for **deleted**:
-		- `more_info` - (String) Link to documentation about deleted resources.
-	- `href` - (String) The URL for this VPC.
-	- `id` - (String) The unique identifier for this VPC.
-	- `name` - (String) The name for this VPC. The name is unique across all VPCs in the region.
-	- `resource_type` - (String) The resource type.
+
+  Nested schema for **vpc**:
+  - `crn` - (String) The CRN for this VPC.
+  - `deleted` - (List) If present, this property indicates the referenced resource has been deleted, and providessome supplementary information.
+
+    Nested schema for **deleted**:
+    - `more_info` - (String) Link to documentation about deleted resources.
+  - `href` - (String) The URL for this VPC.
+  - `id` - (String) The unique identifier for this VPC.
+  - `name` - (String) The name for this VPC. The name is unique across all VPCs in the region.
+  - `resource_type` - (String) The resource type.
 - `zone` - (String) The zone name of the zone this virtual network interface resides in.
 
 
@@ -116,7 +123,7 @@ The `id` property can be formed using the VNI identifier. For example:
 
 ```terraform
 import {
-  to = ibm_is_virtual_network_interface.is_virtual_network_interface
+  to = ibm_is_virtual_network_interface.example
   id = "<id>"
 }
 ```
@@ -124,5 +131,5 @@ import {
 Using `terraform import`. For example:
 
 ```console
-% terraform import ibm_is_virtual_network_interface.is_virtual_network_interface <id>
+% terraform import ibm_is_virtual_network_interface.example <id>
 ```

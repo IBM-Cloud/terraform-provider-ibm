@@ -1,8 +1,8 @@
-// Copyright IBM Corp. 2025 All Rights Reserved.
+// Copyright IBM Corp. 2026 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 /*
- * IBM OpenAPI Terraform Generator Version: 3.98.0-8be2046a-20241205-162752
+ * IBM OpenAPI Terraform Generator Version: 3.113.1-d76630af-20260320-135953
  */
 
 package iamidentity
@@ -13,13 +13,14 @@ import (
 	"log"
 	"time"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/IBM/platform-services-go-sdk/iamidentityv1"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 func ResourceIBMIAMTrustedProfile() *schema.Resource {
@@ -40,6 +41,11 @@ func ResourceIBMIAMTrustedProfile() *schema.Resource {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Description: "The optional description of the trusted profile. The 'description' property is only available if a description was provided during a create of a trusted profile.",
+			},
+			"email": &schema.Schema{
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The optional email of the trusted profile. The 'email' property is only available if an email was provided during a create of a trusted profile.",
 			},
 			"account_id": &schema.Schema{
 				Type:        schema.TypeString,
@@ -136,6 +142,24 @@ func ResourceIBMIAMTrustedProfile() *schema.Resource {
 					},
 				},
 			},
+			"activity": &schema.Schema{
+				Type:     schema.TypeList,
+				Computed: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"last_authn": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Time when the entity was last authenticated.",
+						},
+						"authn_count": &schema.Schema{
+							Type:        schema.TypeInt,
+							Computed:    true,
+							Description: "Authentication count, number of times the entity was authenticated.",
+						},
+					},
+				},
+			},
 		},
 	}
 }
@@ -152,7 +176,9 @@ func resourceIBMIamTrustedProfileCreate(context context.Context, d *schema.Resou
 
 	userDetails, err := meta.(conns.ClientSession).BluemixUserDetails()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("resourceIBMIamTrustedProfileCreate failed: %s", err.Error()), "ibm_iam_trusted_profile", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	accountID := userDetails.UserAccount
@@ -161,6 +187,9 @@ func resourceIBMIamTrustedProfileCreate(context context.Context, d *schema.Resou
 	createProfileOptions.SetAccountID(accountID)
 	if _, ok := d.GetOk("description"); ok {
 		createProfileOptions.SetDescription(d.Get("description").(string))
+	}
+	if _, ok := d.GetOk("email"); ok {
+		createProfileOptions.SetEmail(d.Get("email").(string))
 	}
 
 	trustedProfile, _, err := iamIdentityClient.CreateProfileWithContext(context, createProfileOptions)
@@ -192,7 +221,6 @@ func resourceIBMIamTrustedProfileRead(context context.Context, d *schema.Resourc
 	var (
 		initialDelaySec = 2  // seconds
 		maxDelaySec     = 60 // max delay in seconds
-
 	)
 
 	err = retry.RetryContext(context, 5*time.Minute, func() *retry.RetryError {
@@ -241,13 +269,19 @@ func resourceIBMIamTrustedProfileRead(context context.Context, d *schema.Resourc
 			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_trusted_profile", "read", "set-description").GetDiag()
 		}
 	}
+	if !core.IsNil(trustedProfile.Email) {
+		if err = d.Set("email", trustedProfile.Email); err != nil {
+			err = fmt.Errorf("Error setting email: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_trusted_profile", "read", "set-email").GetDiag()
+		}
+	}
 	if err = d.Set("account_id", trustedProfile.AccountID); err != nil {
 		err = fmt.Errorf("Error setting account_id: %s", err)
 		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_trusted_profile", "read", "set-account_id").GetDiag()
 	}
 	if err = d.Set("profile_id", trustedProfile.ID); err != nil {
 		err = fmt.Errorf("Error setting id: %s", err)
-		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_trusted_profile", "read", "set-id").GetDiag()
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_trusted_profile", "read", "set-profile_id").GetDiag()
 	}
 	if err = d.Set("entity_tag", trustedProfile.EntityTag); err != nil {
 		err = fmt.Errorf("Error setting entity_tag: %s", err)
@@ -312,7 +346,18 @@ func resourceIBMIamTrustedProfileRead(context context.Context, d *schema.Resourc
 		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_trusted_profile", "read", "set-history").GetDiag()
 
 	}
-
+	activity := []map[string]interface{}{}
+	if !core.IsNil(trustedProfile.Activity) {
+		activityMap, err := ResourceIBMIamTrustedProfileActivityToMap(trustedProfile.Activity)
+		if err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_trusted_profile", "read", "activity-to-map").GetDiag()
+		}
+		activity = append(activity, activityMap)
+	}
+	if err = d.Set("activity", activity); err != nil {
+		err = fmt.Errorf("Error setting activity: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_trusted_profile", "read", "set-activity").GetDiag()
+	}
 	return nil
 }
 
@@ -333,6 +378,9 @@ func resourceIBMIamTrustedProfileUpdate(context context.Context, d *schema.Resou
 	}
 	if _, ok := d.GetOk("description"); ok {
 		updateProfileOptions.SetDescription(d.Get("description").(string))
+	}
+	if _, ok := d.GetOk("email"); ok {
+		updateProfileOptions.SetEmail(d.Get("email").(string))
 	}
 
 	_, _, err = iamIdentityClient.UpdateProfileWithContext(context, updateProfileOptions)
@@ -367,4 +415,13 @@ func resourceIBMIamTrustedProfileDelete(context context.Context, d *schema.Resou
 	d.SetId("")
 
 	return nil
+}
+
+func ResourceIBMIamTrustedProfileActivityToMap(model *iamidentityv1.Activity) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.LastAuthn != nil {
+		modelMap["last_authn"] = *model.LastAuthn
+	}
+	modelMap["authn_count"] = flex.IntValue(model.AuthnCount)
+	return modelMap, nil
 }

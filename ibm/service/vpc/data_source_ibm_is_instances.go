@@ -1058,6 +1058,11 @@ func DataSourceIBMISInstances() *schema.Resource {
 							Computed:    true,
 							Description: "The amount of bandwidth (in megabits per second) allocated exclusively to instance network interfaces.",
 						},
+						isInstanceThreadsPerCore: {
+							Type:        schema.TypeInt,
+							Computed:    true,
+							Description: "The threads per core for this virtual server instance.",
+						},
 						"vcpu": &schema.Schema{
 							Type:        schema.TypeList,
 							Computed:    true,
@@ -1320,6 +1325,50 @@ func DataSourceIBMISInstances() *schema.Resource {
 												},
 											},
 										},
+									},
+								},
+							},
+						},
+						// software attachments
+						"software_attachments": &schema.Schema{
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "The software attachments for this instance.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"deleted": &schema.Schema{
+										Type:        schema.TypeList,
+										Computed:    true,
+										Description: "If present, this property indicates the referenced resource has been deleted, and providessome supplementary information.",
+										Elem: &schema.Resource{
+											Schema: map[string]*schema.Schema{
+												"more_info": &schema.Schema{
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "A link to documentation about deleted resources.",
+												},
+											},
+										},
+									},
+									"href": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The URL for this instance software attachment.",
+									},
+									"id": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The unique identifier for this instance software attachment.",
+									},
+									"name": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The name for this instance software attachment. The name is unique across all instance software attachments for the instance.",
+									},
+									"resource_type": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The resource type.",
 									},
 								},
 							},
@@ -1813,6 +1862,10 @@ func instancesList(context context.Context, d *schema.ResourceData, meta interfa
 
 		l["profile"] = *instance.Profile.Name
 
+		if instance.ThreadsPerCore != nil {
+			l[isInstanceThreadsPerCore] = flex.IntValue(instance.ThreadsPerCore)
+		}
+
 		vcpuMap, err := DataSourceIBMIsInstancesInstanceVcpuToMap(instance.Vcpu)
 		if err != nil {
 			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting instances %s", err), "(Data) ibm_is_instances", "read", "set-vcpu").GetDiag()
@@ -1901,6 +1954,15 @@ func instancesList(context context.Context, d *schema.ResourceData, meta interfa
 			resList = append(resList, res)
 			l[isInstanceReservation] = resList
 		}
+		softwareAttachments := []map[string]interface{}{}
+		for _, softwareAttachmentsItem := range instance.SoftwareAttachments {
+			softwareAttachmentsItemMap, err := DataSourceIBMIsInstancesInstanceSoftwareAttachmentReferenceToMap(&softwareAttachmentsItem) // #nosec G601
+			if err != nil {
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_instances", "read", "software_attachments-to-map").GetDiag()
+			}
+			softwareAttachments = append(softwareAttachments, softwareAttachmentsItemMap)
+		}
+		l["software_attachments"] = softwareAttachments
 
 		instancesInfo = append(instancesInfo, l)
 	}
@@ -1972,8 +2034,12 @@ func DataSourceIBMIsInstancesInstanceAvailabilityToMap(model *vpcv1.InstanceAvai
 
 func DataSourceIBMIsInstancesInstanceAvailabilityPolicyToMap(model *vpcv1.InstanceAvailabilityPolicy) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	modelMap["host_failure"] = *model.HostFailure
-	modelMap["preemption"] = *model.Preemption
+	if model.HostFailure != nil {
+		modelMap["host_failure"] = *model.HostFailure
+	}
+	if model.Preemption != nil {
+		modelMap["preemption"] = *model.Preemption
+	}
 	return modelMap, nil
 }
 
@@ -1996,5 +2062,21 @@ func DataSourceIBMIsInstancesInstanceVcpuToMap(model *vpcv1.InstanceVcpu) (map[s
 func DataSourceIBMIsInstancesInstanceVcpuBurstToMap(model *vpcv1.InstanceVcpuBurst) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["limit"] = flex.IntValue(model.Limit)
+	return modelMap, nil
+}
+
+func DataSourceIBMIsInstancesInstanceSoftwareAttachmentReferenceToMap(model *vpcv1.InstanceSoftwareAttachmentReference) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
+	if model.Deleted != nil {
+		deletedMap, err := DataSourceIBMIsInstancesDeletedToMap(model.Deleted)
+		if err != nil {
+			return modelMap, err
+		}
+		modelMap["deleted"] = []map[string]interface{}{deletedMap}
+	}
+	modelMap["href"] = *model.Href
+	modelMap["id"] = *model.ID
+	modelMap["name"] = *model.Name
+	modelMap["resource_type"] = *model.ResourceType
 	return modelMap, nil
 }

@@ -127,6 +127,53 @@ output "db_connection" {
 
 **Note:** Gen2 instances use `ibm_resource_key` for credential management instead of the `adminpassword` and `users` attributes used in Classic plans. The `groups` computed attribute can be used to verify current scaling configuration from instance extensions and catalog metadata.
 
+### Gen2 Valkey database instance example
+
+An example to configure and deploy a Gen2 Valkey instance. Valkey is only available as a Gen2 service.
+
+```terraform
+data "ibm_resource_group" "group" {
+  name = "<your_group>"
+}
+
+# Gen2 Valkey instance
+resource "ibm_database" "valkey_gen2" {
+  name              = "my-valkey-gen2"
+  plan              = "standard-gen2"
+  location          = "ca-mon"
+  service           = "databases-for-valkey"
+  resource_group_id = data.ibm_resource_group.group.id
+
+  version = "9.0"
+
+  service_endpoints = "private"
+
+  group {
+    group_id = "member"
+    disk {
+      allocation_mb = 20480  # 20 GB
+    }
+    host_flavor {
+      id = "bx3d.4x20"
+    }
+  }
+
+  tags = ["env:test", "app:myapp"]
+}
+
+# Credentials via resource key
+resource "ibm_resource_key" "valkey_credentials" {
+  name                 = "valkey-credentials"
+  resource_instance_id = ibm_database.valkey_gen2.id
+}
+
+# Access credentials
+output "valkey_connection" {
+  value     = ibm_resource_key.valkey_credentials.credentials
+  sensitive = true
+}
+```
+
 ### Sample database instance by using `group` attributes
 An example to configure and deploy database by using `group` attributes.
 
@@ -694,9 +741,11 @@ Review the argument reference that you can specify for your resource.
          - `rate_period_seconds` - (Optional, Integer) Auto scaling rate period in seconds.
          - `rate_units` - (Optional, String) Auto scaling rate in units.
 
-- `backup_id` - (Optional, String) The CRN of a backup resource to restore from. The backup is created by a database deployment with the same service ID. The backup is loaded after provisioning and the new deployment starts up that uses that data. A backup CRN is in the format `crn:v1:<…>:backup:`. If omitted, the database is provisioned empty.
+- `backup_id` - (Optional, String) The CRN of a backup resource to restore from. The backup is loaded after provisioning and the new deployment starts up that uses that data. If omitted, the database is provisioned empty.
 
-  **Gen2:** Plan fails if set. Restore from backup is not yet implemented for Gen2 instances.
+  **Classic:** Supports backups from Classic instances. Backup CRN format: `crn:v1:<…>:backup:<backup-id>`.
+
+  **Gen2:** Supports restoring from Gen2 coupled backups (from Gen2 instances with format `crn:v1:<…>:backup:<backup-id>`) and Gen2 decoupled backups (independent backups with format `crn:v1:bluemix:public:databases-independent-backups:<region>:a/<account>:<backup-id>::`). Classic backups are not supported for Gen2 instances and will cause plan to fail with a validation error.
 
 - `backup_encryption_key_crn`- (Optional, Forces new resource, String) The CRN of a key protect key, that you want to use for encrypting disk that holds deployment backups. A key protect CRN is in the format `crn:v1:<...>:key:`. Backup_encryption_key_crn can be added only at the time of creation and no update support  are available.
 
@@ -754,6 +803,7 @@ Review the argument reference that you can specify for your resource.
         - `id` - (Optional, String) The hosting infrastructure identifier. **Gen2: Supported.**
 
           **Classic:** Selecting `multitenant` places your database on a logically separated, multi-tenant machine. With this identifier, minimum resource configurations apply. Alternatively, setting the identifier to any of the following host sizes places your database on the specified host size with no other tenants:
+          - `multitenant`
           - `b3c.4x16.encrypted`
           - `b3c.8x32.encrypted`
           - `m3c.8x64.encrypted`
@@ -761,17 +811,28 @@ Review the argument reference that you can specify for your resource.
           - `b3c.32x128.encrypted`
           - `m3c.30x240.encrypted`
 
-          **Gen2:** Use dedicated host flavors like `bx3d.4x20`, `bx3d.8x40`, `mx3d.8x64`, etc. The `multitenant` option is not supported for Gen2 plans.
+          **Gen2:** Use one of the following dedicated host flavors. The `multitenant` option is not supported for Gen2 plans.
+          - `bx3d.4x20`
+          - `bx3d.8x40`
+          - `bx3d.16x80`
+          - `bx3d.32x160`
+          - `bx3d.48x240`
+          - `bxf.16x64`
+          - `bxf.32x128`
+          - `bxf.48x192`
+          - `bxf.4x16`
+          - `bxf.8x32`
 
 - `name` - (Required, String) A descriptive name that is used to identify the database instance. The name must not include spaces.
 - `offline_restore` - (Optional, Boolean) Enable or disable the Offline Restore option while performing a Point-in-time Recovery for MongoDB EE in a disaster recovery scenario when the source region is unavailable, see [Point-in-time Recovery](https://cloud.ibm.com/docs/databases-for-mongodb?topic=databases-for-mongodb-pitr&interface=api#pitr-offline-restore)
 
-  **Gen2:** Accepted but ignored. Offline restore requires `backup_id` support which is not yet implemented for Gen2 instances.
+  **Gen2:** Accepted but ignored (Classic-only feature).
 - `plan` - (Required, Forces new resource, String) The name of the service plan that you choose for your instance. The plan determines whether your instance uses Classic or Gen2 infrastructure:
   - **Classic plans**: `standard`, `enterprise`, `platinum`
   - **Gen2 plans**: `standard-gen2`, `enterprise-gen2`, `platinum-gen2`
 
   Plans ending with `-gen2` use Gen2 infrastructure. `enterprise` is supported only for elasticsearch (`databases-for-elasticsearch`) and mongodb (`databases-for-mongodb`). `platinum` is supported for elasticsearch (`databases-for-elasticsearch`).
+  `enterprise-gen2` is supported only for elasticsearch (`databases-for-elasticsearch`).
 - `point_in_time_recovery_deployment_id` - (Optional, String) The ID of the source deployment that you want to recover back to.
 
   **Gen2:** Plan fails if set. Point-in-time recovery is not yet implemented for Gen2 instances.
@@ -786,11 +847,12 @@ Review the argument reference that you can specify for your resource.
 - `skip_initial_backup` - (Optional, Boolean) Should only be set when promoting a read-only replica. By setting this value to `true`, you skip the initial backup that would normally be taken upon promotion. Skipping the initial backup means that your replica becomes available more quickly, but there is no immediate backup available. The default is `false`. For more information, see [Configuring Read-only Replicas]
 
   **Gen2:** Accepted but ignored (Classic-only feature for read replica promotion).
-- `async_restore` - (Optional, Boolean) Should only be set for asynchronous restore. By setting this value to `true`, the restore is initiated as an asynchronous operation, which helps to reduce end-to-end restore time. Only applicable when restoring a PostgreSQL instance.
+- `async_restore` - (Optional, Boolean) Should only be set for asynchronous restore. By setting this value to `true`, the restore is initiated as an asynchronous operation, which helps to reduce end-to-end restore time. Only applicable when restoring a PostgreSQL instance from `backup_id`.
 
-  **Gen2:** Accepted but ignored. Async restore requires `backup_id` support which is not yet implemented for Gen2 instances.
+  **Gen2:** Accepted but ignored (Classic-only feature).
 - `resource_group_id` - (Optional, Forces new resource, String)  The ID of the resource group where you want to create the instance. To retrieve this value, run `ibmcloud resource groups` or use the `ibm_resource_group` data source. If no value is provided, the `default` resource group is used.
-- `service` - (Required, Forces new resource, String) The type of Cloud Databases that you want to create. Only the following services are currently accepted: `databases-for-etcd`, `databases-for-postgresql`, `databases-for-redis`, `databases-for-elasticsearch`, `messages-for-rabbitmq`,`databases-for-mongodb`,`databases-for-mysql`, and `databases-for-enterprisedb`.
+- `service` - (Required, Forces new resource, String) The type of Cloud Databases that you want to create. Only the following services are currently accepted: `databases-for-etcd`, `databases-for-postgresql`, `databases-for-redis`, `databases-for-valkey`, `databases-for-elasticsearch`, `messages-for-rabbitmq`,`databases-for-mongodb`,`databases-for-mysql`, and `databases-for-enterprisedb`.
+
 - `service_endpoints` - (Optional, String) Specify whether you want to enable the public, private, or both service endpoints. Supported values are `public`, `private`, or `public-and-private`.
 
   **Gen2:** Optional; must be `private` if set. Gen2 instances only support private endpoints and default to `private`. Plan fails if set to `public` or `public-and-private`.
@@ -857,7 +919,7 @@ The following table summarizes feature availability for Classic and Gen2 plans:
 | Tags | ✅ Supported | ✅ Supported |
 | Encryption (key_protect_key) | ✅ Supported | ✅ Supported |
 | Backup encryption (backup_encryption_key_crn) | ✅ Supported | ❌ Plan fails if set |
-| Restore from backup (backup_id) | ✅ Supported | ❌ Plan fails if set |
+| Restore from backup (backup_id) | ✅ Supported (Classic backups) | ⚠️ Supported (Gen2 backups only) |
 | Point-in-time recovery (point_in_time_recovery_deployment_id, point_in_time_recovery_time) | ✅ Supported | ❌ Plan fails if set |
 | Offline restore (MongoDB) | ✅ Supported | ❌ Accepted but ignored |
 | Async restore (PostgreSQL) | ✅ Supported | ❌ Accepted but ignored |
@@ -879,7 +941,8 @@ The following table summarizes feature availability for Classic and Gen2 plans:
 Gen2 plans handle unsupported features in two ways:
 
 - **Plan fails if set**: Terraform plan will fail with a validation error if these attributes are configured. You must remove them from your configuration to use Gen2 plans.
-  - Examples: `backup_id`, `point_in_time_recovery_deployment_id`, `point_in_time_recovery_time`, `users`, `allowlist`, `adminpassword`, `remote_leader_id`, memory/cpu in `group`
+  - Examples: `point_in_time_recovery_deployment_id`, `point_in_time_recovery_time`, `users`, `allowlist`, `adminpassword`, `remote_leader_id`, memory/cpu in `group`
+  - Note: `backup_id` is supported for Gen2 but only with Gen2 backup CRNs. Using a Classic backup CRN will cause plan to fail.
 
 - **Accepted but ignored**: These attributes can remain in your configuration for easier migration, but they have no effect on Gen2 instances. They are silently ignored during apply and cleared during read operations.
   - Examples: `auto_scaling`, `configuration`, `logical_replication_slot`, `offline_restore`, `async_restore`

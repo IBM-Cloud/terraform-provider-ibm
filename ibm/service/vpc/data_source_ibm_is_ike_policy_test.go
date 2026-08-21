@@ -72,6 +72,47 @@ func TestAccIBMIsIkePolicyDataSourceBasic(t *testing.T) {
 	})
 }
 
+func TestAccIBMIsIkePolicyDataSourceMultipleAlgorithms(t *testing.T) {
+	name := fmt.Sprintf("tfike-data-multi-%d", acctest.RandIntRange(10, 100))
+	resourceKey := "ibm_is_ike_policy.example"
+	dataSourceNameKey := "data.ibm_is_ike_policy.by_name"
+	dataSourceIDKey := "data.ibm_is_ike_policy.by_id"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { acc.TestAccPreCheck(t) },
+		Providers: acc.TestAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMIsIkePolicyDataSourceMultipleAlgorithmsConfig(name),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrPair(dataSourceNameKey, "id", resourceKey, "id"),
+					resource.TestCheckResourceAttrPair(dataSourceNameKey, "name", resourceKey, "name"),
+					resource.TestCheckResourceAttrPair(dataSourceNameKey, "authentication_algorithms.#", resourceKey, "authentication_algorithms.#"),
+					resource.TestCheckResourceAttrPair(dataSourceNameKey, "authentication_algorithms.0", resourceKey, "authentication_algorithms.0"),
+					resource.TestCheckResourceAttrPair(dataSourceNameKey, "authentication_algorithms.1", resourceKey, "authentication_algorithms.1"),
+					resource.TestCheckResourceAttrPair(dataSourceNameKey, "encryption_algorithms.#", resourceKey, "encryption_algorithms.#"),
+					resource.TestCheckResourceAttrPair(dataSourceNameKey, "encryption_algorithms.0", resourceKey, "encryption_algorithms.0"),
+					resource.TestCheckResourceAttrPair(dataSourceNameKey, "encryption_algorithms.1", resourceKey, "encryption_algorithms.1"),
+					resource.TestCheckResourceAttrPair(dataSourceNameKey, "dh_groups.#", resourceKey, "dh_groups.#"),
+					resource.TestCheckResourceAttrPair(dataSourceNameKey, "dh_groups.0", resourceKey, "dh_groups.0"),
+					resource.TestCheckResourceAttrPair(dataSourceNameKey, "dh_groups.1", resourceKey, "dh_groups.1"),
+					resource.TestCheckResourceAttrPair(dataSourceNameKey, "ike_version", resourceKey, "ike_version"),
+					resource.TestCheckResourceAttrPair(dataSourceNameKey, "key_lifetime", resourceKey, "key_lifetime"),
+					resource.TestCheckResourceAttrPair(dataSourceIDKey, "authentication_algorithms.#", resourceKey, "authentication_algorithms.#"),
+					resource.TestCheckResourceAttrPair(dataSourceIDKey, "authentication_algorithms.0", resourceKey, "authentication_algorithms.0"),
+					resource.TestCheckResourceAttrPair(dataSourceIDKey, "authentication_algorithms.1", resourceKey, "authentication_algorithms.1"),
+					resource.TestCheckResourceAttrPair(dataSourceIDKey, "encryption_algorithms.#", resourceKey, "encryption_algorithms.#"),
+					resource.TestCheckResourceAttrPair(dataSourceIDKey, "encryption_algorithms.0", resourceKey, "encryption_algorithms.0"),
+					resource.TestCheckResourceAttrPair(dataSourceIDKey, "encryption_algorithms.1", resourceKey, "encryption_algorithms.1"),
+					resource.TestCheckResourceAttrPair(dataSourceIDKey, "dh_groups.#", resourceKey, "dh_groups.#"),
+					resource.TestCheckResourceAttrPair(dataSourceIDKey, "dh_groups.0", resourceKey, "dh_groups.0"),
+					resource.TestCheckResourceAttrPair(dataSourceIDKey, "dh_groups.1", resourceKey, "dh_groups.1"),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckIBMIsIkePolicyDataSourceConfig(name string) string {
 	return fmt.Sprintf(`
 		resource "ibm_is_ike_policy" "example" {
@@ -79,6 +120,29 @@ func testAccCheckIBMIsIkePolicyDataSourceConfig(name string) string {
 			authentication_algorithm = "sha256"
 			encryption_algorithm = "aes128"
 			dh_group = 14
+			ike_version = 2
+			key_lifetime = 1800
+		}
+		
+		data "ibm_is_ike_policy" "by_name" {
+			name = ibm_is_ike_policy.example.name
+			depends_on = [ibm_is_ike_policy.example]
+		}
+		
+		data "ibm_is_ike_policy" "by_id" {
+			ike_policy = ibm_is_ike_policy.example.id
+			depends_on = [ibm_is_ike_policy.example]
+		}
+	`, name)
+}
+
+func testAccCheckIBMIsIkePolicyDataSourceMultipleAlgorithmsConfig(name string) string {
+	return fmt.Sprintf(`
+		resource "ibm_is_ike_policy" "example" {
+			name = "%s"
+			authentication_algorithms = ["sha384", "sha512"]
+			encryption_algorithms = ["aes256", "aes192"]
+			dh_groups = [15, 14]
 			ike_version = 2
 			key_lifetime = 1800
 		}

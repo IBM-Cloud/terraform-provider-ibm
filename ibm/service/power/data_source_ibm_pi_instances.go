@@ -37,6 +37,11 @@ func DataSourceIBMPIInstances() *schema.Resource {
 				Description: "List of power virtual server instances for the respective cloud instance.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
+						Attr_AllowRemoteRestart: {
+							Computed:    true,
+							Description: "Indicates if the server allows server to be restarted from remote.",
+							Type:        schema.TypeBool,
+						},
 						Attr_CRN: {
 							Computed:    true,
 							Description: "The CRN of this resource.",
@@ -46,6 +51,44 @@ func DataSourceIBMPIInstances() *schema.Resource {
 							Computed:    true,
 							Description: "The dedicated host ID where the shared processor pool resides.",
 							Type:        schema.TypeString,
+						},
+						Attr_DefaultTrustedProfile: {
+							Description: "Default IAM trusted profile to use for this virtual server instance.",
+							Computed:    true,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									Attr_Autolink: {
+										Computed:    true,
+										Description: "If set to true, the system will create a link to the specified trusted profile during server creation. Regardless of whether a link is created by the system or manually using the IAM Identity service, it will be automatically deleted when the server is deleted.",
+										Type:        schema.TypeBool,
+									},
+									Attr_Target: {
+										Description: "The target of the trusted profile.",
+										Computed:    true,
+										Elem: &schema.Resource{
+											Schema: map[string]*schema.Schema{
+												Attr_CRN: {
+													Computed:    true,
+													Description: "The CRN for the trusted profile.",
+													Type:        schema.TypeString,
+												},
+												Attr_ID: {
+													Computed:    true,
+													Description: "Unique identifier for the trusted profile.",
+													Type:        schema.TypeString,
+												},
+												Attr_Name: {
+													Description: "name of the trusted profile.",
+													Optional:    true,
+													Type:        schema.TypeString,
+												},
+											},
+										},
+										Type: schema.TypeList,
+									},
+								},
+							},
+							Type: schema.TypeList,
 						},
 						Attr_EffectiveProcessorCompatibilityMode: {
 							Computed:    true,
@@ -86,6 +129,20 @@ func DataSourceIBMPIInstances() *schema.Resource {
 							Computed:    true,
 							Description: "The amount of memory that is allocated to the instance.",
 							Type:        schema.TypeFloat,
+						},
+						Attr_MetadataService: {
+							Computed:    true,
+							Description: "The metadata service configuration.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									Attr_Enabled: {
+										Computed:    true,
+										Description: "Indicates whether the metadata service endpoint will be available to the virtual server.",
+										Type:        schema.TypeBool,
+									},
+								},
+							},
+							Type: schema.TypeList,
 						},
 						Attr_MinMem: {
 							Computed:    true,
@@ -325,9 +382,11 @@ func flattenPvmInstances(list []*models.PVMInstanceReference, meta any) []map[st
 			Attr_Status:                              *i.Status,
 			Attr_StorageConnection:                   i.StorageConnection,
 			Attr_StoragePool:                         i.StoragePool,
-			Attr_StoragePoolAffinity:                 i.StoragePoolAffinity,
 			Attr_StorageType:                         i.StorageType,
 			Attr_VirtualCoresAssigned:                i.VirtualCores.Assigned,
+		}
+		if i.AllowRemoteRestart != nil {
+			l[Attr_AllowRemoteRestart] = i.AllowRemoteRestart
 		}
 
 		if i.Crn != "" {
@@ -347,10 +406,21 @@ func flattenPvmInstances(list []*models.PVMInstanceReference, meta any) []map[st
 			l[Attr_Fault] = flattenPvmInstanceFault(i.Fault)
 		}
 
+		if i.StoragePoolAffinity != nil {
+			l[Attr_StoragePoolAffinity] = i.StoragePoolAffinity
+		}
+
 		if i.VirtualSerialNumber != nil {
 			l[Attr_VirtualSerialNumber] = flattenVirtualSerialNumberToList(i.VirtualSerialNumber)
 		}
 
+		if i.DefaultTrustedProfile != nil {
+			l[Attr_DefaultTrustedProfile] = flattenDefaultTrustedProfile(i.DefaultTrustedProfile)
+		}
+
+		if i.MetadataService != nil {
+			l[Attr_MetadataService] = flattenMetadataService(i.MetadataService)
+		}
 		result = append(result, l)
 	}
 	return result
@@ -395,4 +465,42 @@ func flattenPvmInstanceFault(fault *models.PVMInstanceFault) map[string]any {
 		faultMap[Attr_Message] = fault.Message
 	}
 	return faultMap
+}
+func flattenDefaultTrustedProfile(tp *models.TrustedProfile) []map[string]any {
+	if tp.Target == nil {
+		return nil
+	}
+	targetID := ""
+	if tp.Target.ID != nil {
+		targetID = *tp.Target.ID
+	}
+	targetCRN := ""
+	if tp.Target.Crn != nil {
+		targetCRN = *tp.Target.Crn
+	}
+	targetName := ""
+	if tp.Target.Name != nil {
+		targetName = *tp.Target.Crn
+	}
+	m := map[string]any{
+		Attr_Target: []map[string]any{{
+			Attr_ID:   targetID,
+			Attr_CRN:  targetCRN,
+			Attr_Name: targetName,
+		}},
+	}
+	if tp.Autolink != nil {
+		m[Attr_Autolink] = *tp.Autolink
+	}
+	return []map[string]any{m}
+}
+
+func flattenMetadataService(ms *models.MetadataService) []map[string]any {
+	result := make([]map[string]any, 1)
+	m := map[string]any{}
+	if ms.Enabled != nil {
+		m[Attr_Enabled] = *ms.Enabled
+	}
+	result[0] = m
+	return result
 }

@@ -202,15 +202,16 @@ func TestAccIBMPIImageBYOLImport(t *testing.T) {
 func testAccCheckIBMPIImageBYOLConfig(name string) string {
 	return fmt.Sprintf(`
 	resource "ibm_pi_image" "cos_image" {
-		pi_cloud_instance_id = "%[2]s"
-		pi_image_access_key = "%[5]s"
-		pi_image_bucket_access = "private"
-		pi_image_bucket_file_name = "%[4]s" 
-		pi_image_bucket_name = "%[3]s" 
-		pi_image_bucket_region = "%[7]s"
-		pi_image_name       = "%[1]s"
-		pi_image_secret_key = "%[6]s"
-		pi_image_storage_type = "tier3"
+		pi_cloud_instance_id 		= "%[2]s"
+		pi_image_access_key 		= "%[5]s"
+		pi_image_bucket_access 		= "private"
+		pi_image_bucket_file_name 	= "%[4]s" 
+		pi_image_bucket_name 		= "%[3]s" 
+		pi_image_bucket_region 		= "%[7]s"
+		pi_image_name       		= "%[1]s"
+		pi_image_secret_key 		= "%[6]s"
+		pi_image_storage_type 		= "tier3"
+		pi_source_checksum 		  	= true
 		pi_image_import_details {
 			license_type = "byol"
 			product = "Hana"

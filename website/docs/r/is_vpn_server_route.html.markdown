@@ -73,7 +73,7 @@ The `id` property can be formed from `vpn_server_id`, and `vpn_route_id`. For ex
 
 ```terraform
 import {
-  to = ibm_is_vpn_server_route.is_vpn_server_route
+  to = ibm_is_vpn_server_route.example
   id = "<vpn_server_id>/<vpn_route_id>"
 }
 ```
@@ -81,5 +81,5 @@ import {
 Using `terraform import`. For example:
 
 ```console
-% terraform import ibm_is_vpn_server_route.is_vpn_server_route <vpn_server_id>/<vpn_route_id>
+% terraform import ibm_is_vpn_server_route.example <vpn_server_id>/<vpn_route_id>
 ```

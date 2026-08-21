@@ -133,12 +133,12 @@ func ResourceIBMCmValidation() *schema.Resource {
 				Computed:    true,
 				Description: "Last operation (e.g. submit_deployment, generate_installer, install_offering.",
 			},
-			// "target": &schema.Schema{
-			// 	Type:        schema.TypeMap,
-			// 	Computed:    true,
-			// 	Description: "Validation target information (e.g. cluster_id, region, namespace, etc).  Values will vary by Content type.",
-			// 	Elem:        &schema.Schema{Type: schema.TypeString},
-			// },
+			"target": &schema.Schema{
+				Type:        schema.TypeMap,
+				Computed:    true,
+				Description: "Validation target information (e.g. cluster_id, region, namespace, etc).  Values will vary by Content type.",
+				Elem:        &schema.Schema{Type: schema.TypeString},
+			},
 			"message": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -382,11 +382,17 @@ func resourceIBMCmValidationRead(context context.Context, d *schema.ResourceData
 			return tfErr.GetDiag()
 		}
 	}
-	// if version.Validation != nil && version.Validation.Target != nil {
-	// 	if err = d.Set("target", version.Validation.Target); err != nil {
-	// 		return diag.FromErr(fmt.Errorf("Error setting target: %s", err))
-	// 	}
-	// }
+	if version.Validation != nil && version.Validation.Target != nil {
+		targetMap := make(map[string]string, len(version.Validation.Target))
+		for k, v := range version.Validation.Target {
+			targetMap[k] = fmt.Sprintf("%v", v)
+		}
+		if err = d.Set("target", targetMap); err != nil {
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting target: %s", err), "ibm_cm_validation", "read")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
+		}
+	}
 
 	return nil
 }
