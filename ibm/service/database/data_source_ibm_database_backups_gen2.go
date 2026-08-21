@@ -23,7 +23,7 @@ func newDataSourceIBMDatabaseBackupsGen2Backend() dataSourceIBMDatabaseBackupsBa
 }
 
 func (g *dataSourceIBMDatabaseBackupsGen2Backend) Read(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	// Gen2 databases use Resource Controller API, not CloudDatabasesV5
+	// Gen2 databases use Resource Controller API
 	// Get the resource controller client to fetch instance details
 	rsConClient, err := meta.(conns.ClientSession).ResourceControllerV2API()
 	if err != nil {
@@ -32,10 +32,15 @@ func (g *dataSourceIBMDatabaseBackupsGen2Backend) Read(context context.Context, 
 		return tfErr.GetDiag()
 	}
 
+	// deployment_id is required by pickDataSourceBackupsBackend before this
+	// backend is ever selected, so it is always populated here.
+	deploymentID := d.Get("deployment_id").(string)
+	d.SetId(deploymentID)
+
 	resourceID := "databases-independent-backups"
 	listOptions := &rc.ListResourceInstancesOptions{ResourceID: &resourceID}
 
-	var instances []rc.ResourceInstance
+	backups := []map[string]interface{}{}
 	nextURL := ""
 	for {
 		if nextURL != "" {
@@ -49,6 +54,11 @@ func (g *dataSourceIBMDatabaseBackupsGen2Backend) Read(context context.Context, 
 			return tfErr.GetDiag()
 		}
 
+		// Filter and map each page as it arrives, appending directly into the
+		// accumulator instead of allocating a per-page slice and copying it
+		// into backups.
+		backups = filterGen2BackupsByDeployment(backups, listResponse.Resources, deploymentID)
+
 		nextURL, err = getInstancesNext(listResponse.NextURL)
 		if err != nil {
 			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("ListResourceInstances failed while parsing NextURL: %s", err.Error()), "(Data) ibm_database_backups", "read")
@@ -56,32 +66,33 @@ func (g *dataSourceIBMDatabaseBackupsGen2Backend) Read(context context.Context, 
 			return tfErr.GetDiag()
 		}
 
-		instances = append(instances, listResponse.Resources...)
 		if nextURL == "" {
 			break
 		}
 	}
 
-	deploymentID := ""
-	if v, ok := d.GetOk("deployment_id"); ok {
-		deploymentID = v.(string)
+	if err = d.Set("backups", backups); err != nil {
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting backups: %s", err), "(Data) ibm_database_backups", "read")
+		return tfErr.GetDiag()
 	}
 
-	if deploymentID != "" {
-		d.SetId(deploymentID)
-	} else {
-		d.SetId(DataSourceIBMDatabaseBackupsID(d))
-	}
+	return nil
+}
 
-	backups := make([]map[string]interface{}, 0, len(instances))
+// filterGen2BackupsByDeployment filters instances to those whose Gen2 backup
+// extensions indicate they belong to deploymentID, maps each match to the
+// "backups" schema attribute shape, and appends it to backups. Extracted from
+// Read so the deployment scoping logic can be unit tested without a Resource
+// Controller client, and so callers can accumulate matches across pages
+// without an extra per-page allocation and copy.
+func filterGen2BackupsByDeployment(backups []map[string]interface{}, instances []rc.ResourceInstance, deploymentID string) []map[string]interface{} {
 	for _, instance := range instances {
 		if instance.CRN == nil {
 			continue
 		}
 
 		sourceDataServiceCRN, backupType := extractGen2BackupExtensions(instance.Extensions)
-
-		if deploymentID != "" && sourceDataServiceCRN != deploymentID {
+		if sourceDataServiceCRN != deploymentID {
 			continue
 		}
 
@@ -96,7 +107,7 @@ func (g *dataSourceIBMDatabaseBackupsGen2Backend) Read(context context.Context, 
 			"type":            backupType,
 			"status":          backupState,
 			"is_downloadable": false,
-			"is_restorable":   backupState == "active",
+			"is_restorable":   backupState == databaseInstanceSuccessStatus,
 			"download_link":   "",
 		}
 		if instance.CreatedAt != nil {
@@ -104,11 +115,5 @@ func (g *dataSourceIBMDatabaseBackupsGen2Backend) Read(context context.Context, 
 		}
 		backups = append(backups, backup)
 	}
-
-	if err = d.Set("backups", backups); err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting backups: %s", err), "(Data) ibm_database_backups", "read")
-		return tfErr.GetDiag()
-	}
-
-	return nil
+	return backups
 }
