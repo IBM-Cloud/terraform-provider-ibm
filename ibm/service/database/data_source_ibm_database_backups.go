@@ -163,6 +163,7 @@ func (c *dataSourceIBMDatabaseBackupsClassicBackend) Read(context context.Contex
 		return tfErr.GetDiag()
 	}
 
+	// Use the provided filter argument and construct a new list with only the requested resource(s)
 	var matchBackups []clouddatabasesv5.Backup
 	var deploymentID string
 	var suppliedFilter bool

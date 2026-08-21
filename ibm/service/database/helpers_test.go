@@ -440,3 +440,146 @@ func TestExtractDeploymentIDFromCRN(t *testing.T) {
 		})
 	}
 }
+
+func TestExtractGen2BackupExtensions(t *testing.T) {
+	testcases := []struct {
+		description        string
+		extensions         map[string]interface{}
+		expectedSourceCRN  string
+		expectedBackupType string
+	}{
+		{
+			description: "Valid extensions with source_data_service_crn and type",
+			extensions: map[string]interface{}{
+				"dataservices": map[string]interface{}{
+					"backup": map[string]interface{}{
+						"source_data_service_crn": "crn:v1:bluemix:public:databases-for-postgresql:us-south:a/abc123:deployment-id::",
+						"type":                    "on_demand",
+					},
+				},
+			},
+			expectedSourceCRN:  "crn:v1:bluemix:public:databases-for-postgresql:us-south:a/abc123:deployment-id::",
+			expectedBackupType: "on_demand",
+		},
+		{
+			description: "Valid extensions with scheduled backup type",
+			extensions: map[string]interface{}{
+				"dataservices": map[string]interface{}{
+					"backup": map[string]interface{}{
+						"source_data_service_crn": "crn:v1:bluemix:public:databases-for-mysql:us-east:a/abc123:deployment-id::",
+						"type":                    "scheduled",
+					},
+				},
+			},
+			expectedSourceCRN:  "crn:v1:bluemix:public:databases-for-mysql:us-east:a/abc123:deployment-id::",
+			expectedBackupType: "scheduled",
+		},
+		{
+			description:        "Nil extensions",
+			extensions:         nil,
+			expectedSourceCRN:  "",
+			expectedBackupType: "",
+		},
+		{
+			description:        "Empty extensions map",
+			extensions:         map[string]interface{}{},
+			expectedSourceCRN:  "",
+			expectedBackupType: "",
+		},
+		{
+			description: "Missing dataservices key",
+			extensions: map[string]interface{}{
+				"other_key": "some_value",
+			},
+			expectedSourceCRN:  "",
+			expectedBackupType: "",
+		},
+		{
+			description: "dataservices is not a map",
+			extensions: map[string]interface{}{
+				"dataservices": "not-a-map",
+			},
+			expectedSourceCRN:  "",
+			expectedBackupType: "",
+		},
+		{
+			description: "Missing backup key within dataservices",
+			extensions: map[string]interface{}{
+				"dataservices": map[string]interface{}{
+					"other_key": "some_value",
+				},
+			},
+			expectedSourceCRN:  "",
+			expectedBackupType: "",
+		},
+		{
+			description: "backup is not a map",
+			extensions: map[string]interface{}{
+				"dataservices": map[string]interface{}{
+					"backup": "not-a-map",
+				},
+			},
+			expectedSourceCRN:  "",
+			expectedBackupType: "",
+		},
+		{
+			description: "Missing source_data_service_crn field",
+			extensions: map[string]interface{}{
+				"dataservices": map[string]interface{}{
+					"backup": map[string]interface{}{
+						"type": "on_demand",
+					},
+				},
+			},
+			expectedSourceCRN:  "",
+			expectedBackupType: "on_demand",
+		},
+		{
+			description: "Missing type field",
+			extensions: map[string]interface{}{
+				"dataservices": map[string]interface{}{
+					"backup": map[string]interface{}{
+						"source_data_service_crn": "crn:v1:bluemix:public:databases-for-postgresql:us-south:a/abc123:deployment-id::",
+					},
+				},
+			},
+			expectedSourceCRN:  "crn:v1:bluemix:public:databases-for-postgresql:us-south:a/abc123:deployment-id::",
+			expectedBackupType: "",
+		},
+		{
+			description: "source_data_service_crn is not a string",
+			extensions: map[string]interface{}{
+				"dataservices": map[string]interface{}{
+					"backup": map[string]interface{}{
+						"source_data_service_crn": 12345,
+						"type":                    "on_demand",
+					},
+				},
+			},
+			expectedSourceCRN:  "",
+			expectedBackupType: "on_demand",
+		},
+		{
+			description: "type is not a string",
+			extensions: map[string]interface{}{
+				"dataservices": map[string]interface{}{
+					"backup": map[string]interface{}{
+						"source_data_service_crn": "crn:v1:bluemix:public:databases-for-postgresql:us-south:a/abc123:deployment-id::",
+						"type":                    42,
+					},
+				},
+			},
+			expectedSourceCRN:  "crn:v1:bluemix:public:databases-for-postgresql:us-south:a/abc123:deployment-id::",
+			expectedBackupType: "",
+		},
+	}
+
+	for _, tc := range testcases {
+		t.Run(tc.description, func(t *testing.T) {
+			sourceDataServiceCRN, backupType := extractGen2BackupExtensions(tc.extensions)
+
+			require.Equal(t, tc.expectedSourceCRN, sourceDataServiceCRN)
+			require.Equal(t, tc.expectedBackupType, backupType)
+		})
+	}
+}
