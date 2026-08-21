@@ -647,7 +647,7 @@ func DataSourceIBMIsVPNGatewaysVPNGatewayMemberLifecycleReasonToMap(model *vpcv1
 	return modelMap, nil
 }
 
-func DataSourceIBMIsVPNGatewaysReservedIPReferenceVPNGatewayContextToMap(model *vpcv1.ReservedIPReferenceVPNGatewayContext) (map[string]interface{}, error) {
+func DataSourceIBMIsVPNGatewaysReservedIPReferenceVPNGatewayContextToMap(model *vpcv1.ReservedIPReferenceVPNGatewayMemberContext) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["address"] = *model.Address
 	if model.Deleted != nil {

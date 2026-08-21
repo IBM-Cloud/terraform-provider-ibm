@@ -137,56 +137,6 @@ func TestDataSourceIBMIsVPNGatewayMemberVPNGatewayMemberLifecycleReasonToMap(t *
 	checkResult(result)
 }
 
-func TestDataSourceIBMIsVPNGatewayMemberReservedIPReferenceVPNGatewayContextToMap(t *testing.T) {
-	checkResult := func(result map[string]interface{}) {
-		deletedModel := make(map[string]interface{})
-		deletedModel["more_info"] = "https://cloud.ibm.com/apidocs/vpc#deleted-resources"
-
-		subnetReferenceModel := make(map[string]interface{})
-		subnetReferenceModel["crn"] = "crn:v1:bluemix:public:is:us-south-1:a/aa2432b1fa4d4ace891e9b80fc104e34::subnet:0717-7ec86020-1c6e-4889-b3f0-a15f2e50f87e"
-		subnetReferenceModel["deleted"] = []map[string]interface{}{deletedModel}
-		subnetReferenceModel["href"] = "https://us-south.iaas.cloud.ibm.com/v1/subnets/0717-7ec86020-1c6e-4889-b3f0-a15f2e50f87e"
-		subnetReferenceModel["id"] = "0717-7ec86020-1c6e-4889-b3f0-a15f2e50f87e"
-		subnetReferenceModel["name"] = "my-subnet"
-		subnetReferenceModel["resource_type"] = "subnet"
-
-		model := make(map[string]interface{})
-		model["address"] = "192.168.3.4"
-		model["deleted"] = []map[string]interface{}{deletedModel}
-		model["href"] = "https://us-south.iaas.cloud.ibm.com/v1/subnets/0717-bea6a632-5e13-42a4-b4b8-31dc877abfe4/reserved_ips/0717-6d353a0f-aeb1-4ae1-832e-1110d10981bb"
-		model["id"] = "0717-6d353a0f-aeb1-4ae1-832e-1110d10981bb"
-		model["name"] = "my-reserved-ip"
-		model["resource_type"] = "subnet_reserved_ip"
-		model["subnet"] = []map[string]interface{}{subnetReferenceModel}
-
-		assert.Equal(t, result, model)
-	}
-
-	deletedModel := new(vpcv1.Deleted)
-	deletedModel.MoreInfo = core.StringPtr("https://cloud.ibm.com/apidocs/vpc#deleted-resources")
-
-	subnetReferenceModel := new(vpcv1.SubnetReference)
-	subnetReferenceModel.CRN = core.StringPtr("crn:v1:bluemix:public:is:us-south-1:a/aa2432b1fa4d4ace891e9b80fc104e34::subnet:0717-7ec86020-1c6e-4889-b3f0-a15f2e50f87e")
-	subnetReferenceModel.Deleted = deletedModel
-	subnetReferenceModel.Href = core.StringPtr("https://us-south.iaas.cloud.ibm.com/v1/subnets/0717-7ec86020-1c6e-4889-b3f0-a15f2e50f87e")
-	subnetReferenceModel.ID = core.StringPtr("0717-7ec86020-1c6e-4889-b3f0-a15f2e50f87e")
-	subnetReferenceModel.Name = core.StringPtr("my-subnet")
-	subnetReferenceModel.ResourceType = core.StringPtr("subnet")
-
-	model := new(vpcv1.ReservedIPReferenceVPNGatewayContext)
-	model.Address = core.StringPtr("192.168.3.4")
-	model.Deleted = deletedModel
-	model.Href = core.StringPtr("https://us-south.iaas.cloud.ibm.com/v1/subnets/0717-bea6a632-5e13-42a4-b4b8-31dc877abfe4/reserved_ips/0717-6d353a0f-aeb1-4ae1-832e-1110d10981bb")
-	model.ID = core.StringPtr("0717-6d353a0f-aeb1-4ae1-832e-1110d10981bb")
-	model.Name = core.StringPtr("my-reserved-ip")
-	model.ResourceType = core.StringPtr("subnet_reserved_ip")
-	model.Subnet = subnetReferenceModel
-
-	result, err := vpc.DataSourceIBMIsVPNGatewayMemberReservedIPReferenceVPNGatewayContextToMap(model)
-	assert.Nil(t, err)
-	checkResult(result)
-}
-
 func TestDataSourceIBMIsVPNGatewayMemberDeletedToMap(t *testing.T) {
 	checkResult := func(result map[string]interface{}) {
 		model := make(map[string]interface{})

@@ -337,7 +337,7 @@ func DataSourceIBMIsVPNGatewayMembersPageLinkToMap(model *vpcv1.PageLink) (map[s
 	return modelMap, nil
 }
 
-func DataSourceIBMIsVPNGatewayMembersVPNGatewayMemberCollectionItemToMap(model *vpcv1.VPNGatewayMemberCollectionItem) (map[string]interface{}, error) {
+func DataSourceIBMIsVPNGatewayMembersVPNGatewayMemberCollectionItemToMap(model *vpcv1.VPNGatewayMember) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	healthReasons := []map[string]interface{}{}
 	for _, healthReasonsItem := range model.HealthReasons {
@@ -396,7 +396,7 @@ func DataSourceIBMIsVPNGatewayMembersVPNGatewayMemberLifecycleReasonToMap(model 
 	return modelMap, nil
 }
 
-func DataSourceIBMIsVPNGatewayMembersReservedIPReferenceVPNGatewayContextToMap(model *vpcv1.ReservedIPReferenceVPNGatewayContext) (map[string]interface{}, error) {
+func DataSourceIBMIsVPNGatewayMembersReservedIPReferenceVPNGatewayContextToMap(model *vpcv1.ReservedIPReferenceVPNGatewayMemberContext) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["address"] = *model.Address
 	if model.Deleted != nil {

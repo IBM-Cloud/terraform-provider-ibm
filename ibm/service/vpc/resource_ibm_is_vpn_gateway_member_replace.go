@@ -136,13 +136,15 @@ func vpnGatewayMemberReplaceCreate(ctx context.Context, d *schema.ResourceData, 
 
 	// Build subnet prototype
 
-	replaceOptions := &vpcv1.ReplaceVPNGatewayMemberOptions{
+	replaceOptions := &vpcv1.ReplaceVPNGatewayMemberPrivateIPOptions{
 		VPNGatewayID: &vpnGatewayID,
 		ID:           &vpnGatewayMemberID,
-		Subnet:       subnetPrototype,
+		PrivateIP: &vpcv1.VPNGatewayMemberPrivateIPPrototype{
+			Subnet: subnetPrototype,
+		},
 	}
 
-	response, err := sess.ReplaceVPNGatewayMemberWithContext(ctx, replaceOptions)
+	_, response, err := sess.ReplaceVPNGatewayMemberPrivateIPWithContext(ctx, replaceOptions)
 	if err != nil {
 		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("ReplaceVPNGatewayMemberWithContext failed: %s", err.Error()), "ibm_is_vpn_gateway_connection", "create")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())

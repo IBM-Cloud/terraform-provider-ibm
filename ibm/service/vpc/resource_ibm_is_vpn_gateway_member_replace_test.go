@@ -18,7 +18,7 @@ import (
 )
 
 func TestAccIBMISVPNGatewayMemberReplace_basic(t *testing.T) {
-	var vpnGatewayMember *vpcv1.VPNGatewayMemberIndividual
+	var vpnGatewayMember *vpcv1.VPNGatewayMember
 
 	vpcname := fmt.Sprintf("tf-vpc-%d", acctest.RandIntRange(10, 100))
 	oldSubnetname := fmt.Sprintf("tf-old-subnet-%d", acctest.RandIntRange(10, 100))
@@ -113,7 +113,7 @@ func testAccCheckIBMISVPNGatewayMemberReplaceDestroy(s *terraform.State) error {
 	return nil
 }
 
-func testAccCheckIBMISVPNGatewayMemberReplaceExists(n string, vpnGatewayMember **vpcv1.VPNGatewayMemberIndividual) resource.TestCheckFunc {
+func testAccCheckIBMISVPNGatewayMemberReplaceExists(n string, vpnGatewayMember **vpcv1.VPNGatewayMember) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
@@ -261,7 +261,7 @@ func testAccCheckIBMISVPNGatewayMemberReplaceConfigWithHref(vpcname, oldSubnetna
 }
 
 func TestAccIBMISVPNGatewayMemberReplace_regional(t *testing.T) {
-	var vpnGatewayMember *vpcv1.VPNGatewayMemberIndividual
+	var vpnGatewayMember *vpcv1.VPNGatewayMember
 
 	vpcname := fmt.Sprintf("tf-vpc-%d", acctest.RandIntRange(10, 100))
 	subnet1name := fmt.Sprintf("tf-subnet1-%d", acctest.RandIntRange(10, 100))
@@ -290,8 +290,8 @@ func TestAccIBMISVPNGatewayMemberReplace_regional(t *testing.T) {
 }
 
 func TestAccIBMISVPNGatewayMemberReplace_regional_multiple(t *testing.T) {
-	var vpnGatewayMember1 *vpcv1.VPNGatewayMemberIndividual
-	var vpnGatewayMember2 *vpcv1.VPNGatewayMemberIndividual
+	var vpnGatewayMember1 *vpcv1.VPNGatewayMember
+	var vpnGatewayMember2 *vpcv1.VPNGatewayMember
 
 	vpcname := fmt.Sprintf("tf-vpc-%d", acctest.RandIntRange(10, 100))
 	subnet1name := fmt.Sprintf("tf-subnet1-%d", acctest.RandIntRange(10, 100))
