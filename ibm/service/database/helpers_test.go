@@ -583,3 +583,52 @@ func TestExtractGen2BackupExtensions(t *testing.T) {
 		})
 	}
 }
+
+func TestGetInstancesNext(t *testing.T) {
+	testcases := []struct {
+		description string
+		next        *string
+		expected    string
+		expectError bool
+	}{
+		{
+			description: "Nil next returns empty string and no error",
+			next:        nil,
+			expected:    "",
+		},
+		{
+			description: "URL with next_url query parameter",
+			next:        core.StringPtr("https://api.example.com/v2/resource_instances?next_url=abc123"),
+			expected:    "abc123",
+		},
+		{
+			description: "URL without next_url query parameter",
+			next:        core.StringPtr("https://api.example.com/v2/resource_instances?start=abc123"),
+			expected:    "",
+		},
+		{
+			description: "Empty string URL",
+			next:        core.StringPtr(""),
+			expected:    "",
+		},
+		{
+			description: "Malformed URL returns error",
+			next:        core.StringPtr("https://api.example.com/v2/resource_instances/%zz"),
+			expected:    "",
+			expectError: true,
+		},
+	}
+
+	for _, tc := range testcases {
+		t.Run(tc.description, func(t *testing.T) {
+			result, err := getInstancesNext(tc.next)
+
+			if tc.expectError {
+				require.Error(t, err)
+			} else {
+				require.NoError(t, err)
+			}
+			require.Equal(t, tc.expected, result)
+		})
+	}
+}

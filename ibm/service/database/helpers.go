@@ -874,9 +874,26 @@ func clearGen2UnsupportedAttributes(d *schema.ResourceData) {
 	// disk_encryption_key_crn for Gen2 instances
 }
 
-// extractGen2BackupExtensions parses the dataservices.backup extension block from
-// a Resource Controller instance and returns the source data service CRN and backup type.
-// Both values are empty strings when the extension is absent or malformed.
+// getInstancesNext extracts the "next_url" query parameter from the URL returned
+// in a paginated Resource Controller list response's NextURL field, so it can be
+// used as the "start" token for the next page request. Returns an empty string,
+// with no error, when next is nil (i.e. there is no further page).
+func getInstancesNext(next *string) (string, error) {
+	if next == nil {
+		return "", nil
+	}
+	u, err := url.Parse(*next)
+	if err != nil {
+		return "", err
+	}
+	q := u.Query()
+	return q.Get("next_url"), nil
+}
+
+// extractGen2BackupExtensions reads the source deployment CRN and backup type
+// from a Gen2 backup instance's Extensions["dataservices"]["backup"] block.
+// Both return values are empty strings if extensions is nil or the expected
+// structure is missing.
 func extractGen2BackupExtensions(extensions map[string]interface{}) (sourceDataServiceCRN string, backupType string) {
 	if extensions == nil {
 		return
