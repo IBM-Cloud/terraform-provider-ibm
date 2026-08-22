@@ -39,6 +39,11 @@ func (g *dataSourceIBMDatabaseBackupGen2Backend) Read(context context.Context, d
 		ID: &backupID,
 	})
 	if err != nil {
+		if response != nil && response.StatusCode == httpNotFound {
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Independent Backup not found: %s", backupID), "(Data) ibm_database_backup", "read")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
+		}
 		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetResourceInstance failed: %s\n%s", err.Error(), response), "(Data) ibm_database_backup", "read")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()

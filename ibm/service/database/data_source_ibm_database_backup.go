@@ -15,6 +15,7 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM/cloud-databases-go-sdk/clouddatabasesv5"
+	rc "github.com/IBM/platform-services-go-sdk/resourcecontrollerv2"
 )
 
 type dataSourceIBMDatabaseBackupBackend interface {
@@ -34,8 +35,38 @@ func pickDataSourceBackupBackend(d *schema.ResourceData, meta interface{}) (data
 		return newDataSourceIBMDatabaseBackupGen2Backend(), nil
 	}
 
+	// Reject coupled backups whose source instance is Gen2.
+	if err := rejectCoupledBackupFromGen2Instance(backupID, meta); err != nil {
+		return nil, err
+	}
+
 	// All other backup IDs are Classic — route directly to the classic backend.
 	return newDataSourceIBMDatabaseBackupClassicBackend(), nil
+}
+
+// rejectCoupledBackupFromGen2Instance errors if backupID is a coupled backup
+// from a Gen2 instance. Returns nil if the CRN or source instance can't be resolved.
+func rejectCoupledBackupFromGen2Instance(backupID string, meta interface{}) error {
+	instanceCRN, err := instanceCRNFromCoupledBackupCRN(backupID)
+	if err != nil {
+		return nil
+	}
+
+	rsConClient, err := meta.(conns.ClientSession).ResourceControllerV2API()
+	if err != nil {
+		return nil
+	}
+
+	instance, _, err := rsConClient.GetResourceInstance(&rc.GetResourceInstanceOptions{ID: &instanceCRN})
+	if err != nil || instance.ResourcePlanID == nil {
+		return nil
+	}
+
+	if isGen2Plan(*instance.ResourcePlanID) {
+		return fmt.Errorf("Gen2 instances only support Independent backups; use the Independent backup CRN (databases-independent-backups) instead")
+	}
+
+	return nil
 }
 
 func DataSourceIBMDatabaseBackup() *schema.Resource {

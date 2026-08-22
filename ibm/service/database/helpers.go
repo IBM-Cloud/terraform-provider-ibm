@@ -145,14 +145,18 @@ func isGen2Plan(plan string) bool {
 	return gen2Pattern.MatchString(strings.ToLower(plan))
 }
 
-// validateGen2BackupCRN validates if a backup CRN is allowed for Gen2 database restore.
-// Returns nil if the backup is allowed (Gen2 coupled or decoupled backup).
-// Returns an error if the backup is not allowed (Classic backup).
-//
-// Three backup types:
-//  1. Classic backup - NOT ALLOWED at this point
-//  2. Gen2 "coupled" backup - ALLOWED
-//  3. Gen2 "decoupled" backup - ALLOWED
+// instanceCRNFromCoupledBackupCRN extracts the source instance CRN from a
+// coupled backup CRN. Returns an error if the instance ID segment is missing.
+func instanceCRNFromCoupledBackupCRN(backupCRN string) (string, error) {
+	parts := strings.Split(backupCRN, ":")
+	if len(parts) < 8 || parts[7] == "" {
+		return "", fmt.Errorf("backup CRN does not contain instance ID and is not a decoupled backup")
+	}
+	return strings.Join(parts[:8], ":") + "::", nil
+}
+
+// validateGen2BackupCRN returns an error if backupCRN is a Classic backup;
+// Gen2 (decoupled) backups are allowed.
 func validateGen2BackupCRN(backupCRN string, meta interface{}) error {
 	if backupCRN == "" {
 		return nil
@@ -171,13 +175,10 @@ func validateGen2BackupCRN(backupCRN string, meta interface{}) error {
 	}
 
 	// It's a coupled backup - need to check if the source instance is Gen2
-	instanceID := parts[7]
-	if instanceID == "" {
-		return fmt.Errorf("backup CRN does not contain instance ID and is not a decoupled backup")
+	instanceCRN, err := instanceCRNFromCoupledBackupCRN(backupCRN)
+	if err != nil {
+		return err
 	}
-
-	// Construct instance CRN by clearing last 2 sections (resource-type and resource)
-	instanceCRN := strings.Join(parts[:8], ":") + "::"
 
 	// Get the instance to check its plan
 	rsConClient, err := meta.(conns.ClientSession).ResourceControllerV2API()
