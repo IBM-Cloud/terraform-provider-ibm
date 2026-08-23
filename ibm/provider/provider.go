@@ -1432,6 +1432,7 @@ func Provider() *schema.Provider {
 			"ibm_is_floating_ip":                                 vpc.ResourceIBMISFloatingIP(),
 			"ibm_is_flow_log":                                    vpc.ResourceIBMISFlowLog(),
 			"ibm_is_instance":                                    vpc.ResourceIBMISInstance(),
+			"ibm_is_instance_reinitialize":                       vpc.ResourceIBMISInstanceReinitialize(),
 			"ibm_is_instance_software_attachment":                vpc.ResourceIBMIsInstanceSoftwareAttachment(),
 			"ibm_is_instance_action":                             vpc.ResourceIBMISInstanceAction(),
 			"ibm_is_instance_network_attachment":                 vpc.ResourceIBMIsInstanceNetworkAttachment(),
