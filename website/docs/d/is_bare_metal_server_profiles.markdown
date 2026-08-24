@@ -120,8 +120,8 @@ Review the attribute references that you can access after you retrieve your data
       - `type` - (String) The type for this profile field.
       - `value` - (Boolean) The value for this profile field.
 
- - `zones` - (List) The zones in this region that have bare metal servers that match this profile.
+  - `zones` - (List) The zones in this region that have bare metal servers that match this profile.
 
-    Nested schema for **zones**:
-    - `href` - (String) The URL for this zone.
-    - `name` - (String) The globally unique name for this zone.
+      Nested schema for **zones**:
+      - `href` - (String) The URL for this zone.
+      - `name` - (String) The globally unique name for this zone.
