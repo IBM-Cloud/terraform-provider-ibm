@@ -78,8 +78,11 @@ func resourceIbmSmAdminTokenUniqueId(d *schema.ResourceData) string {
 }
 
 func resourceIbmSmAdminTokenCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	d.SetId(resourceIbmSmAdminTokenUniqueId(d))
-	return generateSmAdminToken(context, d, meta, "create")
+	err := generateSmAdminToken(context, d, meta, "create")
+	if err == nil {
+		d.SetId(resourceIbmSmAdminTokenUniqueId(d))
+	}
+	return err
 }
 
 func resourceIbmSmAdminTokenRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -97,5 +100,6 @@ func resourceIbmSmAdminTokenRead(context context.Context, d *schema.ResourceData
 }
 
 func resourceIbmSmAdminTokenDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	d.SetId("")
 	return nil
 }
