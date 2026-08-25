@@ -400,6 +400,9 @@ func imageGetByName(context context.Context, d *schema.ResourceData, meta interf
 	if err = d.Set("user_data_format", image.UserDataFormat); err != nil {
 		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting user_data_format: %s", err), "(Data) ibm_is_image", "read", "set-user_data_format").GetDiag()
 	}
+	if err = d.Set("minimum_provisioned_size", flex.IntValue(image.MinimumProvisionedSize)); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting minimum_provisioned_size: %s", err), "(Data) ibm_is_image", "read", "set-minimum_provisioned_size").GetDiag()
+	}
 	if err = d.Set("status", image.Status); err != nil {
 		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting status: %s", err), "(Data) ibm_is_image", "read", "set-status").GetDiag()
 	}
