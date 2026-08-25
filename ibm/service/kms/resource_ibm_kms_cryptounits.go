@@ -61,6 +61,7 @@ func ResourceIBMKmsCryptoUnits() *schema.Resource {
 			"should_zeroize": {
 				Type:        schema.TypeBool,
 				Optional:    true,
+				Computed:    true,
 				Description: "set to true if the resource should be zeroized. Zeroizing if harmful if not understood. Set to false as a safe default",
 				Default:     false,
 			},
