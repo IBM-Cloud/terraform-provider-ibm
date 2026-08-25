@@ -62,8 +62,7 @@ func TestGen2BackendCreate(t *testing.T) {
 				"location":  "us-south",
 				"backup_id": "crn:v1:bluemix:public:databases-for-postgresql:us-south:a/abc123:instance-id:backup:backup-id",
 			},
-			expectedError: true,
-			errorContains: "Classic backup",
+			expectedError: false,
 		},
 		{
 			name: "create_with_remote_leader",
@@ -1776,10 +1775,10 @@ func TestGen2AllUnsupportedAttributesBehavior(t *testing.T) {
 		{
 			name:           "backup_id",
 			attribute:      "backup_id",
-			planBehavior:   "Fails if set",
-			applyBehavior:  "N/A",
+			planBehavior:   "Accepted - Classic, Gen2 coupled, and Gen2 decoupled backups are all supported",
+			applyBehavior:  "Sent to API as restore_backup_id inside dataservices",
 			readBehavior:   "Not set",
-			useAlternative: "Restore from backup not yet implemented in Gen2",
+			useAlternative: "N/A - restore from backup is supported in Gen2",
 		},
 		{
 			name:           "point_in_time_recovery_deployment_id",
