@@ -7,6 +7,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"os"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -65,6 +66,22 @@ func ResourceIBMIsPrivatePathServiceGateway() *schema.Resource {
 				Optional:    true,
 				Computed:    true,
 				Description: "ndicates whether this private path service gateway has zonal affinity.",
+			},
+			"tags": &schema.Schema{
+				Type:        schema.TypeSet,
+				Optional:    true,
+				Computed:    true,
+				Elem:        &schema.Schema{Type: schema.TypeString, ValidateFunc: validate.InvokeValidator("ibm_is_private_path_service_gateway", "tags")},
+				Set:         flex.ResourceIBMVPCHash,
+				Description: "List of user tags for this private path service gateway.",
+			},
+			"access_tags": &schema.Schema{
+				Type:        schema.TypeSet,
+				Optional:    true,
+				Computed:    true,
+				Elem:        &schema.Schema{Type: schema.TypeString, ValidateFunc: validate.InvokeValidator("ibm_is_private_path_service_gateway", "accesstag")},
+				Set:         flex.ResourceIBMVPCHash,
+				Description: "List of access management tags for this private path service gateway.",
 			},
 			"created_at": &schema.Schema{
 				Type:        schema.TypeString,
@@ -190,6 +207,24 @@ func ResourceIBMIsPrivatePathServiceGatewayValidator() *validate.ResourceValidat
 			MinValueLength:             1,
 			MaxValueLength:             128,
 		},
+		validate.ValidateSchema{
+			Identifier:                 "tags",
+			ValidateFunctionIdentifier: validate.ValidateRegexpLen,
+			Type:                       validate.TypeString,
+			Optional:                   true,
+			Regexp:                     `^[A-Za-z0-9:_ .-]+$`,
+			MinValueLength:             1,
+			MaxValueLength:             128,
+		},
+		validate.ValidateSchema{
+			Identifier:                 "accesstag",
+			ValidateFunctionIdentifier: validate.ValidateRegexpLen,
+			Type:                       validate.TypeString,
+			Optional:                   true,
+			Regexp:                     `^([A-Za-z0-9_.-]|[A-Za-z0-9_.-][A-Za-z0-9_ .-]*[A-Za-z0-9_.-]):([A-Za-z0-9_.-]|[A-Za-z0-9_.-][A-Za-z0-9_ .-]*[A-Za-z0-9_.-])$`,
+			MinValueLength:             1,
+			MaxValueLength:             128,
+		},
 	)
 
 	resourceValidator := validate.ResourceValidator{ResourceName: "ibm_is_private_path_service_gateway", Schema: validateSchema}
@@ -251,6 +286,26 @@ func resourceIBMIsPrivatePathServiceGatewayCreate(context context.Context, d *sc
 	if err != nil {
 		return flex.TerraformErrorf(err, fmt.Sprintf("isWaitForPPSGAvailable failed: %s", err.Error()), "ibm_is_private_path_service_gateway", "create").GetDiag()
 
+	}
+
+	if privatePathServiceGateway.CRN != nil {
+		v := os.Getenv("IC_ENV_TAGS")
+		if _, ok := d.GetOk("tags"); ok || v != "" {
+			oldList, newList := d.GetChange("tags")
+			err = flex.UpdateGlobalTagsUsingCRN(oldList, newList, meta, *privatePathServiceGateway.CRN, "", isUserTagType)
+			if err != nil {
+				log.Printf(
+					"[ERROR] Error on create of resource private path service gateway (%s) tags: %s", d.Id(), err)
+			}
+		}
+		if _, ok := d.GetOk("access_tags"); ok {
+			oldList, newList := d.GetChange("access_tags")
+			err = flex.UpdateGlobalTagsUsingCRN(oldList, newList, meta, *privatePathServiceGateway.CRN, "", isAccessTagType)
+			if err != nil {
+				log.Printf(
+					"[ERROR] Error on create of resource private path service gateway (%s) access tags: %s", d.Id(), err)
+			}
+		}
 	}
 
 	return resourceIBMIsPrivatePathServiceGatewayUpdate(context, d, meta)
@@ -331,6 +386,24 @@ func resourceIBMIsPrivatePathServiceGatewayRead(context context.Context, d *sche
 	if err = d.Set("private_path_service_gateway", privatePathServiceGateway.ID); err != nil {
 		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting private_path_service_gateway: %s", err), "ibm_is_private_path_service_gateway", "read", "set-private_path_service_gateway").GetDiag()
 	}
+	if privatePathServiceGateway.CRN != nil {
+		tags, err := flex.GetGlobalTagsUsingCRN(meta, *privatePathServiceGateway.CRN, "", isUserTagType)
+		if err != nil {
+			log.Printf(
+				"[ERROR] Error on get of resource private path service gateway (%s) tags: %s", d.Id(), err)
+		}
+		if err = d.Set("tags", tags); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting tags: %s", err), "ibm_is_private_path_service_gateway", "read", "set-tags").GetDiag()
+		}
+		accesstags, err := flex.GetGlobalTagsUsingCRN(meta, *privatePathServiceGateway.CRN, "", isAccessTagType)
+		if err != nil {
+			log.Printf(
+				"[ERROR] Error on get of resource private path service gateway (%s) access tags: %s", d.Id(), err)
+		}
+		if err = d.Set("access_tags", accesstags); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting access_tags: %s", err), "ibm_is_private_path_service_gateway", "read", "set-access_tags").GetDiag()
+		}
+	}
 
 	return nil
 }
@@ -348,6 +421,35 @@ func resourceIBMIsPrivatePathServiceGatewayUpdate(context context.Context, d *sc
 	hasChange := false
 
 	patchVals := &vpcv1.PrivatePathServiceGatewayPatch{}
+
+	if (d.HasChange("tags") || d.HasChange("access_tags")) && !d.IsNewResource() {
+		getPrivatePathServiceGatewayOptions := &vpcv1.GetPrivatePathServiceGatewayOptions{}
+		getPrivatePathServiceGatewayOptions.SetID(d.Id())
+		privatePathServiceGateway, response, err := vpcClient.GetPrivatePathServiceGatewayWithContext(context, getPrivatePathServiceGatewayOptions)
+		if err != nil {
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error getting private path service gateway: %s\n%s", err.Error(), response), "ibm_is_private_path_service_gateway", "update")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
+		}
+		if privatePathServiceGateway.CRN != nil {
+			if d.HasChange("tags") {
+				oldList, newList := d.GetChange("tags")
+				err = flex.UpdateGlobalTagsUsingCRN(oldList, newList, meta, *privatePathServiceGateway.CRN, "", isUserTagType)
+				if err != nil {
+					log.Printf(
+						"[ERROR] Error on update of resource private path service gateway (%s) tags: %s", d.Id(), err)
+				}
+			}
+			if d.HasChange("access_tags") {
+				oldList, newList := d.GetChange("access_tags")
+				err = flex.UpdateGlobalTagsUsingCRN(oldList, newList, meta, *privatePathServiceGateway.CRN, "", isAccessTagType)
+				if err != nil {
+					log.Printf(
+						"[ERROR] Error on update of resource private path service gateway (%s) access tags: %s", d.Id(), err)
+				}
+			}
+		}
+	}
 
 	if d.HasChange("default_access_policy") && !d.IsNewResource() {
 		newAccessPolicy := d.Get("default_access_policy").(string)
