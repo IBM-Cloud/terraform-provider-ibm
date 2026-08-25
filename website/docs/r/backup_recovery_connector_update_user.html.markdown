@@ -3,7 +3,7 @@ layout: "ibm"
 page_title: "IBM : ibm_backup_recovery_connector_update_user"
 description: |-
   Manages backup_recovery_connector_update_user.
-subcategory: "IBM Backup Recovery API"
+subcategory: "IBM Backup Recovery"
 ---
 
 # ibm_backup_recovery_connector_update_user
