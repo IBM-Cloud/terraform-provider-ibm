@@ -31,7 +31,30 @@ func TestAccIBMISImagesDataSource_basic(t *testing.T) {
 		},
 	})
 }
-func TestAccIBMISImagesDataSource_Zones(t *testing.T) {
+
+func TestAccIBMISImagesDataSource_MinimumProvisionedSize(t *testing.T) {
+	resName := "data.ibm_is_images.test1"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { acc.TestAccPreCheck(t) },
+		Providers: acc.TestAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMISImagesDataSourceNameConfig(),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet(resName, "images.0.name"),
+					resource.TestCheckResourceAttrSet(resName, "images.0.status"),
+					resource.TestCheckResourceAttrSet(resName, "images.0.architecture"),
+					resource.TestCheckResourceAttrSet(resName, "images.0.zones.#"),
+					resource.TestCheckResourceAttrSet(resName, "images.0.zones.0.name"),
+					resource.TestCheckResourceAttrSet(resName, "images.0.zones.0.href"),
+					resource.TestCheckResourceAttrSet(resName, "images.0.minimum_provisioned_size"),
+				),
+			},
+		},
+	})
+}
+func TestAccIBMISImagesDataSource_(t *testing.T) {
 	resName := "data.ibm_is_images.test1"
 
 	resource.Test(t, resource.TestCase{
