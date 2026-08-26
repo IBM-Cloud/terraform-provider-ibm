@@ -229,7 +229,8 @@ func resourceIBMIamAPIKeyRead(context context.Context, d *schema.ResourceData, m
 	}
 	if !core.IsNil(apiKey.ID) {
 		if err = d.Set("apikey_id", apiKey.ID); err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error setting apikey_id: %s", err))
+			err = fmt.Errorf("Error setting apikey_id: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_api_key", "read", "set-apikey_id").GetDiag()
 		}
 	}
 	if !core.IsNil(apiKey.EntityTag) {

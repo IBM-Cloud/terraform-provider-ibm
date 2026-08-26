@@ -21,8 +21,8 @@ variable "iam_api_key_store_value" {
 }
 variable "iam_api_key_entity_lock" {
   description = "Indicates if the API key is locked for further write operations. False by default."
-  type        = bool
-  default     = false
+  type        = string
+  default     = "false"
 }
 variable "iam_api_key_file" {
   description = "The file name where the API key is to be stored."
