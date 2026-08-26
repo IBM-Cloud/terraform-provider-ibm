@@ -138,6 +138,7 @@ import (
 	"github.com/IBM/eventstreams-go-sdk/pkg/schemaregistryv1"
 	"github.com/IBM/ibm-backup-recovery-sdk-go/backuprecoveryv1"
 	"github.com/IBM/ibm-hpcs-uko-sdk/ukov4"
+	"github.ibm.com/BackupAndRecovery/brs-migration-orchestrator/brsmigrationv2"
 	"github.com/IBM/logs-go-sdk/logsv0"
 	"github.com/IBM/platform-services-go-sdk/partnercentersellv1"
 	scc "github.com/IBM/scc-go-sdk/v5/securityandcompliancecenterapiv3"
@@ -271,6 +272,7 @@ type ClientSession interface {
 	BackupRecoveryV1() (*backuprecoveryv1.BackupRecoveryV1, error)
 	BackupRecoveryV1Connector() (*backuprecoveryv1.BackupRecoveryV1Connector, error)
 	BackupRecoveryManagerV1() (*backuprecoveryv1.BackupRecoveryManagementSreApiV1, error)
+	BrsMigrationV2() (*brsmigrationv2.BrsMigrationV2, error)
 	IBMCloudLogsRoutingV0() (*ibmcloudlogsroutingv0.IBMCloudLogsRoutingV0, error)
 	LogsRouterV3() (*logsrouterv3.LogsRouterV3, error)
 	SoftLayerSession() *slsession.Session
@@ -625,6 +627,9 @@ type clientSession struct {
 
 	backupRecoveryManagerClient    *backuprecoveryv1.BackupRecoveryManagementSreApiV1
 	backupRecoveryManagerClientErr error
+
+	brsMigrationClient    *brsmigrationv2.BrsMigrationV2
+	brsMigrationClientErr error
 
 	secretsManagerClient    *secretsmanagerv2.SecretsManagerV2
 	secretsManagerClientErr error
@@ -1309,6 +1314,11 @@ func (session clientSession) BackupRecoveryV1Connector() (*backuprecoveryv1.Back
 
 func (session clientSession) BackupRecoveryManagerV1() (*backuprecoveryv1.BackupRecoveryManagementSreApiV1, error) {
 	return session.backupRecoveryManagerClient, session.backupRecoveryManagerClientErr
+}
+
+// IBM Cloud Backup and Recovery Migration API
+func (session clientSession) BrsMigrationV2() (*brsmigrationv2.BrsMigrationV2, error) {
+	return session.brsMigrationClient, session.brsMigrationClientErr
 }
 
 // IBM Cloud Secrets Manager V2 Basic API
@@ -3761,6 +3771,22 @@ func (c *Config) ClientSession() (*clientSession, error) {
 			})
 		} else {
 			session.powerhaAutomationServiceClientErr = fmt.Errorf("Error occurred while constructing 'PowerhaAutomation Service' service client: %q", err)
+		}
+	}
+
+	// Construct an instance of the 'IBM Cloud Backup and Recovery Migration API' service.
+	if session.brsMigrationClientErr == nil {
+		brsMigrationClientOptions := &brsmigrationv2.BrsMigrationV2Options{
+			Authenticator: authenticator,
+		}
+		session.brsMigrationClient, err = brsmigrationv2.NewBrsMigrationV2(brsMigrationClientOptions)
+		if err == nil {
+			session.brsMigrationClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+			session.brsMigrationClient.SetDefaultHeaders(gohttp.Header{
+				"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
+			})
+		} else {
+			session.brsMigrationClientErr = fmt.Errorf("Error occurred while constructing 'IBM Cloud Backup and Recovery Migration API' service client: %q", err)
 		}
 	}
 

@@ -39,6 +39,7 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/db2"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/directlink"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/dnsservices"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/brsmigration"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/drautomationservice"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/enterprise"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/eventnotification"
@@ -1185,6 +1186,21 @@ func Provider() *schema.Provider {
 			"ibm_pha_powervs_workspaces":  powerhaautomationservice.DataSourceIBMPhaPowervsWorkspace(),
 			"ibm_pha_cluster_nodes":       powerhaautomationservice.DataSourceIBMPhaClusterNodes(),
 			"ibm_pha_deployment":          powerhaautomationservice.DataSourceIBMPhaDeployment(),
+
+			// BRS Migration Service
+			"ibm_brs_migration":                  brsmigration.DataSourceIbmBrsMigration(),
+			"ibm_brs_migrations":                 brsmigration.DataSourceIbmBrsMigrations(),
+			"ibm_brs_migration_host":             brsmigration.DataSourceIbmBrsMigrationHost(),
+			"ibm_brs_migration_hosts":            brsmigration.DataSourceIbmBrsMigrationHosts(),
+			"ibm_brs_migration_volume":           brsmigration.DataSourceIbmBrsMigrationVolume(),
+			"ibm_brs_migration_volumes":          brsmigration.DataSourceIbmBrsMigrationVolumes(),
+			"ibm_brs_migration_workload":         brsmigration.DataSourceIbmBrsMigrationWorkload(),
+			"ibm_brs_migration_workloads":        brsmigration.DataSourceIbmBrsMigrationWorkloads(),
+			"ibm_brs_migration_workload_run":     brsmigration.DataSourceIbmBrsMigrationWorkloadRun(),
+			"ibm_brs_migration_workload_runs":    brsmigration.DataSourceIbmBrsMigrationWorkloadRuns(),
+			"ibm_brs_migration_workload_history": brsmigration.DataSourceIbmBrsMigrationWorkloadHistory(),
+			"ibm_brs_migration_discover":         brsmigration.DataSourceIbmBrsMigrationDiscover(),
+			"ibm_brs_migration_discovers":        brsmigration.DataSourceIbmBrsMigrationDiscovers(),
 		},
 
 		ResourcesMap: map[string]*schema.Resource{
@@ -1902,6 +1918,14 @@ func Provider() *schema.Provider {
 
 			// Platform Notifications
 			"ibm_notification_distribution_list_destination": platformnotifications.ResourceIbmNotificationDistributionListDestination(),
+
+			// BRS Migration Service
+			"ibm_brs_migration":            brsmigration.ResourceIbmBrsMigration(),
+			"ibm_brs_migration_host":       brsmigration.ResourceIbmBrsMigrationHost(),
+			"ibm_brs_migration_volume":     brsmigration.ResourceIbmBrsMigrationVolume(),
+			"ibm_brs_migration_workload":   brsmigration.ResourceIbmBrsMigrationWorkload(),
+			"ibm_brs_migration_workload_run": brsmigration.ResourceIbmBrsMigrationWorkloadRun(),
+			"ibm_brs_migration_discover":   brsmigration.ResourceIbmBrsMigrationDiscover(),
 		},
 
 		ConfigureFunc: providerConfigure,
