@@ -381,6 +381,11 @@ func (g *resourceIBMDatabaseGen2Backend) buildGen2Parameters(d *schema.ResourceD
 		dataservices["restore_backup_id"] = backupID.(string)
 	}
 
+	// Support IOPS configuration when it is provided, (applicable only to Gen2 plans)
+	if iops, ok := d.GetOk("iops"); ok {
+		dataservices["iops"] = iops.(int)
+	}
+
 	// Build final parameters structure
 	parameters := map[string]interface{}{
 		"dataservices": dataservices,
@@ -891,8 +896,9 @@ func (g *resourceIBMDatabaseGen2Backend) checkUnsupportedChanges(d *schema.Resou
 
 // applyGroupScalingWithDiagnostics applies group scaling and returns diagnostics.
 // Wraps applyGroupScaling to provide consistent diagnostic handling.
+// Also triggers when iops changes, since IOPS is part of the dataservices parameters.
 func (g *resourceIBMDatabaseGen2Backend) applyGroupScalingWithDiagnostics(ctx context.Context, d *schema.ResourceData, rsConClient *rc.ResourceControllerV2, instanceID string, meta interface{}) diag.Diagnostics {
-	if !d.HasChange("group") {
+	if !d.HasChange("group") && !d.HasChange("iops") {
 		return nil
 	}
 

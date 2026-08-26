@@ -877,6 +877,13 @@ func ResourceIBMDatabaseInstance() *schema.Resource {
 					},
 				},
 			},
+			"iops": {
+				Type:         schema.TypeInt,
+				Optional:     true,
+				Description:  "IOPS (Input/Output Operations Per Second) for the database instance. Valid range: 3000–64000. Only applicable for Gen2 plans.",
+				ValidateFunc: validation.IntBetween(3000, 64000),
+			},
+
 			flex.DeletionProtection: {
 				Type:        schema.TypeBool,
 				Optional:    true,
