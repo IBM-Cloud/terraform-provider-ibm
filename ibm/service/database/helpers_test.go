@@ -95,6 +95,57 @@ func TestCalculateExpirationDatetime(t *testing.T) {
 		})
 	}
 }
+func TestExtractShardsFromExtensions(t *testing.T) {
+	t.Run("returns shard count from mongodbees extensions", func(t *testing.T) {
+		extensions := map[string]interface{}{
+			dataservicesKey: map[string]interface{}{
+				"mongodbees": map[string]interface{}{
+					"shards": float64(2),
+				},
+			},
+		}
+
+		shards := extractShardsFromExtensions(extensions, "mongodbees")
+		require.Equal(t, 2, shards)
+	})
+
+	t.Run("returns zero when shards are missing", func(t *testing.T) {
+		extensions := map[string]interface{}{
+			dataservicesKey: map[string]interface{}{
+				"mongodbees": map[string]interface{}{},
+			},
+		}
+
+		shards := extractShardsFromExtensions(extensions, "mongodbees")
+		require.Equal(t, 0, shards)
+	})
+
+	t.Run("works for a different dbType key", func(t *testing.T) {
+		extensions := map[string]interface{}{
+			dataservicesKey: map[string]interface{}{
+				"futuredb": map[string]interface{}{
+					"shards": float64(3),
+				},
+			},
+		}
+
+		shards := extractShardsFromExtensions(extensions, "futuredb")
+		require.Equal(t, 3, shards)
+	})
+
+	t.Run("returns zero when dbType key is absent", func(t *testing.T) {
+		extensions := map[string]interface{}{
+			dataservicesKey: map[string]interface{}{
+				"mongodbees": map[string]interface{}{
+					"shards": float64(2),
+				},
+			},
+		}
+
+		shards := extractShardsFromExtensions(extensions, "futuredb")
+		require.Equal(t, 0, shards)
+	})
+}
 
 type MockTaskClient struct {
 	Tasks []clouddatabasesv5.Task
@@ -439,4 +490,44 @@ func TestExtractDeploymentIDFromCRN(t *testing.T) {
 			}
 		})
 	}
+}
+func TestExtractDatabaseAllocations(t *testing.T) {
+	t.Run("extracts allocations from mongodb key for standard-gen2", func(t *testing.T) {
+		instance := map[string]interface{}{
+			"dataservices": map[string]interface{}{
+				"mongodb": map[string]interface{}{
+					"storage_gb":  float64(30),
+					"host_flavor": "bx3d.4x20",
+					"members":     float64(3),
+				},
+			},
+		}
+		alloc := extractDatabaseAllocations(instance, "databases-for-mongodb")
+		require.Equal(t, float64(30), alloc.storageGB)
+		require.Equal(t, "bx3d.4x20", alloc.hostFlavorID)
+		require.Equal(t, int64(3), alloc.members)
+	})
+
+	t.Run("falls back to mongodbees key for enterprise-sharding-gen2", func(t *testing.T) {
+		instance := map[string]interface{}{
+			"dataservices": map[string]interface{}{
+				"mongodbees": map[string]interface{}{
+					"storage_gb":  float64(60),
+					"host_flavor": "bx3d.8x40",
+					"shards":      float64(2),
+				},
+			},
+		}
+		alloc := extractDatabaseAllocations(instance, "databases-for-mongodb")
+		require.Equal(t, float64(60), alloc.storageGB)
+		require.Equal(t, "bx3d.8x40", alloc.hostFlavorID)
+		require.Equal(t, int64(2), alloc.shards)
+	})
+
+	t.Run("returns zero allocations when dataservices key is absent", func(t *testing.T) {
+		instance := map[string]interface{}{}
+		alloc := extractDatabaseAllocations(instance, "databases-for-mongodb")
+		require.Equal(t, float64(0), alloc.storageGB)
+		require.Equal(t, "", alloc.hostFlavorID)
+	})
 }

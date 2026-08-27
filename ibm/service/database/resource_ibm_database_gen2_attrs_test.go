@@ -295,20 +295,23 @@ func TestDbConfigToMap_membersIncludedForMongodb(t *testing.T) {
 	}
 }
 
-func TestDbConfigToMap_membersExcludedForMongodbees(t *testing.T) {
+func TestDbConfigToMap_membersExcludedAndShardsIncludedForMongodbees(t *testing.T) {
 	g := &resourceIBMDatabaseGen2Backend{}
-	config := DBConfig{Members: 3, StorageGB: 10, HostFlavor: "bx3d.4x20"}
+	config := DBConfig{Members: 3, Shards: 2, StorageGB: 10, HostFlavor: "bx3d.4x20"}
 
 	result := g.dbConfigToMap(config, "mongodbees")
 
 	if _, ok := result["members"]; ok {
 		t.Fatalf("expected 'members' to be absent for dbType 'mongodbees', got %v", result["members"])
 	}
+	if result["shards"] != 2 {
+		t.Fatalf("expected shards=2, got %v", result["shards"])
+	}
 }
 
-func TestDbConfigToMap_storageAndHostFlavorPresentForMongodbees(t *testing.T) {
+func TestDbConfigToMap_storageShardsAndHostFlavorPresentForMongodbees(t *testing.T) {
 	g := &resourceIBMDatabaseGen2Backend{}
-	config := DBConfig{Members: 3, StorageGB: 10, HostFlavor: "bx3d.4x20"}
+	config := DBConfig{Members: 3, Shards: 2, StorageGB: 10, HostFlavor: "bx3d.4x20"}
 
 	result := g.dbConfigToMap(config, "mongodbees")
 
@@ -317,6 +320,9 @@ func TestDbConfigToMap_storageAndHostFlavorPresentForMongodbees(t *testing.T) {
 	}
 	if result["host_flavor"] != "bx3d.4x20" {
 		t.Fatalf("expected host_flavor=bx3d.4x20, got %v", result["host_flavor"])
+	}
+	if result["shards"] != 2 {
+		t.Fatalf("expected shards=2, got %v", result["shards"])
 	}
 }
 
@@ -337,6 +343,51 @@ func TestBuildGen2Parameters_enterpriseShardingGen2UsesMongodbees(t *testing.T) 
 	if dbType != "mongodbees" {
 		t.Fatalf("expected dbType 'mongodbees' for enterprise-sharding-gen2, got %q", dbType)
 	}
+}
+func TestGetShardsCount(t *testing.T) {
+	g := &resourceIBMDatabaseGen2Backend{}
+
+	t.Run("accepts maximum shard count of 3", func(t *testing.T) {
+		d := testGen2DatabaseResourceData(t, map[string]interface{}{
+			"service": "databases-for-mongodb",
+			"plan":    "enterprise-sharding-gen2",
+			"shards":  2,
+		})
+
+		shards, err := g.getShardsCount(d)
+		if err != nil {
+			t.Fatalf("expected no error, got %v", err)
+		}
+		if shards != 2 {
+			t.Fatalf("expected shards=2, got shards=%d", shards)
+		}
+	})
+
+	t.Run("defaults to 1 when shards not configured", func(t *testing.T) {
+		d := testGen2DatabaseResourceData(t, map[string]interface{}{
+			"service": "databases-for-mongodb",
+			"plan":    "enterprise-sharding-gen2",
+		})
+
+		shards, err := g.getShardsCount(d)
+		if err != nil {
+			t.Fatalf("expected no error, got %v", err)
+		}
+		if shards != 1 {
+			t.Fatalf("expected default shards=1, got shards=%d", shards)
+		}
+	})
+
+	t.Run("rejects shards for unsupported plans", func(t *testing.T) {
+		d := testGen2DatabaseResourceData(t, map[string]interface{}{
+			"service": "databases-for-postgresql",
+			"plan":    "standard-gen2",
+			"shards":  2,
+		})
+
+		_, err := g.getShardsCount(d)
+		requireErrContains(t, err, "shards is supported only for service=databases-for-mongodb with plan=enterprise-sharding-gen2")
+	})
 }
 
 func TestBuildGen2Parameters_standardGen2UsesMongodbNotMongodbees(t *testing.T) {

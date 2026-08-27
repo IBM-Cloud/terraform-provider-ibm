@@ -109,6 +109,11 @@ func DataSourceIBMDatabaseInstance() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 			},
+			"shards": {
+				Description: "The shard count for MongoDB Enterprise Edition Sharding Gen2 instances",
+				Type:        schema.TypeInt,
+				Computed:    true,
+			},
 			"platform_options": {
 				Description: "Platform-specific options for this deployment.r",
 				Type:        schema.TypeSet,

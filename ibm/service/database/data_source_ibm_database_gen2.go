@@ -56,6 +56,11 @@ func (g *dataSourceIBMDatabaseGen2Backend) Read(d *schema.ResourceData, meta int
 	// Set version information
 	g.setVersionInfo(d, instance)
 
+	// Set shard information
+	if err := g.setShardsInfo(d, instance); err != nil {
+		return err
+	}
+
 	// Set groups information
 	if err := g.setGroupsInfo(d, instance, meta); err != nil {
 		return err
@@ -95,6 +100,10 @@ func (g *dataSourceIBMDatabaseGen2Backend) setVersionInfo(d *schema.ResourceData
 func (g *dataSourceIBMDatabaseGen2Backend) setGroupsInfo(d *schema.ResourceData, instance *rc.ResourceInstance, meta interface{}) error {
 	// Use shared Gen2 helper function
 	return setGen2GroupsInfo(d, instance, meta)
+}
+
+func (g *dataSourceIBMDatabaseGen2Backend) setShardsInfo(d *schema.ResourceData, instance *rc.ResourceInstance) error {
+	return sharedSetShardsInfo(d, instance)
 }
 
 // clearUnsupportedAttributes clears attributes not supported in Gen2.
