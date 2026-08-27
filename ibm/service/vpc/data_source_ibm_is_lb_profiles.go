@@ -227,7 +227,16 @@ func DataSourceIBMISLbProfiles() *schema.Resource {
 								},
 							},
 						},
-
+						"asymmetric_routing_supported": {
+							Type:        schema.TypeBool,
+							Computed:    true,
+							Description: "The asymmetric routing support for a load balancer with this profile",
+						},
+						"asymmetric_routing_supported_type": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The asymmetric routing support type for a load balancer with this profile",
+						},
 						// http bundle
 						"fqdn_pool_members_supported": &schema.Schema{
 							Type:     schema.TypeList,
@@ -388,6 +397,35 @@ func dataSourceIBMISLbProfilesRead(context context.Context, d *schema.ResourceDa
 					}
 					if rms.Value != nil {
 						l["route_mode_supported"] = *rms.Value
+					}
+				}
+			}
+		}
+
+		if profileCollector.AsymmetricRoutingSupported != nil {
+			asymmetricRoutingSupport := profileCollector.AsymmetricRoutingSupported
+			switch reflect.TypeOf(asymmetricRoutingSupport).String() {
+			case "*vpcv1.LoadBalancerProfileAsymmetricRoutingSupportedFixed":
+				{
+					ars := asymmetricRoutingSupport.(*vpcv1.LoadBalancerProfileAsymmetricRoutingSupportedFixed)
+					l["asymmetric_routing_supported"] = ars.Value
+					l["asymmetric_routing_supported_type"] = ars.Type
+				}
+			case "*vpcv1.LoadBalancerProfileAsymmetricRoutingSupportedDependent":
+				{
+					ars := asymmetricRoutingSupport.(*vpcv1.LoadBalancerProfileAsymmetricRoutingSupportedDependent)
+					if ars.Type != nil {
+						l["asymmetric_routing_supported_type"] = *ars.Type
+					}
+				}
+			case "*vpcv1.LoadBalancerProfileAsymmetricRoutingSupported":
+				{
+					ars := asymmetricRoutingSupport.(*vpcv1.LoadBalancerProfileAsymmetricRoutingSupported)
+					if ars.Type != nil {
+						l["asymmetric_routing_supported_type"] = *ars.Type
+					}
+					if ars.Value != nil {
+						l["asymmetric_routing_supported"] = *ars.Value
 					}
 				}
 			}
