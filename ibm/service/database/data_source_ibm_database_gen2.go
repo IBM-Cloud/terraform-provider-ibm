@@ -33,6 +33,7 @@ func newDataSourceIBMDatabaseGen2Backend() dataSourceIBMDatabaseBackend {
 // consistency. This is the recommended approach as fully resetting data source
 // state is considered an anti-pattern in Terraform.
 func (g *dataSourceIBMDatabaseGen2Backend) Read(d *schema.ResourceData, meta interface{}) error {
+	// Find the database instance
 	instance, err := findInstance(d, meta)
 	if err != nil {
 		return fmt.Errorf("failed to find database instance: %w", err)
