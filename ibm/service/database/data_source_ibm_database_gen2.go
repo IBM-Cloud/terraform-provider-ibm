@@ -33,7 +33,6 @@ func newDataSourceIBMDatabaseGen2Backend() dataSourceIBMDatabaseBackend {
 // consistency. This is the recommended approach as fully resetting data source
 // state is considered an anti-pattern in Terraform.
 func (g *dataSourceIBMDatabaseGen2Backend) Read(d *schema.ResourceData, meta interface{}) error {
-	// Find the database instance
 	instance, err := findInstance(d, meta)
 	if err != nil {
 		return fmt.Errorf("failed to find database instance: %w", err)
@@ -63,6 +62,15 @@ func (g *dataSourceIBMDatabaseGen2Backend) Read(d *schema.ResourceData, meta int
 
 	// Clear Gen2 unsupported attributes
 	g.clearUnsupportedAttributes(d)
+
+	// S2S authorization warning — Gen2 only.
+	// Independent Backups is a Gen2 feature; emit a plan/apply warning when
+	// the required authorizations are not fully enabled on this instance.
+	if !checkS2SAuthorization(instance.Extensions) {
+		// Log the warning using diag directly via a separate return so state
+		// is fully populated before the warning is surfaced.
+		return &s2sAuthWarning{}
+	}
 
 	return nil
 }

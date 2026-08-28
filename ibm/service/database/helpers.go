@@ -873,3 +873,34 @@ func clearGen2UnsupportedAttributes(d *schema.ResourceData) {
 	// but platform_options is handled by the data source implementation which only sets
 	// disk_encryption_key_crn for Gen2 instances
 }
+
+const s2sAuthWarningHeader = "Database backup authorization required"
+const s2sAuthWarningDetail = "This database uses Independent Backups.\n" +
+	"Existing backups remain available for 30 days from their creation date. " +
+	"Backup creation and management are unavailable until the required service authorization is completed.\n\n" +
+	"Complete the required service authorization to enable backup operations."
+
+// s2sAuthWarning is an error type returned by the Gen2 datasource Read when
+// S2S authorization is not fully enabled. The router type-asserts it and
+// converts it to a Terraform plan/apply warning rather than an error.
+type s2sAuthWarning struct{}
+
+func (s *s2sAuthWarning) Error() string { return s2sAuthWarningHeader }
+
+// checkS2SAuthorization inspects the Extensions map of a Gen2 RC instance for
+// the "authorizations" key and returns true only when both "independent_backups"
+// and "resource_group" are present and set to true.
+// Any other state — missing key, empty map, or either flag false — is treated as
+// S2S authorization disabled.
+func checkS2SAuthorization(extensions map[string]interface{}) bool {
+	if extensions == nil {
+		return false
+	}
+	auths, ok := extensions["authorizations"].(map[string]interface{})
+	if !ok || len(auths) == 0 {
+		return false
+	}
+	independentBackups, _ := auths["independent_backups"].(bool)
+	resourceGroup, _ := auths["resource_group"].(bool)
+	return independentBackups && resourceGroup
+}

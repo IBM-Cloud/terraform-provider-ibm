@@ -629,10 +629,17 @@ func dataSourceIBMDatabaseInstanceRead(ctx context.Context, d *schema.ResourceDa
 		return diag.FromErr(err)
 	}
 
-	err = b.Read(d, meta)
-	if err != nil {
+	if err := b.Read(d, meta); err != nil {
+		if _, ok := err.(*s2sAuthWarning); ok {
+			return diag.Diagnostics{{
+				Severity: diag.Warning,
+				Summary:  s2sAuthWarningHeader,
+				Detail:   s2sAuthWarningDetail,
+			}}
+		}
 		return diag.FromErr(err)
 	}
+
 	return nil
 }
 
