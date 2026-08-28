@@ -62,8 +62,7 @@ func TestGen2BackendCreate(t *testing.T) {
 				"location":  "us-south",
 				"backup_id": "crn:v1:bluemix:public:databases-for-postgresql:us-south:a/abc123:instance-id:backup:backup-id",
 			},
-			expectedError: true,
-			errorContains: "Classic backup",
+			expectedError: false,
 		},
 		{
 			name: "create_with_remote_leader",
@@ -298,6 +297,9 @@ func TestGen2BackendCreateWithTags(t *testing.T) {
 
 // TestGen2BackendCreateWithAdminPassword tests admin password configuration
 func TestGen2BackendCreateWithAdminPassword(t *testing.T) {
+	adminPasswordValue := "example-admin-value"
+	specialPasswordValue := "example-special-value-1"
+
 	tests := []struct {
 		name          string
 		password      string
@@ -306,12 +308,12 @@ func TestGen2BackendCreateWithAdminPassword(t *testing.T) {
 	}{
 		{
 			name:          "valid_admin_password",
-			password:      "SecurePassword123!",
+			password:      adminPasswordValue,
 			expectedError: false,
 		},
 		{
 			name:          "password_with_special_chars",
-			password:      "P@ssw0rd!#$%",
+			password:      specialPasswordValue,
 			expectedError: false,
 		},
 	}
@@ -325,6 +327,8 @@ func TestGen2BackendCreateWithAdminPassword(t *testing.T) {
 
 // TestGen2BackendUnsupportedFeatures tests that Gen2 properly rejects unsupported features
 func TestGen2BackendUnsupportedFeatures(t *testing.T) {
+	userPasswordValue := "example-user-value-1"
+
 	tests := []struct {
 		name         string
 		attribute    string
@@ -345,7 +349,7 @@ func TestGen2BackendUnsupportedFeatures(t *testing.T) {
 			value: []map[string]interface{}{
 				{
 					"name":     "testuser",
-					"password": "SecurePass123!",
+					"password": userPasswordValue,
 				},
 			},
 			expectedWarn: true,
@@ -377,6 +381,8 @@ func TestGen2BackendUnsupportedFeatures(t *testing.T) {
 
 // TestGen2BackendWarnUnsupported tests the WarnUnsupported method
 func TestGen2BackendWarnUnsupported(t *testing.T) {
+	passwordValue := "example-value"
+
 	tests := []struct {
 		name              string
 		resourceData      map[string]interface{}
@@ -401,7 +407,7 @@ func TestGen2BackendWarnUnsupported(t *testing.T) {
 				"name":     "test-db",
 				"location": "us-south",
 				"users": []map[string]interface{}{
-					{"name": "test", "password": "pass"},
+					{"name": "test", "password": passwordValue},
 				},
 			},
 			expectedDiagCount: 1,
@@ -415,7 +421,7 @@ func TestGen2BackendWarnUnsupported(t *testing.T) {
 				"name":     "test-db",
 				"location": "us-south",
 				"users": []map[string]interface{}{
-					{"name": "test", "password": "pass"},
+					{"name": "test", "password": passwordValue},
 				},
 				"auto_scaling": map[string]interface{}{
 					"disk": map[string]interface{}{"capacity_enabled": true},
@@ -441,6 +447,8 @@ func TestGen2BackendWarnUnsupported(t *testing.T) {
 
 // TestGen2BackendValidateUnsupportedAttrsDiff tests validation during plan
 func TestGen2BackendValidateUnsupportedAttrsDiff(t *testing.T) {
+	passwordValue := "example-value"
+
 	tests := []struct {
 		name          string
 		changes       map[string]interface{}
@@ -460,7 +468,7 @@ func TestGen2BackendValidateUnsupportedAttrsDiff(t *testing.T) {
 			name: "unsupported_users_attr",
 			changes: map[string]interface{}{
 				"users": []map[string]interface{}{
-					{"name": "test", "password": "pass"},
+					{"name": "test", "password": passwordValue},
 				},
 			},
 			expectedError: true,
@@ -533,6 +541,9 @@ func TestGen2BackendRead(t *testing.T) {
 
 // TestGen2BackendUpdate tests the Update method
 func TestGen2BackendUpdate(t *testing.T) {
+	updatedAdminPasswordValue := "example-updated-admin-value"
+	updatedUserPasswordValue := "example-updated-user-value"
+
 	tests := []struct {
 		name          string
 		changes       map[string]interface{}
@@ -567,7 +578,7 @@ func TestGen2BackendUpdate(t *testing.T) {
 		{
 			name: "update_admin_password",
 			changes: map[string]interface{}{
-				"adminpassword": "NewSecurePass123!",
+				"adminpassword": updatedAdminPasswordValue,
 			},
 			expectedError: false,
 		},
@@ -609,7 +620,7 @@ func TestGen2BackendUpdate(t *testing.T) {
 				"users": []map[string]interface{}{
 					{
 						"name":     "newuser",
-						"password": "NewUserPass123!",
+						"password": updatedUserPasswordValue,
 					},
 				},
 			},
@@ -1552,6 +1563,9 @@ func TestGen2KeyProtectInstance(t *testing.T) {
 
 // TestGen2AdminPasswordIgnored tests that adminpassword is silently ignored in Gen2
 func TestGen2AdminPasswordIgnored(t *testing.T) {
+	adminPasswordValue := "example-admin-value"
+	updatedAdminPasswordValue := "example-updated-admin-value"
+
 	tests := []struct {
 		name             string
 		adminPassword    string
@@ -1560,19 +1574,19 @@ func TestGen2AdminPasswordIgnored(t *testing.T) {
 	}{
 		{
 			name:             "admin_password_create_ignored",
-			adminPassword:    "SecurePassword123!",
+			adminPassword:    adminPasswordValue,
 			operation:        "CREATE",
 			expectedBehavior: "Accepted but silently ignored - not validated, not sent to API, not configured",
 		},
 		{
 			name:             "admin_password_update_ignored",
-			adminPassword:    "NewPassword456!",
+			adminPassword:    updatedAdminPasswordValue,
 			operation:        "UPDATE",
 			expectedBehavior: "Accepted but silently ignored - not validated, not sent to API, not configured",
 		},
 		{
 			name:             "admin_password_read_not_returned",
-			adminPassword:    "SecurePassword123!",
+			adminPassword:    adminPasswordValue,
 			operation:        "READ",
 			expectedBehavior: "Not returned from API",
 		},
@@ -1761,10 +1775,10 @@ func TestGen2AllUnsupportedAttributesBehavior(t *testing.T) {
 		{
 			name:           "backup_id",
 			attribute:      "backup_id",
-			planBehavior:   "Fails if set",
-			applyBehavior:  "N/A",
+			planBehavior:   "Accepted - Classic, Gen2 coupled, and Gen2 decoupled backups are all supported",
+			applyBehavior:  "Sent to API as restore_backup_id inside dataservices",
 			readBehavior:   "Not set",
-			useAlternative: "Restore from backup not yet implemented in Gen2",
+			useAlternative: "N/A - restore from backup is supported in Gen2",
 		},
 		{
 			name:           "point_in_time_recovery_deployment_id",
