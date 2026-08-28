@@ -249,7 +249,7 @@ func TestGen2WarningsReturnedWithErrors(t *testing.T) {
 	g := &resourceIBMDatabaseGen2Backend{}
 
 	d := testGen2DatabaseResourceData(t, map[string]interface{}{
-		"backup_id":     "bad",                      // unsupported -> error
+		"adminpassword": "example-admin-value",      // unsupported -> error
 		"configuration": `{"max_connections": 100}`, // ignored -> warning
 	})
 
