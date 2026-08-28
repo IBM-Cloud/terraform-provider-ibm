@@ -17,7 +17,7 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/brsmigration"
 	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/stretchr/testify/assert"
-	"github.ibm.com/BackupAndRecovery/brs-migration-orchestrator/brsmigrationv2"
+	"github.com/IBM/ibm-brs-migration-sdk-go/brsmigrationv1"
 	. "github.com/IBM-Cloud/terraform-provider-ibm/ibm/unittest"
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 )
@@ -99,27 +99,27 @@ func TestDataSourceIbmBrsMigrationWorkloadRunsWorkloadRunToMap(t *testing.T) {
 		assert.Equal(t, result, model)
 	}
 
-	workloadRunStatsModel := new(brsmigrationv2.WorkloadRunStats)
+	workloadRunStatsModel := new(brsmigrationv1.WorkloadRunStats)
 	workloadRunStatsModel.LogicalSizeBytes = core.Int64Ptr(int64(0))
 	workloadRunStatsModel.BytesTransferred = core.Int64Ptr(int64(0))
 	workloadRunStatsModel.BytesRead = core.Int64Ptr(int64(0))
 	workloadRunStatsModel.TotalFileCount = core.Int64Ptr(int64(0))
 	workloadRunStatsModel.TransferredFileCount = core.Int64Ptr(int64(0))
 
-	payloadResultStatsModel := new(brsmigrationv2.PayloadResultStats)
+	payloadResultStatsModel := new(brsmigrationv1.PayloadResultStats)
 	payloadResultStatsModel.LogicalSizeBytes = core.Int64Ptr(int64(0))
 	payloadResultStatsModel.BytesTransferred = core.Int64Ptr(int64(0))
 	payloadResultStatsModel.BytesRead = core.Int64Ptr(int64(0))
 	payloadResultStatsModel.TotalFileCount = core.Int64Ptr(int64(0))
 	payloadResultStatsModel.TransferredFileCount = core.Int64Ptr(int64(0))
 
-	payloadResultModel := new(brsmigrationv2.PayloadResult)
+	payloadResultModel := new(brsmigrationv1.PayloadResult)
 	payloadResultModel.PayloadID = core.StringPtr("pl-c3d4e5f6-a7b8-9012-cdef-012345678901")
 	payloadResultModel.Status = core.StringPtr("accepted")
 	payloadResultModel.Message = core.StringPtr("Source volume unreachable during transfer.")
 	payloadResultModel.Stats = payloadResultStatsModel
 
-	model := new(brsmigrationv2.WorkloadRun)
+	model := new(brsmigrationv1.WorkloadRun)
 	model.ID = core.StringPtr("run-e5f6a7b8-c9d0-1234-ef01-234567890123")
 	model.WorkloadID = core.StringPtr("wl-a1b2c3d4-e5f6-7890-abcd-ef1234567890")
 	model.OperationType = core.StringPtr("backup")
@@ -130,7 +130,7 @@ func TestDataSourceIbmBrsMigrationWorkloadRunsWorkloadRunToMap(t *testing.T) {
 	model.DurationSeconds = core.Int64Ptr(int64(0))
 	model.Message = core.StringPtr("Run completed successfully with 2 payloads transferred.")
 	model.Stats = workloadRunStatsModel
-	model.PayloadResults = []brsmigrationv2.PayloadResult{*payloadResultModel}
+	model.PayloadResults = []brsmigrationv1.PayloadResult{*payloadResultModel}
 
 	result, err := brsmigration.DataSourceIbmBrsMigrationWorkloadRunsWorkloadRunToMap(model)
 	assert.Nil(t, err)
@@ -149,7 +149,7 @@ func TestDataSourceIbmBrsMigrationWorkloadRunsWorkloadRunStatsToMap(t *testing.T
 		assert.Equal(t, result, model)
 	}
 
-	model := new(brsmigrationv2.WorkloadRunStats)
+	model := new(brsmigrationv1.WorkloadRunStats)
 	model.LogicalSizeBytes = core.Int64Ptr(int64(0))
 	model.BytesTransferred = core.Int64Ptr(int64(0))
 	model.BytesRead = core.Int64Ptr(int64(0))
@@ -179,14 +179,14 @@ func TestDataSourceIbmBrsMigrationWorkloadRunsPayloadResultToMap(t *testing.T) {
 		assert.Equal(t, result, model)
 	}
 
-	payloadResultStatsModel := new(brsmigrationv2.PayloadResultStats)
+	payloadResultStatsModel := new(brsmigrationv1.PayloadResultStats)
 	payloadResultStatsModel.LogicalSizeBytes = core.Int64Ptr(int64(0))
 	payloadResultStatsModel.BytesTransferred = core.Int64Ptr(int64(0))
 	payloadResultStatsModel.BytesRead = core.Int64Ptr(int64(0))
 	payloadResultStatsModel.TotalFileCount = core.Int64Ptr(int64(0))
 	payloadResultStatsModel.TransferredFileCount = core.Int64Ptr(int64(0))
 
-	model := new(brsmigrationv2.PayloadResult)
+	model := new(brsmigrationv1.PayloadResult)
 	model.PayloadID = core.StringPtr("pl-c3d4e5f6-a7b8-9012-cdef-012345678901")
 	model.Status = core.StringPtr("accepted")
 	model.Message = core.StringPtr("Source volume unreachable during transfer.")
@@ -209,7 +209,7 @@ func TestDataSourceIbmBrsMigrationWorkloadRunsPayloadResultStatsToMap(t *testing
 		assert.Equal(t, result, model)
 	}
 
-	model := new(brsmigrationv2.PayloadResultStats)
+	model := new(brsmigrationv1.PayloadResultStats)
 	model.LogicalSizeBytes = core.Int64Ptr(int64(0))
 	model.BytesTransferred = core.Int64Ptr(int64(0))
 	model.BytesRead = core.Int64Ptr(int64(0))

@@ -18,7 +18,7 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM/go-sdk-core/v5/core"
-	"github.ibm.com/BackupAndRecovery/brs-migration-orchestrator/brsmigrationv2"
+	"github.com/IBM/ibm-brs-migration-sdk-go/brsmigrationv1"
 )
 
 func DataSourceIbmBrsMigrationVolume() *schema.Resource {
@@ -226,14 +226,14 @@ func DataSourceIbmBrsMigrationVolume() *schema.Resource {
 }
 
 func dataSourceIbmBrsMigrationVolumeRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	brsMigrationClient, err := meta.(conns.ClientSession).BrsMigrationV2()
+	brsMigrationClient, err := meta.(conns.ClientSession).BrsMigrationV1()
 	if err != nil {
 		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_brs_migration_volume", "read", "initialize-client")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
 
-	getVolumeOptions := &brsmigrationv2.GetVolumeOptions{}
+	getVolumeOptions := &brsmigrationv1.GetVolumeOptions{}
 
 	getVolumeOptions.SetMigrationID(d.Get("migration_id").(string))
 	getVolumeOptions.SetVolumeID(d.Get("volume_id").(string))
@@ -298,14 +298,14 @@ func dataSourceIbmBrsMigrationVolumeRead(context context.Context, d *schema.Reso
 	return nil
 }
 
-func DataSourceIbmBrsMigrationVolumeVolumeStorageToMap(model brsmigrationv2.VolumeStorageIntf) (map[string]interface{}, error) {
-	if _, ok := model.(*brsmigrationv2.VolumeStorageClassicVolumeStorageDetails); ok {
-		return DataSourceIbmBrsMigrationVolumeVolumeStorageClassicVolumeStorageDetailsToMap(model.(*brsmigrationv2.VolumeStorageClassicVolumeStorageDetails))
-	} else if _, ok := model.(*brsmigrationv2.VolumeStorageVPCVolumeStorageDetails); ok {
-		return DataSourceIbmBrsMigrationVolumeVolumeStorageVPCVolumeStorageDetailsToMap(model.(*brsmigrationv2.VolumeStorageVPCVolumeStorageDetails))
-	} else if _, ok := model.(*brsmigrationv2.VolumeStorage); ok {
+func DataSourceIbmBrsMigrationVolumeVolumeStorageToMap(model brsmigrationv1.VolumeStorageIntf) (map[string]interface{}, error) {
+	if _, ok := model.(*brsmigrationv1.VolumeStorageClassicVolumeStorageDetails); ok {
+		return DataSourceIbmBrsMigrationVolumeVolumeStorageClassicVolumeStorageDetailsToMap(model.(*brsmigrationv1.VolumeStorageClassicVolumeStorageDetails))
+	} else if _, ok := model.(*brsmigrationv1.VolumeStorageVPCVolumeStorageDetails); ok {
+		return DataSourceIbmBrsMigrationVolumeVolumeStorageVPCVolumeStorageDetailsToMap(model.(*brsmigrationv1.VolumeStorageVPCVolumeStorageDetails))
+	} else if _, ok := model.(*brsmigrationv1.VolumeStorage); ok {
 		modelMap := make(map[string]interface{})
-		model := model.(*brsmigrationv2.VolumeStorage)
+		model := model.(*brsmigrationv1.VolumeStorage)
 		if model.GlobalIdentifier != nil {
 			modelMap["global_identifier"] = *model.GlobalIdentifier
 		}
@@ -370,11 +370,11 @@ func DataSourceIbmBrsMigrationVolumeVolumeStorageToMap(model brsmigrationv2.Volu
 		}
 		return modelMap, nil
 	} else {
-		return nil, fmt.Errorf("Unrecognized brsmigrationv2.VolumeStorageIntf subtype encountered")
+		return nil, fmt.Errorf("Unrecognized brsmigrationv1.VolumeStorageIntf subtype encountered")
 	}
 }
 
-func DataSourceIbmBrsMigrationVolumeSourcePathToMap(model *brsmigrationv2.SourcePath) (map[string]interface{}, error) {
+func DataSourceIbmBrsMigrationVolumeSourcePathToMap(model *brsmigrationv1.SourcePath) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["path"] = *model.Path
 	if model.VpcID != nil {
@@ -386,7 +386,7 @@ func DataSourceIbmBrsMigrationVolumeSourcePathToMap(model *brsmigrationv2.Source
 	return modelMap, nil
 }
 
-func DataSourceIbmBrsMigrationVolumeVolumeStorageClassicVolumeStorageDetailsToMap(model *brsmigrationv2.VolumeStorageClassicVolumeStorageDetails) (map[string]interface{}, error) {
+func DataSourceIbmBrsMigrationVolumeVolumeStorageClassicVolumeStorageDetailsToMap(model *brsmigrationv1.VolumeStorageClassicVolumeStorageDetails) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["global_identifier"] = *model.GlobalIdentifier
 	if model.Name != nil {
@@ -422,7 +422,7 @@ func DataSourceIbmBrsMigrationVolumeVolumeStorageClassicVolumeStorageDetailsToMa
 	return modelMap, nil
 }
 
-func DataSourceIbmBrsMigrationVolumeVolumeStorageVPCVolumeStorageDetailsToMap(model *brsmigrationv2.VolumeStorageVPCVolumeStorageDetails) (map[string]interface{}, error) {
+func DataSourceIbmBrsMigrationVolumeVolumeStorageVPCVolumeStorageDetailsToMap(model *brsmigrationv1.VolumeStorageVPCVolumeStorageDetails) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["global_identifier"] = *model.GlobalIdentifier
 	if model.Name != nil {
@@ -467,7 +467,7 @@ func DataSourceIbmBrsMigrationVolumeVolumeStorageVPCVolumeStorageDetailsToMap(mo
 	return modelMap, nil
 }
 
-func DataSourceIbmBrsMigrationVolumeHostAttachmentToMap(model *brsmigrationv2.HostAttachment) (map[string]interface{}, error) {
+func DataSourceIbmBrsMigrationVolumeHostAttachmentToMap(model *brsmigrationv1.HostAttachment) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["host_id"] = *model.HostID
 	if model.MountPath != nil {

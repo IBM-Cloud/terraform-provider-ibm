@@ -17,7 +17,7 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/brsmigration"
 	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/stretchr/testify/assert"
-	"github.ibm.com/BackupAndRecovery/brs-migration-orchestrator/brsmigrationv2"
+	"github.com/IBM/ibm-brs-migration-sdk-go/brsmigrationv1"
 	. "github.com/IBM-Cloud/terraform-provider-ibm/ibm/unittest"
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 )
@@ -88,22 +88,22 @@ func TestDataSourceIbmBrsMigrationDiscoversDiscoverJobToMap(t *testing.T) {
 		assert.Equal(t, result, model)
 	}
 
-	discoverJobSummaryComputeModel := new(brsmigrationv2.DiscoverJobSummaryCompute)
+	discoverJobSummaryComputeModel := new(brsmigrationv1.DiscoverJobSummaryCompute)
 	discoverJobSummaryComputeModel.VirtualServer = core.Int64Ptr(int64(0))
 	discoverJobSummaryComputeModel.BareMetal = core.Int64Ptr(int64(0))
 
-	discoverJobSummaryStorageModel := new(brsmigrationv2.DiscoverJobSummaryStorage)
+	discoverJobSummaryStorageModel := new(brsmigrationv1.DiscoverJobSummaryStorage)
 	discoverJobSummaryStorageModel.Block = core.Int64Ptr(int64(0))
 	discoverJobSummaryStorageModel.File = core.Int64Ptr(int64(0))
 	discoverJobSummaryStorageModel.San = core.Int64Ptr(int64(0))
 	discoverJobSummaryStorageModel.Local = core.Int64Ptr(int64(0))
 
-	discoverJobSummaryModel := new(brsmigrationv2.DiscoverJobSummary)
+	discoverJobSummaryModel := new(brsmigrationv1.DiscoverJobSummary)
 	discoverJobSummaryModel.Total = core.Int64Ptr(int64(0))
 	discoverJobSummaryModel.Compute = discoverJobSummaryComputeModel
 	discoverJobSummaryModel.Storage = discoverJobSummaryStorageModel
 
-	model := new(brsmigrationv2.DiscoverJob)
+	model := new(brsmigrationv1.DiscoverJob)
 	model.ID = core.StringPtr("job-12345678-abcd-ef01-2345-678901234567")
 	model.Env = core.StringPtr("classic")
 	model.State = core.StringPtr("pending")
@@ -137,17 +137,17 @@ func TestDataSourceIbmBrsMigrationDiscoversDiscoverJobSummaryToMap(t *testing.T)
 		assert.Equal(t, result, model)
 	}
 
-	discoverJobSummaryComputeModel := new(brsmigrationv2.DiscoverJobSummaryCompute)
+	discoverJobSummaryComputeModel := new(brsmigrationv1.DiscoverJobSummaryCompute)
 	discoverJobSummaryComputeModel.VirtualServer = core.Int64Ptr(int64(0))
 	discoverJobSummaryComputeModel.BareMetal = core.Int64Ptr(int64(0))
 
-	discoverJobSummaryStorageModel := new(brsmigrationv2.DiscoverJobSummaryStorage)
+	discoverJobSummaryStorageModel := new(brsmigrationv1.DiscoverJobSummaryStorage)
 	discoverJobSummaryStorageModel.Block = core.Int64Ptr(int64(0))
 	discoverJobSummaryStorageModel.File = core.Int64Ptr(int64(0))
 	discoverJobSummaryStorageModel.San = core.Int64Ptr(int64(0))
 	discoverJobSummaryStorageModel.Local = core.Int64Ptr(int64(0))
 
-	model := new(brsmigrationv2.DiscoverJobSummary)
+	model := new(brsmigrationv1.DiscoverJobSummary)
 	model.Total = core.Int64Ptr(int64(0))
 	model.Compute = discoverJobSummaryComputeModel
 	model.Storage = discoverJobSummaryStorageModel
@@ -166,7 +166,7 @@ func TestDataSourceIbmBrsMigrationDiscoversDiscoverJobSummaryComputeToMap(t *tes
 		assert.Equal(t, result, model)
 	}
 
-	model := new(brsmigrationv2.DiscoverJobSummaryCompute)
+	model := new(brsmigrationv1.DiscoverJobSummaryCompute)
 	model.VirtualServer = core.Int64Ptr(int64(0))
 	model.BareMetal = core.Int64Ptr(int64(0))
 
@@ -186,7 +186,7 @@ func TestDataSourceIbmBrsMigrationDiscoversDiscoverJobSummaryStorageToMap(t *tes
 		assert.Equal(t, result, model)
 	}
 
-	model := new(brsmigrationv2.DiscoverJobSummaryStorage)
+	model := new(brsmigrationv1.DiscoverJobSummaryStorage)
 	model.Block = core.Int64Ptr(int64(0))
 	model.File = core.Int64Ptr(int64(0))
 	model.San = core.Int64Ptr(int64(0))

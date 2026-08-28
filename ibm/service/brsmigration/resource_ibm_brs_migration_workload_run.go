@@ -19,7 +19,7 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 	"github.com/IBM/go-sdk-core/v5/core"
-	"github.ibm.com/BackupAndRecovery/brs-migration-orchestrator/brsmigrationv2"
+	"github.com/IBM/ibm-brs-migration-sdk-go/brsmigrationv1"
 )
 
 func ResourceIbmBrsMigrationWorkloadRun() *schema.Resource {
@@ -220,14 +220,14 @@ func ResourceIbmBrsMigrationWorkloadRunValidator() *validate.ResourceValidator {
 }
 
 func resourceIbmBrsMigrationWorkloadRunCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	brsMigrationClient, err := meta.(conns.ClientSession).BrsMigrationV2()
+	brsMigrationClient, err := meta.(conns.ClientSession).BrsMigrationV1()
 	if err != nil {
 		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_brs_migration_workload_run", "create", "initialize-client")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
 
-	createWorkloadRunOptions := &brsmigrationv2.CreateWorkloadRunOptions{}
+	createWorkloadRunOptions := &brsmigrationv1.CreateWorkloadRunOptions{}
 
 	createWorkloadRunOptions.SetMigrationID(d.Get("migration_id").(string))
 	createWorkloadRunOptions.SetWorkloadID(d.Get("workload_id").(string))
@@ -246,14 +246,14 @@ func resourceIbmBrsMigrationWorkloadRunCreate(context context.Context, d *schema
 }
 
 func resourceIbmBrsMigrationWorkloadRunRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	brsMigrationClient, err := meta.(conns.ClientSession).BrsMigrationV2()
+	brsMigrationClient, err := meta.(conns.ClientSession).BrsMigrationV1()
 	if err != nil {
 		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_brs_migration_workload_run", "read", "initialize-client")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
 
-	getWorkloadRunOptions := &brsmigrationv2.GetWorkloadRunOptions{}
+	getWorkloadRunOptions := &brsmigrationv1.GetWorkloadRunOptions{}
 
 	parts, err := flex.SepIdParts(d.Id(), "/")
 	if err != nil {
@@ -349,7 +349,7 @@ func resourceIbmBrsMigrationWorkloadRunDelete(context context.Context, d *schema
 	return nil
 }
 
-func ResourceIbmBrsMigrationWorkloadRunWorkloadRunStatsToMap(model *brsmigrationv2.WorkloadRunStats) (map[string]interface{}, error) {
+func ResourceIbmBrsMigrationWorkloadRunWorkloadRunStatsToMap(model *brsmigrationv1.WorkloadRunStats) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.LogicalSizeBytes != nil {
 		modelMap["logical_size_bytes"] = flex.IntValue(model.LogicalSizeBytes)
@@ -369,7 +369,7 @@ func ResourceIbmBrsMigrationWorkloadRunWorkloadRunStatsToMap(model *brsmigration
 	return modelMap, nil
 }
 
-func ResourceIbmBrsMigrationWorkloadRunPayloadResultToMap(model *brsmigrationv2.PayloadResult) (map[string]interface{}, error) {
+func ResourceIbmBrsMigrationWorkloadRunPayloadResultToMap(model *brsmigrationv1.PayloadResult) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["payload_id"] = *model.PayloadID
 	modelMap["status"] = *model.Status
@@ -386,7 +386,7 @@ func ResourceIbmBrsMigrationWorkloadRunPayloadResultToMap(model *brsmigrationv2.
 	return modelMap, nil
 }
 
-func ResourceIbmBrsMigrationWorkloadRunPayloadResultStatsToMap(model *brsmigrationv2.PayloadResultStats) (map[string]interface{}, error) {
+func ResourceIbmBrsMigrationWorkloadRunPayloadResultStatsToMap(model *brsmigrationv1.PayloadResultStats) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.LogicalSizeBytes != nil {
 		modelMap["logical_size_bytes"] = flex.IntValue(model.LogicalSizeBytes)

@@ -19,7 +19,7 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 	"github.com/IBM/go-sdk-core/v5/core"
-	"github.ibm.com/BackupAndRecovery/brs-migration-orchestrator/brsmigrationv2"
+	"github.com/IBM/ibm-brs-migration-sdk-go/brsmigrationv1"
 )
 
 func ResourceIbmBrsMigrationHost() *schema.Resource {
@@ -283,14 +283,14 @@ func ResourceIbmBrsMigrationHostValidator() *validate.ResourceValidator {
 }
 
 func resourceIbmBrsMigrationHostCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	brsMigrationClient, err := meta.(conns.ClientSession).BrsMigrationV2()
+	brsMigrationClient, err := meta.(conns.ClientSession).BrsMigrationV1()
 	if err != nil {
 		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_brs_migration_host", "create", "initialize-client")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
 
-	registerHostOptions := &brsmigrationv2.RegisterHostOptions{}
+	registerHostOptions := &brsmigrationv1.RegisterHostOptions{}
 
 	registerHostOptions.SetMigrationID(d.Get("migration_id").(string))
 	registerHostOptions.SetType(d.Get("type").(string))
@@ -319,14 +319,14 @@ func resourceIbmBrsMigrationHostCreate(context context.Context, d *schema.Resour
 }
 
 func resourceIbmBrsMigrationHostRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	brsMigrationClient, err := meta.(conns.ClientSession).BrsMigrationV2()
+	brsMigrationClient, err := meta.(conns.ClientSession).BrsMigrationV1()
 	if err != nil {
 		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_brs_migration_host", "read", "initialize-client")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
 
-	getHostOptions := &brsmigrationv2.GetHostOptions{}
+	getHostOptions := &brsmigrationv1.GetHostOptions{}
 
 	parts, err := flex.SepIdParts(d.Id(), "/")
 	if err != nil {
@@ -398,14 +398,14 @@ func resourceIbmBrsMigrationHostRead(context context.Context, d *schema.Resource
 }
 
 func resourceIbmBrsMigrationHostDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	brsMigrationClient, err := meta.(conns.ClientSession).BrsMigrationV2()
+	brsMigrationClient, err := meta.(conns.ClientSession).BrsMigrationV1()
 	if err != nil {
 		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_brs_migration_host", "delete", "initialize-client")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
 
-	deleteHostOptions := &brsmigrationv2.DeleteHostOptions{}
+	deleteHostOptions := &brsmigrationv1.DeleteHostOptions{}
 
 	parts, err := flex.SepIdParts(d.Id(), "/")
 	if err != nil {
@@ -427,14 +427,14 @@ func resourceIbmBrsMigrationHostDelete(context context.Context, d *schema.Resour
 	return nil
 }
 
-func ResourceIbmBrsMigrationHostHostComputeToMap(model brsmigrationv2.HostComputeIntf) (map[string]interface{}, error) {
-	if _, ok := model.(*brsmigrationv2.HostComputeClassicComputeDetails); ok {
-		return ResourceIbmBrsMigrationHostHostComputeClassicComputeDetailsToMap(model.(*brsmigrationv2.HostComputeClassicComputeDetails))
-	} else if _, ok := model.(*brsmigrationv2.HostComputeVPCComputeDetails); ok {
-		return ResourceIbmBrsMigrationHostHostComputeVPCComputeDetailsToMap(model.(*brsmigrationv2.HostComputeVPCComputeDetails))
-	} else if _, ok := model.(*brsmigrationv2.HostCompute); ok {
+func ResourceIbmBrsMigrationHostHostComputeToMap(model brsmigrationv1.HostComputeIntf) (map[string]interface{}, error) {
+	if _, ok := model.(*brsmigrationv1.HostComputeClassicComputeDetails); ok {
+		return ResourceIbmBrsMigrationHostHostComputeClassicComputeDetailsToMap(model.(*brsmigrationv1.HostComputeClassicComputeDetails))
+	} else if _, ok := model.(*brsmigrationv1.HostComputeVPCComputeDetails); ok {
+		return ResourceIbmBrsMigrationHostHostComputeVPCComputeDetailsToMap(model.(*brsmigrationv1.HostComputeVPCComputeDetails))
+	} else if _, ok := model.(*brsmigrationv1.HostCompute); ok {
 		modelMap := make(map[string]interface{})
-		model := model.(*brsmigrationv2.HostCompute)
+		model := model.(*brsmigrationv1.HostCompute)
 		if model.Status != nil {
 			modelMap["status"] = *model.Status
 		}
@@ -512,11 +512,11 @@ func ResourceIbmBrsMigrationHostHostComputeToMap(model brsmigrationv2.HostComput
 		}
 		return modelMap, nil
 	} else {
-		return nil, fmt.Errorf("Unrecognized brsmigrationv2.HostComputeIntf subtype encountered")
+		return nil, fmt.Errorf("Unrecognized brsmigrationv1.HostComputeIntf subtype encountered")
 	}
 }
 
-func ResourceIbmBrsMigrationHostHostComputeClassicComputeDetailsToMap(model *brsmigrationv2.HostComputeClassicComputeDetails) (map[string]interface{}, error) {
+func ResourceIbmBrsMigrationHostHostComputeClassicComputeDetailsToMap(model *brsmigrationv1.HostComputeClassicComputeDetails) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["status"] = *model.Status
 	modelMap["os_family"] = *model.OsFamily
@@ -548,7 +548,7 @@ func ResourceIbmBrsMigrationHostHostComputeClassicComputeDetailsToMap(model *brs
 	return modelMap, nil
 }
 
-func ResourceIbmBrsMigrationHostHostComputeVPCComputeDetailsToMap(model *brsmigrationv2.HostComputeVPCComputeDetails) (map[string]interface{}, error) {
+func ResourceIbmBrsMigrationHostHostComputeVPCComputeDetailsToMap(model *brsmigrationv1.HostComputeVPCComputeDetails) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["status"] = *model.Status
 	modelMap["os_family"] = *model.OsFamily
@@ -599,7 +599,7 @@ func ResourceIbmBrsMigrationHostHostComputeVPCComputeDetailsToMap(model *brsmigr
 	return modelMap, nil
 }
 
-func ResourceIbmBrsMigrationHostVolumeAttachmentToMap(model *brsmigrationv2.VolumeAttachment) (map[string]interface{}, error) {
+func ResourceIbmBrsMigrationHostVolumeAttachmentToMap(model *brsmigrationv1.VolumeAttachment) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["volume_id"] = *model.VolumeID
 	return modelMap, nil

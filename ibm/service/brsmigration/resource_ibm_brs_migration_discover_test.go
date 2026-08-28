@@ -16,12 +16,12 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/brsmigration"
 	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/stretchr/testify/assert"
-	"github.ibm.com/BackupAndRecovery/brs-migration-orchestrator/brsmigrationv2"
+	"github.com/IBM/ibm-brs-migration-sdk-go/brsmigrationv1"
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 )
 
 func TestAccIbmBrsMigrationDiscoverBasic(t *testing.T) {
-	var conf brsmigrationv2.DiscoverJob
+	var conf brsmigrationv1.DiscoverJob
 	migrationID := fmt.Sprintf("tf_migration_id_%d", acctest.RandIntRange(10, 100))
 	env := "classic"
 
@@ -56,7 +56,7 @@ func testAccCheckIbmBrsMigrationDiscoverConfigBasic(migrationID string, env stri
 	`, migrationID, env)
 }
 
-func testAccCheckIbmBrsMigrationDiscoverExists(n string, obj brsmigrationv2.DiscoverJob) resource.TestCheckFunc {
+func testAccCheckIbmBrsMigrationDiscoverExists(n string, obj brsmigrationv1.DiscoverJob) resource.TestCheckFunc {
 
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
@@ -64,12 +64,12 @@ func testAccCheckIbmBrsMigrationDiscoverExists(n string, obj brsmigrationv2.Disc
 			return fmt.Errorf("Not found: %s", n)
 		}
 
-		brsMigrationClient, err := acc.TestAccProvider.Meta().(conns.ClientSession).BrsMigrationV2()
+		brsMigrationClient, err := acc.TestAccProvider.Meta().(conns.ClientSession).BrsMigrationV1()
 		if err != nil {
 			return err
 		}
 
-		getDiscoverOptions := &brsmigrationv2.GetDiscoverOptions{}
+		getDiscoverOptions := &brsmigrationv1.GetDiscoverOptions{}
 
 		parts, err := flex.SepIdParts(rs.Primary.ID, "/")
 		if err != nil {
@@ -90,7 +90,7 @@ func testAccCheckIbmBrsMigrationDiscoverExists(n string, obj brsmigrationv2.Disc
 }
 
 func testAccCheckIbmBrsMigrationDiscoverDestroy(s *terraform.State) error {
-	brsMigrationClient, err := acc.TestAccProvider.Meta().(conns.ClientSession).BrsMigrationV2()
+	brsMigrationClient, err := acc.TestAccProvider.Meta().(conns.ClientSession).BrsMigrationV1()
 	if err != nil {
 		return err
 	}
@@ -99,7 +99,7 @@ func testAccCheckIbmBrsMigrationDiscoverDestroy(s *terraform.State) error {
 			continue
 		}
 
-		getDiscoverOptions := &brsmigrationv2.GetDiscoverOptions{}
+		getDiscoverOptions := &brsmigrationv1.GetDiscoverOptions{}
 
 		parts, err := flex.SepIdParts(rs.Primary.ID, "/")
 		if err != nil {
@@ -142,17 +142,17 @@ func TestResourceIbmBrsMigrationDiscoverDiscoverJobSummaryToMap(t *testing.T) {
 		assert.Equal(t, result, model)
 	}
 
-	discoverJobSummaryComputeModel := new(brsmigrationv2.DiscoverJobSummaryCompute)
+	discoverJobSummaryComputeModel := new(brsmigrationv1.DiscoverJobSummaryCompute)
 	discoverJobSummaryComputeModel.VirtualServer = core.Int64Ptr(int64(0))
 	discoverJobSummaryComputeModel.BareMetal = core.Int64Ptr(int64(0))
 
-	discoverJobSummaryStorageModel := new(brsmigrationv2.DiscoverJobSummaryStorage)
+	discoverJobSummaryStorageModel := new(brsmigrationv1.DiscoverJobSummaryStorage)
 	discoverJobSummaryStorageModel.Block = core.Int64Ptr(int64(0))
 	discoverJobSummaryStorageModel.File = core.Int64Ptr(int64(0))
 	discoverJobSummaryStorageModel.San = core.Int64Ptr(int64(0))
 	discoverJobSummaryStorageModel.Local = core.Int64Ptr(int64(0))
 
-	model := new(brsmigrationv2.DiscoverJobSummary)
+	model := new(brsmigrationv1.DiscoverJobSummary)
 	model.Total = core.Int64Ptr(int64(0))
 	model.Compute = discoverJobSummaryComputeModel
 	model.Storage = discoverJobSummaryStorageModel
@@ -171,7 +171,7 @@ func TestResourceIbmBrsMigrationDiscoverDiscoverJobSummaryComputeToMap(t *testin
 		assert.Equal(t, result, model)
 	}
 
-	model := new(brsmigrationv2.DiscoverJobSummaryCompute)
+	model := new(brsmigrationv1.DiscoverJobSummaryCompute)
 	model.VirtualServer = core.Int64Ptr(int64(0))
 	model.BareMetal = core.Int64Ptr(int64(0))
 
@@ -191,7 +191,7 @@ func TestResourceIbmBrsMigrationDiscoverDiscoverJobSummaryStorageToMap(t *testin
 		assert.Equal(t, result, model)
 	}
 
-	model := new(brsmigrationv2.DiscoverJobSummaryStorage)
+	model := new(brsmigrationv1.DiscoverJobSummaryStorage)
 	model.Block = core.Int64Ptr(int64(0))
 	model.File = core.Int64Ptr(int64(0))
 	model.San = core.Int64Ptr(int64(0))
@@ -203,8 +203,8 @@ func TestResourceIbmBrsMigrationDiscoverDiscoverJobSummaryStorageToMap(t *testin
 }
 
 func TestResourceIbmBrsMigrationDiscoverMapToDiscoverJobPrototypeLocation(t *testing.T) {
-	checkResult := func(result *brsmigrationv2.DiscoverJobPrototypeLocation) {
-		model := new(brsmigrationv2.DiscoverJobPrototypeLocation)
+	checkResult := func(result *brsmigrationv1.DiscoverJobPrototypeLocation) {
+		model := new(brsmigrationv1.DiscoverJobPrototypeLocation)
 		model.Datacenters = []string{"testString"}
 		model.Regions = []string{"testString"}
 		model.Zones = []string{"testString"}
@@ -223,8 +223,8 @@ func TestResourceIbmBrsMigrationDiscoverMapToDiscoverJobPrototypeLocation(t *tes
 }
 
 func TestResourceIbmBrsMigrationDiscoverMapToDiscoverJobPrototypeCompute(t *testing.T) {
-	checkResult := func(result *brsmigrationv2.DiscoverJobPrototypeCompute) {
-		model := new(brsmigrationv2.DiscoverJobPrototypeCompute)
+	checkResult := func(result *brsmigrationv1.DiscoverJobPrototypeCompute) {
+		model := new(brsmigrationv1.DiscoverJobPrototypeCompute)
 		model.Types = []string{"virtual_server"}
 
 		assert.Equal(t, result, model)
@@ -239,8 +239,8 @@ func TestResourceIbmBrsMigrationDiscoverMapToDiscoverJobPrototypeCompute(t *test
 }
 
 func TestResourceIbmBrsMigrationDiscoverMapToDiscoverJobPrototypeStorage(t *testing.T) {
-	checkResult := func(result *brsmigrationv2.DiscoverJobPrototypeStorage) {
-		model := new(brsmigrationv2.DiscoverJobPrototypeStorage)
+	checkResult := func(result *brsmigrationv1.DiscoverJobPrototypeStorage) {
+		model := new(brsmigrationv1.DiscoverJobPrototypeStorage)
 		model.Types = []string{"block"}
 
 		assert.Equal(t, result, model)

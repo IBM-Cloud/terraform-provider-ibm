@@ -18,7 +18,7 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM/go-sdk-core/v5/core"
-	"github.ibm.com/BackupAndRecovery/brs-migration-orchestrator/brsmigrationv2"
+	"github.com/IBM/ibm-brs-migration-sdk-go/brsmigrationv1"
 )
 
 func DataSourceIbmBrsMigration() *schema.Resource {
@@ -71,14 +71,14 @@ func DataSourceIbmBrsMigration() *schema.Resource {
 }
 
 func dataSourceIbmBrsMigrationRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	brsMigrationClient, err := meta.(conns.ClientSession).BrsMigrationV2()
+	brsMigrationClient, err := meta.(conns.ClientSession).BrsMigrationV1()
 	if err != nil {
 		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_brs_migration", "read", "initialize-client")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
 
-	getMigrationOptions := &brsmigrationv2.GetMigrationOptions{}
+	getMigrationOptions := &brsmigrationv1.GetMigrationOptions{}
 
 	getMigrationOptions.SetMigrationID(d.Get("migration_id").(string))
 

@@ -16,12 +16,12 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/brsmigration"
 	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/stretchr/testify/assert"
-	"github.ibm.com/BackupAndRecovery/brs-migration-orchestrator/brsmigrationv2"
+	"github.com/IBM/ibm-brs-migration-sdk-go/brsmigrationv1"
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 )
 
 func TestAccIbmBrsMigrationWorkloadRunBasic(t *testing.T) {
-	var conf brsmigrationv2.WorkloadRun
+	var conf brsmigrationv1.WorkloadRun
 	migrationID := fmt.Sprintf("tf_migration_id_%d", acctest.RandIntRange(10, 100))
 	workloadID := fmt.Sprintf("tf_workload_id_%d", acctest.RandIntRange(10, 100))
 
@@ -56,7 +56,7 @@ func testAccCheckIbmBrsMigrationWorkloadRunConfigBasic(migrationID string, workl
 	`, migrationID, workloadID)
 }
 
-func testAccCheckIbmBrsMigrationWorkloadRunExists(n string, obj brsmigrationv2.WorkloadRun) resource.TestCheckFunc {
+func testAccCheckIbmBrsMigrationWorkloadRunExists(n string, obj brsmigrationv1.WorkloadRun) resource.TestCheckFunc {
 
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
@@ -64,12 +64,12 @@ func testAccCheckIbmBrsMigrationWorkloadRunExists(n string, obj brsmigrationv2.W
 			return fmt.Errorf("Not found: %s", n)
 		}
 
-		brsMigrationClient, err := acc.TestAccProvider.Meta().(conns.ClientSession).BrsMigrationV2()
+		brsMigrationClient, err := acc.TestAccProvider.Meta().(conns.ClientSession).BrsMigrationV1()
 		if err != nil {
 			return err
 		}
 
-		getWorkloadRunOptions := &brsmigrationv2.GetWorkloadRunOptions{}
+		getWorkloadRunOptions := &brsmigrationv1.GetWorkloadRunOptions{}
 
 		parts, err := flex.SepIdParts(rs.Primary.ID, "/")
 		if err != nil {
@@ -91,7 +91,7 @@ func testAccCheckIbmBrsMigrationWorkloadRunExists(n string, obj brsmigrationv2.W
 }
 
 func testAccCheckIbmBrsMigrationWorkloadRunDestroy(s *terraform.State) error {
-	brsMigrationClient, err := acc.TestAccProvider.Meta().(conns.ClientSession).BrsMigrationV2()
+	brsMigrationClient, err := acc.TestAccProvider.Meta().(conns.ClientSession).BrsMigrationV1()
 	if err != nil {
 		return err
 	}
@@ -100,7 +100,7 @@ func testAccCheckIbmBrsMigrationWorkloadRunDestroy(s *terraform.State) error {
 			continue
 		}
 
-		getWorkloadRunOptions := &brsmigrationv2.GetWorkloadRunOptions{}
+		getWorkloadRunOptions := &brsmigrationv1.GetWorkloadRunOptions{}
 
 		parts, err := flex.SepIdParts(rs.Primary.ID, "/")
 		if err != nil {
@@ -136,7 +136,7 @@ func TestResourceIbmBrsMigrationWorkloadRunWorkloadRunStatsToMap(t *testing.T) {
 		assert.Equal(t, result, model)
 	}
 
-	model := new(brsmigrationv2.WorkloadRunStats)
+	model := new(brsmigrationv1.WorkloadRunStats)
 	model.LogicalSizeBytes = core.Int64Ptr(int64(0))
 	model.BytesTransferred = core.Int64Ptr(int64(0))
 	model.BytesRead = core.Int64Ptr(int64(0))
@@ -166,14 +166,14 @@ func TestResourceIbmBrsMigrationWorkloadRunPayloadResultToMap(t *testing.T) {
 		assert.Equal(t, result, model)
 	}
 
-	payloadResultStatsModel := new(brsmigrationv2.PayloadResultStats)
+	payloadResultStatsModel := new(brsmigrationv1.PayloadResultStats)
 	payloadResultStatsModel.LogicalSizeBytes = core.Int64Ptr(int64(0))
 	payloadResultStatsModel.BytesTransferred = core.Int64Ptr(int64(0))
 	payloadResultStatsModel.BytesRead = core.Int64Ptr(int64(0))
 	payloadResultStatsModel.TotalFileCount = core.Int64Ptr(int64(0))
 	payloadResultStatsModel.TransferredFileCount = core.Int64Ptr(int64(0))
 
-	model := new(brsmigrationv2.PayloadResult)
+	model := new(brsmigrationv1.PayloadResult)
 	model.PayloadID = core.StringPtr("pl-c3d4e5f6-a7b8-9012-cdef-012345678901")
 	model.Status = core.StringPtr("accepted")
 	model.Message = core.StringPtr("Source volume unreachable during transfer.")
@@ -196,7 +196,7 @@ func TestResourceIbmBrsMigrationWorkloadRunPayloadResultStatsToMap(t *testing.T)
 		assert.Equal(t, result, model)
 	}
 
-	model := new(brsmigrationv2.PayloadResultStats)
+	model := new(brsmigrationv1.PayloadResultStats)
 	model.LogicalSizeBytes = core.Int64Ptr(int64(0))
 	model.BytesTransferred = core.Int64Ptr(int64(0))
 	model.BytesRead = core.Int64Ptr(int64(0))

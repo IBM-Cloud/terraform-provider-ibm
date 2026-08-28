@@ -16,12 +16,12 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/brsmigration"
 	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/stretchr/testify/assert"
-	"github.ibm.com/BackupAndRecovery/brs-migration-orchestrator/brsmigrationv2"
+	"github.com/IBM/ibm-brs-migration-sdk-go/brsmigrationv1"
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 )
 
 func TestAccIbmBrsMigrationHostBasic(t *testing.T) {
-	var conf brsmigrationv2.Host
+	var conf brsmigrationv1.Host
 	migrationID := fmt.Sprintf("tf_migration_id_%d", acctest.RandIntRange(10, 100))
 	typeVar := "virtual_server"
 	env := "classic"
@@ -59,7 +59,7 @@ func testAccCheckIbmBrsMigrationHostConfigBasic(migrationID string, typeVar stri
 	`, migrationID, typeVar, env)
 }
 
-func testAccCheckIbmBrsMigrationHostExists(n string, obj brsmigrationv2.Host) resource.TestCheckFunc {
+func testAccCheckIbmBrsMigrationHostExists(n string, obj brsmigrationv1.Host) resource.TestCheckFunc {
 
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
@@ -67,12 +67,12 @@ func testAccCheckIbmBrsMigrationHostExists(n string, obj brsmigrationv2.Host) re
 			return fmt.Errorf("Not found: %s", n)
 		}
 
-		brsMigrationClient, err := acc.TestAccProvider.Meta().(conns.ClientSession).BrsMigrationV2()
+		brsMigrationClient, err := acc.TestAccProvider.Meta().(conns.ClientSession).BrsMigrationV1()
 		if err != nil {
 			return err
 		}
 
-		getHostOptions := &brsmigrationv2.GetHostOptions{}
+		getHostOptions := &brsmigrationv1.GetHostOptions{}
 
 		parts, err := flex.SepIdParts(rs.Primary.ID, "/")
 		if err != nil {
@@ -93,7 +93,7 @@ func testAccCheckIbmBrsMigrationHostExists(n string, obj brsmigrationv2.Host) re
 }
 
 func testAccCheckIbmBrsMigrationHostDestroy(s *terraform.State) error {
-	brsMigrationClient, err := acc.TestAccProvider.Meta().(conns.ClientSession).BrsMigrationV2()
+	brsMigrationClient, err := acc.TestAccProvider.Meta().(conns.ClientSession).BrsMigrationV1()
 	if err != nil {
 		return err
 	}
@@ -102,7 +102,7 @@ func testAccCheckIbmBrsMigrationHostDestroy(s *terraform.State) error {
 			continue
 		}
 
-		getHostOptions := &brsmigrationv2.GetHostOptions{}
+		getHostOptions := &brsmigrationv1.GetHostOptions{}
 
 		parts, err := flex.SepIdParts(rs.Primary.ID, "/")
 		if err != nil {
@@ -157,7 +157,7 @@ func TestResourceIbmBrsMigrationHostHostComputeToMap(t *testing.T) {
 		assert.Equal(t, result, model)
 	}
 
-	model := new(brsmigrationv2.HostCompute)
+	model := new(brsmigrationv1.HostCompute)
 	model.Status = core.StringPtr("pending")
 	model.OsFamily = core.StringPtr("linux")
 	model.GlobalIdentifier = core.StringPtr("a1b2c3d4-e5f6-7890-abcd-ef1234567890")
@@ -209,7 +209,7 @@ func TestResourceIbmBrsMigrationHostHostComputeClassicComputeDetailsToMap(t *tes
 		assert.Equal(t, result, model)
 	}
 
-	model := new(brsmigrationv2.HostComputeClassicComputeDetails)
+	model := new(brsmigrationv1.HostComputeClassicComputeDetails)
 	model.Status = core.StringPtr("pending")
 	model.OsFamily = core.StringPtr("linux")
 	model.GlobalIdentifier = core.StringPtr("a1b2c3d4-e5f6-7890-abcd-ef1234567890")
@@ -260,7 +260,7 @@ func TestResourceIbmBrsMigrationHostHostComputeVPCComputeDetailsToMap(t *testing
 		assert.Equal(t, result, model)
 	}
 
-	model := new(brsmigrationv2.HostComputeVPCComputeDetails)
+	model := new(brsmigrationv1.HostComputeVPCComputeDetails)
 	model.Status = core.StringPtr("pending")
 	model.OsFamily = core.StringPtr("linux")
 	model.GlobalIdentifier = core.StringPtr("a1b2c3d4-e5f6-7890-abcd-ef1234567890")
@@ -299,7 +299,7 @@ func TestResourceIbmBrsMigrationHostVolumeAttachmentToMap(t *testing.T) {
 		assert.Equal(t, result, model)
 	}
 
-	model := new(brsmigrationv2.VolumeAttachment)
+	model := new(brsmigrationv1.VolumeAttachment)
 	model.VolumeID = core.StringPtr("vol-b1c2d3e4-f5a6-7890-bcde-f01234567890")
 
 	result, err := brsmigration.ResourceIbmBrsMigrationHostVolumeAttachmentToMap(model)

@@ -17,7 +17,7 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/brsmigration"
 	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/stretchr/testify/assert"
-	"github.ibm.com/BackupAndRecovery/brs-migration-orchestrator/brsmigrationv2"
+	"github.com/IBM/ibm-brs-migration-sdk-go/brsmigrationv1"
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 )
 
@@ -75,7 +75,7 @@ func TestDataSourceIbmBrsMigrationWorkloadRunWorkloadRunStatsToMap(t *testing.T)
 		assert.Equal(t, result, model)
 	}
 
-	model := new(brsmigrationv2.WorkloadRunStats)
+	model := new(brsmigrationv1.WorkloadRunStats)
 	model.LogicalSizeBytes = core.Int64Ptr(int64(0))
 	model.BytesTransferred = core.Int64Ptr(int64(0))
 	model.BytesRead = core.Int64Ptr(int64(0))
@@ -105,14 +105,14 @@ func TestDataSourceIbmBrsMigrationWorkloadRunPayloadResultToMap(t *testing.T) {
 		assert.Equal(t, result, model)
 	}
 
-	payloadResultStatsModel := new(brsmigrationv2.PayloadResultStats)
+	payloadResultStatsModel := new(brsmigrationv1.PayloadResultStats)
 	payloadResultStatsModel.LogicalSizeBytes = core.Int64Ptr(int64(0))
 	payloadResultStatsModel.BytesTransferred = core.Int64Ptr(int64(0))
 	payloadResultStatsModel.BytesRead = core.Int64Ptr(int64(0))
 	payloadResultStatsModel.TotalFileCount = core.Int64Ptr(int64(0))
 	payloadResultStatsModel.TransferredFileCount = core.Int64Ptr(int64(0))
 
-	model := new(brsmigrationv2.PayloadResult)
+	model := new(brsmigrationv1.PayloadResult)
 	model.PayloadID = core.StringPtr("pl-c3d4e5f6-a7b8-9012-cdef-012345678901")
 	model.Status = core.StringPtr("accepted")
 	model.Message = core.StringPtr("Source volume unreachable during transfer.")
@@ -135,7 +135,7 @@ func TestDataSourceIbmBrsMigrationWorkloadRunPayloadResultStatsToMap(t *testing.
 		assert.Equal(t, result, model)
 	}
 
-	model := new(brsmigrationv2.PayloadResultStats)
+	model := new(brsmigrationv1.PayloadResultStats)
 	model.LogicalSizeBytes = core.Int64Ptr(int64(0))
 	model.BytesTransferred = core.Int64Ptr(int64(0))
 	model.BytesRead = core.Int64Ptr(int64(0))

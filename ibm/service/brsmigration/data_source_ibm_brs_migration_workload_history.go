@@ -18,7 +18,7 @@ import (
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
-	"github.ibm.com/BackupAndRecovery/brs-migration-orchestrator/brsmigrationv2"
+	"github.com/IBM/ibm-brs-migration-sdk-go/brsmigrationv1"
 )
 
 func DataSourceIbmBrsMigrationWorkloadHistory() *schema.Resource {
@@ -75,19 +75,19 @@ func DataSourceIbmBrsMigrationWorkloadHistory() *schema.Resource {
 }
 
 func dataSourceIbmBrsMigrationWorkloadHistoryRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	brsMigrationClient, err := meta.(conns.ClientSession).BrsMigrationV2()
+	brsMigrationClient, err := meta.(conns.ClientSession).BrsMigrationV1()
 	if err != nil {
 		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_brs_migration_workload_history", "read", "initialize-client")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
 
-	listWorkloadHistoryOptions := &brsmigrationv2.ListWorkloadHistoryOptions{}
+	listWorkloadHistoryOptions := &brsmigrationv1.ListWorkloadHistoryOptions{}
 
 	listWorkloadHistoryOptions.SetMigrationID(d.Get("migration_id").(string))
 	listWorkloadHistoryOptions.SetWorkloadID(d.Get("workload_id").(string))
 
-	var pager *brsmigrationv2.WorkloadHistoryPager
+	var pager *brsmigrationv1.WorkloadHistoryPager
 	pager, err = brsMigrationClient.NewWorkloadHistoryPager(listWorkloadHistoryOptions)
 	if err != nil {
 		tfErr := flex.TerraformErrorf(err, err.Error(), "(Data) ibm_brs_migration_workload_history", "read")
@@ -125,7 +125,7 @@ func dataSourceIbmBrsMigrationWorkloadHistoryID(d *schema.ResourceData) string {
 	return time.Now().UTC().String()
 }
 
-func DataSourceIbmBrsMigrationWorkloadHistoryWorkloadHistoryEntryToMap(model *brsmigrationv2.WorkloadHistoryEntry) (map[string]interface{}, error) {
+func DataSourceIbmBrsMigrationWorkloadHistoryWorkloadHistoryEntryToMap(model *brsmigrationv1.WorkloadHistoryEntry) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["id"] = *model.ID
 	modelMap["state"] = *model.State

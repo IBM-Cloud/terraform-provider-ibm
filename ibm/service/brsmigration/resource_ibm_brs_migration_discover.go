@@ -19,7 +19,7 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 	"github.com/IBM/go-sdk-core/v5/core"
-	"github.ibm.com/BackupAndRecovery/brs-migration-orchestrator/brsmigrationv2"
+	"github.com/IBM/ibm-brs-migration-sdk-go/brsmigrationv1"
 )
 
 func ResourceIbmBrsMigrationDiscover() *schema.Resource {
@@ -170,14 +170,14 @@ func ResourceIbmBrsMigrationDiscoverValidator() *validate.ResourceValidator {
 }
 
 func resourceIbmBrsMigrationDiscoverCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	brsMigrationClient, err := meta.(conns.ClientSession).BrsMigrationV2()
+	brsMigrationClient, err := meta.(conns.ClientSession).BrsMigrationV1()
 	if err != nil {
 		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_brs_migration_discover", "create", "initialize-client")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
 
-	createDiscoverOptions := &brsmigrationv2.CreateDiscoverOptions{}
+	createDiscoverOptions := &brsmigrationv1.CreateDiscoverOptions{}
 
 	createDiscoverOptions.SetMigrationID(d.Get("migration_id").(string))
 	createDiscoverOptions.SetEnv(d.Get("env").(string))
@@ -219,14 +219,14 @@ func resourceIbmBrsMigrationDiscoverCreate(context context.Context, d *schema.Re
 }
 
 func resourceIbmBrsMigrationDiscoverRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	brsMigrationClient, err := meta.(conns.ClientSession).BrsMigrationV2()
+	brsMigrationClient, err := meta.(conns.ClientSession).BrsMigrationV1()
 	if err != nil {
 		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_brs_migration_discover", "read", "initialize-client")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
 
-	getDiscoverOptions := &brsmigrationv2.GetDiscoverOptions{}
+	getDiscoverOptions := &brsmigrationv1.GetDiscoverOptions{}
 
 	parts, err := flex.SepIdParts(d.Id(), "/")
 	if err != nil {
@@ -297,8 +297,8 @@ func resourceIbmBrsMigrationDiscoverDelete(context context.Context, d *schema.Re
 	return nil
 }
 
-func ResourceIbmBrsMigrationDiscoverMapToDiscoverJobPrototypeLocation(modelMap map[string]interface{}) (*brsmigrationv2.DiscoverJobPrototypeLocation, error) {
-	model := &brsmigrationv2.DiscoverJobPrototypeLocation{}
+func ResourceIbmBrsMigrationDiscoverMapToDiscoverJobPrototypeLocation(modelMap map[string]interface{}) (*brsmigrationv1.DiscoverJobPrototypeLocation, error) {
+	model := &brsmigrationv1.DiscoverJobPrototypeLocation{}
 	if modelMap["datacenters"] != nil {
 		datacenters := []string{}
 		for _, datacentersItem := range modelMap["datacenters"].([]interface{}) {
@@ -323,8 +323,8 @@ func ResourceIbmBrsMigrationDiscoverMapToDiscoverJobPrototypeLocation(modelMap m
 	return model, nil
 }
 
-func ResourceIbmBrsMigrationDiscoverMapToDiscoverJobPrototypeCompute(modelMap map[string]interface{}) (*brsmigrationv2.DiscoverJobPrototypeCompute, error) {
-	model := &brsmigrationv2.DiscoverJobPrototypeCompute{}
+func ResourceIbmBrsMigrationDiscoverMapToDiscoverJobPrototypeCompute(modelMap map[string]interface{}) (*brsmigrationv1.DiscoverJobPrototypeCompute, error) {
+	model := &brsmigrationv1.DiscoverJobPrototypeCompute{}
 	if modelMap["types"] != nil {
 		types := []string{}
 		for _, typesItem := range modelMap["types"].([]interface{}) {
@@ -335,8 +335,8 @@ func ResourceIbmBrsMigrationDiscoverMapToDiscoverJobPrototypeCompute(modelMap ma
 	return model, nil
 }
 
-func ResourceIbmBrsMigrationDiscoverMapToDiscoverJobPrototypeStorage(modelMap map[string]interface{}) (*brsmigrationv2.DiscoverJobPrototypeStorage, error) {
-	model := &brsmigrationv2.DiscoverJobPrototypeStorage{}
+func ResourceIbmBrsMigrationDiscoverMapToDiscoverJobPrototypeStorage(modelMap map[string]interface{}) (*brsmigrationv1.DiscoverJobPrototypeStorage, error) {
+	model := &brsmigrationv1.DiscoverJobPrototypeStorage{}
 	if modelMap["types"] != nil {
 		types := []string{}
 		for _, typesItem := range modelMap["types"].([]interface{}) {
@@ -347,7 +347,7 @@ func ResourceIbmBrsMigrationDiscoverMapToDiscoverJobPrototypeStorage(modelMap ma
 	return model, nil
 }
 
-func ResourceIbmBrsMigrationDiscoverDiscoverJobSummaryToMap(model *brsmigrationv2.DiscoverJobSummary) (map[string]interface{}, error) {
+func ResourceIbmBrsMigrationDiscoverDiscoverJobSummaryToMap(model *brsmigrationv1.DiscoverJobSummary) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.Total != nil {
 		modelMap["total"] = flex.IntValue(model.Total)
@@ -369,7 +369,7 @@ func ResourceIbmBrsMigrationDiscoverDiscoverJobSummaryToMap(model *brsmigrationv
 	return modelMap, nil
 }
 
-func ResourceIbmBrsMigrationDiscoverDiscoverJobSummaryComputeToMap(model *brsmigrationv2.DiscoverJobSummaryCompute) (map[string]interface{}, error) {
+func ResourceIbmBrsMigrationDiscoverDiscoverJobSummaryComputeToMap(model *brsmigrationv1.DiscoverJobSummaryCompute) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.VirtualServer != nil {
 		modelMap["virtual_server"] = flex.IntValue(model.VirtualServer)
@@ -380,7 +380,7 @@ func ResourceIbmBrsMigrationDiscoverDiscoverJobSummaryComputeToMap(model *brsmig
 	return modelMap, nil
 }
 
-func ResourceIbmBrsMigrationDiscoverDiscoverJobSummaryStorageToMap(model *brsmigrationv2.DiscoverJobSummaryStorage) (map[string]interface{}, error) {
+func ResourceIbmBrsMigrationDiscoverDiscoverJobSummaryStorageToMap(model *brsmigrationv1.DiscoverJobSummaryStorage) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.Block != nil {
 		modelMap["block"] = flex.IntValue(model.Block)

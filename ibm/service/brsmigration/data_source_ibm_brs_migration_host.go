@@ -18,7 +18,7 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM/go-sdk-core/v5/core"
-	"github.ibm.com/BackupAndRecovery/brs-migration-orchestrator/brsmigrationv2"
+	"github.com/IBM/ibm-brs-migration-sdk-go/brsmigrationv1"
 )
 
 func DataSourceIbmBrsMigrationHost() *schema.Resource {
@@ -220,14 +220,14 @@ func DataSourceIbmBrsMigrationHost() *schema.Resource {
 }
 
 func dataSourceIbmBrsMigrationHostRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	brsMigrationClient, err := meta.(conns.ClientSession).BrsMigrationV2()
+	brsMigrationClient, err := meta.(conns.ClientSession).BrsMigrationV1()
 	if err != nil {
 		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_brs_migration_host", "read", "initialize-client")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
 
-	getHostOptions := &brsmigrationv2.GetHostOptions{}
+	getHostOptions := &brsmigrationv1.GetHostOptions{}
 
 	getHostOptions.SetMigrationID(d.Get("migration_id").(string))
 	getHostOptions.SetHostID(d.Get("host_id").(string))
@@ -288,14 +288,14 @@ func dataSourceIbmBrsMigrationHostRead(context context.Context, d *schema.Resour
 	return nil
 }
 
-func DataSourceIbmBrsMigrationHostHostComputeToMap(model brsmigrationv2.HostComputeIntf) (map[string]interface{}, error) {
-	if _, ok := model.(*brsmigrationv2.HostComputeClassicComputeDetails); ok {
-		return DataSourceIbmBrsMigrationHostHostComputeClassicComputeDetailsToMap(model.(*brsmigrationv2.HostComputeClassicComputeDetails))
-	} else if _, ok := model.(*brsmigrationv2.HostComputeVPCComputeDetails); ok {
-		return DataSourceIbmBrsMigrationHostHostComputeVPCComputeDetailsToMap(model.(*brsmigrationv2.HostComputeVPCComputeDetails))
-	} else if _, ok := model.(*brsmigrationv2.HostCompute); ok {
+func DataSourceIbmBrsMigrationHostHostComputeToMap(model brsmigrationv1.HostComputeIntf) (map[string]interface{}, error) {
+	if _, ok := model.(*brsmigrationv1.HostComputeClassicComputeDetails); ok {
+		return DataSourceIbmBrsMigrationHostHostComputeClassicComputeDetailsToMap(model.(*brsmigrationv1.HostComputeClassicComputeDetails))
+	} else if _, ok := model.(*brsmigrationv1.HostComputeVPCComputeDetails); ok {
+		return DataSourceIbmBrsMigrationHostHostComputeVPCComputeDetailsToMap(model.(*brsmigrationv1.HostComputeVPCComputeDetails))
+	} else if _, ok := model.(*brsmigrationv1.HostCompute); ok {
 		modelMap := make(map[string]interface{})
-		model := model.(*brsmigrationv2.HostCompute)
+		model := model.(*brsmigrationv1.HostCompute)
 		if model.Status != nil {
 			modelMap["status"] = *model.Status
 		}
@@ -373,11 +373,11 @@ func DataSourceIbmBrsMigrationHostHostComputeToMap(model brsmigrationv2.HostComp
 		}
 		return modelMap, nil
 	} else {
-		return nil, fmt.Errorf("Unrecognized brsmigrationv2.HostComputeIntf subtype encountered")
+		return nil, fmt.Errorf("Unrecognized brsmigrationv1.HostComputeIntf subtype encountered")
 	}
 }
 
-func DataSourceIbmBrsMigrationHostHostComputeClassicComputeDetailsToMap(model *brsmigrationv2.HostComputeClassicComputeDetails) (map[string]interface{}, error) {
+func DataSourceIbmBrsMigrationHostHostComputeClassicComputeDetailsToMap(model *brsmigrationv1.HostComputeClassicComputeDetails) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["status"] = *model.Status
 	modelMap["os_family"] = *model.OsFamily
@@ -409,7 +409,7 @@ func DataSourceIbmBrsMigrationHostHostComputeClassicComputeDetailsToMap(model *b
 	return modelMap, nil
 }
 
-func DataSourceIbmBrsMigrationHostHostComputeVPCComputeDetailsToMap(model *brsmigrationv2.HostComputeVPCComputeDetails) (map[string]interface{}, error) {
+func DataSourceIbmBrsMigrationHostHostComputeVPCComputeDetailsToMap(model *brsmigrationv1.HostComputeVPCComputeDetails) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["status"] = *model.Status
 	modelMap["os_family"] = *model.OsFamily
@@ -460,7 +460,7 @@ func DataSourceIbmBrsMigrationHostHostComputeVPCComputeDetailsToMap(model *brsmi
 	return modelMap, nil
 }
 
-func DataSourceIbmBrsMigrationHostVolumeAttachmentToMap(model *brsmigrationv2.VolumeAttachment) (map[string]interface{}, error) {
+func DataSourceIbmBrsMigrationHostVolumeAttachmentToMap(model *brsmigrationv1.VolumeAttachment) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["volume_id"] = *model.VolumeID
 	return modelMap, nil

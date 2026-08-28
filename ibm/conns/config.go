@@ -138,7 +138,7 @@ import (
 	"github.com/IBM/eventstreams-go-sdk/pkg/schemaregistryv1"
 	"github.com/IBM/ibm-backup-recovery-sdk-go/backuprecoveryv1"
 	"github.com/IBM/ibm-hpcs-uko-sdk/ukov4"
-	"github.ibm.com/BackupAndRecovery/brs-migration-orchestrator/brsmigrationv2"
+	"github.com/IBM/ibm-brs-migration-sdk-go/brsmigrationv1"
 	"github.com/IBM/logs-go-sdk/logsv0"
 	"github.com/IBM/platform-services-go-sdk/partnercentersellv1"
 	scc "github.com/IBM/scc-go-sdk/v5/securityandcompliancecenterapiv3"
@@ -272,7 +272,7 @@ type ClientSession interface {
 	BackupRecoveryV1() (*backuprecoveryv1.BackupRecoveryV1, error)
 	BackupRecoveryV1Connector() (*backuprecoveryv1.BackupRecoveryV1Connector, error)
 	BackupRecoveryManagerV1() (*backuprecoveryv1.BackupRecoveryManagementSreApiV1, error)
-	BrsMigrationV2() (*brsmigrationv2.BrsMigrationV2, error)
+	BrsMigrationV1() (*brsmigrationv1.BrsMigrationV1, error)
 	IBMCloudLogsRoutingV0() (*ibmcloudlogsroutingv0.IBMCloudLogsRoutingV0, error)
 	LogsRouterV3() (*logsrouterv3.LogsRouterV3, error)
 	SoftLayerSession() *slsession.Session
@@ -628,7 +628,7 @@ type clientSession struct {
 	backupRecoveryManagerClient    *backuprecoveryv1.BackupRecoveryManagementSreApiV1
 	backupRecoveryManagerClientErr error
 
-	brsMigrationClient    *brsmigrationv2.BrsMigrationV2
+	brsMigrationClient    *brsmigrationv1.BrsMigrationV1
 	brsMigrationClientErr error
 
 	secretsManagerClient    *secretsmanagerv2.SecretsManagerV2
@@ -1317,7 +1317,7 @@ func (session clientSession) BackupRecoveryManagerV1() (*backuprecoveryv1.Backup
 }
 
 // IBM Cloud Backup and Recovery Migration API
-func (session clientSession) BrsMigrationV2() (*brsmigrationv2.BrsMigrationV2, error) {
+func (session clientSession) BrsMigrationV1() (*brsmigrationv1.BrsMigrationV1, error) {
 	return session.brsMigrationClient, session.brsMigrationClientErr
 }
 
@@ -3776,10 +3776,10 @@ func (c *Config) ClientSession() (*clientSession, error) {
 
 	// Construct an instance of the 'IBM Cloud Backup and Recovery Migration API' service.
 	if session.brsMigrationClientErr == nil {
-		brsMigrationClientOptions := &brsmigrationv2.BrsMigrationV2Options{
+		brsMigrationClientOptions := &brsmigrationv1.BrsMigrationV1Options{
 			Authenticator: authenticator,
 		}
-		session.brsMigrationClient, err = brsmigrationv2.NewBrsMigrationV2(brsMigrationClientOptions)
+		session.brsMigrationClient, err = brsmigrationv1.NewBrsMigrationV1(brsMigrationClientOptions)
 		if err == nil {
 			session.brsMigrationClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
 			session.brsMigrationClient.SetDefaultHeaders(gohttp.Header{

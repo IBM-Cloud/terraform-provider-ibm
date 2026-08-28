@@ -18,7 +18,7 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM/go-sdk-core/v5/core"
-	"github.ibm.com/BackupAndRecovery/brs-migration-orchestrator/brsmigrationv2"
+	"github.com/IBM/ibm-brs-migration-sdk-go/brsmigrationv1"
 )
 
 func DataSourceIbmBrsMigrationWorkload() *schema.Resource {
@@ -623,14 +623,14 @@ func DataSourceIbmBrsMigrationWorkload() *schema.Resource {
 }
 
 func dataSourceIbmBrsMigrationWorkloadRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	brsMigrationClient, err := meta.(conns.ClientSession).BrsMigrationV2()
+	brsMigrationClient, err := meta.(conns.ClientSession).BrsMigrationV1()
 	if err != nil {
 		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_brs_migration_workload", "read", "initialize-client")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
 
-	getWorkloadOptions := &brsmigrationv2.GetWorkloadOptions{}
+	getWorkloadOptions := &brsmigrationv1.GetWorkloadOptions{}
 
 	getWorkloadOptions.SetMigrationID(d.Get("migration_id").(string))
 	getWorkloadOptions.SetWorkloadID(d.Get("workload_id").(string))
@@ -709,7 +709,7 @@ func dataSourceIbmBrsMigrationWorkloadRead(context context.Context, d *schema.Re
 	return nil
 }
 
-func DataSourceIbmBrsMigrationWorkloadWorkloadPayloadMappingToMap(model *brsmigrationv2.WorkloadPayloadMapping) (map[string]interface{}, error) {
+func DataSourceIbmBrsMigrationWorkloadWorkloadPayloadMappingToMap(model *brsmigrationv1.WorkloadPayloadMapping) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["id"] = *model.ID
 	modelMap["source_host_id"] = *model.SourceHostID
@@ -726,7 +726,7 @@ func DataSourceIbmBrsMigrationWorkloadWorkloadPayloadMappingToMap(model *brsmigr
 	return modelMap, nil
 }
 
-func DataSourceIbmBrsMigrationWorkloadDataSpecToMap(model *brsmigrationv2.DataSpec) (map[string]interface{}, error) {
+func DataSourceIbmBrsMigrationWorkloadDataSpecToMap(model *brsmigrationv1.DataSpec) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["data_format"] = *model.DataFormat
 	sourceMap, err := DataSourceIbmBrsMigrationWorkloadDataPayloadToMap(model.Source)
@@ -742,7 +742,7 @@ func DataSourceIbmBrsMigrationWorkloadDataSpecToMap(model *brsmigrationv2.DataSp
 	return modelMap, nil
 }
 
-func DataSourceIbmBrsMigrationWorkloadDataPayloadToMap(model *brsmigrationv2.DataPayload) (map[string]interface{}, error) {
+func DataSourceIbmBrsMigrationWorkloadDataPayloadToMap(model *brsmigrationv1.DataPayload) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.VolumeID != nil {
 		modelMap["volume_id"] = *model.VolumeID
@@ -756,7 +756,7 @@ func DataSourceIbmBrsMigrationWorkloadDataPayloadToMap(model *brsmigrationv2.Dat
 	return modelMap, nil
 }
 
-func DataSourceIbmBrsMigrationWorkloadWorkloadScheduleToMap(model *brsmigrationv2.WorkloadSchedule) (map[string]interface{}, error) {
+func DataSourceIbmBrsMigrationWorkloadWorkloadScheduleToMap(model *brsmigrationv1.WorkloadSchedule) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.Name != nil {
 		modelMap["name"] = *model.Name
@@ -797,7 +797,7 @@ func DataSourceIbmBrsMigrationWorkloadWorkloadScheduleToMap(model *brsmigrationv
 	return modelMap, nil
 }
 
-func DataSourceIbmBrsMigrationWorkloadBackupPolicyToMap(model *brsmigrationv2.BackupPolicy) (map[string]interface{}, error) {
+func DataSourceIbmBrsMigrationWorkloadBackupPolicyToMap(model *brsmigrationv1.BackupPolicy) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	regularMap, err := DataSourceIbmBrsMigrationWorkloadRegularBackupPolicyToMap(model.Regular)
 	if err != nil {
@@ -814,7 +814,7 @@ func DataSourceIbmBrsMigrationWorkloadBackupPolicyToMap(model *brsmigrationv2.Ba
 	return modelMap, nil
 }
 
-func DataSourceIbmBrsMigrationWorkloadRegularBackupPolicyToMap(model *brsmigrationv2.RegularBackupPolicy) (map[string]interface{}, error) {
+func DataSourceIbmBrsMigrationWorkloadRegularBackupPolicyToMap(model *brsmigrationv1.RegularBackupPolicy) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.Incremental != nil {
 		incrementalMap, err := DataSourceIbmBrsMigrationWorkloadRegularBackupPolicyIncrementalToMap(model.Incremental)
@@ -840,7 +840,7 @@ func DataSourceIbmBrsMigrationWorkloadRegularBackupPolicyToMap(model *brsmigrati
 	return modelMap, nil
 }
 
-func DataSourceIbmBrsMigrationWorkloadRegularBackupPolicyIncrementalToMap(model *brsmigrationv2.RegularBackupPolicyIncremental) (map[string]interface{}, error) {
+func DataSourceIbmBrsMigrationWorkloadRegularBackupPolicyIncrementalToMap(model *brsmigrationv1.RegularBackupPolicyIncremental) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	scheduleMap, err := DataSourceIbmBrsMigrationWorkloadIncrementalScheduleToMap(model.Schedule)
 	if err != nil {
@@ -850,7 +850,7 @@ func DataSourceIbmBrsMigrationWorkloadRegularBackupPolicyIncrementalToMap(model 
 	return modelMap, nil
 }
 
-func DataSourceIbmBrsMigrationWorkloadIncrementalScheduleToMap(model *brsmigrationv2.IncrementalSchedule) (map[string]interface{}, error) {
+func DataSourceIbmBrsMigrationWorkloadIncrementalScheduleToMap(model *brsmigrationv1.IncrementalSchedule) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["unit"] = *model.Unit
 	if model.MinuteSchedule != nil {
@@ -898,31 +898,31 @@ func DataSourceIbmBrsMigrationWorkloadIncrementalScheduleToMap(model *brsmigrati
 	return modelMap, nil
 }
 
-func DataSourceIbmBrsMigrationWorkloadIncrementalScheduleMinuteScheduleToMap(model *brsmigrationv2.IncrementalScheduleMinuteSchedule) (map[string]interface{}, error) {
+func DataSourceIbmBrsMigrationWorkloadIncrementalScheduleMinuteScheduleToMap(model *brsmigrationv1.IncrementalScheduleMinuteSchedule) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["frequency"] = flex.IntValue(model.Frequency)
 	return modelMap, nil
 }
 
-func DataSourceIbmBrsMigrationWorkloadIncrementalScheduleHourScheduleToMap(model *brsmigrationv2.IncrementalScheduleHourSchedule) (map[string]interface{}, error) {
+func DataSourceIbmBrsMigrationWorkloadIncrementalScheduleHourScheduleToMap(model *brsmigrationv1.IncrementalScheduleHourSchedule) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["frequency"] = flex.IntValue(model.Frequency)
 	return modelMap, nil
 }
 
-func DataSourceIbmBrsMigrationWorkloadIncrementalScheduleDayScheduleToMap(model *brsmigrationv2.IncrementalScheduleDaySchedule) (map[string]interface{}, error) {
+func DataSourceIbmBrsMigrationWorkloadIncrementalScheduleDayScheduleToMap(model *brsmigrationv1.IncrementalScheduleDaySchedule) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["frequency"] = flex.IntValue(model.Frequency)
 	return modelMap, nil
 }
 
-func DataSourceIbmBrsMigrationWorkloadIncrementalScheduleWeekScheduleToMap(model *brsmigrationv2.IncrementalScheduleWeekSchedule) (map[string]interface{}, error) {
+func DataSourceIbmBrsMigrationWorkloadIncrementalScheduleWeekScheduleToMap(model *brsmigrationv1.IncrementalScheduleWeekSchedule) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["day_of_week"] = model.DayOfWeek
 	return modelMap, nil
 }
 
-func DataSourceIbmBrsMigrationWorkloadIncrementalScheduleMonthScheduleToMap(model *brsmigrationv2.IncrementalScheduleMonthSchedule) (map[string]interface{}, error) {
+func DataSourceIbmBrsMigrationWorkloadIncrementalScheduleMonthScheduleToMap(model *brsmigrationv1.IncrementalScheduleMonthSchedule) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["day_of_week"] = model.DayOfWeek
 	modelMap["week_of_month"] = *model.WeekOfMonth
@@ -932,13 +932,13 @@ func DataSourceIbmBrsMigrationWorkloadIncrementalScheduleMonthScheduleToMap(mode
 	return modelMap, nil
 }
 
-func DataSourceIbmBrsMigrationWorkloadIncrementalScheduleYearScheduleToMap(model *brsmigrationv2.IncrementalScheduleYearSchedule) (map[string]interface{}, error) {
+func DataSourceIbmBrsMigrationWorkloadIncrementalScheduleYearScheduleToMap(model *brsmigrationv1.IncrementalScheduleYearSchedule) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["day_of_year"] = *model.DayOfYear
 	return modelMap, nil
 }
 
-func DataSourceIbmBrsMigrationWorkloadRegularBackupPolicyFullToMap(model *brsmigrationv2.RegularBackupPolicyFull) (map[string]interface{}, error) {
+func DataSourceIbmBrsMigrationWorkloadRegularBackupPolicyFullToMap(model *brsmigrationv1.RegularBackupPolicyFull) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.Schedule != nil {
 		scheduleMap, err := DataSourceIbmBrsMigrationWorkloadFullBackupPolicyScheduleToMap(model.Schedule)
@@ -950,7 +950,7 @@ func DataSourceIbmBrsMigrationWorkloadRegularBackupPolicyFullToMap(model *brsmig
 	return modelMap, nil
 }
 
-func DataSourceIbmBrsMigrationWorkloadFullBackupPolicyScheduleToMap(model *brsmigrationv2.FullBackupPolicySchedule) (map[string]interface{}, error) {
+func DataSourceIbmBrsMigrationWorkloadFullBackupPolicyScheduleToMap(model *brsmigrationv1.FullBackupPolicySchedule) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["unit"] = *model.Unit
 	if model.DaySchedule != nil {
@@ -984,19 +984,19 @@ func DataSourceIbmBrsMigrationWorkloadFullBackupPolicyScheduleToMap(model *brsmi
 	return modelMap, nil
 }
 
-func DataSourceIbmBrsMigrationWorkloadFullScheduleDayScheduleToMap(model *brsmigrationv2.FullScheduleDaySchedule) (map[string]interface{}, error) {
+func DataSourceIbmBrsMigrationWorkloadFullScheduleDayScheduleToMap(model *brsmigrationv1.FullScheduleDaySchedule) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["frequency"] = flex.IntValue(model.Frequency)
 	return modelMap, nil
 }
 
-func DataSourceIbmBrsMigrationWorkloadFullScheduleWeekScheduleToMap(model *brsmigrationv2.FullScheduleWeekSchedule) (map[string]interface{}, error) {
+func DataSourceIbmBrsMigrationWorkloadFullScheduleWeekScheduleToMap(model *brsmigrationv1.FullScheduleWeekSchedule) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["day_of_week"] = model.DayOfWeek
 	return modelMap, nil
 }
 
-func DataSourceIbmBrsMigrationWorkloadFullScheduleMonthScheduleToMap(model *brsmigrationv2.FullScheduleMonthSchedule) (map[string]interface{}, error) {
+func DataSourceIbmBrsMigrationWorkloadFullScheduleMonthScheduleToMap(model *brsmigrationv1.FullScheduleMonthSchedule) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["day_of_week"] = model.DayOfWeek
 	modelMap["week_of_month"] = *model.WeekOfMonth
@@ -1006,20 +1006,20 @@ func DataSourceIbmBrsMigrationWorkloadFullScheduleMonthScheduleToMap(model *brsm
 	return modelMap, nil
 }
 
-func DataSourceIbmBrsMigrationWorkloadFullScheduleYearScheduleToMap(model *brsmigrationv2.FullScheduleYearSchedule) (map[string]interface{}, error) {
+func DataSourceIbmBrsMigrationWorkloadFullScheduleYearScheduleToMap(model *brsmigrationv1.FullScheduleYearSchedule) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["day_of_year"] = *model.DayOfYear
 	return modelMap, nil
 }
 
-func DataSourceIbmBrsMigrationWorkloadRegularBackupPolicyRetentionToMap(model *brsmigrationv2.RegularBackupPolicyRetention) (map[string]interface{}, error) {
+func DataSourceIbmBrsMigrationWorkloadRegularBackupPolicyRetentionToMap(model *brsmigrationv1.RegularBackupPolicyRetention) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["unit"] = *model.Unit
 	modelMap["duration"] = flex.IntValue(model.Duration)
 	return modelMap, nil
 }
 
-func DataSourceIbmBrsMigrationWorkloadBackupPolicyLogToMap(model *brsmigrationv2.BackupPolicyLog) (map[string]interface{}, error) {
+func DataSourceIbmBrsMigrationWorkloadBackupPolicyLogToMap(model *brsmigrationv1.BackupPolicyLog) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.Schedule != nil {
 		scheduleMap, err := DataSourceIbmBrsMigrationWorkloadLogBackupPolicyScheduleToMap(model.Schedule)
@@ -1031,7 +1031,7 @@ func DataSourceIbmBrsMigrationWorkloadBackupPolicyLogToMap(model *brsmigrationv2
 	return modelMap, nil
 }
 
-func DataSourceIbmBrsMigrationWorkloadLogBackupPolicyScheduleToMap(model *brsmigrationv2.LogBackupPolicySchedule) (map[string]interface{}, error) {
+func DataSourceIbmBrsMigrationWorkloadLogBackupPolicyScheduleToMap(model *brsmigrationv1.LogBackupPolicySchedule) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["unit"] = *model.Unit
 	if model.MinuteSchedule != nil {
@@ -1051,19 +1051,19 @@ func DataSourceIbmBrsMigrationWorkloadLogBackupPolicyScheduleToMap(model *brsmig
 	return modelMap, nil
 }
 
-func DataSourceIbmBrsMigrationWorkloadLogScheduleMinuteScheduleToMap(model *brsmigrationv2.LogScheduleMinuteSchedule) (map[string]interface{}, error) {
+func DataSourceIbmBrsMigrationWorkloadLogScheduleMinuteScheduleToMap(model *brsmigrationv1.LogScheduleMinuteSchedule) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["frequency"] = flex.IntValue(model.Frequency)
 	return modelMap, nil
 }
 
-func DataSourceIbmBrsMigrationWorkloadLogScheduleHourScheduleToMap(model *brsmigrationv2.LogScheduleHourSchedule) (map[string]interface{}, error) {
+func DataSourceIbmBrsMigrationWorkloadLogScheduleHourScheduleToMap(model *brsmigrationv1.LogScheduleHourSchedule) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["frequency"] = flex.IntValue(model.Frequency)
 	return modelMap, nil
 }
 
-func DataSourceIbmBrsMigrationWorkloadBlackoutWindowToMap(model *brsmigrationv2.BlackoutWindow) (map[string]interface{}, error) {
+func DataSourceIbmBrsMigrationWorkloadBlackoutWindowToMap(model *brsmigrationv1.BlackoutWindow) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["day"] = *model.Day
 	startTimeMap, err := DataSourceIbmBrsMigrationWorkloadTimeOfDayToMap(model.StartTime)
@@ -1079,7 +1079,7 @@ func DataSourceIbmBrsMigrationWorkloadBlackoutWindowToMap(model *brsmigrationv2.
 	return modelMap, nil
 }
 
-func DataSourceIbmBrsMigrationWorkloadTimeOfDayToMap(model *brsmigrationv2.TimeOfDay) (map[string]interface{}, error) {
+func DataSourceIbmBrsMigrationWorkloadTimeOfDayToMap(model *brsmigrationv1.TimeOfDay) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["hour"] = flex.IntValue(model.Hour)
 	modelMap["minute"] = flex.IntValue(model.Minute)
@@ -1089,7 +1089,7 @@ func DataSourceIbmBrsMigrationWorkloadTimeOfDayToMap(model *brsmigrationv2.TimeO
 	return modelMap, nil
 }
 
-func DataSourceIbmBrsMigrationWorkloadExtendedRetentionPolicyToMap(model *brsmigrationv2.ExtendedRetentionPolicy) (map[string]interface{}, error) {
+func DataSourceIbmBrsMigrationWorkloadExtendedRetentionPolicyToMap(model *brsmigrationv1.ExtendedRetentionPolicy) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	scheduleMap, err := DataSourceIbmBrsMigrationWorkloadExtendedRetentionScheduleToMap(model.Schedule)
 	if err != nil {
@@ -1105,7 +1105,7 @@ func DataSourceIbmBrsMigrationWorkloadExtendedRetentionPolicyToMap(model *brsmig
 	return modelMap, nil
 }
 
-func DataSourceIbmBrsMigrationWorkloadExtendedRetentionScheduleToMap(model *brsmigrationv2.ExtendedRetentionSchedule) (map[string]interface{}, error) {
+func DataSourceIbmBrsMigrationWorkloadExtendedRetentionScheduleToMap(model *brsmigrationv1.ExtendedRetentionSchedule) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["unit"] = *model.Unit
 	if model.Frequency != nil {
@@ -1114,14 +1114,14 @@ func DataSourceIbmBrsMigrationWorkloadExtendedRetentionScheduleToMap(model *brsm
 	return modelMap, nil
 }
 
-func DataSourceIbmBrsMigrationWorkloadRetentionToMap(model *brsmigrationv2.Retention) (map[string]interface{}, error) {
+func DataSourceIbmBrsMigrationWorkloadRetentionToMap(model *brsmigrationv1.Retention) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["unit"] = *model.Unit
 	modelMap["duration"] = flex.IntValue(model.Duration)
 	return modelMap, nil
 }
 
-func DataSourceIbmBrsMigrationWorkloadWorkloadScheduleRetryOptionsToMap(model *brsmigrationv2.WorkloadScheduleRetryOptions) (map[string]interface{}, error) {
+func DataSourceIbmBrsMigrationWorkloadWorkloadScheduleRetryOptionsToMap(model *brsmigrationv1.WorkloadScheduleRetryOptions) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.Retries != nil {
 		modelMap["retries"] = flex.IntValue(model.Retries)

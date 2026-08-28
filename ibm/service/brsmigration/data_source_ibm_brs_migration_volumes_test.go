@@ -17,7 +17,7 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/brsmigration"
 	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/stretchr/testify/assert"
-	"github.ibm.com/BackupAndRecovery/brs-migration-orchestrator/brsmigrationv2"
+	"github.com/IBM/ibm-brs-migration-sdk-go/brsmigrationv1"
 	. "github.com/IBM-Cloud/terraform-provider-ibm/ibm/unittest"
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 )
@@ -104,12 +104,12 @@ func TestDataSourceIbmBrsMigrationVolumesVolumeToMap(t *testing.T) {
 		assert.Equal(t, result, model)
 	}
 
-	sourcePathModel := new(brsmigrationv2.SourcePath)
+	sourcePathModel := new(brsmigrationv1.SourcePath)
 	sourcePathModel.Path = core.StringPtr("10.240.1.23:/nxg_s_vol_r006-aaa")
 	sourcePathModel.VpcID = core.StringPtr("r006-aaa11111-bbbb-cccc-dddd-eeeeeeeeeeee")
 	sourcePathModel.MountTargetID = core.StringPtr("r006-11223344-5566-7788-99aa-bbccddeeff00")
 
-	volumeStorageModel := new(brsmigrationv2.VolumeStorageClassicVolumeStorageDetails)
+	volumeStorageModel := new(brsmigrationv1.VolumeStorageClassicVolumeStorageDetails)
 	volumeStorageModel.GlobalIdentifier = core.StringPtr("r134-abcdef01-2345-6789-abcd-ef0123456789")
 	volumeStorageModel.Name = core.StringPtr("prod-data-vol-01")
 	volumeStorageModel.CapacityGib = core.Int64Ptr(int64(0))
@@ -118,24 +118,24 @@ func TestDataSourceIbmBrsMigrationVolumesVolumeToMap(t *testing.T) {
 	volumeStorageModel.LifecycleState = core.StringPtr("stable")
 	volumeStorageModel.Encryption = core.StringPtr("provider_managed")
 	volumeStorageModel.ThroughputMbps = core.Int64Ptr(int64(0))
-	volumeStorageModel.SourcePaths = []brsmigrationv2.SourcePath{*sourcePathModel}
+	volumeStorageModel.SourcePaths = []brsmigrationv1.SourcePath{*sourcePathModel}
 	volumeStorageModel.Datacenter = core.StringPtr("dal10")
 	volumeStorageModel.IscsiTargetIps = []string{"161.26.98.5", "161.26.98.6"}
 
-	hostAttachmentModel := new(brsmigrationv2.HostAttachment)
+	hostAttachmentModel := new(brsmigrationv1.HostAttachment)
 	hostAttachmentModel.HostID = core.StringPtr("host-a1b2c3d4-e5f6-7890-abcd-ef1234567890")
 	hostAttachmentModel.MountPath = core.StringPtr("/mnt/data")
 	hostAttachmentModel.Type = core.StringPtr("ext4")
 	hostAttachmentModel.BlockDevice = core.StringPtr("/dev/vdb")
 	hostAttachmentModel.DeviceID = core.StringPtr("0717-80b3e36e-41f4-40e9-bd56-beae81792a68-679qb")
 
-	model := new(brsmigrationv2.Volume)
+	model := new(brsmigrationv1.Volume)
 	model.ID = core.StringPtr("vol-b1c2d3e4-f5a6-7890-bcde-f01234567890")
 	model.Env = core.StringPtr("vpc")
 	model.StorageType = core.StringPtr("block")
 	model.AttachmentState = core.StringPtr("attached")
 	model.Storage = volumeStorageModel
-	model.HostAttachments = []brsmigrationv2.HostAttachment{*hostAttachmentModel}
+	model.HostAttachments = []brsmigrationv1.HostAttachment{*hostAttachmentModel}
 	model.Migrated = core.BoolPtr(false)
 	model.WorkloadID = core.StringPtr("wl-a1b2c3d4-e5f6-7890-abcd-ef1234567890")
 	model.RegisteredAt = CreateMockDateTime("2019-01-01T12:00:00.000Z")
@@ -175,12 +175,12 @@ func TestDataSourceIbmBrsMigrationVolumesVolumeStorageToMap(t *testing.T) {
 		assert.Equal(t, result, model)
 	}
 
-	sourcePathModel := new(brsmigrationv2.SourcePath)
+	sourcePathModel := new(brsmigrationv1.SourcePath)
 	sourcePathModel.Path = core.StringPtr("10.240.1.23:/nxg_s_vol_r006-aaa")
 	sourcePathModel.VpcID = core.StringPtr("r006-aaa11111-bbbb-cccc-dddd-eeeeeeeeeeee")
 	sourcePathModel.MountTargetID = core.StringPtr("r006-11223344-5566-7788-99aa-bbccddeeff00")
 
-	model := new(brsmigrationv2.VolumeStorage)
+	model := new(brsmigrationv1.VolumeStorage)
 	model.GlobalIdentifier = core.StringPtr("r134-abcdef01-2345-6789-abcd-ef0123456789")
 	model.Name = core.StringPtr("prod-data-vol-01")
 	model.CapacityGib = core.Int64Ptr(int64(0))
@@ -189,7 +189,7 @@ func TestDataSourceIbmBrsMigrationVolumesVolumeStorageToMap(t *testing.T) {
 	model.LifecycleState = core.StringPtr("stable")
 	model.Encryption = core.StringPtr("provider_managed")
 	model.ThroughputMbps = core.Int64Ptr(int64(0))
-	model.SourcePaths = []brsmigrationv2.SourcePath{*sourcePathModel}
+	model.SourcePaths = []brsmigrationv1.SourcePath{*sourcePathModel}
 	model.Datacenter = core.StringPtr("dal10")
 	model.IscsiTargetIps = []string{"161.26.98.5", "161.26.98.6"}
 	model.Region = core.StringPtr("us-east")
@@ -215,7 +215,7 @@ func TestDataSourceIbmBrsMigrationVolumesSourcePathToMap(t *testing.T) {
 		assert.Equal(t, result, model)
 	}
 
-	model := new(brsmigrationv2.SourcePath)
+	model := new(brsmigrationv1.SourcePath)
 	model.Path = core.StringPtr("10.240.1.23:/nxg_s_vol_r006-aaa")
 	model.VpcID = core.StringPtr("r006-aaa11111-bbbb-cccc-dddd-eeeeeeeeeeee")
 	model.MountTargetID = core.StringPtr("r006-11223344-5566-7788-99aa-bbccddeeff00")
@@ -248,12 +248,12 @@ func TestDataSourceIbmBrsMigrationVolumesVolumeStorageClassicVolumeStorageDetail
 		assert.Equal(t, result, model)
 	}
 
-	sourcePathModel := new(brsmigrationv2.SourcePath)
+	sourcePathModel := new(brsmigrationv1.SourcePath)
 	sourcePathModel.Path = core.StringPtr("10.240.1.23:/nxg_s_vol_r006-aaa")
 	sourcePathModel.VpcID = core.StringPtr("r006-aaa11111-bbbb-cccc-dddd-eeeeeeeeeeee")
 	sourcePathModel.MountTargetID = core.StringPtr("r006-11223344-5566-7788-99aa-bbccddeeff00")
 
-	model := new(brsmigrationv2.VolumeStorageClassicVolumeStorageDetails)
+	model := new(brsmigrationv1.VolumeStorageClassicVolumeStorageDetails)
 	model.GlobalIdentifier = core.StringPtr("r134-abcdef01-2345-6789-abcd-ef0123456789")
 	model.Name = core.StringPtr("prod-data-vol-01")
 	model.CapacityGib = core.Int64Ptr(int64(0))
@@ -262,7 +262,7 @@ func TestDataSourceIbmBrsMigrationVolumesVolumeStorageClassicVolumeStorageDetail
 	model.LifecycleState = core.StringPtr("stable")
 	model.Encryption = core.StringPtr("provider_managed")
 	model.ThroughputMbps = core.Int64Ptr(int64(0))
-	model.SourcePaths = []brsmigrationv2.SourcePath{*sourcePathModel}
+	model.SourcePaths = []brsmigrationv1.SourcePath{*sourcePathModel}
 	model.Datacenter = core.StringPtr("dal10")
 	model.IscsiTargetIps = []string{"161.26.98.5", "161.26.98.6"}
 
@@ -299,12 +299,12 @@ func TestDataSourceIbmBrsMigrationVolumesVolumeStorageVPCVolumeStorageDetailsToM
 		assert.Equal(t, result, model)
 	}
 
-	sourcePathModel := new(brsmigrationv2.SourcePath)
+	sourcePathModel := new(brsmigrationv1.SourcePath)
 	sourcePathModel.Path = core.StringPtr("10.240.1.23:/nxg_s_vol_r006-aaa")
 	sourcePathModel.VpcID = core.StringPtr("r006-aaa11111-bbbb-cccc-dddd-eeeeeeeeeeee")
 	sourcePathModel.MountTargetID = core.StringPtr("r006-11223344-5566-7788-99aa-bbccddeeff00")
 
-	model := new(brsmigrationv2.VolumeStorageVPCVolumeStorageDetails)
+	model := new(brsmigrationv1.VolumeStorageVPCVolumeStorageDetails)
 	model.GlobalIdentifier = core.StringPtr("r134-abcdef01-2345-6789-abcd-ef0123456789")
 	model.Name = core.StringPtr("prod-data-vol-01")
 	model.CapacityGib = core.Int64Ptr(int64(0))
@@ -313,7 +313,7 @@ func TestDataSourceIbmBrsMigrationVolumesVolumeStorageVPCVolumeStorageDetailsToM
 	model.LifecycleState = core.StringPtr("stable")
 	model.Encryption = core.StringPtr("provider_managed")
 	model.ThroughputMbps = core.Int64Ptr(int64(0))
-	model.SourcePaths = []brsmigrationv2.SourcePath{*sourcePathModel}
+	model.SourcePaths = []brsmigrationv1.SourcePath{*sourcePathModel}
 	model.Region = core.StringPtr("us-east")
 	model.Zone = core.StringPtr("us-east-1")
 	model.Crn = core.StringPtr("crn:v1:bluemix:public:is:us-east-1:a/123456::volume:r134-abcdef01-2345-6789-abcd-ef0123456789")
@@ -339,7 +339,7 @@ func TestDataSourceIbmBrsMigrationVolumesHostAttachmentToMap(t *testing.T) {
 		assert.Equal(t, result, model)
 	}
 
-	model := new(brsmigrationv2.HostAttachment)
+	model := new(brsmigrationv1.HostAttachment)
 	model.HostID = core.StringPtr("host-a1b2c3d4-e5f6-7890-abcd-ef1234567890")
 	model.MountPath = core.StringPtr("/mnt/data")
 	model.Type = core.StringPtr("ext4")

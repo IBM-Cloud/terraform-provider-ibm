@@ -16,12 +16,12 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/brsmigration"
 	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/stretchr/testify/assert"
-	"github.ibm.com/BackupAndRecovery/brs-migration-orchestrator/brsmigrationv2"
+	"github.com/IBM/ibm-brs-migration-sdk-go/brsmigrationv1"
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 )
 
 func TestAccIbmBrsMigrationWorkloadBasic(t *testing.T) {
-	var conf brsmigrationv2.Workload
+	var conf brsmigrationv1.Workload
 	migrationID := fmt.Sprintf("tf_migration_id_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
@@ -41,7 +41,7 @@ func TestAccIbmBrsMigrationWorkloadBasic(t *testing.T) {
 }
 
 func TestAccIbmBrsMigrationWorkloadAllArgs(t *testing.T) {
-	var conf brsmigrationv2.Workload
+	var conf brsmigrationv1.Workload
 	migrationID := fmt.Sprintf("tf_migration_id_%d", acctest.RandIntRange(10, 100))
 	name := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 
@@ -121,7 +121,7 @@ func testAccCheckIbmBrsMigrationWorkloadConfig(migrationID string, name string) 
 	`, migrationID, name)
 }
 
-func testAccCheckIbmBrsMigrationWorkloadExists(n string, obj brsmigrationv2.Workload) resource.TestCheckFunc {
+func testAccCheckIbmBrsMigrationWorkloadExists(n string, obj brsmigrationv1.Workload) resource.TestCheckFunc {
 
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
@@ -129,12 +129,12 @@ func testAccCheckIbmBrsMigrationWorkloadExists(n string, obj brsmigrationv2.Work
 			return fmt.Errorf("Not found: %s", n)
 		}
 
-		brsMigrationClient, err := acc.TestAccProvider.Meta().(conns.ClientSession).BrsMigrationV2()
+		brsMigrationClient, err := acc.TestAccProvider.Meta().(conns.ClientSession).BrsMigrationV1()
 		if err != nil {
 			return err
 		}
 
-		getWorkloadOptions := &brsmigrationv2.GetWorkloadOptions{}
+		getWorkloadOptions := &brsmigrationv1.GetWorkloadOptions{}
 
 		parts, err := flex.SepIdParts(rs.Primary.ID, "/")
 		if err != nil {
@@ -155,7 +155,7 @@ func testAccCheckIbmBrsMigrationWorkloadExists(n string, obj brsmigrationv2.Work
 }
 
 func testAccCheckIbmBrsMigrationWorkloadDestroy(s *terraform.State) error {
-	brsMigrationClient, err := acc.TestAccProvider.Meta().(conns.ClientSession).BrsMigrationV2()
+	brsMigrationClient, err := acc.TestAccProvider.Meta().(conns.ClientSession).BrsMigrationV1()
 	if err != nil {
 		return err
 	}
@@ -164,7 +164,7 @@ func testAccCheckIbmBrsMigrationWorkloadDestroy(s *terraform.State) error {
 			continue
 		}
 
-		getWorkloadOptions := &brsmigrationv2.GetWorkloadOptions{}
+		getWorkloadOptions := &brsmigrationv1.GetWorkloadOptions{}
 
 		parts, err := flex.SepIdParts(rs.Primary.ID, "/")
 		if err != nil {
@@ -208,21 +208,21 @@ func TestResourceIbmBrsMigrationWorkloadWorkloadPayloadMappingToMap(t *testing.T
 		assert.Equal(t, result, model)
 	}
 
-	dataPayloadModel := new(brsmigrationv2.DataPayload)
+	dataPayloadModel := new(brsmigrationv1.DataPayload)
 	dataPayloadModel.VolumeID = core.StringPtr("vol-b1c2d3e4-f5a6-7890-bcde-f01234567890")
 	dataPayloadModel.Type = core.StringPtr("ext4")
 	dataPayloadModel.Path = core.StringPtr("/mnt/data")
 
-	dataSpecModel := new(brsmigrationv2.DataSpec)
+	dataSpecModel := new(brsmigrationv1.DataSpec)
 	dataSpecModel.DataFormat = core.StringPtr("raw")
 	dataSpecModel.Source = dataPayloadModel
 	dataSpecModel.Destination = dataPayloadModel
 
-	model := new(brsmigrationv2.WorkloadPayloadMapping)
+	model := new(brsmigrationv1.WorkloadPayloadMapping)
 	model.ID = core.StringPtr("pl-c3d4e5f6-a7b8-9012-cdef-012345678901")
 	model.SourceHostID = core.StringPtr("host-a1b2c3d4-e5f6-7890-abcd-ef1234567890")
 	model.DestinationHostID = core.StringPtr("host-b2c3d4e5-f6a7-8901-bcde-f01234567890")
-	model.DataSpecs = []brsmigrationv2.DataSpec{*dataSpecModel}
+	model.DataSpecs = []brsmigrationv1.DataSpec{*dataSpecModel}
 
 	result, err := brsmigration.ResourceIbmBrsMigrationWorkloadWorkloadPayloadMappingToMap(model)
 	assert.Nil(t, err)
@@ -244,12 +244,12 @@ func TestResourceIbmBrsMigrationWorkloadDataSpecToMap(t *testing.T) {
 		assert.Equal(t, result, model)
 	}
 
-	dataPayloadModel := new(brsmigrationv2.DataPayload)
+	dataPayloadModel := new(brsmigrationv1.DataPayload)
 	dataPayloadModel.VolumeID = core.StringPtr("vol-b1c2d3e4-f5a6-7890-bcde-f01234567890")
 	dataPayloadModel.Type = core.StringPtr("ext4")
 	dataPayloadModel.Path = core.StringPtr("/mnt/data")
 
-	model := new(brsmigrationv2.DataSpec)
+	model := new(brsmigrationv1.DataSpec)
 	model.DataFormat = core.StringPtr("raw")
 	model.Source = dataPayloadModel
 	model.Destination = dataPayloadModel
@@ -269,7 +269,7 @@ func TestResourceIbmBrsMigrationWorkloadDataPayloadToMap(t *testing.T) {
 		assert.Equal(t, result, model)
 	}
 
-	model := new(brsmigrationv2.DataPayload)
+	model := new(brsmigrationv1.DataPayload)
 	model.VolumeID = core.StringPtr("vol-b1c2d3e4-f5a6-7890-bcde-f01234567890")
 	model.Type = core.StringPtr("ext4")
 	model.Path = core.StringPtr("/mnt/data")
@@ -402,27 +402,27 @@ func TestResourceIbmBrsMigrationWorkloadWorkloadScheduleToMap(t *testing.T) {
 		assert.Equal(t, result, model)
 	}
 
-	incrementalScheduleMinuteScheduleModel := new(brsmigrationv2.IncrementalScheduleMinuteSchedule)
+	incrementalScheduleMinuteScheduleModel := new(brsmigrationv1.IncrementalScheduleMinuteSchedule)
 	incrementalScheduleMinuteScheduleModel.Frequency = core.Int64Ptr(int64(1))
 
-	incrementalScheduleHourScheduleModel := new(brsmigrationv2.IncrementalScheduleHourSchedule)
+	incrementalScheduleHourScheduleModel := new(brsmigrationv1.IncrementalScheduleHourSchedule)
 	incrementalScheduleHourScheduleModel.Frequency = core.Int64Ptr(int64(1))
 
-	incrementalScheduleDayScheduleModel := new(brsmigrationv2.IncrementalScheduleDaySchedule)
+	incrementalScheduleDayScheduleModel := new(brsmigrationv1.IncrementalScheduleDaySchedule)
 	incrementalScheduleDayScheduleModel.Frequency = core.Int64Ptr(int64(1))
 
-	incrementalScheduleWeekScheduleModel := new(brsmigrationv2.IncrementalScheduleWeekSchedule)
+	incrementalScheduleWeekScheduleModel := new(brsmigrationv1.IncrementalScheduleWeekSchedule)
 	incrementalScheduleWeekScheduleModel.DayOfWeek = []string{"sunday"}
 
-	incrementalScheduleMonthScheduleModel := new(brsmigrationv2.IncrementalScheduleMonthSchedule)
+	incrementalScheduleMonthScheduleModel := new(brsmigrationv1.IncrementalScheduleMonthSchedule)
 	incrementalScheduleMonthScheduleModel.DayOfWeek = []string{"sunday"}
 	incrementalScheduleMonthScheduleModel.WeekOfMonth = core.StringPtr("first")
 	incrementalScheduleMonthScheduleModel.DayOfMonth = core.Int64Ptr(int64(1))
 
-	incrementalScheduleYearScheduleModel := new(brsmigrationv2.IncrementalScheduleYearSchedule)
+	incrementalScheduleYearScheduleModel := new(brsmigrationv1.IncrementalScheduleYearSchedule)
 	incrementalScheduleYearScheduleModel.DayOfYear = core.StringPtr("first")
 
-	incrementalScheduleModel := new(brsmigrationv2.IncrementalSchedule)
+	incrementalScheduleModel := new(brsmigrationv1.IncrementalSchedule)
 	incrementalScheduleModel.Unit = core.StringPtr("minutes")
 	incrementalScheduleModel.MinuteSchedule = incrementalScheduleMinuteScheduleModel
 	incrementalScheduleModel.HourSchedule = incrementalScheduleHourScheduleModel
@@ -431,93 +431,93 @@ func TestResourceIbmBrsMigrationWorkloadWorkloadScheduleToMap(t *testing.T) {
 	incrementalScheduleModel.MonthSchedule = incrementalScheduleMonthScheduleModel
 	incrementalScheduleModel.YearSchedule = incrementalScheduleYearScheduleModel
 
-	regularBackupPolicyIncrementalModel := new(brsmigrationv2.RegularBackupPolicyIncremental)
+	regularBackupPolicyIncrementalModel := new(brsmigrationv1.RegularBackupPolicyIncremental)
 	regularBackupPolicyIncrementalModel.Schedule = incrementalScheduleModel
 
-	fullScheduleDayScheduleModel := new(brsmigrationv2.FullScheduleDaySchedule)
+	fullScheduleDayScheduleModel := new(brsmigrationv1.FullScheduleDaySchedule)
 	fullScheduleDayScheduleModel.Frequency = core.Int64Ptr(int64(1))
 
-	fullScheduleWeekScheduleModel := new(brsmigrationv2.FullScheduleWeekSchedule)
+	fullScheduleWeekScheduleModel := new(brsmigrationv1.FullScheduleWeekSchedule)
 	fullScheduleWeekScheduleModel.DayOfWeek = []string{"sunday"}
 
-	fullScheduleMonthScheduleModel := new(brsmigrationv2.FullScheduleMonthSchedule)
+	fullScheduleMonthScheduleModel := new(brsmigrationv1.FullScheduleMonthSchedule)
 	fullScheduleMonthScheduleModel.DayOfWeek = []string{"sunday"}
 	fullScheduleMonthScheduleModel.WeekOfMonth = core.StringPtr("first")
 	fullScheduleMonthScheduleModel.DayOfMonth = core.Int64Ptr(int64(1))
 
-	fullScheduleYearScheduleModel := new(brsmigrationv2.FullScheduleYearSchedule)
+	fullScheduleYearScheduleModel := new(brsmigrationv1.FullScheduleYearSchedule)
 	fullScheduleYearScheduleModel.DayOfYear = core.StringPtr("first")
 
-	fullBackupPolicyScheduleModel := new(brsmigrationv2.FullBackupPolicySchedule)
+	fullBackupPolicyScheduleModel := new(brsmigrationv1.FullBackupPolicySchedule)
 	fullBackupPolicyScheduleModel.Unit = core.StringPtr("days")
 	fullBackupPolicyScheduleModel.DaySchedule = fullScheduleDayScheduleModel
 	fullBackupPolicyScheduleModel.WeekSchedule = fullScheduleWeekScheduleModel
 	fullBackupPolicyScheduleModel.MonthSchedule = fullScheduleMonthScheduleModel
 	fullBackupPolicyScheduleModel.YearSchedule = fullScheduleYearScheduleModel
 
-	regularBackupPolicyFullModel := new(brsmigrationv2.RegularBackupPolicyFull)
+	regularBackupPolicyFullModel := new(brsmigrationv1.RegularBackupPolicyFull)
 	regularBackupPolicyFullModel.Schedule = fullBackupPolicyScheduleModel
 
-	regularBackupPolicyRetentionModel := new(brsmigrationv2.RegularBackupPolicyRetention)
+	regularBackupPolicyRetentionModel := new(brsmigrationv1.RegularBackupPolicyRetention)
 	regularBackupPolicyRetentionModel.Unit = core.StringPtr("days")
 	regularBackupPolicyRetentionModel.Duration = core.Int64Ptr(int64(1))
 
-	regularBackupPolicyModel := new(brsmigrationv2.RegularBackupPolicy)
+	regularBackupPolicyModel := new(brsmigrationv1.RegularBackupPolicy)
 	regularBackupPolicyModel.Incremental = regularBackupPolicyIncrementalModel
 	regularBackupPolicyModel.Full = regularBackupPolicyFullModel
 	regularBackupPolicyModel.Retention = regularBackupPolicyRetentionModel
 
-	logScheduleMinuteScheduleModel := new(brsmigrationv2.LogScheduleMinuteSchedule)
+	logScheduleMinuteScheduleModel := new(brsmigrationv1.LogScheduleMinuteSchedule)
 	logScheduleMinuteScheduleModel.Frequency = core.Int64Ptr(int64(1))
 
-	logScheduleHourScheduleModel := new(brsmigrationv2.LogScheduleHourSchedule)
+	logScheduleHourScheduleModel := new(brsmigrationv1.LogScheduleHourSchedule)
 	logScheduleHourScheduleModel.Frequency = core.Int64Ptr(int64(1))
 
-	logBackupPolicyScheduleModel := new(brsmigrationv2.LogBackupPolicySchedule)
+	logBackupPolicyScheduleModel := new(brsmigrationv1.LogBackupPolicySchedule)
 	logBackupPolicyScheduleModel.Unit = core.StringPtr("minutes")
 	logBackupPolicyScheduleModel.MinuteSchedule = logScheduleMinuteScheduleModel
 	logBackupPolicyScheduleModel.HourSchedule = logScheduleHourScheduleModel
 
-	backupPolicyLogModel := new(brsmigrationv2.BackupPolicyLog)
+	backupPolicyLogModel := new(brsmigrationv1.BackupPolicyLog)
 	backupPolicyLogModel.Schedule = logBackupPolicyScheduleModel
 
-	backupPolicyModel := new(brsmigrationv2.BackupPolicy)
+	backupPolicyModel := new(brsmigrationv1.BackupPolicy)
 	backupPolicyModel.Regular = regularBackupPolicyModel
 	backupPolicyModel.Log = backupPolicyLogModel
 
-	timeOfDayModel := new(brsmigrationv2.TimeOfDay)
+	timeOfDayModel := new(brsmigrationv1.TimeOfDay)
 	timeOfDayModel.Hour = core.Int64Ptr(int64(0))
 	timeOfDayModel.Minute = core.Int64Ptr(int64(0))
 	timeOfDayModel.Timezone = core.StringPtr("America/New_York")
 
-	blackoutWindowModel := new(brsmigrationv2.BlackoutWindow)
+	blackoutWindowModel := new(brsmigrationv1.BlackoutWindow)
 	blackoutWindowModel.Day = core.StringPtr("sunday")
 	blackoutWindowModel.StartTime = timeOfDayModel
 	blackoutWindowModel.EndTime = timeOfDayModel
 
-	extendedRetentionScheduleModel := new(brsmigrationv2.ExtendedRetentionSchedule)
+	extendedRetentionScheduleModel := new(brsmigrationv1.ExtendedRetentionSchedule)
 	extendedRetentionScheduleModel.Unit = core.StringPtr("runs")
 	extendedRetentionScheduleModel.Frequency = core.Int64Ptr(int64(1))
 
-	retentionModel := new(brsmigrationv2.Retention)
+	retentionModel := new(brsmigrationv1.Retention)
 	retentionModel.Unit = core.StringPtr("days")
 	retentionModel.Duration = core.Int64Ptr(int64(1))
 
-	extendedRetentionPolicyModel := new(brsmigrationv2.ExtendedRetentionPolicy)
+	extendedRetentionPolicyModel := new(brsmigrationv1.ExtendedRetentionPolicy)
 	extendedRetentionPolicyModel.Schedule = extendedRetentionScheduleModel
 	extendedRetentionPolicyModel.Retention = retentionModel
 	extendedRetentionPolicyModel.RunType = core.StringPtr("regular")
 
-	workloadScheduleRetryOptionsModel := new(brsmigrationv2.WorkloadScheduleRetryOptions)
+	workloadScheduleRetryOptionsModel := new(brsmigrationv1.WorkloadScheduleRetryOptions)
 	workloadScheduleRetryOptionsModel.Retries = core.Int64Ptr(int64(0))
 	workloadScheduleRetryOptionsModel.RetryIntervalMins = core.Int64Ptr(int64(1))
 
-	model := new(brsmigrationv2.WorkloadSchedule)
+	model := new(brsmigrationv1.WorkloadSchedule)
 	model.Name = core.StringPtr("daily-incremental-weekly-full")
 	model.Description = core.StringPtr("Daily incremental with weekly full backup and 30-day retention")
 	model.BackupPolicy = backupPolicyModel
-	model.BlackoutWindow = []brsmigrationv2.BlackoutWindow{*blackoutWindowModel}
-	model.ExtendedRetention = []brsmigrationv2.ExtendedRetentionPolicy{*extendedRetentionPolicyModel}
+	model.BlackoutWindow = []brsmigrationv1.BlackoutWindow{*blackoutWindowModel}
+	model.ExtendedRetention = []brsmigrationv1.ExtendedRetentionPolicy{*extendedRetentionPolicyModel}
 	model.RetryOptions = workloadScheduleRetryOptionsModel
 
 	result, err := brsmigration.ResourceIbmBrsMigrationWorkloadWorkloadScheduleToMap(model)
@@ -613,27 +613,27 @@ func TestResourceIbmBrsMigrationWorkloadBackupPolicyToMap(t *testing.T) {
 		assert.Equal(t, result, model)
 	}
 
-	incrementalScheduleMinuteScheduleModel := new(brsmigrationv2.IncrementalScheduleMinuteSchedule)
+	incrementalScheduleMinuteScheduleModel := new(brsmigrationv1.IncrementalScheduleMinuteSchedule)
 	incrementalScheduleMinuteScheduleModel.Frequency = core.Int64Ptr(int64(1))
 
-	incrementalScheduleHourScheduleModel := new(brsmigrationv2.IncrementalScheduleHourSchedule)
+	incrementalScheduleHourScheduleModel := new(brsmigrationv1.IncrementalScheduleHourSchedule)
 	incrementalScheduleHourScheduleModel.Frequency = core.Int64Ptr(int64(1))
 
-	incrementalScheduleDayScheduleModel := new(brsmigrationv2.IncrementalScheduleDaySchedule)
+	incrementalScheduleDayScheduleModel := new(brsmigrationv1.IncrementalScheduleDaySchedule)
 	incrementalScheduleDayScheduleModel.Frequency = core.Int64Ptr(int64(1))
 
-	incrementalScheduleWeekScheduleModel := new(brsmigrationv2.IncrementalScheduleWeekSchedule)
+	incrementalScheduleWeekScheduleModel := new(brsmigrationv1.IncrementalScheduleWeekSchedule)
 	incrementalScheduleWeekScheduleModel.DayOfWeek = []string{"sunday"}
 
-	incrementalScheduleMonthScheduleModel := new(brsmigrationv2.IncrementalScheduleMonthSchedule)
+	incrementalScheduleMonthScheduleModel := new(brsmigrationv1.IncrementalScheduleMonthSchedule)
 	incrementalScheduleMonthScheduleModel.DayOfWeek = []string{"sunday"}
 	incrementalScheduleMonthScheduleModel.WeekOfMonth = core.StringPtr("first")
 	incrementalScheduleMonthScheduleModel.DayOfMonth = core.Int64Ptr(int64(1))
 
-	incrementalScheduleYearScheduleModel := new(brsmigrationv2.IncrementalScheduleYearSchedule)
+	incrementalScheduleYearScheduleModel := new(brsmigrationv1.IncrementalScheduleYearSchedule)
 	incrementalScheduleYearScheduleModel.DayOfYear = core.StringPtr("first")
 
-	incrementalScheduleModel := new(brsmigrationv2.IncrementalSchedule)
+	incrementalScheduleModel := new(brsmigrationv1.IncrementalSchedule)
 	incrementalScheduleModel.Unit = core.StringPtr("minutes")
 	incrementalScheduleModel.MinuteSchedule = incrementalScheduleMinuteScheduleModel
 	incrementalScheduleModel.HourSchedule = incrementalScheduleHourScheduleModel
@@ -642,57 +642,57 @@ func TestResourceIbmBrsMigrationWorkloadBackupPolicyToMap(t *testing.T) {
 	incrementalScheduleModel.MonthSchedule = incrementalScheduleMonthScheduleModel
 	incrementalScheduleModel.YearSchedule = incrementalScheduleYearScheduleModel
 
-	regularBackupPolicyIncrementalModel := new(brsmigrationv2.RegularBackupPolicyIncremental)
+	regularBackupPolicyIncrementalModel := new(brsmigrationv1.RegularBackupPolicyIncremental)
 	regularBackupPolicyIncrementalModel.Schedule = incrementalScheduleModel
 
-	fullScheduleDayScheduleModel := new(brsmigrationv2.FullScheduleDaySchedule)
+	fullScheduleDayScheduleModel := new(brsmigrationv1.FullScheduleDaySchedule)
 	fullScheduleDayScheduleModel.Frequency = core.Int64Ptr(int64(1))
 
-	fullScheduleWeekScheduleModel := new(brsmigrationv2.FullScheduleWeekSchedule)
+	fullScheduleWeekScheduleModel := new(brsmigrationv1.FullScheduleWeekSchedule)
 	fullScheduleWeekScheduleModel.DayOfWeek = []string{"sunday"}
 
-	fullScheduleMonthScheduleModel := new(brsmigrationv2.FullScheduleMonthSchedule)
+	fullScheduleMonthScheduleModel := new(brsmigrationv1.FullScheduleMonthSchedule)
 	fullScheduleMonthScheduleModel.DayOfWeek = []string{"sunday"}
 	fullScheduleMonthScheduleModel.WeekOfMonth = core.StringPtr("first")
 	fullScheduleMonthScheduleModel.DayOfMonth = core.Int64Ptr(int64(1))
 
-	fullScheduleYearScheduleModel := new(brsmigrationv2.FullScheduleYearSchedule)
+	fullScheduleYearScheduleModel := new(brsmigrationv1.FullScheduleYearSchedule)
 	fullScheduleYearScheduleModel.DayOfYear = core.StringPtr("first")
 
-	fullBackupPolicyScheduleModel := new(brsmigrationv2.FullBackupPolicySchedule)
+	fullBackupPolicyScheduleModel := new(brsmigrationv1.FullBackupPolicySchedule)
 	fullBackupPolicyScheduleModel.Unit = core.StringPtr("days")
 	fullBackupPolicyScheduleModel.DaySchedule = fullScheduleDayScheduleModel
 	fullBackupPolicyScheduleModel.WeekSchedule = fullScheduleWeekScheduleModel
 	fullBackupPolicyScheduleModel.MonthSchedule = fullScheduleMonthScheduleModel
 	fullBackupPolicyScheduleModel.YearSchedule = fullScheduleYearScheduleModel
 
-	regularBackupPolicyFullModel := new(brsmigrationv2.RegularBackupPolicyFull)
+	regularBackupPolicyFullModel := new(brsmigrationv1.RegularBackupPolicyFull)
 	regularBackupPolicyFullModel.Schedule = fullBackupPolicyScheduleModel
 
-	regularBackupPolicyRetentionModel := new(brsmigrationv2.RegularBackupPolicyRetention)
+	regularBackupPolicyRetentionModel := new(brsmigrationv1.RegularBackupPolicyRetention)
 	regularBackupPolicyRetentionModel.Unit = core.StringPtr("days")
 	regularBackupPolicyRetentionModel.Duration = core.Int64Ptr(int64(1))
 
-	regularBackupPolicyModel := new(brsmigrationv2.RegularBackupPolicy)
+	regularBackupPolicyModel := new(brsmigrationv1.RegularBackupPolicy)
 	regularBackupPolicyModel.Incremental = regularBackupPolicyIncrementalModel
 	regularBackupPolicyModel.Full = regularBackupPolicyFullModel
 	regularBackupPolicyModel.Retention = regularBackupPolicyRetentionModel
 
-	logScheduleMinuteScheduleModel := new(brsmigrationv2.LogScheduleMinuteSchedule)
+	logScheduleMinuteScheduleModel := new(brsmigrationv1.LogScheduleMinuteSchedule)
 	logScheduleMinuteScheduleModel.Frequency = core.Int64Ptr(int64(1))
 
-	logScheduleHourScheduleModel := new(brsmigrationv2.LogScheduleHourSchedule)
+	logScheduleHourScheduleModel := new(brsmigrationv1.LogScheduleHourSchedule)
 	logScheduleHourScheduleModel.Frequency = core.Int64Ptr(int64(1))
 
-	logBackupPolicyScheduleModel := new(brsmigrationv2.LogBackupPolicySchedule)
+	logBackupPolicyScheduleModel := new(brsmigrationv1.LogBackupPolicySchedule)
 	logBackupPolicyScheduleModel.Unit = core.StringPtr("minutes")
 	logBackupPolicyScheduleModel.MinuteSchedule = logScheduleMinuteScheduleModel
 	logBackupPolicyScheduleModel.HourSchedule = logScheduleHourScheduleModel
 
-	backupPolicyLogModel := new(brsmigrationv2.BackupPolicyLog)
+	backupPolicyLogModel := new(brsmigrationv1.BackupPolicyLog)
 	backupPolicyLogModel.Schedule = logBackupPolicyScheduleModel
 
-	model := new(brsmigrationv2.BackupPolicy)
+	model := new(brsmigrationv1.BackupPolicy)
 	model.Regular = regularBackupPolicyModel
 	model.Log = backupPolicyLogModel
 
@@ -771,27 +771,27 @@ func TestResourceIbmBrsMigrationWorkloadRegularBackupPolicyToMap(t *testing.T) {
 		assert.Equal(t, result, model)
 	}
 
-	incrementalScheduleMinuteScheduleModel := new(brsmigrationv2.IncrementalScheduleMinuteSchedule)
+	incrementalScheduleMinuteScheduleModel := new(brsmigrationv1.IncrementalScheduleMinuteSchedule)
 	incrementalScheduleMinuteScheduleModel.Frequency = core.Int64Ptr(int64(1))
 
-	incrementalScheduleHourScheduleModel := new(brsmigrationv2.IncrementalScheduleHourSchedule)
+	incrementalScheduleHourScheduleModel := new(brsmigrationv1.IncrementalScheduleHourSchedule)
 	incrementalScheduleHourScheduleModel.Frequency = core.Int64Ptr(int64(1))
 
-	incrementalScheduleDayScheduleModel := new(brsmigrationv2.IncrementalScheduleDaySchedule)
+	incrementalScheduleDayScheduleModel := new(brsmigrationv1.IncrementalScheduleDaySchedule)
 	incrementalScheduleDayScheduleModel.Frequency = core.Int64Ptr(int64(1))
 
-	incrementalScheduleWeekScheduleModel := new(brsmigrationv2.IncrementalScheduleWeekSchedule)
+	incrementalScheduleWeekScheduleModel := new(brsmigrationv1.IncrementalScheduleWeekSchedule)
 	incrementalScheduleWeekScheduleModel.DayOfWeek = []string{"sunday"}
 
-	incrementalScheduleMonthScheduleModel := new(brsmigrationv2.IncrementalScheduleMonthSchedule)
+	incrementalScheduleMonthScheduleModel := new(brsmigrationv1.IncrementalScheduleMonthSchedule)
 	incrementalScheduleMonthScheduleModel.DayOfWeek = []string{"sunday"}
 	incrementalScheduleMonthScheduleModel.WeekOfMonth = core.StringPtr("first")
 	incrementalScheduleMonthScheduleModel.DayOfMonth = core.Int64Ptr(int64(1))
 
-	incrementalScheduleYearScheduleModel := new(brsmigrationv2.IncrementalScheduleYearSchedule)
+	incrementalScheduleYearScheduleModel := new(brsmigrationv1.IncrementalScheduleYearSchedule)
 	incrementalScheduleYearScheduleModel.DayOfYear = core.StringPtr("first")
 
-	incrementalScheduleModel := new(brsmigrationv2.IncrementalSchedule)
+	incrementalScheduleModel := new(brsmigrationv1.IncrementalSchedule)
 	incrementalScheduleModel.Unit = core.StringPtr("minutes")
 	incrementalScheduleModel.MinuteSchedule = incrementalScheduleMinuteScheduleModel
 	incrementalScheduleModel.HourSchedule = incrementalScheduleHourScheduleModel
@@ -800,38 +800,38 @@ func TestResourceIbmBrsMigrationWorkloadRegularBackupPolicyToMap(t *testing.T) {
 	incrementalScheduleModel.MonthSchedule = incrementalScheduleMonthScheduleModel
 	incrementalScheduleModel.YearSchedule = incrementalScheduleYearScheduleModel
 
-	regularBackupPolicyIncrementalModel := new(brsmigrationv2.RegularBackupPolicyIncremental)
+	regularBackupPolicyIncrementalModel := new(brsmigrationv1.RegularBackupPolicyIncremental)
 	regularBackupPolicyIncrementalModel.Schedule = incrementalScheduleModel
 
-	fullScheduleDayScheduleModel := new(brsmigrationv2.FullScheduleDaySchedule)
+	fullScheduleDayScheduleModel := new(brsmigrationv1.FullScheduleDaySchedule)
 	fullScheduleDayScheduleModel.Frequency = core.Int64Ptr(int64(1))
 
-	fullScheduleWeekScheduleModel := new(brsmigrationv2.FullScheduleWeekSchedule)
+	fullScheduleWeekScheduleModel := new(brsmigrationv1.FullScheduleWeekSchedule)
 	fullScheduleWeekScheduleModel.DayOfWeek = []string{"sunday"}
 
-	fullScheduleMonthScheduleModel := new(brsmigrationv2.FullScheduleMonthSchedule)
+	fullScheduleMonthScheduleModel := new(brsmigrationv1.FullScheduleMonthSchedule)
 	fullScheduleMonthScheduleModel.DayOfWeek = []string{"sunday"}
 	fullScheduleMonthScheduleModel.WeekOfMonth = core.StringPtr("first")
 	fullScheduleMonthScheduleModel.DayOfMonth = core.Int64Ptr(int64(1))
 
-	fullScheduleYearScheduleModel := new(brsmigrationv2.FullScheduleYearSchedule)
+	fullScheduleYearScheduleModel := new(brsmigrationv1.FullScheduleYearSchedule)
 	fullScheduleYearScheduleModel.DayOfYear = core.StringPtr("first")
 
-	fullBackupPolicyScheduleModel := new(brsmigrationv2.FullBackupPolicySchedule)
+	fullBackupPolicyScheduleModel := new(brsmigrationv1.FullBackupPolicySchedule)
 	fullBackupPolicyScheduleModel.Unit = core.StringPtr("days")
 	fullBackupPolicyScheduleModel.DaySchedule = fullScheduleDayScheduleModel
 	fullBackupPolicyScheduleModel.WeekSchedule = fullScheduleWeekScheduleModel
 	fullBackupPolicyScheduleModel.MonthSchedule = fullScheduleMonthScheduleModel
 	fullBackupPolicyScheduleModel.YearSchedule = fullScheduleYearScheduleModel
 
-	regularBackupPolicyFullModel := new(brsmigrationv2.RegularBackupPolicyFull)
+	regularBackupPolicyFullModel := new(brsmigrationv1.RegularBackupPolicyFull)
 	regularBackupPolicyFullModel.Schedule = fullBackupPolicyScheduleModel
 
-	regularBackupPolicyRetentionModel := new(brsmigrationv2.RegularBackupPolicyRetention)
+	regularBackupPolicyRetentionModel := new(brsmigrationv1.RegularBackupPolicyRetention)
 	regularBackupPolicyRetentionModel.Unit = core.StringPtr("days")
 	regularBackupPolicyRetentionModel.Duration = core.Int64Ptr(int64(1))
 
-	model := new(brsmigrationv2.RegularBackupPolicy)
+	model := new(brsmigrationv1.RegularBackupPolicy)
 	model.Incremental = regularBackupPolicyIncrementalModel
 	model.Full = regularBackupPolicyFullModel
 	model.Retention = regularBackupPolicyRetentionModel
@@ -878,27 +878,27 @@ func TestResourceIbmBrsMigrationWorkloadRegularBackupPolicyIncrementalToMap(t *t
 		assert.Equal(t, result, model)
 	}
 
-	incrementalScheduleMinuteScheduleModel := new(brsmigrationv2.IncrementalScheduleMinuteSchedule)
+	incrementalScheduleMinuteScheduleModel := new(brsmigrationv1.IncrementalScheduleMinuteSchedule)
 	incrementalScheduleMinuteScheduleModel.Frequency = core.Int64Ptr(int64(1))
 
-	incrementalScheduleHourScheduleModel := new(brsmigrationv2.IncrementalScheduleHourSchedule)
+	incrementalScheduleHourScheduleModel := new(brsmigrationv1.IncrementalScheduleHourSchedule)
 	incrementalScheduleHourScheduleModel.Frequency = core.Int64Ptr(int64(1))
 
-	incrementalScheduleDayScheduleModel := new(brsmigrationv2.IncrementalScheduleDaySchedule)
+	incrementalScheduleDayScheduleModel := new(brsmigrationv1.IncrementalScheduleDaySchedule)
 	incrementalScheduleDayScheduleModel.Frequency = core.Int64Ptr(int64(1))
 
-	incrementalScheduleWeekScheduleModel := new(brsmigrationv2.IncrementalScheduleWeekSchedule)
+	incrementalScheduleWeekScheduleModel := new(brsmigrationv1.IncrementalScheduleWeekSchedule)
 	incrementalScheduleWeekScheduleModel.DayOfWeek = []string{"sunday"}
 
-	incrementalScheduleMonthScheduleModel := new(brsmigrationv2.IncrementalScheduleMonthSchedule)
+	incrementalScheduleMonthScheduleModel := new(brsmigrationv1.IncrementalScheduleMonthSchedule)
 	incrementalScheduleMonthScheduleModel.DayOfWeek = []string{"sunday"}
 	incrementalScheduleMonthScheduleModel.WeekOfMonth = core.StringPtr("first")
 	incrementalScheduleMonthScheduleModel.DayOfMonth = core.Int64Ptr(int64(1))
 
-	incrementalScheduleYearScheduleModel := new(brsmigrationv2.IncrementalScheduleYearSchedule)
+	incrementalScheduleYearScheduleModel := new(brsmigrationv1.IncrementalScheduleYearSchedule)
 	incrementalScheduleYearScheduleModel.DayOfYear = core.StringPtr("first")
 
-	incrementalScheduleModel := new(brsmigrationv2.IncrementalSchedule)
+	incrementalScheduleModel := new(brsmigrationv1.IncrementalSchedule)
 	incrementalScheduleModel.Unit = core.StringPtr("minutes")
 	incrementalScheduleModel.MinuteSchedule = incrementalScheduleMinuteScheduleModel
 	incrementalScheduleModel.HourSchedule = incrementalScheduleHourScheduleModel
@@ -907,7 +907,7 @@ func TestResourceIbmBrsMigrationWorkloadRegularBackupPolicyIncrementalToMap(t *t
 	incrementalScheduleModel.MonthSchedule = incrementalScheduleMonthScheduleModel
 	incrementalScheduleModel.YearSchedule = incrementalScheduleYearScheduleModel
 
-	model := new(brsmigrationv2.RegularBackupPolicyIncremental)
+	model := new(brsmigrationv1.RegularBackupPolicyIncremental)
 	model.Schedule = incrementalScheduleModel
 
 	result, err := brsmigration.ResourceIbmBrsMigrationWorkloadRegularBackupPolicyIncrementalToMap(model)
@@ -949,27 +949,27 @@ func TestResourceIbmBrsMigrationWorkloadIncrementalScheduleToMap(t *testing.T) {
 		assert.Equal(t, result, model)
 	}
 
-	incrementalScheduleMinuteScheduleModel := new(brsmigrationv2.IncrementalScheduleMinuteSchedule)
+	incrementalScheduleMinuteScheduleModel := new(brsmigrationv1.IncrementalScheduleMinuteSchedule)
 	incrementalScheduleMinuteScheduleModel.Frequency = core.Int64Ptr(int64(1))
 
-	incrementalScheduleHourScheduleModel := new(brsmigrationv2.IncrementalScheduleHourSchedule)
+	incrementalScheduleHourScheduleModel := new(brsmigrationv1.IncrementalScheduleHourSchedule)
 	incrementalScheduleHourScheduleModel.Frequency = core.Int64Ptr(int64(1))
 
-	incrementalScheduleDayScheduleModel := new(brsmigrationv2.IncrementalScheduleDaySchedule)
+	incrementalScheduleDayScheduleModel := new(brsmigrationv1.IncrementalScheduleDaySchedule)
 	incrementalScheduleDayScheduleModel.Frequency = core.Int64Ptr(int64(1))
 
-	incrementalScheduleWeekScheduleModel := new(brsmigrationv2.IncrementalScheduleWeekSchedule)
+	incrementalScheduleWeekScheduleModel := new(brsmigrationv1.IncrementalScheduleWeekSchedule)
 	incrementalScheduleWeekScheduleModel.DayOfWeek = []string{"sunday"}
 
-	incrementalScheduleMonthScheduleModel := new(brsmigrationv2.IncrementalScheduleMonthSchedule)
+	incrementalScheduleMonthScheduleModel := new(brsmigrationv1.IncrementalScheduleMonthSchedule)
 	incrementalScheduleMonthScheduleModel.DayOfWeek = []string{"sunday"}
 	incrementalScheduleMonthScheduleModel.WeekOfMonth = core.StringPtr("first")
 	incrementalScheduleMonthScheduleModel.DayOfMonth = core.Int64Ptr(int64(1))
 
-	incrementalScheduleYearScheduleModel := new(brsmigrationv2.IncrementalScheduleYearSchedule)
+	incrementalScheduleYearScheduleModel := new(brsmigrationv1.IncrementalScheduleYearSchedule)
 	incrementalScheduleYearScheduleModel.DayOfYear = core.StringPtr("first")
 
-	model := new(brsmigrationv2.IncrementalSchedule)
+	model := new(brsmigrationv1.IncrementalSchedule)
 	model.Unit = core.StringPtr("minutes")
 	model.MinuteSchedule = incrementalScheduleMinuteScheduleModel
 	model.HourSchedule = incrementalScheduleHourScheduleModel
@@ -991,7 +991,7 @@ func TestResourceIbmBrsMigrationWorkloadIncrementalScheduleMinuteScheduleToMap(t
 		assert.Equal(t, result, model)
 	}
 
-	model := new(brsmigrationv2.IncrementalScheduleMinuteSchedule)
+	model := new(brsmigrationv1.IncrementalScheduleMinuteSchedule)
 	model.Frequency = core.Int64Ptr(int64(1))
 
 	result, err := brsmigration.ResourceIbmBrsMigrationWorkloadIncrementalScheduleMinuteScheduleToMap(model)
@@ -1007,7 +1007,7 @@ func TestResourceIbmBrsMigrationWorkloadIncrementalScheduleHourScheduleToMap(t *
 		assert.Equal(t, result, model)
 	}
 
-	model := new(brsmigrationv2.IncrementalScheduleHourSchedule)
+	model := new(brsmigrationv1.IncrementalScheduleHourSchedule)
 	model.Frequency = core.Int64Ptr(int64(1))
 
 	result, err := brsmigration.ResourceIbmBrsMigrationWorkloadIncrementalScheduleHourScheduleToMap(model)
@@ -1023,7 +1023,7 @@ func TestResourceIbmBrsMigrationWorkloadIncrementalScheduleDayScheduleToMap(t *t
 		assert.Equal(t, result, model)
 	}
 
-	model := new(brsmigrationv2.IncrementalScheduleDaySchedule)
+	model := new(brsmigrationv1.IncrementalScheduleDaySchedule)
 	model.Frequency = core.Int64Ptr(int64(1))
 
 	result, err := brsmigration.ResourceIbmBrsMigrationWorkloadIncrementalScheduleDayScheduleToMap(model)
@@ -1039,7 +1039,7 @@ func TestResourceIbmBrsMigrationWorkloadIncrementalScheduleWeekScheduleToMap(t *
 		assert.Equal(t, result, model)
 	}
 
-	model := new(brsmigrationv2.IncrementalScheduleWeekSchedule)
+	model := new(brsmigrationv1.IncrementalScheduleWeekSchedule)
 	model.DayOfWeek = []string{"sunday"}
 
 	result, err := brsmigration.ResourceIbmBrsMigrationWorkloadIncrementalScheduleWeekScheduleToMap(model)
@@ -1057,7 +1057,7 @@ func TestResourceIbmBrsMigrationWorkloadIncrementalScheduleMonthScheduleToMap(t 
 		assert.Equal(t, result, model)
 	}
 
-	model := new(brsmigrationv2.IncrementalScheduleMonthSchedule)
+	model := new(brsmigrationv1.IncrementalScheduleMonthSchedule)
 	model.DayOfWeek = []string{"sunday"}
 	model.WeekOfMonth = core.StringPtr("first")
 	model.DayOfMonth = core.Int64Ptr(int64(1))
@@ -1075,7 +1075,7 @@ func TestResourceIbmBrsMigrationWorkloadIncrementalScheduleYearScheduleToMap(t *
 		assert.Equal(t, result, model)
 	}
 
-	model := new(brsmigrationv2.IncrementalScheduleYearSchedule)
+	model := new(brsmigrationv1.IncrementalScheduleYearSchedule)
 	model.DayOfYear = core.StringPtr("first")
 
 	result, err := brsmigration.ResourceIbmBrsMigrationWorkloadIncrementalScheduleYearScheduleToMap(model)
@@ -1112,28 +1112,28 @@ func TestResourceIbmBrsMigrationWorkloadRegularBackupPolicyFullToMap(t *testing.
 		assert.Equal(t, result, model)
 	}
 
-	fullScheduleDayScheduleModel := new(brsmigrationv2.FullScheduleDaySchedule)
+	fullScheduleDayScheduleModel := new(brsmigrationv1.FullScheduleDaySchedule)
 	fullScheduleDayScheduleModel.Frequency = core.Int64Ptr(int64(1))
 
-	fullScheduleWeekScheduleModel := new(brsmigrationv2.FullScheduleWeekSchedule)
+	fullScheduleWeekScheduleModel := new(brsmigrationv1.FullScheduleWeekSchedule)
 	fullScheduleWeekScheduleModel.DayOfWeek = []string{"sunday"}
 
-	fullScheduleMonthScheduleModel := new(brsmigrationv2.FullScheduleMonthSchedule)
+	fullScheduleMonthScheduleModel := new(brsmigrationv1.FullScheduleMonthSchedule)
 	fullScheduleMonthScheduleModel.DayOfWeek = []string{"sunday"}
 	fullScheduleMonthScheduleModel.WeekOfMonth = core.StringPtr("first")
 	fullScheduleMonthScheduleModel.DayOfMonth = core.Int64Ptr(int64(1))
 
-	fullScheduleYearScheduleModel := new(brsmigrationv2.FullScheduleYearSchedule)
+	fullScheduleYearScheduleModel := new(brsmigrationv1.FullScheduleYearSchedule)
 	fullScheduleYearScheduleModel.DayOfYear = core.StringPtr("first")
 
-	fullBackupPolicyScheduleModel := new(brsmigrationv2.FullBackupPolicySchedule)
+	fullBackupPolicyScheduleModel := new(brsmigrationv1.FullBackupPolicySchedule)
 	fullBackupPolicyScheduleModel.Unit = core.StringPtr("days")
 	fullBackupPolicyScheduleModel.DaySchedule = fullScheduleDayScheduleModel
 	fullBackupPolicyScheduleModel.WeekSchedule = fullScheduleWeekScheduleModel
 	fullBackupPolicyScheduleModel.MonthSchedule = fullScheduleMonthScheduleModel
 	fullBackupPolicyScheduleModel.YearSchedule = fullScheduleYearScheduleModel
 
-	model := new(brsmigrationv2.RegularBackupPolicyFull)
+	model := new(brsmigrationv1.RegularBackupPolicyFull)
 	model.Schedule = fullBackupPolicyScheduleModel
 
 	result, err := brsmigration.ResourceIbmBrsMigrationWorkloadRegularBackupPolicyFullToMap(model)
@@ -1167,21 +1167,21 @@ func TestResourceIbmBrsMigrationWorkloadFullBackupPolicyScheduleToMap(t *testing
 		assert.Equal(t, result, model)
 	}
 
-	fullScheduleDayScheduleModel := new(brsmigrationv2.FullScheduleDaySchedule)
+	fullScheduleDayScheduleModel := new(brsmigrationv1.FullScheduleDaySchedule)
 	fullScheduleDayScheduleModel.Frequency = core.Int64Ptr(int64(1))
 
-	fullScheduleWeekScheduleModel := new(brsmigrationv2.FullScheduleWeekSchedule)
+	fullScheduleWeekScheduleModel := new(brsmigrationv1.FullScheduleWeekSchedule)
 	fullScheduleWeekScheduleModel.DayOfWeek = []string{"sunday"}
 
-	fullScheduleMonthScheduleModel := new(brsmigrationv2.FullScheduleMonthSchedule)
+	fullScheduleMonthScheduleModel := new(brsmigrationv1.FullScheduleMonthSchedule)
 	fullScheduleMonthScheduleModel.DayOfWeek = []string{"sunday"}
 	fullScheduleMonthScheduleModel.WeekOfMonth = core.StringPtr("first")
 	fullScheduleMonthScheduleModel.DayOfMonth = core.Int64Ptr(int64(1))
 
-	fullScheduleYearScheduleModel := new(brsmigrationv2.FullScheduleYearSchedule)
+	fullScheduleYearScheduleModel := new(brsmigrationv1.FullScheduleYearSchedule)
 	fullScheduleYearScheduleModel.DayOfYear = core.StringPtr("first")
 
-	model := new(brsmigrationv2.FullBackupPolicySchedule)
+	model := new(brsmigrationv1.FullBackupPolicySchedule)
 	model.Unit = core.StringPtr("days")
 	model.DaySchedule = fullScheduleDayScheduleModel
 	model.WeekSchedule = fullScheduleWeekScheduleModel
@@ -1201,7 +1201,7 @@ func TestResourceIbmBrsMigrationWorkloadFullScheduleDayScheduleToMap(t *testing.
 		assert.Equal(t, result, model)
 	}
 
-	model := new(brsmigrationv2.FullScheduleDaySchedule)
+	model := new(brsmigrationv1.FullScheduleDaySchedule)
 	model.Frequency = core.Int64Ptr(int64(1))
 
 	result, err := brsmigration.ResourceIbmBrsMigrationWorkloadFullScheduleDayScheduleToMap(model)
@@ -1217,7 +1217,7 @@ func TestResourceIbmBrsMigrationWorkloadFullScheduleWeekScheduleToMap(t *testing
 		assert.Equal(t, result, model)
 	}
 
-	model := new(brsmigrationv2.FullScheduleWeekSchedule)
+	model := new(brsmigrationv1.FullScheduleWeekSchedule)
 	model.DayOfWeek = []string{"sunday"}
 
 	result, err := brsmigration.ResourceIbmBrsMigrationWorkloadFullScheduleWeekScheduleToMap(model)
@@ -1235,7 +1235,7 @@ func TestResourceIbmBrsMigrationWorkloadFullScheduleMonthScheduleToMap(t *testin
 		assert.Equal(t, result, model)
 	}
 
-	model := new(brsmigrationv2.FullScheduleMonthSchedule)
+	model := new(brsmigrationv1.FullScheduleMonthSchedule)
 	model.DayOfWeek = []string{"sunday"}
 	model.WeekOfMonth = core.StringPtr("first")
 	model.DayOfMonth = core.Int64Ptr(int64(1))
@@ -1253,7 +1253,7 @@ func TestResourceIbmBrsMigrationWorkloadFullScheduleYearScheduleToMap(t *testing
 		assert.Equal(t, result, model)
 	}
 
-	model := new(brsmigrationv2.FullScheduleYearSchedule)
+	model := new(brsmigrationv1.FullScheduleYearSchedule)
 	model.DayOfYear = core.StringPtr("first")
 
 	result, err := brsmigration.ResourceIbmBrsMigrationWorkloadFullScheduleYearScheduleToMap(model)
@@ -1270,7 +1270,7 @@ func TestResourceIbmBrsMigrationWorkloadRegularBackupPolicyRetentionToMap(t *tes
 		assert.Equal(t, result, model)
 	}
 
-	model := new(brsmigrationv2.RegularBackupPolicyRetention)
+	model := new(brsmigrationv1.RegularBackupPolicyRetention)
 	model.Unit = core.StringPtr("days")
 	model.Duration = core.Int64Ptr(int64(1))
 
@@ -1298,18 +1298,18 @@ func TestResourceIbmBrsMigrationWorkloadBackupPolicyLogToMap(t *testing.T) {
 		assert.Equal(t, result, model)
 	}
 
-	logScheduleMinuteScheduleModel := new(brsmigrationv2.LogScheduleMinuteSchedule)
+	logScheduleMinuteScheduleModel := new(brsmigrationv1.LogScheduleMinuteSchedule)
 	logScheduleMinuteScheduleModel.Frequency = core.Int64Ptr(int64(1))
 
-	logScheduleHourScheduleModel := new(brsmigrationv2.LogScheduleHourSchedule)
+	logScheduleHourScheduleModel := new(brsmigrationv1.LogScheduleHourSchedule)
 	logScheduleHourScheduleModel.Frequency = core.Int64Ptr(int64(1))
 
-	logBackupPolicyScheduleModel := new(brsmigrationv2.LogBackupPolicySchedule)
+	logBackupPolicyScheduleModel := new(brsmigrationv1.LogBackupPolicySchedule)
 	logBackupPolicyScheduleModel.Unit = core.StringPtr("minutes")
 	logBackupPolicyScheduleModel.MinuteSchedule = logScheduleMinuteScheduleModel
 	logBackupPolicyScheduleModel.HourSchedule = logScheduleHourScheduleModel
 
-	model := new(brsmigrationv2.BackupPolicyLog)
+	model := new(brsmigrationv1.BackupPolicyLog)
 	model.Schedule = logBackupPolicyScheduleModel
 
 	result, err := brsmigration.ResourceIbmBrsMigrationWorkloadBackupPolicyLogToMap(model)
@@ -1333,13 +1333,13 @@ func TestResourceIbmBrsMigrationWorkloadLogBackupPolicyScheduleToMap(t *testing.
 		assert.Equal(t, result, model)
 	}
 
-	logScheduleMinuteScheduleModel := new(brsmigrationv2.LogScheduleMinuteSchedule)
+	logScheduleMinuteScheduleModel := new(brsmigrationv1.LogScheduleMinuteSchedule)
 	logScheduleMinuteScheduleModel.Frequency = core.Int64Ptr(int64(1))
 
-	logScheduleHourScheduleModel := new(brsmigrationv2.LogScheduleHourSchedule)
+	logScheduleHourScheduleModel := new(brsmigrationv1.LogScheduleHourSchedule)
 	logScheduleHourScheduleModel.Frequency = core.Int64Ptr(int64(1))
 
-	model := new(brsmigrationv2.LogBackupPolicySchedule)
+	model := new(brsmigrationv1.LogBackupPolicySchedule)
 	model.Unit = core.StringPtr("minutes")
 	model.MinuteSchedule = logScheduleMinuteScheduleModel
 	model.HourSchedule = logScheduleHourScheduleModel
@@ -1357,7 +1357,7 @@ func TestResourceIbmBrsMigrationWorkloadLogScheduleMinuteScheduleToMap(t *testin
 		assert.Equal(t, result, model)
 	}
 
-	model := new(brsmigrationv2.LogScheduleMinuteSchedule)
+	model := new(brsmigrationv1.LogScheduleMinuteSchedule)
 	model.Frequency = core.Int64Ptr(int64(1))
 
 	result, err := brsmigration.ResourceIbmBrsMigrationWorkloadLogScheduleMinuteScheduleToMap(model)
@@ -1373,7 +1373,7 @@ func TestResourceIbmBrsMigrationWorkloadLogScheduleHourScheduleToMap(t *testing.
 		assert.Equal(t, result, model)
 	}
 
-	model := new(brsmigrationv2.LogScheduleHourSchedule)
+	model := new(brsmigrationv1.LogScheduleHourSchedule)
 	model.Frequency = core.Int64Ptr(int64(1))
 
 	result, err := brsmigration.ResourceIbmBrsMigrationWorkloadLogScheduleHourScheduleToMap(model)
@@ -1396,12 +1396,12 @@ func TestResourceIbmBrsMigrationWorkloadBlackoutWindowToMap(t *testing.T) {
 		assert.Equal(t, result, model)
 	}
 
-	timeOfDayModel := new(brsmigrationv2.TimeOfDay)
+	timeOfDayModel := new(brsmigrationv1.TimeOfDay)
 	timeOfDayModel.Hour = core.Int64Ptr(int64(0))
 	timeOfDayModel.Minute = core.Int64Ptr(int64(0))
 	timeOfDayModel.Timezone = core.StringPtr("America/New_York")
 
-	model := new(brsmigrationv2.BlackoutWindow)
+	model := new(brsmigrationv1.BlackoutWindow)
 	model.Day = core.StringPtr("sunday")
 	model.StartTime = timeOfDayModel
 	model.EndTime = timeOfDayModel
@@ -1421,7 +1421,7 @@ func TestResourceIbmBrsMigrationWorkloadTimeOfDayToMap(t *testing.T) {
 		assert.Equal(t, result, model)
 	}
 
-	model := new(brsmigrationv2.TimeOfDay)
+	model := new(brsmigrationv1.TimeOfDay)
 	model.Hour = core.Int64Ptr(int64(0))
 	model.Minute = core.Int64Ptr(int64(0))
 	model.Timezone = core.StringPtr("America/New_York")
@@ -1449,15 +1449,15 @@ func TestResourceIbmBrsMigrationWorkloadExtendedRetentionPolicyToMap(t *testing.
 		assert.Equal(t, result, model)
 	}
 
-	extendedRetentionScheduleModel := new(brsmigrationv2.ExtendedRetentionSchedule)
+	extendedRetentionScheduleModel := new(brsmigrationv1.ExtendedRetentionSchedule)
 	extendedRetentionScheduleModel.Unit = core.StringPtr("runs")
 	extendedRetentionScheduleModel.Frequency = core.Int64Ptr(int64(1))
 
-	retentionModel := new(brsmigrationv2.Retention)
+	retentionModel := new(brsmigrationv1.Retention)
 	retentionModel.Unit = core.StringPtr("days")
 	retentionModel.Duration = core.Int64Ptr(int64(1))
 
-	model := new(brsmigrationv2.ExtendedRetentionPolicy)
+	model := new(brsmigrationv1.ExtendedRetentionPolicy)
 	model.Schedule = extendedRetentionScheduleModel
 	model.Retention = retentionModel
 	model.RunType = core.StringPtr("regular")
@@ -1476,7 +1476,7 @@ func TestResourceIbmBrsMigrationWorkloadExtendedRetentionScheduleToMap(t *testin
 		assert.Equal(t, result, model)
 	}
 
-	model := new(brsmigrationv2.ExtendedRetentionSchedule)
+	model := new(brsmigrationv1.ExtendedRetentionSchedule)
 	model.Unit = core.StringPtr("runs")
 	model.Frequency = core.Int64Ptr(int64(1))
 
@@ -1494,7 +1494,7 @@ func TestResourceIbmBrsMigrationWorkloadRetentionToMap(t *testing.T) {
 		assert.Equal(t, result, model)
 	}
 
-	model := new(brsmigrationv2.Retention)
+	model := new(brsmigrationv1.Retention)
 	model.Unit = core.StringPtr("days")
 	model.Duration = core.Int64Ptr(int64(1))
 
@@ -1512,7 +1512,7 @@ func TestResourceIbmBrsMigrationWorkloadWorkloadScheduleRetryOptionsToMap(t *tes
 		assert.Equal(t, result, model)
 	}
 
-	model := new(brsmigrationv2.WorkloadScheduleRetryOptions)
+	model := new(brsmigrationv1.WorkloadScheduleRetryOptions)
 	model.Retries = core.Int64Ptr(int64(0))
 	model.RetryIntervalMins = core.Int64Ptr(int64(1))
 
@@ -1522,21 +1522,21 @@ func TestResourceIbmBrsMigrationWorkloadWorkloadScheduleRetryOptionsToMap(t *tes
 }
 
 func TestResourceIbmBrsMigrationWorkloadMapToWorkloadPayloadMappingInput(t *testing.T) {
-	checkResult := func(result *brsmigrationv2.WorkloadPayloadMappingInput) {
-		dataPayloadModel := new(brsmigrationv2.DataPayload)
+	checkResult := func(result *brsmigrationv1.WorkloadPayloadMappingInput) {
+		dataPayloadModel := new(brsmigrationv1.DataPayload)
 		dataPayloadModel.VolumeID = core.StringPtr("vol-b1c2d3e4-f5a6-7890-bcde-f01234567890")
 		dataPayloadModel.Type = core.StringPtr("ext4")
 		dataPayloadModel.Path = core.StringPtr("/mnt/data")
 
-		dataSpecModel := new(brsmigrationv2.DataSpec)
+		dataSpecModel := new(brsmigrationv1.DataSpec)
 		dataSpecModel.DataFormat = core.StringPtr("raw")
 		dataSpecModel.Source = dataPayloadModel
 		dataSpecModel.Destination = dataPayloadModel
 
-		model := new(brsmigrationv2.WorkloadPayloadMappingInput)
+		model := new(brsmigrationv1.WorkloadPayloadMappingInput)
 		model.SourceHostID = core.StringPtr("host-a1b2c3d4-e5f6-7890-abcd-ef1234567890")
 		model.DestinationHostID = core.StringPtr("host-b2c3d4e5-f6a7-8901-bcde-f01234567890")
-		model.DataSpecs = []brsmigrationv2.DataSpec{*dataSpecModel}
+		model.DataSpecs = []brsmigrationv1.DataSpec{*dataSpecModel}
 
 		assert.Equal(t, result, model)
 	}
@@ -1562,13 +1562,13 @@ func TestResourceIbmBrsMigrationWorkloadMapToWorkloadPayloadMappingInput(t *test
 }
 
 func TestResourceIbmBrsMigrationWorkloadMapToDataSpec(t *testing.T) {
-	checkResult := func(result *brsmigrationv2.DataSpec) {
-		dataPayloadModel := new(brsmigrationv2.DataPayload)
+	checkResult := func(result *brsmigrationv1.DataSpec) {
+		dataPayloadModel := new(brsmigrationv1.DataPayload)
 		dataPayloadModel.VolumeID = core.StringPtr("vol-b1c2d3e4-f5a6-7890-bcde-f01234567890")
 		dataPayloadModel.Type = core.StringPtr("ext4")
 		dataPayloadModel.Path = core.StringPtr("/mnt/data")
 
-		model := new(brsmigrationv2.DataSpec)
+		model := new(brsmigrationv1.DataSpec)
 		model.DataFormat = core.StringPtr("raw")
 		model.Source = dataPayloadModel
 		model.Destination = dataPayloadModel
@@ -1592,8 +1592,8 @@ func TestResourceIbmBrsMigrationWorkloadMapToDataSpec(t *testing.T) {
 }
 
 func TestResourceIbmBrsMigrationWorkloadMapToDataPayload(t *testing.T) {
-	checkResult := func(result *brsmigrationv2.DataPayload) {
-		model := new(brsmigrationv2.DataPayload)
+	checkResult := func(result *brsmigrationv1.DataPayload) {
+		model := new(brsmigrationv1.DataPayload)
 		model.VolumeID = core.StringPtr("vol-b1c2d3e4-f5a6-7890-bcde-f01234567890")
 		model.Type = core.StringPtr("ext4")
 		model.Path = core.StringPtr("/mnt/data")

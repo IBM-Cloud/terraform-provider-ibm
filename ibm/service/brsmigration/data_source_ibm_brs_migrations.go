@@ -18,7 +18,7 @@ import (
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
-	"github.ibm.com/BackupAndRecovery/brs-migration-orchestrator/brsmigrationv2"
+	"github.com/IBM/ibm-brs-migration-sdk-go/brsmigrationv1"
 )
 
 func DataSourceIbmBrsMigrations() *schema.Resource {
@@ -85,20 +85,20 @@ func DataSourceIbmBrsMigrations() *schema.Resource {
 }
 
 func dataSourceIbmBrsMigrationsRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	brsMigrationClient, err := meta.(conns.ClientSession).BrsMigrationV2()
+	brsMigrationClient, err := meta.(conns.ClientSession).BrsMigrationV1()
 	if err != nil {
 		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_brs_migrations", "read", "initialize-client")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
 
-	listMigrationsOptions := &brsmigrationv2.ListMigrationsOptions{}
+	listMigrationsOptions := &brsmigrationv1.ListMigrationsOptions{}
 
 	if _, ok := d.GetOk("state"); ok {
 		listMigrationsOptions.SetState(d.Get("state").(string))
 	}
 
-	var pager *brsmigrationv2.MigrationsPager
+	var pager *brsmigrationv1.MigrationsPager
 	pager, err = brsMigrationClient.NewMigrationsPager(listMigrationsOptions)
 	if err != nil {
 		tfErr := flex.TerraformErrorf(err, err.Error(), "(Data) ibm_brs_migrations", "read")
@@ -136,7 +136,7 @@ func dataSourceIbmBrsMigrationsID(d *schema.ResourceData) string {
 	return time.Now().UTC().String()
 }
 
-func DataSourceIbmBrsMigrationsMigrationToMap(model *brsmigrationv2.Migration) (map[string]interface{}, error) {
+func DataSourceIbmBrsMigrationsMigrationToMap(model *brsmigrationv1.Migration) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["id"] = *model.ID
 	modelMap["name"] = *model.Name

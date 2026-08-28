@@ -18,7 +18,7 @@ import (
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
-	"github.ibm.com/BackupAndRecovery/brs-migration-orchestrator/brsmigrationv2"
+	"github.com/IBM/ibm-brs-migration-sdk-go/brsmigrationv1"
 )
 
 func DataSourceIbmBrsMigrationVolumes() *schema.Resource {
@@ -250,14 +250,14 @@ func DataSourceIbmBrsMigrationVolumes() *schema.Resource {
 }
 
 func dataSourceIbmBrsMigrationVolumesRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	brsMigrationClient, err := meta.(conns.ClientSession).BrsMigrationV2()
+	brsMigrationClient, err := meta.(conns.ClientSession).BrsMigrationV1()
 	if err != nil {
 		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_brs_migration_volumes", "read", "initialize-client")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
 
-	listVolumesOptions := &brsmigrationv2.ListVolumesOptions{}
+	listVolumesOptions := &brsmigrationv1.ListVolumesOptions{}
 
 	listVolumesOptions.SetMigrationID(d.Get("migration_id").(string))
 	if _, ok := d.GetOk("env"); ok {
@@ -270,7 +270,7 @@ func dataSourceIbmBrsMigrationVolumesRead(context context.Context, d *schema.Res
 		listVolumesOptions.SetMigrated(d.Get("migrated").(bool))
 	}
 
-	var pager *brsmigrationv2.VolumesPager
+	var pager *brsmigrationv1.VolumesPager
 	pager, err = brsMigrationClient.NewVolumesPager(listVolumesOptions)
 	if err != nil {
 		tfErr := flex.TerraformErrorf(err, err.Error(), "(Data) ibm_brs_migration_volumes", "read")
@@ -308,7 +308,7 @@ func dataSourceIbmBrsMigrationVolumesID(d *schema.ResourceData) string {
 	return time.Now().UTC().String()
 }
 
-func DataSourceIbmBrsMigrationVolumesVolumeToMap(model *brsmigrationv2.Volume) (map[string]interface{}, error) {
+func DataSourceIbmBrsMigrationVolumesVolumeToMap(model *brsmigrationv1.Volume) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["id"] = *model.ID
 	modelMap["env"] = *model.Env
@@ -336,14 +336,14 @@ func DataSourceIbmBrsMigrationVolumesVolumeToMap(model *brsmigrationv2.Volume) (
 	return modelMap, nil
 }
 
-func DataSourceIbmBrsMigrationVolumesVolumeStorageToMap(model brsmigrationv2.VolumeStorageIntf) (map[string]interface{}, error) {
-	if _, ok := model.(*brsmigrationv2.VolumeStorageClassicVolumeStorageDetails); ok {
-		return DataSourceIbmBrsMigrationVolumesVolumeStorageClassicVolumeStorageDetailsToMap(model.(*brsmigrationv2.VolumeStorageClassicVolumeStorageDetails))
-	} else if _, ok := model.(*brsmigrationv2.VolumeStorageVPCVolumeStorageDetails); ok {
-		return DataSourceIbmBrsMigrationVolumesVolumeStorageVPCVolumeStorageDetailsToMap(model.(*brsmigrationv2.VolumeStorageVPCVolumeStorageDetails))
-	} else if _, ok := model.(*brsmigrationv2.VolumeStorage); ok {
+func DataSourceIbmBrsMigrationVolumesVolumeStorageToMap(model brsmigrationv1.VolumeStorageIntf) (map[string]interface{}, error) {
+	if _, ok := model.(*brsmigrationv1.VolumeStorageClassicVolumeStorageDetails); ok {
+		return DataSourceIbmBrsMigrationVolumesVolumeStorageClassicVolumeStorageDetailsToMap(model.(*brsmigrationv1.VolumeStorageClassicVolumeStorageDetails))
+	} else if _, ok := model.(*brsmigrationv1.VolumeStorageVPCVolumeStorageDetails); ok {
+		return DataSourceIbmBrsMigrationVolumesVolumeStorageVPCVolumeStorageDetailsToMap(model.(*brsmigrationv1.VolumeStorageVPCVolumeStorageDetails))
+	} else if _, ok := model.(*brsmigrationv1.VolumeStorage); ok {
 		modelMap := make(map[string]interface{})
-		model := model.(*brsmigrationv2.VolumeStorage)
+		model := model.(*brsmigrationv1.VolumeStorage)
 		if model.GlobalIdentifier != nil {
 			modelMap["global_identifier"] = *model.GlobalIdentifier
 		}
@@ -408,11 +408,11 @@ func DataSourceIbmBrsMigrationVolumesVolumeStorageToMap(model brsmigrationv2.Vol
 		}
 		return modelMap, nil
 	} else {
-		return nil, fmt.Errorf("Unrecognized brsmigrationv2.VolumeStorageIntf subtype encountered")
+		return nil, fmt.Errorf("Unrecognized brsmigrationv1.VolumeStorageIntf subtype encountered")
 	}
 }
 
-func DataSourceIbmBrsMigrationVolumesSourcePathToMap(model *brsmigrationv2.SourcePath) (map[string]interface{}, error) {
+func DataSourceIbmBrsMigrationVolumesSourcePathToMap(model *brsmigrationv1.SourcePath) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["path"] = *model.Path
 	if model.VpcID != nil {
@@ -424,7 +424,7 @@ func DataSourceIbmBrsMigrationVolumesSourcePathToMap(model *brsmigrationv2.Sourc
 	return modelMap, nil
 }
 
-func DataSourceIbmBrsMigrationVolumesVolumeStorageClassicVolumeStorageDetailsToMap(model *brsmigrationv2.VolumeStorageClassicVolumeStorageDetails) (map[string]interface{}, error) {
+func DataSourceIbmBrsMigrationVolumesVolumeStorageClassicVolumeStorageDetailsToMap(model *brsmigrationv1.VolumeStorageClassicVolumeStorageDetails) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["global_identifier"] = *model.GlobalIdentifier
 	if model.Name != nil {
@@ -460,7 +460,7 @@ func DataSourceIbmBrsMigrationVolumesVolumeStorageClassicVolumeStorageDetailsToM
 	return modelMap, nil
 }
 
-func DataSourceIbmBrsMigrationVolumesVolumeStorageVPCVolumeStorageDetailsToMap(model *brsmigrationv2.VolumeStorageVPCVolumeStorageDetails) (map[string]interface{}, error) {
+func DataSourceIbmBrsMigrationVolumesVolumeStorageVPCVolumeStorageDetailsToMap(model *brsmigrationv1.VolumeStorageVPCVolumeStorageDetails) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["global_identifier"] = *model.GlobalIdentifier
 	if model.Name != nil {
@@ -505,7 +505,7 @@ func DataSourceIbmBrsMigrationVolumesVolumeStorageVPCVolumeStorageDetailsToMap(m
 	return modelMap, nil
 }
 
-func DataSourceIbmBrsMigrationVolumesHostAttachmentToMap(model *brsmigrationv2.HostAttachment) (map[string]interface{}, error) {
+func DataSourceIbmBrsMigrationVolumesHostAttachmentToMap(model *brsmigrationv1.HostAttachment) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["host_id"] = *model.HostID
 	if model.MountPath != nil {

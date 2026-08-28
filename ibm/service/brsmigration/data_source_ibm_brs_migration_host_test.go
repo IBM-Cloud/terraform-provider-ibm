@@ -17,7 +17,7 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/brsmigration"
 	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/stretchr/testify/assert"
-	"github.ibm.com/BackupAndRecovery/brs-migration-orchestrator/brsmigrationv2"
+	"github.com/IBM/ibm-brs-migration-sdk-go/brsmigrationv1"
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 )
 
@@ -96,7 +96,7 @@ func TestDataSourceIbmBrsMigrationHostHostComputeToMap(t *testing.T) {
 		assert.Equal(t, result, model)
 	}
 
-	model := new(brsmigrationv2.HostCompute)
+	model := new(brsmigrationv1.HostCompute)
 	model.Status = core.StringPtr("pending")
 	model.OsFamily = core.StringPtr("linux")
 	model.GlobalIdentifier = core.StringPtr("a1b2c3d4-e5f6-7890-abcd-ef1234567890")
@@ -148,7 +148,7 @@ func TestDataSourceIbmBrsMigrationHostHostComputeClassicComputeDetailsToMap(t *t
 		assert.Equal(t, result, model)
 	}
 
-	model := new(brsmigrationv2.HostComputeClassicComputeDetails)
+	model := new(brsmigrationv1.HostComputeClassicComputeDetails)
 	model.Status = core.StringPtr("pending")
 	model.OsFamily = core.StringPtr("linux")
 	model.GlobalIdentifier = core.StringPtr("a1b2c3d4-e5f6-7890-abcd-ef1234567890")
@@ -199,7 +199,7 @@ func TestDataSourceIbmBrsMigrationHostHostComputeVPCComputeDetailsToMap(t *testi
 		assert.Equal(t, result, model)
 	}
 
-	model := new(brsmigrationv2.HostComputeVPCComputeDetails)
+	model := new(brsmigrationv1.HostComputeVPCComputeDetails)
 	model.Status = core.StringPtr("pending")
 	model.OsFamily = core.StringPtr("linux")
 	model.GlobalIdentifier = core.StringPtr("a1b2c3d4-e5f6-7890-abcd-ef1234567890")
@@ -238,7 +238,7 @@ func TestDataSourceIbmBrsMigrationHostVolumeAttachmentToMap(t *testing.T) {
 		assert.Equal(t, result, model)
 	}
 
-	model := new(brsmigrationv2.VolumeAttachment)
+	model := new(brsmigrationv1.VolumeAttachment)
 	model.VolumeID = core.StringPtr("vol-b1c2d3e4-f5a6-7890-bcde-f01234567890")
 
 	result, err := brsmigration.DataSourceIbmBrsMigrationHostVolumeAttachmentToMap(model)

@@ -17,7 +17,7 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/brsmigration"
 	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/stretchr/testify/assert"
-	"github.ibm.com/BackupAndRecovery/brs-migration-orchestrator/brsmigrationv2"
+	"github.com/IBM/ibm-brs-migration-sdk-go/brsmigrationv1"
 	. "github.com/IBM-Cloud/terraform-provider-ibm/ibm/unittest"
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 )
@@ -96,7 +96,7 @@ func TestDataSourceIbmBrsMigrationHostsHostToMap(t *testing.T) {
 		assert.Equal(t, result, model)
 	}
 
-	hostComputeModel := new(brsmigrationv2.HostComputeClassicComputeDetails)
+	hostComputeModel := new(brsmigrationv1.HostComputeClassicComputeDetails)
 	hostComputeModel.Status = core.StringPtr("pending")
 	hostComputeModel.OsFamily = core.StringPtr("linux")
 	hostComputeModel.GlobalIdentifier = core.StringPtr("a1b2c3d4-e5f6-7890-abcd-ef1234567890")
@@ -111,15 +111,15 @@ func TestDataSourceIbmBrsMigrationHostsHostToMap(t *testing.T) {
 	hostComputeModel.ImageID = core.StringPtr("r134-f47ac10b-58cc-4372-a567-0e02b2c3d479")
 	hostComputeModel.Datacenter = core.StringPtr("dal10")
 
-	volumeAttachmentModel := new(brsmigrationv2.VolumeAttachment)
+	volumeAttachmentModel := new(brsmigrationv1.VolumeAttachment)
 	volumeAttachmentModel.VolumeID = core.StringPtr("vol-b1c2d3e4-f5a6-7890-bcde-f01234567890")
 
-	model := new(brsmigrationv2.Host)
+	model := new(brsmigrationv1.Host)
 	model.ID = core.StringPtr("host-a1b2c3d4-e5f6-7890-abcd-ef1234567890")
 	model.Type = core.StringPtr("virtual_server")
 	model.Env = core.StringPtr("vpc")
 	model.Compute = hostComputeModel
-	model.VolumeAttachments = []brsmigrationv2.VolumeAttachment{*volumeAttachmentModel}
+	model.VolumeAttachments = []brsmigrationv1.VolumeAttachment{*volumeAttachmentModel}
 	model.Migrated = core.BoolPtr(false)
 	model.WorkloadID = core.StringPtr("wl-a1b2c3d4-e5f6-7890-abcd-ef1234567890")
 	model.RegisteredAt = CreateMockDateTime("2024-06-01T09:00:00.000Z")
@@ -161,7 +161,7 @@ func TestDataSourceIbmBrsMigrationHostsHostComputeToMap(t *testing.T) {
 		assert.Equal(t, result, model)
 	}
 
-	model := new(brsmigrationv2.HostCompute)
+	model := new(brsmigrationv1.HostCompute)
 	model.Status = core.StringPtr("pending")
 	model.OsFamily = core.StringPtr("linux")
 	model.GlobalIdentifier = core.StringPtr("a1b2c3d4-e5f6-7890-abcd-ef1234567890")
@@ -213,7 +213,7 @@ func TestDataSourceIbmBrsMigrationHostsHostComputeClassicComputeDetailsToMap(t *
 		assert.Equal(t, result, model)
 	}
 
-	model := new(brsmigrationv2.HostComputeClassicComputeDetails)
+	model := new(brsmigrationv1.HostComputeClassicComputeDetails)
 	model.Status = core.StringPtr("pending")
 	model.OsFamily = core.StringPtr("linux")
 	model.GlobalIdentifier = core.StringPtr("a1b2c3d4-e5f6-7890-abcd-ef1234567890")
@@ -264,7 +264,7 @@ func TestDataSourceIbmBrsMigrationHostsHostComputeVPCComputeDetailsToMap(t *test
 		assert.Equal(t, result, model)
 	}
 
-	model := new(brsmigrationv2.HostComputeVPCComputeDetails)
+	model := new(brsmigrationv1.HostComputeVPCComputeDetails)
 	model.Status = core.StringPtr("pending")
 	model.OsFamily = core.StringPtr("linux")
 	model.GlobalIdentifier = core.StringPtr("a1b2c3d4-e5f6-7890-abcd-ef1234567890")
@@ -303,7 +303,7 @@ func TestDataSourceIbmBrsMigrationHostsVolumeAttachmentToMap(t *testing.T) {
 		assert.Equal(t, result, model)
 	}
 
-	model := new(brsmigrationv2.VolumeAttachment)
+	model := new(brsmigrationv1.VolumeAttachment)
 	model.VolumeID = core.StringPtr("vol-b1c2d3e4-f5a6-7890-bcde-f01234567890")
 
 	result, err := brsmigration.DataSourceIbmBrsMigrationHostsVolumeAttachmentToMap(model)

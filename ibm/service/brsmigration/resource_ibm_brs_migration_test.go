@@ -12,12 +12,12 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
-	"github.ibm.com/BackupAndRecovery/brs-migration-orchestrator/brsmigrationv2"
+	"github.com/IBM/ibm-brs-migration-sdk-go/brsmigrationv1"
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 )
 
 func TestAccIbmBrsMigrationBasic(t *testing.T) {
-	var conf brsmigrationv2.Migration
+	var conf brsmigrationv1.Migration
 	name := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 	brsCrn := fmt.Sprintf("tf_brs_crn_%d", acctest.RandIntRange(10, 100))
 	nameUpdate := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
@@ -48,7 +48,7 @@ func TestAccIbmBrsMigrationBasic(t *testing.T) {
 }
 
 func TestAccIbmBrsMigrationAllArgs(t *testing.T) {
-	var conf brsmigrationv2.Migration
+	var conf brsmigrationv1.Migration
 	name := fmt.Sprintf("tf_name_%d", acctest.RandIntRange(10, 100))
 	brsCrn := fmt.Sprintf("tf_brs_crn_%d", acctest.RandIntRange(10, 100))
 	description := fmt.Sprintf("tf_description_%d", acctest.RandIntRange(10, 100))
@@ -107,7 +107,7 @@ func testAccCheckIbmBrsMigrationConfig(name string, brsCrn string, description s
 	`, name, brsCrn, description)
 }
 
-func testAccCheckIbmBrsMigrationExists(n string, obj brsmigrationv2.Migration) resource.TestCheckFunc {
+func testAccCheckIbmBrsMigrationExists(n string, obj brsmigrationv1.Migration) resource.TestCheckFunc {
 
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
@@ -115,12 +115,12 @@ func testAccCheckIbmBrsMigrationExists(n string, obj brsmigrationv2.Migration) r
 			return fmt.Errorf("Not found: %s", n)
 		}
 
-		brsMigrationClient, err := acc.TestAccProvider.Meta().(conns.ClientSession).BrsMigrationV2()
+		brsMigrationClient, err := acc.TestAccProvider.Meta().(conns.ClientSession).BrsMigrationV1()
 		if err != nil {
 			return err
 		}
 
-		getMigrationOptions := &brsmigrationv2.GetMigrationOptions{}
+		getMigrationOptions := &brsmigrationv1.GetMigrationOptions{}
 
 		getMigrationOptions.SetMigrationID(rs.Primary.ID)
 
@@ -135,7 +135,7 @@ func testAccCheckIbmBrsMigrationExists(n string, obj brsmigrationv2.Migration) r
 }
 
 func testAccCheckIbmBrsMigrationDestroy(s *terraform.State) error {
-	brsMigrationClient, err := acc.TestAccProvider.Meta().(conns.ClientSession).BrsMigrationV2()
+	brsMigrationClient, err := acc.TestAccProvider.Meta().(conns.ClientSession).BrsMigrationV1()
 	if err != nil {
 		return err
 	}
@@ -144,7 +144,7 @@ func testAccCheckIbmBrsMigrationDestroy(s *terraform.State) error {
 			continue
 		}
 
-		getMigrationOptions := &brsmigrationv2.GetMigrationOptions{}
+		getMigrationOptions := &brsmigrationv1.GetMigrationOptions{}
 
 		getMigrationOptions.SetMigrationID(rs.Primary.ID)
 

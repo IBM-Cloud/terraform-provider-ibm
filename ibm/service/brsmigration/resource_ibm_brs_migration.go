@@ -19,7 +19,7 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 	"github.com/IBM/go-sdk-core/v5/core"
-	"github.ibm.com/BackupAndRecovery/brs-migration-orchestrator/brsmigrationv2"
+	"github.com/IBM/ibm-brs-migration-sdk-go/brsmigrationv1"
 )
 
 func ResourceIbmBrsMigration() *schema.Resource {
@@ -110,14 +110,14 @@ func ResourceIbmBrsMigrationValidator() *validate.ResourceValidator {
 }
 
 func resourceIbmBrsMigrationCreate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	brsMigrationClient, err := meta.(conns.ClientSession).BrsMigrationV2()
+	brsMigrationClient, err := meta.(conns.ClientSession).BrsMigrationV1()
 	if err != nil {
 		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_brs_migration", "create", "initialize-client")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
 
-	createMigrationOptions := &brsmigrationv2.CreateMigrationOptions{}
+	createMigrationOptions := &brsmigrationv1.CreateMigrationOptions{}
 
 	createMigrationOptions.SetName(d.Get("name").(string))
 	createMigrationOptions.SetBrsCrn(d.Get("brs_crn").(string))
@@ -138,14 +138,14 @@ func resourceIbmBrsMigrationCreate(context context.Context, d *schema.ResourceDa
 }
 
 func resourceIbmBrsMigrationRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	brsMigrationClient, err := meta.(conns.ClientSession).BrsMigrationV2()
+	brsMigrationClient, err := meta.(conns.ClientSession).BrsMigrationV1()
 	if err != nil {
 		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_brs_migration", "read", "initialize-client")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
 
-	getMigrationOptions := &brsmigrationv2.GetMigrationOptions{}
+	getMigrationOptions := &brsmigrationv1.GetMigrationOptions{}
 
 	getMigrationOptions.SetMigrationID(d.Id())
 
@@ -199,14 +199,14 @@ func resourceIbmBrsMigrationRead(context context.Context, d *schema.ResourceData
 }
 
 func resourceIbmBrsMigrationUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	brsMigrationClient, err := meta.(conns.ClientSession).BrsMigrationV2()
+	brsMigrationClient, err := meta.(conns.ClientSession).BrsMigrationV1()
 	if err != nil {
 		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_brs_migration", "update", "initialize-client")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
 
-	updateMigrationOptions := &brsmigrationv2.UpdateMigrationOptions{}
+	updateMigrationOptions := &brsmigrationv1.UpdateMigrationOptions{}
 
 	updateMigrationOptions.SetMigrationID(d.Id())
 
@@ -234,14 +234,14 @@ func resourceIbmBrsMigrationUpdate(context context.Context, d *schema.ResourceDa
 }
 
 func resourceIbmBrsMigrationDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	brsMigrationClient, err := meta.(conns.ClientSession).BrsMigrationV2()
+	brsMigrationClient, err := meta.(conns.ClientSession).BrsMigrationV1()
 	if err != nil {
 		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_brs_migration", "delete", "initialize-client")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
 
-	deleteMigrationOptions := &brsmigrationv2.DeleteMigrationOptions{}
+	deleteMigrationOptions := &brsmigrationv1.DeleteMigrationOptions{}
 
 	deleteMigrationOptions.SetMigrationID(d.Id())
 

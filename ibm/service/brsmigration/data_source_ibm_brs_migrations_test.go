@@ -17,7 +17,7 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/brsmigration"
 	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/stretchr/testify/assert"
-	"github.ibm.com/BackupAndRecovery/brs-migration-orchestrator/brsmigrationv2"
+	"github.com/IBM/ibm-brs-migration-sdk-go/brsmigrationv1"
 	. "github.com/IBM-Cloud/terraform-provider-ibm/ibm/unittest"
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 )
@@ -114,7 +114,7 @@ func TestDataSourceIbmBrsMigrationsMigrationToMap(t *testing.T) {
 		assert.Equal(t, result, model)
 	}
 
-	model := new(brsmigrationv2.Migration)
+	model := new(brsmigrationv1.Migration)
 	model.ID = core.StringPtr("mgr-a1b2c3d4-e5f6-7890-abcd-ef12345678ab")
 	model.Name = core.StringPtr("prod-classic-to-vpc")
 	model.BrsCrn = core.StringPtr("crn:v1:bluemix:public:backup-recovery:us-south:a/123456:abcdef01-2345-6789-abcd-ef0123456789::")

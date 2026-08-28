@@ -16,7 +16,7 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/brsmigration"
 	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/stretchr/testify/assert"
-	"github.ibm.com/BackupAndRecovery/brs-migration-orchestrator/brsmigrationv2"
+	"github.com/IBM/ibm-brs-migration-sdk-go/brsmigrationv1"
 	. "github.com/IBM-Cloud/terraform-provider-ibm/ibm/unittest"
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 )
@@ -61,7 +61,7 @@ func TestDataSourceIbmBrsMigrationWorkloadHistoryWorkloadHistoryEntryToMap(t *te
 		assert.Equal(t, result, model)
 	}
 
-	model := new(brsmigrationv2.WorkloadHistoryEntry)
+	model := new(brsmigrationv1.WorkloadHistoryEntry)
 	model.ID = core.StringPtr("hist-f6a7b8c9-d0e1-2345-f012-345678901234")
 	model.State = core.StringPtr("scheduled")
 	model.StartedAt = CreateMockDateTime("2019-01-01T12:00:00.000Z")
