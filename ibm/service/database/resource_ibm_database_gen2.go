@@ -931,6 +931,19 @@ func (g *resourceIBMDatabaseGen2Backend) Update(ctx context.Context, d *schema.R
 
 	instanceID := d.Id()
 
+	// S2S authorization check — fetch instance once and reuse below.
+	instance, _, err := rsConClient.GetResourceInstance(&rc.GetResourceInstanceOptions{ID: &instanceID})
+	if err != nil {
+		return appendGen2DiagnosticsErrorsThenWarnings(diag.FromErr(fmt.Errorf("error retrieving resource instance: %w", err)), warnings)
+	}
+	if !checkS2SAuthorization(instance.Extensions) {
+		warnings = append(warnings, diag.Diagnostic{
+			Severity: diag.Warning,
+			Summary:  s2sAuthWarningHeader,
+			Detail:   s2sAuthWarningDetail,
+		})
+	}
+
 	if diags := g.checkUnsupportedChanges(d); len(diags) > 0 {
 		return appendGen2DiagnosticsErrorsThenWarnings(diags, warnings)
 	}
