@@ -891,16 +891,9 @@ func (g *resourceIBMDatabaseGen2Backend) checkUnsupportedChanges(d *schema.Resou
 
 // applyGroupScalingWithDiagnostics applies group scaling and returns diagnostics.
 // Wraps applyGroupScaling to provide consistent diagnostic handling.
-func (g *resourceIBMDatabaseGen2Backend) applyGroupScalingWithDiagnostics(ctx context.Context, d *schema.ResourceData, rsConClient *rc.ResourceControllerV2, instanceID string, meta interface{}) diag.Diagnostics {
+func (g *resourceIBMDatabaseGen2Backend) applyGroupScalingWithDiagnostics(ctx context.Context, d *schema.ResourceData, rsConClient *rc.ResourceControllerV2, instanceID string, instance *rc.ResourceInstance, meta interface{}) diag.Diagnostics {
 	if !d.HasChange("group") {
 		return nil
-	}
-
-	instance, _, err := rsConClient.GetResourceInstance(&rc.GetResourceInstanceOptions{
-		ID: &instanceID,
-	})
-	if err != nil {
-		return diagError("error getting resource instance: %s", err)
 	}
 
 	configCtx := &instanceConfigContext{
@@ -956,7 +949,7 @@ func (g *resourceIBMDatabaseGen2Backend) Update(ctx context.Context, d *schema.R
 		return appendGen2DiagnosticsErrorsThenWarnings(diags, warnings)
 	}
 
-	if diags := g.applyGroupScalingWithDiagnostics(ctx, d, rsConClient, instanceID, meta); len(diags) > 0 {
+	if diags := g.applyGroupScalingWithDiagnostics(ctx, d, rsConClient, instanceID, instance, meta); len(diags) > 0 {
 		return appendGen2DiagnosticsErrorsThenWarnings(diags, warnings)
 	}
 

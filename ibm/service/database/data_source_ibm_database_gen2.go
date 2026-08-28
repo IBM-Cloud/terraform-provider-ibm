@@ -8,10 +8,14 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-type dataSourceIBMDatabaseGen2Backend struct{}
+// dataSourceIBMDatabaseGen2Backend holds the instance already fetched by
+// pickDataSourceBackend so Read does not need a second findInstance call.
+type dataSourceIBMDatabaseGen2Backend struct {
+	instance *rc.ResourceInstance
+}
 
-func newDataSourceIBMDatabaseGen2Backend() dataSourceIBMDatabaseBackend {
-	return &dataSourceIBMDatabaseGen2Backend{}
+func newDataSourceIBMDatabaseGen2Backend(instance *rc.ResourceInstance) dataSourceIBMDatabaseBackend {
+	return &dataSourceIBMDatabaseGen2Backend{instance: instance}
 }
 
 // Read retrieves and populates the state for a Gen2 database instance data source.
@@ -33,11 +37,8 @@ func newDataSourceIBMDatabaseGen2Backend() dataSourceIBMDatabaseBackend {
 // consistency. This is the recommended approach as fully resetting data source
 // state is considered an anti-pattern in Terraform.
 func (g *dataSourceIBMDatabaseGen2Backend) Read(d *schema.ResourceData, meta interface{}) error {
-	// Find the database instance
-	instance, err := findInstance(d, meta)
-	if err != nil {
-		return fmt.Errorf("failed to find database instance: %w", err)
-	}
+	// Use the instance already fetched by pickDataSourceBackend.
+	instance := g.instance
 	if instance == nil || instance.ID == nil {
 		return fmt.Errorf("database instance not found or missing ID")
 	}
