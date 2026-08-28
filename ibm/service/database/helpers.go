@@ -892,15 +892,30 @@ func (s *s2sAuthWarning) Error() string { return s2sAuthWarningHeader }
 // and "resource_group" are present and set to true.
 // Any other state — missing key, empty map, or either flag false — is treated as
 // S2S authorization disabled.
+// Handles both bool and string ("true"/"false") value types since the RC API
+// may return JSON-decoded values differently depending on context.
 func checkS2SAuthorization(extensions map[string]interface{}) bool {
 	if extensions == nil {
 		return false
 	}
-	auths, ok := extensions["authorizations"].(map[string]interface{})
+	authsRaw, exists := extensions["authorizations"]
+	if !exists || authsRaw == nil {
+		return false
+	}
+	auths, ok := authsRaw.(map[string]interface{})
 	if !ok || len(auths) == 0 {
 		return false
 	}
-	independentBackups, _ := auths["independent_backups"].(bool)
-	resourceGroup, _ := auths["resource_group"].(bool)
-	return independentBackups && resourceGroup
+	return isTruthy(auths["independent_backups"]) && isTruthy(auths["resource_group"])
+}
+
+// isTruthy returns true if v is the boolean true or the string "true".
+func isTruthy(v interface{}) bool {
+	switch val := v.(type) {
+	case bool:
+		return val
+	case string:
+		return val == "true"
+	}
+	return false
 }
