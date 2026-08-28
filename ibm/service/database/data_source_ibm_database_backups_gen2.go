@@ -37,8 +37,21 @@ func (g *dataSourceIBMDatabaseBackupsGen2Backend) Read(context context.Context, 
 	deploymentID := d.Get("deployment_id").(string)
 	d.SetId(deploymentID)
 
+	// Fetch the deployment instance to obtain its ResourceGroupID so the
+	// subsequent backup list can be scoped to that group, avoiding a full
+	// account-wide scan of all independent-backup instances.
+	deployment, _, err := rsConClient.GetResourceInstance(&rc.GetResourceInstanceOptions{ID: &deploymentID})
+	if err != nil {
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetResourceInstance failed for deployment %s: %s", deploymentID, err.Error()), "(Data) ibm_database_backups", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
+	}
+
 	resourceID := "databases-independent-backups"
 	listOptions := &rc.ListResourceInstancesOptions{ResourceID: &resourceID}
+	if deployment.ResourceGroupID != nil {
+		listOptions.ResourceGroupID = deployment.ResourceGroupID
+	}
 
 	backups := []map[string]interface{}{}
 	nextURL := ""

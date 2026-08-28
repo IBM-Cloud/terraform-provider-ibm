@@ -231,6 +231,8 @@ var (
 	IcdDbDeploymentId         string
 	IcdDbBackupId             string
 	IcdDbTaskId               string
+	Gen2DeploymentId          string
+	Gen2BackupId              string
 	KmsInstanceID             string
 	CrkID                     string
 	KmsAccountID              string
@@ -1224,6 +1226,18 @@ func init() {
 	if IcdDbDeploymentId == "" {
 		IcdDbDeploymentId = "crn:v1:bluemix:public:databases-for-redis:au-syd:a/40ddc34a953a8c02f10987b59085b60e:5042afe1-72c2-4231-89cc-c949e5d56251::"
 		fmt.Println("[INFO] Set the environment variable ICD_DB_DEPLOYMENT_ID for testing ibm_cloud_databases else it is set to default value 'crn:v1:bluemix:public:databases-for-redis:au-syd:a/40ddc34a953a8c02f10987b59085b60e:5042afe1-72c2-4231-89cc-c949e5d56251::'")
+	}
+
+	Gen2DeploymentId = os.Getenv("GEN2_DEPLOYMENT_ID")
+	if Gen2DeploymentId == "" {
+		Gen2DeploymentId = "crn:v1:bluemix:public:databases-for-postgresql:us-south:a/40ddc34a953a8c02f10987b59085b60e:00000000-0000-0000-0000-000000000000::"
+		fmt.Println("[INFO] Set the environment variable GEN2_DEPLOYMENT_ID for testing ibm_database_backups Gen2 else it is set to default value")
+	}
+
+	Gen2BackupId = os.Getenv("GEN2_BACKUP_ID")
+	if Gen2BackupId == "" {
+		Gen2BackupId = "crn:v1:bluemix:public:databases-for-postgresql:us-south:a/40ddc34a953a8c02f10987b59085b60e:00000000-0000-0000-0000-000000000000:backup:00000000-0000-0000-0000-000000000000"
+		fmt.Println("[INFO] Set the environment variable GEN2_BACKUP_ID for testing ibm_database_backup Gen2 else it is set to default value")
 	}
 
 	IcdDbBackupId = os.Getenv("ICD_DB_BACKUP_ID")

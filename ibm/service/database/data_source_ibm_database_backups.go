@@ -39,6 +39,10 @@ func pickDataSourceBackupsBackend(d *schema.ResourceData, meta interface{}) (dat
 		return nil, fmt.Errorf("failed to get resource instance: %s", err)
 	}
 
+	if instance.ResourcePlanID == nil {
+		return nil, fmt.Errorf("resource instance %s has no ResourcePlanID", deploymentID)
+	}
+
 	plan := *instance.ResourcePlanID
 	if isGen2Plan(plan) {
 		return newDataSourceIBMDatabaseBackupsGen2Backend(), nil

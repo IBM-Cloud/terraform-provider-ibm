@@ -32,5 +32,5 @@ func testAccCheckIBMDatabaseBackupsGen2DataSourceConfigBasic() string {
 		data "ibm_database_backups" "database_backups" {
 			deployment_id = "%[1]s"
 		}
-	`, acc.IcdDbDeploymentId)
+	`, acc.Gen2DeploymentId)
 }
