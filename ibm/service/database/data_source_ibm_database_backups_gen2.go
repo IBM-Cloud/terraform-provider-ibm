@@ -16,15 +16,19 @@ import (
 	rc "github.com/IBM/platform-services-go-sdk/resourcecontrollerv2"
 )
 
-type dataSourceIBMDatabaseBackupsGen2Backend struct{}
+// dataSourceIBMDatabaseBackupsGen2Backend holds the ResourceGroupID obtained
+// by pickDataSourceBackupsBackend so Read does not need a second
+// GetResourceInstance call.
+type dataSourceIBMDatabaseBackupsGen2Backend struct {
+	resourceGroupID *string
+}
 
-func newDataSourceIBMDatabaseBackupsGen2Backend() dataSourceIBMDatabaseBackupsBackend {
-	return &dataSourceIBMDatabaseBackupsGen2Backend{}
+func newDataSourceIBMDatabaseBackupsGen2Backend(resourceGroupID *string) dataSourceIBMDatabaseBackupsBackend {
+	return &dataSourceIBMDatabaseBackupsGen2Backend{resourceGroupID: resourceGroupID}
 }
 
 func (g *dataSourceIBMDatabaseBackupsGen2Backend) Read(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	// Gen2 databases use Resource Controller API
-	// Get the resource controller client to fetch instance details
 	rsConClient, err := meta.(conns.ClientSession).ResourceControllerV2API()
 	if err != nil {
 		tfErr := flex.TerraformErrorf(err, err.Error(), "(Data) ibm_database_backups", "read")
@@ -37,20 +41,12 @@ func (g *dataSourceIBMDatabaseBackupsGen2Backend) Read(context context.Context, 
 	deploymentID := d.Get("deployment_id").(string)
 	d.SetId(deploymentID)
 
-	// Fetch the deployment instance to obtain its ResourceGroupID so the
-	// subsequent backup list can be scoped to that group, avoiding a full
-	// account-wide scan of all independent-backup instances.
-	deployment, _, err := rsConClient.GetResourceInstance(&rc.GetResourceInstanceOptions{ID: &deploymentID})
-	if err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetResourceInstance failed for deployment %s: %s", deploymentID, err.Error()), "(Data) ibm_database_backups", "read")
-		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
-		return tfErr.GetDiag()
-	}
-
+	// ResourceGroupID was fetched once by pickDataSourceBackupsBackend —
+	// no second GetResourceInstance call needed.
 	resourceID := "databases-independent-backups"
 	listOptions := &rc.ListResourceInstancesOptions{ResourceID: &resourceID}
-	if deployment.ResourceGroupID != nil {
-		listOptions.ResourceGroupID = deployment.ResourceGroupID
+	if g.resourceGroupID != nil {
+		listOptions.ResourceGroupID = g.resourceGroupID
 	}
 
 	backups := []map[string]interface{}{}

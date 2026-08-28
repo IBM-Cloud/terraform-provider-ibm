@@ -45,7 +45,7 @@ func pickDataSourceBackupsBackend(d *schema.ResourceData, meta interface{}) (dat
 
 	plan := *instance.ResourcePlanID
 	if isGen2Plan(plan) {
-		return newDataSourceIBMDatabaseBackupsGen2Backend(), nil
+		return newDataSourceIBMDatabaseBackupsGen2Backend(instance.ResourceGroupID), nil
 	}
 	return newDataSourceIBMDatabaseBackupsClassicBackend(), nil
 }
