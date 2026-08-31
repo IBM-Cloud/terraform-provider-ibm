@@ -766,6 +766,16 @@ func (g *resourceIBMDatabaseGen2Backend) populateResourceData(d *schema.Resource
 	// Check for ignored attributes and add warnings
 	diags = append(diags, g.WarnIgnoredAttrs(d)...)
 
+	// S2S authorization warning — surfaces on every Read, which covers plan,
+	// apply refresh, and import. Independent Backups is Gen2-only.
+	if !checkS2SAuthorization(instance.Extensions) {
+		diags = append(diags, diag.Diagnostic{
+			Severity: diag.Warning,
+			Summary:  s2sAuthWarningHeader,
+			Detail:   s2sAuthWarningDetail,
+		})
+	}
+
 	return diags
 }
 
@@ -930,19 +940,6 @@ func (g *resourceIBMDatabaseGen2Backend) Update(ctx context.Context, d *schema.R
 	}
 
 	instanceID := d.Id()
-
-	// S2S authorization check — fetch instance once and reuse below.
-	instance, _, err := rsConClient.GetResourceInstance(&rc.GetResourceInstanceOptions{ID: &instanceID})
-	if err != nil {
-		return appendGen2DiagnosticsErrorsThenWarnings(diag.FromErr(fmt.Errorf("error retrieving resource instance: %w", err)), warnings)
-	}
-	if !checkS2SAuthorization(instance.Extensions) {
-		warnings = append(warnings, diag.Diagnostic{
-			Severity: diag.Warning,
-			Summary:  s2sAuthWarningHeader,
-			Detail:   s2sAuthWarningDetail,
-		})
-	}
 
 	if diags := g.checkUnsupportedChanges(d); len(diags) > 0 {
 		return appendGen2DiagnosticsErrorsThenWarnings(diags, warnings)
