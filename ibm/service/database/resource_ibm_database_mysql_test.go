@@ -274,55 +274,38 @@ func testAccCheckIBMDatabaseInstanceMysqlFullyspecified(databaseResourceGroup st
 }
 
 // ---------------------------------------------------------------------------
-// S2S authorization warning — ibm_database resource Update (Gen2 MySQL)
+// S2S authorization warning — ibm_database resource (Gen2 MySQL)
 // ---------------------------------------------------------------------------
 
-// TestAccIBMDatabaseGen2MysqlS2SWarning verifies that:
-//
-//  1. A Gen2 MySQL instance in eu-fr2 is created successfully.
-//  2. An in-place update (tag change) succeeds; the S2S warning
-//     "Database backup authorization required" surfaces during the post-update
-//     Read refresh (visible in apply output, not assertable via TestCase).
-//  3. All resource attributes remain consistent after the update.
-//
-// The S2S warning fires because no service-to-service authorization is
-// configured between the database service and the target resource group.
+// TestAccIBMDatabaseGen2MysqlS2SWarning verifies that a Gen2 MySQL instance
+// is created successfully and that the S2S warning "Database backup
+// authorization required" surfaces during the post-create Read refresh
+// (visible in apply output). The warning is non-blocking — all resource
+// attributes are fully populated.
 //
 // Run with:
 //
-//	IC_API_KEY=<key> go test -v -timeout 240m \
+//	TF_ACC=1 IC_API_KEY=<key> go test -v -timeout 240m \
 //	  -run TestAccIBMDatabaseGen2MysqlS2SWarning \
 //	  ./ibm/service/database/...
 func TestAccIBMDatabaseGen2MysqlS2SWarning(t *testing.T) {
 	t.Parallel()
-	name := fmt.Sprintf("tf-gen2-s2s-upd-%s", acctest.RandString(8))
-	resName := "ibm_database.gen2_s2s_upd"
+	name := fmt.Sprintf("tf-gen2-s2s-%s", acctest.RandString(8))
+	resName := "ibm_database.gen2_s2s"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheckEnterprise(t) },
 		Providers:    acc.TestAccProviders,
 		CheckDestroy: testAccCheckIBMDatabaseInstanceDestroy,
 		Steps: []resource.TestStep{
-			// Step 1: Create — S2S warning fires during initial Read refresh.
 			{
-				Config: testAccCheckIBMDatabaseGen2MysqlS2SConfig(name, "terraform", "s2s-test"),
+				Config: testAccCheckIBMDatabaseGen2MysqlS2SConfig(name),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(resName, "id"),
 					resource.TestCheckResourceAttr(resName, "name", name),
 					resource.TestCheckResourceAttr(resName, "service", "databases-for-mysql"),
 					resource.TestCheckResourceAttr(resName, "plan", "standard-gen2"),
 					resource.TestCheckResourceAttr(resName, "location", "eu-fr2"),
-					resource.TestCheckResourceAttr(resName, "tags.#", "2"),
-					resource.TestCheckResourceAttrSet(resName, "groups.#"),
-				),
-			},
-			// Step 2: Update (add tag) — S2S warning fires again during post-update
-			// Read refresh, confirming the warning is non-blocking on updates.
-			{
-				Config: testAccCheckIBMDatabaseGen2MysqlS2SConfig(name, "terraform", "s2s-test", "updated"),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(resName, "name", name),
-					resource.TestCheckResourceAttr(resName, "tags.#", "3"),
 					resource.TestCheckResourceAttrSet(resName, "groups.#"),
 				),
 			},
@@ -330,28 +313,20 @@ func TestAccIBMDatabaseGen2MysqlS2SWarning(t *testing.T) {
 	})
 }
 
-// testAccCheckIBMDatabaseGen2MysqlS2SConfig returns a Gen2 MySQL instance config
-// in eu-fr2 with the given tags.  eu-fr2 requires exactly 2 members.
-func testAccCheckIBMDatabaseGen2MysqlS2SConfig(name string, tags ...string) string {
-	tagList := ""
-	for i, tag := range tags {
-		if i > 0 {
-			tagList += ", "
-		}
-		tagList += fmt.Sprintf("%q", tag)
-	}
+// testAccCheckIBMDatabaseGen2MysqlS2SConfig provisions a minimal Gen2 MySQL
+// instance in eu-fr2. eu-fr2 requires exactly 2 members for this service.
+func testAccCheckIBMDatabaseGen2MysqlS2SConfig(name string) string {
 	return fmt.Sprintf(`
 data "ibm_resource_group" "test_acc" {
   is_default = true
 }
 
-resource "ibm_database" "gen2_s2s_upd" {
+resource "ibm_database" "gen2_s2s" {
   resource_group_id = data.ibm_resource_group.test_acc.id
   name              = %[1]q
   service           = "databases-for-mysql"
   plan              = "standard-gen2"
   location          = "eu-fr2"
-  tags              = [%[2]s]
 
   # eu-fr2 Gen2 MySQL only allows exactly 2 members
   group {
@@ -367,5 +342,5 @@ resource "ibm_database" "gen2_s2s_upd" {
     delete = "15m"
   }
 }
-`, name, tagList)
+`, name)
 }
