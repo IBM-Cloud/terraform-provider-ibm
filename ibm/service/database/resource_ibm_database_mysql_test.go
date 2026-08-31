@@ -273,21 +273,8 @@ func testAccCheckIBMDatabaseInstanceMysqlFullyspecified(databaseResourceGroup st
 				`, databaseResourceGroup, name, acc.Region())
 }
 
-// ---------------------------------------------------------------------------
-// S2S authorization warning — ibm_database resource (Gen2 MySQL)
-// ---------------------------------------------------------------------------
-
-// TestAccIBMDatabaseGen2MysqlS2SWarning verifies that a Gen2 MySQL instance
-// is created successfully and that the S2S warning "Database backup
-// authorization required" surfaces during the post-create Read refresh
-// (visible in apply output). The warning is non-blocking — all resource
-// attributes are fully populated.
-//
-// Run with:
-//
-//	TF_ACC=1 IC_API_KEY=<key> go test -v -timeout 240m \
-//	  -run TestAccIBMDatabaseGen2MysqlS2SWarning \
-//	  ./ibm/service/database/...
+// TestAccIBMDatabaseGen2MysqlS2SWarning verifies the S2S warning fires on
+// a Gen2 MySQL create and is non-blocking.
 func TestAccIBMDatabaseGen2MysqlS2SWarning(t *testing.T) {
 	t.Parallel()
 	name := fmt.Sprintf("tf-gen2-s2s-%s", acctest.RandString(8))
