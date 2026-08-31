@@ -100,25 +100,8 @@ func TestAccIBMDatabaseConnectionGen2DataSourceFallsBackToFirstKey(t *testing.T)
 	})
 }
 
-// ---------------------------------------------------------------------------
-// S2S authorization warning — ibm_database_connection data source
-// ---------------------------------------------------------------------------
-
-// TestAccIBMDatabaseConnectionGen2DataSourceS2SWarning verifies that the
-// ibm_database_connection data source for a Gen2 MySQL instance without S2S
-// authorizations configured:
-//   - Resolves connection information via the resource key (non-blocking).
-//   - mysql and cli connection blocks are populated.
-//
-// The S2S warning "Database backup authorization required" fires during the
-// connection backend Read.  resource.TestCase does not expose warning assertions;
-// the checks confirm state is fully populated despite the warning.
-//
-// Run with:
-//
-//	IC_API_KEY=<key> go test -v -timeout 240m \
-//	  -run TestAccIBMDatabaseConnectionGen2DataSourceS2SWarning \
-//	  ./ibm/service/database/...
+// TestAccIBMDatabaseConnectionGen2DataSourceS2SWarning verifies the S2S warning
+// fires on a Gen2 MySQL connection data source read and is non-blocking.
 func TestAccIBMDatabaseConnectionGen2DataSourceS2SWarning(t *testing.T) {
 	t.Parallel()
 	name := fmt.Sprintf("tf-gen2-s2s-conn-%s", acctest.RandString(8))
