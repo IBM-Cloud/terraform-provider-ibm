@@ -880,20 +880,13 @@ const s2sAuthWarningDetail = "This database uses Independent Backups.\n" +
 	"Backup creation and management are unavailable until the required service authorization is completed.\n\n" +
 	"Complete the required service authorization to enable backup operations."
 
-// s2sAuthWarning is an error type returned by the Gen2 datasource Read when
-// S2S authorization is not fully enabled. The router type-asserts it and
-// converts it to a Terraform plan/apply warning rather than an error.
+// s2sAuthWarning is a sentinel error that the datasource router converts to a diag.Warning.
 type s2sAuthWarning struct{}
 
 func (s *s2sAuthWarning) Error() string { return s2sAuthWarningHeader }
 
-// checkS2SAuthorization inspects the Extensions map of a Gen2 RC instance for
-// the "authorizations" key and returns true only when both "independent_backups"
-// and "resource_group" are present and set to true.
-// Any other state — missing key, empty map, or either flag false — is treated as
-// S2S authorization disabled.
-// Handles both bool and string ("true"/"false") value types since the RC API
-// may return JSON-decoded values differently depending on context.
+// checkS2SAuthorization returns true only when both "independent_backups" and
+// "resource_group" authorizations are present and truthy in the RC extensions map.
 func checkS2SAuthorization(extensions map[string]interface{}) bool {
 	if extensions == nil {
 		return false

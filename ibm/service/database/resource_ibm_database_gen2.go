@@ -766,8 +766,7 @@ func (g *resourceIBMDatabaseGen2Backend) populateResourceData(d *schema.Resource
 	// Check for ignored attributes and add warnings
 	diags = append(diags, g.WarnIgnoredAttrs(d)...)
 
-	// S2S authorization warning — surfaces on every Read, which covers plan,
-	// apply refresh, and import. Independent Backups is Gen2-only.
+	// Warn if S2S authorizations are not fully configured.
 	if !checkS2SAuthorization(instance.Extensions) {
 		diags = append(diags, diag.Diagnostic{
 			Severity: diag.Warning,

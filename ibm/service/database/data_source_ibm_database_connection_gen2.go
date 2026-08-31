@@ -276,9 +276,7 @@ func (g *dataSourceIBMDatabaseConnectionGen2Backend) Read(context context.Contex
 		}
 	}
 
-	// S2S authorization warning — Gen2 only.
-	// Independent Backups is a Gen2 feature; emit a plan/apply warning when
-	// the required authorizations are not fully enabled on this instance.
+	// Warn if S2S authorizations are not fully configured.
 	if !checkS2SAuthorization(instance.Extensions) {
 		return diag.Diagnostics{{
 			Severity: diag.Warning,

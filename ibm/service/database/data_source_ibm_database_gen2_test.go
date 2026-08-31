@@ -14,25 +14,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 )
 
-// ---------------------------------------------------------------------------
-// S2S authorization warning — ibm_database data source
-// ---------------------------------------------------------------------------
-
-// TestAccIBMDatabaseDataSourceGen2S2SWarning verifies that the ibm_database
-// data source for a Gen2 MySQL instance without S2S authorizations configured:
-//   - Fully populates all attributes (warning is non-blocking).
-//   - Gen2-unsupported fields (adminuser, auto_scaling, allowlist) are empty.
-//
-// The S2S warning "Database backup authorization required" is emitted during the
-// Read refresh that runs on every plan/apply.  resource.TestCase does not expose
-// a way to assert on warnings directly; the important assertion is that state is
-// fully set despite the warning.
-//
-// Run with:
-//
-//	IC_API_KEY=<key> go test -v -timeout 240m \
-//	  -run TestAccIBMDatabaseDataSourceGen2S2SWarning \
-//	  ./ibm/service/database/...
+// TestAccIBMDatabaseDataSourceGen2S2SWarning verifies the S2S warning fires on
+// a Gen2 MySQL data source read and is non-blocking — state is fully populated.
 func TestAccIBMDatabaseDataSourceGen2S2SWarning(t *testing.T) {
 	t.Parallel()
 	name := fmt.Sprintf("tf-gen2-s2s-ds-%s", acctest.RandString(8))
