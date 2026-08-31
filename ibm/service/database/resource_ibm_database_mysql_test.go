@@ -272,3 +272,100 @@ func testAccCheckIBMDatabaseInstanceMysqlFullyspecified(databaseResourceGroup st
 	}
 				`, databaseResourceGroup, name, acc.Region())
 }
+
+// ---------------------------------------------------------------------------
+// S2S authorization warning — ibm_database resource Update (Gen2 MySQL)
+// ---------------------------------------------------------------------------
+
+// TestAccIBMDatabaseGen2MysqlS2SWarning verifies that:
+//
+//  1. A Gen2 MySQL instance in eu-fr2 is created successfully.
+//  2. An in-place update (tag change) succeeds; the S2S warning
+//     "Database backup authorization required" surfaces during the post-update
+//     Read refresh (visible in apply output, not assertable via TestCase).
+//  3. All resource attributes remain consistent after the update.
+//
+// The S2S warning fires because no service-to-service authorization is
+// configured between the database service and the target resource group.
+//
+// Run with:
+//
+//	IC_API_KEY=<key> go test -v -timeout 240m \
+//	  -run TestAccIBMDatabaseGen2MysqlS2SWarning \
+//	  ./ibm/service/database/...
+func TestAccIBMDatabaseGen2MysqlS2SWarning(t *testing.T) {
+	t.Parallel()
+	name := fmt.Sprintf("tf-gen2-s2s-upd-%s", acctest.RandString(8))
+	resName := "ibm_database.gen2_s2s_upd"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheckEnterprise(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMDatabaseInstanceDestroy,
+		Steps: []resource.TestStep{
+			// Step 1: Create — S2S warning fires during initial Read refresh.
+			{
+				Config: testAccCheckIBMDatabaseGen2MysqlS2SConfig(name, "terraform", "s2s-test"),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet(resName, "id"),
+					resource.TestCheckResourceAttr(resName, "name", name),
+					resource.TestCheckResourceAttr(resName, "service", "databases-for-mysql"),
+					resource.TestCheckResourceAttr(resName, "plan", "standard-gen2"),
+					resource.TestCheckResourceAttr(resName, "location", "eu-fr2"),
+					resource.TestCheckResourceAttr(resName, "tags.#", "2"),
+					resource.TestCheckResourceAttrSet(resName, "groups.#"),
+				),
+			},
+			// Step 2: Update (add tag) — S2S warning fires again during post-update
+			// Read refresh, confirming the warning is non-blocking on updates.
+			{
+				Config: testAccCheckIBMDatabaseGen2MysqlS2SConfig(name, "terraform", "s2s-test", "updated"),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(resName, "name", name),
+					resource.TestCheckResourceAttr(resName, "tags.#", "3"),
+					resource.TestCheckResourceAttrSet(resName, "groups.#"),
+				),
+			},
+		},
+	})
+}
+
+// testAccCheckIBMDatabaseGen2MysqlS2SConfig returns a Gen2 MySQL instance config
+// in eu-fr2 with the given tags.  eu-fr2 requires exactly 2 members.
+func testAccCheckIBMDatabaseGen2MysqlS2SConfig(name string, tags ...string) string {
+	tagList := ""
+	for i, tag := range tags {
+		if i > 0 {
+			tagList += ", "
+		}
+		tagList += fmt.Sprintf("%q", tag)
+	}
+	return fmt.Sprintf(`
+data "ibm_resource_group" "test_acc" {
+  is_default = true
+}
+
+resource "ibm_database" "gen2_s2s_upd" {
+  resource_group_id = data.ibm_resource_group.test_acc.id
+  name              = %[1]q
+  service           = "databases-for-mysql"
+  plan              = "standard-gen2"
+  location          = "eu-fr2"
+  tags              = [%[2]s]
+
+  # eu-fr2 Gen2 MySQL only allows exactly 2 members
+  group {
+    group_id = "member"
+    members {
+      allocation_count = 2
+    }
+  }
+
+  timeouts {
+    create = "120m"
+    update = "120m"
+    delete = "15m"
+  }
+}
+`, name, tagList)
+}
