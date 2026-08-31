@@ -46,6 +46,7 @@ The input parameters that you need to specify for the data source.
 - `vpc_name` - (Optional, String) The name of the VPC to filter the instances attached.
 - `instance_group` - (Optional, String) Instance group ID to filter the instances attached to it.
 - `instance_group_name` - (Optional, String) Instance group name to filter the instances attached to it.
+- `instance_group_crn` - (Optional, String) Instance group crn to filter the instances attached to it.
 - `dedicated_host_name` - (Optional, String) Dedicated host name to filter the instances attached to it.
 - `dedicated_host` - (Optional, String) Dedicated host ID to filter the instances attached to it.
 - `placement_group_name` - (Optional, String) Placement group name to filter the instances attached to it.
