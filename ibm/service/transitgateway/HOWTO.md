@@ -90,9 +90,9 @@ terraform apply
 
 ```
 
-Notice: Run the below command to output more details: 
+Notice: Run the below command to output more details:
 ```
-TF_LOG=DEBUG terraform plan | tee plan.log 
+TF_LOG=DEBUG terraform plan | tee plan.log
 ```
 
 If your logs show your custom build debug lines, the local binary is working.

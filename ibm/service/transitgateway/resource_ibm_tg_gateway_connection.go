@@ -114,6 +114,13 @@ func ResourceIBMTransitGatewayConnection() *schema.Resource {
 				ForceNew:    true,
 				Description: "The ID of a network_type 'classic' connection a tunnel is configured over. This field only applies to network type 'gre_tunnel' connections.",
 			},
+			tgCidr: {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Computed:    true,
+				ForceNew:    true,
+				Description: "The CIDR of the VPN gateway or dynamic route server GRE tunnel. This field applies to network type 'vpn_gateway' connections.",
+			},
 			tgBaseNetworkType: {
 				Type:        schema.TypeString,
 				Optional:    true,
@@ -155,12 +162,6 @@ func ResourceIBMTransitGatewayConnection() *schema.Resource {
 				Optional:    true,
 				ForceNew:    true,
 				Description: "Location of connection. This field only applies to network type 'gre_tunnel' and 'unbound_gre_tunnel' connections and optional for network type 'vpn_gateway' connections",
-			},
-			tgCidr: {
-				Type:        schema.TypeString,
-				Optional:    true,
-				ForceNew:    true,
-				Description: "The network_type 'vpn_gateway' connections use 'cidr' to specify the CIDR to use for the VPN GRE tunnels",
 			},
 			tgCreatedAt: {
 				Type:        schema.TypeString,
@@ -521,7 +522,6 @@ func isTransitGatewayConnectionRefreshFunc(client *transitgatewayapisv1.TransitG
 	}
 }
 func resourceIBMTransitGatewayConnectionRead(d *schema.ResourceData, meta interface{}) error {
-
 	client, err := transitgatewayClient(meta)
 	if err != nil {
 		return err
@@ -570,9 +570,26 @@ func resourceIBMTransitGatewayConnectionRead(d *schema.ResourceData, meta interf
 	if instance.RequestStatus != nil {
 		d.Set(tgRequestStatus, *instance.RequestStatus)
 	}
-
+	if instance.LocalGatewayIp != nil {
+		d.Set(tgLocalGatewayIp, *instance.LocalGatewayIp)
+	}
+	if instance.LocalTunnelIp != nil {
+		d.Set(tgLocalTunnelIp, *instance.LocalTunnelIp)
+	}
+	if instance.RemoteGatewayIp != nil {
+		d.Set(tgRemoteGatewayIp, *instance.RemoteGatewayIp)
+	}
+	if instance.LocalBgpAsn != nil {
+		d.Set(tgLocalBgpAsn, *instance.LocalBgpAsn)
+	}
+	if instance.RemoteBgpAsn != nil {
+		d.Set(tgRemoteBgpAsn, *instance.RemoteBgpAsn)
+	}
 	if instance.PrefixFiltersDefault != nil {
 		d.Set(tgDefaultPrefixFilter, *instance.PrefixFiltersDefault)
+	}
+	if instance.Cidr != nil {
+		d.Set(tgCidr, *instance.Cidr)
 	}
 
 	if instance.Zone != nil {
