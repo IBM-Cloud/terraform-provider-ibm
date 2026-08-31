@@ -26,8 +26,3 @@ variable "trusted_profile_template_version" {
   type        = string
   default     = null
 }
-variable "trusted_profile_template_include_history" {
-  description = "Defines if the entity history is included in the response."
-  type        = bool
-  default     = false
-}
