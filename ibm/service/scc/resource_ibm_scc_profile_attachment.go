@@ -778,11 +778,16 @@ func resourceIbmSccProfileAttachmentMapToPropertyItem(modelMap map[string]interf
 func resourceIbmSccProfileAttachmentMapToAttachmentsNotificationsPrototype(modelMap map[string]interface{}) (*securityandcompliancecenterapiv3.AttachmentNotifications, error) {
 	model := &securityandcompliancecenterapiv3.AttachmentNotifications{}
 	model.Enabled = core.BoolPtr(modelMap["enabled"].(bool))
-	ControlsModel, err := resourceIbmSccProfileAttachmentMapToFailedControls(modelMap["controls"].([]interface{})[0].(map[string]interface{}))
-	if err != nil {
-		return model, err
+	controlsModel := &securityandcompliancecenterapiv3.FailedControls{}
+	if len(modelMap["controls"].([]interface{})) != 0 {
+		var err error
+		controlsModel, err = resourceIbmSccProfileAttachmentMapToFailedControls(modelMap["controls"].([]interface{})[0].(map[string]interface{}))
+		if err != nil {
+			return model, err
+		}
+
 	}
-	model.Controls = ControlsModel
+	model.Controls = controlsModel
 	return model, nil
 }
 
