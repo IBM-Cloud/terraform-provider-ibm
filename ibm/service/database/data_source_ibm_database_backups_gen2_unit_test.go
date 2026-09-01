@@ -12,7 +12,7 @@ import (
 )
 
 // backupExtensions builds the dataservices.backup extension block used by
-// extractGen2BackupExtensions to identify a Gen2 independent backup's source
+// extractGen2BackupExtensions to identify a Gen2 Independent Backup's source
 // deployment and type.
 func backupExtensions(sourceDataServiceCRN, backupType string) map[string]interface{} {
 	return map[string]interface{}{
@@ -27,7 +27,7 @@ func backupExtensions(sourceDataServiceCRN, backupType string) map[string]interf
 
 // TestFilterGen2BackupsByDeployment verifies that only backup instances whose
 // source_data_service_crn extension matches the requested deploymentID are
-// returned, so listing Gen2 independent backups for a specific deployment
+// returned, so listing Gen2 Independent Backups for a specific deployment
 // does not leak backups belonging to other deployments in the account.
 func TestFilterGen2BackupsByDeployment(t *testing.T) {
 	const deploymentA = "crn:v1:bluemix:public:databases-for-postgresql:us-south:a/abc123:deployment-a::"

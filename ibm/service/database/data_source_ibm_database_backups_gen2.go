@@ -81,7 +81,7 @@ func (g *dataSourceIBMDatabaseBackupsGen2Backend) Read(context context.Context, 
 	}
 
 	if len(backups) == 0 {
-		tfErr := flex.TerraformErrorf(fmt.Errorf("Independent Backup not found for deployment_id: %s", deploymentID), fmt.Sprintf("Independent Backups not found for deployment_id: %s", deploymentID), "(Data) ibm_database_backups", "read")
+		tfErr := flex.TerraformErrorf(fmt.Errorf("Independent Backups not found for deployment_id: %s", deploymentID), fmt.Sprintf("Independent Backups not found for deployment_id: %s", deploymentID), "(Data) ibm_database_backups", "read")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}

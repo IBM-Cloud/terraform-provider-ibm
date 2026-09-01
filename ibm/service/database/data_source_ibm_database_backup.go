@@ -25,7 +25,7 @@ type dataSourceIBMDatabaseBackupBackend interface {
 func pickDataSourceBackupBackend(d *schema.ResourceData, meta interface{}) (dataSourceIBMDatabaseBackupBackend, error) {
 	backupID := d.Get("backup_id").(string)
 
-	// Gen2 only uses decoupled independent backups, identifiable from the CRN's
+	// Gen2 only uses decoupled Independent Backup, identifiable from the CRN's
 	// service-name segment (5th colon-delimited field) alone. SplitN is bounded
 	// to 6 fields so we avoid splitting the remainder of the CRN (region, scope,
 	// instance/resource IDs) that we don't need.
@@ -63,7 +63,7 @@ func rejectCoupledBackupFromGen2Instance(backupID string, meta interface{}) erro
 	}
 
 	if isGen2Plan(*instance.ResourcePlanID) {
-		return fmt.Errorf("Gen2 instances only support Independent backups; use the Independent backup CRN (databases-independent-backups) instead")
+		return fmt.Errorf("Gen2 instances only support Independent Backup; use the Independent Backup CRN (databases-independent-backups) instead")
 	}
 
 	return nil
