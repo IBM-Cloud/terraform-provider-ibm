@@ -18,6 +18,7 @@ func TestAccIBMIsLbPoolDataSourceBasic(t *testing.T) {
 	name := fmt.Sprintf("tfcreate%d", acctest.RandIntRange(10, 100))
 	poolName := fmt.Sprintf("tflbpoolc%d", acctest.RandIntRange(10, 100))
 	alg1 := "round_robin"
+	alg2 := "weighted_forwarding"
 	protocol1 := "http"
 	delay1 := "45"
 	retries1 := "5"
@@ -35,6 +36,22 @@ func TestAccIBMIsLbPoolDataSourceBasic(t *testing.T) {
 					resource.TestCheckResourceAttrSet("data.ibm_is_lb_pool.is_lb_pool", "lb"),
 					resource.TestCheckResourceAttrSet("data.ibm_is_lb_pool.is_lb_pool", "identifier"),
 					resource.TestCheckResourceAttrSet("data.ibm_is_lb_pool.is_lb_pool", "algorithm"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_lb_pool.is_lb_pool", "created_at"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_lb_pool.is_lb_pool", "health_monitor.#"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_lb_pool.is_lb_pool", "href"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_lb_pool.is_lb_pool", "name"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_lb_pool.is_lb_pool", "protocol"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_lb_pool.is_lb_pool", "provisioning_status"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_lb_pool.is_lb_pool", "proxy_protocol"),
+				),
+			},
+			{
+				Config: testAccCheckIBMIsLbPoolDataSourceConfigRouteModeNLB(vpcname, subnetname, acc.ISZoneName, acc.ISCIDR, name, poolName, alg2, "tcp", delay1, retries1, timeout1, "tcp"),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet("data.ibm_is_lb_pool.is_lb_pool", "lb"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_lb_pool.is_lb_pool", "identifier"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_lb_pool.is_lb_pool", "algorithm"),
+					resource.TestCheckResourceAttr("data.ibm_is_lb_pool.is_lb_pool", "algorithm", "weighted_forwarding"),
 					resource.TestCheckResourceAttrSet("data.ibm_is_lb_pool.is_lb_pool", "created_at"),
 					resource.TestCheckResourceAttrSet("data.ibm_is_lb_pool.is_lb_pool", "health_monitor.#"),
 					resource.TestCheckResourceAttrSet("data.ibm_is_lb_pool.is_lb_pool", "href"),
@@ -94,6 +111,41 @@ func testAccCheckIBMIsLbPoolDataSourceConfigBasic(vpcname, subnetname, zone, cid
             identifier = "${element(split("/",ibm_is_lb_pool.testacc_lb_pool.id),1)}"
         }
     `)
+}
+
+func testAccCheckIBMIsLbPoolDataSourceConfigRouteModeNLB(vpcname, subnetname, zone, cidr, name, poolName, algorithm, protocol, delay, retries, timeout, healthType string) string {
+	return fmt.Sprintf(`
+	resource "ibm_is_vpc" "testacc_vpc" {
+		name = "%s"
+	}
+	resource "ibm_is_subnet" "testacc_subnet" {
+		name            = "%s"
+		vpc             = ibm_is_vpc.testacc_vpc.id
+		zone            = "%s"
+		ipv4_cidr_block = "%s"
+	}
+	resource "ibm_is_lb" "testacc_LB" {
+		name       = "%s"
+		subnets    = [ibm_is_subnet.testacc_subnet.id]
+		profile    = "network-fixed"
+		type       = "private"
+		route_mode = true
+	}
+	resource "ibm_is_lb_pool" "testacc_lb_pool" {
+		name           = "%s"
+		lb             = ibm_is_lb.testacc_LB.id
+		algorithm      = "%s"
+		protocol       = "%s"
+		health_delay   = %s
+		health_retries = %s
+		health_timeout = %s
+		health_type    = "%s"
+	}
+	data "ibm_is_lb_pool" "is_lb_pool" {
+		lb         = ibm_is_lb.testacc_LB.id
+		identifier = element(split("/", ibm_is_lb_pool.testacc_lb_pool.id), 1)
+		depends_on = [ibm_is_lb_pool.testacc_lb_pool]
+	}`, vpcname, subnetname, zone, cidr, name, poolName, algorithm, protocol, delay, retries, timeout, healthType)
 }
 
 func testAccCheckIBMIsLbPoolDataSourceConfigmTLS(vpcname, subnetname, zone, cidr, name, poolName, algorithm, protocol, delay, retries, timeout, healthType, clientCertCRN, serverCACRN string) string {
