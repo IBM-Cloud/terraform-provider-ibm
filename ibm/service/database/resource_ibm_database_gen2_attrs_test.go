@@ -243,8 +243,8 @@ func TestGen2WarningsReturnedWithErrors(t *testing.T) {
 	g := &resourceIBMDatabaseGen2Backend{}
 
 	d := testGen2DatabaseResourceData(t, map[string]interface{}{
-		"adminpassword": "example-admin-value",      // unsupported -> error
-		"version_upgrade_skip_backup": true,         // ignored -> warning
+		"adminpassword":               "example-admin-value", // unsupported -> error
+		"version_upgrade_skip_backup": true,                  // ignored -> warning
 	})
 
 	err := g.ValidateUnsupportedAttrsData(d)
