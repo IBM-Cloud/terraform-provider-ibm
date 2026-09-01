@@ -53,8 +53,8 @@ func rejectCoupledBackupFromGen2Instance(backupID string, meta interface{}) erro
 	return nil
 }
 
-// isGen2CoupledBackup returns true only when the backup CRN can be resolved to
-// a Gen2 instance. Returns false whenever any lookup step fails.
+// isGen2CoupledBackup returns true only when the backup CRN can be resolved to a Gen2 instance.
+// Returns false whenever any lookup step fails.
 func isGen2CoupledBackup(backupID string, meta interface{}) bool {
 	instanceCRN, err := instanceCRNFromCoupledBackupCRN(backupID)
 	if err != nil {
