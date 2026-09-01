@@ -440,7 +440,7 @@ func Provider() *schema.Provider {
 			"ibm_iam_service_id":                            iamidentity.DataSourceIBMIamServiceID(),
 			"ibm_iam_serviceid_group":                       iamidentity.DataSourceIBMIamServiceidGroup(),
 			"ibm_iam_service_policy":                        iampolicy.DataSourceIBMIAMServicePolicy(),
-			"ibm_iam_api_key":                               iamidentity.DataSourceIBMIamApiKey(),
+			"ibm_iam_api_key":                               iamidentity.DataSourceIBMIamAPIKey(),
 			"ibm_iam_trusted_profile":                       iamidentity.DataSourceIBMIamTrustedProfile(),
 			"ibm_iam_trusted_profile_identity":              iamidentity.DataSourceIBMIamTrustedProfileIdentity(),
 			"ibm_iam_trusted_profile_identities":            iamidentity.DataSourceIBMIamTrustedProfileIdentities(),
@@ -483,6 +483,7 @@ func Provider() *schema.Provider {
 			"ibm_is_backup_policy_jobs":  vpc.DataSourceIBMIsBackupPolicyJobs(),
 
 			// bare_metal_server
+			"ibm_is_bare_metal_server_capacities":                     vpc.DataSourceIBMIsBareMetalServerCapacities(),
 			"ibm_is_bare_metal_server_disk":                           vpc.DataSourceIBMIsBareMetalServerDisk(),
 			"ibm_is_bare_metal_server_disks":                          vpc.DataSourceIBMIsBareMetalServerDisks(),
 			"ibm_is_bare_metal_server_initialization":                 vpc.DataSourceIBMIsBareMetalServerInitialization(),
@@ -1379,7 +1380,7 @@ func Provider() *schema.Provider {
 			"ibm_iam_service_api_key":                       iamidentity.ResourceIBMIAMServiceAPIKey(),
 			"ibm_iam_service_policy":                        iampolicy.ResourceIBMIAMServicePolicy(),
 			"ibm_iam_user_invite":                           iampolicy.ResourceIBMIAMUserInvite(),
-			"ibm_iam_api_key":                               iamidentity.ResourceIBMIAMApiKey(),
+			"ibm_iam_api_key":                               iamidentity.ResourceIBMIamAPIKey(),
 			"ibm_iam_trusted_profile":                       iamidentity.ResourceIBMIAMTrustedProfile(),
 			"ibm_iam_trusted_profile_identity":              iamidentity.ResourceIBMIamTrustedProfileIdentity(),
 			"ibm_iam_trusted_profile_identities":            iamidentity.ResourceIBMIamTrustedProfileIdentities(),

@@ -339,15 +339,8 @@ func (g *resourceIBMDatabaseGen2Backend) setResourceGroup(d *schema.ResourceData
 
 // buildGen2Parameters constructs the Gen2-specific parameters structure.
 // Includes database configuration, encryption settings, and backup_id for restore.
-// Note: PITR is not supported in Gen2. backup_id is validated to ensure only Gen2 backups are used.
+// Note: PITR is not supported in Gen2.
 func (g *resourceIBMDatabaseGen2Backend) buildGen2Parameters(d *schema.ResourceData, serviceName string, meta interface{}, catalogCRN string) (map[string]interface{}, error) {
-	// Validate backup_id if provided (only Gen2 coupled and decoupled backups are allowed at this point)
-	if backupID, ok := d.GetOk("backup_id"); ok {
-		if err := validateGen2BackupCRN(backupID.(string), meta); err != nil {
-			return nil, err
-		}
-	}
-
 	// Get the database type for the dataservices key
 	dbType := getDatabaseTypeFromResourceID(serviceName)
 	if dbType == "" {

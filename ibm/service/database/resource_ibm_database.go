@@ -303,7 +303,7 @@ func ResourceIBMDatabaseInstance() *schema.Resource {
 				ValidateFunc: validate.InvokeValidator("ibm_database", "service_endpoints"),
 			},
 			"backup_id": {
-				Description:      "The CRN of backup source database. Gen2: Supports restoring from Gen2 coupled backups (from Gen2 instances) and Gen2 decoupled backups (databases-independent-backups). Classic backups are not supported for Gen2 instances.",
+				Description:      "The CRN of backup source database. Gen2: Supports restoring from Classic backups, Gen2 coupled backups, and Gen2 decoupled backups (databases-independent-backups).",
 				Type:             schema.TypeString,
 				Optional:         true,
 				DiffSuppressFunc: flex.ApplyOnce,
