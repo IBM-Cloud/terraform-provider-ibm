@@ -278,7 +278,7 @@ func ResourceIBMDatabaseInstance() *schema.Resource {
 					}
 					return json
 				},
-				Description: "The configuration in JSON format. Gen2: Accepted but ignored. Database configuration management is not yet implemented for Gen2 instances.",
+				Description: "The configuration in JSON format. Supported for both Classic and Gen2 plans. The accepted keys depend on the database service type (e.g. max_connections for PostgreSQL, maxmemory-policy for Redis).",
 			},
 			"configuration_schema": {
 				Type:        schema.TypeString,
