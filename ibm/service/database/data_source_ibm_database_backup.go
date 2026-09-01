@@ -44,29 +44,34 @@ func pickDataSourceBackupBackend(d *schema.ResourceData, meta interface{}) (data
 	return newDataSourceIBMDatabaseBackupClassicBackend(), nil
 }
 
-// rejectCoupledBackupFromGen2Instance errors if backupID is a coupled backup
-// from a Gen2 instance. Returns nil if the CRN or source instance can't be resolved.
+// rejectCoupledBackupFromGen2Instance errors if backupID belongs to a Gen2 instance.
+// Unresolvable instances are allowed through; the ICD API rejects them server-side.
 func rejectCoupledBackupFromGen2Instance(backupID string, meta interface{}) error {
+	if isGen2CoupledBackup(backupID, meta) {
+		return fmt.Errorf("Gen2 instances only support Independent Backup; use the Independent Backup CRN (databases-independent-backups) instead")
+	}
+	return nil
+}
+
+// isGen2CoupledBackup returns true only when the backup CRN can be resolved to
+// a Gen2 instance. Returns false whenever any lookup step fails.
+func isGen2CoupledBackup(backupID string, meta interface{}) bool {
 	instanceCRN, err := instanceCRNFromCoupledBackupCRN(backupID)
 	if err != nil {
-		return nil
+		return false
 	}
 
 	rsConClient, err := meta.(conns.ClientSession).ResourceControllerV2API()
 	if err != nil {
-		return nil
+		return false
 	}
 
 	instance, _, err := rsConClient.GetResourceInstance(&rc.GetResourceInstanceOptions{ID: &instanceCRN})
 	if err != nil || instance.ResourcePlanID == nil {
-		return nil
+		return false
 	}
 
-	if isGen2Plan(*instance.ResourcePlanID) {
-		return fmt.Errorf("Gen2 instances only support Independent Backup; use the Independent Backup CRN (databases-independent-backups) instead")
-	}
-
-	return nil
+	return isGen2Plan(*instance.ResourcePlanID)
 }
 
 func DataSourceIBMDatabaseBackup() *schema.Resource {
