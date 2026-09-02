@@ -499,32 +499,54 @@ func TestCheckS2SAuthorization(t *testing.T) {
 			want:       false,
 		},
 		{
-			name: "authorizations key missing",
+			name: "dataservices key missing",
 			extensions: map[string]interface{}{
 				"other_key": "value",
 			},
 			want: false,
 		},
 		{
+			name: "dataservices is not a map",
+			extensions: map[string]interface{}{
+				"dataservices": "not-a-map",
+			},
+			want: false,
+		},
+		{
+			name: "authorizations key missing inside dataservices",
+			extensions: map[string]interface{}{
+				"dataservices": map[string]interface{}{
+					"other_key": "value",
+				},
+			},
+			want: false,
+		},
+		{
 			name: "authorizations is nil",
 			extensions: map[string]interface{}{
-				"authorizations": nil,
+				"dataservices": map[string]interface{}{
+					"authorizations": nil,
+				},
 			},
 			want: false,
 		},
 		{
 			name: "authorizations is empty map",
 			extensions: map[string]interface{}{
-				"authorizations": map[string]interface{}{},
+				"dataservices": map[string]interface{}{
+					"authorizations": map[string]interface{}{},
+				},
 			},
 			want: false,
 		},
 		{
 			name: "both flags true (bool)",
 			extensions: map[string]interface{}{
-				"authorizations": map[string]interface{}{
-					"independent_backups": true,
-					"resource_group":      true,
+				"dataservices": map[string]interface{}{
+					"authorizations": map[string]interface{}{
+						"independent_backups": true,
+						"resource_group":      true,
+					},
 				},
 			},
 			want: true,
@@ -532,9 +554,11 @@ func TestCheckS2SAuthorization(t *testing.T) {
 		{
 			name: "both flags true (string)",
 			extensions: map[string]interface{}{
-				"authorizations": map[string]interface{}{
-					"independent_backups": "true",
-					"resource_group":      "true",
+				"dataservices": map[string]interface{}{
+					"authorizations": map[string]interface{}{
+						"independent_backups": "true",
+						"resource_group":      "true",
+					},
 				},
 			},
 			want: true,
@@ -542,9 +566,11 @@ func TestCheckS2SAuthorization(t *testing.T) {
 		{
 			name: "independent_backups false (bool)",
 			extensions: map[string]interface{}{
-				"authorizations": map[string]interface{}{
-					"independent_backups": false,
-					"resource_group":      true,
+				"dataservices": map[string]interface{}{
+					"authorizations": map[string]interface{}{
+						"independent_backups": false,
+						"resource_group":      true,
+					},
 				},
 			},
 			want: false,
@@ -552,9 +578,11 @@ func TestCheckS2SAuthorization(t *testing.T) {
 		{
 			name: "resource_group false (bool)",
 			extensions: map[string]interface{}{
-				"authorizations": map[string]interface{}{
-					"independent_backups": true,
-					"resource_group":      false,
+				"dataservices": map[string]interface{}{
+					"authorizations": map[string]interface{}{
+						"independent_backups": true,
+						"resource_group":      false,
+					},
 				},
 			},
 			want: false,
@@ -562,9 +590,11 @@ func TestCheckS2SAuthorization(t *testing.T) {
 		{
 			name: "both flags false (bool)",
 			extensions: map[string]interface{}{
-				"authorizations": map[string]interface{}{
-					"independent_backups": false,
-					"resource_group":      false,
+				"dataservices": map[string]interface{}{
+					"authorizations": map[string]interface{}{
+						"independent_backups": false,
+						"resource_group":      false,
+					},
 				},
 			},
 			want: false,
@@ -572,8 +602,10 @@ func TestCheckS2SAuthorization(t *testing.T) {
 		{
 			name: "independent_backups missing",
 			extensions: map[string]interface{}{
-				"authorizations": map[string]interface{}{
-					"resource_group": true,
+				"dataservices": map[string]interface{}{
+					"authorizations": map[string]interface{}{
+						"resource_group": true,
+					},
 				},
 			},
 			want: false,
@@ -581,8 +613,10 @@ func TestCheckS2SAuthorization(t *testing.T) {
 		{
 			name: "resource_group missing",
 			extensions: map[string]interface{}{
-				"authorizations": map[string]interface{}{
-					"independent_backups": true,
+				"dataservices": map[string]interface{}{
+					"authorizations": map[string]interface{}{
+						"independent_backups": true,
+					},
 				},
 			},
 			want: false,
@@ -590,9 +624,11 @@ func TestCheckS2SAuthorization(t *testing.T) {
 		{
 			name: "mixed: bool true + string true",
 			extensions: map[string]interface{}{
-				"authorizations": map[string]interface{}{
-					"independent_backups": true,
-					"resource_group":      "true",
+				"dataservices": map[string]interface{}{
+					"authorizations": map[string]interface{}{
+						"independent_backups": true,
+						"resource_group":      "true",
+					},
 				},
 			},
 			want: true,
@@ -600,9 +636,11 @@ func TestCheckS2SAuthorization(t *testing.T) {
 		{
 			name: "resource_group string false",
 			extensions: map[string]interface{}{
-				"authorizations": map[string]interface{}{
-					"independent_backups": true,
-					"resource_group":      "false",
+				"dataservices": map[string]interface{}{
+					"authorizations": map[string]interface{}{
+						"independent_backups": true,
+						"resource_group":      "false",
+					},
 				},
 			},
 			want: false,
@@ -610,7 +648,9 @@ func TestCheckS2SAuthorization(t *testing.T) {
 		{
 			name: "authorizations is not a map (wrong type)",
 			extensions: map[string]interface{}{
-				"authorizations": "not-a-map",
+				"dataservices": map[string]interface{}{
+					"authorizations": "not-a-map",
+				},
 			},
 			want: false,
 		},

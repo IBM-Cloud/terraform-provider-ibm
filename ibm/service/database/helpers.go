@@ -887,11 +887,16 @@ func (s *s2sAuthWarning) Error() string { return s2sAuthWarningHeader }
 
 // checkS2SAuthorization returns true only when both "independent_backups" and
 // "resource_group" authorizations are present and truthy in the RC extensions map.
+// The authorizations are nested under extensions["dataservices"]["authorizations"].
 func checkS2SAuthorization(extensions map[string]interface{}) bool {
 	if extensions == nil {
 		return false
 	}
-	authsRaw, exists := extensions["authorizations"]
+	dataservices, ok := extensions["dataservices"].(map[string]interface{})
+	if !ok {
+		return false
+	}
+	authsRaw, exists := dataservices["authorizations"]
 	if !exists || authsRaw == nil {
 		return false
 	}
