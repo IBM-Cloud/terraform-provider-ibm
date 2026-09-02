@@ -496,18 +496,19 @@ func (g *resourceIBMDatabaseGen2Backend) getShardsCount(d *schema.ResourceData) 
 	service := d.Get("service").(string)
 	plan := d.Get("plan").(string)
 
+	shards := d.Get("shards").(int)
+
 	if service != "databases-for-mongodb" || plan != "enterprise-sharding-gen2" {
-		if shards, ok := d.GetOk("shards"); ok && shards.(int) != 0 {
+		if shards != 0 {
 			return 0, fmt.Errorf("shards is supported only for service=databases-for-mongodb with plan=enterprise-sharding-gen2")
 		}
 		return 0, nil
 	}
 
-	if shards, ok := d.GetOk("shards"); ok && shards.(int) != 0 {
-		return shards.(int), nil
+	if shards < 1 || shards > 3 {
+		return 0, fmt.Errorf("shard count must be between 1 and 3, got %d", shards)
 	}
-
-	return 1, nil
+	return shards, nil
 }
 
 // addEncryptionConfig adds encryption configuration to dataservices.
@@ -671,6 +672,10 @@ func (g *resourceIBMDatabaseGen2Backend) waitForGen2InstanceUpdate(d *schema.Res
 	}
 	instanceID := d.Id()
 
+	// For enterprise-sharding-gen2 scale-out, the RC API returns "active" before
+	// extensions reflect the new shard count. Poll until they match.
+	desiredShards, _ := d.GetOk("shards")
+
 	stateConf := &resource.StateChangeConf{
 		Pending: []string{databaseInstanceProgressStatus, databaseInstanceInactiveStatus},
 		Target:  []string{databaseInstanceSuccessStatus},
@@ -687,6 +692,11 @@ func (g *resourceIBMDatabaseGen2Backend) waitForGen2InstanceUpdate(d *schema.Res
 			}
 			if *instance.State == databaseInstanceFailStatus {
 				return *instance, *instance.State, fmt.Errorf("[ERROR] The resource instance %s failed: %s %s", d.Id(), err, response)
+			}
+			if n, ok := desiredShards.(int); ok && *instance.State == databaseInstanceSuccessStatus {
+				if extractShardsFromExtensions(instance.Extensions, "mongodbees") != n {
+					return *instance, databaseInstanceProgressStatus, nil
+				}
 			}
 			return *instance, *instance.State, nil
 		},

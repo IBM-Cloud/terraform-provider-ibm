@@ -10,6 +10,7 @@ import (
 
 	"github.com/IBM/cloud-databases-go-sdk/clouddatabasesv5"
 	"github.com/IBM/go-sdk-core/v5/core"
+	rcv2 "github.com/IBM/platform-services-go-sdk/resourcecontrollerv2"
 	"github.com/go-openapi/strfmt"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/stretchr/testify/require"
@@ -531,5 +532,85 @@ func TestExtractDatabaseAllocations(t *testing.T) {
 		alloc := extractDatabaseAllocations(instance, "databases-for-mongodb")
 		require.Equal(t, float64(0), alloc.storageGB)
 		require.Equal(t, "", alloc.hostFlavorID)
+	})
+}
+func TestSharedSetShardsInfo(t *testing.T) {
+	t.Run("defaults shards to 1 when instance is nil", func(t *testing.T) {
+		d := schema.TestResourceDataRaw(t, ResourceIBMDatabaseInstance().Schema, map[string]interface{}{
+			"service": "databases-for-mongodb",
+			"plan":    "enterprise-sharding-gen2",
+		})
+
+		err := sharedSetShardsInfo(d, nil)
+		if err != nil {
+			t.Fatalf("expected no error, got %v", err)
+		}
+		if v := d.Get("shards").(int); v != 1 {
+			t.Fatalf("expected shards=1 for nil instance, got %d", v)
+		}
+	})
+
+	t.Run("defaults shards to 1 when instance.Extensions is nil", func(t *testing.T) {
+		d := schema.TestResourceDataRaw(t, ResourceIBMDatabaseInstance().Schema, map[string]interface{}{
+			"service": "databases-for-mongodb",
+			"plan":    "enterprise-sharding-gen2",
+		})
+
+		instance := &rcv2.ResourceInstance{Extensions: nil}
+		err := sharedSetShardsInfo(d, instance)
+		if err != nil {
+			t.Fatalf("expected no error, got %v", err)
+		}
+		if v := d.Get("shards").(int); v != 1 {
+			t.Fatalf("expected shards=1 for nil extensions, got %d", v)
+		}
+	})
+
+	t.Run("reads shard count from extensions for enterprise-sharding-gen2", func(t *testing.T) {
+		d := schema.TestResourceDataRaw(t, ResourceIBMDatabaseInstance().Schema, map[string]interface{}{
+			"service": "databases-for-mongodb",
+			"plan":    "enterprise-sharding-gen2",
+		})
+
+		instance := &rcv2.ResourceInstance{
+			Extensions: map[string]interface{}{
+				dataservicesKey: map[string]interface{}{
+					"mongodbees": map[string]interface{}{
+						"shards": float64(3),
+					},
+				},
+			},
+		}
+		err := sharedSetShardsInfo(d, instance)
+		if err != nil {
+			t.Fatalf("expected no error, got %v", err)
+		}
+		if v := d.Get("shards").(int); v != 3 {
+			t.Fatalf("expected shards=3 from extensions, got %d", v)
+		}
+	})
+
+	t.Run("defaults to 1 when extensions exist but shards key is absent", func(t *testing.T) {
+		d := schema.TestResourceDataRaw(t, ResourceIBMDatabaseInstance().Schema, map[string]interface{}{
+			"service": "databases-for-mongodb",
+			"plan":    "enterprise-sharding-gen2",
+		})
+
+		instance := &rcv2.ResourceInstance{
+			Extensions: map[string]interface{}{
+				dataservicesKey: map[string]interface{}{
+					"mongodbees": map[string]interface{}{
+						// no "shards" key
+					},
+				},
+			},
+		}
+		err := sharedSetShardsInfo(d, instance)
+		if err != nil {
+			t.Fatalf("expected no error, got %v", err)
+		}
+		if v := d.Get("shards").(int); v != 1 {
+			t.Fatalf("expected shards defaulted to 1 when key absent, got %d", v)
+		}
 	})
 }
