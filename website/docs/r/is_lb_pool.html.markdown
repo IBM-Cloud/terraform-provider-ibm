@@ -168,6 +168,25 @@ resource "ibm_is_lb_pool" "route_mode_example" {
 }
 ```
 
+### Route mode load balancer pool with weighted_forwarding algorithm
+
+For route mode network load balancers supporting asymmetric routing, use the `weighted_forwarding` algorithm to distribute traffic based on member weights:
+
+```terraform
+
+resource "ibm_is_lb_pool" "weighted_forwarding_example" {
+  name           = "weighted-forwarding-pool"
+  lb             = ibm_is_lb.route_mode_nlb.id
+  algorithm      = "weighted_forwarding"
+  protocol       = "tcp"
+  health_delay   = 60
+  health_retries = 5
+  health_timeout = 30
+  health_type    = "tcp"
+}
+
+```
+
 ### Load balancer pool with failsafe policy
 
 Configure failsafe behavior when all pool members become unhealthy:
@@ -232,7 +251,7 @@ The `ibm_is_lb_pool` resource provides the following [Timeouts](https://www.terr
 ## Argument reference
 Review the argument references that you can specify for your resource. 
 
-- `algorithm` - (Required, String) The load-balancing algorithm. Supported values are `round_robin`, `weighted_round_robin`, or `least_connections`. Choose `least_connections` for workloads with varying response times.
+- `algorithm` - (Required, String) The load-balancing algorithm. Supported values are `round_robin`, `weighted_round_robin`, `least_connections`, or `weighted_forwarding`. Choose `least_connections` for workloads with varying response times, or `weighted_forwarding` for advanced traffic distribution based on member weights.
 - `client_authentication` - (Optional, List) The client authentication configuration for this pool. Supported by load balancers with `mtls_supported` set to `true`. The pool must have a protocol of `https`.
 
   Nested schema for **client_authentication**:

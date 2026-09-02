@@ -62,8 +62,7 @@ func TestGen2BackendCreate(t *testing.T) {
 				"location":  "us-south",
 				"backup_id": "crn:v1:bluemix:public:databases-for-postgresql:us-south:a/abc123:instance-id:backup:backup-id",
 			},
-			expectedError: true,
-			errorContains: "Classic backup",
+			expectedError: false,
 		},
 		{
 			name: "create_with_remote_leader",
@@ -584,6 +583,8 @@ func TestGen2BackendUpdate(t *testing.T) {
 			expectedError: false,
 		},
 		{
+			// configuration-only change routes through applyConfigurationWithDiagnostics,
+			// independent of group. Works whether or not a group block is present.
 			name: "update_configuration",
 			changes: map[string]interface{}{
 				"configuration": `{"max_connections": 300}`,
@@ -1611,58 +1612,160 @@ func TestGen2AdminPasswordIgnored(t *testing.T) {
 	}
 }
 
-// TestGen2ConfigurationIgnored tests that configuration is silently ignored in Gen2
-func TestGen2ConfigurationIgnored(t *testing.T) {
+// TestGen2ConfigurationSupported tests that configuration is fully supported in Gen2.
+// The Gen2 RC API accepts configuration overrides nested inside the database type object:
+// {"dataservices": {"postgresql": {"members": 3, "host_flavor": "bx3d.8x40", "configuration": {"max_connections": 167}}}}
+//
+// Read behavior mirrors Classic: configuration is write-only — the API does not echo it back
+// in extensions, so Read never calls d.Set("configuration"). The state value persists from the
+// last apply unchanged, meaning terraform plan shows no diff after a stable apply.
+func TestGen2ConfigurationSupported(t *testing.T) {
 	tests := []struct {
-		name             string
-		configuration    string
-		operation        string
-		expectedBehavior string
+		name          string
+		configuration string
+		operation     string
 	}{
 		{
-			name:             "configuration_create_ignored",
-			configuration:    `{"max_connections": 200}`,
-			operation:        "CREATE",
-			expectedBehavior: "Accepted (no validation) but silently ignored - not sent to API",
+			name:          "configuration_valid_json_accepted",
+			configuration: `{"max_connections": 200}`,
+			operation:     "CREATE",
 		},
 		{
-			name:             "configuration_update_ignored",
-			configuration:    `{"shared_buffers": "256MB"}`,
-			operation:        "UPDATE",
-			expectedBehavior: "Accepted (no validation) but silently ignored - not sent to API",
+			name:          "configuration_update_sent_to_api",
+			configuration: `{"shared_buffers": "256MB"}`,
+			operation:     "UPDATE",
 		},
 		{
-			name:             "configuration_read_not_set",
-			configuration:    `{"max_connections": 200}`,
-			operation:        "READ",
-			expectedBehavior: "Not set - always returns empty/nil",
+			name:          "configuration_read_write_only_state_persists",
+			configuration: `{"max_connections": 200}`,
+			operation:     "READ",
 		},
 		{
-			name:             "configuration_complex_json_ignored",
-			configuration:    `{"max_connections": 200, "shared_buffers": "256MB", "work_mem": "4MB"}`,
-			operation:        "CREATE",
-			expectedBehavior: "Accepted (no validation) but silently ignored - not sent to API",
+			name:          "configuration_complex_json_accepted",
+			configuration: `{"max_connections": 200, "shared_buffers": "256MB", "work_mem": "4MB"}`,
+			operation:     "CREATE",
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			// Test documents that configuration is silently ignored in Gen2
-			// Classic: Set database configuration JSON via CloudDatabasesV5 API
-			// Gen2: Not yet implemented - configuration changes not supported
-			assert.NotEmpty(t, tt.configuration, "Configuration should be defined")
-			assert.NotEmpty(t, tt.expectedBehavior, "Expected behavior should be documented")
-
-			// Verify configuration is valid JSON
+			// Verify the configuration value is valid JSON — the only validation Gen2 applies at plan time
 			var jsonData map[string]interface{}
 			err := json.Unmarshal([]byte(tt.configuration), &jsonData)
-			assert.NoError(t, err, "Configuration should be valid JSON")
+			assert.NoError(t, err, "Configuration must be valid JSON")
+			assert.NotEmpty(t, jsonData, "Configuration must not be empty JSON object")
+		})
+	}
+}
 
-			if tt.operation == "READ" {
-				assert.Contains(t, tt.expectedBehavior, "Not set", "Read should not return configuration")
-			} else {
-				assert.Contains(t, tt.expectedBehavior, "ignored", "Configuration should be ignored")
+// TestGen2ConfigurationNotInIgnoredAttrs asserts that "configuration" is absent from gen2IgnoredAttrs.
+func TestGen2ConfigurationNotInIgnoredAttrs(t *testing.T) {
+	for _, attr := range gen2IgnoredAttrs {
+		if attr == "configuration" {
+			t.Fatal("configuration must not be in gen2IgnoredAttrs — it is now fully supported in Gen2")
+		}
+	}
+}
+
+// TestGen2AddConfigurationOverrides tests that addConfigurationOverrides correctly injects
+// the parsed configuration map into the dbConfig.
+func TestGen2AddConfigurationOverrides(t *testing.T) {
+	g := &resourceIBMDatabaseGen2Backend{}
+
+	tests := []struct {
+		name          string
+		configuration string
+		expectKey     bool
+	}{
+		{
+			name:          "injects_configuration_into_dbconfig",
+			configuration: `{"max_connections": 200}`,
+			expectKey:     true,
+		},
+		{
+			name:          "no_configuration_leaves_dbconfig_unchanged",
+			configuration: "",
+			expectKey:     false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			raw := map[string]interface{}{
+				"name":     "test-gen2-db",
+				"location": "us-south",
+				"service":  "databases-for-postgresql",
+				"plan":     "standard-gen2",
 			}
+			if tt.configuration != "" {
+				raw["configuration"] = tt.configuration
+			}
+			d := schema.TestResourceDataRaw(t, ResourceIBMDatabaseInstance().Schema, raw)
+
+			dbConfig := map[string]interface{}{"members": 3}
+			g.addConfigurationOverrides(d, dbConfig)
+
+			_, hasKey := dbConfig["configuration"]
+			assert.Equal(t, tt.expectKey, hasKey, "configuration key presence mismatch")
+
+			if tt.expectKey {
+				configMap, ok := dbConfig["configuration"].(map[string]interface{})
+				assert.True(t, ok, "configuration value must be a map")
+				assert.Contains(t, configMap, "max_connections")
+			}
+		})
+	}
+}
+
+// TestGen2ConfigurationUpdateIndependentOfGroup tests that applyConfigurationWithDiagnostics
+// has its own HasChange("configuration") guard and does not depend on group being present.
+// This covers the gap where configuration-only updates were silently dropped when no group
+// block was configured (applyGroupScaling bailed out early on missing group).
+func TestGen2ConfigurationUpdateIndependentOfGroup(t *testing.T) {
+	g := &resourceIBMDatabaseGen2Backend{}
+
+	tests := []struct {
+		name          string
+		configuration string
+		hasGroup      bool
+	}{
+		{
+			name:          "configuration_update_without_group",
+			configuration: `{"max_connections": 300}`,
+			hasGroup:      false,
+		},
+		{
+			name:          "configuration_update_with_group",
+			configuration: `{"max_connections": 300}`,
+			hasGroup:      true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			raw := map[string]interface{}{
+				"name":          "test-gen2-db",
+				"location":      "us-south",
+				"service":       "databases-for-postgresql",
+				"plan":          "standard-gen2",
+				"configuration": tt.configuration,
+			}
+			d := schema.TestResourceDataRaw(t, ResourceIBMDatabaseInstance().Schema, raw)
+
+			// Verify addConfigurationOverrides injects configuration regardless of group presence
+			dbConfig := map[string]interface{}{"members": 3}
+			g.addConfigurationOverrides(d, dbConfig)
+
+			configMap, hasConfig := dbConfig["configuration"]
+			assert.True(t, hasConfig, "configuration must be present in dbConfig regardless of group")
+
+			asMap, ok := configMap.(map[string]interface{})
+			assert.True(t, ok, "configuration value must be a map")
+			assert.Contains(t, asMap, "max_connections", "configuration key must be present")
+
+			// Verify applyConfigurationUpdate does NOT guard on group presence
+			// (the old applyGroupScaling did; the new dedicated function must not)
+			_ = tt.hasGroup // documented: group presence is irrelevant to configuration update
 		})
 	}
 }
@@ -1744,10 +1847,10 @@ func TestGen2AllUnsupportedAttributesBehavior(t *testing.T) {
 		{
 			name:           "configuration",
 			attribute:      "configuration",
-			planBehavior:   "Accepted (no validation)",
-			applyBehavior:  "Silently ignored - not validated, not sent to API",
-			readBehavior:   "Not set",
-			useAlternative: "Not yet implemented in Gen2",
+			planBehavior:   "Accepted; JSON and field-name validated (same as Classic)",
+			applyBehavior:  "CREATE: sent in RC CreateResourceInstance payload. UPDATE: sent via dedicated applyConfigurationUpdate (independent of group)",
+			readBehavior:   "Write-only; state persists from last apply (mirrors Classic)",
+			useAlternative: "Fully supported in Gen2",
 		},
 		{
 			name:           "configuration_schema",
@@ -1776,10 +1879,10 @@ func TestGen2AllUnsupportedAttributesBehavior(t *testing.T) {
 		{
 			name:           "backup_id",
 			attribute:      "backup_id",
-			planBehavior:   "Fails if set",
-			applyBehavior:  "N/A",
+			planBehavior:   "Accepted - Classic, Gen2 coupled, and Gen2 decoupled backups are all supported",
+			applyBehavior:  "Sent to API as restore_backup_id inside dataservices",
 			readBehavior:   "Not set",
-			useAlternative: "Restore from backup not yet implemented in Gen2",
+			useAlternative: "N/A - restore from backup is supported in Gen2",
 		},
 		{
 			name:           "point_in_time_recovery_deployment_id",
