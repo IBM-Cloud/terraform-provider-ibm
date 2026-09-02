@@ -22,11 +22,51 @@ provider "ibm" {
 }
 ```
 
+## Using with ibm_is_instance
+
+`ibm_is_instance_reinitialize` is a one-shot resource that performs a single reinitialization when applied. It does **not** own the lifecycle of the instance — `ibm_is_instance` does. Because reinitializing replaces the boot source on an already-managed instance, the two resources can go out of sync in Terraform state unless you account for it.
+
+**What happens without `lifecycle.ignore_changes`**
+
+After `ibm_is_instance_reinitialize` runs, the instance reflects the new boot source. On the next `terraform plan` or `terraform refresh`, `ibm_is_instance` re-reads the current state and updates its local state. Because `image` is `ForceNew` in `ibm_is_instance`, Terraform will plan to **destroy and recreate** the instance unless the `image` in your config now matches what reinitialize used.
+
+**The correct pattern**
+
+Add a `lifecycle` block to `ibm_is_instance` that ignores the attributes that `ibm_is_instance_reinitialize` can change: `image`, `user_data`, and `default_trusted_profile`. This tells Terraform not to treat post-reinitialize drift on those fields as a signal to replace the instance.
+
+```terraform
+resource "ibm_is_instance" "example" {
+  name    = "example-instance"
+  image   = "7eb4e35b-4257-56f8-d7da-326d85452591"   # original image at create time
+  profile = "bx2-2x8"
+
+  primary_network_interface {
+    subnet = ibm_is_subnet.example.id
+  }
+
+  vpc  = ibm_is_vpc.example.id
+  zone = "us-south-1"
+  keys = [ibm_is_ssh_key.example.id]
+
+  lifecycle {
+    ignore_changes = [
+      image,               # reinitialize can swap the image
+      user_data,           # reinitialize can replace user data
+      default_trusted_profile,  # reinitialize can change the trusted profile
+    ]
+  }
+}
+```
+
+With `ignore_changes` in place, Terraform will not plan any changes to those attributes on `ibm_is_instance` after a reinitialize, and no destructive diff will appear.
+
+---
+
 ## Example usage
 
 ### Reinitialize by image
 
-In the following example, you can reinitialize an instance using a new image:
+In the following example, you can reinitialize an instance using a new image. Note the `lifecycle.ignore_changes` on `ibm_is_instance` — this is required to prevent Terraform from planning a destructive replace on the parent instance after the reinitialize runs.
 
 ```terraform
 resource "ibm_is_vpc" "example" {
@@ -49,25 +89,35 @@ resource "ibm_is_instance" "example" {
   name    = "example-instance"
   image   = "7eb4e35b-4257-56f8-d7da-326d85452591"
   profile = "bx2-2x8"
-  
+
   primary_network_interface {
     subnet = ibm_is_subnet.example.id
   }
-  
+
   vpc  = ibm_is_vpc.example.id
   zone = "us-south-1"
   keys = [ibm_is_ssh_key.example.id]
+
+  lifecycle {
+    ignore_changes = [
+      image,
+      user_data,
+      default_trusted_profile,
+    ]
+  }
 }
 
 resource "ibm_is_instance_reinitialize" "example" {
   depends_on = [ibm_is_instance.example]
-  
+
   instance_id = ibm_is_instance.example.id
   image       = "r006-8f7c5c3d-5b8c-4b8c-8b8c-8b8c8b8c8b8c"
 }
 ```
 
 ### Reinitialize by boot volume attachment
+
+When reinitializing by volume or snapshot, `image` is not swapped — but `boot_volume` attachment metadata on `ibm_is_instance` will still drift. Add `ignore_changes` on `ibm_is_instance` accordingly.
 
 ```terraform
 resource "ibm_is_volume" "example" {
@@ -77,11 +127,23 @@ resource "ibm_is_volume" "example" {
   capacity   = 100
 }
 
+resource "ibm_is_instance" "example" {
+  # ... other arguments ...
+
+  lifecycle {
+    ignore_changes = [
+      image,
+      user_data,
+      default_trusted_profile,
+    ]
+  }
+}
+
 resource "ibm_is_instance_reinitialize" "example" {
   depends_on = [ibm_is_instance.example, ibm_is_volume.example]
-  
+
   instance_id = ibm_is_instance.example.id
-  
+
   boot_volume_attachment {
     name = "reinit-boot-volume"
     volume {
@@ -252,6 +314,19 @@ In addition to all argument reference list, you can access the following attribu
 - **Boot source conflicts**: You must specify either `image` or `boot_volume_attachment`, but not both.
 - **Volume ID vs Snapshot**: Within `boot_volume_attachment.volume`, you must specify either `id` or `source_snapshot`, but not both.
 - **Force new**: All configuration arguments except `status` force the creation of a new resource when changed.
+- **Use `lifecycle.ignore_changes` on `ibm_is_instance`**: After reinitialization, the instance reflects the new boot source. Because `image` is `ForceNew` and its current value is re-read on every `terraform plan` or `terraform refresh`, omitting `ignore_changes` will cause Terraform to plan a **destroy and recreate** of the instance. Always add the following to the associated `ibm_is_instance` resource when using `ibm_is_instance_reinitialize`:
+
+  ```terraform
+  lifecycle {
+    ignore_changes = [
+      image,
+      user_data,
+      default_trusted_profile,
+    ]
+  }
+  ```
+
+- **Catalog offering instances**: Instances provisioned from a `catalog_offering` cannot be reinitialized. Attempting to do so will return an error.
 
 ## Import
 

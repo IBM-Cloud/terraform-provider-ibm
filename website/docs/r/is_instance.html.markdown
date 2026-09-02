@@ -13,6 +13,7 @@ Create, update, or delete a Virtual Servers for VPC instance. For more informati
 **Note**
 - IBM Cloud terraform provider currently provides both a standalone `ibm_is_instance_network_interface` resource and a `network_interfaces` block defined in-line in the `ibm_is_instance` resource. At this time you cannot use the `network_interfaces` block inline with `ibm_is_instance` in conjunction with the standalone resource `ibm_is_instance_network_interface`. Doing so will create a conflict of network interfaces and will overwrite it.
 - VPC infrastructure services are a regional specific based endpoint, by default targets to `us-south`. Please make sure to target right region in the provider block as shown in the `provider.tf` file, if VPC service is created in region other than `us-south`.
+- If you are using [`ibm_is_instance_reinitialize`](https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/resources/is_instance_reinitialize) to swap the boot source on this instance, you must add `lifecycle.ignore_changes` for `image`, `user_data`, and `default_trusted_profile` on this resource. Without it, Terraform will plan a **destroy and recreate** of the instance after every reinitialize, because `image` is `ForceNew` and its current value is re-read on every `terraform plan` or `terraform refresh`. See the [`ibm_is_instance_reinitialize`](https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/resources/is_instance_reinitialize) documentation for the full pattern.
 
   **provider.tf**
 
