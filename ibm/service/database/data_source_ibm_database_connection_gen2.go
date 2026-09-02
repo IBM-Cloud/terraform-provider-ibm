@@ -277,7 +277,8 @@ func (g *dataSourceIBMDatabaseConnectionGen2Backend) Read(context context.Contex
 	}
 
 	// Warn if S2S authorizations are not fully configured.
-	if !checkS2SAuthorization(instance.Extensions) {
+	// Only applicable to instances using Independent Backups.
+	if hasIndependentBackups(instance.Extensions) && !checkS2SAuthorization(instance.Extensions) {
 		return diag.Diagnostics{{
 			Severity: diag.Warning,
 			Summary:  s2sAuthWarningHeader,

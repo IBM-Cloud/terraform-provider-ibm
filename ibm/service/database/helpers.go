@@ -885,6 +885,23 @@ type s2sAuthWarning struct{}
 
 func (s *s2sAuthWarning) Error() string { return s2sAuthWarningHeader }
 
+// hasIndependentBackups reports whether the instance extensions indicate that
+// the instance is using Independent Backups.  This is determined by the presence
+// of a non-nil "backups" object inside extensions["dataservices"].
+// The S2S authorization check is only meaningful for instances that use
+// Independent Backups, so callers should gate checkS2SAuthorization on this.
+func hasIndependentBackups(extensions map[string]interface{}) bool {
+	if extensions == nil {
+		return false
+	}
+	dataservices, ok := extensions["dataservices"].(map[string]interface{})
+	if !ok {
+		return false
+	}
+	backups, exists := dataservices["backups"]
+	return exists && backups != nil
+}
+
 // checkS2SAuthorization returns true only when both "independent_backups" and
 // "resource_group" authorizations are present and truthy in the RC extensions map.
 // The authorizations are nested under extensions["dataservices"]["authorizations"].

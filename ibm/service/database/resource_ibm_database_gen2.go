@@ -767,7 +767,8 @@ func (g *resourceIBMDatabaseGen2Backend) populateResourceData(d *schema.Resource
 	diags = append(diags, g.WarnIgnoredAttrs(d)...)
 
 	// Warn if S2S authorizations are not fully configured.
-	if !checkS2SAuthorization(instance.Extensions) {
+	// Only applicable to instances using Independent Backups.
+	if hasIndependentBackups(instance.Extensions) && !checkS2SAuthorization(instance.Extensions) {
 		diags = append(diags, diag.Diagnostic{
 			Severity: diag.Warning,
 			Summary:  s2sAuthWarningHeader,

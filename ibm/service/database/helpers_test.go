@@ -664,6 +664,94 @@ func TestCheckS2SAuthorization(t *testing.T) {
 }
 
 // ---------------------------------------------------------------------------
+// hasIndependentBackups
+// ---------------------------------------------------------------------------
+
+func TestHasIndependentBackups(t *testing.T) {
+	cases := []struct {
+		name       string
+		extensions map[string]interface{}
+		want       bool
+	}{
+		{
+			name:       "nil extensions",
+			extensions: nil,
+			want:       false,
+		},
+		{
+			name:       "empty extensions",
+			extensions: map[string]interface{}{},
+			want:       false,
+		},
+		{
+			name: "dataservices key missing",
+			extensions: map[string]interface{}{
+				"other_key": "value",
+			},
+			want: false,
+		},
+		{
+			name: "dataservices is not a map",
+			extensions: map[string]interface{}{
+				"dataservices": "not-a-map",
+			},
+			want: false,
+		},
+		{
+			name: "backups key missing inside dataservices",
+			extensions: map[string]interface{}{
+				"dataservices": map[string]interface{}{
+					"other_key": "value",
+				},
+			},
+			want: false,
+		},
+		{
+			name: "backups key is nil",
+			extensions: map[string]interface{}{
+				"dataservices": map[string]interface{}{
+					"backups": nil,
+				},
+			},
+			want: false,
+		},
+		{
+			name: "backups key is present and non-nil",
+			extensions: map[string]interface{}{
+				"dataservices": map[string]interface{}{
+					"backups": map[string]interface{}{
+						"automatic_backups": map[string]interface{}{
+							"enabled": true,
+							"window": map[string]interface{}{
+								"start_time": "09:04Z",
+							},
+						},
+						"preserve":  false,
+						"retention": "30d",
+					},
+				},
+			},
+			want: true,
+		},
+		{
+			name: "backups key is an empty map (still non-nil)",
+			extensions: map[string]interface{}{
+				"dataservices": map[string]interface{}{
+					"backups": map[string]interface{}{},
+				},
+			},
+			want: true,
+		},
+	}
+
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			require.Equal(t, c.want, hasIndependentBackups(c.extensions))
+		})
+	}
+}
+
+// ---------------------------------------------------------------------------
 // s2sAuthWarningHeader / s2sAuthWarningDetail constants are non-empty
 // ---------------------------------------------------------------------------
 

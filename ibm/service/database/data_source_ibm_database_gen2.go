@@ -66,7 +66,8 @@ func (g *dataSourceIBMDatabaseGen2Backend) Read(d *schema.ResourceData, meta int
 	g.clearUnsupportedAttributes(d)
 
 	// Warn if S2S authorizations are not fully configured.
-	if !checkS2SAuthorization(instance.Extensions) {
+	// Only applicable to instances using Independent Backups.
+	if hasIndependentBackups(instance.Extensions) && !checkS2SAuthorization(instance.Extensions) {
 		return &s2sAuthWarning{}
 	}
 
