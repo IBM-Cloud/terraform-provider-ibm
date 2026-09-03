@@ -512,6 +512,13 @@ func (g *resourceIBMDatabaseGen2Backend) getShardsCount(d *schema.ResourceData) 
 		return 0, nil
 	}
 
+	// shards=0 means the attribute was not set in config; default to 1 for backward
+	// compatibility so existing enterprise-sharding-gen2 configs without an explicit
+	// shards value continue to work exactly as before.
+	if shards == 0 {
+		return 1, nil
+	}
+
 	if shards < 1 || shards > 3 {
 		return 0, fmt.Errorf("shard count must be between 1 and 3, got %d", shards)
 	}
