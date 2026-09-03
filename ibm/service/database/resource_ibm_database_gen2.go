@@ -63,6 +63,7 @@ const (
 type DBConfig struct {
 	Version    string `json:"version,omitempty"`
 	Members    int    `json:"members"`
+	Shards     int    `json:"shards,omitempty"`
 	StorageGB  int    `json:"storage_gb,omitempty"`
 	HostFlavor string `json:"host_flavor,omitempty"`
 }
@@ -403,6 +404,14 @@ func (g *resourceIBMDatabaseGen2Backend) buildDBConfig(d *schema.ResourceData, c
 	}
 	config.Members = members
 
+	if dbType == "mongodbees" {
+		shards, err := g.getShardsCount(d)
+		if err != nil {
+			return nil, err
+		}
+		config.Shards = shards
+	}
+
 	// Storage in GB (not MB!) - Gen2 expects per-member allocation
 	if memberGroup != nil && memberGroup.Disk != nil {
 		config.StorageGB = memberGroup.Disk.Allocation / mbPerGb
@@ -439,7 +448,7 @@ func (g *resourceIBMDatabaseGen2Backend) addConfigurationOverrides(d *schema.Res
 
 // dbConfigToMap converts DBConfig struct to map[string]interface{} for API compatibility.
 // Only includes non-zero values to avoid sending unnecessary fields.
-// The dbType parameter controls which fields are included: "mongodbees" does not accept "members".
+// The dbType parameter controls which fields are included: "mongodbees" adds "shards" instead of members.
 func (g *resourceIBMDatabaseGen2Backend) dbConfigToMap(config DBConfig, dbType string) map[string]interface{} {
 	result := make(map[string]interface{})
 
@@ -448,6 +457,8 @@ func (g *resourceIBMDatabaseGen2Backend) dbConfigToMap(config DBConfig, dbType s
 	}
 	if dbType != "mongodbees" {
 		result["members"] = config.Members
+	} else {
+		result["shards"] = config.Shards
 	}
 	if config.StorageGB > 0 {
 		result["storage_gb"] = config.StorageGB
@@ -486,6 +497,32 @@ func (g *resourceIBMDatabaseGen2Backend) getMembersCount(memberGroup *Group, cat
 		return 0, fmt.Errorf("failed to get initial node count: %w", err)
 	}
 	return members, nil
+}
+
+func (g *resourceIBMDatabaseGen2Backend) getShardsCount(d *schema.ResourceData) (int, error) {
+	service := d.Get("service").(string)
+	plan := d.Get("plan").(string)
+
+	shards := d.Get("shards").(int)
+
+	if service != "databases-for-mongodb" || plan != "enterprise-sharding-gen2" {
+		if shards != 0 {
+			return 0, fmt.Errorf("shards is supported only for databases-for-mongodb with plan enterprise-sharding-gen2")
+		}
+		return 0, nil
+	}
+
+	// shards=0 means the attribute was not set in config; default to 1 for backward
+	// compatibility so existing enterprise-sharding-gen2 configs without an explicit
+	// shards value continue to work exactly as before.
+	if shards == 0 {
+		return 1, nil
+	}
+
+	if shards < 1 || shards > 3 {
+		return 0, fmt.Errorf("shard count must be between 1 and 3, got %d", shards)
+	}
+	return shards, nil
 }
 
 // addEncryptionConfig adds encryption configuration to dataservices.
@@ -603,7 +640,7 @@ func (g *resourceIBMDatabaseGen2Backend) updateResourceInstanceParameters(
 // Flattens group configuration into parameters and updates the instance via UpdateResourceInstance API.
 // This approach is consistent with how groups are handled at CREATE time and removes CloudDatabasesV5 dependency.
 func (g *resourceIBMDatabaseGen2Backend) applyGroupScaling(configCtx *instanceConfigContext) error {
-	if _, ok := configCtx.d.GetOk("group"); !ok {
+	if _, ok := configCtx.d.GetOk("group"); !ok && !isShardAttrConfigured(configCtx.d) {
 		return nil
 	}
 
@@ -803,6 +840,9 @@ func (g *resourceIBMDatabaseGen2Backend) populateResourceData(d *schema.Resource
 	if err := g.setGroupsInfo(d, instance, meta); err != nil {
 		return diag.FromErr(err)
 	}
+	if err := g.setShardsInfo(d, instance); err != nil {
+		return diag.FromErr(err)
+	}
 
 	// Clear Gen2 unsupported attributes
 	g.clearUnsupportedAttributes(d)
@@ -841,6 +881,10 @@ func (g *resourceIBMDatabaseGen2Backend) setVersionInfo(d *schema.ResourceData, 
 func (g *resourceIBMDatabaseGen2Backend) setGroupsInfo(d *schema.ResourceData, instance *rc.ResourceInstance, meta interface{}) error {
 	// Use shared Gen2 helper function
 	return setGen2GroupsInfo(d, instance, meta)
+}
+
+func (g *resourceIBMDatabaseGen2Backend) setShardsInfo(d *schema.ResourceData, instance *rc.ResourceInstance) error {
+	return sharedSetShardsInfo(d, instance)
 }
 
 // clearUnsupportedAttributes clears attributes not supported in Gen2.
@@ -936,7 +980,7 @@ func (g *resourceIBMDatabaseGen2Backend) checkUnsupportedChanges(d *schema.Resou
 // applyGroupScalingWithDiagnostics applies group scaling and returns diagnostics.
 // Wraps applyGroupScaling to provide consistent diagnostic handling.
 func (g *resourceIBMDatabaseGen2Backend) applyGroupScalingWithDiagnostics(ctx context.Context, d *schema.ResourceData, rsConClient *rc.ResourceControllerV2, instanceID string, meta interface{}) diag.Diagnostics {
-	if !d.HasChange("group") {
+	if !d.HasChange("group") && !d.HasChange("shards") {
 		return nil
 	}
 
@@ -1194,6 +1238,24 @@ func (g *resourceIBMDatabaseGen2Backend) ValidateGroupsDiff(ctx context.Context,
 	}
 
 	return nil
+}
+
+func isShardAttrConfigured(d *schema.ResourceData) bool {
+	if d == nil {
+		return false
+	}
+	shards, ok := d.GetOk("shards")
+	if !ok {
+		return false
+	}
+	return normalizeShardValue(shards) > 0
+}
+
+func normalizeShardValue(v interface{}) int {
+	if val, ok := v.(int); ok {
+		return val
+	}
+	return 0
 }
 
 func (g *resourceIBMDatabaseGen2Backend) ValidateServiceEndpointsDiff(ctx context.Context, d *schema.ResourceDiff, meta interface{}) error {
