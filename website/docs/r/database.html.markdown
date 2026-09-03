@@ -745,7 +745,7 @@ Review the argument reference that you can specify for your resource.
 
   **Classic:** Supports backups from Classic instances. Backup CRN format: `crn:v1:<…>:backup:<backup-id>`.
 
-  **Gen2:** Supports restoring from Gen2 coupled backups (from Gen2 instances with format `crn:v1:<…>:backup:<backup-id>`) and Gen2 decoupled backups (independent backups with format `crn:v1:bluemix:public:databases-independent-backups:<region>:a/<account>:<backup-id>::`). Classic backups are not supported for Gen2 instances and will cause plan to fail with a validation error.
+  **Gen2:** Supports restoring from Classic backups, Gen2 coupled backups (format `crn:v1:<…>:backup:<backup-id>`), and Gen2 independent backups (format `crn:v1:bluemix:public:databases-independent-backups:<region>:a/<account>:<backup-id>::`).
 
 - `backup_encryption_key_crn`- (Optional, Forces new resource, String) The CRN of a key protect key, that you want to use for encrypting disk that holds deployment backups. A key protect CRN is in the format `crn:v1:<...>:key:`. Backup_encryption_key_crn can be added only at the time of creation and no update support  are available.
 
@@ -919,7 +919,7 @@ The following table summarizes feature availability for Classic and Gen2 plans:
 | Tags | ✅ Supported | ✅ Supported |
 | Encryption (key_protect_key) | ✅ Supported | ✅ Supported |
 | Backup encryption (backup_encryption_key_crn) | ✅ Supported | ❌ Plan fails if set |
-| Restore from backup (backup_id) | ✅ Supported (Classic backups) | ⚠️ Supported (Gen2 backups only) |
+| Restore from backup (backup_id) | ✅ Supported (Classic backups) | ✅ Supported (Classic and Gen2 backups) |
 | Point-in-time recovery (point_in_time_recovery_deployment_id, point_in_time_recovery_time) | ✅ Supported | ❌ Plan fails if set |
 | Offline restore (MongoDB) | ✅ Supported | ❌ Accepted but ignored |
 | Async restore (PostgreSQL) | ✅ Supported | ❌ Accepted but ignored |
@@ -942,7 +942,6 @@ Gen2 plans handle unsupported features in two ways:
 
 - **Plan fails if set**: Terraform plan will fail with a validation error if these attributes are configured. You must remove them from your configuration to use Gen2 plans.
   - Examples: `point_in_time_recovery_deployment_id`, `point_in_time_recovery_time`, `users`, `allowlist`, `adminpassword`, `remote_leader_id`, memory/cpu in `group`
-  - Note: `backup_id` is supported for Gen2 but only with Gen2 backup CRNs. Using a Classic backup CRN will cause plan to fail.
 
 - **Accepted but ignored**: These attributes can remain in your configuration for easier migration, but they have no effect on Gen2 instances. They are silently ignored during apply and cleared during read operations.
   - Examples: `auto_scaling`, `configuration`, `logical_replication_slot`, `offline_restore`, `async_restore`

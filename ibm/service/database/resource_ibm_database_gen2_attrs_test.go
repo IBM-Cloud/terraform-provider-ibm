@@ -97,7 +97,7 @@ func TestGen2UnsupportedAttrsValidation(t *testing.T) {
 		requireErrContains(t, err, "remote_leader_id")
 	})
 
-	t.Run("ignored attr only does not return error", func(t *testing.T) {
+	t.Run("supported attr configuration does not return error", func(t *testing.T) {
 		d := testGen2DatabaseResourceData(t, map[string]interface{}{
 			"configuration": `{"max_connections": 100}`,
 		})
@@ -105,11 +105,11 @@ func TestGen2UnsupportedAttrsValidation(t *testing.T) {
 		err := g.ValidateUnsupportedAttrsData(d)
 
 		if err != nil {
-			t.Fatalf("expected no error for ignored attr only, got:\n%s", err.Error())
+			t.Fatalf("expected no error for supported configuration attr, got:\n%s", err.Error())
 		}
 	})
 
-	t.Run("ignored and unsupported attrs returns error for unsupported attrs only", func(t *testing.T) {
+	t.Run("configuration with unsupported attrs returns error for unsupported attrs only", func(t *testing.T) {
 		d := testGen2DatabaseResourceData(t, map[string]interface{}{
 			"adminpassword": adminPasswordValue,
 			"configuration": `{"max_connections": 100}`,
@@ -125,7 +125,8 @@ func TestGen2UnsupportedAttrsValidation(t *testing.T) {
 func TestGen2IgnoredAttrsWarnings(t *testing.T) {
 	g := &resourceIBMDatabaseGen2Backend{}
 
-	t.Run("ignored attr present returns warning", func(t *testing.T) {
+	t.Run("configuration attr does not produce ignored warning", func(t *testing.T) {
+		// configuration is now fully supported in Gen2 — it must not generate a warning
 		d := testGen2DatabaseResourceData(t, map[string]interface{}{
 			"configuration": `{"max_connections": 100}`,
 		})
@@ -134,20 +135,13 @@ func TestGen2IgnoredAttrsWarnings(t *testing.T) {
 
 		requireNoErrors(t, diags)
 
-		if len(diags) != 1 {
-			t.Fatalf("expected 1 warning, got %d: %#v", len(diags), diags)
+		if len(diags) != 0 {
+			t.Fatalf("expected no warnings for supported configuration attr, got %d: %#v", len(diags), diags)
 		}
-
-		if diags[0].Severity != diag.Warning {
-			t.Fatalf("expected warning severity, got: %#v", diags[0])
-		}
-
-		requireWarningContains(t, diags, "configuration")
 	})
 
-	t.Run("multiple ignored attrs return one grouped warning", func(t *testing.T) {
+	t.Run("multiple ignored attrs return one grouped warning (configuration excluded)", func(t *testing.T) {
 		d := testGen2DatabaseResourceData(t, map[string]interface{}{
-			"configuration":               `{"max_connections": 100}`,
 			"version_upgrade_skip_backup": true,
 			"skip_initial_backup":         true,
 		})
@@ -164,7 +158,6 @@ func TestGen2IgnoredAttrsWarnings(t *testing.T) {
 			t.Fatalf("expected warning severity, got: %#v", diags[0])
 		}
 
-		requireWarningContains(t, diags, "configuration")
 		requireWarningContains(t, diags, "version_upgrade_skip_backup")
 		requireWarningContains(t, diags, "skip_initial_backup")
 	})
@@ -202,14 +195,15 @@ func TestGen2IgnoredAttrsWarningsAreIndependentFromUnsupportedAttrs(t *testing.T
 		"version_upgrade_skip_backup": true,
 	})
 
+	// configuration is supported in Gen2 — it must not appear in unsupported errors
 	err := g.ValidateUnsupportedAttrsData(d)
 	requireErrContains(t, err, "adminpassword")
 	requireErrNotContains(t, err, "configuration")
 	requireErrNotContains(t, err, "version_upgrade_skip_backup")
 
+	// configuration is supported — only truly ignored attrs produce warnings
 	diags := g.WarnIgnoredAttrs(d)
 	requireNoErrors(t, diags)
-	requireWarningContains(t, diags, "configuration")
 	requireWarningContains(t, diags, "version_upgrade_skip_backup")
 }
 
@@ -218,7 +212,7 @@ func TestGen2DiagnosticsCanContainErrorsAndWarnings(t *testing.T) {
 		{
 			Severity: diag.Warning,
 			Summary:  "ignored attr warning",
-			Detail:   "configuration is ignored",
+			Detail:   "version_upgrade_skip_backup is ignored",
 		},
 	}
 
@@ -249,8 +243,8 @@ func TestGen2WarningsReturnedWithErrors(t *testing.T) {
 	g := &resourceIBMDatabaseGen2Backend{}
 
 	d := testGen2DatabaseResourceData(t, map[string]interface{}{
-		"backup_id":     "bad",                      // unsupported -> error
-		"configuration": `{"max_connections": 100}`, // ignored -> warning
+		"adminpassword":               "example-admin-value", // unsupported -> error
+		"version_upgrade_skip_backup": true,                  // ignored -> warning
 	})
 
 	err := g.ValidateUnsupportedAttrsData(d)
