@@ -95,11 +95,29 @@ The following attributes are not supported for Gen2 databases:
 - `configuration_schema` - Configuration schema is not available for Gen2 databases.
 - `platform_options.backup_encryption_key_crn` - Backup encryption key is not supported for Gen2 databases (only `disk_encryption_key_crn` is supported).
 
-### Gen2 Independent Backups and S2S Authorization Warning
+### Gen2 Independent Backups and S2S Authorization
 
-When reading a Gen2 database instance that is configured to use **Independent Backups**, this data source checks whether the required service-to-service (S2S) IAM authorization is in place. If missing or incomplete, a **non-blocking warning** is emitted — all attributes are fully populated, but backup creation and management remain unavailable until the authorization is complete.
+Gen2 database instances support **Independent Backups** — automated backups managed independently of the database instance lifecycle. When a Gen2 instance is configured to use Independent Backups, it requires a service-to-service (S2S) IAM authorization between the database service and the backup storage.
 
-The warning fires only for Gen2 instances with Independent Backups configured. Classic instances and Gen2 instances without Independent Backups are not affected. To resolve the warning, see the [`ibm_database` resource documentation](../r/database.html.markdown#gen2-independent-backups-and-s2s-authorization).
+If this authorization is missing or incomplete, Terraform emits a **non-blocking warning** during `plan`, `apply`:
+
+```
+╷
+│ Warning: Database backup authorization required
+│
+│   with data.ibm_database.<name>,
+│
+│ This database uses Independent Backups.
+│ Existing backups remain available for 30 days from their creation date.
+│ Backup creation and management are unavailable until the required service authorization is completed.
+│
+│ Complete the required service authorization to enable backup operations.
+╵
+```
+
+The warning fires only when the instance has Independent Backups configured **and** the required S2S authorizations (`independent_backups` and `resource_group`) are not both `true`. It is suppressed for Classic plans and Gen2 instances not enrolled in Independent Backups.
+
+To resolve the warning, create the required IAM service-to-service authorization between the database service and `databases-independent-backups`. Once both authorizations are in place, the warning will no longer appear.
 
 ### Gen2 Example
 ```terraform
