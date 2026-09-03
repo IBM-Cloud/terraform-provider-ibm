@@ -95,6 +95,12 @@ The following attributes are not supported for Gen2 databases:
 - `configuration_schema` - Configuration schema is not available for Gen2 databases.
 - `platform_options.backup_encryption_key_crn` - Backup encryption key is not supported for Gen2 databases (only `disk_encryption_key_crn` is supported).
 
+### Gen2 Independent Backups and S2S Authorization Warning
+
+When reading a Gen2 database instance that is configured to use **Independent Backups**, this data source checks whether the required service-to-service (S2S) IAM authorization is in place. If missing or incomplete, a **non-blocking warning** is emitted — all attributes are fully populated, but backup creation and management remain unavailable until the authorization is complete.
+
+The warning fires only for Gen2 instances with Independent Backups configured. Classic instances and Gen2 instances without Independent Backups are not affected. To resolve the warning, see the [`ibm_database` resource documentation](../r/database.html.markdown#gen2-independent-backups-and-s2s-authorization).
+
 ### Gen2 Example
 ```terraform
 data "ibm_database" "postgres_gen2" {

@@ -10,6 +10,8 @@ subcategory: "Cloud Databases"
 
 Provides a read-only data source for database_connection. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.
 
+**Gen2: S2S authorization warning** — When the Gen2 instance is configured to use Independent Backups, this data source checks whether the required service-to-service (S2S) IAM authorization is in place. If missing or incomplete, a non-blocking warning is emitted after a successful read — all connection attributes are fully populated. The warning fires only for Gen2 instances with Independent Backups configured. Classic instances and Gen2 instances without Independent Backups are not affected. To resolve the warning, see the [`ibm_database` resource documentation](../r/database.html.markdown#gen2-independent-backups-and-s2s-authorization).
+
 ## Example Usage
 
 ```hcl
