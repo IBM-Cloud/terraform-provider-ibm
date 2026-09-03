@@ -8,7 +8,6 @@ import (
 	"fmt"
 	"log"
 	"net/url"
-	"reflect"
 
 	"github.com/IBM/cloud-databases-go-sdk/clouddatabasesv5"
 	"github.com/IBM/go-sdk-core/v5/core"
@@ -772,16 +771,4 @@ func classicDataSourceIBMDatabaseInstanceRead(d *schema.ResourceData, meta inter
 
 	d.Set("allowlist", flex.FlattenAllowlist(allowlist.IPAddresses))
 	return nil
-}
-
-func getInstancesNext(next *string) (string, error) {
-	if reflect.ValueOf(next).IsNil() {
-		return "", nil
-	}
-	u, err := url.Parse(*next)
-	if err != nil {
-		return "", err
-	}
-	q := u.Query()
-	return q.Get("next_url"), nil
 }

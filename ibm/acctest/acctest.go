@@ -231,6 +231,8 @@ var (
 	IcdDbDeploymentId         string
 	IcdDbBackupId             string
 	IcdDbTaskId               string
+	Gen2DeploymentId          string
+	Gen2BackupId              string
 	KmsInstanceID             string
 	CrkID                     string
 	KmsAccountID              string
@@ -492,6 +494,7 @@ var (
 	PcsOnboardingCatalogProductId                     string
 	PcsOnboardingCatalogPlanId                        string
 	PcsIamServiceRegistrationId                       string
+	ResourceGroupCRN                                  string
 )
 
 // For cluster
@@ -1224,6 +1227,18 @@ func init() {
 	if IcdDbDeploymentId == "" {
 		IcdDbDeploymentId = "crn:v1:bluemix:public:databases-for-redis:au-syd:a/40ddc34a953a8c02f10987b59085b60e:5042afe1-72c2-4231-89cc-c949e5d56251::"
 		fmt.Println("[INFO] Set the environment variable ICD_DB_DEPLOYMENT_ID for testing ibm_cloud_databases else it is set to default value 'crn:v1:bluemix:public:databases-for-redis:au-syd:a/40ddc34a953a8c02f10987b59085b60e:5042afe1-72c2-4231-89cc-c949e5d56251::'")
+	}
+
+	Gen2DeploymentId = os.Getenv("GEN2_DEPLOYMENT_ID")
+	if Gen2DeploymentId == "" {
+		Gen2DeploymentId = "crn:v1:bluemix:public:databases-for-mysql:us-east:a/23b09aee04da4545b6e32805fa93249d:8ff728d1-35f2-4b35-86ce-8f9f9bea9721::"
+		fmt.Println("[INFO] Set the environment variable GEN2_DEPLOYMENT_ID for testing ibm_database_backups Gen2 else it is set to default value")
+	}
+
+	Gen2BackupId = os.Getenv("GEN2_BACKUP_ID")
+	if Gen2BackupId == "" {
+		Gen2BackupId = "crn:v1:bluemix:public:databases-independent-backups:us-east:a/23b09aee04da4545b6e32805fa93249d:4a7b205f-5469-4d23-a0fb-28035c8cb500::"
+		fmt.Println("[INFO] Set the environment variable GEN2_BACKUP_ID for testing ibm_database_backup Gen2 else it is set to default value")
 	}
 
 	IcdDbBackupId = os.Getenv("ICD_DB_BACKUP_ID")
@@ -2334,6 +2349,11 @@ func init() {
 	PcsIamServiceRegistrationId = os.Getenv("PCS_IAM_REGISTRATION_ID")
 	if PcsIamServiceRegistrationId == "" {
 		fmt.Println("[WARN] Set the environment variable PCS_IAM_TEGISTRATION_ID for testing iam_onboarding resource else tests will fail if this is not set correctly")
+	}
+
+	ResourceGroupCRN = os.Getenv("RESOURCE_GROUP_CRN")
+	if ResourceGroupCRN == "" {
+		fmt.Println("[WARN] Set the environment variable RESOURCE_GROUP_CRN for testing brokers else tests will fail if this is not set correctly")
 	}
 
 	ToolchainID = os.Getenv("TOOLCHAIN_ID")

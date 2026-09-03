@@ -2,7 +2,7 @@
 // Licensed under the Mozilla Public License v2.0
 
 /*
- * IBM OpenAPI Terraform Generator Version: 3.112.0-f88e9264-20260220-115155
+ * IBM OpenAPI Terraform Generator Version: 3.116.0-df613dbc-20260803-154903
  */
 
 package partnercentersell
@@ -1219,6 +1219,16 @@ func ResourceIbmOnboardingCatalogProduct() *schema.Resource {
 											},
 										},
 									},
+									"product_code": &schema.Schema{
+										Type:        schema.TypeString,
+										Optional:    true,
+										Description: "Product code from FedCat.",
+									},
+									"product_code_type": &schema.Schema{
+										Type:        schema.TypeString,
+										Optional:    true,
+										Description: "Product code type.",
+									},
 								},
 							},
 						},
@@ -2163,6 +2173,12 @@ func ResourceIbmOnboardingCatalogProductMapToGlobalCatalogProductMetadataOther(m
 		}
 		model.Composite = CompositeModel
 	}
+	if modelMap["product_code"] != nil && modelMap["product_code"].(string) != "" {
+		model.ProductCode = core.StringPtr(modelMap["product_code"].(string))
+	}
+	if modelMap["product_code_type"] != nil && modelMap["product_code_type"].(string) != "" {
+		model.ProductCodeType = core.StringPtr(modelMap["product_code_type"].(string))
+	}
 	return model, nil
 }
 
@@ -2889,6 +2905,12 @@ func ResourceIbmOnboardingCatalogProductGlobalCatalogProductMetadataOtherToMap(m
 		}
 		modelMap["composite"] = []map[string]interface{}{compositeMap}
 	}
+	if model.ProductCode != nil {
+		modelMap["product_code"] = *model.ProductCode
+	}
+	if model.ProductCodeType != nil {
+		modelMap["product_code_type"] = *model.ProductCodeType
+	}
 	return modelMap, nil
 }
 
@@ -3193,6 +3215,18 @@ func ResourceIbmOnboardingCatalogProductGlobalCatalogProductMetadataOtherAsPatch
 		ResourceIbmOnboardingCatalogProductGlobalCatalogProductMetadataOtherCompositeAsPatch(patch["composite"].(map[string]interface{}), d, fmt.Sprintf("%s.0", path))
 	} else if !exists {
 		delete(patch, "composite")
+	}
+	path = rootPath + ".product_code"
+	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
+		patch["product_code"] = nil
+	} else if !exists {
+		delete(patch, "product_code")
+	}
+	path = rootPath + ".product_code_type"
+	if _, exists := d.GetOk(path); d.HasChange(path) && !exists {
+		patch["product_code_type"] = nil
+	} else if !exists {
+		delete(patch, "product_code_type")
 	}
 }
 
