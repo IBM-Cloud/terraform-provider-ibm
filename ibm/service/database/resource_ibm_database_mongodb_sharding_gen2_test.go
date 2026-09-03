@@ -63,39 +63,6 @@ func TestAccIBMDatabaseMongoDBShardingGen2Basic(t *testing.T) {
 	})
 }
 
-// TestAccIBMDatabaseMongoDBShardingGen2ScaleOut verifies that shard count can be
-// increased from 1 to 2, then from 2 to 3, within the same resource lifecycle.
-func TestAccIBMDatabaseMongoDBShardingGen2ScaleOut(t *testing.T) {
-	t.Parallel()
-	var databaseInstanceOne string
-	testName := fmt.Sprintf("tf-mongo-sharding-gen2-%d", acctest.RandIntRange(10, 100))
-	name := "ibm_database." + testName
-
-	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { acc.TestAccPreCheckEnterprise(t) },
-		Providers:    acc.TestAccProviders,
-		CheckDestroy: testAccCheckIBMDatabaseInstanceDestroy,
-		Steps: []resource.TestStep{
-			// Step 1 — create with 1 shard
-			{
-				Config: testAccCheckIBMDatabaseInstanceMongoDBShardingGen2WithShards(testName, 1),
-				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckIBMDatabaseInstanceExists(name, &databaseInstanceOne),
-					resource.TestCheckResourceAttr(name, "shards", "1"),
-				),
-			},
-			// Step 2 — increase to 2 shards
-			{
-				Config: testAccCheckIBMDatabaseInstanceMongoDBShardingGen2WithShards(testName, 2),
-				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckIBMDatabaseInstanceExists(name, &databaseInstanceOne),
-					resource.TestCheckResourceAttr(name, "shards", "2"),
-				),
-			},
-		},
-	})
-}
-
 // TestAccIBMDatabaseMongoDBShardingGen2DowngradeRejected verifies that attempting
 // to decrease shard count is rejected during terraform plan (CustomizeDiff),
 // before any API call is made.

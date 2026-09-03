@@ -723,10 +723,6 @@ func (g *resourceIBMDatabaseGen2Backend) waitForGen2InstanceUpdate(d *schema.Res
 	}
 	instanceID := d.Id()
 
-	// For enterprise-sharding-gen2 scale-out, the RC API returns "active" before
-	// extensions reflect the new shard count. Poll until they match.
-	desiredShards, _ := d.GetOk("shards")
-
 	stateConf := &resource.StateChangeConf{
 		Pending: []string{databaseInstanceProgressStatus, databaseInstanceInactiveStatus},
 		Target:  []string{databaseInstanceSuccessStatus},
@@ -743,11 +739,6 @@ func (g *resourceIBMDatabaseGen2Backend) waitForGen2InstanceUpdate(d *schema.Res
 			}
 			if *instance.State == databaseInstanceFailStatus {
 				return *instance, *instance.State, fmt.Errorf("[ERROR] The resource instance %s failed: %s %s", d.Id(), err, response)
-			}
-			if n, ok := desiredShards.(int); ok && *instance.State == databaseInstanceSuccessStatus {
-				if extractShardsFromExtensions(instance.Extensions, "mongodbees") != n {
-					return *instance, databaseInstanceProgressStatus, nil
-				}
 			}
 			return *instance, *instance.State, nil
 		},
