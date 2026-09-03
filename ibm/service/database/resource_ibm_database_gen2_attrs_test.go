@@ -383,7 +383,7 @@ func TestGetShardsCount(t *testing.T) {
 		})
 
 		_, err := g.getShardsCount(d)
-		requireErrContains(t, err, "shards is supported only for service=databases-for-mongodb with plan=enterprise-sharding-gen2")
+		requireErrContains(t, err, "shards is supported only for databases-for-mongodb with plan enterprise-sharding-gen2")
 	})
 	t.Run("rejects shard count outside 1-3 range", func(t *testing.T) {
 		d := testGen2DatabaseResourceData(t, map[string]interface{}{
@@ -416,17 +416,17 @@ func TestBuildGen2Parameters_standardGen2UsesMongodbNotMongodbees(t *testing.T) 
 func TestValidateShardsDiff(t *testing.T) {
 	t.Run("rejects shards for non-mongodb service", func(t *testing.T) {
 		err := validateShardsDiffPredicate("databases-for-postgresql", "enterprise-sharding-gen2")
-		requireErrContains(t, err, "only supported for `service=databases-for-mongodb`")
+		requireErrContains(t, err, "only supported for databases-for-mongodb")
 	})
 
 	t.Run("rejects shards for non-gen2 plan", func(t *testing.T) {
 		err := validateShardsDiffPredicate("databases-for-mongodb", "enterprise-sharding")
-		requireErrContains(t, err, "only supported for `service=databases-for-mongodb`")
+		requireErrContains(t, err, "only supported for databases-for-mongodb")
 	})
 
 	t.Run("rejects shards for standard plan", func(t *testing.T) {
 		err := validateShardsDiffPredicate("databases-for-mongodb", "standard-gen2")
-		requireErrContains(t, err, "only supported for `service=databases-for-mongodb`")
+		requireErrContains(t, err, "only supported for databases-for-mongodb")
 	})
 
 	t.Run("accepts shards for mongodb enterprise-sharding-gen2", func(t *testing.T) {
@@ -439,7 +439,7 @@ func TestValidateShardsDiff(t *testing.T) {
 
 func validateShardsDiffPredicate(service, plan string) error {
 	if service != "databases-for-mongodb" || plan != "enterprise-sharding-gen2" {
-		return fmt.Errorf("[ERROR] `shards` is only supported for `service=databases-for-mongodb` with `plan=enterprise-sharding-gen2`")
+		return fmt.Errorf("[ERROR] `shards` is only supported for databases-for-mongodb with plan enterprise-sharding-gen2")
 	}
 	return nil
 }

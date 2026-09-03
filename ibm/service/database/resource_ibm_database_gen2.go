@@ -507,7 +507,7 @@ func (g *resourceIBMDatabaseGen2Backend) getShardsCount(d *schema.ResourceData) 
 
 	if service != "databases-for-mongodb" || plan != "enterprise-sharding-gen2" {
 		if shards != 0 {
-			return 0, fmt.Errorf("shards is supported only for service=databases-for-mongodb with plan=enterprise-sharding-gen2")
+			return 0, fmt.Errorf("shards is supported only for databases-for-mongodb with plan enterprise-sharding-gen2")
 		}
 		return 0, nil
 	}

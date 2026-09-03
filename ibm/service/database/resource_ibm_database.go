@@ -293,7 +293,7 @@ func ResourceIBMDatabaseInstance() *schema.Resource {
 				Optional:    true,
 			},
 			"shards": {
-				Description: "Explicit shard count for MongoDB Enterprise Edition Sharding Gen 2 is supported only with service=databases-for-mongodb and plan=enterprise-sharding-gen2. The shard count can range from 1 to 3. It can be increased after provisioning, but cannot be decreased.",
+				Description: "Explicit shard count for MongoDB Enterprise Edition Sharding Gen 2 is supported only for databases-for-mongodb with plan enterprise-sharding-gen2. The shard count can range from 1 to 3. It can be increased after provisioning, but cannot be decreased.",
 				Type:        schema.TypeInt,
 				Optional:    true,
 				Computed:    true,
@@ -3345,7 +3345,7 @@ func validateShardsDiff(_ context.Context, diff *schema.ResourceDiff, _ interfac
 	plan := diff.Get("plan").(string)
 
 	if service != "databases-for-mongodb" || plan != "enterprise-sharding-gen2" {
-		return fmt.Errorf("[ERROR] `shards` is only supported for `service=databases-for-mongodb` with `plan=enterprise-sharding-gen2`")
+		return fmt.Errorf("[ERROR] `shards` is only supported for databases-for-mongodb with plan enterprise-sharding-gen2")
 	}
 
 	if diff.HasChange("shards") {
