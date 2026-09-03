@@ -934,6 +934,8 @@ func isTruthy(v interface{}) bool {
 		return val == "true"
 	}
 	return false
+}
+
 // getInstancesNext extracts the "next_url" query parameter from the URL returned
 // in a paginated Resource Controller list response's NextURL field, so it can be
 // used as the "start" token for the next page request. Returns an empty string,
