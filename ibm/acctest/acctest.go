@@ -492,6 +492,7 @@ var (
 	PcsOnboardingCatalogProductId                     string
 	PcsOnboardingCatalogPlanId                        string
 	PcsIamServiceRegistrationId                       string
+	ResourceGroupCRN                                  string
 )
 
 // For cluster
@@ -2334,6 +2335,11 @@ func init() {
 	PcsIamServiceRegistrationId = os.Getenv("PCS_IAM_REGISTRATION_ID")
 	if PcsIamServiceRegistrationId == "" {
 		fmt.Println("[WARN] Set the environment variable PCS_IAM_TEGISTRATION_ID for testing iam_onboarding resource else tests will fail if this is not set correctly")
+	}
+
+	ResourceGroupCRN = os.Getenv("RESOURCE_GROUP_CRN")
+	if ResourceGroupCRN == "" {
+		fmt.Println("[WARN] Set the environment variable RESOURCE_GROUP_CRN for testing brokers else tests will fail if this is not set correctly")
 	}
 
 	ToolchainID = os.Getenv("TOOLCHAIN_ID")
