@@ -810,6 +810,16 @@ func (g *resourceIBMDatabaseGen2Backend) populateResourceData(d *schema.Resource
 	// Check for ignored attributes and add warnings
 	diags = append(diags, g.WarnIgnoredAttrs(d)...)
 
+	// Warn if S2S authorizations are not fully configured.
+	// Only applicable to instances using Independent Backups.
+	if hasIndependentBackups(instance.Extensions) && !checkS2SAuthorization(instance.Extensions) {
+		diags = append(diags, diag.Diagnostic{
+			Severity: diag.Warning,
+			Summary:  s2sAuthWarningHeader,
+			Detail:   s2sAuthWarningDetail,
+		})
+	}
+
 	return diags
 }
 
