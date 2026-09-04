@@ -953,7 +953,7 @@ Gen2 plans handle unsupported features in two ways:
 
 Gen2 database instances support **Independent Backups** — automated backups managed independently of the database instance lifecycle. When a Gen2 instance is configured to use Independent Backups, it requires a service-to-service (S2S) IAM authorization between the database service and the backup storage.
 
-If this authorization is missing or incomplete, Terraform emits a **non-blocking warning** during `plan`, `apply`:
+If this authorization is missing or incomplete, Terraform emits a **non-blocking warning** during `plan` or `apply`:
 
 ```
 ╷
@@ -969,7 +969,7 @@ If this authorization is missing or incomplete, Terraform emits a **non-blocking
 ╵
 ```
 
-The warning fires only when the instance has Independent Backups configured **and** the required S2S authorizations (`independent_backups` and `resource_group`) are not both `true`. It is suppressed for Classic plans and Gen2 instances not enrolled in Independent Backups.
+The warning is emitted (or The warning appears) only when the instance has Independent Backups configured **and** the required S2S authorizations (`independent_backups` and `resource_group`) are not both `true`. It is suppressed for Classic plans and Gen2 instances not enrolled in Independent Backups.
 
 To resolve the warning, create the required IAM service-to-service authorization between the database service and `databases-independent-backups`. Once both authorizations are in place, the warning will no longer appear.
 
