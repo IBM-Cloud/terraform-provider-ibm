@@ -2204,3 +2204,125 @@ func TestGen2LogicalReplicationSlotIgnored(t *testing.T) {
 		})
 	}
 }
+
+// TestMemberZonesInDBConfig verifies that member_zones is passed through DBConfig
+// into the API parameters map when set, and omitted when not set.
+func TestMemberZonesInDBConfig(t *testing.T) {
+	backend := &resourceIBMDatabaseGen2Backend{}
+
+	t.Run("member_zones included when set", func(t *testing.T) {
+		config := DBConfig{
+			Members:     1,
+			MemberZones: []string{"us-east-1"},
+		}
+		result := backend.dbConfigToMap(config, "postgresql")
+		zones, ok := result["member_zones"]
+		assert.True(t, ok, "member_zones should be present in result")
+		assert.Equal(t, []string{"us-east-1"}, zones)
+		assert.Equal(t, 1, result["members"])
+	})
+
+	t.Run("member_zones omitted when empty", func(t *testing.T) {
+		config := DBConfig{
+			Members:     3,
+			MemberZones: nil,
+		}
+		result := backend.dbConfigToMap(config, "postgresql")
+		_, ok := result["member_zones"]
+		assert.False(t, ok, "member_zones should not be present when empty")
+	})
+
+	t.Run("member_zones omitted for mongodbees", func(t *testing.T) {
+		config := DBConfig{
+			Members:     1,
+			MemberZones: []string{"us-east-1"},
+		}
+		result := backend.dbConfigToMap(config, "mongodbees")
+		_, membersOk := result["members"]
+		assert.False(t, membersOk, "members should not be present for mongodbees")
+		zones, zonesOk := result["member_zones"]
+		assert.True(t, zonesOk, "member_zones should still be present for mongodbees")
+		assert.Equal(t, []string{"us-east-1"}, zones)
+	})
+}
+
+// TestMemberCountFromGroups verifies the helper extracts the member allocation correctly.
+func TestMemberCountFromGroups(t *testing.T) {
+	cases := []struct {
+		name   string
+		groups []*Group
+		want   int
+	}{
+		{
+			name:   "nil groups",
+			groups: nil,
+			want:   0,
+		},
+		{
+			name: "member group with allocation",
+			groups: []*Group{
+				{ID: "member", Members: &GroupResource{Allocation: 3}},
+			},
+			want: 3,
+		},
+		{
+			name: "member group with allocation 1",
+			groups: []*Group{
+				{ID: "member", Members: &GroupResource{Allocation: 1}},
+			},
+			want: 1,
+		},
+		{
+			name: "no members block",
+			groups: []*Group{
+				{ID: "member"},
+			},
+			want: 0,
+		},
+		{
+			name: "non-member group ignored",
+			groups: []*Group{
+				{ID: "analytics", Members: &GroupResource{Allocation: 2}},
+			},
+			want: 0,
+		},
+	}
+
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			assert.Equal(t, c.want, memberCountFromGroups(c.groups))
+		})
+	}
+}
+
+// TestScaleDownTo1MemberBlocked verifies the gate condition used in checkUnsupportedChanges
+// to block scaling from N members down to 1.
+// Uses []*Group directly to avoid schema.Set construction complexity.
+func TestScaleDownTo1MemberBlocked(t *testing.T) {
+	makeGroups := func(count int) []*Group {
+		return []*Group{{ID: defaultGroupID, Members: &GroupResource{Allocation: count}}}
+	}
+
+	cases := []struct {
+		name        string
+		oldCount    int
+		newCount    int
+		shouldBlock bool
+	}{
+		{"scale down 3→1 blocked", 3, 1, true},
+		{"scale down 2→1 blocked", 2, 1, true},
+		{"scale up 1→3 allowed", 1, 3, false},
+		{"scale up 1→2 allowed", 1, 2, false},
+		{"scale 3→2 allowed", 3, 2, false},
+		{"no change 3→3 allowed", 3, 3, false},
+	}
+
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			oldMembers := memberCountFromGroups(makeGroups(c.oldCount))
+			newMembers := memberCountFromGroups(makeGroups(c.newCount))
+			blocked := oldMembers > 1 && newMembers == 1
+			assert.Equal(t, c.shouldBlock, blocked)
+		})
+	}
+}

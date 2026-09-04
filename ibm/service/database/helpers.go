@@ -352,12 +352,13 @@ func flattenIcdGroupsFromInstanceAndCatalog(instance map[string]interface{}, cat
 		}
 
 		group := map[string]interface{}{
-			"group_id":    groupID,
-			"count":       count,
-			"memory":      buildMemoryConfig(resourceMap, allocations.memoryGB),
-			"cpu":         buildCPUConfig(resourceMap, allocations.cpuCount),
-			"disk":        buildDiskConfig(resourceMap, allocations.storageGB),
-			"host_flavor": buildHostFlavorConfig(allocations.hostFlavorID),
+			"group_id":     groupID,
+			"count":        count,
+			"memory":       buildMemoryConfig(resourceMap, allocations.memoryGB),
+			"cpu":          buildCPUConfig(resourceMap, allocations.cpuCount),
+			"disk":         buildDiskConfig(resourceMap, allocations.storageGB),
+			"member_zones": allocations.memberZones,
+			"host_flavor":  buildHostFlavorConfig(allocations.hostFlavorID),
 		}
 		groups = append(groups, group)
 	}
@@ -372,6 +373,7 @@ type databaseAllocations struct {
 	memoryGB     float64
 	storageGB    float64
 	members      int64
+	memberZones  []string
 	hostFlavorID string
 }
 
@@ -408,6 +410,15 @@ func extractDatabaseAllocations(instance map[string]interface{}, resourceID stri
 	}
 	if flavor, ok := dbTypeData["host_flavor"].(string); ok {
 		alloc.hostFlavorID = flavor
+	}
+	if zonesRaw, ok := dbTypeData["member_zones"].([]interface{}); ok {
+		zones := make([]string, 0, len(zonesRaw))
+		for _, z := range zonesRaw {
+			if s, ok := z.(string); ok {
+				zones = append(zones, s)
+			}
+		}
+		alloc.memberZones = zones
 	}
 
 	return alloc
