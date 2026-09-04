@@ -61,10 +61,11 @@ const (
 // DBConfig represents database-specific configuration for Gen2 parameters.
 // Replaces map[string]interface{} for type safety and compile-time validation.
 type DBConfig struct {
-	Version    string `json:"version,omitempty"`
-	Members    int    `json:"members"`
-	StorageGB  int    `json:"storage_gb,omitempty"`
-	HostFlavor string `json:"host_flavor,omitempty"`
+	Version     string   `json:"version,omitempty"`
+	Members     int      `json:"members"`
+	MemberZones []string `json:"member_zones,omitempty"`
+	StorageGB   int      `json:"storage_gb,omitempty"`
+	HostFlavor  string   `json:"host_flavor,omitempty"`
 }
 
 // instanceConfigContext encapsulates shared context for instance configuration steps.
@@ -427,6 +428,11 @@ func (g *resourceIBMDatabaseGen2Backend) buildDBConfig(d *schema.ResourceData, c
 		config.HostFlavor = memberGroup.HostFlavor.ID
 	}
 
+	// member_zones — only valid when members == 1
+	if len(memberGroup.MemberZones) > 0 {
+		config.MemberZones = memberGroup.MemberZones
+	}
+
 	return g.dbConfigToMap(config, dbType), nil
 }
 
@@ -441,6 +447,9 @@ func (g *resourceIBMDatabaseGen2Backend) dbConfigToMap(config DBConfig, dbType s
 	}
 	if dbType != "mongodbees" {
 		result["members"] = config.Members
+	}
+	if len(config.MemberZones) > 0 {
+		result["member_zones"] = config.MemberZones
 	}
 	if config.StorageGB > 0 {
 		result["storage_gb"] = config.StorageGB
@@ -886,7 +895,37 @@ func (g *resourceIBMDatabaseGen2Backend) checkUnsupportedChanges(d *schema.Resou
 		return diagError("Version changes are not supported for Gen2 database instances")
 	}
 
+	// Scaling down to 1 member is not supported.
+	// Customers can scale from 1 to N, but not from N back to 1.
+	if d.HasChange("group") {
+		oldRaw, newRaw := d.GetChange("group")
+		oldGroups := expandGroups(oldRaw.(*schema.Set).List())
+		newGroups := expandGroups(newRaw.(*schema.Set).List())
+
+		oldMembers := memberCountFromGroups(oldGroups)
+		newMembers := memberCountFromGroups(newGroups)
+
+		if oldMembers > 1 && newMembers == 1 {
+			return diagError(
+				"Scaling down to 1 member is not supported for Gen2 databases. "+
+					"Current member count: %d. Scaling down from 2 or more members to 1 is not allowed.",
+				oldMembers,
+			)
+		}
+	}
+
 	return nil
+}
+
+// memberCountFromGroups returns the member allocation_count from the "member" group,
+// or 0 if no member group or members block is found.
+func memberCountFromGroups(groups []*Group) int {
+	for _, g := range groups {
+		if g.ID == defaultGroupID && g.Members != nil {
+			return g.Members.Allocation
+		}
+	}
+	return 0
 }
 
 // applyGroupScalingWithDiagnostics applies group scaling and returns diagnostics.

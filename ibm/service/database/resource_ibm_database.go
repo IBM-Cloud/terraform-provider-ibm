@@ -469,6 +469,13 @@ func ResourceIBMDatabaseInstance() *schema.Resource {
 										Type:     schema.TypeInt,
 										Required: true,
 									},
+									"member_zones": {
+										Type:     schema.TypeList,
+										Optional: true,
+										Elem: &schema.Schema{
+											Type: schema.TypeString,
+										},
+									},
 								},
 							},
 						},
@@ -683,6 +690,14 @@ func ResourceIBMDatabaseInstance() *schema.Resource {
 									},
 								},
 							},
+						},
+						"member_zones": {
+							Type:     schema.TypeList,
+							Computed: true,
+							Elem: &schema.Schema{
+								Type: schema.TypeString,
+							},
+							Description: "Availability zones for a single-member deployment. Gen2 only.",
 						},
 						"host_flavor": {
 							Type:     schema.TypeList,
@@ -996,12 +1011,13 @@ type Params struct {
 }
 
 type Group struct {
-	ID         string
-	Members    *GroupResource
-	Memory     *GroupResource
-	Disk       *GroupResource
-	CPU        *GroupResource
-	HostFlavor *HostFlavorGroupResource
+	ID          string
+	Members     *GroupResource
+	MemberZones []string
+	Memory      *GroupResource
+	Disk        *GroupResource
+	CPU         *GroupResource
+	HostFlavor  *HostFlavorGroupResource
 }
 
 type GroupResource struct {
@@ -2857,7 +2873,15 @@ func expandGroups(_groups []interface{}) []*Group {
 			if membersSet, ok := tfGroup["members"].(*schema.Set); ok {
 				members := membersSet.List()
 				if len(members) != 0 {
-					group.Members = &GroupResource{Allocation: members[0].(map[string]interface{})["allocation_count"].(int)}
+					memberMap := members[0].(map[string]interface{})
+					group.Members = &GroupResource{Allocation: memberMap["allocation_count"].(int)}
+					if zonesRaw, ok := memberMap["member_zones"].([]interface{}); ok && len(zonesRaw) > 0 {
+						zones := make([]string, len(zonesRaw))
+						for i, z := range zonesRaw {
+							zones[i] = z.(string)
+						}
+						group.MemberZones = zones
+					}
 				}
 			}
 
