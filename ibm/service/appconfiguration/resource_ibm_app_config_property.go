@@ -404,7 +404,7 @@ func resourceIbmIbmAppConfigPropertyDelete(d *schema.ResourceData, meta interfac
 	options.SetEnvironmentID(d.Get("environment_id").(string))
 	options.SetPropertyID(parts[1])
 
-	response, err := appconfigClient.DeleteProperty(options)
+	_, response, err := appconfigClient.DeleteProperty(options)
 	if err != nil {
 		if response != nil && response.StatusCode == 404 {
 			d.SetId("")
