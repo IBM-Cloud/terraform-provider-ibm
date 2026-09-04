@@ -420,11 +420,6 @@ func (g *resourceIBMDatabaseGen2Backend) buildDBConfig(d *schema.ResourceData, c
 	}
 
 	return g.dbConfigToMap(config, dbType), nil
-	// Build the result map and inject configuration overrides.
-	// addConfigurationOverrides is independent of memberGroup — called once here.
-	result := g.dbConfigToMap(config, dbType)
-	g.addConfigurationOverrides(d, result)
-	return result, nil
 }
 
 // addConfigurationOverrides injects the "configuration" JSON field into the dbConfig map.
