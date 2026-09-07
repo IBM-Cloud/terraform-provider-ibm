@@ -417,7 +417,7 @@ func (g *resourceIBMDatabaseGen2Backend) buildDBConfig(d *schema.ResourceData, c
 	// member_zones is only valid when members == 1
 	if memberGroup != nil && len(memberGroup.MemberZones) > 0 {
 		if config.Members != 1 {
-			return nil, fmt.Errorf("[ERROR] member_zones can only be set when allocation_count is 1, got %d", config.Members)
+			return nil, fmt.Errorf("member_zones can only be set when allocation_count is 1, got %d", config.Members)
 		}
 		config.MemberZones = memberGroup.MemberZones
 	}
