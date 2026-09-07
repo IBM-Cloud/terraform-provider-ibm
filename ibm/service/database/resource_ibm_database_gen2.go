@@ -458,6 +458,7 @@ func (g *resourceIBMDatabaseGen2Backend) dbConfigToMap(config DBConfig, dbType s
 	if dbType != "mongodbees" {
 		result["members"] = config.Members
 	}
+	// Only include member_zones when set — omitted for standard multi-member deployments
 	if len(config.MemberZones) > 0 {
 		result["member_zones"] = config.MemberZones
 	}
