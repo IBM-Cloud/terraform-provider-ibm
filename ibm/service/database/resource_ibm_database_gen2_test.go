@@ -2245,7 +2245,6 @@ func TestMemberZonesInDBConfig(t *testing.T) {
 		assert.Equal(t, []string{"us-east-1"}, zones)
 	})
 }
-
 // TestMemberCountFromGroups verifies the helper extracts the member allocation correctly.
 func TestMemberCountFromGroups(t *testing.T) {
 	cases := []struct {
