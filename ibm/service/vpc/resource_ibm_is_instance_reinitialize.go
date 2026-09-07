@@ -358,7 +358,9 @@ func resourceIBMISInstanceReinitializeCreate(ctx context.Context, d *schema.Reso
 			Keys:                  keys,
 			DefaultTrustedProfile: defaultTrustedProfile,
 		}
-		// Reinitialize by boot volume attachment
+		reinitializeOptions.InstanceReinitializePrototype = instanceReinitializePrototype
+		log.Printf("[INFO] Reinitializing instance %s by image: %s", instanceId, imageStr)
+		// Reinitialize by image + optional custom boot volume attachment
 		if bootVolumeAttachmentList, ok := d.GetOk("boot_volume_attachment"); ok && len(bootVolumeAttachmentList.([]interface{})) > 0 {
 
 			bootVolumeAttachmentConfig := bootVolumeAttachmentList.([]interface{})[0].(map[string]interface{})
@@ -477,162 +479,151 @@ func resourceIBMISInstanceReinitializeCreate(ctx context.Context, d *schema.Reso
 				DefaultTrustedProfile: defaultTrustedProfile,
 			}
 			reinitializeOptions.InstanceReinitializePrototype = instanceReinitializePrototype
-			log.Printf("[INFO] Reinitializing instance %s by boot volume attachment", instanceId)
-			log.Printf("[INFO] Reinitializing instance %s by image: %s", instanceId, imageStr)
+			log.Printf("[INFO] Reinitializing instance %s by image with custom boot volume attachment", instanceId)
 		}
 
 	} else if bootVolumeAttachmentList, ok := d.GetOk("boot_volume_attachment"); ok && len(bootVolumeAttachmentList.([]interface{})) > 0 {
 		// Reinitialize by boot volume attachment
 		bootVolumeAttachmentConfig := bootVolumeAttachmentList.([]interface{})[0].(map[string]interface{})
 
-		// Build volume prototype
-		if volumeList, ok := bootVolumeAttachmentConfig["volume"]; ok && len(volumeList.([]interface{})) > 0 {
-			volumeConfig := volumeList.([]interface{})[0].(map[string]interface{})
+		// volume block is required for ByVolume and BySnapshot paths
+		volumeList, volumeOk := bootVolumeAttachmentConfig["volume"]
+		if !volumeOk || len(volumeList.([]interface{})) == 0 {
+			tfErr := flex.TerraformErrorf(fmt.Errorf("boot_volume_attachment.volume must be specified"),
+				"Missing volume configuration in boot_volume_attachment", "ibm_is_instance_reinitialize", "create")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
+		}
 
-			// Check for volume ID or source snapshot
-			if volumeId, ok := volumeConfig["id"]; ok && volumeId.(string) != "" {
-				bootvolumeAttachment := &vpcv1.VolumeAttachmentPrototypeInstanceByVolumeContext{}
-				// Set volume attachment name
-				if name, ok := bootVolumeAttachmentConfig["name"]; ok && name.(string) != "" {
-					nameStr := name.(string)
-					bootvolumeAttachment.Name = &nameStr
-				}
+		volumeConfig := volumeList.([]interface{})[0].(map[string]interface{})
 
-				// Set delete volume on instance delete
-				if deleteOnDelete, ok := bootVolumeAttachmentConfig["delete_volume_on_instance_delete"]; ok {
-					deleteBool := deleteOnDelete.(bool)
-					bootvolumeAttachment.DeleteVolumeOnInstanceDelete = &deleteBool
-				}
-				volumeIdStr := volumeId.(string)
-				bootvolumeAttachment.Volume = &vpcv1.VolumeIdentityByID{
-					ID: &volumeIdStr,
-				}
-				instanceReinitializePrototype = &vpcv1.InstanceReinitializePrototypeInstanceReinitializeByVolume{
-					BootVolumeAttachment:  bootvolumeAttachment,
-					UserData:              userData,
-					Keys:                  keys,
-					DefaultTrustedProfile: defaultTrustedProfile,
-				}
-				reinitializeOptions.InstanceReinitializePrototype = instanceReinitializePrototype
-				log.Printf("[INFO] Reinitializing instance %s by volume ID: %s", instanceId, volumeIdStr)
+		if volumeId, ok := volumeConfig["id"]; ok && volumeId.(string) != "" {
+			// ByVolume path
+			bootvolumeAttachment := &vpcv1.VolumeAttachmentPrototypeInstanceByVolumeContext{}
+			if name, ok := bootVolumeAttachmentConfig["name"]; ok && name.(string) != "" {
+				nameStr := name.(string)
+				bootvolumeAttachment.Name = &nameStr
+			}
+			if deleteOnDelete, ok := bootVolumeAttachmentConfig["delete_volume_on_instance_delete"]; ok {
+				deleteBool := deleteOnDelete.(bool)
+				bootvolumeAttachment.DeleteVolumeOnInstanceDelete = &deleteBool
+			}
+			volumeIdStr := volumeId.(string)
+			bootvolumeAttachment.Volume = &vpcv1.VolumeIdentityByID{
+				ID: &volumeIdStr,
+			}
+			instanceReinitializePrototype = &vpcv1.InstanceReinitializePrototypeInstanceReinitializeByVolume{
+				BootVolumeAttachment:  bootvolumeAttachment,
+				UserData:              userData,
+				Keys:                  keys,
+				DefaultTrustedProfile: defaultTrustedProfile,
+			}
+			reinitializeOptions.InstanceReinitializePrototype = instanceReinitializePrototype
+			log.Printf("[INFO] Reinitializing instance %s by volume ID: %s", instanceId, volumeIdStr)
 
-			} else if sourceSnapshotList, ok := volumeConfig["source_snapshot"]; ok && len(sourceSnapshotList.([]interface{})) > 0 {
-				sourceSnapshotConfig := sourceSnapshotList.([]interface{})[0].(map[string]interface{})
-				if snapshotId, ok := sourceSnapshotConfig["id"]; ok && snapshotId.(string) != "" {
-					bootvolumeAttachment := &vpcv1.VolumeAttachmentPrototypeInstanceBySourceSnapshotContext{}
-					// Set volume attachment name
-					if name, ok := bootVolumeAttachmentConfig["name"]; ok && name.(string) != "" {
-						nameStr := name.(string)
-						bootvolumeAttachment.Name = &nameStr
-					}
-
-					// Set delete volume on instance delete
-					if deleteOnDelete, ok := bootVolumeAttachmentConfig["delete_volume_on_instance_delete"]; ok {
-						deleteBool := deleteOnDelete.(bool)
-						bootvolumeAttachment.DeleteVolumeOnInstanceDelete = &deleteBool
-					}
-					snapshotIdStr := snapshotId.(string)
-					volumePrototype := &vpcv1.VolumePrototypeInstanceBySourceSnapshotContext{}
-					volumePrototype.SourceSnapshot = &vpcv1.SnapshotIdentityByID{
-						ID: &snapshotIdStr,
-					}
-					// Set volume name
-					if volumeName, ok := volumeConfig["name"]; ok && volumeName.(string) != "" {
-						volumeNameStr := volumeName.(string)
-						volumePrototype.Name = &volumeNameStr
-					}
-
-					// Set capacity
-					if capacity, ok := volumeConfig["capacity"]; ok && capacity.(int) > 0 {
-						capacityInt64 := int64(capacity.(int))
-						volumePrototype.Capacity = &capacityInt64
-					}
-
-					// Set IOPS
-					if iops, ok := volumeConfig["iops"]; ok && iops.(int) > 0 {
-						iopsInt64 := int64(iops.(int))
-						volumePrototype.Iops = &iopsInt64
-					}
-
-					// Set bandwidth
-					if bandwidth, ok := volumeConfig["bandwidth"]; ok && bandwidth.(int) > 0 {
-						bandwidthInt64 := int64(bandwidth.(int))
-						volumePrototype.Bandwidth = &bandwidthInt64
-					}
-
-					// Set profile
-					if profileList, ok := volumeConfig["profile"]; ok && len(profileList.([]interface{})) > 0 {
-						profileConfig := profileList.([]interface{})[0].(map[string]interface{})
-						if profileName, ok := profileConfig["name"]; ok && profileName.(string) != "" {
-							profileNameStr := profileName.(string)
-							volumePrototype.Profile = &vpcv1.VolumeProfileIdentity{
-								Name: &profileNameStr,
-							}
-						}
-					}
-
-					// Set encryption key
-					if encryptionKeyList, ok := volumeConfig["encryption_key"]; ok && len(encryptionKeyList.([]interface{})) > 0 {
-						encryptionKeyConfig := encryptionKeyList.([]interface{})[0].(map[string]interface{})
-						if crn, ok := encryptionKeyConfig["crn"]; ok && crn.(string) != "" {
-							crnStr := crn.(string)
-							volumePrototype.EncryptionKey = &vpcv1.EncryptionKeyIdentity{
-								CRN: &crnStr,
-							}
-						}
-					}
-
-					// Set resource group
-					if resourceGroup, ok := volumeConfig["resource_group"]; ok && resourceGroup.(string) != "" {
-						resourceGroupStr := resourceGroup.(string)
-						volumePrototype.ResourceGroup = &vpcv1.ResourceGroupIdentity{
-							ID: &resourceGroupStr,
-						}
-					}
-
-					// Set user tags
-					if userTagsSet, ok := volumeConfig["user_tags"]; ok {
-						userTags := userTagsSet.(*schema.Set)
-						if userTags.Len() > 0 {
-							tags := make([]string, userTags.Len())
-							for i, tag := range userTags.List() {
-								tags[i] = tag.(string)
-							}
-							volumePrototype.UserTags = tags
-						}
-					}
-
-					// Set allowed use
-					if allowedUseList, ok := volumeConfig["allowed_use"]; ok && len(allowedUseList.([]interface{})) > 0 {
-						allowedUseConfig := allowedUseList.([]interface{})[0].(map[string]interface{})
-						allowedUse := &vpcv1.VolumeAllowedUsePrototype{}
-
-						if apiVersion, ok := allowedUseConfig["api_version"]; ok && apiVersion.(string) != "" {
-							apiVersionStr := apiVersion.(string)
-							allowedUse.ApiVersion = &apiVersionStr
-						}
-						if bareMetalServer, ok := allowedUseConfig["bare_metal_server"]; ok && bareMetalServer.(string) != "" {
-							bareMetalServerStr := bareMetalServer.(string)
-							allowedUse.BareMetalServer = &bareMetalServerStr
-						}
-						if instance, ok := allowedUseConfig["instance"]; ok && instance.(string) != "" {
-							instanceStr := instance.(string)
-							allowedUse.Instance = &instanceStr
-						}
-						volumePrototype.AllowedUse = allowedUse
-					}
-					bootvolumeAttachment.Volume = volumePrototype
-					instanceReinitializePrototype = &vpcv1.InstanceReinitializePrototypeInstanceReinitializeBySnapshot{
-						BootVolumeAttachment:  bootvolumeAttachment,
-						UserData:              userData,
-						Keys:                  keys,
-						DefaultTrustedProfile: defaultTrustedProfile,
-					}
-					reinitializeOptions.InstanceReinitializePrototype = instanceReinitializePrototype
-					log.Printf("[INFO] Reinitializing instance %s by source snapshot: %s", instanceId, snapshotIdStr)
+		} else if sourceSnapshotList, ok := volumeConfig["source_snapshot"]; ok && len(sourceSnapshotList.([]interface{})) > 0 {
+			// BySnapshot path
+			sourceSnapshotConfig := sourceSnapshotList.([]interface{})[0].(map[string]interface{})
+			snapshotId, snapshotOk := sourceSnapshotConfig["id"]
+			if !snapshotOk || snapshotId.(string) == "" {
+				tfErr := flex.TerraformErrorf(fmt.Errorf("boot_volume_attachment.volume.source_snapshot.id must be specified"),
+					"Missing snapshot ID", "ibm_is_instance_reinitialize", "create")
+				log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+				return tfErr.GetDiag()
+			}
+			snapshotIdStr := snapshotId.(string)
+			bootvolumeAttachment := &vpcv1.VolumeAttachmentPrototypeInstanceBySourceSnapshotContext{}
+			if name, ok := bootVolumeAttachmentConfig["name"]; ok && name.(string) != "" {
+				nameStr := name.(string)
+				bootvolumeAttachment.Name = &nameStr
+			}
+			if deleteOnDelete, ok := bootVolumeAttachmentConfig["delete_volume_on_instance_delete"]; ok {
+				deleteBool := deleteOnDelete.(bool)
+				bootvolumeAttachment.DeleteVolumeOnInstanceDelete = &deleteBool
+			}
+			volumePrototype := &vpcv1.VolumePrototypeInstanceBySourceSnapshotContext{
+				SourceSnapshot: &vpcv1.SnapshotIdentityByID{
+					ID: &snapshotIdStr,
+				},
+			}
+			if volumeName, ok := volumeConfig["name"]; ok && volumeName.(string) != "" {
+				volumeNameStr := volumeName.(string)
+				volumePrototype.Name = &volumeNameStr
+			}
+			if capacity, ok := volumeConfig["capacity"]; ok && capacity.(int) > 0 {
+				capacityInt64 := int64(capacity.(int))
+				volumePrototype.Capacity = &capacityInt64
+			}
+			if iops, ok := volumeConfig["iops"]; ok && iops.(int) > 0 {
+				iopsInt64 := int64(iops.(int))
+				volumePrototype.Iops = &iopsInt64
+			}
+			if bandwidth, ok := volumeConfig["bandwidth"]; ok && bandwidth.(int) > 0 {
+				bandwidthInt64 := int64(bandwidth.(int))
+				volumePrototype.Bandwidth = &bandwidthInt64
+			}
+			if profileList, ok := volumeConfig["profile"]; ok && len(profileList.([]interface{})) > 0 {
+				profileConfig := profileList.([]interface{})[0].(map[string]interface{})
+				if profileName, ok := profileConfig["name"]; ok && profileName.(string) != "" {
+					profileNameStr := profileName.(string)
+					volumePrototype.Profile = &vpcv1.VolumeProfileIdentity{Name: &profileNameStr}
 				}
 			}
+			if encryptionKeyList, ok := volumeConfig["encryption_key"]; ok && len(encryptionKeyList.([]interface{})) > 0 {
+				encryptionKeyConfig := encryptionKeyList.([]interface{})[0].(map[string]interface{})
+				if crn, ok := encryptionKeyConfig["crn"]; ok && crn.(string) != "" {
+					crnStr := crn.(string)
+					volumePrototype.EncryptionKey = &vpcv1.EncryptionKeyIdentity{CRN: &crnStr}
+				}
+			}
+			if resourceGroup, ok := volumeConfig["resource_group"]; ok && resourceGroup.(string) != "" {
+				resourceGroupStr := resourceGroup.(string)
+				volumePrototype.ResourceGroup = &vpcv1.ResourceGroupIdentity{ID: &resourceGroupStr}
+			}
+			if userTagsSet, ok := volumeConfig["user_tags"]; ok {
+				userTags := userTagsSet.(*schema.Set)
+				if userTags.Len() > 0 {
+					tags := make([]string, userTags.Len())
+					for i, tag := range userTags.List() {
+						tags[i] = tag.(string)
+					}
+					volumePrototype.UserTags = tags
+				}
+			}
+			if allowedUseList, ok := volumeConfig["allowed_use"]; ok && len(allowedUseList.([]interface{})) > 0 {
+				allowedUseConfig := allowedUseList.([]interface{})[0].(map[string]interface{})
+				allowedUse := &vpcv1.VolumeAllowedUsePrototype{}
+				if apiVersion, ok := allowedUseConfig["api_version"]; ok && apiVersion.(string) != "" {
+					apiVersionStr := apiVersion.(string)
+					allowedUse.ApiVersion = &apiVersionStr
+				}
+				if bareMetalServer, ok := allowedUseConfig["bare_metal_server"]; ok && bareMetalServer.(string) != "" {
+					bareMetalServerStr := bareMetalServer.(string)
+					allowedUse.BareMetalServer = &bareMetalServerStr
+				}
+				if instance, ok := allowedUseConfig["instance"]; ok && instance.(string) != "" {
+					instanceStr := instance.(string)
+					allowedUse.Instance = &instanceStr
+				}
+				volumePrototype.AllowedUse = allowedUse
+			}
+			bootvolumeAttachment.Volume = volumePrototype
+			instanceReinitializePrototype = &vpcv1.InstanceReinitializePrototypeInstanceReinitializeBySnapshot{
+				BootVolumeAttachment:  bootvolumeAttachment,
+				UserData:              userData,
+				Keys:                  keys,
+				DefaultTrustedProfile: defaultTrustedProfile,
+			}
+			reinitializeOptions.InstanceReinitializePrototype = instanceReinitializePrototype
+			log.Printf("[INFO] Reinitializing instance %s by source snapshot: %s", instanceId, snapshotIdStr)
+
+		} else {
+			tfErr := flex.TerraformErrorf(fmt.Errorf("boot_volume_attachment.volume must specify either id or source_snapshot"),
+				"Missing volume source in boot_volume_attachment", "ibm_is_instance_reinitialize", "create")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
+
 	} else {
 		tfErr := flex.TerraformErrorf(fmt.Errorf("one of image or boot_volume_attachment must be provided"),
 			"Missing boot source configuration", "ibm_is_instance_reinitialize", "create")
@@ -745,9 +736,9 @@ func resourceStopInstanceIfRunning(ctx context.Context, d *schema.ResourceData, 
 		}
 
 		// Use hard stop for reinitialization
-		forceStop := true
+		forceStop := false
 		stopInstanceOptions.Force = &forceStop
-		typeStop := "hard"
+		typeStop := "stop"
 		stopInstanceOptions.Type = &typeStop
 
 		_, response, err := sess.CreateInstanceActionWithContext(ctx, stopInstanceOptions)

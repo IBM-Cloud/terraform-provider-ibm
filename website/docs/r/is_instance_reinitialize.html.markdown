@@ -50,9 +50,12 @@ resource "ibm_is_instance" "example" {
 
   lifecycle {
     ignore_changes = [
-      image,               # reinitialize can swap the image
-      user_data,           # reinitialize can replace user data
+      image,                    # reinitialize can swap the image
+      user_data,                # reinitialize can replace user data
       default_trusted_profile,  # reinitialize can change the trusted profile
+      boot_volume[0].snapshot,      # reinitialize-by-snapshot changes the boot volume provenance
+      boot_volume[0].snapshot_crn,
+      boot_volume[0].volume_id,     # reinitialize always replaces the boot volume
     ]
   }
 }
@@ -103,6 +106,9 @@ resource "ibm_is_instance" "example" {
       image,
       user_data,
       default_trusted_profile,
+      boot_volume[0].snapshot,
+      boot_volume[0].snapshot_crn,
+      boot_volume[0].volume_id,
     ]
   }
 }
@@ -117,7 +123,7 @@ resource "ibm_is_instance_reinitialize" "example" {
 
 ### Reinitialize by boot volume attachment
 
-When reinitializing by volume or snapshot, `image` is not swapped — but `boot_volume` attachment metadata on `ibm_is_instance` will still drift. Add `ignore_changes` on `ibm_is_instance` accordingly.
+When reinitializing by volume or snapshot, `boot_volume[0].volume_id`, `boot_volume[0].snapshot`, and `boot_volume[0].snapshot_crn` in `ibm_is_instance` will drift because the boot volume is replaced. The full `ignore_changes` list covers all paths.
 
 ```terraform
 resource "ibm_is_volume" "example" {
@@ -135,6 +141,9 @@ resource "ibm_is_instance" "example" {
       image,
       user_data,
       default_trusted_profile,
+      boot_volume[0].snapshot,
+      boot_volume[0].snapshot_crn,
+      boot_volume[0].volume_id,
     ]
   }
 }
@@ -200,15 +209,40 @@ resource "ibm_is_instance_reinitialize" "example" {
 
 ```terraform
 resource "ibm_is_snapshot" "example" {
-  name     = "example-snapshot"
-  volume   = ibm_is_volume.example.id
+  name   = "example-snapshot"
+  volume = ibm_is_volume.example.id
+}
+
+resource "ibm_is_instance" "example" {
+  name    = "example-instance"
+  image   = "7eb4e35b-4257-56f8-d7da-326d85452591"
+  profile = "bx2-2x8"
+
+  primary_network_interface {
+    subnet = ibm_is_subnet.example.id
+  }
+
+  vpc  = ibm_is_vpc.example.id
+  zone = "us-south-1"
+  keys = [ibm_is_ssh_key.example.id]
+
+  lifecycle {
+    ignore_changes = [
+      image,
+      user_data,
+      default_trusted_profile,
+      boot_volume[0].snapshot,
+      boot_volume[0].snapshot_crn,
+      boot_volume[0].volume_id,
+    ]
+  }
 }
 
 resource "ibm_is_instance_reinitialize" "example" {
   depends_on = [ibm_is_instance.example, ibm_is_snapshot.example]
-  
+
   instance_id = ibm_is_instance.example.id
-  
+
   boot_volume_attachment {
     volume {
       source_snapshot {
@@ -314,7 +348,7 @@ In addition to all argument reference list, you can access the following attribu
 - **Boot source conflicts**: You must specify either `image` or `boot_volume_attachment`, but not both.
 - **Volume ID vs Snapshot**: Within `boot_volume_attachment.volume`, you must specify either `id` or `source_snapshot`, but not both.
 - **Force new**: All configuration arguments except `status` force the creation of a new resource when changed.
-- **Use `lifecycle.ignore_changes` on `ibm_is_instance`**: After reinitialization, the instance reflects the new boot source. Because `image` is `ForceNew` and its current value is re-read on every `terraform plan` or `terraform refresh`, omitting `ignore_changes` will cause Terraform to plan a **destroy and recreate** of the instance. Always add the following to the associated `ibm_is_instance` resource when using `ibm_is_instance_reinitialize`:
+- **Use `lifecycle.ignore_changes` on `ibm_is_instance`**: After reinitialization, the instance reflects the new boot source. Because `image`, `boot_volume[0].snapshot`, `boot_volume[0].snapshot_crn`, and `boot_volume[0].volume_id` are all `ForceNew` and their current values are re-read on every `terraform plan` or `terraform refresh`, omitting `ignore_changes` will cause Terraform to plan a **destroy and recreate** of the instance. Always add the following to the associated `ibm_is_instance` resource when using `ibm_is_instance_reinitialize`:
 
   ```terraform
   lifecycle {
@@ -322,6 +356,9 @@ In addition to all argument reference list, you can access the following attribu
       image,
       user_data,
       default_trusted_profile,
+      boot_volume[0].snapshot,
+      boot_volume[0].snapshot_crn,
+      boot_volume[0].volume_id,
     ]
   }
   ```
