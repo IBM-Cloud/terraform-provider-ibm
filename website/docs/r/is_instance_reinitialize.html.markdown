@@ -26,6 +26,10 @@ provider "ibm" {
 
 `ibm_is_instance_reinitialize` is a one-shot resource that performs a single reinitialization when applied. It does **not** own the lifecycle of the instance — `ibm_is_instance` does. Because reinitializing replaces the boot source on an already-managed instance, the two resources can go out of sync in Terraform state unless you account for it.
 
+**Warning: existing boot volume is permanently deleted**
+
+Reinitialization always **deletes the existing boot volume** before attaching the new one. This is an irreversible API-level side effect — the original boot volume is not detached and preserved; it is destroyed. Ensure that any data on the existing boot volume has been backed up (for example, by creating a snapshot) before triggering a reinitialize.
+
 **What happens without `lifecycle.ignore_changes`**
 
 After `ibm_is_instance_reinitialize` runs, the instance reflects the new boot source. On the next `terraform plan` or `terraform refresh`, `ibm_is_instance` re-reads the current state and updates its local state. Because `image` is `ForceNew` in `ibm_is_instance`, Terraform will plan to **destroy and recreate** the instance unless the `image` in your config now matches what reinitialize used.
@@ -344,6 +348,7 @@ In addition to all argument reference list, you can access the following attribu
 ## Important notes
 
 - **One-time operation**: This resource performs a one-time reinitialization operation. After creation, the resource can be imported but any changes to arguments will force a new resource.
+- **Existing boot volume is permanently deleted**: Reinitialization always deletes the existing boot volume before attaching the new boot source. The original volume is **not** preserved or detached — it is destroyed. Back up any data (e.g. create a snapshot) before reinitializing.
 - **Instance state**: The instance must be in a `stopped` state before reinitialization. The resource will automatically stop the instance if it's running and restart it after reinitialization.
 - **Boot source conflicts**: You must specify either `image` or `boot_volume_attachment`, but not both.
 - **Volume ID vs Snapshot**: Within `boot_volume_attachment.volume`, you must specify either `id` or `source_snapshot`, but not both.
