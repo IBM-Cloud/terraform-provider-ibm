@@ -122,6 +122,8 @@ resource "ibm_is_instance_reinitialize" "example" {
 
   instance_id = ibm_is_instance.example.id
   image       = "r006-8f7c5c3d-5b8c-4b8c-8b8c-8b8c8b8c8b8c"
+  keys        = [ibm_is_ssh_key.example.id]
+  user_data   = "#!/bin/bash\necho reinit-by-image > /tmp/reinit.log"
 }
 ```
 
@@ -158,12 +160,13 @@ resource "ibm_is_instance_reinitialize" "example" {
   instance_id = ibm_is_instance.example.id
 
   boot_volume_attachment {
-    name = "reinit-boot-volume"
+    name                             = "reinit-boot-volume"
+    delete_volume_on_instance_delete = false
     volume {
       id   = ibm_is_volume.example.id
       name = "reinit-volume"
+      # profile is not required when attaching an existing volume by id
     }
-    delete_volume_on_instance_delete = false
   }
 }
 ```
@@ -248,13 +251,16 @@ resource "ibm_is_instance_reinitialize" "example" {
   instance_id = ibm_is_instance.example.id
 
   boot_volume_attachment {
+    name                             = "reinit-snap-attachment"
+    delete_volume_on_instance_delete = true
     volume {
       source_snapshot {
         id = ibm_is_snapshot.example.id
       }
       name = "reinit-from-snapshot"
       # profile is required when creating a volume from a snapshot.
-      # The profile and the source snapshot must share the same storage_generation value.
+      # The profile and the source snapshot must share the same storage_generation value
+      # (e.g. general-purpose/5iops-tier/10iops-tier/custom for gen1; sdp for gen2).
       profile {
         name = "general-purpose"
       }
