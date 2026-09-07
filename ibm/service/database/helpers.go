@@ -377,7 +377,9 @@ type databaseAllocations struct {
 	hostFlavorID string
 }
 
-// extractDatabaseAllocations extracts allocation values from instance extensions for a specific database type
+// extractDatabaseAllocations extracts allocation values from instance extensions for a specific database type.
+// Most fields (members, cpu_count, memory_gb, storage_gb, host_flavor) live under extensions.dataservices.<dbType>.
+// member_zones is stored separately under extensions.cdp.dataservices.<dbType> and read from there.
 func extractDatabaseAllocations(instance map[string]interface{}, resourceID string) databaseAllocations {
 	var alloc databaseAllocations
 
@@ -386,39 +388,42 @@ func extractDatabaseAllocations(instance map[string]interface{}, resourceID stri
 		return alloc
 	}
 
-	dataservices, ok := instance["dataservices"].(map[string]interface{})
-	if !ok {
-		return alloc
-	}
-
-	dbTypeData, ok := dataservices[dbType].(map[string]interface{})
-	if !ok {
-		return alloc
-	}
-
-	if mem, ok := dbTypeData["memory_gb"].(float64); ok {
-		alloc.memoryGB = mem
-	}
-	if cpu, ok := dbTypeData["cpu_count"].(float64); ok {
-		alloc.cpuCount = cpu
-	}
-	if storage, ok := dbTypeData["storage_gb"].(float64); ok {
-		alloc.storageGB = storage
-	}
-	if m, ok := dbTypeData["members"].(float64); ok {
-		alloc.members = int64(m)
-	}
-	if flavor, ok := dbTypeData["host_flavor"].(string); ok {
-		alloc.hostFlavorID = flavor
-	}
-	if zonesRaw, ok := dbTypeData["member_zones"].([]interface{}); ok {
-		zones := make([]string, 0, len(zonesRaw))
-		for _, z := range zonesRaw {
-			if s, ok := z.(string); ok {
-				zones = append(zones, s)
+	// Read members, cpu, memory, storage, host_flavor from extensions.dataservices.<dbType>
+	if dataservices, ok := instance["dataservices"].(map[string]interface{}); ok {
+		if dbTypeData, ok := dataservices[dbType].(map[string]interface{}); ok {
+			if mem, ok := dbTypeData["memory_gb"].(float64); ok {
+				alloc.memoryGB = mem
+			}
+			if cpu, ok := dbTypeData["cpu_count"].(float64); ok {
+				alloc.cpuCount = cpu
+			}
+			if storage, ok := dbTypeData["storage_gb"].(float64); ok {
+				alloc.storageGB = storage
+			}
+			if m, ok := dbTypeData["members"].(float64); ok {
+				alloc.members = int64(m)
+			}
+			if flavor, ok := dbTypeData["host_flavor"].(string); ok {
+				alloc.hostFlavorID = flavor
 			}
 		}
-		alloc.memberZones = zones
+	}
+
+	// member_zones lives under extensions.cdp.dataservices.<dbType>, not extensions.dataservices.<dbType>
+	if cdp, ok := instance["cdp"].(map[string]interface{}); ok {
+		if dataservices, ok := cdp["dataservices"].(map[string]interface{}); ok {
+			if dbTypeData, ok := dataservices[dbType].(map[string]interface{}); ok {
+				if zonesRaw, ok := dbTypeData["member_zones"].([]interface{}); ok {
+					zones := make([]string, 0, len(zonesRaw))
+					for _, z := range zonesRaw {
+						if s, ok := z.(string); ok {
+							zones = append(zones, s)
+						}
+					}
+					alloc.memberZones = zones
+				}
+			}
+		}
 	}
 
 	return alloc
