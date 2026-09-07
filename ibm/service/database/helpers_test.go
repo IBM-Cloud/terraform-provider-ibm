@@ -638,43 +638,36 @@ func TestGetInstancesNext(t *testing.T) {
 func TestExtractDatabaseAllocations_MemberZones(t *testing.T) {
 	resourceID := "databases-for-postgresql"
 
-	// Mirrors the actual RC API GET response structure for a single-member deployment.
-	// member_zones is returned under extensions.cdp.dataservices.<dbType> (not extensions.dataservices.<dbType>).
+	// Mirrors the RC API GET response — all fields including member_zones live under
+	// extensions.dataservices.<dbType> for production standard-gen2 instances.
 	makeExtensions := func(memberZones []interface{}) map[string]interface{} {
+		pg := map[string]interface{}{
+			"members":     float64(1),
+			"cpu_count":   float64(4),
+			"memory_gb":   float64(16),
+			"storage_gb":  float64(10),
+			"host_flavor": "bxf.4x16",
+		}
+		if memberZones != nil {
+			pg["member_zones"] = memberZones
+		}
 		return map[string]interface{}{
-			// runtime allocations (members, cpu, memory, storage, host_flavor) live here
 			"dataservices": map[string]interface{}{
-				"postgresql": map[string]interface{}{
-					"members":     float64(2),
-					"cpu_count":   float64(4),
-					"memory_gb":   float64(16),
-					"storage_gb":  float64(10),
-					"host_flavor": "bxf.4x16",
-				},
-			},
-			// member_zones lives here, separate from the runtime allocations
-			"cdp": map[string]interface{}{
-				"dataservices": map[string]interface{}{
-					"postgresql": map[string]interface{}{
-						"members":      float64(1),
-						"member_zones": memberZones,
-					},
-				},
+				"postgresql": pg,
 			},
 		}
 	}
 
-	t.Run("member_zones read from cdp path", func(t *testing.T) {
+	t.Run("member_zones read from dataservices path", func(t *testing.T) {
 		ext := makeExtensions([]interface{}{"us-east-2"})
 		alloc := extractDatabaseAllocations(ext, resourceID)
 		require.Equal(t, []string{"us-east-2"}, alloc.memberZones)
-		// other fields still read correctly from dataservices path
-		require.Equal(t, int64(2), alloc.members)
+		require.Equal(t, int64(1), alloc.members)
 		require.Equal(t, "bxf.4x16", alloc.hostFlavorID)
 		require.Equal(t, float64(16), alloc.memoryGB)
 	})
 
-	t.Run("member_zones absent when cdp key missing (normal multi-member database)", func(t *testing.T) {
+	t.Run("member_zones absent for normal multi-member database", func(t *testing.T) {
 		ext := map[string]interface{}{
 			"dataservices": map[string]interface{}{
 				"postgresql": map[string]interface{}{
@@ -685,19 +678,6 @@ func TestExtractDatabaseAllocations_MemberZones(t *testing.T) {
 		alloc := extractDatabaseAllocations(ext, resourceID)
 		require.Nil(t, alloc.memberZones)
 		require.Equal(t, int64(3), alloc.members)
-	})
-
-	t.Run("member_zones absent when cdp.dataservices missing", func(t *testing.T) {
-		ext := map[string]interface{}{
-			"dataservices": map[string]interface{}{
-				"postgresql": map[string]interface{}{
-					"members": float64(3),
-				},
-			},
-			"cdp": map[string]interface{}{},
-		}
-		alloc := extractDatabaseAllocations(ext, resourceID)
-		require.Nil(t, alloc.memberZones)
 	})
 
 	t.Run("empty extensions returns zero alloc", func(t *testing.T) {

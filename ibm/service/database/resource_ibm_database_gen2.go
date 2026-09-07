@@ -415,7 +415,7 @@ func (g *resourceIBMDatabaseGen2Backend) buildDBConfig(d *schema.ResourceData, c
 	}
 
 	// member_zones — only valid when members == 1
-	if len(memberGroup.MemberZones) > 0 {
+	if memberGroup != nil && len(memberGroup.MemberZones) > 0 {
 		config.MemberZones = memberGroup.MemberZones
 	}
 
