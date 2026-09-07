@@ -253,6 +253,11 @@ resource "ibm_is_instance_reinitialize" "example" {
         id = ibm_is_snapshot.example.id
       }
       name = "reinit-from-snapshot"
+      # profile is required when creating a volume from a snapshot.
+      # The profile and the source snapshot must share the same storage_generation value.
+      profile {
+        name = "general-purpose"
+      }
     }
   }
 }
@@ -275,7 +280,7 @@ Review the argument references that you can specify for your resource.
     Nested `volume` blocks have the following structure:
     
     - `id` - (Optional, Forces new resource, String) The unique identifier of the volume to attach as boot volume. Conflicts with `source_snapshot`.
-    - `source_snapshot` - (Optional, Forces new resource, List) The snapshot to use as a source for the volume's data. The specified snapshot may be in a different account, subject to IAM policies. Conflicts with `id`.
+    - `source_snapshot` - (Optional, Forces new resource, List) The snapshot to use as a source for the volume's data. The specified snapshot may be in a different account, subject to IAM policies. Conflicts with `id`. **When `source_snapshot` is set, `profile` is required** and the profile's `storage_generation` must match the snapshot's `storage_generation` — mixing generations (e.g. a `general-purpose` profile against a `sdp` snapshot) will result in an error.
       
       Nested `source_snapshot` blocks have the following structure:
       
@@ -299,7 +304,7 @@ Review the argument references that you can specify for your resource.
       
     - `iops` - (Optional, Forces new resource, Integer) The maximum I/O operations per second (IOPS) to use for this volume.
     - `name` - (Optional, Forces new resource, String) The name for this volume. The name must not be used by another volume in the region. If unspecified, the name will be a hyphenated list of randomly-selected words.
-    - `profile` - (Optional, Forces new resource, List) The profile for this volume. The maximum length is `1`.
+    - `profile` - (Optional, Forces new resource, List) The profile for this volume. The maximum length is `1`. **Required when `source_snapshot` is specified.** The profile and the source snapshot must have the same `storage_generation` value (for example, both must be generation 1 or both must be generation 2). Common profiles: `general-purpose`, `5iops-tier`, `10iops-tier`, `custom` (generation 1); `sdp` (generation 2).
       
       Nested `profile` blocks have the following structure:
       
@@ -352,6 +357,7 @@ In addition to all argument reference list, you can access the following attribu
 - **Instance state**: The instance must be in a `stopped` state before reinitialization. The resource will automatically stop the instance if it's running and restart it after reinitialization.
 - **Boot source conflicts**: You must specify either `image` or `boot_volume_attachment`, but not both.
 - **Volume ID vs Snapshot**: Within `boot_volume_attachment.volume`, you must specify either `id` or `source_snapshot`, but not both.
+- **`profile` required for snapshot-based volumes**: When `source_snapshot` is set, `boot_volume_attachment.volume.profile` is required. The volume profile and the source snapshot must have the same `storage_generation` value. For example, a `general-purpose` profile (generation 1) cannot be used with an `sdp` snapshot (generation 2), and vice versa. The API will return an error if the generations do not match.
 - **Force new**: All configuration arguments except `status` force the creation of a new resource when changed.
 - **Use `lifecycle.ignore_changes` on `ibm_is_instance`**: After reinitialization, the instance reflects the new boot source. Because `image`, `boot_volume[0].snapshot`, `boot_volume[0].snapshot_crn`, and `boot_volume[0].volume_id` are all `ForceNew` and their current values are re-read on every `terraform plan` or `terraform refresh`, omitting `ignore_changes` will cause Terraform to plan a **destroy and recreate** of the instance. Always add the following to the associated `ibm_is_instance` resource when using `ibm_is_instance_reinitialize`:
 
