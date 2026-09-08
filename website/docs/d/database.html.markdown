@@ -23,6 +23,21 @@ data "ibm_database" "database" {
 }
 ```
 
+### MongoDB Enterprise Sharding Gen2 example
+The following example retrieves information about a MongoDB Enterprise Sharding Gen2 instance and outputs its shard count.
+
+```terraform
+data "ibm_database" "mongo_sharded" {
+  name     = "my-mongo-sharded"
+  location = "ca-mon"
+  service  = "databases-for-mongodb"
+}
+
+output "shard_count" {
+  value = data.ibm_database.mongo_sharded.shards
+}
+```
+
 ## Argument reference
 Review the argument reference that you can specify for your data source. 
 
@@ -39,6 +54,8 @@ In addition to all argument references list, you can access the following attrib
 - `id` - (String) The CRN of the IBM Cloud Databases instance.
 - `guid` - (String) The unique identifier of the IBM Cloud Databases instance.
 - `plan` - (String)  The service plan of the IBM Cloud Databases instance.
+- `shards` - (Integer) The number of shards for a MongoDB Enterprise Edition Sharding Gen2 instance. Only populated for `databases-for-mongodb` with plan `enterprise-sharding-gen2`. Not set for all other services and plans.
+
 - `location` - (String)  The location where the IBM Cloud Databases instance is deployed into.
 - `status` - (String)  The status of the IBM Cloud Databases instance.
 - `version` - (String) The database version.
@@ -94,6 +111,10 @@ The following attributes are not supported for Gen2 databases:
 - `auto_scaling` - Auto-scaling configuration is not currently supported for Gen2 databases.
 - `configuration_schema` - Configuration schema is not available for Gen2 databases.
 - `platform_options.backup_encryption_key_crn` - Backup encryption key is not supported for Gen2 databases (only `disk_encryption_key_crn` is supported).
+
+### Gen2 Specific Attributes
+The following attributes are only populated for Gen2 instances:
+- `shards` - The live shard count, populated only for `databases-for-mongodb` with plan `enterprise-sharding-gen2`. Returns `1` for a single-shard instance. Not set for any other service or plan.
 
 ### Gen2 Example
 ```terraform
