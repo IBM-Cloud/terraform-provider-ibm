@@ -1,3 +1,68 @@
+# 2.6.0 (September 8, 2026)
+
+## Bug Fixes
+
+### Backup/Recovery
+* correct subcategory from 'IBM Backup Recovery API' to 'IBM Backup Recovery' in docs ([6971](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6971))
+
+### Cloud Databases
+* use placeholder constants for passwords in tests and docs ([6965](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6965))
+* Feat 2857:Implement Gen2 Support for `ibm_database_backup` and `ibm_database_backups` Data Sources ([6951](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6951))
+* Support scale beyond one shard for MongoDB EES Gen2 ([6978](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6978))
+* Feat 3817: Validate S2S authorization for Gen2 Services ([6980](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6980))
+
+### Cloud Internet Services
+* resolve perpetual diff, apply crash, and schema mismatches ([6958](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6958))
+
+### General
+* fixed go.sum entries ([6987](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6987))
+
+### IAM
+* Removed the Error return if an user is found as an ACTIVE member ([6962](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6962))
+* update API key code ([6836](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6836))
+
+### VPC Infrastructure
+* treat unhealthy as a pending state when waiting for instance group health ([6936](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6936))
+* added support for vpc instance reinitialization ([6938](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6938))
+
+
+## Enhancements
+
+### Cloud Databases
+* allow Classic backup restore into Gen2 instances ([6974](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6974))
+* support 'configuration' attribute in Gen2 ([6954](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6954))
+
+### Privileged Access Gateway
+* Increased provisioning timout ([6968](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6968))
+
+### General
+* bump google.golang.org/grpc from 1.79.3 to 1.83.1 ([6981](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6981))
+
+### Kubernetes
+* added cluster name support in container cluster ([6988](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6988))
+
+### Partner Center Sell
+* add new parameters to Global Catalog metada ([6957](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6957))
+
+### Secrets Manager
+* SM instance management service ([6966](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6966))
+
+### VPC Infrastructure
+* BM-capacity, zones in profiles ([6961](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6961))
+* add minimum_provisioned_size to ibm_is_image ([6972](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6972))
+* added tag support for private path services gateway ([6948](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6948))
+* added asymmetric routing for nlb ([6977](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6977))
+* remove supported vcpu count with backward support ([6986](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6986))
+* prevent ibm_is_share data source panic on missing share id ([6984](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6984))
+
+
+## Tests
+
+### Cloudant
+* add acceptance tests for cloudant gen2 ([6964](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6964))
+
+
+
 # 2.5.0 (August 5, 2026)
 
 ## Bug Fixes
