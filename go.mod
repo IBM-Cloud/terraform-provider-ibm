@@ -5,7 +5,7 @@ go 1.26.0
 require (
 	github.com/IBM-Cloud/bluemix-go v0.0.0-20260624064701-576d2f801297
 	github.com/IBM-Cloud/container-services-go-sdk v0.0.0-20240725064144-454a2ae23113
-	github.com/IBM-Cloud/power-go-client v1.16.2
+	github.com/IBM-Cloud/power-go-client v1.17.0
 	github.com/IBM/appconfiguration-go-admin-sdk v0.5.1
 	github.com/IBM/appid-management-go-sdk v0.0.0-20210908164609-dd0e0eaf732f
 	github.com/IBM/cloud-databases-go-sdk v0.8.1
@@ -45,7 +45,7 @@ require (
 	github.com/akamai/AkamaiOPEN-edgegrid-golang v1.2.2
 	github.com/akamai/AkamaiOPEN-edgegrid-golang/v5 v5.0.0
 	github.com/apache/openwhisk-client-go v0.0.0-20200201143223-a804fb82d105
-	github.com/apparentlymart/go-cidr v1.1.0
+	github.com/apparentlymart/go-cidr v1.1.1
 	github.com/go-openapi/strfmt v0.27.0
 	github.com/golang-jwt/jwt/v5 v5.2.2
 	github.com/google/go-cmp v0.7.0
@@ -66,7 +66,7 @@ require (
 	github.com/pkg/errors v0.9.1
 	github.com/rook/rook/pkg/apis v0.0.0-20250619203122-80563e28b685
 	github.com/softlayer/softlayer-go v1.0.3
-	github.com/stretchr/testify v1.11.1
+	github.com/stretchr/testify v1.12.1
 	golang.org/x/crypto v0.54.0
 	gopkg.in/yaml.v3 v3.0.1
 	gotest.tools v2.2.0+incompatible
@@ -190,13 +190,12 @@ require (
 	github.com/patrickmn/go-cache v2.1.0+incompatible // indirect
 	github.com/pelletier/go-toml v1.7.0 // indirect
 	github.com/pierrec/lz4/v4 v4.1.22 // indirect
-	github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 // indirect
 	github.com/rcrowley/go-metrics v0.0.0-20201227073835-cf1acfcdf475 // indirect
 	github.com/ryanuber/go-glob v1.0.0 // indirect
 	github.com/sirupsen/logrus v1.9.3 // indirect
 	github.com/softlayer/xmlrpc v0.0.0-20200409220501-5f089df7cb7e // indirect
 	github.com/spf13/pflag v1.0.10 // indirect
-	github.com/stretchr/objx v0.5.2 // indirect
+	github.com/stretchr/objx v0.5.3 // indirect
 	github.com/vmihailenco/msgpack v4.0.4+incompatible // indirect
 	github.com/vmihailenco/msgpack/v5 v5.4.1 // indirect
 	github.com/vmihailenco/tagparser/v2 v2.0.0 // indirect
@@ -209,7 +208,7 @@ require (
 	go.uber.org/ratelimit v0.2.0 // indirect
 	go.uber.org/zap v1.27.0 // indirect
 	go.yaml.in/yaml/v2 v2.4.4 // indirect
-	go.yaml.in/yaml/v3 v3.0.4 // indirect
+	go.yaml.in/yaml/v3 v3.0.5 // indirect
 	golang.org/x/mod v0.37.0 // indirect
 	golang.org/x/net v0.57.0 // indirect
 	golang.org/x/oauth2 v0.36.0 // indirect
