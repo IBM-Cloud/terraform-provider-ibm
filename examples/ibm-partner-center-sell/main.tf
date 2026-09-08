@@ -501,6 +501,8 @@ resource "ibm_onboarding_catalog_product" "onboarding_catalog_product_instance" 
           id = "id"
         }
       }
+      product_code = "product_code"
+      product_code_type = "product_code_type"
     }
   }
 }
