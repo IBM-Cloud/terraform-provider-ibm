@@ -36,10 +36,17 @@ func ResourceIBMCISRulesetEntryPointVersion() *schema.Resource {
 				Description: "Ruleset phase",
 			},
 			CISRulesetsEntryPointOutput: {
-				Type:        schema.TypeSet,
+				Type:        schema.TypeList,
 				Optional:    true,
-				Description: "Container for response information.",
+				MaxItems:    1,
+				Description: "Input block: ruleset description and rules to deploy.",
 				Elem:        CISResourceResponseObject,
+			},
+			CISRulesetsEntryPointResponseOutput: {
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "Output block: full ruleset response as returned by the CIS API after apply.",
+				Elem:        CISResponseObject,
 			},
 		},
 	}
@@ -77,11 +84,14 @@ func ResourceIBMCISRulesetEntryPointVersionRead(d *schema.ResourceData, meta int
 		opt := sess.Clone().NewGetZoneEntrypointRulesetOptions(ruleset_phase)
 		result, resp, err := sess.GetZoneEntrypointRuleset(opt)
 		if err != nil {
-			return flex.FmtErrorf("[WARN] Get zone ruleset failed: %v", resp)
+			return flex.FmtErrorf("[ERROR] Get zone ruleset failed: %s %v", err, resp)
 		}
-		rulesetObj := flattenCISRulesets(*result.Result)
-
-		d.Set(CISRulesetsEntryPointOutput, rulesetObj)
+		// rulesets (input) is intentionally not overwritten — it holds the
+		// user-configured values and must not be overwritten with API values
+		// or the SDK will generate a perpetual diff on every plan.
+		// rulesets_response is Computed-only: it receives the full API response
+		// and is never compared against user config, so no diff is produced.
+		d.Set(CISRulesetsEntryPointResponseOutput, flattenCISRulesets(*result.Result))
 		d.Set(cisDomainID, zoneId)
 		d.Set(cisID, crn)
 		d.Set(CISRulesetPhase, ruleset_phase)
@@ -90,11 +100,10 @@ func ResourceIBMCISRulesetEntryPointVersionRead(d *schema.ResourceData, meta int
 		opt := sess.NewGetInstanceEntrypointRulesetOptions(ruleset_phase)
 		result, resp, err := sess.GetInstanceEntrypointRuleset(opt)
 		if err != nil {
-			return flex.FmtErrorf("[WARN] Get zone ruleset failed: %v", resp)
+			return flex.FmtErrorf("[ERROR] Get instance ruleset failed: %s %v", err, resp)
 		}
-		rulesetObj := flattenCISRulesets(*result.Result)
-
-		d.Set(CISRulesetsEntryPointOutput, rulesetObj)
+		// Same rationale as zone branch above.
+		d.Set(CISRulesetsEntryPointResponseOutput, flattenCISRulesets(*result.Result))
 		d.Set(cisDomainID, zoneId)
 		d.Set(cisID, crn)
 		d.Set(CISRulesetPhase, ruleset_phase)
@@ -121,11 +130,8 @@ func ResourceIBMCISRulesetEntryPointVersionUpdate(d *schema.ResourceData, meta i
 
 		opt := sess.NewUpdateZoneEntrypointRulesetOptions(ruleset_phase)
 
-		cis_ruleset_object := d.Get(CISRulesetsObjectOutput)
-
-		rulesetsObject := cis_ruleset_object.(*schema.Set).List()[0].(map[string]interface{})
+		rulesetsObject := d.Get(CISRulesetsEntryPointOutput).([]interface{})[0].(map[string]interface{})
 		opt.SetDescription(rulesetsObject[CISRulesetsDescription].(string))
-		opt.SetName(rulesetsObject[CISRulesetsName].(string))
 
 		rulesObj := expandCISRules(rulesetsObject[CISRulesetsRules])
 		opt.SetRules(rulesObj)
@@ -138,9 +144,8 @@ func ResourceIBMCISRulesetEntryPointVersionUpdate(d *schema.ResourceData, meta i
 	} else {
 		opt := sess.NewUpdateInstanceEntrypointRulesetOptions(ruleset_phase)
 
-		rulesetsObject := d.Get(CISRulesetsObjectOutput).([]interface{})[0].(map[string]interface{})
+		rulesetsObject := d.Get(CISRulesetsEntryPointOutput).([]interface{})[0].(map[string]interface{})
 		opt.SetDescription(rulesetsObject[CISRulesetsDescription].(string))
-		opt.SetName(rulesetsObject[CISRulesetsName].(string))
 
 		rulesObj := expandCISRules(rulesetsObject[CISRulesetsRules])
 		opt.SetRules(rulesObj)
