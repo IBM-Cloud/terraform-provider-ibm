@@ -60,6 +60,27 @@ type TimeoutHelper struct {
 	Now time.Time
 }
 
+func sharedSetShardsInfo(d *schema.ResourceData, instance *rc.ResourceInstance) error {
+	service := d.Get("service").(string)
+	plan := d.Get("plan").(string)
+
+	if service != "databases-for-mongodb" || plan != "enterprise-sharding-gen2" {
+		return d.Set("shards", nil)
+	}
+
+	if instance == nil || instance.Extensions == nil {
+		return d.Set("shards", 1)
+	}
+
+	// enterprise-sharding-gen2 stores shard data under "mongodbees" in extensions
+	dbType := "mongodbees"
+	shards := extractShardsFromExtensions(instance.Extensions, dbType)
+	if shards == 0 {
+		shards = 1
+	}
+	return d.Set("shards", shards)
+}
+
 // Allows mocking
 type DeploymentTaskFetcher interface {
 	ListDeploymentTasks(opts *clouddatabasesv5.ListDeploymentTasksOptions) (*clouddatabasesv5.Tasks, *core.DetailedResponse, error)
@@ -372,6 +393,7 @@ type databaseAllocations struct {
 	memoryGB     float64
 	storageGB    float64
 	members      int64
+	shards       int64
 	hostFlavorID string
 }
 
@@ -391,7 +413,13 @@ func extractDatabaseAllocations(instance map[string]interface{}, resourceID stri
 
 	dbTypeData, ok := dataservices[dbType].(map[string]interface{})
 	if !ok {
-		return alloc
+		// enterprise-sharding-gen2 stores data under "mongodbees" instead of "mongodb"
+		if dbType == "mongodb" {
+			dbTypeData, ok = dataservices["mongodbees"].(map[string]interface{})
+		}
+		if !ok {
+			return alloc
+		}
 	}
 
 	if mem, ok := dbTypeData["memory_gb"].(float64); ok {
@@ -406,11 +434,49 @@ func extractDatabaseAllocations(instance map[string]interface{}, resourceID stri
 	if m, ok := dbTypeData["members"].(float64); ok {
 		alloc.members = int64(m)
 	}
+	if s, ok := dbTypeData["shards"].(float64); ok {
+		alloc.shards = int64(s)
+	}
 	if flavor, ok := dbTypeData["host_flavor"].(string); ok {
 		alloc.hostFlavorID = flavor
 	}
 
 	return alloc
+}
+
+// extractShardsFromExtensions extracts the shard count for a given dbType key from instance extensions.
+// dbType is the key inside dataservices that holds shard info (e.g. "mongodbees" for enterprise-sharding-gen2).
+// If a future database type supports shards, pass its dataservices key as dbType.
+func extractShardsFromExtensions(extensions map[string]interface{}, dbType string) int {
+	if extensions == nil {
+		return 0
+	}
+
+	dataservices, ok := extensions[dataservicesKey].(map[string]interface{})
+	if !ok {
+		return 0
+	}
+
+	dbTypeData, ok := dataservices[dbType].(map[string]interface{})
+	if !ok {
+		return 0
+	}
+
+	shards, ok := dbTypeData["shards"]
+	if !ok {
+		return 0
+	}
+
+	switch v := shards.(type) {
+	case float64:
+		return int(v)
+	case int:
+		return v
+	case int64:
+		return int(v)
+	default:
+		return 0
+	}
 }
 
 // buildMemoryConfig creates memory configuration from catalog metadata and actual allocation
