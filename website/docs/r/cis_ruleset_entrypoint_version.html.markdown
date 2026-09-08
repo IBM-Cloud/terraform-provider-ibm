@@ -38,14 +38,14 @@ Provides an IBM Cloud Internet Services ruleset entrypoint version resource to c
         description = "Deploy CIS managed ruleset"
         enabled = true
         expression = "true"
-        action_parameters  {
+        action_parameters {
           id = "efb7b8c949ac4650a09736fc376e9aee"
-        } 
+        }
       }
     }
   }
 
-# Create/Update entrypoint ruleset and deploy multiple managed ruleset.
+# Create/Update entrypoint ruleset and deploy multiple managed rulesets.
 
   resource "ibm_cis_ruleset_entrypoint_version" "test" {
     cis_id    = ibm_cis.instance.id
@@ -58,27 +58,27 @@ Provides an IBM Cloud Internet Services ruleset entrypoint version resource to c
         description = "Deploy CIS managed ruleset"
         enabled = true
         expression = "true"
-        action_parameters  {
+        action_parameters {
           id = "efb7b8c949ac4650a09736fc376e9aee"
-        } 
+        }
       }
       rules {
         action =  "execute"
         description = "Deploy CIS OWASP core ruleset"
         enabled = true
         expression = "true"
-        action_parameters  {
+        action_parameters {
           id = "4814384a9e5d4991b9815dcfc25d2f1f"
-        } 
+        }
       }
       rules {
         action =  "execute"
         description = "Deploy CIS exposed credentials check ruleset"
         enabled = true
         expression = "true"
-        action_parameters  {
+        action_parameters {
           id = "c2e184081120413c86c3ab7e14069605"
-        } 
+        }
       }
     }
   }
@@ -96,7 +96,7 @@ Provides an IBM Cloud Internet Services ruleset entrypoint version resource to c
         description = "Deploy CIS managed ruleset"
         enabled = true
         expression = "true"
-        action_parameters  {
+        action_parameters {
           id = "efb7b8c949ac4650a09736fc376e9aee"
           overrides {
             action = "block"
@@ -112,7 +112,7 @@ Provides an IBM Cloud Internet Services ruleset entrypoint version resource to c
               action = "block"
             }
           }
-        } 
+        }
       }
     }
   }
@@ -151,46 +151,110 @@ Review the argument references that you can specify for your resource.
 - `cis_id` - (Required, String) The ID of the CIS service instance.
 - `domain_id` - (Optional, String) The Domain/Zone ID of the CIS service instance. If `domain_id` is provided, the request is made at the zone/domain level; otherwise, the request is made at the instance level.
 - `phase` - (Required, String) Phase of the ruleset. Currently, only `http_request_firewall_managed` phase is supported.
-- `rulesets` - (Required, List) Values that will be created or updated.
+- `rulesets` - (Optional, List, MaxItems: 1) Input block containing the ruleset description and rules to deploy.
 
-  Nested scheme of `rulesets`
-  - `description` (Optional, String) Description of the ruleset
-  - `rules` (Optional, List) Rules that are required to be added/modified.
-  Nested scheme of `rules`
-    - `action` (String). If you are deploying a rule, then action is required. The `execute` action is used for deploying the ruleset. If you are updating the rule, the action is optional.
-    - `description` (Optional, String) Description of the rule.
-    - `enable` (Optional, Boolean) Enables/Disables the rule.
-    - `expression` (Optional, String) Expression used by the rule to match the incoming request.
-    - `ref` (Optional, String) ID of an existing rule. If not provided, it is populated by the ID of the created rule.
-    - `action_parameters` (Optional, List) Parameters that are used to modify the rules.
+  Nested scheme of `rulesets`:
+  - `description` - (Optional, String) Description of the ruleset.
+  - `rules` - (Optional, List) Rules to add or modify.
 
-      Nested scheme of `action parameters`
-      - `id` (Required, String) ID of the managed ruleset to be deployed.
-      - `ruleset` (Optional, String)  Skips the remaining rules in the current ruleset. Allowed value is `current`.
-      - `phases` (Optional, List) Skips the execution of one or more phases. Allowed values for phases are `http_ratelimit`, `http_request_sbfm`, `http_request_firewall_managed`.
-      - `products` (Optional, List) Skips specific security products. Allowed values for products are `zoneLockdown`, `uaBlock`, `bic`, `hot`, `securityLevel`, `rateLimit`, `waf`.
-      - `overrides` (Optional, List) Provides the parameters that are to be overridden.
+    Nested scheme of `rules`:
+    - `id` - (Optional, String) ID of an existing rule. Required when updating a specific rule; omit when creating a new rule.
+    - `action` - (Optional, String) Action of the rule. Use `execute` to deploy a managed ruleset.
+    - `description` - (Optional, String) Description of the rule.
+    - `enabled` - (Optional, Boolean) Enables/Disables the rule.
+    - `expression` - (Optional, String) Expression used by the rule to match the incoming request.
+    - `ref` - (Optional, String) Reference ID of an existing rule. If not provided, it is populated by the ID of the created rule.
+    - `action_parameters` - (Optional, List, MaxItems: 1) Parameters used to configure the rule action.
 
-        Nested scheme of `overrides`
-        - `action` (Optional, String) Action of the rule. Examples: log, block, skip.
-        - `enabled` (Optional, Boolean) Enables/Disables the rule.
-        - `override_rules` (Optional, List) List of details of rules to be overridden. These rules are already present in the managed ruleset.
+      Nested scheme of `action_parameters`:
+      - `id` - (Optional, String) ID of the managed ruleset to execute.
+      - `ruleset` - (Optional, String) Skips the remaining rules in the current ruleset. Allowed value: `current`.
+      - `phases` - (Optional, List) Skips the execution of one or more phases. Allowed values: `http_ratelimit`, `http_request_sbfm`, `http_request_firewall_managed`.
+      - `products` - (Optional, List) Skips specific security products. Allowed values: `zoneLockdown`, `uaBlock`, `bic`, `hot`, `securityLevel`, `rateLimit`, `waf`.
+      - `rulesets` - (Optional, List) List of ruleset IDs to apply the action to.
+      - `response` - (Optional, Set) Custom response returned by the API.
+        - `content` - (Optional, String) Response body content.
+        - `content_type` - (Optional, String) Response content type.
+        - `status_code` - (Optional, Integer) HTTP status code to return.
+      - `overrides` - (Optional, Set) Override parameters for the managed ruleset.
 
-          Nested scheme of `override_rules`
-          - `rule_id` (Required, String) ID of the rule.
-          - `enabled` (Optional, Boolean) Enables/Disables the rule.
-          - `action` (Optional, String) Action of the rule.
-          - `score_threshold` (Optional, Int) Score threshold of the rule. Allowed values are 25, 40, 60 for high, medium and low sensitivity respectively. 
-        - `categories` (Optional, List)
+        Nested scheme of `overrides`:
+        - `action` - (Optional, String) Default action to apply to all rules in the managed ruleset. Examples: `log`, `block`, `skip`.
+        - `enabled` - (Optional, Boolean) Enables/Disables all rules in the managed ruleset.
+        - `override_rules` - (Optional, List) Per-rule overrides for specific rules already present in the managed ruleset.
 
-          Nested scheme of `categories`
-          - `category` (Required, String) Category of the rule.
-          - `enabled` (Optional, Boolean) Enables/Disables the rule.
-          - `action` (Optional, String) Action of the rule.
+          Nested scheme of `override_rules`:
+          - `rule_id` - (Required, String) ID of the rule to override.
+          - `enabled` - (Optional, Boolean) Enables/Disables the rule.
+          - `action` - (Optional, String) Action to apply to the rule.
+          - `score_threshold` - (Optional, Integer) Score threshold of the rule. Allowed values: `25` (high), `40` (medium), `60` (low sensitivity).
+          - `sensitivity_level` - (Optional, String) Sensitivity level of the rule.
+        - `categories` - (Optional, List) Category-level overrides.
+
+          Nested scheme of `categories`:
+          - `category` - (Required, String) Category name.
+          - `enabled` - (Optional, Boolean) Enables/Disables rules in the category.
+          - `action` - (Optional, String) Action to apply to rules in the category.
+    - `position` - (Optional, Set) Position of the rule within the ruleset. Only one of `before`, `after`, or `index` may be set.
+      - `before` - (Optional, String) Place this rule before the rule with this ID.
+      - `after` - (Optional, String) Place this rule after the rule with this ID.
+      - `index` - (Optional, Integer) Place this rule at this index position.
 
 ## Attribute reference
 
-There are no attribute references in addition to the argument reference list.
+In addition to the argument references listed above, you can access the following computed attribute after the resource is applied.
+
+- `rulesets_response` - (Computed, List) Full ruleset response as returned by the CIS API after apply. This block is read-only and reflects the live state of the entrypoint ruleset.
+
+  Nested scheme of `rulesets_response`:
+  - `ruleset_id` - (String) ID of the ruleset.
+  - `description` - (String) Description of the ruleset.
+  - `kind` - (String) Kind of the ruleset.
+  - `name` - (String) Name of the ruleset.
+  - `phase` - (String) Phase of the ruleset.
+  - `version` - (String) Version of the ruleset.
+  - `last_updated` - (String) Timestamp of the last update to the ruleset.
+  - `rules` - (List) Rules associated with the ruleset.
+
+    Nested scheme of `rules`:
+    - `id` - (String) ID of the rule.
+    - `version` - (String) Version of the rule.
+    - `action` - (String) Action of the rule.
+    - `description` - (String) Description of the rule.
+    - `enabled` - (Boolean) Whether the rule is enabled.
+    - `expression` - (String) Expression used by the rule to match the incoming request.
+    - `ref` - (String) Reference ID of the rule.
+    - `last_updated_at` - (String) Timestamp of the last update to the rule.
+    - `categories` - (List) List of categories the rule belongs to.
+    - `logging` - (Map) Logging configuration. Contains `enabled` (Boolean).
+    - `action_parameters` - (Set) Action parameters of the rule.
+
+      Nested scheme of `action_parameters`:
+      - `id` - (String) ID of the managed ruleset deployed by this rule.
+      - `version` - (String) Version of the managed ruleset.
+      - `ruleset` - (String) Ruleset identifier.
+      - `phases` - (List) Phases targeted by this rule.
+      - `products` - (List) Security products targeted by this rule.
+      - `rulesets` - (List) List of ruleset IDs.
+      - `rules_to_skip` - (List) Ruleset-to-rule-IDs mappings for rules to skip.
+        - `ruleset_id` - (String) Ruleset identifier.
+        - `rule_ids` - (List of String) Rule IDs to skip within the ruleset.
+      - `response` - (Set) Custom response configuration.
+        - `content` - (String) Response body content.
+        - `content_type` - (String) Response content type.
+        - `status_code` - (Integer) HTTP status code.
+      - `overrides` - (Set) Override configuration applied to the managed ruleset.
+        - `action` - (String) Default action override.
+        - `enabled` - (Boolean) Enable/disable all rules override.
+        - `override_rules` - (List) Per-rule overrides.
+          - `rule_id` - (String) ID of the overridden rule.
+          - `enabled` - (Boolean) Enable/disable the rule.
+          - `action` - (String) Action override.
+          - `score_threshold` - (Integer) Score threshold override.
+        - `categories` - (List) Category overrides.
+          - `category` - (String) Category name.
+          - `enabled` - (Boolean) Enable/disable the category.
+          - `action` - (String) Action override for the category.
 
 ## Import
 
