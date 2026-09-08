@@ -118,6 +118,11 @@ func DataSourceIBMISImages() *schema.Resource {
 							Computed:    true,
 							Description: "Whether the image is publicly visible or private to the account",
 						},
+						"minimum_provisioned_size": {
+							Type:        schema.TypeInt,
+							Computed:    true,
+							Description: "The minimum size (in gigabytes) of a volume onto which this image may be provisioned.",
+						},
 						"operating_system": {
 							Type:     schema.TypeList,
 							Computed: true,
@@ -541,6 +546,9 @@ func imageList(context context.Context, d *schema.ResourceData, meta interface{}
 		}
 		if image.SourceVolume != nil {
 			l["source_volume"] = *image.SourceVolume.ID
+		}
+		if image.MinimumProvisionedSize != nil {
+			l["minimum_provisioned_size"] = flex.IntValue(image.MinimumProvisionedSize)
 		}
 		if image.CatalogOffering != nil {
 			catalogOfferingList := []map[string]interface{}{}

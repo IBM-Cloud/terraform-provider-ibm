@@ -7,6 +7,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/secretsmanagerinstancemanagement"
 	"log"
 	"os"
 	"strconv"
@@ -440,7 +441,7 @@ func Provider() *schema.Provider {
 			"ibm_iam_service_id":                            iamidentity.DataSourceIBMIamServiceID(),
 			"ibm_iam_serviceid_group":                       iamidentity.DataSourceIBMIamServiceidGroup(),
 			"ibm_iam_service_policy":                        iampolicy.DataSourceIBMIAMServicePolicy(),
-			"ibm_iam_api_key":                               iamidentity.DataSourceIBMIamApiKey(),
+			"ibm_iam_api_key":                               iamidentity.DataSourceIBMIamAPIKey(),
 			"ibm_iam_trusted_profile":                       iamidentity.DataSourceIBMIamTrustedProfile(),
 			"ibm_iam_trusted_profile_identity":              iamidentity.DataSourceIBMIamTrustedProfileIdentity(),
 			"ibm_iam_trusted_profile_identities":            iamidentity.DataSourceIBMIamTrustedProfileIdentities(),
@@ -483,6 +484,7 @@ func Provider() *schema.Provider {
 			"ibm_is_backup_policy_jobs":  vpc.DataSourceIBMIsBackupPolicyJobs(),
 
 			// bare_metal_server
+			"ibm_is_bare_metal_server_capacities":                     vpc.DataSourceIBMIsBareMetalServerCapacities(),
 			"ibm_is_bare_metal_server_disk":                           vpc.DataSourceIBMIsBareMetalServerDisk(),
 			"ibm_is_bare_metal_server_disks":                          vpc.DataSourceIBMIsBareMetalServerDisks(),
 			"ibm_is_bare_metal_server_initialization":                 vpc.DataSourceIBMIsBareMetalServerInitialization(),
@@ -919,6 +921,8 @@ func Provider() *schema.Provider {
 			"ibm_sm_service_credentials_secret":                                  secretsmanager.AddInstanceFields(secretsmanager.DataSourceIbmSmServiceCredentialsSecret()),
 			"ibm_sm_custom_credentials_secret":                                   secretsmanager.AddInstanceFields(secretsmanager.DataSourceIbmSmCustomCredentialsSecret()),
 			"ibm_sm_en_registration":                                             secretsmanager.AddInstanceFields(secretsmanager.DataSourceIbmSmEnRegistration()),
+
+			"ibm_sm_instance": secretsmanagerinstancemanagement.DataSourceIbmSmInstance(),
 
 			// Added for Satellite
 			"ibm_satellite_location":                            satellite.DataSourceIBMSatelliteLocation(),
@@ -1379,7 +1383,7 @@ func Provider() *schema.Provider {
 			"ibm_iam_service_api_key":                       iamidentity.ResourceIBMIAMServiceAPIKey(),
 			"ibm_iam_service_policy":                        iampolicy.ResourceIBMIAMServicePolicy(),
 			"ibm_iam_user_invite":                           iampolicy.ResourceIBMIAMUserInvite(),
-			"ibm_iam_api_key":                               iamidentity.ResourceIBMIAMApiKey(),
+			"ibm_iam_api_key":                               iamidentity.ResourceIBMIamAPIKey(),
 			"ibm_iam_trusted_profile":                       iamidentity.ResourceIBMIAMTrustedProfile(),
 			"ibm_iam_trusted_profile_identity":              iamidentity.ResourceIBMIamTrustedProfileIdentity(),
 			"ibm_iam_trusted_profile_identities":            iamidentity.ResourceIBMIamTrustedProfileIdentities(),
@@ -1705,6 +1709,8 @@ func Provider() *schema.Provider {
 			"ibm_sm_en_registration":                                             secretsmanager.AddInstanceFields(secretsmanager.ResourceIbmSmEnRegistration()),
 			"ibm_sm_private_certificate_configuration_action_sign_csr":           secretsmanager.AddInstanceFields(secretsmanager.ResourceIbmSmPrivateCertificateConfigurationActionSignCsr()),
 			"ibm_sm_private_certificate_configuration_action_set_signed":         secretsmanager.AddInstanceFields(secretsmanager.ResourceIbmSmPrivateCertificateConfigurationActionSetSigned()),
+
+			"ibm_sm_admin_token": secretsmanagerinstancemanagement.ResourceIbmSmAdminToken(),
 
 			// satellite  resources
 			"ibm_satellite_location":                            satellite.ResourceIBMSatelliteLocation(),

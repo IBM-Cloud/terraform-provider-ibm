@@ -3,7 +3,7 @@ layout: "ibm"
 page_title: "IBM : ibm_backup_recoveries"
 description: |-
   Get information about List of Recoveries.
-subcategory: "IBM Backup Recovery API"
+subcategory: "IBM Backup Recovery"
 ---
 
 # ibm_backup_recoveries

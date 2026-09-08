@@ -54,6 +54,7 @@ In addition to all argument reference list, you can access the following attribu
 
 - `access_mode` - (String) The access mode for this load balancer. One of **private**, **public**, **private_path**.
 - `access_tags`  - (String) Access management tags associated for the load balancer.
+- `asymmetric_routing_supported` - (Bool) Indicates whether this load balancer supports asymmetric routing.
 - `advanced_health_checks_supported` - (Boolean) Indicates whether this load balancer supports advanced health checks.
 - `attached_load_balancer_pool_members` - (List) The load balancer pool members attached to this load balancer.
 	Nested scheme for `members`:

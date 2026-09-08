@@ -194,6 +194,7 @@ In addition to all argument reference list, you can access the following attribu
 - `file` - (String) The file.
 - `format` - (String) The format of an image.
 - `id` - (String) The unique identifier of the image.
+- `minimum_provisioned_size` - (Integer) The minimum size (in gigabytes) of a volume onto which this image may be provisioned. This property may be absent if the image has a status of pending or failed.
 - `resourceGroup` - (String) The resource group to which the image belongs to.
 - `status`- (String) The status of an image such as `corrupt`, or `available`.
 - `user_data_format` - (String) The user data format for this image.

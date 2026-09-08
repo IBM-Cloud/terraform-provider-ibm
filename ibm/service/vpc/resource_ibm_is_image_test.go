@@ -41,6 +41,29 @@ func TestAccIBMISImage_basic(t *testing.T) {
 	})
 }
 
+func TestAccIBMISImage_MinimumProvisionedSize(t *testing.T) {
+	var image string
+	name := fmt.Sprintf("tfimg-name-%d", acctest.RandIntRange(10, 100))
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheckImage(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: checkImageDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMISImageConfig(name),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISImageExists("ibm_is_image.isExampleImage", image),
+					resource.TestCheckResourceAttr(
+						"ibm_is_image.isExampleImage", "name", name),
+					resource.TestCheckResourceAttrSet("ibm_is_image.isExampleImage", "user_data_format"),
+					resource.TestCheckResourceAttrSet("ibm_is_image.isExampleImage", "minimum_provisioned_size"),
+				),
+			},
+		},
+	})
+}
+
 func TestAccIBMISImage_accessTags(t *testing.T) {
 	var image string
 	name := fmt.Sprintf("tfimg-access-tags-%d", acctest.RandIntRange(10, 100))

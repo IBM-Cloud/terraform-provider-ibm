@@ -18,6 +18,7 @@ func TestAccIBMIsLbPoolsDataSourceBasic(t *testing.T) {
 	name := fmt.Sprintf("tfcreate%d", acctest.RandIntRange(10, 100))
 	poolName := fmt.Sprintf("tflbpoolc%d", acctest.RandIntRange(10, 100))
 	alg1 := "round_robin"
+	alg2 := "weighted_forwarding"
 	protocol1 := "http"
 	delay1 := "45"
 	retries1 := "5"
@@ -33,6 +34,14 @@ func TestAccIBMIsLbPoolsDataSourceBasic(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_is_lb_pools.is_lb_pools", "lb"),
 					resource.TestCheckResourceAttrSet("data.ibm_is_lb_pools.is_lb_pools", "pools.#"),
+				),
+			},
+			{
+				Config: testAccCheckIBMIsLbPoolsDataSourceConfigRouteModeNLB(vpcname, subnetname, acc.ISZoneName, acc.ISCIDR, name, poolName, alg2, "tcp", delay1, retries1, timeout1, "tcp"),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet("data.ibm_is_lb_pools.is_lb_pools", "lb"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_lb_pools.is_lb_pools", "pools.#"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_lb_pools.is_lb_pools", "pools.0.algorithm"),
 				),
 			},
 		},
@@ -83,6 +92,40 @@ func testAccCheckIBMIsLbPoolsDataSourceConfigBasic(vpcname, subnetname, zone, ci
             lb = "${ibm_is_lb.testacc_LB.id}"
         }
     `)
+}
+
+func testAccCheckIBMIsLbPoolsDataSourceConfigRouteModeNLB(vpcname, subnetname, zone, cidr, name, poolName, algorithm, protocol, delay, retries, timeout, healthType string) string {
+	return fmt.Sprintf(`
+	resource "ibm_is_vpc" "testacc_vpc" {
+		name = "%s"
+	}
+	resource "ibm_is_subnet" "testacc_subnet" {
+		name            = "%s"
+		vpc             = ibm_is_vpc.testacc_vpc.id
+		zone            = "%s"
+		ipv4_cidr_block = "%s"
+	}
+	resource "ibm_is_lb" "testacc_LB" {
+		name       = "%s"
+		subnets    = [ibm_is_subnet.testacc_subnet.id]
+		profile    = "network-fixed"
+		type       = "private"
+		route_mode = true
+	}
+	resource "ibm_is_lb_pool" "testacc_lb_pool" {
+		name           = "%s"
+		lb             = ibm_is_lb.testacc_LB.id
+		algorithm      = "%s"
+		protocol       = "%s"
+		health_delay   = %s
+		health_retries = %s
+		health_timeout = %s
+		health_type    = "%s"
+	}
+	data "ibm_is_lb_pools" "is_lb_pools" {
+		lb         = ibm_is_lb.testacc_LB.id
+		depends_on = [ibm_is_lb_pool.testacc_lb_pool]
+	}`, vpcname, subnetname, zone, cidr, name, poolName, algorithm, protocol, delay, retries, timeout, healthType)
 }
 
 func testAccCheckIBMIsLbPoolsDataSourceConfigmTLS(vpcname, subnetname, zone, cidr, name, poolName, algorithm, protocol, delay, retries, timeout, healthType, clientCertCRN, serverCACRN string) string {

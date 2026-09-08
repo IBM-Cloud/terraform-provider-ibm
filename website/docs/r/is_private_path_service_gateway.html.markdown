@@ -19,6 +19,8 @@ resource "ibm_is_private_path_service_gateway" "example" {
   load_balancer = ibm_is_lb.testacc_LB.id
   zonal_affinity = true
   service_endpoints = ["myexamplefqdn"]
+  tags = ["env:prod"]
+  access_tags = ["project:myapp"]
 }
 ```
 
@@ -30,7 +32,9 @@ Review the argument reference that you can specify for your resource.
 - `load_balancer` - (Required, String) The ID of the load balancer for this private path service gateway. This load balancer must be in the same VPC as the private path service gateway and must have is_private_path set to true.
 - `service_endpoints` - (Required, List of Strings) The fully qualified domain names for this private path service gateway.
 - `name` - (Optional, String) The name for this private path service gateway. The name must not be used by another private path service gateway in the VPC. 
+- `access_tags` - (Optional, List of Strings) A list of access management tags to attach to the private path service gateway. Tags must be in the format `key:value`. **Note** you can attach only those access tags that already exists.
 - `resource_group` - (Optional, String) ID of the resource group to use.
+- `tags` - (Optional, List of Strings) A list of user tags to attach to the private path service gateway.
 - `zonal_affinity` - (Optional, String) Indicates whether this private path service gateway has zonal affinity.
 
 ## Attribute Reference

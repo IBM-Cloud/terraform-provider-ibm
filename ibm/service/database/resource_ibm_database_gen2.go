@@ -5,6 +5,7 @@ package database
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"log"
@@ -39,7 +40,6 @@ var gen2UnsupportedAttrs = []string{
 var gen2IgnoredAttrs = []string{
 	"key_protect_instance",
 	"auto_scaling",
-	"configuration",
 	"logical_replication_slot",
 	"offline_restore",
 	"async_restore",
@@ -127,7 +127,6 @@ var gen2AttrGuidance = map[string]string{
 	"remote_leader_id": "Gen2 databases do not yet support read replica creation and promotion using the 'remote_leader_id' attribute at this point.\n" +
 		"Documentation: https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/resources/database",
 
-	"configuration":               "database configuration changes are currently ignored",
 	"logical_replication_slot":    "logical replication slot creation is currently ignored",
 	"auto_scaling":                "auto-scaling settings are currently ignored",
 	"offline_restore":             "offline restore settings are currently ignored",
@@ -340,15 +339,8 @@ func (g *resourceIBMDatabaseGen2Backend) setResourceGroup(d *schema.ResourceData
 
 // buildGen2Parameters constructs the Gen2-specific parameters structure.
 // Includes database configuration, encryption settings, and backup_id for restore.
-// Note: PITR is not supported in Gen2. backup_id is validated to ensure only Gen2 backups are used.
+// Note: PITR is not supported in Gen2.
 func (g *resourceIBMDatabaseGen2Backend) buildGen2Parameters(d *schema.ResourceData, serviceName string, meta interface{}, catalogCRN string) (map[string]interface{}, error) {
-	// Validate backup_id if provided (only Gen2 coupled and decoupled backups are allowed at this point)
-	if backupID, ok := d.GetOk("backup_id"); ok {
-		if err := validateGen2BackupCRN(backupID.(string), meta); err != nil {
-			return nil, err
-		}
-	}
-
 	// Get the database type for the dataservices key
 	dbType := getDatabaseTypeFromResourceID(serviceName)
 	if dbType == "" {
@@ -411,23 +403,38 @@ func (g *resourceIBMDatabaseGen2Backend) buildDBConfig(d *schema.ResourceData, c
 	}
 	config.Members = members
 
-	// Early return if no member group - simplifies logic below
-	if memberGroup == nil {
-		return g.dbConfigToMap(config, dbType), nil
-	}
-
 	// Storage in GB (not MB!) - Gen2 expects per-member allocation
-	if memberGroup.Disk != nil {
-		storageGB := memberGroup.Disk.Allocation / mbPerGb
-		config.StorageGB = storageGB
+	if memberGroup != nil && memberGroup.Disk != nil {
+		config.StorageGB = memberGroup.Disk.Allocation / mbPerGb
 	}
 
-	// Host flavor - guard clause eliminates nested if
-	if memberGroup.HostFlavor != nil {
+	// Host flavor
+	if memberGroup != nil && memberGroup.HostFlavor != nil {
 		config.HostFlavor = memberGroup.HostFlavor.ID
 	}
 
-	return g.dbConfigToMap(config, dbType), nil
+	// Build the result map and inject configuration overrides.
+	// addConfigurationOverrides is independent of memberGroup — called once here.
+	result := g.dbConfigToMap(config, dbType)
+	g.addConfigurationOverrides(d, result)
+	return result, nil
+}
+
+// addConfigurationOverrides injects the "configuration" JSON field into the dbConfig map.
+// The Gen2 API accepts configuration overrides nested inside the database type object:
+// {"dataservices": {"postgresql": {"members": 3, ..., "configuration": {"max_connections": 167}}}}
+func (g *resourceIBMDatabaseGen2Backend) addConfigurationOverrides(d *schema.ResourceData, dbConfig map[string]interface{}) {
+	configJSON, ok := d.GetOk("configuration")
+	if !ok {
+		return
+	}
+	var configMap map[string]interface{}
+	if err := json.Unmarshal([]byte(configJSON.(string)), &configMap); err != nil {
+		// JSON validity was already enforced by the diff validator; log and skip
+		log.Printf("[WARN] configuration JSON unmarshal failed during parameter build: %s", err)
+		return
+	}
+	dbConfig["configuration"] = configMap
 }
 
 // dbConfigToMap converts DBConfig struct to map[string]interface{} for API compatibility.
@@ -614,6 +621,43 @@ func (g *resourceIBMDatabaseGen2Backend) applyGroupScaling(configCtx *instanceCo
 	}
 
 	// Build Gen2 parameters with updated group configuration
+	parameters, err := g.buildGen2Parameters(configCtx.d, metadata.serviceName, configCtx.meta, metadata.catalogCRN)
+	if err != nil {
+		return fmt.Errorf("failed to build parameters: %w", err)
+	}
+
+	// Update the instance
+	if err := g.updateResourceInstanceParameters(updateCtx.client, configCtx.instanceID, parameters); err != nil {
+		return err
+	}
+
+	// Wait for update to complete
+	_, err = g.waitForGen2InstanceUpdate(configCtx.d, configCtx.meta)
+	if err != nil {
+		return fmt.Errorf("error waiting for instance update to complete: %w", err)
+	}
+
+	return nil
+}
+
+// applyConfigurationUpdate applies database configuration changes via Resource Controller.
+// Configuration is sent nested inside dataservices[dbType]["configuration"] in the RC UpdateResourceInstance call.
+// This mirrors Classic's UpdateDatabaseConfiguration behavior but uses the RC API instead of the ICD API.
+func (g *resourceIBMDatabaseGen2Backend) applyConfigurationUpdate(configCtx *instanceConfigContext) error {
+	// Initialize clients and extract location
+	updateCtx, err := g.prepareUpdateContext(configCtx)
+	if err != nil {
+		return err
+	}
+
+	// Get service metadata
+	clientSession := configCtx.meta.(conns.ClientSession)
+	metadata, err := g.getServiceMetadata(configCtx.d, updateCtx.location, clientSession)
+	if err != nil {
+		return err
+	}
+
+	// Build Gen2 parameters including configuration
 	parameters, err := g.buildGen2Parameters(configCtx.d, metadata.serviceName, configCtx.meta, metadata.catalogCRN)
 	if err != nil {
 		return fmt.Errorf("failed to build parameters: %w", err)
@@ -918,6 +962,35 @@ func (g *resourceIBMDatabaseGen2Backend) applyGroupScalingWithDiagnostics(ctx co
 	return nil
 }
 
+// applyConfigurationWithDiagnostics applies configuration updates and returns diagnostics.
+// Wraps applyConfigurationUpdate to provide consistent diagnostic handling.
+func (g *resourceIBMDatabaseGen2Backend) applyConfigurationWithDiagnostics(ctx context.Context, d *schema.ResourceData, rsConClient *rc.ResourceControllerV2, instanceID string, meta interface{}) diag.Diagnostics {
+	if !d.HasChange("configuration") {
+		return nil
+	}
+
+	instance, _, err := rsConClient.GetResourceInstance(&rc.GetResourceInstanceOptions{
+		ID: &instanceID,
+	})
+	if err != nil {
+		return diagError("error getting resource instance: %s", err)
+	}
+
+	configCtx := &instanceConfigContext{
+		ctx:        ctx,
+		d:          d,
+		instanceID: instanceID,
+		meta:       meta,
+		instance:   instance,
+	}
+
+	if err := g.applyConfigurationUpdate(configCtx); err != nil {
+		return diagError("error applying configuration update: %s", err)
+	}
+
+	return nil
+}
+
 // Update modifies an existing IBM Cloud Database Gen2 instance.
 // Supports updates to name, tags, and group scaling.
 // Many features are not yet supported in Gen2 and will return errors if modified.
@@ -944,6 +1017,10 @@ func (g *resourceIBMDatabaseGen2Backend) Update(ctx context.Context, d *schema.R
 	}
 
 	if diags := g.applyGroupScalingWithDiagnostics(ctx, d, rsConClient, instanceID, meta); len(diags) > 0 {
+		return appendGen2DiagnosticsErrorsThenWarnings(diags, warnings)
+	}
+
+	if diags := g.applyConfigurationWithDiagnostics(ctx, d, rsConClient, instanceID, meta); len(diags) > 0 {
 		return appendGen2DiagnosticsErrorsThenWarnings(diags, warnings)
 	}
 

@@ -185,9 +185,9 @@ func testAccCheckIBMResourceInstanceBasic(cos_instance_name string, cos_bucket_n
 		  }
 		)
 		timeouts {
-		  create = "30m"
-		  update = "30m"
-		  delete = "30m"
+		  create = "95m"
+		  update = "1h"
+		  delete = "1h"
 		}
 	  }
 	  

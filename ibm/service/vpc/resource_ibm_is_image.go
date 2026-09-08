@@ -159,7 +159,11 @@ func ResourceIBMISImage() *schema.Resource {
 				Computed:     true,
 				Description:  "Image Operating system",
 			},
-
+			"minimum_provisioned_size": {
+				Type:        schema.TypeInt,
+				Computed:    true,
+				Description: "The minimum size (in gigabytes) of a volume onto which this image may be provisioned.",
+			},
 			isImageEncryption: {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -891,6 +895,9 @@ func imgGet(context context.Context, d *schema.ResourceData, meta interface{}, i
 	if err = d.Set("created_at", flex.DateTimeToString(image.CreatedAt)); err != nil {
 		err = fmt.Errorf("Error setting created_at: %s", err)
 		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_image", "read", "set-created_at").GetDiag()
+	}
+	if err = d.Set("minimum_provisioned_size", flex.IntValue(image.MinimumProvisionedSize)); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting minimum_provisioned_size: %s", err), "ibm_is_image", "read", "set-minimum_provisioned_size").GetDiag()
 	}
 	if !core.IsNil(image.DeprecationAt) {
 		if err = d.Set("deprecation_at", flex.DateTimeToString(image.DeprecationAt)); err != nil {

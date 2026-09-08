@@ -19,6 +19,12 @@ After creating a Key Protect Dedicated resource, you need to initialize the inst
 ## Example usage to provision Key Protect service and key management
 
 ```terraform
+variable "kms_key_passphrase" {
+  description = "Passphrase for the KMS key share files."
+  type        = string
+  sensitive   = true
+}
+
 resource "ibm_resource_instance" "key_protect_instance" {
   name              = "test-tf-st"
   resource_group_id = data.ibm_resource_group.resource_group.id
@@ -45,11 +51,11 @@ resource "ibm_kms_cryptounits" "st-dedicated" {
   master_key  {
     keysharefile {
       filepath = "tf-mbk-1.key"
-      passphrase    = "abcd12"
+      passphrase    = var.kms_key_passphrase
     }
     keysharefile {
       filepath = "tf-mbk-2.key"
-      passphrase    = "abcd12"
+      passphrase    = var.kms_key_passphrase
     }
     keyname = "mbkkey"
     exists  = true
@@ -84,11 +90,11 @@ resource "ibm_kms_cryptounits" "st-dedicated" {
   master_key  {
     keysharefile {
       filepath = "tf-mbk-1.key"
-      passphrase    = "abcd12"
+      passphrase    = var.kms_key_passphrase
     }
     keysharefile {
       filepath = "tf-mbk-2.key"
-      passphrase    = "abcd12"
+      passphrase    = var.kms_key_passphrase
     }
     keyname = "mbkkey"
     exists  = true
