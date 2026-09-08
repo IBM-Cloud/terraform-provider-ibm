@@ -878,8 +878,10 @@ func clearGen2UnsupportedAttributes(d *schema.ResourceData) {
 const s2sAuthWarningHeader = "Database backup authorization required"
 const s2sAuthWarningDetail = "This database uses Independent Backups.\n" +
 	"Existing backups remain available for 30 days from their creation date. " +
-	"Backup creation and management are unavailable until the required service authorization is completed.\n\n" +
-	"Complete the required service authorization to enable backup operations."
+	"Backup creation and management are unavailable until the required service authorization is completed.\n" +
+	"Complete the required service authorization to enable backup operations.\n\n" +
+	"To configure the required IAM service authorization, please refer to the documentation below: \n" +
+	"https://cloud.ibm.com/docs/cloud-databases-gen2?topic=cloud-databases-gen2-iam&interface=ui#s2s-authorization-backups"
 
 // s2sAuthWarning is a sentinel error that the datasource router converts to a diag.Warning.
 type s2sAuthWarning struct{}
