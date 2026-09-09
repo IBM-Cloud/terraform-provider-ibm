@@ -24,7 +24,7 @@ func TestAccIbmCodeEngineFunctionDataSourceBasic(t *testing.T) {
 		PreCheck:  func() { acc.TestAccPreCheck(t) },
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccCheckIbmCodeEngineFunctionDataSourceConfigBasic(projectID, functionCodeReference, functionName, functionRuntime),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_code_engine_function.code_engine_function_instance", "function_id"),
@@ -64,7 +64,7 @@ func TestAccIbmCodeEngineFunctionDataSourceExtended(t *testing.T) {
 		PreCheck:  func() { acc.TestAccPreCheck(t) },
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccCheckIbmCodeEngineFunctionDataSourceConfig(projectID, functionCodeReference, functionManagedDomainMappings, functionName, functionRuntime, functionScaleCPULimit, functionScaleDownDelay, functionScaleMaxExecutionTime, functionScaleMemoryLimit),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("data.ibm_code_engine_function.code_engine_function_instance", "project_id", projectID),

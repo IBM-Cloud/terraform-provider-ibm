@@ -26,38 +26,38 @@ func DataSourceIbmCodeEnginePersistentDataStore() *schema.Resource {
 		ReadContext: dataSourceIbmCodeEnginePersistentDataStoreRead,
 
 		Schema: map[string]*schema.Schema{
-			"project_id": &schema.Schema{
+			"project_id": {
 				Type:        schema.TypeString,
 				Required:    true,
 				Description: "The ID of the project.",
 			},
-			"name": &schema.Schema{
+			"name": {
 				Type:        schema.TypeString,
 				Required:    true,
 				Description: "The name of your persistent data store.",
 			},
-			"created_at": &schema.Schema{
+			"created_at": {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The timestamp when the resource was created.",
 			},
-			"data": &schema.Schema{
+			"data": {
 				Type:        schema.TypeList,
 				Computed:    true,
 				Description: "Data container that allows to specify config parameters and their values as a key-value map. Each key field must consist of alphanumeric characters, `-`, `_` or `.` and must not exceed a max length of 253 characters. Each value field can consists of any character and must not exceed a max length of 1048576 characters.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"bucket_location": &schema.Schema{
+						"bucket_location": {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "Specify the location of the bucket.",
 						},
-						"bucket_name": &schema.Schema{
+						"bucket_name": {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "Specify the name of the bucket.",
 						},
-						"secret_name": &schema.Schema{
+						"secret_name": {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "Specify the name of the HMAC secret.",
@@ -65,17 +65,27 @@ func DataSourceIbmCodeEnginePersistentDataStore() *schema.Resource {
 					},
 				},
 			},
-			"entity_tag": &schema.Schema{
+			"entity_tag": {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The version of the persistent data store, which is used to achieve optimistic locking.",
 			},
-			"region": &schema.Schema{
+			"href": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "When you provision a new persistent data store, a URL is created identifying the location of the instance.",
+			},
+			"region": {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The region of the project the resource is located in. Possible values: 'au-syd', 'br-sao', 'ca-tor', 'eu-de', 'eu-gb', 'jp-osa', 'jp-tok', 'us-east', 'us-south'.",
 			},
-			"storage_type": &schema.Schema{
+			"resource_type": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The type of the persistent data store.",
+			},
+			"storage_type": {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "Specify the storage type of the persistent data store.",
@@ -126,9 +136,21 @@ func dataSourceIbmCodeEnginePersistentDataStoreRead(context context.Context, d *
 		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting entity_tag: %s", err), "(Data) ibm_code_engine_persistent_data_store", "read", "set-entity_tag").GetDiag()
 	}
 
+	if !core.IsNil(persistentDataStore.Href) {
+		if err = d.Set("href", persistentDataStore.Href); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting href: %s", err), "(Data) ibm_code_engine_persistent_data_store", "read", "set-href").GetDiag()
+		}
+	}
+
 	if !core.IsNil(persistentDataStore.Region) {
 		if err = d.Set("region", persistentDataStore.Region); err != nil {
 			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting region: %s", err), "(Data) ibm_code_engine_persistent_data_store", "read", "set-region").GetDiag()
+		}
+	}
+
+	if !core.IsNil(persistentDataStore.ResourceType) {
+		if err = d.Set("resource_type", persistentDataStore.ResourceType); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting resource_type: %s", err), "(Data) ibm_code_engine_persistent_data_store", "read", "set-resource_type").GetDiag()
 		}
 	}
 

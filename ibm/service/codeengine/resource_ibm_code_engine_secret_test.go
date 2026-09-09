@@ -36,7 +36,7 @@ func TestAccIbmCodeEngineSecretGeneric(t *testing.T) {
 		Providers:    acc.TestAccProviders,
 		CheckDestroy: testAccCheckIbmCodeEngineSecretDestroy,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccCheckIbmCodeEngineSecretConfig(projectID, format, name, data),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIbmCodeEngineSecretExists("ibm_code_engine_secret.code_engine_secret_instance", conf),
@@ -47,7 +47,7 @@ func TestAccIbmCodeEngineSecretGeneric(t *testing.T) {
 					resource.TestCheckResourceAttr("ibm_code_engine_secret.code_engine_secret_instance", "resource_type", "secret_generic_v2"),
 				),
 			},
-			resource.TestStep{
+			{
 				Config: testAccCheckIbmCodeEngineSecretConfig(projectID, format, nameUpdate, dataUpdate),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("ibm_code_engine_secret.code_engine_secret_instance", "project_id", projectID),
@@ -58,7 +58,7 @@ func TestAccIbmCodeEngineSecretGeneric(t *testing.T) {
 					resource.TestCheckResourceAttr("ibm_code_engine_secret.code_engine_secret_instance", "resource_type", "secret_generic_v2"),
 				),
 			},
-			resource.TestStep{
+			{
 				ResourceName:      "ibm_code_engine_secret.code_engine_secret_instance",
 				ImportState:       true,
 				ImportStateVerify: true,
@@ -88,7 +88,7 @@ func TestAccIbmCodeEngineSecretBasicAuth(t *testing.T) {
 		Providers:    acc.TestAccProviders,
 		CheckDestroy: testAccCheckIbmCodeEngineSecretDestroy,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccCheckIbmCodeEngineSecretConfig(projectID, format, name, data),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIbmCodeEngineSecretExists("ibm_code_engine_secret.code_engine_secret_instance", conf),
@@ -100,7 +100,7 @@ func TestAccIbmCodeEngineSecretBasicAuth(t *testing.T) {
 					resource.TestCheckResourceAttr("ibm_code_engine_secret.code_engine_secret_instance", "resource_type", "secret_basic_auth_v2"),
 				),
 			},
-			resource.TestStep{
+			{
 				Config: testAccCheckIbmCodeEngineSecretConfig(projectID, format, nameUpdate, dataUpdate),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("ibm_code_engine_secret.code_engine_secret_instance", "project_id", projectID),
@@ -111,7 +111,7 @@ func TestAccIbmCodeEngineSecretBasicAuth(t *testing.T) {
 					resource.TestCheckResourceAttr("ibm_code_engine_secret.code_engine_secret_instance", "resource_type", "secret_basic_auth_v2"),
 				),
 			},
-			resource.TestStep{
+			{
 				ResourceName:      "ibm_code_engine_secret.code_engine_secret_instance",
 				ImportState:       true,
 				ImportStateVerify: true,
@@ -145,7 +145,7 @@ func TestAccIbmCodeEngineSecretRegistry(t *testing.T) {
 		Providers:    acc.TestAccProviders,
 		CheckDestroy: testAccCheckIbmCodeEngineSecretDestroy,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccCheckIbmCodeEngineSecretConfig(projectID, format, name, data),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIbmCodeEngineSecretExists("ibm_code_engine_secret.code_engine_secret_instance", conf),
@@ -159,7 +159,7 @@ func TestAccIbmCodeEngineSecretRegistry(t *testing.T) {
 					resource.TestCheckResourceAttr("ibm_code_engine_secret.code_engine_secret_instance", "resource_type", "secret_registry_v2"),
 				),
 			},
-			resource.TestStep{
+			{
 				Config: testAccCheckIbmCodeEngineSecretConfig(projectID, format, nameUpdate, dataUpdate),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("ibm_code_engine_secret.code_engine_secret_instance", "project_id", projectID),
@@ -172,7 +172,7 @@ func TestAccIbmCodeEngineSecretRegistry(t *testing.T) {
 					resource.TestCheckResourceAttr("ibm_code_engine_secret.code_engine_secret_instance", "resource_type", "secret_registry_v2"),
 				),
 			},
-			resource.TestStep{
+			{
 				ResourceName:      "ibm_code_engine_secret.code_engine_secret_instance",
 				ImportState:       true,
 				ImportStateVerify: true,
@@ -202,7 +202,7 @@ func TestAccIbmCodeEngineSecretSSHAuth(t *testing.T) {
 		Providers:    acc.TestAccProviders,
 		CheckDestroy: testAccCheckIbmCodeEngineSecretDestroy,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccCheckIbmCodeEngineSecretConfig(projectID, format, name, data),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIbmCodeEngineSecretExists("ibm_code_engine_secret.code_engine_secret_instance", conf),
@@ -214,7 +214,7 @@ func TestAccIbmCodeEngineSecretSSHAuth(t *testing.T) {
 					resource.TestCheckResourceAttr("ibm_code_engine_secret.code_engine_secret_instance", "resource_type", "secret_auth_ssh_v2"),
 				),
 			},
-			resource.TestStep{
+			{
 				Config: testAccCheckIbmCodeEngineSecretConfig(projectID, format, nameUpdate, dataUpdate),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("ibm_code_engine_secret.code_engine_secret_instance", "project_id", projectID),
@@ -225,7 +225,7 @@ func TestAccIbmCodeEngineSecretSSHAuth(t *testing.T) {
 					resource.TestCheckResourceAttr("ibm_code_engine_secret.code_engine_secret_instance", "resource_type", "secret_auth_ssh_v2"),
 				),
 			},
-			resource.TestStep{
+			{
 				ResourceName:      "ibm_code_engine_secret.code_engine_secret_instance",
 				ImportState:       true,
 				ImportStateVerify: true,
@@ -249,7 +249,7 @@ func TestAccIbmCodeEngineSecretTls(t *testing.T) {
 		Providers:    acc.TestAccProviders,
 		CheckDestroy: testAccCheckIbmCodeEngineSecretDestroy,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccCheckIbmCodeEngineSecretTLSConfig(projectID, string(tlsKey), string(tlsCert), format, name),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIbmCodeEngineSecretExists("ibm_code_engine_secret.code_engine_secret_instance", conf),
@@ -261,7 +261,7 @@ func TestAccIbmCodeEngineSecretTls(t *testing.T) {
 					resource.TestCheckResourceAttr("ibm_code_engine_secret.code_engine_secret_instance", "resource_type", "secret_tls_v2"),
 				),
 			},
-			resource.TestStep{
+			{
 				Config: testAccCheckIbmCodeEngineSecretTLSConfig(projectID, string(tlsKey), string(tlsCert), format, nameUpdate),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("ibm_code_engine_secret.code_engine_secret_instance", "project_id", projectID),
@@ -272,7 +272,7 @@ func TestAccIbmCodeEngineSecretTls(t *testing.T) {
 					resource.TestCheckResourceAttr("ibm_code_engine_secret.code_engine_secret_instance", "resource_type", "secret_tls_v2"),
 				),
 			},
-			resource.TestStep{
+			{
 				ResourceName:      "ibm_code_engine_secret.code_engine_secret_instance",
 				ImportState:       true,
 				ImportStateVerify: true,
@@ -295,7 +295,7 @@ func TestAccIbmCodeEngineSecretServiceAccess(t *testing.T) {
 		Providers:    acc.TestAccProviders,
 		CheckDestroy: testAccCheckIbmCodeEngineSecretDestroy,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccCheckIbmCodeEngineServiceAccessSecretConfig(projectID, format, name, resourceKeyId, serviceInstanceId),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIbmCodeEngineSecretExists("ibm_code_engine_secret.code_engine_secret_instance", conf),
@@ -310,7 +310,7 @@ func TestAccIbmCodeEngineSecretServiceAccess(t *testing.T) {
 					resource.TestCheckResourceAttrSet("ibm_code_engine_secret.code_engine_secret_instance", "service_access.0.role.0.name"),
 				),
 			},
-			resource.TestStep{
+			{
 				ResourceName:      "ibm_code_engine_secret.code_engine_secret_instance",
 				ImportState:       true,
 				ImportStateVerify: true,

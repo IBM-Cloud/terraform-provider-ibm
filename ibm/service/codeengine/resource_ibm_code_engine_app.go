@@ -38,87 +38,87 @@ func ResourceIbmCodeEngineApp() *schema.Resource {
 		},
 
 		Schema: map[string]*schema.Schema{
-			"project_id": &schema.Schema{
+			"project_id": {
 				Type:         schema.TypeString,
 				Required:     true,
 				ForceNew:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_code_engine_app", "project_id"),
 				Description:  "The ID of the project.",
 			},
-			"image_port": &schema.Schema{
+			"image_port": {
 				Type:         schema.TypeInt,
 				Optional:     true,
 				Default:      8080,
 				ValidateFunc: validate.InvokeValidator("ibm_code_engine_app", "image_port"),
 				Description:  "Optional port the app listens on. While the app will always be exposed via port `443` for end users, this port is used to connect to the port that is exposed by the container image.",
 			},
-			"image_reference": &schema.Schema{
+			"image_reference": {
 				Type:         schema.TypeString,
 				Required:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_code_engine_app", "image_reference"),
 				Description:  "The name of the image that is used for this app. The format is `REGISTRY/NAMESPACE/REPOSITORY:TAG` where `REGISTRY` and `TAG` are optional. If `REGISTRY` is not specified, the default is `docker.io`. If `TAG` is not specified, the default is `latest`. If the image reference points to a registry that requires authentication, make sure to also specify the property `image_secret`.",
 			},
-			"image_secret": &schema.Schema{
+			"image_secret": {
 				Type:         schema.TypeString,
 				Optional:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_code_engine_app", "image_secret"),
 				Description:  "Optional name of the image registry access secret. The image registry access secret is used to authenticate with a private registry when you download the container image. If the image reference points to a registry that requires authentication, the app will be created but cannot reach the ready status, until this property is provided, too.",
 			},
-			"managed_domain_mappings": &schema.Schema{
+			"managed_domain_mappings": {
 				Type:         schema.TypeString,
 				Optional:     true,
 				Default:      "local_public",
 				ValidateFunc: validate.InvokeValidator("ibm_code_engine_app", "managed_domain_mappings"),
 				Description:  "Optional value controlling which of the system managed domain mappings will be setup for the application. Valid values are 'local_public', 'local_private' and 'local'. Visibility can only be 'local_private' if the project supports application private visibility.",
 			},
-			"name": &schema.Schema{
+			"name": {
 				Type:         schema.TypeString,
 				Required:     true,
 				ForceNew:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_code_engine_app", "name"),
 				Description:  "The name of the app.",
 			},
-			"probe_liveness": &schema.Schema{
+			"probe_liveness": {
 				Type:        schema.TypeList,
 				MaxItems:    1,
 				Optional:    true,
 				Description: "Response model for probes.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"failure_threshold": &schema.Schema{
+						"failure_threshold": {
 							Type:        schema.TypeInt,
 							Optional:    true,
 							Default:     1,
 							Description: "The number of consecutive, unsuccessful checks for the probe to be considered failed.",
 						},
-						"initial_delay": &schema.Schema{
+						"initial_delay": {
 							Type:        schema.TypeInt,
 							Optional:    true,
 							Description: "The amount of time in seconds to wait before the first probe check is performed.",
 						},
-						"interval": &schema.Schema{
+						"interval": {
 							Type:        schema.TypeInt,
 							Optional:    true,
 							Default:     10,
 							Description: "The amount of time in seconds between probe checks.",
 						},
-						"path": &schema.Schema{
+						"path": {
 							Type:        schema.TypeString,
 							Optional:    true,
 							Description: "The path of the HTTP request to the resource. A path is only supported for a probe with a `type` of `http`.",
 						},
-						"port": &schema.Schema{
+						"port": {
 							Type:        schema.TypeInt,
 							Optional:    true,
-							Description: "The port on which to probe the resource.",
+							Description: "The port on which to probe the resource, or 0 to probe the default app port 8080.",
 						},
-						"timeout": &schema.Schema{
+						"timeout": {
 							Type:        schema.TypeInt,
 							Optional:    true,
 							Default:     1,
 							Description: "The amount of time in seconds that the probe waits for a response from the application before it times out and fails.",
 						},
-						"type": &schema.Schema{
+						"type": {
 							Type:        schema.TypeString,
 							Required:    true,
 							Description: "Specifies whether to use HTTP or TCP for the probe checks. The default is TCP.",
@@ -126,47 +126,47 @@ func ResourceIbmCodeEngineApp() *schema.Resource {
 					},
 				},
 			},
-			"probe_readiness": &schema.Schema{
+			"probe_readiness": {
 				Type:        schema.TypeList,
 				MaxItems:    1,
 				Optional:    true,
 				Description: "Response model for probes.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"failure_threshold": &schema.Schema{
+						"failure_threshold": {
 							Type:        schema.TypeInt,
 							Optional:    true,
 							Default:     1,
 							Description: "The number of consecutive, unsuccessful checks for the probe to be considered failed.",
 						},
-						"initial_delay": &schema.Schema{
+						"initial_delay": {
 							Type:        schema.TypeInt,
 							Optional:    true,
 							Description: "The amount of time in seconds to wait before the first probe check is performed.",
 						},
-						"interval": &schema.Schema{
+						"interval": {
 							Type:        schema.TypeInt,
 							Optional:    true,
 							Default:     10,
 							Description: "The amount of time in seconds between probe checks.",
 						},
-						"path": &schema.Schema{
+						"path": {
 							Type:        schema.TypeString,
 							Optional:    true,
 							Description: "The path of the HTTP request to the resource. A path is only supported for a probe with a `type` of `http`.",
 						},
-						"port": &schema.Schema{
+						"port": {
 							Type:        schema.TypeInt,
 							Optional:    true,
-							Description: "The port on which to probe the resource.",
+							Description: "The port on which to probe the resource, or 0 to probe the default app port 8080.",
 						},
-						"timeout": &schema.Schema{
+						"timeout": {
 							Type:        schema.TypeInt,
 							Optional:    true,
 							Default:     1,
 							Description: "The amount of time in seconds that the probe waits for a response from the application before it times out and fails.",
 						},
-						"type": &schema.Schema{
+						"type": {
 							Type:        schema.TypeString,
 							Required:    true,
 							Description: "Specifies whether to use HTTP or TCP for the probe checks. The default is TCP.",
@@ -174,62 +174,62 @@ func ResourceIbmCodeEngineApp() *schema.Resource {
 					},
 				},
 			},
-			"run_arguments": &schema.Schema{
+			"run_arguments": {
 				Type:        schema.TypeList,
 				Optional:    true,
 				Description: "Optional arguments for the app that are passed to start the container. If not specified an empty string array will be applied and the arguments specified by the container image, will be used to start the container.",
 				Elem:        &schema.Schema{Type: schema.TypeString},
 			},
-			"run_as_user": &schema.Schema{
+			"run_as_user": {
 				Type:        schema.TypeInt,
 				Optional:    true,
 				Default:     0,
 				Description: "Optional user ID (UID) to run the app.",
 			},
-			"run_commands": &schema.Schema{
+			"run_commands": {
 				Type:        schema.TypeList,
 				Optional:    true,
 				Description: "Optional commands for the app that are passed to start the container. If not specified an empty string array will be applied and the command specified by the container image, will be used to start the container.",
 				Elem:        &schema.Schema{Type: schema.TypeString},
 			},
-			"run_compute_resource_token_enabled": &schema.Schema{
+			"run_compute_resource_token_enabled": {
 				Type:        schema.TypeBool,
 				Optional:    true,
 				Default:     false,
 				Description: "Optional flag to enable the use of a compute resource token mounted to the container file system.",
 			},
-			"run_env_variables": &schema.Schema{
+			"run_env_variables": {
 				Type:        schema.TypeList,
 				Optional:    true,
 				Description: "References to config maps, secrets or literal values, which are defined by the app owner and are exposed as environment variables in the application.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"key": &schema.Schema{
+						"key": {
 							Type:        schema.TypeString,
 							Optional:    true,
 							Description: "The key to reference as environment variable.",
 						},
-						"name": &schema.Schema{
+						"name": {
 							Type:        schema.TypeString,
 							Optional:    true,
 							Description: "The name of the environment variable.",
 						},
-						"prefix": &schema.Schema{
+						"prefix": {
 							Type:        schema.TypeString,
 							Optional:    true,
 							Description: "A prefix that can be added to all keys of a full secret or config map reference.",
 						},
-						"reference": &schema.Schema{
+						"reference": {
 							Type:        schema.TypeString,
 							Optional:    true,
 							Description: "The name of the secret or config map.",
 						},
-						"type": &schema.Schema{
+						"type": {
 							Type:        schema.TypeString,
 							Required:    true,
 							Description: "Specify the type of the environment variable.",
 						},
-						"value": &schema.Schema{
+						"value": {
 							Type:        schema.TypeString,
 							Optional:    true,
 							Description: "The literal value of the environment variable.",
@@ -237,41 +237,41 @@ func ResourceIbmCodeEngineApp() *schema.Resource {
 					},
 				},
 			},
-			"run_service_account": &schema.Schema{
+			"run_service_account": {
 				Type:         schema.TypeString,
 				Optional:     true,
 				Default:      "default",
 				ValidateFunc: validate.InvokeValidator("ibm_code_engine_app", "run_service_account"),
 				Description:  "Optional name of the service account. For built-in service accounts, you can use the shortened names `manager` , `none`, `reader`, and `writer`.",
 			},
-			"run_volume_mounts": &schema.Schema{
+			"run_volume_mounts": {
 				Type:        schema.TypeList,
 				Optional:    true,
 				Description: "Mounts of config maps or secrets.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"mount_path": &schema.Schema{
+						"mount_path": {
 							Type:        schema.TypeString,
 							Required:    true,
 							Description: "The path that should be mounted.",
 						},
-						"read_only": &schema.Schema{
+						"read_only": {
 							Type:        schema.TypeBool,
 							Optional:    true,
 							Default:     true,
 							Description: "Optional flag for a volume mount of type 'persistent_data_store' to specify whether it is read-only.",
 						},
-						"reference": &schema.Schema{
+						"reference": {
 							Type:        schema.TypeString,
 							Required:    true,
 							Description: "The name of the referenced secret, config map, or persistent data store.",
 						},
-						"sub_path": &schema.Schema{
+						"sub_path": {
 							Type:        schema.TypeString,
 							Optional:    true,
 							Description: "The path mounted at the mount path.",
 						},
-						"type": &schema.Schema{
+						"type": {
 							Type:        schema.TypeString,
 							Required:    true,
 							Description: "Specify the type of the volume mount. Allowed types are: 'config_map', 'persistent_data_store', 'secret'.",
@@ -279,117 +279,119 @@ func ResourceIbmCodeEngineApp() *schema.Resource {
 					},
 				},
 			},
-			"scale_concurrency": &schema.Schema{
+			"scale_concurrency": {
 				Type:        schema.TypeInt,
 				Optional:    true,
 				Default:     100,
 				Description: "Optional maximum number of requests that can be processed concurrently per instance.",
 			},
-			"scale_concurrency_target": &schema.Schema{
+			"scale_concurrency_target": {
 				Type:         schema.TypeInt,
 				Optional:     true,
 				Default:      100,
 				ValidateFunc: validate.InvokeValidator("ibm_code_engine_app", "scale_concurrency_target"),
 				Description:  "Optional threshold of concurrent requests per instance at which one or more additional instances are created. Use this value to scale up instances based on concurrent number of requests. This option defaults to the value of the `scale_concurrency` option, if not specified.",
 			},
-			"scale_cpu_limit": &schema.Schema{
+			"scale_cpu_limit": {
 				Type:         schema.TypeString,
 				Optional:     true,
 				Default:      "1",
 				ValidateFunc: validate.InvokeValidator("ibm_code_engine_app", "scale_cpu_limit"),
 				Description:  "Optional number of CPU set for the instance of the app. For valid values see [Supported memory and CPU combinations](https://cloud.ibm.com/docs/codeengine?topic=codeengine-mem-cpu-combo).",
 			},
-			"scale_down_delay": &schema.Schema{
+			"scale_down_delay": {
 				Type:         schema.TypeInt,
 				Optional:     true,
 				Default:      0,
 				ValidateFunc: validate.InvokeValidator("ibm_code_engine_app", "scale_down_delay"),
 				Description:  "Optional amount of time in seconds that delays the scale-down behavior for an app instance.",
 			},
-			"scale_ephemeral_storage_limit": &schema.Schema{
-				Type:         schema.TypeString,
-				Optional:     true,
-				Default:      "400M",
-				ValidateFunc: validate.InvokeValidator("ibm_code_engine_app", "scale_ephemeral_storage_limit"),
-				Description:  "Optional amount of ephemeral storage to set for the instance of the app. The amount specified as ephemeral storage, must not exceed the amount of `scale_memory_limit`. The units for specifying ephemeral storage are Megabyte (M) or Gigabyte (G), whereas G and M are the shorthand expressions for GB and MB. For more information see [Units of measurement](https://cloud.ibm.com/docs/codeengine?topic=codeengine-mem-cpu-combo#unit-measurements).",
+			"scale_ephemeral_storage_limit": {
+				Type:             schema.TypeString,
+				Optional:         true,
+				Default:          "400M",
+				ValidateFunc:     validate.InvokeValidator("ibm_code_engine_app", "scale_ephemeral_storage_limit"),
+				DiffSuppressFunc: SuppressCodeEngineQuantityDiff,
+				Description:      "Optional amount of ephemeral storage to set for the instance of the app. The amount specified as ephemeral storage, must not exceed the amount of `scale_memory_limit`. The units for specifying ephemeral storage are Megabyte (M) or Gigabyte (G), whereas G and M are the shorthand expressions for GB and MB. For more information see [Units of measurement](https://cloud.ibm.com/docs/codeengine?topic=codeengine-mem-cpu-combo#unit-measurements).",
 			},
-			"scale_initial_instances": &schema.Schema{
+			"scale_initial_instances": {
 				Type:        schema.TypeInt,
 				Optional:    true,
 				Default:     1,
 				Description: "Optional initial number of instances that are created upon app creation or app update.",
 			},
-			"scale_max_instances": &schema.Schema{
+			"scale_max_instances": {
 				Type:        schema.TypeInt,
 				Optional:    true,
 				Default:     10,
 				Description: "Optional maximum number of instances for this app. If you set this value to `0`, this property does not set a upper scaling limit. However, the app scaling is still limited by the project quota for instances. See [Limits and quotas for Code Engine](https://cloud.ibm.com/docs/codeengine?topic=codeengine-limits).",
 			},
-			"scale_memory_limit": &schema.Schema{
-				Type:         schema.TypeString,
-				Optional:     true,
-				Default:      "4G",
-				ValidateFunc: validate.InvokeValidator("ibm_code_engine_app", "scale_memory_limit"),
-				Description:  "Optional amount of memory set for the instance of the app. For valid values see [Supported memory and CPU combinations](https://cloud.ibm.com/docs/codeengine?topic=codeengine-mem-cpu-combo). The units for specifying memory are Megabyte (M) or Gigabyte (G), whereas G and M are the shorthand expressions for GB and MB. For more information see [Units of measurement](https://cloud.ibm.com/docs/codeengine?topic=codeengine-mem-cpu-combo#unit-measurements).",
+			"scale_memory_limit": {
+				Type:             schema.TypeString,
+				Optional:         true,
+				Default:          "4G",
+				ValidateFunc:     validate.InvokeValidator("ibm_code_engine_app", "scale_memory_limit"),
+				DiffSuppressFunc: SuppressCodeEngineQuantityDiff,
+				Description:      "Optional amount of memory set for the instance of the app. For valid values see [Supported memory and CPU combinations](https://cloud.ibm.com/docs/codeengine?topic=codeengine-mem-cpu-combo). The units for specifying memory are Megabyte (M) or Gigabyte (G), whereas G and M are the shorthand expressions for GB and MB. For more information see [Units of measurement](https://cloud.ibm.com/docs/codeengine?topic=codeengine-mem-cpu-combo#unit-measurements).",
 			},
-			"scale_min_instances": &schema.Schema{
+			"scale_min_instances": {
 				Type:        schema.TypeInt,
 				Optional:    true,
 				Default:     0,
 				Description: "Optional minimum number of instances for this app. If you set this value to `0`, the app will scale down to zero, if not hit by any request for some time.",
 			},
-			"scale_request_timeout": &schema.Schema{
+			"scale_request_timeout": {
 				Type:        schema.TypeInt,
 				Optional:    true,
 				Default:     300,
 				Description: "Optional amount of time in seconds that is allowed for a running app to respond to a request.",
 			},
-			"build": &schema.Schema{
+			"build": {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "Reference to a build that is associated with the application.",
 			},
-			"build_run": &schema.Schema{
+			"build_run": {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "Reference to a build run that is associated with the application.",
 			},
-			"computed_env_variables": &schema.Schema{
+			"computed_env_variables": {
 				Type:        schema.TypeList,
 				Computed:    true,
 				Description: "References to config maps, secrets or literal values, which are defined and set by Code Engine and are exposed as environment variables in the application.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"key": &schema.Schema{
+						"key": {
 							Type:        schema.TypeString,
 							Optional:    true,
 							Computed:    true,
 							Description: "The key to reference as environment variable.",
 						},
-						"name": &schema.Schema{
+						"name": {
 							Type:        schema.TypeString,
 							Optional:    true,
 							Computed:    true,
 							Description: "The name of the environment variable.",
 						},
-						"prefix": &schema.Schema{
+						"prefix": {
 							Type:        schema.TypeString,
 							Optional:    true,
 							Computed:    true,
 							Description: "A prefix that can be added to all keys of a full secret or config map reference.",
 						},
-						"reference": &schema.Schema{
+						"reference": {
 							Type:        schema.TypeString,
 							Optional:    true,
 							Computed:    true,
 							Description: "The name of the secret or config map.",
 						},
-						"type": &schema.Schema{
+						"type": {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "Specify the type of the environment variable.",
 						},
-						"value": &schema.Schema{
+						"value": {
 							Type:        schema.TypeString,
 							Optional:    true,
 							Computed:    true,
@@ -398,68 +400,68 @@ func ResourceIbmCodeEngineApp() *schema.Resource {
 					},
 				},
 			},
-			"created_at": &schema.Schema{
+			"created_at": {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The timestamp when the resource was created.",
 			},
-			"endpoint": &schema.Schema{
+			"endpoint": {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "Optional URL to invoke the app. Depending on visibility,  this is accessible publicly or in the private network only. Empty in case 'managed_domain_mappings' is set to 'local'.",
 			},
-			"endpoint_internal": &schema.Schema{
+			"endpoint_internal": {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The URL to the app that is only visible within the project.",
 			},
-			"entity_tag": &schema.Schema{
+			"entity_tag": {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The version of the app instance, which is used to achieve optimistic locking.",
 			},
-			"href": &schema.Schema{
+			"href": {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "When you provision a new app,  a URL is created identifying the location of the instance.",
 			},
-			"app_id": &schema.Schema{
+			"app_id": {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The identifier of the resource.",
 			},
-			"region": &schema.Schema{
+			"region": {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The region of the project the resource is located in. Possible values: 'au-syd', 'br-sao', 'ca-tor', 'eu-de', 'eu-gb', 'jp-osa', 'jp-tok', 'us-east', 'us-south'.",
 			},
-			"resource_type": &schema.Schema{
+			"resource_type": {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The type of the app.",
 			},
-			"status": &schema.Schema{
+			"status": {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The current status of the app.",
 			},
-			"status_details": &schema.Schema{
+			"status_details": {
 				Type:        schema.TypeList,
 				Computed:    true,
 				Description: "The detailed status of the application.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"latest_created_revision": &schema.Schema{
+						"latest_created_revision": {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "Latest app revision that has been created.",
 						},
-						"latest_ready_revision": &schema.Schema{
+						"latest_ready_revision": {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "Latest app revision that reached a ready state.",
 						},
-						"reason": &schema.Schema{
+						"reason": {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "Optional information to provide more context in case of a 'failed' or 'warning' status.",
@@ -467,7 +469,7 @@ func ResourceIbmCodeEngineApp() *schema.Resource {
 					},
 				},
 			},
-			"etag": &schema.Schema{
+			"etag": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},

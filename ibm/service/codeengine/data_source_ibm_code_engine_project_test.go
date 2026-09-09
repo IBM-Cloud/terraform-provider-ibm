@@ -19,7 +19,7 @@ func TestAccIbmCodeEngineProjectDataSourceBasic(t *testing.T) {
 		PreCheck:  func() { acc.TestAccPreCheck(t) },
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccCheckIbmCodeEngineProjectDataSourceConfigBasic(projectID),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_code_engine_project.code_engine_project_instance", "resource_group_id"),

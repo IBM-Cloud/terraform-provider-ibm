@@ -34,7 +34,7 @@ func TestAccIbmCodeEngineAllowedOutboundDestinationCIDRBlock(t *testing.T) {
 		Providers:    acc.TestAccProviders,
 		CheckDestroy: testAccCheckIbmCodeEngineAllowedOutboundDestinationDestroy,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccCheckIbmCodeEngineAllowedOutboundDestinationCIDRBlock(projectID, typeVar, cidrBlock, name),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIbmCodeEngineAllowedOutboundDestinationExists("ibm_code_engine_allowed_outbound_destination.code_engine_allowed_outbound_destination_instance", conf),
@@ -83,7 +83,7 @@ func TestAccIbmCodeEngineAllowedOutboundDestinationPrivatePathServiceGateway(t *
 		Providers:    acc.TestAccProviders,
 		CheckDestroy: testAccCheckIbmCodeEngineAllowedOutboundDestinationDestroy,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccCheckIbmCodeEngineAllowedOutboundDestinationPrivatePathServiceGateway(projectID, ppsgCreate),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIbmCodeEngineAllowedOutboundDestinationExists("ibm_code_engine_allowed_outbound_destination.code_engine_allowed_outbound_destination_instance", conf),
