@@ -507,6 +507,7 @@ func dataSourceIBMContainerClusterVPCRead(d *schema.ResourceData, meta interface
 		log.Printf("Error in GetApiKeyInfo, %s", err)
 		//return err
 	}
+	d.Set("cluster_name", cls.Name)
 	if &apikeyConfig != nil {
 		if &apikeyConfig.Name != nil {
 			d.Set("api_key_id", apikeyConfig.ID)
