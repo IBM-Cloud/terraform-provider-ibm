@@ -26,7 +26,7 @@ func TestAccIbmCodeEngineBuildDataSourceBasic(t *testing.T) {
 		PreCheck:  func() { acc.TestAccPreCheck(t) },
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccCheckIbmCodeEngineBuildDataSourceConfigBasic(projectID, buildName, buildOutputImage, buildOutputSecret, buildSourceURL, buildStrategyType),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_code_engine_build.code_engine_build_instance", "build_id"),
