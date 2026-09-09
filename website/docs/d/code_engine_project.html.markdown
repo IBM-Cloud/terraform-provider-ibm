@@ -30,7 +30,7 @@ You can specify the following arguments for this data source.
 After your data source is created, you can read values from the following attributes.
 
 * `id` - The unique identifier of the code_engine_project.
-* `account_id` - (String) An alphanumeric value identifying the account ID.
+* `account_id` - (String) The ID of the account of the project, e.g. 4329073d16d2f3663f74bfa955259139.
 * `created_at` - (String) The timestamp when the project was created.
 * `crn` - (String) The CRN of the project.
 * `href` - (String) When you provision a new resource, a URL is created identifying the location of the instance.

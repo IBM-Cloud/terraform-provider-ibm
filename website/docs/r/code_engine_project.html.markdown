@@ -27,7 +27,7 @@ resource "ibm_code_engine_project" "code_engine_project_instance" {
 
 code_engine_project provides the following [Timeouts](https://www.terraform.io/docs/configuration/resources.html#timeouts) configuration options:
 
-* `create` - (Default 600 minutes) Used for creating a code_engine_project.
+* `create` - (Default 10 minutes) Used for creating a code_engine_project.
 * `delete` - (Default Projects(/projects/{id}) minutes) Used for deleting a code_engine_project.
 
 ## Argument Reference
@@ -46,7 +46,7 @@ After your resource is created, you can read values from the listed arguments an
 * `id` - The unique identifier of the code_engine_project.
 * `project_id` - (String) The ID of the project.
   * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/^[0-9a-z]{8}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{12}$/`.
-* `account_id` - (String) An alphanumeric value identifying the account ID.
+* `account_id` - (String) The ID of the account of the project, e.g. 4329073d16d2f3663f74bfa955259139.
 * `created_at` - (String) The timestamp when the project was created.
 * `crn` - (String) The CRN of the project.
 * `href` - (String) When you provision a new resource, a URL is created identifying the location of the instance.
