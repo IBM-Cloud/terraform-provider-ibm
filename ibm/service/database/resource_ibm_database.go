@@ -324,7 +324,7 @@ func ResourceIBMDatabaseInstance() *schema.Resource {
 			"remote_leader_id": {
 				Description: "The CRN of the leader (source) database. " +
 					"Classic: creates a read-only replica at provisioning time; clear to promote the replica to a standalone instance. " +
-					"Gen2: creates a read-only replica linked to the specified Gen1 source; clear to promote the replica to a standalone primary instance.",
+					"Gen2: creates a read-only replica linked to the specified Gen1 or Gen2 source; clear to promote the replica to a standalone primary instance.",
 				Type:     schema.TypeString,
 				Optional: true,
 			},

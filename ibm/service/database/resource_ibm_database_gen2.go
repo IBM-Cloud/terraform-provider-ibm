@@ -370,13 +370,24 @@ func (g *resourceIBMDatabaseGen2Backend) buildGen2Parameters(d *schema.ResourceD
 		dataservices["restore_backup_id"] = backupID.(string)
 	}
 
-	// Add read_replica block if remote_leader_id is set (for read replica creation)
+	// Add read_replica block if remote_leader_id is set (for read replica creation).
 	// The dbConfig map already exists as dataservices[dbType]; inject read_replica into it.
+	// source_type is derived by looking up the source instance's plan: Gen2 plans contain
+	// "-gen2-"; anything else is treated as "gen1" (Classic).
 	if sourceCRN, ok := d.GetOk(remoteLeaderIDKey); ok {
 		if dbCfg, ok := dataservices[dbType].(map[string]interface{}); ok {
+			sourceType := "gen1"
+			if rsConClient, err := g.getResourceControllerClient(meta); err == nil {
+				srcCRNStr := sourceCRN.(string)
+				if srcInst, _, err := rsConClient.GetResourceInstance(&rc.GetResourceInstanceOptions{ID: &srcCRNStr}); err == nil {
+					if srcInst.ResourcePlanID != nil && isGen2Plan(*srcInst.ResourcePlanID) {
+						sourceType = "gen2"
+					}
+				}
+			}
 			dbCfg["read_replica"] = map[string]interface{}{
 				"source_crn":  sourceCRN.(string),
-				"source_type": "gen1",
+				"source_type": sourceType,
 			}
 		}
 	}

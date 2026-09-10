@@ -900,7 +900,7 @@ Review the argument reference that you can specify for your resource.
 
   **Classic:** Supported at provisioning time. Clear the attribute to promote the replica.
 
-  **Gen2:** Supported. Set `remote_leader_id` to the CRN of an existing Gen1 (Classic) source instance to provision a Gen2 read-only replica. Clear the attribute on an existing Gen2 replica to promote it to a standalone primary instance.
+  **Gen2:** Supported. Set `remote_leader_id` to the CRN of an existing Gen1 (Classic) or Gen2 source instance to provision a Gen2 read-only replica. Clear the attribute on an existing Gen2 replica to promote it to a standalone primary instance.
 
   For more information, see [Configuring Read-only Replicas](https://cloud.ibm.com/docs/databases-for-postgresql?topic=databases-for-postgresql-read-only-replicas).
 
