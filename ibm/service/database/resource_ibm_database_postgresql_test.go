@@ -93,6 +93,14 @@ func TestAccIBMDatabaseInstancePostgresGen2Basic(t *testing.T) {
 					resource.TestCheckResourceAttr(name, "tags.#", "1"),
 				),
 			},
+			{
+				ResourceName:      name,
+				ImportState:       true,
+				ImportStateVerify: true,
+				ImportStateVerifyIgnore: []string{
+					"wait_time_minutes", "deletion_protection",
+				},
+			},
 		},
 	})
 }

@@ -59,6 +59,15 @@ func TestAccIBMDatabaseMongoDBShardingGen2Basic(t *testing.T) {
 					resource.TestCheckResourceAttr(dataName, "allowlist.#", "0"),
 				),
 			},
+			// Step 3 — test import
+			{
+				ResourceName:      name,
+				ImportState:       true,
+				ImportStateVerify: true,
+				ImportStateVerifyIgnore: []string{
+					"wait_time_minutes", "deletion_protection",
+				},
+			},
 		},
 	})
 }
