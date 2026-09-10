@@ -59,6 +59,11 @@ func DataSourceIBMContainerVPCCluster() *schema.Resource {
 				Type:        schema.TypeInt,
 				Computed:    true,
 			},
+			"cluster_name": {
+				Description: "Number of cluster",
+				Type:        schema.TypeString,
+				Computed:    true,
+			},
 			"workers": {
 				Type:     schema.TypeList,
 				Computed: true,
@@ -507,6 +512,7 @@ func dataSourceIBMContainerClusterVPCRead(d *schema.ResourceData, meta interface
 		log.Printf("Error in GetApiKeyInfo, %s", err)
 		//return err
 	}
+	d.Set("cluster_name", cls.Name)
 	if &apikeyConfig != nil {
 		if &apikeyConfig.Name != nil {
 			d.Set("api_key_id", apikeyConfig.ID)
