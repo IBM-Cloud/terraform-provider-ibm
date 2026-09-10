@@ -23,21 +23,6 @@ data "ibm_database" "database" {
 }
 ```
 
-### MongoDB Enterprise Sharding Gen2 example
-The following example retrieves information about a MongoDB Enterprise Sharding Gen2 instance and outputs its shard count.
-
-```terraform
-data "ibm_database" "mongo_sharded" {
-  name     = "my-mongo-sharded"
-  location = "ca-mon"
-  service  = "databases-for-mongodb"
-}
-
-output "shard_count" {
-  value = data.ibm_database.mongo_sharded.shards
-}
-```
-
 ## Argument reference
 Review the argument reference that you can specify for your data source. 
 
@@ -54,8 +39,6 @@ In addition to all argument references list, you can access the following attrib
 - `id` - (String) The CRN of the IBM Cloud Databases instance.
 - `guid` - (String) The unique identifier of the IBM Cloud Databases instance.
 - `plan` - (String)  The service plan of the IBM Cloud Databases instance.
-- `shards` - (Integer) The number of shards for a MongoDB Enterprise Edition Sharding Gen2 instance. Only populated for `databases-for-mongodb` with plan `enterprise-sharding-gen2`. Not set for all other services and plans.
-
 - `location` - (String)  The location where the IBM Cloud Databases instance is deployed into.
 - `status` - (String)  The status of the IBM Cloud Databases instance.
 - `version` - (String) The database version.
@@ -135,10 +118,6 @@ If this authorization is missing or incomplete, Terraform emits a **non-blocking
 The warning appears only when the instance has Independent Backups configured **and** the required S2S authorizations (`independent_backups` and `resource_group`) are not both `true`. It is suppressed for Classic plans and Gen2 instances not enrolled in Independent Backups.
 
 To resolve the warning, create the required IAM service-to-service authorization between the database service and `databases-independent-backups`. Once both authorizations are in place, the warning will no longer appear.
-### Gen2 Specific Attributes
-The following attributes are only populated for Gen2 instances:
-- `shards` - The live shard count, populated only for `databases-for-mongodb` with plan `enterprise-sharding-gen2`. Returns `1` for a single-shard instance. Not set for any other service or plan.
-
 ### Gen2 Example
 ```terraform
 data "ibm_database" "postgres_gen2" {
