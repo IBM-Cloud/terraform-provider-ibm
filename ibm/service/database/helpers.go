@@ -887,6 +887,69 @@ func clearGen2UnsupportedAttributes(d *schema.ResourceData) {
 	// disk_encryption_key_crn for Gen2 instances
 }
 
+const s2sAuthWarningHeader = "Database backup authorization required"
+const s2sAuthWarningDetail = "This database uses Independent Backups.\n" +
+	"Existing backups remain available for 30 days from their creation date. " +
+	"Backup creation and management are unavailable until the required service authorization is completed.\n" +
+	"Complete the required service authorization to enable backup operations.\n\n" +
+	"To configure the required IAM service authorization, please refer to the documentation below: \n" +
+	"https://cloud.ibm.com/docs/cloud-databases-gen2?topic=cloud-databases-gen2-iam&interface=ui#s2s-authorization-backups"
+
+// s2sAuthWarning is a sentinel error that the datasource router converts to a diag.Warning.
+type s2sAuthWarning struct{}
+
+func (s *s2sAuthWarning) Error() string { return s2sAuthWarningHeader }
+
+// hasIndependentBackups reports whether the instance extensions indicate that
+// the instance is using Independent Backups.  This is determined by the presence
+// of a non-nil "backups" object inside extensions["dataservices"].
+// The S2S authorization check is only meaningful for instances that use
+// Independent Backups, so callers should gate checkS2SAuthorization on this.
+func hasIndependentBackups(extensions map[string]interface{}) bool {
+	if extensions == nil {
+		return false
+	}
+	dataservices, ok := extensions["dataservices"].(map[string]interface{})
+	if !ok {
+		return false
+	}
+	backups, exists := dataservices["backups"]
+	return exists && backups != nil
+}
+
+// checkS2SAuthorization returns true only when both "independent_backups" and
+// "resource_group" authorizations are present and truthy in the RC extensions map.
+// The authorizations are nested under extensions["dataservices"]["authorizations"].
+func checkS2SAuthorization(extensions map[string]interface{}) bool {
+	if extensions == nil {
+		return false
+	}
+	dataservices, ok := extensions["dataservices"].(map[string]interface{})
+	if !ok {
+		return false
+	}
+	authsRaw, exists := dataservices["authorizations"]
+	if !exists || authsRaw == nil {
+		return false
+	}
+	auths, ok := authsRaw.(map[string]interface{})
+	if !ok || len(auths) == 0 {
+		return false
+	}
+	return isTruthy(auths["independent_backups"]) && isTruthy(auths["resource_group"])
+}
+
+// isTruthy returns true if v is the boolean true or the string "true".
+func isTruthy(v interface{}) bool {
+	switch val := v.(type) {
+	case bool:
+		return val
+	case string:
+		return val == "true"
+	}
+	return false
+}
+
 // getInstancesNext extracts the "next_url" query parameter from the URL returned
 // in a paginated Resource Controller list response's NextURL field, so it can be
 // used as the "start" token for the next page request. Returns an empty string,

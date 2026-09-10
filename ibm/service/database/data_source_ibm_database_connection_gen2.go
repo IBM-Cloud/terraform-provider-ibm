@@ -17,12 +17,16 @@ import (
 	rc "github.com/IBM/platform-services-go-sdk/resourcecontrollerv2"
 )
 
-// Gen2 backend implementation for database connections
-// This uses Resource Controller APIs to retrieve connection information from resource keys
-type dataSourceIBMDatabaseConnectionGen2Backend struct{}
+// Gen2 backend implementation for database connections.
+// This uses Resource Controller APIs to retrieve connection information from resource keys.
+// The instance is injected at construction time from pickDataSourceConnectionBackend so
+// this backend does not need a second GetResourceInstance call.
+type dataSourceIBMDatabaseConnectionGen2Backend struct {
+	instance *rc.ResourceInstance
+}
 
-func newDataSourceIBMDatabaseConnectionGen2Backend() dataSourceIBMDatabaseConnectionBackend {
-	return &dataSourceIBMDatabaseConnectionGen2Backend{}
+func newDataSourceIBMDatabaseConnectionGen2Backend(instance *rc.ResourceInstance) dataSourceIBMDatabaseConnectionBackend {
+	return &dataSourceIBMDatabaseConnectionGen2Backend{instance: instance}
 }
 
 func (g *dataSourceIBMDatabaseConnectionGen2Backend) Read(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -39,8 +43,7 @@ func (g *dataSourceIBMDatabaseConnectionGen2Backend) Read(context context.Contex
 	// If this becomes an issue, unsupported attributes could be explicitly set
 	// to null via d.Set() to ensure stale values are cleared.
 
-	// Gen2 databases use Resource Controller API, not CloudDatabasesV5
-	// Get the resource controller client to fetch instance details
+	// Get the Resource Controller API to fetch instance details
 	rsConClient, err := meta.(conns.ClientSession).ResourceControllerV2API()
 	if err != nil {
 		tfErr := flex.TerraformErrorf(err, err.Error(), "(Data) ibm_database_connection", "read")
@@ -48,32 +51,12 @@ func (g *dataSourceIBMDatabaseConnectionGen2Backend) Read(context context.Contex
 		return tfErr.GetDiag()
 	}
 
+	// Use the instance already fetched by pickDataSourceConnectionBackend.
+	instance := g.instance
 	deploymentID := d.Get("deployment_id").(string)
 	userID := d.Get("user_id").(string)
 	userType := d.Get("user_type").(string)
 	endpointType := d.Get("endpoint_type").(string)
-
-	// Get the instance to verify it exists and is accessible
-	instance, response, err := rsConClient.GetResourceInstance(&rc.GetResourceInstanceOptions{
-		ID: &deploymentID,
-	})
-	if err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetResourceInstance failed: %s\n%s", err.Error(), response), "(Data) ibm_database_connection", "read")
-		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
-		return tfErr.GetDiag()
-	}
-
-	// Verify this is actually a Gen2 instance
-	if instance.ResourcePlanID != nil && !isGen2Plan(*instance.ResourcePlanID) {
-		tfErr := flex.TerraformErrorf(
-			fmt.Errorf("instance %s is not a Gen2 database", deploymentID),
-			"Instance is not a Gen2 database",
-			"(Data) ibm_database_connection",
-			"read",
-		)
-		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
-		return tfErr.GetDiag()
-	}
 
 	// For Gen2 databases, connection information is retrieved through resource keys
 	// List all resource keys for this instance
@@ -291,6 +274,16 @@ func (g *dataSourceIBMDatabaseConnectionGen2Backend) Read(context context.Contex
 			}
 			log.Printf("[DEBUG] Successfully set %s connection data", tfKey)
 		}
+	}
+
+	// Warn if S2S authorizations are not fully configured.
+	// Only applicable to instances using Independent Backups.
+	if hasIndependentBackups(instance.Extensions) && !checkS2SAuthorization(instance.Extensions) {
+		return diag.Diagnostics{{
+			Severity: diag.Warning,
+			Summary:  s2sAuthWarningHeader,
+			Detail:   s2sAuthWarningDetail,
+		}}
 	}
 
 	return nil

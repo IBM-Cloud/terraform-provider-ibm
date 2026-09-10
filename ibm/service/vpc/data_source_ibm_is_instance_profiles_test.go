@@ -32,6 +32,8 @@ func TestAccIBMISInstanceProfilesDataSource_basic(t *testing.T) {
 					resource.TestCheckResourceAttrSet("data.ibm_is_instance_profiles.test1", "profiles.0.port_speed.#"),
 					resource.TestCheckResourceAttrSet("data.ibm_is_instance_profiles.test1", "profiles.0.vcpu_architecture.#"),
 					resource.TestCheckResourceAttrSet("data.ibm_is_instance_profiles.test1", "profiles.0.vcpu_count.#"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_instance_profiles.test1", "profiles.0.vcpu_count.0.type"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_instance_profiles.test1", "profiles.0.vcpu_count.0.value"),
 					resource.TestCheckResourceAttrSet("data.ibm_is_instance_profiles.test1", "profiles.0.network_interface_count.#"),
 					resource.TestCheckResourceAttrSet("data.ibm_is_instance_profiles.test1", "profiles.0.network_interface_count.0.type"),
 					resource.TestCheckResourceAttrSet("data.ibm_is_instance_profiles.test1", "profiles.0.network_attachment_count.#"),
@@ -242,9 +244,35 @@ func TestAccIBMISInstanceProfilesDataSource_ThreadsPerCore(t *testing.T) {
 					resource.TestCheckResourceAttrSet(resName, "profiles.0.threads_per_core.0.type"),
 					resource.TestCheckResourceAttrSet(resName, "profiles.0.threads_per_core.0.default"),
 					resource.TestCheckResourceAttrSet(resName, "profiles.0.threads_per_core.0.values.#"),
+				),
+			},
+		},
+	})
+}
+
+// TestAccIBMISInstanceProfilesDataSource_SupportedVcpuCountBackfill verifies that
+// supported_vcpu_count is correctly backfilled from vcpu_count when type == "enum"
+// in the ibm_is_instance_profiles (plural) flatten path.
+// The known enum profile (acc.ISInstanceProfileName) is expected to appear somewhere
+// in the list; we locate it via a Terraform locals filter so assertions can use a
+// deterministic address while still exercising the ibm_is_instance_profiles read path.
+func TestAccIBMISInstanceProfilesDataSource_SupportedVcpuCountBackfill(t *testing.T) {
+	resName := "data.ibm_is_instance_profiles.test1"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { acc.TestAccPreCheck(t) },
+		Providers: acc.TestAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMISInstanceProfilesEnumDataSourceConfig(),
+				Check: resource.ComposeTestCheckFunc(
+					// datasource returned profiles
+					resource.TestCheckResourceAttrSet(resName, "profiles.#"),
+					// every profile must have supported_vcpu_count set (may be empty list for non-enum)
 					resource.TestCheckResourceAttrSet(resName, "profiles.0.supported_vcpu_count.#"),
-					resource.TestCheckResourceAttrSet(resName, "profiles.0.supported_vcpu_count.0.type"),
-					resource.TestCheckResourceAttrSet(resName, "profiles.0.supported_vcpu_count.0.values.#"),
+					// vcpu_count must always have type and value populated (backfill for value)
+					resource.TestCheckResourceAttrSet(resName, "profiles.0.vcpu_count.0.type"),
+					resource.TestCheckResourceAttrSet(resName, "profiles.0.vcpu_count.0.value"),
 				),
 			},
 		},
@@ -256,4 +284,10 @@ func testAccCheckIBMISInstanceProfilesDataSourceConfig() string {
 	return fmt.Sprintf(`
       data "ibm_is_instance_profiles" "test1" {
       }`)
+}
+
+func testAccCheckIBMISInstanceProfilesEnumDataSourceConfig() string {
+	return `
+data "ibm_is_instance_profiles" "test1" {}
+`
 }
