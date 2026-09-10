@@ -964,7 +964,7 @@ func ResourceIBMICDValidator() *validate.ResourceValidator {
 			Identifier:                 "service",
 			ValidateFunctionIdentifier: validate.ValidateAllowedStringValue,
 			Type:                       validate.TypeString,
-			AllowedValues:              "databases-for-etcd, databases-for-postgresql, databases-for-redis, databases-for-valkey, databases-for-valkey-cdp-dev, databases-for-elasticsearch, databases-for-mongodb, messages-for-rabbitmq, databases-for-mysql, databases-for-enterprisedb",
+			AllowedValues:              "databases-for-etcd, databases-for-postgresql, databases-for-postgresql-cdp-dev, databases-for-redis, databases-for-valkey, databases-for-valkey-cdp-dev, databases-for-elasticsearch, databases-for-mongodb, messages-for-rabbitmq, databases-for-mysql, databases-for-enterprisedb",
 			Required:                   true})
 	validateSchema = append(validateSchema,
 		validate.ValidateSchema{
@@ -2876,9 +2876,11 @@ func expandGroups(_groups []interface{}) []*Group {
 					memberMap := members[0].(map[string]interface{})
 					group.Members = &GroupResource{Allocation: memberMap["allocation_count"].(int)}
 					if zonesRaw, ok := memberMap["member_zones"].([]interface{}); ok && len(zonesRaw) > 0 {
-						zones := make([]string, len(zonesRaw))
-						for i, z := range zonesRaw {
-							zones[i] = z.(string)
+						zones := make([]string, 0, len(zonesRaw))
+						for _, z := range zonesRaw {
+							if s, ok := z.(string); ok {
+								zones = append(zones, s)
+							}
 						}
 						group.MemberZones = zones
 					}
