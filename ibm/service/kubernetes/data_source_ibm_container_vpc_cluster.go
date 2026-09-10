@@ -59,6 +59,11 @@ func DataSourceIBMContainerVPCCluster() *schema.Resource {
 				Type:        schema.TypeInt,
 				Computed:    true,
 			},
+			"cluster_name": {
+				Description: "Number of cluster",
+				Type:        schema.TypeString,
+				Computed:    true,
+			},
 			"workers": {
 				Type:     schema.TypeList,
 				Computed: true,
