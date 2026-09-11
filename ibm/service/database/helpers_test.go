@@ -950,3 +950,55 @@ func TestGetInstancesNext(t *testing.T) {
 		})
 	}
 }
+
+func TestExtractDatabaseAllocations_MemberZones(t *testing.T) {
+	resourceID := "databases-for-postgresql"
+
+	// Mirrors the RC API GET response — all fields including member_zones live under
+	// extensions.dataservices.<dbType> for production standard-gen2 instances.
+	makeExtensions := func(memberZones []interface{}) map[string]interface{} {
+		pg := map[string]interface{}{
+			"members":     float64(1),
+			"cpu_count":   float64(4),
+			"memory_gb":   float64(16),
+			"storage_gb":  float64(10),
+			"host_flavor": "bxf.4x16",
+		}
+		if memberZones != nil {
+			pg["member_zones"] = memberZones
+		}
+		return map[string]interface{}{
+			"dataservices": map[string]interface{}{
+				"postgresql": pg,
+			},
+		}
+	}
+
+	t.Run("member_zones read from dataservices path", func(t *testing.T) {
+		ext := makeExtensions([]interface{}{"us-east-2"})
+		alloc := extractDatabaseAllocations(ext, resourceID)
+		require.Equal(t, []string{"us-east-2"}, alloc.memberZones)
+		require.Equal(t, int64(1), alloc.members)
+		require.Equal(t, "bxf.4x16", alloc.hostFlavorID)
+		require.Equal(t, float64(16), alloc.memoryGB)
+	})
+
+	t.Run("member_zones absent for normal multi-member database", func(t *testing.T) {
+		ext := map[string]interface{}{
+			"dataservices": map[string]interface{}{
+				"postgresql": map[string]interface{}{
+					"members": float64(3),
+				},
+			},
+		}
+		alloc := extractDatabaseAllocations(ext, resourceID)
+		require.Nil(t, alloc.memberZones)
+		require.Equal(t, int64(3), alloc.members)
+	})
+
+	t.Run("empty extensions returns zero alloc", func(t *testing.T) {
+		alloc := extractDatabaseAllocations(map[string]interface{}{}, resourceID)
+		require.Equal(t, int64(0), alloc.members)
+		require.Nil(t, alloc.memberZones)
+	})
+}

@@ -785,6 +785,7 @@ Review the argument reference that you can specify for your resource.
     - `members` (Set, Optional)
       - Nested scheme for `members`:
         - `allocation_count` - (Optional, Integer) Allocated number of members. **Gen2: Supported.**
+        - `member_zones` - (Optional, List of Strings) Availability zones for the member. **Gen2 only.** Can only be set when `allocation_count` is `1`. Must contain exactly one zone entry (e.g. `["us-east-1"]`). Cannot be changed after provisioning unless the member count is scaled. Scale-up from 1 to N members is supported; scale-down from N to 1 is not allowed.
 
     - `memory` (Set, Optional) Memory Auto Scaling in single block of memory is allowed at once.
       - Nested scheme for `memory`:
@@ -907,6 +908,13 @@ In addition to all argument references list, you can access the following attrib
 - `status` - (String) The status of the instance.
 - `version` - (String) The database version.
 - `groups` - (List) A list of scaling groups for the database. This is a computed attribute that shows the current resource allocations.
+  - `group_id` - (String) The scaling group name.
+  - `count` - (Integer) Count of scaling groups for the instance.
+  - `memory` - (List) Memory allocation details.
+  - `cpu` - (List) CPU allocation details.
+  - `disk` - (List) Disk allocation details.
+  - `member_zones` - (List of Strings) Availability zones for the member. Only present for Gen2 single-member (`allocation_count=1`) deployments.
+  - `host_flavor` - (List) Host flavor details.
 
 ## Gen2 Feature Summary
 
