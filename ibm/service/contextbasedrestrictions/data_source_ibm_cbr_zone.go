@@ -259,6 +259,8 @@ func DataSourceIBMCbrZoneAddressToMap(model contextbasedrestrictionsv1.AddressIn
 		return DataSourceIBMCbrZoneAddressSubnetToMap(model.(*contextbasedrestrictionsv1.AddressSubnet))
 	} else if _, ok := model.(*contextbasedrestrictionsv1.AddressVPC); ok {
 		return DataSourceIBMCbrZoneAddressVPCToMap(model.(*contextbasedrestrictionsv1.AddressVPC))
+	} else if _, ok := model.(*contextbasedrestrictionsv1.AddressInstance); ok {
+		return DataSourceIBMCbrZoneAddressInstanceToMap(model.(*contextbasedrestrictionsv1.AddressInstance))
 	} else if _, ok := model.(*contextbasedrestrictionsv1.AddressServiceRef); ok {
 		return DataSourceIBMCbrZoneAddressServiceRefToMap(model.(*contextbasedrestrictionsv1.AddressServiceRef))
 	} else if _, ok := model.(*contextbasedrestrictionsv1.Address); ok {
@@ -370,6 +372,20 @@ func DataSourceIBMCbrZoneAddressIPAddressRangeToMap(model *contextbasedrestricti
 }
 
 func DataSourceIBMCbrZoneAddressVPCToMap(model *contextbasedrestrictionsv1.AddressVPC) (modelMap map[string]interface{}, addressId string, err error) {
+	modelMap = make(map[string]interface{})
+	if model.Type != nil {
+		modelMap["type"] = *model.Type
+	}
+	if model.Value != nil {
+		modelMap["value"] = *model.Value
+	}
+	if model.ID != nil {
+		addressId = *model.ID
+	}
+	return
+}
+
+func DataSourceIBMCbrZoneAddressInstanceToMap(model *contextbasedrestrictionsv1.AddressInstance) (modelMap map[string]interface{}, addressId string, err error) {
 	modelMap = make(map[string]interface{})
 	if model.Type != nil {
 		modelMap["type"] = *model.Type
