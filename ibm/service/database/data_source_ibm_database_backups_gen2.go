@@ -16,15 +16,19 @@ import (
 	rc "github.com/IBM/platform-services-go-sdk/resourcecontrollerv2"
 )
 
-// dataSourceIBMDatabaseBackupsGen2Backend holds the ResourceGroupID obtained
-// by pickDataSourceBackupsBackend so Read does not need a second
-// GetResourceInstance call.
+// dataSourceIBMDatabaseBackupsGen2Backend holds the ResourceGroupID and the
+// source database instance obtained by pickDataSourceBackupsBackend so Read
+// does not need a second GetResourceInstance call.
 type dataSourceIBMDatabaseBackupsGen2Backend struct {
 	resourceGroupID *string
+	sourceInstance  *rc.ResourceInstance
 }
 
-func newDataSourceIBMDatabaseBackupsGen2Backend(resourceGroupID *string) dataSourceIBMDatabaseBackupsBackend {
-	return &dataSourceIBMDatabaseBackupsGen2Backend{resourceGroupID: resourceGroupID}
+func newDataSourceIBMDatabaseBackupsGen2Backend(resourceGroupID *string, sourceInstance *rc.ResourceInstance) dataSourceIBMDatabaseBackupsBackend {
+	return &dataSourceIBMDatabaseBackupsGen2Backend{
+		resourceGroupID: resourceGroupID,
+		sourceInstance:  sourceInstance,
+	}
 }
 
 func (g *dataSourceIBMDatabaseBackupsGen2Backend) Read(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -89,6 +93,18 @@ func (g *dataSourceIBMDatabaseBackupsGen2Backend) Read(context context.Context, 
 	if err = d.Set("backups", backups); err != nil {
 		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting backups: %s", err), "(Data) ibm_database_backups", "read")
 		return tfErr.GetDiag()
+	}
+
+	// Warn if S2S authorizations are not fully configured on the source database instance.
+	// Only applicable to instances using Independent Backups.
+	if g.sourceInstance != nil &&
+		hasIndependentBackups(g.sourceInstance.Extensions) &&
+		!checkS2SAuthorization(g.sourceInstance.Extensions) {
+		return diag.Diagnostics{{
+			Severity: diag.Warning,
+			Summary:  s2sAuthWarningHeader,
+			Detail:   s2sAuthWarningDetail,
+		}}
 	}
 
 	return nil

@@ -16,10 +16,15 @@ import (
 	rc "github.com/IBM/platform-services-go-sdk/resourcecontrollerv2"
 )
 
-type dataSourceIBMDatabaseBackupGen2Backend struct{}
+// dataSourceIBMDatabaseBackupGen2Backend holds the source database instance
+// fetched by pickDataSourceBackupBackend so Read can check S2S authorization
+// without a second GetResourceInstance call.
+type dataSourceIBMDatabaseBackupGen2Backend struct {
+	sourceInstance *rc.ResourceInstance
+}
 
-func newDataSourceIBMDatabaseBackupGen2Backend() dataSourceIBMDatabaseBackupBackend {
-	return &dataSourceIBMDatabaseBackupGen2Backend{}
+func newDataSourceIBMDatabaseBackupGen2Backend(sourceInstance *rc.ResourceInstance) dataSourceIBMDatabaseBackupBackend {
+	return &dataSourceIBMDatabaseBackupGen2Backend{sourceInstance: sourceInstance}
 }
 
 func (g *dataSourceIBMDatabaseBackupGen2Backend) Read(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -34,7 +39,7 @@ func (g *dataSourceIBMDatabaseBackupGen2Backend) Read(context context.Context, d
 
 	backupID := d.Get("backup_id").(string)
 
-	// Get the instance to verify it exists and is accessible
+	// Get the backup instance to verify it exists and is accessible.
 	instance, response, err := rsConClient.GetResourceInstance(&rc.GetResourceInstanceOptions{
 		ID: &backupID,
 	})
@@ -74,6 +79,19 @@ func (g *dataSourceIBMDatabaseBackupGen2Backend) Read(context context.Context, d
 			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting %s: %s", field, err), "(Data) ibm_database_backup", "read")
 			return tfErr.GetDiag()
 		}
+	}
+
+	// Warn if S2S authorizations are not fully configured on the source database instance.
+	// S2S authorization lives on the source instance, not on the backup resource itself.
+	// Only applicable to instances using Independent Backups.
+	if g.sourceInstance != nil &&
+		hasIndependentBackups(g.sourceInstance.Extensions) &&
+		!checkS2SAuthorization(g.sourceInstance.Extensions) {
+		return diag.Diagnostics{{
+			Severity: diag.Warning,
+			Summary:  s2sAuthWarningHeader,
+			Detail:   s2sAuthWarningDetail,
+		}}
 	}
 
 	return nil

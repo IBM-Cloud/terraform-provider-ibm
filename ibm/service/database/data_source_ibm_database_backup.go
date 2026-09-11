@@ -32,7 +32,10 @@ func pickDataSourceBackupBackend(d *schema.ResourceData, meta interface{}) (data
 	parts := strings.SplitN(backupID, ":", 6)
 
 	if len(parts) >= 5 && parts[4] == "databases-independent-backups" {
-		return newDataSourceIBMDatabaseBackupGen2Backend(), nil
+		// Fetch the source database instance so the Gen2 backend can check S2S
+		// authorization without a second GetResourceInstance call.
+		sourceInstance := fetchSourceInstanceForBackup(backupID, meta)
+		return newDataSourceIBMDatabaseBackupGen2Backend(sourceInstance), nil
 	}
 
 	// Reject coupled backups whose source instance is Gen2.
@@ -42,6 +45,32 @@ func pickDataSourceBackupBackend(d *schema.ResourceData, meta interface{}) (data
 
 	// All other backup IDs are Classic — route directly to the classic backend.
 	return newDataSourceIBMDatabaseBackupClassicBackend(), nil
+}
+
+// fetchSourceInstanceForBackup fetches the source database instance for an Independent Backup CRN.
+func fetchSourceInstanceForBackup(backupID string, meta interface{}) *rc.ResourceInstance {
+	rsConClient, err := meta.(conns.ClientSession).ResourceControllerV2API()
+	if err != nil {
+		return nil
+	}
+
+	// Fetch the backup resource instance to extract the source database CRN.
+	backupInstance, _, err := rsConClient.GetResourceInstance(&rc.GetResourceInstanceOptions{ID: &backupID})
+	if err != nil || backupInstance == nil {
+		return nil
+	}
+
+	sourceDataServiceCRN, _ := extractGen2BackupExtensions(backupInstance.Extensions)
+	if sourceDataServiceCRN == "" {
+		return nil
+	}
+
+	// Fetch the source database instance.
+	sourceInstance, _, err := rsConClient.GetResourceInstance(&rc.GetResourceInstanceOptions{ID: &sourceDataServiceCRN})
+	if err != nil {
+		return nil
+	}
+	return sourceInstance
 }
 
 // rejectCoupledBackupFromGen2Instance errors if backupID belongs to a Gen2 instance.
