@@ -28,7 +28,6 @@ For Gen2 instances, the `backup_id` is an Independent Backup CRN with service na
 data "ibm_database_backup" "database_backup" {
   backup_id = "crn:v1:bluemix:public:databases-independent-backups:<region>:a/<account_id>:<backup_id>::"
 }
-
 ```
 
 ## Argument Reference

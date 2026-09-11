@@ -84,6 +84,20 @@ func (g *dataSourceIBMDatabaseBackupsGen2Backend) Read(context context.Context, 
 		}
 	}
 
+	// S2S warning is checked before the empty-backups guard: when S2S is
+	// misconfigured, backup creation is blocked, so the list may be empty
+	// precisely because S2S is missing. Warn first so users see the root cause.
+	if g.sourceInstance != nil &&
+		hasIndependentBackups(g.sourceInstance.Extensions) &&
+		!checkS2SAuthorization(g.sourceInstance.Extensions) {
+		_ = d.Set("backups", backups)
+		return diag.Diagnostics{{
+			Severity: diag.Warning,
+			Summary:  s2sAuthWarningHeader,
+			Detail:   s2sAuthWarningDetail,
+		}}
+	}
+
 	if len(backups) == 0 {
 		tfErr := flex.TerraformErrorf(fmt.Errorf("Independent Backups not found for deployment_id: %s", deploymentID), fmt.Sprintf("Independent Backups not found for deployment_id: %s", deploymentID), "(Data) ibm_database_backups", "read")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
@@ -93,18 +107,6 @@ func (g *dataSourceIBMDatabaseBackupsGen2Backend) Read(context context.Context, 
 	if err = d.Set("backups", backups); err != nil {
 		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting backups: %s", err), "(Data) ibm_database_backups", "read")
 		return tfErr.GetDiag()
-	}
-
-	// Warn if S2S authorizations are not fully configured on the source database instance.
-	// Only applicable to instances using Independent Backups.
-	if g.sourceInstance != nil &&
-		hasIndependentBackups(g.sourceInstance.Extensions) &&
-		!checkS2SAuthorization(g.sourceInstance.Extensions) {
-		return diag.Diagnostics{{
-			Severity: diag.Warning,
-			Summary:  s2sAuthWarningHeader,
-			Detail:   s2sAuthWarningDetail,
-		}}
 	}
 
 	return nil
