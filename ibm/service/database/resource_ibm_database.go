@@ -188,7 +188,9 @@ func ResourceIBMDatabaseInstance() *schema.Resource {
 			validateBackendSpecificServiceEndpointsDiff,
 		),
 
-		Importer: &schema.ResourceImporter{},
+		Importer: &schema.ResourceImporter{
+			StateContext: resourceIBMDatabaseImport,
+		},
 
 		Timeouts: &schema.ResourceTimeout{
 			Create: schema.DefaultTimeout(60 * time.Minute),
@@ -1662,6 +1664,39 @@ func classicDatabaseInstanceCreate(context context.Context, d *schema.ResourceDa
 	}
 
 	return resourceIBMDatabaseInstanceRead(context, d, meta)
+}
+
+func resourceIBMDatabaseImport(ctx context.Context, d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
+	instanceID := d.Id()
+	rsConClient, err := meta.(conns.ClientSession).ResourceControllerV2API()
+	if err != nil {
+		return nil, err
+	}
+
+	rsInst := rc.GetResourceInstanceOptions{
+		ID: &instanceID,
+	}
+	instance, response, err := rsConClient.GetResourceInstance(&rsInst)
+	if err != nil {
+		return nil, fmt.Errorf("[ERROR] Error retrieving resource instance %s: %w (response: %v)", instanceID, err, response)
+	}
+
+	if instance.ResourcePlanID != nil {
+		rsCatClient, err := meta.(conns.ClientSession).ResourceCatalogAPI()
+		if err != nil {
+			return nil, err
+		}
+		rsCatRepo := rsCatClient.ResourceCatalog()
+		servicePlan, err := rsCatRepo.GetServicePlanName(*instance.ResourcePlanID)
+		if err != nil {
+			return nil, fmt.Errorf("[ERROR] Error retrieving plan for resource instance %s: %w", instanceID, err)
+		}
+		if err := d.Set("plan", servicePlan); err != nil {
+			return nil, err
+		}
+	}
+
+	return []*schema.ResourceData{d}, nil
 }
 
 func resourceIBMDatabaseInstanceRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
