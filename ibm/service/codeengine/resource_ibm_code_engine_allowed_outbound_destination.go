@@ -33,85 +33,85 @@ func ResourceIbmCodeEngineAllowedOutboundDestination() *schema.Resource {
 		Importer:      &schema.ResourceImporter{},
 
 		Schema: map[string]*schema.Schema{
-			"project_id": &schema.Schema{
+			"project_id": {
 				Type:         schema.TypeString,
 				Required:     true,
 				ForceNew:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_code_engine_allowed_outbound_destination", "project_id"),
 				Description:  "The ID of the project.",
 			},
-			"type": &schema.Schema{
-				Type:         schema.TypeString,
-				Required:     true,
-				ForceNew:     true,
-				ValidateFunc: validate.InvokeValidator("ibm_code_engine_allowed_outbound_destination", "type"),
-				Description:  "Specify the type of the allowed outbound destination. Allowed types are: `cidr_block` and `private_path_service_gateway`.",
-			},
-			"cidr_block": &schema.Schema{
-				Type:         schema.TypeString,
-				Optional:     true,
-				ValidateFunc: validate.InvokeValidator("ibm_code_engine_allowed_outbound_destination", "cidr_block"),
-				Description:  "The IPv4 address range.",
-			},
-			"name": &schema.Schema{
+			"name": {
 				Type:         schema.TypeString,
 				Required:     true,
 				ForceNew:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_code_engine_allowed_outbound_destination", "name"),
 				Description:  "The name of the allowed outbound destination.",
 			},
-			"private_path_service_gateway_crn": &schema.Schema{
+			"type": {
+				Type:         schema.TypeString,
+				Required:     true,
+				ForceNew:     true,
+				ValidateFunc: validate.InvokeValidator("ibm_code_engine_allowed_outbound_destination", "type"),
+				Description:  "Specify the type of the allowed outbound destination. Allowed types are: `cidr_block` and `private_path_service_gateway`.",
+			},
+			"cidr_block": {
 				Type:         schema.TypeString,
 				Optional:     true,
-				ForceNew:     true,
-				ValidateFunc: validate.InvokeValidator("ibm_code_engine_allowed_outbound_destination", "private_path_service_gateway_crn"),
-				Description:  "The CRN of the Private Path service.",
+				ValidateFunc: validate.InvokeValidator("ibm_code_engine_allowed_outbound_destination", "cidr_block"),
+				Description:  "The IPv4 address range.",
 			},
-			"isolation_policy": &schema.Schema{
+			"isolation_policy": {
 				Type:         schema.TypeString,
 				Optional:     true,
 				Default:      "shared",
 				ValidateFunc: validate.InvokeValidator("ibm_code_engine_allowed_outbound_destination", "isolation_policy"),
 				Description:  "Optional property to specify the isolation policy of the private path service gateway. If set to `shared`, other projects within the same account or enterprise account family can connect to Private Path service, too. If set to `dedicated` the gateway can only be used by a single Code Engine project. If not specified the isolation policy will be set to `shared`.",
 			},
-			"entity_tag": &schema.Schema{
+			"private_path_service_gateway_crn": {
+				Type:         schema.TypeString,
+				Optional:     true,
+				ForceNew:     true,
+				ValidateFunc: validate.InvokeValidator("ibm_code_engine_allowed_outbound_destination", "private_path_service_gateway_crn"),
+				Description:  "The CRN of the Private Path service.",
+			},
+			"entity_tag": {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The version of the allowed outbound destination, which is used to achieve optimistic locking.",
 			},
-			"status": &schema.Schema{
+			"status": {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The current status of the outbound destination.",
 			},
-			"status_details": &schema.Schema{
+			"status_details": {
 				Type:     schema.TypeList,
 				Computed: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"endpoint_gateway": &schema.Schema{
+						"endpoint_gateway": {
 							Type:        schema.TypeList,
 							Computed:    true,
 							Description: "Optional information about the endpoint gateway located in the Code Engine VPC that connects to the private path service gateway.",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
-									"account_id": &schema.Schema{
+									"account_id": {
 										Type:        schema.TypeString,
 										Computed:    true,
-										Description: "The account that created the endpoint gateway.",
+										Description: "The ID of the account that created the endpoint gateway, e.g. 4329073d16d2f3663f74bfa955259139.",
 									},
-									"created_at": &schema.Schema{
+									"created_at": {
 										Type:        schema.TypeString,
 										Computed:    true,
 										Description: "The timestamp when the endpoint gateway was created.",
 									},
-									"ips": &schema.Schema{
+									"ips": {
 										Type:        schema.TypeList,
 										Computed:    true,
 										Description: "The reserved IPs bound to this endpoint gateway.",
 										Elem:        &schema.Schema{Type: schema.TypeString},
 									},
-									"name": &schema.Schema{
+									"name": {
 										Type:        schema.TypeString,
 										Computed:    true,
 										Description: "The name for this endpoint gateway. The name is unique across all endpoint gateways in the VPC.",
@@ -119,23 +119,23 @@ func ResourceIbmCodeEngineAllowedOutboundDestination() *schema.Resource {
 								},
 							},
 						},
-						"private_path_service_gateway": &schema.Schema{
+						"private_path_service_gateway": {
 							Type:        schema.TypeList,
 							Computed:    true,
 							Description: "Optional information about the private path service gateway that this allowed outbound destination points to.",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
-									"id": &schema.Schema{
+									"id": {
 										Type:        schema.TypeString,
 										Computed:    true,
 										Description: "The private path service gateway identifier.",
 									},
-									"name": &schema.Schema{
+									"name": {
 										Type:        schema.TypeString,
 										Computed:    true,
 										Description: "The name of private path service gateway.",
 									},
-									"service_endpoints": &schema.Schema{
+									"service_endpoints": {
 										Type:        schema.TypeList,
 										Computed:    true,
 										Description: "The fully qualified domain names for this private path service gateway. The domains are used for endpoint gateways to connect to the service and are configured in the VPC for each endpoint gateway.",
@@ -144,7 +144,7 @@ func ResourceIbmCodeEngineAllowedOutboundDestination() *schema.Resource {
 								},
 							},
 						},
-						"reason": &schema.Schema{
+						"reason": {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "Optional information to provide more context in case of a 'failed' or 'deploying' status.",
@@ -152,7 +152,7 @@ func ResourceIbmCodeEngineAllowedOutboundDestination() *schema.Resource {
 					},
 				},
 			},
-			"etag": &schema.Schema{
+			"etag": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
@@ -190,6 +190,13 @@ func ResourceIbmCodeEngineAllowedOutboundDestinationValidator() *validate.Resour
 			MaxValueLength:             18,
 		},
 		validate.ValidateSchema{
+			Identifier:                 "isolation_policy",
+			ValidateFunctionIdentifier: validate.ValidateAllowedStringValue,
+			Type:                       validate.TypeString,
+			Optional:                   true,
+			AllowedValues:              "dedicated, shared",
+		},
+		validate.ValidateSchema{
 			Identifier:                 "private_path_service_gateway_crn",
 			ValidateFunctionIdentifier: validate.ValidateRegexpLen,
 			Type:                       validate.TypeString,
@@ -197,13 +204,6 @@ func ResourceIbmCodeEngineAllowedOutboundDestinationValidator() *validate.Resour
 			Regexp:                     `^crn\:v1\:[a-zA-Z0-9]*\:(public|dedicated|local)\:is\:([a-z][\-a-z0-9_]*[a-z0-9])?\:((a|o|s)\/[\-a-z0-9]+)?\:\:private-path-service-gateway\:[\-a-zA-Z0-9\/.]*$`,
 			MinValueLength:             20,
 			MaxValueLength:             253,
-		},
-		validate.ValidateSchema{
-			Identifier:                 "isolation_policy",
-			ValidateFunctionIdentifier: validate.ValidateAllowedStringValue,
-			Type:                       validate.TypeString,
-			Optional:                   true,
-			AllowedValues:              "dedicated, shared",
 		},
 	)
 
@@ -227,11 +227,11 @@ func resourceIbmCodeEngineAllowedOutboundDestinationCreate(context context.Conte
 	if _, ok := d.GetOk("cidr_block"); ok {
 		bodyModelMap["cidr_block"] = d.Get("cidr_block")
 	}
-	if _, ok := d.GetOk("private_path_service_gateway_crn"); ok {
-		bodyModelMap["private_path_service_gateway_crn"] = d.Get("private_path_service_gateway_crn")
-	}
 	if _, ok := d.GetOk("isolation_policy"); ok {
 		bodyModelMap["isolation_policy"] = d.Get("isolation_policy")
+	}
+	if _, ok := d.GetOk("private_path_service_gateway_crn"); ok {
+		bodyModelMap["private_path_service_gateway_crn"] = d.Get("private_path_service_gateway_crn")
 	}
 	createAllowedOutboundDestinationOptions.SetProjectID(d.Get("project_id").(string))
 	convertedModel, err := ResourceIbmCodeEngineAllowedOutboundDestinationMapToAllowedOutboundDestinationPrototype(bodyModelMap)
@@ -331,6 +331,14 @@ func resourceIbmCodeEngineAllowedOutboundDestinationRead(context context.Context
 	}
 
 	allowedOutboundDestination := allowedOutboundDestinationIntf.(*codeenginev2.AllowedOutboundDestination)
+	if err = d.Set("project_id", allowedOutboundDestination.ProjectID); err != nil {
+		err = fmt.Errorf("Error setting project_id: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_code_engine_allowed_outbound_destination", "read", "set-project_id").GetDiag()
+	}
+	if err = d.Set("name", allowedOutboundDestination.Name); err != nil {
+		err = fmt.Errorf("Error setting name: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_code_engine_allowed_outbound_destination", "read", "set-name").GetDiag()
+	}
 	if err = d.Set("type", allowedOutboundDestination.Type); err != nil {
 		err = fmt.Errorf("Error setting type: %s", err)
 		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_code_engine_allowed_outbound_destination", "read", "set-type").GetDiag()
@@ -341,20 +349,16 @@ func resourceIbmCodeEngineAllowedOutboundDestinationRead(context context.Context
 			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_code_engine_allowed_outbound_destination", "read", "set-cidr_block").GetDiag()
 		}
 	}
-	if err = d.Set("name", allowedOutboundDestination.Name); err != nil {
-		err = fmt.Errorf("Error setting name: %s", err)
-		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_code_engine_allowed_outbound_destination", "read", "set-name").GetDiag()
+	if !core.IsNil(allowedOutboundDestination.IsolationPolicy) {
+		if err = d.Set("isolation_policy", allowedOutboundDestination.IsolationPolicy); err != nil {
+			err = fmt.Errorf("Error setting isolation_policy: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_code_engine_allowed_outbound_destination", "read", "set-isolation_policy").GetDiag()
+		}
 	}
 	if !core.IsNil(allowedOutboundDestination.PrivatePathServiceGatewayCrn) {
 		if err = d.Set("private_path_service_gateway_crn", allowedOutboundDestination.PrivatePathServiceGatewayCrn); err != nil {
 			err = fmt.Errorf("Error setting private_path_service_gateway_crn: %s", err)
 			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_code_engine_allowed_outbound_destination", "read", "set-private_path_service_gateway_crn").GetDiag()
-		}
-	}
-	if !core.IsNil(allowedOutboundDestination.IsolationPolicy) {
-		if err = d.Set("isolation_policy", allowedOutboundDestination.IsolationPolicy); err != nil {
-			err = fmt.Errorf("Error setting isolation_policy: %s", err)
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_code_engine_allowed_outbound_destination", "read", "set-isolation_policy").GetDiag()
 		}
 	}
 	if !core.IsNil(allowedOutboundDestination.EntityTag) {
@@ -494,11 +498,11 @@ func ResourceIbmCodeEngineAllowedOutboundDestinationMapToAllowedOutboundDestinat
 	if modelMap["cidr_block"] != nil && modelMap["cidr_block"].(string) != "" {
 		model.CidrBlock = core.StringPtr(modelMap["cidr_block"].(string))
 	}
-	if modelMap["private_path_service_gateway_crn"] != nil && modelMap["private_path_service_gateway_crn"].(string) != "" {
-		model.PrivatePathServiceGatewayCrn = core.StringPtr(modelMap["private_path_service_gateway_crn"].(string))
-	}
 	if modelMap["isolation_policy"] != nil && modelMap["isolation_policy"].(string) != "" {
 		model.IsolationPolicy = core.StringPtr(modelMap["isolation_policy"].(string))
+	}
+	if modelMap["private_path_service_gateway_crn"] != nil && modelMap["private_path_service_gateway_crn"].(string) != "" {
+		model.PrivatePathServiceGatewayCrn = core.StringPtr(modelMap["private_path_service_gateway_crn"].(string))
 	}
 	return model, nil
 }
@@ -515,10 +519,10 @@ func ResourceIbmCodeEngineAllowedOutboundDestinationMapToAllowedOutboundDestinat
 	model := &codeenginev2.AllowedOutboundDestinationPrototypePrivatePathServiceGatewayDataPrototype{}
 	model.Name = core.StringPtr(modelMap["name"].(string))
 	model.Type = core.StringPtr(modelMap["type"].(string))
-	model.PrivatePathServiceGatewayCrn = core.StringPtr(modelMap["private_path_service_gateway_crn"].(string))
 	if modelMap["isolation_policy"] != nil && modelMap["isolation_policy"].(string) != "" {
 		model.IsolationPolicy = core.StringPtr(modelMap["isolation_policy"].(string))
 	}
+	model.PrivatePathServiceGatewayCrn = core.StringPtr(modelMap["private_path_service_gateway_crn"].(string))
 	return model, nil
 }
 

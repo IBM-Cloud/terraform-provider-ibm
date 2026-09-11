@@ -28,7 +28,7 @@ func TestAccIbmCodeEngineProjectBasic(t *testing.T) {
 		Providers:    acc.TestAccProviders,
 		CheckDestroy: testAccCheckIbmCodeEngineProjectDestroy,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccCheckIbmCodeEngineProjectConfig(projectName, resourceGroupID),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIbmCodeEngineProjectExists("ibm_code_engine_project.code_engine_project_instance", conf),
@@ -44,7 +44,7 @@ func TestAccIbmCodeEngineProjectBasic(t *testing.T) {
 					resource.TestCheckResourceAttr("ibm_code_engine_project.code_engine_project_instance", "resource_type", "project_v2"),
 				),
 			},
-			resource.TestStep{
+			{
 				ResourceName:      "ibm_code_engine_project.code_engine_project_instance",
 				ImportState:       true,
 				ImportStateVerify: true,
