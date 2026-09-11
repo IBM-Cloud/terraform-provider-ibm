@@ -12,10 +12,21 @@ Provides a read-only data source for Backup. You can then reference the fields o
 
 ## Example Usage
 
+### Classic
+
 ```hcl
 data "ibm_database_backup" "database_backup" {
 	backup_id = "<backup_crn>"
 }
+```
+
+### Gen2
+
+```hcl
+data "ibm_database_backup" "database_backup" {
+	backup_id = "crn:v1:bluemix:public:databases-independent-backups:<region>:a/<account_id>:<backup_id>::"
+}
+
 ```
 
 ## Argument Reference
@@ -23,6 +34,20 @@ data "ibm_database_backup" "database_backup" {
 Review the argument reference that you can specify for your data source.
 
 * `backup_id` - (Required, Forces new resource, String) Backup ID.
+
+  **Classic:** The backup CRN, for example:
+  ```
+  crn:v1:bluemix:public:databases-for-postgresql:us-south:a/<account_id>:<instance_id>:backup:<backup_id>
+  ```
+
+  **Gen2:** The independent backup CRN, with service name `databases-independent-backups`, for example:
+  ```
+  crn:v1:bluemix:public:databases-independent-backups:<region>:a/<account_id>:<backup_id>::
+  ```
+  The Gen2 backup CRN can be retrieved from:
+  - The `backup_id` field in the `ibm_database_backups` data source (when `deployment_id` is a Gen2 instance CRN).
+  - The IBM Cloud UI under **Databases > your instance > Backups**.
+  - The IBM Cloud CLI: `ibmcloud cdb backups <instance_name_or_crn>`.
 
 ## Attribute Reference
 

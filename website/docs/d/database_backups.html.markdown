@@ -12,9 +12,19 @@ Provides a read-only data source for Backups. You can then reference the fields 
 
 ## Example Usage
 
+### Classic
+
 ```hcl
 data "ibm_database_backups" "database_backups" {
 	deployment_id = "<crn>"
+}
+```
+
+### Gen2
+
+```hcl
+data "ibm_database_backups" "database_backups" {
+	deployment_id = "crn:v1:bluemix:public:databases-for-mysql:<region>:a/<account_id>:<instance_id>::"
 }
 ```
 
@@ -23,6 +33,20 @@ data "ibm_database_backups" "database_backups" {
 Review the argument reference that you can specify for your data source.
 
 * `deployment_id` - (Required, String) ID of the deployment this backup relates to.
+
+  **Classic:** The database instance CRN, for example:
+  ```
+  crn:v1:bluemix:public:databases-for-postgresql:us-south:a/<account_id>:<instance_id>::
+  ```
+
+  **Gen2:** The Gen2 database instance CRN, for example:
+  ```
+  crn:v1:bluemix:public:databases-for-mysql:<region>:a/<account_id>:<instance_id>::
+  ```
+  The Gen2 deployment CRN can be retrieved from:
+  - The `id` attribute of an `ibm_database` resource configured with a Gen2 plan.
+  - The IBM Cloud UI under **Databases > your instance > Overview**.
+  - The IBM Cloud CLI: `ibmcloud resource service-instance <instance_name> --output json | jq -r '.[0].crn'`.
 
 ## Attribute Reference
 
