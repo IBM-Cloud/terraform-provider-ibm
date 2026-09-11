@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
@@ -29,7 +30,17 @@ func ResourceIBMIsSnapshotConsistencyGroup() *schema.Resource {
 		UpdateContext: resourceIBMIsSnapshotConsistencyGroupUpdate,
 		DeleteContext: resourceIBMIsSnapshotConsistencyGroupDelete,
 		Importer:      &schema.ResourceImporter{},
-
+		CustomizeDiff: customdiff.All(
+			customdiff.Sequence(
+				func(_ context.Context, diff *schema.ResourceDiff, v interface{}) error {
+					return flex.ResourceTagsCustomizeDiff(diff)
+				},
+			),
+			customdiff.Sequence(
+				func(_ context.Context, diff *schema.ResourceDiff, v interface{}) error {
+					return flex.ResourceValidateAccessTags(diff, v)
+				}),
+		),
 		Schema: map[string]*schema.Schema{
 			"delete_snapshots_on_delete": &schema.Schema{
 				Type:        schema.TypeBool,
