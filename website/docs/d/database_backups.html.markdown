@@ -8,7 +8,7 @@ subcategory: "Cloud Databases"
 
 # ibm_database_backups
 
-Provides a read-only data source for Backups. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.
+Provides a read-only data source for Backups. Supports both Classic and Gen2 (Independent Backup) instances. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.
 
 ## Example Usage
 
@@ -21,6 +21,8 @@ data "ibm_database_backups" "database_backups" {
 ```
 
 ### Gen2
+
+For Gen2 instances, the `deployment_id` is a Gen2 database instance CRN. The data source lists all Independent Backups associated with that instance.
 
 ```hcl
 data "ibm_database_backups" "database_backups" {
@@ -45,7 +47,7 @@ Review the argument reference that you can specify for your data source.
   ```
   The Gen2 deployment CRN can be retrieved from:
   - The `id` attribute of an `ibm_database` resource configured with a Gen2 plan.
-  - The IBM Cloud UI under **Databases > your instance > Overview**.
+  - The IBM Cloud UI under **Databases → your instance → Overview**.
   - The IBM Cloud CLI: `ibmcloud resource service-instance <instance_name> --output json | jq -r '.[0].crn'`.
 
 ## Attribute Reference
@@ -64,7 +66,6 @@ Nested scheme for **backups**:
 	  * Constraints: Allowable values are: `running`, `completed`, `failed`.
 	* `type` - (Optional, String) The type of backup.
 	  * Constraints: Allowable values are: `scheduled`, `on_demand`.
-
 
 ### Gen2 Independent Backups and S2S Authorization
 
