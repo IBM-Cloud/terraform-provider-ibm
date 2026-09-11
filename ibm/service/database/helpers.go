@@ -149,16 +149,11 @@ func isAttrConfiguredInDiff(d *schema.ResourceDiff, k string) bool {
 	if !ok {
 		return false
 	}
-	switch t := v.(type) {
-	case string:
-		return t != ""
-	case []interface{}:
-		return len(t) > 0
-	case map[string]interface{}:
-		return len(t) > 0
-	default:
-		return true
+
+	if intVal, isInt := v.(int); isInt {
+		return intVal > 0
 	}
+	return false
 }
 
 func isGen2Plan(plan string) bool {
@@ -472,11 +467,8 @@ func extractShardsFromExtensions(extensions map[string]interface{}, dbType strin
 		return int(v)
 	case int:
 		return v
-	case int64:
-		return int(v)
-	default:
-		return 0
 	}
+	return 0
 }
 
 // buildMemoryConfig creates memory configuration from catalog metadata and actual allocation
