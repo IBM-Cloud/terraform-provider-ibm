@@ -27,7 +27,6 @@ func ResourceIbmBackupRecoveryConnectorAgentRegistration() *schema.Resource {
 		CreateContext: resourceIbmBackupRecoveryConnectorAgentRegistrationCreate,
 		ReadContext:   resourceIbmBackupRecoveryConnectorAgentRegistrationRead,
 		DeleteContext: resourceIbmBackupRecoveryConnectorAgentRegistrationDelete,
-		UpdateContext: resourceIbmBackupRecoveryConnectorAgentRegistrationUpdate,
 		Importer:      &schema.ResourceImporter{},
 
 		Schema: map[string]*schema.Schema{

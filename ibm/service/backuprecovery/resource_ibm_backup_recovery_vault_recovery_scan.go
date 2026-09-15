@@ -26,7 +26,6 @@ func ResourceIbmBackupRecoveryVaultRecoveryScan() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceIbmBackupRecoveryVaultRecoveryScanCreate,
 		ReadContext:   resourceIbmBackupRecoveryVaultRecoveryScanRead,
-		UpdateContext: resourceIbmBackupRecoveryVaultRecoveryScanUpdate,
 		DeleteContext: resourceIbmBackupRecoveryVaultRecoveryScanDelete,
 		Importer:      &schema.ResourceImporter{},
 		Schema: map[string]*schema.Schema{
@@ -90,6 +89,17 @@ func resourceIbmBackupRecoveryVaultRecoveryScanCreate(context context.Context, d
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
+	endpointType := d.Get("endpoint_type").(string)
+	instanceId, region, serviceName := getInstanceIdAndRegion(d)
+	if instanceId != "" && region != "" {
+		bmxsession, err := meta.(conns.ClientSession).BluemixSession()
+		if err != nil {
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("unable to get clientSession"), "ibm_backup_recovery_vault_recovery_scan", "create")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
+		}
+		backupRecoveryClient = getClientWithInstanceEndpoint(backupRecoveryClient, bmxsession, instanceId, region, endpointType, serviceName)
+	}
 
 	vaultRecoveryScanOptions := &backuprecoveryv1.VaultRecoveryScanOptions{}
 
@@ -110,7 +120,9 @@ func resourceIbmBackupRecoveryVaultRecoveryScanCreate(context context.Context, d
 		return tfErr.GetDiag()
 	}
 
-	d.SetId(*recoveryScan.Uid)
+	if !core.IsNil(recoveryScan.Uid) {
+		d.SetId(*recoveryScan.Uid)
+	}
 	if err = d.Set("cloud_type", recoveryScan.CloudType); err != nil {
 		err = fmt.Errorf("Error setting cloud_type: %s", err)
 		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_vault_recovery_scan", "read", "set-cloud_type").GetDiag()

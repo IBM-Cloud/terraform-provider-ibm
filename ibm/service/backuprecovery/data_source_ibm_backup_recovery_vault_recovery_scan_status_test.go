@@ -9,9 +9,10 @@ package backuprecovery_test
 
 import (
 	"fmt"
+	"os"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/backuprecovery"
@@ -21,30 +22,40 @@ import (
 )
 
 func TestAccIbmBackupRecoveryVaultRecoveryScanStatusDataSourceBasic(t *testing.T) {
+	vaultID := os.Getenv("IBMCLOUD_BACKUP_RECOVERY_VAULT_ID")
+	tenantID := os.Getenv("IBMCLOUD_BACKUP_RECOVERY_TENANT_ID")
+
+	if vaultID == "" {
+		t.Skip("IBMCLOUD_BACKUP_RECOVERY_VAULT_ID must be set for this acceptance test")
+	}
+	if tenantID == "" {
+		t.Skip("IBMCLOUD_BACKUP_RECOVERY_TENANT_ID must be set for this acceptance test")
+	}
+
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { acc.TestAccPreCheck(t) },
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
-			resource.TestStep{
-				Config: testAccCheckIbmBackupRecoveryVaultRecoveryScanStatusDataSourceConfigBasic(),
+			{
+				Config: testAccCheckIbmBackupRecoveryVaultRecoveryScanStatusDataSourceConfigBasic(vaultID, tenantID),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.ibm_backup_recovery_vault_recovery_scan_status.backup_recovery_vault_recovery_scan_status_instance", "id"),
-					resource.TestCheckResourceAttrSet("data.ibm_backup_recovery_vault_recovery_scan_status.backup_recovery_vault_recovery_scan_status_instance", "x_ibm_tenant_id"),
-					resource.TestCheckResourceAttrSet("data.ibm_backup_recovery_vault_recovery_scan_status.backup_recovery_vault_recovery_scan_status_instance", "cloud_type"),
+					resource.TestCheckResourceAttr("data.ibm_backup_recovery_vault_recovery_scan_status.backup_recovery_vault_recovery_scan_status_instance", "x_ibm_tenant_id", tenantID),
+					resource.TestCheckResourceAttr("data.ibm_backup_recovery_vault_recovery_scan_status.backup_recovery_vault_recovery_scan_status_instance", "cloud_type", "ibm"),
 				),
 			},
 		},
 	})
 }
 
-func testAccCheckIbmBackupRecoveryVaultRecoveryScanStatusDataSourceConfigBasic() string {
+func testAccCheckIbmBackupRecoveryVaultRecoveryScanStatusDataSourceConfigBasic(vaultID string, tenantID string) string {
 	return fmt.Sprintf(`
 		data "ibm_backup_recovery_vault_recovery_scan_status" "backup_recovery_vault_recovery_scan_status_instance" {
-			X-IBM-Tenant-Id = "tenantId"
-			cloudType = "ibm"
-			vaultIds = [ 1 ]
+			x_ibm_tenant_id = "%s"
+			cloud_type       = "ibm"
+			vault_ids        = [ %s ]
 		}
-	`)
+	`, tenantID, vaultID)
 }
 
 func TestDataSourceIbmBackupRecoveryVaultRecoveryScanStatusBatchVaultRecoveryScanStatusToMap(t *testing.T) {

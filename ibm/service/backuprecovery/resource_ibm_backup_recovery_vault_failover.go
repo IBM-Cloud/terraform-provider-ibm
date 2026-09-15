@@ -37,11 +37,10 @@ func ResourceIbmBackupRecoveryVaultFailover() *schema.Resource {
 				Description: "Specifies the unique id of the tenant.",
 			},
 			"cloud_type": &schema.Schema{
-				Type:         schema.TypeString,
-				Required:     true,
-				ForceNew:     true,
-				ValidateFunc: validate.InvokeValidator("ibm_backup_recovery_vault_failover", "cloud_type"),
-				Description:  "Specifies the type of the Backup and Recovery instance. Currently, only 'ibm' is supported.",
+				Type:        schema.TypeString,
+				Required:    true,
+				ForceNew:    true,
+				Description: "Specifies the type of the Backup and Recovery instance. Currently, only 'ibm' is supported.",
 			},
 			"failover_request_params": &schema.Schema{
 				Type:        schema.TypeList,
@@ -91,6 +90,17 @@ func resourceIbmBackupRecoveryVaultFailoverCreate(context context.Context, d *sc
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
+	endpointType := d.Get("endpoint_type").(string)
+	instanceId, region, serviceName := getInstanceIdAndRegion(d)
+	if instanceId != "" && region != "" {
+		bmxsession, err := meta.(conns.ClientSession).BluemixSession()
+		if err != nil {
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("unable to get clientSession"), "ibm_backup_recovery_vault_failover", "create")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
+		}
+		backupRecoveryClient = getClientWithInstanceEndpoint(backupRecoveryClient, bmxsession, instanceId, region, endpointType, serviceName)
+	}
 
 	initVaultsFailoverOptions := &backuprecoveryv1.InitVaultsFailoverOptions{}
 
@@ -111,7 +121,13 @@ func resourceIbmBackupRecoveryVaultFailoverCreate(context context.Context, d *sc
 		return tfErr.GetDiag()
 	}
 
-	d.SetId(*vaultFailover.Uid)
+	if !core.IsNil(vaultFailover.Uid) {
+		d.SetId(*vaultFailover.Uid)
+		if err = d.Set("uid", vaultFailover.Uid); err != nil {
+			err = fmt.Errorf("Error setting uid: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_vault_failover", "create", "set-uid").GetDiag()
+		}
+	}
 
 	if err = d.Set("cloud_type", vaultFailover.CloudType); err != nil {
 		err = fmt.Errorf("Error setting cloud_type: %s", err)
@@ -132,48 +148,6 @@ func resourceIbmBackupRecoveryVaultFailoverCreate(context context.Context, d *sc
 }
 
 func resourceIbmBackupRecoveryVaultFailoverRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	backupRecoveryClient, err := meta.(conns.ClientSession).BackupRecoveryV1()
-	if err != nil {
-		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_backup_recovery_vault_failover", "read", "initialize-client")
-		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
-		return tfErr.GetDiag()
-	}
-
-	getBatchVaultsFailoverStatusOptions := &backuprecoveryv1.GetBatchVaultsFailoverStatusOptions{}
-
-	getBatchVaultsFailoverStatusOptions.SetXIBMTenantID(d.Get("x_ibm_tenant_id").(string))
-
-	getBatchVaultFailoverStatus, response, err := backupRecoveryClient.GetBatchVaultsFailoverStatusWithContext(context, getBatchVaultsFailoverStatusOptions)
-	if err != nil {
-		if response != nil && response.StatusCode == 404 {
-			d.SetId("")
-			return nil
-		}
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetBatchVaultsFailoverStatusWithContext failed: %s", err.Error()), "ibm_backup_recovery_vault_failover", "read")
-		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
-		return tfErr.GetDiag()
-	}
-
-	if !core.IsNil(getBatchVaultFailoverStatus.ErrorMessage) {
-		if err = d.Set("error_message", getBatchVaultFailoverStatus.ErrorMessage); err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting error_message: %s", err), "(Data) ibm_backup_recovery_vault_failover_status", "read", "set-error_message").GetDiag()
-		}
-	}
-
-	if !core.IsNil(getBatchVaultFailoverStatus.FailoverStatuses) {
-		failoverStatuses := []map[string]interface{}{}
-		for _, failoverStatusesItem := range getBatchVaultFailoverStatus.FailoverStatuses {
-			failoverStatusesItemMap, err := DataSourceIbmBackupRecoveryVaultFailoverStatusBatchVaultFailoverStatusToMap(&failoverStatusesItem) // #nosec G601
-			if err != nil {
-				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_backup_recovery_vault_failover_status", "read", "failover_statuses-to-map").GetDiag()
-			}
-			failoverStatuses = append(failoverStatuses, failoverStatusesItemMap)
-		}
-		if err = d.Set("failover_statuses", failoverStatuses); err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting failover_statuses: %s", err), "(Data) ibm_backup_recovery_vault_failover_status", "read", "set-failover_statuses").GetDiag()
-		}
-	}
-
 	return nil
 }
 
