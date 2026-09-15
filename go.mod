@@ -19,7 +19,7 @@ require (
 	github.com/IBM/event-notifications-go-admin-sdk v0.24.1
 	github.com/IBM/eventstreams-go-sdk v1.4.0
 	github.com/IBM/go-sdk-core/v5 v5.23.4
-	github.com/IBM/ibm-backup-recovery-sdk-go v1.4.0
+	github.com/IBM/ibm-backup-recovery-sdk-go v1.5.0
 	github.com/IBM/ibm-cos-sdk-go v1.12.2
 	github.com/IBM/ibm-cos-sdk-go-config/v2 v2.3.0
 	github.com/IBM/ibm-hpcs-tke-sdk v0.0.0-20250305134146-e023c2e84762
@@ -236,8 +236,6 @@ require (
 )
 
 replace github.com/softlayer/softlayer-go v1.0.3 => github.com/IBM-Cloud/softlayer-go v1.0.5-tf
-
-replace github.com/IBM/ibm-backup-recovery-sdk-go v1.4.0 => /Users/shivashishratnam/Documents/GitHub/Shivashish/SDK/Internal/ibm-backup-recovery-sdk-go
 
 // add sdk changes.
 replace github.com/portworx/sched-ops v0.0.0-20200831185134-3e8010dc7056 => github.com/portworx/sched-ops v0.20.4-openstorage-rc3 // required by rook v1.7
