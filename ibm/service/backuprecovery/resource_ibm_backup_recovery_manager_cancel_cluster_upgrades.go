@@ -27,7 +27,6 @@ func ResourceIbmBackupRecoveryManagerCancelClusterUpgrades() *schema.Resource {
 		CreateContext: resourceIbmBackupRecoveryManagerCancelClusterUpgradesCreate,
 		ReadContext:   resourceIbmBackupRecoveryManagerCancelClusterUpgradesRead,
 		DeleteContext: resourceIbmBackupRecoveryManagerCancelClusterUpgradesDelete,
-		UpdateContext: resourceIbmBackupRecoveryManagerCancelClusterUpgradesUpdate,
 		Importer:      &schema.ResourceImporter{},
 
 		Schema: map[string]*schema.Schema{

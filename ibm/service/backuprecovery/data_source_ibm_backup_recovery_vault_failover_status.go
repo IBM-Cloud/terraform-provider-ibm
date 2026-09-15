@@ -109,6 +109,17 @@ func dataSourceIbmBackupRecoveryVaultFailoverStatusRead(context context.Context,
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
+	endpointType := d.Get("endpoint_type").(string)
+	instanceId, region, serviceName := getInstanceIdAndRegion(d)
+	if instanceId != "" && region != "" {
+		bmxsession, err := meta.(conns.ClientSession).BluemixSession()
+		if err != nil {
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("unable to get clientSession"), "(Data) ibm_backup_recovery_vault_failover_status", "read")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
+		}
+		backupRecoveryClient = getClientWithInstanceEndpoint(backupRecoveryClient, bmxsession, instanceId, region, endpointType, serviceName)
+	}
 
 	getBatchVaultsFailoverStatusOptions := &backuprecoveryv1.GetBatchVaultsFailoverStatusOptions{}
 
