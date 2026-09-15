@@ -8,13 +8,25 @@ subcategory: "Cloud Databases"
 
 # ibm_database_backup
 
-Provides a read-only data source for Backup. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.
+Provides a read-only data source for Backup. Supports both Classic and Gen2 (Independent Backup) instances. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.
 
 ## Example Usage
 
+### Classic
+
 ```hcl
 data "ibm_database_backup" "database_backup" {
-	backup_id = "<backup_crn>"
+  backup_id = "<backup_crn>"
+}
+```
+
+### Gen2
+
+For Gen2 instances, the `backup_id` is an Independent Backup CRN with service name `databases-independent-backups`. This can be obtained from the `backup_id` field of the `ibm_database_backups` data source.
+
+```hcl
+data "ibm_database_backup" "database_backup" {
+  backup_id = "crn:v1:bluemix:public:databases-independent-backups:<region>:a/<account_id>:<backup_id>::"
 }
 ```
 
@@ -23,6 +35,22 @@ data "ibm_database_backup" "database_backup" {
 Review the argument reference that you can specify for your data source.
 
 * `backup_id` - (Required, Forces new resource, String) Backup ID.
+
+  **Classic:** The backup CRN returned by the ICD API, for example:
+  ```
+  crn:v1:bluemix:public:databases-for-postgresql:us-south:a/<account_id>:<instance_id>:backup:<backup_id>
+  ```
+
+  **Gen2:** The Independent Backup CRN, identifiable by the service name `databases-independent-backups`, for example:
+  ```
+  crn:v1:bluemix:public:databases-independent-backups:<region>:a/<account_id>:<backup_id>::
+  ```
+  The Gen2 backup CRN can be retrieved from:
+  - The `backup_id` field in the `ibm_database_backups` data source (when `deployment_id` is a Gen2 instance CRN).
+  - The IBM Cloud UI under **Databases → your instance → Backups**.
+  - The IBM Cloud CLI: `ibmcloud cdb backups <instance_name_or_crn>`.
+
+  **Note:** Passing a Classic (coupled) backup CRN for a Gen2 instance returns an error. Use the Independent Backup CRN instead.
 
 ## Attribute Reference
 
