@@ -1,3 +1,19 @@
+# 2.6.1 (September 10, 2026)
+
+## Bug Fixes
+
+### IAM
+* IAM Identity - Fix empty user_mfa when updating account settings ([6818](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6818))
+
+
+## Enhancements
+
+### Cloud Databases
+* Revert "Support scale beyond one shard for MongoDB EES Gen2 (#6978)" ([6978](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6978))
+
+### Kubernetes
+* added cluster name support in vpc container cluster ([6992](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6992))
+
 # 2.6.0 (September 8, 2026)
 
 ## Bug Fixes
@@ -60,8 +76,6 @@
 
 ### Cloudant
 * add acceptance tests for cloudant gen2 ([6964](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6964))
-
-
 
 # 2.5.0 (August 5, 2026)
 
