@@ -3336,7 +3336,7 @@ func validateAsyncRestoreDiff(_ context.Context, diff *schema.ResourceDiff, meta
 }
 
 func validateShardsDiff(_ context.Context, diff *schema.ResourceDiff, _ interface{}) error {
-	shardsConfigured := isAttrConfiguredInDiff(diff, "shards")
+	shardsConfigured := isShardAttrConfiguredInDiff(diff, "shards")
 	if !shardsConfigured {
 		return nil
 	}

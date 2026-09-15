@@ -149,6 +149,23 @@ func isAttrConfiguredInDiff(d *schema.ResourceDiff, k string) bool {
 	if !ok {
 		return false
 	}
+	switch t := v.(type) {
+	case string:
+		return t != ""
+	case []interface{}:
+		return len(t) > 0
+	case map[string]interface{}:
+		return len(t) > 0
+	default:
+		return true
+	}
+}
+
+func isShardAttrConfiguredInDiff(d *schema.ResourceDiff, k string) bool {
+	v, ok := d.GetOkExists(k)
+	if !ok {
+		return false
+	}
 
 	if intVal, isInt := v.(int); isInt {
 		return intVal > 0
