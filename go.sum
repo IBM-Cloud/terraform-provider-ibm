@@ -129,6 +129,8 @@ github.com/IBM/go-sdk-core/v5 v5.10.2/go.mod h1:WZPFasUzsKab/2mzt29xPcfruSk5js2y
 github.com/IBM/go-sdk-core/v5 v5.17.4/go.mod h1:KsAAI7eStAWwQa4F96MLy+whYSh39JzNjklZRbN/8ns=
 github.com/IBM/go-sdk-core/v5 v5.23.4 h1:pxQuxcRSuQYHf6HsWDKKQHU7cMjl817bqvFGiu53p5k=
 github.com/IBM/go-sdk-core/v5 v5.23.4/go.mod h1:STTfOZKIy3y4WowRDXYQTXb24nrAnIcm0dcxRXrinTk=
+github.com/IBM/ibm-backup-recovery-sdk-go v1.5.0 h1:/AiWPMsBkxSjZtPURCzj6oyWero0mJcUqThi6UVt6gM=
+github.com/IBM/ibm-backup-recovery-sdk-go v1.5.0/go.mod h1:H8l2csoqJu2tOH/JpUMtbHK+Y2+vfY0POZCT8XfZP5U=
 github.com/IBM/ibm-cos-sdk-go v1.12.2 h1:71A4tDl8u6BZ548h71ecEe7fw5bBA7ECTVqYmeSQWQA=
 github.com/IBM/ibm-cos-sdk-go v1.12.2/go.mod h1:ODYcmrmdpjo5hVguq9RbD6xmC8xb1XZMG7NefUbJNcc=
 github.com/IBM/ibm-cos-sdk-go-config/v2 v2.3.0 h1:956Nqk0eKI3lq+AkzWXZDid4UZHRz0wWh1LwkleBsWk=
