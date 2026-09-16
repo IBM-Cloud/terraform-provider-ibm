@@ -439,7 +439,7 @@ func TestValidateShardsDiff(t *testing.T) {
 	})
 }
 
-// validateShardsDiffPredicate calls the real getShardsCount logic with a minimal ResourceData 
+// validateShardsDiffPredicate calls the real getShardsCount logic with a minimal ResourceData
 func validateShardsDiffPredicate(g *resourceIBMDatabaseGen2Backend, t *testing.T, service, plan string) error {
 	t.Helper()
 	d := testGen2DatabaseResourceData(t, map[string]interface{}{
