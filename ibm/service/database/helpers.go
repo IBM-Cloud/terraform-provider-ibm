@@ -141,8 +141,19 @@ func isAttrConfiguredInDiff(d *schema.ResourceDiff, k string) bool {
 }
 
 func isGen2Plan(plan string) bool {
+	p := strings.ToLower(plan)
+	// Standard gen2 plans contain the -gen2 segment (e.g. standard-gen2, enterprise-gen2).
 	gen2Pattern := regexp.MustCompile(`-gen2($|-.+)`)
-	return gen2Pattern.MatchString(strings.ToLower(plan))
+	if gen2Pattern.MatchString(p) {
+		return true
+	}
+	// Dev/shadow plans that use a fully-qualified plan name without the -gen2 suffix
+	// but are backed by the Gen2 infrastructure.
+	gen2DevPlans := map[string]bool{
+		"databases-for-redis-cdp-dev-standard":      true,
+		"databases-for-postgresql-cdp-dev-standard": true,
+	}
+	return gen2DevPlans[p]
 }
 
 // instanceCRNFromCoupledBackupCRN extracts the source instance CRN from a

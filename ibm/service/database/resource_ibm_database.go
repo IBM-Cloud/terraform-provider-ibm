@@ -181,6 +181,7 @@ func ResourceIBMDatabaseInstance() *schema.Resource {
 			validateUnsupportedAttrsDiff,
 			resourceIBMDatabaseInstanceDiff,
 			validateBackendSpecificGroupsDiff,
+			validateMemberZonesDiff,
 			validateUsersDiff,
 			validateRemoteLeaderIDDiff,
 			validateVersionDiff,
@@ -964,14 +965,14 @@ func ResourceIBMICDValidator() *validate.ResourceValidator {
 			Identifier:                 "service",
 			ValidateFunctionIdentifier: validate.ValidateAllowedStringValue,
 			Type:                       validate.TypeString,
-			AllowedValues:              "databases-for-etcd, databases-for-postgresql, databases-for-redis, databases-for-valkey, databases-for-valkey-cdp-dev, databases-for-elasticsearch, databases-for-mongodb, messages-for-rabbitmq, databases-for-mysql, databases-for-enterprisedb",
+			AllowedValues:              "databases-for-etcd, databases-for-postgresql, databases-for-redis, databases-for-valkey, databases-for-valkey-cdp-dev, databases-for-elasticsearch, databases-for-mongodb, messages-for-rabbitmq, databases-for-mysql, databases-for-enterprisedb, databases-for-redis-cdp-dev, databases-for-postgresql-cdp-dev",
 			Required:                   true})
 	validateSchema = append(validateSchema,
 		validate.ValidateSchema{
 			Identifier:                 "plan",
 			ValidateFunctionIdentifier: validate.ValidateAllowedICDPlanValue,
 			Type:                       validate.TypeString,
-			AllowedValues:              "standard, standard-gen2, enterprise, enterprise-gen2, enterprise-sharding, enterprise-sharding-gen2, platinum",
+			AllowedValues:              "standard, standard-gen2, enterprise, enterprise-gen2, enterprise-sharding, enterprise-sharding-gen2, platinum, databases-for-redis-cdp-dev-standard, databases-for-postgresql-cdp-dev-standard",
 			Required:                   true})
 	validateSchema = append(validateSchema,
 		validate.ValidateSchema{
@@ -3023,6 +3024,71 @@ func publicServiceEndpointsWarning() diag.Diagnostics {
 
 func validateBackendSpecificGroupsDiff(context context.Context, diff *schema.ResourceDiff, meta interface{}) error {
 	return pickResourceBackendFromDiff(diff).ValidateGroupsDiff(context, diff, meta)
+}
+
+// validateMemberZonesDiff is a plan-time CustomizeDiff function that validates
+// member_zones rules for Gen2 instances by reading the raw config values directly
+// from the diff, bypassing the schema.Set round-trip that loses nested list data.
+func validateMemberZonesDiff(_ context.Context, d *schema.ResourceDiff, _ interface{}) error {
+	if !isGen2Plan(d.Get("plan").(string)) {
+		return nil
+	}
+
+	groupsRaw, ok := d.GetOk("group")
+	if !ok {
+		return nil
+	}
+
+	for _, groupRaw := range groupsRaw.(*schema.Set).List() {
+		tfGroup, ok := groupRaw.(map[string]interface{})
+		if !ok {
+			continue
+		}
+		if tfGroup["group_id"].(string) != defaultGroupID {
+			continue
+		}
+
+		membersSet, ok := tfGroup["members"].(*schema.Set)
+		if !ok || membersSet.Len() == 0 {
+			continue
+		}
+
+		memberMap, ok := membersSet.List()[0].(map[string]interface{})
+		if !ok {
+			continue
+		}
+
+		allocationCount, _ := memberMap["allocation_count"].(int)
+		zonesRaw, _ := memberMap["member_zones"].([]interface{})
+
+		if len(zonesRaw) == 0 {
+			continue
+		}
+
+		// member_zones can only be set when allocation_count == 1
+		if allocationCount != 1 {
+			return fmt.Errorf(
+				"Invalid group configuration: member_zones requires allocation_count = 1, but %d was provided.\n"+
+					"To deploy a single member in a specific availability zone, set:\n"+
+					"  members {\n"+
+					"    allocation_count = 1\n"+
+					"    member_zones     = [\"<zone>\"]\n"+
+					"  }",
+				allocationCount,
+			)
+		}
+
+		// member_zones must contain exactly one zone entry
+		if len(zonesRaw) != 1 {
+			return fmt.Errorf(
+				"Invalid group configuration: member_zones must contain exactly one availability zone, but %d were provided.\n"+
+					"Please specify a single availability zone.\n",
+				len(zonesRaw),
+			)
+		}
+	}
+
+	return nil
 }
 
 func validateGroupsDiffClassic(_ context.Context, diff *schema.ResourceDiff, meta interface{}) (err error) {

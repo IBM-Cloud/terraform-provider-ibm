@@ -414,10 +414,31 @@ func (g *resourceIBMDatabaseGen2Backend) buildDBConfig(d *schema.ResourceData, c
 		config.HostFlavor = memberGroup.HostFlavor.ID
 	}
 
-	// member_zones is only valid when members == 1
+	// member_zones is only valid when members == 1 and must have exactly one entry.
 	if memberGroup != nil && len(memberGroup.MemberZones) > 0 {
 		if config.Members != 1 {
-			return nil, fmt.Errorf("member_zones can only be set when allocation_count is 1, got %d", config.Members)
+			return nil, fmt.Errorf(
+				"Invalid group configuration: member_zones requires allocation_count = 1, but %d was provided.\n"+
+					"To deploy a single member in a specific availability zone, set:\n"+
+					"  members {\n"+
+					"    allocation_count = 1\n"+
+					"    member_zones     = [\"<zone>\"]\n"+
+					"  }",
+				config.Members,
+			)
+		}
+		if len(memberGroup.MemberZones) != 1 {
+			zones := make([]string, 0, len(memberGroup.MemberZones))
+			for _, z := range memberGroup.MemberZones {
+				zones = append(zones, fmt.Sprintf("%q", z))
+			}
+			zonesDisplay := "[" + strings.Join(zones, ", ") + "]"
+			return nil, fmt.Errorf(
+				"Invalid group configuration: member_zones must contain exactly one availability zone, but %d were provided %s.\n"+
+					"Please specify a single availability zone.\n",
+				len(memberGroup.MemberZones),
+				zonesDisplay,
+			)
 		}
 		config.MemberZones = memberGroup.MemberZones
 	}
@@ -953,25 +974,6 @@ func (g *resourceIBMDatabaseGen2Backend) checkUnsupportedChanges(d *schema.Resou
 		return diagError("Version changes are not supported for Gen2 database instances")
 	}
 
-	// Scaling down to 1 member is not supported.
-	// Customers can scale from 1 to N, but not from N back to 1.
-	if d.HasChange("group") {
-		oldRaw, newRaw := d.GetChange("group")
-		oldGroups := expandGroups(oldRaw.(*schema.Set).List())
-		newGroups := expandGroups(newRaw.(*schema.Set).List())
-
-		oldMembers := memberCountFromGroups(oldGroups)
-		newMembers := memberCountFromGroups(newGroups)
-
-		if oldMembers > 1 && newMembers == 1 {
-			return diagError(
-				"Scaling down to 1 member is not supported for Gen2 databases. "+
-					"Current member count: %d. Scaling down from 2 or more members to 1 is not allowed.",
-				oldMembers,
-			)
-		}
-	}
-
 	return nil
 }
 
@@ -1181,12 +1183,15 @@ func (g *resourceIBMDatabaseGen2Backend) ValidateUnsupportedAttrsDiff(ctx contex
 }
 
 func (g *resourceIBMDatabaseGen2Backend) ValidateGroupsDiff(ctx context.Context, d *schema.ResourceDiff, meta interface{}) error {
-	group, ok := d.GetOk("group")
-	if !ok {
+	// Use the new (proposed) value from the diff so validation always sees what
+	// Terraform intends to apply, regardless of whether this is a create or update.
+	_, newGroupRaw := d.GetChange("group")
+	newGroupSet, ok := newGroupRaw.(*schema.Set)
+	if !ok || newGroupSet.Len() == 0 {
 		return nil
 	}
 
-	groups := expandGroups(group.(*schema.Set).List())
+	groups := expandGroups(newGroupSet.List())
 	groupIDs := make([]string, 0, len(groups))
 	for _, group := range groups {
 		groupIDs = append(groupIDs, group.ID)
@@ -1242,6 +1247,40 @@ func (g *resourceIBMDatabaseGen2Backend) ValidateGroupsDiff(ctx context.Context,
 		if group.HostFlavor != nil && group.HostFlavor.ID != "" && group.HostFlavor.ID != "multitenant" {
 			if err := validateGroupHostFlavor(group.ID, "host_flavor", group); err != nil {
 				return err
+			}
+		}
+
+		// Plan-time validation for member_zones:
+		//   - member_zones can only be set when allocation_count == 1
+		//   - member_zones must contain exactly one zone entry
+		if group.ID == defaultGroupID && len(group.MemberZones) > 0 {
+			memberCount := 0
+			if group.Members != nil {
+				memberCount = group.Members.Allocation
+			}
+			if memberCount != 1 {
+				return fmt.Errorf(
+					"Invalid group configuration: member_zones requires allocation_count = 1, but %d was provided.\n"+
+						"To deploy a single member in a specific availability zone, set:\n"+
+						"  members {\n"+
+						"    allocation_count = 1\n"+
+						"    member_zones     = [\"<zone>\"]\n"+
+						"  }",
+					memberCount,
+				)
+			}
+			if len(group.MemberZones) != 1 {
+				zones := make([]string, 0, len(group.MemberZones))
+				for _, z := range group.MemberZones {
+					zones = append(zones, fmt.Sprintf("%q", z))
+				}
+				zonesDisplay := "[" + strings.Join(zones, ", ") + "]"
+				return fmt.Errorf(
+					"Invalid group configuration: member_zones must contain exactly one availability zone, but %d were provided %s.\n"+
+						"Please specify a single availability zone.\n",
+					len(group.MemberZones),
+					zonesDisplay,
+				)
 			}
 		}
 	}

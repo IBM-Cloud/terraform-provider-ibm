@@ -2294,35 +2294,3 @@ func TestMemberCountFromGroups(t *testing.T) {
 		})
 	}
 }
-
-// TestScaleDownTo1MemberBlocked verifies the gate condition used in checkUnsupportedChanges
-// to block scaling from N members down to 1.
-// Uses []*Group directly to avoid schema.Set construction complexity.
-func TestScaleDownTo1MemberBlocked(t *testing.T) {
-	makeGroups := func(count int) []*Group {
-		return []*Group{{ID: defaultGroupID, Members: &GroupResource{Allocation: count}}}
-	}
-
-	cases := []struct {
-		name        string
-		oldCount    int
-		newCount    int
-		shouldBlock bool
-	}{
-		{"scale down 3→1 blocked", 3, 1, true},
-		{"scale down 2→1 blocked", 2, 1, true},
-		{"scale up 1→3 allowed", 1, 3, false},
-		{"scale up 1→2 allowed", 1, 2, false},
-		{"scale 3→2 allowed", 3, 2, false},
-		{"no change 3→3 allowed", 3, 3, false},
-	}
-
-	for _, c := range cases {
-		t.Run(c.name, func(t *testing.T) {
-			oldMembers := memberCountFromGroups(makeGroups(c.oldCount))
-			newMembers := memberCountFromGroups(makeGroups(c.newCount))
-			blocked := oldMembers > 1 && newMembers == 1
-			assert.Equal(t, c.shouldBlock, blocked)
-		})
-	}
-}
