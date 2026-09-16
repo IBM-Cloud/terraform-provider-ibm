@@ -141,6 +141,7 @@ type resourceIBMDatabaseBackend interface {
 	ValidateUnsupportedAttrsDiff(context context.Context, d *schema.ResourceDiff, meta interface{}) error
 	ValidateGroupsDiff(context context.Context, d *schema.ResourceDiff, meta interface{}) error
 	ValidateServiceEndpointsDiff(context context.Context, d *schema.ResourceDiff, meta interface{}) error
+	ValidateShardsDiff(context context.Context, d *schema.ResourceDiff, meta interface{}) error
 }
 
 func pickResourceBackend(d *schema.ResourceData) resourceIBMDatabaseBackend {
@@ -3335,7 +3336,7 @@ func validateAsyncRestoreDiff(_ context.Context, diff *schema.ResourceDiff, meta
 	return nil
 }
 
-func validateShardsDiff(_ context.Context, diff *schema.ResourceDiff, _ interface{}) error {
+func validateShardsDiffGen2(_ context.Context, diff *schema.ResourceDiff, _ interface{}) error {
 	shardsConfigured := isShardAttrConfiguredInDiff(diff, "shards")
 	if !shardsConfigured {
 		return nil
@@ -3371,6 +3372,55 @@ func validateServiceEndpointsDiffClassic(_ context.Context, diff *schema.Resourc
 		return fmt.Errorf("[ERROR] service_endpoints is required for Classic plans")
 	}
 	return nil
+}
+
+func validateUnsupportedAttrsDiffClassic(_ context.Context, d *schema.ResourceDiff, _ interface{}) error {
+	var unsupportedAttrs []string
+
+	for _, attr := range classicUnsupportedAttrs {
+		if val, ok := d.GetOk(attr); ok && !isEmptyClassicAttrValue(val) {
+			unsupportedAttrs = append(unsupportedAttrs, attr)
+		}
+	}
+
+	if len(unsupportedAttrs) == 0 {
+		return nil
+	}
+
+	var msg strings.Builder
+	msg.WriteString("The following attributes are not supported for Classic databases:\n\n")
+
+	for i, attr := range unsupportedAttrs {
+		msg.WriteString(fmt.Sprintf("%d. Attribute: %q\n", i+1, attr))
+		msg.WriteString("\n")
+	}
+
+	return errors.New(msg.String())
+}
+
+func isEmptyClassicAttrValue(val interface{}) bool {
+	if val == nil {
+		return true
+	}
+
+	switch v := val.(type) {
+	case string:
+		return v == ""
+	case bool:
+		return !v
+	case int:
+		return v == 0
+	case int64:
+		return v == 0
+	case float64:
+		return v == 0
+	case []interface{}:
+		return len(v) == 0
+	case map[string]interface{}:
+		return len(v) == 0
+	default:
+		return false
+	}
 }
 
 func validateVersionDiff(_ context.Context, diff *schema.ResourceDiff, meta interface{}) (err error) {

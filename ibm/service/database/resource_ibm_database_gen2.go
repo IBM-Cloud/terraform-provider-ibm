@@ -1276,6 +1276,10 @@ func (g *resourceIBMDatabaseGen2Backend) ValidateServiceEndpointsDiff(ctx contex
 	return nil
 }
 
+func (g *resourceIBMDatabaseGen2Backend) ValidateShardsDiff(ctx context.Context, d *schema.ResourceDiff, meta interface{}) error {
+	return validateShardsDiffGen2(ctx, d, meta)
+}
+
 func (g *resourceIBMDatabaseGen2Backend) ValidateUnsupportedAttrsData(d *schema.ResourceData) error {
 	var unsupportedAttrs []string
 
