@@ -3336,31 +3336,6 @@ func validateAsyncRestoreDiff(_ context.Context, diff *schema.ResourceDiff, meta
 	return nil
 }
 
-func validateShardsDiffGen2(_ context.Context, diff *schema.ResourceDiff, _ interface{}) error {
-	shardsConfigured := isShardAttrConfiguredInDiff(diff, "shards")
-	if !shardsConfigured {
-		return nil
-	}
-
-	service := diff.Get("service").(string)
-	plan := diff.Get("plan").(string)
-
-	if service != "databases-for-mongodb" || plan != "enterprise-sharding-gen2" {
-		return fmt.Errorf("[ERROR] `shards` is only supported for databases-for-mongodb with plan enterprise-sharding-gen2")
-	}
-
-	if diff.HasChange("shards") {
-		oldVal, newVal := diff.GetChange("shards")
-		oldShards := normalizeShardValue(oldVal)
-		newShards := normalizeShardValue(newVal)
-		if oldShards > 0 && newShards < oldShards {
-			return fmt.Errorf("[ERROR] Shard count cannot be decreased. Current: %d, Requested: %d", oldShards, newShards)
-		}
-	}
-
-	return nil
-}
-
 func validateBackendSpecificServiceEndpointsDiff(context context.Context, diff *schema.ResourceDiff, meta interface{}) error {
 	return pickResourceBackendFromDiff(diff).ValidateServiceEndpointsDiff(context, diff, meta)
 }

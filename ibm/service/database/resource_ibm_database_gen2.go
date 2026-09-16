@@ -1276,8 +1276,29 @@ func (g *resourceIBMDatabaseGen2Backend) ValidateServiceEndpointsDiff(ctx contex
 	return nil
 }
 
-func (g *resourceIBMDatabaseGen2Backend) ValidateShardsDiff(ctx context.Context, d *schema.ResourceDiff, meta interface{}) error {
-	return validateShardsDiffGen2(ctx, d, meta)
+func (g *resourceIBMDatabaseGen2Backend) ValidateShardsDiff(_ context.Context, d *schema.ResourceDiff, _ interface{}) error {
+	shardsConfigured := isShardAttrConfiguredInDiff(d, "shards")
+	if !shardsConfigured {
+		return nil
+	}
+
+	service := d.Get("service").(string)
+	plan := d.Get("plan").(string)
+
+	if service != "databases-for-mongodb" || plan != "enterprise-sharding-gen2" {
+		return fmt.Errorf("[ERROR] `shards` is only supported for databases-for-mongodb with plan enterprise-sharding-gen2")
+	}
+
+	if d.HasChange("shards") {
+		oldVal, newVal := d.GetChange("shards")
+		oldShards := normalizeShardValue(oldVal)
+		newShards := normalizeShardValue(newVal)
+		if oldShards > 0 && newShards < oldShards {
+			return fmt.Errorf("[ERROR] Shard count cannot be decreased. Current: %d, Requested: %d", oldShards, newShards)
+		}
+	}
+
+	return nil
 }
 
 func (g *resourceIBMDatabaseGen2Backend) ValidateUnsupportedAttrsData(d *schema.ResourceData) error {
