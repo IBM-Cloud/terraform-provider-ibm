@@ -414,34 +414,41 @@ func TestBuildGen2Parameters_standardGen2UsesMongodbNotMongodbees(t *testing.T) 
 	}
 }
 func TestValidateShardsDiff(t *testing.T) {
+	g := &resourceIBMDatabaseGen2Backend{}
+
 	t.Run("rejects shards for non-mongodb service", func(t *testing.T) {
-		err := validateShardsDiffPredicate("databases-for-postgresql", "enterprise-sharding-gen2")
-		requireErrContains(t, err, "only supported for databases-for-mongodb")
+		err := validateShardsDiffPredicate(g, t, "databases-for-postgresql", "enterprise-sharding-gen2")
+		requireErrContains(t, err, "shards is supported only for databases-for-mongodb with plan enterprise-sharding-gen2")
 	})
 
 	t.Run("rejects shards for non-gen2 plan", func(t *testing.T) {
-		err := validateShardsDiffPredicate("databases-for-mongodb", "enterprise-sharding")
-		requireErrContains(t, err, "only supported for databases-for-mongodb")
+		err := validateShardsDiffPredicate(g, t, "databases-for-mongodb", "enterprise-sharding")
+		requireErrContains(t, err, "shards is supported only for databases-for-mongodb with plan enterprise-sharding-gen2")
 	})
 
 	t.Run("rejects shards for standard plan", func(t *testing.T) {
-		err := validateShardsDiffPredicate("databases-for-mongodb", "standard-gen2")
-		requireErrContains(t, err, "only supported for databases-for-mongodb")
+		err := validateShardsDiffPredicate(g, t, "databases-for-mongodb", "standard-gen2")
+		requireErrContains(t, err, "shards is supported only for databases-for-mongodb with plan enterprise-sharding-gen2")
 	})
 
 	t.Run("accepts shards for mongodb enterprise-sharding-gen2", func(t *testing.T) {
-		err := validateShardsDiffPredicate("databases-for-mongodb", "enterprise-sharding-gen2")
+		err := validateShardsDiffPredicate(g, t, "databases-for-mongodb", "enterprise-sharding-gen2")
 		if err != nil {
 			t.Fatalf("expected no error, got %v", err)
 		}
 	})
 }
 
-func validateShardsDiffPredicate(service, plan string) error {
-	if service != "databases-for-mongodb" || plan != "enterprise-sharding-gen2" {
-		return fmt.Errorf("[ERROR] `shards` is only supported for databases-for-mongodb with plan enterprise-sharding-gen2")
-	}
-	return nil
+// validateShardsDiffPredicate calls the real getShardsCount logic with a minimal ResourceData 
+func validateShardsDiffPredicate(g *resourceIBMDatabaseGen2Backend, t *testing.T, service, plan string) error {
+	t.Helper()
+	d := testGen2DatabaseResourceData(t, map[string]interface{}{
+		"service": service,
+		"plan":    plan,
+		"shards":  2,
+	})
+	_, err := g.getShardsCount(d)
+	return err
 }
 
 // downgrade guard inside validateShardsDiff

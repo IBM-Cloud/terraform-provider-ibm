@@ -129,6 +129,21 @@ func TestAccIBMDatabaseMongoDBShardingGen2ShardsOnWrongPlan(t *testing.T) {
 	})
 }
 
+// TestAccIBMDatabaseMongoDBShardsOnClassicPlan verifies that setting shards on
+// a Classic plan is rejected at plan time with the unsupported-attribute error.
+func TestAccIBMDatabaseMongoDBShardsOnClassicPlan(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { acc.TestAccPreCheckEnterprise(t) },
+		Providers: acc.TestAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config:      testAccCheckIBMDatabaseInstanceMongoDBClassicWithShards("tf-classic-shards"),
+				ExpectError: regexp.MustCompile(`not supported for Classic databases`),
+			},
+		},
+	})
+}
+
 func testAccCheckIBMDatabaseInstanceMongoDBShardingGen2WithShards(name string, shards int) string {
 	return fmt.Sprintf(`
 data "ibm_resource_group" "test_acc" {
@@ -213,6 +228,32 @@ data "ibm_database" "lookup" {
   name              = ibm_database.%[1]s.name
   service           = "databases-for-mongodb"
   location          = "ca-mon"
+}
+`, name)
+}
+
+// testAccCheckIBMDatabaseInstanceMongoDBClassicWithShards produces a config that
+// sets shards on a Classic plan — used to verify plan-time rejection.
+func testAccCheckIBMDatabaseInstanceMongoDBClassicWithShards(name string) string {
+	return fmt.Sprintf(`
+data "ibm_resource_group" "test_acc" {
+  is_default = true
+}
+
+resource "ibm_database" "%[1]s" {
+  resource_group_id = data.ibm_resource_group.test_acc.id
+  name              = "%[1]s"
+  service           = "databases-for-mongodb"
+  plan              = "enterprise-sharding"
+  location          = "us-south"
+  service_endpoints = "public"
+  shards            = 2
+
+  timeouts {
+    create = "240m"
+    update = "120m"
+    delete = "15m"
+  }
 }
 `, name)
 }
