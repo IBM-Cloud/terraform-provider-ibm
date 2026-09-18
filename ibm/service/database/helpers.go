@@ -150,8 +150,9 @@ func isGen2Plan(plan string) bool {
 	// Dev/shadow plans that use a fully-qualified plan name without the -gen2 suffix
 	// but are backed by the Gen2 infrastructure.
 	gen2DevPlans := map[string]bool{
-		"databases-for-redis-cdp-dev-standard":      true,
-		"databases-for-postgresql-cdp-dev-standard": true,
+		"databases-for-redis-cdp-dev-standard":           true,
+		"databases-for-elasticsearch-cdp-dev-enterprise": true,
+		"databases-for-postgresql-cdp-dev-standard":      true,
 	}
 	return gen2DevPlans[p]
 }
