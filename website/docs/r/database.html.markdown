@@ -908,13 +908,7 @@ In addition to all argument references list, you can access the following attrib
 - `status` - (String) The status of the instance.
 - `version` - (String) The database version.
 - `groups` - (List) A list of scaling groups for the database. This is a computed attribute that shows the current resource allocations.
-  - `group_id` - (String) The scaling group name.
-  - `count` - (Integer) Count of scaling groups for the instance.
-  - `memory` - (List) Memory allocation details.
-  - `cpu` - (List) CPU allocation details.
-  - `disk` - (List) Disk allocation details.
   - `member_zones` - (List of Strings) Availability zones for the member. Only present for Gen2 single-member (`allocation_count=1`) deployments.
-  - `host_flavor` - (List) Host flavor details.
 
 ## Gen2 Feature Summary
 
