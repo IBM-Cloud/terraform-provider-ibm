@@ -2245,4 +2245,3 @@ func TestMemberZonesInDBConfig(t *testing.T) {
 		assert.Equal(t, []string{"us-east-1"}, zones)
 	})
 }
-
