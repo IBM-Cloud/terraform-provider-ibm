@@ -3041,10 +3041,7 @@ func validateMemberZonesDiff(_ context.Context, d *schema.ResourceDiff, _ interf
 
 	for _, groupRaw := range groupsRaw.(*schema.Set).List() {
 		tfGroup, ok := groupRaw.(map[string]interface{})
-		if !ok {
-			continue
-		}
-		if tfGroup["group_id"].(string) != defaultGroupID {
+		if !ok || tfGroup["group_id"].(string) != defaultGroupID {
 			continue
 		}
 
@@ -3058,12 +3055,12 @@ func validateMemberZonesDiff(_ context.Context, d *schema.ResourceDiff, _ interf
 			continue
 		}
 
-		allocationCount, _ := memberMap["allocation_count"].(int)
 		zonesRaw, _ := memberMap["member_zones"].([]interface{})
-
 		if len(zonesRaw) == 0 {
 			continue
 		}
+
+		allocationCount, _ := memberMap["allocation_count"].(int)
 
 		// member_zones can only be set when allocation_count == 1
 		if allocationCount != 1 {
@@ -3082,7 +3079,7 @@ func validateMemberZonesDiff(_ context.Context, d *schema.ResourceDiff, _ interf
 		if len(zonesRaw) != 1 {
 			return fmt.Errorf(
 				"Invalid group configuration: member_zones must contain exactly one availability zone, but %d were provided.\n"+
-					"Please specify a single availability zone.\n",
+					"Please specify a single availability zone.",
 				len(zonesRaw),
 			)
 		}

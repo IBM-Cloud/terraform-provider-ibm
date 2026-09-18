@@ -416,29 +416,8 @@ func (g *resourceIBMDatabaseGen2Backend) buildDBConfig(d *schema.ResourceData, c
 
 	// member_zones is only valid when members == 1 and must have exactly one entry.
 	if memberGroup != nil && len(memberGroup.MemberZones) > 0 {
-		if config.Members != 1 {
-			return nil, fmt.Errorf(
-				"Invalid group configuration: member_zones requires allocation_count = 1, but %d was provided.\n"+
-					"To deploy a single member in a specific availability zone, set:\n"+
-					"  members {\n"+
-					"    allocation_count = 1\n"+
-					"    member_zones     = [\"<zone>\"]\n"+
-					"  }",
-				config.Members,
-			)
-		}
-		if len(memberGroup.MemberZones) != 1 {
-			zones := make([]string, 0, len(memberGroup.MemberZones))
-			for _, z := range memberGroup.MemberZones {
-				zones = append(zones, fmt.Sprintf("%q", z))
-			}
-			zonesDisplay := "[" + strings.Join(zones, ", ") + "]"
-			return nil, fmt.Errorf(
-				"Invalid group configuration: member_zones must contain exactly one availability zone, but %d were provided %s.\n"+
-					"Please specify a single availability zone.\n",
-				len(memberGroup.MemberZones),
-				zonesDisplay,
-			)
+		if err := validateMemberZones(memberGroup, config.Members); err != nil {
+			return nil, err
 		}
 		config.MemberZones = memberGroup.MemberZones
 	}
@@ -977,72 +956,51 @@ func (g *resourceIBMDatabaseGen2Backend) checkUnsupportedChanges(d *schema.Resou
 	return nil
 }
 
-// memberCountFromGroups returns the member allocation_count from the "member" group,
-// or 0 if no member group or members block is found.
-func memberCountFromGroups(groups []*Group) int {
-	for _, g := range groups {
-		if g.ID == defaultGroupID && g.Members != nil {
-			return g.Members.Allocation
-		}
+// buildConfigCtx fetches the current instance state and assembles an instanceConfigContext
+// for use by applyGroupScaling and applyConfigurationUpdate.
+func (g *resourceIBMDatabaseGen2Backend) buildConfigCtx(ctx context.Context, d *schema.ResourceData, rsConClient *rc.ResourceControllerV2, instanceID string, meta interface{}) (*instanceConfigContext, diag.Diagnostics) {
+	instance, _, err := rsConClient.GetResourceInstance(&rc.GetResourceInstanceOptions{
+		ID: &instanceID,
+	})
+	if err != nil {
+		return nil, diagError("error getting resource instance: %s", err)
 	}
-	return 0
+	return &instanceConfigContext{
+		ctx:        ctx,
+		d:          d,
+		instanceID: instanceID,
+		meta:       meta,
+		instance:   instance,
+	}, nil
 }
 
 // applyGroupScalingWithDiagnostics applies group scaling and returns diagnostics.
-// Wraps applyGroupScaling to provide consistent diagnostic handling.
 func (g *resourceIBMDatabaseGen2Backend) applyGroupScalingWithDiagnostics(ctx context.Context, d *schema.ResourceData, rsConClient *rc.ResourceControllerV2, instanceID string, meta interface{}) diag.Diagnostics {
 	if !d.HasChange("group") {
 		return nil
 	}
-
-	instance, _, err := rsConClient.GetResourceInstance(&rc.GetResourceInstanceOptions{
-		ID: &instanceID,
-	})
-	if err != nil {
-		return diagError("error getting resource instance: %s", err)
+	configCtx, diags := g.buildConfigCtx(ctx, d, rsConClient, instanceID, meta)
+	if len(diags) > 0 {
+		return diags
 	}
-
-	configCtx := &instanceConfigContext{
-		ctx:        ctx,
-		d:          d,
-		instanceID: instanceID,
-		meta:       meta,
-		instance:   instance,
-	}
-
 	if err := g.applyGroupScaling(configCtx); err != nil {
 		return diagError("error applying group scaling: %s", err)
 	}
-
 	return nil
 }
 
 // applyConfigurationWithDiagnostics applies configuration updates and returns diagnostics.
-// Wraps applyConfigurationUpdate to provide consistent diagnostic handling.
 func (g *resourceIBMDatabaseGen2Backend) applyConfigurationWithDiagnostics(ctx context.Context, d *schema.ResourceData, rsConClient *rc.ResourceControllerV2, instanceID string, meta interface{}) diag.Diagnostics {
 	if !d.HasChange("configuration") {
 		return nil
 	}
-
-	instance, _, err := rsConClient.GetResourceInstance(&rc.GetResourceInstanceOptions{
-		ID: &instanceID,
-	})
-	if err != nil {
-		return diagError("error getting resource instance: %s", err)
+	configCtx, diags := g.buildConfigCtx(ctx, d, rsConClient, instanceID, meta)
+	if len(diags) > 0 {
+		return diags
 	}
-
-	configCtx := &instanceConfigContext{
-		ctx:        ctx,
-		d:          d,
-		instanceID: instanceID,
-		meta:       meta,
-		instance:   instance,
-	}
-
 	if err := g.applyConfigurationUpdate(configCtx); err != nil {
 		return diagError("error applying configuration update: %s", err)
 	}
-
 	return nil
 }
 
@@ -1258,29 +1216,8 @@ func (g *resourceIBMDatabaseGen2Backend) ValidateGroupsDiff(ctx context.Context,
 			if group.Members != nil {
 				memberCount = group.Members.Allocation
 			}
-			if memberCount != 1 {
-				return fmt.Errorf(
-					"Invalid group configuration: member_zones requires allocation_count = 1, but %d was provided.\n"+
-						"To deploy a single member in a specific availability zone, set:\n"+
-						"  members {\n"+
-						"    allocation_count = 1\n"+
-						"    member_zones     = [\"<zone>\"]\n"+
-						"  }",
-					memberCount,
-				)
-			}
-			if len(group.MemberZones) != 1 {
-				zones := make([]string, 0, len(group.MemberZones))
-				for _, z := range group.MemberZones {
-					zones = append(zones, fmt.Sprintf("%q", z))
-				}
-				zonesDisplay := "[" + strings.Join(zones, ", ") + "]"
-				return fmt.Errorf(
-					"Invalid group configuration: member_zones must contain exactly one availability zone, but %d were provided %s.\n"+
-						"Please specify a single availability zone.\n",
-					len(group.MemberZones),
-					zonesDisplay,
-				)
+			if err := validateMemberZones(group, memberCount); err != nil {
+				return err
 			}
 		}
 	}
