@@ -141,8 +141,20 @@ func isAttrConfiguredInDiff(d *schema.ResourceDiff, k string) bool {
 }
 
 func isGen2Plan(plan string) bool {
+	p := strings.ToLower(plan)
+	// Standard gen2 plans contain the -gen2 segment (e.g. standard-gen2, enterprise-gen2).
 	gen2Pattern := regexp.MustCompile(`-gen2($|-.+)`)
-	return gen2Pattern.MatchString(strings.ToLower(plan))
+	if gen2Pattern.MatchString(p) {
+		return true
+	}
+	// Dev/shadow plans that use a fully-qualified plan name without the -gen2 suffix
+	// but are backed by the Gen2 infrastructure.
+	gen2DevPlans := map[string]bool{
+		"databases-for-redis-cdp-dev-standard":           true,
+		"databases-for-elasticsearch-cdp-dev-enterprise": true,
+		"databases-for-postgresql-cdp-dev-standard":      true,
+	}
+	return gen2DevPlans[p]
 }
 
 // instanceCRNFromCoupledBackupCRN extracts the source instance CRN from a
@@ -352,12 +364,13 @@ func flattenIcdGroupsFromInstanceAndCatalog(instance map[string]interface{}, cat
 		}
 
 		group := map[string]interface{}{
-			"group_id":    groupID,
-			"count":       count,
-			"memory":      buildMemoryConfig(resourceMap, allocations.memoryGB),
-			"cpu":         buildCPUConfig(resourceMap, allocations.cpuCount),
-			"disk":        buildDiskConfig(resourceMap, allocations.storageGB),
-			"host_flavor": buildHostFlavorConfig(allocations.hostFlavorID),
+			"group_id":     groupID,
+			"count":        count,
+			"memory":       buildMemoryConfig(resourceMap, allocations.memoryGB),
+			"cpu":          buildCPUConfig(resourceMap, allocations.cpuCount),
+			"disk":         buildDiskConfig(resourceMap, allocations.storageGB),
+			"member_zones": allocations.memberZones,
+			"host_flavor":  buildHostFlavorConfig(allocations.hostFlavorID),
 		}
 		groups = append(groups, group)
 	}
@@ -372,10 +385,12 @@ type databaseAllocations struct {
 	memoryGB     float64
 	storageGB    float64
 	members      int64
+	memberZones  []string
 	hostFlavorID string
 }
 
-// extractDatabaseAllocations extracts allocation values from instance extensions for a specific database type
+// extractDatabaseAllocations extracts allocation values from instance extensions for a specific database type.
+// All fields live under extensions.dataservices.<dbType> in the RC API GET response.
 func extractDatabaseAllocations(instance map[string]interface{}, resourceID string) databaseAllocations {
 	var alloc databaseAllocations
 
@@ -408,6 +423,15 @@ func extractDatabaseAllocations(instance map[string]interface{}, resourceID stri
 	}
 	if flavor, ok := dbTypeData["host_flavor"].(string); ok {
 		alloc.hostFlavorID = flavor
+	}
+	if zonesRaw, ok := dbTypeData["member_zones"].([]interface{}); ok {
+		zones := make([]string, 0, len(zonesRaw))
+		for _, z := range zonesRaw {
+			if s, ok := z.(string); ok {
+				zones = append(zones, s)
+			}
+		}
+		alloc.memberZones = zones
 	}
 
 	return alloc
@@ -977,4 +1001,34 @@ func extractGen2BackupExtensions(extensions map[string]interface{}) (sourceDataS
 		backupType = v
 	}
 	return
+}
+
+// validateMemberZones validates the member_zones constraint for a group.
+// member_zones requires exactly allocation_count=1 and exactly one zone entry.
+// Used by both buildDBConfig (apply time) and ValidateGroupsDiff (plan time).
+func validateMemberZones(group *Group, memberCount int) error {
+	if memberCount != 1 {
+		return fmt.Errorf(
+			"Invalid group configuration: member_zones requires allocation_count = 1, but %d was provided.\n"+
+				"To deploy a single member in a specific availability zone, set:\n"+
+				"  members {\n"+
+				"    allocation_count = 1\n"+
+				"    member_zones     = [\"<zone>\"]\n"+
+				"  }",
+			memberCount,
+		)
+	}
+	if len(group.MemberZones) != 1 {
+		zones := make([]string, 0, len(group.MemberZones))
+		for _, z := range group.MemberZones {
+			zones = append(zones, fmt.Sprintf("%q", z))
+		}
+		return fmt.Errorf(
+			"Invalid group configuration: member_zones must contain exactly one availability zone, but %d were provided [%s].\n"+
+				"Please specify a single availability zone.",
+			len(group.MemberZones),
+			strings.Join(zones, ", "),
+		)
+	}
+	return nil
 }

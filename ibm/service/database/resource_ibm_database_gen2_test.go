@@ -2204,3 +2204,44 @@ func TestGen2LogicalReplicationSlotIgnored(t *testing.T) {
 		})
 	}
 }
+
+// TestMemberZonesInDBConfig verifies that member_zones is passed through DBConfig
+// into the API parameters map when set, and omitted when not set.
+func TestMemberZonesInDBConfig(t *testing.T) {
+	backend := &resourceIBMDatabaseGen2Backend{}
+
+	t.Run("member_zones included when set", func(t *testing.T) {
+		config := DBConfig{
+			Members:     1,
+			MemberZones: []string{"us-east-1"},
+		}
+		result := backend.dbConfigToMap(config, "postgresql")
+		zones, ok := result["member_zones"]
+		assert.True(t, ok, "member_zones should be present in result")
+		assert.Equal(t, []string{"us-east-1"}, zones)
+		assert.Equal(t, 1, result["members"])
+	})
+
+	t.Run("member_zones omitted when empty", func(t *testing.T) {
+		config := DBConfig{
+			Members:     3,
+			MemberZones: nil,
+		}
+		result := backend.dbConfigToMap(config, "postgresql")
+		_, ok := result["member_zones"]
+		assert.False(t, ok, "member_zones should not be present when empty")
+	})
+
+	t.Run("member_zones omitted for mongodbees", func(t *testing.T) {
+		config := DBConfig{
+			Members:     1,
+			MemberZones: []string{"us-east-1"},
+		}
+		result := backend.dbConfigToMap(config, "mongodbees")
+		_, membersOk := result["members"]
+		assert.False(t, membersOk, "members should not be present for mongodbees")
+		zones, zonesOk := result["member_zones"]
+		assert.True(t, zonesOk, "member_zones should still be present for mongodbees")
+		assert.Equal(t, []string{"us-east-1"}, zones)
+	})
+}

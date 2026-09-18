@@ -61,10 +61,11 @@ const (
 // DBConfig represents database-specific configuration for Gen2 parameters.
 // Replaces map[string]interface{} for type safety and compile-time validation.
 type DBConfig struct {
-	Version    string `json:"version,omitempty"`
-	Members    int    `json:"members"`
-	StorageGB  int    `json:"storage_gb,omitempty"`
-	HostFlavor string `json:"host_flavor,omitempty"`
+	Version     string   `json:"version,omitempty"`
+	Members     int      `json:"members"`
+	MemberZones []string `json:"member_zones,omitempty"`
+	StorageGB   int      `json:"storage_gb,omitempty"`
+	HostFlavor  string   `json:"host_flavor,omitempty"`
 }
 
 // instanceConfigContext encapsulates shared context for instance configuration steps.
@@ -413,6 +414,14 @@ func (g *resourceIBMDatabaseGen2Backend) buildDBConfig(d *schema.ResourceData, c
 		config.HostFlavor = memberGroup.HostFlavor.ID
 	}
 
+	// member_zones is only valid when members == 1 and must have exactly one entry.
+	if memberGroup != nil && len(memberGroup.MemberZones) > 0 {
+		if err := validateMemberZones(memberGroup, config.Members); err != nil {
+			return nil, err
+		}
+		config.MemberZones = memberGroup.MemberZones
+	}
+
 	// Build the result map and inject configuration overrides.
 	// addConfigurationOverrides is independent of memberGroup — called once here.
 	result := g.dbConfigToMap(config, dbType)
@@ -448,6 +457,10 @@ func (g *resourceIBMDatabaseGen2Backend) dbConfigToMap(config DBConfig, dbType s
 	}
 	if dbType != "mongodbees" {
 		result["members"] = config.Members
+	}
+	// Only include member_zones when set — omitted for standard multi-member deployments
+	if len(config.MemberZones) > 0 {
+		result["member_zones"] = config.MemberZones
 	}
 	if config.StorageGB > 0 {
 		result["storage_gb"] = config.StorageGB
@@ -1138,12 +1151,15 @@ func (g *resourceIBMDatabaseGen2Backend) ValidateUnsupportedAttrsDiff(ctx contex
 }
 
 func (g *resourceIBMDatabaseGen2Backend) ValidateGroupsDiff(ctx context.Context, d *schema.ResourceDiff, meta interface{}) error {
-	group, ok := d.GetOk("group")
-	if !ok {
+	// Use the new (proposed) value from the diff so validation always sees what
+	// Terraform intends to apply, regardless of whether this is a create or update.
+	_, newGroupRaw := d.GetChange("group")
+	newGroupSet, ok := newGroupRaw.(*schema.Set)
+	if !ok || newGroupSet.Len() == 0 {
 		return nil
 	}
 
-	groups := expandGroups(group.(*schema.Set).List())
+	groups := expandGroups(newGroupSet.List())
 	groupIDs := make([]string, 0, len(groups))
 	for _, group := range groups {
 		groupIDs = append(groupIDs, group.ID)
@@ -1198,6 +1214,19 @@ func (g *resourceIBMDatabaseGen2Backend) ValidateGroupsDiff(ctx context.Context,
 
 		if group.HostFlavor != nil && group.HostFlavor.ID != "" && group.HostFlavor.ID != "multitenant" {
 			if err := validateGroupHostFlavor(group.ID, "host_flavor", group); err != nil {
+				return err
+			}
+		}
+
+		// Plan-time validation for member_zones:
+		//   - member_zones can only be set when allocation_count == 1
+		//   - member_zones must contain exactly one zone entry
+		if group.ID == defaultGroupID && len(group.MemberZones) > 0 {
+			memberCount := 0
+			if group.Members != nil {
+				memberCount = group.Members.Allocation
+			}
+			if err := validateMemberZones(group, memberCount); err != nil {
 				return err
 			}
 		}
