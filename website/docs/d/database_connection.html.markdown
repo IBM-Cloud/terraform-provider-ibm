@@ -8,7 +8,7 @@ subcategory: "Cloud Databases"
 
 # ibm_database_connection
 
-Provides a read-only data source for database_connection. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.
+Provides a read-only data source for database_connection. Supports both Classic and Gen2 database instances. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.
 
 ### Gen2 Independent Backups and S2S Authorization
 
@@ -36,12 +36,37 @@ To resolve the warning, create the required IAM service-to-service authorization
 
 ## Example Usage
 
+### Classic
+
 ```hcl
 data "ibm_database_connection" "database_connection" {
-	endpoint_type = "public"
-	deployment_id = ibm_database.my_db.id
-	user_id = "user_id"
-	user_type = "database"
+  endpoint_type = "public"
+  deployment_id = ibm_database.my_db.id
+  user_id       = "user_id"
+  user_type     = "database"
+}
+```
+
+### Gen2
+
+For Gen2 instances, connection information is retrieved through IBM Cloud resource keys. The `user_id` is matched against resource key names; if no match is found, the first available key is used. `user_type` and `endpoint_type` are accepted but not used for key selection.
+
+```hcl
+data "ibm_database_connection" "database_connection" {
+  endpoint_type = "public"
+  deployment_id = ibm_database.my_db.id
+  user_id       = "<resource_key_name>"
+  user_type     = "database"
+}
+```
+
+**Prerequisite:** A resource key must exist for the Gen2 instance before reading connection details. Create one with:
+
+```hcl
+resource "ibm_resource_key" "db_key" {
+  name                 = "my-db-key"
+  resource_instance_id = ibm_database.my_db.id
+  role                 = "Administrator"
 }
 ```
 
@@ -49,12 +74,38 @@ data "ibm_database_connection" "database_connection" {
 
 Review the argument reference that you can specify for your data source.
 
-* `endpoint_type` - (Required, String) Endpoint Type. The endpoint must be enabled on the deployment before its connection information can be fetched.
+* `endpoint_type` - (Required, String) Endpoint Type. The endpoint must be enabled on the deployment before its connection information can be fetched. Not used for key selection in Gen2.
   * Constraints: Allowable values are: `public`, `private`.
 * `deployment_id` - (Required, String) Deployment ID.
+
+  **Classic:** The database instance CRN, for example:
+  ```
+  crn:v1:bluemix:public:databases-for-postgresql:us-south:a/<account_id>:<instance_id>::
+  ```
+
+  **Gen2:** The Gen2 database instance CRN, for example:
+  ```
+  crn:v1:bluemix:public:databases-for-postgresql:<region>:a/<account_id>:<instance_id>::
+  ```
+  The Gen2 deployment CRN can be retrieved from:
+  - The `id` attribute of an `ibm_database` resource configured with a Gen2 plan.
+  - The IBM Cloud UI under **Databases → your instance → Overview**.
+  - The IBM Cloud CLI: `ibmcloud resource service-instance <instance_name> --output json | jq -r '.[0].crn'`.
+
 * `user_id` - (Required, String) User ID.
-* `user_type` - (Required, String) User type.
+
+  **Classic:** The database username to fetch connection information for.
+
+  **Gen2:** The name of the resource key to use. If no key with this name exists, the first available resource key for the instance is used automatically.
+
+* `user_type` - (Required, String) User type. Not used for connection retrieval in Gen2.
 * `certificate_root` - (Optional, String) Optional certificate root path to prepend certificate names. Certificates would be stored in this directory for use by other commands.
+
+## Gen2 Behaviour
+
+For Gen2 database instances, connection information is extracted from IBM Cloud resource key credentials via the Resource Controller API rather than the Cloud Databases V5 API. The `user_id` field is matched against resource key names. If no matching key is found, the first available key is used and `user_id` is updated in state to reflect the actual key name used.
+
+**Note:** If no resource keys exist for the Gen2 instance, the data source returns an error. Create a resource key using `ibm_resource_key` before using this data source.
 
 ## Attribute Reference
 
