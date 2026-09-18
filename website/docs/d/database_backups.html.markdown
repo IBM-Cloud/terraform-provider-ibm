@@ -8,7 +8,7 @@ subcategory: "Cloud Databases"
 
 # ibm_database_backups
 
-Provides a read-only data source for Backups. Supports both Classic and Gen2 (Independent Backup) instances. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.
+Provides a read-only data source for Backups. Supports both Classic and Gen2 (Independent Backup) instances. For more information, refer to [IBM Cloud Databases Gen2 Independent Backups](https://cloud.ibm.com/docs/cloud-databases-gen2?topic=cloud-databases-gen2-independent-backups&interface=ui). You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.
 
 ## Example Usage
 

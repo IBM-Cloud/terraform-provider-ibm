@@ -8,7 +8,7 @@ subcategory: "Cloud Databases"
 
 # ibm_database_backup
 
-Provides a read-only data source for Backup. Supports both Classic and Gen2 (Independent Backup) instances. You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.
+Provides a read-only data source for Backup. Supports both Classic and Gen2 (Independent Backup) instances. For more information, refer to [IBM Cloud Databases Gen2 Independent Backups](https://cloud.ibm.com/docs/cloud-databases-gen2?topic=cloud-databases-gen2-independent-backups&interface=ui). You can then reference the fields of the data source in other resources within the same configuration using interpolation syntax.
 
 ## Example Usage
 
@@ -26,7 +26,7 @@ For Gen2 instances, the `backup_id` is an Independent Backup CRN with service na
 
 ```hcl
 data "ibm_database_backup" "database_backup" {
-  backup_id = "crn:v1:bluemix:public:databases-independent-backups:<region>:a/<account_id>:<backup_id>::"
+  backup_id = "crn:v1:bluemix:public:databases-independent-backups:<region>:a/<account_id>:<backup_uuid>::"
 }
 ```
 
@@ -43,12 +43,11 @@ Review the argument reference that you can specify for your data source.
 
   **Gen2:** The Independent Backup CRN, identifiable by the service name `databases-independent-backups`, for example:
   ```
-  crn:v1:bluemix:public:databases-independent-backups:<region>:a/<account_id>:<backup_id>::
+  crn:v1:bluemix:public:databases-independent-backups:<region>:a/<account_id>:<backup_uuid>::
   ```
   The Gen2 backup CRN can be retrieved from:
   - The `backup_id` field in the `ibm_database_backups` data source (when `deployment_id` is a Gen2 instance CRN).
   - The IBM Cloud UI under **Databases → your instance → Backups**.
-  - The IBM Cloud CLI: `ibmcloud cdb backups <instance_name_or_crn>`.
 
   **Note:** Passing a Classic (coupled) backup CRN for a Gen2 instance returns an error. Use the Independent Backup CRN instead.
 
