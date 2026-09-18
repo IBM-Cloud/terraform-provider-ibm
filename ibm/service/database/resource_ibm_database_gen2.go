@@ -956,51 +956,61 @@ func (g *resourceIBMDatabaseGen2Backend) checkUnsupportedChanges(d *schema.Resou
 	return nil
 }
 
-// buildConfigCtx fetches the current instance state and assembles an instanceConfigContext
-// for use by applyGroupScaling and applyConfigurationUpdate.
-func (g *resourceIBMDatabaseGen2Backend) buildConfigCtx(ctx context.Context, d *schema.ResourceData, rsConClient *rc.ResourceControllerV2, instanceID string, meta interface{}) (*instanceConfigContext, diag.Diagnostics) {
+// applyGroupScalingWithDiagnostics applies group scaling and returns diagnostics.
+// Wraps applyGroupScaling to provide consistent diagnostic handling.
+func (g *resourceIBMDatabaseGen2Backend) applyGroupScalingWithDiagnostics(ctx context.Context, d *schema.ResourceData, rsConClient *rc.ResourceControllerV2, instanceID string, meta interface{}) diag.Diagnostics {
+	if !d.HasChange("group") {
+		return nil
+	}
+
 	instance, _, err := rsConClient.GetResourceInstance(&rc.GetResourceInstanceOptions{
 		ID: &instanceID,
 	})
 	if err != nil {
-		return nil, diagError("error getting resource instance: %s", err)
+		return diagError("error getting resource instance: %s", err)
 	}
-	return &instanceConfigContext{
+
+	configCtx := &instanceConfigContext{
 		ctx:        ctx,
 		d:          d,
 		instanceID: instanceID,
 		meta:       meta,
 		instance:   instance,
-	}, nil
-}
+	}
 
-// applyGroupScalingWithDiagnostics applies group scaling and returns diagnostics.
-func (g *resourceIBMDatabaseGen2Backend) applyGroupScalingWithDiagnostics(ctx context.Context, d *schema.ResourceData, rsConClient *rc.ResourceControllerV2, instanceID string, meta interface{}) diag.Diagnostics {
-	if !d.HasChange("group") {
-		return nil
-	}
-	configCtx, diags := g.buildConfigCtx(ctx, d, rsConClient, instanceID, meta)
-	if len(diags) > 0 {
-		return diags
-	}
 	if err := g.applyGroupScaling(configCtx); err != nil {
 		return diagError("error applying group scaling: %s", err)
 	}
+
 	return nil
 }
 
 // applyConfigurationWithDiagnostics applies configuration updates and returns diagnostics.
+// Wraps applyConfigurationUpdate to provide consistent diagnostic handling.
 func (g *resourceIBMDatabaseGen2Backend) applyConfigurationWithDiagnostics(ctx context.Context, d *schema.ResourceData, rsConClient *rc.ResourceControllerV2, instanceID string, meta interface{}) diag.Diagnostics {
 	if !d.HasChange("configuration") {
 		return nil
 	}
-	configCtx, diags := g.buildConfigCtx(ctx, d, rsConClient, instanceID, meta)
-	if len(diags) > 0 {
-		return diags
+
+	instance, _, err := rsConClient.GetResourceInstance(&rc.GetResourceInstanceOptions{
+		ID: &instanceID,
+	})
+	if err != nil {
+		return diagError("error getting resource instance: %s", err)
 	}
+
+	configCtx := &instanceConfigContext{
+		ctx:        ctx,
+		d:          d,
+		instanceID: instanceID,
+		meta:       meta,
+		instance:   instance,
+	}
+
 	if err := g.applyConfigurationUpdate(configCtx); err != nil {
 		return diagError("error applying configuration update: %s", err)
 	}
+
 	return nil
 }
 

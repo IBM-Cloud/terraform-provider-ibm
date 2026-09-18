@@ -1002,3 +1002,33 @@ func extractGen2BackupExtensions(extensions map[string]interface{}) (sourceDataS
 	}
 	return
 }
+
+// validateMemberZones validates the member_zones constraint for a group.
+// member_zones requires exactly allocation_count=1 and exactly one zone entry.
+// Used by both buildDBConfig (apply time) and ValidateGroupsDiff (plan time).
+func validateMemberZones(group *Group, memberCount int) error {
+	if memberCount != 1 {
+		return fmt.Errorf(
+			"Invalid group configuration: member_zones requires allocation_count = 1, but %d was provided.\n"+
+				"To deploy a single member in a specific availability zone, set:\n"+
+				"  members {\n"+
+				"    allocation_count = 1\n"+
+				"    member_zones     = [\"<zone>\"]\n"+
+				"  }",
+			memberCount,
+		)
+	}
+	if len(group.MemberZones) != 1 {
+		zones := make([]string, 0, len(group.MemberZones))
+		for _, z := range group.MemberZones {
+			zones = append(zones, fmt.Sprintf("%q", z))
+		}
+		return fmt.Errorf(
+			"Invalid group configuration: member_zones must contain exactly one availability zone, but %d were provided [%s].\n"+
+				"Please specify a single availability zone.",
+			len(group.MemberZones),
+			strings.Join(zones, ", "),
+		)
+	}
+	return nil
+}
