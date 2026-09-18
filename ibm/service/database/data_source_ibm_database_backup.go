@@ -32,7 +32,10 @@ func pickDataSourceBackupBackend(d *schema.ResourceData, meta interface{}) (data
 	parts := strings.SplitN(backupID, ":", 6)
 
 	if len(parts) >= 5 && parts[4] == "databases-independent-backups" {
-		return newDataSourceIBMDatabaseBackupGen2Backend(), nil
+		// Fetch both the backup instance and its source database instance upfront
+		// so the Gen2 backend can reuse them in Read() without extra API calls.
+		backupInstance, sourceInstance := fetchInstancesForBackup(backupID, meta)
+		return newDataSourceIBMDatabaseBackupGen2Backend(backupInstance, sourceInstance), nil
 	}
 
 	// Reject coupled backups whose source instance is Gen2.
@@ -42,6 +45,36 @@ func pickDataSourceBackupBackend(d *schema.ResourceData, meta interface{}) (data
 
 	// All other backup IDs are Classic — route directly to the classic backend.
 	return newDataSourceIBMDatabaseBackupClassicBackend(), nil
+}
+
+// fetchInstancesForBackup fetches the backup resource instance and, from its
+// extensions, the source database instance. Both are returned so the Gen2
+// backend can use them in Read() without issuing any additional API calls.
+// On any failure the affected pointer is nil; callers must handle nil.
+func fetchInstancesForBackup(backupID string, meta interface{}) (backupInstance, sourceInstance *rc.ResourceInstance) {
+	rsConClient, err := meta.(conns.ClientSession).ResourceControllerV2API()
+	if err != nil {
+		return nil, nil
+	}
+
+	// Single call to fetch the backup resource instance.
+	bi, _, err := rsConClient.GetResourceInstance(&rc.GetResourceInstanceOptions{ID: &backupID})
+	if err != nil || bi == nil {
+		return nil, nil
+	}
+	backupInstance = bi
+
+	sourceDataServiceCRN, _ := extractGen2BackupExtensions(backupInstance.Extensions)
+	if sourceDataServiceCRN == "" {
+		return backupInstance, nil
+	}
+
+	// Fetch the source database instance for the S2S authorization check.
+	si, _, err := rsConClient.GetResourceInstance(&rc.GetResourceInstanceOptions{ID: &sourceDataServiceCRN})
+	if err != nil {
+		return backupInstance, nil
+	}
+	return backupInstance, si
 }
 
 // rejectCoupledBackupFromGen2Instance errors if backupID belongs to a Gen2 instance.
