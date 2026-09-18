@@ -210,3 +210,40 @@ func testAccCheckIBMISImagesDataSourceWithRemoteAccountId(remoteAccountId string
 	}
 	`, remoteAccountId)
 }
+
+func TestAccIBMISImagesDataSource_bootFirmwareSelectionMode(t *testing.T) {
+	resName := "data.ibm_is_images.test1"
+	imageName := fmt.Sprintf("tfimage-bfsm-%d", acctest.RandIntRange(10, 100))
+	instanceExpr := `boot_firmware_selection_mode=='uefi'`
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheckImage(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: checkImageDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMISImagesDSBootFirmwareConfig(imageName, instanceExpr),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet(resName, "images.0.name"),
+					resource.TestCheckResourceAttrSet(resName, "images.0.allowed_use.#"),
+					resource.TestCheckResourceAttr(resName, "images.0.allowed_use.0.instance", instanceExpr),
+				),
+			},
+		},
+	})
+}
+
+func testAccCheckIBMISImagesDSBootFirmwareConfig(imageName, instanceExpr string) string {
+	return fmt.Sprintf(`
+resource "ibm_is_image" "isExampleImage" {
+  href             = "%s"
+  name             = "%s"
+  operating_system = "%s"
+  allowed_use {
+    instance = "%s"
+  }
+}
+data "ibm_is_images" "test1" {
+  name = ibm_is_image.isExampleImage.name
+}`, acc.Image_cos_url, imageName, acc.Image_operating_system, instanceExpr)
+}

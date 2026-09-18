@@ -454,6 +454,18 @@ func ResourceIBMISInstance() *schema.Resource {
 				Computed:    true,
 				Description: "Indicates whether secure boot is enabled for this virtual server instance.If unspecified, the default secure boot mode from the profile will be used.",
 			},
+			"boot_firmware_selection_mode": &schema.Schema{
+				Type:         schema.TypeString,
+				Optional:     true,
+				Computed:     true,
+				ValidateFunc: validate.InvokeValidator("ibm_is_instance", "boot_firmware_selection_mode"),
+				Description:  "The boot firmware selection mode to use for this virtual server instance. If unspecified, the default boot firmware selection mode from the profile will be used.",
+			},
+			"boot_firmware": &schema.Schema{
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The active boot firmware for this virtual server instance. This property will be absent if the instance status is not running.",
+			},
 
 			isInstanceSourceTemplate: {
 				Type:          schema.TypeString,
@@ -2243,6 +2255,16 @@ func ResourceIBMISInstanceValidator() *validate.ResourceValidator {
 			MaxValueLength:             128,
 		},
 		validate.ValidateSchema{
+			Identifier:                 "boot_firmware_selection_mode",
+			ValidateFunctionIdentifier: validate.ValidateAllowedStringValue,
+			Type:                       validate.TypeString,
+			Optional:                   true,
+			AllowedValues:              "bios, detect, uefi",
+			Regexp:                     `^[a-z][a-z0-9]*(_[a-z0-9]+)*$`,
+			MinValueLength:             1,
+			MaxValueLength:             128,
+		},
+		validate.ValidateSchema{
 			Identifier:                 isInstanceMetadataServiceRespHopLimit,
 			ValidateFunctionIdentifier: validate.IntBetween,
 			Type:                       validate.TypeInt,
@@ -2504,6 +2526,9 @@ func instanceCreateByImage(context context.Context, d *schema.ResourceData, meta
 	}
 	if _, ok := d.GetOkExists("enable_secure_boot"); ok {
 		instanceproto.EnableSecureBoot = core.BoolPtr(d.Get("enable_secure_boot").(bool))
+	}
+	if _, ok := d.GetOk("boot_firmware_selection_mode"); ok {
+		instanceproto.BootFirmwareSelectionMode = core.StringPtr(d.Get("boot_firmware_selection_mode").(string))
 	}
 	if defaultTrustedProfileTargetIntf, ok := d.GetOk(isInstanceDefaultTrustedProfileTarget); ok {
 		defaultTrustedProfiletarget := defaultTrustedProfileTargetIntf.(string)
@@ -3106,6 +3131,9 @@ func instanceCreateByCatalogOffering(context context.Context, d *schema.Resource
 	}
 	if _, ok := d.GetOkExists("enable_secure_boot"); ok {
 		instanceproto.EnableSecureBoot = core.BoolPtr(d.Get("enable_secure_boot").(bool))
+	}
+	if _, ok := d.GetOk("boot_firmware_selection_mode"); ok {
+		instanceproto.BootFirmwareSelectionMode = core.StringPtr(d.Get("boot_firmware_selection_mode").(string))
 	}
 	var planOffering *vpcv1.CatalogOfferingVersionPlanIdentityCatalogOfferingVersionPlanByCRN
 	planOffering = nil
@@ -3719,6 +3747,9 @@ func instanceCreateByTemplate(context context.Context, d *schema.ResourceData, m
 	}
 	if _, ok := d.GetOkExists("enable_secure_boot"); ok {
 		instanceproto.EnableSecureBoot = core.BoolPtr(d.Get("enable_secure_boot").(bool))
+	}
+	if _, ok := d.GetOk("boot_firmware_selection_mode"); ok {
+		instanceproto.BootFirmwareSelectionMode = core.StringPtr(d.Get("boot_firmware_selection_mode").(string))
 	}
 	if defaultTrustedProfileTargetIntf, ok := d.GetOk(isInstanceDefaultTrustedProfileTarget); ok {
 		defaultTrustedProfiletarget := defaultTrustedProfileTargetIntf.(string)
@@ -4337,6 +4368,9 @@ func instanceCreateBySnapshot(context context.Context, d *schema.ResourceData, m
 	if _, ok := d.GetOkExists("enable_secure_boot"); ok {
 		instanceproto.EnableSecureBoot = core.BoolPtr(d.Get("enable_secure_boot").(bool))
 	}
+	if _, ok := d.GetOk("boot_firmware_selection_mode"); ok {
+		instanceproto.BootFirmwareSelectionMode = core.StringPtr(d.Get("boot_firmware_selection_mode").(string))
+	}
 	if defaultTrustedProfileTargetIntf, ok := d.GetOk(isInstanceDefaultTrustedProfileTarget); ok {
 		defaultTrustedProfiletarget := defaultTrustedProfileTargetIntf.(string)
 
@@ -4953,6 +4987,9 @@ func instanceCreateByVolume(context context.Context, d *schema.ResourceData, met
 	}
 	if _, ok := d.GetOkExists("enable_secure_boot"); ok {
 		instanceproto.EnableSecureBoot = core.BoolPtr(d.Get("enable_secure_boot").(bool))
+	}
+	if _, ok := d.GetOk("boot_firmware_selection_mode"); ok {
+		instanceproto.BootFirmwareSelectionMode = core.StringPtr(d.Get("boot_firmware_selection_mode").(string))
 	}
 	if defaultTrustedProfileTargetIntf, ok := d.GetOk(isInstanceDefaultTrustedProfileTarget); ok {
 		defaultTrustedProfiletarget := defaultTrustedProfileTargetIntf.(string)
@@ -5609,6 +5646,18 @@ func instanceGet(context context.Context, d *schema.ResourceData, meta interface
 		if err = d.Set("enable_secure_boot", instance.EnableSecureBoot); err != nil {
 			err = fmt.Errorf("Error setting enable_secure_boot: %s", err)
 			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance", "read", "set-enable_secure_boot").GetDiag()
+		}
+	}
+	if !core.IsNil(instance.BootFirmwareSelectionMode) {
+		if err = d.Set("boot_firmware_selection_mode", instance.BootFirmwareSelectionMode); err != nil {
+			err = fmt.Errorf("Error setting boot_firmware_selection_mode: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance", "read", "set-boot_firmware_selection_mode").GetDiag()
+		}
+	}
+	if !core.IsNil(instance.BootFirmware) {
+		if err = d.Set("boot_firmware", instance.BootFirmware); err != nil {
+			err = fmt.Errorf("Error setting boot_firmware: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance", "read", "set-boot_firmware").GetDiag()
 		}
 	}
 	instanceInitialization, response, err := instanceC.GetInstanceInitializationWithContext(context, getinsIniOptions)
@@ -7598,7 +7647,7 @@ func instanceUpdate(context context.Context, d *schema.ResourceData, meta interf
 
 	}
 
-	if (d.HasChange(isInstanceName) || d.HasChange("vcpu") || d.HasChange("availability") || d.HasChange("confidential_compute_mode") || d.HasChange("enable_secure_boot") || d.HasChange(isInstanceVolumeBandwidthQoSMode)) && !d.IsNewResource() {
+	if (d.HasChange(isInstanceName) || d.HasChange("vcpu") || d.HasChange("availability") || d.HasChange("confidential_compute_mode") || d.HasChange("enable_secure_boot") || d.HasChange("boot_firmware_selection_mode") || d.HasChange(isInstanceVolumeBandwidthQoSMode)) && !d.IsNewResource() {
 		restartNeeded := false
 		serverstopped := false
 		name := d.Get(isInstanceName).(string)
@@ -7628,6 +7677,10 @@ func instanceUpdate(context context.Context, d *schema.ResourceData, meta interf
 		}
 		if _, ok := d.GetOkExists("enable_secure_boot"); ok && d.HasChange("enable_secure_boot") {
 			instanceCCMPatchModel.EnableSecureBoot = core.BoolPtr(d.Get("enable_secure_boot").(bool))
+			restartNeeded = true
+		}
+		if d.HasChange("boot_firmware_selection_mode") {
+			instanceCCMPatchModel.BootFirmwareSelectionMode = core.StringPtr(d.Get("boot_firmware_selection_mode").(string))
 			restartNeeded = true
 		}
 

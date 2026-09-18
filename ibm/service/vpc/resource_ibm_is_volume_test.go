@@ -905,3 +905,48 @@ func testAccCheckIBMISVolumeConfigSnapshotCrn(vpcname, subnetname, sshname, publ
 		 }
 	`, volname, acc.ISZoneName)
 }
+
+func TestAccIBMISVolume_allowedUse_bootFirmwareSelectionMode(t *testing.T) {
+	volname := fmt.Sprintf("tf-vol-%d", acctest.RandIntRange(10, 100))
+
+	// Create: uefi only
+	instanceCreate := `boot_firmware_selection_mode=='uefi'`
+	// Update: bios only
+	instanceUpdate := `boot_firmware_selection_mode=='bios'`
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMISVolumeDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMISVolumeBootFirmwareConfig(volname, instanceCreate),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_volume.storage", "allowed_use.#"),
+					resource.TestCheckResourceAttr(
+						"ibm_is_volume.storage", "allowed_use.0.instance", instanceCreate),
+				),
+			},
+			{
+				Config: testAccCheckIBMISVolumeBootFirmwareConfig(volname, instanceUpdate),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(
+						"ibm_is_volume.storage", "allowed_use.0.instance", instanceUpdate),
+				),
+			},
+		},
+	})
+}
+
+func testAccCheckIBMISVolumeBootFirmwareConfig(volname, instanceExpr string) string {
+	return fmt.Sprintf(`
+resource "ibm_is_volume" "storage" {
+  name    = "%s"
+  profile = "general-purpose"
+  zone    = "%s"
+  allowed_use {
+    instance = "%s"
+  }
+}`, volname, acc.ISZoneName, instanceExpr)
+}

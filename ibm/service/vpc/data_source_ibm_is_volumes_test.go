@@ -263,3 +263,40 @@ func testAccCheckIBMIsVolumesWithCatalogOffering(vpcname, subnetname, sshname, p
 		volume_name = ibm_is_instance.testacc_instance.boot_volume.0.name
 	}`, vpcname, subnetname, acc.ISZoneName, sshname, publicKey, name, acc.InstanceProfileName, acc.ISZoneName, versionCrn, planCrn)
 }
+
+func TestAccIBMIsVolumesDataSource_bootFirmwareSelectionMode(t *testing.T) {
+	resName := "data.ibm_is_volumes.is_volumes"
+	volname := fmt.Sprintf("tf-vol-%d", acctest.RandIntRange(10, 100))
+	instanceExpr := `boot_firmware_selection_mode=='uefi'`
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { acc.TestAccPreCheck(t) },
+		Providers: acc.TestAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMIsVolumesDSBootFirmwareConfig(volname, instanceExpr),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet(resName, "volumes.0.allowed_use.#"),
+					resource.TestCheckResourceAttr(resName, "volumes.0.allowed_use.0.instance", instanceExpr),
+				),
+			},
+		},
+	})
+}
+
+func testAccCheckIBMIsVolumesDSBootFirmwareConfig(volname, instanceExpr string) string {
+	return fmt.Sprintf(`
+resource "ibm_is_volume" "storage" {
+  name    = "%s"
+  profile = "general-purpose"
+  zone    = "%s"
+  allowed_use {
+    instance = "%s"
+  }
+}
+
+data "ibm_is_volumes" "is_volumes" {
+  volume_name      = ibm_is_volume.storage.name
+  attachment_state = "unattached"
+}`, volname, acc.ISZoneName, instanceExpr)
+}

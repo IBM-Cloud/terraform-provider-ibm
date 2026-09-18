@@ -755,6 +755,8 @@ Review the argument references that you can specify for your resource.
 
 - `default_trusted_profile_auto_link` - (Optional, Forces new resource, Boolean) If set to `true`, the system will create a link to the specified `target` trusted profile during instance creation. Regardless of whether a link is created by the system or manually using the IAM Identity service, it will be automatically deleted when the instance is deleted. Default value : **true**
 - `default_trusted_profile_target` - (Optional, Forces new resource, String) The unique identifier or CRN of the default IAM trusted profile to use for this virtual server instance.
+- `boot_firmware_selection_mode` - (Optional, String) The boot firmware selection mode to use for this virtual server instance. Possible values are: `bios` - Basic Input/Output System (BIOS) boot firmware, `detect` - Automatically detect the appropriate boot firmware, `uefi` - Unified Extensible Firmware Interface (UEFI) boot firmware. If unspecified, the default boot firmware selection mode from the profile will be used. **Constraints: Allowable values are: `bios`, `detect`, `uefi`**
+
 - `enable_secure_boot` - (Optional, Boolean) Indicates whether secure boot is enabled for this virtual server instance.If unspecified, the default secure boot mode from the profile will be used. {Select Availability}
 
   ~>**Note:** The enable_secure_boot is `Select Availability` feature.
@@ -1035,6 +1037,8 @@ In addition to all argument reference list, you can access the following attribu
   - `name` - (String) The name of the boot volume.
   - `profile` - (String) The profile of the volume.
   - `size`- (Integer) The capacity of the volume in gigabytes.  
+- `boot_firmware` - (String) The firmware currently running on this virtual server instance. This value is only present when the instance is running.
+
 - `catalog_offering` - (List) The [catalog](https://cloud.ibm.com/docs/account?topic=account-restrict-by-user&interface=ui) offering or offering version to use when provisioning this virtual server instance. If an offering is specified, the latest version of that offering will be used. The specified offering or offering version may be in a different account in the same [enterprise](https://cloud.ibm.com/docs/account?topic=account-what-is-enterprise), subject to IAM policies.
 
   Nested scheme for `catalog_offering`:

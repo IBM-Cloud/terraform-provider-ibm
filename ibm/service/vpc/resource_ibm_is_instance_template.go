@@ -268,6 +268,14 @@ func ResourceIBMISInstanceTemplate() *schema.Resource {
 				ForceNew:    true,
 				Description: "Indicates whether secure boot is enabled for this virtual server instance.If unspecified, the default secure boot mode from the profile will be used.",
 			},
+			"boot_firmware_selection_mode": &schema.Schema{
+				Type:         schema.TypeString,
+				Optional:     true,
+				Computed:     true,
+				ForceNew:     true,
+				ValidateFunc: validate.InvokeValidator("ibm_is_instance_template", "boot_firmware_selection_mode"),
+				Description:  "The boot firmware selection mode to use for this virtual server instance. If unspecified, the default boot firmware selection mode from the profile will be used.",
+			},
 
 			isInstanceTemplateMetadataServiceEnabled: {
 				Type:          schema.TypeBool,
@@ -1434,6 +1442,16 @@ func ResourceIBMISInstanceTemplateValidator() *validate.ResourceValidator {
 			MaxValueLength:             128,
 		},
 		validate.ValidateSchema{
+			Identifier:                 "boot_firmware_selection_mode",
+			ValidateFunctionIdentifier: validate.ValidateAllowedStringValue,
+			Type:                       validate.TypeString,
+			Optional:                   true,
+			AllowedValues:              "bios, detect, uefi",
+			Regexp:                     `^[a-z][a-z0-9]*(_[a-z0-9]+)*$`,
+			MinValueLength:             1,
+			MaxValueLength:             128,
+		},
+		validate.ValidateSchema{
 			Identifier:                 isInstanceTemplateVolAttachmentName,
 			ValidateFunctionIdentifier: validate.ValidateRegexpLen,
 			Type:                       validate.TypeString,
@@ -1629,6 +1647,9 @@ func instanceTemplateCreateBySourceSnapshot(context context.Context, d *schema.R
 	}
 	if _, ok := d.GetOkExists("enable_secure_boot"); ok {
 		instanceproto.EnableSecureBoot = core.BoolPtr(d.Get("enable_secure_boot").(bool))
+	}
+	if _, ok := d.GetOk("boot_firmware_selection_mode"); ok {
+		instanceproto.BootFirmwareSelectionMode = core.StringPtr(d.Get("boot_firmware_selection_mode").(string))
 	}
 
 	metadataServiceEnabled := d.Get(isInstanceTemplateMetadataServiceEnabled).(bool)
@@ -2215,6 +2236,9 @@ func instanceTemplateCreateByCatalogOffering(context context.Context, d *schema.
 	}
 	if _, ok := d.GetOkExists("enable_secure_boot"); ok {
 		instanceproto.EnableSecureBoot = core.BoolPtr(d.Get("enable_secure_boot").(bool))
+	}
+	if _, ok := d.GetOk("boot_firmware_selection_mode"); ok {
+		instanceproto.BootFirmwareSelectionMode = core.StringPtr(d.Get("boot_firmware_selection_mode").(string))
 	}
 	var planOffering *vpcv1.CatalogOfferingVersionPlanIdentityCatalogOfferingVersionPlanByCRN
 	planOffering = nil
@@ -2810,6 +2834,9 @@ func instanceTemplateCreate(context context.Context, d *schema.ResourceData, met
 	}
 	if _, ok := d.GetOkExists("enable_secure_boot"); ok {
 		instanceproto.EnableSecureBoot = core.BoolPtr(d.Get("enable_secure_boot").(bool))
+	}
+	if _, ok := d.GetOk("boot_firmware_selection_mode"); ok {
+		instanceproto.BootFirmwareSelectionMode = core.StringPtr(d.Get("boot_firmware_selection_mode").(string))
 	}
 	metadataServiceEnabled := d.Get(isInstanceTemplateMetadataServiceEnabled).(bool)
 	if metadataServiceEnabled {
@@ -3409,6 +3436,12 @@ func instanceTemplateGet(context context.Context, d *schema.ResourceData, meta i
 				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance_template", "read", "set-enable_secure_boot").GetDiag()
 			}
 		}
+		if !core.IsNil(instanceTemplate.BootFirmwareSelectionMode) {
+			if err = d.Set("boot_firmware_selection_mode", instanceTemplate.BootFirmwareSelectionMode); err != nil {
+				err = fmt.Errorf("Error setting boot_firmware_selection_mode: %s", err)
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance_template", "read", "set-boot_firmware_selection_mode").GetDiag()
+			}
+		}
 
 		// vni if any
 		if !core.IsNil(instanceTemplate.NetworkAttachments) {
@@ -3899,6 +3932,12 @@ func instanceTemplateGet(context context.Context, d *schema.ResourceData, meta i
 			if err = d.Set("enable_secure_boot", instanceTemplate.EnableSecureBoot); err != nil {
 				err = fmt.Errorf("Error setting enable_secure_boot: %s", err)
 				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance_template", "read", "set-enable_secure_boot").GetDiag()
+			}
+		}
+		if !core.IsNil(instanceTemplate.BootFirmwareSelectionMode) {
+			if err = d.Set("boot_firmware_selection_mode", instanceTemplate.BootFirmwareSelectionMode); err != nil {
+				err = fmt.Errorf("Error setting boot_firmware_selection_mode: %s", err)
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance_template", "read", "set-boot_firmware_selection_mode").GetDiag()
 			}
 		}
 

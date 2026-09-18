@@ -225,6 +225,16 @@ func DataSourceIBMISInstance() *schema.Resource {
 				Computed:    true,
 				Description: "Indicates whether secure boot is enabled for this virtual server instance.If unspecified, the default secure boot mode from the profile will be used.",
 			},
+			"boot_firmware_selection_mode": &schema.Schema{
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The boot firmware selection mode to use for this virtual server instance.",
+			},
+			"boot_firmware": &schema.Schema{
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The active boot firmware for this virtual server instance. This property will be absent if the instance status is not running.",
+			},
 			isInstanceMetadataServiceEnabled: {
 				Type:        schema.TypeBool,
 				Computed:    true,
@@ -1642,6 +1652,16 @@ func instanceGetByName(context context.Context, d *schema.ResourceData, meta int
 
 	if err = d.Set("enable_secure_boot", instance.EnableSecureBoot); err != nil {
 		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting enable_secure_boot: %s", err), "(Data) ibm_is_instance", "read", "set-enable_secure_boot").GetDiag()
+	}
+	if !core.IsNil(instance.BootFirmwareSelectionMode) {
+		if err = d.Set("boot_firmware_selection_mode", instance.BootFirmwareSelectionMode); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting boot_firmware_selection_mode: %s", err), "(Data) ibm_is_instance", "read", "set-boot_firmware_selection_mode").GetDiag()
+		}
+	}
+	if !core.IsNil(instance.BootFirmware) {
+		if err = d.Set("boot_firmware", instance.BootFirmware); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting boot_firmware: %s", err), "(Data) ibm_is_instance", "read", "set-boot_firmware").GetDiag()
+		}
 	}
 	if instance.NetworkInterfaces != nil {
 		interfacesList := make([]map[string]interface{}, 0)

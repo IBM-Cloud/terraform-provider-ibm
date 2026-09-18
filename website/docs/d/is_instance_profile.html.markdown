@@ -76,6 +76,15 @@ In addition to the argument reference list, you can access the following attribu
 	- `type` - (String) The type for this profile field.
 	- `values` - (List) The supported confidential compute modes.
 
+
+- `supported_boot_firmware` - (List) The supported boot firmware for this profile.
+
+  Nested schema for **supported_boot_firmware**:
+	- `default` - (String) The default boot firmware for this profile.
+	- `type` - (String) The type for this profile field.
+	- `values` - (List) The supported boot firmware values for this profile.
+
+
 - `total_volume_bandwidth`  Nested `total_volume_bandwidth` blocks have the following structure:
   - `type` - The type for this profile field.
   - `value` - The value for this profile field.

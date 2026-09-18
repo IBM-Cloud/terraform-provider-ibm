@@ -584,3 +584,49 @@ func testAccCheckIBMISImagePartialAvailableConfig(ssh string) string {
 
 	`, acc.IsImageName, acc.Image_cos_url, acc.Image_operating_system, ssh)
 }
+func TestAccIBMISImage_allowedUse_bootFirmwareSelectionMode(t *testing.T) {
+	name := fmt.Sprintf("tfimg-bfsm-%d", acctest.RandIntRange(10, 100))
+
+	// Create: restrict to uefi only
+	instanceCreate := `boot_firmware_selection_mode=='uefi'`
+	// Update: change to bios only — tests that the expression can be updated
+	instanceUpdate := `boot_firmware_selection_mode=='bios'`
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheckImage(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: checkImageDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMISImageBootFirmwareConfig(name, instanceCreate),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(
+						"ibm_is_image.isExampleImage", "name", name),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_image.isExampleImage", "allowed_use.#"),
+					resource.TestCheckResourceAttr(
+						"ibm_is_image.isExampleImage", "allowed_use.0.instance", instanceCreate),
+				),
+			},
+			{
+				Config: testAccCheckIBMISImageBootFirmwareConfig(name, instanceUpdate),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(
+						"ibm_is_image.isExampleImage", "allowed_use.0.instance", instanceUpdate),
+				),
+			},
+		},
+	})
+}
+
+func testAccCheckIBMISImageBootFirmwareConfig(name, instanceExpr string) string {
+	return fmt.Sprintf(`
+resource "ibm_is_image" "isExampleImage" {
+  href             = "%s"
+  name             = "%s"
+  operating_system = "%s"
+  allowed_use {
+    instance = "%s"
+  }
+}`, acc.Image_cos_url, name, acc.Image_operating_system, instanceExpr)
+}

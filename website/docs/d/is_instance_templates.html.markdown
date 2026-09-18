@@ -93,6 +93,8 @@ You can access the following attribute references after your data source is crea
 				- `id` - (String) The unique identifier for this cluster network subnet.
 		- `name` - (String) The name for this cluster network attachment. Names must be unique within the instance the cluster network attachment resides in. If unspecified, the name will be a hyphenated list of randomly-selected words. Names starting with `ibm-` are reserved for provider-owned resources, and are not allowed.
 
+	- `boot_firmware_selection_mode` - (String) The boot firmware selection mode to use for this virtual server instance. If unspecified, the default boot firmware selection mode from the profile will be used.
+
 	- `confidential_compute_mode` - (String) The confidential compute mode to use for this virtual server instance.If unspecified, the default confidential compute mode from the profile will be used.
 	- `catalog_offering` - (List) The [catalog](https://cloud.ibm.com/docs/account?topic=account-restrict-by-user&interface=ui) offering or offering version to use when provisioning this virtual server instance. If an offering is specified, the latest version of that offering will be used. The specified offering or offering version may be in a different account in the same [enterprise](https://cloud.ibm.com/docs/account?topic=account-what-is-enterprise), subject to IAM policies.
 

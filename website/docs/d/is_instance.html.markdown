@@ -154,6 +154,10 @@ In addition to all argument reference list, you can access the following attribu
 	- `name` - (String) The name for this instance cluster network attachment. The name is unique across all network attachments for the instance.
 	- `resource_type` - (String) The resource type.
 
+- `boot_firmware` - (String) The active boot firmware for this virtual server instance. This property will be absent if the instance status is not running.
+
+- `boot_firmware_selection_mode` - (String) The boot firmware selection mode for this virtual server instance.
+
 - `confidential_compute_mode` - (String) The confidential compute mode to use for this virtual server instance.If unspecified, the default confidential compute mode from the profile will be used. 
 - `crn` - (String) The CRN of the instance.
 - `disks` - (List) Collection of the instance's disks. Nested `disks` blocks has the following structure:

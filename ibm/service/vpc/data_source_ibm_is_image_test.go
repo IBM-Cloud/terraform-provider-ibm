@@ -325,3 +325,39 @@ func testAccCheckIBMISImageDataSourceWithRemoteAccountId() string {
   		name = "ibm-ubuntu-18-04-1-minimal-amd64-1"
 	}`)
 }
+
+func TestAccIBMISImageDataSource_bootFirmwareSelectionMode(t *testing.T) {
+	resName := "data.ibm_is_image.test1"
+	imageName := fmt.Sprintf("tfimage-bfsm-%d", acctest.RandIntRange(10, 100))
+	instanceExpr := `boot_firmware_selection_mode=='uefi'`
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheckImage(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: checkImageDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMISImageDSBootFirmwareConfig(imageName, instanceExpr),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet(resName, "allowed_use.#"),
+					resource.TestCheckResourceAttr(resName, "allowed_use.0.instance", instanceExpr),
+				),
+			},
+		},
+	})
+}
+
+func testAccCheckIBMISImageDSBootFirmwareConfig(imageName, instanceExpr string) string {
+	return fmt.Sprintf(`
+resource "ibm_is_image" "isExampleImage" {
+  href             = "%s"
+  name             = "%s"
+  operating_system = "%s"
+  allowed_use {
+    instance = "%s"
+  }
+}
+data "ibm_is_image" "test1" {
+  name = ibm_is_image.isExampleImage.name
+}`, acc.Image_cos_url, imageName, acc.Image_operating_system, instanceExpr)
+}

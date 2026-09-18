@@ -164,6 +164,34 @@ func DataSourceIBMISInstanceProfiles() *schema.Resource {
 							},
 						},
 
+						"supported_boot_firmware": &schema.Schema{
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "The supported boot firmware for this profile.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"default": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The default boot firmware for this profile.",
+									},
+									"type": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The type for this profile field.",
+									},
+									"values": &schema.Schema{
+										Type:        schema.TypeList,
+										Computed:    true,
+										Description: "The supported boot firmware values for this profile.",
+										Elem: &schema.Schema{
+											Type: schema.TypeString,
+										},
+									},
+								},
+							},
+						},
+
 						"secure_boot_modes": &schema.Schema{
 							Type:     schema.TypeList,
 							Computed: true,
@@ -1082,6 +1110,16 @@ func instanceProfilesList(context context.Context, d *schema.ResourceData, meta 
 			secureBootModes = append(secureBootModes, modelMap)
 		}
 		l["secure_boot_modes"] = secureBootModes
+
+		supportedBootFirmware := []map[string]interface{}{}
+		if profile.SupportedBootFirmware != nil {
+			modelMap, err := dataSourceIBMIsInstanceProfileSupportedBootFirmwareToMap(profile.SupportedBootFirmware)
+			if err != nil {
+				return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_instance_profiles", "read", "supported_boot_firmware-to-map").GetDiag()
+			}
+			supportedBootFirmware = append(supportedBootFirmware, modelMap)
+		}
+		l["supported_boot_firmware"] = supportedBootFirmware
 
 		if profile.Memory != nil {
 			memoryList := []map[string]interface{}{}

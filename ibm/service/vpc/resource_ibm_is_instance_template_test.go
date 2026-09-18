@@ -1761,3 +1761,67 @@ func testAccCheckIBMISInstanceTemplateConfigAvailabilityPolicy_Default(vpcName, 
 		keys      = [ibm_is_ssh_key.testacc_sshkey.id]
 	}`, vpcName, subnetName, acc.ISZoneName, acc.ISCIDR, sshKeyName, publicKey, templateName, acc.IsImage, acc.ISInstanceGPUProfileName, acc.ISZoneName)
 }
+
+func TestAccIBMISInstanceTemplate_bootFirmwareSelectionMode(t *testing.T) {
+	randInt := acctest.RandIntRange(10, 100)
+
+	publicKey := strings.TrimSpace(`
+	ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQDVtuCfWKVGKaRmaRG6JQZY8YdxnDgGzVOK93IrV9R5Hl0JP1oiLLWlZQS2reAKb8lBqyDVEREpaoRUDjqDqXG8J/kR42FKN51su914pjSBc86wJ02VtT1Wm1zRbSg67kT+g8/T1jCgB5XBODqbcICHVP8Z1lXkgbiHLwlUrbz6OZkGJHo/M/kD1Eme8lctceIYNz/Ilm7ewMXZA4fsidpto9AjyarrJLufrOBl4MRVcZTDSJ7rLP982aHpu9pi5eJAjOZc7Og7n4ns3NFppiCwgVMCVUQbN5GBlWhZ1OsT84ZiTf+Zy8ew+Yg5T7Il8HuC7loWnz+esQPf0s3xhC/kTsGgZreIDoh/rxJfD67wKXetNSh5RH/n5BqjaOuXPFeNXmMhKlhj9nJ8scayx/wsvOGuocEIkbyJSLj3sLUU403OafgatEdnJOwbqg6rUNNF5RIjpJpL7eEWlKIi1j9LyhmPJ+fEO7TmOES82VpCMHpLbe4gf/MhhJ/Xy8DKh9s= root@ffd8363b1226
+	`)
+	vpcName := fmt.Sprintf("tf-testvpc%d", randInt)
+	subnetName := fmt.Sprintf("tf-testsubnet%d", randInt)
+	templateName := fmt.Sprintf("tf-testtemplate%d", randInt)
+	sshKeyName := fmt.Sprintf("tf-testsshkey%d", randInt)
+	bfsm := "uefi"
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMISInstanceTemplateDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMISInstanceTemplateBootFirmwareConfig(vpcName, subnetName, sshKeyName, publicKey, templateName, bfsm),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(
+						"ibm_is_instance_template.instancetemplate1", "name", templateName),
+					resource.TestCheckResourceAttr(
+						"ibm_is_instance_template.instancetemplate1", "boot_firmware_selection_mode", bfsm),
+				),
+			},
+		},
+	})
+}
+
+func testAccCheckIBMISInstanceTemplateBootFirmwareConfig(vpcName, subnetName, sshKeyName, publicKey, templateName, bfsm string) string {
+	return fmt.Sprintf(`
+	resource "ibm_is_vpc" "vpc2" {
+	  name = "%s"
+	}
+
+	resource "ibm_is_subnet" "subnet2" {
+	  name            = "%s"
+	  vpc             = ibm_is_vpc.vpc2.id
+	  zone            = "%s"
+	  ipv4_cidr_block = "%s"
+	}
+
+	resource "ibm_is_ssh_key" "sshkey" {
+	  name       = "%s"
+	  public_key = "%s"
+	}
+
+	resource "ibm_is_instance_template" "instancetemplate1" {
+	  name                         = "%s"
+	  image                        = "%s"
+	  profile                      = "%s"
+	  boot_firmware_selection_mode = "%s"
+
+	  primary_network_interface {
+	    subnet = ibm_is_subnet.subnet2.id
+	  }
+
+	  vpc  = ibm_is_vpc.vpc2.id
+	  zone = "%s"
+	  keys = [ibm_is_ssh_key.sshkey.id]
+	}
+	`, vpcName, subnetName, acc.ISZoneName, acc.ISCIDR, sshKeyName, publicKey, templateName, acc.IsImage, acc.InstanceProfileName, bfsm, acc.ISZoneName)
+}

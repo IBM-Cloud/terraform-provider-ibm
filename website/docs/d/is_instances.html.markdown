@@ -106,6 +106,10 @@ In addition to all argument reference list, you can access the following attribu
 		- `resource_type` - (String) The resource type.
 
 
+	- `boot_firmware` - (String) The active boot firmware for this virtual server instance. This property will be absent if the instance status is not running.
+
+	- `boot_firmware_selection_mode` - (String) The boot firmware selection mode to use for this virtual server instance. Possible values are: `bios` - Basic Input/Output System (BIOS) boot firmware, `detect` - Automatically detect the appropriate boot firmware, `uefi` - Unified Extensible Firmware Interface (UEFI) boot firmware. If unspecified, the default boot firmware selection mode from the profile will be used.
+
 	- `confidential_compute_mode` - (String) The confidential compute mode to use for this virtual server instance.If unspecified, the default confidential compute mode from the profile will be used.
 	- `crn` - (String) The CRN of the instance.
 	- `disks` - (List) Collection of the instance's disks. Nested `disks` blocks has the following structure:

@@ -5018,3 +5018,127 @@ func testAccCheckIBMISInstanceConfigWithAvailabilityPolicy_Updated(vpcname, subn
 		keys = [ibm_is_ssh_key.testacc_sshkey.id]
 	  }`, vpcname, subnetname, acc.ISZoneName, acc.ISCIDR, sshname, publicKey, name, acc.IsImage, acc.InstanceProfileName, acc.ISZoneName)
 }
+
+// TestAccIBMISInstance_BootFirmwareSelectionMode_create verifies that
+// boot_firmware_selection_mode is accepted on create and reflected in state,
+// and that boot_firmware_selection_mode is always set (required field from API).
+func TestAccIBMISInstance_BootFirmwareSelectionMode_create(t *testing.T) {
+	var instance string
+	vpcname := fmt.Sprintf("tf-vpc-%d", acctest.RandIntRange(10, 100))
+	name := fmt.Sprintf("tf-instance-%d", acctest.RandIntRange(10, 100))
+	subnetname := fmt.Sprintf("tf-subnet-%d", acctest.RandIntRange(10, 100))
+	sshname := fmt.Sprintf("tf-ssh-%d", acctest.RandIntRange(10, 100))
+	publicKey := strings.TrimSpace(`
+ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVERRN7/9484SOBJ3HSKxxNG5JN8owAjy5f9yYwcUg+JaUVuytn5Pv3aeYROHGGg+5G346xaq3DAwX6Y5ykr2fvjObgncQBnuU5KHWCECO/4h8uWuwh/kfniXPVjFToc+gnkqA+3RKpAecZhFXwfalQ9mMuYGFxn+fwn8cYEApsJbsEmb0iJwPiZ5hjFC8wREuiTlhPHDgkBLOiycd20op2nXzDbHfCHInquEe/gYxEitALONxm0swBOwJZwlTDOB7C6y2dzlrtxr1L59m7pCkWI4EtTRLvleehBoj3u7jB4usR
+`)
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMISInstanceDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMISInstanceBootFirmwareConfig(vpcname, subnetname, sshname, publicKey, name, "uefi"),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISInstanceExists("ibm_is_instance.testacc_instance", instance),
+					resource.TestCheckResourceAttr(
+						"ibm_is_instance.testacc_instance", "name", name),
+					resource.TestCheckResourceAttr(
+						"ibm_is_instance.testacc_instance", "boot_firmware_selection_mode", "uefi"),
+					// boot_firmware is set only when the instance is running; verify the attr exists in state
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_instance.testacc_instance", "boot_firmware"),
+				),
+			},
+		},
+	})
+}
+
+// TestAccIBMISInstance_BootFirmwareSelectionMode_update verifies that
+// boot_firmware_selection_mode can be changed via PATCH (requires stop first).
+// Pattern mirrors TestAccIBMISInstanceSGXtoTDX_basic.
+func TestAccIBMISInstance_BootFirmwareSelectionMode_update(t *testing.T) {
+	var instance string
+	vpcname := fmt.Sprintf("tf-vpc-%d", acctest.RandIntRange(10, 100))
+	name := fmt.Sprintf("tf-instance-%d", acctest.RandIntRange(10, 100))
+	subnetname := fmt.Sprintf("tf-subnet-%d", acctest.RandIntRange(10, 100))
+	sshname := fmt.Sprintf("tf-ssh-%d", acctest.RandIntRange(10, 100))
+	publicKey := strings.TrimSpace(`
+ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVERRN7/9484SOBJ3HSKxxNG5JN8owAjy5f9yYwcUg+JaUVuytn5Pv3aeYROHGGg+5G346xaq3DAwX6Y5ykr2fvjObgncQBnuU5KHWCECO/4h8uWuwh/kfniXPVjFToc+gnkqA+3RKpAecZhFXwfalQ9mMuYGFxn+fwn8cYEApsJbsEmb0iJwPiZ5hjFC8wREuiTlhPHDgkBLOiycd20op2nXzDbHfCHInquEe/gYxEitALONxm0swBOwJZwlTDOB7C6y2dzlrtxr1L59m7pCkWI4EtTRLvleehBoj3u7jB4usR
+`)
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMISInstanceDestroy,
+		Steps: []resource.TestStep{
+			// Step 1: create with uefi
+			{
+				Config: testAccCheckIBMISInstanceBootFirmwareConfig(vpcname, subnetname, sshname, publicKey, name, "uefi"),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISInstanceExists("ibm_is_instance.testacc_instance", instance),
+					resource.TestCheckResourceAttr(
+						"ibm_is_instance.testacc_instance", "boot_firmware_selection_mode", "uefi"),
+				),
+			},
+			// Step 2: stop the instance before patching (API requires stopped state)
+			{
+				Config: testAccCheckIBMISInstanceBootFirmwareActionStopConfig(vpcname, subnetname, sshname, publicKey, name, "uefi"),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(
+						"ibm_is_instance_action.testacc_instanceaction", "action", "stop"),
+				),
+			},
+			// Step 3: patch to bios while stopped
+			{
+				Config: testAccCheckIBMISInstanceBootFirmwareConfig(vpcname, subnetname, sshname, publicKey, name, "bios"),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISInstanceExists("ibm_is_instance.testacc_instance", instance),
+					resource.TestCheckResourceAttr(
+						"ibm_is_instance.testacc_instance", "boot_firmware_selection_mode", "bios"),
+				),
+			},
+		},
+	})
+}
+
+func testAccCheckIBMISInstanceBootFirmwareConfig(vpcname, subnetname, sshname, publicKey, name, bootFirmwareSelectionMode string) string {
+	return fmt.Sprintf(`
+	resource "ibm_is_vpc" "testacc_vpc" {
+		name = "%s"
+	}
+
+	resource "ibm_is_subnet" "testacc_subnet" {
+		name            = "%s"
+		vpc             = ibm_is_vpc.testacc_vpc.id
+		zone            = "%s"
+		ipv4_cidr_block = "%s"
+	}
+
+	resource "ibm_is_ssh_key" "testacc_sshkey" {
+		name       = "%s"
+		public_key = "%s"
+	}
+
+	resource "ibm_is_instance" "testacc_instance" {
+		name                         = "%s"
+		image                        = "%s"
+		profile                      = "%s"
+		boot_firmware_selection_mode = "%s"
+		primary_network_interface {
+			subnet = ibm_is_subnet.testacc_subnet.id
+		}
+		vpc  = ibm_is_vpc.testacc_vpc.id
+		zone = "%s"
+		keys = [ibm_is_ssh_key.testacc_sshkey.id]
+	}`, vpcname, subnetname, acc.ISZoneName, acc.ISCIDR, sshname, publicKey, name, acc.IsImage, acc.InstanceProfileName, bootFirmwareSelectionMode, acc.ISZoneName)
+}
+
+func testAccCheckIBMISInstanceBootFirmwareActionStopConfig(vpcname, subnetname, sshname, publicKey, name, bootFirmwareSelectionMode string) string {
+	return testAccCheckIBMISInstanceBootFirmwareConfig(vpcname, subnetname, sshname, publicKey, name, bootFirmwareSelectionMode) + `
+	resource "ibm_is_instance_action" "testacc_instanceaction" {
+		depends_on = [ibm_is_instance.testacc_instance]
+		action     = "stop"
+		instance   = ibm_is_instance.testacc_instance.id
+	}`
+}

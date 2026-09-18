@@ -157,6 +157,34 @@ func DataSourceIBMISInstanceProfile() *schema.Resource {
 				},
 			},
 
+			"supported_boot_firmware": &schema.Schema{
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "The supported boot firmware for this profile.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"default": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The default boot firmware for this profile.",
+						},
+						"type": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The type for this profile field.",
+						},
+						"values": &schema.Schema{
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "The supported boot firmware values for this profile.",
+							Elem: &schema.Schema{
+								Type: schema.TypeString,
+							},
+						},
+					},
+				},
+			},
+
 			"secure_boot_modes": &schema.Schema{
 				Type:     schema.TypeList,
 				Computed: true,
@@ -1052,6 +1080,18 @@ func instanceProfileGet(context context.Context, d *schema.ResourceData, meta in
 		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting secure_boot_modes: %s", err), "(Data) ibm_is_instance_profile", "read", "set-secure_boot_modes").GetDiag()
 	}
 
+	supportedBootFirmware := []map[string]interface{}{}
+	if profile.SupportedBootFirmware != nil {
+		modelMap, err := dataSourceIBMIsInstanceProfileSupportedBootFirmwareToMap(profile.SupportedBootFirmware)
+		if err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_instance_profile", "read", "supported_boot_firmware-to-map").GetDiag()
+		}
+		supportedBootFirmware = append(supportedBootFirmware, modelMap)
+	}
+	if err = d.Set("supported_boot_firmware", supportedBootFirmware); err != nil {
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting supported_boot_firmware: %s", err), "(Data) ibm_is_instance_profile", "read", "set-supported_boot_firmware").GetDiag()
+	}
+
 	if profile.Bandwidth != nil {
 		err = d.Set("bandwidth", dataSourceInstanceProfileFlattenBandwidth(*profile.Bandwidth.(*vpcv1.InstanceProfileBandwidth)))
 		if err != nil {
@@ -1783,6 +1823,13 @@ func dataSourceIBMIsInstanceProfileInstanceProfileSupportedSecureBootModesToMap(
 func dataSourceIBMIsInstanceProfileInstanceProfileSupportedConfidentialComputeModesToMap(model *vpcv1.InstanceProfileSupportedConfidentialComputeModes) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	modelMap["default"] = model.Default
+	modelMap["type"] = model.Type
+	modelMap["values"] = model.Values
+	return modelMap, nil
+}
+
+func dataSourceIBMIsInstanceProfileSupportedBootFirmwareToMap(model *vpcv1.InstanceProfileSupportedBootFirmware) (map[string]interface{}, error) {
+	modelMap := make(map[string]interface{})
 	modelMap["type"] = model.Type
 	modelMap["values"] = model.Values
 	return modelMap, nil

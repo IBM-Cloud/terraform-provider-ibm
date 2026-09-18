@@ -250,6 +250,16 @@ func DataSourceIBMISInstances() *schema.Resource {
 							Computed:    true,
 							Description: "Indicates whether secure boot is enabled for this virtual server instance.If unspecified, the default secure boot mode from the profile will be used.",
 						},
+						"boot_firmware_selection_mode": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The boot firmware selection mode to use for this virtual server instance. If unspecified, the default boot firmware selection mode from the profile will be used.",
+						},
+						"boot_firmware": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The active boot firmware for this virtual server instance. This property will be absent if the instance status is not running.",
+						},
 						"memory": {
 							Type:        schema.TypeInt,
 							Computed:    true,
@@ -1543,6 +1553,10 @@ func instancesList(context context.Context, d *schema.ResourceData, meta interfa
 		l["confidential_compute_mode"] = instance.ConfidentialComputeMode
 
 		l["enable_secure_boot"] = instance.EnableSecureBoot
+		l["boot_firmware_selection_mode"] = instance.BootFirmwareSelectionMode
+		if instance.BootFirmware != nil {
+			l["boot_firmware"] = instance.BootFirmware
+		}
 		if instance.MetadataService != nil {
 			l[isInstanceMetadataServiceEnabled] = *instance.MetadataService.Enabled
 			metadataService := []map[string]interface{}{}

@@ -217,6 +217,11 @@ func DataSourceIBMISInstanceTemplate() *schema.Resource {
 				Computed:    true,
 				Description: "Indicates whether secure boot is enabled for this virtual server instance.If unspecified, the default secure boot mode from the profile will be used.",
 			},
+			"boot_firmware_selection_mode": &schema.Schema{
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The boot firmware selection mode to use for this virtual server instance. If unspecified, the default boot firmware selection mode from the profile will be used.",
+			},
 			isInstanceTemplateHref: {
 				Type:     schema.TypeString,
 				Computed: true,
@@ -1164,6 +1169,11 @@ func dataSourceIBMISInstanceTemplateRead(context context.Context, d *schema.Reso
 			if err = d.Set("enable_secure_boot", instanceTemplate.EnableSecureBoot); err != nil {
 				return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting enable_secure_boot: %s", err), "(Data) ibm_is_instance_template", "read", "set-enable_secure_boot").GetDiag()
 			}
+			if !core.IsNil(instanceTemplate.BootFirmwareSelectionMode) {
+				if err = d.Set("boot_firmware_selection_mode", instanceTemplate.BootFirmwareSelectionMode); err != nil {
+					return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting boot_firmware_selection_mode: %s", err), "(Data) ibm_is_instance_template", "read", "set-boot_firmware_selection_mode").GetDiag()
+				}
+			}
 			if instanceTemplate.DefaultTrustedProfile != nil {
 				if instanceTemplate.DefaultTrustedProfile.AutoLink != nil {
 					if err = d.Set(isInstanceDefaultTrustedProfileAutoLink, instanceTemplate.DefaultTrustedProfile.AutoLink); err != nil {
@@ -1645,6 +1655,11 @@ func dataSourceIBMISInstanceTemplateRead(context context.Context, d *schema.Reso
 			if err = d.Set("enable_secure_boot", instanceTemplate.EnableSecureBoot); err != nil {
 				return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting enable_secure_boot: %s", err), "(Data) ibm_is_instance_template", "read", "set-enable_secure_boot").GetDiag()
 			}
+			if !core.IsNil(instanceTemplate.BootFirmwareSelectionMode) {
+				if err = d.Set("boot_firmware_selection_mode", instanceTemplate.BootFirmwareSelectionMode); err != nil {
+					return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting boot_firmware_selection_mode: %s", err), "(Data) ibm_is_instance_template", "read", "set-boot_firmware_selection_mode").GetDiag()
+				}
+			}
 			if instanceTemplate.DefaultTrustedProfile != nil {
 				if instanceTemplate.DefaultTrustedProfile.AutoLink != nil {
 					if err = d.Set(isInstanceDefaultTrustedProfileAutoLink, instanceTemplate.DefaultTrustedProfile.AutoLink); err != nil {
@@ -2088,6 +2103,11 @@ func dataSourceIBMISInstanceTemplateRead(context context.Context, d *schema.Reso
 					}
 					if err = d.Set("enable_secure_boot", instanceTemplate.EnableSecureBoot); err != nil {
 						return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting enable_secure_boot: %s", err), "(Data) ibm_is_instance_template", "read", "set-enable_secure_boot").GetDiag()
+					}
+					if !core.IsNil(instanceTemplate.BootFirmwareSelectionMode) {
+						if err = d.Set("boot_firmware_selection_mode", instanceTemplate.BootFirmwareSelectionMode); err != nil {
+							return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting boot_firmware_selection_mode: %s", err), "(Data) ibm_is_instance_template", "read", "set-boot_firmware_selection_mode").GetDiag()
+						}
 					}
 					// cluster changes
 					if !core.IsNil(instanceTemplate.ClusterNetworkAttachments) {
@@ -2535,6 +2555,11 @@ func dataSourceIBMISInstanceTemplateRead(context context.Context, d *schema.Reso
 					}
 					if err = d.Set("enable_secure_boot", instanceTemplate.EnableSecureBoot); err != nil {
 						return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting enable_secure_boot: %s", err), "(Data) ibm_is_instance_template", "read", "set-enable_secure_boot").GetDiag()
+					}
+					if !core.IsNil(instanceTemplate.BootFirmwareSelectionMode) {
+						if err = d.Set("boot_firmware_selection_mode", instanceTemplate.BootFirmwareSelectionMode); err != nil {
+							return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting boot_firmware_selection_mode: %s", err), "(Data) ibm_is_instance_template", "read", "set-boot_firmware_selection_mode").GetDiag()
+						}
 					}
 					// cluster changes
 					if !core.IsNil(instanceTemplate.ClusterNetworkAttachments) {
