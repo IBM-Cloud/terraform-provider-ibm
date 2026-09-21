@@ -54,7 +54,7 @@ func ResourceIBMPISharedProcessorPool() *schema.Resource {
 				Type:        schema.TypeString,
 			},
 			Arg_SharedProcessorPoolHostGroup: {
-				Description: "Host group of the shared processor pool. Valid values are 'e980', 'e1080', 'e1180', 's922', 's1022' and 's1122'.",
+				Description: "Host group of the shared processor pool.",
 				ForceNew:    true,
 				Required:    true,
 				Type:        schema.TypeString,

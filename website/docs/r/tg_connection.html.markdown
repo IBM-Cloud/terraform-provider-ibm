@@ -1,3 +1,4 @@
+---
 
 subcategory: "Transit Gateway"
 layout: "ibm"
@@ -121,4 +122,4 @@ The `ibm_tg_connection` resource can be imported by using transit gateway ID and
 $ terraform import ibm_tg_connection.example 5ffda12064634723b079acdb018ef308/cea6651a-bd0a-4438-9f8a-a0770bbf3ebb
 
 ```
----
+---website/docs/r/tg_connection_tunnel.html.markdown

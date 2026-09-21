@@ -2347,7 +2347,7 @@ func bareMetalServerGet(context context.Context, d *schema.ResourceData, meta in
 				usageConstraintList := []map[string]interface{}{}
 				modelMap, err := ResourceceIBMIsBareMetalServerDiskAllowedUseToMap(disk.AllowedUse)
 				if err != nil {
-					tfErr := flex.TerraformErrorf(err, err.Error(), "(Resource) ibm_is_bare_metal_server", "read")
+					tfErr := flex.TerraformErrorf(err, err.Error(), "ibm_is_bare_metal_server", "read")
 					log.Println(tfErr.GetDiag())
 				}
 				usageConstraintList = append(usageConstraintList, modelMap)

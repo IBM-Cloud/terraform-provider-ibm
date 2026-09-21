@@ -66,7 +66,7 @@ func ResourceIBMPIVolumeOnboarding() *schema.Resource {
 							Type:     schema.TypeList,
 						},
 						Arg_SourceCRN: {
-							Description: "The crn of source service broker instance from where auxiliary volumes need to be onboarded.",
+							Description: "The CRN of the workspace in which the primary volume is located.",
 							Required:    true,
 							Type:        schema.TypeString,
 						},

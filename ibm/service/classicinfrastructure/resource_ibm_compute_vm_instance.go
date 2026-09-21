@@ -1927,9 +1927,9 @@ func addAccessToStorageList(sam storageAccessModifier, deviceID int, ids storage
 				time.Sleep(retryDelayForModifyingStorageAccess)
 				continue
 			}
-			return fmt.Errorf("[ERROR] Could  not authorize Device %d, access to the following storages %q, %q", deviceID, ids, err)
+			return fmt.Errorf("[ERROR] Could  not authorize Device %d, access to the following storages %v, %q", deviceID, ids, err)
 		}
-		log.Printf("[INFO] Device authorized to access %q", ids)
+		log.Printf("[INFO] Device authorized to access %v", ids)
 		break
 	}
 	return nil
@@ -1948,9 +1948,9 @@ func removeAccessToStorageList(sam storageAccessModifier, deviceID int, ids stor
 				time.Sleep(retryDelayForModifyingStorageAccess)
 				continue
 			}
-			return fmt.Errorf("[ERROR] Could  not remove Device %d, access to the following storages %q, %q", deviceID, ids, err)
+			return fmt.Errorf("[ERROR] Could  not remove Device %d, access to the following storages %v, %q", deviceID, ids, err)
 		}
-		log.Printf("[INFO] Devices's access to %q have been removed", ids)
+		log.Printf("[INFO] Devices's access to %v have been removed", ids)
 		break
 	}
 	return nil

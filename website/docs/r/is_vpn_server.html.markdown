@@ -55,15 +55,15 @@ Review the argument references that you can specify for your resource.
 - `client_authentication` - (Required, List) The methods used to authenticate VPN clients to this VPN server.
   
   Nested scheme for **client_authentication**:
-	- `method` - (Required, String) The type of authentication.
-	  - Constraints: Allowable values are: certificate, username
-    
-   -> **NOTE:** 
-      `identity_provider` and `client_ca_crn` are mutually exclusive, which means either one must be provided. When `method` has `certificate` as value `client_ca_crn` must be provided and when `method` has `username` as value `identity_provider` must be provided.
+  - `method` - (Required, String) The type of authentication.
+    - Constraints: Allowable values are: certificate, username
 
-	- `identity_provider` - (Required, String) The type of identity provider to be used by VPN client.The type of identity provider to be used by the VPN client.- `iam`: IBM identity and access management The enumerated values for this property are expected to expand in the future. When processing this property, check for and log unknown values. Optionally halt processing and surface the error, or bypass the route on which the unexpected property value was encountered.
-		  - Constraints: Allowable values are: iam
-	- `client_ca_crn` - (Required, String)  The CRN of the certificate instance or CRN of the secret from secrets manager to use for the VPN client certificate authority (CA). As the usage of certificate CRN from Certificate Manager is getting deprecated, It is recommended to use Secret manger for same.
+  -> **NOTE:**
+     `identity_provider` and `client_ca_crn` are mutually exclusive, which means either one must be provided. When `method` has `certificate` as value `client_ca_crn` must be provided and when `method` has `username` as value `identity_provider` must be provided.
+
+  - `identity_provider` - (Required, String) The type of identity provider to be used by VPN client.The type of identity provider to be used by the VPN client.- `iam`: IBM identity and access management The enumerated values for this property are expected to expand in the future. When processing this property, check for and log unknown values. Optionally halt processing and surface the error, or bypass the route on which the unexpected property value was encountered.
+    - Constraints: Allowable values are: iam
+  - `client_ca_crn` - (Required, String)  The CRN of the certificate instance or CRN of the secret from secrets manager to use for the VPN client certificate authority (CA). As the usage of certificate CRN from Certificate Manager is getting deprecated, It is recommended to use Secret manger for same.
 - `client_dns_server_ips` - (Optional, List) The IP address. This property may add support for IPv6 addresses in the future. When processing a value in this property, verify that the address is in an expected format. If it is not, log an error. Optionally halt processing and surface the error, or bypass the resource on which the unexpected IP address format was encountered, the DNS server addresses that will be provided to VPN clients connected to this VPN server.
 - `client_idle_timeout` - (Optional, Integer) The seconds a VPN client can be idle before this VPN server will disconnect it.   Specify `0` to prevent the server from disconnecting idle clients.
   - Constraints: The maximum value is `28800`. The minimum value is `0`, default is `600`.
@@ -116,14 +116,15 @@ In addition to all argument references listed, you can access the following attr
 - `private_ips` - (List) The reserved IPs bound to this VPN server.
 
   Nested scheme for `private_ips`:
-    - `address` - (String) The IP address. This property may add support for IPv6 addresses in the future. When processing a value in this property, verify that the address is in an expected format. If it is not, log an error. Optionally halt processing and surface the error, or bypass the resource on which the unexpected IP address format was encountered.
-    - `deleted` - (Optional, List) If present, this property indicates the referenced resource has been deleted and providessome supplementary information.
+  - `address` - (String) The IP address. This property may add support for IPv6 addresses in the future. When processing a value in this property, verify that the address is in an expected format. If it is not, log an error. Optionally halt processing and surface the error, or bypass the resource on which the unexpected IP address format was encountered.
+  - `deleted` - (Optional, List) If present, this property indicates the referenced resource has been deleted and providessome supplementary information.
+
     Nested scheme for `deleted`:
-      - `more_info` - (String) Link to documentation about deleted resources.
-    - `href` - (String) The URL for this reserved IP.
-    - `id` - (String) The unique identifier for this reserved IP.
-    - `name` - (String) The user-defined or system-provided name for this reserved IP.
-    - `resource_type` - (String) The resource type.
+    - `more_info` - (String) Link to documentation about deleted resources.
+  - `href` - (String) The URL for this reserved IP.
+  - `id` - (String) The unique identifier for this reserved IP.
+  - `name` - (String) The user-defined or system-provided name for this reserved IP.
+  - `resource_type` - (String) The resource type.
 
 - `resource_type` - (String) The type of resource referenced.
 
@@ -134,7 +135,7 @@ The `id` property can be formed using the appropriate identifier(s). For example
 
 ```terraform
 import {
-  to = ibm_is_vpn_server.is_vpn_server
+  to = ibm_is_vpn_server.example
   id = "<id>"
 }
 ```
@@ -142,5 +143,5 @@ import {
 Using `terraform import`. For example:
 
 ```console
-% terraform import ibm_is_vpn_server.is_vpn_server <id>
+% terraform import ibm_is_vpn_server.example <id>
 ```

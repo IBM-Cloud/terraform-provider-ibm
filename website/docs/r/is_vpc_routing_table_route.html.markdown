@@ -81,20 +81,21 @@ In addition to all argument reference list, you can access the following attribu
 - `creator` - (Optional, List) If present, the resource that created the route. Routes with this property present cannot bedirectly deleted. All routes with an `origin` of `learned` or `service` will have thisproperty set, and future `origin` values may also have this property set.
 
   Nested scheme for **creator**:
-    - `crn` - (Optional, String) The VPN gateway's CRN.
-      - Constraints: The maximum length is `512` characters. The minimum length is `9` characters.
-    - `deleted` - (Optional, List) If present, this property indicates the referenced resource has been deleted and providessome supplementary information.
+  - `crn` - (Optional, String) The VPN gateway's CRN.
+    - Constraints: The maximum length is `512` characters. The minimum length is `9` characters.
+  - `deleted` - (Optional, List) If present, this property indicates the referenced resource has been deleted and providessome supplementary information.
+
     Nested scheme for **deleted**:
-        - `more_info` - (Required, String) Link to documentation about deleted resources.
-          - Constraints: The maximum length is `8000` characters. The minimum length is `10` characters. The value must match regular expression `/^http(s)?:\/\/([^\/?#]*)([^?#]*)(\\?([^#]*))?(#(.*))?$/`.
-    - `href` - (Optional, String) The VPN gateway's canonical URL.
+    - `more_info` - (Required, String) Link to documentation about deleted resources.
       - Constraints: The maximum length is `8000` characters. The minimum length is `10` characters. The value must match regular expression `/^http(s)?:\/\/([^\/?#]*)([^?#]*)(\\?([^#]*))?(#(.*))?$/`.
-    - `id` - (Optional, String) The unique identifier for this VPN gateway.
-      - Constraints: The maximum length is `64` characters. The minimum length is `1` character. The value must match regular expression `/^[-0-9a-z_]+$/`.
-    - `name` - (Optional, String) The user-defined name for this VPN gateway.
-      - Constraints: The maximum length is `63` characters. The minimum length is `1` character. The value must match regular expression `/^-?([a-z]|[a-z][-a-z0-9]*[a-z0-9]|[0-9][-a-z0-9]*([a-z]|[-a-z][-a-z0-9]*[a-z0-9]))$/`.
-    - `resource_type` - (Optional, String) The resource type.
-      - Constraints: Allowable values are: `vpn_gateway`. The maximum length is `128` characters. The minimum length is `1` character. The value must match regular expression `/^[a-z][a-z0-9]*(_[a-z0-9]+)*$/`.
+  - `href` - (Optional, String) The VPN gateway's canonical URL.
+    - Constraints: The maximum length is `8000` characters. The minimum length is `10` characters. The value must match regular expression `/^http(s)?:\/\/([^\/?#]*)([^?#]*)(\\?([^#]*))?(#(.*))?$/`.
+  - `id` - (Optional, String) The unique identifier for this VPN gateway.
+    - Constraints: The maximum length is `64` characters. The minimum length is `1` character. The value must match regular expression `/^[-0-9a-z_]+$/`.
+  - `name` - (Optional, String) The user-defined name for this VPN gateway.
+    - Constraints: The maximum length is `63` characters. The minimum length is `1` character. The value must match regular expression `/^-?([a-z]|[a-z][-a-z0-9]*[a-z0-9]|[0-9][-a-z0-9]*([a-z]|[-a-z][-a-z0-9]*[a-z0-9]))$/`.
+  - `resource_type` - (Optional, String) The resource type.
+    - Constraints: Allowable values are: `vpn_gateway`. The maximum length is `128` characters. The minimum length is `1` character. The value must match regular expression `/^[a-z][a-z0-9]*(_[a-z0-9]+)*$/`.
 - `href` - (String) The routing table URL.
 - `id` - (String) The routing table ID. The ID is composed of `<vpc_routing_table_id>/<vpc_routing_table_route_id>`.
 - `is_default` - (String) Indicates the default routing table for this VPC.

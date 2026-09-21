@@ -357,6 +357,11 @@ func ResourceIbmBackupRecoverySourceRegistration() *schema.Resource {
 							Optional:    true,
 							Description: "Specifies the velero image location of the Kubernetes source.",
 						},
+						"velero_kubevirt_plugin_image_location": &schema.Schema{
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Specifies the velero kubevirt plugin image location of the Kubernetes source.",
+						},
 						"velero_openshift_plugin_image_location": &schema.Schema{
 							Type:        schema.TypeString,
 							Optional:    true,
@@ -1336,6 +1341,7 @@ func suppressParameterDuringRefresh(k, o, n string, d *schema.ResourceData) bool
 			d.HasChange("kubernetes_params.0.resource_annotations") ||
 			d.HasChange("kubernetes_params.0.resource_labels") ||
 			d.HasChange("kubernetes_params.0.velero_openshift_plugin_image_location") ||
+			d.HasChange("kubernetes_params.0.velero_kubevirt_plugin_image_location") ||
 			d.HasChange("kubernetes_params.0.cohesity_dataprotect_plugin_image_location") ||
 			d.HasChange("kubernetes_params.0.velero_image_location") ||
 			d.HasChange("kubernetes_params.0.velero_aws_plugin_image_location") ||
@@ -1992,6 +1998,9 @@ func ResourceIbmBackupRecoverySourceRegistrationMapToKubernetesSourceRegistratio
 	if modelMap["velero_image_location"] != nil && modelMap["velero_image_location"].(string) != "" {
 		model.VeleroImageLocation = core.StringPtr(modelMap["velero_image_location"].(string))
 	}
+	if modelMap["velero_kubevirt_plugin_image_location"] != nil && modelMap["velero_kubevirt_plugin_image_location"].(string) != "" {
+		model.VeleroKubevirtPluginImageLocation = core.StringPtr(modelMap["velero_kubevirt_plugin_image_location"].(string))
+	}
 	if modelMap["velero_openshift_plugin_image_location"] != nil && modelMap["velero_openshift_plugin_image_location"].(string) != "" {
 		model.VeleroOpenshiftPluginImageLocation = core.StringPtr(modelMap["velero_openshift_plugin_image_location"].(string))
 	}
@@ -2231,6 +2240,9 @@ func ResourceIbmBackupRecoverySourceRegistrationKubernetesSourceRegistrationPara
 	}
 	if model.VeleroImageLocation != nil {
 		modelMap["velero_image_location"] = *model.VeleroImageLocation
+	}
+	if model.VeleroKubevirtPluginImageLocation != nil {
+		modelMap["velero_kubevirt_plugin_image_location"] = *model.VeleroKubevirtPluginImageLocation
 	}
 	if model.VeleroOpenshiftPluginImageLocation != nil {
 		modelMap["velero_openshift_plugin_image_location"] = *model.VeleroOpenshiftPluginImageLocation

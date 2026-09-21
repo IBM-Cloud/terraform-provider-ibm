@@ -235,6 +235,7 @@ You can access the following attribute references after your data source is crea
 	- `resource_group` - (String) The resource group ID.
 	- `total_volume_bandwidth` - (Integer) The amount of bandwidth (in megabits per second) allocated exclusively to instance storage volumes	
 	- `user_data` -  (String) The user data provided for the instance.
+	- `threads_per_core` - (Integer) The number of threads per core for this virtual server instance.
 	- `vcpu` - (List) Vcpu details.
 
 		Nested schema for **vcpu**:

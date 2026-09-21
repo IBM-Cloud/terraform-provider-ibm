@@ -27,7 +27,9 @@ You can specify the following arguments for this data source.
 
 * `destination_id` - (Optional, String) Unique identifier for Destination.
   * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]/`.
-* `destination_type` - (Required, String) Destination type. Allowed values are [smtp_custom].
+* `smtp_config_id` - (Optional, String) Unique identifier for SMTP config id.
+  * Constraints: The maximum length is `36` characters. The minimum length is `36` characters. The value must match regular expression `/[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]/`.  
+* `destination_type` - (Optional, String) Destination type. Allowed values are [smtp_custom].
   * Constraints: Allowable values are: `smtp_custom`.
 * `email_to` - (Optional, String) Receiver email id.
   * Constraints: The maximum length is `256` characters. The minimum length is `0` characters. The value must match regular expression `/[A-Za-z0-9\\._%+\\-]+@[A-Za-z0-9\\.\\-]+\\.[A-Za-z]{2,}/`.

@@ -60,9 +60,10 @@ In addition to all argument reference list, you can access the following attribu
 
 - `crn` - (String) The CRN for this public gateway.
 - `floating_ip` - (List) The floating IP bound to this public gateway.
+
   Nested scheme for `floating_ip`:
-	- `address` - (String) The globally unique IP address for this floating ip.
-	- `id` - (String) The unique identifier of the floating IP address.
+  - `address` - (String) The globally unique IP address for this floating ip.
+  - `id` - (String) The unique identifier of the floating IP address.
 - `id` - (String) The unique identifier of the subnet.
 - `name` -  (String) The user-defined name for this public gateway.
 - `resource_group` - (String) The resource group identifier for this public gateway.

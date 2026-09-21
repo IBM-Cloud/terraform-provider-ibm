@@ -61,6 +61,8 @@ func TestAccIBMISLB_basic_udp(t *testing.T) {
 						"ibm_is_lb.testacc_LB", "udp_supported", "true"),
 					resource.TestCheckResourceAttrSet(
 						"ibm_is_lb.testacc_LB", "udp_supported"),
+					resource.TestCheckResourceAttrSet(
+						"ibm_is_lb.testacc_LB", "asymmetric_routing_supported"),
 				),
 			},
 
@@ -826,4 +828,28 @@ func testAccCheckIBMISLBSecurityGroupConfig(vpcname, subnetname, zone, cidr, nam
 		logging = false
 }`, vpcname, subnetname, zone, cidr, securityGroup, name)
 
+}
+
+func TestAccIBMISLB_advanced_health_checks(t *testing.T) {
+	var lb string
+	vpcname := fmt.Sprintf("tflb-vpc-%d", acctest.RandIntRange(10, 100))
+	subnetname := fmt.Sprintf("tflb-subnet-name-%d", acctest.RandIntRange(10, 100))
+	name := fmt.Sprintf("tfcreate%d", acctest.RandIntRange(10, 100))
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMISLBDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMISLBConfig(vpcname, subnetname, acc.ISZoneName, acc.ISCIDR, name),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMISLBExists("ibm_is_lb.testacc_LB", lb),
+					resource.TestCheckResourceAttr("ibm_is_lb.testacc_LB", "name", name),
+					resource.TestCheckResourceAttrSet("ibm_is_lb.testacc_LB", "advanced_health_checks_supported"),
+					resource.TestCheckResourceAttrSet("ibm_is_lb.testacc_LB", "fqdn_pool_members_supported"),
+				),
+			},
+		},
+	})
 }

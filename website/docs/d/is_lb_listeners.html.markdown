@@ -36,6 +36,13 @@ In addition to all argument references listed, you can access the following attr
 
 			!> **Removal Notification** Certificate Manager support is removed, please use Secrets Manager.
 
+	- `client_authentication` - (List) The client authentication to use for this listener.
+		Nested scheme for `client_authentication`:
+		- `certificate_authority` - (List) The certificate instance used for the listener client certificate authority.
+			Nested scheme for `certificate_authority`:
+			- `crn` - (String) The CRN for this certificate instance.
+		- `certificate_revocation_list` - (String) A PEM-encoded certificate revocation list (CRL) used for the listener.
+
     - `connection_limit` - (Integer) The connection limit of the listener.
     - `created_at` - (String) The date and time that this listener was created.
     - `default_pool` - (List) The default pool associated with the listener.

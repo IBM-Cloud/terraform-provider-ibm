@@ -17,6 +17,7 @@ resource "ibm_en_ibmsource" "en_ibmsource" {
   instance_guid = ibm_resource_instance.en_terraform_test_resource.guid
   source_id = [for s in toset(data.ibm_en_sources.listsources.sources): s.id if s.type == "resource-lifecycle-events"].0
   enabled       = true
+  store_notifications = false
 }
 ```
 
@@ -29,6 +30,8 @@ Review the argument reference that you can specify for your resource.
 - `source_id` - (Optional, String) The Source id of the IBM Cloud source integrated with Event Notifications..
 
 - `enabled` - (Optional, bool) The enabled flag to enbale the IBM Cloud source.
+
+- `store_notifications` - (Optional, bool) enable to view the payload of incoming events for troubleshooting.
 
 ## Attribute reference
 

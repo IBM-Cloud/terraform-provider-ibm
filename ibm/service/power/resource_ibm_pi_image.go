@@ -34,7 +34,7 @@ func ResourceIBMPIImage() *schema.Resource {
 		Importer:      &schema.ResourceImporter{},
 
 		Timeouts: &schema.ResourceTimeout{
-			Create: schema.DefaultTimeout(60 * time.Minute),
+			Create: schema.DefaultTimeout(2880 * time.Minute),
 			Delete: schema.DefaultTimeout(10 * time.Minute),
 			Update: schema.DefaultTimeout(10 * time.Minute),
 		},
@@ -197,6 +197,14 @@ func ResourceIBMPIImage() *schema.Resource {
 				Optional: true,
 				Type:     schema.TypeList,
 			},
+			Arg_SourceChecksum: {
+				ConflictsWith: []string{Arg_ImageID},
+				Description:   "Checks the checksum file from the COS bucket against the one computed on the downloaded image.",
+				ForceNew:      true,
+				Optional:      true,
+				RequiredWith:  []string{Arg_ImageBucketName},
+				Type:          schema.TypeBool,
+			},
 			Arg_UserTags: {
 				Computed:    true,
 				Description: "The user tags attached to this resource.",
@@ -295,6 +303,9 @@ func resourceIBMPIImageCreate(ctx context.Context, d *schema.ResourceData, meta 
 		}
 		if v, ok := d.GetOk(Arg_ImageStoragePool); ok {
 			body.StoragePool = v.(string)
+		}
+		if v, ok := d.GetOk(Arg_SourceChecksum); ok {
+			body.Checksum = v.(bool)
 		}
 		if ap, ok := d.GetOk(Arg_AffinityPolicy); ok {
 			policy := ap.(string)

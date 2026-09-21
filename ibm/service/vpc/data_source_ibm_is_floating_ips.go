@@ -221,7 +221,7 @@ func DataSourceIBMIsFloatingIps() *schema.Resource {
 func dataSourceIBMIsFloatingIpsRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	vpcClient, err := meta.(conns.ClientSession).VpcV1API()
 	if err != nil {
-		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_ibm_is_floating_ips", "read", "initialize-client")
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_floating_ips", "read", "initialize-client")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
@@ -239,7 +239,7 @@ func dataSourceIBMIsFloatingIpsRead(ctx context.Context, d *schema.ResourceData,
 		}
 		floatingIPs, _, err := vpcClient.ListFloatingIpsWithContext(ctx, floatingIPOptions)
 		if err != nil {
-			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("ListFloatingIpsWithContext failed %s", err), "(Data) ibm_ibm_is_floating_ips", "read")
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("ListFloatingIpsWithContext failed %s", err), "(Data) ibm_is_floating_ips", "read")
 			log.Printf("[DEBUG] %s", tfErr.GetDebugMessage())
 			return tfErr.GetDiag()
 		}
@@ -267,7 +267,7 @@ func dataSourceIBMIsFloatingIpsRead(ctx context.Context, d *schema.ResourceData,
 	if suppliedFilter {
 		if len(matchFloatingIps) == 0 {
 			err = fmt.Errorf("no FloatingIps found with name %s", name)
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_floating_ips", "read", "no-floating-ips-found").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_floating_ips", "read", "no-floating-ips-found").GetDiag()
 		}
 		d.SetId(name)
 	} else {
@@ -277,7 +277,7 @@ func dataSourceIBMIsFloatingIpsRead(ctx context.Context, d *schema.ResourceData,
 	if matchFloatingIps != nil {
 		err = d.Set("floating_ips", dataSourceFloatingIPCollectionFlattenFloatingIps(matchFloatingIps, d, meta))
 		if err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting floating_ips %s", err), "(Data) ibm_ibm_is_floating_ips", "read", "floating_ips-set").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting floating_ips %s", err), "(Data) ibm_is_floating_ips", "read", "floating_ips-set").GetDiag()
 		}
 	}
 	return nil

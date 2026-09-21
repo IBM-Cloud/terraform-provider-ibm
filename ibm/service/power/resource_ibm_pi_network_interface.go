@@ -32,12 +32,12 @@ func ResourceIBMPINetworkInterface() *schema.Resource {
 		Importer:      &schema.ResourceImporter{},
 
 		Timeouts: &schema.ResourceTimeout{
-			Create: schema.DefaultTimeout(60 * time.Minute),
-			Delete: schema.DefaultTimeout(60 * time.Minute),
-			Update: schema.DefaultTimeout(60 * time.Minute),
+			Create: schema.DefaultTimeout(10 * time.Minute),
+			Delete: schema.DefaultTimeout(10 * time.Minute),
+			Update: schema.DefaultTimeout(10 * time.Minute),
 		},
 		CustomizeDiff: customdiff.Sequence(
-			func(_ context.Context, diff *schema.ResourceDiff, v interface{}) error {
+			func(_ context.Context, diff *schema.ResourceDiff, v any) error {
 				return flex.ResourcePowerUserTagsCustomizeDiff(diff)
 			},
 		),
@@ -154,10 +154,12 @@ func ResourceIBMPINetworkInterface() *schema.Resource {
 	}
 }
 
-func resourceIBMPINetworkInterfaceCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceIBMPINetworkInterfaceCreate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	sess, err := meta.(conns.ClientSession).IBMPISession()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("IBMPISession failed: %s", err.Error()), "ibm_pi_network_interface", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	cloudInstanceID := d.Get(Arg_CloudInstanceID).(string)
@@ -176,12 +178,16 @@ func resourceIBMPINetworkInterfaceCreate(ctx context.Context, d *schema.Resource
 	}
 	networkInterface, err := networkC.CreateNetworkInterface(networkID, body)
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("CreateNetworkInterface failed: %s", err.Error()), "ibm_pi_network_interface", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	networkInterfaceID := *networkInterface.ID
 	_, err = isWaitForIBMPINetworkInterfaceAvailable(ctx, networkC, networkID, networkInterfaceID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("isWaitForIBMPINetworkInterfaceAvailable failed: %s", err.Error()), "ibm_pi_network_interface", "create")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	crn := networkInterface.Crn
 	if _, ok := d.GetOk(Arg_UserTags); ok {
@@ -200,11 +206,15 @@ func resourceIBMPINetworkInterfaceCreate(ctx context.Context, d *schema.Resource
 		}
 		_, err = networkC.UpdateNetworkInterface(networkID, networkInterfaceID, body)
 		if err != nil {
-			return diag.FromErr(err)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("UpdateNetworkInterface failed: %s", err.Error()), "ibm_pi_network_interface", "create")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
-		_, err = isWaitForIBMPINetworkPortUpdateAvailable(ctx, networkC, networkID, networkInterfaceID, instanceID, d.Timeout(schema.TimeoutCreate))
+		_, err = isWaitForIBMPINetworkInterfaceUpdate(ctx, networkC, networkID, networkInterfaceID, "", instanceID, d.Timeout(schema.TimeoutCreate))
 		if err != nil {
-			return diag.FromErr(err)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("isWaitForIBMPINetworkInterfaceUpdate failed: %s", err.Error()), "ibm_pi_network_interface", "create")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 	}
 	d.SetId(fmt.Sprintf("%s/%s/%s", cloudInstanceID, networkID, networkInterfaceID))
@@ -212,19 +222,30 @@ func resourceIBMPINetworkInterfaceCreate(ctx context.Context, d *schema.Resource
 	return resourceIBMPINetworkInterfaceRead(ctx, d, meta)
 }
 
-func resourceIBMPINetworkInterfaceRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceIBMPINetworkInterfaceRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	sess, err := meta.(conns.ClientSession).IBMPISession()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("IBMPISession failed: %s", err.Error()), "ibm_pi_network_interface", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	parts, err := flex.IdParts(d.Id())
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("IdParts failed: %s", err.Error()), "ibm_pi_network_interface", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	networkC := instance.NewIBMPINetworkClient(ctx, sess, parts[0])
 	networkInterface, err := networkC.GetNetworkInterface(parts[1], parts[2])
 	if err != nil {
-		return diag.FromErr(err)
+		if strings.Contains(strings.ToLower(err.Error()), NotFound) {
+			log.Printf("[WARNING] network interface resource was not found or removed outside of terraform\n")
+			d.SetId("")
+			return nil
+		}
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetNetworkInterface failed: %s", err.Error()), "ibm_pi_network_interface", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 
 	d.Set(Attr_ExternalIP, networkInterface.ExternalIP)
@@ -235,7 +256,7 @@ func resourceIBMPINetworkInterfaceRead(ctx context.Context, d *schema.ResourceDa
 	d.Set(Attr_NetworkSecurityGroupID, networkInterface.NetworkSecurityGroupID)
 	d.Set(Attr_NetworkSecurityGroupIDs, networkInterface.NetworkSecurityGroupIDs)
 	if networkInterface.Instance != nil {
-		pvmInstance := []map[string]interface{}{}
+		pvmInstance := []map[string]any{}
 		instanceMap := pvmInstanceToMap(networkInterface.Instance)
 		pvmInstance = append(pvmInstance, instanceMap)
 		d.Set(Attr_Instance, pvmInstance)
@@ -255,14 +276,18 @@ func resourceIBMPINetworkInterfaceRead(ctx context.Context, d *schema.ResourceDa
 	return nil
 }
 
-func resourceIBMPINetworkInterfaceUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceIBMPINetworkInterfaceUpdate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	sess, err := meta.(conns.ClientSession).IBMPISession()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("IBMPISession failed: %s", err.Error()), "ibm_pi_network_interface", "update")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	parts, err := flex.IdParts(d.Id())
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("IdParts failed: %s", err.Error()), "ibm_pi_network_interface", "update")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	networkC := instance.NewIBMPINetworkClient(ctx, sess, parts[0])
 	body := &models.NetworkInterfaceUpdate{}
@@ -291,39 +316,61 @@ func resourceIBMPINetworkInterfaceUpdate(ctx context.Context, d *schema.Resource
 	if hasChange {
 		_, err = networkC.UpdateNetworkInterface(parts[1], parts[2], body)
 		if err != nil {
-			return diag.FromErr(err)
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("UpdateNetworkInterface failed: %s", err.Error()), "ibm_pi_network_interface", "update")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
+		expectedName := ""
+		if d.HasChange(Arg_Name) {
+			expectedName = d.Get(Arg_Name).(string)
+		}
+		expectedInstanceID := ""
 		if d.HasChange(Arg_InstanceID) {
-			_, err = isWaitForIBMPINetworkPortUpdateAvailable(ctx, networkC, parts[1], parts[2], d.Get(Arg_InstanceID).(string), d.Timeout(schema.TimeoutUpdate))
-			if err != nil {
-				return diag.FromErr(err)
-			}
+			expectedInstanceID = d.Get(Arg_InstanceID).(string)
+		}
+		_, err = isWaitForIBMPINetworkInterfaceUpdate(ctx, networkC, parts[1], parts[2], expectedName, expectedInstanceID, d.Timeout(schema.TimeoutUpdate))
+		if err != nil {
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("isWaitForIBMPINetworkInterfaceUpdate failed: %s", err.Error()), "ibm_pi_network_interface", "update")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
 		}
 	}
 
 	return resourceIBMPINetworkInterfaceRead(ctx, d, meta)
 }
 
-func resourceIBMPINetworkInterfaceDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceIBMPINetworkInterfaceDelete(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	sess, err := meta.(conns.ClientSession).IBMPISession()
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("IBMPISession failed: %s", err.Error()), "ibm_pi_network_interface", "delete")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	parts, err := flex.IdParts(d.Id())
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("IdParts failed: %s", err.Error()), "ibm_pi_network_interface", "delete")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	networkC := instance.NewIBMPINetworkClient(ctx, sess, parts[0])
 	err = networkC.DeleteNetworkInterface(parts[1], parts[2])
 	if err != nil {
-		return diag.FromErr(err)
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("DeleteNetworkInterface failed: %s", err.Error()), "ibm_pi_network_interface", "delete")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
+	}
+	_, err = isWaitForIBMPINetworkInterfaceDeleted(ctx, networkC, parts[1], parts[2], d.Timeout(schema.TimeoutDelete))
+	if err != nil {
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("isWaitForIBMPINetworkInterfaceDeleted failed: %s", err.Error()), "ibm_pi_network_interface", "delete")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
 	}
 	d.SetId("")
 
 	return nil
 }
 
-func isWaitForIBMPINetworkInterfaceAvailable(ctx context.Context, client *instance.IBMPINetworkClient, networkID string, networkInterfaceID string, timeout time.Duration) (interface{}, error) {
+func isWaitForIBMPINetworkInterfaceAvailable(ctx context.Context, client *instance.IBMPINetworkClient, networkID string, networkInterfaceID string, timeout time.Duration) (any, error) {
 	stateConf := &retry.StateChangeConf{
 		Pending:    []string{State_Build},
 		Target:     []string{State_Down},
@@ -337,7 +384,7 @@ func isWaitForIBMPINetworkInterfaceAvailable(ctx context.Context, client *instan
 }
 
 func isIBMPINetworkInterfaceRefreshFunc(client *instance.IBMPINetworkClient, networkID, networkInterfaceID string) retry.StateRefreshFunc {
-	return func() (interface{}, string, error) {
+	return func() (any, string, error) {
 		networkInterface, err := client.GetNetworkInterface(networkID, networkInterfaceID)
 		if err != nil {
 			return nil, "", err
@@ -349,30 +396,51 @@ func isIBMPINetworkInterfaceRefreshFunc(client *instance.IBMPINetworkClient, net
 	}
 }
 
-func isWaitForIBMPINetworkPortUpdateAvailable(ctx context.Context, client *instance.IBMPINetworkClient, networkID, networkInterfaceID, instanceid string, timeout time.Duration) (interface{}, error) {
-
+func isWaitForIBMPINetworkInterfaceUpdate(ctx context.Context, client *instance.IBMPINetworkClient, networkID, networkInterfaceID, expectedName, expectedInstanceID string, timeout time.Duration) (any, error) {
 	stateConf := &retry.StateChangeConf{
 		Pending:    []string{State_Build},
 		Target:     []string{State_Active},
-		Refresh:    isIBMPINetworkInterfaceUpdateRefreshFunc(client, networkID, networkInterfaceID, instanceid),
+		Refresh:    isIBMPINetworkInterfaceUpdateRefreshFunc(client, networkID, networkInterfaceID, expectedName, expectedInstanceID),
 		Timeout:    timeout,
 		Delay:      10 * time.Second,
 		MinTimeout: 10 * time.Second,
 	}
-
 	return stateConf.WaitForStateContext(ctx)
 }
 
-func isIBMPINetworkInterfaceUpdateRefreshFunc(client *instance.IBMPINetworkClient, networkID, networkInterfaceID, instanceid string) retry.StateRefreshFunc {
-
-	return func() (interface{}, string, error) {
+func isIBMPINetworkInterfaceUpdateRefreshFunc(client *instance.IBMPINetworkClient, networkID, networkInterfaceID, expectedName, expectedInstanceID string) retry.StateRefreshFunc {
+	return func() (any, string, error) {
 		networkInterface, err := client.GetNetworkInterface(networkID, networkInterfaceID)
 		if err != nil {
 			return nil, "", err
 		}
-		if strings.ToLower(*networkInterface.Status) == State_Active && networkInterface.Instance.InstanceID == instanceid {
+		nameOK := expectedName == "" || (networkInterface.Name != nil && *networkInterface.Name == expectedName)
+		instanceOK := expectedInstanceID == "" || (strings.ToLower(*networkInterface.Status) == State_Active && networkInterface.Instance != nil && networkInterface.Instance.InstanceID == expectedInstanceID)
+		if nameOK && instanceOK {
 			return networkInterface, State_Active, nil
 		}
 		return networkInterface, State_Build, nil
+	}
+}
+
+func isWaitForIBMPINetworkInterfaceDeleted(ctx context.Context, client *instance.IBMPINetworkClient, networkID, networkInterfaceID string, timeout time.Duration) (any, error) {
+	stateConf := &retry.StateChangeConf{
+		Pending:    []string{State_Found},
+		Target:     []string{State_NotFound},
+		Refresh:    isIBMPINetworkInterfaceDeleteRefreshFunc(client, networkID, networkInterfaceID),
+		Timeout:    timeout,
+		Delay:      10 * time.Second,
+		MinTimeout: 10 * time.Second,
+	}
+	return stateConf.WaitForStateContext(ctx)
+}
+
+func isIBMPINetworkInterfaceDeleteRefreshFunc(client *instance.IBMPINetworkClient, networkID, networkInterfaceID string) retry.StateRefreshFunc {
+	return func() (any, string, error) {
+		networkInterface, err := client.GetNetworkInterface(networkID, networkInterfaceID)
+		if err != nil {
+			return networkInterface, State_NotFound, nil
+		}
+		return networkInterface, State_Found, nil
 	}
 }

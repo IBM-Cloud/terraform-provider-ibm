@@ -1,4 +1,4 @@
-// Copyright IBM Corp. 2017, 2021 All Rights Reserved.
+// Copyright IBM Corp. 2026 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 package flex
@@ -140,4 +140,34 @@ func SuppressAllowBlank(k, old, new string, d *schema.ResourceData) bool {
 		return true
 	}
 	return false
+}
+
+func SuppressRestrictUserDomains(key, old, new string, d *schema.ResourceData) bool {
+	// Special case: force diff when restrict_invitation or when invitation_email_allow_patterns are removed
+
+	// Extract the field from the key (e.g. "restrict_user_domains.0.restrict_invitation" -> "restrict_invitation")
+	parts := strings.Split(key, ".")
+
+	if len(parts) > 2 {
+		field := parts[2]
+		if field == "restrict_invitation" {
+			// Edge case when removing restrict_invitation, since d.HasChange returns false.
+			// Force a diff when old and new dont match
+			if old == "true" && new == "false" {
+				return false
+			}
+		}
+		if field == "invitation_email_allow_patterns" && len(parts) > 3 {
+			// Get the hash/index from the key: "restrict_user_domains.0.invitation_email_allow_patterns.#"
+			hash := parts[3]
+			if hash == "#" && new == "0" {
+				// # indicates we are assessing the size of the list
+				// If the new patterns list has size 0 then it has been removed, so force a diff
+				return false
+			}
+		}
+	}
+
+	// default HasChange handling for all other cases
+	return !d.HasChange(key)
 }

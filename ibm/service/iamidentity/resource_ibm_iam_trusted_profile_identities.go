@@ -1,4 +1,4 @@
-// Copyright IBM Corp. 2025 All Rights Reserved.
+// Copyright IBM Corp. 2026 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 /*
@@ -140,7 +140,8 @@ func resourceIBMIamTrustedProfileIdentitiesRead(context context.Context, d *sche
 		return tfErr.GetDiag()
 	}
 	if err := d.Set("profile_id", d.Id()); err != nil {
-		return diag.FromErr(fmt.Errorf("Error setting profile_id: %s", err))
+		err = fmt.Errorf("Error setting profile_id: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_trusted_profile_identities", "read", "set-profile_id").GetDiag()
 	}
 	if !core.IsNil(profileIdentitiesResponse.Identities) {
 		identities := []map[string]interface{}{}
@@ -164,7 +165,8 @@ func resourceIBMIamTrustedProfileIdentitiesRead(context context.Context, d *sche
 		}
 	}
 	if err = d.Set("if_match", response.Headers.Get("ETag")); err != nil {
-		return diag.FromErr(flex.FmtErrorf("Error setting etag: %s", err))
+		err = flex.FmtErrorf("Error setting if_match: %s", err)
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_iam_trusted_profile_identities", "read", "set-if_match").GetDiag()
 	}
 
 	return nil

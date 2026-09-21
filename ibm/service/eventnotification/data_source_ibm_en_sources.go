@@ -72,6 +72,11 @@ func DataSourceIBMEnSources() *schema.Resource {
 							Computed:    true,
 							Description: "Source is enabled or not.",
 						},
+						"store_notifications": {
+							Type:        schema.TypeBool,
+							Computed:    true,
+							Description: "enable to view the payload of incoming events for troubleshooting.",
+						},
 						"updated_at": {
 							Type:        schema.TypeString,
 							Computed:    true,
@@ -177,6 +182,9 @@ func enSourceListToMap(sourceItem en.SourceListItem) (source map[string]interfac
 	}
 	if sourceItem.Enabled != nil {
 		source["enabled"] = sourceItem.Enabled
+	}
+	if sourceItem.StoreNotifications != nil {
+		source["store_notifications"] = sourceItem.StoreNotifications
 	}
 	if sourceItem.UpdatedAt != nil {
 		source["updated_at"] = flex.DateTimeToString(sourceItem.UpdatedAt)

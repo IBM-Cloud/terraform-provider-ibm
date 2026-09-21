@@ -1,4 +1,4 @@
-// Copyright IBM Corp. 2017, 2021 All Rights Reserved.
+// Copyright IBM Corp. 2026 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 package iamidentity_test
@@ -109,7 +109,6 @@ func testAccCheckIBMIAMServiceIDDestroy(s *terraform.State) error {
 }
 
 func testAccCheckIBMIAMServiceIDExists(n string, obj string) resource.TestCheckFunc {
-
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
@@ -136,7 +135,6 @@ func testAccCheckIBMIAMServiceIDExists(n string, obj string) resource.TestCheckF
 
 func testAccCheckIBMIAMServiceIDBasic(name string) string {
 	return fmt.Sprintf(`
-		
 		resource "ibm_iam_service_id" "serviceID" {
 			name = "%s"
 			tags = ["tag1", "tag2"]
@@ -146,7 +144,6 @@ func testAccCheckIBMIAMServiceIDBasic(name string) string {
 
 func testAccCheckIBMIAMServiceIDUpdateWithSameName(name string) string {
 	return fmt.Sprintf(`
-		
 		resource "ibm_iam_service_id" "serviceID" {
 			name        = "%s"
 			description = "ServiceID for test scenario1"
@@ -157,7 +154,6 @@ func testAccCheckIBMIAMServiceIDUpdateWithSameName(name string) string {
 
 func testAccCheckIBMIAMServiceIDUpdate(updateName string) string {
 	return fmt.Sprintf(`
-
 		resource "ibm_iam_service_id" "serviceID" {
 			name              = "%s"		
 			description       = "ServiceID for test scenario2"
@@ -168,7 +164,6 @@ func testAccCheckIBMIAMServiceIDUpdate(updateName string) string {
 
 func testAccCheckIBMIAMServiceIDTag(name string) string {
 	return fmt.Sprintf(`
-
 		resource "ibm_iam_service_id" "serviceID" {
 			name              = "%s"		
 			description       = "ServiceID for test scenario2"

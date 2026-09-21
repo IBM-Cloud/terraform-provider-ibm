@@ -1,8 +1,8 @@
-// Copyright IBM Corp. 2025 All Rights Reserved.
+// Copyright IBM Corp. 2026 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 /*
- * IBM OpenAPI Terraform Generator Version: 3.99.1-daeb6e46-20250131-173156
+ * IBM OpenAPI Terraform Generator Version: 3.114.2-b2884bfd-20260601-185447
  */
 
 package partnercentersell
@@ -146,6 +146,11 @@ func ResourceIbmOnboardingProduct() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "IAM registration identifier.",
+			},
+			"oss_id": &schema.Schema{
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The ID of the OSS record connected to the product.",
 			},
 		},
 	}
@@ -324,6 +329,12 @@ func resourceIbmOnboardingProductRead(context context.Context, d *schema.Resourc
 		if err = d.Set("iam_registration_id", onboardingProduct.IamRegistrationID); err != nil {
 			err = fmt.Errorf("Error setting iam_registration_id: %s", err)
 			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_onboarding_product", "read", "set-iam_registration_id").GetDiag()
+		}
+	}
+	if !core.IsNil(onboardingProduct.OssID) {
+		if err = d.Set("oss_id", onboardingProduct.OssID); err != nil {
+			err = fmt.Errorf("Error setting oss_id: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_onboarding_product", "read", "set-oss_id").GetDiag()
 		}
 	}
 

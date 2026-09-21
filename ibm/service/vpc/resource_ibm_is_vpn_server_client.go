@@ -75,7 +75,7 @@ func resourceIBMIsVPNServerClientDisconnect(context context.Context, d *schema.R
 			d.SetId("")
 			return nil
 		}
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetVPNServerClientWithContext failed: %s", err.Error()), "ibm_is_vpn_server_client", "read")
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetVPNServerClientWithContext failed: %s", err.Error()), "ibm_is_vpn_server_client", "create")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
@@ -93,16 +93,16 @@ func resourceIBMIsVPNServerClientDisconnect(context context.Context, d *schema.R
 
 		_, err := vpcClient.DisconnectVPNClientWithContext(context, disconnectVPNServerRouteOptions)
 		if err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "[ERROR] DisconnectVPNClientWithContext failed", "ibm_is_vpn_server_client", "disconnect").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_vpn_server_client", "create", "disconnect-vpn-client").GetDiag()
 
 		}
 
 		if err = d.Set("status_code", response.StatusCode); err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "[ERROR] Error setting status_code", "ibm_is_vpn_server_client", "disconnect").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_vpn_server_client", "create", "set-status_code").GetDiag()
 		}
 
 		if err = d.Set("description", "The VPN client disconnection request was accepted."); err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "[ERROR] Error setting description", "ibm_is_vpn_server_client", "disconnect").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_vpn_server_client", "create", "set-description").GetDiag()
 		}
 
 		d.SetId(fmt.Sprintf("%s/%s/%v", d.Get("vpn_server").(string), d.Get("vpn_client").(string), response.StatusCode))
@@ -115,17 +115,17 @@ func resourceIBMIsVPNServerClientDisconnect(context context.Context, d *schema.R
 
 		response, err := vpcClient.DeleteVPNServerClientWithContext(context, deleteVPNServerClientOptions)
 		if err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "[ERROR] DeleteVPNServerClientWithContext failed", "ibm_is_vpn_server_client", "delete-client").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_vpn_server_client", "create", "delete-vpn-client").GetDiag()
 
 		}
 
 		if err = d.Set("status_code", response.StatusCode); err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "[ERROR] Error setting status_code", "ibm_is_vpn_server_client", "status-code").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_vpn_server_client", "create", "set-status_code").GetDiag()
 
 		}
 
 		if err = d.Set("description", "The VPN client disconnection request was accepted."); err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "[ERROR] DisconnectVPNClientWithContext failed", "ibm_is_vpn_server_client", "description").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_vpn_server_client", "create", "set-description").GetDiag()
 
 		}
 
@@ -133,7 +133,7 @@ func resourceIBMIsVPNServerClientDisconnect(context context.Context, d *schema.R
 	}
 
 	if err = d.Set("delete", d.Get("delete")); err != nil {
-		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "[ERROR] Error setting delete", "ibm_is_vpn_server_client", "delete").GetDiag()
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_vpn_server_client", "create", "set-delete").GetDiag()
 
 	}
 	return nil
@@ -153,7 +153,7 @@ func resourceIBMIsVPNServerClientDelete(context context.Context, d *schema.Resou
 
 	}
 	if len(parts) != 2 {
-		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "[ERROR] Incorrect ID. ID should be a combination of vpnServer/vpnClient", "ibm_is_vpn_server_client", "delete").GetDiag()
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_vpn_server_client", "delete", "invalid-id-format").GetDiag()
 
 	}
 	vpnServer := parts[0]
@@ -170,7 +170,7 @@ func resourceIBMIsVPNServerClientDelete(context context.Context, d *schema.Resou
 			d.SetId("")
 			return nil
 		}
-		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "[ERROR] GetVPNServerClientWithContext failed", "ibm_is_vpn_server_client", "delete").GetDiag()
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_vpn_server_client", "delete", "get-vpn-server-client").GetDiag()
 
 	}
 
@@ -180,7 +180,7 @@ func resourceIBMIsVPNServerClientDelete(context context.Context, d *schema.Resou
 
 	response, err = vpcClient.DeleteVPNServerClientWithContext(context, deleteVPNServerClientOptions)
 	if err != nil {
-		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "[ERROR] DeleteVPNServerClientWithContext failed", "ibm_is_vpn_server_client", "delete").GetDiag()
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_vpn_server_client", "delete", "delete-vpn-server-client").GetDiag()
 
 	}
 

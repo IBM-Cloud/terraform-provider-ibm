@@ -1457,6 +1457,11 @@ func ResourceIbmBackupRecoveryProtectionGroup() *schema.Resource {
 										Optional:    true,
 										Description: "Whether to include all the labels or any of them while performing inclusion/exclusion of objects.",
 									},
+									"label_filter_entity_type": &schema.Schema{
+										Type:        schema.TypeString,
+										Optional:    true,
+										Description: "The type of the entity for which the label filters are specified. Example: kPersistentVolumeClaim or kVirtualMachine.",
+									},
 									"label_vector": &schema.Schema{
 										Type:        schema.TypeList,
 										Optional:    true,
@@ -1551,6 +1556,11 @@ func ResourceIbmBackupRecoveryProtectionGroup() *schema.Resource {
 										Type:        schema.TypeString,
 										Optional:    true,
 										Description: "Whether to include all the labels or any of them while performing inclusion/exclusion of objects.",
+									},
+									"label_filter_entity_type": &schema.Schema{
+										Type:        schema.TypeString,
+										Optional:    true,
+										Description: "The type of the entity for which the label filters are specified. Example: kPersistentVolumeClaim or kVirtualMachine.",
 									},
 									"label_vector": &schema.Schema{
 										Type:        schema.TypeList,
@@ -1674,6 +1684,11 @@ func ResourceIbmBackupRecoveryProtectionGroup() *schema.Resource {
 													Optional:    true,
 													Description: "Whether to include all the labels or any of them while performing inclusion/exclusion of objects.",
 												},
+												"label_filter_entity_type": &schema.Schema{
+													Type:        schema.TypeString,
+													Optional:    true,
+													Description: "The type of the entity for which the label filters are specified. Example: kPersistentVolumeClaim or kVirtualMachine.",
+												},
 												"label_vector": &schema.Schema{
 													Type:        schema.TypeList,
 													Optional:    true,
@@ -1768,6 +1783,11 @@ func ResourceIbmBackupRecoveryProtectionGroup() *schema.Resource {
 													Computed:    true,
 													Description: "Specifies the id of the pvc.",
 												},
+												"metadata_only": &schema.Schema{
+													Type:        schema.TypeBool,
+													Optional:    true,
+													Description: "This field will be used only for PVCs to indicate whether only metadata is present inside PVCs. Default: false (Both data and metadata present).",
+												},
 												"name": &schema.Schema{
 													Type:        schema.TypeString,
 													Computed:    true,
@@ -1803,6 +1823,11 @@ func ResourceIbmBackupRecoveryProtectionGroup() *schema.Resource {
 													Type:        schema.TypeString,
 													Optional:    true,
 													Description: "Whether to include all the labels or any of them while performing inclusion/exclusion of objects.",
+												},
+												"label_filter_entity_type": &schema.Schema{
+													Type:        schema.TypeString,
+													Optional:    true,
+													Description: "The type of the entity for which the label filters are specified. Example: kPersistentVolumeClaim or kVirtualMachine.",
 												},
 												"label_vector": &schema.Schema{
 													Type:        schema.TypeList,
@@ -1898,6 +1923,11 @@ func ResourceIbmBackupRecoveryProtectionGroup() *schema.Resource {
 													Computed:    true,
 													Optional:    true,
 													Description: "Specifies the id of the pvc.",
+												},
+												"metadata_only": &schema.Schema{
+													Type:        schema.TypeBool,
+													Optional:    true,
+													Description: "This field will be used only for PVCs to indicate whether only metadata is present inside PVCs. Default: false (Both data and metadata present).",
 												},
 												"name": &schema.Schema{
 													Type:        schema.TypeString,
@@ -2025,6 +2055,11 @@ func ResourceIbmBackupRecoveryProtectionGroup() *schema.Resource {
 									},
 								},
 							},
+						},
+						"perform_source_side_deduplication": &schema.Schema{
+							Type:        schema.TypeBool,
+							Optional:    true,
+							Description: "Specifies whether or not to perform source side deduplication on this Protection Group.",
 						},
 						"source_id": &schema.Schema{
 							Type:        schema.TypeInt,
@@ -7192,6 +7227,9 @@ func ResourceIbmBackupRecoveryProtectionGroupMapToKubernetesProtectionGroupParam
 		}
 		model.Objects = objects
 	}
+	if modelMap["perform_source_side_deduplication"] != nil {
+		model.PerformSourceSideDeduplication = core.BoolPtr(modelMap["perform_source_side_deduplication"].(bool))
+	}
 	if modelMap["source_id"] != nil {
 		model.SourceID = core.Int64Ptr(int64(modelMap["source_id"].(int)))
 	}
@@ -7215,6 +7253,9 @@ func ResourceIbmBackupRecoveryProtectionGroupMapToKubernetesFilterParams(modelMa
 	model := &backuprecoveryv1.KubernetesFilterParams{}
 	if modelMap["label_combination_method"] != nil && modelMap["label_combination_method"].(string) != "" {
 		model.LabelCombinationMethod = core.StringPtr(modelMap["label_combination_method"].(string))
+	}
+	if modelMap["label_filter_entity_type"] != nil && modelMap["label_filter_entity_type"].(string) != "" {
+		model.LabelFilterEntityType = core.StringPtr(modelMap["label_filter_entity_type"].(string))
 	}
 	if modelMap["label_vector"] != nil {
 		labelVector := []backuprecoveryv1.KubernetesLabel{}
@@ -7381,6 +7422,9 @@ func ResourceIbmBackupRecoveryProtectionGroupMapToKubernetesPvcInfo(modelMap map
 	model := &backuprecoveryv1.KubernetesPvcInfo{}
 	if modelMap["id"] != nil {
 		model.ID = core.Int64Ptr(int64(modelMap["id"].(int)))
+	}
+	if modelMap["metadata_only"] != nil {
+		model.MetadataOnly = core.BoolPtr(modelMap["metadata_only"].(bool))
 	}
 	if modelMap["name"] != nil && modelMap["name"].(string) != "" {
 		model.Name = core.StringPtr(modelMap["name"].(string))
@@ -8210,6 +8254,9 @@ func ResourceIbmBackupRecoveryProtectionGroupKubernetesProtectionGroupParamsToMa
 		}
 		modelMap["objects"] = objects
 	}
+	if model.PerformSourceSideDeduplication != nil {
+		modelMap["perform_source_side_deduplication"] = *model.PerformSourceSideDeduplication
+	}
 	if model.SourceID != nil {
 		modelMap["source_id"] = flex.IntValue(model.SourceID)
 	}
@@ -8233,6 +8280,9 @@ func ResourceIbmBackupRecoveryProtectionGroupKubernetesFilterParamsToMap(model *
 	modelMap := make(map[string]interface{})
 	if model.LabelCombinationMethod != nil {
 		modelMap["label_combination_method"] = *model.LabelCombinationMethod
+	}
+	if model.LabelFilterEntityType != nil {
+		modelMap["label_filter_entity_type"] = *model.LabelFilterEntityType
 	}
 	if model.LabelVector != nil {
 		labelVector := []map[string]interface{}{}
@@ -8387,6 +8437,9 @@ func ResourceIbmBackupRecoveryProtectionGroupKubernetesPvcInfoToMap(model *backu
 	modelMap := make(map[string]interface{})
 	if model.ID != nil {
 		modelMap["id"] = flex.IntValue(model.ID)
+	}
+	if model.MetadataOnly != nil {
+		modelMap["metadata_only"] = *model.MetadataOnly
 	}
 	if model.Name != nil {
 		modelMap["name"] = *model.Name

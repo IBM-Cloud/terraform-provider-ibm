@@ -33,12 +33,14 @@ func TestAccIBMEnIBMSourceAllArgs(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMEnIBMSourceExists("ibm_en_source.en_source_resource_1", config),
 					resource.TestCheckResourceAttr("ibm_en_source.en_source_resource_1", "enabled", "enabled"),
+					resource.TestCheckResourceAttr("ibm_en_source.en_source_resource_1", "store_notifications", "true"),
 				),
 			},
 			{
 				Config: testAccCheckIBMEnIBMSourceConfig(instanceName, sourceId, enabled),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("ibm_en_source.en_source_resource_1", "enabled", "enabled"),
+					resource.TestCheckResourceAttr("ibm_en_source.en_source_resource_1", "store_notifications", "true"),
 				),
 			},
 			{
@@ -63,6 +65,8 @@ func testAccCheckIBMEnIBMSourceConfig(instanceName, sourceId string, enabled boo
 		instance_guid = ibm_resource_instance.en_source_resource.guid
 		source_id     = "%s"
 		enabled = %t
+		store_notifications = true
+
 	}
 	`, instanceName, sourceId, enabled)
 }

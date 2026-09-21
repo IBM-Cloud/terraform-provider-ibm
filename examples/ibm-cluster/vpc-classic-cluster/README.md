@@ -111,7 +111,7 @@ data "ibm_container_vpc_cluster" "cluster" {
 |------|-------------|------|---------|
 | name | Name of the cluster. | `string` | yes |
 | flavor | The flavor of the VPC worker node that you want to use. | `string` | yes |
-| worker\_count | The number of worker nodes per zone in the default worker pool. Default value `1`.| `integer` | no |
+| worker_count | The number of worker nodes per zone in the default worker pool. Default value `1`.| `integer` | no |
 | resource_group | The ID of the resource group. | `string` | yes |
 
 ## Outputs

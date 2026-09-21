@@ -16,7 +16,9 @@ import (
 
 func TestAccIBMCmValidationSimpleArgs(t *testing.T) {
 	var conf catalogmanagementv1.Version
-	versionLocator := "dba7e7dd-2bd7-4fcd-a846-4c370eab2672.98ba725b-86fa-4c6a-8430-70f38ec988da"
+	// this needs to be a real VL for a version that can be validated (i.e. the version is not published/ready).  A real validation
+	// will be done, so there will be a workspace created.
+	versionLocator := "f418eaf7-602a-472d-9e9f-ab75a7c193ab.46f1f0e2-3205-41d8-99e1-14dad4e1dfb8"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { acc.TestAccPreCheck(t) },
@@ -28,6 +30,13 @@ func TestAccIBMCmValidationSimpleArgs(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMCmValidationExists("ibm_cm_validation.cm_validation", conf),
 					resource.TestCheckResourceAttr("ibm_cm_validation.cm_validation", "version_locator", versionLocator),
+				),
+			},
+			{ // step 2 will wait for step 1 ^^ to finish.  'target' is not set until step 1 finishes.
+				Config: testAccCheckIBMCmValidationSimpleConfig(versionLocator),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("ibm_cm_validation.cm_validation", "state", "valid"),         // state = valid
+					resource.TestCheckResourceAttrSet("ibm_cm_validation.cm_validation", "target.workspace_id"), // Check workspace_id key exists and has a value
 				),
 			},
 		},
@@ -52,9 +61,9 @@ func testAccCheckIBMCmValidationSimpleConfig(versionLocator string) string {
 			}
 
 			schematics {
-				name = "workspace name"
+				name = "acceptance-test-workspace"
 				description = "workspace description"
-				region = "us-south"
+				region = "eu-de"
 			}
 		}
 	`, versionLocator)

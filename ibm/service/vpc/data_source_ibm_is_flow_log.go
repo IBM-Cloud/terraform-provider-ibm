@@ -207,7 +207,7 @@ func DataSourceIBMIsFlowLog() *schema.Resource {
 func dataSourceIBMIsFlowLogRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	vpcClient, err := meta.(conns.ClientSession).VpcV1API()
 	if err != nil {
-		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_ibm_is_flow_log", "read", "initialize-client")
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_flow_log", "read", "initialize-client")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
@@ -224,7 +224,7 @@ func dataSourceIBMIsFlowLogRead(context context.Context, d *schema.ResourceData,
 
 		flowlogCollectors, _, err := vpcClient.ListFlowLogCollectorsWithContext(context, listOptions) // Use WithContext
 		if err != nil {
-			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("ListFlowLogCollectorsWithContext failed: %s", err.Error()), "(Data) ibm_ibm_is_flow_log", "read")
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("ListFlowLogCollectorsWithContext failed: %s", err.Error()), "(Data) ibm_is_flow_log", "read")
 			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 			return tfErr.GetDiag()
 		}
@@ -233,7 +233,7 @@ func dataSourceIBMIsFlowLogRead(context context.Context, d *schema.ResourceData,
 
 		if len(allrecs) == 0 {
 			err = fmt.Errorf("No flow log collector found with name (%s)", name)
-			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Not found: %s", err.Error()), "(Data) ibm_ibm_is_flow_log", "read")
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Not found: %s", err.Error()), "(Data) ibm_is_flow_log", "read")
 			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 			return tfErr.GetDiag()
 		}
@@ -247,7 +247,7 @@ func dataSourceIBMIsFlowLogRead(context context.Context, d *schema.ResourceData,
 
 		flowlogCollector, _, err := vpcClient.GetFlowLogCollectorWithContext(context, getFlowLogCollectorOptions)
 		if err != nil {
-			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetFlowLogCollectorWithContext failed: %s", err.Error()), "(Data) ibm_ibm_is_flow_log", "read")
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetFlowLogCollectorWithContext failed: %s", err.Error()), "(Data) ibm_is_flow_log", "read")
 			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 			return tfErr.GetDiag()
 		}
@@ -256,39 +256,39 @@ func dataSourceIBMIsFlowLogRead(context context.Context, d *schema.ResourceData,
 
 	d.SetId(*flowLogCollector.ID)
 	if err = d.Set("active", flowLogCollector.Active); err != nil {
-		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting active: %s", err), "(Data) ibm_ibm_is_flow_log", "read", "set-active").GetDiag()
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting active: %s", err), "(Data) ibm_is_flow_log", "read", "set-active").GetDiag()
 	}
 	if err = d.Set("auto_delete", flowLogCollector.AutoDelete); err != nil {
-		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting auto_delete: %s", err), "(Data) ibm_ibm_is_flow_log", "read", "set-auto_delete").GetDiag()
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting auto_delete: %s", err), "(Data) ibm_is_flow_log", "read", "set-auto_delete").GetDiag()
 	}
 	if err = d.Set("created_at", flex.DateTimeToString(flowLogCollector.CreatedAt)); err != nil {
-		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting created_at: %s", err), "(Data) ibm_ibm_is_flow_log", "read", "set-created_at").GetDiag()
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting created_at: %s", err), "(Data) ibm_is_flow_log", "read", "set-created_at").GetDiag()
 	}
 	if err = d.Set("crn", flowLogCollector.CRN); err != nil {
-		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting crn: %s", err), "(Data) ibm_ibm_is_flow_log", "read", "set-crn").GetDiag()
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting crn: %s", err), "(Data) ibm_is_flow_log", "read", "set-crn").GetDiag()
 	}
 	if err = d.Set("href", flowLogCollector.Href); err != nil {
-		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting href: %s", err), "(Data) ibm_ibm_is_flow_log", "read", "set-href").GetDiag()
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting href: %s", err), "(Data) ibm_is_flow_log", "read", "set-href").GetDiag()
 	}
 	if err = d.Set("lifecycle_state", flowLogCollector.LifecycleState); err != nil {
-		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting lifecycle_state: %s", err), "(Data) ibm_ibm_is_flow_log", "read", "set-lifecycle_state").GetDiag()
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting lifecycle_state: %s", err), "(Data) ibm_is_flow_log", "read", "set-lifecycle_state").GetDiag()
 	}
 	if err = d.Set("name", flowLogCollector.Name); err != nil {
-		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting name: %s", err), "(Data) ibm_ibm_is_flow_log", "read", "set-name").GetDiag()
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting name: %s", err), "(Data) ibm_is_flow_log", "read", "set-name").GetDiag()
 	}
 	if err = d.Set("identifier", *flowLogCollector.ID); err != nil {
-		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting identifier: %s", err), "(Data) ibm_ibm_is_flow_log", "read", "set-identifier").GetDiag()
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting identifier: %s", err), "(Data) ibm_is_flow_log", "read", "set-identifier").GetDiag()
 	}
 
 	if flowLogCollector.ResourceGroup != nil {
 		if err = d.Set("resource_group", dataSourceFlowLogCollectorFlattenResourceGroup(*flowLogCollector.ResourceGroup)); err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting resource_group: %s", err), "(Data) ibm_ibm_is_flow_log", "read", "set-resource_group").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting resource_group: %s", err), "(Data) ibm_is_flow_log", "read", "set-resource_group").GetDiag()
 		}
 	}
 
 	if flowLogCollector.StorageBucket != nil {
 		if err = d.Set("storage_bucket", dataSourceFlowLogCollectorFlattenStorageBucket(*flowLogCollector.StorageBucket)); err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting storage_bucket: %s", err), "(Data) ibm_ibm_is_flow_log", "read", "set-storage_bucket").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting storage_bucket: %s", err), "(Data) ibm_is_flow_log", "read", "set-storage_bucket").GetDiag()
 		}
 	}
 
@@ -296,13 +296,13 @@ func dataSourceIBMIsFlowLogRead(context context.Context, d *schema.ResourceData,
 		targetIntf := flowLogCollector.Target
 		target := targetIntf.(*vpcv1.FlowLogCollectorTarget) // type assertion
 		if err = d.Set("target", dataSourceFlowLogCollectorFlattenTarget(*target)); err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting target: %s", err), "(Data) ibm_ibm_is_flow_log", "read", "set-target").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting target: %s", err), "(Data) ibm_is_flow_log", "read", "set-target").GetDiag()
 		}
 	}
 
 	if flowLogCollector.VPC != nil {
 		if err = d.Set("vpc", dataSourceFlowLogCollectorFlattenVPC(*flowLogCollector.VPC)); err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting vpc: %s", err), "(Data) ibm_ibm_is_flow_log", "read", "set-vpc").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting vpc: %s", err), "(Data) ibm_is_flow_log", "read", "set-vpc").GetDiag()
 		}
 	}
 
@@ -314,7 +314,7 @@ func dataSourceIBMIsFlowLogRead(context context.Context, d *schema.ResourceData,
 
 	if err = d.Set(isFlowLogAccessTags, accesstags); err != nil {
 		err = fmt.Errorf("Error setting access_tags: %s", err)
-		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting access_tags: %s", err), "(Data) ibm_ibm_is_flow_log", "read", "set-access_tags").GetDiag()
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting access_tags: %s", err), "(Data) ibm_is_flow_log", "read", "set-access_tags").GetDiag()
 	}
 	return nil
 }

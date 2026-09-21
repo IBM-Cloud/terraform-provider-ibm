@@ -22,6 +22,8 @@ data "ibm_iam_trusted_profile" "iam_trusted_profile" {
 
 You can specify the following arguments for this data source.
 
+* `include_activity` - (Optional, Boolean) Defines if the entity's activity is included in the response. Retrieving activity data is an expensive operation, so only request this when needed.
+  * Constraints: The default value is `false`.
 * `profile_id` - (Required, Forces new resource, String) ID of the trusted profile to get.
 
 ## Attribute Reference
@@ -30,10 +32,15 @@ After your data source is created, you can read values from the following attrib
 
 * `id` - The unique identifier of the iam_trusted_profile.
 * `account_id` - (String) ID of the account that this trusted profile belong to.
+* `activity` - (List) 
+Nested schema for **activity**:
+	* `authn_count` - (Integer) Authentication count, number of times the entity was authenticated.
+	* `last_authn` - (String) Time when the entity was last authenticated.
 * `assignment_id` - (String) ID of the assignment that was used to create an enterprise-managed trusted profile in your account. When returned, this indicates that the trusted profile is created from and managed by a template in the root enterprise account.
 * `created_at` - (String) If set contains a date time string of the creation date in ISO format.
 * `crn` - (String) Cloud Resource Name of the item. Example Cloud Resource Name: 'crn:v1:bluemix:public:iam-identity:us-south:a/myaccount::profile:Profile-94497d0d-2ac3-41bf-a993-a49d1b14627c'.
 * `description` - (String) The optional description of the trusted profile. The 'description' property is only available if a description was provided during a create of a trusted profile.
+* `email` - (String) The optional email of the trusted profile. The 'email' property is only available if an email was provided during a create of a trusted profile.
 * `entity_tag` - (String) Version of the trusted profile details object. You need to specify this value when updating the trusted profile to avoid stale updates.
 * `history` - (List) History of the trusted profile.
 Nested schema for **history**:

@@ -62,23 +62,23 @@ You can specify the following arguments for this resource.
 - `ipv4_address_count` - (Required, Integer) The number of IPv4 addresses in this public address range.
 - `name` - (Optional, String) The name for this public address range. The name is unique across all public address ranges in the region.
 - `resource_group` - (Optional, List) The resource group for this public address range.
-    
-	Nested schema for `resource_group`:
-	- `id` - (Required, String) The unique identifier for this resource group.
+
+  Nested schema for `resource_group`:
+  - `id` - (Required, String) The unique identifier for this resource group.
 - `target` - (Optional, List) The target this public address range is bound to.If absent, this public address range is not bound to a target.
-    
-	Nested schema for `target`:
-	- `vpc` - (Required, List) The VPC this public address range is bound to. If present, any of the below value must be specified.
-	    
-		Nested schema for `vpc`:
-		- `crn` - (Optional, String) The CRN for this VPC.
-		- `href` - (Optional, String) The URL for this VPC.
-		- `id` - (Optional, String) The unique identifier for this VPC.
-	- `zone` - (Required, List) The zone this public address range resides in. If present, any of the below value must be specified.
-	    
-		Nested schema for `zone`:
-		- `href` - (Optional, String) The URL for this zone.
-		- `name` - (Optional, String) The globally unique name for this zone.
+
+  Nested schema for `target`:
+  - `vpc` - (Required, List) The VPC this public address range is bound to. If present, any of the below value must be specified.
+
+    Nested schema for `vpc`:
+    - `crn` - (Optional, String) The CRN for this VPC.
+    - `href` - (Optional, String) The URL for this VPC.
+    - `id` - (Optional, String) The unique identifier for this VPC.
+  - `zone` - (Required, List) The zone this public address range resides in. If present, any of the below value must be specified.
+
+    Nested schema for `zone`:
+    - `href` - (Optional, String) The URL for this zone.
+    - `name` - (Optional, String) The globally unique name for this zone.
 
 ## Attribute Reference
 In addition to all argument reference list, you can access the following attribute reference after your resource is created.
@@ -91,31 +91,31 @@ In addition to all argument reference list, you can access the following attribu
 - `lifecycle_state` - (String) The lifecycle state of the public address range.
 - `resource_type` - (String) The resource type.
 - `resource_group` - (List) The resource group for this public address range.
-    
-	Nested schema for `resource_group`:
-	- `href` - (String) The URL for this resource group.
-	- `id` - (String) The unique identifier for this resource group.
-	- `name` - (String) The name for this resource group.
+
+  Nested schema for `resource_group`:
+  - `href` - (String) The URL for this resource group.
+  - `id` - (String) The unique identifier for this resource group.
+  - `name` - (String) The name for this resource group.
 - `target` - (List) The target this public address range is bound to.If absent, this public address range is not bound to a target.
-    
-	Nested schema for `target`:
-	- `vpc` - (List) The VPC this public address range is bound to.
-	    
-		Nested schema for `vpc`:
-		- `crn` - (String) The CRN for this VPC.
-		- `deleted` - (List) If present, this property indicates the referenced resource has been deleted, and providessome supplementary information.
-			
-			Nested schema for `deleted`:
-			- `more_info` - (Computed, String) Link to documentation about deleted resources.
-		- `href` - (String) The URL for this VPC.
-		- `id` - (String) The unique identifier for this VPC.
-		- `name` - (Computed, String) The name for this VPC. The name is unique across all VPCs in the region.
-		- `resource_type` - (Computed, String) The resource type.
-	- `zone` - (List) The zone this public address range resides in.
-	    
-		Nested schema for `zone`:
-		- `href` - (String) The URL for this zone.
-		- `name` - (String) The globally unique name for this zone.
+
+  Nested schema for `target`:
+  - `vpc` - (List) The VPC this public address range is bound to.
+
+    Nested schema for `vpc`:
+    - `crn` - (String) The CRN for this VPC.
+    - `deleted` - (List) If present, this property indicates the referenced resource has been deleted, and providessome supplementary information.
+
+      Nested schema for `deleted`:
+      - `more_info` - (Computed, String) Link to documentation about deleted resources.
+    - `href` - (String) The URL for this VPC.
+    - `id` - (String) The unique identifier for this VPC.
+    - `name` - (Computed, String) The name for this VPC. The name is unique across all VPCs in the region.
+    - `resource_type` - (Computed, String) The resource type.
+  - `zone` - (List) The zone this public address range resides in.
+
+    Nested schema for `zone`:
+    - `href` - (String) The URL for this zone.
+    - `name` - (String) The globally unique name for this zone.
 
 ## Import
 
@@ -124,7 +124,7 @@ The `id` property can be formed using the public_address_range id. For example:
 
 ```terraform
 import {
-  to = ibm_is_public_address_range.is_public_address_range
+  to = ibm_is_public_address_range.example
   id = "<id>"
 }
 ```
@@ -132,5 +132,5 @@ import {
 Using `terraform import`. For example:
 
 ```console
-% terraform import ibm_is_public_address_range.is_public_address_range <id>
+% terraform import ibm_is_public_address_range.example <id>
 ```

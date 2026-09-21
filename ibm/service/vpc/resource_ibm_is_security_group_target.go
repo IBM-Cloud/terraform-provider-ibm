@@ -154,7 +154,7 @@ func resourceIBMISSecurityGroupTargetCreate(context context.Context, d *schema.R
 		lbid := sgtarget.ID
 		_, errsgt := isWaitForLbSgTargetCreateAvailable(sess, *lbid, d.Timeout(schema.TimeoutCreate))
 		if errsgt != nil {
-			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("isWaitForLbSgTargetCreateAvailable failed: %s", errsgt.Error()), "ibm_is_security_group_target", "create")
+			tfErr := flex.TerraformErrorf(errsgt, fmt.Sprintf("isWaitForLbSgTargetCreateAvailable failed: %s", errsgt.Error()), "ibm_is_security_group_target", "create")
 			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 			return tfErr.GetDiag()
 		}
@@ -272,9 +272,31 @@ func resourceIBMISSecurityGroupTargetDelete(context context.Context, d *schema.R
 	deleteSecurityGroupTargetBindingOptions := sess.NewDeleteSecurityGroupTargetBindingOptions(securityGroupID, securityGroupTargetID)
 	response, err = sess.DeleteSecurityGroupTargetBindingWithContext(context, deleteSecurityGroupTargetBindingOptions)
 	if err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("DeleteSecurityGroupTargetBindingWithContext failed: %s", err.Error()), "ibm_is_security_group_target", "delete")
-		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
-		return tfErr.GetDiag()
+		// Check if error is due to load balancer being in UPDATE_PENDING or CREATE_PENDING state
+		if strings.Contains(strings.ToLower(err.Error()), "load balancer") && ((strings.Contains(strings.ToUpper(err.Error()), "UPDATE_PENDING")) || (strings.Contains(strings.ToUpper(err.Error()), "CREATE_PENDING"))) {
+			log.Printf("[INFO] Load balancer with ID '%s' is in UPDATE_PENDING state. Waiting for it to become available before retrying deletion...", securityGroupTargetID)
+
+			// Wait for the load balancer to become available
+			_, waitErr := isWaitForSGTargetLBAvailable(sess, securityGroupTargetID, d.Timeout(schema.TimeoutDelete))
+			if waitErr != nil {
+				err = fmt.Errorf("isWaitForSGTargetLBAvailable failed: waiting for load balancer to become available while deleting Security Group Target Binding: %s", waitErr)
+				tfErr := flex.TerraformErrorf(waitErr, fmt.Sprintf("isWaitForSGTargetLBAvailable failed: %s", waitErr.Error()), "ibm_is_security_group_target", "delete")
+				log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+				return tfErr.GetDiag()
+			}
+
+			// Retry the deletion after load balancer becomes available
+			response, err = sess.DeleteSecurityGroupTargetBindingWithContext(context, deleteSecurityGroupTargetBindingOptions)
+			if err != nil {
+				tfErr := flex.TerraformErrorf(err, fmt.Sprintf("DeleteSecurityGroupTargetBindingWithContext failed after retry: %s", err.Error()), "ibm_is_security_group_target", "delete")
+				log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+				return tfErr.GetDiag()
+			}
+		} else {
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("DeleteSecurityGroupTargetBindingWithContext failed: %s", err.Error()), "ibm_is_security_group_target", "delete")
+			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+			return tfErr.GetDiag()
+		}
 	}
 	securityGroupTargetReference := sgt.(*vpcv1.SecurityGroupTargetReference)
 	crn := securityGroupTargetReference.CRN

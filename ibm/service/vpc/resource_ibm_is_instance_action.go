@@ -202,13 +202,13 @@ func resourceIBMISInstanceActionRead(context context.Context, d *schema.Resource
 			d.SetId("")
 			return nil
 		}
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetInstanceWithContext failed: %s", err.Error()), "ibm_is_instance", "read")
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetInstanceWithContext failed: %s", err.Error()), "ibm_is_instance_action", "read")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
 	if err = d.Set(isInstanceStatus, *instance.Status); err != nil {
 		err = fmt.Errorf("Error setting status: %s", err)
-		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance", "read", "set-status").GetDiag()
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance_action", "read", "set-status").GetDiag()
 	}
 	statusReasonsList := make([]map[string]interface{}, 0)
 	if instance.StatusReasons != nil {
@@ -226,7 +226,7 @@ func resourceIBMISInstanceActionRead(context context.Context, d *schema.Resource
 	}
 	if err = d.Set(isInstanceStatusReasons, statusReasonsList); err != nil {
 		err = fmt.Errorf("Error setting status_reasons: %s", err)
-		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance", "read", "set-status_reasons").GetDiag()
+		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_instance_action", "read", "set-status_reasons").GetDiag()
 	}
 	return nil
 }

@@ -8,6 +8,9 @@ description: |-
 ---
 
 # ibm_cis_waf_package
+
+!> **Deprecated:** The legacy WAF APIs are deprecated and are replaced by WAF managed rules. For more information on this change, see [Migrating to WAF managed rules](https://cloud.ibm.com/docs/cis?topic=cis-migrating-to-managed-rules)
+
 Provides an IBM Cloud Internet Services WAF package resource. This resource is associated with an IBM Cloud Internet Services instance and a CIS domain resource. It allows to change WAF package settings of a domain of an IBM Cloud Internet Services instance. It is also named as `OWASP` rule set. For more information, about WAF, see [Web Application Firewall concepts](https://cloud.ibm.com/docs/cis?topic=cis-waf-q-and-a).
 
 ## Example usage

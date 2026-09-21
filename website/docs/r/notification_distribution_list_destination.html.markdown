@@ -8,8 +8,6 @@ subcategory: "Platform Notifications"
 
 # ibm_notification_distribution_list_destination
 
-**Note - This resource is currently in beta and subject to change without notice.**
-
 Create, update, and delete notification distribution list destinations with this resource.
 
 ## Example Usage

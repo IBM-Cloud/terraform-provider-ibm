@@ -46,6 +46,11 @@ func ResourceIBMEnSource() *schema.Resource {
 				Required:    true,
 				Description: "The enabled flag for source",
 			},
+			"store_notifications": {
+				Type:        schema.TypeBool,
+				Required:    true,
+				Description: "enable to view the payload of incoming events for troubleshooting.",
+			},
 			"source_id": {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -78,6 +83,7 @@ func resourceIBMEnSourceCreate(context context.Context, d *schema.ResourceData, 
 	}
 
 	options.SetEnabled(d.Get("enabled").(bool))
+	options.SetStoreNotifications(d.Get("store_notifications").(bool))
 
 	result, _, err := enClient.CreateSourcesWithContext(context, options)
 	if err != nil {
@@ -141,6 +147,11 @@ func resourceIBMEnSourceRead(context context.Context, d *schema.ResourceData, me
 		return diag.FromErr(fmt.Errorf("[ERROR] Error setting enabled: %s", err))
 	}
 
+	if err = d.Set("store_notifications", result.StoreNotifications); err != nil {
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting store_notifications flag: %s", err), "(Data) ibm_en_source", "read")
+		return tfErr.GetDiag()
+	}
+
 	if err = d.Set("updated_at", flex.DateTimeToString(result.UpdatedAt)); err != nil {
 		return diag.FromErr(fmt.Errorf("[ERROR] Error setting updated_at: %s", err))
 	}
@@ -167,7 +178,7 @@ func resourceIBMEnSourceUpdate(context context.Context, d *schema.ResourceData, 
 	options.SetInstanceID(parts[0])
 	options.SetID(parts[1])
 
-	if ok := d.HasChanges("name", "description", "enabled"); ok {
+	if ok := d.HasChanges("name", "description", "enabled", "store_notifications"); ok {
 		options.SetName(d.Get("name").(string))
 
 		if _, ok := d.GetOk("description"); ok {
@@ -175,6 +186,7 @@ func resourceIBMEnSourceUpdate(context context.Context, d *schema.ResourceData, 
 		}
 
 		options.SetEnabled(d.Get("enabled").(bool))
+		options.SetStoreNotifications(d.Get("store_notifications").(bool))
 
 		_, _, err := enClient.UpdateSourceWithContext(context, options)
 		if err != nil {

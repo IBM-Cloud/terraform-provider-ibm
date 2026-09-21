@@ -19,7 +19,7 @@ func TestAccIBMCISRulesetEntrypointVersionsDataSource_Basic(t *testing.T) {
 		Providers: acc.TestAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckCisAlertsDataSource_basic("test", acc.CisDomainStatic),
+				Config: testAccCheckCisRulesetsEntrypointVersionsDataSource_basic("test", acc.CisDomainStatic),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(name, "id"),
 				),
@@ -30,7 +30,9 @@ func TestAccIBMCISRulesetEntrypointVersionsDataSource_Basic(t *testing.T) {
 func testAccCheckCisRulesetsEntrypointVersionsDataSource_basic(id, CisDomainStatic string) string {
 	return testAccCheckIBMCisDomainDataSourceConfigBasic1() + fmt.Sprintf(`
 	data "ibm_cis_ruleset_entrypoint_versions" "%[1]s" {
-		cis_id = data.ibm_cis.cis.id
+		cis_id    = data.ibm_cis.cis.id
+		domain_id = data.ibm_cis_domain.cis_domain.domain_id
+		phase     = "http_request_firewall_managed"
 	  }
 `, id, acc.CisDomainStatic)
 }

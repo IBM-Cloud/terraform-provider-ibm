@@ -58,6 +58,31 @@ func TestAccIBMIsIpsecPoliciesDataSourceBasic(t *testing.T) {
 	})
 }
 
+func TestAccIBMIsIpsecPoliciesDataSourceMultipleAlgorithms(t *testing.T) {
+	name1 := fmt.Sprintf("tfipsec-multi-name1-%d", acctest.RandIntRange(10, 100))
+	name2 := fmt.Sprintf("tfipsec-multi-name2-%d", acctest.RandIntRange(10, 100))
+	dataSourceName := "data.ibm_is_ipsec_policies.is_ipsec_policies"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { acc.TestAccPreCheck(t) },
+		Providers: acc.TestAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMIsIpsecPoliciesDataSourceMultipleAlgorithmsConfig(name1, name2),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet(dataSourceName, "ipsec_policies.#"),
+					resource.TestCheckResourceAttrSet(dataSourceName, "ipsec_policies.0.authentication_algorithms.#"),
+					resource.TestCheckResourceAttrSet(dataSourceName, "ipsec_policies.0.authentication_algorithms.0"),
+					resource.TestCheckResourceAttrSet(dataSourceName, "ipsec_policies.0.encryption_algorithms.#"),
+					resource.TestCheckResourceAttrSet(dataSourceName, "ipsec_policies.0.encryption_algorithms.0"),
+					resource.TestCheckResourceAttrSet(dataSourceName, "ipsec_policies.0.pfs_groups.#"),
+					resource.TestCheckResourceAttrSet(dataSourceName, "ipsec_policies.0.pfs_groups.0"),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckIBMIsIpsecPoliciesDataSourceConfig(name1, name2 string) string {
 	return fmt.Sprintf(`
 		// Create two policies with different configurations to ensure we test various values
@@ -74,6 +99,33 @@ func testAccCheckIBMIsIpsecPoliciesDataSourceConfig(name1, name2 string) string 
 			authentication_algorithm = "sha512"
 			encryption_algorithm = "aes256"
 			pfs = "group_19"
+			key_lifetime = 7200
+		}
+		
+		data "ibm_is_ipsec_policies" "is_ipsec_policies" {
+			depends_on = [
+				ibm_is_ipsec_policy.example1,
+				ibm_is_ipsec_policy.example2
+			]
+		}
+	`, name1, name2)
+}
+
+func testAccCheckIBMIsIpsecPoliciesDataSourceMultipleAlgorithmsConfig(name1, name2 string) string {
+	return fmt.Sprintf(`
+		resource "ibm_is_ipsec_policy" "example1" {
+			name = "%s"
+			authentication_algorithms = ["sha256", "sha384"]
+			encryption_algorithms = ["aes128", "aes192"]
+			pfs_groups = ["group_14", "group_15"]
+			key_lifetime = 3600
+		}
+		
+		resource "ibm_is_ipsec_policy" "example2" {
+			name = "%s"
+			authentication_algorithms = ["sha512", "sha384"]
+			encryption_algorithms = ["aes256", "aes192"]
+			pfs_groups = ["group_19", "group_14"]
 			key_lifetime = 7200
 		}
 		

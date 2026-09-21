@@ -106,11 +106,13 @@ In addition to all argument reference list, you can access the following attribu
 - `lifecycle_state` - (String) The lifecycle state of the VPN gateway.
 - `local_asn` - (Integer) The local autonomous system number (ASN) for this VPN gateway and its connections.
 - `vpc` - (String) 	The VPC this VPN server resides in.
+
   Nested scheme for `vpc`:
   - `crn` - (String) The CRN for this VPC.
   - `deleted` - (List) 	If present, this property indicates the referenced resource has been deleted and provides some supplementary information.
-	  Nested scheme for **deleted**:
-		- `more_info` - (String) Link to documentation about deleted resources.
+
+    Nested scheme for **deleted**:
+    - `more_info` - (String) Link to documentation about deleted resources.
   - `href` - (String) - The URL for this VPC
   - `id` - (String) - The unique identifier for this VPC.
   - `name` - (String) - The unique user-defined name for this VPC.

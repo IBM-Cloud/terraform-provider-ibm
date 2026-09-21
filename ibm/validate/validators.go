@@ -160,7 +160,7 @@ func ValidateAllowedIntValues(is []int) schema.SchemaValidateFunc {
 		}
 		if !existed {
 			errors = append(errors, fmt.Errorf(
-				"%q must contain a valid int value should in array %#v, got %q",
+				"%q must contain a valid int value should in array %#v, got %d",
 				k, is, value))
 		}
 		return
@@ -258,7 +258,7 @@ func validateAppInstance(v interface{}, k string) (ws []string, errors []error) 
 	instances := v.(int)
 	if instances < 0 {
 		errors = append(errors, fmt.Errorf(
-			"%q (%q) must be greater than 0", k, instances))
+			"%q (%d) must be greater than 0", k, instances))
 	}
 	return
 
@@ -303,7 +303,7 @@ func ValidatePublicBandwidth(v interface{}, k string) (ws []string, errors []err
 	bandwidth := v.(int)
 	if bandwidth < 0 {
 		errors = append(errors, fmt.Errorf(
-			"%q (%q) must be greater than 0", k, bandwidth))
+			"%q (%d) must be greater than 0", k, bandwidth))
 		return
 	}
 	validBandwidths := []int{250, 1000, 5000, 10000, 20000}

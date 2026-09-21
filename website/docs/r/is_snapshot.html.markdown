@@ -119,24 +119,23 @@ Review the argument references that you can specify for your resource.
   **&#x2022;** For more information, about creating access tags, see [working with tags](https://cloud.ibm.com/docs/account?topic=account-tag&interface=ui#create-access-console).</br>
   **&#x2022;** You must have the access listed in the [Granting users access to tag resources](https://cloud.ibm.com/docs/account?topic=account-access) for `access_tags`</br>
   **&#x2022;** `access_tags` must be in the format `key:value`.
- - `allowed_use` - (Optional, List) The usage constraints to match against the requested instance or bare metal server properties to determine compatibility. Can only be specified for bootable snapshots.
-    
-    Nested schema for `allowed_use`:
-    - `api_version` - (Optional, String) The API version with which to evaluate the expressions.
-	  
-    - `bare_metal_server` - (Optional, String) The expression that must be satisfied by the properties of a bare metal server provisioned using the image data in this snapshot. If unspecified, the expression will be set to true. The expression follows [Common Expression Language](https://github.com/google/cel-spec/blob/master/doc/langdef.md), but does not support built-in functions and macros.
-    
-    ~> **NOTE** </br> the following variable is supported, corresponding to the `BareMetalServer` property: </br>
-      **&#x2022;** `enable_secure_boot` - (boolean)Indicates whether secure boot is enabled.
-	  
-    - `instance` - (Optional, String) The expression that must be satisfied by the properties of a virtual server instance provisioned using this snapshot. If unspecified, the expression will be set to true. The expression follows [Common Expression Language](https://github.com/google/cel-spec/blob/master/doc/langdef.md), but does not support built-in functions and macros.
-    
-    ~> **NOTE** </br> In addition, the following variables are supported, corresponding to `Instance` properties: </br>
-      **&#x2022;** `gpu.count` - (integer) The number of GPUs. </br>
-      **&#x2022;** `gpu.manufacturer` - (string) The GPU manufacturer. </br>
-      **&#x2022;** `gpu.memory` - (integer) The overall amount of GPU memory in GiB (gibibytes). </br>
-      **&#x2022;** `gpu.model` - (string) The GPU. </br>
-      **&#x2022;** `enable_secure_boot` - (boolean) Indicates whether secure boot is enabled. </br>  
+- `allowed_use` - (Optional, List) The usage constraints to match against the requested instance or bare metal server properties to determine compatibility. Can only be specified for bootable snapshots.
+
+  Nested schema for `allowed_use`:
+  - `api_version` - (Optional, String) The API version with which to evaluate the expressions.
+  - `bare_metal_server` - (Optional, String) The expression that must be satisfied by the properties of a bare metal server provisioned using the image data in this snapshot. If unspecified, the expression will be set to true. The expression follows [Common Expression Language](https://github.com/google/cel-spec/blob/master/doc/langdef.md), but does not support built-in functions and macros.
+
+  ~> **NOTE** </br> the following variable is supported, corresponding to the `BareMetalServer` property: </br>
+    **&#x2022;** `enable_secure_boot` - (boolean)Indicates whether secure boot is enabled.
+
+  - `instance` - (Optional, String) The expression that must be satisfied by the properties of a virtual server instance provisioned using this snapshot. If unspecified, the expression will be set to true. The expression follows [Common Expression Language](https://github.com/google/cel-spec/blob/master/doc/langdef.md), but does not support built-in functions and macros.
+
+  ~> **NOTE** </br> In addition, the following variables are supported, corresponding to `Instance` properties: </br>
+    **&#x2022;** `gpu.count` - (integer) The number of GPUs. </br>
+    **&#x2022;** `gpu.manufacturer` - (string) The GPU manufacturer. </br>
+    **&#x2022;** `gpu.memory` - (integer) The overall amount of GPU memory in GiB (gibibytes). </br>
+    **&#x2022;** `gpu.model` - (string) The GPU. </br>
+    **&#x2022;** `enable_secure_boot` - (boolean) Indicates whether secure boot is enabled. </br>
 - `clones` - (Optional, List) The list of zones to create a clone of this snapshot.
 - `encryption_key` - (String) A reference CRN to the root key used to wrap the data encryption key for the source snapshot.
 - `name` - (Optional, String) The name of the snapshot.
@@ -152,43 +151,43 @@ Review the argument references that you can specify for your resource.
 ## Attribute reference
 In addition to all argument reference list, you can access the following attribute reference after your resource is created.
 - `backup_policy_plan` - (List) If present, the backup policy plan which created this snapshot.
-  
-   Nested scheme for `backup_policy_plan`:
-    - `deleted` - (List) If present, this property indicates the referenced resource has been deleted and provides some supplementary information.
-   
-      Nested scheme for `deleted`:
-      - `more_info` - (String) Link to documentation about deleted resources.
-    - `href` - (String) The URL for this backup policy plan.
-    - `id` - (String) The unique identifier for this backup policy plan.
-    - `name` - (String) The unique user defined name for this backup policy plan. If unspecified, the name will be a hyphenated list of randomly selected words.
-    - `resource_type` - (String) The type of resource referenced.
+
+  Nested scheme for `backup_policy_plan`:
+  - `deleted` - (List) If present, this property indicates the referenced resource has been deleted and provides some supplementary information.
+
+    Nested scheme for `deleted`:
+    - `more_info` - (String) Link to documentation about deleted resources.
+  - `href` - (String) The URL for this backup policy plan.
+  - `id` - (String) The unique identifier for this backup policy plan.
+  - `name` - (String) The unique user defined name for this backup policy plan. If unspecified, the name will be a hyphenated list of randomly selected words.
+  - `resource_type` - (String) The type of resource referenced.
 - `bootable` - (Bool) Indicates if a boot volume attachment can be created with a volume created from this snapshot.
 - `catalog_offering` - (List) The catalog offering inherited from the snapshot's source. If a virtual server instance is provisioned with a source_snapshot specifying this snapshot, the virtual server instance will use this snapshot's catalog offering, including its pricing plan. If absent, this snapshot is not associated with a catalog offering.
 
   Nested scheme for `catalog_offering`:
-    - `version_crn` - (String) The CRN for this version of a catalog offering
-    - `plan_crn` - (String) The CRN for this catalog offering version's billing plan
-    - `deleted` - (List) If present, this property indicates the referenced resource has been deleted, and provides some supplementary information.
-    
-      Nested schema for `deleted`:
-        - `more_info`  - (String) Link to documentation about deleted resources.
+  - `version_crn` - (String) The CRN for this version of a catalog offering
+  - `plan_crn` - (String) The CRN for this catalog offering version's billing plan
+  - `deleted` - (List) If present, this property indicates the referenced resource has been deleted, and provides some supplementary information.
+
+    Nested schema for `deleted`:
+    - `more_info`  - (String) Link to documentation about deleted resources.
 - `copies` - (List) The copies of this snapshot in other regions.
 
-    Nested scheme for `copies`:
-    - `crn` - (String) The CRN for the copied snapshot.
-    - `deleted` - (List) If present, this property indicates the referenced resource has been deleted and provides some supplementary information.
-    
-      Nested scheme for `deleted`:
-      - `more_info` - (String) Link to documentation about deleted resources.
-    - `href` - (String) The URL for the copied snapshot.
-    - `id` - (String) The unique identifier for the copied snapshot.
-    - `name` - (String) The name for the copied snapshot. The name is unique across all snapshots in the copied snapshot's native region.
-    - `remote` - (List) If present, this property indicates the referenced resource is remote to this region,and identifies the native region.
-      Nested scheme for `remote`:
-      - `href` - (String) The URL for this region.
-      - `name` - (String) The globally unique name for this region.
-    - `resource_type` - (String) The resource type.
-    - `crn` - (String) The CRN for this snapshot.
+  Nested scheme for `copies`:
+  - `crn` - (String) The CRN for the copied snapshot.
+  - `deleted` - (List) If present, this property indicates the referenced resource has been deleted and provides some supplementary information.
+
+    Nested scheme for `deleted`:
+    - `more_info` - (String) Link to documentation about deleted resources.
+  - `href` - (String) The URL for the copied snapshot.
+  - `id` - (String) The unique identifier for the copied snapshot.
+  - `name` - (String) The name for the copied snapshot. The name is unique across all snapshots in the copied snapshot's native region.
+  - `remote` - (List) If present, this property indicates the referenced resource is remote to this region,and identifies the native region.
+    Nested scheme for `remote`:
+    - `href` - (String) The URL for this region.
+    - `name` - (String) The globally unique name for this region.
+  - `resource_type` - (String) The resource type.
+  - `crn` - (String) The CRN for this snapshot.
 - `crn` - (String) The CRN for this snapshot.
 - `encryption` - (String) The type of encryption used on the source volume. Supported values are **provider_managed**, **user_managed**.
 - `encryption_key` - (String) The CRN of the `Key Protect Root Key` or `Hyper Protect Crypto Services Root Key` for this resource. The root key used to wrap the data encryption key for the source volume. This property will be present for volumes with an encryption type of `user_managed`.
@@ -202,32 +201,32 @@ In addition to all argument reference list, you can access the following attribu
 - `size` - (Integer) The size of this snapshot rounded up to the next gigabyte.
 - `snapshot_consistency_group` - (List) The snapshot consistency group which created this snapshot.
 
-    Nested scheme for `snapshot_consistency_group`:
-    - `crn` - (String) The CRN of this snapshot consistency group.
-    - `deleted` - (List) If present, this property indicates the referenced resource has been deleted and provides some supplementary information.
-    
-      Nested scheme for `deleted`:
-      - `more_info` - (String) Link to documentation about deleted resources.
-    - `href` - (String) The URL for the snapshot consistency group.
-    - `id` - (String) The unique identifier for the snapshot consistency group.
-    - `name` - (String) TThe name for the snapshot consistency group. The name is unique across all snapshot consistency groups in the region.
-    - `resource_type` - (String) The resource type.
+  Nested scheme for `snapshot_consistency_group`:
+  - `crn` - (String) The CRN of this snapshot consistency group.
+  - `deleted` - (List) If present, this property indicates the referenced resource has been deleted and provides some supplementary information.
+
+    Nested scheme for `deleted`:
+    - `more_info` - (String) Link to documentation about deleted resources.
+  - `href` - (String) The URL for the snapshot consistency group.
+  - `id` - (String) The unique identifier for the snapshot consistency group.
+  - `name` - (String) TThe name for the snapshot consistency group. The name is unique across all snapshot consistency groups in the region.
+  - `resource_type` - (String) The resource type.
 - `source_image` - (String) If present, the unique identifier for the image from which the data on this volume was most directly provisioned.
 - `source_snapshot` - (String) If present, the source snapshot this snapshot was created from.
 
   Nested scheme for `source_snapshot`:
   - `crn` - (String) The CRN of the source snapshot.
   - `deleted` - (List) If present, this property indicates the referenced resource has been deleted and provides some supplementary information.
-   
-      Nested scheme for `deleted`:
-      - `more_info` - (String) Link to documentation about deleted resources.
+
+    Nested scheme for `deleted`:
+    - `more_info` - (String) Link to documentation about deleted resources.
   - `href` - (String) The URL for the source snapshot.
   - `id` - (String) The unique identifier for the source snapshot.
   - `name` - (String) The name for the source snapshot. The name is unique across all snapshots in the source snapshot's native region.
   - `remote` - (List) If present, this property indicates the referenced resource is remote to this region,and identifies the native region.
-      Nested scheme for `remote`:
-      - `href` - (String) The URL for this region.
-      - `name` - (String) The globally unique name for this region.
+    Nested scheme for `remote`:
+    - `href` - (String) The URL for this region.
+    - `name` - (String) The globally unique name for this region.
   - `resource_type` - (String) The resource type.
 
 
@@ -239,12 +238,12 @@ The `id` property can be formed using the snapshot identifier. For example:
 ```terraform
 import {
   to = ibm_is_snapshot.example
-  id = "< id >"
+  id = "<id>"
 }
 ```
 
 Using `terraform import`. For example:
 
 ```console
-% terraform import ibm_is_snapshot.example < id >
+% terraform import ibm_is_snapshot.example <id>
 ```

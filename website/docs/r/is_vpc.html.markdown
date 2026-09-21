@@ -39,80 +39,80 @@ The following example to create a VPC with dns:
 resource "ibm_is_vpc" "example" {
   name = "example-vpc"
   dns {
-		enable_hub = true
-		resolver {
-			manual_servers {
-				address = "192.168.3.4"
-			}
-		}
-	}
+    enable_hub = true
+    resolver {
+      manual_servers {
+        address = "192.168.3.4"
+      }
+    }
+  }
 }
 
 resource "ibm_is_vpc" "example_vpc_manual" {
-	name = "example-vpc-manual"
-	dns {
-		enable_hub = true
-		resolver {
-			manual_servers {
-				address ="192.168.0.4"
-				zone_affinity= "au-syd-1"
-			}
-			manual_servers {
-				address =  "192.168.64.4"
-				zone_affinity = "au-syd-2"
-			}
-			manual_servers {
-				address= "192.168.128.4"
-				zone_affinity ="au-syd-3"
-			}
-		}
-	}
+  name = "example-vpc-manual"
+  dns {
+    enable_hub = true
+    resolver {
+      manual_servers {
+        address       = "192.168.0.4"
+        zone_affinity = "au-syd-1"
+      }
+      manual_servers {
+        address       = "192.168.64.4"
+        zone_affinity = "au-syd-2"
+      }
+      manual_servers {
+        address       = "192.168.128.4"
+        zone_affinity = "au-syd-3"
+      }
+    }
+  }
 }
 
 // system type resolver
 resource "ibm_is_vpc" "example-system" {
-	name = "example-system-vpc"
-	dns {
-		enable_hub = false
-    type = "system"
+  name = "example-system-vpc"
+  dns {
+    enable_hub = false
+    type       = "system"
     // uncommenting/patching vpc with below code would make the resolver type delegated
     # resolver {
-		# 	type = "delegated"
-		# 	vpc_id = ibm_is_vpc.example.id
-		# }
-	}
+    #   type   = "delegated"
+    #   vpc_id = ibm_is_vpc.example.id
+    # }
+  }
 }
 
 // delegated type resolver
 
 resource "ibm_is_vpc" "example-delegated" {
   // required : add a dependency on ibm dns custom resolver of the hub vpc
-	depends_on = [ ibm_dns_custom_resolver.example-hub ]
-	name = "example-hub-false-delegated"
-	dns {
-		enable_hub = false
-		resolver {
-			type = "delegated"
-			vpc_id = ibm_is_vpc.example.id
-			dns_binding_name = "example-vpc-binding"
-		}
-	}
+  depends_on = [ibm_dns_custom_resolver.example-hub]
+  name       = "example-hub-false-delegated"
+  dns {
+    enable_hub = false
+    resolver {
+      type             = "delegated"
+      vpc_id           = ibm_is_vpc.example.id
+      dns_binding_name = "example-vpc-binding"
+    }
+  }
 }
 
 // to change from delegated to system (this removes the binding)
 
 resource "ibm_is_vpc" "example-delegated-to-system" {
   // required : add a dependency on ibm dns custom resolver of the hub vpc
-	depends_on = [ ibm_dns_custom_resolver.example-hub ]
-	name = "example-hub-false-delegated"
-	dns {
-		enable_hub = false
-		resolver {
-			type = "system"
-			vpc_id = "null"
-			dns_binding_name = "null"
-		}
-	}
+  depends_on = [ibm_dns_custom_resolver.example-hub]
+  name       = "example-hub-false-delegated"
+  dns {
+    enable_hub = false
+    resolver {
+      type             = "system"
+      vpc_id           = "null"
+      dns_binding_name = "null"
+    }
+  }
 }
 ```
 
@@ -199,8 +199,8 @@ In addition to all argument reference list, you can access the following attribu
 
 - `crn` - (String) The CRN of the VPC.
 - `cse_source_addresses`- (List) A list of the cloud service endpoints that are associated with your VPC, including their source IP address and zone.
-	- `address` - (String) The IP address of the cloud service endpoint.
-	- `zone_name` - (String) The zone where the cloud service endpoint is located.
+  - `address` - (String) The IP address of the cloud service endpoint.
+  - `zone_name` - (String) The zone where the cloud service endpoint is located.
 - `default_address_prefixes` - (Map) A map of default address prefixes for each zone in the VPC. The keys are the zone names, and the values are the corresponding address prefixes.
   Example:
   ```hcl
@@ -218,23 +218,26 @@ In addition to all argument reference list, you can access the following attribu
 - `default_routing_table`-  (String) The unique identifier of the VPC default routing table.
 - `default_routing_table_crn`-  (String) CRN of the default routing table.
 - `health_reasons` - (List) The reasons for the current `health_state` (if any).The enumerated reason code values for this property will expand in the future. When processing this property, check for and log unknown values. Optionally halt processing and surface the error, or bypass the resource on which the unexpected reason code was encountered.
+
   Nested schema for **health_reasons**:
-	- `code` - (String) A snake case string succinctly identifying the reason for this health state.
-	- `message` - (String) An explanation of the reason for this health state.
-	- `more_info` - (String) Link to documentation about the reason for this health state.
+  - `code` - (String) A snake case string succinctly identifying the reason for this health state.
+  - `message` - (String) An explanation of the reason for this health state.
+  - `more_info` - (String) Link to documentation about the reason for this health state.
 
 - `health_state` - (String) The health of this resource.- `ok`: No abnormal behavior detected- `degraded`: Experiencing compromised performance, capacity, or connectivity- `faulted`: Completely unreachable, inoperative, or otherwise entirely incapacitated- `inapplicable`: The health state does not apply because of the current lifecycle state. A resource with a lifecycle state of `failed` or `deleting` will have a health state of `inapplicable`. A `pending` resource may also have this state.[`degraded`, `faulted`, `inapplicable`, `ok`]
 - `id` - (String) The unique identifier of the VPC that you created.
 - `public_address_ranges` - (List) The public address ranges attached to this VPC.
+
   Nested schema for `public_address_ranges`:
-	- `crn` - (String) The CRN for this public address range.
-	- `deleted` - (List) If present, this property indicates the referenced resource has been deleted, and providessome supplementary information.
-	  Nested schema for `deleted`:
-		- `more_info` - (String) Link to documentation about deleted resources.
-	- `href` - (String) The URL for this public address range.
-	- `id` - (String) The unique identifier for this public address range.
-	- `name` - (String) The name for this public address range. The name is unique across all public address ranges in the region.
-	- `resource_type` - (String) The resource type.
+  - `crn` - (String) The CRN for this public address range.
+  - `deleted` - (List) If present, this property indicates the referenced resource has been deleted, and providessome supplementary information.
+
+    Nested schema for `deleted`:
+    - `more_info` - (String) Link to documentation about deleted resources.
+  - `href` - (String) The URL for this public address range.
+  - `id` - (String) The unique identifier for this public address range.
+  - `name` - (String) The name for this public address range. The name is unique across all public address ranges in the region.
+  - `resource_type` - (String) The resource type.
 - `subnets`- (List of Strings) A list of subnets that are attached to a VPC.
 
   Nested scheme for `subnets`:
@@ -255,13 +258,13 @@ In addition to all argument reference list, you can access the following attribu
   
     Nested scheme for `rules`:
     - `code`- (String) The ICMP traffic code to allow.
-	- `direction`- (String) The direction of the traffic either inbound or outbound.
+    - `direction`- (String) The direction of the traffic either inbound or outbound.
     - `ip_version`-  (String) The IP version: **ipv4**.
     - `remote` -  (String) Security group ID, an IP address, a CIDR block, or a single security group identifier.
-	- `rule_id` - (String) The rule ID.
+    - `rule_id` - (String) The rule ID.
     - `port_min` - (String) The inclusive lower bound of TCP port range.
     - `port_max` - (String) The inclusive upper bound of TCP port range.
-	- `type` - (String) The ICMP traffic type to allow.
+    - `type` - (String) The ICMP traffic type to allow.
 
 
 ## Import

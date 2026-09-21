@@ -51,23 +51,67 @@ func ResourceIBMISIKEPolicy() *schema.Resource {
 
 			isIKEAuthenticationAlg: {
 				Type:         schema.TypeString,
-				Required:     true,
+				Optional:     true,
+				Computed:     true,
+				ExactlyOneOf: []string{"authentication_algorithm", "authentication_algorithms"},
+				Deprecated:   "`authentication_algorithm` is deprecated in favor of `authentication_algorithms`. The existing `authentication_algorithm` field will continue to function without any behavior changes to maintain backward compatibility. No migration is required for existing configurations, for newer use `authentication_algorithms`. Use `authentication_algorithms` to configure multiple authentication algorithms. This enhancement adds support for multi-algorithm authentication while preserving compatibility with earlier single-algorithm configurations.",
 				ValidateFunc: validate.InvokeValidator("ibm_is_ike_policy", isIKEAuthenticationAlg),
 				Description:  "Authentication algorithm type",
+			},
+			"authentication_algorithms": &schema.Schema{
+				Type:         schema.TypeList,
+				MaxItems:     3,
+				Optional:     true,
+				Computed:     true,
+				ExactlyOneOf: []string{"authentication_algorithm", "authentication_algorithms"},
+				Description:  "The authentication algorithms to use for IKE Negotiation.The order of the algorithms in this array indicates their priority for negotiation, with each algorithm having priority over the one after it.",
+				Elem: &schema.Schema{
+					Type:         schema.TypeString,
+					ValidateFunc: validate.InvokeValidator("ibm_is_ike_policy", isIKEAuthenticationAlg),
+				},
 			},
 
 			isIKEEncryptionAlg: {
 				Type:         schema.TypeString,
-				Required:     true,
+				Optional:     true,
+				Computed:     true,
+				ExactlyOneOf: []string{"encryption_algorithm", "encryption_algorithms"},
+				Deprecated:   "`encryption_algorithm` is deprecated in favor of `encryption_algorithms`. The existing `encryption_algorithm` field will continue to function without any behavior changes to maintain backward compatibility. No migration is required for existing configurations, for newer use `encryption_algorithms`. Use `encryption_algorithms` to configure multiple encryption algorithms. This enhancement adds support for multi-algorithm encryption while preserving compatibility with earlier single-algorithm configurations.",
 				ValidateFunc: validate.InvokeValidator("ibm_is_ike_policy", isIKEEncryptionAlg),
 				Description:  "Encryption alogorithm type",
 			},
-
+			"encryption_algorithms": &schema.Schema{
+				Type:         schema.TypeList,
+				Optional:     true,
+				MaxItems:     3,
+				Computed:     true,
+				ExactlyOneOf: []string{"encryption_algorithm", "encryption_algorithms"},
+				Description:  "The encryption algorithms to use for IKE Negotiation.The order of the algorithms in this array indicates their priority for negotiation, with each algorithm having priority over the one after it.",
+				Elem: &schema.Schema{
+					Type:         schema.TypeString,
+					ValidateFunc: validate.InvokeValidator("ibm_is_ike_policy", isIKEEncryptionAlg),
+				},
+			},
 			isIKEDhGroup: {
 				Type:         schema.TypeInt,
-				Required:     true,
+				Optional:     true,
+				Computed:     true,
+				ExactlyOneOf: []string{"dh_group", "dh_groups"},
+				Deprecated:   "`dh_group` is deprecated in favor of `dh_groups`. The existing `dh_group` field will continue to function without any behavior changes to maintain backward compatibility. No migration is required for existing configurations, for newer use `dh_groups`. Use `dh_groups` to configure multiple Diffie-Hellman groups. This enhancement adds support for multi-group DH configurations while preserving compatibility with earlier single-group configurations.",
 				ValidateFunc: validate.InvokeValidator("ibm_is_ike_policy", isIKEDhGroup),
 				Description:  "IKE DH group",
+			},
+			"dh_groups": &schema.Schema{
+				Type:         schema.TypeList,
+				Optional:     true,
+				MaxItems:     12,
+				Computed:     true,
+				ExactlyOneOf: []string{"dh_group", "dh_groups"},
+				Description:  "The Diffie-Hellman groups to use for IKE negotiation.The order of the Diffie-Hellman groups in this array indicates their priority for negotiation, with each Diffie-Hellman group having priority over the one after it.",
+				Elem: &schema.Schema{
+					Type:         schema.TypeInt,
+					ValidateFunc: validate.InvokeValidator("ibm_is_ike_policy", isIKEDhGroup),
+				},
 			},
 
 			isIKEResourceGroup: {
@@ -198,18 +242,15 @@ func resourceIBMISIKEPolicyCreate(context context.Context, d *schema.ResourceDat
 
 	log.Printf("[DEBUG] IKE Policy create")
 	name := d.Get(isIKEName).(string)
-	authenticationAlg := d.Get(isIKEAuthenticationAlg).(string)
-	encryptionAlg := d.Get(isIKEEncryptionAlg).(string)
-	dhGroup := int64(d.Get(isIKEDhGroup).(int))
 
-	diag := ikepCreate(context, d, meta, authenticationAlg, encryptionAlg, name, dhGroup)
+	diag := ikepCreate(context, d, meta, name)
 	if diag != nil {
 		return diag
 	}
 	return resourceIBMISIKEPolicyRead(context, d, meta)
 }
 
-func ikepCreate(context context.Context, d *schema.ResourceData, meta interface{}, authenticationAlg, encryptionAlg, name string, dhGroup int64) diag.Diagnostics {
+func ikepCreate(context context.Context, d *schema.ResourceData, meta interface{}, name string) diag.Diagnostics {
 	sess, err := vpcClient(meta)
 	if err != nil {
 		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_ike_policy", "create", "initialize-client")
@@ -217,10 +258,40 @@ func ikepCreate(context context.Context, d *schema.ResourceData, meta interface{
 		return tfErr.GetDiag()
 	}
 	options := &vpcv1.CreateIkePolicyOptions{
-		AuthenticationAlgorithm: &authenticationAlg,
-		EncryptionAlgorithm:     &encryptionAlg,
-		DhGroup:                 &dhGroup,
-		Name:                    &name,
+		Name: &name,
+	}
+	if _, ok := d.GetOk("authentication_algorithm"); ok {
+		options.SetAuthenticationAlgorithm(d.Get("authentication_algorithm").(string))
+	}
+	if _, ok := d.GetOk("authentication_algorithms"); ok {
+		var authenticationAlgorithms []string
+		for _, v := range d.Get("authentication_algorithms").([]interface{}) {
+			authenticationAlgorithmsItem := v.(string)
+			authenticationAlgorithms = append(authenticationAlgorithms, authenticationAlgorithmsItem)
+		}
+		options.SetAuthenticationAlgorithms(authenticationAlgorithms)
+	}
+	if _, ok := d.GetOk("dh_group"); ok {
+		options.SetDhGroup(int64(d.Get("dh_group").(int)))
+	}
+	if _, ok := d.GetOk("dh_groups"); ok {
+		var dhGroups []int64
+		for _, v := range d.Get("dh_groups").([]interface{}) {
+			dhGroupsItem := int64(v.(int))
+			dhGroups = append(dhGroups, dhGroupsItem)
+		}
+		options.SetDhGroups(dhGroups)
+	}
+	if _, ok := d.GetOk("encryption_algorithm"); ok {
+		options.SetEncryptionAlgorithm(d.Get("encryption_algorithm").(string))
+	}
+	if _, ok := d.GetOk("encryption_algorithms"); ok {
+		var encryptionAlgorithms []string
+		for _, v := range d.Get("encryption_algorithms").([]interface{}) {
+			encryptionAlgorithmsItem := v.(string)
+			encryptionAlgorithms = append(encryptionAlgorithms, encryptionAlgorithmsItem)
+		}
+		options.SetEncryptionAlgorithms(encryptionAlgorithms)
 	}
 
 	if keylt, ok := d.GetOk(isIKEKeyLifeTime); ok {
@@ -284,9 +355,21 @@ func ikepGet(context context.Context, d *schema.ResourceData, meta interface{}, 
 		err = fmt.Errorf("Error setting authentication_algorithm: %s", err)
 		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_ike_policy", "read", "set-authentication_algorithm").GetDiag()
 	}
+	if !core.IsNil(ikePolicy.AuthenticationAlgorithms) {
+		if err = d.Set("authentication_algorithms", ikePolicy.AuthenticationAlgorithms); err != nil {
+			err = fmt.Errorf("Error setting authentication_algorithms: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_ike_policy", "read", "set-authentication_algorithms").GetDiag()
+		}
+	}
 	if err = d.Set("encryption_algorithm", ikePolicy.EncryptionAlgorithm); err != nil {
 		err = fmt.Errorf("Error setting encryption_algorithm: %s", err)
 		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_ike_policy", "read", "set-encryption_algorithm").GetDiag()
+	}
+	if !core.IsNil(ikePolicy.EncryptionAlgorithms) {
+		if err = d.Set("encryption_algorithms", ikePolicy.EncryptionAlgorithms); err != nil {
+			err = fmt.Errorf("Error setting encryption_algorithms: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_ike_policy", "read", "set-encryption_algorithms").GetDiag()
+		}
 	}
 	if ikePolicy.ResourceGroup != nil {
 		d.Set(isIKEResourceGroup, *ikePolicy.ResourceGroup.ID)
@@ -315,6 +398,16 @@ func ikepGet(context context.Context, d *schema.ResourceData, meta interface{}, 
 	if err = d.Set("dh_group", flex.IntValue(ikePolicy.DhGroup)); err != nil {
 		err = fmt.Errorf("Error setting dh_group: %s", err)
 		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_ike_policy", "read", "set-dh_group").GetDiag()
+	}
+	if !core.IsNil(ikePolicy.DhGroups) {
+		dhGroups := []interface{}{}
+		for _, dhGroupsItem := range ikePolicy.DhGroups {
+			dhGroups = append(dhGroups, int64(dhGroupsItem))
+		}
+		if err = d.Set("dh_groups", dhGroups); err != nil {
+			err = fmt.Errorf("Error setting dh_groups: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_ike_policy", "read", "set-dh_groups").GetDiag()
+		}
 	}
 	connList := make([]map[string]interface{}, 0)
 	if ikePolicy.Connections != nil && len(ikePolicy.Connections) > 0 {
@@ -366,27 +459,91 @@ func ikepUpdate(context context.Context, d *schema.ResourceData, meta interface{
 	options := &vpcv1.UpdateIkePolicyOptions{
 		ID: &id,
 	}
-	if d.HasChange(isIKEName) || d.HasChange(isIKEAuthenticationAlg) || d.HasChange(isIKEEncryptionAlg) || d.HasChange(isIKEDhGroup) || d.HasChange(isIKEVERSION) || d.HasChange(isIKEKeyLifeTime) {
-		name := d.Get(isIKEName).(string)
-		authenticationAlg := d.Get(isIKEAuthenticationAlg).(string)
-		encryptionAlg := d.Get(isIKEEncryptionAlg).(string)
-		keyLifetime := int64(d.Get(isIKEKeyLifeTime).(int))
-		dhGroup := int64(d.Get(isIKEDhGroup).(int))
-		ikeVersion := int64(d.Get(isIKEVERSION).(int))
+
+	nameChangeFlag := d.HasChange(isIKEName)
+	authenticationAlgChangeFlag := d.HasChange(isIKEAuthenticationAlg)
+	authenticationAlgsChangeFlag := d.HasChange("authentication_algorithms")
+	encryptionAlgChangeFlag := d.HasChange(isIKEEncryptionAlg)
+	encryptionAlgsChangeFlag := d.HasChange("encryption_algorithms")
+	keyLifetimeChangeFlag := d.HasChange(isIKEKeyLifeTime)
+	dhGroupChangeFlag := d.HasChange(isIKEDhGroup)
+	dhGroupsChangeFlag := d.HasChange("dh_groups")
+	ikeVersionChangeFlag := d.HasChange(isIKEVERSION)
+
+	if nameChangeFlag || authenticationAlgChangeFlag || authenticationAlgsChangeFlag || encryptionAlgChangeFlag || encryptionAlgsChangeFlag || dhGroupChangeFlag || dhGroupsChangeFlag || ikeVersionChangeFlag || keyLifetimeChangeFlag {
 
 		ikePolicyPatchModel := &vpcv1.IkePolicyPatch{}
-		ikePolicyPatchModel.Name = &name
-		ikePolicyPatchModel.AuthenticationAlgorithm = &authenticationAlg
-		ikePolicyPatchModel.EncryptionAlgorithm = &encryptionAlg
-		ikePolicyPatchModel.KeyLifetime = &keyLifetime
-		ikePolicyPatchModel.DhGroup = &dhGroup
-		ikePolicyPatchModel.IkeVersion = &ikeVersion
+		if nameChangeFlag {
+			name := d.Get(isIKEName).(string)
+			ikePolicyPatchModel.Name = &name
+		}
+		if authenticationAlgChangeFlag {
+			authenticationAlg := d.Get(isIKEAuthenticationAlg).(string)
+			ikePolicyPatchModel.AuthenticationAlgorithm = &authenticationAlg
+		}
+		if authenticationAlgsChangeFlag {
+			authenticationAlgs := d.Get("authentication_algorithms").([]interface{})
+			ikePolicyPatchModel.AuthenticationAlgorithms = interfaceSliceToStringSlice(authenticationAlgs)
+		}
+		if encryptionAlgChangeFlag {
+			encryptionAlg := d.Get(isIKEEncryptionAlg).(string)
+			ikePolicyPatchModel.EncryptionAlgorithm = &encryptionAlg
+		}
+		if encryptionAlgsChangeFlag {
+			encryptionAlgs := d.Get("encryption_algorithms").([]interface{})
+			ikePolicyPatchModel.EncryptionAlgorithms = interfaceSliceToStringSlice(encryptionAlgs)
+		}
+		if keyLifetimeChangeFlag {
+			keyLifetime := int64(d.Get(isIKEKeyLifeTime).(int))
+			ikePolicyPatchModel.KeyLifetime = &keyLifetime
+		}
+		if dhGroupChangeFlag {
+			dhGroup := int64(d.Get(isIKEDhGroup).(int))
+			ikePolicyPatchModel.DhGroup = &dhGroup
+		}
+		if dhGroupsChangeFlag {
+			dhGroups := d.Get("dh_groups").([]interface{})
+			ikePolicyPatchModel.DhGroups = interfaceSliceToInt64Slice(dhGroups)
+		}
+		if ikeVersionChangeFlag {
+			ikeVersion := int64(d.Get(isIKEVERSION).(int))
+			ikePolicyPatchModel.IkeVersion = &ikeVersion
+		}
 		ikePolicyPatch, err := ikePolicyPatchModel.AsPatch()
 		if err != nil {
 			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error calling asPatch for IkePolicyPatch: %s", err.Error()), "ibm_is_ike_policy", "update")
 			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 			return tfErr.GetDiag()
 		}
+
+		if !encryptionAlgsChangeFlag {
+			ikePolicyPatch["encryption_algorithms"] = nil
+		}
+		if !dhGroupsChangeFlag {
+			ikePolicyPatch["dh_groups"] = nil
+		}
+		if !authenticationAlgsChangeFlag {
+			ikePolicyPatch["authentication_algorithms"] = nil
+		}
+
+		// if encryptionAlgsChangeFlag || dhGroupsChangeFlag || authenticationAlgsChangeFlag {
+		// 	getIkePolicyOptions := &vpcv1.GetIkePolicyOptions{
+		// 		ID: core.StringPtr(d.Id()),
+		// 	}
+		// 	_, etagResponse, etagErr := sess.GetIkePolicyWithContext(context, getIkePolicyOptions)
+		// 	if etagErr != nil {
+		// 		if etagResponse != nil && etagResponse.StatusCode == 404 {
+		// 			d.SetId("")
+		// 			return nil
+		// 		}
+		// 		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("GetIkePolicyWithContext failed: %s", etagErr.Error()), "ibm_is_ike_policy", "update")
+		// 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		// 		return tfErr.GetDiag()
+		// 	}
+		// 	eTag := etagResponse.Headers.Get("ETag")
+		// 	options.IfMatch = &eTag
+		// }
+
 		options.IkePolicyPatch = ikePolicyPatch
 
 		_, _, err = sess.UpdateIkePolicyWithContext(context, options)
@@ -466,4 +623,27 @@ func ikepExists(d *schema.ResourceData, meta interface{}, id string) (bool, erro
 	}
 
 	return true, nil
+}
+
+func interfaceSliceToStringSlice(values []interface{}) []string {
+	result := make([]string, 0, len(values))
+
+	for _, v := range values {
+		if s, ok := v.(string); ok {
+			result = append(result, s)
+		}
+	}
+
+	return result
+}
+func interfaceSliceToInt64Slice(values []interface{}) []int64 {
+	result := make([]int64, 0, len(values))
+
+	for _, v := range values {
+		if s, ok := v.(int); ok {
+			result = append(result, int64(s))
+		}
+	}
+
+	return result
 }

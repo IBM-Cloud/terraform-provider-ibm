@@ -4,13 +4,14 @@
 package database
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"net/url"
-	"reflect"
 
 	"github.com/IBM/cloud-databases-go-sdk/clouddatabasesv5"
 	"github.com/IBM/go-sdk-core/v5/core"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
@@ -32,14 +33,16 @@ func pickDataSourceBackend(d *schema.ResourceData, meta interface{}) (dataSource
 	}
 	plan := *instance.ResourcePlanID
 	if isGen2Plan(plan) {
-		return newDataSourceIBMDatabaseGen2Backend(), nil
+		// Pass the already-fetched instance into the Gen2 backend so it does
+		// not need a second findInstance call.
+		return newDataSourceIBMDatabaseGen2Backend(instance), nil
 	}
 	return newDataSourceIBMDatabaseClassicBackend(), nil
 }
 
 func DataSourceIBMDatabaseInstance() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceIBMDatabaseInstanceRead,
+		ReadContext: dataSourceIBMDatabaseInstanceRead,
 
 		Schema: map[string]*schema.Schema{
 			"name": {
@@ -92,12 +95,12 @@ func DataSourceIBMDatabaseInstance() *schema.Resource {
 				Computed:    true,
 			},
 			"adminuser": {
-				Description: "The admin user id for the instance",
+				Description: "The admin user id for the instance. Note: In Gen2, there is no default admin user. Users should manage credentials using the ibm_resource_key resource (https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/resources/resource_key).",
 				Type:        schema.TypeString,
 				Computed:    true,
 			},
 			"adminpassword": {
-				Description: "The admin user id for the instance",
+				Description: "The admin user id for the instance. Note: This attribute is not supported for Gen2 database instances",
 				Type:        schema.TypeString,
 				Computed:    true,
 				Sensitive:   true,
@@ -119,7 +122,7 @@ func DataSourceIBMDatabaseInstance() *schema.Resource {
 							Computed:    true,
 						},
 						"backup_encryption_key_crn": {
-							Description: "Backup encryption key crn",
+							Description: "Backup encryption key crn. Note: This attribute is not supported for Gen2 database instances",
 							Type:        schema.TypeString,
 							Computed:    true,
 						},
@@ -133,8 +136,9 @@ func DataSourceIBMDatabaseInstance() *schema.Resource {
 				Set:      schema.HashString,
 			},
 			"users": {
-				Type:     schema.TypeSet,
-				Computed: true,
+				Type:        schema.TypeSet,
+				Computed:    true,
+				Description: "Database users. Note: This attribute is not supported for Gen2 database instances.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"name": {
@@ -152,8 +156,9 @@ func DataSourceIBMDatabaseInstance() *schema.Resource {
 				},
 			},
 			"allowlist": {
-				Type:     schema.TypeSet,
-				Computed: true,
+				Type:        schema.TypeSet,
+				Computed:    true,
+				Description: "Allowlist for database access. Note: This attribute is not supported for Gen2 database instances.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"address": {
@@ -326,7 +331,7 @@ func DataSourceIBMDatabaseInstance() *schema.Resource {
 			},
 			"auto_scaling": {
 				Type:        schema.TypeList,
-				Description: "ICD Auto Scaling",
+				Description: "ICD Auto Scaling. Note: This attribute is currently not supported for Gen2 database instances.",
 				Computed:    true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -486,7 +491,7 @@ func DataSourceIBMDatabaseInstance() *schema.Resource {
 			"configuration_schema": {
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "The configuration schema in JSON format",
+				Description: "The configuration schema in JSON format, Note: This attribute is currently not supported for Gen2 database instances.",
 			},
 			flex.ResourceName: {
 				Type:        schema.TypeString,
@@ -619,13 +624,24 @@ func findInstance(d *schema.ResourceData, meta interface{}) (*rc.ResourceInstanc
 	return &filteredInstances[0], nil
 }
 
-func dataSourceIBMDatabaseInstanceRead(d *schema.ResourceData, meta interface{}) error {
+func dataSourceIBMDatabaseInstanceRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	b, err := pickDataSourceBackend(d, meta)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
-	return b.Read(d, meta)
+	if err := b.Read(d, meta); err != nil {
+		if _, ok := err.(*s2sAuthWarning); ok {
+			return diag.Diagnostics{{
+				Severity: diag.Warning,
+				Summary:  s2sAuthWarningHeader,
+				Detail:   s2sAuthWarningDetail,
+			}}
+		}
+		return diag.FromErr(err)
+	}
+
+	return nil
 }
 
 func classicDataSourceIBMDatabaseInstanceRead(d *schema.ResourceData, meta interface{}) error {
@@ -759,16 +775,4 @@ func classicDataSourceIBMDatabaseInstanceRead(d *schema.ResourceData, meta inter
 
 	d.Set("allowlist", flex.FlattenAllowlist(allowlist.IPAddresses))
 	return nil
-}
-
-func getInstancesNext(next *string) (string, error) {
-	if reflect.ValueOf(next).IsNil() {
-		return "", nil
-	}
-	u, err := url.Parse(*next)
-	if err != nil {
-		return "", err
-	}
-	q := u.Query()
-	return q.Get("next_url"), nil
 }

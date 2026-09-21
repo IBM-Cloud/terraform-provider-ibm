@@ -34,7 +34,9 @@ const (
 	defaultMemberCount = 3
 
 	// Instance states - shared across Classic and Gen2
-	instanceStateRemoved               = "removed"
+	instanceStateRemoved = "removed"
+
+	// Database instance status constants
 	databaseInstanceSuccessStatus      = "active"
 	databaseInstanceProvisioningStatus = "provisioning"
 	databaseInstanceProgressStatus     = "in progress"
@@ -49,7 +51,9 @@ const (
 	resourcesKey       = "resources"
 	platformOptionsKey = "platform_options"
 	adminUserKey       = "adminuser"
+	autoScalingKey     = "auto_scaling"
 	allowlistKey       = "allowlist"
+	databaseUserType   = "database"
 )
 
 type TimeoutHelper struct {
@@ -141,6 +145,79 @@ func isGen2Plan(plan string) bool {
 	return gen2Pattern.MatchString(strings.ToLower(plan))
 }
 
+// instanceCRNFromCoupledBackupCRN extracts the source instance CRN from a
+// coupled backup CRN. Returns an error if the instance ID segment is missing.
+func instanceCRNFromCoupledBackupCRN(backupCRN string) (string, error) {
+	parts := strings.Split(backupCRN, ":")
+	if len(parts) < 8 || parts[7] == "" {
+		return "", fmt.Errorf("backup CRN does not contain instance ID and is not a decoupled backup")
+	}
+	return strings.Join(parts[:8], ":") + "::", nil
+}
+
+// validateGen2BackupCRN returns an error if backupCRN is a Classic backup;
+// Gen2 (decoupled) backups are allowed.
+func validateGen2BackupCRN(backupCRN string, meta interface{}) error {
+	if backupCRN == "" {
+		return nil
+	}
+
+	parts := strings.Split(backupCRN, ":")
+	if len(parts) < 10 {
+		return fmt.Errorf("invalid backup CRN format: expected 10 parts, got %d", len(parts))
+	}
+
+	// Check if it's a decoupled backup (databases-independent-backups)
+	serviceName := parts[4]
+	if serviceName == "databases-independent-backups" {
+		// Decoupled backup - ALLOWED
+		return nil
+	}
+
+	// It's a coupled backup - need to check if the source instance is Gen2
+	instanceCRN, err := instanceCRNFromCoupledBackupCRN(backupCRN)
+	if err != nil {
+		return err
+	}
+
+	// Get the instance to check its plan
+	rsConClient, err := meta.(conns.ClientSession).ResourceControllerV2API()
+	if err != nil {
+		return fmt.Errorf("failed to initialize resource controller client: %w", err)
+	}
+
+	instance, response, err := rsConClient.GetResourceInstance(&rc.GetResourceInstanceOptions{
+		ID: &instanceCRN,
+	})
+	if err != nil {
+		return fmt.Errorf("failed to get backup source instance %s: %w (response: %v)", instanceCRN, err, response)
+	}
+
+	if instance.ResourcePlanID == nil {
+		return fmt.Errorf("backup source instance %s has no resource plan ID", instanceCRN)
+	}
+
+	// Get the plan name to check if it's Gen2
+	rsCatClient, err := meta.(conns.ClientSession).ResourceCatalogAPI()
+	if err != nil {
+		return fmt.Errorf("failed to initialize catalog client: %w", err)
+	}
+
+	rsCatRepo := rsCatClient.ResourceCatalog()
+	servicePlan, err := rsCatRepo.GetServicePlanName(*instance.ResourcePlanID)
+	if err != nil {
+		return fmt.Errorf("failed to get service plan for backup source instance: %w", err)
+	}
+
+	// Check if the plan is Gen2
+	if !isGen2Plan(servicePlan) {
+		return fmt.Errorf("backup_id references a Classic backup (plan: %s). Gen2 databases can only restore from Gen2 coupled backups or Gen2 decoupled backups. Please use a Gen2 backup CRN", servicePlan)
+	}
+
+	// Gen2 coupled backup - ALLOWED
+	return nil
+}
+
 // extractLocationFromCRN extracts the location (region) from an IBM Cloud CRN.
 // CRN format: crn:version:cname:ctype:service-name:location:scope:service-instance:resource-type:resource
 // Returns the location field (index 5) or an error if the CRN is invalid.
@@ -155,6 +232,38 @@ func extractLocationFromCRN(crn *string) (string, error) {
 	return parts[5], nil
 }
 
+// extractDeploymentIDFromCRN extracts the deployment ID from a catalog CRN.
+// Catalog CRN format: crn:v1:bluemix:public:globalcatalog::::deployment:deployment-id
+// Some callers may already provide the deployment ID directly.
+// Returns the deployment ID or an error if the input is invalid.
+func extractDeploymentIDFromCRN(catalogCRN string) (string, error) {
+	if catalogCRN == "" {
+		return "", fmt.Errorf("invalid catalog CRN format: empty CRN")
+	}
+
+	if !strings.HasPrefix(catalogCRN, "crn:") {
+		return catalogCRN, nil
+	}
+
+	// Split by "deployment:" to extract the deployment ID
+	parts := strings.Split(catalogCRN, "deployment:")
+	if len(parts) != 2 {
+		return "", fmt.Errorf("invalid catalog CRN format: expected exactly one 'deployment:' prefix")
+	}
+
+	deploymentID := parts[1]
+	if deploymentID == "" {
+		return "", fmt.Errorf("empty deployment ID in catalog CRN")
+	}
+
+	// Check for multiple deployment prefixes (invalid format)
+	if strings.Contains(deploymentID, "deployment:") {
+		return "", fmt.Errorf("invalid catalog CRN format: multiple 'deployment:' prefixes found")
+	}
+
+	return deploymentID, nil
+}
+
 // wrapAPIError wraps an API error with operation context and response details.
 // Provides consistent error formatting across API calls.
 func wrapAPIError(operation string, err error, response interface{}) error {
@@ -163,14 +272,16 @@ func wrapAPIError(operation string, err error, response interface{}) error {
 
 // Database service name prefixes mapped to their type keys
 var databaseServicePrefixes = map[string]string{
-	"databases-for-etcd":          "etcd",
-	"databases-for-postgresql":    "postgresql",
-	"databases-for-redis":         "redis",
-	"databases-for-elasticsearch": "elasticsearch",
-	"databases-for-mongodb":       "mongodb",
-	"messages-for-rabbitmq":       "rabbitmq",
-	"databases-for-mysql":         "mysql",
-	"databases-for-enterprisedb":  "enterprisedb",
+	"databases-for-etcd":           "etcd",
+	"databases-for-postgresql":     "postgresql",
+	"databases-for-redis":          "redis",
+	"databases-for-valkey":         "valkey",
+	"databases-for-valkey-cdp-dev": "valkey",
+	"databases-for-elasticsearch":  "elasticsearch",
+	"databases-for-mongodb":        "mongodb",
+	"messages-for-rabbitmq":        "rabbitmq",
+	"databases-for-mysql":          "mysql",
+	"databases-for-enterprisedb":   "enterprisedb",
 }
 
 // getDatabaseTypeFromResourceID maps the resource ID or service name to the database type key.
@@ -373,31 +484,20 @@ func buildHostFlavorConfig(hostFlavorID string) []map[string]interface{} {
 	return []map[string]interface{}{hostflavor}
 }
 
-// extractDeploymentIDFromCRN extracts the deployment ID from a catalog CRN.
-func extractDeploymentIDFromCRN(catalogCRN string) (string, error) {
-	// Split by "deployment:" to get the deployment ID
-	parts := strings.Split(catalogCRN, "deployment:")
-	if len(parts) != 2 {
-		return "", fmt.Errorf("invalid catalog CRN format: %s", catalogCRN)
-	}
-	deploymentID := strings.TrimSpace(parts[1])
-	if deploymentID == "" {
-		return "", fmt.Errorf("empty deployment ID in catalog CRN: %s", catalogCRN)
-	}
-	return deploymentID, nil
-}
-
-// getInitialNodeCountGen2 retrieves the default member count for Gen2 plans from Global Catalog.
-// Returns the member count from the catalog metadata, or a default value of 3 if not found.
-func getInitialNodeCountGen2(catalogCRN string, meta interface{}) (int, error) {
+// getInitialNodeCountGen2 retrieves the default member count for a Gen2 deployment from Global Catalog.
+// The input may be either a deployment catalog CRN or a deployment ID.
+// Returns the member count from the catalog metadata, or a default value if not found.
+// If the deployment reference is not a valid Global Catalog entry ID in the current environment,
+// fall back to the provider default instead of failing create.
+func getInitialNodeCountGen2(deploymentRef string, meta interface{}) (int, error) {
 	globalClient, err := meta.(conns.ClientSession).GlobalCatalogV1API()
 	if err != nil {
 		return 0, fmt.Errorf("failed to get global catalog client: %w", err)
 	}
 
-	deploymentID, err := extractDeploymentIDFromCRN(catalogCRN)
+	deploymentID, err := extractDeploymentIDFromCRN(deploymentRef)
 	if err != nil {
-		return 0, fmt.Errorf("failed to extract deployment ID from catalog CRN: %w", err)
+		return 0, fmt.Errorf("failed to normalize deployment reference: %w", err)
 	}
 
 	options := &globalcatalogv1.GetCatalogEntryOptions{
@@ -406,7 +506,8 @@ func getInitialNodeCountGen2(catalogCRN string, meta interface{}) (int, error) {
 
 	deployment, _, err := globalClient.GetCatalogEntry(options)
 	if err != nil {
-		return 0, fmt.Errorf("error retrieving deployment catalog entry: %w", err)
+		log.Printf("[WARN] Unable to retrieve Gen2 deployment catalog entry %q, using default member count %d: %v", deploymentID, defaultMemberCount, err)
+		return defaultMemberCount, nil
 	}
 
 	// Extract member count from deployment metadata
@@ -532,6 +633,42 @@ func getResourceManagerClient(meta interface{}) (interface{}, error) {
 		return nil, fmt.Errorf("failed to get resource manager client: %w", err)
 	}
 	return client, nil
+}
+
+// setTagsWithLogging retrieves and sets tags for a resource, logging errors instead of failing.
+// Returns error only for critical failures, logs warnings for non-critical issues.
+func setTagsWithLogging(d *schema.ResourceData, crn string, meta interface{}) error {
+	tags, err := flex.GetTagsUsingCRN(meta, crn)
+	if err != nil {
+		log.Printf("[WARN] Failed to retrieve tags for resource %s: %v", crn, err)
+	}
+	return d.Set("tags", tags)
+}
+
+// buildResourceControllerURL constructs the resource controller URL for a given CRN.
+// Standardizes URL building across resources and data sources.
+func buildResourceControllerURL(meta interface{}, crn string) (string, error) {
+	rcontroller, err := flex.GetBaseController(meta)
+	if err != nil {
+		return "", fmt.Errorf("failed to get base controller: %w", err)
+	}
+	return rcontroller + "/services/" + url.QueryEscape(crn), nil
+}
+
+// setResourceControllerAttributes sets common flex resource controller attributes.
+// Reduces duplication of setting name, CRN, status, and controller URL.
+func setResourceControllerAttributes(d *schema.ResourceData, name, crn, state string, meta interface{}) error {
+	d.Set(flex.ResourceName, name)
+	d.Set(flex.ResourceCRN, crn)
+	d.Set(flex.ResourceStatus, state)
+
+	controllerURL, err := buildResourceControllerURL(meta, crn)
+	if err != nil {
+		return err
+	}
+	d.Set(flex.ResourceControllerURL, controllerURL)
+
+	return nil
 }
 
 // setGen2BasicAttributes sets basic instance attributes including tags, name, status, location, and resource controller attributes.
@@ -715,12 +852,129 @@ func setGen2GroupsInfo(d *schema.ResourceData, instance *rc.ResourceInstance, me
 // to avoid drift detection when users have these in their configuration.
 // This function is shared between data source and resource implementations.
 func clearGen2UnsupportedAttributes(d *schema.ResourceData) {
+	// Admin user is not supported in Gen2 (no default admin user)
+	d.Set("adminuser", nil)
+
+	// Admin password is not supported in Gen2
+	d.Set("adminpassword", nil)
+
 	// Allowlist is not supported in Gen2
 	d.Set(allowlistKey, nil)
 
 	// Users management is not supported in Gen2 (use ibm_resource_key instead)
 	d.Set("users", nil)
 
+	// Auto scaling is not supported in Gen2
+	d.Set("auto_scaling", nil)
+
 	// Configuration schema is not supported in Gen2
 	d.Set("configuration_schema", nil)
+
+	// Note: backup_encryption_key_crn within platform_options is also not supported in Gen2,
+	// but platform_options is handled by the data source implementation which only sets
+	// disk_encryption_key_crn for Gen2 instances
+}
+
+const s2sAuthWarningHeader = "Database backup authorization required"
+const s2sAuthWarningDetail = "This database uses Independent Backups.\n" +
+	"Existing backups remain available for 30 days from their creation date. " +
+	"Backup creation and management are unavailable until the required service authorization is completed.\n" +
+	"Complete the required service authorization to enable backup operations.\n\n" +
+	"To configure the required IAM service authorization, please refer to the documentation below: \n" +
+	"https://cloud.ibm.com/docs/cloud-databases-gen2?topic=cloud-databases-gen2-iam&interface=ui#s2s-authorization-backups"
+
+// s2sAuthWarning is a sentinel error that the datasource router converts to a diag.Warning.
+type s2sAuthWarning struct{}
+
+func (s *s2sAuthWarning) Error() string { return s2sAuthWarningHeader }
+
+// hasIndependentBackups reports whether the instance extensions indicate that
+// the instance is using Independent Backups.  This is determined by the presence
+// of a non-nil "backups" object inside extensions["dataservices"].
+// The S2S authorization check is only meaningful for instances that use
+// Independent Backups, so callers should gate checkS2SAuthorization on this.
+func hasIndependentBackups(extensions map[string]interface{}) bool {
+	if extensions == nil {
+		return false
+	}
+	dataservices, ok := extensions["dataservices"].(map[string]interface{})
+	if !ok {
+		return false
+	}
+	backups, exists := dataservices["backups"]
+	return exists && backups != nil
+}
+
+// checkS2SAuthorization returns true only when both "independent_backups" and
+// "resource_group" authorizations are present and truthy in the RC extensions map.
+// The authorizations are nested under extensions["dataservices"]["authorizations"].
+func checkS2SAuthorization(extensions map[string]interface{}) bool {
+	if extensions == nil {
+		return false
+	}
+	dataservices, ok := extensions["dataservices"].(map[string]interface{})
+	if !ok {
+		return false
+	}
+	authsRaw, exists := dataservices["authorizations"]
+	if !exists || authsRaw == nil {
+		return false
+	}
+	auths, ok := authsRaw.(map[string]interface{})
+	if !ok || len(auths) == 0 {
+		return false
+	}
+	return isTruthy(auths["independent_backups"]) && isTruthy(auths["resource_group"])
+}
+
+// isTruthy returns true if v is the boolean true or the string "true".
+func isTruthy(v interface{}) bool {
+	switch val := v.(type) {
+	case bool:
+		return val
+	case string:
+		return val == "true"
+	}
+	return false
+}
+
+// getInstancesNext extracts the "next_url" query parameter from the URL returned
+// in a paginated Resource Controller list response's NextURL field, so it can be
+// used as the "start" token for the next page request. Returns an empty string,
+// with no error, when next is nil (i.e. there is no further page).
+func getInstancesNext(next *string) (string, error) {
+	if next == nil {
+		return "", nil
+	}
+	u, err := url.Parse(*next)
+	if err != nil {
+		return "", err
+	}
+	q := u.Query()
+	return q.Get("next_url"), nil
+}
+
+// extractGen2BackupExtensions reads the source deployment CRN and backup type
+// from a Gen2 backup instance's Extensions["dataservices"]["backup"] block.
+// Both return values are empty strings if extensions is nil or the expected
+// structure is missing.
+func extractGen2BackupExtensions(extensions map[string]interface{}) (sourceDataServiceCRN string, backupType string) {
+	if extensions == nil {
+		return
+	}
+	dataservices, ok := extensions["dataservices"].(map[string]interface{})
+	if !ok {
+		return
+	}
+	backupData, ok := dataservices["backup"].(map[string]interface{})
+	if !ok {
+		return
+	}
+	if v, ok := backupData["source_data_service_crn"].(string); ok {
+		sourceDataServiceCRN = v
+	}
+	if v, ok := backupData["type"].(string); ok {
+		backupType = v
+	}
+	return
 }

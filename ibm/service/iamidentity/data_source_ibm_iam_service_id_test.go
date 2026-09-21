@@ -1,5 +1,9 @@
-// Copyright IBM Corp. 2017, 2021 All Rights Reserved.
+// Copyright IBM Corp. 2026 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
+
+/*
+ * IBM OpenAPI Terraform Generator Version: 3.113.1-d76630af-20260320-135953
+ */
 
 package iamidentity_test
 
@@ -53,33 +57,30 @@ func TestAccIBMIAMServiceIDDataSource_same_name(t *testing.T) {
 
 func testAccCheckIBMIAMServiceIDDataSourceConfig(name string) string {
 	return fmt.Sprintf(`
+		resource "ibm_iam_service_id" "serviceID" {
+			name        = "%s"
+			description = "ServiceID for test"
+		}
 
-resource "ibm_iam_service_id" "serviceID" {
-  name        = "%s"
-  description = "ServiceID for test"
-}
-
-data "ibm_iam_service_id" "testacc_ds_service_id" {
-  name = ibm_iam_service_id.serviceID.name
-}
-`, name)
-
+		data "ibm_iam_service_id" "testacc_ds_service_id" {
+			name = ibm_iam_service_id.serviceID.name
+		}
+	`, name)
 }
 
 func testAccCheckIBMIAMServiceIDDataSourceSameName(name string) string {
 	return fmt.Sprintf(`
+		resource "ibm_iam_service_id" "serviceID" {
+			name        = "%s"
+			description = "ServiceID for test"
+		}
 
-resource "ibm_iam_service_id" "serviceID" {
-  name        = "%s"
-  description = "ServiceID for test"
-}
+		resource "ibm_iam_service_id" "serviceID2" {
+			name = "%s"
+		}
 
-resource "ibm_iam_service_id" "serviceID2" {
-  name = "%s"
-}
-
-data "ibm_iam_service_id" "testacc_ds_service_id" {
-  name = ibm_iam_service_id.serviceID.name
-}`, name, name)
-
+		data "ibm_iam_service_id" "testacc_ds_service_id" {
+			name = ibm_iam_service_id.serviceID.name
+		}
+	`, name, name)
 }

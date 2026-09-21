@@ -1161,6 +1161,11 @@ func DataSourceIbmBackupRecoverySourceRegistrations() *schema.Resource {
 										Computed:    true,
 										Description: "Specifies the velero image location of the Kubernetes source.",
 									},
+									"velero_kubevirt_plugin_image_location": &schema.Schema{
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "Specifies the velero kubevirt plugin image location of the Kubernetes source.",
+									},
 									"velero_openshift_plugin_image_location": &schema.Schema{
 										Type:        schema.TypeString,
 										Computed:    true,
@@ -2175,6 +2180,9 @@ func DataSourceIbmBackupRecoverySourceRegistrationsKubernetesSourceRegistrationP
 	}
 	if model.VeleroOpenshiftPluginImageLocation != nil {
 		modelMap["velero_openshift_plugin_image_location"] = *model.VeleroOpenshiftPluginImageLocation
+	}
+	if model.VeleroKubevirtPluginImageLocation != nil {
+		modelMap["velero_kubevirt_plugin_image_location"] = *model.VeleroKubevirtPluginImageLocation
 	}
 	if model.VlanInfoVec != nil {
 		vlanInfoVec := []map[string]interface{}{}

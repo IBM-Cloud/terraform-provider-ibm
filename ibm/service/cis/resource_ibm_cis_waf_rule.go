@@ -30,11 +30,12 @@ const (
 
 func ResourceIBMCISWAFRule() *schema.Resource {
 	return &schema.Resource{
-		Create:   ResourceIBMCISWAFRuleUpdate,
-		Read:     ResourceIBMCISWAFRuleRead,
-		Update:   ResourceIBMCISWAFRuleUpdate,
-		Delete:   ResourceIBMCISWAFRuleDelete,
-		Importer: &schema.ResourceImporter{},
+		Create:             ResourceIBMCISWAFRuleUpdate,
+		Read:               ResourceIBMCISWAFRuleRead,
+		Update:             ResourceIBMCISWAFRuleUpdate,
+		Delete:             ResourceIBMCISWAFRuleDelete,
+		Importer:           &schema.ResourceImporter{},
+		DeprecationMessage: "The legacy WAF APIs are deprecated and are replaced by WAF managed rules. For more information on this change, see https://cloud.ibm.com/docs/cis?topic=cis-migrating-to-managed-rules.",
 		Schema: map[string]*schema.Schema{
 			cisID: {
 				Type:        schema.TypeString,

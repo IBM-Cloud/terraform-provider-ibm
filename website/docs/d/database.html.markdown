@@ -75,7 +75,61 @@ In addition to all argument references list, you can access the following attrib
     - `rate_period_seconds`- (Integer) Auto scaling rate period in seconds.
     - `rate_units` - (String) Auto scaling rate in units.
 - `allowlist`  - (List) A list of allowed IP addresses or ranges.
+- `users` - (List) A list of users configured for the database.
 
 
 **Note**
-The provider only exports the admin user ID and associated connection string. It does not export any user IDs that are configured for the instance in addition. 
+The provider only exports the admin user ID and associated connection string. It does not export any user IDs that are configured for the instance in addition.
+
+
+## Gen2 Support
+This data source supports both Classic and Gen2 database instances. The backend is automatically selected based on the database plan.
+
+### Gen2 Limitations
+The following attributes are not supported for Gen2 databases:
+- `adminuser` - Gen2 databases do not create a default admin user. Use `ibm_resource_key` to manage credentials.
+- `adminpassword` - Not available for Gen2 databases. Use `ibm_resource_key` to manage credentials.
+- `users` - User management is not supported. Use `ibm_resource_key` to manage credentials.
+- `allowlist` - IP allowlisting is not supported for Gen2 databases. Use Context-Based Restrictions (`ibm_cbr_rule`) for IP allowlisting in Gen2.
+- `auto_scaling` - Auto-scaling configuration is not currently supported for Gen2 databases.
+- `configuration_schema` - Configuration schema is not available for Gen2 databases.
+- `platform_options.backup_encryption_key_crn` - Backup encryption key is not supported for Gen2 databases (only `disk_encryption_key_crn` is supported).
+
+### Gen2 Independent Backups and S2S Authorization
+
+Gen2 database instances support **Independent Backups** — automated backups managed independently of the database instance lifecycle. When a Gen2 instance is configured to use Independent Backups, it requires a service-to-service (S2S) IAM authorization between the database service and the backup storage.
+
+If this authorization is missing or incomplete, Terraform emits a **non-blocking warning** during `plan` or `apply`:
+
+```
+╷
+│ Warning: Database backup authorization required
+│
+│   with data.ibm_database.<name>,
+│
+│ This database uses Independent Backups.
+│ Existing backups remain available for 30 days from their creation date.
+│ Backup creation and management are unavailable until the required service authorization is completed.
+│
+│ Complete the required service authorization to enable backup operations.
+╵
+```
+
+The warning appears only when the instance has Independent Backups configured **and** the required S2S authorizations (`independent_backups` and `resource_group`) are not both `true`. It is suppressed for Classic plans and Gen2 instances not enrolled in Independent Backups.
+
+To resolve the warning, create the required IAM service-to-service authorization between the database service and `databases-independent-backups`. Once both authorizations are in place, the warning will no longer appear.
+### Gen2 Example
+```terraform
+data "ibm_database" "postgres_gen2" {
+  name     = "my-postgres-gen2"
+  location = "us-south"
+  service  = "databases-for-postgresql"
+}
+
+# Use ibm_resource_key to manage credentials for Gen2 databases
+resource "ibm_resource_key" "db_credentials" {
+  name                 = "my-db-credentials"
+  resource_instance_id = data.ibm_database.postgres_gen2.id
+  role                 = "Administrator"
+}
+```

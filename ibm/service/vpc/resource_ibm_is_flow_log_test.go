@@ -49,6 +49,9 @@ ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVE
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckIBMISFlowLogExists("ibm_is_flow_log.test_flow_log", instance),
 					resource.TestCheckResourceAttr("ibm_is_flow_log.test_flow_log", "name", flowlogname),
+					resource.TestCheckResourceAttrSet("ibm_is_flow_log.test_flow_log", "auto_delete"),
+					resource.TestCheckResourceAttrSet("ibm_is_flow_log.test_flow_log", "resource_group"),
+					resource.TestCheckResourceAttrSet("ibm_is_flow_log.test_flow_log", "resource_group_name"),
 				),
 			},
 			//update
@@ -58,6 +61,9 @@ ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVE
 					testAccCheckIBMISFlowLogExists("ibm_is_flow_log.test_flow_log", instance),
 					resource.TestCheckResourceAttr("ibm_is_flow_log.test_flow_log", "name", newflowlogname),
 					resource.TestCheckResourceAttr("ibm_is_flow_log.test_flow_log", "active", "false"),
+					resource.TestCheckResourceAttrSet("ibm_is_flow_log.test_flow_log", "auto_delete"),
+					resource.TestCheckResourceAttrSet("ibm_is_flow_log.test_flow_log", "resource_group"),
+					resource.TestCheckResourceAttrSet("ibm_is_flow_log.test_flow_log", "resource_group_name"),
 				),
 			},
 		},
@@ -274,6 +280,9 @@ ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCKVmnMOlHKcZK8tpt3MP1lqOLAcqcJzhsvJcjscgVE
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckIBMISFlowLogExists("ibm_is_flow_log.test_flow_log", instance),
 					resource.TestCheckResourceAttr("ibm_is_flow_log.test_flow_log", "name", flowlogname),
+					resource.TestCheckResourceAttrSet("ibm_is_flow_log.test_flow_log", "auto_delete"),
+					resource.TestCheckResourceAttrSet("ibm_is_flow_log.test_flow_log", "resource_group"),
+					resource.TestCheckResourceAttrSet("ibm_is_flow_log.test_flow_log", "resource_group_name"),
 				),
 			},
 			{

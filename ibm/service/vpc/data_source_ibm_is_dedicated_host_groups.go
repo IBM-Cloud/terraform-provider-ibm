@@ -175,7 +175,7 @@ func DataSourceIbmIsDedicatedHostGroups() *schema.Resource {
 func dataSourceIbmIsDedicatedHostGroupsRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	vpcClient, err := meta.(conns.ClientSession).VpcV1API()
 	if err != nil {
-		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_dedicated_host_groups", "read", "initialize-client")
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_dedicated_host_groups", "read", "initialize-client")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
@@ -202,7 +202,7 @@ func dataSourceIbmIsDedicatedHostGroupsRead(context context.Context, d *schema.R
 		}
 		dedicatedHostGroupCollection, response, err := vpcClient.ListDedicatedHostGroupsWithContext(context, listDedicatedHostGroupsOptions)
 		if err != nil {
-			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("ListDedicatedHostGroupsWithContext failed: %s\n%s", err, response), "ibm_is_dedicated_host_groups", "read")
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("ListDedicatedHostGroupsWithContext failed: %s\n%s", err, response), "(Data) ibm_is_dedicated_host_groups", "read")
 			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 			return tfErr.GetDiag()
 		}
@@ -219,12 +219,12 @@ func dataSourceIbmIsDedicatedHostGroupsRead(context context.Context, d *schema.R
 		err = d.Set("host_groups", dataSourceDedicatedHostGroupCollectionFlattenGroups(allrecs))
 		if err != nil {
 			err = fmt.Errorf("[ERROR] Error setting host_groups: %s", err)
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_dedicated_host_groups", "read", "set-host_groups").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_dedicated_host_groups", "read", "set-host_groups").GetDiag()
 		}
 
 		if err = d.Set("total_count", len(allrecs)); err != nil {
 			err = fmt.Errorf("[ERROR] Error setting total_count: %s", err)
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "ibm_is_dedicated_host_groups", "read", "set-total_count").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_dedicated_host_groups", "read", "set-total_count").GetDiag()
 		}
 
 	}

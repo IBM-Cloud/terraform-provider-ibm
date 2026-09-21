@@ -62,7 +62,7 @@ Review the argument references that you can specify for your resource.
 
   Nested scheme for **pi_onboarding_volumes**:
   - `pi_auxiliary_volumes` - (Required, List of objects) List auxiliary volumes.
-  - `pi_source_crn` - (Required, String) The crn of source service broker instance from where auxiliary volumes need to be onboarded.
+  - `pi_source_crn` - (Required, String) The CRN of the workspace in which the primary volume is located.
     - Constraints: The minimum length is `1` items.
 
     Nested scheme for **pi_auxiliary_volumes**:

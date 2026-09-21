@@ -301,6 +301,7 @@ resource "ibm_onboarding_product" "onboarding_product_instance" {
 | staging_global_catalog_offering_id | The ID of a global catalog object. |
 | approver_resource_id | The ID of the approval workflow of your product. |
 | iam_registration_id | IAM registration identifier. |
+| oss_id | The ID of the OSS record connected to the product. |
 
 ### Resource: ibm_onboarding_registration
 

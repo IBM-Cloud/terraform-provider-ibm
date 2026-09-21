@@ -18,6 +18,7 @@ resource "ibm_en_source" "en_source" {
   name          = "EN Source"
   description   = "API source for Event Notifications destinations"
   enabled       = true
+  store_notifications = true
 }
 ```
 
@@ -40,6 +41,7 @@ Review the argument reference that you can specify for your resource.
 - `description` - (Optional, String) The Source description.
 
 - `enabled` - (Optional, bool) The enabled flag to enbale the created API source.
+- `store_notifications` - (Optional, bool) enable to view the payload of incoming events for troubleshooting.
 
 ## Attribute reference
 
