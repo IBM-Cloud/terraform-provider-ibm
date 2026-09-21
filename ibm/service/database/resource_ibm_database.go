@@ -140,6 +140,7 @@ type resourceIBMDatabaseBackend interface {
 	WarnUnsupported(context context.Context, d *schema.ResourceData) diag.Diagnostics
 	ValidateUnsupportedAttrsDiff(context context.Context, d *schema.ResourceDiff, meta interface{}) error
 	ValidateGroupsDiff(context context.Context, d *schema.ResourceDiff, meta interface{}) error
+	ValidateMemberZonesDiff(context context.Context, d *schema.ResourceDiff, meta interface{}) error
 	ValidateServiceEndpointsDiff(context context.Context, d *schema.ResourceDiff, meta interface{}) error
 }
 
@@ -181,7 +182,7 @@ func ResourceIBMDatabaseInstance() *schema.Resource {
 			validateUnsupportedAttrsDiff,
 			resourceIBMDatabaseInstanceDiff,
 			validateBackendSpecificGroupsDiff,
-			validateMemberZonesDiff,
+			validateBackendSpecificMemberZonesDiff,
 			validateUsersDiff,
 			validateRemoteLeaderIDDiff,
 			validateVersionDiff,
@@ -3026,54 +3027,8 @@ func validateBackendSpecificGroupsDiff(context context.Context, diff *schema.Res
 	return pickResourceBackendFromDiff(diff).ValidateGroupsDiff(context, diff, meta)
 }
 
-// validateMemberZonesDiff is a plan-time CustomizeDiff function that validates
-// member_zones rules for Gen2 instances by reading the raw config values directly
-// from the diff, bypassing the schema.Set round-trip that loses nested list data.
-func validateMemberZonesDiff(_ context.Context, d *schema.ResourceDiff, _ interface{}) error {
-	if !isGen2Plan(d.Get("plan").(string)) {
-		return nil
-	}
-
-	groupsRaw, ok := d.GetOk("group")
-	if !ok {
-		return nil
-	}
-
-	for _, groupRaw := range groupsRaw.(*schema.Set).List() {
-		tfGroup, ok := groupRaw.(map[string]interface{})
-		if !ok || tfGroup["group_id"].(string) != defaultGroupID {
-			continue
-		}
-
-		membersSet, ok := tfGroup["members"].(*schema.Set)
-		if !ok || membersSet.Len() == 0 {
-			continue
-		}
-
-		memberMap, ok := membersSet.List()[0].(map[string]interface{})
-		if !ok {
-			continue
-		}
-
-		zonesRaw, _ := memberMap["member_zones"].([]interface{})
-		if len(zonesRaw) == 0 {
-			continue
-		}
-
-		allocationCount, _ := memberMap["allocation_count"].(int)
-
-		zones := make([]string, 0, len(zonesRaw))
-		for _, z := range zonesRaw {
-			if s, ok := z.(string); ok {
-				zones = append(zones, s)
-			}
-		}
-		if err := validateMemberZones(&Group{MemberZones: zones}, allocationCount); err != nil {
-			return err
-		}
-	}
-
-	return nil
+func validateBackendSpecificMemberZonesDiff(context context.Context, diff *schema.ResourceDiff, meta interface{}) error {
+	return pickResourceBackendFromDiff(diff).ValidateMemberZonesDiff(context, diff, meta)
 }
 
 func validateGroupsDiffClassic(_ context.Context, diff *schema.ResourceDiff, meta interface{}) (err error) {
