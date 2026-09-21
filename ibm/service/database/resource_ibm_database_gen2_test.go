@@ -2298,64 +2298,6 @@ func TestValidateMemberZones(t *testing.T) {
 	}
 }
 
-// TestMemberZonesFromDiff tests the schema unwrapping helper that reads member_zones
-// from a raw diff map, bypassing the TypeSet round-trip.
-func TestMemberZonesFromDiff(t *testing.T) {
-	// membersResource matches the "members" TypeSet elem in the real schema.
-	membersResource := &schema.Resource{
-		Schema: map[string]*schema.Schema{
-			"allocation_count": {Type: schema.TypeInt, Required: true},
-			"member_zones": {
-				Type:     schema.TypeList,
-				Optional: true,
-				Elem:     &schema.Schema{Type: schema.TypeString},
-			},
-		},
-	}
-	hashFn := schema.HashResource(membersResource)
-
-	makeGroupRaw := func(groupID string, allocationCount int, zones []interface{}) interface{} {
-		memberMap := map[string]interface{}{
-			"allocation_count": allocationCount,
-			"member_zones":     zones,
-		}
-		membersSet := schema.NewSet(hashFn, []interface{}{memberMap})
-		return map[string]interface{}{
-			"group_id": groupID,
-			"members":  membersSet,
-		}
-	}
-
-	t.Run("extracts zones and count for member group", func(t *testing.T) {
-		groupRaw := makeGroupRaw("member", 1, []interface{}{"us-east-1"})
-		zones, count, ok := memberZonesFromDiff(groupRaw)
-		assert.True(t, ok)
-		assert.Equal(t, []string{"us-east-1"}, zones)
-		assert.Equal(t, 1, count)
-	})
-
-	t.Run("returns false for non-member group", func(t *testing.T) {
-		groupRaw := makeGroupRaw("analytics", 1, []interface{}{"us-east-1"})
-		_, _, ok := memberZonesFromDiff(groupRaw)
-		assert.False(t, ok)
-	})
-
-	t.Run("returns false when member_zones empty", func(t *testing.T) {
-		groupRaw := makeGroupRaw("member", 3, []interface{}{})
-		_, _, ok := memberZonesFromDiff(groupRaw)
-		assert.False(t, ok)
-	})
-
-	t.Run("returns false when members block absent", func(t *testing.T) {
-		groupRaw := map[string]interface{}{
-			"group_id": "member",
-			"members":  schema.NewSet(hashFn, []interface{}{}),
-		}
-		_, _, ok := memberZonesFromDiff(groupRaw)
-		assert.False(t, ok)
-	})
-}
-
 // TestGen2ValidateMemberZonesDiff tests the Gen2 backend ValidateMemberZonesDiff method
 // using the shared memberZonesFromDiff + validateMemberZones pipeline.
 func TestGen2ValidateMemberZonesDiff(t *testing.T) {
