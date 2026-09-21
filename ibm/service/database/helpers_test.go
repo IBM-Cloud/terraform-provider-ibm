@@ -1002,3 +1002,119 @@ func TestExtractDatabaseAllocations_MemberZones(t *testing.T) {
 		require.Nil(t, alloc.memberZones)
 	})
 }
+
+// TestMemberZonesFromDiff tests every branch of memberZonesFromDiff: it must return
+// (nil, 0, false) for any malformed or irrelevant input, and (zones, count, true) only
+// when the "member" group carries a non-empty member_zones list.
+func TestMemberZonesFromDiff(t *testing.T) {
+	// membersResource mirrors the "members" TypeSet elem declared in the real schema.
+	membersResource := &schema.Resource{
+		Schema: map[string]*schema.Schema{
+			"allocation_count": {Type: schema.TypeInt, Required: true},
+			"member_zones": {
+				Type:     schema.TypeList,
+				Optional: true,
+				Elem:     &schema.Schema{Type: schema.TypeString},
+			},
+		},
+	}
+	hashFn := schema.HashResource(membersResource)
+
+	// makeMembersSet builds a *schema.Set with a single memberMap element.
+	makeMembersSet := func(memberMap map[string]interface{}) *schema.Set {
+		return schema.NewSet(hashFn, []interface{}{memberMap})
+	}
+
+	t.Run("returns false when groupRaw is not a map", func(t *testing.T) {
+		_, _, ok := memberZonesFromDiff("not-a-map")
+		require.False(t, ok)
+	})
+
+	t.Run("returns false when groupRaw is nil", func(t *testing.T) {
+		_, _, ok := memberZonesFromDiff(nil)
+		require.False(t, ok)
+	})
+
+	t.Run("returns false when group_id is not 'member'", func(t *testing.T) {
+		groupRaw := map[string]interface{}{
+			"group_id": "analytics",
+			"members": makeMembersSet(map[string]interface{}{
+				"allocation_count": 1,
+				"member_zones":     []interface{}{"us-east-1"},
+			}),
+		}
+		_, _, ok := memberZonesFromDiff(groupRaw)
+		require.False(t, ok)
+	})
+
+	t.Run("returns false when members value is not a *schema.Set", func(t *testing.T) {
+		groupRaw := map[string]interface{}{
+			"group_id": "member",
+			"members":  []interface{}{},
+		}
+		_, _, ok := memberZonesFromDiff(groupRaw)
+		require.False(t, ok)
+	})
+
+	t.Run("returns false when members set is empty", func(t *testing.T) {
+		groupRaw := map[string]interface{}{
+			"group_id": "member",
+			"members":  schema.NewSet(hashFn, []interface{}{}),
+		}
+		_, _, ok := memberZonesFromDiff(groupRaw)
+		require.False(t, ok)
+	})
+
+	t.Run("returns false when member_zones is absent", func(t *testing.T) {
+		groupRaw := map[string]interface{}{
+			"group_id": "member",
+			"members": makeMembersSet(map[string]interface{}{
+				"allocation_count": 3,
+				// member_zones key not present
+			}),
+		}
+		_, _, ok := memberZonesFromDiff(groupRaw)
+		require.False(t, ok)
+	})
+
+	t.Run("returns false when member_zones is an empty slice", func(t *testing.T) {
+		groupRaw := map[string]interface{}{
+			"group_id": "member",
+			"members": makeMembersSet(map[string]interface{}{
+				"allocation_count": 3,
+				"member_zones":     []interface{}{},
+			}),
+		}
+		_, _, ok := memberZonesFromDiff(groupRaw)
+		require.False(t, ok)
+	})
+
+	t.Run("extracts zones and allocation_count for member group", func(t *testing.T) {
+		groupRaw := map[string]interface{}{
+			"group_id": "member",
+			"members": makeMembersSet(map[string]interface{}{
+				"allocation_count": 1,
+				"member_zones":     []interface{}{"us-east-1"},
+			}),
+		}
+		zones, count, ok := memberZonesFromDiff(groupRaw)
+		require.True(t, ok)
+		require.Equal(t, []string{"us-east-1"}, zones)
+		require.Equal(t, 1, count)
+	})
+
+	t.Run("allocation_count zero is returned as-is when zones are present", func(t *testing.T) {
+		groupRaw := map[string]interface{}{
+			"group_id": "member",
+			"members": makeMembersSet(map[string]interface{}{
+				"allocation_count": 0,
+				"member_zones":     []interface{}{"us-south-1"},
+			}),
+		}
+		zones, count, ok := memberZonesFromDiff(groupRaw)
+		require.True(t, ok)
+		require.Equal(t, []string{"us-south-1"}, zones)
+		require.Equal(t, 0, count)
+	})
+
+}
