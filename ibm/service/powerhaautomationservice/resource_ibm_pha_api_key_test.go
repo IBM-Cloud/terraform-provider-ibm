@@ -7,27 +7,30 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/terraform"
 
-	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
-	"github.com/IBM/dra-go-sdk/powerhaautomationservicev1"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
+	"github.ibm.com/DRAutomation/dra-go-sdk/powerhaautomationservicev1"
+	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 )
 
 func TestAccIBMPhaAPIKeyBasic(t *testing.T) {
 	var conf powerhaautomationservicev1.APIKeyResponse
-	instanceID := "8eefautr-4c02-0009-0086-8bd4d8cf61b6"
+	phaInstanceID := fmt.Sprintf("tf_pha_instance_id_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { acc.TestAccPreCheck(t) },
-		Providers: acc.TestAccProviders,
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMPhaAPIKeyDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIBMPhaAPIKeyConfigBasic(instanceID),
+				Config: testAccCheckIBMPhaAPIKeyConfigBasic(phaInstanceID),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMPhaAPIKeyExists("ibm_pha_api_key.pha_api_key_instance", conf),
-					resource.TestCheckResourceAttr("ibm_pha_api_key.pha_api_key_instance", "instance_id", instanceID),
+					resource.TestCheckResourceAttr("ibm_pha_api_key.pha_api_key_instance", "pha_instance_id", phaInstanceID),
 				),
 			},
 		},
@@ -36,52 +39,50 @@ func TestAccIBMPhaAPIKeyBasic(t *testing.T) {
 
 func TestAccIBMPhaAPIKeyAllArgs(t *testing.T) {
 	var conf powerhaautomationservicev1.APIKeyResponse
-	instanceID := "8eefautr-4c02-0009-0086-8bd4d8cf61b6"
-	acceptLanguage := "en"
-	ifNoneMatch := ""
-	apiKey := ""
+	phaInstanceID := fmt.Sprintf("tf_pha_instance_id_%d", acctest.RandIntRange(10, 100))
+	acceptLanguage := fmt.Sprintf("tf_accept_language_%d", acctest.RandIntRange(10, 100))
+	ifNoneMatch := fmt.Sprintf("tf_if_none_match_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { acc.TestAccPreCheck(t) },
-		Providers: acc.TestAccProviders,
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMPhaAPIKeyDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIBMPhaAPIKeyConfig(instanceID, acceptLanguage, ifNoneMatch, apiKey),
+				Config: testAccCheckIBMPhaAPIKeyConfig(phaInstanceID, acceptLanguage, ifNoneMatch),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMPhaAPIKeyExists("ibm_pha_api_key.pha_api_key_instance", conf),
-					resource.TestCheckResourceAttr("ibm_pha_api_key.pha_api_key_instance", "instance_id", instanceID),
+					resource.TestCheckResourceAttr("ibm_pha_api_key.pha_api_key_instance", "pha_instance_id", phaInstanceID),
 					resource.TestCheckResourceAttr("ibm_pha_api_key.pha_api_key_instance", "accept_language", acceptLanguage),
 					resource.TestCheckResourceAttr("ibm_pha_api_key.pha_api_key_instance", "if_none_match", ifNoneMatch),
-					resource.TestCheckResourceAttr("ibm_pha_api_key.pha_api_key_instance", "api_key", apiKey),
 				),
 			},
-			// resource.TestStep{
-			// 	ResourceName:      "ibm_pha_api_key.pha_api_key_instance",
-			// 	ImportState:       true,
-			// 	ImportStateVerify: true,
-			// },
+			resource.TestStep{
+				ResourceName:      "ibm_pha_api_key.pha_api_key_instance",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
 		},
 	})
 }
 
-func testAccCheckIBMPhaAPIKeyConfigBasic(instanceID string) string {
+func testAccCheckIBMPhaAPIKeyConfigBasic(phaInstanceID string) string {
 	return fmt.Sprintf(`
 		resource "ibm_pha_api_key" "pha_api_key_instance" {
-			instance_id = "%s"
+			pha_instance_id = "%s"
 		}
-	`, instanceID)
+	`, phaInstanceID)
 }
 
-func testAccCheckIBMPhaAPIKeyConfig(instanceID string, acceptLanguage string, ifNoneMatch string, apiKey string) string {
+func testAccCheckIBMPhaAPIKeyConfig(phaInstanceID string, acceptLanguage string, ifNoneMatch string) string {
 	return fmt.Sprintf(`
 
 		resource "ibm_pha_api_key" "pha_api_key_instance" {
-			instance_id = "%s"
+			pha_instance_id = "%s"
 			accept_language = "%s"
 			if_none_match = "%s"
-			api_key = "%s"
 		}
-	`, instanceID, acceptLanguage, ifNoneMatch, apiKey)
+	`, phaInstanceID, acceptLanguage, ifNoneMatch)
 }
 
 func testAccCheckIBMPhaAPIKeyExists(n string, obj powerhaautomationservicev1.APIKeyResponse) resource.TestCheckFunc {
@@ -99,13 +100,13 @@ func testAccCheckIBMPhaAPIKeyExists(n string, obj powerhaautomationservicev1.API
 
 		getAPIKeyOptions := &powerhaautomationservicev1.GetAPIKeyOptions{}
 
-		// parts, err := flex.SepIdParts(rs.Primary.ID, "/")
-		// if err != nil {
-		// 	return err
-		// }
+		parts, err := flex.SepIdParts(rs.Primary.ID, "/")
+		if err != nil {
+			return err
+		}
 
-		// getAPIKeyOptions.SetPhaInstanceID(parts[0])
-		getAPIKeyOptions.SetPhaInstanceID(rs.Primary.ID)
+		getAPIKeyOptions.SetPhaInstanceID(parts[0])
+		getAPIKeyOptions.SetPhaInstanceID(parts[1])
 
 		apiKeyResponse, _, err := powerhaAutomationServiceClient.GetAPIKey(getAPIKeyOptions)
 		if err != nil {
@@ -129,13 +130,13 @@ func testAccCheckIBMPhaAPIKeyDestroy(s *terraform.State) error {
 
 		getAPIKeyOptions := &powerhaautomationservicev1.GetAPIKeyOptions{}
 
-		// parts, err := flex.SepIdParts(rs.Primary.ID, "/")
-		// if err != nil {
-		// 	return err
-		// }
+		parts, err := flex.SepIdParts(rs.Primary.ID, "/")
+		if err != nil {
+			return err
+		}
 
-		// getAPIKeyOptions.SetPhaInstanceID(parts[0])
-		getAPIKeyOptions.SetPhaInstanceID(rs.Primary.ID)
+		getAPIKeyOptions.SetPhaInstanceID(parts[0])
+		getAPIKeyOptions.SetPhaInstanceID(parts[1])
 
 		// Try to find the key
 		_, response, err := powerhaAutomationServiceClient.GetAPIKey(getAPIKeyOptions)

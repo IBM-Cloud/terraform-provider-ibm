@@ -7,36 +7,33 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/terraform"
 
-	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/powerhaautomationservice"
-	"github.com/IBM/dra-go-sdk/powerhaautomationservicev1"
 	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/stretchr/testify/assert"
+	"github.ibm.com/DRAutomation/dra-go-sdk/powerhaautomationservicev1"
+	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 )
 
 func TestAccIBMPhaClusterNodesBasic(t *testing.T) {
 	var conf powerhaautomationservicev1.ClusterNodeResponse
-	instanceID := "2cfb7a06-623b-4eb9-a9ac-daa03dc0b5a6"
-	// primary_cluster_nodes :=["xxxxxxxx-xxxx-xxxx-9e9e-133d946xxxx"]
+	phaInstanceID := fmt.Sprintf("tf_pha_instance_id_%d", acctest.RandIntRange(10, 100))
+
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { acc.TestAccPreCheck(t) },
-		Providers: acc.TestAccProviders,
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMPhaClusterNodesDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIBMPhaClusterNodesConfigBasic(instanceID),
+				Config: testAccCheckIBMPhaClusterNodesConfigBasic(phaInstanceID),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMPhaClusterNodesExists("ibm_pha_cluster_nodes.pha_cluster_nodes_instance", conf),
-					resource.TestCheckResourceAttr("ibm_pha_cluster_nodes.pha_cluster_nodes_instance", "instance_id", instanceID),
-					// resource.TestCheckResourceAttr("ibm_pha_cluster_nodes.pha_cluster_nodes_instance", "primary_cluster_nodes.0", primary_cluster_nodes),
-					resource.TestCheckTypeSetElemAttr(
-						"ibm_pha_cluster_nodes.pha_cluster_nodes_instance",
-						"primary_cluster_nodes.*",
-						"049a8b09-a1ff-4434-acda-92946f3f4ab5",
-					),
+					resource.TestCheckResourceAttr("ibm_pha_cluster_nodes.pha_cluster_nodes_instance", "pha_instance_id", phaInstanceID),
 				),
 			},
 		},
@@ -45,19 +42,20 @@ func TestAccIBMPhaClusterNodesBasic(t *testing.T) {
 
 func TestAccIBMPhaClusterNodesAllArgs(t *testing.T) {
 	var conf powerhaautomationservicev1.ClusterNodeResponse
-	instanceID := "2cfb7a06-623b-4eb9-a9ac-daa03dc0b5a6"
-	acceptLanguage := "en"
-	ifNoneMatch := ""
+	phaInstanceID := fmt.Sprintf("tf_pha_instance_id_%d", acctest.RandIntRange(10, 100))
+	acceptLanguage := fmt.Sprintf("tf_accept_language_%d", acctest.RandIntRange(10, 100))
+	ifNoneMatch := fmt.Sprintf("tf_if_none_match_%d", acctest.RandIntRange(10, 100))
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { acc.TestAccPreCheck(t) },
-		Providers: acc.TestAccProviders,
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMPhaClusterNodesDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckIBMPhaClusterNodesConfig(instanceID, acceptLanguage, ifNoneMatch),
+				Config: testAccCheckIBMPhaClusterNodesConfig(phaInstanceID, acceptLanguage, ifNoneMatch),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckIBMPhaClusterNodesExists("ibm_pha_cluster_nodes.pha_cluster_nodes_instance", conf),
-					resource.TestCheckResourceAttr("ibm_pha_cluster_nodes.pha_cluster_nodes_instance", "instance_id", instanceID),
+					resource.TestCheckResourceAttr("ibm_pha_cluster_nodes.pha_cluster_nodes_instance", "pha_instance_id", phaInstanceID),
 					resource.TestCheckResourceAttr("ibm_pha_cluster_nodes.pha_cluster_nodes_instance", "accept_language", acceptLanguage),
 					resource.TestCheckResourceAttr("ibm_pha_cluster_nodes.pha_cluster_nodes_instance", "if_none_match", ifNoneMatch),
 				),
@@ -71,25 +69,23 @@ func TestAccIBMPhaClusterNodesAllArgs(t *testing.T) {
 	})
 }
 
-func testAccCheckIBMPhaClusterNodesConfigBasic(instanceID string) string {
+func testAccCheckIBMPhaClusterNodesConfigBasic(phaInstanceID string) string {
 	return fmt.Sprintf(`
 		resource "ibm_pha_cluster_nodes" "pha_cluster_nodes_instance" {
-			instance_id = "%s"
-			primary_cluster_nodes = ["xxxxxxxx-xxxx-xxxx-xxxx-92946f3xxxxx"]
+			pha_instance_id = "%s"
 		}
-	`, instanceID)
+	`, phaInstanceID)
 }
 
-func testAccCheckIBMPhaClusterNodesConfig(instanceID string, acceptLanguage string, ifNoneMatch string) string {
+func testAccCheckIBMPhaClusterNodesConfig(phaInstanceID string, acceptLanguage string, ifNoneMatch string) string {
 	return fmt.Sprintf(`
 
 		resource "ibm_pha_cluster_nodes" "pha_cluster_nodes_instance" {
-			instance_id = "%s"
-			primary_cluster_nodes = ["xxxxxxxx-xxxx-xxxx-xxxx-92946f3xxxxx"]
+			pha_instance_id = "%s"
 			accept_language = "%s"
 			if_none_match = "%s"
 		}
-	`, instanceID, acceptLanguage, ifNoneMatch)
+	`, phaInstanceID, acceptLanguage, ifNoneMatch)
 }
 
 func testAccCheckIBMPhaClusterNodesExists(n string, obj powerhaautomationservicev1.ClusterNodeResponse) resource.TestCheckFunc {
@@ -107,7 +103,13 @@ func testAccCheckIBMPhaClusterNodesExists(n string, obj powerhaautomationservice
 
 		getClusterNodeOptions := &powerhaautomationservicev1.GetClusterNodeOptions{}
 
-		getClusterNodeOptions.SetPhaInstanceID(rs.Primary.ID)
+		parts, err := flex.SepIdParts(rs.Primary.ID, "/")
+		if err != nil {
+			return err
+		}
+
+		getClusterNodeOptions.SetPhaInstanceID(parts[0])
+		getClusterNodeOptions.SetPhaInstanceID(parts[1])
 
 		clusterNodeResponse, _, err := powerhaAutomationServiceClient.GetClusterNode(getClusterNodeOptions)
 		if err != nil {
@@ -131,7 +133,13 @@ func testAccCheckIBMPhaClusterNodesDestroy(s *terraform.State) error {
 
 		getClusterNodeOptions := &powerhaautomationservicev1.GetClusterNodeOptions{}
 
-		getClusterNodeOptions.SetPhaInstanceID(rs.Primary.ID)
+		parts, err := flex.SepIdParts(rs.Primary.ID, "/")
+		if err != nil {
+			return err
+		}
+
+		getClusterNodeOptions.SetPhaInstanceID(parts[0])
+		getClusterNodeOptions.SetPhaInstanceID(parts[1])
 
 		// Try to find the key
 		_, response, err := powerhaAutomationServiceClient.GetClusterNode(getClusterNodeOptions)
@@ -149,31 +157,33 @@ func testAccCheckIBMPhaClusterNodesDestroy(s *terraform.State) error {
 func TestResourceIBMPhaClusterNodesNodeDetailToMap(t *testing.T) {
 	checkResult := func(result map[string]interface{}) {
 		model := make(map[string]interface{})
-		model["agent_status"] = "running"
-		model["cores"] = float64(8.0)
-		model["ip_addresses"] = []string{"10.0.0.21", "10.0.0.22"}
-		model["memory"] = float64(64.0)
-		model["pha_level"] = "7.2.1"
+		model["vm_id"] = "vm-1234567890"
+		model["vm_name"] = "desire-01"
 		model["region"] = "us-south"
-		model["vm_id"] = "vm-9b7c2d11"
-		model["vm_name"] = "pha-node-primary-1"
-		model["vm_status"] = "ACTIVE"
-		model["workspace_id"] = "workspace-primary-001"
+		model["workspace_id"] = "2vfdv804c-79a333-5ee-94e7-993ffegve81"
+		model["cores"] = float64(5)
+		model["memory"] = float64(32)
+		model["ip_addresses"] = []string{"10.0.0.25"}
+		model["vm_status"] = "RUNNING"
+		model["agent_status"] = "ACTIVE"
+		model["pha_level"] = "7.2.1"
+		model["powerha_version_supported"] = true
 
 		assert.Equal(t, result, model)
 	}
 
 	model := new(powerhaautomationservicev1.NodeDetail)
-	model.AgentStatus = core.StringPtr("running")
-	model.Cores = core.Float32Ptr(float32(8.0))
-	model.IPAddresses = []string{"10.0.0.21", "10.0.0.22"}
-	model.Memory = core.Float32Ptr(float32(64.0))
-	model.PhaLevel = core.StringPtr("7.2.1")
+	model.VMID = core.StringPtr("vm-1234567890")
+	model.VMName = core.StringPtr("desire-01")
 	model.Region = core.StringPtr("us-south")
-	model.VMID = core.StringPtr("vm-9b7c2d11")
-	model.VMName = core.StringPtr("pha-node-primary-1")
-	model.VMStatus = core.StringPtr("ACTIVE")
-	model.WorkspaceID = core.StringPtr("workspace-primary-001")
+	model.WorkspaceID = core.StringPtr("2vfdv804c-79a333-5ee-94e7-993ffegve81")
+	model.Cores = core.Float32Ptr(float32(5))
+	model.Memory = core.Float32Ptr(float32(32))
+	model.IPAddresses = []string{"10.0.0.25"}
+	model.VMStatus = core.StringPtr("RUNNING")
+	model.AgentStatus = core.StringPtr("ACTIVE")
+	model.PhaLevel = core.StringPtr("7.2.1")
+	model.PowerhaVersionSupported = core.BoolPtr(true)
 
 	result, err := powerhaautomationservice.ResourceIBMPhaClusterNodesNodeDetailToMap(model)
 	assert.Nil(t, err)

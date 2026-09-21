@@ -1,8 +1,8 @@
-// Copyright IBM Corp. 2025 All Rights Reserved.
+// Copyright IBM Corp. 2026 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 /*
- * IBM OpenAPI Terraform Generator Version: 3.108.0-56772134-20251111-102802
+ * IBM OpenAPI Terraform Generator Version: 3.116.0-df613dbc-20260803-154903
  */
 
 package drautomationservice_test
@@ -11,14 +11,13 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/drautomationservice"
 	"github.com/IBM/go-sdk-core/v5/core"
 	"github.com/stretchr/testify/assert"
-
-	"github.com/IBM/dra-go-sdk/drautomationservicev1"
+	"github.ibm.com/DRAutomation/dra-go-sdk/drautomationservicev1"
 )
 
 func TestAccIBMPdrEventDataSourceBasic(t *testing.T) {
@@ -32,12 +31,9 @@ func TestAccIBMPdrEventDataSourceBasic(t *testing.T) {
 					resource.TestCheckResourceAttrSet("data.ibm_pdr_event.pdr_event_instance", "id"),
 					resource.TestCheckResourceAttrSet("data.ibm_pdr_event.pdr_event_instance", "instance_id"),
 					resource.TestCheckResourceAttrSet("data.ibm_pdr_event.pdr_event_instance", "event_id"),
-					resource.TestCheckResourceAttrSet("data.ibm_pdr_event.pdr_event_instance", "action"),
 					resource.TestCheckResourceAttrSet("data.ibm_pdr_event.pdr_event_instance", "level"),
-					resource.TestCheckResourceAttrSet("data.ibm_pdr_event.pdr_event_instance", "message"),
-					resource.TestCheckResourceAttrSet("data.ibm_pdr_event.pdr_event_instance", "resource"),
-					resource.TestCheckResourceAttrSet("data.ibm_pdr_event.pdr_event_instance", "time"),
-					resource.TestCheckResourceAttrSet("data.ibm_pdr_event.pdr_event_instance", "timestamp"),
+					resource.TestCheckResourceAttrSet("data.ibm_pdr_event.pdr_event_instance", "message_data.%"),
+					resource.TestCheckResourceAttrSet("data.ibm_pdr_event.pdr_event_instance", "metadata.%"),
 				),
 			},
 		},
@@ -46,30 +42,30 @@ func TestAccIBMPdrEventDataSourceBasic(t *testing.T) {
 
 func testAccCheckIBMPdrEventDataSourceConfigBasic() string {
 	return fmt.Sprintf(`
-		data "ibm_pdr_get_event" "pdr_get_event_instance" {
+		data "ibm_pdr_event" "pdr_event_instance" {
 			instance_id = "123456d3-1122-3344-b67d-4389b44b7bf9"
 			event_id = "00116b2a-9326-4024-839e-fb5364b76898"
-			Accept-Language = "Accept-Language"
+			Accept-Language = "en-US"
 		}
 	`)
 }
 
-func TestDataSourceIBMPdrGetEventEventUserToMap(t *testing.T) {
+func TestDataSourceIBMPdrEventEventUserToMap(t *testing.T) {
 	checkResult := func(result map[string]interface{}) {
 		model := make(map[string]interface{})
-		model["email"] = "abcuser@ibm.com"
-		model["name"] = "abcuser"
-		model["user_id"] = "IBMid-695000abc7E"
+		model["email"] = "testString"
+		model["name"] = "testString"
+		model["user_id"] = "testString"
 
 		assert.Equal(t, result, model)
 	}
 
 	model := new(drautomationservicev1.EventUser)
-	model.Email = core.StringPtr("abcuser@ibm.com")
-	model.Name = core.StringPtr("abcuser")
-	model.UserID = core.StringPtr("IBMid-695000abc7E")
+	model.Email = core.StringPtr("testString")
+	model.Name = core.StringPtr("testString")
+	model.UserID = core.StringPtr("testString")
 
-	result, err := drautomationservice.DataSourceIBMPdrGetEventEventUserToMap(model)
+	result, err := drautomationservice.DataSourceIBMPdrEventEventUserToMap(model)
 	assert.Nil(t, err)
 	checkResult(result)
 }
