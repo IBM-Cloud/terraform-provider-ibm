@@ -1245,6 +1245,7 @@ func init() {
 	if IcdDbGen2DeploymentId == "" {
 		IcdDbGen2DeploymentId = "crn:v1:bluemix:public:databases-for-postgresql:ca-mon:a/40ddc34a953a8c02f10987b59085b60e:7b231067-9ddd-4de9-964a-d7bf84cfdc3f::"
 		fmt.Println("[INFO] Set the environment variable ICD_DB_GEN2_DEPLOYMENT_ID for testing Gen2 databases else it is set to default value 'crn:v1:bluemix:public:databases-for-postgresql:ca-mon:a/40ddc34a953a8c02f10987b59085b60e:7b231067-9ddd-4de9-964a-d7bf84cfdc3f::'")
+	}
 	Gen2DeploymentId = os.Getenv("GEN2_DEPLOYMENT_ID")
 	if Gen2DeploymentId == "" {
 		Gen2DeploymentId = "crn:v1:bluemix:public:databases-for-mysql:us-east:a/23b09aee04da4545b6e32805fa93249d:8ff728d1-35f2-4b35-86ce-8f9f9bea9721::"
