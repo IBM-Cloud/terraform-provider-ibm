@@ -62,6 +62,15 @@ func (g *dataSourceIBMDatabaseGen2Backend) Read(d *schema.ResourceData, meta int
 		return err
 	}
 
+	// Set maintenance window from instance extensions
+	if ext := instance.Extensions; ext != nil {
+		if flat := flattenMaintenance(ext); flat != nil {
+			if err := d.Set("maintenance", flat); err != nil {
+				return fmt.Errorf("error setting maintenance: %w", err)
+			}
+		}
+	}
+
 	// Clear Gen2 unsupported attributes
 	g.clearUnsupportedAttributes(d)
 

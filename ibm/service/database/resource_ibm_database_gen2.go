@@ -367,6 +367,9 @@ func (g *resourceIBMDatabaseGen2Backend) buildGen2Parameters(d *schema.ResourceD
 	// Handle encryption
 	g.addEncryptionConfig(d, dataservices)
 
+	// Handle maintenance window
+	g.addMaintenanceConfig(d, dataservices)
+
 	// Add restore_backup_id if provided (for restore from backup)
 	// Note: Gen2 uses "restore_backup_id" inside dataservices, not "backup_id" at top level
 	if backupID, ok := d.GetOk("backup_id"); ok {
@@ -501,6 +504,98 @@ func (g *resourceIBMDatabaseGen2Backend) addEncryptionConfig(d *schema.ResourceD
 	}
 }
 
+// addMaintenanceConfig adds maintenance window configuration to dataservices.
+// Supports custom window (start_time/days) or reset to system-assigned default (system_assigned).
+func (g *resourceIBMDatabaseGen2Backend) addMaintenanceConfig(d *schema.ResourceData, dataservices map[string]interface{}) {
+	raw, ok := d.GetOk("maintenance")
+	if !ok {
+		return
+	}
+	list := raw.([]interface{})
+	if len(list) == 0 || list[0] == nil {
+		return
+	}
+	outer := list[0].(map[string]interface{})
+
+	windowRaw, ok := outer["window"]
+	if !ok {
+		return
+	}
+	windowList := windowRaw.([]interface{})
+	if len(windowList) == 0 || windowList[0] == nil {
+		return
+	}
+	wMap := windowList[0].(map[string]interface{})
+
+	window := map[string]interface{}{}
+
+	if v, ok := wMap["start_time"].(string); ok && v != "" {
+		window["start_time"] = v
+	}
+	if v, ok := wMap["days"]; ok {
+		if daysSet, ok := v.(*schema.Set); ok && daysSet.Len() > 0 {
+			days := make([]string, 0, daysSet.Len())
+			for _, d := range daysSet.List() {
+				days = append(days, d.(string))
+			}
+			window["days"] = days
+		}
+	}
+	if v, ok := wMap["system_assigned"].(bool); ok && v {
+		window["system_assigned"] = v
+	}
+
+	if len(window) > 0 {
+		dataservices["maintenance"] = map[string]interface{}{
+			"window": window,
+		}
+	}
+}
+
+// flattenMaintenance converts the maintenance map from instance.Extensions into the
+// []map[string]interface{} shape required by Terraform for TypeList/MaxItems:1 blocks.
+func flattenMaintenance(ext map[string]interface{}) []map[string]interface{} {
+	// The API response nests maintenance under extensions["dataservices"]["maintenance"].
+	dataservices, ok := ext["dataservices"].(map[string]interface{})
+	if !ok {
+		return nil
+	}
+	maintenanceRaw, ok := dataservices["maintenance"]
+	if !ok {
+		return nil
+	}
+	mMap, ok := maintenanceRaw.(map[string]interface{})
+	if !ok {
+		return nil
+	}
+	wRaw, ok := mMap["window"].(map[string]interface{})
+	if !ok {
+		return nil
+	}
+
+	window := map[string]interface{}{}
+	if v, ok := wRaw["start_time"].(string); ok {
+		window["start_time"] = v
+	}
+	// The API returns days as []interface{}; the schema stores it as a TypeSet ([]interface{}).
+	switch v := wRaw["days"].(type) {
+	case string:
+		// defensive: handle unexpected string form from API
+		if v != "" {
+			window["days"] = []interface{}{v}
+		}
+	case []interface{}:
+		window["days"] = v
+	}
+	if v, ok := wRaw["system_assigned"].(bool); ok {
+		window["system_assigned"] = v
+	}
+
+	return []map[string]interface{}{
+		{"window": []map[string]interface{}{window}},
+	}
+}
+
 // createInstanceWithRetry creates an instance.
 // Note: Retry logic can be added in the future if needed.
 func (g *resourceIBMDatabaseGen2Backend) createInstanceWithRetry(client *rc.ResourceControllerV2, opts *rc.CreateResourceInstanceOptions) (*rc.ResourceInstance, *core.DetailedResponse, error) {
@@ -603,7 +698,9 @@ func (g *resourceIBMDatabaseGen2Backend) updateResourceInstanceParameters(
 // Flattens group configuration into parameters and updates the instance via UpdateResourceInstance API.
 // This approach is consistent with how groups are handled at CREATE time and removes CloudDatabasesV5 dependency.
 func (g *resourceIBMDatabaseGen2Backend) applyGroupScaling(configCtx *instanceConfigContext) error {
-	if _, ok := configCtx.d.GetOk("group"); !ok {
+	_, hasGroup := configCtx.d.GetOk("group")
+	hasMaintenance := configCtx.d.HasChange("maintenance")
+	if !hasGroup && !hasMaintenance {
 		return nil
 	}
 
@@ -804,6 +901,15 @@ func (g *resourceIBMDatabaseGen2Backend) populateResourceData(d *schema.Resource
 		return diag.FromErr(err)
 	}
 
+	// Set maintenance window from instance extensions
+	if ext := instance.Extensions; ext != nil {
+		if flat := flattenMaintenance(ext); flat != nil {
+			if err := d.Set("maintenance", flat); err != nil {
+				return diag.FromErr(fmt.Errorf("error setting maintenance: %w", err))
+			}
+		}
+	}
+
 	// Clear Gen2 unsupported attributes
 	g.clearUnsupportedAttributes(d)
 
@@ -899,7 +1005,7 @@ func (g *resourceIBMDatabaseGen2Backend) applyBasicAttributeUpdates(d *schema.Re
 		return diagError("error updating resource instance: %s %s", err, response)
 	}
 
-	_, err = waitForDatabaseInstanceUpdate(d, meta)
+	_, err = g.waitForGen2InstanceUpdate(d, meta)
 	if err != nil {
 		return diagError("error waiting for update of resource instance (%s) to complete: %s", d.Id(), err)
 	}
@@ -946,7 +1052,7 @@ func (g *resourceIBMDatabaseGen2Backend) checkUnsupportedChanges(d *schema.Resou
 // applyGroupScalingWithDiagnostics applies group scaling and returns diagnostics.
 // Wraps applyGroupScaling to provide consistent diagnostic handling.
 func (g *resourceIBMDatabaseGen2Backend) applyGroupScalingWithDiagnostics(ctx context.Context, d *schema.ResourceData, rsConClient *rc.ResourceControllerV2, instanceID string, meta interface{}) diag.Diagnostics {
-	if !d.HasChange("group") {
+	if !d.HasChange("group") && !d.HasChange("maintenance") {
 		return nil
 	}
 

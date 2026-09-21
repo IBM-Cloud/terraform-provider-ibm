@@ -185,6 +185,7 @@ func ResourceIBMDatabaseInstance() *schema.Resource {
 			validateRemoteLeaderIDDiff,
 			validateVersionDiff,
 			validateAsyncRestoreDiff,
+			validateMaintenanceWindowDiff,
 			validateBackendSpecificServiceEndpointsDiff,
 		),
 
@@ -872,6 +873,54 @@ func ResourceIBMDatabaseInstance() *schema.Resource {
 										Type:        schema.TypeString,
 										Optional:    true,
 										Computed:    true,
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			"maintenance": {
+				Type:        schema.TypeList,
+				Optional:    true,
+				MaxItems:    1,
+				Description: "Maintenance window configuration for Gen2 database instances. Applicable to Gen2 plans only.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"window": {
+							Type:     schema.TypeList,
+							Optional: true,
+							MaxItems: 1,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"start_time": {
+										Type:        schema.TypeString,
+										Optional:    true,
+										Description: "Earliest time at which maintenance can be initiated. ISO 8601 UTC time format (hh:mmZ). Example: \"05:00Z\".",
+										ValidateFunc: func(v interface{}, k string) (warnings []string, errors []error) {
+											val := v.(string)
+											if val == "" {
+												return
+											}
+											return validation.StringMatch(
+												regexp.MustCompile(`^(2[0-3]|[01][0-9]):[0-5][0-9]Z$`),
+												"start_time must be in ISO 8601 UTC format hh:mmZ, e.g. \"05:00Z\"",
+											)(v, k)
+										},
+									},
+									"days": {
+										Type:        schema.TypeSet,
+										Optional:    true,
+										Description: "Day(s) of the week on which maintenance can be initiated. Example: [\"Wednesday\",\"Thursday\"].",
+										Elem: &schema.Schema{
+											Type:         schema.TypeString,
+											ValidateFunc: validateMaintenanceDays,
+										},
+									},
+									"system_assigned": {
+										Type:        schema.TypeBool,
+										Optional:    true,
+										Description: "When true, resets the maintenance window to the IBM Cloud system-assigned default. Cannot be set together with start_time or days.",
 									},
 								},
 							},
@@ -3343,6 +3392,54 @@ func validateRemoteLeaderIDDiff(_ context.Context, diff *schema.ResourceDiff, me
 		return fmt.Errorf("[ERROR] remote_leader_id is only supported for databases-for-postgresql, databases-for-enterprisedb and databases-for-mysql")
 	}
 
+	return nil
+}
+
+// validateMaintenanceDays is a ValidateFunc for each element of maintenance.window.days.
+// Accepts a single full English day name (e.g. "Wednesday").
+func validateMaintenanceDays(v interface{}, k string) (warnings []string, errors []error) {
+	allowed := map[string]bool{
+		"Monday": true, "Tuesday": true, "Wednesday": true, "Thursday": true,
+		"Friday": true, "Saturday": true, "Sunday": true,
+	}
+	val := v.(string)
+	if !allowed[val] {
+		errors = append(errors, fmt.Errorf(
+			"%s: unrecognised day %q — must be a full English day name (e.g. \"Wednesday\")",
+			k, val,
+		))
+	}
+	return
+}
+
+// validateMaintenanceWindowDiff enforces two rules for the maintenance.window block:
+//  1. system_assigned cannot be set together with start_time or days.
+//  2. start_time and days must both be set together; specifying only one is not accepted.
+func validateMaintenanceWindowDiff(_ context.Context, diff *schema.ResourceDiff, _ interface{}) error {
+	useDefault, ok := diff.GetOk("maintenance.0.window.0.system_assigned")
+	if ok && useDefault == true {
+		startTime, _ := diff.GetOk("maintenance.0.window.0.start_time")
+		days, _ := diff.GetOk("maintenance.0.window.0.days")
+		daysSet, _ := days.(*schema.Set)
+		if (startTime != nil && startTime.(string) != "") || (daysSet != nil && daysSet.Len() > 0) {
+			return fmt.Errorf("[ERROR] maintenance.window.system_assigned cannot be set together with start_time or days")
+		}
+		return nil
+	}
+
+	// Enforce that start_time and days must both be specified together.
+	startTime, hasStartTime := diff.GetOk("maintenance.0.window.0.start_time")
+	days, _ := diff.GetOk("maintenance.0.window.0.days")
+	daysSet, _ := days.(*schema.Set)
+	hasDays := daysSet != nil && daysSet.Len() > 0
+
+	startTimeSet := hasStartTime && startTime.(string) != ""
+	if startTimeSet && !hasDays {
+		return fmt.Errorf("[ERROR] maintenance.window.start_time and days must be specified together")
+	}
+	if hasDays && !startTimeSet {
+		return fmt.Errorf("[ERROR] maintenance.window.start_time and days must be specified together")
+	}
 	return nil
 }
 

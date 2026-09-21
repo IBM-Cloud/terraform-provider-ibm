@@ -329,6 +329,38 @@ func DataSourceIBMDatabaseInstance() *schema.Resource {
 					},
 				},
 			},
+			"maintenance": {
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "Maintenance window configuration. Applicable to Gen2 plans only.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"window": {
+							Type:     schema.TypeList,
+							Computed: true,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"start_time": {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "Earliest time at which maintenance can begin (hh:mmZ).",
+									},
+									"days": {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "Comma-separated day(s) on which maintenance can run.",
+									},
+									"system_assigned": {
+										Type:        schema.TypeBool,
+										Computed:    true,
+										Description: "True when IBM Cloud controls the maintenance schedule.",
+									},
+								},
+							},
+						},
+					},
+				},
+			},
 			"auto_scaling": {
 				Type:        schema.TypeList,
 				Description: "ICD Auto Scaling. Note: This attribute is currently not supported for Gen2 database instances.",
