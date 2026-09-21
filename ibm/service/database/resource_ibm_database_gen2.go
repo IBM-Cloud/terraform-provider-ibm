@@ -1217,19 +1217,6 @@ func (g *resourceIBMDatabaseGen2Backend) ValidateGroupsDiff(ctx context.Context,
 				return err
 			}
 		}
-
-		// Plan-time validation for member_zones:
-		//   - member_zones can only be set when allocation_count == 1
-		//   - member_zones must contain exactly one zone entry
-		if group.ID == defaultGroupID && len(group.MemberZones) > 0 {
-			memberCount := 0
-			if group.Members != nil {
-				memberCount = group.Members.Allocation
-			}
-			if err := validateMemberZones(group, memberCount); err != nil {
-				return err
-			}
-		}
 	}
 
 	return nil
@@ -1243,41 +1230,15 @@ func (g *resourceIBMDatabaseGen2Backend) ValidateMemberZonesDiff(_ context.Conte
 	if !ok {
 		return nil
 	}
-
 	for _, groupRaw := range groupsRaw.(*schema.Set).List() {
-		tfGroup, ok := groupRaw.(map[string]interface{})
-		if !ok || tfGroup["group_id"].(string) != defaultGroupID {
-			continue
-		}
-
-		membersSet, ok := tfGroup["members"].(*schema.Set)
-		if !ok || membersSet.Len() == 0 {
-			continue
-		}
-
-		memberMap, ok := membersSet.List()[0].(map[string]interface{})
+		zones, allocationCount, ok := memberZonesFromDiff(groupRaw)
 		if !ok {
 			continue
-		}
-
-		zonesRaw, _ := memberMap["member_zones"].([]interface{})
-		if len(zonesRaw) == 0 {
-			continue
-		}
-
-		allocationCount, _ := memberMap["allocation_count"].(int)
-
-		zones := make([]string, 0, len(zonesRaw))
-		for _, z := range zonesRaw {
-			if s, ok := z.(string); ok {
-				zones = append(zones, s)
-			}
 		}
 		if err := validateMemberZones(&Group{MemberZones: zones}, allocationCount); err != nil {
 			return err
 		}
 	}
-
 	return nil
 }
 

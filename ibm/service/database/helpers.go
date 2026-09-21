@@ -1032,3 +1032,32 @@ func validateMemberZones(group *Group, memberCount int) error {
 	}
 	return nil
 }
+
+// memberZonesFromDiff extracts member_zones and allocation_count from the raw diff
+// map for the "member" group, bypassing the schema.Set round-trip that loses nested
+// TypeList values. Returns nil zones if not set.
+func memberZonesFromDiff(groupRaw interface{}) (zones []string, allocationCount int, ok bool) {
+	tfGroup, ok := groupRaw.(map[string]interface{})
+	if !ok || tfGroup["group_id"].(string) != defaultGroupID {
+		return nil, 0, false
+	}
+	membersSet, ok := tfGroup["members"].(*schema.Set)
+	if !ok || membersSet.Len() == 0 {
+		return nil, 0, false
+	}
+	memberMap, ok := membersSet.List()[0].(map[string]interface{})
+	if !ok {
+		return nil, 0, false
+	}
+	zonesRaw, _ := memberMap["member_zones"].([]interface{})
+	if len(zonesRaw) == 0 {
+		return nil, 0, false
+	}
+	for _, z := range zonesRaw {
+		if s, ok := z.(string); ok {
+			zones = append(zones, s)
+		}
+	}
+	allocationCount, _ = memberMap["allocation_count"].(int)
+	return zones, allocationCount, true
+}
