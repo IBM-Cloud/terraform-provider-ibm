@@ -94,7 +94,7 @@ func testAccCheckIBMEnEmailSubscriptionConfig(instanceName, name, description st
             reply_to_mail = "en@ibm.com"
             reply_to_name = "EYS ORG"
             from_name="ABC ORG"
-            to = ["testmail@gmail.com"]
+            invited = ["testmail@gmail.com"]
 			
 		}
 	}
