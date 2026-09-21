@@ -48,7 +48,6 @@ Review the argument reference that you can specify for your data source.
   The Gen2 instance CRN can be retrieved from:
   - The `id` attribute of an `ibm_database` resource configured with a Gen2 plan.
   - The IBM Cloud UI under **Databases → your instance → Overview**.
-  - The IBM Cloud CLI: `ibmcloud resource service-instance <instance_name> --output json | jq -r '.[0].crn'`.
 
   **Note:** For Gen2 instances, `task_id` is set to an empty string `""` in the returned attributes because Gen2 does not expose individual task IDs.
 
