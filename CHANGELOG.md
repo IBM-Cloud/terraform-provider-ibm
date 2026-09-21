@@ -1,3 +1,20 @@
+# 2.6.2 (September 16, 2026)
+
+## Bug Fixes
+
+### Cloud Databases
+* resolve backend plan during import for Gen2 instances ([7000](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/7000))
+
+
+## Enhancements
+
+### Context Based Restrictions
+* add instance address type ([6990](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6990))
+
+### VPC Infrastructure
+* added custom diff for tags in ibm_is_private_path_service_gateway ([6999](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/6999))
+* added custom diff on vpc resources for env tags ([7001](https://github.com/IBM-Cloud/terraform-provider-ibm/pull/7001))
+
 # 2.6.1 (September 10, 2026)
 
 ## Bug Fixes
