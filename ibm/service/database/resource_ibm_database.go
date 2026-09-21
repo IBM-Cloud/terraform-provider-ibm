@@ -182,7 +182,7 @@ func ResourceIBMDatabaseInstance() *schema.Resource {
 			validateUnsupportedAttrsDiff,
 			resourceIBMDatabaseInstanceDiff,
 			validateBackendSpecificGroupsDiff,
-			validateBackendSpecificMemberZonesDiff,
+			validateGen2SpecificMemberZonesDiff,
 			validateUsersDiff,
 			validateRemoteLeaderIDDiff,
 			validateVersionDiff,
@@ -3027,7 +3027,7 @@ func validateBackendSpecificGroupsDiff(context context.Context, diff *schema.Res
 	return pickResourceBackendFromDiff(diff).ValidateGroupsDiff(context, diff, meta)
 }
 
-func validateBackendSpecificMemberZonesDiff(context context.Context, diff *schema.ResourceDiff, meta interface{}) error {
+func validateGen2SpecificMemberZonesDiff(context context.Context, diff *schema.ResourceDiff, meta interface{}) error {
 	return pickResourceBackendFromDiff(diff).ValidateMemberZonesDiff(context, diff, meta)
 }
 
