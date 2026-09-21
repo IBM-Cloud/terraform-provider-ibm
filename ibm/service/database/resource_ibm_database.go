@@ -3062,26 +3062,14 @@ func validateMemberZonesDiff(_ context.Context, d *schema.ResourceDiff, _ interf
 
 		allocationCount, _ := memberMap["allocation_count"].(int)
 
-		// member_zones can only be set when allocation_count == 1
-		if allocationCount != 1 {
-			return fmt.Errorf(
-				"Invalid group configuration: member_zones requires allocation_count = 1, but %d was provided.\n"+
-					"To deploy a single member in a specific availability zone, set:\n"+
-					"  members {\n"+
-					"    allocation_count = 1\n"+
-					"    member_zones     = [\"<zone>\"]\n"+
-					"  }",
-				allocationCount,
-			)
+		zones := make([]string, 0, len(zonesRaw))
+		for _, z := range zonesRaw {
+			if s, ok := z.(string); ok {
+				zones = append(zones, s)
+			}
 		}
-
-		// member_zones must contain exactly one zone entry
-		if len(zonesRaw) != 1 {
-			return fmt.Errorf(
-				"Invalid group configuration: member_zones must contain exactly one availability zone, but %d were provided.\n"+
-					"Please specify a single availability zone.",
-				len(zonesRaw),
-			)
+		if err := validateMemberZones(&Group{MemberZones: zones}, allocationCount); err != nil {
+			return err
 		}
 	}
 
