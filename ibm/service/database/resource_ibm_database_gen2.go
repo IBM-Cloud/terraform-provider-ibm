@@ -1150,52 +1150,6 @@ func (g *resourceIBMDatabaseGen2Backend) ValidateUnsupportedAttrsDiff(ctx contex
 	return errors.New(msg.String())
 }
 
-// ValidateMemberZonesDiff validates member_zones rules for Gen2 instances by reading
-// raw config values directly from the diff, bypassing the schema.Set round-trip that
-// loses nested list data.
-func (g *resourceIBMDatabaseGen2Backend) ValidateMemberZonesDiff(_ context.Context, d *schema.ResourceDiff, _ interface{}) error {
-	groupsRaw, ok := d.GetOk("group")
-	if !ok {
-		return nil
-	}
-
-	for _, groupRaw := range groupsRaw.(*schema.Set).List() {
-		tfGroup, ok := groupRaw.(map[string]interface{})
-		if !ok || tfGroup["group_id"].(string) != defaultGroupID {
-			continue
-		}
-
-		membersSet, ok := tfGroup["members"].(*schema.Set)
-		if !ok || membersSet.Len() == 0 {
-			continue
-		}
-
-		memberMap, ok := membersSet.List()[0].(map[string]interface{})
-		if !ok {
-			continue
-		}
-
-		zonesRaw, _ := memberMap["member_zones"].([]interface{})
-		if len(zonesRaw) == 0 {
-			continue
-		}
-
-		allocationCount, _ := memberMap["allocation_count"].(int)
-
-		zones := make([]string, 0, len(zonesRaw))
-		for _, z := range zonesRaw {
-			if s, ok := z.(string); ok {
-				zones = append(zones, s)
-			}
-		}
-		if err := validateMemberZones(&Group{MemberZones: zones}, allocationCount); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
 func (g *resourceIBMDatabaseGen2Backend) ValidateGroupsDiff(ctx context.Context, d *schema.ResourceDiff, meta interface{}) error {
 	// Use the new (proposed) value from the diff so validation always sees what
 	// Terraform intends to apply, regardless of whether this is a create or update.
@@ -1275,6 +1229,52 @@ func (g *resourceIBMDatabaseGen2Backend) ValidateGroupsDiff(ctx context.Context,
 			if err := validateMemberZones(group, memberCount); err != nil {
 				return err
 			}
+		}
+	}
+
+	return nil
+}
+
+// ValidateMemberZonesDiff validates member_zones rules for Gen2 instances by reading
+// raw config values directly from the diff, bypassing the schema.Set round-trip that
+// loses nested list data.
+func (g *resourceIBMDatabaseGen2Backend) ValidateMemberZonesDiff(_ context.Context, d *schema.ResourceDiff, _ interface{}) error {
+	groupsRaw, ok := d.GetOk("group")
+	if !ok {
+		return nil
+	}
+
+	for _, groupRaw := range groupsRaw.(*schema.Set).List() {
+		tfGroup, ok := groupRaw.(map[string]interface{})
+		if !ok || tfGroup["group_id"].(string) != defaultGroupID {
+			continue
+		}
+
+		membersSet, ok := tfGroup["members"].(*schema.Set)
+		if !ok || membersSet.Len() == 0 {
+			continue
+		}
+
+		memberMap, ok := membersSet.List()[0].(map[string]interface{})
+		if !ok {
+			continue
+		}
+
+		zonesRaw, _ := memberMap["member_zones"].([]interface{})
+		if len(zonesRaw) == 0 {
+			continue
+		}
+
+		allocationCount, _ := memberMap["allocation_count"].(int)
+
+		zones := make([]string, 0, len(zonesRaw))
+		for _, z := range zonesRaw {
+			if s, ok := z.(string); ok {
+				zones = append(zones, s)
+			}
+		}
+		if err := validateMemberZones(&Group{MemberZones: zones}, allocationCount); err != nil {
+			return err
 		}
 	}
 
