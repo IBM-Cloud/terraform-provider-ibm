@@ -1,8 +1,8 @@
-// Copyright IBM Corp. 2025 All Rights Reserved.
+// Copyright IBM Corp. 2026 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 /*
- * IBM OpenAPI Terraform Generator Version: 3.108.0-56772134-20251111-102802
+ * IBM OpenAPI Terraform Generator Version: 3.116.0-df613dbc-20260803-154903
  */
 
 package drautomationservice
@@ -19,18 +19,18 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM/go-sdk-core/v5/core"
-
 	"github.com/IBM/dra-go-sdk/drautomationservicev1"
 )
 
-func dataSourceIBMPdrEventCommon() *schema.Resource {
+func DataSourceIBMPdrEvent() *schema.Resource {
 	return &schema.Resource{
+		ReadContext: dataSourceIBMPdrEventRead,
 
 		Schema: map[string]*schema.Schema{
 			"instance_id": &schema.Schema{
 				Type:        schema.TypeString,
 				Required:    true,
-				Description: "instance id of the service.",
+				Description: "Service Instance ID.",
 			},
 			"event_id": &schema.Schema{
 				Type:        schema.TypeString,
@@ -50,6 +50,7 @@ func dataSourceIBMPdrEventCommon() *schema.Resource {
 			"api_source": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
+				Optional:    true,
 				Description: "Source of API when it being executed.",
 			},
 			"level": &schema.Schema{
@@ -65,7 +66,7 @@ func dataSourceIBMPdrEventCommon() *schema.Resource {
 			"message_data": &schema.Schema{
 				Type:        schema.TypeMap,
 				Computed:    true,
-				Description: "A flexible schema placeholder to allow any JSON value (aligns with interface{} in Go).",
+				Description: "Any message data associated with the event.",
 				Elem: &schema.Schema{
 					Type: schema.TypeString,
 				},
@@ -73,7 +74,7 @@ func dataSourceIBMPdrEventCommon() *schema.Resource {
 			"metadata": &schema.Schema{
 				Type:        schema.TypeMap,
 				Computed:    true,
-				Description: "A flexible schema placeholder to allow any JSON value (aligns with interface{} in Go).",
+				Description: "Any metadata associated with the event.",
 				Elem: &schema.Schema{
 					Type: schema.TypeString,
 				},
@@ -91,7 +92,7 @@ func dataSourceIBMPdrEventCommon() *schema.Resource {
 			"timestamp": &schema.Schema{
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "Time of activity in unix epoch.",
+				Description: "Time of activity in Unix epoch.",
 			},
 			"user": &schema.Schema{
 				Type:        schema.TypeList,
@@ -121,44 +122,23 @@ func dataSourceIBMPdrEventCommon() *schema.Resource {
 	}
 }
 
-func DataSourceIBMPdrEvent() *schema.Resource {
-	res := dataSourceIBMPdrEventCommon()
-	res.ReadContext = dataSourceIBMPdrEventRead
-	return res
-}
-
-func DataSourceIBMPdrGetEvent() *schema.Resource {
-	res := dataSourceIBMPdrEventCommon()
-	res.ReadContext = dataSourceIBMPdrGetEventRead
-	res.DeprecationMessage = "This data source is deprecated. Use `ibm_pdr_event` instead."
-	return res
-}
-
-func dataSourceIBMPdrEventRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	return dataSourceIBMPdrEventReadCommon(ctx, d, meta, "ibm_pdr_event")
-}
-
-func dataSourceIBMPdrGetEventRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	return dataSourceIBMPdrEventReadCommon(ctx, d, meta, "ibm_pdr_get_event")
-}
-
-func dataSourceIBMPdrEventReadCommon(context context.Context, d *schema.ResourceData, meta interface{}, dsname string) diag.Diagnostics {
+func dataSourceIBMPdrEventRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	drAutomationServiceClient, err := meta.(conns.ClientSession).DrAutomationServiceV1()
 	if err != nil {
-		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) "+dsname, "read", "initialize-client")
+		tfErr := flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_pdr_event", "read", "initialize-client")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
 
-	getEventOptions := &drautomationservicev1.GetEventOptions{}
+	getServiceInstanceEventOptions := &drautomationservicev1.GetServiceInstanceEventOptions{}
 
-	getEventOptions.SetInstanceID(d.Get("instance_id").(string))
-	getEventOptions.SetEventID(d.Get("event_id").(string))
+	getServiceInstanceEventOptions.SetInstanceID(d.Get("instance_id").(string))
+	getServiceInstanceEventOptions.SetEventID(d.Get("event_id").(string))
 	if _, ok := d.GetOk("accept_language"); ok {
-		getEventOptions.SetAcceptLanguage(d.Get("accept_language").(string))
+		getServiceInstanceEventOptions.SetAcceptLanguage(d.Get("accept_language").(string))
 	}
 
-	event, response, err := drAutomationServiceClient.GetEventWithContext(context, getEventOptions)
+	event, response, err := drAutomationServiceClient.GetServiceInstanceEventWithContext(context, getServiceInstanceEventOptions)
 	if err != nil {
 		detailedMsg := fmt.Sprintf("GetEventWithContext failed: %s", err.Error())
 		// Include HTTP status & raw body if available
@@ -168,29 +148,33 @@ func dataSourceIBMPdrEventReadCommon(context context.Context, d *schema.Resource
 				err.Error(), response.StatusCode, response.Result,
 			)
 		}
-		tfErr := flex.TerraformErrorf(err, detailedMsg, "(Data) "+dsname, "read")
+		tfErr := flex.TerraformErrorf(err, detailedMsg, "(Data) ibm_pdr_event", "read")
 		log.Printf("[ERROR] %s", detailedMsg)
 		return tfErr.GetDiag()
 	}
 
-	d.SetId(dataSourceIBMPdrGetEventID(d))
+	d.SetId(dataSourceIBMPdrEventID(d))
 
-	if err = d.Set("action", event.Action); err != nil {
-		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting action: %s", err), "(Data) "+dsname, "read", "set-action").GetDiag()
+	if !core.IsNil(event.Action) {
+		if err = d.Set("action", event.Action); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting action: %s", err), "(Data) ibm_pdr_event", "read", "set-action").GetDiag()
+		}
 	}
 
 	if !core.IsNil(event.APISource) {
 		if err = d.Set("api_source", event.APISource); err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting api_source: %s", err), "(Data) "+dsname, "read", "set-api_source").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting api_source: %s", err), "(Data) ibm_pdr_event", "read", "set-api_source").GetDiag()
 		}
 	}
 
 	if err = d.Set("level", event.Level); err != nil {
-		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting level: %s", err), "(Data) "+dsname, "read", "set-level").GetDiag()
+		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting level: %s", err), "(Data) ibm_pdr_event", "read", "set-level").GetDiag()
 	}
 
-	if err = d.Set("message", event.Message); err != nil {
-		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting message: %s", err), "(Data) "+dsname, "read", "set-message").GetDiag()
+	if !core.IsNil(event.Message) {
+		if err = d.Set("message", event.Message); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting message: %s", err), "(Data) ibm_pdr_event", "read", "set-message").GetDiag()
+		}
 	}
 
 	if !core.IsNil(event.MessageData) {
@@ -199,49 +183,54 @@ func dataSourceIBMPdrEventReadCommon(context context.Context, d *schema.Resource
 			convertedMap[k] = v
 		}
 		if err = d.Set("message_data", flex.Flatten(convertedMap)); err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting message_data: %s", err), "(Data) "+dsname, "read", "set-message_data").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting message_data: %s", err), "(Data) ibm_pdr_event", "read", "set-message_data").GetDiag()
 		}
 	}
-
 	if !core.IsNil(event.Metadata) {
-		convertedMap := make(map[string]interface{}, len(event.Metadata))
+		convertedMetadataMap := make(map[string]interface{}, len(event.Metadata))
 		for k, v := range event.Metadata {
-			convertedMap[k] = v
+			convertedMetadataMap[k] = v
 		}
-		if err = d.Set("metadata", flex.Flatten(convertedMap)); err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting metadata: %s", err), "(Data) "+dsname, "read", "set-metadata").GetDiag()
+		if err = d.Set("metadata", flex.Flatten(convertedMetadataMap)); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting metadata: %s", err), "(Data) ibm_pdr_event", "read", "set-metadata").GetDiag()
 		}
 	}
 
-	if err = d.Set("resource", event.Resource); err != nil {
-		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting resource: %s", err), "(Data) "+dsname, "read", "set-resource").GetDiag()
+	if !core.IsNil(event.Resource) {
+		if err = d.Set("resource", event.Resource); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting resource: %s", err), "(Data) ibm_pdr_event", "read", "set-resource").GetDiag()
+		}
 	}
 
-	if err = d.Set("time", flex.DateTimeToString(event.Time)); err != nil {
-		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting time: %s", err), "(Data) "+dsname, "read", "set-time").GetDiag()
+	if !core.IsNil(event.Time) {
+		if err = d.Set("time", flex.DateTimeToString(event.Time)); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting time: %s", err), "(Data) ibm_pdr_event", "read", "set-time").GetDiag()
+		}
 	}
 
-	if err = d.Set("timestamp", event.Timestamp); err != nil {
-		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting timestamp: %s", err), "(Data) "+dsname, "read", "set-timestamp").GetDiag()
+	if !core.IsNil(event.Timestamp) {
+		if err = d.Set("timestamp", event.Timestamp); err != nil {
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting timestamp: %s", err), "(Data) ibm_pdr_event", "read", "set-timestamp").GetDiag()
+		}
 	}
 
 	if !core.IsNil(event.User) {
 		user := []map[string]interface{}{}
-		userMap, err := DataSourceIBMPdrGetEventEventUserToMap(event.User)
+		userMap, err := DataSourceIBMPdrEventEventUserToMap(event.User)
 		if err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) "+dsname, "read", "user-to-map").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_pdr_event", "read", "user-to-map").GetDiag()
 		}
 		user = append(user, userMap)
 		if err = d.Set("user", user); err != nil {
-			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting user: %s", err), "(Data) "+dsname, "read", "set-user").GetDiag()
+			return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting user: %s", err), "(Data) ibm_pdr_event", "read", "set-user").GetDiag()
 		}
 	}
 
 	return nil
 }
 
-// dataSourceIBMPdrGetEventID returns a reasonable ID for the list.
-func dataSourceIBMPdrGetEventID(d *schema.ResourceData) string {
+// dataSourceIBMPdrEventID returns a reasonable ID for the list.
+func dataSourceIBMPdrEventID(d *schema.ResourceData) string {
 	parts := strings.Split(d.Get("instance_id").(string), ":")
 	if len(parts) > 7 {
 		return parts[7]
@@ -249,7 +238,7 @@ func dataSourceIBMPdrGetEventID(d *schema.ResourceData) string {
 	return d.Get("instance_id").(string)
 }
 
-func DataSourceIBMPdrGetEventEventUserToMap(model *drautomationservicev1.EventUser) (map[string]interface{}, error) {
+func DataSourceIBMPdrEventEventUserToMap(model *drautomationservicev1.EventUser) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
 	if model.Email != nil {
 		modelMap["email"] = *model.Email
@@ -257,6 +246,8 @@ func DataSourceIBMPdrGetEventEventUserToMap(model *drautomationservicev1.EventUs
 	if model.Name != nil {
 		modelMap["name"] = *model.Name
 	}
-	modelMap["user_id"] = *model.UserID
+	if model.UserID != nil {
+		modelMap["user_id"] = *model.UserID
+	}
 	return modelMap, nil
 }

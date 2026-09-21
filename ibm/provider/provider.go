@@ -7,12 +7,13 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/secretsmanagerinstancemanagement"
 	"log"
 	"os"
 	"strconv"
 	"sync"
 	"time"
+
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/secretsmanagerinstancemanagement"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -1169,24 +1170,15 @@ func Provider() *schema.Provider {
 			"ibm_pdr_last_operation": drautomationservice.DataSourceIBMPdrLastOperation(),
 
 			// NEW Data Sources
-			"ibm_pdr_dr_summary_response": drautomationservice.DataSourceIBMPdrDrSummaryResponse(),
-			"ibm_pdr_powervs_workspaces":  drautomationservice.DataSourceIBMPdrPowervsWorkspace(),
-			"ibm_pdr_event":               drautomationservice.DataSourceIBMPdrEvent(),
-			"ibm_pdr_events":              drautomationservice.DataSourceIBMPdrEvents(),
-			"ibm_pdr_dr_locations":        drautomationservice.DataSourceIBMPdrDrLocations(),
-			"ibm_pdr_machine_types":       drautomationservice.DataSourceIBMPdrMachineTypes(),
-			"ibm_pdr_managed_vm_list":     drautomationservice.DataSourceIBMPdrManagedVMList(),
-			"ibm_pdr_grs_location_pairs":  drautomationservice.DataSourceIBMPdrGrsLocationPairs(),
-
-			// DEPRECATED Data Sources
-			"ibm_pdr_get_dr_summary_response": drautomationservice.DataSourceIBMPdrGetDrSummaryResponse(),
-			"ibm_pdr_get_powervs_workspace":   drautomationservice.DataSourceIBMPdrGetPowervsWorkspace(),
-			"ibm_pdr_get_event":               drautomationservice.DataSourceIBMPdrGetEvent(),
-			"ibm_pdr_get_events":              drautomationservice.DataSourceIBMPdrGetEvents(),
-			"ibm_pdr_get_dr_locations":        drautomationservice.DataSourceIBMPdrGetDrLocations(),
-			"ibm_pdr_get_machine_types":       drautomationservice.DataSourceIBMPdrGetMachineTypes(),
-			"ibm_pdr_get_managed_vm_list":     drautomationservice.DataSourceIBMPdrGetManagedVMList(),
-			"ibm_pdr_get_grs_location_pairs":  drautomationservice.DataSourceIBMPdrGetGrsLocationPairs(),
+			"ibm_pdr_ibm_maintained_orch_details": drautomationservice.DataSourceIBMPdrIBMMaintainedOrchDetails(),
+			"ibm_pdr_dr_summary_response":         drautomationservice.DataSourceIBMPdrDrSummaryResponse(),
+			"ibm_pdr_powervs_workspaces":          drautomationservice.DataSourceIBMPdrPowervsWorkspace(),
+			"ibm_pdr_event":                       drautomationservice.DataSourceIBMPdrEvent(),
+			"ibm_pdr_events":                      drautomationservice.DataSourceIBMPdrEvents(),
+			"ibm_pdr_dr_locations":                drautomationservice.DataSourceIBMPdrDrLocations(),
+			"ibm_pdr_grs_location_pairs":          drautomationservice.DataSourceIBMPdrGrsLocationPairs(),
+			"ibm_pdr_machine_types":               drautomationservice.DataSourceIBMPdrMachineTypes(),
+			"ibm_pdr_managed_vm_list":             drautomationservice.DataSourceIBMPdrManagedVMList(),
 
 			// PHA service
 			"ibm_pha_last_operation":      powerhaautomationservice.DataSourceIBMPhaLastOperation(),
@@ -1907,8 +1899,9 @@ func Provider() *schema.Provider {
 			"ibm_logs_router_settings": logsrouter.ResourceIBMLogsRouterSettings(),
 
 			// DR Automation Service
-			"ibm_pdr_managedr":        drautomationservice.ResourceIbmPdrManagedr(),
-			"ibm_pdr_validate_apikey": drautomationservice.ResourceIBMPdrValidateApikey(),
+			"ibm_pdr_managedr":                     drautomationservice.ResourceIBMPdrManagedr(),
+			"ibm_pdr_validate_apikey":              drautomationservice.ResourceIBMPdrValidateApikey(),
+			"ibm_pdr_ibm_maintained_orchestration": drautomationservice.ResourceIBMPdrIBMMaintainedDeployment(),
 
 			// // Added for Pha Dr automation service
 			"ibm_pha_api_key":       powerhaautomationservice.ResourceIBMPhaAPIKey(),
