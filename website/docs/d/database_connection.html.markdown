@@ -66,7 +66,6 @@ Review the argument reference that you can specify for your data source.
   The Gen2 deployment CRN can be retrieved from:
   - The `id` attribute of an `ibm_database` resource configured with a Gen2 plan.
   - The IBM Cloud UI under **Databases → your instance → Overview**.
-  - The IBM Cloud CLI: `ibmcloud resource service-instance <instance_name> --output json | jq -r '.[0].crn'`.
 
 * `user_id` - (Required, String) User ID.
 
