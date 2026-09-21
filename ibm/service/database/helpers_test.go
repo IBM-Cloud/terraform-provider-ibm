@@ -106,44 +106,31 @@ func TestExtractShardsFromExtensions(t *testing.T) {
 			},
 		}
 
-		shards := extractShardsFromExtensions(extensions, "mongodbees")
+		shards := extractShardsFromExtensions(extensions)
 		require.Equal(t, 2, shards)
 	})
 
-	t.Run("returns zero when shards are missing", func(t *testing.T) {
+	t.Run("returns zero when shards key is missing", func(t *testing.T) {
 		extensions := map[string]interface{}{
 			dataservicesKey: map[string]interface{}{
 				"mongodbees": map[string]interface{}{},
 			},
 		}
 
-		shards := extractShardsFromExtensions(extensions, "mongodbees")
+		shards := extractShardsFromExtensions(extensions)
 		require.Equal(t, 0, shards)
 	})
 
-	t.Run("works for a different dbType key", func(t *testing.T) {
+	t.Run("returns zero when mongodbees key is absent", func(t *testing.T) {
 		extensions := map[string]interface{}{
 			dataservicesKey: map[string]interface{}{
-				"futuredb": map[string]interface{}{
-					"shards": float64(3),
-				},
-			},
-		}
-
-		shards := extractShardsFromExtensions(extensions, "futuredb")
-		require.Equal(t, 3, shards)
-	})
-
-	t.Run("returns zero when dbType key is absent", func(t *testing.T) {
-		extensions := map[string]interface{}{
-			dataservicesKey: map[string]interface{}{
-				"mongodbees": map[string]interface{}{
+				"otherdb": map[string]interface{}{
 					"shards": float64(2),
 				},
 			},
 		}
 
-		shards := extractShardsFromExtensions(extensions, "futuredb")
+		shards := extractShardsFromExtensions(extensions)
 		require.Equal(t, 0, shards)
 	})
 }
@@ -1043,7 +1030,7 @@ func TestExtractDatabaseAllocations(t *testing.T) {
 	})
 }
 func TestSharedSetShardsInfo(t *testing.T) {
-	t.Run("defaults shards to 1 when instance is nil", func(t *testing.T) {
+	t.Run("does not set shards when instance is nil", func(t *testing.T) {
 		d := schema.TestResourceDataRaw(t, ResourceIBMDatabaseInstance().Schema, map[string]interface{}{
 			"service": "databases-for-mongodb",
 			"plan":    "enterprise-sharding-gen2",
@@ -1053,12 +1040,12 @@ func TestSharedSetShardsInfo(t *testing.T) {
 		if err != nil {
 			t.Fatalf("expected no error, got %v", err)
 		}
-		if v := d.Get("shards").(int); v != 1 {
-			t.Fatalf("expected shards=1 for nil instance, got %d", v)
+		if v := d.Get("shards").(int); v != 0 {
+			t.Fatalf("expected shards unset (0) for nil instance, got %d", v)
 		}
 	})
 
-	t.Run("defaults shards to 1 when instance.Extensions is nil", func(t *testing.T) {
+	t.Run("does not set shards when instance.Extensions is nil", func(t *testing.T) {
 		d := schema.TestResourceDataRaw(t, ResourceIBMDatabaseInstance().Schema, map[string]interface{}{
 			"service": "databases-for-mongodb",
 			"plan":    "enterprise-sharding-gen2",
@@ -1069,8 +1056,8 @@ func TestSharedSetShardsInfo(t *testing.T) {
 		if err != nil {
 			t.Fatalf("expected no error, got %v", err)
 		}
-		if v := d.Get("shards").(int); v != 1 {
-			t.Fatalf("expected shards=1 for nil extensions, got %d", v)
+		if v := d.Get("shards").(int); v != 0 {
+			t.Fatalf("expected shards unset (0) for nil extensions, got %d", v)
 		}
 	})
 
@@ -1098,7 +1085,7 @@ func TestSharedSetShardsInfo(t *testing.T) {
 		}
 	})
 
-	t.Run("defaults to 1 when extensions exist but shards key is absent", func(t *testing.T) {
+	t.Run("does not set shards when extensions exist but shards key is absent", func(t *testing.T) {
 		d := schema.TestResourceDataRaw(t, ResourceIBMDatabaseInstance().Schema, map[string]interface{}{
 			"service": "databases-for-mongodb",
 			"plan":    "enterprise-sharding-gen2",
@@ -1117,8 +1104,8 @@ func TestSharedSetShardsInfo(t *testing.T) {
 		if err != nil {
 			t.Fatalf("expected no error, got %v", err)
 		}
-		if v := d.Get("shards").(int); v != 1 {
-			t.Fatalf("expected shards defaulted to 1 when key absent, got %d", v)
+		if v := d.Get("shards").(int); v != 0 {
+			t.Fatalf("expected shards unset (0) when key absent, got %d", v)
 		}
 	})
 }

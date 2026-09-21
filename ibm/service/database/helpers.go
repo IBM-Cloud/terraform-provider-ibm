@@ -69,14 +69,13 @@ func sharedSetShardsInfo(d *schema.ResourceData, instance *rc.ResourceInstance) 
 	}
 
 	if instance == nil || instance.Extensions == nil {
-		return d.Set("shards", 1)
+		return nil
 	}
 
 	// enterprise-sharding-gen2 stores shard data under "mongodbees" in extensions
-	dbType := "mongodbees"
-	shards := extractShardsFromExtensions(instance.Extensions, dbType)
+	shards := extractShardsFromExtensions(instance.Extensions)
 	if shards == 0 {
-		shards = 1
+		return nil
 	}
 	return d.Set("shards", shards)
 }
@@ -456,20 +455,14 @@ func extractDatabaseAllocations(instance map[string]interface{}, resourceID stri
 	return alloc
 }
 
-// extractShardsFromExtensions extracts the shard count for a given dbType key from instance extensions.
-// dbType is the key inside dataservices that holds shard info (e.g. "mongodbees" for enterprise-sharding-gen2).
-// If a future database type supports shards, pass its dataservices key as dbType.
-func extractShardsFromExtensions(extensions map[string]interface{}, dbType string) int {
-	if extensions == nil {
-		return 0
-	}
+func extractShardsFromExtensions(extensions map[string]interface{}) int {
 
 	dataservices, ok := extensions[dataservicesKey].(map[string]interface{})
 	if !ok {
 		return 0
 	}
 
-	dbTypeData, ok := dataservices[dbType].(map[string]interface{})
+	dbTypeData, ok := dataservices["mongodbees"].(map[string]interface{})
 	if !ok {
 		return 0
 	}

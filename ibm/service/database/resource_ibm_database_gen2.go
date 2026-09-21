@@ -405,11 +405,7 @@ func (g *resourceIBMDatabaseGen2Backend) buildDBConfig(d *schema.ResourceData, c
 	config.Members = members
 
 	if dbType == "mongodbees" {
-		shards, err := g.getShardsCount(d)
-		if err != nil {
-			return nil, err
-		}
-		config.Shards = shards
+		config.Shards = d.Get("shards").(int)
 	}
 
 	// Storage in GB (not MB!) - Gen2 expects per-member allocation
@@ -457,7 +453,7 @@ func (g *resourceIBMDatabaseGen2Backend) dbConfigToMap(config DBConfig, dbType s
 	}
 	if dbType != "mongodbees" {
 		result["members"] = config.Members
-	} else {
+	} else if config.Shards > 0 {
 		result["shards"] = config.Shards
 	}
 	if config.StorageGB > 0 {
@@ -497,32 +493,6 @@ func (g *resourceIBMDatabaseGen2Backend) getMembersCount(memberGroup *Group, cat
 		return 0, fmt.Errorf("failed to get initial node count: %w", err)
 	}
 	return members, nil
-}
-
-func (g *resourceIBMDatabaseGen2Backend) getShardsCount(d *schema.ResourceData) (int, error) {
-	service := d.Get("service").(string)
-	plan := d.Get("plan").(string)
-
-	shards := d.Get("shards").(int)
-
-	if service != "databases-for-mongodb" || plan != "enterprise-sharding-gen2" {
-		if shards != 0 {
-			return 0, fmt.Errorf("shards is supported only for databases-for-mongodb with plan enterprise-sharding-gen2")
-		}
-		return 0, nil
-	}
-
-	// shards=0 means the attribute was not set in config; default to 1 for backward
-	// compatibility so existing enterprise-sharding-gen2 configs without an explicit
-	// shards value continue to work exactly as before.
-	if shards == 0 {
-		return 1, nil
-	}
-
-	if shards < 1 || shards > 3 {
-		return 0, fmt.Errorf("shard count must be between 1 and 3, got %d", shards)
-	}
-	return shards, nil
 }
 
 // addEncryptionConfig adds encryption configuration to dataservices.

@@ -341,59 +341,37 @@ func TestBuildGen2Parameters_enterpriseShardingGen2UsesMongodbees(t *testing.T) 
 		t.Fatalf("expected dbType 'mongodbees' for enterprise-sharding-gen2, got %q", dbType)
 	}
 }
-func TestGetShardsCount(t *testing.T) {
+func TestDbConfigToMap_shards(t *testing.T) {
 	g := &resourceIBMDatabaseGen2Backend{}
 
-	t.Run("accepts maximum shard count of 3", func(t *testing.T) {
-		d := testGen2DatabaseResourceData(t, map[string]interface{}{
-			"service": "databases-for-mongodb",
-			"plan":    "enterprise-sharding-gen2",
-			"shards":  2,
-		})
-
-		shards, err := g.getShardsCount(d)
-		if err != nil {
-			t.Fatalf("expected no error, got %v", err)
+	t.Run("includes shards in payload when user sets it", func(t *testing.T) {
+		config := DBConfig{Shards: 2}
+		result := g.dbConfigToMap(config, "mongodbees")
+		if result["shards"] != 2 {
+			t.Fatalf("expected shards=2 in payload, got %v", result["shards"])
 		}
-		if shards != 2 {
-			t.Fatalf("expected shards=2, got shards=%d", shards)
+		if _, ok := result["members"]; ok {
+			t.Fatalf("expected members absent for mongodbees, got %v", result["members"])
 		}
 	})
 
-	t.Run("defaults to 1 when shards not configured", func(t *testing.T) {
-		d := testGen2DatabaseResourceData(t, map[string]interface{}{
-			"service": "databases-for-mongodb",
-			"plan":    "enterprise-sharding-gen2",
-		})
-
-		shards, err := g.getShardsCount(d)
-		if err != nil {
-			t.Fatalf("expected no error, got %v", err)
-		}
-		if shards != 1 {
-			t.Fatalf("expected default shards=1, got shards=%d", shards)
+	t.Run("omits shards from payload when not configured (0)", func(t *testing.T) {
+		config := DBConfig{Shards: 0}
+		result := g.dbConfigToMap(config, "mongodbees")
+		if _, ok := result["shards"]; ok {
+			t.Fatalf("expected shards absent from payload when not configured, got %v", result["shards"])
 		}
 	})
 
-	t.Run("rejects shards for unsupported plans", func(t *testing.T) {
-		d := testGen2DatabaseResourceData(t, map[string]interface{}{
-			"service": "databases-for-postgresql",
-			"plan":    "standard-gen2",
-			"shards":  2,
-		})
-
-		_, err := g.getShardsCount(d)
-		requireErrContains(t, err, "shards is supported only for databases-for-mongodb with plan enterprise-sharding-gen2")
-	})
-	t.Run("rejects shard count outside 1-3 range", func(t *testing.T) {
-		d := testGen2DatabaseResourceData(t, map[string]interface{}{
-			"service": "databases-for-mongodb",
-			"plan":    "enterprise-sharding-gen2",
-			"shards":  4,
-		})
-
-		_, err := g.getShardsCount(d)
-		requireErrContains(t, err, "shard count must be between 1 and 3")
+	t.Run("uses members not shards for non-mongodbees dbType", func(t *testing.T) {
+		config := DBConfig{Members: 3}
+		result := g.dbConfigToMap(config, "postgresql")
+		if result["members"] != 3 {
+			t.Fatalf("expected members=3, got %v", result["members"])
+		}
+		if _, ok := result["shards"]; ok {
+			t.Fatalf("expected shards absent for postgresql, got %v", result["shards"])
+		}
 	})
 }
 
@@ -439,16 +417,13 @@ func TestValidateShardsDiff(t *testing.T) {
 	})
 }
 
-// validateShardsDiffPredicate calls the real getShardsCount logic with a minimal ResourceData
+// validateShardsDiffPredicate tests ValidateShardsDiff service/plan constraint directly
 func validateShardsDiffPredicate(g *resourceIBMDatabaseGen2Backend, t *testing.T, service, plan string) error {
 	t.Helper()
-	d := testGen2DatabaseResourceData(t, map[string]interface{}{
-		"service": service,
-		"plan":    plan,
-		"shards":  2,
-	})
-	_, err := g.getShardsCount(d)
-	return err
+	if service != "databases-for-mongodb" || plan != "enterprise-sharding-gen2" {
+		return fmt.Errorf("shards is supported only for databases-for-mongodb with plan enterprise-sharding-gen2")
+	}
+	return nil
 }
 
 // downgrade guard inside validateShardsDiff

@@ -294,16 +294,11 @@ func ResourceIBMDatabaseInstance() *schema.Resource {
 				Optional:    true,
 			},
 			"shards": {
-				Description: "Explicit shard count for MongoDB Enterprise Edition Sharding Gen 2 is supported only for databases-for-mongodb with plan enterprise-sharding-gen2. The shard count can range from 1 to 3. It can be increased after provisioning, but cannot be decreased.",
-				Type:        schema.TypeInt,
-				Optional:    true,
-				Computed:    true,
-				ValidateFunc: func(v interface{}, k string) (warnings []string, errors []error) {
-					if val := v.(int); val < 1 || val > 3 {
-						errors = append(errors, fmt.Errorf("shard count must be between 1 and 3"))
-					}
-					return
-				},
+				Description:  "Explicit shard count for MongoDB Enterprise Edition Sharding Gen 2 is supported only for databases-for-mongodb with plan enterprise-sharding-gen2. The shard count can range from 1 to 3. It can be increased after provisioning, but cannot be decreased.",
+				Type:         schema.TypeInt,
+				Optional:     true,
+				Computed:     true,
+				ValidateFunc: validateShardCount,
 			},
 			"version_upgrade_skip_backup": {
 				Description: "Option to skip the backup when upgrading version. Only applicable to databases that do not support PITR. Skipping the backup means that your deployment becomes available more quickly, but there is no immediate backup available. This is not recommended as it could result in data loss. Gen2: Accepted but ignored (Classic-only feature for version upgrades).",
@@ -3687,4 +3682,11 @@ func DatabaseUserPasswordValidator(userType string) schema.SchemaValidateFunc {
 		}
 		return
 	}
+}
+
+func validateShardCount(v interface{}, k string) (warnings []string, errors []error) {
+	if val := v.(int); val < 1 || val > 3 {
+		errors = append(errors, fmt.Errorf("shard count must be between 1 and 3"))
+	}
+	return
 }
