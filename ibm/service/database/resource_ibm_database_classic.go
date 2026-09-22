@@ -36,7 +36,7 @@ func (c *resourceIBMDatabaseClassicBackend) Exists(d *schema.ResourceData, meta 
 func (c *resourceIBMDatabaseClassicBackend) WarnUnsupported(_ context.Context, d *schema.ResourceData) diag.Diagnostics {
 	if group, ok := d.GetOk("group"); ok {
 		for _, groupRaw := range group.(*schema.Set).List() {
-			if zones, _, ok := memberZonesFromDiff(groupRaw); ok && len(zones) > 0 {
+			if _, _, ok := memberZonesFromDiff(groupRaw); ok {
 				return diag.Diagnostics{{
 					Severity: diag.Warning,
 					Summary:  "member_zones is not supported for Classic database plans",
