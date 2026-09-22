@@ -9,12 +9,42 @@ import (
 	"time"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	"github.com/IBM/cloud-databases-go-sdk/clouddatabasesv5"
+	rc "github.com/IBM/platform-services-go-sdk/resourcecontrollerv2"
 )
+
+type dataSourceIBMDatabaseTasksBackend interface {
+	Read(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics
+}
+
+func pickDataSourceTasksBackend(d *schema.ResourceData, meta interface{}) (dataSourceIBMDatabaseTasksBackend, error) {
+	deploymentID := d.Get("deployment_id").(string)
+
+	// Get the resource controller client to fetch instance details
+	rsConClient, err := meta.(conns.ClientSession).ResourceControllerV2API()
+	if err != nil {
+		return nil, err
+	}
+
+	// Get the instance to check its plan
+	instance, _, err := rsConClient.GetResourceInstance(&rc.GetResourceInstanceOptions{
+		ID: &deploymentID,
+	})
+	if err != nil {
+		return nil, fmt.Errorf("failed to get resource instance: %s", err)
+	}
+
+	plan := *instance.ResourcePlanID
+	if isGen2Plan(plan) {
+		return newDataSourceIBMDatabaseTasksGen2Backend(), nil
+	}
+	return newDataSourceIBMDatabaseTasksClassicBackend(), nil
+}
 
 func DataSourceIBMDatabaseTasks() *schema.Resource {
 	return &schema.Resource{
@@ -89,6 +119,22 @@ func DataSourceIBMDatabaseTasksValidator() *validate.ResourceValidator {
 }
 
 func dataSourceIBMDatabaseTasksRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	b, err := pickDataSourceTasksBackend(d, meta)
+	if err != nil {
+		tfErr := flex.TerraformErrorf(err, err.Error(), "(Data) ibm_database_tasks", "read")
+		return tfErr.GetDiag()
+	}
+
+	return b.Read(context, d, meta)
+}
+
+type dataSourceIBMDatabaseTasksClassicBackend struct{}
+
+func newDataSourceIBMDatabaseTasksClassicBackend() dataSourceIBMDatabaseTasksBackend {
+	return &dataSourceIBMDatabaseTasksClassicBackend{}
+}
+
+func (c *dataSourceIBMDatabaseTasksClassicBackend) Read(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	cloudDatabasesClient, err := meta.(conns.ClientSession).CloudDatabasesV5()
 	if err != nil {
 		return diag.FromErr(err)
