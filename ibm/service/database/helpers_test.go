@@ -1003,9 +1003,7 @@ func TestExtractDatabaseAllocations_MemberZones(t *testing.T) {
 	})
 }
 
-// TestMemberZonesFromDiff tests every branch of memberZonesFromDiff: it must return
-// (nil, 0, false) for any malformed or irrelevant input, and (zones, count, true) only
-// when the "member" group carries a non-empty member_zones list.
+// TestMemberZonesFromDiff covers all branches of memberZonesFromDiff.
 func TestMemberZonesFromDiff(t *testing.T) {
 	// membersResource mirrors the "members" TypeSet elem declared in the real schema.
 	membersResource := &schema.Resource{

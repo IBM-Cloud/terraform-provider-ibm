@@ -377,8 +377,7 @@ type databaseAllocations struct {
 	hostFlavorID string
 }
 
-// extractDatabaseAllocations extracts allocation values from instance extensions for a specific database type.
-// All fields live under extensions.dataservices.<dbType> in the RC API GET response.
+// extractDatabaseAllocations reads allocation values from extensions.dataservices.<dbType>.
 func extractDatabaseAllocations(instance map[string]interface{}, resourceID string) databaseAllocations {
 	var alloc databaseAllocations
 
@@ -991,9 +990,7 @@ func extractGen2BackupExtensions(extensions map[string]interface{}) (sourceDataS
 	return
 }
 
-// validateMemberZones validates the member_zones constraint for a group.
-// member_zones requires exactly allocation_count=1 and exactly one zone entry.
-// Used by both buildDBConfig (apply time) and ValidateGroupsDiff (plan time).
+// validateMemberZones checks that member_zones has allocation_count=1 and exactly one zone.
 func validateMemberZones(group *Group, memberCount int) error {
 	if memberCount != 1 {
 		return fmt.Errorf(
@@ -1021,9 +1018,7 @@ func validateMemberZones(group *Group, memberCount int) error {
 	return nil
 }
 
-// memberZonesFromDiff extracts member_zones and allocation_count from the raw diff
-// map for the "member" group, bypassing the schema.Set round-trip that loses nested
-// TypeList values. Returns nil zones if not set.
+// memberZonesFromDiff reads member_zones and allocation_count from a raw diff group map.
 func memberZonesFromDiff(groupRaw interface{}) (zones []string, allocationCount int, ok bool) {
 	tfGroup, ok := groupRaw.(map[string]interface{})
 	if !ok || tfGroup["group_id"].(string) != defaultGroupID {

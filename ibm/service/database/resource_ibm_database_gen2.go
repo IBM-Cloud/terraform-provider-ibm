@@ -1222,9 +1222,7 @@ func (g *resourceIBMDatabaseGen2Backend) ValidateGroupsDiff(ctx context.Context,
 	return nil
 }
 
-// ValidateMemberZonesDiff validates member_zones rules for Gen2 instances by reading
-// raw config values directly from the diff, bypassing the schema.Set round-trip that
-// loses nested list data.
+// ValidateMemberZonesDiff validates member_zones rules at plan time for Gen2 instances.
 func (g *resourceIBMDatabaseGen2Backend) ValidateMemberZonesDiff(_ context.Context, d *schema.ResourceDiff, _ interface{}) error {
 	groupsRaw, ok := d.GetOk("group")
 	if !ok {

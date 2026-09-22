@@ -2205,8 +2205,7 @@ func TestGen2LogicalReplicationSlotIgnored(t *testing.T) {
 	}
 }
 
-// TestMemberZonesInDBConfig verifies that member_zones is passed through DBConfig
-// into the API parameters map when set, and omitted when not set.
+// TestMemberZonesInDBConfig checks member_zones is included in the map when set and omitted when not.
 func TestMemberZonesInDBConfig(t *testing.T) {
 	backend := &resourceIBMDatabaseGen2Backend{}
 
@@ -2298,8 +2297,7 @@ func TestValidateMemberZones(t *testing.T) {
 	}
 }
 
-// TestGen2ValidateMemberZonesDiff tests the Gen2 backend ValidateMemberZonesDiff method
-// using the shared memberZonesFromDiff + validateMemberZones pipeline.
+// TestGen2ValidateMemberZonesDiff tests the Gen2 backend ValidateMemberZonesDiff.
 func TestGen2ValidateMemberZonesDiff(t *testing.T) {
 	g := &resourceIBMDatabaseGen2Backend{}
 
