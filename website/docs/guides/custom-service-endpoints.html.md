@@ -18,7 +18,7 @@ The IBM Cloud Provider plug-in for Terraform can be configured to use non-defaul
   - [Getting started with custom service endpoints](#getting-started-with-custom-service-endpoints)
   - [Supported endpoint customizations](#supported-endpoint-customizations)
   - [File structure for endpoints file](#file-structure-for-endpoints-file)
-  - [Prioritisation of endpoints](#prioritisation-of-endpoints)
+  - [Prioritization of endpoints](#prioritization-of-endpoints)
     - [1. Define service endpoints by using environment variables](#1-define-service-endpoints-by-using-environment-variables)
     - [2. Define service endpoints by using an endpoints file](#2-define-service-endpoints-by-using-an-endpoints-file)
     - [3. Use the default private or public service endpoint based on the `visibility` setting in the provider block](#3-use-the-default-private-or-public-service-endpoint-based-on-the-visibility-setting-in-the-provider-block)
@@ -52,7 +52,7 @@ provider "ibm" {
 |Context-based Restrictions|IBMCLOUD_CONTEXT_BASED_RESTRICTIONS_ENDPOINT|
 |Internet Services|IBMCLOUD_CIS_API_ENDPOINT|
 |Cloud Shell|IBMCLOUD_CLOUD_SHELL_API_ENDPOINT|
-|Compilance (Posture Management)|IBMCLOUD_COMPLIANCE_API_ENDPOINT|
+|Compliance (Posture Management)|IBMCLOUD_COMPLIANCE_API_ENDPOINT|
 |Configuration Aggregator|IBMCLOUD_APP_CONFIG_ENDPOINT|
 |Container Registry|IBMCLOUD_CR_API_ENDPOINT|
 |Cloud Logs | IBMCLOUD_LOGS_API_ENDPOINT |
@@ -141,7 +141,7 @@ To use public and private regional endpoints for a service, you must add these e
 **Note:** 
 
 The endpoints file accepts "public", "private" and "public-and-private" as visibility while COS resources support "public", "private" and "direct as endpoint-types. 
-Since endpoints file schema does not supprt "direct", users must define the url for "direct" endpoint-type under exisiting visibility type "private" for "IBMCLOUD_COS_CONFIG_ENDPOINT" and "IBMCLOUD_COS_ENDPOINT".
+Since endpoints file schema does not support "direct", users must define the url for "direct" endpoint-type under existing visibility type "private" for "IBMCLOUD_COS_CONFIG_ENDPOINT" and "IBMCLOUD_COS_ENDPOINT".
 The user cannot define urls for both private and direct endpoint-type simultaneously in the endpoints file under "private" field. 
 
 **Example**:
@@ -175,9 +175,9 @@ OR
 ```
 
 
-## Prioritisation of endpoints
+## Prioritization of endpoints
 
-The IBM Cloud Provider plug-in gives the following prioritisation 
+The IBM Cloud Provider plug-in gives the following prioritization 
 
 1. Endpoints defined by using environment variables
 2. Endpoints defined by using the `endpoints_file_path` argument in the provider block
@@ -185,7 +185,7 @@ The IBM Cloud Provider plug-in gives the following prioritisation
 
 ### 1. Define service endpoints by using environment variables
 
-The IBM Cloud Provider plug-in gives highest priority to the exported environment variables. To find the environment variable name that you need to export, see **Supportd endpoint customizations**. If an environment variable is exported, the provider uses the defined endpoint URL to connect to the IBM Cloud service. Additional configurations that you made in the provider block, such as the `visibility` or `endpoints_file_path` arguments, are ignored. 
+The IBM Cloud Provider plug-in gives highest priority to the exported environment variables. To find the environment variable name that you need to export, see **Supported endpoint customizations**. If an environment variable is exported, the provider uses the defined endpoint URL to connect to the IBM Cloud service. Additional configurations that you made in the provider block, such as the `visibility` or `endpoints_file_path` arguments, are ignored. 
 
 1. Specify your provider block with or without the `visibility` and `endpoints_file_path` arguments. 
    ```terraform
@@ -226,7 +226,7 @@ You can declare all your service endpoints in a JSON file and either reference t
 
 **Syntax for exporting the path to the endpoints file as an environment variable**: 
 
-1. Specify your provider block with or without the `visibility` and `endpoint_file` arguments. 
+1. Specify your provider block with or without the `visibility` and `endpoints_file_path` arguments. 
    ```terraform
     provider "ibm" {
         # ... other provider configuration ...
@@ -243,11 +243,11 @@ You can declare all your service endpoints in a JSON file and either reference t
 
 If for a given `region` and `visibility` setting in your provider block, the IBM Cloud Provider plug-in cannot find an environment variable or an endpoint in your endpoints file, the default service endpoint that is implemented in the IBM Cloud Provider plug-in is used. 
 
-**Note:** In order to use the private endpoint from an IBM Cloud resource, you must have a VRF-enabled IBM cloudaccount. If the service does not support private endpoints, the Terraform resource or datas ource will log an error.
+**Note:** In order to use the private endpoint from an IBM Cloud resource, you must have a VRF-enabled IBM Cloud account. If the service does not support private endpoints, the Terraform resource or data source will log an error.
 
 - Supported values for the `visibility` argument are `public`, `private`, `public-and-private`. Default value: `public`.
   - If the visibility is set to `public`, the provider uses a regional public endpoint or the global public endpoint. The regional public endpoints has higher precedence.
-  - If the visibility is set to `private`, the. provider uses a regional private endpoint or the global private endpoint. The regional private endpoint is given higher precedence.  
+  - If the visibility is set to `private`, the provider uses a regional private endpoint or the global private endpoint. The regional private endpoint is given higher precedence.  
   - If the visibility is set to `public-and-private`, the provider uses the regional private endpoints or the global private endpoint. If the service does not support regional or global private endpoints, the provider uses the regional or global public endpoint.
 - You can set the visibility by using the `IC_VISIBILITY` (higher precedence) or `IBMCLOUD_VISIBILITY` environment variable.
 
