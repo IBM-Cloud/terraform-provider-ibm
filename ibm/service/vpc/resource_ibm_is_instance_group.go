@@ -26,6 +26,8 @@ const (
 	SCALING = "scaling"
 	// HEALTHY ...
 	HEALTHY = "healthy"
+	// UNHEALTHY ...
+	UNHEALTHY = "unhealthy"
 	// DELETING ...
 	DELETING                     = "deleting"
 	isInstanceGroupAccessTags    = "access_tags"
@@ -660,7 +662,14 @@ func waitForHealthyInstanceGroup(instanceGroupID string, meta interface{}, timeo
 	getInstanceGroupOptions := vpcv1.GetInstanceGroupOptions{ID: &instanceGroupID}
 
 	healthStateConf := &resource.StateChangeConf{
-		Pending: []string{SCALING},
+		// "unhealthy" means the group has fewer than membership_count instances, which is also
+		// true while members are being added, replaced, or are still booting, so it is a state on
+		// the way to "healthy" rather than a terminal one. Leaving it out of Pending makes
+		// StateChangeConf return the moment it observes one, failing an apply the API has already
+		// accepted. A group the platform itself considers broken is caught by lifecycle_state in
+		// Refresh instead. "deleting" stays out deliberately: a group being deleted while we wait
+		// for it to become healthy will never get there.
+		Pending: []string{SCALING, UNHEALTHY},
 		Target:  []string{HEALTHY},
 		Refresh: func() (interface{}, string, error) {
 			instanceGroup, response, err := sess.GetInstanceGroup(&getInstanceGroupOptions)
@@ -668,6 +677,12 @@ func waitForHealthyInstanceGroup(instanceGroupID string, meta interface{}, timeo
 				return nil, SCALING, fmt.Errorf("[ERROR] Error Getting InstanceGroup: %s\n%s", err, response)
 			}
 			log.Println("Status : ", *instanceGroup.Status)
+
+			if instanceGroup.LifecycleState != nil &&
+				(*instanceGroup.LifecycleState == vpcv1.InstanceGroupLifecycleStateFailedConst ||
+					*instanceGroup.LifecycleState == vpcv1.InstanceGroupLifecycleStateSuspendedConst) {
+				return instanceGroup, *instanceGroup.LifecycleState, fmt.Errorf("[ERROR] Instance group %s is in %s lifecycle state: %s", instanceGroupID, *instanceGroup.LifecycleState, instanceGroupLifecycleReasons(instanceGroup))
+			}
 
 			if *instanceGroup.Status == "" {
 				return instanceGroup, SCALING, nil
@@ -682,6 +697,19 @@ func waitForHealthyInstanceGroup(instanceGroupID string, meta interface{}, timeo
 
 	return healthStateConf.WaitForState()
 
+}
+
+func instanceGroupLifecycleReasons(instanceGroup *vpcv1.InstanceGroup) string {
+	reasons := make([]string, 0, len(instanceGroup.LifecycleReasons))
+	for _, reason := range instanceGroup.LifecycleReasons {
+		if reason.Code != nil && reason.Message != nil {
+			reasons = append(reasons, fmt.Sprintf("%s: %s", *reason.Code, *reason.Message))
+		}
+	}
+	if len(reasons) == 0 {
+		return "no lifecycle reasons reported"
+	}
+	return strings.Join(reasons, "; ")
 }
 
 func waitForInstanceGroupDelete(d *schema.ResourceData, meta interface{}) (interface{}, error) {

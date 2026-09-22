@@ -8,7 +8,6 @@ import (
 	"fmt"
 	"log"
 	"net/url"
-	"reflect"
 
 	"github.com/IBM/cloud-databases-go-sdk/clouddatabasesv5"
 	"github.com/IBM/go-sdk-core/v5/core"
@@ -34,7 +33,9 @@ func pickDataSourceBackend(d *schema.ResourceData, meta interface{}) (dataSource
 	}
 	plan := *instance.ResourcePlanID
 	if isGen2Plan(plan) {
-		return newDataSourceIBMDatabaseGen2Backend(), nil
+		// Pass the already-fetched instance into the Gen2 backend so it does
+		// not need a second findInstance call.
+		return newDataSourceIBMDatabaseGen2Backend(instance), nil
 	}
 	return newDataSourceIBMDatabaseClassicBackend(), nil
 }
@@ -629,10 +630,17 @@ func dataSourceIBMDatabaseInstanceRead(ctx context.Context, d *schema.ResourceDa
 		return diag.FromErr(err)
 	}
 
-	err = b.Read(d, meta)
-	if err != nil {
+	if err := b.Read(d, meta); err != nil {
+		if _, ok := err.(*s2sAuthWarning); ok {
+			return diag.Diagnostics{{
+				Severity: diag.Warning,
+				Summary:  s2sAuthWarningHeader,
+				Detail:   s2sAuthWarningDetail,
+			}}
+		}
 		return diag.FromErr(err)
 	}
+
 	return nil
 }
 
@@ -767,16 +775,4 @@ func classicDataSourceIBMDatabaseInstanceRead(d *schema.ResourceData, meta inter
 
 	d.Set("allowlist", flex.FlattenAllowlist(allowlist.IPAddresses))
 	return nil
-}
-
-func getInstancesNext(next *string) (string, error) {
-	if reflect.ValueOf(next).IsNil() {
-		return "", nil
-	}
-	u, err := url.Parse(*next)
-	if err != nil {
-		return "", err
-	}
-	q := u.Query()
-	return q.Get("next_url"), nil
 }

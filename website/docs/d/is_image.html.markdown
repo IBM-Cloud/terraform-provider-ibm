@@ -68,6 +68,7 @@ In addition to all argument reference list, you can access the following attribu
 - `encryption` - (String) The type of encryption used of the image.
 - `encryption_key`-  (String) The CRN of the Key Protect or Hyper Protect Crypto Service root key for this resource.
 - `id` - (String) The unique identifier of the image.
+- `minimum_provisioned_size` - (Integer) The minimum size (in gigabytes) of a volume onto which this image may be provisioned. This property may be absent if the image has a status of pending or failed.
 - `obsolescence_at` - (String) The obsolescence date and time (UTC) for this image. If absent, no obsolescence date and time has been set.
 - `os` - (String) The name of the operating system.
 - `operating_system` - (List) The operating system details. 

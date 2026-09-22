@@ -102,6 +102,7 @@ You can access the following attribute references after your data source is crea
   - `encryption` - (String) The type of encryption used on the image.
   - `encryption_key` - (String) The CRN of the Key Protect Root Key or Hyper Protect Crypto Service Root Key for this resource.
   - `id` - (String) The unique identifier for this image.
+  - `minimum_provisioned_size` - (Integer) The minimum size (in gigabytes) of a volume onto which this image may be provisioned. This property may be absent if the image has a status of pending or failed.
   - `name` - (String) The name for this image.
   - `os` - (String) The name of the Operating System.
   - `operating_system` - (List) The operating system details.

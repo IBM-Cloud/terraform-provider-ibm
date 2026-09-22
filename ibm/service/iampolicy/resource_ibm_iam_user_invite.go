@@ -593,9 +593,8 @@ func resourceIBMIAMInviteUsers(d *schema.ResourceData, meta interface{}) error {
 			errored, accountID)
 	}
 	if len(active) > 0 {
-		return fmt.Errorf("[ERROR] User invite unsuccessful: user(s) %v are already ACTIVE in account %s, "+
-			"which means they were already invited and onboarded to the account earlier. Remove them from the "+
-			"users list, or remove the existing user from the account before re-inviting.",
+		log.Printf("[DEBUG] User(s) %v are already ACTIVE in account %s, "+
+			"which means they were already invited and onboarded to the account earlier.",
 			active, accountID)
 	}
 	if len(missing) > 0 || len(processing) > 0 {

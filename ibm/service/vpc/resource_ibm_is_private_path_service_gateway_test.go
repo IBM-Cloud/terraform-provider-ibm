@@ -54,6 +54,94 @@ func TestAccIBMIsPrivatePathServiceGatewayBasic(t *testing.T) {
 	})
 }
 
+func TestAccIBMIsPrivatePathServiceGatewayUserTags(t *testing.T) {
+	var conf vpcv1.PrivatePathServiceGateway
+	accessPolicy := "deny"
+	vpcname := fmt.Sprintf("tflb-vpc-%d", acctest.RandIntRange(10, 100))
+	subnetname := fmt.Sprintf("tflb-subnet-name-%d", acctest.RandIntRange(10, 100))
+	lbname := fmt.Sprintf("tf-test-lb%dd", acctest.RandIntRange(10, 100))
+	name := fmt.Sprintf("tf-test-ppsg%d", acctest.RandIntRange(10, 100))
+	userTag := "env:prod"
+	userTagUpdated := "env:dev"
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMIsPrivatePathServiceGatewayDestroy,
+		Steps: []resource.TestStep{
+			resource.TestStep{
+				Config: testAccCheckIBMIsPrivatePathServiceGatewayConfigUserTags(vpcname, subnetname, acc.ISZoneName, acc.ISCIDR, lbname, accessPolicy, name, userTag),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMIsPrivatePathServiceGatewayExists("ibm_is_private_path_service_gateway.is_private_path_service_gateway", conf),
+					resource.TestCheckResourceAttr("ibm_is_private_path_service_gateway.is_private_path_service_gateway", "name", name),
+					resource.TestCheckResourceAttr("ibm_is_private_path_service_gateway.is_private_path_service_gateway", "tags.#", "1"),
+					resource.TestCheckTypeSetElemAttr("ibm_is_private_path_service_gateway.is_private_path_service_gateway", "tags.*", userTag),
+				),
+			},
+			resource.TestStep{
+				Config: testAccCheckIBMIsPrivatePathServiceGatewayConfigUserTags(vpcname, subnetname, acc.ISZoneName, acc.ISCIDR, lbname, accessPolicy, name, userTagUpdated),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("ibm_is_private_path_service_gateway.is_private_path_service_gateway", "tags.#", "1"),
+					resource.TestCheckTypeSetElemAttr("ibm_is_private_path_service_gateway.is_private_path_service_gateway", "tags.*", userTagUpdated),
+				),
+			},
+			resource.TestStep{
+				ResourceName:      "ibm_is_private_path_service_gateway.is_private_path_service_gateway",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
+func TestAccIBMIsPrivatePathServiceGatewayAccessTags(t *testing.T) {
+	var conf vpcv1.PrivatePathServiceGateway
+	accessPolicy := "deny"
+	vpcname := fmt.Sprintf("tflb-vpc-%d", acctest.RandIntRange(10, 100))
+	subnetname := fmt.Sprintf("tflb-subnet-name-%d", acctest.RandIntRange(10, 100))
+	lbname := fmt.Sprintf("tf-test-lb%dd", acctest.RandIntRange(10, 100))
+	name := fmt.Sprintf("tf-test-ppsg%d", acctest.RandIntRange(10, 100))
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheck(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMIsPrivatePathServiceGatewayDestroy,
+		Steps: []resource.TestStep{
+			resource.TestStep{
+				Config: testAccCheckIBMIsPrivatePathServiceGatewayConfigAccessTags(vpcname, subnetname, acc.ISZoneName, acc.ISCIDR, lbname, accessPolicy, name, "test:access"),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMIsPrivatePathServiceGatewayExists("ibm_is_private_path_service_gateway.is_private_path_service_gateway", conf),
+					resource.TestCheckResourceAttr("ibm_is_private_path_service_gateway.is_private_path_service_gateway", "access_tags.#", "1"),
+				),
+			},
+		},
+	})
+}
+
+func testAccCheckIBMIsPrivatePathServiceGatewayConfigUserTags(vpcname, subnetname, zone, cidr, lbname, accessPolicy, name, userTag string) string {
+	return testAccCheckIBMISPPNLB(vpcname, subnetname, zone, cidr, lbname) + fmt.Sprintf(`
+		resource "ibm_is_private_path_service_gateway" "is_private_path_service_gateway" {
+			default_access_policy = "%s"
+			name = "%s"
+			load_balancer = ibm_is_lb.testacc_LB.id
+			zonal_affinity = true
+			service_endpoints = ["mytestfqdn.internal"]
+			tags = ["%s"]
+		}
+	`, accessPolicy, name, userTag)
+}
+
+func testAccCheckIBMIsPrivatePathServiceGatewayConfigAccessTags(vpcname, subnetname, zone, cidr, lbname, accessPolicy, name, accessTags string) string {
+	return testAccCheckIBMISPPNLB(vpcname, subnetname, zone, cidr, lbname) + fmt.Sprintf(`
+		resource "ibm_is_private_path_service_gateway" "is_private_path_service_gateway" {
+			default_access_policy = "%s"
+			name = "%s"
+			load_balancer = ibm_is_lb.testacc_LB.id
+			zonal_affinity = true
+			service_endpoints = ["mytestfqdn.internal"]
+			access_tags = ["%s"]
+		}
+	`, accessPolicy, name, accessTags)
+}
+
 func testAccCheckIBMIsPrivatePathServiceGatewayConfigBasic(vpcname, subnetname, zone, cidr, lbname, accessPolicy, name string) string {
 	return testAccCheckIBMISPPNLB(vpcname, subnetname, zone, cidr, lbname) + fmt.Sprintf(`
 		resource "ibm_is_private_path_service_gateway" "is_private_path_service_gateway" {

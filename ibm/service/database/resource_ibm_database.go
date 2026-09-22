@@ -188,7 +188,9 @@ func ResourceIBMDatabaseInstance() *schema.Resource {
 			validateBackendSpecificServiceEndpointsDiff,
 		),
 
-		Importer: &schema.ResourceImporter{},
+		Importer: &schema.ResourceImporter{
+			StateContext: resourceIBMDatabaseImport,
+		},
 
 		Timeouts: &schema.ResourceTimeout{
 			Create: schema.DefaultTimeout(60 * time.Minute),
@@ -278,7 +280,7 @@ func ResourceIBMDatabaseInstance() *schema.Resource {
 					}
 					return json
 				},
-				Description: "The configuration in JSON format. Gen2: Accepted but ignored. Database configuration management is not yet implemented for Gen2 instances.",
+				Description: "The configuration in JSON format. Supported for both Classic and Gen2 plans. The accepted keys depend on the database service type (e.g. max_connections for PostgreSQL, maxmemory-policy for Redis).",
 			},
 			"configuration_schema": {
 				Type:        schema.TypeString,
@@ -303,7 +305,7 @@ func ResourceIBMDatabaseInstance() *schema.Resource {
 				ValidateFunc: validate.InvokeValidator("ibm_database", "service_endpoints"),
 			},
 			"backup_id": {
-				Description:      "The CRN of backup source database. Gen2: Supports restoring from Gen2 coupled backups (from Gen2 instances) and Gen2 decoupled backups (databases-independent-backups). Classic backups are not supported for Gen2 instances.",
+				Description:      "The CRN of backup source database. Gen2: Supports restoring from Classic backups, Gen2 coupled backups, and Gen2 decoupled backups (databases-independent-backups).",
 				Type:             schema.TypeString,
 				Optional:         true,
 				DiffSuppressFunc: flex.ApplyOnce,
@@ -1662,6 +1664,39 @@ func classicDatabaseInstanceCreate(context context.Context, d *schema.ResourceDa
 	}
 
 	return resourceIBMDatabaseInstanceRead(context, d, meta)
+}
+
+func resourceIBMDatabaseImport(ctx context.Context, d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
+	instanceID := d.Id()
+	rsConClient, err := meta.(conns.ClientSession).ResourceControllerV2API()
+	if err != nil {
+		return nil, err
+	}
+
+	rsInst := rc.GetResourceInstanceOptions{
+		ID: &instanceID,
+	}
+	instance, response, err := rsConClient.GetResourceInstance(&rsInst)
+	if err != nil {
+		return nil, fmt.Errorf("[ERROR] Error retrieving resource instance %s: %w (response: %v)", instanceID, err, response)
+	}
+
+	if instance.ResourcePlanID != nil {
+		rsCatClient, err := meta.(conns.ClientSession).ResourceCatalogAPI()
+		if err != nil {
+			return nil, err
+		}
+		rsCatRepo := rsCatClient.ResourceCatalog()
+		servicePlan, err := rsCatRepo.GetServicePlanName(*instance.ResourcePlanID)
+		if err != nil {
+			return nil, fmt.Errorf("[ERROR] Error retrieving plan for resource instance %s: %w", instanceID, err)
+		}
+		if err := d.Set("plan", servicePlan); err != nil {
+			return nil, err
+		}
+	}
+
+	return []*schema.ResourceData{d}, nil
 }
 
 func resourceIBMDatabaseInstanceRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {

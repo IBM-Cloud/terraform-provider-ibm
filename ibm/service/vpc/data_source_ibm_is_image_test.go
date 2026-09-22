@@ -210,6 +210,22 @@ func TestAccIBMISImageDataSource_With_VisibiltyPrivate(t *testing.T) {
 	})
 }
 
+func TestAccIBMISImageDataSourceMinimumProvisionedSize(t *testing.T) {
+	resName := "data.ibm_is_image.example"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { acc.TestAccPreCheck(t) },
+		Providers: acc.TestAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMISImageDataSourceWithMinimumProvisionedSize(),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet(resName, "minimum_provisioned_size"),
+				),
+			},
+		},
+	})
+}
 func TestAccIBMISImageDataSourceRemoteAccountId(t *testing.T) {
 	resName := "data.ibm_is_image.example"
 
@@ -319,6 +335,12 @@ func testAccCheckIBMISCatalogImageDataSourceRemoteAccountId() string {
 	}`)
 }
 
+func testAccCheckIBMISImageDataSourceWithMinimumProvisionedSize() string {
+	return fmt.Sprintf(`
+		data "ibm_is_image" "example" {
+  		name = "ibm-ubuntu-18-04-1-minimal-amd64-1"
+	}`)
+}
 func testAccCheckIBMISImageDataSourceWithRemoteAccountId() string {
 	return fmt.Sprintf(`
 		data "ibm_is_image" "example" {

@@ -16,7 +16,39 @@ import (
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/flex"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/validate"
 	"github.com/IBM/cloud-databases-go-sdk/clouddatabasesv5"
+	rc "github.com/IBM/platform-services-go-sdk/resourcecontrollerv2"
 )
+
+type dataSourceIBMDatabaseBackupsBackend interface {
+	Read(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics
+}
+
+func pickDataSourceBackupsBackend(d *schema.ResourceData, meta interface{}) (dataSourceIBMDatabaseBackupsBackend, error) {
+	deploymentID := d.Get("deployment_id").(string)
+	if deploymentID == "" {
+		return nil, fmt.Errorf("deployment_id is required to list backups")
+	}
+
+	rsConClient, err := meta.(conns.ClientSession).ResourceControllerV2API()
+	if err != nil {
+		return nil, err
+	}
+
+	instance, _, err := rsConClient.GetResourceInstance(&rc.GetResourceInstanceOptions{ID: &deploymentID})
+	if err != nil {
+		return nil, fmt.Errorf("failed to get resource instance: %s", err)
+	}
+
+	if instance.ResourcePlanID == nil {
+		return nil, fmt.Errorf("resource instance %s has no ResourcePlanID", deploymentID)
+	}
+
+	plan := *instance.ResourcePlanID
+	if isGen2Plan(plan) {
+		return newDataSourceIBMDatabaseBackupsGen2Backend(instance.ResourceGroupID), nil
+	}
+	return newDataSourceIBMDatabaseBackupsClassicBackend(), nil
+}
 
 func DataSourceIBMDatabaseBackups() *schema.Resource {
 	return &schema.Resource{
@@ -101,6 +133,23 @@ func DataSourceIBMDatabaseBackupsValidator() *validate.ResourceValidator {
 }
 
 func DataSourceIBMDatabaseBackupsRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	b, err := pickDataSourceBackupsBackend(d, meta)
+	if err != nil {
+		tfErr := flex.TerraformErrorf(err, err.Error(), "(Data) ibm_database_backups", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
+	}
+
+	return b.Read(context, d, meta)
+}
+
+type dataSourceIBMDatabaseBackupsClassicBackend struct{}
+
+func newDataSourceIBMDatabaseBackupsClassicBackend() dataSourceIBMDatabaseBackupsBackend {
+	return &dataSourceIBMDatabaseBackupsClassicBackend{}
+}
+
+func (c *dataSourceIBMDatabaseBackupsClassicBackend) Read(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	cloudDatabasesClient, err := meta.(conns.ClientSession).CloudDatabasesV5()
 	if err != nil {
 		tfErr := flex.TerraformErrorf(err, err.Error(), "(Data) ibm_database_backups", "read")

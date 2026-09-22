@@ -761,6 +761,7 @@ func DataSourceIBMISInstanceProfiles() *schema.Resource {
 						"supported_vcpu_count": {
 							Type:        schema.TypeList,
 							Computed:    true,
+							Deprecated:  "The supported_vcpu_count attribute is deprecated and will be removed in a future release. Use vcpu_count instead, which exposes the same permitted values via its `values` sub-attribute when `type` is `enum`.",
 							Description: "The supported values for vcpu count for an instance with this profile.",
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
@@ -1162,9 +1163,16 @@ func instanceProfilesList(context context.Context, d *schema.ResourceData, meta 
 			portSpeedList = append(portSpeedList, portSpeedMap)
 			l["port_speed"] = portSpeedList
 		}
-		if profile.SupportedVcpuCount != nil {
-			l["supported_vcpu_count"] = dataSourceInstanceProfileFlattenSupportedVcpuCount(*profile.SupportedVcpuCount)
+		// supported_vcpu_count was removed from the API (is-instance-supported-vcpu-count-removal).
+		// Backfill from vcpu_count when it is an enum type so existing callers keep working.
+		supportedVcpuCountList := []map[string]interface{}{}
+		if vcpu, ok := profile.VcpuCount.(*vpcv1.InstanceProfileVcpu); ok && vcpu.Type != nil && *vcpu.Type == vpcv1.InstanceProfileVcpuEnumTypeEnumConst && vcpu.Values != nil {
+			supportedVcpuCountList = []map[string]interface{}{{
+				"type":   *vcpu.Type,
+				"values": vcpu.Values,
+			}}
 		}
+		l["supported_vcpu_count"] = supportedVcpuCountList
 		if profile.ThreadsPerCore != nil {
 			l["threads_per_core"] = dataSourceInstanceProfileFlattenThreadsPerCore(*profile.ThreadsPerCore)
 		}

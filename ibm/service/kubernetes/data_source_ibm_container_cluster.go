@@ -37,6 +37,10 @@ func DataSourceIBMContainerCluster() *schema.Resource {
 					"ibm_container_cluster",
 					"name"),
 			},
+			"cluster_name": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
 			"wait_till": {
 				Type:         schema.TypeString,
 				Optional:     true,
@@ -478,6 +482,7 @@ func dataSourceIBMContainerClusterRead(d *schema.ResourceData, meta interface{})
 	filteredAlbs := flex.FlattenAlbs(albs, filterType)
 
 	d.Set("state", clusterFields.State)
+	d.Set("cluster_name", clusterFields.Name)
 	d.Set("worker_count", clusterFields.WorkerCount)
 	d.Set("workers", workers)
 	d.Set("region", clusterFields.Region)
