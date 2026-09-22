@@ -34,6 +34,8 @@ const (
 	tgRedundancyGroup             = "redundancy_group"
 	tgRedundancyGroupID           = "redundancy_group_id"
 	tgGreEnhancedRoutePropagation = "gre_enhanced_route_propagation"
+	tgConnectionCount             = "connection_count"
+	tgConnectionNeedsAttention    = "connection_needs_attention"
 
 	isTransitGatewayProvisioning     = "provisioning"
 	isTransitGatewayProvisioningDone = "done"
@@ -59,6 +61,17 @@ func ResourceIBMTransitGateway() *schema.Resource {
 		CustomizeDiff: customdiff.Sequence(
 			func(_ context.Context, diff *schema.ResourceDiff, v interface{}) error {
 				return flex.ResourceTagsCustomizeDiff(diff)
+			},
+			// When a gateway belongs to a redundancy group it is always global and the API
+			// rejects any attempt to change the global flag.  Suppress the diff so Terraform
+			// does not report a spurious change or issue a failing update call.
+			func(_ context.Context, diff *schema.ResourceDiff, v interface{}) error {
+				if rg, ok := diff.GetOk(tgRedundancyGroup); ok && rg.(string) != "" {
+					if diff.HasChange(tgGlobal) {
+						return diff.Clear(tgGlobal)
+					}
+				}
+				return nil
 			},
 		),
 
@@ -139,6 +152,18 @@ func ResourceIBMTransitGateway() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The unique identifier of the redundancy group for this global transit gateway",
+			},
+
+			tgConnectionCount: {
+				Type:        schema.TypeInt,
+				Computed:    true,
+				Description: "The number of connections associated with this Transit Gateway",
+			},
+
+			tgConnectionNeedsAttention: {
+				Type:        schema.TypeBool,
+				Computed:    true,
+				Description: "Indicates if this Transit Gateway has a connection that needs attention (such as cross account approval)",
 			},
 
 			flex.ResourceControllerURL: {
@@ -329,11 +354,15 @@ func resourceIBMTransitGatewayRead(d *schema.ResourceData, meta interface{}) err
 	d.Set(tgStatus, tgw.Status)
 	d.Set(tgGreEnhancedRoutePropagation, tgw.GreEnhancedRoutePropagation)
 	if tgw.RedundancyGroup != nil {
-		d.Set(tgRedundancyGroup, tgw.RedundancyGroup)
+		d.Set(tgRedundancyGroup, *tgw.RedundancyGroup)
 	}
 	if tgw.RedundancyGroupID != nil {
-		d.Set(tgRedundancyGroupID, tgw.RedundancyGroupID)
+		d.Set(tgRedundancyGroupID, *tgw.RedundancyGroupID)
 	}
+	if tgw.ConnectionCount != nil {
+		d.Set(tgConnectionCount, int(*tgw.ConnectionCount))
+	}
+	d.Set(tgConnectionNeedsAttention, tgw.ConnectionNeedsAttention)
 
 	tags, err := flex.GetTagsUsingCRN(meta, *tgw.Crn)
 	if err != nil {
@@ -385,9 +414,12 @@ func resourceIBMTransitGatewayUpdate(d *schema.ResourceData, meta interface{}) e
 			updateTransitGatewayOptions.Name = &name
 		}
 	}
+	// The API rejects global changes for gateways that are part of a redundancy group.
 	if d.HasChange(tgGlobal) {
-		global := d.Get(tgGlobal).(bool)
-		updateTransitGatewayOptions.Global = &global
+		if rg, ok := d.GetOk(tgRedundancyGroup); !ok || rg.(string) == "" {
+			global := d.Get(tgGlobal).(bool)
+			updateTransitGatewayOptions.Global = &global
+		}
 	}
 	if d.HasChange(tgGreEnhancedRoutePropagation) {
 		greEnhancedRoutePropagation := d.Get(tgGreEnhancedRoutePropagation).(bool)

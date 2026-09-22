@@ -878,6 +878,8 @@ func Provider() *schema.Provider {
 			"ibm_tg_location":                  transitgateway.DataSourceIBMTransitGatewaysLocation(),
 			"ibm_tg_route_report":              transitgateway.DataSourceIBMTransitGatewayRouteReport(),
 			"ibm_tg_route_reports":             transitgateway.DataSourceIBMTransitGatewayRouteReports(),
+			"ibm_tg_redundancy_group":          transitgateway.DataSourceIBMTransitGatewayRedundancyGroup(),
+			"ibm_tg_redundancy_groups":         transitgateway.DataSourceIBMTransitGatewayRedundancyGroups(),
 
 			// Added for BSS Enterprise
 			"ibm_enterprises":               enterprise.DataSourceIBMEnterprises(),
