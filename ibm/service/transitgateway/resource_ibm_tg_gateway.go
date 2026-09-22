@@ -62,17 +62,6 @@ func ResourceIBMTransitGateway() *schema.Resource {
 			func(_ context.Context, diff *schema.ResourceDiff, v interface{}) error {
 				return flex.ResourceTagsCustomizeDiff(diff)
 			},
-			// When a gateway belongs to a redundancy group it is always global and the API
-			// rejects any attempt to change the global flag.  Suppress the diff so Terraform
-			// does not report a spurious change or issue a failing update call.
-			func(_ context.Context, diff *schema.ResourceDiff, v interface{}) error {
-				if rg, ok := diff.GetOk(tgRedundancyGroup); ok && rg.(string) != "" {
-					if diff.HasChange(tgGlobal) {
-						return diff.Clear(tgGlobal)
-					}
-				}
-				return nil
-			},
 		),
 
 		Schema: map[string]*schema.Schema{
