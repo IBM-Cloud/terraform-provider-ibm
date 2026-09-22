@@ -377,7 +377,7 @@ type databaseAllocations struct {
 	hostFlavorID string
 }
 
-// extractDatabaseAllocations reads allocation values from extensions.dataservices.<dbType>.
+// extractDatabaseAllocations extracts allocation values from instance extensions for a specific database type.
 func extractDatabaseAllocations(instance map[string]interface{}, resourceID string) databaseAllocations {
 	var alloc databaseAllocations
 
@@ -412,13 +412,7 @@ func extractDatabaseAllocations(instance map[string]interface{}, resourceID stri
 		alloc.hostFlavorID = flavor
 	}
 	if zonesRaw, ok := dbTypeData["member_zones"].([]interface{}); ok {
-		zones := make([]string, 0, len(zonesRaw))
-		for _, z := range zonesRaw {
-			if s, ok := z.(string); ok {
-				zones = append(zones, s)
-			}
-		}
-		alloc.memberZones = zones
+		alloc.memberZones = stringsFromInterfaceSlice(zonesRaw)
 	}
 
 	return alloc
@@ -1018,6 +1012,17 @@ func validateMemberZones(group *Group, memberCount int) error {
 	return nil
 }
 
+// stringsFromInterfaceSlice converts []interface{} to []string, skipping non-string elements.
+func stringsFromInterfaceSlice(in []interface{}) []string {
+	out := make([]string, 0, len(in))
+	for _, v := range in {
+		if s, ok := v.(string); ok {
+			out = append(out, s)
+		}
+	}
+	return out
+}
+
 // memberZonesFromDiff reads member_zones and allocation_count from a raw diff group map.
 func memberZonesFromDiff(groupRaw interface{}) (zones []string, allocationCount int, ok bool) {
 	tfGroup, ok := groupRaw.(map[string]interface{})
@@ -1036,11 +1041,6 @@ func memberZonesFromDiff(groupRaw interface{}) (zones []string, allocationCount 
 	if len(zonesRaw) == 0 {
 		return nil, 0, false
 	}
-	for _, z := range zonesRaw {
-		if s, ok := z.(string); ok {
-			zones = append(zones, s)
-		}
-	}
 	allocationCount, _ = memberMap["allocation_count"].(int)
-	return zones, allocationCount, true
+	return stringsFromInterfaceSlice(zonesRaw), allocationCount, true
 }
