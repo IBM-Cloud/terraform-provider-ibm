@@ -25,24 +25,21 @@ data "ibm_database_connection" "database_connection" {
 
 ### Gen2
 
-For Gen2 instances, connection information is retrieved through IBM Cloud resource keys. The `user_id` is matched against resource key names; if no match is found, the first available key is used. `user_type` and `endpoint_type` are accepted but not used for key selection.
-
-```hcl
-data "ibm_database_connection" "database_connection" {
-  endpoint_type = "public"
-  deployment_id = ibm_database.my_db.id
-  user_id       = "<resource_key_name>"
-  user_type     = "database"
-}
-```
-
-**Prerequisite:** A resource key must exist for the Gen2 instance before reading connection details. Create one with:
+For Gen2 instances, connection information is retrieved through IBM Cloud resource keys. A resource key must exist for the instance before this data source can be used. The `user_id` is matched against resource key names; if no match is found, the first available key is used automatically.
 
 ```hcl
 resource "ibm_resource_key" "db_key" {
   name                 = "my-db-key"
   resource_instance_id = ibm_database.my_db.id
-  role                 = "Administrator"
+}
+
+data "ibm_database_connection" "database_connection" {
+  deployment_id = ibm_database.my_db.id
+  user_id       = ibm_resource_key.db_key.name
+  user_type     = "database"
+  endpoint_type = "private"
+
+  depends_on = [ibm_resource_key.db_key]
 }
 ```
 
