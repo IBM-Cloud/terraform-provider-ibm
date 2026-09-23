@@ -229,6 +229,56 @@ func testAccCheckIBMCbrRuleExists(n string, obj contextbasedrestrictionsv1.Rule)
 	}
 }
 
+func testAccCheckIBMCbrRuleImportedEtag(states []*terraform.InstanceState) error {
+	if len(states) == 0 {
+		return fmt.Errorf("no imported states")
+	}
+	if states[0].Attributes["etag"] == "" {
+		return fmt.Errorf("imported ibm_cbr_rule etag is empty")
+	}
+	return nil
+}
+
+func TestAccIBMCbrRuleImportThenUpdate(t *testing.T) {
+	var conf contextbasedrestrictionsv1.Rule
+	description := fmt.Sprintf("tf_description_%d", acctest.RandIntRange(10, 100))
+	descriptionUpdate := fmt.Sprintf("tf_description_%d", acctest.RandIntRange(10, 100))
+	enforcementMode := "disabled"
+	enforcementModeUpdate := "report"
+
+	accountID, _ := getTestAccountAndZoneID()
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheckCbr(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMCbrRuleDestroy,
+		Steps: []resource.TestStep{
+			resource.TestStep{
+				Config: testAccCheckIBMCbrRuleConfig(description, enforcementMode, accountID),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckIBMCbrRuleExists("ibm_cbr_rule.cbr_rule_instance", conf),
+					resource.TestCheckResourceAttr("ibm_cbr_rule.cbr_rule_instance", "description", description),
+					resource.TestCheckResourceAttr("ibm_cbr_rule.cbr_rule_instance", "enforcement_mode", enforcementMode),
+					resource.TestCheckResourceAttrSet("ibm_cbr_rule.cbr_rule_instance", "etag"),
+				),
+			},
+			resource.TestStep{
+				ResourceName:      "ibm_cbr_rule.cbr_rule_instance",
+				ImportState:       true,
+				ImportStateVerify: true,
+				ImportStateCheck:  testAccCheckIBMCbrRuleImportedEtag,
+			},
+			resource.TestStep{
+				Config: testAccCheckIBMCbrRuleConfigUpdate(descriptionUpdate, enforcementModeUpdate, accountID),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("ibm_cbr_rule.cbr_rule_instance", "description", descriptionUpdate),
+					resource.TestCheckResourceAttr("ibm_cbr_rule.cbr_rule_instance", "enforcement_mode", enforcementModeUpdate),
+					resource.TestCheckResourceAttrSet("ibm_cbr_rule.cbr_rule_instance", "etag"),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckIBMCbrRuleDestroy(s *terraform.State) error {
 	contextBasedRestrictionsClient, err := acc.TestAccProvider.Meta().(conns.ClientSession).ContextBasedRestrictionsV1()
 	if err != nil {
