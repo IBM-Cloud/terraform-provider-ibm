@@ -54,7 +54,7 @@ func ResourceIBMTransitGateway() *schema.Resource {
 
 		Timeouts: &schema.ResourceTimeout{
 			Create: schema.DefaultTimeout(10 * time.Minute),
-			Delete: schema.DefaultTimeout(10 * time.Minute),
+			Delete: schema.DefaultTimeout(32 * time.Minute),
 			Update: schema.DefaultTimeout(10 * time.Minute),
 		},
 
@@ -490,6 +490,9 @@ func isTransitGatewayDeleteRefreshFunc(client *transitgatewayapisv1.TransitGatew
 				return transitGateway, isTransitGatewayDeleted, nil
 			}
 			return nil, "", flex.FmtErrorf("[ERROR] Error Getting Transit Gateway: %s\n%s", err, response)
+		}
+		if transitGateway.Status != nil && *transitGateway.Status == "failed" {
+			return transitGateway, isTransitGatewayDeleted, nil
 		}
 		return transitGateway, isTransitGatewayDeleting, err
 	}
