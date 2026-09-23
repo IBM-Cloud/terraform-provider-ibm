@@ -2204,3 +2204,71 @@ func TestGen2LogicalReplicationSlotIgnored(t *testing.T) {
 		})
 	}
 }
+
+// TestGen2ElasticsearchStandardGen2PlanRecognized verifies that the standard-gen2
+// plan string is correctly identified as a Gen2 plan for elasticsearch.
+func TestGen2ElasticsearchStandardGen2PlanRecognized(t *testing.T) {
+	tests := []struct {
+		name     string
+		plan     string
+		wantGen2 bool
+	}{
+		{
+			name:     "elasticsearch_standard_gen2_is_gen2",
+			plan:     "standard-gen2",
+			wantGen2: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := isGen2Plan(tt.plan)
+			assert.Equal(t, tt.wantGen2, got,
+				"isGen2Plan(%q) = %v, want %v", tt.plan, got, tt.wantGen2)
+		})
+	}
+}
+
+// TestGen2ElasticsearchDatabaseTypeMapping verifies that the service name
+// "databases-for-elasticsearch" resolves to the "elasticsearch" database type,
+// which is the key used when building Gen2 API parameters.
+func TestGen2ElasticsearchDatabaseTypeMapping(t *testing.T) {
+	dbType := getDatabaseTypeFromResourceID("databases-for-elasticsearch")
+	assert.Equal(t, "elasticsearch", dbType,
+		"getDatabaseTypeFromResourceID should return 'elasticsearch' for databases-for-elasticsearch")
+}
+
+// TestGen2ElasticsearchStandardGen2ResourceDataValid verifies that a minimal
+// elasticsearch standard-gen2 resource configuration passes schema construction
+// and the Gen2 backend is selected via isGen2Plan.
+func TestGen2ElasticsearchStandardGen2ResourceDataValid(t *testing.T) {
+	resourceSchema := ResourceIBMDatabaseInstance().Schema
+
+	d := schema.TestResourceDataRaw(t, resourceSchema, map[string]interface{}{
+		"service":           "databases-for-elasticsearch",
+		"plan":              "standard-gen2",
+		"name":              "test-es-gen2",
+		"location":          "ca-mon",
+		"service_endpoints": "private",
+		"group": []interface{}{
+			map[string]interface{}{
+				"group_id": "member",
+				"host_flavor": []interface{}{
+					map[string]interface{}{
+						"id": "bx3d.4x20",
+					},
+				},
+				"disk": []interface{}{
+					map[string]interface{}{
+						"allocation_mb": 20480,
+					},
+				},
+			},
+		},
+	})
+
+	assert.Equal(t, "standard-gen2", d.Get("plan").(string))
+	assert.Equal(t, "databases-for-elasticsearch", d.Get("service").(string))
+	assert.True(t, isGen2Plan(d.Get("plan").(string)),
+		"standard-gen2 plan should be routed to the Gen2 backend")
+}
