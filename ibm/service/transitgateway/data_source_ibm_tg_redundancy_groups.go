@@ -13,8 +13,7 @@ import (
 )
 
 const (
-	tgRedundancyGroups  = "redundancy_groups"
-	tgRedundancyGroupAt = "created_at"
+	tgRedundancyGroups = "redundancy_groups"
 )
 
 func DataSourceIBMTransitGatewayRedundancyGroups() *schema.Resource {
