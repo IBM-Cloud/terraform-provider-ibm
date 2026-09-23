@@ -694,10 +694,10 @@ func (g *resourceIBMDatabaseGen2Backend) updateResourceInstanceParameters(
 	return nil
 }
 
-// applyGroupScaling applies scaling configuration to instance groups using Resource Controller.
-// Flattens group configuration into parameters and updates the instance via UpdateResourceInstance API.
-// This approach is consistent with how groups are handled at CREATE time and removes CloudDatabasesV5 dependency.
-func (g *resourceIBMDatabaseGen2Backend) applyGroupScaling(configCtx *instanceConfigContext) error {
+// applyGroupAndMaintenanceUpdate applies scaling and maintenance window configuration to an instance using Resource Controller.
+// Since buildGen2Parameters encodes both group and maintenance into the same parameters payload,
+// a single UpdateResourceInstance call handles both when either has changed.
+func (g *resourceIBMDatabaseGen2Backend) applyGroupAndMaintenanceUpdate(configCtx *instanceConfigContext) error {
 	_, hasGroup := configCtx.d.GetOk("group")
 	hasMaintenance := configCtx.d.HasChange("maintenance")
 	if !hasGroup && !hasMaintenance {
@@ -1049,10 +1049,11 @@ func (g *resourceIBMDatabaseGen2Backend) checkUnsupportedChanges(d *schema.Resou
 	return nil
 }
 
-// applyGroupScalingWithDiagnostics applies group scaling and returns diagnostics.
-// Wraps applyGroupScaling to provide consistent diagnostic handling.
-func (g *resourceIBMDatabaseGen2Backend) applyGroupScalingWithDiagnostics(ctx context.Context, d *schema.ResourceData, rsConClient *rc.ResourceControllerV2, instanceID string, meta interface{}) diag.Diagnostics {
-	if !d.HasChange("group") && !d.HasChange("maintenance") {
+// applyGroupAndMaintenanceWithDiagnostics applies group scaling and maintenance window updates in one RC call.
+// Wraps applyGroupAndMaintenanceUpdate to provide consistent diagnostic handling.
+func (g *resourceIBMDatabaseGen2Backend) applyGroupAndMaintenanceWithDiagnostics(ctx context.Context, d *schema.ResourceData, rsConClient *rc.ResourceControllerV2, instanceID string, meta interface{}) diag.Diagnostics {
+	_, hasGroup := d.GetOk("group")
+	if !hasGroup && !d.HasChange("maintenance") {
 		return nil
 	}
 
@@ -1071,7 +1072,7 @@ func (g *resourceIBMDatabaseGen2Backend) applyGroupScalingWithDiagnostics(ctx co
 		instance:   instance,
 	}
 
-	if err := g.applyGroupScaling(configCtx); err != nil {
+	if err := g.applyGroupAndMaintenanceUpdate(configCtx); err != nil {
 		return diagError("error applying group scaling: %s", err)
 	}
 
@@ -1108,7 +1109,7 @@ func (g *resourceIBMDatabaseGen2Backend) applyConfigurationWithDiagnostics(ctx c
 }
 
 // Update modifies an existing IBM Cloud Database Gen2 instance.
-// Supports updates to name, tags, and group scaling.
+// Supports updates to name, tags, group scaling, maintenance, and configuration.
 // Many features are not yet supported in Gen2 and will return errors if modified.
 func (g *resourceIBMDatabaseGen2Backend) Update(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	warnings := g.WarnIgnoredAttrs(d)
@@ -1132,7 +1133,7 @@ func (g *resourceIBMDatabaseGen2Backend) Update(ctx context.Context, d *schema.R
 		return appendGen2DiagnosticsErrorsThenWarnings(diags, warnings)
 	}
 
-	if diags := g.applyGroupScalingWithDiagnostics(ctx, d, rsConClient, instanceID, meta); len(diags) > 0 {
+	if diags := g.applyGroupAndMaintenanceWithDiagnostics(ctx, d, rsConClient, instanceID, meta); len(diags) > 0 {
 		return appendGen2DiagnosticsErrorsThenWarnings(diags, warnings)
 	}
 
@@ -1309,6 +1310,37 @@ func (g *resourceIBMDatabaseGen2Backend) ValidateGroupsDiff(ctx context.Context,
 		}
 	}
 
+	return nil
+}
+
+// ValidateMaintenanceWindowDiff enforces two rules for the maintenance.window block in Gen2:
+//  1. system_assigned cannot be set together with start_time or days.
+//  2. start_time and days must both be set together; specifying only one is not accepted.
+func (g *resourceIBMDatabaseGen2Backend) ValidateMaintenanceWindowDiff(_ context.Context, diff *schema.ResourceDiff, _ interface{}) error {
+	useDefault, ok := diff.GetOk("maintenance.0.window.0.system_assigned")
+	if ok && useDefault == true {
+		startTime, _ := diff.GetOk("maintenance.0.window.0.start_time")
+		days, _ := diff.GetOk("maintenance.0.window.0.days")
+		daysSet, _ := days.(*schema.Set)
+		if (startTime != nil && startTime.(string) != "") || (daysSet != nil && daysSet.Len() > 0) {
+			return fmt.Errorf("[ERROR] maintenance.window.system_assigned cannot be set together with start_time or days")
+		}
+		return nil
+	}
+
+	// Enforce that start_time and days must both be specified together.
+	startTime, hasStartTime := diff.GetOk("maintenance.0.window.0.start_time")
+	days, _ := diff.GetOk("maintenance.0.window.0.days")
+	daysSet, _ := days.(*schema.Set)
+	hasDays := daysSet != nil && daysSet.Len() > 0
+
+	startTimeSet := hasStartTime && startTime.(string) != ""
+	if startTimeSet && !hasDays {
+		return fmt.Errorf("[ERROR] maintenance.window.start_time and days must be specified together")
+	}
+	if hasDays && !startTimeSet {
+		return fmt.Errorf("[ERROR] maintenance.window.start_time and days must be specified together")
+	}
 	return nil
 }
 

@@ -141,6 +141,7 @@ type resourceIBMDatabaseBackend interface {
 	ValidateUnsupportedAttrsDiff(context context.Context, d *schema.ResourceDiff, meta interface{}) error
 	ValidateGroupsDiff(context context.Context, d *schema.ResourceDiff, meta interface{}) error
 	ValidateServiceEndpointsDiff(context context.Context, d *schema.ResourceDiff, meta interface{}) error
+	ValidateMaintenanceWindowDiff(context context.Context, d *schema.ResourceDiff, meta interface{}) error
 }
 
 func pickResourceBackend(d *schema.ResourceData) resourceIBMDatabaseBackend {
@@ -185,7 +186,7 @@ func ResourceIBMDatabaseInstance() *schema.Resource {
 			validateRemoteLeaderIDDiff,
 			validateVersionDiff,
 			validateAsyncRestoreDiff,
-			validateMaintenanceWindowDiff,
+			validateBackendSpecificMaintenanceWindowDiff,
 			validateBackendSpecificServiceEndpointsDiff,
 		),
 
@@ -894,19 +895,10 @@ func ResourceIBMDatabaseInstance() *schema.Resource {
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"start_time": {
-										Type:        schema.TypeString,
-										Optional:    true,
-										Description: "Earliest time at which maintenance can be initiated. ISO 8601 UTC time format (hh:mmZ). Example: \"05:00Z\".",
-										ValidateFunc: func(v interface{}, k string) (warnings []string, errors []error) {
-											val := v.(string)
-											if val == "" {
-												return
-											}
-											return validation.StringMatch(
-												regexp.MustCompile(`^(2[0-3]|[01][0-9]):[0-5][0-9]Z$`),
-												"start_time must be in ISO 8601 UTC format hh:mmZ, e.g. \"05:00Z\"",
-											)(v, k)
-										},
+										Type:         schema.TypeString,
+										Optional:     true,
+										Description:  "Earliest time at which maintenance can be initiated. ISO 8601 UTC time format (hh:mmZ). Example: \"05:00Z\".",
+										ValidateFunc: validateMaintenanceStartTime,
 									},
 									"days": {
 										Type:        schema.TypeSet,
@@ -3412,35 +3404,21 @@ func validateMaintenanceDays(v interface{}, k string) (warnings []string, errors
 	return
 }
 
-// validateMaintenanceWindowDiff enforces two rules for the maintenance.window block:
-//  1. system_assigned cannot be set together with start_time or days.
-//  2. start_time and days must both be set together; specifying only one is not accepted.
-func validateMaintenanceWindowDiff(_ context.Context, diff *schema.ResourceDiff, _ interface{}) error {
-	useDefault, ok := diff.GetOk("maintenance.0.window.0.system_assigned")
-	if ok && useDefault == true {
-		startTime, _ := diff.GetOk("maintenance.0.window.0.start_time")
-		days, _ := diff.GetOk("maintenance.0.window.0.days")
-		daysSet, _ := days.(*schema.Set)
-		if (startTime != nil && startTime.(string) != "") || (daysSet != nil && daysSet.Len() > 0) {
-			return fmt.Errorf("[ERROR] maintenance.window.system_assigned cannot be set together with start_time or days")
-		}
-		return nil
+// validateMaintenanceStartTime is a ValidateFunc for maintenance.window.start_time.
+// Ensures the time format matches ISO 8601 UTC format (hh:mmZ).
+func validateMaintenanceStartTime(v interface{}, k string) (warnings []string, errors []error) {
+	val := v.(string)
+	if val == "" {
+		return
 	}
+	return validation.StringMatch(
+		regexp.MustCompile(`^(2[0-3]|[01][0-9]):[0-5][0-9]Z$`),
+		"start_time must be in ISO 8601 UTC format hh:mmZ, e.g. \"05:00Z\"",
+	)(v, k)
+}
 
-	// Enforce that start_time and days must both be specified together.
-	startTime, hasStartTime := diff.GetOk("maintenance.0.window.0.start_time")
-	days, _ := diff.GetOk("maintenance.0.window.0.days")
-	daysSet, _ := days.(*schema.Set)
-	hasDays := daysSet != nil && daysSet.Len() > 0
-
-	startTimeSet := hasStartTime && startTime.(string) != ""
-	if startTimeSet && !hasDays {
-		return fmt.Errorf("[ERROR] maintenance.window.start_time and days must be specified together")
-	}
-	if hasDays && !startTimeSet {
-		return fmt.Errorf("[ERROR] maintenance.window.start_time and days must be specified together")
-	}
-	return nil
+func validateBackendSpecificMaintenanceWindowDiff(context context.Context, diff *schema.ResourceDiff, meta interface{}) error {
+	return pickResourceBackendFromDiff(diff).ValidateMaintenanceWindowDiff(context, diff, meta)
 }
 
 func validateAsyncRestoreDiff(_ context.Context, diff *schema.ResourceDiff, meta interface{}) (err error) {

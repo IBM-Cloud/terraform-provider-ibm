@@ -63,3 +63,7 @@ func (c *resourceIBMDatabaseClassicBackend) ValidateGroupsDiff(context context.C
 func (c *resourceIBMDatabaseClassicBackend) ValidateServiceEndpointsDiff(context context.Context, d *schema.ResourceDiff, meta interface{}) error {
 	return validateServiceEndpointsDiffClassic(context, d, meta)
 }
+
+func (c *resourceIBMDatabaseClassicBackend) ValidateMaintenanceWindowDiff(_ context.Context, _ *schema.ResourceDiff, _ interface{}) error {
+	return nil
+}
