@@ -31,59 +31,59 @@ func ResourceIbmCodeEngineBuild() *schema.Resource {
 		Importer:      &schema.ResourceImporter{},
 
 		Schema: map[string]*schema.Schema{
-			"project_id": &schema.Schema{
+			"project_id": {
 				Type:         schema.TypeString,
 				Required:     true,
 				ForceNew:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_code_engine_build", "project_id"),
 				Description:  "The ID of the project.",
 			},
-			"name": &schema.Schema{
+			"name": {
 				Type:         schema.TypeString,
 				Required:     true,
 				ForceNew:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_code_engine_build", "name"),
 				Description:  "The name of the build.",
 			},
-			"output_image": &schema.Schema{
+			"output_image": {
 				Type:         schema.TypeString,
 				Required:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_code_engine_build", "output_image"),
 				Description:  "The name of the image.",
 			},
-			"output_secret": &schema.Schema{
+			"output_secret": {
 				Type:         schema.TypeString,
 				Required:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_code_engine_build", "output_secret"),
 				Description:  "The secret that is required to access the image registry. Make sure that the secret is granted with push permissions towards the specified container registry namespace.",
 			},
-			"run_build_params": &schema.Schema{
+			"run_build_params": {
 				Type:        schema.TypeList,
 				Optional:    true,
 				Description: "References to config maps and secret keys, or literal values, which are defined by the build owner and are exposed as build arguments in Docker files.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"key": &schema.Schema{
+						"key": {
 							Type:        schema.TypeString,
 							Optional:    true,
 							Description: "The key to reference as build param.",
 						},
-						"name": &schema.Schema{
+						"name": {
 							Type:        schema.TypeString,
 							Optional:    true,
 							Description: "The name of the build param.",
 						},
-						"reference": &schema.Schema{
+						"reference": {
 							Type:        schema.TypeString,
 							Optional:    true,
 							Description: "The name of the secret or config map.",
 						},
-						"type": &schema.Schema{
+						"type": {
 							Type:        schema.TypeString,
 							Required:    true,
 							Description: "Specify the type of the build param.",
 						},
-						"value": &schema.Schema{
+						"value": {
 							Type:        schema.TypeString,
 							Optional:    true,
 							Description: "The literal value of the build param.",
@@ -91,106 +91,106 @@ func ResourceIbmCodeEngineBuild() *schema.Resource {
 					},
 				},
 			},
-			"source_context_dir": &schema.Schema{
+			"source_context_dir": {
 				Type:         schema.TypeString,
 				Optional:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_code_engine_build", "source_context_dir"),
 				Description:  "Optional directory in the repository that contains the buildpacks file or the Dockerfile.",
 			},
-			"source_revision": &schema.Schema{
+			"source_revision": {
 				Type:         schema.TypeString,
 				Optional:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_code_engine_build", "source_revision"),
 				Description:  "Commit, tag, or branch in the source repository to pull. This field is optional if the `source_type` is `git` and uses the HEAD of default branch if not specified. If the `source_type` value is `local`, this field must be omitted.",
 			},
-			"source_secret": &schema.Schema{
+			"source_secret": {
 				Type:         schema.TypeString,
 				Optional:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_code_engine_build", "source_secret"),
 				Description:  "Name of the secret that is used access the repository source. This field is optional if the `source_type` is `git`. Additionally, if the `source_url` points to a repository that requires authentication, the build will be created but cannot access any source code, until this property is provided, too. If the `source_type` value is `local`, this field must be omitted.",
 			},
-			"source_type": &schema.Schema{
+			"source_type": {
 				Type:         schema.TypeString,
 				Optional:     true,
 				Default:      "git",
 				ValidateFunc: validate.InvokeValidator("ibm_code_engine_build", "source_type"),
 				Description:  "Specifies the type of source to determine if your build source is in a repository or based on local source code.* local - For builds from local source code.* git - For builds from git version controlled source code.",
 			},
-			"source_url": &schema.Schema{
+			"source_url": {
 				Type:         schema.TypeString,
 				Optional:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_code_engine_build", "source_url"),
 				Description:  "The URL of the code repository. This field is required if the `source_type` is `git`. If the `source_type` value is `local`, this field must be omitted. If the repository is publicly available you can provide a 'https' URL like `https://github.com/IBM/CodeEngine`. If the repository requires authentication, you need to provide a 'ssh' URL like `git@github.com:IBM/CodeEngine.git` along with a `source_secret` that points to a secret of format `ssh_auth`.",
 			},
-			"strategy_size": &schema.Schema{
+			"strategy_size": {
 				Type:         schema.TypeString,
 				Optional:     true,
 				Default:      "medium",
 				ValidateFunc: validate.InvokeValidator("ibm_code_engine_build", "strategy_size"),
 				Description:  "Optional size for the build, which determines the amount of resources used. Build sizes are `small`, `medium`, `large`, `xlarge`, `xxlarge`.",
 			},
-			"strategy_spec_file": &schema.Schema{
+			"strategy_spec_file": {
 				Type:         schema.TypeString,
 				Optional:     true,
 				Default:      "Dockerfile",
 				ValidateFunc: validate.InvokeValidator("ibm_code_engine_build", "strategy_spec_file"),
 				Description:  "Optional path to the specification file that is used for build strategies for building an image.",
 			},
-			"strategy_type": &schema.Schema{
+			"strategy_type": {
 				Type:         schema.TypeString,
 				Required:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_code_engine_build", "strategy_type"),
 				Description:  "The strategy to use for building the image.",
 			},
-			"timeout": &schema.Schema{
+			"timeout": {
 				Type:         schema.TypeInt,
 				Optional:     true,
 				Default:      600,
 				ValidateFunc: validate.InvokeValidator("ibm_code_engine_build", "timeout"),
 				Description:  "The maximum amount of time, in seconds, that can pass before the build must succeed or fail.",
 			},
-			"created_at": &schema.Schema{
+			"created_at": {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The timestamp when the resource was created.",
 			},
-			"entity_tag": &schema.Schema{
+			"entity_tag": {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The version of the build instance, which is used to achieve optimistic locking.",
 			},
-			"href": &schema.Schema{
+			"href": {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "When you provision a new build,  a URL is created identifying the location of the instance.",
 			},
-			"build_id": &schema.Schema{
+			"build_id": {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The identifier of the resource.",
 			},
-			"region": &schema.Schema{
+			"region": {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The region of the project the resource is located in. Possible values: 'au-syd', 'br-sao', 'ca-tor', 'eu-de', 'eu-gb', 'jp-osa', 'jp-tok', 'us-east', 'us-south'.",
 			},
-			"resource_type": &schema.Schema{
+			"resource_type": {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The type of the build.",
 			},
-			"status": &schema.Schema{
+			"status": {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The current status of the build.",
 			},
-			"status_details": &schema.Schema{
+			"status_details": {
 				Type:        schema.TypeList,
 				Computed:    true,
 				Description: "The detailed status of the build.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"reason": &schema.Schema{
+						"reason": {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "Optional information to provide more context in case of a 'failed' or 'warning' status.",
@@ -198,7 +198,7 @@ func ResourceIbmCodeEngineBuild() *schema.Resource {
 					},
 				},
 			},
-			"etag": &schema.Schema{
+			"etag": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},

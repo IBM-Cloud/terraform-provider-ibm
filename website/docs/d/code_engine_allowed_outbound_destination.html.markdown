@@ -47,7 +47,7 @@ After your data source is created, you can read values from the following attrib
 Nested schema for **status_details**:
 	* `endpoint_gateway` - (List) Optional information about the endpoint gateway located in the Code Engine VPC that connects to the private path service gateway.
 	Nested schema for **endpoint_gateway**:
-		* `account_id` - (String) The account that created the endpoint gateway.
+		* `account_id` - (String) The ID of the account that created the endpoint gateway, e.g. 4329073d16d2f3663f74bfa955259139.
 		* `created_at` - (String) The timestamp when the endpoint gateway was created.
 		* `ips` - (List) The reserved IPs bound to this endpoint gateway.
 		* `name` - (String) The name for this endpoint gateway. The name is unique across all endpoint gateways in the VPC.
