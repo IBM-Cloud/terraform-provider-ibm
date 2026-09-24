@@ -37,6 +37,7 @@ import (
 	kpCryptoUnit "github.com/IBM/keyprotect-go-client/dedicated"
 	"github.com/IBM/logs-router-go-sdk/ibmcloudlogsroutingv0"
 	"github.com/IBM/mqcloud-go-sdk/mqcloudv1"
+	aisecurityforappsv1 "github.com/IBM/networking-go-sdk/aisecurityforappsv1"
 	cisalertsv1 "github.com/IBM/networking-go-sdk/alertsv1"
 	cisoriginpull "github.com/IBM/networking-go-sdk/authenticatedoriginpullapiv1"
 	cisbotanalyticsv1 "github.com/IBM/networking-go-sdk/botanalyticsv1"
@@ -316,6 +317,7 @@ type ClientSession interface {
 	CisMtlsSession() (*cismtlsv1.MtlsV1, error)
 	CisBotManagementSession() (*cisbotmanagementv1.BotManagementV1, error)
 	CisBotAnalyticsSession() (*cisbotanalyticsv1.BotAnalyticsV1, error)
+	CisAiSecurityForAppsSession() (*aisecurityforappsv1.AiSecurityForAppsV1, error)
 	CisWebhookSession() (*ciswebhooksv1.WebhooksV1, error)
 	CisCustomPageClientSession() (*ciscustompagev1.CustomPagesV1, error)
 	CisAccessRuleClientSession() (*cisaccessrulev1.ZoneFirewallAccessRulesV1, error)
@@ -661,6 +663,10 @@ type clientSession struct {
 	// Bot Analytics options
 	cisBotAnalyticsClient *cisbotanalyticsv1.BotAnalyticsV1
 	cisBotAnalyticsErr    error
+
+	// AI Security for Apps options
+	cisAiSecurityForAppsClient *aisecurityforappsv1.AiSecurityForAppsV1
+	cisAiSecurityForAppsErr    error
 
 	// CIS Webhooks options
 	cisWebhooksClient *ciswebhooksv1.WebhooksV1
@@ -1368,6 +1374,14 @@ func (sess clientSession) CisBotAnalyticsSession() (*cisbotanalyticsv1.BotAnalyt
 		return sess.cisBotAnalyticsClient, sess.cisBotAnalyticsErr
 	}
 	return sess.cisBotAnalyticsClient.Clone(), nil
+}
+
+// CIS AI Security for Apps
+func (sess clientSession) CisAiSecurityForAppsSession() (*aisecurityforappsv1.AiSecurityForAppsV1, error) {
+	if sess.cisAiSecurityForAppsErr != nil {
+		return sess.cisAiSecurityForAppsClient, sess.cisAiSecurityForAppsErr
+	}
+	return sess.cisAiSecurityForAppsClient.Clone(), nil
 }
 
 // CIS Webhooks
@@ -3397,6 +3411,25 @@ func (c *Config) ClientSession() (*clientSession, error) {
 	if session.cisBotAnalyticsClient != nil && session.cisBotAnalyticsClient.Service != nil {
 		session.cisBotAnalyticsClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
 		session.cisBotAnalyticsClient.SetDefaultHeaders(gohttp.Header{
+			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
+		})
+	}
+
+	// IBM AI Security for Apps
+	cisAiSecurityForAppsOpt := &aisecurityforappsv1.AiSecurityForAppsV1Options{
+		URL:            cisEndPoint,
+		Crn:            core.StringPtr(""),
+		ZoneIdentifier: core.StringPtr(""),
+		Authenticator:  authenticator,
+	}
+	session.cisAiSecurityForAppsClient, session.cisAiSecurityForAppsErr = aisecurityforappsv1.NewAiSecurityForAppsV1(cisAiSecurityForAppsOpt)
+	if session.cisAiSecurityForAppsErr != nil {
+		session.cisAiSecurityForAppsErr = fmt.Errorf("[ERROR] Error occured while configuring CIS AI Security for Apps : %s",
+			session.cisAiSecurityForAppsErr)
+	}
+	if session.cisAiSecurityForAppsClient != nil && session.cisAiSecurityForAppsClient.Service != nil {
+		session.cisAiSecurityForAppsClient.Service.EnableRetries(c.RetryCount, c.RetryDelay)
+		session.cisAiSecurityForAppsClient.SetDefaultHeaders(gohttp.Header{
 			"X-Original-User-Agent": {fmt.Sprintf("terraform-provider-ibm/%s", version.Version)},
 		})
 	}
