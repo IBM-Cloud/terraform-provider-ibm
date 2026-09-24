@@ -70,7 +70,6 @@ jobs:
                 echo "| ELF interpreter | \`${interp:-none}\` |"
                 echo "| Shared libraries | \`${needed:-none}\` |"
                 echo ""
-                echo "Terraform provider binaries are expected to be statically linked so they run on any Linux, including Alpine-based CI runners. A dependency is pulling in dynamic linking despite \`CGO_ENABLED=0\`. Investigate with \`go mod why\` before publishing this draft release."
                 echo ""
               } >> "$GITHUB_STEP_SUMMARY"
             else
