@@ -1111,6 +1111,63 @@ type CountLimit struct {
 	CanScaleDown    bool
 }
 
+// validateConfigurationForService validates the configuration JSON against the known
+// schema for Classic plans. Gen2 plans pass configuration directly to the Resource
+// Controller API, which accepts fields not present in the Classic/ICD SDK structs
+// (e.g. max_worker_processes, max_logical_replication_workers, pgaudit.log,
+// pgaudit.role, and boolean log_connections/log_disconnections), so SDK-based field
+// validation is skipped for them.
+func validateConfigurationForService(service, plan, configJSON string) error {
+	var rawConfig map[string]json.RawMessage
+	if err := json.Unmarshal([]byte(configJSON), &rawConfig); err != nil {
+		return fmt.Errorf("[ERROR] configuration JSON invalid\n%s", err)
+	}
+
+	if isGen2Plan(plan) {
+		return nil
+	}
+
+	var unmarshalFn func(m map[string]json.RawMessage, result interface{}) (err error)
+
+	var configuration clouddatabasesv5.ConfigurationIntf = new(clouddatabasesv5.Configuration)
+
+	switch service {
+	case "databases-for-postgresql":
+		unmarshalFn = clouddatabasesv5.UnmarshalConfigurationPgConfiguration
+	case "databases-for-enterprisedb":
+		unmarshalFn = clouddatabasesv5.UnmarshalConfigurationPgConfiguration
+	case "databases-for-redis":
+		unmarshalFn = clouddatabasesv5.UnmarshalConfigurationRedisConfiguration
+	case "databases-for-mysql":
+		unmarshalFn = clouddatabasesv5.UnmarshalConfigurationMySQLConfiguration
+	case "messages-for-rabbitmq":
+		unmarshalFn = clouddatabasesv5.UnmarshalConfigurationRabbitMqConfiguration
+	default:
+		return fmt.Errorf("[ERROR] configuration is not supported for %s", service)
+	}
+
+	if err := core.UnmarshalModel(rawConfig, "", &configuration, unmarshalFn); err != nil {
+		return fmt.Errorf("[ERROR] configuration is invalid\n%s", err)
+	}
+
+	b, _ := json.Marshal(configuration)
+	var result map[string]json.RawMessage
+	json.Unmarshal(b, &result)
+
+	invalidFields := []string{}
+	for k, _ := range rawConfig {
+		if _, ok := result[k]; !ok {
+			invalidFields = append(invalidFields, k)
+		}
+	}
+
+	if len(invalidFields) != 0 {
+		return fmt.Errorf("[ERROR] configuration contained invalid field(s): %s", invalidFields)
+	}
+
+	return nil
+}
+
 func resourceIBMDatabaseInstanceDiff(_ context.Context, diff *schema.ResourceDiff, meta interface{}) (err error) {
 	err = flex.ResourceTagsCustomizeDiff(diff)
 	if err != nil {
@@ -1129,49 +1186,8 @@ func resourceIBMDatabaseInstanceDiff(_ context.Context, diff *schema.ResourceDif
 	configJSON, configOk := diff.GetOk("configuration")
 
 	if configOk {
-		var rawConfig map[string]json.RawMessage
-		err = json.Unmarshal([]byte(configJSON.(string)), &rawConfig)
-		if err != nil {
-			return fmt.Errorf("[ERROR] configuration JSON invalid\n%s", err)
-		}
-
-		var unmarshalFn func(m map[string]json.RawMessage, result interface{}) (err error)
-
-		var configuration clouddatabasesv5.ConfigurationIntf = new(clouddatabasesv5.Configuration)
-
-		switch service {
-		case "databases-for-postgresql":
-			unmarshalFn = clouddatabasesv5.UnmarshalConfigurationPgConfiguration
-		case "databases-for-enterprisedb":
-			unmarshalFn = clouddatabasesv5.UnmarshalConfigurationPgConfiguration
-		case "databases-for-redis":
-			unmarshalFn = clouddatabasesv5.UnmarshalConfigurationRedisConfiguration
-		case "databases-for-mysql":
-			unmarshalFn = clouddatabasesv5.UnmarshalConfigurationMySQLConfiguration
-		case "messages-for-rabbitmq":
-			unmarshalFn = clouddatabasesv5.UnmarshalConfigurationRabbitMqConfiguration
-		default:
-			return fmt.Errorf("[ERROR] configuration is not supported for %s", service)
-		}
-
-		err = core.UnmarshalModel(rawConfig, "", &configuration, unmarshalFn)
-		if err != nil {
-			return fmt.Errorf("[ERROR] configuration is invalid\n%s", err)
-		}
-
-		b, _ := json.Marshal(configuration)
-		var result map[string]json.RawMessage
-		json.Unmarshal(b, &result)
-
-		invalidFields := []string{}
-		for k, _ := range rawConfig {
-			if _, ok := result[k]; !ok {
-				invalidFields = append(invalidFields, k)
-			}
-		}
-
-		if len(invalidFields) != 0 {
-			return fmt.Errorf("[ERROR] configuration contained invalid field(s): %s", invalidFields)
+		if err = validateConfigurationForService(service, plan, configJSON.(string)); err != nil {
+			return err
 		}
 	}
 
