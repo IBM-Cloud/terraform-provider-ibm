@@ -906,7 +906,7 @@ Review the argument reference that you can specify for your resource.
 
   **Gen2:** Accepted but ignored (Classic-only feature).
 - `resource_group_id` - (Optional, Forces new resource, String)  The ID of the resource group where you want to create the instance. To retrieve this value, run `ibmcloud resource groups` or use the `ibm_resource_group` data source. If no value is provided, the `default` resource group is used.
-- `service` - (Required, Forces new resource, String) The type of Cloud Databases that you want to create. Only the following services are currently accepted: `databases-for-postgresql`, `databases-for-redis`, `databases-for-valkey`, `databases-for-elasticsearch`, `messages-for-rabbitmq`,`databases-for-mongodb`, and `databases-for-mysql`.
+`service` - (Required, Forces new resource, String) The type of Cloud Databases that you want to create. Only the following services are currently accepted: `databases-for-etcd`, `databases-for-postgresql`, `databases-for-redis`, `databases-for-valkey`, `databases-for-elasticsearch`, `messages-for-rabbitmq`,`databases-for-mongodb`,`databases-for-mysql`, and `databases-for-enterprisedb`.
 
 - `service_endpoints` - (Optional, String) Specify whether you want to enable the public, private, or both service endpoints. Supported values are `public`, `private`, or `public-and-private`.
 
