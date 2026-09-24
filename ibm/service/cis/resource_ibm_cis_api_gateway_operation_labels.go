@@ -199,16 +199,6 @@ func ResourceIBMCISApiGatewayOperationLabelsDelete(d *schema.ResourceData, meta 
 			OperationIds: operationIDs,
 		},
 	})
-	// Clear all labels by sending empty slices.
-	opt.SetUser(&aisecurityforappsv1.ApiGatewayOperationsLabelsInputUser{Labels: []string{}})
-	opt.SetManaged(&aisecurityforappsv1.ApiGatewayOperationsLabelsInputManaged{Labels: []string{}})
-
-	_, response, err := cisClient.UpdateApiGatewayOperationLabelsWithContext(context.Background(), opt)
-	if err != nil {
-		log.Printf("[ERROR] Clearing API Gateway operation labels on delete failed: %v", response)
-		return err
-	}
-
 	d.SetId("")
 	return nil
 }

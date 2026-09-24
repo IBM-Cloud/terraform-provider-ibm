@@ -81,7 +81,7 @@ func ResourceIBMCISAiSecuritySettingsUpdate(d *schema.ResourceData, meta interfa
 	cisClient.Crn = core.StringPtr(crn)
 	cisClient.ZoneIdentifier = core.StringPtr(zoneID)
 
-	if d.HasChange(cisAiSecurityEnabled) {
+	if d.HasChange(cisAiSecurityEnabled) || d.IsNewResource() {
 		enabled := d.Get(cisAiSecurityEnabled).(bool)
 		opt := cisClient.NewReplaceZoneAiSecuritySettingsOptions()
 		opt.SetEnabled(enabled)

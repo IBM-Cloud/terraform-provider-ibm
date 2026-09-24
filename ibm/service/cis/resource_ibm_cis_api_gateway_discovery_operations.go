@@ -151,27 +151,31 @@ func ResourceIBMCISApiGatewayDiscoveryOperationsCreateOrUpdate(d *schema.Resourc
 
 	// Build request body: map of operation_id -> state as map[string]interface{}.
 	rawStates := d.Get(cisApiGatewayDiscoveryOpStates).(map[string]interface{})
-	requestBody := make(map[string]interface{}, len(rawStates))
-	for opID, state := range rawStates {
-		requestBody[opID] = state
-	}
+	if len(rawStates) > 0 {
+		requestBody := make(map[string]interface{}, len(rawStates))
+		for opID, state := range rawStates {
+			requestBody[opID] = state
+		}
 
-	opt := cisClient.NewUpdateZoneApiGatewayDiscoveryOperationOptions()
-	opt.SetRequestBody(requestBody)
+		opt := cisClient.NewUpdateZoneApiGatewayDiscoveryOperationOptions()
+		opt.SetRequestBody(requestBody)
 
-	result, response, err := cisClient.UpdateZoneApiGatewayDiscoveryOperationWithContext(context.Background(), opt)
-	if err != nil {
-		log.Printf("[ERROR] UpdateZoneApiGatewayDiscoveryOperation failed: %v", response)
-		return err
+		result, response, err := cisClient.UpdateZoneApiGatewayDiscoveryOperationWithContext(context.Background(), opt)
+		if err != nil {
+			log.Printf("[ERROR] UpdateZoneApiGatewayDiscoveryOperation failed: %v", response)
+			return err
+		}
+
+		if result != nil {
+			if err := d.Set(cisApiGatewayDiscoveryOpResult, flattenDiscoveryOperationsList(result.Result)); err != nil {
+				return fmt.Errorf("error setting result: %w", err)
+			}
+		}
+	} else {
+		d.Set(cisApiGatewayDiscoveryOpResult, []map[string]interface{}{})
 	}
 
 	d.SetId(flex.ConvertCisToTfTwoVar(zoneID, crn))
-
-	if result != nil {
-		if err := d.Set(cisApiGatewayDiscoveryOpResult, flattenDiscoveryOperationsList(result.Result)); err != nil {
-			return fmt.Errorf("error setting result: %w", err)
-		}
-	}
 	return nil
 }
 
@@ -196,20 +200,22 @@ func ResourceIBMCISApiGatewayDiscoveryOperationsDelete(d *schema.ResourceData, m
 	cisClient.Crn = core.StringPtr(crn)
 	cisClient.ZoneIdentifier = core.StringPtr(zoneID)
 
-	// Reset every tracked operation back to "review".
+	// Reset every tracked operation back to "review" if any were tracked.
 	rawStates := d.Get(cisApiGatewayDiscoveryOpStates).(map[string]interface{})
-	requestBody := make(map[string]interface{}, len(rawStates))
-	for opID := range rawStates {
-		requestBody[opID] = "review"
-	}
+	if len(rawStates) > 0 {
+		requestBody := make(map[string]interface{}, len(rawStates))
+		for opID := range rawStates {
+			requestBody[opID] = "review"
+		}
 
-	opt := cisClient.NewUpdateZoneApiGatewayDiscoveryOperationOptions()
-	opt.SetRequestBody(requestBody)
+		opt := cisClient.NewUpdateZoneApiGatewayDiscoveryOperationOptions()
+		opt.SetRequestBody(requestBody)
 
-	_, response, err := cisClient.UpdateZoneApiGatewayDiscoveryOperationWithContext(context.Background(), opt)
-	if err != nil {
-		log.Printf("[ERROR] Resetting discovery operation states on delete failed: %v", response)
-		return err
+		_, response, err := cisClient.UpdateZoneApiGatewayDiscoveryOperationWithContext(context.Background(), opt)
+		if err != nil {
+			log.Printf("[ERROR] Resetting discovery operation states on delete failed: %v", response)
+			return err
+		}
 	}
 
 	d.SetId("")
