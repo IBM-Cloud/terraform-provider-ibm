@@ -47,3 +47,40 @@ jobs:
           GPG_FINGERPRINT: ${{ steps.import_gpg.outputs.fingerprint }}
           # GitHub sets this automatically
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      -
+        name: Check Linux binaries are statically linked (warning only)
+        if: always()
+        run: |
+          set -uo pipefail
+          found=0
+          for bin in dist/*linux*/*; do
+            [ -f "$bin" ] || continue
+            interp=$(readelf -l "$bin" 2>/dev/null | sed -n 's/.*program interpreter: \(.*\)\]/\1/p' || true)
+            needed=$(readelf -d "$bin" 2>/dev/null | awk '/NEEDED/ {gsub(/[\[\]]/,"",$5); print $5}' | paste -sd, - || true)
+            if [ -n "$interp" ] || [ -n "$needed" ]; then
+              found=1
+              echo "::warning file=.goreleaser.yml,title=Dynamically linked Linux binary::$bin requires interpreter '${interp:-none}' and shared libraries '${needed:-none}'. It will not run on musl/Alpine, distroless or scratch images."
+              {
+                echo "### :warning: Dynamically linked Linux binary"
+                echo ""
+                echo "\`$bin\`"
+                echo ""
+                echo "| Property | Value |"
+                echo "|---|---|"
+                echo "| ELF interpreter | \`${interp:-none}\` |"
+                echo "| Shared libraries | \`${needed:-none}\` |"
+                echo ""
+                echo "Terraform provider binaries are expected to be statically linked so they run on any Linux, including Alpine-based CI runners. A dependency is pulling in dynamic linking despite \`CGO_ENABLED=0\`. Investigate with \`go mod why\` before publishing this draft release."
+                echo ""
+              } >> "$GITHUB_STEP_SUMMARY"
+            else
+              echo "ok: $bin is statically linked"
+            fi
+          done
+          if [ "$found" -eq 1 ]; then
+            echo "=================================================================="
+            echo "  WARNING: one or more Linux binaries are dynamically linked."
+            echo "  See the job summary and annotations above. Release NOT blocked."
+            echo "=================================================================="
+          fi
+          exit 0
