@@ -884,6 +884,7 @@ func ResourceIBMDatabaseInstance() *schema.Resource {
 			"maintenance": {
 				Type:        schema.TypeList,
 				Optional:    true,
+				Computed:    true,
 				MaxItems:    1,
 				Description: "Maintenance window configuration for Gen2 database instances. Applicable to Gen2 plans only.",
 				Elem: &schema.Resource{
@@ -891,18 +892,21 @@ func ResourceIBMDatabaseInstance() *schema.Resource {
 						"window": {
 							Type:     schema.TypeList,
 							Optional: true,
+							Computed: true,
 							MaxItems: 1,
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"start_time": {
 										Type:         schema.TypeString,
 										Optional:     true,
+										Computed:     true,
 										Description:  "Earliest time at which maintenance can be initiated. ISO 8601 UTC time format (hh:mmZ). Example: \"05:00Z\".",
 										ValidateFunc: validateMaintenanceStartTime,
 									},
 									"days": {
 										Type:        schema.TypeSet,
 										Optional:    true,
+										Computed:    true,
 										Description: "Day(s) of the week on which maintenance can be initiated. Example: [\"Wednesday\",\"Thursday\"].",
 										Elem: &schema.Schema{
 											Type:         schema.TypeString,
@@ -912,6 +916,7 @@ func ResourceIBMDatabaseInstance() *schema.Resource {
 									"system_assigned": {
 										Type:        schema.TypeBool,
 										Optional:    true,
+										Computed:    true,
 										Description: "When true, resets the maintenance window to the IBM Cloud system-assigned default. Cannot be set together with start_time or days.",
 									},
 								},

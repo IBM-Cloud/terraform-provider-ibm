@@ -197,4 +197,3 @@ resource "ibm_database" %[1]q {
 }
 `, name)
 }
-

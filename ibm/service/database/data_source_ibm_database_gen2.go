@@ -62,9 +62,10 @@ func (g *dataSourceIBMDatabaseGen2Backend) Read(d *schema.ResourceData, meta int
 		return err
 	}
 
-	// Set maintenance window from instance extensions
+	// Set maintenance window from instance extensions.
+	// Data source has no HCL config intent — pass nil so flattenMaintenance uses API response as-is.
 	if ext := instance.Extensions; ext != nil {
-		if flat := flattenMaintenance(ext); flat != nil {
+		if flat := flattenMaintenance(ext, nil); flat != nil {
 			if err := d.Set("maintenance", flat); err != nil {
 				return fmt.Errorf("error setting maintenance: %w", err)
 			}
