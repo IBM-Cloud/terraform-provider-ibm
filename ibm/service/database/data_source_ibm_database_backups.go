@@ -45,7 +45,9 @@ func pickDataSourceBackupsBackend(d *schema.ResourceData, meta interface{}) (dat
 
 	plan := *instance.ResourcePlanID
 	if isGen2Plan(plan) {
-		return newDataSourceIBMDatabaseBackupsGen2Backend(instance.ResourceGroupID), nil
+		// Pass the already-fetched instance so the Gen2 backend can perform the
+		// S2S authorization check without a second GetResourceInstance call.
+		return newDataSourceIBMDatabaseBackupsGen2Backend(instance.ResourceGroupID, instance), nil
 	}
 	return newDataSourceIBMDatabaseBackupsClassicBackend(), nil
 }
