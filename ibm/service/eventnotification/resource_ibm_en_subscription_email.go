@@ -57,7 +57,7 @@ func ResourceIBMEnEmailSubscription() *schema.Resource {
 			"attributes": {
 				Type:     schema.TypeList,
 				MaxItems: 1,
-				Optional: true,
+				Required: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"add_notification_payload": {
@@ -405,6 +405,7 @@ func EmailattributesupdateMapToAttributes(d *schema.ResourceData) en.Subscriptio
 			invitedRemove = append(invitedRemove, v.(string))
 		}
 	}
+
 	if len(invitedAdd) > 0 || len(invitedRemove) > 0 {
 		invited := &en.UpdateAttributesInvited{}
 		if len(invitedAdd) > 0 {
@@ -443,13 +444,31 @@ func toStringSet(in []interface{}) map[string]struct{} {
 	return out
 }
 
-// add and remove are always written as empty slices — they are deprecated transient fields.
+// add and remove are deprecated fields kept for customer-support use only.
+// The service never echoes them back, so we reflect the config value straight
+// into state — this keeps state == config and produces no plan diff as long as
+// the user has not changed the field. No API call is made for these fields.
 func enEmailSubscriptionResourceFlattenAttributes(result en.SubscriptionAttributesIntf, d *schema.ResourceData) []map[string]interface{} {
 	attributes := result.(*en.SubscriptionAttributes)
 
+	// Reflect add/remove config values back into state unchanged so Terraform
+	// sees no diff. Default to empty slice when nothing is set in config.
+	addVal := []string{}
+	if v, ok := d.GetOk("attributes.0.add"); ok {
+		for _, e := range v.([]interface{}) {
+			addVal = append(addVal, e.(string))
+		}
+	}
+	removeVal := []string{}
+	if v, ok := d.GetOk("attributes.0.remove"); ok {
+		for _, e := range v.([]interface{}) {
+			removeVal = append(removeVal, e.(string))
+		}
+	}
+
 	attrMap := map[string]interface{}{
-		"add":    []string{},
-		"remove": []string{},
+		"add":    addVal,
+		"remove": removeVal,
 	}
 
 	if attributes.AddNotificationPayload != nil {
@@ -486,6 +505,7 @@ func enEmailSubscriptionResourceFlattenAttributes(result en.SubscriptionAttribut
 	seen := map[string]struct{}{}
 	invited := []string{}
 
+	// Seed invited from the current config's invited list.
 	if v, ok := d.GetOk("attributes.0.invited"); ok {
 		for _, e := range v.([]interface{}) {
 			email := e.(string)
