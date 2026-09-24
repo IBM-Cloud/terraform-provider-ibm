@@ -1223,16 +1223,70 @@ func (g *resourceIBMDatabaseGen2Backend) ValidateGroupsDiff(ctx context.Context,
 }
 
 // ValidateMemberZonesDiff validates member_zones rules at plan time for Gen2 instances.
+// Uses GetRawConfig to read the proposed config value directly, which is always the
+// new value regardless of whether this is a create or update.
 func (g *resourceIBMDatabaseGen2Backend) ValidateMemberZonesDiff(_ context.Context, d *schema.ResourceDiff, _ interface{}) error {
-	groupsRaw, ok := d.GetOk("group")
-	if !ok {
+	raw := d.GetRawConfig()
+	if raw.IsNull() || !raw.IsKnown() {
 		return nil
 	}
-	for _, groupRaw := range groupsRaw.(*schema.Set).List() {
-		zones, allocationCount, ok := memberZonesFromDiff(groupRaw)
-		if !ok {
+
+	groupsVal := raw.GetAttr("group")
+	if groupsVal.IsNull() || !groupsVal.IsKnown() {
+		return nil
+	}
+
+	it := groupsVal.ElementIterator()
+	for it.Next() {
+		_, groupVal := it.Element()
+		if groupVal.IsNull() || !groupVal.IsKnown() {
 			continue
 		}
+
+		groupIDVal := groupVal.GetAttr("group_id")
+		if groupIDVal.IsNull() || !groupIDVal.IsKnown() || groupIDVal.AsString() != defaultGroupID {
+			continue
+		}
+
+		membersVal := groupVal.GetAttr("members")
+		if membersVal.IsNull() || !membersVal.IsKnown() || membersVal.LengthInt() == 0 {
+			continue
+		}
+
+		mit := membersVal.ElementIterator()
+		if !mit.Next() {
+			continue
+		}
+		_, memberVal := mit.Element()
+		if memberVal.IsNull() || !memberVal.IsKnown() {
+			continue
+		}
+
+		zonesVal := memberVal.GetAttr("member_zones")
+		if zonesVal.IsNull() || !zonesVal.IsKnown() || zonesVal.LengthInt() == 0 {
+			continue
+		}
+
+		var zones []string
+		zit := zonesVal.ElementIterator()
+		for zit.Next() {
+			_, zv := zit.Element()
+			if !zv.IsNull() && zv.IsKnown() {
+				zones = append(zones, zv.AsString())
+			}
+		}
+		if len(zones) == 0 {
+			continue
+		}
+
+		allocVal := memberVal.GetAttr("allocation_count")
+		allocationCount := 0
+		if !allocVal.IsNull() && allocVal.IsKnown() {
+			bf := allocVal.AsBigFloat()
+			n, _ := bf.Int64()
+			allocationCount = int(n)
+		}
+
 		if err := validateMemberZones(&Group{MemberZones: zones}, allocationCount); err != nil {
 			return err
 		}

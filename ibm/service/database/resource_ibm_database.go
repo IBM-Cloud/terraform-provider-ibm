@@ -966,14 +966,14 @@ func ResourceIBMICDValidator() *validate.ResourceValidator {
 			Identifier:                 "service",
 			ValidateFunctionIdentifier: validate.ValidateAllowedStringValue,
 			Type:                       validate.TypeString,
-			AllowedValues:              "databases-for-etcd, databases-for-postgresql, databases-for-redis, databases-for-valkey, databases-for-valkey-cdp-dev, databases-for-elasticsearch, databases-for-mongodb, messages-for-rabbitmq, databases-for-mysql, databases-for-enterprisedb",
+			AllowedValues:              "databases-for-etcd, databases-for-postgresql, databases-for-redis, databases-for-valkey, databases-for-valkey-cdp-dev, databases-for-elasticsearch, databases-for-mongodb, messages-for-rabbitmq, databases-for-mysql, databases-for-enterprisedb, databases-for-redis-cdp-dev, databases-for-postgresql-cdp-dev, databases-for-elasticsearch-cdp-dev",
 			Required:                   true})
 	validateSchema = append(validateSchema,
 		validate.ValidateSchema{
 			Identifier:                 "plan",
 			ValidateFunctionIdentifier: validate.ValidateAllowedICDPlanValue,
 			Type:                       validate.TypeString,
-			AllowedValues:              "standard, standard-gen2, enterprise, enterprise-gen2, enterprise-sharding, enterprise-sharding-gen2, platinum",
+			AllowedValues:              "standard, standard-gen2, enterprise, enterprise-gen2, enterprise-sharding, enterprise-sharding-gen2, platinum, databases-for-redis-cdp-dev-standard, databases-for-elasticsearch-cdp-dev-enterprise, databases-for-postgresql-cdp-dev-standard",
 			Required:                   true})
 	validateSchema = append(validateSchema,
 		validate.ValidateSchema{
@@ -2875,10 +2875,11 @@ func expandGroups(_groups []interface{}) []*Group {
 			if membersSet, ok := tfGroup["members"].(*schema.Set); ok {
 				members := membersSet.List()
 				if len(members) != 0 {
-					memberMap := members[0].(map[string]interface{})
-					group.Members = &GroupResource{Allocation: memberMap["allocation_count"].(int)}
-					if zonesRaw, ok := memberMap["member_zones"].([]interface{}); ok && len(zonesRaw) > 0 {
-						group.MemberZones = stringsFromInterfaceSlice(zonesRaw)
+					if memberMap, ok := members[0].(map[string]interface{}); ok {
+						group.Members = &GroupResource{Allocation: memberMap["allocation_count"].(int)}
+						if zonesRaw, ok := memberMap["member_zones"].([]interface{}); ok && len(zonesRaw) > 0 {
+							group.MemberZones = stringsFromInterfaceSlice(zonesRaw)
+						}
 					}
 				}
 			}

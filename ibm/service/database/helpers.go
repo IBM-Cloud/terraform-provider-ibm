@@ -141,8 +141,17 @@ func isAttrConfiguredInDiff(d *schema.ResourceDiff, k string) bool {
 }
 
 func isGen2Plan(plan string) bool {
+	p := strings.ToLower(plan)
 	gen2Pattern := regexp.MustCompile(`-gen2($|-.+)`)
-	return gen2Pattern.MatchString(strings.ToLower(plan))
+	if gen2Pattern.MatchString(p) {
+		return true
+	}
+	gen2DevPlans := map[string]bool{
+		"databases-for-redis-cdp-dev-standard":           true,
+		"databases-for-elasticsearch-cdp-dev-enterprise": true,
+		"databases-for-postgresql-cdp-dev-standard":      true,
+	}
+	return gen2DevPlans[p]
 }
 
 // instanceCRNFromCoupledBackupCRN extracts the source instance CRN from a
@@ -1042,5 +1051,9 @@ func memberZonesFromDiff(groupRaw interface{}) (zones []string, allocationCount 
 		return nil, 0, false
 	}
 	allocationCount, _ = memberMap["allocation_count"].(int)
-	return stringsFromInterfaceSlice(zonesRaw), allocationCount, true
+	zones = stringsFromInterfaceSlice(zonesRaw)
+	if len(zones) == 0 {
+		return nil, 0, false
+	}
+	return zones, allocationCount, true
 }

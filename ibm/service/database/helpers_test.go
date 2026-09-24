@@ -1018,7 +1018,6 @@ func TestMemberZonesFromDiff(t *testing.T) {
 	}
 	hashFn := schema.HashResource(membersResource)
 
-	// makeMembersSet builds a *schema.Set with a single memberMap element.
 	makeMembersSet := func(memberMap map[string]interface{}) *schema.Set {
 		return schema.NewSet(hashFn, []interface{}{memberMap})
 	}
@@ -1045,7 +1044,7 @@ func TestMemberZonesFromDiff(t *testing.T) {
 		require.False(t, ok)
 	})
 
-	t.Run("returns false when members value is not a *schema.Set", func(t *testing.T) {
+	t.Run("returns false when members is not a *schema.Set", func(t *testing.T) {
 		groupRaw := map[string]interface{}{
 			"group_id": "member",
 			"members":  []interface{}{},
@@ -1068,7 +1067,6 @@ func TestMemberZonesFromDiff(t *testing.T) {
 			"group_id": "member",
 			"members": makeMembersSet(map[string]interface{}{
 				"allocation_count": 3,
-				// member_zones key not present
 			}),
 		}
 		_, _, ok := memberZonesFromDiff(groupRaw)
@@ -1114,5 +1112,4 @@ func TestMemberZonesFromDiff(t *testing.T) {
 		require.Equal(t, []string{"us-south-1"}, zones)
 		require.Equal(t, 0, count)
 	})
-
 }
