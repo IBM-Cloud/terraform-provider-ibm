@@ -12,8 +12,10 @@ import (
 	"fmt"
 	"log"
 	"sort"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
@@ -502,7 +504,21 @@ func resourceIBMCdTektonPipelineTriggerRead(context context.Context, d *schema.R
 	getTektonPipelineTriggerOptions.SetPipelineID(parts[0])
 	getTektonPipelineTriggerOptions.SetTriggerID(parts[1])
 
-	triggerIntf, response, err := cdTektonPipelineClient.GetTektonPipelineTriggerWithContext(context, getTektonPipelineTriggerOptions)
+	var triggerIntf cdtektonpipelinev2.TriggerIntf
+	var response *core.DetailedResponse
+	err = resource.RetryContext(context, 10*time.Second, func() *resource.RetryError {
+		triggerIntf, response, err = cdTektonPipelineClient.GetTektonPipelineTriggerWithContext(context, getTektonPipelineTriggerOptions)
+		if err != nil || triggerIntf == nil {
+			if response != nil && response.StatusCode == 404 {
+				return resource.RetryableError(err)
+			}
+			return resource.NonRetryableError(err)
+		}
+		return nil
+	})
+	if conns.IsResourceTimeoutError(err) {
+		triggerIntf, response, err = cdTektonPipelineClient.GetTektonPipelineTriggerWithContext(context, getTektonPipelineTriggerOptions)
+	}
 	if err != nil {
 		if response != nil && response.StatusCode == 404 {
 			d.SetId("")
