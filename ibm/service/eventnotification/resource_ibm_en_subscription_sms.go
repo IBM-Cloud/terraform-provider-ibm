@@ -56,26 +56,41 @@ func ResourceIBMEnSMSSubscription() *schema.Resource {
 			"attributes": {
 				Type:     schema.TypeList,
 				MaxItems: 1,
-				Optional: true,
+				Required: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"invited": {
 							Type:        schema.TypeList,
 							Optional:    true,
-							Description: "The phone number to send the SMS to in case of sms_ibm. The email id in case of smtp_ibm destination type.",
+							Computed:    true,
+							Description: "The phone numbers to invite. Add a number by adding it to this list; remove a number by removing it from this list.",
+							Elem:        &schema.Schema{Type: schema.TypeString},
+						},
+						"subscribed": {
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "Phone numbers that have accepted the invitation and are currently subscribed. Populated by the service; read-only.",
+							Elem:        &schema.Schema{Type: schema.TypeString},
+						},
+						"unsubscribed": {
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "Phone numbers that have unsubscribed. Populated by the service; read-only.",
 							Elem:        &schema.Schema{Type: schema.TypeString},
 						},
 						"add": {
-							Type:        schema.TypeList,
-							Optional:    true,
-							Description: "The phone number to add in case of update to send the SMS to in case of sms_ibm.",
-							Elem:        &schema.Schema{Type: schema.TypeString},
+							Type:       schema.TypeList,
+							Optional:   true,
+							Computed:   true,
+							Deprecated: "Use invited to manage phone numbers.",
+							Elem:       &schema.Schema{Type: schema.TypeString},
 						},
 						"remove": {
-							Type:        schema.TypeList,
-							Optional:    true,
-							Description: "The phone number to remove in case of update to send the SMS to in case of sms_ibm. The email id in case of smtp_ibm destination type.",
-							Elem:        &schema.Schema{Type: schema.TypeString},
+							Type:       schema.TypeList,
+							Optional:   true,
+							Computed:   true,
+							Deprecated: "Use invited to manage phone numbers.",
+							Elem:       &schema.Schema{Type: schema.TypeString},
 						},
 					},
 				},
@@ -226,6 +241,12 @@ func resourceIBMEnSMSSubscriptionRead(context context.Context, d *schema.Resourc
 		return diag.FromErr(fmt.Errorf("[ERROR] Error setting updated_at: %s", err))
 	}
 
+	if result.Attributes != nil {
+		if err = d.Set("attributes", enSMSSubscriptionResourceFlattenAttributes(result.Attributes, d)); err != nil {
+			return diag.FromErr(fmt.Errorf("[ERROR] Error setting attributes: %s", err))
+		}
+	}
+
 	return nil
 }
 
@@ -255,7 +276,7 @@ func resourceIBMEnSMSSubscriptionUpdate(context context.Context, d *schema.Resou
 			options.SetDescription(d.Get("description").(string))
 		}
 
-		_, attributes := SMSattributesMapToAttributes(d.Get("attributes.0").(map[string]interface{}))
+		attributes := SMSattributesUpdateFromResourceData(d)
 		options.SetAttributes(&attributes)
 
 		_, _, err := enClient.UpdateSubscriptionWithContext(context, options)
@@ -316,26 +337,139 @@ func SMSattributesMapToAttributes(attributeMap map[string]interface{}) (en.Subsc
 			to = append(to, toItem.(string))
 		}
 		attributesCreate.Invited = to
-
-		updateTo := new(en.UpdateAttributesInvited)
-		if attributeMap["add"] != nil {
-			To := []string{}
-			for _, updateToitem := range attributeMap["add"].([]interface{}) {
-				To = append(To, updateToitem.(string))
-			}
-
-			updateTo.Add = To
-		}
-		if attributeMap["remove"] != nil {
-			rmsms := []string{}
-			for _, removeitem := range attributeMap["remove"].([]interface{}) {
-				rmsms = append(rmsms, removeitem.(string))
-			}
-
-			updateTo.Remove = rmsms
-		}
-		attributesUpdate.Invited = updateTo
 	}
 
 	return attributesCreate, attributesUpdate
+}
+
+// SMSattributesUpdateFromResourceData computes the update attributes for SMS subscriptions
+// using a set-diff on the invited list so that order changes never trigger a spurious API call.
+func SMSattributesUpdateFromResourceData(d *schema.ResourceData) en.SubscriptionUpdateAttributesSmsUpdateAttributes {
+	attributesUpdate := en.SubscriptionUpdateAttributesSmsUpdateAttributes{}
+
+	oldInvitedRaw, newInvitedRaw := d.GetChange("attributes.0.invited")
+	oldInvited := oldInvitedRaw.([]interface{})
+	newInvited := newInvitedRaw.([]interface{})
+
+	oldSet := toStringSet(oldInvited)
+	newSet := toStringSet(newInvited)
+
+	var invitedAdd, invitedRemove []string
+	for _, v := range newInvited {
+		if _, exists := oldSet[v.(string)]; !exists {
+			invitedAdd = append(invitedAdd, v.(string))
+		}
+	}
+	for _, v := range oldInvited {
+		if _, exists := newSet[v.(string)]; !exists {
+			invitedRemove = append(invitedRemove, v.(string))
+		}
+	}
+
+	if len(invitedAdd) > 0 || len(invitedRemove) > 0 {
+		invited := &en.UpdateAttributesInvited{}
+		if len(invitedAdd) > 0 {
+			invited.Add = invitedAdd
+		}
+		if len(invitedRemove) > 0 {
+			invited.Remove = invitedRemove
+		}
+		attributesUpdate.Invited = invited
+	}
+
+	return attributesUpdate
+}
+
+// add and remove are deprecated fields kept for customer-support use only.
+// The service never echoes them back, so we reflect the config value straight
+// into state — this keeps state == config and produces no plan diff as long as
+// the user has not changed the field. No API call is made for these fields.
+func enSMSSubscriptionResourceFlattenAttributes(result en.SubscriptionAttributesIntf, d *schema.ResourceData) []map[string]interface{} {
+	attributes := result.(*en.SubscriptionAttributes)
+
+	// Reflect add/remove config values back into state unchanged so Terraform
+	// sees no diff. Default to empty slice when nothing is set in config.
+	addVal := []string{}
+	if v, ok := d.GetOk("attributes.0.add"); ok {
+		for _, e := range v.([]interface{}) {
+			addVal = append(addVal, e.(string))
+		}
+	}
+	removeVal := []string{}
+	if v, ok := d.GetOk("attributes.0.remove"); ok {
+		for _, e := range v.([]interface{}) {
+			removeVal = append(removeVal, e.(string))
+		}
+	}
+
+	attrMap := map[string]interface{}{
+		"add":    addVal,
+		"remove": removeVal,
+	}
+
+	// Build a set of all phone numbers known on the service side.
+	knownOnService := map[string]struct{}{}
+	for _, item := range attributes.Invited {
+		if item.PhoneNumber != nil {
+			knownOnService[*item.PhoneNumber] = struct{}{}
+		}
+	}
+	for _, item := range attributes.Subscribed {
+		if item.PhoneNumber != nil {
+			knownOnService[*item.PhoneNumber] = struct{}{}
+		}
+	}
+	for _, item := range attributes.Unsubscribed {
+		if item.PhoneNumber != nil {
+			knownOnService[*item.PhoneNumber] = struct{}{}
+		}
+	}
+
+	// Write invited in config order to keep state == config order for TypeList.
+	seen := map[string]struct{}{}
+	invited := []string{}
+
+	if v, ok := d.GetOk("attributes.0.invited"); ok {
+		for _, e := range v.([]interface{}) {
+			phone := e.(string)
+			if _, onService := knownOnService[phone]; onService {
+				if _, already := seen[phone]; !already {
+					seen[phone] = struct{}{}
+					invited = append(invited, phone)
+				}
+			}
+		}
+	}
+
+	// Append pending-invite numbers not in config (e.g. invited outside Terraform).
+	for _, item := range attributes.Invited {
+		if item.PhoneNumber != nil {
+			if _, already := seen[*item.PhoneNumber]; !already {
+				seen[*item.PhoneNumber] = struct{}{}
+				invited = append(invited, *item.PhoneNumber)
+			}
+		}
+	}
+
+	attrMap["invited"] = invited
+
+	// Populate subscribed — read-only, directly from the API response.
+	subscribed := []string{}
+	for _, item := range attributes.Subscribed {
+		if item.PhoneNumber != nil {
+			subscribed = append(subscribed, *item.PhoneNumber)
+		}
+	}
+	attrMap["subscribed"] = subscribed
+
+	// Populate unsubscribed — read-only, directly from the API response.
+	unsubscribed := []string{}
+	for _, item := range attributes.Unsubscribed {
+		if item.PhoneNumber != nil {
+			unsubscribed = append(unsubscribed, *item.PhoneNumber)
+		}
+	}
+	attrMap["unsubscribed"] = unsubscribed
+
+	return []map[string]interface{}{attrMap}
 }

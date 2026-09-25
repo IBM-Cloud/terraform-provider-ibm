@@ -22,12 +22,12 @@ resource "ibm_en_subscription_custom_email" "production_email_subscription" {
   destination_id   = ibm_en_destination_custom_email.production_destination.destination_id
   topic_id         = ibm_en_topic.topic1.topic_id
   attributes {
-    add_notification_payload = true
-    reply_to_mail            = "support@example.com"
-    reply_to_name            = "Support Team"
-    from_name                = "Production Alerts"
-    from_email               = "alerts@example.com"
-    invited                  = ["user1@example.com", "user2@example.com"]
+    add_notification_payload  = true
+    reply_to_mail             = "support@example.com"
+    reply_to_name             = "Support Team"
+    from_name                 = "Production Alerts"
+    from_email                = "alerts@example.com"
+    invited                   = ["user1@example.com", "user2@example.com"]
   }
 }
 ```
@@ -66,8 +66,7 @@ resource "ibm_en_subscription_custom_email" "production_email_subscription" {
     reply_to_name            = "Support Team"
     from_name                = "Production Alerts"
     from_email               = "alerts@example.com"
-    add                      = ["newuser@example.com"]
-    remove                   = ["olduser@example.com"]
+    invited                  = ["existinguser@example.com", "newuser@example.com"]
   }
 }
 ```
@@ -91,7 +90,7 @@ When subscribing to a sandbox custom email destination (`is_sandbox = true`):
 ### Common Attributes (Both Types)
 - `reply_to_mail`: Email address for replies
 - `reply_to_name`: Name for reply-to field
-- `invited`: List of recipient email addresses
+- `invited`: List of recipient email addresses to manage. Add an address by adding it to this list; remove an address by removing it from this list.
 - `add_notification_payload`: Include notification payload in email
 - `template_id_notification`: Template for notifications (optional)
 - `template_id_invitation`: Template for invitations (optional)
@@ -102,41 +101,41 @@ Review the argument reference that you can specify for your resource.
 
 - `instance_guid` - (Required, Forces new resource, String) Unique identifier for IBM Cloud Event Notifications instance.
 
-- `name` - (Requires, String) Subscription name.
+- `name` - (Required, String) Subscription name.
 
 - `description` - (Optional, String) Subscription description.
 
-- `destination_id` - (Requires, String) Destination ID.
+- `destination_id` - (Required, Forces new resource, String) Destination ID.
 
-- `topic_id` - (Required, String) Topic ID.
+- `topic_id` - (Required, Forces new resource, String) Topic ID.
 
 - `attributes` - (Optional, List) Subscription attributes. The required attributes depend on the destination type (sandbox vs production).
 
   Nested scheme for **attributes**:
 
+  - `add_notification_payload` - (Optional, Boolean) Whether to include the notification payload in the email. Default is `false`.
+
   - `reply_to_name` - (Optional, String) The email user name to reply to.
 
   - `reply_to_mail` - (Optional, String) The email address to reply to.
 
-  - `from_name` - (Conditional, String) The user name from which email is addressed.
+  - `from_name` - (Conditional, String) The name of the email address from which email is sourced.
     - **Required** for production destinations (`is_sandbox = false`)
     - **Not used** for sandbox destinations (`is_sandbox = true`)
 
-  - `from_email` - (Conditional, String) The email address from which email is addressed. Must belong to the verified custom domain.
+  - `from_email` - (Conditional, String) The email address from which email is sourced. Must belong to the verified custom domain.
     - **Required** for production destinations (`is_sandbox = false`)
     - **Not used** for sandbox destinations (`is_sandbox = true`)
-
-  - `invited` - (Optional, List) The email addresses to send the email to.
-
-  - `add` - (Optional, List) The email addresses to add when updating the list of email addresses.
-
-  - `remove` - (Optional, List) The email addresses to remove from the subscription.
-
-  - `add_notification_payload` - (Optional, Boolean) Whether to include the notification payload in the email. Default is `false`.
 
   - `template_id_notification` - (Optional, String) The template ID for notification emails.
 
   - `template_id_invitation` - (Optional, String) The template ID for invitation emails.
+
+  - `invited` - (Optional, List) The email addresses to invite. Add an address by adding it to this list; remove an address by removing it from this list.
+
+  - `subscribed` - (Computed, List) Email addresses that have accepted the invitation and are currently subscribed. Populated by the service; read-only.
+
+  - `unsubscribed` - (Computed, List) Email addresses that have unsubscribed. Populated by the service; read-only.
 
 ## Attribute reference
 
@@ -145,6 +144,12 @@ In addition to all argument references listed, you can access the following attr
 - `id` - (String) The unique identifier of the `custom_domain_email_subscription`.
 
 - `subscription_id` - (String) The unique identifier of the created subscription.
+
+- `destination_type` - (String) The type of Destination.
+
+- `destination_name` - (String) The Destination name.
+
+- `topic_name` - (String) Name of the topic.
 
 - `updated_at` - (String) Last updated time.
 

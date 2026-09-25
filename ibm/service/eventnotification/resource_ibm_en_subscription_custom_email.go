@@ -57,7 +57,7 @@ func ResourceIBMEnCustomEmailSubscription() *schema.Resource {
 			"attributes": {
 				Type:     schema.TypeList,
 				MaxItems: 1,
-				Optional: true,
+				Required: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"add_notification_payload": {
@@ -98,20 +98,35 @@ func ResourceIBMEnCustomEmailSubscription() *schema.Resource {
 						"invited": {
 							Type:        schema.TypeList,
 							Optional:    true,
-							Description: "The Email address send the invite to in case of smtp_ibm.",
+							Computed:    true,
+							Description: "The email addresses to invite. Add an address by adding it to this list; remove an address by removing it from this list.",
+							Elem:        &schema.Schema{Type: schema.TypeString},
+						},
+						"subscribed": {
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "Email addresses that have accepted the invitation and are currently subscribed. Populated by the service; read-only.",
+							Elem:        &schema.Schema{Type: schema.TypeString},
+						},
+						"unsubscribed": {
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "Email addresses that have unsubscribed. Populated by the service; read-only.",
 							Elem:        &schema.Schema{Type: schema.TypeString},
 						},
 						"add": {
-							Type:        schema.TypeList,
-							Optional:    true,
-							Description: "The Email address which should be added to smtp_ibm.",
-							Elem:        &schema.Schema{Type: schema.TypeString},
+							Type:       schema.TypeList,
+							Optional:   true,
+							Computed:   true,
+							Deprecated: "Use invited to manage email addresses.",
+							Elem:       &schema.Schema{Type: schema.TypeString},
 						},
 						"remove": {
-							Type:        schema.TypeList,
-							Optional:    true,
-							Description: "The email id to be removed in case of smtp_ibm destination type.",
-							Elem:        &schema.Schema{Type: schema.TypeString},
+							Type:       schema.TypeList,
+							Optional:   true,
+							Computed:   true,
+							Deprecated: "Use invited to manage email addresses.",
+							Elem:       &schema.Schema{Type: schema.TypeString},
 						},
 					},
 				},
@@ -286,6 +301,12 @@ func resourceIBMEnCustomEmailSubscriptionRead(context context.Context, d *schema
 		return diag.FromErr(fmt.Errorf("[ERROR] Error setting updated_at: %s", err))
 	}
 
+	if result.Attributes != nil {
+		if err = d.Set("attributes", enCustomEmailSubscriptionResourceFlattenAttributes(result.Attributes, d)); err != nil {
+			return diag.FromErr(fmt.Errorf("[ERROR] Error setting attributes: %s", err))
+		}
+	}
+
 	return nil
 }
 
@@ -331,7 +352,7 @@ func resourceIBMEnCustomEmailSubscriptionUpdate(context context.Context, d *sche
 
 		log.Printf("[DEBUG] Calling CustomEmailattributesupdateMapToAttributes with isSandbox: %v", isSandbox)
 
-		attributes, err := CustomEmailattributesupdateMapToAttributes(d.Get("attributes.0").(map[string]interface{}), isSandbox)
+		attributes, err := CustomEmailattributesupdateMapToAttributes(d, isSandbox)
 		if err != nil {
 			log.Printf("[DEBUG] CustomEmailattributesupdateMapToAttributes failed: %s", err.Error())
 			return diag.FromErr(err)
@@ -462,23 +483,35 @@ func CustomEmailattributesMapToAttributes(attributeMap map[string]interface{}, i
 	return attributesCreate, nil
 }
 
-func CustomEmailattributesupdateMapToAttributes(attributeMap map[string]interface{}, isSandbox bool) (en.SubscriptionUpdateAttributesIntf, error) {
-	// Common attributes
-	addemail := new(en.UpdateAttributesInvited)
-	if attributeMap["add"] != nil {
-		to := []string{}
-		for _, toItem := range attributeMap["add"].([]interface{}) {
-			to = append(to, toItem.(string))
+func CustomEmailattributesupdateMapToAttributes(d *schema.ResourceData, isSandbox bool) (en.SubscriptionUpdateAttributesIntf, error) {
+	attributeMap := d.Get("attributes.0").(map[string]interface{})
+
+	// invited: compute Add/Remove as a pure set-diff between old state and new config,
+	oldInvitedRaw, newInvitedRaw := d.GetChange("attributes.0.invited")
+	oldInvited := oldInvitedRaw.([]interface{})
+	newInvited := newInvitedRaw.([]interface{})
+
+	oldInvitedSet := toStringSet(oldInvited)
+	newInvitedSet := toStringSet(newInvited)
+
+	var invitedAdd, invitedRemove []string
+	for _, v := range newInvited {
+		if _, exists := oldInvitedSet[v.(string)]; !exists {
+			invitedAdd = append(invitedAdd, v.(string))
 		}
-		addemail.Add = to
+	}
+	for _, v := range oldInvited {
+		if _, exists := newInvitedSet[v.(string)]; !exists {
+			invitedRemove = append(invitedRemove, v.(string))
+		}
 	}
 
-	if attributeMap["remove"] != nil {
-		rmemail := []string{}
-		for _, removeitem := range attributeMap["remove"].([]interface{}) {
-			rmemail = append(rmemail, removeitem.(string))
-		}
-		addemail.Remove = rmemail
+	addemail := &en.UpdateAttributesInvited{}
+	if len(invitedAdd) > 0 {
+		addemail.Add = invitedAdd
+	}
+	if len(invitedRemove) > 0 {
+		addemail.Remove = invitedRemove
 	}
 
 	addNotificationPayload := false
@@ -496,10 +529,15 @@ func CustomEmailattributesupdateMapToAttributes(attributeMap map[string]interfac
 		replyToName = attributeMap["reply_to_name"].(string)
 	}
 
+	// Only set Invited on the struct when there is actually something to Add or Remove.
+	var invitedPtr *en.UpdateAttributesInvited
+	if len(invitedAdd) > 0 || len(invitedRemove) > 0 {
+		invitedPtr = addemail
+	}
+
 	if isSandbox {
-		// Sandbox destination - use SubscriptionUpdateAttributesCustomEmailSandboxUpdateAttributes
 		updateattributes := &en.SubscriptionUpdateAttributesCustomEmailSandboxUpdateAttributes{
-			Invited:                addemail,
+			Invited:                invitedPtr,
 			AddNotificationPayload: core.BoolPtr(addNotificationPayload),
 			ReplyToMail:            core.StringPtr(replyToMail),
 			ReplyToName:            core.StringPtr(replyToName),
@@ -516,9 +554,8 @@ func CustomEmailattributesupdateMapToAttributes(attributeMap map[string]interfac
 		return updateattributes, nil
 	}
 
-	// Production destination - use SubscriptionUpdateAttributesCustomEmailUpdateAttributes
 	updateattributes := &en.SubscriptionUpdateAttributesCustomEmailUpdateAttributes{
-		Invited:                addemail,
+		Invited:                invitedPtr,
 		AddNotificationPayload: core.BoolPtr(addNotificationPayload),
 		ReplyToMail:            core.StringPtr(replyToMail),
 		ReplyToName:            core.StringPtr(replyToName),
@@ -541,4 +578,120 @@ func CustomEmailattributesupdateMapToAttributes(attributeMap map[string]interfac
 	}
 
 	return updateattributes, nil
+}
+
+// add and remove are deprecated fields kept for customer-support use only.
+// The service never echoes them back, so we reflect the config value straight
+// into state — this keeps state == config and produces no plan diff as long as
+// the user has not changed the field. No API call is made for these fields.
+func enCustomEmailSubscriptionResourceFlattenAttributes(result en.SubscriptionAttributesIntf, d *schema.ResourceData) []map[string]interface{} {
+	attributes := result.(*en.SubscriptionAttributes)
+
+	// Reflect add/remove config values back into state unchanged so Terraform
+	// sees no diff. Default to empty slice when nothing is set in config.
+	addVal := []string{}
+	if v, ok := d.GetOk("attributes.0.add"); ok {
+		for _, e := range v.([]interface{}) {
+			addVal = append(addVal, e.(string))
+		}
+	}
+	removeVal := []string{}
+	if v, ok := d.GetOk("attributes.0.remove"); ok {
+		for _, e := range v.([]interface{}) {
+			removeVal = append(removeVal, e.(string))
+		}
+	}
+
+	attrMap := map[string]interface{}{
+		"add":    addVal,
+		"remove": removeVal,
+	}
+
+	if attributes.AddNotificationPayload != nil {
+		attrMap["add_notification_payload"] = *attributes.AddNotificationPayload
+	}
+	if attributes.ReplyToMail != nil {
+		attrMap["reply_to_mail"] = *attributes.ReplyToMail
+	}
+	if attributes.ReplyToName != nil {
+		attrMap["reply_to_name"] = *attributes.ReplyToName
+	}
+	if attributes.FromName != nil {
+		attrMap["from_name"] = *attributes.FromName
+	}
+	if attributes.FromEmail != nil {
+		attrMap["from_email"] = *attributes.FromEmail
+	}
+	if attributes.TemplateIDNotification != nil {
+		attrMap["template_id_notification"] = *attributes.TemplateIDNotification
+	}
+	if attributes.TemplateIDInvitation != nil {
+		attrMap["template_id_invitation"] = *attributes.TemplateIDInvitation
+	}
+
+	// Build a set of all emails known on the service side (pending, subscribed, unsubscribed).
+	knownOnService := map[string]struct{}{}
+	for _, item := range attributes.Invited {
+		if item.Email != nil {
+			knownOnService[*item.Email] = struct{}{}
+		}
+	}
+	for _, item := range attributes.Subscribed {
+		if item.Email != nil {
+			knownOnService[*item.Email] = struct{}{}
+		}
+	}
+	for _, item := range attributes.Unsubscribed {
+		if item.Email != nil {
+			knownOnService[*item.Email] = struct{}{}
+		}
+	}
+
+	// Write invited in config order to keep state == config order for TypeList.
+	seen := map[string]struct{}{}
+	invited := []string{}
+
+	if v, ok := d.GetOk("attributes.0.invited"); ok {
+		for _, e := range v.([]interface{}) {
+			email := e.(string)
+			if _, onService := knownOnService[email]; onService {
+				if _, already := seen[email]; !already {
+					seen[email] = struct{}{}
+					invited = append(invited, email)
+				}
+			}
+		}
+	}
+
+	// Append pending-invite emails not in config (e.g. invited outside Terraform).
+	for _, item := range attributes.Invited {
+		if item.Email != nil {
+			if _, already := seen[*item.Email]; !already {
+				seen[*item.Email] = struct{}{}
+				invited = append(invited, *item.Email)
+			}
+		}
+	}
+
+	attrMap["invited"] = invited
+
+	// Populate subscribed — read-only, directly from the API response.
+	subscribed := []string{}
+	for _, item := range attributes.Subscribed {
+		if item.Email != nil {
+			subscribed = append(subscribed, *item.Email)
+		}
+	}
+	attrMap["subscribed"] = subscribed
+
+	// Populate unsubscribed — read-only, directly from the API response.
+	unsubscribed := []string{}
+	for _, item := range attributes.Unsubscribed {
+		if item.Email != nil {
+			unsubscribed = append(unsubscribed, *item.Email)
+		}
+	}
+	attrMap["unsubscribed"] = unsubscribed
+
+	return []map[string]interface{}{attrMap}
 }
