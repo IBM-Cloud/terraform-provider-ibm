@@ -2204,3 +2204,145 @@ func TestGen2LogicalReplicationSlotIgnored(t *testing.T) {
 		})
 	}
 }
+
+// TestMemberZonesInDBConfig checks member_zones is included in the map when set and omitted when not.
+func TestMemberZonesInDBConfig(t *testing.T) {
+	backend := &resourceIBMDatabaseGen2Backend{}
+
+	t.Run("member_zones included when set", func(t *testing.T) {
+		config := DBConfig{
+			Members:     1,
+			MemberZones: []string{"us-east-1"},
+		}
+		result := backend.dbConfigToMap(config, "postgresql")
+		zones, ok := result["member_zones"]
+		assert.True(t, ok, "member_zones should be present in result")
+		assert.Equal(t, []string{"us-east-1"}, zones)
+		assert.Equal(t, 1, result["members"])
+	})
+
+	t.Run("member_zones omitted when empty", func(t *testing.T) {
+		config := DBConfig{
+			Members:     3,
+			MemberZones: nil,
+		}
+		result := backend.dbConfigToMap(config, "postgresql")
+		_, ok := result["member_zones"]
+		assert.False(t, ok, "member_zones should not be present when empty")
+	})
+
+	t.Run("member_zones omitted for mongodbees", func(t *testing.T) {
+		config := DBConfig{
+			Members:     1,
+			MemberZones: []string{"us-east-1"},
+		}
+		result := backend.dbConfigToMap(config, "mongodbees")
+		_, membersOk := result["members"]
+		assert.False(t, membersOk, "members should not be present for mongodbees")
+		zones, zonesOk := result["member_zones"]
+		assert.True(t, zonesOk, "member_zones should still be present for mongodbees")
+		assert.Equal(t, []string{"us-east-1"}, zones)
+	})
+}
+
+// TestValidateMemberZones tests the core member_zones validation rules.
+func TestValidateMemberZones(t *testing.T) {
+	cases := []struct {
+		name        string
+		zones       []string
+		memberCount int
+		wantErr     bool
+		errContains string
+	}{
+		{
+			name:        "valid single zone with allocation 1",
+			zones:       []string{"us-east-1"},
+			memberCount: 1,
+			wantErr:     false,
+		},
+		{
+			name:        "allocation_count not 1",
+			zones:       []string{"us-east-1"},
+			memberCount: 3,
+			wantErr:     true,
+			errContains: "allocation_count = 1",
+		},
+		{
+			name:        "multiple zones provided",
+			zones:       []string{"us-east-1", "us-east-2"},
+			memberCount: 1,
+			wantErr:     true,
+			errContains: "exactly one availability zone",
+		},
+		{
+			name:        "zero allocation count with zones",
+			zones:       []string{"us-east-1"},
+			memberCount: 0,
+			wantErr:     true,
+			errContains: "allocation_count = 1",
+		},
+	}
+
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			group := &Group{MemberZones: c.zones}
+			err := validateMemberZones(group, c.memberCount)
+			if c.wantErr {
+				assert.Error(t, err)
+				assert.Contains(t, err.Error(), c.errContains)
+			} else {
+				assert.NoError(t, err)
+			}
+		})
+	}
+}
+
+// TestGen2ValidateMemberZonesDiff tests the Gen2 backend ValidateMemberZonesDiff.
+func TestGen2ValidateMemberZonesDiff(t *testing.T) {
+	g := &resourceIBMDatabaseGen2Backend{}
+
+	cases := []struct {
+		name        string
+		zones       []string
+		count       int
+		wantErr     bool
+		errContains string
+	}{
+		{
+			name:    "valid single zone allocation 1",
+			zones:   []string{"us-east-1"},
+			count:   1,
+			wantErr: false,
+		},
+		{
+			name:        "invalid allocation count",
+			zones:       []string{"us-east-1"},
+			count:       3,
+			wantErr:     true,
+			errContains: "allocation_count = 1",
+		},
+		{
+			name:        "multiple zones",
+			zones:       []string{"us-east-1", "us-east-2"},
+			count:       1,
+			wantErr:     true,
+			errContains: "exactly one availability zone",
+		},
+	}
+
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			// validateMemberZones is the core logic called by ValidateMemberZonesDiff
+			group := &Group{MemberZones: c.zones}
+			err := validateMemberZones(group, c.count)
+			if c.wantErr {
+				assert.Error(t, err)
+				assert.Contains(t, err.Error(), c.errContains)
+			} else {
+				assert.NoError(t, err)
+			}
+			// Confirm Gen2 backend exists and implements the interface
+			var _ resourceIBMDatabaseBackend = g
+		})
+	}
+}

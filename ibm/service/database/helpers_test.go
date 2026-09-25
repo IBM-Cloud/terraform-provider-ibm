@@ -950,3 +950,166 @@ func TestGetInstancesNext(t *testing.T) {
 		})
 	}
 }
+
+func TestExtractDatabaseAllocations_MemberZones(t *testing.T) {
+	resourceID := "databases-for-postgresql"
+
+	// Mirrors the RC API GET response — all fields including member_zones live under
+	// extensions.dataservices.<dbType> for production standard-gen2 instances.
+	makeExtensions := func(memberZones []interface{}) map[string]interface{} {
+		pg := map[string]interface{}{
+			"members":     float64(1),
+			"cpu_count":   float64(4),
+			"memory_gb":   float64(16),
+			"storage_gb":  float64(10),
+			"host_flavor": "bxf.4x16",
+		}
+		if memberZones != nil {
+			pg["member_zones"] = memberZones
+		}
+		return map[string]interface{}{
+			"dataservices": map[string]interface{}{
+				"postgresql": pg,
+			},
+		}
+	}
+
+	t.Run("member_zones read from dataservices path", func(t *testing.T) {
+		ext := makeExtensions([]interface{}{"us-east-2"})
+		alloc := extractDatabaseAllocations(ext, resourceID)
+		require.Equal(t, []string{"us-east-2"}, alloc.memberZones)
+		require.Equal(t, int64(1), alloc.members)
+		require.Equal(t, "bxf.4x16", alloc.hostFlavorID)
+		require.Equal(t, float64(16), alloc.memoryGB)
+	})
+
+	t.Run("member_zones absent for normal multi-member database", func(t *testing.T) {
+		ext := map[string]interface{}{
+			"dataservices": map[string]interface{}{
+				"postgresql": map[string]interface{}{
+					"members": float64(3),
+				},
+			},
+		}
+		alloc := extractDatabaseAllocations(ext, resourceID)
+		require.Nil(t, alloc.memberZones)
+		require.Equal(t, int64(3), alloc.members)
+	})
+
+	t.Run("empty extensions returns zero alloc", func(t *testing.T) {
+		alloc := extractDatabaseAllocations(map[string]interface{}{}, resourceID)
+		require.Equal(t, int64(0), alloc.members)
+		require.Nil(t, alloc.memberZones)
+	})
+}
+
+// TestMemberZonesFromDiff covers all branches of memberZonesFromDiff.
+func TestMemberZonesFromDiff(t *testing.T) {
+	// membersResource mirrors the "members" TypeSet elem declared in the real schema.
+	membersResource := &schema.Resource{
+		Schema: map[string]*schema.Schema{
+			"allocation_count": {Type: schema.TypeInt, Required: true},
+			"member_zones": {
+				Type:     schema.TypeList,
+				Optional: true,
+				Elem:     &schema.Schema{Type: schema.TypeString},
+			},
+		},
+	}
+	hashFn := schema.HashResource(membersResource)
+
+	makeMembersSet := func(memberMap map[string]interface{}) *schema.Set {
+		return schema.NewSet(hashFn, []interface{}{memberMap})
+	}
+
+	t.Run("returns false when groupRaw is not a map", func(t *testing.T) {
+		_, _, ok := memberZonesFromDiff("not-a-map")
+		require.False(t, ok)
+	})
+
+	t.Run("returns false when groupRaw is nil", func(t *testing.T) {
+		_, _, ok := memberZonesFromDiff(nil)
+		require.False(t, ok)
+	})
+
+	t.Run("returns false when group_id is not 'member'", func(t *testing.T) {
+		groupRaw := map[string]interface{}{
+			"group_id": "analytics",
+			"members": makeMembersSet(map[string]interface{}{
+				"allocation_count": 1,
+				"member_zones":     []interface{}{"us-east-1"},
+			}),
+		}
+		_, _, ok := memberZonesFromDiff(groupRaw)
+		require.False(t, ok)
+	})
+
+	t.Run("returns false when members is not a *schema.Set", func(t *testing.T) {
+		groupRaw := map[string]interface{}{
+			"group_id": "member",
+			"members":  []interface{}{},
+		}
+		_, _, ok := memberZonesFromDiff(groupRaw)
+		require.False(t, ok)
+	})
+
+	t.Run("returns false when members set is empty", func(t *testing.T) {
+		groupRaw := map[string]interface{}{
+			"group_id": "member",
+			"members":  schema.NewSet(hashFn, []interface{}{}),
+		}
+		_, _, ok := memberZonesFromDiff(groupRaw)
+		require.False(t, ok)
+	})
+
+	t.Run("returns false when member_zones is absent", func(t *testing.T) {
+		groupRaw := map[string]interface{}{
+			"group_id": "member",
+			"members": makeMembersSet(map[string]interface{}{
+				"allocation_count": 3,
+			}),
+		}
+		_, _, ok := memberZonesFromDiff(groupRaw)
+		require.False(t, ok)
+	})
+
+	t.Run("returns false when member_zones is an empty slice", func(t *testing.T) {
+		groupRaw := map[string]interface{}{
+			"group_id": "member",
+			"members": makeMembersSet(map[string]interface{}{
+				"allocation_count": 3,
+				"member_zones":     []interface{}{},
+			}),
+		}
+		_, _, ok := memberZonesFromDiff(groupRaw)
+		require.False(t, ok)
+	})
+
+	t.Run("extracts zones and allocation_count for member group", func(t *testing.T) {
+		groupRaw := map[string]interface{}{
+			"group_id": "member",
+			"members": makeMembersSet(map[string]interface{}{
+				"allocation_count": 1,
+				"member_zones":     []interface{}{"us-east-1"},
+			}),
+		}
+		zones, count, ok := memberZonesFromDiff(groupRaw)
+		require.True(t, ok)
+		require.Equal(t, []string{"us-east-1"}, zones)
+		require.Equal(t, 1, count)
+	})
+
+	t.Run("allocation_count zero is returned as-is when zones are present", func(t *testing.T) {
+		groupRaw := map[string]interface{}{
+			"group_id": "member",
+			"members": makeMembersSet(map[string]interface{}{
+				"allocation_count": 0,
+				"member_zones":     []interface{}{"us-south-1"},
+			}),
+		}
+		zones, count, ok := memberZonesFromDiff(groupRaw)
+		require.True(t, ok)
+		require.Equal(t, []string{"us-south-1"}, zones)
+		require.Equal(t, 0, count)
+	})
+}

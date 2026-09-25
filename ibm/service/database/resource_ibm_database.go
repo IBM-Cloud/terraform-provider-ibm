@@ -140,6 +140,7 @@ type resourceIBMDatabaseBackend interface {
 	WarnUnsupported(context context.Context, d *schema.ResourceData) diag.Diagnostics
 	ValidateUnsupportedAttrsDiff(context context.Context, d *schema.ResourceDiff, meta interface{}) error
 	ValidateGroupsDiff(context context.Context, d *schema.ResourceDiff, meta interface{}) error
+	ValidateMemberZonesDiff(context context.Context, d *schema.ResourceDiff, meta interface{}) error
 	ValidateServiceEndpointsDiff(context context.Context, d *schema.ResourceDiff, meta interface{}) error
 }
 
@@ -181,6 +182,7 @@ func ResourceIBMDatabaseInstance() *schema.Resource {
 			validateUnsupportedAttrsDiff,
 			resourceIBMDatabaseInstanceDiff,
 			validateBackendSpecificGroupsDiff,
+			validateGen2SpecificMemberZonesDiff,
 			validateUsersDiff,
 			validateRemoteLeaderIDDiff,
 			validateVersionDiff,
@@ -471,6 +473,13 @@ func ResourceIBMDatabaseInstance() *schema.Resource {
 										Type:     schema.TypeInt,
 										Required: true,
 									},
+									"member_zones": {
+										Type:     schema.TypeList,
+										Optional: true,
+										Elem: &schema.Schema{
+											Type: schema.TypeString,
+										},
+									},
 								},
 							},
 						},
@@ -685,6 +694,14 @@ func ResourceIBMDatabaseInstance() *schema.Resource {
 									},
 								},
 							},
+						},
+						"member_zones": {
+							Type:     schema.TypeList,
+							Computed: true,
+							Elem: &schema.Schema{
+								Type: schema.TypeString,
+							},
+							Description: "Availability zones for a single-member deployment. Gen2 only.",
 						},
 						"host_flavor": {
 							Type:     schema.TypeList,
@@ -951,14 +968,14 @@ func ResourceIBMICDValidator() *validate.ResourceValidator {
 			Identifier:                 "service",
 			ValidateFunctionIdentifier: validate.ValidateAllowedStringValue,
 			Type:                       validate.TypeString,
-			AllowedValues:              "databases-for-etcd, databases-for-postgresql, databases-for-redis, databases-for-valkey, databases-for-valkey-cdp-dev, databases-for-elasticsearch, databases-for-mongodb, messages-for-rabbitmq, databases-for-mysql, databases-for-enterprisedb",
+			AllowedValues:              "databases-for-etcd, databases-for-postgresql, databases-for-redis, databases-for-valkey, databases-for-valkey-cdp-dev, databases-for-elasticsearch, databases-for-mongodb, messages-for-rabbitmq, databases-for-mysql, databases-for-enterprisedb, databases-for-redis-cdp-dev, databases-for-postgresql-cdp-dev, databases-for-elasticsearch-cdp-dev",
 			Required:                   true})
 	validateSchema = append(validateSchema,
 		validate.ValidateSchema{
 			Identifier:                 "plan",
 			ValidateFunctionIdentifier: validate.ValidateAllowedICDPlanValue,
 			Type:                       validate.TypeString,
-			AllowedValues:              "standard, standard-gen2, enterprise, enterprise-gen2, enterprise-sharding, enterprise-sharding-gen2, platinum",
+			AllowedValues:              "standard, standard-gen2, enterprise, enterprise-gen2, enterprise-sharding, enterprise-sharding-gen2, platinum, databases-for-redis-cdp-dev-standard, databases-for-elasticsearch-cdp-dev-enterprise, databases-for-postgresql-cdp-dev-standard",
 			Required:                   true})
 	validateSchema = append(validateSchema,
 		validate.ValidateSchema{
@@ -998,12 +1015,13 @@ type Params struct {
 }
 
 type Group struct {
-	ID         string
-	Members    *GroupResource
-	Memory     *GroupResource
-	Disk       *GroupResource
-	CPU        *GroupResource
-	HostFlavor *HostFlavorGroupResource
+	ID          string
+	Members     *GroupResource
+	MemberZones []string
+	Memory      *GroupResource
+	Disk        *GroupResource
+	CPU         *GroupResource
+	HostFlavor  *HostFlavorGroupResource
 }
 
 type GroupResource struct {
@@ -2892,7 +2910,12 @@ func expandGroups(_groups []interface{}) []*Group {
 			if membersSet, ok := tfGroup["members"].(*schema.Set); ok {
 				members := membersSet.List()
 				if len(members) != 0 {
-					group.Members = &GroupResource{Allocation: members[0].(map[string]interface{})["allocation_count"].(int)}
+					if memberMap, ok := members[0].(map[string]interface{}); ok {
+						group.Members = &GroupResource{Allocation: memberMap["allocation_count"].(int)}
+						if zonesRaw, ok := memberMap["member_zones"].([]interface{}); ok && len(zonesRaw) > 0 {
+							group.MemberZones = stringsFromInterfaceSlice(zonesRaw)
+						}
+					}
 				}
 			}
 
@@ -3032,6 +3055,10 @@ func publicServiceEndpointsWarning() diag.Diagnostics {
 
 func validateBackendSpecificGroupsDiff(context context.Context, diff *schema.ResourceDiff, meta interface{}) error {
 	return pickResourceBackendFromDiff(diff).ValidateGroupsDiff(context, diff, meta)
+}
+
+func validateGen2SpecificMemberZonesDiff(context context.Context, diff *schema.ResourceDiff, meta interface{}) error {
+	return pickResourceBackendFromDiff(diff).ValidateMemberZonesDiff(context, diff, meta)
 }
 
 func validateGroupsDiffClassic(_ context.Context, diff *schema.ResourceDiff, meta interface{}) (err error) {

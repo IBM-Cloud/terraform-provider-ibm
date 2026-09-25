@@ -61,10 +61,11 @@ const (
 // DBConfig represents database-specific configuration for Gen2 parameters.
 // Replaces map[string]interface{} for type safety and compile-time validation.
 type DBConfig struct {
-	Version    string `json:"version,omitempty"`
-	Members    int    `json:"members"`
-	StorageGB  int    `json:"storage_gb,omitempty"`
-	HostFlavor string `json:"host_flavor,omitempty"`
+	Version     string   `json:"version,omitempty"`
+	Members     int      `json:"members"`
+	MemberZones []string `json:"member_zones,omitempty"`
+	StorageGB   int      `json:"storage_gb,omitempty"`
+	HostFlavor  string   `json:"host_flavor,omitempty"`
 }
 
 // instanceConfigContext encapsulates shared context for instance configuration steps.
@@ -413,6 +414,14 @@ func (g *resourceIBMDatabaseGen2Backend) buildDBConfig(d *schema.ResourceData, c
 		config.HostFlavor = memberGroup.HostFlavor.ID
 	}
 
+	// member_zones is only valid when members == 1 and must have exactly one entry.
+	if memberGroup != nil && len(memberGroup.MemberZones) > 0 {
+		if err := validateMemberZones(memberGroup, config.Members); err != nil {
+			return nil, err
+		}
+		config.MemberZones = memberGroup.MemberZones
+	}
+
 	// Build the result map and inject configuration overrides.
 	// addConfigurationOverrides is independent of memberGroup — called once here.
 	result := g.dbConfigToMap(config, dbType)
@@ -448,6 +457,10 @@ func (g *resourceIBMDatabaseGen2Backend) dbConfigToMap(config DBConfig, dbType s
 	}
 	if dbType != "mongodbees" {
 		result["members"] = config.Members
+	}
+	// Only include member_zones when set — omitted for standard multi-member deployments
+	if len(config.MemberZones) > 0 {
+		result["member_zones"] = config.MemberZones
 	}
 	if config.StorageGB > 0 {
 		result["storage_gb"] = config.StorageGB
@@ -1138,12 +1151,15 @@ func (g *resourceIBMDatabaseGen2Backend) ValidateUnsupportedAttrsDiff(ctx contex
 }
 
 func (g *resourceIBMDatabaseGen2Backend) ValidateGroupsDiff(ctx context.Context, d *schema.ResourceDiff, meta interface{}) error {
-	group, ok := d.GetOk("group")
-	if !ok {
+	// Use the new (proposed) value from the diff so validation always sees what
+	// Terraform intends to apply, regardless of whether this is a create or update.
+	_, newGroupRaw := d.GetChange("group")
+	newGroupSet, ok := newGroupRaw.(*schema.Set)
+	if !ok || newGroupSet.Len() == 0 {
 		return nil
 	}
 
-	groups := expandGroups(group.(*schema.Set).List())
+	groups := expandGroups(newGroupSet.List())
 	groupIDs := make([]string, 0, len(groups))
 	for _, group := range groups {
 		groupIDs = append(groupIDs, group.ID)
@@ -1203,6 +1219,78 @@ func (g *resourceIBMDatabaseGen2Backend) ValidateGroupsDiff(ctx context.Context,
 		}
 	}
 
+	return nil
+}
+
+// ValidateMemberZonesDiff validates member_zones rules at plan time for Gen2 instances.
+// Uses GetRawConfig to read the proposed config value directly, which is always the
+// new value regardless of whether this is a create or update.
+func (g *resourceIBMDatabaseGen2Backend) ValidateMemberZonesDiff(_ context.Context, d *schema.ResourceDiff, _ interface{}) error {
+	raw := d.GetRawConfig()
+	if raw.IsNull() || !raw.IsKnown() {
+		return nil
+	}
+
+	groupsVal := raw.GetAttr("group")
+	if groupsVal.IsNull() || !groupsVal.IsKnown() {
+		return nil
+	}
+
+	it := groupsVal.ElementIterator()
+	for it.Next() {
+		_, groupVal := it.Element()
+		if groupVal.IsNull() || !groupVal.IsKnown() {
+			continue
+		}
+
+		groupIDVal := groupVal.GetAttr("group_id")
+		if groupIDVal.IsNull() || !groupIDVal.IsKnown() || groupIDVal.AsString() != defaultGroupID {
+			continue
+		}
+
+		membersVal := groupVal.GetAttr("members")
+		if membersVal.IsNull() || !membersVal.IsKnown() || membersVal.LengthInt() == 0 {
+			continue
+		}
+
+		mit := membersVal.ElementIterator()
+		if !mit.Next() {
+			continue
+		}
+		_, memberVal := mit.Element()
+		if memberVal.IsNull() || !memberVal.IsKnown() {
+			continue
+		}
+
+		zonesVal := memberVal.GetAttr("member_zones")
+		if zonesVal.IsNull() || !zonesVal.IsKnown() || zonesVal.LengthInt() == 0 {
+			continue
+		}
+
+		var zones []string
+		zit := zonesVal.ElementIterator()
+		for zit.Next() {
+			_, zv := zit.Element()
+			if !zv.IsNull() && zv.IsKnown() {
+				zones = append(zones, zv.AsString())
+			}
+		}
+		if len(zones) == 0 {
+			continue
+		}
+
+		allocVal := memberVal.GetAttr("allocation_count")
+		allocationCount := 0
+		if !allocVal.IsNull() && allocVal.IsKnown() {
+			bf := allocVal.AsBigFloat()
+			n, _ := bf.Int64()
+			allocationCount = int(n)
+		}
+
+		if err := validateMemberZones(&Group{MemberZones: zones}, allocationCount); err != nil {
+			return err
+		}
+	}
 	return nil
 }
 

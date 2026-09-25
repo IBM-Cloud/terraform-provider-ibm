@@ -141,8 +141,17 @@ func isAttrConfiguredInDiff(d *schema.ResourceDiff, k string) bool {
 }
 
 func isGen2Plan(plan string) bool {
+	p := strings.ToLower(plan)
 	gen2Pattern := regexp.MustCompile(`-gen2($|-.+)`)
-	return gen2Pattern.MatchString(strings.ToLower(plan))
+	if gen2Pattern.MatchString(p) {
+		return true
+	}
+	gen2DevPlans := map[string]bool{
+		"databases-for-redis-cdp-dev-standard":           true,
+		"databases-for-elasticsearch-cdp-dev-enterprise": true,
+		"databases-for-postgresql-cdp-dev-standard":      true,
+	}
+	return gen2DevPlans[p]
 }
 
 // instanceCRNFromCoupledBackupCRN extracts the source instance CRN from a
@@ -352,12 +361,13 @@ func flattenIcdGroupsFromInstanceAndCatalog(instance map[string]interface{}, cat
 		}
 
 		group := map[string]interface{}{
-			"group_id":    groupID,
-			"count":       count,
-			"memory":      buildMemoryConfig(resourceMap, allocations.memoryGB),
-			"cpu":         buildCPUConfig(resourceMap, allocations.cpuCount),
-			"disk":        buildDiskConfig(resourceMap, allocations.storageGB),
-			"host_flavor": buildHostFlavorConfig(allocations.hostFlavorID),
+			"group_id":     groupID,
+			"count":        count,
+			"memory":       buildMemoryConfig(resourceMap, allocations.memoryGB),
+			"cpu":          buildCPUConfig(resourceMap, allocations.cpuCount),
+			"disk":         buildDiskConfig(resourceMap, allocations.storageGB),
+			"member_zones": allocations.memberZones,
+			"host_flavor":  buildHostFlavorConfig(allocations.hostFlavorID),
 		}
 		groups = append(groups, group)
 	}
@@ -372,10 +382,11 @@ type databaseAllocations struct {
 	memoryGB     float64
 	storageGB    float64
 	members      int64
+	memberZones  []string
 	hostFlavorID string
 }
 
-// extractDatabaseAllocations extracts allocation values from instance extensions for a specific database type
+// extractDatabaseAllocations extracts allocation values from instance extensions for a specific database type.
 func extractDatabaseAllocations(instance map[string]interface{}, resourceID string) databaseAllocations {
 	var alloc databaseAllocations
 
@@ -408,6 +419,9 @@ func extractDatabaseAllocations(instance map[string]interface{}, resourceID stri
 	}
 	if flavor, ok := dbTypeData["host_flavor"].(string); ok {
 		alloc.hostFlavorID = flavor
+	}
+	if zonesRaw, ok := dbTypeData["member_zones"].([]interface{}); ok {
+		alloc.memberZones = stringsFromInterfaceSlice(zonesRaw)
 	}
 
 	return alloc
@@ -977,4 +991,69 @@ func extractGen2BackupExtensions(extensions map[string]interface{}) (sourceDataS
 		backupType = v
 	}
 	return
+}
+
+// validateMemberZones checks that member_zones has allocation_count=1 and exactly one zone.
+func validateMemberZones(group *Group, memberCount int) error {
+	if memberCount != 1 {
+		return fmt.Errorf(
+			"Invalid group configuration: member_zones requires allocation_count = 1, but %d was provided.\n"+
+				"To deploy a single member in a specific availability zone, set:\n"+
+				"  members {\n"+
+				"    allocation_count = 1\n"+
+				"    member_zones     = [\"<zone>\"]\n"+
+				"  }",
+			memberCount,
+		)
+	}
+	if len(group.MemberZones) != 1 {
+		zones := make([]string, 0, len(group.MemberZones))
+		for _, z := range group.MemberZones {
+			zones = append(zones, fmt.Sprintf("%q", z))
+		}
+		return fmt.Errorf(
+			"Invalid group configuration: member_zones must contain exactly one availability zone, but %d were provided [%s].\n"+
+				"Please specify a single availability zone.",
+			len(group.MemberZones),
+			strings.Join(zones, ", "),
+		)
+	}
+	return nil
+}
+
+// stringsFromInterfaceSlice converts []interface{} to []string, skipping non-string elements.
+func stringsFromInterfaceSlice(in []interface{}) []string {
+	out := make([]string, 0, len(in))
+	for _, v := range in {
+		if s, ok := v.(string); ok {
+			out = append(out, s)
+		}
+	}
+	return out
+}
+
+// memberZonesFromDiff reads member_zones and allocation_count from a raw diff group map.
+func memberZonesFromDiff(groupRaw interface{}) (zones []string, allocationCount int, ok bool) {
+	tfGroup, ok := groupRaw.(map[string]interface{})
+	if !ok || tfGroup["group_id"].(string) != defaultGroupID {
+		return nil, 0, false
+	}
+	membersSet, ok := tfGroup["members"].(*schema.Set)
+	if !ok || membersSet.Len() == 0 {
+		return nil, 0, false
+	}
+	memberMap, ok := membersSet.List()[0].(map[string]interface{})
+	if !ok {
+		return nil, 0, false
+	}
+	zonesRaw, _ := memberMap["member_zones"].([]interface{})
+	if len(zonesRaw) == 0 {
+		return nil, 0, false
+	}
+	allocationCount, _ = memberMap["allocation_count"].(int)
+	zones = stringsFromInterfaceSlice(zonesRaw)
+	if len(zones) == 0 {
+		return nil, 0, false
+	}
+	return zones, allocationCount, true
 }
