@@ -84,7 +84,7 @@ func ResourceIBMTransitGatewayConnection() *schema.Resource {
 				Required:     true,
 				ForceNew:     true,
 				ValidateFunc: validate.InvokeValidator("ibm_tg_connection", tgNetworkType),
-				Description:  "Defines what type of network is connected via this connection. Allowable values (classic,directlink,vpc,gre_tunnel,unbound_gre_tunnel,power_virtual_server,redundant_gre,vpn_gateway)",
+				Description:  "Defines what type of network is connected via this connection. Allowable values (classic,directlink,vpc,gre_tunnel,unbound_gre_tunnel,power_virtual_server,redundant_gre,vpn_gateway,dynamic_route_server)",
 			},
 			tgName: {
 				Type:         schema.TypeString,
@@ -98,7 +98,7 @@ func ResourceIBMTransitGatewayConnection() *schema.Resource {
 				Optional:    true,
 				Computed:    true,
 				ForceNew:    true,
-				Description: "The ID of the network being connected via this connection. This field is required for some types, such as 'vpc' or 'directlink' or 'power_virtual_server'. The value of this is the CRN of the VPC or direct link or power_virtual_server gateway to be connected. This field is required to be unspecified for network type 'classic', 'gre_tunnel', and 'unbound_gre_tunnel'.",
+				Description: "The ID of the network being connected via this connection. This field is required for 'vpc', 'directlink', 'power_virtual_server', 'vpn_gateway', and 'dynamic_route_server'. The value is the CRN of the network or gateway to connect. This field is required to be unspecified for network type 'classic', 'gre_tunnel', and 'unbound_gre_tunnel'.",
 			},
 			tgNetworkAccountID: {
 				Type:        schema.TypeString,
@@ -154,13 +154,13 @@ func ResourceIBMTransitGatewayConnection() *schema.Resource {
 				Type:        schema.TypeString,
 				Optional:    true,
 				ForceNew:    true,
-				Description: "Location of connection. This field only applies to network type 'gre_tunnel' and 'unbound_gre_tunnel' connections and optional for network type 'vpn_gateway' connections",
+				Description: "Location of connection. This field only applies to network type 'gre_tunnel' and 'unbound_gre_tunnel' connections and is optional for network type 'vpn_gateway' connections. It must be unspecified for 'dynamic_route_server' connections.",
 			},
 			tgCidr: {
 				Type:        schema.TypeString,
 				Optional:    true,
 				ForceNew:    true,
-				Description: "The network_type 'vpn_gateway' connections use 'cidr' to specify the CIDR to use for the VPN GRE tunnels",
+				Description: "The network_type 'vpn_gateway' and 'dynamic_route_server' connections use 'cidr' to specify the CIDR for their GRE tunnels. If unspecified, the service default is 198.19.174.0/23.",
 			},
 			tgCreatedAt: {
 				Type:        schema.TypeString,
@@ -283,7 +283,7 @@ func ResourceIBMTransitGatewayConnection() *schema.Resource {
 func ResourceIBMTransitGatewayConnectionValidator() *validate.ResourceValidator {
 
 	validateSchema := make([]validate.ValidateSchema, 0)
-	networkType := "classic, directlink, vpc, gre_tunnel, unbound_gre_tunnel, power_virtual_server, redundant_gre, vpn_gateway"
+	networkType := "classic, directlink, vpc, gre_tunnel, unbound_gre_tunnel, power_virtual_server, redundant_gre, vpn_gateway, dynamic_route_server"
 	validateSchema = append(validateSchema,
 		validate.ValidateSchema{
 			Identifier:                 tgNetworkType,
@@ -371,7 +371,7 @@ func resourceIBMTransitGatewayConnectionCreate(d *schema.ResourceData, meta inte
 	}
 
 	if _, ok := d.GetOk(tgDefaultPrefixFilter); ok {
-		if "redundant_gre" == networkType {
+		if "redundant_gre" == networkType || "dynamic_route_server" == networkType {
 			err = flex.FmtErrorf("[ERROR] Error default_prefix_filter is not allowed for connection type %s,", networkType)
 			log.Printf("[ERROR] Error default_prefix_filter is not allowed for connection type %s ", networkType)
 			return err
