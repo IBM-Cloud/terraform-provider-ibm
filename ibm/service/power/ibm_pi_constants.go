@@ -311,6 +311,7 @@ const (
 	Attr_FlashCopyMappings                   = "flash_copy_mappings"
 	Attr_FlashCopyName                       = "flash_copy_name"
 	Attr_ForceDisable                        = "force_disable"
+	Attr_ForceEnable                         = "force_enable"
 	Attr_FreezeTime                          = "freeze_time"
 	Attr_FullSystemProfile                   = "full_system_profile"
 	Attr_Gateway                             = "gateway"

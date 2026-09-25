@@ -1408,7 +1408,8 @@ func TestAccIBMPIInstanceMetadataService(t *testing.T) {
 		CheckDestroy: testAccCheckIBMPIInstanceDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIBMPIInstanceMetadataServiceConfig(name, power.OK, true, false),
+				// Create with MDS enabled.
+				Config: testAccCheckIBMPIInstanceMetadataServiceConfig(name, power.OK, true, false, false),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckIBMPIInstanceExists(instanceRes),
 					resource.TestCheckResourceAttr(instanceRes, "pi_instance_name", name),
@@ -1416,18 +1417,36 @@ func TestAccIBMPIInstanceMetadataService(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccCheckIBMPIInstanceMetadataServiceConfig(name, power.OK, false, true),
+				// Disable MDS on a live instance using force_disable.
+				Config: testAccCheckIBMPIInstanceMetadataServiceConfig(name, power.OK, false, true, false),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckIBMPIInstanceExists(instanceRes),
 					resource.TestCheckResourceAttr(instanceRes, "pi_instance_name", name),
 					resource.TestCheckResourceAttr(instanceRes, "pi_metadata_service.0.enabled", "false"),
+					resource.TestCheckResourceAttr(instanceRes, "pi_metadata_service.0.force_disable", "true"),
+				),
+			},
+			{
+				// Re-enable MDS on a live instance using force_enable.
+				Config: testAccCheckIBMPIInstanceMetadataServiceConfig(name, power.OK, true, false, true),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIBMPIInstanceExists(instanceRes),
+					resource.TestCheckResourceAttr(instanceRes, "pi_instance_name", name),
+					resource.TestCheckResourceAttr(instanceRes, "pi_metadata_service.0.enabled", "true"),
+					resource.TestCheckResourceAttr(instanceRes, "pi_metadata_service.0.force_enable", "true"),
 				),
 			},
 		},
 	})
 }
 
-func testAccCheckIBMPIInstanceMetadataServiceConfig(name, instanceHealthStatus string, enabled, force bool) string {
+func testAccCheckIBMPIInstanceMetadataServiceConfig(name, instanceHealthStatus string, enabled, forceDisable, forceEnable bool) string {
+	forceLine := ""
+	if forceDisable {
+		forceLine = "force_disable = true"
+	} else if forceEnable {
+		forceLine = "force_enable  = true"
+	}
 	return fmt.Sprintf(`
 	data "ibm_pi_image" "power_image" {
 		pi_cloud_instance_id = "%[1]s"
@@ -1452,10 +1471,10 @@ func testAccCheckIBMPIInstanceMetadataServiceConfig(name, instanceHealthStatus s
 		}
 		pi_metadata_service {
 			enabled = %[7]t
-			force   = %[8]t
+			%[8]s
 		}
 	}
-	`, acc.Pi_cloud_instance_id, name, acc.Pi_image, acc.Pi_network_id, instanceHealthStatus, acc.PiStorageType, enabled, force)
+	`, acc.Pi_cloud_instance_id, name, acc.Pi_image, acc.Pi_network_id, instanceHealthStatus, acc.PiStorageType, enabled, forceLine)
 }
 
 func TestAccIBMPIInstanceDefaultTrustedProfile(t *testing.T) {
