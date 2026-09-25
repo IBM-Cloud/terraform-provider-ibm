@@ -613,6 +613,33 @@ resource "ibm_database" "es" {
   }
 }
 ```
+
+### Gen2 Elasticsearch Standard instance
+
+An example to configure and deploy an Elasticsearch Gen2 instance using the `standard-gen2` plan. This plan uses Gen2 infrastructure and requires a dedicated host flavor. Use `ibm_resource_key` for credentials instead of `adminpassword` or `users`.
+
+```terraform
+data "ibm_resource_group" "group" {
+  name = "<your_group>"
+}
+
+resource "ibm_database" "es_standard_gen2" {
+  resource_group_id = data.ibm_resource_group.group.id
+  name              = "<your_database_name>"
+  service           = "databases-for-elasticsearch"
+  plan              = "standard-gen2"
+  location          = "<gen2_location>"
+  service_endpoints = "private"
+
+  tags = ["tag1", "tag2"]
+
+  timeouts {
+    create = "120m"
+    update = "120m"
+    delete = "15m"
+  }
+}
+```
 ### Updating configuration for postgres database
 
 ```terraform
@@ -832,7 +859,7 @@ Review the argument reference that you can specify for your resource.
   - **Gen2 plans**: `standard-gen2`, `enterprise-gen2`, `platinum-gen2`
 
   Plans ending with `-gen2` use Gen2 infrastructure. `enterprise` is supported only for elasticsearch (`databases-for-elasticsearch`) and mongodb (`databases-for-mongodb`). `platinum` is supported for elasticsearch (`databases-for-elasticsearch`).
-  `enterprise-gen2` is supported only for elasticsearch (`databases-for-elasticsearch`).
+  `enterprise-gen2` for elasticsearch (`databases-for-elasticsearch`). `standard-gen2` is supported for all services.
 - `point_in_time_recovery_deployment_id` - (Optional, String) The ID of the source deployment that you want to recover back to.
 
   **Gen2:** Plan fails if set. Point-in-time recovery is not yet implemented for Gen2 instances.
