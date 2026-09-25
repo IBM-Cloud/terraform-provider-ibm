@@ -82,6 +82,9 @@ func testAccCheckIbmAppConfigFeatureConfigBasic(name, envName, featureID, featur
 			tags    		    = "%s"
 			rollout_percentage  = "80"
 			enabled             = false
+			lifecycle {
+				ignore_changes = [rollout_type, segment_rules]
+			}
 		}`, name, envName, featureID, featureType, description, tags)
 }
 

@@ -129,6 +129,59 @@ func DataSourceIBMAppConfigFeatures() *schema.Resource {
 							Computed:    true,
 							Description: "Rollout percentage of the feature.",
 						},
+						"rollout_type": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The rollout strategy type for the feature flag. MANUAL is the default. PROGRESSIVE enables automatic phase-based rollout.",
+						},
+						"rollout_configuration": {
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "Configuration that controls the rollout behaviour for a Progressive rollout type.",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"duration_preset": {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "A predefined duration preset that sets the overall pace of the rollout. Use CUSTOM to define phases manually.",
+									},
+									"start_at": {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The UTC date and time at which the rollout should start, in ISO 8601 format.",
+									},
+									"status": {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The current execution status of a rollout (QUEUED, RUNNING, STOPPED).",
+									},
+									"phases": {
+										Type:        schema.TypeList,
+										Computed:    true,
+										Description: "The ordered list of rollout phases.",
+										Elem: &schema.Resource{
+											Schema: map[string]*schema.Schema{
+												"percentage": {
+													Type:        schema.TypeInt,
+													Computed:    true,
+													Description: "The rollout percentage target for this phase.",
+												},
+												"duration": {
+													Type:        schema.TypeInt,
+													Computed:    true,
+													Description: "The length of time to wait before advancing to the next phase.",
+												},
+												"duration_type": {
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "The unit of time for the duration field (minutes, hours, days).",
+												},
+											},
+										},
+									},
+								},
+							},
+						},
 						"segment_rules": {
 							Type:        schema.TypeList,
 							Computed:    true,
@@ -166,6 +219,59 @@ func DataSourceIBMAppConfigFeatures() *schema.Resource {
 										Type:        schema.TypeInt,
 										Computed:    true,
 										Description: "Rollout percentage for the segment rule.",
+									},
+									"rollout_type": {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The rollout strategy type for this segment rule. MANUAL is the default. PROGRESSIVE enables automatic phase-based rollout.",
+									},
+									"rollout_configuration": {
+										Type:        schema.TypeList,
+										Computed:    true,
+										Description: "Configuration that controls the rollout behaviour for a Progressive rollout type on this segment rule.",
+										Elem: &schema.Resource{
+											Schema: map[string]*schema.Schema{
+												"duration_preset": {
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "A predefined duration preset that sets the overall pace of the rollout.",
+												},
+												"start_at": {
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "The UTC date and time at which the rollout should start, in ISO 8601 format.",
+												},
+												"status": {
+													Type:        schema.TypeString,
+													Computed:    true,
+													Description: "The current execution status of a rollout (QUEUED, RUNNING, STOPPED).",
+												},
+												"phases": {
+													Type:        schema.TypeList,
+													Computed:    true,
+													Description: "The ordered list of rollout phases.",
+													Elem: &schema.Resource{
+														Schema: map[string]*schema.Schema{
+															"percentage": {
+																Type:        schema.TypeInt,
+																Computed:    true,
+																Description: "The rollout percentage target for this phase.",
+															},
+															"duration": {
+																Type:        schema.TypeInt,
+																Computed:    true,
+																Description: "The length of time to wait before advancing to the next phase.",
+															},
+															"duration_type": {
+																Type:        schema.TypeString,
+																Computed:    true,
+																Description: "The unit of time for the duration field (minutes, hours, days).",
+															},
+														},
+													},
+												},
+											},
+										},
 									},
 								},
 							},
@@ -434,6 +540,12 @@ func dataSourceFeaturesListFeaturesToMap(featuresItem appconfigurationv1.Feature
 	if featuresItem.RolloutPercentage != nil {
 		featuresMap["rollout_percentage"] = featuresItem.RolloutPercentage
 	}
+	if featuresItem.RolloutType != nil {
+		featuresMap["rollout_type"] = featuresItem.RolloutType
+	}
+	if featuresItem.RolloutConfiguration != nil {
+		featuresMap["rollout_configuration"] = dataSourceFeatureFlattenRolloutConfiguration(featuresItem.RolloutConfiguration)
+	}
 	if featuresItem.Format != nil {
 		featuresMap["format"] = featuresItem.Format
 	}
@@ -517,6 +629,12 @@ func dataSourceFeaturesListFeaturesSegmentRulesToMap(segmentRulesItem appconfigu
 	}
 	if segmentRulesItem.RolloutPercentage != nil {
 		segmentRulesMap["rollout_percentage"] = segmentRulesItem.RolloutPercentage
+	}
+	if segmentRulesItem.RolloutType != nil {
+		segmentRulesMap["rollout_type"] = segmentRulesItem.RolloutType
+	}
+	if segmentRulesItem.RolloutConfiguration != nil {
+		segmentRulesMap["rollout_configuration"] = dataSourceFeatureFlattenRolloutConfiguration(segmentRulesItem.RolloutConfiguration)
 	}
 
 	return segmentRulesMap

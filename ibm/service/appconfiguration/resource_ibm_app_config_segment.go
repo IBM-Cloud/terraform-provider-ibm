@@ -287,7 +287,7 @@ func resourceIbmIbmAppConfigSegmentDelete(d *schema.ResourceData, meta interface
 	options := &appconfigurationv1.DeleteSegmentOptions{}
 	options.SetSegmentID(parts[1])
 
-	response, err := appconfigClient.DeleteSegment(options)
+	_, response, err := appconfigClient.DeleteSegment(options)
 	if err != nil {
 		if response != nil && response.StatusCode == 404 {
 			d.SetId("")

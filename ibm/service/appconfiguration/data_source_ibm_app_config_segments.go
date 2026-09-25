@@ -191,7 +191,7 @@ func dataSourceIbmAppConfigSegmentsRead(d *schema.ResourceData, meta interface{}
 	}
 
 	if _, ok := GetFieldExists(d, "include"); ok {
-		options.SetInclude(d.Get("include").(string))
+		options.SetInclude([]string{d.Get("include").(string)})
 	}
 
 	var segmentsList *appconfigurationv1.SegmentsList
