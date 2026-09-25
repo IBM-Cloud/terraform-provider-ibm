@@ -60,6 +60,26 @@ type TimeoutHelper struct {
 	Now time.Time
 }
 
+func sharedSetShardsInfo(d *schema.ResourceData, instance *rc.ResourceInstance) error {
+	service := d.Get("service").(string)
+	plan := d.Get("plan").(string)
+
+	if service != "databases-for-mongodb" || plan != "enterprise-sharding-gen2" {
+		return d.Set("shards", nil)
+	}
+
+	if instance == nil || instance.Extensions == nil {
+		return nil
+	}
+
+	// enterprise-sharding-gen2 stores shard data under "mongodbees" in extensions
+	shards := extractShardsFromExtensions(instance.Extensions)
+	if shards == 0 {
+		return nil
+	}
+	return d.Set("shards", shards)
+}
+
 // Allows mocking
 type DeploymentTaskFetcher interface {
 	ListDeploymentTasks(opts *clouddatabasesv5.ListDeploymentTasksOptions) (*clouddatabasesv5.Tasks, *core.DetailedResponse, error)
@@ -138,6 +158,18 @@ func isAttrConfiguredInDiff(d *schema.ResourceDiff, k string) bool {
 	default:
 		return true
 	}
+}
+
+func isShardAttrConfiguredInDiff(d *schema.ResourceDiff, k string) bool {
+	v, ok := d.GetOkExists(k)
+	if !ok {
+		return false
+	}
+
+	if intVal, isInt := v.(int); isInt {
+		return intVal > 0
+	}
+	return false
 }
 
 func isGen2Plan(plan string) bool {
@@ -372,6 +404,7 @@ type databaseAllocations struct {
 	memoryGB     float64
 	storageGB    float64
 	members      int64
+	shards       int64
 	hostFlavorID string
 }
 
@@ -391,7 +424,13 @@ func extractDatabaseAllocations(instance map[string]interface{}, resourceID stri
 
 	dbTypeData, ok := dataservices[dbType].(map[string]interface{})
 	if !ok {
-		return alloc
+		// enterprise-sharding-gen2 stores data under "mongodbees" instead of "mongodb"
+		if dbType == "mongodb" {
+			dbTypeData, ok = dataservices["mongodbees"].(map[string]interface{})
+		}
+		if !ok {
+			return alloc
+		}
 	}
 
 	if mem, ok := dbTypeData["memory_gb"].(float64); ok {
@@ -406,11 +445,40 @@ func extractDatabaseAllocations(instance map[string]interface{}, resourceID stri
 	if m, ok := dbTypeData["members"].(float64); ok {
 		alloc.members = int64(m)
 	}
+	if s, ok := dbTypeData["shards"].(float64); ok {
+		alloc.shards = int64(s)
+	}
 	if flavor, ok := dbTypeData["host_flavor"].(string); ok {
 		alloc.hostFlavorID = flavor
 	}
 
 	return alloc
+}
+
+func extractShardsFromExtensions(extensions map[string]interface{}) int {
+
+	dataservices, ok := extensions[dataservicesKey].(map[string]interface{})
+	if !ok {
+		return 0
+	}
+
+	dbTypeData, ok := dataservices["mongodbees"].(map[string]interface{})
+	if !ok {
+		return 0
+	}
+
+	shards, ok := dbTypeData["shards"]
+	if !ok {
+		return 0
+	}
+
+	switch v := shards.(type) {
+	case float64:
+		return int(v)
+	case int:
+		return v
+	}
+	return 0
 }
 
 // buildMemoryConfig creates memory configuration from catalog metadata and actual allocation
