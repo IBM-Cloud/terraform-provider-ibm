@@ -985,7 +985,7 @@ The following table summarizes feature availability for Classic and Gen2 plans:
 | Admin password | ✅ Supported | ❌ Plan fails if set (use ibm_resource_key) |
 | User management | ✅ Supported | ❌ Plan fails if set (use ibm_resource_key) |
 | IP allowlist | ✅ Supported | ❌ Plan fails if set (use ibm_resource_key) |
-| Database configuration | ✅ Supported | ❌ Accepted but ignored |
+| Database configuration | ✅ Supported | ✅ Supported |
 | Auto-scaling | ✅ Supported | ❌ Accepted but ignored |
 | Logical replication slots | ✅ Supported | ❌ Accepted but ignored |
 | Read-only replicas | ✅ Supported | ❌ Plan fails if set |
