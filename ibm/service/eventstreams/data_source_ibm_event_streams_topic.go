@@ -1,4 +1,4 @@
-// Copyright IBM Corp. 2017, 2021 All Rights Reserved.
+// Copyright IBM Corp. 2017, 2026 All Rights Reserved.
 // Licensed under the Mozilla Public License v2.0
 
 package eventstreams
@@ -53,12 +53,17 @@ func DataSourceIBMEventStreamsTopic() *schema.Resource {
 }
 
 func dataSourceIBMEventStreamsTopicRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	adminClient, instanceCRN, err := createSaramaAdminClient(d, meta)
+	adminClient, ext, instanceCRN, err := createSaramaAdminClient(d, meta)
 	if err != nil {
 		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("dataSourceIBMEventStreamsTopicRead createSaramaAdminClient: %s", err), "ibm_event_streams_topic", "read")
 		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 		return tfErr.GetDiag()
 	}
+	if ext.platformGeneration == 1 {
+		d.Set("kafka_http_url", ext.adminURL)
+	}
+	d.Set("kafka_brokers_sasl", ext.bootstrapServers)
+
 	topics, err := adminClient.ListTopics()
 	if err != nil {
 		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("dataSourceIBMEventStreamsTopicRead ListTopics: %s", err), "ibm_event_streams_topic", "read")
