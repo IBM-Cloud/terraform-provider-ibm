@@ -100,6 +100,84 @@ func TestAccIBMDatabaseConnectionGen2DataSourceFallsBackToFirstKey(t *testing.T)
 	})
 }
 
+// TestAccIBMDatabaseConnectionGen2DataSourceS2SWarning verifies the S2S warning
+// fires on a Gen2 MySQL connection data source read and is non-blocking.
+func TestAccIBMDatabaseConnectionGen2DataSourceS2SWarning(t *testing.T) {
+	t.Parallel()
+	name := fmt.Sprintf("tf-gen2-s2s-conn-%s", acctest.RandString(8))
+	dsName := "data.ibm_database_connection.gen2_s2s_conn"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { acc.TestAccPreCheckEnterprise(t) },
+		Providers: acc.TestAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMDatabaseConnectionGen2S2SConfig(name),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet(dsName, "deployment_id"),
+					resource.TestCheckResourceAttr(dsName, "user_type", "database"),
+					resource.TestCheckResourceAttr(dsName, "endpoint_type", "private"),
+					// mysql connection populated despite S2S warning
+					resource.TestCheckResourceAttrSet(dsName, "mysql.#"),
+					resource.TestCheckResourceAttrSet(dsName, "mysql.0.hosts.#"),
+					resource.TestCheckResourceAttrSet(dsName, "mysql.0.composed.#"),
+					// cli populated
+					resource.TestCheckResourceAttrSet(dsName, "cli.#"),
+					resource.TestCheckResourceAttrSet(dsName, "cli.0.composed.#"),
+				),
+			},
+		},
+	})
+}
+
+// testAccCheckIBMDatabaseConnectionGen2S2SConfig creates a Gen2 MySQL instance
+// in eu-fr2 with a resource key, then reads connection info via the datasource.
+// No S2S authorizations are configured so the S2S warning fires during the read.
+func testAccCheckIBMDatabaseConnectionGen2S2SConfig(name string) string {
+	return fmt.Sprintf(`
+data "ibm_resource_group" "test_acc" {
+  is_default = true
+}
+
+resource "ibm_database" "gen2_s2s" {
+  resource_group_id = data.ibm_resource_group.test_acc.id
+  name              = %[1]q
+  service           = "databases-for-mysql"
+  plan              = "standard-gen2"
+  location          = "eu-fr2"
+  tags              = ["terraform", "s2s-test"]
+
+  # eu-fr2 Gen2 MySQL only allows exactly 2 members
+  group {
+    group_id = "member"
+    members {
+      allocation_count = 2
+    }
+  }
+
+  timeouts {
+    create = "120m"
+    update = "60m"
+    delete = "15m"
+  }
+}
+
+resource "ibm_resource_key" "gen2_s2s_key" {
+  name                 = %[2]q
+  resource_instance_id = ibm_database.gen2_s2s.id
+}
+
+data "ibm_database_connection" "gen2_s2s_conn" {
+  deployment_id = ibm_database.gen2_s2s.id
+  user_type     = "database"
+  user_id       = ibm_resource_key.gen2_s2s_key.name
+  endpoint_type = "private"
+
+  depends_on = [ibm_resource_key.gen2_s2s_key]
+}
+`, name, name+"-key")
+}
+
 // testAccCheckIBMDatabaseDataSourceConfigGen2 creates a Gen2 PostgreSQL instance.
 func testAccCheckIBMDatabaseDataSourceConfigGen2(name string) string {
 	return fmt.Sprintf(`

@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
@@ -27,7 +28,17 @@ func ResourceIBMIsPrivatePathServiceGateway() *schema.Resource {
 		UpdateContext: resourceIBMIsPrivatePathServiceGatewayUpdate,
 		DeleteContext: resourceIBMIsPrivatePathServiceGatewayDelete,
 		Importer:      &schema.ResourceImporter{},
-
+		CustomizeDiff: customdiff.All(
+			customdiff.Sequence(
+				func(_ context.Context, diff *schema.ResourceDiff, v interface{}) error {
+					return flex.ResourceTagsCustomizeDiff(diff)
+				},
+			),
+			customdiff.Sequence(
+				func(_ context.Context, diff *schema.ResourceDiff, v interface{}) error {
+					return flex.ResourceValidateAccessTags(diff, v)
+				}),
+		),
 		Schema: map[string]*schema.Schema{
 			"service_endpoints": {
 				Type:        schema.TypeSet,

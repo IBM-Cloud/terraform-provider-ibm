@@ -919,6 +919,7 @@ The following table summarizes feature availability for Classic and Gen2 plans:
 | Tags | ✅ Supported | ✅ Supported |
 | Encryption (key_protect_key) | ✅ Supported | ✅ Supported |
 | Backup encryption (backup_encryption_key_crn) | ✅ Supported | ❌ Plan fails if set |
+| Independent Backups (automatic backups) | ❌ Not available | ✅ Supported (requires S2S authorization) |
 | Restore from backup (backup_id) | ✅ Supported (Classic backups) | ✅ Supported (Classic and Gen2 backups) |
 | Point-in-time recovery (point_in_time_recovery_deployment_id, point_in_time_recovery_time) | ✅ Supported | ❌ Plan fails if set |
 | Offline restore (MongoDB) | ✅ Supported | ❌ Accepted but ignored |
@@ -947,6 +948,30 @@ Gen2 plans handle unsupported features in two ways:
   - Examples: `auto_scaling`, `configuration`, `logical_replication_slot`, `offline_restore`, `async_restore`
 
 **Note:** For Gen2 instances, use the `ibm_resource_key` resource to create service credentials and obtain connection information.
+
+### Gen2 Independent Backups and S2S Authorization
+
+Gen2 database instances support **Independent Backups** — automated backups managed independently of the database instance lifecycle. When a Gen2 instance is configured to use Independent Backups, it requires a service-to-service (S2S) IAM authorization between the database service and the backup storage.
+
+If this authorization is missing or incomplete, Terraform emits a **non-blocking warning** during `plan` or `apply`:
+
+```
+╷
+│ Warning: Database backup authorization required
+│
+│   with ibm_database.<name>,
+│
+│ This database uses Independent Backups.
+│ Existing backups remain available for 30 days from their creation date.
+│ Backup creation and management are unavailable until the required service authorization is completed.
+│
+│ Complete the required service authorization to enable backup operations.
+╵
+```
+
+The warning appears only when the instance has Independent Backups configured **and** the required S2S authorizations (`independent_backups` and `resource_group`) are not both `true`. It is suppressed for Classic plans and Gen2 instances not enrolled in Independent Backups.
+
+To resolve the warning, create the required IAM service-to-service authorization between the database service and `databases-independent-backups`. Once both authorizations are in place, the warning will no longer appear.
 
 ## Import
 The database instance can be imported by using the ID, that is formed from the CRN. To import the resource, you must specify the `region` parameter in the `provider` block of your Terraform configuration file. If the region is not specified, `us-south` is used by default. A Terraform refresh or apply fails if the database instance is not in the same region as configured in the provider or its alias.

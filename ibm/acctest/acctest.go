@@ -100,6 +100,7 @@ var (
 	InstanceCRN                     string
 	InstanceDiskProfileName         string
 	InstanceName                    string
+	ISInstanceProfileName           string
 	InstanceProfileName             string
 	InstanceProfileNameUpdate       string
 	IpsecDatacenter                 string
@@ -214,6 +215,7 @@ var (
 	SecretsManagerCodeEngineRegion                                                  string
 	SecretsManagerCodeEngineJobName                                                 string
 	SecretsManagerServiceIdForCustomCredentials                                     string
+	SecretsManagerDedicatedInstanceID                                               string
 )
 
 var (
@@ -1056,6 +1058,12 @@ func init() {
 		fmt.Println("[INFO] Set the environment variable SL_INSTANCE_PROFILE for testing ibm_is_instance resource else it is set to default value 'cx2-2x4'")
 	}
 
+	ISInstanceProfileName = os.Getenv("IS_INSTANCE_PROFILE_NAME")
+	if ISInstanceProfileName == "" {
+		ISInstanceProfileName = "gx2-8x64x1v100" // GPU profile — vcpu_count.type == "enum"
+		fmt.Println("[INFO] Set the environment variable IS_INSTANCE_PROFILE_NAME for testing supported_vcpu_count backfill, else it is set to default value 'gx2-8x64x1v100'")
+	}
+
 	IsKMSInstanceId = os.Getenv("SL_KMS_INSTANCE_ID")
 	if IsKMSInstanceId == "" {
 		IsKMSInstanceId = "30222bb5-1c6d-3834-8d78-ae6348cf8z61" // kms instance id
@@ -1801,6 +1809,11 @@ func init() {
 	SecretsManagerServiceIdForCustomCredentials = os.Getenv("SECRETS_MANAGER_SERVICE_ID_FOR_CUSTOM_CREDENTIALS")
 	if SecretsManagerServiceIdForCustomCredentials == "" {
 		fmt.Println("[INFO] Set the environment variable SECRETS_MANAGER_SERVICE_ID_FOR_CUSTOM_CREDENTIALS for testing custom credential secret, else tests fail if not set correctly")
+	}
+
+	SecretsManagerDedicatedInstanceID = os.Getenv("SECRETS_MANAGER_DEDICATED_INSTANCE_ID")
+	if SecretsManagerDedicatedInstanceID == "" {
+		fmt.Println("[INFO] Set the environment variable SECRETS_MANAGER_DEDICATED_INSTANCE_ID for testing Secrets Manager's tests else tests will fail if this is not set correctly")
 	}
 
 	Tg_cross_network_account_api_key = os.Getenv("IBM_TG_CROSS_ACCOUNT_API_KEY")

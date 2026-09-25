@@ -7,6 +7,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/service/secretsmanagerinstancemanagement"
 	"log"
 	"os"
 	"strconv"
@@ -921,6 +922,8 @@ func Provider() *schema.Provider {
 			"ibm_sm_custom_credentials_secret":                                   secretsmanager.AddInstanceFields(secretsmanager.DataSourceIbmSmCustomCredentialsSecret()),
 			"ibm_sm_en_registration":                                             secretsmanager.AddInstanceFields(secretsmanager.DataSourceIbmSmEnRegistration()),
 
+			"ibm_sm_instance": secretsmanagerinstancemanagement.DataSourceIbmSmInstance(),
+
 			// Added for Satellite
 			"ibm_satellite_location":                            satellite.DataSourceIBMSatelliteLocation(),
 			"ibm_satellite_location_nlb_dns":                    satellite.DataSourceIBMSatelliteLocationNLBDNS(),
@@ -1433,6 +1436,7 @@ func Provider() *schema.Provider {
 			"ibm_is_floating_ip":                                 vpc.ResourceIBMISFloatingIP(),
 			"ibm_is_flow_log":                                    vpc.ResourceIBMISFlowLog(),
 			"ibm_is_instance":                                    vpc.ResourceIBMISInstance(),
+			"ibm_is_instance_reinitialize":                       vpc.ResourceIBMISInstanceReinitialize(),
 			"ibm_is_instance_software_attachment":                vpc.ResourceIBMIsInstanceSoftwareAttachment(),
 			"ibm_is_instance_action":                             vpc.ResourceIBMISInstanceAction(),
 			"ibm_is_instance_network_attachment":                 vpc.ResourceIBMIsInstanceNetworkAttachment(),
@@ -1705,6 +1709,8 @@ func Provider() *schema.Provider {
 			"ibm_sm_en_registration":                                             secretsmanager.AddInstanceFields(secretsmanager.ResourceIbmSmEnRegistration()),
 			"ibm_sm_private_certificate_configuration_action_sign_csr":           secretsmanager.AddInstanceFields(secretsmanager.ResourceIbmSmPrivateCertificateConfigurationActionSignCsr()),
 			"ibm_sm_private_certificate_configuration_action_set_signed":         secretsmanager.AddInstanceFields(secretsmanager.ResourceIbmSmPrivateCertificateConfigurationActionSetSigned()),
+
+			"ibm_sm_admin_token": secretsmanagerinstancemanagement.ResourceIbmSmAdminToken(),
 
 			// satellite  resources
 			"ibm_satellite_location":                            satellite.ResourceIBMSatelliteLocation(),
