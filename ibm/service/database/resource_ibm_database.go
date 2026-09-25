@@ -141,6 +141,7 @@ type resourceIBMDatabaseBackend interface {
 	ValidateUnsupportedAttrsDiff(context context.Context, d *schema.ResourceDiff, meta interface{}) error
 	ValidateGroupsDiff(context context.Context, d *schema.ResourceDiff, meta interface{}) error
 	ValidateServiceEndpointsDiff(context context.Context, d *schema.ResourceDiff, meta interface{}) error
+	ValidateMaintenanceWindowDiff(context context.Context, d *schema.ResourceDiff, meta interface{}) error
 }
 
 func pickResourceBackend(d *schema.ResourceData) resourceIBMDatabaseBackend {
@@ -185,6 +186,7 @@ func ResourceIBMDatabaseInstance() *schema.Resource {
 			validateRemoteLeaderIDDiff,
 			validateVersionDiff,
 			validateAsyncRestoreDiff,
+			validateBackendSpecificMaintenanceWindowDiff,
 			validateBackendSpecificServiceEndpointsDiff,
 		),
 
@@ -872,6 +874,50 @@ func ResourceIBMDatabaseInstance() *schema.Resource {
 										Type:        schema.TypeString,
 										Optional:    true,
 										Computed:    true,
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			"maintenance": {
+				Type:        schema.TypeList,
+				Optional:    true,
+				Computed:    true,
+				MaxItems:    1,
+				Description: "Maintenance window configuration for Gen2 database instances. Applicable to Gen2 plans only.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"window": {
+							Type:     schema.TypeList,
+							Optional: true,
+							Computed: true,
+							MaxItems: 1,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"start_time": {
+										Type:         schema.TypeString,
+										Optional:     true,
+										Computed:     true,
+										Description:  "Earliest time at which maintenance can be initiated. ISO 8601 UTC time format (hh:mmZ). Example: \"05:00Z\".",
+										ValidateFunc: validateMaintenanceStartTime,
+									},
+									"days": {
+										Type:        schema.TypeSet,
+										Optional:    true,
+										Computed:    true,
+										Description: "Day(s) of the week on which maintenance can be initiated. Example: [\"Wednesday\",\"Thursday\"].",
+										Elem: &schema.Schema{
+											Type:         schema.TypeString,
+											ValidateFunc: validateMaintenanceDays,
+										},
+									},
+									"system_assigned": {
+										Type:        schema.TypeBool,
+										Optional:    true,
+										Computed:    true,
+										Description: "When true, resets the maintenance window to the IBM Cloud system-assigned default. Cannot be set together with start_time or days.",
 									},
 								},
 							},
@@ -3344,6 +3390,40 @@ func validateRemoteLeaderIDDiff(_ context.Context, diff *schema.ResourceDiff, me
 	}
 
 	return nil
+}
+
+// validateMaintenanceDays is a ValidateFunc for each element of maintenance.window.days.
+// Accepts a single full English day name (e.g. "Wednesday").
+func validateMaintenanceDays(v interface{}, k string) (warnings []string, errors []error) {
+	allowed := map[string]bool{
+		"Monday": true, "Tuesday": true, "Wednesday": true, "Thursday": true,
+		"Friday": true, "Saturday": true, "Sunday": true,
+	}
+	val := v.(string)
+	if !allowed[val] {
+		errors = append(errors, fmt.Errorf(
+			"%s: unrecognised day %q — must be a full English day name (e.g. \"Wednesday\")",
+			k, val,
+		))
+	}
+	return
+}
+
+// validateMaintenanceStartTime is a ValidateFunc for maintenance.window.start_time.
+// Ensures the time format matches ISO 8601 UTC format (hh:mmZ).
+func validateMaintenanceStartTime(v interface{}, k string) (warnings []string, errors []error) {
+	val := v.(string)
+	if val == "" {
+		return
+	}
+	return validation.StringMatch(
+		regexp.MustCompile(`^(2[0-3]|[01][0-9]):[0-5][0-9]Z$`),
+		"start_time must be in ISO 8601 UTC format hh:mmZ, e.g. \"05:00Z\"",
+	)(v, k)
+}
+
+func validateBackendSpecificMaintenanceWindowDiff(context context.Context, diff *schema.ResourceDiff, meta interface{}) error {
+	return pickResourceBackendFromDiff(diff).ValidateMaintenanceWindowDiff(context, diff, meta)
 }
 
 func validateAsyncRestoreDiff(_ context.Context, diff *schema.ResourceDiff, meta interface{}) (err error) {

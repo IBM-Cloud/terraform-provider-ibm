@@ -823,6 +823,16 @@ Review the argument reference that you can specify for your resource.
           - `bxf.4x16`
           - `bxf.8x32`
 
+- `maintenance` - (Optional, List) Maintenance window configuration. **Applicable to Gen2 plans only. Plan fails if set on Classic plans.**
+
+  Nested scheme for `maintenance`:
+  - `window` - (Optional, List) Maintenance window schedule.
+
+    Nested scheme for `window`:
+    - `start_time` - (Optional, String) Earliest time at which maintenance can be initiated, in ISO 8601 UTC format (`hh:mmZ`). Example: `"05:00Z"`.
+    - `days` - (Optional, String) Comma-separated day(s) of the week on which maintenance can be initiated. Example: `"Wednesday,Thursday"`.
+    - `system_assigned` - (Optional, Bool) When `true`, resets the maintenance window to the IBM Cloud system-assigned default. Cannot be used together with `start_time` or `days`.
+
 - `name` - (Required, String) A descriptive name that is used to identify the database instance. The name must not include spaces.
 - `offline_restore` - (Optional, Boolean) Enable or disable the Offline Restore option while performing a Point-in-time Recovery for MongoDB EE in a disaster recovery scenario when the source region is unavailable, see [Point-in-time Recovery](https://cloud.ibm.com/docs/databases-for-mongodb?topic=databases-for-mongodb-pitr&interface=api#pitr-offline-restore)
 
@@ -936,6 +946,7 @@ The following table summarizes feature availability for Classic and Gen2 plans:
 | Read-only replicas | ✅ Supported | ❌ Plan fails if set |
 | In-place version upgrades | ✅ Supported | ❌ Updates fail with error |
 | Deletion protection | ✅ Supported | ✅ Supported |
+| Maintenance window (`maintenance`) | ❌ Plan fails if set | ✅ Supported |
 
 ### Gen2 Validation Behavior
 
