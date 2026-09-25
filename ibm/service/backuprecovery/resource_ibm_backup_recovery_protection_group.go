@@ -2061,6 +2061,11 @@ func ResourceIbmBackupRecoveryProtectionGroup() *schema.Resource {
 							Optional:    true,
 							Description: "Specifies whether or not to perform source side deduplication on this Protection Group.",
 						},
+						"snapshot_timeout_seconds": &schema.Schema{
+							Type:        schema.TypeInt,
+							Optional:    true,
+							Description: "Specifies the user specified timeout in seconds to wait for a volume snapshot to become ready. This is not supported if CSI snapshot is not enabled. Default: 900 secs for IBM baas, 300 secs for others.",
+						},
 						"source_id": &schema.Schema{
 							Type:        schema.TypeInt,
 							Computed:    true,
@@ -7230,6 +7235,9 @@ func ResourceIbmBackupRecoveryProtectionGroupMapToKubernetesProtectionGroupParam
 	if modelMap["perform_source_side_deduplication"] != nil {
 		model.PerformSourceSideDeduplication = core.BoolPtr(modelMap["perform_source_side_deduplication"].(bool))
 	}
+	if modelMap["snapshot_timeout_seconds"] != nil {
+		model.SnapshotTimeoutSeconds = core.Int64Ptr(int64(modelMap["snapshot_timeout_seconds"].(int)))
+	}
 	if modelMap["source_id"] != nil {
 		model.SourceID = core.Int64Ptr(int64(modelMap["source_id"].(int)))
 	}
@@ -8256,6 +8264,9 @@ func ResourceIbmBackupRecoveryProtectionGroupKubernetesProtectionGroupParamsToMa
 	}
 	if model.PerformSourceSideDeduplication != nil {
 		modelMap["perform_source_side_deduplication"] = *model.PerformSourceSideDeduplication
+	}
+	if model.SnapshotTimeoutSeconds != nil {
+		modelMap["snapshot_timeout_seconds"] = flex.IntValue(model.SnapshotTimeoutSeconds)
 	}
 	if model.SourceID != nil {
 		modelMap["source_id"] = flex.IntValue(model.SourceID)
