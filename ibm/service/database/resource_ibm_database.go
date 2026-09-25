@@ -311,14 +311,18 @@ func ResourceIBMDatabaseInstance() *schema.Resource {
 				DiffSuppressFunc: flex.ApplyOnce,
 			},
 			"remote_leader_id": {
-				Description: "The CRN of leader database. Gen2: Plan fails if set. Read-only replica creation and promotion are not supported for Gen2 instances.",
-				Type:        schema.TypeString,
-				Optional:    true,
+				Description: "The CRN of the leader (source) database. " +
+					"Classic: creates a read-only replica at provisioning time; clear to promote the replica to a standalone instance. " +
+					"Gen2: creates a read-only replica linked to the specified Gen1 or Gen2 source; clear to promote the replica to a standalone primary instance.",
+				Type:     schema.TypeString,
+				Optional: true,
 			},
 			"skip_initial_backup": {
-				Description: "Option to skip the initial backup when promoting a read-only replica. Skipping the initial backup means that your replica becomes available more quickly, but there is no immediate backup available. Gen2: Accepted but ignored (Classic-only feature for read replica promotion).",
-				Type:        schema.TypeBool,
-				Optional:    true,
+				Description: "Option to skip the initial backup when promoting a read-only replica. " +
+					"Skipping the initial backup means the replica becomes available more quickly, but no immediate backup is available. " +
+					"Classic only — accepted but ignored for Gen2.",
+				Type:     schema.TypeBool,
+				Optional: true,
 			},
 			"async_restore": {
 				Description:      "Option to support FAST PG Restore. Only applicable when restoring a PostgreSQL instance from backup_id. Gen2: Accepted but ignored (Classic-only feature).",

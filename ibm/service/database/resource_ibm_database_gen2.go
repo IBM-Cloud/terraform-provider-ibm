@@ -30,7 +30,6 @@ var gen2UnsupportedAttrs = []string{
 	"backup_policy",
 	"users",
 	"allowlist",
-	"remote_leader_id",
 	"adminpassword",
 	"backup_encryption_key_crn",
 }
@@ -122,9 +121,6 @@ var gen2AttrGuidance = map[string]string{
 		"Documentation: https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/resources/database",
 
 	"backup_encryption_key_crn": "Gen2 databases do not support backup_encryption_key_crn at this point.\n" +
-		"Documentation: https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/resources/database",
-
-	"remote_leader_id": "Gen2 databases do not yet support read replica creation and promotion using the 'remote_leader_id' attribute at this point.\n" +
 		"Documentation: https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/resources/database",
 
 	"logical_replication_slot":    "logical replication slot creation is currently ignored",
@@ -371,6 +367,28 @@ func (g *resourceIBMDatabaseGen2Backend) buildGen2Parameters(d *schema.ResourceD
 	// Note: Gen2 uses "restore_backup_id" inside dataservices, not "backup_id" at top level
 	if backupID, ok := d.GetOk("backup_id"); ok {
 		dataservices["restore_backup_id"] = backupID.(string)
+	}
+
+	// Add read_replica block if remote_leader_id is set (for read replica creation).
+	// The dbConfig map already exists as dataservices[dbType]; inject read_replica into it.
+	// source_type is derived by looking up the source instance's plan: Gen2 plans contain
+	// "-gen2-"; anything else is treated as "gen1" (Classic).
+	if sourceCRN, ok := d.GetOk(remoteLeaderIDKey); ok {
+		if dbCfg, ok := dataservices[dbType].(map[string]interface{}); ok {
+			sourceType := "gen1"
+			if rsConClient, err := g.getResourceControllerClient(meta); err == nil {
+				srcCRNStr := sourceCRN.(string)
+				if srcInst, _, err := rsConClient.GetResourceInstance(&rc.GetResourceInstanceOptions{ID: &srcCRNStr}); err == nil {
+					if srcInst.ResourcePlanID != nil && isGen2Plan(*srcInst.ResourcePlanID) {
+						sourceType = "gen2"
+					}
+				}
+			}
+			dbCfg["read_replica"] = map[string]interface{}{
+				"source_crn":  sourceCRN.(string),
+				"source_type": sourceType,
+			}
+		}
 	}
 
 	// Build final parameters structure
@@ -1001,9 +1019,71 @@ func (g *resourceIBMDatabaseGen2Backend) applyConfigurationWithDiagnostics(ctx c
 	return nil
 }
 
+// promoteReadReplicaWithDiagnostics promotes a Gen2 read-only replica to a standalone instance.
+// Triggered when remote_leader_id is cleared (set to "") on an existing replica.
+// Uses PATCH /v2/resource_instances/{crn} with parameters.dataservices.<dbType>.read_replica.promoted=true.
+func (g *resourceIBMDatabaseGen2Backend) promoteReadReplicaWithDiagnostics(d *schema.ResourceData, rsConClient *rc.ResourceControllerV2, meta interface{}) diag.Diagnostics {
+	if !d.HasChange(remoteLeaderIDKey) {
+		return nil
+	}
+
+	newVal := d.Get(remoteLeaderIDKey).(string)
+	if newVal != "" {
+		// remote_leader_id is being set on an existing instance — not supported as an update.
+		return diagError("remote_leader_id cannot be changed after creation; it can only be cleared to promote the replica to a standalone instance")
+	}
+
+	instanceID := d.Id()
+
+	// Retrieve the instance to extract service name for the dataservices key.
+	instance, _, err := rsConClient.GetResourceInstance(&rc.GetResourceInstanceOptions{
+		ID: &instanceID,
+	})
+	if err != nil {
+		return diagError("error getting resource instance for promotion: %s", err)
+	}
+
+	serviceName := ""
+	if instance.ResourcePlanID != nil {
+		// Extract service name from resource plan ID (e.g. "databases-for-postgresql-gen2-standard" → "databases-for-postgresql")
+		parts := strings.SplitN(*instance.ResourcePlanID, "-gen2", 2)
+		serviceName = parts[0]
+	}
+
+	dbType := getDatabaseTypeFromResourceID(serviceName)
+	if dbType == "" {
+		return diagError("unable to determine database type from resource plan ID for promotion")
+	}
+
+	// enterprise-sharding-gen2 broker uses "mongodbees" as the dataservices key
+	if d.Get("plan").(string) == "enterprise-sharding-gen2" && dbType == "mongodb" {
+		dbType = "mongodbees"
+	}
+
+	parameters := map[string]interface{}{
+		"dataservices": map[string]interface{}{
+			dbType: map[string]interface{}{
+				"read_replica": map[string]interface{}{
+					"promoted": true,
+				},
+			},
+		},
+	}
+
+	if err := g.updateResourceInstanceParameters(rsConClient, instanceID, parameters); err != nil {
+		return diagError("error promoting read replica: %s", err)
+	}
+
+	_, err = g.waitForGen2InstanceUpdate(d, meta)
+	if err != nil {
+		return diagError("error waiting for read replica promotion to complete: %s", err)
+	}
+
+	return nil
+}
+
 // Update modifies an existing IBM Cloud Database Gen2 instance.
-// Supports updates to name, tags, and group scaling.
-// Many features are not yet supported in Gen2 and will return errors if modified.
+// Supports updates to name, tags, group scaling, and read replica promotion.
 func (g *resourceIBMDatabaseGen2Backend) Update(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	warnings := g.WarnIgnoredAttrs(d)
 
@@ -1015,6 +1095,10 @@ func (g *resourceIBMDatabaseGen2Backend) Update(ctx context.Context, d *schema.R
 	instanceID := d.Id()
 
 	if diags := g.checkUnsupportedChanges(d); len(diags) > 0 {
+		return appendGen2DiagnosticsErrorsThenWarnings(diags, warnings)
+	}
+
+	if diags := g.promoteReadReplicaWithDiagnostics(d, rsConClient, meta); len(diags) > 0 {
 		return appendGen2DiagnosticsErrorsThenWarnings(diags, warnings)
 	}
 
