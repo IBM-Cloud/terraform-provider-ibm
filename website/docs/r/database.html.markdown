@@ -23,6 +23,18 @@ IBM Cloud Databases offers two infrastructure generations:
 
 The plan you select determines which infrastructure your database uses. Both generations support the core database functionality, but have some differences in available features and management approaches. See the [Argument Reference](#argument-reference) section below for details on feature availability by plan type.
 
+### Plans by Service
+
+| Database service | Supported Classic plans | Supported Gen2 plans |
+|---|---|---|
+| databases-for-postgresql | standard | standard-gen2 |
+| databases-for-mysql | standard | standard-gen2 |
+| databases-for-redis | standard | standard-gen2 |
+| databases-for-valkey | — | standard-gen2 |
+| databases-for-mongodb | standard, enterprise, enterprise-sharding | standard-gen2, enterprise-sharding-gen2 |
+| databases-for-elasticsearch | standard, platinum | standard-gen2, enterprise-gen2 |
+| messages-for-rabbitmq | standard | standard-gen2 |
+
 ## Example usage
 To find an example for configuring a virtual server instance that connects to a PostgreSQL database, see [here](https://github.com/IBM-Cloud/terraform-provider-ibm/tree/master/examples/ibm-database).
 
@@ -387,6 +399,49 @@ resource "ibm_database" "mongodb" {
     update = "120m"
     delete = "15m"
   }
+}
+```
+
+### Sample MongoDB Gen2 database instance
+
+* `adminpassword` and `users` are not supported for Gen2. Use `ibm_resource_key` to manage credentials.
+* `allowlist` is not supported for Gen2. Use `ibm_cbr_rule` to manage IP allowlisting.
+
+```terraform
+data "ibm_resource_group" "test_acc" {
+  is_default = true
+}
+
+resource "ibm_database" "mongodb" {
+  resource_group_id            = data.ibm_resource_group.test_acc.id
+  name                         = "mongodb-gen2-test"
+  service                      = "databases-for-mongodb"
+  plan                         = "standard-gen2"
+  location                     = "eu-de"
+  group {
+    group_id = "member"
+    members {
+      allocation_count = 3
+    }
+    disk {
+      allocation_mb = 10240
+    }
+    host_flavor {
+      id = "bxf.4x16"
+    }
+  }
+  tags = ["one:two"]
+  timeouts {
+    create = "120m"
+    update = "120m"
+    delete = "15m"
+  }
+}
+
+# Use ibm_resource_key instead of users/adminpassword for Gen2
+resource "ibm_resource_key" "mongodb_credentials" {
+  name                 = "mongodb-credentials"
+  resource_instance_id = ibm_database.mongodb.id
 }
 ```
 
@@ -930,7 +985,7 @@ The following table summarizes feature availability for Classic and Gen2 plans:
 | Admin password | ✅ Supported | ❌ Plan fails if set (use ibm_resource_key) |
 | User management | ✅ Supported | ❌ Plan fails if set (use ibm_resource_key) |
 | IP allowlist | ✅ Supported | ❌ Plan fails if set (use ibm_resource_key) |
-| Database configuration | ✅ Supported | ❌ Accepted but ignored |
+| Database configuration | ✅ Supported | ✅ Supported |
 | Auto-scaling | ✅ Supported | ❌ Accepted but ignored |
 | Logical replication slots | ✅ Supported | ❌ Accepted but ignored |
 | Read-only replicas | ✅ Supported | ❌ Plan fails if set |
