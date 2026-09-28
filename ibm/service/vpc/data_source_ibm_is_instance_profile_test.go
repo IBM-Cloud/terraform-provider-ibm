@@ -42,7 +42,7 @@ func TestAccIBMISInstanceProfileDataSource_basic(t *testing.T) {
 					resource.TestCheckResourceAttrSet("data.ibm_is_instance_profile.test1", "network_attachment_count.#"),
 					resource.TestCheckResourceAttrSet("data.ibm_is_instance_profile.test1", "reservation_terms.#"),
 					resource.TestCheckResourceAttrSet("data.ibm_is_instance_profile.test1", "reservation_terms.0.type"),
-					resource.TestCheckResourceAttrSet("data.ibm_is_instance_profile.test1", "reservation_terms.0.values"),
+					resource.TestCheckResourceAttrSet("data.ibm_is_instance_profile.test1", "reservation_terms.0.values.#"),
 				),
 			},
 		},

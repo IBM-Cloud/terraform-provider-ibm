@@ -23,6 +23,18 @@ IBM Cloud Databases offers two infrastructure generations:
 
 The plan you select determines which infrastructure your database uses. Both generations support the core database functionality, but have some differences in available features and management approaches. See the [Argument Reference](#argument-reference) section below for details on feature availability by plan type.
 
+### Plans by Service
+
+| Database service | Supported Classic plans | Supported Gen2 plans |
+|---|---|---|
+| databases-for-postgresql | standard | standard-gen2 |
+| databases-for-mysql | standard | standard-gen2 |
+| databases-for-redis | standard | standard-gen2 |
+| databases-for-valkey | — | standard-gen2 |
+| databases-for-mongodb | standard, enterprise, enterprise-sharding | standard-gen2, enterprise-sharding-gen2 |
+| databases-for-elasticsearch | standard, platinum | standard-gen2, enterprise-gen2 |
+| messages-for-rabbitmq | standard | standard-gen2 |
+
 ## Example usage
 To find an example for configuring a virtual server instance that connects to a PostgreSQL database, see [here](https://github.com/IBM-Cloud/terraform-provider-ibm/tree/master/examples/ibm-database).
 
@@ -390,6 +402,49 @@ resource "ibm_database" "mongodb" {
 }
 ```
 
+### Sample MongoDB Gen2 database instance
+
+* `adminpassword` and `users` are not supported for Gen2. Use `ibm_resource_key` to manage credentials.
+* `allowlist` is not supported for Gen2. Use `ibm_cbr_rule` to manage IP allowlisting.
+
+```terraform
+data "ibm_resource_group" "test_acc" {
+  is_default = true
+}
+
+resource "ibm_database" "mongodb" {
+  resource_group_id            = data.ibm_resource_group.test_acc.id
+  name                         = "mongodb-gen2-test"
+  service                      = "databases-for-mongodb"
+  plan                         = "standard-gen2"
+  location                     = "eu-de"
+  group {
+    group_id = "member"
+    members {
+      allocation_count = 3
+    }
+    disk {
+      allocation_mb = 10240
+    }
+    host_flavor {
+      id = "bxf.4x16"
+    }
+  }
+  tags = ["one:two"]
+  timeouts {
+    create = "120m"
+    update = "120m"
+    delete = "15m"
+  }
+}
+
+# Use ibm_resource_key instead of users/adminpassword for Gen2
+resource "ibm_resource_key" "mongodb_credentials" {
+  name                 = "mongodb-credentials"
+  resource_instance_id = ibm_database.mongodb.id
+}
+```
+
 ### Sample MongoDB Enterprise database instance with BI Connector and Analytics
 * To enable Analytics and/or BI Connector for MongoDB Enterprise, a `group` attribute must be defined for the `analytics` and `bi_connector` group types with `members` scaled to at exactly `1`. Read more about Analytics and BI Connector [here](https://cloud.ibm.com/docs/databases-for-mongodb?topic=databases-for-mongodb-mongodbee-analytics)
 
@@ -467,6 +522,62 @@ output "analytics_connection" {
   value       = data.ibm_database_connection.mongodb_conn.analytics.0.composed.0
 }
 
+```
+
+### Sample MongoDB Enterprise Sharding Gen2 instance
+
+MongoDB Enterprise Edition Sharding Gen2 (`enterprise-sharding-gen2`) supports horizontal scale-out via the `shards` attribute. Shard count can be set from `1` to `3` and can be increased after provisioning, but **cannot be decreased**.
+
+* `enterprise-sharding-gen2` is a Gen2-only plan. Use `ibm_resource_key` for credentials — `adminpassword` and `users` are not supported.
+* Provisioning may take longer than the default timeout. Extend the `create` timeout as needed.
+
+```terraform
+data "ibm_resource_group" "test_acc" {
+  is_default = true
+}
+
+resource "ibm_database" "mongo_sharded" {
+  resource_group_id = data.ibm_resource_group.test_acc.id
+  name              = "my-mongo-sharded"
+  service           = "databases-for-mongodb"
+  plan              = "enterprise-sharding-gen2"
+  location          = "ca-mon"
+  service_endpoints = "private"
+
+  shards = 2
+
+  group {
+    group_id = "member"
+    disk {
+      allocation_mb = 20480
+    }
+    host_flavor {
+      id = "bx3d.8x40"
+    }
+  }
+
+  timeouts {
+    create = "120m"
+    update = "120m"
+    delete = "15m"
+  }
+}
+
+resource "ibm_resource_key" "mongo_credentials" {
+  name                 = "mongo-sharded-credentials"
+  resource_instance_id = ibm_database.mongo_sharded.id
+}
+```
+
+### Scaling shards on an existing MongoDB Enterprise Sharding Gen2 instance
+
+To increase the shard count after provisioning, update the `shards` attribute. The plan will fail if you attempt to decrease the count.
+
+```terraform
+resource "ibm_database" "mongo_sharded" {
+  # ... other config unchanged ...
+  shards = 3  # increased from 2
+}
 ```
 
 ### Sample EDB instance
@@ -849,7 +960,12 @@ Review the argument reference that you can specify for your resource.
   **Gen2:** Accepted but ignored (Classic-only feature for read replica promotion).
 - `async_restore` - (Optional, Boolean) Should only be set for asynchronous restore. By setting this value to `true`, the restore is initiated as an asynchronous operation, which helps to reduce end-to-end restore time. Only applicable when restoring a PostgreSQL instance from `backup_id`.
 
-  **Gen2:** Accepted but ignored (Classic-only feature).
+- `shards` - (Optional, Integer) The number of shards for a MongoDB Enterprise Edition Sharding Gen2 instance. Only supported for `databases-for-mongodb` with plan `enterprise-sharding-gen2`. Accepted values are `1`, `2`, or `3`. If omitted, defaults to `1`. The shard count can be increased after provisioning, but **cannot be decreased**.
+
+  **Gen2 (`enterprise-sharding-gen2` only):** Plan fails if `shards` is set on any other service or plan combination.
+
+  > ⚠️ **Warning:** Reducing the shard count is not allowed and will result in a plan-time error.
+  > Shard scale-out is an irreversible operation.
 - `resource_group_id` - (Optional, Forces new resource, String)  The ID of the resource group where you want to create the instance. To retrieve this value, run `ibmcloud resource groups` or use the `ibm_resource_group` data source. If no value is provided, the `default` resource group is used.
 - `service` - (Required, Forces new resource, String) The type of Cloud Databases that you want to create. Only the following services are currently accepted: `databases-for-etcd`, `databases-for-postgresql`, `databases-for-redis`, `databases-for-valkey`, `databases-for-elasticsearch`, `messages-for-rabbitmq`,`databases-for-mongodb`,`databases-for-mysql`, and `databases-for-enterprisedb`.
 
@@ -924,13 +1040,14 @@ The following table summarizes feature availability for Classic and Gen2 plans:
 | Point-in-time recovery (point_in_time_recovery_deployment_id, point_in_time_recovery_time) | ✅ Supported | ❌ Plan fails if set |
 | Offline restore (MongoDB) | ✅ Supported | ❌ Accepted but ignored |
 | Async restore (PostgreSQL) | ✅ Supported | ❌ Accepted but ignored |
+| Shard scale-out (shards, MongoDB enterprise-sharding-gen2) | ❌ Not supported | ✅ Supported (1–3 shards, increase only) |
 | Scaling (members, disk, host_flavor) | ✅ Supported | ✅ Supported |
 | Scaling (memory, cpu) | ✅ Supported | ❌ Plan fails if set (controlled by host_flavor) |
 | Service endpoints | ✅ public, private, public-and-private | ⚠️ private only (plan fails if public) |
 | Admin password | ✅ Supported | ❌ Plan fails if set (use ibm_resource_key) |
 | User management | ✅ Supported | ❌ Plan fails if set (use ibm_resource_key) |
 | IP allowlist | ✅ Supported | ❌ Plan fails if set (use ibm_resource_key) |
-| Database configuration | ✅ Supported | ❌ Accepted but ignored |
+| Database configuration | ✅ Supported | ✅ Supported |
 | Auto-scaling | ✅ Supported | ❌ Accepted but ignored |
 | Logical replication slots | ✅ Supported | ❌ Accepted but ignored |
 | Read-only replicas | ✅ Supported | ❌ Plan fails if set |
@@ -942,7 +1059,7 @@ The following table summarizes feature availability for Classic and Gen2 plans:
 Gen2 plans handle unsupported features in two ways:
 
 - **Plan fails if set**: Terraform plan will fail with a validation error if these attributes are configured. You must remove them from your configuration to use Gen2 plans.
-  - Examples: `point_in_time_recovery_deployment_id`, `point_in_time_recovery_time`, `users`, `allowlist`, `adminpassword`, `remote_leader_id`, memory/cpu in `group`
+  - Examples: `point_in_time_recovery_deployment_id`, `point_in_time_recovery_time`, `users`, `allowlist`, `adminpassword`, `remote_leader_id`, memory/cpu in `group`, `shards` on any service/plan other than `databases-for-mongodb` / `enterprise-sharding-gen2`
 
 - **Accepted but ignored**: These attributes can remain in your configuration for easier migration, but they have no effect on Gen2 instances. They are silently ignored during apply and cleared during read operations.
   - Examples: `auto_scaling`, `configuration`, `logical_replication_slot`, `offline_restore`, `async_restore`
