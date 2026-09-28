@@ -322,13 +322,7 @@ func TestBuildGen2Parameters_enterpriseShardingGen2UsesMongodbees(t *testing.T) 
 		"plan":    "enterprise-sharding-gen2",
 	})
 
-	// dbType resolution: getDatabaseTypeFromResourceID("databases-for-mongodb") → "mongodb"
-	// then overridden to "mongodbees" for enterprise-sharding-gen2
-	dbType := getDatabaseTypeFromResourceID(d.Get("service").(string))
-	plan := d.Get("plan").(string)
-	if plan == "enterprise-sharding-gen2" && dbType == "mongodb" {
-		dbType = "mongodbees"
-	}
+	dbType := getDatabaseTypeFromResourceID(d.Get("service").(string), d.Get("plan").(string))
 
 	if dbType != "mongodbees" {
 		t.Fatalf("expected dbType 'mongodbees' for enterprise-sharding-gen2, got %q", dbType)
@@ -341,11 +335,7 @@ func TestBuildGen2Parameters_standardGen2UsesMongodbNotMongodbees(t *testing.T) 
 		"plan":    "standard-gen2",
 	})
 
-	dbType := getDatabaseTypeFromResourceID(d.Get("service").(string))
-	plan := d.Get("plan").(string)
-	if plan == "enterprise-sharding-gen2" && dbType == "mongodb" {
-		dbType = "mongodbees"
-	}
+	dbType := getDatabaseTypeFromResourceID(d.Get("service").(string), d.Get("plan").(string))
 
 	if dbType != "mongodb" {
 		t.Fatalf("expected dbType 'mongodb' for standard-gen2, got %q", dbType)
