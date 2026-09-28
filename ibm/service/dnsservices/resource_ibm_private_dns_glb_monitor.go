@@ -161,11 +161,16 @@ func ResourceIBMPrivateDNSGLBMonitor() *schema.Resource {
 			},
 
 			pdnsGlbMonitorExpectedCodes: {
-				Type:         schema.TypeString,
-				Computed:     true,
-				Optional:     true,
-				ValidateFunc: validate.InvokeValidator(ibmDNSGlbMonitor, pdnsGlbMonitorExpectedCodes),
-				Description:  "The expected HTTP response code or code range of the health check. This parameter is only valid for HTTP and HTTPS",
+				Type:     schema.TypeString,
+				Computed: true,
+				Optional: true,
+				ValidateFunc: validate.ValidateAllowedStringValues([]string{
+					"200", "201", "202", "203", "204", "205", "206", "207", "208", "226",
+					"2xx", "3xx", "4xx", "5xx",
+					"2xx,3xx", "2xx,4xx",
+					"2xx,3xx,4xx",
+				}),
+				Description: "The expected HTTP response code or code range of the health check. This parameter is only valid for HTTP and HTTPS",
 			},
 
 			pdnsGlbMonitorExpectedBody: {
@@ -192,7 +197,6 @@ func ResourceIBMPrivateDNSGLBMonitor() *schema.Resource {
 func ResourceIBMPrivateDNSGLBMonitorValidator() *validate.ResourceValidator {
 	monitorCheckTypes := "HTTP, HTTPS, TCP"
 	methods := "GET, HEAD"
-	expectedcode := "200,201,202,203,204,205,206,207,208,226,2xx,3xx,4xx,5xx"
 
 	validateSchema := make([]validate.ValidateSchema, 0)
 	validateSchema = append(validateSchema,
@@ -209,13 +213,6 @@ func ResourceIBMPrivateDNSGLBMonitorValidator() *validate.ResourceValidator {
 			Type:                       validate.TypeString,
 			Required:                   true,
 			AllowedValues:              methods})
-	validateSchema = append(validateSchema,
-		validate.ValidateSchema{
-			Identifier:                 pdnsGlbMonitorExpectedCodes,
-			ValidateFunctionIdentifier: validate.ValidateAllowedStringValue,
-			Type:                       validate.TypeString,
-			Required:                   true,
-			AllowedValues:              expectedcode})
 	dnsMonitorValidator := validate.ResourceValidator{ResourceName: ibmDNSGlbMonitor, Schema: validateSchema}
 	return &dnsMonitorValidator
 }
