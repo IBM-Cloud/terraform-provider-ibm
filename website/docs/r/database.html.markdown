@@ -292,6 +292,38 @@ resource "ibm_database" "test_acc" {
 }
 ```
 
+### Sample Gen2 database instance restored to a point in time
+
+A Gen2 point-in-time restore creates a new instance from a Gen2 source instance of the same service, in the same region and account. Set `point_in_time_recovery_deployment_id` and `point_in_time_recovery_time` together. The time is an RFC 3339 timestamp with an offset, and it must lie inside the source's restorable window and outside any period in which the source's history is unavailable. Gen2 has no restore to the latest time, so an empty time is refused. The platform selects the base backup, so `backup_id` cannot be set with these arguments.
+
+Group settings that you omit take the source's current values. Storage can be raised, but not set below the source's current storage.
+
+```terraform
+resource "ibm_database" "postgres_gen2_restore" {
+  name              = "my-postgres-gen2-restore"
+  plan              = "standard-gen2"
+  location          = "ca-mon"
+  service           = "databases-for-postgresql"
+  resource_group_id = data.ibm_resource_group.group.id
+  service_endpoints = "private"
+
+  point_in_time_recovery_deployment_id = ibm_database.postgres_gen2.id
+  point_in_time_recovery_time          = "2026-09-27T09:30:00Z"
+
+  backups {
+    point_in_time_recovery {
+      retention_days = 14
+    }
+  }
+
+  timeouts {
+    create = "180m"
+  }
+}
+```
+
+The restore arguments are applied only at creation, and later changes to them are ignored. A point-in-time restore can take longer than the default create timeout; see [Timeouts](#timeouts).
+
 
 ### Sample database instance by using auto_scaling
 
@@ -762,6 +794,8 @@ The following timeouts are defined for this resource.
 
 ICD create instance typically takes between 30 minutes to 45 minutes. Delete and update takes a minute with the exception of an in place version upgrade. Provisioning time are unpredictable, if the apply fails due to a timeout, import the database resource once the create is completed.
 
+Gen2 point-in-time restores replay the source's changes since the selected backup, so they can take longer than the default create timeout; raise `timeouts { create }` for them. If the create times out, the restore keeps running and Terraform records the instance as tainted: run `terraform untaint` once it is active instead of letting the next apply replace it.
+
 
 ## Argument reference
 Review the argument reference that you can specify for your resource.
@@ -801,11 +835,18 @@ Review the argument reference that you can specify for your resource.
 
   **Classic:** Supports backups from Classic instances. Backup CRN format: `crn:v1:<…>:backup:<backup-id>`.
 
-  **Gen2:** Supports restoring from Classic backups, Gen2 coupled backups (format `crn:v1:<…>:backup:<backup-id>`), and Gen2 independent backups (format `crn:v1:bluemix:public:databases-independent-backups:<region>:a/<account>:<backup-id>::`).
+  **Gen2:** Supports restoring from Classic backups, Gen2 coupled backups (format `crn:v1:<…>:backup:<backup-id>`), and Gen2 independent backups (format `crn:v1:bluemix:public:databases-independent-backups:<region>:a/<account>:<backup-id>::`). Cannot be combined with `point_in_time_recovery_deployment_id`.
 
 - `backup_encryption_key_crn`- (Optional, Forces new resource, String) The CRN of a key protect key, that you want to use for encrypting disk that holds deployment backups. A key protect CRN is in the format `crn:v1:<...>:key:`. Backup_encryption_key_crn can be added only at the time of creation and no update support  are available.
 
   **Gen2:** Plan fails if set. Backup encryption is not supported in Gen2.
+- `backups` - (Optional, List) Backup settings. Gen2 plans only; the plan fails if it is set on a Classic plan.
+
+  Nested scheme for `backups`:
+  - `point_in_time_recovery` - (Optional, List) Point-in-time recovery settings.
+
+    Nested scheme for `point_in_time_recovery`:
+    - `retention_days` - (Optional, Integer) Days of history kept for point-in-time recovery, from 7 to the region's maximum. It can be set at creation and updated in place, and it is read back from the instance. An instance that never sets it keeps 7 days. Removing the block keeps the current value; set `7` to return to the minimum. The platform refuses the setting where point-in-time recovery is not offered.
 - `configuration` - (Optional, Json String) Database Configuration in JSON format. Supported services: `databases-for-postgresql`, `databases-for-redis`, `databases-for-mysql`,`messages-for-rabbitmq` and `databases-for-enterprisedb`. For valid values please refer [API docs](https://cloud.ibm.com/apidocs/cloud-databases-api/cloud-databases-api-v5#updatedatabaseconfiguration).
 
   **Gen2:** Accepted but ignored. Database configuration management is not yet implemented for Gen2 instances.
@@ -891,11 +932,11 @@ Review the argument reference that you can specify for your resource.
   `enterprise-gen2` is supported only for elasticsearch (`databases-for-elasticsearch`).
 - `point_in_time_recovery_deployment_id` - (Optional, String) The ID of the source deployment that you want to recover back to.
 
-  **Gen2:** Plan fails if set. Point-in-time recovery is not yet implemented for Gen2 instances.
+  **Gen2:** The CRN of a Gen2 source instance of the same service, in the same region and account; `location` must be the source's region. Set it together with `point_in_time_recovery_time`, and not with `backup_id`. Applied only at creation.
 
 - `point_in_time_recovery_time` - (Optional, String) The timestamp in UTC format that you want to restore to. To retrieve the timestamp, run the `ibmcloud cdb postgresql earliest-pitr-timestamp <deployment name or CRN>` command. To restore to the latest available time, use a blank string `""` as the timestamp. For more information, see [Point-in-time Recovery](https://cloud.ibm.com/docs/databases-for-postgresql?topic=databases-for-postgresql-pitr).
 
-  **Gen2:** Plan fails if set. Point-in-time recovery is not yet implemented for Gen2 instances.
+  **Gen2:** Required with `point_in_time_recovery_deployment_id`. An RFC 3339 timestamp with an offset, for example `2026-09-27T09:30:00Z`; the provider sends it in UTC. An empty string is refused because Gen2 has no restore to the latest time. Applied only at creation.
 - `remote_leader_id` - (Optional, String) A CRN of the leader database to make the replica(read-only) deployment. The leader database is created by a database deployment with the same service ID. A read-only replica is set up to replicate all of your data from the leader deployment to the replica deployment by using asynchronous replication. Removing the `remote_leader_id` attribute from an existing read-only replica will promote the deployment to a standalone deployment. The deployment will restart and break its connection with the leader. This will disable all database users associated with this deployment. For more information, see [Configuring Read-only Replicas](https://cloud.ibm.com/docs/databases-for-postgresql?topic=databases-for-postgresql-read-only-replicas).
 
   **Gen2:** Plan fails if set. Read-only replica creation and promotion are not supported for Gen2 instances.
@@ -982,7 +1023,8 @@ The following table summarizes feature availability for Classic and Gen2 plans:
 | Backup encryption (backup_encryption_key_crn) | ✅ Supported | ❌ Plan fails if set |
 | Independent Backups (automatic backups) | ❌ Not available | ✅ Supported (requires S2S authorization) |
 | Restore from backup (backup_id) | ✅ Supported (Classic backups) | ✅ Supported (Classic and Gen2 backups) |
-| Point-in-time recovery (point_in_time_recovery_deployment_id, point_in_time_recovery_time) | ✅ Supported | ❌ Plan fails if set |
+| Point-in-time recovery (point_in_time_recovery_deployment_id, point_in_time_recovery_time) | ✅ Supported | ✅ Supported (explicit RFC 3339 time; no restore to latest) |
+| Point-in-time recovery retention (backups.point_in_time_recovery.retention_days) | ❌ Plan fails if set | ✅ Supported |
 | Offline restore (MongoDB) | ✅ Supported | ❌ Accepted but ignored |
 | Async restore (PostgreSQL) | ✅ Supported | ❌ Accepted but ignored |
 | Shard scale-out (shards, MongoDB enterprise-sharding-gen2) | ❌ Not supported | ✅ Supported (1–3 shards, increase only) |
@@ -1004,7 +1046,7 @@ The following table summarizes feature availability for Classic and Gen2 plans:
 Gen2 plans handle unsupported features in two ways:
 
 - **Plan fails if set**: Terraform plan will fail with a validation error if these attributes are configured. You must remove them from your configuration to use Gen2 plans.
-  - Examples: `point_in_time_recovery_deployment_id`, `point_in_time_recovery_time`, `users`, `allowlist`, `adminpassword`, `remote_leader_id`, memory/cpu in `group`, `shards` on any service/plan other than `databases-for-mongodb` / `enterprise-sharding-gen2`
+  - Examples: `users`, `allowlist`, `adminpassword`, `remote_leader_id`, memory/cpu in `group`, `shards` on any service/plan other than `databases-for-mongodb` / `enterprise-sharding-gen2`
 
 - **Accepted but ignored**: These attributes can remain in your configuration for easier migration, but they have no effect on Gen2 instances. They are silently ignored during apply and cleared during read operations.
   - Examples: `auto_scaling`, `configuration`, `logical_replication_slot`, `offline_restore`, `async_restore`
