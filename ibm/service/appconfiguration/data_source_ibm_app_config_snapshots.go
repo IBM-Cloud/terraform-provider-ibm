@@ -156,7 +156,7 @@ func dataSourceIbmAppConfigSnapshotsRead(d *schema.ResourceData, meta interface{
 		return flex.FmtErrorf("getAppConfigClient failed %s", err)
 	}
 
-	options := &appconfigurationv1.ListSnapshotsOptions{}
+	options := &appconfigurationv1.ListGitconfigsOptions{}
 
 	if _, ok := GetFieldExists(d, "collection_id"); ok {
 		options.SetCollectionID(d.Get("collection_id").(string))
@@ -188,11 +188,11 @@ func dataSourceIbmAppConfigSnapshotsRead(d *schema.ResourceData, meta interface{
 	}
 
 	for {
-		options.Offset = &offset
-		result, response, err := appconfigClient.ListSnapshots(options)
+		options.SetOffset(offset)
+		result, response, err := appconfigClient.ListGitconfigs(options)
 		shapshotsList = result
 		if err != nil {
-			return flex.FmtErrorf("ListSnapshots failed %s\n%s", err, response)
+			return flex.FmtErrorf("ListGitconfigs failed %s\n%s", err, response)
 		}
 		if isLimit {
 			offset = 0

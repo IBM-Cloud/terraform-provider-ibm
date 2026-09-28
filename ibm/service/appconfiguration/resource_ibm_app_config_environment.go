@@ -211,7 +211,7 @@ func resourceEnvironmentDelete(d *schema.ResourceData, meta interface{}) error {
 	options := &appconfigurationv1.DeleteEnvironmentOptions{}
 	options.SetEnvironmentID(parts[1])
 
-	response, err := appconfigClient.DeleteEnvironment(options)
+	_, response, err := appconfigClient.DeleteEnvironment(options)
 
 	if err != nil {
 		if response != nil && response.StatusCode == 404 {
