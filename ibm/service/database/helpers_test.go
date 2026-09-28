@@ -1000,7 +1000,7 @@ func TestExtractDatabaseAllocations(t *testing.T) {
 				},
 			},
 		}
-		alloc := extractDatabaseAllocations(instance, "databases-for-mongodb")
+		alloc := extractDatabaseAllocations(instance, "databases-for-mongodb", "standard-gen2")
 		require.Equal(t, float64(30), alloc.storageGB)
 		require.Equal(t, "bx3d.4x20", alloc.hostFlavorID)
 		require.Equal(t, int64(3), alloc.members)
@@ -1016,7 +1016,7 @@ func TestExtractDatabaseAllocations(t *testing.T) {
 				},
 			},
 		}
-		alloc := extractDatabaseAllocations(instance, "databases-for-mongodb")
+		alloc := extractDatabaseAllocations(instance, "databases-for-mongodb", "enterprise-sharding-gen2")
 		require.Equal(t, float64(60), alloc.storageGB)
 		require.Equal(t, "bx3d.8x40", alloc.hostFlavorID)
 		require.Equal(t, int64(2), alloc.shards)
@@ -1024,7 +1024,7 @@ func TestExtractDatabaseAllocations(t *testing.T) {
 
 	t.Run("returns zero allocations when dataservices key is absent", func(t *testing.T) {
 		instance := map[string]interface{}{}
-		alloc := extractDatabaseAllocations(instance, "databases-for-mongodb")
+		alloc := extractDatabaseAllocations(instance, "databases-for-mongodb", "standard-gen2")
 		require.Equal(t, float64(0), alloc.storageGB)
 		require.Equal(t, "", alloc.hostFlavorID)
 	})
