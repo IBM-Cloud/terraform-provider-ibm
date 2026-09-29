@@ -158,8 +158,6 @@ func resourceIbmBackupRecoveryVaultFailoverUpdate(context context.Context, d *sc
 	return resourceIbmBackupRecoveryVaultFailoverRead(context, d, meta)
 }
 
-
-
 func resourceIbmBackupRecoveryVaultFailoverDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	// This resource does not support a "delete" operation.
 
