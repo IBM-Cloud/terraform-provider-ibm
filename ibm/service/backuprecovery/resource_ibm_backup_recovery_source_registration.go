@@ -229,6 +229,7 @@ func ResourceIbmBackupRecoverySourceRegistration() *schema.Resource {
 						"datamover_hostport_number": &schema.Schema{
 							Type:        schema.TypeInt,
 							Optional:    true,
+							Computed:    true,
 							Description: "Specifies the port number to use when using the HostPort model for datamover communication. If user specifies a port number, that value is set here. If no port number was specified by the user, the gflag controlled value is set here.",
 						},
 						"datamover_service_type": &schema.Schema{

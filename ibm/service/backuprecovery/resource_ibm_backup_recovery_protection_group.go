@@ -2064,6 +2064,7 @@ func ResourceIbmBackupRecoveryProtectionGroup() *schema.Resource {
 						"snapshot_timeout_seconds": &schema.Schema{
 							Type:        schema.TypeInt,
 							Optional:    true,
+							Computed:    true,
 							Description: "Specifies the user specified timeout in seconds to wait for a volume snapshot to become ready. This is not supported if CSI snapshot is not enabled. Default: 900 secs for IBM baas, 300 secs for others.",
 						},
 						"source_id": &schema.Schema{

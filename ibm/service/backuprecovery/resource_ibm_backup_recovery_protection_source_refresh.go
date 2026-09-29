@@ -25,6 +25,7 @@ func ResourceIbmBackupRecoveryProtectionSourceRefresh() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceIbmBackupRecoveryProtectionSourceRefreshCreate,
 		ReadContext:   resourceIbmBackupRecoveryProtectionSourceRefreshRead,
+		UpdateContext: resourceIbmBackupRecoveryProtectionSourceRefreshUpdate,
 		DeleteContext: resourceIbmBackupRecoveryProtectionSourceRefreshDelete,
 		Importer:      &schema.ResourceImporter{},
 

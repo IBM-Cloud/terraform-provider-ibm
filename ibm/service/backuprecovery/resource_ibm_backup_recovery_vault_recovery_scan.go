@@ -26,6 +26,7 @@ func ResourceIbmBackupRecoveryVaultRecoveryScan() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceIbmBackupRecoveryVaultRecoveryScanCreate,
 		ReadContext:   resourceIbmBackupRecoveryVaultRecoveryScanRead,
+		UpdateContext: resourceIbmBackupRecoveryVaultRecoveryScanUpdate,
 		DeleteContext: resourceIbmBackupRecoveryVaultRecoveryScanDelete,
 		Importer:      &schema.ResourceImporter{},
 		Schema: map[string]*schema.Schema{

@@ -26,6 +26,7 @@ func ResourceIbmBackupRecoveryVaultFailover() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceIbmBackupRecoveryVaultFailoverCreate,
 		ReadContext:   resourceIbmBackupRecoveryVaultFailoverRead,
+		UpdateContext: resourceIbmBackupRecoveryVaultFailoverUpdate,
 		DeleteContext: resourceIbmBackupRecoveryVaultFailoverDelete,
 		Importer:      &schema.ResourceImporter{},
 
@@ -150,6 +151,14 @@ func resourceIbmBackupRecoveryVaultFailoverCreate(context context.Context, d *sc
 func resourceIbmBackupRecoveryVaultFailoverRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	return nil
 }
+
+func resourceIbmBackupRecoveryVaultFailoverUpdate(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	// This resource does not support an "update" operation.
+	// endpoint_type and service_name changes are reflected on the next apply via the client configuration.
+	return resourceIbmBackupRecoveryVaultFailoverRead(context, d, meta)
+}
+
+
 
 func resourceIbmBackupRecoveryVaultFailoverDelete(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	// This resource does not support a "delete" operation.
