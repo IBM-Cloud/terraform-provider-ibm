@@ -62,27 +62,27 @@ func ResourceIBMEnEmailSubscription() *schema.Resource {
 					Schema: map[string]*schema.Schema{
 						"add_notification_payload": {
 							Type:        schema.TypeBool,
-							Optional:    true,
+							Required:    true,
 							Description: "Whether to add the notification payload to the email.",
 						},
 						"reply_to_mail": {
 							Type:        schema.TypeString,
-							Optional:    true,
+							Required:    true,
 							Description: "The email address to reply to.",
 						},
 						"reply_to_name": {
 							Type:        schema.TypeString,
-							Optional:    true,
+							Required:    true,
 							Description: "The  name of the email address user to reply to.",
 						},
 						"from_name": {
 							Type:        schema.TypeString,
-							Optional:    true,
+							Required:    true,
 							Description: "The email address from which email is sourced.",
 						},
 						"invited": {
 							Type:        schema.TypeList,
-							Optional:    true,
+							Required:    true,
 							Computed:    true,
 							Description: "The email addresses to invite. Add an address by adding it to this list; remove an address by removing it from this list.",
 							Elem:        &schema.Schema{Type: schema.TypeString},

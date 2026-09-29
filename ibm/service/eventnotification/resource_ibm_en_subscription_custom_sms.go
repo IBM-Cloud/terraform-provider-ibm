@@ -60,7 +60,7 @@ func ResourceIBMEnCustomSMSSubscription() *schema.Resource {
 					Schema: map[string]*schema.Schema{
 						"invited": {
 							Type:        schema.TypeList,
-							Optional:    true,
+							Required:    true,
 							Computed:    true,
 							Description: "The phone numbers to invite. Add a number by adding it to this list; remove a number by removing it from this list.",
 							Elem:        &schema.Schema{Type: schema.TypeString},
@@ -193,7 +193,7 @@ func resourceIBMEnCustomSMSSubscriptionRead(context context.Context, d *schema.R
 	}
 
 	if err = d.Set("subscription_id", result.ID); err != nil {
-		return diag.FromErr(fmt.Errorf("[ERROR] Error setting instance_guid: %s", err))
+		return diag.FromErr(fmt.Errorf("[ERROR] Error setting subscription_id: %s", err))
 	}
 
 	if err = d.Set("name", result.Name); err != nil {
@@ -203,12 +203,6 @@ func resourceIBMEnCustomSMSSubscriptionRead(context context.Context, d *schema.R
 	if result.Description != nil {
 		if err = d.Set("description", result.Description); err != nil {
 			return diag.FromErr(fmt.Errorf("[ERROR] Error setting description: %s", err))
-		}
-	}
-
-	if result.From != nil {
-		if err = d.Set("from", result.From); err != nil {
-			return diag.FromErr(fmt.Errorf("[ERROR] Error setting from: %s", err))
 		}
 	}
 

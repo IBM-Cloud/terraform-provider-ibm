@@ -109,15 +109,15 @@ Review the argument reference that you can specify for your resource.
 
 - `topic_id` - (Required, Forces new resource, String) Topic ID.
 
-- `attributes` - (Optional, List) Subscription attributes. The required attributes depend on the destination type (sandbox vs production).
+- `attributes` - (Required, List) Subscription attributes. The required attributes depend on the destination type (sandbox vs production).
 
   Nested scheme for **attributes**:
 
-  - `add_notification_payload` - (Optional, Boolean) Whether to include the notification payload in the email. Default is `false`.
+  - `add_notification_payload` - (Required, Boolean) Whether to include the notification payload in the email. Default is `false`.
 
-  - `reply_to_name` - (Optional, String) The email user name to reply to.
+  - `reply_to_name` - (Required, String) The email user name to reply to.
 
-  - `reply_to_mail` - (Optional, String) The email address to reply to.
+  - `reply_to_mail` - (Required, String) The email address to reply to.
 
   - `from_name` - (Conditional, String) The name of the email address from which email is sourced.
     - **Required** for production destinations (`is_sandbox = false`)
@@ -131,7 +131,7 @@ Review the argument reference that you can specify for your resource.
 
   - `template_id_invitation` - (Optional, String) The template ID for invitation emails.
 
-  - `invited` - (Optional, List) The email addresses to invite. Add an address by adding it to this list; remove an address by removing it from this list.
+  - `invited` - (Required, List) The email addresses to invite. Add an address by adding it to this list; remove an address by removing it from this list.
 
   - `subscribed` - (Computed, List) Email addresses that have accepted the invitation and are currently subscribed. Populated by the service; read-only.
 

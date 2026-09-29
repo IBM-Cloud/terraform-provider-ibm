@@ -48,14 +48,15 @@ func TestAccIBMEnEmailSubscriptionAllArgs(t *testing.T) {
 					resource.TestCheckResourceAttrSet("ibm_en_subscription_email.en_subscription_resource_1", "attributes.0.reply_to_name"),
 					resource.TestCheckResourceAttrSet("ibm_en_subscription_email.en_subscription_resource_1", "attributes.0.from_name"),
 					resource.TestCheckResourceAttrSet("ibm_en_subscription_email.en_subscription_resource_1", "attributes.0.add_notification_payload"),
-					resource.TestCheckResourceAttrSet("ibm_en_subscription_email.en_subscription_resource_1", "attributes.0.to"),
+					resource.TestCheckResourceAttrSet("ibm_en_subscription_email.en_subscription_resource_1", "attributes.0.invited.#"),
 				),
 			},
 			{
-				Config: testAccCheckIBMEnEmailSubscriptionConfig(instanceName, newName, newDescription),
+				Config: testAccCheckIBMEnEmailSubscriptionUpdatedConfig(instanceName, newName, newDescription),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("ibm_en_subscription_email.en_subscription_resource_1", "name", newName),
 					resource.TestCheckResourceAttr("ibm_en_subscription_email.en_subscription_resource_1", "description", newDescription),
+					resource.TestCheckResourceAttr("ibm_en_subscription_email.en_subscription_resource_1", "attributes.0.invited.#", "2"),
 				),
 			},
 			{
@@ -75,27 +76,57 @@ func testAccCheckIBMEnEmailSubscriptionConfig(instanceName, name, description st
 		plan     = "standard"
 		service  = "event-notifications"
 	}
-	
+
 	resource "ibm_en_topic" "en_topic_resource_2" {
 		instance_guid = ibm_resource_instance.en_subscription_resource.guid
-		name        = "tf_topic_name_0234"
-		description = "tf_topic_description_0235"
+		name          = "tf_topic_name_0234"
+		description   = "tf_topic_description_0235"
 	}
-	
-	
+
 	resource "ibm_en_subscription_email" "en_subscription_resource_1" {
 		name           = "%s"
-		description 	 = "%s"
-		instance_guid    = ibm_resource_instance.en_subscription_resource.guid
+		description    = "%s"
+		instance_guid  = ibm_resource_instance.en_subscription_resource.guid
 		topic_id       = ibm_en_topic.en_topic_resource_2.topic_id
 		destination_id = "set email destination id"
 		attributes {
 			add_notification_payload = true
-            reply_to_mail = "en@ibm.com"
-            reply_to_name = "EYS ORG"
-            from_name="ABC ORG"
-            invited = ["testmail@gmail.com"]
-			
+			reply_to_mail            = "en@ibm.com"
+			reply_to_name            = "EYS ORG"
+			from_name                = "ABC ORG"
+			invited                  = ["testmail@gmail.com"]
+		}
+	}
+	`, instanceName, name, description)
+}
+
+func testAccCheckIBMEnEmailSubscriptionUpdatedConfig(instanceName, name, description string) string {
+	return fmt.Sprintf(`
+	resource "ibm_resource_instance" "en_subscription_resource" {
+		name     = "%s"
+		location = "us-south"
+		plan     = "standard"
+		service  = "event-notifications"
+	}
+
+	resource "ibm_en_topic" "en_topic_resource_2" {
+		instance_guid = ibm_resource_instance.en_subscription_resource.guid
+		name          = "tf_topic_name_0234"
+		description   = "tf_topic_description_0235"
+	}
+
+	resource "ibm_en_subscription_email" "en_subscription_resource_1" {
+		name           = "%s"
+		description    = "%s"
+		instance_guid  = ibm_resource_instance.en_subscription_resource.guid
+		topic_id       = ibm_en_topic.en_topic_resource_2.topic_id
+		destination_id = "set email destination id"
+		attributes {
+			add_notification_payload = true
+			reply_to_mail            = "en@ibm.com"
+			reply_to_name            = "EYS ORG"
+			from_name                = "ABC ORG"
+			invited                  = ["testmail@gmail.com", "another@gmail.com"]
 		}
 	}
 	`, instanceName, name, description)
@@ -141,7 +172,7 @@ func testAccCheckIBMEnEmailSubscriptionDestroy(s *terraform.State) error {
 	}
 
 	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "en_subscription_resource_1" {
+		if rs.Type != "ibm_en_subscription_email" {
 			continue
 		}
 

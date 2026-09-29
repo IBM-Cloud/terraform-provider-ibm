@@ -54,11 +54,11 @@ Review the argument reference that you can specify for your resource.
 
 - `topic_id` - (Required, Forces new resource, String) Topic ID.
 
-- `attributes` - (Optional, List) Subscription attributes.
+- `attributes` - (Required, List) Subscription attributes.
 
   Nested scheme for **attributes**:
 
-  - `invited` - (Optional, List) The phone numbers to invite. Add a number by adding it to this list; remove a number by removing it from this list.
+  - `invited` - (Required, List) The phone numbers to invite. Add a number by adding it to this list; remove a number by removing it from this list.
 
   - `subscribed` - (Computed, List) Phone numbers that have accepted the invitation and are currently subscribed. Populated by the service; read-only.
 
