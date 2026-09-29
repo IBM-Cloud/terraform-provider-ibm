@@ -272,3 +272,62 @@ func testAccCheckIBMDatabaseInstanceMysqlFullyspecified(databaseResourceGroup st
 	}
 				`, databaseResourceGroup, name, acc.Region())
 }
+
+// TestAccIBMDatabaseGen2MysqlS2SWarning verifies the S2S warning fires on
+// a Gen2 MySQL create and is non-blocking.
+func TestAccIBMDatabaseGen2MysqlS2SWarning(t *testing.T) {
+	t.Parallel()
+	name := fmt.Sprintf("tf-gen2-s2s-%s", acctest.RandString(8))
+	resName := "ibm_database.gen2_s2s"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { acc.TestAccPreCheckEnterprise(t) },
+		Providers:    acc.TestAccProviders,
+		CheckDestroy: testAccCheckIBMDatabaseInstanceDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIBMDatabaseGen2MysqlS2SConfig(name),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet(resName, "id"),
+					resource.TestCheckResourceAttr(resName, "name", name),
+					resource.TestCheckResourceAttr(resName, "service", "databases-for-mysql"),
+					resource.TestCheckResourceAttr(resName, "plan", "standard-gen2"),
+					resource.TestCheckResourceAttr(resName, "location", "eu-fr2"),
+					resource.TestCheckResourceAttrSet(resName, "groups.#"),
+				),
+			},
+		},
+	})
+}
+
+// testAccCheckIBMDatabaseGen2MysqlS2SConfig provisions a minimal Gen2 MySQL
+// instance in eu-fr2. eu-fr2 requires exactly 2 members for this service.
+func testAccCheckIBMDatabaseGen2MysqlS2SConfig(name string) string {
+	return fmt.Sprintf(`
+data "ibm_resource_group" "test_acc" {
+  is_default = true
+}
+
+resource "ibm_database" "gen2_s2s" {
+  resource_group_id = data.ibm_resource_group.test_acc.id
+  name              = %[1]q
+  service           = "databases-for-mysql"
+  plan              = "standard-gen2"
+  location          = "eu-fr2"
+
+  # eu-fr2 Gen2 MySQL only allows exactly 2 members
+  group {
+    group_id = "member"
+    members {
+      allocation_count = 2
+    }
+  }
+
+  timeouts {
+    create = "120m"
+    update = "120m"
+    delete = "15m"
+  }
+}
+`, name)
+}

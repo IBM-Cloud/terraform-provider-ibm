@@ -141,6 +141,7 @@ type resourceIBMDatabaseBackend interface {
 	ValidateUnsupportedAttrsDiff(context context.Context, d *schema.ResourceDiff, meta interface{}) error
 	ValidateGroupsDiff(context context.Context, d *schema.ResourceDiff, meta interface{}) error
 	ValidateServiceEndpointsDiff(context context.Context, d *schema.ResourceDiff, meta interface{}) error
+	ValidateShardsDiff(context context.Context, d *schema.ResourceDiff, meta interface{}) error
 }
 
 func pickResourceBackend(d *schema.ResourceData) resourceIBMDatabaseBackend {
@@ -185,10 +186,13 @@ func ResourceIBMDatabaseInstance() *schema.Resource {
 			validateRemoteLeaderIDDiff,
 			validateVersionDiff,
 			validateAsyncRestoreDiff,
+			validateShardsDiff,
 			validateBackendSpecificServiceEndpointsDiff,
 		),
 
-		Importer: &schema.ResourceImporter{},
+		Importer: &schema.ResourceImporter{
+			StateContext: resourceIBMDatabaseImport,
+		},
 
 		Timeouts: &schema.ResourceTimeout{
 			Create: schema.DefaultTimeout(60 * time.Minute),
@@ -290,6 +294,13 @@ func ResourceIBMDatabaseInstance() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Optional:    true,
+			},
+			"shards": {
+				Description:  "Explicit shard count for MongoDB Enterprise Edition Sharding Gen 2 is supported only for databases-for-mongodb with plan enterprise-sharding-gen2. The shard count can range from 1 to 3. It can be increased after provisioning, but cannot be decreased.",
+				Type:         schema.TypeInt,
+				Optional:     true,
+				Computed:     true,
+				ValidateFunc: validateShardCount,
 			},
 			"version_upgrade_skip_backup": {
 				Description: "Option to skip the backup when upgrading version. Only applicable to databases that do not support PITR. Skipping the backup means that your deployment becomes available more quickly, but there is no immediate backup available. This is not recommended as it could result in data loss. Gen2: Accepted but ignored (Classic-only feature for version upgrades).",
@@ -1662,6 +1673,39 @@ func classicDatabaseInstanceCreate(context context.Context, d *schema.ResourceDa
 	}
 
 	return resourceIBMDatabaseInstanceRead(context, d, meta)
+}
+
+func resourceIBMDatabaseImport(ctx context.Context, d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
+	instanceID := d.Id()
+	rsConClient, err := meta.(conns.ClientSession).ResourceControllerV2API()
+	if err != nil {
+		return nil, err
+	}
+
+	rsInst := rc.GetResourceInstanceOptions{
+		ID: &instanceID,
+	}
+	instance, response, err := rsConClient.GetResourceInstance(&rsInst)
+	if err != nil {
+		return nil, fmt.Errorf("[ERROR] Error retrieving resource instance %s: %w (response: %v)", instanceID, err, response)
+	}
+
+	if instance.ResourcePlanID != nil {
+		rsCatClient, err := meta.(conns.ClientSession).ResourceCatalogAPI()
+		if err != nil {
+			return nil, err
+		}
+		rsCatRepo := rsCatClient.ResourceCatalog()
+		servicePlan, err := rsCatRepo.GetServicePlanName(*instance.ResourcePlanID)
+		if err != nil {
+			return nil, fmt.Errorf("[ERROR] Error retrieving plan for resource instance %s: %w", instanceID, err)
+		}
+		if err := d.Set("plan", servicePlan); err != nil {
+			return nil, err
+		}
+	}
+
+	return []*schema.ResourceData{d}, nil
 }
 
 func resourceIBMDatabaseInstanceRead(context context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -3335,6 +3379,55 @@ func validateServiceEndpointsDiffClassic(_ context.Context, diff *schema.Resourc
 	return nil
 }
 
+func validateUnsupportedAttrsDiffClassic(_ context.Context, d *schema.ResourceDiff, _ interface{}) error {
+	var unsupportedAttrs []string
+
+	for _, attr := range classicUnsupportedAttrs {
+		if val, ok := d.GetOk(attr); ok && !isEmptyClassicAttrValue(val) {
+			unsupportedAttrs = append(unsupportedAttrs, attr)
+		}
+	}
+
+	if len(unsupportedAttrs) == 0 {
+		return nil
+	}
+
+	var msg strings.Builder
+	msg.WriteString("The following attributes are not supported for Classic databases:\n\n")
+
+	for i, attr := range unsupportedAttrs {
+		msg.WriteString(fmt.Sprintf("%d. Attribute: %q\n", i+1, attr))
+		msg.WriteString("\n")
+	}
+
+	return errors.New(msg.String())
+}
+
+func isEmptyClassicAttrValue(val interface{}) bool {
+	if val == nil {
+		return true
+	}
+
+	switch v := val.(type) {
+	case string:
+		return v == ""
+	case bool:
+		return !v
+	case int:
+		return v == 0
+	case int64:
+		return v == 0
+	case float64:
+		return v == 0
+	case []interface{}:
+		return len(v) == 0
+	case map[string]interface{}:
+		return len(v) == 0
+	default:
+		return false
+	}
+}
+
 func validateVersionDiff(_ context.Context, diff *schema.ResourceDiff, meta interface{}) (err error) {
 	instanceID := diff.Id()
 	oldVersion, newVersion := diff.GetChange("version")
@@ -3624,4 +3717,11 @@ func DatabaseUserPasswordValidator(userType string) schema.SchemaValidateFunc {
 		}
 		return
 	}
+}
+
+func validateShardCount(v interface{}, k string) (warnings []string, errors []error) {
+	if val := v.(int); val < 1 || val > 3 {
+		errors = append(errors, fmt.Errorf("shard count must be between 1 and 3"))
+	}
+	return
 }

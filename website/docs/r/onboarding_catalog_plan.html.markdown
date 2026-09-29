@@ -210,11 +210,11 @@ Nested schema for **overview_ui**:
 		* `display_name` - (Optional, String) The display name of the product.
 		* `long_description` - (Optional, String) The detailed description of your product that is displayed at the beginning of your product page in the catalog. Markdown markup language is supported.
 * `pricing_tags` - (Optional, List) A list of tags that carry information about the pricing information of your product.
-  * Constraints: The list items must match regular expression `/^[a-z0-9\\-._]+$/`. The maximum length is `100` items. The minimum length is `0` items.
+  * Constraints: The list items must match regular expression `/^[a-z0-9\\-._ ]+$/`. The maximum length is `100` items. The minimum length is `0` items.
 * `product_id` - (Required, Forces new resource, String) The unique ID of the resource.
   * Constraints: Length must be `71` characters. The value must match regular expression `/^[a-zA-Z0-9]{32}:o:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/`.
 * `tags` - (Optional, List) A list of tags that carry information about your product. These tags can be used to find your product in the IBM Cloud catalog.
-  * Constraints: The list items must match regular expression `/^[a-z0-9\\-._]+$/`. The maximum length is `100` items. The minimum length is `0` items.
+  * Constraints: The list items must match regular expression `/^[a-z0-9\\-._ ]+$/`. The maximum length is `100` items. The minimum length is `0` items.
 
 ## Attribute Reference
 

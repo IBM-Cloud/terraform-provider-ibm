@@ -625,11 +625,11 @@ func dataSourceIbmIsShareRead(context context.Context, d *schema.ResourceData, m
 
 	shareName := d.Get("name").(string)
 	shareId := d.Get("share").(string)
-	var share *vpcv1.Share = nil
+	var share *vpcv1.Share
 	if shareId != "" {
 		getShareOptions := &vpcv1.GetShareOptions{}
 
-		getShareOptions.SetID(d.Get("share").(string))
+		getShareOptions.SetID(shareId)
 
 		shareItem, response, err := vpcClient.GetShareWithContext(context, getShareOptions)
 		if err != nil {
@@ -640,31 +640,39 @@ func dataSourceIbmIsShareRead(context context.Context, d *schema.ResourceData, m
 		share = shareItem
 	} else if shareName != "" {
 		listSharesOptions := &vpcv1.ListSharesOptions{}
-
-		if shareName != "" {
-			listSharesOptions.Name = &shareName
-		}
+		listSharesOptions.Name = &shareName
 		shareCollection, response, err := vpcClient.ListSharesWithContext(context, listSharesOptions)
 		if err != nil {
 			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("ListSharesWithContext failed: %s\n%s", err.Error(), response), "(Data) ibm_is_share", "read")
 			log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
 			return tfErr.GetDiag()
 		}
-		for _, sharesItem := range shareCollection.Shares {
-			if *sharesItem.Name == shareName {
-				share = &sharesItem
-				break
+		if shareCollection != nil {
+			for i := range shareCollection.Shares {
+				sharesItem := &shareCollection.Shares[i]
+				if sharesItem.Name != nil && *sharesItem.Name == shareName {
+					share = sharesItem
+					break
+				}
 			}
 		}
 		if share == nil {
-			return flex.TerraformErrorf(err, fmt.Sprintf("[ERROR] Share with provided name %s not found", shareName), "(Data) ibm_is_share", "read").GetDiag()
+			err = fmt.Errorf("[ERROR] Share with provided name %s not found", shareName)
+			return flex.TerraformErrorf(err, err.Error(), "(Data) ibm_is_share", "read").GetDiag()
 		}
 	}
 
+	if err = dataSourceIbmIsShareRequireIdentity(share); err != nil {
+		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Get share failed: %s", err.Error()), "(Data) ibm_is_share", "read")
+		log.Printf("[DEBUG]\n%s", tfErr.GetDebugMessage())
+		return tfErr.GetDiag()
+	}
 	d.SetId(*share.ID)
-	if err = d.Set("created_at", share.CreatedAt.String()); err != nil {
-		err = fmt.Errorf("Error setting captured_at: %s", err)
-		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_share", "read", "set-captured_at").GetDiag()
+	if share.CreatedAt != nil {
+		if err = d.Set("created_at", flex.DateTimeToString(share.CreatedAt)); err != nil {
+			err = fmt.Errorf("Error setting created_at: %s", err)
+			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_share", "read", "set-created_at").GetDiag()
+		}
 	}
 	if err = d.Set("crn", share.CRN); err != nil {
 		err = fmt.Errorf("Error setting crn: %s", err)
@@ -675,7 +683,7 @@ func dataSourceIbmIsShareRead(context context.Context, d *schema.ResourceData, m
 		return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_share", "read", "set-encryption").GetDiag()
 	}
 
-	if share.EncryptionKey != nil {
+	if share.EncryptionKey != nil && share.EncryptionKey.CRN != nil {
 		err = d.Set("encryption_key", *share.EncryptionKey.CRN)
 		if err != nil {
 			err = fmt.Errorf("Error setting encryption_key: %s", err)
@@ -761,7 +769,7 @@ func dataSourceIbmIsShareRead(context context.Context, d *schema.ResourceData, m
 			return flex.DiscriminatedTerraformErrorf(err, err.Error(), "(Data) ibm_is_share", "read", "set-origin_share").GetDiag()
 		}
 	}
-	if share.Profile != nil {
+	if share.Profile != nil && share.Profile.Name != nil {
 		err = d.Set("profile", *share.Profile.Name)
 		if err != nil {
 			err = fmt.Errorf("Error setting profile: %s", err)
@@ -797,7 +805,7 @@ func dataSourceIbmIsShareRead(context context.Context, d *schema.ResourceData, m
 		}
 	}
 
-	if share.ResourceGroup != nil {
+	if share.ResourceGroup != nil && share.ResourceGroup.ID != nil {
 		err = d.Set("resource_group", *share.ResourceGroup.ID)
 		if err != nil {
 			err = fmt.Errorf("Error setting resource_group: %s", err)
@@ -832,7 +840,7 @@ func dataSourceIbmIsShareRead(context context.Context, d *schema.ResourceData, m
 		}
 	}
 
-	if share.Zone != nil {
+	if share.Zone != nil && share.Zone.Name != nil {
 		err = d.Set("zone", *share.Zone.Name)
 		if err != nil {
 			err = fmt.Errorf("Error setting zone: %s", err)
@@ -861,11 +869,14 @@ func dataSourceIbmIsShareRead(context context.Context, d *schema.ResourceData, m
 	if err := d.Set("storage_generation", flex.IntValue(share.StorageGeneration)); err != nil {
 		return flex.DiscriminatedTerraformErrorf(err, fmt.Sprintf("Error setting storage_generation: %s", err), "(Data) ibm_is_share", "read", "set-storage_generation").GetDiag()
 	}
-	accesstags, err := flex.GetGlobalTagsUsingCRN(meta, *share.CRN, "", isAccessTagType)
-	if err != nil {
-		tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting shares (%s) access tags: %s", d.Id(), err), "(Data) ibm_is_share", "read")
-		log.Printf(
-			"[ERROR] %s", tfErr.GetDebugMessage())
+	var accesstags *schema.Set
+	if share.CRN != nil {
+		accesstags, err = flex.GetGlobalTagsUsingCRN(meta, *share.CRN, "", isAccessTagType)
+		if err != nil {
+			tfErr := flex.TerraformErrorf(err, fmt.Sprintf("Error setting shares (%s) access tags: %s", d.Id(), err), "(Data) ibm_is_share", "read")
+			log.Printf(
+				"[ERROR] %s", tfErr.GetDebugMessage())
+		}
 	}
 
 	if share.UserTags != nil {
@@ -1118,7 +1129,12 @@ func DataSourceIBMIsShareShareSourceSnapshotToMap(model vpcv1.ShareSourceSnapsho
 }
 func DataSourceIBMIsShareShareSourceSnapshotShareSnapshotReferenceToMap(model *vpcv1.ShareSourceSnapshotShareSnapshotReference) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	modelMap["crn"] = *model.CRN
+	if model == nil {
+		return modelMap, nil
+	}
+	if model.CRN != nil {
+		modelMap["crn"] = *model.CRN
+	}
 	if model.Deleted != nil {
 		deletedMap, err := DataSourceIBMIsShareDeletedToMap(model.Deleted)
 		if err != nil {
@@ -1126,14 +1142,31 @@ func DataSourceIBMIsShareShareSourceSnapshotShareSnapshotReferenceToMap(model *v
 		}
 		modelMap["deleted"] = []map[string]interface{}{deletedMap}
 	}
-	modelMap["href"] = *model.Href
-	modelMap["id"] = *model.ID
-	modelMap["name"] = *model.Name
-	modelMap["resource_type"] = *model.ResourceType
+	if model.Href != nil {
+		modelMap["href"] = *model.Href
+	}
+	if model.ID != nil {
+		modelMap["id"] = *model.ID
+	}
+	if model.Name != nil {
+		modelMap["name"] = *model.Name
+	}
+	if model.ResourceType != nil {
+		modelMap["resource_type"] = *model.ResourceType
+	}
 	return modelMap, nil
 }
 func DataSourceIBMIsShareDeletedToMap(model *vpcv1.Deleted) (map[string]interface{}, error) {
 	modelMap := make(map[string]interface{})
-	modelMap["more_info"] = *model.MoreInfo
+	if model != nil && model.MoreInfo != nil {
+		modelMap["more_info"] = *model.MoreInfo
+	}
 	return modelMap, nil
+}
+
+func dataSourceIbmIsShareRequireIdentity(share *vpcv1.Share) error {
+	if share == nil || share.ID == nil || *share.ID == "" {
+		return fmt.Errorf("share identifier is missing from the API response")
+	}
+	return nil
 }

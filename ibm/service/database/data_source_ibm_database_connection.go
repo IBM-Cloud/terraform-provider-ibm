@@ -42,7 +42,9 @@ func pickDataSourceConnectionBackend(d *schema.ResourceData, meta interface{}) (
 
 	plan := *instance.ResourcePlanID
 	if isGen2Plan(plan) {
-		return newDataSourceIBMDatabaseConnectionGen2Backend(), nil
+		// Pass the already-fetched instance into the Gen2 backend so it does
+		// not need a second GetResourceInstance call.
+		return newDataSourceIBMDatabaseConnectionGen2Backend(instance), nil
 	}
 	return newDataSourceIBMDatabaseConnectionClassicBackend(), nil
 }

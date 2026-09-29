@@ -60,6 +60,26 @@ type TimeoutHelper struct {
 	Now time.Time
 }
 
+func sharedSetShardsInfo(d *schema.ResourceData, instance *rc.ResourceInstance) error {
+	service := d.Get("service").(string)
+	plan := d.Get("plan").(string)
+
+	if service != "databases-for-mongodb" || plan != "enterprise-sharding-gen2" {
+		return d.Set("shards", nil)
+	}
+
+	if instance == nil || instance.Extensions == nil {
+		return nil
+	}
+
+	// enterprise-sharding-gen2 stores shard data under "mongodbees" in extensions
+	shards := extractShardsFromExtensions(instance.Extensions)
+	if shards == 0 {
+		return nil
+	}
+	return d.Set("shards", shards)
+}
+
 // Allows mocking
 type DeploymentTaskFetcher interface {
 	ListDeploymentTasks(opts *clouddatabasesv5.ListDeploymentTasksOptions) (*clouddatabasesv5.Tasks, *core.DetailedResponse, error)
@@ -140,9 +160,94 @@ func isAttrConfiguredInDiff(d *schema.ResourceDiff, k string) bool {
 	}
 }
 
+func isShardAttrConfiguredInDiff(d *schema.ResourceDiff, k string) bool {
+	v, ok := d.GetOkExists(k)
+	if !ok {
+		return false
+	}
+
+	if intVal, isInt := v.(int); isInt {
+		return intVal > 0
+	}
+	return false
+}
+
 func isGen2Plan(plan string) bool {
 	gen2Pattern := regexp.MustCompile(`-gen2($|-.+)`)
 	return gen2Pattern.MatchString(strings.ToLower(plan))
+}
+
+// instanceCRNFromCoupledBackupCRN extracts the source instance CRN from a
+// coupled backup CRN. Returns an error if the instance ID segment is missing.
+func instanceCRNFromCoupledBackupCRN(backupCRN string) (string, error) {
+	parts := strings.Split(backupCRN, ":")
+	if len(parts) < 8 || parts[7] == "" {
+		return "", fmt.Errorf("backup CRN does not contain instance ID and is not a decoupled backup")
+	}
+	return strings.Join(parts[:8], ":") + "::", nil
+}
+
+// validateGen2BackupCRN returns an error if backupCRN is a Classic backup;
+// Gen2 (decoupled) backups are allowed.
+func validateGen2BackupCRN(backupCRN string, meta interface{}) error {
+	if backupCRN == "" {
+		return nil
+	}
+
+	parts := strings.Split(backupCRN, ":")
+	if len(parts) < 10 {
+		return fmt.Errorf("invalid backup CRN format: expected 10 parts, got %d", len(parts))
+	}
+
+	// Check if it's a decoupled backup (databases-independent-backups)
+	serviceName := parts[4]
+	if serviceName == "databases-independent-backups" {
+		// Decoupled backup - ALLOWED
+		return nil
+	}
+
+	// It's a coupled backup - need to check if the source instance is Gen2
+	instanceCRN, err := instanceCRNFromCoupledBackupCRN(backupCRN)
+	if err != nil {
+		return err
+	}
+
+	// Get the instance to check its plan
+	rsConClient, err := meta.(conns.ClientSession).ResourceControllerV2API()
+	if err != nil {
+		return fmt.Errorf("failed to initialize resource controller client: %w", err)
+	}
+
+	instance, response, err := rsConClient.GetResourceInstance(&rc.GetResourceInstanceOptions{
+		ID: &instanceCRN,
+	})
+	if err != nil {
+		return fmt.Errorf("failed to get backup source instance %s: %w (response: %v)", instanceCRN, err, response)
+	}
+
+	if instance.ResourcePlanID == nil {
+		return fmt.Errorf("backup source instance %s has no resource plan ID", instanceCRN)
+	}
+
+	// Get the plan name to check if it's Gen2
+	rsCatClient, err := meta.(conns.ClientSession).ResourceCatalogAPI()
+	if err != nil {
+		return fmt.Errorf("failed to initialize catalog client: %w", err)
+	}
+
+	rsCatRepo := rsCatClient.ResourceCatalog()
+	servicePlan, err := rsCatRepo.GetServicePlanName(*instance.ResourcePlanID)
+	if err != nil {
+		return fmt.Errorf("failed to get service plan for backup source instance: %w", err)
+	}
+
+	// Check if the plan is Gen2
+	if !isGen2Plan(servicePlan) {
+		return fmt.Errorf("backup_id references a Classic backup (plan: %s). Gen2 databases can only restore from Gen2 coupled backups or Gen2 decoupled backups. Please use a Gen2 backup CRN", servicePlan)
+	}
+
+	// Gen2 coupled backup - ALLOWED
+	return nil
 }
 
 // extractLocationFromCRN extracts the location (region) from an IBM Cloud CRN.
@@ -299,6 +404,7 @@ type databaseAllocations struct {
 	memoryGB     float64
 	storageGB    float64
 	members      int64
+	shards       int64
 	hostFlavorID string
 }
 
@@ -318,7 +424,13 @@ func extractDatabaseAllocations(instance map[string]interface{}, resourceID stri
 
 	dbTypeData, ok := dataservices[dbType].(map[string]interface{})
 	if !ok {
-		return alloc
+		// enterprise-sharding-gen2 stores data under "mongodbees" instead of "mongodb"
+		if dbType == "mongodb" {
+			dbTypeData, ok = dataservices["mongodbees"].(map[string]interface{})
+		}
+		if !ok {
+			return alloc
+		}
 	}
 
 	if mem, ok := dbTypeData["memory_gb"].(float64); ok {
@@ -333,11 +445,40 @@ func extractDatabaseAllocations(instance map[string]interface{}, resourceID stri
 	if m, ok := dbTypeData["members"].(float64); ok {
 		alloc.members = int64(m)
 	}
+	if s, ok := dbTypeData["shards"].(float64); ok {
+		alloc.shards = int64(s)
+	}
 	if flavor, ok := dbTypeData["host_flavor"].(string); ok {
 		alloc.hostFlavorID = flavor
 	}
 
 	return alloc
+}
+
+func extractShardsFromExtensions(extensions map[string]interface{}) int {
+
+	dataservices, ok := extensions[dataservicesKey].(map[string]interface{})
+	if !ok {
+		return 0
+	}
+
+	dbTypeData, ok := dataservices["mongodbees"].(map[string]interface{})
+	if !ok {
+		return 0
+	}
+
+	shards, ok := dbTypeData["shards"]
+	if !ok {
+		return 0
+	}
+
+	switch v := shards.(type) {
+	case float64:
+		return int(v)
+	case int:
+		return v
+	}
+	return 0
 }
 
 // buildMemoryConfig creates memory configuration from catalog metadata and actual allocation
@@ -800,4 +941,108 @@ func clearGen2UnsupportedAttributes(d *schema.ResourceData) {
 	// Note: backup_encryption_key_crn within platform_options is also not supported in Gen2,
 	// but platform_options is handled by the data source implementation which only sets
 	// disk_encryption_key_crn for Gen2 instances
+}
+
+const s2sAuthWarningHeader = "Database backup authorization required"
+const s2sAuthWarningDetail = "This database uses Independent Backups.\n" +
+	"Existing backups remain available for 30 days from their creation date. " +
+	"Backup creation and management are unavailable until the required service authorization is completed.\n" +
+	"Complete the required service authorization to enable backup operations.\n\n" +
+	"To configure the required IAM service authorization, please refer to the documentation below: \n" +
+	"https://cloud.ibm.com/docs/cloud-databases-gen2?topic=cloud-databases-gen2-iam&interface=ui#s2s-authorization-backups"
+
+// s2sAuthWarning is a sentinel error that the datasource router converts to a diag.Warning.
+type s2sAuthWarning struct{}
+
+func (s *s2sAuthWarning) Error() string { return s2sAuthWarningHeader }
+
+// hasIndependentBackups reports whether the instance extensions indicate that
+// the instance is using Independent Backups.  This is determined by the presence
+// of a non-nil "backups" object inside extensions["dataservices"].
+// The S2S authorization check is only meaningful for instances that use
+// Independent Backups, so callers should gate checkS2SAuthorization on this.
+func hasIndependentBackups(extensions map[string]interface{}) bool {
+	if extensions == nil {
+		return false
+	}
+	dataservices, ok := extensions["dataservices"].(map[string]interface{})
+	if !ok {
+		return false
+	}
+	backups, exists := dataservices["backups"]
+	return exists && backups != nil
+}
+
+// checkS2SAuthorization returns true only when both "independent_backups" and
+// "resource_group" authorizations are present and truthy in the RC extensions map.
+// The authorizations are nested under extensions["dataservices"]["authorizations"].
+func checkS2SAuthorization(extensions map[string]interface{}) bool {
+	if extensions == nil {
+		return false
+	}
+	dataservices, ok := extensions["dataservices"].(map[string]interface{})
+	if !ok {
+		return false
+	}
+	authsRaw, exists := dataservices["authorizations"]
+	if !exists || authsRaw == nil {
+		return false
+	}
+	auths, ok := authsRaw.(map[string]interface{})
+	if !ok || len(auths) == 0 {
+		return false
+	}
+	return isTruthy(auths["independent_backups"]) && isTruthy(auths["resource_group"])
+}
+
+// isTruthy returns true if v is the boolean true or the string "true".
+func isTruthy(v interface{}) bool {
+	switch val := v.(type) {
+	case bool:
+		return val
+	case string:
+		return val == "true"
+	}
+	return false
+}
+
+// getInstancesNext extracts the "next_url" query parameter from the URL returned
+// in a paginated Resource Controller list response's NextURL field, so it can be
+// used as the "start" token for the next page request. Returns an empty string,
+// with no error, when next is nil (i.e. there is no further page).
+func getInstancesNext(next *string) (string, error) {
+	if next == nil {
+		return "", nil
+	}
+	u, err := url.Parse(*next)
+	if err != nil {
+		return "", err
+	}
+	q := u.Query()
+	return q.Get("next_url"), nil
+}
+
+// extractGen2BackupExtensions reads the source deployment CRN and backup type
+// from a Gen2 backup instance's Extensions["dataservices"]["backup"] block.
+// Both return values are empty strings if extensions is nil or the expected
+// structure is missing.
+func extractGen2BackupExtensions(extensions map[string]interface{}) (sourceDataServiceCRN string, backupType string) {
+	if extensions == nil {
+		return
+	}
+	dataservices, ok := extensions["dataservices"].(map[string]interface{})
+	if !ok {
+		return
+	}
+	backupData, ok := dataservices["backup"].(map[string]interface{})
+	if !ok {
+		return
+	}
+	if v, ok := backupData["source_data_service_crn"].(string); ok {
+		sourceDataServiceCRN = v
+	}
+	if v, ok := backupData["type"].(string); ok {
+		backupType = v
+	}
+	return
 }

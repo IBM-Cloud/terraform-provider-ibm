@@ -22,7 +22,7 @@ func TestAccIBMCISRulesetRule_Basic(t *testing.T) {
 			{
 				Config: testAccCheckCisRulesetsRule_basic("test", acc.CisDomainStatic),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(name, "ruleset_id", "eb5efc50d5ec49d8b0b0f44b357b8d7b"),
+					resource.TestCheckResourceAttrSet(name, "ruleset_id"),
 					resource.TestCheckResourceAttr(name, "rule.#", "1"),
 				),
 			},
@@ -33,16 +33,22 @@ func TestAccIBMCISRulesetRule_Basic(t *testing.T) {
 func testAccCheckCisRulesetsRule_basic(id, CisDomainStatic string) string {
 	return testAccCheckIBMCisDomainDataSourceConfigBasic1() + fmt.Sprintf(`
 
-	resource "ibm_cis_ruleset_rule" "%[1]s" {
-		cis_id = data.ibm_cis.cis.id
+	data "ibm_cis_ruleset_entrypoint_versions" "ep" {
+		cis_id    = data.ibm_cis.cis.id
 		domain_id = data.ibm_cis_domain.cis_domain.domain_id
-		ruleset_id = "eb5efc50d5ec49d8b0b0f44b357b8d7b"
-			rule {
-			  action =  "block"
-			  description = "Testing rule creation"
-			  enabled = true
-			  expression = "true"
-			}
-	  }
+		phase     = "http_request_firewall_custom"
+	}
+
+	resource "ibm_cis_ruleset_rule" "%[1]s" {
+		cis_id     = data.ibm_cis.cis.id
+		domain_id  = data.ibm_cis_domain.cis_domain.domain_id
+		ruleset_id = data.ibm_cis_ruleset_entrypoint_versions.ep.rulesets[0].ruleset_id
+		rule {
+			action      = "block"
+			description = "Testing rule creation"
+			enabled     = true
+			expression  = "true"
+		}
+	}
 `, id, acc.CisDomainStatic)
 }

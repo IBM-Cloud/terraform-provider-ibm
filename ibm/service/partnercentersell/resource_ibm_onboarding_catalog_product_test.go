@@ -7,9 +7,9 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"time"
 
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
@@ -22,9 +22,9 @@ import (
 
 func TestAccIbmOnboardingCatalogProductBasic(t *testing.T) {
 	var conf partnercentersellv1.GlobalCatalogProduct
-	baseName := fmt.Sprintf("test-name-terraform-%d-2", acctest.RandIntRange(100, 999))
+	baseName := fmt.Sprintf("test-name-terraform-%d-2", time.Now().UnixMilli())
 	productID := acc.PcsOnboardingProductWithApprovedProgrammaticName
-	objectId := fmt.Sprintf("test-object-id-terraform-%d-2", acctest.RandIntRange(100, 999))
+	objectId := fmt.Sprintf("test-object-id-terraform-%d-2", time.Now().UnixMilli())
 	name := baseName
 	active := "true"
 	disabled := "false"
@@ -67,8 +67,8 @@ func TestAccIbmOnboardingCatalogProductBasic(t *testing.T) {
 func TestAccIbmOnboardingCatalogProductAllArgs(t *testing.T) {
 	var conf partnercentersellv1.GlobalCatalogProduct
 	productID := acc.PcsOnboardingProductWithApprovedProgrammaticName2
-	baseName := fmt.Sprintf("test-name-terraform-%d-2", acctest.RandIntRange(10, 100))
-	objectId := fmt.Sprintf("test-object-id-terraform-%d-2", acctest.RandIntRange(10, 100))
+	baseName := fmt.Sprintf("test-name-terraform-%d-2", time.Now().UnixMilli())
+	objectId := fmt.Sprintf("test-object-id-terraform-%d-2", time.Now().UnixMilli())
 	env := "current"
 	name := baseName
 	active := "true"
@@ -264,6 +264,8 @@ func testAccCheckIbmOnboardingCatalogProductConfig(productID string, env string,
             		}
 				}
 				other {
+					product_code = "123456"
+					product_code_type = "PID"
 				    composite {
                 		children {
                     		name = "%s"
@@ -438,6 +440,8 @@ func testAccCheckIbmOnboardingCatalogProductUpdateConfig(productID string, env s
             		}
 				}
 				other {
+					product_code = "654321"
+					product_code_type = "WWPC"
 				    composite {
                 		children {
                     		name = "%s"
@@ -799,6 +803,8 @@ func TestResourceIbmOnboardingCatalogProductGlobalCatalogProductMetadataToMap(t 
 		globalCatalogProductMetadataOtherModel := make(map[string]interface{})
 		globalCatalogProductMetadataOtherModel["pc"] = []map[string]interface{}{globalCatalogProductMetadataOtherPcModel}
 		globalCatalogProductMetadataOtherModel["composite"] = []map[string]interface{}{globalCatalogProductMetadataOtherCompositeModel}
+		globalCatalogProductMetadataOtherModel["product_code"] = "testString"
+		globalCatalogProductMetadataOtherModel["product_code_type"] = "testString"
 
 		model := make(map[string]interface{})
 		model["rc_compatible"] = true
@@ -969,6 +975,8 @@ func TestResourceIbmOnboardingCatalogProductGlobalCatalogProductMetadataToMap(t 
 	globalCatalogProductMetadataOtherModel := new(partnercentersellv1.GlobalCatalogProductMetadataOther)
 	globalCatalogProductMetadataOtherModel.PC = globalCatalogProductMetadataOtherPcModel
 	globalCatalogProductMetadataOtherModel.Composite = globalCatalogProductMetadataOtherCompositeModel
+	globalCatalogProductMetadataOtherModel.ProductCode = core.StringPtr("testString")
+	globalCatalogProductMetadataOtherModel.ProductCodeType = core.StringPtr("testString")
 
 	model := new(partnercentersellv1.GlobalCatalogProductMetadata)
 	model.RcCompatible = core.BoolPtr(true)
@@ -1803,6 +1811,8 @@ func TestResourceIbmOnboardingCatalogProductGlobalCatalogProductMetadataOtherToM
 		model := make(map[string]interface{})
 		model["pc"] = []map[string]interface{}{globalCatalogProductMetadataOtherPcModel}
 		model["composite"] = []map[string]interface{}{globalCatalogProductMetadataOtherCompositeModel}
+		model["product_code"] = "testString"
+		model["product_code_type"] = "testString"
 
 		assert.Equal(t, result, model)
 	}
@@ -1859,6 +1869,8 @@ func TestResourceIbmOnboardingCatalogProductGlobalCatalogProductMetadataOtherToM
 	model := new(partnercentersellv1.GlobalCatalogProductMetadataOther)
 	model.PC = globalCatalogProductMetadataOtherPcModel
 	model.Composite = globalCatalogProductMetadataOtherCompositeModel
+	model.ProductCode = core.StringPtr("testString")
+	model.ProductCodeType = core.StringPtr("testString")
 
 	result, err := partnercentersell.ResourceIbmOnboardingCatalogProductGlobalCatalogProductMetadataOtherToMap(model)
 	assert.Nil(t, err)
@@ -2473,6 +2485,8 @@ func TestResourceIbmOnboardingCatalogProductMapToGlobalCatalogProductMetadataPro
 		globalCatalogProductMetadataOtherModel := new(partnercentersellv1.GlobalCatalogProductMetadataOther)
 		globalCatalogProductMetadataOtherModel.PC = globalCatalogProductMetadataOtherPcModel
 		globalCatalogProductMetadataOtherModel.Composite = globalCatalogProductMetadataOtherCompositeModel
+		globalCatalogProductMetadataOtherModel.ProductCode = core.StringPtr("testString")
+		globalCatalogProductMetadataOtherModel.ProductCodeType = core.StringPtr("testString")
 
 		model := new(partnercentersellv1.GlobalCatalogProductMetadataPrototypePatch)
 		model.RcCompatible = core.BoolPtr(true)
@@ -2643,6 +2657,8 @@ func TestResourceIbmOnboardingCatalogProductMapToGlobalCatalogProductMetadataPro
 	globalCatalogProductMetadataOtherModel := make(map[string]interface{})
 	globalCatalogProductMetadataOtherModel["pc"] = []interface{}{globalCatalogProductMetadataOtherPcModel}
 	globalCatalogProductMetadataOtherModel["composite"] = []interface{}{globalCatalogProductMetadataOtherCompositeModel}
+	globalCatalogProductMetadataOtherModel["product_code"] = "testString"
+	globalCatalogProductMetadataOtherModel["product_code_type"] = "testString"
 
 	model := make(map[string]interface{})
 	model["rc_compatible"] = true
@@ -3473,6 +3489,8 @@ func TestResourceIbmOnboardingCatalogProductMapToGlobalCatalogProductMetadataOth
 		model := new(partnercentersellv1.GlobalCatalogProductMetadataOther)
 		model.PC = globalCatalogProductMetadataOtherPcModel
 		model.Composite = globalCatalogProductMetadataOtherCompositeModel
+		model.ProductCode = core.StringPtr("testString")
+		model.ProductCodeType = core.StringPtr("testString")
 
 		assert.Equal(t, result, model)
 	}
@@ -3529,6 +3547,8 @@ func TestResourceIbmOnboardingCatalogProductMapToGlobalCatalogProductMetadataOth
 	model := make(map[string]interface{})
 	model["pc"] = []interface{}{globalCatalogProductMetadataOtherPcModel}
 	model["composite"] = []interface{}{globalCatalogProductMetadataOtherCompositeModel}
+	model["product_code"] = "testString"
+	model["product_code_type"] = "testString"
 
 	result, err := partnercentersell.ResourceIbmOnboardingCatalogProductMapToGlobalCatalogProductMetadataOther(model)
 	assert.Nil(t, err)

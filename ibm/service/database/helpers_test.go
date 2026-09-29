@@ -10,6 +10,7 @@ import (
 
 	"github.com/IBM/cloud-databases-go-sdk/clouddatabasesv5"
 	"github.com/IBM/go-sdk-core/v5/core"
+	rcv2 "github.com/IBM/platform-services-go-sdk/resourcecontrollerv2"
 	"github.com/go-openapi/strfmt"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/stretchr/testify/require"
@@ -94,6 +95,44 @@ func TestCalculateExpirationDatetime(t *testing.T) {
 			require.Equal(t, tc.expected, result)
 		})
 	}
+}
+func TestExtractShardsFromExtensions(t *testing.T) {
+	t.Run("returns shard count from mongodbees extensions", func(t *testing.T) {
+		extensions := map[string]interface{}{
+			dataservicesKey: map[string]interface{}{
+				"mongodbees": map[string]interface{}{
+					"shards": float64(2),
+				},
+			},
+		}
+
+		shards := extractShardsFromExtensions(extensions)
+		require.Equal(t, 2, shards)
+	})
+
+	t.Run("returns zero when shards key is missing", func(t *testing.T) {
+		extensions := map[string]interface{}{
+			dataservicesKey: map[string]interface{}{
+				"mongodbees": map[string]interface{}{},
+			},
+		}
+
+		shards := extractShardsFromExtensions(extensions)
+		require.Equal(t, 0, shards)
+	})
+
+	t.Run("returns zero when mongodbees key is absent", func(t *testing.T) {
+		extensions := map[string]interface{}{
+			dataservicesKey: map[string]interface{}{
+				"otherdb": map[string]interface{}{
+					"shards": float64(2),
+				},
+			},
+		}
+
+		shards := extractShardsFromExtensions(extensions)
+		require.Equal(t, 0, shards)
+	})
 }
 
 type MockTaskClient struct {
@@ -441,4 +480,632 @@ func TestExtractDeploymentIDFromCRN(t *testing.T) {
 			}
 		})
 	}
+}
+
+// ---------------------------------------------------------------------------
+// isTruthy
+// ---------------------------------------------------------------------------
+
+func TestIsTruthy(t *testing.T) {
+	cases := []struct {
+		name string
+		in   interface{}
+		want bool
+	}{
+		{"bool true", true, true},
+		{"bool false", false, false},
+		{"string true", "true", true},
+		{"string false", "false", false},
+		{"string TRUE (case sensitive)", "TRUE", false},
+		{"nil", nil, false},
+		{"int 1", 1, false},
+		{"empty string", "", false},
+	}
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			require.Equal(t, c.want, isTruthy(c.in))
+		})
+	}
+}
+
+// ---------------------------------------------------------------------------
+// s2sAuthWarning sentinel error
+// ---------------------------------------------------------------------------
+
+func TestS2sAuthWarningError(t *testing.T) {
+	w := &s2sAuthWarning{}
+	require.Equal(t, s2sAuthWarningHeader, w.Error())
+}
+
+// ---------------------------------------------------------------------------
+// checkS2SAuthorization
+// ---------------------------------------------------------------------------
+
+func TestCheckS2SAuthorization(t *testing.T) {
+	cases := []struct {
+		name       string
+		extensions map[string]interface{}
+		want       bool
+	}{
+		{
+			name:       "nil extensions",
+			extensions: nil,
+			want:       false,
+		},
+		{
+			name:       "empty extensions map",
+			extensions: map[string]interface{}{},
+			want:       false,
+		},
+		{
+			name: "dataservices key missing",
+			extensions: map[string]interface{}{
+				"other_key": "value",
+			},
+			want: false,
+		},
+		{
+			name: "dataservices is not a map",
+			extensions: map[string]interface{}{
+				"dataservices": "not-a-map",
+			},
+			want: false,
+		},
+		{
+			name: "authorizations key missing inside dataservices",
+			extensions: map[string]interface{}{
+				"dataservices": map[string]interface{}{
+					"other_key": "value",
+				},
+			},
+			want: false,
+		},
+		{
+			name: "authorizations is nil",
+			extensions: map[string]interface{}{
+				"dataservices": map[string]interface{}{
+					"authorizations": nil,
+				},
+			},
+			want: false,
+		},
+		{
+			name: "authorizations is empty map",
+			extensions: map[string]interface{}{
+				"dataservices": map[string]interface{}{
+					"authorizations": map[string]interface{}{},
+				},
+			},
+			want: false,
+		},
+		{
+			name: "both flags true (bool)",
+			extensions: map[string]interface{}{
+				"dataservices": map[string]interface{}{
+					"authorizations": map[string]interface{}{
+						"independent_backups": true,
+						"resource_group":      true,
+					},
+				},
+			},
+			want: true,
+		},
+		{
+			name: "both flags true (string)",
+			extensions: map[string]interface{}{
+				"dataservices": map[string]interface{}{
+					"authorizations": map[string]interface{}{
+						"independent_backups": "true",
+						"resource_group":      "true",
+					},
+				},
+			},
+			want: true,
+		},
+		{
+			name: "independent_backups false (bool)",
+			extensions: map[string]interface{}{
+				"dataservices": map[string]interface{}{
+					"authorizations": map[string]interface{}{
+						"independent_backups": false,
+						"resource_group":      true,
+					},
+				},
+			},
+			want: false,
+		},
+		{
+			name: "resource_group false (bool)",
+			extensions: map[string]interface{}{
+				"dataservices": map[string]interface{}{
+					"authorizations": map[string]interface{}{
+						"independent_backups": true,
+						"resource_group":      false,
+					},
+				},
+			},
+			want: false,
+		},
+		{
+			name: "both flags false (bool)",
+			extensions: map[string]interface{}{
+				"dataservices": map[string]interface{}{
+					"authorizations": map[string]interface{}{
+						"independent_backups": false,
+						"resource_group":      false,
+					},
+				},
+			},
+			want: false,
+		},
+		{
+			name: "independent_backups missing",
+			extensions: map[string]interface{}{
+				"dataservices": map[string]interface{}{
+					"authorizations": map[string]interface{}{
+						"resource_group": true,
+					},
+				},
+			},
+			want: false,
+		},
+		{
+			name: "resource_group missing",
+			extensions: map[string]interface{}{
+				"dataservices": map[string]interface{}{
+					"authorizations": map[string]interface{}{
+						"independent_backups": true,
+					},
+				},
+			},
+			want: false,
+		},
+		{
+			name: "mixed: bool true + string true",
+			extensions: map[string]interface{}{
+				"dataservices": map[string]interface{}{
+					"authorizations": map[string]interface{}{
+						"independent_backups": true,
+						"resource_group":      "true",
+					},
+				},
+			},
+			want: true,
+		},
+		{
+			name: "resource_group string false",
+			extensions: map[string]interface{}{
+				"dataservices": map[string]interface{}{
+					"authorizations": map[string]interface{}{
+						"independent_backups": true,
+						"resource_group":      "false",
+					},
+				},
+			},
+			want: false,
+		},
+		{
+			name: "authorizations is not a map (wrong type)",
+			extensions: map[string]interface{}{
+				"dataservices": map[string]interface{}{
+					"authorizations": "not-a-map",
+				},
+			},
+			want: false,
+		},
+	}
+
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			require.Equal(t, c.want, checkS2SAuthorization(c.extensions))
+		})
+	}
+}
+
+// ---------------------------------------------------------------------------
+// hasIndependentBackups
+// ---------------------------------------------------------------------------
+
+func TestHasIndependentBackups(t *testing.T) {
+	cases := []struct {
+		name       string
+		extensions map[string]interface{}
+		want       bool
+	}{
+		{
+			name:       "nil extensions",
+			extensions: nil,
+			want:       false,
+		},
+		{
+			name:       "empty extensions",
+			extensions: map[string]interface{}{},
+			want:       false,
+		},
+		{
+			name: "dataservices key missing",
+			extensions: map[string]interface{}{
+				"other_key": "value",
+			},
+			want: false,
+		},
+		{
+			name: "dataservices is not a map",
+			extensions: map[string]interface{}{
+				"dataservices": "not-a-map",
+			},
+			want: false,
+		},
+		{
+			name: "backups key missing inside dataservices",
+			extensions: map[string]interface{}{
+				"dataservices": map[string]interface{}{
+					"other_key": "value",
+				},
+			},
+			want: false,
+		},
+		{
+			name: "backups key is nil",
+			extensions: map[string]interface{}{
+				"dataservices": map[string]interface{}{
+					"backups": nil,
+				},
+			},
+			want: false,
+		},
+		{
+			name: "backups key is present and non-nil",
+			extensions: map[string]interface{}{
+				"dataservices": map[string]interface{}{
+					"backups": map[string]interface{}{
+						"automatic_backups": map[string]interface{}{
+							"enabled": true,
+							"window": map[string]interface{}{
+								"start_time": "09:04Z",
+							},
+						},
+						"preserve":  false,
+						"retention": "30d",
+					},
+				},
+			},
+			want: true,
+		},
+		{
+			name: "backups key is an empty map (still non-nil)",
+			extensions: map[string]interface{}{
+				"dataservices": map[string]interface{}{
+					"backups": map[string]interface{}{},
+				},
+			},
+			want: true,
+		},
+	}
+
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			require.Equal(t, c.want, hasIndependentBackups(c.extensions))
+		})
+	}
+}
+
+// ---------------------------------------------------------------------------
+// s2sAuthWarningHeader / s2sAuthWarningDetail constants are non-empty
+// ---------------------------------------------------------------------------
+
+func TestS2SWarningConstants(t *testing.T) {
+	require.NotEmpty(t, s2sAuthWarningHeader, "s2sAuthWarningHeader must not be empty")
+	require.NotEmpty(t, s2sAuthWarningDetail, "s2sAuthWarningDetail must not be empty")
+}
+func TestExtractGen2BackupExtensions(t *testing.T) {
+	testcases := []struct {
+		description        string
+		extensions         map[string]interface{}
+		expectedSourceCRN  string
+		expectedBackupType string
+	}{
+		{
+			description: "Valid extensions with source_data_service_crn and type",
+			extensions: map[string]interface{}{
+				"dataservices": map[string]interface{}{
+					"backup": map[string]interface{}{
+						"source_data_service_crn": "crn:v1:bluemix:public:databases-for-postgresql:us-south:a/abc123:deployment-id::",
+						"type":                    "on_demand",
+					},
+				},
+			},
+			expectedSourceCRN:  "crn:v1:bluemix:public:databases-for-postgresql:us-south:a/abc123:deployment-id::",
+			expectedBackupType: "on_demand",
+		},
+		{
+			description: "Valid extensions with scheduled backup type",
+			extensions: map[string]interface{}{
+				"dataservices": map[string]interface{}{
+					"backup": map[string]interface{}{
+						"source_data_service_crn": "crn:v1:bluemix:public:databases-for-mysql:us-east:a/abc123:deployment-id::",
+						"type":                    "scheduled",
+					},
+				},
+			},
+			expectedSourceCRN:  "crn:v1:bluemix:public:databases-for-mysql:us-east:a/abc123:deployment-id::",
+			expectedBackupType: "scheduled",
+		},
+		{
+			description:        "Nil extensions",
+			extensions:         nil,
+			expectedSourceCRN:  "",
+			expectedBackupType: "",
+		},
+		{
+			description:        "Empty extensions map",
+			extensions:         map[string]interface{}{},
+			expectedSourceCRN:  "",
+			expectedBackupType: "",
+		},
+		{
+			description: "Missing dataservices key",
+			extensions: map[string]interface{}{
+				"other_key": "some_value",
+			},
+			expectedSourceCRN:  "",
+			expectedBackupType: "",
+		},
+		{
+			description: "dataservices is not a map",
+			extensions: map[string]interface{}{
+				"dataservices": "not-a-map",
+			},
+			expectedSourceCRN:  "",
+			expectedBackupType: "",
+		},
+		{
+			description: "Missing backup key within dataservices",
+			extensions: map[string]interface{}{
+				"dataservices": map[string]interface{}{
+					"other_key": "some_value",
+				},
+			},
+			expectedSourceCRN:  "",
+			expectedBackupType: "",
+		},
+		{
+			description: "backup is not a map",
+			extensions: map[string]interface{}{
+				"dataservices": map[string]interface{}{
+					"backup": "not-a-map",
+				},
+			},
+			expectedSourceCRN:  "",
+			expectedBackupType: "",
+		},
+		{
+			description: "Missing source_data_service_crn field",
+			extensions: map[string]interface{}{
+				"dataservices": map[string]interface{}{
+					"backup": map[string]interface{}{
+						"type": "on_demand",
+					},
+				},
+			},
+			expectedSourceCRN:  "",
+			expectedBackupType: "on_demand",
+		},
+		{
+			description: "Missing type field",
+			extensions: map[string]interface{}{
+				"dataservices": map[string]interface{}{
+					"backup": map[string]interface{}{
+						"source_data_service_crn": "crn:v1:bluemix:public:databases-for-postgresql:us-south:a/abc123:deployment-id::",
+					},
+				},
+			},
+			expectedSourceCRN:  "crn:v1:bluemix:public:databases-for-postgresql:us-south:a/abc123:deployment-id::",
+			expectedBackupType: "",
+		},
+		{
+			description: "source_data_service_crn is not a string",
+			extensions: map[string]interface{}{
+				"dataservices": map[string]interface{}{
+					"backup": map[string]interface{}{
+						"source_data_service_crn": 12345,
+						"type":                    "on_demand",
+					},
+				},
+			},
+			expectedSourceCRN:  "",
+			expectedBackupType: "on_demand",
+		},
+		{
+			description: "type is not a string",
+			extensions: map[string]interface{}{
+				"dataservices": map[string]interface{}{
+					"backup": map[string]interface{}{
+						"source_data_service_crn": "crn:v1:bluemix:public:databases-for-postgresql:us-south:a/abc123:deployment-id::",
+						"type":                    42,
+					},
+				},
+			},
+			expectedSourceCRN:  "crn:v1:bluemix:public:databases-for-postgresql:us-south:a/abc123:deployment-id::",
+			expectedBackupType: "",
+		},
+	}
+
+	for _, tc := range testcases {
+		t.Run(tc.description, func(t *testing.T) {
+			sourceDataServiceCRN, backupType := extractGen2BackupExtensions(tc.extensions)
+
+			require.Equal(t, tc.expectedSourceCRN, sourceDataServiceCRN)
+			require.Equal(t, tc.expectedBackupType, backupType)
+		})
+	}
+}
+
+func TestGetInstancesNext(t *testing.T) {
+	testcases := []struct {
+		description string
+		next        *string
+		expected    string
+		expectError bool
+	}{
+		{
+			description: "Nil next returns empty string and no error",
+			next:        nil,
+			expected:    "",
+		},
+		{
+			description: "URL with next_url query parameter",
+			next:        core.StringPtr("https://api.example.com/v2/resource_instances?next_url=abc123"),
+			expected:    "abc123",
+		},
+		{
+			description: "URL without next_url query parameter",
+			next:        core.StringPtr("https://api.example.com/v2/resource_instances?start=abc123"),
+			expected:    "",
+		},
+		{
+			description: "Empty string URL",
+			next:        core.StringPtr(""),
+			expected:    "",
+		},
+		{
+			description: "Malformed URL returns error",
+			next:        core.StringPtr("https://api.example.com/v2/resource_instances/%zz"),
+			expected:    "",
+			expectError: true,
+		},
+	}
+
+	for _, tc := range testcases {
+		t.Run(tc.description, func(t *testing.T) {
+			result, err := getInstancesNext(tc.next)
+
+			if tc.expectError {
+				require.Error(t, err)
+			} else {
+				require.NoError(t, err)
+			}
+			require.Equal(t, tc.expected, result)
+		})
+	}
+}
+func TestExtractDatabaseAllocations(t *testing.T) {
+	t.Run("extracts allocations from mongodb key for standard-gen2", func(t *testing.T) {
+		instance := map[string]interface{}{
+			"dataservices": map[string]interface{}{
+				"mongodb": map[string]interface{}{
+					"storage_gb":  float64(30),
+					"host_flavor": "bx3d.4x20",
+					"members":     float64(3),
+				},
+			},
+		}
+		alloc := extractDatabaseAllocations(instance, "databases-for-mongodb")
+		require.Equal(t, float64(30), alloc.storageGB)
+		require.Equal(t, "bx3d.4x20", alloc.hostFlavorID)
+		require.Equal(t, int64(3), alloc.members)
+	})
+
+	t.Run("falls back to mongodbees key for enterprise-sharding-gen2", func(t *testing.T) {
+		instance := map[string]interface{}{
+			"dataservices": map[string]interface{}{
+				"mongodbees": map[string]interface{}{
+					"storage_gb":  float64(60),
+					"host_flavor": "bx3d.8x40",
+					"shards":      float64(2),
+				},
+			},
+		}
+		alloc := extractDatabaseAllocations(instance, "databases-for-mongodb")
+		require.Equal(t, float64(60), alloc.storageGB)
+		require.Equal(t, "bx3d.8x40", alloc.hostFlavorID)
+		require.Equal(t, int64(2), alloc.shards)
+	})
+
+	t.Run("returns zero allocations when dataservices key is absent", func(t *testing.T) {
+		instance := map[string]interface{}{}
+		alloc := extractDatabaseAllocations(instance, "databases-for-mongodb")
+		require.Equal(t, float64(0), alloc.storageGB)
+		require.Equal(t, "", alloc.hostFlavorID)
+	})
+}
+func TestSharedSetShardsInfo(t *testing.T) {
+	t.Run("does not set shards when instance is nil", func(t *testing.T) {
+		d := schema.TestResourceDataRaw(t, ResourceIBMDatabaseInstance().Schema, map[string]interface{}{
+			"service": "databases-for-mongodb",
+			"plan":    "enterprise-sharding-gen2",
+		})
+
+		err := sharedSetShardsInfo(d, nil)
+		if err != nil {
+			t.Fatalf("expected no error, got %v", err)
+		}
+		if v := d.Get("shards").(int); v != 0 {
+			t.Fatalf("expected shards unset (0) for nil instance, got %d", v)
+		}
+	})
+
+	t.Run("does not set shards when instance.Extensions is nil", func(t *testing.T) {
+		d := schema.TestResourceDataRaw(t, ResourceIBMDatabaseInstance().Schema, map[string]interface{}{
+			"service": "databases-for-mongodb",
+			"plan":    "enterprise-sharding-gen2",
+		})
+
+		instance := &rcv2.ResourceInstance{Extensions: nil}
+		err := sharedSetShardsInfo(d, instance)
+		if err != nil {
+			t.Fatalf("expected no error, got %v", err)
+		}
+		if v := d.Get("shards").(int); v != 0 {
+			t.Fatalf("expected shards unset (0) for nil extensions, got %d", v)
+		}
+	})
+
+	t.Run("reads shard count from extensions for enterprise-sharding-gen2", func(t *testing.T) {
+		d := schema.TestResourceDataRaw(t, ResourceIBMDatabaseInstance().Schema, map[string]interface{}{
+			"service": "databases-for-mongodb",
+			"plan":    "enterprise-sharding-gen2",
+		})
+
+		instance := &rcv2.ResourceInstance{
+			Extensions: map[string]interface{}{
+				dataservicesKey: map[string]interface{}{
+					"mongodbees": map[string]interface{}{
+						"shards": float64(3),
+					},
+				},
+			},
+		}
+		err := sharedSetShardsInfo(d, instance)
+		if err != nil {
+			t.Fatalf("expected no error, got %v", err)
+		}
+		if v := d.Get("shards").(int); v != 3 {
+			t.Fatalf("expected shards=3 from extensions, got %d", v)
+		}
+	})
+
+	t.Run("does not set shards when extensions exist but shards key is absent", func(t *testing.T) {
+		d := schema.TestResourceDataRaw(t, ResourceIBMDatabaseInstance().Schema, map[string]interface{}{
+			"service": "databases-for-mongodb",
+			"plan":    "enterprise-sharding-gen2",
+		})
+
+		instance := &rcv2.ResourceInstance{
+			Extensions: map[string]interface{}{
+				dataservicesKey: map[string]interface{}{
+					"mongodbees": map[string]interface{}{
+						// no "shards" key
+					},
+				},
+			},
+		}
+		err := sharedSetShardsInfo(d, instance)
+		if err != nil {
+			t.Fatalf("expected no error, got %v", err)
+		}
+		if v := d.Get("shards").(int); v != 0 {
+			t.Fatalf("expected shards unset (0) when key absent, got %d", v)
+		}
+	})
 }

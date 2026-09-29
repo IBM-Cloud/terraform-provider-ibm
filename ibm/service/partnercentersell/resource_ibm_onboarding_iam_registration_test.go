@@ -8,7 +8,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 
@@ -47,12 +46,12 @@ func TestAccIbmOnboardingIamRegistrationAllArgs(t *testing.T) {
 	productID := acc.PcsOnboardingProductWithCatalogProduct
 	env := "current"
 	name := acc.PcsIamServiceRegistrationId
-	roleDisplayName := fmt.Sprintf("random-name-%d", acctest.RandIntRange(10, 100))
+	roleDisplayName := fmt.Sprintf("random-name-%d", time.Now().UnixMilli())
 	iamRegistrationRole := fmt.Sprintf("crn:v1:bluemix:public:%s::::serviceRole:%s", acc.PcsIamServiceRegistrationId, roleDisplayName)
 	enabled := "true"
 	serviceType := "platform_service"
 	envUpdate := "current"
-	roleDisplayNameUpdate := fmt.Sprintf("random-name-%d", acctest.RandIntRange(10, 100))
+	roleDisplayNameUpdate := fmt.Sprintf("random-name-%d", time.Now().UnixMilli())
 	iamRegistrationRoleUpdate := fmt.Sprintf("crn:v1:bluemix:public:%s::::serviceRole:%s", acc.PcsIamServiceRegistrationId, roleDisplayNameUpdate)
 	nameUpdate := acc.PcsIamServiceRegistrationId
 	enabledUpdate := "true"
@@ -397,7 +396,7 @@ func testAccCheckIbmOnboardingIamRegistrationUpdateConfig(
 	environmentAttributesValues string,
 	supportedAnonymousAccessesAdditionalPropValue string,
 ) string {
-	roleDisplayName2 := fmt.Sprintf("random-name-2-%d", acctest.RandIntRange(10, 100))
+	roleDisplayName2 := fmt.Sprintf("random-name-2-%d", time.Now().UnixMilli())
 	iamRegistrationRole2 := fmt.Sprintf("crn:v1:bluemix:public:%s::::serviceRole:%s", iamRegistrationID, roleDisplayName2)
 
 	return fmt.Sprintf(`

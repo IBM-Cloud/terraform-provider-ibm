@@ -7,9 +7,9 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"time"
 
 	acc "github.com/IBM-Cloud/terraform-provider-ibm/ibm/acctest"
 	"github.com/IBM-Cloud/terraform-provider-ibm/ibm/conns"
@@ -24,7 +24,7 @@ func TestAccIbmOnboardingCatalogPlanBasic(t *testing.T) {
 	var conf partnercentersellv1.GlobalCatalogPlan
 	productID := acc.PcsOnboardingProductWithCatalogProduct
 	catalogProductID := acc.PcsOnboardingCatalogProductId
-	objectId := fmt.Sprintf("test-object-id-terraform-3-%d", acctest.RandIntRange(10, 100))
+	objectId := fmt.Sprintf("test-object-id-terraform-3-%d", time.Now().UnixMilli())
 	name := "test-plan-name-terraform"
 	active := "true"
 	disabled := "false"
@@ -70,7 +70,7 @@ func TestAccIbmOnboardingCatalogPlanAllArgs(t *testing.T) {
 	var conf partnercentersellv1.GlobalCatalogPlan
 	productID := acc.PcsOnboardingProductWithCatalogProduct
 	catalogProductID := acc.PcsOnboardingCatalogProductId
-	objectId := fmt.Sprintf("test-object-id-terraform-3-%d", acctest.RandIntRange(10, 100))
+	objectId := fmt.Sprintf("test-object-id-terraform-3-%d", time.Now().UnixMilli())
 	env := "current"
 	name := "test-plan-name-terraform"
 	active := "true"
