@@ -77,29 +77,28 @@ func TestGen2BackendCreate(t *testing.T) {
 			errorContains: "supported only for Classic database instances",
 		},
 		{
-			name: "create_with_pitr_deployment_id",
+			name: "create_with_pitr_deployment_id_only",
 			resourceData: map[string]interface{}{
 				"service":                              "databases-for-postgresql",
-				"plan":                                 "standard",
+				"plan":                                 "standard-gen2",
 				"name":                                 "test-db",
 				"location":                             "us-south",
-				"point_in_time_recovery_deployment_id": "crn:v1:bluemix:public:databases-for-postgresql:us-south:a/abc123:pitr-id",
+				"point_in_time_recovery_deployment_id": "crn:v1:bluemix:public:databases-for-postgresql:us-south:a/abc123:pitr-id::",
 			},
 			expectedError: true,
-			errorContains: "point_in_time_recovery_deployment_id is not supported for Gen2 databases",
+			errorContains: "must be set together",
 		},
 		{
-			name: "create_with_pitr_time",
+			name: "create_with_pitr_deployment_id_and_time",
 			resourceData: map[string]interface{}{
 				"service":                              "databases-for-postgresql",
-				"plan":                                 "standard",
+				"plan":                                 "standard-gen2",
 				"name":                                 "test-db",
 				"location":                             "us-south",
-				"point_in_time_recovery_deployment_id": "crn:v1:bluemix:public:databases-for-postgresql:us-south:a/abc123:pitr-id",
+				"point_in_time_recovery_deployment_id": "crn:v1:bluemix:public:databases-for-postgresql:us-south:a/abc123:pitr-id::",
 				"point_in_time_recovery_time":          "2024-01-01T00:00:00Z",
 			},
-			expectedError: true,
-			errorContains: "point_in_time_recovery_time is not supported for Gen2 databases",
+			expectedError: false,
 		},
 		{
 			name: "create_with_service_endpoints",
@@ -935,8 +934,6 @@ func TestGen2ConfigureInstancePipeline(t *testing.T) {
 // TestGen2UnsupportedAttributesList tests the gen2UnsupportedAttrs list
 func TestGen2UnsupportedAttributesList(t *testing.T) {
 	expectedUnsupported := []string{
-		"point_in_time_recovery_deployment_id",
-		"point_in_time_recovery_time",
 		"backup_policy",
 		"users",
 		"allowlist",
@@ -1887,18 +1884,18 @@ func TestGen2AllUnsupportedAttributesBehavior(t *testing.T) {
 		{
 			name:           "point_in_time_recovery_deployment_id",
 			attribute:      "point_in_time_recovery_deployment_id",
-			planBehavior:   "Fails if set",
-			applyBehavior:  "N/A",
-			readBehavior:   "Not set",
-			useAlternative: "Point-in-time recovery not yet implemented in Gen2",
+			planBehavior:   "Accepted on create; validated with point_in_time_recovery_time",
+			applyBehavior:  "Sent as dataservices.source_dataservice_crn at create only",
+			readBehavior:   "Persists in state from create",
+			useAlternative: "N/A - point-in-time recovery is supported in Gen2",
 		},
 		{
 			name:           "point_in_time_recovery_time",
 			attribute:      "point_in_time_recovery_time",
-			planBehavior:   "Fails if set",
-			applyBehavior:  "N/A",
-			readBehavior:   "Not set",
-			useAlternative: "Point-in-time recovery not yet implemented in Gen2",
+			planBehavior:   "Accepted on create; must be RFC 3339 with an offset, never empty",
+			applyBehavior:  "Sent as dataservices.point_in_time in canonical UTC at create only",
+			readBehavior:   "Persists in state from create",
+			useAlternative: "N/A - point-in-time recovery is supported in Gen2",
 		},
 		{
 			name:           "offline_restore",
