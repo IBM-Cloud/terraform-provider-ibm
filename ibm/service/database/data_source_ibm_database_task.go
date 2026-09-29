@@ -15,7 +15,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	"github.com/IBM/cloud-databases-go-sdk/clouddatabasesv5"
-	rc "github.com/IBM/platform-services-go-sdk/resourcecontrollerv2"
 )
 
 type dataSourceIBMDatabaseTaskBackend interface {
@@ -46,42 +45,12 @@ func getDeploymentIDFromTask(taskID string, meta interface{}) (string, error) {
 func pickDataSourceTaskBackend(d *schema.ResourceData, meta interface{}) (dataSourceIBMDatabaseTaskBackend, error) {
 	taskID := d.Get("task_id").(string)
 
-	// Get the resource controller client to fetch instance details
-	rsConClient, err := meta.(conns.ClientSession).ResourceControllerV2API()
-	if err != nil {
-		return nil, err
-	}
-
-	// Determine the deployment ID based on task_id format
-	// Classic: CRN contains :task: segment (e.g., crn:...:instance-id:task:task-uuid)
-	// Gen2: CRN is the instance ID directly (e.g., crn:...:instance-id::)
-	deploymentID := taskID
+	// Classic task CRNs contain a :task: segment (e.g., crn:...:instance-id:task:task-uuid).
+	// Gen2 uses the instance CRN directly as the task_id, so no :task: segment is present.
 	if strings.Contains(taskID, ":task:") {
-		// Classic: Extract deployment_id from task
-		var err error
-		deploymentID, err = getDeploymentIDFromTask(taskID, meta)
-		if err != nil {
-			return nil, err
-		}
+		return newDataSourceIBMDatabaseTaskClassicBackend(), nil
 	}
-
-	// Get the instance using the deployment ID
-	instance, _, err := rsConClient.GetResourceInstance(&rc.GetResourceInstanceOptions{
-		ID: &deploymentID,
-	})
-	if err != nil {
-		return nil, fmt.Errorf("failed to get resource instance: %s", err)
-	}
-
-	// Check the instance plan to determine which backend to use
-	if instance.ResourcePlanID == nil {
-		return nil, fmt.Errorf("failed to determine instance plan: ResourcePlanID is nil")
-	}
-	plan := *instance.ResourcePlanID
-	if isGen2Plan(plan) {
-		return newDataSourceIBMDatabaseTaskGen2Backend(), nil
-	}
-	return newDataSourceIBMDatabaseTaskClassicBackend(), nil
+	return newDataSourceIBMDatabaseTaskGen2Backend(), nil
 }
 
 func DataSourceIBMDatabaseTask() *schema.Resource {
