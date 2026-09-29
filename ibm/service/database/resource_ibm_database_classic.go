@@ -7,6 +7,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
+var classicUnsupportedAttrs = []string{
+	"shards",
+}
+
 type resourceIBMDatabaseClassicBackend struct{}
 
 func newResourceIBMDatabaseClassicBackend() resourceIBMDatabaseBackend {
@@ -38,7 +42,7 @@ func (c *resourceIBMDatabaseClassicBackend) WarnUnsupported(context context.Cont
 }
 
 func (c *resourceIBMDatabaseClassicBackend) ValidateUnsupportedAttrsDiff(context context.Context, d *schema.ResourceDiff, meta interface{}) error {
-	return nil
+	return validateUnsupportedAttrsDiffClassic(context, d, meta)
 }
 
 func (c *resourceIBMDatabaseClassicBackend) ValidateGroupsDiff(context context.Context, d *schema.ResourceDiff, meta interface{}) error {
@@ -47,4 +51,8 @@ func (c *resourceIBMDatabaseClassicBackend) ValidateGroupsDiff(context context.C
 
 func (c *resourceIBMDatabaseClassicBackend) ValidateServiceEndpointsDiff(context context.Context, d *schema.ResourceDiff, meta interface{}) error {
 	return validateServiceEndpointsDiffClassic(context, d, meta)
+}
+
+func (c *resourceIBMDatabaseClassicBackend) ValidateShardsDiff(context context.Context, d *schema.ResourceDiff, meta interface{}) error {
+	return nil
 }
