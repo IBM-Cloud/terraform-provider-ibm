@@ -61,11 +61,12 @@ const (
 // DBConfig represents database-specific configuration for Gen2 parameters.
 // Replaces map[string]interface{} for type safety and compile-time validation.
 type DBConfig struct {
-	Version    string `json:"version,omitempty"`
-	Members    int    `json:"members"`
-	Shards     int    `json:"shards,omitempty"`
-	StorageGB  int    `json:"storage_gb,omitempty"`
-	HostFlavor string `json:"host_flavor,omitempty"`
+	Version     string   `json:"version,omitempty"`
+	Members     int      `json:"members"`
+	Shards      int      `json:"shards,omitempty"`
+	MemberZones []string `json:"member_zones,omitempty"`
+	StorageGB   int      `json:"storage_gb,omitempty"`
+	HostFlavor  string   `json:"host_flavor,omitempty"`
 }
 
 // instanceConfigContext encapsulates shared context for instance configuration steps.
@@ -418,6 +419,14 @@ func (g *resourceIBMDatabaseGen2Backend) buildDBConfig(d *schema.ResourceData, c
 		config.HostFlavor = memberGroup.HostFlavor.ID
 	}
 
+	// member_zones is create-only — omit it on updates.
+	if d.Id() == "" && memberGroup != nil && len(memberGroup.MemberZones) > 0 {
+		if err := validateMemberZones(memberGroup, config.Members); err != nil {
+			return nil, err
+		}
+		config.MemberZones = memberGroup.MemberZones
+	}
+
 	// Build the result map and inject configuration overrides.
 	// addConfigurationOverrides is independent of memberGroup — called once here.
 	result := g.dbConfigToMap(config, dbType)
@@ -442,19 +451,23 @@ func (g *resourceIBMDatabaseGen2Backend) addConfigurationOverrides(d *schema.Res
 	dbConfig["configuration"] = configMap
 }
 
-// dbConfigToMap converts DBConfig struct to map[string]interface{} for API compatibility.
-// Only includes non-zero values to avoid sending unnecessary fields.
-// The dbType parameter controls which fields are included: "mongodbees" adds "shards" instead of members.
+// dbConfigToMap converts DBConfig to a map for the API, omitting zero-value fields.
+// For mongodbees, "shards" is used instead of "members".
 func (g *resourceIBMDatabaseGen2Backend) dbConfigToMap(config DBConfig, dbType string) map[string]interface{} {
 	result := make(map[string]interface{})
 
 	if config.Version != "" {
 		result["version"] = config.Version
 	}
-	if dbType != "mongodbees" {
+	// Include "members" whenever a count is set — applies to all database types including mongodbees.
+	if config.Members > 0 {
 		result["members"] = config.Members
 	} else if config.Shards > 0 {
 		result["shards"] = config.Shards
+	}
+	// Only include member_zones when set — omitted for standard multi-member deployments
+	if len(config.MemberZones) > 0 {
+		result["member_zones"] = config.MemberZones
 	}
 	if config.StorageGB > 0 {
 		result["storage_gb"] = config.StorageGB
@@ -1152,12 +1165,15 @@ func (g *resourceIBMDatabaseGen2Backend) ValidateUnsupportedAttrsDiff(ctx contex
 }
 
 func (g *resourceIBMDatabaseGen2Backend) ValidateGroupsDiff(ctx context.Context, d *schema.ResourceDiff, meta interface{}) error {
-	group, ok := d.GetOk("group")
-	if !ok {
+	// oldGroupRaw enforces update immutability (allocation_count, member_zones).
+	// newGroupRaw validates structure on both create and update.
+	oldGroupRaw, newGroupRaw := d.GetChange("group")
+	newGroupSet, ok := newGroupRaw.(*schema.Set)
+	if !ok || newGroupSet.Len() == 0 {
 		return nil
 	}
 
-	groups := expandGroups(group.(*schema.Set).List())
+	groups := expandGroups(newGroupSet.List())
 	groupIDs := make([]string, 0, len(groups))
 	for _, group := range groups {
 		groupIDs = append(groupIDs, group.ID)
@@ -1167,6 +1183,60 @@ func (g *resourceIBMDatabaseGen2Backend) ValidateGroupsDiff(ctx context.Context,
 		for j, id2 := range groupIDs {
 			if id1 == id2 && i != j {
 				return fmt.Errorf("found 2 or more instances of group with group_id %v", id1)
+			}
+		}
+	}
+
+	// On updates, block allocation_count downgrade and member_zones changes.
+	if d.Id() != "" {
+		if oldGroupSet, ok := oldGroupRaw.(*schema.Set); ok && oldGroupSet.Len() > 0 {
+			type groupState struct {
+				allocationCount int
+				memberZones     []string
+			}
+			oldByID := make(map[string]groupState)
+			for _, og := range expandGroups(oldGroupSet.List()) {
+				if og == nil {
+					continue
+				}
+				s := groupState{memberZones: og.MemberZones}
+				if og.Members != nil {
+					s.allocationCount = og.Members.Allocation
+				}
+				oldByID[og.ID] = s
+			}
+
+			for _, group := range groups {
+				if group == nil {
+					continue
+				}
+				old, exists := oldByID[group.ID]
+				if !exists {
+					continue
+				}
+				if group.Members != nil && old.allocationCount > 0 && group.Members.Allocation < old.allocationCount {
+					return fmt.Errorf(
+						"Invalid update for group %q: reducing 'allocation_count' from %d to %d is not permitted.\n"+
+							"  Downgrading the member count is not supported.",
+						group.ID, old.allocationCount, group.Members.Allocation,
+					)
+				}
+				if len(old.memberZones) == 0 && len(group.MemberZones) > 0 {
+					return fmt.Errorf(
+						"Invalid update for group %q: 'member_zones' cannot be added after provisioning.\n"+
+							"  'member_zones' is a create-only attribute. To deploy in a specific zone, "+
+							"destroy and re-create the instance.",
+						group.ID,
+					)
+				}
+				if len(old.memberZones) > 0 && len(group.MemberZones) > 0 && old.memberZones[0] != group.MemberZones[0] {
+					return fmt.Errorf(
+						"Invalid update for group %q: 'member_zones' cannot be changed after provisioning "+
+							"(current: %q, requested: %q).\n"+
+							"  To change the availability zone, destroy and re-create the instance.",
+						group.ID, old.memberZones[0], group.MemberZones[0],
+					)
+				}
 			}
 		}
 	}
@@ -1218,6 +1288,13 @@ func (g *resourceIBMDatabaseGen2Backend) ValidateGroupsDiff(ctx context.Context,
 	}
 
 	return nil
+}
+
+// ValidateMemberZonesDiff validates member_zones at plan time for Gen2 instances.
+func (g *resourceIBMDatabaseGen2Backend) ValidateMemberZonesDiff(_ context.Context, d *schema.ResourceDiff, _ interface{}) error {
+	return memberZonesInRawConfig(d, func(zones []string, allocationCount int) error {
+		return validateMemberZones(&Group{MemberZones: zones}, allocationCount)
+	})
 }
 
 func isShardAttrConfigured(d *schema.ResourceData) bool {

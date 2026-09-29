@@ -390,6 +390,7 @@ func flattenIcdGroupsFromInstanceAndCatalog(instance map[string]interface{}, cat
 			"cpu":         buildCPUConfig(resourceMap, allocations.cpuCount),
 			"disk":        buildDiskConfig(resourceMap, allocations.storageGB),
 			"host_flavor": buildHostFlavorConfig(allocations.hostFlavorID),
+			"members":     buildMembersConfig(int(allocations.members), allocations.memberZones),
 		}
 		groups = append(groups, group)
 	}
@@ -404,11 +405,12 @@ type databaseAllocations struct {
 	memoryGB     float64
 	storageGB    float64
 	members      int64
+	memberZones  []string
 	shards       int64
 	hostFlavorID string
 }
 
-// extractDatabaseAllocations extracts allocation values from instance extensions for a specific database type
+// extractDatabaseAllocations extracts allocation values from instance extensions for a specific database type.
 func extractDatabaseAllocations(instance map[string]interface{}, resourceID string) databaseAllocations {
 	var alloc databaseAllocations
 
@@ -450,6 +452,9 @@ func extractDatabaseAllocations(instance map[string]interface{}, resourceID stri
 	}
 	if flavor, ok := dbTypeData["host_flavor"].(string); ok {
 		alloc.hostFlavorID = flavor
+	}
+	if zonesRaw, ok := dbTypeData["member_zones"].([]interface{}); ok {
+		alloc.memberZones = stringsFromInterfaceSlice(zonesRaw)
 	}
 
 	return alloc
@@ -550,6 +555,24 @@ func buildHostFlavorConfig(hostFlavorID string) []map[string]interface{} {
 	}
 
 	return []map[string]interface{}{hostflavor}
+}
+
+// buildMembersConfig builds the members sub-block for a flattened group.
+// This ensures allocation_count is present in state so ValidateGroupsDiff can detect downgrade attempts.
+func buildMembersConfig(allocationCount int, memberZones []string) []map[string]interface{} {
+	if allocationCount == 0 {
+		return []map[string]interface{}{}
+	}
+	zones := memberZones
+	if zones == nil {
+		zones = []string{}
+	}
+	return []map[string]interface{}{
+		{
+			"allocation_count": allocationCount,
+			"member_zones":     zones,
+		},
+	}
 }
 
 // getInitialNodeCountGen2 retrieves the default member count for a Gen2 deployment from Global Catalog.
@@ -1045,6 +1068,120 @@ func extractGen2BackupExtensions(extensions map[string]interface{}) (sourceDataS
 		backupType = v
 	}
 	return
+}
+
+// validateMemberZones checks that member_zones has allocation_count=1 and exactly one zone.
+func validateMemberZones(group *Group, memberCount int) error {
+	if memberCount != 1 {
+		return fmt.Errorf(
+			"Invalid group configuration: member_zones requires allocation_count = 1, but %d was provided.\n"+
+				"To deploy a single member in a specific availability zone, set:\n"+
+				"  members {\n"+
+				"    allocation_count = 1\n"+
+				"    member_zones     = [\"<zone>\"]\n"+
+				"  }",
+			memberCount,
+		)
+	}
+	if len(group.MemberZones) != 1 {
+		zones := make([]string, 0, len(group.MemberZones))
+		for _, z := range group.MemberZones {
+			zones = append(zones, fmt.Sprintf("%q", z))
+		}
+		return fmt.Errorf(
+			"Invalid group configuration: member_zones must contain exactly one availability zone, but %d were provided [%s].\n"+
+				"Please specify a single availability zone.",
+			len(group.MemberZones),
+			strings.Join(zones, ", "),
+		)
+	}
+	return nil
+}
+
+// stringsFromInterfaceSlice converts []interface{} to []string, skipping non-string elements.
+func stringsFromInterfaceSlice(in []interface{}) []string {
+	out := make([]string, 0, len(in))
+	for _, v := range in {
+		if s, ok := v.(string); ok {
+			out = append(out, s)
+		}
+	}
+	return out
+}
+
+// memberZonesFromDiff reads member_zones and allocation_count from a raw diff group map.
+func memberZonesFromDiff(groupRaw interface{}) (zones []string, allocationCount int, ok bool) {
+	tfGroup, ok := groupRaw.(map[string]interface{})
+	if !ok || tfGroup["group_id"].(string) != defaultGroupID {
+		return nil, 0, false
+	}
+	membersSet, ok := tfGroup["members"].(*schema.Set)
+	if !ok || membersSet.Len() == 0 {
+		return nil, 0, false
+	}
+	memberMap, ok := membersSet.List()[0].(map[string]interface{})
+	if !ok {
+		return nil, 0, false
+	}
+	zonesRaw, _ := memberMap["member_zones"].([]interface{})
+	if len(zonesRaw) == 0 {
+		return nil, 0, false
+	}
+	allocationCount, _ = memberMap["allocation_count"].(int)
+	zones = stringsFromInterfaceSlice(zonesRaw)
+	if len(zones) == 0 {
+		return nil, 0, false
+	}
+	return zones, allocationCount, true
+}
+
+// memberZonesInRawConfig calls fn for each group that has member_zones set in the raw config.
+func memberZonesInRawConfig(d *schema.ResourceDiff, fn func(zones []string, allocationCount int) error) error {
+	raw := d.GetRawConfig()
+	if raw.IsNull() || !raw.IsKnown() {
+		return nil
+	}
+	groupsVal := raw.GetAttr("group")
+	if groupsVal.IsNull() || !groupsVal.IsKnown() {
+		return nil
+	}
+	it := groupsVal.ElementIterator()
+	for it.Next() {
+		_, groupVal := it.Element()
+		if groupVal.IsNull() || !groupVal.IsKnown() {
+			continue
+		}
+		membersVal := groupVal.GetAttr("members")
+		if membersVal.IsNull() || !membersVal.IsKnown() || membersVal.LengthInt() == 0 {
+			continue
+		}
+		_, memberVal := membersVal.ElementIterator().Element() // first (only) element
+		if memberVal.IsNull() || !memberVal.IsKnown() {
+			continue
+		}
+		zonesVal := memberVal.GetAttr("member_zones")
+		if zonesVal.IsNull() || !zonesVal.IsKnown() || zonesVal.LengthInt() == 0 {
+			continue
+		}
+		var zones []string
+		zit := zonesVal.ElementIterator()
+		for zit.Next() {
+			_, zv := zit.Element()
+			if !zv.IsNull() && zv.IsKnown() {
+				zones = append(zones, zv.AsString())
+			}
+		}
+		allocationCount := 0
+		allocVal := memberVal.GetAttr("allocation_count")
+		if !allocVal.IsNull() && allocVal.IsKnown() {
+			n, _ := allocVal.AsBigFloat().Int64()
+			allocationCount = int(n)
+		}
+		if err := fn(zones, allocationCount); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 // gen2GetOperationDescription extracts a human-readable description from the instance's last operation or state.
