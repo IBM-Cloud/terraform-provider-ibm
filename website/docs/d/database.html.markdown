@@ -55,6 +55,15 @@ In addition to all argument references list, you can access the following attrib
 - `guid` - (String) The unique identifier of the IBM Cloud Databases instance.
 - `plan` - (String)  The service plan of the IBM Cloud Databases instance.
 - `shards` - (Integer) The number of shards for a MongoDB Enterprise Edition Sharding Gen2 instance. Only populated for `databases-for-mongodb` with plan `enterprise-sharding-gen2`. Not set for all other services and plans.
+- `maintenance` - (List) Maintenance window configuration. Applicable to Gen2 plans only.
+
+  Nested scheme for `maintenance`:
+  - `window` - (List) Maintenance window schedule.
+
+    Nested scheme for `window`:
+    - `start_time` - (String) Earliest time at which maintenance can begin (`hh:mmZ`).
+    - `days` - (String) Comma-separated day(s) on which maintenance can run.
+    - `system_assigned` - (Boolean) True when IBM Cloud controls the maintenance schedule.
 
 - `location` - (String)  The location where the IBM Cloud Databases instance is deployed into.
 - `status` - (String)  The status of the IBM Cloud Databases instance.
@@ -138,6 +147,7 @@ To resolve the warning, create the required IAM service-to-service authorization
 ### Gen2 Specific Attributes
 The following attributes are only populated for Gen2 instances:
 - `shards` - The live shard count, populated only for `databases-for-mongodb` with plan `enterprise-sharding-gen2`. Returns `1` for a single-shard instance. Not set for any other service or plan.
+- `maintenance` - Maintenance window configuration from instance extensions (only populated for Gen2 instances).
 
 ### Gen2 Example
 ```terraform
