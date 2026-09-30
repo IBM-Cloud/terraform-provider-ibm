@@ -88,14 +88,12 @@ func TestGen2UnsupportedAttrsValidation(t *testing.T) {
 		d := testGen2DatabaseResourceData(t, map[string]interface{}{
 			"adminpassword":             adminPasswordValue,
 			"backup_encryption_key_crn": "crn:v1:bluemix:public:kms:us-south:a/account-id:instance-id:key:key-id",
-			"remote_leader_id":          "crn:v1:bluemix:public:databases-for-postgresql:us-south:a/account-id:instance-id::",
 		})
 
 		err := g.ValidateUnsupportedAttrsData(d)
 
 		requireErrContains(t, err, "adminpassword")
 		requireErrContains(t, err, "backup_encryption_key_crn")
-		requireErrContains(t, err, "remote_leader_id")
 	})
 
 	t.Run("supported attr configuration does not return error", func(t *testing.T) {
@@ -515,7 +513,7 @@ func TestBuildDBConfig_mongodbeesShardsPath(t *testing.T) {
 		}
 	})
 
-	t.Run("defaults shards to 1 when not explicitly set", func(t *testing.T) {
+	t.Run("omits shards from payload when not explicitly set (API defaults it)", func(t *testing.T) {
 		d := schema.TestResourceDataRaw(t, resourceSchema, map[string]interface{}{
 			"service": "databases-for-mongodb",
 			"plan":    "enterprise-sharding-gen2",
@@ -533,8 +531,8 @@ func TestBuildDBConfig_mongodbeesShardsPath(t *testing.T) {
 		if err != nil {
 			t.Fatalf("expected no error, got %v", err)
 		}
-		if config["shards"] != 1 {
-			t.Fatalf("expected shards defaulted to 1, got %v", config["shards"])
+		if _, ok := config["shards"]; ok {
+			t.Fatalf("expected shards absent from payload when not set (API defaults it), got %v", config["shards"])
 		}
 	})
 

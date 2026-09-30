@@ -30,7 +30,6 @@ var gen2UnsupportedAttrs = []string{
 	"backup_policy",
 	"users",
 	"allowlist",
-	"remote_leader_id",
 	"adminpassword",
 	"backup_encryption_key_crn",
 }
@@ -422,9 +421,6 @@ func (g *resourceIBMDatabaseGen2Backend) buildDBConfig(d *schema.ResourceData, c
 
 	if dbType == "mongodbees" {
 		config.Shards = d.Get("shards").(int)
-		if config.Shards == 0 {
-			config.Shards = 1 // default to 1 shard when not explicitly configured
-		}
 	}
 
 	// Storage in GB (not MB!) - Gen2 expects per-member allocation

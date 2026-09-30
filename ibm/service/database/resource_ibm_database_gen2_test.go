@@ -941,7 +941,6 @@ func TestGen2UnsupportedAttributesList(t *testing.T) {
 		"backup_policy",
 		"users",
 		"allowlist",
-		"remote_leader_id",
 		"adminpassword",
 		"backup_encryption_key_crn",
 	}
