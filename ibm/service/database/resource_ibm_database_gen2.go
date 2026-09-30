@@ -469,13 +469,8 @@ func (g *resourceIBMDatabaseGen2Backend) addConfigurationOverrides(d *schema.Res
 	dbConfig["configuration"] = configMap
 }
 
-// dbConfigToMap converts DBConfig struct to map[string]interface{} for API compatibility.
-// Only includes non-zero values to avoid sending unnecessary fields.
-// For mongodbees (enterprise-sharding-gen2):
-//   - emit "shards" when explicitly configured (> 0)
-//   - emit "members" when members > 0 and shards == 0 (e.g. scale-up without shard change)
-//
-// For all other database types, emit "members" when > 0.
+// dbConfigToMap converts DBConfig to a map for the API, omitting zero-value fields.
+// mongodbees: emits "shards" when set, "members" otherwise. All other types: emits "members".
 func (g *resourceIBMDatabaseGen2Backend) dbConfigToMap(config DBConfig, dbType string) map[string]interface{} {
 	result := make(map[string]interface{})
 
