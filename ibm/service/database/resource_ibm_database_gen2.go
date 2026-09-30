@@ -1060,14 +1060,9 @@ func (g *resourceIBMDatabaseGen2Backend) promoteReadReplicaWithDiagnostics(d *sc
 		serviceName = parts[0]
 	}
 
-	dbType := getDatabaseTypeFromResourceID(serviceName)
+	dbType := getDatabaseTypeFromResourceID(serviceName, d.Get("plan").(string))
 	if dbType == "" {
 		return diagError("unable to determine database type from resource plan ID for promotion")
-	}
-
-	// enterprise-sharding-gen2 broker uses "mongodbees" as the dataservices key
-	if d.Get("plan").(string) == "enterprise-sharding-gen2" && dbType == "mongodb" {
-		dbType = "mongodbees"
 	}
 
 	parameters := map[string]interface{}{
