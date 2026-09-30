@@ -1016,7 +1016,7 @@ func TestExtractDatabaseAllocations_MemberZones(t *testing.T) {
 
 	t.Run("member_zones read from dataservices path", func(t *testing.T) {
 		ext := makeExtensions([]interface{}{"us-east-2"})
-		alloc := extractDatabaseAllocations(ext, resourceID)
+		alloc := extractDatabaseAllocations(ext, resourceID, "standard-gen2")
 		require.Equal(t, []string{"us-east-2"}, alloc.memberZones)
 		require.Equal(t, int64(1), alloc.members)
 		require.Equal(t, "bxf.4x16", alloc.hostFlavorID)
@@ -1031,13 +1031,13 @@ func TestExtractDatabaseAllocations_MemberZones(t *testing.T) {
 				},
 			},
 		}
-		alloc := extractDatabaseAllocations(ext, resourceID)
+		alloc := extractDatabaseAllocations(ext, resourceID, "standard-gen2")
 		require.Nil(t, alloc.memberZones)
 		require.Equal(t, int64(3), alloc.members)
 	})
 
 	t.Run("empty extensions returns zero alloc", func(t *testing.T) {
-		alloc := extractDatabaseAllocations(map[string]interface{}{}, resourceID)
+		alloc := extractDatabaseAllocations(map[string]interface{}{}, resourceID, "standard-gen2")
 		require.Equal(t, int64(0), alloc.members)
 		require.Nil(t, alloc.memberZones)
 	})
